@@ -6,7 +6,7 @@ Android TV application for Catalogizer, optimized for big-screen viewing and D-p
 
 - **Package**: `com.catalogizer.androidtv`
 - **SDK**: compileSdk 34, minSdk 26, targetSdk 34
-- **Version**: 2.3.0 (versionCode 7)
+- **Version**: 2.4.0 (versionCode 8)
 
 ## Commands
 
@@ -41,7 +41,7 @@ app/src/main/java/com/catalogizer/androidtv/
 | Library | Purpose |
 |---|---|
 | Jetpack Compose (BOM 2024.06.00) | Declarative UI |
-| Compose for TV (`tv-foundation`, `tv-material` 1.0.0-alpha10) | TV-specific composables |
+| Compose for TV (`tv-foundation` 1.0.0-alpha11, `tv-material` 1.0.0) | TV-specific composables |
 | Leanback 1.0.0 | TV navigation and UI patterns |
 | Material 3 | Design system |
 | Navigation Compose | Screen navigation |

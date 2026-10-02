@@ -9,8 +9,8 @@ It extends them and never weakens them.
 this document > root `CONSTITUTION.md` / `CLAUDE.md` / `AGENTS.md` > module `CLAUDE.md` /
 `AGENTS.md`. A project or module rule MAY tighten a canon rule and MUST NOT weaken it.
 
-**Completeness model.** The canon is 11,900 lines (about 1.85 MB), so it is incorporated in three
-layers rather than copied, which would breach its own token-efficiency (§11.4.141) and
+**Completeness model.** The canon is 11,900 lines (about 1.85 MB), so it is incorporated in four
+layers rather than copied verbatim, which would breach its own token-efficiency (§11.4.141) and
 no-duplicate (§11.4.227) rules:
 
 1. **Binding by reference.** Every clause of the pinned canon binds in full, including each
@@ -19,8 +19,14 @@ no-duplicate (§11.4.227) rules:
    and the known conflicts are written out below.
 3. **Enumerated here.** All 283 anchors are listed in the Anchor Catalogue, generated from the
    canon's own machine index, so no anchor can be missed or mis-transcribed.
+4. **Ported in the binding appendix.** `.specify/memory/constitution-appendix.md` (about 1 MB)
+   states the operative rules of every one of the 283 anchors (every MUST clause, lettered clause,
+   gate name, no-escape-hatch flag and honest boundary) and every project and module rule. It is
+   part of this constitution and binds with it. It is a separate file only because Spec Kit loads
+   the main file on every command; Spec Kit commands MUST read the appendix when a plan, task or
+   review touches any anchor.
 
-Where a digest here is shorter than canon, canon governs. Read the anchor block before relying
+Where a digest here or in the appendix is shorter than canon, canon governs. Read the anchor block before relying
 on it: `grep -n '§11\.4\.<N> —' submodules/constitution/Constitution.md`.
 
 **Pinned sources (verified this session):** `submodules/constitution` at commit
@@ -306,6 +312,9 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
 
 ## Project and Module Overrides
 
+This section is a summary. The complete per-module rules (identity, commands, architecture and
+ownership, coordination rules, constraints, commit conventions) are in the appendix, Part 2.
+
 ### Root (`CONSTITUTION.md`, `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`)
 
 - The prime directive (Principle I) is the foundational requirement; any dispatch, CI configuration
@@ -327,8 +336,8 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
   Operational Integrity forbids any command that suspends, hibernates, locks, terminates or
   crashes the host.
 - Git topology: `origin` fetches from GitHub and pushes to GitFlic, eight remotes are configured (`origin` pushes to six),
-  force-push needs explicit authorization (and is absolutely banned by §11.4.113), and
-  `--no-verify` is forbidden.
+  force-push is absolutely banned (§11.4.113; the root `AGENTS.md` wording that it could be
+  authorized has been corrected), and `--no-verify` is forbidden.
 - §11.4.173 (containerized and distributed builds) is restated with no escape flag: no
   `--build-on-host`, `--skip-container-build`, `--local-build-ok`, `--no-distributed-build` or
   `--bare-host-build`.
@@ -403,8 +412,9 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
   and use `KEYCODE_TAB` between fields, and run `adb reverse tcp:8080 tcp:8080` per device.
   Watch Next and channels are cleaned on logout; deep links use `catalogizer://media/{id}?type=`.
 - The phone app targets JDK 21 and the TV app JDK 17, both with the `--add-opens` kapt flags and
-  `android.useNewJdkImageTransform=false`. Gradle JVM is limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m` per `gradle.properties` (Kotlin daemon
-  `-Xmx1024m` on TV). Release signing reads `../docker/signing/signing.properties`. Container
+  `android.useNewJdkImageTransform=false`. Gradle JVM is limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m` per `gradle.properties` (the TV guide's
+  Kotlin daemon `-Xmx1024m` is documentation only: no such line exists in its `gradle.properties`,
+  so it is UNCONFIRMED). Release signing reads `../docker/signing/signing.properties`. Container
   builds need the Android SDK (compileSdk 35 for the phone app) in the builder image.
 
 ### `catalogizer-api-client` (TypeScript)
@@ -541,7 +551,8 @@ This project follows **specification-driven development** using the superspec pi
 ## Anchor Catalogue
 
 All 283 anchors of the pinned canon, grouped as the canon groups them. Each line is the anchor id
-and its title (long titles are shortened with an ellipsis; the full text is in canon). Anchors
+and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are
+in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors
 numbered 62, 64, 175 and 203 to 206 do not exist in canon and are cited-but-undefined elsewhere.
 
 ### Anti-bluff and evidence (33 anchors)
@@ -891,8 +902,11 @@ Canon: `submodules/constitution/groups/workable-items-and-tracking.md`
 
 These were found while reading every source in full. Canon wins on each. Items marked
 `UNCONFIRMED` could not be verified from this repository and are recorded rather than assumed
-(§11.4.6). Each item carries its status: FIXED in this change (main-repo files only), DECIDED
-(an autonomous reversible default under §11.4.101), or OPEN (an operator decision or a follow-up).
+(§11.4.6). Items 2 to 4, 7, 11 and 13 carry a mixed FIXED/OPEN status inline; the others are: 1 DECIDED (the
+stricter project limit governs), 5 OPEN, 6 OPEN, 8 NOTE (informational), 9 DECIDED (interim
+ratchet), 10 OPEN, 12 DECIDED (workflow narrowed), 14 NOTE (state at commit time). Statuses:
+FIXED in this change (main-repo files only), DECIDED (an autonomous reversible default under
+§11.4.101), OPEN (an operator decision or a follow-up), NOTE (informational).
 
 1. **Test resource limits.** `catalog-api` caps test runs at `GOMAXPROCS=3`, `-p 2 -parallel 2`
    and 30 to 40% of host CPU and RAM. Canon allows up to 60% of RAM for session-resident work
@@ -955,12 +969,30 @@ These were found while reading every source in full. Canon wins on each. Items m
     34, Compose BOM 2024.01 and a 2048m Gradle heap, while the build files use compileSdk 35 (phone),
     BOM 2024.12.01 (phone) and 2024.06.00 (TV), and `-Xmx4096m -XX:MaxMetaspaceSize=1024m`.
     **FIXED:** the documents now match the build files. Whether the heap was meant to stay at 2048m
-    is `UNCONFIRMED` and is an operator decision. The TV Kotlin daemon `-Xmx1024m` figure was not
-    verified.
+    is `UNCONFIRMED` and is an operator decision. The TV guide's Kotlin daemon `-Xmx1024m` figure has no
+    matching `gradle.properties` line and stays `UNCONFIRMED` (see item 13).
 12. **Spec-first versus autonomy.** Spec-first development (Principle workflow below) is the rule
     for new feature work. Canon makes the autonomous loop the default working mode with no per-step
     approval (§11.4.126, §11.4.101, §11.4.87), and defect fixes follow systematic debugging and
     reproduce-first (§11.4.102, §11.4.146) without a spec. The workflow rules are narrowed to say so.
+13. **Further doc-versus-build discrepancies (found by the module digests, verified against the
+    files).** **FIXED:** Android app version (now 2.4.0, versionCode 6), Android TV (2.4.0,
+    versionCode 8) and the TV Compose artifacts (`tv-foundation` 1.0.0-alpha11, `tv-material`
+    1.0.0) in the module `CLAUDE.md` files; the desktop guide now lists the optional `vlc-player`
+    feature and the Playwright scripts; the root `AGENTS.md` no longer says force-push can be
+    authorized (it is absolutely banned, §11.4.113) and now says eight remotes (it said four).
+    **OPEN:** both Android `gradle.properties`
+    set `org.gradle.java.version=17` while the guides call JDK 21 the default; the TV guide
+    describes a `kotlin.daemon.jvmargs` line that does not exist in its `gradle.properties`;
+    `catalog-web` uses TypeScript 4.9 and `catalogizer-api-client` uses TypeScript 5. Each needs
+    an operator decision on the intended value.
+14. **Repository state at commit time (verified with `git ls-remote` and `git status`).** The
+    `constitution` submodule's remote is at least 6 commits ahead of the pin as of the last fetch
+    (those 6 change hook and fastcycle tooling, not `Constitution.md`, `constitution_index.yaml` or
+    `groups/`); later remote commits are `UNCONFIRMED` because the remote keeps moving. The pin is
+    deliberately not moved here. `submodules/websocket_client_ts` has a `github` remote that
+    returns "Repository not found". `submodules/helix_qa/tools/opensource/docling` is a vendored
+    third-party repository with one modified data file; it is not committed or pushed.
 
 ## Governance
 
@@ -969,7 +1001,8 @@ repository, subordinate only to the Helix Universal Constitution.
 
 **Amendment procedure.** An amendment requires a documented rationale, an update to dependent
 specs and plans, and verification that Principles I to VIII are not weakened. Amendments MUST be
-reviewed under Principle III before acceptance. A principle MUST NOT be removed or weakened to
+reviewed under Principle III before acceptance. The appendix is amended with this document and
+regenerated whenever the canon pin moves. A principle MUST NOT be removed or weakened to
 make a change pass. When the `submodules/constitution` pointer moves, the pinned commit and hash
 above MUST be updated, the Anchor Catalogue regenerated from `constitution_index.yaml`, and the
 post-pull sweep run (§11.4.26, §11.4.32, §11.4.164). Rules landing in canon are classified
@@ -984,6 +1017,7 @@ changes that violate a principle or a canon anchor. Complexity beyond what a pri
 MUST be justified in the plan. Canon conflicts are resolved in canon's favour, and any conflict
 between a module rule and canon is recorded under Known Conflicts.
 
-**Owed items.** The decisions and follow-ups in Known Conflicts items 1 to 10 are open.
+**Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults may be
+replaced by the operator.
 
-**Version**: 2.0.1 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
+**Version**: 2.1.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02

@@ -112,4 +112,7 @@ If any script or command suggests using `sudo` or `su`:
 
 **VIOLATION OF THIS CONSTRAINT IS STRICTLY PROHIBITED.**
 
+## Optional features and E2E
 
+- Optional Cargo feature `vlc-player` (`libvlc-sys`) with sources in `src-tauri/src/vlc/`.
+- Playwright E2E: `npm run test:e2e` and `npm run test:e2e:update` (snapshot refresh).
