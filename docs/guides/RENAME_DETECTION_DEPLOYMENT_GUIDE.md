@@ -216,8 +216,10 @@ volumes:
 
 Run with Docker:
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
-docker-compose up -d
+podman compose up -d
 ```
 
 ### Kubernetes Deployment

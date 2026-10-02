@@ -38,8 +38,10 @@ GRAFANA_PASSWORD=your_grafana_password
 
 ## Step 3: Start Services with Docker Compose
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
-docker compose up -d
+podman compose up -d
 ```
 
 This starts the following services:
@@ -52,7 +54,7 @@ This starts the following services:
 Verify with:
 
 ```bash
-docker compose ps
+podman compose ps
 ```
 
 You should see all services listed as "running" with health status "healthy".
@@ -170,9 +172,9 @@ Access the web UI at http://localhost:5173 (Vite dev server) or http://localhost
 Check logs for the failing service:
 
 ```bash
-docker compose logs api
-docker compose logs postgres
-docker compose logs redis
+podman compose logs api
+podman compose logs postgres
+podman compose logs redis
 ```
 
 Common causes:
@@ -185,13 +187,13 @@ Common causes:
 Wait 30-40 seconds after starting containers. The API has a `start_period` of 40 seconds in its health check. Verify with:
 
 ```bash
-docker compose ps
+podman compose ps
 ```
 
 If the API container keeps restarting, check the logs:
 
 ```bash
-docker compose logs -f api
+podman compose logs -f api
 ```
 
 ### Cannot connect to storage source

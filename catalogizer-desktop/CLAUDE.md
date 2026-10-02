@@ -8,6 +8,8 @@ Tauri 2 desktop application for browsing and managing Catalogizer media collecti
 
 ## Build & Test
 
+> Development-run and test commands. Release artifacts (production builds, APKs, installers, packages) MUST be built only inside a rootless Podman build container (constitution §11.4.173); never use sudo.
+
 ```bash
 # Frontend
 npm install

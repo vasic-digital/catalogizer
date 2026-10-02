@@ -85,7 +85,9 @@ For the backend, navigate to catalog-api. Run go mod tidy to install dependencie
 
 For the frontend, navigate to catalog-web. Run npm install, then npm run dev. Vite starts on port 5173 with hot module replacement. Changes to React components appear instantly in the browser.
 
-For the full stack with dependencies, use Docker. Run docker-compose -f docker-compose.dev.yml up from the project root. This starts PostgreSQL, Redis, and all services with development-friendly settings.
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
+For the full stack with dependencies, use containers. Run podman compose -f docker-compose.dev.yml up from the project root. This starts PostgreSQL, Redis, and all services with development-friendly settings.
 
 For the desktop apps, you need the Rust toolchain in addition to Node.js. In the catalogizer-desktop or installer-wizard directory, run npm run tauri:dev. This starts both the frontend dev server and the Rust backend with hot reloading for the frontend.
 
@@ -105,7 +107,7 @@ The project structure follows clear conventions. Go files use *_test.go beside t
 - [02:30] `npm run dev` -- show Vite starting on port 5173
 - [03:00] Open the browser and show the frontend connecting to the backend
 - [03:30] Make a small React change -- show hot reload
-- [04:00] Stop individual services and start Docker: `docker-compose -f docker-compose.dev.yml up`
+- [04:00] Stop individual services and start Docker: `podman compose -f docker-compose.dev.yml up`
 - [04:30] Show all containers starting
 - [05:00] Desktop setup: show Rust toolchain check (`rustc --version`)
 - [05:30] `cd catalogizer-desktop && npm run tauri:dev`
@@ -126,7 +128,7 @@ The project structure follows clear conventions. Go files use *_test.go beside t
 - Monorepo with independent components: set up only what you need
 - Backend: `go mod tidy && go run main.go` (port 8080)
 - Frontend: `npm install && npm run dev` (port 5173 with HMR)
-- Full stack: `docker-compose -f docker-compose.dev.yml up`
+- Full stack: `podman compose -f docker-compose.dev.yml up`
 - Desktop: Rust toolchain + `npm run tauri:dev`
 - Android: Android Studio + `./gradlew assembleDebug`
 - API client: `npm install && npm run build && npm run test`
@@ -318,7 +320,7 @@ Monitor your deployment using the Prometheus and Grafana stack from the monitori
 - [07:00] Show Redis service configuration
 - [07:30] Show Nginx reverse proxy configuration
 - [08:00] Show environment variable requirements for production
-- [08:30] Deploy: `docker-compose up -d` (detached mode)
+- [08:30] Deploy: `podman compose up -d` (detached mode)
 - [09:00] Verify all containers are healthy: `docker ps`
 - [09:30] Open the deployed application in a browser
 - [10:00] Show monitoring/prometheus.yml and monitoring/grafana/ for production monitoring

@@ -6,6 +6,8 @@ React 18 / TypeScript / Vite frontend for Catalogizer. Provides media browsing, 
 
 ## Commands
 
+> Development-run and test commands. Release artifacts (production builds, APKs, installers, packages) MUST be built only inside a rootless Podman build container (constitution §11.4.173); never use sudo.
+
 ```bash
 npm run dev                 # dev server on :3000 (proxies /api to catalog-api)
 npm run build               # production build (tsc + vite)

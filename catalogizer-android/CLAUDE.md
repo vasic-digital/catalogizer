@@ -10,6 +10,8 @@ Native Android application for Catalogizer media management. Built with Kotlin a
 
 ## Commands
 
+> Development-run and test commands. Release artifacts (production builds, APKs, installers, packages) MUST be built only inside a rootless Podman build container (constitution §11.4.173); never use sudo.
+
 ```bash
 ./gradlew assembleDebug          # build debug APK
 ./gradlew assembleRelease        # build release APK (requires signing config)

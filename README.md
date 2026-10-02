@@ -503,6 +503,9 @@ curl -fsSL https://raw.githubusercontent.com/your-repo/Catalogizer/main/scripts/
 ## 🐳 Docker Deployment
 
 ### Quick Start
+
+> Uses rootless Podman Compose. Never use sudo. Release artifacts are built only inside rootless build containers (see the project constitution, §11.4.173).
+
 ```bash
 # Clone repository
 git clone <repository-url>
@@ -514,10 +517,10 @@ cp deployment/.env.example deployment/.env
 
 # Deploy with Docker Compose
 cd deployment
-docker-compose up -d
+podman compose up -d
 
 # Monitor deployment
-docker-compose logs -f
+podman compose logs -f
 ```
 
 ### Production Deployment
@@ -526,10 +529,10 @@ docker-compose logs -f
 ./deployment/scripts/deploy-server.sh --env=production --strategy=rolling
 
 # Deploy with monitoring
-docker-compose --profile monitoring up -d
+podman compose --profile monitoring up -d
 
 # Deploy with backup service
-docker-compose --profile backup up -d
+podman compose --profile backup up -d
 ```
 
 ### Service Architecture
@@ -575,10 +578,10 @@ SPOTIFY_CLIENT_SECRET=your_spotify_secret
 ### Override Configuration
 ```bash
 # Use custom environment file
-docker-compose --env-file ./production.env up -d
+podman compose --env-file ./production.env up -d
 
 # Override specific variables
-CATALOGIZER_VERSION=v2.1.0 docker-compose up -d
+CATALOGIZER_VERSION=v2.1.0 podman compose up -d
 ```
 
 ## 🏗️ Build & Deploy Clients
@@ -682,7 +685,7 @@ curl http://localhost:8080/health/system
 ### Monitoring Stack (Optional)
 ```bash
 # Enable monitoring services
-docker-compose --profile monitoring up -d
+podman compose --profile monitoring up -d
 
 # Access monitoring interfaces
 # Prometheus: http://localhost:9090
@@ -692,8 +695,8 @@ docker-compose --profile monitoring up -d
 ### Log Management
 ```bash
 # View service logs
-docker-compose logs catalogizer-server
-docker-compose logs --tail=100 -f web
+podman compose logs catalogizer-server
+podman compose logs --tail=100 -f web
 
 # Access log files
 docker exec catalogizer-server tail -f /app/logs/catalogizer.log
@@ -770,10 +773,10 @@ docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 docker system prune -a
 
 # Restart services
-docker-compose restart
+podman compose restart
 
 # Check service health
-docker-compose ps
+podman compose ps
 ```
 
 #### Permission Issues
@@ -786,9 +789,9 @@ sudo chmod -R 755 /mnt/media
 #### Database Issues
 ```bash
 # Reset database
-docker-compose down database
+podman compose down database
 docker volume rm catalogizer-database-data
-docker-compose up -d database
+podman compose up -d database
 ```
 
 ### Performance Tuning

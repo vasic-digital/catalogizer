@@ -8,6 +8,8 @@ Tauri 2 desktop wizard for configuring Catalogizer storage sources. Guides users
 
 ## Build & Test
 
+> Development-run and test commands. Release artifacts (production builds, APKs, installers, packages) MUST be built only inside a rootless Podman build container (constitution §11.4.173); never use sudo.
+
 ```bash
 # Frontend
 npm install

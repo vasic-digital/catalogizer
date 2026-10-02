@@ -10,6 +10,8 @@ Android TV application for Catalogizer, optimized for big-screen viewing and D-p
 
 ## Commands
 
+> Development-run and test commands. Release artifacts (production builds, APKs, installers, packages) MUST be built only inside a rootless Podman build container (constitution §11.4.173); never use sudo.
+
 ```bash
 ./gradlew assembleDebug          # build debug APK
 ./gradlew assembleRelease        # build release APK (requires signing config)

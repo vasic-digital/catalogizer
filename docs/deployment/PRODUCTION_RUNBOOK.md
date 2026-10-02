@@ -56,12 +56,14 @@ Before deployment, ensure you have:
 
 Run through this checklist before every production deployment:
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 # 1. Verify Docker is running
 docker info > /dev/null 2>&1 && echo "OK: Docker running" || echo "FAIL: Docker not running"
 
 # 2. Verify Docker Compose is available
-docker compose version && echo "OK" || echo "FAIL"
+podman compose version && echo "OK" || echo "FAIL"
 
 # 3. Check available disk space (need at least 10GB free)
 df -h / | awk 'NR==2 {print "Available:", $4}'
@@ -167,33 +169,33 @@ mkdir -p /opt/catalogizer/ssl
 cd /opt/catalogizer
 
 # Pull base images
-docker compose pull
+podman compose pull
 
 # Build the API image
-docker compose build api
+podman compose build api
 
 # Start core services (PostgreSQL, Redis, API)
-docker compose up -d postgres redis
+podman compose up -d postgres redis
 echo "Waiting for databases to initialize..."
 sleep 15
 
 # Verify databases are healthy
-docker compose ps postgres redis
+podman compose ps postgres redis
 
 # Start the API
-docker compose up -d api
+podman compose up -d api
 echo "Waiting for API to start..."
 sleep 10
 
 # Start nginx reverse proxy (production profile)
-docker compose --profile production up -d nginx
+podman compose --profile production up -d nginx
 ```
 
 #### Step 6: Verify Deployment
 
 ```bash
 # Check all container statuses
-docker compose ps
+podman compose ps
 
 # Test health endpoint
 curl -f http://localhost:8080/health
@@ -203,7 +205,7 @@ curl -f http://localhost:8080/health
 curl -f http://localhost/health
 
 # Check logs for errors
-docker compose logs --tail=50 api | grep -i "error"
+podman compose logs --tail=50 api | grep -i "error"
 ```
 
 ### Subsequent Deployments
@@ -215,10 +217,10 @@ cd /opt/catalogizer
 git pull origin main
 
 # Rebuild only the API image
-docker compose build api
+podman compose build api
 
 # Restart the API service with zero downtime
-docker compose up -d --no-deps api
+podman compose up -d --no-deps api
 
 # Verify health
 sleep 10
@@ -245,7 +247,7 @@ ALERT_EMAIL="${ALERT_EMAIL:-ops@yourcompany.com}"
 check_service() {
     local service=$1
     local status
-    status=$(docker compose -f /opt/catalogizer/docker-compose.yml ps --format json "$service" 2>/dev/null | jq -r '.Health // .State' 2>/dev/null)
+    status=$(podman compose -f /opt/catalogizer/docker-compose.yml ps --format json "$service" 2>/dev/null | jq -r '.Health // .State' 2>/dev/null)
     echo "$service: $status"
 }
 
@@ -292,18 +294,18 @@ chmod +x /opt/catalogizer/scripts/health_check.sh
 curl -s http://localhost:8080/health | jq .
 
 # PostgreSQL health
-docker compose exec postgres pg_isready -U catalogizer
+podman compose exec postgres pg_isready -U catalogizer
 # Expected: /var/run/postgresql:5432 - accepting connections
 
 # Redis health
-docker compose exec redis redis-cli ping
+podman compose exec redis redis-cli ping
 # Expected: PONG
 
 # Container resource usage
 docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
 
 # Check container logs for recent errors
-docker compose logs --since 10m api 2>&1 | grep -ci "error"
+podman compose logs --since 10m api 2>&1 | grep -ci "error"
 ```
 
 ### Cron-Based Health Monitoring
@@ -323,17 +325,17 @@ docker compose logs --since 10m api 2>&1 | grep -ci "error"
 cd /opt/catalogizer
 
 # Step 1: Create a pre-deployment backup
-docker compose exec postgres pg_dump -U catalogizer catalogizer > backup_$(date +%Y%m%d_%H%M%S).sql
+podman compose exec postgres pg_dump -U catalogizer catalogizer > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Step 2: Pull latest code
 git pull origin main
 
 # Step 3: Build new image
-docker compose build api
+podman compose build api
 
 # Step 4: Rolling restart of the API
 # Docker Compose will stop the old container and start the new one
-docker compose up -d --no-deps --build api
+podman compose up -d --no-deps --build api
 
 # Step 5: Wait for the new container to become healthy
 echo "Waiting for health check..."
@@ -347,7 +349,7 @@ done
 
 # Step 6: Verify
 curl -s http://localhost:8080/health | jq .
-docker compose logs --tail=20 api
+podman compose logs --tail=20 api
 ```
 
 ### Multi-Instance Rolling Update (with nginx load balancer)
@@ -356,7 +358,7 @@ If running multiple API instances behind nginx:
 
 ```bash
 # Step 1: Scale up with new version
-docker compose up -d --scale api=2 --no-recreate
+podman compose up -d --scale api=2 --no-recreate
 
 # Step 2: Wait for new instance to be healthy
 sleep 30
@@ -381,15 +383,15 @@ curl -sf http://localhost/health
 cd /opt/catalogizer
 
 # Step 1: Stop the current API
-docker compose stop api
+podman compose stop api
 
 # Step 2: Revert to previous Git commit
 git log --oneline -5  # Identify the previous good commit
 git checkout <PREVIOUS_COMMIT_HASH>
 
 # Step 3: Rebuild and restart
-docker compose build api
-docker compose up -d api
+podman compose build api
+podman compose up -d api
 
 # Step 4: Verify
 sleep 10
@@ -404,22 +406,22 @@ If the deployment included database schema changes that need reverting:
 cd /opt/catalogizer
 
 # Step 1: Stop the API
-docker compose stop api
+podman compose stop api
 
 # Step 2: Restore database from backup
-docker compose exec -T postgres psql -U catalogizer catalogizer < backup_YYYYMMDD_HHMMSS.sql
+podman compose exec -T postgres psql -U catalogizer catalogizer < backup_YYYYMMDD_HHMMSS.sql
 
 # Step 3: Revert code
 git checkout <PREVIOUS_COMMIT_HASH>
 
 # Step 4: Rebuild and restart
-docker compose build api
-docker compose up -d api
+podman compose build api
+podman compose up -d api
 
 # Step 5: Verify
 sleep 10
 curl -sf http://localhost:8080/health && echo "Rollback successful" || echo "Rollback FAILED"
-docker compose logs --tail=20 api
+podman compose logs --tail=20 api
 ```
 
 ### Emergency Rollback
@@ -428,25 +430,25 @@ If the system is completely unresponsive:
 
 ```bash
 # Force stop all containers
-docker compose down
+podman compose down
 
 # Revert to known-good commit
 git checkout <KNOWN_GOOD_COMMIT>
 
 # Clean rebuild everything
-docker compose build --no-cache api
+podman compose build --no-cache api
 
 # Start fresh
-docker compose up -d postgres redis
+podman compose up -d postgres redis
 sleep 15
-docker compose up -d api
+podman compose up -d api
 sleep 10
 
 # Restore database if needed
-docker compose exec -T postgres psql -U catalogizer catalogizer < backup_YYYYMMDD_HHMMSS.sql
+podman compose exec -T postgres psql -U catalogizer catalogizer < backup_YYYYMMDD_HHMMSS.sql
 
 # Restart API to pick up restored data
-docker compose restart api
+podman compose restart api
 
 # Verify
 curl -sf http://localhost:8080/health
@@ -462,15 +464,15 @@ curl -sf http://localhost:8080/health
 
 ```bash
 # Check logs
-docker compose logs --tail=100 api
+podman compose logs --tail=100 api
 
 # Common causes:
 # 1. Database not ready yet
-docker compose ps postgres  # Should show "healthy"
-docker compose restart api
+podman compose ps postgres  # Should show "healthy"
+podman compose restart api
 
 # 2. Missing environment variables
-docker compose exec api env | grep -E "JWT_SECRET|ADMIN"
+podman compose exec api env | grep -E "JWT_SECRET|ADMIN"
 
 # 3. Port conflict
 ss -tlnp | grep 8080
@@ -482,18 +484,18 @@ ss -tlnp | grep 8080
 
 ```bash
 # Check if PostgreSQL is running
-docker compose ps postgres
+podman compose ps postgres
 
 # Check PostgreSQL logs
-docker compose logs --tail=50 postgres
+podman compose logs --tail=50 postgres
 
 # Test connectivity from API container
-docker compose exec api sh -c "nc -zv postgres 5432"
+podman compose exec api sh -c "nc -zv postgres 5432"
 
 # Restart PostgreSQL if needed
-docker compose restart postgres
+podman compose restart postgres
 sleep 10
-docker compose restart api
+podman compose restart api
 ```
 
 ### Issue: Redis Connection Failed
@@ -502,14 +504,14 @@ docker compose restart api
 
 ```bash
 # Check Redis status
-docker compose ps redis
-docker compose exec redis redis-cli ping
+podman compose ps redis
+podman compose exec redis redis-cli ping
 
 # Check Redis logs
-docker compose logs redis
+podman compose logs redis
 
 # Restart Redis
-docker compose restart redis
+podman compose restart redis
 ```
 
 **Note**: The API gracefully falls back to in-memory rate limiting if Redis is unavailable. This is non-critical but reduces distributed rate limiting capability.
@@ -525,25 +527,25 @@ curl http://localhost:8080/debug/pprof/heap > heap.prof
 
 # Restart with memory limits (already configured in docker-compose.yml)
 # API: 2G limit, PostgreSQL: 2G limit, Redis: 512M limit
-docker compose restart api
+podman compose restart api
 ```
 
 ### Issue: Slow API Responses
 
 ```bash
 # Check database query performance
-docker compose exec postgres psql -U catalogizer -c "
+podman compose exec postgres psql -U catalogizer -c "
 SELECT query, calls, mean_exec_time, total_exec_time
 FROM pg_stat_statements
 ORDER BY mean_exec_time DESC
 LIMIT 10;"
 
 # Check for connection pool exhaustion
-docker compose exec postgres psql -U catalogizer -c "
+podman compose exec postgres psql -U catalogizer -c "
 SELECT count(*) as active FROM pg_stat_activity WHERE state = 'active';"
 
 # Check Redis for cache hit rates
-docker compose exec redis redis-cli info stats | grep keyspace
+podman compose exec redis redis-cli info stats | grep keyspace
 ```
 
 ### Issue: SSL/TLS Certificate Expiry
@@ -556,7 +558,7 @@ openssl x509 -enddate -noout -in /opt/catalogizer/ssl/cert.pem
 sudo certbot renew --quiet
 
 # Restart nginx to pick up new certs
-docker compose restart nginx
+podman compose restart nginx
 ```
 
 ### Issue: Disk Space Full
@@ -573,7 +575,7 @@ docker volume prune -f
 find /opt/catalogizer/logs -name "*.log" -mtime +30 -delete
 
 # Rotate PostgreSQL WAL files
-docker compose exec postgres psql -U catalogizer -c "SELECT pg_switch_wal();"
+podman compose exec postgres psql -U catalogizer -c "SELECT pg_switch_wal();"
 ```
 
 ---
@@ -586,18 +588,18 @@ docker compose exec postgres psql -U catalogizer -c "SELECT pg_switch_wal();"
 # 1. Notify users (via your notification system)
 
 # 2. Create backup
-docker compose exec postgres pg_dump -U catalogizer catalogizer > \
+podman compose exec postgres pg_dump -U catalogizer catalogizer > \
   /opt/catalogizer/backups/pre_maintenance_$(date +%Y%m%d_%H%M%S).sql
 
 # 3. Perform maintenance (e.g., upgrade, config change)
 # ...
 
 # 4. Verify all services
-docker compose ps
+podman compose ps
 curl -sf http://localhost:8080/health
 
 # 5. Monitor logs for 10 minutes
-docker compose logs -f --tail=0 api &
+podman compose logs -f --tail=0 api &
 LOG_PID=$!
 sleep 600
 kill $LOG_PID
@@ -625,7 +627,7 @@ Add to `/etc/logrotate.d/catalogizer`:
 
 | Task | Frequency | Command |
 |------|-----------|---------|
-| Database backup | Daily (2 AM) | `docker compose exec postgres pg_dump -U catalogizer catalogizer` |
+| Database backup | Daily (2 AM) | `podman compose exec postgres pg_dump -U catalogizer catalogizer` |
 | Log rotation | Daily | Handled by logrotate |
 | Docker image cleanup | Weekly | `docker image prune -f --filter "until=168h"` |
 | SSL cert check | Weekly | `openssl x509 -enddate -noout -in ssl/cert.pem` |

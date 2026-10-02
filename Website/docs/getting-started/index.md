@@ -74,8 +74,10 @@ Docker provides an isolated environment that's easy to manage and deploy.
    ```
 
 3. **Start Catalogizer**:
+   > Uses rootless Podman Compose. Never use sudo. Release artifacts are built only inside rootless build containers (see the project constitution, §11.4.173).
+
    ```bash
-   docker-compose up -d
+   podman compose up -d
    ```
 
 4. **Access Catalogizer**:

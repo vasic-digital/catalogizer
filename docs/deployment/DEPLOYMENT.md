@@ -21,13 +21,15 @@ This guide covers various deployment scenarios for Catalogizer, from development
 
 For a quick development setup:
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd Catalogizer
 
 # Start with Docker Compose
-docker-compose up -d
+podman compose up -d
 
 # Access the application
 open http://localhost:3000

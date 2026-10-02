@@ -47,15 +47,17 @@ PostgreSQL is the primary production database. Use `pg_dump` for logical backups
 
 ### Manual Backup
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 # Full database dump (plain SQL format)
-docker compose exec postgres pg_dump \
+podman compose exec postgres pg_dump \
   -U ${POSTGRES_USER:-catalogizer} \
   ${POSTGRES_DB:-catalogizer} \
   > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Compressed backup (recommended for large databases)
-docker compose exec postgres pg_dump \
+podman compose exec postgres pg_dump \
   -U ${POSTGRES_USER:-catalogizer} \
   --format=custom \
   --compress=9 \
@@ -63,7 +65,7 @@ docker compose exec postgres pg_dump \
   > backup_$(date +%Y%m%d_%H%M%S).dump
 
 # Schema-only backup (useful for migration reference)
-docker compose exec postgres pg_dump \
+podman compose exec postgres pg_dump \
   -U ${POSTGRES_USER:-catalogizer} \
   --schema-only \
   ${POSTGRES_DB:-catalogizer} \
@@ -74,16 +76,16 @@ docker compose exec postgres pg_dump \
 
 ```bash
 # Step 1: Stop the API to prevent writes
-docker compose stop api
+podman compose stop api
 
 # Step 2: Restore from plain SQL backup
-docker compose exec -T postgres psql \
+podman compose exec -T postgres psql \
   -U ${POSTGRES_USER:-catalogizer} \
   ${POSTGRES_DB:-catalogizer} \
   < backup_20260201_020000.sql
 
 # OR restore from custom-format backup
-docker compose exec -T postgres pg_restore \
+podman compose exec -T postgres pg_restore \
   -U ${POSTGRES_USER:-catalogizer} \
   -d ${POSTGRES_DB:-catalogizer} \
   --clean \
@@ -91,7 +93,7 @@ docker compose exec -T postgres pg_restore \
   < backup_20260201_020000.dump
 
 # Step 3: Restart the API
-docker compose start api
+podman compose start api
 
 # Step 4: Verify
 curl -sf http://localhost:8080/health
@@ -113,17 +115,17 @@ For continuous backup with point-in-time recovery, configure PostgreSQL WAL arch
 
 ```bash
 # Enable WAL archiving in PostgreSQL configuration
-docker compose exec postgres psql -U catalogizer -c "
+podman compose exec postgres psql -U catalogizer -c "
 ALTER SYSTEM SET wal_level = 'replica';
 ALTER SYSTEM SET archive_mode = 'on';
 ALTER SYSTEM SET archive_command = 'cp %p /backups/wal/%f';
 "
 
 # Create WAL archive directory
-docker compose exec postgres mkdir -p /backups/wal
+podman compose exec postgres mkdir -p /backups/wal
 
 # Restart PostgreSQL to apply changes
-docker compose restart postgres
+podman compose restart postgres
 ```
 
 ---
@@ -153,7 +155,7 @@ rm /tmp/catalogizer_backup.db
 ```bash
 # Step 1: Stop the API
 sudo systemctl stop catalogizer-api
-# or: docker compose stop api
+# or: podman compose stop api
 
 # Step 2: Backup the current database (just in case)
 cp /path/to/catalogizer.db /path/to/catalogizer.db.pre-restore
@@ -170,7 +172,7 @@ chown catalogizer:catalogizer /path/to/catalogizer.db
 
 # Step 5: Restart the API
 sudo systemctl start catalogizer-api
-# or: docker compose start api
+# or: podman compose start api
 ```
 
 ### SQLite WAL Mode Considerations
@@ -214,31 +216,31 @@ appendfsync everysec
 
 ```bash
 # Trigger an RDB snapshot
-docker compose exec redis redis-cli BGSAVE
+podman compose exec redis redis-cli BGSAVE
 # Wait for completion
-docker compose exec redis redis-cli LASTSAVE
+podman compose exec redis redis-cli LASTSAVE
 
 # Copy the RDB file from the Docker volume
-docker compose exec redis cat /data/dump.rdb > redis_backup_$(date +%Y%m%d_%H%M%S).rdb
+podman compose exec redis cat /data/dump.rdb > redis_backup_$(date +%Y%m%d_%H%M%S).rdb
 
 # Copy the AOF file
-docker compose exec redis cat /data/appendonly.aof > redis_aof_backup_$(date +%Y%m%d_%H%M%S).aof
+podman compose exec redis cat /data/appendonly.aof > redis_aof_backup_$(date +%Y%m%d_%H%M%S).aof
 ```
 
 ### Restore Redis Data
 
 ```bash
 # Step 1: Stop Redis
-docker compose stop redis
+podman compose stop redis
 
 # Step 2: Copy backup files into the Redis data volume
-docker compose run --rm -v $(pwd):/backup redis sh -c "cp /backup/redis_backup.rdb /data/dump.rdb"
+podman compose run --rm -v $(pwd):/backup redis sh -c "cp /backup/redis_backup.rdb /data/dump.rdb"
 
 # Step 3: Start Redis
-docker compose start redis
+podman compose start redis
 
 # Step 4: Verify
-docker compose exec redis redis-cli DBSIZE
+podman compose exec redis redis-cli DBSIZE
 ```
 
 ### Note on Redis Data Loss
@@ -324,7 +326,7 @@ mkdir -p "$BACKUP_DIR"
 
 # 1. Database backup
 echo "Backing up PostgreSQL database..."
-docker compose -f /opt/catalogizer/docker-compose.yml exec -T postgres pg_dump \
+podman compose -f /opt/catalogizer/docker-compose.yml exec -T postgres pg_dump \
   -U ${POSTGRES_USER:-catalogizer} \
   --format=custom \
   --compress=9 \
@@ -334,9 +336,9 @@ echo "  Database: $(du -h "$BACKUP_DIR/database.dump" | cut -f1)"
 
 # 2. Redis backup
 echo "Backing up Redis data..."
-docker compose -f /opt/catalogizer/docker-compose.yml exec -T redis redis-cli BGSAVE > /dev/null 2>&1
+podman compose -f /opt/catalogizer/docker-compose.yml exec -T redis redis-cli BGSAVE > /dev/null 2>&1
 sleep 2
-docker compose -f /opt/catalogizer/docker-compose.yml exec -T redis cat /data/dump.rdb \
+podman compose -f /opt/catalogizer/docker-compose.yml exec -T redis cat /data/dump.rdb \
   > "$BACKUP_DIR/redis.rdb" 2>/dev/null || echo "  Redis backup skipped (no data)"
 
 # 3. Configuration backup
@@ -407,10 +409,10 @@ chmod +x /opt/catalogizer/scripts/full_backup.sh
 
 ```bash
 # Step 1: Restart the API container
-docker compose restart api
+podman compose restart api
 
 # Step 2: If restart fails, rebuild
-docker compose up -d --build --no-deps api
+podman compose up -d --build --no-deps api
 
 # Step 3: Verify
 sleep 10
@@ -423,10 +425,10 @@ curl -sf http://localhost:8080/health
 
 ```bash
 # Step 1: Stop the API
-docker compose stop api
+podman compose stop api
 
 # Step 2: Check database health
-docker compose exec postgres pg_isready -U catalogizer
+podman compose exec postgres pg_isready -U catalogizer
 
 # Step 3: If database is running but corrupted, restore from backup
 # Find the latest backup
@@ -440,15 +442,15 @@ tar -xzf $LATEST_BACKUP -C $RESTORE_DIR
 
 # Step 5: Restore the database
 BACKUP_TIMESTAMP=$(ls $RESTORE_DIR | head -1)
-docker compose exec -T postgres psql -U catalogizer -c "DROP DATABASE IF EXISTS catalogizer;"
-docker compose exec -T postgres psql -U catalogizer -c "CREATE DATABASE catalogizer;"
-docker compose exec -T postgres pg_restore \
+podman compose exec -T postgres psql -U catalogizer -c "DROP DATABASE IF EXISTS catalogizer;"
+podman compose exec -T postgres psql -U catalogizer -c "CREATE DATABASE catalogizer;"
+podman compose exec -T postgres pg_restore \
   -U catalogizer \
   -d catalogizer \
   "$RESTORE_DIR/$BACKUP_TIMESTAMP/database.dump"
 
 # Step 6: Restart the API
-docker compose start api
+podman compose start api
 
 # Step 7: Verify
 sleep 10
@@ -487,26 +489,26 @@ BACKUP_DIR=$(ls /tmp/restore | head -1)
 tar -xzf /tmp/restore/$BACKUP_DIR/config.tar.gz -C /opt/catalogizer/
 
 # Step 7: Start infrastructure services
-docker compose up -d postgres redis
+podman compose up -d postgres redis
 echo "Waiting for databases..."
 sleep 20
 
 # Step 8: Restore database
-docker compose exec -T postgres pg_restore \
+podman compose exec -T postgres pg_restore \
   -U catalogizer \
   -d catalogizer \
   --clean --if-exists \
   /tmp/restore/$BACKUP_DIR/database.dump
 
 # Step 9: Restore Redis (optional)
-docker compose exec -T redis sh -c "cat > /data/dump.rdb" < /tmp/restore/$BACKUP_DIR/redis.rdb
-docker compose restart redis
+podman compose exec -T redis sh -c "cat > /data/dump.rdb" < /tmp/restore/$BACKUP_DIR/redis.rdb
+podman compose restart redis
 
 # Step 10: Start the API
-docker compose up -d api
+podman compose up -d api
 
 # Step 11: Start nginx (if using production profile)
-docker compose --profile production up -d nginx
+podman compose --profile production up -d nginx
 
 # Step 12: Verify
 sleep 10
@@ -522,11 +524,11 @@ rm -rf /tmp/restore
 
 ```bash
 # Redis data loss is non-critical. Simply restart Redis.
-docker compose restart redis
+podman compose restart redis
 
 # The API will automatically reconnect and rebuild cache.
 # If Redis was unavailable, restart the API to re-establish connection.
-docker compose restart api
+podman compose restart api
 ```
 
 ---
@@ -606,15 +608,15 @@ if [ -f "$VERIFY_DIR/$BACKUP_TIMESTAMP/database.dump" ]; then
 
     # Test restore to a temporary database
     echo "  Testing database restore..."
-    docker compose exec -T postgres psql -U catalogizer -c "CREATE DATABASE verify_test;" 2>/dev/null || true
-    if docker compose exec -T postgres pg_restore \
+    podman compose exec -T postgres psql -U catalogizer -c "CREATE DATABASE verify_test;" 2>/dev/null || true
+    if podman compose exec -T postgres pg_restore \
         -U catalogizer -d verify_test --clean --if-exists \
         "$VERIFY_DIR/$BACKUP_TIMESTAMP/database.dump" 2>/dev/null; then
         echo "  Database restore test: PASSED"
     else
         echo "  Database restore test: FAILED (may be OK if tables don't exist yet)"
     fi
-    docker compose exec -T postgres psql -U catalogizer -c "DROP DATABASE IF EXISTS verify_test;" 2>/dev/null
+    podman compose exec -T postgres psql -U catalogizer -c "DROP DATABASE IF EXISTS verify_test;" 2>/dev/null
 else
     echo "  Database dump: MISSING"
 fi
@@ -682,7 +684,7 @@ The `deployment/docker-compose.yml` includes an optional backup service profile:
 
 ```bash
 # Start the backup service
-docker compose -f deployment/docker-compose.yml --profile backup up -d backup
+podman compose -f deployment/docker-compose.yml --profile backup up -d backup
 ```
 
 This service supports the following environment variables:

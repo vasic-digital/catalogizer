@@ -19,8 +19,10 @@ This guide explains how to run Catalogizer using Docker and Docker Compose for b
 2. Update the `.env` file with your local configuration (defaults are fine for development).
 
 3. Start the development environment:
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
    ```bash
-   docker-compose -f docker-compose.dev.yml up
+   podman compose -f docker-compose.dev.yml up
    ```
 
 4. Access the services:
@@ -34,7 +36,7 @@ This guide explains how to run Catalogizer using Docker and Docker Compose for b
 To start with pgAdmin and Redis Commander for database/cache management:
 
 ```bash
-docker-compose -f docker-compose.dev.yml --profile tools up
+podman compose -f docker-compose.dev.yml --profile tools up
 ```
 
 Access management tools:
@@ -54,10 +56,10 @@ Start only specific services:
 
 ```bash
 # Only database services
-docker-compose -f docker-compose.dev.yml up postgres redis
+podman compose -f docker-compose.dev.yml up postgres redis
 
 # Only the API (requires databases to be running)
-docker-compose -f docker-compose.dev.yml up api
+podman compose -f docker-compose.dev.yml up api
 ```
 
 ## Production Setup
@@ -81,13 +83,13 @@ docker-compose -f docker-compose.dev.yml up api
 ### Start Production Stack
 
 ```bash
-docker-compose up -d
+podman compose up -d
 ```
 
 ### With Nginx Reverse Proxy
 
 ```bash
-docker-compose --profile production up -d
+podman compose --profile production up -d
 ```
 
 This starts all services including Nginx as a reverse proxy.
@@ -97,7 +99,7 @@ This starts all services including Nginx as a reverse proxy.
 Verify all services are healthy:
 
 ```bash
-docker-compose ps
+podman compose ps
 ```
 
 All services should show "healthy" status.
@@ -116,7 +118,7 @@ catalog-api/database/migrations/
 To run migrations manually:
 
 ```bash
-docker-compose exec api go run database/migrations.go
+podman compose exec api go run database/migrations.go
 ```
 
 ## Common Commands
@@ -125,52 +127,52 @@ docker-compose exec api go run database/migrations.go
 
 ```bash
 # All services
-docker-compose logs -f
+podman compose logs -f
 
 # Specific service
-docker-compose logs -f api
-docker-compose logs -f postgres
-docker-compose logs -f redis
+podman compose logs -f api
+podman compose logs -f postgres
+podman compose logs -f redis
 ```
 
 ### Restart Services
 
 ```bash
 # All services
-docker-compose restart
+podman compose restart
 
 # Specific service
-docker-compose restart api
+podman compose restart api
 ```
 
 ### Stop and Clean Up
 
 ```bash
 # Stop services (preserves data)
-docker-compose down
+podman compose down
 
 # Stop and remove volumes (deletes data)
-docker-compose down -v
+podman compose down -v
 ```
 
 ### Database Backup
 
 ```bash
 # Backup PostgreSQL
-docker-compose exec postgres pg_dump -U catalogizer catalogizer > backup.sql
+podman compose exec postgres pg_dump -U catalogizer catalogizer > backup.sql
 
 # Restore PostgreSQL
-docker-compose exec -T postgres psql -U catalogizer catalogizer < backup.sql
+podman compose exec -T postgres psql -U catalogizer catalogizer < backup.sql
 ```
 
 ### Redis Operations
 
 ```bash
 # Connect to Redis CLI
-docker-compose exec redis redis-cli
+podman compose exec redis redis-cli
 
 # Flush Redis cache
-docker-compose exec redis redis-cli FLUSHALL
+podman compose exec redis redis-cli FLUSHALL
 ```
 
 ## Resource Limits
@@ -190,17 +192,17 @@ Adjust these in `docker-compose.yml` under the `deploy.resources` section if nee
 
 1. Check if PostgreSQL is healthy:
    ```bash
-   docker-compose ps postgres
+   podman compose ps postgres
    ```
 
 2. Check database logs:
    ```bash
-   docker-compose logs postgres
+   podman compose logs postgres
    ```
 
 3. Verify environment variables:
    ```bash
-   docker-compose exec api env | grep DATABASE
+   podman compose exec api env | grep DATABASE
    ```
 
 ### Port Already in Use
@@ -218,8 +220,8 @@ API_PORT=8081
 To completely reset the development environment:
 
 ```bash
-docker-compose -f docker-compose.dev.yml down -v
-docker-compose -f docker-compose.dev.yml up --build
+podman compose -f docker-compose.dev.yml down -v
+podman compose -f docker-compose.dev.yml up --build
 ```
 
 ## Development vs Production

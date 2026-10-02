@@ -47,7 +47,9 @@ Yes. The project includes Nginx configuration files in `config/nginx.conf` and `
 
 ### How do I update Catalogizer?
 
-Pull the latest code, rebuild the components, and restart. For container deployments: pull the latest images and run `podman-compose up -d` or `docker-compose up -d`. Database migrations run automatically on startup. Always back up your database before updating.
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
+Pull the latest code, rebuild the components, and restart. For container deployments: pull the latest images and run `podman compose up -d`. Database migrations run automatically on startup. Always back up your database before updating.
 
 ---
 

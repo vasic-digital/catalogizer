@@ -210,13 +210,15 @@ The existing `config/nginx.conf` already has the `upstream catalogizer_api` bloc
 
 ### Step 3: Deploy
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 # Start with multiple API instances
-docker compose -f docker-compose.yml -f docker-compose.scale.yml \
+podman compose -f docker-compose.yml -f docker-compose.scale.yml \
   --profile production up -d
 
 # Verify all instances are healthy
-docker compose -f docker-compose.yml -f docker-compose.scale.yml ps
+podman compose -f docker-compose.yml -f docker-compose.scale.yml ps
 
 # Test load balancing
 for i in $(seq 1 10); do
@@ -362,7 +364,7 @@ The Catalogizer docker-compose already uses PostgreSQL in production. If you sta
 sqlite3 /path/to/catalogizer.db .dump > sqlite_data.sql
 
 # Step 2: Start PostgreSQL
-docker compose up -d postgres
+podman compose up -d postgres
 sleep 10
 
 # Step 3: The migration files are automatically applied
@@ -375,7 +377,7 @@ sed -e 's/INTEGER PRIMARY KEY AUTOINCREMENT/SERIAL PRIMARY KEY/' \
     -e 's/BOOLEAN/BOOLEAN/' \
     sqlite_data.sql > postgres_data.sql
 
-docker compose exec -T postgres psql -U catalogizer catalogizer < postgres_data.sql
+podman compose exec -T postgres psql -U catalogizer catalogizer < postgres_data.sql
 
 # Step 5: Update environment variables
 # Set DATABASE_TYPE=postgres in .env

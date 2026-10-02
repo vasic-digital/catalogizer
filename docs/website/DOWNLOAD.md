@@ -14,6 +14,8 @@ The fastest way to get Catalogizer running. Includes the API server, PostgreSQL,
 
 ### Quick Install
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 git clone <repository-url>
 cd Catalogizer
@@ -24,7 +26,7 @@ cp .env.example .env
 podman-compose up -d
 
 # Or using Docker
-docker compose up -d
+podman compose up -d
 ```
 
 The API is available at http://localhost:8080.
@@ -36,7 +38,7 @@ Include Prometheus and Grafana for metrics and dashboards:
 ```bash
 podman-compose --profile monitoring up -d
 # or
-docker compose --profile monitoring up -d
+podman compose --profile monitoring up -d
 ```
 
 - Prometheus: http://localhost:9090
@@ -49,7 +51,7 @@ Use the development compose file for local development with hot reloading:
 ```bash
 podman-compose -f docker-compose.dev.yml up
 # or
-docker compose -f docker-compose.dev.yml up
+podman compose -f docker-compose.dev.yml up
 ```
 
 Includes pgAdmin (port 5050) and Redis Commander (port 8081) with the `tools` profile:

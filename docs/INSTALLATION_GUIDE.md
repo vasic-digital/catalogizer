@@ -102,6 +102,8 @@ catalogizer --version
 ![Docker Setup](screenshots/docker/docker-setup.png)
 *Docker container configuration interface*
 
+> Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
+
 ```bash
 # Pull the official image
 docker pull catalogizer/catalogizer:v3.0.0
@@ -113,10 +115,10 @@ mkdir -p ./data/media ./data/db ./data/logs
 curl -o docker-compose.yml https://raw.githubusercontent.com/catalogizer/catalogizer/main/docker-compose.yml
 
 # Start the services
-docker-compose up -d
+podman compose up -d
 
 # Check status
-docker-compose ps
+podman compose ps
 ```
 
 **docker-compose.yml example:**
@@ -748,8 +750,8 @@ docker pull catalogizer/catalogizer:v3.1.0
 sed -i 's/v3.0.0/v3.1.0/g' docker-compose.yml
 
 # Restart containers
-docker-compose down
-docker-compose up -d
+podman compose down
+podman compose up -d
 ```
 
 ### Post-Upgrade Verification

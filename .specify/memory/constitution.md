@@ -933,9 +933,11 @@ FIXED in this change (main-repo files only), DECIDED (an autonomous reversible d
    building anywhere but in a container on the remote build host, and §11.4.161 requires rootless
    Podman. The development-run commands are conveniences and MUST NOT produce release
    artifacts. **FIXED** in `GEMINI.md` (development-run banner, `podman compose`) and
-   `catalog-api/CLAUDE.md` (`go build` marked dev-only). **OPEN:** the other module guides, `README.md`
-   (lines 517, 581, 791) and `Website/docs/getting-started/index.md` (line 78) still show host
-   commands and `docker-compose up -d` that need the same marking.
+   `catalog-api/CLAUDE.md` (`go build` marked dev-only). **FIXED** the same way in the six other module `CLAUDE.md`
+   command sections (a development-run banner), `README.md` (every `docker-compose` command, 10 more),
+   `Website/docs/getting-started/index.md` and 11 guide documents under `docs/` (`podman compose`,
+   no `sudo`). **OPEN:** historical reports under `docs/status/` still contain `docker-compose
+   up`; they are records and are not rewritten.
 5. **HelixPlay §17–§21.** `CONSTITUTION.md` adopts the HelixPlay Constitution v2.3.0 "in full"
    from an external URL, and `CLAUDE.md` states "This submodule is part of the HelixPlay system".
    The R-01 to R-18 clauses, the eight pillars, the technology stack of §20 and the 14-phase
@@ -990,8 +992,11 @@ FIXED in this change (main-repo files only), DECIDED (an autonomous reversible d
     `constitution` submodule's remote is at least 6 commits ahead of the pin as of the last fetch
     (those 6 change hook and fastcycle tooling, not `Constitution.md`, `constitution_index.yaml` or
     `groups/`); later remote commits are `UNCONFIRMED` because the remote keeps moving. The pin is
-    deliberately not moved here. `submodules/websocket_client_ts` has a `github` remote that
-    returns "Repository not found". `submodules/helix_qa/tools/opensource/docling` is a vendored
+    deliberately not moved here. `submodules/websocket_client_ts` had a local `github` remote with the wrong owner
+    (`nickkvasic`, which returns 404 even when authenticated as `milos85vasic`; `.gitmodules` and every
+    other owned submodule use `vasic-digital`). Found by systematic debugging and **FIXED** by
+    pointing the remote at `vasic-digital/WebSocket-Client-TS` (local git configuration, not tracked);
+    `git ls-remote github` now returns the same commit as the local HEAD (6e624db0). `submodules/helix_qa/tools/opensource/docling` is a vendored
     third-party repository with one modified data file; it is not committed or pushed.
 
 ## Governance
@@ -1020,4 +1025,4 @@ between a module rule and canon is recorded under Known Conflicts.
 **Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults may be
 replaced by the operator.
 
-**Version**: 2.1.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
+**Version**: 2.1.1 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
