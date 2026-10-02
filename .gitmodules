@@ -127,3 +127,6 @@
 [submodule "submodules/helix_memory"]
 	path = submodules/helix_memory
 	url = git@github.com:HelixDevelopment/HelixMemory.git
+[submodule "submodules/superspec"]
+	path = submodules/superspec
+	url = git@github.com:WangX0111/superspec.git
