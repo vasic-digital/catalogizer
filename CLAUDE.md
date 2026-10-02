@@ -17,7 +17,7 @@ constitution submodule, the constitution wins.
 > of tests and Challenges MUST guarantee the quality, the completion
 > and full usability by end users of the product!"**
 > This statement is the foundational requirement of this project. Any
-> agent dispatch, any CI configuration, any code review that allows
+> agent dispatch, any local gate configuration, any code review that allows
 > green tests on broken features is a violation and MUST be rejected.
 
 > **Constitution v2.3.0**: [Read the Constitution](https://github.com/HelixDevelopment/HelixPlay/blob/main/docs/research/chapters/MVP/05_Response/01_Constitution.md)
@@ -35,7 +35,7 @@ constitution submodule, the constitution wins.
 > - `ValidateAntiBluff` unconditional; all challenges call `RecordAction()`.
 > - Container verifier `execCommand()` executes real commands.
 > - `go vet ./...` MUST pass with zero warnings — no suppressions, no exceptions.
-> - Anti-bluff scan MUST fail the CI lane: `scripts/anti-bluff-scan.sh` exits
+> - Anti-bluff scan MUST fail the local validation stage (no CI/CD, §11.4.156): `scripts/anti-bluff-scan.sh` exits
 >   non-zero on any violation. Process substitution (`< <(...)>`) required over
 >   pipes for variable state propagation; subshell-based patterns that silently
 >   drop failure state are forbidden.

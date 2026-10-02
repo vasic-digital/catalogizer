@@ -19,6 +19,10 @@ The project is composed of several components:
 
 ## Building and Running
 
+> **Development-run only.** These commands start the apps for local development. Per §11.4.173 every
+> build that produces a release artifact MUST run inside a rootless Podman build container on the
+> designated build host (via the `containers` submodule), never on the bare host. Never use `sudo`.
+
 ### Backend (`catalog-api`)
 
 1.  **Navigate to the `catalog-api` directory:**
@@ -59,7 +63,7 @@ The project also includes a Docker-based deployment option.
     ```
 2.  **Start the services:**
     ```bash
-    docker-compose up -d
+    podman compose up -d
     ```
 
 ## Development Conventions

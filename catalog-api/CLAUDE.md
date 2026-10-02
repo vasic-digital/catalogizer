@@ -9,7 +9,7 @@ Go 1.25 REST API built with Gin. Serves as the backend for all Catalogizer clien
 ```bash
 # Development
 go run main.go                              # starts server, writes port to .service-port
-go build -o catalog-api                     # build binary
+go build -o catalog-api                     # dev-only; release builds run in a rootless container (§11.4.173)
 
 # Testing (resource-limited — host runs other critical processes)
 GOMAXPROCS=3 go test ./... -p 2 -parallel 2 # all tests

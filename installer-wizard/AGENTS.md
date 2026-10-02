@@ -191,4 +191,4 @@ If any script or command suggests using `sudo` or `su`:
 
 ## MANDATORY: Zero Unfinished Work
 
-No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or panic-prone `unwrap()` may be committed. Pre-commit hooks block them; CI fails on them. When an issue is found, fix all instances — not just the reported one.
+No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or panic-prone `unwrap()` may be committed. The local anti-bluff scan and the dedicated commit/push validation script report them; no CI/CD pipeline is used (§11.4.156, §11.4.234). When an issue is found, fix all instances — not just the reported one.

@@ -40,7 +40,7 @@ app/src/main/java/com/catalogizer/androidtv/
 
 | Library | Purpose |
 |---|---|
-| Jetpack Compose (BOM 2024.01) | Declarative UI |
+| Jetpack Compose (BOM 2024.06.00) | Declarative UI |
 | Compose for TV (`tv-foundation`, `tv-material` 1.0.0-alpha10) | TV-specific composables |
 | Leanback 1.0.0 | TV navigation and UI patterns |
 | Material 3 | Design system |
@@ -131,7 +131,7 @@ Key files:
 ## Constraints
 
 - **Container builds**: Use Podman. Requires Android SDK 34 in the builder image.
-- **Resource limits**: Gradle JVM limited to `-Xmx2048m -XX:MaxMetaspaceSize=512m`. Kotlin daemon limited to `-Xmx1024m`.
+- **Resource limits**: Gradle JVM limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m`. Kotlin daemon limited to `-Xmx1024m`.
 - **API keys**: Never commit `local.properties` or `.env` with real secrets.
 - **ADB reverse proxy**: Must set up `adb reverse tcp:8080 tcp:8080` for each device before testing.
 

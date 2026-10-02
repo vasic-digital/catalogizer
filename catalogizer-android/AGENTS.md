@@ -6,10 +6,10 @@ This document provides guidance for AI agents (Claude Code, Copilot, Cursor, etc
 
 - **Package**: `com.catalogizer.android`
 - **Language**: Kotlin
-- **Framework**: Jetpack Compose (BOM 2024.01), Material 3, Navigation Compose
+- **Framework**: Jetpack Compose (BOM 2024.12.01), Material 3, Navigation Compose
 - **Architecture**: MVVM (Compose UI -> ViewModel -> Repository -> Room + Retrofit)
 - **DI**: Manual `DependencyContainer` (not Hilt)
-- **SDK**: compileSdk 34, minSdk 26, targetSdk 34
+- **SDK**: compileSdk 35, minSdk 26, targetSdk 34
 - **JDK**: 21 (sourceCompatibility, targetCompatibility, jvmTarget all VERSION_21)
 
 ## Package Ownership Boundaries
@@ -131,7 +131,7 @@ The app uses a manual `DependencyContainer` initialized in `CatalogizerApplicati
 - **JDK 21** is the compile target. All `sourceCompatibility`, `targetCompatibility`, and `jvmTarget` are set to `VERSION_21` / `"21"`.
 - **`--add-opens` JVM args** are required in `gradle.properties` for kapt (Room annotation processor) compatibility with JDK 21. These open `jdk.compiler` internal modules.
 - **JDK image transform disabled**: `android.useNewJdkImageTransform=false` to avoid jlink issues with AGP 8.1.0 + JDK 21.
-- **Gradle JVM memory**: Limited to `-Xmx2048m -XX:MaxMetaspaceSize=512m`.
+- **Gradle JVM memory**: Limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m`.
 
 ## Commit Conventions
 
@@ -147,8 +147,8 @@ Every commit must:
 
 ## Constraints
 
-- **Container builds**: Use Podman. Requires Android SDK 34 in the builder image.
-- **Resource limits**: Gradle JVM limited to `-Xmx2048m -XX:MaxMetaspaceSize=512m`.
+- **Container builds**: Use Podman. Requires the Android SDK (compileSdk 35) in the builder image.
+- **Resource limits**: Gradle JVM limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m`.
 - **API keys**: Never commit `local.properties` or `.env` with real secrets.
 - **Offline-first**: Room database provides local cache. Network failures must degrade gracefully.
 - **Signing**: Release builds read signing config from `../docker/signing/signing.properties`.
@@ -194,4 +194,4 @@ If any script or command suggests using `sudo` or `su`:
 
 ## MANDATORY: Zero Unfinished Work
 
-No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or `unwrap()`-equivalent patterns may be committed. Pre-commit hooks block them; CI fails on them. When an issue is found, fix all instances — not just the reported one.
+No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or `unwrap()`-equivalent patterns may be committed. The local anti-bluff scan and the dedicated commit/push validation script report them; no CI/CD pipeline is used (§11.4.156, §11.4.234). When an issue is found, fix all instances — not just the reported one.

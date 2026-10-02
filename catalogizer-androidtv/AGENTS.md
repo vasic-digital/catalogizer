@@ -143,7 +143,7 @@ adb reverse tcp:8080 tcp:8080                               # proxy for localhos
 - **`--add-opens` JVM args** required in `gradle.properties` (Gradle JVM + Kotlin daemon) AND in the `kapt` block of `build.gradle.kts` for Room annotation processing with JDK 21.
 - **Kotlin daemon**: Separate `kotlin.daemon.jvmargs` with `--add-opens` flags in `gradle.properties`.
 - **JDK image transform disabled**: `android.useNewJdkImageTransform=false`.
-- **Gradle JVM memory**: `-Xmx2048m -XX:MaxMetaspaceSize=512m`. Kotlin daemon: `-Xmx1024m`.
+- **Gradle JVM memory**: `-Xmx4096m -XX:MaxMetaspaceSize=1024m`. Kotlin daemon: `-Xmx1024m`.
 
 ## Commit Conventions
 
@@ -160,7 +160,7 @@ Every commit must:
 ## Constraints
 
 - **Container builds**: Use Podman. Requires Android SDK 34 in the builder image.
-- **Resource limits**: Gradle JVM limited to `-Xmx2048m`. Kotlin daemon to `-Xmx1024m`.
+- **Resource limits**: Gradle JVM limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m`. Kotlin daemon to `-Xmx1024m`.
 - **API keys**: Never commit `local.properties` or `.env` with real secrets.
 - **ADB reverse proxy**: Must configure `adb reverse tcp:8080 tcp:8080` per device before testing.
 - **Signing**: Release builds read signing config from `../docker/signing/signing.properties`.
@@ -207,4 +207,4 @@ If any script or command suggests using `sudo` or `su`:
 
 ## MANDATORY: Zero Unfinished Work
 
-No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or `unwrap()`-equivalent patterns may be committed. Pre-commit hooks block them; CI fails on them. When an issue is found, fix all instances — not just the reported one.
+No TODOs, FIXMEs, empty implementations, silent error swallows, fake data, or `unwrap()`-equivalent patterns may be committed. The local anti-bluff scan and the dedicated commit/push validation script report them; no CI/CD pipeline is used (§11.4.156, §11.4.234). When an issue is found, fix all instances — not just the reported one.

@@ -5,7 +5,7 @@
 Native Android application for Catalogizer media management. Built with Kotlin and Jetpack Compose following MVVM architecture. Provides media browsing, search, playback, and collection management on Android phones and tablets.
 
 - **Package**: `com.catalogizer.android`
-- **SDK**: compileSdk 34, minSdk 26, targetSdk 34
+- **SDK**: compileSdk 35, minSdk 26, targetSdk 34
 - **Version**: 1.1.0 (versionCode 2)
 
 ## Commands
@@ -39,7 +39,7 @@ app/src/main/java/com/catalogizer/android/
 
 | Library | Purpose |
 |---|---|
-| Jetpack Compose (BOM 2024.01) | Declarative UI |
+| Jetpack Compose (BOM 2024.12.01) | Declarative UI |
 | Material 3 | Design system |
 | Navigation Compose | Screen navigation |
 | Room 2.6.1 | Local database (offline cache) |
@@ -88,8 +88,8 @@ For emulators: `http://10.0.2.2:8080`. For physical devices: server's LAN IP.
 
 ## Constraints
 
-- **Container builds**: Use Podman. Requires Android SDK 34 in the builder image.
-- **Resource limits**: Gradle JVM limited to `-Xmx2048m -XX:MaxMetaspaceSize=512m`.
+- **Container builds**: Use Podman. Requires the Android SDK (compileSdk 35) in the builder image.
+- **Resource limits**: Gradle JVM limited to `-Xmx4096m -XX:MaxMetaspaceSize=1024m`.
 - **API keys**: Never commit `local.properties` or `.env` with real secrets.
 
 
