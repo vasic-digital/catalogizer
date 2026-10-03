@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: commit-push stages aligned with document 16 and docs/21 IC-16 (S0 to S8, S7 verify, S8 report); the section 16.3 skeleton marked superseded; anti-mess sweep wired at S0 and S7; fetch `--prune` per docs/21 IC-36) |
+| Status | draft (revision 3: the section 16.4 sequence diagram renders again (a `;` ended a message); S1 integrates only the main repository and never fast-forwards a submodule; S7 runs the verifier without `--strict` on routine runs and maps its codes per document 16 §12.3; AM-R1 excludes the declared change set at S0; AM-R3 and AM-R4 read remote tips through the verifier, never tracking refs or `ls-remote` of a bare sha; the paragraph after the superseded skeleton points to S5, S6 and `scripts/repo/verify_repos.sh`. Revision 2: commit-push stages aligned with document 16 and docs/21 IC-16 (S0 to S8, S7 verify, S8 report); the section 16.3 skeleton marked superseded; anti-mess sweep wired at S0 and S7; fetch `--prune` per docs/21 IC-36) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-001, FR-002, FR-004, FR-005 (QA side), FR-007, FR-008, FR-009, FR-010, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025 |
 | Success criteria covered | SC-001, SC-002, SC-003, SC-004, SC-005, SC-010, SC-012 |
@@ -557,6 +557,7 @@ reads, `http_executor.go` login code, and is UNCONFIRMED against the live handle
     - name: POST wrong password
       action: "http: POST /api/v1/auth/login"
       auth: none
+      # deliberately wrong literal, never a credential (11.4.10); the real password is only ever read from the environment
       body: {username: "${CATALOGIZER_QA_ADMIN_USER}", password: "not-the-password"}
       expect_status: 401
       expect_body_contains: "error"
@@ -1300,14 +1301,14 @@ The stage numbering and exit codes are those of document 16 §12.2 and §12.3 (d
 
 | Stage | Purpose | Blocks the push? |
 |---|---|---|
-| S0 preflight | host safety (memory and thread headroom, 12.6, 12.12), a lock keyed on the purpose `commit_push` (11.4.232 B), refuse if a stale lock holder is alive or a build writes tracked artifacts (11.4.121); run the anti-mess sweep `scripts/anti-mess/sweep.sh` (section 17) | yes (cannot run) |
-| S1 fetch_integrate | fetch every remote of the main repo and of every submodule at every depth (11.4.37; `--prune` allowed, docs/21 IC-36), report divergence, integrate only by fast-forward (11.4.113); no rebase of shared branches | yes if divergence cannot be integrated without a rewrite (exit 12) |
+| S0 preflight | host safety (memory and thread headroom, 12.6, 12.12), a lock keyed on the purpose `commit_push` (11.4.232 B), refuse if a stale lock holder is alive or a build writes tracked artifacts (11.4.121); run the anti-mess sweep `scripts/anti-mess/sweep.sh` (section 17) in pre-commit mode, which excludes the declared change set of the run from AM-R1 (revision 3; until the sweep exists its absence is a registered deferral row) | yes (cannot run) |
+| S1 fetch_integrate | fetch every remote of the main repo and of every submodule at every depth (11.4.37; `--prune` allowed, docs/21 IC-36), report divergence; integrate only the main repository and only by fast-forward (11.4.113). Revision 3: a submodule at any depth is never fast-forwarded here; a behind submodule is reported as `needs_update` and moves only through document 11 §6 (FR-018 gates; the constitution through WP-07), because a fast-forward here followed by the S5 gitlink commit would be an ungated pin bump; no rebase of shared branches | yes if divergence cannot be integrated without a rewrite, or a submodule in the change set is behind (exit 12) |
 | S2 scope_check | secret scan of the change set (11.4.10), refusal of build artifacts and caches (11.4.30) | yes (exit 13) |
 | S3 validate_cheap | bank validator R-1 to R-8, bank-id floor, anti-bluff scan (the existing `scripts/audit/anti-bluff-scan.sh`), landmine scan (`scripts/detect-landmines.sh`), doc link and export freshness, `.github/workflows` has no workflow files (11.4.156), gate ledger ratchet | the report names each failing check (exit 10); every hard check is also reachable by running the stage alone |
 | S4 validate_long | the multi-minute stages (full test sweeps, mutation sweeps, container builds), consumed as verdict files of separate registered long-ops | never inline: deferrable only with `SKIP_LONG=<reason>`, which writes a `Deferred-Gates:` commit trailer and a row in `$EV/deferrals.jsonl` (reason, who, when), so the deferred gate stays owed and is run at the next full run or at the release gate (11.4.234 D); exit 14 when a deferral is owed |
 | S5 commit | scope-grouped commits with explicit paths, deepest repository first (11.4.191, 11.4.84), never `git add -A`; message with the evidence references; trailer lines per the session rules | no |
 | S6 push | push every repository to **all** configured upstreams, fast-forward only (11.4.88); a rejected push is reported, never forced; skipped under `--local-only`, which records the owed push as a deferral (exit 14) | a rejected non-fast-forward is a reported failure (exit 11), not retried with force |
-| S7 verify_clean | recursive: `scripts/repo/verify_repos.sh --strict` for the main repo and every submodule at every depth, working tree clean, nothing unpushed, tip equal on every upstream (SC-010); report valid against `repo-verification-report/1`; the anti-mess sweep runs again | yes, it is the pass criterion (exit per document 16 §12.3) |
+| S7 verify_clean | recursive: `scripts/repo/verify_repos.sh` for the main repo and every submodule at every depth (working tree clean, nothing unpushed, every remote proven); report valid against `repo-verification-report/1`; `--no-remote` under `--local-only`; the anti-mess sweep runs again in full mode. Revision 3: routine runs do not pass `--strict` (under `--strict` an upstream move in any owned repository fails `behind`, which would fail every routine run); `--strict` is the SC-010 condition of the final run (docs/21 WP-73) | yes, it is the pass criterion; the verifier code is mapped to a commit-push code by document 16 §12.3 (verifier 14 becomes 11, never a pass-through 14, which means a recorded deferral) |
 | S8 report | the report file `$EV/commit-push/<run_id>.json` (document 16 §12.4) and a text summary; lock released | no |
 
 **No gate is lost (11.4.234 C).** The stage list names every check it runs and every check it
@@ -1369,11 +1370,11 @@ exec 9>"$OUT/../.lock"
 for s in S0:s0 S1:s1 S2:s2 S3:s3 S4:s4 S5:s5 S6:s6; do stage "${s%%:*}" "${s##*:}" || true; done
 ```
 
-The skeleton is a design aid. Production behaviour (rc handling per stage, which failures block S4,
-S5) is specified by the stage table above and is test-first: an executing test per stage through its real
-invocation path, with a paired mutation (11.4.224 A). `verify_repos_clean_pushed.py` is a new
-tool or the `repo_verify.py` of the constitution's fast-cycle verifier adapted by reference
-(UNCONFIRMED whether it serves as is).
+The skeleton is a design aid and is superseded. Production behaviour (rc handling per stage, which failures block S5 commit
+and S6 push) is specified by the stage table above and by document 16 §12.2 to §12.6, and is test-first: an executing test per stage through its real
+invocation path, with a paired mutation (11.4.224 A). The skeleton's `verify_repos_clean_pushed.py` is superseded and will not be written: the one verifier is
+`scripts/repo/verify_repos.sh` (revision 3; docs/21 IC-17 and IC-37), promoted from `poc/repo_verify/verify_repo.sh` after the tasks.md WP-03 reuse-first
+evaluation of the constitution's `repo_verify.py`.
 
 ### 16.4 Sequence of a routine commit and push
 
@@ -1387,7 +1388,7 @@ sequenceDiagram
   participant E as Evidence ledger
   D->>S: run (message file)
   S->>S: S0 lock, host headroom, anti-mess sweep
-  S->>R: S1 fetch all, report divergence
+  S->>R: S1 fetch all, report divergence, fast-forward the main repository only
   S->>G: S2 scope check, S3 cheap checks
   G-->>S: per-check report
   alt long gates not deferred
@@ -1397,7 +1398,7 @@ sequenceDiagram
   end
   S->>S: S5 commit
   S->>R: S6 push every remote, fast-forward only
-  S->>R: S7 verify recursive (verify_repos.sh): clean tree, no unpushed, tips match; sweep again
+  S->>R: S7 verify recursive (verify_repos.sh): clean tree, no unpushed, tips match, sweep again
   S->>E: S8 report $EV/commit-push/<run_id>.json
   S-->>D: result and remediation text for any failing check
 ```
@@ -1417,7 +1418,7 @@ long gates by reference.
 
 The feature runs many long operations: container builds, test sweeps, QA sessions with devices, index
 refreshes, subagent dispatches, and git operations across the main repository and its submodules
-(`ls submodules | wc -l` gives 45 entries at depth one, including the constitution; deeper levels not counted). The mess classes 11.4.232
+(`ls submodules | wc -l` gives 45 entries at depth one, including the constitution: 44 gitlinks plus the vendored `llms_verifier`; 97 submodules recursively, document 11). The mess classes 11.4.232
 and 11.4.233 name are all reachable here: duplicate sweeps, hung consumers that look alive, a stopped
 owner killing its child, a stale log read as progress, stale git locks, a large uncommitted pile-up,
 a partly pushed cross-repository change, a submodule pointer that no remote carries.
@@ -1437,10 +1438,10 @@ clean state, before every gated transition and on a cadence. It does not do the 
 
 | Id | Plane | Desired condition | Detector | Reconcile class |
 |---|---|---|---|---|
-| AM-R1 | repository | every repo (main and each submodule at every depth) has a clean working tree at stage S0 and S7 | recursive `git status --porcelain` | operator-gated (commit through S5) |
+| AM-R1 | repository | every repo (main and each submodule at every depth) has a clean working tree at S7 and on the cadence; at S0 the declared change set of the commit-push run is excluded, because a commit-push run always starts with uncommitted changes (revision 3; the same threshold rule as document 16 INV-2: uncommitted work outside the change set older than a threshold recorded as data) | recursive `git status --porcelain` through `scripts/repo/verify_repos.sh` | operator-gated (commit through S5) |
 | AM-R2 | repository | no live-less lock file (`index.lock`, `.git/*.lock`) whose holder pid is dead | `kill -0` on the holder resolved from `/proc/<pid>/cmdline` (never a bare `pgrep`, 11.4.196 D) | auto-safe reap with log |
-| AM-R3 | repository | every repo's tip equals its tip on every upstream, or the lag is reported | `git rev-parse` per remote | operator-gated or push |
-| AM-R4 | repository | each submodule pointer in the parent resolves on at least one remote of that submodule (the `not our ref` condition) | `git ls-remote` for the recorded sha | refuse and report (11.4.233 G, 11.4.275) |
+| AM-R3 | repository | every repo's tip equals its tip on every upstream, or the lag is reported | the verifier's per-remote class, from `git ls-remote` (revision 3: never `git rev-parse` of a tracking ref, document 11 F-4) | operator-gated or push |
+| AM-R4 | repository | each submodule pointer in the parent resolves on at least one remote of that submodule (the `not our ref` condition) | the verifier's class for the submodule row: the recorded commit equals, or is an ancestor of, a remote tip read by `git ls-remote`, decided on the object store (with the verifier's `--fetch` when the tip object is absent). Revision 3: `ls-remote` lists refs, so querying it for a bare sha cannot prove a commit that is not a tip; an unprovable pointer is unproven, never assumed present | refuse and report (11.4.233 G, 11.4.275) |
 | AM-R5 | repository | no submodule is declared but uninitialised | `git submodule status` has no leading `-` | auto-safe init, read-only fetch |
 | AM-G1 | governance | the five constitution mirror files agree; `Constitution.md` hash equals the pinned hash in the Spec Kit layer | hashes | refuse until WP-G1 regeneration |
 | AM-G2 | governance | `.github/workflows` has no workflow files; `core.hooksPath` unset or points to a non-blocking directory | file listing | refuse (11.4.156) |
@@ -1610,7 +1611,7 @@ an owner decision (11.4.66); the default is stated and adjustable.
 | FR-008, SC-003 | 5.2, 6.5, 8.3 | RED then GREEN x3 with identical canonical hash and a caught mutation |
 | FR-009, SC-004 | 7 | coverage matrix rows generated from case metadata |
 | FR-010, SC-005 | 8.3, 8.5 | three identical runs; reviewer mutation sample all RED |
-| FR-019, FR-020, SC-010 | 16, 14.3 | S7 verifier report (`scripts/repo/verify_repos.sh --strict`) on every repository at every depth, cited by the S8 report `$EV/commit-push/<run_id>.json` |
+| FR-019, FR-020, SC-010 | 16, 14.3 | per run: S7 verifier report (`scripts/repo/verify_repos.sh`, routine runs without `--strict`) on every repository at every depth, cited by the S8 report `$EV/commit-push/<run_id>.json`; final: `scripts/repo/verify_repos.sh --strict` exit 0 with `summary.failing = 0` and `summary.unproven = 0` (docs/21 WP-73) |
 | FR-021 | 18.3 | QA image digest; no host build |
 | FR-023 | 14.3 step 11, 19 | review records with `finding_layer` |
 | FR-024 | 14.3 | all on `main`, fast-forward only |

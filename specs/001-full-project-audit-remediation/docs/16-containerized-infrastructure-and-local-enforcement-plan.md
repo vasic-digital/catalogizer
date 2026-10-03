@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: consistency with tasks.md and docs/21 IC-16, IC-36 to IC-38: script name `scripts/commit-push-all.sh`, `--local-only` mode, verifier exit codes and v1 report fields, IMG-TESTUTIL, `$EV` paths, sweep script `scripts/anti-mess/sweep.sh`) |
+| Status | draft (revision 3: verifier sections 11.1, 11.2 and 11.4 aligned with the promoted POC (`git ls-remote` plus object-store-only `--fetch`, `--no-remote`, `--self-test`; v1 report shape by reference); commit-push S1 no longer fast-forwards submodules, S7 runs the verifier without `--strict` on routine runs and maps verifier codes to commit-push codes (verifier 14 becomes 11), `--local-only` parsed and run with `--no-remote`; IMG-KCOV listed as repository-built on IMG-TESTUTIL, PyYAML in IMG-TESTUTIL, a P0 bootstrap row in section 17; `images.lock.yaml` as the single lock file; `.pre-commit-config.yaml` and `docker-compose.dev.override.yml` added to the enforcement inventory; table cells with `\|` escaped. Revision 2: consistency with tasks.md and docs/21 IC-16, IC-36 to IC-38) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec coverage | FR-019, FR-020, FR-021 (also supports FR-006, FR-007, SC-003, SC-010, SC-012) |
 | Constitution anchors | 11.4.173, 11.4.161, 11.4.76, 11.4.156, 11.4.234, 11.4.264, 11.4.246, 12.6, 12.11, 12.12 (also 11.4.232, 11.4.233, 11.4.200, 11.4.108, 11.4.113, 11.4.201, 11.4.27) |
@@ -66,7 +66,7 @@ Read-only commands executed during planning (output observed in this session):
 | `git remote` | 8 remotes configured on the main repository; `Upstreams/` holds 5 export scripts naming gitflic.ru, github.com (two organisations) and gitlab.com (two organisations) |
 | `git config core.hooksPath` | unset; `.git/hooks` contains only `*.sample` files (the tracked `scripts/hooks/pre-push-gate.sh` is not installed) |
 
-Files read: `docker-compose*.yml`, `deploy/*.yml`, `deployment/docker-compose*.yml`, `catalog-api/Dockerfile` and `.dev`, `catalog-web/Dockerfile`, `docker/Dockerfile.builder` and the `docker/` listing, `scripts/build_in_container.sh`, `scripts/container-build.sh`, `scripts/push_all_submodules.sh`, `scripts/run-race-detector.sh`, `scripts/hooks/pre-push-gate.sh`, `scripts/install_git_hooks.sh`, `scripts/distributed-boot.sh`, `docs/BUILD_CONTAINER_AUTO_DISPATCH.md`, `Build/CLAUDE.md`, the root `commit` script, `env.properties` (secrets values not recorded here), `submodules/containers` package tree and `helix-deps.yaml`, and `specs/001-full-project-audit-remediation/docs/01-system-architecture-map.md`.
+Files read: `docker-compose*.yml`, `deploy/*.yml`, `deployment/docker-compose*.yml`, `catalog-api/Dockerfile` and `.dev`, `catalog-web/Dockerfile`, `docker/Dockerfile.builder` and the `docker/` listing, `scripts/build_in_container.sh`, `scripts/container-build.sh`, `scripts/push_all_submodules.sh`, `scripts/run-race-detector.sh`, `scripts/hooks/pre-push-gate.sh`, `scripts/install_git_hooks.sh`, `.pre-commit-config.yaml` and `docker-compose.dev.override.yml` (revision 3), `scripts/distributed-boot.sh`, `docs/BUILD_CONTAINER_AUTO_DISPATCH.md`, `Build/CLAUDE.md`, the root `commit` script, `env.properties` (secrets values not recorded here), `submodules/containers` package tree and `helix-deps.yaml`, and `specs/001-full-project-audit-remediation/docs/01-system-architecture-map.md`.
 
 Not executed: no image pull, no build, no test, no connection to `thinker.local` or `amber.local`. All snippets in sections 6 to 16 are `NOT EXECUTED` unless stated.
 
@@ -110,6 +110,8 @@ Consequence: a distribution and remote-compose mechanism exists and the reposito
 - `scripts/push_all_submodules.sh` handles only owned submodules under `submodules/*` (the header says so), stages governance pointer files only, uses `merge --ff-only` and refuses force. It writes its log to `qa-results/phasef_push.log` and has a `DRY_RUN=1` default. It does not walk nested submodules (53 of 97 entries are nested), so it cannot satisfy SC-010 alone.
 - `scripts/hooks/pre-push-gate.sh` is a tracked blocking gate (landmines, anti-bluff scan, LLM-judge prompt) with an `LLM_JUDGE_BYPASS=1` emergency variable. `scripts/install_git_hooks.sh` would symlink it as `.git/hooks/pre-push`. It is currently not installed (no `pre-push` file in `.git/hooks`, `core.hooksPath` unset). Under 11.4.234 it must not be installed as a blocking hook; its checks become an explicit stage of the dedicated script (section 12). The `LLM_JUDGE_BYPASS` pattern is replaced by the recorded-deferral flag of 11.4.234(D) so skips are visible, not silent.
 - `.github/` exists and tracks `FUNDING.yml` and `workflows/README.md` only: no active pipeline (consistent with 11.4.156). The planning must keep it that way.
+- `.pre-commit-config.yaml` (revision 3; tracked, last changed in commit `d72f14ce`, 2026-04-21) declares a `pre-commit` hook set: `pre-commit-hooks` v4.5.0 (`trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-json`, `check-added-large-files --maxkb=1000`, `check-merge-conflict`, `detect-private-key`), `detect-secrets` v1.4.0 with `--baseline .secrets.baseline`, `pre-commit-golang` v0.5.1 (`go-fmt`, `go-vet`, `go-imports`, `go-unit-tests -v -race ./...`), local `gosec` (`language: system`) and `scripts/hooks/no-false-positive-log.sh`, `mirrors-eslint` v8.55.0 and `mirrors-prettier` v3.1.0. Observed on 2026-10-03: the `pre-commit` tool is not on the host `PATH` (`command -v pre-commit` prints nothing), `.git/hooks` holds only samples, and `.secrets.baseline` does not exist, so the `detect-secrets` hook as configured would fail on its first run. The configuration is therefore not active. It is not installed as a hook under this plan (11.4.234; its `go-unit-tests -race` and `gosec` entries would also run on the bare host, against FR-021). Its checks are carried into named stages instead (section 16.1). The file stays tracked and unmodified; removing it is an owner decision (11.4.122).
+- `docker-compose.dev.override.yml` (revision 3; tracked, 21 lines, last changed in commit `bbba26a0`, 2026-04-11) remaps host ports for a developer host where the standard ports are taken (`postgres` 5435, `redis` 6381, `api` 8090) and sets `POSTGRES_PORT`, `REDIS_PORT` and `API_PORT` for the `api` service. It names no image, so `check_pins.sh` has nothing to pin in it, but it is in scope for the compose enumeration of D-07 and S3, and its `REDIS_PORT` and `API_PORT` names repeat the environment-name mismatch recorded as O-06 in document 01.
 - Names such as `scripts/ci-local.sh` (932 lines), `scripts/local-ci.sh`, `scripts/ci-pipeline.sh` are local scripts; they are acceptable as local enforcement but their stage content is `UNCONFIRMED:` and is audited in document 05's scope; this plan only requires that they run inside containers.
 
 ### 3.5 Build hosts named in the repository
@@ -126,9 +128,9 @@ These are findings observed by reading files. They enter the findings register (
 | D-02 | `docker-compose.test.yml` service `catalog-web` | Context `./catalog-web` with `catalog-web/Dockerfile`, which copies `catalog-web/...` and sibling module directories relative to the repository root | docker-compose.test.yml:87-89 versus catalog-web/Dockerfile:17,59 | high |
 | D-03 | `catalog-web/Dockerfile` | `COPY` sources `WebSocket-Client-TS/`, `Media-Types-TS/`, `UI-Components-React/`, `Media-Browser-React/`, `Media-Player-React/`, `Collection-Manager-React/`, `Dashboard-Analytics-React/`, `Auth-Context-React/`, `Catalogizer-API-Client-TS/` at the context root. Those directories are not at the repository root; the modules live at `submodules/websocket_client_ts` and so on (the root listing has no such directories, `ls WebSocket-Client-TS` fails). The image cannot build from the repository root | catalog-web/Dockerfile:6-14,48-56; root listing; document 01 section on shared submodules | high |
 | D-04 | `docker/Dockerfile.builder` | `COPY docker/go${GO_VERSION}.linux-amd64.tar.gz` with `GO_VERSION=1.26.1`: the `docker/` directory holds Dockerfiles and `signing*` only, no tarball. The builder image (used by `docker-compose.build.yml`, `docker-compose.test.yml` desktop and wizard services, and `scripts/container-build.sh`) cannot be built from a clean checkout | Dockerfile.builder:`COPY docker/go${GO_VERSION}...`; `ls docker` | high |
-| D-05 | `docker/Dockerfile.builder` | Header comment says JDK 17, installed package is `openjdk-21-jdk`; Node 18 from `deb.nodesource.com/setup_18.x` (Node 18 is past end of life, `UNCONFIRMED:` exact date to cite from nodejs.org in the dependency document), while `catalog-web/Dockerfile` uses Node 20; `ubuntu:22.04` unpinned tag; Rust installed by piping `https://sh.rustup.rs` to `sh`; `cargo install tauri-cli` unpinned; `curl | bash` for NodeSource; Go minimum in comment 1.25.7 versus 1.26.1 tarball; `ENTRYPOINT ["/project/scripts/build-test-release.sh"]` | Dockerfile.builder | medium |
+| D-05 | `docker/Dockerfile.builder` | Header comment says JDK 17, installed package is `openjdk-21-jdk`; Node 18 from `deb.nodesource.com/setup_18.x` (Node 18 is past end of life, `UNCONFIRMED:` exact date to cite from nodejs.org in the dependency document), while `catalog-web/Dockerfile` uses Node 20; `ubuntu:22.04` unpinned tag; Rust installed by piping `https://sh.rustup.rs` to `sh`; `cargo install tauri-cli` unpinned; `curl \| bash` for NodeSource; Go minimum in comment 1.25.7 versus 1.26.1 tarball; `ENTRYPOINT ["/project/scripts/build-test-release.sh"]` | Dockerfile.builder | medium |
 | D-06 | `docker-compose.build.yml` | `network_mode: host` and bound host ports 5432 and 6379 on a developer machine (collision with any local PostgreSQL or Redis); fixed credentials in the file (`<test credential literals, see docker-compose.build.yml:13-14, 74-75, 92-93>`, test-only but compromised by disclosure because committed in public code); volumes `go-cache:/root/go` assume root-in-container while the dispatch doc says `--userns=keep-id`; `docker.io/budtmo/docker-android:emulator_14.0` tag only | docker-compose.build.yml:10-50, 100-127 | medium |
-| D-07 | `docker-compose.yml`, `deployment/docker-compose.yml`, `docker-compose.dev.yml` | Floating tags (`prom/prometheus:latest`, `grafana/grafana:latest`, `quay.io/minio/minio:latest`, `dpage/pgadmin4:latest`, `nginx:alpine`, `postgres:15-alpine`); `cat docker-compose.yml deployment/docker-compose.yml docker-compose.dev.yml | grep -c latest` returns 12 matching lines when measured 2026-10-03 (3 + 6 + 3 per file; across all nine root compose files the count is 18 lines, not 30, so the earlier figure of 30 was not reproducible). Environment names `API_PORT`, `REDIS_HOST`, `REDIS_PORT` do not match the names the process reads (`SERVER_PORT`, `REDIS_ADDR`), already recorded as O-06 in document 01 | grep; docker-compose.yml:76-83; main.go:324,562 per document 01 | medium |
+| D-07 | `docker-compose.yml`, `deployment/docker-compose.yml`, `docker-compose.dev.yml` | Floating tags (`prom/prometheus:latest`, `grafana/grafana:latest`, `quay.io/minio/minio:latest`, `dpage/pgadmin4:latest`, `nginx:alpine`, `postgres:15-alpine`); `cat docker-compose.yml deployment/docker-compose.yml docker-compose.dev.yml \| grep -c latest` returns 12 matching lines when measured 2026-10-03 (3 + 6 + 3 per file; across all nine root compose files the count is 18 lines, not 30, so the earlier figure of 30 was not reproducible). Environment names `API_PORT`, `REDIS_HOST`, `REDIS_PORT` do not match the names the process reads (`SERVER_PORT`, `REDIS_ADDR`), already recorded as O-06 in document 01 | grep; docker-compose.yml:76-83; main.go:324,562 per document 01 | medium |
 | D-08 | `scripts/lib/auto-container.sh` | Containerizes only when the toolchain is missing from the host PATH (`need_toolchain`); a host with the tool builds on the bare host | docs/BUILD_CONTAINER_AUTO_DISPATCH.md "Public API" | high (FR-021, 11.4.173) |
 | D-09 | `build-scripts/build-all.sh` | Builds directly on the host; creates placeholder build scripts that print success when a component's script is missing | build-scripts/build-all.sh | high (bluff-class and bare-host) |
 | D-10 | `docker-compose.test-infra.yml` NFS service | `privileged: true` plus `cap_add: SYS_ADMIN` and kernel NFS dependency. A rootless podman user cannot honestly grant that; the service will fail or run degraded. Needs a rootless-compatible NFS strategy or a recorded structural-impossibility finding with a substitute (section 10.3) | docker-compose.test-infra.yml:165-185 | medium |
@@ -204,21 +206,21 @@ Image references below are named by role and by the base image family only. No d
 | IMG-ANDROID | Gradle and Android SDK | built locally; derived from layer 5 of `docker/Dockerfile.builder` and `docker/Dockerfile.android*` | JDK 21, Android command-line tools, build-tools 34 and 35, platforms 34 and 35, pinned Gradle wrapper (the repo's wrapper, not a host Gradle) | catalogizer-android, catalogizer-androidtv, instrumented tests build step | local |
 | IMG-DOCS | Documentation render | built locally | Node plus VitePress (`Website/` is the VitePress site, `UNCONFIRMED:` exact path, owned by document 13), Mermaid CLI with headless Chromium, pandoc, a PDF engine, fonts | README graph checks, exports (html, pdf, docx), diagram render checks (SC-007) | local |
 | IMG-SCAN-TRIVY, -SEMGREP, -GOSEC, -HADOLINT, -SYFT, -SONAR | Scanners | `aquasec/trivy`, `semgrep/semgrep`, `securego/gosec`, `hadolint/hadolint`, `anchore/syft`, `sonarqube` and the scanner CLI image (compose security file already names `sonarqube:community`, `owasp/dependency-check`, snyk CLI on `node:18-alpine`) | one tool each | SC-009 and document 10 | TBD per tool |
-| IMG-SHELLCHECK, IMG-KCOV | Shell lint and shell coverage | pinned `koalaman/shellcheck` and a kcov image or a repository-built kcov | shell scripts are in scope for the 11.4.224 coverage floor | document 05 | TBD |
-| IMG-TESTUTIL | Test utilities for the P0 test legs (added in revision 2, unconditional) | built rootless from the tracked `build/containers/testutil/Containerfile`: `FROM docker.io/library/debian` slim, base digest-pinned, packages installed from a pinned Debian snapshot (`snapshot.debian.org` timestamp recorded in the Containerfile) at pinned versions | `bash`, `git`, `sqlite3`, `python3`, `jq`, Python `jsonschema` | register DDL and trigger tests, verifier and commit-push fixture tests, schema validation, catalogue regeneration (tasks.md WP-09) | local image id; the built digest is recorded in `images.lock.yaml` |
+| IMG-SHELLCHECK, IMG-KCOV | Shell lint and shell coverage | IMG-SHELLCHECK: `docker.io/koalaman/shellcheck` pulled and pinned by digest (built FROM scratch, so the lock entry carries an entrypoint override); IMG-KCOV: repository-built kcov on IMG-TESTUTIL, from the tracked `build/containers/kcov/Containerfile` `FROM` the IMG-TESTUTIL digest (revision 3; the upstream kcov image is not used because it lacks git, jq and python3, tasks.md T005) | shell scripts are in scope for the 11.4.224 coverage floor; IMG-KCOV also carries the IMG-TESTUTIL tools, so a coverage run has git, jq and python3 | document 05; docs/21 P0 test legs (WP-09) | IMG-SHELLCHECK: pulled digest; IMG-KCOV: built digest recorded in `images.lock.yaml` |
+| IMG-TESTUTIL | Test utilities for the docs/21 P0 test legs (added in revision 2, unconditional) | built rootless from the tracked `build/containers/testutil/Containerfile`: `FROM docker.io/library/debian` slim, base digest-pinned, packages installed from a pinned Debian snapshot (`snapshot.debian.org` timestamp recorded in the Containerfile) at pinned versions | `bash`, `git`, `sqlite3`, `python3`, `jq`, Python `jsonschema` and PyYAML (`python3-jsonschema`, `python3-yaml`; revision 3) | register DDL and trigger tests, verifier and commit-push fixture tests, schema validation, catalogue regeneration (tasks.md WP-09) | local image id; the built digest is recorded in `images.lock.yaml` |
 | IMG-MUT | Mutation testing | built locally per language | per document 05 | SC-005 | local |
 | IMG-INFRA-* | Real services | `postgres`, `redis`, `minio`, FTP, SMB, WebDAV, NFS images from `docker-compose.test-infra.yml` and `docker-compose.build.yml` | see section 10 | integration, E2E | TBD |
 
 The Containers submodule's own `crossbuild` Linux backend (`pkg/crossbuild/linux_container.Containerfile`) is the preferred mechanism for the Rust and Android images when those are declared as build components (11.4.74: extend, do not reimplement). Whether it supports Tauri and Android SDK images unchanged is `UNCONFIRMED:`; the decision record is:
 
-Decision DR-16-1. Provide Catalogizer Containerfiles under a new `build/containers/` tree (one directory per image, each with a `Containerfile`, a `README.md` and a `digests.lock`), and register them through a `components.json` consumed by `cmd/distributed-build -components`. If the Containers submodule lacks a needed capability (for example per-build working directory, sha256 artifact manifest), the capability is added upstream in the submodule, not worked around in Catalogizer scripts. Rejected alternative: keep `scripts/build_in_container.sh` as the long-term driver; rejected because it duplicates SSH and rsync logic the submodule already provides and cannot give digest-pinned, per-build isolated directories without becoming a second orchestrator.
+Decision DR-16-1. Provide Catalogizer Containerfiles under a new `build/containers/` tree (one directory per image, each with a `Containerfile` and a `README.md`; every image, pulled or built, has its entry in the single lock file `build/containers/images.lock.yaml` of section 7.1, revision 3), and register them through a `components.json` consumed by `cmd/distributed-build -components`. If the Containers submodule lacks a needed capability (for example per-build working directory, sha256 artifact manifest), the capability is added upstream in the submodule, not worked around in Catalogizer scripts. Rejected alternative: keep `scripts/build_in_container.sh` as the long-term driver; rejected because it duplicates SSH and rsync logic the submodule already provides and cannot give digest-pinned, per-build isolated directories without becoming a second orchestrator.
 
 ### 6.2 Invocation forms (POC, NOT EXECUTED)
 
 The common run flags: rootless, no privileged, user namespace mapping so output files belong to the invoking user, read-only source mount where possible, explicit limits from section 8, a label for scoped cleanup, no host network unless a service needs it.
 
 ```bash
-# Common prefix (NOT EXECUTED). IMG_* come from build/containers/*/digests.lock.
+# Common prefix (NOT EXECUTED). IMG_* come from build/containers/images.lock.yaml (section 7.1).
 RUN_COMMON=(podman run --rm
   --userns=keep-id
   --security-opt label=disable          # or use :z after the SELinux probe in 8.5
@@ -282,14 +284,14 @@ images:
     purpose: "catalog-api build and test"
 ```
 
-2. Resolve: `podman pull docker.io/library/golang:1.25-bookworm` then `podman image inspect --format '{{index .RepoDigests 0}}' docker.io/library/golang:1.25-bookworm`. If the registry is unreachable, the entry stays `digest: ""` and the build record says `UNPINNED`.
+2. Resolve: `podman pull docker.io/library/golang:1.25-bookworm` then `podman image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' docker.io/library/golang:1.25-bookworm` and select the entry whose repository prefix equals the pulled reference (revision 3, as tasks.md T005: never the first entry blindly, because a shared rootless store can list digests of other references for the same image id). If the registry is unreachable, the entry stays `digest: ""` and the build record says `UNPINNED`.
 3. Write the digest into `images.lock.yaml`; thereafter every build refers to `reference@sha256:<digest>`, never to the tag. A `scripts/containers/check_pins.sh` (to be written, phase 1) fails if any compose file, Dockerfile `FROM`, or script references an external image without `@sha256:` (finding D-07).
 4. Update only by an explicit bump change that re-resolves, re-runs the image smoke test and the affected tests, and is committed as its own commit with a reviewed diff of tool versions.
 5. Signature verification: `cosign` and `skopeo` are absent on the host. Verification of upstream signatures, where an image publisher provides them, runs in a pinned verification container. Whether each publisher in the table signs images is `UNKNOWN:` and recorded as a gap, never assumed.
 
 ### 7.2 Locally built images
 
-Locally built images (`IMG-RUST`, `IMG-ANDROID`, `IMG-DOCS`, `IMG-MUT`, `IMG-TESTUTIL`) are built from their `Containerfile` by `podman build` with all `FROM` lines digest-pinned, tagged `localhost/catalogizer-<role>:<content-hash>` where the content hash is the SHA-256 of the Containerfile plus its build context (`Build/lib/hash.sh` already implements source hashing and change detection). An image is rebuilt only when that hash changes. The local image digest is recorded in the build record. Downloads inside a `Containerfile` (rustup, NodeSource, Android command-line tools, the Go tarball) must be replaced by downloads of pinned versions with their published SHA-256 verified in the Containerfile; the `curl | sh` forms in `docker/Dockerfile.builder` are removed (finding D-05). The Go tarball `COPY` is replaced by a pinned `FROM golang` stage (finding D-04).
+Locally built images (`IMG-RUST`, `IMG-ANDROID`, `IMG-DOCS`, `IMG-MUT`, `IMG-TESTUTIL`, and `IMG-KCOV` on the IMG-TESTUTIL base; revision 3) are built from their `Containerfile` by `podman build` with all `FROM` lines digest-pinned, tagged `localhost/catalogizer-<role>:<content-hash>` where the content hash is the SHA-256 of the Containerfile plus its build context (`Build/lib/hash.sh` already implements source hashing and change detection). An image is rebuilt only when that hash changes. The local image digest is recorded in the build record. Downloads inside a `Containerfile` (rustup, NodeSource, Android command-line tools, the Go tarball) must be replaced by downloads of pinned versions with their published SHA-256 verified in the Containerfile; the `curl | sh` forms in `docker/Dockerfile.builder` are removed (finding D-05). The Go tarball `COPY` is replaced by a pinned `FROM golang` stage (finding D-04).
 
 ### 7.3 Cache strategy
 
@@ -534,48 +536,28 @@ For the main repository and every submodule at every depth, all of the following
 
 | Check id | Condition | Evidence |
 |---|---|---|
-| R1 | Working tree clean: no modified, staged, deleted or untracked-not-ignored files (`git status --porcelain=v2 --untracked-files=all` empty) | the status text |
-| R2 | The checked-out commit, or the branch tip for a branch checkout, is contained in the corresponding branch of every configured remote (`git ls-remote <remote> <branch>`, fetch, then `git merge-base --is-ancestor HEAD <remote>/<branch>`) | per-remote result |
+| R1 | Working tree clean: no modified, staged, deleted or untracked-not-ignored files (`git status --porcelain --ignore-submodules=all` empty, as in the promoted verifier and data-model.md §9; a submodule's own changes are judged on that submodule's row) | the status text |
+| R2 | The checked-out commit of a branch checkout is contained in the same branch of every configured remote. The remote tip is read with `git ls-remote <remote> refs/heads/<branch>` (never a tracking ref, document 11 F-4); ancestry is decided with `git merge-base --is-ancestor` on the local object store. Classes per remote: `SAME`, `REMOTE-BEHIND` (local is ahead: unpushed), `LOCAL-BEHIND`, `DIVERGED`, `UNREACHABLE`, `NO-REMOTE-BRANCH`, `UNKNOWN-DIFFERENT` (remote tip differs and its object is not present locally). Revision 3: a remote tip object that is absent locally is never guessed; with `--fetch` the verifier runs `git fetch --no-tags <remote> <branch>`, which leaves the work tree and `refs/heads` untouched (it may write objects, `FETCH_HEAD` and the remote-tracking ref), so that the ancestry can be decided | per-remote class |
 | R3 | No stash holds work that is not otherwise recorded (`git stash list` empty or each entry explained) | list |
-| R4 | The recorded gitlink commit in the parent equals the submodule HEAD (no pointer drift) and that commit exists on a remote of the submodule (so a fresh clone can check it out, the `not our ref` condition of 11.4.233's pointer preflight) | `git submodule status` plus `git cat-file -e` after fetch |
+| R4 | The recorded gitlink commit in the parent equals the submodule HEAD (no pointer drift) and that commit is reachable from a branch tip of a remote of the submodule (so a fresh clone can check it out, the `not our ref` condition of 11.4.233's pointer preflight). Revision 3: `git ls-remote` lists refs, not arbitrary commits, so reachability is proven only as "equal to, or an ancestor of, a remote tip read by `ls-remote`", decided on the local object store (after `--fetch` when the tip object is absent). A gitlink that is not provably reachable is `unproven`, never assumed present. Honest gap: the promoted verifier compares remotes only for owned repositories on a branch, so for third-party rows and detached pins R4 reachability is not in the v1 report; it is listed per repository in document 11 §8.5 and is `UNCONFIRMED:` until a separate read-only check covers it | `git submodule status` first column; per-remote class of the submodule row |
 | R5 | Submodule is initialised (not `-` in `git submodule status`) | status character |
-| R6 | History not rewritten: no remote branch tip is non-ancestor of local tip unless it is an intended merge; no reflog entry shows `forced-update` for pushes (`UNCONFIRMED:` whether reflog of remote-tracking refs is retained long enough) | `git reflog` filter |
+| R6 | History not rewritten: no remote branch tip is non-ancestor of local tip unless it is an intended merge; no reflog entry shows `forced-update` for pushes (`UNCONFIRMED:` whether reflog of remote-tracking refs is retained long enough) | `DIVERGED` class; `git reflog` filter |
 
-The verifier does not modify anything. It does not fetch silently: it runs `git fetch --all --prune` for each repository first (a network operation that changes remote-tracking refs only), and records the fetch result. An unreachable remote yields state `UNVERIFIED`, never "clean".
+The verifier never modifies a work tree, a branch or a configuration value. Revision 3 (docs/21 IC-36, IC-37): it never runs `git fetch --all`; by default it is read-only and reads remote tips with `git ls-remote`; `--fetch` adds the object-store fetch of R2; `--no-remote` skips the remote comparison and reports only the local classes (dirty, pointer drift, uninitialised), which is the mode of a `--local-only` commit-push run. An unreachable remote yields class `UNREACHABLE`, which counts as unproven (exit 14), never as clean.
 
 ### 11.2 Output format
 
-A single JSON document, plus a human text rendering. Exit codes are in section 12.3.
+Revision 3: the output is the `repo-verification-report/1` JSON of `contracts/repo-verification-report.schema.json`, unchanged in shape; the field table and the exit-code map are in data-model.md §9, and the exit codes are listed again in the section 11.4 usage block. The revision 1 example of this section (`"schema": 1`, summary fields `clean`, `unpushed`, `unverified`, per-repository states `clean` to `unverified`) is withdrawn because it did not match the promoted verifier.
 
-```json
-{
-  "schema": 1,
-  "generated_utc": "2026-10-03T00:00:00Z",
-  "root": "/home/milosvasic/Projects/catalogizer",
-  "repos": [
-    {
-      "path": ".",
-      "depth": 0,
-      "head": "<40 hex>",
-      "branch": "main",
-      "clean": true,
-      "remotes": [
-        {"name": "github", "reachable": true, "tip": "<40 hex>", "ahead": 0, "behind": 0, "state": "in_sync"}
-      ],
-      "pointer_ok": true,
-      "stashes": 0,
-      "state": "clean",
-      "reason": ""
-    }
-  ],
-  "summary": {"repos": 98, "clean": 98, "dirty": 0, "unpushed": 0, "diverged": 0, "unverified": 0},
-  "control_needles": {"dirty_fixture_detected": true, "unpushed_fixture_detected": true}
-}
-```
+The facts a reader needs without opening the schema:
 
-The count `98` in the schema example is a placeholder equal to the 97 recursive entries plus the root, to be replaced by the real run; it is not a claim.
+- one row per repository (the main repository as `.` plus every entry of `git submodule status --recursive`), with `path`, `pin_state`, `head`, `branch`, `owned`, `dirty` counts, `remotes[]` (each with `remote`, `url`, `remote_tip`, `class` from R2), `excepted`, `exception_reason`, `problems[]` and `unproven[]`;
+- `problems[]` holds `dirty`, `ahead`, `diverged`, and under `--strict` also `behind` and `pin`; `unproven[]` holds the unproven classes `UNREACHABLE`, `UNKNOWN-DIFFERENT`, `NO-REMOTE-BRANCH`;
+- `summary` holds `repos`, `owned`, `dirty`, `dirty_excepted`, `ahead`, `diverged`, `pin_drift`, `unproven`, `classes`, `failing`;
+- remote comparison is made for owned repositories on a branch (research R-27 own-organisation list); third-party rows carry no remote classes, and a detached HEAD has no branch to compare;
+- FR-020: every non-clean row names its file, ref or remote class, so an unpushable repository is reported with its reason.
 
-States per repository: `clean`, `dirty`, `unpushed`, `diverged`, `behind`, `pointer_drift`, `uninitialised`, `unverified`. Each non-clean state carries a reason string naming the file or ref (FR-020: report unpushable repositories with their reason).
+The measured baseline of the POC on 2026-10-03 (`poc/repo_verify/results/run1.json`, read-only, no fetch): 98 rows, 51 owned, `summary.failing = 1`, `summary.dirty = 2` with 1 excepted, class counts `SAME` 191 and `LOCAL-BEHIND` 8.
 
 ### 11.3 Control needles (11.4.201)
 
@@ -583,60 +565,61 @@ A verifier that reports zero problems must be proven able to see problems. The v
 
 ### 11.4 Skeleton (NOT EXECUTED)
 
+Revision 3: the skeleton below follows the promoted POC `poc/repo_verify/verify_repo.sh` (executed: 24 of 24 self-test checks, one real run of 98 rows) instead of the revision 1 shape, which compared against tracking refs and fetched with `--all`. It is a shape, not the final script.
+
 ```bash
 #!/usr/bin/env bash
-# scripts/repo/verify_repos.sh  -- read-only recursive verifier (NOT EXECUTED)
-# Usage: scripts/repo/verify_repos.sh [--json|--json-out out.json] [--strict] [--no-fetch] [--self-test-only]
+# scripts/repo/verify_repos.sh -- read-only recursive verifier (NOT EXECUTED), promoted from poc/repo_verify/verify_repo.sh
+# Usage: scripts/repo/verify_repos.sh [--json FILE | --json-out FILE] [--strict] [--fetch] [--no-remote] [--self-test]
+#        [--root DIR] [--jobs N] [--timeout SEC] [--owned-orgs a,b,c] [--exceptions FILE] [--quiet]
 # Exit: 0 clean, 11 unpushed, 12 diverged, 13 dirty, 14 unverified(remote), 15 pointer drift/uninitialised, 20 blind or internal
-set -uo pipefail
-ROOT=$(git rev-parse --show-toplevel) || exit 20
-check_repo() {  # $1 = path ; prints one JSON object (compact) via python3 -c or jq
-  local p=$1 st=clean reason=""
-  local dirty; dirty=$(git -C "$p" status --porcelain=v2 --untracked-files=all 2>&1) || { st=unverified; reason="status_failed"; }
-  [ -n "$dirty" ] && { st=dirty; reason="$(printf '%s' "$dirty" | head -n1)"; }
-  git -C "$p" fetch --all --prune >/dev/null 2>&1 || { [ "$st" = clean ] && st=unverified; reason="${reason:-fetch_failed}"; }
-  local br; br=$(git -C "$p" symbolic-ref --short -q HEAD || echo DETACHED)
-  for r in $(git -C "$p" remote); do
-    # compare HEAD against remote branch; detached HEAD is checked with `git branch -r --contains HEAD`
-    if [ "$br" != DETACHED ]; then
-      read -r behind ahead < <(git -C "$p" rev-list --left-right --count "$r/$br"...HEAD 2>/dev/null || echo "? ?")
-      [ "$ahead" != "0" ] && [ "$st" = clean ] && st=unpushed
-      [ "$behind" != "0" ] && [ "$ahead" != "0" ] && st=diverged
-    else
-      git -C "$p" branch -r --contains HEAD | grep -q "^  $r/" || { [ "$st" = clean ] && st=unpushed; }
-    fi
-  done
-  printf '%s\t%s\t%s\n' "$p" "$st" "$reason"
+# Default: read-only; remote tips come from `git ls-remote` only.  --fetch: `git fetch --no-tags <remote> <branch>`
+# (work tree and refs/heads untouched) so that ancestry can be decided.  --no-remote: local classes only.
+set -u
+classify() {  # $1 repo dir, $2 remote, $3 branch -> one remote class (section 11.1 R2)
+  local p=$1 r=$2 br=$3 out tip head
+  out=$(GIT_TERMINAL_PROMPT=0 timeout "${TMO:-25}" git -C "$p" ls-remote "$r" "refs/heads/$br" 2>/dev/null) || { echo UNREACHABLE; return; }
+  tip=$(printf '%s\n' "$out" | grep -E '^[0-9a-f]{40}[[:space:]]' | head -n1 | cut -c1-40)   # banner lines ignored
+  [ -z "$tip" ] && { echo NO-REMOTE-BRANCH; return; }
+  head=$(git -C "$p" rev-parse HEAD)
+  [ "$tip" = "$head" ] && { echo SAME; return; }
+  [ "${DO_FETCH:-0}" = 1 ] && timeout "${TMO:-25}" git -C "$p" fetch --no-tags --quiet "$r" "$br" >/dev/null 2>&1
+  git -C "$p" cat-file -e "${tip}^{commit}" 2>/dev/null || { echo UNKNOWN-DIFFERENT; return; }   # never guessed
+  if   git -C "$p" merge-base --is-ancestor "$tip" "$head"; then echo REMOTE-BEHIND     # local ahead: unpushed
+  elif git -C "$p" merge-base --is-ancestor "$head" "$tip"; then echo LOCAL-BEHIND
+  else echo DIVERGED; fi
 }
-# enumerate: root plus every submodule at every depth, from the recorded tree, not the filesystem
-{ echo "$ROOT"; git -C "$ROOT" submodule foreach --recursive --quiet 'echo "$toplevel/$sm_path"'; } | while read -r p; do check_repo "$p"; done
+# Enumerate the main repository plus every line of `git submodule status --recursive` (first column = pin state);
+# no `git submodule foreach`, which stops at the first failing child.  Each repository is processed independently
+# (bounded by --jobs), one JSON object per repository; the report is assembled with jq into repo-verification-report/1;
+# the control-needle self-test (section 11.3) runs first and a failed needle exits 20 with no trusted report.
 ```
 
-The skeleton is a shape, not the final script. Revision 2 (docs/21 IC-17, IC-37): the final verifier is `poc/repo_verify/verify_repo.sh` promoted to `scripts/repo/verify_repos.sh`; it keeps the `repo-verification-report/1` JSON of `contracts/repo-verification-report.schema.json` (summary fields `repos`, `owned`, `dirty`, `dirty_excepted`, `ahead`, `diverged`, `pin_drift`, `unproven`, `classes`, `failing`), adds the exit codes above (11 from `ahead`, 12 `diverged`, 13 `dirty` minus `dirty_excepted`, 14 `unproven`, 15 `pin_drift`, 20 blind or internal; mapping in data-model.md §9), accepts `--json` and `--json-out`, and reads remote tips with `git ls-remote` only (the `fetch --all --prune` line of the skeleton is not carried over). Further: the final version builds the JSON with `python3` (present in the build framework dependencies) or `jq`, implements R3 to R6, runs the needle self-test first and refuses to report on needle failure, and is covered by an executing test (11.4.224: executing test through the real invocation path, not `bash -n` alone). Tool availability inside the host for `jq` and `python3` is `UNCONFIRMED:`; if absent, the JSON is produced inside a small pinned container, which is allowed because it is a data-plane read-only operation on a mounted copy.
+Carried over from revision 2 (docs/21 IC-17, IC-37): the final verifier keeps the `repo-verification-report/1` JSON (summary fields `repos`, `owned`, `dirty`, `dirty_excepted`, `ahead`, `diverged`, `pin_drift`, `unproven`, `classes`, `failing`), adds the exit codes above (11 from `ahead`, 12 `diverged`, 13 `dirty` minus `dirty_excepted`, 14 `unproven`, 15 `pin_drift`, 20 blind or internal; mapping in data-model.md §9) and accepts both `--json` and `--json-out`. It adds the R3 stash check and the reflog part of R6, which the POC lacks (the POC already reports a non-ancestor remote tip as `DIVERGED`), and it is covered by an executing test through its real invocation path (11.4.224), not by `bash -n` alone. `jq` 1.8.1 and Python 3.14.4 are present on this host (`command -v`, 2026-10-03); the POC already uses `jq`. Still open and decided by tasks.md T030, not here: the precedence when several failing classes are present, the code for `behind` rows under `--strict`, and whether exits 14 and 15 apply without `--strict` (docs/21 §12.2 and data-model.md §9 list these as UNCONFIRMED).
 
 ## 12. Dedicated commit and push script, no blocking hooks (11.4.234)
 
 ### 12.1 Design
 
-A single executable `scripts/commit-push-all.sh` is the one forward path. It replaces ad-hoc use of the external `commit` tool and of `push_all_submodules.sh` for the audit feature (the latter may be retained as a stage helper for owned submodules; section 12.4). No automatic git hook gates commit or push (`core.hooksPath` stays unset; `scripts/hooks/pre-push-gate.sh` is preserved unmodified in the repository, not installed). All validation is an explicit, named stage whose result is printed and recorded.
+A single executable `scripts/commit-push-all.sh` is the one forward path. It replaces ad-hoc use of the external `commit` tool and of `push_all_submodules.sh` for the audit feature (the latter may be retained as a stage helper for owned submodules; section 12.7). No automatic git hook gates commit or push (`core.hooksPath` stays unset; `scripts/hooks/pre-push-gate.sh` and `.pre-commit-config.yaml` are preserved unmodified in the repository, not installed). All validation is an explicit, named stage whose result is printed and recorded.
 
-Properties (11.4.234): idempotent; a failing validation yields a per-check report with a documented remediation, never an opaque hang; long gates are separable and skippable only by an explicit recorded deferral flag; every skip is written into the commit message trailer and the evidence file so it stays owed (no gate silently lost).
+Properties (11.4.234): idempotent; a failing validation yields a per-check report with a documented remediation, never an opaque hang; long gates are separable and skippable only by an explicit recorded deferral flag; every skip is written into the commit message trailer and the evidence file so it stays owed (no gate silently lost). Revision 3: the S8 report is written on every exit path, including failures, so a failed run is as traceable as a clean one.
 
 ### 12.2 Stages
 
 | # | Stage id | Action | Cheap or long | On failure |
 |---|---|---|---|---|
-| S0 | `preflight` | Verify `git`, `ssh`, `python3`, repository root; acquire the single-owner lock for purpose `commit_push` (section 13); read registry for in-flight build writing tracked artifacts (11.4.121: no commit while a build writes tracked artifacts); run the anti-mess sweep `scripts/anti-mess/sweep.sh` (section 13; until it exists, a registered deferral row) | cheap | exit 20; message names the holder or the sweep finding |
-| S1 | `fetch_integrate` | Per repository, deepest first: `git fetch --all --prune` (`--prune` allowed: the verifier decides from `git ls-remote` only, docs/21 IC-36); for each branch with a remote counterpart, if behind then `git merge --ff-only` when possible, otherwise record `diverged` and stop that repository (never rebase, never force; merge-commit integration is a human decision recorded as `needs_merge`) | cheap | exit 12 with the list of diverged repos |
+| S0 | `preflight` | Parse options (`--local-only`); verify `git`, `ssh`, `python3`, `jq`, repository root; acquire the single-owner lock for purpose `commit_push` (section 13); read registry for in-flight build writing tracked artifacts (11.4.121: no commit while a build writes tracked artifacts); run the anti-mess sweep `scripts/anti-mess/sweep.sh` in pre-commit mode (section 13): the declared change set of this run is excluded from the uncommitted-work invariant (INV-2, document 12 AM-R1), which is checked in full at S7. Until the sweep exists (tasks.md T087), its absence is recorded as a registered deferral row, never treated as a pass and never as a failure | cheap | exit 20; message names the holder or the sweep finding |
+| S1 | `fetch_integrate` | Per repository, deepest first: `git fetch --all --prune` (writes objects and remote-tracking refs only; `--prune` allowed because the verifier decides from `git ls-remote` only, docs/21 IC-36). Revision 3: integration is limited to the main repository. If its branch is behind a remote, `git merge --ff-only` when possible, otherwise record `diverged` and stop that repository (never rebase, never force; merge-commit integration is a human decision recorded as `needs_merge`). A submodule at any depth is never fast-forwarded here: a behind submodule is reported as `needs_update` and moves only through document 11 §6 (P-4 gates, FR-018; the constitution only through WP-07 and ODG-12). If a submodule in the change set of this run is behind, the run stops with the remediation "update it through document 11 §6 first". If the main-repository fast-forward changes recorded gitlinks, submodule work trees are not moved, and S7 then reports pointer drift (15) | cheap | exit 12 with the list of diverged or needs-update repositories |
 | S2 | `scope_check` | Show the change set per repository (`git status --porcelain`); refuse files matching the secret patterns (`.env`, `*.pem`, `env.properties` values; the file currently contains key names with values redacted in this document, its tracked state is `UNCONFIRMED:`); refuse build artifacts and caches (11.4.30) | cheap | exit 13 |
-| S3 | `validate_cheap` | Per-repository cheap checks: shell parse of changed scripts, anti-bluff scan (`scripts/audit/anti-bluff-scan.sh`), landmine scan (`scripts/detect-landmines.sh`), conflict-marker scan, document revision header presence for changed docs, `check_pins.sh` for changed compose or Dockerfiles. Each check is a registered `CM-*`-style named check with its own result row | cheap | report, exit 10 |
+| S3 | `validate_cheap` | Per-repository cheap checks: shell parse of changed scripts, anti-bluff scan (`scripts/audit/anti-bluff-scan.sh`), landmine scan (`scripts/detect-landmines.sh`), conflict-marker scan, document revision header presence for changed docs, `check_pins.sh` for changed compose or Dockerfiles, and the cheap checks carried over from `.pre-commit-config.yaml` (section 16.1). Each check is a registered `CM-*`-style named check with its own result row. Revision 3: a repository-wide scan that already fails on the current tree (the tasks.md P0-P3 review measured `anti-bluff-scan.sh` exit 1 with 84 findings) runs as a ratchet against a measured baseline file and fails only on a finding that is new or in a staged path; the baseline may only shrink (11.4.135 pattern, tasks.md T037 and T038) | cheap | report, exit 10 |
 | S4 | `validate_long` | Long gates (tests, mutation, full scanners) run in containers through section 9 and are NOT part of a routine push; they run as separate registered long-ops and their verdict files are consulted by name. Skippable by `SKIP_LONG=<reason>` which is recorded (11.4.234(D)); the skipped set is listed in the commit trailer `Deferred-Gates:` and in `$EV/deferrals.jsonl` | long | exit 10 or recorded deferral |
 | S5 | `commit` | Per repository, deepest first: stage explicit paths (not `git add -A` in submodules that contain nested churn, following the rule in `push_all_submodules.sh`), commit with the message and the attribution trailer required by project governance; then update the parent's gitlink and commit that in the parent | cheap | exit 10 on hook-free commit failure (identity missing and so on) |
-| S6 | `push` | Per repository, deepest first, to every remote: `git push <remote> <branch>` (no `--force`, no `--force-with-lease`, no `+ref`, no `--no-verify` flag use because no hooks run; the rejection message is captured as a failure) | cheap | exit 11, reason per remote |
-| S7 | `verify_clean` | Run `scripts/repo/verify_repos.sh --strict --json` (section 11; report valid against `contracts/repo-verification-report.schema.json`); require exit 0; re-run the anti-mess sweep | cheap | exit per section 12.3 |
-| S8 | `report` | Write the report FILE `$EV/commit-push/<run_id>.json` (section 12.4) and the text summary `$EV/commit-push/<run_id>.txt`; stage transcripts are stored as blobs `$EV/blobs/<sha256>` and referenced from the report; release the lock | cheap | n/a |
+| S6 | `push` | Per repository, deepest first, to every remote: `git push <remote> <branch>` (no `--force`, no `--force-with-lease`, no `+ref`, no `--no-verify` flag use because no hooks run; the rejection message is captured as a failure). Skipped under `--local-only` (recorded deferral) | cheap | exit 11, reason per remote |
+| S7 | `verify_clean` | Run `scripts/repo/verify_repos.sh --json "$EVID/verify.json"` (section 11; report valid against `contracts/repo-verification-report.schema.json`), with `--no-remote` added under `--local-only`. Revision 3: routine runs do not pass `--strict`. Under `--strict`, `behind` and pin rows fail, so an upstream move in any owned repository would fail every routine run; `--strict` is the SC-010 condition of the final run (WP-73, tasks.md T553) and of document 11 §6.4 step 9. The verifier code is mapped to a commit-push code (section 12.3), and `summary.pin_drift > 0` gives 15 in every mode. Then re-run the anti-mess sweep in full mode (INV-2 without the change-set exclusion) | cheap | mapped exit, section 12.3 |
+| S8 | `report` | Runs on every exit path (an exit trap). Write the report FILE `$EV/commit-push/<run_id>.json` (section 12.4) and the text summary `$EV/commit-push/<run_id>.txt`; stage transcripts are stored as blobs `$EV/blobs/<sha256>` and referenced from the report; release the lock if this run holds it | cheap | n/a |
 
-Mode `--local-only` (revision 2): runs S0 to S5, skips S6 `push`, runs the local part of S7 (dirty, pointer drift, uninitialised; remote comparison is not a pass because nothing was pushed) and S8. The owed push is appended to `$EV/deferrals.jsonl` as a deferral row (flag `--local-only`, reason, the commits not yet pushed) and the run exits 14. It is used where a later review gate must pass before anything is pushed (for example the constitution pin bump before its review GO). A later normal run that pushes those commits clears the row.
+Mode `--local-only` (revision 2, made precise in revision 3): runs S0 to S5, skips S6 `push`, runs S7 with `verify_repos.sh --no-remote` (only the local classes: dirty, pointer drift, uninitialised; a remote comparison cannot pass because nothing was pushed) and S8. The owed push is appended to `$EV/deferrals.jsonl` as a deferral row (flag `--local-only`, reason, the commits not yet pushed) and a run that is otherwise clean exits 14. It is used where a later review gate must pass before anything is pushed (for example the constitution pin bump before its review GO). A later normal run that pushes those commits clears the row.
 
 Order rationale: submodules before parents so a parent never records a pointer that no remote has (R4). The 8 remotes of the main repository and the remotes of each submodule are pushed independently; one unreachable mirror produces a per-remote failure but does not stop other remotes or other repositories (the existing `push_all_submodules.sh` principle), and the final exit code reflects it.
 
@@ -644,14 +627,28 @@ Order rationale: submodules before parents so a parent never records a pointer t
 
 | Code | Meaning |
 |---|---|
-| 0 | all stages passed; `verify_clean` reports every repository clean |
+| 0 | all stages passed; `verify_clean` reports every repository clean; no deferral owed |
 | 10 | a validation check failed (report lists each check and its remediation) |
-| 11 | one or more pushes were rejected or a remote was unreachable; commits are safe locally and listed |
-| 12 | a repository diverged from a remote; manual merge required; nothing was forced |
+| 11 | one or more pushes were rejected or a remote was unreachable, or S7 could not prove a remote after the push (verifier 11 or 14); commits are safe locally and listed |
+| 12 | a repository diverged from a remote (manual merge required), or a submodule in the change set is behind and must be updated through document 11 §6 first; nothing was forced |
 | 13 | scope check refused files (secrets, artifacts) or the tree was dirty after commit |
-| 14 | recorded deferral present: the run succeeded for the stages it ran but gates are owed (distinct from 0 so deferral cannot masquerade as a clean pass); includes a `SKIP_LONG` deferral and a `--local-only` run whose push is owed |
+| 14 | recorded deferral present: the run succeeded for the stages it ran but gates are owed (distinct from 0 so deferral cannot masquerade as a clean pass); includes a `SKIP_LONG` deferral, an absent sweep before tasks.md T087, and a `--local-only` run whose push is owed. Never produced by passing a verifier 14 through |
 | 15 | pointer drift or uninitialised submodule |
-| 20 | internal error, blind verifier (needle failure), lock conflict or unresolvable signal; fails closed |
+| 20 | internal error, blind verifier (needle failure), lock conflict, sweep finding or unresolvable signal; fails closed |
+
+Mapping of the verifier result at S7 (revision 3; the verifier's own codes are in section 11.4 and data-model.md §9):
+
+| Verifier result at S7 | v1 report field that drives it | Commit-push exit |
+|---|---|---|
+| 0 | every count 0 (excepted dirty rows allowed and listed) | 0, or 14 if a deferral is owed |
+| 11 | `summary.ahead`: commits still not on a remote after S6 | 11 |
+| 12 | `summary.diverged` | 12 |
+| 13 | `summary.dirty` minus `summary.dirty_excepted` | 13 |
+| 14 | `summary.unproven`: a remote could not be proven after the push | 11 (never 14, which in this script means a recorded deferral) |
+| 15, or any mode with `summary.pin_drift > 0` | `summary.pin_drift` | 15 |
+| 20 | blind verifier, usage or internal error; no trusted report | 20 |
+
+When the report holds several failing classes, the commit-push script applies the verifier precedence that tasks.md T030 decides and records, and lists every class in the S8 report. Under `--local-only` the verifier runs with `--no-remote`, so only 13, 15 and 20 can occur at S7; a run with none of them exits 14.
 
 ### 12.4 Report format
 
@@ -664,7 +661,8 @@ Order rationale: submodules before parents so a parent never records a pointer t
        {"name": "anti_bluff_scan", "result": "pass", "evidence": "$EV/blobs/<sha256>"},
        {"name": "shell_exec_test:verify_repos", "result": "pass", "evidence": "..."}
     ]},
-    {"id": "S4", "result": "deferred", "deferral": {"flag": "SKIP_LONG", "reason": "full suite runs in op 20261003-go-full", "owed_until": "next full run or tag gate"}}
+    {"id": "S4", "result": "deferred", "deferral": {"flag": "SKIP_LONG", "reason": "full suite runs in op 20261003-go-full", "owed_until": "next full run or tag gate"}},
+    {"id": "S7", "verifier_exit": 0, "verifier_report": "$EV/blobs/<sha256>"}
   ],
   "exit_code": 14,
   "remediation": ["run scripts/audit/anti-bluff-scan.sh locally to reproduce S3 failure"]
@@ -676,54 +674,82 @@ Order rationale: submodules before parents so a parent never records a pointer t
 ```mermaid
 stateDiagram-v2
   [*] --> Preflight
-  Preflight --> Failed20: lock held, tool missing
+  Preflight --> Failed20: lock held, tool missing, sweep finding
   Preflight --> FetchIntegrate
-  FetchIntegrate --> Diverged12: not fast-forward
+  FetchIntegrate --> Diverged12: not fast-forward, or a changed submodule is behind
   FetchIntegrate --> ScopeCheck
   ScopeCheck --> Refused13: secret or artifact path
   ScopeCheck --> ValidateCheap
-  ValidateCheap --> Failed10: check failed
+  ValidateCheap --> Failed10: new finding or check failed
   ValidateCheap --> ValidateLong
   ValidateLong --> Failed10: long gate failed
   ValidateLong --> Deferred: SKIP_LONG recorded
   ValidateLong --> Commit
   Deferred --> Commit
-  Commit --> Push
+  Commit --> Failed10: commit failed
+  Commit --> Push: normal run
+  Commit --> PushSkipped: local-only, push deferral recorded
   Push --> PushFailed11: remote rejected or unreachable
   Push --> VerifyClean
-  VerifyClean --> Failed15: pointer drift
-  VerifyClean --> Clean0: all clean and no deferral
-  VerifyClean --> Clean14: all clean with deferral owed
+  PushSkipped --> VerifyClean: verifier with no-remote
+  VerifyClean --> PushFailed11: verifier 11 or 14
+  VerifyClean --> Diverged12: verifier 12
+  VerifyClean --> Refused13: verifier 13
+  VerifyClean --> Failed15: verifier 15 or pin drift in the report
+  VerifyClean --> Failed20: blind verifier or sweep finding
+  VerifyClean --> Report: clean
+  Failed10 --> Report
+  PushFailed11 --> Report
+  Diverged12 --> Report
+  Refused13 --> Report
+  Failed15 --> Report
+  Failed20 --> Report
+  Report --> Clean0: clean and no deferral
+  Report --> Clean14: clean with deferral owed
+  Report --> Failed: any failure code
   Clean0 --> [*]
   Clean14 --> [*]
-  Failed10 --> [*]
-  Diverged12 --> [*]
-  Refused13 --> [*]
-  PushFailed11 --> [*]
-  Failed15 --> [*]
-  Failed20 --> [*]
+  Failed --> [*]
 ```
+
+`Report` is S8; it runs on every path and releases the lock (a lock-conflict failure at S0 releases nothing because this run does not hold it).
 
 ### 12.6 Skeleton (NOT EXECUTED)
 
 ```bash
 #!/usr/bin/env bash
 # scripts/commit-push-all.sh (NOT EXECUTED). Purpose, usage, inputs, outputs, side effects documented per 11.4.18 in the final file.
+# Usage: scripts/commit-push-all.sh [--local-only] [--] "<commit message>"     env: SKIP_LONG=<reason>
 set -uo pipefail
 RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-commit_push"; EV=specs/001-full-project-audit-remediation/evidence
 REPORT="$EV/commit-push/$RUN_ID.json"   # S8 report is a FILE; scratch work goes to a temp dir
-EVID="$(mktemp -d)"; mkdir -p "$EV/commit-push"
-MSG="${1:?commit message required}"
+EVID="$(mktemp -d)"; mkdir -p "$EV/commit-push"; LOCKED=""; DEFERRED=""; LOCAL_ONLY=""
 stage() { printf '[%s] %s\n' "$1" "$2" | tee -a "$EVID/log.txt"; }
-fail()  { stage "$1" "FAIL: $3"; echo "$3" >"$EVID/failure.txt"; exit "$2"; }
+fail()  { stage "$1" "FAIL: $3"; echo "$1 $3" >"$EVID/failure.txt"; exit "$2"; }
+finish() {  # S8 on every exit path
+  local rc=$?
+  stage S8 report   # assemble "$REPORT" from $EVID: stage rows, verifier report and transcripts as $EV/blobs/<sha256>
+  [ -n "$LOCKED" ] && scripts/longops/release.sh commit_push "$RUN_ID"
+  exit "$rc"
+}
+trap finish EXIT
 
 stage S0 preflight
-scripts/longops/acquire.sh commit_push "$RUN_ID" || fail S0 20 "lock held (see registry)"
-scripts/anti-mess/sweep.sh || fail S0 20 "anti-mess sweep finding (section 13.3)"
+while [ $# -gt 0 ]; do
+  case "$1" in --local-only) LOCAL_ONLY=1; shift ;; --) shift; break ;; -*) fail S0 20 "unknown option $1" ;; *) break ;; esac
+done
+MSG="${1:-}"; [ -n "$MSG" ] || fail S0 20 "commit message required"
+for t in git ssh python3 jq; do command -v "$t" >/dev/null || fail S0 20 "tool missing: $t"; done
+scripts/longops/acquire.sh commit_push "$RUN_ID" || fail S0 20 "lock held (see registry)"; LOCKED=1
 scripts/longops/check_no_build_writing_tracked.sh || fail S0 20 "a build is writing tracked artifacts (11.4.121)"
+if [ -x scripts/anti-mess/sweep.sh ]; then
+  scripts/anti-mess/sweep.sh --mode pre-commit --exclude-change-set || fail S0 20 "anti-mess sweep finding (section 13.3)"
+else
+  scripts/repo/record_deferral.sh --flag SWEEP_ABSENT --reason "sweep not yet delivered (tasks.md T087)" --evidence "$EVID"; DEFERRED=1
+fi
 
 stage S1 fetch_integrate
-scripts/repo/integrate_ff_only.sh --recursive || fail S1 12 "diverged repositories listed in $EVID/diverged.txt"
+scripts/repo/integrate_ff_only.sh --main-only --report-behind-submodules || fail S1 12 "diverged or needs-update repositories listed in $EVID/integrate.json"
 
 stage S2 scope_check
 scripts/repo/scope_check.sh --recursive || fail S2 13 "secret or artifact path staged"
@@ -739,32 +765,40 @@ else
 fi
 
 stage S5 commit
-scripts/repo/commit_recursive.sh --message "$MSG" ${DEFERRED:+--trailer "Deferred-Gates: SKIP_LONG"} || fail S5 10 "commit failed"
+scripts/repo/commit_recursive.sh --message "$MSG" ${DEFERRED:+--trailer "Deferred-Gates: see $EV/deferrals.jsonl"} || fail S5 10 "commit failed"
 
 stage S6 push
-if [ -n "${LOCAL_ONLY:-}" ]; then   # set by --local-only
+if [ -n "$LOCAL_ONLY" ]; then
   scripts/repo/record_deferral.sh --flag --local-only --reason "push owed" --evidence "$EVID"; DEFERRED=1
 else
   scripts/repo/push_recursive.sh --no-force || fail S6 11 "see $EVID/push.json"
 fi
 
 stage S7 verify_clean
-scripts/repo/verify_repos.sh --strict --json "$EVID/verify.json"; rc=$?
-[ $rc -ne 0 ] && fail S7 "$rc" "verification not clean (rc=$rc)"   # under --local-only only the local classes are required
-scripts/anti-mess/sweep.sh || fail S7 20 "anti-mess sweep finding after verify"
+VFLAGS=(--json "$EVID/verify.json"); [ -n "$LOCAL_ONLY" ] && VFLAGS+=(--no-remote)   # routine runs: no --strict
+scripts/repo/verify_repos.sh "${VFLAGS[@]}"; vrc=$?
+case "$vrc" in
+  0) ;;
+  14) fail S7 11 "a remote could not be proven after the push (verifier 14)" ;;
+  11|12|13|15|20) fail S7 "$vrc" "verification not clean (verifier rc=$vrc; classes in $EVID/verify.json)" ;;
+  *) fail S7 20 "unexpected verifier exit $vrc" ;;
+esac
+[ "$(jq '.summary.pin_drift' "$EVID/verify.json")" -eq 0 ] || fail S7 15 "pointer drift in the verifier report"
+if [ -x scripts/anti-mess/sweep.sh ]; then
+  scripts/anti-mess/sweep.sh --mode full || fail S7 20 "anti-mess sweep finding after verify"
+fi
 
-# S8: assemble "$REPORT" from the stage results (blobs referenced by sha256), then
-scripts/longops/release.sh commit_push "$RUN_ID"
-[ -n "${DEFERRED:-}" ] && exit 14
+[ -n "$DEFERRED" ] && exit 14
 exit 0
 ```
 
-The helper scripts named in the skeleton (`integrate_ff_only.sh`, `scope_check.sh`, `validate_cheap.sh`, `record_deferral.sh`, `commit_recursive.sh`, `push_recursive.sh`, `require_verdicts.sh`, and the `longops` scripts) do not exist; they are deliverables of phase 3. Each ships with an executing test, a golden-true and a golden-false-with-carrier fixture (11.4.201) and a paired mutation (the mutation that makes the stage allow a forced push, or ignore a dirty submodule, must make its test fail).
+The helper scripts named in the skeleton (`integrate_ff_only.sh`, `scope_check.sh`, `validate_cheap.sh`, `record_deferral.sh`, `commit_recursive.sh`, `push_recursive.sh`, `require_verdicts.sh`, and the `longops` scripts) do not exist; they are deliverables of phase 3. Each ships with an executing test, a golden-true and a golden-false-with-carrier fixture (11.4.201) and a paired mutation (the mutation that makes the stage allow a forced push, ignore a dirty submodule, fast-forward a submodule at S1, or pass a verifier 14 through as 14, must make its test fail). The option names `--main-only`, `--report-behind-submodules`, `--mode` and `--exclude-change-set` are proposals of this revision, to be fixed by the tests of tasks.md T038 and T087.
 
 ### 12.7 Relationship to existing scripts
 
 - `scripts/push_all_submodules.sh`: retained for its narrow purpose (governance pointer commit across owned submodules); not used for general push; its `DRY_RUN=1` default and "no force, no no-verify" stance are kept as the model.
 - `scripts/hooks/pre-push-gate.sh` and `scripts/install_git_hooks.sh`: not installed. Their checks are consumed by S3 (landmines, anti-bluff). The LLM-judge prompt assembly is an optional S3 informational output, never a gate (consistent with the critic advisory-only rule, 11.4.269).
+- `.pre-commit-config.yaml` (revision 3): not installed (the `pre-commit` tool is absent and the configured `.secrets.baseline` does not exist). Its checks are mapped to S2, S3 and S4 in section 16.1.
 - Root `commit` and the external toolkit script: not used by the audit feature until read and tested (D-14). If it proves to be a reasonable fit, S5 and S6 may call it through an adapter, but the exit-code contract above is authoritative.
 - The `Upstreams/` export scripts name the remote families; the list of remotes pushed is read from `git remote` per repository, not hard-coded.
 
@@ -811,7 +845,7 @@ The standing sweep checks a short catalogue; each entry has a detector, a reconc
 | Id | Invariant | Detector | Reconcile class |
 |---|---|---|---|
 | INV-1 | No stale git lock files (`*.lock` under any `.git`, including submodule gitdirs under `.git/modules`) whose holder is dead | find plus `/proc` liveness | auto-safe: remove only when no git process has the repository open |
-| INV-2 | No uncommitted pile-up across repositories older than a threshold recorded as data | `scripts/repo/verify_repos.sh` | operator-gated: report; commit via `scripts/commit-push-all.sh` |
+| INV-2 | No uncommitted pile-up across repositories older than a threshold recorded as data | `scripts/repo/verify_repos.sh`; at commit-push S0 the declared change set of the run is excluded (otherwise every real commit would be refused), at S7 and on the standing cadence the check is full (revision 3; document 12 AM-R1 uses the same rule) | operator-gated: report; commit via `scripts/commit-push-all.sh` |
 | INV-3 | Registry equals reality (rows versus labelled containers) | `scripts/anti-mess/sweep.sh` | auto-safe for orphan containers older than budget with no registry row (stop and record), else operator-gated |
 | INV-4 | No duplicate owner per purpose | claims directory | operator-gated |
 | INV-5 | No submodule pointer pointing at a commit absent from its remotes (R4) | `verify_repos.sh` | operator-gated (push the submodule first) |
@@ -870,6 +904,21 @@ Server-side pipelines are forbidden. The repository tracks `.github/FUNDING.yml`
 
 A gate that exists only as prose is not enforcement (11.4.205, cited in project and consumer carriers as the enforced-not-advisory rule; note that the canonical Constitution.md has no defining `11.4.205` block, so this is a consumer-carrier citation, UNCONFIRMED against canon, with the substantive rule resting on 11.4.201/11.4.227). Each gate named in this document has an owner script, a golden-true and golden-false-with-carrier fixture, and a paired mutation; until it exists it is recorded as a registered deferral with a tracked item, not implied to be active.
 
+### 16.1 Inventory of existing enforcement assets and their disposition (revision 3)
+
+Every tracked file that already tries to enforce something, observed on 2026-10-03, with what this plan does with it. Nothing in the table is removed; a removal is an owner decision (11.4.122).
+
+| Asset | Observed state | Disposition |
+|---|---|---|
+| `.github/` (`FUNDING.yml`, `workflows/README.md`) | no workflow file, so no pipeline (11.4.156) | kept; a proposed S3 check fails a run that adds a workflow file under `.github/workflows/` (proposal, not yet a tracked check) |
+| `scripts/hooks/pre-push-gate.sh` | tracked, not installed; blocking design with `LLM_JUDGE_BYPASS=1` (D-13) | preserved unmodified; landmine and anti-bluff checks consumed by S3; the LLM-judge prompt is informational only (11.4.269) |
+| `scripts/install_git_hooks.sh` | tracked; would symlink the gate as `.git/hooks/pre-push` | not run |
+| `.pre-commit-config.yaml` | tracked; `pre-commit` tool absent on the host; `.secrets.baseline` absent, so the configured `detect-secrets` hook cannot run; not installed (section 3.4) | not installed. Its checks are mapped, each as a named check of the commit-push script and each run in a pinned container on the changed files of the run: `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `check-json`, `check-merge-conflict`, `check-added-large-files` to S3; `detect-private-key` and `detect-secrets` to the S2 secret refusal (a secrets baseline is created only by the reviewed secret-scan work of docs/21 WP-35, never generated to silence findings); `go-fmt`, `go-vet`, `go-imports` and `scripts/hooks/no-false-positive-log.sh` to S3; `go-unit-tests -race` and `gosec` to S4 long-gate verdicts (never on the bare host); `eslint` and `prettier` to S3 in IMG-NODE. Whether the upstream hook implementations are reused inside a pinned image or reimplemented is decided by an existence verdict (11.4.270) and is `UNCONFIRMED:` here |
+| `docker-compose.dev.override.yml` | tracked; port overrides only (5435, 6381, 8090), no image line | in the compose enumeration of D-07 and of the S3 compose checks; its `API_PORT` and `REDIS_PORT` names are part of the O-06 mismatch (document 01) |
+| `scripts/ci-local.sh`, `scripts/local-ci.sh`, `scripts/ci-pipeline.sh` | local scripts, content `UNCONFIRMED:` (V-11) | allowed as local enforcement once they run inside containers; audited in document 05's scope |
+| `scripts/push_all_submodules.sh` | `DRY_RUN=1` default, owned direct submodules only (D-12) | narrow purpose kept (section 12.7) |
+| root `commit` | delegates to an external binary (D-14) | not used until read and tested |
+
 ## 17. Phased adoption order
 
 Phases are ordered by risk and dependency; each ends with a machine-recorded acceptance check.
@@ -877,9 +926,10 @@ Phases are ordered by risk and dependency; each ends with a machine-recorded acc
 | Phase | Deliverables | Depends on | Acceptance (machine evidence) | Spec |
 |---|---|---|---|---|
 | P0 Probes | Host probe record (`$EV/host-probe.json`), read of `cmd/distributed-build` and `envconfig` for env names and `components.json` schema, read of the external `commit` tool, read of `deployment/thinker-up.sh`, `amber-up.sh`; verify-remote-host checklist 9.5 executed by an authorised operator | none | probe JSON with control needles; a written list resolving the UNCONFIRMED items in section 20 | FR-021 |
-| P1 Verifier first | `verify_repos.sh` with needle self-test and its executing tests; first real run on the current tree recorded as the baseline of SC-010 (expected non-clean given the observed untracked files; the baseline is a measurement) | P0 | self-test fixture detects all four conditions; real run JSON | FR-019, FR-020, SC-010 |
-| P2 Pinning and fixing the broken assets | `build/containers/` tree, `images.lock.yaml`, `check_pins.sh`; reproduce-first captures of D-01 to D-04 failing, then fixes (context paths, `COPY` sources, Go base stage), each followed by three passing builds | P0 | per-defect failing-before and passing-after verdict files, three identical passes | FR-021, SC-003 |
-| P3 Dedicated push script | `commit-push-all.sh` and helpers, with tests and mutations; pre-push gate preserved, not installed; `commit-push-all.sh` run in dry-run form on a throwaway clone | P1 | exit-code matrix test, including a seeded diverged repo (expects 12) and a seeded dirty submodule (expects 13) | FR-019, FR-020 |
+| P0b Bootstrap images (revision 3; docs/21 WP-09, IC-35) | the four images the first test legs need: IMG-GO and IMG-SHELLCHECK pulled by digest, IMG-TESTUTIL built rootless from `build/containers/testutil/Containerfile`, IMG-KCOV built from `build/containers/kcov/Containerfile` on the IMG-TESTUTIL digest; their entries in `build/containers/images.lock.yaml`; the launcher `scripts/containers/run_pinned.sh`; the (test, image, tools) map | none (local rootless podman only) | four digests recorded; image smoke tests (section 6.3) per image; tool-image map with no missing tool; launcher mutation (no `--memory`) detected | FR-021, SC-012 |
+| P1 Verifier first | `verify_repos.sh` with needle self-test and its executing tests; first real run on the current tree recorded as the baseline of SC-010 (expected non-clean given the observed untracked files; the baseline is a measurement) | P0, P0b (the executing tests run in IMG-KCOV and IMG-TESTUTIL) | self-test fixture detects all four conditions; real run JSON | FR-019, FR-020, SC-010 |
+| P2 Pinning and fixing the broken assets | the rest of the `build/containers/` tree and of `images.lock.yaml` (extending the P0b entries), `check_pins.sh`; reproduce-first captures of D-01 to D-04 failing, then fixes (context paths, `COPY` sources, Go base stage), each followed by three passing builds | P0, P0b | per-defect failing-before and passing-after verdict files, three identical passes | FR-021, SC-003 |
+| P3 Dedicated push script | `commit-push-all.sh` and helpers, with tests and mutations; pre-push gate preserved, not installed; `commit-push-all.sh` run in dry-run form on a throwaway clone | P1, P0b | exit-code matrix test, including a seeded diverged repo (expects 12), a seeded dirty submodule (expects 13), a remote unreachable at S7 (expects 11, never 14), a behind submodule that S1 must not move, and a `--local-only` run (expects 14 with a deferral row) | FR-019, FR-020 |
 | P4 Local container runners | Wrappers for Go, Node, docs, scanners, Playwright with limits from the envelope calculator and registry integration; `build-scripts/build-all.sh` and `auto-container.sh` corrected to always containerize (D-08, D-09) | P2 | each wrapper produces a toolchain record and passes the image smoke test; a mutation that removes `--memory` is detected by the gate | FR-021 |
 | P5 Test infrastructure | Pinned, rootless real-service stack with protocol-level health probes, deterministic seed; NFS decision DR-16-2 executed | P2, P4 | each protocol has a real round-trip test recorded; NFS result is either a pass or an evidenced skip with reason | FR-006, FR-007 (via document 05) |
 | P6 Remote builds | `hosts.env`, `components.json`, remote verification 9.5, first remote build and return with manifest verification and a clean-target runtime signature check for `catalog-api` | P0, P2, P4 | verdict JSON where manifest sha256 equals the local recomputed sha256 and the target reports the build id | FR-021, 11.4.200 |
@@ -914,7 +964,7 @@ Trade-off recorded: shipping `git archive <commit>` means a fix cannot be built 
 
 | Requirement | How satisfied | Machine evidence | Phase |
 |---|---|---|---|
-| FR-019 (regular commit and push, recursive verification) | `commit-push-all.sh` and `verify_repos.sh` over all repositories at all depths | `$EV/commit-push/<run_id>.json` (S8 report, a file) citing its S7 verifier report: `scripts/repo/verify_repos.sh --strict` exit 0 with `summary.failing = 0`, `summary.dirty` equal to `summary.dirty_excepted`, `summary.ahead = 0`, `summary.diverged = 0`, `summary.pin_drift = 0`, `summary.unproven = 0`, and needle self-test true | P1, P3 |
+| FR-019 (regular commit and push, recursive verification) | `commit-push-all.sh` and `verify_repos.sh` over all repositories at all depths | per run: `$EV/commit-push/<run_id>.json` (S8 report, a file) citing its S7 verifier report (routine runs without `--strict`, revision 3) with commit-push exit 0 or 14; final (WP-73, tasks.md T553): `scripts/repo/verify_repos.sh --strict` exit 0 with `summary.failing = 0`, `summary.dirty` equal to `summary.dirty_excepted`, `summary.ahead = 0`, `summary.diverged = 0`, `summary.pin_drift = 0`, `summary.unproven = 0`, and needle self-test true | P1, P3, final |
 | FR-020 (no rewrite, no force-push, report unpushable with reason) | no force flags in any script; S1 stops on divergence (exit 12); mutation test that injects `--force` must fail the script test; per-repository reason strings | exit-code matrix test results; verify.json reasons | P3 |
 | FR-021 (rootless container builds; verify on clean target) | all wrappers use podman rootless with digest-pinned images; remote builds through the Containers submodule; clean-target runtime signature check | build manifests (image digest, container id), clean-target verdict equal to build id | P2, P4, P6, P7 |
 | SC-003 support (failing run before, passing after, identical across 3 runs) | image smoke and fix flows record fail-before and pass-after verdicts with image digests | three verdict files with identical outcome | P2 |
