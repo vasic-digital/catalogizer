@@ -73,7 +73,7 @@ Starting at `README.md` and following every relative Markdown link (code fences 
 | Metric | Value |
 |---|---|
 | In scope | 2,562 (2,540 at first measurement) |
-| Reachable | 42 (1.7%) |
+| Reachable | 42 (1.6%) (1.7% at first measurement) |
 | Orphans | 2,520 (98.4%) (2,498, 98.3% at first measurement) |
 | Maximum link depth reached | 3 |
 | Broken relative links (target missing) | 126 as of 2026-10-03T12:02Z by the shipped crawler (84 at first measurement; see doc 19 section 7 for the definitional reconciliation) |
@@ -97,7 +97,7 @@ Specifically damaging: `docs/README.md` (the docs index, 120+ lines of well-orga
 
 | Claim | Where | Reality (evidence) |
 |---|---|---|
-| Release `v2.1.0` | `README.md:584,615` (compose and deploy examples) | `versions.json` `global` = 2.3.0, build 25; `docs/database/SQL_MIGRATION_REFERENCE.md` header "Applies to Catalogizer v2.3.0+". One more string `2.4.0` in `docs/VIDEO_COURSE_SCRIPTS.md`. |
+| Release `v2.1.0` | `README.md:584,615` (compose and deploy examples) | `versions.json` `global` = 2.3.0, build 25; `docs/database/SQL_MIGRATION_REFERENCE.md` header "Applies to Catalogizer v2.3.0+". `v2.1.0` also at `docs/VIDEO_COURSE_SCRIPTS.md:1991,2203`; four `package.json` files (`catalog-web`, `catalogizer-desktop`, `installer-wizard`, `submodules/catalogizer_api_client_ts`) declare `2.4.0`, a third divergent version. |
 | OpenAPI version | `docs/api/openapi.yaml` `info.version: 2.0.0` | Same file last committed 2026-03-30; README last committed 2026-10-02. |
 | "2,563 markdown files", "openapi.yaml (197 ops)" | `docs/DOCUMENTATION_AUDIT.md` (2026-04-22) | Measured today: 2,225 under `docs/`, 181 operations in the spec (and 174 path keys). The audit document is itself stale and says "massively over-spec on every written deliverable", which is the opposite of the reachability measurement. |
 | Route coverage | `docs/api/openapi.yaml` | Regex route extraction from `catalog-api/main.go` finds 247 routes; 181 spec operations; 68 routes in code absent from the spec (e.g. `DELETE /api/v1/playlists/{id}`, `GET /api/v1/admin/config`, `GET /api/v1/admin/health`). Regex-derived, so approximate; the plan replaces it with a precise AST extractor (§10.4). |
@@ -600,7 +600,7 @@ Each success criterion maps to captured, machine-created, re-runnable evidence (
 | Gate integrity | self-test report of every gate (golden-good, golden-bad, negative-control all behave) | all gates validated before they are trusted |
 | Independent check | Opus-xhigh review record naming model and effort | zero-finding GO |
 
-Baseline "before" numbers to beat (measured, §2): reachable 42/2,540, broken 84, twins with fingerprints 0/36, DOCX twins 0, undocumented real tables 23 (main schema doc), API spec-vs-code gap 68 operations (approximate), README stale version `v2.1.0` vs 2.3.0.
+Baseline "before" numbers to beat (measured, §2): reachable 42/2,540, broken 84 (first measurement; 42/2,562 and 126 as of 2026-10-03T12:02Z), twins with fingerprints 0/36, DOCX twins 0, undocumented real tables 23 (main schema doc), API spec-vs-code gap 68 operations (approximate), versions three-way divergent (README `v2.1.0`, `versions.json` 2.3.0, four `package.json` files 2.4.0).
 
 Honest boundaries (§11.4.6): link reachability proves findability, not correctness; the review ledger proves claims were checked, not that no wrong claim remains (§11.4.118 discovery pressure: the claim extractor's coverage is itself reported); diagram non-blank checks do not prove a diagram is semantically accurate, which is why each diagram records the code/schema path it was derived from and architectural diagrams are reviewed against the structural index; OCR/label matching has an error rate recorded in the evidence; DOCX/PDF visual fidelity beyond text/structure is checked by sampling (render page PNG → blank/overflow detector) rather than exhaustively.
 
