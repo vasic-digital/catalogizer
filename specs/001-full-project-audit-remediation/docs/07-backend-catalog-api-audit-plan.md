@@ -891,7 +891,7 @@ Read-only access to the index (`file:.codegraph/codegraph.db?mode=ro`): `nodes` 
 
 ```json
 {
-  "finding_id": "CAND-API-C5",
+  "candidate_id": "CAND-API-C5", "finding_id": "FND-NNNN (minted by the register when the candidate is confirmed; finding/1 canonical id, CAND-API-C5 kept as provenance)",
   "register_item": "ATM-NNN (assigned by the register)",
   "location": "catalog-api/internal/services/universal_scanner.go:1044",
   "category": "functional-gap",

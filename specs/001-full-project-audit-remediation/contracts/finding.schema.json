@@ -1,0 +1,545 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "finding/1",
+  "title": "Audit finding record (FR-007, FR-008, SC-002, SC-003)",
+  "description": "One JSON file per finding at audit/findings/<finding_id>.json (document 02 section 9), keyed by the canonical id. Reconciled with the register DDL (document 04 section 5 v2, table reg_findings) per research.md R-12: ONE canonical finding id `FND-NNNN` (minted by the register, reg_findings.finding_id, monotone, never reused) plus the stored alias `unit_alias` = the unit-local `F-<unit>-NNN` (reg_findings.unit_alias, UNIQUE, the register CHECK requires it to start with `F-<unit>-`). Severity S1..S5 maps to critical/high/medium/low/cosmetic; type is the document 02 closed set, category (register) is a superset. Conditional rules encode the document 02 section 9 bullet rules: a fixed closure needs RED and GREEN evidence with 3 iterations; constructed provenance never closes; blocked keeps the finding open; `should_have_been_caught_by: none` needs a written justification (constitution 11.4.238 extension). Producer: audit runner and detectors. Consumers: register importer (reg_findings, reg_evidence), determinism comparator (findings.index.jsonl), independent reviewer. No real finding file exists yet; validated against synthetic fixtures only. Revision 3 (second independent review 2026-10-03): `should_have_been_caught_by_justification` must contain at least 20 non-whitespace characters (pattern `^\\s*(?:\\S\\s*){20,}$`; revision 2 accepted 19 spaces plus one letter); `closure` is allowed only in state `Closed` (document 02 section 9: FalsePositive, Impossible and VendoredException move to Closed). Two rules JSON Schema cannot express are importer checks, listed in contracts/README.md: `fix.red_run` must differ from `fix.green_run`, and both must name ledger entries of the same test with differing target fingerprints.",
+  "type": "object",
+  "required": [
+    "schema",
+    "finding_id",
+    "unit_alias",
+    "register_item",
+    "fingerprint",
+    "title",
+    "type",
+    "severity",
+    "severity_criterion",
+    "classification_rationale",
+    "unit",
+    "locations",
+    "found_by",
+    "should_have_been_caught_by",
+    "evidence",
+    "state",
+    "run_ids",
+    "created",
+    "updated"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "finding/1"
+    },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^FND-[0-9]{4,}$",
+      "description": "canonical finding id minted by the register (reg_findings.finding_id); the only id other records cite"
+    },
+    "unit_alias": {
+      "type": "string",
+      "pattern": "^F-[a-z0-9][a-z0-9_-]*-[0-9]{3,}$",
+      "description": "unit-local alias F-<unit>-NNN stored in reg_findings.unit_alias; the register requires the <unit> part to equal `unit` (not expressible in JSON Schema, checked by the register CHECK and the importer)"
+    },
+    "register_item": {
+      "type": "string",
+      "pattern": "^ATM-[0-9]{3,}$"
+    },
+    "fingerprint": {
+      "$ref": "#/$defs/sha256",
+      "description": "sha256 of normalised (unit, file, symbol-or-key, rule-id, root-cause-key); determinism is defined on this value (D-06)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "type": {
+      "enum": [
+        "bug",
+        "error",
+        "gap",
+        "misalignment",
+        "shortcoming",
+        "weak_spot",
+        "danger_zone"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ]
+    },
+    "severity_criterion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classification_rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unit": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$",
+      "description": "component id as in reg_components"
+    },
+    "locations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "repo",
+          "commit"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "line_start": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "line_end": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(main|submodules/.+)$"
+          },
+          "commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          }
+        }
+      }
+    },
+    "found_by": {
+      "type": "object",
+      "required": [
+        "channel",
+        "detector"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "channel": {
+          "enum": [
+            "automated_seam",
+            "agent_inspection",
+            "manual_qa",
+            "operator",
+            "end_user"
+          ]
+        },
+        "detector": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "should_have_been_caught_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the seam or gate that should have caught this finding, or the literal `none` (constitution 11.4.238 extension); `none` requires should_have_been_caught_by_justification"
+    },
+    "should_have_been_caught_by_justification": {
+      "type": "string",
+      "minLength": 20,
+      "pattern": "^\\s*(?:\\S\\s*){20,}$",
+      "description": "written reason why no seam or gate could have caught the finding; required when should_have_been_caught_by is `none`, counted and reported separately; at least 20 non-whitespace characters"
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidenceRef"
+      }
+    },
+    "root_cause": {
+      "type": "object",
+      "required": [
+        "statement",
+        "reproduction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reproduction": {
+          "type": "object",
+          "required": [
+            "artifact_fingerprint",
+            "steps_ref",
+            "provenance"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "artifact_fingerprint": {
+              "$ref": "#/$defs/sha256"
+            },
+            "steps_ref": {
+              "type": "string"
+            },
+            "provenance": {
+              "enum": [
+                "observed",
+                "constructed"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "fix": {
+      "type": "object",
+      "required": [
+        "commit",
+        "repo",
+        "test",
+        "red_run",
+        "green_run",
+        "iterations"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string",
+          "minLength": 1
+        },
+        "red_run": {
+          "$ref": "#/$defs/sha256",
+          "description": "ledger digest of the RED entry; must differ from green_run (importer check, JSON Schema cannot compare two fields)"
+        },
+        "green_run": {
+          "$ref": "#/$defs/sha256"
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 3
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "reviewer",
+        "verdict",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verdict": {
+          "enum": [
+            "GO",
+            "NO-GO"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "state": {
+      "enum": [
+        "Candidate",
+        "Confirmed",
+        "Linked",
+        "Reopened",
+        "RootCause",
+        "Blocked",
+        "RedProven",
+        "Fixed",
+        "UnderReview",
+        "GreenProven",
+        "Closed",
+        "FalsePositive",
+        "Impossible",
+        "VendoredException"
+      ]
+    },
+    "closure": {
+      "type": "object",
+      "required": [
+        "kind",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "fixed",
+            "false_positive",
+            "structurally_impossible",
+            "accepted_exception_vendored"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/sha256"
+        },
+        "upstream_report": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "blocked": {
+      "type": "object",
+      "required": [
+        "reason",
+        "exact_cause"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "enum": [
+            "owner_decision",
+            "credential",
+            "device",
+            "missing_service"
+          ]
+        },
+        "exact_cause": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "run_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^(AUD|RUN)-[0-9A-Za-z-]+$"
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "Blocked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "blocked"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "Closed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "closure",
+          "review"
+        ],
+        "properties": {
+          "review": {
+            "properties": {
+              "verdict": {
+                "const": "GO"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "closure"
+        ],
+        "properties": {
+          "closure": {
+            "properties": {
+              "kind": {
+                "const": "fixed"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "fix",
+          "root_cause"
+        ],
+        "properties": {
+          "root_cause": {
+            "properties": {
+              "reproduction": {
+                "properties": {
+                  "provenance": {
+                    "const": "observed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "enum": [
+              "RedProven",
+              "Fixed",
+              "UnderReview",
+              "GreenProven"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "root_cause"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "should_have_been_caught_by": {
+            "const": "none"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "should_have_been_caught_by_justification"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "closure"
+        ]
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "const": "Closed"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evidenceRef": {
+      "type": "object",
+      "required": [
+        "kind",
+        "artifact",
+        "sha256",
+        "captured_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "command_output",
+            "screenshot",
+            "recording",
+            "log",
+            "diff",
+            "test_verdict",
+            "index_query"
+          ]
+        },
+        "cmd": {
+          "type": "string"
+        },
+        "exit_status": {
+          "type": "integer"
+        },
+        "artifact": {
+          "type": "string",
+          "pattern": "^audit/evidence/[0-9a-f]{64}(\\.[A-Za-z0-9]+)?$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tool_version": {
+          "type": "string"
+        },
+        "image_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ledger_ref": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+#[0-9]+$",
+          "description": "ledger#seq of the ev/1 entry that produced this artifact"
+        },
+        "control_needle": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "positive": {
+              "type": "string"
+            },
+            "negative": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

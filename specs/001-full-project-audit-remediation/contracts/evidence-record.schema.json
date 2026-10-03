@@ -1,0 +1,621 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ev/1",
+  "title": "Machine-produced evidence ledger entry (one command execution)",
+  "description": "Normative contract for one entry of the hash-chained evidence ledger (document 06 section 3.1, constitution 11.4.115(H), 11.4.245, 11.4.268). Changes against the document 06 draft: (1) `redacted` added, because rule 8 of document 06 writes `redacted: true` while the draft sets additionalProperties false; (2) conditional rules 1, 4, 5 and the blocked-reason pairing are expressed in the schema instead of prose; (3) `blocked_reason` requires verdict `blocked`. Producer: the evidence recorder (document 06 section 13 POC `evrec.sh`, production tool to be built test-first). Consumers: verdict deriver (verdict/1), register importer (reg_evidence rows), report checker for FR-022 and SC-012. No real ledger exists yet, so this schema was validated only against synthetic golden-good and golden-bad fixtures (see contracts/README.md). Revision 2 (independent review 2026-10-03): verdict is tied to exit status by rule 10 of document 06 section 3.1 (pass <=> exit 0; fail <=> exit 1..125, the test ran and its assertion failed; error <=> 126, 127, 128+ or negative, i.e. not executable, not found or killed by a signal, no test outcome); a RED entry must not be `pass`, a GREEN entry must be `pass`, a caught mutation must be `fail`; `target_class` and `target_ref` added so the verdict deriver can require that RED and GREEN ran the same test (same argv, cwd, target class and target locator) on different fingerprints; `item` accepts only canonical ids (the finding alias F-<unit>-NNN is not an evidence key). Revision 3 (second independent review 2026-10-03): `test_fingerprint` (sha256 of the resolved argv[0] file plus declared test sources, taken before the run) is required on RED, GREEN and MUTATION entries whose verdict is `pass` or `fail`, so the deriver can refuse a RED produced by different test bytes than the GREEN (rule 11); a `MUTATION` entry requires its `mutation` object (rule 12); `blocked_detail` (human-readable observed values, credential variable names only) and `counts_as` (`not_passing`) are added and required with `verdict: blocked`, matching document 05 section 10. Ordering (every RED before every GREEN) and the three distinct GREEN iterations are cross-entry rules checked by the verdict deriver, not by this per-entry schema.",
+  "type": "object",
+  "required": [
+    "schema",
+    "seq",
+    "item",
+    "polarity",
+    "iteration",
+    "started_at",
+    "cwd",
+    "argv",
+    "exit_status",
+    "duration_ms",
+    "stdout_sha256",
+    "stderr_sha256",
+    "target_fingerprint",
+    "prev_hash",
+    "entry_hash"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "ev/1"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "item": {
+      "type": "string",
+      "pattern": "^(ATM-[0-9]{3,}|FND-[0-9]{4,}|RUN-[0-9]+|AUD-[0-9A-Za-z-]+)$",
+      "description": "exact stable id of the register item, finding or run the entry belongs to"
+    },
+    "polarity": {
+      "enum": [
+        "RED",
+        "GREEN",
+        "BASELINE",
+        "PREFLIGHT",
+        "PROBE",
+        "NEEDLE",
+        "ANALYZER_FIXTURE",
+        "MUTATION"
+      ]
+    },
+    "iteration": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "cwd": {
+      "type": "string",
+      "minLength": 1
+    },
+    "argv": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "genuine argument list, never a shell-joined string"
+    },
+    "exit_status": {
+      "type": "integer"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stdout_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "stderr_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "target_fingerprint": {
+      "$ref": "#/$defs/sha256"
+    },
+    "target_class": {
+      "enum": [
+        "go_binary",
+        "web_bundle",
+        "container_image",
+        "android_package",
+        "tauri_app",
+        "shell_script",
+        "doc_export",
+        "remote_service"
+      ],
+      "description": "document 06 section 6 target class; RED and GREEN of one closure must share it"
+    },
+    "target_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "stable locator of the fingerprinted target (path, image name, package name plus device serial); RED and GREEN of one closure must share it while their fingerprints differ"
+    },
+    "test_fingerprint": {
+      "$ref": "#/$defs/sha256",
+      "description": "sha256 of the file argv[0] resolves to combined with the sha256 of every declared test source, taken before the command runs (document 06 section 3.1 rule 11); RED and GREEN of one closure must share it. When argv[0] is an interpreter the test sources must be declared, otherwise this hashes only the interpreter"
+    },
+    "prev_hash": {
+      "$ref": "#/$defs/sha256",
+      "description": "entry_hash of seq-1; 64 zeros for seq 1"
+    },
+    "entry_hash": {
+      "$ref": "#/$defs/sha256",
+      "description": "sha256 of the canonical JSON of this entry without entry_hash"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fail",
+        "blocked",
+        "error"
+      ],
+      "description": "outcome of the command, derived from exit_status by the recorder (document 06 section 3.1 rule 10); `blocked` is set by the harness when a precondition probe failed"
+    },
+    "blocked_reason": {
+      "enum": [
+        "service_unreachable",
+        "credential_absent",
+        "credential_rejected",
+        "device_absent",
+        "device_wrong_identity",
+        "device_unauthorised",
+        "geo_restricted",
+        "quota_exhausted",
+        "licence_absent",
+        "host_resource_unavailable"
+      ]
+    },
+    "blocked_detail": {
+      "type": "string",
+      "minLength": 1,
+      "description": "human-readable observed values behind the blocked_reason (document 05 section 10); credential variable names only, never values (11.4.10)"
+    },
+    "counts_as": {
+      "const": "not_passing",
+      "description": "a blocked entry is never a pass or a skip; it counts as not passing for SC-004 and completion (document 05 section 10)"
+    },
+    "precondition_provenance": {
+      "enum": [
+        "observed",
+        "constructed"
+      ]
+    },
+    "oracle": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "independent_of_sut"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "enum": [
+            "specified",
+            "derived",
+            "metamorphic",
+            "golden_master",
+            "invariant",
+            "statistical",
+            "human"
+          ]
+        },
+        "independent_of_sut": {
+          "const": true
+        }
+      }
+    },
+    "mutation": {
+      "type": "object",
+      "required": [
+        "operator",
+        "location",
+        "author",
+        "result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "type": "string",
+          "minLength": 1
+        },
+        "author": {
+          "enum": [
+            "test_author",
+            "reviewer"
+          ]
+        },
+        "result": {
+          "enum": [
+            "caught",
+            "survived"
+          ]
+        }
+      }
+    },
+    "evidence_class": {
+      "enum": [
+        "source",
+        "artifact",
+        "runtime",
+        "user_visible"
+      ]
+    },
+    "closes_item": {
+      "type": "boolean",
+      "description": "true when this entry is part of the RED/GREEN pair that closes a register item"
+    },
+    "container_image_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "peak_rss_kb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cpu_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "stream_digest_before_truncation": {
+      "const": true
+    },
+    "redacted": {
+      "type": "boolean",
+      "description": "true when a credential value was found in argv or a stream and replaced before writing (11.4.10)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "blocked_reason"
+        ]
+      },
+      "then": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "blocked"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "blocked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "blocked_reason",
+          "blocked_detail",
+          "counts_as"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "const": "RED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "not": {
+              "const": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "const": "GREEN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "enum": [
+              "RED",
+              "GREEN",
+              "BASELINE",
+              "MUTATION"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "oracle",
+          "verdict",
+          "evidence_class"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "closes_item"
+        ],
+        "properties": {
+          "closes_item": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "mutation",
+          "precondition_provenance"
+        ],
+        "properties": {
+          "mutation": {
+            "properties": {
+              "result": {
+                "const": "caught"
+              }
+            }
+          },
+          "precondition_provenance": {
+            "const": "observed"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "pass"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "fail"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "minimum": 1,
+            "maximum": 125
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "error"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "exit_status": {
+            "not": {
+              "minimum": 0,
+              "maximum": 125
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "const": "RED"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "enum": [
+              "fail",
+              "blocked",
+              "error"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "const": "GREEN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "pass"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "enum": [
+              "RED",
+              "GREEN",
+              "MUTATION"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "target_class",
+          "target_ref"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "mutation"
+        ],
+        "properties": {
+          "polarity": {
+            "const": "MUTATION"
+          },
+          "mutation": {
+            "properties": {
+              "result": {
+                "const": "caught"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "fail"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "mutation"
+        ],
+        "properties": {
+          "polarity": {
+            "const": "MUTATION"
+          },
+          "mutation": {
+            "properties": {
+              "result": {
+                "const": "survived"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "pass"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "blocked_detail"
+        ]
+      },
+      "then": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "blocked"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "counts_as"
+        ]
+      },
+      "then": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "verdict": {
+            "const": "blocked"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "polarity": {
+            "const": "MUTATION"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "mutation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "verdict"
+        ],
+        "properties": {
+          "polarity": {
+            "enum": [
+              "RED",
+              "GREEN",
+              "MUTATION"
+            ]
+          },
+          "verdict": {
+            "enum": [
+              "pass",
+              "fail"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "test_fingerprint"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

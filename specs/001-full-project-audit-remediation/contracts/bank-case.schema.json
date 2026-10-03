@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bank-case/3",
+  "title": "HelixQA bank case, schema v3 (deterministic lane)",
+  "description": "One test case inside a HelixQA bank YAML file after conversion (document 12 sections 6.2 to 6.6). Completes the document 12 section 6.4 excerpt: adds metadata.v3 fields from 6.2 (register_refs, needs, blocked_when, mutation, evidence), the step fields of 6.3, and validator rules R-1, R-2, R-7 and R-8 where a schema can express them (R-3, R-4, R-5 and R-6 need the run result or cross-file data and stay in the validator script). Applies per case (validate each item of the bank's case list). Producer: bank authors and the converter (document 12 section 7). Consumers: the bank validator gate (run before any bank executes), the Catalogizer HelixQA wrapper, the coverage matrix generator. Interim encoding note: until HelixQA gains typed step fields (WP-Q3), capture/expect_json_eq/ocr_assert live in a *.v3.yaml sidecar; this schema describes the logical merged case. No converted bank exists yet; validated against the document 12 section 6.5 worked example and a placeholder golden-bad case.",
+  "type": "object",
+  "required": ["id", "name", "category", "priority", "platforms", "steps", "metadata"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "name": {"type": "string", "minLength": 3},
+    "category": {"type": "string", "minLength": 1},
+    "priority": {"enum": ["critical", "high", "medium", "low"]},
+    "platforms": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["api", "web", "desktop", "android", "androidtv", "installer"]}},
+    "dependencies": {"type": "array", "items": {"type": "string"}},
+    "requires_env": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}, "description": "environment variable NAMES only, never values (R-5)"},
+    "challenge_id": {"type": "string"},
+    "domains": {"type": "array", "items": {"type": "string"}},
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "documentation_refs": {"type": "array", "items": {"type": "string"}},
+    "steps": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/step"}},
+    "metadata": {
+      "type": "object",
+      "required": ["v3"],
+      "properties": {"v3": {"$ref": "#/$defs/v3"}}
+    }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["name", "action"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "action": {"type": "string", "minLength": 1, "not": {"pattern": "(?i)(TODO|CONVERT|placeholder)"}, "description": "R-2"},
+        "expected": {"type": "string", "description": "prose documentation only, never an assertion"},
+        "timeout": {"type": "number", "exclusiveMinimum": 0},
+        "auth": {"type": "string"},
+        "body": {},
+        "headers": {"type": "object"},
+        "expect_status": {"type": "integer", "minimum": 100, "maximum": 599},
+        "expect_json_path": {"type": "string"},
+        "expect_body_contains": {"type": "string"},
+        "vision_verify": {},
+        "capture": {"type": "object", "additionalProperties": {"type": "string"}},
+        "expect_json_eq": {"type": "object"},
+        "expect_header": {"type": "object", "additionalProperties": {"type": "string"}},
+        "ocr_assert": {
+          "type": "object",
+          "required": ["region"],
+          "properties": {
+            "region": {},
+            "must_contain": {"type": "array", "items": {"type": "string"}},
+            "must_not_contain": {"type": "array", "items": {"type": "string"}}
+          },
+          "anyOf": [{"required": ["must_contain"]}, {"required": ["must_not_contain"]}]
+        },
+        "pixel_assert": {
+          "type": "object",
+          "required": ["reference_hash", "threshold"],
+          "properties": {"reference_hash": {"type": "string", "pattern": "^[0-9a-f]{16,64}$"}, "threshold": {"type": "number", "minimum": 0}}
+        },
+        "assert_after": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+        "negative": {"type": "boolean"}
+      },
+      "anyOf": [
+        {"required": ["expect_status"]}, {"required": ["expect_json_path"]}, {"required": ["expect_body_contains"]},
+        {"required": ["expect_json_eq"]}, {"required": ["expect_header"]}, {"required": ["ocr_assert"]},
+        {"required": ["pixel_assert"]}, {"required": ["assert_after"]}
+      ],
+      "allOf": [
+        {"if": {"properties": {"action": {"pattern": "^tap:"}}}, "then": {
+          "properties": {"action": {"not": {"pattern": "^tap:\\s*960\\s*,\\s*540\\s*$"}}},
+          "anyOf": [{"required": ["ocr_assert"]}, {"required": ["pixel_assert"]}],
+          "description": "R-8 (11.4.193): no blind taps"}}
+      ]
+    },
+    "v3": {
+      "type": "object",
+      "required": ["schema", "surface", "oracle", "needs", "flow", "evidence"],
+      "properties": {
+        "schema": {"const": "bank-case/3"},
+        "register_refs": {"type": "array", "items": {"type": "string", "pattern": "^ATM-[0-9]{3,}$"}},
+        "surface": {"type": "string", "minLength": 1},
+        "oracle": {
+          "type": "object",
+          "required": ["strategy", "independent_of_sut"],
+          "properties": {
+            "strategy": {"enum": ["specified", "derived", "metamorphic", "golden_master", "invariant", "statistical", "human"]},
+            "independent_of_sut": {"const": true}
+          }
+        },
+        "needs": {
+          "type": "object",
+          "properties": {
+            "service": {"type": "string"},
+            "credential_env": {"type": "array", "items": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}},
+            "device": {"type": "string"},
+            "network": {"type": "string"}
+          }
+        },
+        "blocked_when": {"type": "array", "items": {"type": "string"}},
+        "mutation": {
+          "type": "object",
+          "required": ["operator", "target", "expected"],
+          "properties": {
+            "operator": {"type": "string", "minLength": 1},
+            "target": {"type": "string", "minLength": 1},
+            "expected": {"const": "fail"}
+          }
+        },
+        "flow": {"enum": ["deterministic", "exploratory_promoted"]},
+        "evidence": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["http_exchange", "screenshot", "ocr_text", "frame_diff", "video", "logcat", "db_row"]}}
+      },
+      "allOf": [
+        {"if": {"required": ["register_refs"], "properties": {"register_refs": {"minItems": 1}}}, "then": {"required": ["mutation"]}}
+      ]
+    }
+  }
+}

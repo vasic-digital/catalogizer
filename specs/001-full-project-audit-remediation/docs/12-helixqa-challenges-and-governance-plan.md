@@ -966,7 +966,7 @@ queue. For these tickets:
 | `fixed` (492) | closed-class, `legacy_status=fixed`, `verification=unverified` | enters the re-verification queue ordered by risk (11.4.132, 11.4.189) |
 | `resolved` (704) | same, `legacy_status=resolved` | same; 664 of them have no `Resolution` section |
 | `closed` (299) | 294 map to QA-instrument defects (11.3); 5 to product items, unverified | per class |
-| `wontfix` (282) | `Obsolete`-class is not assumed; they are imported with `legacy_status=wontfix` and the reason text; 282 of the 282 have the single date line `Closed: 2026-03-30` and 130 or more give the "enhancement suggestion" text | each is re-decided by a reviewer: false positive (with evidence), accepted exception, or reopened. None is closed by label (FR-008) |
+| `wontfix` (282) | `Obsolete`-class is not assumed; they are imported with `legacy_status=wontfix` and the reason text; 282 of the 282 have the single date line `Closed: 2026-03-30` and 225 give the "enhancement suggestion" text (doc 03 measurement, `grep -rli`) | each is re-decided by a reviewer: false positive (with evidence), accepted exception, or reopened. None is closed by label (FR-008) |
 
 A re-verification of a legacy `fixed` or `resolved` ticket is the deterministic-lane run of a case
 whose `register_refs` names the item: a GREEN run on the current artefact, three repeats, plus the
@@ -1059,7 +1059,7 @@ a cycle in which manual QA did not run contributes no data point and cannot lowe
 
 ```sql
 CREATE TABLE reg_discovery(
-  finding_id TEXT PRIMARY KEY,
+  finding_id TEXT PRIMARY KEY REFERENCES reg_findings(finding_id),  -- canonical DDL (with FKs): docs/04 §5 reg_discovery
   cycle_id   TEXT NOT NULL,
   channel    TEXT NOT NULL CHECK(channel IN('automated_seam','manual_qa','operator','end_user','agent_inspection')),
   should_have_been_caught_by TEXT NOT NULL CHECK(length(should_have_been_caught_by)>0),
