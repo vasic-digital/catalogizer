@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | proof of concept, executed; read-only tool (revision 2: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no command, result or self-test of the repository verifier changed. Revision 1 is commit `0f6b17da`) |
+| Last modified | 2026-10-04 |
+| Status | proof of concept, executed; read-only tool (revision 3: the contract note below states that `contracts/repo-verification-report.schema.json` requires the mode boolean `no_remote` from contracts revision 9 (tasks.md rev 11 T031, T033), which this POC does not write, so `results/run1.json` is no longer a valid instance; no command, result or self-test changed. Revision 2: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no command, result or self-test of the repository verifier changed. Revision 1 is commit `0f6b17da`) |
 
 `verify_repo.sh` reports, for the main repository and every submodule at every depth: working-tree
 dirtiness, pin state (`git submodule status` marker) and, for owned repos on a branch, how every remote's
@@ -38,3 +38,5 @@ unreachable -> `UNREACHABLE` exit 3; controls: ssh-banner noise still parses `SA
 a clean repo before a dirty sibling does not abort the run, exceptions are honoured and recorded.
 
 Results: `results/run1.*` (command, timestamp, JSON, table, exit code, wall time), `results/selftest.txt`.
+
+Contract note (revision 3): the JSON follows `repo-verification-report/1`, which from contracts revision 9 also requires the mode boolean `no_remote` (tasks.md T031: every report records its mode in `fetch`, `strict` and `no_remote`, so a `--no-remote` report is never mistaken for a plain report of repositories that have no remotes). This POC accepts `--no-remote` but its jq assembly (line 259) writes `fetch` and `strict` only, so `results/run1.json` now fails validation with exactly that one missing property (re-checked on 2026-10-04, quickstart.md step 6); the promoted verifier `scripts/repo/verify_repos.sh` (tasks.md T032) writes the field. The POC itself is not changed: its results stay the record of the executed run.

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 12 |
+| Revision | 13 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 12: section 11 reconciled with tasks.md rev 9 and the plan owner's rules taken after the review of commit `b9412d06`: rule 2 puts the `Foreign-Commit:` lines on the first commit the run makes in each repository (tasks.md T041, T042), names the refusals `unrecorded_local_commit`, `hold_in_submodule` and `pin_not_on_remote`, and states the script's own merge integration of a diverged repository (`git merge --no-ff`, never a rebase, reset or force, held for review when it resolves conflicts or merges into a held range; docs/21 IC-49); rule 4 cites the CPA run record of the run that made the measured HEAD, as the tasks.md abbreviation table does (docs/02 §12.1 revision 7), no longer "the latest run report"; `reviews/` uses the file names `<gate-or-wp>[-<item>][-r<n>].json` and names `blocking_findings`; the `wp73/constitution/` entry of tasks.md T580b is listed; `pending_pins.tsv` lists its writers (the `--repo` commits, the reviewed helper `record_pending_pin.sh` of tasks.md T435a, and T042a's integrate-only run), its stale-row rule and the nested rows a `--repo <parent>` run consumes; the run folder lists its run copies of `secrets.baseline` and, under `--repo`, `exceptions.tsv`; the shared-stores paragraph states the exemption of the byte-exact stores from the S3 whitespace and end-of-file checks (docs/21 IC-50); the deferral-row paragraph cites `DEF-T022-1` and its closing row in T095; revision 11: section 11 follows the plan owner's held-commit rules taken after the review of commit `af664ed0` (docs/21 IC-46): rule 2 lists all four lines a commit-push commit can carry (`CPA-Run:`, `Deferred-Gates:`, `Awaits-Review:`, `Foreign-Commit:`), a held commit is released only by a GO verdict committed in the main repository whose `covers_runs` names its run, and `Foreign-Commit:` names only commits a live remote tip held at stage S1; `reviews/` names the verdict format `contracts/review-verdict.schema.json` (`review-verdict/1`, with `covers_runs`); rule 4 defines the clean tracked tree as tasks.md and the verifier measure it (`summary.dirty` equal to `summary.dirty_excepted`, never a raw `git status --porcelain`); the `.audit/` block adds `out/<op_id>/` (the container runner's default output folder), `verify/<run_id>/` (the final strict reports) and each run folder's `out/<check>/` and `disk/`, and states how a `pending_pins.tsv` row is replaced and removed; rule 5 names the retention bound of `scripts/repo/commit_push.conf`; the deferral-row rule names its first instance, T022's row; no `$EV` entry changed; revision 10: section 11 follows the commit-push design that the plan owner decided after the independent review of commit `1a69eed5` (fix wave 7), which supersedes the earlier design of CPA-owned paths under `$EV`: the commit-push script writes nothing into `$EV` or anywhere in the tracked tree; each run's outputs live only in its ignored run folder `.audit/commit-push/<run_id>/` at the repository root, which is not part of `$EV` (the `$EV/commit-push/` entry is removed, it never exists); the tracked record of a push is the commit itself (trailer `CPA-Run: <run_id>` and the deferral flags `SKIP_LONG`, `SWEEP_ABSENT` and `LOCAL_ONLY` in the message body); a task that needs a run's result records it through the evidence recorder; the shared stores (`ledger.jsonl`, `anchors.jsonl`, `blobs/`, `deferrals.jsonl`) belong to the change set of whoever wrote them; `deferrals.jsonl` rows are never edited and are closed by an appended closing row; the `.audit/` layout (`commit-push/<run_id>/`, `pending_pins.tsv`) is listed; no other `$EV` entry changed; revision 9: section 11 task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen: the phase exit records are written by P0 T095, P1 T159, P2 T220, P5 T457 and P6 T557, and the root-only `coverage/` negation is tasks.md T004; no layout entry changed; revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their writers in tasks.md rev 5, remapped in revision 9, the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 13: section 11 reconciled with tasks.md rev 11 (612 tasks) and the plan owner's rules taken after the round-10 reviews of commit `6dca8771` (docs/21 IC-52, IC-53): the commit-push run folder lists the merge record `merge.json`, the §9.2 backup under `backup/` (a `git bundle` of the local range checked by `git bundle verify`, plus `backup/worktree/` with the sha256 of every uncommitted file) and the conflicting files of a refused merge under `conflicts/` (tasks.md T040, T042); the resolution folder `.audit/merge-resolution/<run_id>/` and the T581 run-record copies `.audit/wp73/t581/<run_id>/` are listed; `reviews/` names the merge-review files `CPA-merge-<run_id>.json` and every required field of `review-verdict/1`; `pending_pins.tsv` states its two writers with disjoint moves and the helper's `--ff`, `--rollback` and `--sync-third-party` modes (tasks.md T042a, T435a), withdrawing revision 12's "which of the two is the single writer is left with the tasks.md owner"; rule 2 states the merge-review hold, the `merge_conflict` refusal and its `--resolve-merge` resolution, the `merge_in_progress` refusal with its remediation, the push rule below an unreleased merge and `verdict_covers_incomplete`; rule 5 states both retention bounds; the shared-stores paragraph replaces the exemption list with the path classes `evidence`, `generated` and `patches` of rule (V) (tasks.md T040b) and states the hex filter of the S2 secret fold (T040a). Revision 12: section 11 reconciled with tasks.md rev 9 and the plan owner's rules taken after the review of commit `b9412d06`: rule 2 puts the `Foreign-Commit:` lines on the first commit the run makes in each repository (tasks.md T041, T042), names the refusals `unrecorded_local_commit`, `hold_in_submodule` and `pin_not_on_remote`, and states the script's own merge integration of a diverged repository (`git merge --no-ff`, never a rebase, reset or force, held for review when it resolves conflicts or merges into a held range; docs/21 IC-49); rule 4 cites the CPA run record of the run that made the measured HEAD, as the tasks.md abbreviation table does (docs/02 §12.1 revision 7), no longer "the latest run report"; `reviews/` uses the file names `<gate-or-wp>[-<item>][-r<n>].json` and names `blocking_findings`; the `wp73/constitution/` entry of tasks.md T580b is listed; `pending_pins.tsv` lists its writers (the `--repo` commits, the reviewed helper `record_pending_pin.sh` of tasks.md T435a, and T042a's integrate-only run), its stale-row rule and the nested rows a `--repo <parent>` run consumes; the run folder lists its run copies of `secrets.baseline` and, under `--repo`, `exceptions.tsv`; the shared-stores paragraph states the exemption of the byte-exact stores from the S3 whitespace and end-of-file checks (docs/21 IC-50); the deferral-row paragraph cites `DEF-T022-1` and its closing row in T095; revision 11: section 11 follows the plan owner's held-commit rules taken after the review of commit `af664ed0` (docs/21 IC-46): rule 2 lists all four lines a commit-push commit can carry (`CPA-Run:`, `Deferred-Gates:`, `Awaits-Review:`, `Foreign-Commit:`), a held commit is released only by a GO verdict committed in the main repository whose `covers_runs` names its run, and `Foreign-Commit:` names only commits a live remote tip held at stage S1; `reviews/` names the verdict format `contracts/review-verdict.schema.json` (`review-verdict/1`, with `covers_runs`); rule 4 defines the clean tracked tree as tasks.md and the verifier measure it (`summary.dirty` equal to `summary.dirty_excepted`, never a raw `git status --porcelain`); the `.audit/` block adds `out/<op_id>/` (the container runner's default output folder), `verify/<run_id>/` (the final strict reports) and each run folder's `out/<check>/` and `disk/`, and states how a `pending_pins.tsv` row is replaced and removed; rule 5 names the retention bound of `scripts/repo/commit_push.conf`; the deferral-row rule names its first instance, T022's row; no `$EV` entry changed; revision 10: section 11 follows the commit-push design that the plan owner decided after the independent review of commit `1a69eed5` (fix wave 7), which supersedes the earlier design of CPA-owned paths under `$EV`: the commit-push script writes nothing into `$EV` or anywhere in the tracked tree; each run's outputs live only in its ignored run folder `.audit/commit-push/<run_id>/` at the repository root, which is not part of `$EV` (the `$EV/commit-push/` entry is removed, it never exists); the tracked record of a push is the commit itself (trailer `CPA-Run: <run_id>` and the deferral flags `SKIP_LONG`, `SWEEP_ABSENT` and `LOCAL_ONLY` in the message body); a task that needs a run's result records it through the evidence recorder; the shared stores (`ledger.jsonl`, `anchors.jsonl`, `blobs/`, `deferrals.jsonl`) belong to the change set of whoever wrote them; `deferrals.jsonl` rows are never edited and are closed by an appended closing row; the `.audit/` layout (`commit-push/<run_id>/`, `pending_pins.tsv`) is listed; no other `$EV` entry changed; revision 9: section 11 task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen: the phase exit records are written by P0 T095, P1 T159, P2 T220, P5 T457 and P6 T557, and the root-only `coverage/` negation is tasks.md T004; no layout entry changed; revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their writers in tasks.md rev 5, remapped in revision 9, the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -626,11 +626,21 @@ specs/001-full-project-audit-remediation/evidence/        ($EV)
                                independent review verdicts ([REVIEW] tasks); `-<item>` names one item
                                of a package (for example WP-39R-code), `-r<n>` a later review
                                iteration, whose file holds work made after an earlier GO (revision 12,
-                               the tasks.md abbreviation table); format
-                               contracts/review-verdict.schema.json (review-verdict/1, revision 11):
-                               verdict, covers_runs (repository path, commit sha and CPA-Run id of
-                               every commit reviewed), model and effort, and blocking_findings (0 on
-                               a GO, at least 1 on a NO-GO; required from contracts revision 8)
+                               the tasks.md abbreviation table)
+  reviews/CPA-merge-<run_id>.json
+                               the merge-review file of a merge commit that the commit-push script
+                               made itself (revision 13, tasks.md T040, T042); the script writes this
+                               path into the merge commit's Awaits-Review: line; ST-REV writes the
+                               file: the reviewer of the range the merge went into for a submodule
+                               (T432, T500, T571, T580a), and for the main repository ST-REV before
+                               the next window in P0 to P2, T307 in P3 and T308a from P4 to P7
+                               Both kinds follow contracts/review-verdict.schema.json
+                               (review-verdict/1): schema, verdict, blocking_findings (0 on a GO, at
+                               least 1 on a NO-GO), covers_runs (repository path, commit sha and
+                               CPA-Run id of every held commit that awaits the file; a GO that misses
+                               one is refused, 20 verdict_covers_incomplete, tasks.md T042), model
+                               and effort; a GO file is final: a hold on it or a change to it is
+                               refused (20, verdict_already_go)
   hc/<HC-id>.json              human-checkpoint records (docs/21 section 3.3)
   deferrals.jsonl              gate deferrals recorded by the task that defers a gate (for example the
                                long-op registration owed until WP-08), append-only; never written by
@@ -679,22 +689,50 @@ ignored `.audit/` directory at the repository root, which is not part of `$EV`:
                                2026-10-03, before that rule exists); never on tmpfs, so a crashed run
                                leaves its files for the anti-mess sweep; never part of $EV
   commit-push/<run_id>/        one folder per run; the run id is unique (UTC time, process id and a
-                               random suffix): report.json, the text summary, the stage transcripts,
-                               the stage S7 verifier JSON, the run's deferral rows, out/<check>/
-                               (the /out folder of each container check, including the copies the
-                               S3 fixers check), disk/ (the disk-headroom records of its container
+                               random suffix): report.json (written last, holding the sha256 of every
+                               other file of the folder), the text summary, the stage transcripts,
+                               the stage S7 verifier JSON verify.json, the run's deferral rows,
+                               out/<check>/ (the /out folder of each container check, including the
+                               copies the S3 fixers check and, under out/private_key/, the copies
+                               the private-key check reads with exactly the listed carrier lines
+                               removed, T040a), disk/ (the disk-headroom records of its container
                                calls) and the run copies secrets.baseline (T040a) and, for a
-                               `--repo` run, exceptions.tsv re-keyed to that repository (T042a)
+                               `--repo` run, exceptions.tsv re-keyed to that repository (T042a);
+                               for a merge integration (revision 13, tasks.md T040, T042):
+                               merge.json, the merge record (repository, tip, local tip, run id)
+                               written before `git merge` starts, so a merge that a killed run left
+                               in progress is attributed to that run; backup/, the §9.2 backup: the
+                               bundle backup/<repository key>.bundle of the local range (`git bundle
+                               create ... <branch> ^<tip>`, accepted by `git bundle verify`) and
+                               backup/worktree/, a copy of every uncommitted file of the repository
+                               with its sha256; and, for a merge refused with merge_conflict,
+                               conflicts/<path>, each conflicting file with its markers
+  merge-resolution/<run_id>/   the resolution of a merge that the run <run_id> refused with
+                               merge_conflict (revision 13, tasks.md T040, T042): written by the
+                               resolver, on Opus at xhigh (§11.4.211), from that run's conflicts/,
+                               never by a `git merge` in the shared working tree: resolution.json
+                               (the tip, the conflicting paths, the resolver's model and effort and
+                               the sha256 of each resolved file) and one resolved file per path; a
+                               later `--resolve-merge <dir>` run only reads it, and any other
+                               directory is refused (20, resolution_dir_invalid)
   pending_pins.tsv             submodule HEAD moves not yet committed in the parent (repository path
                                from the main root, new HEAD sha, run id; one row per repository; an
-                               absent file means no rows). Writers (revision 12): a `--repo <path>`
-                               commit (tasks.md T042a); a fast-forward that moves a submodule HEAD
-                               without a commit (the WP-55 layer moves T436 to T439 and T579a),
-                               through the reviewed helper `scripts/repo/record_pending_pin.sh
-                               --record` / `--remove` (T435a) under the commit-push lock, a rollback
-                               updating the row through the same helper; tasks.md rev 9 T042a also
-                               names an integrate-only `--repo` run for that case, and which of the
-                               two is the single writer is left with the tasks.md owner. A later
+                               absent file means no rows). Two writers with disjoint moves (revision
+                               13, tasks.md T042a, T435a): a `--repo <path>` run records only the
+                               moves the commit-push script itself makes in that repository (a
+                               commit, an S1 fast-forward or an S1 merge, an integrate-only run
+                               included); a move made outside the script to a reviewed target (the
+                               WP-55 layer fast-forwards T436 to T439, the late catch-up T579a, the
+                               constitution fast-forward and engine checkouts of T580b) is made with
+                               its row decision in one hold of the commit-push lock by the reviewed
+                               helper `scripts/repo/record_pending_pin.sh` (`--ff <path> <sha>`; its
+                               rollback `--rollback <path> <old>` with the `--after-rollback`
+                               decision, which restores the row of an earlier `--repo` commit the
+                               module returns to and removes the row when HEAD equals the gitlink;
+                               `--sync-third-party` for a nested third-party checkout, which writes
+                               no row; `--record` and `--remove`); a helper call refused because
+                               the lock is held moves nothing and is re-run (revision 12 left the
+                               choice of writer open, which tasks.md rev 10 settled). A later
                                move of the same repository replaces its row; a pointer commit whose
                                gitlink equals, or descends from, the row's sha (a main-repository
                                run, or a `--repo <parent>` run for a nested repository such as a
@@ -706,6 +744,10 @@ ignored `.audit/` directory at the repository root, which is not part of `$EV`:
                                (the runner of tasks.md T003; revision 11)
   verify/<run_id>/             the final `--strict` verifier reports (tasks.md T582, T595b), kept
                                out of the tracked tree they prove clean (revision 11)
+  wp73/t581/<run_id>/          a byte copy of each T581 run's report.json and verify.json with its
+                               sha256, made right after the run and before the next one starts, so
+                               the retention sweep of a later run cannot remove a record before
+                               T582 captures it (tasks.md T581, T582; revision 13)
 ```
 
 Rules for these outputs:
@@ -723,17 +765,35 @@ Rules for these outputs:
    local commit without that trailer that no remote holds is refused at S1 (20,
    `unrecorded_local_commit`), so it is never named and never hidden; a merge commit made by hand is
    such a commit. A repository that has diverged from its remote is integrated by the script itself
-   (revision 12, docs/21 IC-49, the plan owner's rule after the review of commit `b9412d06`): under
-   the lock and after a §9.2 backup it merges the live remote tip with `git merge --no-ff` (never a
-   rebase, a reset or a force); that merge commit carries `CPA-Run:` and one `Foreign-Commit:` line
-   per trailer-less remote commit it brings in, and it is a held commit (`Awaits-Review:`) when it
-   resolves conflicts (constitution §11.4.211, Opus at xhigh) or merges into a held range. A
-   verdict path is always read from the main repository: a held commit is pushed only once its
-   verdict is committed in the main repository's HEAD with `verdict: GO` and its `covers_runs`
-   names the held commit's run, and a hold on a verdict file that already holds GO is refused (20,
-   `verdict_already_go`). The other refusals with 20 that change nothing: a held path below a
-   submodule's gitlink in a main-repository run (`hold_in_submodule`, S0) and a change-set gitlink
-   to a commit that some remote of that submodule lacks (`pin_not_on_remote`, S1).
+   (revision 12, docs/21 IC-49, the plan owner's rule after the review of commit `b9412d06`;
+   revision 13, docs/21 IC-53, tasks.md T040 to T042): under the lock and after the §9.2 backup
+   under `backup/` it merges the newest live remote tip, the one that descends from every other
+   live tip (12, `remotes_diverged`, when none does), with `git merge --no-ff` (never a rebase, a
+   reset or a force); that merge commit carries `CPA-Run:` and one `Foreign-Commit:` line per
+   trailer-less remote commit it brings in, and when it merges into a held range or resolves
+   conflicts it is held on its own merge-review file `$EV/reviews/CPA-merge-<run_id>.json`, never
+   on the verdict the held range awaits. A merge with a conflict is refused (12, `merge_conflict`):
+   the conflicting files are copied under `conflicts/`, the merge is aborted and HEAD and the
+   tracked files are left unchanged; the merge is then made only by a later `--resolve-merge <dir>`
+   run from the resolution folder above (12 `merge_target_moved` when the tip moved, 20
+   `merge_resolver_not_pinned` when the record names anything but Opus at xhigh), and such a merge
+   is always held. A merge left in progress (`MERGE_HEAD` present) is refused at S0 (20,
+   `merge_in_progress`), the report naming the run whose `merge.json` names the same tip and the
+   remediation: `git merge --abort`, then a comparison of the uncommitted files with that run's
+   `backup/worktree/` sha256 list; the sweep reports it and never resolves it. Stage S6 pushes a
+   prefix to a remote only when that remote's live tip is an ancestor of the prefix tip (otherwise
+   that remote gets no push call, 11, `remote_moved_since_s1`), and pushes nothing below an
+   unreleased merge commit to any remote. A verdict path is always read from the main repository:
+   a held commit is pushed only once its verdict is committed in the main repository's HEAD with
+   `verdict: GO` and its `covers_runs` names the held commit's run; a hold on a verdict file that
+   already holds GO, in that HEAD or in the same declared change set, and a change to such a file
+   are refused (20, `verdict_already_go`), and a GO that does not list every held commit awaiting
+   its file is refused before it is committed (20, `verdict_covers_incomplete`, which keeps the
+   held NO-GO revert of the tasks.md P0-P1 conventions safe). The other refusals with 20 that
+   change nothing: a held path below a submodule's gitlink in a main-repository run
+   (`hold_in_submodule`, S0), a change-set gitlink to a commit that some remote of that submodule
+   lacks (`pin_not_on_remote`, S1) and a resolution folder at any other path
+   (`resolution_dir_invalid`).
 3. A task that needs a run's result as evidence (its report, its verifier JSON) records it itself
    through the evidence recorder: an `ev/1` entry that cites `.audit/commit-push/<run_id>/report.json`
    by sha256, with the bytes stored as `$EV/blobs/<sha256>`. The entry and the blob belong to that
@@ -752,25 +812,57 @@ Rules for these outputs:
    change the citation), or records `report_sha256: null` with a reason when HEAD is not a
    commit-push commit or the report is absent on this host (revision 12, the rule of the tasks.md
    abbreviation table and docs/02 §12.1 revision 7; revision 11 said "the latest run report").
-5. The run folders are working files, not evidence. The anti-mess sweep removes a finished one past
-   the retention bound of `scripts/repo/commit_push.conf` (`retain_runs` and `retain_days`, reviewed
-   data; tasks.md T042, WP-08), which loses nothing cited, because a cited report is already a blob
-   under `$EV`; a folder a killed run left without its report is listed as interrupted and kept.
+5. The run folders are working files, not evidence. The anti-mess sweep removes a finished one only
+   when it is both beyond the newest `retain_runs` run folders and older than `retain_days`
+   (`scripts/repo/commit_push.conf`, reviewed data; tasks.md T042, T090; revision 13: a folder that
+   either bound keeps is kept, so a burst of runs never removes a folder younger than `retain_days`
+   before its caller has captured its run record), which loses nothing cited, because a cited
+   report is already a blob under `$EV`; a folder a killed run left without its report is listed
+   as interrupted and kept, and one that also holds `merge.json` while its repository has
+   `MERGE_HEAD` is reported as an interrupted merge with the remediation of rule 2.
 
 **Shared stores (revision 10).** `ledger.jsonl`, `anchors.jsonl`, `blobs/` and `deferrals.jsonl` are
 written by several tools (the evidence recorder, a task that records a deferral). Each line or blob is
 an ordinary member of the change set of the task that wrote it. The commit-push script refuses a file
 in these stores only by its general rule for any file: untracked or modified, and not in the declared
-change set of the run. Byte-exact stores and the S3 checks (revision 12, docs/21 IC-50, the plan
-owner's rule after the review of commit `b9412d06`): a blob is named by its sha256, a ledger or anchor
-line is chained by its hash, and a captured transcript must stay the bytes the tool wrote, so none of
-them can be "fixed" by a whitespace or end-of-file rewrite without breaking its own proof. The stage S3
-checks taken from `.pre-commit-config.yaml` therefore carry that file's `files`/`types` filters and a
-reviewed exemption list (path class, exempted checks, reason): `$EV/blobs/`, the append-only stores
-`ledger.jsonl`, `anchors.jsonl` and `deferrals.jsonl`, and the captured transcripts are exempt from
-`trailing-whitespace` and `end-of-file-fixer`; the large-file check exempts a blob only as tasks.md
-T040 states (named by a ledger entry, the documented OD-76 partial-proceed); the register database
-has its own size bound (docs/04 §12.1 R-9).
+change set of the run. Byte-exact stores and the S2 and S3 checks (revision 12, docs/21 IC-50;
+revision 13, docs/21 IC-52, the plan owner's rule (V) after the round-10 reviews, tasks.md T040b): a
+blob is named by its sha256, a ledger or anchor line is chained by its hash, and a captured transcript
+must stay the bytes the tool wrote, so none of them can be "fixed" by a whitespace or end-of-file
+rewrite without breaking its own proof. Which S2 or S3 check applies to a committed file is decided
+by its class in the reviewed path-class table `scripts/repo/check_exemptions.tsv` (path glob from the
+main-repository root to class) and that class's per-check rows in `scripts/repo/check_classes.tsv`,
+read through `scripts/repo/check_class.sh`, never by an exemption written into a task; a path that no
+row names is class `source` (every check, 1,024,000 B). Three classes cover this layout:
+
+- `evidence`: `ledger.jsonl`, `anchors.jsonl`, `deferrals.jsonl`, `blobs/*`, every `*.json`,
+  `*.jsonl`, `*.txt` and `SHA256SUMS` under `$EV` and `$AUD` (verdicts, run records, manifests,
+  findings, transcripts) and every file that a `SHA256SUMS` line of its own folder names; the secret
+  fold, the private-key check, `check_json` and `check_yaml` apply, while the whitespace,
+  end-of-file, conflict-marker, revision-header, ratchet and language checks do not (a captured
+  transcript may show conflict markers); 1,024,000 B, except a blob `blobs/<sha256>` whose content
+  hashes to its name and that a ledger entry names, which has no bound and is listed in the run
+  result as an OD-76 owed relocation (the documented partial-proceed); an authored note
+  `$EV/**/*.md` stays class `source`;
+- `generated`: `docs/workable_items.db` and `docs/register/**`, written only by the register engine
+  and `sqlite3` through `locked.sh`: the secret fold (on the database through the dump declared in
+  the same change set), the private-key, conflict-marker, `check_json` and `check_yaml` checks apply,
+  while the whitespace, end-of-file, revision-header, ratchet and language checks do not, because the
+  bytes are the engine's and are never normalised; 16,777,216 B (16 MiB) per file, the one
+  register bound (docs/04 §12.1 R-9);
+- `patches`: `$AUD/patches/*.patch`, applied byte for byte by `git apply` in both audit runs and
+  hashed in both manifests (docs/02 §12.1): the secret fold, the private-key check and the
+  conflict-marker check (which cannot fire on a well-formed diff) apply, while the whitespace and
+  end-of-file checks do not, because a `git diff` writes a blank context line as a single space, nor
+  the Markdown and code checks; 1,024,000 B.
+
+No class exempts a file from the S2 secret fold. The fold's baseline filter
+`--exclude-secrets '^([0-9a-f]{40}|[0-9a-f]{64})$'`, recorded in the baseline's `filters_used`
+(tasks.md T040a), excludes only a value that is exactly 40 or 64 lowercase hex characters, so the bare
+commit shas, fingerprints and sha256 values that every record of this layout carries pass, while a
+fake secret assembled at run time in the same file still gives 13; its honest boundary, a credential
+that is itself a bare 40- or 64-hex string, is covered by the WP-35 secret and history scan, which
+runs without the filter.
 
 **Deferral rows (revision 10).** `deferrals.jsonl` is append-only. Each row carries an id, and a row is
 never edited. A deferral is closed by appending a closing row that names the id of the row it closes

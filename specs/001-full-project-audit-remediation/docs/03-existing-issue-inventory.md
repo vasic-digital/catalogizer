@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 2: the root report set re-counted and enumerated by name in section 5.10: 49 root Markdown files are 6 governance files, 2 onboarding files and 41 report, plan and status files; 9 of the 41 have their own source rows (S-03, S-04, S-06, S-07, S-09, S-25) and the other 32 form S-12, which replaces the earlier estimate "about 36") |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 3: step 5 of section 10 and DR-3 follow the bounded description policy of tasks.md T163 and T168 (rev 11), which the one register bound of 16 MiB needs (document 16 §12.2.6, document 04 R-9): every item description the importer writes, its Sources block included, is at most 2,048 bytes, cut on a UTF-8 character boundary and marked as cut, and the full ticket text, or the per-step list of a bank file, stays in the source file that the Sources block cites by path and sha256. Revision 2: the root report set re-counted and enumerated by name in section 5.10: 49 root Markdown files are 6 governance files, 2 onboarding files and 41 report, plan and status files; 9 of the 41 have their own source rows (S-03, S-04, S-06, S-07, S-09, S-25) and the other 32 form S-12, which replaces the earlier estimate "about 36") |
 | Feature | specs/001-full-project-audit-remediation |
 | Traces to | FR-001, FR-002, FR-003, FR-004, FR-007, FR-008, SC-001 (also touches FR-013, FR-022, SC-002) |
 | Constitution anchors | 11.4.15, 11.4.16, 11.4.54, 11.4.55, 11.4.90, 11.4.93, 11.4.95, 11.4.115(F), 11.4.146(D3), 11.4.148, 11.4.202, 11.4.208, 11.4.214, 11.4.226, 11.4.227, 11.4.261 |
@@ -430,7 +430,7 @@ The procedure is deterministic, restartable and idempotent: the same input commi
 
 **Step 4 - Lead scan over all tracked Markdown (2,514 files).** A scripted pass lists lines matching a closed lead vocabulary (unfinished, not implemented, stub, missing, broken, known issue, workaround, deprecated, disabled, skipped, TODO, FIXME, regress, outstanding, pending, "not yet"). Each lead is a `claim` row. Leads inside the already-structured sources are marked duplicates of those rows. The lead scan has a control needle: a known present phrase from `docs/LANDMINES.md` must be found by the same command before any zero is believed (11.4.201(7)(b)).
 
-**Step 5 - Item creation by an importer (one actor).** A scripted importer creates register items for IMPORT rows via `workable-items add <type> <severity> --db <p> --title <T> --description <D> --prefix ATM`. The description MUST meet the 11.4.91 floor and carry a **Sources** block listing every `src_id`. The importer MUST NOT set a closed status (section 8.2).
+**Step 5 - Item creation by an importer (one actor).** A scripted importer creates register items for IMPORT rows via `workable-items add <type> <severity> --db <p> --title <T> --description <D> --prefix ATM`. The description MUST meet the 11.4.91 floor and carry a **Sources** block listing every `src_id`. The importer MUST NOT set a closed status (section 8.2). Revision 3 (tasks.md T163, T168, rev 11; document 16 §12.2.6): the description, its Sources block included, is at most 2,048 bytes, cut on a UTF-8 character boundary and marked as cut, and the full ticket text stays in the source file that the Sources block cites by path and sha256 (726 of the 1,778 tracked tickets are longer than the cap). The cap exists because the register engine stores every description twice (`items.description` and `body_md`), and 2,010 items carrying their whole ticket text measured 18,804,736 B in a scratch database, above the one register bound of 16 MiB that the commit-push script's large-file check applies to `docs/workable_items.db` and to every file under `docs/register/`, while the same items under the cap measured 9,162,752 B (tasks.md T040b, measured for its rev 11).
 
 **Step 6 - Judgement passes (agents, one actor per pass).**
 1. Claim-verify pass over `CLAIM-VERIFY` rows: confirm or refute with the code indexes and file reads, citing path and line.
@@ -685,7 +685,7 @@ Decision records (proposed defaults, reversible, the plan owner may overturn):
 
 - **DR-1 Id prefix and DB location.** Use `ATM` (constitution wording, 11.4.54) via `--prefix ATM`, and place the tracked DB and generated trackers under a project-declared path (declare once, 11.4.35; candidate `docs/tracking/`; UNCONFIRMED, not created). Rejected: default prefix `WIT` (not the constitutional ATM), and reusing `HELIX-NNN` (not unique).
 - **DR-2 Closed legacy tickets enter as Queued or Ready for testing, never as closed.** Rejected: importing 1,777 closed tickets as Fixed, because 1,111 lack evidence and FR-008/FR-022 forbid unproven closure.
-- **DR-3 Bank placeholders are tracked per bank file, not per step.** Rejected: one item per step (1,178 items with identical text and no distinct acceptance); per-case items. The per-step list stays in the item description and in the provenance table, so nothing is dropped.
+- **DR-3 Bank placeholders are tracked per bank file, not per step.** Rejected: one item per step (1,178 items with identical text and no distinct acceptance); per-case items. The per-step list stays in the provenance table and in the bank file that the item's Sources block cites by path and sha256, and the item description carries it only within its 2,048-byte cap (revision 3, tasks.md T168), so nothing is dropped.
 - **DR-4 Known Conflicts DECIDED items are imported as completed decision records.** They are the owner's decisions and part of the audit trail; omitting them would violate "nothing dropped".
 - **DR-5 Provenance table is a separate SQLite table, not new columns on `items`.** Rejected: altering the constitution's schema (it is a shared submodule; changes go upstream by extension, 11.4.74).
 
