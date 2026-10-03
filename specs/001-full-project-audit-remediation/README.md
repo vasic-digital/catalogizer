@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: "How to read" note and the phase and work-package table from docs/21 revision 7; counts re-taken from docs/21 revision 7; reachability note updated) |
+| Status | draft (revision 3: counts re-taken from docs/21 revision 8 (254 plan-document seeds); the task count stated (595 numbered tasks, ids T001 to T595 frozen, later tasks with suffix ids); the task-id citation rule added to "How to read"; reachability note updated to the committed root link. Revision 2: "How to read" note and the phase and work-package table from docs/21 revision 7; counts re-taken from docs/21 revision 7; reachability note updated) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Purpose | Entry point of this specification folder: every document in it is linked from this page, grouped by role, so each one is reachable by following links (spec FR-013, SC-006; constitution §11.4.212) |
-| Reachability note | This page is reachable from [spec.md](spec.md) and from [plan.md](plan.md), and the repository's main README links it (README.md line 40, observed 2026-10-03 as an uncommitted working-tree change; it holds only once that change is committed) |
+| Reachability note | This page is reachable from [spec.md](spec.md) and from [plan.md](plan.md), and the repository's main README links it (README.md line 40, committed in `5807ca9f`, read with `git show HEAD:README.md` on 2026-10-03) |
 
 ## Table of contents
 
@@ -36,15 +36,15 @@ Read in this order:
 ### How to read this plan
 
 - **Layers.** [spec.md](spec.md) says what must be true (FR-001 to FR-025, SC-001 to SC-012). [docs/21](docs/21-master-plan-phases-risks-and-traceability.md) turns documents 01 to 20 into phases, work packages, owner decisions and risks, and maps every requirement to evidence (its section 6). [tasks.md](tasks.md) breaks each work package into tasks under a heading with the same `WP-nn` id. Documents 01 to 20 hold the detailed method that a work package cites as `docNN §x`; read them for a package, not front to back.
-- **Identifiers.** `WP-nn`: work package (docs/21 section 5). `ODG-nn`: grouped owner decision (docs/21 section 8). `OD-nn`: one of the 79 finer owner decisions in [research.md](research.md); a different id space from `ODG-nn` (docs/21 IC-34). `IC-nn`: an inconsistency between documents and its resolution (docs/21 section 10). `Tnnn`: a task in tasks.md. `R-nn` is a risk in docs/21 section 7 but a research decision in research.md, so a citation across documents is written `docNN:ID` (docs/21 IC-19).
+- **Identifiers.** `WP-nn`: work package (docs/21 section 5). `ODG-nn`: grouped owner decision (docs/21 section 8). `OD-nn`: one of the 79 finer owner decisions in [research.md](research.md); a different id space from `ODG-nn` (docs/21 IC-34). `IC-nn`: an inconsistency between documents and its resolution (docs/21 section 10). `Tnnn`: a task in tasks.md; the ids T001 to T595 are frozen from tasks.md revision 6, a task added later takes a suffix id placed where it belongs (for example T039a), and a citation in another document always names the current id (checked by the task-id citation check of docs/21 section 12.7, which a planted stale id fails). `R-nn` is a risk in docs/21 section 7 but a research decision in research.md, so a citation across documents is written `docNN:ID` (docs/21 IC-19).
 - **Disagreements.** Where two documents disagree, docs/21 section 10 records both values and the resolution. A value the plan could not settle is marked `UNCONFIRMED:`, and the work package that measures it owns the answer.
 - **Paths.** `$AUD` is `specs/001-full-project-audit-remediation/audit` and `$EV` is `specs/001-full-project-audit-remediation/evidence` (docs/06 section 11). Neither exists yet.
 - **Claims.** Nothing in this folder reports work as done. Every acceptance needs machine-produced evidence from the work itself (docs/06, spec FR-022 and SC-012). Owner decisions block the work they name until answered (docs/21 planning rule 6).
-- **Counts.** Every count is a point-in-time value of 2026-10-03 and is re-measured by the work package that relies on it. The number of tasks is in the tasks.md header.
+- **Counts.** Every count is a point-in-time value of 2026-10-03 and is re-measured by the work package that relies on it. tasks.md revision 6 has 595 numbered tasks, T001 to T595; tasks added later carry suffix ids, so count the task lines of tasks.md for the current total.
 
 ### Phases and work packages
 
-From docs/21 revision 7, sections 3.1 and 11.2. Tasks: see the tasks.md header.
+From docs/21 revision 8, sections 3.1 and 11.2. Tasks: 595 numbered tasks in tasks.md revision 6 (T001 to T595), plus any suffix-id tasks added later.
 
 | Phase | Name | Work packages | Count |
 |---|---|---|---:|
@@ -65,7 +65,7 @@ From docs/21 revision 7, sections 3.1 and 11.2. Tasks: see the tasks.md header.
 | [spec.md](spec.md) | Feature specification (clarified) |
 | [checklists/requirements.md](checklists/requirements.md) | Specification quality checklist |
 | [plan.md](plan.md) | Implementation plan |
-| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5; the task count is in its header) |
+| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5; 595 numbered tasks T001 to T595 at revision 6, ids frozen, later tasks with suffix ids) |
 
 ## 3. Design artifacts
 
@@ -161,16 +161,16 @@ These do not exist yet; tasks.md creates them and this index will link their ent
 
 ## 8. Counts at a glance
 
-Taken from docs/21 revision 7 (section 1.3); each is re-measured by the work package that relies on it.
+Taken from docs/21 revision 8 (section 1.3); each is re-measured by the work package that relies on it.
 
 | Quantity | Value |
 |---|---|
 | Phases / work packages / streams | 8 / 53 / 13 |
-| Tasks | see the tasks.md header |
+| Tasks | 595 numbered (T001 to T595, tasks.md revision 6, ids frozen); suffix-id tasks added later are counted from tasks.md itself |
 | Cross-document inconsistencies resolved or tracked | 41 (IC-01 to IC-41, docs/21 section 10) |
 | Risks | 34 |
 | Grouped owner decisions | 40 (ODG-01 to ODG-40), plus 16 ungrouped `research.md` decisions (docs/21 section 8.6) |
 | Owner decisions in `research.md` | 79 (OD-01 to OD-79) |
-| Plan-document seed findings | 253 itemised, at most 198 register items after duplicate families |
+| Plan-document seed findings | 254 itemised, at most 198 register items after duplicate families |
 | doc18 innovation entries tracked as Feature items | 34 |
 | Repositories | 98 (the main repository and 97 submodules: 44 direct, 53 nested) |

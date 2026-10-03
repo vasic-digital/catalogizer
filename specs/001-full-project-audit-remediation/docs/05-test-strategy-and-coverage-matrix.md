@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -543,7 +543,7 @@ check.
    `$EV/coverage_baseline/<app>/baseline.json` (`$EV` = `specs/001-full-project-audit-remediation/evidence`) through the
    evidence recorder (document 06). The record is produced by the measuring harness, never edited.
    Revision 3: not `evidence/coverage/<app>/`, which the unanchored `coverage/` rule at `.gitignore:139` ignores at any depth,
-   so a baseline there would never be committed (docs/21 IC-38; tasks.md T003 keeps `$EV/coverage/` ignored on purpose).
+   so a baseline there would never be committed (docs/21 IC-38; tasks.md T004 keeps `$EV/coverage/` ignored on purpose).
 4. Commit the record. The baseline commit hash is the reference for the ratchet.
 
 Baseline record, with illustrative values only (NOT EXECUTED; the numbers are placeholders):
@@ -1010,11 +1010,11 @@ test-first artifact is a paired mutation set: remove a ledger record (cell must 
 verdict line (the chain check must fail, document 06), mark an applicable type n/a without a reason
 (the gate must refuse), and a golden-false case (a complete matrix must pass).
 
-### 13.4 Cross-cutting applicability: translation and i18n, accessibility (revision 3)
+### 13.4 Cross-cutting applicability: translation and i18n, accessibility (revisions 3 and 4)
 
 Two concerns cut across the fifteen types and had no explicit applicability record. Both are recorded here as data for the applicability map (section 13.2) under a `cross_cutting` key, and both are owned by docs/21 WP-61 (absent test types) for the authoring and by WP-70 for the final matrix gate.
 
-**Translation and i18n.** Measured on 2026-10-03 by reading the manifests and resource trees: no internationalisation library is declared in `catalog-web/package.json`, `catalogizer-desktop/package.json`, `installer-wizard/package.json` or `Website/package.json` (a case-insensitive search for `i18n`, `intl`, `locali`, `lingui`, `formatjs` returns 0 in each); `catalogizer-android` and `catalogizer-androidtv` have only the default `res/values` folder and no locale-qualified `values-*` folder. The server has `catalog-api/internal/handlers/localization_handlers.go` with its test file; document 01 §3.1 records that these handlers register on a `mux.Router`, and whether they are reachable in the running server is `UNCONFIRMED:`. The translation mandates (11.4.255 HelixTranslate pipeline, 11.4.256 independent per-language review, 11.4.237 context-and-spirit review) bind translated content, and none was found.
+**Translation and i18n.** Measured on 2026-10-03 by reading the manifests and resource trees: no internationalisation library is declared in `catalog-web/package.json`, `catalogizer-desktop/package.json`, `installer-wizard/package.json` or `Website/package.json` (a case-insensitive search for `i18n`, `intl`, `locali`, `lingui`, `formatjs` returns 0 in each); `catalogizer-android` and `catalogizer-androidtv` have only the default `res/values` folder and no locale-qualified `values-*` folder. The server has `catalog-api/internal/handlers/localization_handlers.go` with its test file; document 01 §3.1 records that these handlers register on a `mux.Router`, and whether they are reachable in the running server is `UNCONFIRMED:`. The translation mandates (11.4.255 HelixTranslate pipeline, 11.4.256 independent per-language review, 11.4.237 context-and-spirit review) bind translated content, and none was found in A1 to A9. Revision 4 (file-name search of every submodule's `git ls-files` for `i18n`, `locale`, `translation` and `values-<locale>` paths, 2026-10-03, outside vendored `tools/opensource` trees): several Go shared modules (A10) carry an i18n seam `pkg/i18n` with an English bundle only, and two governance and QA modules (A12) carry translated bundles, `submodules/containers/pkg/i18n/bundles/` (`de`, `fr`, `ja`, `sr`, `zh` besides `en`; 6 files, 103 lines) and `submodules/doc_processor/pkg/i18n/bundles/active.sr.yaml`.
 
 | Application | Translation and i18n | Reason and evidence | What would change it |
 |---|---|---|---|
@@ -1024,9 +1024,11 @@ Two concerns cut across the fifteen types and had no explicit applicability reco
 | A5 android, A6 tv | n/a | only `res/values`, no `values-<locale>` folder | a `values-<locale>` folder makes translation review mandatory and adds locale and right-to-left layout checks |
 | A7 api-client | n/a | a library with no user-facing strings | none |
 | A8 Website | n/a | no locale configuration found in its manifest | a translated site version |
-| A9 Build, A10, A11, A13 | n/a | no user-facing text; A11 React modules render text supplied by A2 | an A11 module that ships its own strings |
+| A9 Build, A11, A13 | n/a | no user-facing text; A11 React modules render text supplied by A2; A13 is test and harness code | an A11 module that ships its own strings |
+| A10 Go shared modules | n/a | revision 4: an i18n seam (`pkg/i18n` translator code) exists in several modules, with an English bundle only (`active.en.yaml` in `middleware`, `observability`, `storage`, `streaming` and `watcher`); no translated bundle found | a non-English bundle in a module, which makes the translation mandates apply in that module's own repository (FR-006) |
+| A12 governance and QA modules | open | revision 4: translated bundles exist in `submodules/containers` (`de`, `fr`, `ja`, `sr`, `zh`) and `submodules/doc_processor` (`sr`); `helix_qa`, `challenges`, `vision_engine`, `llm_orchestrator` and `llm_provider` carry English bundles only; whether the translated bundles came through the 11.4.255 pipeline with the 11.4.256 and 11.4.237 reviews is `UNCONFIRMED:` | the docs/21 WP-34 audit row of each of the two modules records the provenance and review of its bundles; any fix lands in that module's own repository (FR-006) |
 
-Every n/a above is reviewable (an n/a that hides an applicable concern is the SC-004 bluff of section 13.2), and the A1 row stays open until WP-30 records the reachability result.
+Every n/a above is reviewable (an n/a that hides an applicable concern is the SC-004 bluff of section 13.2), the A1 row stays open until WP-30 records the reachability result, and the A12 row stays open until the two WP-34 audit rows record the provenance of the translated bundles.
 
 **Accessibility (WCAG 2.2 level AA).** The UX type (section 2, row 13) is closed for a user-facing application only when its accessibility checks pass. Automated tools find part of the WCAG failures, so every application also gets a scripted manual walkthrough whose result is recorded as evidence (human oracle, section 2), and neither part substitutes for the other. Document 18 T9-A (checklist) and T9-B (TV focus restoration) are the sources of the items below.
 
@@ -1038,8 +1040,9 @@ Every n/a above is reviewable (an n/a that hides an applicable concern is the SC
 | A6 tv | the same instrumented checks where the TV components support them | D-pad walkthrough: focus order, focus always visible, and focus restored to the originating item after returning from a detail screen (a test that fails when focus is lost, document 18 T9-B) | 10-foot readability, remote-only navigation |
 | A8 Website | axe-core and the Lighthouse accessibility category per page in three engines (11.4.190) | keyboard walkthrough of navigation and search | none |
 | A11 React modules | axe-core in component tests with a real DOM | none beyond A2, which renders them | none |
+| A12 governance and QA modules | open (revision 4): HelixQA tracks two operator web pages, `submodules/helix_qa/docs/website/challenges-dashboard/index.html` and `docs/website/ticket-viewer/index.html`; whether they are a website the project ships (11.4.190) or QA tooling outside this matrix is recorded on the `submodules/helix_qa` audit row of docs/21 WP-34, and any check lands in that repository (FR-006) | none until that row decides | none |
 
-Each automated check ships with its paired mutation (for example, remove an `aria-label` or the focus-restoration call; the check must fail), and each manual walkthrough is recorded with screen captures and the vision oracle where the UI is not introspectable (11.4.117, 11.4.193). A1, A7, A9, A10 and A13 have no user interface: accessibility is n/a for them with that reason.
+Each automated check ships with its paired mutation (for example, remove an `aria-label` or the focus-restoration call; the check must fail), and each manual walkthrough is recorded with screen captures and the vision oracle where the UI is not introspectable (11.4.117, 11.4.193). A1, A7, A9, A10 and A13 have no user interface: accessibility is n/a for them with that reason; A12 is open as its row states.
 
 Applicability-map entries added by this section (NOT EXECUTED; proposal for owner review):
 
@@ -1053,9 +1056,16 @@ cross_cutting:
     catalogizer-android: {status: na, reason: "only res/values"}
     catalogizer-androidtv: {status: na, reason: "only res/values"}
     website: {status: na, reason: "no locale configuration"}
+    catalogizer-api-client: {status: na, reason: "library with no user-facing strings"}
+    build: {status: na, reason: "no user-facing text"}
+    go-modules: {status: na, reason: "i18n seam with English bundles only; no translated bundle (revision 4)"}
+    ts-react-modules: {status: na, reason: "render text supplied by catalog-web"}
+    governance-qa-modules: {status: open, reason: "translated bundles in containers (de, fr, ja, sr, zh) and doc_processor (sr); pipeline and review provenance UNCONFIRMED (WP-34)"}
+    harness: {status: na, reason: "test and harness code, no user-facing text"}
   accessibility_wcag22_aa:
     applies: [catalog-web, catalogizer-desktop, installer-wizard, catalogizer-android, catalogizer-androidtv, website, ts-react-modules]
-    na: {catalog-api: "no user interface", catalogizer-api-client: "library", build: "no user interface"}
+    na: {catalog-api: "no user interface", catalogizer-api-client: "library", build: "no user interface", go-modules: "no user interface", harness: "no user interface"}
+    open: {governance-qa-modules: "HelixQA operator web pages; 11.4.190 scope decided on the WP-34 row"}
 ```
 
 ## 14. Decision records

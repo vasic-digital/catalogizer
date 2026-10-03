@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 3: the per-run `findings.index.jsonl` is defined as a timestamp-free projection of the per-finding files and is not a `finding/1` record (§9); the golden files are named as tasks.md uses them, `$AUD/golden.json` for the G-CG and G-LU questions and `$AUD/lumen_golden_60.json` for `lumen_verify.sh` (§4.4, §15 session 5); no audit output is written under a directory named `out/`, which `.gitignore:112` ignores at any depth (§15 sessions 4 and 5, §17); the submodule count is measured (97 recursively); revision 2: audit outputs written as `$AUD/...` and evidence blobs as `$EV/blobs/<sha256>`, consistent with tasks.md and document 06 §11) |
+| Status | draft (revision 4: task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen (the golden set is authored by T023; the gitleaks redaction wrapper is WP-35's, T263 and T264); the six F-INDEX findings labelled one by one in §2.1 (004 and 005 were only implied by a range); revision 3: the per-run `findings.index.jsonl` is defined as a timestamp-free projection of the per-finding files and is not a `finding/1` record (§9); the golden files are named as tasks.md uses them, `$AUD/golden.json` for the G-CG and G-LU questions and `$AUD/lumen_golden_60.json` for `lumen_verify.sh` (§4.4, §15 session 5); no audit output is written under a directory named `out/`, which `.gitignore:112` ignores at any depth (§15 sessions 4 and 5, §17); the submodule count is measured (97 recursively); revision 2: audit outputs written as `$AUD/...` and evidence blobs as `$EV/blobs/<sha256>`, consistent with tasks.md and document 06 §11) |
 | Feature | specs/001-full-project-audit-remediation |
 | Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit` (every audit output of this document, including one file per finding `$AUD/findings/<FND-NNNN>.json` and the per-run index `$AUD/runs/<run>/findings.index.jsonl`); `$EV` = `specs/001-full-project-audit-remediation/evidence`, whose blob store `$EV/blobs/<sha256>` (document 06 §11) holds every evidence artifact a finding cites. Commands below run from the repository root with `AUD` and `EV` set to those paths |
 | Requirements covered | FR-005, FR-006, FR-007, FR-008, FR-010, FR-022, FR-023, SC-002 (supports FR-001, FR-003, FR-009, FR-016) |
@@ -88,7 +88,7 @@ Facts and gaps found:
 - The index lives at `.codegraph/codegraph.db` (about 502 MB). `.codegraph/.gitignore` ignores everything but itself, so the index is a host-local artefact, not committed.
 - `.codegraph/` contains NO `config.json`. §11.4.78 clauses 2 and 9 require scope to be a generated artefact from a scope DATA file, and §11.4.79 step 2 refers to `.codegraph/config.json` exclusions. Neither a scope DATA file (schema `submodules/constitution/scripts/codegraph/scope.example.yaml`) nor a rendered scope exists in the repo (searched tracked files: zero matches for scope/lumenignore YAML). Consequence: what the installed CLI actually includes was decided by engine defaults. This is finding-class "misalignment with §11.4.78(8)(9)" and MUST be recorded as audit finding F-INDEX-001 before reliance on the index (index health step H3 below proves coverage empirically instead).
 - No `.mcp.json` at the repo root (`cat .mcp.json` failed). §11.4.78(3) and the 2026-09-25 extension require a project-scoped committed registration of the `codegraph` MCP server through `submodules/constitution/scripts/codegraph/codegraph_mcp_serve.sh` (always `--no-watch`). UNCONFIRMED: that path does not exist in the pinned constitution submodule (`find submodules/constitution -name codegraph_mcp_serve.sh` returns 0); `submodules/constitution/scripts/codegraph/codegraph_mcp.sh` and `codegraph_mcp_preflight.sh` do exist in the pinned submodule as candidate wrappers, to be verified (behaviour, `--no-watch`) before any pin bump; a constitution pointer bump or a project-local wrapper is a precondition. Subagents therefore cannot rely on an MCP server definition. The CLI route (`codegraph explore ...`) works for every agent via Bash and is the route this plan uses; MCP registration is tracked as F-INDEX-002.
-- No `docs/CODEGRAPH.md` (§11.4.78(5)), no `scripts/verify-codegraph.sh`, no `tests/codegraph/` (§11.4.78(4)), no `scripts/codegraph_validate.sh` (§11.4.79 step 4). Each is a finding (F-INDEX-003..005); the audit supplies a substitute proof set in section 4 and these items are fixed in the remediation phase.
+- No `docs/CODEGRAPH.md` (§11.4.78(5)): finding F-INDEX-003. No verification script, neither `scripts/verify-codegraph.sh` (§11.4.78(4)) nor `scripts/codegraph_validate.sh` (§11.4.79 step 4): finding F-INDEX-004. No `tests/codegraph/` (§11.4.78(4)): finding F-INDEX-005 (revision 4: the three ids labelled one by one, matching docs/21 §9.1 and the six findings that tasks.md records). The audit supplies a substitute proof set in section 4 and these items are fixed in the remediation phase.
 - The indexed file count (7,150) is greater than the main repository's tracked file count (4,887 from `git ls-files`) because submodule working trees are checked out and indexed (the main repo tracks 86 paths under `submodules/` as gitlinks/files). Third-party/vendored classification of those submodules is not recorded anywhere; section 4.3 derives it.
 
 ### 2.2 Semantic index (Lumen)
@@ -229,7 +229,7 @@ Expected: one row per submodule at every depth (the main `.gitmodules` has 44 `[
 
 ### 4.4 Golden questions
 
-A pre-declared fixed set, kept in `$AUD/golden.json` (tasks.md T022), written once before the first audit and never edited to fit results (a tampered golden is rejected by hash). Minimum content:
+A pre-declared fixed set, kept in `$AUD/golden.json` (tasks.md T023, which authors it before any audit run), written once before the first audit and never edited to fit results (a tampered golden is rejected by hash). Minimum content:
 
 | Id | Index | Query | Expected | Type |
 |---|---|---|---|---|
@@ -738,7 +738,7 @@ podman run --rm --network=none \
   detect --source /repo --no-banner --report-format json --report-path /out/gitleaks.redacted.json --redact
 test -s "$AUD/secrets/gitleaks.redacted.json" && python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$AUD/secrets/gitleaks.redacted.json"
 ```
-`--redact` keeps secret values out of the report (§11.4.10). The container is rootless (no sudo, no docker). The report goes to `$AUD/secrets/`, not to an `out/` directory: `.gitignore:112` ignores every directory named `out/`, so a report there could never be committed as evidence (revision 3; `git check-ignore` exits 1 for `$AUD/secrets/gitleaks.redacted.json` and 0 for `$AUD/out/gitleaks.json`). The production path is the WP-15 wrapper around the constitution's `gitleaks_run_scan.sh` (tasks.md T245, T246).
+`--redact` keeps secret values out of the report (§11.4.10). The container is rootless (no sudo, no docker). The report goes to `$AUD/secrets/`, not to an `out/` directory: `.gitignore:112` ignores every directory named `out/`, so a report there could never be committed as evidence (revision 3; `git check-ignore` exits 1 for `$AUD/secrets/gitleaks.redacted.json` and 0 for `$AUD/out/gitleaks.json`). The production path is the redaction wrapper around the constitution's `gitleaks_run_scan.sh` that WP-35 builds and runs on the WP-15 scanner harness (tasks.md T263, its redaction proof, and T264, the history scan of every repository).
 
 Session 5: Lumen golden run, NOT EXECUTED.
 

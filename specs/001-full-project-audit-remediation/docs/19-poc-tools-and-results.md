@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: requirement mapping of the repository-state tool corrected to FR-019, FR-020, FR-024 and SC-010 (docs/21 IC-31); new section 11 accounts for every `NOT EXECUTED` marker in the plan set by file and states which document 07 appendix tests remain not executed; nothing is promoted to executed) |
+| Status | draft (revision 3: the section 11.1 task ids remapped to the frozen tasks.md numbering T001-T595 (each matched by task text, not by arithmetic); section 6.1 cites FR-017 and SC-010 for a submodule behind its upstream instead of FR-001 (docs/21 IC-31); section 9 states that `--strict` is the WP-73 final condition only and that routine commit-push S7 runs plain mode with `--fetch`. Revision 2: requirement mapping of the repository-state tool corrected to FR-019, FR-020, FR-024 and SC-010 (docs/21 IC-31); new section 11 accounts for every `NOT EXECUTED` marker in the plan set by file and states which document 07 appendix tests remain not executed; nothing is promoted to executed) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Tools live in | `specs/001-full-project-audit-remediation/poc/` |
 | Related plan documents | 02 (audit method), 07 (backend, section 12), 13 (documentation), 16 (infrastructure and enforcement) |
@@ -185,7 +185,7 @@ dirty: "." (0 tracked, 3 untracked)  -> FAIL;   submodules/helix_qa/tools/openso
 
 * Exit 1 is caused by the main repository: three untracked paths, namely the new plan material (`specs/001-full-project-audit-remediation/docs/`, `plan.md`) and this POC directory. That is the correct, honest result at the time of the run.
 * All 8 remotes of the main repository report `SAME` with local HEAD.
-* `submodules/constitution` has `LOCAL-BEHIND` on all 8 of its remotes (the remote branch is ahead of the pinned local HEAD; ancestry decided because the objects were present locally). This is not a failure by default, it is exactly the state SC-010 and FR-001 care about (a submodule that is not at the tip of its upstream) and shows up as `LOCAL-BEHIND` in the table; `--strict` would fail on it.
+* `submodules/constitution` has `LOCAL-BEHIND` on all 8 of its remotes (the remote branch is ahead of the pinned local HEAD; ancestry decided because the objects were present locally). This is not a failure by default, it is exactly the state SC-010 (matching tips on every upstream) and FR-017 (every submodule updated to its latest upstream) care about (a submodule that is not at the tip of its upstream; revision 3: the earlier FR-001 citation was wrong, and the tool as a whole maps to FR-019, FR-020, FR-024 and SC-010, docs/21 IC-31) and shows up as `LOCAL-BEHIND` in the table; `--strict` would fail on it.
 * `docling` is dirty by one tracked file (`tests/data/uspto/sources/pftaps057006474.txt`); it is the documented exception.
 
 ### 6.2 doc_links result
@@ -251,7 +251,7 @@ Stale spec entries: `GET /api/v1/discovery` and `GET /api/v1/recommendations/tes
 * **repo_verify**: compares branch tips only for owned repositories on a branch; a detached HEAD gets pin and dirtiness only. Remote heads other than the checked-out branch are not compared. `UNREACHABLE` can be a transient network failure; there is no retry. Fetching (`--fetch`) writes objects into `.git`, which is why it is opt-in. The 25 s per-remote timeout bounded the real run to 45 s; a slower network may need `--timeout`.
 * **crawl_links**: static text analysis; no HTML-block Markdown, no setext headings, no generator-specific URL rewriting beyond `--site-root`. The scope is "every `.md`", not the `DOC_SCOPE.yaml` classification planned in document 13, so an in-scope figure of 2,551 includes governance and generated ticket files. Case sensitivity follows the host filesystem (case hints mitigate).
 * **route_drift**: regex extraction (see the caveat block in its README). It cannot see routes added by helpers or loops and counts conditionally registered routes as present. All numbers are leads. The permanent mechanism (document 07, section 12.2) is a test over `gin.Engine.Routes()` and schema validation of real responses; this tool is the cheap cross-check and a regression oracle for that test.
-* **Promotion path**: each tool maps to a planned gate: `verify_repo.sh` to the repository-state gate behind SC-010 (add JSON schema validation and the `--strict` mode in the commit-and-push script), `crawl_links.py` to `G-DOC-REACHABILITY` with `DOC_SCOPE.yaml` filtering and a fingerprint-checked baseline, `route_drift.py` to a seed list for the contract tests. In each case the self-test fixtures become permanent mutation tests (the gate must fail when its negation is injected).
+* **Promotion path**: each tool maps to a planned gate: `verify_repo.sh` to the repository-state gate behind SC-010 (add JSON schema validation; revision 3: `--strict` is the condition of the WP-73 final run only, while the commit-and-push script's routine S7 runs plain mode with `--fetch`, object store only, document 16 §12.2), `crawl_links.py` to `G-DOC-REACHABILITY` with `DOC_SCOPE.yaml` filtering and a fingerprint-checked baseline, `route_drift.py` to a seed list for the contract tests. In each case the self-test fixtures become permanent mutation tests (the gate must fail when its negation is injected).
 * **Containerisation**: the tools are scripts, not builds; they run on the host because they are read-only and bounded (a few seconds, no heavy memory). Plan 16 still requires any promoted version that builds or renders artifacts to run in a rootless container.
 * **Not claimed**: nothing here proves a feature works for an end user; these are consistency and state measurements. Runtime confirmation of POC-F-01 and POC-F-02 is required before they become register entries.
 
@@ -290,11 +290,11 @@ An independent plan-set audit asked for document 07 A.1 and A.2 to be promoted t
 
 | Document 07 entry | Status | Executed first by (tasks.md) |
 |---|---|---|
-| A.1 Auth middleware negative-path test skeleton (Go) | NOT EXECUTED | T210 (WP-30 detection: JWT negative-path suite against the real binary), then T321 (WP-50 negative-path suite from document 15 Appendix A.1) |
-| A.2 SSRF RED test for the image proxy | NOT EXECUTED | T211 (WP-30 detection: SSRF table against real containers with a sink-side listener), then T315 (WP-50 S-01 RED from document 15 Appendix A.2) |
-| A.3 Benchmark skeleton | NOT EXECUTED | T272 (WP-38 Go benchmark baselines) |
-| A.4 Dialect semantic-loss RED test | NOT EXECUTED | T214 (WP-30 database detection: dialect-rewrite tests on real PostgreSQL) |
-| A.5 Scanner behaviour test against a real FTP server | NOT EXECUTED | T339 (WP-51 scanner implementation, BLOCKED-ON ODG-20) and T451 (real FTP, SMB and WebDAV services in the integration suites) |
+| A.1 Auth middleware negative-path test skeleton (Go) | NOT EXECUTED | T227 (WP-30 W2 auth detection: JWT middleware negative-path suite against the real binary), then T344 (WP-50 WS2 negative-path auth suite from document 15 Appendix A.1) |
+| A.2 SSRF RED test for the image proxy | NOT EXECUTED | T228 (WP-30 W3 detection: SSRF table against real containers with a sink-side listener), then T338 (WP-50 S-01 RED from document 15 Appendix A.2) |
+| A.3 Benchmark skeleton | NOT EXECUTED | T293 (WP-38 Go benchmark baselines) |
+| A.4 Dialect semantic-loss RED test | NOT EXECUTED | T231 (WP-30 W6 database detection: dialect-rewrite tests on real PostgreSQL) |
+| A.5 Scanner behaviour test against a real FTP server | NOT EXECUTED | T361 (WP-51 BC-5 scanner RED test on seeded FTP, WebDAV and NFS trees from document 07 Appendix A.5), then T362 (WP-51 scanner implementation, BLOCKED-ON ODG-20) and T477 (WP-61: real FTP, SMB and WebDAV services in the integration suites) |
 | B.1 Route set versus OpenAPI | EXECUTED (read-only, document 07) | n/a |
 | B.2 Client versus server routes | EXECUTED (read-only, document 07) | n/a |
 | B.3 CodeGraph hotspot query | EXECUTED (read-only, document 07) | n/a |

@@ -4,7 +4,7 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
-| Revision | 3 (production verifier modes per data-model §9; expected strict exit stated with its open precedence; fixture count; G2 index projection; G3 phase mapping; golden file names) |
+| Revision | 4 (the exit-code precedence is cited as tasks.md T032, the id in tasks.md rev 6; ODG-39 blocks WP-20 and WP-74 as in docs/21 revision 8. Revision 3: production verifier modes per data-model §9; expected strict exit stated with its open precedence; fixture count; G2 index projection; G3 phase mapping; golden file names) |
 | Last modified | 2026-10-03 |
 | Executed | 2026-10-03, from 11:44:31Z, main repository HEAD `e4852ce7e1a136818b7b63524e94b5f8ee1b68bf` |
 | Scope | read-only commands that prove what the plan starts from; no build, no install, no write to any repository |
@@ -101,7 +101,7 @@ The production verifier is `scripts/repo/verify_repos.sh`, promoted from this PO
 scripts/repo/verify_repos.sh --strict --json "$OUT/repo_verify.json"; echo "exit=$?"
 ```
 
-On today's state the strict run has two failing classes: the dirty main repository (13) and the `submodules/constitution` row that is `LOCAL-BEHIND` on all 8 remotes (`behind` under `--strict`). The expected result is therefore 13 or the strict-`behind` code, whichever the WP-03 exit-code matrix puts first (the precedence is decided by tasks.md T030; a failing class always precedes 14); either is the counterpart of the POC's exit 1. Exit criterion for US7 / SC-010: `scripts/repo/verify_repos.sh --strict` exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception carrying a reason.
+On today's state the strict run has two failing classes: the dirty main repository (13) and the `submodules/constitution` row that is `LOCAL-BEHIND` on all 8 remotes (`behind` under `--strict`). The expected result is therefore 13 or the strict-`behind` code, whichever the WP-03 exit-code matrix puts first (the precedence is decided by tasks.md T032; a failing class always precedes 14); either is the counterpart of the POC's exit 1. Exit criterion for US7 / SC-010: `scripts/repo/verify_repos.sh --strict` exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception carrying a reason.
 
 ## 4. Documentation reachability (FR-013, SC-006) - EXECUTED
 
@@ -225,4 +225,4 @@ The gates below follow the spec's user stories in priority order. They are not t
 | G7 Repository state | US7 | P0 (WP-03 baseline), P7 (WP-73) | `scripts/repo/verify_repos.sh --strict`: exit 0, failing 0, unproven 0, exceptions explained | step 3 | POC exit 1 (main repository untracked planning files) |
 | Final | SC-011, SC-012 | P6 (WP-62), P7 (WP-71, WP-74) | performance baselines and owner-approved targets for every critical operation with no regression; report checker finds zero completion claims without `ledger#seq` | `specs/001-full-project-audit-remediation/perf/targets.yaml`, report checker | not started |
 
-Completion additionally waits on the owner decisions in `research.md` section 5 that block the work in question (79 recorded: 12 with reversible defaults, 1 resolved by a plan decision, 66 blocking), and on docs/21 ODG-39 (disposition of the doc18 innovation entries, WP-74) and ODG-40 (licence policy, WP-35 and WP-57), which have no `research.md` counterpart. Index of every document of this folder: [README.md](README.md).
+Completion additionally waits on the owner decisions in `research.md` section 5 that block the work in question (79 recorded: 12 with reversible defaults, 1 resolved by a plan decision, 66 blocking), and on docs/21 ODG-39 (disposition of the doc18 innovation entries, WP-20, WP-74) and ODG-40 (licence policy, WP-35 and WP-57), which have no `research.md` counterpart. Index of every document of this folder: [README.md](README.md).

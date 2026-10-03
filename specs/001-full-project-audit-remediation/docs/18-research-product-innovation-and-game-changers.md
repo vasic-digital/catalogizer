@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: every candidate table has a per-item evidence label column; new section 1.1 routes all 47 candidates (PROPOSAL items to the docs/21 WP-20 register intake as Feature items or recorded owner decisions, R-ADJ items to their plan document and work package); new section 2.1 maps this document's labels (EMERGING) to document 17's (PLAUSIBLE)) |
+| Status | draft (revision 3: the section 1.1 `R-ADJ` route matches docs/21 sections 9.1 and 9.3: the 19 `R-ADJ` seeds enter the register at docs/21 WP-20 as candidate findings, and the named work package confirms or closes them with evidence instead of minting them. Revision 2: every candidate table has a per-item evidence label column; new section 1.1 routes all 47 candidates (PROPOSAL items to the docs/21 WP-20 register intake as Feature items or recorded owner decisions, R-ADJ items to their plan document and work package); new section 2.1 maps this document's labels (EMERGING) to document 17's (PLAUSIBLE)) |
 | Feature | specs/001-full-project-audit-remediation |
 | Nature | Desk research (web) plus read-only grounding in the repository. Nothing here was built, run or benchmarked. |
 | Source access date | 2026-10-03 for every source in section 14 |
@@ -55,7 +55,7 @@ Effort scale: S = days, M = 1 to 3 weeks, L = more than 3 weeks (engineer estima
 No candidate of this document may stay a paragraph with no owner (§11.4.197). Revision 2 routes all 47 candidates. Counted from the tag column of the candidate tables: 28 are `PROPOSAL` only, 13 are `R-ADJ` only and 6 are mixed (an `R-ADJ` part and a `PROPOSAL` part).
 
 - **`PROPOSAL` items and the `PROPOSAL` part of mixed items** flow into the register intake of docs/21 WP-20 as items of Type Feature, each carrying this document's ID, its evidence label and its experiment (section 13.1) where one exists. Each is then either accepted as input to a later feature specification or recorded as an owner decision to defer or drop it, with the reason. None is implemented under feature 001 (section 1 scope fence), and none is dropped silently.
-- **`R-ADJ` items and the `R-ADJ` part of mixed items** are inputs to the plan document and docs/21 work package named below; that work package decides the fix and its test, and the register item, if the audit confirms a defect, is minted there, not here.
+- **`R-ADJ` items and the `R-ADJ` part of mixed items** are inputs to the plan document and docs/21 work package named below; that work package decides the fix and its test. Revision 3 (aligned with docs/21 sections 9.1 and 9.3): the 19 `R-ADJ` seeds (the 13 `R-ADJ` items plus the `R-ADJ` parts of the 6 mixed items) are imported by docs/21 WP-20 with the other plan-document seeds, as candidate findings (folded into a docs/21 §9.3 family where one applies); each stays a candidate until the named work package produces machine evidence (FR-007), and that package confirms it, links it to the finding its audit records, or closes it with the reason. No second register item is minted for the same defect (§11.4.214).
 - The ranked game changers of section 13 are combinations of these IDs and need no separate route.
 
 | ID | Kind | Evidence label | Destination |

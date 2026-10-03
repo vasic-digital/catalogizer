@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 8 |
+| Revision | 9 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their current writers (P0 T095, P1 T158, P2 T218, P5 T454, P6 T555), the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 9: section 11 task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen: the phase exit records are written by P0 T095, P1 T159, P2 T220, P5 T457 and P6 T557, and the root-only `coverage/` negation is tasks.md T004; no layout entry changed; revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their writers in tasks.md rev 5, remapped in revision 9, the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -626,8 +626,8 @@ specs/001-full-project-audit-remediation/evidence/        ($EV)
   host-probe.json              host probe record (docs/16 section 8.5)
   disk/<op_id>.json            disk-headroom record before and after each image build, pull or
                                container run (tasks.md T001 convention, probe in WP-09)
-  p<N>-exit.json               phase exit records, one per docs/21 phase gate (tasks.md rev 5: P0 T095,
-                               P1 T158, P2 T218, P5 T454, P6 T555; the same name for every other
+  p<N>-exit.json               phase exit records, one per docs/21 phase gate (tasks.md rev 6: P0 T095,
+                               P1 T159, P2 T220, P5 T457, P6 T557; the same name for every other
                                phase that adds one)
   register/                    register-side records: freeze manifest, seed and source
                                reconciliation, import transcripts, blocked_items.json (WP-20 to WP-22, WP-72)
@@ -654,7 +654,7 @@ ignores at any depth (check with `git check-ignore -q`; the coverage rule below 
 
 Folder naming (revision 6): the coverage folders are named `coverage_baseline/` and
 `coverage_targets/`, never `coverage/`, because `.gitignore:139` ignores every directory named
-`coverage/` at any depth and the root-only negation added by tasks.md T003 does not reach below the
+`coverage/` at any depth and the root-only negation added by tasks.md T004 does not reach below the
 repository root (measured with `git check-ignore` during the tasks.md cross-check).
 
 Note on size: blobs are large (logs, screenshots, videos). The ledger and verdicts are small and

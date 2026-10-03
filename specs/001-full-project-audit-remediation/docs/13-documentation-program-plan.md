@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
+| Status | draft (revision 3: the section 5 reachability note on this feature's plan set is marked resolved, with the crawler result of 2026-10-03. Revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
 | Feature | specs/001-full-project-audit-remediation |
 | Covers | FR-012, FR-013, FR-014, FR-015, SC-006, SC-007, SC-008 |
 | Governance anchors | §11.4.12, §11.4.18, §11.4.44, §11.4.57, §11.4.59, §11.4.61, §11.4.65, §11.4.73, §11.4.86, §11.4.95, §11.4.106, §11.4.107(10), §11.4.122, §11.4.124, §11.4.186, §11.4.212, §11.4.215, §11.4.223, §11.4.257, §11.4.258, §11.4.259, §11.4.260 |
@@ -255,7 +255,7 @@ Disposition vocabulary: KEEP (reviewed, updated), UPDATE (stale content fixed in
 | `.github/workflows/README.md` (revision 2) | 1 | KEEP+UPDATE | it must state that no workflow runs here (§11.4.156) and point to the local enforcement of document 16 §16.1 |
 | `.pre-commit-config.yaml` (not Markdown; revision 2) | 1 | DECIDE (owner), documented meanwhile | not installed and not runnable as configured (document 16 §3.4); `docs/scripts/commit-push-all.md` records where each of its checks now runs |
 
-Reachability of this feature's own plan set (revision 2, measured by the plan-set hygiene sweep with `poc/doc_links/crawl_links.py`): none of the 32 Markdown files under `specs/001-full-project-audit-remediation/` is reachable from the root `README.md`, and `spec.md` links to none of its siblings. Under §11.4.212 the README hub of D1 links the feature's `spec.md`, `plan.md` and `tasks.md`, and an index page lists the 21 numbered plan documents; until then they are counted as orphans, not as exempt.
+Reachability of this feature's own plan set (revision 2, measured by the plan-set hygiene sweep with `poc/doc_links/crawl_links.py`): none of the 32 Markdown files under `specs/001-full-project-audit-remediation/` was reachable from the root `README.md`, and `spec.md` linked to none of its siblings. Resolved (revision 3, 2026-10-03): the root `README.md` now links the feature index `specs/001-full-project-audit-remediation/README.md`, which links every plan document; `crawl_links.py --root . --start README.md` (read-only, exit 0) reaches all 33 tracked Markdown files of the folder (the control needle `spec.md` among them), with 0 broken links and 0 broken anchors whose source is in the folder, every file at depth 1 or 2 from the root README. The D1 README hub of §11.4.212 still has to keep this path when it is rebuilt; the crawler rules of section 4.4 re-measure it on every run.
 
 Required measure of success for FR-012: every file in a KEEP/UPDATE row has a recorded review (reviewer, date, evidence of verification against code/config/runtime, `reviewed:` front-matter field), and the `DOC_DISPOSITION.md` row count equals the number of non-KEEP files.
 

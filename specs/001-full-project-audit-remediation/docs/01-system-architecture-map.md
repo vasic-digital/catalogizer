@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: new section 3.8 lists the root configuration files and tool directories that the inventory omitted (`.github/`, `.claude/`, `.codegraph/`, `.implementation/`, `.remember/`, `templates/`, `.pre-commit-config.yaml`, `docker-compose.dev.override.yml`, `submodule-analysis.txt`, `LICENSE`), each with a disposition; `\|` escaped inside table cells so every table row has its header's column count) |
+| Status | draft (revision 3: the section 3.8 `.github/` row names where the no-workflow-file condition is enforced: anti-mess invariant AM-G2 of document 12 §17.3, swept at commit-push S0 and S7 (tasks.md T090, T093), not an S3 check of document 16. Revision 2: new section 3.8 lists the root configuration files and tool directories that the inventory omitted (`.github/`, `.claude/`, `.codegraph/`, `.implementation/`, `.remember/`, `templates/`, `.pre-commit-config.yaml`, `docker-compose.dev.override.yml`, `submodule-analysis.txt`, `LICENSE`), each with a disposition; `\|` escaped inside table cells so every table row has its header's column count) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | Factual map of the whole Catalogizer system as it exists in the tree on `main` |
 | Method | Read-only inspection: `git ls-files`, `git submodule status --recursive`, targeted file reads, two small static-parse scripts (route extraction and client-to-route comparison). No builds, no test runs, no network calls. Baseline commit `e4852ce7`. |
@@ -256,7 +256,7 @@ These root entries were missing from the inventory above. Each was observed on 2
 
 | Path | Tracked state | What it is | Disposition |
 |---|---|---|---|
-| `.github/` | 2 tracked files: `FUNDING.yml`, `workflows/README.md` | sponsorship file and a README; no workflow file, so no pipeline (11.4.156) | WP-37 lists the README; document 16 §16.1 keeps the "no workflow file" condition as a check |
+| `.github/` | 2 tracked files: `FUNDING.yml`, `workflows/README.md` | sponsorship file and a README; no workflow file, so no pipeline (11.4.156) | WP-37 lists the README; the "no workflow file" condition is enforced as anti-mess invariant AM-G2 (document 12 §17.3), built into the sweep by tasks.md T090 and run at commit-push S0 and S7 once tasks.md T093 wires it (document 16 §16.1, revision 5) |
 | `.claude/` | ignored by the root `.gitignore`; holds `skills/` | local agent skills (Spec Kit commands and others); the constitution post-update hook can write here (document 11 §7.2) | not a product source; reviewed only when the hook changes it (document 11 §7.4 step 4); document 13 classes its Markdown as governance and agent files |
 | `.codegraph/` | only `.codegraph/.gitignore` is tracked; `codegraph.db` is ignored | the local CodeGraph index (section 13) | index state, not a source; scope and health are WP-02 (document 02) |
 | `.implementation/` | 6 tracked files: two ticket-validation reports dated 2026-04-17 and four empty progress markers (`backend_tests_fixed`, `cicd_configured`, `documentation_started`, `frontend_tests_fixed`, 0 bytes each) | the report that bulk-closed 460 HelixQA tickets (document 03 F-5) and status markers that carry no content | WP-20 source S-24 (document 03 §5.16); the four markers are evidence-free status claims and are imported as such, never as facts (`cicd_configured` would also conflict with 11.4.156 if it described an active pipeline, `UNCONFIRMED:` what it referred to) |
