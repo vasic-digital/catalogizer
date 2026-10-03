@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 5 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -240,6 +240,12 @@ Rules enforced by the verifier, each one a testable check:
    about the test.
 12. **A `MUTATION` entry carries its `mutation` object** (operator, location, author, result). A
    `MUTATION` entry without it is refused by the schema (revision 3; it was valid before).
+13. **A `REOPEN` entry is a genuine failure** (revision 5, after a review appended a passing `REOPEN`
+   to a cycle that had a failing GREEN, which the revision 4 deriver then discarded). A `REOPEN`
+   records the observed recurrence: `verdict: fail` and `exit_status` 1..125 are required by the
+   schema; a run that passed, a harness error (126, 127, signals) or a blocked probe observed no
+   recurrence and is not a `REOPEN`. Which `REOPEN` entries cut a fix cycle is a cross-entry rule of
+   the deriver (section 4.2 step 7).
 
 ### 3.2 What counts as one entry
 
@@ -344,18 +350,37 @@ Steps in detail:
    the defect rather than for another reason that disappeared between the runs (environment,
    timing, a dependency); that residual is covered by the failure-signature check (step 4,
    production deriver) and by the mutation in step 8, not by the polarity pair.
-   **Cycle rule (revision 4).** A closed item that is reopened starts a new fix cycle. The reopen is
-   recorded in the ledger as an entry with polarity `REOPEN` (the run that observed the recurrence on
-   the deployed target), and the deriver evaluates only the item's entries recorded after its LAST
-   `REOPEN` entry. Evidence of an earlier, already-consumed cycle therefore never closes the item again,
-   and an honest second cycle (new RED, fix, three GREEN) is judged on its own runs instead of being
-   refused because an old GREEN precedes the new RED (executed, section 13.4, cases `reopen_no_new` and
-   `second_cycle`). The register applies the same boundary in SQL (docs/04 §14.9 B1).
+   **Cycle rule (revision 4, tightened in revision 5).** A closed item that is reopened starts a new
+   fix cycle. The reopen is recorded in the ledger as an entry with polarity `REOPEN`: the same test
+   (identical `argv`, `cwd`, `target_class`, `target_ref`, `test_fingerprint`) run on the deployed
+   target, failing for real (`verdict: fail`, exit 1..125, rule 13), with the deployed target's
+   fingerprint recorded. The deriver walks the item's `REOPEN` entries in ledger order and treats one
+   as a CUT only when it is such a genuine failure of the same test AND the cycle it ends (the entries
+   since the previous cut) itself derives PASS. Any other `REOPEN` (one that passed, a harness error,
+   another test, or one appended after an incomplete or failing cycle) is not a cut: it is listed in
+   `reopens_ignored` and the entries before it stay in the evaluated cycle, so a `REOPEN` cannot
+   discard a failing GREEN (executed, section 13.4, cases `launder`, `reopen_pass`,
+   `reopen_after_fail`). Only entries after the last cut are evaluated. In the new cycle no GREEN may
+   run on a fingerprint that a cutting `REOPEN` showed failing, or that was GREEN in an earlier cycle
+   (`fingerprints_new`; cases `green_on_reopen_fp`, `green_old_fp`): a re-fix is a new build, which
+   the version increment of every deployment guarantees (11.4.235(B)). An honest second cycle (new
+   RED, new build, three GREEN) is judged on its own runs instead of being refused because an old
+   GREEN precedes the new RED (cases `reopen_no_new`, `second_cycle`). The register applies the same
+   boundary in SQL (docs/04 §14.9 B1) and refuses copies of earlier-cycle evidence and earlier-cycle
+   GREEN fingerprints (docs/04 §14.10 I1).
+   **Register and ledger must agree on reopens.** The deriver reports `reopens_counted` (the cuts).
+   Every register `Reopened` status row of the item (docs/04 `v_reopen_counts`) must correspond to
+   exactly one cut, and vice versa. The register's SQL cannot read the ledger, so this equality is
+   enforced by the verifier of step 9 and by the register engine's closure seam (section 11), which
+   refuse the closure when the two counts differ: a register reopen with no recorded recurrence, or a
+   recorded recurrence the register never reopened. Nothing in SQL enforces it (docs/04 §5
+   limitation 9 (d)).
 8. **Mutation**: apply the revert of the fix commit to a scratch copy, rebuild, rerun in `RED_MODE=0`;
    the test must fail. A mutation that only deletes the string the test greps for is refused as a
    tautology.
 9. **Independent review**: the reviewer re-derives the verdict from the ledger (not from the author's
-   verdict file), adds a mutation the author did not write (11.4.194 (6)(d)), and the register
+   verdict file), compares the derived `reopens_counted` with the register's reopen count for the
+   item (step 7), adds a mutation the author did not write (11.4.194 (6)(d)), and the register
    engine writes the status. A done-status write without the chain
    (`registered guard -> RED+GREEN pair -> class-matched evidence`) is refused (11.4.146 D3).
 
@@ -603,7 +628,10 @@ binding artifacts).
 path, the ledger entry sequence numbers, the RED and GREEN fingerprints, and the head hash at
 closure. The register engine refuses a transition to a closed status without a verdict file that
 verifies against the ledger (11.4.146 D3 seam A), and a periodic full-table sweep re-checks every
-closed item (seam B), and the release verification re-derives them (seam C). The engine
+closed item (seam B), and the release verification re-derives them (seam C). The verdict file
+carries `reopens_counted` (section 4.2 step 7); seams A to C refuse a closure whose count differs
+from the item's `Reopened` rows in the register (docs/04 `v_reopen_counts`). This comparison runs
+outside SQL: the register database never reads the ledger. The engine
 re-derives rather than trusting the stored verdict: the stored `ledger_head` must be an ancestor
 of the current head and the entries cited must still verify.
 
@@ -788,7 +816,12 @@ ignored reopen boundaries, so a reopened item with no new evidence still derived
 honest second cycle derived `FAIL`, and that re-running a scenario case appended to the old ledger.
 Both were reproduced with the revision 3 recorder and deriver, then fixed and **executed** under the
 session scratchpad (`.../scratchpad/r3/ev_after/`), with the revision 3 deriver run on the revision 4
-ledgers as the mutation check (section 13.4).
+ledgers as the mutation check (section 13.4). Revision 5 (fourth independent review, 2026-10-03)
+tightens the cycle rule: the reviewer appended a passing `REOPEN` after a cycle that contained a
+failing GREEN, then a fresh RED and three GREEN, and the revision 4 deriver printed `PASS` (the
+failing GREEN was discarded). Reproduced with the revision 4 recorder and deriver on the reviewer's
+ledger, then fixed and **executed** under the session scratchpad (`.../scratchpad/r5/eva/`), with the
+revision 4 deriver run on the revision 5 ledgers as the mutation check (section 13.4).
 
 Limitations stated up front (11.4.6): shell and `jq` rather than the production implementation;
 `policy` anchor strength only; no secret redaction; no per-test parsing; no failure-signature check
@@ -866,32 +899,49 @@ cmd_verdict() { # verdict ITEM
   #            test_fingerprint (bytes of the test itself, section 3.1 rule 11).
   # red_before_green: every RED entry precedes every GREEN entry in the ledger (max RED seq < min GREEN seq).
   # fingerprints_differ: no GREEN fingerprint equals any RED fingerprint.
-  # cycle: a REOPEN entry (the recorded recurrence) ends the previous fix cycle; only entries recorded
-  #        after the item's LAST REOPEN entry count, so old evidence never closes a reopened item and an
-  #        honest second cycle is judged on its own runs (revision 4, section 13.4).
+  # cycle: a REOPEN entry (the recorded recurrence) ends the previous fix cycle, but only when it CUTS:
+  #        it is a genuine failure (exit 1..125, verdict fail) of the same test (argv, cwd, target class,
+  #        target locator, test bytes) as the cycle it ends, and that cycle itself derived PASS. Any other
+  #        REOPEN (a passing run, a harness error, another test, or one recorded after an incomplete cycle)
+  #        is ignored and listed in reopens_ignored, so it cannot discard a failing GREEN (revision 5).
+  #        Only entries after the last cutting REOPEN count.
+  # fingerprints_new: no GREEN of the current cycle ran on a fingerprint that a cutting REOPEN showed
+  #        failing, or that was GREEN in an earlier cycle (the artifact the recurrence came back on).
   local item=$1
   jq -s --arg item "$item" '
+    def genuine: .exit_status>=1 and .exit_status<=125 and .verdict=="fail";
+    def same($a; $b): $a.argv==$b.argv and $a.cwd==$b.cwd and $a.target_class==$b.target_class
+                      and $a.target_ref==$b.target_ref and $a.test_fingerprint==$b.test_fingerprint;
+    def checks($r; $banned):            # one cycle: $r = its entries (no REOPEN), $banned = forbidden GREEN fps
+      ($r|map(select(.polarity=="RED"))) as $red | ($r|map(select(.polarity=="GREEN"))) as $grn | ($red+$grn) as $both
+      | {red_ok:   (($red|length)>=1 and ($red|all(genuine))),
+         green_ok: (($grn|length)>=3 and ($grn|map(.iteration)|unique|length)>=3
+                    and ($grn|all(.exit_status==0 and .verdict=="pass"))),
+         green_identical: (($grn|map(.stdout_sha256)|unique|length)==1 and ($grn|map(.target_fingerprint)|unique|length)==1),
+         same_test: (($both|map(.argv)|unique|length)==1 and ($both|map(.cwd)|unique|length)==1
+                     and ($both|map(.target_class)|unique|length)==1 and ($both|map(.target_ref)|unique|length)==1
+                     and ($both|map(.test_fingerprint)|unique|length)==1
+                     and ($both|all(.target_class!=null and .target_ref!=null and .test_fingerprint!=null))),
+         red_before_green: (($red|length)>=1 and ($grn|length)>=1
+                            and ($red|map(.seq)|max) < ($grn|map(.seq)|min)),
+         fingerprints_differ: ((($red|map(.target_fingerprint)) - ($grn|map(.target_fingerprint))|length)==($red|length)
+                               and ($red|length)>=1 and ($grn|length)>=1),
+         fingerprints_new: ((($grn|map(.target_fingerprint)) - $banned|length)==($grn|length))}
+      | . + {pass: (.red_ok and .green_ok and .green_identical and .same_test and .red_before_green
+                    and .fingerprints_differ and .fingerprints_new)};
     [.[]|select(.item==$item)] as $all
-    | ([$all[]|select(.polarity=="REOPEN")|.seq]|max // 0) as $cut
-    | [$all[]|select(.seq>$cut and .polarity!="REOPEN")] as $r
-    | ($r|map(select(.polarity=="RED")))   as $red
-    | ($r|map(select(.polarity=="GREEN"))) as $grn
-    | ($red+$grn) as $both
-    | {item:$item, cycle_after_seq:$cut,
-       red_ok:   (($red|length)>=1 and ($red|all(.exit_status>=1 and .exit_status<=125 and .verdict=="fail"))),
-       green_ok: (($grn|length)>=3 and ($grn|map(.iteration)|unique|length)>=3
-                  and ($grn|all(.exit_status==0 and .verdict=="pass"))),
-       green_identical: (($grn|map(.stdout_sha256)|unique|length)==1 and ($grn|map(.target_fingerprint)|unique|length)==1),
-       same_test: (($both|map(.argv)|unique|length)==1 and ($both|map(.cwd)|unique|length)==1
-                   and ($both|map(.target_class)|unique|length)==1 and ($both|map(.target_ref)|unique|length)==1
-                   and ($both|map(.test_fingerprint)|unique|length)==1
-                   and ($both|all(.target_class!=null and .target_ref!=null and .test_fingerprint!=null))),
-       red_before_green: (($red|length)>=1 and ($grn|length)>=1
-                          and ($red|map(.seq)|max) < ($grn|map(.seq)|min)),
-       fingerprints_differ: ((($red|map(.target_fingerprint)) - ($grn|map(.target_fingerprint))|length)==($red|length)
-                             and ($red|length)>=1 and ($grn|length)>=1)}
-    | . + {verdict: (if .red_ok and .green_ok and .green_identical and .same_test and .red_before_green
-                         and .fingerprints_differ then "PASS" else "FAIL" end)}' "$LEDGER"
+    | reduce ($all[]|select(.polarity=="REOPEN")) as $o ({cut:0, banned:[], counted:[], ignored:[]};
+        . as $s
+        | [$all[]|select(.seq>$s.cut and .seq<$o.seq and .polarity!="REOPEN")] as $w
+        | ($w|map(select(.polarity=="RED" or .polarity=="GREEN"))|first) as $ref
+        | if checks($w; $s.banned).pass and ($o|genuine) and $ref!=null and same($o; $ref) and $o.target_fingerprint!=null
+          then {cut:$o.seq, counted:($s.counted+[$o.seq]), ignored:$s.ignored,
+                banned:($s.banned + ($w|map(select(.polarity=="GREEN")|.target_fingerprint)) + [$o.target_fingerprint])}
+          else $s + {ignored:($s.ignored+[$o.seq])} end)
+    | . as $st
+    | {item:$item, cycle_after_seq:$st.cut, reopens_counted:($st.counted|length), reopens_ignored:$st.ignored}
+      + checks([$all[]|select(.seq>$st.cut and .polarity!="REOPEN")]; $st.banned)
+    | . + {verdict: (if .pass then "PASS" else "FAIL" end)} | del(.pass)' "$LEDGER"
 }
 cmd_forge_delete_and_recompute() { # DEMO ONLY: attacker deletes seq $1 and recomputes the chain forward
   local del=$1 prev=$ZERO tmp; tmp=$(mktemp); local line body ne
@@ -923,6 +973,7 @@ rm -rf -- "${d:?}"; mkdir -p "$d"; cd "$d"                          # a re-run s
 export EV_LEDGER=$d/ledger.jsonl EV_ANCHOR=$d/anchor.jsonl EV_BLOBS=$d/blobs
 printf '#!/usr/bin/env bash\necho $(( 2 - 3 ))\n' > broken.sh   # defect: subtracts
 printf '#!/usr/bin/env bash\necho $(( 2 + 3 ))\n' > fixed.sh    # fix: adds
+printf '#!/usr/bin/env bash\necho $(( 3 + 2 ))\n' > fixed2.sh   # cycle-2 fix: a new build, new fingerprint
 printf '#!/usr/bin/env bash\n[ "$("$1")" = 5 ]\n' > check.sh    # oracle: specified, 2+3=5
 cp check.sh check_other.sh; chmod +x ./*.sh
 E=$here/evrec.sh; red_argv=(./check.sh ./adder.sh); red_ref=adder.sh; iters=(1 2 3)
@@ -940,26 +991,37 @@ case $case in
                printf '#!/usr/bin/env bash\n[ "$("$l")" = 5 ]\n' > check.sh; chmod +x check.sh ;;  # exit 1, wrong reason
   green_dup_iter) iters=(1 1 1) ;;                                  # three GREEN entries, one iteration value
   green_first) : ;;                                                 # GREEN x3 recorded before the RED
-  reopen_no_new|second_cycle) : ;;                                  # a closed cycle, then a recurrence (below)
+  reopen_no_new|second_cycle|launder|reopen_pass|green_on_reopen_fp|green_old_fp) : ;;  # recurrence cases (below)
+  reopen_after_fail) iters=(1 2) ;;                                 # cycle 1 incomplete: two GREEN only
 esac
 red() { "$E" run ITEM-"$case" RED 1 shell_script "$red_ref" -- "${red_argv[@]}" >/dev/null
         [ -e check.sh.away ] && mv -f check.sh.away check.sh; [ -e check.sh.orig ] && mv -f check.sh.orig check.sh
         chmod +x check.sh; }                                        # restore the test for GREEN
-green() { cp fixed.sh adder.sh; chmod +x adder.sh                  # deploy the fixed artifact
+green() { cp "${1:-fixed.sh}" adder.sh; chmod +x adder.sh           # deploy the fixed artifact
           for i in "${iters[@]}"; do "$E" run ITEM-"$case" GREEN "$i" shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null; done; }
-if [ "$case" = green_first ]; then green; cp broken.sh adder.sh; chmod +x adder.sh; red; else red; green; fi
-if [ "$case" = reopen_no_new ] || [ "$case" = second_cycle ]; then    # the defect returns after the closure
-  printf '#!/usr/bin/env bash\necho $(( 2 * 3 ))\n' > broken2.sh; cp broken2.sh adder.sh; chmod +x adder.sh
-  "$E" run ITEM-"$case" REOPEN 1 shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null   # recurrence observed
-  if [ "$case" = second_cycle ]; then                                # honest cycle 2: new RED, fix, GREEN x3
-    "$E" run ITEM-"$case" RED 1 shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null; green; fi
-fi
+run1() { "$E" run ITEM-"$case" "$1" "${2:-1}" shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null; }
+dep() { cp "$1" adder.sh; chmod +x adder.sh; }                     # deploy an artifact
+if [ "$case" = green_first ]; then green; cp broken.sh adder.sh; chmod +x adder.sh; red
+elif [ "$case" = launder ]; then                                    # cycle 1 with a FAILING GREEN (it 2), then a
+  red; dep fixed.sh; run1 GREEN 1; dep broken.sh; run1 GREEN 2; dep fixed.sh; run1 GREEN 3   # PASSING REOPEN that
+  run1 REOPEN; dep broken.sh; run1 RED; green                       # would discard it, then a clean cycle
+else red; green; fi
+printf '#!/usr/bin/env bash\necho $(( 2 * 3 ))\n' > broken2.sh      # the defect returns after the closure
+case $case in
+  reopen_no_new)      dep broken2.sh; run1 REOPEN ;;                                   # recurrence, nothing new
+  second_cycle)       dep broken2.sh; run1 REOPEN; run1 RED; iters=(1 2 3); green fixed2.sh ;;  # honest cycle 2
+  reopen_after_fail)  dep broken2.sh; run1 REOPEN; run1 RED; iters=(1 2 3); green fixed2.sh ;;  # cut after a FAIL cycle
+  reopen_pass)        run1 REOPEN; dep broken2.sh; run1 RED; green fixed2.sh ;;        # REOPEN that passed (exit 0)
+  green_on_reopen_fp) dep fixed2.sh; chmod -x adder.sh; run1 REOPEN                    # fixed2 deployed and failing
+                      dep broken2.sh; run1 RED; green fixed2.sh ;;                     # GREEN on that same artifact
+  green_old_fp)       dep broken2.sh; run1 REOPEN; run1 RED; green fixed.sh ;;         # GREEN on the cycle-1 artifact
+esac
 "$E" anchor >/dev/null; "$E" verify >&2
 printf 'RED entry: '; jq -c 'select(.polarity=="RED")|{seq,exit_status,verdict,argv,target_ref,test_fingerprint}' "$EV_LEDGER"
 "$E" verdict ITEM-"$case" | jq -c .
 ```
 
-Run: `for c in good blind_red exit127 exit126 signal other_argv other_target dash_argv typo_red green_dup_iter green_first reopen_no_new second_cycle; do ./scenario.sh $c; done`
+Run: `for c in good blind_red exit127 exit126 signal other_argv other_target dash_argv typo_red green_dup_iter green_first reopen_no_new second_cycle launder reopen_pass reopen_after_fail green_on_reopen_fp green_old_fp; do ./scenario.sh $c; done` (18 cases)
 
 ### 13.2 Output of the golden-good case (EXECUTED, revision 3, `.../scratchpad/ev_after/case-good`)
 
@@ -969,7 +1031,8 @@ RED entry: {"seq":1,"exit_status":1,"verdict":"fail","argv":["./check.sh","./add
 {"item":"ITEM-good","red_ok":true,"green_ok":true,"green_identical":true,"same_test":true,"red_before_green":true,"fingerprints_differ":true,"verdict":"PASS"}
 ```
 
-The ledger summary and the full ledger line below are from the revision 2 run (`/tmp/evpoc3/case-good`,
+Revision 5 adds `reopens_counted`, `reopens_ignored` and `fingerprints_new` to this object (for
+`good`: 0, `[]`, `true`). The ledger summary and the full ledger line below are from the revision 2 run (`/tmp/evpoc3/case-good`,
 before `test_fingerprint` existed); a revision 3 GREEN line has the same fields plus
 `test_fingerprint`.
 
@@ -1063,6 +1126,31 @@ running `./scenario.sh good` a second time appended to the first ledger (`OK cha
 run 12 entries) and the golden-good case derived `FAIL` (`red_before_green` false). Revision 4
 deletes the case directory before recreating it (`rm -rf -- "${d:?}"`); three consecutive runs of
 `good` each gave `OK chain=4 entries` and `PASS`.
+
+Revision 5 cases (executed in `.../scratchpad/r5/eva/`; the last column is the revision 4 deriver run
+on the same revision 5 ledgers, the mutation check for the tightened cycle rule). `second_cycle` now
+deploys a new build `fixed2.sh` (`3 + 2`, a different fingerprint) for its GREEN runs, because a
+GREEN on the cycle-1 artifact is refused (case `green_old_fp`). The reviewer's own ledger
+(`.../scratchpad/r4/ev/case-launder`, item `ITEM-L`) gave revision 4 `PASS` (reproduced) and
+revision 5 `FAIL` (`reopens_ignored` [5]). The thirteen cases above were re-run with the revision 5
+recorder and deriver and gave the same verdicts (`good` and `second_cycle` PASS, the other eleven
+FAIL; every one now reports `reopens_counted` and `fingerprints_new`); three consecutive runs of
+`good` each gave `OK chain=4 entries`.
+
+| Case | What differs | Revision 5 deriver | Revision 4 deriver |
+|---|---|---|---|
+| `launder`: cycle 1 with GREEN iteration 2 run on the broken artifact (exit 1, `fail`), then a `REOPEN` that passed (exit 0), a new RED and three GREEN | the reviewer's attack | `FAIL` (`reopens_ignored` [5], `green_ok` false, `red_before_green` false) | **`PASS`** (cut at seq 5, the failing GREEN discarded) |
+| `reopen_pass`: complete cycle 1, `REOPEN` run on the fixed artifact that passed (exit 0), new RED, three GREEN on `fixed2.sh` | a REOPEN that observed no recurrence | `FAIL` (`reopens_ignored` [5], `red_before_green` false) | **`PASS`** |
+| `reopen_after_fail`: cycle 1 with only two GREEN (incomplete), genuine `REOPEN` (exit 1), new RED, three GREEN on `fixed2.sh` | a cut after a cycle that never derived PASS | `FAIL` (`reopens_ignored` [4], `red_before_green` false) | **`PASS`** |
+| `green_on_reopen_fp`: complete cycle 1, `fixed2.sh` deployed and failing (`REOPEN`, exit 1), new RED, three GREEN on that same `fixed2.sh` | GREEN on the fingerprint the REOPEN showed failing | `FAIL` (`fingerprints_new` false) | **`PASS`** |
+| `green_old_fp`: complete cycle 1, genuine `REOPEN` on `broken2.sh`, new RED, three GREEN on the cycle-1 artifact `fixed.sh` | GREEN on an earlier-cycle GREEN fingerprint | `FAIL` (`fingerprints_new` false) | **`PASS`** |
+
+Each new clause was also removed on its own from the revision 5 deriver (scratch copies): without
+"the ended cycle derived PASS", `reopen_after_fail` gives `PASS`; without "the REOPEN is a genuine
+failure", `reopen_pass` gives `PASS`; without `fingerprints_new`, `green_on_reopen_fp` and
+`green_old_fp` give `PASS`. `launder` fails both cut conditions at once, so it stays `FAIL` under each
+single-clause mutation and gives `PASS` only under the revision 4 deriver, where both are absent.
+`good` and `second_cycle` give `PASS` under every mutation.
 
 The reviewer's exact reproduction (revision 1 recorder and deriver, RED command `./no_such_check.sh`,
 exit 127) also printed `"verdict":"PASS"` (executed, `/tmp/evpoc1`).
