@@ -262,6 +262,7 @@ These are the first register items from reading alone. Each carries id prefix `D
 | D-12 | `tauri.conf.json` `plugins.shell.open: true`; `tauri-plugin-shell` registered | v1-style plugin key; plugin has no capability and no UI usage. UNCONFIRMED whether the key is accepted by the v2 schema. Removal is an end-user-component decision only if it is user-visible; here it is not, but 11.4.124 still demands history investigation before removal | Low | `git log -S` on introduction; keep or remove decision recorded |
 | D-13 | `Cargo.toml` `rust-version = "1.60"` | Almost certainly below Tauri 2's minimum Rust version. UNCONFIRMED exact value | Low | `cargo +1.60 check` in container, expect failure |
 | D-14 | `src-tauri/Cargo.lock` gitignored | Application builds are not reproducible; `cargo audit` has nothing to audit (11.4.246) | High (supply chain) | Decision D-ADR-07 |
+| D-15 | Config lock held across network I/O in the proxy path | A slow server blocks every concurrent `get_config` call (see section 6.2) | Medium | WP-D3 |
 
 ### 5.2 Installer wizard
 

@@ -86,7 +86,7 @@ Facts and gaps found:
 
 - The index lives at `.codegraph/codegraph.db` (about 502 MB). `.codegraph/.gitignore` ignores everything but itself, so the index is a host-local artefact, not committed.
 - `.codegraph/` contains NO `config.json`. §11.4.78 clauses 2 and 9 require scope to be a generated artefact from a scope DATA file, and §11.4.79 step 2 refers to `.codegraph/config.json` exclusions. Neither a scope DATA file (schema `submodules/constitution/scripts/codegraph/scope.example.yaml`) nor a rendered scope exists in the repo (searched tracked files: zero matches for scope/lumenignore YAML). Consequence: what the installed CLI actually includes was decided by engine defaults. This is finding-class "misalignment with §11.4.78(8)(9)" and MUST be recorded as audit finding F-INDEX-001 before reliance on the index (index health step H3 below proves coverage empirically instead).
-- No `.mcp.json` at the repo root (`cat .mcp.json` failed). §11.4.78(3) and the 2026-09-25 extension require a project-scoped committed registration of the `codegraph` MCP server through `submodules/constitution/scripts/codegraph/codegraph_mcp_serve.sh` (always `--no-watch`). UNCONFIRMED: that path does not exist in the pinned constitution submodule (`find submodules/constitution -name codegraph_mcp_serve.sh` returns 0); a constitution pointer bump or a project-local wrapper is a precondition. Subagents therefore cannot rely on an MCP server definition. The CLI route (`codegraph explore ...`) works for every agent via Bash and is the route this plan uses; MCP registration is tracked as F-INDEX-002.
+- No `.mcp.json` at the repo root (`cat .mcp.json` failed). §11.4.78(3) and the 2026-09-25 extension require a project-scoped committed registration of the `codegraph` MCP server through `submodules/constitution/scripts/codegraph/codegraph_mcp_serve.sh` (always `--no-watch`). UNCONFIRMED: that path does not exist in the pinned constitution submodule (`find submodules/constitution -name codegraph_mcp_serve.sh` returns 0); `submodules/constitution/scripts/codegraph/codegraph_mcp.sh` and `codegraph_mcp_preflight.sh` do exist in the pinned submodule as candidate wrappers, to be verified (behaviour, `--no-watch`) before any pin bump; a constitution pointer bump or a project-local wrapper is a precondition. Subagents therefore cannot rely on an MCP server definition. The CLI route (`codegraph explore ...`) works for every agent via Bash and is the route this plan uses; MCP registration is tracked as F-INDEX-002.
 - No `docs/CODEGRAPH.md` (§11.4.78(5)), no `scripts/verify-codegraph.sh`, no `tests/codegraph/` (§11.4.78(4)), no `scripts/codegraph_validate.sh` (§11.4.79 step 4). Each is a finding (F-INDEX-003..005); the audit supplies a substitute proof set in section 4 and these items are fixed in the remediation phase.
 - The indexed file count (7,150) is greater than the main repository's tracked file count (4,887 from `git ls-files`) because submodule working trees are checked out and indexed (the main repo tracks 86 paths under `submodules/` as gitlinks/files). Third-party/vendored classification of those submodules is not recorded anywhere; section 4.3 derives it.
 
@@ -161,11 +161,11 @@ The CLI (`/home/milosvasic/.local/bin/codegraph`, version 1.6.0) offers: `init`,
 | Blast radius | `codegraph impact <symbol>` | used to scope the regression set of a fix |
 | File inventory | `codegraph files --json --filter <dir>` | 7,150 entries returned, fields `path, language, nodeCount, size` |
 
-Constitution §11.4.80 deliverable 2 states `codegraph affected [files...]` and `serve --mcp` exist; the installed 1.6.0 help output printed only the first 40 lines in this session, so `affected` is UNCONFIRMED for 1.6.0 until `codegraph --help` is read fully at audit time (recorded in `index-health.json` as `cli_commands`).
+Constitution §11.4.80 deliverable 2 states `codegraph affected [files...]` and `serve --mcp` exist. `codegraph affected [options] [files...]` ("Find test files affected by changed source") is VERIFIED: it is listed in the installed `codegraph --help` output (read in full when this document was re-reviewed); the full command list is still recorded in `index-health.json` as `cli_commands` at audit time.
 
 ### 3.4 MCP use
 
-MCP is not wired in this repo (2.1). Until F-INDEX-002 is fixed, subagents use the CLI through Bash. After the fix the registration is `.mcp.json` -> a wrapper (UNCONFIRMED path `submodules/constitution/scripts/codegraph/codegraph_mcp_serve.sh`, absent from the pinned submodule; needs a constitution pointer bump or a project-local wrapper first), which always passes `--path <project> --no-watch`; the MCP tools `codegraph_explore`, `codegraph_node` are then equivalent to the CLI. Lumen is exposed through the installed plugin as `semantic_search`, `index_status`, `health_check`; `index_status` and `health_check` are safe read-only calls and are used by section 4. `semantic_search` auto-indexes (writes) and is therefore called only after P7 freshness is recorded and the audit is in its read phase.
+MCP is not wired in this repo (2.1). Until F-INDEX-002 is fixed, subagents use the CLI through Bash. After the fix the registration is `.mcp.json` -> a wrapper (UNCONFIRMED path `submodules/constitution/scripts/codegraph/codegraph_mcp_serve.sh`, absent from the pinned submodule; `codegraph_mcp.sh` and `codegraph_mcp_preflight.sh` are present there and are candidate wrappers to verify; needs a constitution pointer bump or a project-local wrapper first), which always passes `--path <project> --no-watch`; the MCP tools `codegraph_explore`, `codegraph_node` are then equivalent to the CLI. Lumen is exposed through the installed plugin as `semantic_search`, `index_status`, `health_check`; `index_status` and `health_check` are safe read-only calls and are used by section 4. `semantic_search` auto-indexes (writes) and is therefore called only after P7 freshness is recorded and the audit is in its read phase.
 
 Universal accessibility (§11.4.275(A)) is proven by an unforgeable challenge: a dispatched subagent must return `nodeCount` (128,472 at the baseline) or the Lumen `Chunks` count through its own index call; a subagent that cannot make the call is recorded as an honest SKIP per §11.4.3, never a PASS.
 
@@ -361,7 +361,7 @@ Candidates from the structural index: symbols with zero callers (`codegraph call
 
 ### 7.6 Documentation drift (FR-012, FR-013, FR-014)
 
-Link-graph crawl from `README.md` (breadth-first over Markdown links) lists orphans among the in-scope doc set (the repo has 93 entries in `docs/` and dozens of root report files such as `FINAL_*_REPORT.md`; none is assumed in scope or out of scope until the doc-scope plan classifies them). Export parity: each `.html`/`.pdf`/`.docx` twin is compared with its `.md` source by regeneration-hash or timestamp-plus-content check (the repo has `AGENTS.html/.pdf`, `CONTINUATION.html/.pdf`). Diagram validity: every Mermaid block must parse and every rendered image be non-blank (§11.4.258). Behaviour claims in docs are checked against code through the index (for example a documented endpoint must be a route node).
+Link-graph crawl from `README.md` (breadth-first over Markdown links) lists orphans among the in-scope doc set (the repo has 93 entries in `docs/` and dozens of root report files such as `FINAL_*_REPORT.md`; none is assumed in scope or out of scope until the doc-scope plan classifies them). Export parity: each `.html`/`.pdf`/`.docx` twin is compared with its `.md` source by regeneration-hash or timestamp-plus-content check (the repo has `docs/CONTINUATION.html/.pdf`; `AGENTS.html` and `AGENTS.pdf` do not exist, only `AGENTS.md`). Diagram validity: every Mermaid block must parse and every rendered image be non-blank (§11.4.258). Behaviour claims in docs are checked against code through the index (for example a documented endpoint must be a route node).
 
 ### 7.7 Governance conflicts
 
@@ -449,12 +449,13 @@ Each checklist is executed per unit in step A3/A4. "I" marks an index-driven che
 
 ## 9. Evidence record schema
 
-One JSON file per finding at `specs/001-full-project-audit-remediation/audit/findings/<finding_id>.json`, schema id `finding/1`. Evidence blobs are separate files referenced by sha256 (content-addressed, so a record cannot silently point at changed bytes, §11.4.207/§11.4.268 spirit).
+One JSON file per finding at `specs/001-full-project-audit-remediation/audit/findings/<finding_id>.json`, schema id `finding/1`. The canonical id is `FND-NNNN` (register-minted); the unit-local `F-<unit>-NNN` is stored as `unit_alias` (see document 04 and `data-model.md`). Evidence blobs are separate files referenced by sha256 (content-addressed, so a record cannot silently point at changed bytes, §11.4.207/§11.4.268 spirit).
 
 ```json
 {
   "schema": "finding/1",
-  "finding_id": "F-<unit>-<seq>",
+  "finding_id": "FND-0001",
+  "unit_alias": "F-catalog-api-001",
   "register_item": "ATM-NNN",
   "fingerprint": "sha256 of normalised (unit, file, symbol-or-key, rule-id, root-cause-key)",
   "title": "short imperative statement of the problem",
@@ -788,7 +789,6 @@ echo "{\"soft\":$soft,\"live\":$live,\"headroom\":$((soft-live))}"
 ### 16.3 Open items (UNCONFIRMED / UNKNOWN)
 
 - Grammar of `codegraph_safe.sh` subcommands and the exact `codegraph query` flags in 1.6.0.
-- Whether `codegraph affected` exists in 1.6.0.
 - Embedding dimensionality of `ordis/jina-embeddings-v2-base-code` (read from model card at audit time).
 - Contents of `docker-compose.security.yml` and whether SonarQube/ZAP/HawkScan run from it.
 - Mutation tooling script location and per-language coverage tools for Kotlin/Rust/Python.

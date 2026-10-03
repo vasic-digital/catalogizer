@@ -8,7 +8,7 @@
 | Status | draft |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | Factual map of the whole Catalogizer system as it exists in the tree on `main` |
-| Method | Read-only inspection: `git ls-files`, `git submodule status --recursive`, targeted file reads, two small static-parse scripts (route extraction and client-to-route comparison). No builds, no test runs, no network calls. |
+| Method | Read-only inspection: `git ls-files`, `git submodule status --recursive`, targeted file reads, two small static-parse scripts (route extraction and client-to-route comparison). No builds, no test runs, no network calls. Baseline commit `e4852ce7`. |
 | Traceability | FR-005, FR-006, FR-015, FR-016, FR-017, FR-021; SC-002, SC-004, SC-008 |
 
 ## Table of contents
@@ -138,17 +138,17 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Second binary | `catalog-api/cmd/boot/main.go` - a CLI that boots infrastructure through `digital.vasic.containers` (`pkg/boot`, `pkg/compose`, `pkg/distribution`, `pkg/remote`) | VERIFIED |
 | HTTP framework | Gin v1.12.0 (`router := gin.Default()`, main.go:915); gorilla/mux v1.8.1 is also a dependency and is used by `internal/handlers/localization_handlers.go` and `media_player_handlers.go` (`RegisterRoutes(router *mux.Router)`) | VERIFIED |
 | Listeners | HTTP on `cfg.Server.Port` (default 8080, scans up to 10 ports upward via `findAvailablePort`, writes the chosen port to `./.service-port`); HTTPS HTTP/2 and HTTP/3 (QUIC, `quic-go`) on port 28443 using a self-signed certificate from `getOrCreateSelfSignedCert()` | main.go:86-115, 1795-1850 |
-| Config | `config.json` loaded by `config.LoadConfig("config.json")`, then overridden by environment variables: `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SERVER_PORT`, `HOST`, `GIN_MODE`, `DATABASE_TYPE/HOST/PORT/NAME/USER/PASSWORD/SSL_MODE`, `STORAGE_*`, `REDIS_ADDR`, `REDIS_PASSWORD`, `TRUSTED_PROXIES`, `INFRA_PROVISION_REQUIRED`, `APP_ENV` | main.go:315-355 |
+| Config | `config.json` loaded by `config.LoadConfig("config.json")`, then overridden by environment variables: `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `SERVER_PORT`, `HOST`, `GIN_MODE`, `DATABASE_TYPE/HOST/PORT/NAME/USER/PASSWORD/SSL_MODE`, `STORAGE_*`, `REDIS_ADDR`, `REDIS_PASSWORD`, `TRUSTED_PROXIES`, `INFRA_PROVISION_REQUIRED`, `APP_ENV` | main.go:315-355 (core); `STORAGE_*` config/config.go:252-270; `REDIS_*` main.go:562-563; `TRUSTED_PROXIES` main.go:927; `INFRA_PROVISION_REQUIRED` main.go:375; `APP_ENV` main.go:270 |
 | Config struct | `Server`, `Database`, `Auth`, `Catalog`, `Storage`, `Logging`, `Proxy` | `catalog-api/config/config.go:13-20` |
 | Auth | JWT HS256, 24 h expiry default (`jwtExpiry: 24 * time.Hour`), refresh tokens persisted in `user_sessions`; login lockout counters (`IncrementFailedLoginAttempts`) | `services/auth_service.go:34,57-125` |
 | Route count | 259 distinct (method, path) pairs registered directly in `main.go` (STATIC parse, `scratchpad/routes.py`); handlers registered through `mux` helpers are not included | STATIC |
 | Route groups | `/api/v1/auth`, `/catalog`, `/search`, `/download`, `/stream`, `/copy`, `/media`, `/entities`, `/browse`, `/storage`, `/storage-roots`, `/stats`, `/smb`, `/scans`, `/conversion`, `/admin`, `/users`, `/roles`, `/configuration` (wizard steps), `/errors`, `/logs`, `/collections`, `/assets`, `/playback`, `/analytics`, `/reports`, `/favorites`, `/playlists`, `/subtitles`, `/recommendations`, `/sync`, `/challenges`; outside the JWT group: `/health`, `/api/v1/health`, `/health/deep`, `/discovery`, `/metrics`, `/ws`, `/api/v1/image-proxy`, `/api/v1/assets/:id`, `/api/v1/cover/*`, `/debug/pprof/*` | main.go:957-1640 |
 | Global middleware | SecurityHeaders, ConcurrencyLimiter(100), RequestTimeout(60 s), CORS, metrics, logger, error handler, Firebase, RequestID, InputValidation, compression | main.go:979-991 |
-| Rate limiting | Redis-backed when `REDIS_ADDR` answers a ping, else in-memory fallback | main.go:560-575 |
+| Rate limiting | Redis-backed only when `REDIS_RATE_LIMIT=="true"` AND the Redis client exists (`REDIS_ADDR` answered a ping, main.go:560-575); otherwise in-memory. `loginRateLimiter` (main.go:900) is always in-memory. `docker-compose.yml` sets neither `REDIS_ADDR` nor `REDIS_RATE_LIMIT` | main.go:560-575, 900-913 |
 | Source layout | Two parallel layers: root packages `handlers/`, `services/`, `repository/`, `models/`, `middleware/`, `database/`, `filesystem/`, `config/`, `smb/`, `utils/`, `challenges/`, and `internal/` packages (`auth`, `cache`, `concurrency`, `config`, `eventbus`, `firebase`, `handlers`, `httpclient`, `infra`, `lifecycle`, `logging`, `media`, `metrics`, `middleware`, `models`, `modules`, `monitoring`, `recovery`, `services`, `smb`, `tests`). `main.go` imports both, aliasing the root ones `root_handlers`, `root_services`, `root_repository`, `root_middleware`, `root_config` | main.go:3-23 |
 | Challenge package | `catalog-api/challenges/` (Go, 45 files named `ch*`) registers runtime challenges through `RegisterAll(svc)`; `GET/POST /api/v1/challenges...` runs them | VERIFIED |
 | Go submodule wiring | 23 `replace digital.vasic.<x> => ../submodules/<x>` directives (assets, auth, cache, challenges, concurrency, config, containers, database, discovery, entities, event_bus, filesystem, lazy, media, memory, middleware, observability, rate_limiter, recovery, security, storage, streaming, watcher) | go.mod, `grep '^replace'` |
-| Module registry | `internal/modules/registry.go` registers the `digital.vasic.*` modules at start (`modules.RegisterModules()`, main.go:285) | VERIFIED |
+| Module registry | `internal/modules/registry.go` registers the `digital.vasic.*` modules at start (`modules.RegisterModules()`, main.go:293) | VERIFIED |
 
 #### Verified implementation state worth knowing
 
@@ -158,8 +158,8 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | `FTPScanner.ScanPath`, `NFSScanner.ScanPath`, `WebDAVScanner.ScanPath` bodies are a comment and `return nil` (no scanning) | same file, lines 1044-1047, 1076-1079, 1108-1111 |
 | Only `LocalScanner` and `SMBScanner` have implemented `scanDirectory` logic (lines 544-700) | same file |
 | `filesystem/` has real client files for FTP, NFS (plus darwin and windows variants), SMB, WebDAV and local | `catalog-api/filesystem/*.go` |
-| `internal/media/` (`manager.go` with `NewMediaManager`, `realtime/` watchers, `detector/`, `analyzer/`, `database/` with its own `schema.sql` and a password-keyed SQLite DSN) has no non-test importer other than `internal/media/providers` (imported by `main.go`, `handlers/media_entity_handler.go`); `NewMediaManager` and `internal/handlers.NewMediaHandler` have no call site outside tests | `grep` of imports, appendix A.7 |
-| `/ws` is registered on the bare `router`, outside the `api` JWT group, and `handlers/websocket_handler.go` contains no token, auth or jwt handling; `CheckOrigin` returns `true`. The comment at main.go:1083 says "auth via query parameter" | main.go:1083-1084; `grep -Ei 'token|auth|jwt'` over the handler returns only the `CheckOrigin` line |
+| `internal/media/` (`manager.go` with `NewMediaManager`, `realtime/` watchers, `detector/`, `analyzer/`, `database/` with its own `schema.sql` and a password-keyed SQLite DSN) is only partly unwired. `internal/media/models` has 9 production importers outside `internal/media/` (handlers, repository, `internal/services/aggregation_service.go`, `internal/handlers/media.go`) and `internal/media/providers` is imported by `main.go` and `handlers/media_entity_handler.go`. The root package, `manager`, `realtime` and `detector` have no non-test importer outside `internal/media/`; `analyzer` and `database` are imported outside it only by `internal/handlers/media.go` (`MediaHandler`). `NewMediaManager` and `internal/handlers.NewMediaHandler` have no call site outside tests | `grep` of imports, appendix A.7 |
+| `/ws` is registered on the bare `router`, outside the `api` JWT group, and `handlers/websocket_handler.go` contains no token, auth or jwt handling (case-insensitive grep for `token|auth|jwt` returns no lines); `CheckOrigin` (line 124) returns `true`. The comment at main.go:1083 says "auth via query parameter" | main.go:1083-1084; `grep -Ei 'token|auth|jwt'` over the handler returns no lines |
 | Several `/api/v1` routes are inline closures returning static empty collections (for example `/sync/conflicts` returns `{"conflicts": [], "count": 0}`) | main.go:1698-1775 |
 | `Alt-Svc` header middleware is added with `router.Use` at main.go:1838, after route registration | VERIFIED text; runtime effect UNCONFIRMED (Gin applies `Use` only to routes added after it) |
 
@@ -177,7 +177,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Production serving | `catalog-web/Dockerfile`: `node:20-alpine` build, `nginx:alpine` runtime on port 3000; `catalog-web/nginx.conf` proxies `/api` and `/ws` to `host.containers.internal:8080` | Dockerfile:1,64-79; nginx.conf:15-28 |
 | Shared submodules | 9 `file:` dependencies: auth_context_react, catalogizer_api_client_ts, collection_manager_react, dashboard_analytics_react, media_browser_react, media_player_react, media_types_ts, ui_components_react, websocket_client_ts. Source imports found for 8 of them; the api-client submodule appears only as a type re-export in `src/lib/module-registry.ts` and a `declare module` stub in `src/types/modules.d.ts` | grep over `src/` |
 | Tests | 173 tracked test or spec files; Vitest (jsdom) for unit tests, Playwright specs under `catalog-web/e2e/` | `git ls-files` |
-| Status documents | Eight phase and status Markdown files sit at the package root (`PHASE-3.2.6-SUMMARY.md`, `IMPLEMENTATION-STATUS.md`, and others) | VERIFIED listing |
+| Status documents | Seven phase and status Markdown files sit at the package root (`PHASE-3.2.6-SUMMARY.md`, `IMPLEMENTATION-STATUS.md`, and others) | VERIFIED listing |
 
 ### 3.3 catalogizer-desktop (Tauri client)
 
@@ -199,7 +199,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Rust modules | `ftp.rs, local.rs, network.rs, nfs.rs, smb.rs, webdav.rs, main.rs` | `src-tauri/src/` |
 | Commands | `scan_network, scan_smb_shares, browse_smb_share, test_smb_connection, test_ftp_connection, test_nfs_connection, test_webdav_connection, test_local_connection, load_configuration, save_configuration, get_default_config_path` | main.rs:181-193 |
 | Output | `save_configuration` writes JSON `{accesses: [{name,type,account,secret}], sources: [{type,url,access}]}`; default path `~/.catalogizer/config.json` | main.rs:32-51,102-111,158-171 |
-| Consumer of that file | Not found. `catalog-api` reads `config.json` with a different schema (`server`, `database`, `auth`, ...); the only repository mention of an `accesses` key outside the wizard is `installer-wizard/README.md` | grep, UNCONFIRMED |
+| Consumer of that file | Not found. `catalog-api` reads `config.json` with a different schema (`server`, `database`, `auth`, ...); no consumer of an `accesses` key exists outside `installer-wizard/` (only an unrelated `access_count` label in `catalog-web/src/pages/Admin.tsx`) | grep, UNCONFIRMED |
 | Docs | `STATUS.md`, `TESTING.md`, `badges.json`, `test-results.json` tracked at package root | VERIFIED |
 
 ### 3.5 catalogizer-android and catalogizer-androidtv
@@ -212,7 +212,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | UI | Jetpack Compose (BOM 2024.12.01), Material 3, Navigation Compose | Compose BOM 2024.06.00, `androidx.tv:tv-foundation 1.0.0-alpha11`, `tv-material 1.0.0` |
 | Networking | Retrofit 2.9.0, OkHttp 4.12.0, kotlinx-serialization | same |
 | Storage | Room 2.6.1 (schema export to `app/schemas`), DataStore | Room 2.6.1, DataStore |
-| Playback | Media3 ExoPlayer 1.2.0 | not listed in the first 40 grep matches; UNCONFIRMED |
+| Playback | Media3 ExoPlayer 1.2.0 | Media3 ExoPlayer 1.2.0 (VERIFIED: `catalogizer-androidtv/app/build.gradle.kts:216-218`) |
 | Image loading | Coil 2.5.0 | Coil 2.5.0 plus coil-svg |
 | API interface | `data/remote/CatalogizerApi.kt`, 42 endpoints; Retrofit base URL forced to end with `/api/v1/` (`DependencyContainer.kt:94-98`) | `data/remote/CatalogizerApi.kt`, 37 endpoints, paths written as `api/v1/...`; base URL is the server root (`DependencyContainer.kt:99`) |
 | Discovery | none found | `data/discovery/NetworkDiscoveryService.kt` (references the multicast group or `/discovery`) |
@@ -227,7 +227,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Package | `@catalogizer/api-client` 1.0.0, `main dist/index.js`, built with `tsc`, tested with Vitest | `package.json` |
 | Source | `src/index.ts`, `src/services/*` (including `AuthService.ts`, `SMBService.ts`), `src/utils/http.ts` (axios), `src/types` | VERIFIED |
 | Tracked build output | 28 files under `dist/` and 5 under `releases/` are tracked in git | `git ls-files | grep -c` |
-| Consumers | No `package.json` in the repository depends on `@catalogizer/api-client`; the only mentions are in `scripts/*.sh`. `catalog-web` depends on a different package, `@vasic-digital/catalogizer-api-client`, from the submodule `submodules/catalogizer_api_client_ts` | grep over package manifests |
+| Consumers | Only one `package.json` depends on `@catalogizer/api-client`: `installer-wizard/package.json:26` (`"file:../catalogizer-api-client"`), and no import of it was found under `installer-wizard/src`. Other mentions are in `build-scripts/build-all.sh`, `README.md` and `Website/download.md`. `catalog-web` depends on a different package, `@vasic-digital/catalogizer-api-client`, from the submodule `submodules/catalogizer_api_client_ts` | grep over package manifests |
 | Route agreement | Of 53 distinct (method, path) pairs extracted, 26 have no matching static route in `catalog-api/main.go` (for example `/smb/configs`, `/auth/password`, `/auth/api-keys`, `/info`) | STATIC, scratchpad `cmp2.py` |
 
 ### 3.7 Other top-level components
@@ -322,14 +322,14 @@ Rule used for "Consumer": a `replace` in `catalog-api/go.mod` or a `file:` depen
 |---|---|---|---|---|
 | REST | web, android, androidtv to API | HTTPS or HTTP JSON under `/api/v1` | Bearer JWT in `Authorization` | api.ts, Retrofit interfaces |
 | REST via IPC | desktop webview to API | Tauri `invoke('make_http_request')` then Rust `reqwest` | URL prefix check against configured server | main.rs:76-101 |
-| WebSocket | web (and Android `WebSocketRepository`) to API | `ws(s)://host/ws`, token in query string | Server fans out event-bus events as message types `notification`, `scan_started`, `media_update`, `file_created`, `file_modified`, `file_deleted` | eventbus_bridge.go:51-149; websocket.ts |
+| WebSocket | web (and Android `WebSocketRepository`) to API | `ws(s)://host/ws`, token in query string | Server fans out event-bus events as message types `notification`, `scan_started`, `media_update`, `file_created`, `file_modified`, `file_deleted` | internal/handlers/eventbus_bridge.go:51-149; websocket.ts |
 | Stream token in URL | media players to API | `?access_token=` or `?token=` accepted by `RequireAuth` when no header is present | for libVLC and ffmpeg style clients | middleware/auth.go:38-70 |
 | UDP multicast | API to LAN | Announcer and responder from `digital.vasic.discovery` | group 239.42.42.42, port 42069 | main.go:835-851; broadcast.go:33-36 |
 | HTTP discovery | LAN clients to API | `GET /discovery` returns service, version, `api_base_url`, `websocket_url`, capabilities | main.go:957-976 | |
 | Scanner to sources | API to file servers | Per-protocol clients in `catalog-api/filesystem` (SMB, FTP, NFS, WebDAV, local) | scanner uses `filesystem.ClientFactory` | universal_scanner.go; filesystem/factory.go |
 | API to metadata providers | API to Internet | HTTPS with optional SOCKS or HTTP proxy from `Proxy` config | section 10 | providers.go |
 | API to DB | in process | `database/sql` through `database.DB` wrapper | SQLite (go-sqlcipher driver named `sqlite3`) or PostgreSQL (`lib/pq`) | database/connection.go:23-60 |
-| API to Redis | in process | go-redis v9 | rate limiting only (main.go:560) | |
+| API to Redis | in process | go-redis v9 | rate limiting only, and only when `REDIS_RATE_LIMIT=="true"` and a ping succeeds (main.go:560-575, 906-913); login limiter always in-memory | |
 | API to object storage | in process | `digital.vasic.storage/pkg/s3` client | `STORAGE_TYPE`, endpoint, bucket | main.go:725-760 |
 | Wizard to disk | wizard to filesystem | JSON file | consumer unconfirmed | section 3.4 |
 | Static site | Website | VitePress build, no runtime link | | |
@@ -341,8 +341,8 @@ Rule used for "Consumer": a `replace` in `catalog-api/go.mod` or a `file:` depen
 | Store | Dialect or format | Used by | Notes |
 |---|---|---|---|
 | Main DB | SQLite via `github.com/mutecomm/go-sqlcipher` (driver name `sqlite3`) or PostgreSQL 15 via `github.com/lib/pq` | catalog-api everything | Selected by `DATABASE_TYPE` or `database.type`; SQLite default path `./data/catalogizer.db`; WAL, busy timeout 30 s, foreign keys on; pool defaults 25 open, 10 idle, 5 min lifetime, 3 min idle time |
-| Media sub-DB | SQLite with `_pragma_key` (encrypted) | `internal/media/database` | Schema in `internal/media/database/schema.sql` (media_types, media_items, external_metadata, directory_analysis, media_files, quality_profiles, change_log, media_collections, media_collection_items, user_metadata, detection_rules). The package is not wired from `main.go` (section 3.1) |
-| Redis 7 | key-value | rate limiter | Optional; failure falls back to memory |
+| Media sub-DB | SQLite with `_pragma_key` (encrypted) | `internal/media/database` | Schema in `internal/media/database/schema.sql` (media_types, media_items, external_metadata, directory_analysis, media_files, quality_profiles, change_log, media_collections, media_collection_items, user_metadata, detection_rules). The `database` package is imported only by `internal/media/*` and `internal/handlers/media.go`, not from `main.go` (section 3.1) |
+| Redis 7 | key-value | rate limiter | Optional; active only with `REDIS_RATE_LIMIT=true` and a successful ping, otherwise in-memory |
 | Asset store | local directory `./cache/assets` or S3/MinIO | covers, images | `asset_store.NewFileStore(filepath.Join(".", "cache", "assets"))` main.go:666 |
 | Challenge results | JSON files under `./data/challenge_results` | challenge service | main.go:583 |
 | Client stores | Room (Android and TV), `localStorage` (web), Tauri config file (desktop) | clients | |
@@ -402,8 +402,8 @@ flowchart TD
 | Queue | `internal/services/universal_scanner.go:29,109` | Buffered channel of 100 `ScanJob`; worker pool size from `cfg.Catalog.ScannerConcurrency`, default 4 (main.go:597-602); `golang.org/x/sync/semaphore` bounds concurrency; panics inside a job are recovered, recorded and published |
 | Scan | `LocalScanner`, `SMBScanner` | Directory walk through `filesystem.FileSystemClient`; `ensureDirectoryPathExists` and `insertFileRecord` write `files` rows; `classifyFileType` maps extension to a type |
 | Detect | `AggregationService` (`internal/services/aggregation_service.go`) and `title_parser.go` | `AggregateAfterScan(ctx, storageRootID)` groups leaf files by title (`groupLeafFilesByTitle`), parses titles and seasons and episodes, `detectMediaType`, builds the TV hierarchy (`buildTVHierarchy`), creates `media_items`. `internal/media/detector` is a separate rule engine that is not on this path |
-| Events | `publishScanEvent` and `handlers/eventbus_bridge.go` | Scan start, complete and fail, entity created or updated, file created, modified or deleted are mapped to WebSocket message types |
-| Enrich | `AggregationService.enrichNewEntities` and `handlers/media_entity_handler.go` (`EnrichAllEntities`, 30 minute background context) | Selects up to 200 `media_items` without `external_metadata`; skips entirely with a warning when `TMDB_API_KEY` is unset (aggregation_service.go:688-692). The provider layer `internal/media/providers` registers 14 lazy providers (section 10) and is created in `main.go:784` with a proxy-aware HTTP client |
+| Events | `publishScanEvent` and `internal/handlers/eventbus_bridge.go` | Scan start, complete and fail, entity created or updated, file created, modified or deleted are mapped to WebSocket message types |
+| Enrich | `AggregationService.enrichNewEntities` and `handlers/media_entity_handler.go` (`EnrichAllEntities`, 30 minute background context at line 1021) | Selects up to 200 `media_items` without `external_metadata`; skips entirely with a warning when `TMDB_API_KEY` is unset (aggregation_service.go:688-692). The provider layer `internal/media/providers` registers 14 lazy providers (section 10) and is created in `main.go:784` with a proxy-aware HTTP client |
 | Recognition services | `internal/services/*_recognition_provider.go`, `media_recognition_service.go` | Movie, music, book and game/software recognisers behind a `MediaRecognitionService`; instantiated only inside the lazily built recommendation handler (main.go:491) |
 | Store | `repository/*` over `database.DB` | Tables in section 6.3; image quality in `image_quality_assessments`; covers in `cover_art*` |
 | Assets | `digital.vasic.assets` manager with resolver chain (`internal/services/asset_resolvers.go`: cover-art-archive, fanart, IGDB, LLM image resolver, circuit breaker) | Files saved to the asset store; `QualityRevalidator.Start` runs in the background (main.go:700) |
@@ -461,13 +461,13 @@ Facts behind the sequence: login handler `handlers/auth_handler.go:19-37`; servi
 | WebSocket cleanup loop | `NewWebSocketHandler` (ticker and wait group) | `wsHandler.Stop()` on shutdown |
 | Event bus bridge | `eventBusBridge.Start()` main.go:661 | with the system event bus |
 | Cache cleanup | `services.NewCacheService` | `cacheService.Close()` |
-| Entity enrichment | goroutines in `media_entity_handler.go:1019,1548`, 30 minute context | `mediaEntityHandler.Close()` waits on a wait group |
+| Entity enrichment | goroutines in `media_entity_handler.go:1019,1548`; the line-1021 context is 30 minutes, the line-1548 one 5 minutes | `mediaEntityHandler.Close()` waits on a wait group |
 | Log stream relays | log management adapter | `logAdapter.Close()` |
 | Middleware cleanup goroutines (rate limiters) | `root_middleware.StopAll()` | on shutdown |
 | Discovery announcer and responder | main.go:835-851 | process lifetime |
 | Runtime metrics collector | `metrics` package | `metrics.StopRuntimeCollector()` |
 | HTTPS and HTTP/3 servers | goroutines main.go:1815-1850 | `Shutdown` after the HTTP server |
-| Lazily initialised services | `sync.Once` for recommendation, conversion, playlist, subtitle handlers (main.go:486-630) | built on first request |
+| Lazily initialised services | `sync.Once` for recommendation, conversion, playlist, subtitle handlers (main.go:486-630) and `syncHandlerOnce` (main.go:863) | built on first request |
 | Module registry | `modules.RegisterModules()` | `moduleRegistry.Stop()` |
 | Infra provisioner | `infra.Provision` before DB connection | one-shot, off by default (`INFRA_PROVISION_ENABLED`) |
 | Firebase | `firebase.New` | disabled mode when `GOOGLE_APPLICATION_CREDENTIALS` is unset |
@@ -604,10 +604,10 @@ HelixQA sessions require running services and tools (`ffmpeg`, `playwright`, `ch
 | # | Contract | Defined in (owner) | Consumers | Format and notes |
 |---|---|---|---|---|
 | C1 | REST API `/api/v1` (259 static route pairs) | `catalog-api/main.go` and handlers | web, desktop, android, androidtv, api-client, HelixQA API banks, k6 tests | JSON over HTTP; no OpenAPI file was found in the first-level listing; `docs/API_CONTRACTS.md` exists (DOC-CLAIM) |
-| C2 | Android phone Retrofit interface | `catalogizer-android/.../CatalogizerApi.kt` | catalog-api | 42 endpoints; 24 have no matching static route (for example `user/preferences`, `user/favorites`, `user/watchlist`, `media/updated`, `status`, `smb/sources/status`, `analytics/dashboard`) and two written as `api/v1/entities/...` resolve to `/api/v1/api/v1/entities/...` because the base URL already ends with `/api/v1/` |
+| C2 | Android phone Retrofit interface | `catalogizer-android/.../CatalogizerApi.kt` | catalog-api | 42 endpoints; 22 have no matching static route (for example `user/preferences`, `user/favorites`, `user/watchlist`, `media/updated`, `status`, `smb/sources/status`, `analytics/dashboard`) and two written as `api/v1/entities/...` resolve to `/api/v1/api/v1/entities/...` because the base URL already ends with `/api/v1/` (24 unreachable in total: 22 plus 2 doubled) |
 | C3 | Android TV Retrofit interface | `catalogizer-androidtv/.../CatalogizerApi.kt` | catalog-api | 37 endpoints; 36 match; `POST /api/v1/media/recognize` has no static route |
-| C4 | Web API modules | `catalog-web/src/lib/*Api.ts` | catalog-api | 165 distinct pairs extracted; 62 unmatched, of which 19 use an unresolved `${this.baseUrl}` template in `collectionsApi.ts`; the rest include `/identities`, `/discovery/*`, `/playlists/*` extras, `/favorites/toggle`, `/storage/roots/:id`, `/media/:id` PUT and DELETE (STATIC, string-level, may miss routes registered by other means) |
-| C5 | TS client library routes | `catalogizer-api-client/src/services/*` | no consumer found | 53 distinct pairs; 26 unmatched (`/smb/configs`, `/auth/api-keys`, `/auth/password*`, `/info`, and others) |
+| C4 | Web API modules | `catalog-web/src/lib/*Api.ts` | catalog-api | 165 distinct pairs extracted; 62 unmatched, of which 22 use an unresolved `${this.baseUrl}` template in `collectionsApi.ts`; the rest include `/identities`, `/discovery/*`, `/playlists/*` extras, `/favorites/toggle`, `/storage/roots/:id`, `/media/:id` PUT and DELETE (STATIC, string-level, may miss routes registered by other means) |
+| C5 | TS client library routes | `catalogizer-api-client/src/services/*` | declared dependency of `installer-wizard` only (no import found); no runtime consumer found | 53 distinct pairs; 26 unmatched (`/smb/configs`, `/auth/api-keys`, `/auth/password*`, `/info`, and others) |
 | C6 | Auth token | `services.AuthService` issues; `middleware.JWTMiddleware` validates | all clients | HS256, issuer `catalogizer`, claims `user_id, username, role_id, session_id`; shared secret from config or env or generated at start (main.go:514-521); web stores it in `localStorage['auth_token']` |
 | C7 | Login response | `services.AuthResult` | web `LoginResponse` type, android, androidtv, desktop | `user`, `session_token`, `refresh_token`, `expires_at` as serialized; client type files not compared |
 | C8 | WebSocket messages | `handlers/websocket_handler.go`, `internal/handlers/eventbus_bridge.go` | web (`MediaUpdate`, `SystemUpdate` types), Android `WebSocketRepository` | message types `notification`, `scan_started`, `media_update`, `file_created`, `file_modified`, `file_deleted`; token in query string; server-side auth absent (3.1) |
@@ -634,10 +634,10 @@ These are facts located in the tree. Each needs a register entry, a root-cause i
 |---|---|---|
 | O-01 | FTP, NFS and WebDAV scanners are registered but do nothing; clients for these protocols exist, and the wizard offers all five protocols | universal_scanner.go:119-123,1044-1111 |
 | O-02 | `/ws` has no server-side authentication although a comment claims query-parameter auth; `CheckOrigin` allows all origins | main.go:1083; websocket_handler.go:124 |
-| O-03 | 24 of 42 Android phone endpoints and 62 of 165 web request shapes have no matching static route; one Android TV endpoint has none; two phone endpoints build a doubled `/api/v1/api/v1` path | section 14, C2 to C4 (STATIC) |
-| O-04 | `catalogizer-api-client` is not depended on by any application; 26 of its 53 routes do not match; its `dist/` and `releases/` are tracked | section 3.6 |
+| O-03 | 24 of 42 Android phone endpoints (22 with no matching static route plus 2 doubled `/api/v1/api/v1` paths) and 62 of 165 web request shapes have no matching static route; one Android TV endpoint has none; two phone endpoints build a doubled `/api/v1/api/v1` path | section 14, C2 to C4 (STATIC) |
+| O-04 | `catalogizer-api-client` is declared as a `file:` dependency only by `installer-wizard/package.json:26` (no import under `installer-wizard/src`) and used by no other application; 26 of its 53 routes do not match; its `dist/` and `releases/` are tracked | section 3.6 |
 | O-05 | Three of four migration mechanisms are not executed by the Go process; the production compose file mounts the SQL directory into PostgreSQL `initdb.d` | section 6.3 |
-| O-06 | Compose passes `API_PORT`, `REDIS_HOST`, `REDIS_PORT`; the process reads `SERVER_PORT` and `REDIS_ADDR`; Redis rate limiting in that stack therefore depends on `REDIS_ADDR` being set elsewhere | docker-compose.yml:76-83,100; main.go:324,562 |
+| O-06 | Compose passes `API_PORT`, `REDIS_HOST`, `REDIS_PORT`; the process reads `SERVER_PORT` and `REDIS_ADDR`; Redis rate limiting in that stack therefore also needs `REDIS_ADDR` and `REDIS_RATE_LIMIT=true`, neither of which compose sets (grep over `docker-compose*.yml`) | docker-compose.yml:76-83,100; main.go:324,562 |
 | O-07 | `docker-compose.yml` builds with `context: ./catalog-api` while the Dockerfile copies `submodules/...` and `catalog-api/...` from a repository-root context | docker-compose.yml:68; catalog-api/Dockerfile:20-45 |
 | O-08 | `deployment/docker-compose.yml` mounts `./sql/init`, which does not exist | `ls deployment/sql` fails |
 | O-09 | Version drift: apps and Cargo manifests say 2.4.0, `versions.json` global says 2.3.0 build 25 dated 2026-04-28, `catalogizer-api-client` says 1.0.0 | section 3 |
@@ -650,6 +650,7 @@ These are facts located in the tree. Each needs a register entry, a root-cause i
 | O-16 | `catalog-api/result_*.json`, `*.bak`, `coverage.*` files, `local.properties.backup`, `frontend.pid`, `server2.pid`, `server3.pid` are tracked or present at the top levels | `ls`, `git ls-files` (the pid files were seen by `ls`, tracked status not checked) |
 | O-17 | Builder image installs toolchains from unpinned network downloads; builder compose service uses host networking | docker/Dockerfile.builder:68,80; docker-compose.build.yml:63 |
 | O-18 | `storage_roots` credentials are read as plain columns for SMB connections; at-rest protection is not evident from the query | main.go:407-411 |
+| O-19 | `.env.distributed` and `.env.security` are tracked in git (mode 664; `git ls-files`), as are `.env.roundrobin` and `.env.spread`. Their secret-named variables (for example `BUILD_HOST_*_KEY_PATH`, `SONARQUBE_PASSWORD`, `SNYK_TOKEN`, `SONAR_TOKEN`) were checked by name only; whether the values are placeholders is UNCONFIRMED. Tracked `.env*` files conflict with CONST-042 / §11.4.10 (`.env` gitignored, mode 0600) | `git ls-files` filtered on `.env`; verify without printing values |
 
 ## 16. Areas not verified
 
@@ -663,7 +664,7 @@ These are facts located in the tree. Each needs a register entry, a root-cause i
 | U-06 | Whether the production compose stack builds and starts | Not executed | Containerized compose run |
 | U-07 | PostgreSQL `initdb.d` behaviour with the mounted directory | Not executed | Run the Postgres image in a rootless container and list applied objects |
 | U-08 | Equivalence of SQLite and PostgreSQL schemas produced by mechanism 1 | Only table-name unions were compared; columns, indexes and constraints were not | Schema dump comparison in containers |
-| U-09 | Android and Android TV runtime, ExoPlayer in TV, TV discovery protocol details | Not built or run; TV player dependency not confirmed in the grep window | Build in container, read full `build.gradle.kts` |
+| U-09 | Android and Android TV runtime, TV discovery protocol details | Not built or run | Build in container, read full `build.gradle.kts` |
 | U-10 | Relationship of `OCU-CUDA-Sidecar` to the system | No importer or reference examined | Search for `ocu` references and docs |
 | U-11 | Consumers of `vision_engine`, `screen_diff`, `replay_buffer`, `visual_regression`, `training_collector`, `doc_processor`, `llm_orchestrator`, `llm_provider`, `helix_memory`, `superspec` | Only `catalog-api/go.mod` and `catalog-web/package.json` were used as dependency evidence; HelixQA may consume them through nested submodules | Read `helix_qa/go.mod` and nested `.gitmodules` |
 | U-12 | Whether each submodule HEAD equals each upstream tip, and whether working trees are clean | No fetch or remote access performed (read-only inspection) | Recursive status and remote comparison under FR-017 and FR-019 |

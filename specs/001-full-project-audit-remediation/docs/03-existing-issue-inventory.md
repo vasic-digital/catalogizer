@@ -91,16 +91,16 @@ Kind codes: **T** = ticket-per-file, **L** = list/table inside a document, **C**
 | S-13 | `docs/status/*.md` (37 files) | R | `NOT COUNTED` | prose | none | 2026-02 to 2026-04 |
 | S-14 | `docs/audits/*.md` (7 files) and `docs/*AUDIT*.md` (10 files) | R | `CATAPI-DEFECT-001..006` = 6 (exact); others `NOT COUNTED` | prose, per-defect headings | `CATAPI-DEFECT-NNN` in one file | 2026-04-22 to 2026-04-30 |
 | S-15 | `docs/qa/**`, `docs/reports/qa-sessions/**` | R+T | 20 tracked files under qa-sessions, 3 ticket files; FINDING-1 and FINDING-2 in `findings_20260626` | prose | `FIX-QA-YYYY-MM-DD-NNN`, `DEFER-QA-...`, `FINDING-N` | 2026-04-21 to 2026-06-29 |
-| S-16 | `docs/security/**` | S+R | npm audit 12/35/18/19 vulns, govulncheck 4, gosec baseline 24 (exact, latest run); Snyk failed (snyk-go: packageURL validation failed; other four: not authenticated, run `snyk auth`) | tool-native | tool-native | 2026-06-29 |
+| S-16 | `docs/security/**` | S+R | npm audit 12/35/18/19 vulns, govulncheck 4, gosec 810 issues in the latest run `docs/security/gosec-20260629_030611.json` (the 24 figure is the 2026-04-22 baseline `gosec-baseline-2026-04-22.json`); Snyk failed (snyk-go: packageURL validation failed; other four: not authenticated, run `snyk auth`) | tool-native | tool-native | 2026-06-29 |
 | S-17 | `challenges/helixqa-banks/*.yaml` | Q | 15 files, 1,269 cases, 1,178 TODO step lines (exact) | none | `id` per case | see 5.15 |
 | S-18 | `challenges/data/challenges_bank.json` | Q | 507 challenges, 18 categories (exact), generated 2026-04-04 | none | per challenge | see 5.15 |
-| S-19 | `submodules/helix_qa/banks/` | Q | 131 yaml + 66 json files; 2,882 cases over 145 parsed yaml files (cases may double count nested files) | none | per case | 2026-10-02 |
+| S-19 | `submodules/helix_qa/banks/` | Q | 131 top-level yaml + 66 top-level json (tracked: 145 yaml, 67 json); 2,882 cases over 145 parsed yaml files (cases may double count nested files) | none | per case | 2026-10-02 |
 | S-20 | `submodules/helix_qa/` docs and baselines | G | `bluff-baseline.txt` 9 entries (5 below 100% mutation kill); `behavior-anchors.md` 27 rows, 27 active, 0 pending | `active/pending-anchor/retired` | `CAP-NNN` | 2026-10-02 |
 | S-21 | `.specify/memory/constitution.md` Known Conflicts | G | 16 numbered items (exact), many with sub-items | FIXED / DECIDED / OPEN / NOTE / UNCONFIRMED | item numbers 1-16 | 2026-10-03 |
-| S-22 | Per-module `CLAUDE.md` / `AGENTS.md` (20 tracked files outside submodules) | R | `NOT COUNTED`; 0 to 3 marker words per file | none | none | 2026-10-02 |
+| S-22 | Per-module `CLAUDE.md` / `AGENTS.md` (19 tracked files outside submodules) | R | `NOT COUNTED`; 0 to 3 marker words per file | none | none | 2026-10-02 |
 | S-23 | Code markers (TODO, FIXME, HACK, XXX) and skipped tests | M | section 5.18 (exact) | none | none | n/a |
 | S-24 | `.implementation/` | R | 2 validation reports; progress marker files | prose | HELIX ids | 2026-04-17 |
-| S-25 | `SECURITY_KEY_ROTATION_REQUIRED.md`, `SECURITY_AUDIT_REPORT.md`, `docs/security/firebase-api-key-exposure-20260629.md` | R | 1 action list with 38 provider rows (exact) in the first; others `NOT COUNTED` | prose | none | 2026-04-06 to 2026-06-29 |
+| S-25 | `SECURITY_KEY_ROTATION_REQUIRED.md`, `SECURITY_AUDIT_REPORT.md`, `docs/security/firebase-api-key-exposure-20260629.md` | R | 1 action list with 37 provider rows (exact) in the first; others `NOT COUNTED` | prose | none | 2026-04-06 to 2026-06-29 |
 
 The number of tracked Markdown files in the main repository (excluding submodules) is 2,514; 49 of them sit at the repository root and 37 in `docs/status/`. The inventory above covers every place that was found to hold problem statements. A Markdown file not listed is not claimed clean: the reconciliation procedure (section 10, step 4) includes a lead scan over all 2,514 so that nothing is dropped by omission.
 
@@ -119,7 +119,7 @@ The number of tracked Markdown files in the main repository (excluding submodule
 | category | functional 544, ux 542, visual 250, accessibility 165, UX 141 (case variant of ux), content 104, brand 21, performance 9, functionality 2 |
 | platform | blank 1,305, androidtv 413, video-frame 49, api 11 |
 | found_date | 2026-03-26 to 2026-04-21 (one date per file; 10 distinct dates) |
-| sections | Evidence 1,349, Related Issues 1,268, Reproduction Steps 768, Resolution 685 |
+| sections | Evidence 1,349, Related Issues 1,268, Reproduction Steps 768, Resolution 667 |
 
 **Quality observations that affect the mapping:**
 
@@ -175,7 +175,7 @@ Operator-owned items, 10 sections. 35 unchecked and 19 checked boxes (exact). Se
 
 Reading every hit: the catalog-api hits are prose in two Markdown reports (`catalog-api/CONVERSION_FINAL_SUMMARY.md:194`, `catalog-api/PHASE1_COMPLETION_REPORT.md:121,125`) and one echo line (`catalog-api/scripts/test-all.sh:140`); the qa-ai-system hits are grep patterns inside shell scripts. The only real code marker is `OCU-CUDA-Sidecar/internal/server/backend_cuda.go:287` (`TODO(operator): wire gosseract.Client ...`). Marker counts for submodules (tracked files, TODO/FIXME/HACK): constitution 225 (57 files; mostly marker text quoted in governance documents and test fixtures, real count UNCONFIRMED), llm_orchestrator 37, challenges 37, helix_qa 21, helix_memory 17, vision_engine 15, llm_provider 10, doc_processor 9, database 8, config 8, storage 7, security 7, rate_limiter 7, concurrency 7, auth 7, containers 5; all other submodules 0. Each submodule hit must be read before it becomes a register item, because quoted markers inside rule text are carriers, not defects (11.4.201(7)(a)).
 
-**Skipped tests:** catalog-api has 118 `t.Skip` call sites in 35 files; the majority are short-mode guards (stress 33, unreachable-endpoint 20, contract 8, chaos 6, integration 7) and 87 `testing.Short()` references exist. Two are honest environment skips with a reason (`SKIP-OK`). Whether a short-mode skip is acceptable depends on whether the full mode is run somewhere with evidence; that is an audit question (FR-009/FR-010), so the inventory lists them as leads, not defects. Skip counts in submodules (Go): helix_qa 151, containers 129, llm_provider 60, streaming 37, event_bus 33, storage 33, challenges 31, cache 30, concurrency 30, memory 30, observability 29, security 28, database 27, vision_engine 24, auth 22, llm_orchestrator 21, constitution 20, others 1 to 7.
+**Skipped tests:** catalog-api has 118 `t.Skip` call sites in 35 files; the majority are short-mode guards (stress 33, unreachable-endpoint 20, contract 8, chaos 6, integration 7) and 87 `testing.Short()` references exist. `SKIP-OK` markers (honest environment skips with a reason) appear at 16 sites in 8 files in catalog-api (`grep -rn SKIP-OK --include=*.go catalog-api`). Whether a short-mode skip is acceptable depends on whether the full mode is run somewhere with evidence; that is an audit question (FR-009/FR-010), so the inventory lists them as leads, not defects. Skip counts in submodules (Go), earlier broader pattern: helix_qa 151, containers 129, llm_provider 60; with `grep -rn --include=*.go '\bt\.Skip' <submodule>` run in the working tree: helix_qa 148, containers 130, llm_provider 54 (a reviewer-reported 139/126/53 was not reproduced). Others as counted earlier: streaming 37, event_bus 33, storage 33, challenges 31, cache 30, concurrency 30, memory 30, observability 29, security 28, database 27, vision_engine 24, auth 22, llm_orchestrator 21, constitution 20, others 1 to 7.
 
 **Correction (instrument false positive).** A first TypeScript/Rust skip regex that included `xit\(` reported 2 hits (desktop and wizard). Both were `std::process::exit(1)` in `src-tauri/src/main.rs`, a substring match. The corrected count of skipped tests in the TypeScript and Rust applications is **0** by that pattern. Kotlin `@Ignore` is 0 and Rust `#[ignore` is 0. This is recorded because the same carrier trap (11.4.201(7)(a)) will recur when the audit repeats these scans: use word-boundary patterns and test-framework-specific forms.
 
@@ -191,15 +191,15 @@ Seven dated audit reports in `docs/audits/` (2026-04-28 to 2026-04-30) and ten a
 
 ### 5.12 S-15 QA session archives and findings
 
-`docs/qa/` (9 entries including `findings_20260626/`, `helixqa-androidtv-20260629/`, `containerized-build-20260630/`, `cover-images-rootcause-20260629/`, `crashlytics-wiring-20260629/`, `androidtv-players-20260629/`, `provision-when-down-20260630/`) and `docs/reports/qa-sessions/` (4 session directories, 18 tracked files). Id schemes found in text: `FIX-QA-YYYY-MM-DD-NNN` (23 distinct values referenced across docs), `DEFER-QA-...` (4 distinct) and `DEFER-...` (6 distinct, overlapping), `FINDING-1`, `FINDING-2`, `FIX-OC3-NNN` (4), `HQA-DOCS-001`. Only 3 ticket files exist under `qa-sessions/*/tickets`; most FIX-QA ids exist only as references inside prose such as `docs/OPEN_POINTS_CLOSURE.md`. `FINDING-2` in `docs/qa/findings_20260626/discovered_findings.md` is stated OPEN (operator-gated upstream renumber); FINDING-1 is resolved with commit references (`dac3fc6e`, `1afec970`). The `DEFER-QA-2026-04-21-001/002` tickets (the `/challenges/results` client-disconnect refactor and a memory-burst review) are deferred, i.e. open. Mapping: each distinct id becomes one register item (or a link to an existing one); the id is kept as legacy id.
+`docs/qa/` (10 entries including `findings_20260626/`, `helixqa-androidtv-20260629/`, `containerized-build-20260630/`, `cover-images-rootcause-20260629/`, `crashlytics-wiring-20260629/`, `androidtv-players-20260629/`, `provision-when-down-20260630/`) and `docs/reports/qa-sessions/` (4 session directories, 20 tracked files). Id schemes found in text: `FIX-QA-YYYY-MM-DD-NNN` (22 distinct values in tracked files, `git grep -ohE`; same 22 in the working tree), `DEFER-QA-...` (4 distinct) and `DEFER-...` (6 distinct, overlapping), `FINDING-1`, `FINDING-2`, `FIX-OC3-NNN` (2 in tracked files, 11 in the working tree including untracked or ignored files), `HQA-DOCS-001`. Only 3 ticket files exist under `qa-sessions/*/tickets`; most FIX-QA ids exist only as references inside prose such as `docs/OPEN_POINTS_CLOSURE.md`. `FINDING-2` in `docs/qa/findings_20260626/discovered_findings.md` is stated OPEN (operator-gated upstream renumber); FINDING-1 is resolved with commit references (`dac3fc6e`, `1afec970`). The `DEFER-QA-2026-04-21-001/002` tickets (the `/challenges/results` client-disconnect refactor and a memory-burst review) are deferred, i.e. open. Mapping: each distinct id becomes one register item (or a link to an existing one); the id is kept as legacy id.
 
 ### 5.13 S-16 `docs/security/**`
 
-Scan outputs (JSON and text) and security reports (about 18 Markdown files). Latest run in the repository is 2026-06-29. Exact counts from files: npm audit `catalog-web` 12 (1 low, 4 moderate, 5 high, 2 critical), `catalogizer-api-client` 35 (2, 23, 8, 2), `catalogizer-desktop` 18 (2, 7, 7, 2), `installer-wizard` 19 (2, 7, 7, 3); `govulncheck` 4 entries (GO-2026-5061 among them); `gosec` baseline 24 issues (dated 2026-04-22); Snyk: all five results failed (F-8). Whether these findings still hold is unknown until re-run (FR-017 reports third-party versions; vulnerabilities in them are still findings under FR-006/FR-008). Mapping: one register item per vulnerability identifier per affected application, created at audit time from a fresh scan; the historical files are linked as evidence of first detection.
+Scan outputs (JSON and text) and security reports (about 18 Markdown files). Latest run in the repository is 2026-06-29. Exact counts from files: npm audit `catalog-web` 12 (1 low, 4 moderate, 5 high, 2 critical), `catalogizer-api-client` 35 (2, 23, 8, 2), `catalogizer-desktop` 18 (2, 7, 7, 2), `installer-wizard` 19 (2, 7, 7, 3); `govulncheck` 4 entries (GO-2026-5061 among them); `gosec` latest run `gosec-20260629_030611.json` 810 issues (stats: 364 files, 17 `nosec`), versus 24 in the 2026-04-22 baseline; Snyk: all five results failed (F-8). Whether these findings still hold is unknown until re-run (FR-017 reports third-party versions; vulnerabilities in them are still findings under FR-006/FR-008). Mapping: one register item per vulnerability identifier per affected application, created at audit time from a fresh scan; the historical files are linked as evidence of first detection.
 
 ### 5.14 S-25 credential-rotation documents
 
-`SECURITY_KEY_ROTATION_REQUIRED.md` lists 38 provider rows whose keys were exposed in local `.env` files and must be rotated; it states the action as open and is dated 2026-04-17. `docs/security/firebase-api-key-exposure-20260629.md` records a Firebase key exposure. These are danger-zone items. They map to Type Task, severity critical, and **the register MUST NOT store any credential value** (11.4.10); only the provider name and variable name are recorded. Whether the rotation was completed is UNKNOWN from the repository.
+`SECURITY_KEY_ROTATION_REQUIRED.md` lists 37 provider rows whose keys were exposed in local `.env` files and must be rotated; it states the action as open and is dated 2026-04-17. `docs/security/firebase-api-key-exposure-20260629.md` records a Firebase key exposure. These are danger-zone items. They map to Type Task, severity critical, and **the register MUST NOT store any credential value** (11.4.10); only the provider name and variable name are recorded. Whether the rotation was completed is UNKNOWN from the repository.
 
 ### 5.15 S-17, S-18, S-19, S-20 QA banks (HelixQA)
 
@@ -228,7 +228,7 @@ These are test definitions, not defect lists. They matter to the register in thr
 
 (Step-line counts can exceed the case count: a case has several steps.) The file names say "executable" while the steps say "TODO: Convert to executable"; that mismatch is itself a bluff signal (11.4.1, 11.4.27). Every case has `id, name, category, priority, platforms, steps`; none has a status field, so there is no recorded pass/fail state in the banks. `challenges/results/` holds only `.gitkeep`, so **no committed results exist** for these banks. `challenges/data/challenges_bank.json` holds 507 challenges in 18 categories, generated 2026-04-04, also without a status field.
 
-**HelixQA submodule banks, `submodules/helix_qa/banks/`.** 131 YAML and 66 JSON files (202 entries listed by `ls`, including directories); 145 YAML files parsed without error, holding 2,882 cases by a conservative count of `test_cases`, `cases` or `challenges` lists (nested files may double count, the exact distinct count is UNCONFIRMED). Only 4 `TODO` occurrences exist in them. The submodule also holds `docs/behavior-anchors.md` (27 capability rows, all `active`, 0 `pending-anchor`) and `challenges/baselines/bluff-baseline.txt` (9 data lines; five show per-file mutation kill rates below 100: `pkg/nexus/capture/factory.go` 88, `pkg/nexus/interact/factory.go` 88, `pkg/nexus/interact/verify/verifier.go` 20, `pkg/nexus/native/budget/assert.go` 33, `pkg/nexus/record/encoder/encoder.go` 77 - weak-test signals, each a candidate finding). `docs/IMPLEMENTATION_PROGRESS.md` states "Known Issues: None currently".
+**HelixQA submodule banks, `submodules/helix_qa/banks/`.** 131 top-level YAML and 66 top-level JSON files (202 entries listed by `ls`, including directories); tracked totals are 145 YAML (131 top-level) and 67 JSON (66 top-level); 145 YAML files parsed without error, holding 2,882 cases by a conservative count of `test_cases`, `cases` or `challenges` lists (nested files may double count, the exact distinct count is UNCONFIRMED). Only 4 `TODO` occurrences exist in them. The submodule also holds `docs/behavior-anchors.md` (27 capability rows, all `active`, 0 `pending-anchor`) and `challenges/baselines/bluff-baseline.txt` (9 data lines; five show per-file mutation kill rates below 100: `pkg/nexus/capture/factory.go` 88, `pkg/nexus/interact/factory.go` 88, `pkg/nexus/interact/verify/verifier.go` 20, `pkg/nexus/native/budget/assert.go` 33, `pkg/nexus/record/encoder/encoder.go` 77 - weak-test signals, each a candidate finding). `docs/IMPLEMENTATION_PROGRESS.md` states "Known Issues: None currently".
 
 **Mapping rule for banks.** Bank cases are NOT imported as problems one by one. Instead:
 1. One **gap item per bank file** that contains placeholder steps (11 items), whose acceptance is "every step executable and run with a recorded verdict", with the per-case placeholder count in the description. This keeps the register honest without creating 1,178 near-identical items (rationale in DR-3, section 14).
@@ -266,7 +266,7 @@ Mapping: **one register item per OPEN or UNCONFIRMED sub-item** (about 14 candid
 
 ### 5.18 S-22 per-module guidance files
 
-20 tracked `CLAUDE.md`/`AGENTS.md` files outside submodules (one under `.specify/extensions`, which is a template). Marker words ("known issue", "TODO", "not yet", "open") appear 0 to 3 times per file. They record rules, not problems, and Known Conflicts 11 and 13 already captured their doc-versus-build mismatches. They are scanned in the lead scan and otherwise map nowhere.
+19 tracked `CLAUDE.md`/`AGENTS.md` files outside submodules (one under `.specify/extensions`, which is a template). Marker words ("known issue", "TODO", "not yet", "open") appear 0 to 3 times per file. They record rules, not problems, and Known Conflicts 11 and 13 already captured their doc-versus-build mismatches. They are scanned in the lead scan and otherwise map nowhere.
 
 ### 5.19 Sources that exist in the checkout but hold no problem entries (explicitly listed, FR-002)
 
@@ -291,7 +291,7 @@ The repository has 8 git remotes (`origin, upstream, github, githubvasicdigital,
 | Testing diary | 11.4.149 | Not found (not searched deeply: UNCONFIRMED). | Out of scope here; plan owner to confirm. |
 | Request history ledger | 11.4.208 | **Present:** `docs/requests/history.md` revision 2, starts 2026-10-02, 4 entries; earlier sessions not reconstructed (stated in the file). Track/alias fields are UNKNOWN. | Keep; not a problem source. |
 | Session-resumption / continuation | 12.10, 11.4.131 | `docs/CONTINUATION.md` present (revision 9, 2026-06-29, HEAD `e5019c68` quoted, older than the current main). | Stale against current state: a finding (the file claims HEAD e5019c68). |
-| Single commit entrypoint | section 2, 11.4.234 | A root `commit` script exists (589 bytes, 2026-10-02); no `commit_all.sh` or `commit-push-all.sh` (Known Conflict 7). | Out of scope here. |
+| Single commit entrypoint | section 2, 11.4.234 | A root `commit` script exists (589 bytes; last git commit touching it 2025-10-07); no `commit_all.sh` or `commit-push-all.sh` (Known Conflict 7). | Out of scope here. |
 | External-tracker sync mechanism | 11.4.148 D5, 11.4.202 | Not found as configured (UNCONFIRMED). | Declared in FR-004; design in another plan document. |
 
 Consequence for SC-001: the "existing register" is empty. The register is built from scratch, and the inventory in sections 4 and 5 is the complete starting population.
@@ -307,16 +307,16 @@ All values exact unless marked. "Entries" are source entries before deduplicatio
 | Task and checklist items (S-03 to S-07, S-10) | 269 + 299 + 845 + 141 + 87 + 35 = 1,676 unchecked or not-started lines | all | Overlap between S-04 and S-05 unmeasured; 19 checked in S-10 and 0 elsewhere |
 | Other unchecked boxes in planning reports (S-12) | 66 + 38 + 12 + 11 + 10 + 9 + 4 + 7 + 37 + 20 + 7 = 221 | all | `MASTER_IMPLEMENTATION_PLAN_PHASES` 66; `PHASE_1_PROGRESS_REPORT` 38; `IMPLEMENTATION_PROGRESS_REPORT` 12; `IMPLEMENTATION_PACKAGE_SUMMARY` 11; `COMPREHENSIVE_IMPLEMENTATION_PLAN` 10; `PROJECT_STATUS_SUMMARY` 9; `FINAL_PROGRESS_REPORT` 4; `HELIXQA_AUTONOMOUS...PLAN` 7; `docs/COMPREHENSIVE_PACKAGE_SUMMARY` 37; `docs/MASTER_AUDIT_AND_IMPLEMENTATION_PLAN` 20; `docs/README_IMPLEMENTATION_PACKAGE` 7 |
 | Cross-marked lines in unfinished-work reports (S-07 to S-09) | 9 + 65 + 5 + 4 = 83 marks | marks only | Marks are not problems; each is a lead |
-| Defect-id entries in audits and QA text (S-14, S-15) | 6 CATAPI + 23 FIX-QA + 4 DEFER-QA + 2 FINDING (+ 6 DEFER overlapping, 4 FIX-OC3) | distinct ids from text, partly overlapping | exact id counts, overlaps unresolved |
+| Defect-id entries in audits and QA text (S-14, S-15) | 6 CATAPI + 22 FIX-QA + 4 DEFER-QA + 2 FINDING (+ 6 DEFER overlapping, 2 FIX-OC3 tracked / 11 working tree) | distinct ids from text, partly overlapping | exact id counts, overlaps unresolved |
 | Landmine rules (S-11) | 63 | 63 | guards, not defects |
 | Constitution Known Conflicts (S-21) | 16 items | 16 | about 14 open or unconfirmed sub-items (estimate pending parse) |
-| Scan findings latest run (S-16) | 12 + 35 + 18 + 19 + 4 + 24 = 112 | counts per file | Snyk failed; staleness of the findings unknown |
-| Credential-rotation rows (S-25) | 38 | 38 | action list |
+| Scan findings latest run (S-16) | 12 + 35 + 18 + 19 + 4 + 810 = 898 (with the 24 gosec baseline instead: 112) | counts per file | Snyk failed; staleness of the findings unknown; gosec 810 is the latest run |
+| Credential-rotation rows (S-25) | 37 | 37 | action list |
 | Real code markers (S-23) | 1 (OCU sidecar) | 1 | 8 more are document/script text |
 | Bank gaps (S-17 to S-20) | 11 placeholder bank files; 1,178 placeholder step lines; 5 weak-baseline rows | exact | 1,269 cases and 507 + 2,882 other cases are test definitions, mapped as NON-PROBLEM |
 | Narrative claim documents (S-08, S-09, S-12, S-13, S-14 others) | about 36 root + 37 status + 11 audit documents, plus S-22 | `NOT COUNTED` | needs the lead-scan and read pass |
 
-Upper bound on register items before deduplication: **about 1,778 + 1 + 1,676 + 221 + 83 + 112 + 38 + 14 + 16 + 5 + the claim-document leads**, roughly 4,000 candidate entries, of which the real count after folding duplicates and dropping procedural checklists is expected to be far lower. This is an estimate for capacity planning only (ESTIMATE, not a finding). The reconciliation produces the exact figure.
+Upper bound on register items before deduplication: **about 1,778 + 1 + 1,676 + 221 + 83 + 898 + 37 + 14 + 16 + 5 + the claim-document leads**, roughly 4,000 candidate entries, of which the real count after folding duplicates and dropping procedural checklists is expected to be far lower. This is an estimate for capacity planning only (ESTIMATE, not a finding). The reconciliation produces the exact figure.
 
 ## 8. The target register and its mapping vocabulary
 
@@ -361,7 +361,7 @@ The register status set is the schema set. The import never writes a closed stat
 | `open` (S-01) | Queued | direct |
 | `resolved`, `fixed`, `closed` with a Resolution section naming a commit, file or test (S-01) | Ready for testing | the claim is carried; closure happens only after the audit re-verifies on the current artifact with a machine verdict (FR-008, FR-022). A parser flags those whose resolution text names a commit that exists (`git cat-file -e`) for faster review. |
 | `resolved`, `fixed` with no Resolution section (S-01, 1,104 files) | Queued | evidence-less closure is not accepted; reason recorded; they join the re-verification queue |
-| `wontfix` (S-01, 282) | Queued, `legacy_status=wontfix` | FR-008: no closure because of low severity; each needs one of {real defect fix, Feature item for enhancement, false-positive evidence}. The 204 "Enhancement suggestion" ones are triaged as a batch with sampling, not skipped |
+| `wontfix` (S-01, 282) | Queued, `legacy_status=wontfix` | FR-008: no closure because of low severity; each needs one of {real defect fix, Feature item for enhancement, false-positive evidence}. The 225 "Enhancement suggestion" ones (`grep -rli "enhancement suggestion" docs/issues`) are triaged as a batch with sampling, not skipped |
 | `RESOLVED` (S-02) | Ready for testing | re-verify |
 | `Not Started` rows (S-03) | Queued only if the audit confirms the work is absent; otherwise Obsolete with reason `superseded-by-design-change` or closed as Completed with evidence | row-by-row through the claim-verify disposition |
 | unchecked box (S-04 to S-07, S-10, planning reports) | Queued after folding | many fold into existing items (section 9) |
@@ -376,7 +376,7 @@ The register status set is the schema set. The import never writes a closed stat
 | Source signal | Register type |
 |---|---|
 | ticket category functional, performance, or a crash/ANR/security defect | Bug |
-| category ux, UX, visual, accessibility, content, brand | Bug when it states wrong behaviour against a standard (contrast ratio below WCAG AA, missing alt text); Feature when it is an enhancement request without a violated rule (the 204 vision suggestions after triage) |
+| category ux, UX, visual, accessibility, content, brand | Bug when it states wrong behaviour against a standard (contrast ratio below WCAG AA, missing alt text); Feature when it is an enhancement request without a violated rule (the 225 vision suggestions after triage) |
 | planned work rows (S-03 to S-07) and operator action lists (S-10, S-25) | Task |
 | gaps (placeholder bank steps, disabled features, missing test types) | Task (the fix is writing the missing artifact) |
 
@@ -617,7 +617,7 @@ grep -h '^severity:' docs/issues/*.md | sort | uniq -c
 grep -h '^category:' docs/issues/*.md | sort | uniq -c
 ls docs/issues | sed -E 's/^(HELIX-[0-9]+)-.*/\1/' | sort -u | wc -l   # 676 distinct ids
 ls docs/issues | sed -E 's/^(HELIX-[0-9]+)-.*/\1/' | sort | uniq -c | awk '$1>1' | wc -l  # 560 shared ids
-ls docs/issues | sed -E 's/^HELIX-[0-9]+-//' | sort -u | wc -l   # 1417 distinct title slugs
+ls docs/issues | sed -E 's/^HELIX-[0-9]+-//' | sort -u | wc -l   # 1417 distinct title slugs (re-run on this tree prints 1417; a reviewer-reported 1419 was not reproduced; lowercasing and mapping `_` to `-` also gives 1417)
 grep -L '^## Resolution' docs/issues/*.md | wc -l        # 1111
 
 # --- checklists and tracker rows (EXECUTED) ---
@@ -707,7 +707,7 @@ SC-001 is met when all of the following are shown with machine-produced output f
 4. **Round trip.** `workable-items diff` reports DB and exported Markdown in sync; `validate` passes.
 5. **Completeness test.** Three planted entries are detected by the enumerator; the planted entries are removed afterwards.
 6. **Independent review.** A GO verdict from a reviewer who did not run the importer, with the sample sizes and the adversarial check recorded.
-7. **Status honesty.** `SELECT count(*) FROM items WHERE status IN ('Fixed (→ Fixed.md)','Implemented (→ Fixed.md)','Completed (→ Fixed.md)') AND id NOT IN (SELECT atm_id FROM item_history WHERE evidence_path IS NOT NULL)` returns 0 (query shape is a proposal, NOT EXECUTED; the history columns are those in `schema.sql`).
+7. **Status honesty.** `SELECT count(*) FROM items WHERE status IN ('Fixed (→ Fixed.md)','Implemented (→ Fixed.md)','Completed (→ Fixed.md)') AND atm_id NOT IN (SELECT atm_id FROM item_history WHERE evidence_path IS NOT NULL)` returns 0 (query shape is a proposal, NOT EXECUTED; the history columns are those in `schema.sql`).
 8. **External trackers.** Each external source is recorded as queried or skipped(reason); none shows as synced without a recorded real command exit.
 
 ## 16. Traceability matrix
