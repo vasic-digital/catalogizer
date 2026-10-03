@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,6 +31,6 @@
 
 ## Notes
 
-- Iteration 1: all items pass except "No [NEEDS CLARIFICATION] markers remain". Three markers are intentional and need the operator's decision (FR-011 coverage-floor adoption, FR-017 dependency freshness policy, SC-011 latency target). They match decisions the constitution already records as open.
+- Iteration 2 (2026-10-03): all items pass. The three clarifications were answered by the owner (Q1 submodules only, Q2 latency target does not bind and performance is best-achievable, Q3 per-application coverage phase-in) and applied to FR-011, FR-017 and SC-011. A new requirement FR-024 records the owner's instruction that all work happens on main branches.
 - Named project concepts that appear in the spec (the main README, HelixQA, rootless containers, SQL schemas) are domain terms or constraints the owner stated, not implementation choices.
 - Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.

@@ -501,7 +501,8 @@ This project follows **specification-driven development** using the superspec pi
   of the dedicated script (§11.4.234(C)).
 - Branches use `feat/<slug>`, `product/<slug>` or `flavor/<slug>`, one canonical name across the
   main repo and every owned submodule; feature branches merge `main` into themselves regularly and
-  merge to `main` only after live QA (§11.4.181, §11.4.188, §11.4.195).
+  merge to `main` only after live QA (§11.4.181, §11.4.188, §11.4.195); spec 001 is the one
+  exception (Known Conflicts item 15: all work on main branches).
 - Release tags are project-prefixed and mirrored on owned submodules (§4, §11.4.151).
 - Operator action prefixes (`BUG ::`, `TASK ::`, `ISSUE ::`, `FEATURE ::`, `NOTE ::` and the rest)
   are recognized and create tracked items (§11.4.140, §11.4.202, §11.4.213).
@@ -903,10 +904,12 @@ Canon: `submodules/constitution/groups/workable-items-and-tracking.md`
 These were found while reading every source in full. Canon wins on each. Items marked
 `UNCONFIRMED` could not be verified from this repository and are recorded rather than assumed
 (§11.4.6). Items 2 to 4, 7, 11 and 13 carry a mixed FIXED/OPEN status inline; the others are: 1 DECIDED (the
-stricter project limit governs), 5 OPEN, 6 OPEN, 8 NOTE (informational), 9 DECIDED (interim
-ratchet), 10 OPEN, 12 DECIDED (workflow narrowed), 14 NOTE (state at commit time). Statuses:
-FIXED in this change (main-repo files only), DECIDED (an autonomous reversible default under
-§11.4.101), OPEN (an operator decision or a follow-up), NOTE (informational).
+stricter project limit governs), 5 DECIDED (operator), 6 OPEN, 8 NOTE (informational), 9 DECIDED
+(operator, per-application phase-in), 10 OPEN, 12 DECIDED (workflow narrowed), 14 NOTE (state at
+commit time), 15 DECIDED (operator), 16 DECIDED (operator). Statuses: FIXED in this change
+(main-repo files only), DECIDED (an autonomous reversible default under §11.4.101 where no
+"operator" is named, otherwise a decision the operator gave), OPEN (an operator decision or a
+follow-up), NOTE (informational).
 
 1. **Test resource limits.** `catalog-api` caps test runs at `GOMAXPROCS=3`, `-p 2 -parallel 2`
    and 30 to 40% of host CPU and RAM. Canon allows up to 60% of RAM for session-resident work
@@ -945,7 +948,11 @@ FIXED in this change (main-repo files only), DECIDED (an autonomous reversible d
    30 ms LAN and 50 ms WAN p999 latency SLA of §19 applies to the Catalogizer REST API (it was
    written for HelixPlay) is `UNCONFIRMED`; it is therefore not made a hard gate here. The
    operator should decide, and vendor the text if it is binding (§11.4.215: a binding document
-   must be tracked in this repository). **OPEN.**
+   must be tracked in this repository). **DECIDED by the operator (2026-10-03):** the latency SLA
+   does NOT bind Catalogizer (it belongs to HelixPlay streaming); Catalogizer sets its own
+   performance targets and aims for the best achievable performance (spec 001, SC-011). The
+   HelixPlay text therefore need not be vendored for the SLA; the other HelixPlay clauses stay
+   `UNKNOWN` here.
 6. **Website dead links.** `Website/.vitepress/config.ts` sets `ignoreDeadLinks: true`, tolerating
    links to unimplemented pages. That is a gap against the zero-gaps invariant (§11.4.261) and
    the documentation-coverage rules (§11.4.257). **OPEN:** turning it off may break the site build,
@@ -960,10 +967,11 @@ FIXED in this change (main-repo files only), DECIDED (an autonomous reversible d
    Anchor Catalogue above is generated from the canon and is authoritative.
 9. **Owed operator decision.** Brownfield adoption of the 85% coverage floor (immediate hard
    floor, one-time monotone ratchet, per-corpus phase-in, or changed-code-only with a deadline)
-   is the operator's call under §11.4.224 and §11.4.66. **DECIDED (interim, reversible, §11.4.101):**
-   a one-time monotone-decrease ratchet, so coverage may never fall below the baseline measured
-   when the ratchet is first run and the 85% floor applies in full to new code. The operator may
-   replace this choice; the floor keeps gating meanwhile.
+   is the operator's call under §11.4.224 and §11.4.66. **DECIDED by the operator (2026-10-03):**
+   per-application phase-in (spec 001, FR-011): each application records a coverage baseline and
+   a dated target, and no application may fall below its baseline. This replaces the earlier
+   interim ratchet. During the phase-in the 85% floor gates new and changed code in full, while
+   existing code is held to its recorded baseline and dated target.
 10. **Gate code owed.** Canon recommends many mechanism gates (named `CM-*`) whose code is a
     separate, unshipped work item. This document does not claim any of them is implemented
     (§11.4.227).
@@ -998,6 +1006,18 @@ FIXED in this change (main-repo files only), DECIDED (an autonomous reversible d
     pointing the remote at `vasic-digital/WebSocket-Client-TS` (local git configuration, not tracked);
     `git ls-remote github` now returns the same commit as the local HEAD (6e624db0). `submodules/helix_qa/tools/opensource/docling` is a vendored
     third-party repository with one modified data file; it is not committed or pushed.
+15. **Branch policy for spec 001.** The operator instructed (2026-10-03) that all work is done on
+    the main branch of the main repository and of every submodule. This is a decision for the audit
+    and remediation work and overrides the default branch-per-feature convention of §11.4.195 for
+    it; the rest of §11.4.195 and §11.4.113 stand (fast-forward only, no force-push, push to every
+    upstream, nothing committed without review). Because work lands directly on `main`, the live
+    manual QA of §11.4.185 still gates every release, as the merge step of §11.4.195(B) is skipped.
+    **DECIDED (operator).**
+16. **Dependency update scope for spec 001.** The operator decided (2026-10-03) that "keep
+    dependencies current" means submodules only: fetch and pull the latest codebases from all of
+    their upstreams (spec 001, FR-017). Third-party package dependencies are reported, not bulk
+    updated. Pulling the governance submodule includes its post-pull sweep and hook (§11.4.26,
+    §11.4.32, §11.4.164). **DECIDED (operator).**
 
 ## Governance
 
@@ -1022,7 +1042,7 @@ changes that violate a principle or a canon anchor. Complexity beyond what a pri
 MUST be justified in the plan. Canon conflicts are resolved in canon's favour, and any conflict
 between a module rule and canon is recorded under Known Conflicts.
 
-**Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults may be
+**Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults (those not marked as operator decisions) may be
 replaced by the operator.
 
-**Version**: 2.1.1 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
+**Version**: 2.1.2 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-03

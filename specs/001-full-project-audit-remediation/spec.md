@@ -133,9 +133,9 @@ At any point, the owner can run one deterministic check and see that the main re
 
 | # | Question | Status | Resolution |
 |---|----------|--------|------------|
-| Q1 | How current must dependencies be: latest compatible release, or latest release including major versions that need migration work? | Open | See FR-017 |
-| Q2 | Is the latency target stated in the project's adopted external constitution an acceptance criterion for this project? | Open | See SC-011 |
-| Q3 | How is the minimum code-coverage floor applied to existing code? | Open | See FR-011 |
+| Q1 | How current must dependencies be? | Resolved | Only submodules: fetch and pull the latest codebases from all of their upstreams (FR-017). Third-party package dependencies are reported but not bulk-updated in this feature. |
+| Q2 | Is the latency target of the adopted external constitution an acceptance criterion? | Resolved | No. It does not bind this project. Catalogizer sets its own performance targets and aims for the best achievable performance (SC-011). |
+| Q3 | How is the minimum code-coverage floor applied to existing code? | Resolved | Per-application phase-in (FR-011). |
 
 ## Requirements *(mandatory)*
 
@@ -151,19 +151,20 @@ At any point, the owner can run one deterministic check and see that the main re
 - **FR-008**: Every finding MUST be investigated to a root cause before a fix is applied, and every fix MUST be accompanied by a test that fails before the fix and passes after it.
 - **FR-009**: Every test type the constitution defines MUST exist for every application where it applies, and any absent type MUST be tracked as an item with a plan.
 - **FR-010**: Every test, existing and new, MUST produce the same verdict on every run, MUST rely on measured and recorded results rather than prediction, and MUST be shown to fail when the behaviour it protects is deliberately broken.
-- **FR-011**: A minimum code-coverage floor MUST apply to executable code, as a necessary and never sufficient measure of test quality [NEEDS CLARIFICATION: Is the floor applied immediately to all existing code, through a one-time ratchet that forbids regression, per application in phases, or only to changed code with a deadline for the rest?].
+- **FR-011**: A minimum code-coverage floor MUST apply to executable code, as a necessary and never sufficient measure of test quality. It is adopted per application in phases: each application has a recorded coverage baseline and a dated target, and no application may fall below its recorded baseline at any time. During the phase-in the 85% floor of the project's governance gates new and changed code in full, and existing code is held to its recorded baseline and dated target.
 - **FR-012**: Every existing document MUST be reviewed and updated to match the current system, and every exported copy MUST match its source.
 - **FR-013**: Every in-scope document MUST be reachable by links starting from the main README, and any orphan MUST be listed and resolved.
 - **FR-014**: Each application and service MUST have a user manual, task-oriented guides, a FAQ and the relevant architecture, data-flow, state-machine and sequence diagrams, and each diagram MUST be rendered, non-blank and embedded where it is used.
 - **FR-015**: Definitions, including SQL schemas, templates and other formal definitions, MUST be documented and MUST match the definitions the system actually uses.
 - **FR-016**: Shared contracts between applications MUST be tested on both sides so that an incompatible change is detected before release.
-- **FR-017**: Every dependency, including shared modules in separate repositories, MUST be reported with its current and latest upstream version and a status, and MUST be kept up to date [NEEDS CLARIFICATION: Does "up to date" mean the latest compatible release, or the latest release including major versions that need migration work?].
+- **FR-017**: Every submodule (each shared module maintained in a separate repository; "at every depth" is an inference from the owner's instruction) MUST be fetched from all of its upstreams and updated to the latest upstream codebase, and each MUST be reported with its pinned and latest upstream commit and a status. Third-party package dependencies are reported with their current and latest versions but are not bulk-updated by this feature (an inference from "only submodules").
 - **FR-018**: An accepted dependency update MUST pass the full tests of every affected application first.
 - **FR-019**: All work MUST be committed and pushed regularly, and a recursive verification MUST show, using version-control status and remote comparison, that the main repository and every submodule at every depth has nothing uncommitted and nothing unpushed to any upstream.
 - **FR-020**: History MUST never be rewritten and nothing may be force-pushed, and any repository that cannot be made clean or pushed MUST be reported with its reason.
 - **FR-021**: Every build of a deliverable MUST run in a rootless container, never on the bare host, and the resulting artifact MUST be verified on a clean target before a fix is called done.
 - **FR-022**: Every completion claim MUST cite machine-produced evidence from the current work, and an unverified claim MUST be labelled as unconfirmed.
 - **FR-023**: The audit and its evidence MUST be independently reviewed by a reviewer separate from the author before acceptance, iterating until no blocking finding remains.
+- **FR-024**: All work MUST be done on the main branch of the main repository and on the main branch of every submodule, with no separate feature, product or flavor branches created for this work. Integration remains fast-forward only, with no history rewrite and no force-push.
 
 ### Key Entities
 
@@ -190,7 +191,7 @@ At any point, the owner can run one deterministic check and see that the main re
 - **SC-008**: 100% of documented SQL schemas and templates match the definitions the system uses.
 - **SC-009**: 100% of dependencies are reported with their version, the upstream version and a status, and every dependency that is behind has a recorded decision.
 - **SC-010**: A recursive repository check reports every repository (main and all submodules at all depths) with a clean working tree and matching tips on every upstream, with zero unexplained exceptions.
-- **SC-011**: The project meets its latency target under measurement [NEEDS CLARIFICATION: Is the 30 ms LAN and 50 ms WAN p999 target of the adopted external constitution a binding acceptance criterion for this project, and if so, where is its authoritative text kept?].
+- **SC-011**: Every critical user-facing operation (browsing, search, playback start, scanning a source, sign-in, and each client's start-up) has a measured performance baseline and a documented target set for this project, no measured operation regresses against its baseline, and every identified bottleneck is either fixed with before-and-after measurements or tracked with a plan, aiming for the best achievable performance.
 - **SC-012**: Zero completion claims in the final report lack a cited machine-produced evidence record from the current work.
 
 ## Assumptions
@@ -201,6 +202,9 @@ At any point, the owner can run one deterministic check and see that the main re
 - The project's existing governance (the constitution and its appendix) defines the supported test types, the evidence standard and the review rules; this feature applies them and does not change them.
 - The structural and semantic code indexes exist or can be built in a rootless container, and their health is verified as part of the work.
 - The work is delivered in priority order (P1 first), and each story can be accepted independently.
+- The owner's instruction that all work happens on main branches is a decision for this feature and overrides the default branch-per-feature convention; every commit still goes through review and is pushed to every upstream.
+- Pulling the latest governance submodule includes running its post-pull validation sweep and registration hook, because the project's governance requires them after every pull.
+- The latency target from the adopted external constitution is not a criterion here, because the owner decided it applies to a different product.
 - Findings that require operator decisions are recorded as blocked items with their choices rather than guessed.
 
 ## Brainstorm Log
