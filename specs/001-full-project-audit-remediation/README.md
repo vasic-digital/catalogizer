@@ -2,17 +2,19 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: "How to read" note and the phase and work-package table from docs/21 revision 7; counts re-taken from docs/21 revision 7; reachability note updated) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Purpose | Entry point of this specification folder: every document in it is linked from this page, grouped by role, so each one is reachable by following links (spec FR-013, SC-006; constitution §11.4.212) |
-| Reachability note | This page is reachable from [spec.md](spec.md) and from [plan.md](plan.md). For the folder to be reachable from the repository's main README, that README must link this page; that edit belongs to the README's owner and is not made here |
+| Reachability note | This page is reachable from [spec.md](spec.md) and from [plan.md](plan.md), and the repository's main README links it (README.md line 40, observed 2026-10-03 as an uncommitted working-tree change; it holds only once that change is committed) |
 
 ## Table of contents
 
 1. [Start here](#1-start-here)
+   - [How to read this plan](#how-to-read-this-plan)
+   - [Phases and work packages](#phases-and-work-packages)
 2. [Specification, plan and tasks](#2-specification-plan-and-tasks)
 3. [Design artifacts](#3-design-artifacts)
 4. [Planning documents 01 to 21](#4-planning-documents-01-to-21)
@@ -31,6 +33,31 @@ Read in this order:
 4. [tasks.md](tasks.md): the task list by phase and work package.
 5. [quickstart.md](quickstart.md): read-only commands that show the state the plan starts from.
 
+### How to read this plan
+
+- **Layers.** [spec.md](spec.md) says what must be true (FR-001 to FR-025, SC-001 to SC-012). [docs/21](docs/21-master-plan-phases-risks-and-traceability.md) turns documents 01 to 20 into phases, work packages, owner decisions and risks, and maps every requirement to evidence (its section 6). [tasks.md](tasks.md) breaks each work package into tasks under a heading with the same `WP-nn` id. Documents 01 to 20 hold the detailed method that a work package cites as `docNN §x`; read them for a package, not front to back.
+- **Identifiers.** `WP-nn`: work package (docs/21 section 5). `ODG-nn`: grouped owner decision (docs/21 section 8). `OD-nn`: one of the 79 finer owner decisions in [research.md](research.md); a different id space from `ODG-nn` (docs/21 IC-34). `IC-nn`: an inconsistency between documents and its resolution (docs/21 section 10). `Tnnn`: a task in tasks.md. `R-nn` is a risk in docs/21 section 7 but a research decision in research.md, so a citation across documents is written `docNN:ID` (docs/21 IC-19).
+- **Disagreements.** Where two documents disagree, docs/21 section 10 records both values and the resolution. A value the plan could not settle is marked `UNCONFIRMED:`, and the work package that measures it owns the answer.
+- **Paths.** `$AUD` is `specs/001-full-project-audit-remediation/audit` and `$EV` is `specs/001-full-project-audit-remediation/evidence` (docs/06 section 11). Neither exists yet.
+- **Claims.** Nothing in this folder reports work as done. Every acceptance needs machine-produced evidence from the work itself (docs/06, spec FR-022 and SC-012). Owner decisions block the work they name until answered (docs/21 planning rule 6).
+- **Counts.** Every count is a point-in-time value of 2026-10-03 and is re-measured by the work package that relies on it. The number of tasks is in the tasks.md header.
+
+### Phases and work packages
+
+From docs/21 revision 7, sections 3.1 and 11.2. Tasks: see the tasks.md header.
+
+| Phase | Name | Work packages | Count |
+|---|---|---|---:|
+| P0 | Foundation | WP-01 to WP-09 | 9 |
+| P1 | Containerized infrastructure | WP-10 to WP-15 | 6 |
+| P2 | Inventory and baselines | WP-20 to WP-24 | 5 |
+| P3 | Audit pass | WP-30 to WP-39, WP-39R | 11 |
+| P4 | Contract layer | WP-40, WP-41 | 2 |
+| P5 | Remediation | WP-50 to WP-57 | 8 |
+| P6 | Test closure, QA, performance, documentation | WP-60 to WP-65 | 6 |
+| P7 | Verification and closure | WP-70 to WP-74, WP-74R | 6 |
+| **Total** | 8 phases | 13 streams; sizes S 3, M 23, L 20, XL 7 (docs/21 section 11) | **53** |
+
 ## 2. Specification, plan and tasks
 
 | Document | Role |
@@ -38,7 +65,7 @@ Read in this order:
 | [spec.md](spec.md) | Feature specification (clarified) |
 | [checklists/requirements.md](checklists/requirements.md) | Specification quality checklist |
 | [plan.md](plan.md) | Implementation plan |
-| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5) |
+| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5; the task count is in its header) |
 
 ## 3. Design artifacts
 
@@ -134,11 +161,13 @@ These do not exist yet; tasks.md creates them and this index will link their ent
 
 ## 8. Counts at a glance
 
-Taken from docs/21 revision 6 (section 1.3); each is re-measured by the work package that relies on it.
+Taken from docs/21 revision 7 (section 1.3); each is re-measured by the work package that relies on it.
 
 | Quantity | Value |
 |---|---|
 | Phases / work packages / streams | 8 / 53 / 13 |
+| Tasks | see the tasks.md header |
+| Cross-document inconsistencies resolved or tracked | 41 (IC-01 to IC-41, docs/21 section 10) |
 | Risks | 34 |
 | Grouped owner decisions | 40 (ODG-01 to ODG-40), plus 16 ungrouped `research.md` decisions (docs/21 section 8.6) |
 | Owner decisions in `research.md` | 79 (OD-01 to OD-79) |

@@ -37,6 +37,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | 🎯 **[Open-Points Closure Brief](docs/OPEN_POINTS_CLOSURE.md)** | Canonical operator-action checklist — every credential, hardware item, and infra task still outstanding |
 | 🗺️ **[OCU Program Roadmap](HelixQA/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |
 | 📆 **[Session Handoff 2026-04-18](docs/SESSION_HANDOFF_2026-04-18.md)** | Latest session's completed work + known issues + exact resume commands |
+| 🔎 **[Full Project Audit and Remediation (spec 001)](specs/001-full-project-audit-remediation/README.md)** | Specification, 21 planning documents, research, data model, contracts, POC tools and the task list for the project-wide audit and remediation (entry point to every plan document) |
 | 📝 **[Full-QA Master Plan](docs/plans/2026-04-18-full-qa-cycle-master-plan.md)** | Plan for the rigid rebuild → test → Challenges → HelixQA → fix loop |
 | 🧾 **[v4.0.0 Release Notes (HelixQA)](HelixQA/docs/releases/v4.0.0.md)** | OpenClaw Ultimate v4.0.0 ship notes |
 | 🐞 **[QA Sessions Archive](docs/reports/qa-sessions/)** | Permanent per-session FINAL-REPORT.md + logs + videos + tickets |

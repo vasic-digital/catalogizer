@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 7 |
+| Revision | 8 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their current writers (P0 T095, P1 T158, P2 T218, P5 T454, P6 T555), the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -624,8 +624,11 @@ specs/001-full-project-audit-remediation/evidence/        ($EV)
   commit-push/<run_id>.json    commit-push script reports (docs/16 section 12.4, stage S8)
   deferrals.jsonl              recorded gate deferrals (SKIP_LONG, --local-only push deferral)
   host-probe.json              host probe record (docs/16 section 8.5)
-  p<N>-exit.json               phase exit records, one per docs/21 phase gate (P0 T089, P1 T149,
-                               P5 T432, P6 T528; the same name for every other phase that adds one)
+  disk/<op_id>.json            disk-headroom record before and after each image build, pull or
+                               container run (tasks.md T001 convention, probe in WP-09)
+  p<N>-exit.json               phase exit records, one per docs/21 phase gate (tasks.md rev 5: P0 T095,
+                               P1 T158, P2 T218, P5 T454, P6 T555; the same name for every other
+                               phase that adds one)
   register/                    register-side records: freeze manifest, seed and source
                                reconciliation, import transcripts, blocked_items.json (WP-20 to WP-22, WP-72)
   verify/                      recursive repository verification and its exceptions (WP-73)
