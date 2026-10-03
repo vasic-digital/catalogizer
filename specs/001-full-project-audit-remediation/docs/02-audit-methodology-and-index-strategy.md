@@ -2,11 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: audit outputs written as `$AUD/...` and evidence blobs as `$EV/blobs/<sha256>`, consistent with tasks.md and document 06 §11) |
 | Feature | specs/001-full-project-audit-remediation |
+| Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit` (every audit output of this document, including one file per finding `$AUD/findings/<FND-NNNN>.json` and the per-run index `$AUD/runs/<run>/findings.index.jsonl`); `$EV` = `specs/001-full-project-audit-remediation/evidence`, whose blob store `$EV/blobs/<sha256>` (document 06 §11) holds every evidence artifact a finding cites. Commands below run from the repository root with `AUD` and `EV` set to those paths |
 | Requirements covered | FR-005, FR-006, FR-007, FR-008, FR-010, FR-022, FR-023, SC-002 (supports FR-001, FR-003, FR-009, FR-016) |
 | Governance anchors | §11.4.78, §11.4.79, §11.4.80, §11.4.275, §11.4.273, §11.4.201, §11.4.184, §11.4.124, §11.4.102, §11.4.115, §11.4.50, §11.4.58, §12.6, §12.12 |
 
@@ -135,15 +136,15 @@ Because the security and lint tools are not on the host and the constitution for
 
 | Step | Name | Action | Output |
 |---|---|---|---|
-| A0 | Unit enumeration | Enumerate tracked top-level directories and submodules; assign each to one unit of section 1; unassigned = finding | `audit/units.json` |
-| A1 | Index health gate | Run section 4 proofs P1..P8; any FAIL stops the pass for that index | `audit/index-health.json` |
-| A2 | Map | `codegraph files --json` per unit; symbol census by kind; entry points (routes: the index holds 1,178 `route` nodes) | `audit/maps/<unit>.json` |
-| A3 | Detector sweep | Run detector families (section 7) in containers; normalise output to candidate findings | `audit/candidates/<detector>.jsonl` |
+| A0 | Unit enumeration | Enumerate tracked top-level directories and submodules; assign each to one unit of section 1; unassigned = finding | `$AUD/units.json` |
+| A1 | Index health gate | Run section 4 proofs P1..P8; any FAIL stops the pass for that index | `$AUD/index-health.json` |
+| A2 | Map | `codegraph files --json` per unit; symbol census by kind; entry points (routes: the index holds 1,178 `route` nodes) | `$AUD/maps/<unit>.json` |
+| A3 | Detector sweep | Run detector families (section 7) in containers; normalise output to candidate findings | `$AUD/candidates/<detector>.jsonl` |
 | A4 | Index-driven review | For each unit: unwired code, impact, contract drift (7.4) via `callers`, `callees`, `impact`, `explore` | candidates |
-| A5 | Triage | Deduplicate, classify with section 5 rules, assign severity per section 6, link to register item (reopen if recurrence, FR-003) | `audit/findings/*.json` |
+| A5 | Triage | Deduplicate, classify with section 5 rules, assign severity per section 6, link to register item (reopen if recurrence, FR-003) | `$AUD/findings/*.json` |
 | A6 | Root cause | Per finding, §11.4.102 four-phase systematic debugging; record the reproduction on the broken artifact (§11.4.115) | evidence records |
 | A7 | Independent review | Reviewer (not the author) re-checks sampled and all high-severity findings (FR-023) | review verdict file |
-| A8 | Repeat run | Run A1..A5 again from the same state and diff (section 12) | `audit/determinism.json` |
+| A8 | Repeat run | Run A1..A5 again from the same state and diff (section 12) | `$AUD/determinism.json` |
 
 Steps A6 onward belong to the fix phase documented in other plan documents; this document defines their inputs and outputs.
 
@@ -173,7 +174,7 @@ Universal accessibility (§11.4.275(A)) is proven by an unforgeable challenge: a
 
 ## 4. Index health proofs (gate before any reliance)
 
-An index is relied on only when every proof for it passes in the current pass. Results are written to `audit/index-health.json` with the exact command, raw output hash and verdict. Each count proof carries a positive and negative control needle (§11.4.273(a)(b), (f) for set criteria).
+An index is relied on only when every proof for it passes in the current pass. Results are written to `$AUD/index-health.json` with the exact command, raw output hash and verdict. Each count proof carries a positive and negative control needle (§11.4.273(a)(b), (f) for set criteria).
 
 ### 4.1 Proof table
 
@@ -190,7 +191,7 @@ An index is relied on only when every proof for it passes in the current pass. R
 
 A FAIL in P1..P5 blocks CodeGraph use for that pass (fallback: grep plus reads, with a lower token efficiency and a recorded reason). A FAIL in P6..P8 blocks Lumen use.
 
-### 4.2 Machine-readable shape of `audit/index-health.json`
+### 4.2 Machine-readable shape of `$AUD/index-health.json`
 
 ```json
 {
@@ -220,9 +221,9 @@ Third-party versus own-org is derived mechanically (§11.4.79(6)): walk `.gitmod
 
 ```bash
 # list submodules recursively with their URLs (read-only)
-git submodule foreach --recursive --quiet 'echo "$displaypath $(git config --get remote.origin.url)"' > audit/submodules.tsv
+git submodule foreach --recursive --quiet 'echo "$displaypath $(git config --get remote.origin.url)"' > $AUD/submodules.tsv
 # classify by organisation
-awk '{ if ($2 ~ /(vasic-digital|HelixDevelopment)/) c="own"; else c="third_party"; print $1"\t"c"\t"$2 }' audit/submodules.tsv
+awk '{ if ($2 ~ /(vasic-digital|HelixDevelopment)/) c="own"; else c="third_party"; print $1"\t"c"\t"$2 }' $AUD/submodules.tsv
 ```
 Expected: one row per submodule at every depth (the main `.gitmodules` has 44 `[submodule]` blocks; nested ones are additional and UNKNOWN until run).
 
@@ -302,7 +303,7 @@ Closed scale with objective criteria. A finding is rated by the highest criterio
 | S4 Low | Cosmetic or ergonomic defect; non-conformance with naming/layout rules; stale but non-misleading documentation; minor duplication |
 | S5 Info | Observation required for traceability (for example an index scope note) that has no failure mode; still tracked and closed |
 
-Every severity is investigated and closed (FR-008). The scale only orders work: S1/S2 first (risk-descending, §11.4.132), most-reopened first within a level (§11.4.189). Detector-native severities (for example a SAST "high") are inputs, never the final rating; the mapping table lives in `audit/severity-map.json` and is reviewed independently.
+Every severity is investigated and closed (FR-008). The scale only orders work: S1/S2 first (risk-descending, §11.4.132), most-reopened first within a level (§11.4.189). Detector-native severities (for example a SAST "high") are inputs, never the final rating; the mapping table lives in `$AUD/severity-map.json` and is reviewed independently.
 
 ---
 
@@ -473,14 +474,14 @@ One JSON file per finding at `specs/001-full-project-audit-remediation/audit/fin
     {"kind": "command_output|screenshot|recording|log|diff|test_verdict|index_query",
      "cmd": "exact command",
      "exit_status": 0,
-     "artifact": "audit/evidence/<sha256>.txt",
+     "artifact": "$EV/blobs/<sha256>",
      "sha256": "...",
      "captured_at": "UTC timestamp",
      "tool_version": "...",
      "image_digest": "container image digest or null",
      "control_needle": {"positive": "...", "negative": "..."}}
   ],
-  "root_cause": {"statement": "...", "reproduction": {"artifact_fingerprint": "...", "steps_ref": "audit/evidence/<sha256>.txt", "provenance": "observed|constructed"}},
+  "root_cause": {"statement": "...", "reproduction": {"artifact_fingerprint": "...", "steps_ref": "$EV/blobs/<sha256>", "provenance": "observed|constructed"}},
   "fix": {"commit": "<sha>", "repo": "...", "test": "path::name", "red_run": "evidence sha", "green_run": "evidence sha", "iterations": 3},
   "review": {"reviewer": "agent id/model+effort", "verdict": "GO|NO-GO", "evidence": "sha"},
   "state": "see section 10",
@@ -499,7 +500,7 @@ Rules:
 - Secrets are never stored: a secret finding stores path, line, rule id, and the hash of the match (§11.4.10).
 - The record is schema-validated by a script (JSON Schema, to be authored in the tooling plan); records failing validation cannot enter the register.
 
-Derived file `audit/findings.index.jsonl` is one line per finding with the sort key `(unit, path, line_start, rule_id)` and no timestamps, used for the determinism comparison.
+Derived file `$AUD/runs/<run>/findings.index.jsonl` is one line per finding with the sort key `(unit, path, line_start, rule_id)` and no timestamps, used for the determinism comparison.
 
 ---
 
@@ -576,7 +577,7 @@ Requirement: "the audit repeated from the same state yields an identical set of 
 
 ### 12.1 Fixing "the same state"
 
-A run is parameterised by a state vector recorded in `audit/run-manifest.json`:
+A run is parameterised by a state vector recorded in `$AUD/run-manifest.json`:
 
 ```json
 {
@@ -608,13 +609,13 @@ Both runs MUST start from identical manifests. Sources of nondeterminism and the
 
 ```bash
 # NOT EXECUTED - illustrative; paths created by the audit tooling
-sort -u audit/runs/AUD-001/findings.index.jsonl > /tmp/a.jsonl
-sort -u audit/runs/AUD-002/findings.index.jsonl > /tmp/b.jsonl
+sort -u $AUD/runs/AUD-001/findings.index.jsonl > /tmp/a.jsonl
+sort -u $AUD/runs/AUD-002/findings.index.jsonl > /tmp/b.jsonl
 cmp /tmp/a.jsonl /tmp/b.jsonl && echo IDENTICAL
-sha256sum audit/runs/AUD-00{1,2}/findings.index.jsonl
+sha256sum $AUD/runs/AUD-00{1,2}/findings.index.jsonl
 ```
 
-Expected machine-readable result `audit/determinism.json`:
+Expected machine-readable result `$AUD/determinism.json`:
 
 ```json
 {"schema":"determinism/1","runs":["AUD-001","AUD-002"],"manifests_equal":true,
@@ -731,10 +732,10 @@ Session 4: containerised secret scan, NOT EXECUTED (image reference is a placeho
 
 ```bash
 podman run --rm --network=none \
-  -v "$PWD":/repo:ro -v "$PWD/audit/out":/out:rw \
+  -v "$PWD":/repo:ro -v "$PWD/$AUD/out":/out:rw \
   <gitleaks-image@sha256:DIGEST> \
   detect --source /repo --no-banner --report-format json --report-path /out/gitleaks.json --redact
-test -s audit/out/gitleaks.json && python3 -c 'import json;print(len(json.load(open("audit/out/gitleaks.json"))))'
+test -s "$AUD/out/gitleaks.json" && python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$AUD/out/gitleaks.json"
 ```
 `--redact` keeps secret values out of the report (§11.4.10). The container is rootless (no sudo, no docker).
 
@@ -744,8 +745,8 @@ Session 5: Lumen golden run, NOT EXECUTED.
 XDG_DATA_HOME=/path/to/cow-copy \
 bash submodules/constitution/scripts/lumen/lumen_verify.sh \
   --golden specs/001-full-project-audit-remediation/audit/golden.json \
-  --project "$PWD" --k 5 --min-recall 0.85 --out audit/out/lumen
-echo "rc=$?"; cat audit/out/lumen/summary.txt
+  --project "$PWD" --k 5 --min-recall 0.85 --out $AUD/out/lumen
+echo "rc=$?"; cat $AUD/out/lumen/summary.txt
 # rc 0 = all PASS, 1 = a FAIL, 2 = usage error or an errored/empty search
 ```
 
@@ -802,13 +803,13 @@ echo "{\"soft\":$soft,\"live\":$live,\"headroom\":$((soft-live))}"
 
 | Requirement | Satisfied by | Acceptance evidence |
 |---|---|---|
-| FR-005 | sections 3, 4 | `audit/index-health.json` with P1..P8 PASS and golden results, per pass; Lumen `results.tsv`/`summary.txt` |
-| FR-006 | sections 1, 8, 14.3 | `audit/units.json` assigning every top-level directory and submodule; a recorded audit result per unit |
+| FR-005 | sections 3, 4 | `$AUD/index-health.json` with P1..P8 PASS and golden results, per pass; Lumen `results.tsv`/`summary.txt` |
+| FR-006 | sections 1, 8, 14.3 | `$AUD/units.json` assigning every top-level directory and submodule; a recorded audit result per unit |
 | FR-007 | sections 5, 6, 9 | each finding record validates against `finding/1` with location, severity, category, machine evidence, register link |
 | FR-008 | sections 5.3, 10 | lifecycle log shows root cause before fix, RED/GREEN verdict pair, closure kind; zero-open check query over `findings/*.json` |
 | FR-010 | 7.3, 12 | per-test verdict vectors N >= 3, mutation survivors list |
 | FR-022 | 9 | every closed record cites evidence sha from the current run |
 | FR-023 | 3.2 A7, 11 | reviewer verdict files by an agent other than the author, iterated to GO |
-| SC-002 | 12 | `audit/determinism.json` verdict IDENTICAL from two manifests-equal runs, with comparator self-validation |
+| SC-002 | 12 | `$AUD/determinism.json` verdict IDENTICAL from two manifests-equal runs, with comparator self-validation |
 
 Completion condition for this methodology: every unit has a recorded audit result; the second run is IDENTICAL to the first; zero findings are outside `Closed` apart from the vendored-exception class; all index-health proofs of the final pass are PASS or carry an honest fallback record.

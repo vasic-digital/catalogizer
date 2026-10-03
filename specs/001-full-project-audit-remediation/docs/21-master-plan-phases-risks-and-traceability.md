@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 5 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
 | Status | draft |
@@ -129,7 +129,7 @@ flowchart LR
 | Server routes / OpenAPI operations / routes missing from the spec / unwired mux routes | 247 / 181 / 68 / 62 | doc19 §6.3 (reproduces doc07 and doc13) |
 | Itemised seed findings across documents | 234 (section 9) | this document |
 | Work packages | 53 (section 5; WP-09, WP-39R and WP-74R added by review) | this document |
-| Owner decisions and inputs | 38 grouped, ODG-01 to ODG-38 (section 8; `research.md` holds 79 finer ones, OD-01 to OD-79) | this document |
+| Owner decisions and inputs | 38 grouped, ODG-01 to ODG-38, plus 16 ungrouped `research.md` ids in section 8.6 (15 open, OD-60 resolved by IC-16); `research.md` holds 79 finer ones, OD-01 to OD-79 | this document |
 
 ---
 
@@ -140,9 +140,10 @@ flowchart LR
 3. **TDD for every executable artifact** (§11.4.224): code, gate scripts, wrappers, mutation pairs, bank cases. A gate's paired mutation is its test-first artifact. Prose-only document edits are not coverage-scoped (§11.4.224(F)) but still pass independent review (§11.4.142).
 4. **No calendar dates and no hour numbers.** Effort is expressed as package counts and size classes (section 11).
 5. **No guessing.** Where source documents disagree, section 10 records both values and the measurement that settles the question; the plan never picks a number by preference.
-6. **Owner decisions are blockers, not assumptions.** Each one is recorded as an `Operator-blocked` register item with its choices (§11.4.21, spec edge case "owner decision"). Only where `research.md` marks a reversible working default (12 of its 79 OD items) may the plan proceed on the recommendation; every other group blocks the work in its Blocks column until the owner answers (FR-008, FR-025).
+6. **Owner decisions are blockers, not assumptions.** Each one is recorded as an `Operator-blocked` register item with its choices (§11.4.21, spec edge case "owner decision"). Only where `research.md` marks a reversible working default (12 of its 79 OD items) may the plan proceed on the recommendation; every other group blocks the work in its Blocks column until the owner answers (FR-008, FR-025). Two stated exceptions (revision 5, section 8.3 note): ODG-34 and ODG-35 have no `research.md` counterpart, and their recommendations restate rules that already bind (the constitution's agent and host-safety limits; the spec's FR-008 completion rule), so the plan uses them as working defaults while they stay open owner items.
 7. **Main branch only, fast-forward only, no force-push, no history rewrite** (FR-020, FR-024, §11.4.113).
 8. **Every build and test in a rootless container** (FR-021, §11.4.161, §11.4.173), heavy builds on the designated build host once verified (doc16 P6).
+9. **Path shorthands** (revision 5): `$AUD` = `specs/001-full-project-audit-remediation/audit` and `$EV` = `specs/001-full-project-audit-remediation/evidence` (layout owned by doc06 §11). Every audit and evidence path in this document is under one of them; a bare `audit/` or `evidence/` path never means a root-level directory.
 
 ---
 
@@ -189,13 +190,13 @@ stateDiagram-v2
 | Item | Content |
 |---|---|
 | Entry criteria | Spec clarified (done, `spec.md` Clarifications); this plan accepted at human checkpoint HC-0 |
-| Work | WP-01 decision intake; WP-02 index gate and index scope fixes; WP-03 recursive verifier; WP-04 commit-push script; WP-05 evidence recorder; WP-06 register bootstrap; WP-07 constitution pin bump; WP-08 gate ledger and anti-mess sweep; WP-09 bootstrap pinned-image slice (IMG-GO, IMG-SHELLCHECK, IMG-KCOV by digest, the part of WP-10 and WP-11 that WP-04 to WP-06 need) |
+| Work | WP-01 decision intake; WP-02 index gate and index scope fixes; WP-03 recursive verifier; WP-04 commit-push script; WP-05 evidence recorder; WP-06 register bootstrap; WP-07 constitution pin bump; WP-08 gate ledger and anti-mess sweep; WP-09 bootstrap pinned-image slice (IMG-GO, IMG-SHELLCHECK, IMG-KCOV pulled by digest and IMG-TESTUTIL built rootless from `build/containers/testutil/Containerfile` with its digest recorded; the part of WP-10 and WP-11 that WP-04 to WP-06 need) |
 | Parallel streams | WP-02, WP-03 and WP-09 start together (different files, no mutual dependency); WP-05 and WP-06 depend on WP-09; WP-04 depends on WP-03 and WP-09; WP-07 depends on WP-03 and WP-04 and on decision ODG-12 |
-| Containers | Read-only work runs on the host (git, CodeGraph CLI reads, Lumen MCP reads); index rewrites only through the sanctioned single writer (doc02 §4.5); script and recorder tests run in IMG-SHELLCHECK, IMG-KCOV and IMG-GO (doc16 §6.1), pinned by digest in WP-09 inside P0 so that no P0 exit evidence waits for P1; the host shell is allowed only for the read-only verifier self-test (doc16 §18 states `git` is not a build) and for the local rootless probe inside WP-09 |
+| Containers | Read-only work runs on the host (git, CodeGraph CLI reads, Lumen MCP reads); index rewrites only through the sanctioned single writer (doc02 §4.5); script and recorder tests run in IMG-SHELLCHECK, IMG-KCOV, IMG-GO and IMG-TESTUTIL (doc16 §6.1), pinned by digest in WP-09 inside P0 so that no P0 exit evidence waits for P1; the host shell is allowed only for the read-only verifier self-test (doc16 §18 states `git` is not a build) and for the local rootless probe inside WP-09 |
 | TDD scope | Verifier (needle self-test with four seeded conditions, doc16 P1), commit-push script (exit-code matrix with seeded diverged and dirty repositories, doc16 P3), recorder (tamper table, doc06 §13.3), register triggers (rejected inserts, doc04 §14.3) |
 | Human checkpoints | HC-0 at entry (plan acceptance, request list sent); HC-1 at exit (tooling verified, register empty and operational) |
 | Review gates | Register DDL and triggers (data model); every gate script with its paired mutation; the constitution pin bump (doc12 §14.3 step 11 with the new `finding_layer` field) |
-| Exit criteria | `audit/index-health.json` all P1 to P8 PASS or an honest fallback record per unit; the three bootstrap images referenced by digest and passing their smoke tests (WP-09); verifier baseline recorded (expected non-clean, doc16 P1); commit-push script used for every later commit, its exit-code matrix run in the pinned images; register gates return empty; evidence recorder passes its rollout tests (doc06 §17 steps 1 to 4) in the pinned images |
+| Exit criteria | `$AUD/index-health.json` all P1 to P8 PASS or an honest fallback record per unit; the four bootstrap images (IMG-GO, IMG-SHELLCHECK, IMG-KCOV, IMG-TESTUTIL) referenced by digest and passing their smoke tests, with a tool-to-image map covering every P0 test tool (WP-09); verifier baseline recorded (expected non-clean, doc16 P1); commit-push script used for every later commit, its exit-code matrix run in the pinned images; register gates return empty; evidence recorder passes its rollout tests (doc06 §17 steps 1 to 4) in the pinned images |
 | Expected evidence | index-health JSON with needles; verifier TSV/JSON with summary line; script test transcripts from the pinned images; DDL apply transcript (`FINAL_DDL_OK`-style, doc04 §5); pin-bump review record |
 
 #### P1 Containerized infrastructure
@@ -205,7 +206,7 @@ stateDiagram-v2
 | Entry criteria | P0 accepted; host probes allowed (ODG-07 for remote hosts) |
 | Work | WP-10 host probes and remote host checklist (doc16 §9.5); WP-11 image catalogue, digest pinning, reproduce-first fix of D-01 to D-04; WP-12 runners and always-containerize correction (D-08, D-09); WP-13 real-service stack with NFS decision (ODG-08); WP-14 remote builds with artifact identity; WP-15 detector and scanner harness with control needles |
 | Parallel streams | WP-10 first (it completes the probe record WP-09 started locally); WP-11 after WP-09 and WP-10, extending the WP-09 pins to the full catalogue; WP-15 after WP-11; WP-12 after WP-11; WP-13 after WP-11 and WP-12; WP-14 after WP-10 to WP-12 |
-| Containers | IMG-GO, IMG-NODE, IMG-PW, IMG-DOCS, IMG-SCAN-*, IMG-SHELLCHECK, IMG-KCOV locally (the last three already pinned by WP-09); IMG-RUST and IMG-ANDROID built and run on the remote build host (doc16 §6.1, DR-16-1); IMG-INFRA-* for services |
+| Containers | IMG-GO, IMG-NODE, IMG-PW, IMG-DOCS, IMG-SCAN-*, IMG-SHELLCHECK, IMG-KCOV and IMG-TESTUTIL locally (IMG-GO, IMG-SHELLCHECK, IMG-KCOV and IMG-TESTUTIL already pinned by WP-09); IMG-RUST and IMG-ANDROID built and run on the remote build host (doc16 §6.1, DR-16-1); IMG-INFRA-* for services |
 | TDD scope | Every broken asset is a reproduce-first case: failing `podman build` captured before the edit, then three passing builds (doc16 §4). Each wrapper has an image smoke test and a mutation (remove `--memory`, expect the gate to fail, doc16 P4) |
 | Human checkpoints | HC-1b: remote host roles and capacity confirmed by the owner (ODG-07) |
 | Review gates | Containerfiles and lock files; any extension of `submodules/containers` goes upstream (§11.4.74) and passes review there |
@@ -238,7 +239,7 @@ stateDiagram-v2
 | Human checkpoints | HC-3: audit report accepted (findings per unit including "none found" with evidence, spec US2 scenario 2) |
 | Review gates | WP-39R independent review (FR-023, stream ST-REV) iterated to GO; reviewer authors at least one mutation the author did not write (§11.4.194(6)(d)) |
 | Exit criteria | Every unit has a recorded audit result; second run from an identical manifest yields `IDENTICAL` (SC-002, doc02 §12); every finding carries location, severity, category, evidence and a register link (FR-007) |
-| Expected evidence | `audit/units.json`, `audit/determinism.json`, finding records validating against `finding/1`, reviewer verdict files |
+| Expected evidence | `$AUD/units.json`, `$AUD/determinism.json`, finding records validating against `finding/1`, reviewer verdict files |
 
 #### P4 Contract layer
 
@@ -343,6 +344,7 @@ Within these limits the default parallel plan is: three to four implementation s
 | IMG-DOCS | pandoc, weasyprint, Mermaid CLI, VitePress; exports and diagram checks | local |
 | IMG-SCAN-* | gitleaks, trivy, semgrep or opengrep, gosec, govulncheck, hadolint, syft, sonar | local |
 | IMG-SHELLCHECK, IMG-KCOV | shell lint and line coverage for `Build/`, `scripts/` | local |
+| IMG-TESTUTIL (built rootless from `build/containers/testutil/Containerfile`: digest-pinned Debian slim base, apt snapshot, `bash`, `git`, `sqlite3`, `python3`, `jq`, Python `jsonschema` at pinned versions; built image digest recorded) | P0 test legs needing sqlite3, git, python3 or jq: register DDL and trigger tests, verifier and commit-push fixtures, schema validation, catalogue regeneration | local |
 | IMG-MUT | mutation tooling per language | local or remote by measured RSS |
 | QA image | helixqa binary from the pinned submodule, Tesseract, ffmpeg, browsers, wrapper | local |
 | IMG-INFRA-* | PostgreSQL, Redis, MinIO, Samba, FTP, WebDAV, NFS (decision) | local, rootless |
@@ -375,20 +377,20 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
 | WP-01 | ST-GOV | Owner decision and blocker intake | all docs' open decisions; section 8 | this document, `research.md` | `Operator-blocked` register items with choices (after WP-06), owner request list (devices, credentials, hosts) | request list delivered; one register item per decision | FR-008, FR-025 | SC-003 | M |
-| WP-02 | ST-GOV | Index health gate and index scope fixes | doc02 §4, F-INDEX-001..006; doc17 rank 13; doc20 W20-12 (60-query golden set, Kotlin gap reported) | CodeGraph DB, Lumen | scope DATA rendered via constitution tooling, `.lumenignore`, `.mcp.json` registration (CLI route until then, doc02 D-01), golden questions | `audit/index-health.json` P1 to P8 PASS with needles; Lumen `Stale: no` | FR-005 | SC-002 | M |
+| WP-02 | ST-GOV | Index health gate and index scope fixes | doc02 §4, F-INDEX-001..006; doc17 rank 13; doc20 W20-12 (60-query golden set, Kotlin gap reported) | CodeGraph DB, Lumen | scope DATA rendered via constitution tooling, `.lumenignore`, `.mcp.json` registration (CLI route until then, doc02 D-01), golden questions | `$AUD/index-health.json` P1 to P8 PASS with needles; Lumen `Stale: no` | FR-005 | SC-002 | M |
 | WP-03 | ST-INFRA | Single recursive repository verifier | doc11 App. A (executed), doc16 P1, doc12 WP-G3, doc19 tool 1 `poc/repo_verify/verify_repo.sh` (24 of 24 self-test checks) | 97 repositories, ODG-15 | one verifier (section 10, IC-17) | needle self-test detecting dirty, unpushed, diverged, unverified; baseline run (observed 2026-10-03: `BEHIND_UPSTREAM=24 ... CLEAN=72 BLOCKING=0`, doc11 §8.4) | FR-019, FR-020, FR-024 | SC-010 | M |
 | WP-04 | ST-INFRA | Dedicated commit-push script (§11.4.234) | doc12 WP-G3, doc16 P3, D-12 to D-14 | WP-03, WP-09 | script with stages, recorded deferral flag, pre-push gate preserved and not installed | exit-code matrix test including seeded diverged (12) and dirty (13); `--force` mutation fails the test | FR-019, FR-020, FR-024 | SC-010 | M |
-| WP-05 | ST-QA | Evidence recorder, verdict deriver, anchors, runner wrappers | doc06 §17 steps 1-4; doc05 TS-02; F-10 | WP-09 | recorder, verifier, wrappers for Go, vitest, Gradle, cargo, bash | tamper table reproduces; seeded hidden failure found; golden-good and golden-bad verdicts | FR-010, FR-022 | SC-003, SC-012 | M |
-| WP-06 | ST-REG | Register bootstrap | doc04 §5 DDL, DR-1..5; doc03 DR-1..5 | engine binary in constitution, WP-09, ODG-11 | tracked DB (ODG-11), `.gitignore` negation, `reg_` extension, custody triggers | DDL apply on fresh DB; rejected-insert tests; gate views empty; 41 triggers present (doc04 §4); `PRAGMA integrity_check` ok and `PRAGMA foreign_key_check` empty (doc04 §12.3) | FR-001, FR-003, FR-007, FR-008 | SC-001 | M |
+| WP-05 | ST-QA | Evidence recorder, verdict deriver, anchors, runner wrappers | doc06 §17 steps 1-4; doc05 TS-02; F-10 | WP-09, OD-76 (§8.6) | recorder, verifier, wrappers for Go, vitest, Gradle, cargo, bash | tamper table reproduces; seeded hidden failure found; golden-good and golden-bad verdicts | FR-010, FR-022 | SC-003, SC-012 | M |
+| WP-06 | ST-REG | Register bootstrap | doc04 §5 DDL, DR-1..5; doc03 DR-1..5 | engine binary in constitution, WP-09, ODG-11, OD-14 (§8.6) | tracked DB (ODG-11), `.gitignore` negation, `reg_` extension, custody triggers | DDL apply on fresh DB; rejected-insert tests; gate views empty; 41 triggers present (doc04 §4); `PRAGMA integrity_check` ok and `PRAGMA foreign_key_check` empty (doc04 §12.3) | FR-001, FR-003, FR-007, FR-008 | SC-001 | M |
 | WP-07 | ST-GOV | Constitution pin bump to `e44f22f` | doc12 §14.3 (12 steps), doc11 §7, F-1, F-8 | WP-03, WP-04, ODG-12 | ff-only pin move; regenerated Spec Kit catalogue and appendix; upstream report of the stale `constitution_index.yaml` hash; hook variant B transcript; §11.4.32 substitute sweep | review record with `finding_layer`; sweep gate outputs; FAILs filed as tracked items | FR-006, FR-017, FR-020, FR-024 | SC-009, SC-010 | M |
 | WP-08 | ST-GOV | Project gate ledger and anti-mess sweep | doc12 WP-G2, WP-G4; doc16 P10 | WP-04 | gate ledger and ratchet, invariant catalogue, long-op registry | seeded-mess fixtures detected (orphan container, stale lock, duplicate owner) | FR-022 | SC-012 | M |
-| WP-09 | ST-INFRA | Bootstrap pinned-image slice for the P0 tests | doc16 §6.1 (IMG-GO, IMG-SHELLCHECK, IMG-KCOV), P0 and P2 methods; the local part of WP-10 and the first three pins of WP-11 | none (local rootless podman only: no remote host, no owner decision) | `images.lock.yaml` entries with digests for IMG-GO, IMG-SHELLCHECK, IMG-KCOV; local rootless probe record; runner wrapper with `--memory` and `--pids-limit` | each image pulled by digest and its smoke test passes; a deliberately mutated digest is refused; WP-04 to WP-06 test transcripts name these digests | FR-021 | SC-012 | M |
+| WP-09 | ST-INFRA | Bootstrap pinned-image slice for the P0 tests | doc16 §6.1 (IMG-GO, IMG-SHELLCHECK, IMG-KCOV, plus IMG-TESTUTIL added in revision 5), P0 and P2 methods; the local part of WP-10 and the first four pins of WP-11 | none (local rootless podman only: no remote host, no owner decision) | `images.lock.yaml` entries with digests for IMG-GO, IMG-SHELLCHECK, IMG-KCOV (pulled) and IMG-TESTUTIL (built rootless from the pinned `build/containers/testutil/Containerfile` with an apt snapshot; the built digest recorded); local rootless probe record; runner wrapper with `--memory` and `--pids-limit`; tool-to-image map | each image referenced by digest and its smoke test passes; a deliberately mutated digest is refused; WP-04 to WP-06 test transcripts name these digests | FR-021 | SC-012 | M |
 
 ### 5.2 P1 Containerized infrastructure
 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
-| WP-10 | ST-INFRA | Host probes and remote-host checklist | doc16 P0, §8.5, §9.5, V-01..V-15 (completes the probe record that WP-09 starts locally) | WP-09, ODG-07 | `evidence/host-probe.json`, resolved UNCONFIRMED list | probe JSON with control needles | FR-021 | SC-012 | S |
+| WP-10 | ST-INFRA | Host probes and remote-host checklist | doc16 P0, §8.5, §9.5, V-01..V-15 (completes the probe record that WP-09 starts locally) | WP-09, ODG-07 | `$EV/host-probe.json`, resolved UNCONFIRMED list | probe JSON with control needles | FR-021 | SC-012 | S |
 | WP-11 | ST-INFRA | Image catalogue, digest pins, reproduce-first fix of D-01..D-04 (extends the WP-09 pins to the full catalogue) | doc16 P2; doc02 D-04; doc17 rank 1; O-07, O-17 | WP-09, WP-10 | `build/containers/*`, `images.lock.yaml`, `check_pins.sh` | per defect failing-before and three passing-after verdicts | FR-021 | SC-003 | L |
 | WP-12 | ST-INFRA | Container runners, always-containerize correction | doc16 P4; D-08, D-09 | WP-11 | wrappers per toolchain with measured limits | image smoke tests; `--memory` removal mutation detected | FR-021 | SC-012 | M |
 | WP-13 | ST-INFRA | Real-service test stack | doc16 P5, §10; doc05 F-2; D-10 | WP-11, WP-12, ODG-08, ODG-01 | pinned rootless PostgreSQL, Redis, MinIO, Samba, FTP, WebDAV; NFS by decision | protocol round-trip records; NFS PASS or structural-impossibility record | FR-009, FR-021, FR-025 | SC-004 | L |
@@ -402,7 +404,7 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 | WP-20 | ST-REG | Source freeze, enumeration, import | doc03 §10; doc04 §9 stages 0-3; doc12 WP-Q5 | WP-06, frozen commit | `reg_source_entries`, `reg_source_map`, register items (25 source classes S-01..S-25) | `PENDING=0`; join checks; planted-entry test; `workable-items diff` in sync | FR-001, FR-002, FR-003 | SC-001 | XL |
 | WP-21 | ST-REG | Legacy-closure re-verification and `wontfix` triage | doc04 DR-5, D-1; doc03 DR-2; doc12 §11 | WP-20, ODG-09 | `v_reverify_queue` ordered by severity; 460 bulk-closed sample re-verified; 282 `wontfix` re-triaged (fix, Feature item, or false-positive evidence) | each closure has machine evidence; counts reported as items and source entries | FR-002, FR-008 | SC-003 | XL |
 | WP-22 | ST-REG | External tracker sync | doc04 §10 | WP-06, ODG-10 | adapter per configured tracker; `reg_tracker_sync_log` | each tracker `SYNCED` with real exit or `SKIPPED(reason)`; dry run and pilot batch before a mass push (doc04 K-7) | FR-004 | SC-001 | M |
-| WP-23 | ST-QA | Applicability map, measurement and coverage baselines | doc05 TS-00, TS-01, §7; doc08 W8-03; doc09 WP-T1; doc10 W10-03 | WP-05, WP-12, WP-13, ODG-17 | `matrix/applicability.yaml`, baseline coverage per application, failing-suite findings | no `?` cell; baseline records; collector fails on error | FR-009, FR-011 | SC-004 | L |
+| WP-23 | ST-QA | Applicability map, measurement and coverage baselines | doc05 TS-00, TS-01, §7; doc08 W8-03; doc09 WP-T1; doc10 W10-03 | WP-05, WP-12, WP-13, ODG-17, OD-75 (§8.6) | `matrix/applicability.yaml`, baseline coverage per application, failing-suite findings | no `?` cell; baseline records; collector fails on error | FR-009, FR-011 | SC-004 | L |
 | WP-24 | ST-QA | QA wrapper, bank validator, manifest, adapter, vision analyzers | doc12 WP-Q1, WP-Q6; QF-01..QF-16 | WP-05, ODG-01 | wrapper reading machine verdicts, validator R-1..R-8, `.bank-id-floor.txt`, conduit-to-ledger adapter, QA image | validator rejects placeholder and prose-only steps; `skipped` absent from deterministic lane; analyzer golden fixtures | FR-010, FR-025 | SC-004 | L |
 
 ### 5.4 P3 Audit pass
@@ -418,7 +420,7 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 | WP-36 | ST-GOV | Unowned components audit | doc02 §8.6-8.8; doc01 U-10; section 6.3 | WP-02, WP-05, WP-15 | audit results for `OCU-CUDA-Sidecar`, `qa-ai-system`, `Website/`, `Build/`, `scripts/`, `tests/` | recorded result per unit, "none found" with evidence | FR-006, FR-007 | SC-002 | M |
 | WP-37 | ST-DOC | Documentation and definitions baseline | doc13 D0, D4 extractors; §2; doc19 tool 2 `poc/doc_links/crawl_links.py` (31 of 31 self-test checks) | WP-12 | crawler and export checker committed; schema dumper, route and env extractors | baseline JSON reproducible | FR-012, FR-013, FR-015 | SC-006, SC-008 | M |
 | WP-38 | ST-PERF | Performance as-found baseline | doc14 WP-14-01..07; doc07 W9 | WP-13, WP-05, ODG-01, ODG-07, ODG-32 | harness, environment fingerprint, A/A noise floors, baselines OP-01..OP-16 where possible | A/A twice identical; BLOCKED records name missing resources | FR-010, FR-025 | SC-011 | L |
-| WP-39 | ST-GOV | Audit repeat run and determinism comparison | doc02 W4, §12 | WP-30..WP-38 | second run from an identical manifest; `audit/determinism.json` | `audit/determinism.json` IDENTICAL; comparator self-validation with a seeded difference; index gate re-proved in the repeat run | FR-005 | SC-002 | M |
+| WP-39 | ST-GOV | Audit repeat run and determinism comparison | doc02 W4, §12 | WP-30..WP-38 | second run from an identical manifest; `$AUD/determinism.json` | `$AUD/determinism.json` IDENTICAL; comparator self-validation with a seeded difference; index gate re-proved in the repeat run | FR-005 | SC-002 | M |
 | WP-39R | ST-REV | Independent review of the audit (G-AUDIT) | doc02 W5, §12; spec FR-023 | WP-39 (and through it WP-30..WP-38) | reviewer verdict files iterated to GO; at least one reviewer-authored mutation | reviewer GO on Opus at xhigh; a mutation the author did not write is detected; zero blocking findings | FR-023 | SC-002 | M |
 
 ### 5.5 P4 Contract layer
@@ -426,17 +428,17 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
 | WP-40 | ST-API | Live route dump and contract inventory | doc07 W7; doc01 §14, U-02..U-04; doc13 §2.4; doc19 tool 3 `poc/route_drift/route_drift.py` as cross-check and regression oracle; doc20 W20-11 (route table vs spec, `oasdiff` base-vs-head) | WP-30, ODG-38 | runtime route list, OpenAPI drift, client drift per C1..C22 | guard fails on an undocumented route, passes after documentation | FR-015, FR-016 | SC-008 | M |
-| WP-41 | ST-QA | Both-sided contract tests and can-i-deploy | doc05 TS-05, §9; doc08 W8-09; doc09 WP-D2; doc10 W10-05; doc17 ranks 5, 6 | WP-40, ODG-24, ODG-30, ODG-38 | consumer and provider tests per contract, compatibility matrix gate | broker or file matrix verdict; missing-contract refusal | FR-016 | SC-004 | L |
+| WP-41 | ST-QA | Both-sided contract tests and can-i-deploy | doc05 TS-05, §9; doc08 W8-09; doc09 WP-D2; doc10 W10-05; doc17 ranks 5, 6 | WP-40, ODG-24, ODG-30, ODG-38, OD-25 (§8.6) | consumer and provider tests per contract, compatibility matrix gate | broker or file matrix verdict; missing-contract refusal | FR-016 | SC-004 | L |
 
 ### 5.6 P5 Remediation
 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
-| WP-50 | ST-SEC | Security fix wave | doc15 §13 order S-01..S-08, WS2-WS4, WS7 | WP-41, ODG-25, ODG-26, ODG-27, ODG-28, ODG-02, ODG-03 | fixes in server and every client | RED then GREEN x3; anonymous and foreign-origin `/ws` refused; SSRF table pass; at-rest sentinel absent | FR-008, FR-016 | SC-003 | L |
+| WP-50 | ST-SEC | Security fix wave | doc15 §13 order S-01..S-08, WS2-WS4, WS7 | WP-41, ODG-25, ODG-26, ODG-27, ODG-28, ODG-02, ODG-03, OD-68 (§8.6) | fixes in server and every client | RED then GREEN x3; anonymous and foreign-origin `/ws` refused; SSRF table pass; at-rest sentinel absent | FR-008, FR-016 | SC-003 | L |
 | WP-51 | ST-API | Backend fix wave | doc07 W8 | WP-41, ODG-20, ODG-08, ODG-23 | fixes for C-items, dialect, migrations, scanners, include/exclude patterns | per fix RED and GREEN verdict with different fingerprints | FR-008, FR-015 | SC-003 | XL |
-| WP-52 | ST-WEB | Web fix wave | doc08 W8-04, W8-07, W8-08, W8-11 | WP-41, WP-50, WP-51, ODG-21, ODG-25, ODG-30, ODG-24 | auth and realtime fixes, fabricated data removed or replaced, reproducible Dockerfile, security headers | RED and GREEN incl. unmocked provider-plus-status test | FR-008, FR-021 | SC-003 | L |
-| WP-53 | ST-DESK | Desktop and installer fixes | doc09 WP-D3..D7, WP-I1..I4, WP-P1; doc20 W20-07 (`Cargo.lock`, cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants) | WP-41, WP-50, WP-51, WP-14, ODG-06, ODG-31, ODG-08, ODG-23, ODG-25 | SSRF validator, managed client, credential storage, capabilities, protocol testers, packaging | Appendix A table green; mutation to `starts_with` goes red; per-protocol evidence | FR-008, FR-021 | SC-003 | L |
-| WP-54 | ST-AND | Android and TV fixes | doc10 W10-05..W10-13; doc20 W20-08 (AGP/compileSdk resolved against primary text), W20-09 (lint SARIF) | WP-41, WP-50, WP-51, WP-14, ODG-04, ODG-05, ODG-22, ODG-29, ODG-01, ODG-03, ODG-26 | auth header, refresh, route drift, offline layer, playback, release hardening, banks | real-backend RED and GREEN; device journeys or `blocked-unavailable` | FR-008, FR-025 | SC-003 | XL |
+| WP-52 | ST-WEB | Web fix wave | doc08 W8-04, W8-07, W8-08, W8-11 | WP-41, WP-50, WP-51, ODG-21, ODG-25, ODG-30, ODG-24, OD-49 (§8.6) | auth and realtime fixes, fabricated data removed or replaced, reproducible Dockerfile, security headers | RED and GREEN incl. unmocked provider-plus-status test | FR-008, FR-021 | SC-003 | L |
+| WP-53 | ST-DESK | Desktop and installer fixes | doc09 WP-D3..D7, WP-I1..I4, WP-P1; doc20 W20-07 (`Cargo.lock`, cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants) | WP-41, WP-50, WP-51, WP-14, ODG-06, ODG-31, ODG-08, ODG-23, ODG-25, OD-74 (§8.6) | SSRF validator, managed client, credential storage, capabilities, protocol testers, packaging | Appendix A table green; mutation to `starts_with` goes red; per-protocol evidence | FR-008, FR-021 | SC-003 | L |
+| WP-54 | ST-AND | Android and TV fixes | doc10 W10-05..W10-13; doc20 W20-08 (AGP/compileSdk resolved against primary text), W20-09 (lint SARIF) | WP-41, WP-50, WP-51, WP-14, ODG-04, ODG-05, ODG-22, ODG-29, ODG-01, ODG-03, ODG-26, OD-43, OD-45 (§8.6) | auth header, refresh, route drift, offline layer, playback, release hardening, banks | real-backend RED and GREEN; device journeys or `blocked-unavailable` | FR-008, FR-025 | SC-003 | XL |
 | WP-55 | ST-SUB | Shared-module fixes upstream and submodule update layers | doc11 §6 L0-L5; doc08 W8-09; doc12 WP-Q3; doc11 S-LOCK-1 (pin discipline re-verified after each layer) | WP-34, WP-07, ODG-13, ODG-14, ODG-15 | upstream commits with review; bottom-up pin moves | `UPDATED_GATE_PASS` ledger rows; affected-application full tests | FR-006, FR-017, FR-018 | SC-003, SC-009 | L |
 | WP-56 | ST-INFRA | Reproducibility, SBOM, provenance, SLSA record, promotion by digest | doc16 P8, P9, §14, §15; doc15 WS6; doc20 W20-04 (provenance script and verifier, `SLSA_LEVEL.md` stating L1 until ODG-16) | WP-14, ODG-16, ODG-06 | double-build comparisons, SBOMs, `docs/security/SLSA_LEVEL.md`, digest-referenced compose | per-artifact reproducibility verdict; `check_pins.sh` clean | FR-021 | SC-003 | L |
 | WP-57 | ST-SUB | Dependency report and decisions | doc15 WS6; doc09 WP-X2; doc10 W10-15; doc11 §2.2 | WP-34, ODG-13 | one report: every dependency with version, upstream version, status, decision | report complete for submodules and third-party packages | FR-017 | SC-009 | M |
@@ -446,9 +448,9 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
 | WP-60 | ST-QA | HelixQA bank conversion waves | doc12 WP-Q2, §7; F-6; QF-01..QF-03 | WP-24, WP-41, ODG-01, ODG-03, ODG-04 | 1,178 placeholder lines converted or the case closed with evidence | BASELINE, mutation, three-run evidence per case; bank-id floor | FR-009, FR-010, FR-025 | SC-004, SC-005 | XL |
-| WP-61 | ST-QA | Absent test types, fakes replaced, mutation instrumentation | doc05 TS-03..TS-09; doc08 W8-05, W8-06; doc09 WP-T2, T3; doc10 W10-07, -11..-13; doc07 W10; doc20 W20-06 (OpenTelemetry server tracing with `tracetest` in-memory assertions on one critical flow) | WP-23, WP-13, ODG-05, ODG-17 | authored cells per application, real-stack E2E, `.go-mutesting.yml`, mutation per language | matrix cells closed with ledger records; zero `page.route` and zero `waitForTimeout` in E2E; the W20-06 flow's span assertions pass in memory and fail when its instrumentation is removed | FR-009, FR-010, FR-011 | SC-004, SC-005 | XL |
-| WP-62 | ST-PERF | Targets, regression gate, bottleneck fixes, soak | doc14 WP-14-08..16; doc08 W8-10; doc10 W10-16 | WP-38, ODG-32, ODG-04, ODG-06, ODG-07 | `targets.yaml`, gate in the commit-push script, before and after records | negative control fails, unmodified passes; per bottleneck confidence interval of the median ratio | FR-010, FR-025 | SC-011 | L |
-| WP-63 | ST-DOC | Documentation programme D1-D9 | doc13 §12; doc08 W8-12; doc09 WP-X1; doc10 W10-14; doc15 WS8; doc14 WP-14-17 | WP-37, WP-40, ODG-33 | hubs, link fixes, disposition, review ledger, new manuals, guides, FAQs, runbooks, diagrams, exports, badges | `orphans=0`, `broken=0`, `stale=0`; app doc matrix green; diagram report 100% non-blank | FR-012, FR-013, FR-014 | SC-006, SC-007 | XL |
+| WP-61 | ST-QA | Absent test types, fakes replaced, mutation instrumentation | doc05 TS-03..TS-09; doc08 W8-05, W8-06; doc09 WP-T2, T3; doc10 W10-07, -11..-13; doc07 W10; doc20 W20-06 (OpenTelemetry server tracing with `tracetest` in-memory assertions on one critical flow) | WP-23, WP-13, ODG-05, ODG-17, OD-20, OD-23, OD-26 (§8.6) | authored cells per application, real-stack E2E, `.go-mutesting.yml`, mutation per language | matrix cells closed with ledger records; zero `page.route` and zero `waitForTimeout` in E2E; the W20-06 flow's span assertions pass in memory and fail when its instrumentation is removed | FR-009, FR-010, FR-011 | SC-004, SC-005 | XL |
+| WP-62 | ST-PERF | Targets, regression gate, bottleneck fixes, soak | doc14 WP-14-08..16; doc08 W8-10; doc10 W10-16 | WP-38, ODG-32, ODG-04, ODG-06, ODG-07, OD-55 (§8.6) | `targets.yaml`, gate in the commit-push script, before and after records | negative control fails, unmodified passes; per bottleneck confidence interval of the median ratio | FR-010, FR-025 | SC-011 | L |
+| WP-63 | ST-DOC | Documentation programme D1-D9 | doc13 §12; doc08 W8-12; doc09 WP-X1; doc10 W10-14; doc15 WS8; doc14 WP-14-17 | WP-37, WP-40, ODG-33, OD-57 (§8.6) | hubs, link fixes, disposition, review ledger, new manuals, guides, FAQs, runbooks, diagrams, exports, badges | `orphans=0`, `broken=0`, `stale=0`; app doc matrix green; diagram report 100% non-blank | FR-012, FR-013, FR-014 | SC-006, SC-007 | XL |
 | WP-64 | ST-DOC | Definitions references and diff gates | doc13 D4, §10; doc20 W20-10 (scratch unencrypted DB, `tbls`, migration systems reconciled) | WP-37, WP-40, ODG-33, ODG-37 | generated schema, route, env, template references | zero differences both dialects, or each difference a tracked finding | FR-015 | SC-008 | M |
 | WP-65 | ST-QA | Escape ratchet and discovery channel | doc12 WP-Q4, §12 | WP-06, ODG-18 | `reg_discovery`, ratchet gate | ratchet gate self-test; first manual-QA data point | FR-010 | SC-005 | M |
 
@@ -456,11 +458,11 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
-| WP-70 | ST-QA | Matrix gate and coverage ratchet final | doc05 TS-10, §13.3 | WP-60, WP-61, ODG-17 | final matrix | generator exit 0, zero gaps; gate mutation set passes | FR-009, FR-011 | SC-004 | S |
+| WP-70 | ST-QA | Matrix gate and coverage ratchet final | doc05 TS-10, §13.3 | WP-60, WP-61, ODG-17, OD-26 (§8.6) | final matrix | generator exit 0, zero gaps; gate mutation set passes | FR-009, FR-011 | SC-004 | S |
 | WP-71 | ST-QA | Full-suite retest on candidate digest, RED/GREEN sample, reviewer mutation sample | doc06 §17; doc05 §8.3; doc20 W20-05 (authoring-time stress runner, flake ledger) | P5, P6, ODG-17 | retest records on the promoted digest | sample: RED on pre-fix, GREEN x3 identical digests; zero mutation survivors | FR-010, FR-018, FR-021 | SC-003, SC-005 | L |
 | WP-72 | ST-REG | Register closure sweep | doc04 §13; doc03 §15 | WP-71, ODG-09 | final register state, exports regenerated | zero-open query; status-honesty query; recurrence violations view empty | FR-001, FR-003, FR-008 | SC-001, SC-003 | M |
-| WP-73 | ST-INFRA | Final recursive verification and push | doc11 §8.4 A-1..A-7, S-LOCK-1; doc16 §11 | WP-72, ODG-15 | pushes to every upstream ff-only | verifier `BLOCKING=0`, zero own-org behind, root tip equal on every remote | FR-019, FR-020, FR-024 | SC-010 | S |
-| WP-74 | ST-GOV | Evidence pack and completion-report checker | doc06 §14.3; doc13 D10; doc07 W11; doc08 W8-13 and doc10 W10-17 (closure sweep parts) | all | evidence pack, completion report, report checker | checker finds zero claims without `ledger#seq`; needle proves the checker sees claims | FR-022 | SC-012 | M |
+| WP-73 | ST-INFRA | Final recursive verification and push | doc11 §8.4 A-1..A-7, S-LOCK-1; doc16 §11 | WP-72, ODG-15, OD-36 (§8.6) | pushes to every upstream ff-only | verifier `BLOCKING=0`, zero own-org behind, root tip equal on every remote | FR-019, FR-020, FR-024 | SC-010 | S |
+| WP-74 | ST-GOV | Evidence pack and completion-report checker | doc06 §14.3; doc13 D10; doc07 W11; doc08 W8-13 and doc10 W10-17 (closure sweep parts) | all, OD-76 (§8.6) | evidence pack, completion report, report checker | checker finds zero claims without `ledger#seq`; needle proves the checker sees claims | FR-022 | SC-012 | M |
 | WP-74R | ST-REV | Final independent review (G-FINAL) | doc06 §14.3; doc08 W8-13 and doc10 W10-17 (review parts); spec FR-023 | WP-74 | reviewer verdict on the evidence pack and the report | reviewer GO on Opus at xhigh; reviewer-authored mutation detected; zero blocking findings | FR-023 | SC-012 | M |
 
 ### 5.9 Work-package dependency diagram (Gantt-style, no dates)
@@ -604,7 +606,7 @@ Evidence types: **L** ledger record (doc06 evidence entry), **V** verdict pair R
 | FR-002 | WP-20, WP-21 | `v_reconciliation`, `PENDING=0`, planted-entry test | Q, M | covered |
 | FR-003 | WP-06, WP-20, WP-72 | `reg_recurrence_links`, `v_recurrence_violations` empty | Q, G | covered |
 | FR-004 | WP-22 | `reg_tracker_sync_log` SYNCED or SKIPPED(reason) | Q, M | covered, blocked on ODG-10 |
-| FR-005 | WP-02, WP-39 | `audit/index-health.json` P1-P8 | M, G | covered |
+| FR-005 | WP-02, WP-39 | `$AUD/index-health.json` P1-P8 | M, G | covered |
 | FR-006 | WP-07, WP-30 to WP-36, WP-55 | per-unit audit result; upstream fix records | M, R | covered (WP-36 added by this synthesis) |
 | FR-007 | WP-06, WP-15, WP-30 to WP-36 | finding records validating against `finding/1` | M, Q | covered |
 | FR-008 | WP-01, WP-06, WP-21, WP-50 to WP-54, WP-72 | custody chain per closure; zero-open query | V, Q, R | covered |
@@ -631,7 +633,7 @@ Evidence types: **L** ledger record (doc06 evidence entry), **V** verdict pair R
 | SC | Work packages | Evidence | Status |
 |---|---|---|---|
 | SC-001 | WP-06, WP-20, WP-22, WP-72 | reconciliation listing every source entry with its item | covered |
-| SC-002 | WP-02, WP-15, WP-30 to WP-36, WP-39, WP-39R | `audit/determinism.json` IDENTICAL | covered |
+| SC-002 | WP-02, WP-15, WP-30 to WP-36, WP-39, WP-39R | `$AUD/determinism.json` IDENTICAL | covered |
 | SC-003 | WP-01, WP-05, WP-11, WP-14, WP-21, WP-50 to WP-56, WP-71, WP-72 | RED before, GREEN x3 after, zero open | covered |
 | SC-004 | WP-13, WP-23, WP-24, WP-41, WP-60, WP-61, WP-70 | matrix zero gaps | covered |
 | SC-005 | WP-60, WP-61, WP-65, WP-71 | reviewer sample, zero survivors | covered, sample size on ODG-17 |
@@ -776,11 +778,38 @@ Each decision becomes an `Operator-blocked` register item with its choices (§11
 | ODG-37 | Accept a commercial account and licence for migration linting (Atlas Pro) | yes; no (SQLite procedure checks plus squawk for PostgreSQL) | no | WP-64 | doc20 DR-20-04 | OD-64 | No |
 | ODG-38 | Spec-first (oapi-codegen) for new endpoints, keeping the hand-written spec plus drift gates for existing routes | spec-first for new endpoints; code-first later with a stable generator; status quo plus gates | status quo plus gates now; decide after WP-40 measures the drift | WP-40, WP-41 | doc20 DR-20-05 | OD-63 | No |
 
-**Count: 38 grouped decisions and inputs** (ODG-01 to ODG-38; ODG-34 and ODG-35 are listed in 8.3 because they govern process; ODG-36 to ODG-38 come from document 20 and are listed in 8.5).
+**Count: 38 grouped decisions and inputs** (ODG-01 to ODG-38; ODG-34 and ODG-35 are listed in 8.3 because they govern process; ODG-36 to ODG-38 come from document 20 and are listed in 8.5), plus 16 ungrouped `research.md` decisions in 8.6 (15 open, 1 resolved).
+
+**ODG-34 and ODG-35 in use** (revision 5, the exception stated in planning rule 6): no `research.md` default backs either, but each recommendation restates a rule that already binds, so the plan proceeds on them as reversible working defaults and records that: ODG-34 (at most 6 working agents, Sonnet default, Opus xhigh for reviews, doc02 §13 budget rules) applies from P0 onward, and ODG-35 (no SLA tiers; FR-008 completion rule; order by severity then exposure) applies in P5. Both stay `Operator-blocked` items the owner may overturn; overturning either changes scheduling only, not any evidence rule.
 
 **Defaults:** Yes 3, Partial 3, UNCONFIRMED 4, No 28 (38 groups). The last column is derived from `research.md` section 5, whose count says 12 of the 79 OD items carry a reversible working default (OD-11, -17, -30, -32, -35, -37, -39, -47, -54, -58, -61, -79). Only 7 of those 12 fall inside a group (OD-11, -30, -32, -39, -47, -58, -61); OD-17, -35, -37, -54 and -79 have no group counterpart here and stay recorded in `research.md` only. The group mapping is wording-based (see below), so every Yes and Partial is UNCONFIRMED at row level until re-mapped. Row-level marking in `research.md` ("(default)" in the Blocks cell) exists for 8 rows (OD-11, -17, -30, -32, -35, -37, -39, -79); OD-47, -54, -58 and -61 are on its list of 12 without that marker, and this document follows the list.
 
 The grouped ids are `ODG-NN`, not `OD-NN`, because `research.md` already numbers 79 finer-grained owner decisions `OD-01` to `OD-79` with different meanings (for example `research.md` OD-01 is the SLSA statement, which is ODG-16 here, while ODG-01 here is credentials, which is spread over `research.md` OD-28 and OD-67). The last column but one of every table above lists the `research.md` ids that fall inside each group where a counterpart can be determined from the wording; `-` means no counterpart was found.
+
+### 8.6 Ungrouped `research.md` decisions (added in revision 5)
+
+The 16 `research.md` owner decisions below have no ODG counterpart and no reversible default, so the ODG tables above would never register them. Each of the 15 open ones is imported as its own `Operator-blocked` register item next to the 38 groups and blocks the work package named here; the WP rows in section 5 list them in their Inputs column. OD-60 is listed for completeness: it is resolved by IC-16 and blocks nothing.
+
+| `research.md` id | Topic | Default (`research.md`) | Blocks | Closest group (topic only, not merged) |
+|---|---|---|---|---|
+| OD-14 | producer-equals-verifier residual of the register custody design (docs/04 §7.1) | No | WP-06 | - |
+| OD-20 | 30 shuffled race runs per new or changed test (SC-003 tuning) | No | WP-61 | - |
+| OD-23 | in-memory SQLite in non-unit tests as a real engine | No | WP-61 | ODG-17 |
+| OD-25 | backward-compatibility window N for the can-i-deploy gate | No | WP-41 | ODG-30 |
+| OD-26 | scaling tests where the API cannot run multiple replicas | No | WP-61, WP-70 | ODG-17 |
+| OD-36 | add the missing GitLab remote for `websocket_client_ts` | No | WP-73 | ODG-15 |
+| OD-43 | crash reporting on the phone | No | WP-54 | ODG-22 |
+| OD-45 | `google-services.json` for builds without Firebase values | No | WP-54 | ODG-01 |
+| OD-49 | web state management (Zustand and dead aliases) | No | WP-52 | ODG-30 |
+| OD-55 | user-perceived thresholds without a credible source | No | WP-62 | ODG-32 |
+| OD-57 | `qa-ai-system/` and `catalog-api/challenges/` documentation live or legacy | No | WP-63 | ODG-33 |
+| OD-60 | binding path of the commit-push script | resolved by IC-16 (`scripts/commit-push-all.sh`, doc16 stages S0-S8) | none | - |
+| OD-68 | `go-sqlcipher` encryption keyed in production | No | WP-50 | ODG-27 |
+| OD-74 | `catalog-api` auth change for the installer's SMB routes | No | WP-53 | ODG-23 |
+| OD-75 | origin of `installer-wizard/test-results.json` | No | WP-23 | - |
+| OD-76 | where large evidence blobs and the anchor live | No (in-tree `$EV/blobs/<sha256>` for small blobs proceeds per doc06 §11; the out-of-tree store and the anchor strength wait) | WP-05, WP-74 | - |
+
+With this table every `research.md` id OD-01 to OD-79 is accounted for: 58 inside a group, 16 here, and the 5 defaulted ids OD-17, -35, -37, -54 and -79 recorded in `research.md` only (their defaults apply without an owner item).
 
 ---
 
@@ -926,7 +955,10 @@ Upper bound before dedup: about 4,700 candidate entries (ESTIMATE, doc03 §7: th
 | IC-32 | Research corrections | doc17 versus doc20 §11 (C1 to C13): Trivy tag counts, SLSA reading, OpenTelemetry Go logs status, cargo-mutants features, OpenAPI existence, Android lint SARIF | doc20 used primary sources for each correction; doc20 supersedes doc17 where they conflict |
 | IC-33 | SLSA framing | doc17 §7.1: L2 without CI cannot be met; doc15 OQ-S3: open question; doc20 §3: an interpretation question about owner-operated dedicated hosts | doc20's framing governs; ODG-16 offers options A, B, C |
 | IC-34 | Owner decision id collision | the first draft of this document numbered its grouped decisions `OD-01` to `OD-38`; `research.md` numbers 79 finer decisions `OD-01` to `OD-79` with different meanings (OD-01 is the SLSA statement there and the credentials group here) | the grouped ids are `ODG-01` to `ODG-38` with a mapping column to the `research.md` ids in section 8; a citation of a grouped decision as `OD-nn` in another file is wrong and is reconciled there |
-| IC-35 | Phase gating deadlock | P0 exit required test transcripts of WP-04 to WP-06 that run in IMG-SHELLCHECK, IMG-KCOV and IMG-GO, whose pinning was planned in P1 (WP-10, WP-11) | WP-09 pins those three images by digest inside P0; WP-11 extends the catalogue; P0 exit cites the WP-09 digests |
+| IC-35 | Phase gating deadlock | P0 exit required test transcripts of WP-04 to WP-06 that run in IMG-SHELLCHECK, IMG-KCOV and IMG-GO, whose pinning was planned in P1 (WP-10, WP-11) | WP-09 pins those three images by digest inside P0, plus IMG-TESTUTIL (built rootless, digest recorded) for the P0 tests that need sqlite3, git, python3 or jq (revision 5); WP-11 extends the catalogue; P0 exit cites the four WP-09 digests |
+| IC-36 | `git fetch --prune` | doc11 §6.4 step 1 forbids `--prune` (pruning deletes tracking refs other tooling may use); doc12 §14.3 step 2 and doc16 §12.2 S1 use `fetch --all --prune` | allowed. The single verifier reads remote tips with `git ls-remote` only and never decides from tracking refs (doc11 F-4, doc16 §11), so pruning cannot change a verification result. `--prune` is allowed in the commit-push script stage S1 and in the constitution-pin preparation; doc11 step 1 is aligned to this |
+| IC-37 | Verifier output and exit codes | data-model §9 and contracts README bound `repo-verification-report/1` to the POC (`--json-out`, `--strict`, exits 0/1/2/3, `summary.failing`/`unproven`); doc16 §11.4 and §12.3 use `--json` and exits 0, 11-15, 20; doc16 §19 named summary fields `dirty`, `unpushed`, `unverified` | promote the POC as `scripts/repo/verify_repos.sh` (IC-17) keeping the `repo-verification-report/1` JSON shape unchanged; add the doc16 exit-code map (0 clean, 11 unpushed, 12 diverged, 13 dirty, 14 unverified remote, 15 pointer drift or uninitialised, 20 blind or internal); accept both `--json` and `--json-out`; summary fields are the v1 names (data-model §9 maps each code to its field) |
+| IC-38 | Tool and evidence path names | coverage evidence under `coverage/` (ignored at any depth by `.gitignore:139`) vs `coverage_targets/`; commit-push stages S0-S6 (doc12, research R-28) vs S0-S8 (doc16, tasks.md); sweep script `scripts/longops/sweep.sh` (doc16) vs `scripts/anti-mess/sweep.sh` (doc12, tasks.md); register gate `register_gate.sh` (doc04) vs `gate.sh` (tasks.md); reconciliation CSV in `docs/register/` vs `$EV/register/`; commit-push report as a directory vs a file | `$EV/coverage_baseline/<app>/` for baselines and `$EV/coverage_targets/<app>/` for targets (doc06 §11); doc16 stages S0-S8 with S7 verify and S8 report (IC-16), the doc12 §16.3 skeleton superseded; `scripts/anti-mess/sweep.sh` wired at S0 and S7; `scripts/register/gate.sh`; `docs/register/reconciliation.csv`; `$EV/commit-push/<run_id>.json` (a file). The documents were corrected in place |
 
 ---
 
@@ -998,7 +1030,7 @@ Any later revision of documents 01 to 20 is reconciled into this plan by updatin
 ### 12.2 Open items carried by this plan
 
 - UNCONFIRMED: the count of distinct push hosts for the root repository (IC-11).
-- UNCONFIRMED: whether `repo_verify.py` from the constitution or doc19's `verify_repo.sh` becomes the single verifier (IC-17).
+- Decided in revision 5 (IC-17, IC-37): doc19's `verify_repo.sh` is promoted as `scripts/repo/verify_repos.sh` with the v1 JSON shape and doc16 exit codes; the tasks.md WP-03 reuse-first task still records the §11.4.74 evaluation of the constitution's `repo_verify.py` before the promotion. UNCONFIRMED until the WP-03 executing verifier test fixes them: the exit-code precedence when several failing classes coexist, and the code for `behind` rows under `--strict`.
 - UNCONFIRMED at runtime: doc19 POC-F-01 (62 unwired mux routes) and POC-F-02 (28 doubled-prefix web calls) need one live request each before they become confirmed register findings (doc19 §9).
 - UNCONFIRMED: the real number of register items after deduplication (section 9.3 gives an upper bound only).
 - UNCONFIRMED: every measured count quoted here is a point-in-time value from its source document on 2026-10-03 (documentation counts are stamped 2026-10-03T12:02Z); each is re-measured by the work package that relies on it.

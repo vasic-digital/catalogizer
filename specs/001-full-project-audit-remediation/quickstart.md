@@ -4,6 +4,8 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
+| Revision | 2 (paths qualified with the feature directory; production verifier command line; gate table mapped to docs/21 phases) |
+| Last modified | 2026-10-03 |
 | Executed | 2026-10-03, from 11:44:31Z, main repository HEAD `e4852ce7e1a136818b7b63524e94b5f8ee1b68bf` |
 | Scope | read-only commands that prove what the plan starts from; no build, no install, no write to any repository |
 
@@ -22,6 +24,7 @@ Every command marked EXECUTED was run in this session and its output is quoted. 
 ```bash
 cd /home/milosvasic/Projects/catalogizer
 P=specs/001-full-project-audit-remediation/poc
+S=specs/001-full-project-audit-remediation   # feature directory; $AUD = $S/audit, $EV = $S/evidence
 OUT=/tmp/claude-1000/qs        # any scratch directory outside the repository
 mkdir -p "$OUT"
 ```
@@ -62,13 +65,13 @@ Verdicts against the proof table (docs/02 §4.1):
 | Proof | Verdict today | Reason |
 |---|---|---|
 | P1 CodeGraph state | FAIL | `pendingChanges.added = 2` |
-| P2, P3, P4 | NOT EXECUTED | need the derived tracked set, scope DATA and `audit/golden.json` |
+| P2, P3, P4 | NOT EXECUTED | need the derived tracked set, scope DATA (`config/index/scope.yaml`) and `specs/001-full-project-audit-remediation/audit/golden.json` |
 | P5 CodeGraph freshness | FAIL | `lastIndexed` 2026-10-02T19:24Z is older than HEAD commit time 2026-10-03T10:56:02Z |
 | P6 embedder dimensionality | NOT EXECUTED | needs the model card dimension and a real embed call |
 | P7 Lumen complete and fresh | FAIL | `Stale: yes` |
 | P8 scope parity | FAIL | 10,397 Lumen files vs 7,150 CodeGraph files, no shared scope DATA |
 
-Exit criterion for the index gate: P1 to P8 all PASS in `audit/index-health.json` (`index-health/1`), produced after the sanctioned writer refresh (`codegraph_safe.sh`, NOT EXECUTED here).
+Exit criterion for the index gate: P1 to P8 all PASS in `specs/001-full-project-audit-remediation/audit/index-health.json` (`$AUD/index-health.json`, `index-health/1`), produced after the sanctioned writer refresh (`codegraph_safe.sh`, NOT EXECUTED here).
 
 ## 3. Repository state (FR-019, FR-020, SC-010) - EXECUTED
 
@@ -90,7 +93,15 @@ excepted: submodules/helix_qa/tools/opensource/docling (1 tracked, CRLF quirk, e
 LOCAL-BEHIND x8: submodules/constitution (behind its upstream on all 8 remotes)
 ```
 
-Expected machine-readable output: a document valid against `contracts/repo-verification-report.schema.json` (step 6). Exit 1 is the honest result while planning files are uncommitted. Exit criterion for US7 / SC-010: `--strict` run with exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception carrying a reason.
+Expected machine-readable output: a document valid against `contracts/repo-verification-report.schema.json` (step 6). Exit 1 is the honest result of the POC while planning files are uncommitted.
+
+The production verifier is `scripts/repo/verify_repos.sh`, promoted from this POC by tasks.md WP-03 with the same `repo-verification-report/1` JSON and the docs/16 exit codes (0 clean, 11 unpushed, 12 diverged, 13 dirty, 14 unverified remote, 15 pointer drift, 20 blind or internal; data-model.md §9). It accepts `--json` and `--json-out`. NOT EXECUTED (the script does not exist yet):
+
+```bash
+scripts/repo/verify_repos.sh --strict --json "$OUT/repo_verify.json"; echo "exit=$?"
+```
+
+On today's state the expected result is exit 13 (dirty main repository), the counterpart of the POC's exit 1. Exit criterion for US7 / SC-010: `scripts/repo/verify_repos.sh --strict` exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception carrying a reason.
 
 ## 4. Documentation reachability (FR-013, SC-006) - EXECUTED
 
@@ -198,20 +209,20 @@ ls docs/issues | wc -l                           # 1,778 ticket files (docs/03 F
 
 NOT EXECUTED (the register does not exist yet): applying `register_ext.sql`, the import stages, and the SC-001 queries of docs/04 §13.1, for example `SELECT count(*) FROM v_unmapped_entries;` (expected 0) and `SELECT * FROM v_custody_violations;` (expected empty).
 
-## 9. Phase exit criteria
+## 9. Gate exit criteria by user story
 
-Phases follow the spec's user stories in priority order. Each criterion is a machine output, never a statement.
+The gates below follow the spec's user stories in priority order. They are not the docs/21 phases P0 to P7 (which follow dependency order); the "docs/21 phase" column maps each gate to the phase and work packages that produce it. Each criterion is a machine output, never a statement.
 
-| Phase | Story | Exit criterion (all must hold) | Producing command or artifact | Status today |
-|---|---|---|---|---|
-| 0 Index readiness | FR-005 | P1 to P8 PASS in `audit/index-health.json` | step 2 plus writer refresh and goldens | FAIL (P1, P5, P7, P8) |
-| 1 Register | US1 | `v_unmapped_entries` empty; reconciliation lists every source entry; three planted entries detected; `workable-items diff` in sync; external trackers each `SYNCED` or `SKIPPED` with reason | docs/04 §13, docs/03 §15 | register absent |
-| 2 Audit | US2 | every component has a recorded result; two runs from one state give identical `findings.index.jsonl` fingerprints; a planted defect is reported; every finding validates against `finding/1` | docs/02 §12, `contracts/finding.schema.json` | not started |
-| 3 Fixes proven | US3 | per fixed item: RED on pre-fix artifact, GREEN x3 identical, fingerprints differ, mutation caught, review GO; matrix shows zero absent applicable cells; zero `BLOCKED` counted as pass; reviewer sample with zero survivors | ledger entries valid against `ev/1`, verdict files | not started |
-| 4 Documentation | US4 | crawl: class A/B orphans 0, broken links 0, broken anchors 0; export check stale 0 and missing 0; schema/route/env diff reports empty; every diagram rendered non-blank | step 4, export checker, diff gates | 2,515 orphans, 123 broken links, 83 broken anchors |
-| 5 Applications and contracts | US5 | coverage matrix row per application; can-i-deploy matrix all `compatible` | contract gate | 68 undocumented routes, 123 client calls without route (leads) |
-| 6 Dependencies | US6 | every dependency listed with version, upstream version and status; behind items carry a decision; accepted updates have full-suite evidence | dependency report | constitution 8 remotes `LOCAL-BEHIND` |
-| 7 Repository state | US7 | `verify_repo.sh --strict`: exit 0, failing 0, unproven 0, exceptions explained | step 3 | exit 1 (main repository untracked planning files) |
-| Final | SC-011, SC-012 | performance baselines and owner-approved targets for every critical operation with no regression; report checker finds zero completion claims without `ledger#seq` | `perf/targets.yaml`, report checker | not started |
+| Gate | Story | docs/21 phase (work packages) | Exit criterion (all must hold) | Producing command or artifact | Status today |
+|---|---|---|---|---|---|
+| G0 Index readiness | FR-005 | P0 (WP-02), repeated in P3 (WP-39) | P1 to P8 PASS in `specs/001-full-project-audit-remediation/audit/index-health.json` | step 2 plus writer refresh and goldens | FAIL (P1, P5, P7, P8) |
+| G1 Register | US1 | P0 (WP-06), P2 (WP-20 to WP-22) | `v_unmapped_entries` empty; reconciliation (`docs/register/reconciliation.csv`) lists every source entry; three planted entries detected; `workable-items diff` in sync; external trackers each `SYNCED` or `SKIPPED` with reason | docs/04 §13, docs/03 §15 | register absent |
+| G2 Audit | US2 | P3 (WP-30 to WP-39R) | every component has a recorded result; two runs from one state give identical `findings.index.jsonl` fingerprints; a planted defect is reported; every finding (`specs/001-full-project-audit-remediation/audit/findings/<FND-NNNN>.json`) validates against `finding/1` | docs/02 §12, `contracts/finding.schema.json` | not started |
+| G3 Fixes proven | US3 | P5 (WP-50 to WP-55), P6 (WP-61, WP-70) | per fixed item: RED on pre-fix artifact, GREEN x3 identical, fingerprints differ, mutation caught, review GO; matrix shows zero absent applicable cells; zero `BLOCKED` counted as pass; reviewer sample with zero survivors | ledger entries in `specs/001-full-project-audit-remediation/evidence/ledger.jsonl` valid against `ev/1`, verdict files | not started |
+| G4 Documentation | US4 | P3 (WP-37), P6 (WP-63, WP-64) | crawl: class A/B orphans 0, broken links 0, broken anchors 0; export check stale 0 and missing 0; schema/route/env diff reports empty; every diagram rendered non-blank | step 4, export checker, diff gates | 2,515 orphans, 123 broken links, 83 broken anchors |
+| G5 Applications and contracts | US5 | P4 (WP-40, WP-41), P5 (WP-51 to WP-54) | coverage matrix row per application; can-i-deploy matrix all `compatible` | contract gate | 68 undocumented routes, 123 client calls without route (leads) |
+| G6 Dependencies | US6 | P0 (WP-07), P5 (WP-55, WP-57) | every dependency listed with version, upstream version and status; behind items carry a decision; accepted updates have full-suite evidence | dependency report | constitution 8 remotes `LOCAL-BEHIND` |
+| G7 Repository state | US7 | P0 (WP-03 baseline), P7 (WP-73) | `scripts/repo/verify_repos.sh --strict`: exit 0, failing 0, unproven 0, exceptions explained | step 3 | POC exit 1 (main repository untracked planning files) |
+| Final | SC-011, SC-012 | P6 (WP-62), P7 (WP-71, WP-74) | performance baselines and owner-approved targets for every critical operation with no regression; report checker finds zero completion claims without `ledger#seq` | `specs/001-full-project-audit-remediation/perf/targets.yaml`, report checker | not started |
 
-Completion additionally waits on the owner decisions in `research.md` section 5 that block the work in question (79 recorded, 12 with reversible defaults).
+Completion additionally waits on the owner decisions in `research.md` section 5 that block the work in question (79 recorded: 12 with reversible defaults, 1 resolved by a plan decision, 66 blocking).

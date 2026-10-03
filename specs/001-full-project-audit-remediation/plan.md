@@ -2,6 +2,7 @@
 
 **Branch**: `001-full-project-audit-remediation` (no branch; all work on `main`, per spec FR-024) | **Date**: 2026-10-03 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/001-full-project-audit-remediation/spec.md`
+**Revision**: 2 (consistency fixes after the tasks.md rev 2 cross-check: structure decision, POC list, HC ids) | **Last modified**: 2026-10-03
 
 ## Summary
 
@@ -108,9 +109,33 @@ challenges/ docs/ database/ templates/ tests/                            # QA ba
 submodules/                   # 44 direct, 97 recursive repositories
 .specify/memory/              # governance layer (constitution + appendix)
 docs/workable_items.db        # the register (to be created and tracked)
+docs/register/                # register extension SQL and reconciliation.csv (docs/04 §12)
 ```
 
-**Structure Decision**: no new top-level application. New tooling is promoted from [poc/](poc/) into a tracked, tested location under `scripts/` during the work packages that need it; new shared contracts live next to their owners. The register is the constitution's engine database plus an extension layer (docs/04), and the planning documents stay under this specification directory.
+New tracked locations this feature creates (from docs/04, 05, 06, 14 and 16 as decided in tasks.md):
+
+```text
+scripts/                      # promoted tools: repo/verify_repos.sh, commit-push-all.sh, register/gate.sh,
+                              #   anti-mess/sweep.sh, containers/*, longops/*, coverage/* (each with tests/)
+tools/evidence/               # evidence recorder (evrec), matrix and analyzers (docs/06)
+tools/perf/                   # performance harness (docs/14)
+tools/audit/rust_ast/         # Rust AST detector (target/ stays ignored)
+build/containers/             # Containerfiles and images.lock.yaml (docs/16 §7.1), incl. testutil/Containerfile
+build/components.json         # component inventory used by the container runners
+build/hosts.env.example       # build-host template (build/hosts.env stays ignored)
+config/index/scope.yaml       # CodeGraph/Lumen scope data file (docs/02)
+coverage/exclusions/          # per-application coverage exclusion fences (docs/05 §7.3)
+specs/001-full-project-audit-remediation/
+├── audit/                    # $AUD: runs, findings/<FND-NNNN>.json, index health
+├── evidence/                 # $EV: ledger, anchors, blobs/<sha256>, verdicts, reviews, hc (docs/06 §11)
+├── decisions/                # owner-decision records
+├── matrix/                   # test-type coverage matrix
+└── perf/                     # perf targets and baselines
+```
+
+`.gitignore` hides `build/`, `tools/` and `coverage/` today (`.gitignore:40`, `:101`, `:139`, `:263`). Task T003 adds anchored negations (`!/build/`, `/build/*`, `!/build/containers/`, `!/build/components.json`, `!/build/hosts.env.example`; `!/tools/`, `/tools/*`, `!/tools/evidence/`, `!/tools/perf/`, `!/tools/audit/`, `/tools/audit/*`, `!/tools/audit/rust_ast/`, `/tools/audit/rust_ast/target/`; `!/coverage/`, `/coverage/*`, `!/coverage/exclusions/`) and the ignore rules `/.audit/`, `docs/*.bak-*` and `docs/.register.lock`, proved by `git check-ignore` before and after.
+
+**Structure Decision**: no new top-level application. New tooling is promoted from [poc/](poc/) into tracked, tested locations under `scripts/`, `tools/`, `build/`, `config/index/` and `coverage/exclusions/` (listed above) during the work packages that need it; new shared contracts live next to their owners. The register is the constitution's engine database plus an extension layer (docs/04), and the planning documents, audit outputs (`$AUD`) and evidence (`$EV`) stay under this specification directory.
 
 ## Execution Strategy
 
@@ -119,7 +144,7 @@ docs/workable_items.db        # the register (to be created and tracked)
 - [ ] Register and evidence recorder (WP-05, WP-06): invariants (status custody, recurrence links, evidence class) are checked by RED-first tests with golden-bad fixtures.
 - [ ] Every fixed finding (all applications): a test that fails before and passes after, repeated three times, with machine-recorded verdicts.
 - [ ] Auth, SSRF and input-validation paths (backend WebSocket and image proxy; desktop `make_http_request`; Android exported components): negative-path tests with concrete hostile inputs.
-- [ ] Verifier, link-crawler, route-drift and commit/push script: promoted from the POCs with their golden-good, golden-bad and control tests retained.
+- [ ] Verifier, link-crawler and route-drift extractor: promoted from the POCs (`poc/repo_verify`, `poc/doc_links`, `poc/route_drift`) with their golden-good, golden-bad and control tests retained. The commit/push script (`scripts/commit-push-all.sh`, stages S0-S8, docs/16 §12, docs/21 IC-16) has no POC and is written test-first.
 - [ ] Migrations and dialect rewriting (both SQLite and PostgreSQL): tests on a real database of each dialect.
 
 ### Parallel Execution Opportunities
@@ -131,11 +156,17 @@ docs/workable_items.db        # the register (to be created and tracked)
 
 ### Human Checkpoints
 
-1. After the owner decision intake (WP-01): confirm credentials, devices, build hosts, legacy-ticket policy and the constitution hook variant.
-2. After foundation (P0) and infrastructure (P1): confirm the verifier, the commit/push script and the container runners work on a clean checkout.
-3. After the audit pass (P3): review the first register totals and the independent review's verdict before any fix.
-4. After each remediation wave: confirm behaviour against the acceptance scenarios and run the affected suites.
-5. Before final closure (P7): full retest on the candidate artifact, recursive repository verification, and the owner's live manual QA.
+The checkpoint ids are those of docs/21 §3.3; tasks.md records each one under `$EV/hc/<HC-id>.json`.
+
+1. **HC-0** (P0 entry): plan accepted, owner request list sent (credentials, devices, build hosts, legacy-ticket policy, constitution hook variant).
+2. **HC-1** (P0 exit): tooling verified on a clean checkout (verifier, commit/push script, pinned container runners); register empty and operational.
+3. **HC-1b** (P1): remote build-host roles and capacity confirmed by the owner (ODG-07).
+4. **HC-2** (P2): SC-001 reconciliation reviewed; legacy-closure policy (ODG-09) and category mapping (docs/04 D-6) confirmed.
+5. **HC-3** (P3): audit report accepted, including first register totals, "none found" units with evidence, and the independent review verdict, before any fix.
+6. **HC-4** (P4): contract changes that need a compatibility window approved (ODG-25).
+7. **HC-5** (P5, per user story): behaviour confirmed against the acceptance scenarios; §11.4.122 removal decisions (ODG-20 to ODG-24) before any component is removed.
+8. **HC-6** (P7): full retest on the candidate artifact and recursive repository verification reviewed before the final push.
+9. **HC-7** (P7): final acceptance against the spec, including the owner's live manual QA.
 
 ### Review Gates
 

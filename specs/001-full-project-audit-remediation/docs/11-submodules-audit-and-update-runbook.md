@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: verification steps use the single verifier `scripts/repo/verify_repos.sh` writing into the feature evidence directory, docs/21 IC-17 and IC-37; `fetch --prune` allowed per docs/21 IC-36; remotes enumerated, never listed, per docs/21 IC-11) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | The 44 direct submodules declared in `.gitmodules` and every nested submodule beneath them (97 repositories recursively) |
 | Traceability | FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-024, FR-025; SC-004 (and the dependency-currency success criteria that reference FR-017) |
@@ -264,11 +264,11 @@ Reading the graph: update order inside the Go layer must respect the edges `reco
 | P-3 | No branch is created, no history is rewritten, nothing is force-pushed, `--no-verify` is never used. Divergence is reported, never resolved automatically. | FR-020, §11.4.113, §9.2 |
 | P-4 | Every accepted move passes a containerized gate for that module and then the affected applications' full tests (FR-018, FR-021). A gate that cannot run for lack of a service, credential or device is `BLOCKED` with the exact reason and counts as not passing (FR-025). | FR-018, FR-021, FR-025 |
 | P-5 | Backup before any write: a hardlinked mirror of the root `.git` (which contains every submodule git directory under `.git/modules`). | §9.1 |
-| P-6 | The main-repository pointer commit is made once per layer and pushed ff-only to all 6 remotes; the individual submodules are pushed only if the loop created commits in them (a pure fast-forward needs no push). | FR-019, §2.1 |
+| P-6 | The main-repository pointer commit is made once per layer and pushed ff-only to every configured remote (enumerated from `git remote`, docs/21 IC-11; 6 distinct push targets were counted in this pass); the individual submodules are pushed only if the loop created commits in them (a pure fast-forward needs no push). | FR-019, §2.1 |
 
 ### 6.2 Preconditions (checked, not assumed)
 
-1. `submodule_verify.sh` returns `BLOCKING=0` and a report whose only non-clean verdicts are `BEHIND_UPSTREAM`, `CLEAN_EOL_QUIRK` and `ADVISORY_*`. If any `DIRTY`, `UNPUSHED`, `DIVERGED` or `UNREACHABLE` appears for an own-organisation repository, stop and report it with its reason (FR-020).
+1. The single verifier `scripts/repo/verify_repos.sh` (docs/21 IC-17, IC-37; Appendix A's `submodule_verify.sh` is its executed predecessor and produced the §8.4 baseline) is run without `--strict` and its report (`repo-verification-report/1`, stored at `$EV/verify/submodules-pre-<UTC>.json`, where `$EV` = `specs/001-full-project-audit-remediation/evidence`) shows, for own-organisation repositories, no `dirty` (other than listed exceptions such as the docling CRLF quirk), no `ahead`, no `diverged` and no `unproven` row; `LOCAL-BEHIND` rows are expected, since they are what the update loop moves. If any of those appears, stop and report it with its reason (FR-020).
 2. No other writer is active: `pgrep -af 'git (fetch|pull|merge|commit|push)'` filtered by real `/proc/<pid>/cmdline` shows none (finding F-2 shows concurrent writers exist; a bare `pgrep -f` substring is itself a carrier hazard, §11.4.201). Index lock files (`.git/index.lock`, `.git/modules/**/index.lock`) absent.
 3. Host headroom per §12: memory ceiling, process count, disk. The backup is hardlinks (near zero additional space), but gate containers are bounded with `--memory` and `--pids-limit`.
 4. `podman` rootless available (`podman 5.7.0` observed); gate image present (`localhost/catalogizer-builder:latest` is the image named in `docker-compose.build.yml`; its contents `UNCONFIRMED:`). If absent, building it is a prior task, not an inline `docker run golang` fallback on the bare host (§11.4.173).
@@ -289,7 +289,7 @@ flowchart TD
   H --> I[L5: TS libraries then catalogizer_api_client_ts]
   I --> J[Affected-application full tests catalog-api catalog-web]
   J --> K[Main repo pointer commit per layer]
-  K --> L[Push to all 6 upstreams ff-only]
+  K --> L[Push to every configured remote ff-only]
   L --> M[Recursive verification and evidence pack]
 ```
 
@@ -309,7 +309,7 @@ The practical consequence of the measured state: on 2026-10-03 the bottom-up loo
 
 ### 6.4 Steps
 
-**Step 1 - fetch (write to object store and tracking refs only).** For each repository in bottom-up order: `git fetch --all --tags` (no `--prune`: pruning would delete tracking refs other tooling may use; the stale-ref problem is solved by never reading them for decisions). Repositories whose remote is unreachable are recorded `REMOTE_UNREACHABLE` and do not block the others (matches `push_all_submodules.sh` behaviour).
+**Step 1 - fetch (write to object store and tracking refs only).** For each repository in bottom-up order: `git fetch --all --tags --prune`. Revision 2 (docs/21 IC-36): `--prune` is allowed. Every decision in this runbook and in the verifier `scripts/repo/verify_repos.sh` reads remote tips with `git ls-remote`, never tracking refs, so pruning cannot change a result; the commit-push script's S1 prunes as well (document 16 §12.2). Repositories whose remote is unreachable are recorded `REMOTE_UNREACHABLE` and do not block the others (matches `push_all_submodules.sh` behaviour).
 
 **Step 2 - choose the target tip.** For each repository collect `ls-remote --heads <remote> <branch>` for every remote. The target is the unique tip T such that every other remote tip is an ancestor of T. If no unique maximum exists the repository is `DIVERGED_OPERATOR_DECISION` (remotes disagree in a non-linear way); the loop stops for that repository and reports the SHAs. It never merges two remotes' histories and never picks one by position in the remote list.
 
@@ -323,9 +323,9 @@ The practical consequence of the measured state: on 2026-10-03 the bottom-up loo
 
 **Step 7 - pointer commit.** In the main repository: `git add submodules/<x>` for each accepted move (never `git add -A`, to keep unrelated planning files out), one commit per layer with message `chore(submodules): fast-forward <list> to upstream tips` and the evidence ledger path. Independent review precedes the commit (§11.4.142), executed by a reviewer separate from the author (FR-023).
 
-**Step 8 - push.** To every main remote: `git push <remote> main` for `github`, `githubvasicdigital`, `gitlab`, `gitlabvasicdigital`, `gitflicvasicdigital`, `gitversevasicdigital` (6 distinct remotes). Plain push only: git refuses non-fast-forward by default, and the script never passes `--force`, `--force-with-lease` or a `+` refspec. A rejected remote means that remote has commits we lack: run Step 2-style analysis (fetch, merge ff-only or report), never force. Submodules that received local commits are pushed first (children before parents), each to all of its remotes; lagging mirrors (F-5) receive an ff push.
+**Step 8 - push.** Through `scripts/commit-push-all.sh` (docs/21 IC-16), to every remote enumerated from `git remote` (docs/21 IC-11: never a hard-coded list; this pass counted 6 distinct push targets, `github`, `githubvasicdigital`, `gitlab`, `gitlabvasicdigital`, `gitflicvasicdigital`, `gitversevasicdigital`, while other documents count 8 configured remotes). Plain push only: git refuses non-fast-forward by default, and the script never passes `--force`, `--force-with-lease` or a `+` refspec. A rejected remote means that remote has commits we lack: run Step 2-style analysis (fetch, merge ff-only or report), never force. Submodules that received local commits are pushed first (children before parents), each to all of its remotes; lagging mirrors (F-5) receive an ff push.
 
-**Step 9 - verification.** Re-run `submodule_verify.sh` (network on). Expected output in section 8.4. Store TSV and summary in `qa-results/` as the FR-019/SC-004 evidence.
+**Step 9 - verification.** Run `scripts/repo/verify_repos.sh --strict --json $EV/verify/submodules-post-<UTC>.json` (network on; `git ls-remote` only). Pass: exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception explained (data-model.md §9). The report goes into the feature evidence directory `$EV`, never into `qa-results/` (ignored at `.gitignore:268`, so evidence there would not be tracked). Section 8.4 shows the expected shape of the predecessor's output.
 
 ### 6.5 Handling remotes that disagree or are unreachable
 
@@ -525,7 +525,7 @@ SUMMARY BEHIND_UPSTREAM=23 ADVISORY_PIN_OFF_REMOTE_HEAD=1 CLEAN_EOL_QUIRK=1 CLEA
 | A-4 | `unpushed_remotes` is 0 everywhere | TSV column |
 | A-5 | No own-organisation row has `UNREACHABLE` or `DIVERGED` | awk |
 | A-6 | No own-organisation row has `BEHIND_UPSTREAM` (after the update) | awk |
-| A-7 | The root `HEAD` equals the tip on all 6 remotes | included in the root row |
+| A-7 | The root `HEAD` equals the tip on every configured remote | included in the root row |
 
 Observed on 2026-10-03 before any update (parallel run, 34 s, exit 0): `SUMMARY BEHIND_UPSTREAM=24 ADVISORY_PIN_OFF_REMOTE_HEAD=1 CLEAN_EOL_QUIRK=1 CLEAN=72 BLOCKING=0`; the root row `.  own  main  e4852ce7e1a1  0/0  0  0  CLEAN`.
 

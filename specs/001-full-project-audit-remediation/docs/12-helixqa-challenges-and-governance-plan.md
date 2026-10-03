@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: commit-push stages aligned with document 16 and docs/21 IC-16 (S0 to S8, S7 verify, S8 report); the section 16.3 skeleton marked superseded; anti-mess sweep wired at S0 and S7; fetch `--prune` per docs/21 IC-36) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-001, FR-002, FR-004, FR-005 (QA side), FR-007, FR-008, FR-009, FR-010, FR-019, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025 |
 | Success criteria covered | SC-001, SC-002, SC-003, SC-004, SC-005, SC-010, SC-012 |
@@ -724,7 +724,7 @@ Adapter sketch (NOT EXECUTED; Python reading JSONL and writing one ledger line p
 
 ```python
 #!/usr/bin/env python3
-# conduit_to_ledger.py  --stream qa-results/session-X/conduit.jsonl --ledger evidence/ledger.jsonl
+# conduit_to_ledger.py  --stream qa-results/session-X/conduit.jsonl --ledger "$EV/ledger.jsonl"   # $EV = specs/001-full-project-audit-remediation/evidence
 import json, sys, hashlib, argparse, os
 MAP = {"PASS": "pass", "FAIL": "fail", "OPERATOR-BLOCKED": "blocked"}
 REASONS = {"service_unreachable","credential_absent","credential_rejected","device_absent",
@@ -1201,7 +1201,7 @@ All steps on `main`, no branches, fast-forward only, never force-push (11.4.113)
 | # | Step | Command or action | Evidence |
 |---|---|---|---|
 | 1 | Pre-op backup of the working tree state (9.2) | hardlinked or archive backup per the project's backup script | backup path recorded |
-| 2 | Fetch every remote of the submodule (11.4.37, 11.4.71) | `git -C submodules/constitution fetch --all --prune` (network, read-only on refs) | remote tips table |
+| 2 | Fetch every remote of the submodule (11.4.37, 11.4.71) | `git -C submodules/constitution fetch --all --prune` (network, read-only on refs; `--prune` allowed because decisions read `git ls-remote`, docs/21 IC-36) | remote tips table |
 | 3 | Confirm all upstream tips agree, or report the lagging mirror | compare `git rev-parse <remote>/main` | table |
 | 4 | Review the incoming range read-only | `git -C submodules/constitution log --oneline HEAD..github/main`; `git diff --stat HEAD github/main`; diff `Constitution.md` and the four mirrors | summary like 14.2 |
 | 5 | Verify lockstep of the five governance files and anchor-block integrity (11.4.227 B) at the new tip | run the constitution's own gates from the container (`scripts/gates/cm_anchor_block_integrity*` if present; UNCONFIRMED names) | gate output |
@@ -1211,7 +1211,7 @@ All steps on `main`, no branches, fast-forward only, never force-push (11.4.113)
 | 9 | Run the post-pull sweep (11.4.32, 11.4.164 `post_update_hook.sh`) | the hook installs or registers skills, hooks and MCP entries into agent platforms; it modifies configuration outside the repository. Run it in a reviewed, recorded way; its effects are UNCONFIRMED until read | hook transcript |
 | 10 | Re-run the pre-existing local gates (section 16) and the lockstep checks | stage output | evidence ledger |
 | 11 | Independent review (11.4.142, 11.4.209) of the whole bump, with the new `finding_layer` field in the verdict | review record | verdict |
-| 12 | Push the parent and the submodule to every upstream, fast-forward only; verify (section 16 stage S6) | recursive check | machine output |
+| 12 | Push the parent and the submodule to every upstream, fast-forward only, through `scripts/commit-push-all.sh`; verify (section 16 stage S7 `verify_clean`, report at S8) | recursive check | machine output |
 
 Rejected alternative: pointing the parent at the new commit without updating the Spec Kit layer.
 That leaves a layer that states a hash and a clause set that no longer match what binds (a document
@@ -1296,30 +1296,36 @@ its name, its start time, its result and the path of its machine output. Stages 
 functions; failure of a validation stage yields a per-check report and a documented remediation
 (the mechanism stays usable, 11.4.234 D).
 
+The stage numbering and exit codes are those of document 16 §12.2 and §12.3 (docs/21 IC-16 binds them); this table maps this document's checks onto them (revision 2; the earlier S0 to S6 numbering of revision 1 is withdrawn).
+
 | Stage | Purpose | Blocks the push? |
 |---|---|---|
-| S0 preflight | host safety (memory and thread headroom, 12.6, 12.12), a lock keyed on the purpose `commit-push` (11.4.232 B), refuse if a stale lock holder is alive | yes (cannot run) |
-| S1 sync | fetch every remote of the main repo and of every submodule at every depth (11.4.37), report divergence, integrate only by fast-forward or merge onto latest `main` (11.4.113); no rebase of shared branches | yes if divergence cannot be integrated without a rewrite |
-| S2 cheap checks | secret scan (11.4.10), bank validator R-1 to R-8, bank-id floor, anti-bluff scan (the existing `scripts/audit/anti-bluff-scan.sh`), landmine scan (`scripts/detect-landmines.sh`), doc link and export freshness, `.github/workflows` has no workflow files (11.4.156), gate ledger ratchet | the report names each failing check; the commit proceeds only for checks marked hard, and every hard check is also reachable by running the stage alone |
-| S3 long gates | the multi-minute stages (full test sweeps, mutation sweeps, container builds) | never inline: separable, runnable on their own, and deferrable only with `--defer-long-gates "<reason>"` which writes a deferral record (reason, who, when) into the commit message and the evidence ledger, so the deferred gate stays owed and is run at the next full run or at the release gate (11.4.234 D) |
-| S4 commit | scope-grouped commits (11.4.191, 11.4.84), message with the evidence references; trailer lines per the session rules | no |
-| S5 push | push every repository to **all** configured upstreams, fast-forward only, background and non-blocking for the commit lock (11.4.88); a rejected push is reported, never forced | a rejected non-fast-forward is a reported failure, not retried with force |
-| S6 verify | recursive: for the main repo and every submodule at every depth, working tree clean, nothing unpushed, tip equal on every upstream (SC-010); JSON output into the evidence ledger | yes, it is the pass criterion |
+| S0 preflight | host safety (memory and thread headroom, 12.6, 12.12), a lock keyed on the purpose `commit_push` (11.4.232 B), refuse if a stale lock holder is alive or a build writes tracked artifacts (11.4.121); run the anti-mess sweep `scripts/anti-mess/sweep.sh` (section 17) | yes (cannot run) |
+| S1 fetch_integrate | fetch every remote of the main repo and of every submodule at every depth (11.4.37; `--prune` allowed, docs/21 IC-36), report divergence, integrate only by fast-forward (11.4.113); no rebase of shared branches | yes if divergence cannot be integrated without a rewrite (exit 12) |
+| S2 scope_check | secret scan of the change set (11.4.10), refusal of build artifacts and caches (11.4.30) | yes (exit 13) |
+| S3 validate_cheap | bank validator R-1 to R-8, bank-id floor, anti-bluff scan (the existing `scripts/audit/anti-bluff-scan.sh`), landmine scan (`scripts/detect-landmines.sh`), doc link and export freshness, `.github/workflows` has no workflow files (11.4.156), gate ledger ratchet | the report names each failing check (exit 10); every hard check is also reachable by running the stage alone |
+| S4 validate_long | the multi-minute stages (full test sweeps, mutation sweeps, container builds), consumed as verdict files of separate registered long-ops | never inline: deferrable only with `SKIP_LONG=<reason>`, which writes a `Deferred-Gates:` commit trailer and a row in `$EV/deferrals.jsonl` (reason, who, when), so the deferred gate stays owed and is run at the next full run or at the release gate (11.4.234 D); exit 14 when a deferral is owed |
+| S5 commit | scope-grouped commits with explicit paths, deepest repository first (11.4.191, 11.4.84), never `git add -A`; message with the evidence references; trailer lines per the session rules | no |
+| S6 push | push every repository to **all** configured upstreams, fast-forward only (11.4.88); a rejected push is reported, never forced; skipped under `--local-only`, which records the owed push as a deferral (exit 14) | a rejected non-fast-forward is a reported failure (exit 11), not retried with force |
+| S7 verify_clean | recursive: `scripts/repo/verify_repos.sh --strict` for the main repo and every submodule at every depth, working tree clean, nothing unpushed, tip equal on every upstream (SC-010); report valid against `repo-verification-report/1`; the anti-mess sweep runs again | yes, it is the pass criterion (exit per document 16 §12.3) |
+| S8 report | the report file `$EV/commit-push/<run_id>.json` (document 16 §12.4) and a text summary; lock released | no |
 
 **No gate is lost (11.4.234 C).** The stage list names every check it runs and every check it
 defers with a deferral target. The mapping from the existing hook:
 
 | Check in `pre-push-gate.sh` | Moves to |
 |---|---|
-| `detect-landmines.sh` (hard) | S2 |
-| `audit/anti-bluff-scan.sh` (hard) | S2 |
+| `detect-landmines.sh` (hard) | S3 |
+| `audit/anti-bluff-scan.sh` (hard) | S3 |
 | LLM-judge prompt assembly (soft, operator-reviewed) | not a gate: it produced a prompt for a human or model to read; in this feature the independent review (FR-023) replaces it and its verdict is machine-written (11.4.269 bars a model judgement from being the gate) |
 
 **Hooks.** The hook file stays in the repository unmodified; `core.hooksPath` stays unset; no
 `--no-verify` is used. The bypass variable of the old hook has no counterpart: the only escape is
-the recorded deferral flag of S3.
+the recorded deferral flag `SKIP_LONG` of S4 (and the push deferral of `--local-only`), each written to `$EV/deferrals.jsonl`.
 
-### 16.3 Skeleton (NOT EXECUTED)
+### 16.3 Skeleton (NOT EXECUTED, SUPERSEDED)
+
+**Superseded in revision 2.** The skeleton below predates docs/21 IC-16 and must not be implemented: it numbers the stages S0 to S6, uses a `--defer-long-gates` flag (the deferral flag is `SKIP_LONG`), stages with `git add -A` (forbidden: explicit paths, deepest first), writes the report as a directory, and verifies with a `verify_repos_clean_pushed.py` that will not exist (the verifier is `scripts/repo/verify_repos.sh`, docs/21 IC-17 and IC-37). The binding design is document 16 §12.2 to §12.6 and tasks.md WP-04. It is kept only as the record of the first design.
 
 ```bash
 #!/usr/bin/env bash
@@ -1380,19 +1386,19 @@ sequenceDiagram
   participant R as Remotes (all upstreams)
   participant E as Evidence ledger
   D->>S: run (message file)
-  S->>S: S0 lock and host headroom
+  S->>S: S0 lock, host headroom, anti-mess sweep
   S->>R: S1 fetch all, report divergence
-  S->>G: S2 cheap checks
+  S->>G: S2 scope check, S3 cheap checks
   G-->>S: per-check report
   alt long gates not deferred
-    S->>G: S3 long gates (separate run, container)
-  else deferred
+    S->>G: S4 long-gate verdicts (separate run, container)
+  else deferred (SKIP_LONG)
     S->>E: record deferral (reason, who, when)
   end
-  S->>S: S4 commit
-  S->>R: S5 push every remote, fast-forward only
-  S->>R: S6 verify recursive: clean tree, no unpushed, tips match
-  S->>E: stages.jsonl, verify.json
+  S->>S: S5 commit
+  S->>R: S6 push every remote, fast-forward only
+  S->>R: S7 verify recursive (verify_repos.sh): clean tree, no unpushed, tips match; sweep again
+  S->>E: S8 report $EV/commit-push/<run_id>.json
   S-->>D: result and remediation text for any failing check
 ```
 
@@ -1400,7 +1406,7 @@ sequenceDiagram
 
 `ci-local.sh`, `local-ci.sh` and `ci-pipeline.sh` have CI-like names. Their content was not
 reviewed for this document (UNCONFIRMED). They are inventoried in the audit (document 02): any that
-amounts to a pipeline definition is reviewed against 11.4.156; those that are local runners become S3
+amounts to a pipeline definition is reviewed against 11.4.156; those that are local runners become S4
 long gates by reference.
 
 ---
@@ -1423,7 +1429,7 @@ clean state, before every gated transition and on a cadence. It does not do the 
 
 | Level | What | Deliverable |
 |---|---|---|
-| L1 (this feature) | a **declared invariant catalogue** and a sweep script that checks it before gated transitions; the commit-push script (section 16) calls it at S0 and S6 | `scripts/anti-mess/catalogue.yaml`, `scripts/anti-mess/sweep.sh` |
+| L1 (this feature) | a **declared invariant catalogue** and a sweep script that checks it before gated transitions; the commit-push script (section 16) calls it at S0 and S7 | `scripts/anti-mess/catalogue.yaml`, `scripts/anti-mess/sweep.sh` |
 | L2 | a **long-op registry** (11.4.232 A to E): every long operation of this feature (container build, mutation sweep, QA profile run, index refresh) registers `{op_id, purpose_key, owner, pid, state, last_heartbeat, progress_offset, log, verdict}` before it runs and ends in a terminal state | registry file in the evidence directory, written temp-then-rename, never tmpfs |
 | L3 | reconcile-or-refuse actions for auto-safe drift (reap a provably dead lock, regenerate a stale derived doc), refusal plus an operator decision for the rest | in the sweep |
 
@@ -1431,7 +1437,7 @@ clean state, before every gated transition and on a cadence. It does not do the 
 
 | Id | Plane | Desired condition | Detector | Reconcile class |
 |---|---|---|---|---|
-| AM-R1 | repository | every repo (main and each submodule at every depth) has a clean working tree at stage S0 and S6 | recursive `git status --porcelain` | operator-gated (commit through S4) |
+| AM-R1 | repository | every repo (main and each submodule at every depth) has a clean working tree at stage S0 and S7 | recursive `git status --porcelain` | operator-gated (commit through S5) |
 | AM-R2 | repository | no live-less lock file (`index.lock`, `.git/*.lock`) whose holder pid is dead | `kill -0` on the holder resolved from `/proc/<pid>/cmdline` (never a bare `pgrep`, 11.4.196 D) | auto-safe reap with log |
 | AM-R3 | repository | every repo's tip equals its tip on every upstream, or the lag is reported | `git rev-parse` per remote | operator-gated or push |
 | AM-R4 | repository | each submodule pointer in the parent resolves on at least one remote of that submodule (the `not our ref` condition) | `git ls-remote` for the recorded sha | refuse and report (11.4.233 G, 11.4.275) |
@@ -1604,7 +1610,7 @@ an owner decision (11.4.66); the default is stated and adjustable.
 | FR-008, SC-003 | 5.2, 6.5, 8.3 | RED then GREEN x3 with identical canonical hash and a caught mutation |
 | FR-009, SC-004 | 7 | coverage matrix rows generated from case metadata |
 | FR-010, SC-005 | 8.3, 8.5 | three identical runs; reviewer mutation sample all RED |
-| FR-019, FR-020, SC-010 | 16, 14.3 | S6 `verify.json` on every repository at every depth |
+| FR-019, FR-020, SC-010 | 16, 14.3 | S7 verifier report (`scripts/repo/verify_repos.sh --strict`) on every repository at every depth, cited by the S8 report `$EV/commit-push/<run_id>.json` |
 | FR-021 | 18.3 | QA image digest; no host build |
 | FR-023 | 14.3 step 11, 19 | review records with `finding_layer` |
 | FR-024 | 14.3 | all on `main`, fast-forward only |

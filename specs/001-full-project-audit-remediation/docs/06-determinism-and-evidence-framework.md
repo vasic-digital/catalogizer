@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 |
+| Revision | 6 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -105,9 +105,9 @@ Components:
 | Recorder | runs one command, captures argv, cwd, start time, exit status, duration, stream digests; writes one ledger entry | `tools/evidence/evrec` (shell first, optional Go later) |
 | Runner wrappers | adapt Go, vitest, Gradle, cargo, bash runners so their structured output goes through the recorder | `tools/evidence/wrap-*.sh` |
 | Fingerprinter | computes the target artifact identity from the target itself at run time | part of the recorder, per target class |
-| Blob store | holds raw stdout, stderr, reports, screenshots by sha256 | `evidence/blobs/` |
-| Ledger | append-only JSONL of entries, each carrying the hash of the previous | `evidence/ledger.jsonl` |
-| Anchor log | periodic record of head hash and entry count, written to a location the producer can append to but not rewrite | `evidence/anchors.jsonl` plus the chosen strength (section 8) |
+| Blob store | holds raw stdout, stderr, reports, screenshots by sha256 | `$EV/blobs/` (`$EV` = the evidence directory, section 11) |
+| Ledger | append-only JSONL of entries, each carrying the hash of the previous | `$EV/ledger.jsonl` |
+| Anchor log | periodic record of head hash and entry count, written to a location the producer can append to but not rewrite | `$EV/anchors.jsonl` plus the chosen strength (section 8) |
 | Verifier | walks the whole chain, checks anchor agreement, refuses when it cannot complete | `tools/evidence/verify` |
 | Verdict deriver | computes PASS or FAIL for an item from ledger records by rules in section 4 | `tools/evidence/verdict` |
 | Analyzers | OCR, screenshot diff, log reader, coverage reader; each has fixtures | `tools/evidence/analyzers/` |
@@ -603,17 +603,34 @@ The deriver refuses the pair, as the golden-bad requires.
 
 ## 11. Storage layout and linkage from the register
 
+`$EV` below is `specs/001-full-project-audit-remediation/evidence` and `$AUD` is
+`specs/001-full-project-audit-remediation/audit`; every evidence path in this document is under `$EV`.
+This section owns the blob store: audit findings (`$AUD/findings/<FND-NNNN>.json`) and register rows
+reference blobs as `$EV/blobs/<sha256>`, never a second store.
+
 ```
-specs/001-full-project-audit-remediation/evidence/
+specs/001-full-project-audit-remediation/evidence/        ($EV)
   ledger.jsonl                 chained entries, append-only
   anchors.jsonl                anchor records
   blobs/<sha256>               streams, reports, screenshots (content addressed, never edited)
   verdicts/<item-id>.json      machine-derived verdict files
   needles/<query-class>/       needle definitions
-  coverage/<app>/baseline.json baselines (document 05 section 7)
+  coverage_baseline/<app>/baseline.json  coverage baselines (document 05 section 7)
+  coverage_targets/<app>/      owner-set coverage targets derived from the baselines (ODG-17)
   performance/<operation>/...  baselines (SC-011)
   matrix/                      generated coverage matrix
+  reviews/<gate-or-wp>.json    independent review verdicts ([REVIEW] tasks)
+  hc/<HC-id>.json              human-checkpoint records (docs/21 section 3.3)
+  commit-push/<run_id>.json    commit-push script reports (docs/16 section 12.4, stage S8)
+  deferrals.jsonl              recorded gate deferrals (SKIP_LONG, --local-only push deferral)
+  host-probe.json              host probe record (docs/16 section 8.5)
+  <wp>/                        per-work-package transcripts before the recorder exists, with SHA256SUMS
 ```
+
+Folder naming (revision 6): the coverage folders are named `coverage_baseline/` and
+`coverage_targets/`, never `coverage/`, because `.gitignore:139` ignores every directory named
+`coverage/` at any depth and the root-only negation added by tasks.md T003 does not reach below the
+repository root (measured with `git check-ignore` during the tasks.md cross-check).
 
 Note on size: blobs are large (logs, screenshots, videos). The ledger and verdicts are small and
 belong in version control; blobs are stored under the repository's evidence directory when small and

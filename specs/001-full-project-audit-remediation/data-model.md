@@ -4,10 +4,11 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
-| Revision | 2 |
+| Revision | 3 |
 | Last modified | 2026-10-03 |
 | Status | draft |
 | Sources | spec.md "Key Entities"; docs/02 §5, §6, §9, §10; docs/04 §3 to §8 (register DDL); docs/06 §3, §4, §14; docs/11 §2; docs/12 §6, §11; docs/13 §3, §8; docs/19 §3 |
+| Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit`; `$EV` = `specs/001-full-project-audit-remediation/evidence` (layout owned by docs/06 §11) |
 | Physical store | `docs/workable_items.db` (constitution engine schema plus the `reg_*` extension of docs/04 §5) for register-side entities; JSON files validated by `contracts/*.schema.json` for audit-side records |
 
 This document does not repeat the DDL. Each entity names the tables, columns and sections of `docs/04-findings-register-design.md` that implement it. Where docs/02 and docs/04 use different vocabularies, the mapping of `research.md` R-12 applies.
@@ -49,14 +50,14 @@ erDiagram
 
 | Spec entity | Primary store | Key | Schema / DDL reference |
 |---|---|---|---|
-| Finding | `audit/findings/<finding_id>.json` + `reg_findings` | `finding_id` = canonical `FND-NNNN` (register-minted); stored alias `unit_alias` = `F-<unit>-NNN` | `contracts/finding.schema.json`; docs/04 §5 `reg_findings` |
+| Finding | `$AUD/findings/<finding_id>.json` (one file per finding, plus the run index `$AUD/runs/<run>/findings.index.jsonl`) + `reg_findings` | `finding_id` = canonical `FND-NNNN` (register-minted); stored alias `unit_alias` = `F-<unit>-NNN` | `contracts/finding.schema.json`; docs/04 §5 `reg_findings` |
 | Register Item | engine `items` + `reg_ids` + `reg_item_ext` | `atm_id` `ATM-NNN` | docs/04 §4, §5, DR-2 |
 | Application | `reg_components` | `component_id` | docs/04 §5 `reg_components` |
 | Test Evidence Record | ledger `ev/1` + `reg_evidence` + `reg_test_runs` | ledger `seq` / `evidence_id` / `(group_id, rep_index)` | `contracts/evidence-record.schema.json`; docs/06 §3; docs/04 §5 |
 | Contract | contract files (Pact JSON) + matrix verdicts | `(provider, consumer, interface)` | docs/05 §9; `contracts/route-drift-report.schema.json` for drift leads |
 | Dependency Record | dependency report (SC-009) | `(repo_or_manifest, name)` | docs/11 §2.2; docs/15 WS6 |
 | Document | `docs/DOC_SCOPE.yaml` + `docs/EXPORT_MANIFEST.json` + crawl report | repository-relative path | docs/13 §3, §8; `contracts/link-crawl-report.schema.json` |
-| Repository Verification Record | `verify_repo.sh` JSON | `path` | `contracts/repo-verification-report.schema.json` |
+| Repository Verification Record | `scripts/repo/verify_repos.sh` JSON (`repo-verification-report/1`) | `path` | `contracts/repo-verification-report.schema.json` |
 
 ## 2. Finding
 
@@ -74,7 +75,7 @@ One audit observation with its own location and evidence. Many findings may poin
 | `locations[]` | path, line range, repo, commit | >=1 | path must exist at the recorded commit; register keeps the first location in `location_path`, `location_line` |
 | `found_by` | channel, detector, rule id | yes | channel closed set `automated_seam, agent_inspection, manual_qa, operator, end_user` (§11.4.238) |
 | `should_have_been_caught_by` (+ `_justification`) | string (+ text) | yes | names the seam or gate; the literal `none` requires a written justification of at least 20 characters with non-blank content (§11.4.238 extension), and `none` records are counted separately |
-| `evidence[]` | evidence refs | >=1 | machine-produced; content-addressed path `audit/evidence/<sha256>`; register FK `reg_findings.evidence_id -> reg_evidence` (deferred) |
+| `evidence[]` | evidence refs | >=1 | machine-produced; content-addressed path `$EV/blobs/<sha256>` (docs/06 §11 owns the blob store); register FK `reg_findings.evidence_id -> reg_evidence` (deferred) |
 | `root_cause` | statement, reproduction | before fix | `provenance` `observed` or `constructed`; `constructed` never closes (§11.4.115(G)) |
 | `fix` | commit, test, red_run, green_run, iterations | when fixed | `iterations >= 3`; RED and GREEN artifact fingerprints differ |
 | `review` | reviewer, verdict, evidence | before Closed | reviewer differs from author case- and space-insensitively (`reg_reviews CHECK (lower(trim(author)) <> lower(trim(reviewer)))`), the review's `review_verdict` evidence was produced by the reviewer, and the reviewer produced none of the item's RED/GREEN/proof/decision evidence (`v_closure_chain.review_ok`) |
@@ -177,7 +178,7 @@ Recurrence (FR-003, docs/04 §8): every intake resolves `duplicate-of` chains to
 | documentation present | derived | Document entity (`covers:` mapping, docs/13 §11) | manual, guides, FAQ, diagrams (FR-014) |
 | coverage baseline, dated target | number, date | coverage baseline file per app (docs/05 §7.2) | never below baseline (FR-011) |
 
-Initial seed (docs/01 §3, docs/05 §3): `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`, `catalogizer-androidtv`, `catalogizer-api-client`, `website`, `build`, `qa-ai-system`, `challenges`, `constitution`, and one row per owned submodule (51 owned repositories counted by `verify_repo.sh`, including the main repository).
+Initial seed (docs/01 §3, docs/05 §3): `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`, `catalogizer-androidtv`, `catalogizer-api-client`, `website`, `build`, `qa-ai-system`, `challenges`, `constitution`, and one row per owned submodule (51 owned repositories counted by the POC `verify_repo.sh`, including the main repository).
 
 ## 5. Test Evidence Record
 
@@ -307,7 +308,7 @@ Definitions (FR-015) are documents generated from what the system uses (schema d
 
 ## 9. Repository Verification Record
 
-Exactly the per-repository object of `contracts/repo-verification-report.schema.json`, produced by `poc/repo_verify/verify_repo.sh`.
+Exactly the per-repository object of `contracts/repo-verification-report.schema.json` (`repo-verification-report/1`, unchanged). Producer: `scripts/repo/verify_repos.sh`, the single verifier promoted from `poc/repo_verify/verify_repo.sh` (docs/21 IC-17, IC-37; tasks.md WP-03). The promotion keeps the v1 JSON shape, including the constant `"tool": "verify_repo.sh"` that the v1 schema requires (it names the shape's lineage, not the file), and adds the docs/16 §11.4 exit-code map. Both output options are accepted: `--json <file>` (docs/16) and `--json-out <file>` (POC).
 
 | Field | Type | Rules |
 |---|---|---|
@@ -321,7 +322,21 @@ Exactly the per-repository object of `contracts/repo-verification-report.schema.
 | `problems[]` | enum list | `dirty, ahead, diverged`, plus `behind, pin` in `--strict` |
 | `unproven[]` | enum list | `UNREACHABLE, UNKNOWN-DIFFERENT, NO-REMOTE-BRANCH` |
 
-Report-level rule (SC-010): `summary.failing = 0` and `summary.unproven = 0` under `--strict`, with every exception explained. Exit codes: 0 clear, 1 failing, 2 usage, 3 unproven only.
+Report-level rule (SC-010): `summary.failing = 0` and `summary.unproven = 0` under `--strict`, with every exception explained.
+
+Exit codes of `scripts/repo/verify_repos.sh` (docs/16 §11.4 and §12.3; replaces the POC's 0/1/2/3):
+
+| Exit | Meaning | v1 summary field that drives it |
+|---|---|---|
+| 0 | clean | every count below is 0 (excepted dirty rows allowed and listed) |
+| 11 | unpushed commits | `summary.ahead` (`REMOTE-BEHIND` remotes) |
+| 12 | diverged | `summary.diverged` |
+| 13 | dirty | `summary.dirty` minus `summary.dirty_excepted` |
+| 14 | unverified remote | `summary.unproven` (`UNREACHABLE`, `UNKNOWN-DIFFERENT`, `NO-REMOTE-BRANCH`) |
+| 15 | pointer drift or uninitialised submodule | `summary.pin_drift` |
+| 20 | blind verifier (control-needle self-test failed), usage or internal error | no report is trusted; any summary written is marked unproven |
+
+UNCONFIRMED until the WP-03 executing test of tasks.md fixes them in its exit-code matrix: the precedence when several failing classes are present at once, and the code for `behind` rows under `--strict` (the POC fails them, docs/16 assigns no code).
 
 ```mermaid
 stateDiagram-v2
@@ -342,13 +357,13 @@ stateDiagram-v2
 | Entity | Store (docs/04 §5) | Purpose |
 |---|---|---|
 | Source and source entry | `reg_sources`, `reg_source_entries`, `reg_source_map` | FR-002 provenance; entry key `(source_id, locator)`; exactly one mapping per entry; `v_unmapped_entries` must be empty (SC-001) |
-| Audit run | `reg_audit_runs` | `run_id`, 40-char git head, index attestation path (`audit/index-health.json`), tool versions |
+| Audit run | `reg_audit_runs` | `run_id`, 40-char git head, index attestation path (`$AUD/index-health.json`), tool versions |
 | Review | `reg_reviews` | GO/NO-GO, model and effort recorded (effort `?` when not reportable), author differs from reviewer (FR-023) |
 | Closure decision | `reg_closure_decisions` | imported `closure-check` verdict, single use; ACCEPTED only with `custody_decision` evidence and a complete chain; append-only except the consumption |
 | Gate registry | `reg_gate_checks`, `v_gate_missing_objects` | the views that must be empty and the triggers that must exist; the gate reads this table |
 | Tracker and sync log | `reg_trackers`, `reg_tracker_sync_log` | SYNCED needs exit 0, remote ref and evidence; SKIPPED needs a closed reason (FR-004) |
 | Export run and file | `reg_export_runs`, `reg_export_files` | DB fingerprint, verdict `OK, STALE, FAILED`; per-file sha256 |
-| Index health | `audit/index-health.json` (`index-health/1`, docs/02 §4.2) | P1 to P8 per pass |
+| Index health | `$AUD/index-health.json` (`index-health/1`, docs/02 §4.2) | P1 to P8 per pass |
 | Bank case | bank YAML validated by `contracts/bank-case.schema.json` | a test definition, never a problem (docs/04 §15.2); placeholder banks are gap items |
 
 ## 11. Cross-entity validation rules (completion gates)
@@ -361,5 +376,5 @@ All queries are read-only and are listed in docs/04 §13.1 and docs/03 §15.
 4. Every closed fixed item has RED, three GREEN with identical verdict, a caught mutation and a GO review in the register (`v_closure_ready`), AND the cited ledger entries verify against chain and anchor and re-derive to `PASS` by an independent verifier (docs/06 §4.2, §13; the register rows alone do not prove authorship).
 5. Every applicable `(application, test type)` cell has a recorded run; no `BLOCKED` run counted as a pass.
 6. Link crawl: `docs_orphans` of class A and B = 0, `broken_links = 0`, `broken_anchors = 0`; export check `stale = 0`, `missing = 0`.
-7. Repository verification `--strict`: `failing = 0`, `unproven = 0`, exceptions explained.
+7. Repository verification (`scripts/repo/verify_repos.sh --strict`): exit 0, `failing = 0`, `unproven = 0`, exceptions explained.
 8. Every dependency record has a status and, when behind, a decision.
