@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 9 |
+| Revision | 10 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 9: section 11 task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen: the phase exit records are written by P0 T095, P1 T159, P2 T220, P5 T457 and P6 T557, and the root-only `coverage/` negation is tasks.md T004; no layout entry changed; revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their writers in tasks.md rev 5, remapped in revision 9, the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 10: section 11 follows the commit-push design that the plan owner decided after the independent review of commit `1a69eed5` (fix wave 7), which supersedes the earlier design of CPA-owned paths under `$EV`: the commit-push script writes nothing into `$EV` or anywhere in the tracked tree; each run's outputs live only in its ignored run folder `.audit/commit-push/<run_id>/` at the repository root, which is not part of `$EV` (the `$EV/commit-push/` entry is removed, it never exists); the tracked record of a push is the commit itself (trailer `CPA-Run: <run_id>` and the deferral flags `SKIP_LONG`, `SWEEP_ABSENT` and `LOCAL_ONLY` in the message body); a task that needs a run's result records it through the evidence recorder; the shared stores (`ledger.jsonl`, `anchors.jsonl`, `blobs/`, `deferrals.jsonl`) belong to the change set of whoever wrote them; `deferrals.jsonl` rows are never edited and are closed by an appended closing row; the `.audit/` layout (`commit-push/<run_id>/`, `pending_pins.tsv`) is listed; no other `$EV` entry changed; revision 9: section 11 task-id citations remapped to tasks.md rev 6, whose ids T001 to T595 are frozen: the phase exit records are written by P0 T095, P1 T159, P2 T220, P5 T457 and P6 T557, and the root-only `coverage/` negation is tasks.md T004; no layout entry changed; revision 8: section 11 layout re-measured against tasks.md rev 5 by script (every `$EV/` path of tasks.md reduced to its top-level entry): `disk/` added, and the phase exit records name their writers in tasks.md rev 5, remapped in revision 9, the P2 record included; revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -605,8 +605,11 @@ The deriver refuses the pair, as the golden-bad requires.
 
 `$EV` below is `specs/001-full-project-audit-remediation/evidence` and `$AUD` is
 `specs/001-full-project-audit-remediation/audit`; every evidence path in this document is under `$EV`.
-This section owns the blob store: audit findings (`$AUD/findings/<FND-NNNN>.json`) and register rows
-reference blobs as `$EV/blobs/<sha256>`, never a second store.
+This section owns the layout of the blob store: audit findings (`$AUD/findings/<FND-NNNN>.json`) and
+register rows reference blobs as `$EV/blobs/<sha256>`, never a second store. Owning the layout does
+not make any tool the owner of the files (revision 10): a blob, a ledger or anchor line or a deferral
+row is a member of the change set of the task that wrote it, and is committed with that change set
+like any other file of it.
 
 ```
 specs/001-full-project-audit-remediation/evidence/        ($EV)
@@ -621,12 +624,14 @@ specs/001-full-project-audit-remediation/evidence/        ($EV)
   matrix/                      generated coverage matrix
   reviews/<gate-or-wp>.json    independent review verdicts ([REVIEW] tasks)
   hc/<HC-id>.json              human-checkpoint records (docs/21 section 3.3)
-  commit-push/<run_id>.json    commit-push script reports (docs/16 section 12.4, stage S8)
-  deferrals.jsonl              recorded gate deferrals (SKIP_LONG, --local-only push deferral)
+  deferrals.jsonl              gate deferrals recorded by the task that defers a gate (for example the
+                               long-op registration owed until WP-08), append-only; never written by
+                               the commit-push script, whose deferrals are in its commit messages
+                               (see the .audit/ block below)
   host-probe.json              host probe record (docs/16 section 8.5)
   disk/<op_id>.json            disk-headroom record before and after each image build, pull or
                                container run (tasks.md T001 convention, probe in WP-09)
-  p<N>-exit.json               phase exit records, one per docs/21 phase gate (tasks.md rev 6: P0 T095,
+  p<N>-exit.json               phase exit records, one per docs/21 phase gate (ids frozen since tasks.md rev 6: P0 T095,
                                P1 T159, P2 T220, P5 T457, P6 T557; the same name for every other
                                phase that adds one)
   register/                    register-side records: freeze manifest, seed and source
@@ -651,6 +656,55 @@ only for a work package or phase gate that owns it, and the task that first writ
 list above is regenerated from tasks.md when that happens. Every entry must stay tracked: no folder
 may be named `coverage/`, `out/`, `build/`, `tools/`, `reports/` or any other name that `.gitignore`
 ignores at any depth (check with `git check-ignore -q`; the coverage rule below is the example).
+
+**Commit-push outputs (revision 10).** The commit-push script (`scripts/commit-push-all.sh`, tasks.md
+WP-04, docs/16 section 12) never writes into `$EV` and never into any other path of the tracked tree,
+and never commits its own outputs. Every output of a run lives only in that run's folder under the
+ignored `.audit/` directory at the repository root, which is not part of `$EV`:
+
+```
+.audit/                        repository root; ignored by the `/.audit/` rule that tasks.md T004 adds
+                               (`git check-ignore -q .audit/commit-push/x/report.json` gave rc=1 on
+                               2026-10-03, before that rule exists); never on tmpfs, so a crashed run
+                               leaves its files for the anti-mess sweep; never part of $EV
+  commit-push/<run_id>/        one folder per run; the run id is unique (UTC time, process id and a
+                               random suffix): report.json, the text summary, the stage transcripts,
+                               the stage S7 verifier JSON, the run's deferral rows and the
+                               disk-headroom records of its container calls
+  pending_pins.tsv             pin moves made by `--repo <path>` runs and not yet committed in the
+                               parent (repository path, new gitlink sha, run id); the G-PIN layer
+                               removes a row when it commits that pointer
+  longops/                     long-op registry records (WP-08)
+```
+
+Rules for these outputs:
+
+1. A run that does not get the lock writes only its own run folder and touches nothing else, so a
+   run that holds the lock is never affected by a second run.
+2. The tracked record of a push is the commit itself: every commit the script makes carries the
+   trailer `CPA-Run: <run_id>` and, in its message body, the deferral flags of that run from the closed
+   set `SKIP_LONG`, `SWEEP_ABSENT` and `LOCAL_ONLY` (the `Deferred-Gates:` line of docs/16 section 12.2).
+3. A task that needs a run's result as evidence (its report, its verifier JSON) records it itself
+   through the evidence recorder: an `ev/1` entry that cites `.audit/commit-push/<run_id>/report.json`
+   by sha256, with the bytes stored as `$EV/blobs/<sha256>`. The entry and the blob belong to that
+   task's own change set and are committed by a later normal commit-push run.
+4. Therefore the tracked tree is clean after every commit-push run. Every clean-tree condition
+   (`dirty:false` of docs/02 section 12.1, the P2 source freeze, the audit runs, the WP-73 strict
+   verification, SC-010) is measured on the tracked tree, with ignored paths excluded by construction,
+   and cites the latest run report from `.audit/commit-push/` by sha256.
+5. The run folders are working files, not evidence. Removing an old one (the anti-mess sweep's
+   retention rule, WP-08) loses nothing cited, because a cited report is already a blob under `$EV`.
+
+**Shared stores (revision 10).** `ledger.jsonl`, `anchors.jsonl`, `blobs/` and `deferrals.jsonl` are
+written by several tools (the evidence recorder, a task that records a deferral). Each line or blob is
+an ordinary member of the change set of the task that wrote it. The commit-push script refuses a file
+in these stores only by its general rule for any file: untracked or modified, and not in the declared
+change set of the run.
+
+**Deferral rows (revision 10).** `deferrals.jsonl` is append-only. Each row carries an id, and a row is
+never edited. A deferral is closed by appending a closing row that names the id of the row it closes
+and the evidence that ends the deferral (for example the review verdict file or the commit that
+carries the owed push).
 
 Folder naming (revision 6): the coverage folders are named `coverage_baseline/` and
 `coverage_targets/`, never `coverage/`, because `.gitignore:139` ignores every directory named

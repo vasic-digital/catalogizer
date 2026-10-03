@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 3: counts re-taken from docs/21 revision 8 (254 plan-document seeds); the task count stated (595 numbered tasks, ids T001 to T595 frozen, later tasks with suffix ids); the task-id citation rule added to "How to read"; reachability note updated to the committed root link. Revision 2: "How to read" note and the phase and work-package table from docs/21 revision 7; counts re-taken from docs/21 revision 7; reachability note updated) |
+| Status | draft (revision 4: the task count is that of tasks.md revision 7 (601 tasks: the 595 frozen ids T001 to T595 plus the 6 suffix ids T040a, T042a, T248a, T434a, T462a and T580a); the inconsistency count is docs/21 revision 9's (IC-01 to IC-45); the ignored `.audit/` folder of the commit-push runs is named next to the folders the work creates. Revision 3: counts re-taken from docs/21 revision 8 (254 plan-document seeds); the task count stated (595 numbered tasks, ids T001 to T595 frozen, later tasks with suffix ids); the task-id citation rule added to "How to read"; reachability note updated to the committed root link. Revision 2: "How to read" note and the phase and work-package table from docs/21 revision 7; counts re-taken from docs/21 revision 7; reachability note updated) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Purpose | Entry point of this specification folder: every document in it is linked from this page, grouped by role, so each one is reachable by following links (spec FR-013, SC-006; constitution §11.4.212) |
 | Reachability note | This page is reachable from [spec.md](spec.md) and from [plan.md](plan.md), and the repository's main README links it (README.md line 40, committed in `5807ca9f`, read with `git show HEAD:README.md` on 2026-10-03) |
@@ -40,11 +40,11 @@ Read in this order:
 - **Disagreements.** Where two documents disagree, docs/21 section 10 records both values and the resolution. A value the plan could not settle is marked `UNCONFIRMED:`, and the work package that measures it owns the answer.
 - **Paths.** `$AUD` is `specs/001-full-project-audit-remediation/audit` and `$EV` is `specs/001-full-project-audit-remediation/evidence` (docs/06 section 11). Neither exists yet.
 - **Claims.** Nothing in this folder reports work as done. Every acceptance needs machine-produced evidence from the work itself (docs/06, spec FR-022 and SC-012). Owner decisions block the work they name until answered (docs/21 planning rule 6).
-- **Counts.** Every count is a point-in-time value of 2026-10-03 and is re-measured by the work package that relies on it. tasks.md revision 6 has 595 numbered tasks, T001 to T595; tasks added later carry suffix ids, so count the task lines of tasks.md for the current total.
+- **Counts.** Every count is a point-in-time value of 2026-10-03 and is re-measured by the work package that relies on it. tasks.md revision 7 has 601 tasks: the 595 ids T001 to T595, frozen since revision 6, and 6 suffix ids (T040a, T042a, T248a, T434a, T462a, T580a). A later revision adds more suffix ids, so count the task lines of tasks.md for the current total.
 
 ### Phases and work packages
 
-From docs/21 revision 8, sections 3.1 and 11.2. Tasks: 595 numbered tasks in tasks.md revision 6 (T001 to T595), plus any suffix-id tasks added later.
+From docs/21 revision 9, sections 3.1 and 11.2. Tasks: 601 in tasks.md revision 7 (the 595 frozen ids T001 to T595 plus 6 suffix ids); a later revision adds suffix ids only.
 
 | Phase | Name | Work packages | Count |
 |---|---|---|---:|
@@ -65,7 +65,7 @@ From docs/21 revision 8, sections 3.1 and 11.2. Tasks: 595 numbered tasks in tas
 | [spec.md](spec.md) | Feature specification (clarified) |
 | [checklists/requirements.md](checklists/requirements.md) | Specification quality checklist |
 | [plan.md](plan.md) | Implementation plan |
-| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5; 595 numbered tasks T001 to T595 at revision 6, ids frozen, later tasks with suffix ids) |
+| [tasks.md](tasks.md) | Task list (phases P0 to P7, every work package of docs/21 section 5; 601 tasks at revision 7: the frozen ids T001 to T595 plus 6 suffix ids, later tasks with suffix ids) |
 
 ## 3. Design artifacts
 
@@ -159,15 +159,17 @@ These do not exist yet; tasks.md creates them and this index will link their ent
 | `matrix/` | test-type applicability and coverage matrix | docs/05 section 13 |
 | `perf/` | performance targets and baselines | docs/14 |
 
+Not tracked and outside this folder: the ignored `.audit/` directory at the repository root holds one folder per commit-push run (`.audit/commit-push/<run_id>/`: its report, verifier JSON and transcripts) and the long-op records. The commit-push script writes only there, never into the tracked tree; the record of a push is the commit and its `CPA-Run:` trailer (docs/06 section 11).
+
 ## 8. Counts at a glance
 
-Taken from docs/21 revision 8 (section 1.3); each is re-measured by the work package that relies on it.
+Taken from docs/21 revision 9 (section 1.3); each is re-measured by the work package that relies on it.
 
 | Quantity | Value |
 |---|---|
 | Phases / work packages / streams | 8 / 53 / 13 |
-| Tasks | 595 numbered (T001 to T595, tasks.md revision 6, ids frozen); suffix-id tasks added later are counted from tasks.md itself |
-| Cross-document inconsistencies resolved or tracked | 41 (IC-01 to IC-41, docs/21 section 10) |
+| Tasks | 601 in tasks.md revision 7 (the 595 frozen ids T001 to T595 plus 6 suffix ids); suffix-id tasks added later are counted from tasks.md itself |
+| Cross-document inconsistencies resolved or tracked | 45 (IC-01 to IC-45, docs/21 section 10) |
 | Risks | 34 |
 | Grouped owner decisions | 40 (ODG-01 to ODG-40), plus 16 ungrouped `research.md` decisions (docs/21 section 8.6) |
 | Owner decisions in `research.md` | 79 (OD-01 to OD-79) |

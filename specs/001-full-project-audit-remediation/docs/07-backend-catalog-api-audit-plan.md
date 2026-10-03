@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
+| Status | draft (revision 3: Appendix B.4 is labelled a candidate record, not a `finding/1` record, and points to document 02 §9 and `contracts/finding.schema.json` for the register format. Revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-api/` (Go 1.25.7, Gin, SQLite/PostgreSQL, JWT, SMB/FTP/NFS/WebDAV/local clients, WebSocket, Prometheus metrics, HTTP/3, Challenges) |
 | Traceability | FR-005..FR-011, FR-015, FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-008, SC-011 |
@@ -887,7 +887,9 @@ Historical scratchpad output: `client ops 50 not served by main.go routes: 24` (
 
 Read-only access to the index (`file:.codegraph/codegraph.db?mode=ro`): `nodes` joined to `edges` where `edges.kind = 'calls'`, filtered by `file_path LIKE 'catalog-api/%'`, grouped by target node for fan-in and by source node for fan-out; longest functions from `end_line - start_line + 1` for `kind IN ('function','method')`. Counts quoted in section 3 and 6 come from this query. The same results are reachable through `codegraph explore "<symbol>"` and `codegraph node <name>` for a human reviewer.
 
-### B.4 Evidence record format for this plan's findings (NOT EXECUTED)
+### B.4 Candidate record format for this plan's findings (NOT EXECUTED; candidate only, not a `finding/1` record)
+
+Revision 3: the record below is the working form of a candidate before the register confirms it. It is not a register finding and does not validate against `contracts/finding.schema.json` (it lacks the `schema` field and uses the plan's own severity words such as `high`, while `finding/1` uses `S1` to `S5` with a `severity_criterion`). When a candidate is confirmed, the register mints a `finding/1` record in the format of document 02 §9 (`schema: "finding/1"`, canonical `FND-NNNN`, the unit alias, the severity scale and the evidence entries that contract requires); the candidate id stays as provenance.
 
 ```json
 {

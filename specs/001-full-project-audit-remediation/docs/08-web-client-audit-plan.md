@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: pipe characters inside code spans of three table rows escaped with a backslash, so each row has its header's column count; no content change) |
+| Status | draft (revision 3: the section 6.1 evidence-directory variable is renamed from `EVID` to `WEB_EV`, because tasks.md and document 16 use `$EVID` for the run directory of one commit-push run; no other change. Revision 2: pipe characters inside code spans of three table rows escaped with a backslash, so each row has its header's column count; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-web/` and the nine linked submodules `auth_context_react`, `media_browser_react`, `media_player_react`, `collection_manager_react`, `dashboard_analytics_react`, `ui_components_react`, `websocket_client_ts`, `media_types_ts`, `catalogizer_api_client_ts` |
 | Spec traceability | FR-005..FR-011, FR-014..FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-011 |
@@ -264,10 +264,10 @@ All detectors run in a rootless Podman container with the repository mounted rea
 # NOT EXECUTED. One-time image selection: pin to the resolved Playwright version in package-lock.json.
 export WEB_NODE_IMAGE=docker.io/library/node:20-alpine        # matches catalog-web/Dockerfile builder stage
 export WEB_PW_IMAGE=mcr.microsoft.com/playwright:v<PIN_FROM_LOCKFILE>-jammy   # UNKNOWN: exact tag must be read from package-lock.json
-export EVID=specs/001-full-project-audit-remediation/evidence/web
+export WEB_EV=specs/001-full-project-audit-remediation/evidence/web
 
 podman run --rm --memory=8g --pids-limit=2048 \
-  -v "$PWD":/work:ro,Z -v "$PWD/$EVID":/evidence:rw,Z \
+  -v "$PWD":/work:ro,Z -v "$PWD/$WEB_EV":/evidence:rw,Z \
   -w /work/catalog-web "$WEB_NODE_IMAGE" \
   sh -c 'cp -r /work /tmp/w && cd /tmp/w/catalog-web && npm ci --legacy-peer-deps && npm run type-check 2>&1 | tee /evidence/tsc.txt'
 ```
@@ -276,7 +276,7 @@ Rationale for copying: the mounted tree is read-only (so a detector can never al
 
 ### 6.2 Detector catalogue
 
-Each detector writes JSON Lines to `$EVID/<id>.jsonl` with fields `{id, rule, path, line, snippet_sha256, severity, tool_version, run_utc}`. A detector is accepted only after it has been shown to fire on a seeded bad fixture and stay silent on a clean one (§11.4.201(6)-(7) control needle; §11.4.107(10)).
+Each detector writes JSON Lines to `$WEB_EV/<id>.jsonl` with fields `{id, rule, path, line, snippet_sha256, severity, tool_version, run_utc}`. A detector is accepted only after it has been shown to fire on a seeded bad fixture and stay silent on a clean one (§11.4.201(6)-(7) control needle; §11.4.107(10)).
 
 | ID | Purpose | Tool and command (inside container) | Seeded fixtures for validation |
 |---|---|---|---|

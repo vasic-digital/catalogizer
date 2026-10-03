@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: pipe characters inside code spans of two table rows escaped with a backslash, so each row has its header's column count; no content change) |
+| Status | draft (revision 3: detector D10 is validated per class and per language with TSV-row needles and uses the Kotlin detector of tasks.md T248a, replacing the single seeded violation with an exit-code oracle, which a measured Kotlin tree showed blind (rc=0). Revision 2: pipe characters inside code spans of two table rows escaped with a backslash, so each row has its header's column count; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalogizer-android/` (phone and tablet, package `com.catalogizer.android`) and `catalogizer-androidtv/` (Android TV, package `com.catalogizer.androidtv`); their HelixQA banks in `challenges/helixqa-banks/`; the Android parts of `docker/`, `scripts/`, `docs/` |
 | Spec traceability | FR-005..FR-016, FR-019, FR-021, FR-022, FR-024, FR-025; SC-002..SC-005, SC-009, SC-011 |
@@ -357,7 +357,7 @@ grep -cE '^\s*- id:' challenges/helixqa-banks/catalogizer-android-comprehensive-
 | D7 | R8 outputs | `assembleRelease` then parse `build/outputs/mapping/release/{mapping,seeds,usage}.txt` | text | H10-08 keep-rule overreach, serialization classes kept or stripped |
 | D8 | Room schema export diff | `kaptDebugKotlin` then `git diff --exit-code app/schemas` | exit code | schema drift not reflected in a version bump (H10-17) |
 | D9 | StrictMode and leak detection | debug-only `StrictMode` policy (thread and VM) installed by a test `Application` subclass in `androidTest`, plus LeakCanary is NOT currently a dependency (`grep leakcanary` found none); adding it is a W10-09 decision | logcat | disk and network on main thread, leaked Activities and closeables |
-| D10 | Anti-bluff scan | `scripts/audit/anti-bluff-scan.sh` (project CLAUDE.md names it), validated first with a seeded violation | exit code | `assertTrue(true)`, constructor-only, mock-only integration tests |
+| D10 | Anti-bluff scan | `scripts/audit/anti-bluff-scan.sh` (project CLAUDE.md names it), validated first per class and per language with one needle per D10 class in each test language (Kotlin, and Java where test sources exist), each asserting its own `(path, kind)` row in the scanner's TSV output, never the aggregate exit code (tasks.md T248); the scanner is blind to the first three classes in Kotlin (a seeded Kotlin tree gave rc=0 at plan review), so Kotlin uses the detector `scripts/audit/anti_bluff_kotlin.py` of tasks.md T248a, and until that is GO, D10 for Kotlin is recorded `blocked` (blind detector), never as a zero (revision 3) | TSV rows per needle and per finding | `assertTrue(true)`, constructor-only, mock-only integration tests |
 | D11 | Bank lint | new script (section 6.4) | JSON | banks without machine oracles, wrong component names |
 | D12 | Coverage | JaCoCo tasks already present in both `build.gradle.kts` (`jacocoTestReport`) | XML | FR-011 baselines; note the instrument measures lines of the debug classes only |
 

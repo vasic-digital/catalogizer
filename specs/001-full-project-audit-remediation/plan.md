@@ -1,8 +1,14 @@
 # Implementation Plan: Full Project Audit and Remediation
 
+| Field | Value |
+|---|---|
+| Revision | 5 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | draft (revision 5: the revision header is now this table, the §11.4.44 form that the revision-header check of tasks.md T040 reads (a `Revision` row and a `Last modified` row in the first 40 lines; the bold line used before counted as missing); the commit-push script is stated to write only its ignored run folder `.audit/commit-push/<run_id>/` and to leave the tracked tree clean (Project Structure, Execution Strategy; docs/06 §11 revision 10, docs/21 IC-42). Revision 4: the `.gitignore` list cited as tasks.md T004, the id in tasks.md rev 6, whose ids T001 to T595 are frozen; the plan-document seed count is docs/21 revision 8's 254. Revision 3: links to directories replaced by links to files, the spec-folder index [README.md](README.md) added, candidate-entry estimate and owner-decision count aligned with docs/21 revision 6) |
+
 **Branch**: `001-full-project-audit-remediation` (no branch; all work on `main`, per spec FR-024) | **Date**: 2026-10-03 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/001-full-project-audit-remediation/spec.md`
-**Revision**: 4 (the `.gitignore` list cited as tasks.md T004, the id in tasks.md rev 6, whose ids T001 to T595 are frozen; the plan-document seed count is docs/21 revision 8's 254. Revision 3: links to directories replaced by links to files, the spec-folder index [README.md](README.md) added, candidate-entry estimate and owner-decision count aligned with docs/21 revision 6) | **Last modified**: 2026-10-03
 
 ## Summary
 
@@ -134,7 +140,7 @@ specs/001-full-project-audit-remediation/
 └── perf/                     # perf targets and baselines
 ```
 
-`.gitignore` hides `build/`, `tools/`, `coverage/` and `*.db` today (`.gitignore:40`, `:85`, `:101`, `:139`, `:153`, `:263`). Task T004 of tasks.md is the authoritative list; it appends, as the last lines of `.gitignore`: `!/build/`, `/build/*`, `!/build/containers/`, `!/build/components.json`, `!/build/hosts.env.example`, `/build/containers/**/*.bin`, `!/scripts/build/`, `!/tools/`, `/tools/*`, `!/tools/evidence/`, `/tools/evidence/.cache`, `!/tools/perf/`, `!/tools/audit/`, `/tools/audit/*`, `!/tools/audit/rust_ast/`, `/tools/audit/rust_ast/target/`, `!/tools/audit/rust_ast/Cargo.lock`, `!/coverage/`, `/coverage/*`, `!/coverage/exclusions/`, `!/scripts/coverage/`, `!/docs/workable_items.db`, `docs/*.bak-*`, `docs/.register.lock` and `/.audit/`, proved by `git check-ignore` on its planned and control paths before and after. Coverage evidence under the specification folder uses `coverage_baseline/` and `coverage_targets/` because the unanchored `coverage/` rule applies at any depth (docs/06 §11).
+`.gitignore` hides `build/`, `tools/`, `coverage/` and `*.db` today (`.gitignore:40`, `:85`, `:101`, `:139`, `:153`, `:263`). Task T004 of tasks.md is the authoritative list; it appends, as the last lines of `.gitignore`: `!/build/`, `/build/*`, `!/build/containers/`, `!/build/components.json`, `!/build/hosts.env.example`, `/build/containers/**/*.bin`, `!/scripts/build/`, `!/tools/`, `/tools/*`, `!/tools/evidence/`, `/tools/evidence/.cache`, `!/tools/perf/`, `!/tools/audit/`, `/tools/audit/*`, `!/tools/audit/rust_ast/`, `/tools/audit/rust_ast/target/`, `!/tools/audit/rust_ast/Cargo.lock`, `!/coverage/`, `/coverage/*`, `!/coverage/exclusions/`, `!/scripts/coverage/`, `!/docs/workable_items.db`, `docs/*.bak-*`, `docs/.register.lock` and `/.audit/`, proved by `git check-ignore` on its planned and control paths before and after. `/.audit/` is the ignored, never tracked home of the commit-push run folders (`.audit/commit-push/<run_id>/`) and the long-op records (docs/06 §11). Coverage evidence under the specification folder uses `coverage_baseline/` and `coverage_targets/` because the unanchored `coverage/` rule applies at any depth (docs/06 §11).
 
 **Structure Decision**: no new top-level application. New tooling is promoted from the `poc/` tools ([docs/19](docs/19-poc-tools-and-results.md)) into tracked, tested locations under `scripts/`, `tools/`, `build/`, `config/index/` and `coverage/exclusions/` (listed above) during the work packages that need it; new shared contracts live next to their owners. The register is the constitution's engine database plus an extension layer (docs/04), and the planning documents, audit outputs (`$AUD`) and evidence (`$EV`) stay under this specification directory.
 
@@ -145,7 +151,7 @@ specs/001-full-project-audit-remediation/
 - [ ] Register and evidence recorder (WP-05, WP-06): invariants (status custody, recurrence links, evidence class) are checked by RED-first tests with golden-bad fixtures.
 - [ ] Every fixed finding (all applications): a test that fails before and passes after, repeated three times, with machine-recorded verdicts.
 - [ ] Auth, SSRF and input-validation paths (backend WebSocket and image proxy; desktop `make_http_request`; Android exported components): negative-path tests with concrete hostile inputs.
-- [ ] Verifier, link-crawler and route-drift extractor: promoted from the POCs (`poc/repo_verify`, `poc/doc_links`, `poc/route_drift`) with their golden-good, golden-bad and control tests retained. The commit/push script (`scripts/commit-push-all.sh`, stages S0-S8, docs/16 §12, docs/21 IC-16) has no POC and is written test-first.
+- [ ] Verifier, link-crawler and route-drift extractor: promoted from the POCs (`poc/repo_verify`, `poc/doc_links`, `poc/route_drift`) with their golden-good, golden-bad and control tests retained. The commit/push script (`scripts/commit-push-all.sh`, stages S0-S8, docs/16 §12, docs/21 IC-16) has no POC and is written test-first; it writes every output of a run only into its ignored run folder `.audit/commit-push/<run_id>/`, never into the tracked tree, and marks each commit it makes with the trailer `CPA-Run: <run_id>`, so the tracked tree is clean after every run (docs/06 §11, docs/21 IC-42).
 - [ ] Migrations and dialect rewriting (both SQLite and PostgreSQL): tests on a real database of each dialect.
 
 ### Parallel Execution Opportunities

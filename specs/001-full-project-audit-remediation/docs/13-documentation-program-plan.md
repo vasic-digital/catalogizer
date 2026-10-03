@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 3: the section 5 reachability note on this feature's plan set is marked resolved, with the crawler result of 2026-10-03. Revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
+| Status | draft (revision 4: the same-commit rule names the Catalogizer commit-push script (`scripts/commit-push-all.sh`, document 16 §12) instead of an `UNKNOWN:` binding, and records that registering `export_sync_check` as a commit-push S3 check is owed in tasks.md. Revision 3: the section 5 reachability note on this feature's plan set is marked resolved, with the crawler result of 2026-10-03. Revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
 | Feature | specs/001-full-project-audit-remediation |
 | Covers | FR-012, FR-013, FR-014, FR-015, SC-006, SC-007, SC-008 |
 | Governance anchors | §11.4.12, §11.4.18, §11.4.44, §11.4.57, §11.4.59, §11.4.61, §11.4.65, §11.4.73, §11.4.86, §11.4.95, §11.4.106, §11.4.107(10), §11.4.122, §11.4.124, §11.4.186, §11.4.212, §11.4.215, §11.4.223, §11.4.257, §11.4.258, §11.4.259, §11.4.260 |
@@ -401,7 +401,7 @@ Volume consideration: ~320 hand-curated documents × 3 formats ≈ 960 binary fi
 - Generalise by reference the constitution's `render-governance-twins.sh` recipe: pandoc `-f gfm -t html5 -s --template=<governance-template.html5>`, docx via `pandoc -f gfm -t docx`, PDF via `weasyprint <html> <pdf>`, `SOURCE_DATE_EPOCH` pinned. A project-level wrapper `scripts/docs/export_docs.sh` reads the export set from `docs/EXPORT_SCOPE.txt` (derived from `DOC_SCOPE.yaml` classes A, B, D-selected) and renders every document; the template file is referenced from the constitution submodule path (inherited, not copied, §11.4.28/.177), with an OpenDesign project stylesheet appended for product docs (§11.4.162 tokens; the tokens file location is `UNKNOWN:` until the design-token audit names it).
 - Mermaid handling in exports: pre-pass replaces each diagram reference with the validated SVG (html) / PNG (docx) / embedded SVG (pdf).
 - Fingerprint: each export embeds the source sha256, the template sha256 and the toolchain version: HTML `<meta name="source-sha256" content="…">`, PDF `/Keywords` or XMP field `source-sha256`, DOCX `docProps/custom.xml` property. `docs/EXPORT_MANIFEST.json` maps `source → {sha256, outputs[{path, sha256, bytes}], toolchain}` and is itself tracked (§11.4.95/§11.4.215 principle).
-- Same-commit rule: the commit/push script (§11.4.234, the dedicated script path is consumer-bound, `scripts/commit-push-all.sh` in the Lava binding; Catalogizer binding `UNKNOWN:` until the infra audit names it) runs `export_sync_check` as an explicit stage; a staged `.md` without a staged twin whose fingerprint equals `sha256(md)` refuses the commit with a remediation message (never a hung push). Long-render path: only changed sources re-render (manifest diff), full render on demand.
+- Same-commit rule: the commit/push script (§11.4.234; revision 4: the Catalogizer binding is `scripts/commit-push-all.sh`, document 16 §12 and tasks.md WP-04, docs/21 IC-16) runs `export_sync_check` (production form `scripts/docs/export_sync_check.py`, tasks.md T280) as a named S3 check; its registration as a row of the check registry `scripts/repo/validate_checks.tsv` is not yet carried by any task and is owed in tasks.md; a staged `.md` without a staged twin whose fingerprint equals `sha256(md)` refuses the commit with a remediation message (never a hung push). Long-render path: only changed sources re-render (manifest diff), full render on demand.
 
 ### 8.3 Sequence
 

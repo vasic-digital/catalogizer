@@ -4,9 +4,9 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
-| Revision | 5 |
+| Revision | 6 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 5: §9 names the routine commit-push S7 flags, plain mode with `--fetch` and `--no-remote` under `--local-only`, matching docs/16 revision 4 and docs/21 revision 7; no field, code or rule changed. Revision 4: §9 states which verifier exit codes apply in plain and in `--strict` mode, how a stash (R3) and a pointer no remote holds (R4) appear in the v1 report, cites docs/16 §11.4 only for the verifier codes; §1 and §2 define `findings.index.jsonl` as a timestamp-free projection, not a `finding/1` record; §3 records the doc18 Feature items (docs/21 §9.5); §4 states the owned-repository split) |
+| Status | draft (revision 6: §9 and §11 rule 7 state that cleanness is measured on the tracked tree, that the commit-push script writes only its ignored run folder `.audit/commit-push/<run_id>/` (docs/06 §11 revision 10), and how the final `--strict` record is kept without dirtying the tree it proves clean; no field, code or exception class added: a file-level exception for pending commit-push outputs, proposed by one review, is not needed because no such output exists in the tracked tree. Revision 5: §9 names the routine commit-push S7 flags, plain mode with `--fetch` and `--no-remote` under `--local-only`, matching docs/16 revision 4 and docs/21 revision 7; no field, code or rule changed. Revision 4: §9 states which verifier exit codes apply in plain and in `--strict` mode, how a stash (R3) and a pointer no remote holds (R4) appear in the v1 report, cites docs/16 §11.4 only for the verifier codes; §1 and §2 define `findings.index.jsonl` as a timestamp-free projection, not a `finding/1` record; §3 records the doc18 Feature items (docs/21 §9.5); §4 states the owned-repository split) |
 | Sources | spec.md "Key Entities"; docs/02 §5, §6, §9, §10; docs/04 §3 to §8 (register DDL); docs/06 §3, §4, §14; docs/11 §2; docs/12 §6, §11; docs/13 §3, §8; docs/19 §3 |
 | Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit`; `$EV` = `specs/001-full-project-audit-remediation/evidence` (layout owned by docs/06 §11) |
 | Physical store | `docs/workable_items.db` (constitution engine schema plus the `reg_*` extension of docs/04 §5) for register-side entities; JSON files validated by `contracts/*.schema.json` for audit-side records |
@@ -324,6 +324,8 @@ Exactly the per-repository object of `contracts/repo-verification-report.schema.
 
 Report-level rule (SC-010): `summary.failing = 0` and `summary.unproven = 0` under `--strict`, with every exception explained.
 
+What "clean" is measured on (revision 6): the `dirty` columns come from `git status --porcelain --ignore-submodules=all`, so ignored paths never count. The commit-push script keeps every output of a run, including its S7 verifier JSON, in the ignored run folder `.audit/commit-push/<run_id>/` and never writes into the tracked tree (docs/06 §11, revision 10), so a repository is clean right after a commit-push run with no exception for the script's own files. The durable record of a push is the commit (trailer `CPA-Run: <run_id>`). A task that needs a run's report or verifier JSON as evidence records it through the evidence recorder in its own change set, which a later commit-push run commits. The same holds for the final `--strict` run of WP-73: its JSON is written under the ignored `.audit/` and cited by sha256, never into the tracked tree that it proves clean; a closing record that must itself be committed is committed by a later commit-push run, whose own S7 report proves that last commit.
+
 Exit codes of `scripts/repo/verify_repos.sh` (docs/16 §11.4; replaces the POC's 0/1/2/3; the commit-push script's own codes are docs/16 §12.3, and it maps these codes to its own at stage S7):
 
 | Exit | Meaning | v1 summary field that drives it |
@@ -380,5 +382,5 @@ All queries are read-only and are listed in docs/04 §13.1 and docs/03 §15.
 4. Every closed fixed item has RED, three GREEN with identical verdict, a caught mutation and a GO review in the register (`v_closure_ready`), AND the cited ledger entries verify against chain and anchor and re-derive to `PASS` by an independent verifier (docs/06 §4.2, §13; the register rows alone do not prove authorship).
 5. Every applicable `(application, test type)` cell has a recorded run; no `BLOCKED` run counted as a pass.
 6. Link crawl: `docs_orphans` of class A and B = 0, `broken_links = 0`, `broken_anchors = 0`; export check `stale = 0`, `missing = 0`.
-7. Repository verification (`scripts/repo/verify_repos.sh --strict`): exit 0, `failing = 0`, `unproven = 0`, exceptions explained.
+7. Repository verification (`scripts/repo/verify_repos.sh --strict`): exit 0, `failing = 0`, `unproven = 0`, exceptions explained, measured on the tracked tree after the last commit-push run, with the report kept under the ignored `.audit/` and cited by sha256 (§9, revision 6).
 8. Every dependency record has a status and, when behind, a decision.

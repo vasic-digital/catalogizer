@@ -1,9 +1,14 @@
 # Feature Specification: Full Project Audit and Remediation
 
+| Field | Value |
+|---|---|
+| Revision | 6 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | Draft (revision 6: the revision and last-modified lines are moved into this table, the §11.4.44 form that the revision-header check of tasks.md T040 reads; no requirement changed. Revision 5: adds this revision line and the last-modified date, constitution §11.4.44; no requirement changed. Revision 4 is commit `e811cbd0`, which added the "Plan documents" section; revisions 1 to 3 are commits `4e633fec`, `8aee842f` and `e4852ce7`, read with `git log -- spec.md`) |
+
 **Feature Branch**: `001-full-project-audit-remediation` (no branch created; work continues on `main`)
 **Created**: 2026-10-03
-**Revision**: 5 (adds this revision line and the last-modified date, constitution §11.4.44; no requirement changed. Revision 4 is commit `e811cbd0`, which added the "Plan documents" section; revisions 1 to 3 are commits `4e633fec`, `8aee842f` and `e4852ce7`, read with `git log -- spec.md`)
-**Last modified**: 2026-10-03
 **Status**: Draft
 **Input**: User description: "Do exhaustive analysis of the whole project. Rely heavily on the indexed structural code space (CodeGraph) to reduce token use as much as possible, always, and on the indexed semantic space (Lumen) as well. Detect any gap, misalignment, shortcoming, weak spot, danger zone, bug, error and issue, plus everything already known and documented as issues, workable items and tickets everywhere (HelixQA especially). Investigate systematically, fix and improve, and cover everything with all supported test types defined in the constitution. Every test, existing and new, must validate and verify fully deterministically through machine-produced results, never prediction. Update all documentation and exported files, add new documents properly linked from the main README, write user manuals, guides, FAQs, diagrams, graphs and schemes, and cover all definitions (SQL schemas, templates and others). The project consists of multiple applications (backends, services, APIs, web, mobile, desktop and other clients). All dependencies must always be up to date with their upstream codebases. Commit and push all work regularly, and confirm with `git status`, fully recursively, that nothing is uncommitted or unpushed to any upstream of any repository."
 
