@@ -354,8 +354,8 @@ stateDiagram-v2
 All queries are read-only and are listed in docs/04 §13.1 and docs/03 §15.
 
 1. `v_unmapped_entries` empty; every problem-disposition source entry has a register id (SC-001).
-2. Every `reg_gate_checks` view of kind `view_empty` returns 0 rows (`v_findings_without_item`, `v_custody_violations`, `v_recurrence_violations`, `v_duplicate_item_ids`, `v_items_without_mint`, `v_unmapped_entries`) and `v_gate_missing_objects` is empty (all 16 registered triggers present; docs/04 K-9).
-3. Zero findings outside `Closed` except `VendoredException`; `reverify_required = 1` counted as not done until OD-10 is decided.
+2. Every `reg_gate_checks` view of kind `view_empty` returns 0 rows (`v_findings_without_item`, `v_custody_violations`, `v_recurrence_violations`, `v_duplicate_item_ids`, `v_items_without_mint`, `v_unmapped_entries`, `v_legacy_import_unbacked`, `v_illegal_logged_edges`), `v_gate_missing_objects` is empty (all 33 registered triggers present; docs/04 §4, K-9), `PRAGMA integrity_check` prints `ok` and `PRAGMA foreign_key_check` prints nothing (docs/04 §12.3, §5 limitation 7).
+3. Zero findings outside `Closed` except `VendoredException`; every row of `v_reverify_queue` (`reverify_required = 1`, registered in `reg_gate_checks` with kind `view_not_done`) counted as not done until OD-10 is decided; a reopened legacy item leaves that queue and needs a full chain recorded after the reopen (docs/04 §5 limitation 5, §14.9 B2).
 4. Every closed fixed item has RED, three GREEN with identical verdict, a caught mutation and a GO review in the register (`v_closure_ready`), AND the cited ledger entries verify against chain and anchor and re-derive to `PASS` by an independent verifier (docs/06 §4.2, §13; the register rows alone do not prove authorship).
 5. Every applicable `(application, test type)` cell has a recorded run; no `BLOCKED` run counted as a pass.
 6. Link crawl: `docs_orphans` of class A and B = 0, `broken_links = 0`, `broken_anchors = 0`; export check `stale = 0`, `missing = 0`.

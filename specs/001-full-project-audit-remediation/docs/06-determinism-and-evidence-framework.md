@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: independent-review fixes to the verdict rules and the section 13 proof of concept) |
+| Status | draft (revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -147,7 +147,7 @@ pairing of `blocked_reason` with `verdict: blocked`. Where the two differ, the c
     "schema": {"const": "ev/1"},
     "seq": {"type": "integer", "minimum": 1},
     "item": {"type": "string", "description": "register item id, exact stable id"},
-    "polarity": {"enum": ["RED","GREEN","BASELINE","PREFLIGHT","PROBE","NEEDLE","ANALYZER_FIXTURE"]},
+    "polarity": {"enum": ["RED","GREEN","BASELINE","PREFLIGHT","PROBE","NEEDLE","ANALYZER_FIXTURE","MUTATION","REOPEN"]},
     "iteration": {"type": "integer", "minimum": 1},
     "started_at": {"type": "string", "format": "date-time"},
     "cwd": {"type": "string"},
@@ -344,6 +344,13 @@ Steps in detail:
    the defect rather than for another reason that disappeared between the runs (environment,
    timing, a dependency); that residual is covered by the failure-signature check (step 4,
    production deriver) and by the mutation in step 8, not by the polarity pair.
+   **Cycle rule (revision 4).** A closed item that is reopened starts a new fix cycle. The reopen is
+   recorded in the ledger as an entry with polarity `REOPEN` (the run that observed the recurrence on
+   the deployed target), and the deriver evaluates only the item's entries recorded after its LAST
+   `REOPEN` entry. Evidence of an earlier, already-consumed cycle therefore never closes the item again,
+   and an honest second cycle (new RED, fix, three GREEN) is judged on its own runs instead of being
+   refused because an old GREEN precedes the new RED (executed, section 13.4, cases `reopen_no_new` and
+   `second_cycle`). The register applies the same boundary in SQL (docs/04 §14.9 B1).
 8. **Mutation**: apply the revert of the fix commit to a scratch copy, rebuild, rerun in `RED_MODE=0`;
    the test must fail. A mutation that only deletes the string the test greps for is refused as a
    tautology.
@@ -775,7 +782,13 @@ mutation check (section 13.4). Revision 3 (second independent review, 2026-10-03
 `test_fingerprint`, the RED-before-GREEN order and the three-distinct-iterations rule after the
 reviewer showed that a RED-only typo'd test and three GREENs recorded before the RED both produced
 `PASS`; it was **executed** under the session scratchpad (`.../scratchpad/ev_after/`), and the
-revision 2 deriver was run on the new ledgers as the mutation check.
+revision 2 deriver was run on the new ledgers as the mutation check. Revision 4 (third independent
+review, 2026-10-03) adds the cycle rule of section 4.2 step 7: the reviewer showed that the deriver
+ignored reopen boundaries, so a reopened item with no new evidence still derived `PASS` while an
+honest second cycle derived `FAIL`, and that re-running a scenario case appended to the old ledger.
+Both were reproduced with the revision 3 recorder and deriver, then fixed and **executed** under the
+session scratchpad (`.../scratchpad/r3/ev_after/`), with the revision 3 deriver run on the revision 4
+ledgers as the mutation check (section 13.4).
 
 Limitations stated up front (11.4.6): shell and `jq` rather than the production implementation;
 `policy` anchor strength only; no secret redaction; no per-test parsing; no failure-signature check
@@ -853,13 +866,18 @@ cmd_verdict() { # verdict ITEM
   #            test_fingerprint (bytes of the test itself, section 3.1 rule 11).
   # red_before_green: every RED entry precedes every GREEN entry in the ledger (max RED seq < min GREEN seq).
   # fingerprints_differ: no GREEN fingerprint equals any RED fingerprint.
+  # cycle: a REOPEN entry (the recorded recurrence) ends the previous fix cycle; only entries recorded
+  #        after the item's LAST REOPEN entry count, so old evidence never closes a reopened item and an
+  #        honest second cycle is judged on its own runs (revision 4, section 13.4).
   local item=$1
   jq -s --arg item "$item" '
-    [.[]|select(.item==$item)] as $r
+    [.[]|select(.item==$item)] as $all
+    | ([$all[]|select(.polarity=="REOPEN")|.seq]|max // 0) as $cut
+    | [$all[]|select(.seq>$cut and .polarity!="REOPEN")] as $r
     | ($r|map(select(.polarity=="RED")))   as $red
     | ($r|map(select(.polarity=="GREEN"))) as $grn
     | ($red+$grn) as $both
-    | {item:$item,
+    | {item:$item, cycle_after_seq:$cut,
        red_ok:   (($red|length)>=1 and ($red|all(.exit_status>=1 and .exit_status<=125 and .verdict=="fail"))),
        green_ok: (($grn|length)>=3 and ($grn|map(.iteration)|unique|length)>=3
                   and ($grn|all(.exit_status==0 and .verdict=="pass"))),
@@ -900,7 +918,8 @@ thing about the RED run.
 #!/usr/bin/env bash
 # scenario.sh CASE : builds one ledger per case under ./case-<CASE>/ and prints the derived verdict
 set -euo pipefail
-here=$(cd "$(dirname "$0")" && pwd); case=$1; d=$here/case-$case; mkdir -p "$d"; cd "$d"
+here=$(cd "$(dirname "$0")" && pwd); case=$1; d=$here/case-$case
+rm -rf -- "${d:?}"; mkdir -p "$d"; cd "$d"                          # a re-run starts from an empty ledger
 export EV_LEDGER=$d/ledger.jsonl EV_ANCHOR=$d/anchor.jsonl EV_BLOBS=$d/blobs
 printf '#!/usr/bin/env bash\necho $(( 2 - 3 ))\n' > broken.sh   # defect: subtracts
 printf '#!/usr/bin/env bash\necho $(( 2 + 3 ))\n' > fixed.sh    # fix: adds
@@ -921,6 +940,7 @@ case $case in
                printf '#!/usr/bin/env bash\n[ "$("$l")" = 5 ]\n' > check.sh; chmod +x check.sh ;;  # exit 1, wrong reason
   green_dup_iter) iters=(1 1 1) ;;                                  # three GREEN entries, one iteration value
   green_first) : ;;                                                 # GREEN x3 recorded before the RED
+  reopen_no_new|second_cycle) : ;;                                  # a closed cycle, then a recurrence (below)
 esac
 red() { "$E" run ITEM-"$case" RED 1 shell_script "$red_ref" -- "${red_argv[@]}" >/dev/null
         [ -e check.sh.away ] && mv -f check.sh.away check.sh; [ -e check.sh.orig ] && mv -f check.sh.orig check.sh
@@ -928,12 +948,18 @@ red() { "$E" run ITEM-"$case" RED 1 shell_script "$red_ref" -- "${red_argv[@]}" 
 green() { cp fixed.sh adder.sh; chmod +x adder.sh                  # deploy the fixed artifact
           for i in "${iters[@]}"; do "$E" run ITEM-"$case" GREEN "$i" shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null; done; }
 if [ "$case" = green_first ]; then green; cp broken.sh adder.sh; chmod +x adder.sh; red; else red; green; fi
+if [ "$case" = reopen_no_new ] || [ "$case" = second_cycle ]; then    # the defect returns after the closure
+  printf '#!/usr/bin/env bash\necho $(( 2 * 3 ))\n' > broken2.sh; cp broken2.sh adder.sh; chmod +x adder.sh
+  "$E" run ITEM-"$case" REOPEN 1 shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null   # recurrence observed
+  if [ "$case" = second_cycle ]; then                                # honest cycle 2: new RED, fix, GREEN x3
+    "$E" run ITEM-"$case" RED 1 shell_script adder.sh -- ./check.sh ./adder.sh >/dev/null; green; fi
+fi
 "$E" anchor >/dev/null; "$E" verify >&2
 printf 'RED entry: '; jq -c 'select(.polarity=="RED")|{seq,exit_status,verdict,argv,target_ref,test_fingerprint}' "$EV_LEDGER"
 "$E" verdict ITEM-"$case" | jq -c .
 ```
 
-Run: `for c in good blind_red exit127 exit126 signal other_argv other_target dash_argv typo_red green_dup_iter green_first; do ./scenario.sh $c; done`
+Run: `for c in good blind_red exit127 exit126 signal other_argv other_target dash_argv typo_red green_dup_iter green_first reopen_no_new second_cycle; do ./scenario.sh $c; done`
 
 ### 13.2 Output of the golden-good case (EXECUTED, revision 3, `.../scratchpad/ev_after/case-good`)
 
@@ -1017,6 +1043,26 @@ Revision 3 cases (executed in `.../scratchpad/ev_after/`; the last column is the
 | `typo_red`: `check.sh` replaced by a typo'd copy (`$l` for `$1`) for the RED run only, argv unchanged | RED exit 1, `fail`, different `test_fingerprint` | `FAIL` (`same_test` false) | **`PASS`** |
 | `green_dup_iter`: three GREEN entries all with `iteration` 1 | GREEN iterations not distinct | `FAIL` (`green_ok` false) | **`PASS`** |
 | `green_first`: three GREEN on the fixed artifact, then the RED on the broken one | RED is `seq` 4 | `FAIL` (`red_before_green` false) | **`PASS`** |
+
+Revision 4 cases (executed in `.../scratchpad/r3/ev_after/`; the last column is the revision 3 deriver
+run on the same revision 4 ledgers, the mutation check for the cycle rule). Both cases first record the
+golden-good cycle (RED seq 1, GREEN seq 2 to 4), then deploy a new defect (`broken2.sh` computes
+`2 * 3`) and record the recurrence as a `REOPEN` entry (seq 5, exit 1). Before the edit the same two
+ledgers, built with the revision 3 recorder, gave revision 3 `PASS` and `FAIL` respectively
+(reproduced, `.../scratchpad/r3/ev_before/`). The eleven cases above were re-run with the revision 4
+recorder and deriver and gave the same verdicts (`good` PASS, the other ten FAIL, every one with
+`cycle_after_seq` 0).
+
+| Case | What differs | Revision 4 deriver | Revision 3 deriver |
+|---|---|---|---|
+| `reopen_no_new`: closed cycle, recurrence recorded, no new evidence | nothing after the `REOPEN` entry | `FAIL` (`cycle_after_seq` 5, `red_ok` false, `green_ok` false) | **`PASS`** |
+| `second_cycle`: closed cycle, recurrence, then a new RED on `broken2.sh` (seq 6) and three GREEN on the fixed artifact (seq 7 to 9) | an honest second cycle | `PASS` (`cycle_after_seq` 5, all six checks true) | **`FAIL`** (`red_before_green` false: the cycle-1 GREEN at seq 2 precedes the cycle-2 RED) |
+
+Re-run hygiene (defect found by the third review, reproduced): with the revision 3 `scenario.sh`,
+running `./scenario.sh good` a second time appended to the first ledger (`OK chain=8 entries`, third
+run 12 entries) and the golden-good case derived `FAIL` (`red_before_green` false). Revision 4
+deletes the case directory before recreating it (`rm -rf -- "${d:?}"`); three consecutive runs of
+`good` each gave `OK chain=4 entries` and `PASS`.
 
 The reviewer's exact reproduction (revision 1 recorder and deriver, RED command `./no_such_check.sh`,
 exit 127) also printed `"verdict":"PASS"` (executed, `/tmp/evpoc1`).

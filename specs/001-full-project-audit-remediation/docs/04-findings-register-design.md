@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: independent-review defects fixed, DDL v2, §14.7) |
+| Status | draft (revision 4: third independent review, DDL v3, §14.9: fix-cycle boundary, legacy exemption ends at reopen, raise-only defect layer, INSERT OR REPLACE refused, every insert reachability-checked, integrity and foreign-key checks in the gate; revision 3: second review, §14.8; revision 2: first review, DDL v2, §14.7) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Spec requirements covered | FR-001, FR-002, FR-003, FR-004, FR-007, SC-001 (supports FR-008, FR-019, FR-020, FR-022) |
 | Constitution anchors | §11.4.15, §11.4.16, §11.4.33, §11.4.54, §11.4.65, §11.4.74, §11.4.93, §11.4.95, §11.4.106, §11.4.115(F), §11.4.146(D3), §11.4.148, §11.4.202, §11.4.214, §11.4.226, §11.4.240, §11.4.10, §11.4.113 |
-| Executed evidence | Section 14 (scratch SQLite files under the session scratchpad and, for revision 2, `/tmp/regfix/`; nothing in the repository was modified by the tests) |
+| Executed evidence | Section 14 (scratch SQLite files under the session scratchpad, for revision 2 also `/tmp/regfix/`, for revision 4 `.../scratchpad/r3/`; nothing in the repository was modified by the tests) |
 
 ## Table of contents
 
@@ -17,7 +17,7 @@
 2. What already exists (reuse inventory) and what is missing
 3. Architecture and decision records
 4. Data model: ER diagram and table catalogue
-5. Complete DDL (extension layer, v2)
+5. Complete DDL (extension layer, v3)
 6. Constraint map: how each mandate is enforced mechanically
 7. Status lifecycle and closure custody
 8. Recurrence: links, not mints
@@ -151,7 +151,7 @@ Of 1778 legacy files, 1495 carry a closed-class status (`resolved` 704, `fixed` 
 1. Import all as non-terminal (`Ready for testing`) and re-prove every one: ~1495 items re-proved before anything counts as closed; correct but very large and most are UX items whose screens no longer exist.
 2. Import as terminal with `custody_basis='legacy_import'`, `reverify_required=1`: preserves history and nothing is dropped, but "terminal" is not trusted.
 3. Drop (forbidden by FR-002).
-Chosen: option 2 as the mechanical default, with the re-verification queue (`v_reverify_queue`) ordered by severity as audit input. The audit (document 02) confirms or reopens each; confirmation adds machine evidence and flips `custody_basis` to `machine_evidence` and `reverify_required` to 0. This is flagged as an OPEN DECISION for the owner (§15.3) because it determines how many items remain "unverified closed" at feature completion; the spec forbids completion while any finding is open, but does not say whether a legacy closure that cannot be re-proven may be accepted as an exception. Until decided, the feature completion gate in §13 counts `reverify_required=1` rows as not done.
+Chosen: option 2 as the mechanical default, with the re-verification queue (`v_reverify_queue`) ordered by severity as audit input. The audit (document 02) confirms or reopens each; confirmation adds machine evidence and flips `custody_basis` to `machine_evidence` and `reverify_required` to 0. This is flagged as an OPEN DECISION for the owner (§15.3) because it determines how many items remain "unverified closed" at feature completion; the spec forbids completion while any finding is open, but does not say whether a legacy closure that cannot be re-proven may be accepted as an exception. Until decided, the feature completion gate in §13 counts `reverify_required=1` rows as not done; the mechanism is the `reg_gate_checks` row `('v_reverify_queue','view_not_done')`, which the completion gate reads (§12.3, §13.3). A legacy item that is reopened leaves the queue and becomes an ordinary item whose next closure needs a full chain recorded after the reopen (§5 limitation 5, §14.9 B2).
 `wontfix` (282 files) is NOT a permitted closure under FR-008 (closure without fix requires evidence of false positive or structural impossibility). They import as `Queued` with `legacy_status='wontfix'`.
 
 ---
@@ -185,14 +185,14 @@ erDiagram
   items }o--|| reg_ids : "logical atm_id (no FK; DR-2)"
 ```
 
-Table catalogue (25 `reg_*` tables, 24 views, 23 triggers; counts measured after applying the v2 DDL with the second-round fixes to a fresh engine DB, §14.8):
+Table catalogue (25 `reg_*` tables, 26 views, 33 triggers; counts measured after applying the v3 DDL to a fresh engine DB, §14.9):
 
 | Table | Purpose | Key constraints |
 |---|---|---|
-| `reg_meta` | extension schema version | `ext_schema_version=2`, `engine_schema_required=7` |
+| `reg_meta` | extension schema version | `ext_schema_version=3`, `engine_schema_required=7` |
 | `reg_ids` | identity anchor (ATM-NNN), append-only | generated id, UNIQUE, UPDATE/DELETE aborted |
 | `reg_components` | applications and shared modules (spec "Application") | lowercase snake/kebab id (§11.4.29), `kind` closed set |
-| `reg_item_ext` | per-item category, defect layer, severity, custody basis, legacy status | closed sets for category/layer/severity/custody; `legacy_import` only at INSERT, only for an id minted with `mint_basis='import'` that never had an `items` or status-log row (`trg_item_ext_legacy_insert`); no later change TO `legacy_import`, `reverify_required` only 1 -> 0, `atm_id` immutable (`trg_item_ext_custody_update`) |
+| `reg_item_ext` | per-item category, defect layer, severity, custody basis, legacy status | closed sets for category/layer/severity/custody; `legacy_import` only at INSERT, only for an id minted with `mint_basis='import'` that never had an `items` or status-log row (`trg_item_ext_legacy_insert`); no later change TO `legacy_import`, `reverify_required` only 1 -> 0, `atm_id` immutable, `defect_layer` can only be raised (`trg_item_ext_custody_update`); never deleted or replaced (`reg_item_ext_no_delete`, `reg_item_ext_no_replace`); a legacy row is converted to `machine_evidence` with `reverify_required=0` when the item is reopened (`trg_status_log_reopen_legacy`) |
 | `reg_sources` | one row per scanned source (file, directory, bank, database) | `kind` closed set, UNIQUE locator |
 | `reg_source_entries` | one row per entry in a source, with raw id/status/severity and content hash | UNIQUE `(source_id, locator)`, sha256 length 64 |
 | `reg_source_map` | exactly one mapping per entry to an ATM id | PK = `entry_id` (an entry maps once), relation closed set, one severity-governing row per item (partial UNIQUE index) |
@@ -200,42 +200,47 @@ Table catalogue (25 `reg_*` tables, 24 views, 23 triggers; counts measured after
 | `reg_findings` | finding with location, category, severity, detector, fingerprint, evidence | canonical id `finding_id` = `FND-NNNN`, generated from `finding_seq` (monotone, never reused); `unit_alias` = file-local `F-<unit>-NNN`, UNIQUE, must start with `F-<component_id>-` and end in 3+ digits; both immutable; UNIQUE `(fingerprint, run_id)`; deferred FK to evidence |
 | `reg_evidence` | machine-produced evidence record | class vs fingerprint, polarity/exit-code CHECKs (a `red_run` and a `mutation_run` need exit 1..125: 126, 127 and signal exits are harness errors, not a test failure), append-only |
 | `reg_test_types` | seeded vocabulary of the 16 test types used for coverage | seeded rows |
-| `reg_test_runs` | each repetition of each test (RED/GREEN/MUTATION), with verdict `PASS|FAIL|BLOCKED` (the test's own outcome) | UNIQUE `(group_id, rep_index)`; BLOCKED requires reason; RED rows are `FAIL` or `BLOCKED`, GREEN rows always `PASS` (as in `ev/1`); append-only |
+| `reg_test_runs` | each repetition of each test (RED/GREEN/MUTATION), with verdict `PASS|FAIL|BLOCKED` (the test's own outcome) | UNIQUE `(group_id, rep_index)`; BLOCKED requires a reason from the closed `ev/1` `blocked_reason` set (its evidence row carries the failing probe's non-zero exit status); RED rows are `FAIL` or `BLOCKED`, GREEN rows always `PASS` (as in `ev/1`); append-only |
 | `reg_reviews` | independent review verdicts | `lower(trim(author)) <> lower(trim(reviewer))`; append-only |
 | `reg_recurrence_links` | recurrence decisions | SAME_DEFECT implies no new id; UNDECIDED implies new id with link |
 | `reg_status_transitions` | allowed status graph | seeded 21 edges |
-| `reg_status_log` | append-only status history written by triggers | UPDATE/DELETE aborted; an INSERT must record the current `items` status, continue the last logged status and be a real change (`reg_status_log_insert_guard`) |
+| `reg_status_log` | append-only status history written by triggers; each row carries the ledger high-water marks `ev_hwm`, `run_hwm`, `rev_hwm`, so the last `Reopened` row marks where the current fix cycle starts (`v_cycle_start`) | UPDATE/DELETE/REPLACE aborted; an INSERT must record the current `items` status, continue the last logged status, be a real change and carry the current maxima (`reg_status_log_insert_guard`) |
 | `reg_closure_decisions` | imported `closure-check` verdicts consumed by custody triggers | an ACCEPTED row requires its evidence to be a `custody_decision` row of the same item and a complete chain (`trg_closure_decision_guard`); no DELETE; the only UPDATE allowed is the single consumption |
-| `reg_gate_checks` | registry of the views that must be empty and the triggers that must exist | read by the gate; `v_gate_missing_objects` lists registered objects absent from the schema |
+| `reg_gate_checks` | registry of the views that must be empty (`view_empty`), the views whose rows are open work (`view_not_done`: `v_reverify_queue`) and the triggers that must exist | read by the gate; `v_gate_missing_objects` lists registered objects absent from the schema |
 | `reg_trackers` | configured external trackers | lowercase id |
 | `reg_tracker_sync_log` | every sync attempt per tracker and item | SKIPPED needs reason; SYNCED needs exit 0 + remote ref + evidence |
 | `reg_export_runs`, `reg_export_files` | export runs, produced files and their hashes | verdict closed set |
 | `reg_cycle`, `reg_discovery`, `reg_escape_baseline` | escape-ratchet records (§11.4.238 extension, designed in docs/12 §12) | `reg_discovery.finding_id` FK to `reg_findings`; closed channel set; `recorded_by` differs from `producer` (case-insensitive); `none` needs a 20-non-blank-character justification |
 
-Views (24): `v_open_items`, `v_closed_items`, `v_issues_summary`, `v_fixed_summary`, `v_unmapped_entries`, `v_reconciliation`, `v_legacy_id_collisions`, `v_reopen_counts`, `v_findings_without_item`, `v_custody_violations`, `v_stale_tracker_sync`, `v_reverify_queue`, `v_recurrence_violations`; custody chain: `v_red_runs`, `v_green_groups`, `v_closure_chain`, `v_closure_ready`, `v_live_decisions`; identity and gate: `v_duplicate_item_ids`, `v_items_without_mint`, `v_ids_without_item`, `v_legacy_import_unbacked`, `v_gate_missing_objects`; escape ratchet: `v_escapes`.
+Views (26): `v_open_items`, `v_closed_items`, `v_issues_summary`, `v_fixed_summary`, `v_unmapped_entries`, `v_reconciliation`, `v_legacy_id_collisions`, `v_reopen_counts`, `v_findings_without_item`, `v_custody_violations`, `v_stale_tracker_sync`, `v_reverify_queue`, `v_recurrence_violations`; custody chain: `v_cycle_start`, `v_red_runs`, `v_green_groups`, `v_closure_chain`, `v_closure_ready`, `v_live_decisions`; identity and gate: `v_duplicate_item_ids`, `v_items_without_mint`, `v_ids_without_item`, `v_legacy_import_unbacked`, `v_illegal_logged_edges`, `v_gate_missing_objects`; escape ratchet: `v_escapes`.
 
-Triggers (23): append-only guards `reg_ids_no_update`, `reg_ids_no_delete`, `reg_evidence_no_update`, `reg_evidence_no_delete`, `reg_test_runs_no_update`, `reg_test_runs_no_delete`, `reg_reviews_no_update`, `reg_reviews_no_delete`, `reg_status_log_no_update`, `reg_status_log_no_delete`, `reg_findings_id_no_update`, `reg_closure_decisions_no_delete`, `reg_closure_decisions_consume_only`; custody and identity `reg_status_log_insert_guard`, `trg_item_ext_legacy_insert`, `trg_item_ext_custody_update`, `trg_closure_decision_guard`, `trg_items_require_mint`, `trg_items_identity_update`, `trg_items_transition`, `trg_items_insert_guard`, `trg_items_status_log`, `trg_items_insert_log`. All 23 are registered in `reg_gate_checks` as `trigger_present`.
+Triggers (33): append-only guards `reg_ids_no_update`, `reg_ids_no_delete`, `reg_evidence_no_update`, `reg_evidence_no_delete`, `reg_test_runs_no_update`, `reg_test_runs_no_delete`, `reg_reviews_no_update`, `reg_reviews_no_delete`, `reg_status_log_no_update`, `reg_status_log_no_delete`, `reg_findings_id_no_update`, `reg_closure_decisions_no_delete`, `reg_closure_decisions_consume_only`, `reg_item_ext_no_delete`; INSERT OR REPLACE guards (a REPLACE deletes the old row without firing DELETE triggers) `reg_ids_no_replace`, `reg_item_ext_no_replace`, `reg_findings_no_replace`, `reg_evidence_no_replace`, `reg_test_runs_no_replace`, `reg_reviews_no_replace`, `reg_status_log_no_replace`, `reg_closure_decisions_no_replace`; custody and identity `reg_status_log_insert_guard`, `trg_status_log_reopen_legacy`, `trg_item_ext_legacy_insert`, `trg_item_ext_custody_update`, `trg_closure_decision_guard`, `trg_items_require_mint`, `trg_items_identity_update`, `trg_items_transition`, `trg_items_insert_guard`, `trg_items_status_log`, `trg_items_insert_log`. All 33 are registered in `reg_gate_checks` as `trigger_present` (measured: every trigger in `sqlite_master` has a registry row).
 
 The engine's `test_diary` table and `test_diary_summary` view (constitution §11.4.149 per-item testing diary: `tested_by` in `User|Operator|AI-agent|HelixQA`, PASS requires evidence) are reused as the human-readable diary; `reg_test_runs` is the machine-repetition ledger required by SC-003 (3 identical runs). They are deliberately separate: the diary is per session, the ledger per repetition.
 
 ---
 
-## 5. Complete DDL (extension layer, v2)
+## 5. Complete DDL (extension layer, v3)
 
-The file is applied after the engine has created its schema (`workable-items validate --db docs/workable_items.db` bootstraps an empty DB; executed). It is idempotent (applied twice to the same DB without error; executed). Proposed repository path: `scripts/register/register_ext.sql`. This exact text (extracted from this document with `awk`) was executed against a fresh engine database: 25 `reg_*` tables, 24 views, 23 triggers (§14.8; the first v2 text gave 22, 22 and 16, §14.7).
+The file is applied after the engine has created its schema (`workable-items validate --db docs/workable_items.db` bootstraps an empty DB; executed). It is idempotent (applied twice to the same DB without error; executed). Proposed repository path: `scripts/register/register_ext.sql`. This exact text (extracted from this document with `awk`) was executed against a fresh engine database: 25 `reg_*` tables, 26 views, 33 triggers (§14.9; the second-round v2 text gave 25, 24 and 23, §14.8; the first v2 text gave 22, 22 and 16, §14.7).
 
 v2 replaces the v1 text after an independent review ran v1 and found real defects: a second `items` row for an existing id was accepted (raw insert into Fixed while the id was in Issues, and a second representation row), `add --id ATM-050` without a minted `reg_ids` row was accepted, a hand-inserted ACCEPTED decision whose evidence row was not a `custody_decision` (and had no RED/GREEN/mutation/review behind it) let `close` succeed, the finding id disagreed between the file schema and the DB, and `v_recurrence_violations` trusted the self-reported `reopened` flag. Each defect was reproduced on v1 before the fix and re-tested on v2 (§14.7). No v1 database exists outside scratch files, so v2 is applied to fresh databases only; it is not an in-place upgrade of a v1 file (`reg_findings` changed shape, and `INSERT OR IGNORE` keeps an old `ext_schema_version`).
 
+v3 (`ext_schema_version=3`) follows a third independent review that ran the second-round text and found: a reopened item closed again on the evidence of its previous cycle (new decision, no new RED, GREEN, mutation or review); a reopened legacy item closed with no chain at all because its `legacy_import` exemption survived the reopen, and `v_reverify_queue` was not in the gate registry; `defect_layer` could be lowered (UPDATE, or DELETE plus re-INSERT of the extension row) to weaken the evidence-class floor; `INSERT OR REPLACE` rewrote rows of every append-only table, because SQLite does not fire DELETE triggers for the rows a REPLACE removes; a raw `DELETE` of a closed item followed by an INSERT as `Queued` logged an edge that is not in the graph; and foreign keys and CHECK constraints are not enforced on a connection that has not enabled them. Each was reproduced on the second-round text and re-tested on v3 (§14.9). `reg_status_log` gained three columns, so v3 is again applied to fresh databases only.
+
 ```sql
--- register_ext.sql : Catalogizer problem-register extension layer, v2 (v1 + review fixes 2026-10-03,
---                    second review round 2026-10-03: §14.8)
+-- register_ext.sql : Catalogizer problem-register extension layer, v3 (v1 + review fixes 2026-10-03,
+--                    second review round 2026-10-03: §14.8, third review round 2026-10-03: §14.9)
 -- Applies ON TOP of the constitution workable-items engine schema (meta.schema_version = 7).
+-- PRAGMA foreign_keys is per connection and OFF by default in the sqlite3 shell: this line binds only
+-- the connection that applies this file. Every writer MUST open with foreign keys ON (the engine does:
+-- db.go:44 `_foreign_keys=on`), and the gate runs PRAGMA foreign_key_check and integrity_check (§12.3).
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS reg_meta (
   key TEXT PRIMARY KEY, value TEXT NOT NULL,
   last_modified TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')));
-INSERT OR IGNORE INTO reg_meta(key,value) VALUES ('ext_schema_version','2'),('engine_schema_required','7');
+INSERT OR IGNORE INTO reg_meta(key,value) VALUES ('ext_schema_version','3'),('engine_schema_required','7');
 
 -- identity anchor: one row per ATM id, monotone, never reused (spec FR-001, §11.4.54)
 CREATE TABLE IF NOT EXISTS reg_ids (
@@ -249,6 +254,11 @@ CREATE TRIGGER IF NOT EXISTS reg_ids_no_update BEFORE UPDATE ON reg_ids
 BEGIN SELECT RAISE(ABORT,'reg_ids is append-only (§11.4.54)'); END;
 CREATE TRIGGER IF NOT EXISTS reg_ids_no_delete BEFORE DELETE ON reg_ids
 BEGIN SELECT RAISE(ABORT,'reg_ids is append-only (§11.4.54)'); END;
+-- INSERT OR REPLACE deletes the conflicting row WITHOUT firing DELETE triggers (recursive_triggers is off
+-- by default), so every append-only table also refuses an INSERT whose key already exists (§14.9 I2).
+CREATE TRIGGER IF NOT EXISTS reg_ids_no_replace BEFORE INSERT ON reg_ids
+WHEN EXISTS (SELECT 1 FROM reg_ids WHERE seq=NEW.seq)
+BEGIN SELECT RAISE(ABORT,'reg_ids is append-only: key exists (INSERT OR REPLACE refused)'); END;
 
 CREATE TABLE IF NOT EXISTS reg_components (
   component_id TEXT PRIMARY KEY CHECK (component_id = lower(component_id) AND component_id NOT GLOB '*[^a-z0-9_-]*'),
@@ -269,7 +279,13 @@ CREATE TABLE IF NOT EXISTS reg_item_ext (
 -- legacy_import is an import-time fact, never a later edit (§14.8 I-1): it may be written only at
 -- INSERT, for an id minted with mint_basis='import' that has never had an items row or a status-log
 -- row; afterwards custody_basis can never change TO legacy_import, reverify_required can only be
--- cleared (1 -> 0), and atm_id never changes.
+-- cleared (1 -> 0), atm_id never changes, defect_layer can only be raised (it sets the evidence-class
+-- floor, §14.9 I1), and an extension row can never be deleted or replaced.
+CREATE TRIGGER IF NOT EXISTS reg_item_ext_no_delete BEFORE DELETE ON reg_item_ext
+BEGIN SELECT RAISE(ABORT,'reg_item_ext rows are never deleted (custody floor, §14.9 I1)'); END;
+CREATE TRIGGER IF NOT EXISTS reg_item_ext_no_replace BEFORE INSERT ON reg_item_ext
+WHEN EXISTS (SELECT 1 FROM reg_item_ext WHERE atm_id=NEW.atm_id)
+BEGIN SELECT RAISE(ABORT,'reg_item_ext: row exists (INSERT OR REPLACE refused)'); END;
 CREATE TRIGGER IF NOT EXISTS trg_item_ext_legacy_insert BEFORE INSERT ON reg_item_ext
 WHEN NEW.custody_basis='legacy_import'
 BEGIN
@@ -279,9 +295,12 @@ BEGIN
    WHERE EXISTS (SELECT 1 FROM items WHERE atm_id=NEW.atm_id)
       OR EXISTS (SELECT 1 FROM reg_status_log WHERE atm_id=NEW.atm_id);
 END;
-CREATE TRIGGER IF NOT EXISTS trg_item_ext_custody_update BEFORE UPDATE OF atm_id, custody_basis, reverify_required ON reg_item_ext
+CREATE TRIGGER IF NOT EXISTS trg_item_ext_custody_update BEFORE UPDATE OF atm_id, custody_basis, reverify_required, defect_layer ON reg_item_ext
 BEGIN
   SELECT RAISE(ABORT,'custody: reg_item_ext.atm_id is immutable') WHERE NEW.atm_id IS NOT OLD.atm_id;
+  SELECT RAISE(ABORT,'custody: defect_layer can only be raised (source < artifact < runtime), never lowered')
+   WHERE (CASE NEW.defect_layer WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
+       < (CASE OLD.defect_layer WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END);
   SELECT RAISE(ABORT,'custody: custody_basis can never be changed TO legacy_import (import-time only)')
    WHERE NEW.custody_basis='legacy_import' AND OLD.custody_basis IS NOT 'legacy_import';
   SELECT RAISE(ABORT,'custody: reverify_required can only be cleared (1 -> 0), never set after insert')
@@ -337,6 +356,10 @@ CREATE TABLE IF NOT EXISTS reg_findings (
          AND substr(unit_alias, length(component_id) + 4) NOT GLOB '*[^0-9]*'));
 CREATE TRIGGER IF NOT EXISTS reg_findings_id_no_update BEFORE UPDATE OF finding_seq, unit_alias ON reg_findings
 BEGIN SELECT RAISE(ABORT,'reg_findings ids are immutable (§11.4.54)'); END;
+CREATE TRIGGER IF NOT EXISTS reg_findings_no_replace BEFORE INSERT ON reg_findings
+WHEN EXISTS (SELECT 1 FROM reg_findings WHERE finding_seq=NEW.finding_seq OR unit_alias=NEW.unit_alias
+             OR (fingerprint=NEW.fingerprint AND run_id=NEW.run_id))
+BEGIN SELECT RAISE(ABORT,'reg_findings: key exists (INSERT OR REPLACE refused, §11.4.54)'); END;
 CREATE INDEX IF NOT EXISTS idx_findings_atm ON reg_findings(atm_id);
 
 CREATE TABLE IF NOT EXISTS reg_evidence (
@@ -361,6 +384,9 @@ CREATE TRIGGER IF NOT EXISTS reg_evidence_no_update BEFORE UPDATE ON reg_evidenc
 BEGIN SELECT RAISE(ABORT,'reg_evidence is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS reg_evidence_no_delete BEFORE DELETE ON reg_evidence
 BEGIN SELECT RAISE(ABORT,'reg_evidence is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reg_evidence_no_replace BEFORE INSERT ON reg_evidence
+WHEN EXISTS (SELECT 1 FROM reg_evidence WHERE evidence_id=NEW.evidence_id)
+BEGIN SELECT RAISE(ABORT,'reg_evidence is append-only: key exists (INSERT OR REPLACE refused)'); END;
 
 CREATE TABLE IF NOT EXISTS reg_test_types (type_code TEXT PRIMARY KEY, label TEXT NOT NULL);
 INSERT OR IGNORE INTO reg_test_types VALUES ('unit','Unit'),('integration','Integration'),('e2e','End to end'),('full_automation','Full automation'),('security','Security'),('ddos','DDoS'),('scaling','Scaling'),('chaos','Chaos'),('stress','Stress'),('performance','Performance'),('benchmark','Benchmarking'),('ui','UI'),('ux','UX'),('challenge','Challenge'),('helixqa','HelixQA session'),('contract','Contract');
@@ -372,7 +398,13 @@ CREATE TABLE IF NOT EXISTS reg_test_runs (
   group_id TEXT NOT NULL, rep_index INTEGER NOT NULL CHECK (rep_index>=1),
   polarity TEXT NOT NULL CHECK (polarity IN ('RED','GREEN','MUTATION')),
   verdict TEXT NOT NULL CHECK (verdict IN ('PASS','FAIL','BLOCKED')),
-  blocked_reason TEXT, target_fingerprint TEXT NOT NULL CHECK (length(target_fingerprint)>0),
+  -- closed set = ev/1 blocked_reason enum (contracts/evidence-record.schema.json); for a BLOCKED row the
+  -- test command was not run and the evidence row carries the failing precondition probe's exit status
+  -- (non-zero) as a kind='log' row, never a red_run or green_run (§14.9 M8)
+  blocked_reason TEXT CHECK (blocked_reason IN ('service_unreachable','credential_absent','credential_rejected',
+    'device_absent','device_wrong_identity','device_unauthorised','geo_restricted','quota_exhausted',
+    'licence_absent','host_resource_unavailable')),
+  target_fingerprint TEXT NOT NULL CHECK (length(target_fingerprint)>0),
   container_image_digest TEXT, evidence_id INTEGER NOT NULL REFERENCES reg_evidence(evidence_id),
   started_at TEXT NOT NULL, UNIQUE (group_id, rep_index),
   CHECK ((verdict='BLOCKED') = (blocked_reason IS NOT NULL)),
@@ -382,6 +414,9 @@ CREATE TRIGGER IF NOT EXISTS reg_test_runs_no_update BEFORE UPDATE ON reg_test_r
 BEGIN SELECT RAISE(ABORT,'reg_test_runs is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS reg_test_runs_no_delete BEFORE DELETE ON reg_test_runs
 BEGIN SELECT RAISE(ABORT,'reg_test_runs is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reg_test_runs_no_replace BEFORE INSERT ON reg_test_runs
+WHEN EXISTS (SELECT 1 FROM reg_test_runs WHERE run_row=NEW.run_row OR (group_id=NEW.group_id AND rep_index=NEW.rep_index))
+BEGIN SELECT RAISE(ABORT,'reg_test_runs is append-only: key exists (INSERT OR REPLACE refused)'); END;
 
 CREATE TABLE IF NOT EXISTS reg_reviews (
   review_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -393,6 +428,9 @@ CREATE TRIGGER IF NOT EXISTS reg_reviews_no_update BEFORE UPDATE ON reg_reviews
 BEGIN SELECT RAISE(ABORT,'reg_reviews is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS reg_reviews_no_delete BEFORE DELETE ON reg_reviews
 BEGIN SELECT RAISE(ABORT,'reg_reviews is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reg_reviews_no_replace BEFORE INSERT ON reg_reviews
+WHEN EXISTS (SELECT 1 FROM reg_reviews WHERE review_id=NEW.review_id)
+BEGIN SELECT RAISE(ABORT,'reg_reviews is append-only: key exists (INSERT OR REPLACE refused)'); END;
 
 CREATE TABLE IF NOT EXISTS reg_recurrence_links (
   link_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -419,16 +457,26 @@ INSERT OR IGNORE INTO reg_status_transitions VALUES
  ('Fixed (→ Fixed.md)','Reopened'),('Implemented (→ Fixed.md)','Reopened'),('Completed (→ Fixed.md)','Reopened'),('Obsolete (→ Fixed.md)','Reopened'),
  ('Reopened','In progress'),('Reopened','Operator-blocked'),('Reopened','Obsolete (→ Fixed.md)');
 
+-- ev_hwm, run_hwm, rev_hwm: the highest reg_evidence / reg_test_runs / reg_reviews id that existed when the
+-- row was written. The ids are AUTOINCREMENT and those ledgers are append-only, so "id > hwm of the item's
+-- last Reopened row" means "recorded after the reopen": that is the cycle boundary the custody views use
+-- (§14.9 B1). SQLite cannot assign NEW columns in a BEFORE trigger, so the writer supplies the values and
+-- the guard below refuses any other value.
 CREATE TABLE IF NOT EXISTS reg_status_log (
   log_id INTEGER PRIMARY KEY AUTOINCREMENT, atm_id TEXT NOT NULL, from_status TEXT, to_status TEXT NOT NULL,
-  changed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')), session_actor TEXT);
+  changed_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')), session_actor TEXT,
+  ev_hwm INTEGER NOT NULL DEFAULT 0, run_hwm INTEGER NOT NULL DEFAULT 0, rev_hwm INTEGER NOT NULL DEFAULT 0);
 CREATE TRIGGER IF NOT EXISTS reg_status_log_no_update BEFORE UPDATE ON reg_status_log
 BEGIN SELECT RAISE(ABORT,'reg_status_log is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS reg_status_log_no_delete BEFORE DELETE ON reg_status_log
 BEGIN SELECT RAISE(ABORT,'reg_status_log is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reg_status_log_no_replace BEFORE INSERT ON reg_status_log
+WHEN EXISTS (SELECT 1 FROM reg_status_log WHERE log_id=NEW.log_id)
+BEGIN SELECT RAISE(ABORT,'reg_status_log is append-only: key exists (INSERT OR REPLACE refused)'); END;
 -- the log is trusted by trg_items_insert_guard, so a raw INSERT must not be able to forge it (§14.8):
 -- a row is legal only when it records the CURRENT items status, continues the last logged status,
--- and is a real change (the items triggers below are the only writers that satisfy all three).
+-- is a real change, and carries the current ledger high-water marks (the items triggers below are the
+-- only writers that satisfy all four).
 CREATE TRIGGER IF NOT EXISTS reg_status_log_insert_guard BEFORE INSERT ON reg_status_log
 BEGIN
   SELECT RAISE(ABORT,'reg_status_log: to_status must equal the current items status of the id')
@@ -437,7 +485,26 @@ BEGIN
    WHERE NEW.from_status IS NEW.to_status
       OR (EXISTS (SELECT 1 FROM reg_status_log WHERE atm_id=NEW.atm_id)
           AND NEW.from_status IS NOT (SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1));
+  SELECT RAISE(ABORT,'reg_status_log: ev_hwm/run_hwm/rev_hwm must equal the current ledger maxima (cycle boundary)')
+   WHERE NEW.ev_hwm  IS NOT (SELECT IFNULL(max(evidence_id),0) FROM reg_evidence)
+      OR NEW.run_hwm IS NOT (SELECT IFNULL(max(run_row),0) FROM reg_test_runs)
+      OR NEW.rev_hwm IS NOT (SELECT IFNULL(max(review_id),0) FROM reg_reviews);
 END;
+-- a reopened legacy item is no longer "imported closed, awaiting re-verification": the reopen is the
+-- re-verification outcome. It becomes an ordinary machine-evidence item, so its next closure needs a
+-- full chain recorded after the reopen (§14.9 B2).
+CREATE TRIGGER IF NOT EXISTS trg_status_log_reopen_legacy AFTER INSERT ON reg_status_log
+WHEN NEW.to_status='Reopened'
+BEGIN
+  UPDATE reg_item_ext SET custody_basis='machine_evidence', reverify_required=0
+   WHERE atm_id=NEW.atm_id AND custody_basis='legacy_import';
+END;
+-- start of the item's current fix cycle: its last Reopened log row (0 when never reopened)
+CREATE VIEW IF NOT EXISTS v_cycle_start AS
+  SELECT r.atm_id, IFNULL(l.log_id,0) AS log_id, IFNULL(l.ev_hwm,0) AS ev_hwm,
+         IFNULL(l.run_hwm,0) AS run_hwm, IFNULL(l.rev_hwm,0) AS rev_hwm
+  FROM reg_ids r LEFT JOIN reg_status_log l
+    ON l.log_id = (SELECT max(log_id) FROM reg_status_log WHERE atm_id=r.atm_id AND to_status='Reopened');
 
 CREATE TABLE IF NOT EXISTS reg_closure_decisions (
   decision_id INTEGER PRIMARY KEY AUTOINCREMENT, atm_id TEXT NOT NULL REFERENCES reg_ids(atm_id),
@@ -447,6 +514,9 @@ CREATE TABLE IF NOT EXISTS reg_closure_decisions (
   decided_at TEXT NOT NULL, consumed_at TEXT);
 CREATE TRIGGER IF NOT EXISTS reg_closure_decisions_no_delete BEFORE DELETE ON reg_closure_decisions
 BEGIN SELECT RAISE(ABORT,'reg_closure_decisions is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reg_closure_decisions_no_replace BEFORE INSERT ON reg_closure_decisions
+WHEN EXISTS (SELECT 1 FROM reg_closure_decisions WHERE decision_id=NEW.decision_id)
+BEGIN SELECT RAISE(ABORT,'reg_closure_decisions: key exists (INSERT OR REPLACE refused; a consumed decision cannot be revived)'); END;
 CREATE TRIGGER IF NOT EXISTS reg_closure_decisions_consume_only BEFORE UPDATE ON reg_closure_decisions
 WHEN NOT (OLD.consumed_at IS NULL AND NEW.consumed_at IS NOT NULL AND NEW.decision_id=OLD.decision_id
           AND NEW.atm_id=OLD.atm_id AND NEW.to_status=OLD.to_status AND NEW.decision=OLD.decision
@@ -456,12 +526,17 @@ BEGIN SELECT RAISE(ABORT,'reg_closure_decisions: only a single consumption (cons
 -- ---------- custody chain views (consumed by the triggers below and by the gate) ----------
 -- class rank: runtime 3 > artifact 2 > source 1; an evidence row satisfies an item only when its
 -- class rank >= the rank of the item's defect_layer (§11.4.226 floor).
+-- cycle rule (§14.9 B1): every test run, evidence row and review counted below was recorded AFTER the
+-- item's last Reopened log row (id > the high-water mark stored on that row, v_cycle_start); evidence
+-- from an earlier, already-consumed fix cycle never closes the item again.
 CREATE VIEW IF NOT EXISTS v_red_runs AS            -- genuine RED: test FAILED (exit 1..125) on the pre-fix artifact
   SELECT t.atm_id, t.test_id, t.target_fingerprint AS fp, e.produced_by
   FROM reg_test_runs t
   JOIN reg_evidence e ON e.evidence_id=t.evidence_id AND e.atm_id=t.atm_id
   JOIN reg_item_ext x ON x.atm_id=t.atm_id
+  JOIN v_cycle_start k ON k.atm_id=t.atm_id
   WHERE t.polarity='RED' AND t.verdict='FAIL' AND e.kind='red_run' AND e.polarity='RED'
+    AND t.run_row > k.run_hwm AND e.evidence_id > k.ev_hwm
     AND e.exit_code BETWEEN 1 AND 125 AND e.precondition_provenance='observed'
     AND e.target_fingerprint=t.target_fingerprint
     AND (CASE e.evidence_class WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
@@ -472,10 +547,12 @@ CREATE VIEW IF NOT EXISTS v_green_groups AS        -- >=3 repetitions, all PASS,
   FROM reg_test_runs t
   JOIN reg_evidence e ON e.evidence_id=t.evidence_id AND e.atm_id=t.atm_id
   JOIN reg_item_ext x ON x.atm_id=t.atm_id
-  WHERE t.polarity='GREEN'
+  JOIN v_cycle_start k ON k.atm_id=t.atm_id
+  WHERE t.polarity='GREEN' AND t.run_row > k.run_hwm
   GROUP BY t.atm_id, t.test_id, t.group_id
   HAVING count(DISTINCT t.rep_index) >= 3 AND count(DISTINCT t.target_fingerprint) = 1
      AND min(t.verdict='PASS' AND e.kind='green_run' AND e.exit_code=0 AND e.target_fingerprint=t.target_fingerprint
+             AND e.evidence_id > k.ev_hwm
              AND (CASE e.evidence_class WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
                  >= (CASE x.defect_layer WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)) = 1;
 CREATE VIEW IF NOT EXISTS v_closure_chain AS       -- one row per extended item, one flag per custody link
@@ -486,8 +563,9 @@ CREATE VIEW IF NOT EXISTS v_closure_chain AS       -- one row per extended item,
     EXISTS (SELECT 1 FROM v_red_runs r
             JOIN v_green_groups g ON g.atm_id=r.atm_id AND g.test_id=r.test_id AND g.fp<>r.fp
             JOIN reg_test_runs m ON m.atm_id=r.atm_id AND m.test_id=r.test_id AND m.polarity='MUTATION' AND m.verdict='FAIL'
+                 AND m.run_row > k.run_hwm
             JOIN reg_evidence me ON me.evidence_id=m.evidence_id AND me.atm_id=m.atm_id AND me.kind='mutation_run'
-                 AND me.exit_code BETWEEN 1 AND 125
+                 AND me.exit_code BETWEEN 1 AND 125 AND me.evidence_id > k.ev_hwm
                  AND (CASE me.evidence_class WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
                      >= (CASE x.defect_layer WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
             WHERE r.atm_id=x.atm_id) AS fix_chain_ok,      -- same test_id for RED, GREEN and the caught mutation;
@@ -495,18 +573,22 @@ CREATE VIEW IF NOT EXISTS v_closure_chain AS       -- one row per extended item,
     EXISTS (SELECT 1 FROM reg_reviews v
             JOIN reg_evidence ve ON ve.evidence_id=v.evidence_id AND ve.atm_id=v.atm_id AND ve.kind='review_verdict'
                  AND lower(trim(ve.produced_by))=lower(trim(v.reviewer))   -- the verdict was produced by the reviewer
-            WHERE v.atm_id=x.atm_id AND v.verdict='GO'
+                 AND ve.evidence_id > k.ev_hwm
+            WHERE v.atm_id=x.atm_id AND v.verdict='GO' AND v.review_id > k.rev_hwm   -- reviewed in this cycle
               AND lower(trim(v.author))<>lower(trim(v.reviewer))
               AND v.review_id=(SELECT max(review_id) FROM reg_reviews WHERE atm_id=x.atm_id)
               AND NOT EXISTS (SELECT 1 FROM reg_evidence p WHERE p.atm_id=x.atm_id
                               AND p.kind IN ('red_run','green_run','false_positive_proof','custody_decision')
                               AND lower(trim(p.produced_by))=lower(trim(v.reviewer)))) AS review_ok,
-                              -- latest review is GO, its verdict evidence is the reviewer's, and the reviewer
-                              -- produced none of the RED/GREEN/proof/decision evidence (case- and space-insensitive)
+                              -- latest review is GO and recorded in this cycle, its verdict evidence is the
+                              -- reviewer's, and the reviewer produced none of the item's RED/GREEN/proof/decision
+                              -- evidence in ANY cycle (deliberately stricter than the cycle rule; case- and
+                              -- space-insensitive)
     EXISTS (SELECT 1 FROM reg_evidence f WHERE f.atm_id=x.atm_id AND f.kind='false_positive_proof'
+            AND f.evidence_id > k.ev_hwm
             AND (CASE f.evidence_class WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)
                 >= (CASE x.defect_layer WHEN 'runtime' THEN 3 WHEN 'artifact' THEN 2 ELSE 1 END)) AS proof_ok
-  FROM reg_item_ext x;
+  FROM reg_item_ext x JOIN v_cycle_start k ON k.atm_id=x.atm_id;
 CREATE VIEW IF NOT EXISTS v_closure_ready AS       -- (item, terminal status) pairs whose chain is complete
   SELECT c.atm_id, s.to_status FROM v_closure_chain c
   JOIN (SELECT 'Fixed (→ Fixed.md)' AS to_status UNION ALL SELECT 'Implemented (→ Fixed.md)' UNION ALL SELECT 'Completed (→ Fixed.md)') s
@@ -519,14 +601,16 @@ CREATE VIEW IF NOT EXISTS v_live_decisions AS      -- an ACCEPTED, unconsumed de
   SELECT d.decision_id, d.atm_id, d.to_status     -- evidence row of the same item AND by a complete chain
   FROM reg_closure_decisions d
   JOIN reg_evidence e ON e.evidence_id=d.decision_json_evidence_id AND e.atm_id=d.atm_id AND e.kind='custody_decision'
+  JOIN v_cycle_start k ON k.atm_id=d.atm_id AND e.evidence_id > k.ev_hwm      -- decided in this cycle
   JOIN v_closure_ready r ON r.atm_id=d.atm_id AND r.to_status=d.to_status
   WHERE d.decision='ACCEPTED' AND d.consumed_at IS NULL;
 CREATE TRIGGER IF NOT EXISTS trg_closure_decision_guard BEFORE INSERT ON reg_closure_decisions
 WHEN NEW.decision='ACCEPTED'
 BEGIN
-  SELECT RAISE(ABORT,'custody: decision_json_evidence_id must be a custody_decision evidence row of the same item')
+  SELECT RAISE(ABORT,'custody: decision_json_evidence_id must be a custody_decision evidence row of the same item, recorded in the current cycle')
    WHERE NOT EXISTS (SELECT 1 FROM reg_evidence e WHERE e.evidence_id=NEW.decision_json_evidence_id
-                     AND e.atm_id=NEW.atm_id AND e.kind='custody_decision');
+                     AND e.atm_id=NEW.atm_id AND e.kind='custody_decision'
+                     AND e.evidence_id > (SELECT ev_hwm FROM v_cycle_start WHERE atm_id=NEW.atm_id));
   SELECT RAISE(ABORT,'custody: chain incomplete for ACCEPTED decision (RED, GREEN x3, caught mutation, independent GO review; FR-008, §11.4.115(F)/.226/.240)')
    WHERE NOT EXISTS (SELECT 1 FROM v_closure_ready r WHERE r.atm_id=NEW.atm_id AND r.to_status=NEW.to_status);
 END;
@@ -562,34 +646,44 @@ BEGIN
    WHERE NEW.status LIKE '%(→ Fixed.md)'
      AND NOT EXISTS (SELECT 1 FROM v_live_decisions d WHERE d.atm_id=NEW.atm_id AND d.to_status=NEW.status);
 END;
+-- every insert (not only a terminal one) must be reachable from the last logged status, because the engine
+-- (and a raw writer) moves rows with DELETE + INSERT and DELETE on items cannot be guarded (§5 limitation 6,
+-- §14.9 I3). The import-time legacy exemption applies only while the id has never been Reopened (§14.9 B2).
 CREATE TRIGGER IF NOT EXISTS trg_items_insert_guard BEFORE INSERT ON items
-WHEN NEW.status LIKE '%(→ Fixed.md)'
 BEGIN
-  SELECT RAISE(ABORT,'transition: terminal insert not reachable from last logged status')
+  SELECT RAISE(ABORT,'transition: insert not reachable from the last logged status')
    WHERE (SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1) IS NOT NULL
      AND (SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1) <> NEW.status
      AND NOT EXISTS (SELECT 1 FROM reg_status_transitions t WHERE t.to_status=NEW.status
           AND t.from_status=(SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1))
-     AND NOT EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=NEW.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1);
-  SELECT RAISE(ABORT,'custody: terminal insert without live decision (custody_decision evidence + complete chain) or import-time legacy basis (§11.4.146(D3))')
-   WHERE (SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1) IS NOT NEW.status
+     AND NOT (NEW.status LIKE '%(→ Fixed.md)'
+              AND EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=NEW.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1)
+              AND NOT EXISTS (SELECT 1 FROM reg_status_log s WHERE s.atm_id=NEW.atm_id AND s.to_status='Reopened'));
+  SELECT RAISE(ABORT,'custody: terminal insert without live decision (custody_decision evidence + complete chain in the current cycle) or import-time legacy basis (§11.4.146(D3))')
+   WHERE NEW.status LIKE '%(→ Fixed.md)'
+     AND (SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1) IS NOT NEW.status
      AND NOT EXISTS (SELECT 1 FROM v_live_decisions d WHERE d.atm_id=NEW.atm_id AND d.to_status=NEW.status)
-     AND NOT EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=NEW.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1);
+     AND NOT (EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=NEW.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1)
+              AND NOT EXISTS (SELECT 1 FROM reg_status_log s WHERE s.atm_id=NEW.atm_id AND s.to_status='Reopened'));
      -- v2 also exempted Obsolete when an obsolete_details row existed; that exemption was unreachable through
      -- the engine and open to a raw writer, and was removed in the second review round (§14.8 I-4).
 END;
 CREATE TRIGGER IF NOT EXISTS trg_items_status_log AFTER UPDATE OF status ON items
 WHEN OLD.status <> NEW.status
 BEGIN
-  INSERT INTO reg_status_log(atm_id,from_status,to_status) VALUES (NEW.atm_id,OLD.status,NEW.status);
+  INSERT INTO reg_status_log(atm_id,from_status,to_status,ev_hwm,run_hwm,rev_hwm)
+  VALUES (NEW.atm_id,OLD.status,NEW.status,(SELECT IFNULL(max(evidence_id),0) FROM reg_evidence),
+          (SELECT IFNULL(max(run_row),0) FROM reg_test_runs),(SELECT IFNULL(max(review_id),0) FROM reg_reviews));
   UPDATE reg_closure_decisions SET consumed_at=strftime('%Y-%m-%dT%H:%M:%SZ','now')
    WHERE atm_id=NEW.atm_id AND to_status=NEW.status AND decision='ACCEPTED' AND consumed_at IS NULL;
 END;
 CREATE TRIGGER IF NOT EXISTS trg_items_insert_log AFTER INSERT ON items
 WHEN IFNULL((SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1),'') <> NEW.status
 BEGIN
-  INSERT INTO reg_status_log(atm_id,from_status,to_status)
-  VALUES (NEW.atm_id,(SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1),NEW.status);
+  INSERT INTO reg_status_log(atm_id,from_status,to_status,ev_hwm,run_hwm,rev_hwm)
+  VALUES (NEW.atm_id,(SELECT to_status FROM reg_status_log WHERE atm_id=NEW.atm_id ORDER BY log_id DESC LIMIT 1),NEW.status,
+          (SELECT IFNULL(max(evidence_id),0) FROM reg_evidence),(SELECT IFNULL(max(run_row),0) FROM reg_test_runs),
+          (SELECT IFNULL(max(review_id),0) FROM reg_reviews));
   UPDATE reg_closure_decisions SET consumed_at=strftime('%Y-%m-%dT%H:%M:%SZ','now')
    WHERE atm_id=NEW.atm_id AND to_status=NEW.status AND decision='ACCEPTED' AND consumed_at IS NULL;
 END;
@@ -641,7 +735,8 @@ CREATE VIEW IF NOT EXISTS v_findings_without_item AS
 CREATE VIEW IF NOT EXISTS v_custody_violations AS   -- terminal items whose chain is not complete (Seam B sweep)
   SELECT i.atm_id, i.status FROM items i
   WHERE i.status LIKE '%(→ Fixed.md)'
-    AND NOT EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=i.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1)
+    AND NOT (EXISTS (SELECT 1 FROM reg_item_ext x WHERE x.atm_id=i.atm_id AND x.custody_basis='legacy_import' AND x.reverify_required=1)
+             AND NOT EXISTS (SELECT 1 FROM reg_status_log s WHERE s.atm_id=i.atm_id AND s.to_status='Reopened'))
     AND NOT EXISTS (SELECT 1 FROM v_closure_ready r WHERE r.atm_id=i.atm_id AND r.to_status=i.status);
 CREATE VIEW IF NOT EXISTS v_stale_tracker_sync AS
   SELECT t.tracker_id, i.atm_id,
@@ -674,6 +769,13 @@ CREATE VIEW IF NOT EXISTS v_items_without_mint AS      -- items row whose id was
   SELECT atm_id, current_location FROM items WHERE atm_id NOT IN (SELECT atm_id FROM reg_ids);
 CREATE VIEW IF NOT EXISTS v_ids_without_item AS        -- minted id never inserted (reported, never recycled)
   SELECT atm_id FROM reg_ids WHERE atm_id NOT IN (SELECT atm_id FROM items);
+CREATE VIEW IF NOT EXISTS v_illegal_logged_edges AS   -- logged status changes that are not edges of the graph
+  SELECT l.log_id, l.atm_id, l.from_status, l.to_status FROM reg_status_log l   -- (a raw DELETE + INSERT, §14.9 I3)
+  WHERE l.from_status IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM reg_status_transitions t WHERE t.from_status=l.from_status AND t.to_status=l.to_status)
+    AND NOT (l.to_status LIKE '%(→ Fixed.md)'                    -- the import-time legacy closure (Queued -> terminal),
+             AND EXISTS (SELECT 1 FROM reg_ids r WHERE r.atm_id=l.atm_id AND r.mint_basis='import')  -- before any reopen
+             AND NOT EXISTS (SELECT 1 FROM reg_status_log p WHERE p.atm_id=l.atm_id AND p.to_status='Reopened' AND p.log_id<l.log_id));
 CREATE VIEW IF NOT EXISTS v_legacy_import_unbacked AS  -- legacy basis that the import did not produce
   SELECT x.atm_id, r.mint_basis FROM reg_item_ext x JOIN reg_ids r ON r.atm_id=x.atm_id
   WHERE x.custody_basis='legacy_import'
@@ -703,8 +805,10 @@ CREATE VIEW IF NOT EXISTS v_escapes AS
 
 -- gate registry: the closure / register gate (scripts/register/register_gate.sh, proposed) reads this table;
 -- every view_empty row must return 0 rows, every trigger_present row must exist in sqlite_master.
+-- view_not_done: a row is open work; the register gate passes, the feature completion gate (§13.3) counts
+-- every row as NOT done.
 CREATE TABLE IF NOT EXISTS reg_gate_checks (
-  name TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK (kind IN ('view_empty','trigger_present','view_report')));
+  name TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK (kind IN ('view_empty','trigger_present','view_report','view_not_done')));
 INSERT OR IGNORE INTO reg_gate_checks VALUES
  ('v_duplicate_item_ids','view_empty'),('v_items_without_mint','view_empty'),('v_custody_violations','view_empty'),
  ('v_recurrence_violations','view_empty'),('v_findings_without_item','view_empty'),('v_unmapped_entries','view_empty'),
@@ -720,7 +824,12 @@ INSERT OR IGNORE INTO reg_gate_checks VALUES
  ('trg_item_ext_legacy_insert','trigger_present'),('trg_item_ext_custody_update','trigger_present'),
  ('reg_status_log_insert_guard','trigger_present'),
  ('reg_test_runs_no_update','trigger_present'),('reg_test_runs_no_delete','trigger_present'),
- ('reg_reviews_no_update','trigger_present'),('reg_reviews_no_delete','trigger_present');
+ ('reg_reviews_no_update','trigger_present'),('reg_reviews_no_delete','trigger_present'),
+ ('v_reverify_queue','view_not_done'),('v_illegal_logged_edges','view_empty'),
+ ('reg_ids_no_replace','trigger_present'),('reg_item_ext_no_delete','trigger_present'),('reg_item_ext_no_replace','trigger_present'),
+ ('reg_findings_no_replace','trigger_present'),('reg_evidence_no_replace','trigger_present'),('reg_test_runs_no_replace','trigger_present'),
+ ('reg_reviews_no_replace','trigger_present'),('reg_status_log_no_replace','trigger_present'),
+ ('reg_closure_decisions_no_replace','trigger_present'),('trg_status_log_reopen_legacy','trigger_present');
 CREATE VIEW IF NOT EXISTS v_gate_missing_objects AS    -- a registered check whose object is absent (dropped trigger/view)
   SELECT g.name, g.kind FROM reg_gate_checks g
   WHERE NOT EXISTS (SELECT 1 FROM sqlite_master m WHERE m.name=g.name
@@ -733,8 +842,10 @@ Known limitations of this DDL (stated, not hidden):
 2. **Engine paths that conflict with one-row identity.** `sync md-to-db` (deletes a whole location and re-inserts it) and the engine's subtask creation (child ids not minted in `reg_ids`) are not register writer paths; with v2 they fail on the identity triggers instead of writing silently. An engine schema migration that rebuilds `items` (`db.go` builds `items_new`) would drop every trigger on `items`; `v_gate_missing_objects` reports that (K-2, K-9).
 3. **Custody checks structure, not authorship (producer equals verifier residual).** The triggers now require that an ACCEPTED decision is backed by a `custody_decision` evidence row of the same item and by a complete chain in `v_closure_ready` (§7.1). They cannot prove who inserted those rows: SQLite has no caller identity, and `produced_by`, `author` and `reviewer` are self-declared strings. A single actor with write access can still hand-insert a complete, internally consistent chain (executed: the golden-good case in §14.7 is itself hand-inserted SQL and is accepted). The compensating controls are outside SQL and are mandatory: (a) the gate re-hashes every cited `reg_evidence.path` against `sha256` (no file, or a different hash, fails); (b) the independent verifier (§11.4.240, docs/06 §4.2 step 9) re-derives the verdict from the hash-chained ledger and its anchor, not from the register rows, and records its achieved independence tier honestly (`instance` on a single-user host, §11.4.240(F)); (c) every change to the tracked DB file passes the §11.4.142 review, which diffs the `register.sql` dump (§12.1).
 4. **Obsolete closure has one route: the non-fix decision chain.** The first v2 text also accepted an engine `obsolete_details` row as a basis for a terminal `Obsolete` write. That exemption was unreachable through the engine (the engine's `obsolete-details` refuses an item whose status is not already `Obsolete`, and `close --status obsolete` from `In testing` is refused because `In testing -> Obsolete` is not an edge of `reg_status_transitions`), and it was open to a raw writer (insert an `obsolete_details` row, delete the `items` row, insert an `Obsolete` row: accepted on the first v2 text, executed §14.8 I-4a). It was removed from `trg_items_insert_guard` and from `v_custody_violations`. The only way to `Obsolete` is now: the item is `Queued` or `Reopened` (the two seeded edges to Obsolete), its `custody_basis` is `false_positive_evidence`, `structural_impossibility` or `accepted_exception`, it has a `false_positive_proof` evidence row whose class meets the defect layer, its latest review is an independent GO, and an ACCEPTED decision exists; then `close --status obsolete` moves it, and the engine's `obsolete-details` writes the human-readable reason record afterwards (executed §14.8 I-4c). Non-head duplicates found at import are NOT closed as Obsolete: they are recorded only as `reg_source_map` rows with `relation='duplicate_of'` pointing at the head and get no `items` row (§9.3). Whether an `In testing -> Obsolete` edge (a fix attempt that ends with a proven false positive) should be added to `reg_status_transitions`, and whether the engine's `obsolete-details` should accept a non-Obsolete item, are owner decisions (D-4, §15.3); the second is a change to the constitution submodule and is not made here (§11.4.28).
-5. `v_custody_violations` now uses the same `v_closure_ready` definition as the triggers, so the sweep and the trigger cannot disagree about what a complete chain is; a terminal item that is `legacy_import` with `reverify_required=1` is excluded from the sweep and policed by `v_reverify_queue`. Clearing `reverify_required` on a terminal legacy item without a complete chain makes it appear in `v_custody_violations` (executed §14.8, case L2).
-6. **Residuals of the legacy path and of raw deletes.** `mint_basis` is a self-declared string, so a raw writer can mint a fresh id with `mint_basis='import'`, insert a `legacy_import` row and a source-map row, and create an item that is terminal without a chain. It cannot convert an EXISTING item (the triggers refuse a change to `legacy_import`, and an INSERT of `legacy_import` for an id that ever had an `items` or status-log row, executed §14.8 I-1 and I-1b), and such an item stays in `v_reverify_queue`, which the §13.3 gate counts as not done (K-4). `v_legacy_import_unbacked` reports a legacy row whose mint basis is not `import` or that has no `primary` source-map row. `DELETE FROM items` is not guarded (the engine moves rows with DELETE plus INSERT, so a BEFORE DELETE trigger would break `close` and `reopen`); a deleted row is reported by `v_ids_without_item` and by the engine's `validate` (dangling `doc_segments`), and cannot be re-inserted as terminal without a chain.
+5. `v_custody_violations` now uses the same `v_closure_ready` definition as the triggers, so the sweep and the trigger cannot disagree about what a complete chain is; a terminal item that is `legacy_import` with `reverify_required=1` AND has never been reopened is excluded from the sweep and policed by `v_reverify_queue`, which is registered in `reg_gate_checks` with kind `view_not_done`: the register gate passes, and the feature completion gate (§13.3) counts every row of it as not done. Clearing `reverify_required` on a terminal legacy item without a complete chain makes it appear in `v_custody_violations` (executed §14.8, case L2). Reopening a legacy item ends its exemption in two independent ways: `trg_status_log_reopen_legacy` converts the extension row to `machine_evidence` with `reverify_required=0` when the `Reopened` row is logged, and both `trg_items_insert_guard` and `v_custody_violations` grant the exemption only while the id has no `Reopened` log row (executed §14.9 B2, with each half removed in turn as a mutation).
+6. **Residuals of the legacy path and of raw deletes.** `mint_basis` is a self-declared string, so a raw writer can mint a fresh id with `mint_basis='import'`, insert a `legacy_import` row and a source-map row, and create an item that is terminal without a chain. It cannot convert an EXISTING item (the triggers refuse a change to `legacy_import`, and an INSERT of `legacy_import` for an id that ever had an `items` or status-log row, executed §14.8 I-1 and I-1b; the extension row can no longer be deleted at all, §14.9 I1), and such an item stays in `v_reverify_queue` (kind `view_not_done`) only until it is reopened: from then on it is an ordinary item and its next closure needs a full chain recorded after the reopen (K-4, §14.9 B2). `v_legacy_import_unbacked` reports a legacy row whose mint basis is not `import` or that has no `primary` source-map row. `DELETE FROM items` is not guarded (the engine moves rows with DELETE plus INSERT, so a BEFORE DELETE trigger would break `close` and `reopen`); a deleted row is reported by `v_ids_without_item` and by the engine's `validate` (dangling `doc_segments`). Every re-insert must now be reachable from the last logged status (§14.9 I3): a raw DELETE of a `Fixed` row followed by an INSERT as `Queued` is refused, and `v_illegal_logged_edges` (`view_empty`) reports any logged pair that is not an edge of `reg_status_transitions`, other than the import-time legacy closure of an import-minted id before its first reopen. Remaining raw-writer residual: DELETE of a closed row followed by an INSERT as `Reopened` is a legal edge, so it reopens the item without the engine's four attribution facts (§7.2); the reopen is still logged and counted by `v_reopen_counts`, and the fix-cycle boundary still applies.
+7. **Per-connection settings can switch constraints off.** `PRAGMA foreign_keys` is OFF by default in the `sqlite3` shell and applies to one connection only, and `PRAGMA ignore_check_constraints=ON` lets a connection write rows that violate CHECK constraints (executed §14.9 I4: a plain `sqlite3` connection inserted a `reg_item_ext` row for the unminted `ATM-999`, and a connection with `ignore_check_constraints=ON` inserted a `red_run` with exit 127). The engine opens its database with `_foreign_keys=on` (`db.go:44`); every other writer (importer, audit runner, gate scripts) MUST execute `PRAGMA foreign_keys=ON` on every connection and MUST NOT set `ignore_check_constraints`. Because a writer can still forget, the gate runs `PRAGMA integrity_check` (must print `ok`; it re-checks CHECK and NOT NULL constraints on every row) and `PRAGMA foreign_key_check` (must print nothing) on the whole file (§12.3); both reported the two rows above. Triggers are not affected by either pragma, and `PRAGMA recursive_triggers` is irrelevant because every append-only table refuses an existing key on INSERT (the `*_no_replace` triggers) instead of relying on DELETE triggers firing during a REPLACE.
+8. **Seed and registry tables are not append-guarded.** `reg_status_transitions` (the edge graph) and `reg_gate_checks` (the gate registry) accept raw INSERT, UPDATE and DELETE, so a raw writer can add an edge or remove a check. They are seeded by this file with `INSERT OR IGNORE`, and the reviewed `register.sql` dump (§12.1 R-6) is the control: any change to either table shows in the dump diff that the §11.4.142 review reads. Guarding them in SQL is possible (refuse any row that is not part of the seed) but would make every legitimate change of the graph a DDL change; this is left to owner decision D-4.
 
 ---
 
@@ -759,7 +870,12 @@ Prose does not bind (§11.4.226): each row names the mechanism that fails when v
 | FR-010 caught mutation belongs to the item | `v_closure_chain.fix_chain_ok` joins the MUTATION row's evidence as `kind='mutation_run'` of the SAME item, exit 1..125, class floor met | chain incomplete | yes: a MUTATION row citing another item's `red_run` refused (§14.8 I-3) |
 | §11.4.146(D3) legacy basis is import-time only | `trg_item_ext_legacy_insert`, `trg_item_ext_custody_update`, `v_legacy_import_unbacked` | change to `legacy_import`, `reverify_required` 0 -> 1, or a legacy INSERT for an id that already existed aborts | yes (§14.8 I-1, I-1b, L1, L2) |
 | status history cannot be forged | `reg_status_log_insert_guard` (to = current status, from = last logged, from <> to) | raw INSERT aborts | yes: a forged `In testing -> Fixed` row that let `close` through on the first v2 text is refused (§14.8 M1) |
-| evidence ledgers append-only | `reg_test_runs_no_update/_no_delete`, `reg_reviews_no_update/_no_delete` (registered in `reg_gate_checks`) | UPDATE/DELETE aborts | yes (§14.8 M2) |
+| evidence ledgers append-only | `reg_test_runs_no_update/_no_delete`, `reg_reviews_no_update/_no_delete` (registered in `reg_gate_checks`); `*_no_replace` on `reg_ids`, `reg_item_ext`, `reg_findings`, `reg_evidence`, `reg_test_runs`, `reg_reviews`, `reg_status_log`, `reg_closure_decisions` refuse an INSERT whose key exists, because `INSERT OR REPLACE` removes the old row without firing DELETE triggers | UPDATE/DELETE/REPLACE aborts | yes (§14.8 M2; REPLACE: §14.9 I2, rewrite reproduced on six tables and a consumed decision revived before the fix; refused after; each guard removed as a mutation and the rewrite succeeds again, except `reg_status_log`, where `reg_status_log_insert_guard` already refuses the replacement row) |
+| a closure needs evidence of the CURRENT fix cycle | `v_cycle_start` (last `Reopened` log row and its ledger high-water marks); `v_red_runs`, `v_green_groups`, the mutation join, `review_ok`, `proof_ok`, `v_live_decisions` and `trg_closure_decision_guard` count only rows with an id above the mark | decision insert aborts (chain incomplete); close refused | yes (§14.9 B1: reopen then close on old evidence refused; honest second cycle closes; mutation with the marks forced to 0 lets the old evidence close the item again) |
+| a reopened legacy item is no longer exempt | `trg_status_log_reopen_legacy` (convert to `machine_evidence`, `reverify_required=0`); exemption in `trg_items_insert_guard` and `v_custody_violations` only without a `Reopened` row; `v_reverify_queue` registered as `view_not_done` | close without chain refused; queue counted as not done by the completion gate | yes (§14.9 B2, B2b) |
+| evidence-class floor cannot be lowered | `trg_item_ext_custody_update` (defect_layer raise-only), `reg_item_ext_no_delete`, `reg_item_ext_no_replace` | UPDATE, DELETE, REPLACE abort | yes (§14.9 I1) |
+| every logged status change is an edge | `trg_items_insert_guard` checks reachability on every insert; `v_illegal_logged_edges` (`view_empty`) | raw DELETE + INSERT to a non-adjacent status aborts; a bypass is reported | yes (§14.9 I3, view shown with the guard mutated) |
+| constraints actually enforced | `PRAGMA integrity_check` = `ok` and `PRAGMA foreign_key_check` empty in the gate (§12.3); writers set `foreign_keys=ON` | gate FAIL | yes (§14.9 I4) |
 | FR-004 honest skips | `reg_tracker_sync_log` CHECKs | SYNCED without exit 0 + remote ref + evidence rejected; SKIPPED without reason rejected | yes (SYNCED case) |
 | §11.4.95 DB tracked, never gitignored | rule R-1 (§12) + gate | `git check-ignore` non-empty | yes: currently ignored (`.gitignore:85`) |
 
@@ -810,13 +926,15 @@ The chain below is what the SQL layer checks mechanically, and what it cannot ch
 7. **Decision**: run `workable-items closure-check --config <cfg> --item ATM-NNN --to <status> --attempt attempt.json --out decision.json`; import the resulting JSON as evidence (`kind=custody_decision`) and insert `reg_closure_decisions(decision='ACCEPTED', decision_json_evidence_id=<that row>)`. The insert is refused if the evidence row is of another kind or another item, or if steps 1-6 are incomplete (executed: the reviewer's hand-made decision backed by a source-class `artifact` row is now refused, §14.7).
 8. `workable-items close ATM-NNN --status ... --evidence <path>`: the trigger consumes the decision (single use, `consumed_at` set; any other UPDATE and any DELETE of a decision aborts) and the status log records the edge. If the decision guard was dropped and a decision was inserted anyway, the close is still refused, because the status-write triggers re-check the chain (executed).
 
+**Fix cycles.** Every row counted in steps 2 to 7 (test runs, evidence including the `custody_decision`, reviews) must have been recorded after the item's last `Reopened` status-log row. Each log row stores the highest `reg_evidence`, `reg_test_runs` and `reg_reviews` id that existed when it was written (`ev_hwm`, `run_hwm`, `rev_hwm`, checked by `reg_status_log_insert_guard`); the ids are AUTOINCREMENT in append-only tables, so "id above the mark of the last `Reopened` row" means "recorded after the reopen" (`v_cycle_start`). A reopened item therefore needs a new RED, a new GREEN group, a new caught mutation, a new GO review and a new decision before it can close again, and the honest second cycle is judged only on those rows (executed §14.9 B1). The reviewer-independence check (step 6, the reviewer produced none of the RED, GREEN, proof or decision evidence) deliberately looks at every cycle, so a producer of an earlier cycle cannot review a later one.
+
 **What this does NOT prove (honest boundary, §11.4.6).** The triggers check that the rows exist and agree with each other. They cannot check that the rows are true, and they cannot check who wrote them: SQLite has no caller identity and `produced_by`, `author`, `reviewer` are self-declared strings, so a single actor with write access can hand-insert a complete chain and close the item (executed: the accepted golden-good case in §14.7 is exactly that). The producer-equals-verifier gap is therefore closed only by controls outside SQL, all of which are required before a closure counts for spec FR-008 / SC-003: (a) the gate re-hashes every cited evidence file against its `sha256`; (b) an independent verifier, structurally separate from the author (§11.4.240, §11.4.165), re-derives RED, GREEN and the mutation from the hash-chained ledger and anchor (docs/06 §4.2 step 9, §7, §8), adds its own mutation (§11.4.194(6)(d)), and records the achieved independence tier honestly; (c) the DB file change passes the §11.4.142 review on the `register.sql` dump. A closure whose chain exists only as register rows, with no ledger entries that verify, is a `v_custody_violations`-clean but unverified closure and MUST NOT be reported as fixed.
 
 Items closed on a non-fix basis (FR-008 false positive / structurally impossible / accepted exception in vendored third-party code) use `custody_basis` to say which (set when the extension row is written; it may change between non-legacy values, never to `legacy_import`), require a `false_positive_proof` evidence row whose class meets the defect layer, an independent GO review and an ACCEPTED decision for `Obsolete (→ Fixed.md)`, and are closed from `Queued` or `Reopened` with `close --status obsolete`; the engine's `obsolete-details` (reasons `not-reproducible`, `duplicate-of`, `unsupported-topology`, ...) is written AFTER the close as the human-readable reason record, because the engine refuses it on an item that is not yet Obsolete (executed §14.8 I-4b, I-4c). An `obsolete_details` row alone is not a closure basis (§5 limitation 4). "Low severity" is never a basis, and the closed set has no value for it.
 
 ### 7.2 Reopen and block
 
-`reopen` uses the engine's four mandatory attribution facts (By, On, Reason from the closed set `test-failed | manual-testing-detected | captured-evidence-contradicts | end-user-report | cycle-re-discovered | design-reconsidered`, Evidence). The engine relocates the row from Fixed back to Issues (executed). `block` records the engine's `operator_block_details` (what, why alternatives are exhausted, unblock condition, who), which is exactly the owner-decision record FR-008 and the spec edge cases require; an item blocked for a missing service, credential or device is the FR-025 "blocked" state and counts as not done.
+`reopen` uses the engine's four mandatory attribution facts (By, On, Reason from the closed set `test-failed | manual-testing-detected | captured-evidence-contradicts | end-user-report | cycle-re-discovered | design-reconsidered`, Evidence). The engine relocates the row from Fixed back to Issues (executed). The `Reopened` log row starts a new fix cycle (§7.1), and for a legacy-imported item it ends the import-time exemption (§5 limitation 5). `block` records the engine's `operator_block_details` (what, why alternatives are exhausted, unblock condition, who), which is exactly the owner-decision record FR-008 and the spec edge cases require; an item blocked for a missing service, credential or device is the FR-025 "blocked" state and counts as not done.
 
 ---
 
@@ -1081,11 +1199,19 @@ $WI add Bug High --db $DB --id "$ATM" --title "<title>" --description "<what, sc
 
 # 2. gates (all must be empty or OK); the view list is data in reg_gate_checks, not hard-coded here
 $WI validate --db $DB
+[ "$(sqlite3 -readonly $DB 'PRAGMA integrity_check;')" = ok ] || echo "FAIL integrity_check"   # CHECK/NOT NULL re-checked
+[ -z "$(sqlite3 -readonly $DB 'PRAGMA foreign_key_check;')" ] || echo "FAIL foreign_key_check"  # FKs re-checked
 sqlite3 -readonly $DB "SELECT * FROM v_gate_missing_objects;"           # registered trigger/view missing -> FAIL
 for v in $(sqlite3 -readonly $DB "SELECT name FROM reg_gate_checks WHERE kind='view_empty'"); do
   n=$(sqlite3 -readonly $DB "SELECT count(*) FROM $v"); [ "$n" = 0 ] || echo "FAIL $v rows=$n"
 done
+# 3. feature completion gate (§13.3) additionally counts every view_not_done row as NOT done
+for v in $(sqlite3 -readonly $DB "SELECT name FROM reg_gate_checks WHERE kind='view_not_done'"); do
+  n=$(sqlite3 -readonly $DB "SELECT count(*) FROM $v"); [ "$n" = 0 ] || echo "NOT DONE $v rows=$n"
+done
 ```
+
+Every writer other than the engine (which opens with `_foreign_keys=on`, `db.go:44`) must start each connection with `PRAGMA foreign_keys=ON;` and must never set `PRAGMA ignore_check_constraints`; the two PRAGMA checks above catch a writer that forgot (§5 limitation 7).
 
 The engine's `validate` does not check register identity (one row per id, minted ids); those checks live only in the `reg_gate_checks` views, so step 2 is not optional.
 
@@ -1133,9 +1259,10 @@ Mutation obligation (§1.1, FR-010): each trigger and CHECK above ships with a p
 
 ### 13.3 Acceptance evidence for this design (what must exist before the register is declared operational)
 
-1. `register_ext.sql` committed and applied; `ext_schema_version=2`.
+1. `register_ext.sql` committed and applied; `ext_schema_version=3`.
 2. Stage 0 scan of every identified source finished; `reg_sources.scanned_entry_count` equals actual entry count (re-counted independently by a second tool, avoiding a self-confirming count).
-3. Every `reg_gate_checks` row of kind `view_empty` returns 0 rows (`v_unmapped_entries`, `v_custody_violations`, `v_recurrence_violations`, `v_findings_without_item`, `v_duplicate_item_ids`, `v_items_without_mint`, `v_legacy_import_unbacked`) and `v_gate_missing_objects` is empty.
+3. Every `reg_gate_checks` row of kind `view_empty` returns 0 rows (`v_unmapped_entries`, `v_custody_violations`, `v_recurrence_violations`, `v_findings_without_item`, `v_duplicate_item_ids`, `v_items_without_mint`, `v_legacy_import_unbacked`, `v_illegal_logged_edges`), `v_gate_missing_objects` is empty, `PRAGMA integrity_check` prints `ok` and `PRAGMA foreign_key_check` prints nothing.
+3a. Feature completion (not register operation): every row of every `view_not_done` view (`v_reverify_queue`) counts as not done until owner decision D-1.
 4. `workable-items validate` prints OK; `diff` prints in-sync against freshly exported documents.
 5. DB tracked: `git ls-files docs/workable_items.db` non-empty; `git check-ignore` empty.
 6. Independent review of this schema and importer (FR-023) with a GO on the reviewer's recorded model and effort.
@@ -1358,6 +1485,74 @@ v_custody_violations = the L2 item only (by design: a cleared legacy item withou
 
 Side effects stated (§11.4.6): the raw DELETEs in I-1b and I-4a are committed before the refused INSERT (sqlite3 runs the statements one by one), so those two ids are left without an `items` row; `v_ids_without_item` lists them and the engine's `validate` reports 3 violations, all dangling `doc_segments` of the two deleted rows (§5 limitation 6). The golden-good case G1 is still hand-inserted SQL and is still accepted: the producer-equals-verifier residual of §5 limitation 3 is unchanged by this round.
 
+### 14.9 Third review round: reproduction on the second-round text, re-test on DDL v3 (executed 2026-10-03)
+
+The third independent review attacked the second-round text (§14.8). The same harness was extended (`attacks3.sh DDL DB`, which runs the §14.8 script unchanged plus `round3.sh` and `replace_cases.sh`; scratch only, under `.../scratchpad/r3/`) and run against `ext_before.sql` (the §14.8 text, extracted with `awk` before any edit) and `ext_after.sql` (the v3 text above). Each run bootstraps a fresh DB exactly as in §14.7. One prior case was added: P6b, a reviewer that differs from the evidence producer only by case and a leading space (` AUTHOR` vs `author`).
+
+```text
+$ sqlite3 ap.db < ext_after.sql && sqlite3 ap.db < ext_after.sql   -> APPLY_REAPPLY_OK
+tables 25 | views 26 | triggers 33 (all 33 registered as trigger_present) | v_gate_missing_objects: (empty) | ext_schema_version=3
+
+case                                                       second-round text (before)            v3 (after)
+B1a golden item closed, engine reopen, update to In testing,
+    new custody_decision + ACCEPTED decision, NO new evidence decision accepted; close MOVED -> Fixed  chain incomplete; close refused, stays In testing
+B1b honest cycle 2, first a decision only (old evidence)   decision accepted                     chain incomplete
+B1b then new RED (new fp), GREEN x3 (new fp), own caught
+    mutation, new GO review by a new reviewer, decision     decision accepted; close -> Fixed      decision accepted; close -> Fixed
+B1c cycle 2 chain, latest review predates the reopen       review_ok=1, decision accepted        review_ok=0, chain incomplete
+B2  legacy item imported closed, engine reopen
+    (cycle-re-discovered)                                   ext stays legacy_import,1             ext converted to machine_evidence,0
+B2  then In testing and close --status fixed, NO chain     MOVED -> Fixed, v_custody_violations=0 refused (no live decision), stays In testing
+B2  v_reverify_queue in reg_gate_checks                    absent                                 view_not_done
+B2b reopened legacy item, cycle-2 chain + GO review        chain incomplete (still legacy_import, decision accepted; close -> Fixed; not in queue
+                                                            already Fixed by B2; in the queue)
+I1  runtime item with a source-class chain: decision        chain incomplete                      chain incomplete
+I1  UPDATE defect_layer runtime -> source                  accepted, flags 1111                  defect_layer can only be raised; flags 0001
+I1  then decision + close                                  accepted; close MOVED -> Fixed         chain incomplete; close refused
+I1b DELETE reg_item_ext row + re-INSERT layer=source        accepted, layer=source                reg_item_ext rows are never deleted
+I1c raise defect_layer source -> runtime                    accepted                              accepted (raising is allowed)
+I2  INSERT OR REPLACE reg_evidence (existing id, new path)  rewritten                             key exists, refused
+I2  INSERT OR REPLACE reg_ids seq 1 (mint_basis -> import)  rewritten to import                   key exists, refused
+I2  INSERT OR REPLACE reg_reviews NO-GO -> GO               review_ok 0 -> 1                      key exists, refused, review_ok=0
+I2  INSERT OR REPLACE consumed decision with consumed_at NULL revived (unconsumed=1)              key exists, refused
+I2  INSERT OR REPLACE reg_test_runs (group,rep) FAIL -> PASS rewritten to PASS                     key exists, refused
+I2  INSERT OR REPLACE reg_item_ext runtime -> source         rewritten to source                   row exists, refused
+I2  INSERT OR REPLACE reg_status_log last row               refused by reg_status_log_insert_guard refused (same guard first)
+I2  INSERT OR REPLACE reg_findings alias row -> other item  rewritten (atm_id changed)            key exists, refused
+I3  raw DELETE of a Fixed item, INSERT as Queued           accepted; log Fixed -> Queued;         insert not reachable from the last logged
+                                                            v_reopen_counts 0                     status, refused; v_illegal_logged_edges empty
+I4  plain sqlite3 (foreign_keys off): ext row for ATM-999  accepted                              accepted (per-connection); gate: foreign_key_check
+                                                                                                  reports reg_item_ext|27|reg_ids|1
+I4  ignore_check_constraints=ON: red_run with exit 127     accepted                              accepted (per-connection); gate: integrity_check
+                                                                                                  reports "CHECK constraint failed in reg_evidence"
+I4  clean v3 database                                       -                                     integrity_check ok; foreign_key_check empty
+M8  BLOCKED test run with blocked_reason 'because'          accepted                              CHECK refused; 'device_absent' accepted
+
+re-run of every earlier case on v3 (P1 to P7, P6b, G1, G2, I-1, I-1b, I-2, I-2b, I-3, I-4a/b/c, M1, M1b, M2, M3, M4, L1, L2):
+  same verdict as on the second-round text; two messages differ: I-1b is now refused earlier (DELETE of the extension row,
+  so the items row is no longer deleted as a side effect) and I-4b reads "insert not reachable from the last logged status"
+sweeps after the v3 run: v_custody_violations = the L2 item only (by design, §14.8); v_legacy_import_unbacked, v_duplicate_item_ids,
+  v_illegal_logged_edges, v_gate_missing_objects empty; engine validate: 4 violations, all dangling doc_segments of the two ids whose
+  items row a refused raw sequence had already deleted (I-4a, I3), §5 limitation 6
+```
+
+Paired mutations (each a copy of the v3 DDL with one fix removed, same harness):
+
+```text
+mutant                                                     effect on the attack
+v_cycle_start forced to 0 (no cycle boundary)               B1a closes on old evidence again; B1c review_ok=1
+trg_status_log_reopen_legacy dropped                       B2 still refused (no-Reopened condition); B2b honest close refused,
+                                                           item stays in v_reverify_queue (the conversion is what lets it close)
+conversion dropped AND no-Reopened condition removed       B2 closes with no chain again
+defect_layer clause and reg_item_ext_no_delete removed     I1 downgrade accepted and the item closes; I1b delete + re-insert accepted
+all eight *_no_replace triggers dropped                    REPLACE rewrites reg_evidence, reg_ids, reg_reviews (review_ok 1),
+                                                           reg_test_runs, reg_item_ext, reg_findings and revives the decision;
+                                                           reg_status_log still refused by reg_status_log_insert_guard
+insert reachability limited to terminal statuses again     I3 accepted (log Fixed -> Queued) and v_illegal_logged_edges reports it
+```
+
+Golden-good still works on v3: G1 closes, G2 reopens, B1b closes the honest second cycle, B2b closes the reopened legacy item, and the legacy import flow L1 closes as before. Residuals stated in §5 limitations 3, 6, 7 and 8 are unchanged by this round: a single writer can still hand-insert a complete chain (now a chain recorded after the reopen), raw DELETE plus INSERT as `Reopened` reopens without the engine's attribution facts, per-connection pragmas are caught by the gate rather than prevented, and the seed tables are protected by the reviewed dump, not by triggers.
+
 ---
 
 ## 15. Risks, rejected alternatives, open decisions, UNCONFIRMED list
@@ -1369,12 +1564,12 @@ Side effects stated (§11.4.6): the raw DELETEs in I-1b and I-4a are committed b
 | K-1 | Binary DB in git conflicts on parallel edits | single-writer lock (R-8, §12.2); dump file for review; fast-forward only |
 | K-2 | Triggers on engine tables break after an engine upgrade that changes its status handling | extension declares `engine_schema_required=7`; a pre-apply check compares `meta.schema_version`; a regression suite replays §14.2 after every engine bump (submodule update is a feature item, FR-017) |
 | K-3 | Importer false merges of the 1778 legacy entries (many are near-identical UX complaints with generic vocabulary) | Stage 1 off by default; negative control; a merge keeps both entries in `reg_source_map` so it is reversible |
-| K-4 | Closed legacy items counted as proven | `reverify_required` + gate in §13.3 counts them as not done until owner decision D-1 |
+| K-4 | Closed legacy items counted as proven | `reverify_required` + `v_reverify_queue` registered as `view_not_done`, which the §13.3 completion gate counts as not done until owner decision D-1; a reopen ends the exemption (§14.9 B2) |
 | K-5 | SQLite CHECK NULL pass-through | review step: for every CHECK supply NULL variants (found once already, §14.3) |
 | K-6 | `report_item.sh` bypassing `reg_ids` | D-5: wrapper mints first and passes `--id` |
 | K-7 | A mass push to an external tracker is irreversible in effect | dry run, pilot batch, owner approval |
 | K-8 | WAL sidecars lost when copying the DB without checkpoint | R-2 |
-| K-9 | Any trigger can be disabled by `DROP TRIGGER` by any SQL writer | sweep views as second line; the expected triggers and views are data in `reg_gate_checks` and `v_gate_missing_objects` lists any that are absent (executed with a dropped trigger, §14.7); the status-write triggers re-check the chain even if the decision guard is dropped |
+| K-9 | Any trigger can be disabled by `DROP TRIGGER` by any SQL writer; foreign keys and CHECK constraints are switched off per connection (`foreign_keys` is OFF by default in the `sqlite3` shell; `ignore_check_constraints=ON`) | sweep views as second line; the expected triggers and views are data in `reg_gate_checks` and `v_gate_missing_objects` lists any that are absent (executed with a dropped trigger, §14.7); the status-write triggers re-check the chain even if the decision guard is dropped; every writer sets `foreign_keys=ON`, and the gate runs `PRAGMA integrity_check` and `PRAGMA foreign_key_check` (§5 limitation 7, executed §14.9 I4) |
 | K-11 | A forged but internally consistent chain is accepted by SQL (producer = verifier) | outside-SQL controls in §7.1 (evidence re-hash, ledger re-derivation by an independent verifier, reviewed DB diff) |
 | K-10 | The extension relies on the engine's DELETE+INSERT move; an engine change to UPDATE-based moves would still be caught (both guarded), but a change to a different table layout would not | K-2 regression suite |
 
