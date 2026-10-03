@@ -5,6 +5,14 @@
 **Status**: Draft
 **Input**: User description: "Do exhaustive analysis of the whole project. Rely heavily on the indexed structural code space (CodeGraph) to reduce token use as much as possible, always, and on the indexed semantic space (Lumen) as well. Detect any gap, misalignment, shortcoming, weak spot, danger zone, bug, error and issue, plus everything already known and documented as issues, workable items and tickets everywhere (HelixQA especially). Investigate systematically, fix and improve, and cover everything with all supported test types defined in the constitution. Every test, existing and new, must validate and verify fully deterministically through machine-produced results, never prediction. Update all documentation and exported files, add new documents properly linked from the main README, write user manuals, guides, FAQs, diagrams, graphs and schemes, and cover all definitions (SQL schemas, templates and others). The project consists of multiple applications (backends, services, APIs, web, mobile, desktop and other clients). All dependencies must always be up to date with their upstream codebases. Commit and push all work regularly, and confirm with `git status`, fully recursively, that nothing is uncommitted or unpushed to any upstream of any repository."
 
+## Clarifications
+
+### Session 2026-10-03
+
+- Q: Which of the problems the audit finds must actually be fixed inside this feature, as opposed to only being recorded and tracked? → A: Every finding of every severity is fixed and proven before the feature is done.
+- Q: When a test needs something outside our control (a live external service, an API key, or a physical device), what counts as acceptable evidence if it is unavailable during a run? → A: The test must run against the real service or device every time; if it is unavailable, the test fails and the feature is not done.
+- Q: Should this feature change the shared modules that other projects also use (the governance constitution submodule and the reusable libraries), or only audit them and report findings? → A: Fix everything everywhere, including the governance submodule and all shared modules, and push their fixes to their own upstreams.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - One trustworthy register of every known and discovered problem (Priority: P1)
@@ -121,9 +129,11 @@ At any point, the owner can run one deterministic check and see that the main re
 ### Edge Cases
 
 - A finding turns out to be a false positive: it is closed with the evidence that disproves it, never deleted.
+- A finding cannot be fixed without a decision only the owner can make: the feature is not complete until the owner decides, so the finding is recorded as blocked with the owner's choices and what it blocks, and it is raised to the owner rather than guessed.
 - An index answers a question wrongly or is out of date: the audit stops relying on it for that class of question, falls back to direct reading, and records the gap.
+- An external service, credential or device needed by a test is unavailable: the test is reported as blocked with what is missing (distinct from a defect failure), it counts as not passing, and it is never skipped as a pass or replaced by a simulation.
 - A fix in one application breaks another application sharing a contract: the contract tests on both sides catch it before acceptance.
-- A dependency update requires a breaking change: it is recorded with the decision and the affected applications, not applied silently.
+- A submodule update breaks an application: the break is a finding, it is fixed before the update is accepted, and it is never applied silently.
 - A tracker or upstream host is unreachable: the item is recorded as skipped with the reason, and the missing sync is itself tracked.
 - A third-party or vendored repository cannot be made clean by us: it is reported as an accepted exception with its reason.
 - Two sources describe the same problem with different severities: the register keeps both views, links them, and records which severity governs.
@@ -146,10 +156,10 @@ At any point, the owner can run one deterministic check and see that the main re
 - **FR-003**: A problem that recurs MUST reopen its original item and MUST NOT create a new one.
 - **FR-004**: The register MUST be kept in sync with every configured external tracker, and an unreachable tracker MUST be reported as skipped with its reason, never as synced.
 - **FR-005**: The audit MUST use the project's structural and semantic code indexes as the first route for understanding the code, and MUST first demonstrate that each index is complete for the in-scope files, current, and correct on known test questions.
-- **FR-006**: The audit MUST cover every application and shared component: backend, services, APIs, web, desktop, mobile, TV, installer, shared libraries, website and build framework.
+- **FR-006**: The audit MUST cover every application and shared component: backend, services, APIs, web, desktop, mobile, TV, installer, shared libraries, website, build framework and the shared governance module. Findings in shared modules MUST be fixed in those modules and pushed to their own upstreams, with the same independent review and evidence as any other fix.
 - **FR-007**: Every finding MUST state its location, severity, category and machine-produced evidence, and MUST link to its register item.
-- **FR-008**: Every finding MUST be investigated to a root cause before a fix is applied, and every fix MUST be accompanied by a test that fails before the fix and passes after it.
-- **FR-009**: Every test type the constitution defines MUST exist for every application where it applies, and any absent type MUST be tracked as an item with a plan.
+- **FR-008**: Every finding, of every severity, MUST be investigated to a root cause before a fix is applied, and every fix MUST be accompanied by a test that fails before the fix and passes after it. The feature is not done while any finding is open. A finding may be closed without a fix only with evidence that it is a false positive or is structurally impossible to fix, never because it is low severity. A finding that is blocked waiting for an owner decision, a credential, a device or a missing service counts as open, so completion waits for the owner. A finding located only in vendored third-party code that the owner does not maintain is out of scope for changes: it is closed as an accepted exception with its reason and reported to that code's upstream, and it is excluded from the zero-open count.
+- **FR-009**: Every test type the constitution defines MUST exist for every application where it applies. An absent type is itself a finding and MUST be fixed by writing it; it is not closed by recording a plan.
 - **FR-010**: Every test, existing and new, MUST produce the same verdict on every run, MUST rely on measured and recorded results rather than prediction, and MUST be shown to fail when the behaviour it protects is deliberately broken.
 - **FR-011**: A minimum code-coverage floor MUST apply to executable code, as a necessary and never sufficient measure of test quality. It is adopted per application in phases: each application has a recorded coverage baseline and a dated target, and no application may fall below its recorded baseline at any time. During the phase-in the 85% floor of the project's governance gates new and changed code in full, and existing code is held to its recorded baseline and dated target.
 - **FR-012**: Every existing document MUST be reviewed and updated to match the current system, and every exported copy MUST match its source.
@@ -165,6 +175,7 @@ At any point, the owner can run one deterministic check and see that the main re
 - **FR-022**: Every completion claim MUST cite machine-produced evidence from the current work, and an unverified claim MUST be labelled as unconfirmed.
 - **FR-023**: The audit and its evidence MUST be independently reviewed by a reviewer separate from the author before acceptance, iterating until no blocking finding remains.
 - **FR-024**: All work MUST be done on the main branch of the main repository and on the main branch of every submodule, with no separate feature, product or flavor branches created for this work. Integration remains fast-forward only, with no history rewrite and no force-push.
+- **FR-025**: Any test of behaviour that depends on an external service, credential or physical device MUST run against the real one on every run. If it is unavailable, the test is reported as blocked with the exact reason, which counts as not passing, is never treated as a pass or a skip, and is never replaced by a simulation; the feature is not complete until the owner supplies the missing service, credential or device.
 
 ### Key Entities
 
@@ -183,15 +194,15 @@ At any point, the owner can run one deterministic check and see that the main re
 
 - **SC-001**: 100% of problems recorded in any existing tracker, report, QA bank or ticket appear in the register, and a machine-produced reconciliation lists each source entry with its register item.
 - **SC-002**: 100% of applications and shared components have a recorded audit result, and the audit repeated from the same state yields an identical set of findings.
-- **SC-003**: 100% of fixed items have a machine-recorded failing run before the fix and a passing run after it, and each passes identically across 3 repeated runs.
-- **SC-004**: For every test type the constitution defines, 100% of applications either have it or have a tracked item with a plan, and the coverage matrix shows zero unexplained gaps.
+- **SC-003**: 100% of findings, of every severity, are either fixed or closed with evidence (false positive, structurally impossible, or an accepted exception in vendored third-party code), zero findings remain open at completion, and every fixed item has a machine-recorded failing run before the fix and a passing run after it that passes identically across 3 repeated runs.
+- **SC-004**: For every test type the constitution defines, 100% of applications have it where it applies, and the coverage matrix shows zero gaps.
 - **SC-005**: Zero tests are accepted that still pass after the behaviour they protect is deliberately broken, measured on a sample drawn by the reviewer.
 - **SC-006**: 100% of in-scope documents are reachable from the main README by following links, and zero exported copies differ from their sources.
 - **SC-007**: Every application and service has a user manual, guides, a FAQ and its diagrams, and 100% of diagrams render non-blank.
 - **SC-008**: 100% of documented SQL schemas and templates match the definitions the system uses.
 - **SC-009**: 100% of dependencies are reported with their version, the upstream version and a status, and every dependency that is behind has a recorded decision.
 - **SC-010**: A recursive repository check reports every repository (main and all submodules at all depths) with a clean working tree and matching tips on every upstream, with zero unexplained exceptions.
-- **SC-011**: Every critical user-facing operation (browsing, search, playback start, scanning a source, sign-in, and each client's start-up) has a measured performance baseline and a documented target set for this project, no measured operation regresses against its baseline, and every identified bottleneck is either fixed with before-and-after measurements or tracked with a plan, aiming for the best achievable performance.
+- **SC-011**: Every critical user-facing operation (browsing, search, playback start, scanning a source, sign-in, and each client's start-up) has a measured performance baseline and a documented target set for this project, no measured operation regresses against its baseline, and every identified bottleneck is fixed with before-and-after measurements aiming for the best achievable performance.
 - **SC-012**: Zero completion claims in the final report lack a cited machine-produced evidence record from the current work.
 
 ## Assumptions
@@ -204,8 +215,11 @@ At any point, the owner can run one deterministic check and see that the main re
 - The work is delivered in priority order (P1 first), and each story can be accepted independently.
 - The owner's instruction that all work happens on main branches is a decision for this feature and overrides the default branch-per-feature convention; every commit still goes through review and is pushed to every upstream.
 - Pulling the latest governance submodule includes running its post-pull validation sweep and registration hook, because the project's governance requires them after every pull.
+- Vendored third-party repositories remain out of scope for changes (reported only); modules the owner maintains, including shared ones other projects use, are in scope for fixes.
 - The latency target from the adopted external constitution is not a criterion here, because the owner decided it applies to a different product.
 - Findings that require operator decisions are recorded as blocked items with their choices rather than guessed.
+- The owner supplies the external credentials and physical devices that real-service and real-device tests need, and tells us where they are (see FR-025). The owner's rule that an unavailable dependency means the test cannot pass is stricter than the governance's allowance of an honest skip with a reason; the blocked status in FR-025 reports the exact reason, so it does not mislabel an infrastructure gap as a defect failure.
+- An outdated third-party package is reported but is not a finding for the zero-open count, consistent with the decision that only submodules are updated.
 
 ## Brainstorm Log
 
