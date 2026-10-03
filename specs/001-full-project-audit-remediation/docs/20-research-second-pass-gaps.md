@@ -162,7 +162,7 @@ Three consequences follow, each directly from the text:
 
 1. **A developer workstation cannot be an L2 platform.** The Hosted requirement excludes it by name. Document 17 section 7.1 was right on this point.
 2. **The text does not require CI.** Nowhere in the quoted requirement is a CI service, a SaaS, or a particular product demanded. "Dedicated infrastructure" and "a special-purpose build platform used by a single software project" are explicitly within the definition of a platform. GitHub Actions and similar are listed as *examples*. This weakens doc 17's framing that §11.4.246 and §11.4.156 "cannot both be met in the strict SLSA sense"; they can be met only if the build host qualifies as a hosted platform that generates and signs provenance itself.
-3. **"Hosted" is not defined beyond that sentence.** Whether an owner-operated remote host such as the constitution's `thinker.local` is "hosted" is an interpretive question the specification does not settle. Secondary guidance says self-hosted runners "do not meet" L2 isolation [S8, summary], but that remark concerns GitHub's self-hosted runners and the L3 isolation notion, and the SLSA FAQ treats the self-hosted runner question as one of *who generates the provenance*: "the provenance is only affected by the platform so there would be no requirements imposed on the runner"; if the runner generates it, "all requirements are imposed on the runner" [S9 raw].
+3. **"Hosted" is not defined beyond that sentence.** Whether an owner-operated remote host such as the constitution's `thinker.local` is "hosted" is an interpretive question the specification does not settle. Secondary guidance says self-hosted runners "do not meet" L2 isolation [S8, summary], but that remark concerns GitHub's self-hosted runners and the L3 isolation notion, and the SLSA FAQ treats the self-hosted runner question as one of *who generates the provenance*: "the provenance is only affected by the platform so there would be no requirements imposed on the runner"; if the runner generates it, "all requirements are imposed on the runner" [S9 summary].
 
 **Where L2 draws the signing line.** For L2 the platform must "generate and sign the provenance itself" [S6 summary]; the spec says the platform "should implement controls preventing tenant tampering, though strength is unspecified at this level" [S7 summary]. The stricter "key not reachable by build steps" is an **L3** requirement. So an L2 claim does not require key isolation, but it does require that the *platform*, not the developer's interactive session, produce and sign the provenance, and that consumers verify it against an expected `builder.id`. The SLSA provenance schema states `builder.id` is "the trusted build platform's URI (sole SLSA level determiner)" and represents "the transitive closure of entities trusted to faithfully execute the build" [S10, summary].
 
@@ -695,7 +695,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 
 ### 10.4 Recommendation
 
-(1) Keep `lumen_verify.sh` as the recall instrument; build a 60-query golden set from the findings register; report per-language recall and the Kotlin gap explicitly. (2) Keep the default `ordis/jina-embeddings-v2-base-code` (Apache-2.0, the tool's cheapest). Trying `nomic-embed-code` or `qwen3-embedding:8b` is an experiment to run only with the same golden set and determinism check, and only if the host has the memory (§12.6). (3) Do not claim published benchmark numbers as predictions for this repository. **Confidence:** HIGH for the harness behaviour and the tool's language list (raw); MEDIUM for the academic summaries (abstracts only); LOW for any numeric benchmark comparison (not extracted).
+(1) Keep `lumen_verify.sh` as the recall instrument; build a 60-query golden set from the findings register; report per-language recall and the Kotlin gap explicitly. (2) Keep the default `ordis/jina-embeddings-v2-base-code` (Apache-2.0, the tool's cheapest). Trying `nomic-embed-code` or `qwen3-embedding:8b` is an experiment to run only with the same golden set and determinism check, and only if the host has the memory (§12.6). (3) Do not claim published benchmark numbers as predictions for this repository. **Confidence:** HIGH for the harness behaviour and the tool's language list (raw); MEDIUM for the academic summaries (abstracts only); LOW for any numeric benchmark comparison (CoIR numeric tables beyond the cited mean are not extracted).
 
 ---
 
@@ -736,7 +736,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 13. **tbls Mermaid ER output and `--force` flag**, and Atlas Open's rootless `docker://` dev-URL behaviour with Podman: not verified.
 14. **Whether the SQLite database is encrypted by SQLCipher in practice** and whether the `.sql` migration files are ever executed: not determined (needs a code trace).
 15. **Exact count of registered Gin routes**: only a grep count was obtained.
-16. **CoIR's metric (NDCG@10) and numeric tables beyond one cited mean**, and any benchmark for Kotlin: not extracted.
+16. **CoIR numeric tables beyond the one cited mean (56.26), and any Kotlin benchmark:** not extracted. NDCG@10 is confirmed (C12).
 17. **Embedding model licences** for `qwen3-embedding:8b` and `:4b` were not checked.
 
 ---
@@ -862,7 +862,7 @@ All accessed 2026-10-03. "Raw" means retrieved with `curl` and extracted; "summa
 
 **Theme 9: Semantic search**
 - **[S63]** CodeSearchNet repository, https://github.com/github/CodeSearchNet (raw).
-- **[S64]** CoIR benchmark paper, https://arxiv.org/abs/2407.02883 (raw abstract; PDF text partly readable).
+- **[S64]** CoIR benchmark paper, https://arxiv.org/abs/2407.02883 and https://arxiv.org/html/2407.02883v3 (raw abstract; PDF text partly readable; the v3 HTML confirms NDCG@10).
 - **[S65]** CodeXEmbed, https://arxiv.org/abs/2411.12644 (raw abstract).
 - **[S66]** CoRNStack, https://arxiv.org/abs/2412.01007 (raw abstract).
 - **[S67]** jina-code-embeddings, https://arxiv.org/abs/2508.21290 (raw abstract).

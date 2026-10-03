@@ -546,7 +546,7 @@ Go benchmarks per hot function (existing: 130): add for `database.DB.QueryContex
 | Item | Count |
 |---|---:|
 | Route registrations in `main.go` resolved with group prefixes (excluding `/debug/pprof`) | 247 |
-| Operations in `docs/api/openapi.yaml` (6,310 lines, 174 paths) | 181 |
+| Operations in `docs/api/openapi.yaml` (6,310 lines, 161 paths; the earlier 174-path figure was wrong, measured 2026-10-03) | 181 |
 | In code, not in the spec | 68 |
 | In the spec, not in code | 2 (`GET /api/v1/discovery` - the code serves `GET /discovery`; `GET /api/v1/recommendations/test`) |
 | Client calls in `catalogizer-api-client` (PoC `client_calls.api_client`) | 59 |

@@ -83,7 +83,7 @@ flowchart LR
 
 ### 3.1 Flaky-test elimination
 
-Sources on flakiness at primary level were not retrieved in this pass (UNCONFIRMED: no Google testing-blog or academic flaky-test paper was fetched). The practice below is therefore the project's own requirement (FR-010, SC-003: identical verdict across 3 repeated runs) rather than a cited external finding. Go supplies the primitives directly: `go test -count=N -shuffle=on -race` (standard toolchain, UNCONFIRMED against current docs this pass). Recommendation: the verification harness runs every changed test 3 times with shuffled order and records the three verdicts in the evidence file; a mixed verdict is a defect in the test, never a retry.
+Sources on flakiness at primary level were not retrieved in this pass (UNCONFIRMED: no Google testing-blog or academic flaky-test paper was fetched). The practice below is therefore the project's own requirement (FR-010, SC-003: identical verdict across 3 repeated runs) rather than a cited external finding. Go supplies the primitives directly: `go test -count=N -shuffle=on -race` (standard toolchain, UNCONFIRMED against current docs this pass). Recommendation: the verification harness runs every changed test 3 times with shuffled order and records the three verdicts in the evidence file; a mixed verdict is a defect in the test, never a retry. [corrected by doc 20 section 11 (C3)]
 
 ### 3.2 Real databases and services in containers
 
@@ -107,7 +107,7 @@ Sources on flakiness at primary level were not retrieved in this pass (UNCONFIRM
 | Go | turango (`turango test -mutate=./...`) | Appears only in a search snippet [R3]; nothing else known. | Unknown | UNCONFIRMED | SPECULATIVE |
 | TypeScript / Vite | **StrykerJS** with `@stryker-mutator/vitest-runner` | [R4]: available since Stryker 7.0; forces `perTest` coverage analysis; only `threads: true` supported; Browser Mode unsupported; incremental mode supported through test-location reporting. | Mature | Browser Mode unsupported means tests using Vitest browser mode cannot be mutation-tested. Check `catalog-web` test runner. UNCONFIRMED. | PROVEN |
 | Kotlin (Android, TV) | **PIT** via `gradle-pitest-plugin` plus Android fork `pl.droidsonroids.pitest`; Kotlin support | [R5] pitest.org states Kotlin support is in the Pro version (ArcMutate), not the open-source tool; search results also mention a `pitest-kotlin` plugin that filters Kotlin-generated mutants (SINGLE-SOURCE, not verified at primary source). | PIT mature; Android plugin version 0.2.25 per search listing, i.e. low-version community plugin | Mutation of Compose UI code on JVM unit tests is limited to what unit tests reach; Android instrumented tests are too slow for mutation. ArcMutate is paid: **do not adopt without owner approval**. | PLAUSIBLE (open-source PIT + pitest-kotlin), cost UNKNOWN for Pro |
-| Rust (Tauri backend) | **cargo-mutants** | [R6] mutants.rs / docs.rs: `cargo mutants`, `-f file` scoping; "actively maintained spare-time project, releases every one to two months" (as of Aug 2025). Features such as in-diff, sharding and JSON output were NOT confirmed this pass. | Mature for its niche | Whole-crate runs rebuild per mutant; use per-file scoping. | PROVEN (basic), UNCONFIRMED (feature list) |
+| Rust (Tauri backend) | **cargo-mutants** | [R6] mutants.rs / docs.rs: `cargo mutants`, `-f file` scoping; "actively maintained spare-time project, releases every one to two months" (as of Aug 2025). Features such as in-diff, sharding and JSON output were NOT confirmed this pass. | Mature for its niche | Whole-crate runs rebuild per mutant; use per-file scoping. | PROVEN (basic), UNCONFIRMED (feature list) [corrected by doc 20 section 11 (C7)] |
 
 **Control needle for the mutation tools themselves** (§11.4.201). Before trusting a "0 survivors" result, plant one known-surviving mutant (a deliberately untested branch) and assert the tool reports it. This is the same method the constitution applies to every measurement.
 
@@ -121,7 +121,7 @@ Sources on flakiness at primary level were not retrieved in this pass (UNCONFIRM
 |---|---|---|---|
 | pact-go v2 supports Pact specifications 2, 3 and 4 (HTTP, sync messages, plugins). | [R7], [R8] | PROVEN | |
 | pact-go v2 needs native FFI libraries compiled from Rust and `CGO_ENABLED=1` with gcc on Linux; `pact-go install` downloads the library (override path with `PACT_GO_LIB_DOWNLOAD_PATH`). | [R8] | PROVEN | Conflicts with the `CGO_ENABLED=0` reproducible-build rule (theme 5): contract tests would run in a separate test image, not the release build. Linux musl provider verification has a known segmentation fault per the README summary, so use a glibc image. |
-| `can-i-deploy` requires a Pact Broker; it cannot work from pact files alone. | [R9] | PLAUSIBLE (PARTIAL, INFERENCE: the source supports that `can-i-deploy` queries a Broker's verification matrix; "cannot work from pact files alone" is an inference, not a quoted statement, so it is no longer labelled PROVEN) | A broker is another service to run. A self-hosted broker container is possible; setup details were not retrieved. UNCONFIRMED. |
+| `can-i-deploy` requires a Pact Broker; (inference) it cannot work from pact files alone. | [R9] | PLAUSIBLE (PARTIAL, INFERENCE: the source supports that `can-i-deploy` queries a Broker's verification matrix; "cannot work from pact files alone" is an inference, not a quoted statement, so it is no longer labelled PROVEN) | A broker is another service to run. A self-hosted broker container is possible; setup details were not retrieved. UNCONFIRMED. |
 | Pact has JVM (Kotlin) and JS implementations. | search result, [R10] | SINGLE-SOURCE (aggregator) | Version and Android suitability not verified. |
 
 The constitution's §11.4.244 requires contract tests on both sides plus a `can-i-deploy`-style gate. FR-016 requires the same.
@@ -138,7 +138,7 @@ The constitution's §11.4.244 requires contract tests on both sides plus a `can-
 
 ```mermaid
 flowchart TD
-  S["catalog-api OpenAPI spec (source of truth, UNCONFIRMED whether one exists)"] --> D["oasdiff breaking: base vs head"]
+  S["catalog-api OpenAPI spec (source of truth, UNCONFIRMED whether one exists)"] --> D["oasdiff breaking: base vs head"] [corrected by doc 20 section 11 (C8)]
   S --> T["Schemathesis against live API container"]
   W["catalog-web / api-client / android / androidtv / desktop consumers"] --> P["Pact consumer tests produce pact files"]
   P --> V["Provider verification in catalog-api test image"]
@@ -148,7 +148,7 @@ flowchart TD
   B --> E
 ```
 
-**Which fit.** oasdiff + Schemathesis fit immediately if a machine-readable OpenAPI document exists for `catalog-api`; if it does not, the audit must first decide between generating one from the Gin routes or hand-writing it. That is a finding, not a plan item here (UNCONFIRMED: no OpenAPI file was located this pass; verify with `codegraph explore "openapi swagger"`). Pact fits the five consumer clients but costs a broker and a CGO test image; a cheaper first step is **file-based** consumer-driven contracts: consumers publish pact JSON into the repo, the provider verifies them, and a script computes the compatibility matrix locally. This forgoes the broker's `can-i-deploy` convenience but meets "detected before release" (FR-016) without a new service. The trade-off must be an explicit decision record in the contract plan document.
+**Which fit.** oasdiff + Schemathesis fit immediately if a machine-readable OpenAPI document exists for `catalog-api`; if it does not, the audit must first decide between generating one from the Gin routes or hand-writing it. That is a finding, not a plan item here (UNCONFIRMED: no OpenAPI file was located this pass; verify with `codegraph explore "openapi swagger"`). Pact fits the five consumer clients but costs a broker and a CGO test image; a cheaper first step is **file-based** consumer-driven contracts: consumers publish pact JSON into the repo, the provider verifies them, and a script computes the compatibility matrix locally. This forgoes the broker's `can-i-deploy` convenience but meets "detected before release" (FR-016) without a new service. The trade-off must be an explicit decision record in the contract plan document. [corrected by doc 20 section 11 (C8)]
 
 **Recommendation.** Adopt oasdiff (breaking-change gate between tagged baseline and head) and Schemathesis (run against the live containerized API) now; adopt Pact in file-based mode for the web, Android, TV, desktop and api-client consumers; defer a Pact Broker unless the matrix becomes unmanageable. Reject Dredd.
 
@@ -167,8 +167,8 @@ flowchart TD
 | **trivy** | Scanners for vulnerabilities, misconfiguration, secrets, licenses plus SBOM generation; targets images, filesystems, repositories, SBOMs; offline/air-gapped database support. | [R21] | See the incident below. | PROVEN capability, **supply-chain-risky provenance** |
 | **Trivy compromise (March 2026)** | Per vendor-security reporting, attackers force-pushed malicious code to 75 of 76 tags [corrected by doc 20 section 11 (C1): the vendor advisory says 76 of 77 version tags; images v0.69.4 to v0.69.6 with registry caveats] of `aquasecurity/trivy-action`; malicious Trivy binary v0.69.4 and images v0.69.4 to v0.69.6 were published after earlier credential theft. | [R22] (aggregated reporting; vendor primary advisory not fetched, UNCONFIRMED) | Never consume tools by mutable tag; pin by image digest; verify signatures; prefer versions after the incident. Applies equally to every tool in this table. | PROVEN as lesson |
 | **detekt** | Gradle plugin `dev.detekt`, SARIF/Checkstyle reports, baselines; docs show 2.0.0-alpha.6 while 1.23.8 is the latest 1.x stable. | [R23] | Use the 1.x stable line for gating; record that 2.0 is alpha. Kotlin version compatibility not confirmed. | PROVEN (1.x) |
-| **Android lint** | Part of AGP; was not researched this pass. | none | UNCONFIRMED. Plan: run `./gradlew lint` inside the Android build container; SARIF output availability must be verified. | n/a |
-| **cargo-audit / cargo-deny** | Not researched at primary level this pass. | none | UNCONFIRMED. Run both in a Rust container; cargo-deny additionally enforces licenses and bans. Verify before adopting. | n/a |
+| **Android lint** | Part of AGP; was not researched this pass. | none | UNCONFIRMED. Plan: run `./gradlew lint` inside the Android build container; SARIF output availability must be verified. | n/a [corrected by doc 20 section 11 (C11)] |
+| **cargo-audit / cargo-deny** | Not researched at primary level this pass. | none | UNCONFIRMED. Run both in a Rust container; cargo-deny additionally enforces licenses and bans. Verify before adopting. | n/a [corrected by doc 20 section 11 (C9)] |
 
 ### 5.2 Semgrep alternatives given the repeal
 
@@ -205,16 +205,16 @@ Every tool run MUST emit a control-needle check (a planted known finding, such a
 |---|---|---|---|
 | For Go, tracing and metrics SDKs are Stable and logs Beta; JavaScript traces and metrics Stable, logs in Development; Kotlin traces/metrics/logs Development. | [R26] (search-result summary of opentelemetry.io status pages) | SINGLE-SOURCE [Go logs Beta corrected by doc 20 section 11 (C4): the official table lists Go logs as Release candidate] | Exact status must be re-read on the official status page before adoption. |
 | `otelgin` is the Gin instrumentation in the `opentelemetry-go-contrib` repository. | [R26] | SINGLE-SOURCE | Version compatibility with the project's Gin version UNCONFIRMED. |
-| OpenTelemetry Android was heading to a 1.0 release candidate in October 2025; the `android-agent` initialiser is the stabilising piece, while all instrumentation modules stay `-alpha` and telemetry remains in "development" until semantic conventions stabilise. Instrumentation includes Android log, HttpURLConnection, view and Compose click, sessions. The summary did not mention crash/ANR. | [R27] | PROVEN as of the post date; the 2026 state is UNCONFIRMED | Instrumentation is HttpURLConnection-based; whether it covers the OkHttp/Retrofit stack used by the apps is UNKNOWN. |
+| OpenTelemetry Android was heading to a 1.0 release candidate in October 2025; the `android-agent` initialiser is the stabilising piece, while all instrumentation modules stay `-alpha` and telemetry remains in "development" until semantic conventions stabilise. Instrumentation includes Android log, HttpURLConnection, view and Compose click, sessions. The summary did not mention crash/ANR. | [R27] | PROVEN as of the post date; the 2026 state is UNCONFIRMED | Instrumentation is HttpURLConnection-based; whether it covers the OkHttp/Retrofit stack used by the apps is UNKNOWN. [corrected by doc 20 section 11 (C5)] |
 | A Kotlin Multiplatform OpenTelemetry API and SDK was announced in March 2026; Android/JVM most battle-tested, APIs not stable. | [R26] | SINGLE-SOURCE | Not recommended for gating. |
-| Structured logs and trace-based testing | no primary source retrieved | SPECULATIVE for this project | See below. |
+| Structured logs and trace-based testing | no primary source retrieved | SPECULATIVE for this project | See below. [corrected by doc 20 section 11 (C6)] |
 
 **What this means for the audit.** The feature's observability need is diagnostic: reproduce findings with correlated evidence, not run production telemetry. A pragmatic, low-risk design:
 
 1. Backend: a request-id/trace-id middleware (OTel Go SDK, stable) writing structured JSON logs; during audit runs, export spans to a file or a local OTLP collector container. Evidence records cite the trace id.
 2. Web: browser tracing is optional; propagate the `traceparent` header on API calls so backend spans link to the UI action. Treat browser instrumentation as lower priority (JS logs still in development).
 3. Android and TV: do **not** make alpha instrumentation a dependency of the audit; use the existing Crashlytics path (§11.4.152) and structured logcat tags.
-4. **Trace-based testing** (asserting on spans produced during a test) is an idea with no primary source retrieved; classify as SPECULATIVE and run only as a pilot on one critical flow (scan a source, start playback) where the span assertion complements, never replaces, a behaviour assertion.
+4. **Trace-based testing** (asserting on spans produced during a test) is an idea with no primary source retrieved; classify as SPECULATIVE and run only as a pilot on one critical flow (scan a source, start playback) where the span assertion complements, never replaces, a behaviour assertion. [corrected by doc 20 section 11 (C6)]
 
 **Recommendation.** Adopt OTel Go with `otelgin` plus file/OTLP-collector export for audit diagnostics; propagate `traceparent` from web; defer Android instrumentation to a later phase. Fit with SC-011: spans give per-operation timing for the baselines.
 
@@ -320,7 +320,7 @@ sequenceDiagram
 | The repository's own benchmark claims, on 7 codebases, Claude Code answering architecture questions: 88% fewer tool calls, 53% faster, 62% fewer tokens, 44% cheaper; 1 to 4 calls with the index versus 6 to 43 without; **savings are negligible when exploration is cheap**. | [R43] | SINGLE-SOURCE, VENDOR-REPORTED. Not independently reproduced. The project's own constitution (§11.4.275) records a stricter local measurement in which the index route also answered some fixture queries wrongly; that local evidence outranks this claim. |
 | Limits stated by the project: needs `.codegraph/`; cannot follow reflection or DI containers; framework routing coverage varies (73 to 100%). | [R43] | PROVEN as stated limits | Directly relevant to Gin handlers and Android DI. |
 | Aider's repo map sends a compact map of classes and function signatures and ranks files with a graph-ranking algorithm over a file dependency graph, within a token budget (default 1k via `--map-tokens`); the page does not mention tree-sitter. | [R44] | PROVEN as description | No quantitative effectiveness data on the page. |
-| Embedding-based retrieval has standard benchmarks: CoIR (10 datasets, four task types, NDCG@10) and retrieval adaptations of SWE-bench (find files to edit). One search result states code-specialised embeddings strongly dominate code-to-code retrieval and no single model wins all tasks. | [R45] | SINGLE-SOURCE (arXiv/aggregators; the 2x claim comes from a result page not read in full) | The benchmarks measure general models, not this repository. |
+| Embedding-based retrieval has standard benchmarks: CoIR (10 datasets, four task types, NDCG@10) and retrieval adaptations of SWE-bench (find files to edit). One search result states code-specialised embeddings strongly dominate code-to-code retrieval and no single model wins all tasks. | [R45] | SINGLE-SOURCE (arXiv/aggregators; the 2x claim comes from a result page not read in full) | The benchmarks measure general models, not this repository. [corrected by doc 20 section 11 (C12)] |
 | Direct head-to-head evidence of graph-versus-embedding retrieval on a mixed Go/TS/Kotlin repository was not found. | none | UNKNOWN | |
 
 ### 11.2 How to prove an index is complete (FR-005)
@@ -393,11 +393,11 @@ Rank 13 is first in time even though it ranks lower on cost-benefit order, becau
 ## 14. Open questions and what could not be verified <a id="14-unverified"></a>
 
 1. `UNCONFIRMED:` Go 1.25.7 compatibility of Gremlins, go-mutesting and turango; none was run.
-2. `UNCONFIRMED:` whether `cargo-mutants` offers in-diff, sharding and JSON output (the fetched welcome page did not list them).
+2. `UNCONFIRMED:` whether `cargo-mutants` offers in-diff, sharding and JSON output (the fetched welcome page did not list them). [corrected by doc 20 section 11 (C7)]
 3. `UNCONFIRMED:` pact-go and pact-js versions compatible with Go 1.25 and the project's TypeScript version; Pact JVM suitability for Android.
 4. `UNCONFIRMED:` Pact Broker self-hosting procedure in rootless containers.
-5. `UNCONFIRMED:` existence and location of an OpenAPI document for `catalog-api`.
-6. `UNCONFIRMED:` osv-scanner ecosystem list (Gradle lockfiles, Cargo) and output formats; cargo-audit, cargo-deny, Android lint: not researched.
+5. `UNCONFIRMED:` existence and location of an OpenAPI document for `catalog-api`. [corrected by doc 20 section 11 (C8)]
+6. `UNCONFIRMED:` osv-scanner ecosystem list (Gradle lockfiles, Cargo) and output formats; cargo-audit, cargo-deny, Android lint: not researched. [corrected by doc 20 section 11 (C9)]
 7. `UNCONFIRMED:` govulncheck offline operation and database mirroring procedure.
 8. `UNCONFIRMED:` primary vendor advisory for the Trivy incident (secondary reporting only); whether any currently used image or action in this repository depends on affected versions.
 9. `UNCONFIRMED:` mermaid-cli exit code on syntax errors and the Chromium sandbox setting inside rootless Podman.
@@ -456,4 +456,4 @@ Format: id, title, URL, access date, supports, limits. All accessed 2026-10-03.
 - **[R42]** Tauri v2 WebDriver testing (https://v2.tauri.app/develop/tests/webdriver/) and webdriver.io Tauri platform support (https://webdriver.io/docs/desktop-testing/tauri/platform-support), via search results. Supports: tauri-driver, WebKitWebDriver, Xvfb, screenshot capability. Limits: not fetched directly.
 - **[R43]** colbymchenry/codegraph repository, https://github.com/colbymchenry/codegraph. Supports: architecture, vendor benchmark, limits. Limits: vendor-reported; identity with the locally installed CodeGraph is UNCONFIRMED.
 - **[R44]** Aider documentation, "Repository map", https://aider.chat/docs/repomap.html. Supports: map concept, graph ranking, token budget. Limits: no effectiveness numbers.
-- **[R45]** CoIR: A Comprehensive Benchmark for Code Information Retrieval Models, https://arxiv.org/abs/2407.02883 (also https://arxiv.org/html/2407.02883v2), found via search. Supports: benchmark structure, NDCG@10. Limits: only the search summary was read; the embedding-comparison claim comes from a different result page and is SINGLE-SOURCE.
+- **[R45]** CoIR: A Comprehensive Benchmark for Code Information Retrieval Models, https://arxiv.org/abs/2407.02883 (also https://arxiv.org/html/2407.02883v2), found via search. Supports: benchmark structure, NDCG@10. Limits: only the search summary was read; the embedding-comparison claim comes from a different result page and is SINGLE-SOURCE. [corrected by doc 20 section 11 (C12)]

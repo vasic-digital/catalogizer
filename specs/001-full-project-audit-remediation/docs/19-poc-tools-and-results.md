@@ -102,9 +102,9 @@ Ancestry uses `git merge-base --is-ancestor`; the fetch-only step (`git fetch --
                "remotes": [ { "remote": "github", "url": "git@github.com:...", "remote_tip": "ceb948a2...", "class": "SAME" } ] } ] }
 ```
 
-### 3.3 Self-test (24 checks, local fixtures only, about 40 s)
+### 3.3 Self-test (24 checks, local fixtures only, about 6 to 40 s, host-dependent (measured 6.2 s on 2026-10-03))
 
-Golden-good: clean synchronised repo exits 0 with `SAME`. Golden-bad: dirty tracked file (exit 1), unpushed commit (`REMOTE-BEHIND`, exit 1), diverged (`DIVERGED`, exit 1). Behind: `UNKNOWN-DIFFERENT` and exit 3 without fetch, `LOCAL-BEHIND` and exit 0 with `--fetch`, exit 1 with `--strict`. Unreachable remote: `UNREACHABLE`, exit 3. Negative controls: a git shim that prints banner text (including a 40-hex-looking token followed by non-whitespace is not an issue because only `hex40<whitespace>` lines match) before `ls-remote` still yields `SAME`; a shim whose only output is noise yields `NO-REMOTE-BRANCH`, never `SAME`; a parent with a clean submodule followed by a dirty one lists all three repositories and exits 1 (the `foreach` abort pitfall); the exception list suppresses the exit code but records the exception. A first run of this self-test exposed a real design flaw (a dirty child made its parent dirty, so the exception could never produce exit 0); it was fixed with `--ignore-submodules=all` and the test then passed.
+Golden-good: clean synchronised repo exits 0 with `SAME`. Golden-bad: dirty tracked file (exit 1), unpushed commit (`REMOTE-BEHIND`, exit 1), diverged (`DIVERGED`, exit 1). Behind: `UNKNOWN-DIFFERENT` and exit 3 without fetch, `LOCAL-BEHIND` and exit 0 with `--fetch`, exit 1 with `--strict`. Unreachable remote: `UNREACHABLE`, exit 3. Negative controls: a git shim that prints banner text before `ls-remote`, including a 40-hex token followed by non-whitespace (ignored, because only `hex40<whitespace>` lines match), still yields `SAME`; a shim whose only output is noise yields `NO-REMOTE-BRANCH`, never `SAME`; a parent with a clean submodule followed by a dirty one lists all three repositories and exits 1 (the `foreach` abort pitfall); the exception list suppresses the exit code but records the exception. A first run of this self-test exposed a real design flaw (a dirty child made its parent dirty, so the exception could never produce exit 0); it was fixed with `--ignore-submodules=all` and the test then passed.
 
 ## 4. Tool 2: `doc_links/crawl_links.py`
 
@@ -225,7 +225,7 @@ Stale spec entries: `GET /api/v1/discovery` and `GET /api/v1/recommendations/tes
 | Broken anchors | not measured | 82 (83 under `--site-root`) | **New**: the largest sources are three archived plans under `docs/plans/archive/` (17, 13 and 10 anchors) and `README.md` (14); the old crawler did not check anchors |
 | Submodule counts (docs 01, 16) | 44 direct + 53 nested = 97 (24 constitution, 29 helix_qa) | 98 repositories = main + 97, split reproduced | Reproduced |
 | Route registrations (doc 07 section 12.1) | 247 | 247 | Reproduced exactly |
-| OpenAPI operations | 181 (174 paths) | 181 | Reproduced exactly |
+| OpenAPI operations | 181 (174 paths) | 181 | Operations reproduced (181); doc 07's 174-path figure is wrong: 161 paths measured 2026-10-03 |
 | In code, not in spec | 68 | 68 | Reproduced exactly |
 | In spec, not in code | 2 | 2 (same two entries) | Reproduced exactly |
 | Client operations, `catalogizer-api-client` (doc 07) | 50 | 59 | **Differs**: the old regex missed calls with TypeScript generic arguments or query templates; this tool captures 9 more |

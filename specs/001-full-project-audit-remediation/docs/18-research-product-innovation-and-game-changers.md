@@ -312,7 +312,7 @@ Repository grounding (doc 01 and direct reads): JWT HS256 with 24 h default expi
 | T6-E | E2E-encrypted cloud sync using `age` or secretstream with client-held keys, so S3 or GCS only ever store ciphertext. Requires a key-recovery story. | PROPOSAL | catalog-api sync service | L | High | High |
 | T6-F | Zero-trust LAN posture: default to authenticated everything (including `/discovery` and image routes after review), TLS everywhere with real certificates option (self-signed HTTPS exists per doc 01), per-device tokens revocable from the UI. | PROPOSAL | catalog-api, clients | M | Medium | Low |
 
-Anti-pattern warning supported by section 3.1.2: forcing a vendor account for local playback is the stated reason users abandon Plex; any passkey or cloud feature must stay optional.
+Anti-pattern warning supported by section 3.1, finding 1.2: forcing a vendor account for local playback is the stated reason users abandon Plex; any passkey or cloud feature must stay optional.
 
 ## 9. Theme 7 - Observability and self-healing
 
@@ -320,9 +320,9 @@ Anti-pattern warning supported by section 3.1.2: forcing a vendor account for lo
 
 | # | Finding | Evidence | Label |
 |---|---|---|---|
-| 7.1 | OpenTelemetry Go: traces and metrics are stable, logs are beta (as stated by a secondary summary). Prometheus `/metrics` is the common Go pattern. | [S42] (secondary) | PROVEN |
+| 7.1 | OpenTelemetry Go: traces and metrics are stable, logs are Release candidate per the official status table (doc 20 §5.1, C4; the earlier "beta" summary was wrong). Prometheus `/metrics` is the common Go pattern. | [S42] (secondary) | PROVEN |
 | 7.2 | FTS5 ships `integrity-check` and `rebuild`; SQLite documents corruption causes and safe backup commands (`VACUUM INTO`, backup API, `sqlite3_rsync` from 3.47.0). Search-index corruption is therefore repairable by rebuild from content, which suggests derived indexes should be rebuildable by design. | [S9], [S12] | PROVEN |
-| 7.3 | Litestream continuously replicates WAL pages to object storage and can restore a backup to a temp location. The "write a marker row, replicate it, restore, check the row" verification is **not** a Litestream core feature: the Litestream How-it-works page and CLI reference list no `verify` command; the mechanism is attributed to third-party wrappers (django-litestream, litestream-ruby), and the exact command names and behaviour of those wrappers were not re-verified here. | [S36] for replication and restore; wrapper behaviour UNVERIFIED (third-party) | PROVEN (replication, restore) / UNCONFIRMED (marker-row verify as core Litestream) |
+| 7.3 | Litestream continuously replicates WAL pages to object storage and can restore a backup to a temp location. The "write a marker row, replicate it, restore, check the row" verification is **not** a Litestream core feature: the Litestream How-it-works page and CLI reference list no `verify` command; the mechanism is attributed to third-party wrappers (django-litestream, litestream-ruby), and the wrapper commands were verified from the wrapper READMEs (2026-10-03); Litestream core still has no verify command. | [S36] for replication and restore; wrapper behaviour verified from READMEs [S36a], [S36b] (third-party) | PROVEN (replication, restore) / UNCONFIRMED (marker-row verify as core Litestream) |
 | 7.4 | Peers' opacity is a top complaint (library not updating, wrong match, no reason shown). Explainability is a differentiator, not a luxury (themes 1 and 2). | [S1], [S23], [S46] | PROVEN (as complaint) |
 
 Repository grounding: health endpoints exist (`/health`, `/api/v1/health`, `/health/deep` at `catalog-api/main.go:1047`), Prometheus `/metrics`, a monitoring directory with Prometheus, Alertmanager and OpenTelemetry configuration (doc 01 section 3.7). The depth and correctness of `/health/deep` and the existence of integrity checks are UNCONFIRMED and belong to document 07.
@@ -365,7 +365,7 @@ A scan report per run, machine readable and human readable, with: sources and st
 | 8.3 | `oapi-codegen` generates Go server stubs (including Gin and a strict server mode), clients and models from OpenAPI 3.0 or 3.1, supporting webhooks in 3.1. | [S39] | PROVEN |
 | 8.4 | Radarr and Sonarr ecosystem shows the value of config-as-code and community rule distribution (Recyclarr, Profilarr). | [S3], [S4] | PROVEN |
 
-Repository grounding: handlers already carry Swagger-style annotations (`// @Router /api/search [get]` in `catalog-api/handlers/search.go`), but doc 01 section 3.6 reports that 26 of 53 routes in the TypeScript API client have no matching static route in `main.go`, and routes are registered in two styles (Gin and gorilla/mux). This is direct evidence that the contract is not machine-checked (FR-016). Whether a generated OpenAPI document is published and current is UNCONFIRMED.
+Repository grounding: handlers already carry Swagger-style annotations (`// @Router /api/search [get]` in `catalog-api/handlers/search.go`), but doc 01 section 3.6 reports that 26 of 53 routes (superseded by doc 19 §6.3/§7: 59 calls, 31 without a route) in the TypeScript API client have no matching static route in `main.go`, and routes are registered in two styles (Gin and gorilla/mux). This is direct evidence that the contract is not machine-checked (FR-016). Whether a generated OpenAPI document is published and current is UNCONFIRMED.
 
 ### 10.2 Candidates
 
@@ -405,9 +405,9 @@ Repository grounding (doc 01): the Android TV app declares `androidx.tv:tv-found
 | # | Finding | Evidence | Label |
 |---|---|---|---|
 | 10.1 | Podman Quadlet turns small declarative files (`.container`, `.network`, `.volume`, `.pod`) into systemd units; supported since Podman 4.4, recommended deployment style from Podman 5, works rootless, and `podman-auto-update` can update and roll back images. This matches the constitution's rootless-container rule. | [S44] (secondary) | PROVEN |
-| 10.2 | SLSA Build track: L1 provenance exists, L2 hosted build with signed provenance, L3 hardened build isolation. | [S45] (primary) | PROVEN |
+| 10.2 | SLSA Build track (v1.0; current spec v1.2, see doc 20 §3.1): L1 provenance exists, L2 hosted build with signed provenance, L3 hardened build isolation. | [S45] (primary) | PROVEN |
 | 10.3 | SQLite backup guidance: `VACUUM INTO`, backup API, `sqlite3_rsync` (3.47.0 and later); never copy a live database without its WAL or journal. | [S12] | PROVEN |
-| 10.4 | Continuous replication (Litestream; the marker-row verification belongs to third-party wrappers such as django-litestream and litestream-ruby, not to Litestream core) is the peer pattern for single-node SQLite disaster recovery, but it holds a long read transaction and manages checkpoints itself; it applies to SQLite deployments only (Catalogizer also supports PostgreSQL). | [S36] | PROVEN |
+| 10.4 | Continuous replication (Litestream; the marker-row verification belongs to third-party wrappers such as django-litestream and litestream-ruby, not to Litestream core; verified from the wrapper READMEs 2026-10-03) is the peer pattern for single-node SQLite disaster recovery, but it holds a long read transaction and manages checkpoints itself; it applies to SQLite deployments only (Catalogizer also supports PostgreSQL). | [S36] | PROVEN |
 
 Repository grounding (doc 01): compose-based deployment exists, `config/systemd/catalogizer-api.service` exists, there is a `Build/` framework and `docker/Dockerfile.builder`, versions disagree (application manifests say 2.4.0, `versions.json` says global 2.3.0), and `catalog-api` ships a second binary `cmd/boot`. Single-binary distribution is partly constrained by cgo (the repository uses the cgo `go-sqlcipher` driver, so a fully static pure-Go binary is not the default, UNCONFIRMED whether a static musl build is used).
 
@@ -430,7 +430,7 @@ Ranking criteria: impact on the stated user pain points (section 3), strength of
 | 2 | Hybrid local search (FTS5 or tsvector plus optional embeddings, RRF) with "why matched" (T4-B, T4-C) | PROVEN components; combined on a NAS: EMERGING | PROPOSAL | Replaces substring search; mirrors the experience users praise in Immich | Index size, CPU, dialect parity |
 | 3 | Source-aware change detection with capability probe, grace window and fingerprint re-link (T3-B, T3-C, T2-D) | Protocol PROVEN; Go client support UNCONFIRMED | PROPOSAL | Makes "real-time monitoring" honest and keeps user state across outages | Complexity; protocol quirks |
 | 4 | Verified-restore backups and self-healing indexes (T7-B, T7-C, T3-F) | PROVEN (Litestream replication and restore, FTS5 rebuild, SQLite backup API); the marker-row verify technique is UNCONFIRMED, attributed to third-party wrappers (django-litestream, litestream-ruby), not Litestream core | PROPOSAL (T7-B, T7-C) plus R-ADJ part (T3-F backup procedure, which the audit's data-safety findings already cover) | Cheap, trust-building, and aligned with the audit's evidence culture | Dual-dialect support |
-| 5 | OpenAPI-first contract with generated or validated clients (T8-A) | PROVEN | R-ADJ part (T8-A contract testing against a drift class the audit measures) plus PROPOSAL part (server-stub generation) | Removes a drift class that doc 01 already measured (26 of 53 client routes unmatched) | Migration of two route styles |
+| 5 | OpenAPI-first contract with generated or validated clients (T8-A) | PROVEN | R-ADJ part (T8-A contract testing against a drift class the audit measures) plus PROPOSAL part (server-stub generation) | Removes a drift class that doc 01 already measured (26 of 53 client routes unmatched; superseded by doc 19 §6.3/§7: 59 calls, 31 without a route) | Migration of two route styles |
 | 6 | Passkeys plus per-device revocable tokens, optional by design (T6-C, T6-F) | Standard PROVEN; client support UNCONFIRMED | PROPOSAL | Security and accessibility (WCAG 3.3.8) gain | Platform support in Tauri and Android |
 | 7 | Server-authoritative event log for per-user state and playback handoff (T5-A, T5-B, T5-D) | EMERGING (pattern used by sync engines); CRDT variant SPECULATIVE | PROPOSAL (T5-A, T5-B) plus R-ADJ part (T5-D, authenticating the WebSocket first, an existing defect class) | Fixes cross-device continuity complaints | Merge-rule edge cases |
 | 8 | Out-of-process plugin and signed webhook platform (T8-B, T8-C) | PROVEN in peers (in-process); out-of-process EMERGING | PROPOSAL | Ecosystem leverage | Security surface, support cost |
@@ -458,7 +458,7 @@ Ranking criteria: impact on the stated user pain points (section 3), strength of
 - Note: any test that needs a real external service must run against the real one (FR-025); an unavailable share is reported as blocked, never simulated.
 
 **E4 - Verified restore (rank 4).**
-- Hypothesis: a scripted backup plus restore into a scratch DB can prove, on every run, that the backup is restorable and current (marker row technique, as implemented by the third-party wrappers django-litestream and litestream-ruby; Litestream core lists no verify command, so the script is ours to write) for both SQLite and PostgreSQL.
+- Hypothesis: a scripted backup plus restore into a scratch DB can prove, on every run, that the backup is restorable and current (marker row technique, as implemented by the third-party wrappers django-litestream and litestream-ruby; wrapper commands verified from the wrapper READMEs (2026-10-03); Litestream core still has no verify command, so the script is ours to write) for both SQLite and PostgreSQL.
 - Design: run the job against a live write load; corrupt the primary on purpose (truncate the file in a scratch copy, delete the WAL) and measure whether the job detects it and how long recovery takes.
 - Pass: the corrupted case is detected in 100 percent of 20 trials and recovery meets a predeclared recovery time. Fail: any undetected corruption.
 
@@ -530,17 +530,19 @@ All accessed 2026-10-03. "Primary" = specification, official documentation, proj
 | S33 | How to Implement Encryption with SQLCipher | https://oneuptime.com/blog/post/2026-02-02-sqlcipher-encryption/view | secondary | Key derivation, iterations advice | Conflicting default values; read SQLCipher docs for the used version |
 | S34 | age; libsodium secretstream | https://github.com/FiloSottile/age and https://doc.libsodium.org/secret-key_cryptography/secretstream | primary | File and stream encryption | Not evaluated against sync design |
 | S35 | JWT algorithm confusion (PentesterLab glossary) | https://pentesterlab.com/glossary/jwt-algorithm-confusion | secondary | Alg pinning | Not an official OWASP page; confirm in OWASP cheat sheet |
-| S36 | Litestream: How it works | https://litestream.io/how-it-works/ | primary | Replication and verify | SQLite only |
+| S36 | Litestream: How it works | https://litestream.io/how-it-works/ | primary | Replication and restore; no `verify` command (marker-row verify is third-party) | SQLite only |
+| S36a | django-litestream README (manage.py litestream verify) | https://github.com/Tobi-De/django-litestream | primary (wrapper README) | Wrapper verify command | Third-party, not Litestream core |
+| S36b | litestream-ruby README (Litestream.verify! writes a _litestream_verification row) | https://github.com/fractaledmind/litestream-ruby | primary (wrapper README) | Wrapper verify method | Third-party, not Litestream core |
 | S37 | Jellyfin documentation: Plugins | https://jellyfin.org/docs/general/server/plugins | primary | Repository manifests | Security statement came from a secondary summary |
 | S38 | Webhook signature (Svix glossary) | https://www.svix.com/resources/glossary/webhook-signature/ | secondary | Standard Webhooks summary | Specification text not fetched |
 | S39 | oapi-codegen | https://github.com/oapi-codegen/oapi-codegen | primary (repo) | OpenAPI 3.0 and 3.1, Gin, strict server | Fit with existing route style unverified |
 | S40 | Android Developers: Design for TV | https://developer.android.com/design/ui/tv/guides/foundations/design-for-tv | primary | 10-foot UI, D-pad, focus | The safe-margin figure came from a secondary source |
 | S40b | Android Developers: Create scrollable layouts for TV (Compose) | https://developer.android.com/training/tv/playback/compose/lists?hl=fr | primary (localised page) | TV lazy layouts deprecation, focusRestorer | Read through a search summary |
 | S41 | What's New in WCAG 2.2 | https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/ | primary | Nine new criteria | - |
-| S42 | OpenTelemetry Go documentation | https://opentelemetry.io/docs/languages/go/ | primary (index) | Go support | Stability statuses came from a secondary summary |
+| S42 | OpenTelemetry Go documentation | https://opentelemetry.io/docs/languages/go/ | primary (index) | Go support | Stability statuses came from a secondary summary; its "logs beta" was wrong, the official table says Release candidate (doc 20 C4) |
 | S43 | ICU guide (GitLab translate); Weblate overview | https://unicode-org.github.io/icu/userguide/format_parse/messages/ (ICU MessageFormat, checked HTTP 200 on 2026-10-03; the earlier source https://translate.gitlab.com/blog/icu-guide is DEAD, it redirects to a 404 page) and https://blog.elest.io/weblate-free-open-source-alternative-to-crowdin-lokalise/ | primary (ICU user guide) plus secondary (Weblate blog) | ICU plurals, Weblate | Vendor blog for Weblate; the GitLab ICU guide link was dead and was replaced |
 | S44 | Run Podman Containers as systemd Services with Quadlet | https://www.golinuxcloud.com/podman-quadlet-systemd/ | secondary | Quadlet | Read Podman docs for exact version support |
-| S45 | SLSA specification v1.0: Levels | https://slsa.dev/spec/v1.0/levels | primary | Build L1 to L3 | - |
+| S45 | SLSA specification v1.0: Levels (current spec v1.2; see doc 20 §3.1) | https://slsa.dev/spec/v1.0/levels | primary | Build L1 to L3 | - |
 | S46 | OSMC forum: Library updates not working reliably | https://discourse.osmc.tv/t/library-updates-not-working-reliably/87926 | secondary | Kodi library update complaints | Anecdotal |
 | S47 | Kavita vs Calibre-Web vs Komga | https://selfhosting.sh/compare/kavita-vs-calibre-web-vs-komga/ | secondary | Product split | Comparison blog |
 | S48 | How Jellyfin Turns Client Limits Into a Transcoding Pipeline | https://shop.zimaspace.com/blogs/tech-ai-hub/how-jellyfin-turns-client-limits-into-a-transcoding-pipeline | secondary | Transcoding stages | Vendor blog |
@@ -651,4 +653,4 @@ count_bak=$(sqlite3 "$out" "SELECT count(*) FROM files")
 printf '{"backup":"%s","integrity":"ok","rows_src":%s,"rows_bak":%s}\n' "$out" "$count_src" "$count_bak"
 ```
 
-Note: counts can differ slightly if writes occur between the two reads; a marker-row technique (implemented by the third-party wrappers django-litestream and litestream-ruby; [S36] does not describe a verify command) is stricter. If the production DB is SQLCipher-encrypted, the `sqlite3` CLI needs an SQLCipher-enabled build and the key (not shown, and no key may be written to logs, constitution CONST-042).
+Note: counts can differ slightly if writes occur between the two reads; a marker-row technique (implemented by the third-party wrappers django-litestream and litestream-ruby; verified from the wrapper READMEs 2026-10-03 [S36a], [S36b]; Litestream core still has no verify command, [S36] describes none) is stricter. If the production DB is SQLCipher-encrypted, the `sqlite3` CLI needs an SQLCipher-enabled build and the key (not shown, and no key may be written to logs, constitution CONST-042).
