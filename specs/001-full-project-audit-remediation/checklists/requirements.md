@@ -1,5 +1,12 @@
 # Specification Quality Checklist: Full Project Audit and Remediation
 
+| Field | Value |
+|---|---|
+| Revision | 3 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | complete for the specification as clarified (revision 3: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no checklist item changed. Revisions 1 and 2 are commits `4e633fec` and `8aee842f`, read with `git log`) |
+
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-10-03
 **Feature**: [spec.md](../spec.md)

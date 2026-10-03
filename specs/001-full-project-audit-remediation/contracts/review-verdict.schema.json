@@ -1,15 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "review-verdict/1",
-  "title": "Independent review verdict file ($EV/reviews/<gate-or-wp>.json)",
-  "description": "Format of every [REVIEW] verdict file of tasks.md (docs/21 section 4.4 and IC-46, the plan owner's held-commit rules after the review of commit af664ed0). Producer: the reviewing stream ST-REV, never the stream that made the change (FR-023, constitution 11.4.142, 11.4.240). Consumers: the commit-push script stage S6, which releases a held commit (one whose message carries `Awaits-Review: <this file's path>`) only when this file is committed in the main repository's HEAD with verdict GO and its covers_runs lists the held commit's CPA-Run id; stage S5, which refuses a new hold on a file that already holds GO (exit 20, reason verdict_already_go); the register importer of review rows (docs/04 reg_reviews: GO or NO-GO, model and effort). covers_runs lists every commit the review read, each by repository path (`.` for the main repository, otherwise the submodule path from the main repository root), commit sha and the CPA-Run id from that commit's trailer; it may be empty when the reviewed change is not committed yet (a task that commits only after its GO), and such a verdict releases no held commit. model and effort record what actually performed the review (constitution 11.4.209: Opus at xhigh); effort `?` records that the dispatch path could not set or report it (11.4.231(F.2)), never a claimed xhigh. Validated only against synthetic fixtures (no verdict file exists yet); see contracts/README.md. Other fields a task records (findings, reviewer-authored mutations, gate-specific checks) are allowed.",
+  "title": "Independent review verdict file ($EV/reviews/<gate-or-wp>[-<item>][-r<n>].json)",
+  "description": "Format of every [REVIEW] verdict file of tasks.md (docs/21 section 4.4 and IC-46, the plan owner's held-commit rules after the review of commit af664ed0). Producer: the reviewing stream ST-REV, never the stream that made the change (FR-023, constitution 11.4.142, 11.4.240). Consumers: the commit-push script stage S6, which releases a held commit (one whose message carries `Awaits-Review: <this file's path>`) only when this file is committed in the main repository's HEAD with verdict GO and its covers_runs lists the held commit's CPA-Run id; stage S5, which refuses a new hold on a file that already holds GO (exit 20, reason verdict_already_go); the register importer of review rows (docs/04 reg_reviews: GO or NO-GO, model and effort). covers_runs lists every commit the review read, each by repository path (`.` for the main repository, otherwise the submodule path from the main repository root), commit sha and the CPA-Run id from that commit's trailer; it may be empty when the reviewed change is not committed yet (a task that commits only after its GO), and such a verdict releases no held commit. model and effort record what actually performed the review (constitution 11.4.209: Opus at xhigh); effort `?` records that the dispatch path could not set or report it (11.4.231(F.2)), never a claimed xhigh. blocking_findings is required (contracts revision 8): 0 on a GO and at least 1 on a NO-GO, so a GO can never carry an open blocking finding or omit the count (docs/16 section 12.2.4 (e); the round-9 content review of commit b9412d06 found a GO without the field VALID). File name: <gate-or-wp>, an optional -<item> for one item of a package (for example WP-39R-code) and an optional -r<n> for a later review iteration, which holds work made after an earlier GO (tasks.md abbreviation table). Validated only against synthetic fixtures (no verdict file exists yet); see contracts/README.md. Other fields a task records (findings, reviewer-authored mutations, gate-specific checks) are allowed.",
   "type": "object",
   "required": [
     "schema",
     "verdict",
     "covers_runs",
     "model",
-    "effort"
+    "effort",
+    "blocking_findings"
   ],
   "additionalProperties": true,
   "properties": {
@@ -82,7 +83,8 @@
     },
     "blocking_findings": {
       "type": "integer",
-      "minimum": 0
+      "minimum": 0,
+      "description": "number of blocking findings open at this verdict: 0 on a GO, at least 1 on a NO-GO (constitution 11.4.134: a review iterates to zero blocking findings)"
     }
   },
   "allOf": [
@@ -101,6 +103,25 @@
         "properties": {
           "blocking_findings": {
             "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "NO-GO"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "blocking_findings": {
+            "minimum": 1
           }
         }
       }

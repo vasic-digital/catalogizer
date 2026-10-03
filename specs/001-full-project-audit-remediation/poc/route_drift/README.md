@@ -1,5 +1,12 @@
 # route_drift - API drift detector (read-only, heuristic)
 
+| Field | Value |
+|---|---|
+| Revision | 2 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | proof of concept, executed; read-only tool (revision 2: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no command, result or self-test of the route and contract drift detector changed. Revision 1 is commit `0f6b17da`) |
+
 `route_drift.py` extracts server routes (gin groups and gorilla/mux subrouters in `catalog-api`), OpenAPI operations
 (`docs/api/openapi.yaml`) and client calls (`catalogizer-api-client/src`, `catalog-web/src` axios + fetch, Android and Android TV
 Retrofit interfaces) and prints JSON: `undocumented_routes`, `stale_spec_entries`, `unwired_mux_routes`,

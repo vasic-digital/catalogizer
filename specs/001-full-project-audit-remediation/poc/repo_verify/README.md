@@ -1,5 +1,12 @@
 # repo_verify - recursive repository verifier (read-only)
 
+| Field | Value |
+|---|---|
+| Revision | 2 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | proof of concept, executed; read-only tool (revision 2: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no command, result or self-test of the repository verifier changed. Revision 1 is commit `0f6b17da`) |
+
 `verify_repo.sh` reports, for the main repository and every submodule at every depth: working-tree
 dirtiness, pin state (`git submodule status` marker) and, for owned repos on a branch, how every remote's
 branch tip relates to local HEAD (`SAME`, `REMOTE-BEHIND` = local ahead, `LOCAL-BEHIND`, `DIVERGED`,

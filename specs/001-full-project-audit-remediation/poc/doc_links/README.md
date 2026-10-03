@@ -1,5 +1,12 @@
 # doc_links - documentation link crawler (read-only)
 
+| Field | Value |
+|---|---|
+| Revision | 2 |
+| Created | 2026-10-03 |
+| Last modified | 2026-10-03 |
+| Status | proof of concept, executed; read-only tool (revision 2: this §11.4.44 header table added, which the revision-header check of tasks.md T040 reads in the first 40 lines; it lacked one through four review rounds, the last being the round-9 review of commit `b9412d06`; no command, result or self-test of the link crawler changed. Revision 1 is commit `0f6b17da`) |
+
 `crawl_links.py` starts at `README.md`, follows relative Markdown links transitively and prints JSON: reachable
 set, orphans (all in-scope and the `docs/**` subset), broken links (with reason and case hint) and broken anchors.
 Python 3 standard library only.
