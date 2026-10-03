@@ -1,0 +1,1 @@
+cd /home/milosvasic/Projects/catalogizer && specs/001-full-project-audit-remediation/poc/repo_verify/verify_repo.sh --root . --jobs 8 --timeout 25 --json-out specs/001-full-project-audit-remediation/poc/repo_verify/results/run1.json

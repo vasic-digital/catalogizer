@@ -1,0 +1,32 @@
+  PASS  golden-good reachable README.md
+  PASS  golden-good reachable docs/a.md
+  PASS  golden-good reachable docs/my doc.md
+  PASS  golden-good reachable docs/sub/README.md
+  PASS  golden-good reachable docs/c.md
+  PASS  golden-good reachable docs/html_link.md
+  PASS  golden-good reachable docs/after_fence.md
+  PASS  golden-good reachable docs/refdef.md
+  PASS  depth of docs/c.md is 2 (README > docs/sub/README > docs/c)
+  PASS  golden-bad orphan.md listed as orphan
+  PASS  golden-bad orphan inherits no reachability from its own outlinks
+  PASS  control: link only in ``` fence does not make target reachable
+  PASS  control: link only in inline code does not make target reachable
+  PASS  control: ~~~~ fence with shorter ~~~ line stays open
+  PASS  control: link after a fence is parsed again
+  PASS  control: fenced missing link is NOT reported broken
+  PASS  broken: missing file reported
+  PASS  broken: path escaping root reported
+  PASS  broken: case mismatch gets case_hint
+  PASS  ok: URL-encoded path resolved
+  PASS  ok: existing non-md target not broken
+  PASS  ok: external url skipped
+  PASS  anchor: bad anchor reported
+  PASS  anchor: good cross-file anchor accepted
+  PASS  anchor: duplicate-heading suffix -1 accepted (same-file)
+  PASS  anchor: same-file #root accepted
+  PASS  unclosed fence recorded
+  PASS  submodules excluded from scope
+  PASS  site-root off: '/guide/x#a' reported broken
+  PASS  site-root on: '/guide/x#a' + extensionless 'other' reachable, anchor ok
+  PASS  deterministic: two runs identical
+SELF-TEST: pass=31 fail=0

@@ -1,0 +1,217 @@
+# Quickstart: Validate the Planning Baseline
+
+| Field | Value |
+|---|---|
+| Feature | `specs/001-full-project-audit-remediation` |
+| Created | 2026-10-03 |
+| Executed | 2026-10-03, from 11:44:31Z, main repository HEAD `e4852ce7e1a136818b7b63524e94b5f8ee1b68bf` |
+| Scope | read-only commands that prove what the plan starts from; no build, no install, no write to any repository |
+
+Every command marked EXECUTED was run in this session and its output is quoted. Commands marked NOT EXECUTED are the planned checks whose tooling does not exist yet. Outputs go to a scratch directory, never into the repository (set `OUT` to any directory outside the tree).
+
+## 1. Prerequisites
+
+| Need | Check | Observed |
+|---|---|---|
+| bash, git, jq, ssh with access to the project remotes | `command -v git jq ssh` | present |
+| Python 3 with PyYAML and `jsonschema` | `python3 -c "import yaml, jsonschema"` | Python 3.14.4, jsonschema 4.19.2 |
+| CodeGraph CLI | `codegraph --version` | `1.6.0` |
+| Lumen (MCP plugin) with Ollama | `health_check` tool | `Backend: ollama ... Model: ordis/jina-embeddings-v2-base-code Status: OK` |
+| Network for `git ls-remote` (step 3) | SSH keys loaded, `BatchMode` | 8 remotes of the main repository answered |
+
+```bash
+cd /home/milosvasic/Projects/catalogizer
+P=specs/001-full-project-audit-remediation/poc
+OUT=/tmp/claude-1000/qs        # any scratch directory outside the repository
+mkdir -p "$OUT"
+```
+
+Do not run a Lumen `semantic_search` before step 2 is recorded: a search re-indexes (`EnsureFresh`) and writes the Lumen database (docs/02 §2.2).
+
+## 2. Index health (FR-005, research R-06) - EXECUTED
+
+```bash
+codegraph status --json
+ls .mcp.json .codegraph/config.json .lumenignore
+```
+
+Real output (abridged):
+
+```json
+{"initialized":true,"version":"1.6.0","lastIndexed":"2026-10-02T19:24:35.111Z","fileCount":7150,
+ "nodeCount":128472,"edgeCount":414476,"pendingChanges":{"added":2,"modified":0,"removed":0},
+ "worktreeMismatch":null,"index":{"state":"complete","pendingRefs":0,"reindexRecommended":false}}
+```
+
+```text
+ls: cannot access '.mcp.json': No such file or directory
+ls: cannot access '.codegraph/config.json': No such file or directory
+ls: cannot access '.lumenignore': No such file or directory
+```
+
+Lumen (MCP tools `index_status` and `health_check`, EXECUTED):
+
+```text
+Files: 10397 | Indexed: 10397 | Chunks: 167256 | Model: ordis/jina-embeddings-v2-base-code
+Last indexed: 2026-10-03T10:19:58Z | Stale: yes
+Backend: ollama | Status: OK | Message: service and configured model are ready
+```
+
+Verdicts against the proof table (docs/02 §4.1):
+
+| Proof | Verdict today | Reason |
+|---|---|---|
+| P1 CodeGraph state | FAIL | `pendingChanges.added = 2` |
+| P2, P3, P4 | NOT EXECUTED | need the derived tracked set, scope DATA and `audit/golden.json` |
+| P5 CodeGraph freshness | FAIL | `lastIndexed` 2026-10-02T19:24Z is older than HEAD commit time 2026-10-03T10:56:02Z |
+| P6 embedder dimensionality | NOT EXECUTED | needs the model card dimension and a real embed call |
+| P7 Lumen complete and fresh | FAIL | `Stale: yes` |
+| P8 scope parity | FAIL | 10,397 Lumen files vs 7,150 CodeGraph files, no shared scope DATA |
+
+Exit criterion for the index gate: P1 to P8 all PASS in `audit/index-health.json` (`index-health/1`), produced after the sanctioned writer refresh (`codegraph_safe.sh`, NOT EXECUTED here).
+
+## 3. Repository state (FR-019, FR-020, SC-010) - EXECUTED
+
+```bash
+$P/repo_verify/verify_repo.sh --self-test
+/usr/bin/time -p $P/repo_verify/verify_repo.sh --root . --jobs 8 --timeout 25 --quiet --json-out "$OUT/repo_verify.json"
+echo "exit=$?"
+```
+
+Real output:
+
+```text
+SELF-TEST: pass=24 fail=0
+exit=1        (real 45.62 s)
+{"repos":98,"owned":51,"dirty":2,"dirty_excepted":1,"ahead":0,"diverged":0,"pin_drift":0,
+ "unproven":0,"classes":{"LOCAL-BEHIND":8,"SAME":191},"failing":1}
+failing:  "."  problems ["dirty"]  (0 tracked, 3 untracked: this feature's new planning files)
+excepted: submodules/helix_qa/tools/opensource/docling (1 tracked, CRLF quirk, exceptions.tsv)
+LOCAL-BEHIND x8: submodules/constitution (behind its upstream on all 8 remotes)
+```
+
+Expected machine-readable output: a document valid against `contracts/repo-verification-report.schema.json` (step 6). Exit 1 is the honest result while planning files are uncommitted. Exit criterion for US7 / SC-010: `--strict` run with exit 0, `summary.failing = 0`, `summary.unproven = 0`, every exception carrying a reason.
+
+## 4. Documentation reachability (FR-013, SC-006) - EXECUTED
+
+```bash
+python3 $P/doc_links/crawl_links.py --self-test
+python3 $P/doc_links/crawl_links.py --root . > "$OUT/doc_links.json"
+python3 $P/doc_links/crawl_links.py --root . --site-root Website > "$OUT/doc_links_site.json"
+```
+
+Real output:
+
+```text
+SELF-TEST: pass=31 fail=0
+default scope : in_scope 2557, reachable 42, orphans 2515, docs_in_scope 2225, docs_reachable 36,
+                docs_orphans 2189, broken_links 123, broken_anchors 83, max_depth 3
+--site-root   : in_scope 2557, reachable 42, orphans 2515, broken_links 87, broken_anchors 84
+```
+
+Compared with the stored POC run (`poc/doc_links/results/run1.json`: 2,551 in scope, 82 broken anchors), the 6 extra files are all new files under `specs/001-full-project-audit-remediation/` (docs 19 to 21 and the three POC READMEs), and the extra anchor is `#13-consolidated-recommendations` in docs/20. Exit criterion for US4: class A and B orphans 0, `broken_links = 0`, `broken_anchors = 0` with the `DOC_SCOPE.yaml` filter (filter NOT EXECUTED, file does not exist yet).
+
+Export sync (NOT EXECUTED: `export_docs.sh`, `export_sync_check` with fingerprints and `docs/EXPORT_MANIFEST.json` do not exist yet). Exit criterion: `stale = 0`, `missing = 0`, independently recomputed `sha256(md)` equals each twin's embedded value.
+
+## 5. API contract drift (FR-015, FR-016) - EXECUTED
+
+```bash
+python3 $P/route_drift/route_drift.py --self-test
+python3 $P/route_drift/route_drift.py --root . --spec docs/api/openapi.yaml > "$OUT/route_drift.json"
+```
+
+Real output (`counts`):
+
+```text
+SELF-TEST: pass=26 fail=0
+server routes 247 (unique 247), unwired mux routes 62, spec operations 181,
+undocumented 68, stale spec 2, client calls api_client 59 / web 166 / android 42 / androidtv 37,
+without route api_client 31 / web 69 / android 22 / androidtv 1, double prefix 30, unresolved 13
+```
+
+Identical to the stored run of 11:37Z. All items are leads; each becomes a finding only after a runtime router dump or request. Exit criterion: the router-table drift test over `gin.Engine.Routes()` (NOT EXECUTED, needs the router constructor extracted from `main.go`) reports zero undocumented and zero stale entries, and both-sided contract tests pass in the can-i-deploy gate.
+
+## 6. Contract schemas against real outputs - EXECUTED
+
+```bash
+S=specs/001-full-project-audit-remediation
+for f in $S/contracts/*.json; do python3 -m json.tool "$f" >/dev/null && echo "json OK $f"; done
+python3 - "$OUT" <<'EOF'
+import json, sys
+from jsonschema import Draft202012Validator as V
+S = 'specs/001-full-project-audit-remediation/'; O = sys.argv[1]
+pairs = {
+ 'repo-verification-report': [S+'poc/repo_verify/results/run1.json', O+'/repo_verify.json'],
+ 'link-crawl-report': [S+'poc/doc_links/results/run1.json', S+'poc/doc_links/results/run2.json',
+                       O+'/doc_links.json', O+'/doc_links_site.json'],
+ 'route-drift-report': [S+'poc/route_drift/results/run1.json', O+'/route_drift.json']}
+bad = 0
+for name, files in pairs.items():
+    schema = json.load(open(S+'contracts/'+name+'.schema.json')); V.check_schema(schema); v = V(schema)
+    for f in files:
+        n = len(list(v.iter_errors(json.load(open(f))))); bad += n
+        print('VALID  ' if n == 0 else 'INVALID', name, f)
+sys.exit(1 if bad else 0)
+EOF
+```
+
+Real output:
+
+```text
+json OK (all 6 schema files)
+VALID   repo-verification-report poc/repo_verify/results/run1.json
+VALID   repo-verification-report $OUT/repo_verify.json
+VALID   link-crawl-report poc/doc_links/results/run1.json
+VALID   link-crawl-report poc/doc_links/results/run2.json
+VALID   link-crawl-report $OUT/doc_links.json
+VALID   link-crawl-report $OUT/doc_links_site.json
+VALID   route-drift-report poc/route_drift/results/run1.json
+VALID   route-drift-report $OUT/route_drift.json
+```
+
+Negative controls (EXECUTED, mutated copies of the fresh outputs): unknown remote class, missing `summary.failing`, unknown broken-link reason and unknown route source were each REJECTED. The fixture validation of `ev/1`, `finding/1` and `bank-case/3` is summarised in `contracts/README.md` (17 of 17 expected outcomes).
+
+## 7. HelixQA bank baseline (US3, research R-23) - EXECUTED
+
+```bash
+python3 - <<'EOF'
+import json, yaml, glob
+from jsonschema import Draft202012Validator as V
+v = V(json.load(open('specs/001-full-project-audit-remediation/contracts/bank-case.schema.json')))
+tot = ok = 0
+for f in sorted(glob.glob('challenges/helixqa-banks/*.yaml')):
+    b = yaml.safe_load(open(f)); lst = b.get('test_cases') if isinstance(b, dict) else b
+    lst = lst if lst is not None else next((x for x in b.values() if isinstance(x, list)), [])
+    tot += len(lst); ok += sum(1 for c in lst if not list(v.iter_errors(c)))
+print(f"cases {tot}, valid against bank-case/3: {ok}")
+EOF
+```
+
+Real output: `cases 1269, valid against bank-case/3: 0` (15 bank files). Exit criterion: every deterministic-lane case valid, `TODO: Convert to executable` count 0 (1,178 per docs/03 F-6), three identical runs and a caught reviewer mutation per counted case.
+
+## 8. Register baseline (US1) - partly EXECUTED
+
+```bash
+git ls-files 'docs/workable_items.db'            # EXECUTED in docs/03 F-1: no register exists
+ls docs/issues | wc -l                           # 1,778 ticket files (docs/03 F-2)
+```
+
+NOT EXECUTED (the register does not exist yet): applying `register_ext.sql`, the import stages, and the SC-001 queries of docs/04 §13.1, for example `SELECT count(*) FROM v_unmapped_entries;` (expected 0) and `SELECT * FROM v_custody_violations;` (expected empty).
+
+## 9. Phase exit criteria
+
+Phases follow the spec's user stories in priority order. Each criterion is a machine output, never a statement.
+
+| Phase | Story | Exit criterion (all must hold) | Producing command or artifact | Status today |
+|---|---|---|---|---|
+| 0 Index readiness | FR-005 | P1 to P8 PASS in `audit/index-health.json` | step 2 plus writer refresh and goldens | FAIL (P1, P5, P7, P8) |
+| 1 Register | US1 | `v_unmapped_entries` empty; reconciliation lists every source entry; three planted entries detected; `workable-items diff` in sync; external trackers each `SYNCED` or `SKIPPED` with reason | docs/04 §13, docs/03 §15 | register absent |
+| 2 Audit | US2 | every component has a recorded result; two runs from one state give identical `findings.index.jsonl` fingerprints; a planted defect is reported; every finding validates against `finding/1` | docs/02 §12, `contracts/finding.schema.json` | not started |
+| 3 Fixes proven | US3 | per fixed item: RED on pre-fix artifact, GREEN x3 identical, fingerprints differ, mutation caught, review GO; matrix shows zero absent applicable cells; zero `BLOCKED` counted as pass; reviewer sample with zero survivors | ledger entries valid against `ev/1`, verdict files | not started |
+| 4 Documentation | US4 | crawl: class A/B orphans 0, broken links 0, broken anchors 0; export check stale 0 and missing 0; schema/route/env diff reports empty; every diagram rendered non-blank | step 4, export checker, diff gates | 2,515 orphans, 123 broken links, 83 broken anchors |
+| 5 Applications and contracts | US5 | coverage matrix row per application; can-i-deploy matrix all `compatible` | contract gate | 68 undocumented routes, 123 client calls without route (leads) |
+| 6 Dependencies | US6 | every dependency listed with version, upstream version and status; behind items carry a decision; accepted updates have full-suite evidence | dependency report | constitution 8 remotes `LOCAL-BEHIND` |
+| 7 Repository state | US7 | `verify_repo.sh --strict`: exit 0, failing 0, unproven 0, exceptions explained | step 3 | exit 1 (main repository untracked planning files) |
+| Final | SC-011, SC-012 | performance baselines and owner-approved targets for every critical operation with no regression; report checker finds zero completion claims without `ledger#seq` | `perf/targets.yaml`, report checker | not started |
+
+Completion additionally waits on the owner decisions in `research.md` section 5 that block the work in question (79 recorded, 12 with reversible defaults).

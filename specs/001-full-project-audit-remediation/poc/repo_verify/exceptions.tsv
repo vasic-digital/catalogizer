@@ -1,0 +1,2 @@
+# path<TAB>kind<TAB>reason
+submodules/helix_qa/tools/opensource/docling	dirty	Known quirk: CRLF line endings make tracked test data show as modified

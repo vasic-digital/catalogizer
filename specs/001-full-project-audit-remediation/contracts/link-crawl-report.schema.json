@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "link-crawl-report/1",
+  "title": "Documentation reachability and broken-link report (FR-013, SC-006)",
+  "description": "Shape of the JSON printed by poc/doc_links/crawl_links.py (function crawl(), result dict). Validated against poc/doc_links/results/run1.json, run2.json (--site-root Website) and two fresh runs on 2026-10-03. Producer: crawl_links.py. Consumers: G-DOC-REACHABILITY gate (document 13 section 4.4), documentation hub generator, SC-006 acceptance.",
+  "type": "object",
+  "required": ["start", "start_exists", "in_scope", "reachable", "orphans", "docs_prefix", "docs_in_scope", "docs_reachable", "docs_orphans", "broken_links", "broken_anchors", "max_depth", "notes", "reachable_set", "orphans_among_docs", "orphans_all", "orphans_by_group", "broken_by_source_group", "broken_list", "broken_anchor_list", "depth"],
+  "additionalProperties": false,
+  "properties": {
+    "start": {"type": "string", "minLength": 1},
+    "start_exists": {"type": "boolean"},
+    "in_scope": {"type": "integer", "minimum": 0},
+    "reachable": {"type": "integer", "minimum": 0},
+    "orphans": {"type": "integer", "minimum": 0},
+    "docs_prefix": {"type": "string"},
+    "docs_in_scope": {"type": "integer", "minimum": 0},
+    "docs_reachable": {"type": "integer", "minimum": 0},
+    "docs_orphans": {"type": "integer", "minimum": 0},
+    "broken_links": {"type": "integer", "minimum": 0},
+    "broken_anchors": {"type": "integer", "minimum": 0},
+    "max_depth": {"type": "integer", "minimum": 0},
+    "notes": {
+      "type": "object",
+      "required": ["fence_unclosed", "out_of_scope_ok", "non_md_ok", "external_skipped"],
+      "additionalProperties": false,
+      "properties": {
+        "fence_unclosed": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "out_of_scope_ok": {"type": "integer", "minimum": 0},
+        "non_md_ok": {"type": "integer", "minimum": 0},
+        "external_skipped": {"type": "integer", "minimum": 0}
+      }
+    },
+    "reachable_set": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "orphans_among_docs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "orphans_all": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "orphans_by_group": {"$ref": "#/$defs/groupCounts"},
+    "broken_by_source_group": {"$ref": "#/$defs/groupCounts"},
+    "broken_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "target", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "from": {"type": "string", "minLength": 1},
+          "target": {"type": "string"},
+          "reason": {"enum": ["missing", "dir_without_index", "escapes_root"]},
+          "case_hint": {"type": "string", "description": "existing path that differs only by letter case"}
+        }
+      }
+    },
+    "broken_anchor_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "target"],
+        "additionalProperties": false,
+        "properties": {
+          "from": {"type": "string", "minLength": 1},
+          "target": {"type": "string", "description": "'#frag' for a same-file anchor, else the link target"},
+          "file": {"type": "string", "description": "resolved target file (cross-file anchors only)"},
+          "anchor": {"type": "string"}
+        },
+        "dependentRequired": {"file": ["anchor"], "anchor": ["file"]}
+      }
+    },
+    "depth": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}, "description": "BFS depth from start for every reachable file"}
+  },
+  "$defs": {
+    "groupCounts": {
+      "type": "array",
+      "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer", "minimum": 0}], "minItems": 2, "maxItems": 2}
+    }
+  }
+}

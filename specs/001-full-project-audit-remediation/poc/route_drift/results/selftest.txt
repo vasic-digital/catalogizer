@@ -1,0 +1,27 @@
+  PASS  golden-good: documented routes absent from undocumented (health, items/:id, catch-all vs {p})
+  PASS  golden-bad: undocumented gin routes detected
+  PASS  golden-bad: ANY route without spec detected
+  PASS  golden-bad: wired mux route undocumented detected
+  PASS  golden-bad: stale spec entry detected
+  PASS  unwired mux route reported and stale entry annotated
+  PASS  control: variable re-binding uses latest prefix (smb -> /other)
+  PASS  control: commented-out route ignored
+  PASS  control: route inside a string literal ignored
+  PASS  control: *_test.go route ignored
+  PASS  control: OPTIONS route ignored
+  PASS  control: pprof excluded (N6)
+  PASS  control: unknown receiver goes to unresolved, not silently dropped
+  PASS  api-client: dynamic template + query resolved, matches /items/{id}
+  PASS  api-client: unrouted call reported
+  PASS  control: params.get/map.get noise not captured
+  PASS  web: catch-all matches multi-segment client path (N3/N8)
+  PASS  web: double prefix flagged and has no route
+  PASS  web: fetch with method option recognised (POST /items/{} has no route)
+  PASS  android: relative paths prefixed; host-absolute not prefixed
+  PASS  androidtv: base '/' (paths already carry api/v1) matches; unrouted reported
+  PASS  android: relative api/v1 path flagged as double prefix
+  PASS  control: dynamic first segment goes to unresolved, not no-route
+  PASS  control: zap.Any("event") is not an unresolved route
+  PASS  control: commented Kotlin annotation ignored
+  PASS  deterministic: identical output on re-run
+SELF-TEST: pass=26 fail=0

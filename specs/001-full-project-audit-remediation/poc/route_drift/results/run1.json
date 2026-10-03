@@ -1,0 +1,1876 @@
+{
+ "tool": "route_drift.py",
+ "root": "/home/milosvasic/Projects/catalogizer",
+ "spec_files": [
+  "docs/api/openapi.yaml"
+ ],
+ "api_client_prefix_assumed": "/api/v1",
+ "exclude_prefix": "/debug/pprof",
+ "counts": {
+  "server_routes_gin_and_wired_mux": 247,
+  "server_unique_keys": 247,
+  "unwired_mux_routes": 62,
+  "spec_operations": 181,
+  "spec_unique_keys": 181,
+  "undocumented_routes": 68,
+  "stale_spec_entries": 2,
+  "client_calls": {
+   "api_client": 59,
+   "web": 166,
+   "android": 42,
+   "androidtv": 37
+  },
+  "client_calls_without_route": {
+   "api_client": 31,
+   "web": 69,
+   "android": 22,
+   "androidtv": 1
+  },
+  "double_prefix_calls": 30,
+  "unresolved": 13
+ },
+ "server_info": {
+  "register_routes_call_sites": [],
+  "go_files_scanned": 342
+ },
+ "spec_notes": [],
+ "undocumented_routes": [
+  {
+   "key": "DELETE /api/v1/favorites/{}/{}",
+   "file": "catalog-api/main.go",
+   "line": 1558,
+   "source": "gin"
+  },
+  {
+   "key": "DELETE /api/v1/playlists/{}",
+   "file": "catalog-api/main.go",
+   "line": 1569,
+   "source": "gin"
+  },
+  {
+   "key": "DELETE /api/v1/playlists/{}/items/{}",
+   "file": "catalog-api/main.go",
+   "line": 1571,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/admin/config",
+   "file": "catalog-api/main.go",
+   "line": 1395,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/admin/errors",
+   "file": "catalog-api/main.go",
+   "line": 1396,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/admin/health",
+   "file": "catalog-api/main.go",
+   "line": 1397,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/admin/logs",
+   "file": "catalog-api/main.go",
+   "line": 1398,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/analytics/duplicates",
+   "file": "catalog-api/main.go",
+   "line": 1630,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/analytics/media/{}",
+   "file": "catalog-api/main.go",
+   "line": 1542,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/analytics/stats",
+   "file": "catalog-api/main.go",
+   "line": 1627,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/analytics/system",
+   "file": "catalog-api/main.go",
+   "line": 1541,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/analytics/user/{}",
+   "file": "catalog-api/main.go",
+   "line": 1540,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/auth/init-status",
+   "file": "catalog-api/main.go",
+   "line": 1158,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/browse",
+   "file": "catalog-api/main.go",
+   "line": 1623,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/cover/placeholder/{}",
+   "file": "catalog-api/main.go",
+   "line": 1138,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/cover/url/{}",
+   "file": "catalog-api/main.go",
+   "line": 1139,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/cover/{}",
+   "file": "catalog-api/main.go",
+   "line": 1140,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/search",
+   "file": "catalog-api/main.go",
+   "line": 1492,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/history",
+   "file": "catalog-api/main.go",
+   "line": 1524,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/pages",
+   "file": "catalog-api/main.go",
+   "line": 1507,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/pages/{}",
+   "file": "catalog-api/main.go",
+   "line": 1508,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/pdf-pages",
+   "file": "catalog-api/main.go",
+   "line": 1512,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/pdf-pages/{}",
+   "file": "catalog-api/main.go",
+   "line": 1513,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/entities/{}/progress",
+   "file": "catalog-api/main.go",
+   "line": 1523,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/favorites",
+   "file": "catalog-api/main.go",
+   "line": 1556,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/favorites/check/{}/{}",
+   "file": "catalog-api/main.go",
+   "line": 1559,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/files",
+   "file": "catalog-api/main.go",
+   "line": 1723,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/health",
+   "file": "catalog-api/main.go",
+   "line": 1042,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/image-proxy",
+   "file": "catalog-api/main.go",
+   "line": 1089,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/languages",
+   "file": "catalog-api/main.go",
+   "line": 1639,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/localization/languages",
+   "file": "catalog-api/main.go",
+   "line": 1752,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/localization/stats",
+   "file": "catalog-api/main.go",
+   "line": 1761,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/localization/translations",
+   "file": "catalog-api/main.go",
+   "line": 1755,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/media-types",
+   "file": "catalog-api/main.go",
+   "line": 1677,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/playlists",
+   "file": "catalog-api/main.go",
+   "line": 1565,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/playlists/{}",
+   "file": "catalog-api/main.go",
+   "line": 1567,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/recommendations",
+   "file": "catalog-api/main.go",
+   "line": 1660,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/recommendations/by-type",
+   "file": "catalog-api/main.go",
+   "line": 1664,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/reports/performance",
+   "file": "catalog-api/main.go",
+   "line": 1550,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/reports/usage",
+   "file": "catalog-api/main.go",
+   "line": 1549,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/smb/identities",
+   "file": "catalog-api/main.go",
+   "line": 1332,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/stats/media-types",
+   "file": "catalog-api/main.go",
+   "line": 1734,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/stats/scan-history",
+   "file": "catalog-api/main.go",
+   "line": 1745,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/stream/{}",
+   "file": "catalog-api/main.go",
+   "line": 1188,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/subtitles",
+   "file": "catalog-api/main.go",
+   "line": 1653,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/sync/conflicts",
+   "file": "catalog-api/main.go",
+   "line": 1774,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/sync/devices",
+   "file": "catalog-api/main.go",
+   "line": 1770,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/sync/history",
+   "file": "catalog-api/main.go",
+   "line": 1706,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/sync/providers",
+   "file": "catalog-api/main.go",
+   "line": 1710,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/sync/status",
+   "file": "catalog-api/main.go",
+   "line": 1698,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/translations",
+   "file": "catalog-api/main.go",
+   "line": 1646,
+   "source": "gin"
+  },
+  {
+   "key": "GET /api/v1/users/me",
+   "file": "catalog-api/main.go",
+   "line": 1634,
+   "source": "gin"
+  },
+  {
+   "key": "GET /discovery",
+   "file": "catalog-api/main.go",
+   "line": 957,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/admin/covers/generate-thumbnails",
+   "file": "catalog-api/main.go",
+   "line": 1260,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/admin/image-quality/revalidate",
+   "file": "catalog-api/main.go",
+   "line": 1219,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/analytics/access",
+   "file": "catalog-api/main.go",
+   "line": 1538,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/analytics/event",
+   "file": "catalog-api/main.go",
+   "line": 1539,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/analytics/reports",
+   "file": "catalog-api/main.go",
+   "line": 1543,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/entities/enrich",
+   "file": "catalog-api/main.go",
+   "line": 1518,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/favorites",
+   "file": "catalog-api/main.go",
+   "line": 1557,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/playback/sessions/end",
+   "file": "catalog-api/main.go",
+   "line": 1532,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/playback/sessions/progress",
+   "file": "catalog-api/main.go",
+   "line": 1531,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/playback/sessions/start",
+   "file": "catalog-api/main.go",
+   "line": 1530,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/playlists",
+   "file": "catalog-api/main.go",
+   "line": 1566,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/playlists/{}/items",
+   "file": "catalog-api/main.go",
+   "line": 1570,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/smb/probe",
+   "file": "catalog-api/main.go",
+   "line": 1333,
+   "source": "gin"
+  },
+  {
+   "key": "POST /api/v1/smb/probe-and-ingest",
+   "file": "catalog-api/main.go",
+   "line": 1334,
+   "source": "gin"
+  },
+  {
+   "key": "PUT /api/v1/playlists/{}",
+   "file": "catalog-api/main.go",
+   "line": 1568,
+   "source": "gin"
+  }
+ ],
+ "stale_spec_entries": [
+  {
+   "key": "GET /api/v1/discovery",
+   "spec_file": "docs/api/openapi.yaml"
+  },
+  {
+   "key": "GET /api/v1/recommendations/test",
+   "spec_file": "docs/api/openapi.yaml"
+  }
+ ],
+ "unwired_mux_routes": [
+  {
+   "key": "GET /api/v1/wizard/localization/defaults",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 37,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/wizard/localization/setup",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 38,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/wizard/configuration/export",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 41,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/wizard/configuration/import",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 42,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/wizard/configuration/validate",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 43,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/wizard/configuration/edit",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 44,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/wizard/configuration/templates",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 45,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/localization",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 48,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "PUT /api/v1/localization",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 49,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/localization/languages",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 50,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/localization/languages/{}",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 51,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/localization/preferences/{}",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 52,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/localization/stats",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 53,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/localization/detect",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 56,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/localization/check-support",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 57,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/localization/format-datetime",
+   "file": "catalog-api/internal/handlers/localization_handlers.go",
+   "line": 58,
+   "owner": "LocalizationHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/play",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 86,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/play/album",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 87,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/play/artist",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 88,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/music/session/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 89,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/update",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 90,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/next",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 91,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/previous",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 92,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/seek",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 93,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/queue",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 94,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/music/session/{}/equalizer",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 95,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/music/library/stats",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 96,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/play",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 99,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/play/series",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 100,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/video/session/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 101,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/session/{}/update",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 102,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/session/{}/next",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 103,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/session/{}/previous",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 104,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/session/{}/seek",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 105,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/video/session/{}/bookmark",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 106,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/video/continue-watching",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 107,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/video/watch-history",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 108,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playlists",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 111,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playlists",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 112,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playlists/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 113,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "PUT /api/v1/playlists/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 114,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playlists/{}/items",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 115,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playlists/{}/items",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 116,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "DELETE /api/v1/playlists/{}/items/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 117,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playlists/{}/items/{}/reorder",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 118,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playlists/{}/refresh",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 119,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/subtitles/search",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 122,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/subtitles/download",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 123,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/subtitles/translate",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 124,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/lyrics/search",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 127,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/lyrics/sync",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 128,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/lyrics/concert",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 129,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/cover-art/search",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 132,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/cover-art/scan",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 133,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/translate",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 136,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/translate/detect",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 137,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playback/position",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 140,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playback/position/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 141,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playback/continue-watching",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 142,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "POST /api/v1/playback/bookmarks",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 143,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playback/bookmarks/{}",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 144,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  },
+  {
+   "key": "GET /api/v1/playback/stats",
+   "file": "catalog-api/internal/handlers/media_player_handlers.go",
+   "line": 145,
+   "owner": "MediaPlayerHandlers.RegisterRoutes",
+   "confidence": "no_call_sites"
+  }
+ ],
+ "client_calls_without_route": {
+  "api_client": [
+   {
+    "key": "GET /api/v1/info",
+    "file": "catalogizer-api-client/src/index.ts",
+    "line": 243
+   },
+   {
+    "key": "PUT /api/v1/auth/profile",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 87
+   },
+   {
+    "key": "POST /api/v1/auth/password",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 94
+   },
+   {
+    "key": "POST /api/v1/auth/password/reset",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 101
+   },
+   {
+    "key": "POST /api/v1/auth/password/reset/confirm",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 108
+   },
+   {
+    "key": "POST /api/v1/auth/email/verify",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 118
+   },
+   {
+    "key": "POST /api/v1/auth/email/verify/resend",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 125
+   },
+   {
+    "key": "GET /api/v1/auth/username/check",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 132
+   },
+   {
+    "key": "GET /api/v1/auth/email/check",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 139
+   },
+   {
+    "key": "POST /api/v1/auth/api-keys",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 161
+   },
+   {
+    "key": "GET /api/v1/auth/api-keys",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 168
+   },
+   {
+    "key": "DELETE /api/v1/auth/api-keys/{}",
+    "file": "catalogizer-api-client/src/services/AuthService.ts",
+    "line": 175
+   },
+   {
+    "key": "GET /api/v1/smb/configs",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 15
+   },
+   {
+    "key": "GET /api/v1/smb/configs/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 22
+   },
+   {
+    "key": "POST /api/v1/smb/configs",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 29
+   },
+   {
+    "key": "PUT /api/v1/smb/configs/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 36
+   },
+   {
+    "key": "DELETE /api/v1/smb/configs/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 43
+   },
+   {
+    "key": "POST /api/v1/smb/configs/{}/test",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 57
+   },
+   {
+    "key": "GET /api/v1/smb/status",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 64
+   },
+   {
+    "key": "GET /api/v1/smb/status/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 71
+   },
+   {
+    "key": "POST /api/v1/smb/connect/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 78
+   },
+   {
+    "key": "POST /api/v1/smb/disconnect/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 85
+   },
+   {
+    "key": "POST /api/v1/smb/scan/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 105
+   },
+   {
+    "key": "GET /api/v1/smb/scan-jobs/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 121
+   },
+   {
+    "key": "POST /api/v1/smb/scan-jobs/{}/cancel",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 137
+   },
+   {
+    "key": "GET /api/v1/smb/scan-jobs{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 155
+   },
+   {
+    "key": "GET /api/v1/smb/configs/{}/browse{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 177
+   },
+   {
+    "key": "PATCH /api/v1/smb/configs/{}",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 188
+   },
+   {
+    "key": "GET /api/v1/smb/configs/{}/info",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 202
+   },
+   {
+    "key": "POST /api/v1/smb/refresh-all",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 220
+   },
+   {
+    "key": "GET /api/v1/smb/logs",
+    "file": "catalogizer-api-client/src/services/SMBService.ts",
+    "line": 242
+   }
+  ],
+  "web": [
+   {
+    "key": "PUT /api/v1/auth/profile",
+    "file": "catalog-web/src/lib/api.ts",
+    "line": 70
+   },
+   {
+    "key": "GET /api/v1/shared/{}",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 72
+   },
+   {
+    "key": "POST /api/v1/import",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 88
+   },
+   {
+    "key": "GET /api/v1/suggestions",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 114
+   },
+   {
+    "key": "GET /api/v1/templates",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 119
+   },
+   {
+    "key": "POST /api/v1/test-rules",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 124
+   },
+   {
+    "key": "DELETE /api/v1/bulk",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 130
+   },
+   {
+    "key": "POST /api/v1/bulk/share",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 134
+   },
+   {
+    "key": "POST /api/v1/bulk/export",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 142
+   },
+   {
+    "key": "PUT /api/v1/bulk",
+    "file": "catalog-web/src/lib/collectionsApi.ts",
+    "line": 152
+   },
+   {
+    "key": "GET /api/v1/api/v1/favorites",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 25
+   },
+   {
+    "key": "GET /api/v1/api/v1/favorites/stats",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 31
+   },
+   {
+    "key": "POST /api/v1/api/v1/favorites/toggle",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 37
+   },
+   {
+    "key": "GET /api/v1/api/v1/favorites/check/{}",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 43
+   },
+   {
+    "key": "POST /api/v1/api/v1/favorites",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 49
+   },
+   {
+    "key": "DELETE /api/v1/api/v1/favorites/{}",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 55
+   },
+   {
+    "key": "POST /api/v1/api/v1/favorites/bulk",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 60
+   },
+   {
+    "key": "DELETE /api/v1/api/v1/favorites/bulk",
+    "file": "catalog-web/src/lib/favoritesApi.ts",
+    "line": 65
+   },
+   {
+    "key": "GET /api/v1/identities",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 36
+   },
+   {
+    "key": "GET /api/v1/identities/{}",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 39
+   },
+   {
+    "key": "POST /api/v1/identities",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 42
+   },
+   {
+    "key": "PUT /api/v1/identities/{}",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 45
+   },
+   {
+    "key": "DELETE /api/v1/identities/{}",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 48
+   },
+   {
+    "key": "POST /api/v1/discovery/scan",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 57
+   },
+   {
+    "key": "GET /api/v1/discovery/hosts",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 64
+   },
+   {
+    "key": "GET /api/v1/discovery/shares",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 72
+   },
+   {
+    "key": "POST /api/v1/discovery/shares/{}/probe",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 81
+   },
+   {
+    "key": "GET /api/v1/discovery/bindings",
+    "file": "catalog-web/src/lib/identitiesApi.ts",
+    "line": 89
+   },
+   {
+    "key": "GET /api/v1/media/{}/metadata",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 33
+   },
+   {
+    "key": "DELETE /api/v1/media/{}",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 57
+   },
+   {
+    "key": "PUT /api/v1/media/{}",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 60
+   },
+   {
+    "key": "GET /api/v1/storage/roots/{}",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 67
+   },
+   {
+    "key": "PUT /api/v1/storage/roots/{}",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 73
+   },
+   {
+    "key": "DELETE /api/v1/storage/roots/{}",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 76
+   },
+   {
+    "key": "POST /api/v1/storage/roots/{}/test",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 79
+   },
+   {
+    "key": "GET /api/v1/download",
+    "file": "catalog-web/src/lib/mediaApi.ts",
+    "line": 83
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 27
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists/{}",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 33
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists/{}/items",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 50
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 56
+   },
+   {
+    "key": "PUT /api/v1/api/v1/playlists/{}",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 62
+   },
+   {
+    "key": "DELETE /api/v1/api/v1/playlists/{}",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 68
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/{}/items",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 73
+   },
+   {
+    "key": "DELETE /api/v1/api/v1/playlists/{}/items/{}",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 79
+   },
+   {
+    "key": "PUT /api/v1/api/v1/playlists/{}/items/reorder",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 84
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/{}/share",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 94
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists/shared/{}",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 100
+   },
+   {
+    "key": "DELETE /api/v1/api/v1/playlists/{}/share",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 106
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists/{}/analytics",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 111
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/{}/duplicate",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 117
+   },
+   {
+    "key": "GET /api/v1/api/v1/playlists/{}/export",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 123
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/{}/play",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 131
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/{}/shuffle",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 136
+   },
+   {
+    "key": "PUT /api/v1/api/v1/playlists/{}/reorder",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 141
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/import",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 150
+   },
+   {
+    "key": "POST /api/v1/api/v1/playlists/validate-smart-rules",
+    "file": "catalog-web/src/lib/playlistsApi.ts",
+    "line": 160
+   },
+   {
+    "key": "DELETE /api/v1/subtitles/{}",
+    "file": "catalog-web/src/lib/subtitleApi.ts",
+    "line": 48
+   },
+   {
+    "key": "PUT /api/v1/subtitles/{}",
+    "file": "catalog-web/src/lib/subtitleApi.ts",
+    "line": 52
+   },
+   {
+    "key": "HEAD /api/v1/cover/{}",
+    "file": "catalog-web/src/hooks/useCoverQuality.ts",
+    "line": 39
+   },
+   {
+    "key": "GET /api/v1/collections/{}/shares",
+    "file": "catalog-web/src/components/collections/CollectionSharing.tsx",
+    "line": 195
+   },
+   {
+    "key": "POST /api/v1/collections/{}/share",
+    "file": "catalog-web/src/components/collections/CollectionSharing.tsx",
+    "line": 246
+   },
+   {
+    "key": "PUT /api/v1/collections/{}/shares/{}/revoke",
+    "file": "catalog-web/src/components/collections/CollectionSharing.tsx",
+    "line": 308
+   },
+   {
+    "key": "DELETE /api/v1/collections/{}/shares/{}",
+    "file": "catalog-web/src/components/collections/CollectionSharing.tsx",
+    "line": 326
+   },
+   {
+    "key": "POST /api/v1/collections/{}/share/email",
+    "file": "catalog-web/src/components/collections/CollectionSharing.tsx",
+    "line": 349
+   },
+   {
+    "key": "GET /api/v1/integrations",
+    "file": "catalog-web/src/components/collections/ExternalIntegrations.tsx",
+    "line": 125
+   },
+   {
+    "key": "PUT /api/v1/integrations/{}",
+    "file": "catalog-web/src/components/collections/ExternalIntegrations.tsx",
+    "line": 208
+   },
+   {
+    "key": "POST /api/v1/integrations/{}/test",
+    "file": "catalog-web/src/components/collections/ExternalIntegrations.tsx",
+    "line": 227
+   },
+   {
+    "key": "POST /api/v1/integrations/{}/sync",
+    "file": "catalog-web/src/components/collections/ExternalIntegrations.tsx",
+    "line": 278
+   },
+   {
+    "key": "DELETE /api/v1/integrations/{}",
+    "file": "catalog-web/src/components/collections/ExternalIntegrations.tsx",
+    "line": 332
+   }
+  ],
+  "android": [
+   {
+    "key": "PUT /api/v1/auth/profile",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 26
+   },
+   {
+    "key": "GET /api/v1/media/{}/metadata",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 56
+   },
+   {
+    "key": "DELETE /api/v1/media/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 74
+   },
+   {
+    "key": "PUT /api/v1/media/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 77
+   },
+   {
+    "key": "PUT /api/v1/media/{}/rating",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 87
+   },
+   {
+    "key": "GET /api/v1/user/preferences",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 90
+   },
+   {
+    "key": "GET /api/v1/smb/sources/status",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 97
+   },
+   {
+    "key": "POST /api/v1/smb/sources/{}/reconnect",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 100
+   },
+   {
+    "key": "GET /api/v1/smb/health",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 103
+   },
+   {
+    "key": "GET /api/v1/analytics/dashboard",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 107
+   },
+   {
+    "key": "GET /api/v1/analytics/charts",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 110
+   },
+   {
+    "key": "GET /api/v1/status",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 117
+   },
+   {
+    "key": "GET /api/v1/user/favorites",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 128
+   },
+   {
+    "key": "POST /api/v1/user/favorites/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 134
+   },
+   {
+    "key": "DELETE /api/v1/user/favorites/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 137
+   },
+   {
+    "key": "GET /api/v1/user/watchlist",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 140
+   },
+   {
+    "key": "POST /api/v1/user/watchlist/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 146
+   },
+   {
+    "key": "DELETE /api/v1/user/watchlist/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 149
+   },
+   {
+    "key": "PUT /api/v1/user/progress/{}",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 152
+   },
+   {
+    "key": "GET /api/v1/user/continue-watching",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 158
+   },
+   {
+    "key": "GET /api/v1/api/v1/entities/{}/progress",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 164
+   },
+   {
+    "key": "GET /api/v1/api/v1/entities/{}/history",
+    "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+    "line": 169
+   }
+  ],
+  "androidtv": [
+   {
+    "key": "POST /api/v1/media/recognize",
+    "file": "catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/remote/CatalogizerApi.kt",
+    "line": 106
+   }
+  ]
+ },
+ "double_prefix_calls": [
+  {
+   "method": "GET",
+   "raw": "/api/v1/favorites?{}",
+   "path": "/api/v1/api/v1/favorites",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 25,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/favorites/stats",
+   "path": "/api/v1/api/v1/favorites/stats",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 31,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/favorites/toggle",
+   "path": "/api/v1/api/v1/favorites/toggle",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 37,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/favorites/check/{}",
+   "path": "/api/v1/api/v1/favorites/check/{}",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 43,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/favorites",
+   "path": "/api/v1/api/v1/favorites",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 49,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "DELETE",
+   "raw": "/api/v1/favorites/{}",
+   "path": "/api/v1/api/v1/favorites/{}",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 55,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/favorites/bulk",
+   "path": "/api/v1/api/v1/favorites/bulk",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 60,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "DELETE",
+   "raw": "/api/v1/favorites/bulk",
+   "path": "/api/v1/api/v1/favorites/bulk",
+   "file": "catalog-web/src/lib/favoritesApi.ts",
+   "line": 65,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists?{}",
+   "path": "/api/v1/api/v1/playlists",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 27,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists/{}",
+   "path": "/api/v1/api/v1/playlists/{}",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 33,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists/{}/items?{}",
+   "path": "/api/v1/api/v1/playlists/{}/items",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 50,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists",
+   "path": "/api/v1/api/v1/playlists",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 56,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "PUT",
+   "raw": "/api/v1/playlists/{}",
+   "path": "/api/v1/api/v1/playlists/{}",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 62,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "DELETE",
+   "raw": "/api/v1/playlists/{}",
+   "path": "/api/v1/api/v1/playlists/{}",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 68,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/{}/items",
+   "path": "/api/v1/api/v1/playlists/{}/items",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 73,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "DELETE",
+   "raw": "/api/v1/playlists/{}/items/{}",
+   "path": "/api/v1/api/v1/playlists/{}/items/{}",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 79,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "PUT",
+   "raw": "/api/v1/playlists/{}/items/reorder",
+   "path": "/api/v1/api/v1/playlists/{}/items/reorder",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 84,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/{}/share",
+   "path": "/api/v1/api/v1/playlists/{}/share",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 94,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists/shared/{}",
+   "path": "/api/v1/api/v1/playlists/shared/{}",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 100,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "DELETE",
+   "raw": "/api/v1/playlists/{}/share",
+   "path": "/api/v1/api/v1/playlists/{}/share",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 106,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists/{}/analytics",
+   "path": "/api/v1/api/v1/playlists/{}/analytics",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 111,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/{}/duplicate",
+   "path": "/api/v1/api/v1/playlists/{}/duplicate",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 117,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "/api/v1/playlists/{}/export?format={}",
+   "path": "/api/v1/api/v1/playlists/{}/export",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 123,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/{}/play",
+   "path": "/api/v1/api/v1/playlists/{}/play",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 131,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/{}/shuffle",
+   "path": "/api/v1/api/v1/playlists/{}/shuffle",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 136,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "PUT",
+   "raw": "/api/v1/playlists/{}/reorder",
+   "path": "/api/v1/api/v1/playlists/{}/reorder",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 141,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/import",
+   "path": "/api/v1/api/v1/playlists/import",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 150,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "POST",
+   "raw": "/api/v1/playlists/validate-smart-rules",
+   "path": "/api/v1/api/v1/playlists/validate-smart-rules",
+   "file": "catalog-web/src/lib/playlistsApi.ts",
+   "line": 160,
+   "client": "web",
+   "note": "starts with /api/v1 but the axios instance baseURL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "api/v1/entities/{id}/progress",
+   "path": "/api/v1/api/v1/entities/{}/progress",
+   "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+   "line": 164,
+   "client": "android",
+   "note": "relative path starts with api/v1 but this client's base URL already ends with /api/v1"
+  },
+  {
+   "method": "GET",
+   "raw": "api/v1/entities/{id}/history",
+   "path": "/api/v1/api/v1/entities/{}/history",
+   "file": "catalogizer-android/app/src/main/java/com/catalogizer/android/data/remote/CatalogizerApi.kt",
+   "line": 169,
+   "client": "android",
+   "note": "relative path starts with api/v1 but this client's base URL already ends with /api/v1"
+  }
+ ],
+ "unresolved": [
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 26,
+   "what": "path begins with an expression: ${this.baseUrl}"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 31,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 36,
+   "what": "path begins with an expression: ${this.baseUrl}"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 41,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 46,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 50,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/items"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 57,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/refresh"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 62,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/analytics"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 67,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/share"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 77,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/export"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 97,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/duplicate"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 104,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/items"
+  },
+  {
+   "file": "catalog-web/src/lib/collectionsApi.ts",
+   "line": 108,
+   "what": "first path segment is dynamic (base path built elsewhere): ${this.baseUrl}/${id}/items"
+  }
+ ],
+ "receivers_seen_top": [
+  [
+   "api",
+   165
+  ],
+  [
+   "this.http",
+   59
+  ],
+  [
+   "searchParams",
+   3
+  ],
+  [
+   "resp.headers",
+   2
+  ]
+ ],
+ "caveat": "heuristic regex extraction; see module docstring. Treat every item as a lead to confirm, not a verdict."
+}

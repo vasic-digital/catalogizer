@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "route-drift-report/1",
+  "title": "API route versus OpenAPI versus client drift report (FR-015, FR-016, SC-008)",
+  "description": "Shape of the JSON printed by poc/route_drift/route_drift.py (return value of the report function, lines 459-476). Every item is a LEAD (heuristic regex extraction), not a verdict. Validated against poc/route_drift/results/run1.json and a fresh run on 2026-10-03. Producer: route_drift.py. Consumers: contract-test seed list (document 05 section 9), register import of drift findings, regression oracle for the future gin.Engine.Routes() drift test (document 20 section 9.4).",
+  "type": "object",
+  "required": ["tool", "root", "spec_files", "api_client_prefix_assumed", "exclude_prefix", "counts", "server_info", "spec_notes", "undocumented_routes", "stale_spec_entries", "unwired_mux_routes", "client_calls_without_route", "double_prefix_calls", "unresolved", "receivers_seen_top", "caveat"],
+  "additionalProperties": false,
+  "properties": {
+    "tool": {"const": "route_drift.py"},
+    "root": {"type": "string", "minLength": 1},
+    "spec_files": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "api_client_prefix_assumed": {"type": "string"},
+    "exclude_prefix": {"type": "string"},
+    "counts": {
+      "type": "object",
+      "required": ["server_routes_gin_and_wired_mux", "server_unique_keys", "unwired_mux_routes", "spec_operations", "spec_unique_keys", "undocumented_routes", "stale_spec_entries", "client_calls", "client_calls_without_route", "double_prefix_calls", "unresolved"],
+      "additionalProperties": false,
+      "properties": {
+        "server_routes_gin_and_wired_mux": {"type": "integer", "minimum": 0},
+        "server_unique_keys": {"type": "integer", "minimum": 0},
+        "unwired_mux_routes": {"type": "integer", "minimum": 0},
+        "spec_operations": {"type": "integer", "minimum": 0},
+        "spec_unique_keys": {"type": "integer", "minimum": 0},
+        "undocumented_routes": {"type": "integer", "minimum": 0},
+        "stale_spec_entries": {"type": "integer", "minimum": 0},
+        "client_calls": {"$ref": "#/$defs/perClientCount"},
+        "client_calls_without_route": {"$ref": "#/$defs/perClientCount"},
+        "double_prefix_calls": {"type": "integer", "minimum": 0},
+        "unresolved": {"type": "integer", "minimum": 0, "description": "full count; the unresolved list itself is capped at 200 entries"}
+      }
+    },
+    "server_info": {
+      "type": "object",
+      "required": ["register_routes_call_sites", "go_files_scanned"],
+      "additionalProperties": false,
+      "properties": {
+        "register_routes_call_sites": {"type": "array"},
+        "go_files_scanned": {"type": "integer", "minimum": 0}
+      }
+    },
+    "spec_notes": {"type": "array", "items": {"type": "string"}},
+    "undocumented_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "file", "line", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/routeKey"},
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "source": {"enum": ["gin", "mux"]}
+        }
+      }
+    },
+    "stale_spec_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "spec_file"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/routeKey"},
+          "spec_file": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "unwired_mux_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "file", "line", "owner", "confidence"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/routeKey"},
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "owner": {"type": ["string", "null"]},
+          "confidence": {"type": ["string", "null"], "pattern": "^(no_call_sites|calls_exist_but_none_linked_to_.+)$"}
+        }
+      }
+    },
+    "client_calls_without_route": {
+      "type": "object",
+      "required": ["api_client", "web", "android", "androidtv"],
+      "additionalProperties": false,
+      "properties": {
+        "api_client": {"$ref": "#/$defs/clientMissList"},
+        "web": {"$ref": "#/$defs/clientMissList"},
+        "android": {"$ref": "#/$defs/clientMissList"},
+        "androidtv": {"$ref": "#/$defs/clientMissList"}
+      }
+    },
+    "double_prefix_calls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["method", "raw", "path", "file", "line", "client"],
+        "additionalProperties": false,
+        "properties": {
+          "method": {"type": "string"},
+          "raw": {"type": "string"},
+          "path": {"type": "string"},
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "client": {"enum": ["api_client", "web", "android", "androidtv"]},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "what"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "what": {"type": "string"}
+        }
+      }
+    },
+    "receivers_seen_top": {
+      "type": "array",
+      "maxItems": 15,
+      "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "integer", "minimum": 0}], "minItems": 2, "maxItems": 2}
+    },
+    "caveat": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "routeKey": {"type": "string", "pattern": "^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|ANY) /.*$", "description": "normalised method plus path; parameters as {}. HEAD and OPTIONS appear on the client side only (one web call, HEAD /api/v1/cover/{}, observed 2026-10-03); the server side ignores them per rule N1"},
+    "perClientCount": {
+      "type": "object",
+      "required": ["api_client", "web", "android", "androidtv"],
+      "additionalProperties": false,
+      "properties": {
+        "api_client": {"type": "integer", "minimum": 0},
+        "web": {"type": "integer", "minimum": 0},
+        "android": {"type": "integer", "minimum": 0},
+        "androidtv": {"type": "integer", "minimum": 0}
+      }
+    },
+    "clientMissList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "file", "line"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/routeKey"},
+          "file": {"type": "string"},
+          "line": {"type": "integer", "minimum": 1},
+          "note": {"type": "string"}
+        }
+      }
+    }
+  }
+}
