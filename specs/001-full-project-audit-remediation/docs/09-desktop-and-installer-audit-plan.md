@@ -200,9 +200,9 @@ sequenceDiagram
   R->>C: lock, read server_url
   alt current check (main.rs:88-93)
     R->>R: url.trim_end_matches("/").starts_with(server_url)
-    Note over R: string prefix only; scheme/host/port/userinfo not parsed
+    Note over R: string prefix only, scheme/host/port/userinfo not parsed
   else target check (Appendix A)
-    R->>R: parse both URLs, compare scheme, host, port, path segment prefix; reject userinfo
+    R->>R: parse both URLs, compare scheme, host, port, path segment prefix, reject userinfo
   end
   R->>S: reqwest::Client::new() send (follows up to 10 redirects, no timeout)
   S-->>R: 302 Location: http://169.254.169.254/ (hypothesis H-REDIR)
@@ -248,8 +248,8 @@ These are the first register items from reading alone. Each carries id prefix `D
 
 | Cand. | Where | Description | Initial rating | Reproduction approach |
 |---|---|---|---|---|
-| D-01 | `src/services/apiService.ts:35`, `src/stores/authStore.ts:32,69,109` vs `catalog-api/main.go:1143,1163,1196-1207` | Client builds `${server_url}/api/auth/login`, `/api/media/search`, `/api/auth/status`; the server registers groups `/api/v1/auth` and `/api/v1`. No `/api` (unversioned) group appears in `main.go` (grep of `router.Group(` shows only `/debug/pprof`, `/api/v1/auth`, `/api/v1`). If no alias exists, login and every data call fail against the real backend. Also `getMediaUrl` uses `/media/:id/stream` while the server registers `/stream/:id` and `/media/:id` verbs `GET/PUT/POST` (lines 1188, 1204-1207). | Critical (if confirmed) | Section 11 contract test against the real `catalog-api` in a container. UNCONFIRMED: an alias or reverse-proxy rewrite elsewhere |
-| D-02 | `main.rs:88-93` | SSRF check is `starts_with` on trimmed strings. Allows `http://api.example.com.evil.com/`, `http://localhost:8080@evil.example/`, and, when `server_url` is `Some("")`, every URL. The unit test `test_ssrf_prevention_subdomain_attack` (`main.rs:797-808`) asserts the bypass as "acceptable". | Critical | Appendix A table test calling the extracted validator; plus `mockito`/real-server redirect test for H-REDIR |
+| D-01 | `src/services/apiService.ts:33`, `src/stores/authStore.ts:32,69,109` vs `catalog-api/main.go:1143,1163,1196-1207` | Client builds `${server_url}/api/auth/login`, `/api/media/search`, `/api/auth/status`; the server registers groups `/api/v1/auth` and `/api/v1`. No `/api` (unversioned) group appears in `main.go` (grep of `router.Group(` shows only `/debug/pprof`, `/api/v1/auth`, `/api/v1`). If no alias exists, login and every data call fail against the real backend. Also `getMediaUrl` uses `/media/:id/stream` while the server registers `/stream/:id` and `/media/:id` verbs `GET/PUT/POST` (lines 1188, 1204-1207). | Critical (if confirmed) | Section 11 contract test against the real `catalog-api` in a container. UNCONFIRMED: an alias or reverse-proxy rewrite elsewhere |
+| D-02 | `main.rs:88-93` | SSRF check is `starts_with` on trimmed strings. Allows `http://api.example.com.evil.com/`, `http://localhost:8080@evil.example/`, and, when `server_url` is `Some("")`, every URL (that empty case is reachable only through direct IPC `set_server_url("")`, because the TS layer rejects a falsy URL at `apiService.ts:29`). The unit test `test_ssrf_prevention_subdomain_attack` (`main.rs:797-808`) asserts the bypass as "acceptable". | Critical | Appendix A table test calling the extracted validator; plus `mockito`/real-server redirect test for H-REDIR |
 | D-03 | `main.rs:55-58` | `set_server_url` and `update_config` accept any string; the allow-base is attacker-settable from the web view, so the check does not protect against a compromised renderer | High | Rust test that sets `server_url` to a link-local address and then proxies |
 | D-04 | `scripts/detect-landmines.sh:139-165` | RULE-DESK-001 uses `/\bunwrap\(\)/` in `awk`. MEASURED-NOW on this host (GNU Awk 5.3.2): `printf 'a.unwrap();' \| awk '/\bunwrap\(\)/{print "MATCH"}'` prints nothing, while `awk '/unwrap\(\)/'` matches; in gawk `\b` is backspace, word boundary is `\y`. A non-test `unwrap()` exists at `vlc/mod.rs:445`, yet the audit doc reports "clean". This is a false-null instrument (11.4.201(6)-(7)). | High (governance) | Control-needle test of the detector (section 6.4) |
 | D-05 | `main.rs:117-125` | Response status is discarded: non-2xx bodies are returned as `Ok(text)`; `authStore.login` then does `JSON.parse` on an error body and `set_auth_token({token: undefined})` | High | Test with a real server returning 401 JSON |
