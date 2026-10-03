@@ -1203,10 +1203,10 @@ All steps on `main`, no branches, fast-forward only, never force-push (11.4.113)
 |---|---|---|---|
 | 1 | Pre-op backup of the working tree state (9.2) | hardlinked or archive backup per the project's backup script | backup path recorded |
 | 2 | Fetch every remote of the submodule (11.4.37, 11.4.71) | `git -C submodules/constitution fetch --all --prune` (network, read-only on refs; `--prune` allowed because decisions read `git ls-remote`, docs/21 IC-36) | remote tips table |
-| 3 | Confirm all upstream tips agree, or report the lagging mirror | compare `git rev-parse <remote>/main` | table |
-| 4 | Review the incoming range read-only | `git -C submodules/constitution log --oneline HEAD..github/main`; `git diff --stat HEAD github/main`; diff `Constitution.md` and the four mirrors | summary like 14.2 |
+| 3 | Confirm all upstream tips agree, or report the lagging mirror | compare the tips read with `git ls-remote <remote> refs/heads/main` for every remote, the unique-maximum rule of document 11 §6.4 step 2 (revision 3: never `git rev-parse <remote>/main`, a tracking ref that was observed stale, document 11 F-4) | table |
+| 4 | Review the incoming range read-only | `git -C submodules/constitution log --oneline HEAD..<T>`; `git diff --stat HEAD <T>` (`<T>` from step 3); diff `Constitution.md` and the four mirrors | summary like 14.2 |
 | 5 | Verify lockstep of the five governance files and anchor-block integrity (11.4.227 B) at the new tip | run the constitution's own gates from the container (`scripts/gates/cm_anchor_block_integrity*` if present; UNCONFIRMED names) | gate output |
-| 6 | Fast-forward the submodule | `git -C submodules/constitution merge --ff-only github/main` | new HEAD |
+| 6 | Fast-forward the submodule | `git -C submodules/constitution merge --ff-only <T>`, where `<T>` is the unique maximum tip of step 3 (expected `e44f22f` per document 11 H3; revision 3: by commit id, not by the name of one remote's tracking ref) | new HEAD |
 | 7 | Update the pin in the parent | `git add submodules/constitution` then commit | commit hash |
 | 8 | Update the Spec Kit layer: pinned commit, `Constitution.md` hash (record the index hash separately if it lags), regenerate the catalogue, update the appendix text of changed anchors (here 11.4.235 (D)) | WP-G1 script; diff of appendix | clean regeneration diff |
 | 9 | Run the post-pull sweep (11.4.32, 11.4.164 `post_update_hook.sh`) | the hook installs or registers skills, hooks and MCP entries into agent platforms; it modifies configuration outside the repository. Run it in a reviewed, recorded way; its effects are UNCONFIRMED until read | hook transcript |

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: the root report set re-counted and enumerated by name in section 5.10: 49 root Markdown files are 6 governance files, 2 onboarding files and 41 report, plan and status files; 9 of the 41 have their own source rows (S-03, S-04, S-06, S-07, S-09, S-25) and the other 32 form S-12, which replaces the earlier estimate "about 36") |
 | Feature | specs/001-full-project-audit-remediation |
 | Traces to | FR-001, FR-002, FR-003, FR-004, FR-007, FR-008, SC-001 (also touches FR-013, FR-022, SC-002) |
 | Constitution anchors | 11.4.15, 11.4.16, 11.4.54, 11.4.55, 11.4.90, 11.4.93, 11.4.95, 11.4.115(F), 11.4.146(D3), 11.4.148, 11.4.202, 11.4.208, 11.4.214, 11.4.226, 11.4.227, 11.4.261 |
@@ -87,7 +87,7 @@ Kind codes: **T** = ticket-per-file, **L** = list/table inside a document, **C**
 | S-09 | `UNFINISHED_WORK_ANALYSIS.md`, `UNFINISHED_WORK_AND_ISSUES.md`, `FINAL_UNFINISHED_WORK_REPORT.md` | R | 5, 4 cross marks; counts not otherwise claimed | prose | none | 2026-04-06 to 2026-04-10 |
 | S-10 | `docs/OPEN_POINTS_CLOSURE.md` | C | 35 unchecked, 19 checked (exact) | checkbox | none | see 5.7 |
 | S-11 | `docs/LANDMINES.md` | L | 63 rules (exact) | none (invariants) | `RULE-<scope>-NNN`, unique | see 5.8 |
-| S-12 | Other root status reports (about 36 files) | R | `NOT COUNTED` | prose, tick marks | none | 2026-02-25 to 2026-10-02 |
+| S-12 | Other root status reports (32 files, exact; listed in section 5.10) | R | `NOT COUNTED` | prose, tick marks | none | 2026-02-25 to 2026-10-02 |
 | S-13 | `docs/status/*.md` (37 files) | R | `NOT COUNTED` | prose | none | 2026-02 to 2026-04 |
 | S-14 | `docs/audits/*.md` (7 files) and `docs/*AUDIT*.md` (10 files) | R | `CATAPI-DEFECT-001..006` = 6 (exact); others `NOT COUNTED` | prose, per-defect headings | `CATAPI-DEFECT-NNN` in one file | 2026-04-22 to 2026-04-30 |
 | S-15 | `docs/qa/**`, `docs/reports/qa-sessions/**` | R+T | 20 tracked files under qa-sessions, 3 ticket files; FINDING-1 and FINDING-2 in `findings_20260626` | prose | `FIX-QA-YYYY-MM-DD-NNN`, `DEFER-QA-...`, `FINDING-N` | 2026-04-21 to 2026-06-29 |
@@ -181,7 +181,7 @@ Reading every hit: the catalog-api hits are prose in two Markdown reports (`cata
 
 ### 5.10 S-12 and S-13 root reports and `docs/status/`
 
-About 36 root reports (for example `FINAL_*`, `PHASE_*_COMPLETION_REPORT.md`, `COMPREHENSIVE_*`, `PROJECT_STATUS_*`, `IMPLEMENTATION_*`, `ALL_ISSUES_FIXED.md`, `ISSUES_FIXED_TODAY.md`) plus 37 files in `docs/status/`. Their form is narrative with tick marks. Most state completion; they are the **contradiction source** for F-3. They hold few structured problem entries (a few have unchecked boxes: `PHASE_1_PROGRESS_REPORT.md` 38, `MASTER_IMPLEMENTATION_PLAN_PHASES.md` 66, `IMPLEMENTATION_PROGRESS_REPORT.md` 12, `IMPLEMENTATION_PACKAGE_SUMMARY.md` 11, `COMPREHENSIVE_IMPLEMENTATION_PLAN.md` 10, `PROJECT_STATUS_SUMMARY.md` 9, `FINAL_PROGRESS_REPORT.md` 4, `HELIXQA_AUTONOMOUS_QA_IMPLEMENTATION_PLAN.md` 7). `docs/status/IMPLEMENTATION_TASK_TRACKER.md` has 1,228 lines and no rows matching an id pattern (0 table rows with a leading id), so it must be read as prose. The files have no ids.
+Revision 2 re-count (`git ls-files` of `*.md` at the repository root, 2026-10-03): 49 root Markdown files. 6 are governance files (`AGENTS.md`, `CLAUDE.md`, `CONSTITUTION.md`, `GEMINI.md`, `MEMORY.md`, `README.md`) and 2 are onboarding files (`GETTING_STARTED.md`, `QUICK_REFERENCE.md`); none of the 8 is a problem source. The other 41 are report, plan and status files. Nine of the 41 already have their own source row: `TASK_TRACKER.md` (S-03), `MASTER_EXECUTION_CHECKLIST.md` (S-04), `COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md` (S-06), `COMPREHENSIVE_UNFINISHED_WORK_REPORT.md` (S-07), `UNFINISHED_WORK_ANALYSIS.md`, `UNFINISHED_WORK_AND_ISSUES.md`, `FINAL_UNFINISHED_WORK_REPORT.md` (S-09), `SECURITY_KEY_ROTATION_REQUIRED.md` and `SECURITY_AUDIT_REPORT.md` (S-25). The remaining 32 are S-12, named here so that none is covered only by a pattern: `ALL_ISSUES_FIXED.md`, `ANDROID_CRASH_FIXES_REPORT.md`, `COMMIT_SUMMARY.md`, `COMPLETE_FINAL_REPORT.md`, `COMPLETE_FIX_REPORT.md`, `COMPREHENSIVE_IMPLEMENTATION_PLAN.md`, `COMPREHENSIVE_TEST_REPORT_2026-04-07.md`, `COMPREHENSIVE_TEST_REPORT_2026-04-09.md`, `FINAL_COMPLETION_REPORT_ALL_PHASES.md`, `FINAL_COMPLETION_REPORT.md`, `FINAL_COMPREHENSIVE_COMPLETION_REPORT.md`, `FINAL_PROGRESS_REPORT.md`, `FINAL_PROJECT_REPORT.md`, `FINAL_SUMMARY_REPORT.md`, `HELIXQA_AUTONOMOUS_QA_IMPLEMENTATION_PLAN.md`, `IMPLEMENTATION_COMPLETE.md`, `IMPLEMENTATION_PACKAGE_SUMMARY.md`, `IMPLEMENTATION_PROGRESS_REPORT.md`, `ISSUES_FIXED_TODAY.md`, `MASTER_IMPLEMENTATION_INDEX.md`, `MASTER_IMPLEMENTATION_PLAN_PHASES.md`, `PERFORMANCE_OPTIMIZATION_REPORT.md`, `PHASE_0_COMPLETION_REPORT.md`, `PHASE_1_COMPLETION_REPORT.md`, `PHASE_1_PROGRESS_REPORT.md`, `PHASE_2_COMPLETION_REPORT.md`, `PHASE_3_COMPLETION_REPORT.md`, `PROGRESS_UPDATE_DEAD_CODE.md`, `PROJECT_STATUS_REPORT.md`, `PROJECT_STATUS_SUMMARY.md`, `REMAINING_ISSUES_REPORT.md`, `TEST_EXECUTION_REPORT.md`. The earlier figure "about 36" is withdrawn. S-13 adds 37 files in `docs/status/`. Their form is narrative with tick marks. Most state completion; they are the **contradiction source** for F-3. They hold few structured problem entries (a few have unchecked boxes: `PHASE_1_PROGRESS_REPORT.md` 38, `MASTER_IMPLEMENTATION_PLAN_PHASES.md` 66, `IMPLEMENTATION_PROGRESS_REPORT.md` 12, `IMPLEMENTATION_PACKAGE_SUMMARY.md` 11, `COMPREHENSIVE_IMPLEMENTATION_PLAN.md` 10, `PROJECT_STATUS_SUMMARY.md` 9, `FINAL_PROGRESS_REPORT.md` 4, `HELIXQA_AUTONOMOUS_QA_IMPLEMENTATION_PLAN.md` 7). `docs/status/IMPLEMENTATION_TASK_TRACKER.md` has 1,228 lines and no rows matching an id pattern (0 table rows with a leading id), so it must be read as prose. The files have no ids.
 
 Reconciliation treatment: they are **claim documents**. Each completion claim ("X is implemented", "Y resolved") is a statement that the audit verifies or refutes (FR-022). Extraction is by pattern-led lead scan plus an agent read pass (section 10, step 4), producing candidate claims with the line reference; claims that contradict the current state become register items, and the document is added to the doc-update list (FR-012).
 
@@ -314,7 +314,7 @@ All values exact unless marked. "Entries" are source entries before deduplicatio
 | Credential-rotation rows (S-25) | 37 | 37 | action list |
 | Real code markers (S-23) | 1 (OCU sidecar) | 1 | 8 more are document/script text |
 | Bank gaps (S-17 to S-20) | 11 placeholder bank files; 1,178 placeholder step lines; 5 weak-baseline rows | exact | 1,269 cases and 507 + 2,882 other cases are test definitions, mapped as NON-PROBLEM |
-| Narrative claim documents (S-08, S-09, S-12, S-13, S-14 others) | about 36 root + 37 status + 11 audit documents, plus S-22 | `NOT COUNTED` | needs the lead-scan and read pass |
+| Narrative claim documents (S-08, S-09, S-12, S-13, S-14 others) | 3 root (S-09) + 32 root (S-12) + 37 status + 11 audit documents, plus S-08 and S-22 | `NOT COUNTED` | needs the lead-scan and read pass |
 
 Upper bound on register items before deduplication: **about 1,778 + 1 + 1,676 + 221 + 83 + 898 + 37 + 14 + 16 + 5 + the claim-document leads**, which sums to 4,729 before the leads, so about 4,700 candidate entries (ESTIMATE; the sum includes the 898 scan findings of the latest run, of which gosec 810; the 14 and 16 terms are not itemised in the table above and are UNCONFIRMED), of which the real count after folding duplicates and dropping procedural checklists is expected to be far lower. This is an estimate for capacity planning only (ESTIMATE, not a finding). The reconciliation produces the exact figure.
 

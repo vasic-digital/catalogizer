@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -78,7 +78,7 @@ accounting for SC-004.
 | 10 | Performance | Latency, throughput, tail latency against recorded baselines | yes | statistical | runtime |
 | 11 | Benchmarking | Micro and macro benchmarks with historical drift detection | yes | statistical | runtime |
 | 12 | UI | Visual regression, DOM state and interaction flow on every target platform | yes | golden-master + vision oracle | user-visible |
-| 13 | UX | Flow correctness, accessibility, i18n, visual-cue order | yes | specified (WCAG, flow spec) | user-visible |
+| 13 | UX | Flow correctness, accessibility to WCAG 2.2 level AA, i18n where it applies, visual-cue order (section 13.4) | yes | specified (WCAG 2.2 AA success criteria, flow spec) | user-visible |
 | 14 | Challenges | Per-feature Challenge scripts from the Challenges submodule with captured runtime evidence | yes | specified | runtime |
 | 15 | HelixQA | Every written test bank executed; autonomous QA sessions in release gates | yes | specified + human (manual QA remains the final gate, 11.4.185) | user-visible |
 
@@ -540,8 +540,10 @@ check.
    or on measured coverage is flaky: it enters quarantine (section 11) and its coverage is measured
    from the stable subset.
 3. Write a **baseline record** per application (schema below) to
-   `specs/001-full-project-audit-remediation/evidence/coverage/<app>/baseline.json` through the
+   `$EV/coverage_baseline/<app>/baseline.json` (`$EV` = `specs/001-full-project-audit-remediation/evidence`) through the
    evidence recorder (document 06). The record is produced by the measuring harness, never edited.
+   Revision 3: not `evidence/coverage/<app>/`, which the unanchored `coverage/` rule at `.gitignore:139` ignores at any depth,
+   so a baseline there would never be committed (docs/21 IC-38; tasks.md T003 keeps `$EV/coverage/` ignored on purpose).
 4. Commit the record. The baseline commit hash is the reference for the ratchet.
 
 Baseline record, with illustrative values only (NOT EXECUTED; the numbers are placeholders):
@@ -558,7 +560,7 @@ Baseline record, with illustrative values only (NOT EXECUTED; the numbers are pl
   "line_percent": "<measured>",
   "branch_percent": null,
   "per_package": {"handlers": "<measured>", "services": "<measured>"},
-  "evidence": ["evidence/coverage/catalog-api/run-1.json", "run-2.json", "run-3.json"]
+  "evidence": ["$EV/coverage_baseline/catalog-api/run-1.json", "run-2.json", "run-3.json"]
 }
 ```
 
@@ -585,8 +587,8 @@ flowchart LR
   the evidence of the run that earned it. It never moves down except by the governed repeal
   described in 11.4.227 (A), which cites a removal reason.
 - **Targets**: the dated target is a per-application commitment of the form "total coverage at least
-  X by date D", where X and D are chosen by the owner after the baseline run and recorded in the
-  baseline record's sibling `targets.yaml`. This plan sets the method and the deadline mechanism, not
+  X by date D", where X and D are chosen by the owner after the baseline run and recorded in
+  `$EV/coverage_targets/<app>/targets.yaml` (revision 3: a separate tracked folder, not a sibling of the baseline record). This plan sets the method and the deadline mechanism, not
   the numbers or dates, since a baseline does not exist yet (the figures for the final target are
   `UNKNOWN:` and are not invented here). Method for proposing X: the constitution's aim is close
   to 100% with a floor of 85%; the proposal to the owner is the lowest-effort line that reaches 85%
@@ -638,7 +640,7 @@ automated mutation analysis as a bulk instrument and the human-drawn sample as t
 | TypeScript | Stryker Mutator | none | add for api-client, web (selected packages), shared TS modules; vitest runner plugin |
 | Kotlin | PIT (pitest) with the Gradle and Kotlin plugins | none | `UNCONFIRMED:` Compose and coroutine compatibility; scope to logic layers (repositories, view models) |
 | Rust | cargo-mutants | none | `UNCONFIRMED:` run time on Tauri crates; scope to non-UI modules |
-| Bash | purpose-built mutation harness | none | a script that applies a table of operators (flip `-eq`/`-ne`, delete a command, swap `&&`/`||`, change an exit code) to a copy of the script and runs its test; included in the Build framework tests |
+| Bash | purpose-built mutation harness | none | a script that applies a table of operators (flip `-eq`/`-ne`, delete a command, swap `&&`/`\|\|`, change an exit code) to a copy of the script and runs its test; included in the Build framework tests |
 
 Mutation analysis is expensive; it runs on changed files per change and in full on a schedule
 (per package, in parallel streams) in the build container within the memory ceiling. Equivalent
@@ -1008,6 +1010,54 @@ test-first artifact is a paired mutation set: remove a ledger record (cell must 
 verdict line (the chain check must fail, document 06), mark an applicable type n/a without a reason
 (the gate must refuse), and a golden-false case (a complete matrix must pass).
 
+### 13.4 Cross-cutting applicability: translation and i18n, accessibility (revision 3)
+
+Two concerns cut across the fifteen types and had no explicit applicability record. Both are recorded here as data for the applicability map (section 13.2) under a `cross_cutting` key, and both are owned by docs/21 WP-61 (absent test types) for the authoring and by WP-70 for the final matrix gate.
+
+**Translation and i18n.** Measured on 2026-10-03 by reading the manifests and resource trees: no internationalisation library is declared in `catalog-web/package.json`, `catalogizer-desktop/package.json`, `installer-wizard/package.json` or `Website/package.json` (a case-insensitive search for `i18n`, `intl`, `locali`, `lingui`, `formatjs` returns 0 in each); `catalogizer-android` and `catalogizer-androidtv` have only the default `res/values` folder and no locale-qualified `values-*` folder. The server has `catalog-api/internal/handlers/localization_handlers.go` with its test file; document 01 §3.1 records that these handlers register on a `mux.Router`, and whether they are reachable in the running server is `UNCONFIRMED:`. The translation mandates (11.4.255 HelixTranslate pipeline, 11.4.256 independent per-language review, 11.4.237 context-and-spirit review) bind translated content, and none was found.
+
+| Application | Translation and i18n | Reason and evidence | What would change it |
+|---|---|---|---|
+| A1 catalog-api | open | `localization_handlers.go` exists; reachability `UNCONFIRMED:` | if the localization routes are reachable and serve translated strings, i18n tests (locale negotiation, fallback, encoding) and the translation mandates apply to those strings; WP-30 settles reachability |
+| A2 catalog-web | n/a | no i18n library declared (manifest read; whether every component string is English was not measured) | adding a second language makes the translation pipeline and per-language review mandatory, and UX gains locale tests |
+| A3 desktop, A4 installer | n/a | no i18n library in either manifest | same as A2 |
+| A5 android, A6 tv | n/a | only `res/values`, no `values-<locale>` folder | a `values-<locale>` folder makes translation review mandatory and adds locale and right-to-left layout checks |
+| A7 api-client | n/a | a library with no user-facing strings | none |
+| A8 Website | n/a | no locale configuration found in its manifest | a translated site version |
+| A9 Build, A10, A11, A13 | n/a | no user-facing text; A11 React modules render text supplied by A2 | an A11 module that ships its own strings |
+
+Every n/a above is reviewable (an n/a that hides an applicable concern is the SC-004 bluff of section 13.2), and the A1 row stays open until WP-30 records the reachability result.
+
+**Accessibility (WCAG 2.2 level AA).** The UX type (section 2, row 13) is closed for a user-facing application only when its accessibility checks pass. Automated tools find part of the WCAG failures, so every application also gets a scripted manual walkthrough whose result is recorded as evidence (human oracle, section 2), and neither part substitutes for the other. Document 18 T9-A (checklist) and T9-B (TV focus restoration) are the sources of the items below.
+
+| Application | Automated checks | Manual or scripted checks | Platform specifics |
+|---|---|---|---|
+| A2 catalog-web | axe-core rules inside the existing Playwright suites (`accessibility*.spec.ts` exist), Lighthouse accessibility category | keyboard-only walkthrough of sign-in, browse, search, playback start; focus visible and not obscured; target size; dragging alternatives; consistent help | colour contrast in both themes |
+| A3 desktop, A4 installer | axe-core against the Tauri webview pages through the planned Playwright and WebDriver suite | keyboard-only walkthrough of every installer step and the desktop main flows | native dialogs (`plugin-dialog`) checked by hand, `UNCONFIRMED:` tool support |
+| A5 android | Android accessibility checks in instrumented tests (Accessibility Test Framework class; exact library `UNCONFIRMED:` until the build container resolves it) | TalkBack walkthrough of sign-in to playback on a real device or an owner-approved emulator (DR-4) | content descriptions, touch target size, font scaling |
+| A6 tv | the same instrumented checks where the TV components support them | D-pad walkthrough: focus order, focus always visible, and focus restored to the originating item after returning from a detail screen (a test that fails when focus is lost, document 18 T9-B) | 10-foot readability, remote-only navigation |
+| A8 Website | axe-core and the Lighthouse accessibility category per page in three engines (11.4.190) | keyboard walkthrough of navigation and search | none |
+| A11 React modules | axe-core in component tests with a real DOM | none beyond A2, which renders them | none |
+
+Each automated check ships with its paired mutation (for example, remove an `aria-label` or the focus-restoration call; the check must fail), and each manual walkthrough is recorded with screen captures and the vision oracle where the UI is not introspectable (11.4.117, 11.4.193). A1, A7, A9, A10 and A13 have no user interface: accessibility is n/a for them with that reason.
+
+Applicability-map entries added by this section (NOT EXECUTED; proposal for owner review):
+
+```yaml
+cross_cutting:
+  translation_i18n:
+    catalog-api: {status: open, reason: "localization handlers exist; reachability UNCONFIRMED (WP-30)"}
+    catalog-web: {status: na, reason: "no i18n library declared"}
+    catalogizer-desktop: {status: na, reason: "no i18n library"}
+    installer-wizard: {status: na, reason: "no i18n library"}
+    catalogizer-android: {status: na, reason: "only res/values"}
+    catalogizer-androidtv: {status: na, reason: "only res/values"}
+    website: {status: na, reason: "no locale configuration"}
+  accessibility_wcag22_aa:
+    applies: [catalog-web, catalogizer-desktop, installer-wizard, catalogizer-android, catalogizer-androidtv, website, ts-react-modules]
+    na: {catalog-api: "no user interface", catalogizer-api-client: "library", build: "no user interface"}
+```
+
 ## 14. Decision records
 
 | Id | Decision | Alternatives rejected | Reason | Open input |
@@ -1044,7 +1094,7 @@ configured (12.1); the origin of `installer-wizard/test-results.json`.
 |---|---|---|
 | FR-009 | 2, 4, 6, 13 | generated matrix with zero absent applicable cells; each closed cell lists a ledger record |
 | FR-010 | 6 (TS-02), 7.2, 8, 11, 12, doc 06 | three-run comparison records; mutation caught per test; no retry configuration |
-| FR-011 | 7 | per-application baseline records, targets file, ratchet gate passing with mutation-proved gate |
+| FR-011 | 7 | per-application baseline records under `$EV/coverage_baseline/<app>/`, targets files under `$EV/coverage_targets/<app>/`, ratchet gate passing with mutation-proved gate |
 | FR-016 | 9 | broker matrix verdict record; both-side tests; missing-contract refusal test |
 | FR-025 | 10 | preflight records; `blocked` verdicts with reason codes; no `skipped` outcome in the reporter; dependency file |
 | SC-004 | 13 | generator exit code and matrix with zero gaps |

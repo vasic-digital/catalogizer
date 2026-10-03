@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: the section 4.3 flowchart renders again (a correction note sat after a node definition and broke the parser; it is now a Mermaid comment plus a sentence below the diagram); one section 11.1 row split into its four columns; the evidence-label vocabulary of this document (PROVEN, PLAUSIBLE, SINGLE-SOURCE, ...) is mapped to document 18's in document 18 §2.1) |
 | Feature | specs/001-full-project-audit-remediation |
 | Traceability | FR-005, FR-008..FR-011, FR-014..FR-016, FR-021, FR-022, FR-025, SC-003..SC-008, SC-011 |
 | Source access date | 2026-10-03 (all sources below) |
@@ -138,7 +138,8 @@ The constitution's §11.4.244 requires contract tests on both sides plus a `can-
 
 ```mermaid
 flowchart TD
-  S["catalog-api OpenAPI spec (source of truth, UNCONFIRMED whether one exists)"] --> D["oasdiff breaking: base vs head"] [corrected by doc 20 section 11 (C8)]
+  %% the oasdiff edge is corrected by doc 20 section 11 (C8)
+  S["catalog-api OpenAPI spec (source of truth, UNCONFIRMED whether one exists)"] --> D["oasdiff breaking: base vs head"]
   S --> T["Schemathesis against live API container"]
   W["catalog-web / api-client / android / androidtv / desktop consumers"] --> P["Pact consumer tests produce pact files"]
   P --> V["Provider verification in catalog-api test image"]
@@ -147,6 +148,8 @@ flowchart TD
   T --> E
   B --> E
 ```
+
+The oasdiff step of this diagram is corrected by document 20 §11 (C8).
 
 **Which fit.** oasdiff + Schemathesis fit immediately if a machine-readable OpenAPI document exists for `catalog-api`; if it does not, the audit must first decide between generating one from the Gin routes or hand-writing it. That is a finding, not a plan item here (UNCONFIRMED: no OpenAPI file was located this pass; verify with `codegraph explore "openapi swagger"`). Pact fits the five consumer clients but costs a broker and a CGO test image; a cheaper first step is **file-based** consumer-driven contracts: consumers publish pact JSON into the repo, the provider verifies them, and a script computes the compatibility matrix locally. This forgoes the broker's `can-i-deploy` convenience but meets "detected before release" (FR-016) without a new service. The trade-off must be an explicit decision record in the contract plan document. [corrected by doc 20 section 11 (C8)]
 
@@ -317,7 +320,7 @@ sequenceDiagram
 | Finding | Source | Class | Limit |
 |---|---|---|---|
 | CodeGraph (the colbymchenry project, assumed to be the one in use here; UNCONFIRMED) uses tree-sitter grammars in a native Rust kernel, stores symbols and edges in SQLite with FTS5, resolves calls/imports/inheritance after extraction, and keeps the index fresh with OS file watchers. | [R43] | PROVEN as description | Vendor documentation. |
-| The repository's own benchmark claims, on 7 codebases, Claude Code answering architecture questions: 88% fewer tool calls, 53% faster, 62% fewer tokens, 44% cheaper; 1 to 4 calls with the index versus 6 to 43 without; **savings are negligible when exploration is cheap**. | [R43] | SINGLE-SOURCE, VENDOR-REPORTED. Not independently reproduced. The project's own constitution (§11.4.275) records a stricter local measurement in which the index route also answered some fixture queries wrongly; that local evidence outranks this claim. |
+| The repository's own benchmark claims, on 7 codebases, Claude Code answering architecture questions: 88% fewer tool calls, 53% faster, 62% fewer tokens, 44% cheaper; 1 to 4 calls with the index versus 6 to 43 without; **savings are negligible when exploration is cheap**. | [R43] | SINGLE-SOURCE, VENDOR-REPORTED | Not independently reproduced. The project's own constitution (§11.4.275) records a stricter local measurement in which the index route also answered some fixture queries wrongly; that local evidence outranks this claim. |
 | Limits stated by the project: needs `.codegraph/`; cannot follow reflection or DI containers; framework routing coverage varies (73 to 100%). | [R43] | PROVEN as stated limits | Directly relevant to Gin handlers and Android DI. |
 | Aider's repo map sends a compact map of classes and function signatures and ranks files with a graph-ranking algorithm over a file dependency graph, within a token budget (default 1k via `--map-tokens`); the page does not mention tree-sitter. | [R44] | PROVEN as description | No quantitative effectiveness data on the page. |
 | Embedding-based retrieval has standard benchmarks: CoIR (10 datasets, four task types, NDCG@10) and retrieval adaptations of SWE-bench (find files to edit). One search result states code-specialised embeddings strongly dominate code-to-code retrieval and no single model wins all tasks. | [R45] | SINGLE-SOURCE (arXiv/aggregators; the 2x claim comes from a result page not read in full) | The benchmarks measure general models, not this repository. [corrected by doc 20 section 11 (C12)] |

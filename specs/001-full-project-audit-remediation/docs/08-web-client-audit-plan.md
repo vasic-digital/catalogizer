@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: pipe characters inside code spans of three table rows escaped with a backslash, so each row has its header's column count; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-web/` and the nine linked submodules `auth_context_react`, `media_browser_react`, `media_player_react`, `collection_manager_react`, `dashboard_analytics_react`, `ui_components_react`, `websocket_client_ts`, `media_types_ts`, `catalogizer_api_client_ts` |
 | Spec traceability | FR-005..FR-011, FR-014..FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-011 |
@@ -71,7 +71,7 @@ All counts exclude `__tests__/` and `*.test.*` unless stated. Measured 2026-10-0
 | `localStorage` auth token reads | `api.ts:25`, `websocket.ts:58`, 10 more inside `CollectionSharing.tsx` and `ExternalIntegrations.tsx` | `grep` |
 | `Math.random` in `src` | 60 occurrences in 10 files (58 in 9 non-test files; `CollectionAnalytics` 30, `AIMetadata` 10, `CollectionRealTime` 8); re-measured with `grep -rn "Math.random" src` | `grep` |
 | `.then(` versus catch constructs | 130 versus 82 (candidate unhandled chains, needs AST confirmation) | `grep` |
-| `key={index}` style keys | 42 (`grep -rnE "key=\{(index|i|idx|[a-z]*[iI]ndex|[a-z]*Idx)\}" src`) | `grep` |
+| `key={index}` style keys | 42 (`grep -rnE "key=\{(index\|i\|idx\|[a-z]*[iI]ndex\|[a-z]*Idx)\}" src`) | `grep` |
 | `<img` tags / without `alt=` | 11 / 0 | `grep` |
 | Click handlers on `div`/`span` (a11y candidates) | 11 | `grep` |
 | `prefers-reduced-motion` occurrences (css + code) | 0 | `grep` |
@@ -285,7 +285,7 @@ Each detector writes JSON Lines to `$EVID/<id>.jsonl` with fields `{id, rule, pa
 | D-LINT-02 | Lint rules that `.eslintrc.js` does not enable | add in a separate config: `@typescript-eslint/no-floating-promises`, `no-misused-promises`, `jsx-a11y/*`, `no-console`, `react/no-array-index-key` | Floating promise fixture |
 | D-ANY-01 | `any`, `ts-ignore`, `eslint-disable` census with per-file delta | `ts-morph` script over `src` (non-test and test separately) | Fixture with one of each |
 | D-FETCH-01 | Raw `fetch`/`XMLHttpRequest`/`axios` outside `lib/api.ts` | `ts-morph` call-expression scan | Fixture component calling `fetch` |
-| D-TOKEN-01 | Reads/writes of auth token storage outside `lib/api.ts` and `AuthContext` | AST scan for `localStorage|sessionStorage|document.cookie` with key regex `token|auth|session` | Fixture |
+| D-TOKEN-01 | Reads/writes of auth token storage outside `lib/api.ts` and `AuthContext` | AST scan for `localStorage\|sessionStorage\|document.cookie` with key regex `token\|auth\|session` | Fixture |
 | D-RANDOM-01 | `Math.random`, `Date.now()` used to fabricate data in non-test code | AST scan with allowlist for ids and animation | Fixture |
 | D-PROMISE-01 | Unhandled promise chains: `.then()` without `.catch`, `async` handlers without try/catch, floating promises | `typescript-eslint` type-aware rules plus AST for chains | Fixture |
 | D-CONSOLE-01 | `console.*` in non-test code | AST scan | Fixture |
@@ -511,7 +511,7 @@ Ordering respects risk (§11.4.132): auth/realtime first, then data-fabrication 
 | W8-05 | Real-stack E2E rebuild | section 11.3 | Compose stack, seed, real `setup` project, mock removal, `waitForTimeout` to 0, journeys per route, chaos scenarios, trace-on evidence | FR-009, FR-010, FR-025, SC-004 |
 | W8-06 | UI proof and catalogue (section 8, 9) | W8-05 stack | Capture harness, OCR and layout oracles with self-validation fixtures, committed baselines, component catalogue, screen catalogue, reduced-motion handling | §11.4.170, .218, .219, .221; SC-004 |
 | W8-07 | Tokens, OpenDesign contract and fonts | section 9 | `tokens.css` canonical or generated, `data-theme` support, `design/opendesign/DESIGN.md`, raw-hex removal, vendored fonts, contrast evidence | §11.4.162, .216, .217 |
-| W8-08 | Security and delivery hardening | WEB-F10, F17 | Reproducible Dockerfile (paths from real submodule locations, no `|| true`, no `--skipLibCheck` fallback), nginx security headers and rate limits, header probe, XSS/token/redirect tests | FR-021, SC-003 |
+| W8-08 | Security and delivery hardening | WEB-F10, F17 | Reproducible Dockerfile (paths from real submodule locations, no `\|\| true`, no `--skipLibCheck` fallback), nginx security headers and rate limits, header probe, XSS/token/redirect tests | FR-021, SC-003 |
 | W8-09 | Contract tests and dependency alignment | section 13, F03, F11, F12, F21 | Drift extractor, both-sided contract tests, ambient-shadow removal, peer-version matrix and a recorded upgrade/decision for React Query v4 versus v5, TypeScript, Vitest; shared submodule fixes pushed to their upstreams | FR-016, FR-017, FR-018 |
 | W8-10 | Performance baselines and bottleneck fixes | section 12 | Measured baselines for SC-011 operations, bundle budgets and gate, soak/stress results, fixes with before/after | SC-011 |
 | W8-11 | Dead and fabricated code resolution | WEB-F03, F04, F05, F14, F20 | For each: git-history investigation (`git log --follow`, `-S`) recorded before any removal (§11.4.124); fabricated data replaced by real data or the feature removed with an operator decision (§11.4.122); version labels from build define | FR-008 |

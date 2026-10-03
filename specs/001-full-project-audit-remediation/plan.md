@@ -2,21 +2,21 @@
 
 **Branch**: `001-full-project-audit-remediation` (no branch; all work on `main`, per spec FR-024) | **Date**: 2026-10-03 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/001-full-project-audit-remediation/spec.md`
-**Revision**: 2 (consistency fixes after the tasks.md rev 2 cross-check: structure decision, POC list, HC ids) | **Last modified**: 2026-10-03
+**Revision**: 3 (links to directories replaced by links to files, the spec-folder index [README.md](README.md) added, candidate-entry estimate and owner-decision count aligned with docs/21 revision 6, the `.gitignore` list taken from tasks.md T003) | **Last modified**: 2026-10-03
 
 ## Summary
 
 The spec asks for an exhaustive, evidence-backed audit of every Catalogizer application and shared component, a single register of every known and discovered problem, every finding fixed and proven by deterministic machine-produced results, complete and linked documentation, submodules brought to their latest upstream codebases, and a recursive proof that nothing is uncommitted or unpushed.
 
-The technical approach, fixed by the 21 planning documents in [docs/](docs/) (about 239,000 words), is:
+The technical approach, fixed by the 21 planning documents under `docs/` (index: [README.md](README.md); about 280,000 words by `wc -w docs/*.md`, measured on 2026-10-03 while the documents were in their revision-6 round; plan revision 2 stated about 239,000), is:
 
 1. **Prove the instruments first.** Both code indexes fail their own health checks today (CodeGraph covers 7,150 files; Lumen reports 10,397 files and stale; no scope data file, no `.lumenignore`, no `.mcp.json`). A health gate must pass before an index is trusted ([docs/02](docs/02-audit-methodology-and-index-strategy.md)).
 2. **Build the register and the evidence machinery before the first finding.** The register is the constitution's workable-items engine database plus an extension layer, not a second database ([docs/04](docs/04-findings-register-design.md)); evidence records, polarity runs and tamper-evident chaining follow [docs/06](docs/06-determinism-and-evidence-framework.md).
 3. **Containerize before any build or test.** Several existing container assets cannot build from a clean checkout, and some scripts build on the bare host ([docs/16](docs/16-containerized-infrastructure-and-local-enforcement-plan.md)).
-4. **Import everything already known** (about 4,000 candidate entries, led by 1,778 HelixQA tickets whose ids collide) and **audit every application twice from the same state** with independent review ([docs/03](docs/03-existing-issue-inventory.md), [07](docs/07-backend-catalog-api-audit-plan.md) to [10](docs/10-android-and-android-tv-audit-plan.md), [12](docs/12-helixqa-challenges-and-governance-plan.md)).
+4. **Import everything already known** (about 4,700 candidate entries, led by 1,778 HelixQA tickets whose ids collide, plus 253 seeds from the plan documents and 34 doc18 innovation entries tracked as Feature items) and **audit every application twice from the same state** with independent review ([docs/03](docs/03-existing-issue-inventory.md), [07](docs/07-backend-catalog-api-audit-plan.md) to [10](docs/10-android-and-android-tv-audit-plan.md), [12](docs/12-helixqa-challenges-and-governance-plan.md)).
 5. **Fix contracts before clients**, remediate by risk with RED-then-GREEN proof repeated three times, close the test-type matrix, convert the prose QA steps, run the documentation and performance programmes, update submodules per the runbook, then verify recursively and close ([docs/05](docs/05-test-strategy-and-coverage-matrix.md), [11](docs/11-submodules-audit-and-update-runbook.md), [13](docs/13-documentation-program-plan.md), [14](docs/14-performance-engineering-plan.md), [15](docs/15-security-and-danger-zone-plan.md)).
 
-The master plan ([docs/21](docs/21-master-plan-phases-risks-and-traceability.md)) defines 8 phases, 53 work packages, 34 risks and 38 grouped owner decisions (ODG-01 to ODG-38; the finer-grained collection in [research.md](research.md) lists 79, OD-01 to OD-79), and maps every FR and SC to at least one work package and one evidence type (0 uncovered). Research with cited sources is in [docs/17](docs/17-research-engineering-practices.md), [18](docs/18-research-product-innovation-and-game-changers.md) and [20](docs/20-research-second-pass-gaps.md); working, self-tested proof-of-concept tools are in [poc/](poc/) and [docs/19](docs/19-poc-tools-and-results.md).
+The master plan ([docs/21](docs/21-master-plan-phases-risks-and-traceability.md)) defines 8 phases, 53 work packages, 34 risks and 40 grouped owner decisions (ODG-01 to ODG-40; the finer-grained collection in [research.md](research.md) lists 79, OD-01 to OD-79), and maps every FR and SC to at least one work package and one evidence type (0 uncovered). Research with cited sources is in [docs/17](docs/17-research-engineering-practices.md), [18](docs/18-research-product-innovation-and-game-changers.md) and [20](docs/20-research-second-pass-gaps.md); working, self-tested proof-of-concept tools are under `poc/` ([repo_verify](poc/repo_verify/README.md), [doc_links](poc/doc_links/README.md), [route_drift](poc/route_drift/README.md)) and described in [docs/19](docs/19-poc-tools-and-results.md).
 
 ## Technical Context
 
@@ -52,7 +52,7 @@ Gate result: no unjustified violation. Two NEEDS ATTENTION items (II and IV) des
 
 ### Post-design re-evaluation
 
-The design artifacts ([research.md](research.md), [data-model.md](data-model.md), [contracts/](contracts/), [quickstart.md](quickstart.md)) introduce no new principle conflict. The decisions that needed a conflict resolution are listed under Complexity Tracking.
+The design artifacts ([research.md](research.md), [data-model.md](data-model.md), [contracts/README.md](contracts/README.md), [quickstart.md](quickstart.md)) introduce no new principle conflict. The decisions that needed a conflict resolution are listed under Complexity Tracking.
 
 ## Project Structure
 
@@ -60,6 +60,7 @@ The design artifacts ([research.md](research.md), [data-model.md](data-model.md)
 
 ```text
 specs/001-full-project-audit-remediation/
+├── README.md               # Index of every document of this specification folder
 ├── spec.md                 # Feature specification (clarified)
 ├── plan.md                 # This file
 ├── research.md             # Phase 0: decisions, rationale, alternatives, owner inputs
@@ -133,9 +134,9 @@ specs/001-full-project-audit-remediation/
 └── perf/                     # perf targets and baselines
 ```
 
-`.gitignore` hides `build/`, `tools/` and `coverage/` today (`.gitignore:40`, `:101`, `:139`, `:263`). Task T003 adds anchored negations (`!/build/`, `/build/*`, `!/build/containers/`, `!/build/components.json`, `!/build/hosts.env.example`; `!/tools/`, `/tools/*`, `!/tools/evidence/`, `!/tools/perf/`, `!/tools/audit/`, `/tools/audit/*`, `!/tools/audit/rust_ast/`, `/tools/audit/rust_ast/target/`; `!/coverage/`, `/coverage/*`, `!/coverage/exclusions/`) and the ignore rules `/.audit/`, `docs/*.bak-*` and `docs/.register.lock`, proved by `git check-ignore` before and after.
+`.gitignore` hides `build/`, `tools/`, `coverage/` and `*.db` today (`.gitignore:40`, `:85`, `:101`, `:139`, `:153`, `:263`). Task T003 of tasks.md is the authoritative list; it appends, as the last lines of `.gitignore`: `!/build/`, `/build/*`, `!/build/containers/`, `!/build/components.json`, `!/build/hosts.env.example`, `/build/containers/**/*.bin`, `!/scripts/build/`, `!/tools/`, `/tools/*`, `!/tools/evidence/`, `/tools/evidence/.cache`, `!/tools/perf/`, `!/tools/audit/`, `/tools/audit/*`, `!/tools/audit/rust_ast/`, `/tools/audit/rust_ast/target/`, `!/tools/audit/rust_ast/Cargo.lock`, `!/coverage/`, `/coverage/*`, `!/coverage/exclusions/`, `!/scripts/coverage/`, `!/docs/workable_items.db`, `docs/*.bak-*`, `docs/.register.lock` and `/.audit/`, proved by `git check-ignore` on its planned and control paths before and after. Coverage evidence under the specification folder uses `coverage_baseline/` and `coverage_targets/` because the unanchored `coverage/` rule applies at any depth (docs/06 §11).
 
-**Structure Decision**: no new top-level application. New tooling is promoted from [poc/](poc/) into tracked, tested locations under `scripts/`, `tools/`, `build/`, `config/index/` and `coverage/exclusions/` (listed above) during the work packages that need it; new shared contracts live next to their owners. The register is the constitution's engine database plus an extension layer (docs/04), and the planning documents, audit outputs (`$AUD`) and evidence (`$EV`) stay under this specification directory.
+**Structure Decision**: no new top-level application. New tooling is promoted from the `poc/` tools ([docs/19](docs/19-poc-tools-and-results.md)) into tracked, tested locations under `scripts/`, `tools/`, `build/`, `config/index/` and `coverage/exclusions/` (listed above) during the work packages that need it; new shared contracts live next to their owners. The register is the constitution's engine database plus an extension layer (docs/04), and the planning documents, audit outputs (`$AUD`) and evidence (`$EV`) stay under this specification directory.
 
 ## Execution Strategy
 

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: audit outputs written as `$AUD/...` and evidence blobs as `$EV/blobs/<sha256>`, consistent with tasks.md and document 06 §11) |
+| Status | draft (revision 3: the per-run `findings.index.jsonl` is defined as a timestamp-free projection of the per-finding files and is not a `finding/1` record (§9); the golden files are named as tasks.md uses them, `$AUD/golden.json` for the G-CG and G-LU questions and `$AUD/lumen_golden_60.json` for `lumen_verify.sh` (§4.4, §15 session 5); no audit output is written under a directory named `out/`, which `.gitignore:112` ignores at any depth (§15 sessions 4 and 5, §17); the submodule count is measured (97 recursively); revision 2: audit outputs written as `$AUD/...` and evidence blobs as `$EV/blobs/<sha256>`, consistent with tasks.md and document 06 §11) |
 | Feature | specs/001-full-project-audit-remediation |
 | Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit` (every audit output of this document, including one file per finding `$AUD/findings/<FND-NNNN>.json` and the per-run index `$AUD/runs/<run>/findings.index.jsonl`); `$EV` = `specs/001-full-project-audit-remediation/evidence`, whose blob store `$EV/blobs/<sha256>` (document 06 §11) holds every evidence artifact a finding cites. Commands below run from the repository root with `AUD` and `EV` set to those paths |
 | Requirements covered | FR-005, FR-006, FR-007, FR-008, FR-010, FR-022, FR-023, SC-002 (supports FR-001, FR-003, FR-009, FR-016) |
@@ -225,11 +225,11 @@ git submodule foreach --recursive --quiet 'echo "$displaypath $(git config --get
 # classify by organisation
 awk '{ if ($2 ~ /(vasic-digital|HelixDevelopment)/) c="own"; else c="third_party"; print $1"\t"c"\t"$2 }' $AUD/submodules.tsv
 ```
-Expected: one row per submodule at every depth (the main `.gitmodules` has 44 `[submodule]` blocks; nested ones are additional and UNKNOWN until run).
+Expected: one row per submodule at every depth (the main `.gitmodules` has 44 `[submodule]` blocks; `git submodule status --recursive` lists 97 on 2026-10-03, 44 direct and 53 nested, and the run re-measures it).
 
 ### 4.4 Golden questions
 
-A pre-declared fixed set, kept in `specs/001-full-project-audit-remediation/audit/golden.json`, written once before the first audit and never edited to fit results (a tampered golden is rejected by hash). Minimum content:
+A pre-declared fixed set, kept in `$AUD/golden.json` (tasks.md T022), written once before the first audit and never edited to fit results (a tampered golden is rejected by hash). Minimum content:
 
 | Id | Index | Query | Expected | Type |
 |---|---|---|---|---|
@@ -240,7 +240,7 @@ A pre-declared fixed set, kept in `specs/001-full-project-audit-remediation/audi
 | G-LU-1..9 | LU | conceptual queries (e.g. "where is the SMB reconnect logic") | listed gold files within top-k (k=5 distinct files) | conceptual |
 | G-LU-N | LU | query whose gold file is `.sh` or `.kt` | MUST NOT be found (type `unsupported`) | capability gap proof |
 
-Gold values for G-CG-2 and G-LU-* are UNKNOWN today; they are authored from direct reads at the start of the audit. Lumen goldens run through `submodules/constitution/scripts/lumen/lumen_verify.sh` (verified by reading its header): usage `lumen_verify.sh --golden <file.json> --project <root> [--k 5] [--n 20] [--min-recall 0.85] [--baseline known_misses.json]`; exit 0 all PASS, 1 any FAIL, 2 usage error or an errored/empty search ("could not look", §11.4.273). Output `results.tsv` is sorted and timestamp-free, so it is directly diffable for determinism. Note the harness runs `EnsureFresh`, i.e. writes the Lumen index; point `XDG_DATA_HOME` at a copy-on-write copy if the shared index must not move during a pass.
+Gold values for G-CG-2 and G-LU-* are UNKNOWN today; they are authored from direct reads at the start of the audit. A second, larger Lumen set, `$AUD/lumen_golden_60.json` (60 queries, docs/20 W20-12), is written in the input format of `lumen_verify.sh` (a JSON array of `{"id", "type", "q", "gold", "in_tierA"}`); both files' sha256 are recorded before the first run. Lumen goldens run through `submodules/constitution/scripts/lumen/lumen_verify.sh` (verified by reading its header): usage `lumen_verify.sh --golden <file.json> --project <root> [--k 5] [--n 20] [--min-recall 0.85] [--baseline known_misses.json]`; exit 0 all PASS, 1 any FAIL, 2 usage error or an errored/empty search ("could not look", §11.4.273). Output `results.tsv` is sorted and timestamp-free, so it is directly diffable for determinism; it is written to `$AUD/lumen-verify/` through `--out` (without `--out` the harness writes to a random temporary directory). Note the harness runs `EnsureFresh`, i.e. writes the Lumen index; point `XDG_DATA_HOME` at a copy-on-write copy if the shared index must not move during a pass.
 
 ### 4.5 Making an index fresh and complete (writer path only)
 
@@ -500,7 +500,7 @@ Rules:
 - Secrets are never stored: a secret finding stores path, line, rule id, and the hash of the match (§11.4.10).
 - The record is schema-validated by a script (JSON Schema, to be authored in the tooling plan); records failing validation cannot enter the register.
 
-Derived file `$AUD/runs/<run>/findings.index.jsonl` is one line per finding with the sort key `(unit, path, line_start, rule_id)` and no timestamps, used for the determinism comparison.
+Derived file `$AUD/runs/<run>/findings.index.jsonl` is a projection, not a `finding/1` record: one line per finding observed by that run, with exactly the sort-key fields `unit`, `path`, `line_start`, `rule_id` and the `fingerprint`, and nothing else (no timestamps, no `run_ids`, no `finding_id`, no evidence hashes), so two runs of one state give byte-identical files after `sort -u` (§12). The full record of each finding lives only in its own file `$AUD/findings/<FND-NNNN>.json`, which carries `created`, `updated` and `run_ids`. The checker validates every `$AUD/findings/*.json` against `finding/1` and asserts a 1:1 mapping between a run's index lines and the finding files whose `run_ids` contain that run (equal fingerprint sets).
 
 ---
 
@@ -731,22 +731,23 @@ codegraph node SomeHandlerName                    # reads source with line numbe
 Session 4: containerised secret scan, NOT EXECUTED (image reference is a placeholder; real digest pinned in the toolchain plan).
 
 ```bash
+mkdir -p "$AUD/secrets"
 podman run --rm --network=none \
-  -v "$PWD":/repo:ro -v "$PWD/$AUD/out":/out:rw \
+  -v "$PWD":/repo:ro -v "$PWD/$AUD/secrets":/out:rw \
   <gitleaks-image@sha256:DIGEST> \
-  detect --source /repo --no-banner --report-format json --report-path /out/gitleaks.json --redact
-test -s "$AUD/out/gitleaks.json" && python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$AUD/out/gitleaks.json"
+  detect --source /repo --no-banner --report-format json --report-path /out/gitleaks.redacted.json --redact
+test -s "$AUD/secrets/gitleaks.redacted.json" && python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$AUD/secrets/gitleaks.redacted.json"
 ```
-`--redact` keeps secret values out of the report (§11.4.10). The container is rootless (no sudo, no docker).
+`--redact` keeps secret values out of the report (§11.4.10). The container is rootless (no sudo, no docker). The report goes to `$AUD/secrets/`, not to an `out/` directory: `.gitignore:112` ignores every directory named `out/`, so a report there could never be committed as evidence (revision 3; `git check-ignore` exits 1 for `$AUD/secrets/gitleaks.redacted.json` and 0 for `$AUD/out/gitleaks.json`). The production path is the WP-15 wrapper around the constitution's `gitleaks_run_scan.sh` (tasks.md T245, T246).
 
 Session 5: Lumen golden run, NOT EXECUTED.
 
 ```bash
 XDG_DATA_HOME=/path/to/cow-copy \
 bash submodules/constitution/scripts/lumen/lumen_verify.sh \
-  --golden specs/001-full-project-audit-remediation/audit/golden.json \
-  --project "$PWD" --k 5 --min-recall 0.85 --out $AUD/out/lumen
-echo "rc=$?"; cat $AUD/out/lumen/summary.txt
+  --golden $AUD/lumen_golden_60.json \
+  --project "$PWD" --k 5 --min-recall 0.85 --out $AUD/lumen-verify
+echo "rc=$?"; cat $AUD/lumen-verify/summary.txt
 # rc 0 = all PASS, 1 = a FAIL, 2 = usage error or an errored/empty search
 ```
 
@@ -793,7 +794,7 @@ echo "{\"soft\":$soft,\"live\":$live,\"headroom\":$((soft-live))}"
 - Embedding dimensionality of `ordis/jina-embeddings-v2-base-code` (read from model card at audit time).
 - Contents of `docker-compose.security.yml` and whether SonarQube/ZAP/HawkScan run from it.
 - Mutation tooling script location and per-language coverage tools for Kotlin/Rust/Python.
-- Real number of nested submodules at every depth.
+- Real number of nested submodules at every depth: resolved, 97 recursively (44 direct, 53 nested), measured 2026-10-03; re-measured by each run.
 - Detector container images and digests (toolchain plan).
 - Per-job peak RSS of heavy detectors.
 
@@ -803,7 +804,7 @@ echo "{\"soft\":$soft,\"live\":$live,\"headroom\":$((soft-live))}"
 
 | Requirement | Satisfied by | Acceptance evidence |
 |---|---|---|
-| FR-005 | sections 3, 4 | `$AUD/index-health.json` with P1..P8 PASS and golden results, per pass; Lumen `results.tsv`/`summary.txt` |
+| FR-005 | sections 3, 4 | `$AUD/index-health.json` with P1..P8 PASS and golden results, per pass; Lumen `$AUD/lumen-verify/results.tsv` and `summary.txt` |
 | FR-006 | sections 1, 8, 14.3 | `$AUD/units.json` assigning every top-level directory and submodule; a recorded audit result per unit |
 | FR-007 | sections 5, 6, 9 | each finding record validates against `finding/1` with location, severity, category, machine evidence, register link |
 | FR-008 | sections 5.3, 10 | lifecycle log shows root cause before fix, RED/GREEN verdict pair, closure kind; zero-open check query over `findings/*.json` |

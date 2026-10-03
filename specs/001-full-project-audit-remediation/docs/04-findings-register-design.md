@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 6 |
+| Revision | 7 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 6: consistency with tasks.md and docs/21 IC-38: gate path `scripts/register/gate.sh`, reconciliation CSV at `docs/register/reconciliation.csv`, R-4 pushes to every configured remote, `docs/.register.lock` ignored; revision 5: fourth independent review, DDL v4, §14.10: copies of earlier-cycle evidence refused by sha256 and earlier-cycle GREEN fingerprints refused, recurrence links append-only and positioned by a guarded `head_log_id`, legacy exemption only for a closed-class entry never worked on, scanned source entries and mappings never deleted, gate compares schema and seed tables with the reviewed DDL; revision 4: third independent review, DDL v3, §14.9: fix-cycle boundary, legacy exemption ends at reopen, raise-only defect layer, INSERT OR REPLACE refused, every insert reachability-checked, integrity and foreign-key checks in the gate; revision 3: second review, §14.8; revision 2: first review, DDL v2, §14.7) |
+| Status | draft (revision 7: prose and table fixes only, the DDL of §5 is byte-identical to revision 6 (re-extracted and re-applied to a fresh engine database: 25 tables, 28 views, 41 triggers); `\|` escaped inside the code spans of two table rows; revision 6's R-4 change is attributed to docs/21 IC-11; §9.2 and §13.1 name docs/21 §9.1 and §9.5 as register sources and IC-39 as the staging-vocabulary mapping; revision 6: consistency with tasks.md and docs/21 IC-38: gate path `scripts/register/gate.sh`, reconciliation CSV at `docs/register/reconciliation.csv`, R-4 pushes to every configured remote (docs/21 IC-11), `docs/.register.lock` ignored; revision 5: fourth independent review, DDL v4, §14.10: copies of earlier-cycle evidence refused by sha256 and earlier-cycle GREEN fingerprints refused, recurrence links append-only and positioned by a guarded `head_log_id`, legacy exemption only for a closed-class entry never worked on, scanned source entries and mappings never deleted, gate compares schema and seed tables with the reviewed DDL; revision 4: third independent review, DDL v3, §14.9: fix-cycle boundary, legacy exemption ends at reopen, raise-only defect layer, INSERT OR REPLACE refused, every insert reachability-checked, integrity and foreign-key checks in the gate; revision 3: second review, §14.8; revision 2: first review, DDL v2, §14.7) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Spec requirements covered | FR-001, FR-002, FR-003, FR-004, FR-007, SC-001 (supports FR-008, FR-019, FR-020, FR-022) |
 | Constitution anchors | §11.4.15, §11.4.16, §11.4.33, §11.4.54, §11.4.65, §11.4.74, §11.4.93, §11.4.95, §11.4.106, §11.4.115(F), §11.4.146(D3), §11.4.148, §11.4.202, §11.4.214, §11.4.226, §11.4.240, §11.4.10, §11.4.113 |
@@ -62,7 +62,7 @@ Source of truth: `submodules/constitution/scripts/workable-items/cmd/workable-it
 | Capability | Evidence in repo | Notes |
 |---|---|---|
 | SQLite DB with `items`, `item_history`, `obsolete_details`, `operator_block_details`, `firebase_metadata`, `logic_groups`, `group_paths`, `doc_segments`, `test_diary`, `test_diary_summary` view, `meta` | `schema_embed.sql` lines 24-397; DB created fresh by any subcommand (executed: `validate --db new.db` printed `OK - 0 items`, schema_version `7`) | `items` PK is the triple `(atm_id, current_location, representation)` |
-| Closed type set `Bug|Feature|Task` | `items.type` CHECK | §11.4.16 |
+| Closed type set `Bug\|Feature\|Task` | `items.type` CHECK | §11.4.16 |
 | Closed status set, 10 values: `Queued`, `In progress`, `Ready for testing`, `In testing`, `Reopened`, `Operator-blocked`, `Fixed (→ Fixed.md)`, `Implemented (→ Fixed.md)`, `Completed (→ Fixed.md)`, `Obsolete (→ Fixed.md)` | `items.status` CHECK | README says "8 values"; the schema has 10 (UNCONFIRMED which is intended; schema wins) |
 | Obsolete reasons (6) incl. `duplicate-of`, `not-reproducible` | `obsolete_details.reason` CHECK | maps FR-008 "false positive" |
 | Subcommands: `add update reopen move block close closure-check obsolete-details intake-match report diary export sync diff validate group assign classify repair-bodies version-tags correct-history-evidence` | `main.go` dispatch, lines 123-167 | |
@@ -200,7 +200,7 @@ Table catalogue (25 `reg_*` tables, 28 views, 41 triggers; counts measured after
 | `reg_findings` | finding with location, category, severity, detector, fingerprint, evidence | canonical id `finding_id` = `FND-NNNN`, generated from `finding_seq` (monotone, never reused); `unit_alias` = file-local `F-<unit>-NNN`, UNIQUE, must start with `F-<component_id>-` and end in 3+ digits; both immutable; UNIQUE `(fingerprint, run_id)`; deferred FK to evidence |
 | `reg_evidence` | machine-produced evidence record | class vs fingerprint, polarity/exit-code CHECKs (a `red_run` and a `mutation_run` need exit 1..125: 126, 127 and signal exits are harness errors, not a test failure), append-only; a custody-bearing row (`red_run`, `green_run`, `mutation_run`, `review_verdict`, `custody_decision`, `false_positive_proof`) whose `(atm_id, sha256)` already exists at or below the item's cycle mark is refused (`reg_evidence_no_replay`) |
 | `reg_test_types` | seeded vocabulary of the 16 test types used for coverage | seeded rows |
-| `reg_test_runs` | each repetition of each test (RED/GREEN/MUTATION), with verdict `PASS|FAIL|BLOCKED` (the test's own outcome) | UNIQUE `(group_id, rep_index)`; BLOCKED requires a reason from the closed `ev/1` `blocked_reason` set (its evidence row carries the failing probe's non-zero exit status); RED rows are `FAIL` or `BLOCKED`, GREEN rows always `PASS` (as in `ev/1`); append-only |
+| `reg_test_runs` | each repetition of each test (RED/GREEN/MUTATION), with verdict `PASS\|FAIL\|BLOCKED` (the test's own outcome) | UNIQUE `(group_id, rep_index)`; BLOCKED requires a reason from the closed `ev/1` `blocked_reason` set (its evidence row carries the failing probe's non-zero exit status); RED rows are `FAIL` or `BLOCKED`, GREEN rows always `PASS` (as in `ev/1`); append-only |
 | `reg_reviews` | independent review verdicts | `lower(trim(author)) <> lower(trim(reviewer))`; append-only |
 | `reg_recurrence_links` | recurrence decisions | SAME_DEFECT implies no new id; UNDECIDED implies new id with link; `head_log_id` must equal the head's current last status-log id (`reg_recurrence_links_head_guard`); append-only (`_no_update`, `_no_delete`, `_no_replace`) |
 | `reg_status_transitions` | allowed status graph | seeded 21 edges |
@@ -1072,6 +1072,8 @@ The matcher is the engine's own `intake-match` (header documents: tokens lowerca
 | external tickets | `external_ticket` | no tracker configuration found (`.env.example` contains no tracker names; no `.helix/reporting.yaml`) | n/a | UNCONFIRMED whether the owner has tickets elsewhere; asked as D-2 (§15.3) |
 | constitution conflict list | `constitution_conflict` | location UNKNOWN (spec FR-002 cites "constitution conflict list"); `.specify/memory/` holds `constitution.md` and `constitution-appendix.md` | unknown | UNCONFIRMED: needs the owner or document 01/03 to name it |
 | code markers | `code_marker` | TODO/FIXME/"for now" scans per §11.4.261 vocabulary | per-hit | produced by the audit (document 02), imported as findings, not by this importer |
+| plan-document seeds (revision 7) | `report_doc` | docs/21 §9.1: 253 itemised seeds from plan documents 01 to 20 (folding to at most 198 items through the docs/21 §9.3 families) | one entry per seed id, locator `docNN:<id>` (docs/21 IC-19) | imported by WP-20 as candidate findings; the docs/21 §9.3 family members are Stage 1 duplicate candidates, and until the §8 negative control passes each entry is its own head (`import_1to1`, §9.3 below) |
+| doc18 innovation entries (revision 7) | `report_doc` | docs/21 §9.5: 34 `PROPOSAL` entries | one entry per doc18 id | imported by WP-20 as type `Feature`, status `Queued`, category `gap`, `mint_basis='import'`; not findings (no `reg_findings` row); disposition per docs/21 ODG-39 |
 
 Measured status distribution of the `docs/issues` corpus (scan executed, §14.4):
 
@@ -1327,6 +1329,8 @@ GROUP BY s.source_id;
 .output docs/register/reconciliation.csv
 SELECT * FROM v_reconciliation ORDER BY source, entry_locator;
 ```
+
+Document 03 §15 states the same completeness check in its staging vocabulary (`SELECT count(*) FROM src_entry WHERE disposition='PENDING'`); in this register `src_entry` is `reg_source_entries` and "PENDING" is an entry without a `reg_source_map` row, so the two queries above are the check (docs/21 IC-39, revision 7 of this document).
 
 Artefact policy: the CSV is tracked at `docs/register/reconciliation.csv` (beside `docs/register/register.sql`; `qa-results/` is git-ignored, so a CSV there could not be evidence), and the CSV plus a JSON manifest containing sha256 of the DB and of the CSV are stored as `reg_evidence kind=artifact class=source` (a generated report is source-class evidence about the register, not runtime evidence about the product).
 

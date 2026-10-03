@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 2: verification steps use the single verifier `scripts/repo/verify_repos.sh` writing into the feature evidence directory, docs/21 IC-17 and IC-37; `fetch --prune` allowed per docs/21 IC-36; remotes enumerated, never listed, per docs/21 IC-11) |
+| Status | draft (revision 3: every repository named: one audit row per own-organisation repository (51: the main repository, 43 own direct submodules and 7 own nested engines, section 10.3.1) and one row per third-party repository (47, section 8.5.1), with a heuristic licence-file column; assertions A-1 to A-7 restated in `repo-verification-report/1` fields; the predecessor's `BLOCKING=0` replaced by the v1 pass condition; precondition 1 runs the verifier with `--fetch`; the Appendix B write-path ledger moved to `$EV/verify/`; the provenance table widened to all 97 repositories plus the vendored tree. Revision 2: verification steps use the single verifier `scripts/repo/verify_repos.sh` writing into the feature evidence directory, docs/21 IC-17 and IC-37; `fetch --prune` allowed per docs/21 IC-36; remotes enumerated, never listed, per docs/21 IC-11) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | The 44 direct submodules declared in `.gitmodules` and every nested submodule beneath them (97 repositories recursively) |
 | Traceability | FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-024, FR-025; SC-004 (and the dependency-currency success criteria that reference FR-017) |
@@ -155,7 +155,7 @@ Notes on the table:
 | `submodules/helix_qa` | 29 (27 listed in its `.gitmodules` + 2 nested-nested: `mem0/evaluation`, `skyvern/integrations/n8n`) | all third-party | not own-org, so §11.4.28(C) (which forbids nested own-org chains) does not apply, but the fan-out is the dominant clone-time and disk cost |
 | every other direct submodule | 0 | n/a | consistent with §11.4.28(C) |
 
-Verification of the carve-out conditions is part of the audit (section 10.4): each of the 7 own nested constitution engines must ship `helix-deps.yaml` and must declare no own-org submodule of its own. `UNCONFIRMED:` the `helix-deps.yaml` presence for each of the seven (not read in this pass).
+Verification of the carve-out conditions is part of the audit (section 10.4): each of the 7 own nested constitution engines must ship `helix-deps.yaml` and must declare no own-org submodule of its own. Revision 3: a file-presence read on 2026-10-03 found `helix-deps.yaml` in all seven and a `.gitmodules` in none (section 10.3.1, rows 44 to 50); the content of each `helix-deps.yaml` (zero own-org dependencies declared) is `UNCONFIRMED:` until read in S-GOV-2.
 
 ### 3.2 Vendored but not a submodule: `submodules/llms_verifier`
 
@@ -268,7 +268,7 @@ Reading the graph: update order inside the Go layer must respect the edges `reco
 
 ### 6.2 Preconditions (checked, not assumed)
 
-1. The single verifier `scripts/repo/verify_repos.sh` (docs/21 IC-17, IC-37; Appendix A's `submodule_verify.sh` is its executed predecessor and produced the §8.4 baseline) is run without `--strict` and its report (`repo-verification-report/1`, stored at `$EV/verify/submodules-pre-<UTC>.json`, where `$EV` = `specs/001-full-project-audit-remediation/evidence`) shows, for own-organisation repositories, no `dirty` (other than listed exceptions such as the docling CRLF quirk), no `ahead`, no `diverged` and no `unproven` row; `LOCAL-BEHIND` rows are expected, since they are what the update loop moves. If any of those appears, stop and report it with its reason (FR-020).
+1. The single verifier `scripts/repo/verify_repos.sh` (docs/21 IC-17, IC-37; Appendix A's `submodule_verify.sh` is its executed predecessor and produced the §8.4 baseline) is run without `--strict` and with `--fetch`, and its report (`repo-verification-report/1`, stored at `$EV/verify/submodules-pre-<UTC>.json`, where `$EV` = `specs/001-full-project-audit-remediation/evidence`) shows, for own-organisation repositories, no `dirty` (other than listed exceptions such as the docling CRLF quirk), no `ahead`, no `diverged` and no `unproven` row; `LOCAL-BEHIND` rows are expected, since they are what the update loop moves. Revision 3: `--fetch` is required here, because the verifier never fetches on its own; without it a repository whose new upstream objects are not yet local is classified `UNKNOWN-DIFFERENT` (unproven), not `LOCAL-BEHIND` (the POC self-test case "behind w/o fetch" and the measured constitution state), so the precondition would fail in exactly the state the loop is meant to handle. `--fetch` runs `git fetch --no-tags <remote> <branch>` per compared remote and leaves work trees and `refs/heads` untouched; an `UNKNOWN-DIFFERENT` row of an in-scope repository that does not clear after the fetch is a stop with its reason (FR-020).
 2. No other writer is active: `pgrep -af 'git (fetch|pull|merge|commit|push)'` filtered by real `/proc/<pid>/cmdline` shows none (finding F-2 shows concurrent writers exist; a bare `pgrep -f` substring is itself a carrier hazard, §11.4.201). Index lock files (`.git/index.lock`, `.git/modules/**/index.lock`) absent.
 3. Host headroom per §12: memory ceiling, process count, disk. The backup is hardlinks (near zero additional space), but gate containers are bounded with `--memory` and `--pids-limit`.
 4. `podman` rootless available (`podman 5.7.0` observed); gate image present (`localhost/catalogizer-builder:latest` is the image named in `docker-compose.build.yml`; its contents `UNCONFIRMED:`). If absent, building it is a prior task, not an inline `docker run golang` fallback on the bare host (§11.4.173).
@@ -414,7 +414,7 @@ sequenceDiagram
   participant M as Main repo
   O->>V: run read-only verification
   V->>R: ls-remote per remote
-  V-->>O: TSV and BLOCKING count
+  V-->>O: v1 report, summary.failing and summary.unproven
   O->>U: DRY_RUN=1 plan
   U->>R: ls-remote only
   U-->>O: WOULD_FF list
@@ -433,7 +433,7 @@ sequenceDiagram
   O->>M: git add per accepted submodule and commit
   O->>R: git push per remote ff-only
   O->>V: final recursive verification
-  V-->>O: BLOCKING=0 and evidence pack
+  V-->>O: strict exit 0, failing 0, unproven 0, evidence pack
 ```
 
 ---
@@ -509,7 +509,7 @@ For each repository `R` (root first, then `git submodule foreach --quiet --recur
 
 ### 8.4 Expected outputs (and the one observed on 2026-10-03)
 
-Immediately after a successful run of section 6 with the owner's choice D-1 = report-only for third-party pins:
+Immediately after a successful run of section 6 with the owner's choice D-1 = report-only for third-party pins, in the predecessor's summary format (revision 3: `BLOCKING` is not a field of the final verifier's `repo-verification-report/1`; its pass condition is the v1 column of the assertion table below):
 
 ```
 SUMMARY BEHIND_UPSTREAM=23 ADVISORY_PIN_OFF_REMOTE_HEAD=1 CLEAN_EOL_QUIRK=1 CLEAN=73 BLOCKING=0
@@ -517,15 +517,15 @@ SUMMARY BEHIND_UPSTREAM=23 ADVISORY_PIN_OFF_REMOTE_HEAD=1 CLEAN_EOL_QUIRK=1 CLEA
 
 (the 23 behind entries are then the third-party pins only: `constitution/verification` plus 22 `helix_qa/tools/opensource` pins; `constitution` itself has moved to `CLEAN`.) Assertions A-1..A-7 for the evidence pack:
 
-| Id | Assertion | Check |
-|---|---|---|
-| A-1 | Row count equals `git submodule status --recursive \| wc -l` plus 1 (root) | wc |
-| A-2 | Every row's `head` equals the parent's recorded gitlink (`git ls-tree <parent HEAD> <path>`) | ls-tree |
-| A-3 | `dirty` is 0 everywhere | TSV column |
-| A-4 | `unpushed_remotes` is 0 everywhere | TSV column |
-| A-5 | No own-organisation row has `UNREACHABLE` or `DIVERGED` | awk |
-| A-6 | No own-organisation row has `BEHIND_UPSTREAM` (after the update) | awk |
-| A-7 | The root `HEAD` equals the tip on every configured remote | included in the root row |
+| Id | Assertion | Check (predecessor TSV) | v1 form in `repo-verification-report/1` (revision 3; the final verifier) |
+|---|---|---|---|
+| A-1 | Row count equals `git submodule status --recursive \| wc -l` plus 1 (root) | wc | `summary.repos` equals that count plus 1 |
+| A-2 | Every row's `head` equals the parent's recorded gitlink (`git ls-tree <parent HEAD> <path>`) | ls-tree | `summary.pin_drift = 0` (every `pin_state` is `ok`) |
+| A-3 | `dirty` is 0 everywhere | TSV column | `summary.dirty` equals `summary.dirty_excepted`, and every excepted row carries an `exception_reason` |
+| A-4 | `unpushed_remotes` is 0 everywhere | TSV column | `summary.ahead = 0` (no `REMOTE-BEHIND` class) |
+| A-5 | No own-organisation row has `UNREACHABLE` or `DIVERGED` | awk | `summary.diverged = 0` and `summary.unproven = 0` |
+| A-6 | No own-organisation row has `BEHIND_UPSTREAM` (after the update) | awk | no `LOCAL-BEHIND` class in `summary.classes` (remote classes exist only for owned rows); under `--strict` such a row is also a `behind` problem |
+| A-7 | The root `HEAD` equals the tip on every configured remote | included in the root row | every `remotes[].class` of the `.` row is `SAME` |
 
 Observed on 2026-10-03 before any update (parallel run, 34 s, exit 0): `SUMMARY BEHIND_UPSTREAM=24 ADVISORY_PIN_OFF_REMOTE_HEAD=1 CLEAN_EOL_QUIRK=1 CLEAN=72 BLOCKING=0`; the root row `.  own  main  e4852ce7e1a1  0/0  0  0  CLEAN`.
 
@@ -538,6 +538,63 @@ Observed on 2026-10-03 before any update (parallel run, 34 s, exit 0): `SUMMARY 
 | quirk `EOL` | modified files whose only difference is CR at end of line | `CLEAN_EOL_QUIRK` (counted, reported, not blocking) | never `reset --hard`; fix at source by committing a normalising `.gitattributes` in a fork or documenting the exception |
 | quirk `detached` | pinned commit not on a branch | compared to remote HEAD; divergence is advisory | `checkout --detach <commit>` only under D-1 |
 | vendored tree (not a submodule) | tracked blobs under `submodules/` that are not gitlinks (`llms_verifier`) | out of verifier scope; listed by a separate check `git ls-files -s submodules \| awk '$1!="160000"'` restricted to top-level directories | not updatable; decision D-4 |
+
+
+#### 8.5.1 Every third-party repository by name (revision 3)
+
+All 47 third-party repositories at every depth (the 97 recursive entries are 43 own direct, 7 own nested and these 47; with the main repository the verifier lists 98 rows, 51 owned). Sources: pins and checkout state from the read-only POC report `poc/repo_verify/results/run1.json` (2026-10-03T11:31:22Z); upstreams from the `.gitmodules` files of the main repository, `submodules/constitution`, `submodules/helix_qa`, `MVT`, `mem0` and `skyvern` (file reads); the licence column from reading the first lines of each root licence file. The licence column is a lead for the licence workstream of document 15 §10.5, not a licence determination. The behind status per repository is not repeated here: on 2026-10-03 the predecessor verifier counted `constitution/submodules/verification` and 22 `tools/opensource` pins behind (H4); the per-repository status comes from the next verifier run and fills the provenance table (section 11, FR-017). Policy for all 47: report only (P-2, D-1); no push is ever attempted.
+
+| # | Repository | Upstream (owner/repository, from `.gitmodules`) | Pin (2026-10-03) | Checkout | Licence file at the root (heuristic class from its first lines, not a licence determination) |
+|---|---|---|---|---|---|
+| 1 | `submodules/constitution/submodules/MVT` | rdkcentral/MVT | `2e62cca` | main | `COPYING`, `LICENSE`, `licenses.html` (Apache-2.0) |
+| 2 | `submodules/constitution/submodules/MVT/js_mse_eme` | stagingrdkm/js_mse_eme | `ed98284` | detached | `LICENSE`, `licenses.html` (Apache-2.0) |
+| 3 | `submodules/constitution/submodules/agentic-validation` | Tyler-R-Kendrick/agentic_validation | `8258f13` | main | `LICENSE` (MIT) |
+| 4 | `submodules/constitution/submodules/claude-video` | bradautomates/claude-video | `03ceb42` | main | `LICENSE` (MIT) |
+| 5 | `submodules/constitution/submodules/donespec` | xryv/DoneSpec | `017e05f` | main | `LICENSE` (MIT) |
+| 6 | `submodules/constitution/submodules/kedge` | SturdyRobot/kedge | `0b6e4d4` | main | `LICENSE` (BUSL-1.1) |
+| 7 | `submodules/constitution/submodules/mcp-audio-tweaker` | DeveloperZo/mcp-audio-tweaker | `5d64b4f` | main | `LICENSE` (MIT) |
+| 8 | `submodules/constitution/submodules/polyscreen-mcp` | Zyzto/polyscreen-mcp | `f2ed241` | main | `LICENSE` (MPL-2.0) |
+| 9 | `submodules/constitution/submodules/repo-proof` | Gary06868/repo-proof | `cd3d599` | main | `LICENSE` (Apache-2.0) |
+| 10 | `submodules/constitution/submodules/repo-qa` | okwinds/skills-runtime-sdk | `2539e1c` | main | `LICENSE` (Apache-2.0) |
+| 11 | `submodules/constitution/submodules/skill-doctor` | KalarisLabs/Skill-Doctor | `9413620` | main | `LICENSE` (Apache-2.0) |
+| 12 | `submodules/constitution/submodules/verfix` | verfix-dev/verfix | `b1286b1` | main | `LICENSE.md` (Apache-2.0) |
+| 13 | `submodules/constitution/submodules/verification` | ArcBlock/agent-skills | `9f06855` | main | `LICENSE` (MIT) |
+| 14 | `submodules/constitution/submodules/verify` | KeyValueSoftwareSystems/maestro | `b8cac8f` | main | `LICENSE`, `licenses` (MIT) |
+| 15 | `submodules/constitution/submodules/video-quality-mcp` | hlpsxc/video-quality-mcp | `10f9a08` | main | none found |
+| 16 | `submodules/constitution/submodules/watch-skill` | oxbshw/watch-skill | `f1317c8` | main | `LICENSE` (MIT) |
+| 17 | `submodules/constitution/submodules/wave-dpctf` | cta-wave/device-observation-framework | `9290b25` | main | `LICENSE` (unrecognised; text withholds the right to sell) |
+| 18 | `submodules/helix_qa/tools/opensource/allure2` | allure-framework/allure2 | `db2dbd8` | detached | `LICENSE` (Apache-2.0) |
+| 19 | `submodules/helix_qa/tools/opensource/anthropic-quickstarts` | anthropics/anthropic-quickstarts | `f37f168` | detached | `LICENSE` (MIT) |
+| 20 | `submodules/helix_qa/tools/opensource/appcrawler` | nicetester/AppCrawler | `c1f4af1` | master | none found |
+| 21 | `submodules/helix_qa/tools/opensource/appium` | appium/appium | `0e4ecc4` | detached | `LICENSE` (Apache-2.0) |
+| 22 | `submodules/helix_qa/tools/opensource/browser-use` | browser-use/browser-use | `c8e6e8f` | detached | `LICENSE` (MIT) |
+| 23 | `submodules/helix_qa/tools/opensource/chroma` | chroma-core/chroma | `cbec464` | detached | `LICENSE` (Apache-2.0) |
+| 24 | `submodules/helix_qa/tools/opensource/docker-android` | budtmo/docker-android | `28478f3` | detached | `LICENSE.md` (custom: Apache-2.0 plus amendments, stated as not dual-licensed) |
+| 25 | `submodules/helix_qa/tools/opensource/docling` | DS4SD/docling | `c7b1734` | detached | `LICENSE` (MIT) |
+| 26 | `submodules/helix_qa/tools/opensource/kiwi-tcms` | kiwitcms/Kiwi | `1dba1ed` | detached | `LICENSE` (GPL-2.0) |
+| 27 | `submodules/helix_qa/tools/opensource/leakcanary` | square/leakcanary | `27b5101` | detached | `LICENSE.txt` (Apache-2.0) |
+| 28 | `submodules/helix_qa/tools/opensource/llama-index` | run-llama/llama_index | `5891d5f` | detached | `LICENSE` (MIT) |
+| 29 | `submodules/helix_qa/tools/opensource/marker` | VikParuchuri/marker | `5684e76` | detached | `LICENSE` (GPL-3.0) |
+| 30 | `submodules/helix_qa/tools/opensource/mem0` | mem0ai/mem0 | `8d6b7c1` | detached | `LICENSE` (Apache-2.0) |
+| 31 | `submodules/helix_qa/tools/opensource/mem0/evaluation` | mem0ai/memory-benchmarks | `4b61c5d` | main | `LICENSE` (Apache-2.0) |
+| 32 | `submodules/helix_qa/tools/opensource/midscene` | web-infra-dev/midscene | `4d37b88` | detached | `LICENSE` (MIT) |
+| 33 | `submodules/helix_qa/tools/opensource/moondream` | vikhyat/moondream | `6eccfce` | main | `LICENSE` (Apache-2.0) |
+| 34 | `submodules/helix_qa/tools/opensource/perfetto` | google/perfetto | `3ea71e6` | detached | `LICENSE` (Apache-2.0) |
+| 35 | `submodules/helix_qa/tools/opensource/redroid` | remote-android/redroid-doc | `eba9a48` | master | none found |
+| 36 | `submodules/helix_qa/tools/opensource/scrcpy` | Genymobile/scrcpy | `2322868` | detached | `LICENSE` (Apache-2.0) |
+| 37 | `submodules/helix_qa/tools/opensource/shortest` | antiwork/shortest | `45a8dcf` | main | `license.md` (MIT) |
+| 38 | `submodules/helix_qa/tools/opensource/signoz` | SigNoz/signoz | `7646aab` | detached | `LICENSE` (MIT) |
+| 39 | `submodules/helix_qa/tools/opensource/skyvern` | Skyvern-AI/skyvern | `d30575b` | detached | `LICENSE` (AGPL-3.0) |
+| 40 | `submodules/helix_qa/tools/opensource/skyvern/integrations/n8n` | Skyvern-AI/skyvern-n8n | `c040066` | detached | `LICENSE.md` (MIT) |
+| 41 | `submodules/helix_qa/tools/opensource/stagehand` | browserbase/stagehand | `7224376` | detached | `LICENSE` (MIT) |
+| 42 | `submodules/helix_qa/tools/opensource/testdriverai` | testdriverai/testdriverai | `42d2bc8` | detached | none found |
+| 43 | `submodules/helix_qa/tools/opensource/ui-tars` | bytedance/UI-TARS | `582f3a7` | main | `LICENSE` (Apache-2.0) |
+| 44 | `submodules/helix_qa/tools/opensource/ui-tars-desktop` | bytedance/UI-TARS-desktop | `e9f3387` | detached | `LICENSE` (Apache-2.0) |
+| 45 | `submodules/helix_qa/tools/opensource/unstructured` | Unstructured-IO/unstructured | `f6eea75` | detached | `LICENSE.md` (Apache-2.0) |
+| 46 | `submodules/helix_qa/tools/test-apps/rest-demo` | nicehash/rest-clients-demo | `e5cf556` | master | none found |
+| 47 | `submodules/superspec` | WangX0111/superspec | `c20ac6c` | main | `LICENSE` (MIT) |
+
+Counted from the table: licence files classified Apache-2.0 18, MIT 17, GPL-2.0 1 (`kiwi-tcms`), GPL-3.0 1 (`marker`), AGPL-3.0 1 (`skyvern`), MPL-2.0 1 (`polyscreen-mcp`), BUSL-1.1 1 (`kedge`), a custom Apache-2.0 with amendments 1 (`docker-android`), an unrecognised text that withholds the right to sell 1 (`wave-dpctf`), and no licence file found 5 (`video-quality-mcp`, `appcrawler`, `redroid`, `testdriverai`, `rest-demo`). Whether any of these reaches a distributed artifact (as opposed to a QA or governance tool that is only cloned) is `UNCONFIRMED:` and is the first question of the licence workstream.
 
 ---
 
@@ -604,6 +661,65 @@ Risk = consequence of a defect for the product x likelihood from size/age/comple
 | TS/React libraries (9) | Medium | rendered in the web client; small (641 to 3,370 LOC) with 2 to 18 test files each | `tsc --noEmit`, `vitest run`, D-DEP, a11y and visual checks via document 05 | component tests with real DOM; contract tests against `catalog-api` for `catalogizer_api_client_ts` and `websocket_client_ts` |
 | `constitution` (own governance) | High for process, low for runtime | 244K LOC mostly scripts, 759 commits; changes bind this repository | audit S-GOV-1 (sweep substitute), S-GOV-2 (carve-out conditions) | run the selected gate scripts; check `helix-deps.yaml` of the 7 own engines |
 
+
+#### 10.3.1 One row per own-organisation repository (revision 3)
+
+The grouped plan above is the risk rationale; this table makes it per repository, so that no own-organisation repository is audited only as part of a group. It has 51 rows: the main repository (row 0, audited by documents 07 to 10), the 43 own direct submodules (the 44 of section 2.2 minus the third-party `superspec`) and the 7 own nested constitution engines. Size for direct submodules is section 2.2's tracked files, test files and working-tree size; for the nested engines it is the working-tree file count and main language, measured by reading the directories on 2026-10-03 (not `git ls-files`), with the engine's own README first line as its role. The `helix-deps.yaml` and `.gitmodules` facts of rows 44 to 50 are file-presence reads that settle the presence half of S-GOV-2; the content of each `helix-deps.yaml` is still unread. The audit WP is docs/21 WP-34 for every submodule row; pin moves are WP-55 (WP-07 for the constitution).
+
+| # | Repository | Owner (remote) | Layer (6.3) | Size and kind | Risk | Primary detectors | Tests to verify or add | Audit item, WP |
+|---|---|---|---|---|---|---|---|---|
+| 0 | `.` (the main repository) | own (vasic-digital, milos85vasic) | n/a | 4,887 tracked files (document 01 §2.2) | High | documents 07 to 10 detector sets | documents 05 and 07 to 10 | docs/21 WP-30 to WP-33, WP-36 |
+| 1 | `submodules/websocket_client_ts` | vasic-digital | L5 | 29f/4t/328K (TS; TS lib: WebSocket client) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | contract tests against `catalog-api` (route and message shapes); unit tests with a real DOM where it renders | S-REM-1 (GitLab mirror), WP-34 |
+| 2 | `submodules/ui_components_react` | vasic-digital | L5 | 61f/18t/536K (TS/React; React lib: UI components) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 3 | `submodules/challenges` | vasic-digital | L3 | 571f/127t/6M (Go; Go lib: Challenges framework (QA)) | High | D-VET, D-TEST, D-BLUFF, D-MUT, D-DEAD | verify that its paired mutations fail on seeded defects; reproduce one historical escape; check the `memprobe` fixture replace path (`../../../../helix_memory`) | WP-34 |
+| 4 | `submodules/assets` | vasic-digital | L2 | 47f/9t/1M (Go; Go lib: lazy asset loading) | Medium | D-TEST, D-COV, D-CONTRACT | property tests on parsers; golden files for parsed data | WP-34 |
+| 5 | `submodules/concurrency` | vasic-digital | L2 | 93f/22t/760K (Go; Go lib: concurrency primitives) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 6 | `submodules/config` | vasic-digital | L2 | 49f/5t/352K (Go; Go lib: configuration management) | Medium | D-TEST, D-COV, D-CONTRACT | property tests on parsers; golden files for parsed data | WP-34 |
+| 7 | `submodules/filesystem` | vasic-digital | L2 | 56f/11t/440K (Go; Go lib: filesystem abstraction) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 8 | `submodules/database` | vasic-digital | L2 | 96f/24t/904K (Go; Go lib: relational DB operations) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 9 | `submodules/auth` | vasic-digital | L2 | 72f/15t/592K (Go; Go lib: authentication/authorization) | High | D-VET, D-TEST `-race`, D-SEC, D-VULN, D-API | negative tests on the request path (forged and expired tokens, rate-limit bypass, panic recovery leaving no open connection), as they apply to this module | WP-34 |
+| 10 | `submodules/middleware` | vasic-digital | L2 | 82f/24t/536K (Go; Go lib: HTTP middleware) | High | D-VET, D-TEST `-race`, D-SEC, D-VULN, D-API | negative tests on the request path (forged and expired tokens, rate-limit bypass, panic recovery leaving no open connection), as they apply to this module | WP-34 |
+| 11 | `submodules/rate_limiter` | vasic-digital | L2 | 73f/18t/448K (Go; Go lib: rate limiting) | High | D-VET, D-TEST `-race`, D-SEC, D-VULN, D-API | negative tests on the request path (forged and expired tokens, rate-limit bypass, panic recovery leaving no open connection), as they apply to this module | WP-34 |
+| 12 | `submodules/observability` | vasic-digital | L2 | 80f/18t/792K (Go; Go lib: tracing/metrics/logging/health) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 13 | `submodules/media` | vasic-digital | L2 | 54f/19t/344K (Go; Go lib: media detection/metadata) | Medium | D-TEST, D-COV, D-CONTRACT | property tests on parsers; golden files for parsed data | WP-34 |
+| 14 | `submodules/watcher` | vasic-digital | L2 | 61f/11t/412K (Go; Go lib: FS change monitoring) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 15 | `submodules/event_bus` | vasic-digital | L2 | 63f/13t/512K (Go; Go lib: event bus) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 16 | `submodules/cache` | vasic-digital | L2 | 79f/16t/676K (Go; Go lib: cache (memory/Redis/PostgreSQL)) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 17 | `submodules/security` | vasic-digital | L3 | 120f/43t/1M (Go; Go lib: security) | High | D-VET, D-TEST `-race`, D-SEC, D-VULN, D-API | negative tests on the request path (forged and expired tokens, rate-limit bypass, panic recovery leaving no open connection), as they apply to this module | WP-34 |
+| 18 | `submodules/storage` | vasic-digital | L2 | 97f/31t/920K (Go; Go lib: object storage) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 19 | `submodules/streaming` | vasic-digital | L2 | 87f/23t/740K (Go; Go lib: streaming (SSE/WebSocket/gRPC)) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 20 | `submodules/discovery` | vasic-digital | L2 | 57f/15t/484K (Go; Go lib: network/service discovery) | High | D-TEST against real services, D-COV, D-CONTRACT | real-service tests (PostgreSQL, Redis, MinIO, SMB, WebDAV, FTP, NFS as the module needs them); `BLOCKED` with the reason when a service is absent (FR-025) | WP-34 |
+| 21 | `submodules/entities` | vasic-digital | L2 | 20f/5t/144K (Go; Go lib: media entity system) | Medium | D-TEST, D-COV, D-CONTRACT | property tests on parsers; golden files for parsed data | WP-34 |
+| 22 | `submodules/media_types_ts` | vasic-digital | L5 | 27f/4t/204K (TS; TS lib: media types) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | type and parser tests; contract check of the types against `catalog-api` payloads | WP-34 |
+| 23 | `submodules/catalogizer_api_client_ts` | vasic-digital | L5 | 43f/7t/296K (TS; TS lib: API client) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | contract tests against `catalog-api` (route and message shapes); unit tests with a real DOM where it renders | WP-34 |
+| 24 | `submodules/auth_context_react` | vasic-digital | L5 | 22f/2t/276K (TS/React; React lib: auth context) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 25 | `submodules/media_browser_react` | vasic-digital | L5 | 28f/5t/272K (TS/React; React lib: media browser) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 26 | `submodules/dashboard_analytics_react` | vasic-digital | L5 | 27f/5t/276K (TS/React; React lib: dashboard analytics) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 27 | `submodules/media_player_react` | vasic-digital | L5 | 25f/4t/268K (TS/React; React lib: media player) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 28 | `submodules/collection_manager_react` | vasic-digital | L5 | 27f/5t/284K (TS/React; React lib: collection manager) | Medium | `tsc --noEmit`, `vitest run`, D-DEP, D-CONTRACT | component or unit tests with a real DOM; accessibility (WCAG 2.2 AA) and visual checks per document 05 | WP-34 |
+| 29 | `submodules/containers` | vasic-digital | L2 | 690f/323t/7M (Go; Go lib: container orchestration (§11.4.76)) | High | D-VET, D-TEST, D-COV, D-DEAD | rootless-runtime tests against real Podman; failure injection (missing image, port clash) | WP-34 |
+| 30 | `submodules/lazy` | vasic-digital | L2 | 49f/5t/320K (Go; Go lib: lazy initialization) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 31 | `submodules/memory` | vasic-digital | L2 | 72f/13t/584K (Go; Go lib: memory management (Mem0-style)) | Medium | D-TEST `-race`, D-DEAD, D-COV | race tests, goroutine-leak checks, deadlock tests | WP-34 |
+| 32 | `submodules/recovery` | vasic-digital | L3 | 62f/10t/412K (Go; Go lib: recovery (small scoped module)) | High | D-VET, D-TEST `-race`, D-SEC, D-VULN, D-API | negative tests on the request path (forged and expired tokens, rate-limit bypass, panic recovery leaving no open connection), as they apply to this module | WP-34 |
+| 33 | `submodules/helix_qa` | HelixDevelopment | L4 | 1371f/402t/2630M (Go; QA tooling: HelixQA autonomous QA) | High | D-VET, `go build ./...` in a container (S-HQA-1), D-TEST, D-BLUFF | prove the module builds with its declared replaces; list tests skipped for missing tools; each skip carries a reason | S-HQA-1, WP-34 |
+| 34 | `submodules/doc_processor` | HelixDevelopment | L4 | 113f/21t/1M (Go; QA tooling: doc processing / feature-map extraction) | Medium | D-VET, D-TEST, D-SEC | live-provider tests `BLOCKED` unless credentials are supplied (FR-025); mock-free integration through `helix_qa` | WP-34 |
+| 35 | `submodules/llm_orchestrator` | HelixDevelopment | L4 | 147f/37t/2M (Go; LLM: headless CLI agent orchestrator) | Medium | D-VET, D-TEST, D-SEC | live-provider tests `BLOCKED` unless credentials are supplied (FR-025); mock-free integration through `helix_qa` | S-REM-1, WP-34 |
+| 36 | `submodules/llm_provider` | HelixDevelopment | L4 | 240f/103t/3M (Go; LLM: provider abstractions) | Medium | D-VET, D-TEST, D-SEC | live-provider tests `BLOCKED` unless credentials are supplied (FR-025); mock-free integration through `helix_qa` | WP-34 |
+| 37 | `submodules/vision_engine` | HelixDevelopment | L4 | 142f/25t/1M (Go; Vision/LLM: UI analysis and navigation graph) | Medium | D-VET, D-TEST, D-SEC | live-provider tests `BLOCKED` unless credentials are supplied (FR-025); mock-free integration through `helix_qa` | S-REM-1, WP-34 |
+| 38 | `submodules/screen_diff` | vasic-digital | L4 | 14f/1t/88K (Go; QA tooling: screen diff) | Low | D-VET, D-TEST, D-DEAD | confirm whether `helix_qa` uses it at runtime (S-UNUSED-1) | S-UNUSED-1, WP-34 |
+| 39 | `submodules/replay_buffer` | vasic-digital | L4 | 14f/1t/92K (Go; QA tooling: SQLite action replay buffer) | Low | D-VET, D-TEST, D-DEAD | confirm whether `helix_qa` uses it at runtime (S-UNUSED-1) | S-UNUSED-1, WP-34 |
+| 40 | `submodules/visual_regression` | vasic-digital | L4 | 14f/1t/96K (Go; QA tooling: LLM-vision visual regression) | Low | D-VET, D-TEST, D-DEAD | confirm whether `helix_qa` uses it at runtime (S-UNUSED-1) | S-UNUSED-1, WP-34 |
+| 41 | `submodules/training_collector` | vasic-digital | L4 | 14f/1t/84K (Go; QA/LLM tooling: training-data collector) | Low | D-VET, D-TEST, D-DEAD | confirm whether `helix_qa` uses it at runtime (S-UNUSED-1) | S-UNUSED-1, WP-34 |
+| 42 | `submodules/constitution` | HelixDevelopment | L1 | 3214f/81t/197M (Bash/Py/Go/MD; Governance: Helix Constitution + tooling) | High (process), none (runtime) | S-GOV-1 sweep substitute, S-GOV-2, D-SEC | run the selected gate scripts after each pin move; carve-out check of the 7 own engines | S-GOV-1, S-GOV-2, WP-34; pin move WP-07 |
+| 43 | `submodules/helix_memory` | HelixDevelopment | L3 | 115f/35t/2M (Go; Go lib: unified cognitive memory engine) | Low-Medium | D-DEAD with git history (§11.4.124), D-TEST | decide wired or retire, never removed on sight | WP-34 |
+| 44 | `submodules/constitution/submodules/anti_bluff` | vasic-digital | L0 | shell and SQL, mechanical anti-bluff seams (28 files, 13 `.sh`; README: first slice, remaining mechanisms owed); `helix-deps.yaml` present, no `.gitmodules`, LICENSE present | Medium (process) | shellcheck in IMG-SHELLCHECK, an executing test per script (11.4.224), D-BLUFF on itself | golden-good and golden-bad fixture per seam; a needle per detector; the owed mechanisms listed as gaps, never as passes | S-GOV-2, WP-34 |
+| 45 | `submodules/constitution/submodules/continuum` | vasic-digital | L0 | Go, state snapshot store for resume (62 files, 46 `.go`); `helix-deps.yaml` present, no `.gitmodules`, LICENSE present | Medium (process) | D-VET, D-TEST `-race`, D-COV | `go test -race ./...`; its self-check must give good PASS, bad FAIL and negative-control PASS (11.4.207) | S-GOV-2, WP-34 |
+| 46 | `submodules/constitution/submodules/design-toolkit` | vasic-digital | L0 | JavaScript modules and Markdown, design-capability layer used with OpenDesign (110 files, 21 `.mjs`; README: first increment, scaffold); `helix-deps.yaml` present, no `.gitmodules`, no licence file | Low (process) | D-DEP, an executing test per `.mjs` tool (runner `UNCONFIRMED:`), D-DEAD | determinism: the same seed gives the same output; the README says "license-clean" but no licence file was found (lead for the licence workstream, document 15) | S-GOV-2, WP-34 |
+| 47 | `submodules/constitution/submodules/docs_chain` | vasic-digital | L0 | Go, documentation-chain engine (88 files, 40 `.go`); `helix-deps.yaml` present, no `.gitmodules`, no licence file | Medium (process) | D-VET, D-TEST `-race`, D-COV | re-run in a container the `go test -race ./...` result the README states; regeneration and drift detection on a fixture with a seeded stale export | S-GOV-2, WP-34 |
+| 48 | `submodules/constitution/submodules/helix_perf_cache` | HelixDevelopment | L0 | Go, LLM inference-performance measurement and caching (25 files, 12 `.go`; README: phase 0-1 scaffold); `helix-deps.yaml` present, no `.gitmodules`, no licence file | Low (process) | D-VET, D-TEST `-race`, D-COV | benchmark-harness self-validation (an A/A run shows no difference); cache hit and invalidation cases | S-GOV-2, WP-34 |
+| 49 | `submodules/constitution/submodules/session_orchestrator` | vasic-digital | L0 | Go, alias-health registry, claim registry and scheduler (21 files, 12 `.go`; README: failover spine not implemented); `helix-deps.yaml` present, no `.gitmodules`, LICENSE present | Medium (process) | D-VET, D-TEST `-race`, D-COV | exactly-once claim under concurrent callers; the unimplemented failover recorded as a gap, never as a pass | S-GOV-2, WP-34 |
+| 50 | `submodules/constitution/submodules/token_optimizer` | vasic-digital | L0 | Go, request-footprint engine: tier routing with a never-downgrade floor, multi-layer cache, wire encoding (73 files, 57 `.go`); `helix-deps.yaml` present, no `.gitmodules`, LICENSE present | Low (process) | D-VET, D-TEST, D-COV | property test of the never-downgrade floor; cache correctness; golden wire encodings | S-GOV-2, WP-34 |
+
 ### 10.4 Specific audit items
 
 | Id | Item | Evidence to produce |
@@ -626,7 +742,7 @@ P0 modules first (section 2.1 priority definition): `challenges`, `containers`, 
 
 | Requirement | Evidence | Source in this plan |
 |---|---|---|
-| FR-017 pinned and latest per submodule with status | the classification table (section 2.2) regenerated from the verifier TSV at final time; third-party rows listed with `BEHIND` or `at tip` | 2.2, 8.4 |
+| FR-017 pinned and latest per submodule with status | one provenance row per repository at every depth, regenerated from the verifier report at final time: 97 today (44 direct and 53 nested; the row count equals `git submodule status --recursive \| wc -l` at run time), plus one separate row for the vendored `submodules/llms_verifier` (docs/21 IC-12); third-party rows listed with `BEHIND` or `at tip` (revision 3: widened from the 44 direct rows; sections 2.2, 8.5.1 and 10.3.1 already name all 97) | 2.2, 8.4, 8.5.1, 10.3.1 |
 | FR-018 tests before accepting an update | ledger rows `UPDATED_GATE_PASS` with gate logs; application test logs | 6.8 |
 | FR-019 recursive verification, nothing uncommitted or unpushed | verifier TSV and summary with A-1..A-7 | 8.2 to 8.4 |
 | FR-020 no rewrite, no force, report unreachable with reasons | scripts contain no executable `--force`, `+` refspec, `rebase` or `--no-verify` (the `grep -nE` hits are comments only, verified); ledger statuses `DIVERGED_OPERATOR_DECISION`, `REMOTE_UNREACHABLE` | Appendices A and B |
@@ -635,11 +751,11 @@ P0 modules first (section 2.1 priority definition): `challenges`, `containers`, 
 | FR-023 independent review | reviewer record per layer commit | 6.4 step 7 |
 | FR-024 main branch everywhere, no new branches | verifier `branch` column shows `main` or `master` only, `git branch -a` shows no new branch | 8.2 |
 | FR-025 real-service tests blocked, not skipped | `BLOCKED` status in the ledger with the exact reason | 6.8 |
-| SC-004 (dependency/submodule currency) | final summary line with `BLOCKING=0` and A-6 | 8.4 |
+| SC-004 (dependency/submodule currency) | final `scripts/repo/verify_repos.sh --strict` run: exit 0, `summary.failing = 0`, `summary.unproven = 0`, and A-6 in its v1 form (section 8.4; revision 3, the predecessor's `BLOCKING=0` is not a v1 field) | 8.4 |
 
 Checklist before declaring the submodule work done:
 
-- [ ] verifier `BLOCKING=0` and A-1..A-7 hold
+- [ ] `scripts/repo/verify_repos.sh --strict` exit 0 with `summary.failing = 0` and `summary.unproven = 0`, and A-1..A-7 hold in their v1 form (section 8.4)
 - [ ] zero own-organisation `BEHIND_UPSTREAM`
 - [ ] third-party status listed with decision D-1 recorded
 - [ ] every `ROLLED_BACK` or `BLOCKED` row has a tracked item and a reason
@@ -663,7 +779,7 @@ Checklist before declaring the submodule work done:
 | D-7 | Gate image: use `localhost/catalogizer-builder:latest` or a pinned golang/node image per module kind? | two options | one image per language, pinned by digest (§11.4.264), content `UNCONFIRMED:` | reproducibility |
 | D-8 | Own-organisation owner list: add the `helixdevelopment1` GitLab namespace as own? | yes / no | yes (used by `constitution`, `helix_memory`, `doc_processor` GitLab URLs) | classification accuracy |
 
-Open `UNCONFIRMED:` items: contents of the builder image; whether `staticcheck`/`govulncheck`/`gosec` exist on it; whether `install_upstreams` is on `PATH`; whether the external `commit` binary exists; whether Podman accepts the `:O` mount in this environment; `helix-deps.yaml` presence for the 7 own constitution engines; actual behaviour of the hook on the real delta (predicted only); whether the §11.4.32 sweep scripts exist upstream (they are absent locally).
+Open `UNCONFIRMED:` items: contents of the builder image; whether `staticcheck`/`govulncheck`/`gosec` exist on it; whether `install_upstreams` is on `PATH`; whether the external `commit` binary exists; whether Podman accepts the `:O` mount in this environment; the content (not the presence, measured in revision 3) of `helix-deps.yaml` for the 7 own constitution engines; actual behaviour of the hook on the real delta (predicted only); whether the §11.4.32 sweep scripts exist upstream (they are absent locally).
 
 ---
 
@@ -750,7 +866,7 @@ rc=$?; rm -f "${TMPDIR:-/tmp}/sv.$$"; exit $rc
 
 ## Appendix B - update-loop script (EXECUTED in DRY_RUN=1 on five submodules only)
 
-Executed on 2026-10-03 with `DRY_RUN=1` and `ONLY="submodules/constitution submodules/websocket_client_ts submodules/auth submodules/superspec submodules/helix_qa"` (about 25 s, re-run after the dirty-check fix; the `helix_qa` row confirms the EOL-quirk path does not abort). The write path (`DRY_RUN=0`: backup, fetch, ff-only merge, gate, rollback) is **NOT EXECUTED**. The script never commits and never pushes; section 6.4 steps 7 and 8 are deliberately manual and reviewed.
+Executed on 2026-10-03 with `DRY_RUN=1` and `ONLY="submodules/constitution submodules/websocket_client_ts submodules/auth submodules/superspec submodules/helix_qa"` (about 25 s, re-run after the dirty-check fix; the `helix_qa` row confirms the EOL-quirk path does not abort). The write path (`DRY_RUN=0`: backup, fetch, ff-only merge, gate, rollback) is **NOT EXECUTED**. Revision 3 changed one line of the unexecuted write path: the `DRY_RUN=0` ledger moved from `qa-results/` (ignored at `.gitignore:268`, so the FR-022 evidence would never be tracked) to `$EV/verify/`, matching step 9; the `DRY_RUN=1` path that was executed is unchanged. The script never commits and never pushes; section 6.4 steps 7 and 8 are deliberately manual and reviewed.
 
 ```bash
 #!/usr/bin/env bash
@@ -772,7 +888,7 @@ GATE_IMAGE=${GATE_IMAGE:-localhost/catalogizer-builder:latest}; GATE_MEM=${GATE_
 OWN_OWNERS=${OWN_OWNERS:-'vasic-digital|HelixDevelopment|helixdevelopment1'}
 ROOT=$(git rev-parse --show-toplevel) || exit 2; cd "$ROOT"
 export GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10 -o LogLevel=ERROR"
-if [ "$DRY_RUN" = 1 ]; then LOG=${LOG:-${TMPDIR:-/tmp}/submodule_update_dry_$$.tsv}; else LOG=${LOG:-$ROOT/qa-results/submodule_update_$(date +%Y%m%dT%H%M%S).tsv}; fi  # evidence ledger (FR-022)
+if [ "$DRY_RUN" = 1 ]; then LOG=${LOG:-${TMPDIR:-/tmp}/submodule_update_dry_$$.tsv}; else LOG=${LOG:-$ROOT/specs/001-full-project-audit-remediation/evidence/verify/submodule_update_$(date -u +%Y%m%dT%H%M%SZ).tsv}; fi  # evidence ledger (FR-022); revision 3: was qa-results/ (ignored)
 say() { printf '%s\n' "$*" >&2; }
 rec() { mkdir -p "$(dirname "$LOG")"; printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" "$5" "$6" >> "$LOG"; }  # path state old new gate note
 tips() { # repo remote branch -> sha (banner noise filtered per brief)

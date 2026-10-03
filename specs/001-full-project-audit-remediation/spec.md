@@ -221,6 +221,17 @@ At any point, the owner can run one deterministic check and see that the main re
 - The owner supplies the external credentials and physical devices that real-service and real-device tests need, and tells us where they are (see FR-025). The owner's rule that an unavailable dependency means the test cannot pass is stricter than the governance's allowance of an honest skip with a reason; the blocked status in FR-025 reports the exact reason, so it does not mislabel an infrastructure gap as a defect failure.
 - An outdated third-party package is reported but is not a finding for the zero-open count, consistent with the decision that only submodules are updated.
 
+## Plan documents
+
+This section only points to the documents derived from this specification; it adds and changes no requirement.
+
+- [README.md](README.md): index of every document of this specification folder, grouped.
+- [plan.md](plan.md): implementation plan and constitution check.
+- [docs/21-master-plan-phases-risks-and-traceability.md](docs/21-master-plan-phases-risks-and-traceability.md): master plan with phases, work packages, risks, owner decisions and the requirement traceability matrix.
+- [tasks.md](tasks.md): task list by phase and work package.
+- [research.md](research.md), [data-model.md](data-model.md), [quickstart.md](quickstart.md), [contracts/README.md](contracts/README.md): design artifacts.
+- [checklists/requirements.md](checklists/requirements.md): specification quality checklist.
+
 ## Brainstorm Log
 
 <!--

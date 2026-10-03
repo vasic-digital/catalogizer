@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: the section 9.1 "Security note" row gains its missing Tool cell; pipe characters inside code spans of two table rows escaped with a backslash) |
 | Spec requirement | SC-011 (also FR-010, FR-021, FR-022, FR-025) |
 | Owner decision | The 30/50 ms latency SLA of the adopted external constitution does NOT bind this project (spec Q2). Catalogizer sets its own targets and aims for the best achievable performance. |
 | Companion documents | 05 test strategy, 06 determinism and evidence framework, 07 backend audit, 08 web audit |
@@ -59,7 +59,7 @@ All paths are repository relative. Everything below was read in this session; no
 | Protocol client benchmarks | `catalog-api/tests/performance/protocol_bench_test.go` | 22 benchmarks of the local client: list, read, write, copy, concurrent reads and writes, scan directory |
 | Per-package benchmarks | `catalog-api/repository/media_item_repository_bench_test.go`, `catalog-api/services/auth_service_bench_test.go`, `catalog-api/internal/auth/jwt_bench_test.go`, `catalog-api/internal/media/detector/engine_bench_test.go`, `catalog-api/internal/media/providers/providers_bench_test.go`, `catalog-api/internal/services/title_parser_bench_test.go`, `catalog-api/internal/smb/resilience_bench_test.go`, `catalog-api/middleware/benchmark_test.go`, `catalog-api/middleware/rate_limiter_bench_test.go`, `catalog-api/utils/buffer_pool_test.go`, `catalog-api/utils/concurrency_bench_test.go` | Component level |
 | Fuzz targets | `catalog-api/middleware/fuzz_test.go`, `csp_fuzz_test.go`, `input_validation_fuzz_test.go`, `catalog-api/database/dialect_fuzz_test.go`, `catalog-api/filesystem/factory_fuzz_test.go`, `catalog-api/internal/handlers/download_fuzz_test.go`, `catalog-api/internal/services/title_parser_fuzz_test.go`, `catalog-api/utils/validation_fuzz_test.go` | Correctness and robustness; relevant to performance only as a source of pathological inputs (algorithmic-complexity cases) |
-| Runner script | `scripts/performance-test.sh` | Runs the benchmarks with `-benchtime=3s`/`2s` and `tee`s to `performance-results-*.txt` at the repository root; every `go test` is suffixed `|| true`, so a failing benchmark does not fail the script (a defect for gating purposes, section 8.6); it then builds the web bundle on the bare host with `npm run build` (violates FR-021, must be containerized) |
+| Runner script | `scripts/performance-test.sh` | Runs the benchmarks with `-benchtime=3s`/`2s` and `tee`s to `performance-results-*.txt` at the repository root; every `go test` is suffixed `\|\| true`, so a failing benchmark does not fail the script (a defect for gating purposes, section 8.6); it then builds the web bundle on the bare host with `npm run build` (violates FR-021, must be containerized) |
 | Metrics | `catalog-api/internal/metrics/metrics.go` (HTTP duration histogram, request counter, active connections, WebSocket connections, DB query duration, goroutines, memory) and `prometheus.go` (DB connection gauges, `RecordDBQuery`) | Served at `/metrics` (`catalog-api/main.go:997`) |
 | Profiling endpoints | `catalog-api/main.go:1009-1021` | `/debug/pprof/*` registered only when `HELIX_PPROF_ENABLED=true` (line 1008) |
 | Compression, HTTP/3 | `catalog-api/main.go:991` (`CompressionMiddleware`), `main.go:65,1809-1850` (quic-go HTTP/3 on the HTTPS port) | Compression and HTTP/3 exist; their benefit is unmeasured |
@@ -405,7 +405,7 @@ Local only (no CI/CD, section 11.4.156). The gate runs from the dedicated commit
 | Scheduling and GC latency | `runtime/trace` via `/debug/pprof/trace?seconds=5`, `go tool trace` | for tail-latency stalls |
 | Micro-benchmark compare | `go test -bench -benchmem -count=10 -cpuprofile` then `benchstat old.txt new.txt` | in the Go build container; `benchstat` pinned by version via `go run golang.org/x/perf/cmd/benchstat@<version>` inside the container |
 | GC and runtime metrics | `GODEBUG=gctrace=1` in the measurement profile, plus `/metrics` Go collectors | |
-| Security note | pprof exposes internal data; it stays off by default and is never enabled on a user-facing deployment; the measurement profile binds it to a container-local network only |
+| Security note | none (a rule, not a tool) | pprof exposes internal data; it stays off by default and is never enabled on a user-facing deployment; the measurement profile binds it to a container-local network only |
 
 ### 9.2 Databases
 
@@ -584,7 +584,7 @@ All work is test-first (section 11.4.224): the failing check exists and is obser
 | WP-14-02 | Measurement harness core | evidence record type `perf`, comparator, env fingerprint collector, cgroup throttle reader, control needle, A/A runner | harness self-tests with golden-good, golden-bad, negative control; throttle reader sees the quota control container (section 10.7) | doc 06 framework | FR-010, FR-022 |
 | WP-14-03 | Containerized measurement environment | pinned images by digest, compose profile with cpuset and memory limits, dataset generator with seed, both dialects | environment starts from clean checkout; fingerprint recorded; DS-S and DS-M generated with matching hashes on two generations | WP-14-02 | FR-021 |
 | WP-14-04 | Instrumentation fixes needed to measure | wire DB query histogram (H-03), per-request query counter, mutex and block profile rates under measurement profile only | `/metrics` shows nonzero `DBQueryDuration` series in a run; query counter test fails before and passes after | WP-14-03 | SC-011 |
-| WP-14-05 | Go benchmark baselines | `-count=10` baselines for all existing Benchmark files, stored raw plus sidecar; `scripts/performance-test.sh` fixed (no `|| true`, containerized, evidence output) | baseline files exist for each package; A/A benchstat shows no significant difference; script exits non-zero on a deliberately failing benchmark | WP-14-02, 03 | SC-011 |
+| WP-14-05 | Go benchmark baselines | `-count=10` baselines for all existing Benchmark files, stored raw plus sidecar; `scripts/performance-test.sh` fixed (no `\|\| true`, containerized, evidence output) | baseline files exist for each package; A/A benchstat shows no significant difference; script exits non-zero on a deliberately failing benchmark | WP-14-02, 03 | SC-011 |
 | WP-14-06 | HTTP baselines for OP-01..04, 08, 09, 14, 15 | k6 scripts with arrival-rate executors and machine summaries; baselines per dialect and dataset | baseline JSON per variant passing schema; raw histograms stored; A/A noise floors recorded | WP-14-03, 04 | SC-011 |
 | WP-14-07 | Database plan capture (OP-12) | `EXPLAIN` capture script (section 15.3) run on both dialects for the hot queries; plan diffs tracked | plan JSON per query per dialect; unused or missing index report | WP-14-03 | SC-011, FR-015 |
 | WP-14-08 | Scan and enrichment baselines (OP-06, OP-07) | scan baseline for local and SMB; enrichment baseline with real providers where credentials exist | baseline files, or BLOCKED records naming the missing credential or server | WP-14-03, FR-025 inputs | SC-011, FR-025 |

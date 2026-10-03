@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
 | Feature | specs/001-full-project-audit-remediation |
 | Covers | FR-012, FR-013, FR-014, FR-015, SC-006, SC-007, SC-008 |
 | Governance anchors | §11.4.12, §11.4.18, §11.4.44, §11.4.57, §11.4.59, §11.4.61, §11.4.65, §11.4.73, §11.4.86, §11.4.95, §11.4.106, §11.4.107(10), §11.4.122, §11.4.124, §11.4.186, §11.4.212, §11.4.215, §11.4.223, §11.4.257, §11.4.258, §11.4.259, §11.4.260 |
@@ -227,9 +227,9 @@ Disposition vocabulary: KEEP (reviewed, updated), UPDATE (stale content fixed in
 | Folder / group | Count | Disposition | Reason and method |
 |---|---:|---|---|
 | `README.md` (root) | 1 | UPDATE | repoint 7 dead links, version strings (`v2.1.0` → read from `versions.json`), add badge row/hub tables, remove claims contradicted by §2.4 |
-| Root completion/report files (`ALL_ISSUES_FIXED`, `FINAL_*_REPORT`, `PHASE_*_REPORT`, `COMPLETE_*`, `IMPLEMENTATION_*`, `*_SUMMARY`, `COMMIT_SUMMARY`, etc.; ≈35 of the 49 root md) | ≈35 | ARCHIVE to `docs/archive/2026/` with stub at old path for one release, linked from HISTORY | historical status snapshots dated before the current audit; they contradict each other ("FINAL_COMPLETION_REPORT" vs "REMAINING_ISSUES_REPORT"); exact list produced by script by `git log` date + name pattern, then reviewed; `DECIDE` for any file still cited by a gate (grep for inbound references first, §11.4.124) |
+| Root completion/report files (`ALL_ISSUES_FIXED`, `FINAL_*_REPORT`, `PHASE_*_REPORT`, `COMPLETE_*`, `IMPLEMENTATION_*`, `*_SUMMARY`, `COMMIT_SUMMARY`, etc.; revision 2: exactly 37 of the 49 root Markdown files, which are the 49 less `README.md`, the 5 governance files and the 6 working docs; document 03 §5.10 names each; `SECURITY_KEY_ROTATION_REQUIRED.md` stays in place while its action is open) | 37 | ARCHIVE to `docs/archive/2026/` with stub at old path for one release, linked from HISTORY | historical status snapshots dated before the current audit; they contradict each other ("FINAL_COMPLETION_REPORT" vs "REMAINING_ISSUES_REPORT"); exact list produced by script by `git log` date + name pattern, then reviewed; `DECIDE` for any file still cited by a gate (grep for inbound references first, §11.4.124) |
 | Root governance: `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `CONSTITUTION.md`, `MEMORY.md` | 5 | KEEP | fix `Constitution.md` casing; §11.4.157 lockstep check |
-| Root working docs: `QUICK_REFERENCE.md`, `GETTING_STARTED.md`, `TASK_TRACKER.md`, `MASTER_*` | ≈6 | MERGE or KEEP | `GETTING_STARTED.md` → merged into `docs/INSTALLATION_GUIDE.md` + `docs/guides/QUICKSTART_*`; `TASK_TRACKER.md`/`MASTER_EXECUTION_CHECKLIST.md` exist both at root and `docs/` (duplicate names); keep the live one, archive the other |
+| Root working docs: `QUICK_REFERENCE.md`, `GETTING_STARTED.md`, `TASK_TRACKER.md`, `MASTER_EXECUTION_CHECKLIST.md`, `MASTER_IMPLEMENTATION_INDEX.md`, `MASTER_IMPLEMENTATION_PLAN_PHASES.md` | 6 | MERGE or KEEP | `GETTING_STARTED.md` → merged into `docs/INSTALLATION_GUIDE.md` + `docs/guides/QUICKSTART_*`; `TASK_TRACKER.md`/`MASTER_EXECUTION_CHECKLIST.md` exist both at root and `docs/` (duplicate names); keep the live one, archive the other |
 | `docs/*.md` top level | 59 | UPDATE/ARCHIVE | product guides (`USER_GUIDE`, `ADMIN_GUIDE`, `INSTALLATION_GUIDE`, `DEPLOYMENT_GUIDE`, `CONFIGURATION_GUIDE`, `TROUBLESHOOTING_GUIDE`, `DEVELOPER_GUIDE`, `DISASTER_RECOVERY`, `MIGRATION_GUIDE`, `DATA_DICTIONARY`, `ENV_VARIABLES`, `API_CONTRACTS`, `CONTRIBUTING`, `CHANGELOG`, `LANDMINES`) KEEP+UPDATE; `*_AUDIT.md`, `*_COMPLETION*`, `PHASE_15_STATUS`, `CYCLE_CLOSURE_*`, `SESSION_*`, `UNFINISHED_WORK_*` → HISTORY/ARCHIVE |
 | `docs/issues/` | 1,778 | GENERATE index, KEEP files | class C (§3); ID-collision finding to register |
 | `docs/video-course/`, `docs/courses/` | 43 + 35 | KEEP, link from USERS hub (`Learn`) | overlap check: `docs/VIDEO_COURSE_SCRIPTS.md`, `docs/video-course/*`, `docs/courses/scripts`, `Website/course.md`: decide canonical script location; MERGE overlaps |
@@ -249,6 +249,13 @@ Disposition vocabulary: KEEP (reviewed, updated), UPDATE (stale content fixed in
 | `Website/` | 37 | KEEP+UPDATE; remove `ignoreDeadLinks: true` | the VitePress build then fails on dead links (a real gate) |
 | `templates/` (4 md) | 4 | KEEP; document in §10.2 | |
 | `.specify/`, `.claude/`, `.remember/`, `specs/` | 71 | KEEP (class D) | governance hub |
+| `LICENSE` (root, Apache-2.0 text; revision 2) | 1 | KEEP | linked from the README hub (§11.4.212); the licence findings of document 15 §10.5 (40 own-organisation repositories without a licence file) may change README and per-module docs |
+| `submodule-analysis.txt` (root, 368 lines, generated 2026-04-14 for "all 41 submodules"; revision 2) | 1 | DECIDE (owner) | stale snapshot (`.gitmodules` now declares 44); regenerate from the verifier report, archive, or retire; never deleted on sight (§11.4.122, §11.4.124); also a document 03 source |
+| `.implementation/` (2 validation reports dated 2026-04-17 plus 4 empty progress markers; revision 2) | 6 | KEEP as a document 03 source (S-24); ARCHIVE after the register import cites them | the bulk-closure report is evidence for the register, not current documentation |
+| `.github/workflows/README.md` (revision 2) | 1 | KEEP+UPDATE | it must state that no workflow runs here (§11.4.156) and point to the local enforcement of document 16 §16.1 |
+| `.pre-commit-config.yaml` (not Markdown; revision 2) | 1 | DECIDE (owner), documented meanwhile | not installed and not runnable as configured (document 16 §3.4); `docs/scripts/commit-push-all.md` records where each of its checks now runs |
+
+Reachability of this feature's own plan set (revision 2, measured by the plan-set hygiene sweep with `poc/doc_links/crawl_links.py`): none of the 32 Markdown files under `specs/001-full-project-audit-remediation/` is reachable from the root `README.md`, and `spec.md` links to none of its siblings. Under §11.4.212 the README hub of D1 links the feature's `spec.md`, `plan.md` and `tasks.md`, and an index page lists the 21 numbered plan documents; until then they are counted as orphans, not as exempt.
 
 Required measure of success for FR-012: every file in a KEEP/UPDATE row has a recorded review (reviewer, date, evidence of verification against code/config/runtime, `reviewed:` front-matter field), and the `DOC_DISPOSITION.md` row count equals the number of non-KEEP files.
 

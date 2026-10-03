@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: every candidate table has a per-item evidence label column; new section 1.1 routes all 47 candidates (PROPOSAL items to the docs/21 WP-20 register intake as Feature items or recorded owner decisions, R-ADJ items to their plan document and work package); new section 2.1 maps this document's labels (EMERGING) to document 17's (PLAUSIBLE)) |
 | Feature | specs/001-full-project-audit-remediation |
 | Nature | Desk research (web) plus read-only grounding in the repository. Nothing here was built, run or benchmarked. |
 | Source access date | 2026-10-03 for every source in section 14 |
@@ -14,8 +14,8 @@
 
 ## Table of contents
 
-1. Purpose, scope fence and how to read this document
-2. Method and evidence labels
+1. Purpose, scope fence and how to read this document (1.1 routing of every candidate)
+2. Method and evidence labels (2.1 mapping to document 17)
 3. Theme 1 - How peers solve the core jobs, and what users complain about
 4. Theme 2 - Recognition and metadata quality
 5. Theme 3 - Scanning at scale over flaky network shares
@@ -50,6 +50,64 @@ Reading rules: sections 3 to 12 each contain (a) a findings table of research re
 
 Effort scale: S = days, M = 1 to 3 weeks, L = more than 3 weeks (engineer estimate, UNCONFIRMED, no measurement behind it). Impact and risk: Low, Medium, High (judgement, not measured).
 
+### 1.1 Routing of every candidate (revision 2)
+
+No candidate of this document may stay a paragraph with no owner (§11.4.197). Revision 2 routes all 47 candidates. Counted from the tag column of the candidate tables: 28 are `PROPOSAL` only, 13 are `R-ADJ` only and 6 are mixed (an `R-ADJ` part and a `PROPOSAL` part).
+
+- **`PROPOSAL` items and the `PROPOSAL` part of mixed items** flow into the register intake of docs/21 WP-20 as items of Type Feature, each carrying this document's ID, its evidence label and its experiment (section 13.1) where one exists. Each is then either accepted as input to a later feature specification or recorded as an owner decision to defer or drop it, with the reason. None is implemented under feature 001 (section 1 scope fence), and none is dropped silently.
+- **`R-ADJ` items and the `R-ADJ` part of mixed items** are inputs to the plan document and docs/21 work package named below; that work package decides the fix and its test, and the register item, if the audit confirms a defect, is minted there, not here.
+- The ranked game changers of section 13 are combinations of these IDs and need no separate route.
+
+| ID | Kind | Evidence label | Destination |
+|---|---|---|---|
+| T1-A | R-ADJ | PROVEN (1.6, 3.4) | doc 07 (`files.deleted` semantics); docs/21 WP-30, fix in WP-51 |
+| T1-B | PROPOSAL | PROVEN (1.3) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T1-C | PROPOSAL | PROVEN (1.4) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T2-A | R-ADJ | PROVEN (2.2) | docs 05 and 07 (parser test asset); WP-61 |
+| T2-B | PROPOSAL | PROVEN components (1.4, 1.7); integrated form not found | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T2-C | PROPOSAL | PROVEN (1.3, 1.7; 2.7 weak) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T2-D | PROPOSAL | PROVEN (2.3, 2.4, 2.5) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T2-E | PROPOSAL | SPECULATIVE (2.8) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T2-F | R-ADJ | PROVEN (2.6) | doc 07 (provider rate limiter); WP-30, fix in WP-51 |
+| T3-A | R-ADJ | n/a: repository defect (doc 01 §3.1), no peer claim | doc 07 C5 (stub FTP, NFS and WebDAV scanners); WP-30, fix in WP-51 |
+| T3-B | PROPOSAL | PROVEN protocol (3.2); UNCONFIRMED Go client (3.3) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T3-C | PROPOSAL | PROVEN (1.6, 3.4) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T3-D | PROPOSAL | SPECULATIVE (design inference, §5.3 point 5) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T3-E | R-ADJ | PROVEN (3.5) | doc 07 and doc 16 (database path); WP-30 |
+| T3-F | R-ADJ | PROVEN (3.5, 10.3) | doc 15 §6.1 data-loss danger zone; WP-50 (WS7 danger-zone tests) |
+| T4-A | R-ADJ | n/a: a measurement (SC-011) | doc 14 search baseline; WP-38 |
+| T4-B | PROPOSAL | PROVEN (4.1, 4.5) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T4-C | PROPOSAL | EMERGING (4.2, 4.6) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T4-D | PROPOSAL | SPECULATIVE (no source for filter extraction from natural language) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T4-E | PROPOSAL | UNCONFIRMED (FTS5 in the Android SQLite build) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T5-A | PROPOSAL | EMERGING (5.3) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T5-B | PROPOSAL | EMERGING (5.3) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T5-C | PROPOSAL | SPECULATIVE (5.1, 5.2) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T5-D | mixed | PROVEN resume pattern (5.4); prerequisite is a repository defect (`/ws`) | R-ADJ part: doc 15 S-02 (`/ws` authentication); WP-50; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T6-A | R-ADJ | n/a: repository defect (doc 01 §3.1) | doc 15 S-02, doc 07; WP-50 |
+| T6-B | R-ADJ | PROVEN (6.5, secondary) | doc 15 ST-AUTH, doc 07; WP-50 |
+| T6-C | PROPOSAL | PROVEN standard (6.1, 6.2); UNCONFIRMED client support | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T6-D | mixed | PROVEN mechanism (6.3); UNCONFIRMED version defaults | R-ADJ part: doc 15 OQ-S6 key management; WP-35 finds, WP-50 fixes; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T6-E | PROPOSAL | PROVEN building blocks (6.4); SPECULATIVE product | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T6-F | PROPOSAL | SPECULATIVE (design position; revocation guidance 6.5) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T7-A | PROPOSAL | SPECULATIVE (the need is PROVEN as a complaint, 7.4) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T7-B | PROPOSAL | PROVEN (7.2) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T7-C | mixed | PROVEN restore (7.3); UNCONFIRMED marker-row verify | R-ADJ part: doc 15 §6.1 (backup procedure, with T3-F); WP-50; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T7-D | R-ADJ | n/a: repository verification item (doc 01) | doc 07 (`/health/deep`); WP-30 |
+| T7-E | PROPOSAL | PROVEN (7.1) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T8-A | mixed | PROVEN (8.3) | R-ADJ part: doc 05 §9 and doc 07 (contract tests); WP-40, WP-41; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T8-B | PROPOSAL | PROVEN practice; UNCONFIRMED spec text (8.2) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T8-C | PROPOSAL | EMERGING out-of-process (8.1) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T8-D | PROPOSAL | PROVEN (8.4) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T9-A | R-ADJ | PROVEN (9.1, 9.2) | doc 05 §13.4 (WCAG 2.2 AA per client); WP-61 |
+| T9-B | R-ADJ | PROVEN (9.3, per source) | doc 05 §13.4 and doc 10 (TV focus restoration test); WP-61 |
+| T9-C | PROPOSAL | PROVEN (9.4, secondary) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T9-D | PROPOSAL | PROVEN (9.2) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T10-A | mixed | PROVEN (10.1, secondary) | R-ADJ part: doc 13 (deployment documentation); WP-63; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T10-B | PROPOSAL | PROVEN (10.2) | WP-20 intake: Feature item with an owner decision (later feature, deferred or dropped); not implemented in feature 001 |
+| T10-C | mixed | PROVEN backup step (10.3); SPECULATIVE guard and rollback | R-ADJ part: doc 07 (migration source of truth); WP-30; PROPOSAL part: WP-20 intake as a Feature item with an owner decision |
+| T10-D | R-ADJ | PROVEN (10.3, 10.4) | doc 13 runbooks (restore drill); WP-63 |
+
 ## 2. Method and evidence labels
 
 Research ran at least four rounds per theme (query, refine, primary-source fetch, cross-check). Prefer primary sources (specifications, official docs, project repositories). Where only a forum thread, a blog or a search-engine summary was available, the source is marked secondary in section 14 and the claim is worded accordingly.
@@ -60,6 +118,19 @@ Research ran at least four rounds per theme (query, refine, primary-source fetch
 | EMERGING | Available, maintained and used, but young, fast-moving or with sparse production evidence. |
 | SPECULATIVE | Plausible but with no comparable shipped product found, or evidence only from the author's reasoning. |
 | UNCONFIRMED | A claim the research could not verify (reported as such). |
+
+### 2.1 Mapping to the labels of document 17 (revision 2)
+
+Document 17 (engineering practices) and this document label evidence with different words. Neither document is renamed; for any use across documents, including the WP-20 register intake, the mapping below applies and the register records the document 17 name.
+
+| This document | Document 17 | Basis of the label in each document | Register value at intake |
+|---|---|---|---|
+| PROVEN | PROVEN | here: shipped in a comparable product per a cited source; in document 17: documented by the tool's own primary source and in wide use. Both still need a first local run before they count as evidence for Catalogizer | PROVEN |
+| EMERGING | PLAUSIBLE | young, fast-moving, pre-1.0 or single-maintainer, with sparse production evidence; adopt with a pilot | PLAUSIBLE |
+| SPECULATIVE | SPECULATIVE | no comparable shipped product or no primary source; the author's reasoning only | SPECULATIVE |
+| UNCONFIRMED | `UNCONFIRMED:` | a claim the research could not verify | UNCONFIRMED |
+| (secondary source, marked in section 14) | SINGLE-SOURCE (qualifier) | the claim rests on one source; document 17 marks it beside the label, this document marks secondary sources in the bibliography | the label plus a `single_source` flag |
+| `n/a` (revision 2, candidate tables only) | no counterpart | a candidate that is a repository defect or a measurement, not a technique with peer evidence | n/a, with the repository citation |
 
 Repository facts cited below come from read-only inspection on 2026-10-03 and from docs/01. Where a fact is from docs/01 it is cited as "doc 01".
 
@@ -87,11 +158,11 @@ Synthesis: the strongest, repeated user pain points are (1) wrong or unexplained
 
 ### 3.2 Candidate improvements for this codebase
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T1-A | Treat peers' "missing, not deleted" semantics as the design for removed files, so user state survives temporary share outage (compare with how `files.deleted` is used in `catalog-api/repository/file_repository.go:251,300`). Verification needed before any change. | R-ADJ | catalog-api | M | High | Low |
-| T1-B | A manual "Identify / re-match" action with provider-id input on every client, as a first-class workflow, not an afterthought. | PROPOSAL | catalog-api, catalog-web, android, androidtv | M | High | Low |
-| T1-C | Quality scoring as data (profile plus scored rules) instead of fixed thresholds, to align with the quality analysis feature in README.md. | PROPOSAL | catalog-api | M | Medium | Medium |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T1-A | Treat peers' "missing, not deleted" semantics as the design for removed files, so user state survives temporary share outage (compare with how `files.deleted` is used in `catalog-api/repository/file_repository.go:251,300`). Verification needed before any change. | R-ADJ | catalog-api | M | High | Low | PROVEN (1.6, 3.4) |
+| T1-B | A manual "Identify / re-match" action with provider-id input on every client, as a first-class workflow, not an afterthought. | PROPOSAL | catalog-api, catalog-web, android, androidtv | M | High | Low | PROVEN (1.3) |
+| T1-C | Quality scoring as data (profile plus scored rules) instead of fixed thresholds, to align with the quality analysis feature in README.md. | PROPOSAL | catalog-api | M | Medium | Medium | PROVEN (1.4) |
 
 ## 4. Theme 2 - Recognition and metadata quality
 
@@ -144,14 +215,14 @@ stateDiagram-v2
 
 ### 4.3 Candidate improvements
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T2-A | Parser regression corpus: a labelled set of real-world filenames with expected parse, run in CI-equivalent local gates. This is a test asset that also serves the audit's test strategy (FR-009, FR-010). | R-ADJ | catalog-api tests | M | High | Low |
-| T2-B | Persist match evidence and confidence (parsed fields, candidates, score, provider, timestamp). | PROPOSAL | catalog-api DB, API | M | High | Low |
-| T2-C | Review queue UI with accept, reject, search-by-provider-id; correction becomes locked state. | PROPOSAL | catalog-api, catalog-web, androidtv (read-only) | L | High | Medium |
-| T2-D | Fingerprint layer: head/tail hash for movies, Chromaprint for music, perceptual hash for video and images; duplicates and versions grouped by fingerprint, "keep best" suggestion (size, bitrate, tag completeness). | PROPOSAL | catalog-api, submodule `digital.vasic.media` (UNCONFIRMED whether the right home) | L | High | Medium |
-| T2-E | Local embedding re-ranker for ambiguous title matches, behind a flag, to be tested against the corpus in T2-A. | PROPOSAL (SPECULATIVE) | catalog-api, optional sidecar (see `OCU-CUDA-Sidecar/`, relationship UNCONFIRMED per doc 01) | L | Medium | High |
-| T2-F | Respect provider limits explicitly (MusicBrainz 1 per second, TMDB 429 handling, User-Agent with contact) and test that the limiter exists; the provider code keeps a `rateLimiter map[string]*time.Ticker` (`music_recognition_provider.go`), correctness UNCONFIRMED. | R-ADJ | catalog-api | S | Medium | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T2-A | Parser regression corpus: a labelled set of real-world filenames with expected parse, run in CI-equivalent local gates. This is a test asset that also serves the audit's test strategy (FR-009, FR-010). | R-ADJ | catalog-api tests | M | High | Low | PROVEN (2.2) |
+| T2-B | Persist match evidence and confidence (parsed fields, candidates, score, provider, timestamp). | PROPOSAL | catalog-api DB, API | M | High | Low | PROVEN components (1.4, 1.7); integrated form not found |
+| T2-C | Review queue UI with accept, reject, search-by-provider-id; correction becomes locked state. | PROPOSAL | catalog-api, catalog-web, androidtv (read-only) | L | High | Medium | PROVEN (1.3, 1.7; 2.7 weak) |
+| T2-D | Fingerprint layer: head/tail hash for movies, Chromaprint for music, perceptual hash for video and images; duplicates and versions grouped by fingerprint, "keep best" suggestion (size, bitrate, tag completeness). | PROPOSAL | catalog-api, submodule `digital.vasic.media` (UNCONFIRMED whether the right home) | L | High | Medium | PROVEN (2.3, 2.4, 2.5) |
+| T2-E | Local embedding re-ranker for ambiguous title matches, behind a flag, to be tested against the corpus in T2-A. | PROPOSAL (SPECULATIVE) | catalog-api, optional sidecar (see `OCU-CUDA-Sidecar/`, relationship UNCONFIRMED per doc 01) | L | Medium | High | SPECULATIVE (2.8) |
+| T2-F | Respect provider limits explicitly (MusicBrainz 1 per second, TMDB 429 handling, User-Agent with contact) and test that the limiter exists; the provider code keeps a `rateLimiter map[string]*time.Ticker` (`music_recognition_provider.go`), correctness UNCONFIRMED. | R-ADJ | catalog-api | S | Medium | Low | PROVEN (2.6) |
 
 ## 5. Theme 3 - Scanning at scale over flaky network shares
 
@@ -203,14 +274,14 @@ Key ideas with evidence: (1) capability probe per source rather than assuming a 
 
 ### 5.4 Candidate improvements
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T3-A | Replace "stub returns nil" scanners with either a real implementation or an explicit "unsupported" error surfaced in the UI. A silent no-op is the worst case for users (a source that never populates and never says why). | R-ADJ (doc 01 observation, audit decides) | catalog-api | M-L | High | Low |
-| T3-B | Per-source capability probe and strategy selection (notify, mtime-delta listing, full walk), with the chosen strategy shown in scan reports. | PROPOSAL | catalog-api, `digital.vasic.watcher`, `digital.vasic.filesystem` (submodules per doc 01) | L | High | Medium |
-| T3-C | Grace-window "missing" state and re-link by fingerprint on rename (see T2-D). | PROPOSAL | catalog-api | M | High | Medium |
-| T3-D | Scan resumability with a persisted cursor and idempotent upserts. | PROPOSAL | catalog-api | M | Medium | Medium |
-| T3-E | Keep the catalogue database off network filesystems and document it; add a startup check that warns when the DB path is on NFS/SMB (SQLite sources, 3.5). | R-ADJ | catalog-api, docs | S | Medium | Low |
-| T3-F | Backup procedure uses `VACUUM INTO` or the online backup API, never raw file copy (3.5); verify by restore (theme 10). | R-ADJ | scripts, docs | S | High | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T3-A | Replace "stub returns nil" scanners with either a real implementation or an explicit "unsupported" error surfaced in the UI. A silent no-op is the worst case for users (a source that never populates and never says why). | R-ADJ (doc 01 observation, audit decides) | catalog-api | M-L | High | Low | n/a: repository defect (doc 01 §3.1), no peer claim |
+| T3-B | Per-source capability probe and strategy selection (notify, mtime-delta listing, full walk), with the chosen strategy shown in scan reports. | PROPOSAL | catalog-api, `digital.vasic.watcher`, `digital.vasic.filesystem` (submodules per doc 01) | L | High | Medium | PROVEN protocol (3.2); UNCONFIRMED Go client (3.3) |
+| T3-C | Grace-window "missing" state and re-link by fingerprint on rename (see T2-D). | PROPOSAL | catalog-api | M | High | Medium | PROVEN (1.6, 3.4) |
+| T3-D | Scan resumability with a persisted cursor and idempotent upserts. | PROPOSAL | catalog-api | M | Medium | Medium | SPECULATIVE (design inference, §5.3 point 5) |
+| T3-E | Keep the catalogue database off network filesystems and document it; add a startup check that warns when the DB path is on NFS/SMB (SQLite sources, 3.5). | R-ADJ | catalog-api, docs | S | Medium | Low | PROVEN (3.5) |
+| T3-F | Backup procedure uses `VACUUM INTO` or the online backup API, never raw file copy (3.5); verify by restore (theme 10). | R-ADJ | scripts, docs | S | High | Low | PROVEN (3.5, 10.3) |
 
 ## 6. Theme 4 - Search
 
@@ -244,13 +315,13 @@ flowchart TB
 
 ### 6.3 Candidate improvements
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T4-A | Measure the current `LIKE` search on a representative catalogue and record a baseline (SC-011 requires one for search). | R-ADJ | catalog-api, doc 14 | S | High | Low |
-| T4-B | Lexical upgrade: FTS5 (external-content, trigram or unicode61 plus porter) for SQLite, `tsvector` plus GIN for PostgreSQL, behind the existing search endpoint contract. | PROPOSAL | catalog-api, DB migrations | M | High | Medium (dialect parity, FR-015 schema documentation) |
-| T4-C | Optional vector search with a small local multilingual model and RRF fusion, off by default. | PROPOSAL (EMERGING) | catalog-api, optional sidecar | L | Medium-High | High (model size, CPU on small NAS, index rebuild on model change as Immich warns) |
-| T4-D | Structured natural-language queries ("1080p comedies from the 90s I have not watched") implemented as filter extraction plus lexical, not as an LLM requirement. LLM-based query rewriting is SPECULATIVE for this product. | PROPOSAL | catalog-api, clients | M | Medium | Medium |
-| T4-E | On-device search: Android and TV can hold a compact local lexical index (SQLite FTS5 is available in Android's SQLite, UNCONFIRMED for the exact build used) for offline browsing; embeddings stay server-side. | PROPOSAL | android, androidtv | M | Medium | Medium |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T4-A | Measure the current `LIKE` search on a representative catalogue and record a baseline (SC-011 requires one for search). | R-ADJ | catalog-api, doc 14 | S | High | Low | n/a: a measurement (SC-011) |
+| T4-B | Lexical upgrade: FTS5 (external-content, trigram or unicode61 plus porter) for SQLite, `tsvector` plus GIN for PostgreSQL, behind the existing search endpoint contract. | PROPOSAL | catalog-api, DB migrations | M | High | Medium (dialect parity, FR-015 schema documentation) | PROVEN (4.1, 4.5) |
+| T4-C | Optional vector search with a small local multilingual model and RRF fusion, off by default. | PROPOSAL (EMERGING) | catalog-api, optional sidecar | L | Medium-High | High (model size, CPU on small NAS, index rebuild on model change as Immich warns) | EMERGING (4.2, 4.6) |
+| T4-D | Structured natural-language queries ("1080p comedies from the 90s I have not watched") implemented as filter extraction plus lexical, not as an LLM requirement. LLM-based query rewriting is SPECULATIVE for this product. | PROPOSAL | catalog-api, clients | M | Medium | Medium | SPECULATIVE (no source for filter extraction from natural language) |
+| T4-E | On-device search: Android and TV can hold a compact local lexical index (SQLite FTS5 is available in Android's SQLite, UNCONFIRMED for the exact build used) for offline browsing; embeddings stay server-side. | PROPOSAL | android, androidtv | M | Medium | Medium | UNCONFIRMED (FTS5 in the Android SQLite build) |
 
 On-device versus server: server-side keeps one index, one model version and lets weak clients stay thin; on-device gives offline search and instant typing. Peers (Immich) keep embeddings on the server. The balanced position supported by the evidence is server-side hybrid plus an optional client lexical cache.
 
@@ -279,12 +350,12 @@ Catalogizer's per-user state is small and mostly monotone or last-writer-wins fr
 
 Repository grounding (doc 01): `/sync/conflicts` is an inline closure returning a static empty collection (`catalog-api/main.go:1698-1775`), and the README advertises "Cloud Storage Sync" with S3 and GCS. Whether a real client sync protocol exists is UNCONFIRMED and belongs to documents 07 to 10. Tag: `R-ADJ` for finding the stub, `PROPOSAL` for the event-log protocol.
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T5-A | Per-user state event log with per-field merge rules and idempotent replay (idempotency key per event). | PROPOSAL | catalog-api, android, androidtv, web, desktop | L | High | Medium |
-| T5-B | Offline queue on mobile and TV (Room is already a dependency per doc 01) that uploads when the server is reachable and shows sync status. | PROPOSAL | android, androidtv | M | High | Medium |
-| T5-C | General CRDT adoption (Automerge or cr-sqlite) | PROPOSAL (SPECULATIVE; not recommended for v1 given the essay's own limits) | - | L | Low | High |
-| T5-D | Playback handoff ("continue on TV") via the existing WebSocket channel, provided that channel is first authenticated (doc 01 notes `/ws` has no token handling; this is an audit item, not a feature). | R-ADJ then PROPOSAL | catalog-api, clients | M | Medium | Medium |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T5-A | Per-user state event log with per-field merge rules and idempotent replay (idempotency key per event). | PROPOSAL | catalog-api, android, androidtv, web, desktop | L | High | Medium | EMERGING (5.3) |
+| T5-B | Offline queue on mobile and TV (Room is already a dependency per doc 01) that uploads when the server is reachable and shows sync status. | PROPOSAL | android, androidtv | M | High | Medium | EMERGING (5.3) |
+| T5-C | General CRDT adoption (Automerge or cr-sqlite) | PROPOSAL (SPECULATIVE; not recommended for v1 given the essay's own limits) | - | L | Low | High | SPECULATIVE (5.1, 5.2) |
+| T5-D | Playback handoff ("continue on TV") via the existing WebSocket channel, provided that channel is first authenticated (doc 01 notes `/ws` has no token handling; this is an audit item, not a feature). | R-ADJ then PROPOSAL | catalog-api, clients | M | Medium | Medium | PROVEN resume pattern (5.4); prerequisite is a repository defect (`/ws`) |
 
 ## 8. Theme 6 - Privacy-first and security-first design
 
@@ -303,14 +374,14 @@ Repository grounding (doc 01 and direct reads): JWT HS256 with 24 h default expi
 
 ### 8.2 Candidate improvements
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T6-A | Authenticate `/ws` and restrict origins. Fix belongs to the backend audit (document 07). | R-ADJ | catalog-api, catalog-web, clients | S-M | High | Low |
-| T6-B | Pin signing algorithm explicitly in JWT validation and test that a token with a different `alg` is rejected (a negative test satisfying FR-010's break-it requirement). | R-ADJ | catalog-api | S | Medium | Low |
-| T6-C | Passkeys as an optional login method; keep password plus TOTP as fallback; WebAuthn credentials table with backup-eligibility flags. | PROPOSAL | catalog-api, catalog-web, desktop (webview support UNCONFIRMED), android (Credential Manager, UNCONFIRMED) | L | High | Medium |
-| T6-D | Key management for SQLCipher: key from an OS keystore or a file with mode 0600 outside the database directory, never a plain env var in compose; documented key-rotation (rekey) and backup of the key separately. | PROPOSAL (partly R-ADJ if the audit finds a hard-coded or missing key) | catalog-api, ops docs | M | High | Medium (loss of key means loss of data) |
-| T6-E | E2E-encrypted cloud sync using `age` or secretstream with client-held keys, so S3 or GCS only ever store ciphertext. Requires a key-recovery story. | PROPOSAL | catalog-api sync service | L | High | High |
-| T6-F | Zero-trust LAN posture: default to authenticated everything (including `/discovery` and image routes after review), TLS everywhere with real certificates option (self-signed HTTPS exists per doc 01), per-device tokens revocable from the UI. | PROPOSAL | catalog-api, clients | M | Medium | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T6-A | Authenticate `/ws` and restrict origins. Fix belongs to the backend audit (document 07). | R-ADJ | catalog-api, catalog-web, clients | S-M | High | Low | n/a: repository defect (doc 01 §3.1) |
+| T6-B | Pin signing algorithm explicitly in JWT validation and test that a token with a different `alg` is rejected (a negative test satisfying FR-010's break-it requirement). | R-ADJ | catalog-api | S | Medium | Low | PROVEN (6.5, secondary) |
+| T6-C | Passkeys as an optional login method; keep password plus TOTP as fallback; WebAuthn credentials table with backup-eligibility flags. | PROPOSAL | catalog-api, catalog-web, desktop (webview support UNCONFIRMED), android (Credential Manager, UNCONFIRMED) | L | High | Medium | PROVEN standard (6.1, 6.2); UNCONFIRMED client support |
+| T6-D | Key management for SQLCipher: key from an OS keystore or a file with mode 0600 outside the database directory, never a plain env var in compose; documented key-rotation (rekey) and backup of the key separately. | PROPOSAL (partly R-ADJ if the audit finds a hard-coded or missing key) | catalog-api, ops docs | M | High | Medium (loss of key means loss of data) | PROVEN mechanism (6.3); UNCONFIRMED version defaults |
+| T6-E | E2E-encrypted cloud sync using `age` or secretstream with client-held keys, so S3 or GCS only ever store ciphertext. Requires a key-recovery story. | PROPOSAL | catalog-api sync service | L | High | High | PROVEN building blocks (6.4); SPECULATIVE product |
+| T6-F | Zero-trust LAN posture: default to authenticated everything (including `/discovery` and image routes after review), TLS everywhere with real certificates option (self-signed HTTPS exists per doc 01), per-device tokens revocable from the UI. | PROPOSAL | catalog-api, clients | M | Medium | Low | SPECULATIVE (design position; revocation guidance 6.5) |
 
 Anti-pattern warning supported by section 3.1, finding 1.2: forcing a vendor account for local playback is the stated reason users abandon Plex; any passkey or cloud feature must stay optional.
 
@@ -346,13 +417,13 @@ flowchart TB
 
 A scan report per run, machine readable and human readable, with: sources and strategy used, counts (seen, new, changed, missing, errors by class), timings per phase, slowest directories, matches auto-accepted versus queued with reasons, provider calls and cache hit rates, and a "why was this file skipped" lookup by path. This is a direct answer to complaint class 7.4 and doubles as audit evidence format (FR-022 favours machine-produced evidence).
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T7-A | Scan report artefact (JSON plus rendered view). | PROPOSAL | catalog-api, catalog-web | M | High | Low |
-| T7-B | Scheduled integrity check and derived-index rebuild. | PROPOSAL | catalog-api | M | Medium | Low |
-| T7-C | Verified-restore backup job (restore into a scratch DB and compare a marker or checksum), with its result exposed in health. | PROPOSAL; backup procedure itself is R-ADJ (see T3-F) | scripts, catalog-api | M | High | Low |
-| T7-D | Make `/health/deep` report component state (database, providers, each source online or offline, queue depth) rather than a single boolean; verify what it reports today. | R-ADJ | catalog-api | S | Medium | Low |
-| T7-E | Trace a scan end to end with OpenTelemetry spans per source and per phase. | PROPOSAL | catalog-api | M | Medium | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T7-A | Scan report artefact (JSON plus rendered view). | PROPOSAL | catalog-api, catalog-web | M | High | Low | SPECULATIVE (the need is PROVEN as a complaint, 7.4) |
+| T7-B | Scheduled integrity check and derived-index rebuild. | PROPOSAL | catalog-api | M | Medium | Low | PROVEN (7.2) |
+| T7-C | Verified-restore backup job (restore into a scratch DB and compare a marker or checksum), with its result exposed in health. | PROPOSAL; backup procedure itself is R-ADJ (see T3-F) | scripts, catalog-api | M | High | Low | PROVEN restore (7.3); UNCONFIRMED marker-row verify |
+| T7-D | Make `/health/deep` report component state (database, providers, each source online or offline, queue depth) rather than a single boolean; verify what it reports today. | R-ADJ | catalog-api | S | Medium | Low | n/a: repository verification item (doc 01) |
+| T7-E | Trace a scan end to end with OpenTelemetry spans per source and per phase. | PROPOSAL | catalog-api | M | Medium | Low | PROVEN (7.1) |
 
 ## 10. Theme 8 - Extensibility
 
@@ -369,12 +440,12 @@ Repository grounding: handlers already carry Swagger-style annotations (`// @Rou
 
 ### 10.2 Candidates
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T8-A | Make OpenAPI the single source of truth, generate the TS client, Android Retrofit interfaces (or validate them) and run a contract test on both sides. Directly serves FR-016. Whether to generate server stubs (oapi-codegen strict mode) or only validate is a design decision for document 07. | R-ADJ (contract testing) / PROPOSAL (server-stub generation) | catalog-api, `catalogizer-api-client`, android, androidtv, web | M-L | High | Medium |
-| T8-B | Outbound webhooks (scan complete, item added, match needs review) with Standard Webhooks signing, retries and idempotency ids. | PROPOSAL | catalog-api | M | Medium | Low |
-| T8-C | Plugin system. Prefer out-of-process plugins (subprocess or HTTP, declared capabilities, per-plugin token) over in-process code loading, because Jellyfin's in-process model grants full privilege. Metadata-provider plugins are the most requested extension point in peers (inference from peer ecosystem, not a counted statistic). | PROPOSAL (EMERGING for out-of-process) | catalog-api | L | Medium-High | High (security surface, support burden) |
-| T8-D | Config-as-code export and import of quality profiles, naming rules and source definitions (versioned JSON or YAML). | PROPOSAL | catalog-api | M | Medium | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T8-A | Make OpenAPI the single source of truth, generate the TS client, Android Retrofit interfaces (or validate them) and run a contract test on both sides. Directly serves FR-016. Whether to generate server stubs (oapi-codegen strict mode) or only validate is a design decision for document 07. | R-ADJ (contract testing) / PROPOSAL (server-stub generation) | catalog-api, `catalogizer-api-client`, android, androidtv, web | M-L | High | Medium | PROVEN (8.3) |
+| T8-B | Outbound webhooks (scan complete, item added, match needs review) with Standard Webhooks signing, retries and idempotency ids. | PROPOSAL | catalog-api | M | Medium | Low | PROVEN practice; UNCONFIRMED spec text (8.2) |
+| T8-C | Plugin system. Prefer out-of-process plugins (subprocess or HTTP, declared capabilities, per-plugin token) over in-process code loading, because Jellyfin's in-process model grants full privilege. Metadata-provider plugins are the most requested extension point in peers (inference from peer ecosystem, not a counted statistic). | PROPOSAL (EMERGING for out-of-process) | catalog-api | L | Medium-High | High (security surface, support burden) | EMERGING out-of-process (8.1) |
+| T8-D | Config-as-code export and import of quality profiles, naming rules and source definitions (versioned JSON or YAML). | PROPOSAL | catalog-api | M | Medium | Low | PROVEN (8.4) |
 
 ## 11. Theme 9 - Accessibility, localisation and 10-foot UX
 
@@ -391,12 +462,12 @@ Repository grounding (doc 01): the Android TV app declares `androidx.tv:tv-found
 
 ### 11.2 Candidates
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T9-A | Accessibility audit checklist per client built from WCAG 2.2 AA (target size, focus not obscured, dragging alternative, consistent help) and from the TV guidance; evidence produced by automated tools plus manual keyboard and D-pad walkthroughs. | R-ADJ (inputs for documents 08, 09, 10) | web, desktop, android, androidtv | M | High | Low |
-| T9-B | Focus-order and focus-restoration tests for TV (a test that fails when focus is lost after returning from a detail screen). | R-ADJ | androidtv | M | High | Low |
-| T9-C | Single source of translatable strings with ICU plural syntax and a translation workflow (Weblate or equivalent), pseudo-localisation tests that catch hard-coded strings and layout overflow. | PROPOSAL | all clients, backend error messages | L | Medium | Low |
-| T9-D | TV-first browsing patterns: continue-watching row first, recently added, per-profile shelves, minimal typing (voice or on-device keyboard fallback, plus search suggestions). | PROPOSAL | androidtv | M | High | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T9-A | Accessibility audit checklist per client built from WCAG 2.2 AA (target size, focus not obscured, dragging alternative, consistent help) and from the TV guidance; evidence produced by automated tools plus manual keyboard and D-pad walkthroughs. | R-ADJ (inputs for documents 08, 09, 10) | web, desktop, android, androidtv | M | High | Low | PROVEN (9.1, 9.2) |
+| T9-B | Focus-order and focus-restoration tests for TV (a test that fails when focus is lost after returning from a detail screen). | R-ADJ | androidtv | M | High | Low | PROVEN (9.3, per source) |
+| T9-C | Single source of translatable strings with ICU plural syntax and a translation workflow (Weblate or equivalent), pseudo-localisation tests that catch hard-coded strings and layout overflow. | PROPOSAL | all clients, backend error messages | L | Medium | Low | PROVEN (9.4, secondary) |
+| T9-D | TV-first browsing patterns: continue-watching row first, recently added, per-profile shelves, minimal typing (voice or on-device keyboard fallback, plus search suggestions). | PROPOSAL | androidtv | M | High | Low | PROVEN (9.2) |
 
 ## 12. Theme 10 - Packaging and operations
 
@@ -413,12 +484,12 @@ Repository grounding (doc 01): compose-based deployment exists, `config/systemd/
 
 ### 12.2 Candidates
 
-| ID | Candidate | Tag | Touches | Effort | Impact | Risk |
-|---|---|---|---|---|---|---|
-| T10-A | Provide Quadlet files for rootless operation as a documented deployment option. | PROPOSAL (documentation of an existing rule's practice is R-ADJ) | `deployment/`, docs | S | Medium | Low |
-| T10-B | Multi-arch OCI images with SBOM and signed provenance, targeting SLSA L2. | PROPOSAL | `Build/`, release scripts | M | Medium | Medium |
-| T10-C | Upgrade safety: pre-upgrade verified backup, migration dry-run, schema version guard that refuses to start on a newer-than-known DB, and an automatic rollback path. Migrations folder holds two files (`catalog-api/migrations/005_*.sql`, `006_*.sql`) while doc 01 section 6 discusses dialects and an unused root `database/schema_v3_multiuser.sql`; migration source of truth is for document 07. | R-ADJ (finding) / PROPOSAL (guard feature) | catalog-api | M | High | Medium |
-| T10-D | A restore drill documented and scripted (extends `docs/DISASTER_RECOVERY.md` which exists). | R-ADJ | docs, scripts | S | High | Low |
+| ID | Candidate | Tag | Touches | Effort | Impact | Risk | Evidence label (finding) |
+|---|---|---|---|---|---|---|---|
+| T10-A | Provide Quadlet files for rootless operation as a documented deployment option. | PROPOSAL (documentation of an existing rule's practice is R-ADJ) | `deployment/`, docs | S | Medium | Low | PROVEN (10.1, secondary) |
+| T10-B | Multi-arch OCI images with SBOM and signed provenance, targeting SLSA L2. | PROPOSAL | `Build/`, release scripts | M | Medium | Medium | PROVEN (10.2) |
+| T10-C | Upgrade safety: pre-upgrade verified backup, migration dry-run, schema version guard that refuses to start on a newer-than-known DB, and an automatic rollback path. Migrations folder holds two files (`catalog-api/migrations/005_*.sql`, `006_*.sql`) while doc 01 section 6 discusses dialects and an unused root `database/schema_v3_multiuser.sql`; migration source of truth is for document 07. | R-ADJ (finding) / PROPOSAL (guard feature) | catalog-api | M | High | Medium | PROVEN backup step (10.3); SPECULATIVE guard and rollback |
+| T10-D | A restore drill documented and scripted (extends `docs/DISASTER_RECOVERY.md` which exists). | R-ADJ | docs, scripts | S | High | Low | PROVEN (10.3, 10.4) |
 
 ## 13. Ranked game-changer candidates with falsifiable experiments
 

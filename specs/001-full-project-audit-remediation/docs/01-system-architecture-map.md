@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: new section 3.8 lists the root configuration files and tool directories that the inventory omitted (`.github/`, `.claude/`, `.codegraph/`, `.implementation/`, `.remember/`, `templates/`, `.pre-commit-config.yaml`, `docker-compose.dev.override.yml`, `submodule-analysis.txt`, `LICENSE`), each with a disposition; `\|` escaped inside table cells so every table row has its header's column count) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | Factual map of the whole Catalogizer system as it exists in the tree on `main` |
 | Method | Read-only inspection: `git ls-files`, `git submodule status --recursive`, targeted file reads, two small static-parse scripts (route extraction and client-to-route comparison). No builds, no test runs, no network calls. Baseline commit `e4852ce7`. |
@@ -23,6 +23,7 @@
    - 3.5 catalogizer-android and catalogizer-androidtv
    - 3.6 catalogizer-api-client (TypeScript library)
    - 3.7 Website, Build, challenges, qa-ai-system, tests, OCU-CUDA-Sidecar
+   - 3.8 Root configuration files and tool directories (revision 2)
 4. Submodules (44 declared, 53 nested, one vendored directory)
 5. Communication paths
 6. Data stores, dialects and migrations
@@ -108,7 +109,7 @@ Dotted edges are build-time or file-level relationships. The wizard-to-API edge 
 
 | Path | Tracked files | Main languages (file counts) |
 |---|---:|---|
-| `catalog-api/` | 831 | Go 742 (of which 372 are `_test.go`; 318,817 Go lines, measured with `git ls-files catalog-api | grep '\.go$' | xargs cat | wc -l`), SQL 21, sh 11, md 23 |
+| `catalog-api/` | 831 | Go 742 (of which 372 are `_test.go`; 318,817 Go lines, measured with `git ls-files catalog-api \| grep '\.go$' \| xargs cat \| wc -l`), SQL 21, sh 11, md 23 |
 | `catalog-web/` | 348 | tsx 192, ts 125 (173 test files, 144 non-test ts/tsx) |
 | `catalogizer-desktop/` | 95 | ts 32, tsx 29, rs 4 |
 | `installer-wizard/` | 92 | tsx 41, ts 11, rs 8 |
@@ -159,7 +160,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Only `LocalScanner` and `SMBScanner` have implemented `scanDirectory` logic (lines 544-700) | same file |
 | `filesystem/` has real client files for FTP, NFS (plus darwin and windows variants), SMB, WebDAV and local | `catalog-api/filesystem/*.go` |
 | `internal/media/` (`manager.go` with `NewMediaManager`, `realtime/` watchers, `detector/`, `analyzer/`, `database/` with its own `schema.sql` and a password-keyed SQLite DSN) is only partly unwired. `internal/media/models` has 9 production importers outside `internal/media/` (handlers, repository, `internal/services/aggregation_service.go`, `internal/handlers/media.go`) and `internal/media/providers` is imported by `main.go` and `handlers/media_entity_handler.go`. The root package, `manager`, `realtime` and `detector` have no non-test importer outside `internal/media/`; `analyzer` and `database` are imported outside it only by `internal/handlers/media.go` (`MediaHandler`). `NewMediaManager` and `internal/handlers.NewMediaHandler` have no call site outside tests | `grep` of imports, appendix A.7 |
-| `/ws` is registered on the bare `router`, outside the `api` JWT group, and `handlers/websocket_handler.go` contains no token, auth or jwt handling (case-insensitive grep for `token|auth|jwt` returns no lines); `CheckOrigin` (line 124) returns `true`. The comment at main.go:1083 says "auth via query parameter" | main.go:1083-1084; `grep -Ei 'token|auth|jwt'` over the handler returns no lines |
+| `/ws` is registered on the bare `router`, outside the `api` JWT group, and `handlers/websocket_handler.go` contains no token, auth or jwt handling (case-insensitive grep for `token\|auth\|jwt` returns no lines); `CheckOrigin` (line 124) returns `true`. The comment at main.go:1083 says "auth via query parameter" | main.go:1083-1084; `grep -Ei 'token\|auth\|jwt'` over the handler returns no lines |
 | Several `/api/v1` routes are inline closures returning static empty collections (for example `/sync/conflicts` returns `{"conflicts": [], "count": 0}`) | main.go:1698-1775 |
 | `Alt-Svc` header middleware is added with `router.Use` at main.go:1838, after route registration | VERIFIED text; runtime effect UNCONFIRMED (Gin applies `Use` only to routes added after it) |
 
@@ -173,7 +174,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | HTTP client | `src/lib/api.ts`: axios, `baseURL = ${VITE_API_BASE_URL}/api/v1`, 10 s timeout, token read from `localStorage['auth_token']`, 401 outside auth endpoints clears storage and redirects to `/login` | api.ts:11-52 |
 | API modules | `adminApi, analyticsApi, assetApi, collectionsApi, conversionApi, downloadApi, favoritesApi, identitiesApi, mediaApi, playbackApi, playlistsApi, recommendationsApi, reportsApi, scansApi, smbApi, statsApi, subtitleApi, syncApi` | `src/lib/` |
 | WebSocket | `src/lib/websocket.ts` wraps `@vasic-digital/websocket-client`; URL `VITE_WS_URL` or same-origin `/ws`, token appended as `?token=` | websocket.ts:29,58-59 |
-| Dev proxy | Vite dev server port 3000, proxies `/api` to `http://${VITE_API_HOST|localhost}:${port from ../catalog-api/.service-port or 8080}` | vite.config.ts:7-60 |
+| Dev proxy | Vite dev server port 3000, proxies `/api` to `http://${VITE_API_HOST\|localhost}:${port from ../catalog-api/.service-port or 8080}` | vite.config.ts:7-60 |
 | Production serving | `catalog-web/Dockerfile`: `node:20-alpine` build, `nginx:alpine` runtime on port 3000; `catalog-web/nginx.conf` proxies `/api` and `/ws` to `host.containers.internal:8080` | Dockerfile:1,64-79; nginx.conf:15-28 |
 | Shared submodules | 9 `file:` dependencies: auth_context_react, catalogizer_api_client_ts, collection_manager_react, dashboard_analytics_react, media_browser_react, media_player_react, media_types_ts, ui_components_react, websocket_client_ts. Source imports found for 8 of them; the api-client submodule appears only as a type re-export in `src/lib/module-registry.ts` and a `declare module` stub in `src/types/modules.d.ts` | grep over `src/` |
 | Tests | 173 tracked test or spec files; Vitest (jsdom) for unit tests, Playwright specs under `catalog-web/e2e/` | `git ls-files` |
@@ -226,7 +227,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 |---|---|---|
 | Package | `@catalogizer/api-client` 1.0.0, `main dist/index.js`, built with `tsc`, tested with Vitest | `package.json` |
 | Source | `src/index.ts`, `src/services/*` (including `AuthService.ts`, `SMBService.ts`), `src/utils/http.ts` (axios), `src/types` | VERIFIED |
-| Tracked build output | 28 files under `dist/` and 5 under `releases/` are tracked in git | `git ls-files | grep -c` |
+| Tracked build output | 28 files under `dist/` and 5 under `releases/` are tracked in git | `git ls-files \| grep -c` |
 | Consumers | Only one `package.json` depends on `@catalogizer/api-client`: `installer-wizard/package.json:26` (`"file:../catalogizer-api-client"`), and no import of it was found under `installer-wizard/src`. Other mentions are in `build-scripts/build-all.sh`, `README.md` and `Website/download.md`. `catalog-web` depends on a different package, `@vasic-digital/catalogizer-api-client`, from the submodule `submodules/catalogizer_api_client_ts` | grep over package manifests |
 | Route agreement | Of 53 distinct (method, path) pairs extracted, 26 have no matching static route in `catalog-api/main.go` (for example `/smb/configs`, `/auth/password`, `/auth/api-keys`, `/info`) | STATIC, scratchpad `cmp2.py` |
 
@@ -249,6 +250,23 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | `deploy/`, `deployment/` | `deploy/`: Firebase distribution note, thinker.local migration note, `infra-compose*.yml`. `deployment/`: `amber-up.sh`, `thinker-up.sh`, a compose file and override, three `deploy-*.sh` scripts | VERIFIED listing |
 | `versions.json` | Build-framework state: global `2.3.0` build 25, per-component last build, source hash and commit (dated 2026-04-28) | VERIFIED. Application manifests say 2.4.0 |
 
+### 3.8 Root configuration files and tool directories (revision 2)
+
+These root entries were missing from the inventory above. Each was observed on 2026-10-03 by a directory listing, `git ls-files` and `git check-ignore`, and file reads. The disposition column says which work package takes it: docs/21 WP-20 enumerates every source of candidate issues for the register, and WP-37 is the documentation baseline whose disposition list (document 13 §5) records keep, update or retire for every document. Nothing here is removed by this plan; a removal is an owner decision (11.4.122).
+
+| Path | Tracked state | What it is | Disposition |
+|---|---|---|---|
+| `.github/` | 2 tracked files: `FUNDING.yml`, `workflows/README.md` | sponsorship file and a README; no workflow file, so no pipeline (11.4.156) | WP-37 lists the README; document 16 §16.1 keeps the "no workflow file" condition as a check |
+| `.claude/` | ignored by the root `.gitignore`; holds `skills/` | local agent skills (Spec Kit commands and others); the constitution post-update hook can write here (document 11 §7.2) | not a product source; reviewed only when the hook changes it (document 11 §7.4 step 4); document 13 classes its Markdown as governance and agent files |
+| `.codegraph/` | only `.codegraph/.gitignore` is tracked; `codegraph.db` is ignored | the local CodeGraph index (section 13) | index state, not a source; scope and health are WP-02 (document 02) |
+| `.implementation/` | 6 tracked files: two ticket-validation reports dated 2026-04-17 and four empty progress markers (`backend_tests_fixed`, `cicd_configured`, `documentation_started`, `frontend_tests_fixed`, 0 bytes each) | the report that bulk-closed 460 HelixQA tickets (document 03 F-5) and status markers that carry no content | WP-20 source S-24 (document 03 §5.16); the four markers are evidence-free status claims and are imported as such, never as facts (`cicd_configured` would also conflict with 11.4.156 if it described an active pipeline, `UNCONFIRMED:` what it referred to) |
+| `.remember/` | not tracked; ignored by its own `.gitignore` (`*`) | local agent memory files (`now.md`, dated `today-*.md`, `logs/`, `tmp/`) | not a product source and not audited; never committed |
+| `templates/` | 4 tracked Markdown files: `AI_TASK_ASSIGNMENT.md`, `BUG_RETROSPECTIVE.md`, `LLM_JUDGE_PREMERGE.md`, `VERIFICATION_COMMANDS.md` | process templates; `LLM_JUDGE_PREMERGE.md` is read by `scripts/hooks/pre-push-gate.sh` (lines 10 and 102) | WP-37 (document 13 §5 keeps them and documents them in §10.2); the LLM-judge use stays informational, never a gate (document 16 §12.7, 11.4.269) |
+| `.pre-commit-config.yaml` | tracked (last change `d72f14ce`, 2026-04-21) | `pre-commit` hook set: whitespace and YAML/JSON checks, `detect-private-key`, `detect-secrets` with a `.secrets.baseline` that does not exist, Go fmt/vet/imports/tests, `gosec`, ESLint, Prettier, the repository's `no-false-positive-log.sh`; not installed (the `pre-commit` tool is not on the host) | document 16 §3.4 and §16.1 map its checks to commit-push stages; document 15 B29 records the inactive secret checks; WP-20 records it as a source (its presence implies checks that never run) |
+| `docker-compose.dev.override.yml` | tracked (last change `bbba26a0`, 2026-04-11), 21 lines | host-port overrides for postgres (5435), redis (6381) and api (8090), plus `POSTGRES_PORT`, `REDIS_PORT`, `API_PORT` for the api | already in the compose table of section 11.2; its environment names are part of O-06; document 16 §16.1 |
+| `submodule-analysis.txt` | tracked (last change `660a82be`, 2026-04-14), 368 lines | a generated snapshot headed "detailed commit history for all 41 submodules" (2026-04-14T13:51:29Z); `.gitmodules` now declares 44 | WP-20 source of historical state (stale by count); WP-37 disposition candidate with the owner deciding keep, regenerate or retire (11.4.122, 11.4.124) |
+| `LICENSE` | tracked (last change `80ae1d8d`, 2025-06-20) | the Apache License 2.0 text | input to the licence workstream of document 15 §10.5 (docs/21 WP-57 and WP-35); README linkage checked by document 13 |
+
 ## 4. Submodules
 
 ### 4.1 Counts
@@ -256,7 +274,7 @@ Note: the `catalog-api` Go file count (742) and line count (318,817) were measur
 | Quantity | Value | Command |
 |---|---:|---|
 | Entries in `.gitmodules` | 44 | `grep -c path .gitmodules` |
-| Gitlink entries in the index under `submodules/` | 44 | `git ls-files -s submodules | awk '$1==160000'` |
+| Gitlink entries in the index under `submodules/` | 44 | `git ls-files -s submodules \| awk '$1==160000'` |
 | Directories under `submodules/` | 45 | `ls submodules` |
 | Nested submodules, all depths | 53 (24 under `constitution`, 29 under `helix_qa`) | `git submodule status --recursive` |
 | Total recursive entries | 97 | same |

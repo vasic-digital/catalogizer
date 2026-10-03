@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: pipe characters inside quoted text and code spans of five table rows escaped with a backslash; the section 7.3 "Compatibility" row gains its missing Source cell) |
 | Feature | specs/001-full-project-audit-remediation |
 | Supersedes in part | `docs/17-research-engineering-practices.md` (sections it tagged UNCONFIRMED or SINGLE-SOURCE) |
 | Traceability | FR-010, FR-015, FR-016, FR-021, FR-022, FR-025, SC-003, SC-011 (requirement ids as used in doc 17); constitution anchors §11.4.156, §11.4.161, §11.4.173, §11.4.201, §11.4.240, §11.4.246 |
@@ -484,11 +484,11 @@ Doc 10 found that the phone app sets `compileSdk = 35` while using AGP 8.2.2, Gr
 | Question | Answer | Quote [raw] |
 |---|---|---|
 | Does AGP 8.2 support compileSdk 35? | **No.** | "The maximum API level that Android Gradle plugin 8.2 supports is API level 34." [S41] |
-| Minimum AGP for API 35? | 8.6.0. | Table "Minimum versions of tools for Android API level": "35 | Koala Feature Drop 2024.2.1 | 8.6.0". Also 34 needs 8.1.1, 36 needs 8.9.1, 36.1 needs 8.13.0, 37.0 needs 9.1.1. [S42] |
+| Minimum AGP for API 35? | 8.6.0. | Table "Minimum versions of tools for Android API level": "35 \| Koala Feature Drop 2024.2.1 \| 8.6.0". Also 34 needs 8.1.1, 36 needs 8.9.1, 36.1 needs 8.13.0, 37.0 needs 9.1.1. [S42] |
 | AGP 8.6 maximum API? | 35. | "The maximum API level that Android Gradle plugin 8.6 supports is API level 35." [S43] |
 | JDK AGP requires? | 17 minimum for 8.2, 8.6, 8.7 (and the current 9.4 notes). | Compatibility tables: JDK minimum 17, default 17. [S41, S43, S44, S45] |
-| Gradle AGP 8.2 needs? | 8.2 minimum; wrapper 8.11.1 satisfies it. | "Gradle | 8.2 | 8.2" [S41]; full table: 8.6 needs 8.7, 8.7 needs 8.9, 8.9 and 8.10 need 8.11.1, 8.11 to 8.13 need 8.13, 9.0 needs 9.1.0, 9.4 needs 9.6.0. [S42] |
-| Is JDK 21 usable with AGP 8.2.2? | Gradle runs on 21 from Gradle 8.5; AGP 8.2.1 fixed an issue titled "Android Gradle Plugin failed with JavaVersion.VERSION_11 and OpenJDK 21 ea" (#294137077). So 8.2.2 includes that fix. The AGP 8.2 notes require 17 as a *minimum*, not a maximum. | "Issue #294137077 Android Gradle Plugin failed with JavaVersion.VERSION_11 and OpenJDK 21 ea" [S41]; Gradle Java compatibility table row "21 | 8.4 toolchains | 8.5 and after" [S46] |
+| Gradle AGP 8.2 needs? | 8.2 minimum; wrapper 8.11.1 satisfies it. | "Gradle \| 8.2 \| 8.2" [S41]; full table: 8.6 needs 8.7, 8.7 needs 8.9, 8.9 and 8.10 need 8.11.1, 8.11 to 8.13 need 8.13, 9.0 needs 9.1.0, 9.4 needs 9.6.0. [S42] |
+| Is JDK 21 usable with AGP 8.2.2? | Gradle runs on 21 from Gradle 8.5; AGP 8.2.1 fixed an issue titled "Android Gradle Plugin failed with JavaVersion.VERSION_11 and OpenJDK 21 ea" (#294137077). So 8.2.2 includes that fix. The AGP 8.2 notes require 17 as a *minimum*, not a maximum. | "Issue #294137077 Android Gradle Plugin failed with JavaVersion.VERSION_11 and OpenJDK 21 ea" [S41]; Gradle Java compatibility table row "21 \| 8.4 toolchains \| 8.5 and after" [S46] |
 | Which JDK does Gradle itself accept now? | "A JVM version between 17 and 27 is required to execute Gradle." (current docs, Gradle 9.8 era) | [S46] |
 | `org.gradle.java.version`? | Not in the documented properties: Gradle 8.11.1's build-environment page documents `org.gradle.java.home` ("Specifies the Java home for the Gradle build process") and installation-discovery properties; no `org.gradle.java.version`. The repository sets it (`catalogizer-android/gradle.properties:14`). | [S47 raw] |
 | What is the current AGP? | AGP 9.4 stable, requiring Gradle 9.6.0, Kotlin plugin example 2.4.10, JDK 17. The page also states a "time-based compatibility policy": each Android Studio version supports AGP versions released within the previous 3 years. | [S42 raw] |
@@ -519,7 +519,7 @@ Lint is part of AGP. The Gradle DSL reference [S48 raw] confirms the options rel
 | detekt stable | v1.23.8, 2025-02-20, "built against Kotlin 2.0.21"; its dependency updates include "AGP to v8.8.1" and "Gradle to v8.12.1". | [raw] GitHub release notes [S49] |
 | detekt 2.0 | Seven pre-release tags v2.0.0-alpha.0 to alpha.6 (latest 2026-08-04); the README says "detekt 2.0 is recommended for its new features, but it is still available only as a pre-release. Use the stable 1.x setup below if your project cannot adopt an alpha release yet." Plugin id `dev.detekt`. | [raw] [S50][api] |
 | SARIF | Report formats HTML, Markdown, SARIF, XML (Checkstyle); `sarif.required.set(true)`. | [raw] [S50] |
-| Compatibility | detekt 1.23.8 is compiled against Kotlin 2.0.21; the Android modules use Kotlin 1.9.22 (doc 10). Whether detekt 1.23.8 analyses Kotlin 1.9.22 sources cleanly is UNCONFIRMED; detekt warns about Kotlin version mismatch in its own documentation (not read this pass). |
+| Compatibility | detekt 1.23.8 is compiled against Kotlin 2.0.21; the Android modules use Kotlin 1.9.22 (doc 10). Whether detekt 1.23.8 analyses Kotlin 1.9.22 sources cleanly is UNCONFIRMED; detekt warns about Kotlin version mismatch in its own documentation (not read this pass). | [raw] [S49]; doc 10 |
 | ktlint | `build-release.sh` invokes `ktlintCheck`, which no plugin provides (doc 10 finding H10-29). `JLLeitschuh/ktlint-gradle` v14.2.0 (2026-03-12) and `diffplug/spotless` are maintained [api]. A choice is needed; not recommended to add before the toolchain is settled. | [api] |
 
 Recommendation: adopt detekt **1.23.8 stable** only after the AGP/Kotlin decision (7.1), because a toolchain upgrade changes which detekt line fits; take SARIF output.
@@ -555,7 +555,7 @@ Consequence: "the schema" has no single source of truth; FR-015 (schema document
 |---|---|---|---|---|---|
 | **tbls** (k1LoW) | `tbls doc <dsn>`; Docker image `ghcr.io/k1low/tbls`; `tbls diff` "shows the difference between database schema and generated document" (and diff between two databases); `tbls lint` checks rules; `tbls coverage` measures document coverage (descriptions, comments); `--sort` helps column ordering; DSN forms `postgres://...` and `sqlite:///path/to/dbname.db`; MIT; last push 2026-09-30 [raw README S53][api]. `tbls diff` "shows the difference Markdown documents only" (the vendor's own caveat). | Image runs with Podman (no daemon required to *run* it; no privileged socket) | Yes | Yes | **Best fit for FR-015**: generated Markdown plus a diff gate; Mermaid ER output not read this pass. |
 | **SchemaSpy** | Java tool; "Out of the box, SchemaSpy supports" many databases and "As long as your database has a JDBC driver you can" use it; JAR or Docker image; LGPL-3.0; last push 2026-03-05, i.e. a 7-month gap [raw S54][api]. | Image runs rootless | Via JDBC driver you supply | Yes | HTML site, heavier. A JDBC SQLite driver cannot open a SQLCipher database. |
-| **Atlas** (Ariga) | Core Apache-2.0 [api]. **Migration linting, schema visualization and drift detection are Pro features**: the official feature table says "Migration Linting | Pro", "Drift Detection | Pro", "Schema Visualization | Pro", "Testing Framework | Pro"; Pro uses `atlas login` and "free 30-day trial ... a license is required to continue using Atlas Pro ... $9/seat per month" [raw S55]. Open: inspection, diffing, versioned migrations. The README advertises "50+ safety analyzers" and `atlas migrate lint --dev-url "docker://postgres/16/dev"` [raw S56]. | The `docker://...` dev URL implies a Docker API socket; with rootless Podman this needs the Podman socket and `DOCKER_HOST` (UNCONFIRMED) | Yes (Open) | Yes (Open) | **Do not rely on `atlas migrate lint`**: it requires a vendor account and a licence, contradicting local-only enforcement and credential hygiene. Atlas Open for `schema inspect` and `schema diff` is usable. |
+| **Atlas** (Ariga) | Core Apache-2.0 [api]. **Migration linting, schema visualization and drift detection are Pro features**: the official feature table says "Migration Linting \| Pro", "Drift Detection \| Pro", "Schema Visualization \| Pro", "Testing Framework \| Pro"; Pro uses `atlas login` and "free 30-day trial ... a license is required to continue using Atlas Pro ... $9/seat per month" [raw S55]. Open: inspection, diffing, versioned migrations. The README advertises "50+ safety analyzers" and `atlas migrate lint --dev-url "docker://postgres/16/dev"` [raw S56]. | The `docker://...` dev URL implies a Docker API socket; with rootless Podman this needs the Podman socket and `DOCKER_HOST` (UNCONFIRMED) | Yes (Open) | Yes (Open) | **Do not rely on `atlas migrate lint`**: it requires a vendor account and a licence, contradicting local-only enforcement and credential hygiene. Atlas Open for `schema inspect` and `schema diff` is usable. |
 | **squawk** | "Linter for Postgres migrations & SQL"; Apache-2.0; `docker run --rm -v $(pwd):/data ghcr.io/sbdchd/squawk:latest *.sql`; last push 2026-10-02 [raw S57][api] | Yes | **No** (Postgres only) | Yes | Fits the PostgreSQL path only. |
 | **sqlfluff** | Dialect-flexible SQL linter; dialect list includes SQLite and PostgreSQL; Docker image; MIT; last push 2026-10-03 [raw S58][api] | Yes | Yes (syntax and style) | Yes | A style/syntax linter, not a migration-safety analyzer: it cannot say a change is destructive. |
 | **`pg_dump -s` diff** | Native; a schema-only dump of a migrated scratch database compared to a committed dump is a drift gate with zero dependencies. | Yes (`postgres` image) | n/a | Yes | Output order must be normalised; text diff only. |
@@ -746,7 +746,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 | ID | Work item | Theme | Priority | Decision needed |
 |---|---|---|---|---|
 | W20-01 | Create `tools.lock` with digest-pinned, signature-verified scanner and build images; harness rejects mutable tags | 1 | High | none |
-| W20-02 | Replace `docker.io/aquasec/trivy:latest` in `docker-compose.security.yml:169`; remove `curl|sh` install in `scripts/security-scan-full.sh:40` | 1 | High | none |
+| W20-02 | Replace `docker.io/aquasec/trivy:latest` in `docker-compose.security.yml:169`; remove `curl\|sh` install in `scripts/security-scan-full.sh:40` | 1 | High | none |
 | W20-03 | Host exposure check for malicious Trivy images; rotate atomically if suspect | 1 | High | DR-20-02 (owner) |
 | W20-04 | Provenance generation script and verifier; `docs/security/SLSA_LEVEL.md` stating L1 | 2 | Medium | DR-20-01 |
 | W20-05 | Authoring-time stress runner (30 shuffled runs) and flake ledger | 3 | Medium | tuning of SC-003 |

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 6 |
+| Revision | 7 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
+| Status | draft (revision 7: section 11 layout lists every `$EV` top-level entry that tasks.md rev 4 writes (register, verify, exceptions, qa, web, android, audit, docs, sbom, reproducibility, release_digests, retest, flake_ledger.jsonl, pack, the phase exit records) with the rule for new ones and the ignored names to avoid; revision 6: path consistency with tasks.md, section 11 layout uses `$EV`, coverage folders renamed `coverage_baseline/` and `coverage_targets/`, review, checkpoint, commit-push and deferral records listed; revision 5: fourth independent review, a `REOPEN` entry must be a genuine failure (schema), a REOPEN cuts the cycle only after a cycle that derived PASS and only for the same test, a GREEN on the REOPEN fingerprint or an earlier-cycle GREEN fingerprint is refused, register and ledger reopen counts must agree; revision 4: third independent review, cycle rule in section 4.2 step 7 and the section 13 deriver, `REOPEN` entries, scenario re-run hygiene; revision 3: second review, `test_fingerprint`, RED-before-GREEN, distinct iterations; revision 2: first review, exit-status verdict rules) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-010, FR-022, FR-008 (evidence side), FR-021 (verification side), FR-023 (review evidence) |
 | Success criteria covered | SC-003, SC-005, SC-012 (and the evidence side of SC-002, SC-004) |
@@ -624,8 +624,30 @@ specs/001-full-project-audit-remediation/evidence/        ($EV)
   commit-push/<run_id>.json    commit-push script reports (docs/16 section 12.4, stage S8)
   deferrals.jsonl              recorded gate deferrals (SKIP_LONG, --local-only push deferral)
   host-probe.json              host probe record (docs/16 section 8.5)
-  <wp>/                        per-work-package transcripts before the recorder exists, with SHA256SUMS
+  p<N>-exit.json               phase exit records, one per docs/21 phase gate (P0 T089, P1 T149,
+                               P5 T432, P6 T528; the same name for every other phase that adds one)
+  register/                    register-side records: freeze manifest, seed and source
+                               reconciliation, import transcripts, blocked_items.json (WP-20 to WP-22, WP-72)
+  verify/                      recursive repository verification and its exceptions (WP-73)
+  exceptions/                  recorded exception lists (third-party pins, FR-017)
+  qa/                          HelixQA validator baselines and run records (WP-24, WP-60)
+  web/, android/               per-application audit evidence such as index-readiness records (WP-31, WP-33)
+  audit/, docs/                gate mutation records of the audit comparator and the export check
+  sbom/                        SBOMs (WP-56, WP-57)
+  reproducibility/<artifact>.json  double-build comparisons (WP-56)
+  release_digests/             digests promoted for release (docs/16 section 15, WP-56)
+  retest/<candidate-digest>/   full-suite retest records on the candidate (WP-71)
+  flake_ledger.jsonl           authoring-time stress-run verdicts (W20-05, WP-71)
+  pack/                        the final evidence pack (WP-74)
+  wp<NN>/                      per-work-package transcripts before the recorder exists, with SHA256SUMS
+                               (lower-case work-package number, for example wp09/)
 ```
+
+Rule for further top-level entries (revision 7): a task may create a new top-level folder under `$EV`
+only for a work package or phase gate that owns it, and the task that first writes it names it; the
+list above is regenerated from tasks.md when that happens. Every entry must stay tracked: no folder
+may be named `coverage/`, `out/`, `build/`, `tools/`, `reports/` or any other name that `.gitignore`
+ignores at any depth (check with `git check-ignore -q`; the coverage rule below is the example).
 
 Folder naming (revision 6): the coverage folders are named `coverage_baseline/` and
 `coverage_targets/`, never `coverage/`, because `.gitignore:139` ignores every directory named

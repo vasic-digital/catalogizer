@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-api/` (Go 1.25.7, Gin, SQLite/PostgreSQL, JWT, SMB/FTP/NFS/WebDAV/local clients, WebSocket, Prometheus metrics, HTTP/3, Challenges) |
 | Traceability | FR-005..FR-011, FR-015, FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-008, SC-011 |
@@ -99,7 +99,7 @@ CodeGraph kinds inside `catalog-api/` (Go, non-test): 3,310 methods, 1,342 struc
 | `context.Background()` / `context.TODO()` | 79 | same, excluding `_test.go` and the top-level `challenges`, `tests`, `internal/tests` directories (re-measured; excluding any path segment named `tests` or `challenges` gives 61) | each is a cancellation break to review |
 | Ignored errors (`_ = x`, `, _ :=`/`, _ =`) | 398 | same exclusion | top: `handlers/media_entity_handler.go` 24, `internal/services/subtitle_service.go` 17, `services/configuration_wizard_service.go` 16, `internal/services/media_recognition_service.go` 14, `internal/modules/registry.go` 14 |
 | `_ = err` literal | 0 | grep | the constitution forbids it; the weaker `_ = fn()` form is the real exposure |
-| `fmt.Sprintf` building SQL | 4 | `Sprintf("\s*(SELECT|INSERT|UPDATE|DELETE)` | `internal/media/database/database.go:240`, `internal/services/cache_service.go:768`, `internal/auth/service.go:553`, `repository/favorites_repository.go:257` |
+| `fmt.Sprintf` building SQL | 4 | `Sprintf("\s*(SELECT\|INSERT\|UPDATE\|DELETE)` | `internal/media/database/database.go:240`, `internal/services/cache_service.go:768`, `internal/auth/service.go:553`, `repository/favorites_repository.go:257` |
 | String-concatenated `WHERE`/`IN` clauses | 3 sites seen | targeted grep | `repository/media_item_repository.go:148`, `internal/handlers/media.go:235`, `internal/services/catalog.go:277`; plus `internal/services/playlist_service.go:818` (`ORDER BY` from `getOrderClause`) |
 | `exec.Command*` | 16 | grep | `services/conversion_service.go` (7, no context), `internal/services/cover_art_service.go` (3), `filesystem/nfs_client_darwin.go` (5), `internal/infra/provisioner.go` (1) |
 | `&http.Client{` literals | 76 | grep, excluding `challenges`/`tests` | constitution says use `internal/httpclient`; see 9 (C16) |
@@ -347,11 +347,11 @@ Note: `scripts/build_in_container.sh` is the constitutional distributed-build en
 | D3 | gosec | `podman run --rm -v "$REPO":/src:Z -w /src/catalog-api docker.io/securego/gosec:latest -fmt sarif -out /src/<scratch>/gosec.sarif -exclude-dir=vendor ./...` (image tag UNCONFIRMED: pin by digest in W0) | SARIF | G101 secrets, G201/G202 SQL, G304 path, G402 TLS, G204 exec |
 | D4 | staticcheck | `run_go sh -c 'go install honnef.co/go/tools/cmd/staticcheck@<pinned> && staticcheck -f json ./...'` (version pinned in W0; availability in the repo scripts: UNCONFIRMED, `grep` found `gosec` and `nancy` scripts but no `staticcheck` reference) | JSON | unused code, deprecated APIs, ineffective assignments |
 | D5 | govulncheck | `run_go sh -c 'go install golang.org/x/vuln/cmd/govulncheck@<pinned> && govulncheck -json ./...'` | JSON | known vulnerable dependency symbols reached from our code (feeds FR-018) |
-| D6 | existing scripts | `scripts/gosec-scan.sh`, `scripts/security-scan*.sh`, `scripts/run-race-detector.sh`, `scripts/performance-test.sh`, `scripts/run-stress-tests.sh`, `scripts/memory-leak-check.sh` | varies | reuse but audit them: `scripts/gosec-scan.sh` ends the gosec call with `|| true` and discards stderr (`2>/dev/null`), so it can never fail the gate (candidate C15) |
+| D6 | existing scripts | `scripts/gosec-scan.sh`, `scripts/security-scan*.sh`, `scripts/run-race-detector.sh`, `scripts/performance-test.sh`, `scripts/run-stress-tests.sh`, `scripts/memory-leak-check.sh` | varies | reuse but audit them: `scripts/gosec-scan.sh` ends the gosec call with `\|\| true` and discards stderr (`2>/dev/null`), so it can never fail the gate (candidate C15) |
 | D7 | route auth matrix | the script in Appendix B.1 plus a runtime probe (W2) | JSON route list | routes outside `/api/v1` auth, groups with no admin gate |
 | D8 | contract drift | Appendix B.1 and B.2 scripts | text | code vs OpenAPI, client vs code |
 | D9 | CodeGraph hotspot query | Appendix B.3 | table | size, fan-in, fan-out, route nodes |
-| D10 | migration parity | `run_go go test -run 'TestRunMigrations|TestMigrationsParity' ./database/...` (parity test: `database/migrations_parity_test.go`) plus a PostgreSQL run against a real container (section 10) | go test JSON | schema drift between dialects |
+| D10 | migration parity | `run_go go test -run 'TestRunMigrations\|TestMigrationsParity' ./database/...` (parity test: `database/migrations_parity_test.go`) plus a PostgreSQL run against a real container (section 10) | go test JSON | schema drift between dialects |
 
 grep patterns (each paired with a control needle per M2). Run from `catalog-api/`:
 
@@ -413,7 +413,7 @@ Verified pattern (`filesystem/local_client.go:69-75`, same in `nfs_client.go:116
 | Surface | Control today | Gap |
 |---|---|---|
 | `GET /api/v1/image-proxy?url=` (public route) | allow-list by `strings.Contains(imageURL, domain)` for `image.tmdb.org`, `img.omdbapi.com`, `images.igdb.com` (`main.go:1096-1105`); not routed through `GuardProviderURL`; `buildImageProxyClient` resolves the host through DNS-over-HTTPS and dials the resolved IPs | a URL such as `https://attacker.example/?x=image.tmdb.org` or `https://image.tmdb.org.attacker.example/` passes the substring test; redirects are followed by default; no scheme check; unauthenticated (C1) |
-| SMB discovery and probe (`/api/v1/smb/discover|test|browse|probe|probe-and-ingest`) | `isHostAllowed` resolves with `net.LookupIP` and blocks loopback, link-local, multicast, unspecified; private ranges allowed on purpose (`internal/handlers/host_validation.go`) | resolve-then-dial is a TOCTOU window (DNS rebinding); unresolvable hosts are allowed; IPv4-mapped IPv6 and `0.0.0.0` variants need tests |
+| SMB discovery and probe (`/api/v1/smb/discover\|test\|browse\|probe\|probe-and-ingest`) | `isHostAllowed` resolves with `net.LookupIP` and blocks loopback, link-local, multicast, unspecified; private ranges allowed on purpose (`internal/handlers/host_validation.go`) | resolve-then-dial is a TOCTOU window (DNS rebinding); unresolvable hosts are allowed; IPv4-mapped IPv6 and `0.0.0.0` variants need tests |
 | Providers (TMDB, IGDB, LLM, resolvers) | `GuardProviderURL` | verify coverage of every outbound call; verify redirect handling; verify the test-only relaxation (`SetTestAllowPrivateNetworks`, `internal/media/providers/ssrf_testmain_test.go`) cannot be set in production |
 | WebDAV and FTP storage roots | host comes from user-created storage roots | same guard as SMB is not evident (UNCONFIRMED) |
 | Subtitle, cover, deep-link downloads | `services.GuardProviderURL` at `handlers/media_entity_handler.go:781` | enumerate others |
@@ -435,7 +435,7 @@ Verified pattern (`filesystem/local_client.go:69-75`, same in `nfs_client.go:116
 | `RewritePlaceholders` tracks only single quotes; it ignores double-quoted identifiers, comments, `$$` strings, and the PostgreSQL JSONB `?` operator | `dialect.go:24-46` | table-driven test with `"col?"`, `-- ?`, `/* ? */`, `'it''s ?'` |
 | `RewriteInsertOrIgnore` appends `ON CONFLICT DO NOTHING` at the end of the string | `dialect.go:52-66` | statement ending with `;` or containing `RETURNING` or a subquery |
 | `RewriteInsertOrReplace` turns `INSERT OR REPLACE INTO` into plain `INSERT INTO` | `dialect.go:70-84` | on PostgreSQL a replace of an existing key must update, today it errors or duplicates; real-PostgreSQL test per call site of `INSERT OR REPLACE` |
-| Boolean rewrite is a fixed column-name regex | `dialect.go:131-141` | any new boolean column compared with `= 0/1` is not rewritten; scan SQL for `= 0|1` against columns in the PostgreSQL schema typed `BOOLEAN` |
+| Boolean rewrite is a fixed column-name regex | `dialect.go:131-141` | any new boolean column compared with `= 0/1` is not rewritten; scan SQL for `= 0\|1` against columns in the PostgreSQL schema typed `BOOLEAN` |
 | PostgreSQL DSN not URL-escaped | `database/connection.go:38`, `config/config.go:362` | password containing `@`, `/`, `?`, `%`, space |
 | Dialect branches (`IsPostgres` has 50 callers) are rarely exercised on PostgreSQL | CodeGraph in-degree | CI-free local matrix: run the full repository test suite once on SQLite and once on a real PostgreSQL container |
 
@@ -466,7 +466,7 @@ These are candidates, not confirmed defects. Each enters the register (FR-001) w
 | C12 | `internal/auth/middleware.go:293-345` | Rate-limit map entries never evicted | VERIFIED-READ for the viewed slice | Low-Medium | DZ-C3 |
 | C13 | `filesystem/{local,nfs,webdav}_client.go` | `ReplaceAll("..", "")` sanitiser mangles legitimate names; no symlink confinement; SMB/FTP unsanitised | VERIFIED-READ | Medium | 8.4 tests |
 | C14 | `internal/handlers/host_validation.go` | Resolve-then-dial TOCTOU; unresolvable hosts allowed | VERIFIED-READ | Medium | rebinding test with a controllable DNS server in a container |
-| C15 | `scripts/gosec-scan.sh` | Scanner failures swallowed (`|| true`, `2>/dev/null`): the gate cannot fail (§11.4.201) | VERIFIED-READ | Medium (process) | run with a planted G101 secret; script must exit non-zero |
+| C15 | `scripts/gosec-scan.sh` | Scanner failures swallowed (`\|\| true`, `2>/dev/null`): the gate cannot fail (§11.4.201) | VERIFIED-READ | Medium (process) | run with a planted G101 secret; script must exit non-zero |
 | C16 | whole tree | Constitution drift: 0 importers of `internal/httpclient` vs 76 `&http.Client{` literals; 12 `*sql.DB` sites; 11 `internal/` files importing top-level domain packages (37 imports) | MEASURED | Low-Medium | detector D-drift (section 13, W1) |
 | C17 | `catalog-api/services/coverage.*` (9 files), `catalog-api/challenge_ids.txt.bak`, `result_*.json`, `test_report_*.md` | Tracked build/test artifacts (`git ls-files` lists them) | MEASURED | Low | §11.4.30 cleanup after §11.4.124-style history check |
 | C18 | `database/migrations_sqlite.go:32` | Storage-root password stored as plain `TEXT`; sqlcipher key use unconfirmed | VERIFIED-READ (column); encryption UNCONFIRMED | High | inspect a real database file with and without the key |

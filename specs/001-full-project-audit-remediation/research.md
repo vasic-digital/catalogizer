@@ -4,9 +4,9 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
-| Revision | 3 |
+| Revision | 4 |
 | Last modified | 2026-10-03 |
-| Status | draft, consolidation of planning documents 01 to 20 (document 21 excluded, still being written) |
+| Status | draft, consolidation of planning documents 01 to 20, cross-checked against document 21 revision 6 (IC-16, IC-37, the ODG mapping and section 8.6); revision 4 adds the source and access-date policy (section 1), the plain and strict verifier modes in R-28, the innovation intake in R-29 and the five research-only defaults in the section 5 count |
 | Inputs | `spec.md`, `docs/01`..`docs/20`, `poc/` tools and results, `.specify/memory/constitution.md` |
 | Rule | Every decision cites its source document and section. Nothing here was re-derived from memory. Where the documents disagree, the conflict is stated and a resolution is recommended; the owner may overturn any recommendation. |
 
@@ -22,6 +22,8 @@
 ## 1. How this consolidation was made
 
 The decision records, open-question lists and risk sections of each planning document were read section by section (`docs/02` §5, §16; `docs/03` §8, §14; `docs/04` §3, §7, §15; `docs/05` §5, §8, §9, §10, §14, §15; `docs/06` §3, §18; `docs/07` §14; `docs/08` §15; `docs/09` §17; `docs/10` §22; `docs/11` §1.3, §6, §7, §12; `docs/12` §3.5, §6, §19, §20; `docs/13` §3, §8, §10, §14; `docs/14` §7, §8, §16, §18; `docs/15` §14; `docs/16` §10, §14, §18, §20; `docs/17` §14 and recommendations; `docs/18` §1; `docs/19`; `docs/20` §3, §4, §7, §9, §13). The three POC tools were re-run on 2026-10-03 (see `quickstart.md`) so that the numbers below are measured in this session, not copied.
+
+**Sources and access dates.** This file cites planning documents and their sections, not web pages: the external sources behind its decisions are listed with their URLs in the bibliographies of `docs/17` (50 URLs), `docs/18` (63 URLs, section 14) and `docs/20` (75 URLs, section 14), 180 distinct URLs in total (counted 2026-10-03). A decision here that rests on a web source names the document and section that cites it, and the reader follows that citation to the URL. Access-date policy: each of the three bibliographies states one access date for all its entries (2026-10-03); from this revision on, a source that is added or re-read records its own access date (ISO date, UTC) on its bibliography entry, and an entry without one is read as accessed on its document's stated date and is re-read before it supports a new or changed decision. A decision that rests only on a secondary source or a search-engine summary (doc18 marks secondary sources in its section 14; doc20 marks quotations taken from summaries rather than `[raw]` page text) stays `UNCONFIRMED` until a primary source is read.
 
 ## 2. Technical context resolved
 
@@ -217,13 +219,13 @@ Each entry: **Decision**, **Rationale**, **Alternatives considered**, **Source**
 
 ### R-28 Gates without CI: the commit-push script
 
-- **Decision**: A dedicated `scripts/commit-push-all.sh` with the docs/16 §12 stages S0 to S8 (S0 preflight, including the anti-mess sweep; S1 fetch, `--prune` allowed per docs/21 IC-36; S2 scope check; S3 cheap validation; S4 long-gate verdicts or a recorded deferral; S5 commit; S6 fast-forward push to every remote, skipped under `--local-only`; S7 verify, which runs the recursive repository verifier `scripts/repo/verify_repos.sh` (promoted from `poc/repo_verify/verify_repo.sh`) in strict mode, validates its JSON against `contracts/repo-verification-report.schema.json` and re-runs the anti-mess sweep; S8 report, written to `$EV/commit-push/<run_id>.json`) and the docs/16 exit codes. The existing blocking pre-push hook is not installed and not deleted; long gates may be deferred only with the recorded `SKIP_LONG` flag, each deferral appended to `$EV/deferrals.jsonl`. Revision 3: corrected from an earlier S0-S6 numbering taken from the superseded docs/12 §16.3 skeleton (docs/21 IC-16 binds docs/16's stages and exit codes).
+- **Decision**: A dedicated `scripts/commit-push-all.sh` with the docs/16 §12 stages S0 to S8 (S0 preflight, including the anti-mess sweep; S1 fetch, `--prune` allowed per docs/21 IC-36; S2 scope check; S3 cheap validation; S4 long-gate verdicts or a recorded deferral; S5 commit; S6 fast-forward push to every remote, skipped under `--local-only`; S7 verify, which runs the recursive repository verifier `scripts/repo/verify_repos.sh` (promoted from `poc/repo_verify/verify_repo.sh`) in plain mode on routine runs (its `--strict` mode, which also fails `behind` rows and pointer drift, is the WP-73 final condition; docs/21 IC-37, revision 4 of this file), maps the verifier's exit codes to the commit-push codes, validates its JSON against `contracts/repo-verification-report.schema.json` and re-runs the anti-mess sweep; S8 report, written to `$EV/commit-push/<run_id>.json`) and the docs/16 exit codes. The existing blocking pre-push hook is not installed and not deleted; long gates may be deferred only with the recorded `SKIP_LONG` flag, each deferral appended to `$EV/deferrals.jsonl`. Revision 3: corrected from an earlier S0-S6 numbering taken from the superseded docs/12 §16.3 skeleton (docs/21 IC-16 binds docs/16's stages and exit codes).
 - **Source**: docs/12 §16, DR-7; docs/16 §12; docs/19 §9 (promotion path). Owner input: OD-60 (binding path), resolved by docs/21 IC-16.
 
 ### R-29 Product innovation is out of scope
 
-- **Decision**: Everything tagged `PROPOSAL` in docs/18 goes to a future feature; only `R-ADJ` research feeds fixes owned by documents 07, 08, 10 and 14.
-- **Source**: docs/18 §1.
+- **Decision**: Everything tagged `PROPOSAL` in docs/18 goes to a future feature; only `R-ADJ` research feeds fixes owned by the plan documents named in docs/18 §1.1. Revision 4: so that no started research is left untracked (§11.4.197), the 34 `PROPOSAL` entries (28 candidates plus the `PROPOSAL` parts of 6 mixed ones) are imported by WP-20 as register items of type Feature that are not findings, the owner decides each one's disposition through docs/21 ODG-39 (no OD counterpart here), and the 19 `R-ADJ` entries are plan-document seeds (docs/21 §9.1, §9.5).
+- **Source**: docs/18 §1, §1.1; docs/21 §9.5, ODG-39.
 
 ### R-30 Corrections to planning documents found during consolidation
 
@@ -334,7 +336,7 @@ Duplicates across documents are merged into one row; every source is listed. "Bl
 | OD-78 | React Query alignment: upgrade app to v5 or lower shared peer range | upgrade; lower | decide after codemod dry run | DR-W8-06 | docs/08 DR-W8-06 |
 | OD-79 | Index thresholds (Lumen min recall 0.85, max CodeGraph wrong answers) as consumer data | values | 0.85 recall; wrong answers recorded | index gate (default) | docs/02 D-02 |
 
-**Count: 79 owner decisions and inputs** (OD-01 to OD-79). Of these, 12 carry a reversible working default that does not block work (OD-11, OD-17, OD-30, OD-32, OD-35, OD-37, OD-39, OD-47, OD-54, OD-58, OD-61, OD-79); 1 is resolved by a plan decision (OD-60, by docs/21 IC-16); the remaining 66 block the named work until answered. Every OD id is mapped to an ODG group or to the ungrouped table in docs/21 §8.6.
+**Count: 79 owner decisions and inputs** (OD-01 to OD-79). Of these, 12 carry a reversible working default that does not block work (OD-11, OD-17, OD-30, OD-32, OD-35, OD-37, OD-39, OD-47, OD-54, OD-58, OD-61, OD-79); 1 is resolved by a plan decision (OD-60, by docs/21 IC-16); the remaining 66 block the named work until answered. Every OD id is mapped to an ODG group or to the ungrouped table in docs/21 §8.6, except the 5 defaulted ids that docs/21 records in this file only (OD-17, OD-35, OD-37, OD-54, OD-79), whose defaults apply without an owner item. Docs/21 ODG-34, ODG-35, ODG-39 and ODG-40 have no OD counterpart here.
 
 Decisions recorded by the documents as settled and needing no owner input (for completeness): docs/09 D-ADR-01, -02, -05; docs/12 DR-1 to DR-8; docs/13 D-13-01 to D-13-07; docs/14 D-14-01 to D-14-04, D-14-06; docs/16 DR-16-1, DR-16-3; docs/06 DR-E1 to DR-E6; docs/05 DR-7 to DR-9; docs/02 D-01, D-03 to D-07; docs/08 DR-W8-04, DR-W8-07.
 

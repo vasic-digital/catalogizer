@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: the P-CFG-01 and P-CFG-02 rows of section 9.4 gain their missing Target cell; pipe characters inside a code span of one table row escaped with a backslash) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-014, FR-015, FR-016, FR-021, FR-022, FR-025 |
 | Success criteria covered | SC-002, SC-003, SC-004, SC-005, SC-007, SC-011, SC-012 |
@@ -140,7 +140,7 @@ The handler list is written twice in `main.rs` (lines 158-168 and 176-206); the 
 | Command | Arguments | Effect | Trust note |
 |---|---|---|---|
 | `scan_network` | - | per interface assumes a /24, TCP probes, `ping`, `arp`, reverse DNS | active scanning of every attached /24 |
-| `scan_smb_shares` / `browse_smb_share` / `test_smb_connection` | host, share, credentials | POSTs to `catalog-api` at `CATALOG_API_URL` (default `http://localhost:8080`) endpoints `/api/v1/smb/discover|browse|test` (`smb.rs:225-227`) | plain HTTP, password in JSON body, no auth header |
+| `scan_smb_shares` / `browse_smb_share` / `test_smb_connection` | host, share, credentials | POSTs to `catalog-api` at `CATALOG_API_URL` (default `http://localhost:8080`) endpoints `/api/v1/smb/discover\|browse\|test` (`smb.rs:225-227`) | plain HTTP, password in JSON body, no auth header |
 | `test_ftp_connection` | host, port, user, password, path | raw `std::net::TcpStream` FTP dialogue | CRLF injection, blocking I/O in async fn |
 | `test_nfs_connection` | host, path, mount_point, options | TCP connect to port 2049, then `create_dir_all(mount_point)` | arbitrary directory creation; `path` and `options` ignored |
 | `test_webdav_connection` | url, user, password, path | raw HTTP `PROPFIND` over TCP; HTTPS only checks reachability | false positives, see D-12 |
@@ -588,8 +588,8 @@ Mocks of the protocol (a fake FTP server written for the test, a stub that retur
 | P-NET-02 | blackholed address | `is_host_alive` | returns within the stated bound | I-02 |
 | P-NET-03 | container network with 2 live hosts and 1 refusing host | scan | exactly the live hosts | I-01 |
 | P-LOC-01 | existing dir, file, missing path, unreadable dir | all four | true, error, error, error | |
-| P-CFG-01 | save then load | roundtrip with secrets; file mode 0600 | I-09 |
-| P-CFG-02 | save to `/etc/x`, `../../x`, symlink escape | refuse | I-09 |
+| P-CFG-01 | temporary config directory (local file system) | save then load | roundtrip with secrets; file mode 0600 | I-09 |
+| P-CFG-02 | same | save to `/etc/x`, `../../x`, symlink escape | refuse | I-09 |
 
 ### 9.5 Blocked-unavailable handling
 

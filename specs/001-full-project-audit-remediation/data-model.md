@@ -4,9 +4,9 @@
 |---|---|
 | Feature | `specs/001-full-project-audit-remediation` |
 | Created | 2026-10-03 |
-| Revision | 3 |
+| Revision | 4 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 4: §9 states which verifier exit codes apply in plain and in `--strict` mode, how a stash (R3) and a pointer no remote holds (R4) appear in the v1 report, cites docs/16 §11.4 only for the verifier codes; §1 and §2 define `findings.index.jsonl` as a timestamp-free projection, not a `finding/1` record; §3 records the doc18 Feature items (docs/21 §9.5); §4 states the owned-repository split) |
 | Sources | spec.md "Key Entities"; docs/02 §5, §6, §9, §10; docs/04 §3 to §8 (register DDL); docs/06 §3, §4, §14; docs/11 §2; docs/12 §6, §11; docs/13 §3, §8; docs/19 §3 |
 | Paths | `$AUD` = `specs/001-full-project-audit-remediation/audit`; `$EV` = `specs/001-full-project-audit-remediation/evidence` (layout owned by docs/06 §11) |
 | Physical store | `docs/workable_items.db` (constitution engine schema plus the `reg_*` extension of docs/04 §5) for register-side entities; JSON files validated by `contracts/*.schema.json` for audit-side records |
@@ -50,7 +50,7 @@ erDiagram
 
 | Spec entity | Primary store | Key | Schema / DDL reference |
 |---|---|---|---|
-| Finding | `$AUD/findings/<finding_id>.json` (one file per finding, plus the run index `$AUD/runs/<run>/findings.index.jsonl`) + `reg_findings` | `finding_id` = canonical `FND-NNNN` (register-minted); stored alias `unit_alias` = `F-<unit>-NNN` | `contracts/finding.schema.json`; docs/04 §5 `reg_findings` |
+| Finding | `$AUD/findings/<finding_id>.json` (one `finding/1` file per finding, the only full record) + `reg_findings`; per run, the derived index `$AUD/runs/<run>/findings.index.jsonl` (docs/02 §9: one line per finding with `unit`, `path`, `line_start`, `rule_id` and `fingerprint` only, no timestamps, no `run_ids`; not a `finding/1` record) | `finding_id` = canonical `FND-NNNN` (register-minted); stored alias `unit_alias` = `F-<unit>-NNN` | `contracts/finding.schema.json`; docs/04 §5 `reg_findings` |
 | Register Item | engine `items` + `reg_ids` + `reg_item_ext` | `atm_id` `ATM-NNN` | docs/04 §4, §5, DR-2 |
 | Application | `reg_components` | `component_id` | docs/04 §5 `reg_components` |
 | Test Evidence Record | ledger `ev/1` + `reg_evidence` + `reg_test_runs` | ledger `seq` / `evidence_id` / `(group_id, rep_index)` | `contracts/evidence-record.schema.json`; docs/06 §3; docs/04 §5 |
@@ -68,7 +68,7 @@ One audit observation with its own location and evidence. Many findings may poin
 | `finding_id` | string | yes | ONE canonical id `^FND-[0-9]{4,}$`, minted by the register (`reg_findings.finding_id` generated from `finding_seq`, UNIQUE, monotone, never reused, immutable); the file name and every cross-reference use it (research R-12) |
 | `unit_alias` | string | yes | unit-local alias `^F-<unit>-[0-9]{3,}$`, stored in `reg_findings.unit_alias` (UNIQUE, immutable; CHECK requires the `<unit>` part to equal `component_id`); never used as a key elsewhere (the `ev/1` `item` field does not accept it) |
 | `register_item` | `ATM-NNN` | yes | FK `reg_findings.atm_id -> reg_ids.atm_id` |
-| `fingerprint` | sha256 hex | yes | normalised `(unit, file, symbol-or-key, rule-id, root-cause-key)`; `UNIQUE (fingerprint, run_id)`; determinism (SC-002) is equality of the fingerprint set across two runs |
+| `fingerprint` | sha256 hex | yes | normalised `(unit, file, symbol-or-key, rule-id, root-cause-key)`; `UNIQUE (fingerprint, run_id)`; determinism (SC-002) is equality of the fingerprint set across two runs, compared on the per-run index files, which map 1:1 to the finding files whose `run_ids` contain the run |
 | `type` | enum | yes | `bug, error, gap, misalignment, shortcoming, weak_spot, danger_zone` (docs/02 §5.1, decision rules §5.2, first match wins, ties toward higher risk) |
 | `severity` | enum | yes | `S1..S5` (docs/02 §6); register column `severity` uses `critical, high, medium, low, cosmetic` (S1->critical ... S5->cosmetic) |
 | `unit` | component id | yes | FK `reg_findings.component_id -> reg_components` |
@@ -119,7 +119,7 @@ The tracked unit of work and history; the engine row plus extension rows (docs/0
 | Field | Type | Store | Rules |
 |---|---|---|---|
 | `atm_id` | `ATM-NNN` | `reg_ids.atm_id` (generated from `seq`, UNIQUE) | minted first, append-only (UPDATE/DELETE abort), never reused; `mint_basis` closed set `import, audit_finding, reporting_directive, candidate_duplicate, manual` |
-| `type` | enum | engine `items.type` | `Bug, Feature, Task` (§11.4.16); closure status follows type: Bug->Fixed, Feature->Implemented, Task->Completed (§11.4.33) |
+| `type` | enum | engine `items.type` | `Bug, Feature, Task` (§11.4.16); closure status follows type: Bug->Fixed, Feature->Implemented, Task->Completed (§11.4.33). The 34 doc18 `PROPOSAL` entries (docs/21 §9.5) are `Feature` items with no `reg_findings` row, so they are outside the zero-open-findings count; their disposition is docs/21 ODG-39 |
 | `status` | enum | engine `items.status` | 10 engine strings kept verbatim incl. `(→ Fixed.md)` (docs/04 DR-3) |
 | title, description | text | engine | comprehensive: what, manifestation, reproduction, acceptance (§11.4.148) |
 | `category` | enum | `reg_item_ext.category` | `bug, error, gap, misalignment, shortcoming, weak_spot, danger_zone, documentation, dependency, test_gap, governance` |
@@ -178,7 +178,7 @@ Recurrence (FR-003, docs/04 §8): every intake resolves `duplicate-of` chains to
 | documentation present | derived | Document entity (`covers:` mapping, docs/13 §11) | manual, guides, FAQ, diagrams (FR-014) |
 | coverage baseline, dated target | number, date | coverage baseline file per app (docs/05 §7.2) | never below baseline (FR-011) |
 
-Initial seed (docs/01 §3, docs/05 §3): `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`, `catalogizer-androidtv`, `catalogizer-api-client`, `website`, `build`, `qa-ai-system`, `challenges`, `constitution`, and one row per owned submodule (51 owned repositories counted by the POC `verify_repo.sh`, including the main repository).
+Initial seed (docs/01 §3, docs/05 §3): `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`, `catalogizer-androidtv`, `catalogizer-api-client`, `website`, `build`, `qa-ai-system`, `challenges`, `constitution`, and one row per owned submodule (51 owned repositories counted by the POC `verify_repo.sh`: the main repository, 43 direct submodules and 7 nested ones under `submodules/constitution/submodules/`; the direct `submodules/superspec` is third-party; docs/21 IC-30).
 
 ## 5. Test Evidence Record
 
@@ -317,26 +317,30 @@ Exactly the per-repository object of `contracts/repo-verification-report.schema.
 | `head`, `branch` | sha40 or empty, string | empty branch = detached |
 | `owned` | bool | organisation of any remote URL in the own-org list (research R-27) |
 | `dirty`, `dirty_tracked`, `dirty_untracked` | bool, int, int | `git status --porcelain --ignore-submodules=all` |
-| `remotes[]` | `{remote, url, remote_tip, class}` | class `SAME, REMOTE-BEHIND, LOCAL-BEHIND, DIVERGED, UNREACHABLE, NO-REMOTE-BRANCH, UNKNOWN-DIFFERENT`; compared only for owned repositories on a branch |
+| `remotes[]` | `{remote, url, remote_tip, class}` | class `SAME, REMOTE-BEHIND, LOCAL-BEHIND, DIVERGED, UNREACHABLE, NO-REMOTE-BRANCH, UNKNOWN-DIFFERENT`; the POC compares owned repositories on a branch; the promoted verifier also compares a detached owned submodule's pinned commit with the tip of its `.gitmodules` branch (else the remote's default branch) on every remote (R4, below); always empty for third-party repositories (schema rule) |
 | `excepted`, `exception_reason` | bool, string | from `exceptions.tsv`; excepted rows are still listed |
 | `problems[]` | enum list | `dirty, ahead, diverged`, plus `behind, pin` in `--strict` |
 | `unproven[]` | enum list | `UNREACHABLE, UNKNOWN-DIFFERENT, NO-REMOTE-BRANCH` |
 
 Report-level rule (SC-010): `summary.failing = 0` and `summary.unproven = 0` under `--strict`, with every exception explained.
 
-Exit codes of `scripts/repo/verify_repos.sh` (docs/16 §11.4 and §12.3; replaces the POC's 0/1/2/3):
+Exit codes of `scripts/repo/verify_repos.sh` (docs/16 §11.4; replaces the POC's 0/1/2/3; the commit-push script's own codes are docs/16 §12.3, and it maps these codes to its own at stage S7):
 
 | Exit | Meaning | v1 summary field that drives it |
 |---|---|---|
 | 0 | clean | every count below is 0 (excepted dirty rows allowed and listed) |
 | 11 | unpushed commits | `summary.ahead` (`REMOTE-BEHIND` remotes) |
 | 12 | diverged | `summary.diverged` |
-| 13 | dirty | `summary.dirty` minus `summary.dirty_excepted` |
+| 13 | dirty, including a stash (R3) | `summary.dirty` minus `summary.dirty_excepted`; a repository with a stash entry is reported `dirty: true` with `problems` containing `dirty`, so a stash-only row shows `dirty: true` with `dirty_tracked = 0` and `dirty_untracked = 0` |
 | 14 | unverified remote | `summary.unproven` (`UNREACHABLE`, `UNKNOWN-DIFFERENT`, `NO-REMOTE-BRANCH`) |
-| 15 | pointer drift or uninitialised submodule | `summary.pin_drift` |
+| 15 | pointer drift or uninitialised submodule, `--strict` only | `summary.pin_drift`, counted in both modes; in `--strict` mode the row's `problems` contains `pin` |
 | 20 | blind verifier (control-needle self-test failed), usage or internal error | no report is trusted; any summary written is marked unproven |
 
-UNCONFIRMED until the WP-03 executing test of tasks.md fixes them in its exit-code matrix: the precedence when several failing classes are present at once, and the code for `behind` rows under `--strict` (the POC fails them, docs/16 assigns no code).
+Modes (docs/21 IC-37, revision 6, keeping the POC's semantics): every `summary` count is computed the same way in plain and in `--strict` mode. Codes 11, 12, 13 and 14 apply in both modes; 14 is the POC's plain-mode exit 3, because "could not verify" is never clean. `--strict` only adds `behind` (a `LOCAL-BEHIND` remote) and `pin` (a `pin_state` other than `ok`) to `problems`, and so to `summary.failing`; therefore 15, and the code for a strict `behind` row, apply only under `--strict`, and a plain run with pointer drift and nothing else exits 0 with `summary.pin_drift > 0` reported. A failing class (11, 12, 13, or under `--strict` 15 and the `behind` code) takes precedence over 14, as the POC's exit 1 takes precedence over its exit 3. The routine commit-push run uses plain mode at S7; `--strict` is the WP-73 final condition (SC-010).
+
+Pinned commit held by no remote (R4): with the detached-submodule comparison above, a pinned commit that no remote tip contains is `REMOTE-BEHIND` (exit 11, unpushed) or `DIVERGED` (12) when the ancestry is proven, and `UNKNOWN-DIFFERENT` (14) when the commit object of a remote tip is absent locally and `--fetch` (object store only, refs untouched) was not given. The v1 shape has no field that would drive 15 for it.
+
+UNCONFIRMED until the WP-03 executing test of tasks.md fixes them in its exit-code matrix: the order among the failing codes when several failing classes are present at once, and the code for `behind` rows under `--strict` (the POC fails them, docs/16 assigns no code).
 
 ```mermaid
 stateDiagram-v2

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: new section 10.5, a dependency and repository licence-compliance workstream (per-ecosystem licence tools, the root `LICENSE`, 47 third-party repositories with a measured licence-file read, 40 own-organisation repositories without a licence file); `.pre-commit-config.yaml` placed in the local enforcement view (B29); submodule provenance widened from 45 to all 97 recursive repositories plus the vendored tree (docs/21 IC-12); the provenance existence check reads remote tips through the single verifier; the section 11 header fixed to four columns; `\|` escaped in table cells) |
 | Feature | specs/001-full-project-audit-remediation |
 | Requirements traced | FR-005..FR-010, FR-017, FR-018, FR-020, FR-021, FR-022, FR-025; SC-002, SC-003, SC-005, SC-009, SC-012 |
 | Related documents | 01 architecture map, 04 findings register, 06 evidence framework, 07 backend, 08 web, 09 desktop and installer |
@@ -81,6 +81,8 @@ All rows were produced in this session from the working tree at the start of the
 | B26 | Previous scanners configured: gosec (`config/gosec/config.json`), Trivy (`config/trivy/trivy.yaml`: vuln, misconfig, secret), Semgrep rules (`config/semgrep-rules.yml`), OWASP dependency-check suppressions, Sonar properties (`projectVersion=2.2.0`), 20-plus scan scripts under `scripts/`. `scripts/security-gates.sh` exits 0 with a warning when no scan results exist | read | VERIFIED-READ |
 | B27 | The constitution submodule ships `scripts/gitleaks`, `scripts/zap`, `scripts/trivy`, `scripts/hawkscan`, `scripts/sonarqube` (install-check, lib, run-scan per tool) | `ls submodules/constitution/scripts` | MEASURED |
 | B28 | Containers base images: `golang:1.25`, `debian:trixie-slim`, `node:20-alpine`, `nginx:alpine`; API and web run as non-root (`USER appuser`, `USER nginx`) | Dockerfiles | VERIFIED-READ |
+| B29 | `.pre-commit-config.yaml` (tracked) declares `detect-private-key` and `detect-secrets --baseline .secrets.baseline` among its hooks; `.secrets.baseline` does not exist, the `pre-commit` tool is not on the host `PATH`, and `.git/hooks` holds only samples, so none of these secret checks runs today (revision 2) | `ls`, `command -v pre-commit`, `ls .git/hooks` (2026-10-03) | MEASURED |
+| B30 | Root `LICENSE` is the Apache License 2.0 text. Of the 51 own-organisation repositories (the main repository plus 50 own submodules), 11 have a licence file at their root and 40 have none; of the 47 third-party repositories, 42 have one and 5 have none; first-line classes of the third-party files include GPL-2.0, GPL-3.0, AGPL-3.0, MPL-2.0, BUSL-1.1, a custom Apache-2.0 with amendments and a no-sell text (document 11 §8.5.1) (revision 2) | directory listing and first lines of each root licence file; a heuristic class, not a licence determination | MEASURED (heuristic) |
 
 Note on B26: `scripts/security-gates.sh` returning success when there is nothing to check is itself a §11.4.201 false-negative gate (a blind instrument reads as clean). It is registered as a finding candidate (S-12 in section 13).
 
@@ -231,7 +233,7 @@ Document 07 §8.6 measured the public set. This table restates the security-rele
 | `/debug/pprof/*` | only when `HELIX_PPROF_ENABLED=true`; gate UNCONFIRMED | heap dumps contain tokens and secrets | probe with the flag on; it MUST require admin or listen on loopback only |
 | `/api/v1/*` (rest) | `RequireAuth` (JWT) plus rate limiter | baseline | matrix |
 | `/api/v1/admin/*` | `RequireAuth` + `RequireAdmin` | baseline | matrix |
-| `/api/v1/users|roles|configuration|errors|logs` | `RequireAuth` only; per-handler checks UNCONFIRMED | T-1-3 | matrix with a non-admin token for every method and path |
+| `/api/v1/users\|roles\|configuration\|errors\|logs` | `RequireAuth` only; per-handler checks UNCONFIRMED | T-1-3 | matrix with a non-admin token for every method and path |
 
 Generator (route table to JSON, to feed the matrix test): the Appendix B.1 script of document 07 produces the route set; the matrix test of document 07 A.1 consumes it. This document adds one invariant: **the allow-list of public routes is a checked-in file (`catalog-api/tests/security/public_routes.json`), and the matrix test fails when a route outside the list answers an anonymous request with anything but 401 or 403.** This turns "public by accident" into a RED test (FR-009, §11.4.252 fail-closed).
 
@@ -634,6 +636,8 @@ Business-logic authorisation flaws that need role-aware oracles (covered by the 
 | Trivy | filesystem, images, IaC (`config/trivy/trivy.yaml`: vuln, misconfig, secret; severity HIGH, CRITICAL) | present | widen severity to include MEDIUM and LOW so that FR-008 (every severity) is reported; HIGH/CRITICAL-only reporting hides findings the spec requires to be resolved or closed |
 | OWASP dependency-check | all | `dependency-check-suppressions.xml` | review each suppression: the Log4Shell suppression is justified (no Log4j; verify by dependency tree, not by assertion) and the npm test-scope suppression uses `vulnerabilityName regex ".*"` over several package families, which suppresses every vulnerability for them, including a future one; replace with specific CVE ids and expiry dates, and record each as an accepted exception with evidence (FR-008 exception path), not a blanket |
 
+Local enforcement view (revision 2): the secret checks declared in `.pre-commit-config.yaml` (B29) do not run, because the tool is absent, the hook is not installed and the baseline file does not exist. They are not revived as a git hook (§11.4.234, document 16 §16.1); `detect-private-key` and `detect-secrets` become part of the commit-push S2 secret refusal and of the WS1 tracked-file gate, both in pinned containers. A `.secrets.baseline` is created only by the reviewed WS1 scan, with each baseline entry justified, and is never generated to silence current findings.
+
 Existing gate defect: `scripts/security-gates.sh` passes when no report exists (B26). Replace with a gate that FAILS on missing or empty reports, requires a control-needle result per tool (a known vulnerable fixture dependency must be flagged), and checks that report timestamps are newer than the last source change (§11.4.201, §11.4.226).
 
 ### 10.2 SBOM and provenance
@@ -644,12 +648,12 @@ Existing gate defect: `scripts/security-gates.sh` passes when no report exists (
 - Reproducibility test: build the same commit twice in containers with a fixed `SOURCE_DATE_EPOCH`; compare artifact hashes; differences are findings (Go builds with `-trimpath` and `-buildvcs=false` are typically reproducible; npm and Gradle need lockfiles and fixed timestamps; the claim for each component is tested, not assumed).
 - Pinned image digests: replace tags in all Dockerfiles and compose files (`golang:1.25`, `debian:trixie-slim`, `node:20-alpine`, `nginx:alpine`, `postgres:15-alpine`, `sonarqube:community`, scanner `:latest`) with `image@sha256:...` recorded in a single `versions.json` section (the repo already has `versions.json`). A rotation procedure updates digests deliberately with a diff review. Node 20 reached end of life status is UNCONFIRMED here; check the Node release schedule when reviewing the pin.
 
-### 10.3 Submodule provenance (45 submodules, FR-017)
+### 10.3 Submodule provenance (97 recursive repositories plus the vendored tree, FR-017)
 
 | Check | Method | Evidence |
 |---|---|---|
 | each submodule URL is the owner's expected upstream (not a typosquat or a stale fork) | parse `.gitmodules` and nested `.gitmodules`, compare with an owner-confirmed list in `docs/SUBMODULE_DEPENDENCIES.md` | table of URL, org, expected |
-| pinned commit exists on every upstream (the `not our ref` condition, constitution §11.4.233(G)) | `git ls-remote` per upstream and per pinned sha, `git cat-file -e` after fetch | per-submodule status: ok, absent, unfetchable |
+| pinned commit exists on every upstream (the `not our ref` condition, constitution §11.4.233(G)) | the single verifier `scripts/repo/verify_repos.sh --fetch`: remote tips by `git ls-remote`, the pin proven equal to or an ancestor of a tip on the object store (revision 2: `ls-remote` lists refs, so querying it for a bare sha cannot prove a commit that is not a tip; document 16 §11.1 R4) | per-submodule status: ok, absent, unproven |
 | pinned vs latest upstream | fetch all upstreams, compare tips, fast-forward only (FR-017, FR-020) | pinned and latest sha, behind count |
 | signed commits and tags where upstream uses them | `git verify-commit` (informative; unsigned upstream is a finding of class "provenance weak", not a blocker) | verification output |
 | `go.mod` `replace` directives to local submodule paths | list `replace` lines; confirm each target is a submodule at the pinned commit; confirm there is no `replace` to a path outside the repository | list |
@@ -659,6 +663,8 @@ Existing gate defect: `scripts/security-gates.sh` passes when no report exists (
 
 Submodule findings are fixed in the submodule's own repository and pushed to its own upstreams (FR-006), with the same independent review.
 
+Scope (revision 2; docs/21 IC-12): the provenance table has one row per repository at every depth, 97 today (44 direct and 53 nested, the count read from `git submodule status --recursive` at run time, never fixed), plus one row for the vendored `submodules/llms_verifier`, which has no upstream pin and is reported by its own provenance question (document 11 S-LLMV-1). Document 11 §8.5.1 and §10.3.1 name all 97 by path, with upstream and pin.
+
 ### 10.4 Runtime image and compose hardening checklist
 
 - non-root user (done for api and web, B28), read-only root filesystem, `cap_drop: [ALL]`, `no-new-privileges`, tmpfs for writable paths, `pids_limit`, memory and CPU limits (the memory ceiling rule of the host also applies to scans, §12.6);
@@ -666,14 +672,31 @@ Submodule findings are fixed in the submodule's own repository and pushed to its
 - Redis: `requirepass`, bind to the compose network address only, no `0.0.0.0` publish (T-3-2);
 - healthchecks that do not call external services.
 
+
+### 10.5 Licence compliance for dependencies and repositories (revision 2)
+
+No earlier plan document covered licences. The facts that make it necessary are B30: the product is published under Apache-2.0 at the root, 40 own-organisation repositories carry no licence file, and the third-party trees cloned with the repository include copyleft and source-available texts. Whether any copyleft or source-available code reaches a distributed artifact, rather than only a QA or governance tool that is cloned beside the code, is `UNCONFIRMED:` and is the first question of this workstream. This section plans the check; it decides nothing about licensing. The licence allow-list is an owner decision, and no docs/21 owner-decision group covers it yet (ODG-13 is about moving third-party pins, not about licences): it is raised as open question OQ-S10 (section 14.3) for the docs/21 owner to route.
+
+| Step | Scope | Method (each in a pinned rootless container; each tool takes a §11.4.270 existence verdict before first use) | Output |
+|---|---|---|---|
+| L-1 Root and repository licence files | the main repository and all 97 submodules at every depth, plus the vendored `llms_verifier` | read the root licence file of each repository and record the SPDX identifier where the text matches one exactly; a heuristic class (B30) is only a lead; record "none" for the 45 repositories without a file (40 own, 5 third-party) | licence column in the document 11 provenance table (FR-017) |
+| L-2 Go modules | `catalog-api`, the Go submodules, `OCU-CUDA-Sidecar` | licence fields from the SBOM of section 10.2 (CycloneDX, `cyclonedx-gomod`), cross-checked with a module licence reporter such as `go-licenses` (existence verdict first) | per-module licence rows |
+| L-3 npm packages | `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-api-client`, the TypeScript submodules, `Website` | licence fields from the npm SBOM (`@cyclonedx/cyclonedx-npm`), cross-checked against each package's `license` field in the lockfile tree | per-package licence rows |
+| L-4 Cargo crates | `catalogizer-desktop/src-tauri`, `installer-wizard/src-tauri` | `cargo deny check licenses` with a checked-in `deny.toml` allow-list (the licence half of the `cargo deny` run already planned in section 10.1 and in docs/21 WP-53) | pass or the list of crates outside the allow-list |
+| L-5 Gradle dependencies | `catalogizer-android`, `catalogizer-androidtv` | the CycloneDX Gradle SBOM of section 10.2; a Gradle licence-report plugin only if its existence verdict passes | per-artifact licence rows |
+| L-6 Container images | every image in `build/containers/images.lock.yaml` and the runtime images | licences from the image SBOM (syft or Trivy) | per-image licence summary |
+| L-7 Policy and decisions | all rows above | an owner-approved allow-list and deny-list of licence identifiers per distribution context (shipped artifact, server image, development or QA tool only); a row outside the allow-list becomes a register item (Type Bug, severity by the section 12 mapping: an incompatible licence in a shipped artifact is high; a missing own-organisation licence file is medium), never an accepted exception without the owner's recorded decision (FR-008) | register items; decision records |
+
+Gate (ST-SC-06): the licence report fails when any dependency or repository lacks a licence row, when a row is outside the allow-list without a recorded decision, or when the planted fixture dependency (a package with a deny-listed licence in a test-only manifest) is not reported. Owners: docs/21 WP-57 produces the licence columns in the one dependency report; WP-35 files the licence-risk findings into the register; the scanner harness and its needle belong to WP-15. Honest limit: tool-reported licence fields are declarations by package authors; a mismatch between a declared field and the shipped licence text is itself a finding, and this plan does not offer a legal opinion.
+
 ---
 
 ## 11. Security test plan by type
 
 Test identifiers `ST-*` are referenced from section 3. All are written test-first (§11.4.224): the test is observed failing on the unfixed artifact (RED verdict file, document 06), then the fix, then three identical GREEN runs. A test is accepted only if a deliberate break of the protected behaviour makes it fail (SC-005); the mutation for each is named.
 
-| Test type (constitution) | Ids | What is tested | Real-service rule | Mutation that must break it |
-|---|---|---|---|---|
+| Test type (constitution) | Ids and what is tested | Real-service rule | Mutation that must break it |
+|---|---|---|---|
 | Security: authentication and authorization | ST-AUTH-01 route matrix; -02 admin gate per route; -03 query-token rejection; -04 weak-secret refusal at boot; -05 token issuer role claims; -06 revocation and logout; -07 brute force, lockout, user enumeration | real API binary and PostgreSQL container | make `RequireAdmin` always pass |
 | Security: transport and headers | ST-HDR-01 header set per route class; -02 CORS exact origin; -03 TLS version and cipher with testssl; -04 cookie/CSRF if any cookie auth exists | real stack | remove HSTS header |
 | Security: injection and parsing | ST-SQLI-01 data-flow trace of dynamic SQL fragments plus RED test with hostile column name; -02 ORM-free fuzz of query params; ST-XSS-01 stored/reflected in web with a payload corpus; ST-XSS-02 proxied content-type | real stack, headless browser in container | relax the column allow-list |
@@ -686,7 +709,7 @@ Test identifiers `ST-*` are referenced from section 3. All are written test-firs
 | Fuzz | F-PATH, F-ARGV, F-JSON (provider responses), F-IMG (image decoders), F-WS (frames), F-URL (SSRF parser) using `go test -fuzz` with a committed seed corpus; a crash artifact becomes a regression test | no external service | seed a known crasher; the fuzz run must find it |
 | Integrity | ST-INTEG-01 scanner behaviour against real FTP/SMB/NFS/WebDAV servers (doc 07 A.5); ST-INTEG-02 empty-root scan does not delete (DZ-X-2); idempotency ST-IDEM-01 for mutating POSTs | real servers in containers | return nil from scanner |
 | Contract (FR-016) | ST-CONTRACT-01 each client's use of auth, WebSocket and error envelope against the server | real server | rename a field |
-| Dependency | ST-SC-01 SBOM generated and non-empty; -02 images pinned by digest; -03 vulnerable-fixture control needle detected by Trivy and dependency-check; -04 installer and artifact signatures verify (blocked-on-owner until certificates supplied); -05 SLSA record present and current | build host containers | unpin an image |
+| Dependency | ST-SC-01 SBOM generated and non-empty; -02 images pinned by digest; -03 vulnerable-fixture control needle detected by Trivy and dependency-check; -04 installer and artifact signatures verify (blocked-on-owner until certificates supplied); -05 SLSA record present and current; -06 licence policy (section 10.5): every dependency and repository has a licence row, and a planted fixture dependency with a licence outside the owner's allow-list is reported | build host containers | unpin an image; for ST-SC-06, drop the planted fixture from the licence scan, which must then fail its needle |
 | Challenges/HelixQA | the existing security challenge banks (`challenges/ch186_200_security_challenges.go`, `ch051_input_validation.go`) are re-run and each is mutation-checked; a challenge that passes with its guarded behaviour removed is a defect in the bank | real stack | per challenge |
 
 Mobile and TV: network security config tests (cleartext policy decided and tested on a real device or emulator per FR-025), certificate pinning decision (OQ-S5), token storage (EncryptedSharedPreferences vs plain), deep-link validation (the project has a deep-linking service), exported component review from the manifest. Plans for these live in documents for those apps; this plan contributes the checks as ST-MOB-01..05 with the same evidence rules and records `blocked` verdicts where a device is not supplied.
@@ -744,7 +767,7 @@ flowchart TD
 | WS3 | Image proxy (exact host, scheme, IP-at-dial, no redirect, size and time caps, content-type allow-list, decision on auth); inventory and guard of all outbound fetchers; exec hardening (allow-lists, `--`, contexts, resource limits); path traversal corpus; archive and parser limits; `storage_roots.password` encryption | WS0 | RED tests, fixes, DR-S1 and DR-S3 | SSRF table results (A.2) pass x3; argv-injection corpus rejected; at-rest sentinel absent in DB bytes |
 | WS4 | WebSocket ticket authentication, origin allow-list, limits, channel authorisation; web client and Android/TV/desktop client changes (contract tests both sides, FR-016) | WS2 | tests and fixes in server and every client | anonymous and foreign-origin connections refused; authorised client receives events; contract test on both sides |
 | WS5 | DAST: baseline, API scan with spec and route list, authenticated active scan, custom probes, TLS scan; HawkScan blocked finding | WS2, WS3, WS4 | reports, normalised findings | ZAP JSON/SARIF with image digest and chain hash; alert set identical across 3 runs after sorting; every alert has a fix or closure evidence |
-| WS6 | SBOMs; dependency report (SC-009); image digest pins; submodule provenance table; reproducibility test; SLSA record; suppression review | WS0 | `reports/sbom/`, `docs/security/SLSA_LEVEL.md`, dependency report | SBOM per component non-empty; two builds hash comparison recorded; submodule table complete for all 45 |
+| WS6 | SBOMs; dependency report (SC-009); image digest pins; submodule provenance table; licence workstream (section 10.5); reproducibility test; SLSA record; suppression review | WS0 | `reports/sbom/`, `docs/security/SLSA_LEVEL.md`, dependency report with its licence columns | SBOM per component non-empty; two builds hash comparison recorded; submodule table complete for all 97 recursive repositories plus the vendored `llms_verifier` row (row count equals `git submodule status --recursive \| wc -l` at run time; docs/21 IC-12); licence row for every dependency and repository, needle ST-SC-06 detected |
 | WS7 | Danger-zone tests DZ-X-1..30 (those executable without owner-supplied hardware); blocked verdicts for the rest | WS3 | tests and fixes | each executed test has RED and GREEN; blocked ones carry the exact missing item |
 | WS8 | Update security documents (`SECURITY_AUDIT_REPORT.md` is dated 2026-04-06 and states good practices that this audit contradicts, e.g. "Token Validation: Validates JWT signing method": document 07 says the key function does not assert the method; reconcile with evidence), README links (FR-013), manuals and FAQ security sections, independent review (FR-023) | all | updated docs | doc-link check; independent reviewer verdict to zero blocking findings |
 
@@ -815,6 +838,7 @@ Candidate findings seeded by this plan (to be registered; ids are plan-local unt
 | OQ-S7 | Will the owner create the StackHawk account and application id, or is HawkScan to remain a documented blocked item? | WS5 |
 | OQ-S8 | Which devices and share servers are available for real-device and real-share tests (list by model and protocol)? | WS7 |
 | OQ-S9 | Windows and macOS hosts for desktop packaging, signing certificates and notarization credentials (documents 09, section 10) | WS6 |
+| OQ-S10 | Licence policy (revision 2): which licence identifiers are allowed per distribution context (shipped artifact, server image, development or QA tool only); whether own-organisation repositories without a licence file get one, and which; how copyleft and source-available third-party trees cloned with the repository are treated (section 10.5, B30) | WS6 |
 
 ---
 
@@ -829,7 +853,7 @@ Candidate findings seeded by this plan (to be registered; ids are plan-local unt
 | FR-009 (every test type) | section 11 table (security, fuzz, chaos, stress, contract, integrity) |
 | FR-010 (deterministic, mutation-checked) | sections 9.3 step 8, 11 |
 | FR-016 (contract tests both sides) | WS4, ST-CONTRACT-01 |
-| FR-017 (submodules latest) | section 10.3 |
+| FR-017 (submodules latest) | sections 10.3, 10.5 |
 | FR-018 (updates pass tests first) | section 10.3 |
 | FR-020 (no history rewrite, no force-push) | section 8 |
 | FR-021 (rootless containers) | sections 9.1, 10.1, 10.4 |
@@ -1003,7 +1027,7 @@ ffmpeg treats `concat:`, `http:`, `file:` as protocols in an input name; the fix
 
 ```go
 const sentinel = "SENTINEL-NOT-A-REAL-CREDENTIAL-7f3a"
-// 1. POST /api/v1/storage/roots with password=sentinel (real PostgreSQL container)
+// 1. POST /api/v1/storage/roots with the password field set to the sentinel constant above, never a real value (real PostgreSQL container)
 // 2. read the database file or dump rows: bytes.Contains(dump, sentinel) must be false
 // 3. GET /api/v1/storage/roots and every /smb/* response: bytes.Contains(body, sentinel) must be false
 // 4. capture all log sinks during the operations: bytes.Contains(logs, sentinel) must be false

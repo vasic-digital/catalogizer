@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft |
+| Status | draft (revision 2: requirement mapping of the repository-state tool corrected to FR-019, FR-020, FR-024 and SC-010 (docs/21 IC-31); new section 11 accounts for every `NOT EXECUTED` marker in the plan set by file and states which document 07 appendix tests remain not executed; nothing is promoted to executed) |
 | Feature | `specs/001-full-project-audit-remediation` |
 | Tools live in | `specs/001-full-project-audit-remediation/poc/` |
 | Related plan documents | 02 (audit method), 07 (backend, section 12), 13 (documentation), 16 (infrastructure and enforcement) |
@@ -22,10 +22,11 @@
 8. Findings the tools surfaced (leads for the register)
 9. Limits, honest boundaries and path to production
 10. Reproduction commands and traceability
+11. Execution status of the plan set's code (revision 2)
 
 ## 1. Purpose and status
 
-The plan relies on three mechanical measurements: whether every repository (main plus 97 nested and direct submodule entries) is clean, pinned and published; whether documentation is reachable from the root README; and whether the HTTP API as served, documented and consumed is consistent. Documents 07, 13 and 16 quote numbers produced by earlier ad-hoc scripts that were kept only in a scratchpad. These three tools turn those scripts into tracked, tested, re-runnable proofs of concept so that the numbers can be reproduced and, later, promoted into the permanent gates (FR-001..FR-003 repository state, FR-013 reachability, FR-016 contract drift; SC-006, SC-008, SC-010).
+The plan relies on three mechanical measurements: whether every repository (main plus 97 nested and direct submodule entries) is clean, pinned and published; whether documentation is reachable from the root README; and whether the HTTP API as served, documented and consumed is consistent. Documents 07, 13 and 16 quote numbers produced by earlier ad-hoc scripts that were kept only in a scratchpad. These three tools turn those scripts into tracked, tested, re-runnable proofs of concept so that the numbers can be reproduced and, later, promoted into the permanent gates (FR-019, FR-020 and FR-024 repository state, FR-013 reachability, FR-016 contract drift; SC-006, SC-008, SC-010; revision 2 corrects the earlier mapping of repository state to FR-001..FR-003, which are register requirements, docs/21 IC-31).
 
 All three are **read-only**. No tool writes to any repository, runs a build, or contacts the network except `git ls-remote` in tool 1 (and `git fetch`, only when `--fetch` is passed). Nothing outside `poc/` and this document was modified. Each tool has a deterministic self-test with golden-good, golden-bad and negative-control cases (constitution 11.4.107(10), 11.4.201(7)) and each was run for real against this repository on 2026-10-03.
 
@@ -270,7 +271,7 @@ python3 $P/route_drift/route_drift.py --root . --spec docs/api/openapi.yaml > /t
 
 | Requirement | Supported by |
 |---|---|
-| FR-001..FR-003 (repository state, pins, synchronisation) | `repo_verify` |
+| FR-019, FR-020, FR-024 (repository state, pins, synchronisation; revision 2, docs/21 IC-31) | `repo_verify` |
 | FR-013, SC-006 (documentation reachable from README) | `doc_links` |
 | FR-015, FR-016, SC-008 (definitions and contracts match) | `route_drift` |
 | SC-010 (every repository and submodule clean and published) | `repo_verify` summary, exit code, `--strict` |
@@ -278,3 +279,55 @@ python3 $P/route_drift/route_drift.py --root . --spec docs/api/openapi.yaml > /t
 | 11.4.50 (determinism) | determinism assertions in tools 2 and 3, sorted traversal in tool 1 |
 
 Files: `poc/repo_verify/{verify_repo.sh,exceptions.tsv,README.md,results/}`, `poc/doc_links/{crawl_links.py,README.md,results/}`, `poc/route_drift/{route_drift.py,README.md,results/}`.
+
+## 11. Execution status of the plan set's code (revision 2)
+
+This revision promotes nothing to executed. The code that actually ran for the plan set is: the three tools of this document (self-tests 24 of 24, 31 of 31 and 26 of 26, plus one real run each, section 6); document 11 Appendix A (the predecessor verifier, executed read-only) and Appendix B (the update loop, executed with `DRY_RUN=1` on five submodules only); the document 03 inventory commands; document 07 Appendix B.1 to B.3 (route set, client routes, CodeGraph hotspot query); and document 13 Appendices A and B (link crawler and export-sync checker, read-only). Everything else that looks like code is a design sketch and carries the marker.
+
+### 11.1 Document 07 appendix tests that remain NOT EXECUTED
+
+An independent plan-set audit asked for document 07 A.1 and A.2 to be promoted to executed proofs of concept. They were not run in this revision: running them needs the API binary built in a container and a running stack (document 16 P0b, P4 and P5 have not been delivered), and writing a "promoted" status without a run would be the bluff this plan forbids. Their status and the tasks that will execute them:
+
+| Document 07 entry | Status | Executed first by (tasks.md) |
+|---|---|---|
+| A.1 Auth middleware negative-path test skeleton (Go) | NOT EXECUTED | T210 (WP-30 detection: JWT negative-path suite against the real binary), then T321 (WP-50 negative-path suite from document 15 Appendix A.1) |
+| A.2 SSRF RED test for the image proxy | NOT EXECUTED | T211 (WP-30 detection: SSRF table against real containers with a sink-side listener), then T315 (WP-50 S-01 RED from document 15 Appendix A.2) |
+| A.3 Benchmark skeleton | NOT EXECUTED | T272 (WP-38 Go benchmark baselines) |
+| A.4 Dialect semantic-loss RED test | NOT EXECUTED | T214 (WP-30 database detection: dialect-rewrite tests on real PostgreSQL) |
+| A.5 Scanner behaviour test against a real FTP server | NOT EXECUTED | T339 (WP-51 scanner implementation, BLOCKED-ON ODG-20) and T451 (real FTP, SMB and WebDAV services in the integration suites) |
+| B.1 Route set versus OpenAPI | EXECUTED (read-only, document 07) | n/a |
+| B.2 Client versus server routes | EXECUTED (read-only, document 07) | n/a |
+| B.3 CodeGraph hotspot query | EXECUTED (read-only, document 07) | n/a |
+| B.4 Evidence record format | NOT EXECUTED (a format, not a test) | WP-05 evidence recorder |
+
+### 11.2 Accounting of the NOT EXECUTED markers
+
+Measured on 2026-10-03 while this revision was written (after the same round's edits to documents 01, 03, 05, 07 to 18 and 20), with `grep -c 'NOT EXECUTED'` per Markdown file of the feature directory (a line count; `grep -o ... | wc -l` gives the same total, so no line carries the marker twice). This document is excluded, so that the table does not count itself. A marker labels a heading, a code block, a comment line or a run statement; one sketch can carry it twice (in its heading and in its first comment line), so the count is of markers, not of distinct sketches.
+
+| File | Markers |
+|---|---:|
+| `docs/02-audit-methodology-and-index-strategy.md` | 11 |
+| `docs/03-existing-issue-inventory.md` | 6 |
+| `docs/04-findings-register-design.md` | 5 |
+| `docs/05-test-strategy-and-coverage-matrix.md` | 4 |
+| `docs/06-determinism-and-evidence-framework.md` | 2 |
+| `docs/07-backend-catalog-api-audit-plan.md` | 13 |
+| `docs/08-web-client-audit-plan.md` | 11 |
+| `docs/09-desktop-and-installer-audit-plan.md` | 9 |
+| `docs/10-android-and-android-tv-audit-plan.md` | 9 |
+| `docs/11-submodules-audit-and-update-runbook.md` | 2 |
+| `docs/12-helixqa-challenges-and-governance-plan.md` | 5 |
+| `docs/13-documentation-program-plan.md` | 9 |
+| `docs/14-performance-engineering-plan.md` | 6 |
+| `docs/15-security-and-danger-zone-plan.md` | 13 |
+| `docs/16-containerized-infrastructure-and-local-enforcement-plan.md` | 9 |
+| `docs/17-research-engineering-practices.md` | 1 |
+| `docs/18-research-product-innovation-and-game-changers.md` | 6 |
+| `docs/20-research-second-pass-gaps.md` | 11 |
+| Subtotal, 18 numbered documents | 132 |
+| `contracts/README.md` | 1 |
+| `plan.md` | 1 |
+| `quickstart.md` | 9 |
+| Total, 21 Markdown files | 143 |
+
+The plan-set audit counted 131 markers in 18 documents before this round (re-measured against the committed `HEAD` versions: 131). The difference of one in the numbered documents is the applicability-map block that document 05 revision 3 added (section 13.4); the other 11 are in the three files outside `docs/`, which that count did not include. Documents 01 and 21 carry no marker. The count changes whenever a document is edited; it is re-measured, never carried forward, and the documents' own markers stay the authority on what ran.
