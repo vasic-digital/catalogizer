@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 5 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 4: the same-commit rule names the Catalogizer commit-push script (`scripts/commit-push-all.sh`, document 16 §12) instead of an `UNKNOWN:` binding, and records that registering `export_sync_check` as a commit-push S3 check is owed in tasks.md. Revision 3: the section 5 reachability note on this feature's plan set is marked resolved, with the crawler result of 2026-10-03. Revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
+| Status | draft (revision 5: the same-commit rule and the section 8.3 sequence follow tasks.md T535 and document 16 revision 7: the commit-push script runs `export_sync_check` as an S3 check that renders nothing and writes nothing into the tracked tree, the author renders the twins under `/out` and declares them with their source, and the run refuses a stale or missing twin with exit 10; the revision 4 statement that no task carried the check is corrected (T535 wires it, T538 the other documentation gates), only its `scripts/repo/validate_checks.tsv` row is still owed in T535 (round-8 review); the independent-check row names the `covers_runs` field of every review verdict. Revision 4: the same-commit rule names the Catalogizer commit-push script (`scripts/commit-push-all.sh`, document 16 §12) instead of an `UNKNOWN:` binding, and records that registering `export_sync_check` as a commit-push S3 check is owed in tasks.md. Revision 3: the section 5 reachability note on this feature's plan set is marked resolved, with the crawler result of 2026-10-03. Revision 2: root Markdown groups counted exactly (37 report files, 6 working docs, document 03 §5.10 names them); disposition rows added for root items that are not Markdown or sit in hidden directories (`LICENSE`, `submodule-analysis.txt`, `.implementation/`, `.github/workflows/README.md`, `.pre-commit-config.yaml`); the feature's own plan set recorded as unreachable from `README.md` today) |
 | Feature | specs/001-full-project-audit-remediation |
 | Covers | FR-012, FR-013, FR-014, FR-015, SC-006, SC-007, SC-008 |
 | Governance anchors | §11.4.12, §11.4.18, §11.4.44, §11.4.57, §11.4.59, §11.4.61, §11.4.65, §11.4.73, §11.4.86, §11.4.95, §11.4.106, §11.4.107(10), §11.4.122, §11.4.124, §11.4.186, §11.4.212, §11.4.215, §11.4.223, §11.4.257, §11.4.258, §11.4.259, §11.4.260 |
@@ -401,32 +401,37 @@ Volume consideration: ~320 hand-curated documents × 3 formats ≈ 960 binary fi
 - Generalise by reference the constitution's `render-governance-twins.sh` recipe: pandoc `-f gfm -t html5 -s --template=<governance-template.html5>`, docx via `pandoc -f gfm -t docx`, PDF via `weasyprint <html> <pdf>`, `SOURCE_DATE_EPOCH` pinned. A project-level wrapper `scripts/docs/export_docs.sh` reads the export set from `docs/EXPORT_SCOPE.txt` (derived from `DOC_SCOPE.yaml` classes A, B, D-selected) and renders every document; the template file is referenced from the constitution submodule path (inherited, not copied, §11.4.28/.177), with an OpenDesign project stylesheet appended for product docs (§11.4.162 tokens; the tokens file location is `UNKNOWN:` until the design-token audit names it).
 - Mermaid handling in exports: pre-pass replaces each diagram reference with the validated SVG (html) / PNG (docx) / embedded SVG (pdf).
 - Fingerprint: each export embeds the source sha256, the template sha256 and the toolchain version: HTML `<meta name="source-sha256" content="…">`, PDF `/Keywords` or XMP field `source-sha256`, DOCX `docProps/custom.xml` property. `docs/EXPORT_MANIFEST.json` maps `source → {sha256, outputs[{path, sha256, bytes}], toolchain}` and is itself tracked (§11.4.95/§11.4.215 principle).
-- Same-commit rule: the commit/push script (§11.4.234; revision 4: the Catalogizer binding is `scripts/commit-push-all.sh`, document 16 §12 and tasks.md WP-04, docs/21 IC-16) runs `export_sync_check` (production form `scripts/docs/export_sync_check.py`, tasks.md T280) as a named S3 check; its registration as a row of the check registry `scripts/repo/validate_checks.tsv` is not yet carried by any task and is owed in tasks.md; a staged `.md` without a staged twin whose fingerprint equals `sha256(md)` refuses the commit with a remediation message (never a hung push). Long-render path: only changed sources re-render (manifest diff), full render on demand.
+- Same-commit rule: the commit/push script (§11.4.234; revision 4: the Catalogizer binding is `scripts/commit-push-all.sh`, document 16 §12 and tasks.md WP-04, docs/21 IC-16) runs `export_sync_check` (production form `scripts/docs/export_sync_check.py`, tasks.md T280) as a named S3 check that renders nothing, because the script never writes into the tracked tree (revision 5, tasks.md T535, which wires it as a `CPA` check stage, and T538, which wires the remaining documentation gates as `CPA` stages): a declared in-scope `.md` whose twin is not declared with it, or whose twin's embedded fingerprint differs from `sha256(md)`, refuses the run at S3 (exit 10) with the remediation "run `scripts/docs/export_docs.sh` for the listed sources and declare the twins" (never a hung push). The author renders before the run: `export_docs.sh` renders only stale sources in IMG-DOCS under `/out`, and a host step copies each twin and the manifest to its tracked path with both sha256 values recorded (the generated-files rule of tasks.md). Revision 5 correction: tasks.md T535 wires the check but names no row of the check registry `scripts/repo/validate_checks.tsv` for it, so that registration row is still owed in tasks.md T535 (the revision 4 text said no task carried the check at all). Long-render path: only changed sources re-render (manifest diff), full render on demand.
 
 ### 8.3 Sequence
+
+Revision 5: the commit-push script renders nothing and writes nothing into the tracked tree (document 16 §12.2.1); rendering is the author's step before the run (tasks.md T535).
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant Dev as Author
-  participant Cmt as commit-push script
-  participant Chk as export_sync_check
   participant Exp as export_docs.sh (rootless container)
   participant Dia as diagram_validate
   participant Man as EXPORT_MANIFEST.json
-  Dev->>Cmt: stage docs/**/*.md changes
-  Cmt->>Chk: verify fingerprints for staged sources
-  Chk->>Man: read source sha256 and twin sha256 list
-  Chk-->>Cmt: STALE list (sources changed, twins not)
-  Cmt->>Exp: render only STALE sources (md to html, docx, pdf)
+  participant Cmt as commit-push script
+  participant Chk as export_sync_check
+  Dev->>Exp: render only STALE sources (md to html, docx, pdf) under /out
   Exp->>Dia: render and validate every referenced diagram
   Dia-->>Exp: verdict per diagram (non-blank, labels, sha)
   Exp->>Exp: pandoc html, pandoc docx, weasyprint pdf, embed source-sha256
-  Exp->>Man: update manifest atomically (temp, fsync, rename)
-  Exp-->>Cmt: outputs plus manifest
-  Cmt->>Chk: re-verify (must be zero STALE, zero MISSING)
-  Chk-->>Cmt: PASS (export-sync report JSON)
-  Cmt->>Dev: commit includes md and all twins in one commit
+  Exp-->>Dev: twins and manifest under /out
+  Dev->>Man: host step copies twins and manifest to their tracked paths, sha256 recorded
+  Dev->>Cmt: declare md, twins and manifest in the paths-from list
+  Cmt->>Chk: S3 check of the declared sources, renders nothing
+  Chk->>Man: read source sha256 and twin sha256 list
+  alt any STALE or MISSING
+    Chk-->>Cmt: FAIL with the list
+    Cmt-->>Dev: exit 10 and the remediation, run export_docs.sh for the listed sources
+  else zero STALE and zero MISSING
+    Chk-->>Cmt: PASS (export-sync report JSON)
+    Cmt->>Cmt: S5 commit md and all twins in one commit
+  end
 ```
 
 ### 8.4 Checker contract
@@ -605,7 +610,7 @@ Each success criterion maps to captured, machine-created, re-runnable evidence (
 | SC-008b templates/config | `definitions_diff_report.json` (env keys, templates, compose services, routes, WebSocket events, alert rules) | zero differences or each difference tracked as a finding with item id |
 | FR-012 review | `DOC_REVIEW_LEDGER.csv` + `DOC_DISPOSITION.md` | every document accounted; reviewer independent of the author (§11.4.240) |
 | Gate integrity | self-test report of every gate (golden-good, golden-bad, negative-control all behave) | all gates validated before they are trusted |
-| Independent check | Opus-xhigh review record naming model and effort | zero-finding GO |
+| Independent check | Opus-xhigh review record naming model and effort and, revision 5, the reviewed commits in `covers_runs` (repository path, commit sha and `CPA-Run` id; every `[REVIEW]` verdict carries it, `$FEAT/contracts/review-verdict.schema.json`, document 16 §12.2.4 rule (e)) | zero-finding GO |
 
 Baseline "before" numbers to beat (measured, §2): reachable 42/2,540, broken 84 (first measurement; 42/2,562 and 126 as of 2026-10-03T12:02Z), twins with fingerprints 0/36, DOCX twins 0, undocumented real tables 23 (main schema doc), API spec-vs-code gap 68 operations (approximate), versions three-way divergent (README `v2.1.0`, `versions.json` 2.3.0, four `package.json` files 2.4.0).
 

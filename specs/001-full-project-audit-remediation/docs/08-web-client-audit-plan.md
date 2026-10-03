@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 3: the section 6.1 evidence-directory variable is renamed from `EVID` to `WEB_EV`, because tasks.md and document 16 use `$EVID` for the run directory of one commit-push run; no other change. Revision 2: pipe characters inside code spans of three table rows escaped with a backslash, so each row has its header's column count; no content change) |
+| Status | draft (revision 4: status note only; tasks.md (rev 8) and document 16 (revision 7) now name the commit-push run directory `$CPA_RUN`, so `$EVID` is used by no plan document and `WEB_EV` stays this document's name; no other change. Revision 3: the section 6.1 evidence-directory variable is renamed from `EVID` to `WEB_EV`, because tasks.md and document 16 then used `$EVID` for the run directory of one commit-push run; no other change. Revision 2: pipe characters inside code spans of three table rows escaped with a backslash, so each row has its header's column count; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-web/` and the nine linked submodules `auth_context_react`, `media_browser_react`, `media_player_react`, `collection_manager_react`, `dashboard_analytics_react`, `ui_components_react`, `websocket_client_ts`, `media_types_ts`, `catalogizer_api_client_ts` |
 | Spec traceability | FR-005..FR-011, FR-014..FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-011 |

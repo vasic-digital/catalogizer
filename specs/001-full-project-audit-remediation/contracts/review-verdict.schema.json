@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-verdict/1",
+  "title": "Independent review verdict file ($EV/reviews/<gate-or-wp>.json)",
+  "description": "Format of every [REVIEW] verdict file of tasks.md (docs/21 section 4.4 and IC-46, the plan owner's held-commit rules after the review of commit af664ed0). Producer: the reviewing stream ST-REV, never the stream that made the change (FR-023, constitution 11.4.142, 11.4.240). Consumers: the commit-push script stage S6, which releases a held commit (one whose message carries `Awaits-Review: <this file's path>`) only when this file is committed in the main repository's HEAD with verdict GO and its covers_runs lists the held commit's CPA-Run id; stage S5, which refuses a new hold on a file that already holds GO (exit 20, reason verdict_already_go); the register importer of review rows (docs/04 reg_reviews: GO or NO-GO, model and effort). covers_runs lists every commit the review read, each by repository path (`.` for the main repository, otherwise the submodule path from the main repository root), commit sha and the CPA-Run id from that commit's trailer; it may be empty when the reviewed change is not committed yet (a task that commits only after its GO), and such a verdict releases no held commit. model and effort record what actually performed the review (constitution 11.4.209: Opus at xhigh); effort `?` records that the dispatch path could not set or report it (11.4.231(F.2)), never a claimed xhigh. Validated only against synthetic fixtures (no verdict file exists yet); see contracts/README.md. Other fields a task records (findings, reviewer-authored mutations, gate-specific checks) are allowed.",
+  "type": "object",
+  "required": [
+    "schema",
+    "verdict",
+    "covers_runs",
+    "model",
+    "effort"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "const": "review-verdict/1"
+    },
+    "verdict": {
+      "enum": [
+        "GO",
+        "NO-GO"
+      ]
+    },
+    "gate": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the gate or work package reviewed, for example G-GATE or WP-04"
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the stream that produced the reviewed change; the register importer refuses a verdict whose author equals its reviewer (docs/04 reg_reviews), a cross-field rule JSON Schema cannot express"
+    },
+    "reviewer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "the reviewing stream or agent, never the producing stream"
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "effort": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max",
+        "?"
+      ]
+    },
+    "covers_runs": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "repository",
+          "commit",
+          "cpa_run"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "repository": {
+            "type": "string",
+            "pattern": "^(\\.|[^/\\s][^\\s]*[^/\\s]|[^/\\s])$",
+            "description": "`.` or a path relative to the main repository root, no leading or trailing slash"
+          },
+          "commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "cpa_run": {
+            "type": "string",
+            "pattern": "^[0-9]{8}T[0-9]{6}Z-[0-9]+-[0-9A-Za-z]+$",
+            "description": "the run id of the commit's `CPA-Run:` trailer: UTC start time to the second, process id, random suffix"
+          }
+        }
+      }
+    },
+    "blocking_findings": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "GO"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "properties": {
+          "blocking_findings": {
+            "const": 0
+          }
+        }
+      }
+    }
+  ]
+}

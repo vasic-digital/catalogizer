@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 5 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
-| Status | draft (revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -845,10 +845,14 @@ determinism a hard requirement, so this plan does not treat a retry as acceptabl
   in the language's comment form, referencing the register item. The tag is applied per test, not
   as a blanket. The project's reviewer rules (CODEOWNERS equivalent) require the designated
   reviewer for any change that touches a tagged test or the `regression/` path, so a weakening is
-  visible and reviewable, not prevented. CODEOWNERS is a host-platform concept; a local
-  equivalent is a pre-push check (the pre-push gate script is `scripts/hooks/pre-push-gate.sh`;
-  its use and the constitution rule 11.4.234 on hooks must be reconciled by the repository
-  workflow owner, `UNCONFIRMED:`).
+  visible and reviewable, not prevented. CODEOWNERS is a host-platform concept; the local
+  equivalent is a stage of the commit-push script, never an automatic hook (revision 5, which
+  resolves the revision 4 `UNCONFIRMED:` note on `scripts/hooks/pre-push-gate.sh`: 11.4.234
+  forbids a blocking hook, document 16 §12.1 installs none and keeps that script unmodified and
+  uninstalled): tasks.md T564 adds a `CPA` stage that refuses an unreviewed change inside the
+  protected scope declared in `scripts/qa/protected_spec_scope.yaml` (tagged tests, the T473
+  guard registry, any `regression/` directory), and a reviewed change is one whose review
+  verdict covers it (document 16 §12.2.4).
 - Causes of flakiness found by the three-run comparison are investigated to root cause (11.4.102)
   and fixed; they are not hidden by quarantine. Quarantine only isolates while the investigation
   runs.
