@@ -316,7 +316,7 @@ All values exact unless marked. "Entries" are source entries before deduplicatio
 | Bank gaps (S-17 to S-20) | 11 placeholder bank files; 1,178 placeholder step lines; 5 weak-baseline rows | exact | 1,269 cases and 507 + 2,882 other cases are test definitions, mapped as NON-PROBLEM |
 | Narrative claim documents (S-08, S-09, S-12, S-13, S-14 others) | about 36 root + 37 status + 11 audit documents, plus S-22 | `NOT COUNTED` | needs the lead-scan and read pass |
 
-Upper bound on register items before deduplication: **about 1,778 + 1 + 1,676 + 221 + 83 + 898 + 37 + 14 + 16 + 5 + the claim-document leads**, roughly 4,000 candidate entries, of which the real count after folding duplicates and dropping procedural checklists is expected to be far lower. This is an estimate for capacity planning only (ESTIMATE, not a finding). The reconciliation produces the exact figure.
+Upper bound on register items before deduplication: **about 1,778 + 1 + 1,676 + 221 + 83 + 898 + 37 + 14 + 16 + 5 + the claim-document leads**, which sums to 4,729 before the leads, so about 4,700 candidate entries (ESTIMATE; the sum includes the 898 scan findings of the latest run, of which gosec 810; the 14 and 16 terms are not itemised in the table above and are UNCONFIRMED), of which the real count after folding duplicates and dropping procedural checklists is expected to be far lower. This is an estimate for capacity planning only (ESTIMATE, not a finding). The reconciliation produces the exact figure.
 
 ## 8. The target register and its mapping vocabulary
 

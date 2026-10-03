@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-03 |
 | Status | draft |
@@ -38,7 +38,7 @@ The feature delivers seven user stories (spec P1: register, audit, proven fixes;
 1. **Prove the instruments before using them.** The code indexes fail their own health checks today: CodeGraph covers 7,150 files and Lumen 10,397 with `Stale: yes`, there is no scope DATA file, no `.lumenignore` and no `.mcp.json` (doc02 §2, findings F-INDEX-001 to -006). Detectors are absent from the host and one existing detector is already proven blind (the `awk '\bunwrap\(\)'` rule, doc09 D-04; the Snyk results that are failed scans read as clean, doc03 F-8). Nothing is audited until the index gate (P1 to P8, doc02 §4.1) and the control-needle discipline exist.
 2. **Build the register and the evidence machinery before the first finding.** The constitution-mandated workable-items database does not exist (doc03 F-1); `.gitignore:85` would ignore it the moment it is created (doc04 §2.4). The register (doc04) and the evidence recorder (doc06) are the first customers of their own rules.
 3. **Containerize before any build or test.** Four existing container assets cannot build from a clean checkout (doc16 D-01 to D-04); `auto-container.sh` builds on the bare host when the host has the tool (D-08). FR-021 forbids bare-host builds, so every audit and test run waits on Phase 1.
-4. **Import everything already known.** About 4,000 candidate source entries (doc03 §7, ESTIMATE), dominated by 1,778 HelixQA tickets whose `HELIX-NNN` ids collide (676 distinct ids, doc03 F-2), 1,111 closures without evidence (F-4) and 282 `wontfix` closures that FR-008 does not permit (doc04 §3 DR-5).
+4. **Import everything already known.** About 4,700 candidate source entries (doc03 §7, ESTIMATE; doc03's own sum is 4,729 before the claim-document leads and includes the latest gosec run of 810 findings), dominated by 1,778 HelixQA tickets whose `HELIX-NNN` ids collide (676 distinct ids, doc03 F-2), 1,111 closures without evidence (F-4) and 282 `wontfix` closures that FR-008 does not permit (doc04 §3 DR-5).
 5. **Audit every application twice from the same state** (SC-002), with independent review (FR-023).
 6. **Fix contracts before clients.** Client-to-server drift is measured in every client (doc01 §14 C2 to C5; doc08 WEB-F03; doc09 D-01; doc10 H10-11, H10-13). The live route dump and both-sided contract tests (doc07 W7, doc05 TS-05) come before any client fix, so a client is never fixed against a contract that is about to change.
 7. **Remediate by risk, prove every fix RED then GREEN three times** (FR-008, SC-003), then close the test-type matrix (SC-004), convert 1,178 prose QA steps (doc12 §2.3), run the documentation programme (2,520 orphans as of 2026-10-03T12:02Z, doc13 §2.1 stamp; 2,498 at first measurement) and the performance programme (SC-011).
@@ -48,7 +48,7 @@ The feature delivers seven user stories (spec P1: register, audit, proven fixes;
 
 The critical path is set by dependencies, not by effort. Two chains run in parallel, converge at WP-71 (full retest on the candidate) and end together at WP-74 (evidence pack and report checker) and WP-74R (final independent review):
 
-- **Engineering chain:** WP-09 bootstrap image slice -> WP-05 evidence recorder and WP-06 register -> WP-10 host probes -> WP-11 image pinning and broken-asset fixes -> WP-12 runners -> WP-13 real-service stack -> WP-30..WP-38 audit pass (WP-02 index gate and WP-15 detector harness are further inputs, WP-05 supplies the evidence recorder) -> WP-39 repeat run -> WP-39R audit review -> WP-40 live route dump -> WP-41 contract tests -> WP-50/WP-51 server fixes -> WP-52..WP-54 client fixes -> WP-61 test-type closure -> WP-71 full retest -> WP-72 -> WP-73 -> WP-74 -> WP-74R.
+- **Engineering chain:** WP-09 bootstrap image slice -> WP-05 evidence recorder and WP-06 register -> WP-10 host probes -> WP-11 image pinning and broken-asset fixes -> WP-12 runners -> WP-13 real-service stack -> WP-30..WP-38 audit pass (WP-02 index gate, WP-05 evidence recorder and WP-15 detector harness are inputs of every audit package WP-30 to WP-36; WP-13 is an input of WP-30, WP-35 and WP-38) -> WP-39 repeat run -> WP-39R audit review -> WP-40 live route dump -> WP-41 contract tests -> WP-50/WP-51 server fixes -> WP-52..WP-54 client fixes -> WP-61 test-type closure -> WP-71 full retest -> WP-72 -> WP-73 -> WP-74 -> WP-74R.
 - **Owner chain:** WP-01 decision intake -> owner supplies build-host confirmation (ODG-07), devices (ODG-04), credentials (ODG-01), desktop hosts (ODG-06) and the legacy-closure policy (ODG-09) -> WP-10 host probes -> WP-11 and WP-14 -> the device- and credential-gated work in WP-14, WP-21, WP-54, WP-60, WP-62 -> WP-71.
 
 WP-02 does not depend on WP-01: the index gate needs neither an owner decision nor a device, so it starts in parallel with the decision intake. WP-09 exists so that WP-04, WP-05 and WP-06 can run their tests in pinned containers during P0 instead of waiting for the P1 image programme (section 3.3, P0).
@@ -60,7 +60,8 @@ flowchart LR
   A["WP-01 Owner decision intake"]
   B["WP-02 Index health gate"]
   B0["WP-09 Bootstrap image slice"]
-  C["WP-03 Verifier and WP-04 commit-push script"]
+  C0["WP-03 Recursive verifier"]
+  C["WP-04 Commit-push script"]
   D["WP-05 Evidence recorder and WP-06 Register"]
   E["WP-07 Constitution pin bump"]
   F0["WP-10 Host probes"]
@@ -68,7 +69,7 @@ flowchart LR
   G["WP-12 Container runners"]
   H["WP-13 Real-service stack"]
   I["WP-20 Source import"]
-  J["WP-30 to WP-38 Audit pass 1"]
+  J["WP-30 to WP-38 Audit pass 1 (inputs per package, section 5.4)"]
   K["WP-39 Audit repeat"]
   K2["WP-39R Audit review"]
   L["WP-40 Live route dump"]
@@ -81,10 +82,13 @@ flowchart LR
   S["WP-74 Evidence pack and report checker"]
   S2["WP-74R Final independent review"]
   T["Owner supplies devices, credentials, hosts"]
+  C0 --> C
   B0 --> C
   B0 --> D
+  C0 --> E
   C --> E
-  D --> F0
+  B0 --> F0
+  D -->|"P0 exit, phase gate"| F0
   F0 --> F
   B0 --> F
   F --> G
@@ -118,12 +122,12 @@ flowchart LR
 | Direct submodules / recursive repositories | 44 / 97 | doc01 §4.1, doc11 H1 |
 | Own-org submodule pins behind upstream | 1 (`constitution`, 25 commits) | doc11 H3 |
 | Legacy HelixQA ticket files | 1,778 (676 distinct ids) | doc03 F-2 |
-| Candidate source entries before dedup | about 4,000 (ESTIMATE) | doc03 §7 |
+| Candidate source entries before dedup | about 4,700 (ESTIMATE; 4,729 before the claim-document leads, includes the gosec latest run of 810) | doc03 §7 |
 | HelixQA bank cases / placeholder step lines | 1,269 / 1,178 | doc12 §2.3 |
 | In-scope Markdown / reachable from README / orphans | 2,562 / 42 / 2,520 as of 2026-10-03T12:02Z (doc13 §2.1 stamp, doc19 §7); earlier points 2,540 / 42 / 2,498 (first measurement) and 2,551 / 42 / 2,509 | doc13 §2.1 to §2.2, doc19 §6.2 |
 | Broken relative links / broken anchors | 126 / 83 as of 2026-10-03T12:02Z (shipped crawler rules, include images, HTML and anchors); earlier points 84 (doc13 rules) and 123 entries, 119 unique, plus 82 anchors (doc19 first run) | doc13 §2.1 to §2.3, doc19 §6.2 |
 | Server routes / OpenAPI operations / routes missing from the spec / unwired mux routes | 247 / 181 / 68 / 62 | doc19 §6.3 (reproduces doc07 and doc13) |
-| Itemised seed findings across documents | 233 (section 9) | this document |
+| Itemised seed findings across documents | 234 (section 9) | this document |
 | Work packages | 53 (section 5; WP-09, WP-39R and WP-74R added by review) | this document |
 | Owner decisions and inputs | 38 grouped, ODG-01 to ODG-38 (section 8; `research.md` holds 79 finer ones, OD-01 to OD-79) | this document |
 
@@ -136,7 +140,7 @@ flowchart LR
 3. **TDD for every executable artifact** (§11.4.224): code, gate scripts, wrappers, mutation pairs, bank cases. A gate's paired mutation is its test-first artifact. Prose-only document edits are not coverage-scoped (§11.4.224(F)) but still pass independent review (§11.4.142).
 4. **No calendar dates and no hour numbers.** Effort is expressed as package counts and size classes (section 11).
 5. **No guessing.** Where source documents disagree, section 10 records both values and the measurement that settles the question; the plan never picks a number by preference.
-6. **Owner decisions are blockers, not assumptions.** Each one is recorded as an `Operator-blocked` register item with its choices (§11.4.21, spec edge case "owner decision"), with a stated plan default that is reversible.
+6. **Owner decisions are blockers, not assumptions.** Each one is recorded as an `Operator-blocked` register item with its choices (§11.4.21, spec edge case "owner decision"). Only where `research.md` marks a reversible working default (12 of its 79 OD items) may the plan proceed on the recommendation; every other group blocks the work in its Blocks column until the owner answers (FR-008, FR-025).
 7. **Main branch only, fast-forward only, no force-push, no history rewrite** (FR-020, FR-024, §11.4.113).
 8. **Every build and test in a rootless container** (FR-021, §11.4.161, §11.4.173), heavy builds on the designated build host once verified (doc16 P6).
 
@@ -405,13 +409,13 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 
 | ID | Stream | Title | Source | Inputs | Outputs | Acceptance evidence | FR | SC | Size |
 |---|---|---|---|---|---|---|---|---|---|
-| WP-30 | ST-API | Backend audit | doc07 W1-W6, §8 danger zones | WP-15, WP-13 | findings for auth, SSRF, exec, concurrency, scanner, DB | race and leak reports; RED tests for C1..C22 candidates | FR-006, FR-007 | SC-002 | L |
-| WP-31 | ST-WEB | Web audit | doc08 W8-00, W8-02, W8-03 | WP-15 | detector results reconciled with WEB-F01..F20 | identical hashes on two runs | FR-006, FR-007 | SC-002 | L |
-| WP-32 | ST-DESK | Desktop and installer audit | doc09 WP-D1, §6 Rust detectors | WP-15 | findings D-/I- reconciled | needle per detector (fixes the D-04 false null) | FR-006, FR-007 | SC-002 | M |
-| WP-33 | ST-AND | Android and TV audit | doc10 W10-00, W10-03, W10-04 | WP-11, WP-15 | SARIF, bank lint JSON, H10 hypotheses confirmed or refuted | two runs hash-identical | FR-006, FR-007 | SC-002 | L |
-| WP-34 | ST-SUB | Own-org submodule audit | doc11 §10, S-HQA-1, S-GOV-1/2, S-REM-1, S-UNUSED-1, S-LLMV-1 | WP-15, ODG-14 | per-module findings, `helix_qa` build proof | containerized `go build ./...` result; gate outputs | FR-006, FR-007 | SC-002 | L |
-| WP-35 | ST-SEC | Security audit, secrets and history scan, DAST detection | doc15 WS1, WS2/WS3 detection, WS5 | WP-15, WP-13, ODG-02, ODG-36 | redacted secret scan per repository, route-by-auth matrix, DAST alerts | needle result per scan; alert set identical across 3 runs | FR-006, FR-007 | SC-002 | L |
-| WP-36 | ST-GOV | Unowned components audit | doc02 §8.6-8.8; doc01 U-10; section 6.3 | WP-15 | audit results for `OCU-CUDA-Sidecar`, `qa-ai-system`, `Website/`, `Build/`, `scripts/`, `tests/` | recorded result per unit, "none found" with evidence | FR-006, FR-007 | SC-002 | M |
+| WP-30 | ST-API | Backend audit | doc07 W1-W6, §8 danger zones | WP-02, WP-05, WP-15, WP-13 | findings for auth, SSRF, exec, concurrency, scanner, DB | race and leak reports; RED tests for C1..C22 candidates | FR-006, FR-007 | SC-002 | L |
+| WP-31 | ST-WEB | Web audit | doc08 W8-00, W8-02, W8-03 | WP-02, WP-05, WP-15 | detector results reconciled with WEB-F01..F20 | identical hashes on two runs | FR-006, FR-007 | SC-002 | L |
+| WP-32 | ST-DESK | Desktop and installer audit | doc09 WP-D1, §6 Rust detectors | WP-02, WP-05, WP-15 | findings D-/I- reconciled | needle per detector (fixes the D-04 false null) | FR-006, FR-007 | SC-002 | M |
+| WP-33 | ST-AND | Android and TV audit | doc10 W10-00, W10-03, W10-04 | WP-02, WP-05, WP-11, WP-15 | SARIF, bank lint JSON, H10 hypotheses confirmed or refuted | two runs hash-identical | FR-006, FR-007 | SC-002 | L |
+| WP-34 | ST-SUB | Own-org submodule audit | doc11 §10, S-HQA-1, S-GOV-1/2, S-REM-1, S-UNUSED-1, S-LLMV-1 | WP-02, WP-05, WP-15, ODG-14 | per-module findings, `helix_qa` build proof | containerized `go build ./...` result; gate outputs | FR-006, FR-007 | SC-002 | L |
+| WP-35 | ST-SEC | Security audit, secrets and history scan, DAST detection | doc15 WS1, WS2/WS3 detection, WS5 | WP-02, WP-05, WP-15, WP-13, ODG-02, ODG-36 | redacted secret scan per repository, route-by-auth matrix, DAST alerts | needle result per scan; alert set identical across 3 runs | FR-006, FR-007 | SC-002 | L |
+| WP-36 | ST-GOV | Unowned components audit | doc02 §8.6-8.8; doc01 U-10; section 6.3 | WP-02, WP-05, WP-15 | audit results for `OCU-CUDA-Sidecar`, `qa-ai-system`, `Website/`, `Build/`, `scripts/`, `tests/` | recorded result per unit, "none found" with evidence | FR-006, FR-007 | SC-002 | M |
 | WP-37 | ST-DOC | Documentation and definitions baseline | doc13 D0, D4 extractors; §2; doc19 tool 2 `poc/doc_links/crawl_links.py` (31 of 31 self-test checks) | WP-12 | crawler and export checker committed; schema dumper, route and env extractors | baseline JSON reproducible | FR-012, FR-013, FR-015 | SC-006, SC-008 | M |
 | WP-38 | ST-PERF | Performance as-found baseline | doc14 WP-14-01..07; doc07 W9 | WP-13, WP-05, ODG-01, ODG-07, ODG-32 | harness, environment fingerprint, A/A noise floors, baselines OP-01..OP-16 where possible | A/A twice identical; BLOCKED records name missing resources | FR-010, FR-025 | SC-011 | L |
 | WP-39 | ST-GOV | Audit repeat run and determinism comparison | doc02 W4, §12 | WP-30..WP-38 | second run from an identical manifest; `audit/determinism.json` | `audit/determinism.json` IDENTICAL; comparator self-validation with a seeded difference; index gate re-proved in the repeat run | FR-005 | SC-002 | M |
@@ -430,9 +434,9 @@ Size classes are defined in section 11. "Source" lists the work packages of the 
 |---|---|---|---|---|---|---|---|---|---|
 | WP-50 | ST-SEC | Security fix wave | doc15 §13 order S-01..S-08, WS2-WS4, WS7 | WP-41, ODG-25, ODG-26, ODG-27, ODG-28, ODG-02, ODG-03 | fixes in server and every client | RED then GREEN x3; anonymous and foreign-origin `/ws` refused; SSRF table pass; at-rest sentinel absent | FR-008, FR-016 | SC-003 | L |
 | WP-51 | ST-API | Backend fix wave | doc07 W8 | WP-41, ODG-20, ODG-08, ODG-23 | fixes for C-items, dialect, migrations, scanners, include/exclude patterns | per fix RED and GREEN verdict with different fingerprints | FR-008, FR-015 | SC-003 | XL |
-| WP-52 | ST-WEB | Web fix wave | doc08 W8-04, W8-07, W8-08, W8-11 | WP-41, ODG-21, ODG-25, ODG-30, ODG-24 | auth and realtime fixes, fabricated data removed or replaced, reproducible Dockerfile, security headers | RED and GREEN incl. unmocked provider-plus-status test | FR-008, FR-021 | SC-003 | L |
-| WP-53 | ST-DESK | Desktop and installer fixes | doc09 WP-D3..D7, WP-I1..I4, WP-P1; doc20 W20-07 (`Cargo.lock`, cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants) | WP-41, WP-14, ODG-06, ODG-31, ODG-08, ODG-23, ODG-25 | SSRF validator, managed client, credential storage, capabilities, protocol testers, packaging | Appendix A table green; mutation to `starts_with` goes red; per-protocol evidence | FR-008, FR-021 | SC-003 | L |
-| WP-54 | ST-AND | Android and TV fixes | doc10 W10-05..W10-13; doc20 W20-08 (AGP/compileSdk resolved against primary text), W20-09 (lint SARIF) | WP-41, WP-14, ODG-04, ODG-05, ODG-22, ODG-29, ODG-01, ODG-03, ODG-26 | auth header, refresh, route drift, offline layer, playback, release hardening, banks | real-backend RED and GREEN; device journeys or `blocked-unavailable` | FR-008, FR-025 | SC-003 | XL |
+| WP-52 | ST-WEB | Web fix wave | doc08 W8-04, W8-07, W8-08, W8-11 | WP-41, WP-50, WP-51, ODG-21, ODG-25, ODG-30, ODG-24 | auth and realtime fixes, fabricated data removed or replaced, reproducible Dockerfile, security headers | RED and GREEN incl. unmocked provider-plus-status test | FR-008, FR-021 | SC-003 | L |
+| WP-53 | ST-DESK | Desktop and installer fixes | doc09 WP-D3..D7, WP-I1..I4, WP-P1; doc20 W20-07 (`Cargo.lock`, cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants) | WP-41, WP-50, WP-51, WP-14, ODG-06, ODG-31, ODG-08, ODG-23, ODG-25 | SSRF validator, managed client, credential storage, capabilities, protocol testers, packaging | Appendix A table green; mutation to `starts_with` goes red; per-protocol evidence | FR-008, FR-021 | SC-003 | L |
+| WP-54 | ST-AND | Android and TV fixes | doc10 W10-05..W10-13; doc20 W20-08 (AGP/compileSdk resolved against primary text), W20-09 (lint SARIF) | WP-41, WP-50, WP-51, WP-14, ODG-04, ODG-05, ODG-22, ODG-29, ODG-01, ODG-03, ODG-26 | auth header, refresh, route drift, offline layer, playback, release hardening, banks | real-backend RED and GREEN; device journeys or `blocked-unavailable` | FR-008, FR-025 | SC-003 | XL |
 | WP-55 | ST-SUB | Shared-module fixes upstream and submodule update layers | doc11 §6 L0-L5; doc08 W8-09; doc12 WP-Q3; doc11 S-LOCK-1 (pin discipline re-verified after each layer) | WP-34, WP-07, ODG-13, ODG-14, ODG-15 | upstream commits with review; bottom-up pin moves | `UPDATED_GATE_PASS` ledger rows; affected-application full tests | FR-006, FR-017, FR-018 | SC-003, SC-009 | L |
 | WP-56 | ST-INFRA | Reproducibility, SBOM, provenance, SLSA record, promotion by digest | doc16 P8, P9, §14, §15; doc15 WS6; doc20 W20-04 (provenance script and verifier, `SLSA_LEVEL.md` stating L1 until ODG-16) | WP-14, ODG-16, ODG-06 | double-build comparisons, SBOMs, `docs/security/SLSA_LEVEL.md`, digest-referenced compose | per-artifact reproducibility verdict; `check_pins.sh` clean | FR-021 | SC-003 | L |
 | WP-57 | ST-SUB | Dependency report and decisions | doc15 WS6; doc09 WP-X2; doc10 W10-15; doc11 §2.2 | WP-34, ODG-13 | one report: every dependency with version, upstream version, status, decision | report complete for submodules and third-party packages | FR-017 | SC-009 | M |
@@ -659,7 +663,7 @@ Probability and impact use the source documents' qualitative scale (Low, Medium,
 |---|---|---|---|---|---|---|
 | R-01 | SLSA Build Level 2 (§11.4.246 minimum) versus no CI (§11.4.156): SLSA excludes workstations; whether an owner-operated dedicated build host counts as a hosted platform is an interpretation question (doc20 §3, correcting doc17 §7.1); no signing key exists (doc16 §14.2); L3 is unreachable on a single-uid host | H | M | first provenance statement | claim L1 once provenance exists; build the signed-on-build-host path as the L2 target; never write L2 before the owner decides (doc20 DR-20-01) | ODG-16 |
 | R-02 | FR-025 `blocked-unavailable` versus governance honest-skip: existing tools emit `skipped` (HelixQA executor, `t.Skip`, NAS challenges skipped silently, QF-02, QF-09, doc03 §5.9) | certain | H | first test run | deterministic lane removes `skipped` (doc12 DR-4); reporter has no skip outcome (doc05 §16); spec records the stricter rule | none (owner decided) |
-| R-03 | `wontfix` (282) and legacy closures without evidence (1,111) conflict with FR-008 | certain | H | import Stage 2 | import as Queued with `legacy_status`; re-verification queue; batch triage of 204 enhancement suggestions into Feature items | ODG-09 |
+| R-03 | `wontfix` (282) and legacy closures without evidence (1,111) conflict with FR-008 | certain | H | import Stage 2 | import as Queued with `legacy_status`; re-verification queue; batch triage of 225 enhancement suggestions into Feature items | ODG-09 |
 | R-04 | Constitution pin bump changes binding rules; upstream `constitution_index.yaml` keeps the old `Constitution.md` hash so the Spec Kit freshness check fails after the bump (doc12 §14.1) | certain | M | WP-07 | record both hashes; report the defect upstream (FR-006 route); review record gains `finding_layer` | ODG-12 |
 | R-05 | Real devices absent: `adb devices` empty; no phone or tablet evidence exists; the Mi Box is not attached (doc10 §12.1, doc12 §2.5) | H | H | any device-gated test | owner request list in WP-01; blocked records; emulator only where ODG-05 allows | ODG-04, ODG-05 |
 | R-06 | Credentials absent for providers, NAS shares, Firebase, HawkScan, banks (doc12 §20.1, doc15 OQ-S7) | H | H | real-service tests | env-var contract; `blocked: credential_absent`; never defaults | ODG-01 |
@@ -684,8 +688,8 @@ Probability and impact use the source documents' qualitative scale (Low, Medium,
 | R-25 | `llms_verifier` vendored as files; `helix_qa` replace target missing, so HelixQA build health is unknown | certain | M | WP-34 | S-HQA-1 containerized build; history investigation | ODG-14 |
 | R-26 | Root `commit` delegates to an external unread binary | M | M | WP-04 | replace by the dedicated script; read the external tool before any use | none |
 | R-27 | Binary register DB in git conflicts under parallel edits | M | M | WP-20 onward | single-writer lock; reviewable dump; fast-forward only | ODG-11 |
-| R-28 | Completion requires zero open findings over a population of about 4,000 candidate entries plus every new finding | certain | H | P5 to P7 | dedup families; risk order; honest blocked list early | ODG-09, ODG-17 |
-| R-29 | Firebase key published in history and 38 to 41 provider keys with unknown rotation status | M | H | WP-35 | rotation ledger; history never rewritten | ODG-02 |
+| R-28 | Completion requires zero open findings over a population of about 4,700 candidate entries plus every new finding | certain | H | P5 to P7 | dedup families; risk order; honest blocked list early | ODG-09, ODG-17 |
+| R-29 | Firebase key published in history and 37 to 41 provider keys with unknown rotation status | M | H | WP-35 | rotation ledger; history never rewritten | ODG-02 |
 | R-30 | `post_update_hook.sh` modifies user-level Claude configuration (variant A) | M | M | WP-07 | variant B by default | ODG-12 |
 | R-31 | Determinism threatened by live vulnerability feeds and index state | M | M | WP-39 | pinned offline vulnerability snapshots; index refresh only between waves | none |
 | R-32 | Android toolchain inconsistency (JDK 17 vs 21, `compileSdk 35` above AGP 8.2.2 maximum 34; API 35 needs AGP 8.6.0 or later per the primary documentation, doc20 §7.1) breaks containerized builds | H | M | WP-14, WP-33 | capture `help --warning-mode all` and `javaToolchains` in the container first; decision before changes | ODG-29 |
@@ -706,74 +710,76 @@ The ten risks in the top-left cell set the plan's priorities. R-02 is already se
 
 ## 8. Owner decisions and inputs
 
-Each decision becomes an `Operator-blocked` register item with its choices (§11.4.21). The recommendation is the plan default until the owner decides; it is reversible.
+Each decision becomes an `Operator-blocked` register item with its choices (§11.4.21). The recommendation is a reversible plan default only where the last column says Yes or Partial (derived from the `research.md` default list, below); for every other group the recommendation is only the proposed answer and the Blocks column stays blocked until the owner answers. Input-type groups (ODG-01, -02, -04, -06, -07: credentials, devices, hosts) cannot be defaulted.
 
 ### 8.1 Credentials and accounts
 
-| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids |
-|---|---|---|---|---|---|---|
-| ODG-01 | Credentials for real-service tests: metadata provider keys, admin test account, NAS share accounts, `google-services.json` values, optional HawkScan and Snyk accounts | (a) supply through `.env` (gitignored, mode 0600) by variable name; (b) leave absent and accept `blocked` | (a), with the env-var contract from WP-24 and doc10 W10-02 | WP-13, WP-24, WP-38, WP-54, WP-60 | doc10 H10-31, doc12 §20.1, doc15 OQ-S7 | OD-28, OD-67 |
-| ODG-02 | Firebase Android key published in history; status of the provider-key rotation list | (A) restrict the key; (B) rotate; and confirm per provider whether rotation happened | rotate and restrict; record per-provider rotation in the ledger | WP-35, WP-50 | doc15 OQ-S1, OQ-S2 | OD-07, OD-08 |
-| ODG-03 | Default admin credential committed in scripts, banks and docs (the default admin credential literal, 20 occurrences in banks; see doc12 QF-07) | rotate and remove; or keep as dev-only | treat as compromised; rotate on every real deployment; remove literals | WP-50, WP-54, WP-60 | doc10 DR-10-09, doc12 QF-07, doc15 B21 | OD-09 |
+| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids | Default (`research.md`) |
+|---|---|---|---|---|---|---|---|
+| ODG-01 | Credentials for real-service tests: metadata provider keys, admin test account, NAS share accounts, `google-services.json` values, optional HawkScan and Snyk accounts | (a) supply through `.env` (gitignored, mode 0600) by variable name; (b) leave absent and accept `blocked` | (a), with the env-var contract from WP-24 and doc10 W10-02 | WP-13, WP-24, WP-38, WP-54, WP-60 | doc10 H10-31, doc12 §20.1, doc15 OQ-S7 | OD-28, OD-67 | No (input, cannot be defaulted) |
+| ODG-02 | Firebase Android key published in history; status of the provider-key rotation list | (A) restrict the key; (B) rotate; and confirm per provider whether rotation happened | rotate and restrict; record per-provider rotation in the ledger | WP-35, WP-50 | doc15 OQ-S1, OQ-S2 | OD-07, OD-08 | No (input, cannot be defaulted) |
+| ODG-03 | Default admin credential committed in scripts, banks and docs (the default admin credential literal, 20 occurrences in banks; see doc12 QF-07) | rotate and remove; or keep as dev-only | treat as compromised; rotate on every real deployment; remove literals | WP-50, WP-54, WP-60 | doc10 DR-10-09, doc12 QF-07, doc15 B21 | OD-09 | No |
 
 ### 8.2 Devices, hosts and infrastructure
 
-| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids |
-|---|---|---|---|---|---|---|
-| ODG-04 | Physical devices: at least one phone, one tablet, the Android TV box, by model and serial | supply; or accept blocked device claims | supply one of each class | WP-54, WP-60, WP-62 | doc10 §12.1, doc12 OD-3 | OD-28 |
-| ODG-05 | Emulator acceptance scope | hardware-independent behaviour only; or broader | hardware-independent only | WP-54, WP-61 | doc10 DR-10-06, doc05 DR-4 | OD-27 |
-| ODG-06 | Desktop hosts and signing: macOS and Windows hosts, signing certificates, notarisation, updater | supply; or record blocked platforms | supply hosts if cross-OS claims are made; updater out of scope until decided | WP-53, WP-56, WP-62 | doc09 D-ADR-06, D-ADR-10, doc15 OQ-S9 | OD-29, OD-73 |
-| ODG-07 | Build and measurement hosts: roles, capacity and reachability of `thinker.local` and `amber.local`; a dedicated measurement host | confirm; or local containers only | confirm `thinker.local` as build host; decide the measurement host before WP-62 | WP-14, WP-38, WP-62, WP-10 | doc16 V-02, doc14 D-14-08 | OD-04 |
-| ODG-08 | NFS real target | user-space NFS container if feasible; owner NFS host; structural-impossibility record | try user-space first, else owner NFS host | WP-13, WP-51, WP-53 | doc16 DR-16-2, doc09 D-ADR-08 | OD-05 |
+| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids | Default (`research.md`) |
+|---|---|---|---|---|---|---|---|
+| ODG-04 | Physical devices: at least one phone, one tablet, the Android TV box, by model and serial | supply; or accept blocked device claims | supply one of each class | WP-54, WP-60, WP-62 | doc10 §12.1, doc12 OD-3 | OD-28 | No (input, cannot be defaulted) |
+| ODG-05 | Emulator acceptance scope | hardware-independent behaviour only; or broader | hardware-independent only | WP-54, WP-61 | doc10 DR-10-06, doc05 DR-4 | OD-27 | No |
+| ODG-06 | Desktop hosts and signing: macOS and Windows hosts, signing certificates, notarisation, updater | supply; or record blocked platforms | supply hosts if cross-OS claims are made; updater out of scope until decided | WP-53, WP-56, WP-62 | doc09 D-ADR-06, D-ADR-10, doc15 OQ-S9 | OD-29, OD-73 | No (input, cannot be defaulted) |
+| ODG-07 | Build and measurement hosts: roles, capacity and reachability of `thinker.local` and `amber.local`; a dedicated measurement host | confirm; or local containers only | confirm `thinker.local` as build host; decide the measurement host before WP-62 | WP-14, WP-38, WP-62, WP-10 | doc16 V-02, doc14 D-14-08 | OD-04 | No (input, cannot be defaulted) |
+| ODG-08 | NFS real target | user-space NFS container if feasible; owner NFS host; structural-impossibility record | try user-space first, else owner NFS host | WP-13, WP-51, WP-53 | doc16 DR-16-2, doc09 D-ADR-08 | OD-05 | No |
 
 ### 8.3 Governance and process
 
-| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids |
-|---|---|---|---|---|---|---|
-| ODG-09 | Legacy-closed items (1,495 closed-class plus 282 `wontfix`): accept as terminal with re-verify flag, or re-prove every one; handling of items that cannot be re-proven | re-prove all; sample plus reverify queue; per-family rule | re-verify by severity order with sampling for low-severity families; unprovable items go to the owner as blocked with choices | WP-21, WP-72 | doc04 D-1, doc03 DR-2 | OD-10, OD-19 |
-| ODG-10 | Which external trackers are "configured" for FR-004 | none until named; GitHub issues; GitLab, GitFlic, GitVerse issues; Crashlytics; Sonar | name the trackers; pilot one with dry run before any mass push | WP-22 | doc04 D-2, doc03 §5.20 | OD-12, OD-13 |
-| ODG-11 | Register prefix and location | `ATM` plus `docs/workable_items.db`; `docs/tracking/`; another prefix | `ATM` and `docs/workable_items.db` (the doc04 POC executed there) | WP-06 | doc03 DR-1, doc04 DR-1 | OD-11, OD-15, OD-18 |
-| ODG-12 | Constitution `post_update_hook.sh` variant | A (full, may write user-level Claude config, naming the alias); B (project-only) | B by default; A only with explicit go-ahead naming the alias | WP-07 | doc11 D-2 | OD-31, OD-38 |
-| ODG-13 | Third-party vendored pins (23 behind) | report only; move all; move selected tools with tests | report only now; selected later | WP-55, WP-57 | doc11 D-1 | OD-30 |
-| ODG-14 | `submodules/llms_verifier` disposition | real submodule; in-tree code; drop the `helix_qa` replace | decide after the history investigation S-LLMV-1 | WP-34, WP-55 | doc11 D-4 | OD-33 |
-| ODG-15 | Branch and ownership interpretation: `master` counts as main in 4 repositories; add `helixdevelopment1` as own organisation | yes or no each | yes to both | WP-03, WP-73, WP-55 | doc11 D-3, D-8 | OD-32, OD-34 |
-| ODG-16 | SLSA level claim, platform and signing-key custody | A claim L1; B designate the dedicated build host as the hosted platform that signs provenance (L2 self-assessed); C ask the constitution owners for a written interpretation; D hosted service (rejected, §11.4.156) | A now, B as the target in the same work package, C asked in parallel; never claim L3 on a single-uid host | WP-56 | doc15 OQ-S3, doc16 V-15, doc20 DR-20-01 | OD-01, OD-02 |
-| ODG-17 | Coverage targets and dates per application; SC-005 sample size; register category mapping | owner sets after baselines | set after WP-23 baselines; new code at 85% from the start | WP-23, WP-61, WP-70, WP-71 | doc05 §15, doc06 §18, doc04 D-6 | OD-21, OD-22, OD-16 |
-| ODG-18 | Escape-ratchet baseline and timing of the first manual-QA cycle | first manual-QA cycle seeds it; other rule | first manual-QA cycle | WP-65 | doc12 OD-4, DR-9 | OD-47 |
-| ODG-19 | Reviewer substrate | Opus at xhigh as pinned; other | as pinned (§11.4.209) | all review gates | doc12 OD-1 | OD-39 |
-| ODG-34 | Quota and budget: agent concurrency, model tiers, token budget | constitution defaults; owner caps | at most 6 working agents, Sonnet default, Opus xhigh for reviews, budget rules of doc02 §13 | all phases | doc02 §13, §14 | - |
-| ODG-35 | SLA tiers for remediation | SLA by severity; no SLA | no SLA tiers: FR-008 completion rule replaces them; order by severity then exposure | P5 | doc15 §12 | - |
+| ID | Decision or input | Options | Recommendation | Blocks | Source | `research.md` ids | Default (`research.md`) |
+|---|---|---|---|---|---|---|---|
+| ODG-09 | Legacy-closed items (1,495 closed-class plus 282 `wontfix`): accept as terminal with re-verify flag, or re-prove every one; handling of items that cannot be re-proven | re-prove all; sample plus reverify queue; per-family rule | re-verify by severity order with sampling for low-severity families; unprovable items go to the owner as blocked with choices | WP-21, WP-72 | doc04 D-1, doc03 DR-2 | OD-10, OD-19 | No |
+| ODG-10 | Which external trackers are "configured" for FR-004 | none until named; GitHub issues; GitLab, GitFlic, GitVerse issues; Crashlytics; Sonar | name the trackers; pilot one with dry run before any mass push | WP-22 | doc04 D-2, doc03 §5.20 | OD-12, OD-13 | No |
+| ODG-11 | Register prefix and location | `ATM` plus `docs/workable_items.db`; `docs/tracking/`; another prefix | `ATM` and `docs/workable_items.db` (the doc04 POC executed there) | WP-06 | doc03 DR-1, doc04 DR-1 | OD-11, OD-15, OD-18 | Partial (OD-11 of OD-11, -15, -18) |
+| ODG-12 | Constitution `post_update_hook.sh` variant | A (full, may write user-level Claude config, naming the alias); B (project-only) | B by default; A only with explicit go-ahead naming the alias | WP-07 | doc11 D-2 | OD-31, OD-38 | UNCONFIRMED (No in `research.md`: OD-31, OD-38 not on the default list; the recommendation reads "B by default") |
+| ODG-13 | Third-party vendored pins (23 behind) | report only; move all; move selected tools with tests | report only now; selected later | WP-55, WP-57 | doc11 D-1 | OD-30 | Yes (OD-30) |
+| ODG-14 | `submodules/llms_verifier` disposition | real submodule; in-tree code; drop the `helix_qa` replace | decide after the history investigation S-LLMV-1 | WP-34, WP-55 | doc11 D-4 | OD-33 | No |
+| ODG-15 | Branch and ownership interpretation: `master` counts as main in 4 repositories; add `helixdevelopment1` as own organisation | yes or no each | yes to both | WP-03, WP-73, WP-55 | doc11 D-3, D-8 | OD-32, OD-34 | Partial (OD-32 of OD-32, -34) |
+| ODG-16 | SLSA level claim, platform and signing-key custody | A claim L1; B designate the dedicated build host as the hosted platform that signs provenance (L2 self-assessed); C ask the constitution owners for a written interpretation; D hosted service (rejected, §11.4.156) | A now, B as the target in the same work package, C asked in parallel; never claim L3 on a single-uid host | WP-56 | doc15 OQ-S3, doc16 V-15, doc20 DR-20-01 | OD-01, OD-02 | No |
+| ODG-17 | Coverage targets and dates per application; SC-005 sample size; register category mapping | owner sets after baselines | set after WP-23 baselines; new code at 85% from the start | WP-23, WP-61, WP-70, WP-71 | doc05 §15, doc06 §18, doc04 D-6 | OD-21, OD-22, OD-16 | No |
+| ODG-18 | Escape-ratchet baseline and timing of the first manual-QA cycle | first manual-QA cycle seeds it; other rule | first manual-QA cycle | WP-65 | doc12 OD-4, DR-9 | OD-47 | Yes (OD-47) |
+| ODG-19 | Reviewer substrate | Opus at xhigh as pinned; other | as pinned (§11.4.209) | all review gates | doc12 OD-1 | OD-39 | Yes (OD-39) |
+| ODG-34 | Quota and budget: agent concurrency, model tiers, token budget | constitution defaults; owner caps | at most 6 working agents, Sonnet default, Opus xhigh for reviews, budget rules of doc02 §13 | all phases | doc02 §13, §14 | - | UNCONFIRMED (no counterpart found) |
+| ODG-35 | SLA tiers for remediation | SLA by severity; no SLA | no SLA tiers: FR-008 completion rule replaces them; order by severity then exposure | P5 | doc15 §12 | - | UNCONFIRMED (no counterpart found) |
 
 ### 8.4 Product and component decisions (§11.4.122)
 
-| ID | Decision | Options | Recommendation | Blocks | Source | `research.md` ids |
-|---|---|---|---|---|---|---|
-| ODG-20 | FTP, NFS and WebDAV scanners are empty bodies (scan reports `completed` with zero files) | implement; remove advertised support | implement | WP-51 | doc07 C5 and §14.3 item 5; doc01 O-01 | OD-06 |
-| ODG-21 | Web features with fabricated data (`Math.random` charts) and calls to unregistered endpoints (sharing, integrations) | replace with real data and backend routes; remove | replace | WP-52 | doc08 WEB-F03, WEB-F04, R5 | OD-77 |
-| ODG-22 | Phone offline layer and `SyncService`; phone playback placeholder; TV Room dependency | wire or implement; retire | wire and implement | WP-54 | doc10 DR-10-03, DR-10-08, H10-22, H10-34 | OD-42, OD-46 |
-| ODG-23 | Desktop `shell` and `fs` plugins; wizard `api-client` dependency; unwired `internal/media` code in catalog-api | keep with minimal capability; remove after history check | history investigation first, then decide per item | WP-51, WP-53 | doc09 D-ADR-09, I-12; doc01 O-10 | OD-72 |
-| ODG-24 | Purpose of `catalogizer-api-client` (no consumer found; 31 of 59 client calls have no server route, doc19 §6.3, superseding the older 26 of 53) | track the server and adopt; retire | adopt as the generated or validated client if OpenAPI-first is accepted | WP-41, WP-52 | doc01 O-04, doc07 §14.3 item 4, doc18 rank 5 | OD-69 |
+| ID | Decision | Options | Recommendation | Blocks | Source | `research.md` ids | Default (`research.md`) |
+|---|---|---|---|---|---|---|---|
+| ODG-20 | FTP, NFS and WebDAV scanners are empty bodies (scan reports `completed` with zero files) | implement; remove advertised support | implement | WP-51 | doc07 C5 and §14.3 item 5; doc01 O-01 | OD-06 | No |
+| ODG-21 | Web features with fabricated data (`Math.random` charts) and calls to unregistered endpoints (sharing, integrations) | replace with real data and backend routes; remove | replace | WP-52 | doc08 WEB-F03, WEB-F04, R5 | OD-77 | No |
+| ODG-22 | Phone offline layer and `SyncService`; phone playback placeholder; TV Room dependency | wire or implement; retire | wire and implement | WP-54 | doc10 DR-10-03, DR-10-08, H10-22, H10-34 | OD-42, OD-46 | No |
+| ODG-23 | Desktop `shell` and `fs` plugins; wizard `api-client` dependency; unwired `internal/media` code in catalog-api | keep with minimal capability; remove after history check | history investigation first, then decide per item | WP-51, WP-53 | doc09 D-ADR-09, I-12; doc01 O-10 | OD-72 | No |
+| ODG-24 | Purpose of `catalogizer-api-client` (no consumer found; 31 of 59 client calls have no server route, doc19 §6.3, superseding the older 26 of 53) | track the server and adopt; retire | adopt as the generated or validated client if OpenAPI-first is accepted | WP-41, WP-52 | doc01 O-04, doc07 §14.3 item 4, doc18 rank 5 | OD-69 | No |
 
 ### 8.5 Technical architecture decisions
 
-| ID | Decision | Options | Recommendation | Blocks | Source | `research.md` ids |
-|---|---|---|---|---|---|---|
-| ODG-25 | Token handling: web storage (localStorage, httpOnly cookie, in-memory plus refresh cookie); desktop Rust-only keychain; WebSocket ticket auth; signed media URLs replacing query tokens | as listed | in-memory or cookie for web; keychain for desktop; ticket for `/ws`; signed short-lived media URLs | WP-50, WP-52, WP-53 | doc08 DR-W8-01, doc09 D-ADR-04, doc15 §14.2 DR-S2 | OD-48, OD-71 |
-| ODG-26 | Certificate model for LAN deployments and Android cleartext policy | self-signed with pinning; private CA; public certificate; keep cleartext with documentation | owner choice; until then test actual behaviour and document | WP-50, WP-54 | doc15 OQ-S5, doc10 DR-10-05 | OD-44 |
-| ODG-27 | Key management for stored share credentials | env KEK; OS keystore; external vault | env KEK with documented provisioning and dual-read migration | WP-50 | doc15 OQ-S6 | OD-66 |
-| ODG-28 | Public registration and public `/assets`, `/cover` routes intended? | yes or no each | owner choice; default deny until confirmed | WP-50 | doc15 OQ-S4 | OD-65 |
-| ODG-29 | Android toolchain: JDK 17 or 21; `compileSdk` versus AGP | (a) `compileSdk 34`; (b) AGP 8.6 to 8.13 with the existing Gradle 8.11.1 to 8.13; (c) AGP 9.x with Gradle 9.x and a Kotlin update; JDK 17 minimum in every case | capture the containerized warning first; then (a) as the smallest change unless an API 35 feature is needed, else (b) | WP-14, WP-54 | doc10 DR-10-01, DR-10-02, doc20 §7.1 | OD-40, OD-41 |
-| ODG-30 | Front-end alignment and contract tooling: React Query v4 or v5; contract tool | upgrade app or lower peer ranges; Pact file-based, Pact broker, Zod validation | decide React Query after the codemod dry run; file-based Pact (section 10, IC-18) | WP-41, WP-52 | doc08 DR-W8-05, DR-W8-06, doc17 §13 | OD-24, OD-78 |
-| ODG-31 | Rust supply chain: commit `Cargo.lock`; adopt maintained FTP and WebDAV crates | yes or no each | yes to both, after the dependency existence check | WP-53 | doc09 D-ADR-03, D-ADR-07, doc20 DR-20-03 | OD-62, OD-70 |
-| ODG-32 | Performance parameters, dataset size distributions, local upstream for the image-proxy overhead test, bundle-analyzer dev dependency | owner values; defaults in doc14 §8.3 | adopt proposed defaults pending A/A data; owner states library sizes | WP-38, WP-62 | doc14 §18, D-14-05, D-14-07 | OD-50, OD-51, OD-52, OD-53 |
-| ODG-33 | Documentation: binary twin size threshold (150 MB proposed), HelixQA link repoint targets, which SQL path each deployment uses, OpenDesign token file location | owner values | approve 150 MB threshold; repoint to `submodules/helix_qa/`; SQL path decided by containerized proof | WP-63, WP-64 | doc13 §14 | OD-56, OD-58, OD-59, OD-61 |
-| ODG-36 | Treat the Trivy exposure as a potential incident if any host pulled an affected image | run the mechanical check on every host first; rotate atomically if positive | run the check, including the remote build host | WP-15, WP-35 | doc20 DR-20-02 | OD-03 |
-| ODG-37 | Accept a commercial account and licence for migration linting (Atlas Pro) | yes; no (SQLite procedure checks plus squawk for PostgreSQL) | no | WP-64 | doc20 DR-20-04 | OD-64 |
-| ODG-38 | Spec-first (oapi-codegen) for new endpoints, keeping the hand-written spec plus drift gates for existing routes | spec-first for new endpoints; code-first later with a stable generator; status quo plus gates | status quo plus gates now; decide after WP-40 measures the drift | WP-40, WP-41 | doc20 DR-20-05 | OD-63 |
+| ID | Decision | Options | Recommendation | Blocks | Source | `research.md` ids | Default (`research.md`) |
+|---|---|---|---|---|---|---|---|
+| ODG-25 | Token handling: web storage (localStorage, httpOnly cookie, in-memory plus refresh cookie); desktop Rust-only keychain; WebSocket ticket auth; signed media URLs replacing query tokens | as listed | in-memory or cookie for web; keychain for desktop; ticket for `/ws`; signed short-lived media URLs | WP-50, WP-52, WP-53 | doc08 DR-W8-01, doc09 D-ADR-04, doc15 §14.2 DR-S2 | OD-48, OD-71 | No |
+| ODG-26 | Certificate model for LAN deployments and Android cleartext policy | self-signed with pinning; private CA; public certificate; keep cleartext with documentation | owner choice; until then test actual behaviour and document | WP-50, WP-54 | doc15 OQ-S5, doc10 DR-10-05 | OD-44 | No |
+| ODG-27 | Key management for stored share credentials | env KEK; OS keystore; external vault | env KEK with documented provisioning and dual-read migration | WP-50 | doc15 OQ-S6 | OD-66 | No |
+| ODG-28 | Public registration and public `/assets`, `/cover` routes intended? | yes or no each | owner choice; default deny until confirmed | WP-50 | doc15 OQ-S4 | OD-65 | No |
+| ODG-29 | Android toolchain: JDK 17 or 21; `compileSdk` versus AGP | (a) `compileSdk 34`; (b) AGP 8.6 to 8.13 with the existing Gradle 8.11.1 to 8.13; (c) AGP 9.x with Gradle 9.x and a Kotlin update; JDK 17 minimum in every case | capture the containerized warning first; then (a) as the smallest change unless an API 35 feature is needed, else (b) | WP-14, WP-54 | doc10 DR-10-01, DR-10-02, doc20 §7.1 | OD-40, OD-41 | No |
+| ODG-30 | Front-end alignment and contract tooling: React Query v4 or v5; contract tool | upgrade app or lower peer ranges; Pact file-based, Pact broker, Zod validation | decide React Query after the codemod dry run; file-based Pact (section 10, IC-18) | WP-41, WP-52 | doc08 DR-W8-05, DR-W8-06, doc17 §13 | OD-24, OD-78 | No |
+| ODG-31 | Rust supply chain: commit `Cargo.lock`; adopt maintained FTP and WebDAV crates | yes or no each | yes to both, after the dependency existence check | WP-53 | doc09 D-ADR-03, D-ADR-07, doc20 DR-20-03 | OD-62, OD-70 | No |
+| ODG-32 | Performance parameters, dataset size distributions, local upstream for the image-proxy overhead test, bundle-analyzer dev dependency | owner values; defaults in doc14 §8.3 | adopt proposed defaults pending A/A data; owner states library sizes | WP-38, WP-62 | doc14 §18, D-14-05, D-14-07 | OD-50, OD-51, OD-52, OD-53 | UNCONFIRMED (No in `research.md`: OD-50 to OD-53 not on the default list; the recommendation reads "adopt proposed defaults") |
+| ODG-33 | Documentation: binary twin size threshold (150 MB proposed), HelixQA link repoint targets, which SQL path each deployment uses, OpenDesign token file location | owner values | approve 150 MB threshold; repoint to `submodules/helix_qa/`; SQL path decided by containerized proof | WP-63, WP-64 | doc13 §14 | OD-56, OD-58, OD-59, OD-61 | Partial (OD-58, OD-61 of OD-56, -58, -59, -61) |
+| ODG-36 | Treat the Trivy exposure as a potential incident if any host pulled an affected image | run the mechanical check on every host first; rotate atomically if positive | run the check, including the remote build host | WP-15, WP-35 | doc20 DR-20-02 | OD-03 | No |
+| ODG-37 | Accept a commercial account and licence for migration linting (Atlas Pro) | yes; no (SQLite procedure checks plus squawk for PostgreSQL) | no | WP-64 | doc20 DR-20-04 | OD-64 | No |
+| ODG-38 | Spec-first (oapi-codegen) for new endpoints, keeping the hand-written spec plus drift gates for existing routes | spec-first for new endpoints; code-first later with a stable generator; status quo plus gates | status quo plus gates now; decide after WP-40 measures the drift | WP-40, WP-41 | doc20 DR-20-05 | OD-63 | No |
 
 **Count: 38 grouped decisions and inputs** (ODG-01 to ODG-38; ODG-34 and ODG-35 are listed in 8.3 because they govern process; ODG-36 to ODG-38 come from document 20 and are listed in 8.5).
 
-The grouped ids are `ODG-NN`, not `OD-NN`, because `research.md` already numbers 79 finer-grained owner decisions `OD-01` to `OD-79` with different meanings (for example `research.md` OD-01 is the SLSA statement, which is ODG-16 here, while ODG-01 here is credentials, which is spread over `research.md` OD-28 and OD-67). The last column of every table below lists the `research.md` ids that fall inside each group where a counterpart can be determined from the wording; `-` means no counterpart was found.
+**Defaults:** Yes 3, Partial 3, UNCONFIRMED 4, No 28 (38 groups). The last column is derived from `research.md` section 5, whose count says 12 of the 79 OD items carry a reversible working default (OD-11, -17, -30, -32, -35, -37, -39, -47, -54, -58, -61, -79). Only 7 of those 12 fall inside a group (OD-11, -30, -32, -39, -47, -58, -61); OD-17, -35, -37, -54 and -79 have no group counterpart here and stay recorded in `research.md` only. The group mapping is wording-based (see below), so every Yes and Partial is UNCONFIRMED at row level until re-mapped. Row-level marking in `research.md` ("(default)" in the Blocks cell) exists for 8 rows (OD-11, -17, -30, -32, -35, -37, -39, -79); OD-47, -54, -58 and -61 are on its list of 12 without that marker, and this document follows the list.
+
+The grouped ids are `ODG-NN`, not `OD-NN`, because `research.md` already numbers 79 finer-grained owner decisions `OD-01` to `OD-79` with different meanings (for example `research.md` OD-01 is the SLSA statement, which is ODG-16 here, while ODG-01 here is credentials, which is spread over `research.md` OD-28 and OD-67). The last column but one of every table above lists the `research.md` ids that fall inside each group where a counterpart can be determined from the wording; `-` means no counterpart was found.
 
 ---
 
@@ -785,13 +791,13 @@ Severity labels are the source documents' own; "unrated" means the source assign
 
 | Source | Ids | Application | Count | Severity distribution (source labels) |
 |---|---|---|---:|---|
-| doc01 §15 | O-01..O-18 | cross-system (mostly backend, compose, docs) | 18 | unrated |
+| doc01 §15 | O-01..O-19 | cross-system (mostly backend, compose, docs, tracked `.env*` files) | 19 | unrated |
 | doc02 §2.1-2.2 | F-INDEX-001..006 | indexes (governance) | 6 | unrated |
 | doc03 §2 | F-1..F-9 | register and sources | 9 | unrated (F-7 is an observation that markers are almost absent) |
 | doc05 §5 | F-1..F-10 | tests across applications | 10 | unrated |
 | doc07 §9 | C1..C22 | catalog-api | 22 | High 5, High if confirmed 1, Medium-High 1, Medium 9, Low-Medium 4, Low 2 |
 | doc08 §4 | WEB-F01..F20 | catalog-web and TS submodules | 20 | High 7, Medium 10, Low-Medium 2, Low 1 |
-| doc09 §5.1 and §6.2 | D-01..D-15 (D-15 is defined in doc09 §6.2, see IC-21) | catalogizer-desktop | 15 | Critical 1, Critical if confirmed 1, High 6, Medium 5, Low 2 |
+| doc09 §5.1 | D-01..D-15 (D-15 is listed in doc09 §5.1 since commit 6fd1decb, see IC-21) | catalogizer-desktop | 15 | Critical 1, Critical if confirmed 1, High 6, Medium 5, Low 2 |
 | doc09 §5.2 | I-01..I-15 | installer-wizard | 15 | High 9, Medium 5, Low 1 |
 | doc09 §5.3 | S-01, S-02 | desktop and installer shared | 2 | unrated |
 | doc10 §4 | H10-01..H10-34 | catalogizer-android and -androidtv | 34 | Critical if confirmed 1, High 10, Med-High 1, Med 17, Low-Med 2, Low 2, Info 1 |
@@ -802,7 +808,7 @@ Severity labels are the source documents' own; "unrated" means the source assign
 | doc16 §4 | D-01..D-14 | build and container assets | 14 | high 6, medium 7, UNKNOWN 1 |
 | doc19 §8 | POC-F-01..POC-F-06 | catalog-api, catalog-web, Android, constitution, documentation | 6 | unrated (the source gives confidence high or medium, not severity) |
 | doc20 §2.2 | T-1..T-4 (labels assigned here to the four rows of the source table: `trivy:latest` in compose, repository mounted into that image, `curl` piped to `sh` installer, `sudo apt-key` advice) | security tooling | 4 | HIGH 2, MEDIUM 1, LOW 1 |
-| **Total itemised** | | | **233** | |
+| **Total itemised** | | | **234** | |
 
 Not counted as findings: doc14 H-01..H-20 (20 performance hypotheses, findings only when a profile confirms them); doc06 §13.6 (a defect in the proof of concept, fixed there); doc18 PROPOSAL items (out of scope by its own scope fence); doc20's `Cargo.lock` observation (already doc09 D-14) and its confirmation that `.github/workflows` holds no workflow (not a defect).
 
@@ -820,7 +826,7 @@ Not counted as findings: doc14 H-01..H-20 (20 performance hypotheses, findings o
 | security tooling (doc20) | 0 | 0 | 2 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 4 |
 | **Total rated** | **1** | **2** | **46** | **1** | **2** | **58** | **8** | **13** | **2** | **1** | **134** |
 
-Unrated seeds: 99 (doc01 18, doc02 6, doc03 9, doc05 10, doc09 shared 2, doc12 17, doc13 11, doc15 20, doc19 6). Rated (134) plus unrated (99) equals 233.
+Unrated seeds: 100 (doc01 19, doc02 6, doc03 9, doc05 10, doc09 shared 2, doc12 17, doc13 11, doc15 20, doc19 6). Rated (134) plus unrated (100) equals 234. O-19 is unrated in doc01, so the rated total (134) and the Medium column (58) are unchanged.
 
 ### 9.3 Cross-document duplicate families
 
@@ -858,7 +864,7 @@ Many seeds describe the same defect from different angles. They import as one it
 | Unwired handlers and routes | doc01 O-10; doc19 POC-F-01 (62 mux routes never registered) |
 | Scanner images by mutable tag | doc15 S-13; doc20 T-1 |
 
-These 29 families cover 79 itemised seeds, so the 233 itemised seeds fold to at most 183 register items before any further deduplication (233 minus 79 plus 29). This is an upper bound from reading, not a measurement; the importer's dedup (doc04 §8) produces the real figure, and families found later reduce it further.
+These 29 families list 79 member ids (recounted from the table), of which one, doc15 S-17, is only partly folded (marked `(part)`), so it is counted as not folded: 78 seeds are fully folded and the 234 itemised seeds fold to at most 185 register items before any further deduplication (234 minus 78 plus 29). This is an upper bound from reading, not a measurement (doc01 O-19 is not placed in any family); the importer's dedup (doc04 §8) produces the real figure, and families found later reduce it further.
 
 ### 9.4 Legacy backlog population (existing sources, doc03 §7)
 
@@ -869,15 +875,15 @@ These 29 families cover 79 itemised seeds, so the 233 itemised seeds fold to at 
 | Tracker and checklist lines | 1,676 | not started or unchecked |
 | Other unchecked boxes in planning reports | 221 | unchecked |
 | Cross-marked lines | 83 | marks (leads) |
-| Defect ids in audit and QA text | 6 CATAPI + 23 FIX-QA + 4 DEFER-QA + 2 FINDING (overlaps unresolved) | per document |
+| Defect ids in audit and QA text | 6 CATAPI + 22 FIX-QA + 4 DEFER-QA + 2 FINDING (+ 2 FIX-OC3 tracked / 11 working tree; overlaps unresolved) | per document |
 | Constitution Known Conflicts | 16 items, about 14 open or unconfirmed sub-items | FIXED, DECIDED, OPEN, NOTE, UNCONFIRMED |
-| Latest scan results | 112 | tool-native; Snyk failed |
-| Credential-rotation rows | 38 | action list |
+| Latest scan results | 898 (latest run, gosec 810); 112 with the 2026-04-22 gosec baseline | tool-native; Snyk failed |
+| Credential-rotation rows | 37 | action list |
 | Real code markers | 1 | `OCU-CUDA-Sidecar/internal/server/backend_cuda.go:287` |
 | Bank gaps | 11 placeholder bank files, 5 weak-baseline rows | gap items |
 | Landmine rules | 63 | guards, not defects |
 
-Upper bound before dedup: about 4,000 candidate entries (ESTIMATE, doc03 §7).
+Upper bound before dedup: about 4,700 candidate entries (ESTIMATE, doc03 §7: the sum of its table is 4,729 before the claim-document leads; it includes the 898 scan findings of the latest run, gosec 810).
 
 ---
 
@@ -893,8 +899,8 @@ Upper bound before dedup: about 4,000 candidate entries (ESTIMATE, doc03 §7).
 | IC-06 | Markdown and documentation counts | doc03: 2,514 tracked Markdown files; doc13: 2,540 in scope (find, includes untracked and `.specify`); doc01: 2,396 tracked files under `docs/`; doc13: 2,225 Markdown under `docs/` | different scopes and dates, not contradictions; doc19 re-measured 2,551 in scope and 2,509 orphans because 11 `specs/` files were added since doc13; the latest stamped measurement is 2,562 in scope, 42 reachable, 2,520 orphans, 126 broken relative links and 83 broken anchors as of 2026-10-03T12:02Z (doc13 §2.1). `DOC_SCOPE.yaml` (doc13 D0) defines the scope, `specs/` is classified explicitly, counts are reported on a tracked-file basis with the date |
 | IC-07 | Database table count | doc01: about 53 tables from Go migrations; doc13: 57 real tables including SQL directories | the schema dumper on a container-run migration decides (WP-37, WP-64) |
 | IC-08 | Legacy-closed count | doc03: 1,777 closed-class tickets; doc04 D-1: 1,495 | both correct: 1,495 = resolved + fixed + closed; plus 282 `wontfix`; ODG-09 covers both groups |
-| IC-09 | `wontfix` enhancement suggestions | doc03: 204; doc12 §11.2: "130 or more" | re-measure in WP-20 Stage 0 |
-| IC-10 | Credential-rotation rows | doc03: 38 provider rows; doc15 B19: 41 provider variables | re-count by structural parse; the register keys on variable names |
+| IC-09 | `wontfix` enhancement suggestions | doc03: 225 (measured, `grep -rli "enhancement suggestion" docs/issues`); doc12 §11.2: "130 or more" | the doc03 measurement governs; doc12 §11.2 is to be corrected there; WP-20 Stage 0 re-measures |
+| IC-10 | Credential-rotation rows | doc03: 37 provider rows; doc15 B19: 41 provider variables | re-count by structural parse; the register keys on variable names |
 | IC-11 | Root repository remotes | doc03 §5.20 and doc16 V-12: 8 remotes; doc11 P-6 and doc15: "all 6 upstreams" | the verifier enumerates every configured remote and reports distinct hosts; the push targets every configured remote (FR-019); count UNCONFIRMED until WP-03 runs |
 | IC-12 | Submodule count | 44 gitlinks (doc01, doc11); doc15 WS6 "all 45" | 44 submodules plus 1 vendored tree (`llms_verifier`); report both lines |
 | IC-13 | Constitution remote state | doc11 H3: all 8 remotes at `e44f22f` by `ls-remote`; doc12 §14.1: 3 remotes not fetched, UNCONFIRMED | `ls-remote` evidence governs (doc11); re-run at WP-07 |
@@ -905,7 +911,7 @@ Upper bound before dedup: about 4,000 candidate entries (ESTIMATE, doc03 §7).
 | IC-18 | Contract tooling | doc05 DR-1: Pact with a self-hosted broker; doc17 §13: broker rejected as day-one, file-based Pact; doc08 DR-W8-05: Zod first | file-based Pact matrix now (doc17), Zod response validation as a supplementary web check, broker only if consumer count grows; ODG-30 |
 | IC-19 | Plan-local id collisions | `S-01` (doc03 source, doc09 shared, doc15 security), `D-01` (doc09 desktop, doc16 defect), `F-1` (doc03, doc05, doc11), `R-1` across many documents | until ATM ids are minted, cite as `docNN:ID` (this document does so) |
 | IC-20 | Wrong success criterion | doc11 §11 maps dependency currency to SC-004 | dependency currency is SC-009 and SC-010; correct doc11 |
-| IC-21 | Finding id defined outside its list | doc09 §5.1 lists D-01..D-14; doc09 §6.2 (line 337) defines D-15 (Medium, the config lock is held across network I/O) and WP-D3 cites it | D-15 exists. Count it: the doc09 desktop row is D-01..D-15 (15 seeds, 5 Medium) in section 9; correct doc09 by adding D-15 to its §5.1 table so the list and the citation agree |
+| IC-21 | Finding id defined outside its list | doc09 §6.2 defined D-15 (Medium, the config lock is held across network I/O) while its §5.1 list stopped at D-14 | resolved: doc09 §5.1 now lists D-01..D-15 (commit 6fd1decb), agreeing with §6.2 and WP-D3; the desktop row in section 9 is D-01..D-15 (15 seeds, 5 Medium); no further correction owed |
 | IC-22 | Wrong document references | doc16 refers to "document 10" for the dependency and security documents | the dependency report is WP-57 (doc11, doc15); security is doc15 |
 | IC-23 | Go toolchain version | `catalog-api/go.mod` 1.25.7; `docker/Dockerfile.builder` tarball 1.26.1; images `golang:1.25` and `1.25-bookworm` | IMG-GO at the `go.mod` toolchain, `1.25-bookworm` family, pinned by digest (doc16 §6.1) |
 | IC-24 | Version strings | apps 2.4.0; `versions.json` 2.3.0; README v2.1.0; web labels v1.1.0; OpenAPI 2.0.0; `catalogizer-api-client` 1.0.0 (doc01) while doc08 reports the shared client package at 2.4.0; Sonar `projectVersion` 2.2.0; a `/health` probe answered 1.0.0 (doc12 §2.5, service identity UNCONFIRMED) | one version source of truth derived at build time; each mismatch is a finding in the O-09 family |
@@ -970,7 +976,7 @@ The stream totals sum to 53, one stream per package; ST-REV owns only review pac
 
 ### 11.3 Where the volume is
 
-The seven XL packages carry most of the work: WP-20 import (about 4,000 candidate entries), WP-21 legacy re-verification (1,495 plus 282), WP-51 backend fixes (22 seeds plus families), WP-54 Android and TV fixes (34 seeds, device-gated), WP-60 bank conversion (1,178 lines, 835 all-placeholder cases), WP-61 test-type authoring (the matrix in doc05 §4.4 shows most cells outside A1 and A2 as absent), WP-63 documentation (2,520 orphans as of 2026-10-03T12:02Z, about 45 new task guides and 10 FAQs forecast in doc13 §6.4). The volume of the population-scale packages is not reducible by effort alone; it is reduced by family-level items (doc03 DR-3, doc12 §11.4) and by mechanical conversion where the source allows it (504 HTTP lines, doc12 §2.3).
+The seven XL packages carry most of the work: WP-20 import (about 4,700 candidate entries), WP-21 legacy re-verification (1,495 plus 282), WP-51 backend fixes (22 seeds plus families), WP-54 Android and TV fixes (34 seeds, device-gated), WP-60 bank conversion (1,178 lines, 835 all-placeholder cases), WP-61 test-type authoring (the matrix in doc05 §4.4 shows most cells outside A1 and A2 as absent), WP-63 documentation (2,520 orphans as of 2026-10-03T12:02Z, about 45 new task guides and 10 FAQs forecast in doc13 §6.4). The volume of the population-scale packages is not reducible by effort alone; it is reduced by family-level items (doc03 DR-3, doc12 §11.4) and by mechanical conversion where the source allows it (504 HTTP lines, doc12 §2.3).
 
 ---
 
