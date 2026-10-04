@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 2: the section 9.1 "Security note" row gains its missing Tool cell; pipe characters inside code spans of two table rows escaped with a backslash) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 3: section 8.7 records the commit-push wiring of tasks.md rev 12 T514 (the tiers `perf_cheap` and `perf_long`, registry rows with scope `changeset`, outside the path-class table of document 16 revision 10 §12.2.6, and the standalone release-seam check `scripts/perf/release_check.sh`), and section 15.3 records that the plan-capture script (T295) and the dataset generator of WP-14-03 (T291) are test-first, each with its RED captured before it exists. Revision 2: the section 9.1 "Security note" row gains its missing Tool cell; pipe characters inside code spans of two table rows escaped with a backslash) |
 | Spec requirement | SC-011 (also FR-010, FR-021, FR-022, FR-025) |
 | Owner decision | The 30/50 ms latency SLA of the adopted external constitution does NOT bind this project (spec Q2). Catalogizer sets its own targets and aims for the best achievable performance. |
 | Companion documents | 05 test strategy, 06 determinism and evidence framework, 07 backend audit, 08 web audit |
@@ -391,7 +391,7 @@ Verdicts use the three-state vocabulary of the project: PASS, FAIL, BLOCKED (not
 
 ### 8.7 Gate placement
 
-Local only (no CI/CD, section 11.4.156). The gate runs from the dedicated commit-and-push script as an explicit named stage per section 11.4.234: cheap tier (Go micro-benchmarks, bundle size) on every sync, long tier (HTTP load, soak, scan) on a declared cadence and before any release, with recorded deferral if skipped, never silent. The release seam blocks on a performance verdict that is absent for the candidate fingerprint (section 11.4.135 verdict-coverage).
+Local only (no CI/CD, section 11.4.156). The gate runs from the dedicated commit-and-push script as an explicit named stage per section 11.4.234: cheap tier (Go micro-benchmarks, bundle size) on every sync, long tier (HTTP load, soak, scan) on a declared cadence and before any release, with recorded deferral if skipped, never silent. The release seam blocks on a performance verdict that is absent for the candidate fingerprint (section 11.4.135 verdict-coverage). Revision 3 (tasks.md T514): the cheap tier is the registry row `perf_cheap` (mode `plain`) and the long tier `perf_long` (mode `deferred`, with its recorded deferral flag), both rows of `scripts/repo/validate_checks.tsv` with scope `changeset`, because they measure the build of the change set and take no declared-file list, so they have no row in the path-class table (document 16 §12.2.6); the release-seam check `scripts/perf/release_check.sh <candidate-fingerprint>` is a standalone script, not a commit-push stage, run at tasks.md T569 and T582, which refuses a missing verdict, a FAIL verdict and a PASS verdict for another fingerprint.
 
 ## 9. Profiling toolbox per runtime
 
@@ -706,6 +706,8 @@ podman run --rm --network perfnet --cpuset-cpus=4-5 --memory=1g \
 Expected output: `perf/out/op03.summary.json` with `metrics.op03_search_ms.values` containing `med`, `p(95)`, `p(99)`, `p(99.9)`, `max`. The harness repeats the run R times with a fresh API container each time and feeds the per-repetition values to the comparator.
 
 ### 15.3 SQL EXPLAIN capture script (NOT EXECUTED)
+
+Revision 3 (tasks.md T295, test-first since its rev 12): the parser's test on recorded plan fixtures of both dialects (a sequential scan, an index scan and a malformed plan that must be refused) is run before the script exists, its RED captured to `$EV/performance/capture-plans-red.txt`; likewise the dataset generator of WP-14-03 (tasks.md T291) is test-first, its test generating a small seeded dataset twice and asserting equal hashes and a different hash for another seed, the RED captured to `$EV/performance/dataset-generator-red.txt`.
 
 ```bash
 #!/usr/bin/env bash

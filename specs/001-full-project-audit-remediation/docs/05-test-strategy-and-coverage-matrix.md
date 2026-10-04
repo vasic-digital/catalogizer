@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 |
+| Revision | 6 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -607,6 +607,10 @@ flowchart LR
   gate joins the coverage output with the mutation or RED evidence index (document 06 section 5);
   a line covered only by tests with no red-capability flag is counted as uncovered for the gate
   (and reported separately so effort can be directed there).
+- **Commit-push stage (revision 6; tasks.md T503, document 16 §12.2.6)**: the gate is wired as a named
+  stage of the commit-push script with its `scripts/repo/validate_checks.tsv` row `coverage_gate`,
+  scope `changeset`: it judges the changed lines and the application totals of the change set through
+  the T200 exclusion fence and takes no declared-file list, so it has no row in the path-class table.
 
 ### 7.4 Per-application phase-in plan
 
@@ -852,7 +856,12 @@ determinism a hard requirement, so this plan does not treat a retry as acceptabl
   uninstalled): tasks.md T564 adds a `CPA` stage that refuses an unreviewed change inside the
   protected scope declared in `scripts/qa/protected_spec_scope.yaml` (tagged tests, the T473
   guard registry, any `regression/` directory), and a reviewed change is one whose review
-  verdict covers it (document 16 §12.2.4).
+  verdict covers it (document 16 §12.2.4). Revision 6 (tasks.md rev 12 T564; document 16
+  §12.2.6): the stage is the registry row `protected_spec` with scope `files`, given the declared
+  files whose path class applies it, with its rows in `scripts/repo/check_classes.tsv`: `yes` for
+  `source` and `fixtures`, `no` for `patches` (a recorded diff may quote a tagged test and is never
+  the test), `evidence`, `evidence-ledger`, `generated`, `legacy-collection` and
+  `governance-carrier`, each with its reason, its golden-false fixture and its mutation.
 - Causes of flakiness found by the three-run comparison are investigated to root cause (11.4.102)
   and fixed; they are not hidden by quarantine. Quarantine only isolates while the investigation
   runs.
@@ -944,7 +953,9 @@ interface, not verified against this repository (`UNCONFIRMED:`).
 
 The matrix is generated, not written. A generator script reads (a) the applicability map, (b) the
 evidence ledger (document 06) and (c) the repository, and emits `matrix/coverage-matrix.json` plus
-`matrix/coverage-matrix.md`. A cell is `present` only when the ledger contains, for that
+`matrix/coverage-matrix.md` (revision 6, tasks.md T504: under `$EV/matrix/`; an `$EV/**/*.md` file is
+class `source` of the commit-push path-class table, so the generator writes it with the 11.4.44
+revision header, one final newline and no trailing whitespace). A cell is `present` only when the ledger contains, for that
 application and type, at least one test record whose verdict is PASS with three identical runs, a
 caught mutation, and an evidence class matching the type's required class (section 2); `partial`
 when records exist but fewer than the applicability map requires; `absent` when none; `blocked`

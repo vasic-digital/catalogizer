@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 3: Appendix B.4 is labelled a candidate record, not a `finding/1` record, and points to document 02 §9 and `contracts/finding.schema.json` for the register format. Revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 4: section 8 records that the per-zone detectors of the danger-zone sweep are test-first in tasks.md rev 12 T232 (11.4.224; round-11 review), each detector's test with its golden-good, golden-bad and control-needle fixtures run before the detector exists and its RED captured to `$EV/needles/api/<zone>-red.txt`. Revision 3: Appendix B.4 is labelled a candidate record, not a `finding/1` record, and points to document 02 §9 and `contracts/finding.schema.json` for the register format. Revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-api/` (Go 1.25.7, Gin, SQLite/PostgreSQL, JWT, SMB/FTP/NFS/WebDAV/local clients, WebSocket, Prometheus metrics, HTTP/3, Challenges) |
 | Traceability | FR-005..FR-011, FR-015, FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-008, SC-011 |
@@ -373,6 +373,8 @@ Determinism (M6): each detector writes sorted output to `<scratch>/audit/<detect
 ## 8. Danger-zone catalogue
 
 Each entry states the hazard, the code evidence if any, the detector, and the test that would prove or refute it.
+
+Revision 4 (tasks.md rev 12 T232): the sweep has one detector per zone under `scripts/audit/api_dz/`, each test-first (11.4.224): its test with golden-good, golden-bad and control-needle fixtures is written and run before the detector exists, the RED captured to `$EV/needles/api/<zone>-red.txt`, then the detector, GREEN three times, with its golden-good, golden-bad and control needle recorded under `$EV/needles/api/` before its zero is trusted; every detector whose zero is trusted is in the G-GATE review scope of tasks.md T306.
 
 ### 8.1 Concurrency
 
