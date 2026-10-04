@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 9 |
+| Revision | 10 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 9: follows tasks.md rev 24: section 11 adds the expected-RED guard lanes of T334a (one marker form per language that its runner selects on: a `*.expected-red.test.ts` file excluded by the default vitest lane, a JUnit 5 tag or JUnit 4 category in the Gradle trees, a Rust `#[ignore = "expected-red: ATM-<id>"]`, each run by a guard lane and backed by a row of the standing guard registry); the new section 13.5 states the release seam (the standalone release-seam checks at T569 and T582, verdict coverage, the two modes `--seam pre-qa` and `--seam final` of the escape gates, the SLSA gate), the QA-deploy-readiness gate `scripts/release/qa_handoff_gate.sh` (T564a), the final manual-QA hand-off T580e with the review of each manual-finding fix (T580f) and the candidate re-cut set; section 16 gains its acceptance row. Revision 8: section 12.1 and the section 15 risk and open-item rows follow the plan owner's decision C1 of 2026-10-04 (docs/21 ODG-07 revision 15): every build and every compiling test lane runs on the remote build host, dispatched event-driven, never locally (document 16 section 9.6). Revision 7: section 9.3 records when the can-i-deploy gate runs and on which provider version, as the P4-P7 tasks of the round-13 tasks.md wave state it: `--provider catalog-api@<fingerprint>` with the fingerprint of the artifact under test in P4 and P5 (T335, T358) and of the T566 candidate at the release seam (T569, T582), whose provider verification T567 re-runs and publishes under that fingerprint; a provider version without published verification results is refused; the verdict is written only to the file of the required `--out` option (T324, T325). Revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 10: section 13.5 follows tasks.md rev 26 (673 tasks, 78 suffix ids): the `release_seam` path class and its list holding only tracked policy or threshold inputs as data files; the `--seam pre-qa` ratchet judged only on the candidate's own `qa-<fingerprint>` cycle (`pre_qa_no_candidate_cycle`, the retired `pre_qa_unseeded` refused by the readiness gate); one version increment per QA deploy, a re-cut deploy minting its own; the constitution survivor route through a further T580b (3c) iteration. Revision 9: follows tasks.md rev 24: section 11 adds the expected-RED guard lanes of T334a (one marker form per language that its runner selects on: a `*.expected-red.test.ts` file excluded by the default vitest lane, a JUnit 5 tag or JUnit 4 category in the Gradle trees, a Rust `#[ignore = "expected-red: ATM-<id>"]`, each run by a guard lane and backed by a row of the standing guard registry); the new section 13.5 states the release seam (the standalone release-seam checks at T569 and T582, verdict coverage, the two modes `--seam pre-qa` and `--seam final` of the escape gates, the SLSA gate), the QA-deploy-readiness gate `scripts/release/qa_handoff_gate.sh` (T564a), the final manual-QA hand-off T580e with the review of each manual-finding fix (T580f) and the candidate re-cut set; section 16 gains its acceptance row. Revision 8: section 12.1 and the section 15 risk and open-item rows follow the plan owner's decision C1 of 2026-10-04 (docs/21 ODG-07 revision 15): every build and every compiling test lane runs on the remote build host, dispatched event-driven, never locally (document 16 section 9.6). Revision 7: section 9.3 records when the can-i-deploy gate runs and on which provider version, as the P4-P7 tasks of the round-13 tasks.md wave state it: `--provider catalog-api@<fingerprint>` with the fingerprint of the artifact under test in P4 and P5 (T335, T358) and of the T566 candidate at the release seam (T569, T582), whose provider verification T567 re-runs and publishes under that fingerprint; a provider version without published verification results is refused; the verdict is written only to the file of the required `--out` option (T324, T325). Revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -1067,9 +1067,9 @@ test-first artifact is a paired mutation set: remove a ledger record (cell must 
 verdict line (the chain check must fail, document 06), mark an applicable type n/a without a reason
 (the gate must refuse), and a golden-false case (a complete matrix must pass).
 
-### 13.5 Release seam, final manual QA and candidate re-cut (revision 9)
+### 13.5 Release seam, final manual QA and candidate re-cut (revisions 9 and 10)
 
-This section restates tasks.md rev 24 (P6-P7 release-seam and candidate re-cut rules; T447a, T447b,
+This section restates tasks.md rev 26 (revision 10; first written for rev 24) (P6-P7 release-seam and candidate re-cut rules; T447a, T447b,
 T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
 
 - **Release seam.** The commit-push script has no release mode. Every release-seam check is a
@@ -1087,10 +1087,19 @@ T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
   candidate's manual QA) and T582 (every check re-run before the final verification is accepted), on
   the committed, checkpointed register; outputs go under `.audit/out/<op_id>/` and are captured
   through the evidence recorder. A refusal blocks the candidate exactly as a FAIL does; an absent
-  verdict is a refusal, never a pass.
-- **The two modes of the escape gates.** `--seam pre-qa` (T569) needs no manual-QA cycle of the
-  candidate; while the escape baseline is unseeded its ratchet part reports the named non-refusing
-  result `pre_qa_unseeded` (never a ratchet PASS), and the catchability part is judged in full.
+  verdict is a refusal, never a pass. The release-seam scripts are the path class `release_seam`
+  over `scripts/release/release_seam_files.txt` (refusal `release_seam_list_stale`); its data files
+  are only tracked policy or threshold inputs (for example `$SPEC/perf/targets.yaml`,
+  `$SPEC/quality/floor_ratchet.json`, `tests/contracts/compat-window.yaml` for
+  `can_i_deploy.sh`), never the register, its dumps, ledgers, evidence, verdicts or reports
+  (revision 10).
+- **The two modes of the escape gates.** `--seam pre-qa --candidate <fingerprint>` (T569) judges
+  its ratchet part only on the candidate's own register cycle `qa-<fingerprint>`, never on the latest
+  cycle (which after a T580e session with findings belongs to the previous candidate); since no such
+  row exists before this candidate's QA, seeded baseline or not, it reports the named non-refusing
+  result `pre_qa_no_candidate_cycle` (never a ratchet PASS; revision 10, replacing
+  `pre_qa_unseeded`); a missing `--candidate` is refused `candidate_missing`; the catchability part
+  is judged in full.
   `--seam final --candidate <fingerprint>` (T582) needs the register cycle row
   `qa-<fingerprint>` with `manual_qa_ran = 1`, else it refuses with `manual_qa_not_run_for_candidate`;
   an unseeded baseline is refused with `baseline_not_seeded`; a register whose write-ahead log is not
@@ -1098,7 +1107,8 @@ T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
 - **QA-deploy-readiness gate** (11.4.236; T564a). `scripts/release/qa_handoff_gate.sh
   <fingerprint>` is a standalone script run before any deploy to the owner's QA target. It passes
   only when every output that the T569 evidence entry cites exists, matches its sha256, names this
-  fingerprint and is a PASS (`pre_qa_unseeded` accepted for the ratchet part only), and the HC-6
+  fingerprint and is a PASS (`pre_qa_no_candidate_cycle` accepted for the ratchet part only; any other ratchet
+  result, the retired `pre_qa_unseeded` included, is refused `release_seam_refused`), and the HC-6
   record names the same fingerprint; otherwise it refuses with a named reason
   (`release_seam_output_absent`, `release_seam_output_sha_mismatch`,
   `release_seam_fingerprint_mismatch`, `release_seam_refused`, `hc6_absent`,
@@ -1108,9 +1118,12 @@ T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
   push of T581, the readiness gate is run on the candidate fingerprint; the candidate digests are
   deployed to the owner's QA target by promotion by digest, the SLSA gate run on each digest first and
   each target's build id read back (11.4.200). This deploy closes the development cycle
-  (11.4.235(B)): the next version increment is minted once as a register `Task` item and applied only
-  as the first change of the next cycle, after the final state check T595b, never committed to this
-  feature's `main` before it (version files are deliverable inputs). The owner's
+  (11.4.235(B)): each QA deploy mints its own version increment as a register `Task` item (revision
+  10; a re-cut deployed for QA is a new deploy). When the session records a manual finding, that
+  increment is applied as the first held commit of the fix cycle, before any fix commit, so the
+  re-cut is built with the new version id; only the increment of the final, finding-free candidate
+  is deferred to the first change of the next cycle, after the final state check T595b, never
+  committed to this feature's `main` before it (version files are deliverable inputs). The owner's
   session is recorded as the register cycle `qa-<fingerprint>` with `manual_qa_ran = 1`, seeding the
   escape baseline when none exists; every manual finding is a discovery row with channel `manual_qa`
   and a `should_have_been_caught_by` value, linked to or reopening its item (11.4.214), and owes a new
@@ -1123,8 +1136,13 @@ T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
   candidate build (T566), T567 to T571 on its digests (the survivor loop included), T560, T561, T561a
   and T562 on its state, HC-6 taken again, and the final manual-QA hand-off held again on the re-cut
   candidate; when the manual QA recorded any finding, also the register closure steps T574 to T578
-  and T586 on the register state that holds them. A re-cut mints no second version increment, and
-  the evidence of the earlier candidate is never carried over.
+  and T586 on the register state that holds them. Each QA deploy of a re-cut mints its own
+  increment (revision 10, replacing "a re-cut mints no second version increment"), and the
+  evidence of the earlier candidate is never carried over. A constitution-test survivor or a
+  constitution manual finding is fixed by a further T580b (3c) iteration in the re-cut set,
+  consuming exactly the T440a `owed_to_T580b` rows (among them the 16 class-(c) third-party gitlinks
+  that `submodules/constitution/.gitmodules` records, scoped by that recording parent's
+  `.gitmodules`, never the class-(d) grandchild `MVT/js_mse_eme`).
 
 ### 13.4 Cross-cutting applicability: translation and i18n, accessibility (revisions 3 and 4)
 
