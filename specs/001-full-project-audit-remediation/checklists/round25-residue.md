@@ -1,5 +1,12 @@
 # Round 25 review residue (tasks.md rev 25, commit 2e1fd314)
 
+| Field | Value |
+|---|---|
+| Revision | 4 |
+| Created | 2026-10-04 |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 4: section "Rev 28 disposition" appended, judging every round-27 finding against tasks.md rev 28 (commit `fb1d1982`), closing the stale parts of the rev 27 disposition and recording the Mermaid render evidence; revisions 1 to 3 text unchanged) |
+
 Revision 3, 2026-10-04 (revision 1 and 2 text unchanged; sections "Rev 26 disposition" and "Rev 27 disposition" appended). Stop rule decided by the owner: two more rounds, then bound it. Round 25 was the last review round. Findings below are OPEN and tracked; none is fixed in rev 25. Source: five independent read-only reviews. Verdict per slice: NO-GO. Blocking 3, important 25, minor 17.
 
 ## Blocking (3)
@@ -68,3 +75,44 @@ Blocking:
 Important: P0: verdict provenance (check_review_provenance.sh) not run at S1/launcher/T095 clause (b) or Self-Release sites, so a foreign push with G-GATE code plus a self-made GO verdict is accepted; waiver roster version read is unspecified (same change set can add key and signed waiver); scratch DB under .audit/scratch is read-only because RUNP binds only `--rw docs`. P1-P2: T220 check_blocked_reason.sh refuses host_check_missing on legitimately blocked legs; T121a libc backfill equality test breaks later tasks' GREEN x3; T134 has no terminal state when the libnfs verdict is not VERIFIED. P3-P4: block (8) unit-id rule lost its own-org subject; no edge T320->T325 (inventory.json); T334/T330 vs T336a hold/scope. P5-P7: no final SC-005 GO required after a re-cut and no (3c) route for re-cut survivors; final GO can go stale across (3c) iterations (cite test blob sha); T570/T571 gaps (final GO with open non-routed survivor, scoped GO with zero routed survivors, first draw unchecked, T570 commit unreleased when zero survivors); sc011_status.json wrongly excluded from release-seam list; T580e(2) increment commit may have no reviewer.
 
 Minor: see the five round-27 reports (P0 M1-M6: Self-Release clause (2) lacks GO/G-GATE conditions, missing golden-false fixtures, hc record timing under defective release, reviewed_files set omits waiver_hc, bootstrap 14 vs 20 wording, adoption integration via held merge unconfirmed; P1-P2 m1-m5: T117 misses nfs-client verdict, LOCKED_SCRATCH_DB needs realpath, artifact_kind_mismatch scope, T201 ldd vs elf_needed.py, T175 scratch DB content unconfirmed; P3-P4: T299 'two'->'three' cases, T337 lacks T336a, T225 minting list incomplete, T225e conflict on path_root/own_repo, T269 lacks T225; P5-P7: negations inside depends-on clauses, T580c edge omitted in the note; docs: README row wording for the residue file, this file's rev 27 disposition partly stale, Mermaid evidence not tracked).
+
+## Rev 28 disposition
+
+Evidence: the tasks.md rev 28 Status row (commit `fb1d1982`; 673 tasks, 78 suffix ids, none added) and the task bodies it names (T003, T007, T039, T040, T042, T043, T064, T094d, T095; T106, T117, T121a, T121b, T134, T134a, T142, T159, T161, T165, T174, T175, T201, T212, T220; T225, T225e, T237, T248, T250, T254, T269, T299, T320, T325, T334, T336a, T337; T518, T570, T571, T580e, T580f), read on 2026-10-04 by a docs-sweep agent. Round-27 finding ids are matched by the Status row's slice attributions and by `round-27 review <id>` citations in the task bodies (counted with grep: I1 11, I2 7, I3 11, M1 to M6 3/1/4/3/6/2, m1 to m5 1/1/1/2/1, B1 2; the P5-P7 changes cite `rev 28` instead). "Fixed in rev 28 text" means the task text now states the fix; nothing is implemented or run, and rev 28 is not re-reviewed. The five round-27 reports are not tracked files, so their full wording is known only through the summary in the section above (UNCONFIRMED where it matters, said per item). No entry above is deleted.
+
+Blocking (2):
+- R27-B1 (T161): fixed in rev 28 text. The freeze is materialised by `git read-tree` and `git checkout-index` into a scratch index (new `scripts/register/freeze.sh`), never `git archive`; the listing holds files only (modes 100644, 100755, 120000) and the gitlinks are recorded apart in `freeze.json` `gitlinks`, over the same recursive submodule set for snapshot and listing (`freeze_gitlink_set_mismatch`, `freeze_submodule_not_walked`, `freeze_submodule_unmaterialisable`); fixture f1 is a real submodule holding a nested one, each fixture with a paired mutation.
+- R27-B2 (T580e (0)): fixed in rev 28 text. No separate records-only window run exists: each main-repository run folds the uncommitted WP-73 records into its own `--paths-from` list, and the conductor grants the commit turn to one run at a time through `scripts/release/commit_turn_check.sh` (`commit_turn_conflict`, fixtures through the real S0 path, paired mutation).
+
+Important (14):
+- P0 I1 (provenance not run at S1, launcher, T095, Self-Release sites): fixed in rev 28 text (the check inside clause (b) of the T042 predicate, at launcher clauses (2) and (3), the `--self-release` check, the T040 S1 routing, S6 and T095; one forged-verdict fixture and one mutation per site in T094d; `check_pending_release` from the T047 adoption until T094d is released). The residual stays OPEN by design and is stated in T042 and T095: a forged verdict with a forged provenance record is accepted at tier `instance`.
+- P0 I2 (waiver roster version): fixed in rev 28 text (read only from the released commit, `roster_changed_in_run`, the K2 fixture and the separate-run route for adding a key).
+- P0 I3 (scratch DB read-only): fixed in rev 28 text (RUNP `--rw .audit/scratch`, the allow-list exactly two strings, `scratch_db_subcommand_invalid`).
+- P1-P2 I1 (T220 `host_check_missing`): fixed in rev 28 text (only for the host-or-image reason set; a `device_absent` leg passes).
+- P1-P2 I2 (T121a backfill equality): fixed in rev 28 text (lock ids as they stood at the backfill commit, `backfill_baseline_moved`, also for T121b).
+- P1-P2 I3 (T134 terminal state): fixed in rev 28 text (`blocked` `nfs_client_unverified`, `scripts/test-infra/nfs_terminal_state.sh`, `nfs_client_verdict_missing`, owed to T134a and ODG-08, listed in T159).
+- P3-P4 I1 (block (8) unit-id subject): fixed in rev 28 text.
+- P3-P4 I2 (edge T320 -> T325): fixed in rev 28 text (T325 depends on T320).
+- P3-P4 I3 (T334/T330 vs T336a): fixed in rev 28 text (T336a depends on T330 and T334 and checks their inventory edits row by row; T334 gains the new-iteration clause).
+- P5-P7 (final SC-005 GO after a re-cut, (3c) route for re-cut survivors): fixed in rev 28 text (`sc005_verdict_check.py --require-final` at T580, the closing T580a iteration and T582, `final_go_required`, `sc005_candidate_mismatch`; re-cut routing through (3c) and T580a, `sc005_recheck_owed`).
+- P5-P7 (final GO stale across (3c) iterations): fixed in rev 28 text (the `final` GO cites the test's blob sha, `final_go_stale`).
+- P5-P7 (T570/T571 gaps): fixed in rev 28 text (`final_with_open_survivor`, `scoped_without_routed`, every T571 verdict checked including the first draw, the first GO lists the T570 run in `covers_runs` whatever the survivor count, else `verdict_covers_incomplete`).
+- P5-P7 (`sc011_status.json` excluded from the release seam): fixed in rev 28 text (T518 lists it, held on the T519 verdict with `G-GATE`).
+- P5-P7 (T580e (2) increment commit without a reviewer): fixed in rev 28 text (its own verdict `$EV/reviews/WP-73-increment-<fingerprint>.json`, written by T580f, `increment_scope_mismatch`).
+
+Minor (18 tasks.md, 3 docs):
+- P0 M1 to M6: fixed in rev 28 text (Self-Release GO, `blocking_findings` 0, `G-GATE` and provenance conditions; golden-false fixtures at S1 and the launcher; the `hc` record inside the self-release change set it authorises; `waiver_hc` records of the run in the self-release `reviewed_files` set; held bootstrap 14 versus 20 `verdict_already_go`; the admission-table self-release integrated by a held merge in the other clones, stated as intended with a fixture).
+- P1-P2 m1 to m5: fixed in rev 28 text (T117 reviews `$EV/wp11/nfs-client.json`; `LOCKED_SCRATCH_DB` canonicalised; `qa_artifact_kind_record_missing` on the QA rows only; `elf_needed.py` moved to T121a for the T201 needle; T175 bootstraps with `apply_ext.sh --db` and copies the real `reg_sources` rows, `scratch_sources_empty`).
+- P3-P4 (T299 three cases, T337 on T336a, T225 minting list, T225e `unit_path_root_conflict` and `unit_own_repo_conflict`, T269 on T225): fixed in rev 28 text (M1 to M5).
+- P5-P7 negations inside `depends on` clauses: fixed in rev 28 text (M1). P5-P7 "T580c edge omitted in the note": the rev 28 Status row attributes M2 to T570 stating its edges in a `depends on` clause, and the forward-reference note names T580e after T580c under its rev 27 recount; whether that is the edge the round-27 report meant is UNCONFIRMED (report wording not tracked).
+- Docs, README row wording for this file: not judged here (README is outside this sweep); open until the README sweep reports.
+- Docs, this file's rev 27 disposition partly stale: closed by the corrections below.
+- Docs, Mermaid evidence not tracked: closed by the evidence below.
+
+Corrections to the rev 27 disposition (its text is kept above unchanged):
+- "rev 27 itself is not re-reviewed" is superseded: the round-27 review of rev 27 (section above) returned NO-GO on every tasks.md slice and GO on the docs set.
+- "README, docs/21 and docs 01, 03, 07 to 10, 13 to 15, 17 to 20 were not judged in this sweep: open until their own sweep reports" is superseded for the docs set: the round-27 docs review returned GO with 3 minor findings, none naming those documents; this rev 28 sweep also aligned docs 02, 03, 05, 11, 12 and 14 with rev 28. README and docs/21 remain outside this sweep.
+- "the edited docs/16 section 12.2.8 diagram was rendered in this sweep (see the sweep report)" is replaced by the tracked evidence below.
+- The rev 27 statement that the forward-edge graph (42 edges over 32 tasks) is acyclic remains tasks.md's own count; rev 28 states 1319 `depends on` edges and 1334 with the `after` phrases, still 42 forward edges over 32 tasks; not re-run here (UNCONFIRMED).
+
+Mermaid render evidence (2026-10-04, this sweep, after the rev 28 edits): every fenced `mermaid` block of the spec folder's Markdown files was extracted to its own file, 114 blocks (106 in docs/01 to 21, 8 in data-model.md; none in the other files), and each was rendered with `mmdc` 11.17.0 (`mmdc -p pp.json -i <block>.mmd -o <block>.svg`, `pp.json` = `{"args":["--no-sandbox"]}`, the puppeteer no-sandbox form). Result: 114 of 114 exit 0, 114 SVG files written, none under 2,000 bytes, none containing the text "Syntax error". Control needle: a planted malformed flowchart rendered through the same command exits 1, so the instrument sees a broken block. The diagram edited in this sweep, docs/16 section 12.2.8 (nodes RC, SR and R5), is among the 114 and rendered. The block count differs from the 87 named in the sweep request; 114 is the count measured here by the extractor (a per-file count of lines that open a mermaid fence agrees). The prose-only edits made after the render changed no block: the 114 block texts re-extracted at the end of the sweep hash identically to the rendered ones.
