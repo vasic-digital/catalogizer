@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 2: the section 4.3 flowchart renders again (a correction note sat after a node definition and broke the parser; it is now a Mermaid comment plus a sentence below the diagram); one section 11.1 row split into its four columns; the evidence-label vocabulary of this document (PROVEN, PLAUSIBLE, SINGLE-SOURCE, ...) is mapped to document 18's in document 18 §2.1) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 3: a supersession note in section 7.1 records the plan owner's SLSA decision C2 of 2026-10-04, Build L2 at minimum with no L1 interim; the research text is unchanged. Revision 2: the section 4.3 flowchart renders again (a correction note sat after a node definition and broke the parser; it is now a Mermaid comment plus a sentence below the diagram); one section 11.1 row split into its four columns; the evidence-label vocabulary of this document (PROVEN, PLAUSIBLE, SINGLE-SOURCE, ...) is mapped to document 18's in document 18 §2.1) |
 | Feature | specs/001-full-project-audit-remediation |
 | Traceability | FR-005, FR-008..FR-011, FR-014..FR-016, FR-021, FR-022, FR-025, SC-003..SC-008, SC-011 |
 | Source access date | 2026-10-03 (all sources below) |
@@ -232,6 +232,8 @@ SLSA v1.1 states Build L2 requires a **hosted build platform** that itself gener
 | A | Claim **L1** (provenance exists, unsigned or locally signed) and record the gap against §11.4.246 as an operator decision (§11.4.66). | L1 |
 | B | Treat the designated remote build host (the constitution's `thinker.local`) running the rootless build container as the "hosted build platform", with provenance generated and signed by the build host's own service identity rather than by the developer's session. | L2 only if the host's signing key is inaccessible to the build steps and the operator accepts the reading; UNCONFIRMED |
 | C | Obtain a reading from the constitution owners that "SLSA Build Level 2" in §11.4.246 is satisfiable on an owner-operated build host. | depends |
+
+Revision 3 note (2026-10-04): the plan owner decided this question (C2, verbatim: "As much as we need in order to keep producing deterministically validated and verified zero defects products!"): SLSA Build L2 at minimum with no L1 interim, Option B on the dedicated remote build host, reached through a gate (docs/21 ODG-16 revision 15, docs/16 §14 revision 12, tasks.md T447, T447a). The recommendation below is kept as the research record and is superseded.
 
 Recommendation: record Option A as the factual claim now, pursue B as the target, and log the question as an open decision rather than silently claiming L2.
 

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 6 |
+| Revision | 8 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 8: section 12.1 and the section 15 risk and open-item rows follow the plan owner's decision C1 of 2026-10-04 (docs/21 ODG-07 revision 15): every build and every compiling test lane runs on the remote build host, dispatched event-driven, never locally (document 16 section 9.6). Revision 7: section 9.3 records when the can-i-deploy gate runs and on which provider version, as the P4-P7 tasks of the round-13 tasks.md wave state it: `--provider catalog-api@<fingerprint>` with the fingerprint of the artifact under test in P4 and P5 (T335, T358) and of the T566 candidate at the release seam (T569, T582), whose provider verification T567 re-runs and publishes under that fingerprint; a provider version without published verification results is refused; the verdict is written only to the file of the required `--out` option (T324, T325). Revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -745,6 +745,19 @@ sequenceDiagram
   versions, matrix cells and verdict, and is itself guarded by paired mutations: break a consumer
   expectation (the gate must go red), delete a contract (must refuse), and run a compatible change
   (must not fire, the golden-false case of 11.4.201 (1)).
+- Revision 7 (tasks.md T324 to T326, T335, T358, T567, T569 and T582 of the round-13 wave; their P6-P7
+  release-seam rule): the gate `scripts/contract/can_i_deploy.sh` judges one provider version with
+  `--provider catalog-api@<fingerprint>`, the fingerprint of the artifact whose provider verification results
+  were published under it, read at run time from the running artifact (T326), never typed in. In P4 and P5 that
+  is the artifact under test (T335, T358); at the release seam it is the T566 candidate: T567 re-runs the
+  provider verification against the candidate and publishes it under that fingerprint, T569 judges the
+  candidate and T582 re-judges it before the final verification is accepted, a refusal blocking the candidate
+  exactly as a FAIL does. A provider version with no published verification results is refused (missing
+  verification, never a pass), and the gate writes its verdict only to the file that its required `--out`
+  option names, under `.audit/out/<op_id>/` at the release seam, so a release-seam run never writes the tracked
+  tree (T324, T325). Those tasks read the pacts and the verification results from committed files
+  (`tests/contracts/pacts/`, `tests/contracts/verifications/`, T325), so no broker is on that path; whether the
+  broker of DR-1 is still adopted is UNCONFIRMED, to be decided when DR-1 is revisited against T325.
 
 ### 9.4 Shared-module contracts
 
@@ -878,6 +891,19 @@ found (11.4.74). Podman is installed on the host; Docker is not found. The const
 containers are distributed to a remote build host and artifacts brought back (11.4.173 text in
 the project CLAUDE.md); whether a remote host is configured in this environment is `UNCONFIRMED:`
 (`deploy/MIGRATION_thinker_local.md` suggests a prior migration).
+
+Revision 8 (the plan owner's decision C1 of 2026-10-04, docs/21 ODG-07 revision 15): every
+build, and every test lane that compiles or produces an artifact, runs in a rootless container on
+the remote build host and is dispatched event-driven: the lane dispatcher submits it and returns at
+once, its completion arrives as one authenticated `build-event/1` record consumed exactly once, and
+the caller's next step runs as the registered callback, so other lanes and reviews proceed while it
+runs (document 16 section 9.6; tasks.md T005a, T005b, T121a). Only interpreter lanes over the
+read-only source (bash, python3, jq, sqlite3 gates and the documentation checks) run locally, in
+images built remotely or pulled by digest; the site of each lane is the `site` column of
+`scripts/containers/lanes.tsv`. With no qualified build host reachable, or a build whose heartbeat
+stops past its budget, the lane is `blocked-unavailable` (`host_unreachable`, `no_qualified_host`,
+`build_liveness_lost`), never a local run and never a pass (FR-025). The host identity is the
+ODG-07 input.
 
 ### 12.2 The wrapper
 
@@ -1105,13 +1131,13 @@ cross_cutting:
 | Mutation tooling does not support Go 1.25, Compose or Tauri | cannot reach the 85% instrument | fall back to the bash mutation harness pattern plus manual reviewer mutation; record the limit honestly (11.4.6) |
 | Real-device tests cannot run in the environment | many cells stay `blocked` and completion waits | declare early which devices are needed (`dependencies.yaml`); owner supplies |
 | Contract libraries missing for a consumer language | contract tests incomplete | recorded-traffic fallback in Pact JSON (section 9.2) |
-| Host memory ceiling slows mutation and Gradle runs | long wall time | schedule alone, offload to the remote build host (11.4.173) |
+| Host memory ceiling slows mutation and Gradle runs | long wall time | every compiling lane runs on the remote build host (11.4.173; owner decision C1, revision 8), dispatched event-driven so the wall time overlaps other work |
 | Tests rewritten in bulk by agents become assertion-poor | SC-005 breach | reviewer-written mutations and the numerator rule (sections 7.3, 8.3); 60% observable-assertion check by the anti-bluff scan |
 | Test count inflates without value | cost, noise | push-tests-down rule (11.4.169): lower-level test preferred, redundant high-level test removed |
 
 Open items for the plan owner: DR-3, DR-4, DR-6 inputs; final coverage targets and dates;
-sample size for SC-005; the library fit of section 9.2; whether the remote build host is
-configured (12.1); the origin of `installer-wizard/test-results.json`.
+sample size for SC-005; the library fit of section 9.2; the identity of the remote build host
+(12.1; docs/21 ODG-07, the build location itself decided by C1); the origin of `installer-wizard/test-results.json`.
 
 ## 16. Traceability and acceptance evidence
 

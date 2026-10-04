@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 5 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 3: section 8.7 records the commit-push wiring of tasks.md rev 12 T514 (the tiers `perf_cheap` and `perf_long`, registry rows with scope `changeset`, outside the path-class table of document 16 revision 10 §12.2.6, and the standalone release-seam check `scripts/perf/release_check.sh`), and section 15.3 records that the plan-capture script (T295) and the dataset generator of WP-14-03 (T291) are test-first, each with its RED captured before it exists. Revision 2: the section 9.1 "Security note" row gains its missing Tool cell; pipe characters inside code spans of two table rows escaped with a backslash) |
+| Status | draft (revision 5: the build under test is produced on the remote build host through the event-driven dispatcher (the plan owner's decision C1 of 2026-10-04, docs/21 ODG-07 revision 15, document 16 section 9.6): section 5.1 states what that means for the environment fingerprint and the reference host, and the section 8.4 gate sequence submits the build and continues on its completion callback instead of waiting; the scope note of section 1 and D-14-05 follow the FR-017 answer of the same date (every package moved to latest whenever possible after its tests pass). Revision 4: section 8.7 names the closed deferral flag of the long tier, `SKIP_LONG`, because a registry row in mode `deferred` is not a deferral flag (document 16 §12.2 S3; round-13 review). Revision 3: section 8.7 records the commit-push wiring of tasks.md rev 12 T514 (the tiers `perf_cheap` and `perf_long`, registry rows with scope `changeset`, outside the path-class table of document 16 revision 10 §12.2.6, and the standalone release-seam check `scripts/perf/release_check.sh`), and section 15.3 records that the plan-capture script (T295) and the dataset generator of WP-14-03 (T291) are test-first, each with its RED captured before it exists. Revision 2: the section 9.1 "Security note" row gains its missing Tool cell; pipe characters inside code spans of two table rows escaped with a backslash) |
 | Spec requirement | SC-011 (also FR-010, FR-021, FR-022, FR-025) |
 | Owner decision | The 30/50 ms latency SLA of the adopted external constitution does NOT bind this project (spec Q2). Catalogizer sets its own targets and aims for the best achievable performance. |
 | Companion documents | 05 test strategy, 06 determinism and evidence framework, 07 backend audit, 08 web audit |
@@ -44,7 +44,7 @@ Stance:
 - Every number in the final reports is machine-produced by the measurement pipeline (FR-022). Prose is never evidence (section 11.4.262).
 - Performance verdicts are held to the same determinism rules as functional verdicts (FR-010): repeated runs, recorded environment, a deliberate-break control (section 8.5) proving the gate can fail.
 
-Out of scope: capacity planning for hosted deployment sizes (no hosted topology is declared in the spec), cost optimization, and third-party package upgrades (spec Q1).
+Out of scope: capacity planning for hosted deployment sizes (no hosted topology is declared in the spec), cost optimization, and third-party package upgrades (owned by the dependency work of docs/21 WP-57 under FR-017 as amended; revision 5: a package upgrade that the move-to-latest rule brings in is measured like any other change set).
 
 ## 2. Inventory of existing performance assets (verified)
 
@@ -186,6 +186,8 @@ env:
   db_version: "..."
   noise_probe: {cpu_throttle_ratio: 0.0, steal_pct: 0.0, load1_before: 0.0}
 ```
+
+Revision 5 (owner decision C1, docs/21 ODG-07): every build under test is built in a rootless container on the remote build host and dispatched event-driven (document 16 section 9.6, tasks.md T005b, T121a); `build_fingerprint` is the digest of the `completed` event of that build, and the artifact is used only after it matches that event. Method M-GO compiles, so its lane runs on a remote host too (tasks.md T121a), and its fingerprint is that host's; the measurement host for M-HTTP, M-SQL and the other methods is the one docs/21 ODG-07 names before WP-62 (D-14-08), and a baseline is never compared across the two. When no qualified host is reachable the measurement is BLOCKED (`host_unreachable` or `no_qualified_host`), never run on a local build.
 
 Two runs are comparable only if `host_cpu_model`, `host_cpu_count`, `container_image_digests` (apart from the build under test), `cgroup_*` limits, `dataset_id`, `db_dialect`, `db_version` and `governor` are equal. Otherwise the comparison is refused with the differing fields named. A baseline recorded on one host class is not valid on another; each reference host class has its own baseline set (section 6.4).
 
@@ -361,8 +363,8 @@ sequenceDiagram
   participant Cmp as Comparator
   participant Store as Evidence store and baselines
   participant Rev as Independent reviewer
-  Dev->>Build: build candidate artifact
-  Build-->>Dev: artifact digest
+  Dev->>Build: submit candidate build (returns the build id at once)
+  Build-->>Dev: completed event with artifact digest (callback, verified)
   Dev->>Env: provision pinned environment and dataset
   Env->>Env: noise probe and control needle
   Env->>Store: run R repetitions, write raw evidence and chain it
@@ -391,7 +393,7 @@ Verdicts use the three-state vocabulary of the project: PASS, FAIL, BLOCKED (not
 
 ### 8.7 Gate placement
 
-Local only (no CI/CD, section 11.4.156). The gate runs from the dedicated commit-and-push script as an explicit named stage per section 11.4.234: cheap tier (Go micro-benchmarks, bundle size) on every sync, long tier (HTTP load, soak, scan) on a declared cadence and before any release, with recorded deferral if skipped, never silent. The release seam blocks on a performance verdict that is absent for the candidate fingerprint (section 11.4.135 verdict-coverage). Revision 3 (tasks.md T514): the cheap tier is the registry row `perf_cheap` (mode `plain`) and the long tier `perf_long` (mode `deferred`, with its recorded deferral flag), both rows of `scripts/repo/validate_checks.tsv` with scope `changeset`, because they measure the build of the change set and take no declared-file list, so they have no row in the path-class table (document 16 §12.2.6); the release-seam check `scripts/perf/release_check.sh <candidate-fingerprint>` is a standalone script, not a commit-push stage, run at tasks.md T569 and T582, which refuses a missing verdict, a FAIL verdict and a PASS verdict for another fingerprint.
+Local only (no CI/CD, section 11.4.156). The gate runs from the dedicated commit-and-push script as an explicit named stage per section 11.4.234: cheap tier (Go micro-benchmarks, bundle size) on every sync, long tier (HTTP load, soak, scan) on a declared cadence and before any release, with recorded deferral if skipped, never silent. The release seam blocks on a performance verdict that is absent for the candidate fingerprint (section 11.4.135 verdict-coverage). Revision 3 (tasks.md T514): the cheap tier is the registry row `perf_cheap` (mode `plain`) and the long tier `perf_long` (mode `deferred`), both rows of `scripts/repo/validate_checks.tsv` with scope `changeset`, because they measure the build of the change set and take no declared-file list, so they have no row in the path-class table (document 16 §12.2.6); the release-seam check `scripts/perf/release_check.sh <candidate-fingerprint>` is a standalone script, not a commit-push stage, run at tasks.md T569 and T582, which refuses a missing verdict, a FAIL verdict and a PASS verdict for another fingerprint. Revision 4 (round-13 review; document 16 §12.2 S3 and §12.2.1 rule 3): a registry row in mode `deferred` is no deferral flag: S3 does not run it inline and lists it in the run report, and the flag set stays closed (`SKIP_LONG`, `SWEEP_ABSENT`, `LOCAL_ONLY`); the long tier is a long gate in the sense of document 16 §12.2 S4, run as a separate registered long-op (UNCONFIRMED: tasks.md T514 names no S4 verdict file for it), so a run that defers the long gates records the closed flag `SKIP_LONG` at S0, written into the `Deferred-Gates:` line of every commit of the run; tasks.md T514 says "with a recorded deferral flag", to be read as `SKIP_LONG` (a wording owed to T514).
 
 ## 9. Profiling toolbox per runtime
 
@@ -784,7 +786,7 @@ Path `/sys/fs/cgroup/cpu.stat` inside a rootless podman container on cgroup v2 i
 | D-14-02 | Mann-Whitney U plus effect-size guard plus bootstrap CI as the comparison method | proposed | section 8.2 |
 | D-14-03 | Baselines tracked in git under the spec directory during the feature, relocated afterwards | proposed | keeps evidence with the feature; relocation avoids permanent spec-folder clutter |
 | D-14-04 | Disk-backed SQLite is the baseline of record; tmpfs only for profiling | proposed | users do not run from tmpfs |
-| D-14-05 | Adding a bundle analyzer dev dependency | needs owner approval | spec Q1 limits bulk updates, not additions, but it is still a dependency change |
+| D-14-05 | Adding a bundle analyzer dev dependency | needs owner approval | a new dependency, not an update: the move-to-latest rule (FR-017 as amended, revision 5) applies once it is added, and adding it is still a dependency change |
 | D-14-06 | WebSocket harness publishes through the real event path | proposed | avoids testing a simulation |
 | D-14-07 | Local test upstream for the image proxy overhead test | needs owner confirmation | tension with FR-025: the external CDN behaviour cannot be deterministic; the owner decides whether a local HTTP upstream counts as a permitted simulation for a contract-level overhead test |
 | D-14-08 | Dedicated measurement host | open | owner input on hardware availability |

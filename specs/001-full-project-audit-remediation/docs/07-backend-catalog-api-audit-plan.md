@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 6 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 4: section 8 records that the per-zone detectors of the danger-zone sweep are test-first in tasks.md rev 12 T232 (11.4.224; round-11 review), each detector's test with its golden-good, golden-bad and control-needle fixtures run before the detector exists and its RED captured to `$EV/needles/api/<zone>-red.txt`. Revision 3: Appendix B.4 is labelled a candidate record, not a `finding/1` record, and points to document 02 §9 and `contracts/finding.schema.json` for the register format. Revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
+| Status | draft (revision 6: the note after the `run_go` definition of section 7 states that every Go-compiling command runs on the remote build host through the event-driven dispatcher (the plan owner's decision C1 of 2026-10-04, docs/21 ODG-07 revision 15). Revision 5: the W11 row of section 13 states that the SC-003 closure query excludes the tracked item 'legacy headerless documents' by name while FR-008 and SC-003 are reported UNMET as long as it is open, unless an owner decision amends them (tasks.md T576, T588, T593 of the round-13 wave). Revision 4: section 8 records that the per-zone detectors of the danger-zone sweep are test-first in tasks.md rev 12 T232 (11.4.224; round-11 review), each detector's test with its golden-good, golden-bad and control-needle fixtures run before the detector exists and its RED captured to `$EV/needles/api/<zone>-red.txt`. Revision 3: Appendix B.4 is labelled a candidate record, not a `finding/1` record, and points to document 02 §9 and `contracts/finding.schema.json` for the register format. Revision 2: pipe characters inside code spans of six table rows escaped with a backslash, so each row has its header's column count in GitHub-flavoured Markdown; no content change) |
 | Feature | specs/001-full-project-audit-remediation |
 | Scope | `catalog-api/` (Go 1.25.7, Gin, SQLite/PostgreSQL, JWT, SMB/FTP/NFS/WebDAV/local clients, WebSocket, Prometheus metrics, HTTP/3, Challenges) |
 | Traceability | FR-005..FR-011, FR-015, FR-016, FR-021, FR-022, FR-025; SC-002..SC-005, SC-008, SC-011 |
@@ -338,7 +338,7 @@ run_go() {  # usage: run_go <command...>
 }
 ```
 
-Note: `scripts/build_in_container.sh` is the constitutional distributed-build entry (§11.4.173, remote build host `thinker.local` by default). The commands here are the audit-time local rootless equivalent for read-only analysis and tests; builds of deliverables still go through that script.
+Note: `scripts/build_in_container.sh` is the constitutional distributed-build entry (§11.4.173, remote build host `thinker.local` by default). Revision 6 (the plan owner's decision C1 of 2026-10-04, docs/21 ODG-07 revision 15): the `run_go` form above shows the container command, not where it runs; every command of this section that compiles Go (`vet`, `test`, `build`, `-race`, fuzz, bench, the route dump) runs on the remote build host through the containerized runner with lane site `remote`, dispatched event-driven (document 16 §9.6; tasks.md T005b, T121a), its result brought back and verified before it is read; only interpreter analyses over the read-only source run locally; an unreachable build host makes the step `blocked-unavailable`, never a local run.
 
 | ID | Detector | Command (containerised) | Output (machine-readable) | Finds |
 |---|---|---|---|---|
@@ -613,7 +613,7 @@ flowchart LR
 | W8 | Fixes in severity order, each: root cause note, RED test on the broken artifact, fix, GREEN verdict, reviewer mutation | W2..W6 | commits on `main` (no force-push), register closure | for each fix a RED verdict file (fails on the pre-fix artifact) and a GREEN verdict with a different artifact fingerprint (§11.4.115(F)) |
 | W9 | Performance baseline per section 11 on both dialects | W8 | `perf-baseline.json`, regression gate | 3 repetitions inside tolerance; environment record present |
 | W10 | Fill the test-type matrix gaps (section 10), coverage per package with RED-capable numerator, mutation sample | W8 | coverage matrix, mutation results | matrix with zero unexplained gaps (SC-004); sample mutations all caught (SC-005) |
-| W11 | Recursive verification, independent review of the evidence pack, final status of every candidate and finding (fixed or closed with evidence) | W7, W9, W10 | evidence pack, register final state | SC-003 closure query on the register: no open item without evidence |
+| W11 | Recursive verification, independent review of the evidence pack, final status of every candidate and finding (fixed or closed with evidence) | W7, W9, W10 | evidence pack, register final state | SC-003 closure query on the register: no open item without evidence (revision 5, tasks.md T576, T588 and T593 of the round-13 wave: the query excludes the tracked item 'legacy headerless documents' by name, but while it is open FR-008 and SC-003 are reported UNMET and the feature incomplete, unless an owner decision amending them for that class is recorded before HC-7) |
 
 Ordering rationale: W2 and W3 come first among the audits because they cover unauthenticated and externally reachable surfaces (largest blast radius); W6 precedes the contract work because schema and dialect defects change what the contract means; performance is measured after the fix wave so the baseline describes the shipped behaviour, except that W1 records an unfixed "as found" snapshot for the report (cost of C5, C11).
 

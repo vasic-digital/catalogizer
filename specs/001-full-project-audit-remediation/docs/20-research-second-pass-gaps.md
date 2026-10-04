@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 2: pipe characters inside quoted text and code spans of five table rows escaped with a backslash; the section 7.3 "Compatibility" row gains its missing Source cell) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 3: the plan owner's SLSA decision C2 of 2026-10-04 (Build L2 at minimum, no L1 interim; docs/21 ODG-16 revision 15) supersedes the DR-20-01 recommendation "A now, B as the target" and the W20-04 statement of L1; supersession notes added in the section 3.6 recommendation row and in the W20-04 and DR-20-01 rows, the research findings unchanged. Revision 2: pipe characters inside quoted text and code spans of five table rows escaped with a backslash; the section 7.3 "Compatibility" row gains its missing Source cell) |
 | Feature | specs/001-full-project-audit-remediation |
 | Supersedes in part | `docs/17-research-engineering-practices.md` (sections it tagged UNCONFIRMED or SINGLE-SOURCE) |
 | Traceability | FR-010, FR-015, FR-016, FR-021, FR-022, FR-025, SC-003, SC-011 (requirement ids as used in doc 17); constitution anchors §11.4.156, §11.4.161, §11.4.173, §11.4.201, §11.4.240, §11.4.246 |
@@ -261,7 +261,7 @@ Expected machine-readable output: `provenance.intoto.json` containing `.subject[
 | **Option B: designate the dedicated build host as the hosted platform** | The host's signing step, not the developer, generates and signs provenance; consumers verify `builder.id`. Claim "Build L2, self-assessed (owner-operated dedicated platform)". Requires the owner to accept the reading. Cost: a host-resident signing step, a key-custody procedure, a verifier script. |
 | **Option C: ask the constitution owners for an interpretation** | Obtain a written reading that an owner-operated dedicated host satisfies §11.4.246. Cheapest in engineering, slowest in time, and the only way to avoid a self-assessed label. |
 | **Option D: adopt a hosted service** | Rejected: contradicts §11.4.156 and would move the trust boundary outside the owner's control. |
-| **Recommendation** | Do A now (it is true and costs one script, 3.5), build B as the target in the same work item, and put C as the question for the owner. Do not write "L2" in any document until the owner has chosen B or C. Never claim L3 on a single-uid host (the specification requires the signing secret to be inaccessible to build steps). |
+| **Recommendation** | Superseded on 2026-10-04 by the owner's decision C2 (Build L2 at minimum with no L1 interim, B reached through a gate; docs/21 ODG-16 revision 15, tasks.md T447a); the research recommendation was: do A now (it is true and costs one script, 3.5), build B as the target in the same work item, and put C as the question for the owner. Do not write "L2" in any document until the owner has chosen B or C. Never claim L3 on a single-uid host (the specification requires the signing secret to be inaccessible to build steps). |
 | **Evidence required to move from A to B** | (1) provenance and signature for every release artifact in the evidence store; (2) a verifier script that fails if `builder.id` differs from the declared builder; (3) a statement of who can use the signing key and from where; (4) the owner's recorded decision. |
 | **Risks** | Over-claiming a level is itself a bluff under §11.4.201 and §11.4.226. A key stored beside the build gives integrity only against casual tampering, which matches the SLSA L2 wording ("may be easy to perform"). |
 | **Rejected alternatives** | `slsa-github-generator` (GitHub Actions only [S15]); relying on BuildKit `--attest` alone (no statement of level, Podman support unverified [S14]). |
@@ -748,7 +748,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 | W20-01 | Create `tools.lock` with digest-pinned, signature-verified scanner and build images; harness rejects mutable tags | 1 | High | none |
 | W20-02 | Replace `docker.io/aquasec/trivy:latest` in `docker-compose.security.yml:169`; remove `curl\|sh` install in `scripts/security-scan-full.sh:40` | 1 | High | none |
 | W20-03 | Host exposure check for malicious Trivy images; rotate atomically if suspect | 1 | High | DR-20-02 (owner) |
-| W20-04 | Provenance generation script and verifier; `docs/security/SLSA_LEVEL.md` stating L1 | 2 | Medium | DR-20-01 |
+| W20-04 | Provenance generation script and verifier; `docs/security/SLSA_LEVEL.md` stating L1 (superseded on 2026-10-04: Build L2 at minimum, no L1 interim, owner decision C2; tasks.md T446, T447, T447a) | 2 | Medium | DR-20-01 |
 | W20-05 | Authoring-time stress runner (30 shuffled runs) and flake ledger | 3 | Medium | tuning of SC-003 |
 | W20-06 | OpenTelemetry server tracing with `tracetest` in-memory assertions on one critical flow | 4 | Low | none |
 | W20-07 | Commit `src-tauri/Cargo.lock`; add cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants (per-diff) in a pinned Rust image | 5 | Medium | DR-20-03 |
@@ -762,7 +762,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 
 | ID | Question | Recommendation | Owner |
 |---|---|---|---|
-| DR-20-01 | SLSA level claim | A now, B as target, C as the question | Project owner |
+| DR-20-01 | SLSA level claim | A now, B as target, C as the question; answered 2026-10-04 by the owner (C2): Build L2 at minimum, no L1 interim | Project owner |
 | DR-20-02 | Treat Trivy exposure as a potential incident if any host pulled an affected image | Run the mechanical check; if positive, atomic rotation | Project owner |
 | DR-20-03 | Commit `Cargo.lock` | Yes | Project owner |
 | DR-20-04 | Accept an Atlas account and licence for migration linting | No; use SQLite procedure checks, squawk for PostgreSQL | Project owner |
