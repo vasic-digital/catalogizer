@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-03 |
-| Last modified | 2026-10-03 |
-| Status | draft (revision 2: the P-CFG-01 and P-CFG-02 rows of section 9.4 gain their missing Target cell; pipe characters inside a code span of one table row escaped with a backslash) |
+| Last modified | 2026-10-04 |
+| Status | draft (revision 3: sections 5.1, 6.4, 6.5 and 17 follow tasks.md rev 24 (T241a, T242, T243, T244, T245, T334a, T397): the index readiness record of both trees before any detector runs, DET-R06, DET-T03 and DET-T04 through the stored registry snapshot, the decided commit of `src-tauri/Cargo.lock` (D-ADR-07) and, until it lands, one audit-time lock generated in the first audit run and reused by the second, and the expected-RED marker of a Rust test committed RED. Revision 2: the P-CFG-01 and P-CFG-02 rows of section 9.4 gain their missing Target cell; pipe characters inside a code span of one table row escaped with a backslash) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-014, FR-015, FR-016, FR-021, FR-022, FR-025 |
 | Success criteria covered | SC-002, SC-003, SC-004, SC-005, SC-007, SC-011, SC-012 |
@@ -261,7 +261,7 @@ These are the first register items from reading alone. Each carries id prefix `D
 | D-11 | `src/hooks/useCoverQuality.ts:38` | Uses browser `fetch` to the server origin while CSP is `connect-src 'self'`; in a release build this request is blocked by CSP (UNCONFIRMED; depends on the `tauri://` origin handling). Also bypasses the SSRF-validated proxy | Medium | Real-window test with tauri-driver; or CSP evaluation in the e2e |
 | D-12 | `tauri.conf.json` `plugins.shell.open: true`; `tauri-plugin-shell` registered | v1-style plugin key; plugin has no capability and no UI usage. UNCONFIRMED whether the key is accepted by the v2 schema. Removal is an end-user-component decision only if it is user-visible; here it is not, but 11.4.124 still demands history investigation before removal | Low | `git log -S` on introduction; keep or remove decision recorded |
 | D-13 | `Cargo.toml` `rust-version = "1.60"` | Almost certainly below Tauri 2's minimum Rust version. UNCONFIRMED exact value | Low | `cargo +1.60 check` in container, expect failure |
-| D-14 | `src-tauri/Cargo.lock` gitignored | Application builds are not reproducible; `cargo audit` has nothing to audit (11.4.246) | High (supply chain) | Decision D-ADR-07 |
+| D-14 | `src-tauri/Cargo.lock` gitignored | Application builds are not reproducible; `cargo audit` has nothing to audit (11.4.246) | High (supply chain) | Decision D-ADR-07 (revision 3: decided, the lock is committed by tasks.md T397; section 6.5) |
 | D-15 | Config lock held across network I/O in the proxy path | A slow server blocks every concurrent `get_config` call (see section 6.2) | Medium | WP-D3 |
 
 ### 5.2 Installer wizard
@@ -343,11 +343,18 @@ Use `syn` in a small Rust binary under the build container (the repo carries no 
 
 ### 6.4 Control needles for every detector (11.4.201(7)(b))
 
-For each detector, a needle file with a known violation is placed in a scratch crate, run through the same command line, and the detector MUST report it before a zero on the real tree is accepted. For D-04, the minimal needle already exists (the 3-line awk probe above). The result JSON records `needle_found: true`.
+For each detector, a needle file with a known violation is placed in a scratch crate, run through the same command line, and the detector MUST report it before a zero on the real tree is accepted. For D-04, the minimal needle already exists (the 3-line awk probe above). The result JSON records `needle_found: true`. Revision 3 (tasks.md T242): the needles are materialised in a scratch directory by `scripts/audit/desktop_needles.sh`, one per detector id DET-R01 to R12 and DET-T01 to T05, its test written and run RED before the generator exists; a detector's "none found" in the unit result cites the ledger entry of its needle (tasks.md T299).
 
 ### 6.5 Determinism and evidence
 
 Each detector run writes its output plus `{command, container_image_digest, cargo_lock_sha256, git_commit, start/end}` to the evidence store defined in 06. Two consecutive runs from the same state MUST produce identical finding sets (SC-002); sort order and path normalisation are part of the detector wrapper.
+
+Revision 3 (tasks.md rev 24; document 02 §3.2 and §12.1, revision 11):
+
+- **Index readiness** (T241a): before the detectors of `catalogizer-desktop/` and `installer-wizard/` run, file-count parity per language against each tree's input-commit file set, freshness, and three known-answer probes per tree (a Rust function, a TS service function and a Tauri command handler, each read from source with path and line) are recorded through `scripts/audit/index_query.sh`; for a language the index has no chunker for, the fallback and its reason are recorded in the unit's `index_route`. Evidence `$EV/desktop/index_readiness.json`.
+- **Live registry answers**: DET-R06 `cargo outdated` and DET-T03 `npm audit --json` and DET-T04 `npm outdated --json` run once, in the first audit run, through `scripts/audit/registry_snapshot.sh` (T243, T245); both runs derive their findings from the stored snapshot.
+- **Lock file** (T244): committing `src-tauri/Cargo.lock` is decided (D-ADR-07; the owner's FR-017 answer), and tasks.md T397 commits it. Until then DET-R04 and DET-R05 read a lock generated once, in the first audit run, inside a scratch container copy and stored as `$AUD/cargo-locks/<app>.Cargo.lock`; the repeat run copies that stored lock into its scratch copy and never regenerates it, DET-R06 reads the same lock, the lock's sha256 is an identity field of both run manifests and is the `cargo_lock_sha256` of the evidence record above, and the audit never commits it to the app tree. The absence of `deny.toml` is recorded as a finding.
+- **Expected-RED tests** (T334a): a Rust test committed RED before its fix carries `#[ignore = "expected-red: ATM-<id>"]` and a `RED_EXPECTED` row of `scripts/qa/guard_registry.tsv`; the default `cargo test` skips it and the guard lane runs it with `cargo test -- --ignored <name>` (document 05 §11).
 
 ---
 
@@ -790,7 +797,7 @@ Each WP closes with: register items updated, evidence records stored, the indepe
 | D-ADR-04 | Token storage | Rust-only, OS keychain, attached in Rust | keep token in web view memory: exposure to any script; persisting in `localStorage`: worse | yes: whether remember-me is wanted |
 | D-ADR-05 | WebDAV client | `reqwest` with explicit methods | extending the raw socket code | no |
 | D-ADR-06 | Real-window harness | tauri-driver where supported | Playwright against Vite: does not exercise IPC (section 8.5); macOS harness `UNKNOWN:` | yes: macOS hosts |
-| D-ADR-07 | Commit `Cargo.lock` for applications | yes (remove from `.gitignore` for these crates) | keep ignored: no audit, no reproducibility | confirm |
+| D-ADR-07 | Commit `Cargo.lock` for applications | yes (remove from `.gitignore` for these crates) | keep ignored: no audit, no reproducibility | decided (revision 3): the lock is committed by tasks.md T397 (the owner's FR-017 answer recorded by T012a); until then the audit uses the stored lock of section 6.5 |
 | D-ADR-08 | NFS real target | user-space NFS server container if feasible | simulating NFS: forbidden (FR-025) | yes, if infeasible: supply an NFS host |
 | D-ADR-09 | Plugins `shell`, `fs` | keep only with minimal capability, else remove after history check | silent removal: forbidden (11.4.122/11.4.124) | confirm keep or remove |
 | D-ADR-10 | Updater | out of scope until owner decides | add one now: needs signing keys the audit cannot create | yes |

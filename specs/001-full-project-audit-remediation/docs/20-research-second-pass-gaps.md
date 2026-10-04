@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 3: the plan owner's SLSA decision C2 of 2026-10-04 (Build L2 at minimum, no L1 interim; docs/21 ODG-16 revision 15) supersedes the DR-20-01 recommendation "A now, B as the target" and the W20-04 statement of L1; supersession notes added in the section 3.6 recommendation row and in the W20-04 and DR-20-01 rows, the research findings unchanged. Revision 2: pipe characters inside quoted text and code spans of five table rows escaped with a backslash; the section 7.3 "Compatibility" row gains its missing Source cell) |
+| Status | draft (revision 4: supersession notes only, the research text unchanged: decision DR-20-03 (commit `src-tauri/Cargo.lock`) is answered by the plan owner's FR-017 answer of 2026-10-04 and planned in tasks.md rev 24 (T397 commits the lock; until then the audit generates one lock in its first run and reuses it in the repeat run, T244); notes in section 6, the W20-07 row and the DR-20-03 row. Revision 3: the plan owner's SLSA decision C2 of 2026-10-04 (Build L2 at minimum, no L1 interim; docs/21 ODG-16 revision 15) supersedes the DR-20-01 recommendation "A now, B as the target" and the W20-04 statement of L1; supersession notes added in the section 3.6 recommendation row and in the W20-04 and DR-20-01 rows, the research findings unchanged. Revision 2: pipe characters inside quoted text and code spans of five table rows escaped with a backslash; the section 7.3 "Compatibility" row gains its missing Source cell) |
 | Feature | specs/001-full-project-audit-remediation |
 | Supersedes in part | `docs/17-research-engineering-practices.md` (sections it tagged UNCONFIRMED or SINGLE-SOURCE) |
 | Traceability | FR-010, FR-015, FR-016, FR-021, FR-022, FR-025, SC-003, SC-011 (requirement ids as used in doc 17); constitution anchors §11.4.156, §11.4.161, §11.4.173, §11.4.201, §11.4.240, §11.4.246 |
@@ -473,6 +473,8 @@ Tauri builds on Linux need system libraries (WebKitGTK) in the image: the exact 
 
 **Decision DR-20-03 (owner):** commit `src-tauri/Cargo.lock` (remove it from `.gitignore`). Recommendation: yes, because the Cargo book ties lockfile commit to deterministic builds, which §11.4.246 requires. Cost: one file, plus a lock-update policy. **Confidence:** HIGH on tool facts (raw primary); MEDIUM on integration (not exercised).
 
+Revision 4 supersession note (2026-10-04): DR-20-03 is answered. The plan owner's FR-017 answer of 2026-10-04 (recorded by tasks.md T012a) decides that `src-tauri/Cargo.lock` is committed, and tasks.md rev 24 commits it in T397 (§11.4.246). Until then the audit pass does not commit it: tasks.md T244 generates the lock once, in the first audit run, inside a scratch container copy, stores it as `$AUD/cargo-locks/<app>.Cargo.lock` with its sha256 as an identity field of both run manifests, and reuses it in the repeat run (document 02 §12.1, revision 11; document 09 §6.5, revision 3). The research above is unchanged.
+
 ---
 
 ## 7. Theme 6: Android lint, detekt, screenshot tests, Gradle/AGP/JDK matrix <a id="7-theme-6-android"></a>
@@ -751,7 +753,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 | W20-04 | Provenance generation script and verifier; `docs/security/SLSA_LEVEL.md` stating L1 (superseded on 2026-10-04: Build L2 at minimum, no L1 interim, owner decision C2; tasks.md T446, T447, T447a) | 2 | Medium | DR-20-01 |
 | W20-05 | Authoring-time stress runner (30 shuffled runs) and flake ledger | 3 | Medium | tuning of SC-003 |
 | W20-06 | OpenTelemetry server tracing with `tracetest` in-memory assertions on one critical flow | 4 | Low | none |
-| W20-07 | Commit `src-tauri/Cargo.lock`; add cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants (per-diff) in a pinned Rust image | 5 | Medium | DR-20-03 |
+| W20-07 | Commit `src-tauri/Cargo.lock`; add cargo-deny, cargo-audit, cargo-llvm-cov, cargo-mutants (per-diff) in a pinned Rust image (revision 4: the lock commit is planned as tasks.md T397) | 5 | Medium | DR-20-03 (answered) |
 | W20-08 | Resolve compileSdk 35 / AGP 8.2.2 mismatch via the containerized warning capture, then pick the option | 6 | High | DR-10-02 (existing) |
 | W20-09 | Android lint SARIF + baseline ratchet; detekt after toolchain decision; refresh Roborazzi pin on TV | 6 | Medium | none |
 | W20-10 | Schema reference and drift gate via a scratch DB and `tbls`; reconcile the two migration systems | 7 | High | DR-20-04 (Atlas Pro yes/no) |
@@ -764,7 +766,7 @@ Licence traps: `jinaai/jina-code-embeddings-1.5b` and `Salesforce/SFR-Embedding-
 |---|---|---|---|
 | DR-20-01 | SLSA level claim | A now, B as target, C as the question; answered 2026-10-04 by the owner (C2): Build L2 at minimum, no L1 interim | Project owner |
 | DR-20-02 | Treat Trivy exposure as a potential incident if any host pulled an affected image | Run the mechanical check; if positive, atomic rotation | Project owner |
-| DR-20-03 | Commit `Cargo.lock` | Yes | Project owner |
+| DR-20-03 | Commit `Cargo.lock` | Yes; answered 2026-10-04 by the owner's FR-017 answer (tasks.md T012a): committed by T397 | Project owner |
 | DR-20-04 | Accept an Atlas account and licence for migration linting | No; use SQLite procedure checks, squawk for PostgreSQL | Project owner |
 | DR-20-05 | Spec-first (oapi-codegen) for new endpoints | Decide after the drift test shows the size of the problem | Project owner |
 

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 8 |
+| Revision | 9 |
 | Created | 2026-10-03 |
 | Last modified | 2026-10-04 |
-| Status | draft (revision 8: section 12.1 and the section 15 risk and open-item rows follow the plan owner's decision C1 of 2026-10-04 (docs/21 ODG-07 revision 15): every build and every compiling test lane runs on the remote build host, dispatched event-driven, never locally (document 16 section 9.6). Revision 7: section 9.3 records when the can-i-deploy gate runs and on which provider version, as the P4-P7 tasks of the round-13 tasks.md wave state it: `--provider catalog-api@<fingerprint>` with the fingerprint of the artifact under test in P4 and P5 (T335, T358) and of the T566 candidate at the release seam (T569, T582), whose provider verification T567 re-runs and publishes under that fingerprint; a provider version without published verification results is refused; the verdict is written only to the file of the required `--out` option (T324, T325). Revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
+| Status | draft (revision 9: follows tasks.md rev 24: section 11 adds the expected-RED guard lanes of T334a (one marker form per language that its runner selects on: a `*.expected-red.test.ts` file excluded by the default vitest lane, a JUnit 5 tag or JUnit 4 category in the Gradle trees, a Rust `#[ignore = "expected-red: ATM-<id>"]`, each run by a guard lane and backed by a row of the standing guard registry); the new section 13.5 states the release seam (the standalone release-seam checks at T569 and T582, verdict coverage, the two modes `--seam pre-qa` and `--seam final` of the escape gates, the SLSA gate), the QA-deploy-readiness gate `scripts/release/qa_handoff_gate.sh` (T564a), the final manual-QA hand-off T580e with the review of each manual-finding fix (T580f) and the candidate re-cut set; section 16 gains its acceptance row. Revision 8: section 12.1 and the section 15 risk and open-item rows follow the plan owner's decision C1 of 2026-10-04 (docs/21 ODG-07 revision 15): every build and every compiling test lane runs on the remote build host, dispatched event-driven, never locally (document 16 section 9.6). Revision 7: section 9.3 records when the can-i-deploy gate runs and on which provider version, as the P4-P7 tasks of the round-13 tasks.md wave state it: `--provider catalog-api@<fingerprint>` with the fingerprint of the artifact under test in P4 and P5 (T335, T358) and of the T566 candidate at the release seam (T569, T582), whose provider verification T567 re-runs and publishes under that fingerprint; a provider version without published verification results is refused; the verdict is written only to the file of the required `--out` option (T324, T325). Revision 6: sections 7.3, 11 and 13.1 record how tasks.md rev 12 wires these gates into the commit-push script (document 16 revision 10 §12.2.6): the coverage gate of T503 is the registry row `coverage_gate` with scope `changeset`, outside the path-class table; the protected-spec stage of T564 is the row `protected_spec` with scope `files` and a class row for every class; and the matrix generator of T504 writes `$EV/matrix/coverage-matrix.md` as a class `source` file with the 11.4.44 revision header. Revision 5: the protected-spec rule of section 11 names its local enforcement, the `CPA` stage of tasks.md T564, instead of an unresolved pre-push check, since 11.4.234 allows no blocking hook and document 16 installs none. Revision 4: section 13.4 accounts for all thirteen applications A1 to A13 in the translation table, the accessibility section and the applicability YAML (A12 added; A10 corrected after a file-name search found an English-only i18n seam in the Go modules and translated bundles in two A12 modules); the section 7.2 citation of the `.gitignore` negation task corrected to tasks.md T004. Revision 3: coverage baselines and their run records move to `$EV/coverage_baseline/<app>/` and targets to `$EV/coverage_targets/<app>/targets.yaml`, because `evidence/coverage/` is ignored at any depth by `.gitignore:139` (docs/21 IC-38); new section 13.4 records the translation and i18n applicability per application (n/a with reasons and one open server-side item) and the accessibility (WCAG 2.2 AA) checks per user-facing application, owned by docs/21 WP-61; `\|` escaped in one table cell. Revision 2: catalog-web test-file count and submodule count stated precisely after independent review) |
 | Feature | specs/001-full-project-audit-remediation |
 | Spec requirements covered | FR-009, FR-010, FR-011, FR-016, FR-025 (and the test side of FR-008, FR-021, FR-022) |
 | Success criteria covered | SC-004, SC-005 (and the test side of SC-003, SC-011) |
@@ -875,6 +875,22 @@ determinism a hard requirement, so this plan does not treat a retry as acceptabl
   `source` and `fixtures`, `no` for `patches` (a recorded diff may quote a tagged test and is never
   the test), `evidence`, `evidence-ledger`, `generated`, `legacy-collection` and
   `governance-carrier`, each with its reason, its golden-false fixture and its mutation.
+- **Expected-RED guards are not quarantine** (revision 9; tasks.md rev 24 T334a, 11.4.135): a test
+  committed RED on purpose before its fix (a consumer contract test that fails until P5, tasks.md
+  T327 to T329) leaves its default lane only through the registered marker `expected-red: ATM-<id>`,
+  in the form its runner selects on: TypeScript (vitest; `catalog-web`, `catalogizer-desktop`) a test
+  file named `*.expected-red.test.ts` with the marker in its header comment, excluded by the default
+  lane's vitest `exclude` glob and run by a guard lane; Kotlin and Java (Gradle, both Android trees)
+  `@Tag("expected-red")` (JUnit 5) or `@Category(ExpectedRed::class)` (JUnit 4) beside the marker
+  comment, excluded from the default `test` task and run by a guard task; Rust
+  (`catalogizer-desktop/src-tauri`) `#[ignore = "expected-red: ATM-<id>"]`, skipped by the default
+  `cargo test` and run by `cargo test -- --ignored <name>`. Each such test has a row in the standing
+  guard registry `scripts/qa/guard_registry.tsv` (polarity `RED_EXPECTED`, the RED evidence on the
+  pre-fix artifact fingerprint, the task that owes the GREEN), and the anti-bluff scan accepts a
+  marker only when its ATM id has a guard row, reporting `SKIP_WITHOUT_TICKET` otherwise. The lane
+  test runs one marked and one unmarked failing fixture per language: the default lane's machine
+  report must list the unmarked test and not the marked one, the guard lane's report must list the
+  marked one, and the unmarked failing fixture must make the default lane fail (control needle).
 - Causes of flakiness found by the three-run comparison are investigated to root cause (11.4.102)
   and fixed; they are not hidden by quarantine. Quarantine only isolates while the investigation
   runs.
@@ -1051,6 +1067,65 @@ test-first artifact is a paired mutation set: remove a ledger record (cell must 
 verdict line (the chain check must fail, document 06), mark an applicable type n/a without a reason
 (the gate must refuse), and a golden-false case (a complete matrix must pass).
 
+### 13.5 Release seam, final manual QA and candidate re-cut (revision 9)
+
+This section restates tasks.md rev 24 (P6-P7 release-seam and candidate re-cut rules; T447a, T447b,
+T504a, T514, T554, T564a, T569, T570, T580e, T580f, T582); the task list binds.
+
+- **Release seam.** The commit-push script has no release mode. Every release-seam check is a
+  standalone script with its own exit code that judges the candidate fingerprint recorded by the
+  candidate build (T566), never a commit-push stage: the performance verdict
+  (`scripts/perf/release_check.sh`, T514), the escape-ratchet and catchability gates
+  (`scripts/qa/escape_gates.sh`, T554), the can-i-deploy matrix for the candidate provider version
+  (section 9), the claim-vs-reality ledger (`scripts/docs/claim_ledger.py`, T548a), the quality
+  floors `mutation_ratchet_challenge.sh` and `scripts/qa/observable_assertions.sh` (T504a; 85% and
+  60% with their ratchet values), the verdict-coverage check `scripts/qa/verdict_coverage.py` (T570,
+  11.4.135: a guard of the standing guard registry whose topology is present and that has no verdict
+  for the candidate fingerprint refuses the candidate), and the SLSA gate
+  `scripts/supply_chain/check_slsa.sh` per deliverable with its `--check-record
+  docs/security/SLSA_LEVEL.md` mode (T447a, T447b). They run at two named points, T569 (before the
+  candidate's manual QA) and T582 (every check re-run before the final verification is accepted), on
+  the committed, checkpointed register; outputs go under `.audit/out/<op_id>/` and are captured
+  through the evidence recorder. A refusal blocks the candidate exactly as a FAIL does; an absent
+  verdict is a refusal, never a pass.
+- **The two modes of the escape gates.** `--seam pre-qa` (T569) needs no manual-QA cycle of the
+  candidate; while the escape baseline is unseeded its ratchet part reports the named non-refusing
+  result `pre_qa_unseeded` (never a ratchet PASS), and the catchability part is judged in full.
+  `--seam final --candidate <fingerprint>` (T582) needs the register cycle row
+  `qa-<fingerprint>` with `manual_qa_ran = 1`, else it refuses with `manual_qa_not_run_for_candidate`;
+  an unseeded baseline is refused with `baseline_not_seeded`; a register whose write-ahead log is not
+  empty is refused with `register_not_checkpointed`.
+- **QA-deploy-readiness gate** (11.4.236; T564a). `scripts/release/qa_handoff_gate.sh
+  <fingerprint>` is a standalone script run before any deploy to the owner's QA target. It passes
+  only when every output that the T569 evidence entry cites exists, matches its sha256, names this
+  fingerprint and is a PASS (`pre_qa_unseeded` accepted for the ratchet part only), and the HC-6
+  record names the same fingerprint; otherwise it refuses with a named reason
+  (`release_seam_output_absent`, `release_seam_output_sha_mismatch`,
+  `release_seam_fingerprint_mismatch`, `release_seam_refused`, `hc6_absent`,
+  `hc6_fingerprint_mismatch`). It is test-first with one golden-bad fixture per refusal and one
+  golden-good fixture, and its paired mutation reads an absent output as PASS.
+- **Final manual QA** (11.4.185, 11.4.238; T580e, plan HC-7). After HC-6 and before the bottom-up
+  push of T581, the readiness gate is run on the candidate fingerprint; the candidate digests are
+  deployed to the owner's QA target by promotion by digest, the SLSA gate run on each digest first and
+  each target's build id read back (11.4.200). This deploy closes the development cycle
+  (11.4.235(B)): the next version increment is minted once as a register `Task` item and applied only
+  as the first change of the next cycle, after the final state check T595b, never committed to this
+  feature's `main` before it (version files are deliverable inputs). The owner's
+  session is recorded as the register cycle `qa-<fingerprint>` with `manual_qa_ran = 1`, seeding the
+  escape baseline when none exists; every manual finding is a discovery row with channel `manual_qa`
+  and a `should_have_been_caught_by` value, linked to or reopening its item (11.4.214), and owes a new
+  automated check in the standing guard registry with a RED captured on this candidate: anything
+  manual QA finds is a coverage escape of the automated regime. Each such fix change set is reviewed
+  on its own (T580f: the RED on the tested candidate, GREEN x3, the new registered check with its
+  coverage-escape audit, and one reviewer-authored mutation recorded caught), and the candidate
+  re-cut the fix brings is made only after that review's GO.
+- **Candidate re-cut.** Whenever a new release candidate is called for, the one set re-run is: the
+  candidate build (T566), T567 to T571 on its digests (the survivor loop included), T560, T561, T561a
+  and T562 on its state, HC-6 taken again, and the final manual-QA hand-off held again on the re-cut
+  candidate; when the manual QA recorded any finding, also the register closure steps T574 to T578
+  and T586 on the register state that holds them. A re-cut mints no second version increment, and
+  the evidence of the earlier candidate is never carried over.
+
 ### 13.4 Cross-cutting applicability: translation and i18n, accessibility (revisions 3 and 4)
 
 Two concerns cut across the fifteen types and had no explicit applicability record. Both are recorded here as data for the applicability map (section 13.2) under a `cross_cutting` key, and both are owned by docs/21 WP-61 (absent test types) for the authoring and by WP-70 for the final matrix gate.
@@ -1152,6 +1227,7 @@ sample size for SC-005; the library fit of section 9.2; the identity of the remo
 | SC-005 | 8.3 | reviewer sample records: seed, sample, mutation diffs, three-run outputs, zero survivors |
 | SC-003 (test side) | doc 06 | RED/GREEN pair per fixed item across three runs |
 | SC-011 (test side) | 6 TS-08 | baselines and regression gate records |
+| SC-003, SC-005 (release side) | 13.5 | T569 and T582 release-seam outputs for the candidate fingerprint; the `qa_handoff_gate.sh` pass record; the `qa-<fingerprint>` manual-QA cycle and its discovery rows (revision 9) |
 
 Completion claims drawn from this plan cite ledger records, never this document (FR-022, SC-012).
 Anything marked `UNCONFIRMED:` or `UNKNOWN:` above is to be resolved by a measured run, not by
