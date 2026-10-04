@@ -1,0 +1,22 @@
+# Round 25 review residue (tasks.md rev 25, commit 2e1fd314)
+
+Revision 1, 2026-10-04. Stop rule decided by the owner: two more rounds, then bound it. Round 25 was the last review round. Findings below are OPEN and tracked; none is fixed in rev 25. Source: five independent read-only reviews. Verdict per slice: NO-GO. Blocking 3, important 25, minor 17.
+
+## Blocking (3)
+- B-A1 (T040/T042 S1, T041 S6, T095): a forged `CPA-Run:` trailer passes every check except the S0 launcher; foreign G-GATE change with a copied trailer is fast-forwarded unheld and pushed to other remotes. Fix: one "CPA commit" predicate (local run record lists the sha, or a committed GO lists the run) used by S1 routing, unrecorded_local_commit, Foreign-Commit naming, S6 withhold, T095; fixtures for forged-trailer fast-forward and hand commit with copied trailer, each with a mutation.
+- B-C1 (T264/T300, block 3): frozen worktree scan set includes ignored files that change during a run (.codegraph/codegraph.db, .remember/*, .claude/), so AUD-002 always stops `worktree_scan_set_changed`; SC-002 unreachable. Fix: reviewed exclusion list of plan-written state with reasons and a needle.
+- B-C2 (block 8, T225/T255/T271/T286/T299): own-org `submodules/security` derives unit id `security`, colliding with the cross-cutting `security` unit; T225 fails `unit_id_collision`. Fix: rename cross-cutting unit (e.g. `security-xcut`).
+
+## Important (25)
+Phase 0: (A-I1) T039/T040 baseline bootstrap expects 0/10 for unheld validate_checks.tsv edit but S2 refuses first with 20; (A-I2) `released_code_unreviewed` remediation via self-release does not clear (add reviewed_files clause for self-release verdict); (A-I3) waiver authorisation is a self-asserted string, authoriser_is_producer compares unlike namespaces (need owner attestation + single-uid boundary note).
+Phases 1-2: (B-I1) T212 split rows lack run_image; libc check should apply only to native binaries; (B-I2) libc field has no backfill owner, IMG-CLEAN has no shell; (B-I3) T164 and T174 read live tree not frozen snapshot; (B-I4) T165/T167 import command hides .sql path from the T064 journal; (B-I5) T203/T204 use false reason codes, should use artifact_not_yet_built/image_not_built.
+Phases 3-4: (C-I1) T244 lacks IMG-RUST guard; (C-I2) block (1) has no rows for tools/**, build/**, codegraph.json, .mcp.json, .lumenignore, .secrets.baseline, .helix/**; (C-I3) T235 does not update fixture_roots.txt review header; (C-I4) no review releases T325 release_seam_files.txt edit; (C-I5) T233/T240a/T277a missing from nondeterministic_detectors.tsv; (C-I6) T232 detectors and T267 lack author-side paired mutations.
+Phases 5-7: (E-I1) T440a class (c) count 17 vs 16 (MVT/js_mse_eme is class d); (E-I2) stale "re-cut never mints a second increment" bullet; (E-I3) release-seam rule over-reaches (register/ledgers/targets.yaml); (E-I4) constitution survivor route cycle T572<->T580b and no re-run after T580e (UNCONFIRMED likelihood); (E-I5) reviews of change sets with blocked legs not covered by owner-blocked rule (T359, T395, T411, T428); (E-I6) WP-73 main-mode CPA runs can hit the S0 sweep with uncommitted records.
+Docs (D-I1..D-I5): all docs follow rev 24 (670/75, no T134a); README and docs/21 call rev 24 uncommitted; docs/16 12.2.8(4) contradicts T042 on materialisation and lacks B1/I1 text; path-gate table lacks release_seam and guard_registry rows; P6-P7 increment and pre-qa semantics stale in docs 21, 06, 04.
+
+## Minor (17)
+A: M1 merge-commit path set in S5; M2 commit_push.conf, review-verdict.schema.json and T040b tables have no gate row; M3 T039 deletion fixture does not say held. B: T121b default classes for IMG-DOCS/scanner images; T134a terminal state on T134 pass; T142 readelf/binutils unconfirmed. C: T245 stale ref; T240a fixture ordering; "no class exempts secret fold" bullet; T277b missing T236 edge; two ambiguous unit-location cases; R08/R09 lock sha unconfirmed; vague checks T251, T260, T261, T277. E: T447a/T447b gate not named (T451); unreachable "(c) re-cut with no finding" branch; T581(0) omits earlier re-cut fingerprint records and T580e evrec. Docs: WP-13 ODG-08 input; P1 terminal-state rule, IMG-INFRA-CLIENT/IMG-SIGVERIFY, run_image, libc, waiver roster absent from docs.
+
+## Also owed
+- contracts revision: finding/1 unit and reg_components must accept every id in $AUD/units.json (no task defines reg_components).
+- Mermaid rendering unconfirmed in the round-25 docs review (browser launch failed there; earlier docs agent rendered all blocks).
