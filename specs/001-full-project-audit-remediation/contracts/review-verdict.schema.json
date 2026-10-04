@@ -114,6 +114,33 @@
           }
         }
       }
+    },
+    "accepted_pins": {
+      "type": "array",
+      "description": "Optional. Per accepted pin path, the exact gitlink sha the reviewer accepted and the move record that produced it; a staged gitlink that differs from this list is refused (T441, T442, T580a, T581).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "sha",
+          "move_record"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "move_record": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
   },
   "allOf": [
