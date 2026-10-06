@@ -1,0 +1,238 @@
+# identity: task=T120 utc=2026-10-06T17:44:23Z host=anton uid=1000 git_head=b3728d76adbfa2efd1055d6878881c9298e3c22b (working tree has uncommitted work: content hashes identify the files)
+# sha256 scripts/containers/envelope.sh=4c454e97da7d0e795adc34c871149ba9c0b92eb543981face5bccc38e2856cd9
+# sha256 scripts/containers/runner_lib.sh=205f353b381def8d9aa77590d6abf70bd46d2ef2ccf341757f1cfeefb3a3472d
+# sha256 scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 scripts/containers/run_node.sh=55acba4e6e9c33ad074cf39e4af986cf9c901c8abbbcdb6352cade2212c8050f
+# sha256 scripts/containers/run_docs.sh=5c62ff9b08744afbe7bf62ef411ae63f24dff9587176c21048e29dcc8da99311
+# sha256 scripts/containers/run_scan.sh=6e582ada4e268dfc5051925f5fa10408a32dd47a83a3c1377e8ce1be1b8df92a
+# sha256 scripts/containers/run_playwright.sh=c4056b25b3168d22160218dffac4816b4d91a63034d5a23207d7ce3ba1e341cc
+# sha256 scripts/containers/run_testutil.sh=635ef4c7ad2d7417f40579bc375749252ff3297302fa78f82236b6840cc669fa
+# sha256 scripts/containers/lanes.tsv=f7582edddea0e6508bb0790fc5879620ce6e590d5ce133f79879cfc7f69671ca
+# sha256 scripts/test-in-container.sh=cf5adf4be7293be8caa07f923cdda07dc7fcf1162673697b0e1e788a5e570a5f
+# sha256 scripts/containers/tests/test_envelope.sh=ee7e7e71b65b68d6a4ab57aa657d310a9232395b4db24bab55a656bc58bfb971
+# sha256 scripts/containers/tests/test_runners.sh=de861d737483bf2b33e45fef953e08b0919d1b756e867a4a65588fb2a53c5198
+# sha256 scripts/containers/tests/test_test_in_container.sh=45e436049a8a256b1c4f7a82c02824912065df206ae7169789151ea664376a5a
+# sha256 scripts/containers/tests/test_race_detector.sh=c209bc585548367bc4e69d6761b78936a8bbc4eef35c1ffb593e0f40042f41b0
+# sha256 scripts/containers/run_pinned.sh=98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# cmd: bash scripts/containers/tests/test_runners.sh
+PASS: run_go: no arguments is a usage error
+PASS: run_go: missing -- command is a usage error
+PASS: run_go: unknown option is a usage error
+PASS: run_go: --memory must be a byte count
+PASS: run_go: --cpus must be a positive integer
+PASS: run_go: usage errors start no container
+PASS: run_go: usage errors register nothing
+PASS: run_node: no arguments is a usage error
+PASS: run_node: missing -- command is a usage error
+PASS: run_node: unknown option is a usage error
+PASS: run_node: --memory must be a byte count
+PASS: run_node: --cpus must be a positive integer
+PASS: run_node: usage errors start no container
+PASS: run_node: usage errors register nothing
+PASS: run_docs: no arguments is a usage error
+PASS: run_docs: missing -- command is a usage error
+PASS: run_docs: unknown option is a usage error
+PASS: run_docs: --memory must be a byte count
+PASS: run_docs: --cpus must be a positive integer
+PASS: run_docs: usage errors start no container
+PASS: run_docs: usage errors register nothing
+PASS: run_scan: no arguments is a usage error
+PASS: run_scan: missing -- command is a usage error
+PASS: run_scan: unknown option is a usage error
+PASS: run_scan: --memory must be a byte count
+PASS: run_scan: --cpus must be a positive integer
+PASS: run_scan: usage errors start no container
+PASS: run_scan: usage errors register nothing
+PASS: run_playwright: no arguments is a usage error
+PASS: run_playwright: missing -- command is a usage error
+PASS: run_playwright: unknown option is a usage error
+PASS: run_playwright: --memory must be a byte count
+PASS: run_playwright: --cpus must be a positive integer
+PASS: run_playwright: usage errors start no container
+PASS: run_playwright: usage errors register nothing
+PASS: run_testutil: no arguments is a usage error
+PASS: run_testutil: missing -- command is a usage error
+PASS: run_testutil: unknown option is a usage error
+PASS: run_testutil: --memory must be a byte count
+PASS: run_testutil: --cpus must be a positive integer
+PASS: run_testutil: usage errors start no container
+PASS: run_testutil: usage errors register nothing
+PASS: run_go: success exit 0
+PASS: run_go: two containers go through run_pinned.sh (the toolchain probe, then the run)
+PASS: run_go: both calls name the image IMG-GO
+PASS: run_go: the run gets an explicit --out
+PASS: run_go: RUNP_MEMORY is the envelope memory (the limit is handed to run_pinned.sh)
+PASS: run_go: RUNP_CPUS is the envelope cpus
+PASS: run_go: RUNP_PIDS is the envelope pids
+PASS: run_go: the probe carries the same limits
+PASS: run_go: the user command is passed after --
+PASS: run_go: probe and run carry one --op-id (run_go-20261006T174424Z-3759248)
+PASS: run_go: exactly one long-op is registered
+PASS: run_go: the registry row is the op id of the container label
+PASS: run_go: the op reached the terminal state complete
+PASS: run_go: the op budget records the envelope memory
+PASS: run_go: the op budget records the envelope cpus
+PASS: run_go: the op records its out dir as a declared write path
+PASS: run_go: the op was registered BEFORE the first container started
+PASS: run_go: the sweep ran once, before the run
+PASS: run_go: the sweep reads the runtime plane (AM-P1,AM-P2,AM-P3) at the cadence stage
+PASS: run_go: toolchain.json is written and valid JSON
+PASS: run_go: record schema
+PASS: run_go: record wrapper
+PASS: run_go: record image id
+PASS: run_go: record lock digest
+PASS: run_go: record inspected digest equals the lock digest
+PASS: run_go: record digest_match
+PASS: run_go: record carries the version line from the probe
+PASS: run_go: record control needle (read-only mount write must fail)
+PASS: run_go: record out writable
+PASS: run_go: record op id
+PASS: run_go: record envelope jobs (per_job UNKNOWN: 1)
+PASS: run_go: record envelope memory
+PASS: run_go: run stdout reaches the caller
+PASS: run_go: run stderr reaches the caller's stderr
+PASS: run_go: the container exit code is passed through
+PASS: run_go: a failed run ends the op in state failed
+PASS: run_go: the verdict names the exit code
+PASS: run_testutil: success exit 0
+PASS: run_testutil: two containers go through run_pinned.sh (the toolchain probe, then the run)
+PASS: run_testutil: both calls name the image IMG-TESTUTIL
+PASS: run_testutil: the run gets an explicit --out
+PASS: run_testutil: RUNP_MEMORY is the envelope memory (the limit is handed to run_pinned.sh)
+PASS: run_testutil: RUNP_CPUS is the envelope cpus
+PASS: run_testutil: RUNP_PIDS is the envelope pids
+PASS: run_testutil: the probe carries the same limits
+PASS: run_testutil: the user command is passed after --
+PASS: run_testutil: probe and run carry one --op-id (run_testutil-20261006T174425Z-3761212)
+PASS: run_testutil: exactly one long-op is registered
+PASS: run_testutil: the registry row is the op id of the container label
+PASS: run_testutil: the op reached the terminal state complete
+PASS: run_testutil: the op budget records the envelope memory
+PASS: run_testutil: the op budget records the envelope cpus
+PASS: run_testutil: the op records its out dir as a declared write path
+PASS: run_testutil: the op was registered BEFORE the first container started
+PASS: run_testutil: the sweep ran once, before the run
+PASS: run_testutil: the sweep reads the runtime plane (AM-P1,AM-P2,AM-P3) at the cadence stage
+PASS: run_testutil: toolchain.json is written and valid JSON
+PASS: run_testutil: record schema
+PASS: run_testutil: record wrapper
+PASS: run_testutil: record image id
+PASS: run_testutil: record lock digest
+PASS: run_testutil: record inspected digest equals the lock digest
+PASS: run_testutil: record digest_match
+PASS: run_testutil: record carries the version line from the probe
+PASS: run_testutil: record control needle (read-only mount write must fail)
+PASS: run_testutil: record out writable
+PASS: run_testutil: record op id
+PASS: run_testutil: record envelope jobs (per_job UNKNOWN: 1)
+PASS: run_testutil: record envelope memory
+PASS: run_testutil: run stdout reaches the caller
+PASS: run_testutil: run stderr reaches the caller's stderr
+PASS: run_testutil: the container exit code is passed through
+PASS: run_testutil: a failed run ends the op in state failed
+PASS: run_testutil: the verdict names the exit code
+PASS: run_go: the command is prefixed env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1
+PASS: run_testutil: no command prefix
+PASS: explicit lower limits: exit 0
+PASS: explicit lower memory reaches run_pinned.sh
+PASS: explicit lower cpus reaches run_pinned.sh
+PASS: the op budget records the explicit memory
+PASS: memory above the envelope: refused (exit 1)
+PASS: memory above the envelope: reason limit_exceeds_envelope
+PASS: memory above the envelope: no container, no op
+PASS: cpus above the envelope: refused
+PASS: cpus above the envelope: reason limit_exceeds_envelope
+PASS: memory 1 byte above the live envelope but inside the 2% slack: accepted
+PASS: the accepted slack value reaches run_pinned.sh
+PASS: memory above the 2% slack: refused
+PASS: above the slack: reason limit_exceeds_envelope
+PASS: cpus 1 above the live envelope but inside the 0.60*nproc ceiling (9): refused at the ceiling
+PASS: a registered live op shrinks the memory limit
+PASS: a registered live op shrinks the cpus limit (cpu_budget 5)
+PASS: purpose held by a live op: refused
+PASS: purpose held: reason purpose_conflict
+PASS: purpose held: no container started
+PASS: unpinned image (no digest): refused
+PASS: unpinned image: reason image_unpinned
+PASS: unpinned image: no container, no op, no sweep
+PASS: malformed digest: refused
+PASS: malformed digest: reason image_unpinned
+PASS: run_node: image IMG-NODE absent from the lock is refused (exit 1)
+PASS: run_node: reason image_not_in_lock
+PASS: run_node: the refusal says BLOCKED and names IMG-NODE
+PASS: run_node: blocked starts no container, registers no op, runs no sweep
+PASS: run_playwright: image IMG-PW absent from the lock is refused (exit 1)
+PASS: run_playwright: reason image_not_in_lock
+PASS: run_playwright: the refusal says BLOCKED and names IMG-PW
+PASS: run_playwright: blocked starts no container, registers no op, runs no sweep
+PASS: run_docs: image IMG-DOCS absent from the lock is refused (exit 1)
+PASS: run_docs: reason image_not_in_lock
+PASS: run_docs: the refusal says BLOCKED and names IMG-DOCS
+PASS: run_docs: blocked starts no container, registers no op, runs no sweep
+PASS: run_node with IMG-NODE in the lock: runs
+PASS: run_node: the run names IMG-NODE
+PASS: run_scan: default image IMG-SHELLCHECK runs
+PASS: run_scan: names IMG-SHELLCHECK
+PASS: run_scan: the record states no shell probe is possible (entrypoint-only image)
+PASS: run_scan: the record carries the first version line
+PASS: run_scan: an allowed scanner image with no defined version command is refused (blocked, never guessed)
+PASS: run_scan: reason probe_not_defined
+PASS: run_scan: probe_not_defined starts no container and the op ended failed
+PASS: run_scan: a non-scanner image is refused (exit 1)
+PASS: run_scan: reason image_not_allowed
+PASS: run_go: --image is not an option of a single-image wrapper (usage)
+PASS: sweep drift (rc 10): the run is refused
+PASS: sweep drift: reason anti_mess_drift
+PASS: sweep drift: no container, no op
+PASS: sweep refusal/blind (rc 20): refused
+PASS: sweep rc 20: reason anti_mess_blind
+PASS: sweep rc 20: no container, no op
+PASS: sweep unexpected rc (99): refused (fail closed)
+PASS: sweep unexpected rc: reason anti_mess_blind
+PASS: sweep script missing: refused (fail closed)
+PASS: sweep missing: reason anti_mess_sweep_missing
+PASS: RUNNER_RUNP / RUNNER_SWEEP without RUNNER_TEST_MODE: refused
+PASS: hook reason test_hook_outside_test_mode
+PASS: hooks outside test mode: nothing started
+PASS: control needle failed (write to the read-only mount succeeded): refused
+PASS: reason probe_blind
+PASS: probe_blind: the run did not start (only the probe call)
+PASS: probe_blind: the op ended failed
+PASS: /out not writable by the mapped user: refused
+PASS: reason out_not_writable
+PASS: cache dir not writable: refused
+PASS: reason cache_not_writable
+PASS: an empty probe output (the instrument saw nothing): refused
+PASS: empty probe: reason probe_blind
+PASS: the probe container failing: refused
+PASS: reason probe_failed
+PASS: inspected image digest differs from the lock digest: refused
+PASS: reason image_digest_mismatch
+PASS: digest mismatch: the run did not start
+PASS: passthrough: exit 0
+PASS: passthrough: --network=none --rw docs --need 123 reach run_pinned.sh
+PASS: a 3 s run records at least one heartbeat (seq 3)
+PASS: real sweep clean (rc 0): the wrapper runs
+  (real sweep verdict for this run: rc=0)
+PASS: real: run_testutil in the pinned IMG-TESTUTIL exits 0
+PASS: real: the python3 import ran inside the container
+PASS: real: toolchain.json digest_match
+PASS: real: control needle yes in the real container
+PASS: real: the real op ended complete
+PASS: real: run_go in the pinned IMG-GO exits 0
+PASS: real: go version printed by the toolchain inside IMG-GO
+PASS: real: IMG-GO toolchain.json digest_match
+PASS: real: IMG-GO the source mount is read-only (needle)
+PASS: real: run_scan in the pinned IMG-SHELLCHECK exits 0
+PASS: real: shellcheck --version printed
+PASS: real lock has IMG-NODE: run_node runs 'node --version' in the pinned image (exit 0)
+PASS: real: run_node printed the toolchain version (v20.20.2)
+PASS: real: run_node toolchain record digest_match
+PASS: real lock has IMG-PW: run_playwright runs 'npx playwright --version' in the pinned image (exit 0)
+PASS: real: run_playwright printed the toolchain version (Version 1.63.0)
+PASS: real: run_playwright toolchain record digest_match
+PASS: real lock has IMG-DOCS: run_docs runs 'python3 --version' in the pinned image (exit 0)
+PASS: real: run_docs printed the toolchain version (Python 3.11.2)
+PASS: real: run_docs toolchain record digest_match
+RESULT pass=218 fail=0
+# exit=0

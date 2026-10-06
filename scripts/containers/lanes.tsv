@@ -1,0 +1,18 @@
+# lanes.tsv - T121. The lane table of scripts/test-in-container.sh (TIC): one reviewed row per (app, lane), naming the wrapper that runs it.
+# Columns (TAB separated): app, lane, wrapper (a file of scripts/containers/, without .sh). Lines starting with # and blank lines are ignored.
+# Apps: catalog-api, catalog-web, qa, docs, tooling. Lanes: unit, contract, integration, e2e, api, docs, render, tooling.
+# A new app or lane exists only by a REVIEWED row added here; TIC refuses any (app, lane) that has no row, with a non-zero exit (never a bare-host fallback).
+# `qa` is a RESERVED app key with NO row: until T212 adds the run_qa.sh rows, `TIC qa ...` is refused as an unknown app, never sent to another image.
+# The wrappers run_rust.sh and run_kcov.sh (T200a) and the Android rows of T204 (scripts/audit/android-container.sh, T145) are added by their own reviewed rows.
+# The `site` column (remote / split / local, T121a) is added by T121a, which is blocked on the dispatcher scripts/build/dispatch.sh (T005b).
+catalog-api	unit	run_go
+catalog-api	contract	run_go
+catalog-api	integration	run_go
+catalog-api	e2e	run_go
+catalog-web	unit	run_node
+catalog-web	contract	run_node
+catalog-web	tooling	run_node
+catalog-web	e2e	run_playwright
+docs	docs	run_docs
+docs	render	run_docs
+tooling	unit	run_testutil

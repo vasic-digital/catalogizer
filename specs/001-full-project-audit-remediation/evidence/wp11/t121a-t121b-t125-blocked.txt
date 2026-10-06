@@ -1,0 +1,21 @@
+# T121a, T121b, T125: recorded BLOCKED (not implemented, nothing faked)
+# utc: 2026-10-06  host: anton  author: the T118/T119/T120/T121/T124 implementation agent
+#
+# T121a (remote lanes: `site` column of scripts/containers/lanes.tsv, remote/split/local rows, submission through scripts/build/dispatch.sh)
+#   BLOCKED-ON-T005b: scripts/build/dispatch.sh (the event-driven dispatcher) is being built by another agent and is not complete; every `remote`
+#   and `split` row is submitted through it, and the failing-test-first cases need it shimmed with its real submit/status/cancel contract.
+#   NOT DONE: lanes.tsv has no `site` column; scripts/test-in-container.sh runs every row locally through its wrapper.
+# T121b (class per image: `class` column of images.lock.yaml, remote-only enforcement in the wrappers, `class_unknown`, the T039 matrix cases)
+#   BLOCKED-ON-T005b (the compile-class commands are refused locally and submitted through the dispatcher) and it edits
+#   build/containers/images.lock.yaml and scripts/repo CPA checks, which are other agents' in-flight files.
+#   NOT DONE: the wrappers do not read a class; compile-class images (IMG-GO, IMG-NODE, IMG-PW) run locally on anton by the owner decision of
+#   2026-10-06 (build host = this host), which is what T121b's remote-only rule would later change.
+# T125 (ST-INFRA smoke per wrapper and the dispatcher, $EV/wp12/smoke.json)
+#   BLOCKED-ON-T005b, T122, T123 (T125 depends on T121, T122, T123, T124 and needs `TIC catalog-api unit -- true` to reach the dispatcher shim and
+#   `run_go.sh go version` as a remote lane taken from its callback record).
+#   What exists and is real today (not a substitute for the T125 record): test_runners.sh runs `go version` (IMG-GO), `python3 -c 'import yaml,
+#   jsonschema, pytest'` (IMG-TESTUTIL), `shellcheck --version` (IMG-SHELLCHECK), and while the lock has them `node --version` (IMG-NODE) and
+#   `npx playwright --version` (IMG-PW) inside the pinned images, each with a toolchain record whose digest_match is true.
+# T124, migration half: scripts/run-race-detector.sh is NOT moved to run_go.sh (an existing script, outside the new-files-only instruction; its remote
+#   lane additionally needs T121a/T005b). Its RED is captured in t124-race-red.txt (L3: the script runs the bare-host go, no container).
+#   tools/evidence/wrap-go.sh (T051) does not exist: the race report through it is SKIP, BLOCKED-ON-T051.

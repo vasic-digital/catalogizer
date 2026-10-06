@@ -1,0 +1,122 @@
+# identity: task=T119 utc=2026-10-06T17:45:33Z host=anton uid=1000 git_head=b53be11ab4015963247ce14252d00ff1f4a30891 (working tree has uncommitted work: content hashes identify the files)
+# sha256 scripts/containers/envelope.sh=4c454e97da7d0e795adc34c871149ba9c0b92eb543981face5bccc38e2856cd9
+# sha256 scripts/containers/runner_lib.sh=205f353b381def8d9aa77590d6abf70bd46d2ef2ccf341757f1cfeefb3a3472d
+# sha256 scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 scripts/containers/run_node.sh=55acba4e6e9c33ad074cf39e4af986cf9c901c8abbbcdb6352cade2212c8050f
+# sha256 scripts/containers/run_docs.sh=5c62ff9b08744afbe7bf62ef411ae63f24dff9587176c21048e29dcc8da99311
+# sha256 scripts/containers/run_scan.sh=6e582ada4e268dfc5051925f5fa10408a32dd47a83a3c1377e8ce1be1b8df92a
+# sha256 scripts/containers/run_playwright.sh=c4056b25b3168d22160218dffac4816b4d91a63034d5a23207d7ce3ba1e341cc
+# sha256 scripts/containers/run_testutil.sh=635ef4c7ad2d7417f40579bc375749252ff3297302fa78f82236b6840cc669fa
+# sha256 scripts/containers/lanes.tsv=f7582edddea0e6508bb0790fc5879620ce6e590d5ce133f79879cfc7f69671ca
+# sha256 scripts/test-in-container.sh=cf5adf4be7293be8caa07f923cdda07dc7fcf1162673697b0e1e788a5e570a5f
+# sha256 scripts/containers/tests/test_envelope.sh=ee7e7e71b65b68d6a4ab57aa657d310a9232395b4db24bab55a656bc58bfb971
+# sha256 scripts/containers/tests/test_runners.sh=de861d737483bf2b33e45fef953e08b0919d1b756e867a4a65588fb2a53c5198
+# sha256 scripts/containers/tests/test_test_in_container.sh=45e436049a8a256b1c4f7a82c02824912065df206ae7169789151ea664376a5a
+# sha256 scripts/containers/tests/test_race_detector.sh=c209bc585548367bc4e69d6761b78936a8bbc4eef35c1ffb593e0f40042f41b0
+# sha256 scripts/containers/run_pinned.sh=98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# cmd: bash scripts/containers/tests/test_envelope.sh
+PASS: golden: exit 0
+PASS: golden: schema
+PASS: golden: nproc
+PASS: golden: reserve_cpu = max(2, ceil(0.125*16)) = 2
+PASS: golden: reserve_mem = max(4 GiB, 0.15*MemTotal)
+PASS: golden: ceiling_mem = floor(0.60*MemTotal)
+PASS: golden: mem_budget
+PASS: golden: cpu_budget
+PASS: golden: per_job status measured
+PASS: golden: jobs = max(1, min(14, 12))
+PASS: golden: container memory equals mem_budget
+PASS: golden: container cpus is the cpu budget under 0.60*nproc (9)
+PASS: golden: pids = min(2048, min(8192, ulimit/2))
+PASS: unknown (profile absent): exit 0
+PASS: unknown (profile absent): per_job_mem UNKNOWN
+PASS: unknown (profile absent): status names the reason
+PASS: unknown (profile absent): jobs = 1
+PASS: unknown (toolchain not in profile): jobs = 1
+PASS: unknown (toolchain not in profile): status
+PASS: unknown (no --toolchain): jobs = 1
+PASS: invalid per_job value 0: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 0: status names per_job_invalid
+PASS: invalid per_job value -5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value -5: status names per_job_invalid
+PASS: invalid per_job value "x": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "x": status names per_job_invalid
+PASS: invalid per_job value null: jobs = 1 (never a division by zero)
+PASS: invalid per_job value null: status names per_job_invalid
+PASS: invalid per_job value 1.5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 1.5: status names per_job_invalid
+PASS: invalid per_job value "1610612736": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "1610612736": status names per_job_invalid
+PASS: malformed profile: jobs = 1
+PASS: malformed profile: status
+PASS: per_job above mem_budget: jobs = max(1, 0) = 1
+PASS: per_job above mem_budget: still measured
+PASS: cpu bound: jobs = cpu_budget
+PASS: nproc 1: reserve_cpu floor 2
+PASS: nproc 1: cpu_budget may be negative (-1)
+PASS: nproc 1: jobs still 1
+PASS: nproc 1: container cpus floor 1
+PASS: nproc 64: reserve_cpu = ceil(64/8) = 8
+PASS: nproc 64: cpu_budget 56
+PASS: nproc 64: container cpus = floor(0.60*64) = 38
+PASS: nproc 17: reserve_cpu = ceil(2.125) = 3
+PASS: small host: reserve_mem floor is 4 GiB
+PASS: small host: ceiling_mem
+PASS: small host: mem_budget = MemAvailable - reserve (the lower term)
+PASS: MemAvailable below reserve: exit 1
+PASS: MemAvailable below reserve: reason memory_budget_unavailable
+PASS: unparsable meminfo: exit 1
+PASS: unparsable meminfo: reason meminfo_unreadable
+PASS: nproc 0: exit 1
+PASS: nproc 0: reason cpu_budget_unavailable
+PASS: ulimit -u 0: exit 1 (fail closed, never the permissive 8192)
+PASS: ulimit 0: reason pids_budget_unavailable
+PASS: test hook without ENVELOPE_TEST_MODE: refused
+PASS: hook reason test_hook_outside_test_mode
+PASS: ENVELOPE_NPROC without test mode: refused
+PASS: usage: unknown option
+PASS: usage: toolchain name must be [a-z0-9_-]+
+PASS: usage: unknown format
+PASS: pids = ulimit/2 when that is below 2048
+PASS: pids with ulimit unlimited = 2048
+PASS: fixture: two operations registered through the real register.sh
+PASS: registry: used_mem counts the live op only
+PASS: registry: used_cpu counts the live op only
+PASS: registry: mem_budget = min(ceiling - used, avail - reserve)
+PASS: registry: cpu_budget = nproc - reserve_cpu - used
+PASS: registry: jobs = min(12, floor(17660800000/1073741824)=16)
+PASS: registry: a hung (flat-progress, owner alive) op is still subtracted
+PASS: registry: a dead-owner op is not subtracted
+PASS: registry empty: used 0
+PASS: json: valid and jobs matches
+PASS: json: schema
+PASS: json: per_job_mem_bytes is a number when measured
+PASS: json: per_job_mem_bytes is null when UNKNOWN
+PASS: json: per_job_status carries the reason
+PASS: derived oracle: 60 seeded random cases agree with the independent python implementation
+PASS: negative control: different hosts give different envelopes (19660800000/14 vs 39321600000/28)
+PASS: real host: exit 0
+PASS: real host: ceiling_mem is 0.60*MemTotal from /proc/meminfo
+PASS: real host: nproc equals nproc(1)
+PASS: real host: container memory within the 12.6 ceiling
+RESULT pass=84 fail=0
+CAUGHT   reserve-cpu-floor (9 failing checks)
+CAUGHT   reserve-mem-floor (9 failing checks)
+CAUGHT   reserve-mem-pct (8 failing checks)
+CAUGHT   ceiling (13 failing checks)
+CAUGHT   used-mem (6 failing checks)
+CAUGHT   min-term (13 failing checks)
+CAUGHT   refusal (9 failing checks)
+CAUGHT   cpu-budget (12 failing checks)
+CAUGHT   jobs-min (10 failing checks)
+CAUGHT   jobs-floor (9 failing checks)
+CAUGHT   unknown-jobs (17 failing checks)
+CAUGHT   cpu-ceiling (8 failing checks)
+CAUGHT   pids (7 failing checks)
+CAUGHT   ulimit-closed (8 failing checks)
+CAUGHT   test-hooks (9 failing checks)
+CAUGHT   used-classes-hung (6 failing checks)
+CAUGHT   used-classes-dead (6 failing checks)
+CAUGHT   memory-output (6 failing checks)
+MUTATION RESULT caught=18 survived=0 total=18
+# exit=0

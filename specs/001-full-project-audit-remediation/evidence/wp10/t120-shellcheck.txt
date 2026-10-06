@@ -1,0 +1,2 @@
+# shellcheck (pinned IMG-SHELLCHECK) via run_scan.sh, -x -S warning, on the T118-T124 scripts; utc 2026-10-06T17:59:27Z
+# exit=0 (0 = no warning-level finding)

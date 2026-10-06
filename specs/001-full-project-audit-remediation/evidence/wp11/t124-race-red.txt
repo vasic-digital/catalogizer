@@ -1,0 +1,38 @@
+# identity: task=T124-RED utc=2026-10-06T17:36:42Z host=anton uid=1000 git_head=b3728d76adbfa2efd1055d6878881c9298e3c22b (working tree has uncommitted work: content hashes identify the files)
+# sha256 scripts/containers/tests/test_race_detector.sh=c209bc585548367bc4e69d6761b78936a8bbc4eef35c1ffb593e0f40042f41b0
+# sha256 scripts/run-race-detector.sh=3d5286cc39231e4a6b727d3a89f30c131438bc27d0a4b1a938ec7c46453fd54a
+# sha256 scripts/containers/run_go.sh=1752675949a24109a3b25a0bda0d831781590104deb11564c50baa6abcaa6db9
+# sha256 scripts/containers/runner_lib.sh=04209cc2cce506892ee73f14fa247ef80f38d03fb58d38c04ac2a843028e8e43
+# cmd: bash scripts/containers/tests/test_race_detector.sh
+PASS: instrument: the jsonl reader sees a DATA RACE output event (needle)
+PASS: instrument: no false race on a clean line (negative control)
+  (racy -race run: rc=1, 25 s)
+PASS: L1 racy: the containerized -race run exits non-zero on the seeded race (rc 1)
+PASS: L1 racy: /out/go-test.jsonl was written by the run
+PASS: L1 racy: the machine output carries a 'DATA RACE' event
+PASS: L1 racy: the test event is a failure
+PASS: L1 racy: the fixture printed race=enabled from inside the container (the detector was on)
+PASS: L1 racy: GOMAXPROCS=3 inside the container (the docs/16 limit was applied)
+PASS: L1 racy: the toolchain record says the digest matched
+PASS: L1 racy: the registered long op ended failed with verdict rc=1
+  (fixed -race run: rc=0, 27 s)
+PASS: L1 fixed: the containerized -race run exits 0 on the fixed copy
+PASS: L1 fixed: no DATA RACE event on the fixed copy
+PASS: L1 fixed: the package passed
+PASS: L1 fixed: race=enabled inside the container
+PASS: L1 fixed: the registered long op ended complete
+PASS: L1 negative control: the racy copy without -race exits 0 (the detector is what fails it)
+PASS: L1 negative control: no race event without -race
+PASS: L1 negative control: race=disabled inside the container
+PASS: L2 shim: the lane command runs through run_go.sh (exit 0)
+PASS: L2 shim: GOMAXPROCS=3 + the docs/16 flags -race -p 2 -parallel 2 -json reach run_pinned.sh in the IMG-GO container call
+PASS: L2 shim: the image is IMG-GO
+PASS: L2 shim: the envelope limits (--memory, --cpus, --pids-limit) are handed to run_pinned.sh as container limits
+SKIP: BLOCKED-ON-T051: tools/evidence/wrap-go.sh does not exist, so the race report through it is not asserted; the machine output is read with jq above
+  (script run: rc=0, bare-host go calls=1, container runs=0)
+FAIL: L3 RED: scripts/run-race-detector.sh runs go on the bare host (BARE_HOST_GO test -race ./... -p 2 -parallel 2 -count=1 -timeout 300s)
+FAIL: L3 RED: the script starts no container (no podman run executing go test)
+FAIL: L3 RED: the IMG-GO digest is not in any container run
+FAIL: L3 RED: no --memory on any container run
+RESULT pass=22 fail=4 skip=1
+# exit=1

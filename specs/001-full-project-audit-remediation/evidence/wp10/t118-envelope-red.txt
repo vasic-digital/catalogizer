@@ -1,0 +1,1 @@
+FAIL: envelope.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/../envelope.sh

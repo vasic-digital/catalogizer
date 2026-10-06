@@ -1,0 +1,8 @@
+FAIL: run_go.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: run_node.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: run_docs.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: run_scan.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: run_playwright.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: run_testutil.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+FAIL: runner_lib.sh not found at /home/milosvasic/Projects/catalogizer/scripts/containers/tests/..
+RESULT pass=0 fail=7

@@ -1,0 +1,2 @@
+FAIL: test-in-container.sh not found at /nonexistent/test-in-container.sh
+RESULT pass=0 fail=1
