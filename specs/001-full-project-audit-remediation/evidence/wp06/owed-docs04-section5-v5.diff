@@ -1,0 +1,76 @@
+OWED revision of docs/04 section 5 (not applied here: docs/04 is the binding document and another agent owns its edits).
+Generated 2026-10-05T18:37:50Z by: diff -u <sql block of docs/04 section 5 as in the working tree> scripts/register/register_ext.sql
+left  sha256 e798b2f42e0d2918ad7dbf9d082d4187dedc908ece9ef64d68b8a51ea88b8351  (= the pre-fix scripts/register/register_ext.sql, byte-identical; it already holds the undocumented CAT- rename of the reg_ids.atm_id expression)
+right sha256 701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3  (the v5 DDL)
+Applying it makes section 5 v5; section 4 counts become 43 triggers and 30 views; the header line 'DDL of section 5 unchanged ... c179f65c' must be replaced (that hash is not reproduced by any extraction, UNCONFIRMED what it hashed).
+
+--- /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/wf3/doc04_sql_now.sql	2026-10-05 20:27:24.853862850 +0200
++++ ../../scripts/register/register_ext.sql	2026-10-05 20:08:02.388027755 +0200
+@@ -1,6 +1,8 @@
+--- register_ext.sql : Catalogizer problem-register extension layer, v4 (v1 + review fixes 2026-10-03,
++-- register_ext.sql : Catalogizer problem-register extension layer, v5 (v1 + review fixes 2026-10-03,
+ --                    second review round 2026-10-03: §14.8, third review round 2026-10-03: §14.9,
+---                    fourth review round 2026-10-03: §14.10)
++--                    fourth review round 2026-10-03: §14.10; v5 = WF2 review fix round 3, 2026-10-05:
++--                    I-1 v_reopen_unlogged, I-2 v_deleted_items, I-4 findings custody; the docs/04 section 5
++--                    revision owed for v5 is recorded in evidence/wp06/README.md)
+ -- Applies ON TOP of the constitution workable-items engine schema (meta.schema_version = 7).
+ -- PRAGMA foreign_keys is per connection and OFF by default in the sqlite3 shell: this line binds only
+ -- the connection that applies this file. Every writer MUST open with foreign keys ON (the engine does:
+@@ -10,7 +12,10 @@
+ CREATE TABLE IF NOT EXISTS reg_meta (
+   key TEXT PRIMARY KEY, value TEXT NOT NULL,
+   last_modified TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')));
+-INSERT OR IGNORE INTO reg_meta(key,value) VALUES ('ext_schema_version','4'),('engine_schema_required','7');
++INSERT OR IGNORE INTO reg_meta(key,value) VALUES ('engine_schema_required','7');
++-- ext_schema_version is bumped on re-apply (v4 -> v5): an OR IGNORE would leave a stale version beside new objects
++INSERT INTO reg_meta(key,value) VALUES ('ext_schema_version','5')
++  ON CONFLICT(key) DO UPDATE SET value=excluded.value, last_modified=strftime('%Y-%m-%dT%H:%M:%SZ','now');
+ 
+ -- identity anchor: one row per CAT id, monotone, never reused (spec FR-001, §11.4.54)
+ CREATE TABLE IF NOT EXISTS reg_ids (
+@@ -146,6 +151,14 @@
+              OR (fingerprint=NEW.fingerprint AND run_id=NEW.run_id))
+ BEGIN SELECT RAISE(ABORT,'reg_findings: key exists (INSERT OR REPLACE refused, §11.4.54)'); END;
+ CREATE INDEX IF NOT EXISTS idx_findings_atm ON reg_findings(atm_id);
++-- a finding is one recorded audit OBSERVATION: it is never deleted, and no column that states what was
++-- observed can be edited (a lowered severity, a re-pointed atm_id or a rewritten fingerprint would silently
++-- change the audit's primary output, WF2 review I-4). A correction is a NEW finding plus a recurrence link.
++CREATE TRIGGER IF NOT EXISTS reg_findings_no_delete BEFORE DELETE ON reg_findings
++BEGIN SELECT RAISE(ABORT,'reg_findings: a finding is never deleted (record a new finding or a recurrence link)'); END;
++CREATE TRIGGER IF NOT EXISTS reg_findings_observation_no_update
++BEFORE UPDATE OF atm_id, run_id, component_id, location_path, location_line, category, severity, detector, fingerprint, evidence_id ON reg_findings
++BEGIN SELECT RAISE(ABORT,'reg_findings: an audit observation is never edited (atm_id, severity, fingerprint, location, detector, evidence)'); END;
+ 
+ CREATE TABLE IF NOT EXISTS reg_evidence (
+   evidence_id INTEGER PRIMARY KEY AUTOINCREMENT,
+@@ -601,6 +614,18 @@
+   SELECT atm_id, count(*) AS rows_n, group_concat(current_location) AS locations FROM items GROUP BY atm_id HAVING count(*) > 1;
+ CREATE VIEW IF NOT EXISTS v_items_without_mint AS      -- items row whose id was never minted in reg_ids
+   SELECT atm_id, current_location FROM items WHERE atm_id NOT IN (SELECT atm_id FROM reg_ids);
++CREATE VIEW IF NOT EXISTS v_deleted_items AS           -- an id that has status-log rows but no items row: the item
++  SELECT DISTINCT atm_id FROM reg_status_log           -- was deleted (the engine only ever moves a row, WF2 I-2)
++  WHERE atm_id NOT IN (SELECT atm_id FROM items);
++CREATE VIEW IF NOT EXISTS v_reopen_unlogged AS         -- the engine recorded a Reopened event (item_history) that the
++  SELECT h.atm_id, count(*) AS engine_reopens,         -- register's own log lacks: a log writer was silenced (WF2 I-1).
++         (SELECT count(*) FROM reg_status_log s WHERE s.atm_id=h.atm_id AND s.to_status='Reopened') AS logged_reopens
++  FROM item_history h                                  -- only events at or after the id's first log row count, so
++  WHERE h.event_type='Reopened'                        -- reopen history that pre-dates the extension is not a violation
++    AND EXISTS (SELECT 1 FROM reg_status_log f WHERE f.atm_id=h.atm_id)
++    AND h.created_at >= (SELECT replace(substr(min(f.changed_at),1,19),'T',' ') FROM reg_status_log f WHERE f.atm_id=h.atm_id)
++  GROUP BY h.atm_id
++  HAVING count(*) > (SELECT count(*) FROM reg_status_log s WHERE s.atm_id=h.atm_id AND s.to_status='Reopened');
+ CREATE VIEW IF NOT EXISTS v_ids_without_item AS        -- minted id never inserted (reported, never recycled)
+   SELECT atm_id FROM reg_ids WHERE atm_id NOT IN (SELECT atm_id FROM items);
+ CREATE VIEW IF NOT EXISTS v_illegal_logged_edges AS   -- logged status changes that are not edges of the graph
+@@ -669,7 +694,9 @@
+  ('reg_recurrence_links_no_update','trigger_present'),('reg_recurrence_links_no_delete','trigger_present'),
+  ('reg_recurrence_links_no_replace','trigger_present'),('reg_source_entries_no_delete','trigger_present'),
+  ('reg_source_entries_no_replace','trigger_present'),('reg_source_map_no_delete','trigger_present'),
+- ('v_replayed_evidence','view_empty'),('v_legacy_exempt','view_report');
++ ('v_replayed_evidence','view_empty'),('v_legacy_exempt','view_report'),
++ ('reg_findings_no_delete','trigger_present'),('reg_findings_observation_no_update','trigger_present'),
++ ('v_deleted_items','view_empty'),('v_reopen_unlogged','view_empty');
+ CREATE VIEW IF NOT EXISTS v_gate_missing_objects AS    -- a registered check whose object is absent (dropped trigger/view)
+   SELECT g.name, g.kind FROM reg_gate_checks g
+   WHERE NOT EXISTS (SELECT 1 FROM sqlite_master m WHERE m.name=g.name

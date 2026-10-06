@@ -1,0 +1,9 @@
+NOTE: scripts/audit/scope_to_lumen_json.py is absent (RED state)
+FAIL derive: want rc=0, got rc=2
+FAIL output differs from golden
+FAIL second run differs or absent
+FAIL empty allow: want rc=3 and no output, got rc=2
+FAIL --check golden: want rc=0, got rc=2
+FAIL --check missing class: want rc=1, got rc=2
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+SUMMARY pass=1 fail=6

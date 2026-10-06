@@ -1,0 +1,2 @@
+FAIL script absent: /home/milosvasic/Projects/catalogizer/scripts/review/tests/../check_review_provenance.sh
+RESULT pass=0 fail=1

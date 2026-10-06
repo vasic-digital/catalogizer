@@ -1,0 +1,542 @@
+[
+  {
+    "gold": [
+      "catalog-api/middleware/csrf.go"
+    ],
+    "id": "L60-01",
+    "in_tierA": true,
+    "q": "double-submit cookie CSRF protection that compares HMACs of a cookie token and a header token",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/redis_rate_limiter.go"
+    ],
+    "id": "L60-02",
+    "in_tierA": true,
+    "q": "rate limiting backed by Redis with a stricter configuration for sensitive endpoints",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/concurrency_limiter.go"
+    ],
+    "id": "L60-03",
+    "in_tierA": true,
+    "q": "gin middleware that caps the number of requests being processed at the same time",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/shutdown.go"
+    ],
+    "id": "L60-04",
+    "in_tierA": true,
+    "q": "registry that stops middleware background cleanup goroutines during graceful shutdown",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/security_headers.go"
+    ],
+    "id": "L60-05",
+    "in_tierA": true,
+    "q": "add standard security headers to every HTTP response",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/timeout.go"
+    ],
+    "id": "L60-06",
+    "in_tierA": true,
+    "q": "set a deadline on the request context so slow handlers are cancelled",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/concurrency/semaphore.go"
+    ],
+    "id": "L60-07",
+    "in_tierA": true,
+    "q": "counting semaphore built on a buffered channel that honours context cancellation",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/utils/lru_cache.go"
+    ],
+    "id": "L60-08",
+    "in_tierA": true,
+    "q": "thread-safe least recently used cache with time to live",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/utils/buffer_pool.go"
+    ],
+    "id": "L60-09",
+    "in_tierA": true,
+    "q": "pool of reusable byte slices to reduce garbage collection pressure",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/filesystem/factory.go"
+    ],
+    "id": "L60-10",
+    "in_tierA": true,
+    "q": "create a filesystem client for the configured storage protocol",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/filesystem/ftp_client.go"
+    ],
+    "id": "L60-11",
+    "in_tierA": true,
+    "q": "FTP implementation of the filesystem client interface",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/filesystem/webdav_client.go"
+    ],
+    "id": "L60-12",
+    "in_tierA": true,
+    "q": "WebDAV filesystem client implementing the FileSystemClient interface",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/filesystem/nfs_client.go"
+    ],
+    "id": "L60-13",
+    "in_tierA": true,
+    "q": "NFS client configuration and client type for the linux build",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/smb/client.go"
+    ],
+    "id": "L60-14",
+    "in_tierA": true,
+    "q": "bound the TCP connect phase so unreachable SMB servers cannot block tests or shutdown",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/smb/resilience.go"
+    ],
+    "id": "L60-15",
+    "in_tierA": true,
+    "q": "retry and reconnect resilience around SMB operations using the recovery facade",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/services/sync_service.go"
+    ],
+    "id": "L60-16",
+    "in_tierA": true,
+    "q": "cancel in-flight sync goroutines and wait for them when the sync service closes",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/services/playlist_service.go"
+    ],
+    "id": "L60-17",
+    "in_tierA": true,
+    "q": "business logic for creating playlists for a user",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/services/favorites_service.go"
+    ],
+    "id": "L60-18",
+    "in_tierA": true,
+    "q": "add and remove a user's favourite entity",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/auth/service.go"
+    ],
+    "id": "L60-19",
+    "in_tierA": true,
+    "q": "JWT token generation delegated to the shared auth jwt manager",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/handlers/host_validation.go"
+    ],
+    "id": "L60-20",
+    "in_tierA": true,
+    "q": "block loopback link-local multicast and cloud metadata addresses when probing an SMB host to prevent SSRF",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/handlers/copy.go"
+    ],
+    "id": "L60-21",
+    "in_tierA": true,
+    "q": "HTTP handler that copies a file from one SMB share to another",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/handlers/download.go"
+    ],
+    "id": "L60-22",
+    "in_tierA": true,
+    "q": "download a single file or an archive from the catalog with a maximum archive size and chunking",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/handlers/comic_pages_handler.go"
+    ],
+    "id": "L60-23",
+    "in_tierA": true,
+    "q": "serve individual image pages out of a comic book archive file",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/handlers/scan_handler.go"
+    ],
+    "id": "L60-24",
+    "in_tierA": true,
+    "q": "handler type for creating storage roots and queueing scans",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/eventbus/eventbus.go"
+    ],
+    "id": "L60-25",
+    "in_tierA": true,
+    "q": "event bus types re-exported as type aliases for Catalogizer",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/cache/cache.go"
+    ],
+    "id": "L60-26",
+    "in_tierA": true,
+    "q": "cache interface types re-exported as type aliases",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/main.go"
+    ],
+    "id": "L60-27",
+    "in_tierA": true,
+    "q": "registration of the health endpoint alias used by QA tooling",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/handlers/catalog.go"
+    ],
+    "id": "L60-28",
+    "in_tierA": true,
+    "q": "handler listing directories ordered by size",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "submodules/rate_limiter/pkg/ladder/ladder.go"
+    ],
+    "id": "L60-29",
+    "in_tierA": true,
+    "q": "per-key fixed-step backoff state machine that clamps at the last step",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/rate_limiter/pkg/adaptive/adaptive.go"
+    ],
+    "id": "L60-30",
+    "in_tierA": true,
+    "q": "rate limiter that auto-adjusts its rate from success and failure feedback",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/watcher/pkg/debounce/debounce.go"
+    ],
+    "id": "L60-31",
+    "in_tierA": true,
+    "q": "coalesce rapid filesystem change events with a generation counter against stale timers",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/recovery/pkg/breaker/breaker.go"
+    ],
+    "id": "L60-32",
+    "in_tierA": true,
+    "q": "named circuit breaker manager wrapping the shared concurrency breaker",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/watcher/pkg/filter/filter.go"
+    ],
+    "id": "L60-33",
+    "in_tierA": true,
+    "q": "filter filesystem events by type pattern and file extension",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/websocket.ts"
+    ],
+    "id": "L60-34",
+    "in_tierA": true,
+    "q": "derive the WebSocket URL from the page origin in development so it goes through the Vite proxy",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/webVitals.ts"
+    ],
+    "id": "L60-35",
+    "in_tierA": true,
+    "q": "report Core Web Vitals metrics through a callback",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/playbackFormatter.ts"
+    ],
+    "id": "L60-36",
+    "in_tierA": true,
+    "q": "format playback amounts such as seconds and pages for progress badges",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/hooks/useCoverQuality.ts"
+    ],
+    "id": "L60-37",
+    "in_tierA": true,
+    "q": "hook that probes cover quality response headers with a HEAD request and caches the result in a module-level map",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/hooks/useDebounce.ts"
+    ],
+    "id": "L60-38",
+    "in_tierA": true,
+    "q": "debounce a changing value by a delay in a React hook",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/collectionRules.ts"
+    ],
+    "id": "L60-39",
+    "in_tierA": true,
+    "q": "collection rule field operator media type and quality option lists",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/module-registry.ts"
+    ],
+    "id": "L60-40",
+    "in_tierA": true,
+    "q": "registry of shared vasic-digital React modules next to the local auth provider",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/syncApi.ts"
+    ],
+    "id": "L60-41",
+    "in_tierA": true,
+    "q": "sync endpoint session and statistics request types of the web API client",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/subtitleApi.ts"
+    ],
+    "id": "L60-42",
+    "in_tierA": true,
+    "q": "subtitle search and download API client",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/identitiesApi.ts"
+    ],
+    "id": "L60-43",
+    "in_tierA": true,
+    "q": "typed API client for identities and network share discovery endpoints",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-api-client/src/utils/http.ts"
+    ],
+    "id": "L60-44",
+    "in_tierA": true,
+    "q": "axios based HTTP client wrapper that maps failures to typed catalogizer errors",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-api-client/src/services/SMBService.ts"
+    ],
+    "id": "L60-45",
+    "in_tierA": true,
+    "q": "service for creating and reading SMB configurations in the TypeScript API client",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-api-client/src/services/AuthService.ts"
+    ],
+    "id": "L60-46",
+    "in_tierA": true,
+    "q": "authentication service of the TypeScript API client",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-desktop/src-tauri/src/vlc/mod.rs"
+    ],
+    "id": "L60-47",
+    "in_tierA": true,
+    "q": "Rust bindings to libVLC for video and audio playback in the Tauri desktop app",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-desktop/src-tauri/src/vlc/commands.rs"
+    ],
+    "id": "L60-48",
+    "in_tierA": true,
+    "q": "Tauri commands bridging the React frontend to the VLC backend",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-desktop/src-tauri/src/main.rs"
+    ],
+    "id": "L60-49",
+    "in_tierA": true,
+    "q": "Tauri commands that read and update the application config and server URL",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "scripts/audit/web-verify-articleXI.py"
+    ],
+    "id": "L60-50",
+    "in_tierA": true,
+    "q": "real-browser verification of the web client login with Chromium capturing DOM evidence and a screenshot",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackFormatter.kt"
+    ],
+    "id": "L60-51",
+    "in_tierA": true,
+    "q": "pure playback formatting functions mirrored from the TV app for badge rendering",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/DependencyContainer.kt"
+    ],
+    "id": "L60-52",
+    "in_tierA": true,
+    "q": "manual dependency injection container with singleton repositories and Retrofit configuration",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/repository/AuthRepository.kt"
+    ],
+    "id": "L60-53",
+    "in_tierA": true,
+    "q": "persist authentication tokens in DataStore and expose reactive flows",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/repository/WebSocketRepository.kt"
+    ],
+    "id": "L60-54",
+    "in_tierA": true,
+    "q": "WebSocket connection subscribing to media and system update channels",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/repository/OfflineRepository.kt"
+    ],
+    "id": "L60-55",
+    "in_tierA": true,
+    "q": "queue offline favourites ratings and progress actions for later sync",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/repository/MediaRepository.kt"
+    ],
+    "id": "L60-56",
+    "in_tierA": true,
+    "q": "online-first media repository with offline fallback and paged browsing",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "scripts/memory-leak-check.sh"
+    ],
+    "id": "L60-57",
+    "in_tierA": true,
+    "q": "memory profiling of Go packages to detect leaks",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "scripts/gosec-scan.sh"
+    ],
+    "id": "L60-58",
+    "in_tierA": true,
+    "q": "scan Go code for security vulnerabilities with gosec",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "scripts/normalize_submodule_pointers.sh"
+    ],
+    "id": "L60-59",
+    "in_tierA": true,
+    "q": "collapse accumulated constitution-inheritance pointer blocks in owned submodules",
+    "type": "unsupported"
+  },
+  {
+    "gold": [
+      "scripts/distribute.sh"
+    ],
+    "id": "L60-60",
+    "in_tierA": true,
+    "q": "distribute builds through Firebase App Distribution to testers",
+    "type": "unsupported"
+  }
+]

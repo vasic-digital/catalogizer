@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "all_ok": true,
+  "pairs": [
+    {
+      "test": "T011,T016,T017,T018 (bash python3 jq, PyYAML)",
+      "image": "IMG-TESTUTIL",
+      "tools": [
+        "bash",
+        "python3",
+        "jq"
+      ],
+      "imports": [
+        "pytest_yaml_jsonschema"
+      ],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "T033 (bash python3 jq, jsonschema)",
+      "image": "IMG-TESTUTIL",
+      "tools": [
+        "bash",
+        "python3",
+        "jq"
+      ],
+      "imports": [
+        "pytest_yaml_jsonschema"
+      ],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "T031,T039,T044 (kcov git bash jq script realpath)",
+      "image": "IMG-KCOV",
+      "tools": [
+        "kcov",
+        "git",
+        "bash",
+        "jq",
+        "script",
+        "realpath"
+      ],
+      "imports": [],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "T071,T060-T063,T064+ locked.sh (sqlite3 bash git)",
+      "image": "IMG-TESTUTIL",
+      "tools": [
+        "sqlite3",
+        "bash",
+        "git"
+      ],
+      "imports": [],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "T075 (python3)",
+      "image": "IMG-TESTUTIL",
+      "tools": [
+        "python3"
+      ],
+      "imports": [],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "CPA S2/S3 T040,T040a secrets and hooks",
+      "image": "IMG-TESTUTIL",
+      "tools": [
+        "detect-secrets",
+        "detect-private-key",
+        "check-yaml",
+        "bash",
+        "python3"
+      ],
+      "imports": [
+        "cpa_tools_identify"
+      ],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "CPA go_fmt",
+      "image": "IMG-GO",
+      "tools": [
+        "gofmt"
+      ],
+      "imports": [],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "lint (shellcheck)",
+      "image": "IMG-SHELLCHECK",
+      "tools": [
+        "shellcheck"
+      ],
+      "imports": [],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "T039 harness python imports in IMG-KCOV",
+      "image": "IMG-KCOV",
+      "imports": [
+        "pytest_yaml_jsonschema"
+      ],
+      "missing": [],
+      "ok": true
+    },
+    {
+      "test": "control needles IMG-GO",
+      "image": "IMG-GO",
+      "absent_needle": true,
+      "ro_write_failed": true,
+      "cache_write_ok": true,
+      "errored_needle_is_error": true,
+      "uid_is_host_uid": true,
+      "host_uid": 1000,
+      "ok": true
+    },
+    {
+      "test": "control needles IMG-KCOV",
+      "image": "IMG-KCOV",
+      "absent_needle": true,
+      "ro_write_failed": true,
+      "cache_write_ok": true,
+      "errored_needle_is_error": true,
+      "uid_is_host_uid": true,
+      "host_uid": 1000,
+      "ok": true
+    },
+    {
+      "test": "control needles IMG-TESTUTIL",
+      "image": "IMG-TESTUTIL",
+      "absent_needle": true,
+      "ro_write_failed": true,
+      "cache_write_ok": true,
+      "errored_needle_is_error": true,
+      "uid_is_host_uid": true,
+      "host_uid": 1000,
+      "ok": true
+    }
+  ]
+}

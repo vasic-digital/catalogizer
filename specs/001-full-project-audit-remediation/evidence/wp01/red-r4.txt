@@ -1,0 +1,75 @@
+# RED r4 (test extended with progress.yml coverage check), 2026-10-05, host anton; intake unchanged
+# note: red-r4 ran on the previous intake with the test before a nested-block fix (progress.yml first block is nested under hc0); same check, 58 FAIL lines
+$ bash scripts/governance/tests/test_decision_intake.sh
+PASS groups: exactly 43 ids ODG-01..ODG-43, no duplicates
+PASS research_ods: exactly the 15 open ungrouped decisions (OD-60 absent)
+PASS no id duplicated across 58 ids in both lists
+PASS every one of 58 rows has topic or options, groups carry recommendation and research_ids
+PASS topic, options and recommendation equal the docs/21 cells for all 58 rows
+PASS closest_group equals the docs/21 section 8.6 cell (id, or null for '-') for all 15 research_ods
+PASS blocks equal the docs/21 section 8 Blocks cells as sets for all 58 checked rows; empty cells carry blocks_scope verbatim
+PASS default is a bare closed-set token, default_detail holds the rest without the token (58 rows); ODG-34/35/39/40/42/43 and OD-76 shapes hold
+PASS fixed needles hold for OD-76, OD-20, OD-26, ODG-40, ODG-42 and the empty-blocks ODG-19/34/35/43 (9 rows)
+PASS tasks.md: all 166 BLOCKED-ON markers inside work packages are listed in the decision's blocks
+PASS no credential value field or credential-shaped value in 677 string values
+PASS owner_answers holds the reserved slots ODG-42, C2-custody, floors-adoption (a slot is not a group)
+FAIL OD-14: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-20: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-23: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-25: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-26: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-36: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-43: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-45: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-49: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-55: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-57: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-68: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-74: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-75: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL OD-76: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-01: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-02: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-03: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-04: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-05: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-06: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-08: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-09: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-10: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-11: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-12: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-13: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-14: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-15: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-16: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-17: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-18: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-19: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-20: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-21: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-22: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-23: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-24: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-25: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-26: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-27: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-28: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-29: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-30: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-31: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-32: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-33: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-34: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-35: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-36: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-37: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-38: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-39: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-40: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-41: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-42: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL ODG-43: answered in progress.yml but 0 owner_answers entries name it (need exactly 1)
+FAIL owner_answers_without_decision_id must list the 3 answers that carry no decision id
+RESULT FAIL (58 failures)
+exit=1

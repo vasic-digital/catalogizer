@@ -1,0 +1,43 @@
+# shellcheck 0.11.0 (IMG-SHELLCHECK pinned) via scripts/containers/run_pinned.sh; identity: 2026-10-05T23:51:39Z head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+sha256 a17191b4e66cc46a0acf24598c3ff39f4a45875b72ceffbb475b61285cffe7d7  scripts/audit/index_health.sh
+sha256 197c83e4e5bc57cc8c73695d60eb033c27b629d71d567cb5ea3fd667ed700a9b  scripts/audit/tests/test_index_health_extra.sh
+sha256 b5add3de56289a6680c3bfa076c813d4bc5e1d53f9134f576b776874805edc54  scripts/audit/tests/mutate_index_health.sh
+## index_health.sh and its tests (python heredoc is not shell-parsed by shellcheck)
+
+In scripts/audit/tests/test_index_health_extra.sh line 75:
+[ "$(jq -r '.complete' "$T/o.json")" = false ] && ok "X12b skipped proofs make complete=false" || bad "X12b complete flag"
+                                               ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 77:
+"$IH" --out "$T/o.json" --cg-status --cg-files >/dev/null 2>&1; [ $? -eq 2 ] && ok "X13a option-like value -> rc 2" || bad "X13a"
+                                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 78:
+base --bogus x; [ "$RC" -eq 2 ] && ok "X13b unknown option -> rc 2" || bad "X13b rc=$RC"
+                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 79:
+base --cg-files "$T/f_good.json" --cg-files "$T/f_good.json"; [ "$RC" -eq 2 ] && ok "X13c duplicate option -> rc 2" || bad "X13c rc=$RC"
+                                                                              ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 80:
+base --cg-files "$T/f_good.json" --parity-tolerance-pct -1; [ "$RC" -eq 2 ] && ok "X13d negative tolerance -> rc 2" || bad "X13d rc=$RC"
+                                                                            ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 85:
+cmp -s "$T/o.json" "$T/o1.json" && ok "X15 identical inputs -> byte-identical output" || bad "X15 output differs between runs"
+                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 88:
+[ "$want" = "$got" ] && ok "X16 inputs.cg_files.sha256 equals the sha256 of the file" || bad "X16 want $want got $got"
+                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2015 -- Note that A && B || C is not if-t...
+rc=1

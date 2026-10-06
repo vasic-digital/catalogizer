@@ -1,0 +1,12 @@
+RED (rev 18 schema, git show 1d7bb480^, 31 properties)
+ok   pre-rev6 entry (neither property) (valid)
+FAIL pre_release with test_state_gos: wanted valid got refused
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=1
+rc=1

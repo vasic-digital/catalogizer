@@ -1,0 +1,75 @@
+# RED T011 revision 3 of the test (after round-2 review findings F1,F2,F4,F5,F6,F7), 2026-10-05, host anton; python3 on host (RUNP/IMG-TESTUTIL not built: T007/T008 pending)
+# identity: test sha256 c45872b08ee507002db9e90f97a36de1e8dc8c6e8305151b3eecc9922538d94c; intake (owner-decisions.yaml) sha256 037e9ad30415303ec1a3fa8e0021f5242950d8ed64f2b15e5922d347fbf4c826 (the intake BEFORE the F1/F2 fix; copy kept in the scratchpad); git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test and intake untracked); Python 3.14.4; PyYAML 6.0.3; GNU bash, version 5.3.9(1)-release (x86_64-pc-linux-gnu)
+## RED C: new test on the intake before the fix (INTAKE_FILE=<scratch>/intake-before.yaml); expected FAILs: 22 default_detail (token repeated) + 12 closest_group (null where docs/21 has an id)
+$ INTAKE_FILE=<scratch>/intake-before.yaml bash scripts/governance/tests/test_decision_intake.sh | cut -c1-170
+PASS groups: exactly 43 ids ODG-01..ODG-43, no duplicates
+PASS research_ods: exactly the 15 open ungrouped decisions (OD-60 absent)
+PASS no id duplicated across 58 ids in both lists
+PASS every one of 58 rows has topic or options, groups carry recommendation and research_ids
+PASS topic, options and recommendation equal the docs/21 cells for all 58 rows
+FAIL OD-20: closest_group None != docs/21 section 8.6 cell value 'ODG-17'
+FAIL OD-23: closest_group None != docs/21 section 8.6 cell value 'ODG-17'
+FAIL OD-25: closest_group None != docs/21 section 8.6 cell value 'ODG-30'
+FAIL OD-26: closest_group None != docs/21 section 8.6 cell value 'ODG-17'
+FAIL OD-36: closest_group None != docs/21 section 8.6 cell value 'ODG-15'
+FAIL OD-43: closest_group None != docs/21 section 8.6 cell value 'ODG-22'
+FAIL OD-45: closest_group None != docs/21 section 8.6 cell value 'ODG-01'
+FAIL OD-49: closest_group None != docs/21 section 8.6 cell value 'ODG-30'
+FAIL OD-55: closest_group None != docs/21 section 8.6 cell value 'ODG-32'
+FAIL OD-57: closest_group None != docs/21 section 8.6 cell value 'ODG-33'
+FAIL OD-68: closest_group None != docs/21 section 8.6 cell value 'ODG-27'
+FAIL OD-74: closest_group None != docs/21 section 8.6 cell value 'ODG-23'
+PASS blocks equal the docs/21 section 8 Blocks cells as sets for all 58 checked rows; empty cells carry blocks_scope verbatim
+FAIL ODG-01: default_detail 'No (input, cannot be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defaulted)' (the token is
+FAIL ODG-02: default_detail 'No (input, cannot be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defaulted)' (the token is
+FAIL ODG-04: default_detail 'No (input, cannot be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defaulted)' (the token is
+FAIL ODG-06: default_detail 'No (input, cannot be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defaulted)' (the token is
+FAIL ODG-07: default_detail 'No (input, cannot be defaulted; the build location is decided by C1)' != the rest of the docs/21 Default cell after the leading token '(input
+FAIL ODG-11: default_detail 'Partial (OD-11 of OD-11, -15, -18)' != the rest of the docs/21 Default cell after the leading token '(OD-11 of OD-11, -15, -18)' (the token i
+FAIL ODG-12: default_detail 'UNCONFIRMED (No in `research.md`: OD-31, OD-38 not on the default list; the recommendation reads "B by default")' != the rest of the docs/21 
+FAIL ODG-13: default_detail 'Yes (OD-30; answered by the owner on 2026-10-04, which supersedes that default, tasks.md T012a, T072)' != the rest of the docs/21 Default cel
+FAIL ODG-15: default_detail 'Partial (OD-32 of OD-32, -34)' != the rest of the docs/21 Default cell after the leading token '(OD-32 of OD-32, -34)' (the token is not repe
+FAIL ODG-16: default_detail 'No (answered by the owner on 2026-10-04, tasks.md T012a, T072)' != the rest of the docs/21 Default cell after the leading token '(answered by
+FAIL ODG-18: default_detail 'Yes (OD-47)' != the rest of the docs/21 Default cell after the leading token '(OD-47)' (the token is not repeated)
+FAIL ODG-19: default_detail 'Yes (OD-39)' != the rest of the docs/21 Default cell after the leading token '(OD-39)' (the token is not repeated)
+FAIL ODG-34: default_detail 'UNCONFIRMED (no counterpart found)' != the rest of the docs/21 Default cell after the leading token '(no counterpart found)' (the token is no
+FAIL ODG-35: default_detail 'UNCONFIRMED (no counterpart found)' != the rest of the docs/21 Default cell after the leading token '(no counterpart found)' (the token is no
+FAIL ODG-39: default_detail 'No (no `research.md` counterpart; `research.md` R-29 records only the scope fence)' != the rest of the docs/21 Default cell after the leading
+FAIL ODG-40: default_detail 'No (no `research.md` counterpart)' != the rest of the docs/21 Default cell after the leading token '(no `research.md` counterpart)' (the toke
+FAIL ODG-41: default_detail 'No (no `research.md` counterpart)' != the rest of the docs/21 Default cell after the leading token '(no `research.md` counterpart)' (the toke
+FAIL ODG-42: default_detail 'No (no `research.md` counterpart; only the owner amends the spec)' != the rest of the docs/21 Default cell after the leading token '(no `rese
+FAIL ODG-43: default_detail 'No (no `research.md` counterpart)' != the rest of the docs/21 Default cell after the leading token '(no `research.md` counterpart)' (the toke
+FAIL ODG-32: default_detail 'UNCONFIRMED (No in `research.md`: OD-50 to OD-53 not on the default list; the recommendation reads "adopt proposed defaults")' != the rest of
+FAIL ODG-33: default_detail 'Partial (OD-58, OD-61 of OD-56, -58, -59, -61)' != the rest of the docs/21 Default cell after the leading token '(OD-58, OD-61 of OD-56, -58,
+FAIL OD-76: default_detail 'No (in-tree `$EV/blobs/<sha256>` for small blobs proceeds per doc06 §11; the out-of-tree store and the anchor strength wait)' != the rest of 
+PASS fixed needles hold for OD-76, OD-20, OD-26, ODG-40, ODG-42 and the empty-blocks ODG-19/34/35/43 (9 rows)
+PASS tasks.md: all 166 BLOCKED-ON markers inside work packages are listed in the decision's blocks
+PASS no credential value field or credential-shaped value in 665 string values
+PASS owner_answers holds the reserved slots ODG-42, C2-custody, floors-adoption (a slot is not a group)
+RESULT FAIL (34 failures)
+rc=1
+## RED D: empty intake (groups: [], research_ods: [], owner_answers: []): zero-row checks must FAIL, none may PASS (finding F6); the 166 'FAIL tasks.md:' lines are abbreviated to a count
+rc=1
+FAIL groups must hold exactly ODG-01..ODG-43 once each; missing=['ODG-01', 'ODG-02', 'ODG-03', 'ODG-04', 'ODG-05', 'ODG-06', 'ODG-07', 'ODG-08', 'ODG-09', 'ODG-10', 'ODG-
+FAIL research_ods must hold exactly the 15 open ids ['OD-14', 'OD-20', 'OD-23', 'OD-25', 'OD-26', 'OD-36', 'OD-43', 'OD-45', 'OD-49', 'OD-55', 'OD-57', 'OD-68', 'OD-74', 
+FAIL duplicate check covered 0 ids (nothing to assert)
+FAIL structure check covered 0 rows (nothing to assert)
+FAIL topic/options/recommendation check covered 0 rows (nothing to assert)
+FAIL closest_group check covered 0 rows (nothing to assert)
+FAIL blocks check covered 0 rows, docs/21 has 58 (rows missing from the intake)
+FAIL default check covered 0 rows (nothing to assert)
+FAIL needle OD-76: row absent from the intake
+FAIL needle OD-20: row absent from the intake
+FAIL needle OD-26: row absent from the intake
+FAIL needle ODG-40: row absent from the intake
+FAIL needle ODG-42: row absent from the intake
+FAIL needle ODG-19: row absent from the intake
+FAIL needle ODG-34: row absent from the intake
+FAIL needle ODG-35: row absent from the intake
+FAIL needle ODG-43: row absent from the intake
+FAIL credential scan covered 0 string values (nothing to assert)
+FAIL reserved slot ODG-42 must be present exactly once (found 0)
+FAIL reserved slot C2-custody must be present exactly once (found 0)
+FAIL reserved slot floors-adoption must be present exactly once (found 0)
+RESULT FAIL (187 failures)
+tasks.md FAIL lines: 166; PASS lines in the empty run: 0

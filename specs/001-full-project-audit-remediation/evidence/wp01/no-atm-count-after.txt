@@ -1,0 +1,6 @@
+tasks 685 suffix 90
+TDD 323 REVIEW 87 P 116 SUBAGENT 80 noUS 0
+P4-7 329 TDD 179 REVIEW 48
+edges dep 1505 with after 1520 rangeinclause 0 dangling []
+forward dep 43 over 32 | with after 43 over 32 self []
+cycles dep (0, 0) both (0, 0)

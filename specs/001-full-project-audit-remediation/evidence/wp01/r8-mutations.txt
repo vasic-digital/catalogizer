@@ -1,0 +1,74 @@
+# generated 2026-10-06T06:19:09Z on anton
+# git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test uncommitted: the sha256 lines identify it)
+# command: /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/mut.sh /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4
+# sha256 a54d88bf58ed4c89574ea858c02f09c94fa3e49078c079ffeb421202aa4af50d  scripts/governance/tests/test_decision_intake.sh
+# sha256 b9677080b17733dad35ffd7c361c3f4147977f2fa8adcdaa7bd8beb3b015d452  scripts/governance/tests/test_evidence_root.sh
+# sha256 5c50843bec19a7322fe9893e5362d0cadf1b361b678d59acdbc2bbc8bc4329b7  scripts/governance/tests/test_no_atm_prefix.sh
+# sha256 c262ca3d8ee50df8aa4f1c7c6deeddf70ab84b040ed699401a6f7c6e198606ab  scripts/governance/tests/test_register_id_schemas.sh
+# sha256 53206f3e317ab83cf1aea60a9317ea1c98bb23de47e3a900f6ce646fd5c039e4  specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml
+# sha256 d8a7693bc75bd63adae009410e7ef21f2423aa137ffe2fcd8f178693eaf423fa  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 810990f47fa355222082de78b1fceb9945f93bf304cb230736e699a1137a1d38  specs/001-full-project-audit-remediation/progress.yml
+# sha256 bd128a401c3bf555f598d2b40a6ec8d8f08befeaac8239c51f66e2ea315dfe37  specs/001-full-project-audit-remediation/docs/04-findings-register-design.md
+# sha256 cbb23840c01b00700e97e5c0a44711450a29f3eafb03452f6c7e84c45d54c560  specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md
+# sha256 60193de772dbb2fcac9244d5d521f00752d0b66fc79a00c1af001fd835eaa303  specs/001-full-project-audit-remediation/research.md
+# sha256 46493639f8e0bfc636a04bd384a6ae3fe965dcc3006121c5dd5bb4002a870fa5  specs/001-full-project-audit-remediation/docs/upstream/constitution-prefix-change-request.md
+# sha256 e8ca6e0f6743bd7a183a0a970328d4840869d56f59b9b7dd542676682e81d191  specs/001-full-project-audit-remediation/docs/upstream/continuum-decision-brief.md
+# sha256 4376b4fb5774404f20edad019c26a3454a91cd0080a7011a612ddc8e2900991d  specs/001-full-project-audit-remediation/tasks.md
+
+== baseline controls
+baseline intake (scratch tree)                                 want rc=0 got rc=0 OK
+baseline no-atm (scratch tree)                                 want rc=0 got rc=0 OK
+== I5 (intake)
+MI1 undated block owner_answers_batch5                         want rc=1 got rc=1 OK
+      FAIL progress.yml top-level key 'owner_answers_batch5' is neither on the closed allow-list ['feature', 'hc0', 'phase', 'phase_status', 'risks_recorded', 'tasks'] nor a dated owner_answers_<yyyy-mm-dd>
+      FAIL progress.yml key owner_answers_batch5 looks like an answer block but does not match owner_answers_<yyyy-mm-dd>[_suffix]
+MI3 answers_2026-10-06 block                                   want rc=1 got rc=1 OK
+      FAIL progress.yml top-level key 'answers_2026-10-06' is neither on the closed allow-list ['feature', 'hc0', 'phase', 'phase_status', 'risks_recorded', 'tasks'] nor a dated owner_answers_<yyyy-mm-dd>[_
+      FAIL progress.yml key answers_2026-10-06 looks like an answer block but does not match owner_answers_<yyyy-mm-dd>[_suffix]
+unknown top-level key not on the allow-list                    want rc=1 got rc=1 OK
+      FAIL progress.yml top-level key 'surprise_key' is neither on the closed allow-list ['feature', 'hc0', 'phase', 'phase_status', 'risks_recorded', 'tasks'] nor a dated owner_answers_<yyyy-mm-dd>[_suffix
+answer-like key nested under tasks                             want rc=1 got rc=1 OK
+      FAIL progress.yml key tasks.note_answers looks like an answer block but does not match owner_answers_<yyyy-mm-dd>[_suffix]
+control: dated block not carried by intake                     want rc=1 got rc=1 OK
+      FAIL owner_answers_2026-10-06_batch5.ODG-37: progress.yml answer (block date 2026-10-06) is carried by no owner_answers entry (later or unknown block)
+      carried-by-no-entry lines: 1
+== m7 amends (intake)
+MI4 invented amends on a relayed entry                         want rc=1 got rc=1 OK
+      FAIL ODG-07: a relayed entry must carry amends: null until T012a records amendments (got ['spec.md FR-001']: invented provenance)
+== I2 precedence (intake)
+request list loses the single precedence statement             want rc=1 got rc=1 OK
+      FAIL decisions/owner-request-list.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+draft re-adds 'the constitution wins'                          want rc=1 got rc=1 OK
+      FAIL docs/upstream/constitution-prefix-change-request.md: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to 
+research.md weakened to a bare 'owner-approved exception'      want rc=1 got rc=1 OK
+      FAIL research.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+== I3 owed (intake)
+docs/04 loses the OWED marker                                  want rc=1 got rc=1 OK
+      FAIL docs/04 does not track the answered lower-case rename as OWED ('OWED: rename of the lower-case identifiers')
+request list loses the option B caveat                         want rc=1 got rc=1 OK
+      FAIL owner-request-list.md lacks the engine-compatibility caveat (option B views, not yet accepted by the owner) ('option B')
+request list loses the continuum brief path                    want rc=1 got rc=1 OK
+      FAIL owner-request-list.md lacks the continuum decision brief ('docs/upstream/continuum-decision-brief.md')
+== I1/E7 (no-atm)
+docs/04 gets a concrete CAT-050 in prose                       want rc=1 got rc=1 OK
+      FAIL docs/04 carries 1 line(s) with a concrete CAT-NNN id (no run printed one; prose reporting an executed result is evidence): lines [138]
+restored executed-result paragraph loses its marker            want rc=1 got rc=1 OK
+      FAIL 3 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/tree:
+      FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 30 exempt line(s), expected 33
+== I4 (no-atm)
+draft loses a BEGIN marker (unmarked quotation, END without BEGIN) want rc=1 got rc=1 OK
+      FAIL 19 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/tree:
+      FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/upstream/constitution-prefix-change-request.md has 12 exempt line(s), expected 30
+draft region re-kinded decision-history (kind pin)             want rc=1 got rc=1 OK
+      FAIL specs/001-full-project-audit-remediation/docs/upstream/constitution-prefix-change-request.md exempt kinds are ['decision-history'], expected only ['constitution-quotation']
+constitution-quotation region in a non-upstream file           want rc=1 got rc=1 OK
+      FAIL 3 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/tree:
+unmarked new ATM line appended to the upstream draft           want rc=1 got rc=1 OK
+      FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/tree:
+disabled restriction (QUOTE_OK always true): scenario suite    want rc=1 got rc=1 OK
+      FAIL E5 kind constitution-quotation is a violation outside docs/upstream (region and line marker): wanted violations in ['docs/q.md', 'docs/q2.md', 'specs/001-full-project-audit-remediation/docs/upstr
+      FAIL 40 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r4/tree:
+      FAIL E5 kind constitution-quotation is a violation outside docs/upstream (region and line marker): wanted violations in ['docs/q.md', 'docs/q2.md', 's
+== load-bearing check: with the I5 allow-list disabled, MI1 and MI3 survive
+I5 disabled copy vs MI1 (expected to SURVIVE: rc 0)            want rc=0 got rc=0 OK
+rc=0

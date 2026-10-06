@@ -1,0 +1,67 @@
+NOTE: /home/milosvasic/Projects/catalogizer/tools/evidence/evrec is absent or not executable (expected RED before T050)
+cp: cannot stat '/tmp/tmp.IMRYckW0PM/w/ledger.jsonl': No such file or directory
+FAIL verify: original 4-entry ledger exits 0
+sed: can't read /tmp/tmp.IMRYckW0PM/orig.jsonl: No such file or directory
+FAIL verify: delete w/o repair exit 127 (want 1)
+cp: cannot stat '/tmp/tmp.IMRYckW0PM/orig.jsonl': No such file or directory
+FAIL verify: original restored exits 0
+FAIL ledger entry count != 4
+FAIL schema validation: valid 0
+FAIL duration self-test: not recorded ()
+jq: error: Could not open file /tmp/tmp.IMRYckW0PM/orig.jsonl: No such file or directory
+FAIL check-record refuses record missing started_at (rc=127)
+FAIL check-record refuses record missing cwd (rc=127)
+FAIL check-record refuses record missing argv (rc=127)
+FAIL check-record refuses record missing exit_status (rc=127)
+FAIL check-record refuses record missing duration_ms (rc=127)
+FAIL check-record refuses argv as a string (rc=127)
+FAIL concurrent appenders: seqs=[]
+FAIL concurrent appenders: chain still verifies
+FAIL stale ledger lock with dead holder is reaped, append succeeds
+sha256sum: /tmp/tmp.IMRYckW0PM/w/ledger.jsonl: No such file or directory
+FAIL live lock holder: append refused, not stolen (rc=127)
+FAIL live holder process untouched (vacuous: recorder/verifier absent)
+sha256sum: /tmp/tmp.IMRYckW0PM/w/ledger.jsonl: No such file or directory
+FAIL ledger unchanged after refused append (vacuous: recorder/verifier absent)
+sha256sum: /tmp/tmp.IMRYckW0PM/w/ledger.jsonl: No such file or directory
+sha256sum: /tmp/tmp.IMRYckW0PM/w/ledger.jsonl: No such file or directory
+FAIL killed write leaves previous ledger intact (vacuous: recorder/verifier absent)
+FAIL ledger still verifies after killed write
+FAIL no blob stored (cannot judge redaction)
+FAIL entry lacks redacted: true
+FAIL reconcile: runner count 3 == 3 entries
+FAIL reconcile: runner count 4 != 3 entries refused (rc=127)
+FAIL verify silent above 75% of bound
+FAIL verify silent below 75% of bound (vacuous: recorder/verifier absent)
+cp: cannot stat '/tmp/tmp.IMRYckW0PM/rr/base.jsonl': No such file or directory
+cp: cannot stat '/tmp/tmp.IMRYckW0PM/rr/base.jsonl': No such file or directory
+FAIL rerecord: remote prefix (no output)
+FAIL rerecord: re-sequenced (no output)
+FAIL rerecord: other fields (no output)
+FAIL rerecord: verify accepts (no output)
+FAIL rerecord: seq map (no output)
+FAIL rerecord: mutation (no output)
+FAIL rerecord refuses a side verify rejects (rc=127)
+FAIL rerecord: nothing written on refusal (vacuous: recorder/verifier absent)
+FAIL rerecord refuses sides without a common prefix (rc=127)
+FAIL append-only rerecord
+FAIL remap-refs result: see ledger#4 and ledger#5
+FAIL remap-refs refuses a reference the map does not cover (rc=127)
+FAIL no run id: tools/evidence/tests/test_evrec.sh: line 170: /home/milosvasic/Projects/catalogizer/tools/evidence/evrec: No such file or directory
+rc=127
+FAIL stores byte-unchanged after refusal (vacuous: recorder/verifier absent)
+FAIL different run id not refused
+FAIL matching run id: append succeeds, stub never called
+FAIL matching run id never calls the stub (vacuous: recorder/verifier absent)
+FAIL no grant file: append succeeds
+FAIL mode 000 grant not refused
+FAIL non-JSON grant not refused
+FAIL dead-holder grant reaped, append then succeeds
+FAIL --reap call count: 0
+FAIL no --exec-approved entry in host log
+FAIL mutation (direct working-tree run) leaves host log empty, caught (vacuous: recorder/verifier absent)
+FAIL live old grant not refused
+FAIL stub call count 0
+FAIL stores unchanged (live old grant) (vacuous: recorder/verifier absent)
+FAIL host refusing: rc=127 tools/evidence/tests/test_evrec.sh: line 200: /home/milosvasic/Projects/catalogizer/tools/evidence/evrec: No such file or directory
+checks=54 failures=54

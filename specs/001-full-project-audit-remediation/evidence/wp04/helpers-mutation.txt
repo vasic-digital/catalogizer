@@ -1,0 +1,21 @@
+# T040 integrate_ff_only.sh mutations (host run: bash scripts/repo/tests/run_wp04_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the test exits non-zero)
+CAUGHT   I1 force/rewrite option refusal removed  -> 5 failing case(s), e.g. FAIL option --force: reason (got 'usage', want 'force_refused')
+CAUGHT   I2 declared-path ff block removed  -> 4 failing case(s), e.g. FAIL ff blocked by declared path: exit (got '0', want '12')
+CAUGHT   I3 pin_not_on_remote refusal removed  -> 4 failing case(s), e.g. FAIL pin missing on one remote: exit (got '0', want '20')
+CAUGHT   I3b submodule_local_commits turned into pin_not_on_remote  -> 2 failing case(s), e.g. FAIL submodule local commit in change set: exit (got '20', want '12')
+CAUGHT   I4 unrecorded_local_commit refusal removed  -> 5 failing case(s), e.g. FAIL trailer-less local commit: exit (got '0', want '20')
+CAUGHT   I4b trailer alone accepted (commits.tsv run row not required)  -> 1 failing case(s), e.g. FAIL copied trailer, run unknown: exit (got '0', want '20')
+CAUGHT   I4c commits.tsv row need not hold this sha  -> 1 failing case(s), e.g. FAIL trailer, run lists another sha: exit (got '0', want '20')
+CAUGHT   I5 G-GATE content check removed  -> 6 failing case(s), e.g. FAIL G-GATE path not in manifest: exit (got '0', want '12')
+CAUGHT   I5b G-GATE deletion of approved path ignored  -> 1 failing case(s), e.g. FAIL G-GATE deletion of an approved path: exit (got '0', want '12')
+CAUGHT   I5c adoption first-parent rule removed  -> 3 failing case(s), e.g. FAIL adoption commit off the tip's first-parent chain: exit (got '0', want '12')
+CAUGHT   I5d merge-path routing not applied  -> 9 failing case(s), e.g. FAIL G-GATE path not in manifest: exit (got '0', want '12')
+CAUGHT   I6 diverged not detected  -> 1 failing case(s), e.g. FAIL diverged: reason (got 'ff_blocked_by_local_changes', want 'diverged')
+CAUGHT   I7 remotes_diverged not detected  -> 1 failing case(s), e.g. FAIL remotes_diverged: reason (got 'diverged', want 'remotes_diverged')
+CAUGHT   I8 fetch failure label changed  -> 1 failing case(s), e.g. FAIL fetch_failed:<remote> recorded (got 'failed:bad', want 'fetch_failed:bad')
+CAUGHT   I9 helper also updates submodule work trees  -> 1 failing case(s), e.g. FAIL submodule worktree still unmoved (got '8d8f88d817d325d158be1b355ee3943b328457c3', want '8129fb679e770f67c
+CAUGHT   I10 behind submodule not reported  -> 1 failing case(s), e.g. FAIL behind submodule: needs_update (got 'current', want 'needs_update')
+CAUGHT   I11 helper pushes the new tip to remotes  -> 1 failing case(s), e.g. FAIL behind mirror is not pushed to (got '54660e797f9140e5643ca070f01792c69fc846d2	refs/heads/main', want 'ba9
+CAUGHT   I12 merge instead of fast-forward  -> 2 failing case(s), e.g. FAIL fast-forward: HEAD is the remote tip (got 'ae384740b6dafce35a01a83eea0434d34716b868', want '340ecc738c74d
+CAUGHT   I13 ff blocked by dirty overlap reported as success  -> 2 failing case(s), e.g. FAIL dirty overlap: exit (got '0', want '12')
+---- 19 mutations, 0 not caught

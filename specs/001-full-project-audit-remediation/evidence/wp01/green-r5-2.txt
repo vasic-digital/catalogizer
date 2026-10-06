@@ -1,0 +1,19 @@
+# GREEN 2 T012 revision 5 of the test (owner_answers bound to progress.yml), 2026-10-05, host anton
+# identity: test sha256 ac54a0bb788ce5d3b57ca05b59e9cb5e218b8d6828e243246925473b88307d43; intake (owner-decisions.yaml) sha256 e430f5ca6293e61bb2c4d09509c40a489232200234ca9f553c164f95d6bb6ead; progress.yml sha256 8345098e80dfcc179d533b825bdea750b636f15cf0fcbc578eacfd55c29e3c8b; git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test, intake, progress.yml untracked); Python 3.14.4; PyYAML 6.0.3
+$ bash scripts/governance/tests/test_decision_intake.sh
+PASS groups: exactly 43 ids ODG-01..ODG-43, no duplicates
+PASS research_ods: exactly the 15 open ungrouped decisions (OD-60 absent)
+PASS no id duplicated across 58 ids in both lists
+PASS every one of 58 rows has topic or options, groups carry recommendation and research_ids
+PASS topic, options and recommendation equal the docs/21 cells for all 58 rows
+PASS closest_group equals the docs/21 section 8.6 cell (id, or null for '-') for all 15 research_ods
+PASS blocks equal the docs/21 section 8 Blocks cells as sets for all 58 checked rows; empty cells carry blocks_scope verbatim
+PASS status is Operator-blocked and blocks_text and (groups) source equal the docs/21 cells for all 58 rows
+PASS default is a bare closed-set token, default_detail holds the rest without the token (58 rows); ODG-34/35/39/40/42/43 and OD-76 shapes hold
+PASS fixed needles hold for OD-76, OD-20, OD-26, ODG-40, ODG-42 and the empty-blocks ODG-19/34/35/43 (9 rows)
+PASS tasks.md: all 166 BLOCKED-ON markers inside work packages are listed in the decision's blocks
+PASS no credential value field or credential-shaped value in 1065 string values
+PASS owner_answers holds the reserved slots ODG-42, C2-custody, floors-adoption (a slot is not a group)
+PASS owner_answers carry progress.yml faithfully: 62 answered ids + 3 id-less answers over 61 source keys; text = progress.yml value + relay suffix, dates from block names, caveats/OPEN/UNCONFIRMED carried, no invented or unsourced entry
+RESULT PASS (0 failures)
+rc=0

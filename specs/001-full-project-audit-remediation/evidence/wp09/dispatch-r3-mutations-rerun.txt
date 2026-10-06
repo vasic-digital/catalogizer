@@ -1,0 +1,145 @@
+# MUTATIONS RERUN: the 9 rows that survived or failed to patch in dispatch-r3-mutations.txt, after the row fixes and the added fixtures, 2026-10-05T20:08:14Z
+# sha256 cdebab5cc0ac991820136a9f61d0e7153196fbfdedcf21469f5249d7383f43ef scripts/build/event_core.sh
+# sha256 46f4c9a53b64586a0adf3dca792e70d766684013157fc5a09058263a69cb46a4 scripts/build/lib/bev_crypto.py
+# sha256 98741dc2326cd69033bfe3ec9673391f8b626ddf794cda870614e94b714f670a scripts/build/tests/test_dispatch_events.sh
+# sha256 ab40ed73454f9fd9da35df76591c406832f19d76a6caf4a464ea4a7031fcd874 scripts/build/tests/mutate_dispatch_events.sh
+# sha256 7af0052800738414e0b3907e011162037fb37ab7712df4741d587504f1e5a274 specs/001-full-project-audit-remediation/contracts/build-event.schema.json
+== m_completedlog  (lib/bev_crypto.py)
+@@ -171,7 +171,7 @@
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+         if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.fullmatch(str(ev.get("artifact_manifest_sha256", "")))
+-                and _str(ev.get("image_digest")) and HEX64.fullmatch(str(ev.get("remote_log_sha256", "")))):
++                and _str(ev.get("image_digest")) and True):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+             raise Malformed("peak_rss_bytes")
+FAIL (I7 completed without remote_log_sha256) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I1 log LF) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+FAIL (I1 hmac LF) rc=20 out=REFUSED reason=event_unauthenticated 
+RESULT pass=240 fail=5
+-> KILLED
+== m_completedmanifest  (lib/bev_crypto.py)
+@@ -170,7 +170,7 @@
+         if not all(f in ev and _isint(ev[f], 0) for f in HB):
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+-        if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.fullmatch(str(ev.get("artifact_manifest_sha256", "")))
++        if not (ev.get("exit_class") in EXIT_CLASSES and True
+                 and _str(ev.get("image_digest")) and HEX64.fullmatch(str(ev.get("remote_log_sha256", "")))):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+FAIL (I7 completed without artifact_manifest_sha256) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I1 manifest LF) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+FAIL (I1 log LF) rc=20 out=REFUSED reason=event_malformed completed fields
+FAIL (I1 hmac LF) rc=20 out=REFUSED reason=event_unauthenticated 
+RESULT pass=239 fail=6
+-> KILLED
+== m_journal_multiwrite  (event_core.sh)
+@@ -49,7 +49,9 @@
+         os.ftruncate(fd, size)
+     os.close(rfd)
+ try:
+-    ok = os.write(fd, d) == len(d)
++    n = 0
++    for i in range(0, len(d), 4096): n += os.write(fd, d[i:i+4096])
++    ok = n == len(d)
+     if ok:
+         os.fsync(fd)
+ except OSError:
+FAIL (m4 single write) strace: 19 lines; wanted a write of 8023 bytes
+RESULT pass=244 fail=1
+-> KILLED
+== m_keyinjournal  (event_core.sh)
+@@ -231,7 +231,7 @@
+     if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
+     atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
+   fi
+-  journal "$d" "$ev" || refuse_l journal_failed "event"
++  journal "$d" "$ev $(python3 "$CRYPTO" derive "$sd" "$b" "$r" "$CHECKOUT")" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+FAIL (t) leaks: secret=0 key=1 hmac=0
+FAIL (I8) redelivered completed journaled or superseded wrongly
+FAIL (I5 short write) rc=20 size=291 was=291 out=REFUSED reason=journal_failed event
+FAIL (I5 redelivery) rc=0 out=consumed seq=2 kind=heartbeat lines=2
+FAIL (I5 repair) rc=0 out=consumed seq=2 kind=heartbeat lines=2
+RESULT pass=240 fail=5
+-> KILLED
+== m_keyinstdout  (event_core.sh)
+@@ -234,7 +234,7 @@
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+-    flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
++    flock -u 9; echo "consumed seq=$seq kind=$kind key=$(python3 "$CRYPTO" derive "$sd" "$b" "$r" "$CHECKOUT")"; return 0
+   fi
+   # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
+   claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?
+FAIL (m5) leaks state=0 logs(secret)=0 logs(key)=1
+RESULT pass=244 fail=1
+-> KILLED
+== R3_secret_dirsync_unchecked  (event_core.sh)
+@@ -159,7 +159,7 @@
+     printf 'created=%s\nsha256=%s\n' "$(now)" "$h" > "$mt" || exit 1
+     fsync_file "$mt" || exit 1
+     mv -f "$mt" "$m" || exit 1
+-    fsync_dir "$sd" || exit 1 ) || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "$sd"; }
++    fsync_dir "$sd"; true ) || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "$sd"; }
+   # report success only when the key we just wrote reads back as a usable 32-byte secret
+   BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "read-back"; }
+ import os, sys
+FAIL (I4 secret dir) rc=0 out=secret created
+RESULT pass=244 fail=1
+-> KILLED
+== R3_journal_follows_symlink  (event_core.sh)
+@@ -40,7 +40,7 @@
+   printf '%s' "$2" | python3 -c 'import os, sys
+ p = sys.argv[1]
+ d = sys.stdin.buffer.read() + b"\n"
+-fd = os.open(p, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o644)
++fd = os.open(p, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
+ size = os.fstat(fd).st_size
+ if size:
+     rfd = os.open(p, os.O_RDONLY | os.O_NOFOLLOW)
+FAIL (m7 empty target) rc=0 size=226 out=consumed seq=1 kind=accepted
+RESULT pass=244 fail=1
+-> KILLED
+== R3_journal_follows_symlink_both  (event_core.sh)
+@@ -40,10 +40,10 @@
+   printf '%s' "$2" | python3 -c 'import os, sys
+ p = sys.argv[1]
+ d = sys.stdin.buffer.read() + b"\n"
+-fd = os.open(p, os.O_WRONLY | os.O_APPEND | os.O_CREAT | os.O_NOFOLLOW, 0o644)
++fd = os.open(p, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
+ size = os.fstat(fd).st_size
+ if size:
+-    rfd = os.open(p, os.O_RDONLY | os.O_NOFOLLOW)
++    rfd = os.open(p, os.O_RDONLY)
+     if os.pread(rfd, 1, size - 1) != b"\n":
+         size = os.pread(rfd, size, 0).rfind(b"\n") + 1
+         os.ftruncate(fd, size)
+FAIL (m7 journal symlink) rc=0 victim='KEEP
+FAIL (m7 empty target) rc=0 size=226 out=consumed seq=1 kind=accepted
+RESULT pass=243 fail=2
+-> KILLED
+== R3_buildid_match  (lib/bev_crypto.py)
+@@ -158,7 +158,7 @@
+         raise Malformed("unexpected field " + sorted(set(ev) - allowed)[0])
+     if ev["schema"] != "build-event/1":
+         raise Malformed("schema")
+-    if not (type(ev["build_id"]) is str and BUILD_ID_RE.fullmatch(ev["build_id"])):
++    if not (type(ev["build_id"]) is str and BUILD_ID_RE.match(ev["build_id"])):
+         raise Malformed("build_id")
+     if not _str(ev["run_id"], 1, 128) or not _str(ev["host"]) or not _str(ev["sent_at"]):
+         raise Malformed("run_id/host/sent_at")
+FAIL (I1 verifier build_id) got 'ok
+RESULT pass=244 fail=1
+-> KILLED
+SUMMARY killed=9 survived=0 patchfailed=0 total=9
+DONE

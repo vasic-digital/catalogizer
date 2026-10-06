@@ -1,0 +1,1 @@
+gate mutants=11 survived=0

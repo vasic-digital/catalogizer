@@ -1,0 +1,11 @@
+# R4 smoke MUTATION: probe with the exit-status check removed (old behaviour), run through the real smoke_images.sh in a scratch tree
+# date_utc: 2026-10-06T05:46:32Z
+# sut_sha256: 12a5f201ef54950df500dd18fcbe620fc7b6e9719ddb6c1e4226141a8aa87e48
+# probe_sha256: 170691f94af898b733b45d84365d5b4fa9e4e216aa781ddfe469a9b8b5e4602b
+# test_sha256: 3857c43e10c72462d2fcd05dcd1e4c3dca2e8a4e56e5dbbb6190a2266d2b2c4b
+# mutant_probe_sha256: b994c8e04a0d88b3be2401646cc9dd4f964278c47f4fed05022114fa43e31b5b
+smoke: FAILED
+rc=1
+["IMG-GO",false,false]
+["IMG-KCOV",false,false]
+["IMG-TESTUTIL",false,false]

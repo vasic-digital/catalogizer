@@ -1,0 +1,2 @@
+CAUGHT   Mm2 m2 no remote at all read as clean
+MUTATION SUMMARY caught=1 survived=0 broken=0

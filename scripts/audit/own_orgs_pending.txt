@@ -1,0 +1,4 @@
+# Accounts whose own-organisation status is BLOCKED-ON ODG-15 (OD-34, no default; docs/21 IC-30).
+# derive_scope.sh reports both classifications for rows of these accounts and flags the differing rows.
+helixdevelopment1
+milos85vasic

@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "rc-vr-IMG-TESTUTIL",
+  "at": "2026-10-06T00:15:46Z",
+  "need_bytes": 259193207,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 179721138176,
+      "free_after": 179461944969,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 179721117696,
+      "free_after": 179461924489,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

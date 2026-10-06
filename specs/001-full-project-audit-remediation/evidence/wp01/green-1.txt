@@ -1,0 +1,18 @@
+# GREEN 1 T012 revision 4 of the test (owner_answers coverage of progress.yml), 2026-10-05, host anton
+# identity: test sha256 1f54f8cc777c1c53ff2a39a3790e1995e18e97af942a44448b625645661fd96a; intake (owner-decisions.yaml) sha256 c2dc261f9c29db054fd207ffd5f3770d1335928d39fe5c951a7dfac18d20afdf; progress.yml sha256 3f117cd8fef6ed4c94d85de60005535a3c7424dee2b777ced7e7090155e57fe5; git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test and intake untracked); Python 3.14.4; PyYAML 6.0.3
+$ bash scripts/governance/tests/test_decision_intake.sh
+PASS groups: exactly 43 ids ODG-01..ODG-43, no duplicates
+PASS research_ods: exactly the 15 open ungrouped decisions (OD-60 absent)
+PASS no id duplicated across 58 ids in both lists
+PASS every one of 58 rows has topic or options, groups carry recommendation and research_ids
+PASS topic, options and recommendation equal the docs/21 cells for all 58 rows
+PASS closest_group equals the docs/21 section 8.6 cell (id, or null for '-') for all 15 research_ods
+PASS blocks equal the docs/21 section 8 Blocks cells as sets for all 58 checked rows; empty cells carry blocks_scope verbatim
+PASS default is a bare closed-set token, default_detail holds the rest without the token (58 rows); ODG-34/35/39/40/42/43 and OD-76 shapes hold
+PASS fixed needles hold for OD-76, OD-20, OD-26, ODG-40, ODG-42 and the empty-blocks ODG-19/34/35/43 (9 rows)
+PASS tasks.md: all 166 BLOCKED-ON markers inside work packages are listed in the decision's blocks
+PASS no credential value field or credential-shaped value in 982 string values
+PASS owner_answers holds the reserved slots ODG-42, C2-custody, floors-adoption (a slot is not a group)
+PASS every one of 58 answered decision ids (43 ODG, 15 OD) in progress.yml has exactly one owner_answers entry with relayed_by conductor, verbatim false, date 2026-10-05
+RESULT PASS (0 failures)
+rc=0

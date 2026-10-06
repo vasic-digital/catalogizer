@@ -1,0 +1,1 @@
+host_checklist: wrote /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp10/host-checklist.json

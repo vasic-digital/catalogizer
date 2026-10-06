@@ -1,0 +1,8 @@
+ok   derive exits 0
+ok   output equals the golden JSON byte-for-byte
+ok   second run byte-identical
+ok   empty allow-list refused (rc=3, nothing written)
+ok   --check passes on the golden JSON
+ok   --check FAILs when a scope.yaml class is missing from the JSON (rc=1)
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+SUMMARY pass=7 fail=0

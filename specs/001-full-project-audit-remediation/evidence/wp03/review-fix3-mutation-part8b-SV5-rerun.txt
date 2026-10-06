@@ -1,0 +1,2 @@
+CAUGHT   SV5 trailing slash hides a third_party root
+MUTATION SUMMARY caught=1 survived=0 broken=0

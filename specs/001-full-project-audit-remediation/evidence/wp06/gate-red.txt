@@ -1,0 +1,25 @@
+# identity: task=T063 utc=2026-10-05T13:04:05Z host=anton uid=1000
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=45
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== golden-good ==
+FAIL G1 rc=127 [bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory]
+FAIL G2 [bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory]
+ok   G3 the gate does not modify the DB under test
+ok   G4 missing --db refused
+ok   G5 absent DB file refused (and not created)
+ok   G6 absent DB file was not created
+== golden-bad fixtures ==
+FAIL B1 orphan finding (no item row) fails :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*v_findings_without_item/
+FAIL B2 illegal logged status edge fails :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*v_illegal_logged_edges/
+FAIL B3 dropped trigger fails (v_gate_missing_objects) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*v_gate_missing_objects.*reg_ids_no_delete/
+FAIL B4 same-name view redefinition fails (schema differs from the reference) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*(schema|differs)/
+FAIL B5 edited edge graph fails (seed differs) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*(seed|differs|schema)/
+FAIL B6 foreign-key violation fails (foreign_key_check) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*foreign_key_check/
+FAIL B7 item without a mint fails (v_items_without_mint) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*v_items_without_mint/
+FAIL B8 edited gate registry fails (seed differs) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*(seed|differs|schema)/
+FAIL B9 a file that is not a database fails :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL/
+FAIL B10 page corruption fails (integrity_check) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL/
+FAIL B11 terminal item with no custody chain fails (v_custody_violations) :: rc=127 out=[bash: /home/milosvasic/Projects/catalogizer/scripts/register/gate.sh: No such file or directory] wanted /FAIL.*v_custody_violations/
+RESULT pass=4 fail=13

@@ -1,0 +1,87 @@
+# identity: green-early-1
+# test_disk_headroom.sh sha256: 3d66f392269c9b1761891a07dd6215cafd106261fc392ec72641fee6b0da6144
+# driver: new_early (scratch driver = test with a DH_ONLY_PRE hook; early read simulated for the first 12 reads of the gate's command line; sha256 c89234d8148a7698c94ddfa83bab00d9cebae2d9fee9f5b950eddf97ecbbe7ed)
+# disk_headroom.sh sha256: b5d59685a3f7719fa737bac47f1a1618bd3aa590e43f99dc06c39090982624a0
+# run_at: 2026-10-06T12:20:11Z host: anton uid: 1000 load: 18.02 24.29 30.27
+PASS: above threshold: exit 0
+PASS: above threshold: record written to EV/disk/<op_id>.json
+PASS: record carries before value
+PASS: record carries after value (free minus need)
+PASS: record verdict pass
+PASS: free-need exactly at threshold: passes
+PASS: free-need one byte below threshold (graphroot fs): refused non-zero
+PASS: refusal reason disk_below_headroom on stderr
+PASS: refusal record carries reason
+PASS: repository filesystem below threshold: refused
+PASS: unreadable free-space value: refused non-zero
+PASS: unreadable free-space: named reason, never treated as enough
+PASS: missing --need: refused as usage error (exit 2)
+PASS: percentage value in conf: refused as configuration error (exit 2)
+PASS: percentage refusal names reason
+PASS: conf without min_free_bytes: refused (exit 2)
+PASS: DISK_HEADROOM_OUT_DIR: record written there
+PASS: DISK_HEADROOM_OUT_DIR: nothing written under EV/disk for that op
+PASS: committed conf min_free_bytes is an absolute byte count (12172240540)
+PASS: committed conf documents formula, inputs and measurement dates
+PASS: pass record read exactly 2 readable filesystems
+PASS: F1 --need 08 (invalid octal, leading zero): exit 2
+PASS: F1 --need 08 (invalid octal, leading zero): stdout never says pass
+PASS: F1 --need 08 (invalid octal, leading zero): no pass verdict recorded
+PASS: F1 --need 08: reason usage named
+PASS: F2b --need 0100 (octal misread would pass): exit 2
+PASS: F2b --need 0100 (octal misread would pass): stdout never says pass
+PASS: F2b --need 0100 (octal misread would pass): no pass verdict recorded
+PASS: F2a --need 2^64 (wraps to 0): exit 2
+PASS: F2a --need 2^64 (wraps to 0): stdout never says pass
+PASS: F2a --need 2^64 (wraps to 0): no pass verdict recorded
+PASS: F2 --need 20 digits: exit 2
+PASS: F2 --need 20 digits: stdout never says pass
+PASS: F2 --need 20 digits: no pass verdict recorded
+PASS: F2 --need INT64_MAX+1: exit 2
+PASS: F2 --need INT64_MAX+1: stdout never says pass
+PASS: F2 --need INT64_MAX+1: no pass verdict recorded
+PASS: F2 --need 00 (leading zeros refused): exit 2
+PASS: F2 --need 00 (leading zeros refused): stdout never says pass
+PASS: F2 --need 00 (leading zeros refused): no pass verdict recorded
+PASS: --need 0 is a valid base-10 value: passes
+PASS: --need INT64_MAX: refused below headroom (rc 1), not a wrap
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): exit 2
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): stdout never says pass
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): no pass verdict recorded
+PASS: F2c: reason config_not_integer
+PASS: F2d conf min_free_bytes with leading zero: exit 2
+PASS: F2d conf min_free_bytes with leading zero: stdout never says pass
+PASS: F2d conf min_free_bytes with leading zero: no pass verdict recorded
+PASS: F9 duplicate conf key refused: exit 2
+PASS: F9 duplicate conf key refused: stdout never says pass
+PASS: F9 duplicate conf key refused: no pass verdict recorded
+PASS: F9 duplicate conf key: reason named
+PASS: F2 df value 20 digits is unreadable: exit 1
+PASS: F2 df value 20 digits is unreadable: stdout never says pass
+PASS: F2 df value 20 digits is unreadable: no pass verdict recorded
+PASS: F2 df 20 digits: reason disk_free_unreadable
+PASS: F2 df value with leading zero is unreadable: exit 1
+PASS: F2 df value with leading zero is unreadable: stdout never says pass
+PASS: F2 df value with leading zero is unreadable: no pass verdict recorded
+PASS: F3 '--need' as last argument: refused usage (exit 2), no hang
+PASS: F3 '--op-id' as last argument: refused usage (exit 2), no hang
+PASS: F9 repeated --op-id refused usage (exit 2)
+PASS: F9 first fs below, second unreadable: reason disk_free_unreadable
+PASS: F9 first fs unreadable, second below: reason disk_free_unreadable
+PASS: podman reports no graphroot: refused (never pass on one filesystem)
+PASS: podman reports no graphroot: record is not pass
+PASS: [real] I1 podman: a pre-exec child (still the gate's own image) is observed
+PASS: [real] I1 podman: the gate stops promptly after the signal (under 2500 ms; the TERM-wait path takes at least 3000 ms)
+PASS: [real] I1 podman: gate stopped by the signal (exited, said so on stderr)
+PASS: [real] I1 podman: the pre-exec child is gone (not orphaned)
+PASS: [real] I1 podman: the delayed child never exec'd (hang shim never started)
+PASS: [real] I1 podman: nothing written under EV/disk
+PASS: [real] I1 reaper: a pre-exec child (still the gate's own image) is observed
+PASS: [real] I1 reaper: the gate stops promptly after the signal (under 2500 ms; the TERM-wait path takes at least 3000 ms)
+PASS: [real] I1 reaper: gate stopped by the signal (exited, said so on stderr)
+PASS: [real] I1 reaper: the pre-exec child is gone (not orphaned)
+PASS: [real] I1 reaper: the delayed child never exec'd (hang shim never started)
+PASS: [real] I1 reaper: nothing written under EV/disk
+disk_headroom pre tests: 79 passed, 0 failed
+rc=0
+finished 2026-10-06T12:20:48Z

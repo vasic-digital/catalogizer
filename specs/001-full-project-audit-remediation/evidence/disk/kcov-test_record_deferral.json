@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "kcov-test_record_deferral",
+  "at": "2026-10-05T23:53:47Z",
+  "need_bytes": 283106672,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 179687219200,
+      "free_after": 179404112528,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 179687219200,
+      "free_after": 179404112528,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

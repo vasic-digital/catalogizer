@@ -1,0 +1,12 @@
+verify_repos: no --owned-orgs and no /src/.audit/scratch/repo/../audit/own_orgs.txt
+rc=20
+fatal: detected dubious ownership in repository at '/src/submodules/assets'
+To add an exception for this directory, call:
+AGENTS.md
+ARCHITECTURE.md
+CLAUDE.md
+drwxrwxr-x 7 milosvasic milosvasic 4096 Oct  2 17:47 /src/submodules/assets
+-rw-rw-r-- 1 milosvasic milosvasic   45 Oct  2 17:45 /src/submodules/assets/.git
+1000
+gitdir: ../../.git/modules/submodules/assets
+submodules

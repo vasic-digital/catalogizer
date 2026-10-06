@@ -1,0 +1,37 @@
+# round5 evidence | utc=2026-10-06T08:51:57Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 7601a648e78353d5cea9393e4786d26f401f6ad145e7831cba933ee220461187 scripts/repo/tests/test_verify_repos.sh
+# sha256 3f56aca169a2b0c2c20b84fb159e1014111260be6c684f48526dea1cff81f900 /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/pf/repo/verify_repos.sh
+# cmd: env VR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/pf/repo/verify_repos.sh bash /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/quick39.sh
+IDENTITY test=eefb5ab8eb2b9b35293e7529d2ae198f329438734fe9eacc6c69278003d97dd8 verifier=3f56aca169a2b0c2c20b84fb159e1014111260be6c684f48526dea1cff81f900 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-06T08:51:57Z
+ok   R1 control: a plain fetch in a repository with a reference-transaction hook runs the hook (the fixture is live)
+ok   R1 plain mode on a diverged repository with repository hooks installed: exit 14 (remote tip unknown locally) (=14)
+ok   R1 no hook execution in plain mode
+ok   R1 --fetch on the same repository: exit 12 (=12)
+FAIL R1 the reference-transaction hook ran under --fetch: prepared committed 
+ok   R1 no other repository hook ran
+ok   R2 control: a repository with no remote (real jq path, shim present but not triggered by another filter) is exit 14 (=14)
+ok   R2 control: a dirty repository without the shim is exit 13 (=13)
+FAIL R2 the unproven count jq fails (rc 5) on a no-remote repository: exit 20, not 0 (got '0', want '20')
+FAIL R2 no message on stderr: jq: simulated failure
+/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/pf/repo/verify_repos.sh: line 430: [: : integer expected
+FAIL R2 the dirty count jq fails (rc 5) on a dirty repository: exit 20, not 14 or 0 (got '0', want '20')
+FAIL R2 the dirty count jq answers a non-number with rc 0: exit 20 (an answer that is not a count is an error) (got '0', want '20')
+FAIL R2 the ahead count jq fails (rc 5) on an unpushed repository: exit 20, not 0 (got '0', want '20')
+ok   R3 fixture: the submodule is ATTACHED on main (=main)
+ok   R3 fixture: the pin is the tip of the remote branch release (not of main) (=c724784cc15f0fc8937fdee409d460f48e1e67a3)
+ok   R3 oracle: a fresh clone of the parent checks the submodule pin out (rc) (=0)
+FAIL R3 a pin held as the tip of another remote branch: exit 0 (was 12 DIVERGED) (got '12', want '0')
+FAIL R3 the submodule row class is SAME (HEAD vs main tip) (got 'DIVERGED', want 'SAME')
+FAIL R3 the same under --strict is pin drift only (15) (got '12', want '15')
+FAIL R3 the same under --fetch: exit 0 (got '12', want '0')
+FAIL R3 a pin that is an ancestor of another remote branch tip: exit 0 (got '12', want '0')
+ok   R3 fixture: no remote branch holds the pin any more (release deleted), only the tag (=0)
+FAIL R3 a pin held by a remote tag only: exit 0 (got '12', want '0')
+ok   M5-1 attached owned submodule, pin diverged from the pushed tip and held by no remote ref: exit 12 (=12)
+ok   M5-1 the submodule row is DIVERGED (=DIVERGED)
+ok   M5-1 oracle: a fresh clone really fails with 'not our ref'
+ok   M5-1b fixture: the pin object is unknown to the submodule (=absent)
+ok   M5-1b a pin unknown locally and held by no remote tip: exit 14 (UNKNOWN-DIFFERENT) (=14)
+ok   M5-1b the submodule row is UNKNOWN-DIFFERENT (=UNKNOWN-DIFFERENT)
+SUMMARY pass=17 fail=12
+# rc=1

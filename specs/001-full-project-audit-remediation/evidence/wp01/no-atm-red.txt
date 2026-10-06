@@ -1,0 +1,65 @@
+ok   control needle: 3 planted hits seen (ATM-123, ATM alone, ATM_ID)
+ok   ATMOSphere and atm_id not matched
+ok   allow-list honoured (decision record, evidence/)
+FAIL 122 ATM occurrence(s) remain:
+specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json:35:      "pattern": "^(ATM-[0-9]{3,}|FND-[0-9]{4,}|RUN-[0-9]+|AUD-[0-9A-Za-z-]+)$",
+specs/001-full-project-audit-remediation/contracts/bank-case.schema.json:81:        "register_refs": {"type": "array", "items": {"type": "string", "pattern": "^ATM-[0-9]{3,}$"}},
+specs/001-full-project-audit-remediation/contracts/README.md:58:- Owed contract items (revision 26, analyze-remediation finding A25; no schema file exists for any of these, each is read by a gate or a
+specs/001-full-project-audit-remediation/contracts/finding.schema.json:45:      "pattern": "^ATM-[0-9]{3,}$"
+specs/001-full-project-audit-remediation/tasks.md:225:BLOCKED-ON ODG-11 for the final prefix and location; research.md default OD-11 (prefix `ATM`, path `docs/workable_items.db`) is used as the revers
+specs/001-full-project-audit-remediation/tasks.md:512:- [ ] T190 [US1] Create consumer config `.helix/reporting.yaml` (doc04 §10.4 shape: `db: docs/workable_items.db`, `id_prefix: ATM`, `trackers: []
+specs/001-full-project-audit-remediation/tasks.md:779:- **Evidence**: every run goes through `tools/evidence/evrec` into `$EV/ledger.jsonl` as an `ev/1` record (`$SPEC/contracts/evidence-record.schema
+specs/001-full-project-audit-remediation/tasks.md:830:- [ ] T328 [P] [US5] [TDD] Desktop consumer and IPC contracts (docs/09 WP-D2, §8.3): vitest bridge and route-contract test from docs/09 Appendix 
+specs/001-full-project-audit-remediation/tasks.md:837:- [ ] T334a [US5] [TDD] Expected-RED guard mechanism, in place before any consumer contract test is committed RED (T327 for WEB-F06, T328 until T3
+specs/001-full-project-audit-remediation/tasks.md:1243:- [ ] T564 [US3] [TDD] Quarantine and protected specs (§11.4.248, doc05 §11): flaky tests moved to `tests/quarantine/<application>/` (new) with
+specs/001-full-project-audit-remediation/data-model.md:54:| Register Item | engine `items` + `reg_ids` + `reg_item_ext` | `atm_id` `ATM-NNN` | docs/04 §4, §5, DR-2 |
+specs/001-full-project-audit-remediation/data-model.md:70:| `register_item` | `ATM-NNN` | yes | FK `reg_findings.atm_id -> reg_ids.atm_id` |
+specs/001-full-project-audit-remediation/data-model.md:121:| `atm_id` | `ATM-NNN` | `reg_ids.atm_id` (generated from `seq`, UNIQUE) | minted first, append-only (UPDATE/DELETE abort), never reused; `mi
+specs/001-full-project-audit-remediation/data-model.md:136:  [*] --> Queued: add (ATM id minted first)
+specs/001-full-project-audit-remediation/research.md:65:- **Decision**: Legacy `HELIX-NNN` ids are labels, never keys. Import is keyed on `(source, locator)` = file path plus content hash; matching fo
+specs/001-full-project-audit-remediation/research.md:80:- **Decision**: One SQLite file `docs/workable_items.db`, tracked in git (§11.4.95), holding the constitution engine's tables unchanged plus an
+specs/001-full-project-audit-remediation/research.md:272:| OD-11 | Register id prefix `ATM` and register path (`docs/workable_items.db`, generated trackers under `docs/tracking/`?) | ATM / other; path
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:8:| Status | draft (revision 24: analyze-remediation round of 2026-10-05 (owner approved 'yes, all of it'; Sp
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:799:| Language and runner | Registered marker (`expected-red: ATM-<id>`, naming its register item) | Default 
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:803:| Rust, `catalogizer-desktop/src-tauri` | `#[ignore = "expected-red: ATM-<id>"]` | skipped by the default
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:809:The scanner rule closes the honesty loop: `scripts/audit/anti-bluff-scan.sh` treats a marker as registere
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:1030:   create or reopen, mint `ATM-NNN` from the register id table.
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:1032:   `ATM-NNN`, the evidence references and the lifecycle state.
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:8:| Status | draft (revision 19: analyze-remediation round of 2026-10-05 (owner approved 'yes, all of it'; Spec Ki
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:901:- **Protected specs**: regression tests that codify a fixed defect carry `[PROTECTED-SPEC: ATM-NNN]`
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:920:  T327 to T329) leaves its default lane only through the registered marker `expected-red: ATM-<id>`,
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:926:  (`catalogizer-desktop/src-tauri`) `#[ignore = "expected-red: ATM-<id>"]`, skipped by the default
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:930:  marker only when its ATM id has a guard row, reporting `SKIP_WITHOUT_TICKET` otherwise. The lane
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:701:| FR-001 | WP-06, WP-20, WP-72 | register DDL tests, items with status, type, ATM id, description | Q,
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:839:| ODG-11 | Register prefix and location | `ATM` plus `docs/workable_items.db`; `docs/tracking/`; anoth
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:1123:| IC-19 | Plan-local id collisions | `S-01` (doc03 source, doc09 shared, doc15 security), `D-01` (doc
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:1143:| IC-39 | Register staging vocabulary | doc03 §15 and its staging DDL use `src_entry` rows with a `d
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:47:| F-1 | **The constitution-mandated workable-items database does not exist in this repository.** No SQLite file holds wo
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:286:| ATM-NNN stable ids | 11.4.54 | **0 occurrences** in main-repo content. The engine auto-generates `<PREFIX>-NNN` (defa
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:343:    register_id    TEXT,                    -- ATM-NNN or NULL only when NON-PROBLEM/EXTERNAL-SKIPPED
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:387:Register ids are `ATM-NNN` (decision DR-1). Legacy ids are never used as register keys. They are stored in `src_entry.l
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:435:**Step 5 - Item creation by an importer (one actor).** A scripted importer creates register items for IMPORT rows via `
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:472:- **Output:** a `dup_group` per cluster, with the canonical item chosen as the earliest-found, best-evidenced entry; no
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:500:    REG[("Workable-items DB ATM items")]
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:601:    I->>W: add type severity title description prefix ATM
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:602:    W-->>I: ATM id
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:690:- **DR-1 Id prefix and DB location.** Use `ATM` (constitution wording, 11.4.54) via `--prefix ATM`, and place the track
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:138:The engine's PK is `(atm_id, current_location, representation)`, so SQLite cannot declare a FOREIGN KEY to `items.atm_i
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:193:| `reg_ids` | identity anchor (ATM-NNN), append-only | generated id, UNIQUE, UPDATE/DELETE aborted |
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:198:| `reg_source_map` | exactly one mapping per entry to an ATM id | PK = `entry_id` (an entry maps once), relation closed
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:246:v2 replaces the v1 text after an independent review ran v1 and found real defects: a second `items` row for an existing
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:267:-- identity anchor: one row per ATM id, monotone, never reused (spec FR-001, §11.4.54)
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:270:  atm_id    TEXT GENERATED ALWAYS AS ('ATM-' || printf('%03d', seq)) STORED UNIQUE,
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:933:1. **The engine's own schema cannot be changed from here.** `items` keeps the engine primary key `(atm_id, current_loca
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:939:7. **Per-connection settings can switch constraints off.** `PRAGMA foreign_keys` is OFF by default in the `sqlite3` she
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:950:| §11.4.54 stable ATM-NNN, monotone, never reused | `reg_ids` generated id + AUTOINCREMENT + append-only triggers; `tr
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:983:  [*] --> Queued: add (ATM id minted first)
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1021:7. **Decision**: run `workable-items closure-check --config <cfg> --item ATM-NNN --to <status> --attempt attempt.json 
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1022:8. `workable-items close ATM-NNN --status ... --evidence <path>`: the trigger consumes the decision (single use, `cons
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1048:  E -- UNDECIDED --> U["mint new ATM with candidate link; ask owner"]
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1049:  E -- DISTINCT --> M["mint new ATM, no link"]
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1080:* IDs are never taken from legacy sources (collisions, §9.2); each mapped item receives a fresh ATM id; the legacy id
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1127:  Imp->>WI: add --id ATM-NNN (one per cluster head)
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1211:id_prefix: ATM
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1221:Note the `id_prefix: ATM` choice: the engine's own default is `WIT`; the constitution requires `ATM-NNN` (§11.4.54). 
+failures=1

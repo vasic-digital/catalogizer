@@ -1,0 +1,154 @@
+# class	check	applies	reason   (check class table, plan owner's rule (V), T040b; yes | no | byte bound for large_file)
+# review: specs/001-full-project-audit-remediation/evidence/reviews/WP-04.json   (admission table: held-table rule of T040b; header names the verdict that holds it)
+source	secret_fold	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	private_key	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	merge_conflict	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	trailing_whitespace	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	end_of_file	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	check_yaml	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	check_json	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	large_file	1024000	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	shell_parse	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	revision_header	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	anti_bluff	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	check_pins	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	bank_validator	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	go_fmt	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	go_vet	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	go_imports	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	no_false_positive_log	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	eslint	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+source	prettier	yes	every check applies to a path that no row names (strictest default); 1,024,000 B is the --maxkb=1000 of .pre-commit-config.yaml
+generated	secret_fold	yes	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	private_key	yes	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	merge_conflict	yes	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	trailing_whitespace	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	end_of_file	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	check_yaml	yes	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	check_json	yes	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	large_file	16777216	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	shell_parse	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	revision_header	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	anti_bluff	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	check_pins	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	bank_validator	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	go_fmt	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	go_vet	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	go_imports	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	no_false_positive_log	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	eslint	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+generated	prettier	no	bytes are written only by a pinned generator (engine, sqlite3 via locked.sh) and stay byte-exact; 16 MiB is the one register bound (docs/04 R-9, T168)
+evidence	secret_fold	yes	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	private_key	yes	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	merge_conflict	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	trailing_whitespace	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	end_of_file	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	check_yaml	yes	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	check_json	yes	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	large_file	1024000	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	shell_parse	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	revision_header	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	anti_bluff	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	check_pins	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	bank_validator	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	go_fmt	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	go_vet	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	go_imports	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	no_false_positive_log	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	eslint	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+evidence	prettier	no	records, captures and tool outputs written by their own tools; byte-exact, may show conflict markers or shell text; no authored Markdown or code
+patches	secret_fold	yes	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	private_key	yes	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	merge_conflict	yes	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	trailing_whitespace	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	end_of_file	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	check_yaml	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	check_json	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	large_file	1024000	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	shell_parse	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	revision_header	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	anti_bluff	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	check_pins	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	bank_validator	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	go_fmt	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	go_vet	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	go_imports	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	no_false_positive_log	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	eslint	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+patches	prettier	no	git diff output applied byte for byte and hashed in both manifests; a blank context line is a single space, so never normalised
+governance-carrier	secret_fold	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	private_key	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	merge_conflict	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	trailing_whitespace	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	end_of_file	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	check_yaml	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	check_json	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	large_file	4194304	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	shell_parse	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	revision_header	yes	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	anti_bluff	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	check_pins	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	bank_validator	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	go_fmt	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	go_vet	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	go_imports	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	no_false_positive_log	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	eslint	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+governance-carrier	prettier	no	two Markdown files quoting the constitution forbidden-content lists (private_key skips only the exact carrier lines of private_key_carriers.tsv); 4 MiB is about twice the whole constitution
+fixtures	secret_fold	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	private_key	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	merge_conflict	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	trailing_whitespace	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	end_of_file	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	check_yaml	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	check_json	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	large_file	1024000	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	shell_parse	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	revision_header	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	anti_bluff	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	check_pins	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	bank_validator	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	go_fmt	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	go_vet	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	go_imports	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	no_false_positive_log	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	eslint	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+fixtures	prettier	yes	deliberate-violation fixture root: every check applies less the checks the root row in fixture_roots.txt names (resolved by the loader)
+evidence-ledger	secret_fold	yes	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	private_key	yes	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	merge_conflict	yes	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	trailing_whitespace	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	end_of_file	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	check_yaml	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	check_json	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	large_file	33554432	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	shell_parse	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	revision_header	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	anti_bluff	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	check_pins	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	bank_validator	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	go_fmt	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	go_vet	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	go_imports	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	no_false_positive_log	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	eslint	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+evidence-ledger	prettier	no	hash-chained or append-only JSON lines, not one JSON document; 32 MiB derived from the projected entry count (T040b class 7), raised only through its held reviewed raise step
+legacy-collection	secret_fold	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	private_key	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	merge_conflict	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	trailing_whitespace	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	end_of_file	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	check_yaml	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	check_json	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	large_file	1024000	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	shell_parse	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	revision_header	no	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	anti_bluff	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	check_pins	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	bank_validator	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	go_fmt	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	go_vet	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	go_imports	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	no_false_positive_log	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	eslint	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)
+legacy-collection	prettier	yes	kept legacy collections no task edits: every source check except the revision header; an edit drops the exact-path row (T040b edit rule)

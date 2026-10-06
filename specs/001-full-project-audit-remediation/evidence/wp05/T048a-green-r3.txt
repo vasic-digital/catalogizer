@@ -1,0 +1,60 @@
+# T048a re-capture (review minor 12): test_evidence_record_schema.sh x3 against the current contract (revision 7)
+# generated_utc=2026-10-06T05:56:40Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 4af4288875d0ad93714d8938fecd7b6a0f65d7621d7c7b080f4d2a666b5cee1f  tools/evidence/evcore.py
+# sha256 741188337e62169b11cd55f53c28d0c917dfd6aaefc26d39739a5cdff40d5ba6  tools/evidence/tests/hermetic.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 f59acc0c226e1a8a5962ae3a0bb9a4b69848e0cb77d8101585dd8403894e1e68  tools/evidence/tests/run_mutations.py
+# sha256 68bc306f7b09d4aeba86d62996c39556957d12e05914349d91fceca201898104  tools/evidence/tests/test_evrec.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 1246274de86650d97ed08317b37b85d81d95181499328f3dc25f9546581179c3  tools/evidence/tests/test_evrec_r4.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 fb38d5f8d19939398e8cd30283adbe00b2b35e47186535edd09a7c4f723c68cd  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+## run 1
+ok   pre-rev6 entry (neither property) (valid)
+ok   item with the withdrawn prefix (rev 7) (refused)
+ok   item CAT-123 (rev 7) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0
+## run 2
+ok   pre-rev6 entry (neither property) (valid)
+ok   item with the withdrawn prefix (rev 7) (refused)
+ok   item CAT-123 (rev 7) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0
+## run 3
+ok   pre-rev6 entry (neither property) (valid)
+ok   item with the withdrawn prefix (rev 7) (refused)
+ok   item CAT-123 (rev 7) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0
+# DONE

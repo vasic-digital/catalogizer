@@ -465,7 +465,7 @@ One JSON file per finding at `specs/001-full-project-audit-remediation/audit/fin
   "schema": "finding/1",
   "finding_id": "FND-0001",
   "unit_alias": "F-catalog-api-001",
-  "register_item": "ATM-NNN",
+  "register_item": "CAT-NNN",
   "fingerprint": "sha256 of normalised (unit, file, symbol-or-key, rule-id, root-cause-key)",
   "title": "short imperative statement of the problem",
   "type": "bug|error|gap|misalignment|shortcoming|weak_spot|danger_zone",

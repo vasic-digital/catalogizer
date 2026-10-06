@@ -1,0 +1,25 @@
+FAIL golden-good passes (rc=127 want 0, pat=)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL name with no row FAILs (rc=127 want 1, pat=F1 CM-CCC-THREE)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL vanished name without citation FAILs (rc=127 want 1, pat=F2 CM-OLD-GONE)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL vanished name WITH citation passes (golden-false) (rc=127 want 0, pat=)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL unimplemented count above baseline FAILs (rc=127 want 1, pat=F3)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL count below baseline passes (monotone down) (rc=127 want 0, pat=)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL implementation site without token FAILs (rc=127 want 1, pat=F1 CM-AAA-ONE)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL markdown carrier as site FAILs (rc=127 want 1, pat=markdown)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL wildcard token FAILs (rc=127 want 1, pat=wildcard)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL zero names is BLIND not clean (rc=127 want 1, pat=BLIND)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL deferral without tracked item FAILs (rc=127 want 1, pat=CM-BBB-TWO)
+     bash: /home/milosvasic/Projects/catalogizer/scripts/ledger/tests/../project_gate_ledger_ratchet.sh: No such file or directory
+FAIL control needle not seen
+RESULT pass=0 fail=12
+exit=1

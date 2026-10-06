@@ -1,0 +1,59 @@
+# mutations of the 2026-10-05 batch3/batch4 intake checks; each mutant of the intake (scratch copy via INTAKE_FILE) MUST exit 1; control = unmutated exit 0
+== control unmutated: rc=0 
+== M1_OD75_drops_removals: rc=1 (1 FAIL lines)
+FAIL OD-75: text 'unknown; investigate; owner free text: remove if they are not used at ' != progress.yml value(s) 'unknown; investigate' plus the relay suffix (meaning drift or invented content)
+== M2_ODG11_drops_atm_id_columns: rc=1 (2 FAIL lines)
+FAIL ODG-11: text "id prefix CAT (never ATM; remove ATM from this repo's files); generic " != progress.yml value(s) "id prefix CAT (never ATM; remove ATM from this repo's files); generic " plus the relay suffix (meaning 
+FAIL owner_answers_2026-10-05_batch3.atm_id_columns: progress.yml answer (block date 2026-10-05) is carried by no owner_answers entry (later or unknown block)
+== M3_phase0_close_entry_removed: rc=1 (2 FAIL lines)
+FAIL owner_answers_2026-10-05_batch4.phase0_close: progress.yml answer (block date 2026-10-05) is carried by no owner_answers entry (later or unknown block)
+FAIL owner_answers_without_decision_id must list the 9 progress.yml answers without a decision id (found 8)
+== M4_ODG08_drops_batch4: rc=1 (2 FAIL lines)
+FAIL ODG-08: text 'BOTH: user-space NFS server in a container first AND an owner-supplied' != progress.yml value(s) 'BOTH: user-space NFS server in a container first AND an owner-supplied' plus the relay suffix (meaning 
+FAIL owner_answers_2026-10-05_batch4.ODG-08_nfs: progress.yml answer (block date 2026-10-05) is carried by no owner_answers entry (later or unknown block)
+== M5_ODG14_note_nulled: rc=1 (2 FAIL lines)
+FAIL OA-2026-10-05-18: note '' != the comment-part plus fixed review-flag text 'OPEN: the disposition waits for the history investigation S-LLMV-1 (equals the recommendat' (an unsourced or altered note)
+FAIL ODG-14: a deferral or partial answer must carry an OPEN note
+== M6_evidence_chain_note_loses_OPEN: rc=1 (2 FAIL lines)
+FAIL OAU-2026-10-05-4: progress.yml value carries OPEN but the note does not
+FAIL OAU-2026-10-05-4: note 'none' != the comment-part plus fixed review-flag text 'OPEN: the owner has not answered the four points of the constitution continuum chain (hash' (an unsourced or altered note)
+== M7_Firebase_text_drift: rc=1 (1 FAIL lines)
+FAIL OD-43: text 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' != progress.yml value(s) 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' plus the relay suffix (meaning d
+== M8_ODG42_drops_batch4: rc=1 (1 FAIL lines)
+FAIL ODG-42: text 'decide after T525 per-class report; per-class report in phase 2 (T525)' != progress.yml value(s) 'decide after T525 per-class report' plus the relay suffix (meaning drift or invented content)
+== M9_ODG16_custody_dropped: rc=1 (2 FAIL lines)
+FAIL ODG-16: text "this host is build platform; signing key in owner's user keyring; key " != progress.yml value(s) "this host is build platform; signing key in owner's user keyring" plus the relay suffix (meaning drift 
+FAIL owner_answers_2026-10-05_batch3.ODG-16_custody: progress.yml answer (block date 2026-10-05) is carried by no owner_answers entry (later or unknown block)
+== M10_unk_claims_verbatim_true: rc=1 (1 FAIL lines)
+FAIL OAU-2026-10-05-6: verbatim must be false
+== M11_ODG23_drops_internal_media: rc=1 (1 FAIL lines)
+FAIL ODG-23: text 'history investigation then per-item decision; owner free text: remove ' != progress.yml value(s) 'history investigation then per-item decision; owner free text: remove ' plus the relay suffix (meaning 
+== M12_image_pulls_dropped_from_ODG07: rc=1 (2 FAIL lines)
+FAIL ODG-07: text 'current host (hostname anton, 16 CPU, ~31 GiB RAM, podman 5.7.0 rootle' != progress.yml value(s) 'current host (hostname anton, 16 CPU, ~31 GiB RAM, podman 5.7.0 rootle' plus the relay suffix (meaning 
+FAIL owner_answers_2026-10-05_batch3.image_pulls: progress.yml answer (block date 2026-10-05) is carried by no owner_answers entry (later or unknown block)
+== M_alias_removed_CAT_vs_constitution_ATM: rc=1 (2 FAIL lines)
+FAIL ODG-11: answers ODG-11 is not derived from source key owner_answers_2026-10-05_batch3.CAT_vs_constitution_ATM
+FAIL owner_answers_without_decision_id must list the 10 progress.yml answers without a decision id (found 9)
+== M_alias_removed_atm_id_columns: rc=1 (2 FAIL lines)
+FAIL ODG-11: answers ODG-11 is not derived from source key owner_answers_2026-10-05_batch3.atm_id_columns
+FAIL owner_answers_without_decision_id must list the 10 progress.yml answers without a decision id (found 9)
+== M_alias_removed_image_pulls: rc=1 (2 FAIL lines)
+FAIL ODG-07: answers ODG-07 is not derived from source key owner_answers_2026-10-05_batch3.image_pulls
+FAIL owner_answers_without_decision_id must list the 10 progress.yml answers without a decision id (found 9)
+== M_alias_removed_removals: rc=1 (3 FAIL lines)
+FAIL OD-75: answers OD-75 is not derived from source key owner_answers_2026-10-05_batch3.removals
+FAIL ODG-23: answers ODG-23 is not derived from source key owner_answers_2026-10-05_batch3.removals
+== M_alias_removed_llms_verifier: rc=1 (2 FAIL lines)
+FAIL ODG-14: answers ODG-14 is not derived from source key owner_answers_2026-10-05_batch3.llms_verifier
+FAIL owner_answers_without_decision_id must list the 10 progress.yml answers without a decision id (found 9)
+== M_alias_removed_internal_media: rc=1 (3 FAIL lines)
+FAIL OD-68: answers OD-68 is not derived from source key owner_answers_2026-10-05_batch3.internal_media
+FAIL ODG-23: answers ODG-23 is not derived from source key owner_answers_2026-10-05_batch3.internal_media
+== M_alias_removed_Firebase: rc=1 (3 FAIL lines)
+FAIL OD-43: answers OD-43 is not derived from source key owner_answers_2026-10-05_batch4.Firebase
+FAIL OD-45: answers OD-45 is not derived from source key owner_answers_2026-10-05_batch4.Firebase
+FAIL OD-43: text 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' != progress.yml value(s) 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' plus the rel
+== M_progress_firebase_value_changed done
+== M_progress_firebase_value_changed (progress.yml value edited, intake unchanged): rc=1
+FAIL OD-43: text 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' != progress.yml value(s) 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' plus the rel
+FAIL OD-45: text 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' != progress.yml value(s) 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; cre' plus the rel

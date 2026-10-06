@@ -1,0 +1,28 @@
+# IMG-KCOV (T006): IMG-TESTUTIL plus kcov v43 built from the upstream source tarball (bookworm of the pinned snapshot carries no kcov package,
+# checked 2026-10-05: `apt-cache policy kcov` empty). The tarball is verified by SHA-256 below (computed on first fetch of
+# https://github.com/SimonKagstrom/kcov/archive/refs/tags/v43.tar.gz, release v43 of 2024-07-23 per the GitHub API; the publisher
+# does not publish a checksum, so the value is a pin of the bytes seen, not a publisher signature: signature_status UNKNOWN).
+# The upstream docker.io/kcov/kcov image is not used: it lacks git, jq and python3.
+# TESTUTIL_REF is the IMG-TESTUTIL digest reference, passed by the builder (recorded in build/containers/images.lock.yaml).
+ARG TESTUTIL_REF
+FROM ${TESTUTIL_REF} AS build
+USER root
+# The base image's own apt sources (bookworm, bookworm-updates and bookworm-security at the 2026-09-18 snapshot) are re-enabled: the pinned bookworm
+# suite alone holds older libssl/libc than the base ships, so the -dev packages do not resolve against it.
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20260918T000000Z\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources
+RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+      cmake g++ make pkg-config curl ca-certificates libcurl4-openssl-dev libelf-dev libdw-dev libiberty-dev binutils-dev zlib1g-dev libssl-dev python3 \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL -o /tmp/kcov.tgz https://github.com/SimonKagstrom/kcov/archive/refs/tags/v43.tar.gz \
+ && echo "4cbba86af11f72de0c7514e09d59c7927ed25df7cebdad087f6d3623213b95bf  /tmp/kcov.tgz" | sha256sum -c - \
+ && mkdir /tmp/src && tar xzf /tmp/kcov.tgz -C /tmp/src --strip-components=1 \
+ && cmake -S /tmp/src -B /tmp/b -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local && cmake --build /tmp/b -j2 && DESTDIR=/stage cmake --install /tmp/b
+FROM ${TESTUTIL_REF}
+USER root
+# The base image's own apt sources (bookworm, bookworm-updates and bookworm-security at the 2026-09-18 snapshot) are re-enabled: the pinned bookworm
+# suite alone holds older libssl/libc than the base ships, so the -dev packages do not resolve against it.
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20260918T000000Z\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources
+RUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libcurl4 libelf1 libdw1 libbinutils zlib1g \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=build /stage/usr/local /usr/local
+LABEL project=catalogizer

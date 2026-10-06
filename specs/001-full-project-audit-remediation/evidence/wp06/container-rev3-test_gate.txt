@@ -1,0 +1,5 @@
+# container leg WF3 round 4: scripts/containers/run_pinned.sh IMG-TESTUTIL -- bash <test>; utc=2026-10-06T06:08:48Z host=anton; sha256 of the test run: 66f979f237b363b90f15376a2159882a7215a8a4270f2eb65d2cc1d79e9e5528; image digest: see the lock entry (RUNP resolves it); first lines are the container's sqlite3 --version and uid
+3.40.1 2022-12-28 14:03:47 df5c253c0b3dd24916e4ec7cf77d3db5294cc9fd45ae7b9c5e82ad8197f3alt1
+1000
+RESULT pass=75 fail=0
+rc=0

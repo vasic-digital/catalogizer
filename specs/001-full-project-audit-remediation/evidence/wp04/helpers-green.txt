@@ -1,0 +1,48 @@
+# WP-04 stage helpers GREEN x3 (host run, bash 5.3.9(1)-release, git 2.53.0); each run is a fresh throwaway tree
+# head: a27d72a5 (working tree, nothing committed by this task)
+== test_record_deferral run 1
+---- 23 ok, 0 failed
+exit=0
+== test_record_deferral run 2
+---- 23 ok, 0 failed
+exit=0
+== test_record_deferral run 3
+---- 23 ok, 0 failed
+exit=0
+== test_integrate_ff_only run 1
+---- 80 ok, 0 failed
+exit=0
+== test_integrate_ff_only run 2
+---- 80 ok, 0 failed
+exit=0
+== test_integrate_ff_only run 3
+---- 80 ok, 0 failed
+exit=0
+== test_check_classes run 1
+---- 131 ok, 0 failed
+exit=0
+== test_check_classes run 2
+---- 131 ok, 0 failed
+exit=0
+== test_check_classes run 3
+---- 131 ok, 0 failed
+exit=0
+== test_fixture_roots run 1
+---- 30 ok, 0 failed
+exit=0
+== test_fixture_roots run 2
+---- 30 ok, 0 failed
+exit=0
+== test_fixture_roots run 3
+---- 30 ok, 0 failed
+exit=0
+# record_deferral GREEN x3 after adding cases 5b and 7b (the first run set above had 23 cases)
+== test_record_deferral run 1
+---- 26 ok, 0 failed
+exit=0
+== test_record_deferral run 2
+---- 26 ok, 0 failed
+exit=0
+== test_record_deferral run 3
+---- 26 ok, 0 failed
+exit=0

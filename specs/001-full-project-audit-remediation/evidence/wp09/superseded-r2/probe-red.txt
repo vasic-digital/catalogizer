@@ -1,0 +1,30 @@
+FAIL: real host: exit status 0 (got '127' want '0')
+FAIL: real host: host-probe.json missing or invalid
+FAIL: real host: nproc equals independent nproc (got '' want '16')
+FAIL: real host: MemTotal bytes equals /proc/meminfo (got '' want '32478769152')
+FAIL: real host: MemAvailable ''
+FAIL: real host: ulimit -u equals independent read (got '' want '123699')
+FAIL: real host: cgroup version (got '' want '2')
+FAIL: real host: rootless flag (got '' want 'true')
+FAIL: field kvm status ''
+FAIL: field selinux status ''
+FAIL: field ulimit_u status ''
+FAIL: field cgroup_version status ''
+FAIL: field rootless status ''
+FAIL: field user_slice_memory_max status ''
+FAIL: field nproc status ''
+FAIL: field mem_total status ''
+FAIL: field mem_available status ''
+FAIL: control needle: path that must not exist is recorded absent (got '' want 'absent')
+FAIL: control needle: records the probed path (got '' want 'true')
+FAIL: fixture no SELinux/KVM: exit 0 (got '127' want '0')
+FAIL: fixture no SELinux: status absent (got '' want 'absent')
+FAIL: fixture no KVM: status absent (got '' want 'absent')
+FAIL: fixture present kvm stand-in: status present (got '' want 'present')
+FAIL: fixture garbage meminfo: exit 0 (probe records, does not abort) (got '127' want '0')
+FAIL: fixture garbage meminfo: mem_total status error (got '' want 'error')
+FAIL: fixture garbage meminfo: mem_available status error (got '' want 'error')
+FAIL: fixture missing meminfo: status error (got '' want 'error')
+FAIL: fixture user.slice memory.max numeric (got '' want '8589934592')
+FAIL: fixture user.slice memory.max missing: absent (got '' want 'absent')
+probe_host tests: 0 passed, 29 failed

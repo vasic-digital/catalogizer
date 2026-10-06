@@ -1,0 +1,4 @@
+# root	exempt checks (closed check set, comma separated)	reason	adding task   (deliberate-violation fixture roots, T040a)
+# review: specs/001-full-project-audit-remediation/evidence/reviews/WP-04.json   (admission table: held-table rule of T040b)
+# No row yet: each row is added by the task that creates its root, in the same change (tests/security/needles/ by T150 or T153,
+# scripts/qa/tests/fixtures/ by T209, specs/001-full-project-audit-remediation/audit/fixtures/ by T235).

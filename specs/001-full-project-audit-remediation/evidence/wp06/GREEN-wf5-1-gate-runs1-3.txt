@@ -1,0 +1,52 @@
+# identity: task=WF5-1 utc=2026-10-06T09:04:25Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sqlite3=3.50.6 2025-09-22 gate_sha256=0379d1402a0febfde9003479292f6d2ad8529a7ca8690aac18851705515cfddd test_gate_sha256=2ca3b39c65ca3458f1f6b6cdcdd10b5de42da1f37572726e0eccd79da9983c4c mutate_gate_sha256=cafcc6bc32801d3d69cd1796dd20773cc86186e5635fdcb97e95faa3d7907d56
+# GREEN x3 of test_gate.sh after the fix (stat filter + pinned stat definitions)
+run 1: RESULT pass=111 fail=0
+run 2: RESULT pass=111 fail=0
+run 3: RESULT pass=111 fail=0
+--- run 1 B40/B41/B42/G9 lines
+ok   B40.1 fixture: trigger sqlite_swallow exists in the database under test
+ok   B40.1 an added trigger named sqlite_swallow (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.2 fixture: trigger SQLITE_SWALLOW exists in the database under test
+ok   B40.2 an added trigger named SQLITE_SWALLOW (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.3 fixture: trigger Sqlite_Swallow exists in the database under test
+ok   B40.3 an added trigger named Sqlite_Swallow (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.4 fixture: view sqlite_hidden_v exists in the database under test
+ok   B40.4 an added view named sqlite_hidden_v (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.5 fixture: view SQLite_Hidden_V exists in the database under test
+ok   B40.5 an added view named SQLite_Hidden_V (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.6 fixture: index sqlite_hidden_i exists in the database under test
+ok   B40.6 an added index named sqlite_hidden_i (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.7 fixture: index SQLITE_HIDDEN_I exists in the database under test
+ok   B40.7 an added index named SQLITE_HIDDEN_I (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.8 fixture: table sqlite_hidden_t exists in the database under test
+ok   B40.8 an added table named sqlite_hidden_t (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.9 fixture: table Sqlite_Hidden_T exists in the database under test
+ok   B40.9 an added table named Sqlite_Hidden_T (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.10 fixture: trigger sqlite_stat1 exists in the database under test
+ok   B40.10 an added trigger named sqlite_stat1 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.11 fixture: view sqlite_stat2 exists in the database under test
+ok   B40.11 an added view named sqlite_stat2 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.12 fixture: index sqlite_stat3 exists in the database under test
+ok   B40.12 an added index named sqlite_stat3 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.13 fixture: table sqlite_sequence_x exists in the database under test
+ok   B40.13 an added table named sqlite_sequence_x (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.14 fixture: table sqlite_stat9 exists in the database under test
+ok   B40.14 an added table named sqlite_stat9 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.15 fixture: table sqlite_autoindex_fake exists in the database under test
+ok   B40.15 an added table named sqlite_autoindex_fake (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.16 fixture: index sqlite_autoindex_fake_1 exists in the database under test
+ok   B40.16 an added index named sqlite_autoindex_fake_1 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B41 the sqlite_swallow trigger persists in the file (new connection sees it)
+ok   G9.0 fixture: ANALYZE created sqlite_stat1
+ok   G9 a register after ANALYZE (sqlite_stat1 present) still prints GATE OK
+ok   B42 a forged sqlite_stat1 (definition differs from SQLite's own) fails
+--- other suites after the fix
+== scripts/register/tests/test_register_behaviour.sh
+RESULT pass=147 fail=0
+== scripts/register/tests/test_register_ext.sh
+RESULT pass=180 fail=0
+== scripts/register/tests/test_run_mutations.sh
+RESULT pass=24 fail=0
+== scripts/ledger/tests/test_project_gate_ledger.sh
+RESULT pass=55 fail=0

@@ -1,0 +1,30 @@
+RED captures for review r2 N1-N12 (2026-10-05T10:27:44Z)
+== test_probe_host.sh new fixtures vs the code before the fix (verbatim FAIL lines):
+FAIL: N5 ulimit -u 'abc': status error (got 'present' want 'error')
+FAIL: N5 ulimit -u 'unlimited': present string (got 'present:number' want 'present:string')
+FAIL: N5 ulimit -u 4096: present number 4096 (got 'present:number:123699' want 'present:number:4096')
+FAIL: N6 duplicate MemTotal: exit 0 and record written (got '3/no' want '0/yes')
+FAIL: N6 duplicate MemTotal: mem_total status error (got '' want 'error')
+FAIL: N6 duplicate MemTotal: mem_available still present (got '' want 'present')
+FAIL: N6 duplicate MemTotal: no .tmp left behind (got '1' want '0')
+FAIL: N7 needle path is a dangling symlink: status error (got 'absent' want 'error')
+FAIL: mutation meminfo-digit-guard-removed not applied (marker missing)
+FAIL: mutation meminfo-duplicate-accepted not applied (marker missing)
+FAIL: mutation needle-symlink-blind not applied (marker missing)
+FAIL: real script: probe suite has zero failures (got '8' want '0')
+
+== test_planned_paths_tracked.sh new controls vs the .gitignore before the fix (first 6 and totals):
+FAIL control build/containers/hosts.env rc=1 (want 0)
+FAIL control build/containers/sub/hosts.env rc=1 (want 0)
+FAIL control tools/evidence/sub/.cache/x rc=1 (want 0)
+FAIL control build/containers/sub/id_rsa rc=1 (want 0)
+FAIL control build/containers/sub/id_rsa.pub rc=1 (want 0)
+FAIL control build/containers/sub/x.key rc=1 (want 0)
+TOTAL planned=34 control=103 failures=73
+
+== disk_headroom.sh: the N1/N2/N3/N11 fixes were applied before their tests were run (order slip, stated honestly); the RED is each fix reverted by a paired mutant, caught by the new checks:
+mutation reread-unreadable-passes: CAUGHT, 4 assertion(s) failed: FAIL: [mut-reread-unreadable-passes] N3 reaper leaves a non-JSON grant: refused commit_turn_held rc 1 (got '0/0' want '1/1');FAIL: [mut-reread-unreadable-passes] N3 reaper leaves a non-JSON grant: nothing written (got 'yes' want 'no');FAIL: [mut-reread-unreadable-passes] N3 reaper leaves a mode-000 grant: refused commit_turn_held rc 1 (got '0/0' want '1/1');
+mutation df-size-not-avail: CAUGHT, 5 assertion(s) failed: FAIL: [mut-df-size-not-avail] N1 strict df shim (-B1 --output=avail): pass, exit 0 (got '1' want '0');FAIL: [mut-df-size-not-avail] N2 single token with spaces and CR: accepted (got '1' want '0');FAIL: [mut-df-size-not-avail] N11 op-id of 128 characters: accepted (got '1' want '0');
+mutation df-multi-token-merged: CAUGHT, 3 assertion(s) failed: FAIL: [mut-df-multi-token-merged] N2 df value '5000 4000': refused rc 1 (got '0' want '1');FAIL: [mut-df-multi-token-merged] N2 df value '5000 4000': reason disk_free_unreadable (got '0' want '1');FAIL: [mut-df-multi-token-merged] N2 df value '5000 4000': no pass record (got 'pass' want 'refused');
+mutation opid-no-length-cap: CAUGHT, 4 assertion(s) failed: FAIL: [mut-opid-no-length-cap] N11 op-id of 129 characters: refused rc 2 (got '0' want '2');FAIL: [mut-opid-no-length-cap] N11 op-id of 129 characters: reason op_id_too_long (got '0' want '1');FAIL: [mut-opid-no-length-cap] N11 op-id of 300 characters: refused rc 2 with the named reason (got '1/0' want '2/1');
+mutation fixed-tmp-name: CAUGHT, 1 assertion(s) failed: FAIL: [mut-fixed-tmp-name] N11 stale <op>.json.tmp present: still writes the record, exit 0 (got '1/no' want '0/yes');

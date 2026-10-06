@@ -1,0 +1,84 @@
+# WP-04 round 6 (wp04f) green runs: 13 WP-04 suites, 3 sequential runs
+# 2026-10-06T13:34:27Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2 git=2.53.0
+# sha256 dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc  scripts/repo/check_class.sh
+# sha256 02c1d2a9d31364ffd73bb1da50e7f4c42c739afe778174b4337d9f129698e66c  scripts/repo/check_no_ci.sh
+# sha256 1e421f83128eb403c98931bba2d4df1e815454bfd0da2b8e2a262de95e22d931  scripts/repo/check_revision_headers.sh
+# sha256 c1df5ca244228594c0b15060ed6b96611aded8028e539c35818624a2f8d80067  scripts/repo/commit_recursive.sh
+# sha256 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d  scripts/repo/fixture_roots.sh
+# sha256 096f9fe84d2ec89264facaabaa138a8fa0d0acf3a44f56e1f321dffa941cef6c  scripts/repo/integrate_ff_only.sh
+# sha256 0bd37606fdaa6ceed468949f3e12c9ff6a5f4d31a282b5e9da1a13a0b9a4cb1f  scripts/repo/integrate_merge.sh
+# sha256 8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+# sha256 3161a9e26ef33270ec5c399657dd4bdecbac90918747fa5a1d5cab80cf6b04aa  scripts/repo/push_recursive.sh
+# sha256 2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1  scripts/repo/record_deferral.sh
+# sha256 b266393f67b40e7e6df365b93e1995a9be6963a708440c6cceace2b910ff655d  scripts/repo/scope_check.sh
+# sha256 79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff  scripts/repo/validate_cheap.sh
+# sha256 af6468ce5196d6a289f1e333e5a5990c5e3e61cfbb477df2e12e002e301a4dfd  scripts/repo/verify_repos.sh
+# sha256 4ae7335cf4078d9958e32dfd97730f1a1d75c581415f72fd9db84686d24562bb  scripts/repo/tests/test_check_classes.sh
+# sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# sha256 7d0a4bb444881a69f960110c93ae6d98dd30b456ba6628537e28ef7c3ba5a96f  scripts/repo/tests/test_commit_recursive.sh
+# sha256 9f0874d8f53fff96c3b291176758141219209d0cd9adbccfea880d866d88a196  scripts/repo/tests/test_fixture_roots.sh
+# sha256 b2a61fd232b189335753f94aeae5592a11378719d5ecf093df94ecf9d2cc879e  scripts/repo/tests/test_integrate_ff_only.sh
+# sha256 94bdb017a67d76af4ab3cde50010600416b2aec4b6056ede626758f2bdb4d3d7  scripts/repo/tests/test_integrate_merge.sh
+# sha256 fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# sha256 3babdf3db5a6b4416b96c548e29cc32bd599dfeaab747fa1bd8fbbacce7fabcc  scripts/repo/tests/test_record_deferral.sh
+# sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# sha256 3b61f92061ca033026c8d3f1530dca65e53d164e7ecc8c8a6f10f4f069a6992b  scripts/repo/tests/test_validate_cheap.sh
+# sha256 86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e  scripts/repo/tests/test_verify_repos.sh
+# sha256 53b76cb3c7e76728e7e3ec8a761dc027edd96147788aa955a32e53b58675f7ca  scripts/repo/tests/test_verify_repos_r6.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# sha256 ab40ca1e5eda860784f7b982956fff91468aabfcffe65df82d715ee56981308a  scripts/repo/tests/test_wp04c.sh
+# sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+== run 1
+check_no_ci rc=0 ---- 38 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 29 ok, 0 failed fails=0
+scope_check rc=0 ---- 70 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 153 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 125 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 231 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+evidence_root_guard rc=0 PASS
+== run 2
+check_no_ci rc=0 ---- 38 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 29 ok, 0 failed fails=0
+scope_check rc=0 ---- 70 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 153 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 125 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 231 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+evidence_root_guard rc=0 PASS
+== run 3
+check_no_ci rc=0 ---- 38 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 29 ok, 0 failed fails=0
+scope_check rc=0 ---- 70 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 153 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 125 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 231 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+evidence_root_guard rc=0 PASS
+# WP-04 round 6: test_wp04c.sh re-run x3 after the shellcheck-driven edit (unused variable removed from the W4 case); the 13-suite runs above carry the pre-edit hash of this one file
+# 2026-10-06T14:05:45Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2 git=2.53.0
+# sha256 e3920adbdbe485c2e2692b70d3317ecacbc97f885da7c90b4158916526db94dd  scripts/repo/tests/test_wp04c.sh
+# sha256 3161a9e26ef33270ec5c399657dd4bdecbac90918747fa5a1d5cab80cf6b04aa  scripts/repo/push_recursive.sh
+wp04c run 1 rc=0 ---- 231 ok, 0 failed fails=0
+wp04c run 2 rc=0 ---- 231 ok, 0 failed fails=0
+wp04c run 3 rc=0 ---- 231 ok, 0 failed fails=0

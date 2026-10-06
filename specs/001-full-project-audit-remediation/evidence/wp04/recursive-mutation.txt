@@ -1,0 +1,11 @@
+# T041 record_deferral.sh mutations (host run: bash scripts/repo/tests/run_wp04_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the test exits non-zero)
+CAUGHT   R1 flag closed-set check removed  -> 3 failing case(s), e.g. FAIL flag outside the closed set: 20 (got '0', want '20')
+CAUGHT   R2 reason requirement removed  -> 3 failing case(s), e.g. FAIL missing reason: 20 (got '0', want '20')
+CAUGHT   R3 tracked-files refusal removed  -> 1 failing case(s), e.g. FAIL ignored run dir holding a tracked file: 20 (got '0', want '20')
+CAUGHT   R4 not-ignored refusal removed  -> 2 failing case(s), e.g. FAIL run dir not ignored by git: 20 (got '0', want '20')
+CAUGHT   R5b row write and read-back ignored  -> 1 failing case(s), e.g. FAIL read-only deferrals.tsv: 20 and no row (got '0', want '20')
+CAUGHT   R6 awaits-review requirement removed  -> 2 failing case(s), e.g. FAIL held commit without verdict: 20 (got '0', want '20')
+CAUGHT   R7 --list order not the closed-set order  -> 2 failing case(s), e.g. FAIL --list: closed-set order (got 'LOCAL_ONLY,SWEEP_ABSENT,SKIP_LONG', want 'SKIP_LONG,SWEEP_ABSENT,LOCAL_ONL
+CAUGHT   R8 tab/newline refusal removed  -> 2 failing case(s), e.g. FAIL tab in reason: 20 (got '0', want '20')
+# R5 (header-write failure ignored) is an equivalent mutant, not run: the following append die still gives 20; the unwritable-dir case is kept as a test
+---- 8 mutations, 0 not caught

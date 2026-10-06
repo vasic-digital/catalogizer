@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "kcov-test_fixture_roots",
+  "at": "2026-10-05T23:54:15Z",
+  "need_bytes": 283106672,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 179685302272,
+      "free_after": 179402195600,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 179685273600,
+      "free_after": 179402166928,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

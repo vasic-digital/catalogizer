@@ -1,0 +1,43 @@
+# round5 mutation run | utc=2026-10-06T09:15:49Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758 scripts/repo/verify_repos.sh
+# sha256 86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e scripts/repo/tests/test_verify_repos.sh (section 39 only: quick39 = header+helpers+mk ahead+section 39)
+# sha256 0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854 scripts/audit/index_health.sh
+# sha256 be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71 scripts/audit/scope_to_lumen_json.py
+MUTANT R1a-no-hooksPath-anywhere: CAUGHT (failing checks: 1)
+    FAIL R1 the reference-transaction hook ran under --fetch: prepared committed 
+MUTANT R1b-no-global-hooksPath-fetch-keeps-explicit: SURVIVED (failing checks: 0)
+MUTANT R2a-cnt-no-numeric-check: CAUGHT (failing checks: 1)
+    FAIL R2 the dirty count jq answers a non-number with rc 0: exit 20 (an answer that is not a count is an error) (got '0', want '20')
+MUTANT R2b-unproven-count-failopen: CAUGHT (failing checks: 2)
+    FAIL R2 the unproven count jq fails (rc 5) on a no-remote repository: exit 20, not 0 (got '0', want '20')
+    FAIL R2 no message on stderr: jq: simulated failure
+MUTANT R2c-dirty-count-failopen: CAUGHT (failing checks: 2)
+    FAIL R2 the dirty count jq fails (rc 5) on a dirty repository: exit 20, not 14 or 0 (got '0', want '20')
+    FAIL R2 the dirty count jq answers a non-number with rc 0: exit 20 (an answer that is not a count is an error) (got '0', want '20')
+MUTANT R3a-never-held: CAUGHT (failing checks: 6)
+    FAIL R3 a pin held as the tip of another remote branch: exit 0 (was 12 DIVERGED) (got '12', want '0')
+    FAIL R3 the submodule row class is SAME (HEAD vs main tip) (got 'DIVERGED', want 'SAME')
+    FAIL R3 the same under --strict is pin drift only (15) (got '12', want '15')
+MUTANT R3b-always-held-M5-1: CAUGHT (failing checks: 4)
+    FAIL M5-1 attached owned submodule, pin diverged from the pushed tip and held by no remote ref: exit 12 (got '0', want '12')
+    FAIL M5-1 the submodule row is DIVERGED (got 'SAME', want 'DIVERGED')
+    FAIL M5-1b a pin unknown locally and held by no remote tip: exit 14 (UNKNOWN-DIFFERENT) (got '0', want '14')
+MUTANT R3c-tags-not-consulted: CAUGHT (failing checks: 1)
+    FAIL R3 a pin held by a remote tag only: exit 0 (got '12', want '0')
+MUTANT R3d-heads-not-consulted: CAUGHT (failing checks: 5)
+    FAIL R3 a pin held as the tip of another remote branch: exit 0 (was 12 DIVERGED) (got '12', want '0')
+    FAIL R3 the submodule row class is SAME (HEAD vs main tip) (got 'DIVERGED', want 'SAME')
+    FAIL R3 the same under --strict is pin drift only (15) (got '12', want '15')
+MUTANT R3e-ancestry-not-consulted: CAUGHT (failing checks: 1)
+    FAIL R3 a pin that is an ancestor of another remote branch tip: exit 0 (got '12', want '0')
+MUTANT R3f-unknown-pin-object-held: CAUGHT (failing checks: 2)
+    FAIL M5-1b a pin unknown locally and held by no remote tip: exit 14 (UNKNOWN-DIFFERENT) (got '0', want '14')
+    FAIL M5-1b the submodule row is UNKNOWN-DIFFERENT (got 'SAME', want 'UNKNOWN-DIFFERENT')
+MUTANT ih_M5-2-empty-tracked-not-blind: CAUGHT (failing checks: 1)
+MUTANT ih_M5-3-state-not-complete-ignored: CAUGHT (failing checks: 1)
+MUTANT ih_R4b-no-CR-control-check: CAUGHT (failing checks: 1)
+MUTANT ih_R4c-no-strip-check: CAUGHT (failing checks: 2)
+MUTANT ih_R4d-no-dot-prefix-check: CAUGHT (failing checks: 3)
+MUTANT ih_R4-noncanonical-check-removed: CAUGHT (failing checks: 9)
+MUTANT stj_D1-classes-element-check-removed: CAUGHT (failing checks: 3)
+# done

@@ -1,0 +1,1511 @@
+# WP-04 second slice evidence (green) - host run, bash 5.3.9(1)-release, git version 2.53.0, head a27d72a5 (working tree; nothing committed by this task)
+# generated 2026-10-05T13:57:40Z
+
+== test_integrate_merge run 1  [helper scripts/repo/integrate_merge.sh sha256 1eb24ce9b360f63eca5bdce7fc76629bb8e103fe137344689355618f022f16a9; test scripts/repo/tests/test_integrate_merge.sh sha256 e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   diverged tip merged: 0 (=0)
+ok   merge commit with two parents (=3)
+ok   message subject (=Merge r1/main 8f0579f5ba9357b30ef800d2e249f45237840b72 (CPA))
+ok   CPA-Run trailer
+ok   unheld: no Awaits-Review
+ok   both sides present, uncommitted file untouched (=3)
+ok   r1 tip unchanged (no push) (=8f0579f5ba9357b30ef800d2e249f45237840b72)
+ok   r2 tip unchanged (=8f2fe0fd47b87ab7eca51ab6e830586fa39915cc)
+ok   commits.tsv row (=.	abde4d29b1352046d4a970686e082879c226f576	20261005T000000Z-1-aaaa)
+ok   merge.json repository (=.)
+ok   merge.json tip (=8f0579f5ba9357b30ef800d2e249f45237840b72)
+ok   merge.json local_tip (=3bc3a619e3b50124e9d4b329da2cc2bd91b4476b)
+ok   merge.json run_id (=20261005T000000Z-1-aaaa)
+ok   merge.json pid is a number (=number)
+ok   merge.json pid_start from /proc/<pid>/stat (=true)
+ok   bundle verifies (=0)
+ok   bundle holds the local commit
+ok   uncommitted file copied to the backup (=uncommitted)
+ok   backup sha256 line
+ok   second run: nothing to merge: 0 (=0)
+ok   reported
+ok   merge with anchor: 0 (=0)
+ok   foreign commit named
+ok   CPA commit not named
+ok   without an anchor no foreign commit is named
+ok   local held commit missing from a remote: Awaits-Review
+ok   reported held
+ok   G-GATE content outside the approved manifest: held
+ok   reason gate
+ok   G-GATE content equal to the approved entry: not held
+ok   admission table changed by a non-CPA commit: held
+ok   admission table changed by a recorded CPA commit: not held
+ok   descendant tip, no adoption option: nothing to merge (=0)
+ok   reported
+ok   descendant tip lacking the adoption commit on its first-parent chain: merged (=0)
+ok   held for adoption
+ok   conflicting merge: 12 (=12)
+ok   merge_conflict naming the path
+ok   conflict file copy holds markers
+ok   HEAD unchanged (=50107776e6e5695ba0a3e70517860383c742e93c)
+ok   work tree status unchanged (= M base.txt)
+ok   no MERGE_HEAD (=1)
+ok   no commits.tsv row (=0)
+ok   nothing written to the run dir (checked before anything moves) (=0)
+ok   uncommitted change in a path the incoming commits change: 12 (=12)
+ok   named
+ok   HEAD unchanged (=83781aeac2ecf8338f9fc0b597e9041ae0674a8a)
+ok   my change kept (=mine)
+ok   index differs from HEAD: 12 (=12)
+ok   nothing written to the run dir (index case) (=0)
+ok   untracked file at an incoming path: 12 (=12)
+ok   nothing written to the run dir (untracked case) (=0)
+ok   two targets that conflict with each other: 12 (=12)
+ok   remotes_diverged naming the pair
+ok   and r2
+ok   nothing moved (=55c48f0f3c35bc52e0f3432a0b9d7dbd3611dedc)
+ok   two compatible diverged targets: 0 (=0)
+ok   two MERGED lines (=2)
+ok   both files present (=2)
+ok   two rows in commits.tsv (=2)
+ok   r2 descends from r1: one target (=0)
+ok   one MERGED line (=1)
+ok   backup cannot be written: 20 (=20)
+ok   nothing merged (=88e23454e1956f1e55c34d363408e9586b3b3d78)
+ok   backup_failed
+ok   bundle that does not verify: 20 (=20)
+ok   backup_failed
+ok   nothing merged (=e57bdbe2e1bff6d6e9076e945de1999a407ff8f0)
+ok   MERGE_HEAD present: 20 (=20)
+ok   merge_in_progress
+ok   option --rebase: 20 (=20)
+ok   option --rebase named force_refused
+ok   option --reset: 20 (=20)
+ok   option --reset named force_refused
+ok   option --hard: 20 (=20)
+ok   option --hard named force_refused
+ok   option --force: 20 (=20)
+ok   option --force named force_refused
+ok   option -f: 20 (=20)
+ok   option -f named force_refused
+ok   option +x: 20 (=20)
+ok   option +x named force_refused
+ok   option --merge: 20 (=20)
+ok   option --merge named force_refused
+ok   branch starting with a dash: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run dir absent: 20 (=20)
+ok   adoption commit that is no sha: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   branch not checked out: 20 (=20)
+ok   wrong_branch
+ok   remote named like an option: 20 (=20)
+ok   valid resolution: stops at the missing secret fold (20) (=20)
+ok   secret_fold_unavailable
+ok   nothing written, HEAD unchanged (=5036fba7b878bd03377c762583566bb60ac23d8a)
+ok   no MERGE_HEAD left (=1)
+ok   work tree clean of the merge (=0)
+ok   resolution dir outside .audit/merge-resolution: 20 (=20)
+ok   resolution_dir_invalid
+ok   no resolution.json: 20 (=20)
+ok   tip no longer the newest live tip: 12 (=12)
+ok   merge_target_moved
+ok   model not Opus: 20 (=20)
+ok   merge_resolver_not_pinned
+ok   effort not xhigh: 20 (=20)
+ok   merge_resolver_not_pinned (effort)
+ok   conflict set differs from the record: 12 (=12)
+ok   merge_conflict
+ok   conflict marker in a resolved file: 10 (=10)
+ok   resolved file differs from its recorded sha256: 20 (=20)
+ok   resolution_invalid
+ok   store path without method re-recorded: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store that does not extend the remote side byte for byte: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store extending the remote side passes the store check (then the fold gap)
+---- 117 ok, 0 failed
+exit=0
+
+== test_integrate_merge run 2  [helper scripts/repo/integrate_merge.sh sha256 1eb24ce9b360f63eca5bdce7fc76629bb8e103fe137344689355618f022f16a9; test scripts/repo/tests/test_integrate_merge.sh sha256 e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   diverged tip merged: 0 (=0)
+ok   merge commit with two parents (=3)
+ok   message subject (=Merge r1/main ea9597c8c7b82fcfa3a98616f0d780b5477d545c (CPA))
+ok   CPA-Run trailer
+ok   unheld: no Awaits-Review
+ok   both sides present, uncommitted file untouched (=3)
+ok   r1 tip unchanged (no push) (=ea9597c8c7b82fcfa3a98616f0d780b5477d545c)
+ok   r2 tip unchanged (=0f159173d2f51b98da3f999763fb3e8008ad440f)
+ok   commits.tsv row (=.	95078373e1a16600731d4fc26069c04a0331f69a	20261005T000000Z-1-aaaa)
+ok   merge.json repository (=.)
+ok   merge.json tip (=ea9597c8c7b82fcfa3a98616f0d780b5477d545c)
+ok   merge.json local_tip (=86472dcbd007399091df98ef0e201c895736cfc2)
+ok   merge.json run_id (=20261005T000000Z-1-aaaa)
+ok   merge.json pid is a number (=number)
+ok   merge.json pid_start from /proc/<pid>/stat (=true)
+ok   bundle verifies (=0)
+ok   bundle holds the local commit
+ok   uncommitted file copied to the backup (=uncommitted)
+ok   backup sha256 line
+ok   second run: nothing to merge: 0 (=0)
+ok   reported
+ok   merge with anchor: 0 (=0)
+ok   foreign commit named
+ok   CPA commit not named
+ok   without an anchor no foreign commit is named
+ok   local held commit missing from a remote: Awaits-Review
+ok   reported held
+ok   G-GATE content outside the approved manifest: held
+ok   reason gate
+ok   G-GATE content equal to the approved entry: not held
+ok   admission table changed by a non-CPA commit: held
+ok   admission table changed by a recorded CPA commit: not held
+ok   descendant tip, no adoption option: nothing to merge (=0)
+ok   reported
+ok   descendant tip lacking the adoption commit on its first-parent chain: merged (=0)
+ok   held for adoption
+ok   conflicting merge: 12 (=12)
+ok   merge_conflict naming the path
+ok   conflict file copy holds markers
+ok   HEAD unchanged (=ced000d5295816c1332bcb2d6cc489f1ddf58174)
+ok   work tree status unchanged (= M base.txt)
+ok   no MERGE_HEAD (=1)
+ok   no commits.tsv row (=0)
+ok   nothing written to the run dir (checked before anything moves) (=0)
+ok   uncommitted change in a path the incoming commits change: 12 (=12)
+ok   named
+ok   HEAD unchanged (=4e39ae6dc4df68a7abf9b5a5efd2dbefb5ee70db)
+ok   my change kept (=mine)
+ok   index differs from HEAD: 12 (=12)
+ok   nothing written to the run dir (index case) (=0)
+ok   untracked file at an incoming path: 12 (=12)
+ok   nothing written to the run dir (untracked case) (=0)
+ok   two targets that conflict with each other: 12 (=12)
+ok   remotes_diverged naming the pair
+ok   and r2
+ok   nothing moved (=8bc6641c2c84b1c1a92a4651904944b7f2aec600)
+ok   two compatible diverged targets: 0 (=0)
+ok   two MERGED lines (=2)
+ok   both files present (=2)
+ok   two rows in commits.tsv (=2)
+ok   r2 descends from r1: one target (=0)
+ok   one MERGED line (=1)
+ok   backup cannot be written: 20 (=20)
+ok   nothing merged (=67550785a9c49a07efe655df1708ee8e927393bf)
+ok   backup_failed
+ok   bundle that does not verify: 20 (=20)
+ok   backup_failed
+ok   nothing merged (=a92260fb110c73a3a5307acea6a72beabecea70e)
+ok   MERGE_HEAD present: 20 (=20)
+ok   merge_in_progress
+ok   option --rebase: 20 (=20)
+ok   option --rebase named force_refused
+ok   option --reset: 20 (=20)
+ok   option --reset named force_refused
+ok   option --hard: 20 (=20)
+ok   option --hard named force_refused
+ok   option --force: 20 (=20)
+ok   option --force named force_refused
+ok   option -f: 20 (=20)
+ok   option -f named force_refused
+ok   option +x: 20 (=20)
+ok   option +x named force_refused
+ok   option --merge: 20 (=20)
+ok   option --merge named force_refused
+ok   branch starting with a dash: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run dir absent: 20 (=20)
+ok   adoption commit that is no sha: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   branch not checked out: 20 (=20)
+ok   wrong_branch
+ok   remote named like an option: 20 (=20)
+ok   valid resolution: stops at the missing secret fold (20) (=20)
+ok   secret_fold_unavailable
+ok   nothing written, HEAD unchanged (=c2fdf1e5a9b981b206707e291b8339b4f3efee2f)
+ok   no MERGE_HEAD left (=1)
+ok   work tree clean of the merge (=0)
+ok   resolution dir outside .audit/merge-resolution: 20 (=20)
+ok   resolution_dir_invalid
+ok   no resolution.json: 20 (=20)
+ok   tip no longer the newest live tip: 12 (=12)
+ok   merge_target_moved
+ok   model not Opus: 20 (=20)
+ok   merge_resolver_not_pinned
+ok   effort not xhigh: 20 (=20)
+ok   merge_resolver_not_pinned (effort)
+ok   conflict set differs from the record: 12 (=12)
+ok   merge_conflict
+ok   conflict marker in a resolved file: 10 (=10)
+ok   resolved file differs from its recorded sha256: 20 (=20)
+ok   resolution_invalid
+ok   store path without method re-recorded: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store that does not extend the remote side byte for byte: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store extending the remote side passes the store check (then the fold gap)
+---- 117 ok, 0 failed
+exit=0
+
+== test_integrate_merge run 3  [helper scripts/repo/integrate_merge.sh sha256 1eb24ce9b360f63eca5bdce7fc76629bb8e103fe137344689355618f022f16a9; test scripts/repo/tests/test_integrate_merge.sh sha256 e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   diverged tip merged: 0 (=0)
+ok   merge commit with two parents (=3)
+ok   message subject (=Merge r1/main 493f4ad64c8de0d6b6505884ae34b943dd3aaf50 (CPA))
+ok   CPA-Run trailer
+ok   unheld: no Awaits-Review
+ok   both sides present, uncommitted file untouched (=3)
+ok   r1 tip unchanged (no push) (=493f4ad64c8de0d6b6505884ae34b943dd3aaf50)
+ok   r2 tip unchanged (=8506baa16eff47ee9c705aa23a95086a50cc5a4a)
+ok   commits.tsv row (=.	740df1aac6848aee40fb11191a96bd34a664f544	20261005T000000Z-1-aaaa)
+ok   merge.json repository (=.)
+ok   merge.json tip (=493f4ad64c8de0d6b6505884ae34b943dd3aaf50)
+ok   merge.json local_tip (=76464222d9d90a6cc2f32a21fa2300e41bad0352)
+ok   merge.json run_id (=20261005T000000Z-1-aaaa)
+ok   merge.json pid is a number (=number)
+ok   merge.json pid_start from /proc/<pid>/stat (=true)
+ok   bundle verifies (=0)
+ok   bundle holds the local commit
+ok   uncommitted file copied to the backup (=uncommitted)
+ok   backup sha256 line
+ok   second run: nothing to merge: 0 (=0)
+ok   reported
+ok   merge with anchor: 0 (=0)
+ok   foreign commit named
+ok   CPA commit not named
+ok   without an anchor no foreign commit is named
+ok   local held commit missing from a remote: Awaits-Review
+ok   reported held
+ok   G-GATE content outside the approved manifest: held
+ok   reason gate
+ok   G-GATE content equal to the approved entry: not held
+ok   admission table changed by a non-CPA commit: held
+ok   admission table changed by a recorded CPA commit: not held
+ok   descendant tip, no adoption option: nothing to merge (=0)
+ok   reported
+ok   descendant tip lacking the adoption commit on its first-parent chain: merged (=0)
+ok   held for adoption
+ok   conflicting merge: 12 (=12)
+ok   merge_conflict naming the path
+ok   conflict file copy holds markers
+ok   HEAD unchanged (=9a9cfee64387306a44e784643a45ddf50cbdb019)
+ok   work tree status unchanged (= M base.txt)
+ok   no MERGE_HEAD (=1)
+ok   no commits.tsv row (=0)
+ok   nothing written to the run dir (checked before anything moves) (=0)
+ok   uncommitted change in a path the incoming commits change: 12 (=12)
+ok   named
+ok   HEAD unchanged (=346068d3eefe3f1563df162f1eb6d19843ebff3f)
+ok   my change kept (=mine)
+ok   index differs from HEAD: 12 (=12)
+ok   nothing written to the run dir (index case) (=0)
+ok   untracked file at an incoming path: 12 (=12)
+ok   nothing written to the run dir (untracked case) (=0)
+ok   two targets that conflict with each other: 12 (=12)
+ok   remotes_diverged naming the pair
+ok   and r2
+ok   nothing moved (=e1b7677f3cc24bfd8b33482c62825993c134201f)
+ok   two compatible diverged targets: 0 (=0)
+ok   two MERGED lines (=2)
+ok   both files present (=2)
+ok   two rows in commits.tsv (=2)
+ok   r2 descends from r1: one target (=0)
+ok   one MERGED line (=1)
+ok   backup cannot be written: 20 (=20)
+ok   nothing merged (=875b3e75ab3eeb4df9295e7b2df5a40f57b5af79)
+ok   backup_failed
+ok   bundle that does not verify: 20 (=20)
+ok   backup_failed
+ok   nothing merged (=fc499cc72179a2a02b4e9b7c00074b2c9ee484f7)
+ok   MERGE_HEAD present: 20 (=20)
+ok   merge_in_progress
+ok   option --rebase: 20 (=20)
+ok   option --rebase named force_refused
+ok   option --reset: 20 (=20)
+ok   option --reset named force_refused
+ok   option --hard: 20 (=20)
+ok   option --hard named force_refused
+ok   option --force: 20 (=20)
+ok   option --force named force_refused
+ok   option -f: 20 (=20)
+ok   option -f named force_refused
+ok   option +x: 20 (=20)
+ok   option +x named force_refused
+ok   option --merge: 20 (=20)
+ok   option --merge named force_refused
+ok   branch starting with a dash: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run dir absent: 20 (=20)
+ok   adoption commit that is no sha: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   branch not checked out: 20 (=20)
+ok   wrong_branch
+ok   remote named like an option: 20 (=20)
+ok   valid resolution: stops at the missing secret fold (20) (=20)
+ok   secret_fold_unavailable
+ok   nothing written, HEAD unchanged (=fd042de216418475c6f61108f440b6d886949591)
+ok   no MERGE_HEAD left (=1)
+ok   work tree clean of the merge (=0)
+ok   resolution dir outside .audit/merge-resolution: 20 (=20)
+ok   resolution_dir_invalid
+ok   no resolution.json: 20 (=20)
+ok   tip no longer the newest live tip: 12 (=12)
+ok   merge_target_moved
+ok   model not Opus: 20 (=20)
+ok   merge_resolver_not_pinned
+ok   effort not xhigh: 20 (=20)
+ok   merge_resolver_not_pinned (effort)
+ok   conflict set differs from the record: 12 (=12)
+ok   merge_conflict
+ok   conflict marker in a resolved file: 10 (=10)
+ok   resolved file differs from its recorded sha256: 20 (=20)
+ok   resolution_invalid
+ok   store path without method re-recorded: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store that does not extend the remote side byte for byte: 20 (=20)
+ok   store_not_rerecorded
+ok   re-recorded store extending the remote side passes the store check (then the fold gap)
+---- 117 ok, 0 failed
+exit=0
+
+== test_check_no_ci run 1  [helper scripts/repo/check_no_ci.sh sha256 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c; test scripts/repo/tests/test_check_no_ci.sh sha256 d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   clean root (README + nested needle): 0 (=0)
+ok   planted .github/workflows/a.yml: 10 (=10)
+ok   report names .github/workflows/a.yml
+ok   planted .github/workflows/b.yaml: 10 (=10)
+ok   report names .github/workflows/b.yaml
+ok   planted .gitlab-ci.yml: 10 (=10)
+ok   report names .gitlab-ci.yml
+ok   planted .gitea/workflows/w.yml: 10 (=10)
+ok   report names .gitea/workflows/w.yml
+ok   planted .gitea/workflows/noext: 10 (=10)
+ok   report names .gitea/workflows/noext
+ok   planted .woodpecker.yml: 10 (=10)
+ok   report names .woodpecker.yml
+ok   planted .drone.yml: 10 (=10)
+ok   report names .drone.yml
+ok   planted .circleci/config.yml: 10 (=10)
+ok   report names .circleci/config.yml
+ok   planted .circleci/sub/x.txt: 10 (=10)
+ok   report names .circleci/sub/x.txt
+ok   nested pipeline files at a deeper path (never a root): 0 (=0)
+ok   git-ignored .drone.yml: 0 (=0)
+ok   tracked workflow file: 10 (=10)
+ok   two roots, second violates: 10 (=10)
+ok   violating root named
+ok   missing root: 20 (=20)
+ok   not a git repository: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is still refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no --root: 20 (=20)
+---- 30 ok, 0 failed
+exit=0
+
+== test_check_no_ci run 2  [helper scripts/repo/check_no_ci.sh sha256 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c; test scripts/repo/tests/test_check_no_ci.sh sha256 d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   clean root (README + nested needle): 0 (=0)
+ok   planted .github/workflows/a.yml: 10 (=10)
+ok   report names .github/workflows/a.yml
+ok   planted .github/workflows/b.yaml: 10 (=10)
+ok   report names .github/workflows/b.yaml
+ok   planted .gitlab-ci.yml: 10 (=10)
+ok   report names .gitlab-ci.yml
+ok   planted .gitea/workflows/w.yml: 10 (=10)
+ok   report names .gitea/workflows/w.yml
+ok   planted .gitea/workflows/noext: 10 (=10)
+ok   report names .gitea/workflows/noext
+ok   planted .woodpecker.yml: 10 (=10)
+ok   report names .woodpecker.yml
+ok   planted .drone.yml: 10 (=10)
+ok   report names .drone.yml
+ok   planted .circleci/config.yml: 10 (=10)
+ok   report names .circleci/config.yml
+ok   planted .circleci/sub/x.txt: 10 (=10)
+ok   report names .circleci/sub/x.txt
+ok   nested pipeline files at a deeper path (never a root): 0 (=0)
+ok   git-ignored .drone.yml: 0 (=0)
+ok   tracked workflow file: 10 (=10)
+ok   two roots, second violates: 10 (=10)
+ok   violating root named
+ok   missing root: 20 (=20)
+ok   not a git repository: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is still refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no --root: 20 (=20)
+---- 30 ok, 0 failed
+exit=0
+
+== test_check_no_ci run 3  [helper scripts/repo/check_no_ci.sh sha256 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c; test scripts/repo/tests/test_check_no_ci.sh sha256 d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   clean root (README + nested needle): 0 (=0)
+ok   planted .github/workflows/a.yml: 10 (=10)
+ok   report names .github/workflows/a.yml
+ok   planted .github/workflows/b.yaml: 10 (=10)
+ok   report names .github/workflows/b.yaml
+ok   planted .gitlab-ci.yml: 10 (=10)
+ok   report names .gitlab-ci.yml
+ok   planted .gitea/workflows/w.yml: 10 (=10)
+ok   report names .gitea/workflows/w.yml
+ok   planted .gitea/workflows/noext: 10 (=10)
+ok   report names .gitea/workflows/noext
+ok   planted .woodpecker.yml: 10 (=10)
+ok   report names .woodpecker.yml
+ok   planted .drone.yml: 10 (=10)
+ok   report names .drone.yml
+ok   planted .circleci/config.yml: 10 (=10)
+ok   report names .circleci/config.yml
+ok   planted .circleci/sub/x.txt: 10 (=10)
+ok   report names .circleci/sub/x.txt
+ok   nested pipeline files at a deeper path (never a root): 0 (=0)
+ok   git-ignored .drone.yml: 0 (=0)
+ok   tracked workflow file: 10 (=10)
+ok   two roots, second violates: 10 (=10)
+ok   violating root named
+ok   missing root: 20 (=20)
+ok   not a git repository: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is still refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no --root: 20 (=20)
+---- 30 ok, 0 failed
+exit=0
+
+== test_check_revision_headers run 1  [helper scripts/repo/check_revision_headers.sh sha256 f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339; test scripts/repo/tests/test_check_revision_headers.sh sha256 8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   header table and both bold forms pass: 0 (=0)
+ok   no header: 10 (=10)
+ok   failing path named
+ok   Revision without Last modified: 10 (=10)
+ok   plain 'Revision:' lines are not the header form: 10 (=10)
+ok   header beyond the first 40 lines: 10 (=10)
+ok   class generated (docs/register): 0 (=0)
+ok   same file one directory away (class source): 10 (=10)
+ok   class legacy-collection (docs/issues ticket): 0 (=0)
+ok   class legacy-collection (legacy root report): 0 (=0)
+ok   a non-Markdown file is never judged: 0 (=0)
+ok   mixed list: 10 (=10)
+ok   passing file not named
+ok   declared but absent file (a deletion) is not judged: 0 (=0)
+ok   --measure exits 0 (=0)
+ok   --measure rows (no_header, rev_only, plain_line, deep, docs/other/Issues) (=5)
+ok   --measure key shape
+ok   --measure skips generated
+ok   --measure skips legacy-collection
+ok   path with .. : 20 (=20)
+ok   absolute path: 20 (=20)
+ok   path starting with a dash: 20 (=20)
+ok   unreadable --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+---- 25 ok, 0 failed
+exit=0
+
+== test_check_revision_headers run 2  [helper scripts/repo/check_revision_headers.sh sha256 f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339; test scripts/repo/tests/test_check_revision_headers.sh sha256 8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   header table and both bold forms pass: 0 (=0)
+ok   no header: 10 (=10)
+ok   failing path named
+ok   Revision without Last modified: 10 (=10)
+ok   plain 'Revision:' lines are not the header form: 10 (=10)
+ok   header beyond the first 40 lines: 10 (=10)
+ok   class generated (docs/register): 0 (=0)
+ok   same file one directory away (class source): 10 (=10)
+ok   class legacy-collection (docs/issues ticket): 0 (=0)
+ok   class legacy-collection (legacy root report): 0 (=0)
+ok   a non-Markdown file is never judged: 0 (=0)
+ok   mixed list: 10 (=10)
+ok   passing file not named
+ok   declared but absent file (a deletion) is not judged: 0 (=0)
+ok   --measure exits 0 (=0)
+ok   --measure rows (no_header, rev_only, plain_line, deep, docs/other/Issues) (=5)
+ok   --measure key shape
+ok   --measure skips generated
+ok   --measure skips legacy-collection
+ok   path with .. : 20 (=20)
+ok   absolute path: 20 (=20)
+ok   path starting with a dash: 20 (=20)
+ok   unreadable --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+---- 25 ok, 0 failed
+exit=0
+
+== test_check_revision_headers run 3  [helper scripts/repo/check_revision_headers.sh sha256 f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339; test scripts/repo/tests/test_check_revision_headers.sh sha256 8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   header table and both bold forms pass: 0 (=0)
+ok   no header: 10 (=10)
+ok   failing path named
+ok   Revision without Last modified: 10 (=10)
+ok   plain 'Revision:' lines are not the header form: 10 (=10)
+ok   header beyond the first 40 lines: 10 (=10)
+ok   class generated (docs/register): 0 (=0)
+ok   same file one directory away (class source): 10 (=10)
+ok   class legacy-collection (docs/issues ticket): 0 (=0)
+ok   class legacy-collection (legacy root report): 0 (=0)
+ok   a non-Markdown file is never judged: 0 (=0)
+ok   mixed list: 10 (=10)
+ok   passing file not named
+ok   declared but absent file (a deletion) is not judged: 0 (=0)
+ok   --measure exits 0 (=0)
+ok   --measure rows (no_header, rev_only, plain_line, deep, docs/other/Issues) (=5)
+ok   --measure key shape
+ok   --measure skips generated
+ok   --measure skips legacy-collection
+ok   path with .. : 20 (=20)
+ok   absolute path: 20 (=20)
+ok   path starting with a dash: 20 (=20)
+ok   unreadable --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+---- 25 ok, 0 failed
+exit=0
+
+== test_scope_check run 1  [helper scripts/repo/scope_check.sh sha256 b74a5ce1f66d17b8a9f45fc1704be863bd4bd05d6987b64135197a4d4c9630e2; test scripts/repo/tests/test_scope_check.sh sha256 2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   golden-true change set: 0 (=0)
+ok   build output build/output/x.bin: 13 (=13)
+ok   build output build/output/x.bin names the path
+ok   build output build/containers/go/x.bin: 13 (=13)
+ok   build output build/containers/go/x.bin names the path
+ok   build output catalog-web/build/x.js: 13 (=13)
+ok   build output catalog-web/build/x.js names the path
+ok   other database other/x.db: 13 (=13)
+ok   other database other/x.db names the path
+ok   an .env file: 13 (=13)
+ok   an .env file names the path
+ok   a nested .env.local: 13 (=13)
+ok   a nested .env.local names the path
+ok   .env.example: 0 (=0)
+ok   a path merely named build is not build output: 0 (=0)
+ok   a name merely containing db is not a database: 0 (=0)
+ok   pure append to the ledger: 0 (=0)
+ok   an earlier line changed: 13 (=13)
+ok   reason append_only
+ok   a line removed: 13 (=13)
+ok   the store deleted: 13 (=13)
+ok   rewritten store anchors.jsonl: 13 (=13)
+ok   rewritten store deferrals.jsonl: 13 (=13)
+ok   rewritten store flake_ledger.jsonl: 13 (=13)
+ok   a jsonl that is not a named store: 0 (=0)
+ok   blob whose sha256 is its name: 0 (=0)
+ok   blob named by another hash: 13 (=13)
+ok   reason blob_name
+ok   blob with a non-hash name: 13 (=13)
+ok   clean submodule: 0 (=0)
+ok   dirty submodule: 13 (=13)
+ok   reason dirty_submodule
+ok   dirty submodule with its exceptions row: 0 (=0)
+ok   row with a stale work-tree hash: 13 (=13)
+ok   row for another file: 13 (=13)
+ok   row of another kind: 13 (=13)
+ok   an untracked file in the submodule is also dirty: 13 (=13)
+ok   submodule clean again: 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   tab in a path: 20 (=20)
+ok   unreadable list: 20 (=20)
+ok   no --paths-from: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   root that is no repository: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no tracked file changed by the check (=0)
+---- 50 ok, 0 failed
+exit=0
+
+== test_scope_check run 2  [helper scripts/repo/scope_check.sh sha256 b74a5ce1f66d17b8a9f45fc1704be863bd4bd05d6987b64135197a4d4c9630e2; test scripts/repo/tests/test_scope_check.sh sha256 2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   golden-true change set: 0 (=0)
+ok   build output build/output/x.bin: 13 (=13)
+ok   build output build/output/x.bin names the path
+ok   build output build/containers/go/x.bin: 13 (=13)
+ok   build output build/containers/go/x.bin names the path
+ok   build output catalog-web/build/x.js: 13 (=13)
+ok   build output catalog-web/build/x.js names the path
+ok   other database other/x.db: 13 (=13)
+ok   other database other/x.db names the path
+ok   an .env file: 13 (=13)
+ok   an .env file names the path
+ok   a nested .env.local: 13 (=13)
+ok   a nested .env.local names the path
+ok   .env.example: 0 (=0)
+ok   a path merely named build is not build output: 0 (=0)
+ok   a name merely containing db is not a database: 0 (=0)
+ok   pure append to the ledger: 0 (=0)
+ok   an earlier line changed: 13 (=13)
+ok   reason append_only
+ok   a line removed: 13 (=13)
+ok   the store deleted: 13 (=13)
+ok   rewritten store anchors.jsonl: 13 (=13)
+ok   rewritten store deferrals.jsonl: 13 (=13)
+ok   rewritten store flake_ledger.jsonl: 13 (=13)
+ok   a jsonl that is not a named store: 0 (=0)
+ok   blob whose sha256 is its name: 0 (=0)
+ok   blob named by another hash: 13 (=13)
+ok   reason blob_name
+ok   blob with a non-hash name: 13 (=13)
+ok   clean submodule: 0 (=0)
+ok   dirty submodule: 13 (=13)
+ok   reason dirty_submodule
+ok   dirty submodule with its exceptions row: 0 (=0)
+ok   row with a stale work-tree hash: 13 (=13)
+ok   row for another file: 13 (=13)
+ok   row of another kind: 13 (=13)
+ok   an untracked file in the submodule is also dirty: 13 (=13)
+ok   submodule clean again: 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   tab in a path: 20 (=20)
+ok   unreadable list: 20 (=20)
+ok   no --paths-from: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   root that is no repository: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no tracked file changed by the check (=0)
+---- 50 ok, 0 failed
+exit=0
+
+== test_scope_check run 3  [helper scripts/repo/scope_check.sh sha256 b74a5ce1f66d17b8a9f45fc1704be863bd4bd05d6987b64135197a4d4c9630e2; test scripts/repo/tests/test_scope_check.sh sha256 2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   golden-true change set: 0 (=0)
+ok   build output build/output/x.bin: 13 (=13)
+ok   build output build/output/x.bin names the path
+ok   build output build/containers/go/x.bin: 13 (=13)
+ok   build output build/containers/go/x.bin names the path
+ok   build output catalog-web/build/x.js: 13 (=13)
+ok   build output catalog-web/build/x.js names the path
+ok   other database other/x.db: 13 (=13)
+ok   other database other/x.db names the path
+ok   an .env file: 13 (=13)
+ok   an .env file names the path
+ok   a nested .env.local: 13 (=13)
+ok   a nested .env.local names the path
+ok   .env.example: 0 (=0)
+ok   a path merely named build is not build output: 0 (=0)
+ok   a name merely containing db is not a database: 0 (=0)
+ok   pure append to the ledger: 0 (=0)
+ok   an earlier line changed: 13 (=13)
+ok   reason append_only
+ok   a line removed: 13 (=13)
+ok   the store deleted: 13 (=13)
+ok   rewritten store anchors.jsonl: 13 (=13)
+ok   rewritten store deferrals.jsonl: 13 (=13)
+ok   rewritten store flake_ledger.jsonl: 13 (=13)
+ok   a jsonl that is not a named store: 0 (=0)
+ok   blob whose sha256 is its name: 0 (=0)
+ok   blob named by another hash: 13 (=13)
+ok   reason blob_name
+ok   blob with a non-hash name: 13 (=13)
+ok   clean submodule: 0 (=0)
+ok   dirty submodule: 13 (=13)
+ok   reason dirty_submodule
+ok   dirty submodule with its exceptions row: 0 (=0)
+ok   row with a stale work-tree hash: 13 (=13)
+ok   row for another file: 13 (=13)
+ok   row of another kind: 13 (=13)
+ok   an untracked file in the submodule is also dirty: 13 (=13)
+ok   submodule clean again: 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   tab in a path: 20 (=20)
+ok   unreadable list: 20 (=20)
+ok   no --paths-from: 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   root that is no repository: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no tracked file changed by the check (=0)
+---- 50 ok, 0 failed
+exit=0
+
+== test_validate_cheap run 1  [helper scripts/repo/validate_cheap.sh sha256 b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10; test scripts/repo/tests/test_validate_cheap.sh sha256 f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   shell_parse clean: exit (=0)
+ok   shell_parse clean: no byte of the tree changed (=9d098dd40c1aad41540d5d130c37d0d0f1256697cc0287e4c3f1da5716b459b2)
+ok   shell_parse bad: exit (=10)
+ok   shell_parse bad: report
+ok   shell_parse bad: no byte of the tree changed (=e8d8c1d02513a1d750aba8d204ea7949358b04114bb155e931996c61fce6943f)
+ok   merge_conflict clean: exit (=0)
+ok   merge_conflict clean: no byte of the tree changed (=8d3085e919a7f7fe15148119111762ced9351b3dc7919f10fed6dfbe3bf25000)
+ok   merge_conflict bad: exit (=10)
+ok   merge_conflict bad: report
+ok   merge_conflict bad: no byte of the tree changed (=79a2f877d53cf10a233931371060474b807fd34206e507b0171bfabeba516d9c)
+ok   trailing_whitespace clean: exit (=0)
+ok   trailing_whitespace clean: no byte of the tree changed (=8229a240ff2667f233b23786dc367d08cb4c3b9f8927cee535071ea22e0c3397)
+ok   trailing_whitespace bad: exit (=10)
+ok   trailing_whitespace bad: report
+ok   trailing_whitespace bad: no byte of the tree changed (=8bf69522eab3d662afbeae70d92d40510c1da12ab2405a026eee2779158d5742)
+ok   end_of_file clean: exit (=0)
+ok   end_of_file clean: no byte of the tree changed (=d1220e1cd2508636d8ca15fda904fb92eb718dd6ff139bca98cc1489d6c2e294)
+ok   end_of_file missing newline: exit (=10)
+ok   end_of_file missing newline: report
+ok   end_of_file missing newline: no byte of the tree changed (=835e050be9854ea4f04d4da9f27d2fc17805a0786de0a046487f145b4d72a721)
+ok   end_of_file extra blank lines: exit (=10)
+ok   end_of_file extra blank lines: report
+ok   end_of_file extra blank lines: no byte of the tree changed (=2408a155d99ccb5a315e29f07122843708bc19b9706a8d9346433df2ce8a1c69)
+ok   check_yaml clean: exit (=0)
+ok   check_yaml clean: no byte of the tree changed (=8c451fbe19308f29e1d382efcdc8f7e6328bed3c6be8f9d151c787e7df3e050c)
+ok   check_yaml bad: exit (=10)
+ok   check_yaml bad: report
+ok   check_yaml bad: no byte of the tree changed (=10b9f9cc3b4b5a654d46ebb213d2ecaa4d5d85e37f4e13760dc3a5ef0efba14c)
+ok   check_json clean: exit (=0)
+ok   check_json clean: no byte of the tree changed (=8b79746cd4409974d3b71d565b0c08a02a71999ed9da3e591f9d74b61eb12bb3)
+ok   check_json bad: exit (=10)
+ok   check_json bad: report
+ok   check_json bad: no byte of the tree changed (=15b79d368b99730a26d3f545cca871c1778bcecd421195774695559cf2162b98)
+ok   revision_header clean (new md file): exit (=0)
+ok   revision_header clean (new md file): no byte of the tree changed (=3167bebdb35c5b7e884e760eb5faa5562d28f9bb337dd4fa73d335994bf5790e)
+ok   revision_header bad (new md file): exit (=10)
+ok   revision_header bad (new md file): report
+ok   revision_header bad (new md file): no byte of the tree changed (=f5cb3bab6a60d67e16d5754d60b441258aa50e4347ced5b25922a5c38187a0e7)
+ok   large_file above the bound: exit (=10)
+ok   large_file named
+ok   size_alarm above 75% of the bound: exit 0 (=0)
+ok   size_alarm reported
+ok   binary file with trailing blanks: 0 (=0)
+ok   left out by the filter
+ok   bytes unchanged after a failing run (=29e8d994ead974cfcffb1204742ccb4e3067d99e2a9973608fdb24d3d7a56dce)
+ok   class generated: trailing space, extra blank, no header all skipped: 0 (=0)
+ok   same content outside docs/register (source): 10 (=10)
+ok   no_ci: planted workflow file, unrelated declared file: 10 (=10)
+ok   no_ci named
+ok   no_ci clean: 0 (=0)
+ok   detect_landmines (changeset scope) fails: 10 (=10)
+ok   detect_landmines named
+ok   deferred rows are listed, never run
+ok   deferred rows: exit 0 (=0)
+ok   a ratchet row (not implemented in this slice) refuses: 20 (=20)
+ok   reason named
+ok   a files-scope row with no class rows: 20 (check_unknown) (=20)
+ok   check_unknown named
+ok   a registry command outside the code root (..): 20 (=20)
+ok   a registry command that does not exist: 20 (=20)
+ok   check_command_absent
+ok   registry unreadable: 20 (=20)
+ok   a differing unapproved row, nothing else failing: 14 (=14)
+ok   check_pending_release named
+ok   a failing check and a pending row in one run: 10 (never 14) (=10)
+ok   both named: the refusal
+ok   both named: the pending row
+ok   the pending row is not run (shell error in a declared file): 14 (=14)
+ok   no row differs: the check runs and fails: 10 (=10)
+ok   a row the approved copy lacks is pending: 14 (=14)
+ok   named
+ok   that row declared by the change set runs (deferred row: nothing to run): 0 (=0)
+ok   unreviewed table change: 10 (=10)
+ok   class_table_unreviewed
+ok   gen/x.txt judged with the HEAD tables
+ok   table change with GO declared in the change set: 0 (=0)
+ok   table change with GO in HEAD: 0 (=0)
+ok   verdict NO-GO in HEAD: 10 (=10)
+ok   unreviewed
+ok   verdict GO with blocking findings in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   verdict NO-GO (even with 0 blocking findings) in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   held path under a held table change: 0 (=0)
+ok   no class_table_unreviewed when held
+ok   unheld path the held table would admit: 20 (=20)
+ok   table_admits_unheld_path
+ok   names the path and the check
+ok   unheld path failing under both tables: 10 (=10)
+ok   not table_admits
+ok   unheld path that passes under the HEAD tables is never refused: 0 (=0)
+ok   edited legacy root report, row kept: 10 (=10)
+ok   legacy_row_not_dropped names the row
+ok   legacy root report declared unchanged: 0 (=0)
+ok   an edited docs/issues ticket (glob row): 0 (=0)
+ok   row dropped by a reviewed table change, header added: 0 (=0)
+ok   row dropped but no header: 10 (class source now) (=10)
+ok   revision_header
+ok   unsafe declared path '../x': 20 (=20)
+ok   unsafe declared path '/abs': 20 (=20)
+ok   unsafe declared path '-n': 20 (=20)
+ok   unsafe declared path 'a/../b': 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   no --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+---- 106 ok, 0 failed
+exit=0
+
+== test_validate_cheap run 2  [helper scripts/repo/validate_cheap.sh sha256 b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10; test scripts/repo/tests/test_validate_cheap.sh sha256 f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   shell_parse clean: exit (=0)
+ok   shell_parse clean: no byte of the tree changed (=9d098dd40c1aad41540d5d130c37d0d0f1256697cc0287e4c3f1da5716b459b2)
+ok   shell_parse bad: exit (=10)
+ok   shell_parse bad: report
+ok   shell_parse bad: no byte of the tree changed (=e8d8c1d02513a1d750aba8d204ea7949358b04114bb155e931996c61fce6943f)
+ok   merge_conflict clean: exit (=0)
+ok   merge_conflict clean: no byte of the tree changed (=8d3085e919a7f7fe15148119111762ced9351b3dc7919f10fed6dfbe3bf25000)
+ok   merge_conflict bad: exit (=10)
+ok   merge_conflict bad: report
+ok   merge_conflict bad: no byte of the tree changed (=79a2f877d53cf10a233931371060474b807fd34206e507b0171bfabeba516d9c)
+ok   trailing_whitespace clean: exit (=0)
+ok   trailing_whitespace clean: no byte of the tree changed (=8229a240ff2667f233b23786dc367d08cb4c3b9f8927cee535071ea22e0c3397)
+ok   trailing_whitespace bad: exit (=10)
+ok   trailing_whitespace bad: report
+ok   trailing_whitespace bad: no byte of the tree changed (=8bf69522eab3d662afbeae70d92d40510c1da12ab2405a026eee2779158d5742)
+ok   end_of_file clean: exit (=0)
+ok   end_of_file clean: no byte of the tree changed (=d1220e1cd2508636d8ca15fda904fb92eb718dd6ff139bca98cc1489d6c2e294)
+ok   end_of_file missing newline: exit (=10)
+ok   end_of_file missing newline: report
+ok   end_of_file missing newline: no byte of the tree changed (=835e050be9854ea4f04d4da9f27d2fc17805a0786de0a046487f145b4d72a721)
+ok   end_of_file extra blank lines: exit (=10)
+ok   end_of_file extra blank lines: report
+ok   end_of_file extra blank lines: no byte of the tree changed (=2408a155d99ccb5a315e29f07122843708bc19b9706a8d9346433df2ce8a1c69)
+ok   check_yaml clean: exit (=0)
+ok   check_yaml clean: no byte of the tree changed (=8c451fbe19308f29e1d382efcdc8f7e6328bed3c6be8f9d151c787e7df3e050c)
+ok   check_yaml bad: exit (=10)
+ok   check_yaml bad: report
+ok   check_yaml bad: no byte of the tree changed (=10b9f9cc3b4b5a654d46ebb213d2ecaa4d5d85e37f4e13760dc3a5ef0efba14c)
+ok   check_json clean: exit (=0)
+ok   check_json clean: no byte of the tree changed (=8b79746cd4409974d3b71d565b0c08a02a71999ed9da3e591f9d74b61eb12bb3)
+ok   check_json bad: exit (=10)
+ok   check_json bad: report
+ok   check_json bad: no byte of the tree changed (=15b79d368b99730a26d3f545cca871c1778bcecd421195774695559cf2162b98)
+ok   revision_header clean (new md file): exit (=0)
+ok   revision_header clean (new md file): no byte of the tree changed (=3167bebdb35c5b7e884e760eb5faa5562d28f9bb337dd4fa73d335994bf5790e)
+ok   revision_header bad (new md file): exit (=10)
+ok   revision_header bad (new md file): report
+ok   revision_header bad (new md file): no byte of the tree changed (=f5cb3bab6a60d67e16d5754d60b441258aa50e4347ced5b25922a5c38187a0e7)
+ok   large_file above the bound: exit (=10)
+ok   large_file named
+ok   size_alarm above 75% of the bound: exit 0 (=0)
+ok   size_alarm reported
+ok   binary file with trailing blanks: 0 (=0)
+ok   left out by the filter
+ok   bytes unchanged after a failing run (=29e8d994ead974cfcffb1204742ccb4e3067d99e2a9973608fdb24d3d7a56dce)
+ok   class generated: trailing space, extra blank, no header all skipped: 0 (=0)
+ok   same content outside docs/register (source): 10 (=10)
+ok   no_ci: planted workflow file, unrelated declared file: 10 (=10)
+ok   no_ci named
+ok   no_ci clean: 0 (=0)
+ok   detect_landmines (changeset scope) fails: 10 (=10)
+ok   detect_landmines named
+ok   deferred rows are listed, never run
+ok   deferred rows: exit 0 (=0)
+ok   a ratchet row (not implemented in this slice) refuses: 20 (=20)
+ok   reason named
+ok   a files-scope row with no class rows: 20 (check_unknown) (=20)
+ok   check_unknown named
+ok   a registry command outside the code root (..): 20 (=20)
+ok   a registry command that does not exist: 20 (=20)
+ok   check_command_absent
+ok   registry unreadable: 20 (=20)
+ok   a differing unapproved row, nothing else failing: 14 (=14)
+ok   check_pending_release named
+ok   a failing check and a pending row in one run: 10 (never 14) (=10)
+ok   both named: the refusal
+ok   both named: the pending row
+ok   the pending row is not run (shell error in a declared file): 14 (=14)
+ok   no row differs: the check runs and fails: 10 (=10)
+ok   a row the approved copy lacks is pending: 14 (=14)
+ok   named
+ok   that row declared by the change set runs (deferred row: nothing to run): 0 (=0)
+ok   unreviewed table change: 10 (=10)
+ok   class_table_unreviewed
+ok   gen/x.txt judged with the HEAD tables
+ok   table change with GO declared in the change set: 0 (=0)
+ok   table change with GO in HEAD: 0 (=0)
+ok   verdict NO-GO in HEAD: 10 (=10)
+ok   unreviewed
+ok   verdict GO with blocking findings in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   verdict NO-GO (even with 0 blocking findings) in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   held path under a held table change: 0 (=0)
+ok   no class_table_unreviewed when held
+ok   unheld path the held table would admit: 20 (=20)
+ok   table_admits_unheld_path
+ok   names the path and the check
+ok   unheld path failing under both tables: 10 (=10)
+ok   not table_admits
+ok   unheld path that passes under the HEAD tables is never refused: 0 (=0)
+ok   edited legacy root report, row kept: 10 (=10)
+ok   legacy_row_not_dropped names the row
+ok   legacy root report declared unchanged: 0 (=0)
+ok   an edited docs/issues ticket (glob row): 0 (=0)
+ok   row dropped by a reviewed table change, header added: 0 (=0)
+ok   row dropped but no header: 10 (class source now) (=10)
+ok   revision_header
+ok   unsafe declared path '../x': 20 (=20)
+ok   unsafe declared path '/abs': 20 (=20)
+ok   unsafe declared path '-n': 20 (=20)
+ok   unsafe declared path 'a/../b': 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   no --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+---- 106 ok, 0 failed
+exit=0
+
+== test_validate_cheap run 3  [helper scripts/repo/validate_cheap.sh sha256 b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10; test scripts/repo/tests/test_validate_cheap.sh sha256 f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   shell_parse clean: exit (=0)
+ok   shell_parse clean: no byte of the tree changed (=9d098dd40c1aad41540d5d130c37d0d0f1256697cc0287e4c3f1da5716b459b2)
+ok   shell_parse bad: exit (=10)
+ok   shell_parse bad: report
+ok   shell_parse bad: no byte of the tree changed (=e8d8c1d02513a1d750aba8d204ea7949358b04114bb155e931996c61fce6943f)
+ok   merge_conflict clean: exit (=0)
+ok   merge_conflict clean: no byte of the tree changed (=8d3085e919a7f7fe15148119111762ced9351b3dc7919f10fed6dfbe3bf25000)
+ok   merge_conflict bad: exit (=10)
+ok   merge_conflict bad: report
+ok   merge_conflict bad: no byte of the tree changed (=79a2f877d53cf10a233931371060474b807fd34206e507b0171bfabeba516d9c)
+ok   trailing_whitespace clean: exit (=0)
+ok   trailing_whitespace clean: no byte of the tree changed (=8229a240ff2667f233b23786dc367d08cb4c3b9f8927cee535071ea22e0c3397)
+ok   trailing_whitespace bad: exit (=10)
+ok   trailing_whitespace bad: report
+ok   trailing_whitespace bad: no byte of the tree changed (=8bf69522eab3d662afbeae70d92d40510c1da12ab2405a026eee2779158d5742)
+ok   end_of_file clean: exit (=0)
+ok   end_of_file clean: no byte of the tree changed (=d1220e1cd2508636d8ca15fda904fb92eb718dd6ff139bca98cc1489d6c2e294)
+ok   end_of_file missing newline: exit (=10)
+ok   end_of_file missing newline: report
+ok   end_of_file missing newline: no byte of the tree changed (=835e050be9854ea4f04d4da9f27d2fc17805a0786de0a046487f145b4d72a721)
+ok   end_of_file extra blank lines: exit (=10)
+ok   end_of_file extra blank lines: report
+ok   end_of_file extra blank lines: no byte of the tree changed (=2408a155d99ccb5a315e29f07122843708bc19b9706a8d9346433df2ce8a1c69)
+ok   check_yaml clean: exit (=0)
+ok   check_yaml clean: no byte of the tree changed (=8c451fbe19308f29e1d382efcdc8f7e6328bed3c6be8f9d151c787e7df3e050c)
+ok   check_yaml bad: exit (=10)
+ok   check_yaml bad: report
+ok   check_yaml bad: no byte of the tree changed (=10b9f9cc3b4b5a654d46ebb213d2ecaa4d5d85e37f4e13760dc3a5ef0efba14c)
+ok   check_json clean: exit (=0)
+ok   check_json clean: no byte of the tree changed (=8b79746cd4409974d3b71d565b0c08a02a71999ed9da3e591f9d74b61eb12bb3)
+ok   check_json bad: exit (=10)
+ok   check_json bad: report
+ok   check_json bad: no byte of the tree changed (=15b79d368b99730a26d3f545cca871c1778bcecd421195774695559cf2162b98)
+ok   revision_header clean (new md file): exit (=0)
+ok   revision_header clean (new md file): no byte of the tree changed (=3167bebdb35c5b7e884e760eb5faa5562d28f9bb337dd4fa73d335994bf5790e)
+ok   revision_header bad (new md file): exit (=10)
+ok   revision_header bad (new md file): report
+ok   revision_header bad (new md file): no byte of the tree changed (=f5cb3bab6a60d67e16d5754d60b441258aa50e4347ced5b25922a5c38187a0e7)
+ok   large_file above the bound: exit (=10)
+ok   large_file named
+ok   size_alarm above 75% of the bound: exit 0 (=0)
+ok   size_alarm reported
+ok   binary file with trailing blanks: 0 (=0)
+ok   left out by the filter
+ok   bytes unchanged after a failing run (=29e8d994ead974cfcffb1204742ccb4e3067d99e2a9973608fdb24d3d7a56dce)
+ok   class generated: trailing space, extra blank, no header all skipped: 0 (=0)
+ok   same content outside docs/register (source): 10 (=10)
+ok   no_ci: planted workflow file, unrelated declared file: 10 (=10)
+ok   no_ci named
+ok   no_ci clean: 0 (=0)
+ok   detect_landmines (changeset scope) fails: 10 (=10)
+ok   detect_landmines named
+ok   deferred rows are listed, never run
+ok   deferred rows: exit 0 (=0)
+ok   a ratchet row (not implemented in this slice) refuses: 20 (=20)
+ok   reason named
+ok   a files-scope row with no class rows: 20 (check_unknown) (=20)
+ok   check_unknown named
+ok   a registry command outside the code root (..): 20 (=20)
+ok   a registry command that does not exist: 20 (=20)
+ok   check_command_absent
+ok   registry unreadable: 20 (=20)
+ok   a differing unapproved row, nothing else failing: 14 (=14)
+ok   check_pending_release named
+ok   a failing check and a pending row in one run: 10 (never 14) (=10)
+ok   both named: the refusal
+ok   both named: the pending row
+ok   the pending row is not run (shell error in a declared file): 14 (=14)
+ok   no row differs: the check runs and fails: 10 (=10)
+ok   a row the approved copy lacks is pending: 14 (=14)
+ok   named
+ok   that row declared by the change set runs (deferred row: nothing to run): 0 (=0)
+ok   unreviewed table change: 10 (=10)
+ok   class_table_unreviewed
+ok   gen/x.txt judged with the HEAD tables
+ok   table change with GO declared in the change set: 0 (=0)
+ok   table change with GO in HEAD: 0 (=0)
+ok   verdict NO-GO in HEAD: 10 (=10)
+ok   unreviewed
+ok   verdict GO with blocking findings in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   verdict NO-GO (even with 0 blocking findings) in HEAD is no review form: 10 (=10)
+ok   unreviewed
+ok   held path under a held table change: 0 (=0)
+ok   no class_table_unreviewed when held
+ok   unheld path the held table would admit: 20 (=20)
+ok   table_admits_unheld_path
+ok   names the path and the check
+ok   unheld path failing under both tables: 10 (=10)
+ok   not table_admits
+ok   unheld path that passes under the HEAD tables is never refused: 0 (=0)
+ok   edited legacy root report, row kept: 10 (=10)
+ok   legacy_row_not_dropped names the row
+ok   legacy root report declared unchanged: 0 (=0)
+ok   an edited docs/issues ticket (glob row): 0 (=0)
+ok   row dropped by a reviewed table change, header added: 0 (=0)
+ok   row dropped but no header: 10 (class source now) (=10)
+ok   revision_header
+ok   unsafe declared path '../x': 20 (=20)
+ok   unsafe declared path '/abs': 20 (=20)
+ok   unsafe declared path '-n': 20 (=20)
+ok   unsafe declared path 'a/../b': 20 (=20)
+ok   root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   no --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+---- 106 ok, 0 failed
+exit=0
+
+== test_commit_recursive run 1  [helper scripts/repo/commit_recursive.sh sha256 2bfdc51a7db80ae3a3c8601543dc172191ad1acd44254ac2ab17dd3aea299826; test scripts/repo/tests/test_commit_recursive.sh sha256 41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   commit of two explicit paths: 0 (=0)
+ok   exactly the declared paths are in the commit (=a.txt b.txt )
+ok   an undeclared staged file stays staged, uncommitted (=A  staged.txt)
+ok   an undeclared file stays untracked (=?? other.txt)
+ok   attribution trailer
+ok   CPA-Run trailer
+ok   subject kept
+ok   no Deferred-Gates line without a deferral
+ok   commits.tsv row (repository key, sha, run id) (=.	cf4c0a034692e5cf37e554e6a8a668ffb9763025	run1)
+ok   second commit: 0 (=0)
+ok   Deferred-Gates line from the run directory
+ok   two rows now (=2)
+ok   first commit with foreign list: 0 (=0)
+ok   ancestor named
+ok   non-ancestor not named
+ok   second commit of the run names no foreign commit
+ok   a later commit of the run does not name a new foreign commit either
+ok   a commit already named by an earlier Foreign-Commit line is not named again
+ok   a foreign entry that is no sha: 20 (=20)
+ok   held and unheld paths: 0 (=0)
+ok   three commits made (=4)
+ok   first commit holds the unheld path (=u.txt)
+ok   second commit Awaits-Review V1
+ok   third commit Awaits-Review V2
+ok   unheld commit has no Awaits-Review
+ok   three rows in commit order (=14bb4977d68ca4df33fb6c84bf7650193e79647a 53cda542dfb2d31f469e56281ffc00307083edf1 567bb5ffca0c19b8b9f26861bd33133bd7e90292 )
+ok   path inside a submodule: 20 (=20)
+ok   reason path_in_submodule
+ok   the submodule HEAD is unchanged (=866b17a5b205d75e8a0477e70ad7095d7b4fc462)
+ok   the gitlink path itself (a pin move): 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs/x': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   path that is neither tracked nor present: 20 (=20)
+ok   run id with a blank: 20 (=20)
+ok   run id starting with a dash: 20 (=20)
+ok   no --message: 20 (=20)
+ok   newline in the attribution trailer: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no commit made when the run directory is absent (=1)
+ok   not a repository: 20 (=20)
+ok   repository path starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no paths: 20 (=20)
+ok   unsafe verdict path in the held table: 20 (=20)
+ok   no commit was made by an unsafe path (=1)
+ok   no row was written by any refusal (=0)
+ok   no commit was made by any refusal (=1)
+ok   commit refused by a hook: 20 (=20)
+ok   no row after a refused commit (=0)
+ok   the helper was killed (137) after its first commit (=137)
+ok   the first commit exists (=2)
+ok   its row survives the kill (=c0447ada9e45c972bf49adb6c36b76043e73bbf2)
+---- 55 ok, 0 failed
+exit=0
+
+== test_commit_recursive run 2  [helper scripts/repo/commit_recursive.sh sha256 2bfdc51a7db80ae3a3c8601543dc172191ad1acd44254ac2ab17dd3aea299826; test scripts/repo/tests/test_commit_recursive.sh sha256 41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   commit of two explicit paths: 0 (=0)
+ok   exactly the declared paths are in the commit (=a.txt b.txt )
+ok   an undeclared staged file stays staged, uncommitted (=A  staged.txt)
+ok   an undeclared file stays untracked (=?? other.txt)
+ok   attribution trailer
+ok   CPA-Run trailer
+ok   subject kept
+ok   no Deferred-Gates line without a deferral
+ok   commits.tsv row (repository key, sha, run id) (=.	551e2603256087677836bdd71e85904afb390459	run1)
+ok   second commit: 0 (=0)
+ok   Deferred-Gates line from the run directory
+ok   two rows now (=2)
+ok   first commit with foreign list: 0 (=0)
+ok   ancestor named
+ok   non-ancestor not named
+ok   second commit of the run names no foreign commit
+ok   a later commit of the run does not name a new foreign commit either
+ok   a commit already named by an earlier Foreign-Commit line is not named again
+ok   a foreign entry that is no sha: 20 (=20)
+ok   held and unheld paths: 0 (=0)
+ok   three commits made (=4)
+ok   first commit holds the unheld path (=u.txt)
+ok   second commit Awaits-Review V1
+ok   third commit Awaits-Review V2
+ok   unheld commit has no Awaits-Review
+ok   three rows in commit order (=76cd7ad1dc19fb02f7dcf97557ab0ff925918b7f b5b2cf6c4c20f8db6bbac8171b9c12426463bbb2 74e68be23a75378da9a94cd1439cd074446c24ae )
+ok   path inside a submodule: 20 (=20)
+ok   reason path_in_submodule
+ok   the submodule HEAD is unchanged (=56524542ba9e1e87316dc9c78d5f5541dce7e758)
+ok   the gitlink path itself (a pin move): 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs/x': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   path that is neither tracked nor present: 20 (=20)
+ok   run id with a blank: 20 (=20)
+ok   run id starting with a dash: 20 (=20)
+ok   no --message: 20 (=20)
+ok   newline in the attribution trailer: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no commit made when the run directory is absent (=1)
+ok   not a repository: 20 (=20)
+ok   repository path starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no paths: 20 (=20)
+ok   unsafe verdict path in the held table: 20 (=20)
+ok   no commit was made by an unsafe path (=1)
+ok   no row was written by any refusal (=0)
+ok   no commit was made by any refusal (=1)
+ok   commit refused by a hook: 20 (=20)
+ok   no row after a refused commit (=0)
+ok   the helper was killed (137) after its first commit (=137)
+ok   the first commit exists (=2)
+ok   its row survives the kill (=1d8baf537aa8b04d24abf0ec0b27507a75dc225a)
+---- 55 ok, 0 failed
+exit=0
+
+== test_commit_recursive run 3  [helper scripts/repo/commit_recursive.sh sha256 2bfdc51a7db80ae3a3c8601543dc172191ad1acd44254ac2ab17dd3aea299826; test scripts/repo/tests/test_commit_recursive.sh sha256 41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   commit of two explicit paths: 0 (=0)
+ok   exactly the declared paths are in the commit (=a.txt b.txt )
+ok   an undeclared staged file stays staged, uncommitted (=A  staged.txt)
+ok   an undeclared file stays untracked (=?? other.txt)
+ok   attribution trailer
+ok   CPA-Run trailer
+ok   subject kept
+ok   no Deferred-Gates line without a deferral
+ok   commits.tsv row (repository key, sha, run id) (=.	c76ae29ad622f0e9e260f8b5ff0c80c7826ca116	run1)
+ok   second commit: 0 (=0)
+ok   Deferred-Gates line from the run directory
+ok   two rows now (=2)
+ok   first commit with foreign list: 0 (=0)
+ok   ancestor named
+ok   non-ancestor not named
+ok   second commit of the run names no foreign commit
+ok   a later commit of the run does not name a new foreign commit either
+ok   a commit already named by an earlier Foreign-Commit line is not named again
+ok   a foreign entry that is no sha: 20 (=20)
+ok   held and unheld paths: 0 (=0)
+ok   three commits made (=4)
+ok   first commit holds the unheld path (=u.txt)
+ok   second commit Awaits-Review V1
+ok   third commit Awaits-Review V2
+ok   unheld commit has no Awaits-Review
+ok   three rows in commit order (=b60e57ab8ce9168c4e2dc230acae974482c0f7a8 1213fca7402559ed58af2ac1425012b78814bc6a ebd53ec906e8869773f55ad108d643bb9162cd80 )
+ok   path inside a submodule: 20 (=20)
+ok   reason path_in_submodule
+ok   the submodule HEAD is unchanged (=96dcf84d84f708c0406426a77a0d09a8552d70d8)
+ok   the gitlink path itself (a pin move): 0 (=0)
+ok   unsafe path '../x': 20 (=20)
+ok   unsafe path '/abs/x': 20 (=20)
+ok   unsafe path '-n': 20 (=20)
+ok   unsafe path 'a/../b': 20 (=20)
+ok   path that is neither tracked nor present: 20 (=20)
+ok   run id with a blank: 20 (=20)
+ok   run id starting with a dash: 20 (=20)
+ok   no --message: 20 (=20)
+ok   newline in the attribution trailer: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no commit made when the run directory is absent (=1)
+ok   not a repository: 20 (=20)
+ok   repository path starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   no paths: 20 (=20)
+ok   unsafe verdict path in the held table: 20 (=20)
+ok   no commit was made by an unsafe path (=1)
+ok   no row was written by any refusal (=0)
+ok   no commit was made by any refusal (=1)
+ok   commit refused by a hook: 20 (=20)
+ok   no row after a refused commit (=0)
+ok   the helper was killed (137) after its first commit (=137)
+ok   the first commit exists (=2)
+ok   its row survives the kill (=f275fb52575a67cdecad6d048c503d825b813c10)
+---- 55 ok, 0 failed
+exit=0
+
+== test_push_recursive run 1  [helper scripts/repo/push_recursive.sh sha256 4b34913f8363ede90e9e80ea7fe27b8daca665d4b0c78d349e169f206306fd60; test scripts/repo/tests/test_push_recursive.sh sha256 5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   two unheld CPA commits: 0 (=0)
+ok   r1 holds the tip (=e4fc7ada2913a7542e7fc61895e504e485a90b20)
+ok   r2 holds the tip (=e4fc7ada2913a7542e7fc61895e504e485a90b20)
+ok   report names each push
+ok   nothing outgoing: 0 (=0)
+ok   already holds the tip, no push call
+ok   trailer-less commit: 20 (=20)
+ok   names the commit
+ok   reason
+ok   no remote received anything (=72b81cf9a7ac052000f50cdff65463ca67893f3372b81cf9a7ac052000f50cdff65463ca67893f33)
+ok   copied CPA-Run trailer, no commits.tsv row: 20 (=20)
+ok   r1 unchanged (=72b81cf9a7ac052000f50cdff65463ca67893f33)
+ok   a CPA commit of another run, recorded in that run's commits.tsv: 0 (=0)
+ok   commits.tsv row for another sha: 20 (=20)
+ok   GO committed in HEAD, run listed: exit (=0)
+ok   held commit pushed (=a37b99081537b048b4c7b4d56e5d52896683bb40)
+ok   GO covering another run only: exit (=14)
+ok   held commit stays held (r1 at the unheld prefix) (=6cd62ecdc2af725b6aa26442f624ec062b13f224)
+ok   HELD line
+ok   NO-GO verdict: exit (=14)
+ok   GO with blocking findings: exit (=14)
+ok   verdict failing the schema (no model/effort): exit (=14)
+ok   verdict file absent: exit (=14)
+ok   GO only uncommitted in the working tree: stays held (14) (=14)
+ok   unheld, held-and-released, unheld: all pushed (=abb197981de8415f6483fe783549097714597b5d)
+ok   unheld, held, unheld: only the prefix below the first unreleased commit (=bc4e7765c24102a6c5410c908fd6e42bc13186a0)
+ok   two unreleased held commits: the prefix stops below the FIRST (=7fb150b4738bae0f4465949abac11bea4c6ad4ad)
+ok   unsafe verdict path in an Awaits-Review line stays held, never read: 14 (=14)
+ok   merge whose verdict does not cover its run: 14 (=14)
+ok   no remote received the commit below the merge (r1) (=de9cba40d8a79e063a3362a957e9afb5201f18d1)
+ok   no push to r2 either (=de9cba40d8a79e063a3362a957e9afb5201f18d1)
+ok   merge released by a GO that covers its run: 0 (=0)
+ok   merge tip pushed (=55185003d28d32634e4d825f198bc30c0413762c)
+ok   one remote moved: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r2 unchanged (=cf2b1661ad920dc75b388b9bfd987a9f39277b67)
+ok   r1 received the tip (=e386fb3e090901e251e2a74bdea613925eec5654)
+ok   remote without the branch: 0 (=0)
+ok   r3 received the tip (=71426b8c7063d1c5cfe37c6ded4500c77acb99d0)
+ok   unreachable remote: 11 (=11)
+ok   recorded per remote
+ok   r1 still pushed (=e64aedcc7792b79cb93aefaa6a413e58971ec117)
+ok   push rejected by a remote: 11 (=11)
+ok   PUSH_FAILED recorded
+ok   others continued (r1) (=d7ea4026cacce20723144a0a52815c10d8c77501)
+ok   option --force refused: 20 (=20)
+ok   option --force named force_refused
+ok   option -f refused: 20 (=20)
+ok   option -f named force_refused
+ok   option --force-with-lease refused: 20 (=20)
+ok   option --force-with-lease named force_refused
+ok   option --force-with-lease=main refused: 20 (=20)
+ok   option --force-with-lease=main named force_refused
+ok   option +main refused: 20 (=20)
+ok   option +main named force_refused
+ok   option --mirror refused: 20 (=20)
+ok   option --mirror named force_refused
+ok   option --delete refused: 20 (=20)
+ok   option --delete named force_refused
+ok   nothing pushed by any refusal (=9bf584d3da36d7d4137f40097ba2dfddac3fc5d2)
+ok   branch starting with a dash: 20 (=20)
+ok   branch that is no ref name: 20 (=20)
+ok   main root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no --run-dir: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   remote named like an option: 20 (=20)
+ok   unsafe_remote_name
+ok   remote URL starting with a dash: 20 (=20)
+ok   unsafe_remote_url
+ok   still nothing pushed (=9bf584d3da36d7d4137f40097ba2dfddac3fc5d2)
+ok   known remote tip that diverged from the target: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r1 pushed (=a142df3ed7fc45ce25b8a662d0dbec1cf842cec6)
+ok   remote URL with the ext:: transport: 20 (=20)
+ok   unsafe_remote_url
+ok   nothing was executed (=1)
+ok   run through the logging shim: 0 (=0)
+ok   every push is 'push -q -- <remote> <sha>:refs/heads/main' (=0)
+ok   at least one push was logged (=yes)
+ok   every ls-remote follows -- (=0)
+ok   no plus refspec and no force flag anywhere (=0)
+ok   submodule and main, recursive: 0 (=0)
+ok   submodule remote received its tip (=6a3b832cd505bb53cab8c15fb01f9ce46bb5e043)
+ok   main r1 received its tip (=0158774108e97dcce7b8d9687d3f8a183a730492)
+ok   deepest first: the submodule is reported before the main repository (=mods/sub . )
+ok   trailer-less commit in a submodule: 20 (=20)
+ok   the submodule remote got no push call (=6a3b832cd505bb53cab8c15fb01f9ce46bb5e043)
+ok   copied trailer in a submodule: 20 (=20)
+ok   verdict only in the submodule tree: held (14) (=14)
+ok   submodule remote still at its old tip (=6a3b832cd505bb53cab8c15fb01f9ce46bb5e043)
+---- 92 ok, 0 failed
+exit=0
+
+== test_push_recursive run 2  [helper scripts/repo/push_recursive.sh sha256 4b34913f8363ede90e9e80ea7fe27b8daca665d4b0c78d349e169f206306fd60; test scripts/repo/tests/test_push_recursive.sh sha256 5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   two unheld CPA commits: 0 (=0)
+ok   r1 holds the tip (=e2dc256902efb209d13ea56714c7ac4e9de516fc)
+ok   r2 holds the tip (=e2dc256902efb209d13ea56714c7ac4e9de516fc)
+ok   report names each push
+ok   nothing outgoing: 0 (=0)
+ok   already holds the tip, no push call
+ok   trailer-less commit: 20 (=20)
+ok   names the commit
+ok   reason
+ok   no remote received anything (=653af564d8a2b27347db61902af5542ab0fee6da653af564d8a2b27347db61902af5542ab0fee6da)
+ok   copied CPA-Run trailer, no commits.tsv row: 20 (=20)
+ok   r1 unchanged (=653af564d8a2b27347db61902af5542ab0fee6da)
+ok   a CPA commit of another run, recorded in that run's commits.tsv: 0 (=0)
+ok   commits.tsv row for another sha: 20 (=20)
+ok   GO committed in HEAD, run listed: exit (=0)
+ok   held commit pushed (=3d7359c17edcbfc33e03db270880d99fc5a48a56)
+ok   GO covering another run only: exit (=14)
+ok   held commit stays held (r1 at the unheld prefix) (=ef8268d59ed4ce4863cffc84e7b84e8677d9c32a)
+ok   HELD line
+ok   NO-GO verdict: exit (=14)
+ok   GO with blocking findings: exit (=14)
+ok   verdict failing the schema (no model/effort): exit (=14)
+ok   verdict file absent: exit (=14)
+ok   GO only uncommitted in the working tree: stays held (14) (=14)
+ok   unheld, held-and-released, unheld: all pushed (=d6b0d8f71604e9cb99eaf8c02561c5149544c253)
+ok   unheld, held, unheld: only the prefix below the first unreleased commit (=c7b60a6c27655bcb3b4cf596a4e3bd04ce1e2db1)
+ok   two unreleased held commits: the prefix stops below the FIRST (=99e9b0fc6edbb53812282dcfb2eaf4f12061f43d)
+ok   unsafe verdict path in an Awaits-Review line stays held, never read: 14 (=14)
+ok   merge whose verdict does not cover its run: 14 (=14)
+ok   no remote received the commit below the merge (r1) (=16255f147cef4f3b52076ecd3010859749d84c8d)
+ok   no push to r2 either (=16255f147cef4f3b52076ecd3010859749d84c8d)
+ok   merge released by a GO that covers its run: 0 (=0)
+ok   merge tip pushed (=a6a4a66fbc0c2cc3b930d67d575636fe62eda2fb)
+ok   one remote moved: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r2 unchanged (=7210105aba38b8d96bd0a038e67761937c2541dd)
+ok   r1 received the tip (=23ddad26ef4385acf4edb2f8cce2eacd8b3ee4e9)
+ok   remote without the branch: 0 (=0)
+ok   r3 received the tip (=be496b027f26520605ba4c45432d9604c9676d5e)
+ok   unreachable remote: 11 (=11)
+ok   recorded per remote
+ok   r1 still pushed (=29ad9c75779135f77bbd4e73ac122005a6f733b0)
+ok   push rejected by a remote: 11 (=11)
+ok   PUSH_FAILED recorded
+ok   others continued (r1) (=7bd4ddda5a7f05503a0e1799ebe2a39051fb6cb0)
+ok   option --force refused: 20 (=20)
+ok   option --force named force_refused
+ok   option -f refused: 20 (=20)
+ok   option -f named force_refused
+ok   option --force-with-lease refused: 20 (=20)
+ok   option --force-with-lease named force_refused
+ok   option --force-with-lease=main refused: 20 (=20)
+ok   option --force-with-lease=main named force_refused
+ok   option +main refused: 20 (=20)
+ok   option +main named force_refused
+ok   option --mirror refused: 20 (=20)
+ok   option --mirror named force_refused
+ok   option --delete refused: 20 (=20)
+ok   option --delete named force_refused
+ok   nothing pushed by any refusal (=1ea7962136f19501acd325fe47095a629747a1b6)
+ok   branch starting with a dash: 20 (=20)
+ok   branch that is no ref name: 20 (=20)
+ok   main root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no --run-dir: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   remote named like an option: 20 (=20)
+ok   unsafe_remote_name
+ok   remote URL starting with a dash: 20 (=20)
+ok   unsafe_remote_url
+ok   still nothing pushed (=1ea7962136f19501acd325fe47095a629747a1b6)
+ok   known remote tip that diverged from the target: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r1 pushed (=89b93848e4638bee215f2656729a314207ec64de)
+ok   remote URL with the ext:: transport: 20 (=20)
+ok   unsafe_remote_url
+ok   nothing was executed (=1)
+ok   run through the logging shim: 0 (=0)
+ok   every push is 'push -q -- <remote> <sha>:refs/heads/main' (=0)
+ok   at least one push was logged (=yes)
+ok   every ls-remote follows -- (=0)
+ok   no plus refspec and no force flag anywhere (=0)
+ok   submodule and main, recursive: 0 (=0)
+ok   submodule remote received its tip (=30aa91ff1a21b53b5141070729808567b819892c)
+ok   main r1 received its tip (=e08b53fd7d4b193bfa4446008b5a96408bc9d90d)
+ok   deepest first: the submodule is reported before the main repository (=mods/sub . )
+ok   trailer-less commit in a submodule: 20 (=20)
+ok   the submodule remote got no push call (=30aa91ff1a21b53b5141070729808567b819892c)
+ok   copied trailer in a submodule: 20 (=20)
+ok   verdict only in the submodule tree: held (14) (=14)
+ok   submodule remote still at its old tip (=30aa91ff1a21b53b5141070729808567b819892c)
+---- 92 ok, 0 failed
+exit=0
+
+== test_push_recursive run 3  [helper scripts/repo/push_recursive.sh sha256 4b34913f8363ede90e9e80ea7fe27b8daca665d4b0c78d349e169f206306fd60; test scripts/repo/tests/test_push_recursive.sh sha256 5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564; lib sha256 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042]
+ok   two unheld CPA commits: 0 (=0)
+ok   r1 holds the tip (=818613ea3210a5305db0140defec041a3e78b66b)
+ok   r2 holds the tip (=818613ea3210a5305db0140defec041a3e78b66b)
+ok   report names each push
+ok   nothing outgoing: 0 (=0)
+ok   already holds the tip, no push call
+ok   trailer-less commit: 20 (=20)
+ok   names the commit
+ok   reason
+ok   no remote received anything (=f5fa8644d070b636a1725f38174e177b49b6d9eaf5fa8644d070b636a1725f38174e177b49b6d9ea)
+ok   copied CPA-Run trailer, no commits.tsv row: 20 (=20)
+ok   r1 unchanged (=6651d0c1a4fec80b6094111697657c4549aa297e)
+ok   a CPA commit of another run, recorded in that run's commits.tsv: 0 (=0)
+ok   commits.tsv row for another sha: 20 (=20)
+ok   GO committed in HEAD, run listed: exit (=0)
+ok   held commit pushed (=c1c007f00fdde9690dd1c4ca097dea79ba8ed9c9)
+ok   GO covering another run only: exit (=14)
+ok   held commit stays held (r1 at the unheld prefix) (=f061c0c00d76ea596fd35a07a9ab4cd1ecb97ea2)
+ok   HELD line
+ok   NO-GO verdict: exit (=14)
+ok   GO with blocking findings: exit (=14)
+ok   verdict failing the schema (no model/effort): exit (=14)
+ok   verdict file absent: exit (=14)
+ok   GO only uncommitted in the working tree: stays held (14) (=14)
+ok   unheld, held-and-released, unheld: all pushed (=2c5681d6a235537bf843735aa928784656ccd5d2)
+ok   unheld, held, unheld: only the prefix below the first unreleased commit (=287f4ecb9f32141e0baf39c145ae85ff7f616e0b)
+ok   two unreleased held commits: the prefix stops below the FIRST (=a149986ea870071e60157095c861e2ce77781bd7)
+ok   unsafe verdict path in an Awaits-Review line stays held, never read: 14 (=14)
+ok   merge whose verdict does not cover its run: 14 (=14)
+ok   no remote received the commit below the merge (r1) (=8ee2e3ceac5b5f857cd84bb30043814c3335ae09)
+ok   no push to r2 either (=8ee2e3ceac5b5f857cd84bb30043814c3335ae09)
+ok   merge released by a GO that covers its run: 0 (=0)
+ok   merge tip pushed (=4a2eef50103114da3926c6f5709b85ed756be9f0)
+ok   one remote moved: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r2 unchanged (=33616c7ec7656c0c5eeadbd893fa330bb608c541)
+ok   r1 received the tip (=7df619caa388c44faacb60edb16ad0cf6895a524)
+ok   remote without the branch: 0 (=0)
+ok   r3 received the tip (=c79f10c6081b0c5f53b57286fc6dad86e6b8b39a)
+ok   unreachable remote: 11 (=11)
+ok   recorded per remote
+ok   r1 still pushed (=36741dd14a280ed972c685f76d74b2729f2d1d5f)
+ok   push rejected by a remote: 11 (=11)
+ok   PUSH_FAILED recorded
+ok   others continued (r1) (=a829d23a9a403979a6e2336961d396a5a1bbeb7d)
+ok   option --force refused: 20 (=20)
+ok   option --force named force_refused
+ok   option -f refused: 20 (=20)
+ok   option -f named force_refused
+ok   option --force-with-lease refused: 20 (=20)
+ok   option --force-with-lease named force_refused
+ok   option --force-with-lease=main refused: 20 (=20)
+ok   option --force-with-lease=main named force_refused
+ok   option +main refused: 20 (=20)
+ok   option +main named force_refused
+ok   option --mirror refused: 20 (=20)
+ok   option --mirror named force_refused
+ok   option --delete refused: 20 (=20)
+ok   option --delete named force_refused
+ok   nothing pushed by any refusal (=75b083c95acd597eb579edbfcf27120ff7cb8d24)
+ok   branch starting with a dash: 20 (=20)
+ok   branch that is no ref name: 20 (=20)
+ok   main root starting with a dash: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+ok   run directory absent: 20 (=20)
+ok   no --run-dir: 20 (=20)
+ok   unknown option: 20 (=20)
+ok   remote named like an option: 20 (=20)
+ok   unsafe_remote_name
+ok   remote URL starting with a dash: 20 (=20)
+ok   unsafe_remote_url
+ok   still nothing pushed (=75b083c95acd597eb579edbfcf27120ff7cb8d24)
+ok   known remote tip that diverged from the target: 11 (=11)
+ok   r2 named remote_moved_since_s1
+ok   r1 pushed (=af7c408125b50f38a3387bd2ee97c8aeb611f58e)
+ok   remote URL with the ext:: transport: 20 (=20)
+ok   unsafe_remote_url
+ok   nothing was executed (=1)
+ok   run through the logging shim: 0 (=0)
+ok   every push is 'push -q -- <remote> <sha>:refs/heads/main' (=0)
+ok   at least one push was logged (=yes)
+ok   every ls-remote follows -- (=0)
+ok   no plus refspec and no force flag anywhere (=0)
+ok   submodule and main, recursive: 0 (=0)
+ok   submodule remote received its tip (=ffa6a49337011601acba8c4bedf96064f8bf5dea)
+ok   main r1 received its tip (=02b516099d7fd0567f6c8573ace2120a21d2b2f0)
+ok   deepest first: the submodule is reported before the main repository (=mods/sub . )
+ok   trailer-less commit in a submodule: 20 (=20)
+ok   the submodule remote got no push call (=ffa6a49337011601acba8c4bedf96064f8bf5dea)
+ok   copied trailer in a submodule: 20 (=20)
+ok   verdict only in the submodule tree: held (14) (=14)
+ok   submodule remote still at its old tip (=ffa6a49337011601acba8c4bedf96064f8bf5dea)
+---- 92 ok, 0 failed
+exit=0

@@ -1,0 +1,24 @@
+# Mutation sweep r5: each MUTANT is a scratch copy of the intake and/or progress.yml with one defect; the test must exit 1 naming it; GUARD (PyYAML re-dump, no defect) must exit 0. Mutants M1-M12 and P_later are the independent reviewer's (WF-REVIEW-governance.md); the rest are the author's for the new checks.
+# identity: test sha256 ac54a0bb788ce5d3b57ca05b59e9cb5e218b8d6828e243246925473b88307d43; intake (owner-decisions.yaml) sha256 e430f5ca6293e61bb2c4d09509c40a489232200234ca9f553c164f95d6bb6ead; progress.yml sha256 8345098e80dfcc179d533b825bdea750b636f15cf0fcbc578eacfd55c29e3c8b; git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test, intake, progress.yml untracked); Python 3.14.4; PyYAML 6.0.3
+GUARD          rc=0 
+M1             rc=1 FAIL ODG-37: text 'Yes, buy and adopt Atlas Pro (relayed by the conductor, not a verbatim' != progress.yml value(s) 'no Atlas Pro' plus the relay suff
+M2             rc=1 FAIL ODG-13: status 'Done' != Operator-blocked
+M3_source      rc=1 FAIL ODG-05: source 'doc99 X' != docs/21 Source cell 'doc10 DR-10-06, doc05 DR-4'
+M3_blocks_text rc=1 FAIL ODG-05: blocks_text 'WP-99' != docs/21 Blocks cell 'WP-54, WP-60, WP-61'
+M4             rc=1 FAIL OAU-2026-10-05-1: text 'force-push is allowed whenever convenient (relayed by the conductor, n' != progress.yml value(s) 'plain git, fast-forward
+M5             rc=1 FAIL ODG-11: text "id prefix CAT (never ATM; remove ATM from this repo's files); generic " != progress.yml value(s) "id prefix CAT (never ATM; remove 
+M7             rc=1 FAIL ODG-28: text 'deny by default; registration off (relayed by the conductor, not a ver' != progress.yml value(s) 'allow public registration and pub
+M10            rc=1 FAIL C1: answered in progress.yml but 2 owner_answers entries name it (need exactly 1)
+M11            rc=1 FAIL ODG-08: progress.yml value carries OPEN but the note does not
+M12            rc=1 FAIL ODG-07: text 'Build host is thinker.local; measurement host is amber.local (relayed ' != progress.yml value(s) 'current host (hostname anton, 16 
+P_later        rc=1 FAIL owner_answers_2026-10-06_batch3.ODG-37: progress.yml answer (block date 2026-10-06) is carried by no owner_answers entry (later or unknown block)
+I4_false_prov  rc=1 FAIL ODG-19: note must cite tasks.md T011a and not attribute the fact to progress.yml
+I5_deferral    rc=1 FAIL ODG-23: a deferral or partial answer must carry an OPEN note
+I5_odg42       rc=1 FAIL ODG-42: note must say UNCONFIRMED that T525 produces the headerless count
+I3_flag        rc=1 FAIL ODG-16: note must flag the custody conflict (missing 'OPEN')
+M3_caveat      rc=1 FAIL FR-017: progress.yml comment 'report-only for non-submodule packages until T429a' is not carried in the note (conductor caveat dropped)
+M3_risks       rc=1 FAIL risks_recorded in the intake differs from progress.yml risks_recorded (conductor caveats dropped)
+M6_amends      rc=1 FAIL C1: amends key missing (null until T012a records amendments)
+CRED           rc=1 FAIL $.owner_answers[50].note: credential-like value pattern (value not printed)
+XYZ_invent     rc=1 FAIL an invented XYZ-NNN UNCONFIRMED note is present (progress.yml does not mark it)
+DATE           rc=1 FAIL OD-76: date 2026-10-04 != the date 2026-10-05 of its progress.yml block owner_answers_2026-10-05_batch2.OD-76

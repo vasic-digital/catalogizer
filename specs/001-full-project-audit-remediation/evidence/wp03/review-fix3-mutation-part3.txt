@@ -1,0 +1,6 @@
+CAUGHT   RV3 RV3 needle does not require seeing the untracked file
+CAUGHT   RV4 RV4 exception symlink guard removed
+SURVIVED RV5 RV5 needle does not require clean-reads-clean
+CAUGHT   RV6 N-I1 explicit --untracked-files=all dropped
+CAUGHT   RV6b N-I1 --untracked-files=no (the reviewer -uno)
+MUTATION SUMMARY caught=4 survived=1 broken=0

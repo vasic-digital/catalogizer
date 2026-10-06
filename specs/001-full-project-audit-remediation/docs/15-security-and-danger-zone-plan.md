@@ -776,7 +776,7 @@ flowchart TD
 
 Priority inside a package follows the section 12 severity then exposure (anonymous before authenticated). The first fixes to land, in order: S-01 image proxy host check and auth decision, S-02 WebSocket authentication and origin, S-03 admin gate on the sensitive groups (if confirmed), S-04 exec contexts and argument safety, S-05 `storage_roots.password` encryption, S-06 query-token removal, S-07 boot invariants for secrets, S-08 Redis auth in compose.
 
-Candidate findings seeded by this plan (to be registered; ids are plan-local until the register assigns ATM ids):
+Candidate findings seeded by this plan (to be registered; ids are plan-local until the register assigns CAT ids):
 
 | Plan id | Title | Location | Section ref |
 |---|---|---|---|

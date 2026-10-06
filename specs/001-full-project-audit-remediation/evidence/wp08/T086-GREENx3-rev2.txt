@@ -1,0 +1,150 @@
+##### GREEN run 1
+# capture: utc=2026-10-05T19:23:18Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/ledger/tests/test_project_gate_ledger.sh
+# sha256 ratchet=38c376983972203c7006e25eab5162dbb5dc26377ab77761a540665135b0002e test=8c38fb1c43aaa4227b56e913c48627ada883087c8e3f65538643fa3a6a68781b
+# image_digest=UNCONFIRMED (RUNP/IMG-KCOV absent, host-side run)
+ok   golden-good passes (rc=0)
+ok   name with no row FAILs (rc=1)
+ok   vanished name without citation FAILs (rc=1)
+ok   vanished name WITH citation passes (golden-false) (rc=0)
+ok   unimplemented count above baseline FAILs (rc=1)
+ok   count below baseline FAILs: slack must be lowered (ratchet only moves down, I-5d) (rc=1)
+ok   count equal to the baseline passes (rc=0)
+ok   implementation site without token FAILs (rc=1)
+ok   markdown carrier as site FAILs (rc=1)
+ok   generic family reference only warns (golden-false) (rc=0)
+ok   wildcard ledger row FAILs (rc=1)
+ok   zero names is BLIND not clean (rc=1)
+ok   deferral without tracked item FAILs (rc=1)
+ok   I-5a a name list as IMPLEMENTED site (carrier) FAILs (rc=1)
+ok   I-5a a code file that mentions the token only in a comment FAILs (rc=1)
+ok   I-5a the ratchet's own prev-names input as IMPLEMENTED site FAILs (rc=1)
+ok   I-5a an implementation site path leaving the root FAILs (rc=1)
+ok   I-5b a dated header in the baseline file is not read as part of the number: 3 deferred > 1 FAILs (rc=1)
+ok   I-5b a dated header with the right number passes (golden-false) (rc=0)
+ok   I-5b two integers in the baseline file FAIL (ambiguous) (rc=1)
+ok   I-5b a non-integer baseline FAILs (rc=1)
+ok   I-5b an empty baseline FAILs (rc=1)
+ok   I-5f a deferral reference that is not a tracked item id FAILs (rc=1)
+ok   I-5f the interim placeholder FAILs without --allow-pending (rc=1)
+ok   I-5f the interim placeholder with --allow-pending passes but is reported PASS-INTERIM, never PASS (rc=0)
+ok   the interim result line names PASS-INTERIM and pending_untracked=1
+ok   I-5f with --allow-pending and a real tracked id the result is a plain PASS (golden-false) (rc=0)
+ok   a ledger with only tracked deferrals reports plain PASS
+ok   I-5e a name followed by hyphenated prose is a NAME with no row: FAILs (was a silent warn) (rc=1)
+ok   I-5e the same name without the prose suffix FAILs identically (control) (rc=1)
+ok   LM3 a digit-bearing name with no row FAILs by its full name (rc=1)
+ok   LM3 a digit-bearing name with a row passes (golden-false) (rc=0)
+ok   LM1 a removal row with an empty reason FAILs (rc=1)
+ok   LM1 a removal row with a one-character reason FAILs (rc=1)
+ok   LM1 a removal row with a real reason passes (golden-false) (rc=0)
+ok   LM2 a ledger row whose name ends in a dash FAILs (rc=1)
+ok   I-5 a duplicate ledger name FAILs (rc=1)
+ok   an option without its value exits 2
+ok   I-5c control: committed repo, nothing removed, passes and names prev_source=working+HEAD
+ok   I-5c a name removed from docs, ledger AND the working prev-names is still caught against the committed prev-names
+ok   I-5c with a removal citation the same change passes (golden-false)
+ok   I-5c an untracked prev-names file is reported prev_source=working-only (the guard is honestly inactive)
+ok   control needle seen
+RESULT pass=43 fail=0
+# exit=0
+##### GREEN run 2
+# capture: utc=2026-10-05T19:23:39Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/ledger/tests/test_project_gate_ledger.sh
+# sha256 ratchet=38c376983972203c7006e25eab5162dbb5dc26377ab77761a540665135b0002e test=8c38fb1c43aaa4227b56e913c48627ada883087c8e3f65538643fa3a6a68781b
+# image_digest=UNCONFIRMED (RUNP/IMG-KCOV absent, host-side run)
+ok   golden-good passes (rc=0)
+ok   name with no row FAILs (rc=1)
+ok   vanished name without citation FAILs (rc=1)
+ok   vanished name WITH citation passes (golden-false) (rc=0)
+ok   unimplemented count above baseline FAILs (rc=1)
+ok   count below baseline FAILs: slack must be lowered (ratchet only moves down, I-5d) (rc=1)
+ok   count equal to the baseline passes (rc=0)
+ok   implementation site without token FAILs (rc=1)
+ok   markdown carrier as site FAILs (rc=1)
+ok   generic family reference only warns (golden-false) (rc=0)
+ok   wildcard ledger row FAILs (rc=1)
+ok   zero names is BLIND not clean (rc=1)
+ok   deferral without tracked item FAILs (rc=1)
+ok   I-5a a name list as IMPLEMENTED site (carrier) FAILs (rc=1)
+ok   I-5a a code file that mentions the token only in a comment FAILs (rc=1)
+ok   I-5a the ratchet's own prev-names input as IMPLEMENTED site FAILs (rc=1)
+ok   I-5a an implementation site path leaving the root FAILs (rc=1)
+ok   I-5b a dated header in the baseline file is not read as part of the number: 3 deferred > 1 FAILs (rc=1)
+ok   I-5b a dated header with the right number passes (golden-false) (rc=0)
+ok   I-5b two integers in the baseline file FAIL (ambiguous) (rc=1)
+ok   I-5b a non-integer baseline FAILs (rc=1)
+ok   I-5b an empty baseline FAILs (rc=1)
+ok   I-5f a deferral reference that is not a tracked item id FAILs (rc=1)
+ok   I-5f the interim placeholder FAILs without --allow-pending (rc=1)
+ok   I-5f the interim placeholder with --allow-pending passes but is reported PASS-INTERIM, never PASS (rc=0)
+ok   the interim result line names PASS-INTERIM and pending_untracked=1
+ok   I-5f with --allow-pending and a real tracked id the result is a plain PASS (golden-false) (rc=0)
+ok   a ledger with only tracked deferrals reports plain PASS
+ok   I-5e a name followed by hyphenated prose is a NAME with no row: FAILs (was a silent warn) (rc=1)
+ok   I-5e the same name without the prose suffix FAILs identically (control) (rc=1)
+ok   LM3 a digit-bearing name with no row FAILs by its full name (rc=1)
+ok   LM3 a digit-bearing name with a row passes (golden-false) (rc=0)
+ok   LM1 a removal row with an empty reason FAILs (rc=1)
+ok   LM1 a removal row with a one-character reason FAILs (rc=1)
+ok   LM1 a removal row with a real reason passes (golden-false) (rc=0)
+ok   LM2 a ledger row whose name ends in a dash FAILs (rc=1)
+ok   I-5 a duplicate ledger name FAILs (rc=1)
+ok   an option without its value exits 2
+ok   I-5c control: committed repo, nothing removed, passes and names prev_source=working+HEAD
+ok   I-5c a name removed from docs, ledger AND the working prev-names is still caught against the committed prev-names
+ok   I-5c with a removal citation the same change passes (golden-false)
+ok   I-5c an untracked prev-names file is reported prev_source=working-only (the guard is honestly inactive)
+ok   control needle seen
+RESULT pass=43 fail=0
+# exit=0
+##### GREEN run 3
+# capture: utc=2026-10-05T19:23:54Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/ledger/tests/test_project_gate_ledger.sh
+# sha256 ratchet=38c376983972203c7006e25eab5162dbb5dc26377ab77761a540665135b0002e test=8c38fb1c43aaa4227b56e913c48627ada883087c8e3f65538643fa3a6a68781b
+# image_digest=UNCONFIRMED (RUNP/IMG-KCOV absent, host-side run)
+ok   golden-good passes (rc=0)
+ok   name with no row FAILs (rc=1)
+ok   vanished name without citation FAILs (rc=1)
+ok   vanished name WITH citation passes (golden-false) (rc=0)
+ok   unimplemented count above baseline FAILs (rc=1)
+ok   count below baseline FAILs: slack must be lowered (ratchet only moves down, I-5d) (rc=1)
+ok   count equal to the baseline passes (rc=0)
+ok   implementation site without token FAILs (rc=1)
+ok   markdown carrier as site FAILs (rc=1)
+ok   generic family reference only warns (golden-false) (rc=0)
+ok   wildcard ledger row FAILs (rc=1)
+ok   zero names is BLIND not clean (rc=1)
+ok   deferral without tracked item FAILs (rc=1)
+ok   I-5a a name list as IMPLEMENTED site (carrier) FAILs (rc=1)
+ok   I-5a a code file that mentions the token only in a comment FAILs (rc=1)
+ok   I-5a the ratchet's own prev-names input as IMPLEMENTED site FAILs (rc=1)
+ok   I-5a an implementation site path leaving the root FAILs (rc=1)
+ok   I-5b a dated header in the baseline file is not read as part of the number: 3 deferred > 1 FAILs (rc=1)
+ok   I-5b a dated header with the right number passes (golden-false) (rc=0)
+ok   I-5b two integers in the baseline file FAIL (ambiguous) (rc=1)
+ok   I-5b a non-integer baseline FAILs (rc=1)
+ok   I-5b an empty baseline FAILs (rc=1)
+ok   I-5f a deferral reference that is not a tracked item id FAILs (rc=1)
+ok   I-5f the interim placeholder FAILs without --allow-pending (rc=1)
+ok   I-5f the interim placeholder with --allow-pending passes but is reported PASS-INTERIM, never PASS (rc=0)
+ok   the interim result line names PASS-INTERIM and pending_untracked=1
+ok   I-5f with --allow-pending and a real tracked id the result is a plain PASS (golden-false) (rc=0)
+ok   a ledger with only tracked deferrals reports plain PASS
+ok   I-5e a name followed by hyphenated prose is a NAME with no row: FAILs (was a silent warn) (rc=1)
+ok   I-5e the same name without the prose suffix FAILs identically (control) (rc=1)
+ok   LM3 a digit-bearing name with no row FAILs by its full name (rc=1)
+ok   LM3 a digit-bearing name with a row passes (golden-false) (rc=0)
+ok   LM1 a removal row with an empty reason FAILs (rc=1)
+ok   LM1 a removal row with a one-character reason FAILs (rc=1)
+ok   LM1 a removal row with a real reason passes (golden-false) (rc=0)
+ok   LM2 a ledger row whose name ends in a dash FAILs (rc=1)
+ok   I-5 a duplicate ledger name FAILs (rc=1)
+ok   an option without its value exits 2
+ok   I-5c control: committed repo, nothing removed, passes and names prev_source=working+HEAD
+ok   I-5c a name removed from docs, ledger AND the working prev-names is still caught against the committed prev-names
+ok   I-5c with a removal citation the same change passes (golden-false)
+ok   I-5c an untracked prev-names file is reported prev_source=working-only (the guard is honestly inactive)
+ok   control needle seen
+RESULT pass=43 fail=0
+# exit=0

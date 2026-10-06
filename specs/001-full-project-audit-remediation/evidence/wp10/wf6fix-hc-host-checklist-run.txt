@@ -1,0 +1,8 @@
+# identity: wf6fix-hc-real-run
+# hc_sha256: 588e3ffcca7d59df732fcca9b83fda3bdc783801b6123a5661f005e437188641
+# host: anton uid: 1000
+# run_at: 2026-10-06T13:31:48Z
+# command: bash scripts/containers/host_checklist.sh (no shims, the real host); then --strict (exit 0)
+# result_json: wp10/host-checklist.json summary {"pass":13,"fail":0,"na":4,"unconfirmed":2}
+# c13: [{"verdict":"pass","images":["present_pinned","present_pinned","present_pinned","present_pinned","present_pinned"]}]
+host_checklist: wrote /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp10/host-checklist.json

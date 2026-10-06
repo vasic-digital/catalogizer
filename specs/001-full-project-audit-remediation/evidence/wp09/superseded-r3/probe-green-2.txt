@@ -1,0 +1,101 @@
+# T001 probe test GREEN run 2/3
+# generated: 2026-10-05T12:14:35Z  (round: W1-W10 fix of WF-REVIEW-containers-gitignore)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED; the sha256 lines below fingerprint it)
+# sha256 9e0e8f4416badcf49917ba2195ae4bfbae98290599a6a02a07833c556be51f54  scripts/containers/probe_host.sh
+# sha256 70723a1266a3f336728b09d647d7ead6b5dec983f7d388ba12264759594a8063  scripts/containers/disk_headroom.sh
+# sha256 2d3c3abc7b802755fd3e3213fb9e3c84d289f3c9a2c45359da41c65308605f6b  scripts/containers/disk_headroom.conf
+# sha256 1086ad68a1a0f37f6e9ae4c1f46fbaf56cd83ace069ccf42c566f8cc350ddc21  scripts/containers/tests/test_probe_host.sh
+# sha256 d17913b0901b44a1e64c171c8eb93e9b7dfaf9b13b7c9ad370abe1ca1078ced0  scripts/containers/tests/test_disk_headroom.sh
+# sha256 0804144cc7e28bcf267d891734f46c26381580dc71521e894a1a88d4cce9a208  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 48fa0c5148b3ca20961bfb7e4fd3de93b46471f5aa2d638fef2f0fa322b48eae  .gitignore
+# sha256 02060ee6a6cb1f0bfc1ce40d147cb41ca0a78f073c24dd1bf9946c122a0f361b  specs/001-full-project-audit-remediation/evidence/wp09/.gitignore.before
+# ---
+PASS: real host: exit status 0
+PASS: real host: host-probe.json exists and is valid JSON
+PASS: real host: nproc equals independent nproc
+PASS: real host: MemTotal bytes equals /proc/meminfo
+PASS: real host: MemAvailable is a positive integer
+PASS: real host: ulimit -u equals independent read
+PASS: real host: cgroup version
+PASS: real host: rootless flag
+PASS: field kvm has closed status (present)
+PASS: field selinux has closed status (absent)
+PASS: field ulimit_u has closed status (present)
+PASS: field cgroup_version has closed status (present)
+PASS: field rootless has closed status (present)
+PASS: field user_slice_memory_max has closed status (present)
+PASS: field nproc has closed status (present)
+PASS: field mem_total has closed status (present)
+PASS: field mem_available has closed status (present)
+PASS: control needle: path that must not exist is recorded absent
+PASS: control needle: records the probed path
+PASS: fixture no SELinux/KVM: exit 0
+PASS: fixture no SELinux: status absent
+PASS: fixture no KVM: status absent
+PASS: fixture present kvm stand-in: status present
+PASS: fixture garbage meminfo: exit 0 (probe records, does not abort)
+PASS: fixture garbage meminfo: mem_total status error
+PASS: fixture garbage meminfo: mem_available status error
+PASS: fixture missing meminfo: status error
+PASS: fixture user.slice memory.max numeric
+PASS: fixture user.slice memory.max missing: absent
+PASS: fixture meminfo MemTotal 1000 kB = 1024000 bytes
+PASS: fixture meminfo MemAvailable 500 kB = 512000 bytes
+PASS: fixture failing getenforce (no selinuxfs): status error, not absent
+PASS: fixture selinuxfs present + failing getenforce: status error (F5)
+PASS: fixture selinuxfs present + working getenforce: present Enforcing
+PASS: fixture needle path that exists: status error (needle can see)
+PASS: fixture needle path that exists: path recorded
+PASS: fixture cgroup.controllers present: cgroup_version 2
+PASS: fixture cgroup.controllers absent: cgroup_version 1
+PASS: fixture uid 0: rootless false
+PASS: fixture uid 1000: rootless true
+PASS: N5 user.slice memory.max numeric is a JSON number
+PASS: N5 user.slice memory.max 'max' is present
+PASS: N5 user.slice memory.max 'max' is a JSON string
+PASS: N5 MemTotal 'abc kB': exit 0, record written
+PASS: N5 MemTotal 'abc kB': mem_total status error
+PASS: N5 MemTotal 'abc kB': mem_available still present (500 kB = 512000)
+PASS: N5 ulimit -u 'abc': status error
+PASS: N5 ulimit -u 'unlimited': present string
+PASS: N5 ulimit -u 4096: present number 4096
+PASS: N6 duplicate MemTotal: exit 0 and record written
+PASS: N6 duplicate MemTotal: mem_total status error
+PASS: N6 duplicate MemTotal: mem_available still present
+PASS: N6 duplicate MemTotal: no .tmp left behind
+PASS: N7 needle path is a dangling symlink: status error
+PASS: W4 16 concurrent probes: all exit 0
+PASS: W4 concurrent probes: record is valid JSON
+PASS: W4 concurrent probes: no temp residue in the evidence dir
+PASS: W4 concurrent probes: reader saw no invalid record
+PASS: W5 empty memory.max: status error (not absent)
+PASS: W5 unreadable (mode 000) memory.max: status error (not absent)
+PASS: W5 real host nproc is a JSON number
+PASS: W5 real host mem_total is a JSON number
+PASS: W5 real host mem_available is a JSON number
+PASS: W5 fixture mem_total 1024000 is a JSON number
+PASS: W5 fixture mem_available 512000 is a JSON number
+PASS: W5 real host cgroup_version is a JSON number
+PASS: W9 positive control present on the real host
+PASS: W9 positive control records its path
+PASS: W9 positive control missing: exit 0 and record written
+PASS: W9 positive control missing: status error (instrument blind, absences not trustworthy)
+PASS: mutation cgroup-hardcoded-2 observed failing (1 assertion(s) RED)
+PASS: mutation rootless-hardcoded-true observed failing (1 assertion(s) RED)
+PASS: mutation needle-hardcoded-absent observed failing (2 assertion(s) RED)
+PASS: mutation getenforce-failure-as-absent observed failing (1 assertion(s) RED)
+PASS: mutation selinuxfs-failure-as-present observed failing (1 assertion(s) RED)
+PASS: mutation usermax-number-as-string observed failing (1 assertion(s) RED)
+PASS: mutation meminfo-digit-guard-removed observed failing (1 assertion(s) RED)
+PASS: mutation ulimit-nonnumeric-as-present observed failing (1 assertion(s) RED)
+PASS: mutation meminfo-duplicate-accepted observed failing (1 assertion(s) RED)
+PASS: mutation needle-symlink-blind observed failing (1 assertion(s) RED)
+PASS: mutation slice-empty-as-absent observed failing (2 assertion(s) RED)
+PASS: mutation nproc-as-string observed failing (1 assertion(s) RED)
+PASS: mutation memtotal-as-string observed failing (2 assertion(s) RED)
+PASS: mutation memavailable-as-string observed failing (2 assertion(s) RED)
+PASS: mutation fixed-tmp-name observed failing (2 assertion(s) RED)
+PASS: mutation positive-control-hardcoded-present observed failing (1 assertion(s) RED)
+PASS: real script: probe suite has zero failures
+probe_host tests: 87 passed, 0 failed
+rc=0

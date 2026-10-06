@@ -44,7 +44,7 @@ Out of scope here: new findings from the audit itself, the register's storage im
 
 | # | Finding | Evidence (how verified) |
 |---|---|---|
-| F-1 | **The constitution-mandated workable-items database does not exist in this repository.** No SQLite file holds workable items, there is no Issues.md, Fixed.md, Issues_Summary.md or Fixed_Summary.md, and there are zero ATM-NNN identifiers outside the constitution submodule and the Spec Kit memory files. The engine to create them is present (`submodules/constitution/scripts/workable-items/bin/workable-items`, schema at `.../schema.sql`). | `find` for `*.db`/`*.sqlite*` outside submodules and `node_modules` returned only `.codegraph/codegraph.db` (the code index) and database migration SQL. `git grep -hoE 'ATM-[0-9]+'` excluding `submodules/constitution`, `specs`, `.specify` returned 0 matches. |
+| F-1 | **The constitution-mandated workable-items database does not exist in this repository.** No SQLite file holds workable items, there is no Issues.md, Fixed.md, Issues_Summary.md or Fixed_Summary.md, and there are zero stable ticket identifiers (the form required by the constitution's ticket-identifier rule, §11.4.54) outside the constitution submodule and the Spec Kit memory files. The engine to create them is present (`submodules/constitution/scripts/workable-items/bin/workable-items`, schema at `.../schema.sql`). | `find` for `*.db`/`*.sqlite*` outside submodules and `node_modules` returned only `.codegraph/codegraph.db` (the code index) and database migration SQL. a `git grep -hoE` for the stable-ticket-id form of the constitution's ticket-identifier rule (§11.4.54, measured before the project prefix `CAT` was chosen under ODG-11), excluding `submodules/constitution`, `specs`, `.specify`, returned 0 matches. |
 | F-2 | **The largest structured source is `docs/issues/`: 1,778 HelixQA-generated ticket files**, of which 1 is open, 704 resolved, 492 fixed, 299 closed, 282 wontfix. Their `HELIX-NNN` identifier is **not unique**: 676 distinct ids are spread over 1,778 files, and 560 ids are shared by more than one file. The file path, not the id, is the only unique key. | `ls docs/issues \| wc -l`; `grep -h '^status:'`; filename-prefix uniq counts. Front-matter `id:` equals the filename prefix in all 1,778 files (0 mismatches), so the collision is real, not a parsing artefact. |
 | F-3 | **Root and docs reports contradict each other.** Many say "all issues resolved" while others list hundreds of unchecked items. Example: `REMAINING_ISSUES_REPORT.md` is headed "ALL CRITICAL ISSUES RESOLVED"; `MASTER_EXECUTION_CHECKLIST.md` (root) has 299 unchecked and 0 checked boxes; `TASK_TRACKER.md` has 269 task rows, every one still marked "Not Started". | Read the heads of those files; counted checkbox and status marks (section 7). |
 | F-4 | **1,111 of the 1,778 tickets have no Resolution section**, including 664 `resolved` and 440 `fixed` ones. A closed status without recorded evidence cannot be imported as closed under 11.4.146(D3) and 11.4.226. | `grep -L '^## Resolution'` split by status. |
@@ -283,7 +283,7 @@ The repository has 8 git remotes (`origin, upstream, github, githubvasicdigital,
 | Workable-items SQLite database, tracked in git | 11.4.93, 11.4.95 | **Absent.** Only `.codegraph/codegraph.db` (code index) and app migration SQL exist. The Go binary exists at `submodules/constitution/scripts/workable-items/bin/workable-items` (and `workable-items-linux`), schema at `.../schema.sql` (tables: items, item_history, obsolete_details, operator_block_details, firebase_metadata, logic_groups, group_paths, doc_segments, meta). | Create the DB at a project-declared path, tracked (11.4.95), by `workable-items` commands. Path to be declared once (11.4.35); proposal in DR-1. |
 | Issues.md and Fixed.md trackers | 11.4.12, 11.4.19 | **Absent.** `find` for `Issues*.md`, `Fixed*.md`, `*Status_Summary*` outside submodules returned nothing relevant. | Generated from the DB by `workable-items export`; never hand-edited. |
 | Issues_Summary.md, Fixed_Summary.md | 11.4.12, 11.4.53, 11.4.56 | Absent. | Same generator. |
-| ATM-NNN stable ids | 11.4.54 | **0 occurrences** in main-repo content. The engine auto-generates `<PREFIX>-NNN` (default prefix `WIT`; `--prefix` overrides). | Choose prefix `ATM` per the constitution wording (UNCONFIRMED whether the project prefers another; decision DR-1). |
+| Stable ticket ids (the constitution's ticket-identifier rule) | 11.4.54 | **0 occurrences** in main-repo content. The engine auto-generates `<PREFIX>-NNN` (default prefix `WIT`; `--prefix` overrides). | Prefix `CAT` (owner decision ODG-11, 2026-10-05; decision DR-1 superseded as to the prefix). |
 | Item status closed set | 11.4.15, 11.4.21, 11.4.33, 11.4.90 | Absent in practice: the repository uses five ad-hoc vocabularies (section 9 table). The schema CHECK lists ten values (the schema comment says eight): Queued, In progress, Ready for testing, In testing, Reopened, Operator-blocked, Fixed, Implemented, Completed, Obsolete (the last four with the "(-> Fixed.md)" suffix). | Mapping table in section 9. |
 | Item type closed set | 11.4.16 | Absent. Schema allows Bug, Feature, Task. | Mapping in section 9 (the audit's extra classes such as gap or danger zone are a `category` text, not new types). |
 | Reopen history | 11.4.55, 11.4.34 | Absent. Table `item_history` exists in schema. | `workable-items reopen --why ... --who ... --when ... --incident ...` (closed reason set). |
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS src_entry (
     source_commit  TEXT NOT NULL,           -- git rev-parse HEAD when read
     disposition    TEXT NOT NULL CHECK (disposition IN
                    ('IMPORT','LINK-DUP','FOLD','CLAIM-VERIFY','GAP-ITEM','NON-PROBLEM','EXTERNAL-SKIPPED','PENDING')),
-    register_id    TEXT,                    -- ATM-NNN or NULL only when NON-PROBLEM/EXTERNAL-SKIPPED
+    register_id    TEXT,                    -- CAT-NNN or NULL only when NON-PROBLEM/EXTERNAL-SKIPPED
     reason         TEXT,                    -- mandatory for NON-PROBLEM, EXTERNAL-SKIPPED
     dup_group      TEXT,                    -- group key when LINK-DUP or FOLD
     reviewed_by    TEXT,                    -- reviewer identity (different from importer)
@@ -384,7 +384,7 @@ The audit's vocabulary ("gap, misalignment, shortcoming, weak spot, danger zone"
 
 ### 8.4 Identifier policy
 
-Register ids are `ATM-NNN` (decision DR-1). Legacy ids are never used as register keys. They are stored in `src_entry.legacy_id` and in the item description's "Sources" block, so a search for `HELIX-022` finds the item and, because of the collision in S-01, returns all items that legacy label touches.
+Register ids are `CAT-NNN` (decision DR-1). Legacy ids are never used as register keys. They are stored in `src_entry.legacy_id` and in the item description's "Sources" block, so a search for `HELIX-022` finds the item and, because of the collision in S-01, returns all items that legacy label touches.
 
 ## 9. Mapping rules per source
 
@@ -432,7 +432,7 @@ Revision 6 (tasks.md rev 24 T165, round-23 review): the enumerator runs in the t
 
 **Step 4 - Lead scan over the main repository's tracked Markdown outside every gitlink (2,514 files measured 2026-10-03; 2,552 at `84145b2e` per tasks.md rev 31).** Revision 11 (tasks.md rev 31 T167, T175, T222; round-30 review P1-P2 I1): the population is the entries of the step-0 frozen listing whose path ends in `.md` and lies outside every `gitlinks` path of `freeze.json`, computed by one helper `scripts/register/lead_scan_population.py` that the T175 replay reuses; Markdown inside submodules is out of scope for the lead scan (tasks.md measured 8,429 `.md` files in the recursive listing, 3,713 of them under the third-party `submodules/helix_qa/tools/opensource/`; not re-run in this sweep), the decision and its reason recorded in `$EV/register/lead-scan-scope.md`, owner approval UNCONFIRMED and presented at HC-2 (T222); the population size is recorded as `population_files`. A scripted pass lists lines matching a closed lead vocabulary (unfinished, not implemented, stub, missing, broken, known issue, workaround, deprecated, disabled, skipped, TODO, FIXME, regress, outstanding, pending, "not yet"). Each lead is a `claim` row. Leads inside the already-structured sources are marked duplicates of those rows. The lead scan has a control needle: a known present phrase from `docs/LANDMINES.md` must be found by the same command before any zero is believed (11.4.201(7)(b)). Revision 12 (tasks.md rev 32 T167, T175, T222; round-31 reviews P1-P2 I1, I4): `lead_scan.py` runs `check_freeze_listing.sh` on the listing and `check_freeze_snapshot.sh` on the snapshot, both named by its required `--freeze-json`, before the population helper reads the listing (`freeze_listing_moved`, `freeze_snapshot_moved`). The one widening of the population is the owner's recorded answer at HC-2: T222 records `lead_scan_scope` in `$EV/hc/HC-2.json`, `approved`, or `amended` with `lead_scan_extra_roots` (the `gitlinks` paths whose Markdown the owner brings into scope, default empty; a record without `lead_scan_scope` is incomplete); the helper reads `lead_scan_extra_roots` when that record holds it (an empty list when the file or the field is absent), a path equal to an extra root or beginning with it followed by `/` is in the population, an extra root that is not a `gitlinks` path of `freeze.json` is refused `lead_scan_extra_root_invalid` naming it, and the roots applied are recorded in `lead-scan-run.json` as `extra_roots` (`[]` before HC-2). An `amended` answer leaves the lead scan `Operator-blocked` until T167 is re-run with that population and the T175 replay and reconciliation are re-run over it.
 
-**Step 5 - Item creation by an importer (one actor).** A scripted importer creates register items for IMPORT rows via `workable-items add <type> <severity> --db <p> --title <T> --description <D> --prefix ATM`. The description MUST meet the 11.4.91 floor and carry a **Sources** block listing every `src_id`. The importer MUST NOT set a closed status (section 8.2). Revision 3 (tasks.md T163, T168, rev 11; document 16 §12.2.6): the description, its Sources block included, is at most 2,048 bytes, cut on a UTF-8 character boundary and marked as cut, and the full ticket text stays in the source file that the Sources block cites by path and sha256 (726 of the 1,778 tracked tickets are longer than the cap). The cap exists because the register engine stores every description twice (`items.description` and `body_md`), and 2,010 items carrying their whole ticket text measured 18,804,736 B in a scratch database, above the one register bound of 16 MiB that the commit-push script's large-file check applies to `docs/workable_items.db` and to every file under `docs/register/`, while the same items under the cap measured 9,162,752 B (tasks.md T040b, measured for its rev 11).
+**Step 5 - Item creation by an importer (one actor).** A scripted importer creates register items for IMPORT rows via `workable-items add <type> <severity> --db <p> --title <T> --description <D> --prefix CAT`. The description MUST meet the 11.4.91 floor and carry a **Sources** block listing every `src_id`. The importer MUST NOT set a closed status (section 8.2). Revision 3 (tasks.md T163, T168, rev 11; document 16 §12.2.6): the description, its Sources block included, is at most 2,048 bytes, cut on a UTF-8 character boundary and marked as cut, and the full ticket text stays in the source file that the Sources block cites by path and sha256 (726 of the 1,778 tracked tickets are longer than the cap). The cap exists because the register engine stores every description twice (`items.description` and `body_md`), and 2,010 items carrying their whole ticket text measured 18,804,736 B in a scratch database, above the one register bound of 16 MiB that the commit-push script's large-file check applies to `docs/workable_items.db` and to every file under `docs/register/`, while the same items under the cap measured 9,162,752 B (tasks.md T040b, measured for its rev 11).
 
 **Step 6 - Judgement passes (agents, one actor per pass).**
 1. Claim-verify pass over `CLAIM-VERIFY` rows: confirm or refute with the code indexes and file reads, citing path and line.
@@ -469,7 +469,7 @@ Calibration and controls:
 - **Positive control**: a seeded exact duplicate pair MUST be grouped.
 - **Id-collision handling:** `HELIX-NNN` equality alone is never a duplicate signal because of F-2; it is only a candidate for L2 when the titles also match.
 - **Related Issues graph:** use the 1,268 `Related Issues` sections as edges only after resolving each referenced id to the file with the best title match; unresolved references are listed, not guessed.
-- **Output:** a `dup_group` per cluster, with the canonical item chosen as the earliest-found, best-evidenced entry; non-canonical items are recorded as `Obsolete` with reason `duplicate-of` and the superseding ATM id, with the triple-check evidence field filled (11.4.90). Recurrence of a closed defect reopens the canonical item (FR-003, 11.4.214), never mints a new id.
+- **Output:** a `dup_group` per cluster, with the canonical item chosen as the earliest-found, best-evidenced entry; non-canonical items are recorded as `Obsolete` with reason `duplicate-of` and the superseding CAT id, with the triple-check evidence field filled (11.4.90). Recurrence of a closed defect reopens the canonical item (FR-003, 11.4.214), never mints a new id.
 - **Reported metrics:** number of groups, items per group distribution, and the count of UNDECIDED left for the operator (11.4.66).
 
 ## 12. Diagrams
@@ -497,7 +497,7 @@ flowchart LR
     IMP["Step 5 importer"]
     JUDGE["Step 6 judgement passes claim-verify, duplicates, triage"]
     REV["Step 7 independent review"]
-    REG[("Workable-items DB ATM items")]
+    REG[("Workable-items DB CAT items")]
     OUT["Issues.md / Fixed.md exports"]
     REP["Step 8 reconciliation report (SC-001)"]
     SRC --> ENUM --> PROV
@@ -598,8 +598,8 @@ sequenceDiagram
     E->>P: insert PENDING rows (path, hash, commit)
     E->>P: control needle rows
     I->>P: read IMPORT rows
-    I->>W: add type severity title description prefix ATM
-    W-->>I: ATM id
+    I->>W: add type severity title description prefix CAT
+    W-->>I: CAT id
     I->>P: set register_id
     J->>P: read CLAIM-VERIFY and duplicate candidates
     J->>P: write disposition with reviewed_by
@@ -687,7 +687,7 @@ grep -c 'RULE-CONST-001' docs/LANDMINES.md
 
 Decision records (proposed defaults, reversible, the plan owner may overturn):
 
-- **DR-1 Id prefix and DB location.** Use `ATM` (constitution wording, 11.4.54) via `--prefix ATM`, and place the tracked DB and generated trackers under a project-declared path (declare once, 11.4.35; candidate `docs/tracking/`; UNCONFIRMED, not created). Rejected: default prefix `WIT` (not the constitutional ATM), and reusing `HELIX-NNN` (not unique).
+- **DR-1 Id prefix and DB location.** Use `CAT` (owner decision ODG-11, 2026-10-05; the constitution's ticket-identifier rule, 11.4.54, requires a stable prefixed id) via `--prefix CAT`, and place the tracked DB and generated trackers under a project-declared path (declare once, 11.4.35; candidate `docs/tracking/`; UNCONFIRMED, not created). Rejected: default prefix `WIT` (not the owner-chosen prefix), and reusing `HELIX-NNN` (not unique).
 - **DR-2 Closed legacy tickets enter as Queued or Ready for testing, never as closed.** Rejected: importing 1,777 closed tickets as Fixed, because 1,111 lack evidence and FR-008/FR-022 forbid unproven closure.
 - **DR-3 Bank placeholders are tracked per bank file, not per step.** Rejected: one item per step (1,178 items with identical text and no distinct acceptance); per-case items. The per-step list stays in the provenance table and in the bank file that the item's Sources block cites by path and sha256, and the item description carries it only within its 2,048-byte cap (revision 3, tasks.md T168), so nothing is dropped.
 - **DR-4 Known Conflicts DECIDED items are imported as completed decision records.** They are the owner's decisions and part of the audit trail; omitting them would violate "nothing dropped".

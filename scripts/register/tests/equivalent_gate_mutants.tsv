@@ -1,0 +1,3 @@
+# equivalent_gate_mutants.tsv - reviewed-equivalent mutants of gate.sh (rev 3, WF3 round 4). Columns: mutant<TAB>reason<TAB>reviewed-by. output_not_flattened was REFUTED by WF3 m2 and is now killed by fixture S3 (row removed).
+# A row for a mutant a test kills, or naming no mutant, is a stale entry and fails mutate_gate.sh.
+missing_objects_not_sanitised	sane() on the missing-objects list is redundant with flat() in fail(): flat() turns the newline into a space, so a bare GATE OK line cannot be printed. Dangerous only with flat() removed too (mutant output_both_defences_removed, killed by S1 and S2).	WF3 reviewer (confirmed for newlines; ESC bytes UNCONFIRMED for the container sqlite3)

@@ -1,0 +1,22 @@
+# WP-02 round 6 green run 3: test_index_health.sh
+# 2026-10-06T14:00:13Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2 git=2.53.0
+# sha256 d9821d8a38416b1e38cb19c544e46867c3ec0b3e35f4e2f615ab118032dd82fc  scripts/audit/index_health.sh
+# sha256 1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  scripts/audit/scope_to_lumen_json.py
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183  scripts/audit/derive_scope.sh
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 f4c9ca6ae0b02cd3395daa8adc4744d4f38b4fb4816fde03145956d61d090b5d  scripts/audit/tests/test_index_health.sh
+ok   all-good fixture PASS (rc=0, verdict=PASS, no FAIL proof)
+ok   output carries schema index-health/1
+ok   P2 row records both control needles
+ok   pendingRefs>0 (rc=1, P1=FAIL, verdict=FAIL)
+ok   required field index.pendingRefs absent (rc=1, P1=FAIL, verdict=FAIL)
+ok   worktreeMismatch non-null (rc=1, P1=FAIL, verdict=FAIL)
+ok   negative needle zz/does_not_exist.go found (rc=1, P2=FAIL, verdict=FAIL)
+ok   positive needle missing from the index (rc=1, P2=FAIL, verdict=FAIL)
+ok   Lumen status Stale: yes (rc=1, P7=FAIL, verdict=FAIL)
+ok   no Lumen status file and no probe (rc=1, P-Lumen=FAIL, verdict=FAIL)
+ok   --lumen-bin path does not exist (rc=1, P-Lumen=FAIL, verdict=FAIL)
+ok   scope parity outside tolerance (rc=1, P8=FAIL, verdict=FAIL)
+ok   missing --out is a usage error (rc=2)
+SUMMARY pass=13 fail=0
+rc=0

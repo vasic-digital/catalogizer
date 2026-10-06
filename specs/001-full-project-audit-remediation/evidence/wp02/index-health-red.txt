@@ -1,0 +1,15 @@
+NOTE: scripts/audit/index_health.sh is absent or not executable (RED state: every case below must FAIL)
+FAIL all-good fixture: want rc=0 verdict=PASS, got rc=127 verdict=MISSING failing=[?]
+FAIL schema: want index-health/1, got MISSING
+FAIL P2 row must record needle_pos and needle_neg
+FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=127 verdict=MISSING P1=MISSING
+FAIL required field index.pendingRefs absent: want rc=1 verdict=FAIL P1=FAIL, got rc=127 verdict=MISSING P1=MISSING
+FAIL worktreeMismatch non-null: want rc=1 verdict=FAIL P1=FAIL, got rc=127 verdict=MISSING P1=MISSING
+FAIL negative needle zz/does_not_exist.go found: want rc=1 verdict=FAIL P2=FAIL, got rc=127 verdict=MISSING P2=MISSING
+FAIL positive needle missing from the index: want rc=1 verdict=FAIL P2=FAIL, got rc=127 verdict=MISSING P2=MISSING
+FAIL Lumen status Stale: yes: want rc=1 verdict=FAIL P7=FAIL, got rc=127 verdict=MISSING P7=MISSING
+FAIL no Lumen status file and no probe: want rc=1 verdict=FAIL P-Lumen=FAIL, got rc=127 verdict=MISSING P-Lumen=MISSING
+FAIL --lumen-bin path does not exist: want rc=1 verdict=FAIL P-Lumen=FAIL, got rc=127 verdict=MISSING P-Lumen=MISSING
+FAIL scope parity outside tolerance: want rc=1 verdict=FAIL P8=FAIL, got rc=127 verdict=MISSING P8=MISSING
+FAIL missing --out: want rc=2, got rc=127
+SUMMARY pass=0 fail=13

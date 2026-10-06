@@ -1,0 +1,47 @@
+# identity: wf6fix-provenance-mutations
+# prov_sha256: 9f4fdbf89993a225f5f8d179fa95c0005f38a9ac17a13fd665e0d34a4f208c00
+# prov_test_sha256: 7569661292c2bb4924303493ee05f0fff763852c28f33c8c54441b8bc573a62a
+# prov_mut_sha256: 73a817fa342da703a71dd0a55996504db0f1e4cb2f1a05b5c4e64e4545bde35d
+# host: anton uid: 1000
+# run_at: 2026-10-06T13:01:32Z
+# command: MUT_ONLY="r6pr1 r6pr2 r5f1a r5f1b r5f2a r5f2b" bash scripts/review/tests/mutations_check_review_provenance.sh (subset run: the two new mutants and the four mutants of the F1/F2 code they sit beside)
+--- MUTANT r5f1a: R5 F1: the jq wrapper that points HOME at the private work dir is removed
+    99c99
+    < jq() { HOME=$w command jq "$@"; }   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    ---
+    > :   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    KILLED (RESULT pass=146 fail=4; first: FAIL hostile $HOME/.jq shadowing any() cannot make a non-Opus record pass (R5 F1)
+--- MUTANT r5f1b: R5 F1: the jq wrapper keeps the caller HOME
+    99c99
+    < jq() { HOME=$w command jq "$@"; }   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    ---
+    > jq() { command jq "$@"; }   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    KILLED (RESULT pass=146 fail=4; first: FAIL hostile $HOME/.jq shadowing any() cannot make a non-Opus record pass (R5 F1)
+--- MUTANT r5f2a: R5 F2: the jq start smoke test dropped
+    102c102
+    < jq -n 1 >/dev/null 2>&1 || { echo "jq unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    ---
+    > true || { echo "jq unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    KILLED (RESULT pass=148 fail=2; first: FAIL jq that cannot start after the LD_* scrub is exit 2, not a record refusal ()
+--- MUTANT r5f2b: R5 F2: the python3 start smoke test dropped
+    103c103
+    < python3 -I -c '' >/dev/null 2>&1 || { echo "python3 unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    ---
+    > true || { echo "python3 unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    KILLED (RESULT pass=148 fail=2; first: FAIL python3 that cannot start after the LD_* scrub is exit 2, not a record refu)
+--- MUTANT r6pr1: R6 PR-1: the jq HOME is the work dir's PARENT (TMPDIR, a shared directory) instead of the private work dir
+    99c99
+    < jq() { HOME=$w command jq "$@"; }   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    ---
+    > jq() { HOME=$w/.. command jq "$@"; }   # HOME is the private work dir ITSELF, never its parent (round 6, PR-1: the parent is the shared TMPDIR)
+    KILLED (RESULT pass=148 fail=2; first: FAIL a hostile .jq in TMPDIR (the dir above the private work dir) cannot make a )
+--- MUTANT r6pr2: R6 PR-2: the python3 start smoke test runs without -I (the user site and PYTHON* are honoured)
+    103c103
+    < python3 -I -c '' >/dev/null 2>&1 || { echo "python3 unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    ---
+    > python3 -c '' >/dev/null 2>&1 || { echo "python3 unusable: it cannot start in the scrubbed environment (tool unusable)" >&2; exit 2; }
+    KILLED (RESULT pass=149 fail=1; first: FAIL a user-site usercustomize that exits is NOT 'python3 unusable': the isolate)
+MUTATIONS total=6 survived_or_unapplied=0 documented_equivalent=0
+
+=== anchor check of ALL rows (MUT_ANCHORS_ONLY=1, the suite is not run; run_at 2026-10-06T13:36:21Z)
+MUTATIONS total=71 survived_or_unapplied=0 documented_equivalent=0

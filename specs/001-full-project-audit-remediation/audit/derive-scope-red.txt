@@ -1,0 +1,7 @@
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/audit/derive_scope.sh is absent or not executable (RED state)
+FAIL fixture run: want rc=0, got rc=127
+FAIL TSV differs from expected
+FAIL second run differs or absent
+FAIL unclassifiable URL: want rc=3 and no output, got rc=127
+ok   control needle: a mis-classified copy is detected as different
+SUMMARY pass=1 fail=4

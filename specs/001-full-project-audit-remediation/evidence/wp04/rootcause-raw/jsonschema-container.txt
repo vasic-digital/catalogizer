@@ -1,0 +1,24 @@
+/usr/bin/python3 /usr/lib/python3/dist-packages/jsonschema/__init__.py
+Activate.ps1
+activate
+activate.csh
+activate.fish
+check-added-large-files
+check-ast
+check-builtin-literals
+check-byte-order-marker
+check-case-conflict
+check-docstring-first
+check-executables-have-shebangs
+check-json
+check-merge-conflict
+check-shebang-scripts-are-executable
+check-symlinks
+check-toml
+check-vcs-permalinks
+check-xml
+check-yaml
+debug-statement-hook
+ModuleNotFoundError: No module named 'jsonschema'
+/usr/bin/python3
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

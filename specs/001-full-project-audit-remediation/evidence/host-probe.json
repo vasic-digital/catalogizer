@@ -1,0 +1,59 @@
+{
+  "schema": "host-probe/1",
+  "scope": "local",
+  "host": "anton",
+  "probed_at": "2026-10-06T07:20:03Z",
+  "kvm": {
+    "status": "present",
+    "value": "/dev/kvm"
+  },
+  "selinux": {
+    "status": "absent",
+    "detail": "no selinuxfs and no getenforce"
+  },
+  "ulimit_u": {
+    "status": "present",
+    "value": 123699
+  },
+  "cgroup_version": {
+    "status": "present",
+    "value": 2
+  },
+  "rootless": {
+    "status": "present",
+    "value": true
+  },
+  "user_slice_memory_max": {
+    "status": "present",
+    "value": "max"
+  },
+  "nproc": {
+    "status": "present",
+    "value": 16
+  },
+  "mem_total": {
+    "status": "present",
+    "value": 32478769152
+  },
+  "mem_available": {
+    "status": "present",
+    "value": 16378970112
+  },
+  "control_needle": {
+    "status": "absent",
+    "path": "/nonexistent/catalogizer-probe-needle-4081509",
+    "detail": "expected absence confirmed"
+  },
+  "control_positive": {
+    "status": "present",
+    "path": "scripts/containers/probe_host.sh"
+  },
+  "control_positive_dev": {
+    "status": "present",
+    "path": "/dev/null"
+  },
+  "control_positive_sys": {
+    "status": "present",
+    "path": "/sys/kernel"
+  }
+}

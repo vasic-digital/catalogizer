@@ -1,0 +1,39 @@
+== GREEN run 1
+ok   xhigh Opus record passes
+ok   high record refused (refused: effort_not_xhigh)
+ok   ? record refused (refused: effort_not_xhigh)
+ok   missing record refused (refused: provenance_absent)
+ok   claimed xhigh without effort argument refused (control needle) (refused: effort_argument_absent)
+ok   non-Opus model refused (refused: model_not_opus)
+ok   record without run id refused (refused: workflow_run_id_absent)
+ok   verdict effort differs from record refused (refused: verdict_field_mismatch)
+ok   verdict changed by one byte refused (verdict_sha_mismatch) (refused: verdict_sha_mismatch)
+ok   record without verdict_sha256 refused (verdict_sha_absent) (refused: verdict_sha_absent)
+RESULT pass=10 fail=0
+rc=0
+== GREEN run 2
+ok   xhigh Opus record passes
+ok   high record refused (refused: effort_not_xhigh)
+ok   ? record refused (refused: effort_not_xhigh)
+ok   missing record refused (refused: provenance_absent)
+ok   claimed xhigh without effort argument refused (control needle) (refused: effort_argument_absent)
+ok   non-Opus model refused (refused: model_not_opus)
+ok   record without run id refused (refused: workflow_run_id_absent)
+ok   verdict effort differs from record refused (refused: verdict_field_mismatch)
+ok   verdict changed by one byte refused (verdict_sha_mismatch) (refused: verdict_sha_mismatch)
+ok   record without verdict_sha256 refused (verdict_sha_absent) (refused: verdict_sha_absent)
+RESULT pass=10 fail=0
+rc=0
+== GREEN run 3
+ok   xhigh Opus record passes
+ok   high record refused (refused: effort_not_xhigh)
+ok   ? record refused (refused: effort_not_xhigh)
+ok   missing record refused (refused: provenance_absent)
+ok   claimed xhigh without effort argument refused (control needle) (refused: effort_argument_absent)
+ok   non-Opus model refused (refused: model_not_opus)
+ok   record without run id refused (refused: workflow_run_id_absent)
+ok   verdict effort differs from record refused (refused: verdict_field_mismatch)
+ok   verdict changed by one byte refused (verdict_sha_mismatch) (refused: verdict_sha_mismatch)
+ok   record without verdict_sha256 refused (verdict_sha_absent) (refused: verdict_sha_absent)
+RESULT pass=10 fail=0
+rc=0

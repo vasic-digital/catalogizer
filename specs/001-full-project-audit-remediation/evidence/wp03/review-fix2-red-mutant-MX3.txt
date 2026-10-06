@@ -1,0 +1,16 @@
+MUTANT MX3 verifier=b6f7cafc382eaf0d27e795b5c9070d4bc1f32dfd26817c79fb77ea69da6630ee test=d835944b8ab974c36a4aa38a9852533a969161da13db3ab2eb1cfbdb199fad8c
+-      if [ -z "$why" ] && ! valid_remote "$r"; then why="the remote name '$r'"; fi
++      if [ -z "$why" ] && false; then why="the remote name '$r'"; fi
+FAIL rn upload: exit 14 (the refused remote is unproven, never clean) (got '0', want '14')
+FAIL rn upload: the hostile remote's row is NO-REMOTE-BRANCH (got 'SAME', want 'NO-REMOTE-BRANCH')
+FAIL rn upload: no refusal message: 
+FAIL rn uploadsp: exit 14 (the refused remote is unproven, never clean) (got '0', want '14')
+FAIL rn uploadsp: the hostile remote's row is NO-REMOTE-BRANCH (got 'SAME', want 'NO-REMOTE-BRANCH')
+FAIL rn uploadsp: no refusal message: 
+FAIL rn dash: exit 14 (the refused remote is unproven, never clean) (got '0', want '14')
+FAIL rn dash: the hostile remote's row is NO-REMOTE-BRANCH (got 'SAME', want 'NO-REMOTE-BRANCH')
+FAIL rn dash: no refusal message: 
+FAIL rn space: exit 14 (the refused remote is unproven, never clean) (got '0', want '14')
+FAIL rn space: the hostile remote's row is NO-REMOTE-BRANCH (got 'SAME', want 'NO-REMOTE-BRANCH')
+FAIL rn space: no refusal message: 
+SUMMARY pass=221 fail=12

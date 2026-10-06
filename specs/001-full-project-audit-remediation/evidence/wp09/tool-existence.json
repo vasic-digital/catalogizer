@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "checked_on": "anton",
+  "method": "PyPI JSON API sha256 cross-check of the pip-downloaded file (11.4.270 existence verdict)",
+  "tools": [
+    {
+      "package": "certifi",
+      "version": "2026.7.22",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/certifi/2026.7.22/json lists the sha256 of the downloaded file",
+      "downloaded_file": "certifi-2026.7.22-py3-none-any.whl",
+      "sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+      "checked_at": "2026-10-05T20:11:12Z"
+    },
+    {
+      "package": "charset-normalizer",
+      "version": "3.5.2",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/charset-normalizer/3.5.2/json lists the sha256 of the downloaded file",
+      "downloaded_file": "charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "211d5a3eb6af8f513b8d4ca19a8c1b7accab1b5f0d3175f9826b03c1a920dc1f",
+      "checked_at": "2026-10-05T20:11:12Z"
+    },
+    {
+      "package": "detect-secrets",
+      "version": "1.4.0",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/detect-secrets/1.4.0/json lists the sha256 of the downloaded file",
+      "downloaded_file": "detect_secrets-1.4.0-py3-none-any.whl",
+      "sha256": "d08ecabeee8b68c0acb0e8a354fb98d822a653f6ed05e520cead4c6fc1fc02cd",
+      "checked_at": "2026-10-05T20:11:12Z"
+    },
+    {
+      "package": "identify",
+      "version": "2.6.20",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/identify/2.6.20/json lists the sha256 of the downloaded file",
+      "downloaded_file": "identify-2.6.20-py2.py3-none-any.whl",
+      "sha256": "6a16b69b93187244e0548cbfd25b3e4a6f9a7a2ad784625c3bec2b8d27b81aaa",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "idna",
+      "version": "3.20",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/idna/3.20/json lists the sha256 of the downloaded file",
+      "downloaded_file": "idna-3.20-py3-none-any.whl",
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "pre-commit-hooks",
+      "version": "4.5.0",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/pre-commit-hooks/4.5.0/json lists the sha256 of the downloaded file",
+      "downloaded_file": "pre_commit_hooks-4.5.0-py2.py3-none-any.whl",
+      "sha256": "b779d5c44ede9b1fda48e2d96b08e9aa5b1d2fdb8903ca09f0dbaca22d529edb",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "PyYAML",
+      "version": "6.0.3",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/PyYAML/6.0.3/json lists the sha256 of the downloaded file",
+      "downloaded_file": "pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "b8bb0864c5a28024fac8a632c443c87c5aa6f215c0b126c449ae1a150412f31d",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "requests",
+      "version": "2.34.2",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/requests/2.34.2/json lists the sha256 of the downloaded file",
+      "downloaded_file": "requests-2.34.2-py3-none-any.whl",
+      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "ruamel.yaml",
+      "version": "0.19.1",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/ruamel.yaml/0.19.1/json lists the sha256 of the downloaded file",
+      "downloaded_file": "ruamel_yaml-0.19.1-py3-none-any.whl",
+      "sha256": "27592957fedf6e0b62f281e96effd28043345e0e66001f97683aa9a40c667c93",
+      "checked_at": "2026-10-05T20:11:13Z"
+    },
+    {
+      "package": "urllib3",
+      "version": "2.8.0",
+      "verdict": "VERIFIED",
+      "evidence": "https://pypi.org/pypi/urllib3/2.8.0/json lists the sha256 of the downloaded file",
+      "downloaded_file": "urllib3-2.8.0-py3-none-any.whl",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "checked_at": "2026-10-05T20:11:13Z"
+    }
+  ]
+}

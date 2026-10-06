@@ -1,0 +1,18 @@
+=== mutant no_dirty_check: /exit 13$/d
+225d224
+< [ "$n_dirty" -gt 0 ] && exit 13
+T031 against mutant no_dirty_check: rc=1 SUMMARY pass=53 fail=5
+FAIL dirty file, plain: exit 13 (got '0', want '13')
+FAIL unreachable remote plus dirty file, plain: exit 13 (failing class precedes 14) (got '14', want '13')
+FAIL dirty plus diverged, --fetch: exit 13 (decision a: dirty first) (got '12', want '13')
+FAIL unexplained stash, plain: exit 13 (got '0', want '13')
+FAIL --no-remote still decides dirty (13) (got '0', want '13')
+=== mutant no_divergence_check: /exit 12$/{/n_div/d}
+226d225
+< [ "$n_div" -gt 0 ] && exit 12
+T031 against mutant no_divergence_check: rc=1 SUMMARY pass=55 fail=3
+FAIL diverged branch, --fetch: exit 12 (got '0', want '12')
+FAIL remote tip rewritten by a forced update, --fetch: exit 12 (got '0', want '12')
+FAIL R4 histories split, --fetch: exit 12 (DIVERGED) (got '0', want '12')
+=== mutant control_unmutated: s/zzzz_nomatch//
+T031 against mutant control_unmutated: rc=0 SUMMARY pass=58 fail=0

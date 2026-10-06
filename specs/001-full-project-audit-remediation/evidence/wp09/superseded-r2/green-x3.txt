@@ -1,0 +1,54 @@
+T001 green x3 (review fix pass), generated 2026-10-05T09:54:52Z
+git HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2 (working tree uncommitted; scripts/containers untracked)
+host: anton kernel 7.0.0-34-generic
+default test runs write nothing under the repo (mutation records go to a scratch dir)
+--- run 1: bash scripts/containers/tests/test_probe_host.sh   start 09:54:52Z
+PASS: mutation cgroup-hardcoded-2 observed failing (1 assertion(s) RED)
+PASS: mutation rootless-hardcoded-true observed failing (1 assertion(s) RED)
+PASS: mutation needle-hardcoded-absent observed failing (1 assertion(s) RED)
+PASS: mutation getenforce-failure-as-absent observed failing (1 assertion(s) RED)
+PASS: mutation selinuxfs-failure-as-present observed failing (1 assertion(s) RED)
+probe_host tests: 46 passed, 0 failed
+rc=0 end 09:55:07Z
+--- run 1: bash scripts/containers/tests/test_disk_headroom.sh   start 09:55:07Z
+PASS: mutation ignore-grant observed failing (14 assertion(s) RED)
+PASS: mutation unreadable-as-none observed failing (2 assertion(s) RED)
+PASS: mutation no-reread observed failing (7 assertion(s) RED)
+PASS: mutation direct-reap observed failing (3 assertion(s) RED)
+disk_headroom tests: 97 passed, 0 failed
+rc=0 end 09:55:21Z
+--- run 2: bash scripts/containers/tests/test_probe_host.sh   start 09:55:21Z
+PASS: mutation cgroup-hardcoded-2 observed failing (1 assertion(s) RED)
+PASS: mutation rootless-hardcoded-true observed failing (1 assertion(s) RED)
+PASS: mutation needle-hardcoded-absent observed failing (1 assertion(s) RED)
+PASS: mutation getenforce-failure-as-absent observed failing (1 assertion(s) RED)
+PASS: mutation selinuxfs-failure-as-present observed failing (1 assertion(s) RED)
+probe_host tests: 46 passed, 0 failed
+rc=0 end 09:55:35Z
+--- run 2: bash scripts/containers/tests/test_disk_headroom.sh   start 09:55:35Z
+PASS: mutation ignore-grant observed failing (14 assertion(s) RED)
+PASS: mutation unreadable-as-none observed failing (2 assertion(s) RED)
+PASS: mutation no-reread observed failing (7 assertion(s) RED)
+PASS: mutation direct-reap observed failing (3 assertion(s) RED)
+disk_headroom tests: 97 passed, 0 failed
+rc=0 end 09:55:50Z
+--- run 3: bash scripts/containers/tests/test_probe_host.sh   start 09:55:50Z
+PASS: mutation cgroup-hardcoded-2 observed failing (1 assertion(s) RED)
+PASS: mutation rootless-hardcoded-true observed failing (1 assertion(s) RED)
+PASS: mutation needle-hardcoded-absent observed failing (1 assertion(s) RED)
+PASS: mutation getenforce-failure-as-absent observed failing (1 assertion(s) RED)
+PASS: mutation selinuxfs-failure-as-present observed failing (1 assertion(s) RED)
+probe_host tests: 46 passed, 0 failed
+rc=0 end 09:56:04Z
+--- run 3: bash scripts/containers/tests/test_disk_headroom.sh   start 09:56:04Z
+PASS: mutation ignore-grant observed failing (14 assertion(s) RED)
+PASS: mutation unreadable-as-none observed failing (2 assertion(s) RED)
+PASS: mutation no-reread observed failing (7 assertion(s) RED)
+PASS: mutation direct-reap observed failing (3 assertion(s) RED)
+disk_headroom tests: 97 passed, 0 failed
+rc=0 end 09:56:19Z
+--- real-host evidence commands 09:56:28Z:
+EV=specs/001-full-project-audit-remediation/evidence/wp09 bash scripts/containers/probe_host.sh -> specs/001-full-project-audit-remediation/evidence/wp09/host-probe.json
+EV=specs/001-full-project-audit-remediation/evidence/wp09 bash scripts/containers/disk_headroom.sh --need 6086120270 --op-id t001-real-host-need-largest-image -> specs/001-full-project-audit-remediation/evidence/wp09/disk/t001-real-host-need-largest-image.json
+RED captures: disk-headroom-review-red.txt, probe-review-red.txt
+note: review r2 N10: canonical records are $EV/host-probe.json = evidence/wp09/host-probe.json and evidence/wp09/disk/<op_id>.json; the duplicate evidence/disk/ record was deleted; both were re-recorded in n1-n12-green-x3.txt

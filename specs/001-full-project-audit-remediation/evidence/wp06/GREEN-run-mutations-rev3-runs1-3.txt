@@ -1,0 +1,86 @@
+# WF3 round 4 evidence | utc=2026-10-06T05:32:57Z host=anton uid=1000 | run_mutations x3 (host-side)
+# sha256 gate=f2b94af598098726c76dafc6cba476449ddaeb7f59aad82ce289cf1581e2d440 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 mutate_ddl=41972d1118e67f4697c834dc9af6b46fc40907f8f17275affecc803733db4f52 run_mutations=ba3eac5b1011dceaf867860f10ab13839745a1e5f647b5df3e87a22bc9a933ab equivalent_mutants=7996e06d2aef62ef946e946de7e115836c2b9521b06eb2f0b22c7c357a379e92
+# sha256 test_gate=66f979f237b363b90f15376a2159882a7215a8a4270f2eb65d2cc1d79e9e5528 test_behaviour=77c06dc0d54da5419d4c5983031bc8539c7e1706e9a2b3873f29ae206dfa8b1a test_ext=65b55e9c736b3fd0b6220da8b7d79862c09bc790404d0c3de7d0dbc3cc1b5f4d mutate_gate=6d500dd8961d2f5d64bcfe2ce900caf3dd1f1466cba7966d0a22acf9ea29a17d equiv_gate=218bad5dbd91522a081f65fecc7007f5c6e7e2a98041939ddbcb70afb6f94bf3
+# sha256 ratchet=fb354ebc3fe451e98e4df0409f2ccdefdd30ddef05f677598711ba356357e119 ledger_test=18dc33ca5f00fb8aba44b81a1aedd85d559f247578bcc6ce7f48821877e735ab ledger_mut=c3243c0829ae84597a0efb6409d72739d44c8affdd84bf740b75afb8ef5a4647 ledger=58f4f2d44cc2275d13e3c4700d3670706cb3e271bd27de566dd0a7067a59d2e0 prev_names=c292b92b907f0bd170e6d8da9e0747a2c72c0dfa631ccd9990030ac984739dde
+# container_image_digest=UNCONFIRMED (see README)
+== run 1 ==
+ok   R1 two mutants the fake test cannot see survive: exit 1
+ok   R2 summary: 41 killed, 0 equivalent, 2 survived of 43
+ok   R3 the table agrees with the summary (41 yes, 2 NO)
+ok   R4 both survivors listed as reviewed-equivalent: exit 0
+ok   R5 summary counts them as equivalent_reviewed, not killed
+ok   R6 the equivalence reason is printed in the table
+ok   R7 a row naming a mutant that a test KILLS is stale: exit 4
+ok   R8 the stale row is named on stderr
+ok   R9 a row naming no mutant is stale: exit 4
+ok   R10 named on stderr
+ok   R11 a row of a kind this run did not select is not stale: exit 0
+ok   R12 a detail prefix that matches nothing leaves the mutant a survivor (and the row stale): exit 4
+ok   R13 a test that fails only on a count kills nothing: every mutant is COUNT_ONLY, exit 1
+ok   R14 COUNT_ONLY rows are counted as unreviewed survivors in the summary
+ok   R15 the same test without --count-checks kills them all (the option is what separates the two)
+ok   R16 a test that fails on the unmutated DDL aborts the run (exit 3)
+ok   R17 an option without a value exits 2 (no hang)
+ok   R18 no --test/--out exits 2
+ok   R21 a row for a surviving mutant of a table is not stale just because a sibling mutant of that table is killed
+ok   R21b the survivor is reported EQUIV
+ok   R22 a row naming the one mutant a test KILLS is stale: exit 4
+ok   R22b named on stderr
+ok   R19 a DDL in which a clause mutant's text no longer occurs exactly once aborts (exit 2)
+ok   R20 the message names the remedy
+RESULT pass=24 fail=0
+rc=0
+== run 2 ==
+ok   R1 two mutants the fake test cannot see survive: exit 1
+ok   R2 summary: 41 killed, 0 equivalent, 2 survived of 43
+ok   R3 the table agrees with the summary (41 yes, 2 NO)
+ok   R4 both survivors listed as reviewed-equivalent: exit 0
+ok   R5 summary counts them as equivalent_reviewed, not killed
+ok   R6 the equivalence reason is printed in the table
+ok   R7 a row naming a mutant that a test KILLS is stale: exit 4
+ok   R8 the stale row is named on stderr
+ok   R9 a row naming no mutant is stale: exit 4
+ok   R10 named on stderr
+ok   R11 a row of a kind this run did not select is not stale: exit 0
+ok   R12 a detail prefix that matches nothing leaves the mutant a survivor (and the row stale): exit 4
+ok   R13 a test that fails only on a count kills nothing: every mutant is COUNT_ONLY, exit 1
+ok   R14 COUNT_ONLY rows are counted as unreviewed survivors in the summary
+ok   R15 the same test without --count-checks kills them all (the option is what separates the two)
+ok   R16 a test that fails on the unmutated DDL aborts the run (exit 3)
+ok   R17 an option without a value exits 2 (no hang)
+ok   R18 no --test/--out exits 2
+ok   R21 a row for a surviving mutant of a table is not stale just because a sibling mutant of that table is killed
+ok   R21b the survivor is reported EQUIV
+ok   R22 a row naming the one mutant a test KILLS is stale: exit 4
+ok   R22b named on stderr
+ok   R19 a DDL in which a clause mutant's text no longer occurs exactly once aborts (exit 2)
+ok   R20 the message names the remedy
+RESULT pass=24 fail=0
+rc=0
+== run 3 ==
+ok   R1 two mutants the fake test cannot see survive: exit 1
+ok   R2 summary: 41 killed, 0 equivalent, 2 survived of 43
+ok   R3 the table agrees with the summary (41 yes, 2 NO)
+ok   R4 both survivors listed as reviewed-equivalent: exit 0
+ok   R5 summary counts them as equivalent_reviewed, not killed
+ok   R6 the equivalence reason is printed in the table
+ok   R7 a row naming a mutant that a test KILLS is stale: exit 4
+ok   R8 the stale row is named on stderr
+ok   R9 a row naming no mutant is stale: exit 4
+ok   R10 named on stderr
+ok   R11 a row of a kind this run did not select is not stale: exit 0
+ok   R12 a detail prefix that matches nothing leaves the mutant a survivor (and the row stale): exit 4
+ok   R13 a test that fails only on a count kills nothing: every mutant is COUNT_ONLY, exit 1
+ok   R14 COUNT_ONLY rows are counted as unreviewed survivors in the summary
+ok   R15 the same test without --count-checks kills them all (the option is what separates the two)
+ok   R16 a test that fails on the unmutated DDL aborts the run (exit 3)
+ok   R17 an option without a value exits 2 (no hang)
+ok   R18 no --test/--out exits 2
+ok   R21 a row for a surviving mutant of a table is not stale just because a sibling mutant of that table is killed
+ok   R21b the survivor is reported EQUIV
+ok   R22 a row naming the one mutant a test KILLS is stale: exit 4
+ok   R22b named on stderr
+ok   R19 a DDL in which a clause mutant's text no longer occurs exactly once aborts (exit 2)
+ok   R20 the message names the remedy
+RESULT pass=24 fail=0
+rc=0

@@ -1,0 +1,6 @@
+CAUGHT   NB2a N-B2 staged gitlink changes not detected
+CAUGHT   NB2b N-B2 a staged ADDED gitlink not detected
+SURVIVED NB2c N-B2 a staged REMOVED gitlink not detected
+CAUGHT   NB2d N-B2 git diff-index exit not checked
+CAUGHT   NB2e N-B2 staged gitlink counted but listed nowhere (could be excepted)
+MUTATION SUMMARY caught=4 survived=1 broken=0

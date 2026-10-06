@@ -1,0 +1,262 @@
+# T050 GREEN x3: tests run against the implemented tools
+# generated_utc=2026-10-05T13:34:29Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 56ead5856aa31eeb142adb63bc202b89ee585690157dfe1a77235d6257c04724  tools/evidence/evcore.py
+# sha256 1f665a89a392e5bff742405a45bbbe7611f13be4702b0a949c414486962a56cd  tools/evidence/tests/test_evrec.sh
+# sha256 2e1260e7c85949168678212c804cf9b6565127c0d9c35f7b65ad1feb7744dca0  tools/evidence/tests/test_evrec_more.sh
+# sha256 841d4ed10f173592201d829472b4cba0a772d84b46e1d3b3d78a3f018f3d8a98  tools/evidence/tests/run_mutations.py
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+## run 1 test_evrec.sh
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (305 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+/home/milosvasic/Projects/catalogizer/tools/evidence/tests/test_evrec.sh: line 91: 1507658 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+checks=54 failures=0
+rc=0
+## run 1 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+checks=23 failures=0
+rc=0
+## run 2 test_evrec.sh
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (304 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+/home/milosvasic/Projects/catalogizer/tools/evidence/tests/test_evrec.sh: line 91: 1555307 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+checks=54 failures=0
+rc=0
+## run 2 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+checks=23 failures=0
+rc=0
+## run 3 test_evrec.sh
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (306 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+/home/milosvasic/Projects/catalogizer/tools/evidence/tests/test_evrec.sh: line 91: 1606422 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+checks=54 failures=0
+rc=0
+## run 3 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+checks=23 failures=0
+rc=0

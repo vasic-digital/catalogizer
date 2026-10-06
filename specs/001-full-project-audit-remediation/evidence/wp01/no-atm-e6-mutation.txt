@@ -1,0 +1,55 @@
+# sha256 scripts/governance/tests/test_no_atm_prefix.sh: 4a0cfb380c31ba46f86eebe0309900ee2b4f8dec2ea9a898d4d2935634436b8e
+# date 2026-10-05T20:09:03Z head a27d72a5
+# MUTATION: rule line removed
+FAIL E6 the exact constitution gate token is exempt in the two ledger files (1 exempt line each): wanted violations in [], got ['scripts/ledger/project_gate_ledger.tsv', 'scripts/ledger/project_gate_ledger_prev_names.txt'] (scripts/ledger/project_gate_ledger.tsv:1: CM-ATM-TICKET-IDS-COMPLETE	DEFERRED	PENDING; scripts/ledger/project_gate_ledger_prev_names.txt:1: CM-ATM-TICKET-IDS-COMPLETE)
+FAIL 42 ATM occurrence(s) or marker violation(s) remain in /home/milosvasic/Projects/catalogizer:
+     scripts/governance/tests/_m.sh:3: #   the prefix ATM must not appear in this repository's own files (generic example id: XYZ-NNN).
+     scripts/governance/tests/_m.sh:6: # Env:    ATM_SCAN_ROOT  repository root to scan (default: the repo root of this script). The control needles and
+     scripts/governance/tests/_m.sh:8: # Exit:   0 no ATM id in scope, every control needle and scenario behaved, the exemption inventory matches; 1 otherwise.
+     scripts/governance/tests/_m.sh:9: # Scope:  EVERY file of `git ls-files -co --exclude-standard` of ATM_SCAN_ROOT (tracked or untracked-not-ignored; a
+     scripts/governance/tests/_m.sh:12: #         name, and the lowercase identifiers 'atm_id', 'new_atm_id', 'head_atm_id' are NOT matched; whether the owner's 'remove ATM from this repo's files' covers them is UNCONFIRMED, 
+     scripts/governance/tests/_m.sh:13: #         PNG): pattern ATM-[0-9]{3} on the raw bytes (a bare 'ATM' is a random byte run in a PNG). A regular file that
+     scripts/governance/tests/_m.sh:16: #   E1 .specify/memory/constitution.md and constitution-appendix.md (read-only here; the owner said their ATM text needs a
+     scripts/governance/tests/_m.sh:22: #      ATM mention in a decision file is therefore a hit (review N2).
+     scripts/governance/tests/_m.sh:24: #        line marker   <!-- ATM-ALLOW:<kind> --> (or '# ATM-ALLOW:<kind>')  exempts the line that carries it
+     scripts/governance/tests/_m.sh:25: ATM-ALLOW-END without BEGIN
+     scripts/governance/tests/_m.sh:33: export SCAN_ROOT="${ATM_SCAN_ROOT:-$REAL_ROOT}"
+     scripts/governance/tests/_m.sh:41: RX_BIN = re.compile(rb"ATM-[0-9]{3}")
+     scripts/governance/tests/_m.sh:65: #   change is approved). CM-ATM-TICKET-IDS-COMPLETE is the constitution's own gate name (docs/04 names it) and must stay verbatim
+     scripts/governance/tests/_m.sh:66: #   for the ledger ratchet. It is exempt ONLY as that exact quoted token (no wildcard, no other ATM literal) and ONLY in the
+     scripts/governance/tests/_m.sh:69: TOKEN = b"CM-ATM-TICKET-IDS-COMPLETE"
+     scripts/governance/tests/_m.sh:109:         if b"ATM" not in data: continue
+     scripts/governance/tests/_m.sh:114:             mb = re.search(rb"(?:<!--|#)\s*ATM-ALLOW-BEGIN:([A-Za-z-]+)", ln); me = re.search(rb"(?:<!--|#)\s*ATM-ALLOW-END", ln)
+     scripts/governance/tests/_m.sh:115:             ml = re.search(rb"(?:<!--|#)\s*ATM-ALLOW:([A-Za-z-]+)", ln)
+     scripts/governance/tests/_m.sh:117:                 if mb.group(1) not in KINDS: viol.append("%s:%d: unknown ATM-ALLOW-BEGIN kind %r" % (rel, i, mb.group(1).decode())); continue
+     scripts/governance/tests/_m.sh:118:                 if region is not None: viol.append("%s:%d: nested ATM-ALLOW-BEGIN (opened at line %d)" % (rel, i, region_start)); continue
+     scripts/governance/tests/_m.sh:121:                 if region is None: viol.append("%s:%d: ATM-ALLOW-END without BEGIN" % (rel, i))
+     scripts/governance/tests/_m.sh:127:                 if ml.group(1) not in KINDS: viol.append("%s:%d: unknown ATM-ALLOW kind %r" % (rel, i, ml.group(1).decode())); continue
+     scripts/governance/tests/_m.sh:140:         if region is not None: viol.append("%s: ATM-ALLOW-BEGIN at line %d never closed" % (rel, region_start))
+     scripts/governance/tests/_m.sh:167: want_hits("needle: ATM id, bare ATM, ATM_ID in specs/docs/tools", {"specs/x/n.md": B("item ATM-123 here\n"), "docs/n2.md": B("prefix ATM alone\n"), "tools/n3.sh": B("ATM_ID underscore\
+     scripts/governance/tests/_m.sh:168: want_hits("N1 whole repo scope: .helix/reporting.yaml and a root file are scanned", {".helix/reporting.yaml": B("id_prefix: ATM\n"), "README.md": B("see ATM-007\n")}, [".helix/reportin
+     scripts/governance/tests/_m.sh:170: want_hits("binary file without an id-shaped run is not a hit (PNG-like bare ATM)", {"x/img.png": B("\x89PNG\0\0ATM\0ATM_\0")}, [])
+     scripts/governance/tests/_m.sh:171: want_hits("N4 a nested directory named submodules is scanned; only the top-level submodules/ is skipped", {"docs/submodules/notes.md": B("ATM-777\n"), "submodules/top/x.md": B("ATM-888
+     scripts/governance/tests/_m.sh:172: want_hits("N6 path containing '|' and '&' and a space keeps its hit", {"docs/a|b.md": B("ATM-321\n"), "docs/c&d.md": B("ATM-322\n"), "docs/e f.md": B("ATM-323\n")}, ["docs/a|b.md", "do
+     scripts/governance/tests/_m.sh:174: want_hits("E1 constitution files and E3 self are exempt", {".specify/memory/constitution.md": B("ATM-001\n"), ".specify/memory/other.md": B("ATM-002\n"), SELF_REL: B("ATM-003\n")}, [".
+     scripts/governance/tests/_m.sh:175: want_hits("E2 only the feature-folder evidence dir is exempt: docs/evidence is scanned", {FEATREL + "/evidence/log.txt": B("ATM-001\n"), "docs/evidence/log.txt": B("ATM-001\n")}, ["doc
+     scripts/governance/tests/_m.sh:176: want_hits("E4 N2 a quoted fragment is exempt, a new ATM mention in the same file is a hit",
+     scripts/governance/tests/_m.sh:177:           {OWN: B("  text: id prefix CAT (never ATM; remove ATM from this repo's files); generic\n  note: first register item will be ATM-005\n")}, [OWN], expect_exempt=[OWN])
+     scripts/governance/tests/_m.sh:178: want_hits("E4 fragment plus a second ATM on the same line is a hit", {OWN: B("id prefix CAT (never ATM; remove ATM from this repo's files) and ATM-9\n")}, [OWN])
+     scripts/governance/tests/_m.sh:182: nested ATM-ALLOW-BEGIN (opened at line 181)
+     scripts/governance/tests/_m.sh:183: nested ATM-ALLOW-BEGIN (opened at line 181)
+     scripts/governance/tests/_m.sh:186: nested ATM-ALLOW-BEGIN (opened at line 185)
+     scripts/governance/tests/_m.sh: ATM-ALLOW-BEGIN at line 185 never closed
+     scripts/ledger/project_gate_ledger.tsv:5: CM-ATM-TICKET-IDS-COMPLETE	DEFERRED	PENDING-REGISTER-ITEM(after T069)
+     scripts/ledger/project_gate_ledger_prev_names.txt:1: CM-ATM-TICKET-IDS-COMPLETE
+     specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml:1728: - "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-
+     specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:1221: Note the `id_prefix: CAT` choice: the engine's own default is `WIT`; the constitution (11.4.54, 11.4.248) mandates the ATM prefix, the ow
+     specs/001-full-project-audit-remediation/progress.yml:19:   - "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-11, 2026-10-05), a
+FAIL exemption inventory: scripts/governance/tests/_m.sh has 29 exempt line(s), expected 0
+FAIL exemption inventory: scripts/ledger/project_gate_ledger.tsv has 0 exempt line(s), expected 1
+FAIL exemption inventory: scripts/ledger/project_gate_ledger_prev_names.txt has 0 exempt line(s), expected 1
+FAIL exemption inventory: specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml has 6 exempt line(s), expected 7
+FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 29 exempt line(s), expected 30
+FAIL exemption inventory: specs/001-full-project-audit-remediation/progress.yml has 1 exempt line(s), expected 2
+failures=8
+rc=1

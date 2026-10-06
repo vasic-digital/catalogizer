@@ -1,0 +1,19 @@
+# WP-02 round 6 green run 1: test_derive_scope.sh
+# 2026-10-06T13:43:10Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2 git=2.53.0
+# sha256 d9821d8a38416b1e38cb19c544e46867c3ec0b3e35f4e2f615ab118032dd82fc  scripts/audit/index_health.sh
+# sha256 1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  scripts/audit/scope_to_lumen_json.py
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183  scripts/audit/derive_scope.sh
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2  scripts/audit/tests/test_derive_scope.sh
+ok   fixture run exits 0
+ok   TSV equals the expected 10 rows (every depth, nesting rules, pending flags)
+ok   second run byte-identical (deterministic)
+ok   unclassifiable URL exits 3 and writes nothing
+ok   relative URL ../../org/repo.git exits 3 and writes nothing (DM3)
+ok   an unreadable .gitmodules exits 3 with a message and writes nothing (DM4)
+ok   an uninitialised (empty directory) submodule is reported not-descended (I8)
+ok   an unreadable --pending-orgs file exits 3 with a message and no traceback (m-g)
+ok   control needle: a mis-classified copy is detected as different
+IDENTITY test=2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2 script=253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton git=2.53.0 python=3.14.4 utc=2026-10-06T13:43:11Z
+SUMMARY pass=9 fail=0
+rc=0

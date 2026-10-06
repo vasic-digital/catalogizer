@@ -1,0 +1,6 @@
+ok   fixture run exits 0
+ok   TSV equals the expected 8 rows (every depth, nesting rules, pending flags)
+ok   second run byte-identical (deterministic)
+ok   unclassifiable URL exits 3 and writes nothing
+ok   control needle: a mis-classified copy is detected as different
+SUMMARY pass=5 fail=0

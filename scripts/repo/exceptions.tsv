@@ -1,0 +1,2 @@
+# path<TAB>kind<TAB>file<TAB>wt_sha256<TAB>blob_sha256<TAB>reason (reviewed rows only; docs/16 section 11.1 R1; T032; docs/scripts/verify_repos.md "Exceptions")
+submodules/helix_qa/tools/opensource/docling	dirty	tests/data/uspto/sources/pftaps057006474.txt	9e4a0221b6106f8766b77acc2dc36ca8591e5e1a384c11e15982c21af7b7d591	9e4a0221b6106f8766b77acc2dc36ca8591e5e1a384c11e15982c21af7b7d591	Third-party checkout: CRLF line endings make this tracked test data file show as modified

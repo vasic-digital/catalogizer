@@ -1,0 +1,7 @@
+CAUGHT   NI1b N-I1 hidden-untracked configuration not noted
+CAUGHT   NI2a N-I2 assume-unchanged entries ignored
+CAUGHT   NI2b N-I2 a deleted assume-unchanged file ignored
+CAUGHT   NI2c N-I2 an absent skip-worktree file counted as dirt
+CAUGHT   NI2d N-I2 flagged files never compared
+CAUGHT   NI2e N-I2 git ls-files -v exit not checked
+MUTATION SUMMARY caught=6 survived=0 broken=0

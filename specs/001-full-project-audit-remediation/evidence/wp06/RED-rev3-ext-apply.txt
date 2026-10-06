@@ -1,0 +1,7 @@
+# RED (WF3 round 4, m3): the round-4 test_register_ext.sh run against the rev 2 apply_ext.sh guard (guard block reconstructed byte for byte from the rev 2 text into the live file for one run, then the rev 3 file was restored: cmp identical)
+# captured utc=2026-10-06T05:31:40Z host=anton uid=1000
+FAIL F12 a percent-encoded file: URI that SQLite decodes to the real register is refused (rc 4) :: got [0] want [4]
+FAIL F12b the protected file is byte-identical after the refused percent-encoded call :: got [9cad8898f9f64ecf83a953152c4fb63df21281d877f03676f349c8211fabe280] want [4fee2daf2d566c67dc67ff5886492c27859b422f2f9c3a838306ef90e9abd86e]
+FAIL F12c the scheme is matched case-insensitively (FILE:) and refused (rc 4) :: got [0] want [4]
+FAIL F13 any file: URI is refused, even for a scratch path (rc 4): the guard does not try to out-parse SQLite :: got [3] want [4]
+RESULT pass=176 fail=4

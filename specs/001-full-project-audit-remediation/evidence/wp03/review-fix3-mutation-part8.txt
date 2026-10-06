@@ -1,0 +1,11 @@
+CAUGHT   DM7 m-g unreadable orgs file is a traceback with rc 1
+CAUGHT   SV1 nested-third-party prefix test without the path boundary
+CAUGHT   SV2 unknown TSV classes accepted (allow = every non-third_party row)
+CAUGHT   SV3 an allow root INSIDE a third_party row accepted
+CAUGHT   SV4 an allow root EQUAL to a third_party row accepted
+SURVIVED SV5 trailing slash hides a third_party root
+CAUGHT   SV6 a TSV row with an empty path accepted
+CAUGHT   SV7 a TSV row without a tab (IndexError traceback)
+CAUGHT   SV8 unwritable --out is a traceback
+CAUGHT   SV9 malformed --check classes accepted (traceback / wrong rc)
+MUTATION SUMMARY caught=9 survived=1 broken=0

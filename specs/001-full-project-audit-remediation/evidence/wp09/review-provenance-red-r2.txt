@@ -1,0 +1,31 @@
+ok   xhigh Opus record passes
+ok   high record refused (refused: effort_not_xhigh)
+ok   ? record refused (refused: effort_not_xhigh)
+ok   missing record refused (refused: provenance_absent)
+ok   claimed xhigh without effort argument refused (control needle) (refused: effort_argument_absent)
+ok   non-Opus model refused (refused: model_not_opus)
+ok   record without run id refused (refused: workflow_run_id_absent)
+ok   verdict effort differs from record refused (refused: verdict_field_mismatch)
+ok   verdict changed by one byte refused (verdict_sha_mismatch) (refused: verdict_sha_mismatch)
+ok   record without verdict_sha256 refused (verdict_sha_absent) (refused: verdict_sha_absent)
+FAIL verdict model differs from record model refused (B3) (rc=0 want reason=verdict_field_mismatch: OK review provenance: run=wf-run-0001 model=claude-opus-5 effort=xhigh)
+FAIL verdict model 'opus-fake-claim' vs real record refused (B3) (rc=0 want reason=verdict_field_mismatch: OK review provenance: run=wf-run-0001 model=claude-opus-5 effort=xhigh)
+ok   verdict without model refused (B3) (refused: verdict_field_mismatch)
+FAIL substring 'opus' in a non-Opus model refused (I1) (rc=0 want reason=model_not_opus: OK review provenance: run=wf-run-0001 model=claude-sonnet-5-5 (not opus) effort=xhigh)
+FAIL record model as an array refused (I1) (rc=0 want reason=model_not_opus: OK review provenance: run=wf-run-0001 model=[
+  "claude-sonnet-5-5",
+  "opus"
+] effort=xhigh)
+FAIL bare 'opus' refused, not an allow-list id (I1) (rc=0 want reason=model_not_opus: OK review provenance: run=wf-run-0001 model=opus effort=xhigh)
+FAIL case variant refused, exact match only (I1) (rc=0 want reason=model_not_opus: OK review provenance: run=wf-run-0001 model=Claude-Opus-5 effort=xhigh)
+FAIL id with a suffix refused (I1) (rc=0 want reason=model_not_opus: OK review provenance: run=wf-run-0001 model=claude-opus-5x effort=xhigh)
+FAIL second JSON document in the verdict refused (I2) (rc=0 want reason=verdict_unreadable: OK review provenance: run=wf-run-0001 model=claude-opus-5 effort=xhigh)
+FAIL second JSON document in the record refused (I2) (rc=0 want reason=provenance_unreadable: OK review provenance: run=wf-run-0001
+other model=claude-opus-5 effort=xhigh)
+FAIL top-level array verdict refused (I2) (rc=20 want reason=verdict_unreadable: jq: error (at /tmp/tmp.1ysvb0yuxW/d3.json:14): Cannot index array with string "effort"
+jq: error (at /tmp/tmp.1ysvb0yuxW/d3.json:14): Cannot index array with string "model"
+REFUSED reason=verdict_field_mismatch effort verdict='' record='xhigh')
+ok   explicit good record used although default-path record is bad (c2)
+ok   explicit bad record refused although default-path record is good (c2) (refused: effort_not_xhigh)
+FAIL header lacks the I3 honest boundary
+RESULT pass=13 fail=11

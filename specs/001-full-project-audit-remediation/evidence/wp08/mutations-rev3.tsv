@@ -1,0 +1,35 @@
+# identity: task=T087 utc=2026-10-06T06:01:18Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# ratchet_sha256=fb354ebc3fe451e98e4df0409f2ccdefdd30ddef05f677598711ba356357e119 test_sha256=18dc33ca5f00fb8aba44b81a1aedd85d559f247578bcc6ce7f48821877e735ab runner_sha256=c3243c0829ae84597a0efb6409d72739d44c8affdd84bf740b75afb8ef5a4647
+# columns: mutant<TAB>result(caught|SURVIVED|ERROR)<TAB>first failing check of the test
+no_F1	caught	FAIL name with no row FAILs (rc=1 want 1, pat=F1 CM-CCC-THREE)
+no_F2	caught	FAIL vanished name without citation FAILs (rc=0 want 1, pat=F2 CM-OLD-GONE)
+no_F3	caught	FAIL unimplemented count above baseline FAILs (rc=0 want 1, pat=F3)
+allow_md_site	caught	FAIL markdown carrier as site FAILs (rc=1 want 1, pat=markdown)
+allow_wildcard	caught	FAIL wildcard ledger row FAILs (rc=1 want 1, pat=F1b)
+blind_ok	caught	FAIL zero names is BLIND not clean (rc=0 want 1, pat=BLIND)
+LM1_removal_reason_ignored	caught	FAIL LM1 a removal row with an empty reason FAILs (rc=0 want 1, pat=F2 CM-OLD-GONE)
+LM1b_removal_reason_any_length	caught	FAIL LM1 a removal row with an empty reason FAILs (rc=0 want 1, pat=F2 CM-OLD-GONE)
+LM2_trailing_dash_ledger_row_ok	caught	FAIL LM2 a ledger row whose name ends in a dash FAILs (rc=1 want 1, pat=F1b)
+LM3_extraction_drops_digits	caught	FAIL LM3 a digit-bearing name with no row FAILs by its full name (rc=1 want 1, pat=F1 CM-QA2-GATE9 has neither
+I5a_non_code_site_accepted	caught	FAIL I-5a a name list as IMPLEMENTED site (carrier) FAILs (rc=0 want 1, pat=not a code file)
+I5a_comment_line_counts	caught	FAIL I-5a a code file that mentions the token only in a comment FAILs (rc=0 want 1, pat=non-comment line)
+I5a_own_inputs_allowed	caught	FAIL I-5a the ratchet's own prev-names input as IMPLEMENTED site FAILs (rc=0 want 1, pat=own input files)
+I5a_site_outside_root_allowed	caught	FAIL I-5a an implementation site path leaving the root FAILs (rc=1 want 1, pat=leaves the root)
+I5b_baseline_digits_concatenated	caught	FAIL I-5b a dated header in the baseline file is not read as part of the number: 3 deferred > 1 FAILs (rc=1 wa
+I5b_baseline_first_line_wins	caught	FAIL I-5b two integers in the baseline file FAIL (ambiguous) (rc=0 want 1, pat=ambiguous)
+I5b_baseline_non_integer_ok	caught	FAIL I-5b a non-integer baseline FAILs (rc=1 want 1, pat=unreadable or ambiguous)
+I5c_prev_working_file_only	caught	FAIL I3-1e rc=0 []
+I5d_no_ratchet_down	caught	FAIL count below baseline FAILs: slack must be lowered (ratchet only moves down, I-5d) (rc=0 want 1, pat=below
+I5e_hyphen_prose_not_stripped	caught	FAIL I-5e a name followed by hyphenated prose is a NAME with no row: FAILs (was a silent warn) (rc=1 want 1, p
+I5f_any_nonempty_ref_is_tracked	caught	FAIL I-5f a deferral reference that is not a tracked item id FAILs (rc=0 want 1, pat=not a tracked item id)
+I5f_pending_without_flag	caught	FAIL I-5f the interim placeholder FAILs without --allow-pending (rc=0 want 1, pat=needs --allow-pending)
+I5f_pending_reported_as_plain_pass	caught	FAIL interim result line: CM-PROJECT-GATE-LEDGER-RATCHET PASS names=2 deferred=1 baseline=1 pending_untracked=
+I5_duplicate_ledger_name_ok	caught	FAIL I-5 a duplicate ledger name FAILs (rc=0 want 1, pat=F1c)
+I5c_prev_source_not_reported	caught	FAIL I-5c control rc=0 [CM-PROJECT-GATE-LEDGER-RATCHET PASS names=2 deferred=1 baseline=1 pending_untracked=0 
+usage_missing_value_ignored	caught	FAIL option without value
+I3_F2b_unregistered_name_ok	caught	FAIL I3-1 a document name that is not registered in prev-names FAILs (F2b: it could later vanish uncited) (rc=
+I3_prev_names_absent_ok	caught	FAIL I3-2 a missing --prev-names file FAILs (an unresolvable input is a refusal, never a pass) (rc=0 want 1, p
+I3_F1d_orphan_row_ok	caught	FAIL I3-3 an orphan ledger row (name in no document) FAILs (F1d) (rc=0 want 1, pat=F1d CM-ORPHAN-PAD)
+W6_item_id_regex_unanchored_at_end	caught	FAIL W6 a deferral reference with a suffix (CAT-12-later) FAILs: the item-id pattern is anchored at the end (r
+W7_slash_comment_counts_as_code	caught	FAIL W7 a .go site whose token sits only in a // comment FAILs (rc=0 want 1, pat=non-comment line)
+I3_F2b_applied_to_family_only_names	caught	FAIL I3-1 a document name that is not registered in prev-names FAILs (F2b: it could later vanish uncited) (rc=

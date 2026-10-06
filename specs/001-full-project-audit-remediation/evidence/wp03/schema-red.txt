@@ -1,0 +1,12 @@
+ok   golden-good report validates
+ok   POC run1.json rejected for exactly the missing no_remote
+ok   missing_summary: rejected
+ok   missing_no_remote: rejected
+ok   wrong_tool: rejected
+ok   excepted_null_reason: rejected
+ok   excepted_empty_reason: rejected
+ok   extra_reason_property: rejected
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/repo/verify_repos.sh is absent or not executable (RED: the real-output legs must fail)
+FAIL real output via --json: absent or invalid ()
+FAIL real output via --json-out: absent or invalid ()
+SUMMARY pass=8 fail=2

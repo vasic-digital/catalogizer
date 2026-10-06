@@ -495,7 +495,7 @@ flowchart LR
   OUT --> GATE["can-i-deploy gate: any missing-on-backend blocks"]
 ```
 
-Revision 6 (tasks.md rev 24 T327, T334a): the web consumer contract test that is RED for WEB-F06 when it is committed (its fix owed to P5) is named `*.expected-red.test.ts` with the marker `expected-red: ATM-<id>` in its header comment and carries a `RED_EXPECTED` row of `scripts/qa/guard_registry.tsv` in the same change set, so the default vitest lane excludes it through its `exclude` glob from its first commit on and the guard lane runs it (document 05 §11).
+Revision 6 (tasks.md rev 24 T327, T334a): the web consumer contract test that is RED for WEB-F06 when it is committed (its fix owed to P5) is named `*.expected-red.test.ts` with the marker `expected-red: CAT-<id>` in its header comment and carries a `RED_EXPECTED` row of `scripts/qa/guard_registry.tsv` in the same change set, so the default vitest lane excludes it through its `exclude` glob from its first commit on and the guard lane runs it (document 05 §11).
 
 Already-seen drift candidates (hypotheses until the extractor confirms): WEB-F03 (69 call sites with no matching route per `poc/route_drift/results/run1.json`), WEB-F21 (28 web double-prefix calls; the PoC's 30 includes 2 in Android), WEB-F06 (mock `token` versus real `session_token`), `/api/v1/cover/:id` direct `fetch` in `hooks/useCoverQuality.ts` (route exists at `catalog-api/main.go:1140`, so a drift check should pass it).
 

@@ -1,0 +1,8 @@
+# T040a fixture_roots.sh mutations (host run: bash scripts/repo/tests/run_wp04_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the test exits non-zero)
+CAUGHT   F1 root exempts every check  -> 7 failing case(s), e.g. FAIL check not named on the row: not exempt (got '0', want '1')
+CAUGHT   F2 root matches by name prefix  -> 2 failing case(s), e.g. FAIL sibling sharing the root name prefix: not exempt (got '0', want '1')
+CAUGHT   F3 unknown check in a row accepted  -> 20 failing case(s), e.g. FAIL root row names secret_fold: exempt (got '1', want '0')
+CAUGHT   F4 path not normalised  -> 2 failing case(s), e.g. FAIL leading ./ is normalised: exempt (got '1', want '0')
+CAUGHT   F5 reason not required  -> 1 failing case(s), e.g. FAIL row without a reason: 20 (got '0', want '20')
+CAUGHT   F6 glob root accepted  -> 1 failing case(s), e.g. FAIL glob character in a root: 20 (got '1', want '20')
+---- 6 mutations, 0 not caught

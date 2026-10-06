@@ -1,0 +1,4 @@
+CAUGHT   RV1c RV1c rank: REMOTE-BEHIND above DIVERGED
+CAUGHT   RV1d RV1d rank: SAME above LOCAL-BEHIND
+CAUGHT   RV2 RV2 exception ignores the repository path column
+MUTATION SUMMARY caught=3 survived=0 broken=0

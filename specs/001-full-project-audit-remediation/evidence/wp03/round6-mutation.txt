@@ -1,0 +1,17 @@
+# round 6 mutation excerpt for WP-03 (verify_repos.sh): V1..V15; full run in evidence/wp04/wp04f-mutation.txt
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   V1 VR: ls-remote tail matches count as branch or tag tips (N6-1)  -> 2 failing case(s), e.g. FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0
+CAUGHT   V2 VR: a tip that is not held locally is not undecided (N6-2)  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+EQUIVALENT EQ-V3 VR: a missing pin object is not undecided (classify already answers UNKNOWN-DIFFERENT for a pin object that is not held)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   V4 VR: the tip-equality shortcut is dropped (MR1)  -> 1 failing case(s), e.g. FAIL MR1 a pin equal to a remote branch tip is held even when its object is absent locally: exit 0 (got '14', 
+CAUGHT   V5 VR: undecided keeps the definite class  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V6 VR: the dirty count failure is not fatal (MR2 family)  -> 6 failing case(s), e.g. FAIL N6-3 dirty count unreadable, --json FILE: exit 20 (got '0', want '20')
+CAUGHT   V7 VR: the diverged count failure is not fatal (MR2)  -> 2 failing case(s), e.g. FAIL MR2 the diverged count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V8 VR: the pin count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the pin count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V9 VR: the behind count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the behind count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V10 VR: the report is written before the counts are read (N6-3)  -> 4 failing case(s), e.g. FAIL N6-3 a report file exists after an exit-20 count failure
+CAUGHT   V11 VR: core.fsmonitor is not disabled on every command (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+CAUGHT   V12 VR: no configured filter driver is switched off (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the clean filter ran under the verifier
+CAUGHT   V13 VR: the plain ls-remote of the branch keeps the repository uploadpack (N6-4)  -> 3 failing case(s), e.g. FAIL N6-4 the remote.origin.uploadpack program ran
+CAUGHT   V14 VR: the fetch keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+CAUGHT   V15 VR: the default-branch ls-remote keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran in the default-branch lookup

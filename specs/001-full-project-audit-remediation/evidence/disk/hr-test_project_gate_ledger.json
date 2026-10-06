@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "hr-test_project_gate_ledger",
+  "at": "2026-10-05T23:58:53Z",
+  "need_bytes": 0,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 179669438464,
+      "free_after": 179669438464,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 179669438464,
+      "free_after": 179669438464,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

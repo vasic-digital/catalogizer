@@ -1,0 +1,535 @@
+# dispatch-green-x3.txt - scripts/build/tests/test_dispatch_events.sh against the round-2 scripts/build, 3 consecutive runs, 2026-10-05T13:37:03Z
+=== run 1
+ok   schema: accepted event valid
+ok   schema: heartbeat valid
+ok   schema: completed without peak_rss valid
+ok   schema: completed with peak_rss valid
+ok   schema: negative peak_rss refused
+ok   schema: unknown exit_class refused
+ok   schema: heartbeat without progress pair refused
+ok   HKDF per-build key equals the python oracle
+ok   HKDF key equals the openssl kdf oracle (second independent implementation)
+ok   HKDF RFC 5869 test case 1
+ok   key bound to run_id
+ok   (a) completed consumed once, callback done, effect 1
+ok   (b) duplicate dropped, effect still 1
+ok   (b) duplicated heartbeat dropped as DUP
+ok   (b) duplicate not journaled twice
+ok   (o) running callback resumed, keyed effect applied once
+ok   (n) done callback not re-run
+ok   (q2) cancel is blocked on the per-build lock while a completed consume holds its claim
+ok   (q2) held consume wins, the waiting cancel is superseded: one claim, one superseded, effect 1
+ok   (q2) consume is blocked while a cancel holds the per-build lock at its claim
+ok   (q2) held cancel wins, the waiting completed is late_ignored: one claim, effect 1
+ok   (d) late completed after cancel is late_ignored, verdict unchanged
+ok   (e) completed before accepted refused
+ok   (e) seq below last consumed refused
+ok   (e) progress_offset lower than last refused
+ok   (f) unsigned event refused
+ok   (f) wrongly signed event refused
+ok   (f) tampered body refused
+ok   (f) event for never-issued build refused
+ok   (f) refused events leave no journal line
+ok   (g) old-run signed event refused as event_replayed
+ok   (q) cancel/completed race x8: one terminal, effect once
+ok   secret dir inside the checkout refused
+ok   secret created mode 0600 outside checkout
+ok   secret-init does not overwrite an existing secret
+ok   meta holds no secret bytes
+ok   (t) scan sees a planted secret (control needle)
+ok   (t) secret, derived key and refused-event hmac absent from build state
+ok   (B1) FIFO, 1 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B1) FIFO, 7 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B2) stray crash-leftover file does not blind the ordering check (seq 3 after 5 refused)
+ok   (B2) stray files ignored: seq 7 consumed
+ok   (B2) frac refused as event_malformed
+ok   (B2) bigseq refused as event_malformed
+ok   (B2) bigoff refused as event_malformed
+ok   (B2) negoff refused as event_malformed
+ok   (B2) booloff refused as event_malformed
+ok   (B2) stroff refused as event_malformed
+ok   (B2) floatseq refused as event_malformed
+ok   (B2) refused numeric events left no consumed file and progress unchanged
+ok   (B2) valid seq 3 still consumed after the refused ones
+ok   (I5) resume-callback on a done build leaves terminal/state.json and callback.state inode and bytes unchanged
+ok   (I6) 15 shuffled parallel heartbeats x5: journal strictly increasing, no duplicates
+ok   (I6) unopenable lock refuses (fail closed), also with an inherited fd 9; nothing consumed
+ok   (I7) completed exit_class weird refused (event_malformed)
+ok   (I7) completed exit_class weird also rejected by the schema
+ok   (I7) accepted with an extra field refused (event_malformed)
+ok   (I7) accepted with an extra field also rejected by the schema
+ok   (I7) heartbeat without progress_offset refused (event_malformed)
+ok   (I7) heartbeat without progress_offset also rejected by the schema
+ok   (I7) heartbeat without stage refused (event_malformed)
+ok   (I7) heartbeat without stage also rejected by the schema
+ok   (I7) completed without image_digest refused (event_malformed)
+ok   (I7) completed without image_digest also rejected by the schema
+ok   (I7) completed without exit_class refused (event_malformed)
+ok   (I7) completed without exit_class also rejected by the schema
+ok   (I7) completed without remote_log_sha256 refused (event_malformed)
+ok   (I7) completed without remote_log_sha256 also rejected by the schema
+ok   (I7) completed without artifact_manifest_sha256 refused (event_malformed)
+ok   (I7) completed without artifact_manifest_sha256 also rejected by the schema
+ok   (I7) stage going backwards refused (offset forward)
+ok   (I7) a correct heartbeat after the refused ones is consumed
+ok   (I7) duplicate JSON keys refused
+ok   (I8) heartbeat is blocked on the per-build lock while the completed claim is held
+ok   (I8) heartbeat after the held claim is late_ignored, not consumed
+ok   (I8) concurrent redelivered completed x5: journaled once, one DUP, no self-supersede
+ok   (I9) shipped script has no EC_TEST seam
+ok   (I9) EC_TEST_HOLD_BEFORE_CLAIM in the environment neither hangs nor touches any path
+ok   (m1) key mode 0644 refused (key_mode_not_0600)
+ok   (m1) symlinked state dir refused (state_dir_symlink)
+ok   (m1) symlinked key file refused (key_not_regular_file)
+ok   (m1) meta sha mismatch refused (meta_sha_mismatch)
+ok   (m1) meta absent refused (meta_absent)
+ok   (m1) state dir inside the checkout refused on READ
+ok   (m1) derive-key refuses an unusable secret location
+ok   (m1) secret-init does not report a loose-mode existing key as kept
+owner/uid check (key_wrong_owner) and the RUNP-mount location check are UNCONFIRMED here (single uid host; RUNP absent): OWED
+ok   (m2) build_id '.' refused
+ok   (m2) schema also rejects build_id '.'
+ok   (m2) build_id '..' refused
+ok   (m2) schema also rejects build_id '..'
+ok   (m2) build_id '.x' refused
+ok   (m2) schema also rejects build_id '.x'
+ok   (m2) build_id 'a.b' refused
+ok   (m2) schema also rejects build_id 'a.b'
+ok   (m2) nothing was written at the builds root
+ok   (m3) different event reusing a consumed seq refused as seq_conflict
+ok   (m3) identical redelivery still DUP
+ok   (m6) build, consumed, terminal and effects directories are fsynced
+ok   (m6) crash after the audit line, before the effect: resume applies the effect, log keeps one line
+ok   (m6) effects.log lost but effect absent: resume rewrites exactly one line
+ok   (m7) canonical bytes: python canon equals jq -cS for a non-ASCII/escape event
+ok   (m7) event signed ONLY with jq + openssl (independent of bev_crypto) is accepted
+ok   (m5) scan sees a secret planted in a transcript-shaped file (control needle)
+ok   (m5) secret and derived key absent from the state dir (minus the key), consume transcripts and this test's own output (both under logs/)
+ok   (B1) terminal rename fails: refused terminal_claim_failed (rc 20), no terminal, no consumed mark, never journaled superseded, no leftover
+ok   (B1) redelivery after the fault clears completes the build: terminal, callback done, effect applied
+ok   (B1) cancel with a failing terminal rename: refused terminal_claim_failed, no terminal, never superseded
+ok   (B1) cancel retried after the fault clears wins
+ok   (B1) an existing but unparsable terminal is not reported as a lost race
+ok   (B1) claim_terminal called directly (no lock) onto an existing terminal loses (rc 1), the terminal is untouched, no leftover
+ok   (I1) jq killed while writing the terminal record: refused, no empty terminal/state.json, nothing consumed
+ok   (I1) jq exits 0 but leaves a TRUNCATED terminal record: refused, nothing renamed into place
+ok   (I1) the same event redelivered after the fault completes with a whole terminal record
+ok   (I1) a failed temp-file sync is not renamed over the consumed mark: refused state_write_failed, no mark, no leftover temp
+ok   (I1) accepted redelivered after the fault is consumed
+ok   (I1) progress.json write failing: refused, previous progress.json intact, nothing journaled or consumed
+ok   (I1) callback.state write failing: resume-callback exits non-zero, callback.state keeps its previous whole value, no effect run
+ok   (I1) resume-callback after the fault clears completes the callback
+ok   (I2) ln fails: terminal stays completed, callback.state=failed with a reason, no effect file, never done
+ok   (I2) resume-callback under the same fault exits non-zero and stays failed
+ok   (I2) resume-callback after the fault clears applies the effect once (one audit line, one effect file)
+ok   (I3) runner that waited on .cblock re-checks the state after the lock: a callback another runner finished is not re-entered
+ok   (I4) secret-init refuses a state dir inside the script's own checkout even when the checkout argument names another path
+ok   (I4) secret-init into an unwritable parent: refused secret_create_failed, not 'secret created'
+ok   (B2) openssl fails during secret-init: refused secret_create_failed, no key, no meta, no 'secret created'
+ok   (B2) openssl exits 0 but writes a malformed key: refused, no key left
+ok   (B2) a created key is exactly 64 lowercase hex characters
+ok   (m1) empty key refused (key_bad_length)
+ok   (m1) one byte key refused (key_bad_length)
+ok   (m1) sixty-three hex key refused (key_bad_length)
+ok   (m1) sixty-six hex key refused (key_bad_length)
+ok   (m1) non-hex key refused (key_not_hex)
+ok   (X1) a second accepted event is refused (illegal_transition second accepted)
+ok   (X2) same completed redelivered with the consumed mark missing: DUP, not journaled again
+ok   (X2) different completed content for the claimed seq (mark missing): seq_conflict, verdict unchanged
+ok   (X) variant evil refused (event_malformed variant$)
+ok   (X) variant evil also rejected by the schema
+ok   (X) schema build-event/2 refused (event_malformed)
+ok   (X) schema build-event/2 also rejected by the schema
+ok   (X) empty host refused (event_malformed)
+ok   (X) empty host also rejected by the schema
+ok   (X) empty sent_at refused (event_malformed)
+ok   (X) empty sent_at also rejected by the schema
+ok   (X) run_id longer than 128 refused (event_malformed)
+ok   (X) run_id longer than 128 also rejected by the schema
+ok   (X) host of 1025 characters refused (event_malformed)
+ok   (X) host of 1025 characters also rejected by the schema
+ok   (X) sent_at of 1025 characters refused (event_malformed)
+ok   (X) sent_at of 1025 characters also rejected by the schema
+ok   (m5) a host of exactly 1024 characters is valid for the schema and the core
+ok   (m5) image_digest of 1025 characters refused by the core
+ok   (m5) the schema also rejects an image_digest of 1025 characters
+ok   (X5) an event of 65537 bytes is refused (too large)
+ok   (X5) an event of exactly 65536 bytes is accepted (the cap is inclusive)
+ok   (X6) a corrupt progress.json is refused (state_corrupt), no shell error, nothing consumed
+ok   (m1) run_id field differing from submit.json, signed under the current key: refused
+ok   (m1) variant differing from submit.json: refused
+ok   (m1) the first event with seq 5 is refused (T005a: seq from 1)
+ok   (m1) the correct first event is consumed after the refused ones
+ok   (m2) symlinked .lock: consume and cancel refuse (lock_unavailable), the link target is untouched
+ok   (m2) symlinked .cblock: resume-callback refuses, the link target is untouched, state unchanged
+ok   (m3) effect_key '../../ESCAPED' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'a.b' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'x*' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'with space' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) the audit lookup is literal and whole-key: a log line of a longer key does not count as this key's line
+ok   (m3) a key that starts with '-' is a valid token and is used literally (never as an option)
+ok   (m4) a journal line of 8023 bytes is written with a single write(2) (strace)
+ok   (m4) a journal write that fails refuses (journal_failed) and writes no consumed mark
+ok   (I2) ln reporting failure while the effect file exists (concurrent creator) is success: callback done
+ok   (m4) late_ignored whose journal write fails is refused (journal_failed), not acknowledged
+ok   (m4) a terminal claimed but not journaled is reported as an error (journal_failed), not as 'cancelled'
+ok   (m7) terminal prepared as terminal.tmp-<pid>-<start-time>/ and renamed onto terminal/; callback.state is its own file, not a state.json field
+OWED (not covered by this slice): c d-full h i i2 j k l m n0-n2 n o p q2 q3 r0 r s u2 v w u x (dispatcher, hub, runner, ssh shim, remote host)
+RESULT pass=173 fail=0
+# exit=0
+=== run 2
+ok   schema: accepted event valid
+ok   schema: heartbeat valid
+ok   schema: completed without peak_rss valid
+ok   schema: completed with peak_rss valid
+ok   schema: negative peak_rss refused
+ok   schema: unknown exit_class refused
+ok   schema: heartbeat without progress pair refused
+ok   HKDF per-build key equals the python oracle
+ok   HKDF key equals the openssl kdf oracle (second independent implementation)
+ok   HKDF RFC 5869 test case 1
+ok   key bound to run_id
+ok   (a) completed consumed once, callback done, effect 1
+ok   (b) duplicate dropped, effect still 1
+ok   (b) duplicated heartbeat dropped as DUP
+ok   (b) duplicate not journaled twice
+ok   (o) running callback resumed, keyed effect applied once
+ok   (n) done callback not re-run
+ok   (q2) cancel is blocked on the per-build lock while a completed consume holds its claim
+ok   (q2) held consume wins, the waiting cancel is superseded: one claim, one superseded, effect 1
+ok   (q2) consume is blocked while a cancel holds the per-build lock at its claim
+ok   (q2) held cancel wins, the waiting completed is late_ignored: one claim, effect 1
+ok   (d) late completed after cancel is late_ignored, verdict unchanged
+ok   (e) completed before accepted refused
+ok   (e) seq below last consumed refused
+ok   (e) progress_offset lower than last refused
+ok   (f) unsigned event refused
+ok   (f) wrongly signed event refused
+ok   (f) tampered body refused
+ok   (f) event for never-issued build refused
+ok   (f) refused events leave no journal line
+ok   (g) old-run signed event refused as event_replayed
+ok   (q) cancel/completed race x8: one terminal, effect once
+ok   secret dir inside the checkout refused
+ok   secret created mode 0600 outside checkout
+ok   secret-init does not overwrite an existing secret
+ok   meta holds no secret bytes
+ok   (t) scan sees a planted secret (control needle)
+ok   (t) secret, derived key and refused-event hmac absent from build state
+ok   (B1) FIFO, 1 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B1) FIFO, 7 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B2) stray crash-leftover file does not blind the ordering check (seq 3 after 5 refused)
+ok   (B2) stray files ignored: seq 7 consumed
+ok   (B2) frac refused as event_malformed
+ok   (B2) bigseq refused as event_malformed
+ok   (B2) bigoff refused as event_malformed
+ok   (B2) negoff refused as event_malformed
+ok   (B2) booloff refused as event_malformed
+ok   (B2) stroff refused as event_malformed
+ok   (B2) floatseq refused as event_malformed
+ok   (B2) refused numeric events left no consumed file and progress unchanged
+ok   (B2) valid seq 3 still consumed after the refused ones
+ok   (I5) resume-callback on a done build leaves terminal/state.json and callback.state inode and bytes unchanged
+ok   (I6) 15 shuffled parallel heartbeats x5: journal strictly increasing, no duplicates
+ok   (I6) unopenable lock refuses (fail closed), also with an inherited fd 9; nothing consumed
+ok   (I7) completed exit_class weird refused (event_malformed)
+ok   (I7) completed exit_class weird also rejected by the schema
+ok   (I7) accepted with an extra field refused (event_malformed)
+ok   (I7) accepted with an extra field also rejected by the schema
+ok   (I7) heartbeat without progress_offset refused (event_malformed)
+ok   (I7) heartbeat without progress_offset also rejected by the schema
+ok   (I7) heartbeat without stage refused (event_malformed)
+ok   (I7) heartbeat without stage also rejected by the schema
+ok   (I7) completed without image_digest refused (event_malformed)
+ok   (I7) completed without image_digest also rejected by the schema
+ok   (I7) completed without exit_class refused (event_malformed)
+ok   (I7) completed without exit_class also rejected by the schema
+ok   (I7) completed without remote_log_sha256 refused (event_malformed)
+ok   (I7) completed without remote_log_sha256 also rejected by the schema
+ok   (I7) completed without artifact_manifest_sha256 refused (event_malformed)
+ok   (I7) completed without artifact_manifest_sha256 also rejected by the schema
+ok   (I7) stage going backwards refused (offset forward)
+ok   (I7) a correct heartbeat after the refused ones is consumed
+ok   (I7) duplicate JSON keys refused
+ok   (I8) heartbeat is blocked on the per-build lock while the completed claim is held
+ok   (I8) heartbeat after the held claim is late_ignored, not consumed
+ok   (I8) concurrent redelivered completed x5: journaled once, one DUP, no self-supersede
+ok   (I9) shipped script has no EC_TEST seam
+ok   (I9) EC_TEST_HOLD_BEFORE_CLAIM in the environment neither hangs nor touches any path
+ok   (m1) key mode 0644 refused (key_mode_not_0600)
+ok   (m1) symlinked state dir refused (state_dir_symlink)
+ok   (m1) symlinked key file refused (key_not_regular_file)
+ok   (m1) meta sha mismatch refused (meta_sha_mismatch)
+ok   (m1) meta absent refused (meta_absent)
+ok   (m1) state dir inside the checkout refused on READ
+ok   (m1) derive-key refuses an unusable secret location
+ok   (m1) secret-init does not report a loose-mode existing key as kept
+owner/uid check (key_wrong_owner) and the RUNP-mount location check are UNCONFIRMED here (single uid host; RUNP absent): OWED
+ok   (m2) build_id '.' refused
+ok   (m2) schema also rejects build_id '.'
+ok   (m2) build_id '..' refused
+ok   (m2) schema also rejects build_id '..'
+ok   (m2) build_id '.x' refused
+ok   (m2) schema also rejects build_id '.x'
+ok   (m2) build_id 'a.b' refused
+ok   (m2) schema also rejects build_id 'a.b'
+ok   (m2) nothing was written at the builds root
+ok   (m3) different event reusing a consumed seq refused as seq_conflict
+ok   (m3) identical redelivery still DUP
+ok   (m6) build, consumed, terminal and effects directories are fsynced
+ok   (m6) crash after the audit line, before the effect: resume applies the effect, log keeps one line
+ok   (m6) effects.log lost but effect absent: resume rewrites exactly one line
+ok   (m7) canonical bytes: python canon equals jq -cS for a non-ASCII/escape event
+ok   (m7) event signed ONLY with jq + openssl (independent of bev_crypto) is accepted
+ok   (m5) scan sees a secret planted in a transcript-shaped file (control needle)
+ok   (m5) secret and derived key absent from the state dir (minus the key), consume transcripts and this test's own output (both under logs/)
+ok   (B1) terminal rename fails: refused terminal_claim_failed (rc 20), no terminal, no consumed mark, never journaled superseded, no leftover
+ok   (B1) redelivery after the fault clears completes the build: terminal, callback done, effect applied
+ok   (B1) cancel with a failing terminal rename: refused terminal_claim_failed, no terminal, never superseded
+ok   (B1) cancel retried after the fault clears wins
+ok   (B1) an existing but unparsable terminal is not reported as a lost race
+ok   (B1) claim_terminal called directly (no lock) onto an existing terminal loses (rc 1), the terminal is untouched, no leftover
+ok   (I1) jq killed while writing the terminal record: refused, no empty terminal/state.json, nothing consumed
+ok   (I1) jq exits 0 but leaves a TRUNCATED terminal record: refused, nothing renamed into place
+ok   (I1) the same event redelivered after the fault completes with a whole terminal record
+ok   (I1) a failed temp-file sync is not renamed over the consumed mark: refused state_write_failed, no mark, no leftover temp
+ok   (I1) accepted redelivered after the fault is consumed
+ok   (I1) progress.json write failing: refused, previous progress.json intact, nothing journaled or consumed
+ok   (I1) callback.state write failing: resume-callback exits non-zero, callback.state keeps its previous whole value, no effect run
+ok   (I1) resume-callback after the fault clears completes the callback
+ok   (I2) ln fails: terminal stays completed, callback.state=failed with a reason, no effect file, never done
+ok   (I2) resume-callback under the same fault exits non-zero and stays failed
+ok   (I2) resume-callback after the fault clears applies the effect once (one audit line, one effect file)
+ok   (I3) runner that waited on .cblock re-checks the state after the lock: a callback another runner finished is not re-entered
+ok   (I4) secret-init refuses a state dir inside the script's own checkout even when the checkout argument names another path
+ok   (I4) secret-init into an unwritable parent: refused secret_create_failed, not 'secret created'
+ok   (B2) openssl fails during secret-init: refused secret_create_failed, no key, no meta, no 'secret created'
+ok   (B2) openssl exits 0 but writes a malformed key: refused, no key left
+ok   (B2) a created key is exactly 64 lowercase hex characters
+ok   (m1) empty key refused (key_bad_length)
+ok   (m1) one byte key refused (key_bad_length)
+ok   (m1) sixty-three hex key refused (key_bad_length)
+ok   (m1) sixty-six hex key refused (key_bad_length)
+ok   (m1) non-hex key refused (key_not_hex)
+ok   (X1) a second accepted event is refused (illegal_transition second accepted)
+ok   (X2) same completed redelivered with the consumed mark missing: DUP, not journaled again
+ok   (X2) different completed content for the claimed seq (mark missing): seq_conflict, verdict unchanged
+ok   (X) variant evil refused (event_malformed variant$)
+ok   (X) variant evil also rejected by the schema
+ok   (X) schema build-event/2 refused (event_malformed)
+ok   (X) schema build-event/2 also rejected by the schema
+ok   (X) empty host refused (event_malformed)
+ok   (X) empty host also rejected by the schema
+ok   (X) empty sent_at refused (event_malformed)
+ok   (X) empty sent_at also rejected by the schema
+ok   (X) run_id longer than 128 refused (event_malformed)
+ok   (X) run_id longer than 128 also rejected by the schema
+ok   (X) host of 1025 characters refused (event_malformed)
+ok   (X) host of 1025 characters also rejected by the schema
+ok   (X) sent_at of 1025 characters refused (event_malformed)
+ok   (X) sent_at of 1025 characters also rejected by the schema
+ok   (m5) a host of exactly 1024 characters is valid for the schema and the core
+ok   (m5) image_digest of 1025 characters refused by the core
+ok   (m5) the schema also rejects an image_digest of 1025 characters
+ok   (X5) an event of 65537 bytes is refused (too large)
+ok   (X5) an event of exactly 65536 bytes is accepted (the cap is inclusive)
+ok   (X6) a corrupt progress.json is refused (state_corrupt), no shell error, nothing consumed
+ok   (m1) run_id field differing from submit.json, signed under the current key: refused
+ok   (m1) variant differing from submit.json: refused
+ok   (m1) the first event with seq 5 is refused (T005a: seq from 1)
+ok   (m1) the correct first event is consumed after the refused ones
+ok   (m2) symlinked .lock: consume and cancel refuse (lock_unavailable), the link target is untouched
+ok   (m2) symlinked .cblock: resume-callback refuses, the link target is untouched, state unchanged
+ok   (m3) effect_key '../../ESCAPED' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'a.b' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'x*' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'with space' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) the audit lookup is literal and whole-key: a log line of a longer key does not count as this key's line
+ok   (m3) a key that starts with '-' is a valid token and is used literally (never as an option)
+ok   (m4) a journal line of 8023 bytes is written with a single write(2) (strace)
+ok   (m4) a journal write that fails refuses (journal_failed) and writes no consumed mark
+ok   (I2) ln reporting failure while the effect file exists (concurrent creator) is success: callback done
+ok   (m4) late_ignored whose journal write fails is refused (journal_failed), not acknowledged
+ok   (m4) a terminal claimed but not journaled is reported as an error (journal_failed), not as 'cancelled'
+ok   (m7) terminal prepared as terminal.tmp-<pid>-<start-time>/ and renamed onto terminal/; callback.state is its own file, not a state.json field
+OWED (not covered by this slice): c d-full h i i2 j k l m n0-n2 n o p q2 q3 r0 r s u2 v w u x (dispatcher, hub, runner, ssh shim, remote host)
+RESULT pass=173 fail=0
+# exit=0
+=== run 3
+ok   schema: accepted event valid
+ok   schema: heartbeat valid
+ok   schema: completed without peak_rss valid
+ok   schema: completed with peak_rss valid
+ok   schema: negative peak_rss refused
+ok   schema: unknown exit_class refused
+ok   schema: heartbeat without progress pair refused
+ok   HKDF per-build key equals the python oracle
+ok   HKDF key equals the openssl kdf oracle (second independent implementation)
+ok   HKDF RFC 5869 test case 1
+ok   key bound to run_id
+ok   (a) completed consumed once, callback done, effect 1
+ok   (b) duplicate dropped, effect still 1
+ok   (b) duplicated heartbeat dropped as DUP
+ok   (b) duplicate not journaled twice
+ok   (o) running callback resumed, keyed effect applied once
+ok   (n) done callback not re-run
+ok   (q2) cancel is blocked on the per-build lock while a completed consume holds its claim
+ok   (q2) held consume wins, the waiting cancel is superseded: one claim, one superseded, effect 1
+ok   (q2) consume is blocked while a cancel holds the per-build lock at its claim
+ok   (q2) held cancel wins, the waiting completed is late_ignored: one claim, effect 1
+ok   (d) late completed after cancel is late_ignored, verdict unchanged
+ok   (e) completed before accepted refused
+ok   (e) seq below last consumed refused
+ok   (e) progress_offset lower than last refused
+ok   (f) unsigned event refused
+ok   (f) wrongly signed event refused
+ok   (f) tampered body refused
+ok   (f) event for never-issued build refused
+ok   (f) refused events leave no journal line
+ok   (g) old-run signed event refused as event_replayed
+ok   (q) cancel/completed race x8: one terminal, effect once
+ok   secret dir inside the checkout refused
+ok   secret created mode 0600 outside checkout
+ok   secret-init does not overwrite an existing secret
+ok   meta holds no secret bytes
+ok   (t) scan sees a planted secret (control needle)
+ok   (t) secret, derived key and refused-event hmac absent from build state
+ok   (B1) FIFO, 1 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B1) FIFO, 7 signed read(s) then forged: terminal is the VERIFIED exit_class, journal holds no forged body
+ok   (B2) stray crash-leftover file does not blind the ordering check (seq 3 after 5 refused)
+ok   (B2) stray files ignored: seq 7 consumed
+ok   (B2) frac refused as event_malformed
+ok   (B2) bigseq refused as event_malformed
+ok   (B2) bigoff refused as event_malformed
+ok   (B2) negoff refused as event_malformed
+ok   (B2) booloff refused as event_malformed
+ok   (B2) stroff refused as event_malformed
+ok   (B2) floatseq refused as event_malformed
+ok   (B2) refused numeric events left no consumed file and progress unchanged
+ok   (B2) valid seq 3 still consumed after the refused ones
+ok   (I5) resume-callback on a done build leaves terminal/state.json and callback.state inode and bytes unchanged
+ok   (I6) 15 shuffled parallel heartbeats x5: journal strictly increasing, no duplicates
+ok   (I6) unopenable lock refuses (fail closed), also with an inherited fd 9; nothing consumed
+ok   (I7) completed exit_class weird refused (event_malformed)
+ok   (I7) completed exit_class weird also rejected by the schema
+ok   (I7) accepted with an extra field refused (event_malformed)
+ok   (I7) accepted with an extra field also rejected by the schema
+ok   (I7) heartbeat without progress_offset refused (event_malformed)
+ok   (I7) heartbeat without progress_offset also rejected by the schema
+ok   (I7) heartbeat without stage refused (event_malformed)
+ok   (I7) heartbeat without stage also rejected by the schema
+ok   (I7) completed without image_digest refused (event_malformed)
+ok   (I7) completed without image_digest also rejected by the schema
+ok   (I7) completed without exit_class refused (event_malformed)
+ok   (I7) completed without exit_class also rejected by the schema
+ok   (I7) completed without remote_log_sha256 refused (event_malformed)
+ok   (I7) completed without remote_log_sha256 also rejected by the schema
+ok   (I7) completed without artifact_manifest_sha256 refused (event_malformed)
+ok   (I7) completed without artifact_manifest_sha256 also rejected by the schema
+ok   (I7) stage going backwards refused (offset forward)
+ok   (I7) a correct heartbeat after the refused ones is consumed
+ok   (I7) duplicate JSON keys refused
+ok   (I8) heartbeat is blocked on the per-build lock while the completed claim is held
+ok   (I8) heartbeat after the held claim is late_ignored, not consumed
+ok   (I8) concurrent redelivered completed x5: journaled once, one DUP, no self-supersede
+ok   (I9) shipped script has no EC_TEST seam
+ok   (I9) EC_TEST_HOLD_BEFORE_CLAIM in the environment neither hangs nor touches any path
+ok   (m1) key mode 0644 refused (key_mode_not_0600)
+ok   (m1) symlinked state dir refused (state_dir_symlink)
+ok   (m1) symlinked key file refused (key_not_regular_file)
+ok   (m1) meta sha mismatch refused (meta_sha_mismatch)
+ok   (m1) meta absent refused (meta_absent)
+ok   (m1) state dir inside the checkout refused on READ
+ok   (m1) derive-key refuses an unusable secret location
+ok   (m1) secret-init does not report a loose-mode existing key as kept
+owner/uid check (key_wrong_owner) and the RUNP-mount location check are UNCONFIRMED here (single uid host; RUNP absent): OWED
+ok   (m2) build_id '.' refused
+ok   (m2) schema also rejects build_id '.'
+ok   (m2) build_id '..' refused
+ok   (m2) schema also rejects build_id '..'
+ok   (m2) build_id '.x' refused
+ok   (m2) schema also rejects build_id '.x'
+ok   (m2) build_id 'a.b' refused
+ok   (m2) schema also rejects build_id 'a.b'
+ok   (m2) nothing was written at the builds root
+ok   (m3) different event reusing a consumed seq refused as seq_conflict
+ok   (m3) identical redelivery still DUP
+ok   (m6) build, consumed, terminal and effects directories are fsynced
+ok   (m6) crash after the audit line, before the effect: resume applies the effect, log keeps one line
+ok   (m6) effects.log lost but effect absent: resume rewrites exactly one line
+ok   (m7) canonical bytes: python canon equals jq -cS for a non-ASCII/escape event
+ok   (m7) event signed ONLY with jq + openssl (independent of bev_crypto) is accepted
+ok   (m5) scan sees a secret planted in a transcript-shaped file (control needle)
+ok   (m5) secret and derived key absent from the state dir (minus the key), consume transcripts and this test's own output (both under logs/)
+ok   (B1) terminal rename fails: refused terminal_claim_failed (rc 20), no terminal, no consumed mark, never journaled superseded, no leftover
+ok   (B1) redelivery after the fault clears completes the build: terminal, callback done, effect applied
+ok   (B1) cancel with a failing terminal rename: refused terminal_claim_failed, no terminal, never superseded
+ok   (B1) cancel retried after the fault clears wins
+ok   (B1) an existing but unparsable terminal is not reported as a lost race
+ok   (B1) claim_terminal called directly (no lock) onto an existing terminal loses (rc 1), the terminal is untouched, no leftover
+ok   (I1) jq killed while writing the terminal record: refused, no empty terminal/state.json, nothing consumed
+ok   (I1) jq exits 0 but leaves a TRUNCATED terminal record: refused, nothing renamed into place
+ok   (I1) the same event redelivered after the fault completes with a whole terminal record
+ok   (I1) a failed temp-file sync is not renamed over the consumed mark: refused state_write_failed, no mark, no leftover temp
+ok   (I1) accepted redelivered after the fault is consumed
+ok   (I1) progress.json write failing: refused, previous progress.json intact, nothing journaled or consumed
+ok   (I1) callback.state write failing: resume-callback exits non-zero, callback.state keeps its previous whole value, no effect run
+ok   (I1) resume-callback after the fault clears completes the callback
+ok   (I2) ln fails: terminal stays completed, callback.state=failed with a reason, no effect file, never done
+ok   (I2) resume-callback under the same fault exits non-zero and stays failed
+ok   (I2) resume-callback after the fault clears applies the effect once (one audit line, one effect file)
+ok   (I3) runner that waited on .cblock re-checks the state after the lock: a callback another runner finished is not re-entered
+ok   (I4) secret-init refuses a state dir inside the script's own checkout even when the checkout argument names another path
+ok   (I4) secret-init into an unwritable parent: refused secret_create_failed, not 'secret created'
+ok   (B2) openssl fails during secret-init: refused secret_create_failed, no key, no meta, no 'secret created'
+ok   (B2) openssl exits 0 but writes a malformed key: refused, no key left
+ok   (B2) a created key is exactly 64 lowercase hex characters
+ok   (m1) empty key refused (key_bad_length)
+ok   (m1) one byte key refused (key_bad_length)
+ok   (m1) sixty-three hex key refused (key_bad_length)
+ok   (m1) sixty-six hex key refused (key_bad_length)
+ok   (m1) non-hex key refused (key_not_hex)
+ok   (X1) a second accepted event is refused (illegal_transition second accepted)
+ok   (X2) same completed redelivered with the consumed mark missing: DUP, not journaled again
+ok   (X2) different completed content for the claimed seq (mark missing): seq_conflict, verdict unchanged
+ok   (X) variant evil refused (event_malformed variant$)
+ok   (X) variant evil also rejected by the schema
+ok   (X) schema build-event/2 refused (event_malformed)
+ok   (X) schema build-event/2 also rejected by the schema
+ok   (X) empty host refused (event_malformed)
+ok   (X) empty host also rejected by the schema
+ok   (X) empty sent_at refused (event_malformed)
+ok   (X) empty sent_at also rejected by the schema
+ok   (X) run_id longer than 128 refused (event_malformed)
+ok   (X) run_id longer than 128 also rejected by the schema
+ok   (X) host of 1025 characters refused (event_malformed)
+ok   (X) host of 1025 characters also rejected by the schema
+ok   (X) sent_at of 1025 characters refused (event_malformed)
+ok   (X) sent_at of 1025 characters also rejected by the schema
+ok   (m5) a host of exactly 1024 characters is valid for the schema and the core
+ok   (m5) image_digest of 1025 characters refused by the core
+ok   (m5) the schema also rejects an image_digest of 1025 characters
+ok   (X5) an event of 65537 bytes is refused (too large)
+ok   (X5) an event of exactly 65536 bytes is accepted (the cap is inclusive)
+ok   (X6) a corrupt progress.json is refused (state_corrupt), no shell error, nothing consumed
+ok   (m1) run_id field differing from submit.json, signed under the current key: refused
+ok   (m1) variant differing from submit.json: refused
+ok   (m1) the first event with seq 5 is refused (T005a: seq from 1)
+ok   (m1) the correct first event is consumed after the refused ones
+ok   (m2) symlinked .lock: consume and cancel refuse (lock_unavailable), the link target is untouched
+ok   (m2) symlinked .cblock: resume-callback refuses, the link target is untouched, state unchanged
+ok   (m3) effect_key '../../ESCAPED' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'a.b' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'x*' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) effect_key 'with space' refused: callback failed (effect_key_invalid), nothing written
+ok   (m3) the audit lookup is literal and whole-key: a log line of a longer key does not count as this key's line
+ok   (m3) a key that starts with '-' is a valid token and is used literally (never as an option)
+ok   (m4) a journal line of 8023 bytes is written with a single write(2) (strace)
+ok   (m4) a journal write that fails refuses (journal_failed) and writes no consumed mark
+ok   (I2) ln reporting failure while the effect file exists (concurrent creator) is success: callback done
+ok   (m4) late_ignored whose journal write fails is refused (journal_failed), not acknowledged
+ok   (m4) a terminal claimed but not journaled is reported as an error (journal_failed), not as 'cancelled'
+ok   (m7) terminal prepared as terminal.tmp-<pid>-<start-time>/ and renamed onto terminal/; callback.state is its own file, not a state.json field
+OWED (not covered by this slice): c d-full h i i2 j k l m n0-n2 n o p q2 q3 r0 r s u2 v w u x (dispatcher, hub, runner, ssh shim, remote host)
+RESULT pass=173 fail=0
+# exit=0

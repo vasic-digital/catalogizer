@@ -1,0 +1,35 @@
+# WP-03 round 6 RED: test_verify_repos_r6.sh against the PRE-FIX verify_repos.sh
+# captured 2026-10-06T13:11:04Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# PRE-FIX helpers (the state the WF6 review judged; sha256 of the copies run):
+d6220cd5b1332be478cf43d2b573cfde835e9a1bb13b37756d7178217f19afc4    pre/repo/push_recursive.sh
+bba1695b8a13a6790dcfa9cd17d09c4e46aaf09ed4ae8577e3feef0afbc25e1a    pre/repo/scope_check.sh
+2b98969813f3060b13a40ddf8be2d97c8a5618af475cec24c7a47bb9079b83ed    pre/repo/check_no_ci.sh
+08e4a18175d30d7db1f22999c796218e720fed3cda1752c1e321a6d070f7c834    pre/repo/check_revision_headers.sh
+fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4    pre/repo/integrate_merge.sh
+8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd    pre/repo/lib_safe.sh
+29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758    pre/repo/verify_repos.sh
+0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854    pre/audit/index_health.sh
+be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71    pre/audit/scope_to_lumen_json.py
+# tests (current, round 6):
+  53b76cb3c7e76728e7e3ec8a761dc027edd96147788aa955a32e53b58675f7ca  scripts/repo/tests/test_verify_repos_r6.sh
+== test_verify_repos_r6
+IDENTITY test=53b76cb3c7e76728e7e3ec8a761dc027edd96147788aa955a32e53b58675f7ca verifier=29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-06T13:11:04Z
+FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0', want '12')
+FAIL N6-1 the submodule row is DIVERGED (got 'SAME', want 'DIVERGED')
+FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+FAIL N6-2 the submodule row is UNKNOWN-DIFFERENT (got 'DIVERGED', want 'UNKNOWN-DIFFERENT')
+FAIL N6-3 a report file exists after an exit-20 count failure
+FAIL N6-3 nothing on stdout (no report copy) (got '1014', want '0')
+FAIL N6-3 no table and no summary on stdout (got '237', want '0')
+FAIL MR2 report written for the diverged count failure
+FAIL MR2 report written for the pin count failure
+FAIL MR2 report written for the behind count failure
+FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+FAIL N6-4 the remote.origin.uploadpack program ran
+FAIL N6-4 the uploadpack program ran under --fetch
+FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+FAIL N6-4 the uploadpack program ran in the default-branch lookup
+FAIL N6-4 the clean filter ran under the verifier
+FAIL N6-4 the header still says NO git command runs a repository hook (only hooks were covered)
+FAIL N6-4 the header does not name fsmonitor
+SUMMARY pass=23 fail=18

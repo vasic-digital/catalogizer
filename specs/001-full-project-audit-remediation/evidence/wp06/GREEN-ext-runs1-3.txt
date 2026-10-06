@@ -1,0 +1,582 @@
+##### GREEN run 1
+# capture: utc=2026-10-05T20:00:38Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/register/tests/test_register_ext.sh
+# identity: task=T060 utc=2026-10-05T20:00:40Z host=anton uid=1000
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=2c9ba51f17be3d3feec2df37bc96a2c180cc140b9f94bbb6341ec29b245e6214 gate=3d697e86854711c15abb3196f7a945bee3896e447157900f8f4e03a65a5fef68 test=0f104251c48aa86ed499b7a77fd482f378cae9bbce7b9569d377caaecc335c1c
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== A. apply_ext.sh on a fresh DB, idempotence, counts ==
+ok   A1 apply on absent DB exits 0
+ok   A2 25 reg_ tables
+ok   A3 43 triggers (v5: 41 + reg_findings_no_delete + reg_findings_observation_no_update)
+ok   A4 ext_schema_version (v5)
+ok   A5 engine schema_version still 7
+ok   A6 second apply exits 0 (idempotent)
+ok   A7 trigger count unchanged after re-apply
+== B. DB already holding items ==
+ok   B1 engine accepted --id CAT-001 --prefix CAT
+ok   B2 apply on DB with items exits 0
+ok   B3 item kept
+ok   B4 raw items insert without a mint refused
+== C. engine version mismatch refused ==
+ok   C1 mismatching engine version exits non-zero
+ok   C2 message names both versions (6 and 7)
+ok   C3 nothing applied
+ok   C4 missing --db refused
+== D. CHECK constraints: rejected inserts incl. NULL inputs (§14.3) ==
+ok   D1 red_run exit_code 0
+ok   D2 red_run exit_code NULL
+ok   D3 red_run exit_code 126
+ok   D4 red_run polarity NULL
+ok   D5 green_run iterations 1
+ok   D6 green_run iterations NULL
+ok   D7 green_run exit_code NULL
+ok   D8 green_run exit_code 1
+ok   D9 runtime evidence without fingerprint (NULL)
+ok   D10 runtime evidence with empty fingerprint
+ok   D11 mutation_run exit_code 0
+ok   D12 mutation_run exit_code NULL
+ok   D13 polarity on a non run kind
+ok   D14 sha256 uppercase
+ok   D15 sha256 short
+ok   D16 sha256 NULL
+ok   D17 size_bytes 0
+ok   D18 unknown kind
+ok   D19 evidence for an unminted id (FK)
+ok   D20 positive control: a valid red_run is accepted
+ok   D21 UPDATE reg_evidence
+ok   D22 DELETE reg_evidence
+ok   D23 INSERT OR REPLACE reg_evidence
+ok   D24 UPDATE reg_ids
+ok   D25 DELETE reg_ids
+ok   D26 reg_ids minted_by empty
+ok   D27 reg_ids unknown mint_basis
+ok   D28 reg_ids mint_basis NULL
+ok   D29 minted ids follow the CAT-NNN form
+ok   D30 reg_item_ext bad category
+ok   D31 reg_item_ext severity NULL
+ok   D32 reg_item_ext defect_layer NULL
+ok   D33 reg_components id with uppercase
+ok   D34 positive control: reg_item_ext row accepted
+ok   D35 defect_layer lowered
+ok   D36 reg_item_ext deleted
+ok   D37 custody_basis changed to legacy_import
+ok   D38 reg_item_ext.atm_id changed
+ok   D39 legacy_import for a non-import mint
+ok   D40 SAME_DEFECT with a minted new id
+ok   D41 UNDECIDED without a new id (NULL)
+ok   D42 new id equals the head
+ok   D43 no reported entry and no finding
+ok   D44 head_log_id not the head's last log id
+ok   D45 positive control: valid SAME_DEFECT link
+ok   D46 UPDATE reg_recurrence_links
+ok   D47 DELETE reg_recurrence_links
+ok   D50 SYNCED without exit/ref/evidence
+ok   D51 SYNCED exit 0 but no remote_ref
+ok   D52 SYNCED exit 0 ref but no evidence
+ok   D53 SYNCED with exit 1
+ok   D54 SKIPPED without a reason
+ok   D55 a reason on a non-SKIPPED row
+ok   D56 FAILED with exit 0
+ok   D57 FAILED with exit NULL
+ok   D58 positive control: SKIPPED credentials_absent accepted
+ok   D60 GREEN row that is BLOCKED
+ok   D61 BLOCKED without a reason
+ok   D62 PASS carrying a blocked_reason
+ok   D63 RED row that PASSes
+ok   D64 rep_index 0
+ok   D65 empty target_fingerprint
+ok   D66 unknown test type (FK)
+ok   D67 positive control: GREEN PASS row accepted
+ok   D68 duplicate (group_id, rep_index)
+ok   D69 UPDATE reg_test_runs
+ok   D70 author equals reviewer
+ok   D71 author equals reviewer (case, space)
+ok   D72 verdict neither GO nor NO-GO
+ok   D73 reviewer NULL
+ok   D74 status log forged by a raw insert
+ok   D75 gate registry check kind unknown
+ok   D76 reg_export_runs verdict unknown
+ok   D77 reg_discovery recorded_by equals producer
+== E. custody chain through the engine: close needs an ACCEPTED, single-use decision ==
+ok   E1 both items reached In testing
+ok   E2 close without a decision refused (custody)
+ok   E3 item unchanged after the refused close
+ok   E4 raw UPDATE to a terminal status refused
+ok   E5 raw status edge not in the graph refused
+ok   E6 DELETE+INSERT as terminal refused (bypass)
+ok   E7 item still present after the refused bypass
+ok   E8 hand-made ACCEPTED decision on a non-decision evidence row
+ok   E9 RED alone: close still refused
+ok   E10 ACCEPTED decision without a custody_decision evidence row
+ok   E11 ACCEPTED decision on a complete chain accepted
+ok   E12 close with an ACCEPTED decision succeeds
+ok   E13 item is Fixed
+ok   E14 decision consumed (single use)
+ok   E15 a consumed decision cannot be revived
+ok   E16 decision DELETE refused
+ok   E17 v_custody_violations empty
+ok   E18 status log recorded the whole path
+ok   E19 raw edit of the closed status refused
+ok   E20 reopen succeeded
+ok   E21 a new decision on cycle-1 evidence refused
+ok   E22 second close without a new chain refused
+ok   E23 replay of a cycle-1 evidence file refused
+== F. trigger set equals the DDL's own trigger names; the real register is refused ==
+ok   F1 trigger names in the DB equal the names in the DDL (diff empty)
+ok   F2 43 trigger names in the DDL
+ok   F3 the real docs/workable_items.db is refused (rc 4)
+ok   F4 the refused call neither created nor changed the real DB file
+ok   F5 a file: URI naming the real register is refused (rc 4)
+ok   F6 --db with no value exits 2 (usage), it does not hang (124 = hung)
+ok   F7 a DB path with spaces is applied
+ok   F8 a DDL path with spaces is applied
+ok   F9 a DDL path holding a double quote is refused (rc 2), not interpolated into .read
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.hard.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.sym.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F11 control: a different scratch DB is applied (rc 0)
+== H. remaining CHECK constraints: one rejected insert per CHECK (value out of range, and NULL where a closed set applies) ==
+ok   H components.kind
+ok   H components.own_repo
+ok   H item_ext.defect_layer
+ok   H item_ext.severity
+ok   H item_ext.custody_basis
+ok   H item_ext.reverify_required
+ok   H sources.kind
+ok   H source_entries.entry_sha256 length
+ok   H source_map.relation
+ok   H source_map.match_basis
+ok   H source_map.severity_governs
+ok   H audit_runs.run_id pattern
+ok   H audit_runs.git_head length
+ok   H findings.location_path empty
+ok   H findings.category
+ok   H findings.severity
+ok   H findings.fingerprint length
+ok   H findings.unit_alias for another component
+ok   H findings.unit_alias non-digit suffix
+ok   H evidence.evidence_class
+ok   H evidence.path empty
+ok   H evidence.polarity value
+ok   H evidence.iterations 0
+ok   H evidence.precondition_provenance
+ok   H test_runs.polarity
+ok   H test_runs.verdict
+ok   H test_runs.verdict (MUTATION row, the only path no other CHECK covers)
+ok   H test_runs.blocked_reason
+ok   H recurrence.intake_path
+ok   H recurrence.verdict
+ok   H recurrence.match_basis
+ok   H recurrence.reopened
+ok   H closure_decisions.to_status
+ok   H closure_decisions.decision
+ok   H trackers.tracker_id lowercase
+ok   H trackers.enabled
+ok   H tracker_sync.status
+ok   H tracker_sync.skip_reason
+ok   H export_files.format
+ok   H export_files.sha256 length
+ok   H export_files.status
+ok   H cycle.manual_qa_ran
+ok   H discovery.channel
+ok   H discovery.should_have_been_caught_by empty
+ok   H discovery.recorded_by equals producer
+ok   H discovery.none needs a 20-char justification
+ok   H discovery.none with NULL justification
+ok   H positive control: discovery with a real justification accepted
+ok   H escape_baseline.escapes negative
+RESULT pass=176 fail=0
+# exit=0
+##### GREEN run 2
+# capture: utc=2026-10-05T20:00:51Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/register/tests/test_register_ext.sh
+# identity: task=T060 utc=2026-10-05T20:00:53Z host=anton uid=1000
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=2c9ba51f17be3d3feec2df37bc96a2c180cc140b9f94bbb6341ec29b245e6214 gate=3d697e86854711c15abb3196f7a945bee3896e447157900f8f4e03a65a5fef68 test=0f104251c48aa86ed499b7a77fd482f378cae9bbce7b9569d377caaecc335c1c
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== A. apply_ext.sh on a fresh DB, idempotence, counts ==
+ok   A1 apply on absent DB exits 0
+ok   A2 25 reg_ tables
+ok   A3 43 triggers (v5: 41 + reg_findings_no_delete + reg_findings_observation_no_update)
+ok   A4 ext_schema_version (v5)
+ok   A5 engine schema_version still 7
+ok   A6 second apply exits 0 (idempotent)
+ok   A7 trigger count unchanged after re-apply
+== B. DB already holding items ==
+ok   B1 engine accepted --id CAT-001 --prefix CAT
+ok   B2 apply on DB with items exits 0
+ok   B3 item kept
+ok   B4 raw items insert without a mint refused
+== C. engine version mismatch refused ==
+ok   C1 mismatching engine version exits non-zero
+ok   C2 message names both versions (6 and 7)
+ok   C3 nothing applied
+ok   C4 missing --db refused
+== D. CHECK constraints: rejected inserts incl. NULL inputs (§14.3) ==
+ok   D1 red_run exit_code 0
+ok   D2 red_run exit_code NULL
+ok   D3 red_run exit_code 126
+ok   D4 red_run polarity NULL
+ok   D5 green_run iterations 1
+ok   D6 green_run iterations NULL
+ok   D7 green_run exit_code NULL
+ok   D8 green_run exit_code 1
+ok   D9 runtime evidence without fingerprint (NULL)
+ok   D10 runtime evidence with empty fingerprint
+ok   D11 mutation_run exit_code 0
+ok   D12 mutation_run exit_code NULL
+ok   D13 polarity on a non run kind
+ok   D14 sha256 uppercase
+ok   D15 sha256 short
+ok   D16 sha256 NULL
+ok   D17 size_bytes 0
+ok   D18 unknown kind
+ok   D19 evidence for an unminted id (FK)
+ok   D20 positive control: a valid red_run is accepted
+ok   D21 UPDATE reg_evidence
+ok   D22 DELETE reg_evidence
+ok   D23 INSERT OR REPLACE reg_evidence
+ok   D24 UPDATE reg_ids
+ok   D25 DELETE reg_ids
+ok   D26 reg_ids minted_by empty
+ok   D27 reg_ids unknown mint_basis
+ok   D28 reg_ids mint_basis NULL
+ok   D29 minted ids follow the CAT-NNN form
+ok   D30 reg_item_ext bad category
+ok   D31 reg_item_ext severity NULL
+ok   D32 reg_item_ext defect_layer NULL
+ok   D33 reg_components id with uppercase
+ok   D34 positive control: reg_item_ext row accepted
+ok   D35 defect_layer lowered
+ok   D36 reg_item_ext deleted
+ok   D37 custody_basis changed to legacy_import
+ok   D38 reg_item_ext.atm_id changed
+ok   D39 legacy_import for a non-import mint
+ok   D40 SAME_DEFECT with a minted new id
+ok   D41 UNDECIDED without a new id (NULL)
+ok   D42 new id equals the head
+ok   D43 no reported entry and no finding
+ok   D44 head_log_id not the head's last log id
+ok   D45 positive control: valid SAME_DEFECT link
+ok   D46 UPDATE reg_recurrence_links
+ok   D47 DELETE reg_recurrence_links
+ok   D50 SYNCED without exit/ref/evidence
+ok   D51 SYNCED exit 0 but no remote_ref
+ok   D52 SYNCED exit 0 ref but no evidence
+ok   D53 SYNCED with exit 1
+ok   D54 SKIPPED without a reason
+ok   D55 a reason on a non-SKIPPED row
+ok   D56 FAILED with exit 0
+ok   D57 FAILED with exit NULL
+ok   D58 positive control: SKIPPED credentials_absent accepted
+ok   D60 GREEN row that is BLOCKED
+ok   D61 BLOCKED without a reason
+ok   D62 PASS carrying a blocked_reason
+ok   D63 RED row that PASSes
+ok   D64 rep_index 0
+ok   D65 empty target_fingerprint
+ok   D66 unknown test type (FK)
+ok   D67 positive control: GREEN PASS row accepted
+ok   D68 duplicate (group_id, rep_index)
+ok   D69 UPDATE reg_test_runs
+ok   D70 author equals reviewer
+ok   D71 author equals reviewer (case, space)
+ok   D72 verdict neither GO nor NO-GO
+ok   D73 reviewer NULL
+ok   D74 status log forged by a raw insert
+ok   D75 gate registry check kind unknown
+ok   D76 reg_export_runs verdict unknown
+ok   D77 reg_discovery recorded_by equals producer
+== E. custody chain through the engine: close needs an ACCEPTED, single-use decision ==
+ok   E1 both items reached In testing
+ok   E2 close without a decision refused (custody)
+ok   E3 item unchanged after the refused close
+ok   E4 raw UPDATE to a terminal status refused
+ok   E5 raw status edge not in the graph refused
+ok   E6 DELETE+INSERT as terminal refused (bypass)
+ok   E7 item still present after the refused bypass
+ok   E8 hand-made ACCEPTED decision on a non-decision evidence row
+ok   E9 RED alone: close still refused
+ok   E10 ACCEPTED decision without a custody_decision evidence row
+ok   E11 ACCEPTED decision on a complete chain accepted
+ok   E12 close with an ACCEPTED decision succeeds
+ok   E13 item is Fixed
+ok   E14 decision consumed (single use)
+ok   E15 a consumed decision cannot be revived
+ok   E16 decision DELETE refused
+ok   E17 v_custody_violations empty
+ok   E18 status log recorded the whole path
+ok   E19 raw edit of the closed status refused
+ok   E20 reopen succeeded
+ok   E21 a new decision on cycle-1 evidence refused
+ok   E22 second close without a new chain refused
+ok   E23 replay of a cycle-1 evidence file refused
+== F. trigger set equals the DDL's own trigger names; the real register is refused ==
+ok   F1 trigger names in the DB equal the names in the DDL (diff empty)
+ok   F2 43 trigger names in the DDL
+ok   F3 the real docs/workable_items.db is refused (rc 4)
+ok   F4 the refused call neither created nor changed the real DB file
+ok   F5 a file: URI naming the real register is refused (rc 4)
+ok   F6 --db with no value exits 2 (usage), it does not hang (124 = hung)
+ok   F7 a DB path with spaces is applied
+ok   F8 a DDL path with spaces is applied
+ok   F9 a DDL path holding a double quote is refused (rc 2), not interpolated into .read
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.hard.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.sym.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F11 control: a different scratch DB is applied (rc 0)
+== H. remaining CHECK constraints: one rejected insert per CHECK (value out of range, and NULL where a closed set applies) ==
+ok   H components.kind
+ok   H components.own_repo
+ok   H item_ext.defect_layer
+ok   H item_ext.severity
+ok   H item_ext.custody_basis
+ok   H item_ext.reverify_required
+ok   H sources.kind
+ok   H source_entries.entry_sha256 length
+ok   H source_map.relation
+ok   H source_map.match_basis
+ok   H source_map.severity_governs
+ok   H audit_runs.run_id pattern
+ok   H audit_runs.git_head length
+ok   H findings.location_path empty
+ok   H findings.category
+ok   H findings.severity
+ok   H findings.fingerprint length
+ok   H findings.unit_alias for another component
+ok   H findings.unit_alias non-digit suffix
+ok   H evidence.evidence_class
+ok   H evidence.path empty
+ok   H evidence.polarity value
+ok   H evidence.iterations 0
+ok   H evidence.precondition_provenance
+ok   H test_runs.polarity
+ok   H test_runs.verdict
+ok   H test_runs.verdict (MUTATION row, the only path no other CHECK covers)
+ok   H test_runs.blocked_reason
+ok   H recurrence.intake_path
+ok   H recurrence.verdict
+ok   H recurrence.match_basis
+ok   H recurrence.reopened
+ok   H closure_decisions.to_status
+ok   H closure_decisions.decision
+ok   H trackers.tracker_id lowercase
+ok   H trackers.enabled
+ok   H tracker_sync.status
+ok   H tracker_sync.skip_reason
+ok   H export_files.format
+ok   H export_files.sha256 length
+ok   H export_files.status
+ok   H cycle.manual_qa_ran
+ok   H discovery.channel
+ok   H discovery.should_have_been_caught_by empty
+ok   H discovery.recorded_by equals producer
+ok   H discovery.none needs a 20-char justification
+ok   H discovery.none with NULL justification
+ok   H positive control: discovery with a real justification accepted
+ok   H escape_baseline.escapes negative
+RESULT pass=176 fail=0
+# exit=0
+##### GREEN run 3
+# capture: utc=2026-10-05T20:01:02Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# command: bash scripts/register/tests/test_register_ext.sh
+# identity: task=T060 utc=2026-10-05T20:01:03Z host=anton uid=1000
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=47
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=2c9ba51f17be3d3feec2df37bc96a2c180cc140b9f94bbb6341ec29b245e6214 gate=3d697e86854711c15abb3196f7a945bee3896e447157900f8f4e03a65a5fef68 test=0f104251c48aa86ed499b7a77fd482f378cae9bbce7b9569d377caaecc335c1c
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== A. apply_ext.sh on a fresh DB, idempotence, counts ==
+ok   A1 apply on absent DB exits 0
+ok   A2 25 reg_ tables
+ok   A3 43 triggers (v5: 41 + reg_findings_no_delete + reg_findings_observation_no_update)
+ok   A4 ext_schema_version (v5)
+ok   A5 engine schema_version still 7
+ok   A6 second apply exits 0 (idempotent)
+ok   A7 trigger count unchanged after re-apply
+== B. DB already holding items ==
+ok   B1 engine accepted --id CAT-001 --prefix CAT
+ok   B2 apply on DB with items exits 0
+ok   B3 item kept
+ok   B4 raw items insert without a mint refused
+== C. engine version mismatch refused ==
+ok   C1 mismatching engine version exits non-zero
+ok   C2 message names both versions (6 and 7)
+ok   C3 nothing applied
+ok   C4 missing --db refused
+== D. CHECK constraints: rejected inserts incl. NULL inputs (§14.3) ==
+ok   D1 red_run exit_code 0
+ok   D2 red_run exit_code NULL
+ok   D3 red_run exit_code 126
+ok   D4 red_run polarity NULL
+ok   D5 green_run iterations 1
+ok   D6 green_run iterations NULL
+ok   D7 green_run exit_code NULL
+ok   D8 green_run exit_code 1
+ok   D9 runtime evidence without fingerprint (NULL)
+ok   D10 runtime evidence with empty fingerprint
+ok   D11 mutation_run exit_code 0
+ok   D12 mutation_run exit_code NULL
+ok   D13 polarity on a non run kind
+ok   D14 sha256 uppercase
+ok   D15 sha256 short
+ok   D16 sha256 NULL
+ok   D17 size_bytes 0
+ok   D18 unknown kind
+ok   D19 evidence for an unminted id (FK)
+ok   D20 positive control: a valid red_run is accepted
+ok   D21 UPDATE reg_evidence
+ok   D22 DELETE reg_evidence
+ok   D23 INSERT OR REPLACE reg_evidence
+ok   D24 UPDATE reg_ids
+ok   D25 DELETE reg_ids
+ok   D26 reg_ids minted_by empty
+ok   D27 reg_ids unknown mint_basis
+ok   D28 reg_ids mint_basis NULL
+ok   D29 minted ids follow the CAT-NNN form
+ok   D30 reg_item_ext bad category
+ok   D31 reg_item_ext severity NULL
+ok   D32 reg_item_ext defect_layer NULL
+ok   D33 reg_components id with uppercase
+ok   D34 positive control: reg_item_ext row accepted
+ok   D35 defect_layer lowered
+ok   D36 reg_item_ext deleted
+ok   D37 custody_basis changed to legacy_import
+ok   D38 reg_item_ext.atm_id changed
+ok   D39 legacy_import for a non-import mint
+ok   D40 SAME_DEFECT with a minted new id
+ok   D41 UNDECIDED without a new id (NULL)
+ok   D42 new id equals the head
+ok   D43 no reported entry and no finding
+ok   D44 head_log_id not the head's last log id
+ok   D45 positive control: valid SAME_DEFECT link
+ok   D46 UPDATE reg_recurrence_links
+ok   D47 DELETE reg_recurrence_links
+ok   D50 SYNCED without exit/ref/evidence
+ok   D51 SYNCED exit 0 but no remote_ref
+ok   D52 SYNCED exit 0 ref but no evidence
+ok   D53 SYNCED with exit 1
+ok   D54 SKIPPED without a reason
+ok   D55 a reason on a non-SKIPPED row
+ok   D56 FAILED with exit 0
+ok   D57 FAILED with exit NULL
+ok   D58 positive control: SKIPPED credentials_absent accepted
+ok   D60 GREEN row that is BLOCKED
+ok   D61 BLOCKED without a reason
+ok   D62 PASS carrying a blocked_reason
+ok   D63 RED row that PASSes
+ok   D64 rep_index 0
+ok   D65 empty target_fingerprint
+ok   D66 unknown test type (FK)
+ok   D67 positive control: GREEN PASS row accepted
+ok   D68 duplicate (group_id, rep_index)
+ok   D69 UPDATE reg_test_runs
+ok   D70 author equals reviewer
+ok   D71 author equals reviewer (case, space)
+ok   D72 verdict neither GO nor NO-GO
+ok   D73 reviewer NULL
+ok   D74 status log forged by a raw insert
+ok   D75 gate registry check kind unknown
+ok   D76 reg_export_runs verdict unknown
+ok   D77 reg_discovery recorded_by equals producer
+== E. custody chain through the engine: close needs an ACCEPTED, single-use decision ==
+ok   E1 both items reached In testing
+ok   E2 close without a decision refused (custody)
+ok   E3 item unchanged after the refused close
+ok   E4 raw UPDATE to a terminal status refused
+ok   E5 raw status edge not in the graph refused
+ok   E6 DELETE+INSERT as terminal refused (bypass)
+ok   E7 item still present after the refused bypass
+ok   E8 hand-made ACCEPTED decision on a non-decision evidence row
+ok   E9 RED alone: close still refused
+ok   E10 ACCEPTED decision without a custody_decision evidence row
+ok   E11 ACCEPTED decision on a complete chain accepted
+ok   E12 close with an ACCEPTED decision succeeds
+ok   E13 item is Fixed
+ok   E14 decision consumed (single use)
+ok   E15 a consumed decision cannot be revived
+ok   E16 decision DELETE refused
+ok   E17 v_custody_violations empty
+ok   E18 status log recorded the whole path
+ok   E19 raw edit of the closed status refused
+ok   E20 reopen succeeded
+ok   E21 a new decision on cycle-1 evidence refused
+ok   E22 second close without a new chain refused
+ok   E23 replay of a cycle-1 evidence file refused
+== F. trigger set equals the DDL's own trigger names; the real register is refused ==
+ok   F1 trigger names in the DB equal the names in the DDL (diff empty)
+ok   F2 43 trigger names in the DDL
+ok   F3 the real docs/workable_items.db is refused (rc 4)
+ok   F4 the refused call neither created nor changed the real DB file
+ok   F5 a file: URI naming the real register is refused (rc 4)
+ok   F6 --db with no value exits 2 (usage), it does not hang (124 = hung)
+ok   F7 a DB path with spaces is applied
+ok   F8 a DDL path with spaces is applied
+ok   F9 a DDL path holding a double quote is refused (rc 2), not interpolated into .read
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.hard.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.sym.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F10 the real register reached through [realish.db] is refused (rc 4)
+ok   F11 control: a different scratch DB is applied (rc 0)
+== H. remaining CHECK constraints: one rejected insert per CHECK (value out of range, and NULL where a closed set applies) ==
+ok   H components.kind
+ok   H components.own_repo
+ok   H item_ext.defect_layer
+ok   H item_ext.severity
+ok   H item_ext.custody_basis
+ok   H item_ext.reverify_required
+ok   H sources.kind
+ok   H source_entries.entry_sha256 length
+ok   H source_map.relation
+ok   H source_map.match_basis
+ok   H source_map.severity_governs
+ok   H audit_runs.run_id pattern
+ok   H audit_runs.git_head length
+ok   H findings.location_path empty
+ok   H findings.category
+ok   H findings.severity
+ok   H findings.fingerprint length
+ok   H findings.unit_alias for another component
+ok   H findings.unit_alias non-digit suffix
+ok   H evidence.evidence_class
+ok   H evidence.path empty
+ok   H evidence.polarity value
+ok   H evidence.iterations 0
+ok   H evidence.precondition_provenance
+ok   H test_runs.polarity
+ok   H test_runs.verdict
+ok   H test_runs.verdict (MUTATION row, the only path no other CHECK covers)
+ok   H test_runs.blocked_reason
+ok   H recurrence.intake_path
+ok   H recurrence.verdict
+ok   H recurrence.match_basis
+ok   H recurrence.reopened
+ok   H closure_decisions.to_status
+ok   H closure_decisions.decision
+ok   H trackers.tracker_id lowercase
+ok   H trackers.enabled
+ok   H tracker_sync.status
+ok   H tracker_sync.skip_reason
+ok   H export_files.format
+ok   H export_files.sha256 length
+ok   H export_files.status
+ok   H cycle.manual_qa_ran
+ok   H discovery.channel
+ok   H discovery.should_have_been_caught_by empty
+ok   H discovery.recorded_by equals producer
+ok   H discovery.none needs a 20-char justification
+ok   H discovery.none with NULL justification
+ok   H positive control: discovery with a real justification accepted
+ok   H escape_baseline.escapes negative
+RESULT pass=176 fail=0
+# exit=0

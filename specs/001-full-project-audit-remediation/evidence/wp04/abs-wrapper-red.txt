@@ -1,0 +1,59 @@
+# identity 2026-10-05T23:55:20Z head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 
+# sha256 
+# sha256 16a87323009108af8fc4dbf40c10c42a794f4ce6a23c9e306a8a419965fc1757  scripts/audit/tests/test_anti_bluff_scan_wrapper.sh
+# sha256 8884708d9217b99e27777a476a8783a5787db2059b9e03f5a4056f92f76e1dee  scripts/audit/tests/mutate_anti_bluff_scan_wrapper.sh
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/anti-bluff-scan.sh absent or not executable (RED state: every case below must FAIL)
+FAIL whole tree with violations exits non-zero and reports them: want rc=1 grep=[GO_NO_ASSERT] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL whole tree without violations exits 0 with no output: want rc=0 grep=[] not=[.]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL positional root accepted (clean) -> 0: want rc=0 grep=[] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL listed clean file, unlisted violations elsewhere IGNORED -> 0, no finding: want rc=0 grep=[] not=[unlisted_bad]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL violation planted in a LISTED file -> 1 and named: want rc=1 grep=[pkg/bad_test.go.*GO_NO_ASSERT] not=[unlisted_bad]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL clean + bad listed -> 1, only the listed bad file reported: want rc=1 grep=[bad_test.go] not=[unlisted_bad]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL duplicate entries harmless -> 0: want rc=0 grep=[] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL listed non-test file with no pattern -> 0: want rc=0 grep=[] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL last line without newline is still scanned -> 1: want rc=1 grep=[GO_NO_ASSERT] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL =value forms and -- accepted -> 0: want rc=0 grep=[] not=[]; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+ok   no file in the scanned tree was created or modified
+FAIL hostile path: optionlike: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: longopt: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: dotdot: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: dotdot_mid: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: absolute: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: dot_prefix: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: dot_mid: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: trailing_slash: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: glob_star: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: glob_q: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: glob_bracket: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: pathspec_magic: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: double_slash: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: backslash: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: tab_in_name: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: empty_line: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: only_dot: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: nonexistent: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: directory: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: symlink_file: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: symlink_dir_component: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL one hostile entry among good ones refuses the whole run: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL option-like --files-from value (an existing file named -x must still be refused): want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL hostile path: fifo: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL missing list file: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL empty list file (scans nothing, must not read as clean): want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL unknown option: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL --files-from without a value: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL root that is not a directory: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+FAIL option-like root: want rc=2 + REFUSED + empty stdout; got rc=127 out=[] err=[timeout: failed to execute process: No such file or directory (os error 2)|]
+ok   symlink target never scanned (no finding for the outside file)
+cp: cannot stat '/home/milosvasic/Projects/catalogizer/scripts/anti-bluff-scan.sh': No such file or directory
+chmod: cannot access '/tmp/abs_t.EzqGOD/mir_s_find/scripts/anti-bluff-scan.sh': No such file or directory
+FAIL finding printed by the inner scanner with exit 0 still fails the wrapper: want rc=1 grep=[FAKE] not=[]; got rc=127 out=[] err=[scripts/audit/tests/test_anti_bluff_scan_wrapper.sh: line 142: /tmp/abs_t.EzqGOD/mir_s_find/scripts/anti-bluff-scan.sh: No such file or directory|]
+cp: cannot stat '/home/milosvasic/Projects/catalogizer/scripts/anti-bluff-scan.sh': No such file or directory
+chmod: cannot access '/tmp/abs_t.EzqGOD/mir_s_rc1/scripts/anti-bluff-scan.sh': No such file or directory
+FAIL inner exit 1 without output -> 1: want rc=1 grep=[] not=[]; got rc=127 out=[] err=[scripts/audit/tests/test_anti_bluff_scan_wrapper.sh: line 144: /tmp/abs_t.EzqGOD/mir_s_rc1/scripts/anti-bluff-scan.sh: No such file or directory|]
+cp: cannot stat '/home/milosvasic/Projects/catalogizer/scripts/anti-bluff-scan.sh': No such file or directory
+chmod: cannot access '/tmp/abs_t.EzqGOD/mir_s_rc3/scripts/anti-bluff-scan.sh': No such file or directory
+FAIL inner scanner crash (rc 3) -> 2, never clean: want rc=2 grep=[] not=[]; got rc=127 out=[] err=[scripts/audit/tests/test_anti_bluff_scan_wrapper.sh: line 145: /tmp/abs_t.EzqGOD/mir_s_rc3/scripts/anti-bluff-scan.sh: No such file or directory|]
+SUMMARY pass=2 fail=43
+rc=1

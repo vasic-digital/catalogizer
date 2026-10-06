@@ -1,0 +1,32 @@
+# T041 record_deferral.sh RED: test run with the script absent (host run, bash; see wp04 README note)
+# command: bash scripts/repo/tests/test_record_deferral.sh  exit=1
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/repo/record_deferral.sh is absent or not executable (RED state: every case must FAIL)
+FAIL LOCAL_ONLY recorded (got '127', want '0')
+FAIL SKIP_LONG recorded (got '127', want '0')
+FAIL SWEEP_ABSENT recorded (got '127', want '0')
+FAIL --list: closed-set order (got '', want 'SKIP_LONG,SWEEP_ABSENT,LOCAL_ONLY')
+scripts/repo/tests/test_record_deferral.sh: line 22: /tmp/rd_test.XErevS/w/.audit/commit-push/run1/deferrals.tsv: No such file or directory
+FAIL row count (header + 3) (got '', want '4')
+awk: fatal: cannot open file `/tmp/rd_test.XErevS/w/.audit/commit-push/run1/deferrals.tsv' for reading: No such file or directory
+FAIL row carries flag and reason (got '', want 'long gate deferred')
+FAIL --list: duplicate flag listed once (got '', want 'SKIP_LONG,SWEEP_ABSENT,LOCAL_ONLY')
+FAIL held commit with verdict recorded (got '127', want '0')
+tail: cannot open '/tmp/rd_test.XErevS/w/.audit/commit-push/run1/deferrals.tsv' for reading: No such file or directory
+FAIL row carries awaits_review and commit (got '', want 'specs/x/reviews/WP-04.json|abc123')
+scripts/repo/tests/test_record_deferral.sh: line 32: /tmp/rd_test.XErevS/w/.audit/commit-push/run1/deferrals.tsv: No such file or directory
+FAIL flag outside the closed set: 20 (got '127', want '20')
+FAIL flag in wrong case: 20 (got '127', want '20')
+FAIL missing reason: 20 (got '127', want '20')
+FAIL empty reason: 20 (got '127', want '20')
+FAIL tab in reason: 20 (got '127', want '20')
+FAIL held commit without verdict: 20 (got '127', want '20')
+FAIL no --run-dir: 20 (got '127', want '20')
+FAIL unknown argument: 20 (got '127', want '20')
+scripts/repo/tests/test_record_deferral.sh: line 41: /tmp/rd_test.XErevS/w/.audit/commit-push/run1/deferrals.tsv: No such file or directory
+ok   no row written by any refusal (=)
+FAIL run dir holding tracked files: 20 (got '127', want '20')
+FAIL run dir not ignored by git: 20 (got '127', want '20')
+ok   no deferrals.tsv in the tracked tree (=0)
+FAIL run dir outside a work tree (got '127', want '0')
+FAIL unwritable run dir: 20 and no row (got '127', want '20')
+---- 2 ok, 21 failed

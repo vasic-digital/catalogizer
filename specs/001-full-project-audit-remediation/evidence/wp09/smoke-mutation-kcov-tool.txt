@@ -1,0 +1,2 @@
+smoke: FAILED
+rc=1

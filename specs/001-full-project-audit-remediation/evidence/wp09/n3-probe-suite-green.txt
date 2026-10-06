@@ -1,0 +1,9 @@
+# identity: n1-probe-suite
+# test sha256: b26d7320495b9869d7e860f5bff5360854ce3bb51497c7b047804c3ab205035a
+# run_at: 2026-10-06T12:22:17Z host: anton uid: 1000
+PASS: mutation trap-after-mktemp observed failing (1 assertion(s) RED)
+PASS: mutation dev-needle-default-wrong-class observed failing (1 assertion(s) RED)
+PASS: mutation sys-needle-default-wrong-class observed failing (2 assertion(s) RED)
+PASS: real script: probe suite has zero failures
+probe_host tests: 122 passed, 0 failed
+rc=0

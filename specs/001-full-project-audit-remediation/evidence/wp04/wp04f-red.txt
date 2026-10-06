@@ -1,0 +1,68 @@
+# WP-04 round 6 (wp04f) RED: the round-6 cases run against the PRE-FIX helpers (tests extended first, helpers unchanged); failing lines only (^FAIL) and the summary, verbatim
+# captured 2026-10-06T13:09:36Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# PRE-FIX helpers (the state the WF6 review judged; sha256 of the copies run):
+d6220cd5b1332be478cf43d2b573cfde835e9a1bb13b37756d7178217f19afc4    pre/repo/push_recursive.sh
+bba1695b8a13a6790dcfa9cd17d09c4e46aaf09ed4ae8577e3feef0afbc25e1a    pre/repo/scope_check.sh
+2b98969813f3060b13a40ddf8be2d97c8a5618af475cec24c7a47bb9079b83ed    pre/repo/check_no_ci.sh
+08e4a18175d30d7db1f22999c796218e720fed3cda1752c1e321a6d070f7c834    pre/repo/check_revision_headers.sh
+fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4    pre/repo/integrate_merge.sh
+8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd    pre/repo/lib_safe.sh
+29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758    pre/repo/verify_repos.sh
+0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854    pre/audit/index_health.sh
+be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71    pre/audit/scope_to_lumen_json.py
+# tests (current, round 6):
+  6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+  0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+  c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+  d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+  94bdb017a67d76af4ab3cde50010600416b2aec4b6056ede626758f2bdb4d3d7  scripts/repo/tests/test_integrate_merge.sh
+== push_recursive
+FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand commit is re-judged by S1 once the moved tips are fetched) (got '20', want '11')
+FAIL names the moved remote r1 (no 'NOPUSH	.	r1	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	7cff22ef33525e30493d07855e6927fa23235528')
+FAIL names the moved remote r2 (no 'NOPUSH	.	r2	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	7cff22ef33525e30493d07855e6927fa23235528')
+FAIL no commit is named unrecorded while a remote moved (got '1', want '0')
+FAIL rev-list failing, CPA commit only: 20 (W6-2) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in 'PUSHED	.	r1	06479dc8dbc7e7c1259d5d5764c09da61c224504
+FAIL nothing pushed to r1 when rev-list fails (got '06479dc8dbc7e7c1259d5d5764c09da61c224504', want 'cf6c3fa8757323d32dddac238af692f43a2db7d2')
+FAIL no PUSHED line (unexpected 'PUSHED' in 'PUSHED	.	r1	06479dc8dbc7e7c1259d5d5764c09da61c224504
+FAIL rev-list failing with an unrecorded hand commit: 20, never published (W6-2) (got '0', want '20')
+FAIL the hand commit was not pushed to r1 (got 'f9e57741af2e398b024dacd242f06061236759f4', want 'dd42db1ac1da25eca223637bfaf27d63f3104fcd')
+FAIL nor to r2 (got 'f9e57741af2e398b024dacd242f06061236759f4', want 'dd42db1ac1da25eca223637bfaf27d63f3104fcd')
+FAIL no PUSHED line (hand commit) (unexpected 'PUSHED' in 'PUSHED	.	r1	f9e57741af2e398b024dacd242f06061236759f4
+FAIL named git_listing_failed (remote) (no 'git_listing_failed' in 'REFUSED	.	unrecorded_local_commit	c3e5cdfa2ca939729146f0b8238705555dd3c7fefatal: shim')
+FAIL S1-form ff, CPA commit, every remote moved again: 11 (W6-1) (got '20', want '11')
+FAIL no false unrecorded_local_commit naming the published F (unexpected 'unrecorded_local_commit' in 'REFUSED	.	unrecorded_local_commit	109f063fd8bf8f84e4009bab922940da60d12778')
+FAIL r1 named remote_moved_since_s1 (no 'NOPUSH	.	r1	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	109f063fd8bf8f84e4009bab922940da60d12778')
+FAIL hand commit and one moved remote: 11 (conservative, W6-1) (got '20', want '11')
+FAIL moved remote named (no 'NOPUSH	.	r1	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	012949e9c37de53fe15d36a606a6fb911cd58094')
+FAIL no unrecorded_local_commit while a remote moved (unexpected 'unrecorded_local_commit' in 'REFUSED	.	unrecorded_local_commit	012949e9c37de53fe15d36a606a6fb911cd58094')
+FAIL submodule at the path ?x, nothing outgoing there: 0 (W6-3) (got '20', want '0')
+FAIL main received the CPA commit (got 'bde6ae1d45027e2717ea32b9c2cf0d2bfcfeab06', want '6919acff95b26d8eb9464c019555d0cfabd2b988')
+FAIL ?x reported as a repository (no '?x' in '')
+FAIL no git_listing_failed for ?x (unexpected 'git_listing_failed' in 'push_recursive: git_listing_failed: x')
+FAIL gitlink path -evil under --recursive: 20 (W6-4) (got '0', want '20')
+FAIL nothing pushed on the unsafe gitlink (got '44b2ebade0cf2a41a64f6ba3570532be3c42fb8d', want 'fea330e2437fe988261fa6aea435685f8e5817ae')
+FAIL parents listing failing for a held commit: 20 (W6-12) (got '14', want '20')
+FAIL named git_listing_failed (parents) (no 'git_listing_failed' in 'HELD	.	9ce28297dfe5890549cb7532446659a131a61da3	specs/ev/reviews/V_nogo.json	not_go
+---- 126 ok, 27 failed
+== scope_check
+FAIL submodule .git pointing at a missing git dir: 20 (W6-6) (got '0', want '20')
+FAIL named submodule_git_unreadable (no 'submodule_git_unreadable' in '')
+FAIL names the submodule (no 'mods/sub' in '')
+FAIL HEAD tree of the evidence directory unreadable (object missing): 20, not 0 (W6-7) (got '0', want '20')
+FAIL named git_tree_unreadable (no 'git_tree_unreadable' in '')
+FAIL git ls-tree failing (shim): 20 (W6-7) (got '13', want '20')
+---- 64 ok, 6 failed
+== check_no_ci
+FAIL no temp file left behind by the terminated run (W6-5) (got 'check_no_ci.YorFyF ', want '')
+---- 37 ok, 1 failed
+== check_revision_headers
+FAIL no temp file left behind by the terminated --measure run (W6-5) (got 'check_rh.4zCqLD ', want '')
+---- 28 ok, 1 failed
+== integrate_merge
+FAIL git diff --name-only failing (shim): 20, never a silent merge (W6-12) (got '12', want '20')
+FAIL named git_diff_failed (no 'git_diff_failed' in '')
+FAIL git status failing (shim): 20 (W6-12) (got '12', want '20')
+FAIL named git_status_failed (no 'git_status_failed' in '')
+---- 121 ok, 4 failed
+== note: W6-12 integrate_merge cases FAIL on the exit code and the reason name; the merge itself was still refused by git on the overlapping dirty file (12), so no change was lost, the gate was just blind

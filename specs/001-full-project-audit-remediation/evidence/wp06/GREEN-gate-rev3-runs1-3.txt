@@ -1,0 +1,254 @@
+# WF3 round 4 evidence | utc=2026-10-06T05:29:52Z host=anton uid=1000 | gate x3 (host-side)
+# sha256 gate=f2b94af598098726c76dafc6cba476449ddaeb7f59aad82ce289cf1581e2d440 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 mutate_ddl=41972d1118e67f4697c834dc9af6b46fc40907f8f17275affecc803733db4f52 run_mutations=ba3eac5b1011dceaf867860f10ab13839745a1e5f647b5df3e87a22bc9a933ab equivalent_mutants=7996e06d2aef62ef946e946de7e115836c2b9521b06eb2f0b22c7c357a379e92
+# sha256 test_gate=66f979f237b363b90f15376a2159882a7215a8a4270f2eb65d2cc1d79e9e5528 test_behaviour=77c06dc0d54da5419d4c5983031bc8539c7e1706e9a2b3873f29ae206dfa8b1a test_ext=65b55e9c736b3fd0b6220da8b7d79862c09bc790404d0c3de7d0dbc3cc1b5f4d mutate_gate=6d500dd8961d2f5d64bcfe2ce900caf3dd1f1466cba7966d0a22acf9ea29a17d equiv_gate=218bad5dbd91522a081f65fecc7007f5c6e7e2a98041939ddbcb70afb6f94bf3
+# sha256 ratchet=fb354ebc3fe451e98e4df0409f2ccdefdd30ddef05f677598711ba356357e119 ledger_test=18dc33ca5f00fb8aba44b81a1aedd85d559f247578bcc6ce7f48821877e735ab ledger_mut=c3243c0829ae84597a0efb6409d72739d44c8affdd84bf740b75afb8ef5a4647 ledger=58f4f2d44cc2275d13e3c4700d3670706cb3e271bd27de566dd0a7067a59d2e0 prev_names=c292b92b907f0bd170e6d8da9e0747a2c72c0dfa631ccd9990030ac984739dde
+# container_image_digest=UNCONFIRMED (see README)
+== run 1 ==
+== golden-good ==
+ok   G1 clean DB with one item prints GATE OK (rc 0)
+ok   G2 freshly applied empty register passes
+ok   G3 the gate does not modify the DB under test
+ok   G4 missing --db exits 2 with a usage message
+ok   G5 absent DB file exits 1 naming the absence (and not created)
+ok   G6 absent DB file was not created
+== golden-bad fixtures ==
+ok   B1 orphan finding (no item row) fails
+ok   B2 illegal logged status edge fails
+ok   B3 dropped trigger fails (v_gate_missing_objects)
+ok   B4 same-name view redefinition fails (schema differs from the reference)
+ok   B5 edited edge graph fails (seed differs)
+ok   B6 foreign-key violation fails (foreign_key_check)
+ok   B7 item without a mint fails (v_items_without_mint)
+ok   B8 edited gate registry fails (seed differs)
+ok   B9 a file that is not a database fails
+ok   B10 page corruption in a data page fails (integrity_check)
+ok   B11 terminal item with no custody chain fails (v_custody_violations)
+ok   B12 injected registry name 'v_open_items WHERE 0' fails closed (invalid registry name)
+ok   B13 injected registry name with a statement separator fails closed
+ok   B13b the injected DROP did not run (reg_meta exists)
+ok   B14 a registered name that is a TABLE, not a view, fails (not a view)
+ok   B15 registry row naming sqlite_master fails closed
+ok   B16 the view list comes from the reference: all 11 views checked though the DB registry lost a row
+ok   B17 tampered DB left unmodified by the gate
+ok   B18 hostile name in the reference registry fails the gate
+ok   B19 engine-only violation fails (engine validate step)
+== WF2 fix round 3: fail-open gaps (I-1 I-2 I-3 I-8), minors m-1 m-2 m-3 m-4 ==
+ok   G7 --db without a value exits 2 (no hang)
+ok   G7b --ext without a value exits 2 (no hang)
+ok   G8.0 fixture: an uncheckpointed -wal exists
+ok   G8 the gate leaves a WAL database file byte-identical
+ok   G8b the gate leaves the -wal file byte-identical and present
+ok   B20 an added trigger named outside the old globs fails (unexpected object)
+ok   B21 an added view of an unrelated name fails
+ok   B22 an added index of an unrelated name fails
+ok   B23 an added table of an unrelated name fails
+ok   B35 an added trigger named sqliteX... (LIKE-wildcard boundary of the object filter) fails
+ok   B36 an added view named sqlite1... fails
+ok   B37 an added table named sqlitezz (no underscore) fails
+ok   B24 reg_reviews rebuilt without the author != reviewer CHECK (triggers intact) fails
+ok   B25 a dropped index fails (missing object)
+ok   B26 a dropped ENGINE view fails (missing object)
+ok   B26b a dropped idx_ index fails
+ok   B26c a redefined ENGINE view (same name, other body) fails (schema differs)
+ok   B26d an index redefined under the same name (WHERE clause dropped) fails (schema differs)
+ok   B27 engine schema_version other than engine_schema_required fails
+ok   B28 an edited reg_meta row fails (seed differs)
+ok   B29 an engine Reopened event the status log lacks fails (v_reopen_unlogged)
+ok   B30 a raw DELETE of an item (and its doc_segments) fails (v_deleted_items)
+ok   X9.0 fixture: the legacy item is closed through the import-time exemption
+ok   X9.1 control: before the attack the register passes
+ok   X9.2 with the silent trigger present the gate fails (unexpected object)
+ok   X9.3 after the silent trigger is dropped again the reopen it hid is still detected (v_reopen_unlogged)
+ok   E1 an evidence row whose file re-hashes to its sha256 passes (control)
+ok   E2 an evidence row citing a file that does not exist fails (WF2 X1)
+ok   E3 an evidence row whose recorded sha256 differs from the file fails
+ok   E4 an evidence row whose recorded size differs from the file fails
+ok   E5 an evidence path holding a tab fails closed
+ok   E6 a tracker_receipt URL is counted as skipped, the run is PASS-PARTIAL (rc 3), never GATE OK
+ok   E6a with --allow-url-evidence the partial run exits 0 but still reads PASS-PARTIAL with the count, never GATE OK
+ok   E6b a URL-shaped path on a custody-bearing kind (log) fails: only a tracker_receipt may be a non-file (WF3 I2)
+ok   E6c the allow flag does not legalise a URL path on a red_run (rc 1)
+ok   E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5)
+ok   E7 a relative evidence path resolves under the tree root (control)
+ok   S1 a failing run never prints a bare GATE OK line even when database text tries to (rc 1)
+ok   S2 the missing-objects report cannot spoof GATE OK either
+== WF3 I4: golden-good boundary fixtures of the I-1/I-2 views (a gate that refuses a clean register is a FAIL-bluff, 11.4.201(1)) ==
+ok   GF1.0 fixture: the engine recorded one Reopened event and the register logged it
+ok   GF1 a legitimately reopened item (logged reopen == engine reopen) passes; v_reopen_unlogged is empty
+ok   GF2 a minted id with no item row yet passes; v_deleted_items is empty
+ok   GF3 a brownfield reopen older than the id's first log row passes (the T069 go-live case)
+ok   S3.0 fixture: integrity_check reports the corrupted newline-named index
+ok   S3 a corrupted index named ix<LF>GATE OK never prints a bare GATE OK line (rc 1)
+== view_empty views each have a golden-bad fixture ==
+ok   B31 a scanned source entry with no mapping fails (v_unmapped_entries)
+ok   B32 a legacy_import row with no primary source mapping fails (v_legacy_import_unbacked)
+ok   B33 a SAME_DEFECT link on a terminal head that was never reopened fails (v_recurrence_violations)
+ok   B34 a custody-bearing evidence file recorded again after the reopen fails (v_replayed_evidence)
+RESULT pass=75 fail=0
+rc=0
+== run 2 ==
+== golden-good ==
+ok   G1 clean DB with one item prints GATE OK (rc 0)
+ok   G2 freshly applied empty register passes
+ok   G3 the gate does not modify the DB under test
+ok   G4 missing --db exits 2 with a usage message
+ok   G5 absent DB file exits 1 naming the absence (and not created)
+ok   G6 absent DB file was not created
+== golden-bad fixtures ==
+ok   B1 orphan finding (no item row) fails
+ok   B2 illegal logged status edge fails
+ok   B3 dropped trigger fails (v_gate_missing_objects)
+ok   B4 same-name view redefinition fails (schema differs from the reference)
+ok   B5 edited edge graph fails (seed differs)
+ok   B6 foreign-key violation fails (foreign_key_check)
+ok   B7 item without a mint fails (v_items_without_mint)
+ok   B8 edited gate registry fails (seed differs)
+ok   B9 a file that is not a database fails
+ok   B10 page corruption in a data page fails (integrity_check)
+ok   B11 terminal item with no custody chain fails (v_custody_violations)
+ok   B12 injected registry name 'v_open_items WHERE 0' fails closed (invalid registry name)
+ok   B13 injected registry name with a statement separator fails closed
+ok   B13b the injected DROP did not run (reg_meta exists)
+ok   B14 a registered name that is a TABLE, not a view, fails (not a view)
+ok   B15 registry row naming sqlite_master fails closed
+ok   B16 the view list comes from the reference: all 11 views checked though the DB registry lost a row
+ok   B17 tampered DB left unmodified by the gate
+ok   B18 hostile name in the reference registry fails the gate
+ok   B19 engine-only violation fails (engine validate step)
+== WF2 fix round 3: fail-open gaps (I-1 I-2 I-3 I-8), minors m-1 m-2 m-3 m-4 ==
+ok   G7 --db without a value exits 2 (no hang)
+ok   G7b --ext without a value exits 2 (no hang)
+ok   G8.0 fixture: an uncheckpointed -wal exists
+ok   G8 the gate leaves a WAL database file byte-identical
+ok   G8b the gate leaves the -wal file byte-identical and present
+ok   B20 an added trigger named outside the old globs fails (unexpected object)
+ok   B21 an added view of an unrelated name fails
+ok   B22 an added index of an unrelated name fails
+ok   B23 an added table of an unrelated name fails
+ok   B35 an added trigger named sqliteX... (LIKE-wildcard boundary of the object filter) fails
+ok   B36 an added view named sqlite1... fails
+ok   B37 an added table named sqlitezz (no underscore) fails
+ok   B24 reg_reviews rebuilt without the author != reviewer CHECK (triggers intact) fails
+ok   B25 a dropped index fails (missing object)
+ok   B26 a dropped ENGINE view fails (missing object)
+ok   B26b a dropped idx_ index fails
+ok   B26c a redefined ENGINE view (same name, other body) fails (schema differs)
+ok   B26d an index redefined under the same name (WHERE clause dropped) fails (schema differs)
+ok   B27 engine schema_version other than engine_schema_required fails
+ok   B28 an edited reg_meta row fails (seed differs)
+ok   B29 an engine Reopened event the status log lacks fails (v_reopen_unlogged)
+ok   B30 a raw DELETE of an item (and its doc_segments) fails (v_deleted_items)
+ok   X9.0 fixture: the legacy item is closed through the import-time exemption
+ok   X9.1 control: before the attack the register passes
+ok   X9.2 with the silent trigger present the gate fails (unexpected object)
+ok   X9.3 after the silent trigger is dropped again the reopen it hid is still detected (v_reopen_unlogged)
+ok   E1 an evidence row whose file re-hashes to its sha256 passes (control)
+ok   E2 an evidence row citing a file that does not exist fails (WF2 X1)
+ok   E3 an evidence row whose recorded sha256 differs from the file fails
+ok   E4 an evidence row whose recorded size differs from the file fails
+ok   E5 an evidence path holding a tab fails closed
+ok   E6 a tracker_receipt URL is counted as skipped, the run is PASS-PARTIAL (rc 3), never GATE OK
+ok   E6a with --allow-url-evidence the partial run exits 0 but still reads PASS-PARTIAL with the count, never GATE OK
+ok   E6b a URL-shaped path on a custody-bearing kind (log) fails: only a tracker_receipt may be a non-file (WF3 I2)
+ok   E6c the allow flag does not legalise a URL path on a red_run (rc 1)
+ok   E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5)
+ok   E7 a relative evidence path resolves under the tree root (control)
+ok   S1 a failing run never prints a bare GATE OK line even when database text tries to (rc 1)
+ok   S2 the missing-objects report cannot spoof GATE OK either
+== WF3 I4: golden-good boundary fixtures of the I-1/I-2 views (a gate that refuses a clean register is a FAIL-bluff, 11.4.201(1)) ==
+ok   GF1.0 fixture: the engine recorded one Reopened event and the register logged it
+ok   GF1 a legitimately reopened item (logged reopen == engine reopen) passes; v_reopen_unlogged is empty
+ok   GF2 a minted id with no item row yet passes; v_deleted_items is empty
+ok   GF3 a brownfield reopen older than the id's first log row passes (the T069 go-live case)
+ok   S3.0 fixture: integrity_check reports the corrupted newline-named index
+ok   S3 a corrupted index named ix<LF>GATE OK never prints a bare GATE OK line (rc 1)
+== view_empty views each have a golden-bad fixture ==
+ok   B31 a scanned source entry with no mapping fails (v_unmapped_entries)
+ok   B32 a legacy_import row with no primary source mapping fails (v_legacy_import_unbacked)
+ok   B33 a SAME_DEFECT link on a terminal head that was never reopened fails (v_recurrence_violations)
+ok   B34 a custody-bearing evidence file recorded again after the reopen fails (v_replayed_evidence)
+RESULT pass=75 fail=0
+rc=0
+== run 3 ==
+== golden-good ==
+ok   G1 clean DB with one item prints GATE OK (rc 0)
+ok   G2 freshly applied empty register passes
+ok   G3 the gate does not modify the DB under test
+ok   G4 missing --db exits 2 with a usage message
+ok   G5 absent DB file exits 1 naming the absence (and not created)
+ok   G6 absent DB file was not created
+== golden-bad fixtures ==
+ok   B1 orphan finding (no item row) fails
+ok   B2 illegal logged status edge fails
+ok   B3 dropped trigger fails (v_gate_missing_objects)
+ok   B4 same-name view redefinition fails (schema differs from the reference)
+ok   B5 edited edge graph fails (seed differs)
+ok   B6 foreign-key violation fails (foreign_key_check)
+ok   B7 item without a mint fails (v_items_without_mint)
+ok   B8 edited gate registry fails (seed differs)
+ok   B9 a file that is not a database fails
+ok   B10 page corruption in a data page fails (integrity_check)
+ok   B11 terminal item with no custody chain fails (v_custody_violations)
+ok   B12 injected registry name 'v_open_items WHERE 0' fails closed (invalid registry name)
+ok   B13 injected registry name with a statement separator fails closed
+ok   B13b the injected DROP did not run (reg_meta exists)
+ok   B14 a registered name that is a TABLE, not a view, fails (not a view)
+ok   B15 registry row naming sqlite_master fails closed
+ok   B16 the view list comes from the reference: all 11 views checked though the DB registry lost a row
+ok   B17 tampered DB left unmodified by the gate
+ok   B18 hostile name in the reference registry fails the gate
+ok   B19 engine-only violation fails (engine validate step)
+== WF2 fix round 3: fail-open gaps (I-1 I-2 I-3 I-8), minors m-1 m-2 m-3 m-4 ==
+ok   G7 --db without a value exits 2 (no hang)
+ok   G7b --ext without a value exits 2 (no hang)
+ok   G8.0 fixture: an uncheckpointed -wal exists
+ok   G8 the gate leaves a WAL database file byte-identical
+ok   G8b the gate leaves the -wal file byte-identical and present
+ok   B20 an added trigger named outside the old globs fails (unexpected object)
+ok   B21 an added view of an unrelated name fails
+ok   B22 an added index of an unrelated name fails
+ok   B23 an added table of an unrelated name fails
+ok   B35 an added trigger named sqliteX... (LIKE-wildcard boundary of the object filter) fails
+ok   B36 an added view named sqlite1... fails
+ok   B37 an added table named sqlitezz (no underscore) fails
+ok   B24 reg_reviews rebuilt without the author != reviewer CHECK (triggers intact) fails
+ok   B25 a dropped index fails (missing object)
+ok   B26 a dropped ENGINE view fails (missing object)
+ok   B26b a dropped idx_ index fails
+ok   B26c a redefined ENGINE view (same name, other body) fails (schema differs)
+ok   B26d an index redefined under the same name (WHERE clause dropped) fails (schema differs)
+ok   B27 engine schema_version other than engine_schema_required fails
+ok   B28 an edited reg_meta row fails (seed differs)
+ok   B29 an engine Reopened event the status log lacks fails (v_reopen_unlogged)
+ok   B30 a raw DELETE of an item (and its doc_segments) fails (v_deleted_items)
+ok   X9.0 fixture: the legacy item is closed through the import-time exemption
+ok   X9.1 control: before the attack the register passes
+ok   X9.2 with the silent trigger present the gate fails (unexpected object)
+ok   X9.3 after the silent trigger is dropped again the reopen it hid is still detected (v_reopen_unlogged)
+ok   E1 an evidence row whose file re-hashes to its sha256 passes (control)
+ok   E2 an evidence row citing a file that does not exist fails (WF2 X1)
+ok   E3 an evidence row whose recorded sha256 differs from the file fails
+ok   E4 an evidence row whose recorded size differs from the file fails
+ok   E5 an evidence path holding a tab fails closed
+ok   E6 a tracker_receipt URL is counted as skipped, the run is PASS-PARTIAL (rc 3), never GATE OK
+ok   E6a with --allow-url-evidence the partial run exits 0 but still reads PASS-PARTIAL with the count, never GATE OK
+ok   E6b a URL-shaped path on a custody-bearing kind (log) fails: only a tracker_receipt may be a non-file (WF3 I2)
+ok   E6c the allow flag does not legalise a URL path on a red_run (rc 1)
+ok   E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5)
+ok   E7 a relative evidence path resolves under the tree root (control)
+ok   S1 a failing run never prints a bare GATE OK line even when database text tries to (rc 1)
+ok   S2 the missing-objects report cannot spoof GATE OK either
+== WF3 I4: golden-good boundary fixtures of the I-1/I-2 views (a gate that refuses a clean register is a FAIL-bluff, 11.4.201(1)) ==
+ok   GF1.0 fixture: the engine recorded one Reopened event and the register logged it
+ok   GF1 a legitimately reopened item (logged reopen == engine reopen) passes; v_reopen_unlogged is empty
+ok   GF2 a minted id with no item row yet passes; v_deleted_items is empty
+ok   GF3 a brownfield reopen older than the id's first log row passes (the T069 go-live case)
+ok   S3.0 fixture: integrity_check reports the corrupted newline-named index
+ok   S3 a corrupted index named ix<LF>GATE OK never prints a bare GATE OK line (rc 1)
+== view_empty views each have a golden-bad fixture ==
+ok   B31 a scanned source entry with no mapping fails (v_unmapped_entries)
+ok   B32 a legacy_import row with no primary source mapping fails (v_legacy_import_unbacked)
+ok   B33 a SAME_DEFECT link on a terminal head that was never reopened fails (v_recurrence_violations)
+ok   B34 a custody-bearing evidence file recorded again after the reopen fails (v_replayed_evidence)
+RESULT pass=75 fail=0
+rc=0

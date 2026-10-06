@@ -1,0 +1,5 @@
+MUTATION drop '!/tools/': rc=1; 6 FAILs; first: FAIL planned tools/evidence/evrec rc=0 (want 1)
+MUTATION drop '!/build/components.json': rc=1; 1 FAILs; first: FAIL planned build/components.json rc=0 (want 1)
+MUTATION drop '/.audit/': rc=1; 5 FAILs; first: FAIL control .audit/longops/x rc=1 (want 0)
+MUTATION drop 'docs/.register.lock': rc=1; 1 FAILs; first: FAIL control docs/.register.lock rc=1 (want 0)
+restored rc=0

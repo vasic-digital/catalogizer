@@ -1,0 +1,11 @@
+CAUGHT   RM1 detached R4 block disabled
+CAUGHT   RM5 stash not counted as dirt
+CAUGHT   MB3a B3 working-tree hash not compared
+CAUGHT   MI5b I5 worse class not taken
+BROKEN-MUTANT: pattern occurs 2 times: '&& noremote_unproven=true'
+chmod: cannot access '/tmp/mut.0AlavS/Mm2/repo/verify_repos.sh': No such file or directory
+BROKEN   Mm2 m2 no remote at all read as clean
+CAUGHT   MX5 --show-toplevel mismatch guard removed
+CAUGHT   MC1 m-c unclassifiable remote URL read as third-party clean
+CAUGHT   Ma1 m-a pinned-gitlink ls-tree exit not checked
+MUTATION SUMMARY caught=7 survived=0 broken=1

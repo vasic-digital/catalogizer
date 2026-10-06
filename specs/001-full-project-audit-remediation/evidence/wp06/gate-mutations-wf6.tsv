@@ -1,0 +1,50 @@
+# identity: task=T063 utc=2026-10-06T12:40:56Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# gate_sha256=9b2ab05cb7386bb3b0d3ccc5f7ab2a600e37fe9dc84536fdcc044ead1974a4eb test_sha256=aced1b79770787fae8c4e883a13e26668f9e9213b76793a2de18fcc644695fa6 runner_sha256=9fa8dc2a42ffdca04014b146a0dc054ba71bb833845224b134cd61c5ae59967e
+# mutant<TAB>killed<TAB>first failing check of test_gate.sh
+always_ok	yes	FAIL B1 orphan finding (no item row) fails :: rc=0 out=[FAIL v_findings_without_item rows=1|INFO view_empty ch
+backup_not_readonly	yes	FAIL G8 the gate leaves a WAL database file byte-identical :: got [accbe054050a30f9803ed4804022b6537bef422a4be
+defs_engine_objects_ignored	yes	FAIL B26c a redefined ENGINE view (same name, other body) fails (schema differs) :: rc=0 out=[INFO view_empty 
+defs_ignore_indexes	yes	FAIL B26d an index redefined under the same name (WHERE clause dropped) fails (schema differs) :: rc=0 out=[IN
+defs_only_triggers_and_views	yes	FAIL B24 reg_reviews rebuilt without the author != reviewer CHECK (triggers intact) fails :: rc=0 out=[INFO vi
+engine_version_not_compared	yes	FAIL B27 engine schema_version other than engine_schema_required fails :: rc=0 out=[INFO view_empty checked=11
+guard_dbrow_regex	yes	FAIL B12 injected registry name 'v_open_items WHERE 0' fails closed (invalid registry name) :: rc=1 out=[FAIL 
+guard_isview	yes	FAIL B14 a registered name that is a TABLE, not a view, fails (not a view) :: rc=1 out=[FAIL unexpected schema
+guard_regex	yes	FAIL B18 rc=1 [FAIL seed differs from /tmp/tmp.YRbSw71hmk/s.guard_regex/regtest.L2zIjq/g/hostile.sql (1 differ
+list_from_db	yes	FAIL B16 [INFO view_empty checked=10
+missing_objects_not_sanitised	EQUIV	sane() on the missing-objects list is redundant with flat() in fail(): flat() turns the newline into a space, so a bare GATE OK line cannot be printed. Dangerous only with flat() removed too (mutant output_both_defences_removed, killed by S1 and S2).
+names_only_by_type_and_name	yes	FAIL G1 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: doc_segments
+no_def_diff	yes	FAIL B4 same-name view redefinition fails (schema differs from the reference) :: rc=0 out=[INFO view_empty che
+no_missing_object_check	yes	FAIL B25 a dropped index fails (missing object) :: rc=1 out=[FAIL schema differs from /home/milosvasic/Project
+no_seed_diff	yes	FAIL B5 edited edge graph fails (seed differs) :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash fi
+no_unexpected_object_check	yes	FAIL B20 an added trigger named outside the old globs fails (unexpected object) :: rc=1 out=[FAIL schema diffe
+object_filter_any_type	yes	FAIL B40.10 an added trigger named sqlite_stat1 (reserved-prefix name, writable_schema) fails, not hidden :: r
+object_filter_like_wildcard	yes	FAIL B40.14 an added table named sqlite_stat9 (reserved-prefix name, writable_schema) fails, not hidden :: rc=
+object_filter_name_only	yes	FAIL B40.1 an added trigger named sqlite_swallow (reserved-prefix name, writable_schema) fails, not hidden :: 
+object_filter_prefix_widened	yes	FAIL B40.8 an added table named sqlite_hidden_t (reserved-prefix name, writable_schema) fails, not hidden :: r
+option_value_not_checked	yes	FAIL G7 rc=1
+output_both_defences_removed	yes	FAIL S1 a failing run never prints a bare GATE OK line even when database text tries to (rc 1) :: got [1/1] wa
+output_not_flattened	yes	FAIL S3 a corrupted index named ix<LF>GATE OK never prints a bare GATE OK line (rc 1) :: got [2/1] want [0/1]
+partial_exits_zero_no_flag	yes	FAIL E6 rc=0 [INFO view_empty checked=11
+partial_ignored_gate_ok	yes	FAIL E6 rc=0 [INFO view_empty checked=11
+rehash_absent_file_ok	yes	FAIL E2 an evidence row citing a file that does not exist fails (WF2 X1) :: rc=1 out=[INFO view_empty checked=
+rehash_hash_not_compared	yes	FAIL E3 an evidence row whose recorded sha256 differs from the file fails :: rc=0 out=[INFO view_empty checked
+rehash_size_not_compared	yes	FAIL E4 an evidence row whose recorded size differs from the file fails :: rc=0 out=[INFO view_empty checked=1
+rehash_tab_path_ok	yes	FAIL E5 an evidence path holding a tab fails closed :: rc=0 out=[INFO view_empty checked=11|INFO evidence_reha
+rehash_url_counted_verified	yes	FAIL E6 rc=0 [INFO view_empty checked=11
+skip_engine_validate	yes	FAIL B19 engine-only violation fails (engine validate step) :: rc=0 out=[INFO view_empty checked=11|INFO evide
+skip_engine_version	yes	FAIL B27 engine schema_version other than engine_schema_required fails :: rc=0 out=[INFO view_empty checked=11
+skip_evidence_rehash	yes	FAIL E1 [INFO view_empty checked=11
+skip_fk	yes	FAIL B6 foreign-key violation fails (foreign_key_check) :: rc=1 out=[INFO view_empty checked=11|FAIL evidence 
+skip_integrity	yes	FAIL B10 page corruption in a data page fails (integrity_check) :: rc=1 out=[FAIL unexpected schema object in 
+skip_missing_objects	yes	FAIL B3 dropped trigger fails (v_gate_missing_objects) :: rc=1 out=[FAIL schema object of the reference missin
+skip_reference_diff	yes	FAIL G1 rc=1 [/tmp/tmp.YRbSw71hmk/skip_reference_diff.sh: line 55: REF: unbound variable
+skip_view_empty	yes	FAIL B1 orphan finding (no item row) fails :: rc=1 out=[FAIL evidence 1: cited file absent: p|INFO evidence_re
+stat3_pin_mixed_case	yes	FAIL G10.2 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: table|sqlite_
+stat4_pin_mixed_case	yes	FAIL G10.3 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: table|sqlite_
+stat_all_narrowed_to_stat1	yes	FAIL B43.1 a forged sqlite_stat2 (CREATE TABLE sqlite_stat2(a)) fails, not hidden :: rc=0 out=[INFO view_empty
+stat_check_removed	yes	FAIL B42 a forged sqlite_stat1 (definition differs from SQLite's own) fails :: rc=0 out=[INFO view_empty check
+stat_definition_not_pinned	yes	FAIL B42 a forged sqlite_stat1 (definition differs from SQLite's own) fails :: rc=0 out=[INFO view_empty check
+stat_pins_234_removed	yes	FAIL G10.1 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: table|sqlite_
+url_any_kind_skipped	yes	FAIL E6b a URL-shaped path on a custody-bearing kind (log) fails: only a tracker_receipt may be a non-file (WF
+url_skip_any_colon	yes	FAIL E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5) :: rc=1 out=[I
+url_skipped_not_counted	yes	FAIL E6 rc=0 [INFO view_empty checked=11

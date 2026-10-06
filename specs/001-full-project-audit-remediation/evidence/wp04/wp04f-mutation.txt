@@ -1,0 +1,77 @@
+# WP-04 / WP-02 / WP-03 round 6 mutation run (44 mutants of the ROUND-6 code; driver scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY of scripts/repo + scripts/audit)
+# captured 2026-10-06T13:26:51Z host=anton
+# sha256 of the mutated files at run time:
+#   3161a9e26ef33270ec5c399657dd4bdecbac90918747fa5a1d5cab80cf6b04aa  scripts/repo/push_recursive.sh
+#   b266393f67b40e7e6df365b93e1995a9be6963a708440c6cceace2b910ff655d  scripts/repo/scope_check.sh
+#   02c1d2a9d31364ffd73bb1da50e7f4c42c739afe778174b4337d9f129698e66c  scripts/repo/check_no_ci.sh
+#   1e421f83128eb403c98931bba2d4df1e815454bfd0da2b8e2a262de95e22d931  scripts/repo/check_revision_headers.sh
+#   0bd37606fdaa6ceed468949f3e12c9ff6a5f4d31a282b5e9da1a13a0b9a4cb1f  scripts/repo/integrate_merge.sh
+#   8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+#   af6468ce5196d6a289f1e333e5a5990c5e3e61cfbb477df2e12e002e301a4dfd  scripts/repo/verify_repos.sh
+#   d9821d8a38416b1e38cb19c544e46867c3ec0b3e35f4e2f615ab118032dd82fc  scripts/audit/index_health.sh
+#   1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  scripts/audit/scope_to_lumen_json.py
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 ac65124e56474277e32eadc94279d09b47317b7a32bc305167644d98828b90fd
+# test sha256 7a0118967aa43f74514c54b352af474f7c3ff606fa4b50b3373871e6495a7a77  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# test sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# test sha256 94bdb017a67d76af4ab3cde50010600416b2aec4b6056ede626758f2bdb4d3d7  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# test sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# test sha256 53b76cb3c7e76728e7e3ec8a761dc027edd96147788aa955a32e53b58675f7ca  scripts/repo/tests/test_verify_repos_r6.sh
+# test sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+CONTROL  scripts/repo/tests/test_push_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_scope_check.sh + scripts/repo/tests/test_wp04d.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_no_ci.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_revision_headers.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_scope_to_lumen_json.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   F1 PR: a failing rev-list is ignored (the old mapfile reading)  -> 8 failing case(s), e.g. FAIL rev-list failing, CPA commit only: 20 (W6-2) (got '0', want '20')
+CAUGHT   F2 PR: a moved remote with unrecorded commits is judged 20 again (W6-1)  -> 10 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F3 PR: a failing gitlink listing under --recursive is read as no submodules  -> 6 failing case(s), e.g. FAIL gitlink listing failing under --recursive: 20 (F3) (got '0', want '20')
+CAUGHT   F4 PR: the nested listing refusal only at depth 0 (R1 of the review)  -> 3 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   F5 PR: a failing git remote is read as no remotes  -> 1 failing case(s), e.g. FAIL named git_listing_failed (remote) (no 'git_listing_failed' in 'REFUSED	.	unrecorded_local_commit	518eecd6
+CAUGHT   F6 PR: an unsafe gitlink path is skipped instead of refused (W6-4)  -> 3 failing case(s), e.g. FAIL gitlink path -evil under --recursive: 20 (W6-4) (got '0', want '20')
+CAUGHT   F7 PR: MOVED is recorded only for a remote without a tracking ref (R3 of the review)  -> 11 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F8 PR: a failing parents listing of a held commit is ignored  -> 3 failing case(s), e.g. FAIL parents listing failing for a held commit: 20 (W6-12) (got '14', want '20')
+CAUGHT   F9 PR: the discover marker problem again: a path with a leading ? is judged a failure  -> 4 failing case(s), e.g. FAIL submodule at the path ?x, nothing outgoing there: 0 (W6-3) (got '20', want '0')
+CAUGHT   G1 SC: a broken submodule .git is skipped silently  -> 3 failing case(s), e.g. FAIL submodule .git pointing at a missing git dir: 20 (W6-6) (got '0', want '20')
+CAUGHT   G2 SC: an unreadable HEAD tree is read as a new store  -> 3 failing case(s), e.g. FAIL HEAD tree of the evidence directory unreadable (object missing): 20, not 0 (W6-7) (got '0', want '20')
+CAUGHT   G3 SC: no commit yet is read as an unreadable tree (false refusal)  -> 1 failing case(s), e.g. FAIL golden-false: a repository without any commit (no HEAD) holds no store yet: 0 (got '20', want '0')
+CAUGHT   G4 SC: the nested listing failure is judged only at depth 0 (R2 of the review)  -> 2 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   G5 SC: a symlink store is not refused (HM link test dropped)  -> 2 failing case(s), e.g. FAIL HEAD holds the link, the work tree a regular file starting with the link text (type change): 13 (B-1) (go
+CAUGHT   H1 NC: no EXIT trap for the listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated run (W6-5) (got 'check_no_ci.ugPYRE ', want '')
+EQUIVALENT EQ-H2 NC: no TERM trap (bash runs the EXIT trap itself on SIGTERM; the TERM trap only keeps the status explicit)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   H3 RH: no EXIT trap for the --measure listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated --measure run (W6-5) (got 'check_rh.xDWRMJ ', want '')
+CAUGHT   I1 IM: a failing git status reads as nothing dirty  -> 2 failing case(s), e.g. FAIL git status failing (shim): 20 (W6-12) (got '12', want '20')
+CAUGHT   I2 IM: a failing git diff reads as no overlap  -> 2 failing case(s), e.g. FAIL git diff --name-only failing (shim): 20, never a silent merge (W6-12) (got '12', want '20')
+CAUGHT   V1 VR: ls-remote tail matches count as branch or tag tips (N6-1)  -> 2 failing case(s), e.g. FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0
+CAUGHT   V2 VR: a tip that is not held locally is not undecided (N6-2)  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+EQUIVALENT EQ-V3 VR: a missing pin object is not undecided (classify already answers UNKNOWN-DIFFERENT for a pin object that is not held)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   V4 VR: the tip-equality shortcut is dropped (MR1)  -> 1 failing case(s), e.g. FAIL MR1 a pin equal to a remote branch tip is held even when its object is absent locally: exit 0 (got '14', 
+CAUGHT   V5 VR: undecided keeps the definite class  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V6 VR: the dirty count failure is not fatal (MR2 family)  -> 6 failing case(s), e.g. FAIL N6-3 dirty count unreadable, --json FILE: exit 20 (got '0', want '20')
+CAUGHT   V7 VR: the diverged count failure is not fatal (MR2)  -> 2 failing case(s), e.g. FAIL MR2 the diverged count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V8 VR: the pin count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the pin count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V9 VR: the behind count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the behind count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V10 VR: the report is written before the counts are read (N6-3)  -> 4 failing case(s), e.g. FAIL N6-3 a report file exists after an exit-20 count failure
+CAUGHT   V11 VR: core.fsmonitor is not disabled on every command (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+CAUGHT   V12 VR: no configured filter driver is switched off (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the clean filter ran under the verifier
+CAUGHT   V13 VR: the plain ls-remote of the branch keeps the repository uploadpack (N6-4)  -> 3 failing case(s), e.g. FAIL N6-4 the remote.origin.uploadpack program ran
+CAUGHT   V14 VR: the fetch keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+CAUGHT   V15 VR: the default-branch ls-remote keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran in the default-branch lookup
+CAUGHT   W1 IH: a replacement character in a root is accepted (invalid UTF-8)  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W2 IH: a format character (BOM, zero-width space) is accepted  -> 3 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=
+CAUGHT   W3 IH: a backslash is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W4 IH: a decomposed (NFD) spelling is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want r
+CAUGHT   W5 IH: a no-break space inside a root is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 
+EQUIVALENT EQ-W6 IH: DEL not named (covered by the C* category check)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   S1 ST: a non-string class name is accepted  -> 3 failing case(s), e.g. FAIL N6-6 an integer class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceb
+CAUGHT   S2 ST: a non-UTF-8 input raises (UnicodeDecodeError not caught)  -> 3 failing case(s), e.g. FAIL N6-6 a submodules TSV that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (mos
+CAUGHT   S3 ST: root_files is compared without its type  -> 1 failing case(s), e.g. FAIL N6-6 root_files 1: want rc=1 naming root_files, got rc=0: 
+CAUGHT   S4 ST: the files are read with the locale encoding  -> 1 failing case(s), e.g. FAIL N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=3: unreadable input: 'ascii' codec
+---- 44 mutations listed, 0 not caught or errored
+# First run (before the survivors were killed): 8 SURVIVED (F8 parents listing, G5 HEAD link on a store, H2 TERM trap, V3 missing pin object, V10 mutant that did not move the report before the counts, V14 fetch uploadpack, V15 default-branch ls-remote uploadpack, W5 inner no-break space, S4 locale encoding). Handling: F8, V14, V15, W5, S4 got new test cases; G5 is also run against test_wp04d.sh (which owns the type-change case); V10 was a badly constructed mutant (it moved the copy AFTER the counts, where it already was) and was rewritten to move it BEFORE them; H2 and V3 are EQUIVALENT (reasons in the ids).

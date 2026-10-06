@@ -1,0 +1,9 @@
+MUTANT MX5 verifier=7a63ab9e0867c19bbf698b29985dc552e64dc28bb0a3a5ca35e48220fd11d5df test=d835944b8ab974c36a4aa38a9852533a969161da13db3ab2eb1cfbdb199fad8c
+-  [ "$(cd "$top" 2>/dev/null && pwd -P)" = "$(cd "$abs" 2>/dev/null && pwd -P)" ] || { fail "git resolves this path to another repository ($top)"; return 1; }
++  [ "$(cd "$top" 2>/dev/null && pwd -P)" = "$(cd "$abs" 2>/dev/null && pwd -P)" ] || :
+FAIL tl a --root inside a repository (not its root): exit 20 (got '0', want '20')
+FAIL tl no 'another repository' message: 
+FAIL tl a report was written for a path that is not a repository root
+FAIL tl a submodule row that git resolves to the parent: exit 20, never a clean row (got '0', want '20')
+FAIL tl worker message missing: 
+SUMMARY pass=228 fail=5

@@ -1,0 +1,185 @@
+# review-provenance evidence, round 3 (T094a), kind=mutations
+# captured: 2026-10-05T12:15:40Z (host UTC)
+# command: bash scripts/review/tests/mutations_check_review_provenance.sh (rc 0 = every mutant killed, EQ* survive by design)
+# script under test: scripts/review/check_review_provenance.sh sha256=de52e25ece6476d4db547030e471a57d3c1222aca6b348619be4d3973ca2b8b0
+# test: scripts/review/tests/test_check_review_provenance.sh sha256=5f7739caf1b80475dbb26250b7c9d28d2229f6ffba576e150ac001f07232017a
+# mutations: scripts/review/tests/mutations_check_review_provenance.sh sha256=28c9166caf9f0381d2a39e5e0de39a507be47cc74e7fd3339847346afdb02c5a
+# guide: docs/scripts/check_review_provenance.md sha256=aab04da48930f3dc2a8ccf3b4a1d59572c685f5277e55e66657e83bcbaa478e8
+# schema: specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json sha256=fdb229d22a54a9ef05f5abeca86ad109f2d37bb6b2e288ab49b86fd3c4783691
+# ----
+--- MUTANT c1: delete the verdict-model equality check
+    100c100
+    < jq -e --slurpfile r "$pc" '.model==$r[0].model' "$vc" >/dev/null 2>&1 \
+    ---
+    > true >/dev/null 2>&1 \
+    KILLED (RESULT pass=61 fail=6; first: FAIL verdict model differs from record model refused (B3) (rc=0 want 20 reason=v)
+--- MUTANT c2: ignore the explicit record argument
+    49c49
+    < prov=${2:-${verdict%.json}.provenance.json}
+    ---
+    > prov=${verdict%.json}.provenance.json
+    KILLED (RESULT pass=65 fail=2; first: FAIL explicit good record used although default-path record is bad (c2) (rc=20: )
+--- MUTANT c3: accept effort ? (record effort only needs to exist)
+    91c91
+    < jq -e '.effort=="xhigh"' "$pc" >/dev/null 2>&1 || refuse effort_not_xhigh "record effort=$(show effort "$pc")"
+    ---
+    > jq -e '.effort!=null' "$pc" >/dev/null 2>&1 || refuse effort_not_xhigh "record effort=$(show effort "$pc")"
+    KILLED (RESULT pass=62 fail=5; first: FAIL high record refused (rc=20 want 20 reason=effort_not_xhigh: REFUSED reason=)
+--- MUTANT c4: drop the run id presence check
+    79c79
+    < jq -e '(.workflow_run_id|type=="string") and (.workflow_run_id|length>0)' "$pc" >/dev/null 2>&1 || refuse workflow_run_id_absent
+    ---
+    > true >/dev/null 2>&1 || refuse workflow_run_id_absent
+    KILLED (RESULT pass=61 fail=6; first: FAIL record without run id refused (rc=20 want 20 reason=workflow_run_id_absent:)
+--- MUTANT c4b: run id shape check becomes string-type only
+    81c81
+    < jq -e --arg p "\\A(?:$pat)\\z" '.workflow_run_id|test($p)' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --arg p "\\A(?:$pat)\\z" '.workflow_run_id|type=="string"' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=63 fail=4; first: FAIL run id blank refused (I-3) (rc=0 want 20 reason=workflow_run_id_malformed: )
+--- MUTANT c4c: run id pattern unanchored
+    81c81
+    < jq -e --arg p "\\A(?:$pat)\\z" '.workflow_run_id|test($p)' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --arg p "$pat" '.workflow_run_id|test($p)' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=65 fail=2; first: FAIL run id trailingnl refused (I-3) (rc=0 want 20 reason=workflow_run_id_malfor)
+--- MUTANT c5: skip the verdict_sha256 comparison
+    106c106
+    < jq -e --arg a "$asha" '.verdict_sha256==$a' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --arg a "$asha" true "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=63 fail=4; first: FAIL verdict changed by one byte refused (verdict_sha_mismatch) (rc=0 want 20 re)
+--- MUTANT i1a: allow-list match becomes a substring match
+    89c89
+    < jq -e --argjson ids "$ids" '(.model|type=="string") and (.model as $m | any($ids[]; .==$m))' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --argjson ids "$ids" '(.model|type=="string") and (.model|test("opus"))' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=61 fail=6; first: FAIL substring 'opus' in a non-Opus model refused (I1) (rc=0 want 20 reason=mode)
+--- MUTANT i1b: allow-list match against the space-joined ids (joined ids pass)
+    89c89
+    < jq -e --argjson ids "$ids" '(.model|type=="string") and (.model as $m | any($ids[]; .==$m))' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --argjson ids "$ids" '(.model|type=="string") and (($ids|join(" ")) as $j | (.model as $m | $j|contains($m)))' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=64 fail=3; first: FAIL bare 'opus' refused, not an allow-list id (I1) (rc=0 want 20 reason=model_n)
+--- MUTANT EQ1: drop the record model string-type check
+    89c89
+    < jq -e --argjson ids "$ids" '(.model|type=="string") and (.model as $m | any($ids[]; .==$m))' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --argjson ids "$ids" '(.model as $m | any($ids[]; .==$m))' "$pc" >/dev/null 2>&1 \
+    SURVIVED as documented EQUIVALENT mutant (redundant by construction, see the mutant description)
+--- MUTANT i1c: allow-list match case-insensitive
+    89c89
+    < jq -e --argjson ids "$ids" '(.model|type=="string") and (.model as $m | any($ids[]; .==$m))' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --argjson ids "$ids" '(.model|type=="string") and (.model as $m | any($ids[]; ascii_downcase==($m|ascii_downcase)))' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=66 fail=1; first: FAIL case variant refused, exact match only (I1) (rc=0 want 20 reason=model_not_)
+--- MUTANT i2a: verdict: accept multiple documents / BOM / bad UTF-8 (jq parse only)
+    71c71
+    < strict "$vc" || refuse verdict_unreadable "not exactly one strict UTF-8 JSON object: $verdict"
+    ---
+    > jq -e . "$vc" >/dev/null 2>&1 || refuse verdict_unreadable "not exactly one strict UTF-8 JSON object: $verdict"
+    KILLED (RESULT pass=63 fail=4; first: FAIL second JSON document in the verdict refused (I2) (rc=20 want 20 reason=verd)
+--- MUTANT i2b: record: accept multiple documents / BOM / bad UTF-8 (jq parse only)
+    74c74
+    < strict "$pc" || refuse provenance_unreadable "not exactly one strict UTF-8 JSON object: $prov"
+    ---
+    > jq -e . "$pc" >/dev/null 2>&1 || refuse provenance_unreadable "not exactly one strict UTF-8 JSON object: $prov"
+    KILLED (RESULT pass=64 fail=3; first: FAIL second JSON document in the record refused (I2) (rc=20 want 20 reason=prove)
+--- MUTANT i2c: strict(): drop the object-type requirement
+    68c68
+    < sys.exit(0 if isinstance(o, dict) else 1)
+    ---
+    > sys.exit(0)
+    KILLED (RESULT pass=66 fail=1; first: FAIL top-level array verdict refused (I2) (rc=20 want 20 reason=verdict_unreadab)
+--- MUTANT EQ2: strict(): drop the explicit UTF-8 BOM check (python json.loads on str rejects a BOM itself; the explicit check is defence in depth)
+    62c62
+    < if b.startswith(b'\xef\xbb\xbf'): sys.exit(1)
+    ---
+    > pass
+    SURVIVED as documented EQUIVALENT mutant (redundant by construction, see the mutant description)
+--- MUTANT m4b: strict(): decode invalid UTF-8 leniently
+    64c64
+    <     s = b.decode('utf-8')
+    ---
+    >     s = b.decode('utf-8','replace')
+    KILLED (RESULT pass=65 fail=2; first: FAIL invalid UTF-8 bytes in the verdict refused (m-4) (rc=20 want 20 reason=verd)
+--- MUTANT r1: R1: skip the effort equality when the verdict has no effort
+    98c98
+    < jq -e --slurpfile r "$pc" '.effort==$r[0].effort' "$vc" >/dev/null 2>&1 \
+    ---
+    > jq -e --slurpfile r "$pc" '(.effort==null) or .effort==$r[0].effort' "$vc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=66 fail=1; first: FAIL verdict lacking effort refused (R1) (rc=20 want 20 reason=verdict_field_mis)
+--- MUTANT r2: R2: effort_argument may be any non-null value
+    94c94
+    < jq -e '.effort_argument=="xhigh"' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e '.effort_argument!=null' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=65 fail=2; first: FAIL record effort_argument 'xhigh' + newline is not xhigh (I-1b) (rc=0 want 20 )
+--- MUTANT r3: R3: refusals exit 1, not 20
+    43c43
+    <   printf 'REFUSED reason=%s %s\n' "$1" "$d" >&2; exit 20
+    ---
+    >   printf 'REFUSED reason=%s %s\n' "$1" "$d" >&2; exit 1
+    KILLED (RESULT pass=11 fail=56; first: FAIL high record refused (rc=1 want 20 reason=effort_not_xhigh: REFUSED reason=e)
+--- MUTANT r4: R4: usage error exits 0
+    45c45
+    < [ $# -ge 1 ] && [ $# -le 2 ] || { echo "usage: $0 <verdict.json> [<provenance.json>]" >&2; exit 2; }
+    ---
+    > [ $# -ge 1 ] && [ $# -le 2 ] || { echo "usage: $0 <verdict.json> [<provenance.json>]" >&2; exit 0; }
+    KILLED (RESULT pass=65 fail=2; first: FAIL no arguments: usage error is exit 2 (R4) (rc=0 want 2 reason=: usage: /tmp/)
+--- MUTANT r6: R6: sha compared on 16 characters
+    106c106
+    < jq -e --arg a "$asha" '.verdict_sha256==$a' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --arg a "$asha" '(.verdict_sha256[:16])==($a[:16])' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=65 fail=2; first: FAIL record sha that is a proper prefix of the actual sha refused (R6b) (rc=0 wa)
+--- MUTANT r6b: R6b: sha compared as a prefix
+    106c106
+    < jq -e --arg a "$asha" '.verdict_sha256==$a' "$pc" >/dev/null 2>&1 \
+    ---
+    > jq -e --arg a "$asha" '.verdict_sha256 as $s | $a|startswith($s)' "$pc" >/dev/null 2>&1 \
+    KILLED (RESULT pass=66 fail=1; first: FAIL record sha that is a proper prefix of the actual sha refused (R6b) (rc=0 wa)
+--- MUTANT s1: B-1: schema-invalid verdict accepted
+    135c135
+    <   *) refuse verdict_schema_invalid "$verr" ;;
+    ---
+    >   *) : ;;
+    KILLED (RESULT pass=63 fail=4; first: FAIL verdict with no schema/covers_runs, verdict MAYBE, blocking_findings 'zero')
+--- MUTANT s2: B-1: unset CPA_APPROVED_DIR no longer refused (falls back to the working tree)
+    110c110
+    < [ -n "${CPA_APPROVED_DIR:-}" ] || refuse verdict_schema_unavailable "CPA_APPROVED_DIR unset: the schema is never read from HEAD or the working tree"
+    ---
+    > CPA_APPROVED_DIR=${CPA_APPROVED_DIR:-$PWD}
+    KILLED (RESULT pass=65 fail=2; first: FAIL CPA_APPROVED_DIR unset: schema check refused, never skipped (B-1) (rc=0 wan)
+--- MUTANT s3: B-1: schema read from the working tree, not CPA_APPROVED_DIR
+    111c111
+    < schema=$CPA_APPROVED_DIR/${CRP_SCHEMA_REL:-specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json}
+    ---
+    > schema=$PWD/${CRP_SCHEMA_REL:-specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json}
+    KILLED (RESULT pass=63 fail=4; first: FAIL approved dir without the schema file refused (B-1) (rc=0 want 20 reason=ver)
+--- MUTANT s4: B-1: unavailable schema/validator accepted
+    134c134
+    <   3) refuse verdict_schema_unavailable "$verr" ;;
+    ---
+    >   3) : ;;
+    KILLED (RESULT pass=66 fail=1; first: FAIL unusable schema file refused as unavailable, not accepted (B-1) (rc=0 want )
+--- MUTANT m1: m-1: the model check reads the original verdict path
+    100c100
+    < jq -e --slurpfile r "$pc" '.model==$r[0].model' "$vc" >/dev/null 2>&1 \
+    ---
+    > jq -e --slurpfile r "$pc" '.model==$r[0].model' "$verdict" >/dev/null 2>&1 \
+    KILLED (RESULT pass=66 fail=1; first: FAIL verdict path seen cat=1 others=1 (want 1 and 0) (m-1))
+--- MUTANT m2: m-2: sha256sum of the original path (escaped digest, second read)
+    105c105
+    < asha=$(sha256sum < "$vc" | cut -d' ' -f1)
+    ---
+    > asha=$(sha256sum "$verdict" | cut -d' ' -f1)
+    KILLED (RESULT pass=65 fail=2; first: FAIL verdict path seen cat=1 others=1 (want 1 and 0) (m-1))
+--- MUTANT m3: m-3: refusal detail not sanitised
+    42c42
+    <   local d; d=$(printf '%s' "${2:-}" | tr -c '[:print:]' '?' | head -c 300)
+    ---
+    >   local d; d=${2:-}
+    KILLED (RESULT pass=66 fail=1; first: FAIL m-3 path rc=20 lines=2 out=REFUSED reason=provenance_absent /tmp/tmp.KX4wcD)
+MUTATIONS total=29 survived_or_unapplied=0 documented_equivalent=2
+rc=0

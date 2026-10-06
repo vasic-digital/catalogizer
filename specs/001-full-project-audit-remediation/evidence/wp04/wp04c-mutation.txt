@@ -1,0 +1,69 @@
+# WP-04 fix round 3 mutations (host run: bash scripts/repo/tests/run_wp04c_mutations.sh; each mutation = one edit of a COPY; CAUGHT = test_wp04c.sh exits non-zero)
+# driver sha256 3ffcc3b04968fa5415a4a7fcff447fdf8b11064776c2c3f5437cd48d837a1071
+# test sha256 03efe87db22e76f179988152922ee02dfb83fb967a934f05164aeae10468bd6d
+CONTROL  test_wp04c.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   L1 safe_declpath accepts the dot  -> 2 failing case(s), e.g. FAIL scope_check refuses --ev '.': 20 (got '0', want '20')
+CAUGHT   L2 safe_declpath accepts a ./ prefix  -> 22 failing case(s), e.g. FAIL commit_recursive refuses the spelling './b.txt': 20 (got '0', want '20')
+CAUGHT   L3 safe_declpath accepts a /./ component  -> 17 failing case(s), e.g. FAIL commit_recursive refuses the spelling 'd/./a.txt': 20 (got '0', want '20')
+CAUGHT   L4 safe_declpath accepts a trailing /.  -> 1 failing case(s), e.g. FAIL safe_declpath: golden-true paths accepted, every spelling refused (got 'ACCEPTED-BAD a/.', want '')
+CAUGHT   L5 safe_declpath accepts a trailing slash  -> 1 failing case(s), e.g. FAIL safe_declpath: golden-true paths accepted, every spelling refused (got 'ACCEPTED-BAD a/', want '')
+CAUGHT   L6 safe_declpath accepts a leading colon  -> 2 failing case(s), e.g. FAIL scope_check refuses --ev ':/': 20 (got '0', want '20')
+CAUGHT   L7 safe_declpath accepts *  -> 4 failing case(s), e.g. FAIL scope_check refuses the spelling '*': 20 (got '0', want '20')
+CAUGHT   L8 safe_declpath accepts ?  -> 2 failing case(s), e.g. FAIL scope_check refuses --ev 'e?': 20 (got '0', want '20')
+CAUGHT   L9 safe_declpath accepts [  -> 1 failing case(s), e.g. FAIL safe_declpath: golden-true paths accepted, every spelling refused (got 'ACCEPTED-BAD a[', want '')
+CAUGHT   L10 safe_declpath is safe_relpath only  -> 34 failing case(s), e.g. FAIL commit_recursive refuses the spelling './b.txt': 20 (got '0', want '20')
+CAUGHT   L11 lr_exact takes the first tail match  -> 5 failing case(s), e.g. FAIL the main repository fast-forwarded to the real tip (got 'ef93aa1f5f449f48856373f6e3e111950deb3ac7', want 
+CAUGHT   C1 declared paths judged by safe_relpath  -> 19 failing case(s), e.g. FAIL commit_recursive refuses the spelling './b.txt': 20 (got '0', want '20')
+CAUGHT   C2 held rows judged by safe_relpath  -> 1 failing case(s), e.g. FAIL named unsafe_held_row (no 'unsafe_held_row' in 'commit_recursive: held_row_unmatched: ./d/a.txt is a held
+CAUGHT   C3 held row naming no declared path accepted  -> 3 failing case(s), e.g. FAIL held row that matches no declared path: 20 (got '0', want '20')
+CAUGHT   C4 a declared directory accepted  -> 3 failing case(s), e.g. FAIL a directory is no declared path: 20 (got '0', want '20')
+CAUGHT   C5 a gitlink refused as a directory  -> 2 failing case(s), e.g. FAIL a gitlink path is declared as the pin it is: 0 (got '20', want '0')
+EQUIVALENT EQ-C6 literal pathspecs not exported: EQUIVALENT, the validator already refuses every pathspec magic  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   S1 declared paths judged by safe_relpath  -> 6 failing case(s), e.g. FAIL scope_check refuses the spelling './ev/ledger.jsonl': 20 (got '0', want '20')
+CAUGHT   S2 --ev judged by safe_relpath  -> 6 failing case(s), e.g. FAIL scope_check refuses --ev './ev': 20 (got '0', want '20')
+CAUGHT   S3 a declared directory accepted  -> 3 failing case(s), e.g. FAIL scope_check refuses the spelling 'ev': 20 (got '0', want '20')
+ERROR    S4 a gitlink refused as a directory  -> old text not found in scripts/repo/scope_check.sh: '!= 160000 ]\n    die declared_directory'
+CAUGHT   S5 uninitialised submodule walks to the parent (W3)  -> 2 failing case(s), e.g. FAIL uninitialised submodule never walks to the parent (W3): 0 (got '13', want '0')
+CAUGHT   V1 declared paths judged by safe_rel  -> 7 failing case(s), e.g. FAIL validate_cheap refuses the spelling './src/keep.txt': 20 (got '0', want '20')
+CAUGHT   V2 held rows judged by safe_rel  -> 1 failing case(s), e.g. FAIL a held row with a ./ spelling: 20 (got '0', want '20')
+CAUGHT   V3 a declared directory accepted  -> 2 failing case(s), e.g. FAIL a directory is no declared path: 20 (got '0', want '20')
+CAUGHT   V4 a gitlink refused as a directory  -> 1 failing case(s), e.g. FAIL a gitlink path is declared as the pin it is (validate_cheap): 0 (got '20', want '0')
+CAUGHT   V5 working-tree table taken as the HEAD table (I1)  -> 5 failing case(s), e.g. FAIL undeclared untracked table row never exempts the declared file (I1): 10 (got '0', want '10')
+CAUGHT   V6 interpreter form not accepted (I2)  -> 13 failing case(s), e.g. FAIL golden-true change set through the shipped registry (mode 644 landmine script): 0 (got '20', want '0')
+CAUGHT   V7 interpreter not used to run the script  -> 13 failing case(s), e.g. FAIL golden-true change set through the shipped registry (mode 644 landmine script): 0 (got '1', want '0')
+CAUGHT   V8 interpreter row demands an executable file  -> 13 failing case(s), e.g. FAIL golden-true change set through the shipped registry (mode 644 landmine script): 0 (got '20', want '0')
+CAUGHT   V9 registry row back to the direct form (I2)  -> 14 failing case(s), e.g. FAIL golden-true change set through the shipped registry (mode 644 landmine script): 0 (got '20', want '0')
+CAUGHT   CC1 duplicate exact rows decided by row order (W7)  -> 2 failing case(s), e.g. FAIL two exact rows of different classes: 20 class_ambiguous (W7) (got '0', want '20')
+CAUGHT   CC2 a two-column fixture-root row accepted  -> 2 failing case(s), e.g. FAIL a fixture-root row with only two columns: 20 (the reader refuses it too) (got '0', want '20')
+CAUGHT   CC3 an option without its value is a traceback  -> 10 failing case(s), e.g. FAIL --exemptions without a value: 20, never a traceback (got '1', want '20')
+CAUGHT   RD1 an option without its value loops  -> 3 failing case(s), e.g. FAIL record_deferral --run-dir without a value ends with 20 (minor 1) (got '1', want '20')
+CAUGHT   F1 pin proof reads the parent of an uninitialised submodule (B2b)  -> 4 failing case(s), e.g. FAIL uninitialised submodule: the parent's HEAD is never the pin (B2b): 20 (got '0', want '20')
+CAUGHT   F2 a submodule with no remote accepted (B2a)  -> 6 failing case(s), e.g. FAIL submodule with no remote at all (B2a): 20 (got '0', want '20')
+CAUGHT   F3 an unproven pin accepted  -> 4 failing case(s), e.g. FAIL only unreachable remotes: 20 (got '0', want '20')
+CAUGHT   F4 a failed remote does not veto the proof  -> 2 failing case(s), e.g. FAIL one remote holds the pin, the other is unreachable: 20 (got '0', want '20')
+CAUGHT   F5a a remote tip that is not held locally goes into --not (the review I5 form)  -> 4 failing case(s), e.g. FAIL a remote tip whose objects cannot be fetched: 20 (fail closed, I5) (got '0', want '20')
+CAUGHT   F5b a remote tip that is not held locally is skipped  -> 3 failing case(s), e.g. FAIL reason remote_tip_not_held (got 'unrecorded_local_commit', want 'remote_tip_not_held')
+CAUGHT   F6 owned organisation parsed by the private basename/dirname form (I6/W1)  -> 2 failing case(s), e.g. FAIL owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (got '0', want '20')
+CAUGHT   F7 owned organisation compared case-sensitively  -> 2 failing case(s), e.g. FAIL owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (got '0', want '20')
+CAUGHT   F8 remotes of the main repository not vetted (I7)  -> 4 failing case(s), e.g. FAIL remote named like an option: 20 (I7) (got '0', want '20')
+CAUGHT   F9 remotes of the submodules not vetted (I7)  -> 1 failing case(s), e.g. FAIL submodule remote named like an option: 20 (got '0', want '20')
+CAUGHT   F10 timeout not validated  -> 1 failing case(s), e.g. FAIL --timeout 0: 20 (got '0', want '20')
+CAUGHT   F11 option values not guarded (loops)  -> 2 failing case(s), e.g. FAIL --root without a value ends with 20, never loops (minor 1) (got '1', want '20')
+CAUGHT   F12 live tip is the first tail match (I3)  -> 1 failing case(s), e.g. FAIL the main repository fast-forwarded to the real tip (got 'add48a3783465da99e85a560a1634e41c8e4ab79', want 
+EQUIVALENT EQ-F13 ls-remote without --: EQUIVALENT, a vetted remote name can never start with a dash  -> survived as documented (the guard it removes has a second layer)
+SURVIVED F14 the declared change set is not validated  -> test passed against the mutated copy
+SURVIVED F15 an unsafe adoption commit accepted  -> test passed against the mutated copy
+CAUGHT   P1 discover walks into an uninitialised submodule (I4)  -> 2 failing case(s), e.g. FAIL uninitialised submodule: ends, never runs away (I4): 0 (got '124', want '0')
+CAUGHT   P2 an uninitialised --repo judged as the parent (I4)  -> 2 failing case(s), e.g. FAIL an explicit --repo naming an uninitialised submodule is refused, never judged as the parent: 20 (got '0',
+CAUGHT   P3 every remote unreachable still judged (I8)  -> 5 failing case(s), e.g. FAIL all remotes unreachable: 11 (I8) (got '20', want '11')
+CAUGHT   P4 held merge of a remote tip reported moved (I9)  -> 3 failing case(s), e.g. FAIL held commit under a merge of r2's own tip: 14 (I9) (got '11', want '14')
+SURVIVED P5 the hold hides a remote that really moved  -> test passed against the mutated copy
+CAUGHT   P6 --repo judged by safe_relpath  -> 1 failing case(s), e.g. FAIL push_recursive refuses the --repo spelling './': 20 (got '0', want '20')
+CAUGHT   P7 --repo . refused  -> 1 failing case(s), e.g. FAIL golden-true: --repo . names the main repository: 0 (got '20', want '0')
+CAUGHT   P8 live tip is the first tail match (I3)  -> 2 failing case(s), e.g. FAIL r1's real main holds the target (got 'aa1b5d63abb87d93ff671be73fa923ede75aed1f', want 'd704e85b87ea6f6c88
+CAUGHT   P9 an unknown remote tip goes into --not (W4)  -> 3 failing case(s), e.g. FAIL the hold is still reported (no 'HELD' in 'PUSHED	.	r1	d252c9253f0f59e90c3f2d90ca55e44d7b85fb79
+CAUGHT   M1 live tip is the first tail match (I3)  -> 1 failing case(s), e.g. FAIL the real tip was merged (no 'MERGED' in 'integrate_merge: nothing_to_merge')
+CAUGHT   M2 an unresolvable adoption commit passes  -> 1 failing case(s), e.g. FAIL MERGED (no 'MERGED' in 'integrate_merge: nothing_to_merge')
+CAUGHT   M3 the fetch recurses into submodules  -> 1 failing case(s), e.g. FAIL integrate_merge: the merge path never moves a submodule ref by fetch (minor 2) (got 'refs/heads/main 1c11
+CAUGHT   M4 the backup misses untracked directories  -> 1 failing case(s), e.g. FAIL the untracked file inside the untracked directory is in the backup (minor 5) (got '', want 'precious')
+---- 64 mutations listed, 4 not caught or errored

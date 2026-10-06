@@ -1,0 +1,271 @@
+# WP-04 fix round 3 evidence (red) - host run, bash 5.3.9(1)-release, git version 2.53.0, head a27d72a5 (working tree; nothing committed by this task)
+# generated 2026-10-05T18:06:18Z
+# sha256 scripts/repo/tests/test_wp04c.sh 5772d44d195403893af05d3161a5ceab255c7746b59471faba6cc5079b6d85fa
+# sha256 scripts/repo/tests/lib_wp04b.sh 5900e65f10353a02aed572dfa5b06338e7bccd38503ceca9c20936b61b5b5f93
+# sha256 scripts/repo/lib_safe.sh 4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042
+# sha256 scripts/repo/check_no_ci.sh 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c
+# sha256 scripts/repo/check_revision_headers.sh f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339
+# sha256 scripts/repo/check_class.sh 82b51a46eba9126bede9d643ca5bb9ca5e04828e4e3e2723ffa6af3098655ef5
+# sha256 scripts/repo/fixture_roots.sh 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d
+# sha256 scripts/repo/scope_check.sh b74a5ce1f66d17b8a9f45fc1704be863bd4bd05d6987b64135197a4d4c9630e2
+# sha256 scripts/repo/validate_cheap.sh b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10
+# sha256 scripts/repo/commit_recursive.sh 2bfdc51a7db80ae3a3c8601543dc172191ad1acd44254ac2ab17dd3aea299826
+# sha256 scripts/repo/push_recursive.sh 4b34913f8363ede90e9e80ea7fe27b8daca665d4b0c78d349e169f206306fd60
+# sha256 scripts/repo/integrate_merge.sh 1eb24ce9b360f63eca5bdce7fc76629bb8e103fe137344689355618f022f16a9
+# sha256 scripts/repo/integrate_ff_only.sh 1c776dfa9af73b753b06e0faa0728cab28f2a20e75b926963baf97543cdfe628
+# sha256 scripts/repo/record_deferral.sh 51fa5efc8dd9fd29641f70ce8862961ac3fa52d004d2a656451c266856bc0cda
+# sha256 scripts/repo/validate_checks.tsv 37198dcf71e4ede297bbfdb3b302b99a2d4af92b4e7a8d7c4b511591d6679338
+# sha256 scripts/repo/check_classes.tsv bf78b9b74eb2fe2c8151533e8469ab8116b5b8e12346a55a9b12bf6077ff8f58
+# sha256 scripts/repo/check_exemptions.tsv 6708510e7513b3cc598b92f3714bf1bf0d7be353adafb155c5d573fc866df34f
+# sha256 scripts/repo/fixture_roots.txt d8c766b51c08530c5d27bd14d083d2d06d6c2b846c62293836f0c96a1667c25a
+
+== test_wp04c run 1
+FAIL commit_recursive refuses the spelling '*': 20 (got '0', want '20')
+FAIL no commit made by the spelling '*' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for '*' (got '0', want '1')
+ok   commit_recursive refuses the spelling ':/': 20 (=20)
+FAIL no commit made by the spelling ':/' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for ':/' (got '0', want '1')
+ok   commit_recursive refuses the spelling '.': 20 (=20)
+FAIL no commit made by the spelling '.' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for '.' (got '0', want '1')
+ok   commit_recursive refuses the spelling './': 20 (=20)
+FAIL no commit made by the spelling './' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for './' (got '0', want '1')
+ok   commit_recursive refuses the spelling './b.txt': 20 (=20)
+FAIL no commit made by the spelling './b.txt' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for './b.txt' (got '0', want '1')
+ok   commit_recursive refuses the spelling 'd/': 20 (=20)
+FAIL no commit made by the spelling 'd/' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for 'd/' (got '0', want '1')
+ok   commit_recursive refuses the spelling 'd/./a.txt': 20 (=20)
+FAIL no commit made by the spelling 'd/./a.txt' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for 'd/./a.txt' (got '0', want '1')
+ok   commit_recursive refuses the spelling ':(glob)*.txt': 20 (=20)
+FAIL no commit made by the spelling ':(glob)*.txt' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for ':(glob)*.txt' (got '0', want '1')
+ok   commit_recursive refuses the spelling ':x': 20 (=20)
+FAIL no commit made by the spelling ':x' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for ':x' (got '0', want '1')
+ok   commit_recursive refuses the spelling 'a?.txt': 20 (=20)
+FAIL no commit made by the spelling 'a?.txt' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for 'a?.txt' (got '0', want '1')
+ok   commit_recursive refuses the spelling '[ab].txt': 20 (=20)
+FAIL no commit made by the spelling '[ab].txt' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for '[ab].txt' (got '0', want '1')
+ok   commit_recursive refuses the spelling 'd/*': 20 (=20)
+FAIL no commit made by the spelling 'd/*' (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+FAIL no commits.tsv row for 'd/*' (got '0', want '1')
+ok   a directory is no declared path: 20 (=20)
+FAIL named declared_directory (no 'declared_directory' in 'commit_recursive: commit_failed: On branch main
+nothing to commit, working tree clean')
+FAIL no commit for the directory (got 'ed23bd34e7686096c8a416f8e2b9c16a7e64a0fc', want '86c0c6879e6841d27c17df3517aa813343d064bb')
+ok   a path neither tracked nor present is still refused: 20 (=20)
+ok   golden-true: the literal path d/a.txt commits: 0 (=0)
+ok   only the declared file is in the commit (=d/a.txt)
+ok   the undeclared tracked change stays unstaged (= M base.txt)
+ok   the undeclared file stays untracked (=?? undeclared.txt)
+FAIL held row spelled ./d/a.txt: 20 (got '0', want '20')
+FAIL named unsafe_held_row (no 'unsafe_held_row' in '')
+FAIL no commit under the bad held row (got '2', want '1')
+FAIL held row that matches no declared path: 20 (got '0', want '20')
+FAIL named held_row_unmatched (no 'held_row_unmatched' in '')
+FAIL no commit under the unmatched held row (got '2', want '1')
+ok   golden-true held row: 0 (=0)
+ok   the held commit names its verdict
+ok   the held file is in the held commit only (=d/a.txt)
+ok   control: the canonical spelling of a rewritten ledger: 13 (=13)
+FAIL scope_check refuses the spelling './ev/ledger.jsonl': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling 'ev/./ledger.jsonl': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling 'ev/': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling 'ev': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling '*': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling ':/': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling '.': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling 'ev/led*.jsonl': 20 (got '0', want '20')
+FAIL scope_check refuses the spelling ':(glob)ev/*': 20 (got '0', want '20')
+FAIL a directory is no declared path (src): 20 (got '0', want '20')
+FAIL named declared_directory (no 'declared_directory' in '')
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   uninitialised submodule never walks to the parent (W3): 0 (=0)
+ok   no dirty_submodule for the empty directory
+FAIL golden-true change set through the shipped registry (mode 644 landmine script): 0 (got '20', want '0')
+ok   validate_cheap refuses the spelling './src/keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/': 20 (=20)
+ok   validate_cheap refuses the spelling '*': 20 (=20)
+ok   validate_cheap refuses the spelling ':/': 20 (=20)
+ok   validate_cheap refuses the spelling '.': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/./keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/ke?p.txt': 20 (=20)
+ok   validate_cheap refuses the spelling ':(glob)src/*': 20 (=20)
+ok   a directory is no declared path: 20 (=20)
+FAIL named declared_directory (no 'declared_directory' in 'validate_cheap: check_command_absent: detect_landmines: scripts/detect-landmines.sh is not an executable file under the code root')
+ok   a held row with a ./ spelling: 20 (=20)
+FAIL legacy report edited, declared canonical: 10 (got '20', want '10')
+FAIL legacy_row_not_dropped (no 'legacy_row_not_dropped' in '')
+ok   legacy report declared as ./ALL_ISSUES_FIXED.md is refused, not passed: 20 (=20)
+FAIL undeclared untracked table row never exempts the declared file (I1): 10 (got '20', want '10')
+FAIL the whitespace failure is reported (no 'trailing_whitespace' in '')
+ok   no table change is claimed when the table is undeclared
+FAIL table declared with its file, no HEAD table, no review verdict: 10 (got '20', want '10')
+FAIL class_table_unreviewed (I1) (no 'class_table_unreviewed' in '')
+FAIL the file is still judged with the reviewed tables (no 'trailing_whitespace' in '')
+FAIL undeclared working-tree table edit is not evaluated (W8): 10 (got '20', want '10')
+FAIL whitespace failure kept (no 'trailing_whitespace' in '')
+FAIL every shipped registry row resolves against the real tree (I2) (got 'detect_landmines: scripts/detect-landmines.sh is not executable and the row names no interpreter', want 'ok')
+FAIL the landmine script really runs through its interpreter (a LANDMINE file fails it): 10 (got '20', want '10')
+FAIL detect_landmines named (no 'detect_landmines' in '')
+ok   golden-false: a direct row naming a non-executable file is still refused: 20 (=20)
+ok   check_command_absent
+ok   control: pin on every remote: 0 (=0)
+FAIL submodule with no remote at all (B2a): 20 (got '0', want '20')
+FAIL reason pin_not_on_remote (got 'null', want 'pin_not_on_remote')
+FAIL the proof is not accepted (got 'true', want 'false')
+ok   nothing moved (=fe3a01722d1f4dd85b436f990061a684eb1aa647)
+FAIL uninitialised submodule: the parent's HEAD is never the pin (B2b): 20 (got '0', want '20')
+FAIL reason pin_unverifiable (got 'null', want 'pin_unverifiable')
+FAIL no pin proof row accepted for the parent's HEAD (got '1', want '0')
+FAIL nothing moved (got '05b2144d72366feda5c5d0da9e05cfe590713479', want '0edce1453dc4fc2c82c11dfdfee65193282b4964')
+FAIL only unreachable remotes: 20 (got '12', want '20')
+FAIL reason pin_unverifiable (not an unproven lack) (got 'submodule_local_commits', want 'pin_unverifiable')
+FAIL the proof records fetch failed per remote (got '', want 'failed')
+ok   one remote holds the pin, the other is unreachable: 20 (=20)
+FAIL reason pin_unverifiable (got 'pin_not_on_remote', want 'pin_unverifiable')
+ok   golden-false for the pin-lack path: a reachable remote that lacks the pin keeps pin_not_on_remote: 20 (=20)
+ok   reason (=pin_not_on_remote)
+ok   setup: the foreign tip object is gone from the remote (=1)
+FAIL a remote tip whose objects cannot be fetched: 20 (fail closed, I5) (got '0', want '20')
+FAIL reason remote_tip_not_held (got 'null', want 'remote_tip_not_held')
+ok   nothing moved (=de8895a420df396d29bacf8d8f5cd056ae61d1fd)
+ok   control: a healthy remote still refuses the hand commit: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+FAIL owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (got '0', want '20')
+FAIL reason unrecorded_local_commit (got 'null', want 'unrecorded_local_commit')
+ok   golden-false: a third-party submodule is not judged: 0 (=0)
+FAIL remote named like an option: 20 (I7) (got '0', want '20')
+FAIL reason unsafe_remote_name (got 'null', want 'unsafe_remote_name')
+FAIL the option was never executed (got '0', want '1')
+FAIL ext:: remote URL: 20 (got '0', want '20')
+FAIL reason unsafe_remote_url (got 'null', want 'unsafe_remote_url')
+ok   nothing executed (=1)
+FAIL submodule remote named like an option: 20 (got '0', want '20')
+ok   the option was never executed (submodule) (=1)
+FAIL --timeout that is no integer: 20 (got '0', want '20')
+FAIL --timeout 0: 20 (got '0', want '20')
+FAIL --root without a value ends with 20, never loops (minor 1) (got '124', want '20')
+FAIL --json without a value: 20 (got '124', want '20')
+ok   --root starting with a dash: 20 (=20)
+FAIL record_deferral --run-dir without a value ends with 20 (minor 1) (got '124', want '20')
+FAIL record_deferral --flag without a value: 20 (got '124', want '20')
+FAIL record_deferral --reason without a value: 20 (got '124', want '20')
+ok   ff_only: a decoy ref sorting first does not hide the real tip (I3): 0 (=0)
+FAIL the main repository fast-forwarded to the real tip (got '0b723dec041f0a8f5860a511cc07eb0733475dfb', want '0f93696536d0eae6bd8ca732065f90133078a5f6')
+ok   integrate_merge: a decoy ref does not hide the diverged real tip (I3): 0 (=0)
+FAIL the real tip was merged (no 'MERGED' in 'integrate_merge: nothing_to_merge')
+ok   push_recursive: a decoy ref equal to the target does not suppress the push (I3): 0 (=0)
+FAIL r1's real main holds the target (got 'f786d31743ede31e261186b516a1f3b0182b6513', want '47ce1274cb784e95c69b8a7f3a6a60b389d21842')
+FAIL PUSHED to r1 (no 'PUSHED	.	r1	47ce1274cb784e95c69b8a7f3a6a60b389d21842' in 'NOPUSH	.	r1	already_holds_tip
+PUSHED	.	r2	47ce1274cb784e95c69b8a7f3a6a60b389d21842')
+FAIL uninitialised submodule: ends, never runs away (I4): 0 (got '124', want '0')
+ok   no garbage repository key
+ok   the uninitialised submodule is not reported as a repository
+FAIL main pushed (got '9328fd0eedeadca2309eabb8920a0f8e052d4628', want '53dcd05b74eaeb97c1fd65153e16c6cd222bdb49')
+FAIL an explicit --repo naming an uninitialised submodule is refused, never judged as the parent: 20 (got '0', want '20')
+FAIL not_a_repository (no 'not_a_repository' in 'PUSHED	zsub	r1	53dcd05b74eaeb97c1fd65153e16c6cd222bdb49
+PUSHED	zsub	r2	53dcd05b74eaeb97c1fd65153e16c6cd222bdb49')
+FAIL push_recursive refuses the --repo spelling './': 20 (got '0', want '20')
+FAIL push_recursive refuses the --repo spelling './zsub': 20 (got '0', want '20')
+FAIL push_recursive refuses the --repo spelling 'zsub/': 20 (got '0', want '20')
+ok   push_recursive refuses the --repo spelling 'z*': 20 (=20)
+ok   push_recursive refuses the --repo spelling ':/': 20 (=20)
+ok   golden-true: --repo . names the main repository: 0 (=0)
+FAIL all remotes unreachable: 11 (I8) (got '20', want '11')
+FAIL r1 named remote_unreachable (no 'NOPUSH	.	r1	remote_unreachable' in 'REFUSED	.	unrecorded_local_commit	fc087e5e8a9ca8123c5c62ca9e0393755f543e03')
+FAIL r2 named remote_unreachable (no 'NOPUSH	.	r2	remote_unreachable' in 'REFUSED	.	unrecorded_local_commit	fc087e5e8a9ca8123c5c62ca9e0393755f543e03')
+FAIL no refusal naming a commit (unexpected 'REFUSED' in 'REFUSED	.	unrecorded_local_commit	fc087e5e8a9ca8123c5c62ca9e0393755f543e03')
+FAIL an unrecorded commit with every remote unreachable is still never pushed: 11, no push (got '20', want '11')
+ok   r1 unchanged (=fc087e5e8a9ca8123c5c62ca9e0393755f543e03)
+ok   golden-false: one reachable remote still refuses the unrecorded commit: 20 (=20)
+ok   unrecorded_local_commit
+FAIL held commit under a merge of r2's own tip: 14 (I9) (got '11', want '14')
+FAIL r2 is not reported as moved (unexpected 'remote_moved_since_s1' in 'HELD	.	bc75c9cb78fc92592618d17bbe67da5c19ca691c	specs/ev/reviews/V_nogo.json	not_go
+NOPUSH	.	r1	already_holds_tip
+NOPUSH	.	r2	remote_moved_since_s1')
+FAIL r2 reported as held below its tip (no 'NOPUSH	.	r2	held_below_remote_tip' in 'HELD	.	bc75c9cb78fc92592618d17bbe67da5c19ca691c	specs/ev/reviews/V_nogo.json	not_go
+NOPUSH	.	r1	already_holds_tip
+NOPUSH	.	r2	remote_moved_since_s1')
+ok   r2 untouched (=48bee7a51a41f0b6390991d814e52f6147369b6c)
+ok   HELD line
+ok   golden-false: a remote that moved on its own: 11 (=11)
+ok   remote_moved_since_s1 kept
+ok   an unrecorded commit with a remote tip unknown locally: 20 (W4) (=20)
+ok   names the hand commit
+ok   nothing was pushed to r1 (=8a36cf2c9c36aec253780e5b868b575fc5334ffe)
+ok   an unresolvable adoption commit routes the descending tip to the merge path (minor 3): 0 (=0)
+FAIL MERGED (no 'MERGED' in 'integrate_merge: nothing_to_merge')
+ok   main fast-forwarded across a gitlink move: 0 (=0)
+ok   no ref of the submodule moved by the main fetch (minor 2) (=refs/heads/main 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/mirror/HEAD 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/mirror/main 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/origin/HEAD 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/origin/main 96971b2aff787d72e1232ef25e0a786bbc38e62e )
+FAIL integrate_merge: the merge path never moves a submodule ref by fetch (minor 2) (got 'refs/heads/main 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/origin/HEAD 282b09bdc4f3eb2ced09f783f82fbb955a8aebd3 refs/remotes/origin/main 282b09bdc4f3eb2ced09f783f82fbb955a8aebd3 ', want 'refs/heads/main 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/origin/HEAD 96971b2aff787d72e1232ef25e0a786bbc38e62e refs/remotes/origin/main 96971b2aff787d72e1232ef25e0a786bbc38e62e ')
+FAIL two exact rows of different classes: 20 class_ambiguous (W7) (got '0', want '20')
+FAIL named class_ambiguous (no 'class_ambiguous' in '')
+ok   golden-false: the same class twice: 0 (=0)
+ok   class generated (=generated)
+FAIL a fixture-root row with only two columns: 20 (the reader refuses it too) (got '0', want '20')
+FAIL table_invalid (no 'table_invalid' in '')
+FAIL --exemptions without a value: 20, never a traceback (got '1', want '20')
+FAIL no Python traceback for --exemptions (unexpected 'Traceback' in 'Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+IndexError: list index out of range')
+FAIL --classes without a value: 20, never a traceback (got '1', want '20')
+FAIL no Python traceback for --classes (unexpected 'Traceback' in 'Traceback (most recent call last):
+  File "<stdin>", line 12, in <module>
+IndexError: list index out of range')
+FAIL --fixture-roots without a value: 20, never a traceback (got '1', want '20')
+FAIL no Python traceback for --fixture-roots (unexpected 'Traceback' in 'Traceback (most recent call last):
+  File "<stdin>", line 13, in <module>
+IndexError: list index out of range')
+FAIL --checks-registry without a value: 20, never a traceback (got '1', want '20')
+FAIL no Python traceback for --checks-registry (unexpected 'Traceback' in 'Traceback (most recent call last):
+  File "<stdin>", line 14, in <module>
+IndexError: list index out of range')
+FAIL --check without a value: 20, never a traceback (got '1', want '20')
+FAIL no Python traceback for --check (unexpected 'Traceback' in 'Traceback (most recent call last):
+  File "<stdin>", line 15, in <module>
+IndexError: list index out of range')
+FAIL safe_declpath: golden-true paths accepted, every spelling refused (got 'scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD a.txt
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD d/a.txt
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD d/a b.txt
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD a:b
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD .hidden
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD d/.hidden/x
+scripts/repo/tests/test_wp04c.sh: line 314: safe_declpath: command not found
+REFUSED-GOOD a.b/c
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found
+scripts/repo/tests/test_wp04c.sh: line 315: safe_declpath: command not found', want '')
+FAIL lr_exact: the exact ref only (got 'scripts/repo/tests/test_wp04c.sh: line 317: lr_exact: command not found', want 'sha2')
+---- 74 ok, 123 failed
+exit=1
+
+# DONE

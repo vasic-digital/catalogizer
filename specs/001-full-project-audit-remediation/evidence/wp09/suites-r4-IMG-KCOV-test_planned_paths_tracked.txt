@@ -1,0 +1,395 @@
+# R4 test_planned_paths_tracked inside IMG-KCOV via run_pinned.sh (mapped uid)
+# date_utc: 2026-10-06T05:27:23Z
+# sut_sha256: 12a5f201ef54950df500dd18fcbe620fc7b6e9719ddb6c1e4226141a8aa87e48
+# probe_sha256: 170691f94af898b733b45d84365d5b4fa9e4e216aa781ddfe469a9b8b5e4602b
+# test_sha256: 3857c43e10c72462d2fcd05dcd1e4c3dca2e8a4e56e5dbbb6190a2266d2b2c4b
+PASS planned not-ignored: tools/evidence/evrec
+PASS planned not-ignored: tools/evidence/matrix/x
+PASS planned not-ignored: tools/evidence/analyzers/x
+PASS planned not-ignored: tools/perf/x
+PASS planned not-ignored: tools/audit/rust_ast/Cargo.toml
+PASS planned not-ignored: tools/audit/rust_ast/Cargo.lock
+PASS planned not-ignored: build/containers/images.lock.yaml
+PASS planned not-ignored: build/containers/go/Containerfile
+PASS planned not-ignored: build/containers/testutil/Containerfile
+PASS planned not-ignored: build/containers/testutil/requirements.txt
+PASS planned not-ignored: build/containers/kcov/Containerfile
+PASS planned not-ignored: build/components.json
+PASS planned not-ignored: build/hosts.env.example
+PASS planned not-ignored: coverage/exclusions/catalog-api.yaml
+PASS planned not-ignored: scripts/build/verify_artifact.sh
+PASS planned not-ignored: scripts/build/tests/test_verify_artifact.sh
+PASS planned not-ignored: scripts/build/dispatch.sh
+PASS planned not-ignored: scripts/build/event_hub.sh
+PASS planned not-ignored: scripts/build/callbacks.tsv
+PASS planned not-ignored: scripts/build/remote/x
+PASS planned not-ignored: scripts/build/tests/test_dispatch_events.sh
+PASS planned not-ignored: scripts/coverage/check_exclusions.sh
+PASS planned not-ignored: scripts/coverage/tests/test_check_exclusions.sh
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-api/baseline.json
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-web/baseline.json
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-api/exclusions-mutation.txt
+PASS planned not-ignored: docs/workable_items.db
+PASS planned not-ignored: config/index/scope.yaml
+PASS planned not-ignored: config/index/lumen_scope.json
+PASS planned not-ignored: scripts/repo/host_entry/cpa-host
+PASS planned not-ignored: scripts/repo/host_entry/INSTALL.md
+PASS planned not-ignored: scripts/audit/api/probe
+PASS planned not-ignored: scripts/security/dast/probe
+PASS planned not-ignored: scripts/qa/tests/probe
+PASS planned not-ignored: build/containers/sub/id_rsa.example
+PASS planned not-ignored: build/containers/sub/id_ed25519.sample
+PASS planned not-ignored: build/containers/sub/id_ecdsa.template
+PASS planned not-ignored: build/containers/sub/id_dsa.example
+PASS planned not-ignored: tools/evidence/sub/id_rsa.example
+PASS planned not-ignored: tools/evidence/sub/id_ed25519.sample
+PASS planned not-ignored: tools/evidence/sub/id_ecdsa.template
+PASS planned not-ignored: tools/evidence/sub/id_dsa.example
+PASS planned not-ignored: tools/perf/sub/id_rsa.example
+PASS planned not-ignored: tools/perf/sub/id_ed25519.sample
+PASS planned not-ignored: tools/perf/sub/id_ecdsa.template
+PASS planned not-ignored: tools/perf/sub/id_dsa.example
+PASS planned not-ignored: tools/audit/rust_ast/sub/id_rsa.example
+PASS planned not-ignored: tools/audit/rust_ast/sub/id_ed25519.sample
+PASS planned not-ignored: tools/audit/rust_ast/sub/id_ecdsa.template
+PASS planned not-ignored: tools/audit/rust_ast/sub/id_dsa.example
+PASS planned not-ignored: coverage/exclusions/sub/id_rsa.example
+PASS planned not-ignored: coverage/exclusions/sub/id_ed25519.sample
+PASS planned not-ignored: coverage/exclusions/sub/id_ecdsa.template
+PASS planned not-ignored: coverage/exclusions/sub/id_dsa.example
+PASS planned not-ignored: scripts/build/sub/id_rsa.example
+PASS planned not-ignored: scripts/build/sub/id_ed25519.sample
+PASS planned not-ignored: scripts/build/sub/id_ecdsa.template
+PASS planned not-ignored: scripts/build/sub/id_dsa.example
+PASS planned not-ignored: scripts/coverage/sub/id_rsa.example
+PASS planned not-ignored: scripts/coverage/sub/id_ed25519.sample
+PASS planned not-ignored: scripts/coverage/sub/id_ecdsa.template
+PASS planned not-ignored: scripts/coverage/sub/id_dsa.example
+PASS planned not-ignored: id_rsa.example
+PASS planned not-ignored: nested/id_ed25519.example
+PASS planned not-ignored: server.pem.example
+PASS planned not-ignored: nested/x.key.example
+PASS planned not-ignored: credentials.json.example
+PASS planned not-ignored: nested/.npmrc.example
+PASS planned not-ignored: secrets.env.example
+PASS planned not-ignored: .netrc.example
+PASS planned not-ignored: nested/x.kdbx.example
+PASS planned not-ignored: nested/x.p12.example
+PASS planned not-ignored: x.pfx.example
+PASS planned not-ignored: id_rsa.sample
+PASS planned not-ignored: nested/id_rsa.template
+PASS planned not-ignored: id_ed25519.sample
+PASS planned not-ignored: nested/id_ed25519.template
+PASS planned not-ignored: id_ecdsa.example
+PASS planned not-ignored: nested/id_dsa.sample
+PASS planned not-ignored: id_ecdsa.template
+PASS planned not-ignored: id_ecdsa.sample
+PASS planned not-ignored: nested/id_dsa.template
+PASS planned not-ignored: id_dsa.example
+PASS planned not-ignored: id_rsa.example
+PASS planned not-ignored: deep/er/id_rsa.example
+PASS planned not-ignored: id_rsa.sample
+PASS planned not-ignored: deep/er/id_rsa.sample
+PASS planned not-ignored: id_rsa.template
+PASS planned not-ignored: deep/er/id_rsa.template
+PASS planned not-ignored: id_ecdsa.example
+PASS planned not-ignored: deep/er/id_ecdsa.example
+PASS planned not-ignored: id_ecdsa.sample
+PASS planned not-ignored: deep/er/id_ecdsa.sample
+PASS planned not-ignored: id_ecdsa.template
+PASS planned not-ignored: deep/er/id_ecdsa.template
+PASS planned not-ignored: id_dsa.example
+PASS planned not-ignored: deep/er/id_dsa.example
+PASS planned not-ignored: id_dsa.sample
+PASS planned not-ignored: deep/er/id_dsa.sample
+PASS planned not-ignored: id_dsa.template
+PASS planned not-ignored: deep/er/id_dsa.template
+PASS planned not-ignored: id_ed25519.example
+PASS planned not-ignored: deep/er/id_ed25519.example
+PASS planned not-ignored: id_ed25519.sample
+PASS planned not-ignored: deep/er/id_ed25519.sample
+PASS planned not-ignored: id_ed25519.template
+PASS planned not-ignored: deep/er/id_ed25519.template
+PASS control ignored: .env
+PASS control ignored: build/hosts.env
+PASS control ignored: build/output/x.bin
+PASS control ignored: build/containers/go/x.bin
+PASS control ignored: tools/jdk/x
+PASS control ignored: tools/evidence/.cache
+PASS control ignored: tools/audit/rust_ast/target/x
+PASS control ignored: docs/workable_items.db-wal
+PASS control ignored: docs/workable_items.db-shm
+PASS control ignored: docs/workable_items.db-journal
+PASS control ignored: docs/workable_items.db.bak-20260101T000000Z
+PASS control ignored: docs/.register.lock
+PASS control ignored: .audit/longops/x
+PASS control ignored: .audit/commit-push/x/report.json
+PASS control ignored: .audit/pending_pins.tsv
+PASS control ignored: .audit/commit_turn.json
+PASS control ignored: .audit/out/x/y.json
+PASS control ignored: .audit/out/commit-turn-reap/x.json
+PASS control ignored: .audit/merge-resolution/x/y
+PASS control ignored: coverage/lcov.info
+PASS control ignored: coverage/other/x
+PASS control ignored: tools/audit/other/x
+PASS control ignored: tools/foo
+PASS control ignored: build/containers/hosts.env
+PASS control ignored: build/containers/sub/hosts.env
+PASS control ignored: tools/evidence/sub/.cache/x
+PASS control ignored: build/containers/sub/id_rsa
+PASS control ignored: build/containers/sub/id_rsa.pub
+PASS control ignored: build/containers/sub/id_rsa_old
+PASS control ignored: build/containers/sub/id_rsa2
+PASS control ignored: build/containers/sub/id_ecdsa
+PASS control ignored: build/containers/sub/id_dsa
+PASS control ignored: build/containers/sub/x.key
+PASS control ignored: build/containers/sub/x.pem
+PASS control ignored: build/containers/sub/x.p12
+PASS control ignored: build/containers/sub/credentials.json
+PASS control ignored: build/containers/sub/.npmrc
+PASS control ignored: build/containers/sub/secrets.env
+PASS control ignored: build/containers/sub/__pycache__/x.pyc
+PASS control ignored: build/containers/sub/.venv/pyvenv.cfg
+PASS control ignored: build/containers/sub/.pytest_cache/x
+PASS control ignored: tools/evidence/sub/id_rsa
+PASS control ignored: tools/evidence/sub/id_rsa.pub
+PASS control ignored: tools/evidence/sub/id_rsa_old
+PASS control ignored: tools/evidence/sub/id_rsa2
+PASS control ignored: tools/evidence/sub/id_ecdsa
+PASS control ignored: tools/evidence/sub/id_dsa
+PASS control ignored: tools/evidence/sub/x.key
+PASS control ignored: tools/evidence/sub/x.pem
+PASS control ignored: tools/evidence/sub/x.p12
+PASS control ignored: tools/evidence/sub/credentials.json
+PASS control ignored: tools/evidence/sub/.npmrc
+PASS control ignored: tools/evidence/sub/secrets.env
+PASS control ignored: tools/evidence/sub/__pycache__/x.pyc
+PASS control ignored: tools/evidence/sub/.venv/pyvenv.cfg
+PASS control ignored: tools/evidence/sub/.pytest_cache/x
+PASS control ignored: tools/perf/sub/id_rsa
+PASS control ignored: tools/perf/sub/id_rsa.pub
+PASS control ignored: tools/perf/sub/id_rsa_old
+PASS control ignored: tools/perf/sub/id_rsa2
+PASS control ignored: tools/perf/sub/id_ecdsa
+PASS control ignored: tools/perf/sub/id_dsa
+PASS control ignored: tools/perf/sub/x.key
+PASS control ignored: tools/perf/sub/x.pem
+PASS control ignored: tools/perf/sub/x.p12
+PASS control ignored: tools/perf/sub/credentials.json
+PASS control ignored: tools/perf/sub/.npmrc
+PASS control ignored: tools/perf/sub/secrets.env
+PASS control ignored: tools/perf/sub/__pycache__/x.pyc
+PASS control ignored: tools/perf/sub/.venv/pyvenv.cfg
+PASS control ignored: tools/perf/sub/.pytest_cache/x
+PASS control ignored: tools/audit/rust_ast/sub/id_rsa
+PASS control ignored: tools/audit/rust_ast/sub/id_rsa.pub
+PASS control ignored: tools/audit/rust_ast/sub/id_rsa_old
+PASS control ignored: tools/audit/rust_ast/sub/id_rsa2
+PASS control ignored: tools/audit/rust_ast/sub/id_ecdsa
+PASS control ignored: tools/audit/rust_ast/sub/id_dsa
+PASS control ignored: tools/audit/rust_ast/sub/x.key
+PASS control ignored: tools/audit/rust_ast/sub/x.pem
+PASS control ignored: tools/audit/rust_ast/sub/x.p12
+PASS control ignored: tools/audit/rust_ast/sub/credentials.json
+PASS control ignored: tools/audit/rust_ast/sub/.npmrc
+PASS control ignored: tools/audit/rust_ast/sub/secrets.env
+PASS control ignored: tools/audit/rust_ast/sub/__pycache__/x.pyc
+PASS control ignored: tools/audit/rust_ast/sub/.venv/pyvenv.cfg
+PASS control ignored: tools/audit/rust_ast/sub/.pytest_cache/x
+PASS control ignored: coverage/exclusions/sub/id_rsa
+PASS control ignored: coverage/exclusions/sub/id_rsa.pub
+PASS control ignored: coverage/exclusions/sub/id_rsa_old
+PASS control ignored: coverage/exclusions/sub/id_rsa2
+PASS control ignored: coverage/exclusions/sub/id_ecdsa
+PASS control ignored: coverage/exclusions/sub/id_dsa
+PASS control ignored: coverage/exclusions/sub/x.key
+PASS control ignored: coverage/exclusions/sub/x.pem
+PASS control ignored: coverage/exclusions/sub/x.p12
+PASS control ignored: coverage/exclusions/sub/credentials.json
+PASS control ignored: coverage/exclusions/sub/.npmrc
+PASS control ignored: coverage/exclusions/sub/secrets.env
+PASS control ignored: coverage/exclusions/sub/__pycache__/x.pyc
+PASS control ignored: coverage/exclusions/sub/.venv/pyvenv.cfg
+PASS control ignored: coverage/exclusions/sub/.pytest_cache/x
+PASS control ignored: scripts/build/sub/id_rsa
+PASS control ignored: scripts/build/sub/id_rsa.pub
+PASS control ignored: scripts/build/sub/id_rsa_old
+PASS control ignored: scripts/build/sub/id_rsa2
+PASS control ignored: scripts/build/sub/id_ecdsa
+PASS control ignored: scripts/build/sub/id_dsa
+PASS control ignored: scripts/build/sub/x.key
+PASS control ignored: scripts/build/sub/x.pem
+PASS control ignored: scripts/build/sub/x.p12
+PASS control ignored: scripts/build/sub/credentials.json
+PASS control ignored: scripts/build/sub/.npmrc
+PASS control ignored: scripts/build/sub/secrets.env
+PASS control ignored: scripts/build/sub/__pycache__/x.pyc
+PASS control ignored: scripts/build/sub/.venv/pyvenv.cfg
+PASS control ignored: scripts/build/sub/.pytest_cache/x
+PASS control ignored: scripts/coverage/sub/id_rsa
+PASS control ignored: scripts/coverage/sub/id_rsa.pub
+PASS control ignored: scripts/coverage/sub/id_rsa_old
+PASS control ignored: scripts/coverage/sub/id_rsa2
+PASS control ignored: scripts/coverage/sub/id_ecdsa
+PASS control ignored: scripts/coverage/sub/id_dsa
+PASS control ignored: scripts/coverage/sub/x.key
+PASS control ignored: scripts/coverage/sub/x.pem
+PASS control ignored: scripts/coverage/sub/x.p12
+PASS control ignored: scripts/coverage/sub/credentials.json
+PASS control ignored: scripts/coverage/sub/.npmrc
+PASS control ignored: scripts/coverage/sub/secrets.env
+PASS control ignored: scripts/coverage/sub/__pycache__/x.pyc
+PASS control ignored: scripts/coverage/sub/.venv/pyvenv.cfg
+PASS control ignored: scripts/coverage/sub/.pytest_cache/x
+PASS control ignored: id_rsa
+PASS control ignored: some/nested/dir/id_rsa
+PASS control ignored: id_rsa.pub
+PASS control ignored: some/nested/dir/id_rsa.pub
+PASS control ignored: id_rsa_old
+PASS control ignored: some/nested/dir/id_rsa_old
+PASS control ignored: id_rsa2
+PASS control ignored: some/nested/dir/id_rsa2
+PASS control ignored: id_rsa.old
+PASS control ignored: some/nested/dir/id_rsa.old
+PASS control ignored: id_ecdsa
+PASS control ignored: some/nested/dir/id_ecdsa
+PASS control ignored: id_ecdsa.pub
+PASS control ignored: some/nested/dir/id_ecdsa.pub
+PASS control ignored: id_dsa
+PASS control ignored: some/nested/dir/id_dsa
+PASS control ignored: id_dsa.pub
+PASS control ignored: some/nested/dir/id_dsa.pub
+PASS control ignored: id_ed25519
+PASS control ignored: some/nested/dir/id_ed25519
+PASS control ignored: id_ed25519.pub
+PASS control ignored: some/nested/dir/id_ed25519.pub
+PASS control ignored: x.key
+PASS control ignored: some/nested/dir/x.key
+PASS control ignored: x.pem
+PASS control ignored: some/nested/dir/x.pem
+PASS control ignored: x.p12
+PASS control ignored: some/nested/dir/x.p12
+PASS control ignored: x.pfx
+PASS control ignored: some/nested/dir/x.pfx
+PASS control ignored: credentials.json
+PASS control ignored: some/nested/dir/credentials.json
+PASS control ignored: .npmrc
+PASS control ignored: some/nested/dir/.npmrc
+PASS control ignored: secrets.env
+PASS control ignored: some/nested/dir/secrets.env
+PASS control ignored: .netrc
+PASS control ignored: some/nested/dir/.netrc
+PASS control ignored: x.kdbx
+PASS control ignored: some/nested/dir/x.kdbx
+PASS control ignored: scripts/audit/__pycache__/org_of.cpython-314.pyc
+PASS control ignored: scripts/audit/__pycache__/x.txt
+PASS control ignored: __pycache__/x.txt
+PASS control ignored: x.pyc
+PASS control ignored: nested/y.pyo
+PASS control ignored: a/b/z.pyd
+PASS control ignored: scripts/audit/x.pyc
+PASS control ignored: .venv/pyvenv.cfg
+PASS control ignored: scripts/audit/.venv/lib/x
+PASS control ignored: .pytest_cache/x
+PASS control ignored: scripts/audit/.pytest_cache/x
+PASS control ignored: .mypy_cache/x
+PASS control ignored: scripts/audit/.mypy_cache/y
+PASS control ignored: .ruff_cache/x
+PASS control ignored: scripts/audit/.ruff_cache/y
+PASS control ignored: docs/x/.venv/pyvenv.cfg
+TOTAL planned=107 control=187 failures=0
+[real] scratch-repo baseline (unmutated copy): failures=0
+PASS mutation removing 'id_rsa*' caught (38 check(s) red)
+PASS mutation removing 'id_ecdsa*' caught (11 check(s) red)
+PASS mutation removing 'id_dsa*' caught (11 check(s) red)
+PASS mutation removing 'id_ed25519*' caught (4 check(s) red)
+PASS mutation removing '!id_rsa.example' caught (10 check(s) red)
+PASS mutation removing '!id_rsa.sample' caught (3 check(s) red)
+PASS mutation removing '!id_rsa.template' caught (3 check(s) red)
+PASS mutation removing '!id_ecdsa.example' caught (3 check(s) red)
+PASS mutation removing '!id_ecdsa.sample' caught (3 check(s) red)
+PASS mutation removing '!id_ecdsa.template' caught (10 check(s) red)
+PASS mutation removing '!id_dsa.example' caught (10 check(s) red)
+PASS mutation removing '!id_dsa.sample' caught (3 check(s) red)
+PASS mutation removing '!id_dsa.template' caught (3 check(s) red)
+PASS mutation removing '!id_ed25519.example' caught (3 check(s) red)
+PASS mutation removing '!id_ed25519.sample' caught (10 check(s) red)
+PASS mutation removing '!id_ed25519.template' caught (3 check(s) red)
+PASS mutation removing '*.key' caught (9 check(s) red)
+PASS mutation removing '*.pem' caught (9 check(s) red)
+PASS mutation removing '*.p12' caught (9 check(s) red)
+PASS mutation removing '*.pfx' caught (2 check(s) red)
+PASS mutation removing '*.kdbx' caught (2 check(s) red)
+PASS mutation removing 'credentials.json' caught (9 check(s) red)
+PASS mutation removing '.npmrc' caught (9 check(s) red)
+PASS mutation removing 'secrets.env' caught (9 check(s) red)
+PASS mutation removing '.netrc' caught (2 check(s) red)
+PASS mutation removing '!/build/' caught (11 check(s) red)
+PASS mutation removing '/build/*' caught (2 check(s) red)
+PASS mutation removing '!/build/containers/' caught (9 check(s) red)
+PASS mutation removing '!/build/components.json' caught (1 check(s) red)
+PASS mutation removing '!/build/hosts.env.example' caught (1 check(s) red)
+PASS mutation removing '/build/containers/**/*.bin' caught (1 check(s) red)
+PASS mutation removing '!/scripts/build/' caught (11 check(s) red)
+PASS mutation removing '!/tools/' caught (18 check(s) red)
+PASS mutation removing '/tools/*' caught (2 check(s) red)
+PASS mutation removing '!/tools/evidence/' caught (7 check(s) red)
+PASS mutation removing '/tools/evidence/.cache' survives as a documented equivalent: also ignored by /tools/evidence/**/.cache (N9 rule), the two rules overlap
+PASS mutation removing '!/tools/perf/' caught (5 check(s) red)
+PASS mutation removing '!/tools/audit/' caught (6 check(s) red)
+PASS mutation removing '/tools/audit/*' caught (1 check(s) red)
+PASS mutation removing '!/tools/audit/rust_ast/' caught (6 check(s) red)
+PASS mutation removing '/tools/audit/rust_ast/target/' survives as a documented equivalent: the repo-wide target/ rule already ignores it (r2 G5)
+PASS mutation removing '!/tools/audit/rust_ast/Cargo.lock' caught (1 check(s) red)
+PASS mutation removing '!/coverage/' caught (5 check(s) red)
+PASS mutation removing '/coverage/*' caught (2 check(s) red)
+PASS mutation removing '!/coverage/exclusions/' caught (5 check(s) red)
+PASS mutation removing '!/scripts/coverage/' caught (6 check(s) red)
+PASS mutation removing '!/docs/workable_items.db' caught (1 check(s) red)
+PASS mutation removing 'docs/*.bak-*' caught (1 check(s) red)
+PASS mutation removing 'docs/.register.lock' caught (1 check(s) red)
+PASS mutation removing '/.audit/' caught (5 check(s) red)
+PASS mutation removing '__pycache__/' caught (2 check(s) red)
+PASS mutation removing '*.py[cod]' caught (4 check(s) red)
+PASS mutation removing '.venv/' caught (10 check(s) red)
+PASS mutation removing '.pytest_cache/' caught (9 check(s) red)
+PASS mutation removing '.mypy_cache/' caught (2 check(s) red)
+PASS mutation removing '.ruff_cache/' caught (2 check(s) red)
+PASS mutation removing '/build/containers/**/hosts.env' caught (2 check(s) red)
+PASS mutation removing '/tools/evidence/**/.cache' caught (1 check(s) red)
+MUTATIONS rule-lines=58 caught=56 documented-equivalent=2
+PASS anchor mutation 'id_rsa*' -> '/id_rsa*' caught (33 check(s) red)
+PASS anchor mutation 'id_ecdsa*' -> '/id_ecdsa*' caught (9 check(s) red)
+PASS anchor mutation 'id_dsa*' -> '/id_dsa*' caught (9 check(s) red)
+PASS anchor mutation 'id_ed25519*' -> '/id_ed25519*' caught (2 check(s) red)
+PASS anchor mutation '!id_rsa.example' -> '!/id_rsa.example' caught (8 check(s) red)
+PASS anchor mutation '!id_rsa.sample' -> '!/id_rsa.sample' caught (1 check(s) red)
+PASS anchor mutation '!id_rsa.template' -> '!/id_rsa.template' caught (2 check(s) red)
+PASS anchor mutation '!id_ecdsa.example' -> '!/id_ecdsa.example' caught (1 check(s) red)
+PASS anchor mutation '!id_ecdsa.sample' -> '!/id_ecdsa.sample' caught (1 check(s) red)
+PASS anchor mutation '!id_ecdsa.template' -> '!/id_ecdsa.template' caught (8 check(s) red)
+PASS anchor mutation '!id_dsa.example' -> '!/id_dsa.example' caught (8 check(s) red)
+PASS anchor mutation '!id_dsa.sample' -> '!/id_dsa.sample' caught (2 check(s) red)
+PASS anchor mutation '!id_dsa.template' -> '!/id_dsa.template' caught (2 check(s) red)
+PASS anchor mutation '!id_ed25519.example' -> '!/id_ed25519.example' caught (2 check(s) red)
+PASS anchor mutation '!id_ed25519.sample' -> '!/id_ed25519.sample' caught (8 check(s) red)
+PASS anchor mutation '!id_ed25519.template' -> '!/id_ed25519.template' caught (2 check(s) red)
+PASS anchor mutation '*.key' -> '/*.key' caught (8 check(s) red)
+PASS anchor mutation '*.pem' -> '/*.pem' caught (8 check(s) red)
+PASS anchor mutation '*.p12' -> '/*.p12' caught (8 check(s) red)
+PASS anchor mutation '*.pfx' -> '/*.pfx' caught (1 check(s) red)
+PASS anchor mutation '*.kdbx' -> '/*.kdbx' caught (1 check(s) red)
+PASS anchor mutation 'credentials.json' -> '/credentials.json' caught (8 check(s) red)
+PASS anchor mutation '.npmrc' -> '/.npmrc' caught (8 check(s) red)
+PASS anchor mutation 'secrets.env' -> '/secrets.env' caught (8 check(s) red)
+PASS anchor mutation '.netrc' -> '/.netrc' caught (1 check(s) red)
+PASS anchor mutation '__pycache__/' -> '/__pycache__/' caught (1 check(s) red)
+PASS anchor mutation '*.py[cod]' -> '/*.py[cod]' caught (3 check(s) red)
+PASS anchor mutation '.venv/' -> '/.venv/' caught (9 check(s) red)
+PASS anchor mutation '.pytest_cache/' -> '/.pytest_cache/' caught (8 check(s) red)
+PASS anchor mutation '.mypy_cache/' -> '/.mypy_cache/' caught (1 check(s) red)
+PASS anchor mutation '.ruff_cache/' -> '/.ruff_cache/' caught (1 check(s) red)
+ANCHOR-MUTATIONS rule-lines=31 caught=31
+PASS T019-shaped block appended after END marker: sweep unchanged (rule-lines=58, no false SURVIVED)
+TOTAL planned=107 control=187 failures=0
+rc=0

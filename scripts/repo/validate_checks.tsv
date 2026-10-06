@@ -1,0 +1,28 @@
+# check<TAB>command<TAB>image<TAB>mode<TAB>baseline<TAB>scope<TAB>note   (T040 check registry of CPA stage S3, read by validate_cheap.sh and by the class loader)
+# review: specs/001-full-project-audit-remediation/evidence/reviews/WP-04.json   (admission table: exact G-GATE path of scripts/repo/path_gates.tsv, T042; header names the verdict that holds it)
+# command: `builtin:<name>` (implemented inside validate_cheap.sh) or `[bash|python3 ]<script relative to the code root> [--root {root}] [--files-from {files}] [{paths}]`
+#          (a row without an interpreter needs an executable script; a row with `bash` or `python3` needs only a readable one, WF2 review I2)
+#          (placeholders {root}, {files} = a list file of the declared files this check applies to, {paths} = those files as arguments;
+#          a script runs with the root as its working directory); `-` for a deferred row. No shell is ever involved.
+# mode: plain | ratchet | deferred.  ratchet rows are refused (20 ratchet_not_implemented) until the baseline machinery lands (T040, owed).
+# scope: files = given the declared files whose class applies the check (T040b); changeset = reads the repository, outside the class table.
+# Slice note (UNCONFIRMED until T042/T006): the container image of each row is recorded but this slice runs the builtins and scripts on the host;
+#   the pinned-container run (IMG-TESTUTIL, IMG-GO, IMG-NODE through cpa-host) and the hook manifest filters of hook-filters.json (read at
+#   the pinned tags) are not built, so the filters are the ones named in validate_cheap.sh (suffix/type, UNCONFIRMED against the manifests).
+shell_parse	builtin:shell_parse	IMG-TESTUTIL	plain	-	files	bash -n on *.sh, *.bash (check only, nothing executed)
+merge_conflict	builtin:merge_conflict	IMG-TESTUTIL	plain	-	files	check-merge-conflict --assume-in-merge semantics: conflict marker lines in text files
+trailing_whitespace	builtin:trailing_whitespace	IMG-TESTUTIL	plain	-	files	check-only form of the trailing-whitespace fixer (a copy would be fixed, never the source)
+end_of_file	builtin:end_of_file	IMG-TESTUTIL	plain	-	files	check-only form of the end-of-file-fixer: exactly one final newline
+check_yaml	builtin:check_yaml	IMG-TESTUTIL	plain	-	files	*.yaml, *.yml parse as one YAML document
+check_json	builtin:check_json	IMG-TESTUTIL	plain	-	files	*.json parse, no duplicate keys
+large_file	builtin:large_file	IMG-TESTUTIL	plain	-	files	check-added-large-files --enforce-all with the byte bound of the file's class (T040b); above 75% size_alarm
+revision_header	scripts/repo/check_revision_headers.sh --assume-class-applied --root {root} --files-from {files}	IMG-TESTUTIL	plain	-	files	section 11.4.44 on declared *.md files; the baseline ratchet is owed (T040)
+no_ci	scripts/repo/check_no_ci.sh --root {root}	IMG-TESTUTIL	plain	-	changeset	section 11.4.156: no pipeline definition at a repository root
+detect_landmines	bash scripts/detect-landmines.sh	IMG-TESTUTIL	plain	-	changeset	reads the tracked tree; rc 0 on the current tree
+no_false_positive_log	scripts/hooks/no-false-positive-log.sh {paths}	IMG-GO	plain	-	files	declared *_test.go files
+go_fmt	-	IMG-GO	deferred	-	files	gofmt -l in IMG-GO through cpa-host (T042/T121b); not runnable on the host slice
+go_vet	-	IMG-GO	deferred	-	files	owned by T121b (remote measurement); never run locally
+go_imports	-	IMG-GOTOOLS	deferred	-	files	owned by T106 (goimports in IMG-GOTOOLS)
+eslint	-	IMG-NODE	deferred	-	files	type-aware eslint, owned by T121b, activation item registered by T092 (owner WP-52)
+prettier	-	IMG-NODE	deferred	-	files	needs a reviewed file scope and a ratchet baseline (T092, owner WP-52)
+anti_bluff	-	IMG-TESTUTIL	deferred	scripts/repo/validate_baselines/anti_bluff.tsv	files	scripts/audit/anti-bluff-scan.sh --files-from mode not built in this slice (see evidence/wp04/wp04b-notes.md)

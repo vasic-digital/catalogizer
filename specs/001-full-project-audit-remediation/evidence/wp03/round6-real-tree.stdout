@@ -1,0 +1,103 @@
+# round 6: the verifier on the real tree (read-only), 2026-10-06T14:09:29Z head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+af6468ce5196d6a289f1e333e5a5990c5e3e61cfbb477df2e12e002e301a4dfd  scripts/repo/verify_repos.sh
+PATH                                                           BRANCH  OWN    PIN  TREE                 REMOTES
+.                                                              main    owned  ok   dirty t=20 u=1081    gitflicvasicdigital:SAME github:SAME githubvasicdigital:SAME gitlab:SAME gitlabvasicdigital:SAME gitversevasicdigital:SAME origin:SAME upstream:SAME
+submodules/assets                                              main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/auth                                                main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/auth_context_react                                  main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/cache                                               main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/catalogizer_api_client_ts                           main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/challenges                                          main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME vasic_digital_github:SAME
+submodules/collection_manager_react                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/concurrency                                         main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/config                                              main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/constitution                                        main    owned  ok   clean                gitflic:UNKNOWN-DIFFERENT github:UNKNOWN-DIFFERENT gitlab:UNKNOWN-DIFFERENT gitverse:UNKNOWN-DIFFERENT origin:UNKNOWN-DIFFERENT upstream:UNKNOWN-DIFFERENT vasic_digital_github:UNKNOWN-DIFFERENT vasic_digital_gitlab:UNKNOWN-DIFFERENT
+submodules/constitution/submodules/MVT                         main    third  ok   clean                -
+submodules/constitution/submodules/MVT/js_mse_eme                      third  ok   clean                -
+submodules/constitution/submodules/agentic-validation          main    third  ok   clean                -
+submodules/constitution/submodules/anti_bluff                  main    owned  ok   clean                origin:SAME
+submodules/constitution/submodules/claude-video                main    third  ok   clean                -
+submodules/constitution/submodules/continuum                   main    owned  ok   clean                origin:SAME
+submodules/constitution/submodules/design-toolkit              main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/constitution/submodules/docs_chain                  main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/constitution/submodules/donespec                    main    third  ok   clean                -
+submodules/constitution/submodules/helix_perf_cache            main    owned  ok   clean                origin:SAME
+submodules/constitution/submodules/kedge                       main    third  ok   clean                -
+submodules/constitution/submodules/mcp-audio-tweaker           main    third  ok   clean                -
+submodules/constitution/submodules/polyscreen-mcp              main    third  ok   clean                -
+submodules/constitution/submodules/repo-proof                  main    third  ok   clean                -
+submodules/constitution/submodules/repo-qa                     main    third  ok   clean                -
+submodules/constitution/submodules/session_orchestrator        main    owned  ok   clean                origin:SAME
+submodules/constitution/submodules/skill-doctor                main    third  ok   clean                -
+submodules/constitution/submodules/token_optimizer             main    owned  ok   clean                origin:SAME
+submodules/constitution/submodules/verfix                      main    third  ok   clean                -
+submodules/constitution/submodules/verification                main    third  ok   clean                -
+submodules/constitution/submodules/verify                      main    third  ok   clean                -
+submodules/constitution/submodules/video-quality-mcp           main    third  ok   clean                -
+submodules/constitution/submodules/watch-skill                 main    third  ok   clean                -
+submodules/constitution/submodules/wave-dpctf                  main    third  ok   clean                -
+submodules/containers                                          main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME vasic_digital_gitlab:SAME
+submodules/dashboard_analytics_react                           main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/database                                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/discovery                                           main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/doc_processor                                       master  owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME vasic_digital_github:SAME vasic_digital_gitlab:SAME
+submodules/entities                                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/event_bus                                           main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/filesystem                                          main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/helix_memory                                        main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/helix_qa                                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME vasic_digital_github:SAME
+submodules/helix_qa/tools/opensource/allure2                           third  ok   clean                -
+submodules/helix_qa/tools/opensource/anthropic-quickstarts             third  ok   clean                -
+submodules/helix_qa/tools/opensource/appcrawler                master  third  ok   clean                -
+submodules/helix_qa/tools/opensource/appium                            third  ok   clean                -
+submodules/helix_qa/tools/opensource/browser-use                       third  ok   clean                -
+submodules/helix_qa/tools/opensource/chroma                            third  ok   clean                -
+submodules/helix_qa/tools/opensource/docker-android                    third  ok   clean                -
+submodules/helix_qa/tools/opensource/docling                           third  ok   dirty t=1 u=0 [EXC]  -
+submodules/helix_qa/tools/opensource/kiwi-tcms                         third  ok   clean                -
+submodules/helix_qa/tools/opensource/leakcanary                        third  ok   clean                -
+submodules/helix_qa/tools/opensource/llama-index                       third  ok   clean                -
+submodules/helix_qa/tools/opensource/marker                            third  ok   clean                -
+submodules/helix_qa/tools/opensource/mem0                              third  ok   clean                -
+submodules/helix_qa/tools/opensource/mem0/evaluation           main    third  ok   clean                -
+submodules/helix_qa/tools/opensource/midscene                          third  ok   clean                -
+submodules/helix_qa/tools/opensource/moondream                 main    third  ok   clean                -
+submodules/helix_qa/tools/opensource/perfetto                          third  ok   clean                -
+submodules/helix_qa/tools/opensource/redroid                   master  third  ok   clean                -
+submodules/helix_qa/tools/opensource/scrcpy                            third  ok   clean                -
+submodules/helix_qa/tools/opensource/shortest                  main    third  ok   clean                -
+submodules/helix_qa/tools/opensource/signoz                            third  ok   clean                -
+submodules/helix_qa/tools/opensource/skyvern                           third  ok   clean                -
+submodules/helix_qa/tools/opensource/skyvern/integrations/n8n          third  ok   clean                -
+submodules/helix_qa/tools/opensource/stagehand                         third  ok   clean                -
+submodules/helix_qa/tools/opensource/testdriverai                      third  ok   clean                -
+submodules/helix_qa/tools/opensource/ui-tars                   main    third  ok   clean                -
+submodules/helix_qa/tools/opensource/ui-tars-desktop                   third  ok   clean                -
+submodules/helix_qa/tools/opensource/unstructured                      third  ok   clean                -
+submodules/helix_qa/tools/test-apps/rest-demo                  master  third  ok   clean                -
+submodules/lazy                                                main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/llm_orchestrator                                    master  owned  ok   clean                github:SAME origin:SAME upstream:SAME
+submodules/llm_provider                                        master  owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME vasic_digital_github:SAME
+submodules/media                                               main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/media_browser_react                                 main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/media_player_react                                  main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/media_types_ts                                      main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/memory                                              main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/middleware                                          main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/observability                                       main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/rate_limiter                                        main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/recovery                                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/replay_buffer                                       main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/screen_diff                                         main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/security                                            main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/storage                                             main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/streaming                                           main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/superspec                                           main    third  ok   clean                -
+submodules/training_collector                                  main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/ui_components_react                                 main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/vision_engine                                       master  owned  ok   clean                github:SAME origin:SAME upstream:SAME
+submodules/visual_regression                                   main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/watcher                                             main    owned  ok   clean                github:SAME gitlab:SAME origin:SAME upstream:SAME
+submodules/websocket_client_ts                                 main    owned  ok   clean                github:SAME origin:SAME
+
+{"repos":98,"owned":51,"dirty":2,"dirty_excepted":1,"ahead":0,"diverged":0,"pin_drift":0,"unproven":1,"classes":{"SAME":191,"UNKNOWN-DIFFERENT":8},"failing":1}

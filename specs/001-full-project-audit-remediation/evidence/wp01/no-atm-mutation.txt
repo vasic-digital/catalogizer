@@ -1,0 +1,6 @@
+ok   control needle: 3 planted hits seen (ATM-123, ATM alone, ATM_ID)
+ok   ATMOSphere and atm_id not matched
+ok   allow-list honoured (decision record, evidence/)
+FAIL 1 ATM occurrence(s) remain:
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:1821:see ATM-123
+failures=1

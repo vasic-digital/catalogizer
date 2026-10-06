@@ -1,0 +1,241 @@
+# WP-04 second slice mutation evidence (T040, T040b, T041): one edit of a COPY of scripts/repo per mutation; CAUGHT = its test exits non-zero
+# generated 2026-10-05T14:21:40Z, host run, bash 5.3.9(1)-release, git version 2.53.0; driver scripts/repo/tests/run_wp04b_mutations.sh sha256 b7dd7041e5710fbf6a1d5f0a1acfb96d3a93aec7c58d42bddfb5593ba1f40ea4
+# identity of the FINAL files these results describe:
+#   4e3956ae03f312f7e83a6dd3267bb1a598b9fec79485d5e39b06856431013042  scripts/repo/lib_safe.sh
+#   5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c  scripts/repo/check_no_ci.sh
+#   f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339  scripts/repo/check_revision_headers.sh
+#   b74a5ce1f66d17b8a9f45fc1704be863bd4bd05d6987b64135197a4d4c9630e2  scripts/repo/scope_check.sh
+#   b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10  scripts/repo/validate_cheap.sh
+#   37198dcf71e4ede297bbfdb3b302b99a2d4af92b4e7a8d7c4b511591d6679338  scripts/repo/validate_checks.tsv
+#   2bfdc51a7db80ae3a3c8601543dc172191ad1acd44254ac2ab17dd3aea299826  scripts/repo/commit_recursive.sh
+#   4b34913f8363ede90e9e80ea7fe27b8daca665d4b0c78d349e169f206306fd60  scripts/repo/push_recursive.sh
+#   1eb24ce9b360f63eca5bdce7fc76629bb8e103fe137344689355618f022f16a9  scripts/repo/integrate_merge.sh
+#   d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3  scripts/repo/tests/test_check_no_ci.sh
+#   8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4  scripts/repo/tests/test_check_revision_headers.sh
+#   2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f  scripts/repo/tests/test_scope_check.sh
+#   f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769  scripts/repo/tests/test_validate_cheap.sh
+#   41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2  scripts/repo/tests/test_commit_recursive.sh
+#   5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564  scripts/repo/tests/test_push_recursive.sh
+#   e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960  scripts/repo/tests/test_integrate_merge.sh
+#
+# How the table was produced (honest account):
+#  Run 1 (section A) listed 145 mutations against the tests as they stood then. It left 9 survivors: five 'option-like root accepted' mutants (N6, S16, H9, C19, P22) and
+#  IM6, IM7, IM9, IM25. Analysis: the five option-like-root mutants are EQUIVALENT (a second layer, 'cd -x' failing, still refuses a repository named -x), so the driver now lists them
+#  as EQ- rows that must survive (section C). IM6/IM7 survived because git itself refuses the dirty merge with the same message: test_integrate_merge.sh now also asserts that nothing was
+#  written to the run directory (the pre-check runs before the backup). IM9 (bundle verify skipped) survived because a valid bundle always verifies: the test now makes verify fail through a git
+#  shim. IM25 survived because the test gave a non-existent directory (refused one layer earlier): the test now gives an existing resolution directory outside .audit/merge-resolution.
+#  After that test_integrate_merge.sh changed (and integrate_merge.sh got a robustness edit: the resolution paths are held in an array, no word splitting or globbing); section B re-runs every
+#  IM mutation against the final test and helper. Other tests did not change between run 1 and the final state except the additions listed in the first-RED note (see wp04b-notes.md).
+#  The mutations of run 1 other than IM*/EQ- are the final ones: their tests and helpers are byte-identical to the final files above.
+
+## Section C: control (final files, unmutated copies)
+CONTROL  test_check_no_ci.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_check_revision_headers.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_scope_check.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_validate_cheap.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_commit_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_push_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+
+## Section A: run 1 (all 145 listed; IM* rows and the five EQ candidates are superseded by sections B and D)
+CONTROL  test_check_no_ci.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_check_revision_headers.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_scope_check.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_validate_cheap.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_commit_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_push_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   N1 .drone.yml form dropped  -> 2 failing case(s), e.g. FAIL planted .drone.yml: 10 (got '0', want '10')
+CAUGHT   N2 .gitea/workflows form dropped  -> 4 failing case(s), e.g. FAIL planted .gitea/workflows/w.yml: 10 (got '0', want '10')
+CAUGHT   N3 pipeline files matched at any depth  -> 3 failing case(s), e.g. FAIL clean root (README + nested needle): 0 (got '10', want '0')
+CAUGHT   N4 ignored files judged too  -> 1 failing case(s), e.g. FAIL git-ignored .drone.yml: 0 (got '10', want '0')
+CAUGHT   N5 only the first root judged  -> 2 failing case(s), e.g. FAIL two roots, second violates: 10 (got '0', want '10')
+SURVIVED N6 option-like root accepted  -> test passed against the mutated copy
+CAUGHT   N7 violation exits 0  -> 11 failing case(s), e.g. FAIL planted .github/workflows/a.yml: 10 (got '0', want '10')
+CAUGHT   N8 README in .github/workflows is a pipeline  -> 3 failing case(s), e.g. FAIL clean root (README + nested needle): 0 (got '10', want '0')
+CAUGHT   H1 plain Revision lines accepted  -> 2 failing case(s), e.g. FAIL plain 'Revision:' lines are not the header form: 10 (got '0', want '10')
+CAUGHT   H2 header window 40 -> 400 lines  -> 2 failing case(s), e.g. FAIL header beyond the first 40 lines: 10 (got '0', want '10')
+CAUGHT   H3 Last modified not required  -> 2 failing case(s), e.g. FAIL Revision without Last modified: 10 (got '0', want '10')
+CAUGHT   H4 class not consulted  -> 6 failing case(s), e.g. FAIL class generated (docs/register): 0 (got '10', want '0')
+CAUGHT   H5 non-Markdown files judged  -> 1 failing case(s), e.g. FAIL a non-Markdown file is never judged: 0 (got '10', want '0')
+CAUGHT   H6 unsafe path accepted  -> 3 failing case(s), e.g. FAIL path with .. : 20 (got '0', want '20')
+CAUGHT   H7 --measure refuses  -> 3 failing case(s), e.g. FAIL --measure exits 0 (got '10', want '0')
+CAUGHT   S1 other databases allowed  -> 2 failing case(s), e.g. FAIL other database other/x.db: 13 (got '0', want '13')
+CAUGHT   S2 the register database refused  -> 1 failing case(s), e.g. FAIL golden-true change set: 0 (got '13', want '0')
+CAUGHT   S3 .env files allowed  -> 4 failing case(s), e.g. FAIL an .env file: 13 (got '0', want '13')
+CAUGHT   S4 .env.example refused  -> 1 failing case(s), e.g. FAIL .env.example: 0 (got '13', want '0')
+CAUGHT   S5 append-only prefix not compared  -> 5 failing case(s), e.g. FAIL an earlier line changed: 13 (got '0', want '13')
+CAUGHT   S7 blob name not checked  -> 3 failing case(s), e.g. FAIL blob named by another hash: 13 (got '0', want '13')
+CAUGHT   S8 build output not judged  -> 6 failing case(s), e.g. FAIL build output build/output/x.bin: 13 (got '0', want '13')
+CAUGHT   S10 submodules not walked  -> 6 failing case(s), e.g. FAIL dirty submodule: 13 (got '0', want '13')
+CAUGHT   S11 exceptions row hash not compared  -> 1 failing case(s), e.g. FAIL row with a stale work-tree hash: 13 (got '0', want '13')
+CAUGHT   S12 exceptions row file not compared  -> 1 failing case(s), e.g. FAIL row for another file: 13 (got '0', want '13')
+CAUGHT   S13 unsafe path accepted  -> 5 failing case(s), e.g. FAIL unsafe path '../x': 20 (got '0', want '20')
+CAUGHT   S14 untracked files in a submodule ignored  -> 1 failing case(s), e.g. FAIL an untracked file in the submodule is also dirty: 13 (got '0', want '13')
+CAUGHT   S15 exceptions kind not compared  -> 1 failing case(s), e.g. FAIL row of another kind: 13 (got '0', want '13')
+CAUGHT   V1 shell_parse never fails  -> 3 failing case(s), e.g. FAIL shell_parse bad: exit (got '0', want '10')
+CAUGHT   V2 merge_conflict never fails  -> 4 failing case(s), e.g. FAIL merge_conflict bad: exit (got '0', want '10')
+CAUGHT   V3 trailing_whitespace never fails  -> 7 failing case(s), e.g. FAIL trailing_whitespace bad: exit (got '0', want '10')
+CAUGHT   V4 extra blank lines at end allowed  -> 2 failing case(s), e.g. FAIL end_of_file extra blank lines: exit (got '0', want '10')
+CAUGHT   V5 missing final newline allowed  -> 2 failing case(s), e.g. FAIL end_of_file missing newline: exit (got '0', want '10')
+CAUGHT   V6 YAML never parsed  -> 2 failing case(s), e.g. FAIL check_yaml bad: exit (got '0', want '10')
+CAUGHT   V7 JSON never parsed  -> 2 failing case(s), e.g. FAIL check_json bad: exit (got '0', want '10')
+CAUGHT   V8 large_file bound ignored  -> 2 failing case(s), e.g. FAIL large_file above the bound: exit (got '0', want '10')
+CAUGHT   V9 size_alarm not reported  -> 1 failing case(s), e.g. FAIL size_alarm reported (no 'size_alarm' in 'deferred	go_fmt
+CAUGHT   V10 binary files given to text checks  -> 2 failing case(s), e.g. FAIL binary file with trailing blanks: 0 (got '10', want '0')
+CAUGHT   V11 class skip not honoured  -> 7 failing case(s), e.g. FAIL class generated: trailing space, extra blank, no header all skipped: 0 (got '10', want '0')
+CAUGHT   V12 differing registry row still runs  -> 6 failing case(s), e.g. FAIL a differing unapproved row, nothing else failing: 14 (got '20', want '14')
+CAUGHT   V13 row missing from the approved copy runs  -> 2 failing case(s), e.g. FAIL a row the approved copy lacks is pending: 14 (got '0', want '14')
+CAUGHT   V14 exit takes the larger of 10 and 14  -> 1 failing case(s), e.g. FAIL a failing check and a pending row in one run: 10 (never 14) (got '14', want '10')
+CAUGHT   V15 ratchet row accepted  -> 1 failing case(s), e.g. FAIL reason named (no 'ratchet_not_implemented' in 'validate_cheap: registry_invalid: go_vet: command '-' is n
+CAUGHT   V16 class loader validation of the registry skipped  -> 1 failing case(s), e.g. FAIL check_unknown named (no 'check_unknown' in 'validate_cheap: check_command_absent: newcheck: unknown built
+CAUGHT   V17 registry command may leave the code root  -> 1 failing case(s), e.g. FAIL a registry command outside the code root (..): 20 (got '0', want '20')
+CAUGHT   V18 absent command not refused  -> 2 failing case(s), e.g. FAIL a registry command that does not exist: 20 (got '1', want '20')
+CAUGHT   V19 class_table_unreviewed not reported  -> 4 failing case(s), e.g. FAIL class_table_unreviewed (no 'class_table_unreviewed' in 'deferred	go_fmt
+CAUGHT   V20 held tables applied to every path  -> 4 failing case(s), e.g. FAIL gen/x.txt judged with the HEAD tables (no 'trailing_whitespace' in 'deferred	go_fmt
+CAUGHT   V21 GO with blocking findings accepted  -> 2 failing case(s), e.g. FAIL verdict GO with blocking findings in HEAD is no review form: 10 (got '0', want '10')
+CAUGHT   V22 verdict value not checked  -> 2 failing case(s), e.g. FAIL verdict NO-GO (even with 0 blocking findings) in HEAD is no review form: 10 (got '0', want '10')
+CAUGHT   V23 table_admits_unheld_path not refused  -> 3 failing case(s), e.g. FAIL unheld path the held table would admit: 20 (got '0', want '20')
+CAUGHT   V24 every unheld failure reported as admitted  -> 2 failing case(s), e.g. FAIL unheld path failing under both tables: 10 (got '20', want '10')
+CAUGHT   V25 legacy_row_not_dropped not reported  -> 2 failing case(s), e.g. FAIL edited legacy root report, row kept: 10 (got '0', want '10')
+CAUGHT   V26 legacy row judged without a content difference  -> 1 failing case(s), e.g. FAIL legacy root report declared unchanged: 0 (got '10', want '0')
+CAUGHT   V27 unsafe declared path accepted  -> 4 failing case(s), e.g. FAIL unsafe declared path '../x': 20 (got '0', want '20')
+CAUGHT   V28 end_of_file fixes the source in place  -> 2 failing case(s), e.g. FAIL end_of_file missing newline: no byte of the tree changed (got 'c42028191d310ea8d3701990a1281734c6fdba1fef
+CAUGHT   V29 script check result ignored  -> 4 failing case(s), e.g. FAIL revision_header bad (new md file): exit (got '0', want '10')
+CAUGHT   V30 changeset-scope checks not run  -> 4 failing case(s), e.g. FAIL no_ci: planted workflow file, unrelated declared file: 10 (got '0', want '10')
+CAUGHT   V33 --run-declared ignored  -> 1 failing case(s), e.g. FAIL that row declared by the change set runs (deferred row: nothing to run): 0 (got '14', want '0')
+CAUGHT   V34 deferred rows not listed  -> 1 failing case(s), e.g. FAIL deferred rows are listed, never run (no 'deferred	go_vet' in '')
+CAUGHT   C1 path inside a submodule accepted  -> 1 failing case(s), e.g. FAIL reason path_in_submodule (no 'path_in_submodule' in 'commit_recursive: add_failed: fatal: Pathspec 'mods/
+CAUGHT   C2 attribution trailer dropped  -> 1 failing case(s), e.g. FAIL attribution trailer (no 'Co-Authored-By: Test Agent <test@example.invalid>' in 'subject line
+CAUGHT   C3 CPA-Run trailer dropped  -> 1 failing case(s), e.g. FAIL CPA-Run trailer (no 'CPA-Run: run1' in 'subject line
+CAUGHT   C4 deferral flags not read  -> 1 failing case(s), e.g. FAIL Deferred-Gates line from the run directory (no 'Deferred-Gates: SKIP_LONG' in 'subject line
+CAUGHT   C5 commits.tsv row not written  -> 5 failing case(s), e.g. FAIL commits.tsv row (repository key, sha, run id) (got '', want '.	d9a8cbe1d9b6781bf474531a8dd75ed64ca9f955	r
+CAUGHT   C6 commits.tsv row written at exit, not right after the commit  -> 2 failing case(s), e.g. FAIL three rows in commit order (got 'b1241470dbd8c9f3ec8ff1c10fd924cb56241a01 ', want '20f851aca5f1f87831108f
+CAUGHT   C7 non-ancestor foreign commit named  -> 1 failing case(s), e.g. FAIL non-ancestor not named (unexpected 'd34c0257aa546d58d72f810ac585959a72ea836f' in 'subject line
+CAUGHT   C8 foreign commit named twice  -> 1 failing case(s), e.g. FAIL a commit already named by an earlier Foreign-Commit line is not named again (unexpected 'Foreign-Commit' 
+CAUGHT   C9 foreign commits named on every commit  -> 1 failing case(s), e.g. FAIL a later commit of the run does not name a new foreign commit either (unexpected 'Foreign-Commit: a9802198
+CAUGHT   C10 held table ignored  -> 6 failing case(s), e.g. FAIL three commits made (got '2', want '4')
+CAUGHT   C11 held commits made before the unheld one  -> 4 failing case(s), e.g. FAIL first commit holds the unheld path (got 'h1.txt', want 'u.txt')
+CAUGHT   C12 unsafe path accepted  -> 7 failing case(s), e.g. FAIL unsafe path '-n': 20 (got '0', want '20')
+CAUGHT   C13 commit not limited to the declared paths  -> 2 failing case(s), e.g. FAIL exactly the declared paths are in the commit (got 'a.txt b.txt staged.txt ', want 'a.txt b.txt ')
+CAUGHT   C14 newline in the attribution accepted  -> 6 failing case(s), e.g. FAIL newline in the attribution trailer: 20 (got '0', want '20')
+CAUGHT   C15 unsafe run id accepted  -> 6 failing case(s), e.g. FAIL run id with a blank: 20 (got '0', want '20')
+CAUGHT   C16 repository hooks bypassed  -> 4 failing case(s), e.g. FAIL commit refused by a hook: 20 (got '0', want '20')
+CAUGHT   C18 absent run directory tolerated  -> 3 failing case(s), e.g. FAIL no commit made when the run directory is absent (got '2', want '1')
+CAUGHT   P1 force-like options accepted  -> 7 failing case(s), e.g. FAIL option --force named force_refused (no 'force_refused' in 'push_recursive: usage: unknown argument --forc
+CAUGHT   P2 commits.tsv row need not hold the sha  -> 4 failing case(s), e.g. FAIL commits.tsv row for another sha: 20 (got '0', want '20')
+CAUGHT   P3 trailer alone proves a CPA commit  -> 6 failing case(s), e.g. FAIL copied CPA-Run trailer, no commits.tsv row: 20 (got '0', want '20')
+CAUGHT   P4 holds ignored  -> 15 failing case(s), e.g. FAIL GO covering another run only: exit (got '0', want '14')
+CAUGHT   P5 verdict value not checked  -> 3 failing case(s), e.g. FAIL NO-GO verdict: exit (got '0', want '14')
+CAUGHT   P6 covers_runs not checked  -> 5 failing case(s), e.g. FAIL GO covering another run only: exit (got '0', want '14')
+CAUGHT   P7 schema validation skipped  -> 1 failing case(s), e.g. FAIL verdict failing the schema (no model/effort): exit (got '0', want '14')
+CAUGHT   P8 verdict read from the working tree, not HEAD  -> 1 failing case(s), e.g. FAIL GO only uncommitted in the working tree: stays held (14) (got '0', want '14')
+CAUGHT   P9 unreleased merge does not block  -> 1 failing case(s), e.g. FAIL no remote received the commit below the merge (r1) (got '05506057db3666d36d52784c70a329cd8c7e1ac2', want 
+CAUGHT   P10 the LAST unreleased held commit cuts the prefix  -> 1 failing case(s), e.g. FAIL two unreleased held commits: the prefix stops below the FIRST (got '0c0469f45004ede9fa6013ad50ed141dcc2ea
+CAUGHT   P11 remote ancestry not checked  -> 1 failing case(s), e.g. FAIL r2 named remote_moved_since_s1 (no 'NOPUSH	.	r2	remote_moved_since_s1' in 'PUSHED	.	r1	ab27efbfc5fae203aa
+CAUGHT   P12 remote already at the target pushed again  -> 1 failing case(s), e.g. FAIL already holds the tip, no push call (no 'already_holds_tip' in 'PUSHED	.	r1	46575f9f7c47b95c5f3c1111c4f28
+CAUGHT   P13 force refspec  -> 2 failing case(s), e.g. FAIL every push is 'push -q -- <remote> <sha>:refs/heads/main' (got '2', want '0')
+CAUGHT   P14 unsafe remote name accepted  -> 3 failing case(s), e.g. FAIL remote named like an option: 20 (got '0', want '20')
+CAUGHT   P15 unsafe remote URL accepted  -> 5 failing case(s), e.g. FAIL remote URL starting with a dash: 20 (got '11', want '20')
+CAUGHT   P16 push without --  -> 1 failing case(s), e.g. FAIL every push is 'push -q -- <remote> <sha>:refs/heads/main' (got '2', want '0')
+CAUGHT   P16b ls-remote without --  -> 1 failing case(s), e.g. FAIL every ls-remote follows -- (got '2', want '0')
+CAUGHT   P17 shallowest repository first  -> 1 failing case(s), e.g. FAIL deepest first: the submodule is reported before the main repository (got '. . ', want 'mods/sub . ')
+CAUGHT   P18 unsafe branch accepted  -> 2 failing case(s), e.g. FAIL branch starting with a dash: 20 (got '0', want '20')
+CAUGHT   P20 a failed push stops the other remotes  -> 1 failing case(s), e.g. FAIL others continued (r1) (got 'cd7b00662650b468d9b3a0cf8bcede30df3ff8ad', want 'fa16b9027af85100b9afd0f47157
+CAUGHT   P21 unreachable remote not recorded  -> 2 failing case(s), e.g. FAIL unreachable remote: 11 (got '0', want '11')
+CAUGHT   L1 safe_relpath accepts ..  -> 1 failing case(s), e.g. FAIL path with .. : 20 (got '0', want '20')
+CAUGHT   L2 safe_relpath accepts a leading dash  -> 1 failing case(s), e.g. FAIL unsafe path '-n': 20 (got '0', want '20')
+CAUGHT   L3 safe_remote accepts a leading dash  -> 3 failing case(s), e.g. FAIL remote named like an option: 20 (got '0', want '20')
+CAUGHT   L4 safe_url accepts a leading dash  -> 3 failing case(s), e.g. FAIL remote URL starting with a dash: 20 (got '11', want '20')
+CAUGHT   L5 control characters accepted  -> 1 failing case(s), e.g. FAIL tab in a path: 20 (got '0', want '20')
+CAUGHT   L6 ext:: URL accepted  -> 2 failing case(s), e.g. FAIL remote URL with the ext:: transport: 20 (got '11', want '20')
+SURVIVED S16 option-like root accepted (scope_check)  -> test passed against the mutated copy
+SURVIVED H9 option-like root accepted (revision headers)  -> test passed against the mutated copy
+SURVIVED C19 option-like repository accepted  -> test passed against the mutated copy
+SURVIVED P22 option-like main root accepted  -> test passed against the mutated copy
+CAUGHT   V35 option-like root accepted (validate_cheap)  -> 1 failing case(s), e.g. FAIL an existing repository named -x is refused as an option-like value: 20 (got '0', want '20')
+CAUGHT   IM1 force-like options accepted  -> 7 failing case(s), e.g. FAIL option --rebase named force_refused (no 'force_refused' in 'integrate_merge: usage: --rebase needs a valu
+CAUGHT   IM2 tips that are ancestors of HEAD are targets  -> 1 failing case(s), e.g. FAIL reported (no 'nothing_to_merge' in 'integrate_merge: r1 already merged')
+CAUGHT   IM3 adoption commit not required for a descendant tip  -> 1 failing case(s), e.g. FAIL held for adoption (no 'Awaits-Review' in 'init')
+CAUGHT   IM4 no single newest target (every tip in turn)  -> 1 failing case(s), e.g. FAIL one MERGED line (got '2', want '1')
+CAUGHT   IM5 pairwise merge-tree check removed  -> 3 failing case(s), e.g. FAIL remotes_diverged naming the pair (no 'remotes_diverged r1' in 'MERGED	r1	64b528621bfe1e9cded8e85bdb2963eb
+SURVIVED IM6 index-differs-from-HEAD check removed  -> test passed against the mutated copy
+SURVIVED IM7 uncommitted-overlap check removed  -> test passed against the mutated copy
+CAUGHT   IM8 bundle not created  -> 34 failing case(s), e.g. FAIL diverged tip merged: 0 (got '20', want '0')
+SURVIVED IM9 bundle not verified  -> test passed against the mutated copy
+CAUGHT   IM10 uncommitted files not copied to the backup  -> 19 failing case(s), e.g. FAIL diverged tip merged: 0 (got '20', want '0')
+CAUGHT   IM11 merge.json lacks the local tip  -> 1 failing case(s), e.g. FAIL merge.json local_tip (got 'null', want '67e1f19e373e39a63ed22b726df53044b4fb88d6')
+CAUGHT   IM12 process start time not recorded  -> 1 failing case(s), e.g. FAIL merge.json pid_start from /proc/<pid>/stat (got 'false', want 'true')
+CAUGHT   IM13 conflicting merge not aborted  -> 19 failing case(s), e.g. FAIL conflicting merge: 12 (got '20', want '12')
+CAUGHT   IM14 conflict files not copied  -> 1 failing case(s), e.g. FAIL conflict file copy holds markers (no '<<<<<<<' in '')
+CAUGHT   IM15 held local commit not detected  -> 2 failing case(s), e.g. FAIL local held commit missing from a remote: Awaits-Review (no 'Awaits-Review: ev/reviews/CPA-merge-20261005T
+CAUGHT   IM16 adoption hold removed  -> 1 failing case(s), e.g. FAIL held for adoption (no 'Awaits-Review' in 'Merge r1/main 85941652f61c43ad4a166a95b12d6898fb40d3ae (CPA)
+CAUGHT   IM17 G-GATE content comparison removed  -> 2 failing case(s), e.g. FAIL G-GATE content outside the approved manifest: held (no 'Awaits-Review' in 'Merge r1/main 87051751e19fef42
+CAUGHT   IM18 admission table change by a non-CPA commit not held  -> 1 failing case(s), e.g. FAIL admission table changed by a non-CPA commit: held (no 'Awaits-Review' in 'Merge r1/main 4fccc1613af6b465a
+CAUGHT   IM19 CPA commits named as foreign  -> 1 failing case(s), e.g. FAIL CPA commit not named (unexpected 'Foreign-Commit: a3cea84b5ed3f6626478e0174d91846efef3c6ac' in 'Merge r1/
+CAUGHT   IM21 commits.tsv row not written  -> 2 failing case(s), e.g. FAIL commits.tsv row (got '', want '.	dee9bc100a593591e0b7ac93b4fd24368d33ebad	20261005T000000Z-1-aaaa')
+CAUGHT   IM22 merge without --no-ff  -> 2 failing case(s), e.g. FAIL descendant tip lacking the adoption commit on its first-parent chain: merged (got '20', want '0')
+CAUGHT   IM23 helper pushes the merged tip  -> 2 failing case(s), e.g. FAIL r1 tip unchanged (no push) (got 'ee5797708ae1e4a5dd952aed5e348a6c9e5795c4', want '20b60c82ded6751d0c3e598
+SURVIVED IM25 resolution dir outside .audit/merge-resolution accepted  -> test passed against the mutated copy
+CAUGHT   IM26 moved tip not detected  -> 2 failing case(s), e.g. FAIL tip no longer the newest live tip: 12 (got '20', want '12')
+CAUGHT   IM27 resolver model not pinned  -> 1 failing case(s), e.g. FAIL merge_resolver_not_pinned (no 'merge_resolver_not_pinned' in 'integrate_merge: secret_fold_unavailable: t
+CAUGHT   IM28 resolver effort not pinned  -> 1 failing case(s), e.g. FAIL merge_resolver_not_pinned (effort) (no 'merge_resolver_not_pinned' in 'integrate_merge: secret_fold_unava
+CAUGHT   IM29 conflict set not compared  -> 2 failing case(s), e.g. FAIL conflict set differs from the record: 12 (got '20', want '12')
+CAUGHT   IM30 conflict markers in resolved files not detected  -> 1 failing case(s), e.g. FAIL conflict marker in a resolved file: 10 (got '20', want '10')
+CAUGHT   IM31 resolved file hash not compared  -> 1 failing case(s), e.g. FAIL resolution_invalid (no 'resolution_invalid' in 'integrate_merge: secret_fold_unavailable: the S2 secret f
+CAUGHT   IM32 store method re-recorded not required  -> 1 failing case(s), e.g. FAIL store_not_rerecorded (no 'store_not_rerecorded' in 'integrate_merge: secret_fold_unavailable: the S2 secr
+CAUGHT   IM33 store prefix not compared  -> 1 failing case(s), e.g. FAIL store_not_rerecorded (no 'store_not_rerecorded' in 'integrate_merge: secret_fold_unavailable: the S2 secr
+CAUGHT   IM34 secret fold gap silently passed  -> 3 failing case(s), e.g. FAIL valid resolution: stops at the missing secret fold (20) (got '0', want '20')
+CAUGHT   IM36 interrupted merge not refused  -> 2 failing case(s), e.g. FAIL MERGE_HEAD present: 20 (got '12', want '20')
+CAUGHT   IM37 branch not checked out accepted  -> 2 failing case(s), e.g. FAIL branch not checked out: 20 (got '0', want '20')
+CAUGHT   IM38 unsafe remote name accepted  -> 1 failing case(s), e.g. FAIL remote named like an option: 20 (got '0', want '20')
+CAUGHT   P23 ancestry of a known remote tip not checked (again, by test 6b)  -> 1 failing case(s), e.g. FAIL r2 named remote_moved_since_s1 (no 'NOPUSH	.	r2	remote_moved_since_s1' in 'PUSHED	.	r1	a4365107bdd389523a
+finished
+
+## Section B: re-run of every IM mutation against the final test and helper
+CAUGHT   IM1 force-like options accepted  -> 7 failing case(s), e.g. FAIL option --rebase named force_refused (no 'force_refused' in 'integrate_merge: usage: --rebase needs a valu
+CAUGHT   IM2 tips that are ancestors of HEAD are targets  -> 1 failing case(s), e.g. FAIL reported (no 'nothing_to_merge' in 'integrate_merge: r1 already merged')
+CAUGHT   IM3 adoption commit not required for a descendant tip  -> 1 failing case(s), e.g. FAIL held for adoption (no 'Awaits-Review' in 'init')
+CAUGHT   IM4 no single newest target (every tip in turn)  -> 1 failing case(s), e.g. FAIL one MERGED line (got '2', want '1')
+CAUGHT   IM5 pairwise merge-tree check removed  -> 3 failing case(s), e.g. FAIL remotes_diverged naming the pair (no 'remotes_diverged r1' in 'MERGED	r1	dd5a577da1e6197d248ac3605877a4df
+CAUGHT   IM6 index-differs-from-HEAD check removed  -> 1 failing case(s), e.g. FAIL nothing written to the run dir (index case) (got '2', want '0')
+CAUGHT   IM7 uncommitted-overlap check removed  -> 2 failing case(s), e.g. FAIL nothing written to the run dir (checked before anything moves) (got '2', want '0')
+CAUGHT   IM8 bundle not created  -> 34 failing case(s), e.g. FAIL diverged tip merged: 0 (got '20', want '0')
+CAUGHT   IM9 bundle not verified  -> 3 failing case(s), e.g. FAIL bundle that does not verify: 20 (got '0', want '20')
+CAUGHT   IM10 uncommitted files not copied to the backup  -> 19 failing case(s), e.g. FAIL diverged tip merged: 0 (got '20', want '0')
+CAUGHT   IM11 merge.json lacks the local tip  -> 1 failing case(s), e.g. FAIL merge.json local_tip (got 'null', want 'db7c75727e3e1b19bb3529ad61832815d7b10f15')
+CAUGHT   IM12 process start time not recorded  -> 1 failing case(s), e.g. FAIL merge.json pid_start from /proc/<pid>/stat (got 'false', want 'true')
+CAUGHT   IM13 conflicting merge not aborted  -> 19 failing case(s), e.g. FAIL conflicting merge: 12 (got '20', want '12')
+CAUGHT   IM14 conflict files not copied  -> 1 failing case(s), e.g. FAIL conflict file copy holds markers (no '<<<<<<<' in '')
+CAUGHT   IM15 held local commit not detected  -> 2 failing case(s), e.g. FAIL local held commit missing from a remote: Awaits-Review (no 'Awaits-Review: ev/reviews/CPA-merge-20261005T
+CAUGHT   IM16 adoption hold removed  -> 1 failing case(s), e.g. FAIL held for adoption (no 'Awaits-Review' in 'Merge r1/main 5086dc168080b12d5e7129c46d71510593646c26 (CPA)
+CAUGHT   IM17 G-GATE content comparison removed  -> 2 failing case(s), e.g. FAIL G-GATE content outside the approved manifest: held (no 'Awaits-Review' in 'Merge r1/main 59dbe1a981deb9a4
+CAUGHT   IM18 admission table change by a non-CPA commit not held  -> 1 failing case(s), e.g. FAIL admission table changed by a non-CPA commit: held (no 'Awaits-Review' in 'Merge r1/main 6d24e8c588a03f5e4
+CAUGHT   IM19 CPA commits named as foreign  -> 1 failing case(s), e.g. FAIL CPA commit not named (unexpected 'Foreign-Commit: 39e786c2f24b8deba0afca8c048ea11d3660dc3b' in 'Merge r1/
+CAUGHT   IM21 commits.tsv row not written  -> 2 failing case(s), e.g. FAIL commits.tsv row (got '', want '.	1e6ec6cdc30d823e27a958313e3642877cffeaab	20261005T000000Z-1-aaaa')
+CAUGHT   IM22 merge without --no-ff  -> 2 failing case(s), e.g. FAIL descendant tip lacking the adoption commit on its first-parent chain: merged (got '20', want '0')
+CAUGHT   IM23 helper pushes the merged tip  -> 2 failing case(s), e.g. FAIL r1 tip unchanged (no push) (got '0fb1973b1374b71e9dfdffcc680e154efa0d6014', want 'ffac908db3a55a1a95e0a57
+CAUGHT   IM25 resolution dir outside .audit/merge-resolution accepted  -> 1 failing case(s), e.g. FAIL resolution_dir_invalid (no 'resolution_dir_invalid' in 'integrate_merge: secret_fold_unavailable: the S2 
+CAUGHT   IM26 moved tip not detected  -> 2 failing case(s), e.g. FAIL tip no longer the newest live tip: 12 (got '20', want '12')
+CAUGHT   IM27 resolver model not pinned  -> 1 failing case(s), e.g. FAIL merge_resolver_not_pinned (no 'merge_resolver_not_pinned' in 'integrate_merge: secret_fold_unavailable: t
+CAUGHT   IM28 resolver effort not pinned  -> 1 failing case(s), e.g. FAIL merge_resolver_not_pinned (effort) (no 'merge_resolver_not_pinned' in 'integrate_merge: secret_fold_unava
+CAUGHT   IM29 conflict set not compared  -> 2 failing case(s), e.g. FAIL conflict set differs from the record: 12 (got '20', want '12')
+CAUGHT   IM30 conflict markers in resolved files not detected  -> 1 failing case(s), e.g. FAIL conflict marker in a resolved file: 10 (got '20', want '10')
+CAUGHT   IM31 resolved file hash not compared  -> 1 failing case(s), e.g. FAIL resolution_invalid (no 'resolution_invalid' in 'integrate_merge: secret_fold_unavailable: the S2 secret f
+CAUGHT   IM32 store method re-recorded not required  -> 1 failing case(s), e.g. FAIL store_not_rerecorded (no 'store_not_rerecorded' in 'integrate_merge: secret_fold_unavailable: the S2 secr
+CAUGHT   IM33 store prefix not compared  -> 1 failing case(s), e.g. FAIL store_not_rerecorded (no 'store_not_rerecorded' in 'integrate_merge: secret_fold_unavailable: the S2 secr
+CAUGHT   IM34 secret fold gap silently passed  -> 3 failing case(s), e.g. FAIL valid resolution: stops at the missing secret fold (20) (got '0', want '20')
+CAUGHT   IM36 interrupted merge not refused  -> 2 failing case(s), e.g. FAIL MERGE_HEAD present: 20 (got '12', want '20')
+CAUGHT   IM37 branch not checked out accepted  -> 2 failing case(s), e.g. FAIL branch not checked out: 20 (got '0', want '20')
+CAUGHT   IM38 unsafe remote name accepted  -> 1 failing case(s), e.g. FAIL remote named like an option: 20 (got '0', want '20')
+---- 145 mutations listed, 0 not caught or errored
+
+## Section D: EQ- rows (mutants that must SURVIVE because a second layer still refuses; survival is the documented outcome)
+EQUIVALENT EQ-N6 option-like root accepted: EQUIVALENT mutant, the second layer (`cd -x` fails, not_a_repository) still gives 20  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-S16 option-like root accepted (scope_check): EQUIVALENT, `cd -x` still refuses  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-H9 option-like root accepted (revision headers): EQUIVALENT, `cd -x` still refuses  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-C19 option-like repository accepted: EQUIVALENT, `cd -x` still refuses  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-P22 option-like main root accepted: EQUIVALENT, `cd -x` still refuses  -> survived as documented (the guard it removes has a second layer)
+---- 145 mutations listed, 0 not caught or errored
+
+## Tally (final): 105 non-IM mutants caught in run 1 + 35 IM mutants caught in run 2 = 140 CAUGHT; 5 EQUIVALENT (documented); 0 SURVIVED unexplained; 0 ERROR

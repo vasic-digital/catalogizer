@@ -1,0 +1,168 @@
+# identity: task=T060b utc=2026-10-06T12:40:11Z host=anton uid=1000
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 tree_dirty_files=53
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=9b2ab05cb7386bb3b0d3ccc5f7ab2a600e37fe9dc84536fdcc044ead1974a4eb test=77c06dc0d54da5419d4c5983031bc8539c7e1706e9a2b3873f29ae206dfa8b1a
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== T1. identity: reg_ids ==
+ok   T1a UPDATE reg_ids refused
+ok   T1b DELETE reg_ids refused (unreferenced id)
+ok   T1c INSERT OR REPLACE reg_ids refused
+ok   T1d the refused calls left the ids as minted
+== T2. reg_item_ext custody ==
+ok   T2.0 control: ext rows for A (artifact) and B (reverify 1) accepted
+ok   T2a DELETE reg_item_ext refused
+ok   T2b INSERT OR REPLACE reg_item_ext refused
+ok   T2c the refused REPLACE kept the artifact layer
+ok   T2d legacy_import for a non-import mint refused
+ok   T2e legacy_import for an OPEN legacy_status refused (§14.10 m-a, R10)
+ok   T2f legacy_import with a NULL legacy_status refused
+ok   T2g legacy_import after the id had an items row refused
+ok   T2h control: legacy_import for an import mint, closed-class status, no items row accepted
+ok   T2i atm_id update refused
+ok   T2j defect_layer lowered refused
+ok   T2k control: defect_layer raised accepted
+ok   T2l custody_basis changed TO legacy_import refused
+ok   T2m reverify_required set 0 -> 1 after insert refused (R1)
+ok   T2n control: reverify_required cleared 1 -> 0 accepted
+ok   T2o reverify flag stayed cleared and the layer raised
+== T3. sources, entries, map ==
+ok   T3a DELETE of a scanned entry refused (FR-002)
+ok   T3b INSERT OR REPLACE by entry_id keeps the scanned row unchanged
+ok   T3c INSERT OR REPLACE by (source_id, locator) keeps the scanned row and adds none
+ok   T3d control: a new entry is accepted
+ok   T3e control: two mappings (entry 1, 2) of A, one severity-governing
+ok   T3f DELETE of a mapping refused (FR-002)
+ok   T3g a second severity-governing mapping of the same id refused (uq_source_map_severity)
+ok   T3h control: the mapping may be corrected by UPDATE
+== T4. findings ==
+ok   T4.0 control: a finding is accepted
+ok   T4a unit_alias update refused
+ok   T4b finding_seq update refused
+ok   T4c INSERT OR REPLACE of the same unit_alias refused
+ok   T4d the same fingerprint in the same run refused as a duplicate key
+ok   T4e DELETE of a finding refused (I-4)
+ok   T4f severity lowered critical -> cosmetic refused (I-4)
+ok   T4g atm_id re-pointed to another item refused (I-4)
+ok   T4h fingerprint rewritten refused (I-4)
+ok   T4i run_id edit refused (I-4)
+ok   T4j location_path edit refused (I-4)
+ok   T4k detector edit refused (I-4)
+ok   T4m category edit refused (WF3 I4, every observation column)
+ok   T4n evidence_id re-pointed to another evidence row refused (WF3 I4)
+ok   T4o location_line edit refused (WF3 I4)
+ok   T4l the finding is exactly as recorded after every refused edit
+== T5. evidence, test runs, reviews: append-only ledgers ==
+ok   T5a UPDATE reg_evidence refused
+ok   T5b DELETE reg_evidence refused
+ok   T5c INSERT OR REPLACE reg_evidence refused
+ok   T5.0 control: a GREEN row and a review are accepted
+ok   T5d UPDATE reg_test_runs refused
+ok   T5e DELETE reg_test_runs refused
+ok   T5f INSERT OR REPLACE reg_test_runs (same run_row) refused
+ok   T5g INSERT OR REPLACE reg_test_runs (same group_id, rep_index) refused
+ok   T5h UPDATE reg_reviews refused
+ok   T5i DELETE reg_reviews refused
+ok   T5j INSERT OR REPLACE reg_reviews refused
+ok   T5k every ledger kept its single original row
+== T6. recurrence links ==
+ok   T6a head_log_id that is not the head's last log id refused
+ok   T6.0 control: a link with the right decision point is accepted
+ok   T6b UPDATE refused
+ok   T6c DELETE refused
+ok   T6d INSERT OR REPLACE refused
+== T7. status log: insert guard, append-only, high-water marks (item that pre-dates the extension) ==
+ok   T7.0 the pre-existing item has no status-log row yet
+ok   T7a to_status that is not the current items status refused
+ok   T7b from_status equal to to_status refused
+ok   T7c wrong evidence high-water mark refused (R6)
+ok   T7d wrong run high-water mark refused
+ok   T7e wrong review high-water mark refused
+ok   T7f control: the correct first row is accepted
+ok   T7g UPDATE reg_status_log refused
+ok   T7h DELETE reg_status_log refused
+ok   T7i INSERT OR REPLACE of log row 1 that satisfies the insert guard refused
+ok   T7j log row 1 is still the original first row
+== T8. engine items table: mint, identity, transitions, log writers ==
+ok   T8a an engine insert wrote the first log row (Queued)
+ok   T8b raw items insert without a mint refused
+ok   T8c second items row for a minted id refused
+ok   T8d items.atm_id re-pointed to an unminted id refused
+ok   T8e items.atm_id re-pointed to another item's id refused
+ok   T8f an edge outside the graph refused (Queued -> In testing)
+ok   T8g the refused statement left only the first log row
+ok   T8h an UPDATE of status wrote a log row
+ok   T8i a terminal UPDATE without a live decision refused (item B driven to In testing)
+ok   T8j DELETE + INSERT as a status not reachable from the last logged one refused
+ok   T8k DELETE + INSERT as a terminal status without a live decision refused
+ok   T8l both items survived the bypass attempts unchanged
+== T9. closure decisions: guard, append-only, single use ==
+ok   T9a ACCEPTED on a non-decision evidence row refused
+ok   T9a2 ACCEPTED on a non-decision (log) evidence row refused
+ok   T9b ACCEPTED on a custody_decision row with no chain refused
+ok   T9c control: a REFUSED decision needs no chain
+ok   T9d DELETE reg_closure_decisions refused
+ok   T9e INSERT OR REPLACE reg_closure_decisions refused
+ok   T9f editing the decision column refused
+ok   T9g editing to_status refused
+ok   T9h control: a single consumption (NULL -> set) is allowed
+ok   T9i a second consumption refused
+== C. custody chain: one scenario per clause; the complete chain is the only ACCEPTED one ==
+ok   C0 control: complete chain (RED observed, GREENx3 on another fingerprint, caught mutation, independent GO) ACCEPTED
+ok   C0b the engine close then succeeds and the decision is consumed
+ok   C0c status log of the closed item is the full path
+ok   C1 no evidence at all REFUSED
+ok   C2 RED with precondition_provenance=constructed REFUSED (R7, §11.4.115(G))
+ok   C3 reviewer who produced the RED evidence REFUSED (R8, §11.4.240)
+ok   C4 a later NO-GO review blocks (R9)
+ok   C5 GREEN on the RED fingerprint (fix never deployed) REFUSED
+ok   C6 only two GREEN repetitions REFUSED
+ok   C9 no caught mutation REFUSED
+ok   C10 control: an extra mutation row for another test leaves an otherwise complete chain ACCEPTED
+ok   C11 the caught mutation belongs to a DIFFERENT test_id than the RED/GREEN pair REFUSED
+ok   C12 no review at all REFUSED
+ok   C13 source-class evidence for a runtime-layer item REFUSED (class floor §11.4.226)
+ok   C14 runtime RED and mutation but source-class GREEN for a runtime-layer item REFUSED
+ok   C15 control: an additional RED on another fingerprint leaves the chain complete
+ok   C16 a NO-GO as the only review REFUSED
+ok   C17 the author=reviewer CHECK refused a self-review row
+ok   C17b and the chain without an independent review REFUSED
+ok   C18 one GREEN group spread over two fingerprints REFUSED
+ok   C19 a review whose verdict evidence was produced by someone other than the reviewer REFUSED
+ok   C20 runtime-layer item with a source-class caught mutation REFUSED (class floor on the mutation)
+ok   C20b control: the same item with a runtime-class mutation ACCEPTED
+ok   C21 RED whose evidence fingerprint differs from its test-run fingerprint REFUSED
+ok   C22 a mutation that PASSed (survived) REFUSED
+ok   C23 a mutation row backed by a plain log evidence row REFUSED
+ok   C24 a review whose evidence row belongs to ANOTHER item REFUSED
+ok   C25 a review whose evidence row is not a review_verdict REFUSED
+ok   C26 false_positive_evidence item with a proof row and an independent GO closes as Obsolete (ACCEPTED)
+ok   C27 the same item without a proof row REFUSED
+ok   C28 a machine_evidence item cannot close as Obsolete on a proof row (basis does not allow it) REFUSED
+ok   C29 a false_positive_evidence item with a complete FIX chain cannot close as Fixed/Completed REFUSED
+ok   C30 runtime-layer item whose only RED is source-class REFUSED (class floor on the RED)
+== R. reopen cycles: the old chain never counts; replay and GREEN-fingerprint reuse refused ==
+ok   R0 cycle 1 closed
+ok   R1 the engine reopen was recorded as a Reopened log row
+ok   R2 a second close with no new chain is REFUSED (cycle boundary)
+ok   R3 replay of the last cycle-1 evidence file (custody_decision) refused (boundary, R2)
+ok   R4 replay of a cycle-1 RED file refused
+ok   R5 cycle 2 GREEN on the fingerprint that was GREEN in cycle 1 REFUSED (R5, §14.10 I1)
+ok   R6 cycle 2 with a new GREEN fingerprint and a fresh review ACCEPTED
+ok   R7 cycle 2 with a new GREEN, mutation and review but NO new RED REFUSED (the old RED does not count)
+ok   R7b control: adding the cycle-2 RED makes the chain ACCEPTED
+ok   R8 cycle 2 with a new RED, GREEN and review but NO new caught mutation REFUSED (the old mutation does not count)
+ok   R8b control: adding the cycle-2 mutation makes the chain ACCEPTED
+ok   R9 cycle 2 without a cycle-2 review REFUSED (the old GO review does not count)
+ok   R10.0 setup: cycle 1 closed
+ok   R10 cycle-2 GREEN rows that cite GREEN evidence recorded before the reopen REFUSED (evidence bound to the cycle)
+== L. legacy import: exemption, reopen clears it ==
+ok   L1 an import-time legacy closure is accepted without a chain (exemption, Queued -> terminal)
+ok   L2 the exemption view reports the id while it awaits re-verification
+ok   L3 the reopen turned the legacy row into an ordinary machine_evidence item
+ok   L4 and the exemption view no longer reports it
+ok   L5 a legacy item that was worked on (In testing) loses the exemption: the close is REFUSED
+== T-COVER. every trigger of the DDL under test has a behavioural assertion registered through tg() ==
+ok   T-COVER no trigger without a behavioural assertion
+RESULT pass=147 fail=0
+rc=0

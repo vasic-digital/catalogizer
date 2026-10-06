@@ -1,0 +1,40 @@
+# Reviewer survivors of WF2-REVIEW containers-gitignore (RM1, RM2, RM10, RM11, Pc, Pf, Gc) and the paired mutation that now kills each
+# generated: 2026-10-05T22:35:32Z  (taken from the GREEN run 3 mutation records and transcripts of this round)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED; the sha256 lines below fingerprint it)
+# sha256 02b2c3cd5c446fab66762aa38614d71e15a5c1fa02a376ebd9b4792441d474d8  scripts/containers/probe_host.sh
+# sha256 4c283a03047f0dab8c98789956be335a754a9182936cc9a56cacd44b191624bc  scripts/containers/disk_headroom.sh
+# sha256 2fabbd744bf63508bb5fb43854a4f9df4997e8d338d6583f263e3740c3542264  scripts/containers/tests/test_probe_host.sh
+# sha256 dee7a6e65a9a378e659c714dd7292fa71b1d3f4ba33928c5376694a3d558e459  scripts/containers/tests/test_disk_headroom.sh
+# sha256 fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 5c0faf057866be5885177b39075ce60a66ef666356c5cd258c7d0a9e49301e75  .gitignore
+# ---
+RM1  (timeout -k 2 dropped from bounded_out)            -> mutation bound-no-kill-after:
+mutation bound-no-kill-after: CAUGHT, 2 assertion(s) failed: FAIL: [mut-bound-no-kill-after] M2 TERM-ignoring df: refused disk_free_unreadable rc 1 (not rc 124 from the harness bound) (got '124/0' want '1/1');FAIL: [mut-bound-no-kill-after] M2 TERM-ignoring df
+RM2  (bounded_out keeps the output of a failed probe)   -> mutation bound-keeps-failed-output:
+mutation bound-keeps-failed-output: CAUGHT, 4 assertion(s) failed: FAIL: [mut-bound-keeps-failed-output] M2 df prints 5000 then exits 1: refused disk_free_unreadable rc 1 (output of a failed probe is not believed) (got '0/0' want '1/1');FAIL: [mut-bound-keeps-
+RM10 (grant run_id loses length>0)                      -> mutation grant-runid-nonempty-dropped:
+mutation grant-runid-nonempty-dropped: CAUGHT, 3 assertion(s) failed: FAIL: [mut-grant-runid-nonempty-dropped] I2 grant {"run_id":""}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written (got '0/0/yes' want '1/1/no');FAIL: [mut-grant-runid-
+RM10b (grant run_id loses type=="string")               -> mutation grant-runid-type-dropped:
+mutation grant-runid-type-dropped: CAUGHT, 1 assertion(s) failed: FAIL: [mut-grant-runid-type-dropped] I2 grant {"run_id":5}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written (got '0/0/yes' want '1/1/no');
+RM11 (op-id charset check removed)                      -> mutation opid-charset-dropped:
+mutation opid-charset-dropped: CAUGHT, 5 assertion(s) failed: FAIL: [mut-opid-charset-dropped] I2 op-id 'a/b': refused rc 2 reason usage (got '1/0' want '2/1');FAIL: [mut-opid-charset-dropped] I2 op-id '/../../../escaped_c': refused rc 2 reason usage (got '0/0
+     (new: leading-dot rule, explicit empty op-id)      -> mutations opid-leading-dot-dropped, opid-empty-defaulted:
+mutation opid-leading-dot-dropped: CAUGHT, 6 assertion(s) failed: FAIL: [mut-opid-leading-dot-dropped] I2 op-id '..': refused rc 2 reason usage (got '0/0' want '2/1');FAIL: [mut-opid-leading-dot-dropped] I2 op-id '.': refused rc 2 reason usage (got '0/0' want 
+mutation opid-empty-defaulted: CAUGHT, 2 assertion(s) failed: FAIL: [mut-opid-empty-defaulted] I2 refused op-ids: nothing named escaped_* written anywhere under the test tree (got '1' want '0');FAIL: [mut-opid-empty-defaulted] I2 explicit empty --op-id: refuse
+Pc   (missing cgroup root recorded as cgroup v1)        -> mutation cgroup-missing-root-as-v1:
+mutation cgroup-missing-root-as-v1: CAUGHT, 1 assertion(s) failed: FAIL: M3 missing cgroup root (no controllers file either): cgroup_version status error (got 'present' want 'error');
+Pf   (meminfo 15-digit cap removed)                     -> mutation meminfo-digit-cap-removed:
+mutation meminfo-digit-cap-removed: CAUGHT, 1 assertion(s) failed: FAIL: M3 MemTotal with 16 digits: status error (cap is 15 digits) (got 'present' want 'error');
+Gc   (!id_ecdsa.sample -> !/id_ecdsa.sample)            -> anchor sweep:
+PASS anchor mutation '!id_ecdsa.sample' -> '!/id_ecdsa.sample' caught (1 check(s) red)
+Gf   (.npmrc -> /.npmrc, already caught, now also by the sweep):
+PASS anchor mutation '.npmrc' -> '/.npmrc' caught (8 check(s) red)
+I1   (pre-exec child not stopped) -> mutations preexec-image-dropped, preexec-image-dropped-it, preexec-kill-dropped:
+mutation preexec-image-dropped: CAUGHT, 1 assertion(s) failed: FAIL: [mut-preexec-image-dropped] own-ness: preexec-own-image-child (got 'no' want 'yes');
+mutation preexec-image-dropped-it: CAUGHT, 4 assertion(s) failed: FAIL: [mut-preexec-image-dropped-it] I1 podman: the pre-exec child is gone (not orphaned) (got 'alive' want 'gone');FAIL: [mut-preexec-image-dropped-it] I1 podman: the delayed child never exec'd
+mutation preexec-kill-dropped: CAUGHT, 2 assertion(s) failed: FAIL: [mut-preexec-kill-dropped] I1 podman: the gate stops promptly after the signal (under 2500 ms; the TERM-wait path takes at least 3000 ms) (got 'no (5110 ms)' want 'yes');FAIL: [mut-preexec-kil
+M1   (TERM during the record write) -> mutations write-trap-dropped (disk, probe):
+specs/001-full-project-audit-remediation/evidence/wp09/probe-mutation-run3.txt:mutation write-trap-dropped: CAUGHT, 1 assertion(s) failed: FAIL: M1 TERM during the record write: no temp residue and no partial record in the evidence dir (got '1' want '0');
+specs/001-full-project-audit-remediation/evidence/wp09/disk-headroom-mutation-run3.txt:mutation write-trap-dropped: CAUGHT, 2 assertion(s) failed: FAIL: [mut-write-trap-dropped] M1 TERM during the record write: no temp residue in the record dir (got '1' want '
+M5   (dependency preflight) -> mutation preflight-dropped:
+mutation preflight-dropped: CAUGHT, 6 assertion(s) failed: FAIL: [mut-preflight-dropped] M5 'timeout' missing: refused rc 2 with reason=dependency_missing naming it (got '1/0' want '2/1');FAIL: [mut-preflight-dropped] M5 'timeout' missing: nothing written (got

@@ -1,0 +1,30 @@
+control ok
+caught  no_F1
+caught  no_F2
+caught  no_F3
+caught  allow_md_site
+caught  allow_wildcard
+caught  blind_ok
+caught  LM1_removal_reason_ignored
+caught  LM1b_removal_reason_any_length
+caught  LM2_trailing_dash_ledger_row_ok
+caught  LM3_extraction_drops_digits
+caught  I5a_non_code_site_accepted
+caught  I5a_comment_line_counts
+caught  I5a_own_inputs_allowed
+caught  I5a_site_outside_root_allowed
+caught  I5b_baseline_digits_concatenated
+caught  I5b_baseline_first_line_wins
+caught  I5b_baseline_non_integer_ok
+caught  I5c_prev_working_file_only
+caught  I5d_no_ratchet_down
+caught  I5e_hyphen_prose_not_stripped
+caught  I5f_any_nonempty_ref_is_tracked
+caught  I5f_pending_without_flag
+caught  I5f_pending_reported_as_plain_pass
+caught  I5_duplicate_ledger_name_ok
+caught  I5c_prev_source_not_reported
+caught  usage_missing_value_ignored
+mutants=26 caught=26 survived_or_error=0
+ALL MUTANTS CAUGHT
+# exit=0

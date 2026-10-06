@@ -1,0 +1,31 @@
+# sha256 scripts/governance/tests/test_no_atm_prefix.sh: 4a0cfb380c31ba46f86eebe0309900ee2b4f8dec2ea9a898d4d2935634436b8e
+# date 2026-10-05T20:09:02Z head a27d72a5
+ok   needle: ATM id, bare ATM, ATM_ID in specs/docs/tools
+ok   N1 whole repo scope: .helix/reporting.yaml and a root file are scanned
+ok   N3 binary file (SQLite-like, NUL byte) with a register id is a hit
+ok   binary file without an id-shaped run is not a hit (PNG-like bare ATM)
+ok   N4 a nested directory named submodules is scanned; only the top-level submodules/ is skipped
+ok   N6 path containing '|' and '&' and a space keeps its hit
+ok   not matched: ATMOSphere, lowercase atm_id, ATMs
+ok   E1 constitution files and E3 self are exempt
+ok   E2 only the feature-folder evidence dir is exempt: docs/evidence is scanned
+ok   E4 N2 a quoted fragment is exempt, a new ATM mention in the same file is a hit
+ok   E4 fragment plus a second ATM on the same line is a hit
+ok   E5 line marker with a known kind exempts; unknown kind is a violation
+ok   E5 balanced region exempts its lines
+ok   E5 unclosed region is a violation
+ok   E5 nested region is a violation
+ok   E5 END without BEGIN is a violation
+ok   E5 region over 150 lines is a violation
+ok   E5 captured-output line carrying CAT- is a violation (never printed by that run)
+ok   E6 the exact constitution gate token is exempt in the two ledger files (1 exempt line each)
+ok   E6 a second ATM literal in a ledger file is still a hit
+ok   E6 ATM-001 on the same line as the token is still a hit
+ok   E6 the token is not exempt in a third file
+ok   unreadable regular file is a failure, not a silent skip
+ok   a root that is not a git work tree is refused as blind
+ok   no ATM id in scope of /home/milosvasic/Projects/catalogizer
+ok   exemption inventory matches: 9 file(s), 49 exempt line(s)
+ok   docs/04 section 14: all 8 captured transcript anchors are byte-true and marked captured-output
+failures=0
+rc=0

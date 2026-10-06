@@ -1,0 +1,13 @@
+# identity: task=WF5-1 utc=2026-10-06T09:04:25Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sqlite3=3.50.6 2025-09-22 gate_sha256=0379d1402a0febfde9003479292f6d2ad8529a7ca8690aac18851705515cfddd test_gate_sha256=2ca3b39c65ca3458f1f6b6cdcdd10b5de42da1f37572726e0eccd79da9983c4c mutate_gate_sha256=cafcc6bc32801d3d69cd1796dd20773cc86186e5635fdcb97e95faa3d7907d56
+# RED: new fixtures B40.*/B42 against the pre-fix gate.sh (filter name NOT GLOB 'sqlite_*'): 9 FAIL of 105, captured before the fix. Fixtures sqlite_stat1/2/3 trigger/view/index added after this capture (B40.9-11 in the final numbering).
+FAIL B40.1 an added trigger named sqlite_swallow (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] w
+FAIL B40.4 an added view named sqlite_hidden_v (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wan
+FAIL B40.6 an added index named sqlite_hidden_i (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wa
+FAIL B40.8 an added table named sqlite_hidden_t (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wa
+FAIL B40.10 an added table named sqlite_sequence_x (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK]
+FAIL B40.11 an added table named sqlite_stat9 (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] want
+FAIL B40.12 an added table named sqlite_autoindex_fake (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE
+FAIL B40.13 an added index named sqlite_autoindex_fake_1 (reserved-prefix name, writable_schema) fails, not hidden :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GA
+FAIL B42 a forged sqlite_stat1 (definition differs from SQLite's own) fails :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL unexpected schema o
+RESULT pass=96 fail=9

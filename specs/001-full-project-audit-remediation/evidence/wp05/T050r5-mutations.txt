@@ -1,0 +1,218 @@
+# T050 round 5 paired mutations (run_mutations.py): every mutant must be CAUGHT by a check that names its cause
+# generated_utc=2026-10-06T10:44:11Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 5afe608b62b8754bff61baa3e1bac72cb7140666beda73fd7451e4551022af80  tools/evidence/evcore.py
+# sha256 d0282abb4d6b0570e458a38a228e464d9e7b996997a979a99eee45f50742694c  tools/evidence/tests/hermetic.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 38507697bac4c980129c8b1ae19f2cf2943b07e982ea9dcd13b2728893ae00e4  tools/evidence/tests/run_mutations.py
+# sha256 68bc306f7b09d4aeba86d62996c39556957d12e05914349d91fceca201898104  tools/evidence/tests/test_evrec.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 2a25ea8886cbe2fed15d76bd06ae8d2a9791fda21ed5a2433682874fc6fa5e7f  tools/evidence/tests/test_evrec_r4.sh
+# sha256 6f359e57c2ada71ba6c1c1278a1d0d5e32a1c404df0319a2e786837cba6f0497  tools/evidence/tests/test_evrec_r5.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 fb38d5f8d19939398e8cd30283adbe00b2b35e47186535edd09a7c4f723c68cd  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+V1-skip-prev-link-check            CAUGHT                     verify: wrong prev_hash with a valid own hash (link only) exits 1
+V2-skip-entry-hash-check           CAUGHT                     verify: edited content (stale entry_hash) exits 1 (rc=0 want 1); rerecord accepted a tampered side (rc=0); I5: construction 'noprefix' differs from docs/06 s7: refused as a
+V3-skip-seq-contiguity             CAUGHT                     verify: consistent chain with non-contiguous seq exits 1 (rc=0 wa
+V4-verify-never-walks              CAUGHT                     verify: delete w/o repair exit 0 (want 1); rerecord mutation (kept local seq) rejected by verify (rc=0); verify: edited content (stale entry_hash) exits 1 (rc=0 want 1)
+V5-verify-always-fails             CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; concurrent appenders: chain still verifies
+V6-empty-ledger-passes             CAUGHT                     verify: empty ledger is unverifiable, exit 3 (rc=1 want 3)
+V7-unreadable-ledger-passes        CAUGHT                     verify: absent ledger is unverifiable, exit 3 (rc=1 want 3)
+V8-torn-line-accepted              CAUGHT                     verify: torn final line exits 1 (rc=0 want 1)
+V9-anchor-note-dropped             CAUGHT                     verify silent about the missing anchor check
+R1-duration-zero                   CAUGHT                     duration self-test out of range (0 ms)
+R2-argv-joined-string              CAUGHT                     verify: original 4-entry ledger exits 0; verify: delete w/o repair exit 3 (want 1); verify: original restored exits 0
+R3-no-schema-validation-at-all     CAUGHT                     RED without oracle accepted (rc=0); I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_i; I11: RED without oracle (schema refusal) before the run (rc=0 wan
+R4-check-record-accepts-all        CAUGHT                     check-record refuses record missing started_at (rc=0); check-record refuses record missing cwd (rc=0); check-record refuses record missing argv (rc=0)
+R5-no-ledger-lock                  CAUGHT                     concurrent appenders: seqs=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock
+R6-reap-live-holder                CAUGHT                     live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock; I1: live holder with unreadable /proc cmdline is not reaped (lock
+R7-never-reap                      CAUGHT                     stale ledger lock with dead holder is reaped, append succeeds; I1: live pid with a different recorded cmdline (pid reuse) is rea; stale: live pid with a different recorded cmdline (pid reuse) IS 
+R8-write-in-place-not-temp-rename  CAUGHT                     ledger changed by a killed write
+R9-no-redaction                    CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R10-redacted-flag-dropped          CAUGHT                     I7: stream-only redacted flags: [null,null]; N2: JSON login body {"username":..,"password":..} on stdout (secr; N2: JSON token {"access_token":"<jwt>"} on stdout (secret survive
+R11-argv-not-redacted              CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R12-reconcile-always-ok            CAUGHT                     reconcile: runner count 4 != 3 entries refused (rc=0); reconcile: runner count mismatch names count_mismatch (rc=0 want ; N4: reconcile --run run4 --runner-count 5 is a mismatch (the fore
+R13-never-raise-owed               CAUGHT                     verify silent above 75% of bound; X11: flake ledger not measured: verify: ledger=/tmp/tmp.jgNbGtHXX
+R14-always-raise-owed              CAUGHT                     verify names ledger_raise_owed below 75%
+R15-exit-status-unmapped           CAUGHT                     exit-status mapping got [0:pass 3:fail ]; X7: 126 mapping: 
+R16-signal-not-128-plus            CAUGHT                     exit-status mapping got [0:pass 3:fail 127:error 1:fail ]
+R17-test-fingerprint-dropped       CAUGHT                     valid RED entry not recorded; target_fingerprint is not the target's sha256; I9: test_fingerprints 
+R18-target-fp-invented             CAUGHT                     unresolvable RED target accepted (rc=0); I8: BASELINE on an unresolvable target is refused (target_unreada; I8: BASELINE wrote an entry
+R19-target-fp-not-file-bytes       CAUGHT                     target_fingerprint is not the target's sha256
+R20-append-onto-corrupt-tail       CAUGHT                     append extended a corrupt ledger (rc=0); X6: a self-consistent last entry with seq 7 on line 1 refuses the
+R21-stream-digest-no-blob          CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; concurrent appenders: chain still verifies
+R22-usage-accepted                 CAUGHT                     evrec with an unknown subcommand exits 64 (rc=0 want 64); usage: unknown subcommand names usage_error (rc=0 want 64, reason
+RR1-keep-local-seq                 CAUGHT                     rerecord: seq values wrong; rerecord: output accepted by verify; I6: seq map content: [{"digest":"b9bc6f4c0abc08115e846bf5bfb7e9f7
+RR2-drop-remote-prefix-bytes       CAUGHT                     rerecord: remote prefix differs; rerecord: seq values wrong; rerecord: output accepted by verify
+RR3-no-common-prefix-check         CAUGHT                     rerecord refuses sides without a common prefix (rc=0); X13: rerecord of sides with no common prefix names no_common_pref
+RR4-no-side-verify                 CAUGHT                     rerecord accepted a tampered side (rc=0); rerecord of a side verify rejects names side_unverifiable (rc=68 
+RR5-seqmap-not-written             CAUGHT                     rerecord: no seq map; I6: seq map content: ; I6: diverged seq map  want [{"digest":"6cacc1683a5a15719f3e10e58c
+RR6-append-only-drops-local        CAUGHT                     append-only rerecord; N1: output content wrong
+RR7-local-fields-rewritten         CAUGHT                     rerecord: local fields changed
+RM1-remap-noop                     CAUGHT                     remap-refs result: see ledger#4 and ledger#5; m2: symlink replaced or target not updated
+RM2-remap-accepts-uncovered        CAUGHT                     remap-refs refuses a reference the map does not cover (rc=0); X14: remap-refs with an uncovered reference names map_incomplete ; X14: file changed on refusal
+RM3-remap-sequential-bug           CAUGHT                     remap-refs result: see ledger#4 and ledger#5; m2: symlink replaced or target not updated
+C1-no-commit-turn-check            CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C2-unreadable-grant-ignored        CAUGHT                     mode 000 grant not refused; non-JSON grant not refused; W3-8: grant body {} is a malformed grant: commit_turn_held (rc=0 
+C3-matching-run-id-refused         CAUGHT                     matching run id: append succeeds, stub never called; stub called for matching run id; F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) stil
+C4-matching-run-id-calls-reaper    CAUGHT                     stub called for matching run id
+C5-reaper-never-called             CAUGHT                     dead-holder grant reaped, append then succeeds; --reap call count: 0; no --exec-approved entry in host log
+C6-reap-direct-not-exec-approved   CAUGHT                     no --exec-approved entry in host log
+C7-reap-by-grant-age               CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C8-host-refusal-crash-allowed      CAUGHT                     C8: the command ran under a held grant
+C9-blobs-written-before-check      CAUGHT                     stores changed under a held grant; dead-holder grant reaped, append then succeeds; --reap call count: 0
+C10-reaper-called-repeatedly       CAUGHT                     no run id: Traceback (most recent call last):; different run id not refused; live old grant not refused
+RV-X1-hash-skips-exit_status-and-verdict CAUGHT                     I4: re-chained entry without argv is refused by verify (schema_in; I4: re-chained entry with exit_status 0 and verdict fail is refus; I4: EV_SCHEMA={} does not weaken verify (rc=1 want 1, reason=sche
+RV-X2-hash-drops-prev_hash-prefix  CAUGHT                     I4: re-chained entry without argv is refused by verify (schema_in; I4: re-chained entry with exit_status 0 and verdict fail is refus; I4: EV_SCHEMA={} does not weaken verify (rc=1 want 1, reason=sche
+RV-X3-canon-ensure_ascii-true      CAUGHT                     I5: golden-good: a ledger hashed independently with jq|sha256sum ; I5: construction 'ascii' differs from docs/06 s7: refused as a ba; I5: 'ascii' not named as bad hash
+RV-X4-no-in-lock-grant-recheck     CAUGHT                     I2: in-lock check: rc=0 recorded seq=1 item=CAT-001 pol=PROBE it=; I2: stores written after the in-lock refusal
+RV-X5-release-deletes-foreign-lock CAUGHT                     lock.release does not delete a lock that another pid now holds (X
+RV-X6-append-skips-seq-count-check CAUGHT                     X6: a self-consistent last entry with seq 7 on line 1 refuses the
+RV-X7-verdict-126-as-fail          CAUGHT                     X7: 126 mapping: 
+RV-X8-dir-fingerprint-ignores-content CAUGHT                     X8: dir fingerprint 9fd2bb5e5f5d1b1bc3dd7748b9a7a9d4bf9fc9e71717a; X8: directory fingerprint ignores content
+RV-X9-unreadable-holder-reaped     CAUGHT                     I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never; I1: lock file removed for {"pid":"x","cmdline":"y"}; I1: unreadable holder identity {"pid":1,"cmdline":"init"} is neve
+RV-X10-pid-reuse-not-detected      CAUGHT                     I1: live pid with a different recorded cmdline (pid reuse) is rea; stale: live pid with a different recorded cmdline (pid reuse) IS ; W3-1: a holder that answers EPERM whose live cmdline differs (pid
+RV-X11-flake-ledger-not-measured   CAUGHT                     X11: flake ledger not measured: verify: ledger=/tmp/tmp.qSeU5GytN
+RV-X12-verify-ignores-schema-key   CAUGHT                     X12: a re-chained entry without the schema key is an undecodable 
+RV-X13-no-common-prefix-crashes    CAUGHT                     X13: rerecord of sides with no common prefix names no_common_pref
+RV-X14-map-incomplete-crashes      CAUGHT                     X14: remap-refs with an uncovered reference names map_incomplete 
+RV-X15-lock-held-crashes           CAUGHT                     I1: live holder with unreadable /proc cmdline is not reaped (lock; I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never; I1: unreadable holder identity {"pid":1,"cmdline":"init"} is neve
+RV-X16-check-record-refusal-crashes CAUGHT                     minor5: check-record asserts the date-time format (record_invalid; X16: check-record refusal is the named record_invalid (rc=1 want ; W3-5: check-record refuses started_at 2026-02-30T00:00:00Z (rc=1 
+RV-X17-seqmap-old-equals-new       CAUGHT                     I6: diverged seq map [{"digest":"d2d7dacaab649ef0d788700f91017525
+RV-X18-rerecord-skips-schema-check CAUGHT                     X18: a re-chained record that ev/1 refuses stops rerecord (record
+RV-X19-check-record-refuses-everything CAUGHT                     X19: check-record valid: rc=65 evrec: refused reason=record_inval; W3-5: a real date (2026-02-28T23:59:59Z) is accepted (rc=65 want 
+RV-X20-pre-release-flag-dropped    CAUGHT                     I11: --pre-release without --test-state-go (schema) before the ru; I11: --pre-release without --test-state-go (schema) before the ru; X20: optional fields: 
+RV-X21-unset-runid-counts-as-holder CAUGHT                     no run id: rc=0; stores changed under a held grant; --reap call count: 0
+N-I1-unreadable-cmdline-reaped (the round-2 behaviour) CAUGHT                     I1: live holder with unreadable /proc cmdline is not reaped (lock; I1: ledger written; stale: live pid whose /proc cmdline is unreadable is NOT stale (n
+N-I2a-no-post-command-check        CAUGHT                     I2: post-command check: rc=76 evrec: refused reason=commit_turn_h
+N-I2b-blobs-stored-before-the-in-lock-check CAUGHT                     I2: stores written after the in-lock refusal
+N-I2c-stall-hook-never-fires       CAUGHT                     I2: stall point never reached; I2: in-lock check: rc=0 recorded seq=1 item=CAT-001 pol=PROBE it=; I2: stores written after the in-lock refusal
+N-I3a-verify-ignores-unknown-args  CAUGHT                     I3: verify with a positional file is refused (usage_error) (rc=0 ; I3: verify --bogus is refused (usage_error) (rc=0 want 64, reason; I3: verify --ledger without a value is refused (usage_error) (rc=
+N-I3b-verify-does-not-name-the-file CAUGHT                     I3: --ledger tampered rc=1 verify: reason=chain_failure; I3: default ledger not named
+N-I3c-ledger-option-ignored        CAUGHT                     I3: --ledger tampered rc=0 verify: ledger=/tmp/tmp.F2iNHuTr9k/w/l; W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch ; m1: verify --ledger with anchors.jsonl beside the ledger is UNVER
+N-I4a-blobs-never-checked          CAUGHT                     I4: forged stdout blob: refused (blob_mismatch, exit 1) (rc=0 wan; I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK; W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismat
+N-I4b-blob-hash-never-compared     CAUGHT                     I4: forged stdout blob: refused (blob_mismatch, exit 1) (rc=0 wan; W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismat; W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch 
+N-I4c-missing-blob-passes          CAUGHT                     I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK
+N-I4d-schema-never-checked-in-verify CAUGHT                     I4: re-chained entry without argv is refused by verify (schema_in; I4: re-chained entry with exit_status 0 and verdict fail is refus; I4: EV_SCHEMA={} does not weaken verify (rc=0 want 1, reason=sche
+N-I4e-producer-chooses-the-schema  CAUGHT                     I4: EV_SCHEMA={} does not weaken verify (rc=0 want 1, reason=sche; I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_i
+N-I4f-canonical-form-not-required  CAUGHT                     I4: a hash-valid line that is not byte-canonical (spaced separato
+N-I4g-anchor-present-is-ok         CAUGHT                     I4: anchor present and not compared: UNVERIFIED exit 3 (rc=0 want; m1: verify --ledger with anchors.jsonl beside the ledger is UNVER; F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is U
+N-I4h-bad-bound-crashes            CAUGHT                     I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceba; I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before t
+N-I4i-assert-style-checks-under-optimize CAUGHT                     I4: re-chained entry without argv is refused by verify (schema_in; I4: re-chained entry with exit_status 0 and verdict fail is refus; I4: EV_SCHEMA={} does not weaken verify (rc=1 want 1, reason=sche
+N-I5-unicode-escape-in-line-check  CAUGHT                     I5: golden-good: a ledger hashed independently with jq|sha256sum ; I5: exit_status flip not detected as bad hash; X18: a re-chained record that ev/1 refuses stops rerecord (record
+N-I6a-run-lists-no-owed-relocation CAUGHT                     I6: no owed_relocation for a 2000 byte blob: recorded seq=1 item=; I6: default bound is not 1024000: recorded seq=1 item=CAT-001 pol
+N-I6b-verify-lists-no-owed-relocation CAUGHT                     I6: verify lists no owed_relocation
+N-I6c-bound-ignored                CAUGHT                     I6: no owed_relocation for a 2000 byte blob: recorded seq=1 item=; I6: verify lists no owed_relocation; I6: default bound is not 1024000: recorded seq=1 item=CAT-001 pol
+N-I6d-empty-bound-env-is-not-unset CAUGHT                     I6: default bound is not 1024000: evrec: refused reason=usage_err
+N-I6e-rerecord-out-guard-removed   CAUGHT                     I6: rerecord --out <shared ledger dir> is refused (out_is_shared_; I6: rerecord --out <shared dir> --name <other file> is refused to; I6: other.jsonl written into the shared directory
+N-I6f-out-guard-only-checks-files  CAUGHT                     I6: rerecord --out <shared dir> --name <other file> is refused to; I6: other.jsonl written into the shared directory; N1: --out <subdirectory of the evidence dir> is refused (any dept
+N-I6g-out-guard-only-checks-the-directory CAUGHT                     I6: rerecord --out writing over one of its own input files is ref
+N-I6h-rerecord-takes-no-lock       CAUGHT                     I6: rerecord takes the lock of the output ledger (a live holder: ; F7: an unwritable --out is a named refusal (out_unwritable), not 
+N-I7a-overlapping-spans-not-merged CAUGHT                     I7: prefix-overlapping secrets leaked (longer value's suffix visi; N2: password value containing a space inside JSON quotes (secret ; redaction: a secret that is a prefix of another (any value order)
+N-I7b-default-patterns-off         CAUGHT                     I7: Bearer token stored verbatim with EVREC_REDACT_VARS unset; I7: redacted flag missing; I7: AWS key id, password= value or URL userinfo password stored
+N-I7c-target-ref-not-redacted      CAUGHT                     I7: target_ref secret in the ledger: {"argv":["true"],"cwd":"/tmp
+N-I7d-cwd-not-redacted             CAUGHT                     I7: cwd secret stored: "/tmp/tmp.m0XokfSIVa/token=Cwd123secretXYZ
+N-I7e-streams-without-patterns     CAUGHT                     I7: Bearer token stored verbatim with EVREC_REDACT_VARS unset; I7: AWS key id, password= value or URL userinfo password stored; I7: GitHub token stored
+N-I7f-named-values-not-redacted-in-streams CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+N-I7g-pattern-bearer-never-matches CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; ledger entry count != 4
+N-I7g-pattern-aws-never-matches    CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored
+N-I7g-pattern-github-never-matches CAUGHT                     I7: GitHub token stored
+N-I7g-pattern-url_userinfo-never-matches CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: target_ref secret in the ledger: {"argv":["true"],"cwd":"/tmp; redaction: default pattern url userinfo hit b'https://u:pw1234567
+N-I7g-pattern-pem-never-matches    CAUGHT                     I7: private key body stored; redaction: default pattern pem hit b'-----BEGIN PRIVATE KEY-----\
+N-I7h-kv-pattern-never-matches     CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: cwd secret stored: "/tmp/tmp.eDkvKVLoKp/token=Cwd123secretXYZ; N2: x-api-key header (secret survived or redacted flag missing: X
+N-I8a-unresolved-fingerprint-allowed-in-verify CAUGHT                     I8: a BASELINE entry with the unresolved-fingerprint sentinel is 
+N-I8b-baseline-with-unresolved-target-accepted CAUGHT                     I8: BASELINE on an unresolvable target is refused (target_unreada; I8: BASELINE wrote an entry; I8: PREFLIGHT on an unresolvable target is refused (target_unread
+N-I8c-sentinel-is-a-hash-of-the-ref CAUGHT                     I8: a BASELINE entry with the unresolved-fingerprint sentinel is ; I8: unresolved PROBE fingerprint is 9c46426f9a44d0440a0f3f537cfc0
+N-I9a-interpreter-rule-off         CAUGHT                     I9: RED with bash -c and no declared test source is refused (inte; I9: GREEN with bash -c and no declared test source is refused (in; I9: MUTATION with bash -c and no declared test source is refused 
+N-I9b-bash-not-an-interpreter      CAUGHT                     I9: RED with bash -c and no declared test source is refused (inte; I9: GREEN with bash -c and no declared test source is refused (in; I9: MUTATION with bash -c and no declared test source is refused 
+N-I9c-env-sources-not-counted      CAUGHT                     I9: EV_TEST_SOURCES counts as a declaration (rc=69 want 0)
+N-I9d-rule-also-hits-probe         CAUGHT                     no blob stored (cannot judge redaction); entry lacks redacted: true; exit-status mapping got [0:pass 127:error ]
+N-I10a-independence-asserted-by-the-recorder CAUGHT                     I10: --oracle without --oracle-independent is refused (oracle_ind; I10: command ran or entry written; I10: oracle {"independent_of_sut":true,"strategy":"specified"}
+N-I10b-independent-without-oracle-ok CAUGHT                     I10: --oracle-independent without --oracle is refused (usage_erro; I10: oracle null
+N-I11a-no-pre-run-validation       CAUGHT                     I11: RED without oracle (schema refusal) before the run: marker=y; I11: --pre-release without --test-state-go (schema) before the ru; I11: command ran without a schema
+N-I11b-bad-mutation-json-crashes   CAUGHT                     I11: invalid --mutation-json before the run (rc=1 want 64, reason
+N-I11c-encoding-not-checked        CAUGHT                     I11: non-UTF-8 argv byte before the run (rc=1 want 64, reason=usa; I11: non-UTF-8 argv byte before the run: marker=yes ledger=no; I11: non-UTF-8 cwd is refused before the run (usage_error) (rc=1 
+N-I11d-test-source-not-checked     CAUGHT                     I11: missing --test-source file before the run (rc=1 want 64, rea
+N-I11e-unknown-flag-is-positional  CAUGHT                     I11: a flag standing where REF belongs is refused, not taken as t; I11: a flag standing where REF belongs is refused, not taken as t
+N-I11f-blobs-stored-before-validation CAUGHT                     I2: stores written after the in-lock refusal; I11: orphan blobs after a post-run refusal
+N-I11g-wrong-exit-for-oracle       CAUGHT                     I10: --oracle without --oracle-independent is refused (oracle_ind
+N-I7i-stderr-hit-does-not-set-redacted CAUGHT                     I7: stream-only redacted flags: [true,null]
+N-m5-date-format-not-checked       CAUGHT                     minor5: check-record asserts the date-time format (record_invalid; W3-5: check-record refuses started_at 2026-02-30T00:00:00Z (rc=0 ; W3-5: check-record refuses started_at 2026-13-01T00:00:00Z (rc=0 
+N-m10-blob-bound-not-validated-before-the-run CAUGHT                     I6: command ran under a bad EV_BLOB_BOUND
+H-I12a-repo-root-not-set           CAUGHT                     hermetic: test_evrec.sh rc=1: FAIL verify: original 4-entry ledge; hermetic: test_evrec_more.sh rc=1: FAIL verify: pristine 4-entry ; hermetic: test_evrec_r3.sh rc=1: FAIL I1: live holder with unread
+H-I12b-test-sources-env-not-unset  CAUGHT                     hermetic: test_evrec.sh rc=1: FAIL verify: original 4-entry ledge; hermetic: test_evrec_more.sh rc=1: FAIL verify: pristine 4-entry ; hermetic: test_evrec_r3.sh rc=1: FAIL I1: live holder with unread
+H-I12c-lock-timeout-env-not-unset  CAUGHT                     hermetic: test_evrec.sh rc=1: FAIL verify: original 4-entry ledge; hermetic: test_evrec_more.sh rc=1: FAIL verify: pristine 4-entry ; hermetic: test_evrec_r3.sh rc=1: FAIL I1: entries= duplicate seq 
+H-I12d-blob-bound-env-not-unset    CAUGHT                     hermetic: test_evrec_r3.sh rc=1: FAIL I6: a small blob is listed 
+H-I12e-proc-root-env-not-unset     CAUGHT                     hermetic: test_evrec_r3.sh rc=1: FAIL I1: live pid with a differe
+H-I12f-cwd-not-isolated            CAUGHT                     hermetic: test_evrec_r3.sh rc=1: FAIL I8: a BASELINE entry with t
+W3-1-eperm-holder-reaped           CAUGHT                     W3-1: a holder that answers EPERM (alive, other uid) with its rec; W3-1: a holder that answers EPERM and whose cmdline cannot be rea
+W3-2-missing-before-mismatched     CAUGHT                     W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismat
+W3-3-python-not-an-interpreter     CAUGHT                     N3: RED python3 -c without a declared test source is refused (rc=; N3: RED python3.12-style versioned interpreter without a source i; F3: RED through a renamed symlink to python3 with -c is refused (
+W3-4-env-not-an-interpreter        CAUGHT                     N3: RED env bash -c without a declared test source is refused (rc
+W3-5-impossible-date-accepted      CAUGHT                     W3-5: check-record refuses started_at 2026-02-30T00:00:00Z (rc=0 ; W3-5: check-record refuses started_at 2026-13-01T00:00:00Z (rc=0 ; W3-5: check-record refuses started_at 2026-04-31T10:00:00Z (rc=0 
+W3-6-lock-records-empty-cmdline    CAUGHT                     W3-6: the lock records the holder's real, non-empty cmdline (the ; W3-6: a lock taken while /proc was unreadable records NO cmdline 
+W3-7-explicit-ledger-skips-blobs   CAUGHT                     W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch ; W3-7: verify --ledger --blobs DIR with a forged blob is FAIL 1 to
+W3-8-malformed-grant-is-no-grant   CAUGHT                     W3-8: grant body {} is a malformed grant: commit_turn_held (rc=0 ; W3-8: ledger written under {}; W3-8: grant body {"run_id":7} is a malformed grant: commit_turn_h
+W3-9-in-lock-check-reaps           CAUGHT                     I2: reaper called; hermetic: 1 call(s) reached the host entry
+W3-10-name-guard-removed           CAUGHT                     N1: --name ../flake_ledger.jsonl (escape from --out) is refused (; N1: --name <absolute path of a shared file> is refused (rc=0 want; N1: --name 'a/b' is not a plain token and is refused (rc=0 want 6
+N1-name-guard-allows-separator     CAUGHT                     N1: --name 'a/b' is not a plain token and is refused (rc=0 want 6; N1: --name 'x/../y' is not a plain token and is refused (rc=0 wan
+N1-name-guard-allows-reserved      CAUGHT                     N1: --name 'ledger-seq-map.json' is not a plain token and is refu
+N1-blob-store-not-shared           CAUGHT                     N1: --out inside a relocated blob store (EV_BLOBS elsewhere) is r
+N1-ev-dir-not-shared               CAUGHT                     N1: --out inside the evidence dir is refused even when the ledger
+N1-inside-only-equal               CAUGHT                     N1: --out <subdirectory of the evidence dir> is refused (any dept; N1: --out <subdirectory of the blob store> is refused (rc=0 want ; N1: --out through a symlink into the evidence dir is refused (rc=
+N2-no-json-secret                  CAUGHT                     N2: password value containing a space inside JSON quotes (secret ; redaction r4: json value with a space is redacted with no fragmen
+N2-no-flag-pair-pattern            CAUGHT                     N2: stream text '--password VALUE' pair (secret survived or redac; F1: NOT redacted: flag pair after dashes; F1: NOT redacted: flag pair prefix flag
+N2-no-authorization-pattern        CAUGHT                     N2: Authorization: Basic <base64> header (secret survived or reda; N2: Authorization with a lower-case header and an unknown scheme ; redaction r4: basic is redacted with no fragment left b'Authoriza
+N2-no-cookie-pattern               CAUGHT                     N2: Cookie header value (secret survived or redacted flag missing; N2: Set-Cookie header value (secret survived or redacted flag mis; redaction r4: cookie is redacted with no fragment left b'Cookie: 
+N2-no-jwt-pattern                  CAUGHT                     N2: a bare three-part JWT in prose (secret survived or redacted f; redaction r4: jwt is redacted with no fragment left b'x eyJhbGciO
+N2-argv-pair-not-redacted          CAUGHT                     N2: argv pair: ["bash","-c",":","--password","Pw0rdSpaced9"]; N2: argv credential flags leaked: ["bash","-c",":","--token","Pw0; redact_argv: the value after a credential flag is redacted and th
+N2-argv-flag-regex-too-narrow      CAUGHT                     N2: argv credential flags leaked: ["bash","-c",":","--token","Pw0; redact_argv: the value after a credential flag is redacted and th
+N2-redact-everything               CAUGHT                     argv not verbatim; I6: no owed_relocation for a 2000 byte blob: recorded seq=1 item=; I6: verify lists no owed_relocation
+N3-launcher-run_pinned-not-listed  CAUGHT                     N3: RED through the project runner run_pinned.sh without a declar; N3: GREEN through run_pinned.sh without a declared test source is; N3: MUTATION through run_pinned.sh without a declared test source
+N3-launcher-kcov-not-listed        CAUGHT                     N3: RED through launcher 'kcov' without a declared test source is
+N3-launcher-podman-docker-ssh-not-listed CAUGHT                     N3: RED through launcher 'podman' without a declared test source ; N3: RED through launcher 'docker' without a declared test source ; N3: RED through launcher 'ssh' without a declared test source is 
+N3-operands-not-hashed             CAUGHT                     N3: unlisted-launcher fingerprint 0fab9f7fbf683c97d2762de33b99b71; N3: unlisted launcher gives 1 distinct fingerprint(s) over differ; F3: --opt=FILE launcher gives 1 distinct fingerprint(s)
+N3-operands-always-hashed          CAUGHT                     N3: test_fingerprint of an interpreter with a declared source is 
+N4-token-ignored-by-run            CAUGHT                     N4: reconcile --run run4 --runner-count 4 passes (its own 4 store; N4: the token may come from EVREC_RUN_TOKEN (rc=1 want 0); N4: unscoped reconcile on a ledger that holds tokened entries is 
+N4-run-index-not-written           CAUGHT                     N4: reconcile --run run4 --runner-count 4 passes (its own 4 store; N4: the token may come from EVREC_RUN_TOKEN (rc=1 want 0); N4: unscoped reconcile on a ledger that holds tokened entries is 
+N4-run-index-hash-not-compared     CAUGHT                     N4: a run-index row whose entry_hash does not match the ledger en
+N4-run-index-run-not-compared      CAUGHT                     N4: another run's token sees 0 entries of run4 (rc=0 want 1, reas
+N4-unscoped-on-tokened-allowed     CAUGHT                     N4: unscoped reconcile on a ledger that holds tokened entries is 
+N4-token-not-validated             CAUGHT                     N4: a token that is not a plain token is refused (rc=1 want 64, r; N4: EVREC_RUN_TOKEN that is not a plain token refuses the run bef
+N4-env-token-ignored-by-reconcile  CAUGHT                     N4: reconcile --run run4 --runner-count 4 passes (its own 4 store; N4: the token may come from EVREC_RUN_TOKEN (rc=1 want 0); N4: unscoped reconcile on a ledger that holds tokened entries is 
+N4-reconcile-accepts-unknown-option CAUGHT                     N4: reconcile with an unknown option is refused (rc=1 want 64, re
+m1-ledger-anchor-from-default      CAUGHT                     m1: verify --ledger with anchors.jsonl beside the ledger is UNVER
+m2-remap-drops-mode                CAUGHT                     m2: mode is 664
+m2-remap-replaces-symlink          CAUGHT                     m2: symlink replaced or target not updated
+m4-deleted-cwd-traceback           CAUGHT                     m4: rc=1 Traceback (most recent call last):   File "/tmp/mut-gnid
+m4-schema-unavailable-is-67        CAUGHT                     m4: verify without a readable schema exits 3 (UNVERIFIED), not 67
+N5-unreadable-marker-never-reaped-even-dead CAUGHT                     I1: entries=17 duplicate seq values=0 (want 18, 0); W3-6: and a reader with a readable /proc does not reap that live 
+N5-unreadable-marker-ignored       CAUGHT                     W3-6: but a holder with an unreadable-identity marker whose pid i
+N5-portable-schema-off             CAUGHT                     portable_schema: the relative $id 'ev/1' becomes an absolute URN 
+F1-kv-pattern-quadratic            CAUGHT                     F1: redact_bytes on a run of 100000 dashes did not finish in 15 s; F1: redact_bytes on a run of 100000 x "a-" did not finish in 15 s; F1: redact_bytes on a run of 100000 x "_." did not finish in 15 s
+F1-flag-pair-quadratic             CAUGHT                     F1: redact_bytes on a run of 100000 dashes did not finish in 15 s; F1: redact_bytes on -token repeated to 100000 bytes did not finis; F1: redact_bytes on a long run of dashes then a flag name did not
+F1-json-tail-quadratic             CAUGHT                     F1: redact_bytes on 'token' repeated to 100000 bytes did not fini; F1: redact_bytes on 'password' repeated to 100000 bytes did not f; F1: redact_bytes on a double quote then 'token' repeated did not 
+F1-argv-flag-quadratic             CAUGHT                     F1: redact_argv did not finish in 15 s (rc=124)
+F1-kv-pattern-dropped              CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: cwd secret stored: "/tmp/tmp.dTlnhlzhkZ/token=Cwd123secretXYZ; N2: x-api-key header (secret survived or redacted flag missing: X
+F2-empty-run-id-is-a-holder        CAUGHT                     F2: empty grant run_id + empty env gave rc=0: recorded seq=1 item; F2: ledger written under the empty run_id grant; F2: a whitespace-only run_id is refused (rc=0 want 76, reason=com
+F2-whitespace-run-id-accepted      CAUGHT                     F2: a whitespace-only run_id is refused (rc=0 want 76, reason=com
+F3-opt-equals-value-not-hashed     CAUGHT                     F3: --opt=FILE launcher gives 1 distinct fingerprint(s); F3: --opt=FILE fingerprint 498ac28f1c1c8c61c4908e3be6b936a119abcf
+F3-directory-operand-not-hashed    CAUGHT                     F3: directory operand gives 1 distinct fingerprint(s); F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED
+F3-realpath-of-argv0-ignored       CAUGHT                     F3: RED through a renamed symlink to bash with -c is refused (int; F3: RED through a renamed symlink to python3 with -c is refused (; F3: the same through PATH lookup of a renamed symlink is refused 
+F3-oversized-directory-silently-skipped CAUGHT                     F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED
+F3-dir-digest-ignores-content      CAUGHT                     F3: directory operand gives 1 distinct fingerprint(s)
+F5-ev-ledger-ignores-anchor-beside CAUGHT                     F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is U
+F5-explicit-anchor-ignored         CAUGHT                     I4: anchor present and not compared: UNVERIFIED exit 3 (rc=0 want; F5: an explicit EV_ANCHOR still wins over the file beside the led
+F6-duplicate-index-row-counted-twice CAUGHT                     F6: with that run-index row duplicated, --runner-count 2 is a cou; F6: with that run-index row duplicated, --runner-count 1 still pa; F6: run-index rows whose seq is not an integer are ignored, not a
+F6-seq-not-an-int-crashes          CAUGHT                     F6: run-index rows whose seq is not an integer are ignored, not a
+F7-existing-directory-not-refused  CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; ledger entry count != 4
+F7-tmp-left-after-failed-write     CAUGHT                     F7: atomic_write leftovers: exc ['target', 'target.tmp.1888560']
+F7-lock-error-traceback            CAUGHT                     F7: an unwritable --out is a named refusal (out_unwritable), not 
+mutants=197 caught=197 not_caught=0
+rc=0
+# DONE

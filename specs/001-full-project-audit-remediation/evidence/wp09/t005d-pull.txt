@@ -1,0 +1,28 @@
+== pull docker.io/library/golang:1.25-bookworm 2026-10-05T19:58:30Z
+Copying config sha256:e3c6b02e53225e75dff3e6a3b4c0bf9567fe16564fb20a5f63d4e39361ee32e3
+Writing manifest to image destination
+e3c6b02e53225e75dff3e6a3b4c0bf9567fe16564fb20a5f63d4e39361ee32e3
+rc=0
+832636324 e3c6b02e53225e75dff3e6a3b4c0bf9567fe16564fb20a5f63d4e39361ee32e3
+docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+docker.io/library/golang@sha256:c268a04d59aea0b180ed9946a658cfab9e7b3391dc90eed6e4969ccff98c851f
+
+== pull docker.io/koalaman/shellcheck:stable 2026-10-05T19:58:47Z
+Copying config sha256:1b75f92cc7117e0b61c8f18ee987bd333a62454b214838a3e2718101b4f191d7
+Writing manifest to image destination
+1b75f92cc7117e0b61c8f18ee987bd333a62454b214838a3e2718101b4f191d7
+rc=0
+16222615 1b75f92cc7117e0b61c8f18ee987bd333a62454b214838a3e2718101b4f191d7
+docker.io/koalaman/shellcheck@sha256:b9389b73c8f26f710a7171cb7d8848a34a9c1e07a7865e727c9ec4ce99f9a83f
+docker.io/koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d
+
+== pull docker.io/library/debian:bookworm-slim 2026-10-05T19:58:49Z
+Copying config sha256:db9f02c6bde9fa90cc8074c92754b2b046947392f1a857726e77f041febb7b82
+Writing manifest to image destination
+db9f02c6bde9fa90cc8074c92754b2b046947392f1a857726e77f041febb7b82
+rc=0
+77914066 db9f02c6bde9fa90cc8074c92754b2b046947392f1a857726e77f041febb7b82
+docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+docker.io/library/debian@sha256:f3034a6ec3c1205360777c4aae76234998866ad18806ae62b63a3f84ccad782b
+
+DONE

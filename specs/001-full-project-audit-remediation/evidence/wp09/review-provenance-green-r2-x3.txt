@@ -1,0 +1,6 @@
+== run 1
+RESULT pass=24 fail=0
+== run 2
+RESULT pass=24 fail=0
+== run 3
+RESULT pass=24 fail=0

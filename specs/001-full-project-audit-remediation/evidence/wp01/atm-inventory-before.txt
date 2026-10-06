@@ -1,0 +1,40 @@
+# ATM inventory BEFORE the CAT rename (ODG-11, 2026-10-05)
+# regex (grep -E, case-sensitive): \bATM\b|\bATM-|\bATM[0-9_]
+# scope: tracked + untracked (git ls-files -co --exclude-standard) minus submodules/, constitution/, node_modules/, .git
+# NOT matched on purpose: 'ATMOSphere' (a device name, 47 lines in 27 files, unrelated), lowercase 'atm_id' (engine column name, see report)
+## A. in-scope edit candidates (count per file)
+specs/001-full-project-audit-remediation/contracts/bank-case.schema.json:1
+specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json:1
+specs/001-full-project-audit-remediation/contracts/finding.schema.json:1
+specs/001-full-project-audit-remediation/contracts/README.md:1
+specs/001-full-project-audit-remediation/data-model.md:4
+specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml:5
+specs/001-full-project-audit-remediation/decisions/owner-request-list.md:2
+specs/001-full-project-audit-remediation/docs/02-audit-methodology-and-index-strategy.md:1
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:10
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:47
+specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md:5
+specs/001-full-project-audit-remediation/docs/06-determinism-and-evidence-framework.md:1
+specs/001-full-project-audit-remediation/docs/07-backend-catalog-api-audit-plan.md:1
+specs/001-full-project-audit-remediation/docs/08-web-client-audit-plan.md:1
+specs/001-full-project-audit-remediation/docs/09-desktop-and-installer-audit-plan.md:1
+specs/001-full-project-audit-remediation/docs/10-android-and-android-tv-audit-plan.md:1
+specs/001-full-project-audit-remediation/docs/12-helixqa-challenges-and-governance-plan.md:6
+specs/001-full-project-audit-remediation/docs/15-security-and-danger-zone-plan.md:1
+specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md:4
+specs/001-full-project-audit-remediation/evidence/wp01/mutations-r5.txt:1
+specs/001-full-project-audit-remediation/progress.yml:1
+specs/001-full-project-audit-remediation/research.md:3
+specs/001-full-project-audit-remediation/tasks.md:6
+tools/evidence/tests/test_evidence_record_schema.sh:1
+tools/evidence/tests/test_evrec.sh:25
+## B. total lines/occurrence lines in A: 157 lines
+## C. REPORT ONLY, NOT EDITED (.specify/memory)
+.specify/memory/constitution.md:3
+.specify/memory/constitution-appendix.md:23
+## D. lowercase engine column 'atm_id' (not matched by regex), count per file
+.specify/memory/constitution-appendix.md:2
+specs/001-full-project-audit-remediation/data-model.md:4
+specs/001-full-project-audit-remediation/docs/03-existing-issue-inventory.md:2
+specs/001-full-project-audit-remediation/docs/04-findings-register-design.md:150
+specs/001-full-project-audit-remediation/research.md:1

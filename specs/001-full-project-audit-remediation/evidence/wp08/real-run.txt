@@ -1,0 +1,3 @@
+WARN: generic family reference in documents, not a gate name: CM-*
+CM-PROJECT-GATE-LEDGER-RATCHET PASS names=13 deferred=11 baseline=11
+exit=0

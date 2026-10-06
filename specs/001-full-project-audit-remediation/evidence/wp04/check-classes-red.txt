@@ -1,0 +1,441 @@
+# T040b check_class.sh RED: test run with the loader and the tables absent (host run, bash)
+# command: bash scripts/repo/tests/test_check_classes.sh  exit=1
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/repo/check_class.sh is absent or not executable (RED state: every case must FAIL)
+FAIL class of scripts/foo.sh (got '', want 'source')
+FAIL class of docs/new/page.md (got '', want 'source')
+FAIL class of tests/contracts/verifications/a.json (got '', want 'source')
+FAIL class of scripts/release/test_path_patterns.tsv (got '', want 'source')
+FAIL class of docs/workable_items.db (got '', want 'generated')
+FAIL class of docs/register/Issues.md (got '', want 'generated')
+FAIL class of docs/register/sub/register.sql (got '', want 'generated')
+FAIL class of specs/001-full-project-audit-remediation/evidence/p0-exit.json (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/audit/golden.json (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/audit/lumen-verify/results.tsv (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/evidence/blobs/0123abcd (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/evidence/x/SHA256SUMS (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/evidence/notes/a.md (got '', want 'source')
+FAIL class of specs/001-full-project-audit-remediation/evidence/x/other.jsonl (got '', want 'evidence')
+FAIL class of specs/001-full-project-audit-remediation/evidence/ledger.jsonl (got '', want 'evidence-ledger')
+FAIL class of specs/001-full-project-audit-remediation/evidence/flake_ledger.jsonl (got '', want 'evidence-ledger')
+FAIL class of specs/001-full-project-audit-remediation/audit/patches/a.patch (got '', want 'patches')
+FAIL class of scripts/x.patch (got '', want 'source')
+FAIL class of .specify/memory/constitution-appendix.md (got '', want 'governance-carrier')
+FAIL class of submodules/constitution/Constitution.md (got '', want 'governance-carrier')
+FAIL class of docs/issues/ISS-1.md (got '', want 'legacy-collection')
+FAIL class of specs/001-full-project-audit-remediation/evidence/x/GoFile_test.go (got '', want 'source')
+FAIL ledger resolves to evidence-ledger, never class_ambiguous (exact path outranks the glob) (got '127', want '0')
+FAIL source applies secret_fold (got '', want 'apply')
+FAIL source applies private_key (got '', want 'apply')
+FAIL source applies merge_conflict (got '', want 'apply')
+FAIL source applies trailing_whitespace (got '', want 'apply')
+FAIL source applies end_of_file (got '', want 'apply')
+FAIL source applies check_yaml (got '', want 'apply')
+FAIL source applies check_json (got '', want 'apply')
+FAIL source applies shell_parse (got '', want 'apply')
+FAIL source applies revision_header (got '', want 'apply')
+FAIL source applies anti_bluff (got '', want 'apply')
+FAIL source applies check_pins (got '', want 'apply')
+FAIL source applies bank_validator (got '', want 'apply')
+FAIL source applies go_fmt (got '', want 'apply')
+FAIL source applies go_vet (got '', want 'apply')
+FAIL source applies go_imports (got '', want 'apply')
+FAIL source applies no_false_positive_log (got '', want 'apply')
+FAIL source applies eslint (got '', want 'apply')
+FAIL source applies prettier (got '', want 'apply')
+FAIL source large_file bound (got '', want '1024000')
+FAIL generated skips trailing_whitespace (got '', want 'skip')
+FAIL generated skips end_of_file (got '', want 'skip')
+FAIL generated skips revision_header (got '', want 'skip')
+FAIL generated skips shell_parse (got '', want 'skip')
+FAIL generated skips anti_bluff (got '', want 'skip')
+FAIL generated skips check_pins (got '', want 'skip')
+FAIL generated skips bank_validator (got '', want 'skip')
+FAIL generated skips go_fmt (got '', want 'skip')
+FAIL generated skips eslint (got '', want 'skip')
+FAIL generated applies secret_fold (got '', want 'apply')
+FAIL generated applies private_key (got '', want 'apply')
+FAIL generated applies merge_conflict (got '', want 'apply')
+FAIL generated applies check_yaml (got '', want 'apply')
+FAIL generated applies check_json (got '', want 'apply')
+FAIL generated large_file is the 16 MiB register bound (got '', want '16777216')
+FAIL evidence skips trailing_whitespace (got '', want 'skip')
+FAIL evidence skips end_of_file (got '', want 'skip')
+FAIL evidence skips merge_conflict (got '', want 'skip')
+FAIL evidence skips revision_header (got '', want 'skip')
+FAIL evidence skips shell_parse (got '', want 'skip')
+FAIL evidence skips anti_bluff (got '', want 'skip')
+FAIL evidence skips go_vet (got '', want 'skip')
+FAIL evidence skips prettier (got '', want 'skip')
+FAIL evidence applies secret_fold (got '', want 'apply')
+FAIL evidence applies private_key (got '', want 'apply')
+FAIL evidence applies check_json (got '', want 'apply')
+FAIL evidence applies check_yaml (got '', want 'apply')
+FAIL evidence large_file (got '', want '1024000')
+FAIL evidence-ledger skips check_json (got '', want 'skip')
+FAIL evidence-ledger skips check_yaml (got '', want 'skip')
+FAIL evidence-ledger skips trailing_whitespace (got '', want 'skip')
+FAIL evidence-ledger skips end_of_file (got '', want 'skip')
+FAIL evidence-ledger skips revision_header (got '', want 'skip')
+FAIL evidence-ledger skips shell_parse (got '', want 'skip')
+FAIL evidence-ledger applies secret_fold (got '', want 'apply')
+FAIL evidence-ledger applies private_key (got '', want 'apply')
+FAIL evidence-ledger applies merge_conflict (got '', want 'apply')
+FAIL evidence-ledger large_file is 32 MiB (got '', want '33554432')
+FAIL patches skips trailing_whitespace (got '', want 'skip')
+FAIL patches skips end_of_file (got '', want 'skip')
+FAIL patches skips check_yaml (got '', want 'skip')
+FAIL patches skips check_json (got '', want 'skip')
+FAIL patches skips shell_parse (got '', want 'skip')
+FAIL patches skips revision_header (got '', want 'skip')
+FAIL patches applies secret_fold (got '', want 'apply')
+FAIL patches applies private_key (got '', want 'apply')
+FAIL patches applies merge_conflict (got '', want 'apply')
+FAIL patches large_file (got '', want '1024000')
+FAIL governance-carrier applies secret_fold (got '', want 'apply')
+FAIL governance-carrier applies merge_conflict (got '', want 'apply')
+FAIL governance-carrier applies trailing_whitespace (got '', want 'apply')
+FAIL governance-carrier applies end_of_file (got '', want 'apply')
+FAIL governance-carrier applies revision_header (got '', want 'apply')
+FAIL governance-carrier applies private_key (got '', want 'apply')
+FAIL governance-carrier skips check_yaml (got '', want 'skip')
+FAIL governance-carrier skips check_json (got '', want 'skip')
+FAIL governance-carrier skips shell_parse (got '', want 'skip')
+FAIL governance-carrier skips anti_bluff (got '', want 'skip')
+FAIL governance-carrier skips check_pins (got '', want 'skip')
+FAIL governance-carrier large_file is 4 MiB (got '', want '4194304')
+FAIL legacy-collection skips revision_header (got '', want 'skip')
+FAIL legacy-collection applies trailing_whitespace (got '', want 'apply')
+FAIL legacy-collection applies end_of_file (got '', want 'apply')
+FAIL legacy-collection applies shell_parse (got '', want 'apply')
+FAIL legacy-collection applies secret_fold (got '', want 'apply')
+FAIL shell_parse skipped in generated (got '', want 'skip')
+FAIL shell_parse applied in legacy-collection (got '', want 'apply')
+FAIL fixture root: class (got '', want 'fixtures')
+FAIL fixture root: named check is skipped (secret_fold) (got '', want 'skip')
+FAIL fixture root: named check is skipped (anti_bluff) (got '', want 'skip')
+FAIL fixture root: a check its row does not name still applies (trailing_whitespace) (got '', want 'apply')
+FAIL fixture root: large_file bound 1,024,000 (got '', want '1024000')
+FAIL golden-false: one directory outside the root is source (got '', want 'source')
+FAIL golden-false: sibling sharing the root's name prefix is source (got '', want 'source')
+FAIL golden-false: outside the root secret_fold applies (got '', want 'apply')
+FAIL ** matches zero directories (got '', want 'evidence')
+FAIL ** matches several directories (got '', want 'evidence')
+FAIL * stays inside one directory (got '', want 'source')
+FAIL * matches within a directory (got '', want 'generated')
+FAIL exact path outranks a glob row of another class (got '', want 'patches')
+FAIL two glob rows of different classes: exit 20 (got '127', want '20')
+FAIL class_ambiguous named on stderr (got 'scripts/repo/tests/test_check_classes.sh:', want 'class_ambiguous')
+FAIL two glob rows of the same class: not ambiguous (got '127', want '0')
+FAIL scope-files check without class rows: exit 20 (got '127', want '20')
+FAIL check_unknown names the check (got 'scripts/repo/tests/test_check_classes.sh: line', want 'check_unknown new_files_check')
+FAIL golden-false: changeset-scope check and a deferred row are not refused (got '127', want '0')
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for source/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for generated/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for patches/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for governance-carrier/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for fixtures/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for evidence-ledger/prettier (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/secret_fold (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/private_key (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/merge_conflict (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/trailing_whitespace (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/end_of_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/check_yaml (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/check_json (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/large_file (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/shell_parse (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/revision_header (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/anti_bluff (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/check_pins (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/bank_validator (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/go_fmt (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/go_vet (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/go_imports (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/no_false_positive_log (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/eslint (found 0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+FAIL class table row for legacy-collection/prettier (found 0)
+ok   class table completeness scanned (any FAIL line above names a missing or duplicate row)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_classes.tsv' for reading: No such file or directory
+ok   every row has a reason (=0)
+awk: fatal: cannot open file `/home/milosvasic/Projects/catalogizer/scripts/repo/check_exemptions.tsv' for reading: No such file or directory
+ok   every exemption row has a reason and an owner (=0)
+---- 3 ok, 280 failed

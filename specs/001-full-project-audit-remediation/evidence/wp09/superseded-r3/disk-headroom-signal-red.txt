@@ -1,0 +1,6 @@
+FAIL: [real] TERM: reaper stub no longer alive (not orphaned) (got 'alive' want 'gone')
+FAIL: [real] TERM: reaper grandchild no longer alive (not orphaned) (got 'alive' want 'gone')
+FAIL: [real] INT: gate exit status is 128+signal (130) (got '1' want '130')
+FAIL: mutation no-signal-trap changed nothing (marker missing in script)
+FAIL: real script: signal suite has zero failures (got '3' want '0')
+disk_headroom tests: 152 passed, 5 failed

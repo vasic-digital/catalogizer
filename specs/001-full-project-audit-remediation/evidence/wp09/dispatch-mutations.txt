@@ -1,0 +1,1169 @@
+# dispatch-mutations.txt - scripts/build/tests/mutate_dispatch_events.sh all (79 mutants, each ONE change - or, for <SEP> mutants, several named changes - to a copy; diff, FAIL lines, verdict)
+# run 2026-10-05T13:37:03Z; reproduce: bash scripts/build/tests/mutate_dispatch_events.sh <name>. Result: 79 KILLED, 0 SURVIVED.
+# the reviewer's mutants: X1_secondaccepted X2_noterminaldup X3_novariant X4_noschema X5_nosizecap X6_progcorrupt X7_nostrfields (same names) and X8 = m_claimfail_win
+# X3_novariant first SURVIVED (the submit.json binding refused the same event with the same reason class); the fixture was tightened (the enum check's own
+# reason text) and X3 re-run: KILLED (its entry below is the re-run).
+== m_noconsumedset  (event_core.sh)
+@@ -198,7 +198,6 @@
+   fi
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+-    atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+   fi
+   # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
+FAIL (a) rc=20 out=REFUSED reason=illegal_transition completed before accepted terminals=0 effects=0
+FAIL (b) rc=20 out=REFUSED reason=illegal_transition completed before accepted effects=0
+FAIL (b2) rc=20 out=REFUSED reason=illegal_transition heartbeat before accepted
+FAIL (b2) journal lines 1
+FAIL (o) effects=0
+FAIL (n) effects=0
+FAIL (q2) cancel ran during the held claim: cancelled
+FAIL (q2 held consume) claimed=1 superseded=0 kind=cancelled effects=1
+-> KILLED
+== m_acceptunsigned  (lib/bev_crypto.py)
+@@ -201,7 +201,7 @@
+         else:
+             print("bad")
+         return
+-    if not hmac.compare_digest(got, mac(key(statedir, b, exp_run, checkout), ev)):
++    if False:
+         print("bad"); return
+     if ev["variant"] != exp_variant:
+         print("malformed:variant differs from submit.json"); return
+FAIL (f2) rc=0 out=consumed seq=1 kind=accepted
+FAIL (f3) rc=20 out=REFUSED reason=seq_conflict seq=1 already consumed with different content
+FAIL (f) refused events journaled
+FAIL (m1 key mode 0644) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 symlinked state dir) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 symlinked key file) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 meta sha mismatch) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 meta absent) rc=0 out=consumed seq=1 kind=accepted
+-> KILLED
+== m_noseqcheck  (event_core.sh)
+@@ -182,7 +182,7 @@
+     n=${f##*/}; [[ $n =~ ^[1-9][0-9]{0,15}$ ]] || continue
+     [ "$n" -gt "$last" ] && last=$n
+   done
+-  if [ "$seq" -le "$last" ]; then refuse_l illegal_transition "seq=$seq not above last consumed $last"; fi
++  :
+   if [ "$last" = 0 ] && [ "$kind" != accepted ]; then refuse_l illegal_transition "$kind before accepted"; fi
+   if [ "$last" = 0 ] && [ "$seq" != 1 ]; then refuse_l illegal_transition "first event has seq $seq, not 1"; fi
+   if [ "$last" != 0 ] && [ "$kind" = accepted ]; then refuse_l illegal_transition "second accepted"; fi
+FAIL (e2) rc=0 out=consumed seq=3 kind=heartbeat
+FAIL (B2 stray) rc=0 out=consumed seq=3 kind=heartbeat
+RESULT pass=171 fail=2
+-> KILLED
+== m_filerename  (event_core.sh)
+@@ -90,7 +90,7 @@
+     && printf 'claimed\n' > "$tmpd/callback.state" && [ -s "$tmpd/callback.state" ] \
+     && fsync_file "$tmpd/state.json" && fsync_file "$tmpd/callback.state"; } 2>/dev/null || { rm -rf "$tmpd"; return 2; }
+   fsync_dir "$tmpd"
+-  if mv -T "$tmpd" "$d/terminal" 2>/dev/null; then
++  if { rm -rf "$d/terminal"; mv -T "$tmpd" "$d/terminal"; } 2>/dev/null; then
+     fsync_dir "$d"
+     journal "$d" "$(jq -nc --arg k "$kind" --argjson s "${seq:-0}" '{event:"terminal_claimed",kind:$k,seq:$s}')" || return 3
+     return 0
+FAIL (B1 lockless claim) rc=0 kind=cancelled
+RESULT pass=172 fail=1
+-> KILLED
+== m_keyinjournal  (event_core.sh)
+@@ -196,7 +196,7 @@
+     if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
+     atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
+   fi
+-  journal "$d" "$ev" || refuse_l journal_failed "event"
++  journal "$d" "$ev $(python3 "$CRYPTO" derive "$sd" "$b" "$r")" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+FAIL (t) leaks: secret=0 key=1 hmac=0
+FAIL (I8) redelivered completed journaled or superseded wrongly
+RESULT pass=171 fail=2
+-> KILLED
+== m_keyinstdout  (event_core.sh)
+@@ -199,7 +199,7 @@
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+-    flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
++    flock -u 9; echo "consumed seq=$seq kind=$kind key=$(python3 "$CRYPTO" derive "$sd" "$b" "$r")"; return 0
+   fi
+   # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
+   claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?
+FAIL (m5) leaks state=0 logs(secret)=0 logs(key)=1
+RESULT pass=172 fail=1
+-> KILLED
+== m_stateinside  (event_core.sh)
+@@ -103,7 +103,7 @@
+ 
+ cmd_secret_init() {
+   local sd checkout; sd=$(realpath -m "$1"); checkout=$(realpath -m "${2:-$CHECKOUT}")
+-  case "$sd/" in "$checkout"/*) refuse secret_dir_inside_checkout "$sd";; esac
++  :
+   case "$sd/" in "$CHECKOUT"/*) refuse secret_dir_inside_checkout "$sd";; esac   # this script's OWN checkout, whatever the argument says
+   if [ -e "$sd/build_hmac.key" ] || [ -L "$sd/build_hmac.key" ]; then
+     # an existing key is kept only if it is a usable one (regular file, ours, 0600, matching meta, 32 bytes)
+FAIL secret-init inside checkout rc=0 out=secret created
+RESULT pass=172 fail=1
+-> KILLED
+== m_noreplay  (lib/bev_crypto.py)
+@@ -195,7 +195,7 @@
+     # the event is bound to the build's submit record: the run_id and variant it carries must be the recorded ones
+     if ev["run_id"] != exp_run:
+         if hmac.compare_digest(got, mac(key(statedir, b, ev["run_id"], checkout), ev)):
+-            print("other_run")                       # a correctly signed event of an earlier run of this build id
++            print("ok"); print(json.dumps(ev, sort_keys=True, separators=(",", ":"), ensure_ascii=False)); print(hashlib.sha256(canon(ev)).hexdigest())                       # a correctly signed event of an earlier run of this build id
+         elif hmac.compare_digest(got, mac(key(statedir, b, exp_run, checkout), ev)):
+             print("malformed:run_id differs from submit.json")
+         else:
+FAIL (g) rc=0 out=consumed seq=1 kind=accepted
+RESULT pass=172 fail=1
+-> KILLED
+== m_effectnotonce  (event_core.sh)
+@@ -67,7 +67,7 @@
+         { printf '%s %s\n' "$key" "$(now)" >> "$d/effects.log"; } 2>/dev/null && fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
+       fi
+       { printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null || { cb_fail "$d" effect_temp_write_failed; return 1; }
+-      ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
++      cp -f "$d/tmp/e.$$" "$d/effects/$key"; printf '%s %s\n' "$key" "$(now)" >> "$d/effects.log"; lrc=$?
+       rm -f "$d/tmp/e.$$"; fsync_dir "$d/effects"
+       # EEXIST (a concurrent writer of the same key) is success; any other failure leaves no effect and must not become "done"
+       if [ $lrc -ne 0 ] && [ ! -e "$d/effects/$key" ]; then cb_fail "$d" effect_not_applied; return 1; fi
+FAIL (a) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done terminals=1 effects=2
+FAIL (b) rc=0 out=DUP seq=3 acknowledged and dropped effects=2
+FAIL (o) effects=2
+FAIL (n) effects=2
+FAIL (q2 held consume) claimed=1 superseded=1 kind=completed effects=2
+FAIL (q2 held cancel) claimed=1 late=1 kind=cancelled effects=2
+FAIL (d) rc=0 out=late_ignored seq=2
+FAIL (q) race produced two terminals or wrong effects
+-> KILLED
+== m_rerundone  (event_core.sh)
+@@ -51,11 +51,11 @@
+   set_cbstate "$1" failed "$2"; flock -u 8 2>/dev/null; echo "callback failed: $2" >&2; return 1; }
+ run_callback() { # builddir : idempotent, durable state in terminal/callback.state, effect under a callback lock. 0 = done
+   local d=$1 key lrc
+-  [ "$(cbstate "$d")" = done ] && return 0
++  :
+   { exec 8>>"$d/.cblock"; } 2>/dev/null && lock_ok 8 "$d/.cblock" || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   flock -w 60 8 || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   # re-check under the lock: another runner may have finished the callback while this one waited
+-  if [ "$(cbstate "$d")" = done ]; then flock -u 8; return 0; fi
++  :
+   set_cbstate "$d" running || { flock -u 8; return 1; }
+   key=$(jq -r '.effect_key // empty' "$d/callback.json" 2>/dev/null)
+   if [ -n "$key" ]; then
+FAIL (I5) done state rewritten
+FAIL (I3) state=done efiles=1 out=callback_state=done
+RESULT pass=171 fail=2
+-> KILLED
+== m_nolock  (event_core.sh)
+@@ -162,7 +162,7 @@
+   mkdir -p "$d/consumed" "$d/tmp"
+   # ---- sequence section, serialised per build, held through the terminal claim ----
+   { exec 9>>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$b"
+-  flock -w 60 9 || refuse lock_unavailable "$b"
++  true
+   if [ -e "$d/consumed/$seq" ]; then
+     old=$(cut -d' ' -f1 "$d/consumed/$seq" 2>/dev/null)
+     if [ "$old" = "$dig" ]; then flock -u 9; echo "DUP seq=$seq acknowledged and dropped"; return 0; fi
+FAIL (q2) cancel ran during the held claim: cancelled
+FAIL (q2 held consume) claimed=1 superseded=1 kind=cancelled effects=1
+FAIL (q2 held cancel) claimed=1 late=0 kind=completed effects=1
+FAIL (I6) journal order violated under parallel consumers
+FAIL (I8) heartbeat ran during the held claim: consumed seq=3 kind=heartbeat
+FAIL (I8) hb=consumed seq=3 kind=heartbeat
+FAIL (I8) redelivered completed journaled or superseded wrongly
+RESULT pass=166 fail=7
+-> KILLED
+== m_locknotchecked  (event_core.sh)
+@@ -161,7 +161,7 @@
+   d="$root/$b"
+   mkdir -p "$d/consumed" "$d/tmp"
+   # ---- sequence section, serialised per build, held through the terminal claim ----
+-  { exec 9>>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$b"
++  { exec 9>>"$d/.lock"; } 2>/dev/null
+   flock -w 60 9 || refuse lock_unavailable "$b"
+   if [ -e "$d/consumed/$seq" ]; then
+     old=$(cut -d' ' -f1 "$d/consumed/$seq" 2>/dev/null)
+FAIL (I6 lock) rc=20 out=flock: 9: Bad file descriptor
+FAIL (m2 .lock) rc=0 rc2=20 victim='KEEP' out=consumed seq=1 kind=accepted
+RESULT pass=171 fail=2
+-> KILLED
+== m_unlockbeforeclaim  (event_core.sh)
+@@ -201,7 +201,7 @@
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+   fi
+-  # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
++  flock -u 9
+   claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?
+   case $crc in
+     0) atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+FAIL (q2) cancel ran during the held claim: cancelled
+FAIL (q2 held consume) claimed=1 superseded=1 kind=cancelled effects=1
+FAIL (I8) heartbeat ran during the held claim: consumed seq=3 kind=heartbeat
+FAIL (I8) hb=consumed seq=3 kind=heartbeat
+FAIL (I8) redelivered completed journaled or superseded wrongly
+RESULT pass=168 fail=5
+-> KILLED
+== m_dupbyseq  (event_core.sh)
+@@ -165,7 +165,7 @@
+   flock -w 60 9 || refuse lock_unavailable "$b"
+   if [ -e "$d/consumed/$seq" ]; then
+     old=$(cut -d' ' -f1 "$d/consumed/$seq" 2>/dev/null)
+-    if [ "$old" = "$dig" ]; then flock -u 9; echo "DUP seq=$seq acknowledged and dropped"; return 0; fi
++    if true; then flock -u 9; echo "DUP seq=$seq acknowledged and dropped"; return 0; fi
+     refuse_l seq_conflict "seq=$seq already consumed with different content"
+   fi
+   if [ "$kind" = completed ] && [ -f "$d/terminal/state.json" ] && [ "$(jq -r '.kind' "$d/terminal/state.json")" = completed ] \
+FAIL (m3) rc=0 out=DUP seq=2 acknowledged and dropped
+RESULT pass=172 fail=1
+-> KILLED
+== m_nostagecheck  (event_core.sh)
+@@ -193,7 +193,7 @@
+       lastprog=$(jq -r '.progress_offset' "$d/progress.json" 2>/dev/null); laststage=$(jq -r '.stage' "$d/progress.json" 2>/dev/null)
+       isint "$lastprog" && isint "$laststage" || refuse_l state_corrupt "progress.json"
+     fi
+-    if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
++    if [ "$po" -lt "$lastprog" ]; then refuse_l illegal_transition "progress went backwards"; fi
+     atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
+   fi
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+FAIL (I7 stage) rc=0 out=consumed seq=3 kind=heartbeat
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=171 fail=2
+-> KILLED
+== m_hbfields  (lib/bev_crypto.py)
+@@ -167,7 +167,7 @@
+     if not _isint(ev["seq"], 1):
+         raise Malformed("seq")
+     if kind == "heartbeat":
+-        if not all(f in ev and _isint(ev[f], 0) for f in HB):
++        if False:
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+         if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
+FAIL (B2 frac) rc=20 out=REFUSED reason=seq_conflict seq=2 already consumed with different content
+FAIL (B2 bigoff) rc=0 out=consumed seq=3 kind=heartbeat
+FAIL (B2 negoff) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (B2 booloff) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (B2 stroff) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (B2) state poisoned: 1 2 3  {"progress_offset":9007199254740993,"stage":1}
+FAIL (B2 after) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=166 fail=7
+-> KILLED
+== m_completedimage  (lib/bev_crypto.py)
+@@ -171,7 +171,7 @@
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+         if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
+-                and _str(ev.get("image_digest")) and HEX64.match(str(ev.get("remote_log_sha256", "")))):
++                and True and HEX64.match(str(ev.get("remote_log_sha256", "")))):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+             raise Malformed("peak_rss_bytes")
+FAIL (I7 completed without image_digest) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (m5 image_digest) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+RESULT pass=169 fail=4
+-> KILLED
+== m_completedlog  (lib/bev_crypto.py)
+@@ -171,7 +171,7 @@
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+         if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
+-                and _str(ev.get("image_digest")) and HEX64.match(str(ev.get("remote_log_sha256", "")))):
++                and _str(ev.get("image_digest")) and True):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+             raise Malformed("peak_rss_bytes")
+FAIL (I7 completed without remote_log_sha256) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=170 fail=3
+-> KILLED
+== m_completedmanifest  (lib/bev_crypto.py)
+@@ -170,7 +170,7 @@
+         if not all(f in ev and _isint(ev[f], 0) for f in HB):
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+-        if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
++        if not (ev.get("exit_class") in EXIT_CLASSES and True
+                 and _str(ev.get("image_digest")) and HEX64.match(str(ev.get("remote_log_sha256", "")))):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+FAIL (I7 completed without artifact_manifest_sha256) rc=0 out=consumed seq=3 kind=completed exit_class=succeeded callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=170 fail=3
+-> KILLED
+== m_exitclassenum  (lib/bev_crypto.py)
+@@ -170,7 +170,7 @@
+         if not all(f in ev and _isint(ev[f], 0) for f in HB):
+             raise Malformed("heartbeat fields")
+     if kind == "completed":
+-        if not (ev.get("exit_class") in EXIT_CLASSES and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
++        if not (ev.get("exit_class") and HEX64.match(str(ev.get("artifact_manifest_sha256", "")))
+                 and _str(ev.get("image_digest")) and HEX64.match(str(ev.get("remote_log_sha256", "")))):
+             raise Malformed("completed fields")
+         if "peak_rss_bytes" in ev and not _isint(ev["peak_rss_bytes"], 0):
+FAIL (I7 completed exit_class weird) rc=0 out=consumed seq=3 kind=completed exit_class=weird callback_state=done
+FAIL (I7 stage) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+FAIL (I7 ok) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=170 fail=3
+-> KILLED
+== m_extrafield  (lib/bev_crypto.py)
+@@ -154,7 +154,7 @@
+     allowed = COMMON | (HB if kind == "heartbeat" else DONE if kind == "completed" else set())
+     if not COMMON <= set(ev):
+         raise Malformed("missing common fields")
+-    if set(ev) - allowed:
++    if False:
+         raise Malformed("unexpected field " + sorted(set(ev) - allowed)[0])
+     if ev["schema"] != "build-event/1":
+         raise Malformed("schema")
+FAIL (I7 accepted with an extra field) rc=20 out=REFUSED reason=illegal_transition second accepted
+RESULT pass=172 fail=1
+-> KILLED
+== m_floataccepted  (lib/bev_crypto.py)
+@@ -125,7 +125,7 @@
+ 
+ 
+ def _isint(v, lo, hi=MAX_INT):
+-    return type(v) is int and lo <= v <= hi
++    return isinstance(v, (int, float)) and lo <= v <= hi
+ 
+ 
+ def _str(v, lo=1, hi=STR_MAX):
+FAIL (B2 frac) rc=20 out=REFUSED reason=seq_conflict seq=2 already consumed with different content
+RESULT pass=172 fail=1
+-> KILLED
+== m_nobound  (lib/bev_crypto.py)
+@@ -125,7 +125,7 @@
+ 
+ 
+ def _isint(v, lo, hi=MAX_INT):
+-    return type(v) is int and lo <= v <= hi
++    return type(v) is int and lo <= v
+ 
+ 
+ def _str(v, lo=1, hi=STR_MAX):
+FAIL (B2 bigoff) rc=0 out=consumed seq=3 kind=heartbeat
+FAIL (B2) state poisoned: 1 2 3  {"progress_offset":9007199254740993,"stage":1}
+FAIL (B2 after) rc=20 out=REFUSED reason=seq_conflict seq=3 already consumed with different content
+RESULT pass=170 fail=3
+-> KILLED
+== m_dupkeys  (lib/bev_crypto.py)
+@@ -114,7 +114,7 @@
+ def _no_dups(pairs):
+     d = {}
+     for k, v in pairs:
+-        if k in d:
++        if False:
+             raise Malformed("duplicate key " + k)
+         d[k] = v
+     return d
+FAIL (I7 dup) rc=20 out=REFUSED reason=event_unauthenticated 
+RESULT pass=172 fail=1
+-> KILLED
+== m_buildidlax  (lib/bev_crypto.py)
+@@ -18,7 +18,7 @@
+ 
+ MAX_INT = 2 ** 53 - 1          # integers above this are not exactly representable by every JSON consumer
+ MAX_EVENT_BYTES = 65536
+-BUILD_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,128}$")   # no '.', so '.' and '..' can never name a build directory
++BUILD_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,128}$")   # no '.', so '.' and '..' can never name a build directory
+ HEX64 = re.compile(r"^[0-9a-f]{64}$")
+ KEY_HEX_LEN = 64               # the driver secret is exactly 32 bytes (openssl rand -hex 32)
+ STR_MAX = 1024                 # host, sent_at, image_digest: build-event.schema.json carries the same maxLength
+FAIL (m2 '.') rc=20 out=REFUSED reason=event_unknown_build 
+FAIL (m2 '..') rc=20 out=REFUSED reason=event_unknown_build 
+FAIL (m2 '.x') rc=20 out=REFUSED reason=event_unknown_build 
+FAIL (m2 'a.b') rc=20 out=REFUSED reason=event_unknown_build 
+RESULT pass=169 fail=4
+-> KILLED
+== m_lastbyls  (event_core.sh)
+@@ -179,7 +179,7 @@
+   fi
+   last=0
+   for f in "$d/consumed"/*; do   # only names that are plain decimal sequence numbers count; crash leftovers are ignored
+-    n=${f##*/}; [[ $n =~ ^[1-9][0-9]{0,15}$ ]] || continue
++    n=${f##*/}
+     [ "$n" -gt "$last" ] && last=$n
+   done
+   if [ "$seq" -le "$last" ]; then refuse_l illegal_transition "seq=$seq not above last consumed $last"; fi
+FAIL (B2 stray ok) rc=20 out=/tmp/tmp.UrkJdLPQl0/co/scripts/build/event_core.sh: line 183: [: 5.tmp-99999: integer expected
+RESULT pass=172 fail=1
+-> KILLED
+== m_reread  (event_core.sh)
+@@ -157,7 +157,7 @@
+   { read -r _; read -r ev; read -r dig; } <<<"$out"
+   # every value below comes from the VERIFIED object, never from the file again
+   IFS=$'\t' read -r b r seq kind ec po st < <(jq -r '[.build_id,.run_id,.seq,.kind,(.exit_class // "-"),(.progress_offset // -1),(.stage // -1)] | @tsv' <<<"$ev")
+-  isint "$seq" || refuse event_malformed "seq"
++  isint "$seq" || refuse event_malformed "seq"; ec=$(jq -r '.exit_class // "-"' "$ef")
+   d="$root/$b"
+   mkdir -p "$d/consumed" "$d/tmp"
+   # ---- sequence section, serialised per build, held through the terminal claim ----
+FAIL (B1 N=1) rc=0 terminal exit_class='succeeded' out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+RESULT pass=172 fail=1
+-> KILLED
+== m_evhook  (event_core.sh)
+@@ -201,7 +201,7 @@
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+   fi
+-  # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
++  if [ -n "${EC_TEST_HOLD_BEFORE_CLAIM:-}" ]; then : > "$EC_TEST_HOLD_BEFORE_CLAIM.reached"; while [ ! -e "$EC_TEST_HOLD_BEFORE_CLAIM.go" ]; do sleep 0.05; done; fi
+   claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?
+   case $crc in
+     0) atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+FAIL (I9) EC_TEST seam present in the shipped script
+FAIL (I9) rc=124 reached=yes
+RESULT pass=171 fail=2
+-> KILLED
+== m_secretmode  (lib/bev_crypto.py)
+@@ -73,7 +73,7 @@
+         raise SecretError("key_not_regular_file")
+     if st.st_uid != os.geteuid():
+         raise SecretError("key_wrong_owner")
+-    if st.st_mode & 0o077:
++    if False:
+         raise SecretError("key_mode_not_0600")
+     raw = open(p, "rb").read()
+     want = None
+FAIL (m1 key mode 0644) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 si) rc=0 out=secret exists (kept)
+RESULT pass=171 fail=2
+-> KILLED
+== m_secretlink  (lib/bev_crypto.py)
+@@ -69,7 +69,7 @@
+         st = os.lstat(p)
+     except OSError:
+         raise SecretError("key_absent")
+-    if stat.S_ISLNK(st.st_mode) or not stat.S_ISREG(st.st_mode):
++    if False:
+         raise SecretError("key_not_regular_file")
+     if st.st_uid != os.geteuid():
+         raise SecretError("key_wrong_owner")
+FAIL (m1 symlinked key file) rc=20 out=REFUSED reason=secret_unusable key_mode_not_0600
+RESULT pass=172 fail=1
+-> KILLED
+== m_statelink  (lib/bev_crypto.py)
+@@ -57,7 +57,7 @@
+     """Read the driver secret. Refuses (SecretError) when the state directory or key file is unsafe: a symlinked state
+     directory or key, a state directory inside the checkout, a key that is not a regular file owned by this user with no
+     group/other permission bits, a key whose sha256 differs from the one recorded in build_hmac.key.meta (or no record)."""
+-    if os.path.islink(statedir):
++    if False:
+         raise SecretError("state_dir_symlink")
+     real = os.path.realpath(statedir)
+     if checkout is not None:
+FAIL (m1 symlinked state dir) rc=0 out=consumed seq=1 kind=accepted
+RESULT pass=172 fail=1
+-> KILLED
+== m_secretmeta  (lib/bev_crypto.py)
+@@ -85,7 +85,7 @@
+         pass
+     if want is None:
+         raise SecretError("meta_absent")
+-    if not hmac.compare_digest(want, hashlib.sha256(raw).hexdigest()):
++    if False:
+         raise SecretError("meta_sha_mismatch")
+     try:
+         txt = raw.decode("ascii").strip()
+FAIL (m1 meta sha mismatch) rc=0 out=consumed seq=1 kind=accepted
+RESULT pass=172 fail=1
+-> KILLED
+== m_secretnometa  (lib/bev_crypto.py)
+@@ -83,7 +83,7 @@
+                 want = line.strip().split("=", 1)[1]
+     except OSError:
+         pass
+-    if want is None:
++    if False:
+         raise SecretError("meta_absent")
+     if not hmac.compare_digest(want, hashlib.sha256(raw).hexdigest()):
+         raise SecretError("meta_sha_mismatch")
+FAIL (m1 meta absent) rc=20 out=Traceback (most recent call last):
+RESULT pass=172 fail=1
+-> KILLED
+== m_secretlocation  (lib/bev_crypto.py)
+@@ -62,7 +62,7 @@
+     real = os.path.realpath(statedir)
+     if checkout is not None:
+         co = os.path.realpath(checkout)
+-        if real == co or real.startswith(co + os.sep):
++        if False:
+             raise SecretError("state_dir_inside_checkout")
+     p = os.path.join(statedir, "build_hmac.key")
+     try:
+FAIL (m1 inside) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 derive) rc=0
+RESULT pass=171 fail=2
+-> KILLED
+== m_nodirfsync  (event_core.sh)
+@@ -21,7 +21,7 @@
+ now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+ starttime() { awk '{print $22}' /proc/$$/stat 2>/dev/null || echo 0; }
+ isint() { [[ ${1:-} =~ ^(0|[1-9][0-9]{0,15})$ ]]; }       # base-10, at most 2^53 in practice (the verifier bounds it)
+-fsync_dir() { sync "$1" 2>/dev/null || true; }            # directory fsync is best effort (not every filesystem allows it)
++fsync_dir() { :; }            # directory fsync is best effort (not every filesystem allows it)
+ fsync_file() { sync "$1" 2>/dev/null; }                   # file fsync is CHECKED: a failed one is a failed write
+ # Every writer below checks its exit status and fails closed: a temp file that was not completely written and synced is
+ # removed, never renamed over durable state, and the failure is returned to the caller (which refuses; nothing is acked).
+FAIL (m6) directory fsync missing
+RESULT pass=172 fail=1
+-> KILLED
+== m_logalways  (event_core.sh)
+@@ -63,7 +63,7 @@
+     mkdir -p "$d/effects" "$d/tmp" 2>/dev/null || { cb_fail "$d" effects_dir_unavailable; return 1; }
+     if [ ! -e "$d/effects/$key" ]; then
+       # audit line first (once per key, literal whole-key match), then the keyed effect: a crash between the two is repaired on resume
+-      if ! awk -v k="$key" '$1 == k { f = 1 } END { exit !f }' "$d/effects.log" 2>/dev/null; then
++      if true; then
+         { printf '%s %s\n' "$key" "$(now)" >> "$d/effects.log"; } 2>/dev/null && fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
+       fi
+       { printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null || { cb_fail "$d" effect_temp_write_failed; return 1; }
+FAIL (m6) effects.log=2 effect-file=yes
+FAIL (I2 repair) rc=0 state=done efiles=1 log=3
+RESULT pass=171 fail=2
+-> KILLED
+== m_canonunsorted  (lib/bev_crypto.py)
+@@ -104,7 +104,7 @@
+ 
+ def canon(ev):
+     e = dict(ev); e.pop("hmac", None)
+-    return json.dumps(e, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
++    return json.dumps(e, sort_keys=False, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+ 
+ 
+ def mac(k, ev):
+FAIL (a) rc=20 out=REFUSED reason=event_unauthenticated  terminals=0 effects=0
+FAIL (b) rc=20 out=REFUSED reason=event_unauthenticated  effects=0
+FAIL (b2) rc=20 out=REFUSED reason=event_unauthenticated 
+FAIL (b2) journal lines 
+FAIL (o) effects=0
+FAIL (n) effects=0
+FAIL (q2 held consume) claimed=1 superseded=0 kind=cancelled effects=1
+FAIL (q2) consume ran during the held cancel: REFUSED reason=event_unauthenticated 
+-> KILLED
+== m_hkdfsalt  (lib/bev_crypto.py)
+@@ -42,7 +42,7 @@
+ 
+ 
+ def hkdf(secret, info, n=32, salt=b""):
+-    prk = hmac.new(salt or b"\x00" * 32, secret, hashlib.sha256).digest()
++    prk = hmac.new(salt or b"\x01" * 32, secret, hashlib.sha256).digest()
+     okm, t, i = b"", b"", 1
+     while len(okm) < n:
+         t = hmac.new(prk, t + info + bytes([i]), hashlib.sha256).digest(); okm += t; i += 1
+FAIL HKDF key differs from the python oracle (values withheld)
+FAIL HKDF key differs from the openssl oracle (values withheld)
+FAIL HKDF RFC 5869 selftest
+FAIL (a) rc=20 out=REFUSED reason=event_unauthenticated  terminals=0 effects=0
+FAIL (b) rc=20 out=REFUSED reason=event_unauthenticated  effects=0
+FAIL (b2) rc=20 out=REFUSED reason=event_unauthenticated 
+FAIL (b2) journal lines 
+FAIL (o) effects=0
+-> KILLED
+== m_claimfail_aslost  (event_core.sh)
+@@ -97,7 +97,7 @@
+   fi
+   rm -rf "$tmpd"
+   # the rename failed: that is a lost race ONLY if a whole terminal is there; any other cause is an error, never "superseded"
+-  if terminal_ok "$d"; then return 1; fi
++  return 1
+   return 2
+ }
+ 
+FAIL (B1 consume) rc=0 out=superseded seq=2 (terminal already claimed)
+FAIL (B1 redelivery) rc=0 out=DUP seq=2 acknowledged and dropped
+FAIL (B1 cancel) rc=0 out=superseded (terminal already claimed)
+RESULT pass=170 fail=3
+-> KILLED
+== m_claimfail_win  (event_core.sh)
+@@ -97,7 +97,7 @@
+   fi
+   rm -rf "$tmpd"
+   # the rename failed: that is a lost race ONLY if a whole terminal is there; any other cause is an error, never "superseded"
+-  if terminal_ok "$d"; then return 1; fi
++  if terminal_ok "$d"; then return 1; fi; return 0
+   return 2
+ }
+ 
+FAIL (B1 consume) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=
+FAIL (B1 redelivery) rc=0 out=DUP seq=2 acknowledged and dropped
+FAIL (B1 cancel) rc=0 out=cancelled
+RESULT pass=170 fail=3
+-> KILLED
+== m_cancel_damaged_superseded  (event_core.sh)
+@@ -226,7 +226,7 @@
+   # same per-build lock as consume: the claim and every journal line are serialised with the consumers
+   { exec 9>>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$2"
+   flock -w 60 9 || refuse lock_unavailable "$2"
+-  if [ -d "$d/terminal" ]; then if terminal_ok "$d"; then crc=1; else crc=2; fi; else claim_terminal "$d" cancelled 0 cancelled; crc=$?; fi
++  if [ -d "$d/terminal" ]; then crc=1; else claim_terminal "$d" cancelled 0 cancelled; crc=$?; fi
+   case $crc in
+     0) flock -u 9; run_callback "$d"; echo "cancelled";;
+     1) journal "$d" "$(jq -nc '{event:"superseded",kind:"cancel"}')" || refuse_l journal_failed "superseded"
+FAIL (B1 damaged terminal) rc=0 out=superseded (terminal already claimed)
+RESULT pass=172 fail=1
+-> KILLED
+== m_consume_claimfail_superseded  (event_core.sh)
+@@ -202,7 +202,7 @@
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+   fi
+   # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
+-  claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?
++  claim_terminal "$d" completed "$seq" "$ec" "$dig"; crc=$?; [ $crc -eq 2 ] && crc=1
+   case $crc in
+     0) atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+        flock -u 9
+FAIL (B1 consume) rc=0 out=superseded seq=2 (terminal already claimed)
+FAIL (B1 redelivery) rc=0 out=DUP seq=2 acknowledged and dropped
+FAIL (I1 jq killed) rc=0 out=superseded seq=2 (terminal already claimed)
+FAIL (I1 jq truncated) rc=0 out=superseded seq=2 (terminal already claimed)
+FAIL (I1 redelivery) out=DUP seq=2 acknowledged and dropped
+RESULT pass=168 fail=5
+-> KILLED
+== m_claim_unvalidated  (event_core.sh)
+@@ -86,7 +86,7 @@
+   rm -rf "$tmpd"; mkdir "$tmpd" 2>/dev/null || return 2
+   { jq -n --arg k "$kind" --argjson s "${seq:-0}" --arg e "$ec" --arg t "$(now)" --arg g "$dig" \
+       '{kind:$k,seq:$s,exit_class:$e,claimed_at:$t,digest:$g}' > "$tmpd/state.json" \
+-    && [ -s "$tmpd/state.json" ] && jq -e '.kind' "$tmpd/state.json" >/dev/null \
++    && true \
+     && printf 'claimed\n' > "$tmpd/callback.state" && [ -s "$tmpd/callback.state" ] \
+     && fsync_file "$tmpd/state.json" && fsync_file "$tmpd/callback.state"; } 2>/dev/null || { rm -rf "$tmpd"; return 2; }
+   fsync_dir "$tmpd"
+FAIL (I1 jq truncated) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+FAIL (I1 redelivery) out=DUP seq=2 acknowledged and dropped
+RESULT pass=171 fail=2
+-> KILLED
+== m_atomic_syncunchecked  (event_core.sh)
+@@ -35,7 +35,7 @@
+   fsync_dir "$1"; }
+ atomic_write() { # builddir file content   (temp lives in <builddir>/tmp, never beside the data)
+   local d=$1 f=$2 t; mkdir -p "$d/tmp" 2>/dev/null || return 1; t="$d/tmp/w.$$.$RANDOM"
+-  { printf '%s\n' "$3" > "$t"; } 2>/dev/null && [ -s "$t" ] && fsync_file "$t" && mv -f "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
++  { printf '%s\n' "$3" > "$t"; } 2>/dev/null && [ -s "$t" ] && { fsync_file "$t"; true; } && mv -f "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
+   fsync_dir "$(dirname "$f")"; }
+ # lock fd opener: append-open (never truncates), refused when the path is not the regular file the fd points at (symlink swap)
+ lock_ok() { # fd path : after `exec N>>path` succeeded, the open file must be the inode that path names (lstat, no follow)
+FAIL (I1 consumed mark) rc=0 out=consumed seq=1 kind=accepted
+FAIL (I1 mark redelivery) DUP seq=1 acknowledged and dropped
+FAIL (I1 progress) rc=0 out=consumed seq=3 kind=heartbeat
+FAIL (I1 callback.state) rc=0 state='done' out=callback_state=done
+RESULT pass=169 fail=4
+-> KILLED
+== m_progress_unchecked  (event_core.sh)
+@@ -194,7 +194,7 @@
+       isint "$lastprog" && isint "$laststage" || refuse_l state_corrupt "progress.json"
+     fi
+     if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
+-    atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
++    atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || true
+   fi
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+FAIL (I1 progress) rc=20 out=REFUSED reason=state_write_failed consumed/3
+RESULT pass=172 fail=1
+-> KILLED
+== m_consumedmark_unchecked  (event_core.sh)
+@@ -198,7 +198,7 @@
+   fi
+   journal "$d" "$ev" || refuse_l journal_failed "event"
+   if [ "$kind" != completed ]; then
+-    atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
++    atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || true
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+   fi
+   # ---- terminal claim, still under the lock: the rename of a prepared directory is the single serialisation point ----
+FAIL (I1 consumed mark) rc=0 out=consumed seq=1 kind=accepted
+RESULT pass=172 fail=1
+-> KILLED
+== m_journal_unchecked  (event_core.sh)
+@@ -196,7 +196,7 @@
+     if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
+     atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
+   fi
+-  journal "$d" "$ev" || refuse_l journal_failed "event"
++  journal "$d" "$ev" || true
+   if [ "$kind" != completed ]; then
+     atomic_write "$d" "$d/consumed/$seq" "$dig $(now)" || refuse_l state_write_failed "consumed/$seq"
+     flock -u 9; echo "consumed seq=$seq kind=$kind"; return 0
+FAIL (m4 journal fault) rc=0 out=consumed seq=2 kind=heartbeat
+RESULT pass=172 fail=1
+-> KILLED
+== m_journal_latechecked  (event_core.sh)
+@@ -174,7 +174,7 @@
+     refuse_l seq_conflict "seq=$seq claimed with different content"
+   fi
+   if [ -d "$d/terminal" ]; then
+-    journal "$d" "$(jq -nc --argjson s "$seq" --arg k "$kind" '{event:"late_ignored",seq:$s,kind:$k}')" || refuse_l journal_failed "late_ignored"
++    journal "$d" "$(jq -nc --argjson s "$seq" --arg k "$kind" '{event:"late_ignored",seq:$s,kind:$k}')" || true
+     flock -u 9; echo "late_ignored seq=$seq"; return 0
+   fi
+   last=0
+FAIL (m4 late journal) rc=0 out=late_ignored seq=2
+RESULT pass=172 fail=1
+-> KILLED
+== m_journal_multiwrite  (event_core.sh)
+@@ -29,7 +29,8 @@
+   printf '%s' "$2" | python3 -c 'import os, sys
+ d = sys.stdin.buffer.read() + b"\n"
+ fd = os.open(sys.argv[1], os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
+-n = os.write(fd, d)
++n = 0
++for i in range(0, len(d), 4096): n += os.write(fd, d[i:i+4096])
+ os.fsync(fd)
+ sys.exit(0 if n == len(d) else 1)' "$1/events.jsonl" 2>/dev/null || return 1
+   fsync_dir "$1"; }
+FAIL (m4 single write) strace: 19 lines; wanted a write of 8023 bytes
+RESULT pass=172 fail=1
+-> KILLED
+== m_terminal_journal_unchecked  (event_core.sh)
+@@ -92,7 +92,7 @@
+   fsync_dir "$tmpd"
+   if mv -T "$tmpd" "$d/terminal" 2>/dev/null; then
+     fsync_dir "$d"
+-    journal "$d" "$(jq -nc --arg k "$kind" --argjson s "${seq:-0}" '{event:"terminal_claimed",kind:$k,seq:$s}')" || return 3
++    journal "$d" "$(jq -nc --arg k "$kind" --argjson s "${seq:-0}" '{event:"terminal_claimed",kind:$k,seq:$s}')" || true
+     return 0
+   fi
+   rm -rf "$tmpd"
+FAIL (m4 terminal journal) rc=0 out=cancelled
+RESULT pass=172 fail=1
+-> KILLED
+== m_cancel_nolock  (event_core.sh)
+@@ -224,8 +224,7 @@
+   [ -f "$d/submit.json" ] || refuse event_unknown_build "$2"
+   mkdir -p "$d/tmp" 2>/dev/null || refuse lock_unavailable "$2"
+   # same per-build lock as consume: the claim and every journal line are serialised with the consumers
+-  { exec 9>>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$2"
+-  flock -w 60 9 || refuse lock_unavailable "$2"
++  :
+   if [ -d "$d/terminal" ]; then if terminal_ok "$d"; then crc=1; else crc=2; fi; else claim_terminal "$d" cancelled 0 cancelled; crc=$?; fi
+   case $crc in
+     0) flock -u 9; run_callback "$d"; echo "cancelled";;
+FAIL (q2) cancel ran during the held claim: flock: 9: Bad file descriptor
+FAIL (q2 held consume) claimed=1 superseded=1 kind=cancelled effects=1
+FAIL (q2 held cancel) claimed=1 late=0 kind=completed effects=1
+FAIL (B1 cancel retry) out=flock: 9: Bad file descriptor
+FAIL (m2 .lock) rc=20 rc2=0 victim='KEEP' out=REFUSED reason=lock_unavailable SL
+RESULT pass=168 fail=5
+-> KILLED
+== m_lockok_off  (event_core.sh)
+@@ -39,7 +39,7 @@
+   fsync_dir "$(dirname "$f")"; }
+ # lock fd opener: append-open (never truncates), refused when the path is not the regular file the fd points at (symlink swap)
+ lock_ok() { # fd path : after `exec N>>path` succeeded, the open file must be the inode that path names (lstat, no follow)
+-  [ "$(stat -L -c %i "/proc/$$/fd/$1" 2>/dev/null)" = "$(stat -c %i "$2" 2>/dev/null)" ]; }
++  true; }
+ 
+ cbstate() { head -c 64 "$1/terminal/callback.state" 2>/dev/null | tr -d '\n'; }
+ set_cbstate() { # builddir state [reason] : callback.state (and callback.reason) are their own files inside terminal/
+FAIL (m2 .lock) rc=0 rc2=0 victim='KEEP' out=consumed seq=1 kind=accepted
+FAIL (m2 .cblock) rc=0 victim='KEEP' state=done
+RESULT pass=171 fail=2
+-> KILLED
+== m_lock_truncates  (event_core.sh)
+@@ -161,7 +161,7 @@
+   d="$root/$b"
+   mkdir -p "$d/consumed" "$d/tmp"
+   # ---- sequence section, serialised per build, held through the terminal claim ----
+-  { exec 9>>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$b"
++  { exec 9>"$d/.lock"; } 2>/dev/null && lock_ok 9 "$d/.lock" || refuse lock_unavailable "$b"
+   flock -w 60 9 || refuse lock_unavailable "$b"
+   if [ -e "$d/consumed/$seq" ]; then
+     old=$(cut -d' ' -f1 "$d/consumed/$seq" 2>/dev/null)
+FAIL (m2 .lock) rc=20 rc2=20 victim='' out=REFUSED reason=lock_unavailable SL
+RESULT pass=172 fail=1
+-> KILLED
+== m_cblock_unchecked  (event_core.sh)
+@@ -52,7 +52,7 @@
+ run_callback() { # builddir : idempotent, durable state in terminal/callback.state, effect under a callback lock. 0 = done
+   local d=$1 key lrc
+   [ "$(cbstate "$d")" = done ] && return 0
+-  { exec 8>>"$d/.cblock"; } 2>/dev/null && lock_ok 8 "$d/.cblock" || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
++  { exec 8>>"$d/.cblock"; } 2>/dev/null || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   flock -w 60 8 || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   # re-check under the lock: another runner may have finished the callback while this one waited
+   if [ "$(cbstate "$d")" = done ]; then flock -u 8; return 0; fi
+FAIL (m2 .cblock) rc=0 victim='KEEP' state=done
+RESULT pass=172 fail=1
+-> KILLED
+== m_cb_norecheck  (event_core.sh)
+@@ -55,7 +55,7 @@
+   { exec 8>>"$d/.cblock"; } 2>/dev/null && lock_ok 8 "$d/.cblock" || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   flock -w 60 8 || { echo "REFUSED reason=lock_unavailable callback" >&2; return 1; }
+   # re-check under the lock: another runner may have finished the callback while this one waited
+-  if [ "$(cbstate "$d")" = done ]; then flock -u 8; return 0; fi
++  :
+   set_cbstate "$d" running || { flock -u 8; return 1; }
+   key=$(jq -r '.effect_key // empty' "$d/callback.json" 2>/dev/null)
+   if [ -n "$key" ]; then
+FAIL (I3) state=done efiles=1 out=callback_state=done
+RESULT pass=172 fail=1
+-> KILLED
+== m_ln_unchecked  (event_core.sh)
+@@ -70,7 +70,7 @@
+       ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
+       rm -f "$d/tmp/e.$$"; fsync_dir "$d/effects"
+       # EEXIST (a concurrent writer of the same key) is success; any other failure leaves no effect and must not become "done"
+-      if [ $lrc -ne 0 ] && [ ! -e "$d/effects/$key" ]; then cb_fail "$d" effect_not_applied; return 1; fi
++      :
+     fi
+   fi
+   set_cbstate "$d" done || { flock -u 8; return 1; }
+FAIL (I2 ln) rc=0 state='done' efiles=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+FAIL (I2 resume fault) rc=0 state=done
+FAIL (I2 repair) rc=0 state=done efiles=0 log=1
+RESULT pass=170 fail=3
+-> KILLED
+== m_ln_eexist_fails  (event_core.sh)
+@@ -70,7 +70,7 @@
+       ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
+       rm -f "$d/tmp/e.$$"; fsync_dir "$d/effects"
+       # EEXIST (a concurrent writer of the same key) is success; any other failure leaves no effect and must not become "done"
+-      if [ $lrc -ne 0 ] && [ ! -e "$d/effects/$key" ]; then cb_fail "$d" effect_not_applied; return 1; fi
++      if [ $lrc -ne 0 ]; then cb_fail "$d" effect_not_applied; return 1; fi
+     fi
+   fi
+   set_cbstate "$d" done || { flock -u 8; return 1; }
+FAIL (I2 EEXIST) state=failed
+RESULT pass=172 fail=1
+-> KILLED
+== m_failed_is_done  (event_core.sh)
+@@ -48,7 +48,7 @@
+   atomic_write "$d" "$d/terminal/callback.state" "$2"; }
+ 
+ cb_fail() { # builddir reason : record failed + reason, release the callback lock, report
+-  set_cbstate "$1" failed "$2"; flock -u 8 2>/dev/null; echo "callback failed: $2" >&2; return 1; }
++  set_cbstate "$1" done "$2"; flock -u 8 2>/dev/null; echo "callback failed: $2" >&2; return 1; }
+ run_callback() { # builddir : idempotent, durable state in terminal/callback.state, effect under a callback lock. 0 = done
+   local d=$1 key lrc
+   [ "$(cbstate "$d")" = done ] && return 0
+FAIL (I2 ln) rc=0 state='done' efiles=0 out=callback failed: effect_not_applied
+FAIL (I2 resume fault) rc=0 state=done
+FAIL (I2 repair) rc=0 state=done efiles=0 log=1
+FAIL (m3 '../../ESCAPED') state=done efiles=0
+FAIL (m3 'a.b') state=done efiles=0
+FAIL (m3 'x*') state=done efiles=0
+FAIL (m3 'with space') state=done efiles=0
+RESULT pass=166 fail=7
+-> KILLED
+== m_resume_rc  (event_core.sh)
+@@ -239,7 +239,7 @@
+ cmd_resume_callback() { # builds_root build_id : re-run a callback found claimed, running or failed; non-zero when it is not done
+   local d="$1/$2" rc=0; [[ $2 =~ ^[A-Za-z0-9_-]{1,128}$ ]] || refuse event_malformed "build_id"
+   [ -f "$d/terminal/state.json" ] || refuse no_terminal "$2"
+-  run_callback "$d" || rc=21
++  run_callback "$d" || true
+   echo "callback_state=$(cbstate "$d")"; return $rc
+ }
+ 
+FAIL (I1 callback.state) rc=0 state='claimed' out=callback_state=claimed
+FAIL (I2 resume fault) rc=0 state=failed
+FAIL (m2 .cblock) rc=0 victim='KEEP' state=claimed
+RESULT pass=170 fail=3
+-> KILLED
+== m_effectkey_unvalidated  (event_core.sh)
+@@ -59,7 +59,7 @@
+   set_cbstate "$d" running || { flock -u 8; return 1; }
+   key=$(jq -r '.effect_key // empty' "$d/callback.json" 2>/dev/null)
+   if [ -n "$key" ]; then
+-    [[ $key =~ ^[A-Za-z0-9_-]{1,128}$ ]] || { cb_fail "$d" effect_key_invalid; return 1; }
++    :
+     mkdir -p "$d/effects" "$d/tmp" 2>/dev/null || { cb_fail "$d" effects_dir_unavailable; return 1; }
+     if [ ! -e "$d/effects/$key" ]; then
+       # audit line first (once per key, literal whole-key match), then the keyed effect: a crash between the two is repaired on resume
+FAIL (m3 '../../ESCAPED') state=done efiles=0
+FAIL (m3 'a.b') state=done efiles=1
+FAIL (m3 'x*') state=done efiles=1
+FAIL (m3 'with space') state=done efiles=1
+RESULT pass=169 fail=4
+-> KILLED
+== m_effectkey_regexgrep  (event_core.sh)
+@@ -63,7 +63,7 @@
+     mkdir -p "$d/effects" "$d/tmp" 2>/dev/null || { cb_fail "$d" effects_dir_unavailable; return 1; }
+     if [ ! -e "$d/effects/$key" ]; then
+       # audit line first (once per key, literal whole-key match), then the keyed effect: a crash between the two is repaired on resume
+-      if ! awk -v k="$key" '$1 == k { f = 1 } END { exit !f }' "$d/effects.log" 2>/dev/null; then
++      if ! grep -q "^$key" "$d/effects.log" 2>/dev/null; then
+         { printf '%s %s\n' "$key" "$(now)" >> "$d/effects.log"; } 2>/dev/null && fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
+       fi
+       { printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null || { cb_fail "$d" effect_temp_write_failed; return 1; }
+FAIL (m3 literal) log lines=1
+RESULT pass=172 fail=1
+-> KILLED
+== m_secret_ownckout  (event_core.sh)
+@@ -104,7 +104,7 @@
+ cmd_secret_init() {
+   local sd checkout; sd=$(realpath -m "$1"); checkout=$(realpath -m "${2:-$CHECKOUT}")
+   case "$sd/" in "$checkout"/*) refuse secret_dir_inside_checkout "$sd";; esac
+-  case "$sd/" in "$CHECKOUT"/*) refuse secret_dir_inside_checkout "$sd";; esac   # this script's OWN checkout, whatever the argument says
++  :
+   if [ -e "$sd/build_hmac.key" ] || [ -L "$sd/build_hmac.key" ]; then
+     # an existing key is kept only if it is a usable one (regular file, ours, 0600, matching meta, 32 bytes)
+     BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || refuse secret_unusable "existing key"
+FAIL (I4 own checkout) rc=20 out=REFUSED reason=secret_create_failed read-back
+RESULT pass=172 fail=1
+-> KILLED
+== m_secret_create_unverified  (event_core.sh)
+@@ -120,8 +120,8 @@
+     mkdir -p "$sd" && chmod 700 "$sd" || exit 1
+     k="$sd/build_hmac.key"; m="$k.meta"; t="$k.tmp-$$"; mt="$m.tmp-$$"
+     trap 'rm -f "$t" "$mt"' EXIT
+-    openssl rand -hex 32 > "$t" || exit 1
+-    [[ "$(cat "$t")" =~ ^[0-9a-f]{64}$ ]] || exit 1
++    openssl rand -hex 32 > "$t"
++    :
+     sync "$t" || exit 1
+     mv -f "$t" "$k" || exit 1
+     chmod 600 "$k" || exit 1
+@@ -131,7 +131,7 @@
+     mv -f "$mt" "$m" || exit 1
+     sync "$sd" 2>/dev/null || true ) || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "$sd"; }
+   # report success only when the key we just wrote reads back as a usable 32-byte secret
+-  BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "read-back"; }
++  BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; true; }
+ import os, sys
+ sys.path.insert(0, os.environ["BEV_LIB"])
+ import bev_crypto
+FAIL (B2 openssl) rc=0 out=secret created
+FAIL (B2 openssl malformed) rc=0 out=secret created
+RESULT pass=171 fail=2
+-> KILLED
+== m_secret_subshell_unchecked  (event_core.sh)
+@@ -129,9 +129,9 @@
+     printf 'created=%s\nsha256=%s\n' "$(now)" "$h" > "$mt" || exit 1
+     sync "$mt" || exit 1
+     mv -f "$mt" "$m" || exit 1
+-    sync "$sd" 2>/dev/null || true ) || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "$sd"; }
++    sync "$sd" 2>/dev/null || true ) || true
+   # report success only when the key we just wrote reads back as a usable 32-byte secret
+-  BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; refuse secret_create_failed "read-back"; }
++  BEV_LIB="$here/lib" python3 - "$sd" "$CHECKOUT" <<'PY' || { rm -f "$sd/build_hmac.key" "$sd/build_hmac.key.meta" 2>/dev/null; true; }
+ import os, sys
+ sys.path.insert(0, os.environ["BEV_LIB"])
+ import bev_crypto
+FAIL (I4 unwritable) rc=0 out=mkdir: Permission denied
+FAIL (B2 openssl) rc=0 out=secret created
+FAIL (B2 openssl malformed) rc=0 out=secret created
+RESULT pass=170 fail=3
+-> KILLED
+== m_keylen  (lib/bev_crypto.py)
+@@ -93,7 +93,7 @@
+         raise SecretError("key_not_hex")
+     if not re.fullmatch(r"[0-9a-f]*", txt):
+         raise SecretError("key_not_hex")
+-    if len(txt) != KEY_HEX_LEN:
++    if False:
+         raise SecretError("key_bad_length")      # an empty or short key would make every event forgeable
+     return bytes.fromhex(txt)
+ 
+FAIL (m1 empty key) rc=20 out=REFUSED reason=event_unauthenticated 
+FAIL (m1 one byte key) rc=20 out=REFUSED reason=event_unauthenticated 
+FAIL (m1 sixty-three hex key) rc=20 out=error: fromhex() arg must contain an even number of hexadecimal digits
+FAIL (m1 sixty-six hex key) rc=20 out=REFUSED reason=event_unauthenticated 
+RESULT pass=169 fail=4
+-> KILLED
+== m_keyhex  (lib/bev_crypto.py)
+@@ -91,7 +91,7 @@
+         txt = raw.decode("ascii").strip()
+     except UnicodeDecodeError:
+         raise SecretError("key_not_hex")
+-    if not re.fullmatch(r"[0-9a-f]*", txt):
++    if False:
+         raise SecretError("key_not_hex")
+     if len(txt) != KEY_HEX_LEN:
+         raise SecretError("key_bad_length")      # an empty or short key would make every event forgeable
+FAIL (m1 non-hex key) rc=20 out=error: non-hexadecimal number found in fromhex() arg at position 0
+RESULT pass=172 fail=1
+-> KILLED
+== m_runid_bind  (lib/bev_crypto.py)
+@@ -193,7 +193,7 @@
+         print("unknown_build"); return
+     got = ev["hmac"]
+     # the event is bound to the build's submit record: the run_id and variant it carries must be the recorded ones
+-    if ev["run_id"] != exp_run:
++    if False:
+         if hmac.compare_digest(got, mac(key(statedir, b, ev["run_id"], checkout), ev)):
+             print("other_run")                       # a correctly signed event of an earlier run of this build id
+         elif hmac.compare_digest(got, mac(key(statedir, b, exp_run, checkout), ev)):
+FAIL (g) rc=20 out=REFUSED reason=event_unauthenticated 
+FAIL (m1 run_id) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 variant) rc=20 out=REFUSED reason=event_malformed variant differs from submit.json
+FAIL (m1 ok) REFUSED reason=seq_conflict seq=1 already consumed with different content
+RESULT pass=169 fail=4
+-> KILLED
+== m_variant_bind  (lib/bev_crypto.py)
+@@ -203,7 +203,7 @@
+         return
+     if not hmac.compare_digest(got, mac(key(statedir, b, exp_run, checkout), ev)):
+         print("bad"); return
+-    if ev["variant"] != exp_variant:
++    if False:
+         print("malformed:variant differs from submit.json"); return
+     print("ok")
+     print(json.dumps(ev, sort_keys=True, separators=(",", ":"), ensure_ascii=False))
+FAIL (m1 variant) rc=0 out=consumed seq=1 kind=accepted
+FAIL (m1 ok) REFUSED reason=seq_conflict seq=1 already consumed with different content
+RESULT pass=171 fail=2
+-> KILLED
+== m_firstseq  (event_core.sh)
+@@ -184,7 +184,7 @@
+   done
+   if [ "$seq" -le "$last" ]; then refuse_l illegal_transition "seq=$seq not above last consumed $last"; fi
+   if [ "$last" = 0 ] && [ "$kind" != accepted ]; then refuse_l illegal_transition "$kind before accepted"; fi
+-  if [ "$last" = 0 ] && [ "$seq" != 1 ]; then refuse_l illegal_transition "first event has seq $seq, not 1"; fi
++  :
+   if [ "$last" != 0 ] && [ "$kind" = accepted ]; then refuse_l illegal_transition "second accepted"; fi
+   if [ "$kind" = heartbeat ]; then
+     isint "$po" && isint "$st" || refuse_l event_malformed "progress fields"
+FAIL (m1 first seq) rc=0 out=consumed seq=5 kind=accepted
+FAIL (m1 ok) REFUSED reason=illegal_transition seq=1 not above last consumed 5
+RESULT pass=171 fail=2
+-> KILLED
+== m_strcap  (lib/bev_crypto.py)
+@@ -128,7 +128,7 @@
+     return type(v) is int and lo <= v <= hi
+ 
+ 
+-def _str(v, lo=1, hi=STR_MAX):
++def _str(v, lo=1, hi=10 ** 9):
+     return type(v) is str and lo <= len(v) <= hi
+ 
+ 
+FAIL (X host of 1025 characters) rc=20 out=REFUSED reason=illegal_transition second accepted
+FAIL (X sent_at of 1025 characters) rc=20 out=REFUSED reason=illegal_transition second accepted
+FAIL (m5 image_digest) rc=0 out=consumed seq=2 kind=completed exit_class=succeeded callback_state=done
+RESULT pass=170 fail=3
+-> KILLED
+== m_capboundary  (lib/bev_crypto.py)
+@@ -136,7 +136,7 @@
+     """One strict parse of the bytes; returns the event dict or raises Malformed. Applies the same rules as
+     build-event.schema.json (types, enums, required fields per kind, no extra fields, string lengths, integer bounds) plus
+     what a schema cannot state: the 64 KiB cap on the raw event, strict duplicate-key and non-finite-number refusal."""
+-    if len(raw) > MAX_EVENT_BYTES:
++    if len(raw) >= MAX_EVENT_BYTES:
+         raise Malformed("too large")
+     try:
+         ev = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_dups, parse_constant=_nan)
+FAIL (X5 boundary) rc=20 out=REFUSED reason=event_malformed too large
+RESULT pass=172 fail=1
+-> KILLED
+== m_tmpname  (event_core.sh)
+@@ -82,7 +82,7 @@
+   [ -s "$1/terminal/state.json" ] && jq -e '.kind' "$1/terminal/state.json" >/dev/null 2>&1 && [ -s "$1/terminal/callback.state" ]; }
+ claim_terminal() { # builddir kind seq exit_class [digest] -> 0 this caller won, 1 lost the race (a good terminal exists), 2 failed, 3 won but the journal write failed
+   local d=$1 kind=$2 seq=$3 ec=$4 dig=${5:-} tmpd
+-  tmpd="$d/terminal.tmp-$$-$(starttime)"
++  tmpd="$d/tmp/terminal.$$-$(starttime)"
+   rm -rf "$tmpd"; mkdir "$tmpd" 2>/dev/null || return 2
+   { jq -n --arg k "$kind" --argjson s "${seq:-0}" --arg e "$ec" --arg t "$(now)" --arg g "$dig" \
+       '{kind:$k,seq:$s,exit_class:$e,claimed_at:$t,digest:$g}' > "$tmpd/state.json" \
+FAIL (m7) mv log: -T /tmp/tmp.f5JeNYs3Ew/builds/NM/tmp/terminal.912743-25234457 /tmp/tmp.f5JeNYs3Ew/builds/NM/terminal
+RESULT pass=172 fail=1
+-> KILLED
+== X1_secondaccepted  (event_core.sh)
+@@ -185,7 +185,7 @@
+   if [ "$seq" -le "$last" ]; then refuse_l illegal_transition "seq=$seq not above last consumed $last"; fi
+   if [ "$last" = 0 ] && [ "$kind" != accepted ]; then refuse_l illegal_transition "$kind before accepted"; fi
+   if [ "$last" = 0 ] && [ "$seq" != 1 ]; then refuse_l illegal_transition "first event has seq $seq, not 1"; fi
+-  if [ "$last" != 0 ] && [ "$kind" = accepted ]; then refuse_l illegal_transition "second accepted"; fi
++  :
+   if [ "$kind" = heartbeat ]; then
+     isint "$po" && isint "$st" || refuse_l event_malformed "progress fields"
+     lastprog=0; laststage=0
+FAIL (X1) rc=0 out=consumed seq=3 kind=accepted
+RESULT pass=172 fail=1
+-> KILLED
+== X2_noterminaldup  (event_core.sh)
+@@ -168,7 +168,7 @@
+     if [ "$old" = "$dig" ]; then flock -u 9; echo "DUP seq=$seq acknowledged and dropped"; return 0; fi
+     refuse_l seq_conflict "seq=$seq already consumed with different content"
+   fi
+-  if [ "$kind" = completed ] && [ -f "$d/terminal/state.json" ] && [ "$(jq -r '.kind' "$d/terminal/state.json")" = completed ] \
++  if false && [ -f "$d/terminal/state.json" ] && [ "$(jq -r '.kind' "$d/terminal/state.json")" = completed ] \
+      && [ "$(jq -r '.seq' "$d/terminal/state.json")" = "$seq" ]; then
+     if [ "$(jq -r '.digest // empty' "$d/terminal/state.json")" = "$dig" ]; then flock -u 9; echo "DUP seq=$seq acknowledged and dropped"; return 0; fi
+     refuse_l seq_conflict "seq=$seq claimed with different content"
+FAIL (X2 dup) rc=0 out=late_ignored seq=2
+FAIL (X2 conflict) rc=0 out=late_ignored seq=2
+RESULT pass=171 fail=2
+-> KILLED
+== X3_novariant  (lib/bev_crypto.py)
+@@ -162,7 +162,7 @@
+         raise Malformed("build_id")
+     if not _str(ev["run_id"], 1, 128) or not _str(ev["host"]) or not _str(ev["sent_at"]):
+         raise Malformed("run_id/host/sent_at")
+-    if ev["variant"] not in VARIANTS:
++    if False:
+         raise Malformed("variant")
+     if not _isint(ev["seq"], 1):
+         raise Malformed("seq")
+FAIL (X variant evil) rc=20 out=REFUSED reason=event_malformed variant differs from submit.json
+RESULT pass=172 fail=1
+-> KILLED
+== X4_noschema  (lib/bev_crypto.py)
+@@ -156,7 +156,7 @@
+         raise Malformed("missing common fields")
+     if set(ev) - allowed:
+         raise Malformed("unexpected field " + sorted(set(ev) - allowed)[0])
+-    if ev["schema"] != "build-event/1":
++    if False:
+         raise Malformed("schema")
+     if not (type(ev["build_id"]) is str and BUILD_ID_RE.match(ev["build_id"])):
+         raise Malformed("build_id")
+FAIL (X schema build-event/2) rc=20 out=REFUSED reason=illegal_transition second accepted
+RESULT pass=172 fail=1
+-> KILLED
+== X5_nosizecap  (lib/bev_crypto.py)
+@@ -136,7 +136,7 @@
+     """One strict parse of the bytes; returns the event dict or raises Malformed. Applies the same rules as
+     build-event.schema.json (types, enums, required fields per kind, no extra fields, string lengths, integer bounds) plus
+     what a schema cannot state: the 64 KiB cap on the raw event, strict duplicate-key and non-finite-number refusal."""
+-    if len(raw) > MAX_EVENT_BYTES:
++    if False:
+         raise Malformed("too large")
+     try:
+         ev = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_dups, parse_constant=_nan)
+FAIL (X5 over) rc=0 out=consumed seq=1 kind=accepted
+FAIL (X5 boundary) rc=0 out=DUP seq=1 acknowledged and dropped
+RESULT pass=171 fail=2
+-> KILLED
+== X6_progcorrupt  (event_core.sh)
+@@ -191,7 +191,7 @@
+     lastprog=0; laststage=0
+     if [ -f "$d/progress.json" ]; then
+       lastprog=$(jq -r '.progress_offset' "$d/progress.json" 2>/dev/null); laststage=$(jq -r '.stage' "$d/progress.json" 2>/dev/null)
+-      isint "$lastprog" && isint "$laststage" || refuse_l state_corrupt "progress.json"
++      :
+     fi
+     if [ "$po" -lt "$lastprog" ] || [ "$st" -lt "$laststage" ]; then refuse_l illegal_transition "progress went backwards"; fi
+     atomic_write "$d" "$d/progress.json" "$(jq -nc --argjson p "$po" --argjson s "$st" '{progress_offset:$p,stage:$s}')" || refuse_l state_write_failed "progress.json"
+FAIL (X6) rc=0 out=/tmp/tmp.e4SOIQa4Oz/co/scripts/build/event_core.sh: line 196: [: : integer expected
+RESULT pass=172 fail=1
+-> KILLED
+== X7_nostrfields  (lib/bev_crypto.py)
+@@ -160,7 +160,7 @@
+         raise Malformed("schema")
+     if not (type(ev["build_id"]) is str and BUILD_ID_RE.match(ev["build_id"])):
+         raise Malformed("build_id")
+-    if not _str(ev["run_id"], 1, 128) or not _str(ev["host"]) or not _str(ev["sent_at"]):
++    if False:
+         raise Malformed("run_id/host/sent_at")
+     if ev["variant"] not in VARIANTS:
+         raise Malformed("variant")
+FAIL (X empty host) rc=20 out=REFUSED reason=illegal_transition second accepted
+FAIL (X empty sent_at) rc=20 out=REFUSED reason=illegal_transition second accepted
+FAIL (X host of 1025 characters) rc=20 out=REFUSED reason=illegal_transition second accepted
+FAIL (X sent_at of 1025 characters) rc=20 out=REFUSED reason=illegal_transition second accepted
+RESULT pass=169 fail=4
+-> KILLED

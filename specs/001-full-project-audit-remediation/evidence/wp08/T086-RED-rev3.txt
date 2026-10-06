@@ -1,0 +1,8 @@
+# RED (WF3 round 4, I3): the round-4 test_project_gate_ledger.sh run against the rev 2 ratchet RECONSTRUCTED from the rev 2 text (the rev 3 file with the F1d/F2b/absent-prev block replaced by the rev 2 F2 block)
+# captured utc=2026-10-06T05:31:40Z host=anton uid=1000 | reconstructed subject sha256 5a2485e85e4680b4647d03e3fe44219f3dd0dc9cc1307280fd21c5431e9d28ef
+# I3-3b: rc=1 on rev 2 for the wrong reason (baseline 0 vs 1 deferred), its pattern F1d is absent: still RED. W6 and W7 are mutation-RED, they pass on the shipped ratchet by design (see mutations-rev3.tsv).
+FAIL I3-1 a document name that is not registered in prev-names FAILs (F2b: it could later vanish uncited) (rc=0 want 1, pat=F2b CM-NEW-GATE)
+FAIL I3-2 a missing --prev-names file FAILs (an unresolvable input is a refusal, never a pass) (rc=0 want 1, pat=prev-names file absent)
+FAIL I3-3 an orphan ledger row (name in no document) FAILs (F1d) (rc=0 want 1, pat=F1d CM-ORPHAN-PAD)
+FAIL I3-3b after a gate is implemented an orphan DEFERRED row cannot keep the freed slack: still FAILs (rc=1 want 1, pat=F1d CM-ORPHAN-PAD)
+RESULT pass=51 fail=4

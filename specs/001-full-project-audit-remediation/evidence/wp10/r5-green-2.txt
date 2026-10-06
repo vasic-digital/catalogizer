@@ -1,0 +1,183 @@
+# identity: r5-GREEN-2
+# runp_sha256: 9be6f3f4c954a4698999b304e92b0241ad9cbad999bfbfa37b44d5e0223f15b9
+# runp_test_sha256: e01ec18644eb7600f42220dac51d4d3208387a0874570b5f74ada76385c85f40
+# hc_sha256: 6aab3b350534f828b2b89ab2fb92a22e6427e8bd2f73cd5ca631afd4258c1180
+# hc_test_sha256: c4197959cb6e14293895c480da3415a4039d26696a6898a419b1d1f0a526d29a
+# run_at: 2026-10-06T09:50:51Z host: anton uid: 1000
+PASS: A1 baseline exit 0
+PASS: A2 baseline record written
+PASS: A3 baseline schema
+PASS: A4 19 unique item ids
+PASS: A5 baseline C02 pass
+PASS: A5 baseline C03 pass
+PASS: A5 baseline C04 pass
+PASS: A5 baseline C05 pass
+PASS: A5 baseline C06 pass
+PASS: A5 baseline C07 pass
+PASS: A5 baseline C08 pass
+PASS: A5 baseline C09 pass
+PASS: A5 baseline C10 pass
+PASS: A5 baseline C11 pass
+PASS: A5 baseline C12 pass
+PASS: A5 baseline C13 pass
+PASS: A5 baseline C16 pass
+PASS: A6 C01 verdict na
+PASS: A6 C01 status not_applicable_local_host
+PASS: A6 C01 cites owner decision
+PASS: A6 C17 verdict na
+PASS: A6 C17 status not_applicable_local_host
+PASS: A6 C17 cites owner decision
+PASS: A6 C18 verdict na
+PASS: A6 C18 status not_applicable_local_host
+PASS: A6 C18 cites owner decision
+PASS: A6 C19 verdict na
+PASS: A6 C19 status not_applicable_local_host
+PASS: A6 C19 cites owner decision
+PASS: A7 C14 unconfirmed
+PASS: A7 C15 unconfirmed
+PASS: A8 summary pass count
+PASS: A9 summary fail count
+PASS: A10 control negative absent
+PASS: A11 control positive present
+PASS: A12 lock parser saw 2 images
+PASS: A13 identity script sha
+PASS: A14 identity lock sha
+PASS: A15 no pull and no network verb used
+PASS: A16 no temp residue
+PASS: A17 values: mem_total bytes
+PASS: A18 values: disk margins
+PASS: A19 images both present_pinned
+PASS: B1 unknown arg exit 2
+PASS: B2 --strict with a fail exits 1
+PASS: B3 default exit 0 with a fail
+PASS: B4 --strict clean exits 0
+PASS: C C02 podman --version fails
+PASS: C02 collateral fails
+PASS: C C03 rootless=false
+PASS: C03 collateral fails
+PASS: C C03 rootless unparsable
+PASS: C03 collateral fails
+PASS: C C03 podman info fails
+PASS: C03 collateral fails
+PASS: C C04 cgroup v1 (no controllers file)
+PASS: C04 collateral fails
+PASS: C C04 cgroot unreadable
+PASS: C04 collateral fails
+PASS: C C05 meminfo unparsable
+PASS: C05 collateral fails
+PASS: C C06 nproc prints 0
+PASS: C06 collateral fails
+PASS: C C06 nproc fails
+PASS: C06 collateral fails
+PASS: C C07 kvm absent
+PASS: C07 collateral fails
+PASS: C C07 kvm present but not rw
+PASS: C07 collateral fails
+PASS: C C08 no subuid range
+PASS: C08 collateral fails
+PASS: C C08 max_user_namespaces=0
+PASS: C08 collateral fails
+PASS: C C08 no newuidmap
+PASS: C08 collateral fails
+PASS: C C09 ulimit -u 1000
+PASS: C09 collateral fails
+PASS: C C09 ulimit unreadable
+PASS: C09 collateral fails
+PASS: C C10 graphroot empty
+PASS: C10 collateral fails
+PASS: C C10 df graphroot fails
+PASS: C10 collateral fails
+PASS: C C11 df repo fails
+PASS: C11 collateral fails
+PASS: C C12 graphroot below min
+PASS: C12 collateral fails
+PASS: C C12 repo below min (graphroot fine)
+PASS: C12 collateral fails
+PASS: C C12 duplicate min_free_bytes
+PASS: C12 collateral fails
+PASS: C C12 exactly at the minimum passes
+PASS: C12 collateral fails
+PASS: C C13 image a absent
+PASS: C13 collateral fails
+PASS: C C13 image a digest mismatch
+PASS: C13 collateral fails
+PASS: C C13 empty lock (parser blind)
+PASS: C13 collateral fails
+PASS: C C13 N1 lock entry with neither digest nor platform_digest
+PASS: C13 collateral fails
+PASS: N1 ...and its status is lock_malformed, not present_pinned
+PASS: C C13 N1 empty digest value (platform_digest alone is not enough)
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed digest (no sha256: prefix)
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with an empty hex part
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with non-hex characters
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed platform_digest
+PASS: C13 collateral fails
+PASS: C C13 N1 no platform_digest and the local image does not match the digest
+PASS: C13 collateral fails
+PASS: C C13 N1 guard against false refusal: no platform_digest but the digest matches the local image
+PASS: C13 collateral fails
+PASS: C C15 loadavg unreadable
+PASS: C15 collateral fails
+PASS: C C16 ntp not synchronised
+PASS: C16 collateral fails
+PASS: C C16 timedatectl fails
+PASS: C16 collateral fails
+PASS: C C16 ntp garbage
+PASS: C16 collateral fails
+PASS: C13 value names the absent image
+PASS: D1 real host exit 0
+PASS: D2 real nproc equals nproc
+PASS: D3 real kvm verdict agrees with the filesystem
+PASS: D4 real rootless agrees with podman
+PASS: D5 real record has 19 items
+PASS: D6 real lock parser saw the lock images
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13dg caught
+PASS: E mutation c13pd caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+host_checklist test: 153 passed, 0 failed (mutation record: /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/hc-mut-g2.txt)
+rc=0
+CAUGHT c01: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c17: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c18: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c19: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c02: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c03: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c04: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c05: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c06: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c07: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c08: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c09: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c10: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c11: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c12: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13dg: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13pd: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13b: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c14: mutant gives 'pass' (fixture wants 'unconfirmed')
+CAUGHT c15: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c16: mutant gives 'pass' (fixture wants 'fail')

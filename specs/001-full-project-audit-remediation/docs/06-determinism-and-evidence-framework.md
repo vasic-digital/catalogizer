@@ -1630,7 +1630,7 @@ Polarity switch in the test (the oracle strategy is declared in a comment the re
 
 ```go
 // oracle: specified (docs/api/openapi.yaml, section on login)
-// [PROTECTED-SPEC: ATM-NNN]
+// [PROTECTED-SPEC: CAT-NNN]
 func TestLoginRejectsExpiredRefreshToken(t *testing.T) {
 	redMode := os.Getenv("RED_MODE") != "0"
 	// ... drive the real handler stack against the real database ...

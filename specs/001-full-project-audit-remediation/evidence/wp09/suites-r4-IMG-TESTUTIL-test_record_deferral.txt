@@ -1,0 +1,33 @@
+# R4 test_record_deferral inside IMG-TESTUTIL via run_pinned.sh (mapped uid)
+# date_utc: 2026-10-06T05:27:21Z
+# sut_sha256: 12a5f201ef54950df500dd18fcbe620fc7b6e9719ddb6c1e4226141a8aa87e48
+# probe_sha256: 170691f94af898b733b45d84365d5b4fa9e4e216aa781ddfe469a9b8b5e4602b
+# test_sha256: 3857c43e10c72462d2fcd05dcd1e4c3dca2e8a4e56e5dbbb6190a2266d2b2c4b
+ok   LOCAL_ONLY recorded (=0)
+ok   SKIP_LONG recorded (=0)
+ok   SWEEP_ABSENT recorded (=0)
+ok   --list: closed-set order (=SKIP_LONG,SWEEP_ABSENT,LOCAL_ONLY)
+ok   row count (header + 3) (=4)
+ok   row carries flag and reason (=long gate deferred)
+ok   --list: duplicate flag listed once (=SKIP_LONG,SWEEP_ABSENT,LOCAL_ONLY)
+ok   held commit with verdict recorded (=0)
+ok   row carries awaits_review and commit (=specs/x/reviews/WP-04.json|abc123)
+ok   flag outside the closed set: 20 (=20)
+ok   flag in wrong case: 20 (=20)
+ok   missing reason: 20 (=20)
+ok   empty reason: 20 (=20)
+ok   tab in reason: 20 (=20)
+ok   held commit without verdict: 20 (=20)
+ok   no --run-dir: 20 (=20)
+ok   unknown argument: 20 (=20)
+ok   no row written by any refusal (=6)
+ok   run dir holding tracked files: 20 (=20)
+ok   run dir not ignored by git: 20 (=20)
+ok   no deferrals.tsv in the tracked tree (=0)
+ok   ignored run dir holding a tracked file: 20 (=20)
+ok   run dir outside a work tree (=0)
+ok   unwritable run dir: 20 and no row (=20)
+ok   read-only deferrals.tsv: 20 and no row (=20)
+ok   no row appended to the read-only file (=1)
+---- 26 ok, 0 failed
+rc=0

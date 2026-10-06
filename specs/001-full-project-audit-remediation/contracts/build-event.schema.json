@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "build-event/1",
+  "title": "Build completion-contract event (one record per event, JSON object per line in the build journal)",
+  "description": "T005a (owner decision C1, plan KC-P2). Producer: the remote emitter scripts/build/remote/emit.sh on the build host. Consumers: the event hub scripts/build/event_hub.sh and the consume core scripts/build/event_core.sh. seq is per build, from 1, strictly increasing. hmac is HMAC-SHA256 (lowercase hex) over the canonical bytes of the event without the hmac field (the CANONICAL FORM: Python json.dumps(event minus hmac, sort_keys=True, separators=(\",\", \":\"), ensure_ascii=False) encoded UTF-8, i.e. compact, keys sorted by code point, non-ASCII characters emitted raw, only the mandatory JSON string escapes, integers in plain decimal, no floats; jq -cS reproduces the same bytes ONLY on the fixtures of test_dispatch_events.sh and not in general: for the character U+007F (DEL) jq -cS emits the escape \\u007f while Python emits the raw character, so an emitter MUST NOT rely on jq -cS for arbitrary text; an emitter MUST reproduce the Python form exactly and a cross-implementation fixture for the emitter is OWED to T005b; scripts/build/lib/bev_crypto.py) under the per-build key HKDF-SHA256(driver secret, salt empty, info = len4be(build_id) || build_id || len4be(run_id) || run_id). Integers are bounded to 2^53-1 and the core refuses floats, booleans and duplicate keys; host, sent_at and image_digest are at most 1024 characters (the core caps them identically); the raw event is at most 65536 bytes (the core refuses a larger one before parsing it: a byte cap on the transport that JSON Schema cannot express); the core additionally binds an event to the build's submit record (run_id and variant must equal the recorded ones) and requires the first event of a build to be accepted with seq 1; build_id matches ^[A-Za-z0-9_-]{1,128}$ (no dot). Initial draft written by the T005a slice 2026-10-05; UNCONFIRMED against the full T005a text beyond the fields it lists (elapsed_monotonic_ms and stage typing are this draft's choice).",
+  "type": "object",
+  "required": ["schema", "run_id", "build_id", "variant", "seq", "kind", "host", "sent_at", "hmac"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "build-event/1"},
+    "run_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "build_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$"},
+    "variant": {"enum": ["primary", "repro-cold"]},
+    "seq": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+    "kind": {"enum": ["accepted", "heartbeat", "completed"]},
+    "host": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "sent_at": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "hmac": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "progress_offset": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "stage": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "elapsed_monotonic_ms": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "peak_rss_bytes": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "exit_class": {"enum": ["succeeded", "build_failed", "test_failed", "infra_failed", "cancelled"]},
+    "artifact_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "image_digest": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "remote_log_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"kind": {"const": "heartbeat"}}, "required": ["kind"]},
+      "then": {"required": ["progress_offset", "stage", "elapsed_monotonic_ms"]}
+    },
+    {
+      "if": {"properties": {"kind": {"const": "completed"}}, "required": ["kind"]},
+      "then": {"required": ["exit_class", "artifact_manifest_sha256", "image_digest", "remote_log_sha256"]}
+    }
+  ]
+}

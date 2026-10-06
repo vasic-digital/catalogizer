@@ -1,0 +1,67 @@
+--- MUTANT c1: delete the verdict-model equality check
+    52c52
+    < [ "$vmodel" = "$pmodel" ] || refuse verdict_field_mismatch "model verdict='$vmodel' record='$pmodel'"
+    ---
+    > :
+    KILLED (RESULT pass=21 fail=3; first: FAIL verdict model differs from record model refused (B3) (rc=0 want reason=verd)
+--- MUTANT c2: ignore the explicit record argument
+    29c29
+    < prov=${2:-${verdict%.json}.provenance.json}
+    ---
+    > prov=${verdict%.json}.provenance.json
+    KILLED (RESULT pass=22 fail=2; first: FAIL explicit good record used although default-path record is bad (c2) (rc=20: )
+--- MUTANT c3: accept effort ? (drop the xhigh equality on the record)
+    42c42
+    < [ "$peffort" = xhigh ] || refuse effort_not_xhigh "record effort='${peffort:-absent}'"
+    ---
+    > [ -n "$peffort" ] || refuse effort_not_xhigh "record effort='${peffort:-absent}'"
+    KILLED (RESULT pass=21 fail=3; first: FAIL high record refused (rc=20 want reason=effort_not_xhigh: REFUSED reason=eff)
+--- MUTANT c4: drop the run id check
+    34c34
+    < [ -n "$rid" ] || refuse workflow_run_id_absent
+    ---
+    > :
+    KILLED (RESULT pass=23 fail=1; first: FAIL record without run id refused (rc=0 want reason=workflow_run_id_absent: OK )
+--- MUTANT c5: skip the verdict_sha256 comparison
+    57c57
+    < [ "$psha" = "$asha" ] || refuse verdict_sha_mismatch "record=$psha actual=$asha"
+    ---
+    > :  # "record=$psha actual=$asha"
+    KILLED (RESULT pass=23 fail=1; first: FAIL verdict changed by one byte refused (verdict_sha_mismatch) (rc=0 want reaso)
+--- MUTANT i1a: allow-list match becomes a substring match
+    40c40
+    < case "$OPUS_IDS" in *" $pmodel "*) : ;; *) refuse model_not_opus "record model='$pmodel'" ;; esac
+    ---
+    > printf "%s" "$pmodel" | grep -qi opus || refuse model_not_opus "x"
+    KILLED (RESULT pass=20 fail=4; first: FAIL substring 'opus' in a non-Opus model refused (I1) (rc=0 want reason=model_n)
+--- MUTANT EQ1: drop the record model string-type check
+    38c38
+    < jq -e '.model|type=="string"' "$prov" >/dev/null 2>&1 || refuse model_not_opus "record model is not a string"
+    ---
+    > :
+    SURVIVED as documented EQUIVALENT mutant (the allow-list match refuses non-strings anyway; type check is a clearer reason only)
+--- MUTANT i1c: allow-list match case-insensitive
+    40c40
+    < case "$OPUS_IDS" in *" $pmodel "*) : ;; *) refuse model_not_opus "record model='$pmodel'" ;; esac
+    ---
+    > case "${OPUS_IDS,,}" in *" ${pmodel,,} "*) : ;; *) refuse model_not_opus "record model='$pmodel'" ;; esac
+    KILLED (RESULT pass=23 fail=1; first: FAIL case variant refused, exact match only (I1) (rc=0 want reason=model_not_opu)
+--- MUTANT i2a: verdict: accept multiple documents
+    28c28
+    < single "$verdict" || refuse verdict_unreadable "not exactly one JSON object: $verdict"
+    ---
+    > jq -e . "$verdict" >/dev/null 2>&1 || refuse verdict_unreadable "not exactly one JSON object: $verdict"
+    KILLED (RESULT pass=22 fail=2; first: FAIL second JSON document in the verdict refused (I2) (rc=20 want reason=verdict)
+--- MUTANT i2b: record: accept multiple documents
+    31c31
+    < single "$prov" || refuse provenance_unreadable "not exactly one JSON object: $prov"
+    ---
+    > jq -e . "$prov" >/dev/null 2>&1 || refuse provenance_unreadable "not exactly one JSON object: $prov"
+    KILLED (RESULT pass=23 fail=1; first: FAIL second JSON document in the record refused (I2) (rc=20 want reason=provenan)
+--- MUTANT i2c: single(): drop the object-type requirement
+    27c27
+    < single() { jq -s -e 'length==1 and (.[0]|type=="object")' "$1" >/dev/null 2>&1; }
+    ---
+    > single() { jq -s -e 'length==1' "$1" >/dev/null 2>&1; }
+    KILLED (RESULT pass=23 fail=1; first: FAIL top-level array verdict refused (I2) (rc=20 want reason=verdict_unreadable:)
+MUTATIONS total=11 survived_or_unapplied=0 documented_equivalent=1

@@ -1,0 +1,15 @@
+# T040b check_class.sh and class tables mutations (host run: bash scripts/repo/tests/run_wp04_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the test exits non-zero)
+CAUGHT   T drop exemption rows of class generated  -> 14 failing case(s), e.g. FAIL class of docs/workable_items.db (got 'source', want 'generated')
+CAUGHT   T drop exemption rows of class evidence  -> 14 failing case(s), e.g. FAIL class of specs/001-full-project-audit-remediation/evidence/p0-exit.json (got 'source', want 'evidence')
+CAUGHT   T drop exemption rows of class patches  -> 7 failing case(s), e.g. FAIL class of specs/001-full-project-audit-remediation/audit/patches/a.patch (got 'source', want 'patches')
+CAUGHT   T drop exemption rows of class governance-carrier  -> 8 failing case(s), e.g. FAIL class of .specify/memory/constitution-appendix.md (got 'source', want 'governance-carrier')
+CAUGHT   T drop exemption rows of class evidence-ledger  -> 6 failing case(s), e.g. FAIL class of specs/001-full-project-audit-remediation/evidence/ledger.jsonl (got 'evidence', want 'evidence-l
+CAUGHT   T drop exemption rows of class legacy-collection  -> 2 failing case(s), e.g. FAIL class of docs/issues/ISS-1.md (got 'source', want 'legacy-collection')
+CAUGHT   T class generated no longer applies secret_fold  -> 1 failing case(s), e.g. FAIL generated applies secret_fold (got 'skip', want 'apply')
+CAUGHT   T class evidence no longer applies secret_fold  -> 1 failing case(s), e.g. FAIL evidence applies secret_fold (got 'skip', want 'apply')
+CAUGHT   T class patches no longer applies merge_conflict  -> 1 failing case(s), e.g. FAIL patches applies merge_conflict (got 'skip', want 'apply')
+CAUGHT   T class governance-carrier no longer applies revision_header  -> 1 failing case(s), e.g. FAIL governance-carrier applies revision_header (got 'skip', want 'apply')
+CAUGHT   T class evidence-ledger no longer applies private_key  -> 1 failing case(s), e.g. FAIL evidence-ledger applies private_key (got 'skip', want 'apply')
+CAUGHT   T class legacy-collection no longer applies shell_parse  -> 2 failing case(s), e.g. FAIL legacy-collection applies shell_parse (got 'skip', want 'apply')
+CAUGHT   T class source no longer applies trailing_whitespace  -> 1 failing case(s), e.g. FAIL source applies trailing_whitespace (got 'skip', want 'apply')
+---- 13 mutations, 0 not caught

@@ -1,0 +1,13 @@
+# RED of the mutation runner (WF2 I-7 follow-up), captured 2026-10-05T19:38:26Z from the first full run of the runner version whose stale-row check matched (kind, name) only
+# command: bash scripts/register/run_mutations.sh --test scripts/register/tests/test_register_ext.sh --kinds check --equivalent scripts/register/equivalent_mutants.tsv --count-checks '^FAIL (A2|A3|A7|F2) '
+# observed (stderr + summary): the row for ONE surviving CHECK mutant of reg_evidence was called stale because another reg_evidence CHECK mutant is killed (exit 4 on a run with 0 unreviewed survivors)
+STALE equivalence entry (a test kills it): check reg_evidence
+mutants=73 killed=72 equivalent_reviewed=1 survived_unreviewed=0 count_only_in_survived=0
+rc=4
+# RED of the earlier version (stale rows reported for rows with an empty detail prefix, 'read' collapsed the empty tab field), from tests/test_run_mutations.sh run against that version:
+FAIL R4 both survivors listed as reviewed-equivalent: exit 0 :: got [4] want [0]
+FAIL R8 [STALE equivalence entry (no such mutant): trigger reg_ids_no_update
+FAIL R11 a row of a kind this run did not select is not stale: exit 0 :: got [4] want [0]
+RESULT pass=17 fail=3
+# GREEN after the fixes: tests/test_run_mutations.sh
+RESULT pass=24 fail=0

@@ -1,0 +1,35 @@
+# WP-02 round 6 RED: N6-5 (index_health) and N6-6 (scope_to_lumen_json) against the PRE-FIX scripts
+# captured 2026-10-06T13:11:18Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# PRE-FIX helpers (the state the WF6 review judged; sha256 of the copies run):
+d6220cd5b1332be478cf43d2b573cfde835e9a1bb13b37756d7178217f19afc4    pre/repo/push_recursive.sh
+bba1695b8a13a6790dcfa9cd17d09c4e46aaf09ed4ae8577e3feef0afbc25e1a    pre/repo/scope_check.sh
+2b98969813f3060b13a40ddf8be2d97c8a5618af475cec24c7a47bb9079b83ed    pre/repo/check_no_ci.sh
+08e4a18175d30d7db1f22999c796218e720fed3cda1752c1e321a6d070f7c834    pre/repo/check_revision_headers.sh
+fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4    pre/repo/integrate_merge.sh
+8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd    pre/repo/lib_safe.sh
+29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758    pre/repo/verify_repos.sh
+0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854    pre/audit/index_health.sh
+be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71    pre/audit/scope_to_lumen_json.py
+# tests (current, round 6):
+  7a0118967aa43f74514c54b352af474f7c3ff606fa4b50b3373871e6495a7a77  scripts/audit/tests/test_index_health_extra.sh
+  37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+== test_index_health_extra
+FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ a 342 200 213] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ 342 200 213 a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL N6-5 encoding-class third-party root [ a 342 200 250 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+SUMMARY pass=39 fail=8
+== test_scope_to_lumen_json
+FAIL N6-6 an integer class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceback (most recent call last):
+FAIL N6-6 a null class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceback (most recent call last):
+FAIL N6-6 integer class name: want rc=3 without a traceback, got rc=1: Traceback (most recent call last):
+FAIL N6-6 a submodules TSV that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (most recent call last):
+FAIL N6-6 non-UTF-8 TSV: want rc=3 without a traceback, got rc=1: Traceback (most recent call last):
+FAIL N6-6 a scope.yaml that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (most recent call last):
+FAIL N6-6 root_files 1: want rc=1 naming root_files, got rc=0: 
+FAIL N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=1: Traceback (most recent call last):
+SUMMARY pass=44 fail=8

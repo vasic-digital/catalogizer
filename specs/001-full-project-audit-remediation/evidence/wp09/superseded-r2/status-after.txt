@@ -1,0 +1,11 @@
+ M .gitignore
+?? scripts/containers/
+?? scripts/governance/
+?? scripts/repo/
+?? specs/001-full-project-audit-remediation/decisions/
+?? specs/001-full-project-audit-remediation/evidence/
+?? specs/001-full-project-audit-remediation/progress.yml
+!! .claude/
+!! .codegraph/codegraph.db
+!! .remember/
+!! .specify/feature.json

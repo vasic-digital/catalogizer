@@ -1,0 +1,13 @@
+# round 6 mutation excerpt for WP-02 (index_health.sh W1..W5, EQ-W6; scope_to_lumen_json.py S1..S4); full run in evidence/wp04/wp04f-mutation.txt
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_scope_to_lumen_json.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   W1 IH: a replacement character in a root is accepted (invalid UTF-8)  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W2 IH: a format character (BOM, zero-width space) is accepted  -> 3 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=
+CAUGHT   W3 IH: a backslash is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W4 IH: a decomposed (NFD) spelling is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want r
+CAUGHT   W5 IH: a no-break space inside a root is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 
+EQUIVALENT EQ-W6 IH: DEL not named (covered by the C* category check)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   S1 ST: a non-string class name is accepted  -> 3 failing case(s), e.g. FAIL N6-6 an integer class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceb
+CAUGHT   S2 ST: a non-UTF-8 input raises (UnicodeDecodeError not caught)  -> 3 failing case(s), e.g. FAIL N6-6 a submodules TSV that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (mos
+CAUGHT   S3 ST: root_files is compared without its type  -> 1 failing case(s), e.g. FAIL N6-6 root_files 1: want rc=1 naming root_files, got rc=0: 
+CAUGHT   S4 ST: the files are read with the locale encoding  -> 1 failing case(s), e.g. FAIL N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=3: unreadable input: 'ascii' codec

@@ -1,0 +1,229 @@
+# WP-04 fix round 4 evidence (GREEN: three runs of the 13 WP-04 helper tests on the host (gawk), then one run with mawk 1.3.4 as awk, then one run of each test inside the pinned container IMG-TESTUTIL via scripts/containers/run_pinned.sh (uid mapped)) - host bash 5.3.9(1)-release, git version 2.53.0, head a27d72a5 (working tree; nothing committed by this task)
+# generated 2026-10-06T06:40:52Z
+# sha256 scripts/repo/tests/test_wp04d.sh 2a0247cabe686d9850163faa3d5c90442388f61f53424312f4be4e99f77a4cd6
+# sha256 scripts/repo/tests/run_wp04d_mutations.sh 896ef24e3cf664496fceae90548820bf5c98390e9712e8a3697772c530683693
+# sha256 scripts/repo/tests/run_wp04c_mutations.sh 789772dd03fa4f83e72ee60c3874be703fda8b4cd3685597dd513d41795fd318
+# sha256 scripts/repo/tests/run_wp04b_mutations.sh b2a4e95ba90aec51b780189c30ebeb3f217872a97632e57e6ccd0669888de5f9
+# sha256 scripts/repo/tests/lib_wp04b.sh 935267e5adef7e00d74e1c0f71f7b544bdf0badc923a93aa7dd9b69bd8e90df1
+# sha256 scripts/repo/tests/test_validate_cheap.sh 3b61f92061ca033026c8d3f1530dca65e53d164e7ecc8c8a6f10f4f069a6992b
+# sha256 scripts/repo/tests/test_wp04c.sh b7be23902267526df5a7bf0cccca85ceb154535a153da1071021a7387c4cc0f8
+# sha256 scripts/repo/lib_safe.sh 7b56e823392f98138e1754526cb67de0428a2f6ce38e612fb7df832624235161
+# sha256 scripts/repo/check_no_ci.sh 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c
+# sha256 scripts/repo/check_revision_headers.sh 78ea300502d92ca91edbb9e48fddc11e2c05e10ab20c61f75e09d6e49fa535b2
+# sha256 scripts/repo/check_class.sh dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc
+# sha256 scripts/repo/scope_check.sh 675cce18ce2b98eeb75a330228c3b1e21e2f2cdbcd8ca4a3e38a87b1e422677a
+# sha256 scripts/repo/validate_cheap.sh 79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff
+# sha256 scripts/repo/commit_recursive.sh e31f8ff37232e239ad492434b58d678f119c1133eeff8745f69c5a5740bdc0de
+# sha256 scripts/repo/push_recursive.sh 03f4b1f8bc9582b435f15c4d011ca465f8a0eb6d08aef25ac0abf88fa8392afa
+# sha256 scripts/repo/integrate_merge.sh fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4
+# sha256 scripts/repo/integrate_ff_only.sh 096f9fe84d2ec89264facaabaa138a8fa0d0acf3a44f56e1f321dffa941cef6c
+# sha256 scripts/repo/record_deferral.sh 2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1
+# sha256 scripts/repo/fixture_roots.sh 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d
+# sha256 scripts/repo/validate_checks.tsv 5ee15550ba12854b3ed6018b56f9745a1b08785815175565bf3410badd8fff69
+# sha256 scripts/repo/check_classes.tsv bf78b9b74eb2fe2c8151533e8469ab8116b5b8e12346a55a9b12bf6077ff8f58
+# sha256 scripts/repo/check_exemptions.tsv 6708510e7513b3cc598b92f3714bf1bf0d7be353adafb155c5d573fc866df34f
+# sha256 scripts/repo/fixture_roots.txt d8c766b51c08530c5d27bd14d083d2d06d6c2b846c62293836f0c96a1667c25a
+# sha256 docs/scripts/check_classes.md 4b7d15b423c9fcc5ca0f18d9cbe8e68fcf96dfbcdf1c11c2ee8defac37f6cea1
+
+== host run 1 summary
+check_classes	rc=0	---- 131 ok, 0 failed
+check_no_ci	rc=0	---- 30 ok, 0 failed
+check_revision_headers	rc=0	---- 25 ok, 0 failed
+commit_recursive	rc=0	---- 55 ok, 0 failed
+fixture_roots	rc=0	---- 30 ok, 0 failed
+integrate_ff_only	rc=0	---- 80 ok, 0 failed
+integrate_merge	rc=0	---- 117 ok, 0 failed
+push_recursive	rc=0	---- 92 ok, 0 failed
+record_deferral	rc=0	---- 26 ok, 0 failed
+scope_check	rc=0	---- 50 ok, 0 failed
+validate_cheap	rc=0	---- 106 ok, 0 failed
+wp04c	rc=0	---- 230 ok, 0 failed
+wp04d	rc=0	---- 124 ok, 0 failed
+done
+== host run 2 summary
+check_classes	rc=0	---- 131 ok, 0 failed
+check_no_ci	rc=0	---- 30 ok, 0 failed
+check_revision_headers	rc=0	---- 25 ok, 0 failed
+commit_recursive	rc=0	---- 55 ok, 0 failed
+fixture_roots	rc=0	---- 30 ok, 0 failed
+integrate_ff_only	rc=0	---- 80 ok, 0 failed
+integrate_merge	rc=0	---- 117 ok, 0 failed
+push_recursive	rc=0	---- 92 ok, 0 failed
+record_deferral	rc=0	---- 26 ok, 0 failed
+scope_check	rc=0	---- 50 ok, 0 failed
+validate_cheap	rc=0	---- 106 ok, 0 failed
+wp04c	rc=0	---- 230 ok, 0 failed
+wp04d	rc=0	---- 124 ok, 0 failed
+done
+== host run 3 summary
+check_classes	rc=0	---- 131 ok, 0 failed
+check_no_ci	rc=0	---- 30 ok, 0 failed
+check_revision_headers	rc=0	---- 25 ok, 0 failed
+commit_recursive	rc=0	---- 55 ok, 0 failed
+fixture_roots	rc=0	---- 30 ok, 0 failed
+integrate_ff_only	rc=0	---- 80 ok, 0 failed
+integrate_merge	rc=0	---- 117 ok, 0 failed
+push_recursive	rc=0	---- 92 ok, 0 failed
+record_deferral	rc=0	---- 26 ok, 0 failed
+scope_check	rc=0	---- 50 ok, 0 failed
+validate_cheap	rc=0	---- 106 ok, 0 failed
+wp04c	rc=0	---- 230 ok, 0 failed
+wp04d	rc=0	---- 124 ok, 0 failed
+done
+== host run 3: test_wp04d.sh full log
+ok   control: line 1 rewritten in place: 13 (=13)
+ok   golden-true: a pure append of the regular ledger: 0 (=0)
+ok   golden-true: an unchanged correctly named blob: 0 (=0)
+ok   the ledger replaced by a symlink to a file that extends HEAD byte for byte: 13 (B-1) (=13)
+ok   named append_only
+ok   HEAD holds the link, the work tree a regular file starting with the link text (type change): 13 (B-1) (=13)
+ok   named append_only (type change)
+ok   a content-addressed blob added as a symlink whose target hashes to its name: 13 (B-1) (=13)
+ok   named blob_name
+ok   the evidence directory itself replaced by a symlink (a symlink path component): 13 (B-1) (=13)
+ok   golden-true: a regular evidence file: 0 (=0)
+ok   a declared symlink in an evidence class: 10 (B-1) (=10)
+ok   reported as a symlink failure
+ok   a declared symlink in the evidence-ledger class: 10 (B-1) (=10)
+ok   reported as a symlink failure
+ok   a declared symlink in the source class: 0 (not an evidence store) (=0)
+ok   but never skipped silently: it is reported
+ok   HEAD holds a link in an evidence path, the work tree a regular file (type change): 10 (B-1) (=10)
+ok   reported as a symlink failure
+ok   check_revision_headers: a declared .md symlink is not failed for a missing header: 0 (=0)
+ok   but it is reported, not skipped silently
+ok   golden-false: a regular headerless .md still fails: 10 (=10)
+ok   S1 with every remote unreachable: 11, never a refusal naming published history (I-1) (=11)
+ok   reason remote_unreachable (=remote_unreachable)
+ok   every remote is recorded fetch_failed (=fetch_failed:mirror,fetch_failed:origin)
+ok   nothing moved (=772456e47d0ac229bce8be5c3084eab003e379f0)
+ok   S1 partial outage: the unreachable remote's last known tip covers the foreign commit it holds; the reachable remote only lags: 0 (I-1) (=0)
+ok   no unrecorded_local_commit reason
+ok   S1: an unreachable remote that was never fetched cannot clear a local-only commit: 11 (cannot compute) (=11)
+ok   reason remote_unreachable (=remote_unreachable)
+ok   golden-false: a hand commit and one reachable remote still refuses: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   the hand commit is named, no published commit (=1)
+ok   golden-false: a partial outage with nothing local-only still fast-forwards from the reachable remote: 0 (=0)
+ok   status fast_forwarded (=fast_forwarded)
+ok   S6 partial outage: the unreachable remote's last known tip covers its foreign commit: 11, not REFUSED (I-1) (=11)
+ok   no refusal naming the foreign commit
+ok   r2 reported unreachable
+ok   r1 pushed
+ok   S6: an unreachable never-fetched remote cannot clear a local-only commit: 11 (cannot compute) (=11)
+ok   ghost named unreachable
+ok   nothing was pushed (=6ff5026e3fa069837a56d090fadeaa1b1433d701)
+ok   golden-false: a hand commit with a known-tip remote unreachable still refuses: 20 (=20)
+ok   unrecorded_local_commit
+ok   in place, tables committed and unmodified: judged with them: 10 (=10)
+ok   trailing whitespace reported
+ok   in place with an uncommitted edit of the helper's own table (I-2): 20 (=20)
+ok   class_table_unreviewed named
+ok   an approved table copy decides, the edited working tree decides nothing: 10 (=10)
+ok   whitespace failure kept
+ok   the explicit owner-approved adoption form uses the working-tree tables: 0 (=0)
+ok   in place with the tables untracked: 20 (=20)
+ok   class_table_unreviewed named
+ok   golden-true: a released snapshot that is no repository is trusted as it is: 10 (=10)
+ok   whitespace reported
+ok   golden-true: the root's HEAD holds the tables, the helper's own working copy is never read: 10 (=10)
+ok   X1: a merge that deletes an approved G-GATE path is held
+ok   reason gate
+ok   golden-false: deleting a G-GATE path that the manifest never approved is not held
+ok   X8: a non-CPA change of the admission table check_exemptions.tsv holds the merge
+ok   reason admission_table for check_exemptions.tsv
+ok   X8: a non-CPA change of the admission table fixture_roots.txt holds the merge
+ok   reason admission_table for fixture_roots.txt
+ok   X8: a non-CPA change of the admission table check_classes.tsv holds the merge
+ok   reason admission_table for check_classes.tsv
+ok   golden-false: the same change recorded as a CPA commit is not held
+ok   X3 (merge path): a run id that walks out of the audit directory proves nothing: held
+ok   X2: a hand commit whose run id walks out of the audit directory is refused: 20 (=20)
+ok   unrecorded_local_commit
+ok   nothing pushed (=f40f7657357adaa7d3fce0c506ff4d8ececd4abf)
+ok   X3: S1 refuses a hand commit whose run id walks out of .audit/commit-push: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   X6 golden: a check script that exits 0: 0 (=0)
+ok   X6: a check script that refuses with 20 is a refusal: 20 (=20)
+ok   check_refused named
+ok   X6 golden-false: a check script that fails with 1: 10 (=10)
+ok   fail anti_bluff
+ok   m8: the script row fails (=10)
+ok   m8: the path column names the failing file only
+ok   X7: .github/workflows/sub/x.yml is no pipeline definition: 0 (=0)
+ok   no output (=)
+ok   X7 golden-false: .github/workflows/top.yml is one: 10 (=10)
+ok   reported
+ok   X9: an incoming change under the declared directory d/ blocks the fast-forward: 12 (=12)
+ok   reason ff_blocked_by_local_changes (=ff_blocked_by_local_changes)
+ok   nothing moved (=a4bb753701bedab529d3c6adbe1aa6f2fa3e65ca)
+ok   X9 golden-false: an incoming change outside the declared directory: 0 (=0)
+ok   fast_forwarded (=fast_forwarded)
+ok   m1: scope_check refuses a directory that starts with a gitlink: 20 (=20)
+ok   named declared_directory
+ok   m1: validate_cheap refuses a directory that starts with a gitlink: 20 (=20)
+ok   named declared_directory
+ok   m1 golden-true: the gitlink itself is a declarable path: 0 (=0)
+ok   m2: a detached owned submodule whose run branch holds a hand commit: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   m3 setup: commit_recursive commits with a plain attribution line: 0 (=0)
+ok   m3: S1 accepts the run's own commit whatever the attribution line is: 0 (=0)
+ok   m4: the pre-commit hook of commit_recursive sees no literal-pathspec variable (=unset)
+ok   m4: a pre-commit hook that selects '*.sh' sees the staged file and refuses it: 20 (=20)
+ok   m4: S1 fast-forwards (=0)
+ok   m4: the post-merge hook of integrate_ff_only sees no literal-pathspec variable (=unset)
+ok   m4: S6 pushes (=0)
+ok   m4: the pre-push hook of push_recursive sees no literal-pathspec variable (=unset)
+ok   m5: --changeset-from naming a missing file: 20 (=20)
+ok   reason changeset_unreadable (=changeset_unreadable)
+ok   m5: ff_only --path-gates naming a missing file: 20 (=20)
+ok   reason path_gates_unreadable (=path_gates_unreadable)
+ok   m5: integrate_merge --path-gates naming a missing file: 20 (=20)
+ok   path_gates_unreadable named
+ok   m6: a stalled ssh remote ends with 11 under --timeout 2 (never rc 124) (=11)
+ok   m6: ended in 5s
+ok   m6: unreachable reported
+ok   m7 setup: commit_recursive was really terminated (124) (=124)
+ok   m7: commit_recursive killed during its commit leaves no cr_msg.* file (=0)
+ok   m7 setup: push_recursive was really terminated (124) (=124)
+ok   m7: push_recursive killed by SIGTERM leaves no push_recursive.* directory (=0)
+ok   m7: validate_cheap leaves no vc_tbl.* / vc_reg.* directory (=0)
+ok   a held row that names no declared path is refused by validate_cheap: 20 (=20)
+ok   held_row_unmatched
+ok   two held rows with different verdicts for one path: 20 (validate_cheap) (=20)
+ok   held_row_duplicate
+ok   two held rows with different verdicts for one path: 20 (commit_recursive) (=20)
+ok   held_row_duplicate
+ok   m9: README.md and T038-findings.md of evidence/wp04 carry the 11.4.44 header: 0 (=0)
+---- 124 ok, 0 failed
+== mawk run summary
+awk=mawk 1.3.4 20260129
+check_classes	rc=0	---- 131 ok, 0 failed
+check_no_ci	rc=0	---- 30 ok, 0 failed
+check_revision_headers	rc=0	---- 25 ok, 0 failed
+commit_recursive	rc=0	---- 55 ok, 0 failed
+fixture_roots	rc=0	---- 30 ok, 0 failed
+integrate_ff_only	rc=0	---- 80 ok, 0 failed
+integrate_merge	rc=0	---- 117 ok, 0 failed
+push_recursive	rc=0	---- 92 ok, 0 failed
+record_deferral	rc=0	---- 26 ok, 0 failed
+scope_check	rc=0	---- 50 ok, 0 failed
+validate_cheap	rc=0	---- 106 ok, 0 failed
+wp04c	rc=0	---- 230 ok, 0 failed
+wp04d	rc=0	---- 124 ok, 0 failed
+done
+== container run summary (run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_<t>.sh)
+check_classes	rc=0	---- 131 ok, 0 failed
+check_no_ci	rc=0	---- 30 ok, 0 failed
+check_revision_headers	rc=0	---- 25 ok, 0 failed
+commit_recursive	rc=0	---- 55 ok, 0 failed
+fixture_roots	rc=0	---- 30 ok, 0 failed
+integrate_ff_only	rc=0	---- 80 ok, 0 failed
+integrate_merge	rc=0	---- 117 ok, 0 failed
+push_recursive	rc=0	---- 92 ok, 0 failed
+record_deferral	rc=0	---- 26 ok, 0 failed
+scope_check	rc=0	---- 50 ok, 0 failed
+validate_cheap	rc=0	---- 106 ok, 0 failed
+wp04c	rc=0	---- 230 ok, 0 failed
+wp04d	rc=0	---- 124 ok, 0 failed
+done

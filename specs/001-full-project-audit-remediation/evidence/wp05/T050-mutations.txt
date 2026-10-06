@@ -1,0 +1,63 @@
+# T050 paired mutations (run_mutations.py): every mutant must be CAUGHT by a check that names its cause
+# generated_utc=2026-10-05T13:35:57Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 56ead5856aa31eeb142adb63bc202b89ee585690157dfe1a77235d6257c04724  tools/evidence/evcore.py
+# sha256 1f665a89a392e5bff742405a45bbbe7611f13be4702b0a949c414486962a56cd  tools/evidence/tests/test_evrec.sh
+# sha256 2e1260e7c85949168678212c804cf9b6565127c0d9c35f7b65ad1feb7744dca0  tools/evidence/tests/test_evrec_more.sh
+# sha256 841d4ed10f173592201d829472b4cba0a772d84b46e1d3b3d78a3f018f3d8a98  tools/evidence/tests/run_mutations.py
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+V1-skip-prev-link-check            CAUGHT                     verify: wrong prev_hash with a valid own hash (link only) exits 1
+V2-skip-entry-hash-check           CAUGHT                     verify: edited content (stale entry_hash) exits 1 (rc=0 want 1); rerecord accepted a tampered side (rc=0)
+V3-skip-seq-contiguity             CAUGHT                     verify: consistent chain with non-contiguous seq exits 1 (rc=0 wa
+V4-verify-never-walks              CAUGHT                     verify: delete w/o repair exit 0 (want 1); rerecord mutation (kept local seq) rejected by verify (rc=0); verify: edited content (stale entry_hash) exits 1 (rc=0 want 1)
+V5-verify-always-fails             CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; concurrent appenders: chain still verifies
+V6-empty-ledger-passes             CAUGHT                     verify: empty ledger is unverifiable, exit 3 (rc=0 want 3)
+V7-unreadable-ledger-passes        CAUGHT                     verify: absent ledger is unverifiable, exit 3 (rc=0 want 3)
+V8-torn-line-accepted              CAUGHT                     verify: torn final line exits 1 (rc=0 want 1)
+V9-anchor-note-dropped             CAUGHT                     verify silent about the missing anchor check
+R1-duration-zero                   CAUGHT                     duration self-test out of range (0 ms)
+R2-argv-joined-string              CAUGHT                     verify: original 4-entry ledger exits 0; verify: delete w/o repair exit 3 (want 1); verify: original restored exits 0
+R3-no-schema-validation-on-append  CAUGHT                     RED without oracle accepted (rc=0)
+R4-check-record-accepts-all        CAUGHT                     check-record refuses record missing started_at (rc=0); check-record refuses record missing cwd (rc=0); check-record refuses record missing argv (rc=0)
+R5-no-ledger-lock                  CAUGHT                     concurrent appenders: seqs=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]; live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock
+R6-reap-live-holder                CAUGHT                     concurrent appenders: seqs=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ]; live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock
+R7-never-reap                      CAUGHT                     stale ledger lock with dead holder is reaped, append succeeds
+R8-write-in-place-not-temp-rename  CAUGHT                     ledger changed by a killed write
+R9-no-redaction                    CAUGHT                     planted secret present in stored blob/ledger; entry lacks redacted: true; secret leaked via argv or stderr
+R10-redacted-flag-dropped          CAUGHT                     entry lacks redacted: true
+R11-argv-not-redacted              CAUGHT                     secret leaked via argv or stderr
+R12-reconcile-always-ok            CAUGHT                     reconcile: runner count 4 != 3 entries refused (rc=0)
+R13-never-raise-owed               CAUGHT                     verify silent above 75% of bound
+R14-always-raise-owed              CAUGHT                     verify names ledger_raise_owed below 75%
+R15-exit-status-unmapped           CAUGHT                     exit-status mapping got [0:pass 3:fail ]
+R16-signal-not-128-plus            CAUGHT                     exit-status mapping got [0:pass 3:fail 127:error 1:fail ]
+R17-test-fingerprint-dropped       CAUGHT                     valid RED entry not recorded; target_fingerprint is not the target's sha256
+R18-target-fp-invented             CAUGHT                     unresolvable RED target accepted (rc=0)
+R19-target-fp-not-file-bytes       CAUGHT                     target_fingerprint is not the target's sha256
+R20-append-onto-corrupt-tail       CAUGHT                     append extended a corrupt ledger (rc=0)
+R21-stream-digest-no-blob          CAUGHT                     no blob stored (cannot judge redaction); entry lacks redacted: true; no blob for stdout_sha256
+R22-usage-accepted                 CAUGHT                     evrec with an unknown subcommand exits 64 (rc=0 want 64)
+RR1-keep-local-seq                 CAUGHT                     rerecord: seq values wrong; rerecord: output accepted by verify
+RR2-drop-remote-prefix-bytes       CAUGHT                     rerecord: remote prefix differs; rerecord: seq values wrong; rerecord: output accepted by verify
+RR3-no-common-prefix-check         CAUGHT                     rerecord refuses sides without a common prefix (rc=0)
+RR4-no-side-verify                 CAUGHT                     rerecord accepted a tampered side (rc=0)
+RR5-seqmap-not-written             CAUGHT                     rerecord: no seq map
+RR6-append-only-drops-local        CAUGHT                     append-only rerecord
+RR7-local-fields-rewritten         CAUGHT                     rerecord: local fields changed
+RM1-remap-noop                     CAUGHT                     remap-refs result: see ledger#4 and ledger#5
+RM2-remap-accepts-uncovered        CAUGHT                     remap-refs refuses a reference the map does not cover (rc=0)
+RM3-remap-sequential-bug           CAUGHT                     remap-refs result: see ledger#4 and ledger#5
+C1-no-commit-turn-check            CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C2-unreadable-grant-ignored        CAUGHT                     mode 000 grant not refused; non-JSON grant not refused
+C3-matching-run-id-refused         CAUGHT                     matching run id: append succeeds, stub never called; stub called for matching run id
+C4-matching-run-id-calls-reaper    CAUGHT                     stub called for matching run id
+C5-reaper-never-called             CAUGHT                     dead-holder grant reaped, append then succeeds; --reap call count: 0; no --exec-approved entry in host log
+C6-reap-direct-not-exec-approved   CAUGHT                     no --exec-approved entry in host log
+C7-reap-by-grant-age               CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C8-host-refusal-crash-allowed      CAUGHT                     stores changed under a held grant
+C9-blobs-written-before-check      CAUGHT                     stores changed under a held grant; dead-holder grant reaped, append then succeeds; --reap call count: 0
+C10-reaper-called-repeatedly       CAUGHT                     no run id: Traceback (most recent call last):; different run id not refused; live old grant not refused
+mutants=51 caught=51 not_caught=0
+rc=0

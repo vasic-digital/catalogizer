@@ -1,0 +1,23 @@
+# wp04e mutation run (9 mutants of the round 5 fixes; driver kept in the session scratchpad, anchors checked present)
+# sha256 identities of the mutated helpers and the tests at run time:
+d6220cd5b1332be478cf43d2b573cfde835e9a1bb13b37756d7178217f19afc4  scripts/repo/push_recursive.sh
+2b98969813f3060b13a40ddf8be2d97c8a5618af475cec24c7a47bb9079b83ed  scripts/repo/check_no_ci.sh
+bba1695b8a13a6790dcfa9cd17d09c4e46aaf09ed4ae8577e3feef0afbc25e1a  scripts/repo/scope_check.sh
+c1df5ca244228594c0b15060ed6b96611aded8028e539c35818624a2f8d80067  scripts/repo/commit_recursive.sh
+08e4a18175d30d7db1f22999c796218e720fed3cda1752c1e321a6d070f7c834  scripts/repo/check_revision_headers.sh
+8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+9fe4bf9652ac1c347e69ecc426750ad0135a22d811d4fafe8e18ef3fb10d7915  scripts/repo/tests/test_push_recursive.sh
+deb7d42b79dc7e737bbd50935cd243ea82e6b938799e3d9879a09cb09ca053d0  scripts/repo/tests/test_check_no_ci.sh
+c9befb35969d09ab94f77d9ea892272e74428c1ffcc4619d6af180a2f27e67e8  scripts/repo/tests/test_scope_check.sh
+7d0a4bb444881a69f960110c93ae6d98dd30b456ba6628537e28ef7c3ba5a96f  scripts/repo/tests/test_commit_recursive.sh
+0c91200521547301e861c0da2fb9b3e5ad19d71cbc0f10181c7c8db814fe0a82  scripts/repo/tests/test_check_revision_headers.sh
+CAUGHT	control_rc=0	mutant_rc=1	F1-a push: a live tip not held is silently dropped again
+CAUGHT	control_rc=0	mutant_rc=1	F1-b push: unknown stand-in never marks UNK
+CAUGHT	control_rc=0	mutant_rc=1	F1-c push: UNK branch does not name the moved remote
+CAUGHT	control_rc=0	mutant_rc=1	F3-a check_no_ci: ls-files failure ignored
+CAUGHT	control_rc=0	mutant_rc=1	F3-b scope_check: status failure ignored
+CAUGHT	control_rc=0	mutant_rc=1	F3-c scope_check: gitlink listing failure ignored
+CAUGHT	control_rc=0	mutant_rc=1	F3-d commit_recursive: gitlink listing failure ignored
+CAUGHT	control_rc=0	mutant_rc=1	F3-e push_recursive: discover failure marker dropped
+CAUGHT	control_rc=0	mutant_rc=1	F3-f check_revision_headers: --measure listing failure ignored
+---- 9/9 caught

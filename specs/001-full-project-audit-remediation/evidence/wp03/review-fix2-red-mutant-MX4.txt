@@ -1,0 +1,10 @@
+MUTANT MX4 verifier=b20ea6aa099c3eb3f76e75cd7616d1eb18725fdf7dfcb3da0293e269dd6ddad7 test=d835944b8ab974c36a4aa38a9852533a969161da13db3ab2eb1cfbdb199fad8c
+-        if [ -n "$rbranch" ] && ! valid_branch "$rbranch"; then why="the default branch name '$rbranch' announced by remote $r"; fi
++        if [ -n "$rbranch" ] && false; then why="the default branch name '$rbranch' announced by remote $r"; fi
+FAIL symref upload: exit 14 (unproven, never clean) (got '12', want '14')
+FAIL symref upload: the submodule row is NO-REMOTE-BRANCH (got 'DIVERGED', want 'NO-REMOTE-BRANCH')
+FAIL symref upload: no refusal message: 
+FAIL symref dash: exit 14 (unproven, never clean) (got '12', want '14')
+FAIL symref dash: the submodule row is NO-REMOTE-BRANCH (got 'DIVERGED', want 'NO-REMOTE-BRANCH')
+FAIL symref dash: no refusal message: 
+SUMMARY pass=227 fail=6

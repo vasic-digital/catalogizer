@@ -1,0 +1,2842 @@
+{
+  "tool": "verify_repo.sh",
+  "root": "/home/milosvasic/Projects/catalogizer",
+  "generated_utc": "2026-10-05T10:35:54Z",
+  "fetch": false,
+  "strict": true,
+  "no_remote": false,
+  "summary": {
+    "repos": 98,
+    "owned": 51,
+    "dirty": 2,
+    "dirty_excepted": 1,
+    "ahead": 0,
+    "diverged": 0,
+    "pin_drift": 0,
+    "unproven": 1,
+    "classes": {
+      "SAME": 191,
+      "UNKNOWN-DIFFERENT": 8
+    },
+    "failing": 1
+  },
+  "repos": [
+    {
+      "path": ".",
+      "pin": ".",
+      "head": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+      "branch": "main",
+      "owned": true,
+      "dirty": true,
+      "dirty_tracked": 1,
+      "dirty_untracked": 18,
+      "remotes": [
+        {
+          "remote": "gitflicvasicdigital",
+          "url": "git@gitflic.ru:vasic-digital/catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "github",
+          "url": "git@github.com:milos85vasic/Catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "githubvasicdigital",
+          "url": "git@github.com:vasic-digital/Catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:milos85vasic/Catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlabvasicdigital",
+          "url": "git@gitlab.com:vasic-digital/catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitversevasicdigital",
+          "url": "ssh://git@gitverse.ru:2222/vasic-digital/Catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@gitflic.ru:vasic-digital/catalogizer.git",
+          "remote_tip": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [
+        "dirty"
+      ],
+      "unproven": []
+    },
+    {
+      "path": "submodules/assets",
+      "pin": " ",
+      "head": "ceb948a2727bdc0d86400f3f57a0d4bcc7685143",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Assets.git",
+          "remote_tip": "ceb948a2727bdc0d86400f3f57a0d4bcc7685143",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/assets.git",
+          "remote_tip": "ceb948a2727bdc0d86400f3f57a0d4bcc7685143",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Assets.git",
+          "remote_tip": "ceb948a2727bdc0d86400f3f57a0d4bcc7685143",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Assets.git",
+          "remote_tip": "ceb948a2727bdc0d86400f3f57a0d4bcc7685143",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/auth",
+      "pin": " ",
+      "head": "0ae1f5d3b16dbb8c6001e7d830c0bc51d73e8d78",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Auth.git",
+          "remote_tip": "0ae1f5d3b16dbb8c6001e7d830c0bc51d73e8d78",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Auth.git",
+          "remote_tip": "0ae1f5d3b16dbb8c6001e7d830c0bc51d73e8d78",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Auth.git",
+          "remote_tip": "0ae1f5d3b16dbb8c6001e7d830c0bc51d73e8d78",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Auth.git",
+          "remote_tip": "0ae1f5d3b16dbb8c6001e7d830c0bc51d73e8d78",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/auth_context_react",
+      "pin": " ",
+      "head": "8a84d574ddfa04716856bd90e2b42f95df554f31",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Auth-Context-React.git",
+          "remote_tip": "8a84d574ddfa04716856bd90e2b42f95df554f31",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Auth-Context-React.git",
+          "remote_tip": "8a84d574ddfa04716856bd90e2b42f95df554f31",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Auth-Context-React.git",
+          "remote_tip": "8a84d574ddfa04716856bd90e2b42f95df554f31",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Auth-Context-React.git",
+          "remote_tip": "8a84d574ddfa04716856bd90e2b42f95df554f31",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/cache",
+      "pin": " ",
+      "head": "6a9a3e5e4e6de60588bab0b02cea507c22f6ac29",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Cache.git",
+          "remote_tip": "6a9a3e5e4e6de60588bab0b02cea507c22f6ac29",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Cache.git",
+          "remote_tip": "6a9a3e5e4e6de60588bab0b02cea507c22f6ac29",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Cache.git",
+          "remote_tip": "6a9a3e5e4e6de60588bab0b02cea507c22f6ac29",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Cache.git",
+          "remote_tip": "6a9a3e5e4e6de60588bab0b02cea507c22f6ac29",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/catalogizer_api_client_ts",
+      "pin": " ",
+      "head": "a3f88dacef111e7a0664eb59025268a09eaf3117",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Catalogizer-API-Client-TS.git",
+          "remote_tip": "a3f88dacef111e7a0664eb59025268a09eaf3117",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Catalogizer-API-Client-TS.git",
+          "remote_tip": "a3f88dacef111e7a0664eb59025268a09eaf3117",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Catalogizer-API-Client-TS.git",
+          "remote_tip": "a3f88dacef111e7a0664eb59025268a09eaf3117",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Catalogizer-API-Client-TS.git",
+          "remote_tip": "a3f88dacef111e7a0664eb59025268a09eaf3117",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/challenges",
+      "pin": " ",
+      "head": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Challenges.git",
+          "remote_tip": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/challenges.git",
+          "remote_tip": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Challenges.git",
+          "remote_tip": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Challenges.git",
+          "remote_tip": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_github",
+          "url": "git@github.com:vasic-digital/challenges.git",
+          "remote_tip": "8a352b971d07ff6b3cda192f7ad6322eebef348a",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/collection_manager_react",
+      "pin": " ",
+      "head": "fa7d1afc1f70490d85b12511c39628ab344343df",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Collection-Manager-React.git",
+          "remote_tip": "fa7d1afc1f70490d85b12511c39628ab344343df",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Collection-Manager-React.git",
+          "remote_tip": "fa7d1afc1f70490d85b12511c39628ab344343df",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Collection-Manager-React.git",
+          "remote_tip": "fa7d1afc1f70490d85b12511c39628ab344343df",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Collection-Manager-React.git",
+          "remote_tip": "fa7d1afc1f70490d85b12511c39628ab344343df",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/concurrency",
+      "pin": " ",
+      "head": "32b7efaeaf2745e68638147bf7e394c2b6b8fcf3",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Concurrency.git",
+          "remote_tip": "32b7efaeaf2745e68638147bf7e394c2b6b8fcf3",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Concurrency.git",
+          "remote_tip": "32b7efaeaf2745e68638147bf7e394c2b6b8fcf3",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Concurrency.git",
+          "remote_tip": "32b7efaeaf2745e68638147bf7e394c2b6b8fcf3",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Concurrency.git",
+          "remote_tip": "32b7efaeaf2745e68638147bf7e394c2b6b8fcf3",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/config",
+      "pin": " ",
+      "head": "8d3f1e080d36bbc7619972a9f7d2bb3463b917ed",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Config.git",
+          "remote_tip": "8d3f1e080d36bbc7619972a9f7d2bb3463b917ed",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/config.git",
+          "remote_tip": "8d3f1e080d36bbc7619972a9f7d2bb3463b917ed",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Config.git",
+          "remote_tip": "8d3f1e080d36bbc7619972a9f7d2bb3463b917ed",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Config.git",
+          "remote_tip": "8d3f1e080d36bbc7619972a9f7d2bb3463b917ed",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution",
+      "pin": " ",
+      "head": "10b7a06c4a2ec3f06b4cde9b1611a622a79320ad",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "gitflic",
+          "url": "git@gitflic.ru:helixdevelopment/helixconstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/HelixConstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:helixdevelopment1/helixconstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "gitverse",
+          "url": "git@gitverse.ru:helixdevelopment/HelixConstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/HelixConstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@gitflic.ru:helixdevelopment/helixconstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "vasic_digital_github",
+          "url": "git@github.com:vasic-digital/HelixConstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        },
+        {
+          "remote": "vasic_digital_gitlab",
+          "url": "git@gitlab.com:vasic-digital/HelixConstitution.git",
+          "remote_tip": "190123339e9618aa853058978ab0945d3ddd7c5d",
+          "class": "UNKNOWN-DIFFERENT"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": [
+        "UNKNOWN-DIFFERENT"
+      ]
+    },
+    {
+      "path": "submodules/constitution/submodules/MVT",
+      "pin": " ",
+      "head": "2e62cca0fb399e2aeef67fcfac19e98d9a05f953",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/MVT/js_mse_eme",
+      "pin": " ",
+      "head": "ed98284a7e4688e0fac47bcf64a3fb7bbd128f7e",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/agentic-validation",
+      "pin": " ",
+      "head": "8258f13f4dcde7c7f86ccc886b42d472c5b681d1",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/anti_bluff",
+      "pin": " ",
+      "head": "bcc7f3d70f8ea0f1b6c5c9e582779ab592e25b93",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/anti_bluff.git",
+          "remote_tip": "bcc7f3d70f8ea0f1b6c5c9e582779ab592e25b93",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/claude-video",
+      "pin": " ",
+      "head": "03ceb42f7fa2c4439aca01752118044baabffb8f",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/continuum",
+      "pin": " ",
+      "head": "46393471cd2a7ff2d374a07110ad40334265dd59",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/continuum.git",
+          "remote_tip": "46393471cd2a7ff2d374a07110ad40334265dd59",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/design-toolkit",
+      "pin": " ",
+      "head": "4ddc9645d140a71ef33cf399801c3ae26307ed9e",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/design-toolkit.git",
+          "remote_tip": "4ddc9645d140a71ef33cf399801c3ae26307ed9e",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/design-toolkit.git",
+          "remote_tip": "4ddc9645d140a71ef33cf399801c3ae26307ed9e",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/design-toolkit.git",
+          "remote_tip": "4ddc9645d140a71ef33cf399801c3ae26307ed9e",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/design-toolkit.git",
+          "remote_tip": "4ddc9645d140a71ef33cf399801c3ae26307ed9e",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/docs_chain",
+      "pin": " ",
+      "head": "8e0abe02713ae0135a697c988932f6896f48fcf8",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/docs_chain.git",
+          "remote_tip": "8e0abe02713ae0135a697c988932f6896f48fcf8",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/docs_chain.git",
+          "remote_tip": "8e0abe02713ae0135a697c988932f6896f48fcf8",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/docs_chain.git",
+          "remote_tip": "8e0abe02713ae0135a697c988932f6896f48fcf8",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/docs_chain.git",
+          "remote_tip": "8e0abe02713ae0135a697c988932f6896f48fcf8",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/donespec",
+      "pin": " ",
+      "head": "017e05f9300537fb805d8f7e6b2d448c230bb5d4",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/helix_perf_cache",
+      "pin": " ",
+      "head": "6adcfb294d249ced3b2e3c460955b9054be662db",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/helix_perf_cache.git",
+          "remote_tip": "6adcfb294d249ced3b2e3c460955b9054be662db",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/kedge",
+      "pin": " ",
+      "head": "0b6e4d4129c952a816745f8e0869a9ff1799cbf8",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/mcp-audio-tweaker",
+      "pin": " ",
+      "head": "5d64b4f2bf16f23a1b95008ab5108ab06db855c9",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/polyscreen-mcp",
+      "pin": " ",
+      "head": "f2ed241075482d281388177be9f1c92af3251dcc",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/repo-proof",
+      "pin": " ",
+      "head": "cd3d5992e520421a34342645cfed519454213a22",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/repo-qa",
+      "pin": " ",
+      "head": "2539e1ca948737547de2d447ac7a877ee019bc3d",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/session_orchestrator",
+      "pin": " ",
+      "head": "78b77bb86e7dae7b3e557e73a587b40457aaa52f",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/session_orchestrator.git",
+          "remote_tip": "78b77bb86e7dae7b3e557e73a587b40457aaa52f",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/skill-doctor",
+      "pin": " ",
+      "head": "9413620ade5c7de07e832db43300c6a3ad2f033b",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/token_optimizer",
+      "pin": " ",
+      "head": "c0591b5ff7559d459ebb512a1309cfd8dd713177",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/token_optimizer.git",
+          "remote_tip": "c0591b5ff7559d459ebb512a1309cfd8dd713177",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/verfix",
+      "pin": " ",
+      "head": "b1286b19c96bba78659536988912ac3e3c27d1af",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/verification",
+      "pin": " ",
+      "head": "9f068556b5455b50dc51455d2ca8a6079b14c946",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/verify",
+      "pin": " ",
+      "head": "b8cac8f6b6c22feac03ca9139e3a9992c60fc904",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/video-quality-mcp",
+      "pin": " ",
+      "head": "10f9a08568794080afcf074b40dbaf5db4107830",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/watch-skill",
+      "pin": " ",
+      "head": "f1317c8fe64744a606c31867b05fbbe3144268c6",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/constitution/submodules/wave-dpctf",
+      "pin": " ",
+      "head": "9290b25242fb99169ff6fc7f3d3f6f2b69d9056d",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/containers",
+      "pin": " ",
+      "head": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Containers.git",
+          "remote_tip": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/containers.git",
+          "remote_tip": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Containers.git",
+          "remote_tip": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Containers.git",
+          "remote_tip": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_gitlab",
+          "url": "git@gitlab.com:vasic-digital/Containers.git",
+          "remote_tip": "4a8f04e05f3535d77c48f69b89687f9fcc896fbf",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/dashboard_analytics_react",
+      "pin": " ",
+      "head": "bfb2818cef788eacbf62579f0947a01c236d54fb",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Dashboard-Analytics-React.git",
+          "remote_tip": "bfb2818cef788eacbf62579f0947a01c236d54fb",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Dashboard-Analytics-React.git",
+          "remote_tip": "bfb2818cef788eacbf62579f0947a01c236d54fb",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Dashboard-Analytics-React.git",
+          "remote_tip": "bfb2818cef788eacbf62579f0947a01c236d54fb",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Dashboard-Analytics-React.git",
+          "remote_tip": "bfb2818cef788eacbf62579f0947a01c236d54fb",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/database",
+      "pin": " ",
+      "head": "8adb19c17700fe2bb5f9ece4ddcfa210cebb5f1f",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Database.git",
+          "remote_tip": "8adb19c17700fe2bb5f9ece4ddcfa210cebb5f1f",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Database.git",
+          "remote_tip": "8adb19c17700fe2bb5f9ece4ddcfa210cebb5f1f",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Database.git",
+          "remote_tip": "8adb19c17700fe2bb5f9ece4ddcfa210cebb5f1f",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Database.git",
+          "remote_tip": "8adb19c17700fe2bb5f9ece4ddcfa210cebb5f1f",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/discovery",
+      "pin": " ",
+      "head": "0e491a350cde4611f0989e9d154ed8f7c91b2318",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Discovery.git",
+          "remote_tip": "0e491a350cde4611f0989e9d154ed8f7c91b2318",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/discovery.git",
+          "remote_tip": "0e491a350cde4611f0989e9d154ed8f7c91b2318",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Discovery.git",
+          "remote_tip": "0e491a350cde4611f0989e9d154ed8f7c91b2318",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Discovery.git",
+          "remote_tip": "0e491a350cde4611f0989e9d154ed8f7c91b2318",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/doc_processor",
+      "pin": " ",
+      "head": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+      "branch": "master",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/DocProcessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:helixdevelopment1/docprocessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/DocProcessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/DocProcessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_github",
+          "url": "git@github.com:vasic-digital/DocProcessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_gitlab",
+          "url": "git@gitlab.com:vasic-digital/DocProcessor.git",
+          "remote_tip": "5692e52713df732ddde68b62b6780f7c28ffcf36",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/entities",
+      "pin": " ",
+      "head": "ca96287c284e7bd114a833e1208635856cd5d107",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Entities.git",
+          "remote_tip": "ca96287c284e7bd114a833e1208635856cd5d107",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/entities.git",
+          "remote_tip": "ca96287c284e7bd114a833e1208635856cd5d107",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Entities.git",
+          "remote_tip": "ca96287c284e7bd114a833e1208635856cd5d107",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Entities.git",
+          "remote_tip": "ca96287c284e7bd114a833e1208635856cd5d107",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/event_bus",
+      "pin": " ",
+      "head": "4613a5ad154a25ca4b7c30db381db600e5f230e8",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/EventBus.git",
+          "remote_tip": "4613a5ad154a25ca4b7c30db381db600e5f230e8",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/EventBus.git",
+          "remote_tip": "4613a5ad154a25ca4b7c30db381db600e5f230e8",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/EventBus.git",
+          "remote_tip": "4613a5ad154a25ca4b7c30db381db600e5f230e8",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/EventBus.git",
+          "remote_tip": "4613a5ad154a25ca4b7c30db381db600e5f230e8",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/filesystem",
+      "pin": " ",
+      "head": "66b6bc1cd9385d8548535f8970ad9fd7049b4b1b",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Filesystem.git",
+          "remote_tip": "66b6bc1cd9385d8548535f8970ad9fd7049b4b1b",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/filesystem.git",
+          "remote_tip": "66b6bc1cd9385d8548535f8970ad9fd7049b4b1b",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Filesystem.git",
+          "remote_tip": "66b6bc1cd9385d8548535f8970ad9fd7049b4b1b",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Filesystem.git",
+          "remote_tip": "66b6bc1cd9385d8548535f8970ad9fd7049b4b1b",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_memory",
+      "pin": " ",
+      "head": "979d7c842324566dbf5ae956f135953cb20f11fa",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/HelixMemory.git",
+          "remote_tip": "979d7c842324566dbf5ae956f135953cb20f11fa",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:helixdevelopment1/HelixMemory.git",
+          "remote_tip": "979d7c842324566dbf5ae956f135953cb20f11fa",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/HelixMemory.git",
+          "remote_tip": "979d7c842324566dbf5ae956f135953cb20f11fa",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/HelixMemory.git",
+          "remote_tip": "979d7c842324566dbf5ae956f135953cb20f11fa",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa",
+      "pin": " ",
+      "head": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/helixqa.git",
+          "remote_tip": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/HelixQA.git",
+          "remote_tip": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/HelixQA.git",
+          "remote_tip": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/helixqa.git",
+          "remote_tip": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_github",
+          "url": "git@github.com:vasic-digital/HelixQA.git",
+          "remote_tip": "1caceb6ec121573bed4be9d8db20a6a41a4fe0b1",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/allure2",
+      "pin": " ",
+      "head": "db2dbd8166fc0c44a86b325e3dd68ecb566d9d13",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/anthropic-quickstarts",
+      "pin": " ",
+      "head": "f37f1685e256d61b2982b8ae69c857b51efe11bf",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/appcrawler",
+      "pin": " ",
+      "head": "c1f4af109a778e758fa67cc9a49a9e0484e7afc5",
+      "branch": "master",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/appium",
+      "pin": " ",
+      "head": "0e4ecc49d6ae3c0b9815bb4eda58703228d4ce4f",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/browser-use",
+      "pin": " ",
+      "head": "c8e6e8f0fe617564687895702c2338967293b309",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/chroma",
+      "pin": " ",
+      "head": "cbec464a012d69232fe084ab96c6f82f16bf38f1",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/docker-android",
+      "pin": " ",
+      "head": "28478f3bce0326cb40692af7fa219a54bd06f69d",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/docling",
+      "pin": " ",
+      "head": "c7b1734217fcb958688589b70c27147cab86a9ae",
+      "branch": "",
+      "owned": false,
+      "dirty": true,
+      "dirty_tracked": 1,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": true,
+      "exception_reason": "Third-party checkout: CRLF line endings make tracked test data show as modified",
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/kiwi-tcms",
+      "pin": " ",
+      "head": "1dba1ed1d096b0af05161a6576ece22f2f616bc6",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/leakcanary",
+      "pin": " ",
+      "head": "27b51013ce4a6907460d337b117ce3105e0c61b2",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/llama-index",
+      "pin": " ",
+      "head": "5891d5f4f3e934973c18334902ca8ea4eb6a2e12",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/marker",
+      "pin": " ",
+      "head": "5684e765530347ad25d25f781c337822a8854d25",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/mem0",
+      "pin": " ",
+      "head": "8d6b7c1d671af329dbf43a984fe1b3207ef59fe7",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/mem0/evaluation",
+      "pin": " ",
+      "head": "4b61c5d31b9c668a12b4f5e78064248a02c82d2b",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/midscene",
+      "pin": " ",
+      "head": "4d37b88b2fe73b390fcd0da34be3bffbef4547a4",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/moondream",
+      "pin": " ",
+      "head": "6eccfceaf1aaff804a67cd157193a6f744fa2bdc",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/perfetto",
+      "pin": " ",
+      "head": "3ea71e6ee738b13ebbfd16a538220c2c137ecd24",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/redroid",
+      "pin": " ",
+      "head": "eba9a489990f3f558b7115f25fdc782d610ee8ad",
+      "branch": "master",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/scrcpy",
+      "pin": " ",
+      "head": "2322868e9e256eb5fce0b3d659ab2a409f29bae1",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/shortest",
+      "pin": " ",
+      "head": "45a8dcfe89992b37ed2dfb1f76618048cff0f45c",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/signoz",
+      "pin": " ",
+      "head": "7646aabb2b849129f3a6acabd01bb07cbdb84a02",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/skyvern",
+      "pin": " ",
+      "head": "d30575bb9a062611d51deacf4cd4398e2c9e3e49",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/skyvern/integrations/n8n",
+      "pin": " ",
+      "head": "c0400660d834dfbe5800deeab8a701bcd5e67c0a",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/stagehand",
+      "pin": " ",
+      "head": "7224376585d6b2cc52e7a76b7035a7a5e0779320",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/testdriverai",
+      "pin": " ",
+      "head": "42d2bc8004df903d56577e30ea955cd1b99bccae",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/ui-tars",
+      "pin": " ",
+      "head": "582f3a7ea5d285ee8ed9e2e84048d1ab01453c49",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/ui-tars-desktop",
+      "pin": " ",
+      "head": "e9f3387288da4af2ad99972da2ac916cdabce093",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/opensource/unstructured",
+      "pin": " ",
+      "head": "f6eea758911fcf627cbe6f9df9f790e549500d7b",
+      "branch": "",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/helix_qa/tools/test-apps/rest-demo",
+      "pin": " ",
+      "head": "e5cf556ee3b4e01e21e22313066b0466973989fe",
+      "branch": "master",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/lazy",
+      "pin": " ",
+      "head": "957a31a6ce2cabfef6892a0047350d9659e5d40d",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Lazy.git",
+          "remote_tip": "957a31a6ce2cabfef6892a0047350d9659e5d40d",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/lazy.git",
+          "remote_tip": "957a31a6ce2cabfef6892a0047350d9659e5d40d",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Lazy.git",
+          "remote_tip": "957a31a6ce2cabfef6892a0047350d9659e5d40d",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Lazy.git",
+          "remote_tip": "957a31a6ce2cabfef6892a0047350d9659e5d40d",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/llm_orchestrator",
+      "pin": " ",
+      "head": "55d2dde25386483649224cd2f966e949881b46b5",
+      "branch": "master",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/LLMOrchestrator.git",
+          "remote_tip": "55d2dde25386483649224cd2f966e949881b46b5",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/LLMOrchestrator.git",
+          "remote_tip": "55d2dde25386483649224cd2f966e949881b46b5",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/LLMOrchestrator.git",
+          "remote_tip": "55d2dde25386483649224cd2f966e949881b46b5",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/llm_provider",
+      "pin": " ",
+      "head": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+      "branch": "master",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/LLMProvider.git",
+          "remote_tip": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/LLMProvider.git",
+          "remote_tip": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/LLMProvider.git",
+          "remote_tip": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/LLMProvider.git",
+          "remote_tip": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+          "class": "SAME"
+        },
+        {
+          "remote": "vasic_digital_github",
+          "url": "git@github.com:vasic-digital/LLMProvider.git",
+          "remote_tip": "e05ec64ebc482d6ba64d6de4b4fe85901b280813",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/media",
+      "pin": " ",
+      "head": "60aecfbaac0e745bfa173c236759021609774090",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Media.git",
+          "remote_tip": "60aecfbaac0e745bfa173c236759021609774090",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/media.git",
+          "remote_tip": "60aecfbaac0e745bfa173c236759021609774090",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Media.git",
+          "remote_tip": "60aecfbaac0e745bfa173c236759021609774090",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Media.git",
+          "remote_tip": "60aecfbaac0e745bfa173c236759021609774090",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/media_browser_react",
+      "pin": " ",
+      "head": "74f43bc420a85c3307f76c951416180099f7a021",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Media-Browser-React.git",
+          "remote_tip": "74f43bc420a85c3307f76c951416180099f7a021",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Media-Browser-React.git",
+          "remote_tip": "74f43bc420a85c3307f76c951416180099f7a021",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Media-Browser-React.git",
+          "remote_tip": "74f43bc420a85c3307f76c951416180099f7a021",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Media-Browser-React.git",
+          "remote_tip": "74f43bc420a85c3307f76c951416180099f7a021",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/media_player_react",
+      "pin": " ",
+      "head": "5657f51103ef12399d8614040696910163de7da9",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Media-Player-React.git",
+          "remote_tip": "5657f51103ef12399d8614040696910163de7da9",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Media-Player-React.git",
+          "remote_tip": "5657f51103ef12399d8614040696910163de7da9",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Media-Player-React.git",
+          "remote_tip": "5657f51103ef12399d8614040696910163de7da9",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Media-Player-React.git",
+          "remote_tip": "5657f51103ef12399d8614040696910163de7da9",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/media_types_ts",
+      "pin": " ",
+      "head": "83b63957234566a98f1fbd2878f9db08d7abc488",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Media-Types-TS.git",
+          "remote_tip": "83b63957234566a98f1fbd2878f9db08d7abc488",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Media-Types-TS.git",
+          "remote_tip": "83b63957234566a98f1fbd2878f9db08d7abc488",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Media-Types-TS.git",
+          "remote_tip": "83b63957234566a98f1fbd2878f9db08d7abc488",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Media-Types-TS.git",
+          "remote_tip": "83b63957234566a98f1fbd2878f9db08d7abc488",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/memory",
+      "pin": " ",
+      "head": "58520a1e16d1a0e4bff6cc3786d2aaf5d56a3772",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Memory.git",
+          "remote_tip": "58520a1e16d1a0e4bff6cc3786d2aaf5d56a3772",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/memory.git",
+          "remote_tip": "58520a1e16d1a0e4bff6cc3786d2aaf5d56a3772",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Memory.git",
+          "remote_tip": "58520a1e16d1a0e4bff6cc3786d2aaf5d56a3772",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Memory.git",
+          "remote_tip": "58520a1e16d1a0e4bff6cc3786d2aaf5d56a3772",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/middleware",
+      "pin": " ",
+      "head": "9bcac1292b940c9169baa19464ad67c37d306305",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Middleware.git",
+          "remote_tip": "9bcac1292b940c9169baa19464ad67c37d306305",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/middleware.git",
+          "remote_tip": "9bcac1292b940c9169baa19464ad67c37d306305",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Middleware.git",
+          "remote_tip": "9bcac1292b940c9169baa19464ad67c37d306305",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Middleware.git",
+          "remote_tip": "9bcac1292b940c9169baa19464ad67c37d306305",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/observability",
+      "pin": " ",
+      "head": "bd3a5be613a0a0ef6a8c986d2c0ae0dd594e4bf0",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Observability.git",
+          "remote_tip": "bd3a5be613a0a0ef6a8c986d2c0ae0dd594e4bf0",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Observability.git",
+          "remote_tip": "bd3a5be613a0a0ef6a8c986d2c0ae0dd594e4bf0",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Observability.git",
+          "remote_tip": "bd3a5be613a0a0ef6a8c986d2c0ae0dd594e4bf0",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Observability.git",
+          "remote_tip": "bd3a5be613a0a0ef6a8c986d2c0ae0dd594e4bf0",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/rate_limiter",
+      "pin": " ",
+      "head": "6463e5172d0eedd3a0ac30d867382351382650b2",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/RateLimiter.git",
+          "remote_tip": "6463e5172d0eedd3a0ac30d867382351382650b2",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/ratelimiter.git",
+          "remote_tip": "6463e5172d0eedd3a0ac30d867382351382650b2",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/RateLimiter.git",
+          "remote_tip": "6463e5172d0eedd3a0ac30d867382351382650b2",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/RateLimiter.git",
+          "remote_tip": "6463e5172d0eedd3a0ac30d867382351382650b2",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/recovery",
+      "pin": " ",
+      "head": "30961a1756ef85dbdbfb6c6b37c7eea29b8fe2ac",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Recovery.git",
+          "remote_tip": "30961a1756ef85dbdbfb6c6b37c7eea29b8fe2ac",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/recovery.git",
+          "remote_tip": "30961a1756ef85dbdbfb6c6b37c7eea29b8fe2ac",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Recovery.git",
+          "remote_tip": "30961a1756ef85dbdbfb6c6b37c7eea29b8fe2ac",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Recovery.git",
+          "remote_tip": "30961a1756ef85dbdbfb6c6b37c7eea29b8fe2ac",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/replay_buffer",
+      "pin": " ",
+      "head": "c1c34f7b54e7a6a96f11696192f79ad892f6c95a",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/ReplayBuffer.git",
+          "remote_tip": "c1c34f7b54e7a6a96f11696192f79ad892f6c95a",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/ReplayBuffer.git",
+          "remote_tip": "c1c34f7b54e7a6a96f11696192f79ad892f6c95a",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/ReplayBuffer.git",
+          "remote_tip": "c1c34f7b54e7a6a96f11696192f79ad892f6c95a",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/ReplayBuffer.git",
+          "remote_tip": "c1c34f7b54e7a6a96f11696192f79ad892f6c95a",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/screen_diff",
+      "pin": " ",
+      "head": "56d3760fb73a70eaee572993ab3cbd543f2d224b",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/ScreenDiff.git",
+          "remote_tip": "56d3760fb73a70eaee572993ab3cbd543f2d224b",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/ScreenDiff.git",
+          "remote_tip": "56d3760fb73a70eaee572993ab3cbd543f2d224b",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/ScreenDiff.git",
+          "remote_tip": "56d3760fb73a70eaee572993ab3cbd543f2d224b",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/ScreenDiff.git",
+          "remote_tip": "56d3760fb73a70eaee572993ab3cbd543f2d224b",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/security",
+      "pin": " ",
+      "head": "79151f23063336b4e63f463709f4f01c0c46aea0",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Security.git",
+          "remote_tip": "79151f23063336b4e63f463709f4f01c0c46aea0",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Security.git",
+          "remote_tip": "79151f23063336b4e63f463709f4f01c0c46aea0",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Security.git",
+          "remote_tip": "79151f23063336b4e63f463709f4f01c0c46aea0",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Security.git",
+          "remote_tip": "79151f23063336b4e63f463709f4f01c0c46aea0",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/storage",
+      "pin": " ",
+      "head": "e498c633badcec51cb1608b1d0c8fa512b846869",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Storage.git",
+          "remote_tip": "e498c633badcec51cb1608b1d0c8fa512b846869",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Storage.git",
+          "remote_tip": "e498c633badcec51cb1608b1d0c8fa512b846869",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Storage.git",
+          "remote_tip": "e498c633badcec51cb1608b1d0c8fa512b846869",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Storage.git",
+          "remote_tip": "e498c633badcec51cb1608b1d0c8fa512b846869",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/streaming",
+      "pin": " ",
+      "head": "ec4e115fc37679140bdeff8cf2228b9d710564e7",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Streaming.git",
+          "remote_tip": "ec4e115fc37679140bdeff8cf2228b9d710564e7",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/Streaming.git",
+          "remote_tip": "ec4e115fc37679140bdeff8cf2228b9d710564e7",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Streaming.git",
+          "remote_tip": "ec4e115fc37679140bdeff8cf2228b9d710564e7",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Streaming.git",
+          "remote_tip": "ec4e115fc37679140bdeff8cf2228b9d710564e7",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/superspec",
+      "pin": " ",
+      "head": "c20ac6c1ba069cc9a72dacb8044b7b193d3dde81",
+      "branch": "main",
+      "owned": false,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/training_collector",
+      "pin": " ",
+      "head": "10c06040b07a90f3cbd859d0bf79298d2e6f839c",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/TrainingCollector.git",
+          "remote_tip": "10c06040b07a90f3cbd859d0bf79298d2e6f839c",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/TrainingCollector.git",
+          "remote_tip": "10c06040b07a90f3cbd859d0bf79298d2e6f839c",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/TrainingCollector.git",
+          "remote_tip": "10c06040b07a90f3cbd859d0bf79298d2e6f839c",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/TrainingCollector.git",
+          "remote_tip": "10c06040b07a90f3cbd859d0bf79298d2e6f839c",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/ui_components_react",
+      "pin": " ",
+      "head": "d3df32d49b3daefb637cdb861adacef9a9ef396f",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/UI-Components-React.git",
+          "remote_tip": "d3df32d49b3daefb637cdb861adacef9a9ef396f",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/ui-components-react.git",
+          "remote_tip": "d3df32d49b3daefb637cdb861adacef9a9ef396f",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/UI-Components-React.git",
+          "remote_tip": "d3df32d49b3daefb637cdb861adacef9a9ef396f",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/UI-Components-React.git",
+          "remote_tip": "d3df32d49b3daefb637cdb861adacef9a9ef396f",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/vision_engine",
+      "pin": " ",
+      "head": "ce16f929304826ee98aac8fa1fa18985141d4c3c",
+      "branch": "master",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:HelixDevelopment/VisionEngine.git",
+          "remote_tip": "ce16f929304826ee98aac8fa1fa18985141d4c3c",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:HelixDevelopment/VisionEngine.git",
+          "remote_tip": "ce16f929304826ee98aac8fa1fa18985141d4c3c",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:HelixDevelopment/VisionEngine.git",
+          "remote_tip": "ce16f929304826ee98aac8fa1fa18985141d4c3c",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/visual_regression",
+      "pin": " ",
+      "head": "d3d9f761f75e4a4805b4d4d121a1d0a4b3412cd6",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/VisualRegression.git",
+          "remote_tip": "d3d9f761f75e4a4805b4d4d121a1d0a4b3412cd6",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/VisualRegression.git",
+          "remote_tip": "d3d9f761f75e4a4805b4d4d121a1d0a4b3412cd6",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/VisualRegression.git",
+          "remote_tip": "d3d9f761f75e4a4805b4d4d121a1d0a4b3412cd6",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/VisualRegression.git",
+          "remote_tip": "d3d9f761f75e4a4805b4d4d121a1d0a4b3412cd6",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/watcher",
+      "pin": " ",
+      "head": "46da9af1e3d91c1a50d0b6f7d38b2640c420db62",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/Watcher.git",
+          "remote_tip": "46da9af1e3d91c1a50d0b6f7d38b2640c420db62",
+          "class": "SAME"
+        },
+        {
+          "remote": "gitlab",
+          "url": "git@gitlab.com:vasic-digital/watcher.git",
+          "remote_tip": "46da9af1e3d91c1a50d0b6f7d38b2640c420db62",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/Watcher.git",
+          "remote_tip": "46da9af1e3d91c1a50d0b6f7d38b2640c420db62",
+          "class": "SAME"
+        },
+        {
+          "remote": "upstream",
+          "url": "git@github.com:vasic-digital/Watcher.git",
+          "remote_tip": "46da9af1e3d91c1a50d0b6f7d38b2640c420db62",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    },
+    {
+      "path": "submodules/websocket_client_ts",
+      "pin": " ",
+      "head": "6e624db0e5926e811336172eb9bd95985c4fdda8",
+      "branch": "main",
+      "owned": true,
+      "dirty": false,
+      "dirty_tracked": 0,
+      "dirty_untracked": 0,
+      "remotes": [
+        {
+          "remote": "github",
+          "url": "git@github.com:vasic-digital/WebSocket-Client-TS.git",
+          "remote_tip": "6e624db0e5926e811336172eb9bd95985c4fdda8",
+          "class": "SAME"
+        },
+        {
+          "remote": "origin",
+          "url": "git@github.com:vasic-digital/WebSocket-Client-TS.git",
+          "remote_tip": "6e624db0e5926e811336172eb9bd95985c4fdda8",
+          "class": "SAME"
+        }
+      ],
+      "pin_state": "ok",
+      "excepted": false,
+      "exception_reason": null,
+      "problems": [],
+      "unproven": []
+    }
+  ]
+}

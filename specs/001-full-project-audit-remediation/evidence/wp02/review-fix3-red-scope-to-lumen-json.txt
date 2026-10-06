@@ -1,0 +1,40 @@
+ok   derive exits 0
+ok   output equals the golden JSON byte-for-byte
+ok   second run byte-identical
+ok   empty allow-list refused (rc=3, nothing written)
+ok   --check passes on the golden JSON
+ok   --check FAILs when a scope.yaml class is missing from the JSON (rc=1)
+ok   --check rc=1: a third-party root added to allow (would index third-party code)
+ok   --check rc=1: root_files flipped to false
+ok   --check rc=1: root_files removed
+ok   --check rc=1: an allow root missing (SM2)
+ok   --check rc=1: a deny pattern missing from deny while still in its class (SM1)
+ok   --check rc=1: an extra deny pattern
+ok   --check rc=1: an extra class
+ok   --check rc=1: an extra pattern inside a class
+ok   --check rc=1: the nested third-party deny missing (class and deny)
+ok   --check rc=1: dropped_negations changed
+ok   a non-mapping scope.yaml is rc=3, no traceback
+ok   a non-mapping baseline_excludes is rc=3 (also under --check)
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+FAIL lumen_allow_roots names a third_party row: want rc=3 with a message and no output, got rc=0: 
+FAIL the same under --check (the leak is not re-derived as legal): want rc=3 with a message and no output, got rc=1: allow entry missing: submodules/third_b
+allow entry not derived (extra): catalog-web
+FAIL lumen_allow_roots lies INSIDE a third_party row: want rc=3 with a message and no output, got rc=0: 
+FAIL a trailing slash does not hide a third_party root: want rc=3 with a message and no output, got rc=0: 
+FAIL lumen_allow_roots names a third_party row nested under an own root: want rc=3 with a message and no output, got rc=0: 
+FAIL a TSV row with an unknown class (third-party): want rc=3 with a message and no output, got rc=0: 
+FAIL a TSV row without a tab: want rc=3 with a message and no output, got rc=0: 
+FAIL a TSV row with an empty class: want rc=3 with a message and no output, got rc=0: 
+FAIL a TSV row with an empty path: want rc=3 with a message and no output, got rc=0: 
+ok   control: blank lines in the TSV are tolerated (rc=0)
+ok   own_ab/x (a sibling, not nested under own_a) is not denied as nested
+FAIL --check file whose classes is a list: want rc=3 with a message and no output, got rc=1: class not in the scope (extra): a
+class missing: build_outputs
+class missing: caches
+class missing: project_excludes
+class missing: qa_corpora
+class missing: se
+FAIL --out unwritable: want rc=3 without a traceback, got rc=1
+IDENTITY test=4be6858ac107de2928087b03ebb08d108543f1744bc3cc3ea78c96bf74ca1667 script=518fb13a90464834d1ea958a2b07d2f704d87fec9d85a8513d806c0bbb915a95 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton python=3.14.4 utc=2026-10-05T18:03:53Z
+SUMMARY pass=21 fail=11

@@ -1,0 +1,49 @@
+# generated 2026-10-05T18:13:17Z on anton, python Python 3.14.4, PyYAML 6.0.3, jsonschema <string>:1: DeprecationWarning: Accessing jsonschema.__version__ is deprecated and will be removed in a future release. Use importlib.metadata directly to query for jsonschema's version.
+4.19.2
+# git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test uncommitted: the sha256 lines identify it)
+# sha256 6807ac562188b5106884e69b1bb5493b7cca42417992e5e973a17f92fd6097bb  scripts/governance/tests/test_decision_intake.sh
+# sha256 d345880b9d6ac46ed4048c50ef7ef07f5b55649ce5d01f66162f80799cb8e1c3  scripts/governance/tests/test_no_atm_prefix.sh
+# sha256 b9677080b17733dad35ffd7c361c3f4147977f2fa8adcdaa7bd8beb3b015d452  scripts/governance/tests/test_evidence_root.sh
+# sha256 c262ca3d8ee50df8aa4f1c7c6deeddf70ab84b040ed699401a6f7c6e198606ab  scripts/governance/tests/test_register_id_schemas.sh
+# sha256 e06d98bc7d4ed4904a11555cbe40c4c33f432bddadfe9221ff1e05f489398c09  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 f9967c5c77ce7086b880f55cf96c09cd188106aae251295851ec0197d6886fa3  specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml
+# sha256 2b150c6863f69899fc2956ebfb618306487e49b26a3ea5464d7ec6f8331849cc  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 3c190feb730d9f489ab4b13fb7b945e9fd20a0b5f1c5b0de4844ee5acb97747b  specs/001-full-project-audit-remediation/progress.yml
+# sha256 e25ebd3136343f6603c63370c1bde451e3907d5ff17135e35a46f6a42eb62800  specs/001-full-project-audit-remediation/docs/04-findings-register-design.md
+# sha256 b535fcd8df99da788244a46f39519385b11df636c272897b5c95ad456cfd8339  specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md
+# sha256 40c64f8f7755d81c4af766691dd10b7d50cf5b4c1b9e0818d7d1fc303b692301  specs/001-full-project-audit-remediation/research.md
+# sha256 9493e8376b2b40ee3ab3f2470a3c60eacd59b52d9ec7fecfb6eca3a0e62b2b40  specs/001-full-project-audit-remediation/contracts/finding.schema.json
+# sha256 76a95a2970e89868d0fad5d3b759cbf5e8c4a102af2e8bf13086a4ce03872296  specs/001-full-project-audit-remediation/contracts/bank-case.schema.json
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+# harness: scratchpad mut_noatm.sh and mut2.py (scratch git copies of the feature folder; tests copied into them)
+control (tree copy, test copy): rc=0 
+R1_anchor_edited_back_to_CAT: rc=1 FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 29 exempt line(s), expected 30|FAIL docs/04 section 14: 1 captured transcript line(s) missing or not inside a captured-output marker: ['minted|1|ATM-001']|
+R2_end_marker_removed: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R3_begin_marker_removed: rc=1 FAIL 6 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 25 exempt line(s), expected 30|
+R4_new_ATM_in_decision_file: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R5_new_ATM_in_docs21: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R5b_marker_line_added_inventory_grows: rc=1 FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md has 3 exempt line(s)|
+R6_helix_reporting_yaml: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R7_sqlite_register_db: rc=1 FAIL 2 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R8_nested_submodules_dir: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R9_pipe_in_path: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+R10_captured_line_with_CAT: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 29 exempt line(s), expected 30|
+R11_leftover_in_script: rc=1 FAIL 1 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c|
+schema finding_widened: rc=1 FAIL finding.schema.json register_item: 'ATM-001' wanted refused got valid; 'XYZ-001' wanted refused got valid
+schema bank_widened: rc=1 FAIL bank-case.schema.json register_refs[]: 'ATM-001' wanted refused got valid; 'XYZ-001' wanted refused got valid
+schema finding_short: rc=1 FAIL finding.schema.json register_item: 'CAT-01' wanted refused got valid
+schema finding_unanchored: rc=1 FAIL finding.schema.json register_item: 'xCAT-001' wanted refused got valid; 'CAT-001x' wanted refused got valid
+schema bank_old_prefix: rc=1 FAIL bank-case.schema.json register_refs[]: 'CAT-001' wanted valid got refused; 'CAT-123' wanted valid got refused; 'CAT-1234' wanted valid got refuse
+schema bank_v3_unreachable: rc=1 FAIL bank-case.schema.json: root metadata.v3 does not reference #/$defs/v3 (the checked pattern would be unreachable)
+MUTDONE
+# mut2.py
+control (tree copy): rc=0 
+disabled binary_skipped:              rc=1 FAIL binary file without an id-shaped run is not a hit (PNG-like bare ATM): wanted violations in [], got ['x/img.png'] (x/img.png:1: PNGA | FAIL 34 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+disabled unreadable_silent:           rc=1 FAIL unreadable regular file is a failure, not a silent skip: wanted violations in ['docs/locked.md'], got [] () | FAIL 34 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+disabled marker_kind_unchecked:       rc=1 FAIL E5 line marker with a known kind exempts; unknown kind is a violation: wanted violations in ['docs/b.md'], got [] () | FAIL 34 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+disabled region_not_checked_for_CAT:  rc=1 FAIL E5 captured-output line carrying CAT- is a violation (never printed by that run): wanted violations in ['docs/c.md'], got [] () | FAIL 34 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+disabled region_unclosed_ignored:     rc=1 FAIL E5 unclosed region is a violation: wanted violations in ['docs/u.md'], got [] () | FAIL 32 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+disabled no_git_listing_blind_ok:     rc=1 FAIL non-git root was not refused: [] | FAIL 34 ATM occurrence(s) or marker violation(s) remain in /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74
+D2 quoted-value comment, old comment parser: rc=0 []
+D2 quoted-value comment, new test: rc=1 ["FAIL ODG-37: progress.yml comment 'caveat: only until the Q3 budget review' is not carried in the note (conductor caveat dropped)"]
+RED B1 (docs/04 as the rename left it: captured lines edited, no markers): rc=1 FAIL exemption inventory: specs/001-full-project-audit-remediation/docs/04-findings-register-design.md has 3 exempt line(s), expected 30 | FAIL docs/04 section 14: 8 captured transcript line(s) missing or not inside a captured-output marker: ['minted|1|ATM-001', 'add: created AT

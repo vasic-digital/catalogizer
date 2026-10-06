@@ -1,0 +1,7 @@
+# sha256 scripts/governance/tests/test_no_atm_prefix.sh: 4a0cfb380c31ba46f86eebe0309900ee2b4f8dec2ea9a898d4d2935634436b8e
+# date 2026-10-05T20:09:01Z head a27d72a5
+# RED (new scenarios against the ORIGINAL test body, before the fix):
+FAIL E6 the token is not exempt in a third file: wanted violations in ['docs/x.md', 'scripts/ledger/other_ledger.tsv'], got [] ()
+FAIL exemption inventory: scripts/ledger/project_gate_ledger.tsv has 1 exempt line(s), expected 0
+FAIL exemption inventory: scripts/ledger/project_gate_ledger_prev_names.txt has 1 exempt line(s), expected 0
+failures=3

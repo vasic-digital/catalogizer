@@ -1,0 +1,87 @@
+# round6 shellcheck | utc=2026-10-06T14:05:22Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (IMG-SHELLCHECK pinned) final files
+# sha256 3161a9e26ef33270ec5c399657dd4bdecbac90918747fa5a1d5cab80cf6b04aa  scripts/repo/push_recursive.sh
+# sha256 b266393f67b40e7e6df365b93e1995a9be6963a708440c6cceace2b910ff655d  scripts/repo/scope_check.sh
+# sha256 02c1d2a9d31364ffd73bb1da50e7f4c42c739afe778174b4337d9f129698e66c  scripts/repo/check_no_ci.sh
+# sha256 1e421f83128eb403c98931bba2d4df1e815454bfd0da2b8e2a262de95e22d931  scripts/repo/check_revision_headers.sh
+# sha256 0bd37606fdaa6ceed468949f3e12c9ff6a5f4d31a282b5e9da1a13a0b9a4cb1f  scripts/repo/integrate_merge.sh
+# sha256 af6468ce5196d6a289f1e333e5a5990c5e3e61cfbb477df2e12e002e301a4dfd  scripts/repo/verify_repos.sh
+# sha256 8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+# sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# sha256 94bdb017a67d76af4ab3cde50010600416b2aec4b6056ede626758f2bdb4d3d7  scripts/repo/tests/test_integrate_merge.sh
+# sha256 e3920adbdbe485c2e2692b70d3317ecacbc97f885da7c90b4158916526db94dd  scripts/repo/tests/test_wp04c.sh
+# sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# sha256 86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e  scripts/repo/tests/test_verify_repos.sh
+# sha256 ac65124e56474277e32eadc94279d09b47317b7a32bc305167644d98828b90fd  scripts/repo/tests/run_wp04f_mutations.sh
+# sha256 d9821d8a38416b1e38cb19c544e46867c3ec0b3e35f4e2f615ab118032dd82fc  scripts/audit/index_health.sh
+# sha256 7a0118967aa43f74514c54b352af474f7c3ff606fa4b50b3373871e6495a7a77  scripts/audit/tests/test_index_health_extra.sh
+# sha256 37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+# cmd: scripts/containers/run_pinned.sh --network=none --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp04/.rp IMG-SHELLCHECK -- shellcheck -S warning <files above>
+
+In scripts/repo/lib_safe.sh line 26:
+  case "$p" in /*|-*|*\\*|..|../*|*/..|*/../*|./..|*//*) return 1 ;; esac
+                                  ^--^ SC2221 (warning): This pattern always overrides a later one on line 26.
+                                              ^--^ SC2222 (warning): This pattern never matches because of a previous pattern on line 26.
+
+
+In scripts/repo/tests/test_push_recursive.sh line 103:
+fresh; cpa "$M" . a.txt; git -C "$M" config remote.rx.url "ext::sh -c 'touch $T/pwned'"; run; eq "remote URL with the ext:: transport: 20" "$RC" 20; has "unsafe_remote_url" "$(cat "$T/out")$(cat "$T/err")" unsafe_remote_url; eq "nothing was executed" "$(test -e "$T/pwned"; echo $?)" 1
+                                                                                                                                                                                                                                                                                       ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_integrate_merge.sh line 33:
+eq "both sides present, uncommitted file untouched" "$(ls "$M" | grep -cE '^(l|r|u)\.txt$')" 3
+                                                       ^-- SC2010 (warning): Don't use ls | grep. Use a glob or a for loop with a condition to allow non-alphanumeric filenames.
+
+
+In scripts/repo/tests/test_integrate_merge.sh line 73:
+eq "work tree status unchanged" "$(git -C "$M" status --porcelain)" "$st0"; eq "no MERGE_HEAD" "$(test -e "$M/.git/MERGE_HEAD"; echo $?)" 1
+                                                                                                                                     ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_integrate_merge.sh line 84:
+run; eq "two compatible diverged targets: 0" "$RC" 0; eq "two MERGED lines" "$(grep -c '^MERGED' "$T/out")" 2; eq "both files present" "$(ls "$M" | grep -cE '^(a|b)\.txt$')" 2
+                                                                                                                                          ^-- SC2010 (warning): Don't use ls | grep. Use a glob or a for loop with a condition to allow non-alphanumeric filenames.
+
+
+In scripts/repo/tests/test_integrate_merge.sh line 115:
+eq "nothing written, HEAD unchanged" "$(head_)" "$LT"; eq "no MERGE_HEAD left" "$(test -e "$M/.git/MERGE_HEAD"; echo $?)" 1; eq "work tree clean of the merge" "$(git -C "$M" status --porcelain | wc -l | tr -d ' ')" 0
+                                                                                                                     ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_wp04c.sh line 26:
+  eq "no commits.tsv row for '$sp'" "$(test -e "$T/run/commits.tsv"; echo $?)" 1
+                                                                          ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_wp04c.sh line 74:
+vcrun() { ( cd "$T/vr" && "$VCH" --root "$T/vr" --adopt-working-tables --code-root "$T/code" --registry "$T/code/scripts/repo/validate_checks.tsv" ${VHELD:+--held-from "$VHELD"} --files-from "$T/cs.lst" "$@" ) >"$T/out" 2>"$T/err"; RC=$?; }
+^-- SC2120 (warning): vcrun references arguments, but none are ever passed.
+
+
+In scripts/repo/tests/test_wp04c.sh line 172:
+rm -f "$P/o.git/objects/${ftip:0:2}/${ftip:2}"; eq "setup: the foreign tip object is gone from the remote" "$(test -e "$P/o.git/objects/${ftip:0:2}/${ftip:2}"; echo $?)" 1
+                                                                                                                                                                     ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_wp04c.sh line 196:
+eq "remote named like an option: 20 (I7)" "$RC" 20; eq "reason unsafe_remote_name" "$(j .reason)" unsafe_remote_name; eq "the option was never executed" "$(test -e "$P/pwned"; echo $?)" 1
+                                                                                                                                                                                     ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_wp04c.sh line 197:
+fx; git -C "$W" config remote.rx.url "ext::sh -c 'touch $P/pwned2'"; ffrun; eq "ext:: remote URL: 20" "$RC" 20; eq "reason unsafe_remote_url" "$(j .reason)" unsafe_remote_url; eq "nothing executed" "$(test -e "$P/pwned2"; echo $?)" 1
+                                                                                                                                                                                                                                   ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+
+In scripts/repo/tests/test_wp04c.sh line 198:
+fx; git -C "$W/sm" remote add -- "--upload-pack=$P/up.sh" "$P/sm.git"; ffrun; eq "submodule remote named like an option: 20" "$RC" 20; eq "the option was never executed (submodule)" "$(test -e "$P/pwned"; echo $?)" 1
+                                                                                                                                                                                                                  ^-- SC2319 (warning): This $? refers to a condition, not a command. Assign to a variable to avoid it being overwritten.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2010 -- Don't use ls | grep. Use a glob o...
+  https://www.shellcheck.net/wiki/SC2120 -- vcrun references arguments, but n...
+  https://www.shellcheck.net/wiki/SC2221 -- This pattern always overrides a l...
+rc=1

@@ -1,0 +1,88 @@
+review-provenance evidence index (T094a; review r1 finding m8). Naming: review-provenance-<kind>[-r<round>].txt
+  review-provenance-red.txt / -green-x3.txt / -mutations.txt   round 1 (superseded: they ran the pre-fix script; the
+                                                               recorded mutation run there is not reproducible from its recorded mutant)
+  review-provenance-red-r2.txt        round 2 suite run against the PRE-FIX script (reconstructed: the round-2 edits reversed;
+                                      11 FAIL, incl. B3, I1, I2, I3 tests; c1/c2 killer tests pass there by design: they kill mutants)
+  review-provenance-green-r2-x3.txt   round 2 suite run 3 times against the fixed script (RESULT lines only)
+  review-provenance-mutations-r2.txt  round 2 mutations, each with its literal diff; reproduce:
+                                      scripts/review/tests/mutations_check_review_provenance.sh  (rc 0 = all killed, EQ* mutants survive by design)
+Required T005a names dispatch-red.txt / dispatch-mutations.txt belong to the dispatcher slice (not touched here).
+
+Round 3 (after the xhigh review of round 2, NO-GO: B-1, I-1..I-3, m-1..m-8). Every r3 file starts with an identity header
+(capture time, command, sha256 of the script under test, test, mutations, guide and the contracts schema; review r2 m-8):
+  review-provenance-red-r3.txt        the round-3 suite run against the round-2 script (reconstructed verbatim from the review
+                                      input; sha256 in its header): 35 ok / 35 FAIL, RESULT pass=35 fail=35
+  review-provenance-green-r3-x3.txt   the round-3 suite 3 times against the fixed script, full output, RESULT pass=67 fail=0 x3
+  review-provenance-mutations-r3.txt  29 mutants, each with its literal diff: 27 killed, EQ1 and EQ2 documented equivalents
+                                      (survive by design), 0 survived; includes the reviewer survivors R1, R2, R3, R4, R6, R6b
+                                      and the schema/TOCTOU/sha-path/sanitisation mutants s1-s4, m1-m3
+r1/r2 files above are superseded by r3 and kept as history.
+
+Round 4 (after the xhigh review of round 3, NO-GO: B-1, I-1, I-2, m-1..m-6, nits). Every r4 file starts with an identity header.
+  review-provenance-green-r4-x3.txt        the round-4 suite 3 times against the fixed script: RESULT pass=113 fail=0 x3 (rc=0)
+  review-provenance-red-r4.txt             the round-4 suite against the BYTE-EXACT round-3 script (reconstructed by reversing the r4 edits;
+                                           sha256 de52e25e...b8b0 equals the round-3 evidence header, verified): RESULT pass=92 fail=21
+                                           (the guide checks pass there because the guide is already updated: 21 behavioural FAILs)
+  review-provenance-red-r4-vs-r2input.txt  m-1 re-capture: the round-4 suite against the TRUE round-2 review input, sha256 98716156...7753
+                                           (the r3 RED header named c14b79fe..., a comment-stripped copy: that identity claim was wrong,
+                                           now superseded): RESULT pass=47 fail=67
+  review-provenance-mutations-r4.txt       50 mutants, each with its literal diff: 47 killed, EQ1, EQ2, EQ3 documented equivalents
+                                           (survive by design), 0 survived, 0 unapplied. Reviewer survivors NM1, NM2, NM3, NM4, NM5, NM7
+                                           are mutants nm1, nm2, nm3, nm4 (+nm4b), nm5 (+nm5b), nm7, all killed. Its last line rc is
+                                           recorded as NOT CAPTURED (launch quoting slip); the script exits 0 iff survived_or_unapplied=0.
+  Earlier r3 mutants c4c, r4, s3 had their anchors retargeted to the round-4 text (same mutation, never weakened).
+  m-3: the DOCCHECKS line now says that doc failures ARE added to RESULT fail and doc passes are not added to RESULT pass.
+  The sweep includes a first run of this sweep that killed no mutant wrongly: an earlier partial run (anchors c4c, r4, s3 stale) was
+  stopped and re-run in full; only the full run above is evidence.
+r1/r2/r3 files are superseded and kept as history.
+
+OWED TASK CHANGES (recorded here; tasks.md NOT edited by this round, owner/conductor to apply):
+  1. T046a step (1) and CENTRAL C6 (first approval): run `env -u CPA_APPROVED_DIR scripts/review/check_review_provenance.sh --bootstrap
+     $EV/reviews/WP-04.json` from the work tree (the verdict must list the contracts schema in reviewed_files; T046 should list it).
+  2. T094d: the `--list-trusted` mode (called by T094c from the work tree) must accept the same bootstrap rule; not implemented here.
+  3. CENTRAL C6 mechanical first-approval list: add `specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json`
+     (otherwise an approved checker refuses every later verdict, verdict_schema_unavailable, when a WP-04 GO omits the schema).
+  4. T042: cpa-host runs the checker with a scrubbed environment (PATH and CRP_*), and sets CPA_EXEC_SHA256 (the checker refuses CRP_* then).
+  5. UNCONFIRMED: the released/ layout mirroring repository-relative paths; the bootstrap mode attests the schema the verdict reviewed,
+     not an owner-approved one.
+
+Round 5 (after the xhigh review of round 4, NO-GO: I-1, I-2, I-3, m-1..m-3, nits). Every r5 file starts with an identity header.
+  script sha256 9e1d6c4ecd19393ea0e40258829d3424b6a020f1aa5ea4a63a74f08040116ead
+  test   sha256 247b40c91c79e2e15b0b17b7fc9a56e2a40c2603fdb51974e1bb6abbbdd62e65
+  mutations sha256 8b0c8007a7691589812ce193ac93dc72ef3d2122f8aa3c98fec4065fae7acee4
+  guide  sha256 111f1f0cc1f6e971f914bbbf2c9007aa13daf89d47d7b176e6549131461fb7f8
+  review-provenance-green-r5-x3.txt        the round-5 suite 3 times: RESULT pass=136 fail=0 x3 (rc=0), DOCCHECKS pass=15 fail=0
+  review-provenance-red-r5.txt             the round-5 suite against the round-4 script (sha256 152aaa64...80296025, the review input):
+                                           RESULT pass=124 fail=12; the 12 FAILs are the I-1 (cwd jsonschema/ and json.py), I-2 (PYTHONPATH,
+                                           LD_*/PYTHON*/BASH_ENV/ENV reaching children, exported jq/python3 functions, BASH_ENV) and m-1
+                                           (validator killed or exiting 1) fixtures. Doc checks are skipped under CRP_SCRIPT (known), so the
+                                           RED run does not exercise the guide checks. The RM1/RM3/RM4/RM5/RM7 fixtures PASS against the
+                                           round-4 script by design: they kill the reviewer's mutants (see below), they do not describe a
+                                           round-4 defect.
+  review-provenance-mutations-r5.txt       65 mutants, each with its literal diff: 61 killed, EQ1-EQ4 documented equivalents (survive by
+                                           design), 0 survived, 0 unapplied, rc=0. New: rm1 rm2 rm2b rm3 rm4 rm5 rm7 (reviewer RM1-RM5, RM7 plus
+                                           the status-1 mapping), i1p1 i1p2 (python3 without -I, one per stage), i2s1..i2s5 (function unset,
+                                           whole variable scrub, LD_*, PYTHON*, BASH_ENV/ENV), EQ4 (IFS reset: bash never imports IFS).
+                                           s1 and s4 had their anchors retargeted to the new status mapping (same mutation, never weakened).
+                                           A first sweep was stopped at mutant 36 to retarget those two stale anchors and re-run in full;
+                                           only the full run above is evidence. The sweep ran in the background with a done marker.
+  I-1  python3 -I in both stages. I-2  the script scrubs functions and LD_*/PYTHON*/BASH_ENV/ENV/BASH_FUNC_*/CDPATH/GLOBIGNORE for children
+  (scrub, not refuse: the host session itself exports LD_PRELOAD and LD_LIBRARY_PATH, so a refusal would be a false refusal of a healthy host).
+  m-1  validator exit 10 = invalid, anything else non-zero = unavailable. RM6 was already killed. No reviewer mutant remains alive.
+Corrections (review r4 m-2, 11.4.6): the r4 RED note above says "the guide checks pass there because the guide is already updated": that is
+  wrong; with CRP_SCRIPT set the test skips the guide checks (DOCCHECKS pass=3 counts only the three script-text checks). The r3 line
+  "reconstructed verbatim from the review input" is true only of what the r3 header's sha256 records; the r4 sentence about the c14b79fe
+  mis-identification is the correction of record.
+OWED TASK CHANGES, tracked here because tasks.md is outside this task's edit scope (review r4 m-3, 11.4.197); owner/conductor to file as items:
+  O1. T046a step (1): call `env -u CPA_APPROVED_DIR scripts/review/check_review_provenance.sh --bootstrap <verdict>` (a plain call refuses
+      verdict_schema_unavailable). O2. T094d: `--list-trusted` takes the same bootstrap rule. O3. C6 mechanical first-approval list: add the schema.
+  O4. T042 (replaces owed item 4 of round 4): cpa-host starts the checker, in EVERY mode (--exec-approved, --check-provenance, approve's C6 check),
+      with an ALLOW-LIST environment (env -i bash --noprofile --norc, enumerated CPA_* only, fixed PATH and locale; never BASH_ENV, ENV, BASH_FUNC_*,
+      PYTHON*, LD_*). The in-script scrub is the second line only (a hostile BASH_ENV can shadow the builtins it uses; PATH is not restored).
+  O5. C5: set the trusted marker CPA_EXEC_SHA256 for --check-provenance and approve too (today the CRP_* refusal does not fire there; CRP_RUN_ID_PATTERN
+      is honoured). O6. UNCONFIRMED: the released/ layout mirroring repository-relative paths.
+OWED NITS (not fixed, recorded, no real-defect impact): on SIGTERM the EXIT trap removes the private directory but the Python child can outlive the
+  checker briefly; CPA_APPROVED_DIR=/ gives a false refusal (unreachable in practice); lone-surrogate escape refused under a misattributed reason;
+  uppercase hex refused (format documented as lowercase); shellcheck is not installed on this host, so no lint ran (bash -n only).
+UNCONFIRMED: that a hostile BASH_ENV defining a shadow of unset/compgen defeats the in-script scrub (reasoned from bash semantics, not probed);
+  behaviour on a host whose jsonschema is only in the user site (python3 -I ignores it: expected verdict_schema_unavailable, not probed).

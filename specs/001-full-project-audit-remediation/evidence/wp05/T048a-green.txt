@@ -1,0 +1,36 @@
+GREEN run 1 (rev 6 schema, 33 properties)
+ok   pre-rev6 entry (neither property) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0
+GREEN run 2 (rev 6 schema, 33 properties)
+ok   pre-rev6 entry (neither property) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0
+GREEN run 3 (rev 6 schema, 33 properties)
+ok   pre-rev6 entry (neither property) (valid)
+ok   pre_release with test_state_gos (valid)
+ok   pre_release without test_state_gos (refused)
+ok   test_state_gos without pre_release (refused)
+ok   test_state_gos with pre_release=false (refused)
+ok   empty test_state_gos (refused)
+ok   duplicate test_state_gos (refused)
+ok   unknown property still refused (refused)
+ok   mutation (no pre_release) caught
+failures=0
+rc=0

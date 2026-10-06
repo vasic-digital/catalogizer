@@ -1,0 +1,12 @@
+MUTANT MX3b verifier=ae1e701d276b2127fe1bd5c87388c444c2db54bf8bec385bd1bb4aa941539133 test=d835944b8ab974c36a4aa38a9852533a969161da13db3ab2eb1cfbdb199fad8c
+-  for r in "${rlist[@]}"; do
++  for r in $(cat "${outdir:?}/${idx:?}.remotes"); do
+FAIL rn uploadsp: exit 14 (the refused remote is unproven, never clean) (got '20', want '14')
+FAIL rn uploadsp: the hostile remote's row is NO-REMOTE-BRANCH (got '?', want 'NO-REMOTE-BRANCH')
+FAIL rn uploadsp: the clean origin is still compared (SAME) (got '?', want 'SAME')
+FAIL rn uploadsp: no refusal message: verify_repos: cannot verify .: git remote get-url --upload-pack=touch failed
+FAIL rn space: exit 14 (the refused remote is unproven, never clean) (got '20', want '14')
+FAIL rn space: the hostile remote's row is NO-REMOTE-BRANCH (got '?', want 'NO-REMOTE-BRANCH')
+FAIL rn space: the clean origin is still compared (SAME) (got '?', want 'SAME')
+FAIL rn space: no refusal message: verify_repos: cannot verify .: git remote get-url a failed
+SUMMARY pass=225 fail=8

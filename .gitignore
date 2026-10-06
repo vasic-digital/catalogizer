@@ -394,3 +394,73 @@ docs/reports/qa-sessions/**/helixqa/*.log
 
 # §11.4.173 brought-back container build artifacts (recreatable via scripts/build_in_container.sh, §11.4.77)
 deploy/artifacts/
+
+# BEGIN helix-t004-repo-wide-secrets (specs/001-full-project-audit-remediation, T004 + repo-wide secrets). scripts/repo/tests/test_planned_paths_tracked.sh sweeps ONLY the lines between this marker and its END marker.
+# REPO-WIDE SECRETS: secret-like files are ignored at the root and in every subdirectory (also inside the trees negated below).
+# Checked with git ls-files before adding: no currently tracked file matches any rule below. Example/template siblings stay trackable.
+id_rsa*
+id_ecdsa*
+id_dsa*
+id_ed25519*
+!id_rsa.example
+!id_rsa.sample
+!id_rsa.template
+!id_ecdsa.example
+!id_ecdsa.sample
+!id_ecdsa.template
+!id_dsa.example
+!id_dsa.sample
+!id_dsa.template
+!id_ed25519.example
+!id_ed25519.sample
+!id_ed25519.template
+*.key
+*.pem
+*.p12
+*.pfx
+*.kdbx
+credentials.json
+.npmrc
+secrets.env
+.netrc
+
+# T004 (specs/001-full-project-audit-remediation): planned tracked deliverables stay committable
+!/build/
+/build/*
+!/build/containers/
+!/build/components.json
+!/build/hosts.env.example
+/build/containers/**/*.bin
+!/scripts/build/
+!/tools/
+/tools/*
+!/tools/evidence/
+/tools/evidence/.cache
+!/tools/perf/
+!/tools/audit/
+/tools/audit/*
+!/tools/audit/rust_ast/
+/tools/audit/rust_ast/target/
+!/tools/audit/rust_ast/Cargo.lock
+!/coverage/
+/coverage/*
+!/coverage/exclusions/
+!/scripts/coverage/
+!/docs/workable_items.db
+docs/*.bak-*
+docs/.register.lock
+/.audit/
+
+# T004 review r2 N8/N9 (r3 W6): the negated trees lost their blanket ignore, so host files and caches are re-ignored inside each of them.
+# Secrets inside these trees are covered by the repo-wide id_*/*.key/... block above (a file pattern applies at any depth, so the per-tree copies were redundant and, for id_rsa*, overrode the example negations).
+# Review r3 I5: Python bytecode and tool caches are ignored REPO-WIDE (any depth, also inside the negated trees); the 21 per-tree cache lines they replace covered 7 trees only,
+# so a compiled .pyc under scripts/audit/ was untracked and not ignored. Checked with git ls-files before adding: no tracked file matches any of these rules.
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+/build/containers/**/hosts.env
+/tools/evidence/**/.cache
+# END helix-t004-repo-wide-secrets

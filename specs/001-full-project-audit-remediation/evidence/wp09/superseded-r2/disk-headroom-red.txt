@@ -1,0 +1,48 @@
+FAIL: above threshold: exit 0 (got '127' want '0')
+FAIL: above threshold: record written to EV/disk/<op_id>.json (got 'no' want 'yes')
+FAIL: record carries before value (got '' want '5000')
+FAIL: record carries after value (free minus need) (got '' want '4000')
+FAIL: record verdict pass (got '' want 'pass')
+FAIL: free-need exactly at threshold: passes (got '127' want '0')
+PASS: free-need one byte below threshold (graphroot fs): refused non-zero
+FAIL: refusal reason disk_below_headroom on stderr (got '0' want '1')
+FAIL: refusal record carries reason (got '' want 'disk_below_headroom')
+FAIL: repository filesystem below threshold: refused (got '0' want '1')
+PASS: unreadable free-space value: refused non-zero
+FAIL: unreadable free-space: named reason, never treated as enough (got '0' want '1')
+FAIL: missing --need: refused as usage error (exit 2) (got '127' want '2')
+FAIL: percentage value in conf: refused as configuration error (exit 2) (got '127' want '2')
+FAIL: percentage refusal names reason (got '0' want '1')
+FAIL: conf without min_free_bytes: refused (exit 2) (got '127' want '2')
+FAIL: DISK_HEADROOM_OUT_DIR: record written there (got 'no' want 'yes')
+PASS: DISK_HEADROOM_OUT_DIR: nothing written under EV/disk for that op
+FAIL: committed conf min_free_bytes is an absolute byte count (got '')
+FAIL: committed conf documents formula, inputs and measurement dates (got '' want 'yes')
+PASS: [real] live grant held by other run: refused non-zero
+FAIL: [real] refusal reason commit_turn_held (got '0' want '1')
+PASS: [real] nothing written under EV/disk
+PASS: [real] scratch tree byte-unchanged
+FAIL: [real] reaper called exactly once (got '0' want '1')
+PASS: [real] every reap call went through --exec-approved (host entry log == reaper log)
+FAIL: [real] OUT_DIR set: passes during a held turn (got '127' want '0')
+FAIL: [real] OUT_DIR set: record written there (got 'no' want 'yes')
+PASS: [real] OUT_DIR set: reaper not called
+FAIL: [real] own run_id: writes EV/disk (got 'no' want 'yes')
+FAIL: [real] no grant file: writes EV/disk (got 'no' want 'yes')
+FAIL: [real] dead holder: reaped then written (got 'no' want 'yes')
+FAIL: [real] dead holder: exit 0 (got '127' want '0')
+FAIL: [real] dead holder: exactly one reap, via --exec-approved (got '0/0' want '1/1')
+FAIL: [real] dead holder: --exec-approved line is the exact reap form (got '' want '--exec-approved scripts/release/commit_turn_check.sh --reap')
+FAIL: [real] no reaper script: refusal stands (got '0' want '1')
+FAIL: [real] absent cpa-host counts as failing reaper: refusal stands (got '0' want '1')
+PASS: [real] absent cpa-host: nothing written
+FAIL: [real] unreadable grant: refused commit_turn_held (got '0' want '1')
+PASS: [real] unreadable grant: nothing written
+FAIL: [real] non-JSON grant: refused commit_turn_held (got '0' want '1')
+PASS: [real] non-JSON grant: nothing written
+FAIL: mutation ignore-grant not applied (script under test unreadable)
+FAIL: mutation unreadable-as-none not applied (script under test unreadable)
+FAIL: mutation no-reread not applied (script under test unreadable)
+FAIL: mutation direct-reap not applied (script under test unreadable)
+FAIL: real script: turn-freeze suite has zero failures (got '14' want '0')
+disk_headroom tests: 11 passed, 36 failed

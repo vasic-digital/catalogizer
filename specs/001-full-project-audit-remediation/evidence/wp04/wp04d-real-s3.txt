@@ -1,0 +1,91 @@
+# WP-04 fix round 4 evidence (real S3 and S2 over 77 WP-04 files of the real repository) - 2026-10-06T06:41:53Z, head a27d72a5
+# sha256 scripts/repo/validate_cheap.sh 79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff
+# sha256 scripts/repo/scope_check.sh 675cce18ce2b98eeb75a330228c3b1e21e2f2cdbcd8ca4a3e38a87b1e422677a
+# command: scripts/repo/validate_cheap.sh --root . --files-from <list> --adopt-working-tables   (the tables are still untracked, so the in-place helper needs the explicit adoption form)
+# S3 stdout, exit 10:
+deferred	go_fmt
+deferred	go_vet
+deferred	go_imports
+deferred	eslint
+deferred	prettier
+deferred	anti_bluff
+fail	revision_header	specs/001-full-project-audit-remediation/evidence/wp04/coverage-kcov-baseline.md,specs/001-full-project-audit-remediation/evidence/wp04/verify-repos-container-rootcause.md	fail	revision_header	specs/001-full-project-audit-remediation/evidence/wp04/coverage-kcov-baseline.md | fail	revision_header	specs/001-full-project-audit-remediation/evidence/wp04/verify-repos-container-rootcause.md
+# S2 (scope_check.sh --root . --paths-from <list>) exit 0, output: 
+# list:
+docs/scripts/check_classes.md
+scripts/repo/check_class.sh
+scripts/repo/check_classes.tsv
+scripts/repo/check_exemptions.tsv
+scripts/repo/check_no_ci.sh
+scripts/repo/check_revision_headers.sh
+scripts/repo/commit_recursive.sh
+scripts/repo/exceptions.tsv
+scripts/repo/fixture_roots.sh
+scripts/repo/fixture_roots.txt
+scripts/repo/integrate_ff_only.sh
+scripts/repo/integrate_merge.sh
+scripts/repo/lib_safe.sh
+scripts/repo/push_recursive.sh
+scripts/repo/record_deferral.sh
+scripts/repo/scope_check.sh
+scripts/repo/tests/lib_wp04b.sh
+scripts/repo/tests/run_wp04_mutations.sh
+scripts/repo/tests/run_wp04b_mutations.sh
+scripts/repo/tests/run_wp04c_mutations.sh
+scripts/repo/tests/run_wp04d_mutations.sh
+scripts/repo/tests/test_check_classes.sh
+scripts/repo/tests/test_check_no_ci.sh
+scripts/repo/tests/test_check_revision_headers.sh
+scripts/repo/tests/test_commit_recursive.sh
+scripts/repo/tests/test_fixture_roots.sh
+scripts/repo/tests/test_integrate_ff_only.sh
+scripts/repo/tests/test_integrate_merge.sh
+scripts/repo/tests/test_planned_paths_tracked.sh
+scripts/repo/tests/test_push_recursive.sh
+scripts/repo/tests/test_record_deferral.sh
+scripts/repo/tests/test_scope_check.sh
+scripts/repo/tests/test_validate_cheap.sh
+scripts/repo/tests/test_verify_repos.sh
+scripts/repo/tests/test_verify_schema.sh
+scripts/repo/tests/test_wp04c.sh
+scripts/repo/tests/test_wp04d.sh
+scripts/repo/tests/wp04b_evidence.sh
+scripts/repo/tests/wp04c_evidence.sh
+scripts/repo/validate_cheap.sh
+scripts/repo/validate_checks.tsv
+scripts/repo/verify_repos.sh
+specs/001-full-project-audit-remediation/evidence/wp04/README.md
+specs/001-full-project-audit-remediation/evidence/wp04/T038-findings.md
+specs/001-full-project-audit-remediation/evidence/wp04/abs-wrapper-green-1.txt
+specs/001-full-project-audit-remediation/evidence/wp04/abs-wrapper-green-2.txt
+specs/001-full-project-audit-remediation/evidence/wp04/abs-wrapper-green-3.txt
+specs/001-full-project-audit-remediation/evidence/wp04/abs-wrapper-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/abs-wrapper-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/check-classes-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/check-classes-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/coverage-kcov-baseline.json
+specs/001-full-project-audit-remediation/evidence/wp04/coverage-kcov-baseline.md
+specs/001-full-project-audit-remediation/evidence/wp04/fixture-roots-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/fixture-roots-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/helpers-green.txt
+specs/001-full-project-audit-remediation/evidence/wp04/helpers-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/helpers-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/pending-precedence-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/recursive-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/recursive-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/shellcheck.txt
+specs/001-full-project-audit-remediation/evidence/wp04/verify-repos-container-rootcause.md
+specs/001-full-project-audit-remediation/evidence/wp04/wp04b-green.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04b-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04b-notes.md
+specs/001-full-project-audit-remediation/evidence/wp04/wp04b-red-first.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04b-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-green.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-mutation-rerun.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-notes.md
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-real-s3.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04c-red.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04d-green.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04d-mutation.txt
+specs/001-full-project-audit-remediation/evidence/wp04/wp04d-red.txt

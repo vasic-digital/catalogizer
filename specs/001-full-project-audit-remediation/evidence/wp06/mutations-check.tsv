@@ -1,0 +1,78 @@
+# identity: task=T062/T063 utc=2026-10-05T19:49:21Z host=anton uid=1000 git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# ddl=/home/milosvasic/Projects/catalogizer/scripts/register/register_ext.sql ddl_sha256=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 runner_sha256=ba3eac5b1011dceaf867860f10ab13839745a1e5f647b5df3e87a22bc9a933ab mutator_sha256=7a9cca913a87b77c52bd8c2a07b5078ac824f7dffdc0ecf2c71fb92c040dff3b
+# test=scripts/register/tests/test_register_ext.sh test_sha256=0f104251c48aa86ed499b7a77fd482f378cae9bbce7b9569d377caaecc335c1c control=PASS
+# kinds=check count_checks=^FAIL (A2|A3|A7|F2)  equivalent_list=scripts/register/equivalent_mutants.tsv equivalent_sha256=b2d2c5612bb404e32d6117a1384fcb10642a1ef576865520a617ba15ab9f1700
+# sqlite3=3.50.6 2025-09-22; columns: mutant<TAB>kind<TAB>name<TAB>killed<TAB>killing test<TAB>first non-count failing check | equivalence reason
+m044_check_reg_ids_1.sql	check	reg_ids	yes	test_register_ext.sh	FAIL D26 reg_ids minted_by empty :: rc=0 out=[] wanted /CHECK constraint failed/
+m045_check_reg_ids_2.sql	check	reg_ids	yes	test_register_ext.sh	FAIL D27 reg_ids unknown mint_basis :: rc=0 out=[] wanted /CHECK constraint failed/
+m046_check_reg_components_3.sql	check	reg_components	yes	test_register_ext.sh	FAIL D33 reg_components id with uppercase :: rc=0 out=[] wanted /CHECK constraint failed/
+m047_check_reg_components_4.sql	check	reg_components	yes	test_register_ext.sh	FAIL H components.kind :: rc=0 out=[] wanted /CHECK constraint failed/
+m048_check_reg_components_5.sql	check	reg_components	yes	test_register_ext.sh	FAIL H components.own_repo :: rc=0 out=[] wanted /CHECK constraint failed/
+m049_check_reg_item_ext_6.sql	check	reg_item_ext	yes	test_register_ext.sh	FAIL D30 reg_item_ext bad category :: rc=0 out=[] wanted /CHECK constraint failed/
+m050_check_reg_item_ext_7.sql	check	reg_item_ext	yes	test_register_ext.sh	FAIL H item_ext.defect_layer :: rc=0 out=[] wanted /CHECK constraint failed/
+m051_check_reg_item_ext_8.sql	check	reg_item_ext	yes	test_register_ext.sh	FAIL H item_ext.severity :: rc=0 out=[] wanted /CHECK constraint failed/
+m052_check_reg_item_ext_9.sql	check	reg_item_ext	yes	test_register_ext.sh	FAIL H item_ext.custody_basis :: rc=0 out=[] wanted /CHECK constraint failed/
+m053_check_reg_item_ext_10.sql	check	reg_item_ext	yes	test_register_ext.sh	FAIL H item_ext.reverify_required :: rc=0 out=[] wanted /CHECK constraint failed/
+m054_check_reg_sources_11.sql	check	reg_sources	yes	test_register_ext.sh	FAIL H sources.kind :: rc=0 out=[] wanted /CHECK constraint failed/
+m055_check_reg_source_entries_12.sql	check	reg_source_entries	yes	test_register_ext.sh	FAIL H source_entries.entry_sha256 length :: rc=0 out=[] wanted /CHECK constraint failed/
+m056_check_reg_source_map_13.sql	check	reg_source_map	yes	test_register_ext.sh	FAIL H source_map.relation :: rc=0 out=[] wanted /CHECK constraint failed/
+m057_check_reg_source_map_14.sql	check	reg_source_map	yes	test_register_ext.sh	FAIL H source_map.match_basis :: rc=0 out=[] wanted /CHECK constraint failed/
+m058_check_reg_source_map_15.sql	check	reg_source_map	yes	test_register_ext.sh	FAIL H source_map.severity_governs :: rc=0 out=[] wanted /CHECK constraint failed/
+m059_check_reg_audit_runs_16.sql	check	reg_audit_runs	yes	test_register_ext.sh	FAIL H audit_runs.run_id pattern :: rc=0 out=[] wanted /CHECK constraint failed/
+m060_check_reg_audit_runs_17.sql	check	reg_audit_runs	yes	test_register_ext.sh	FAIL H audit_runs.git_head length :: rc=0 out=[] wanted /CHECK constraint failed/
+m061_check_reg_findings_18.sql	check	reg_findings	yes	test_register_ext.sh	FAIL H findings.location_path empty :: rc=0 out=[] wanted /CHECK constraint failed/
+m062_check_reg_findings_19.sql	check	reg_findings	yes	test_register_ext.sh	FAIL H findings.category :: rc=0 out=[] wanted /CHECK constraint failed/
+m063_check_reg_findings_20.sql	check	reg_findings	yes	test_register_ext.sh	FAIL H findings.severity :: rc=0 out=[] wanted /CHECK constraint failed/
+m064_check_reg_findings_21.sql	check	reg_findings	yes	test_register_ext.sh	FAIL H findings.fingerprint length :: rc=0 out=[] wanted /CHECK constraint failed/
+m065_check_reg_findings_22.sql	check	reg_findings	yes	test_register_ext.sh	FAIL H findings.unit_alias for another component :: rc=0 out=[] wanted /CHECK constraint failed/
+m066_check_reg_evidence_23.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D18 unknown kind :: rc=0 out=[] wanted /CHECK constraint failed/
+m067_check_reg_evidence_24.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL H evidence.evidence_class :: rc=0 out=[] wanted /CHECK constraint failed/
+m068_check_reg_evidence_25.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL H evidence.path empty :: rc=0 out=[] wanted /CHECK constraint failed/
+m069_check_reg_evidence_26.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D14 sha256 uppercase :: rc=0 out=[] wanted /CHECK constraint failed/
+m070_check_reg_evidence_27.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D17 size_bytes 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m071_check_reg_evidence_28.sql	check	reg_evidence	EQUIV		Every polarity value other than RED/GREEN is already rejected: polarity is non-NULL only for red_run/green_run (the kind/polarity pairing CHECK) and those kinds each pin polarity to RED / GREEN in their own CHECKs; no input reaches this CHECK alone.
+m072_check_reg_evidence_29.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL H evidence.iterations 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m073_check_reg_evidence_30.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL H evidence.precondition_provenance :: rc=0 out=[] wanted /CHECK constraint failed/
+m074_check_reg_evidence_31.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D9 runtime evidence without fingerprint (NULL) :: rc=0 out=[] wanted /CHECK constraint failed/
+m075_check_reg_evidence_32.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D4 red_run polarity NULL :: rc=0 out=[] wanted /CHECK constraint failed/
+m076_check_reg_evidence_33.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D1 red_run exit_code 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m077_check_reg_evidence_34.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D5 green_run iterations 1 :: rc=0 out=[] wanted /CHECK constraint failed/
+m078_check_reg_evidence_35.sql	check	reg_evidence	yes	test_register_ext.sh	FAIL D11 mutation_run exit_code 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m079_check_reg_test_runs_36.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL D64 rep_index 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m080_check_reg_test_runs_37.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL H test_runs.polarity :: rc=0 out=[] wanted /CHECK constraint failed/
+m081_check_reg_test_runs_38.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL H test_runs.verdict (MUTATION row, the only path no other CHECK covers) :: rc=0 out=[] wanted /CHECK cons
+m082_check_reg_test_runs_39.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL H test_runs.blocked_reason :: rc=0 out=[] wanted /CHECK constraint failed/
+m083_check_reg_test_runs_40.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL D65 empty target_fingerprint :: rc=0 out=[] wanted /CHECK constraint failed/
+m084_check_reg_test_runs_41.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL D61 BLOCKED without a reason :: rc=0 out=[] wanted /CHECK constraint failed/
+m085_check_reg_test_runs_42.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL D63 RED row that PASSes :: rc=0 out=[] wanted /CHECK constraint failed/
+m086_check_reg_test_runs_43.sql	check	reg_test_runs	yes	test_register_ext.sh	FAIL D60 GREEN row that is BLOCKED :: rc=0 out=[] wanted /CHECK constraint failed/
+m087_check_reg_reviews_44.sql	check	reg_reviews	yes	test_register_ext.sh	FAIL D72 verdict neither GO nor NO-GO :: rc=0 out=[] wanted /CHECK constraint failed/
+m088_check_reg_reviews_45.sql	check	reg_reviews	yes	test_register_ext.sh	FAIL D70 author equals reviewer :: rc=0 out=[] wanted /CHECK constraint failed/
+m089_check_reg_recurrence_links_46.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL H recurrence.intake_path :: rc=0 out=[] wanted /CHECK constraint failed/
+m090_check_reg_recurrence_links_47.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL H recurrence.verdict :: rc=0 out=[] wanted /CHECK constraint failed/
+m091_check_reg_recurrence_links_48.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL H recurrence.match_basis :: rc=0 out=[] wanted /CHECK constraint failed/
+m092_check_reg_recurrence_links_49.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL H recurrence.reopened :: rc=0 out=[] wanted /CHECK constraint failed/
+m093_check_reg_recurrence_links_50.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL D43 no reported entry and no finding :: rc=0 out=[] wanted /CHECK constraint failed/
+m094_check_reg_recurrence_links_51.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL D40 SAME_DEFECT with a minted new id :: rc=0 out=[] wanted /CHECK constraint failed/
+m095_check_reg_recurrence_links_52.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL D41 UNDECIDED without a new id (NULL) :: rc=0 out=[] wanted /CHECK constraint failed/
+m096_check_reg_recurrence_links_53.sql	check	reg_recurrence_links	yes	test_register_ext.sh	FAIL D42 new id equals the head :: rc=0 out=[] wanted /CHECK constraint failed/
+m097_check_reg_closure_decisions_54.sql	check	reg_closure_decisions	yes	test_register_ext.sh	FAIL H closure_decisions.to_status :: rc=0 out=[] wanted /CHECK constraint failed/
+m098_check_reg_closure_decisions_55.sql	check	reg_closure_decisions	yes	test_register_ext.sh	FAIL H closure_decisions.decision :: rc=0 out=[] wanted /CHECK constraint failed/
+m099_check_reg_trackers_56.sql	check	reg_trackers	yes	test_register_ext.sh	FAIL H trackers.tracker_id lowercase :: rc=0 out=[] wanted /CHECK constraint failed/
+m100_check_reg_trackers_57.sql	check	reg_trackers	yes	test_register_ext.sh	FAIL H trackers.enabled :: rc=0 out=[] wanted /CHECK constraint failed/
+m101_check_reg_tracker_sync_log_58.sql	check	reg_tracker_sync_log	yes	test_register_ext.sh	FAIL H tracker_sync.status :: rc=0 out=[] wanted /CHECK constraint failed/
+m102_check_reg_tracker_sync_log_59.sql	check	reg_tracker_sync_log	yes	test_register_ext.sh	FAIL H tracker_sync.skip_reason :: rc=0 out=[] wanted /CHECK constraint failed/
+m103_check_reg_tracker_sync_log_60.sql	check	reg_tracker_sync_log	yes	test_register_ext.sh	FAIL D54 SKIPPED without a reason :: rc=0 out=[] wanted /CHECK constraint failed/
+m104_check_reg_tracker_sync_log_61.sql	check	reg_tracker_sync_log	yes	test_register_ext.sh	FAIL D50 SYNCED without exit/ref/evidence :: rc=0 out=[] wanted /CHECK constraint failed/
+m105_check_reg_tracker_sync_log_62.sql	check	reg_tracker_sync_log	yes	test_register_ext.sh	FAIL D56 FAILED with exit 0 :: rc=0 out=[] wanted /CHECK constraint failed/
+m106_check_reg_export_runs_63.sql	check	reg_export_runs	yes	test_register_ext.sh	FAIL D76 reg_export_runs verdict unknown :: rc=0 out=[] wanted /CHECK constraint failed/
+m107_check_reg_export_files_64.sql	check	reg_export_files	yes	test_register_ext.sh	FAIL H export_files.format :: rc=0 out=[] wanted /CHECK constraint failed/
+m108_check_reg_export_files_65.sql	check	reg_export_files	yes	test_register_ext.sh	FAIL H export_files.sha256 length :: rc=0 out=[] wanted /CHECK constraint failed/
+m109_check_reg_export_files_66.sql	check	reg_export_files	yes	test_register_ext.sh	FAIL H export_files.status :: rc=0 out=[] wanted /CHECK constraint failed/
+m110_check_reg_cycle_67.sql	check	reg_cycle	yes	test_register_ext.sh	FAIL H cycle.manual_qa_ran :: rc=0 out=[] wanted /CHECK constraint failed/
+m111_check_reg_discovery_68.sql	check	reg_discovery	yes	test_register_ext.sh	FAIL H discovery.channel :: rc=0 out=[] wanted /CHECK constraint failed/
+m112_check_reg_discovery_69.sql	check	reg_discovery	yes	test_register_ext.sh	FAIL H discovery.should_have_been_caught_by empty :: rc=0 out=[] wanted /CHECK constraint failed/
+m113_check_reg_discovery_70.sql	check	reg_discovery	yes	test_register_ext.sh	FAIL H discovery.recorded_by equals producer :: rc=0 out=[] wanted /CHECK constraint failed/
+m114_check_reg_discovery_71.sql	check	reg_discovery	yes	test_register_ext.sh	FAIL H discovery.none needs a 20-char justification :: rc=0 out=[] wanted /CHECK constraint failed/
+m115_check_reg_escape_baseline_72.sql	check	reg_escape_baseline	yes	test_register_ext.sh	FAIL H escape_baseline.escapes negative :: rc=0 out=[] wanted /CHECK constraint failed/
+m116_check_reg_gate_checks_73.sql	check	reg_gate_checks	yes	test_register_ext.sh	FAIL D75 gate registry check kind unknown :: rc=0 out=[] wanted /CHECK constraint failed/

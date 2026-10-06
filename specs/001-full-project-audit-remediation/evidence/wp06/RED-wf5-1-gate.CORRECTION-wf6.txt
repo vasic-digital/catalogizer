@@ -1,0 +1,5 @@
+# CORRECTION to RED-wf5-1-gate.txt (WF6-3c, 2026-10-06). The transcript itself is unchanged.
+# Line 3 says the stat-named trigger, view and index fixtures are "B40.9-11 in the final numbering". They are B40.10-B40.12 in
+# scripts/register/tests/test_gate.sh (B40.9 is Sqlite_Hidden_T, B40.13+ are sqlite_sequence_x, sqlite_stat9, sqlite_autoindex_fake ...).
+# No RED run was captured for B40.10-B40.12 against the pre-fix gate (as line 3 already discloses); they guard the
+# object_filter_any_type mutant, which the WF6 reviewer's table shows killed by B40.10.

@@ -1,0 +1,40 @@
+# round5 evidence | utc=2026-10-06T08:52:11Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 b0c9c05ae101a8beb57f7b86f4e77ec07bb252e0f03d8b831f837561d2fcf89a scripts/audit/tests/test_index_health_extra.sh
+# sha256 32bdf9e8a0252dbe6d2b56193fe4862717300e41604731e89e0529d2d6040d12 /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/prefix_index_health.sh
+# cmd: env IH=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/prefix_index_health.sh bash scripts/audit/tests/test_index_health_extra.sh
+ok   X1 positive needle missing while tracked set is complete -> P2 FAIL
+ok   X2 absent pendingChanges -> P1 FAIL required_field_absent
+ok   X3 Chunks 0 -> P7 FAIL
+ok   X4 Files != Indexed -> P7 FAIL
+ok   X5 no Captured line -> P7 FAIL
+ok   X6 .env.distributed indexed -> P3 FAIL
+ok   X7 .env.example allowed -> P3 PASS (false-positive guard)
+ok   X8 file under a third-party root -> P3 FAIL
+ok   X9 own-org root with no indexed file -> P3 FAIL
+ok   X10 tracked file not indexed -> P2 FAIL
+ok   X11 executable --lumen-bin without a status capture -> P-Lumen FAIL (probe refused)
+ok   X12 no --lumen-files -> P8 SKIP
+ok   X12b skipped proofs make complete=false
+ok   X13a option-like value -> rc 2
+ok   X13b unknown option -> rc 2
+ok   X13c duplicate option -> rc 2
+ok   X13d negative tolerance -> rc 2
+ok   X14 unreadable status file -> P1 FAIL
+ok   X15 identical inputs -> byte-identical output
+ok   X16 inputs.cg_files.sha256 equals the sha256 of the file
+FAIL R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a ] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ / a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a / / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a / . / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a / . . / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+FAIL R4 non-canonical third-party root line [ a \ 0 0 1] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=0 P3=PASS reason=[]
+ok   R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard)
+ok   R4 control: a canonical root with ONE trailing slash that holds an indexed file -> P3 FAIL third_party_files_indexed
+ok   R4 control: blank lines in the roots file are ignored -> P3 PASS
+ok   M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind
+ok   M5-3 index.state indexing (everything else clean) -> P1 FAIL index.state_not_complete
+SUMMARY pass=25 fail=9
+# rc=1

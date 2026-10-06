@@ -1,0 +1,71 @@
+# R4 RED: new test against the round-3 run_pinned.sh/smoke_probe.sh (expected: failures)
+# date_utc: 2026-10-06T05:19:39Z
+# sut_sha256: 8a0e6daa71cf64cf5160dd6b0eef844a3135a062be8866afb0edbd6339f48c40
+# probe_sha256: 70b3e76aef16c9421fe914af75643b864a54caaf10d36307ca9c92d4b6de813b
+# test_sha256: 3857c43e10c72462d2fcd05dcd1e4c3dca2e8a4e56e5dbbb6190a2266d2b2c4b
+FAIL: --user defaults to the host uid:gid (got 'podman' want '1000:1000')
+FAIL: exactly one --user element (got '0' want '1')
+FAIL:   ...and it is the value composed (got 'podman' want '0:0')
+FAIL:   ...an explicit uid:gid is composed (got 'podman' want '4242:4343')
+FAIL: RUNP_USER='1000' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='1000:' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER=':1000' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='1000:1000 --privileged' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='1000:1000,extra' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='-1:-1' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='a:b' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_USER='1000:1000|0:0' is refused (got '0' want '1')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: reason: 
+FAIL: --out under docs (no --rw) is refused (got '0' want '1')
+FAIL: reason: 
+FAIL:   ...nothing composed (got '583' want '0')
+FAIL: --out below docs is refused (got '0' want '1')
+FAIL: --out equal to the source tree is refused (got '0' want '1')
+FAIL: --out above the source tree (it would mount the tree writable) is refused (got '0' want '1')
+FAIL: --out equal to .audit (not a sanctioned root) is refused (got '0' want '1')
+FAIL: --out at an arbitrary source path is refused (got '0' want '1')
+FAIL: --out reaching docs through .. is refused (got '0' want '1')
+FAIL: --out through an .audit/out symlink to docs is refused (got '0' want '1')
+FAIL: relative --out 'relout' is refused (got '0' want '1')
+FAIL: relative --out './relout' is refused (got '0' want '1')
+FAIL: relative --out '../relout' is refused (got '0' want '1')
+FAIL: relative --out '.' is refused (got '0' want '1')
+FAIL: reason: 
+FAIL:   ...nothing composed (got '566' want '0')
+FAIL: bind not resolved: /tmp/runp-test.DeFO8J/outlink/y:/out:rw
+FAIL: raw symlink spelling bound
+FAIL: bind not normalised
+FAIL: RUNP_MEMORY='0' is refused (got 'rc=0' want 'refused')
+FAIL:   ...nothing composed (got '572' want '0')
+FAIL: RUNP_MEMORY='999999999999999999' is refused (got 'rc=0' want 'refused')
+FAIL:   ...nothing composed (got '606' want '0')
+FAIL: RUNP_MEMORY='19660800001' is refused (got 'rc=0' want 'refused')
+FAIL:   ...nothing composed (got '592' want '0')
+FAIL: RUNP_MEMORY=0 (no limit) is a refusal, exit 1 (got '0' want '1')
+FAIL: reason: 
+FAIL: RUNP_MEMORY one byte above the ceiling is refused, exit 1 (got '0' want '1')
+FAIL: default cpus on a 2-cpu host is capped to the 60% ceiling (1) (got '2' want '1')
+FAIL: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1 (got '0' want '1')
+FAIL: reason: 
+FAIL: probe runs and writes toolchain.json (got 'no' want 'yes')
+FAIL: probe: a tool that prints a loader error and exits 127 is error, not present (got '' want 'error')
+FAIL: probe: a tool that exits 126 is error (got '' want 'error')
+FAIL: probe: the error records the exit status (got '' want '127')
+FAIL: probe: a tool that exits 0 with output is present (got '' want 'present')
+FAIL: probe: a tool with a stated exit-code exception (gofmt -h exits 2) is present (got '' want 'present')
+FAIL: probe: a tool that exits 0 with NO output is error (got '' want 'error')
+FAIL: probe: the absent needle is absent (got '' want 'absent')
+FAIL: probe: the errored needle (exit 3) is error (got '' want 'error')
+FAIL: probe: the read-only write needle failed as expected (got '' want 'failed')
+FAIL: probe: uid recorded (got '' want '1000')
+FAIL: probe: toolchain.json is valid JSON (got 'no' want 'yes')
+test_run_pinned: 188 passed, 64 failed
+rc=1

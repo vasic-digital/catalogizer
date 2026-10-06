@@ -1,0 +1,15 @@
+# identity: wf6fix-podman-path-probe
+# runp_sha256: e3ea0a3720b5c755d5cd5a14f92c868602cc830b4149830bd08a88de6c2a4a88
+# host: anton uid: 1000
+# run_at: 2026-10-06T13:14:03Z
+# what: REAL rootless podman (--rm --network=none --pull=never, image localhost/catalogizer-testutil, label catalogizer.op_id) binding a directory whose NAME contains the listed character as -v <dir>:/out:rw and writing a file through it
+# result: space, TAB, comma, equals, double quote, plus and NEWLINE bind and write (rc 0); a colon fails (rc 125). Containers left afterwards: 0
+# consequence: run_pinned.sh refuses ":" (podman) and newline (launcher policy: one argv element per line), and accepts space and TAB
+bind-source-name=sp\ ace podman_rc=0 file_written=yes stderr=
+bind-source-name=$'ta\tb' podman_rc=0 file_written=yes stderr=
+bind-source-name=co\,mma podman_rc=0 file_written=yes stderr=
+bind-source-name=eq=al podman_rc=0 file_written=yes stderr=
+bind-source-name=qu\"ote podman_rc=0 file_written=yes stderr=
+bind-source-name=pl+us podman_rc=0 file_written=yes stderr=
+bind-source-name=co:lon podman_rc=125 file_written=no stderr=Error: /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/wf7/probe2
+bind-source-name=$'ne\nwline' podman_rc=0 file_written=yes stderr=

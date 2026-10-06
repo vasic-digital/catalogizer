@@ -1,0 +1,32 @@
+# RED T011 (revision 2 of the test, after review findings 2,5,6,7,8,9), 2026-10-05, host anton; run on the host with python3 (RUNP/IMG-TESTUTIL not yet built: T007/T008 pending)
+# identity: test sha256 b2f2ca2e91a3abddf63113a7e0766f74c27622ae5389a527ad476c7967d2444c; git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test file untracked); Python 3.14.4; PyYAML 6.0.3; GNU bash, version 5.3.9(1)-release (x86_64-pc-linux-gnu)
+## RED A: intake file absent (state before T012; INTAKE_FILE points at a path that does not exist)
+$ INTAKE_FILE=specs/001-full-project-audit-remediation/decisions/absent-owner-decisions.yaml bash scripts/governance/tests/test_decision_intake.sh
+FAIL intake file absent: /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/decisions/absent-owner-decisions.yaml
+RESULT FAIL (1)
+rc=1
+## RED B: empty intake (groups: [], research_ods: [], owner_answers: []) - control: proves the docs/21 and tasks.md parsers see data (instrument not blind)
+$ INTAKE_FILE=<scratch>/empty.yaml bash scripts/governance/tests/test_decision_intake.sh   (output shown; the 166 'FAIL tasks.md:' lines are abbreviated to a count)
+rc=1
+FAIL groups must hold exactly ODG-01..ODG-43 once each; missing=['ODG-01', 'ODG-02', 'ODG-03', 'ODG-04', 'ODG-05', 'ODG-06', 'ODG-07', 'ODG-08', 'ODG-09', 'ODG-10', 'ODG-11', 'ODG-12', 'ODG-13', 'ODG-14', 'ODG-15', 'ODG-16', 'ODG-17', 'ODG-18', 'ODG-19', 'ODG-
+FAIL research_ods must hold exactly the 15 open ids ['OD-14', 'OD-20', 'OD-23', 'OD-25', 'OD-26', 'OD-36', 'OD-43', 'OD-45', 'OD-49', 'OD-55', 'OD-57', 'OD-68', 'OD-74', 'OD-75', 'OD-76']; got []
+PASS no id duplicated across both lists
+PASS every row has topic or options, groups carry recommendation and research_ids
+FAIL blocks check covered 0 rows, docs/21 has 58 (rows missing from the intake)
+PASS default is a bare closed-set token, default_detail holds the rest; ODG-34/35/39/40/42/43 and OD-76 shapes hold
+FAIL needle OD-76: row absent from the intake
+FAIL needle OD-20: row absent from the intake
+FAIL needle OD-26: row absent from the intake
+FAIL needle ODG-40: row absent from the intake
+FAIL needle ODG-42: row absent from the intake
+FAIL needle ODG-19: row absent from the intake
+FAIL needle ODG-34: row absent from the intake
+FAIL needle ODG-35: row absent from the intake
+FAIL needle ODG-43: row absent from the intake
+PASS no credential value field or credential-shaped value
+FAIL reserved slot ODG-42 must be present exactly once (found 0)
+FAIL reserved slot C2-custody must be present exactly once (found 0)
+FAIL reserved slot floors-adoption must be present exactly once (found 0)
+RESULT FAIL (181 failures)
+tasks.md FAIL lines: 166; total FAIL lines: 181
+## control needle: OD-60 and the BLOCKED-ON marker count are read by the parsers; tasks.md markers inside work packages seen in the empty run = 166 (each unmatched marker is a FAIL, so a non-zero count proves the marker parser sees data)

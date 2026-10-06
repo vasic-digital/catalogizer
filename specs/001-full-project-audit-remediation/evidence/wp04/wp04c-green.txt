@@ -1,0 +1,790 @@
+# WP-04 fix round 3 evidence (green) - host run, bash 5.3.9(1)-release, git version 2.53.0, head a27d72a5 (working tree; nothing committed by this task)
+# generated 2026-10-05T19:47:12Z
+# sha256 scripts/repo/tests/test_wp04c.sh 7cb8a665a88861f3dbe3f68e93db4463f4df4ee975f95c563321de89d0c9ca3d
+# sha256 scripts/repo/tests/lib_wp04b.sh 5900e65f10353a02aed572dfa5b06338e7bccd38503ceca9c20936b61b5b5f93
+# sha256 scripts/repo/lib_safe.sh 66134c783403963ed1998715c4648eb708640ccd3907641ce1dba6e1147c77d9
+# sha256 scripts/repo/check_no_ci.sh 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c
+# sha256 scripts/repo/check_revision_headers.sh f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339
+# sha256 scripts/repo/check_class.sh dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc
+# sha256 scripts/repo/fixture_roots.sh 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d
+# sha256 scripts/repo/scope_check.sh 70f214bc802ef5434559c9c921e925efdd89ebddcf86e5d5f72724b58a8c09cf
+# sha256 scripts/repo/validate_cheap.sh d9b0b487c8f25bddf2bf427c5e5e3e5cf926efd559e733cd99a70c39691121e1
+# sha256 scripts/repo/commit_recursive.sh 83d8eda777083af76da61ed747fa6a062bce25ccd2f847d6277a5ad50e827618
+# sha256 scripts/repo/push_recursive.sh b321b6d5ca0f08f2aeaff16ba664fc496126bdef408cb6a219600b8b83c77865
+# sha256 scripts/repo/integrate_merge.sh c11628ffb90f0ccb6ed6105729083576f706f44c43c36532c0dcdd8a17220dd3
+# sha256 scripts/repo/integrate_ff_only.sh 713c7e446bb9b7b737f44b9ff3093b41978a5d290b971b4e56c0dfe85dff18a7
+# sha256 scripts/repo/record_deferral.sh 2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1
+# sha256 scripts/repo/validate_checks.tsv 5ee15550ba12854b3ed6018b56f9745a1b08785815175565bf3410badd8fff69
+# sha256 scripts/repo/check_classes.tsv bf78b9b74eb2fe2c8151533e8469ab8116b5b8e12346a55a9b12bf6077ff8f58
+# sha256 scripts/repo/check_exemptions.tsv 6708510e7513b3cc598b92f3714bf1bf0d7be353adafb155c5d573fc866df34f
+# sha256 scripts/repo/fixture_roots.txt d8c766b51c08530c5d27bd14d083d2d06d6c2b846c62293836f0c96a1667c25a
+
+== test_wp04c run 1
+ok   commit_recursive refuses the spelling '*': 20 (=20)
+ok   no commit made by the spelling '*' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for '*' (=1)
+ok   commit_recursive refuses the spelling ':/': 20 (=20)
+ok   no commit made by the spelling ':/' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for ':/' (=1)
+ok   commit_recursive refuses the spelling '.': 20 (=20)
+ok   no commit made by the spelling '.' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for '.' (=1)
+ok   commit_recursive refuses the spelling './': 20 (=20)
+ok   no commit made by the spelling './' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for './' (=1)
+ok   commit_recursive refuses the spelling './b.txt': 20 (=20)
+ok   no commit made by the spelling './b.txt' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for './b.txt' (=1)
+ok   commit_recursive refuses the spelling 'd/': 20 (=20)
+ok   no commit made by the spelling 'd/' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for 'd/' (=1)
+ok   commit_recursive refuses the spelling 'd/./a.txt': 20 (=20)
+ok   no commit made by the spelling 'd/./a.txt' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for 'd/./a.txt' (=1)
+ok   commit_recursive refuses the spelling ':(glob)*.txt': 20 (=20)
+ok   no commit made by the spelling ':(glob)*.txt' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for ':(glob)*.txt' (=1)
+ok   commit_recursive refuses the spelling ':x': 20 (=20)
+ok   no commit made by the spelling ':x' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for ':x' (=1)
+ok   commit_recursive refuses the spelling 'a?.txt': 20 (=20)
+ok   no commit made by the spelling 'a?.txt' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for 'a?.txt' (=1)
+ok   commit_recursive refuses the spelling '[ab].txt': 20 (=20)
+ok   no commit made by the spelling '[ab].txt' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for '[ab].txt' (=1)
+ok   commit_recursive refuses the spelling 'd/*': 20 (=20)
+ok   no commit made by the spelling 'd/*' (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   no commits.tsv row for 'd/*' (=1)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   no commit for the directory (=27873cb64256598a3ef5a7780eb6b7c9c94cdd4e)
+ok   a path neither tracked nor present is still refused: 20 (=20)
+ok   golden-true: the literal path d/a.txt commits: 0 (=0)
+ok   only the declared file is in the commit (=d/a.txt)
+ok   the undeclared tracked change stays unstaged (= M base.txt)
+ok   the undeclared file stays untracked (=?? undeclared.txt)
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   the commit holds the gitlink only (=mods/sub)
+ok   a path inside a submodule: 20 (=20)
+ok   named path_in_submodule
+ok   held row spelled ./d/a.txt: 20 (=20)
+ok   named unsafe_held_row
+ok   no commit under the bad held row (=1)
+ok   held row that matches no declared path: 20 (=20)
+ok   named held_row_unmatched
+ok   no commit under the unmatched held row (=1)
+ok   golden-true held row: 0 (=0)
+ok   the held commit names its verdict
+ok   the held file is in the held commit only (=d/a.txt)
+ok   control: the canonical spelling of a rewritten ledger: 13 (=13)
+ok   scope_check refuses the spelling './ev/ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/./ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/': 20 (=20)
+ok   scope_check refuses the spelling 'ev': 20 (=20)
+ok   scope_check refuses the spelling '*': 20 (=20)
+ok   scope_check refuses the spelling ':/': 20 (=20)
+ok   scope_check refuses the spelling '.': 20 (=20)
+ok   scope_check refuses the spelling 'ev/led*.jsonl': 20 (=20)
+ok   scope_check refuses the spelling ':(glob)ev/*': 20 (=20)
+ok   scope_check refuses --ev './ev': 20 (=20)
+ok   scope_check refuses --ev 'ev/./x': 20 (=20)
+ok   scope_check refuses --ev '*': 20 (=20)
+ok   scope_check refuses --ev '.': 20 (=20)
+ok   scope_check refuses --ev ':/': 20 (=20)
+ok   scope_check refuses --ev 'e?': 20 (=20)
+ok   a directory is no declared path (src): 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   uninitialised submodule never walks to the parent (W3): 0 (=0)
+ok   no dirty_submodule for the empty directory
+ok   golden-true change set through the shipped registry (mode 644 landmine script): 0 (=0)
+ok   validate_cheap refuses the spelling './src/keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/': 20 (=20)
+ok   validate_cheap refuses the spelling '*': 20 (=20)
+ok   validate_cheap refuses the spelling ':/': 20 (=20)
+ok   validate_cheap refuses the spelling '.': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/./keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/ke?p.txt': 20 (=20)
+ok   validate_cheap refuses the spelling ':(glob)src/*': 20 (=20)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is (validate_cheap): 0 (=0)
+ok   a held row with a ./ spelling: 20 (=20)
+ok   legacy report edited, declared canonical: 10 (=10)
+ok   legacy_row_not_dropped
+ok   legacy report declared as ./ALL_ISSUES_FIXED.md is refused, not passed: 20 (=20)
+ok   undeclared untracked table row never exempts the declared file (I1): 10 (=10)
+ok   the whitespace failure is reported
+ok   no table change is claimed when the table is undeclared
+ok   table declared with its file, no HEAD table, no review verdict: 10 (=10)
+ok   class_table_unreviewed (I1)
+ok   the file is still judged with the reviewed tables
+ok   undeclared working-tree table edit is not evaluated (W8): 10 (=10)
+ok   whitespace failure kept
+ok   every shipped registry row resolves against the real tree (I2) (=ok)
+ok   the landmine script really runs through its interpreter (a LANDMINE file fails it): 10 (=10)
+ok   detect_landmines named
+ok   golden-false: a direct row naming a non-executable file is still refused: 20 (=20)
+ok   check_command_absent
+ok   control: pin on every remote: 0 (=0)
+ok   submodule with no remote at all (B2a): 20 (=20)
+ok   reason pin_not_on_remote (=pin_not_on_remote)
+ok   the proof is not accepted (=false)
+ok   nothing moved (=f04e1b6462598db45326a6ed7f5f6aaac0011c58)
+ok   uninitialised submodule: the parent's HEAD is never the pin (B2b): 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   no pin proof row accepted for the parent's HEAD (=0)
+ok   nothing moved (=bce77c1dbfbf7daee0adbbbef8391d4b9c594ac6)
+ok   only unreachable remotes: 20 (=20)
+ok   reason pin_unverifiable (not an unproven lack) (=pin_unverifiable)
+ok   the proof records fetch failed per remote (=failed)
+ok   one remote holds the pin, the other is unreachable: 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   golden-false for the pin-lack path: a reachable remote that lacks the pin keeps pin_not_on_remote: 20 (=20)
+ok   reason (=pin_not_on_remote)
+ok   setup: the foreign tip object is gone from the remote (=1)
+ok   a remote tip whose objects cannot be fetched: 20 (fail closed, I5) (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   nothing moved (=0ffa6d75b6813cd1012a15527edb9ebf0a6eadb3)
+ok   a remote tip whose objects cannot be fetched refuses even with no local commit (fail closed): 20 (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   control: a healthy remote still refuses the hand commit: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   golden-false: a third-party submodule is not judged: 0 (=0)
+ok   remote named like an option: 20 (I7) (=20)
+ok   reason unsafe_remote_name (=unsafe_remote_name)
+ok   the option was never executed (=1)
+ok   ext:: remote URL: 20 (=20)
+ok   reason unsafe_remote_url (=unsafe_remote_url)
+ok   nothing executed (=1)
+ok   submodule remote named like an option: 20 (=20)
+ok   the option was never executed (submodule) (=1)
+ok   ff_only change set spelled './f': 20 (=20)
+ok   reason unsafe_path for './f' (=unsafe_path)
+ok   ff_only change set spelled '*': 20 (=20)
+ok   reason unsafe_path for '*' (=unsafe_path)
+ok   ff_only change set spelled 'f/./x': 20 (=20)
+ok   reason unsafe_path for 'f/./x' (=unsafe_path)
+ok   ff_only change set spelled ':/': 20 (=20)
+ok   reason unsafe_path for ':/' (=unsafe_path)
+ok   ff_only change set spelled '.': 20 (=20)
+ok   reason unsafe_path for '.' (=unsafe_path)
+ok   ff_only change set spelled 'f?': 20 (=20)
+ok   reason unsafe_path for 'f?' (=unsafe_path)
+ok   golden-true change set line f: 0 (=0)
+ok   an adoption commit that is no object name: 20 (=20)
+ok   reason unsafe_adoption_commit (=unsafe_adoption_commit)
+ok   --timeout that is no integer: 20 (=20)
+ok   --timeout 0: 20 (=20)
+ok   --root without a value ends with 20, never loops (minor 1) (=20)
+ok   --json without a value: 20 (=20)
+ok   --root starting with a dash: 20 (=20)
+ok   record_deferral --run-dir without a value ends with 20 (minor 1) (=20)
+ok   record_deferral --flag without a value: 20 (=20)
+ok   record_deferral --reason without a value: 20 (=20)
+ok   ff_only: a decoy ref sorting first does not hide the real tip (I3): 0 (=0)
+ok   the main repository fast-forwarded to the real tip (=bec4d72413bed33e03bde63dc2f2164e425b7483)
+ok   integrate_merge: a decoy ref does not hide the diverged real tip (I3): 0 (=0)
+ok   the real tip was merged
+ok   push_recursive: a decoy ref equal to the target does not suppress the push (I3): 0 (=0)
+ok   r1's real main holds the target (=c656a73872d89778b538d4835c9f03ec806d3b1c)
+ok   PUSHED to r1
+ok   uninitialised submodule: ends, never runs away (I4): 0 (=0)
+ok   no garbage repository key
+ok   the uninitialised submodule is not reported as a repository
+ok   main pushed (=aaff4ca3c18091f0bd1e9b87eee4aff69d818e63)
+ok   an explicit --repo naming an uninitialised submodule is refused, never judged as the parent: 20 (=20)
+ok   not_a_repository
+ok   push_recursive refuses the --repo spelling './': 20 (=20)
+ok   push_recursive refuses the --repo spelling './zsub': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'zsub/': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'z*': 20 (=20)
+ok   push_recursive refuses the --repo spelling ':/': 20 (=20)
+ok   golden-true: --repo . names the main repository: 0 (=0)
+ok   all remotes unreachable: 11 (I8) (=11)
+ok   r1 named remote_unreachable
+ok   r2 named remote_unreachable
+ok   no refusal naming a commit
+ok   an unrecorded commit with every remote unreachable is still never pushed: 11, no push (=11)
+ok   r1 unchanged (=2393af3c1ab6e3e47956c561f7b6adaa414a9e5c)
+ok   golden-false: one reachable remote still refuses the unrecorded commit: 20 (=20)
+ok   unrecorded_local_commit
+ok   held commit under a merge of r2's own tip: 14 (I9) (=14)
+ok   r2 is not reported as moved
+ok   r2 reported as held below its tip
+ok   r2 untouched (=f3bc22bfd4b8fce1aa1666a0c367e886d483cbe8)
+ok   HELD line
+ok   golden-false: a remote that moved on its own: 11 (=11)
+ok   remote_moved_since_s1 kept
+ok   a held commit and a remote that moved on its own: 11 (the moved remote wins over the hold) (=11)
+ok   r2 named remote_moved_since_s1
+ok   the hold is still reported
+ok   an unrecorded commit with a remote tip unknown locally: 20 (W4) (=20)
+ok   names the hand commit
+ok   nothing was pushed to r1 (=aa334dcc75ea8379b94eb79401de0f37a81f7923)
+ok   an unresolvable adoption commit routes the descending tip to the merge path (minor 3): 0 (=0)
+ok   MERGED
+ok   diverged tip merged with an untracked directory present: 0 (=0)
+ok   the untracked file inside the untracked directory is in the backup (minor 5) (=precious)
+ok   main fast-forwarded across a gitlink move: 0 (=0)
+ok   no ref of the submodule moved by the main fetch (minor 2) (=refs/heads/main 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/mirror/HEAD 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/mirror/main 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/origin/HEAD 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/origin/main 39f6dd361179426763cab5b67910d56dfc17a2f6 )
+ok   integrate_merge: the merge path never moves a submodule ref by fetch (minor 2) (=refs/heads/main 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/origin/HEAD 39f6dd361179426763cab5b67910d56dfc17a2f6 refs/remotes/origin/main 39f6dd361179426763cab5b67910d56dfc17a2f6 )
+ok   two exact rows of different classes: 20 class_ambiguous (W7) (=20)
+ok   named class_ambiguous
+ok   golden-false: the same class twice: 0 (=0)
+ok   class generated (=generated)
+ok   a fixture-root row with only two columns: 20 (the reader refuses it too) (=20)
+ok   table_invalid
+ok   --exemptions without a value: 20, never a traceback (=20)
+ok   no Python traceback for --exemptions
+ok   --classes without a value: 20, never a traceback (=20)
+ok   no Python traceback for --classes
+ok   --fixture-roots without a value: 20, never a traceback (=20)
+ok   no Python traceback for --fixture-roots
+ok   --checks-registry without a value: 20, never a traceback (=20)
+ok   no Python traceback for --checks-registry
+ok   --check without a value: 20, never a traceback (=20)
+ok   no Python traceback for --check
+ok   safe_declpath: golden-true paths accepted, every spelling refused (=)
+ok   lr_exact: the exact ref only (=sha2)
+---- 230 ok, 0 failed
+exit=0
+
+== test_wp04c run 2
+ok   commit_recursive refuses the spelling '*': 20 (=20)
+ok   no commit made by the spelling '*' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for '*' (=1)
+ok   commit_recursive refuses the spelling ':/': 20 (=20)
+ok   no commit made by the spelling ':/' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for ':/' (=1)
+ok   commit_recursive refuses the spelling '.': 20 (=20)
+ok   no commit made by the spelling '.' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for '.' (=1)
+ok   commit_recursive refuses the spelling './': 20 (=20)
+ok   no commit made by the spelling './' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for './' (=1)
+ok   commit_recursive refuses the spelling './b.txt': 20 (=20)
+ok   no commit made by the spelling './b.txt' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for './b.txt' (=1)
+ok   commit_recursive refuses the spelling 'd/': 20 (=20)
+ok   no commit made by the spelling 'd/' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for 'd/' (=1)
+ok   commit_recursive refuses the spelling 'd/./a.txt': 20 (=20)
+ok   no commit made by the spelling 'd/./a.txt' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for 'd/./a.txt' (=1)
+ok   commit_recursive refuses the spelling ':(glob)*.txt': 20 (=20)
+ok   no commit made by the spelling ':(glob)*.txt' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for ':(glob)*.txt' (=1)
+ok   commit_recursive refuses the spelling ':x': 20 (=20)
+ok   no commit made by the spelling ':x' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for ':x' (=1)
+ok   commit_recursive refuses the spelling 'a?.txt': 20 (=20)
+ok   no commit made by the spelling 'a?.txt' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for 'a?.txt' (=1)
+ok   commit_recursive refuses the spelling '[ab].txt': 20 (=20)
+ok   no commit made by the spelling '[ab].txt' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for '[ab].txt' (=1)
+ok   commit_recursive refuses the spelling 'd/*': 20 (=20)
+ok   no commit made by the spelling 'd/*' (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   no commits.tsv row for 'd/*' (=1)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   no commit for the directory (=99c03218ec2c62c7cf87552fdffc87e05689ceed)
+ok   a path neither tracked nor present is still refused: 20 (=20)
+ok   golden-true: the literal path d/a.txt commits: 0 (=0)
+ok   only the declared file is in the commit (=d/a.txt)
+ok   the undeclared tracked change stays unstaged (= M base.txt)
+ok   the undeclared file stays untracked (=?? undeclared.txt)
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   the commit holds the gitlink only (=mods/sub)
+ok   a path inside a submodule: 20 (=20)
+ok   named path_in_submodule
+ok   held row spelled ./d/a.txt: 20 (=20)
+ok   named unsafe_held_row
+ok   no commit under the bad held row (=1)
+ok   held row that matches no declared path: 20 (=20)
+ok   named held_row_unmatched
+ok   no commit under the unmatched held row (=1)
+ok   golden-true held row: 0 (=0)
+ok   the held commit names its verdict
+ok   the held file is in the held commit only (=d/a.txt)
+ok   control: the canonical spelling of a rewritten ledger: 13 (=13)
+ok   scope_check refuses the spelling './ev/ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/./ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/': 20 (=20)
+ok   scope_check refuses the spelling 'ev': 20 (=20)
+ok   scope_check refuses the spelling '*': 20 (=20)
+ok   scope_check refuses the spelling ':/': 20 (=20)
+ok   scope_check refuses the spelling '.': 20 (=20)
+ok   scope_check refuses the spelling 'ev/led*.jsonl': 20 (=20)
+ok   scope_check refuses the spelling ':(glob)ev/*': 20 (=20)
+ok   scope_check refuses --ev './ev': 20 (=20)
+ok   scope_check refuses --ev 'ev/./x': 20 (=20)
+ok   scope_check refuses --ev '*': 20 (=20)
+ok   scope_check refuses --ev '.': 20 (=20)
+ok   scope_check refuses --ev ':/': 20 (=20)
+ok   scope_check refuses --ev 'e?': 20 (=20)
+ok   a directory is no declared path (src): 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   uninitialised submodule never walks to the parent (W3): 0 (=0)
+ok   no dirty_submodule for the empty directory
+ok   golden-true change set through the shipped registry (mode 644 landmine script): 0 (=0)
+ok   validate_cheap refuses the spelling './src/keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/': 20 (=20)
+ok   validate_cheap refuses the spelling '*': 20 (=20)
+ok   validate_cheap refuses the spelling ':/': 20 (=20)
+ok   validate_cheap refuses the spelling '.': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/./keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/ke?p.txt': 20 (=20)
+ok   validate_cheap refuses the spelling ':(glob)src/*': 20 (=20)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is (validate_cheap): 0 (=0)
+ok   a held row with a ./ spelling: 20 (=20)
+ok   legacy report edited, declared canonical: 10 (=10)
+ok   legacy_row_not_dropped
+ok   legacy report declared as ./ALL_ISSUES_FIXED.md is refused, not passed: 20 (=20)
+ok   undeclared untracked table row never exempts the declared file (I1): 10 (=10)
+ok   the whitespace failure is reported
+ok   no table change is claimed when the table is undeclared
+ok   table declared with its file, no HEAD table, no review verdict: 10 (=10)
+ok   class_table_unreviewed (I1)
+ok   the file is still judged with the reviewed tables
+ok   undeclared working-tree table edit is not evaluated (W8): 10 (=10)
+ok   whitespace failure kept
+ok   every shipped registry row resolves against the real tree (I2) (=ok)
+ok   the landmine script really runs through its interpreter (a LANDMINE file fails it): 10 (=10)
+ok   detect_landmines named
+ok   golden-false: a direct row naming a non-executable file is still refused: 20 (=20)
+ok   check_command_absent
+ok   control: pin on every remote: 0 (=0)
+ok   submodule with no remote at all (B2a): 20 (=20)
+ok   reason pin_not_on_remote (=pin_not_on_remote)
+ok   the proof is not accepted (=false)
+ok   nothing moved (=a81fe69d76190fad6249d3596296b4d114460e58)
+ok   uninitialised submodule: the parent's HEAD is never the pin (B2b): 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   no pin proof row accepted for the parent's HEAD (=0)
+ok   nothing moved (=7b2b2c71c74ccf39d32e7f309f6684fc3b995863)
+ok   only unreachable remotes: 20 (=20)
+ok   reason pin_unverifiable (not an unproven lack) (=pin_unverifiable)
+ok   the proof records fetch failed per remote (=failed)
+ok   one remote holds the pin, the other is unreachable: 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   golden-false for the pin-lack path: a reachable remote that lacks the pin keeps pin_not_on_remote: 20 (=20)
+ok   reason (=pin_not_on_remote)
+ok   setup: the foreign tip object is gone from the remote (=1)
+ok   a remote tip whose objects cannot be fetched: 20 (fail closed, I5) (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   nothing moved (=26d824c63eac31f217230d74607ebfb9824fa72b)
+ok   a remote tip whose objects cannot be fetched refuses even with no local commit (fail closed): 20 (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   control: a healthy remote still refuses the hand commit: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   golden-false: a third-party submodule is not judged: 0 (=0)
+ok   remote named like an option: 20 (I7) (=20)
+ok   reason unsafe_remote_name (=unsafe_remote_name)
+ok   the option was never executed (=1)
+ok   ext:: remote URL: 20 (=20)
+ok   reason unsafe_remote_url (=unsafe_remote_url)
+ok   nothing executed (=1)
+ok   submodule remote named like an option: 20 (=20)
+ok   the option was never executed (submodule) (=1)
+ok   ff_only change set spelled './f': 20 (=20)
+ok   reason unsafe_path for './f' (=unsafe_path)
+ok   ff_only change set spelled '*': 20 (=20)
+ok   reason unsafe_path for '*' (=unsafe_path)
+ok   ff_only change set spelled 'f/./x': 20 (=20)
+ok   reason unsafe_path for 'f/./x' (=unsafe_path)
+ok   ff_only change set spelled ':/': 20 (=20)
+ok   reason unsafe_path for ':/' (=unsafe_path)
+ok   ff_only change set spelled '.': 20 (=20)
+ok   reason unsafe_path for '.' (=unsafe_path)
+ok   ff_only change set spelled 'f?': 20 (=20)
+ok   reason unsafe_path for 'f?' (=unsafe_path)
+ok   golden-true change set line f: 0 (=0)
+ok   an adoption commit that is no object name: 20 (=20)
+ok   reason unsafe_adoption_commit (=unsafe_adoption_commit)
+ok   --timeout that is no integer: 20 (=20)
+ok   --timeout 0: 20 (=20)
+ok   --root without a value ends with 20, never loops (minor 1) (=20)
+ok   --json without a value: 20 (=20)
+ok   --root starting with a dash: 20 (=20)
+ok   record_deferral --run-dir without a value ends with 20 (minor 1) (=20)
+ok   record_deferral --flag without a value: 20 (=20)
+ok   record_deferral --reason without a value: 20 (=20)
+ok   ff_only: a decoy ref sorting first does not hide the real tip (I3): 0 (=0)
+ok   the main repository fast-forwarded to the real tip (=c28a92a0c4e5d5b640eb041a2d13df02c1a72405)
+ok   integrate_merge: a decoy ref does not hide the diverged real tip (I3): 0 (=0)
+ok   the real tip was merged
+ok   push_recursive: a decoy ref equal to the target does not suppress the push (I3): 0 (=0)
+ok   r1's real main holds the target (=5115d73286290cb0b2eed2a976b88015cf0bd11b)
+ok   PUSHED to r1
+ok   uninitialised submodule: ends, never runs away (I4): 0 (=0)
+ok   no garbage repository key
+ok   the uninitialised submodule is not reported as a repository
+ok   main pushed (=6fb67dd4c0a2a764f8dd30be2ef14c545b085521)
+ok   an explicit --repo naming an uninitialised submodule is refused, never judged as the parent: 20 (=20)
+ok   not_a_repository
+ok   push_recursive refuses the --repo spelling './': 20 (=20)
+ok   push_recursive refuses the --repo spelling './zsub': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'zsub/': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'z*': 20 (=20)
+ok   push_recursive refuses the --repo spelling ':/': 20 (=20)
+ok   golden-true: --repo . names the main repository: 0 (=0)
+ok   all remotes unreachable: 11 (I8) (=11)
+ok   r1 named remote_unreachable
+ok   r2 named remote_unreachable
+ok   no refusal naming a commit
+ok   an unrecorded commit with every remote unreachable is still never pushed: 11, no push (=11)
+ok   r1 unchanged (=9d52653967d310f481c1f2aa01f5a75034259261)
+ok   golden-false: one reachable remote still refuses the unrecorded commit: 20 (=20)
+ok   unrecorded_local_commit
+ok   held commit under a merge of r2's own tip: 14 (I9) (=14)
+ok   r2 is not reported as moved
+ok   r2 reported as held below its tip
+ok   r2 untouched (=93b25936f95ae7a53d50b6b96d85a1a84ebd6e3e)
+ok   HELD line
+ok   golden-false: a remote that moved on its own: 11 (=11)
+ok   remote_moved_since_s1 kept
+ok   a held commit and a remote that moved on its own: 11 (the moved remote wins over the hold) (=11)
+ok   r2 named remote_moved_since_s1
+ok   the hold is still reported
+ok   an unrecorded commit with a remote tip unknown locally: 20 (W4) (=20)
+ok   names the hand commit
+ok   nothing was pushed to r1 (=09f6db1ce93f6660e9032cfd5e08f808d07c9404)
+ok   an unresolvable adoption commit routes the descending tip to the merge path (minor 3): 0 (=0)
+ok   MERGED
+ok   diverged tip merged with an untracked directory present: 0 (=0)
+ok   the untracked file inside the untracked directory is in the backup (minor 5) (=precious)
+ok   main fast-forwarded across a gitlink move: 0 (=0)
+ok   no ref of the submodule moved by the main fetch (minor 2) (=refs/heads/main 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/mirror/HEAD 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/mirror/main 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/origin/HEAD 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/origin/main 09096b61df1344f9c2598c0a72cdc8ad45163814 )
+ok   integrate_merge: the merge path never moves a submodule ref by fetch (minor 2) (=refs/heads/main 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/origin/HEAD 09096b61df1344f9c2598c0a72cdc8ad45163814 refs/remotes/origin/main 09096b61df1344f9c2598c0a72cdc8ad45163814 )
+ok   two exact rows of different classes: 20 class_ambiguous (W7) (=20)
+ok   named class_ambiguous
+ok   golden-false: the same class twice: 0 (=0)
+ok   class generated (=generated)
+ok   a fixture-root row with only two columns: 20 (the reader refuses it too) (=20)
+ok   table_invalid
+ok   --exemptions without a value: 20, never a traceback (=20)
+ok   no Python traceback for --exemptions
+ok   --classes without a value: 20, never a traceback (=20)
+ok   no Python traceback for --classes
+ok   --fixture-roots without a value: 20, never a traceback (=20)
+ok   no Python traceback for --fixture-roots
+ok   --checks-registry without a value: 20, never a traceback (=20)
+ok   no Python traceback for --checks-registry
+ok   --check without a value: 20, never a traceback (=20)
+ok   no Python traceback for --check
+ok   safe_declpath: golden-true paths accepted, every spelling refused (=)
+ok   lr_exact: the exact ref only (=sha2)
+---- 230 ok, 0 failed
+exit=0
+
+== test_wp04c run 3
+ok   commit_recursive refuses the spelling '*': 20 (=20)
+ok   no commit made by the spelling '*' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for '*' (=1)
+ok   commit_recursive refuses the spelling ':/': 20 (=20)
+ok   no commit made by the spelling ':/' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for ':/' (=1)
+ok   commit_recursive refuses the spelling '.': 20 (=20)
+ok   no commit made by the spelling '.' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for '.' (=1)
+ok   commit_recursive refuses the spelling './': 20 (=20)
+ok   no commit made by the spelling './' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for './' (=1)
+ok   commit_recursive refuses the spelling './b.txt': 20 (=20)
+ok   no commit made by the spelling './b.txt' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for './b.txt' (=1)
+ok   commit_recursive refuses the spelling 'd/': 20 (=20)
+ok   no commit made by the spelling 'd/' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for 'd/' (=1)
+ok   commit_recursive refuses the spelling 'd/./a.txt': 20 (=20)
+ok   no commit made by the spelling 'd/./a.txt' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for 'd/./a.txt' (=1)
+ok   commit_recursive refuses the spelling ':(glob)*.txt': 20 (=20)
+ok   no commit made by the spelling ':(glob)*.txt' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for ':(glob)*.txt' (=1)
+ok   commit_recursive refuses the spelling ':x': 20 (=20)
+ok   no commit made by the spelling ':x' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for ':x' (=1)
+ok   commit_recursive refuses the spelling 'a?.txt': 20 (=20)
+ok   no commit made by the spelling 'a?.txt' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for 'a?.txt' (=1)
+ok   commit_recursive refuses the spelling '[ab].txt': 20 (=20)
+ok   no commit made by the spelling '[ab].txt' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for '[ab].txt' (=1)
+ok   commit_recursive refuses the spelling 'd/*': 20 (=20)
+ok   no commit made by the spelling 'd/*' (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   no commits.tsv row for 'd/*' (=1)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   no commit for the directory (=c1b15c3d7c7704946f4945471e210b6adfbf5e2e)
+ok   a path neither tracked nor present is still refused: 20 (=20)
+ok   golden-true: the literal path d/a.txt commits: 0 (=0)
+ok   only the declared file is in the commit (=d/a.txt)
+ok   the undeclared tracked change stays unstaged (= M base.txt)
+ok   the undeclared file stays untracked (=?? undeclared.txt)
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   the commit holds the gitlink only (=mods/sub)
+ok   a path inside a submodule: 20 (=20)
+ok   named path_in_submodule
+ok   held row spelled ./d/a.txt: 20 (=20)
+ok   named unsafe_held_row
+ok   no commit under the bad held row (=1)
+ok   held row that matches no declared path: 20 (=20)
+ok   named held_row_unmatched
+ok   no commit under the unmatched held row (=1)
+ok   golden-true held row: 0 (=0)
+ok   the held commit names its verdict
+ok   the held file is in the held commit only (=d/a.txt)
+ok   control: the canonical spelling of a rewritten ledger: 13 (=13)
+ok   scope_check refuses the spelling './ev/ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/./ledger.jsonl': 20 (=20)
+ok   scope_check refuses the spelling 'ev/': 20 (=20)
+ok   scope_check refuses the spelling 'ev': 20 (=20)
+ok   scope_check refuses the spelling '*': 20 (=20)
+ok   scope_check refuses the spelling ':/': 20 (=20)
+ok   scope_check refuses the spelling '.': 20 (=20)
+ok   scope_check refuses the spelling 'ev/led*.jsonl': 20 (=20)
+ok   scope_check refuses the spelling ':(glob)ev/*': 20 (=20)
+ok   scope_check refuses --ev './ev': 20 (=20)
+ok   scope_check refuses --ev 'ev/./x': 20 (=20)
+ok   scope_check refuses --ev '*': 20 (=20)
+ok   scope_check refuses --ev '.': 20 (=20)
+ok   scope_check refuses --ev ':/': 20 (=20)
+ok   scope_check refuses --ev 'e?': 20 (=20)
+ok   a directory is no declared path (src): 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is: 0 (=0)
+ok   uninitialised submodule never walks to the parent (W3): 0 (=0)
+ok   no dirty_submodule for the empty directory
+ok   golden-true change set through the shipped registry (mode 644 landmine script): 0 (=0)
+ok   validate_cheap refuses the spelling './src/keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/': 20 (=20)
+ok   validate_cheap refuses the spelling '*': 20 (=20)
+ok   validate_cheap refuses the spelling ':/': 20 (=20)
+ok   validate_cheap refuses the spelling '.': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/./keep.txt': 20 (=20)
+ok   validate_cheap refuses the spelling 'src/ke?p.txt': 20 (=20)
+ok   validate_cheap refuses the spelling ':(glob)src/*': 20 (=20)
+ok   a directory is no declared path: 20 (=20)
+ok   named declared_directory
+ok   a gitlink path is declared as the pin it is (validate_cheap): 0 (=0)
+ok   a held row with a ./ spelling: 20 (=20)
+ok   legacy report edited, declared canonical: 10 (=10)
+ok   legacy_row_not_dropped
+ok   legacy report declared as ./ALL_ISSUES_FIXED.md is refused, not passed: 20 (=20)
+ok   undeclared untracked table row never exempts the declared file (I1): 10 (=10)
+ok   the whitespace failure is reported
+ok   no table change is claimed when the table is undeclared
+ok   table declared with its file, no HEAD table, no review verdict: 10 (=10)
+ok   class_table_unreviewed (I1)
+ok   the file is still judged with the reviewed tables
+ok   undeclared working-tree table edit is not evaluated (W8): 10 (=10)
+ok   whitespace failure kept
+ok   every shipped registry row resolves against the real tree (I2) (=ok)
+ok   the landmine script really runs through its interpreter (a LANDMINE file fails it): 10 (=10)
+ok   detect_landmines named
+ok   golden-false: a direct row naming a non-executable file is still refused: 20 (=20)
+ok   check_command_absent
+ok   control: pin on every remote: 0 (=0)
+ok   submodule with no remote at all (B2a): 20 (=20)
+ok   reason pin_not_on_remote (=pin_not_on_remote)
+ok   the proof is not accepted (=false)
+ok   nothing moved (=53e194ee94a3fd26f0bc9c97e1bda83985388c4c)
+ok   uninitialised submodule: the parent's HEAD is never the pin (B2b): 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   no pin proof row accepted for the parent's HEAD (=0)
+ok   nothing moved (=ae62bdbeaf6f04195408142d445e6d740747656f)
+ok   only unreachable remotes: 20 (=20)
+ok   reason pin_unverifiable (not an unproven lack) (=pin_unverifiable)
+ok   the proof records fetch failed per remote (=failed)
+ok   one remote holds the pin, the other is unreachable: 20 (=20)
+ok   reason pin_unverifiable (=pin_unverifiable)
+ok   golden-false for the pin-lack path: a reachable remote that lacks the pin keeps pin_not_on_remote: 20 (=20)
+ok   reason (=pin_not_on_remote)
+ok   setup: the foreign tip object is gone from the remote (=1)
+ok   a remote tip whose objects cannot be fetched: 20 (fail closed, I5) (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   nothing moved (=1920a0505b30f3b2e47d105734720bf9c47db0cf)
+ok   a remote tip whose objects cannot be fetched refuses even with no local commit (fail closed): 20 (=20)
+ok   reason remote_tip_not_held (=remote_tip_not_held)
+ok   control: a healthy remote still refuses the hand commit: 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   owned submodule with a local commit and an scp-form URL is judged (I6/W1): 20 (=20)
+ok   reason unrecorded_local_commit (=unrecorded_local_commit)
+ok   golden-false: a third-party submodule is not judged: 0 (=0)
+ok   remote named like an option: 20 (I7) (=20)
+ok   reason unsafe_remote_name (=unsafe_remote_name)
+ok   the option was never executed (=1)
+ok   ext:: remote URL: 20 (=20)
+ok   reason unsafe_remote_url (=unsafe_remote_url)
+ok   nothing executed (=1)
+ok   submodule remote named like an option: 20 (=20)
+ok   the option was never executed (submodule) (=1)
+ok   ff_only change set spelled './f': 20 (=20)
+ok   reason unsafe_path for './f' (=unsafe_path)
+ok   ff_only change set spelled '*': 20 (=20)
+ok   reason unsafe_path for '*' (=unsafe_path)
+ok   ff_only change set spelled 'f/./x': 20 (=20)
+ok   reason unsafe_path for 'f/./x' (=unsafe_path)
+ok   ff_only change set spelled ':/': 20 (=20)
+ok   reason unsafe_path for ':/' (=unsafe_path)
+ok   ff_only change set spelled '.': 20 (=20)
+ok   reason unsafe_path for '.' (=unsafe_path)
+ok   ff_only change set spelled 'f?': 20 (=20)
+ok   reason unsafe_path for 'f?' (=unsafe_path)
+ok   golden-true change set line f: 0 (=0)
+ok   an adoption commit that is no object name: 20 (=20)
+ok   reason unsafe_adoption_commit (=unsafe_adoption_commit)
+ok   --timeout that is no integer: 20 (=20)
+ok   --timeout 0: 20 (=20)
+ok   --root without a value ends with 20, never loops (minor 1) (=20)
+ok   --json without a value: 20 (=20)
+ok   --root starting with a dash: 20 (=20)
+ok   record_deferral --run-dir without a value ends with 20 (minor 1) (=20)
+ok   record_deferral --flag without a value: 20 (=20)
+ok   record_deferral --reason without a value: 20 (=20)
+ok   ff_only: a decoy ref sorting first does not hide the real tip (I3): 0 (=0)
+ok   the main repository fast-forwarded to the real tip (=85f42efe119cacf61e49c96a692ce8dcb33a6dab)
+ok   integrate_merge: a decoy ref does not hide the diverged real tip (I3): 0 (=0)
+ok   the real tip was merged
+ok   push_recursive: a decoy ref equal to the target does not suppress the push (I3): 0 (=0)
+ok   r1's real main holds the target (=13fd49b8ec939e26f123e044f83cffe293c5fb0b)
+ok   PUSHED to r1
+ok   uninitialised submodule: ends, never runs away (I4): 0 (=0)
+ok   no garbage repository key
+ok   the uninitialised submodule is not reported as a repository
+ok   main pushed (=80dad529c0c12d7801e979cb47e629d21856ad5d)
+ok   an explicit --repo naming an uninitialised submodule is refused, never judged as the parent: 20 (=20)
+ok   not_a_repository
+ok   push_recursive refuses the --repo spelling './': 20 (=20)
+ok   push_recursive refuses the --repo spelling './zsub': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'zsub/': 20 (=20)
+ok   push_recursive refuses the --repo spelling 'z*': 20 (=20)
+ok   push_recursive refuses the --repo spelling ':/': 20 (=20)
+ok   golden-true: --repo . names the main repository: 0 (=0)
+ok   all remotes unreachable: 11 (I8) (=11)
+ok   r1 named remote_unreachable
+ok   r2 named remote_unreachable
+ok   no refusal naming a commit
+ok   an unrecorded commit with every remote unreachable is still never pushed: 11, no push (=11)
+ok   r1 unchanged (=66661de1367e88eb817d408589eb2a386aae7dab)
+ok   golden-false: one reachable remote still refuses the unrecorded commit: 20 (=20)
+ok   unrecorded_local_commit
+ok   held commit under a merge of r2's own tip: 14 (I9) (=14)
+ok   r2 is not reported as moved
+ok   r2 reported as held below its tip
+ok   r2 untouched (=304a839c1bffaef0848fbaa14093cec0fa8b9885)
+ok   HELD line
+ok   golden-false: a remote that moved on its own: 11 (=11)
+ok   remote_moved_since_s1 kept
+ok   a held commit and a remote that moved on its own: 11 (the moved remote wins over the hold) (=11)
+ok   r2 named remote_moved_since_s1
+ok   the hold is still reported
+ok   an unrecorded commit with a remote tip unknown locally: 20 (W4) (=20)
+ok   names the hand commit
+ok   nothing was pushed to r1 (=32bf1f7a0df258616f78350bd51b7edacfa28436)
+ok   an unresolvable adoption commit routes the descending tip to the merge path (minor 3): 0 (=0)
+ok   MERGED
+ok   diverged tip merged with an untracked directory present: 0 (=0)
+ok   the untracked file inside the untracked directory is in the backup (minor 5) (=precious)
+ok   main fast-forwarded across a gitlink move: 0 (=0)
+ok   no ref of the submodule moved by the main fetch (minor 2) (=refs/heads/main 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/mirror/HEAD 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/mirror/main 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/origin/HEAD 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/origin/main 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 )
+ok   integrate_merge: the merge path never moves a submodule ref by fetch (minor 2) (=refs/heads/main 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/origin/HEAD 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 refs/remotes/origin/main 01803a9fbb8c280ed1eedfb1bbd36fc99cf9de12 )
+ok   two exact rows of different classes: 20 class_ambiguous (W7) (=20)
+ok   named class_ambiguous
+ok   golden-false: the same class twice: 0 (=0)
+ok   class generated (=generated)
+ok   a fixture-root row with only two columns: 20 (the reader refuses it too) (=20)
+ok   table_invalid
+ok   --exemptions without a value: 20, never a traceback (=20)
+ok   no Python traceback for --exemptions
+ok   --classes without a value: 20, never a traceback (=20)
+ok   no Python traceback for --classes
+ok   --fixture-roots without a value: 20, never a traceback (=20)
+ok   no Python traceback for --fixture-roots
+ok   --checks-registry without a value: 20, never a traceback (=20)
+ok   no Python traceback for --checks-registry
+ok   --check without a value: 20, never a traceback (=20)
+ok   no Python traceback for --check
+ok   safe_declpath: golden-true paths accepted, every spelling refused (=)
+ok   lr_exact: the exact ref only (=sha2)
+---- 230 ok, 0 failed
+exit=0
+
+== test_check_classes (regression, once)  [test sha256 4ae7335cf4078d9958e32dfd97730f1a1d75c581415f72fd9db84686d24562bb]
+ok   every row has a reason (=0)
+ok   every exemption row has a reason and an owner (=0)
+---- 131 ok, 0 failed
+exit=0
+
+== test_check_no_ci (regression, once)  [test sha256 d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3]
+ok   unknown option: 20 (=20)
+ok   no --root: 20 (=20)
+---- 30 ok, 0 failed
+exit=0
+
+== test_check_revision_headers (regression, once)  [test sha256 8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4]
+ok   unknown option: 20 (=20)
+ok   an existing repository named -x is refused as an option-like value: 20 (=20)
+---- 25 ok, 0 failed
+exit=0
+
+== test_commit_recursive (regression, once)  [test sha256 41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2]
+ok   the first commit exists (=2)
+ok   its row survives the kill (=9b359e897c625dc760b6ded859fc21d9c510a15e)
+---- 55 ok, 0 failed
+exit=0
+
+== test_fixture_roots (regression, once)  [test sha256 9f0874d8f53fff96c3b291176758141219209d0cd9adbccfea880d866d88a196]
+ok   unknown check asked: 20 (=20)
+ok   committed fixture_roots.txt parses; no row exempts anything yet (=1)
+---- 30 ok, 0 failed
+exit=0
+
+== test_integrate_ff_only (regression, once)  [test sha256 b2a61fd232b189335753f94aeae5592a11378719d5ecf093df94ecf9d2cc879e]
+2b5d65bd63d3013dd291a4b4691ef6c6c09b5866	refs/heads/main)
+ok   unknown option: exit (=20)
+---- 80 ok, 0 failed
+exit=0
+
+== test_integrate_merge (regression, once)  [test sha256 e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960]
+ok   store_not_rerecorded
+ok   re-recorded store extending the remote side passes the store check (then the fold gap)
+---- 117 ok, 0 failed
+exit=0
+
+== test_push_recursive (regression, once)  [test sha256 5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564]
+ok   verdict only in the submodule tree: held (14) (=14)
+ok   submodule remote still at its old tip (=27783c72d319fb458fce3c84d1154e4ab5ab17cc)
+---- 92 ok, 0 failed
+exit=0
+
+== test_record_deferral (regression, once)  [test sha256 3babdf3db5a6b4416b96c548e29cc32bd599dfeaab747fa1bd8fbbacce7fabcc]
+ok   read-only deferrals.tsv: 20 and no row (=20)
+ok   no row appended to the read-only file (=1)
+---- 26 ok, 0 failed
+exit=0
+
+== test_scope_check (regression, once)  [test sha256 2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f]
+ok   unknown option: 20 (=20)
+ok   no tracked file changed by the check (=0)
+---- 50 ok, 0 failed
+exit=0
+
+== test_validate_cheap (regression, once)  [test sha256 f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769]
+ok   no --files-from: 20 (=20)
+ok   unknown option: 20 (=20)
+---- 106 ok, 0 failed
+exit=0
+
+# DONE

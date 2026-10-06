@@ -1,0 +1,10 @@
+# sha256 scripts/governance/tests/test_register_id_schemas.sh: c262ca3d8ee50df8aa4f1c7c6deeddf70ab84b040ed699401a6f7c6e198606ab
+# date 2026-10-05T20:09:09Z
+ok   finding.schema.json register_item: 12 fixtures (CAT-NNN valid; withdrawn prefix, neutral prefix, short number, case, unanchored refused)
+ok   bank-case.schema.json: metadata.v3 references $defs/v3 (the checked pattern is reachable)
+ok   bank-case.schema.json register_refs[]: 12 fixtures (CAT-NNN valid; withdrawn prefix, neutral prefix, short number, case, unanchored refused)
+ok   bank-case.schema.json register_refs: several ids and the empty list valid
+ok   bank-case.schema.json register_refs: one withdrawn-prefix id among good ones refused
+ok   control needle: the validator separates CAT-001 from the withdrawn prefix
+failures=0
+rc=0

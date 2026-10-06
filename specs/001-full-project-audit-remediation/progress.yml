@@ -1,0 +1,99 @@
+# Execution state for /speckit-superspec-execute (spec 001). Updated 2026-10-05.
+# The relayed owner answers below are the binding source of decisions/owner-decisions.yaml (tests: scripts/governance/tests/test_decision_intake.sh); commit this file together with that intake, the test and $EV/wp01/ (see $EV/wp01/README.md; $EV = specs/001-full-project-audit-remediation/evidence).
+feature: 001-full-project-audit-remediation
+phase: P0
+phase_status: in_progress
+hc0:
+  recorded: false            # T014 not yet written; entry criterion now answerable
+  entry_incomplete: host_identity_missing -> answered_pending_record
+  owner_answers_2026-10-05:
+    ODG-07_build_host: "current host (hostname anton, 16 CPU, ~31 GiB RAM, podman 5.7.0 rootless)"
+    ODG-07_measure_host: "current host (same machine as build host)"
+    confirm_C1_remote_event_driven_builds: confirmed   # note: build host is now this host, see risks
+    confirm_C2_slsa_l2_minimum: confirmed
+    confirm_FR017_latest_stable: confirmed             # report-only for non-submodule packages until T429a
+    accept_plan_start_phase_0: accepted
+risks_recorded:
+  - "Constitution 11.4.173 expects builds distributed to a REMOTE build host; owner chose this host. Builds must still run in rootless containers (11.4.161/11.4.173); the deviation from remote distribution is an owner decision to be cited in HC-0."
+  - "Build and SC-011 measurement share one host (31 GiB RAM): measurements only while no build runs; 12.6 60% memory ceiling (~19 GiB) binds container builds."
+  - "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-11, 2026-10-05), a deviation until an upstream constitution change is approved (this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending; the contract patterns, tasks.md T190 and T564 plan against two gates, CM-ATM-TICKET-IDS-COMPLETE and the [PROTECTED-SPEC: ATM-NNN] tag, that expect that prefix; the exception conflicts with 11.4.54 and 11.4.248, which have no escape hatch, and with the CLAUDE.md precedence rule, and it stays OPEN until the owner confirms it at HC-0 and the upstream change is accepted). OPEN owner item: the owner is asked to acknowledge the deviation at HC-0 and to approve the upstream change as a separate request."
+tasks:
+  done: []   # nothing ticked: every area is implemented on the host but awaits a clean independent review (review round 3 fixes in progress)
+  in_progress: [T001, T004, T005a, T005b, T011, T012, T013, T015, T016, T017, T018, T023, T030, T031, T032, T033, T034, T035, T036, T040, T040a, T040b, T041, T048a, T049, T050, T060, T061, T062, T063, T086, T087, T094a]
+  blocked_on_containers_or_cpa_host: [T003, T005c, T005d, T006, T006a, T007, T008, T022, T051, T053, T057, T064, T066, T067, T068, T069, T074, T075, T076, T077]
+  next_exempt_before_hc0: [T014, T011a]
+owner_answers_2026-10-05_interactive:   # relayed by conductor from AskUserQuestion, not verbatim quotes
+  commit_route: "plain git, fast-forward only, small independently reviewed batches"
+  index_writer_memory_floor_T022: "add swap and retry (UNCONFIRMED that swap satisfies the 32 GiB MemAvailable check)"
+  tracked_but_ignored_1837: "untrack build outputs (catalogizer-api-client/dist) and catalogizer-android/local.properties.backup after a secrets check; docs stay; files stay on disk"
+  review_substrate: "run independent reviews through the Workflow path with Opus xhigh and record effort"
+  ODG-15_own_orgs: "yes to all three: helixdevelopment1 and milos85vasic own; master counts as main"
+  ODG-12_hook: "variant B, always fetch and fast-forward pull the latest constitution; sweep must pass"
+  ODG-11_register: "id prefix CAT (never ATM; remove ATM from this repo's files); generic placeholder XYZ-NNN; constitution submodule ATM text needs separate approved upstream change; location docs/workable_items.db kept (UNCONFIRMED)"
+  ODG-16_slsa: "this host is build platform; signing key in owner's user keyring"
+  ODG-10_trackers: "none; local register only; external trackers reported not configured"
+  ODG-02_03_creds: "remove from current files only plus scanner gate; no rotation requested (owner choice; risk noted: history still contains them)"
+owner_answers_2026-10-05_batch2:   # relayed by conductor from AskUserQuestion; owner free-text kept in meaning, not verbatim
+  ODG-04_05_devices: "emulators only for now; device-class claims UNMET until devices supplied"
+  ODG-08_nfs: "BOTH: user-space NFS server in a container first AND an owner-supplied NFS host (owner has not yet named the host: OPEN)"
+  ODG-06_desktop: "Linux only; updater/signing out of scope; macOS and Windows claims UNMET"
+  ODG-09_legacy_closed: "re-verify by severity, sample low severity"
+  ODG-20: "implement FTP, NFS, WebDAV scanners"
+  ODG-21: "replace fabricated web features with real backed ones"
+  ODG-22: "wire and implement phone offline layer and playback"
+  ODG-24: "api-client = generated/validated client for web and desktop"
+  ODG-25: "web: in-memory token + httpOnly refresh cookie; desktop keychain; ws tickets; signed media URLs"
+  ODG-26: "TLS with self-managed CA; Android cleartext off"
+  ODG-27: "env-provided KEK with dual-read migration"
+  ODG-28: "deny by default; registration off"
+  ODG-13: "update every pin to latest, test each"
+  ODG-14: "investigate history first (S-LLMV-1)"
+  ODG-23: "history investigation then per-item decision"
+  ODG-36: "run Trivy exposure check incl. build host"
+  ODG-17: "new code 85% now; legacy after baselines"
+  ODG-18: "first manual QA after remediation release candidate"
+  ODG-32: "adopt proposed defaults pending A/A data"
+  ODG-34_35: "6 agents, Sonnet default, Opus xhigh reviews; no SLA tiers"
+  ODG-30: "file-based Pact, broker deferred"
+  ODG-31: "yes after existence check"
+  ODG-37: "no Atlas Pro"
+  ODG-38: "status quo plus gates"
+  ODG-39: "import 34 proposals as tracked items, nine ranked first"
+  ODG-40: "Apache-2.0-compatible for shipped code"
+  ODG-41: "record exact commits verified at final strict run"
+  ODG-42_43: "decide after T525 per-class report"
+  ODG-01: "credentials via .env by variable name"
+  ODG-29: "newest AGP that builds; failing latest = blocker item"
+  ODG-33: "150 MB twin threshold; HelixQA links to submodules/helix_qa"
+  OD-14: "accept with outside-SQL controls"
+  OD-20: "30 shuffled runs"
+  OD-23: "read production open path then owner confirms"
+  OD-25: "N=2"
+  OD-26: "not applicable plus architectural finding"
+  OD-36: "add GitLab remote for websocket_client_ts"
+  OD-43_45_firebase: "ADD Crashlytics. Owner free text: use Firebase CLI for everything; create a Firebase project and apps for all platforms if none exists; a bash init script downloads all config files after clone; fully incorporate Crashlytics, App Distribution (dev and release variants and flavors), Analytics and other major Firebase services; everything dynamic, no manual downloads. NEEDS: Firebase CLI login (owner action), explicit confirmation before any project creation in the owner's account"
+  OD-49: "decide from census"
+  OD-55: "industry UX thresholds as adjustable defaults"
+  OD-57: "live docs; bring into doc tree"
+  OD-68: "unknown; verify"
+  OD-74: "yes with tests"
+  OD-75: "unknown; investigate"
+  OD-76: "blobs local out of tree; anchor on a git remote ff-only"
+owner_answers_2026-10-05_batch3:   # relayed by conductor from AskUserQuestion; owner free text kept in meaning
+  CAT_vs_constitution_ATM: "keep CAT and request an upstream constitution change (per-project prefix setting); deviation recorded as owner-approved exception until accepted"
+  atm_id_columns: "YES rename lowercase atm_id/new_atm_id/head_atm_id to cat_id in this project's register design; the constitution engine needs an upstream change or an adapter (UNCONFIRMED how)"
+  evidence_chain: "SWITCH to the constitution continuum chain; owner has not yet answered continuum's four points (hash construction, record schema, exit codes, anchor format) so they are OPEN; python docs/06 chain is interim until a container build exists"
+  image_pulls: "yes: pull the base images and pin by digest on this host (rootless podman, 60 percent memory and disk-headroom rules)"
+  ODG-16_custody: "key in owner keyring locked by a passphrase only the owner enters at signing time; honest strength recorded as policy"
+  gitignore_blocks: "keep the repo-wide secrets block and the cache/hosts block and amend T004 text; owner-approved"
+  verifier_exit_codes: "accept as built (precedence 13,12,11,15,strict-behind; strict behind exits 12); owner-approved"
+  anti_bluff_scan_path: "add a thin wrapper at scripts/anti-bluff-scan.sh calling the audit scanner, with --files-from; test-first"
+  removals: "owner free text: remove if they are not used at all (test-results.json, api-client dist outputs, local.properties.backup, unused Tauri shell/fs plugins): removal only with evidence of non-use, separate commits"
+  env_properties: "untrack env.properties, gitignore it, add env.properties.example, add a scanner gate; history stays (no force-push)"
+  llms_verifier: "owner: LLMsVerifier MUST live as a real submodule at submodules/llms_verifier in the project root and always track the latest main; convert the plain copy to a submodule and fix helix_qa layout"
+  internal_media: "wire it in and test (also resolves OD-68 unkeyed DB)"
+owner_answers_2026-10-05_batch4:   # relayed by conductor from the owner brief; owner free text kept in meaning
+  ODG-08_nfs: "user-space NFS server only for now; real NFS host proof UNMET until named"
+  Firebase: "use existing project catalogizer-7a3f1; owner runs the firebase CLI login once; ask before enabling/creating anything new"
+  ODG-42_43: "per-class report in phase 2 (T525) then decide"
+  phase0_close: "finish reviews, pull images, record HC-0, then ask for phase boundary approval"

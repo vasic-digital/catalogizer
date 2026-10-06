@@ -1,0 +1,7 @@
+# identity: r5-real-host-run
+# runp_sha256: 9be6f3f4c954a4698999b304e92b0241ad9cbad999bfbfa37b44d5e0223f15b9
+# runp_test_sha256: e01ec18644eb7600f42220dac51d4d3208387a0874570b5f74ada76385c85f40
+# hc_sha256: 6aab3b350534f828b2b89ab2fb92a22e6427e8bd2f73cd5ca631afd4258c1180
+# hc_test_sha256: c4197959cb6e14293895c480da3415a4039d26696a6898a419b1d1f0a526d29a
+# run_at: 2026-10-06T09:50:52Z host: anton uid: 1000
+host_checklist: wrote /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp10/host-checklist.json

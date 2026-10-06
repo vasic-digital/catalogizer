@@ -1,0 +1,37 @@
+# sha256 identities at capture (helpers as now fixed; the RED ran against the helpers before the fixes, whose hashes were not recorded: UNCONFIRMED)
+9fe4bf9652ac1c347e69ecc426750ad0135a22d811d4fafe8e18ef3fb10d7915  scripts/repo/tests/test_push_recursive.sh
+deb7d42b79dc7e737bbd50935cd243ea82e6b938799e3d9879a09cb09ca053d0  scripts/repo/tests/test_check_no_ci.sh
+c9befb35969d09ab94f77d9ea892272e74428c1ffcc4619d6af180a2f27e67e8  scripts/repo/tests/test_scope_check.sh
+7d0a4bb444881a69f960110c93ae6d98dd30b456ba6628537e28ef7c3ba5a96f  scripts/repo/tests/test_commit_recursive.sh
+0c91200521547301e861c0da2fb9b3e5ad19d71cbc0f10181c7c8db814fe0a82  scripts/repo/tests/test_check_revision_headers.sh
+# WP-04 round 5 (wp04e) RED: the new cases run against the UNFIXED helpers (tests extended first, helpers unchanged)
+# Captured 2026-10-06 from this session's terminal; failing lines only ("^FAIL" and the summary), verbatim.
+== check_no_ci (32 ok, 3 failed)
+FAIL git ls-files failing: 20, not 0 (F3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in '')
+FAIL git ls-files failing on a clean root: 20, never 0 (got '0', want '20')
+== scope_check (51 ok, 4 failed)
+FAIL git status failing inside a submodule: 20, not 0 (F3) (got '0', want '20')
+FAIL named git_status_failed (no 'git_status_failed' in '')
+FAIL gitlink listing failing: 20, not 0 (F3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in '')
+== push_recursive, F3 part (106 ok, 3 failed)
+FAIL gitlink listing failing under --recursive: 20 (F3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in '')
+FAIL nothing pushed on the refusal (got '980e159908fef779be2f21fb309b255e70383917', want '2e2acd7ec7041a405164ad6e7b1c3f2a0b5aadac')
+== commit_recursive (55 ok, 3 failed)
+FAIL gitlink listing failing: 20 (F3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in '')
+FAIL no commit made (got 'c83185eb6b18f3cf899556ffe9166b20d65f0af1', want 'e16f7fabbc4a4258f587fcd8cb50203ddb8f4cdf')
+== push_recursive, F1 part (98 ok, 8 failed), run before the F3 cases were added
+FAIL every remote moved after S1, nothing unrecorded: 11 (F1) (got '20', want '11')
+FAIL no false unrecorded_local_commit (unexpected 'unrecorded_local_commit' in 'REFUSED	.	unrecorded_local_commit	5025bdd3557b0af30670d03e6a7bc7ccd484a392')
+FAIL r1 named remote_moved_since_s1 (no 'NOPUSH	.	r1	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	5025bdd3557b0af30670d03e6a7bc7ccd484a392')
+FAIL r2 named remote_moved_since_s1 (no 'NOPUSH	.	r2	remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	5025bdd3557b0af30670d03e6a7bc7ccd484a392')
+FAIL exactly one commit named (got '2', want '1')
+FAIL every remote moved and no tracking ref at all: 11, never 20 (got '20', want '11')
+FAIL no unrecorded_local_commit (no tracking ref) (unexpected 'unrecorded_local_commit' in 'REFUSED	.	unrecorded_local_commit	82efbc37b56128efd39e622a77930ebe4f1f418a')
+FAIL moved remote still named (no 'remote_moved_since_s1' in 'REFUSED	.	unrecorded_local_commit	82efbc37b56128efd39e622a77930ebe4f1f418a')
+== check_revision_headers --measure (F3 form found while fixing), against a reverted copy of the helper
+FAIL --measure with git ls-files failing: 20 (F3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in 'fatal: shim')

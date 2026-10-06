@@ -1,0 +1,30 @@
+fixtures: 6 repos
+  PASS  golden-good clean exit (=0)
+  PASS  golden-good class (=SAME)
+  PASS  human table renders with remote class
+  PASS  golden-bad dirty exit (=1)
+  PASS  golden-bad dirty flag (=1)
+  PASS  golden-bad ahead exit (=1)
+  PASS  golden-bad ahead class (=REMOTE-BEHIND)
+  PASS  behind w/o fetch is not guessed (=UNKNOWN-DIFFERENT)
+  PASS  behind w/o fetch exit (unproven) (=3)
+  PASS  behind with --fetch class (=LOCAL-BEHIND)
+  PASS  behind exit (not in fail set) (=0)
+  PASS  behind with --strict exit (=1)
+  PASS  golden-bad diverged class (=DIVERGED)
+  PASS  golden-bad diverged exit (=1)
+  PASS  unreachable class (=UNREACHABLE)
+  PASS  unreachable exit (unproven) (=3)
+  PASS  control: banner noise ignored -> still SAME (=SAME)
+  PASS  control: noise-only answer is not SAME (=NO-REMOTE-BRANCH)
+  PASS  control: all repos listed (no foreach abort) (=3)
+  PASS  control: dirty sibling after clean one -> exit (=1)
+  PASS  control: dirty sub flagged (=true)
+  PASS  control: clean sub not flagged (=false)
+  PASS  exception list honoured exit (=0)
+  PASS  exception recorded (=true)
+SELF-TEST: pass=24 fail=0
+
+real	0m6.200s
+user	0m1.452s
+sys	0m4.383s

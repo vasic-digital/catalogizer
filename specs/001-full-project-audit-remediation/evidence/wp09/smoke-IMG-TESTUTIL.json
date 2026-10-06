@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "image_id": "IMG-TESTUTIL",
+  "reference": "localhost/catalogizer-testutil@sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08",
+  "inspect_digest_and_id": "sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 fb5caf65c377615b1817465fc7f30f58aed2e0af07c39663c81ff8225bf76f9c",
+  "toolchain": {
+    "schema": 1,
+    "image_id": "IMG-TESTUTIL",
+    "uid": 1000,
+    "glibc": "2.36",
+    "cache_write_probe": "ok",
+    "ro_mount_write_probe": "failed",
+    "ro_mount_write_expected": "failed",
+    "tools": {
+      "bash": {
+        "status": "present",
+        "version": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu) Copyright (C) 2022 Free Software Foundation, Inc. "
+      },
+      "git": {
+        "status": "present",
+        "version": "git version 2.39.5 "
+      },
+      "sqlite3": {
+        "status": "present",
+        "version": "3.40.1 2022-12-28 14:03:47 df5c253c0b3dd24916e4ec7cf77d3db5294cc9fd45ae7b9c5e82ad8197f3alt1 "
+      },
+      "python3": {
+        "status": "present",
+        "version": "Python 3.11.2 "
+      },
+      "jq": {
+        "status": "present",
+        "version": "jq-1.6 "
+      },
+      "go": {
+        "status": "absent"
+      },
+      "gofmt": {
+        "status": "absent"
+      },
+      "kcov": {
+        "status": "absent"
+      },
+      "script": {
+        "status": "present",
+        "version": "script from util-linux 2.38.1 "
+      },
+      "realpath": {
+        "status": "present",
+        "version": "realpath (GNU coreutils) 9.1 Copyright (C) 2022 Free Software Foundation, Inc. "
+      },
+      "detect-secrets": {
+        "status": "present",
+        "version": "1.4.0 "
+      },
+      "check-yaml": {
+        "status": "present",
+        "version": "usage: check-yaml [-h] [-m] [--unsafe] [filenames ...]  "
+      },
+      "detect-private-key": {
+        "status": "present",
+        "version": "usage: detect-private-key [-h] [filenames ...]  "
+      },
+      "definitely-not-a-tool": {
+        "status": "absent"
+      },
+      "errored-needle": {
+        "status": "error",
+        "exit": 3,
+        "output": "needle-output "
+      }
+    },
+    "python_imports": {
+      "pytest_yaml_jsonschema": "present",
+      "cpa_tools_identify": "present"
+    }
+  }
+}

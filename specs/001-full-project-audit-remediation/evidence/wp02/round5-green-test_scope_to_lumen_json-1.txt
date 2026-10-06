@@ -1,0 +1,51 @@
+# round5 evidence | utc=2026-10-06T08:55:34Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 4eac3d0626c9b66e081ed91934fc95de471a20a1fe645fcf7837d2a1b7caaff4 scripts/audit/tests/test_scope_to_lumen_json.sh
+# sha256 0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854 scripts/audit/index_health.sh
+# sha256 be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71 scripts/audit/scope_to_lumen_json.py
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183 scripts/audit/derive_scope.sh
+# cmd: bash scripts/audit/tests/test_scope_to_lumen_json.sh
+ok   derive exits 0
+ok   output equals the golden JSON byte-for-byte
+ok   second run byte-identical
+ok   empty allow-list refused (rc=3, nothing written)
+ok   --check passes on the golden JSON
+ok   --check FAILs when a scope.yaml class is missing from the JSON (rc=1)
+ok   --check rc=1: a third-party root added to allow (would index third-party code)
+ok   --check rc=1: root_files flipped to false
+ok   --check rc=1: root_files removed
+ok   --check rc=1: an allow root missing (SM2)
+ok   --check rc=1: a deny pattern missing from deny while still in its class (SM1)
+ok   --check rc=1: an extra deny pattern
+ok   --check rc=1: an extra class
+ok   --check rc=1: an extra pattern inside a class
+ok   --check rc=1: the nested third-party deny missing (class and deny)
+ok   --check rc=1: dropped_negations changed
+ok   a non-mapping scope.yaml is rc=3, no traceback
+ok   a non-mapping baseline_excludes is rc=3 (also under --check)
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row
+ok   refused (rc=3, reason on stderr, no output): the same under --check (the leak is not re-derived as legal)
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots lies INSIDE a third_party row
+ok   refused (rc=3, reason on stderr, no output): a trailing slash does not hide a third_party root
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row nested under an own root
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an unknown class (third-party)
+ok   refused (rc=3, reason on stderr, no output): a TSV row without a tab
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty class
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty path
+ok   control: blank lines in the TSV are tolerated (rc=0)
+ok   own_ab/x (a sibling, not nested under own_a) is not denied as nested
+ok   allowed roots with a trailing slash or padding derive the identical golden JSON
+ok   refused (rc=3, reason on stderr, no output): --check file whose classes is a list
+ok   --out to an unwritable path is rc=3 without a traceback
+ok   m-3 a sibling root (third_bx next to third_b) is accepted, not refused (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-5a a path classed both own and third_party
+ok   m-5b a nested third_party path with [ ] is denied literally (backslash-escaped)
+ok   m-5b control: --check of the escaped derivation is exact (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-8 --check file whose allow holds a non-string element
+ok   m-8 a duplicated allow entry in the --check file is a difference (rc=1, named duplicate)
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a list element
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a number
+ok   round5 D1 no traceback and rc=3 for a non-string classes element
+IDENTITY test=4eac3d0626c9b66e081ed91934fc95de471a20a1fe645fcf7837d2a1b7caaff4 script=be1662d79021a6154b1f8615a44eee2e568951722d966b20e52b390b733d0c71 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton python=3.14.4 utc=2026-10-06T08:55:39Z
+SUMMARY pass=42 fail=0
+# rc=0

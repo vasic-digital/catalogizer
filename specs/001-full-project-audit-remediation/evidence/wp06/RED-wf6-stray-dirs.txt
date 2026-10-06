@@ -1,0 +1,3 @@
+# RED for the stray directories (WF6): the pre-fix test ran the file: calls with cwd = the repository root. With the file: guard absent from apply_ext.sh (as in the run that produced the strays) the call writes under cwd:
+cwd=fakeroot listing:
+./file:/tmp/tmp.1t13Zr4TVQ/x.db

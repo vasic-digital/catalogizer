@@ -1,0 +1,8 @@
+# T040 pending-row exit precedence: paired mutation (CENTRAL C1 (c); host run, bash scripts/repo/tests/run_wp04b_mutations.sh <out> V14)
+# fixture (test_validate_cheap.sh, section 5): a declared change set whose golden-bad file fails an approved check (merge_conflict) while the registry row of another approved check (shell_parse) differs from the approved copy and is pending: the run exits 10 and names both the refusal and the pending row; the same run with the pending row alone exits 14
+# mutation: the exit computation takes the larger of the two codes (max(10, 14) = 14), so the run exits 14 and the fixture FAILs
+# validate_cheap.sh sha256 b57a390ed00129f11b83b9b15c41214b86f905f65dfe07f56ed6485d4c952a10  test sha256 f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769
+# WP-04 second-slice mutations (host run: bash scripts/repo/tests/run_wp04b_mutations.sh; each mutation = one edit of a COPY; CAUGHT = its test exits non-zero)
+# driver sha256 b7dd7041e5710fbf6a1d5f0a1acfb96d3a93aec7c58d42bddfb5593ba1f40ea4
+CAUGHT   V14 exit takes the larger of 10 and 14  -> 1 failing case(s), e.g. FAIL a failing check and a pending row in one run: 10 (never 14) (got '14', want '10')
+# (one mutation, selected by the id prefix V14; the full mutation table is in wp04b-mutation.txt)

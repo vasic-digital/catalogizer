@@ -1,0 +1,52 @@
+# WP-04 fix round 3: the shipped S3 run against the REAL repository (artifact layer for I2: before this round the same command exited 20 check_command_absent for detect_landmines)
+# generated 2026-10-05T19:54:37Z, head a27d72a5 (working tree); command: scripts/repo/validate_cheap.sh --root . --files-from <35 WP-04 files>
+# sha256 scripts/repo/validate_cheap.sh d9b0b487c8f25bddf2bf427c5e5e3e5cf926efd559e733cd99a70c39691121e1
+# sha256 scripts/repo/validate_checks.tsv 5ee15550ba12854b3ed6018b56f9745a1b08785815175565bf3410badd8fff69
+# sha256 scripts/repo/lib_safe.sh 66134c783403963ed1998715c4648eb708640ccd3907641ce1dba6e1147c77d9
+# sha256 scripts/repo/check_class.sh dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc
+# files judged:
+#   docs/scripts/check_classes.md
+#   scripts/repo/check_class.sh
+#   scripts/repo/check_classes.tsv
+#   scripts/repo/check_exemptions.tsv
+#   scripts/repo/check_no_ci.sh
+#   scripts/repo/check_revision_headers.sh
+#   scripts/repo/commit_recursive.sh
+#   scripts/repo/exceptions.tsv
+#   scripts/repo/fixture_roots.sh
+#   scripts/repo/integrate_ff_only.sh
+#   scripts/repo/integrate_merge.sh
+#   scripts/repo/lib_safe.sh
+#   scripts/repo/push_recursive.sh
+#   scripts/repo/record_deferral.sh
+#   scripts/repo/scope_check.sh
+#   scripts/repo/tests/lib_wp04b.sh
+#   scripts/repo/tests/run_wp04_mutations.sh
+#   scripts/repo/tests/run_wp04b_mutations.sh
+#   scripts/repo/tests/run_wp04c_mutations.sh
+#   scripts/repo/tests/test_check_classes.sh
+#   scripts/repo/tests/test_check_no_ci.sh
+#   scripts/repo/tests/test_check_revision_headers.sh
+#   scripts/repo/tests/test_commit_recursive.sh
+#   scripts/repo/tests/test_fixture_roots.sh
+#   scripts/repo/tests/test_integrate_ff_only.sh
+#   scripts/repo/tests/test_integrate_merge.sh
+#   scripts/repo/tests/test_push_recursive.sh
+#   scripts/repo/tests/test_record_deferral.sh
+#   scripts/repo/tests/test_scope_check.sh
+#   scripts/repo/tests/test_validate_cheap.sh
+#   scripts/repo/tests/test_wp04c.sh
+#   scripts/repo/tests/wp04b_evidence.sh
+#   scripts/repo/tests/wp04c_evidence.sh
+#   scripts/repo/validate_cheap.sh
+#   scripts/repo/validate_checks.tsv
+deferred	go_fmt
+deferred	go_vet
+deferred	go_imports
+deferred	eslint
+deferred	prettier
+deferred	anti_bluff
+exit=0
+# scope_check over the same list (S2):
+exit=0
+# DONE

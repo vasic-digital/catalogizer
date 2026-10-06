@@ -1,0 +1,12 @@
+probe_host paired mutations 2026-10-05T10:26:33Z
+script under test: /home/milosvasic/Projects/catalogizer/scripts/containers/tests/../probe_host.sh
+mutation cgroup-hardcoded-2: CAUGHT, 1 assertion(s) failed: FAIL: fixture cgroup.controllers absent: cgroup_version 1 (got '2' want '1');
+mutation rootless-hardcoded-true: CAUGHT, 1 assertion(s) failed: FAIL: fixture uid 0: rootless false (got 'true' want 'false');
+mutation needle-hardcoded-absent: CAUGHT, 2 assertion(s) failed: FAIL: fixture needle path that exists: status error (needle can see) (got 'absent' want 'error');FAIL: N7 needle path is a dangling symlink: status error (got 'absent' want 'error');
+mutation getenforce-failure-as-absent: CAUGHT, 1 assertion(s) failed: FAIL: fixture failing getenforce (no selinuxfs): status error, not absent (got 'absent' want 'error');
+mutation selinuxfs-failure-as-present: CAUGHT, 1 assertion(s) failed: FAIL: fixture selinuxfs present + failing getenforce: status error (F5) (got 'present' want 'error');
+mutation usermax-number-as-string: CAUGHT, 1 assertion(s) failed: FAIL: N5 user.slice memory.max numeric is a JSON number (got 'string' want 'number');
+mutation meminfo-digit-guard-removed: CAUGHT, 1 assertion(s) failed: FAIL: N5 MemTotal 'abc kB': mem_total status error (got 'present' want 'error');
+mutation ulimit-nonnumeric-as-present: CAUGHT, 1 assertion(s) failed: FAIL: N5 ulimit -u 'abc': status error (got 'present' want 'error');
+mutation meminfo-duplicate-accepted: CAUGHT, 1 assertion(s) failed: FAIL: N6 duplicate MemTotal: mem_total status error (got 'present' want 'error');
+mutation needle-symlink-blind: CAUGHT, 1 assertion(s) failed: FAIL: N7 needle path is a dangling symlink: status error (got 'absent' want 'error');

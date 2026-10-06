@@ -1,0 +1,20 @@
+# T001 real host run of the CURRENT probe_host.sh and disk_headroom.sh (default EV): the two records below are the output
+# generated: 2026-10-06T07:20:03Z  (round: r4 fix of WF3-REVIEW containers-gitignore; run times are the started/finished lines of the transcript)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED; the sha256 lines below fingerprint it)
+# sha256 7e323ed41f2df3be31154285ea162f7f14627ab568667e9979075bb9d1dff8a0  scripts/containers/probe_host.sh
+# sha256 b5d59685a3f7719fa737bac47f1a1618bd3aa590e43f99dc06c39090982624a0  scripts/containers/disk_headroom.sh
+# sha256 2d3c3abc7b802755fd3e3213fb9e3c84d289f3c9a2c45359da41c65308605f6b  scripts/containers/disk_headroom.conf
+# sha256 6e6d01473a91d60b28363fc1095e64f8ccb01b197eac01e4c2b3bbec1361bd01  scripts/containers/tests/test_probe_host.sh
+# sha256 e0413d20f078d5cf3af11040bd335a6dacbbea006746533412e01324bd303c7a  scripts/containers/tests/test_disk_headroom.sh
+# sha256 fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 5c0faf057866be5885177b39075ce60a66ef666356c5cd258c7d0a9e49301e75  .gitignore
+# ---
+started 2026-10-06T07:20:03Z
+probe_host: wrote /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/host-probe.json
+rc=0
+disk_headroom: pass op=t001-real-host-need-largest-image need=6086120270 min_free=12172240540 record=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/disk/t001-real-host-need-largest-image.json
+rc=0
+finished 2026-10-06T07:20:05Z
+# sha256 of the records written by that run:
+# bbae3e9eb000a874fb39d6a0cd61f0945f6f086a72aded9d321e1e540624fbc9  host-probe.json
+# f41186cbf86a5110eb0f51082f60d71167d7c99ad6527ef72e688b48a5d9cf4e  disk/t001-real-host-need-largest-image.json

@@ -1,0 +1,70 @@
+# path glob (git-wildmatch, from the main-repository root)	class	reason	owning task   (path-class table, rule (V), T040b)
+# review: specs/001-full-project-audit-remediation/evidence/reviews/WP-04.json   (admission table: held-table rule of T040b)
+docs/workable_items.db	generated	register database written only by the engine and sqlite3 via locked.sh	T040b
+docs/register/**	generated	engine exports, dump, reconciliation outputs, HTML/PDF/DOCX twins	T040b
+specs/001-full-project-audit-remediation/evidence/ledger.jsonl	evidence-ledger	hash-chained evidence ledger (exact path outranks the evidence glob)	T040b
+specs/001-full-project-audit-remediation/evidence/flake_ledger.jsonl	evidence-ledger	append-only flake ledger (exact path outranks the evidence glob)	T040b
+specs/001-full-project-audit-remediation/evidence/anchors.jsonl	evidence	anchor chain, byte-exact	T040b
+specs/001-full-project-audit-remediation/evidence/deferrals.jsonl	evidence	deferral rows, byte-exact	T040b
+specs/001-full-project-audit-remediation/evidence/blobs/*	evidence	content-addressed blobs named by their sha256 (no suffix)	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.json	evidence	tool output or record with suffix .json	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.jsonl	evidence	tool output or record with suffix .jsonl	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.txt	evidence	tool output or record with suffix .txt	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.tsv	evidence	tool output or record with suffix .tsv	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.csv	evidence	tool output or record with suffix .csv	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.sha256	evidence	tool output or record with suffix .sha256	T040b
+specs/001-full-project-audit-remediation/evidence/**/*.sarif	evidence	tool output or record with suffix .sarif	T040b
+specs/001-full-project-audit-remediation/audit/**/*.json	evidence	tool output or record with suffix .json	T040b
+specs/001-full-project-audit-remediation/audit/**/*.jsonl	evidence	tool output or record with suffix .jsonl	T040b
+specs/001-full-project-audit-remediation/audit/**/*.txt	evidence	tool output or record with suffix .txt	T040b
+specs/001-full-project-audit-remediation/audit/**/*.tsv	evidence	tool output or record with suffix .tsv	T040b
+specs/001-full-project-audit-remediation/audit/**/*.csv	evidence	tool output or record with suffix .csv	T040b
+specs/001-full-project-audit-remediation/audit/**/*.sha256	evidence	tool output or record with suffix .sha256	T040b
+specs/001-full-project-audit-remediation/audit/**/*.sarif	evidence	tool output or record with suffix .sarif	T040b
+specs/001-full-project-audit-remediation/evidence/**/SHA256SUMS	evidence	checksum list: records a file sha256, never its class	T040b
+specs/001-full-project-audit-remediation/audit/**/SHA256SUMS	evidence	checksum list: records a file sha256, never its class	T040b
+specs/001-full-project-audit-remediation/audit/patches/*.patch	patches	recorded diffs applied byte for byte	T040b
+.specify/memory/constitution-appendix.md	governance-carrier	quotes the constitution forbidden-content lists	T040b
+submodules/constitution/Constitution.md	governance-carrier	quotes the constitution forbidden-content lists	T040b
+docs/issues/**	legacy-collection	1,778 tracked legacy tickets cited by sha256 from register Sources blocks	T040b
+ALL_ISSUES_FIXED.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+ANDROID_CRASH_FIXES_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMMIT_SUMMARY.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPLETE_FINAL_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPLETE_FIX_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPREHENSIVE_IMPLEMENTATION_PLAN.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPREHENSIVE_TEST_REPORT_2026-04-07.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPREHENSIVE_TEST_REPORT_2026-04-09.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+COMPREHENSIVE_UNFINISHED_WORK_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_COMPLETION_REPORT_ALL_PHASES.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_COMPREHENSIVE_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_PROGRESS_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_PROJECT_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_SUMMARY_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+FINAL_UNFINISHED_WORK_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+HELIXQA_AUTONOMOUS_QA_IMPLEMENTATION_PLAN.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+IMPLEMENTATION_COMPLETE.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+IMPLEMENTATION_PACKAGE_SUMMARY.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+IMPLEMENTATION_PROGRESS_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+ISSUES_FIXED_TODAY.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+MASTER_EXECUTION_CHECKLIST.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+MASTER_IMPLEMENTATION_INDEX.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+MASTER_IMPLEMENTATION_PLAN_PHASES.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PERFORMANCE_OPTIMIZATION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PHASE_0_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PHASE_1_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PHASE_1_PROGRESS_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PHASE_2_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PHASE_3_COMPLETION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PROGRESS_UPDATE_DEAD_CODE.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PROJECT_STATUS_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+PROJECT_STATUS_SUMMARY.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+REMAINING_ISSUES_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+SECURITY_AUDIT_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+SECURITY_KEY_ROTATION_REQUIRED.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+TASK_TRACKER.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+TEST_EXECUTION_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+UNFINISHED_WORK_ANALYSIS.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
+UNFINISHED_WORK_AND_ISSUES.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b

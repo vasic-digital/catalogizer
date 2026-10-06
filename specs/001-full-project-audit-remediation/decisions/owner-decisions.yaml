@@ -1,0 +1,1823 @@
+# owner-decisions.yaml (tasks.md T012, WP-01) - see docs/21 section 8
+schema: owner-decisions/1
+revision: 3
+created: '2026-10-05'
+source: docs/21 sections 8.1 to 8.6 (carried as written, no default invented); tasks.md T012
+note: Owner answers of 2026-10-04 are recorded verbatim later by T012a; entries here dated 2026-10-05
+  are relayed by the conductor and are not verbatim; each relayed entry names its progress.yml source_keys and its text is the progress.yml value plus the relay suffix. Relayed entries carry amends null (the documents an answer amends are recorded by T012a). No credential value anywhere.
+groups:
+- id: ODG-01
+  topic: 'Credentials for real-service tests: metadata provider keys, admin test account, NAS share accounts,
+    `google-services.json` values, optional HawkScan and Snyk accounts'
+  options: (a) supply through `.env` (gitignored, mode 0600) by variable name; (b) leave absent and accept
+    `blocked`
+  recommendation: (a), with the env-var contract from WP-24 and doc10 W10-02
+  blocks:
+  - WP-13
+  - WP-24
+  - WP-38
+  - WP-54
+  - WP-60
+  - WP-61
+  - WP-62
+  blocks_text: WP-13, WP-24, WP-38, WP-54, WP-60, WP-61, WP-62
+  source: doc10 H10-31, doc12 §20.1, doc15 OQ-S7
+  research_ids:
+  - OD-28
+  - OD-67
+  default: 'No'
+  default_detail: (input, cannot be defaulted)
+  status: Operator-blocked
+- id: ODG-02
+  topic: Firebase Android key published in history; status of the provider-key rotation list
+  options: (A) restrict the key; (B) rotate; and confirm per provider whether rotation happened
+  recommendation: rotate and restrict; record per-provider rotation in the ledger
+  blocks:
+  - WP-35
+  - WP-50
+  blocks_text: WP-35, WP-50
+  source: doc15 OQ-S1, OQ-S2
+  research_ids:
+  - OD-07
+  - OD-08
+  default: 'No'
+  default_detail: (input, cannot be defaulted)
+  status: Operator-blocked
+- id: ODG-03
+  topic: Default admin credential committed in scripts, banks and docs (the default admin credential literal,
+    20 occurrences in banks; see doc12 QF-07)
+  options: rotate and remove; or keep as dev-only
+  recommendation: treat as compromised; rotate on every real deployment; remove literals
+  blocks:
+  - WP-50
+  - WP-54
+  - WP-60
+  blocks_text: WP-50, WP-54, WP-60
+  source: doc10 DR-10-09, doc12 QF-07, doc15 B21
+  research_ids:
+  - OD-09
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-04
+  topic: 'Physical devices: at least one phone, one tablet, the Android TV box, by model and serial'
+  options: supply; or accept blocked device claims
+  recommendation: supply one of each class
+  blocks:
+  - WP-54
+  - WP-60
+  - WP-61
+  - WP-62
+  - WP-71
+  blocks_text: WP-54, WP-60, WP-61, WP-62, WP-71
+  source: doc10 §12.1, doc12 OD-3
+  research_ids:
+  - OD-28
+  default: 'No'
+  default_detail: (input, cannot be defaulted)
+  status: Operator-blocked
+- id: ODG-05
+  topic: Emulator acceptance scope
+  options: hardware-independent behaviour only; or broader
+  recommendation: hardware-independent only
+  blocks:
+  - WP-54
+  - WP-60
+  - WP-61
+  blocks_text: WP-54, WP-60, WP-61
+  source: doc10 DR-10-06, doc05 DR-4
+  research_ids:
+  - OD-27
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-06
+  topic: 'Desktop hosts and signing: macOS and Windows hosts, signing certificates, notarisation, updater'
+  options: supply; or record blocked platforms
+  recommendation: supply hosts if cross-OS claims are made; updater out of scope until decided
+  blocks:
+  - WP-53
+  - WP-56
+  - WP-61
+  - WP-62
+  blocks_text: WP-53, WP-56, WP-61, WP-62
+  source: doc09 D-ADR-06, D-ADR-10, doc15 OQ-S9
+  research_ids:
+  - OD-29
+  - OD-73
+  default: 'No'
+  default_detail: (input, cannot be defaulted)
+  status: Operator-blocked
+- id: ODG-07
+  topic: 'Build and measurement hosts: identity, roles, capacity and reachability of `thinker.local` and
+    `amber.local` as remote build hosts; a dedicated measurement host'
+  options: name and confirm the remote build host or hosts and the measurement host; the earlier option
+    "local containers only" is removed by the owner's C1 answer of 2026-10-04 (revision 15)
+  recommendation: 'confirm `thinker.local` as build host; decide the measurement host before WP-62. Owner
+    decision C1, 2026-10-04, verbatim: "We MUST HAVE maximal efficiency and zero waiting whenever is possible
+    with comprehensive / exhaustive callbacks (events driven) mechanisms which all must be full safe and
+    non error prone!": every build of every component in any language runs in a rootless container on
+    the remote build host (§11.4.173), its artifacts brought back and verified by sha256 and digest before
+    use; builds and compiling test lanes are dispatched event-driven, one authenticated `build-event/1`
+    completion record per build delivered at least once and consumed exactly once, no polling, heartbeat
+    liveness bound to the long-op registry, crash-safe resume (tasks.md T005a, T005b, T005c, T089a, T121a;
+    doc16 §9.6); no local build and no local-build deviation exist; while no qualified host is reachable
+    a build step is `blocked-unavailable`, never run locally and never a pass; the host identity stays
+    an input. Revision 16 (tasks.md rev 14): the answered part settles where builds run, so the block
+    is the host identity alone and sits where tasks.md places `BLOCKED-ON ODG-07`: the P0 build-host bootstrap
+    (WP-09, T006a, after the host probes and checklist of WP-10), the P1 remote images and their legs
+    (WP-10, WP-14, WP-15) and the P2, P3 and WP-62 legs that need the host before P0 has qualified one
+    (WP-23, WP-32, WP-33, WP-38, WP-62); P0 cannot exit while no host qualifies (T006a, shown to the owner
+    in T013); from P4 on, a build with no reachable qualified host is `blocked-unavailable` with a reason
+    from the closed set of tasks.md T005b, never an owner block, so WP-51, WP-52, WP-56 and WP-71 carry
+    no marker Revision 18 (tasks.md rev 24 candidate): WP-24 joins the Blocks cell, because T211 builds
+    IMG-QA on the remote host under the P1 remote-host rule (`BLOCKED-ON ODG-07` until HC-1b records the
+    host); WP-23 leaves it, because the baselines T203 and T204 no longer carry this marker: a remote
+    leg that finds no reachable qualified host, or an image not yet built, is recorded `blocked-unavailable`
+    with its reason (`no_qualified_host` or `host_unreachable`) and the task completes on that record,
+    owed to this group''s register item, so the P2 exit does not wait on this group (IC-63)'
+  blocks:
+  - WP-09
+  - WP-10
+  - WP-14
+  - WP-15
+  - WP-24
+  - WP-32
+  - WP-33
+  - WP-38
+  - WP-41
+  - WP-62
+  blocks_text: WP-09, WP-10, WP-14, WP-15, WP-24, WP-32, WP-33, WP-38, WP-41, WP-62
+  source: doc16 V-02, doc14 D-14-08; owner answer C1 (recorded by tasks.md T012a)
+  research_ids:
+  - OD-04
+  default: 'No'
+  default_detail: (input, cannot be defaulted; the build location is decided by C1)
+  status: Operator-blocked
+- id: ODG-08
+  topic: NFS real target
+  options: user-space NFS container if feasible; owner NFS host; structural-impossibility record
+  recommendation: try user-space first, else owner NFS host
+  blocks:
+  - WP-13
+  - WP-50
+  - WP-51
+  - WP-53
+  blocks_text: WP-13, WP-50, WP-51, WP-53
+  source: doc16 DR-16-2, doc09 D-ADR-08
+  research_ids:
+  - OD-05
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-09
+  topic: 'Legacy-closed items (1,495 closed-class plus 282 `wontfix`): accept as terminal with re-verify
+    flag, or re-prove every one; handling of items that cannot be re-proven'
+  options: re-prove all; sample plus reverify queue; per-family rule
+  recommendation: re-verify by severity order with sampling for low-severity families; unprovable items
+    go to the owner as blocked with choices
+  blocks:
+  - WP-21
+  - WP-72
+  blocks_text: WP-21, WP-72
+  source: doc04 D-1, doc03 DR-2
+  research_ids:
+  - OD-10
+  - OD-19
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-10
+  topic: Which external trackers are "configured" for FR-004
+  options: none until named; GitHub issues; GitLab, GitFlic, GitVerse issues; Crashlytics; Sonar
+  recommendation: name the trackers; pilot one with dry run before any mass push
+  blocks:
+  - WP-22
+  blocks_text: WP-22
+  source: doc04 D-2, doc03 §5.20
+  research_ids:
+  - OD-12
+  - OD-13
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-11
+  topic: Register prefix and location
+  options: '`ATM` plus `docs/workable_items.db`; `docs/tracking/`; another prefix'
+  recommendation: '`ATM` and `docs/workable_items.db` (the doc04 POC executed there)'
+  blocks:
+  - WP-06
+  blocks_text: WP-06
+  source: doc03 DR-1, doc04 DR-1
+  research_ids:
+  - OD-11
+  - OD-15
+  - OD-18
+  default: Partial
+  default_detail: (OD-11 of OD-11, -15, -18)
+  status: Operator-blocked
+- id: ODG-12
+  topic: Constitution `post_update_hook.sh` variant
+  options: A (full, may write user-level Claude config, naming the alias); B (project-only)
+  recommendation: 'B by default; A only with explicit go-ahead naming the alias. Revision 18: the third-party
+    pins whose parent is the constitution (16 in the rev 24 candidate, class (c) of tasks.md T440) are
+    owed to T580b step (3c) without a `BLOCKED-ON` phrase, so the shared-module package left this Blocks
+    cell'
+  blocks:
+  - WP-07
+  - WP-73
+  blocks_text: 'WP-07, WP-73 (revision 10: the final constitution update of WP-73, which moves the pin
+    and the nested-engine gitlinks to their pushed tips and runs the hook again)'
+  source: doc11 D-2; tasks.md P4 to P7 review of commit `af664ed0`
+  research_ids:
+  - OD-31
+  - OD-38
+  default: UNCONFIRMED
+  default_detail: '(No in `research.md`: OD-31, OD-38 not on the default list; the recommendation reads
+    "B by default")'
+  status: Operator-blocked
+- id: ODG-13
+  topic: Third-party vendored pins (23 behind at plan time; 47 third-party submodules today) and, by the
+    owner's widening of FR-017, every submodule pin at every depth and every package dependency of every
+    application
+  options: 'decided by the owner''s FR-017 answer of 2026-10-04 (revision 15), verbatim: "We shall aim
+    for the latest versions of it all if and when it is possible and changes applied when new things are
+    brought in into the System!"; the earlier options "report only" (the OD-30 default), "move all" and
+    "move selected tools with tests" are superseded'
+  recommendation: 'apply the answer: every pin at every depth, own-organisation and vendored third-party,
+    and every package dependency moves to its latest upstream once the full tests of every consumer pass
+    (builds on the remote build host), re-evaluated whenever new upstream content, a new release or a
+    new dependency enters the system, triggered by events and never by a timer (tasks.md T440, T440a,
+    T455); an impossible move is a recorded blocker item with its reason and failing test that stays open
+    in the zero-open count until resolved or closed as structurally impossible (§11.4.112); a third-party
+    repository is never modified, committed to or pushed, only our pointer or manifest moves; a nested
+    third-party checkout brought to the pin its parent module records is reported `followed_parent_pin`
+    (IC-59) and then re-evaluated by T440a like every other pin'
+  blocks:
+  - WP-55
+  - WP-57
+  blocks_text: WP-55, WP-57
+  source: doc11 D-1 (its default superseded); owner answer FR-017 (recorded by tasks.md T012a); spec FR-017,
+    SC-009
+  research_ids:
+  - OD-30
+  default: 'Yes'
+  default_detail: (OD-30; answered by the owner on 2026-10-04, which supersedes that default, tasks.md
+    T012a, T072)
+  status: Operator-blocked
+- id: ODG-14
+  topic: '`submodules/llms_verifier` disposition'
+  options: real submodule; in-tree code; drop the `helix_qa` replace
+  recommendation: decide after the history investigation S-LLMV-1
+  blocks:
+  - WP-34
+  - WP-55
+  blocks_text: WP-34, WP-55
+  source: doc11 D-4
+  research_ids:
+  - OD-33
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-15
+  topic: 'Branch and ownership interpretation: `master` counts as main in 4 repositories; add `helixdevelopment1`
+    (the GitLab namespace) and `milos85vasic` (the owner account holding personal mirrors of the main
+    repository, listed by the POC verifier''s default `--owned-orgs` and by `research.md` R-27 and OD-34;
+    revision 7) as own organisations, read by every tool from one data file'
+  options: yes or no each
+  recommendation: yes to all three
+  blocks:
+  - WP-02
+  - WP-03
+  - WP-04
+  - WP-55
+  - WP-73
+  blocks_text: WP-02, WP-03, WP-04, WP-55, WP-73
+  source: doc11 D-3, D-8
+  research_ids:
+  - OD-32
+  - OD-34
+  default: Partial
+  default_detail: (OD-32 of OD-32, -34)
+  status: Operator-blocked
+- id: ODG-16
+  topic: SLSA level claim, platform and signing-key custody
+  options: 'decided by the owner''s C2 answer of 2026-10-04 (revision 15), verbatim: "As much as we need
+    in order to keep producing deterministically validated and verified zero defects products!": SLSA
+    Build L2 at minimum and higher wherever deterministic, validated and verified builds need it, no L1
+    interim; the earlier option A (claim L1) and the recommendation "A now, B as the target" are superseded;
+    D (a hosted service) stays rejected (§11.4.156); C (a written interpretation from the constitution
+    owners) may still be asked but is not a precondition'
+  recommendation: 'the dedicated remote build host is the build platform that generates and signs provenance
+    from the build''s own record, with signing material the producing stream cannot read; L2 is reached
+    through the gate of tasks.md T447a (signed provenance verified against the artifact digest, the source
+    commit and the builder image digest; a reproducible double build, T443; a hermetic compile, T444)
+    and never recorded as a deviation; `docs/security/SLSA_LEVEL.md` (T447) states per deliverable only
+    what the gate measured, each Build L3 property with the separation tier achieved (§11.4.240(F): `instance`,
+    never `capability`, on a single-uid host) and each property not yet reached as a tracked item; never
+    claim L3 on a single-uid host'
+  blocks:
+  - WP-56
+  blocks_text: WP-56
+  source: doc15 OQ-S3, doc16 V-15, doc20 DR-20-01 (its "A now" recommendation superseded); owner answer
+    C2 (recorded by tasks.md T012a)
+  research_ids:
+  - OD-01
+  - OD-02
+  default: 'No'
+  default_detail: (answered by the owner on 2026-10-04, tasks.md T012a, T072)
+  status: Operator-blocked
+- id: ODG-17
+  topic: Coverage targets and dates per application; SC-005 sample size; register category mapping
+  options: owner sets after baselines
+  recommendation: set after WP-23 baselines; new code at 85% from the start
+  blocks:
+  - WP-20
+  - WP-23
+  - WP-61
+  - WP-70
+  - WP-71
+  blocks_text: WP-20, WP-23, WP-61, WP-70, WP-71
+  source: doc05 §15, doc06 §18, doc04 D-6
+  research_ids:
+  - OD-16
+  - OD-21
+  - OD-22
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-18
+  topic: Escape-ratchet baseline and timing of the first manual-QA cycle
+  options: first manual-QA cycle seeds it; other rule
+  recommendation: first manual-QA cycle
+  blocks:
+  - WP-65
+  blocks_text: WP-65
+  source: doc12 OD-4, DR-9
+  research_ids:
+  - OD-47
+  default: 'Yes'
+  default_detail: (OD-47)
+  status: Operator-blocked
+- id: ODG-19
+  topic: Reviewer substrate
+  options: Opus at xhigh as pinned; other
+  recommendation: as pinned (§11.4.209)
+  blocks: []
+  blocks_text: all review gates
+  blocks_scope: all review gates
+  source: doc12 OD-1
+  research_ids:
+  - OD-39
+  default: 'Yes'
+  default_detail: (OD-39)
+  status: Operator-blocked
+- id: ODG-34
+  topic: 'Quota and budget: agent concurrency, model tiers, token budget'
+  options: constitution defaults; owner caps
+  recommendation: at most 6 working agents, Sonnet default, Opus xhigh for reviews, budget rules of doc02
+    §13
+  blocks: []
+  blocks_text: all phases
+  blocks_scope: all phases
+  source: doc02 §13, §14
+  research_ids: []
+  default: UNCONFIRMED
+  default_detail: (no counterpart found)
+  status: Operator-blocked
+- id: ODG-35
+  topic: SLA tiers for remediation
+  options: SLA by severity; no SLA
+  recommendation: 'no SLA tiers: FR-008 completion rule replaces them; order by severity then exposure'
+  blocks: []
+  blocks_text: P5
+  blocks_scope: P5
+  source: doc15 §12
+  research_ids: []
+  default: UNCONFIRMED
+  default_detail: (no counterpart found)
+  status: Operator-blocked
+- id: ODG-39
+  topic: Disposition of the 34 doc18 `PROPOSAL` entries (section 9.5), each imported by WP-20 as a Feature
+    item
+  options: 'per entry: (a) keep as a tracked Feature item for a later feature (open, outside this feature''s
+    zero-open-findings count); (b) drop, with the owner''s recorded §11.4.122 decision; (c) adopt into
+    this feature through a spec amendment and a re-plan'
+  recommendation: (a) for every entry, the nine ranked game changers of doc18 §13 presented first with
+    their falsifiable experiments; (c) only by a spec amendment, because doc18 §1 fences `PROPOSAL` items
+    out of feature 001
+  blocks:
+  - WP-20
+  - WP-74
+  blocks_text: 'WP-20, WP-74 (revision 8: the question is asked at HC-2 and WP-20 records each answer,
+    tasks.md T224; WP-74 lists them)'
+  source: doc18 §1, §13; §11.4.197; volume audit 2026-10-03 (revision 6)
+  research_ids: []
+  default: 'No'
+  default_detail: (no `research.md` counterpart; `research.md` R-29 records only the scope fence)
+  status: Operator-blocked
+- id: ODG-40
+  topic: 'Licence policy: allow-list and deny-list of licence identifiers per distribution context (shipped
+    artifact, server image, development or QA tool only), and the licence of the own-organisation repositories
+    that have no licence file'
+  options: owner-approved lists; a decision per row only
+  recommendation: compatibility with the root `LICENSE` (Apache-2.0) for shipped artifacts and server
+    images; copyleft or source-available licences only in tools that are never distributed; each own-organisation
+    repository without a licence file gets one chosen by the owner
+  blocks:
+  - WP-35
+  - WP-57
+  blocks_text: WP-35, WP-57
+  source: doc15 §10.5 L-7, B30, OQ-S10 (doc15 revision 2 raises OQ-S10 for this document to route; it
+    is routed here, revision 7) (revision 6)
+  research_ids: []
+  default: 'No'
+  default_detail: (no `research.md` counterpart)
+  status: Operator-blocked
+- id: ODG-41
+  topic: 'SC-010 against a moving upstream: how the final strict verification (WP-73, tasks.md T582) and
+    the closing state check (WP-74R, T595b) treat commits that other actors push to an own-organisation
+    upstream after that repository''s reference tips, the remote tips recorded when this feature fixed
+    its final target (revision 12, as the tasks.md WP-73 Inputs paragraph defines them: for a module whose
+    final target T579a fixed, the tips of the T579a `--fetch` run that chose it; for the constitution
+    and its nested engines, the tip table of T580b step (1), or the S7 `--fetch` record of the run that
+    integrated a later constitution move; for every other repository, the S7 `--fetch` record of the last
+    T581 run that pushed it, captured by T582); the constitution''s `main` tip was recorded at four different
+    commits on 2026-10-03 alone (`e44f22f` in doc11 H3, `be06384` in quickstart.md revision 5, `0c1c588`
+    in the tasks.md P4 to P7 review of commit `af664ed0`, and `5fd59fa` read with `git ls-remote` on its
+    `gitflic` remote while revision 10 was written, one remote only), and the window from T579a to T595b
+    spans HC-6, WP-74 and HC-7'
+  options: '(a) compare each repository against its reference tips, and list every later commit that only
+    other actors pushed as an explained exception naming each commit (SC-010 allows explained exceptions;
+    revision 11 compared every repository against the last T581 run''s tips, which left a module caught
+    up at T579a, and moved by another actor before T581 pushed anything to it, an ordinary failure that
+    reopened WP-73, the round-10 P4 to P7 review I-3); (b) an owner-agreed push freeze on the own-organisation
+    remotes for the window from T579a to T595b (revision 11: from the late pin catch-up T579a, as tasks.md
+    states it, not from T581, because an upstream move between T579a and T581 leaves a caught-up pin behind
+    again; revision 12: the reference tips of such a module are the T579a tips, so a freeze starting at
+    T581 would leave that move uncovered); (c) re-run the closing steps until no upstream moves, the only
+    option under which T581 runs a second merge-and-review round for a repository (revision 12; under
+    (a) and (b) each repository gets at most one such round in WP-73 and a further move is a row of this
+    decision)'
+  recommendation: '(a): it needs no other actor''s cooperation, names every commit it excuses and still
+    fails on any commit of this feature that is not pushed; whether a commit was made by this feature
+    is decided from tracked records (the `CPA-Run` ids of this feature''s runs in the CPA run records
+    captured in `$EV/ledger.jsonl`), never from the presence of a run directory under `.audit/commit-push/`,
+    which is per worktree, ignored and removed by the retention sweep (revision 11, the round-9 P4 to
+    P7 review; the wording of the WP-73 Inputs paragraph of tasks.md is its owner''s); until the owner
+    answers, a final run that finds a repository behind only by such later commits records `blocked` with
+    those commits named, never a pass and never a silent re-run loop'
+  blocks:
+  - WP-73
+  - WP-74R
+  blocks_text: WP-73, WP-74R
+  source: tasks.md P4 to P7 review of commit `af664ed0` (B-2); spec SC-010 (revision 10); round-10 P4
+    to P7 review of commit `6dca8771` (I-3, the reference tips per repository; revision 12); the owner's
+    FR-017 answer of 2026-10-04 decides the direction of a foreign-only row and leaves only its stop point
+    to this decision (revision 15, paragraph below the table)
+  research_ids: []
+  default: 'No'
+  default_detail: (no `research.md` counterpart)
+  status: Operator-blocked
+- id: ODG-42
+  topic: 'FR-008 and SC-003 against the legacy headerless class (revision 14, IC-60): the findings linked
+    to the tracked `Task` item `legacy headerless documents` (the main-repository `(revision_header, <path>,
+    missing)` keys left after the `legacy-collection` class, 665 at `a2ebc097`; IC-57) close one by one
+    as each file is next edited, so the item can still be open at completion, while FR-008 ("The feature
+    is not done while any finding is open") and SC-003 ("zero findings remain open") admitted only the
+    vendored-exception class up to spec.md revision 6; the closure query of tasks.md T576 excludes the
+    item''s findings by name, which binds that query and not the spec'
+  options: '(a) amend FR-008 and SC-003 for the legacy headerless class, the decision recorded on the
+    item with its date and source before HC-7 and cited by tasks.md T576, T588 and T593; (b) keep them:
+    FR-008 and SC-003 reported UNMET and the feature incomplete (FR-025) until the item closes'
+  recommendation: 'no proposal from the plan, because the spec''s wording is the owner''s. The owner answered
+    (a) on 2026-10-04, pending confirmation, in spec.md revision 7 (Clarifications, session 2026-10-04,
+    and the amended FR-008 and SC-003, written in parallel with this revision): one named class, "headerless
+    legacy documents", tracked as a single register item with a recorded baseline count that is ratcheted
+    (it never grows and falls as documents are fixed), only that class outside the zero-open count while
+    the item stays open, no other finding placed in it, and a new document without a header an ordinary
+    open finding. Until the owner confirms that answer, ODG-42 stays an `Operator-blocked` item, and the
+    closure record of T576 (reviewed by T578), the completion report of T588 and the HC-7 presentation
+    of T593 state FR-008 and SC-003 UNMET while the item is open; once it is confirmed, they cite the
+    confirmed decision and judge FR-008 and SC-003 by the amended text'
+  blocks:
+  - WP-72
+  - WP-74
+  - WP-74R
+  blocks_text: WP-72, WP-74, WP-74R
+  source: 'round-12 tasks.md P4 to P7 review (I-3); round-12 content review of commit `d014297e` (I-3);
+    spec FR-008, SC-003 (revision 7: the owner''s answer, pending confirmation)'
+  research_ids: []
+  default: 'No'
+  default_detail: (no `research.md` counterpart; only the owner amends the spec)
+  status: Operator-blocked
+- id: ODG-43
+  topic: 'Scope of document classes C and D under FR-012 (analyze-remediation A16, 2026-10-05): whether
+    class C (the kept legacy collections, among them the 1,778 `docs/issues/` tickets counted in docs/13
+    §2) and class D (the selected documents outside classes A and B) are claim-reviewed line by line,
+    as FR-012 reads, or covered by a basis row with a report-only claim extraction, as tasks.md T525 does
+    now'
+  options: full claim review; basis row plus report-only extraction (the current behaviour, a recorded
+    deviation); a sampled claim review
+  recommendation: none until the owner sees the T525 per-class claim and mismatch counts; until the answer
+    FR-012 and SC-006 are stated UNMET for classes C and D
+  blocks: []
+  blocks_text: none (no `BLOCKED-ON` marker; the FR-012 statement for classes C and D in WP-63 and the
+    completion report waits on the answer)
+  blocks_scope: none (no `BLOCKED-ON` marker; the FR-012 statement for classes C and D in WP-63 and the
+    completion report waits on the answer)
+  source: spec FR-012, SC-006 (revision 9); analyze-remediation A16
+  research_ids: []
+  default: 'No'
+  default_detail: (no `research.md` counterpart)
+  status: Operator-blocked
+- id: ODG-20
+  topic: FTP, NFS and WebDAV scanners are empty bodies (scan reports `completed` with zero files)
+  options: implement; remove advertised support
+  recommendation: implement
+  blocks:
+  - WP-30
+  - WP-51
+  blocks_text: WP-30, WP-51
+  source: doc07 C5 and §14.3 item 5; doc01 O-01
+  research_ids:
+  - OD-06
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-21
+  topic: Web features with fabricated data (`Math.random` charts) and calls to unregistered endpoints
+    (sharing, integrations)
+  options: replace with real data and backend routes; remove
+  recommendation: replace
+  blocks:
+  - WP-52
+  blocks_text: WP-52
+  source: doc08 WEB-F03, WEB-F04, R5
+  research_ids:
+  - OD-77
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-22
+  topic: Phone offline layer and `SyncService`; phone playback placeholder; TV Room dependency
+  options: wire or implement; retire
+  recommendation: wire and implement
+  blocks:
+  - WP-54
+  - WP-61
+  blocks_text: WP-54, WP-61
+  source: doc10 DR-10-03, DR-10-08, H10-22, H10-34
+  research_ids:
+  - OD-42
+  - OD-46
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-23
+  topic: Desktop `shell` and `fs` plugins; wizard `api-client` dependency; unwired `internal/media` code
+    in catalog-api
+  options: keep with minimal capability; remove after history check
+  recommendation: history investigation first, then decide per item
+  blocks:
+  - WP-51
+  - WP-53
+  blocks_text: WP-51, WP-53
+  source: doc09 D-ADR-09, I-12; doc01 O-10
+  research_ids:
+  - OD-72
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-24
+  topic: Purpose of `catalogizer-api-client` (no consumer found; 31 of 59 client calls have no server
+    route, doc19 §6.3, superseding the older 26 of 53)
+  options: track the server and adopt; retire
+  recommendation: adopt as the generated or validated client if OpenAPI-first is accepted
+  blocks:
+  - WP-41
+  - WP-52
+  - WP-53
+  blocks_text: WP-41, WP-52, WP-53
+  source: doc01 O-04, doc07 §14.3 item 4, doc18 rank 5
+  research_ids:
+  - OD-69
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-25
+  topic: 'Token handling: web storage (localStorage, httpOnly cookie, in-memory plus refresh cookie);
+    desktop Rust-only keychain; WebSocket ticket auth; signed media URLs replacing query tokens'
+  options: as listed
+  recommendation: in-memory or cookie for web; keychain for desktop; ticket for `/ws`; signed short-lived
+    media URLs
+  blocks:
+  - WP-41
+  - WP-50
+  - WP-52
+  - WP-53
+  blocks_text: WP-41, WP-50, WP-52, WP-53
+  source: doc08 DR-W8-01, doc09 D-ADR-04, doc15 §14.2 DR-S2
+  research_ids:
+  - OD-48
+  - OD-71
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-26
+  topic: Certificate model for LAN deployments and Android cleartext policy
+  options: self-signed with pinning; private CA; public certificate; keep cleartext with documentation
+  recommendation: owner choice; until then test actual behaviour and document
+  blocks:
+  - WP-50
+  - WP-54
+  blocks_text: WP-50, WP-54
+  source: doc15 OQ-S5, doc10 DR-10-05
+  research_ids:
+  - OD-44
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-27
+  topic: Key management for stored share credentials
+  options: env KEK; OS keystore; external vault
+  recommendation: env KEK with documented provisioning and dual-read migration
+  blocks:
+  - WP-35
+  - WP-50
+  blocks_text: WP-35, WP-50
+  source: doc15 OQ-S6
+  research_ids:
+  - OD-66
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-28
+  topic: Public registration and public `/assets`, `/cover` routes intended?
+  options: yes or no each
+  recommendation: owner choice; default deny until confirmed
+  blocks:
+  - WP-35
+  - WP-50
+  blocks_text: WP-35, WP-50
+  source: doc15 OQ-S4
+  research_ids:
+  - OD-65
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-29
+  topic: 'Android toolchain fallback (revision 16, tasks.md rev 14 T412 and the WP-14 entry): the owner''s
+    FR-017 answer makes the latest AGP, Gradle and SDK levels the target, moved through tasks.md T440a
+    with `compileSdk 35` or later kept and never lowered to 34, so the group decides only the case where
+    the latest AGP cannot build both apps in the container'
+  options: '(a) the newest AGP release that builds, `compileSdk 35` or later kept, the failing latest
+    release a blocker item with its failing build and upstream issue; (b) leave the toolchain unchanged
+    until upstream fixes the latest release, the blocker item open; JDK 17 minimum in every case. Superseded:
+    revision 15''s options `compileSdk 34`, AGP 8.6 to 8.13 and AGP 9.x as alternatives'
+  recommendation: 'capture the containerized warning first; then (a) when the latest AGP cannot build.
+    The WP-14 entry of tasks.md rev 14 still called `compileSdk 34` this document''s recommendation, which
+    T412 forbids; revision 18: the WP-14 entry of the rev 24 candidate withdraws it (item (3) of section
+    12.2 closed), and T204 no longer carries this marker: a baseline leg that the latest AGP cannot build
+    is recorded `blocked` naming this group and the task completes on that record'
+  blocks:
+  - WP-14
+  - WP-15
+  - WP-33
+  - WP-54
+  blocks_text: WP-14, WP-15, WP-33, WP-54
+  source: doc10 DR-10-01, DR-10-02, doc20 §7.1
+  research_ids:
+  - OD-40
+  - OD-41
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-30
+  topic: 'Contract tooling (revision 16, tasks.md rev 14: the React Query alignment is decided by the
+    owner''s FR-017 answer, moved to its latest release through T440a and accepted only on GREEN full
+    web tests x3, otherwise a blocker item, T394, T434, T455; the group now decides only the contract
+    tool, T323)'
+  options: 'Pact file-based, Pact broker, Zod validation. Superseded: "upgrade app or lower peer ranges"'
+  recommendation: file-based Pact, broker deferred (section 10, IC-18)
+  blocks:
+  - WP-41
+  blocks_text: WP-41
+  source: doc08 DR-W8-05, DR-W8-06, doc17 §13
+  research_ids:
+  - OD-24
+  - OD-78
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-31
+  topic: 'Rust FTP and WebDAV crates (revision 16, tasks.md rev 14: committing `src-tauri/Cargo.lock`
+    is decided by the owner''s FR-017 answer and made by T397, §11.4.246; the group now decides only the
+    adoption of maintained FTP and WebDAV crates, T407)'
+  options: 'yes or no. Superseded: the yes or no on committing `Cargo.lock`'
+  recommendation: yes, after the dependency existence check
+  blocks:
+  - WP-53
+  blocks_text: WP-53
+  source: doc09 D-ADR-03, D-ADR-07, doc20 DR-20-03
+  research_ids:
+  - OD-62
+  - OD-70
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-32
+  topic: Performance parameters, dataset size distributions, local upstream for the image-proxy overhead
+    test, bundle-analyzer dev dependency
+  options: owner values; defaults in doc14 §8.3
+  recommendation: adopt proposed defaults pending A/A data; owner states library sizes
+  blocks:
+  - WP-38
+  - WP-61
+  - WP-62
+  blocks_text: WP-38, WP-61, WP-62
+  source: doc14 §18, D-14-05, D-14-07
+  research_ids:
+  - OD-50
+  - OD-51
+  - OD-52
+  - OD-53
+  default: UNCONFIRMED
+  default_detail: '(No in `research.md`: OD-50 to OD-53 not on the default list; the recommendation reads
+    "adopt proposed defaults")'
+  status: Operator-blocked
+- id: ODG-33
+  topic: 'Documentation: binary twin size threshold (150 MB proposed), HelixQA link repoint targets, which
+    SQL path each deployment uses, OpenDesign token file location'
+  options: owner values
+  recommendation: approve 150 MB threshold; repoint to `submodules/helix_qa/`; SQL path decided by containerized
+    proof
+  blocks:
+  - WP-63
+  - WP-64
+  blocks_text: WP-63, WP-64
+  source: doc13 §14
+  research_ids:
+  - OD-56
+  - OD-58
+  - OD-59
+  - OD-61
+  default: Partial
+  default_detail: (OD-58, OD-61 of OD-56, -58, -59, -61)
+  status: Operator-blocked
+- id: ODG-36
+  topic: Treat the Trivy exposure as a potential incident if any host pulled an affected image
+  options: run the mechanical check on every host first; rotate atomically if positive
+  recommendation: run the check, including the remote build host
+  blocks:
+  - WP-15
+  - WP-35
+  blocks_text: WP-15, WP-35
+  source: doc20 DR-20-02
+  research_ids:
+  - OD-03
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-37
+  topic: Accept a commercial account and licence for migration linting (Atlas Pro)
+  options: yes; no (SQLite procedure checks plus squawk for PostgreSQL)
+  recommendation: 'no'
+  blocks:
+  - WP-64
+  blocks_text: WP-64
+  source: doc20 DR-20-04
+  research_ids:
+  - OD-64
+  default: 'No'
+  status: Operator-blocked
+- id: ODG-38
+  topic: Spec-first (oapi-codegen) for new endpoints, keeping the hand-written spec plus drift gates for
+    existing routes
+  options: spec-first for new endpoints; code-first later with a stable generator; status quo plus gates
+  recommendation: status quo plus gates now; decide after WP-40 measures the drift
+  blocks: []
+  blocks_text: 'none since tasks.md rev 31: no task step waits on it (T321 since rev 30, T334 since rev
+    31); only the later spec-first adoption decision for new endpoints, which is not a task step, is held
+    on it'
+  blocks_scope: 'none since tasks.md rev 31: no task step waits on it (T321 since rev 30, T334 since rev
+    31); only the later spec-first adoption decision for new endpoints, which is not a task step, is held
+    on it'
+  source: doc20 DR-20-05
+  research_ids:
+  - OD-63
+  default: 'No'
+  status: Operator-blocked
+research_ods:
+- id: OD-14
+  topic: 'register custody design, three open questions (`research.md` OD-14): accept the producer-equals-verifier
+    residual with the docs/04 §7.1 outside-SQL controls; whether to add an `In testing -> Obsolete` edge
+    to the 21-edge status graph; whether to propose upstream that the engine''s `obsolete-details` accept
+    a not-yet-Obsolete item'
+  blocks:
+  - WP-06
+  blocks_text: WP-06
+  default: 'No'
+  closest_group: null
+  status: Operator-blocked
+- id: OD-20
+  topic: 30 shuffled race runs per new or changed test (SC-003 tuning; the W20-05 stress runner sits in
+    WP-71, doc20 §4.3)
+  blocks:
+  - WP-61
+  - WP-71
+  blocks_text: WP-61, WP-71
+  default: 'No'
+  closest_group: ODG-17
+  status: Operator-blocked
+- id: OD-23
+  topic: in-memory SQLite in non-unit tests as a real engine
+  blocks:
+  - WP-61
+  blocks_text: WP-61
+  default: 'No'
+  closest_group: ODG-17
+  status: Operator-blocked
+- id: OD-25
+  topic: backward-compatibility window N for the can-i-deploy gate
+  blocks:
+  - WP-41
+  blocks_text: WP-41
+  default: 'No'
+  closest_group: ODG-30
+  status: Operator-blocked
+- id: OD-26
+  topic: scaling tests where the API cannot run multiple replicas
+  blocks:
+  - WP-61
+  - WP-70
+  blocks_text: WP-61, WP-70
+  default: 'No'
+  closest_group: ODG-17
+  status: Operator-blocked
+- id: OD-36
+  topic: add the missing GitLab remote for `websocket_client_ts`
+  blocks:
+  - WP-73
+  blocks_text: WP-73
+  default: 'No'
+  closest_group: ODG-15
+  status: Operator-blocked
+- id: OD-43
+  topic: crash reporting on the phone
+  blocks:
+  - WP-54
+  blocks_text: WP-54
+  default: 'No'
+  closest_group: ODG-22
+  status: Operator-blocked
+- id: OD-45
+  topic: '`google-services.json` for builds without Firebase values'
+  blocks:
+  - WP-54
+  blocks_text: WP-54
+  default: 'No'
+  closest_group: ODG-01
+  status: Operator-blocked
+- id: OD-49
+  topic: web state management (Zustand and dead aliases)
+  blocks:
+  - WP-52
+  blocks_text: WP-52
+  default: 'No'
+  closest_group: ODG-30
+  status: Operator-blocked
+- id: OD-55
+  topic: user-perceived thresholds without a credible source
+  blocks:
+  - WP-62
+  blocks_text: WP-62
+  default: 'No'
+  closest_group: ODG-32
+  status: Operator-blocked
+- id: OD-57
+  topic: '`qa-ai-system/` and `catalog-api/challenges/` documentation live or legacy'
+  blocks:
+  - WP-63
+  blocks_text: WP-63
+  default: 'No'
+  closest_group: ODG-33
+  status: Operator-blocked
+- id: OD-68
+  topic: '`go-sqlcipher` encryption keyed in production'
+  blocks:
+  - WP-50
+  blocks_text: WP-50
+  default: 'No'
+  closest_group: ODG-27
+  status: Operator-blocked
+- id: OD-74
+  topic: '`catalog-api` auth change for the installer''s SMB routes'
+  blocks:
+  - WP-53
+  blocks_text: WP-53
+  default: 'No'
+  closest_group: ODG-23
+  status: Operator-blocked
+- id: OD-75
+  topic: origin of `installer-wizard/test-results.json`
+  blocks:
+  - WP-23
+  blocks_text: WP-23
+  default: 'No'
+  closest_group: null
+  status: Operator-blocked
+- id: OD-76
+  topic: where large evidence blobs and the anchor live
+  blocks:
+  - WP-05
+  - WP-74
+  blocks_text: WP-05, WP-74
+  default: 'No'
+  default_detail: (in-tree `$EV/blobs/<sha256>` for small blobs proceeds per doc06 §11; the out-of-tree
+    store and the anchor strength wait)
+  closest_group: null
+  status: Operator-blocked
+owner_answers:
+- id: OA-2026-10-05-1
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - hc0.owner_answers_2026-10-05.ODG-07_build_host
+  - hc0.owner_answers_2026-10-05.ODG-07_measure_host
+  - owner_answers_2026-10-05_batch3.image_pulls
+  text: 'current host (hostname anton, 16 CPU, ~31 GiB RAM, podman 5.7.0 rootless); current host (same
+    machine as build host); yes: pull the base images and pin by digest on this host (rootless podman,
+    60 percent memory and disk-headroom rules) (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-07
+  note: 'Conductor-stated facts, not owner-confirmed: capacity 16 CPU, about 31 GiB RAM, podman 5.7.0
+    rootless; shared build and measurement host under the 12.6 60 percent ceiling (see risks_recorded).
+    Reachability, roles, and the earlier thinker.local and amber.local proposal are not recorded as answered.'
+  amends: null
+- id: OA-2026-10-05-2
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - hc0.owner_answers_2026-10-05.confirm_C1_remote_event_driven_builds
+  text: confirmed (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - C1
+  note: 'Conductor caveat (progress.yml comment): note: build host is now this host, see risks. See risks_recorded:
+    the 11.4.173 remote-distribution deviation is an owner decision to be cited in HC-0.'
+  amends: null
+- id: OA-2026-10-05-3
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - hc0.owner_answers_2026-10-05.confirm_C2_slsa_l2_minimum
+  text: confirmed (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - C2
+  note: null
+  amends: null
+- id: OA-2026-10-05-4
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - hc0.owner_answers_2026-10-05.confirm_FR017_latest_stable
+  text: confirmed (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - FR-017
+  note: 'Conductor caveat (progress.yml comment): report-only for non-submodule packages until T429a.'
+  amends: null
+- id: OA-2026-10-05-5
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - hc0.owner_answers_2026-10-05.accept_plan_start_phase_0
+  text: accepted (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - HC-0
+  note: null
+  amends: null
+- id: OA-2026-10-05-6
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-01
+  text: credentials via .env by variable name (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-01
+  note: null
+  amends: null
+- id: OA-2026-10-05-7
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-02_03_creds
+  text: 'remove from current files only plus scanner gate; no rotation requested (owner choice; risk noted:
+    history still contains them) (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-02
+  note: 'Risk noted by the owner choice: history still contains the credentials (constitution 11.4.209(D)
+    treats a committed plaintext credential as compromised); the owner is asked at HC-0 to accept this
+    residual risk explicitly.'
+  amends: null
+- id: OA-2026-10-05-8
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-02_03_creds
+  text: 'remove from current files only plus scanner gate; no rotation requested (owner choice; risk noted:
+    history still contains them) (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-03
+  note: 'Risk noted by the owner choice: history still contains the credentials (constitution 11.4.209(D)
+    treats a committed plaintext credential as compromised); the owner is asked at HC-0 to accept this
+    residual risk explicitly.'
+  amends: null
+- id: OA-2026-10-05-9
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-04_05_devices
+  text: emulators only for now; device-class claims UNMET until devices supplied (relayed by the conductor,
+    not a verbatim owner quotation).
+  answers:
+  - ODG-04
+  note: null
+  amends: null
+- id: OA-2026-10-05-10
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-04_05_devices
+  text: emulators only for now; device-class claims UNMET until devices supplied (relayed by the conductor,
+    not a verbatim owner quotation).
+  answers:
+  - ODG-05
+  note: 'OPEN: partial answer. The emulator acceptance scope (hardware-independent behaviour only, or
+    broader) is not answered by ''emulators only for now''.'
+  amends: null
+- id: OA-2026-10-05-11
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-06_desktop
+  text: Linux only; updater/signing out of scope; macOS and Windows claims UNMET (relayed by the conductor,
+    not a verbatim owner quotation).
+  answers:
+  - ODG-06
+  note: null
+  amends: null
+- id: OA-2026-10-05-12
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-08_nfs
+  - owner_answers_2026-10-05_batch4.ODG-08_nfs
+  text: 'BOTH: user-space NFS server in a container first AND an owner-supplied NFS host (owner has not
+    yet named the host: OPEN); user-space NFS server only for now; real NFS host proof UNMET until named
+    (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-08
+  note: 'OPEN: the owner has not yet named the NFS host. The 2026-10-05 batch4 answer narrows the scope
+    to a user-space NFS server only for now; real NFS host proof stays UNMET until a host is named.'
+  amends: null
+- id: OA-2026-10-05-13
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-09_legacy_closed
+  text: re-verify by severity, sample low severity (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-09
+  note: null
+  amends: null
+- id: OA-2026-10-05-14
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-10_trackers
+  text: none; local register only; external trackers reported not configured (relayed by the conductor,
+    not a verbatim owner quotation).
+  answers:
+  - ODG-10
+  note: null
+  amends: null
+- id: OA-2026-10-05-15
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-11_register
+  - owner_answers_2026-10-05_batch3.CAT_vs_constitution_ATM
+  - owner_answers_2026-10-05_batch3.atm_id_columns
+  text: id prefix CAT (never ATM; remove ATM from this repo's files); generic placeholder XYZ-NNN; constitution
+    submodule ATM text needs separate approved upstream change; location docs/workable_items.db kept (UNCONFIRMED);
+    keep CAT and request an upstream constitution change (per-project prefix setting); deviation recorded
+    as owner-approved exception until accepted; YES rename lowercase atm_id/new_atm_id/head_atm_id to
+    cat_id in this project's register design; the constitution engine needs an upstream change or an adapter
+    (UNCONFIRMED how) (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-11
+  note: 'UNCONFIRMED: the location docs/workable_items.db is kept but marked UNCONFIRMED in the relayed
+    answer; the constitution submodule ATM text needs a separate approved upstream change. OPEN: the owner
+    answer CAT is carried here as an owner answer, NOT as the recommendation (the group row keeps the
+    question and recommendation as recorded before the answer); it deviates from the constitution, because
+    the constitution (11.4.54, 11.4.248) mandates the ATM prefix, and this project''s CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending (see risks_recorded).'
+  amends: null
+- id: OA-2026-10-05-16
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-12_hook
+  text: variant B, always fetch and fast-forward pull the latest constitution; sweep must pass (relayed
+    by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-12
+  note: null
+  amends: null
+- id: OA-2026-10-05-17
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-13
+  text: update every pin to latest, test each (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-13
+  note: null
+  amends: null
+- id: OA-2026-10-05-18
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-14
+  - owner_answers_2026-10-05_batch3.llms_verifier
+  text: 'investigate history first (S-LLMV-1); owner: LLMsVerifier MUST live as a real submodule at submodules/llms_verifier
+    in the project root and always track the latest main; convert the plain copy to a submodule and fix
+    helix_qa layout (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-14
+  note: 'OPEN: the disposition waits for the history investigation S-LLMV-1 (equals the recommendation).
+    The batch3 owner statement (a real submodule at submodules/llms_verifier tracking the latest main)
+    is a direction, not yet a recorded decision; the conversion and the helix_qa layout fix are tracked
+    work, not done.'
+  amends: null
+- id: OA-2026-10-05-19
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-15_own_orgs
+  text: 'yes to all three: helixdevelopment1 and milos85vasic own; master counts as main (relayed by the
+    conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-15
+  note: null
+  amends: null
+- id: OA-2026-10-05-20
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.ODG-16_slsa
+  - owner_answers_2026-10-05_batch3.ODG-16_custody
+  text: this host is build platform; signing key in owner's user keyring; key in owner keyring locked
+    by a passphrase only the owner enters at signing time; honest strength recorded as policy (relayed
+    by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-16
+  note: 'OPEN (flagged by the independent review, not decided here): conflicts with the C2-custody requirement
+    (tasks.md T012a slot C2-custody and T446: the signing key is held only on the build host, out of the
+    producing stream''s reach). The agents run as uid 1000 on this single-uid host, the same user whose
+    keyring would hold the key. UNCONFIRMED: whether the keyring is unlock-gated against the stream. The
+    batch3 answer adds that the key is locked by a passphrase only the owner enters at signing time and
+    records the honest strength as policy (not mechanism); that the passphrase gate holds against the
+    stream is likewise UNCONFIRMED. The reserved slot C2-custody stays empty; the owner decides at HC-0.'
+  amends: null
+- id: OA-2026-10-05-21
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-17
+  text: new code 85% now; legacy after baselines (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-17
+  note: 'OPEN: partial answer. The SC-005 sample size and the register category mapping are unanswered;
+    legacy targets wait for the baselines.'
+  amends: null
+- id: OA-2026-10-05-22
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-18
+  text: first manual QA after remediation release candidate (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-18
+  note: null
+  amends: null
+- id: OA-2026-10-05-23
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.review_substrate
+  text: run independent reviews through the Workflow path with Opus xhigh and record effort (relayed by
+    the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-19
+  note: 'UNCONFIRMED: a prior independent review ran at an unrecorded effort (source: tasks.md T011a and
+    the message of commit a27d72a5); an xhigh-proven re-review needs the Workflow path.'
+  amends: null
+- id: OA-2026-10-05-24
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-20
+  text: implement FTP, NFS, WebDAV scanners (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-20
+  note: null
+  amends: null
+- id: OA-2026-10-05-25
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-21
+  text: replace fabricated web features with real backed ones (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-21
+  note: null
+  amends: null
+- id: OA-2026-10-05-26
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-22
+  text: wire and implement phone offline layer and playback (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-22
+  note: null
+  amends: null
+- id: OA-2026-10-05-27
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-23
+  - owner_answers_2026-10-05_batch3.removals
+  - owner_answers_2026-10-05_batch3.internal_media
+  text: 'history investigation then per-item decision; owner free text: remove if they are not used at
+    all (test-results.json, api-client dist outputs, local.properties.backup, unused Tauri shell/fs plugins):
+    removal only with evidence of non-use, separate commits; wire it in and test (also resolves OD-68
+    unkeyed DB) (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-23
+  note: 'OPEN: deferral, not a decision: waits for the history investigation, then a per-item decision.
+    The batch3 answers (remove only with evidence of non-use, in separate commits; wire in and test the
+    internal media) are conditions for that per-item decision, not decisions.'
+  amends: null
+- id: OA-2026-10-05-28
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-24
+  text: api-client = generated/validated client for web and desktop (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-24
+  note: null
+  amends: null
+- id: OA-2026-10-05-29
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-25
+  text: 'web: in-memory token + httpOnly refresh cookie; desktop keychain; ws tickets; signed media URLs
+    (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-25
+  note: null
+  amends: null
+- id: OA-2026-10-05-30
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-26
+  text: TLS with self-managed CA; Android cleartext off (relayed by the conductor, not a verbatim owner
+    quotation).
+  answers:
+  - ODG-26
+  note: null
+  amends: null
+- id: OA-2026-10-05-31
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-27
+  text: env-provided KEK with dual-read migration (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-27
+  note: null
+  amends: null
+- id: OA-2026-10-05-32
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-28
+  text: deny by default; registration off (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-28
+  note: null
+  amends: null
+- id: OA-2026-10-05-33
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-29
+  text: newest AGP that builds; failing latest = blocker item (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-29
+  note: null
+  amends: null
+- id: OA-2026-10-05-34
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-30
+  text: file-based Pact, broker deferred (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-30
+  note: null
+  amends: null
+- id: OA-2026-10-05-35
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-31
+  text: yes after existence check (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-31
+  note: null
+  amends: null
+- id: OA-2026-10-05-36
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-32
+  text: adopt proposed defaults pending A/A data (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-32
+  note: null
+  amends: null
+- id: OA-2026-10-05-37
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-33
+  text: 150 MB twin threshold; HelixQA links to submodules/helix_qa (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-33
+  note: null
+  amends: null
+- id: OA-2026-10-05-38
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-34_35
+  text: 6 agents, Sonnet default, Opus xhigh reviews; no SLA tiers (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-34
+  note: null
+  amends: null
+- id: OA-2026-10-05-39
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-34_35
+  text: 6 agents, Sonnet default, Opus xhigh reviews; no SLA tiers (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-35
+  note: null
+  amends: null
+- id: OA-2026-10-05-40
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-36
+  text: run Trivy exposure check incl. build host (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-36
+  note: null
+  amends: null
+- id: OA-2026-10-05-41
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-37
+  text: no Atlas Pro (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-37
+  note: null
+  amends: null
+- id: OA-2026-10-05-42
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-38
+  text: status quo plus gates (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-38
+  note: null
+  amends: null
+- id: OA-2026-10-05-43
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-39
+  text: import 34 proposals as tracked items, nine ranked first (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - ODG-39
+  note: null
+  amends: null
+- id: OA-2026-10-05-44
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-40
+  text: Apache-2.0-compatible for shipped code (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-40
+  note: 'OPEN: partial answer. Only ''shipped code'' is answered; the server-image and tool-only lists
+    and a licence for each own-organisation repository without one are unanswered.'
+  amends: null
+- id: OA-2026-10-05-45
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-41
+  text: record exact commits verified at final strict run (relayed by the conductor, not a verbatim owner
+    quotation).
+  answers:
+  - ODG-41
+  note: 'OPEN: the relayed answer maps to none of options (a) compare against the reference tips with
+    named exceptions, (b) push freeze, (c) re-run until no upstream moves; the owner says which option
+    it is.'
+  amends: null
+- id: OA-2026-10-05-46
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-42_43
+  - owner_answers_2026-10-05_batch4.ODG-42_43
+  text: decide after T525 per-class report; per-class report in phase 2 (T525) then decide (relayed by
+    the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-42
+  note: 'OPEN: deferral, not a decision: waits for the T525 per-class report (batch4: per-class report
+    in phase 2, then decide). UNCONFIRMED: T525 concerns ODG-43 (document classes C and D) only and does
+    not produce the headerless count; confirm at HC-0 whether the owner meant ODG-42 to wait on it. The
+    reserved slot ODG-42 stays empty.'
+  amends: null
+- id: OA-2026-10-05-47
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.ODG-42_43
+  - owner_answers_2026-10-05_batch4.ODG-42_43
+  text: decide after T525 per-class report; per-class report in phase 2 (T525) then decide (relayed by
+    the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-43
+  note: 'OPEN: deferral, not a decision: waits for the T525 per-class claim and mismatch counts.'
+  amends: null
+- id: OA-2026-10-05-48
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-14
+  text: accept with outside-SQL controls (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-14
+  note: null
+  amends: null
+- id: OA-2026-10-05-49
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-20
+  text: 30 shuffled runs (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-20
+  note: null
+  amends: null
+- id: OA-2026-10-05-50
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-23
+  text: read production open path then owner confirms (relayed by the conductor, not a verbatim owner
+    quotation).
+  answers:
+  - OD-23
+  note: 'OPEN: deferral, not a decision: the production open path is read first, then the owner confirms.'
+  amends: null
+- id: OA-2026-10-05-51
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-25
+  text: N=2 (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-25
+  note: null
+  amends: null
+- id: OA-2026-10-05-52
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-26
+  text: not applicable plus architectural finding (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-26
+  note: null
+  amends: null
+- id: OA-2026-10-05-53
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-36
+  text: add GitLab remote for websocket_client_ts (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-36
+  note: null
+  amends: null
+- id: OA-2026-10-05-54
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-43_45_firebase
+  - owner_answers_2026-10-05_batch4.Firebase
+  text: 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; create a Firebase project
+    and apps for all platforms if none exists; a bash init script downloads all config files after clone;
+    fully incorporate Crashlytics, App Distribution (dev and release variants and flavors), Analytics
+    and other major Firebase services; everything dynamic, no manual downloads. NEEDS: Firebase CLI login
+    (owner action), explicit confirmation before any project creation in the owner''s account; use existing
+    project catalogizer-7a3f1; owner runs the firebase CLI login once; ask before enabling/creating anything
+    new (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - OD-43
+  note: 'OPEN: needs the owner''s Firebase CLI login (owner action, once) and an explicit confirmation
+    before any enabling or creation of anything new; the batch4 answer names the existing project catalogizer-7a3f1.'
+  amends: null
+- id: OA-2026-10-05-55
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-43_45_firebase
+  - owner_answers_2026-10-05_batch4.Firebase
+  text: 'ADD Crashlytics. Owner free text: use Firebase CLI for everything; create a Firebase project
+    and apps for all platforms if none exists; a bash init script downloads all config files after clone;
+    fully incorporate Crashlytics, App Distribution (dev and release variants and flavors), Analytics
+    and other major Firebase services; everything dynamic, no manual downloads. NEEDS: Firebase CLI login
+    (owner action), explicit confirmation before any project creation in the owner''s account; use existing
+    project catalogizer-7a3f1; owner runs the firebase CLI login once; ask before enabling/creating anything
+    new (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - OD-45
+  note: 'OPEN: needs the owner''s Firebase CLI login (owner action, once) and an explicit confirmation
+    before any enabling or creation of anything new; the batch4 answer names the existing project catalogizer-7a3f1.'
+  amends: null
+- id: OA-2026-10-05-56
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-49
+  text: decide from census (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-49
+  note: 'OPEN: deferral, not a decision: decided from the census.'
+  amends: null
+- id: OA-2026-10-05-57
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-55
+  text: industry UX thresholds as adjustable defaults (relayed by the conductor, not a verbatim owner
+    quotation).
+  answers:
+  - OD-55
+  note: null
+  amends: null
+- id: OA-2026-10-05-58
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-57
+  text: live docs; bring into doc tree (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-57
+  note: null
+  amends: null
+- id: OA-2026-10-05-59
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-68
+  - owner_answers_2026-10-05_batch3.internal_media
+  text: unknown; verify; wire it in and test (also resolves OD-68 unkeyed DB) (relayed by the conductor,
+    not a verbatim owner quotation).
+  answers:
+  - OD-68
+  note: 'OPEN: the owner does not know; to be verified. The batch3 answer (wire in and test the internal
+    media) is said to resolve it, UNCONFIRMED until the production open path is read.'
+  amends: null
+- id: OA-2026-10-05-60
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-74
+  text: yes with tests (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-74
+  note: null
+  amends: null
+- id: OA-2026-10-05-61
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-75
+  - owner_answers_2026-10-05_batch3.removals
+  text: 'unknown; investigate; owner free text: remove if they are not used at all (test-results.json,
+    api-client dist outputs, local.properties.backup, unused Tauri shell/fs plugins): removal only with
+    evidence of non-use, separate commits (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - OD-75
+  note: 'OPEN: the owner does not know; to be investigated. The batch3 removal answer applies only with
+    evidence of non-use.'
+  amends: null
+- id: OA-2026-10-05-62
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch2.OD-76
+  text: blobs local out of tree; anchor on a git remote ff-only (relayed by the conductor, not a verbatim
+    owner quotation).
+  answers:
+  - OD-76
+  note: null
+  amends: null
+- slot: ODG-42
+  text: ''
+  date: ''
+- slot: C2-custody
+  text: ''
+  date: ''
+- slot: floors-adoption
+  text: ''
+  date: ''
+risks_recorded:
+- Constitution 11.4.173 expects builds distributed to a REMOTE build host; owner chose this host. Builds
+  must still run in rootless containers (11.4.161/11.4.173); the deviation from remote distribution is
+  an owner decision to be cited in HC-0.
+- 'Build and SC-011 measurement share one host (31 GiB RAM): measurements only while no build runs; 12.6
+  60% memory ceiling (~19 GiB) binds container builds.'
+- "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-11, 2026-10-05), a deviation until an upstream constitution change is approved (this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending; the contract patterns, tasks.md T190 and T564 plan against two gates, CM-ATM-TICKET-IDS-COMPLETE and the [PROTECTED-SPEC: ATM-NNN] tag, that expect that prefix; the exception conflicts with 11.4.54 and 11.4.248, which have no escape hatch, and with the CLAUDE.md precedence rule, and it stays OPEN until the owner confirms it at HC-0 and the upstream change is accepted). OPEN owner item: the owner is asked to acknowledge the deviation at HC-0 and to approve the upstream change as a separate request."
+owner_answers_without_decision_id:
+- id: OAU-2026-10-05-1
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.commit_route
+  text: plain git, fast-forward only, small independently reviewed batches (relayed by the conductor,
+    not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-2
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.index_writer_memory_floor_T022
+  text: add swap and retry (UNCONFIRMED that swap satisfies the 32 GiB MemAvailable check) (relayed by
+    the conductor, not a verbatim owner quotation).
+  note: 'UNCONFIRMED: that swap satisfies the 32 GiB MemAvailable check; the index-writer swap is not
+    confirmed.'
+  amends: null
+- id: OAU-2026-10-05-3
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_interactive.tracked_but_ignored_1837
+  text: untrack build outputs (catalogizer-api-client/dist) and catalogizer-android/local.properties.backup
+    after a secrets check; docs stay; files stay on disk (relayed by the conductor, not a verbatim owner
+    quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-4
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch3.evidence_chain
+  text: SWITCH to the constitution continuum chain; owner has not yet answered continuum's four points
+    (hash construction, record schema, exit codes, anchor format) so they are OPEN; python docs/06 chain
+    is interim until a container build exists (relayed by the conductor, not a verbatim owner quotation).
+  note: 'OPEN: the owner has not answered the four points of the constitution continuum chain (hash construction,
+    record schema, exit codes, anchor format); the python chain of docs/06 is interim until a container
+    build exists.'
+  amends: null
+- id: OAU-2026-10-05-5
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch3.gitignore_blocks
+  text: keep the repo-wide secrets block and the cache/hosts block and amend T004 text; owner-approved
+    (relayed by the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-6
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch3.verifier_exit_codes
+  text: accept as built (precedence 13,12,11,15,strict-behind; strict behind exits 12); owner-approved
+    (relayed by the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-7
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch3.anti_bluff_scan_path
+  text: add a thin wrapper at scripts/anti-bluff-scan.sh calling the audit scanner, with --files-from;
+    test-first (relayed by the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-8
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch3.env_properties
+  text: untrack env.properties, gitignore it, add env.properties.example, add a scanner gate; history
+    stays (no force-push) (relayed by the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-05-9
+  date: '2026-10-05'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-05_batch4.phase0_close
+  text: finish reviews, pull images, record HC-0, then ask for phase boundary approval (relayed by the
+    conductor, not a verbatim owner quotation).
+  note: null
+  amends: null

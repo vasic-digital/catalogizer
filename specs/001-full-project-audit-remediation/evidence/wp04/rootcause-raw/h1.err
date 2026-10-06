@@ -1,0 +1,45 @@
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'root@45eebda51323.(none)')
+fatal: : not a valid SHA1
+fatal: : not a valid SHA1
+jq: error: Could not open file /tmp/vr_test.rvNC7j/real.json: No such file or directory
+jq: error: Could not open file /tmp/vr_test.rvNC7j/real.json: No such file or directory
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'root@45eebda51323.(none)')
+fatal: : not a valid SHA1
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'root@45eebda51323.(none)')
+fatal: : not a valid SHA1

@@ -1,0 +1,25 @@
+# Mutation sweep for the new/changed checks of revision 3 (F1,F2,F4,F5,F6,F7): each MUTANT is a scratch copy of the intake with one defect, the test must exit 1 with a FAIL naming it; each FALSE-POSITIVE-GUARD must exit 0 (no weakened check)
+# identity: test sha256 c45872b08ee507002db9e90f97a36de1e8dc8c6e8305151b3eecc9922538d94c; intake (owner-decisions.yaml) sha256 c8e5f82782d3389e659de5bb67fb67b1d277425b352dae6c276d2130248dd1b6; git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (test and intake untracked); Python 3.14.4; PyYAML 6.0.3; GNU bash, version 5.3.9(1)-release (x86_64-pc-linux-gnu)
+$ python3 <scratch>/mut.py   (mutates a PyYAML copy of the intake, runs the test with INTAKE_FILE=<copy>)
+MUTANT cg_null    rc=1 OK  1 FAIL line(s): FAIL OD-20: closest_group None != docs/21 section 8.6 cell value 'ODG-17'
+MUTANT cg_wrong   rc=1 OK  1 FAIL line(s): FAIL OD-36: closest_group 'ODG-01' != docs/21 section 8.6 cell value 'ODG-15'
+MUTANT cg_missing rc=1 OK  1 FAIL line(s): FAIL OD-45: closest_group key missing
+MUTANT cg_nonnull rc=1 OK  1 FAIL line(s): FAIL OD-14: closest_group 'ODG-01' != docs/21 section 8.6 cell value None
+MUTANT dd_prefix  rc=1 OK  1 FAIL line(s): FAIL ODG-01: default_detail 'No (input, cannot be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defau
+MUTANT dd_word    rc=1 OK  1 FAIL line(s): FAIL ODG-01: default_detail '(input, can be defaulted)' != the rest of the docs/21 Default cell after the leading token '(input, cannot be defaulted)'
+MUTANT oa_verb    rc=1 OK  1 FAIL line(s): FAIL owner_answers OA-2026-10-05-1: relayed entry must have verbatim: false (got True)
+MUTANT oa_noverb  rc=1 OK  1 FAIL line(s): FAIL owner_answers OA-2026-10-05-2: relayed entry must have verbatim: false (got None)
+MUTANT oa_unk     rc=1 OK  1 FAIL line(s): FAIL owner_answers OA-2026-10-05-3: answers names unknown id ODG-99
+MUTANT oa_empty   rc=1 OK  1 FAIL line(s): FAIL owner_answers OA-2026-10-05-4: text and date must be non-empty
+MUTANT oa_noans   rc=1 OK  1 FAIL line(s): FAIL owner_answers OA-2026-10-05-5: answers must be a non-empty list
+MUTANT pw         rc=1 OK  1 FAIL line(s): FAIL $.groups[0].note_x: credential-like value pattern (value not printed)
+MUTANT pw2        rc=1 OK  2 FAIL line(s): FAIL ODG-02: topic 'Token: <synthetic mutant value, redacted here> rotated' != docs/21 cell 'Firebase Android key published in history; status of the provider-key rotation l'
+MUTANT topic      rc=1 OK  1 FAIL line(s): FAIL ODG-07: topic 'local containers only' != docs/21 cell 'Build and measurement hosts: identity, roles, capacity and reachability of `thin'
+MUTANT opts       rc=1 OK  1 FAIL line(s): FAIL ODG-04: options '(a) whatever' != docs/21 cell 'supply; or accept blocked device claims'
+MUTANT rec        rc=1 OK  1 FAIL line(s): FAIL ODG-02: recommendation 'do nothing' != docs/21 cell 'rotate and restrict; record per-provider rotation in the ledger'
+MUTANT odtopic    rc=1 OK  1 FAIL line(s): FAIL OD-23: topic 'x' != docs/21 cell 'in-memory SQLite in non-unit tests as a real engine'
+FALSE-POSITIVE-GUARD ph         rc=0 OK  0 FAIL line(s)
+FALSE-POSITIVE-GUARD var        rc=0 OK  0 FAIL line(s)
+FALSE-POSITIVE-GUARD env        rc=0 OK  0 FAIL line(s)
+FALSE-POSITIVE-GUARD shell      rc=0 OK  0 FAIL line(s)
+unexpected: 0

@@ -1,0 +1,9 @@
+# WP-04 fix round 3: targeted mutation RE-RUN after the first full run left 3 survivors (F14, F15, P5) and 1 driver error (S4); test_wp04c.sh was strengthened for them (change-set spelling and adoption-commit cases; the P5 case now fetches the diverged tip so it is held locally); the other 60 mutants of the full run (wp04c-mutation.txt) were decided against the earlier test, which these changes only extend
+# generated 2026-10-05T19:41:44Z
+# driver sha256 b09c560f69c5c3401ceb0c8883304e6883a1365ffb876016a88af1a6dcc03623
+# test sha256 7cb8a665a88861f3dbe3f68e93db4463f4df4ee975f95c563321de89d0c9ca3d
+CAUGHT   S4 a gitlink refused as a directory  -> 1 failing case(s), e.g. FAIL a gitlink path is declared as the pin it is: 0 (got '20', want '0')
+CAUGHT   F14 the declared change set is not validated  -> 12 failing case(s), e.g. FAIL ff_only change set spelled './f': 20 (got '0', want '20')
+CAUGHT   F15 an unsafe adoption commit accepted  -> 2 failing case(s), e.g. FAIL an adoption commit that is no object name: 20 (got '0', want '20')
+CAUGHT   P5 the hold hides a remote that really moved  -> 2 failing case(s), e.g. FAIL a held commit and a remote that moved on its own: 11 (the moved remote wins over the hold) (got '14', wan
+# DONE

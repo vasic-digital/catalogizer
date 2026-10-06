@@ -1,0 +1,18 @@
+# sha256 scripts/governance/tests/test_evidence_root.sh: b9677080b17733dad35ffd7c361c3f4147977f2fa8adcdaa7bd8beb3b015d452
+# date 2026-10-05T20:09:09Z
+ok   E2 'mkdir -p evidence/wp09' in an unlisted directory (scripts/containers) is seen
+ok   E3 non-wp default 'evidence/ledger.jsonl' via ${X:-...} is seen
+ok   E3b quoted default and prose 'see evidence/hc/' are seen
+ok   legal: $EV, $FEAT/evidence, specs/<feature>/evidence, tools/evidence, $OUTPUT_DIR/evidence are not matched
+ok   outside the scope (docs/) is not scanned
+ok   unreadable file in scope is an error, not a silent skip
+ok   a root that is not a git work tree is refused as blind
+ok   R1 a repo-root evidence directory is seen
+ok   R1 a repo-root evidence regular file (E4) is seen
+ok   R1 a repo-root evidence symlink is seen
+ok   R1 tools/evidence is not a repo-root evidence path
+ok   R1 no repo-root evidence path
+ok   R2 no script or tool names a repo-root evidence path, apart from the 12 listed residue lines in 8 files
+ok   R3 every residue file still has hits (the list only shrinks)
+PASS
+rc=0

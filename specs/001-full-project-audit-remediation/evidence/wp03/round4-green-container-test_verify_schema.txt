@@ -1,0 +1,28 @@
+# round 4 GREEN (IMG-TESTUTIL via scripts/containers/run_pinned.sh --network=none, mawk 1.3.4 20200120, git 2.39.5, jsonschema 4.10.3): test_verify_schema
+# identity: utc=2026-10-06T06:06:14Z head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton
+# sha256 9111298dba4a4be0e91f7ae5e2f39e445d35ad3234044778e5ad20cbcbe04b47  scripts/repo/verify_repos.sh
+# sha256 22437528050ad5c411ddf00ac397d9d6c350d6129a7cda3dbe591af5e59f0eca  scripts/repo/tests/test_verify_repos.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# sha256 6a41f619bcb71251adef09925f8c19f0331da2f0773b677ae97d21e1d1ba2322  scripts/audit/scope_to_lumen_json.py
+# sha256 3413b6158ce326220b0d2c4dcc6a1381f14c05e79b539927d16ac321d6672375  scripts/audit/tests/test_scope_to_lumen_json.sh
+# sha256 2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2  scripts/audit/tests/test_derive_scope.sh
+# sha256 033cce96e2367e83bfe1e6e84d4b2427426caebb2fcd6f84d6fa467d37016129  scripts/audit/tests/mutate_wp02_wp03.sh
+# sha256 ef91de043ef6843d0433b7b3882bc14bf8793fbbaf5afc402392f8036344ba08  scripts/repo/exceptions.tsv
+ok   golden-good report validates
+ok   POC run1.json rejected for exactly the missing no_remote
+ok   missing_summary: rejected
+ok   missing_no_remote: rejected
+ok   wrong_tool: rejected
+ok   excepted_null_reason: rejected
+ok   excepted_empty_reason: rejected
+ok   extra_reason_property: rejected
+ok   real output via --json validates
+ok   real output via --json-out validates
+ok   real output with an excepted row validates (exit 0, excepted true)
+ok   real output for a repository with no remote validates (exit 14, unproven)
+ok   real output with an uninitialised submodule row validates
+ok   real output with a detached owned submodule row validates (class SAME)
+<string>:1: DeprecationWarning: Accessing jsonschema.__version__ is deprecated and will be removed in a future release. Use importlib.metadata directly to query for jsonschema's version.
+IDENTITY test=b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d verifier=9111298dba4a4be0e91f7ae5e2f39e445d35ad3234044778e5ad20cbcbe04b47 head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=71a1f7fa2afa git=2.39.5 jq=jq-1.6 jsonschema=4.10.3 utc=2026-10-06T06:05:08Z
+SUMMARY pass=14 fail=0
+rc=0

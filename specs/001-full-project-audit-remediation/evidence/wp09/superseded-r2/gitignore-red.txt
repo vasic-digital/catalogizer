@@ -1,0 +1,54 @@
+FAIL planned tools/evidence/evrec rc=0 (want 1)
+FAIL planned tools/evidence/matrix/x rc=0 (want 1)
+FAIL planned tools/evidence/analyzers/x rc=0 (want 1)
+FAIL planned tools/perf/x rc=0 (want 1)
+FAIL planned tools/audit/rust_ast/Cargo.toml rc=0 (want 1)
+FAIL planned tools/audit/rust_ast/Cargo.lock rc=0 (want 1)
+FAIL planned build/containers/images.lock.yaml rc=0 (want 1)
+FAIL planned build/containers/go/Containerfile rc=0 (want 1)
+FAIL planned build/containers/testutil/Containerfile rc=0 (want 1)
+FAIL planned build/containers/testutil/requirements.txt rc=0 (want 1)
+FAIL planned build/containers/kcov/Containerfile rc=0 (want 1)
+FAIL planned build/components.json rc=0 (want 1)
+FAIL planned build/hosts.env.example rc=0 (want 1)
+FAIL planned coverage/exclusions/catalog-api.yaml rc=0 (want 1)
+FAIL planned scripts/build/verify_artifact.sh rc=0 (want 1)
+FAIL planned scripts/build/tests/test_verify_artifact.sh rc=0 (want 1)
+FAIL planned scripts/build/dispatch.sh rc=0 (want 1)
+FAIL planned scripts/build/event_hub.sh rc=0 (want 1)
+FAIL planned scripts/build/callbacks.tsv rc=0 (want 1)
+FAIL planned scripts/build/remote/x rc=0 (want 1)
+FAIL planned scripts/build/tests/test_dispatch_events.sh rc=0 (want 1)
+FAIL planned scripts/coverage/check_exclusions.sh rc=0 (want 1)
+FAIL planned scripts/coverage/tests/test_check_exclusions.sh rc=0 (want 1)
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-api/baseline.json
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-web/baseline.json
+PASS planned not-ignored: specs/001-full-project-audit-remediation/evidence/coverage_baseline/catalog-api/exclusions-mutation.txt
+FAIL planned docs/workable_items.db rc=0 (want 1)
+PASS planned not-ignored: config/index/scope.yaml
+PASS planned not-ignored: config/index/lumen_scope.json
+PASS planned not-ignored: scripts/repo/host_entry/cpa-host
+PASS planned not-ignored: scripts/repo/host_entry/INSTALL.md
+PASS planned not-ignored: scripts/audit/api/probe
+PASS planned not-ignored: scripts/security/dast/probe
+PASS planned not-ignored: scripts/qa/tests/probe
+PASS control ignored: .env
+PASS control ignored: build/hosts.env
+PASS control ignored: build/output/x.bin
+PASS control ignored: build/containers/go/x.bin
+PASS control ignored: tools/jdk/x
+PASS control ignored: tools/evidence/.cache
+PASS control ignored: tools/audit/rust_ast/target/x
+PASS control ignored: docs/workable_items.db-wal
+PASS control ignored: docs/workable_items.db-shm
+PASS control ignored: docs/workable_items.db-journal
+FAIL control docs/workable_items.db.bak-20260101T000000Z rc=1 (want 0)
+FAIL control docs/.register.lock rc=1 (want 0)
+FAIL control .audit/longops/x rc=1 (want 0)
+FAIL control .audit/commit-push/x/report.json rc=1 (want 0)
+FAIL control .audit/pending_pins.tsv rc=1 (want 0)
+FAIL control .audit/commit_turn.json rc=1 (want 0)
+PASS control ignored: .audit/out/x/y.json
+PASS control ignored: .audit/out/commit-turn-reap/x.json
+FAIL control .audit/merge-resolution/x/y rc=1 (want 0)
+TOTAL planned=34 control=19 failures=31

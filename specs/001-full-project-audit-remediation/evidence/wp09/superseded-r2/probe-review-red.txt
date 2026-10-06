@@ -1,0 +1,8 @@
+FAIL: fixture selinuxfs present + failing getenforce: status error (F5) (got 'present' want 'error')
+FAIL: fixture uid 0: rootless false (got 'true' want 'false')
+FAIL: mutation cgroup-hardcoded-2 not applied (marker missing)
+FAIL: mutation rootless-hardcoded-true not applied (marker missing)
+FAIL: mutation needle-hardcoded-absent not applied (marker missing)
+FAIL: mutation selinuxfs-failure-as-present not applied (marker missing)
+FAIL: real script: probe suite has zero failures (got '2' want '0')
+probe_host tests: 39 passed, 7 failed

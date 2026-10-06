@@ -1,0 +1,52 @@
+# generated 2026-10-06T06:13:04Z on anton
+# git HEAD a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test uncommitted: the sha256 lines identify it)
+# command: bash scripts/governance/tests/test_decision_intake.sh
+# sha256 85022e5483411afc78a8049bc5a93181095785d052d2045ec6037dd6386d6e05  scripts/governance/tests/test_decision_intake.sh
+# sha256 b9677080b17733dad35ffd7c361c3f4147977f2fa8adcdaa7bd8beb3b015d452  scripts/governance/tests/test_evidence_root.sh
+# sha256 54604ff46a65533a051e2dc0f3e91a9aa74c7b343f9a9b458408893fa7f09505  scripts/governance/tests/test_no_atm_prefix.sh
+# sha256 c262ca3d8ee50df8aa4f1c7c6deeddf70ab84b040ed699401a6f7c6e198606ab  scripts/governance/tests/test_register_id_schemas.sh
+# sha256 9cbf110eca70bafb0e849de1eb5df7682cf9eb09b746eacc21ac65e718a5af95  specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml
+# sha256 e63a8076abee82439a3b197853a2366ec1346a38a5b41ae86065d0e6ce6b345b  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 0dee838b122d4ec7c82e313108059c7db4d95e769d2d9ddffc83f3ef72bdf57c  specs/001-full-project-audit-remediation/progress.yml
+# sha256 4fdd8aae201c13a751976ed82b2a2da01021124a96715610bb7682b96af4b419  specs/001-full-project-audit-remediation/docs/04-findings-register-design.md
+# sha256 b535fcd8df99da788244a46f39519385b11df636c272897b5c95ad456cfd8339  specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md
+# sha256 40c64f8f7755d81c4af766691dd10b7d50cf5b4c1b9e0818d7d1fc303b692301  specs/001-full-project-audit-remediation/research.md
+# sha256 f869e30e4aa88b75605e75be00bb9ded8dde1532d8a03178ba30877d21445770  specs/001-full-project-audit-remediation/docs/upstream/constitution-prefix-change-request.md
+# sha256 e8ca6e0f6743bd7a183a0a970328d4840869d56f59b9b7dd542676682e81d191  specs/001-full-project-audit-remediation/docs/upstream/continuum-decision-brief.md
+# sha256 4376b4fb5774404f20edad019c26a3454a91cd0080a7011a612ddc8e2900991d  specs/001-full-project-audit-remediation/tasks.md
+
+PASS groups: exactly 43 ids ODG-01..ODG-43, no duplicates
+PASS research_ods: exactly the 15 open ungrouped decisions (OD-60 absent)
+PASS no id duplicated across 58 ids in both lists
+PASS every one of 58 rows has topic or options, groups carry recommendation and research_ids
+PASS topic, options and recommendation equal the docs/21 cells for all 58 rows
+PASS closest_group equals the docs/21 section 8.6 cell (id, or null for '-') for all 15 research_ods
+PASS blocks equal the docs/21 section 8 Blocks cells as sets for all 58 checked rows; empty cells carry blocks_scope verbatim
+PASS status is Operator-blocked and blocks_text and (groups) source equal the docs/21 cells for all 58 rows
+PASS default is a bare closed-set token, default_detail holds the rest without the token (58 rows); ODG-34/35/39/40/42/43 and OD-76 shapes hold
+PASS fixed needles hold for OD-76, OD-20, OD-26, ODG-40, ODG-42 and the empty-blocks ODG-19/34/35/43 (9 rows)
+PASS tasks.md: all 166 BLOCKED-ON markers inside work packages are listed in the decision's blocks
+PASS no credential value field or credential-shaped value in 1111 string values
+PASS owner_answers holds the reserved slots ODG-42, C2-custody, floors-adoption (a slot is not a group)
+PASS owner_answers carry progress.yml faithfully: 62 answered ids + 9 id-less answers over 77 source keys; text = progress.yml value + relay suffix, dates from block names, every note = progress.yml comment + a fixed review-flag text, no invented or unsourced entry
+FAIL progress.yml: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL progress.yml: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL decisions/owner-decisions.yaml: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL decisions/owner-decisions.yaml: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL decisions/owner-request-list.md: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL decisions/owner-request-list.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL docs/04-findings-register-design.md: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL docs/04-findings-register-design.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL docs/21-master-plan-phases-risks-and-traceability.md: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL docs/21-master-plan-phases-risks-and-traceability.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL research.md: states the contradictory precedence ('the constitution wins ...'); the one statement is: this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL research.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL docs/upstream/constitution-prefix-change-request.md: does not carry the single ODG-11 precedence statement: ... owner-approved exception to that literal, recorded, with the upstream change request pending
+FAIL owner-request-list.md lacks an OWED marker for the lower-case rename ('OWED')
+FAIL owner-request-list.md lacks the engine-compatibility caveat (option B views, not yet accepted by the owner) ('option B')
+FAIL owner-request-list.md lacks the retained-occurrences class list put to the owner ('retained occurrences')
+FAIL owner-request-list.md lacks the upstream prefix wording draft ('docs/upstream/constitution-prefix-change-request.md')
+FAIL owner-request-list.md lacks the continuum decision brief ('docs/upstream/continuum-decision-brief.md')
+FAIL docs/04 does not track the answered lower-case rename as OWED ('OWED: rename of the lower-case identifiers')
+RESULT FAIL (19 failures)
+rc=1

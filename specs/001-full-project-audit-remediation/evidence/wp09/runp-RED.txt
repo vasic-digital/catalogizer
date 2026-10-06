@@ -1,0 +1,3 @@
+T003 RED: launcher absent
+FAIL: run_pinned.sh not found at /nonexistent/run_pinned.sh
+rc=1

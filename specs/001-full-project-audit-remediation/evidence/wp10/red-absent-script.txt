@@ -1,0 +1,157 @@
+# identity: RED-absent-script
+# test_sha256: bd9e57978da99a31f6ba821def49ffc4b7b901f7b7ecc6799415ab2934536dda
+# script_sha256: 27a19720af894d519d34d1490da5fbe7fd1442f169150775895293b27bc04a52
+# run_at: 2026-10-05T23:47:05Z host: anton
+FAIL: A1 baseline exit 0 (got '127' want '0')
+FAIL: A2 baseline record written (got 'n' want 'y')
+FAIL: A3 baseline schema (got '' want 'host-checklist/1')
+FAIL: A4 19 unique item ids (got '' want '19')
+FAIL: A5 baseline C02 pass (got '' want 'pass')
+FAIL: A5 baseline C03 pass (got '' want 'pass')
+FAIL: A5 baseline C04 pass (got '' want 'pass')
+FAIL: A5 baseline C05 pass (got '' want 'pass')
+FAIL: A5 baseline C06 pass (got '' want 'pass')
+FAIL: A5 baseline C07 pass (got '' want 'pass')
+FAIL: A5 baseline C08 pass (got '' want 'pass')
+FAIL: A5 baseline C09 pass (got '' want 'pass')
+FAIL: A5 baseline C10 pass (got '' want 'pass')
+FAIL: A5 baseline C11 pass (got '' want 'pass')
+FAIL: A5 baseline C12 pass (got '' want 'pass')
+FAIL: A5 baseline C13 pass (got '' want 'pass')
+FAIL: A5 baseline C16 pass (got '' want 'pass')
+FAIL: A6 C01 verdict na (got '' want 'na')
+FAIL: A6 C01 status not_applicable_local_host (got '' want 'not_applicable_local_host')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A6 C01 cites owner decision (got '' want 'true')
+FAIL: A6 C17 verdict na (got '' want 'na')
+FAIL: A6 C17 status not_applicable_local_host (got '' want 'not_applicable_local_host')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A6 C17 cites owner decision (got '' want 'true')
+FAIL: A6 C18 verdict na (got '' want 'na')
+FAIL: A6 C18 status not_applicable_local_host (got '' want 'not_applicable_local_host')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A6 C18 cites owner decision (got '' want 'true')
+FAIL: A6 C19 verdict na (got '' want 'na')
+FAIL: A6 C19 status not_applicable_local_host (got '' want 'not_applicable_local_host')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A6 C19 cites owner decision (got '' want 'true')
+FAIL: A7 C14 unconfirmed (got '' want 'unconfirmed')
+FAIL: A7 C15 unconfirmed (got '' want 'unconfirmed')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A8 summary pass count (got '' want '13')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A9 summary fail count (got '' want '0')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A10 control negative absent (got '' want 'absent')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A11 control positive present (got '' want 'present')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A12 lock parser saw 2 images (got '' want '2')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+sha256sum: /nonexistent/host_checklist.sh: No such file or directory
+PASS: A13 identity script sha
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A14 identity lock sha (got '' want '2f12a5f699594a6c266601259e3452904e3593b97136a984b86f7e5048d6f5c1')
+PASS: A15 no pull and no network verb used
+ls: cannot access '/tmp/hc-test.BEGhdB/w/ev/wp10': No such file or directory
+PASS: A16 no temp residue
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A17 values: mem_total bytes (got '' want '16384000000')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A18 values: disk margins (got '' want '499000')
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: A19 images both present_pinned (got '' want 'present_pinned')
+FAIL: B1 unknown arg exit 2 (got '127' want '2')
+FAIL: B2 --strict with a fail exits 1 (got '127' want '1')
+FAIL: B3 default exit 0 with a fail (got '127' want '0')
+FAIL: B4 --strict clean exits 0 (got '127' want '0')
+FAIL: C C02 podman --version fails (got '' want 'fail')
+PASS: C02 collateral fails
+FAIL: C C03 rootless=false (got '' want 'fail')
+PASS: C03 collateral fails
+FAIL: C C03 rootless unparsable (got '' want 'fail')
+PASS: C03 collateral fails
+FAIL: C C03 podman info fails (got '' want 'fail')
+PASS: C03 collateral fails
+FAIL: C C04 cgroup v1 (no controllers file) (got '' want 'fail')
+PASS: C04 collateral fails
+FAIL: C C04 cgroot unreadable (got '' want 'fail')
+PASS: C04 collateral fails
+FAIL: C C05 meminfo unparsable (got '' want 'fail')
+PASS: C05 collateral fails
+FAIL: C C06 nproc prints 0 (got '' want 'fail')
+PASS: C06 collateral fails
+FAIL: C C06 nproc fails (got '' want 'fail')
+PASS: C06 collateral fails
+FAIL: C C07 kvm absent (got '' want 'fail')
+PASS: C07 collateral fails
+FAIL: C C07 kvm present but not rw (got '' want 'fail')
+PASS: C07 collateral fails
+FAIL: C C08 no subuid range (got '' want 'fail')
+PASS: C08 collateral fails
+FAIL: C C08 max_user_namespaces=0 (got '' want 'fail')
+PASS: C08 collateral fails
+FAIL: C C08 no newuidmap (got '' want 'fail')
+PASS: C08 collateral fails
+FAIL: C C09 ulimit -u 1000 (got '' want 'fail')
+PASS: C09 collateral fails
+FAIL: C C09 ulimit unreadable (got '' want 'fail')
+PASS: C09 collateral fails
+FAIL: C C10 graphroot empty (got '' want 'fail')
+PASS: C10 collateral fails
+FAIL: C C10 df graphroot fails (got '' want 'fail')
+PASS: C10 collateral fails
+FAIL: C C11 df repo fails (got '' want 'fail')
+PASS: C11 collateral fails
+FAIL: C C12 graphroot below min (got '' want 'fail')
+PASS: C12 collateral fails
+FAIL: C C12 repo below min (graphroot fine) (got '' want 'fail')
+PASS: C12 collateral fails
+FAIL: C C12 duplicate min_free_bytes (got '' want 'fail')
+PASS: C12 collateral fails
+FAIL: C C12 exactly at the minimum passes (got '' want 'pass')
+PASS: C12 collateral fails
+FAIL: C C13 image a absent (got '' want 'fail')
+PASS: C13 collateral fails
+FAIL: C C13 image a digest mismatch (got '' want 'fail')
+PASS: C13 collateral fails
+FAIL: C C13 empty lock (parser blind) (got '' want 'fail')
+PASS: C13 collateral fails
+FAIL: C C15 loadavg unreadable (got '' want 'fail')
+PASS: C15 collateral fails
+FAIL: C C16 ntp not synchronised (got '' want 'fail')
+PASS: C16 collateral fails
+FAIL: C C16 timedatectl fails (got '' want 'fail')
+PASS: C16 collateral fails
+FAIL: C C16 ntp garbage (got '' want 'fail')
+PASS: C16 collateral fails
+jq: error: Could not open file /tmp/hc-test.BEGhdB/w/ev/wp10/host-checklist.json: No such file or directory
+FAIL: C13 value names the absent image (got '' want 'IMG-A')
+FAIL: D1 real host exit 0 (got '127' want '0')
+FAIL: D2 real nproc equals nproc (got '' want '16')
+FAIL: D3 real kvm verdict agrees with the filesystem (got '' want 'pass')
+FAIL: D4 real rootless agrees with podman (got '' want 'pass')
+FAIL: D5 real record has 19 items (got '' want '19')
+FAIL: D6 real lock parser saw the lock images (got '' want '5')
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+host_checklist test: 53 passed, 81 failed (mutation record: /tmp/hc-test.BEGhdB/mutation.txt)
+rc=1

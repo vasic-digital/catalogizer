@@ -1,0 +1,305 @@
+# T050 round 3 RED: the round-3 tests run against the ROUND-2 tools (evidence/wp05/T050r3-baseline: evcore.py sha256 56ead5856aa31eeb142adb63bc202b89ee585690157dfe1a77235d6257c04724), scratch tree removed after
+# generated_utc=2026-10-05T20:16:33Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=a27d72a55c99da68a36a3359d6334f84e62a16a2 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 1bc9d547bf42be95f28b759983c294f98074794c0788cd3134b80103a6a992f8  tools/evidence/evcore.py
+# sha256 741188337e62169b11cd55f53c28d0c917dfd6aaefc26d39739a5cdff40d5ba6  tools/evidence/tests/hermetic.sh
+# sha256 88bd3631885cd6c86129cd4198eb21068022518c1467077b66498a9c3be6eb3f  tools/evidence/tests/test_evcore_golden.py
+# sha256 2a513c63a61ad34e0fc83cff6d3ec3a1cee939131f4b32c68f70547d92f40253  tools/evidence/tests/run_mutations.py
+# sha256 94305d0928ee6ca2de9c4729f10926402ee02a167afca1e8990857fc5dfa1052  tools/evidence/tests/test_evrec.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 fb38d5f8d19939398e8cd30283adbe00b2b35e47186535edd09a7c4f723c68cd  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 e06d98bc7d4ed4904a11555cbe40c4c33f432bddadfe9221ff1e05f489398c09  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+## RED test_evrec.sh
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (307 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+<tree>/tools/evidence/tests/test_evrec.sh: line 92: 317427 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+ok   hermetic: no call reached the host entry outside the commit-turn fixtures
+checks=55 failures=0
+rc=0
+## RED test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+FAIL valid RED entry not recorded
+FAIL target_fingerprint is not the target's sha256
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+ok   hermetic: no call reached the host entry
+checks=24 failures=2
+rc=1
+## RED test_evrec_r3.sh
+ok   I1: live holder with unreadable /proc cmdline is not reaped (lock_held)
+ok   I1: that holder process untouched
+ok   I1: no ledger written under the unreadable-cmdline holder
+ok   I1: 3 writers x 6 appends with unreadable /proc: 18 entries, no duplicate seq
+ok   I1: that ledger verifies
+ok   I1: live pid with a different recorded cmdline (pid reuse) is reaped, append succeeds
+ok   I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":1,"cmdline":"init"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":4242,"cmdline":7} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity not json at all is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity ["list"] is never reaped (lock_held)
+ok   I1: its lock file is still there
+FAIL I2: post-command check: rc=76 evrec: refused reason=commit_turn_held grant held by run_id other
+ok   I2: the command did run once before the grant appeared (stated in the refusal, not hidden)
+FAIL I2: stores written under a foreign grant (1 blobs)
+FAIL I2: stall point never reached
+FAIL I2: in-lock check: rc=0 recorded seq=1 item=CAT-001 pol=PROBE it=1 exit=0 verdict=pass
+FAIL I2: stores written after the in-lock refusal
+ok   I2: the reaper was never called (post-command and in-lock checks do not reap)
+ok   C8: a held grant and a refusing host entry: refused before the command runs (commit_turn_held, where=pre_run)
+ok   C8: the command was not run under the held grant
+FAIL I3: verify with a positional file is refused (usage_error) (rc=0 want 64, reason=usage_error; got: OK chain=3 entries head=6cdcd77e2809 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 2610 bytes of bound 33554432 (scripts/repo/che)
+FAIL I3: verify --bogus is refused (usage_error) (rc=0 want 64, reason=usage_error; got: OK chain=3 entries head=6cdcd77e2809 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 2610 bytes of bound 33554432 (scripts/repo/che)
+FAIL I3: verify --ledger without a value is refused (usage_error) (rc=0 want 64, reason=usage_error; got: OK chain=3 entries head=6cdcd77e2809 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 2610 bytes of bound 33554432 (scripts/repo/che)
+FAIL I3: verify --ledger twice is refused (usage_error) (rc=0 want 64, reason=usage_error; got: OK chain=3 entries head=6cdcd77e2809 note: no anchor compared (T055); chain-only verification size good.jsonl = 2610 bytes of bound 33554432 (scripts/repo/check)
+FAIL I3: --ledger tampered rc=1 verify: reason=chain_failure
+FAIL: broken link at line 2 (seq=3)
+FAIL I3: default ledger not named
+FAIL I4: forged stdout blob: refused (blob_mismatch, exit 1) (rc=0 want 1, reason=blob_mismatch; got: OK chain=2 entries head=9d763e11126c note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1746 bytes of bound 33554432 (scripts/repo/che)
+ok   I4: blob restored verifies
+FAIL I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK (rc=0 want 3, reason=blob_missing; got: OK chain=2 entries head=9d763e11126c note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1746 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: re-chained entry without argv is refused by verify (schema_invalid) (rc=0 want 1, reason=schema_invalid; got: OK chain=2 entries head=1927351978d5 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1698 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: re-chained entry with exit_status 0 and verdict fail is refused (schema_invalid) (rc=0 want 1, reason=schema_invalid; got: OK chain=2 entries head=9ae7a359af68 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1730 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: EV_SCHEMA={} does not weaken verify (rc=0 want 1, reason=schema_invalid; got: OK chain=2 entries head=9ae7a359af68 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1730 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: under PYTHONOPTIMIZE=1 the refusal is the same (no assert-based checks) (rc=0 want 1, reason=schema_invalid; got: OK chain=2 entries head=1927351978d5 note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1698 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_invalid) (rc=0 want 65, reason=record_invalid; got: recorded seq=3 item=CAT-001 pol=RED it=1 exit=1 verdict=fail )
+FAIL I8: a BASELINE entry with the unresolved-fingerprint sentinel is refused by verify (unresolved_fingerprint) (rc=0 want 1, reason=unresolved_fingerprint; got: OK chain=2 entries head=4076d8e4b7af note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1910 bytes of bound 33554432 (scripts/repo/che)
+ok   X12: a re-chained entry without the schema key is an undecodable entry (chain_failure)
+FAIL I4: duplicate key in a line is refused (non_canonical_line) (rc=0 want 1, reason=non_canonical_line; got: OK chain=2 entries head=976ddc95f1ad note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1747 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: a hash-valid line that is not byte-canonical (spaced separators) is refused (non_canonical_line) (rc=0 want 1, reason=non_canonical_line; got: OK chain=2 entries head=976ddc95f1ad note: no anchor compared (T055); chain-only verification size ledger.jsonl = 1804 bytes of bound 33554432 (scripts/repo/che)
+FAIL I4: anchor present and not compared: UNVERIFIED exit 3 (rc=0 want 3, reason=anchor_not_compared; got: OK chain=2 entries head=976ddc95f1ad note: anchor /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.)
+FAIL I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceback or a chain failure (rc=1 want 64, reason=usage_error; got: OK chain=2 entries head=976ddc95f1ad note: no anchor compared (T055); chain-only verification Traceback (most recent call last):   File "/tmp/claude-1000/-home-)
+ok   I5: golden-good: a ledger hashed independently with jq|sha256sum (non-ASCII cwd, exit_status 3) verifies
+ok   I5: construction 'noprefix' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'noprefix' named as bad hash at line 1
+ok   I5: construction 'ascii' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'ascii' named as bad hash at line 1
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+ok   I5: flipping exit_status alone (hash not recomputed) is a bad hash
+FAIL I6: no owed_relocation for a 2000 byte blob: recorded seq=1 item=CAT-001 pol=PROBE it=1 exit=0 verdict=pass
+FAIL I6: verify lists no owed_relocation
+ok   I6: a small blob is not listed
+FAIL I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before the command runs (rc=0 want 64, reason=usage_error; got: recorded seq=1 item=CAT-001 pol=PROBE it=1 exit=0 verdict=pass )
+FAIL I6: command ran under a bad EV_BLOB_BOUND
+ok   I6: nothing is listed as owed in the default environment (no leaked EV_BLOB_BOUND)
+FAIL I6: default bound is not 1024000: recorded seq=1 item=CAT-001 pol=PROBE it=2 exit=0 verdict=pass
+FAIL I6: rerecord --out <shared ledger dir> is refused (out_is_shared_store) (rc=0 want 70, reason=out_is_shared_store; got: rerecord: 3 common, 0 local entries re-recorded into /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/t)
+ok   I6: the shared ledger is byte-unchanged after the refused --out run
+FAIL I6: rerecord --out <shared dir> --name <other file> is refused too (the directory is the shared store) (rc=0 want 70, reason=out_is_shared_store; got: rerecord: 3 common, 0 local entries re-recorded into /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/t)
+FAIL I6: other.jsonl written into the shared directory
+ok   I6: rerecord --out <elsewhere> succeeds
+ok   I6: the shared ledger is byte-unchanged after a legitimate rerecord (store_not_rerecorded shape)
+FAIL I6: rerecord --out writing over one of its own input files is refused (out_is_shared_store) (rc=0 want 70, reason=out_is_shared_store; got: rerecord: 3 common, 1 local entries re-recorded into /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/t)
+FAIL I6: rerecord takes the lock of the output ledger (a live holder: lock_held) (rc=0 want 75, reason=lock_held; got: rerecord: 4 common, 0 local entries re-recorded into /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/t)
+ok   I6: seq map content is exactly [{old,new,digest=new entry_hash}]
+ok   I6: seq map of a diverged rerecord maps old 2,3 to new 3,4 with the new entry hashes
+FAIL I7: prefix-overlapping secrets leaked (longer value's suffix visible)
+FAIL I7: partially overlapping secrets leaked a fragment
+ok   I7: a named secret printed only on stdout or only on stderr is absent from blobs and ledger
+ok   I7: redacted: true is set for a stdout-only and for a stderr-only hit (argv carries no secret)
+FAIL I7: Bearer token stored verbatim with EVREC_REDACT_VARS unset
+FAIL I7: redacted flag missing
+FAIL I7: AWS key id, password= value or URL userinfo password stored
+FAIL I7: GitHub token stored
+FAIL I7: cwd secret stored: "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.O5hup5vgZM/token=Cwd123secretXYZ"
+FAIL I7: private key body stored
+FAIL I7: target_ref secret in the ledger: {"argv":["true"],"cwd":"/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.O5hup5vgZM/hermetic/cwd","duration_ms":2,"entry_hash":"5c4542df91ac9b3b363e8020701231153a5b7ec29ef1d7028806b0e6ba87ad03","exit_status":0,"item":"CAT-001","iteration":1,"polarity":"PROBE","prev_hash":"0000000000000000000000000000000000000000000000000000000000000000","schema":"ev/1","seq":1,"started_at":"2026-10-05T20:17:20Z","stderr_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","stdout_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","target_class":"remote_service","target_fingerprint":"62dcb45d002407c0afda2d52e4ec0979e0aac7a4fb865598c77ddd05ccad77ef","target_ref":"https://svc-user:pass1234word@example.invalid/x","test_fingerprint":"1de0b0b3e52a2b328bfcd8c41efdd67988ab25ced6a426b466145920f00464e1","verdict":"pass"}
+ok   I7: a clean entry carries no redacted flag (no false positive)
+FAIL I8: BASELINE on an unresolvable target is refused (target_unreadable) (rc=64 want 77, reason=target_unreadable; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+ok   I8: BASELINE wrote nothing
+FAIL I8: PREFLIGHT on an unresolvable target is refused (target_unreadable) (rc=64 want 77, reason=target_unreadable; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+ok   I8: PREFLIGHT wrote nothing
+FAIL I8: NEEDLE on an unresolvable target is refused (target_unreadable) (rc=64 want 77, reason=target_unreadable; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+ok   I8: NEEDLE wrote nothing
+FAIL I8: ANALYZER_FIXTURE on an unresolvable target is refused (target_unreadable) (rc=64 want 77, reason=target_unreadable; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+ok   I8: ANALYZER_FIXTURE wrote nothing
+FAIL I8: unresolved PROBE fingerprint is 9c46426f9a44d0440a0f3f537cfc00da16ebc1999dbb865c6f54435b411872ba
+FAIL I9: RED with bash -c and no declared test source is refused (interpreter_without_test_sources) (rc=64 want 69, reason=interpreter_without_test_sources; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+FAIL I9: GREEN with bash -c and no declared test source is refused (interpreter_without_test_sources) (rc=64 want 69, reason=interpreter_without_test_sources; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+FAIL I9: MUTATION with bash -c and no declared test source is refused (interpreter_without_test_sources) (rc=64 want 69, reason=interpreter_without_test_sources; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+jq: error: Could not open file /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.O5hup5vgZM/w/ledger.jsonl: No such file or directory
+FAIL I9: test_fingerprints 
+ok   I9: nothing written for the undeclared interpreter RED
+FAIL I9: a script executed directly is its own test bytes: no source declaration needed (rc=64 want 0)
+ok   I9: PROBE with an interpreter and no sources is allowed (no verdict claim)
+FAIL I9: EV_TEST_SOURCES counts as a declaration (rc=64 want 0)
+FAIL I10: --oracle without --oracle-independent is refused (oracle_independence_undeclared) before the command runs (rc=0 want 64, reason=oracle_independence_undeclared; got: recorded seq=1 item=CAT-001 pol=RED it=1 exit=1 verdict=fail )
+FAIL I10: command ran or entry written
+ok   I10: --oracle-independent without --oracle is refused (usage_error)
+FAIL I10: oracle {"independent_of_sut":true,"strategy":"specified"}
+ok   I11: RED without oracle (schema refusal) before the run
+FAIL I11: RED without oracle (schema refusal) before the run: marker=yes ledger=no
+FAIL I11: invalid --mutation-json before the run (rc=1 want 64, reason=usage_error; got: Traceback (most recent call last):   File "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.tfCkKfp)
+FAIL I11: invalid --mutation-json before the run: marker=yes ledger=no
+FAIL I11: non-UTF-8 argv byte before the run (rc=1 want 64, reason=usage_error; got: Traceback (most recent call last):   File "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.tfCkKfp)
+FAIL I11: non-UTF-8 argv byte before the run: marker=yes ledger=no
+FAIL I11: missing --test-source file before the run (rc=1 want 64, reason=usage_error; got: Traceback (most recent call last):   File "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.tfCkKfp)
+ok   I11: missing --test-source file before the run: command not run, nothing stored
+FAIL I11: a flag standing where REF belongs is refused, not taken as the target (minor 11) (rc=0 want 64, reason=usage_error; got: recorded seq=1 item=CAT-001 pol=PROBE it=1 exit=0 verdict=pass )
+FAIL I11: a flag standing where REF belongs is refused, not taken as the target (minor 11): marker=yes ledger=yes
+ok   I11: unknown flag before the run
+ok   I11: unknown flag before the run: command not run, nothing stored
+ok   I11: --pre-release without --test-state-go (schema) before the run
+FAIL I11: --pre-release without --test-state-go (schema) before the run: marker=yes ledger=no
+FAIL I11: non-UTF-8 cwd is refused before the run (usage_error) (rc=1 want 64, reason=usage_error; got: Traceback (most recent call last):   File "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/mt/tmp.tfCkKfp)
+FAIL I11: command ran in a non-UTF-8 cwd
+ok   I11: schema_unavailable is refused before the command runs (67)
+FAIL I11: command ran without a schema
+FAIL I11: GREEN that fails is refused after the run (record_invalid) and leaves no blob (rc=64 want 65, reason=record_invalid; got: evrec: refused reason=usage_error evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv... )
+ok   I11: no orphan blob after the post-run refusal
+FAIL X19: check-record valid: rc=65 evrec: refused reason=record_invalid 'seq' is a required property
+ok   minor5: check-record asserts the date-time format (record_invalid)
+ok   X16: check-record refusal is the named record_invalid
+FAIL X20: optional fields: 
+ok   X7: a non-executable command is exit 126, verdict error (not fail)
+ok   X8: directory fingerprint equals the independently computed sha256 over sorted 'relpath NUL filehash' lines
+ok   X8: changing a file's content changes the directory fingerprint
+ok   X11: the flake ledger is measured against the bound and named by ledger_raise_owed
+ok   X6: a self-consistent last entry with seq 7 on line 1 refuses the append (ledger_inconsistent)
+ok   X13: rerecord of sides with no common prefix names no_common_prefix
+ok   rerecord of a side verify rejects names side_unverifiable
+ok   X14: remap-refs with an uncovered reference names map_incomplete
+ok   X14: nothing was rewritten on the map_incomplete refusal
+ok   X15: a live lock holder yields the named lock_held (75)
+ok   usage: evrec run with a non-numeric ITER names usage_error
+ok   usage: unknown subcommand names usage_error
+ok   reconcile: runner count mismatch names count_mismatch
+ok   hermetic: no call reached the host entry
+checks=140 failures=70
+rc=1
+## RED test_evrec_golden.sh
+ok   canon: sorted keys, compact separators, non-ASCII kept as UTF-8 bytes
+ok   canon: quote and backslash escaped as in jq
+ok   entry_hash golden vector 1 (genesis prev, non-ASCII cwd, exit_status 3): 413af748bd2c
+ok   entry_hash golden vector 2 (prev = vector 1): 7e7f041978f6
+ok   entry_hash covers field exit_status (changing it changes the hash)
+ok   entry_hash covers field verdict (changing it changes the hash)
+ok   entry_hash covers field item (changing it changes the hash)
+ok   entry_hash covers field cwd (changing it changes the hash)
+ok   entry_hash covers field argv (changing it changes the hash)
+ok   entry_hash covers field started_at (changing it changes the hash)
+ok   entry_hash covers field duration_ms (changing it changes the hash)
+ok   entry_hash covers field stdout_sha256 (changing it changes the hash)
+ok   entry_hash covers field stderr_sha256 (changing it changes the hash)
+ok   entry_hash covers field target_fingerprint (changing it changes the hash)
+ok   entry_hash covers field target_ref (changing it changes the hash)
+ok   entry_hash covers field seq (changing it changes the hash)
+ok   entry_hash covers field prev_hash (changing it changes the hash)
+ok   entry_hash covers field iteration (changing it changes the hash)
+ok   entry_hash covers field polarity (changing it changes the hash)
+ok   entry_hash covers field target_class (changing it changes the hash)
+ok   entry_hash is computed without the entry_hash field itself
+ok   entry_hash is not the hash of the canonical body alone (prev_hash is a hashed prefix)
+ok   entry_hash is sha256(prev_hash ASCII || canonical body) exactly (re-derived here)
+FAIL redaction: partially overlapping secrets leave no fragment of either b'x [REDACTED:A]opqr y'
+FAIL redaction: a secret that is a prefix of another (any value order) leaves no suffix b'auth=[REDACTED:A]SUFFIXSECRET9'
+ok   redaction: the same with the values in the other order
+ok   redaction: a single named secret keeps the [REDACTED:NAME] marker
+ok   redaction: clean bytes are returned unchanged with no hit
+FAIL redaction: default pattern bearer hit b'Authorization: Bearer abcDEF123456xyz789'
+FAIL redaction: default pattern kv password hit b'password=hunter2hunter2'
+FAIL redaction: default pattern url userinfo hit b'https://u:pw12345678@h.example/p'
+FAIL redaction: default pattern pem hit b'-----BEGIN PRIVATE KEY-----\nMIIabc\n-----END PRIVATE KEY-----'
+ok   stale: live pid with its recorded cmdline is NOT stale
+ok   stale: live pid with a different recorded cmdline (pid reuse) IS stale
+ok   stale: live pid whose /proc cmdline is unreadable is NOT stale (never reaped on an unreadable identity)
+ok   stale: a dead pid IS stale
+ok   stale: unreadable holder identity {'pid': 'x', 'cmdline': 'y'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 1, 'cmdline': 'init'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 0, 'cmdline': 'z'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 4242, 'cmdline': 7} is NOT stale
+ok   stale: unreadable holder identity {} is NOT stale
+ok   lock.release does not delete a lock that another pid now holds (X5)
+ok   lock.release deletes the caller's own lock
+ok   X18: a re-chained record that ev/1 refuses stops rerecord (record_invalid)
+checks=44 failures=6
+rc=1
+## RED test_evrec_hermetic.sh
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=55 failures=0)
+FAIL hermetic: test_evrec_more.sh rc=1: FAIL valid RED entry not recorded|FAIL target_fingerprint is not the target's sha256|
+FAIL hermetic: test_evrec_r3.sh rc=1: FAIL I2: post-command check: rc=76 evrec: refused reason=commit_turn_held grant held by run_id other|FAIL I2: stores written under a foreign grant (1 blobs)|FAIL I2: stall point never reached|
+FAIL hermetic: test_evrec_golden.sh rc=1: FAIL redaction: partially overlapping secrets leave no fragment of either b'x [REDACTED:A]opqr y'|FAIL redaction: a secret that is a prefix of another (any value order) leaves no suffix b'auth=[REDACTED:A]SUFFIXSECRET9'|FAIL redaction: default pattern bearer hit b'Authorization: Bearer abcDEF123456xyz789'|
+ok   hermetic: the stand-in for ~/.local/bin/cpa-host was called 0 times
+ok   hermetic: nothing was written to the hostile caller-supplied store paths
+checks=6 failures=3
+rc=1
+# DONE

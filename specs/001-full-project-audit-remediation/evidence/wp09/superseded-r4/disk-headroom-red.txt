@@ -1,0 +1,351 @@
+# T001 disk_headroom test RED (round r3: I1 pre-exec window, I2 op-id and grant run_id, M1, M2, M5)
+# generated: 2026-10-05T22:35:12Z  (round: r3 fix of WF2-REVIEW containers-gitignore; run times are the started/finished lines of the transcript)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED; the sha256 lines below fingerprint it)
+# RED run: the NEW tests below against the OLD pre-r3 scripts / .gitignore (the sha256 lines marked (OLD) are the code under test)
+# sha256 9e0e8f4416badcf49917ba2195ae4bfbae98290599a6a02a07833c556be51f54  scripts/containers/probe_host.sh (OLD)
+# sha256 4354d23dac4e6fb45c8323fcc032176e56bdf5b7011687a946d64f531f531ca3  scripts/containers/disk_headroom.sh (OLD)
+# sha256 48fa0c5148b3ca20961bfb7e4fd3de93b46471f5aa2d638fef2f0fa322b48eae  .gitignore (OLD)
+# sha256 2fabbd744bf63508bb5fb43854a4f9df4997e8d338d6583f263e3740c3542264  scripts/containers/tests/test_probe_host.sh (NEW test)
+# sha256 dee7a6e65a9a378e659c714dd7292fa71b1d3f4ba33928c5376694a3d558e459  scripts/containers/tests/test_disk_headroom.sh (NEW test)
+# sha256 fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh (NEW test)
+# sha256 02060ee6a6cb1f0bfc1ce40d147cb41ca0a78f073c24dd1bf9946c122a0f361b  specs/001-full-project-audit-remediation/evidence/wp09/.gitignore.before
+# ---
+started 2026-10-05T20:59:48Z
+PASS: above threshold: exit 0
+PASS: above threshold: record written to EV/disk/<op_id>.json
+PASS: record carries before value
+PASS: record carries after value (free minus need)
+PASS: record verdict pass
+PASS: free-need exactly at threshold: passes
+PASS: free-need one byte below threshold (graphroot fs): refused non-zero
+PASS: refusal reason disk_below_headroom on stderr
+PASS: refusal record carries reason
+PASS: repository filesystem below threshold: refused
+PASS: unreadable free-space value: refused non-zero
+PASS: unreadable free-space: named reason, never treated as enough
+PASS: missing --need: refused as usage error (exit 2)
+PASS: percentage value in conf: refused as configuration error (exit 2)
+PASS: percentage refusal names reason
+PASS: conf without min_free_bytes: refused (exit 2)
+PASS: DISK_HEADROOM_OUT_DIR: record written there
+PASS: DISK_HEADROOM_OUT_DIR: nothing written under EV/disk for that op
+PASS: committed conf min_free_bytes is an absolute byte count (12172240540)
+PASS: committed conf documents formula, inputs and measurement dates
+PASS: pass record read exactly 2 readable filesystems
+PASS: F1 --need 08 (invalid octal, leading zero): exit 2
+PASS: F1 --need 08 (invalid octal, leading zero): stdout never says pass
+PASS: F1 --need 08 (invalid octal, leading zero): no pass verdict recorded
+PASS: F1 --need 08: reason usage named
+PASS: F2b --need 0100 (octal misread would pass): exit 2
+PASS: F2b --need 0100 (octal misread would pass): stdout never says pass
+PASS: F2b --need 0100 (octal misread would pass): no pass verdict recorded
+PASS: F2a --need 2^64 (wraps to 0): exit 2
+PASS: F2a --need 2^64 (wraps to 0): stdout never says pass
+PASS: F2a --need 2^64 (wraps to 0): no pass verdict recorded
+PASS: F2 --need 20 digits: exit 2
+PASS: F2 --need 20 digits: stdout never says pass
+PASS: F2 --need 20 digits: no pass verdict recorded
+PASS: F2 --need INT64_MAX+1: exit 2
+PASS: F2 --need INT64_MAX+1: stdout never says pass
+PASS: F2 --need INT64_MAX+1: no pass verdict recorded
+PASS: F2 --need 00 (leading zeros refused): exit 2
+PASS: F2 --need 00 (leading zeros refused): stdout never says pass
+PASS: F2 --need 00 (leading zeros refused): no pass verdict recorded
+PASS: --need 0 is a valid base-10 value: passes
+PASS: --need INT64_MAX: refused below headroom (rc 1), not a wrap
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): exit 2
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): stdout never says pass
+PASS: F2c conf min_free_bytes 20 digits (10 bytes free): no pass verdict recorded
+PASS: F2c: reason config_not_integer
+PASS: F2d conf min_free_bytes with leading zero: exit 2
+PASS: F2d conf min_free_bytes with leading zero: stdout never says pass
+PASS: F2d conf min_free_bytes with leading zero: no pass verdict recorded
+PASS: F9 duplicate conf key refused: exit 2
+PASS: F9 duplicate conf key refused: stdout never says pass
+PASS: F9 duplicate conf key refused: no pass verdict recorded
+PASS: F9 duplicate conf key: reason named
+PASS: F2 df value 20 digits is unreadable: exit 1
+PASS: F2 df value 20 digits is unreadable: stdout never says pass
+PASS: F2 df value 20 digits is unreadable: no pass verdict recorded
+PASS: F2 df 20 digits: reason disk_free_unreadable
+PASS: F2 df value with leading zero is unreadable: exit 1
+PASS: F2 df value with leading zero is unreadable: stdout never says pass
+PASS: F2 df value with leading zero is unreadable: no pass verdict recorded
+PASS: F3 '--need' as last argument: refused usage (exit 2), no hang
+PASS: F3 '--op-id' as last argument: refused usage (exit 2), no hang
+PASS: F9 repeated --op-id refused usage (exit 2)
+PASS: F9 first fs below, second unreadable: reason disk_free_unreadable
+PASS: F9 first fs unreadable, second below: reason disk_free_unreadable
+PASS: podman reports no graphroot: refused (never pass on one filesystem)
+PASS: podman reports no graphroot: record is not pass
+PASS: [real] live grant held by other run: refused non-zero
+PASS: [real] refusal reason commit_turn_held
+PASS: [real] nothing written under EV/disk
+PASS: [real] scratch tree byte-unchanged
+PASS: [real] reaper called exactly once
+PASS: [real] every reap call went through --exec-approved (host entry log == reaper log)
+PASS: [real] OUT_DIR set: passes during a held turn
+PASS: [real] OUT_DIR set: record written there
+PASS: [real] OUT_DIR set: reaper not called
+PASS: [real] own run_id: writes EV/disk
+PASS: [real] no grant file: writes EV/disk
+PASS: [real] dR1 EVREC_TURN_RUN_ID unset + held grant: refused commit_turn_held rc 1
+PASS: [real] dR1 EVREC_TURN_RUN_ID unset + held grant: nothing written
+PASS: [real] dR1 EVREC_TURN_RUN_ID unset + held grant: tree byte-unchanged
+PASS: [real] dR4 below headroom + held grant: refused commit_turn_held (not disk_below_headroom) rc 1
+PASS: [real] dR4 below headroom + held grant: no refusal record written
+PASS: [real] dR4 below headroom + held grant: tree byte-unchanged
+PASS: [real] I2 grant {"run_id":""}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":""}, EVREC_TURN_RUN_ID EMPTY: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":""}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":null}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":null}, EVREC_TURN_RUN_ID EMPTY: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":null}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":5}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":5}, EVREC_TURN_RUN_ID EMPTY: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":5}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"pid":1}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"pid":1}, EVREC_TURN_RUN_ID EMPTY: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"pid":1}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":true}, EVREC_TURN_RUN_ID UNSET: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":true}, EVREC_TURN_RUN_ID EMPTY: refused commit_turn_held rc 1, nothing written
+PASS: [real] I2 grant {"run_id":true}, EVREC_TURN_RUN_ID SAME: refused commit_turn_held rc 1, nothing written
+PASS: [real] dead holder: reaped then written
+PASS: [real] dead holder: exit 0
+PASS: [real] dead holder: exactly one reap, via --exec-approved
+PASS: [real] dead holder: --exec-approved line is the exact reap form
+PASS: [real] no reaper script: refusal stands
+PASS: [real] absent cpa-host counts as failing reaper: refusal stands
+PASS: [real] absent cpa-host: nothing written
+PASS: [real] unreadable grant: refused commit_turn_held
+PASS: [real] unreadable grant: nothing written
+PASS: [real] non-JSON grant: refused commit_turn_held
+PASS: [real] non-JSON grant: nothing written
+PASS: [real] N3 reaper leaves a non-JSON grant: refused commit_turn_held rc 1
+PASS: [real] N3 reaper leaves a non-JSON grant: nothing written
+PASS: [real] N3 reaper leaves a mode-000 grant: refused commit_turn_held rc 1
+PASS: [real] N3 reaper leaves a mode-000 grant: nothing written
+PASS: [real] N1 strict df shim (-B1 --output=avail): pass, exit 0
+PASS: [real] N2 df value '5000 4000': refused rc 1
+PASS: [real] N2 df value '5000 4000': reason disk_free_unreadable
+PASS: [real] N2 df value '5000 4000': no pass record
+PASS: [real] N2 single token with spaces and CR: accepted
+PASS: [real] N11 op-id of 128 characters: accepted
+PASS: [real] N11 op-id of 129 characters: refused rc 2
+PASS: [real] N11 op-id of 129 characters: reason op_id_too_long
+PASS: [real] N11 op-id of 300 characters: refused rc 2 with the named reason
+PASS: [real] N11 over-long op-id: nothing written for it
+PASS: [real] I2 op-id 'a/b': refused rc 2 reason usage
+PASS: [real] I2 op-id '/../../../escaped_c': refused rc 2 reason usage
+PASS: [real] I2 op-id '../escaped_d': refused rc 2 reason usage
+PASS: [real] I2 op-id '../../escaped_e': refused rc 2 reason usage
+FAIL: [real] I2 op-id '..': refused rc 2 reason usage (got '0/0' want '2/1')
+FAIL: [real] I2 op-id '.': refused rc 2 reason usage (got '0/0' want '2/1')
+FAIL: [real] I2 op-id '.hidden_i2': refused rc 2 reason usage (got '0/0' want '2/1')
+PASS: [real] I2 refused op-ids: nothing named escaped_* written anywhere under the test tree
+FAIL: [real] I2 refused op-ids: no hidden record in the record dir (got '2' want '0')
+FAIL: [real] I2 explicit empty --op-id: refused rc 2 reason usage (not silently replaced by a generated name) (got '0/0' want '2/1')
+PASS: [real] I2 legal op-id 'A.b_c-9' (dots, underscores, dashes inside): accepted
+PASS: [real] N11 stale <op>.json.tmp present: still writes the record, exit 0
+PASS: [real] N11 after a write only <op>.json exists for that op (no temp residue)
+FAIL: [real] N11 no dot-temp residue anywhere in the record dir (got '3' want '0')
+PASS: [real] N11 concurrent same-op-id runs: one valid record
+PASS: [real] W3 hung podman info: refused disk_free_unreadable rc 1 (not a kill rc 124)
+PASS: [real] W3 hung podman info: gate returned within 15s
+PASS: [real] W3 hung podman info: record is not pass
+PASS: [real] W3 hung df: refused disk_free_unreadable rc 1
+PASS: [real] W3 hung df: gate returned within 15s
+PASS: [real] W3 DISK_HEADROOM_REAPER_TIMEOUT=0 (GNU: no timeout) refused rc 2 with a named reason
+PASS: [real] W3 DISK_HEADROOM_REAPER_TIMEOUT=abc refused rc 2
+PASS: [real] W3 DISK_HEADROOM_CMD_TIMEOUT=0 refused rc 2
+PASS: [real] W3 refused timeout configs wrote no record
+PASS: [real] W3 valid positive timeouts: still passes
+PASS: [real] M2 df prints 5000 then exits 1: refused disk_free_unreadable rc 1 (output of a failed probe is not believed)
+PASS: [real] M2 failed probe: record is not pass
+PASS: [real] M2 df prints 5000 then hangs past the bound: refused disk_free_unreadable rc 1
+PASS: [real] M2 TERM-ignoring df: refused disk_free_unreadable rc 1 (not rc 124 from the harness bound)
+PASS: [real] M2 TERM-ignoring df: gate returned within 15s (KILL escalation, not the probe's own 30s)
+PASS: [real] TERM: reaper stub is running before the signal
+PASS: [real] TERM: gate exit status is 128+signal (143)
+PASS: [real] TERM: reaper stub no longer alive (not orphaned)
+PASS: [real] TERM: reaper grandchild no longer alive (not orphaned)
+PASS: [real] TERM: nothing written under EV/disk
+PASS: [real] INT: reaper stub is running before the signal
+PASS: [real] INT: gate exit status is 128+signal (130)
+PASS: [real] INT: reaper stub no longer alive (not orphaned)
+PASS: [real] INT: reaper grandchild no longer alive (not orphaned)
+PASS: [real] INT: nothing written under EV/disk
+PASS: [real] unsignalled failing reaper: refusal status preserved (rc 1, commit_turn_held)
+PASS: [real] podman TERM: shim was running before the signal
+PASS: [real] podman TERM: gate exit status is 128+signal (143)
+PASS: [real] podman TERM: timeout wrapper no longer alive
+PASS: [real] podman TERM: shim no longer alive (not orphaned)
+PASS: [real] podman TERM: shim grandchild no longer alive (not orphaned)
+PASS: [real] podman TERM: nothing written under EV/disk
+PASS: [real] podman TERM: no output temp file left in TMPDIR
+PASS: [real] podman INT: shim was running before the signal
+PASS: [real] podman INT: gate exit status is 128+signal (130)
+PASS: [real] podman INT: timeout wrapper no longer alive
+PASS: [real] podman INT: shim no longer alive (not orphaned)
+PASS: [real] podman INT: shim grandchild no longer alive (not orphaned)
+PASS: [real] podman INT: nothing written under EV/disk
+PASS: [real] podman INT: no output temp file left in TMPDIR
+PASS: [real] podman HUP: shim was running before the signal
+PASS: [real] podman HUP: gate exit status is 128+signal (129)
+PASS: [real] podman HUP: timeout wrapper no longer alive
+PASS: [real] podman HUP: shim no longer alive (not orphaned)
+PASS: [real] podman HUP: shim grandchild no longer alive (not orphaned)
+PASS: [real] podman HUP: nothing written under EV/disk
+PASS: [real] podman HUP: no output temp file left in TMPDIR
+PASS: [real] df TERM: shim was running before the signal
+PASS: [real] df TERM: gate exit status is 128+signal (143)
+PASS: [real] df TERM: timeout wrapper no longer alive
+PASS: [real] df TERM: shim no longer alive (not orphaned)
+PASS: [real] df TERM: shim grandchild no longer alive (not orphaned)
+PASS: [real] df TERM: nothing written under EV/disk
+PASS: [real] df TERM: no output temp file left in TMPDIR
+PASS: [real] df INT: shim was running before the signal
+PASS: [real] df INT: gate exit status is 128+signal (130)
+PASS: [real] df INT: timeout wrapper no longer alive
+PASS: [real] df INT: shim no longer alive (not orphaned)
+PASS: [real] df INT: shim grandchild no longer alive (not orphaned)
+PASS: [real] df INT: nothing written under EV/disk
+PASS: [real] df INT: no output temp file left in TMPDIR
+PASS: [real] df HUP: shim was running before the signal
+PASS: [real] df HUP: gate exit status is 128+signal (129)
+PASS: [real] df HUP: timeout wrapper no longer alive
+PASS: [real] df HUP: shim no longer alive (not orphaned)
+PASS: [real] df HUP: shim grandchild no longer alive (not orphaned)
+PASS: [real] df HUP: nothing written under EV/disk
+PASS: [real] df HUP: no output temp file left in TMPDIR
+PASS: [real] ignoring timeout, podman hangs, TERM: shim was running before the signal
+PASS: [real] ignoring timeout, podman hangs, TERM: gate exit status is 128+signal (143)
+PASS: [real] ignoring timeout, podman hangs, TERM: timeout wrapper no longer alive
+PASS: [real] ignoring timeout, podman hangs, TERM: shim no longer alive (not orphaned)
+PASS: [real] ignoring timeout, podman hangs, TERM: shim grandchild no longer alive (not orphaned)
+PASS: [real] ignoring timeout, podman hangs, TERM: nothing written under EV/disk
+PASS: [real] ignoring timeout, podman hangs, TERM: no output temp file left in TMPDIR
+PASS: [real] ignoring timeout, df hangs, TERM: shim was running before the signal
+PASS: [real] ignoring timeout, df hangs, TERM: gate exit status is 128+signal (143)
+PASS: [real] ignoring timeout, df hangs, TERM: timeout wrapper no longer alive
+PASS: [real] ignoring timeout, df hangs, TERM: shim no longer alive (not orphaned)
+PASS: [real] ignoring timeout, df hangs, TERM: shim grandchild no longer alive (not orphaned)
+PASS: [real] ignoring timeout, df hangs, TERM: nothing written under EV/disk
+PASS: [real] ignoring timeout, df hangs, TERM: no output temp file left in TMPDIR
+PASS: [real] fork window, podman hangs: shim was running before the signal
+PASS: [real] fork window, podman hangs: gate exit status is 128+signal (143)
+PASS: [real] fork window, podman hangs: timeout wrapper no longer alive
+PASS: [real] fork window, podman hangs: shim no longer alive (not orphaned)
+PASS: [real] fork window, podman hangs: shim grandchild no longer alive (not orphaned)
+PASS: [real] fork window, podman hangs: nothing written under EV/disk
+PASS: [real] fork window, podman hangs: no output temp file left in TMPDIR
+PASS: [real] fork window, df hangs: shim was running before the signal
+PASS: [real] fork window, df hangs: gate exit status is 128+signal (143)
+PASS: [real] fork window, df hangs: timeout wrapper no longer alive
+PASS: [real] fork window, df hangs: shim no longer alive (not orphaned)
+PASS: [real] fork window, df hangs: shim grandchild no longer alive (not orphaned)
+PASS: [real] fork window, df hangs: nothing written under EV/disk
+PASS: [real] fork window, df hangs: no output temp file left in TMPDIR
+PASS: [real] fork window, reaper hangs: shim was running before the signal
+PASS: [real] fork window, reaper hangs: gate exit status is 128+signal (143)
+PASS: [real] fork window, reaper hangs: timeout wrapper no longer alive
+PASS: [real] fork window, reaper hangs: shim no longer alive (not orphaned)
+PASS: [real] fork window, reaper hangs: shim grandchild no longer alive (not orphaned)
+PASS: [real] fork window, reaper hangs: nothing written under EV/disk
+PASS: [real] fork window, reaper hangs: no output temp file left in TMPDIR
+PASS: [real] wedged timeout: running before the signal, a child of the gate
+PASS: [real] wedged timeout: gate exit status is 143
+PASS: [real] wedged timeout: stopped by the KILL fallback
+PASS: [real] own-ness: pid1
+PASS: [real] own-ness: empty
+PASS: [real] own-ness: alpha
+PASS: [real] own-ness: zero
+PASS: [real] own-ness: own-timeout-child
+PASS: [real] own-ness: own-nontimeout-child
+PASS: [real] own-ness: foreign-timeout-named
+FAIL: [real] own-ness: preexec-own-image-child (got 'no' want 'yes')
+PASS: [real] own-ness: foreign-same-image-not-our-child
+PASS: [real] own-ness: tree-descendants
+PASS: [real] own-ness: wrong-starttime-signals
+PASS: [real] own-ness: pid1-signals
+PASS: [real] own-ness: verified-signals
+FAIL: [real] M5 'timeout' missing: refused rc 2 with reason=dependency_missing naming it (got '1/0' want '2/1')
+FAIL: [real] M5 'timeout' missing: nothing written (got 'yes' want 'no')
+FAIL: [real] M5 'grep' missing: refused rc 2 with reason=dependency_missing naming it (got '2/0' want '2/1')
+FAIL: [real] M5 'grep' missing: nothing written (got 'yes' want 'no')
+FAIL: [real] M5 'mktemp' missing: refused rc 2 with reason=dependency_missing naming it (got '1/0' want '2/1')
+FAIL: [real] M5 'mktemp' missing: nothing written (got 'yes' want 'no')
+PASS: [real] M1 record write in progress before the signal
+PASS: [real] M1 TERM during the record write: gate exit status 143
+FAIL: [real] M1 TERM during the record write: no temp residue in the record dir (got '1' want '0')
+FAIL: [real] M1 TERM during the record write: no partial record (got '1' want '0')
+PASS: [real] I1 podman: a pre-exec child (still the gate's own image) is observed
+PASS: [real] I1 podman: the gate stops promptly after the signal (under 2500 ms; the TERM-wait path takes at least 3000 ms)
+PASS: [real] I1 podman: gate stopped by the signal (exited, said so on stderr)
+FAIL: [real] I1 podman: the pre-exec child is gone (not orphaned) (got 'alive' want 'gone')
+FAIL: [real] I1 podman: the delayed child never exec'd (hang shim never started) (got 'started' want 'never')
+PASS: [real] I1 podman: nothing written under EV/disk
+PASS: [real] I1 reaper: a pre-exec child (still the gate's own image) is observed
+PASS: [real] I1 reaper: the gate stops promptly after the signal (under 2500 ms; the TERM-wait path takes at least 3000 ms)
+PASS: [real] I1 reaper: gate stopped by the signal (exited, said so on stderr)
+FAIL: [real] I1 reaper: the pre-exec child is gone (not orphaned) (got 'alive' want 'gone')
+FAIL: [real] I1 reaper: the delayed child never exec'd (hang shim never started) (got 'started' want 'never')
+PASS: [real] I1 reaper: nothing written under EV/disk
+PASS: F7 hung cpa-host: refused commit_turn_held (not a timeout kill rc=124)
+PASS: F7 hung cpa-host: gate returned within 15s
+PASS: F7 hung cpa-host: nothing written
+PASS: mutation ignore-grant observed failing (39 assertion(s) RED)
+PASS: mutation unreadable-as-none observed failing (4 assertion(s) RED)
+PASS: mutation no-reread observed failing (17 assertion(s) RED)
+PASS: mutation direct-reap observed failing (3 assertion(s) RED)
+PASS: mutation reread-unreadable-passes observed failing (4 assertion(s) RED)
+PASS: mutation df-size-not-avail observed failing (12 assertion(s) RED)
+PASS: mutation df-multi-token-merged observed failing (9 assertion(s) RED)
+PASS: mutation opid-no-length-cap observed failing (10 assertion(s) RED)
+PASS: mutation fixed-tmp-name observed failing (7 assertion(s) RED)
+PASS: mutation freeze-unset-caller-is-holder observed failing (4 assertion(s) RED)
+PASS: mutation reaper-cwd-dropped observed failing (5 assertion(s) RED)
+PASS: mutation freeze-only-on-pass observed failing (3 assertion(s) RED)
+PASS: mutation podman-unbounded observed failing (3 assertion(s) RED)
+PASS: mutation df-unbounded observed failing (7 assertion(s) RED)
+PASS: mutation podman-foreground-orphans observed failing (12 assertion(s) RED)
+PASS: mutation df-foreground-orphans observed failing (12 assertion(s) RED)
+PASS: mutation no-signal-trap-bounded observed failing (24 assertion(s) RED)
+PASS: mutation bang-fallback-dropped observed failing (9 assertion(s) RED)
+PASS: mutation kill-fallback-dropped observed failing (1 assertion(s) RED)
+PASS: mutation kill-chain-dropped observed failing (4 assertion(s) RED)
+PASS: mutation own-ppid-dropped observed failing (2 assertion(s) RED)
+PASS: mutation own-cmdline-dropped observed failing (1 assertion(s) RED)
+PASS: mutation snap-descend-dropped observed failing (2 assertion(s) RED)
+PASS: mutation snap-pid-guard-dropped observed failing (3 assertion(s) RED)
+PASS: mutation snap-start-guard-dropped observed failing (4 assertion(s) RED)
+PASS: mutation no-signal-trap observed failing (4 assertion(s) RED)
+PASS: mutation timeout-zero-allowed observed failing (3 assertion(s) RED)
+FAIL: mutation preexec-image-dropped changed nothing (marker missing in script)
+FAIL: mutation preexec-image-dropped-it changed nothing (marker missing in script)
+FAIL: mutation preexec-kill-dropped changed nothing (marker missing in script)
+FAIL: mutation bound-keeps-failed-output changed nothing (marker missing in script)
+FAIL: mutation bound-no-kill-after changed nothing (marker missing in script)
+FAIL: mutation opid-charset-dropped changed nothing (marker missing in script)
+FAIL: mutation opid-leading-dot-dropped changed nothing (marker missing in script)
+FAIL: mutation opid-empty-defaulted changed nothing (marker missing in script)
+PASS: mutation grant-runid-nonempty-dropped observed failing (3 assertion(s) RED)
+PASS: mutation grant-runid-type-dropped observed failing (1 assertion(s) RED)
+FAIL: mutation preflight-dropped changed nothing (marker missing in script)
+FAIL: mutation write-trap-dropped changed nothing (marker missing in script)
+PASS: real script: bound suite has zero failures
+FAIL: real script: dependency-preflight suite has zero failures (got '6' want '0')
+FAIL: real script: record-write signal suite has zero failures (got '2' want '0')
+FAIL: real script: fork-to-exec (pre-exec child) suite has zero failures (got '4' want '0')
+PASS: real script: turn-freeze suite has zero failures
+PASS: real script: signal suite has zero failures
+PASS: real script: bounded-probe signal suite has zero failures
+PASS: real script: ignoring-timeout KILL-chain suite has zero failures
+PASS: real script: fork-window suite has zero failures
+PASS: real script: wedged-timeout KILL suite has zero failures
+FAIL: real script: own-ness guard suite has zero failures (got '1' want '0')
+FAIL: real script: core suite has zero failures (got '6' want '0')
+disk_headroom tests: 300 passed, 34 failed
+RC=1
+finished 2026-10-05T21:12:48Z
+DONE-MARKER

@@ -1,0 +1,9 @@
+ok   fixture run exits 0
+ok   TSV equals the expected 10 rows (every depth, nesting rules, pending flags)
+ok   second run byte-identical (deterministic)
+ok   unclassifiable URL exits 3 and writes nothing
+ok   relative URL ../../org/repo.git exits 3 and writes nothing (DM3)
+ok   an unreadable .gitmodules exits 3 with a message and writes nothing (DM4)
+FAIL uninitialised submodule: want rc=0 and a not-descended line, got rc=0: 
+ok   control needle: a mis-classified copy is detected as different
+SUMMARY pass=7 fail=1

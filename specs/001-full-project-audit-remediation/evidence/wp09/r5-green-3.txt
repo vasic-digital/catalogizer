@@ -1,0 +1,487 @@
+# identity: r5-GREEN-3
+# runp_sha256: 9be6f3f4c954a4698999b304e92b0241ad9cbad999bfbfa37b44d5e0223f15b9
+# runp_test_sha256: e01ec18644eb7600f42220dac51d4d3208387a0874570b5f74ada76385c85f40
+# hc_sha256: 6aab3b350534f828b2b89ab2fb92a22e6427e8bd2f73cd5ca631afd4258c1180
+# hc_test_sha256: c4197959cb6e14293895c480da3415a4039d26696a6898a419b1d1f0a526d29a
+# run_at: 2026-10-06T09:50:51Z host: anton uid: 1000
+## test_run_pinned (with mutations)
+PASS: the launcher names no unrooted evidence path
+PASS: usage: no arguments is a usage error
+PASS: usage: no command after the image is a usage error
+PASS: usage: unknown option is a usage error
+PASS: usage: image id must be IMG-<NAME>
+PASS: unknown lock id is refused
+PASS: unknown lock id names reason image_id_unknown
+PASS: print-argv mode exits 0
+PASS: argv starts with podman run
+PASS: argv carries --rm
+PASS: argv carries --userns=keep-id
+PASS: argv carries --cap-drop=ALL
+PASS: argv carries --memory
+PASS: argv carries --memory-swap
+PASS: argv carries --pids-limit
+PASS: argv carries --cpus
+PASS: argv carries --workdir
+PASS: memory and memory-swap are equal (no swap)
+PASS: memory is the formula result: min(0.6 MemTotal, MemAvailable - 4.8 GB)
+PASS: --workdir is /src
+PASS: source is mounted read-only
+PASS: label project=catalogizer present
+PASS: image reference is digest-pinned, preceded by --
+PASS: command words follow the image
+PASS: no podman call in print mode
+PASS: run mode exits 0 with the shim
+PASS: both oracles agree: shim argv equals print argv minus the leading podman
+PASS: out directory created in run mode
+PASS: default out bind is .audit/out/<op_id>
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:ggggggggggggg...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:AAAAAAAAAAAAA...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'md5:abc...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest '...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: a tag-only reference (tag in reference) is refused
+PASS: tag reference names reason tag_only_reference
+PASS: an empty digest (UNPINNED) is refused
+PASS: empty digest names reason tag_only_reference
+PASS: a well-formed digest passes print mode (format check only)
+PASS: a well-formed digest not present locally is refused in run mode
+PASS: names reason image_not_present_locally
+PASS:   ...no podman run in the shim log
+PASS: entrypoint_override image composes
+PASS: --entrypoint carries the override
+PASS: leading command word dropped: image followed only by the arguments
+PASS: shim agrees: shellcheck word occurs exactly once (as the entrypoint, never as a command)
+PASS: shim agrees: the entrypoint element is present once
+PASS: a command word that does not name the entrypoint is refused
+PASS: names reason entrypoint_word_mismatch
+PASS: no --entrypoint without entrypoint_override
+PASS: headroom refusal refuses the run
+PASS: the disk_below_headroom reason is passed through
+PASS:   ...nothing composed
+PASS: headroom refusal in run mode
+PASS:   ...no podman run
+PASS: ample free space passes
+PASS: DISK_HEADROOM_OUT_DIR is passed through: record written there
+PASS: the lock entry's size_bytes is the headroom need
+PASS: --need overrides the lock size
+PASS: without --rw no writable bind except /out
+PASS: --rw docs composes
+PASS: --rw docs adds exactly one extra writable bind
+PASS: the docs bind is $PWD/docs:/src/docs:rw
+PASS: the rw bind comes after the read-only source mount
+PASS: --rw .audit/scratch composes
+PASS: the scratch bind is $PWD/.audit/scratch:/src/.audit/scratch:rw
+PASS: --rw '.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/x' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/..' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw './docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/etc' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/abs/path' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '../docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/../.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: a second --rw is refused
+PASS: a .audit/scratch symlink to docs is refused
+PASS: names reason rw_source_not_canonical
+PASS:   ...no podman run in the shim log
+PASS: a symlinked .audit component is refused
+PASS: names reason rw_source_not_canonical (parent symlink)
+PASS: a docs symlink is refused
+PASS: the real directories pass
+PASS: --out composes
+PASS: --out <dir> composes exactly -v <dir>:/out:rw
+PASS: --out replaces the default out bind (one /out mount)
+PASS: secret control: a mount of the state directory is detected
+PASS: default run composes
+PASS: needle absent from every mount source (print mode)
+PASS: needle absent from every mount source (shim log)
+PASS: --out under the state directory is refused
+PASS: --out equal to the state directory is refused
+PASS: --out reaching the state directory through .. is refused
+PASS: --out containing the state directory is refused
+PASS: a checkout at $HOME (state directory under the source mount) is refused
+PASS: names reason secret_state_in_mount
+PASS: a state directory placed inside the checkout is refused
+PASS: XDG_STATE_HOME elsewhere does not refuse
+PASS: --network=none composes the option
+PASS: no network option by default
+PASS: RUNP_LOCK: the fixture entry's digest is shown
+PASS: without RUNP_LOCK the tracked lock is read
+PASS: with RUNP_LOCK set no other digest is shown
+PASS: MemAvailable below the reserve refuses (memory_budget_unavailable)
+PASS: RUNP_MEMORY overrides the formula
+PASS: --security-opt is followed by no-new-privileges
+PASS: argv carries --pull=never
+PASS: --tmpfs carries /tmp:rw,mode=1777
+PASS: cache path set by environment: -e HOME=/tmp
+PASS: cache path set by environment: -e XDG_CACHE_HOME=/tmp/.cache
+PASS: cache path set by environment: -e GOCACHE=/tmp/.cache/go-build
+PASS: cache path set by environment: -e GOMODCACHE=/tmp/go/pkg/mod
+PASS: --user defaults to the host uid:gid
+PASS: --userns=keep-id is kept next to --user
+PASS: exactly one --user element
+PASS: RUNP_USER=0:0 is the documented explicit root override
+PASS:   ...and it is the value composed
+PASS:   ...an explicit uid:gid is composed
+PASS: RUNP_USER='root' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER=':1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000 --privileged' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000,extra' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='-1:-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='a:b' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000|0:0' is refused
+PASS:   ...nothing composed
+PASS: names reason user_override_malformed
+PASS: --out under docs (no --rw) is refused
+PASS: names reason out_dir_in_source
+PASS:   ...nothing composed
+PASS: --out below docs is refused
+PASS: --out equal to the source tree is refused
+PASS: --out above the source tree (it would mount the tree writable) is refused
+PASS: --out equal to .audit (not a sanctioned root) is refused
+PASS: --out at an arbitrary source path is refused
+PASS: --out reaching docs through .. is refused
+PASS: --out under .audit/out is accepted
+PASS: --out under .audit/scratch is accepted
+PASS: --out under the evidence tree is accepted
+PASS: --out outside the source tree is accepted
+PASS: --out through an .audit/out symlink to docs is refused
+PASS: relative --out 'relout' is refused
+PASS: relative --out './relout' is refused
+PASS: relative --out '../relout' is refused
+PASS: relative --out '.' is refused
+PASS: names reason out_dir_not_absolute
+PASS:   ...nothing composed
+PASS: --out through a symlink composes
+PASS: the RESOLVED path is bound (not the raw spelling)
+PASS: raw spelling absent from argv
+PASS: .. is resolved in the bind
+PASS: run mode creates the RESOLVED out directory
+PASS: RUNP_MEMORY='0' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='00' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='abc' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='1e9' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='999999999999999999' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='19660800001' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY=0 (no limit) is a refusal, exit 1
+PASS: names reason memory_override_out_of_bounds
+PASS: RUNP_MEMORY one byte above the ceiling is refused, exit 1
+PASS: RUNP_MEMORY exactly at the ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_MEMORY=1 (positive, under the ceiling) is accepted
+PASS: memory is MemAvailable bound: MemAvailable - 15% reserve
+PASS: the 4 GiB reserve floor binds on a small host (9216000000 - 4294967296)
+PASS: default cpus on a 10-cpu host
+PASS: default cpus on a 2-cpu host is capped to the 60% ceiling (1)
+PASS: RUNP_CPUS at the ceiling (6 of 10) is accepted
+PASS: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1
+PASS: names reason cpus_override_out_of_bounds
+PASS: RUNP_CPUS=0 is refused
+PASS: RUNP_CPUS='abc' is refused
+PASS: RUNP_CPUS='1.5' is refused
+PASS: RUNP_CPUS='-1' is refused
+PASS: RUNP_CPUS='00' is refused
+PASS: RUNP_PIDS=0 (unlimited pids) is refused
+PASS:   ...nothing composed
+PASS: RUNP_PIDS='abc' is refused
+PASS: RUNP_PIDS='-1' is refused
+PASS: RUNP_PIDS='01' is refused
+PASS: RUNP_PIDS=100 composes
+PASS: RUNP_PIDS exactly at the 8192 ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_PIDS=8193 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=4194303 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=999999999999999999 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: ulimit -u 4000: RUNP_PIDS=2000 (half of it) is accepted
+PASS: ulimit -u 4000: RUNP_PIDS=2001 (above half of it) is refused, exit 1
+PASS: ulimit -u 1000: the default is clamped to the ceiling (500)
+PASS: ulimit unlimited: the absolute 8192 ceiling still applies
+PASS: ulimit unlimited: 8193 is refused
+PASS: default pids is 2048 on a normal host
+PASS: --out whose resolved path contains ':' (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: a checkout path containing ':' is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS: a checkout reached through a symlink whose RESOLVED path contains ':' is refused
+PASS: control: an ordinary --out still composes
+PASS: probe runs and writes toolchain.json
+PASS: probe: a tool that prints a loader error and exits 127 is error, not present
+PASS: probe: a tool that exits 126 is error
+PASS: probe: the error records the exit status
+PASS: probe: a tool that exits 0 with output is present
+PASS: probe: a tool with a stated exit-code exception (gofmt -h exits 2) is present
+PASS: probe: a tool that exits 0 with NO output is error
+PASS: probe: the absent needle is absent
+PASS: probe: the errored needle (exit 3) is error
+PASS: probe: the read-only write needle failed as expected
+PASS: probe: uid recorded
+PASS: probe: toolchain.json is valid JSON
+PASS: probe mutation (exit status ignored) is VISIBLE: kcov exit 127 reads as present
+MUTATION cacheenv: caught (4 failing checks; first: FAIL: cache path set by environment: -e HOME=/tmp (got '' want '-e')|FAIL: cache path set by environment: -e XDG_CACHE_HOME=/tmp/.cache (got '' want '-e')|)
+MUTATION cpus-bounds: caught (2 failing checks; first: FAIL: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1 (got '0' want '1')|FAIL: reason: |)
+MUTATION digest-format: caught (12 failing checks; first: FAIL: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode) (got '0' want '1')|FAIL:   ...and no podman run was composed (got '664' want '0')|)
+MUTATION entrypoint: caught (4 failing checks; first: FAIL: --entrypoint carries the override (got 'podman' want '/bin/shellcheck')|FAIL: leading command word dropped: image followed only by the arguments (got 'shellcheck |)
+MUTATION headroom: caught (8 failing checks; first: FAIL: headroom refusal refuses the run (got '0' want '1')|FAIL: reason: |)
+MUTATION limits: caught (18 failing checks; first: FAIL: argv lacks --memory|FAIL: argv lacks --memory-swap|)
+MUTATION memory-bounds: caught (9 failing checks; first: FAIL: RUNP_MEMORY='0' is refused (got 'rc=0' want 'refused')|FAIL:   ...nothing composed (got '589' want '0')|)
+MUTATION out-absolute: caught (2 failing checks; first: FAIL: relative --out '../relout' is refused (got '0' want '1')|FAIL: reason: run_pinned: REFUSED reason=out_dir_in_source --out /tmp/runp-test.vgKHQz/hom|)
+MUTATION out-allowlist: caught (10 failing checks; first: FAIL: --out under docs (no --rw) is refused (got '0' want '1')|FAIL: reason: |)
+MUTATION out-resolved: caught (3 failing checks; first: FAIL: --out whose resolved path contains ':' (through a symlink) is refused, exit 1 (got '|FAIL:   reason: |)
+MUTATION pids-ceiling: caught (8 failing checks; first: FAIL: RUNP_PIDS=8193 (above the ceiling) is refused, exit 1 (got '0' want '1')|FAIL:   reason: |)
+MUTATION pids-guard: caught (2 failing checks; first: FAIL: RUNP_PIDS=0 (unlimited pids) is refused (got '0' want '2')|FAIL:   ...nothing composed (got '660' want '0')|)
+MUTATION pull: caught (1 failing checks; first: FAIL: argv lacks --pull=never|)
+MUTATION pwd-colon: caught (1 failing checks; first: FAIL:   reason: run_pinned: REFUSED reason=out_dir_malformed resolved --out '/tmp/runp-tes|)
+MUTATION reserve: caught (1 failing checks; first: FAIL: memory is MemAvailable bound: MemAvailable - 15% reserve (got '16185032704' want '15|)
+MUTATION rw-allowlist: caught (3 failing checks; first: FAIL: --rw '.audit/scratch/x' is refused (got '0' want '1')|FAIL:   ...nothing composed (got '749' want '0')|)
+MUTATION secopt: caught (1 failing checks; first: FAIL: --security-opt is followed by no-new-privileges (got 'podman' want 'no-new-privilege|)
+MUTATION secret: caught (7 failing checks; first: FAIL: --out under the state directory is refused (got '0' want '1')|FAIL: --out equal to the state directory is refused (got '0' want '1')|)
+MUTATION symlink: caught (6 failing checks; first: FAIL: a .audit/scratch symlink to docs is refused (got '0' want '1')|FAIL: reason: |)
+MUTATION tag-only: caught (1 failing checks; first: FAIL: reason: run_pinned: REFUSED reason=digest_malformed id=IMG-TOOL|)
+MUTATION user: caught (4 failing checks; first: FAIL: --user defaults to the host uid:gid (got 'podman' want '1000:1000')|FAIL: exactly one --user element (got '0' want '1')|)
+MUTATION workdir: caught (2 failing checks; first: FAIL: argv lacks --workdir|FAIL: --workdir is /src (got 'podman' want '/src')|)
+test_run_pinned: 277 passed, 0 failed
+rc=0
+## test_host_checklist (with mutations)
+PASS: A1 baseline exit 0
+PASS: A2 baseline record written
+PASS: A3 baseline schema
+PASS: A4 19 unique item ids
+PASS: A5 baseline C02 pass
+PASS: A5 baseline C03 pass
+PASS: A5 baseline C04 pass
+PASS: A5 baseline C05 pass
+PASS: A5 baseline C06 pass
+PASS: A5 baseline C07 pass
+PASS: A5 baseline C08 pass
+PASS: A5 baseline C09 pass
+PASS: A5 baseline C10 pass
+PASS: A5 baseline C11 pass
+PASS: A5 baseline C12 pass
+PASS: A5 baseline C13 pass
+PASS: A5 baseline C16 pass
+PASS: A6 C01 verdict na
+PASS: A6 C01 status not_applicable_local_host
+PASS: A6 C01 cites owner decision
+PASS: A6 C17 verdict na
+PASS: A6 C17 status not_applicable_local_host
+PASS: A6 C17 cites owner decision
+PASS: A6 C18 verdict na
+PASS: A6 C18 status not_applicable_local_host
+PASS: A6 C18 cites owner decision
+PASS: A6 C19 verdict na
+PASS: A6 C19 status not_applicable_local_host
+PASS: A6 C19 cites owner decision
+PASS: A7 C14 unconfirmed
+PASS: A7 C15 unconfirmed
+PASS: A8 summary pass count
+PASS: A9 summary fail count
+PASS: A10 control negative absent
+PASS: A11 control positive present
+PASS: A12 lock parser saw 2 images
+PASS: A13 identity script sha
+PASS: A14 identity lock sha
+PASS: A15 no pull and no network verb used
+PASS: A16 no temp residue
+PASS: A17 values: mem_total bytes
+PASS: A18 values: disk margins
+PASS: A19 images both present_pinned
+PASS: B1 unknown arg exit 2
+PASS: B2 --strict with a fail exits 1
+PASS: B3 default exit 0 with a fail
+PASS: B4 --strict clean exits 0
+PASS: C C02 podman --version fails
+PASS: C02 collateral fails
+PASS: C C03 rootless=false
+PASS: C03 collateral fails
+PASS: C C03 rootless unparsable
+PASS: C03 collateral fails
+PASS: C C03 podman info fails
+PASS: C03 collateral fails
+PASS: C C04 cgroup v1 (no controllers file)
+PASS: C04 collateral fails
+PASS: C C04 cgroot unreadable
+PASS: C04 collateral fails
+PASS: C C05 meminfo unparsable
+PASS: C05 collateral fails
+PASS: C C06 nproc prints 0
+PASS: C06 collateral fails
+PASS: C C06 nproc fails
+PASS: C06 collateral fails
+PASS: C C07 kvm absent
+PASS: C07 collateral fails
+PASS: C C07 kvm present but not rw
+PASS: C07 collateral fails
+PASS: C C08 no subuid range
+PASS: C08 collateral fails
+PASS: C C08 max_user_namespaces=0
+PASS: C08 collateral fails
+PASS: C C08 no newuidmap
+PASS: C08 collateral fails
+PASS: C C09 ulimit -u 1000
+PASS: C09 collateral fails
+PASS: C C09 ulimit unreadable
+PASS: C09 collateral fails
+PASS: C C10 graphroot empty
+PASS: C10 collateral fails
+PASS: C C10 df graphroot fails
+PASS: C10 collateral fails
+PASS: C C11 df repo fails
+PASS: C11 collateral fails
+PASS: C C12 graphroot below min
+PASS: C12 collateral fails
+PASS: C C12 repo below min (graphroot fine)
+PASS: C12 collateral fails
+PASS: C C12 duplicate min_free_bytes
+PASS: C12 collateral fails
+PASS: C C12 exactly at the minimum passes
+PASS: C12 collateral fails
+PASS: C C13 image a absent
+PASS: C13 collateral fails
+PASS: C C13 image a digest mismatch
+PASS: C13 collateral fails
+PASS: C C13 empty lock (parser blind)
+PASS: C13 collateral fails
+PASS: C C13 N1 lock entry with neither digest nor platform_digest
+PASS: C13 collateral fails
+PASS: N1 ...and its status is lock_malformed, not present_pinned
+PASS: C C13 N1 empty digest value (platform_digest alone is not enough)
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed digest (no sha256: prefix)
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with an empty hex part
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with non-hex characters
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed platform_digest
+PASS: C13 collateral fails
+PASS: C C13 N1 no platform_digest and the local image does not match the digest
+PASS: C13 collateral fails
+PASS: C C13 N1 guard against false refusal: no platform_digest but the digest matches the local image
+PASS: C13 collateral fails
+PASS: C C15 loadavg unreadable
+PASS: C15 collateral fails
+PASS: C C16 ntp not synchronised
+PASS: C16 collateral fails
+PASS: C C16 timedatectl fails
+PASS: C16 collateral fails
+PASS: C C16 ntp garbage
+PASS: C16 collateral fails
+PASS: C13 value names the absent image
+PASS: D1 real host exit 0
+PASS: D2 real nproc equals nproc
+PASS: D3 real kvm verdict agrees with the filesystem
+PASS: D4 real rootless agrees with podman
+PASS: D5 real record has 19 items
+PASS: D6 real lock parser saw the lock images
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13dg caught
+PASS: E mutation c13pd caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+host_checklist test: 153 passed, 0 failed (mutation record: /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r5/hc-mut-g3.txt)
+rc=0
+## host-checklist mutation record
+CAUGHT c01: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c17: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c18: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c19: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c02: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c03: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c04: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c05: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c06: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c07: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c08: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c09: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c10: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c11: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c12: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13dg: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13pd: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13b: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c14: mutant gives 'pass' (fixture wants 'unconfirmed')
+CAUGHT c15: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c16: mutant gives 'pass' (fixture wants 'fail')

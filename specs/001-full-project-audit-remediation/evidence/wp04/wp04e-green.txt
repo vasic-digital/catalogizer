@@ -1,0 +1,81 @@
+# WP-04 round 5 (wp04e) green runs; TMPDIR in scratchpad
+2026-10-06T08:50:47Z
+dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc  scripts/repo/check_class.sh
+2b98969813f3060b13a40ddf8be2d97c8a5618af475cec24c7a47bb9079b83ed  scripts/repo/check_no_ci.sh
+08e4a18175d30d7db1f22999c796218e720fed3cda1752c1e321a6d070f7c834  scripts/repo/check_revision_headers.sh
+c1df5ca244228594c0b15060ed6b96611aded8028e539c35818624a2f8d80067  scripts/repo/commit_recursive.sh
+3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d  scripts/repo/fixture_roots.sh
+096f9fe84d2ec89264facaabaa138a8fa0d0acf3a44f56e1f321dffa941cef6c  scripts/repo/integrate_ff_only.sh
+fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4  scripts/repo/integrate_merge.sh
+8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+d6220cd5b1332be478cf43d2b573cfde835e9a1bb13b37756d7178217f19afc4  scripts/repo/push_recursive.sh
+2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1  scripts/repo/record_deferral.sh
+bba1695b8a13a6790dcfa9cd17d09c4e46aaf09ed4ae8577e3feef0afbc25e1a  scripts/repo/scope_check.sh
+79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff  scripts/repo/validate_cheap.sh
+016dcff4ea2c09e7b182a3cbd7d8c298bca1cf10e8e30437adcf14e4720c3871  scripts/repo/verify_repos.sh
+4ae7335cf4078d9958e32dfd97730f1a1d75c581415f72fd9db84686d24562bb  scripts/repo/tests/test_check_classes.sh
+deb7d42b79dc7e737bbd50935cd243ea82e6b938799e3d9879a09cb09ca053d0  scripts/repo/tests/test_check_no_ci.sh
+0c91200521547301e861c0da2fb9b3e5ad19d71cbc0f10181c7c8db814fe0a82  scripts/repo/tests/test_check_revision_headers.sh
+7d0a4bb444881a69f960110c93ae6d98dd30b456ba6628537e28ef7c3ba5a96f  scripts/repo/tests/test_commit_recursive.sh
+9f0874d8f53fff96c3b291176758141219209d0cd9adbccfea880d866d88a196  scripts/repo/tests/test_fixture_roots.sh
+b2a61fd232b189335753f94aeae5592a11378719d5ecf093df94ecf9d2cc879e  scripts/repo/tests/test_integrate_ff_only.sh
+e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960  scripts/repo/tests/test_integrate_merge.sh
+fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh
+9fe4bf9652ac1c347e69ecc426750ad0135a22d811d4fafe8e18ef3fb10d7915  scripts/repo/tests/test_push_recursive.sh
+3babdf3db5a6b4416b96c548e29cc32bd599dfeaab747fa1bd8fbbacce7fabcc  scripts/repo/tests/test_record_deferral.sh
+c9befb35969d09ab94f77d9ea892272e74428c1ffcc4619d6af180a2f27e67e8  scripts/repo/tests/test_scope_check.sh
+3b61f92061ca033026c8d3f1530dca65e53d164e7ecc8c8a6f10f4f069a6992b  scripts/repo/tests/test_validate_cheap.sh
+7601a648e78353d5cea9393e4786d26f401f6ad145e7831cba933ee220461187  scripts/repo/tests/test_verify_repos.sh
+b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+b7be23902267526df5a7bf0cccca85ceb154535a153da1071021a7387c4cc0f8  scripts/repo/tests/test_wp04c.sh
+58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+== run 1
+check_no_ci rc=0 ---- 35 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 27 ok, 0 failed fails=0
+scope_check rc=0 ---- 55 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 109 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 117 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 230 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+== run 2
+check_no_ci rc=0 ---- 35 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 27 ok, 0 failed fails=0
+scope_check rc=0 ---- 55 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 109 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 117 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 230 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+== run 3
+check_no_ci rc=0 ---- 35 ok, 0 failed fails=0
+check_revision_headers rc=0 ---- 27 ok, 0 failed fails=0
+scope_check rc=0 ---- 55 ok, 0 failed fails=0
+validate_cheap rc=0 ---- 106 ok, 0 failed fails=0
+commit_recursive rc=0 ---- 58 ok, 0 failed fails=0
+push_recursive rc=0 ---- 109 ok, 0 failed fails=0
+integrate_merge rc=0 ---- 117 ok, 0 failed fails=0
+integrate_ff_only rc=0 ---- 80 ok, 0 failed fails=0
+record_deferral rc=0 ---- 26 ok, 0 failed fails=0
+check_classes rc=0 ---- 131 ok, 0 failed fails=0
+fixture_roots rc=0 ---- 30 ok, 0 failed fails=0
+wp04c rc=0 ---- 230 ok, 0 failed fails=0
+wp04d rc=0 ---- 124 ok, 0 failed fails=0
+== evidence-root guard
+ok   R1 tools/evidence is not a repo-root evidence path
+ok   R1 no repo-root evidence path
+ok   R2 no script or tool names a repo-root evidence path, apart from the 12 listed residue lines in 8 files
+ok   R3 every residue file still has hits (the list only shrinks)
+PASS
+guard rc=0
+finished

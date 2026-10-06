@@ -1,0 +1,24 @@
+# identity: MUTATION-record-run-1
+# test_sha256: bd9e57978da99a31f6ba821def49ffc4b7b901f7b7ecc6799415ab2934536dda
+# script_sha256: 27a19720af894d519d34d1490da5fbe7fd1442f169150775895293b27bc04a52
+# run_at: 2026-10-05T23:52:02Z host: anton
+CAUGHT c01: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c17: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c18: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c19: mutant gives 'present' (fixture wants 'not_applicable_local_host')
+CAUGHT c02: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c03: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c04: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c05: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c06: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c07: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c08: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c09: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c10: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c11: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c12: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c13b: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c14: mutant gives 'pass' (fixture wants 'unconfirmed')
+CAUGHT c15: mutant gives 'pass' (fixture wants 'fail')
+CAUGHT c16: mutant gives 'pass' (fixture wants 'fail')

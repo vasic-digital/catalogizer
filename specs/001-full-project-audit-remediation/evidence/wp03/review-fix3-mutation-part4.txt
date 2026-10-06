@@ -1,0 +1,6 @@
+CAUGHT   NB1a N-B1 inherited git environment not scrubbed
+CAUGHT   NB1b N-B1 GIT_INDEX_FILE kept
+CAUGHT   NB1c N-B1 GIT_DIR kept
+CAUGHT   NB1d N-B1 GIT_OBJECT_DIRECTORY kept
+CAUGHT   NB1e N-B1 the needle commits again with hooks enabled
+MUTATION SUMMARY caught=5 survived=0 broken=0

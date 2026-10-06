@@ -1,0 +1,47 @@
+# round 4 RED: section 38 (new tests) against the ORIGINAL verifier (sha256 c5468681...)
+# identity: utc=2026-10-06T06:06:13Z head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton
+# sha256 9111298dba4a4be0e91f7ae5e2f39e445d35ad3234044778e5ad20cbcbe04b47  scripts/repo/verify_repos.sh
+# sha256 22437528050ad5c411ddf00ac397d9d6c350d6129a7cda3dbe591af5e59f0eca  scripts/repo/tests/test_verify_repos.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# sha256 6a41f619bcb71251adef09925f8c19f0331da2f0773b677ae97d21e1d1ba2322  scripts/audit/scope_to_lumen_json.py
+# sha256 3413b6158ce326220b0d2c4dcc6a1381f14c05e79b539927d16ac321d6672375  scripts/audit/tests/test_scope_to_lumen_json.sh
+# sha256 2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2  scripts/audit/tests/test_derive_scope.sh
+# sha256 033cce96e2367e83bfe1e6e84d4b2427426caebb2fcd6f84d6fa467d37016129  scripts/audit/tests/mutate_wp02_wp03.sh
+# sha256 ef91de043ef6843d0433b7b3882bc14bf8793fbbaf5afc402392f8036344ba08  scripts/repo/exceptions.tsv
+IDENTITY test=a55b4fe891291c3491b8ea7480e4861b28c1e9ee2598a077d2ce4f709ba4b3d1 verifier=c5468681d6bb5807ea7bb3a627e6b9486d9ceaa366a08c58f51ec54bba4fef7f head=a27d72a55c99da68a36a3359d6334f84e62a16a2 host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-06T05:19:45Z
+ok   I-1 --fetch on a diverged superproject whose remote bumped a submodule pin: exit 12 (=12)
+FAIL I-1 the submodule's refs and FETCH_HEAD are byte-identical after --fetch (no recursion into submodules) (got '406a350c2c16232966e204f5386a363f  -', want '71ce74c6345edeac72ad7a16f8bd7aca  -')
+ok   I-1 the superproject's own refs and FETCH_HEAD are unchanged too (=353ba6a4024740343422c3924b22bda9  -)
+ok   I-1 --fetch on a diverged repository with gc.auto tripped: exit 12 (=12)
+ok   I-1 no pre-auto-gc hook execution (no maintenance under --fetch)
+ok   I-1 no gc ran: the pack count is unchanged (=0)
+FAIL I-2 the unpushed commit exists only under refs/archive/refs/heads/main: exit 11 (not 0) (got '0', want '11')
+FAIL I-2 remote_tip is the tip of refs/heads/main exactly (got 'e8b69633fe7f4dab1187d1ca2de57dd342a2db49', want 'b74cdada3834463aebd057e3dd11cabe73d76cef')
+FAIL I-2 class REMOTE-BEHIND (got 'SAME', want 'REMOTE-BEHIND')
+ok   I-2 control: a same-tip decoy ref under another namespace, branch itself SAME: exit 0 (=0)
+ok   I-2b a decoy ref archive/HEAD does not change the default-branch comparison: exit 0 (=0)
+FAIL I-3 a modified file under a lying core.fsmonitor: exit 13 (got '0', want '13')
+FAIL I-3 the row is dirty with a tracked change (got 'false,false', want 'true,true')
+ok   I-3 control needle: plain git status under the same hook IS blind (the fixture lies; a non-lying fixture would prove nothing) (=0)
+ok   I-3 control: with the monitor disabled git sees the change (=1)
+ok   I-4 fixture: the submodule is ATTACHED on main (=main)
+FAIL I-4 attached owned submodule, pin = a local-only commit no remote holds, parent pushed: exit 11 (not 0) (got '0', want '11')
+FAIL I-4 the submodule row is REMOTE-BEHIND (the pin is ahead of the remote tip) (got 'SAME', want 'REMOTE-BEHIND')
+ok   I-4 oracle: a fresh clone of the parent really fails with 'not our ref' (the condition the verifier must report)
+FAIL I-4 same fixture under --strict: exit 11 (ahead precedes pin drift) (got '15', want '11')
+ok   I-4 control: an attached owned submodule whose pin is a PUSHED commit: exit 0 (=0)
+ok   I-4 control: pin BEHIND the pushed tip (parent not bumped yet) is reachable, not a failure: exit 0 (=0)
+ok   I-4 control: the same under --strict is pin drift only (15), never an unreachable-pin class (=15)
+ok   m-1 git symbolic-ref fails (rc 128): exit 20, never read as detached (=20)
+ok   m-2 a retargeted skip-worktree symlink: exit 13 (=13)
+FAIL m-4 skip-worktree file 'x[1]' rewritten to the content of sibling x1 is dirt (literal lookup): exit 13 (got '0', want '13')
+FAIL portability (mawk as awk): a fully excepted dirty file: exit 0 ({64} interval and NUL printf must work under mawk) (got '13', want '0')
+FAIL portability (mawk as awk): the root row path is '.', not empty (got '', want '.')
+FAIL portability (mawk as awk): a detached owned submodule is enumerated and compared: exit 0 (got '20', want '0')
+FAIL portability (mawk as awk): rows are . and os (got '?', want '.,os')
+ok   portability (no column): the table run on a clean tree: exit 0 (=0)
+FAIL portability: the verifier invoked the external column command
+FAIL portability: no table in the output: 
+{"repos":1,"owned":1,"dirty":0,"dirty_excepted":0,"ahead":0,"diverged":0,"pin_drift":0,"unproven":0,"classes":{"SAME":1},"failing":0}
+SUMMARY pass=17 fail=16
+rc=1

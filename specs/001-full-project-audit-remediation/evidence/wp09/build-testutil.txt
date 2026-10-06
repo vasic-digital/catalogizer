@@ -1,0 +1,43 @@
+# build IMG-TESTUTIL 2026-10-05T20:11:33Z hash=7da5779224fb6c94
+Collecting certifi==2026.7.22
+  Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 2.2 MB/s eta 0:00:00
+Collecting charset-normalizer==3.5.2
+  Downloading charset_normalizer-3.5.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (269 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 270.0/270.0 kB 8.1 MB/s eta 0:00:00
+Collecting detect-secrets==1.4.0
+  Downloading detect_secrets-1.4.0-py3-none-any.whl (116 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 116.3/116.3 kB 52.8 MB/s eta 0:00:00
+Collecting identify==2.6.20
+  Downloading identify-2.6.20-py2.py3-none-any.whl (99 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 99.5/99.5 kB 67.6 MB/s eta 0:00:00
+Collecting idna==3.20
+  Downloading idna-3.20-py3-none-any.whl (69 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 69.6/69.6 kB 182.9 MB/s eta 0:00:00
+Collecting pre-commit-hooks==4.5.0
+  Downloading pre_commit_hooks-4.5.0-py2.py3-none-any.whl (40 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.9/40.9 kB 249.2 MB/s eta 0:00:00
+Collecting PyYAML==6.0.3
+  Downloading pyyaml-6.0.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (806 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 806.6/806.6 kB 22.9 MB/s eta 0:00:00
+Collecting requests==2.34.2
+  Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 73.1/73.1 kB 193.0 MB/s eta 0:00:00
+Collecting ruamel.yaml==0.19.1
+  Downloading ruamel_yaml-0.19.1-py3-none-any.whl (118 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 118.1/118.1 kB 251.2 MB/s eta 0:00:00
+Collecting urllib3==2.8.0
+  Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.7/135.7 kB 209.5 MB/s eta 0:00:00
+Installing collected packages: urllib3, ruamel.yaml, PyYAML, idna, identify, charset-normalizer, certifi, requests, pre-commit-hooks, detect-secrets
+Successfully installed PyYAML-6.0.3 certifi-2026.7.22 charset-normalizer-3.5.2 detect-secrets-1.4.0 identify-2.6.20 idna-3.20 pre-commit-hooks-4.5.0 requests-2.34.2 ruamel.yaml-0.19.1 urllib3-2.8.0
+--> be6fbc200d69
+STEP 5/6: LABEL project=catalogizer
+--> 340c1e4230ac
+STEP 6/6: LABEL "project"="catalogizer"
+COMMIT localhost/catalogizer-testutil:7da5779224fb6c94
+--> fb5caf65c377
+Successfully tagged localhost/catalogizer-testutil:7da5779224fb6c94
+fb5caf65c377615b1817465fc7f30f58aed2e0af07c39663c81ff8225bf76f9c
+rc=0
+DONE

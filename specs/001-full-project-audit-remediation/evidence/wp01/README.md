@@ -1,0 +1,28 @@
+# evidence/wp01 (tasks.md T011, T012, T013)
+
+Files that MUST be committed together (one change set), because the test binds them to each other:
+
+- `scripts/governance/tests/test_decision_intake.sh` (T011)
+- `scripts/governance/tests/test_no_atm_prefix.sh`, `test_evidence_root.sh`, `test_register_id_schemas.sh` (rename and evidence-root guards; they belong to no tasks.md task yet, review m6: UNCONFIRMED which task owns them)
+- `specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml` (T012, revision 2)
+- `specs/001-full-project-audit-remediation/decisions/owner-request-list.md` (T013, revision 2)
+- `specs/001-full-project-audit-remediation/progress.yml`: the binding source of the relayed 2026-10-05 owner answers. The test's `owner_answers` stage reads it and FAILs with a prerequisite message when it is absent, so a change set that omits it cannot be reproduced from a clean clone.
+- this directory (`evidence/wp01/`)
+
+**Fix round 3 (2026-10-05, after the xhigh review WF2 governance): the current transcripts are the `r6-*` files.** Each starts with `#` identity lines (git HEAD and the sha256 of the four WP-01 tests, the intake, `progress.yml`, the request list, docs/04, docs/21, research.md and the schemas it covers); a different hash means the transcript is stale. Files:
+
+- `r6-green-1..3.txt`: the four tests, three runs each, on the final artifacts: `test_decision_intake.sh`, `test_no_atm_prefix.sh`, `test_evidence_root.sh`, `test_register_id_schemas.sh`, and `tools/evidence/tests/test_evidence_record_schema.sh`.
+- `r6-mutations-intake.txt`: the reviewer's survivors D1 to D5 (list-valued block, comment on a quoted value, unrelated UNCONFIRMED, invented approval, invented host confirmation) plus D6 to D8 (the ODG-11 question history erased again, the deviation risk dropped from one copy). Every mutant FAILs the test; with the new check disabled the matching mutant survives (rc 0), which shows each check is load-bearing.
+- `r6-mutations-no-atm.txt`: the reviewer's N1 to N6 as scenarios and as mutants of a scratch tree copy, R1 to R11 (captured line edited back to the new prefix, markers removed, new mention in a decision file, SQLite register file, nested `submodules/` directory, `|` in a path, ...), the disabled-feature copies of the test (each emulates an old behaviour and fails the scenario suite), the RED for finding B1 (docs/04 as the rename left it: captured lines edited, no markers), and the schema-pattern mutants S1 to S6.
+- `r6-mutations-evidence-root.txt`: RED on the real tree contents with the residue list emptied (8 files fail), the reviewer's E1 to E4 on a scratch copy of `scripts/` and `tools/`, and the old-style checks failing the new scenario suite.
+
+History, NOT current evidence, and not bound to the present artifacts: the `*-r5*` files (test revision 5), `red*.txt`, `green-1..3.txt`, `mutations-r3/r4.txt`, and the `no-atm-*` files of the first rename. Notes on them (review minor findings): `no-atm-evrec-1..3.txt` are the all-vacuous RED of the rename (`evrec absent`, 54 of 54 FAIL; they prove nothing about the renamed literals of `tools/evidence/tests/test_evrec.sh`); `atm-inventory-before.txt` line "B. total lines in A: 157" is A (131) plus C (26), not A alone (a captured record, not edited); the `no-atm-*` files carry no identity line, no command and no time. `test_evidence_root.sh` had no RED before revision 2; its RED is in `r6-mutations-evidence-root.txt`.
+
+Superseded wording kept for the history of revision 5: Current transcripts were the `*-r5*` files (test revision 5). Older `red*.txt`, `green-1..3.txt`, `mutations-r3/r4.txt` are history of earlier test revisions. `red-r5.txt` is the RED for the final test: the revision 5 test against the previous (revision 1) intake exits 1. `green-r5-1..3.txt` are three identical GREEN runs. `mutations-r5.txt` kills the independent reviewer's mutants M1 to M12 and P_later plus the author's own for the new checks.
+
+The identity line of each transcript records the sha256 of the test, the intake and `progress.yml`; a different hash means the transcript is stale.
+
+**Batch 3 and batch 4 intake (2026-10-05, round r7): the current transcripts are the `r7-*` files** (each starts with `#` identity lines: git HEAD and the sha256 of the tests, the intake, the request list, `progress.yml` and `tasks.md`). `r7-red.txt` is the RED (the first run of this round: 13 FAIL on the new `progress.yml` block, then a reproduction against an intake with the batch3/batch4 keys reverted). `r7-green-1..3.txt` are three runs of the four governance tests; `r7-mutations.txt` holds 12 intake mutants, 7 alias-removal test mutants and a changed-source mutant, each exiting 1. FOREIGN, not caused by this round: `test_evidence_root.sh` R2 fails on `scripts/containers/run_pinned.sh` (a file of another work stream, 1 hit) and `test_no_atm_prefix.sh` fails its exemption inventory for `scripts/ledger/project_gate_ledger.tsv` and `project_gate_ledger_prev_names.txt` (present before this round).
+
+
+**Round 4 (2026-10-06, after the independent review WF3 governance): the current transcripts are the `r8-*` files, and the owed items are in `round4-notes.md`.** `r8-red-*.txt` are the RED runs, `r8-green-1..3.txt` three runs of the five tests (each file starts with `#` identity lines: git HEAD and the sha256 of the tests, the intake, the request list, `progress.yml`, docs/04, docs/21, research.md, the two `docs/upstream` drafts and tasks.md), `r8-mutations.txt` 22 mutants on a scratch git tree. `r7-*` and older are history. `test_evidence_root.sh` exits 1 in `r8-green-*` for hits in files of other work streams only.

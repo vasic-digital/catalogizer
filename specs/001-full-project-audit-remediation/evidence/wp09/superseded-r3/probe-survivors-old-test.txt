@@ -1,0 +1,21 @@
+# T001 probe: reviewer survivors pR1 (empty memory.max as absent) and pR2 (numbers as JSON strings) run against the OLD test body (new section 8 removed): expected SURVIVED
+# generated: 2026-10-05T12:37:07Z  (round: W1-W10 fix of WF-REVIEW-containers-gitignore)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED; the sha256 lines below fingerprint it)
+# sha256 9e0e8f4416badcf49917ba2195ae4bfbae98290599a6a02a07833c556be51f54  scripts/containers/probe_host.sh
+# sha256 70723a1266a3f336728b09d647d7ead6b5dec983f7d388ba12264759594a8063  scripts/containers/disk_headroom.sh
+# sha256 2d3c3abc7b802755fd3e3213fb9e3c84d289f3c9a2c45359da41c65308605f6b  scripts/containers/disk_headroom.conf
+# sha256 1086ad68a1a0f37f6e9ae4c1f46fbaf56cd83ace069ccf42c566f8cc350ddc21  scripts/containers/tests/test_probe_host.sh
+# sha256 d17913b0901b44a1e64c171c8eb93e9b7dfaf9b13b7c9ad370abe1ca1078ced0  scripts/containers/tests/test_disk_headroom.sh
+# sha256 0804144cc7e28bcf267d891734f46c26381580dc71521e894a1a88d4cce9a208  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 48fa0c5148b3ca20961bfb7e4fd3de93b46471f5aa2d638fef2f0fa322b48eae  .gitignore
+# sha256 02060ee6a6cb1f0bfc1ce40d147cb41ca0a78f073c24dd1bf9946c122a0f361b  specs/001-full-project-audit-remediation/evidence/wp09/.gitignore.before
+# ---
+FAIL: mutation slice-empty-as-absent survived (suite stayed green)
+mutation slice-empty-as-absent: SURVIVED
+FAIL: mutation nproc-as-string survived (suite stayed green)
+mutation nproc-as-string: SURVIVED
+FAIL: mutation memtotal-as-string survived (suite stayed green)
+mutation memtotal-as-string: SURVIVED
+FAIL: mutation memavailable-as-string survived (suite stayed green)
+mutation memavailable-as-string: SURVIVED
+probe_host tests: 65 passed, 6 failed

@@ -1,0 +1,2 @@
+CAUGHT   NB2c N-B2 a staged REMOVED gitlink not detected
+MUTATION SUMMARY caught=1 survived=0 broken=0

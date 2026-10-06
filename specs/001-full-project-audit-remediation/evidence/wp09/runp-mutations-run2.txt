@@ -1,0 +1,10 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-05T20:13:08Z); sha256 of SUT: 8a0e6daa71cf64cf5160dd6b0eef844a3135a062be8866afb0edbd6339f48c40
+MUTATION digest-format: caught (12 failing checks; first: FAIL: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode) (got '0' want '1')|FAIL:   ...and no podman run was composed (got '645' want '0')|)
+MUTATION entrypoint: caught (4 failing checks; first: FAIL: --entrypoint carries the override (got 'podman' want '/bin/shellcheck')|FAIL: leading command word dropped: image followed only by the arguments (got 'shellcheck |)
+MUTATION headroom: caught (8 failing checks; first: FAIL: headroom refusal refuses the run (got '0' want '1')|FAIL: reason: |)
+MUTATION limits: caught (9 failing checks; first: FAIL: argv lacks --memory|FAIL: argv lacks --memory-swap|)
+MUTATION rw-allowlist: caught (3 failing checks; first: FAIL: --rw '.audit/scratch/x' is refused (got '0' want '1')|FAIL:   ...nothing composed (got '730' want '0')|)
+MUTATION secret: caught (7 failing checks; first: FAIL: --out under the state directory is refused (got '0' want '1')|FAIL: --out equal to the state directory is refused (got '0' want '1')|)
+MUTATION symlink: caught (6 failing checks; first: FAIL: a .audit/scratch symlink to docs is refused (got '0' want '1')|FAIL: reason: |)
+MUTATION tag-only: caught (1 failing checks; first: FAIL: reason: run_pinned: REFUSED reason=digest_malformed id=IMG-TOOL|)
+MUTATION workdir: caught (2 failing checks; first: FAIL: argv lacks --workdir|FAIL: --workdir is /src (got 'podman' want '/src')|)

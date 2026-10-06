@@ -1,0 +1,56 @@
+# build/containers/images.lock.yaml - schema docs/16 section 7.1. Digests are filled by scripts/containers/resolve_pin.sh from `podman image inspect`/`podman manifest inspect`, never by hand.
+# digest = image index (manifest list) digest of the tag at resolved_at; platform_digest = the linux/amd64 manifest stored locally.
+schema: 1
+images:
+- id: IMG-GO
+  reference: docker.io/library/golang
+  tag_intent: 1.25-bookworm
+  digest: sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+  platform_digest: sha256:c268a04d59aea0b180ed9946a658cfab9e7b3391dc90eed6e4969ccff98c851f
+  resolved_at: '2026-10-05T20:01:23Z'
+  resolved_on: anton
+  purpose: catalog-api build and test (go.mod requires 1.25.7)
+  signature_status: UNKNOWN
+  size_bytes: 832636324
+- id: IMG-SHELLCHECK
+  reference: docker.io/koalaman/shellcheck
+  tag_intent: stable
+  digest: sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d
+  platform_digest: sha256:b9389b73c8f26f710a7171cb7d8848a34a9c1e07a7865e727c9ec4ce99f9a83f
+  resolved_at: '2026-10-05T20:01:26Z'
+  resolved_on: anton
+  purpose: shellcheck lint (built FROM scratch, shellcheck is the entrypoint)
+  signature_status: UNKNOWN
+  entrypoint_override: /bin/shellcheck
+  size_bytes: 16222615
+- id: IMG-TESTUTIL-BASE
+  reference: docker.io/library/debian
+  tag_intent: bookworm-slim
+  digest: sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+  platform_digest: sha256:f3034a6ec3c1205360777c4aae76234998866ad18806ae62b63a3f84ccad782b
+  resolved_at: '2026-10-05T20:01:29Z'
+  resolved_on: anton
+  purpose: base of IMG-TESTUTIL and IMG-KCOV
+  signature_status: UNKNOWN
+  size_bytes: 77914066
+- id: IMG-TESTUTIL
+  reference: localhost/catalogizer-testutil
+  tag_intent: 7da5779224fb6c94
+  digest: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+  platform_digest: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+  resolved_at: '2026-10-05T20:12:16Z'
+  resolved_on: anton
+  purpose: 'P0 test and CPA check tools (built locally on the build host anton, deviation:
+    no dispatcher yet)'
+  signature_status: UNKNOWN
+  size_bytes: 259193207
+- id: IMG-KCOV
+  reference: localhost/catalogizer-kcov
+  tag_intent: 0f210a61b3723d65
+  digest: sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164
+  platform_digest: sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164
+  resolved_at: '2026-10-05T20:15:59Z'
+  resolved_on: anton
+  purpose: kcov + P0 harness tools (FROM IMG-TESTUTIL, built locally on anton)
+  signature_status: UNKNOWN
+  size_bytes: 283106672

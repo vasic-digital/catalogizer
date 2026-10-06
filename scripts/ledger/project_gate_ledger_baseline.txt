@@ -1,0 +1,2 @@
+# baseline rev 2 2026-10-05: DEFERRED rows with only an interim reference (T092 mints the tracked items)
+12

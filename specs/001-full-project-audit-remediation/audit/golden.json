@@ -1,0 +1,151 @@
+[
+  {
+    "gold": [
+      "catalog-api/handlers/scan_handler.go"
+    ],
+    "id": "G-CG-1",
+    "index": "CG",
+    "note": "type ScanHandler defined at scan_handler.go:26, read directly",
+    "q": "ScanHandler",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/handlers/catalog.go",
+      "catalog-api/main.go"
+    ],
+    "id": "G-CG-2",
+    "index": "CG",
+    "note": "main.go:1306 api.GET(\"/stats/directories/by-size\", catalogHandler.GetDirectoriesBySize); handler at catalog.go:267",
+    "q": "route GET /api/v1/stats/directories/by-size",
+    "type": "structural"
+  },
+  {
+    "gold": [
+      "submodules/rate_limiter/pkg/ladder/ladder.go"
+    ],
+    "id": "G-CG-3",
+    "index": "CG",
+    "note": "type Ladder is defined only in the own-org submodule rate_limiter (grep over all .go files, one definition)",
+    "q": "Ladder",
+    "type": "scope"
+  },
+  {
+    "gold": [],
+    "id": "G-CG-4",
+    "index": "CG",
+    "note": "must return nothing",
+    "q": "zz_no_such_symbol_9f3a",
+    "type": "negative_control"
+  },
+  {
+    "gold": [
+      "catalog-api/middleware/csrf.go"
+    ],
+    "id": "G-LU-1",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "double-submit cookie CSRF protection that compares HMACs of a cookie token and a header token",
+    "source_id": "L60-01",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/utils/lru_cache.go"
+    ],
+    "id": "G-LU-2",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "thread-safe least recently used cache with time to live",
+    "source_id": "L60-08",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/services/sync_service.go"
+    ],
+    "id": "G-LU-3",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "cancel in-flight sync goroutines and wait for them when the sync service closes",
+    "source_id": "L60-16",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/internal/auth/service.go"
+    ],
+    "id": "G-LU-4",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "JWT token generation delegated to the shared auth jwt manager",
+    "source_id": "L60-19",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-api/handlers/comic_pages_handler.go"
+    ],
+    "id": "G-LU-5",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "serve individual image pages out of a comic book archive file",
+    "source_id": "L60-23",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/rate_limiter/pkg/ladder/ladder.go"
+    ],
+    "id": "G-LU-6",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "per-key fixed-step backoff state machine that clamps at the last step",
+    "source_id": "L60-29",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "submodules/watcher/pkg/filter/filter.go"
+    ],
+    "id": "G-LU-7",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "filter filesystem events by type pattern and file extension",
+    "source_id": "L60-33",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/playbackFormatter.ts"
+    ],
+    "id": "G-LU-8",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "format playback amounts such as seconds and pages for progress badges",
+    "source_id": "L60-36",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalog-web/src/lib/subtitleApi.ts"
+    ],
+    "id": "G-LU-9",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "subtitle search and download API client",
+    "source_id": "L60-42",
+    "type": "conceptual"
+  },
+  {
+    "gold": [
+      "catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackFormatter.kt"
+    ],
+    "id": "G-LU-N",
+    "in_tierA": true,
+    "index": "LU",
+    "q": "pure playback formatting functions mirrored from the TV app for badge rendering",
+    "source_id": "L60-51",
+    "type": "unsupported"
+  }
+]

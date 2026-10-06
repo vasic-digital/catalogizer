@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "bank-case/3",
   "title": "HelixQA bank case, schema v3 (deterministic lane)",
-  "description": "One test case inside a HelixQA bank YAML file after conversion (document 12 sections 6.2 to 6.6). Completes the document 12 section 6.4 excerpt: adds metadata.v3 fields from 6.2 (register_refs, needs, blocked_when, mutation, evidence), the step fields of 6.3, and validator rules R-1, R-2, R-7 and R-8 where a schema can express them (R-3, R-4, R-5 and R-6 need the run result or cross-file data and stay in the validator script). Applies per case (validate each item of the bank's case list). Producer: bank authors and the converter (document 12 section 7). Consumers: the bank validator gate (run before any bank executes), the Catalogizer HelixQA wrapper, the coverage matrix generator. Interim encoding note: until HelixQA gains typed step fields (WP-Q3), capture/expect_json_eq/ocr_assert live in a *.v3.yaml sidecar; this schema describes the logical merged case. No converted bank exists yet; validated against the document 12 section 6.5 worked example and a placeholder golden-bad case.",
+  "description": "One test case inside a HelixQA bank YAML file after conversion (document 12 sections 6.2 to 6.6). Completes the document 12 section 6.4 excerpt: adds metadata.v3 fields from 6.2 (register_refs, needs, blocked_when, mutation, evidence), the step fields of 6.3, and validator rules R-1, R-2, R-7 and R-8 where a schema can express them (R-3, R-4, R-5 and R-6 need the run result or cross-file data and stay in the validator script). Applies per case (validate each item of the bank's case list). Producer: bank authors and the converter (document 12 section 7). Consumers: the bank validator gate (run before any bank executes), the Catalogizer HelixQA wrapper, the coverage matrix generator. Interim encoding note: until HelixQA gains typed step fields (WP-Q3), capture/expect_json_eq/ocr_assert live in a *.v3.yaml sidecar; this schema describes the logical merged case. No converted bank exists yet; validated against the document 12 section 6.5 worked example and a placeholder golden-bad case. Revision note (2026-10-05, owner decision ODG-11): `register_refs` items are `^CAT-[0-9]{3,}$` (the withdrawn prefix is refused); checked by scripts/governance/tests/test_register_id_schemas.sh. No other keyword changed.",
   "type": "object",
   "required": ["id", "name", "category", "priority", "platforms", "steps", "metadata"],
   "properties": {
@@ -78,7 +78,7 @@
       "required": ["schema", "surface", "oracle", "needs", "flow", "evidence"],
       "properties": {
         "schema": {"const": "bank-case/3"},
-        "register_refs": {"type": "array", "items": {"type": "string", "pattern": "^ATM-[0-9]{3,}$"}},
+        "register_refs": {"type": "array", "items": {"type": "string", "pattern": "^CAT-[0-9]{3,}$"}},
         "surface": {"type": "string", "minLength": 1},
         "oracle": {
           "type": "object",

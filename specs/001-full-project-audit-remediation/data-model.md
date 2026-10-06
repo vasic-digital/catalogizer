@@ -51,7 +51,7 @@ erDiagram
 | Spec entity | Primary store | Key | Schema / DDL reference |
 |---|---|---|---|
 | Finding | `$AUD/findings/<finding_id>.json` (one `finding/1` file per finding, the only full record) + `reg_findings`; per run, the derived index `$AUD/runs/<run>/findings.index.jsonl` (docs/02 §9: one line per finding with `unit`, `path`, `line_start`, `rule_id` and `fingerprint` only, no timestamps, no `run_ids`; not a `finding/1` record) | `finding_id` = canonical `FND-NNNN` (register-minted); stored alias `unit_alias` = `F-<unit>-NNN` | `contracts/finding.schema.json`; docs/04 §5 `reg_findings` |
-| Register Item | engine `items` + `reg_ids` + `reg_item_ext` | `atm_id` `ATM-NNN` | docs/04 §4, §5, DR-2 |
+| Register Item | engine `items` + `reg_ids` + `reg_item_ext` | `atm_id` `CAT-NNN` | docs/04 §4, §5, DR-2 |
 | Application | `reg_components` | `component_id` | docs/04 §5 `reg_components` |
 | Test Evidence Record | ledger `ev/1` + `reg_evidence` + `reg_test_runs` | ledger `seq` / `evidence_id` / `(group_id, rep_index)` | `contracts/evidence-record.schema.json`; docs/06 §3; docs/04 §5 |
 | Contract | contract files (Pact JSON) + matrix verdicts | `(provider, consumer, interface)` | docs/05 §9; `contracts/route-drift-report.schema.json` for drift leads |
@@ -67,7 +67,7 @@ One audit observation with its own location and evidence. Many findings may poin
 |---|---|---|---|
 | `finding_id` | string | yes | ONE canonical id `^FND-[0-9]{4,}$`, minted by the register (`reg_findings.finding_id` generated from `finding_seq`, UNIQUE, monotone, never reused, immutable); the file name and every cross-reference use it (research R-12) |
 | `unit_alias` | string | yes | unit-local alias `^F-<unit>-[0-9]{3,}$`, stored in `reg_findings.unit_alias` (UNIQUE, immutable; CHECK requires the `<unit>` part to equal `component_id`); never used as a key elsewhere (the `ev/1` `item` field does not accept it) |
-| `register_item` | `ATM-NNN` | yes | FK `reg_findings.atm_id -> reg_ids.atm_id` |
+| `register_item` | `CAT-NNN` | yes | FK `reg_findings.atm_id -> reg_ids.atm_id` |
 | `fingerprint` | sha256 hex | yes | normalised `(unit, file, symbol-or-key, rule-id, root-cause-key)`; `UNIQUE (fingerprint, run_id)`; determinism (SC-002) is equality of the fingerprint set across two runs, compared on the per-run index files, which map 1:1 to the finding files whose `run_ids` contain the run |
 | `type` | enum | yes | `bug, error, gap, misalignment, shortcoming, weak_spot, danger_zone` (docs/02 §5.1, decision rules §5.2, first match wins, ties toward higher risk) |
 | `severity` | enum | yes | `S1..S5` (docs/02 §6); register column `severity` uses `critical, high, medium, low, cosmetic` (S1->critical ... S5->cosmetic) |
@@ -118,7 +118,7 @@ The tracked unit of work and history; the engine row plus extension rows (docs/0
 
 | Field | Type | Store | Rules |
 |---|---|---|---|
-| `atm_id` | `ATM-NNN` | `reg_ids.atm_id` (generated from `seq`, UNIQUE) | minted first, append-only (UPDATE/DELETE abort), never reused; `mint_basis` closed set `import, audit_finding, reporting_directive, candidate_duplicate, manual` |
+| `atm_id` | `CAT-NNN` | `reg_ids.atm_id` (generated from `seq`, UNIQUE) | minted first, append-only (UPDATE/DELETE abort), never reused; `mint_basis` closed set `import, audit_finding, reporting_directive, candidate_duplicate, manual` |
 | `type` | enum | engine `items.type` | `Bug, Feature, Task` (§11.4.16); closure status follows type: Bug->Fixed, Feature->Implemented, Task->Completed (§11.4.33). The 34 doc18 `PROPOSAL` entries (docs/21 §9.5) are `Feature` items with no `reg_findings` row, so they are outside the zero-open-findings count; their disposition is docs/21 ODG-39 |
 | `status` | enum | engine `items.status` | 10 engine strings kept verbatim incl. `(→ Fixed.md)` (docs/04 DR-3) |
 | title, description | text | engine | comprehensive: what, manifestation, reproduction, acceptance (§11.4.148) |
@@ -133,7 +133,7 @@ The tracked unit of work and history; the engine row plus extension rows (docs/0
 
 ```mermaid
 stateDiagram-v2
-  [*] --> Queued: add (ATM id minted first)
+  [*] --> Queued: add (CAT id minted first)
   Queued --> InProgress
   Queued --> Blocked
   Queued --> Obsolete: non-fix decision (proof, GO review, ACCEPTED decision)

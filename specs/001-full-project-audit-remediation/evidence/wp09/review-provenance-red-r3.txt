@@ -1,0 +1,85 @@
+# review-provenance evidence, round 3 (T094a), kind=red
+# captured: 2026-10-05T12:15:39Z (host UTC)
+# command: CRP_SCRIPT=<round-2 script, reconstructed verbatim from the review input> bash scripts/review/tests/test_check_review_provenance.sh
+# script under test: round-2 script (the pre-fix script; NOT in the tree any more, copy kept in the session scratchpad, its logic equals r2 as reviewed) sha256=c14b79fe62c7acf747675a94a6c66f21331f4e746c524cf9b0af12beb9360573
+# test: scripts/review/tests/test_check_review_provenance.sh sha256=5f7739caf1b80475dbb26250b7c9d28d2229f6ffba576e150ac001f07232017a
+# mutations: scripts/review/tests/mutations_check_review_provenance.sh sha256=28c9166caf9f0381d2a39e5e0de39a507be47cc74e7fd3339847346afdb02c5a
+# guide: docs/scripts/check_review_provenance.md sha256=aab04da48930f3dc2a8ccf3b4a1d59572c685f5277e55e66657e83bcbaa478e8
+# schema: specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json sha256=fdb229d22a54a9ef05f5abeca86ad109f2d37bb6b2e288ab49b86fd3c4783691
+# ----
+ok   xhigh Opus record passes (control needle for every refusal below)
+ok   high record refused (rc=20 effort_not_xhigh)
+ok   ? record refused (rc=20 effort_not_xhigh)
+ok   missing record refused (rc=20 provenance_absent)
+ok   claimed xhigh without effort argument refused (control needle) (rc=20 effort_argument_absent)
+ok   non-Opus model refused (rc=20 model_not_opus)
+ok   record without run id refused (rc=20 workflow_run_id_absent)
+ok   verdict effort differs from record refused (rc=20 verdict_field_mismatch)
+ok   verdict changed by one byte refused (verdict_sha_mismatch) (rc=20 verdict_sha_mismatch)
+ok   record without verdict_sha256 refused (verdict_sha_absent) (rc=20 verdict_sha_absent)
+ok   verdict model differs from record model refused (B3) (rc=20 verdict_field_mismatch)
+ok   verdict model 'opus-fake-claim' vs real record refused (B3) (rc=20 verdict_field_mismatch)
+ok   verdict without model refused (B3) (rc=20 verdict_field_mismatch)
+ok   substring 'opus' in a non-Opus model refused (I1) (rc=20 model_not_opus)
+ok   record model as an array refused (I1) (rc=20 model_not_opus)
+ok   bare 'opus' refused, not an allow-list id (I1) (rc=20 model_not_opus)
+ok   case variant refused, exact match only (I1) (rc=20 model_not_opus)
+ok   id with a suffix refused (I1) (rc=20 model_not_opus)
+FAIL two adjacent allow-list ids joined by a space refused (I-1a) (rc=0 want 20 reason=model_not_opus: OK review provenance: run=wf_00000001-abc model=claude-opus-5 claude-opus-5-5 effort=xhigh)
+FAIL ids 'claude-opus-4-1 claude-opus-4' joined refused (I-1a) (rc=0 want 20 reason=model_not_opus: OK review provenance: run=wf_00000001-abc model=claude-opus-4-1 claude-opus-4 effort=xhigh)
+FAIL verdict model with a trailing newline differs from the record (I-1b) (rc=0 want 20 reason=verdict_field_mismatch: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL verdict effort with trailing newlines differs from the record (I-1b) (rc=0 want 20 reason=verdict_field_mismatch: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL record effort 'xhigh' + newline is not xhigh (I-1b) (rc=0 want 20 reason=effort_not_xhigh: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL record effort_argument 'xhigh' + newline is not xhigh (I-1b) (rc=0 want 20 reason=effort_argument_mismatch: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL record model with trailing newlines refused (I-1b) (rc=0 want 20 reason=model_not_opus: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+ok   second JSON document in the verdict refused (I2) (rc=20 verdict_unreadable)
+ok   second JSON document in the record refused (I2) (rc=20 provenance_unreadable)
+ok   top-level array verdict refused (I2) (rc=20 verdict_unreadable)
+FAIL UTF-8 BOM in the verdict refused (m-4) (rc=0 want 20 reason=verdict_unreadable: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL UTF-8 BOM in the record refused (m-4) (rc=0 want 20 reason=provenance_unreadable: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL invalid UTF-8 bytes in the verdict refused (m-4) (rc=20 want 20 reason=verdict_unreadable: REFUSED reason=verdict_field_mismatch effort verdict='' record='xhigh')
+FAIL invalid UTF-8 bytes in the record refused (m-4) (rc=20 want 20 reason=provenance_unreadable: REFUSED reason=model_not_opus record model is not a string)
+ok   explicit good record used although default-path record is bad (c2)
+ok   explicit bad record refused although default-path record is good (c2) (rc=20 effort_not_xhigh)
+ok   verdict lacking effort refused (R1) (rc=20 verdict_field_mismatch)
+FAIL record effort xhigh with effort_argument high refused (R2) (rc=20 want 20 reason=effort_argument_mismatch: REFUSED reason=effort_argument_absent record effort_argument='high')
+ok   record effort ? with effort_argument xhigh refused: 'accept ?' behaviour (c3) (rc=20 effort_not_xhigh)
+ok   record sha that is a proper prefix of the actual sha refused (R6b) (rc=20 verdict_sha_mismatch)
+ok   record sha '2' refused (R6b) (rc=20 verdict_sha_mismatch)
+ok   record sha differing only in the last hex character refused (R6) (rc=20 verdict_sha_mismatch)
+ok   no arguments: usage error is exit 2 (R4) (rc=2)
+ok   three arguments: usage error is exit 2 (R4) (rc=2)
+FAIL run id blank refused (I-3) (rc=0 want 20 reason=workflow_run_id_malformed: OK review provenance: run=  model=claude-opus-5 effort=xhigh)
+FAIL run id wrongshape refused (I-3) (rc=0 want 20 reason=workflow_run_id_malformed: OK review provenance: run=wf-run-0001 model=claude-opus-5 effort=xhigh)
+FAIL run id trailingnl refused (I-3) (rc=0 want 20 reason=workflow_run_id_malformed: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL run id embedded refused (I-3) (rc=0 want 20 reason=workflow_run_id_malformed: OK review provenance: run=xx-wf_00000001-abc-yy model=claude-opus-5 effort=xhigh)
+FAIL run id bool refused (I-3) (rc=0 want 20 reason=workflow_run_id_absent: OK review provenance: run=true model=claude-opus-5 effort=xhigh)
+FAIL run id obj refused (I-3) (rc=0 want 20 reason=workflow_run_id_absent: OK review provenance: run={} model=claude-opus-5 effort=xhigh)
+FAIL run id num refused (I-3) (rc=0 want 20 reason=workflow_run_id_absent: OK review provenance: run=0 model=claude-opus-5 effort=xhigh)
+FAIL run id arr refused (I-3) (rc=0 want 20 reason=workflow_run_id_absent: OK review provenance: run=[
+  "x"
+] model=claude-opus-5 effort=xhigh)
+ok   run id null refused (I-3) (rc=20 workflow_run_id_absent)
+ok   run id pattern is configurable (CRP_RUN_ID_PATTERN)
+FAIL verdict with no schema/covers_runs, verdict MAYBE, blocking_findings 'zero' refused (B-1 probe) (rc=0 want 20 reason=verdict_schema_invalid: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL GO with blocking_findings 2 refused by the schema (B-1) (rc=0 want 20 reason=verdict_schema_invalid: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL reviewed_files entry with a short sha256 refused by the schema (B-1) (rc=0 want 20 reason=verdict_schema_invalid: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL CPA_APPROVED_DIR unset: schema check refused, never skipped (B-1) (rc=0 want 20 reason=verdict_schema_unavailable: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL unset case detail: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh
+FAIL approved dir without the schema file refused (B-1) (rc=0 want 20 reason=verdict_schema_unavailable: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL unusable schema file refused as unavailable, not accepted (B-1) (rc=0 want 20 reason=verdict_schema_unavailable: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+FAIL schema comes from CPA_APPROVED_DIR, not the working tree (s3) (rc=0 want 20 reason=verdict_schema_invalid: OK review provenance: run=wf_00000001-abc model=claude-opus-5 effort=xhigh)
+ok   CRP_SCHEMA_REL selects the schema path under CPA_APPROVED_DIR
+ok   shimmed run still accepted
+FAIL verdict path seen cat=0 others=4 (want 1 and 0) (m-1)
+FAIL valid bound verdict under a path with a backslash accepted (m-2) (rc=20: REFUSED reason=verdict_sha_mismatch record=b1e02643dd56272d0fe25eb7287d1ff09112aeae1e6bcbe1e678cd466b11166b actual=\b1e02643dd56272d0fe25eb7287d1ff09112aeae1e6bcbe1e678cd466b11166b)
+FAIL m-3 rc=20 lines=2 out=REFUSED reason=verdict_field_mismatch model verdict='claude-opus-5
+OK review provenance: run=forged' record='claude-opus-5'
+FAIL m-3 path rc=20 lines=2 out=REFUSED reason=provenance_absent /tmp/tmp.S4VlATBbji/nl
+OK forged.provenance.json
+ok   refusal writes nothing to stdout (m-3)
+FAIL doc check: 'HONEST BOUNDARY' absent from /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/crp/old.sh
+FAIL doc check: 'EFFORT IS THE REQUESTED ARGUMENT' absent from /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/crp/old.sh
+FAIL doc check: 'CPA_APPROVED_DIR' absent from /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/crp/old.sh
+DOCCHECKS pass=0 fail=3 (text only, not counted below)
+RESULT pass=35 fail=35

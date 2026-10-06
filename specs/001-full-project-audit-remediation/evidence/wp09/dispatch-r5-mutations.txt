@@ -1,0 +1,63 @@
+# dispatch (event_core) evidence, round 5 (WF5 fix N1 N2 N3), kind=mutations
+# captured: 2026-10-06T10:09:14Z (host UTC)
+# command: bash scripts/build/tests/mutate_dispatch_events.sh m_r5_n1_fsync_only_on_create m_r5_n2_cat_progress m_r5_n2_follow_symlink m_r5_n3_redo_retries_failed (the 4 new rows only; the 125-row r4 sweep NOT re-run, owed)
+# script under test: scripts/build/event_core.sh sha256=c04a4535f09c38af861dcf893456652666b4134d44df39454e1ddc52bab571ce
+# current script: scripts/build/event_core.sh sha256=c04a4535f09c38af861dcf893456652666b4134d44df39454e1ddc52bab571ce
+# test: scripts/build/tests/test_dispatch_events.sh sha256=c26ebd7f5e8459097d8fd2fd74d24d83042a490d599be0c7e5d780cbdbdae075
+# mutations: scripts/build/tests/mutate_dispatch_events.sh sha256=ab53976e938b689df128e0c4453b069a1f476f6fe6b95653c1b022d2a0e9e99f
+# guide: docs/scripts/event_core.md sha256=1cc195a465c544a8dbc63f61ec145eaf4bbdd8a04ccbcea4b5b84bfda4e9d4ae
+== m_r5_n1_fsync_only_on_create  (event_core.sh)
+@@ -100,8 +100,7 @@
+     [[ $key =~ ^[A-Za-z0-9_-]{1,128}$ ]] || { cb_fail "$d" effect_key_invalid; return 1; }
+     # the first creation of effects/ must itself be durable in the build directory (checked), else the proof's directory entry may be lost
+     # (round 5, N1: the build-directory fsync runs on EVERY attempt, not only the one that created effects/: a retry after a failed fsync must succeed at it before "done")
+-    if [ ! -d "$d/effects" ]; then { mkdir "$d/effects" 2>/dev/null || [ -d "$d/effects" ]; } || { cb_fail "$d" effects_dir_unavailable; return 1; }; fi
+-    fsync_dir "$d" || { cb_fail "$d" effects_dir_not_durable; return 1; }
++    if [ ! -d "$d/effects" ]; then { mkdir "$d/effects" 2>/dev/null || [ -d "$d/effects" ]; } || { cb_fail "$d" effects_dir_unavailable; return 1; }; fsync_dir "$d" || { cb_fail "$d" effects_dir_not_durable; return 1; }; fi
+     mkdir -p "$d/tmp" 2>/dev/null || { cb_fail "$d" effects_dir_unavailable; return 1; }
+     if [ ! -e "$d/effects/$key" ]; then
+       # audit line first (once per key, literal whole-key match), then the keyed effect: a crash between the two is repaired on resume
+FAIL (R5-N1 retry under fault) rc=0 state=done efiles=1 out=callback_state=done
+RESULT pass=282 fail=1 skip=0
+-> KILLED
+== m_r5_n2_cat_progress  (event_core.sh)
+@@ -241,7 +241,7 @@
+     isint "$po" && isint "$st" || refuse_l event_malformed "progress fields"
+     lastprog=0; laststage=0
+     if [ -e "$d/progress.json" ] || [ -L "$d/progress.json" ]; then   # present in any form: a directory or dangling link there is state damage, not "no progress yet"
+-      pj=$(read_regular "$d/progress.json") || refuse_l state_corrupt "progress.json"
++      pj=$(cat "$d/progress.json" 2>/dev/null)
+       lastprog=$(jq -r '.progress_offset' <<<"$pj" 2>/dev/null); laststage=$(jq -r '.stage' <<<"$pj" 2>/dev/null)
+       isint "$lastprog" && isint "$laststage" || refuse_l state_corrupt "progress.json"
+     fi
+FAIL (R5-N2 fifo) rc=124 (124 = blocked) out=
+FAIL (R5-N2 symlink) rc=0 out=consumed seq=3 kind=heartbeat
+RESULT pass=281 fail=2 skip=0
+-> KILLED
+== m_r5_n2_follow_symlink  (event_core.sh)
+@@ -22,7 +22,7 @@
+ starttime() { awk '{print $22}' /proc/$$/stat 2>/dev/null || echo 0; }
+ read_regular() { # file : print a regular, non-symlink file of at most 4096 bytes; anything else (FIFO, device, directory, symlink, dangling, oversize) fails. Opened O_NONBLOCK|O_NOFOLLOW and judged by fstat, so a swap after a check cannot block
+   python3 -c 'import os, stat, sys
+-fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
++fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK)
+ st = os.fstat(fd)
+ if not stat.S_ISREG(st.st_mode) or st.st_size > 4096: sys.exit(1)
+ sys.stdout.buffer.write(os.read(fd, 4097))' "$1" 2>/dev/null; }
+FAIL (R5-N2 symlink) rc=0 out=consumed seq=3 kind=heartbeat
+RESULT pass=282 fail=1 skip=0
+-> KILLED
+== m_r5_n3_redo_retries_failed  (event_core.sh)
+@@ -89,7 +89,7 @@
+   # re-check under the lock: another runner may have finished the callback while this one waited
+   if [ "$(cbstate "$d")" = done ]; then flock -u 8; return 0; fi
+   # round 5, N3: a redo (DUP / superseded redelivery) only re-runs a callback found claimed or running; one the lock holder marked failed meanwhile is left to resume-callback
+-  if [ "${2:-}" = redo ]; then case "$(cbstate "$d")" in claimed|running) ;; *) flock -u 8; return 0;; esac; fi
++  if false; then case "$(cbstate "$d")" in claimed|running) ;; *) flock -u 8; return 0;; esac; fi
+   set_cbstate "$d" running || { flock -u 8; return 1; }
+   # the callback record must be readable JSON carrying a string effect_key: anything else is a failed callback (never "done" without an effect)
+   # (an empty file is "unreadable" explicitly: jq 1.6 exits 0 for empty input even with -e, and a missing key must never fall through to the key checks)
+FAIL (R5-N3) state=done efiles=1 out=DUP seq=2 acknowledged and dropped
+RESULT pass=282 fail=1 skip=0
+-> KILLED
+DONE

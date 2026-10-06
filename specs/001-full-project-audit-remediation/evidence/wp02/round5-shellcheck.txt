@@ -1,0 +1,14 @@
+# round5 evidence | utc=2026-10-06T09:03:07Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 29a83c72bcbb36a3e42dd8ec6df3a852a1d240f464ea8e95acd2697e10a44758 scripts/repo/verify_repos.sh
+# sha256 7601a648e78353d5cea9393e4786d26f401f6ad145e7831cba933ee220461187 scripts/repo/tests/test_verify_repos.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d scripts/repo/tests/test_verify_schema.sh
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183 scripts/audit/derive_scope.sh
+# sha256 0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854 scripts/audit/index_health.sh
+# sha256 f4c9ca6ae0b02cd3395daa8adc4744d4f38b4fb4816fde03145956d61d090b5d scripts/audit/tests/test_index_health.sh
+# sha256 b0c9c05ae101a8beb57f7b86f4e77ec07bb252e0f03d8b831f837561d2fcf89a scripts/audit/tests/test_index_health_extra.sh
+# sha256 4eac3d0626c9b66e081ed91934fc95de471a20a1fe645fcf7837d2a1b7caaff4 scripts/audit/tests/test_scope_to_lumen_json.sh
+# sha256 2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2 scripts/audit/tests/test_derive_scope.sh
+# sha256 033cce96e2367e83bfe1e6e84d4b2427426caebb2fcd6f84d6fa467d37016129 scripts/audit/tests/mutate_wp02_wp03.sh
+# sha256 7cb28b2d2f93625ef6a234e028670121c71be893c34eca1a745d2cbd34074da4 scripts/anti-bluff-scan.sh
+# cmd: scripts/containers/run_pinned.sh --network=none --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp02/.rp IMG-SHELLCHECK -- shellcheck -S warning scripts/repo/verify_repos.sh scripts/repo/tests/test_verify_repos.sh scripts/repo/tests/test_verify_schema.sh scripts/audit/derive_scope.sh scripts/audit/index_health.sh scripts/audit/tests/test_index_health.sh scripts/audit/tests/test_index_health_extra.sh scripts/audit/tests/test_scope_to_lumen_json.sh scripts/audit/tests/test_derive_scope.sh scripts/audit/tests/mutate_wp02_wp03.sh scripts/anti-bluff-scan.sh
+# rc=0

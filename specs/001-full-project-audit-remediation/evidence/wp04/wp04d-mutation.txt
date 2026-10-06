@@ -1,0 +1,73 @@
+# WP-04 fix round 4 evidence (MUTATION: run_wp04d_mutations.sh, 44 mutants) - host bash 5.3.9(1)-release, git version 2.53.0, head a27d72a5 (working tree; nothing committed by this task)
+# generated 2026-10-06T06:40:52Z
+# sha256 scripts/repo/tests/test_wp04d.sh 2a0247cabe686d9850163faa3d5c90442388f61f53424312f4be4e99f77a4cd6
+# sha256 scripts/repo/tests/run_wp04d_mutations.sh 896ef24e3cf664496fceae90548820bf5c98390e9712e8a3697772c530683693
+# sha256 scripts/repo/tests/run_wp04c_mutations.sh 789772dd03fa4f83e72ee60c3874be703fda8b4cd3685597dd513d41795fd318
+# sha256 scripts/repo/tests/run_wp04b_mutations.sh b2a4e95ba90aec51b780189c30ebeb3f217872a97632e57e6ccd0669888de5f9
+# sha256 scripts/repo/tests/lib_wp04b.sh 935267e5adef7e00d74e1c0f71f7b544bdf0badc923a93aa7dd9b69bd8e90df1
+# sha256 scripts/repo/tests/test_validate_cheap.sh 3b61f92061ca033026c8d3f1530dca65e53d164e7ecc8c8a6f10f4f069a6992b
+# sha256 scripts/repo/tests/test_wp04c.sh b7be23902267526df5a7bf0cccca85ceb154535a153da1071021a7387c4cc0f8
+# sha256 scripts/repo/lib_safe.sh 7b56e823392f98138e1754526cb67de0428a2f6ce38e612fb7df832624235161
+# sha256 scripts/repo/check_no_ci.sh 5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c
+# sha256 scripts/repo/check_revision_headers.sh 78ea300502d92ca91edbb9e48fddc11e2c05e10ab20c61f75e09d6e49fa535b2
+# sha256 scripts/repo/check_class.sh dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc
+# sha256 scripts/repo/scope_check.sh 675cce18ce2b98eeb75a330228c3b1e21e2f2cdbcd8ca4a3e38a87b1e422677a
+# sha256 scripts/repo/validate_cheap.sh 79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff
+# sha256 scripts/repo/commit_recursive.sh e31f8ff37232e239ad492434b58d678f119c1133eeff8745f69c5a5740bdc0de
+# sha256 scripts/repo/push_recursive.sh 03f4b1f8bc9582b435f15c4d011ca465f8a0eb6d08aef25ac0abf88fa8392afa
+# sha256 scripts/repo/integrate_merge.sh fbba32576288b262e6eaf93f27f85f89bf6c4e2821ad26254f7d5521b033daf4
+# sha256 scripts/repo/integrate_ff_only.sh 096f9fe84d2ec89264facaabaa138a8fa0d0acf3a44f56e1f321dffa941cef6c
+# sha256 scripts/repo/record_deferral.sh 2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1
+# sha256 scripts/repo/fixture_roots.sh 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d
+# sha256 scripts/repo/validate_checks.tsv 5ee15550ba12854b3ed6018b56f9745a1b08785815175565bf3410badd8fff69
+# sha256 scripts/repo/check_classes.tsv bf78b9b74eb2fe2c8151533e8469ab8116b5b8e12346a55a9b12bf6077ff8f58
+# sha256 scripts/repo/check_exemptions.tsv 6708510e7513b3cc598b92f3714bf1bf0d7be353adafb155c5d573fc866df34f
+# sha256 scripts/repo/fixture_roots.txt d8c766b51c08530c5d27bd14d083d2d06d6c2b846c62293836f0c96a1667c25a
+# sha256 docs/scripts/check_classes.md 4b7d15b423c9fcc5ca0f18d9cbe8e68fcf96dfbcdf1c11c2ee8defac37f6cea1
+
+CONTROL  test_wp04d.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   D1 S2: a symlink store path is judged by its target  -> 5 failing case(s), e.g. FAIL the ledger replaced by a symlink to a file that extends HEAD byte for byte: 13 (B-1) (got '0', want '13')
+CAUGHT   D2 S2: a type change (HEAD holds a link) is not refused  -> 2 failing case(s), e.g. FAIL HEAD holds the link, the work tree a regular file starting with the link text (type change): 13 (B-1) (go
+CAUGHT   D3 S2: only the last path component is checked for a link  -> 1 failing case(s), e.g. FAIL the evidence directory itself replaced by a symlink (a symlink path component): 13 (B-1) (got '0', want '
+CAUGHT   D4 S2: a symlink blob is judged by its target  -> 2 failing case(s), e.g. FAIL a content-addressed blob added as a symlink whose target hashes to its name: 13 (B-1) (got '0', want '13'
+CAUGHT   D5 S3: a declared symlink in an evidence class is not a failure  -> 4 failing case(s), e.g. FAIL a declared symlink in an evidence class: 10 (B-1) (got '0', want '10')
+CAUGHT   D6 S3: the type change (HEAD link, regular file now) is not refused  -> 2 failing case(s), e.g. FAIL HEAD holds a link in an evidence path, the work tree a regular file (type change): 10 (B-1) (got '0', wan
+CAUGHT   D7 S3: a declared symlink of another class is skipped silently  -> 1 failing case(s), e.g. FAIL but never skipped silently: it is reported (no 'symlink_not_judged	src/l.txt' in 'deferred	go_fmt
+CAUGHT   D8 revision header: a declared symlink is skipped silently  -> 1 failing case(s), e.g. FAIL but it is reported, not skipped silently (no 'symlink_not_judged	revision_header	docs/a.md' in '')
+CAUGHT   E1 S1: every remote unreachable still judged  -> 2 failing case(s), e.g. FAIL S1 with every remote unreachable: 11, never a refusal naming published history (I-1) (got '0', want '11')
+CAUGHT   E2 S1: an unreachable remote contributes no known tip  -> 5 failing case(s), e.g. FAIL S1 partial outage: the unreachable remote's last known tip covers the foreign commit it holds; the reacha
+CAUGHT   E3 S1: cannot-compute is refused 20 instead of 11  -> 2 failing case(s), e.g. FAIL S1: an unreachable remote that was never fetched cannot clear a local-only commit: 11 (cannot compute) (g
+CAUGHT   E4 S1: an unreachable remote holds nothing (the old reading)  -> 4 failing case(s), e.g. FAIL S1 partial outage: the unreachable remote's last known tip covers the foreign commit it holds; the reacha
+CAUGHT   E5 S6: an unknown unreachable remote is refused 20  -> 2 failing case(s), e.g. FAIL S6: an unreachable never-fetched remote cannot clear a local-only commit: 11 (cannot compute) (got '20', 
+CAUGHT   E6 S6: an unreachable remote contributes no known tip  -> 3 failing case(s), e.g. FAIL r1 pushed (no 'PUSHED	.	r1	b7cf1af6a733d6e4449819cc8ba99876aa66d90d' in 'NOPUSH	.	r2	remote_unreachable')
+EQUIVALENT EQ-T3 S3: an uncommitted helper table is accepted: EQUIVALENT, the second check (the working copy differs from the empty committed copy) refuses the same input  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-N12 commit_recursive: no TERM trap: EQUIVALENT on this bash, which runs the EXIT trap when SIGTERM ends the script; the TERM trap only makes that shell-version independent  -> survived as documented (the guard it removes has a second layer)
+EQUIVALENT EQ-N13 push_recursive: no TERM trap: EQUIVALENT on this bash (EXIT trap runs on SIGTERM); the TERM trap only makes that shell-version independent  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   T1 S3: the helper trusts its own working-tree tables in place  -> 4 failing case(s), e.g. FAIL in place with an uncommitted edit of the helper's own table (I-2): 20 (got '0', want '20')
+CAUGHT   T2 S3: a working-tree table that differs from the committed one is accepted  -> 2 failing case(s), e.g. FAIL in place with an uncommitted edit of the helper's own table (I-2): 20 (got '10', want '20')
+CAUGHT   T4 S3: --trusted-tables is ignored  -> 2 failing case(s), e.g. FAIL an approved table copy decides, the edited working tree decides nothing: 10 (got '20', want '10')
+CAUGHT   X1 merge: a deletion of an approved G-GATE path is not held  -> 2 failing case(s), e.g. FAIL X1: a merge that deletes an approved G-GATE path is held (no 'Awaits-Review' in 'Merge r1/main 6c0af796ce
+CAUGHT   X2 the CPA run id is not validated (S1, S6 and the merge path)  -> 4 failing case(s), e.g. FAIL X3 (merge path): a run id that walks out of the audit directory proves nothing: held (no 'Awaits-Review' 
+CAUGHT   X6 S3: a check script that refuses with 20 is a failed check  -> 2 failing case(s), e.g. FAIL X6: a check script that refuses with 20 is a refusal: 20 (got '10', want '20')
+CAUGHT   X7 check_no_ci: a file below .github/workflows/<dir>/ is a pipeline  -> 2 failing case(s), e.g. FAIL X7: .github/workflows/sub/x.yml is no pipeline definition: 0 (got '10', want '0')
+CAUGHT   X8 merge: only the first admission table is checked  -> 5 failing case(s), e.g. FAIL X8: a non-CPA change of the admission table check_exemptions.tsv holds the merge (no 'Awaits-Review' in '
+CAUGHT   X9 ff: a declared directory does not block an incoming change under it  -> 3 failing case(s), e.g. FAIL X9: an incoming change under the declared directory d/ blocks the fast-forward: 12 (got '0', want '12')
+CAUGHT   N1 S2: a directory that starts with a gitlink is a gitlink  -> 2 failing case(s), e.g. FAIL m1: scope_check refuses a directory that starts with a gitlink: 20 (got '0', want '20')
+CAUGHT   N2 S3: a directory that starts with a gitlink is a gitlink  -> 2 failing case(s), e.g. FAIL m1: validate_cheap refuses a directory that starts with a gitlink: 20 (got '0', want '20')
+CAUGHT   N3 S1: the owned-submodule guard judges the checked-out branch  -> 2 failing case(s), e.g. FAIL m2: a detached owned submodule whose run branch holds a hand commit: 20 (got '0', want '20')
+CAUGHT   N4 S1: the CPA-Run predicate reads git trailers again  -> 1 failing case(s), e.g. FAIL m3: S1 accepts the run's own commit whatever the attribution line is: 0 (got '20', want '0')
+CAUGHT   N5 commit_recursive exports GIT_LITERAL_PATHSPECS into the hooks  -> 3 failing case(s), e.g. FAIL m3 setup: commit_recursive commits with a plain attribution line: 0 (got '20', want '0')
+CAUGHT   N6 ff_only leaks GIT_LITERAL_PATHSPECS into the merge hooks  -> 1 failing case(s), e.g. FAIL m4: the post-merge hook of integrate_ff_only sees no literal-pathspec variable (got '1', want 'unset')
+CAUGHT   N7 push_recursive exports GIT_LITERAL_PATHSPECS into the pre-push hooks  -> 1 failing case(s), e.g. FAIL m4: the pre-push hook of push_recursive sees no literal-pathspec variable (got '1', want 'unset')
+CAUGHT   N8 ff_only: a missing --changeset-from is read as empty  -> 2 failing case(s), e.g. FAIL m5: --changeset-from naming a missing file: 20 (got '0', want '20')
+CAUGHT   N9 ff_only: a missing --path-gates is read as empty  -> 2 failing case(s), e.g. FAIL m5: ff_only --path-gates naming a missing file: 20 (got '0', want '20')
+CAUGHT   N10 merge: a missing --path-gates is read as empty  -> 2 failing case(s), e.g. FAIL m5: integrate_merge --path-gates naming a missing file: 20 (got '0', want '20')
+CAUGHT   N11 push_recursive: no timeout on ls-remote and push  -> 3 failing case(s), e.g. FAIL m6: a stalled ssh remote ends with 11 under --timeout 2 (never rc 124) (got '124', want '11')
+CAUGHT   N14 validate_cheap: the table work directory is never removed  -> 1 failing case(s), e.g. FAIL m7: validate_cheap leaves no vc_tbl.* / vc_reg.* directory (got '1', want '0')
+CAUGHT   N15 validate_cheap: the registry directory is never removed  -> 1 failing case(s), e.g. FAIL m7: validate_cheap leaves no vc_tbl.* / vc_reg.* directory (got '1', want '0')
+CAUGHT   N16 validate_cheap: the fail line names the first five files given  -> 1 failing case(s), e.g. FAIL m8: the path column names the failing file only (no 'fail	anti_bluff	src/b.txt	' in 'fail	anti_bluff	src/
+CAUGHT   N17 validate_cheap: two held rows for one path resolve silently  -> 2 failing case(s), e.g. FAIL two held rows with different verdicts for one path: 20 (validate_cheap) (got '0', want '20')
+CAUGHT   N18 validate_cheap: a held row naming no declared path is accepted  -> 2 failing case(s), e.g. FAIL a held row that names no declared path is refused by validate_cheap: 20 (got '0', want '20')
+CAUGHT   N20 commit_recursive: the EXIT trap that removes the message files is gone  -> 1 failing case(s), e.g. FAIL m7: commit_recursive killed during its commit leaves no cr_msg.* file (got '3', want '0')
+CAUGHT   N19 commit_recursive: two held rows for one path resolve silently  -> 2 failing case(s), e.g. FAIL two held rows with different verdicts for one path: 20 (commit_recursive) (got '0', want '20')
+---- 41 CAUGHT, 3 EQUIVALENT, 0 SURVIVED

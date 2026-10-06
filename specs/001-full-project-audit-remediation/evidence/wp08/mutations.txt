@@ -1,0 +1,8 @@
+control ok
+caught  no_F1
+caught  no_F2
+caught  no_F3
+caught  allow_md_site
+caught  allow_wildcard
+caught  blind_ok
+ALL MUTANTS CAUGHT

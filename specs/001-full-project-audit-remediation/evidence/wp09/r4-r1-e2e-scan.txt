@@ -1,0 +1,17 @@
+# T001 R1 end-to-end statistical scan of the exec-window orphan (WF3-REVIEW R1): round-3 script (OLD) vs round-4 script (NEW)
+# generated: 2026-10-06T07:08:04Z  (round: r4)
+# HEAD: a27d72a55c99da68a36a3359d6334f84e62a16a2  (the tree under test is UNCOMMITTED)
+# sha256 b5d59685a3f7719fa737bac47f1a1618bd3aa590e43f99dc06c39090982624a0  scripts/containers/disk_headroom.sh (NEW)
+# sha256 4c283a03047f0dab8c98789956be335a754a9182936cc9a56cacd44b191624bc  round-3 disk_headroom.sh (OLD, copied from the r3 scratch tree)
+# method: the gate signals itself (kill -TERM $$) right after launching its bounded probe; PATH is padded with N nonexistent directories to shift the child's exec time; 0.6 s after the gate exits the hanging podman stub is looked up by the pid it recorded itself; alive = orphan. Statistical: a 0 does NOT prove absence (UNCONFIRMED for other paddings, loads and kernels).
+# the scan script is wp09/r4-r1-e2e-scan.sh (usage: bash r4-r1-e2e-scan.sh <disk_headroom.sh> 100 150 200 250). RESULT: 0 orphans in 300 trials for BOTH scripts, so on this host and load the scan does NOT reproduce the round-3 orphan and does not discriminate old from new; the discriminating evidence is the live exec-loop unit fixture (own-ness: execloop-not-ours), RED 88 of 600 reads answered "not ours" on the round-3 script, GREEN 0 of 600.
+# ---
+== OLD
+script=disk_headroom.r3.sh npad=150 trials=100 orphans=0
+script=disk_headroom.r3.sh npad=200 trials=100 orphans=0
+script=disk_headroom.r3.sh npad=250 trials=100 orphans=0
+== NEW
+script=scripts/containers/disk_headroom.sh npad=150 trials=100 orphans=0
+script=scripts/containers/disk_headroom.sh npad=200 trials=100 orphans=0
+script=scripts/containers/disk_headroom.sh npad=250 trials=100 orphans=0
+finished 2026-10-06T07:19:49Z

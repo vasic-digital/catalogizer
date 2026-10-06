@@ -1,0 +1,40 @@
+# round5 evidence | utc=2026-10-06T09:06:28Z host=anton head=a27d72a55c99da68a36a3359d6334f84e62a16a2
+# sha256 0c3c83082b76de79bef2ada63fa2a1afd6f834fb5ebbcfc5c5a2e37d076eb854 scripts/audit/index_health.sh
+# sha256 4451fe65e0cd9cc077546888c5760efaf128840d382ac0292128f7ac0706d367 scripts/audit/tests/mutate_index_health.sh
+# sha256 f4c9ca6ae0b02cd3395daa8adc4744d4f38b4fb4816fde03145956d61d090b5d scripts/audit/tests/test_index_health.sh
+# sha256 b0c9c05ae101a8beb57f7b86f4e77ec07bb252e0f03d8b831f837561d2fcf89a scripts/audit/tests/test_index_health_extra.sh
+# cmd: bash scripts/audit/tests/mutate_index_health.sh
+baseline (unmutated) rc=0 SUMMARY pass=34 fail=0
+CAUGHT   m01-good-needs-pendingrefs-1 (5 failing check(s): FAIL all-good fixture: want rc=0 verdict=PASS, got rc=1 verdict=FAIL f)
+CAUGHT   m02-pendingrefs-ignored (1 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m03-absent-field-read-as-zero (2 failing check(s): FAIL required field index.pendingRefs absent: want rc=1 verdict=FAIL P)
+CAUGHT   m04-worktree-ignored (1 failing check(s): FAIL worktreeMismatch non-null: want rc=1 verdict=FAIL P1=FAIL, got rc)
+CAUGHT   m05-negative-needle-ignored (1 failing check(s): FAIL negative needle zz/does_not_exist.go found: want rc=1 verdict=FAI)
+CAUGHT   m06-positive-needle-ignored (1 failing check(s): FAIL X1 positive needle missing while tracked set is complete -> P2 FA)
+CAUGHT   m07-stale-ignored (1 failing check(s): FAIL Lumen status Stale: yes: want rc=1 verdict=FAIL P7=FAIL, got rc=0)
+CAUGHT   m08-no-status-passes (1 failing check(s): FAIL no Lumen status file and no probe: want rc=1 verdict=FAIL P-Lumen)
+CAUGHT   m09-bin-absent-passes (1 failing check(s): FAIL --lumen-bin path does not exist: want rc=1 verdict=FAIL P-Lumen=F)
+CAUGHT   m10-parity-tolerance-ignored (1 failing check(s): FAIL scope parity outside tolerance: want rc=1 verdict=FAIL P8=FAIL, g)
+CAUGHT   m11-out-optional (1 failing check(s): FAIL missing --out: want rc=2, got rc=1)
+CAUGHT   m12-schema-marker (1 failing check(s): FAIL schema: want index-health/1, got index-health/2)
+CAUGHT   m13-p2-needles-not-recorded (1 failing check(s): FAIL P2 row must record needle_pos and needle_neg)
+CAUGHT   m14-verdict-always-pass (32 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m15-chunks-zero-ok (1 failing check(s): FAIL X3 Chunks 0 -> P7 FAIL: want rc=1 P7=FAIL chunks_zero, got rc=0 P)
+CAUGHT   m16-files-ne-indexed-ok (1 failing check(s): FAIL X4 Files != Indexed -> P7 FAIL: want rc=1 P7=FAIL files_ne_indexe)
+CAUGHT   m17-secret-class-ignored (1 failing check(s): FAIL X6 .env.distributed indexed -> P3 FAIL: want rc=1 P3=FAIL secret_)
+CAUGHT   m18-env-example-flagged (1 failing check(s): FAIL X7 .env.example allowed -> P3 PASS (false-positive guard): want r)
+CAUGHT   m19-third-party-ignored (2 failing check(s): FAIL X8 file under a third-party root -> P3 FAIL: want rc=1 P3=FAIL th)
+CAUGHT   m20-own-org-ignored (1 failing check(s): FAIL X9 own-org root with no indexed file -> P3 FAIL: want rc=1 P3=FAI)
+CAUGHT   m21-tracked-missing-ignored (1 failing check(s): FAIL X10 tracked file not indexed -> P2 FAIL: want rc=1 P2=FAIL tracke)
+CAUGHT   m22-bin-probe-passes (1 failing check(s): FAIL X11 executable --lumen-bin without a status capture -> P-Lumen FA)
+CAUGHT   m23-skip-p8-not-incomplete (1 failing check(s): FAIL X12b complete flag)
+CAUGHT   m24-hash-not-of-file (1 failing check(s): FAIL X16 want b8a990bee2c8304cf6ffb1c46fa3a99c295ba27ece5c6434cae86563)
+CAUGHT   m25-dup-option-allowed (1 failing check(s): FAIL X13c rc=0)
+CAUGHT   m26-empty-tracked-not-blind (1 failing check(s): FAIL M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind: wa)
+CAUGHT   m27-state-not-complete-ignored (1 failing check(s): FAIL M5-3 index.state indexing (everything else clean) -> P1 FAIL inde)
+CAUGHT   m28-noncanonical-third-party-root-ignored (9 failing check(s): FAIL R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_)
+CAUGHT   m29-noncanonical-no-control-char-check (1 failing check(s): FAIL R4 non-canonical third-party root line [ a \ 0 0 1] -> P3 FAIL th)
+CAUGHT   m30-noncanonical-no-whitespace-check (2 failing check(s): FAIL R4 non-canonical third-party root line [ a ] -> P3 FAIL third_par)
+CAUGHT   m31-noncanonical-no-dot-component-check (3 failing check(s): FAIL R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_)
+MUTATIONS total=31 survived=0
+# rc=0

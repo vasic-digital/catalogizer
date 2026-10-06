@@ -1,0 +1,590 @@
+{
+ "header": {
+  "schema": 1,
+  "date_utc": "2026-10-06T00:12:09Z",
+  "image_id": "IMG-KCOV",
+  "image_digest": "sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164",
+  "kcov_version": "kcov 43",
+  "repo_head": "a27d72a55c99da68a36a3359d6334f84e62a16a2",
+  "runner": "scripts/containers/run_pinned.sh",
+  "runner_sha256": "8a0e6daa71cf64cf5160dd6b0eef844a3135a062be8866afb0edbd6339f48c40",
+  "lock_sha256": "d2e8fa9d23863776a53549b292d771d7b0b0de9902c53ef668f475268cf1a1c3",
+  "measurement": "kcov bash line coverage (executable lines as kcov determines them), union over the listed tests, union of hits>0",
+  "kcov_flags": "--include-path=/src/scripts --exclude-pattern=/tests/",
+  "floor_percent": 85
+ },
+ "scripts": [
+  {
+   "executable": 19,
+   "covered": 17,
+   "percent": 89.47,
+   "uncovered_ranges": [
+    "38",
+    "42"
+   ],
+   "tests": [
+    "test_check_no_ci"
+   ],
+   "script": "scripts/repo/check_no_ci.sh",
+   "script_sha256": "5d67d3806298f008af73580342aa389f7b8089076d957ccafb159af04745f02c",
+   "total_file_lines": 44,
+   "embedded_python": null
+  },
+  {
+   "executable": 39,
+   "covered": 33,
+   "percent": 84.62,
+   "uncovered_ranges": [
+    "31-33",
+    "52-54"
+   ],
+   "tests": [
+    "test_check_revision_headers"
+   ],
+   "script": "scripts/repo/check_revision_headers.sh",
+   "script_sha256": "f6a168ea8b15663607a68a02077c79f9a176395a60389f50f01e0f2f91a54339",
+   "total_file_lines": 70,
+   "embedded_python": null
+  },
+  {
+   "executable": 62,
+   "covered": 58,
+   "percent": 93.55,
+   "uncovered_ranges": [
+    "56",
+    "59",
+    "108",
+    "110"
+   ],
+   "tests": [
+    "test_scope_check"
+   ],
+   "script": "scripts/repo/scope_check.sh",
+   "script_sha256": "70f214bc802ef5434559c9c921e925efdd89ebddcf86e5d5f72724b58a8c09cf",
+   "total_file_lines": 113,
+   "embedded_python": null
+  },
+  {
+   "executable": 3,
+   "covered": 3,
+   "percent": 100.0,
+   "uncovered_ranges": [],
+   "tests": [
+    "test_validate_cheap"
+   ],
+   "script": "scripts/repo/validate_cheap.sh",
+   "script_sha256": "d9b0b487c8f25bddf2bf427c5e5e3e5cf926efd559e733cd99a70c39691121e1",
+   "total_file_lines": 360,
+   "embedded_python": {
+    "embedded_python_lines": 318,
+    "from_line": 42,
+    "to_line": 359
+   }
+  },
+  {
+   "executable": 87,
+   "covered": 83,
+   "percent": 95.4,
+   "uncovered_ranges": [
+    "44-45",
+    "74",
+    "125"
+   ],
+   "tests": [
+    "test_commit_recursive"
+   ],
+   "script": "scripts/repo/commit_recursive.sh",
+   "script_sha256": "83d8eda777083af76da61ed747fa6a062bce25ccd2f847d6277a5ad50e827618",
+   "total_file_lines": 140,
+   "embedded_python": null
+  },
+  {
+   "executable": 105,
+   "covered": 97,
+   "percent": 92.38,
+   "uncovered_ranges": [
+    "45",
+    "48",
+    "74",
+    "118",
+    "120",
+    "134-135",
+    "176"
+   ],
+   "tests": [
+    "test_push_recursive"
+   ],
+   "script": "scripts/repo/push_recursive.sh",
+   "script_sha256": "b321b6d5ca0f08f2aeaff16ba664fc496126bdef408cb6a219600b8b83c77865",
+   "total_file_lines": 185,
+   "embedded_python": {
+    "embedded_python_lines": 12,
+    "from_line": 92,
+    "to_line": 103
+   }
+  },
+  {
+   "executable": 171,
+   "covered": 164,
+   "percent": 95.91,
+   "uncovered_ranges": [
+    "122",
+    "165",
+    "214-215",
+    "221",
+    "231",
+    "247"
+   ],
+   "tests": [
+    "test_integrate_merge"
+   ],
+   "script": "scripts/repo/integrate_merge.sh",
+   "script_sha256": "c11628ffb90f0ccb6ed6105729083576f706f44c43c36532c0dcdd8a17220dd3",
+   "total_file_lines": 253,
+   "embedded_python": null
+  },
+  {
+   "executable": 155,
+   "covered": 140,
+   "percent": 90.32,
+   "uncovered_ranges": [
+    "44",
+    "59",
+    "85",
+    "101",
+    "115",
+    "151",
+    "191-199"
+   ],
+   "tests": [
+    "test_integrate_ff_only"
+   ],
+   "script": "scripts/repo/integrate_ff_only.sh",
+   "script_sha256": "713c7e446bb9b7b737f44b9ff3093b41978a5d290b971b4e56c0dfe85dff18a7",
+   "total_file_lines": 248,
+   "embedded_python": null
+  },
+  {
+   "executable": 35,
+   "covered": 35,
+   "percent": 100.0,
+   "uncovered_ranges": [],
+   "tests": [
+    "test_record_deferral"
+   ],
+   "script": "scripts/repo/record_deferral.sh",
+   "script_sha256": "2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1",
+   "total_file_lines": 54,
+   "embedded_python": null
+  },
+  {
+   "executable": 3,
+   "covered": 3,
+   "percent": 100.0,
+   "uncovered_ranges": [],
+   "tests": [
+    "test_check_classes"
+   ],
+   "script": "scripts/repo/check_class.sh",
+   "script_sha256": "dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc",
+   "total_file_lines": 106,
+   "embedded_python": {
+    "embedded_python_lines": 85,
+    "from_line": 21,
+    "to_line": 105
+   }
+  },
+  {
+   "executable": 4,
+   "covered": 4,
+   "percent": 100.0,
+   "uncovered_ranges": [],
+   "tests": [
+    "test_fixture_roots"
+   ],
+   "script": "scripts/repo/fixture_roots.sh",
+   "script_sha256": "3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d",
+   "total_file_lines": 51,
+   "embedded_python": {
+    "embedded_python_lines": 35,
+    "from_line": 14,
+    "to_line": 48
+   }
+  },
+  {
+   "executable": 261,
+   "covered": 196,
+   "percent": 75.1,
+   "uncovered_ranges": [
+    "83-84",
+    "100",
+    "114",
+    "130",
+    "143-144",
+    "147",
+    "173-183",
+    "185-187",
+    "209-213",
+    "227-228",
+    "231",
+    "242",
+    "285",
+    "321",
+    "324",
+    "345-357",
+    "359-372",
+    "375-377",
+    "379"
+   ],
+   "tests": [
+    "test_verify_repos"
+   ],
+   "script": "scripts/repo/verify_repos.sh",
+   "script_sha256": "c5468681d6bb5807ea7bb3a627e6b9486d9ceaa366a08c58f51ec54bba4fef7f",
+   "total_file_lines": 397,
+   "embedded_python": null
+  },
+  {
+   "executable": 9,
+   "covered": 9,
+   "percent": 100.0,
+   "uncovered_ranges": [],
+   "tests": [
+    "test_check_no_ci",
+    "test_check_revision_headers",
+    "test_scope_check",
+    "test_validate_cheap",
+    "test_commit_recursive",
+    "test_push_recursive",
+    "test_integrate_merge",
+    "test_integrate_ff_only",
+    "test_record_deferral",
+    "test_check_classes",
+    "test_fixture_roots",
+    "test_verify_repos",
+    "test_check_review_provenance",
+    "test_project_gate_ledger"
+   ],
+   "script": "scripts/repo/lib_safe.sh",
+   "script_sha256": "66134c783403963ed1998715c4648eb708640ccd3907641ce1dba6e1147c77d9",
+   "total_file_lines": 51,
+   "embedded_python": null
+  },
+  {
+   "executable": 82,
+   "covered": 70,
+   "percent": 85.37,
+   "uncovered_ranges": [
+    "85-95",
+    "166"
+   ],
+   "tests": [
+    "test_check_review_provenance"
+   ],
+   "script": "scripts/review/check_review_provenance.sh",
+   "script_sha256": "152aaa649b71413d2e1f85af0b93e0f6f96820c84b4541f88310636e80296025",
+   "total_file_lines": 193,
+   "embedded_python": {
+    "embedded_python_lines": 10,
+    "from_line": 85,
+    "to_line": 94
+   }
+  },
+  {
+   "executable": 67,
+   "covered": 62,
+   "percent": 92.54,
+   "uncovered_ranges": [
+    "40",
+    "81",
+    "83",
+    "88",
+    "107"
+   ],
+   "tests": [
+    "test_project_gate_ledger"
+   ],
+   "script": "scripts/ledger/project_gate_ledger_ratchet.sh",
+   "script_sha256": "38c376983972203c7006e25eab5162dbb5dc26377ab77761a540665135b0002e",
+   "total_file_lines": 124,
+   "embedded_python": null
+  }
+ ],
+ "test_pass_comparison": {
+  "test_check_no_ci": {
+   "test_sha256": "d2d8fe4b06cf04f66fb5eadabbc27ced11cf3a457321fe6b5c4387b3b5889ae3",
+   "host_pass_fail": [
+    30,
+    0
+   ],
+   "kcov_pass_fail": [
+    30,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    30,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_check_revision_headers": {
+   "test_sha256": "8c2c65b793686212a29c2aa44a8eae773fa11ebb82773450a511213eb3bdd7b4",
+   "host_pass_fail": [
+    25,
+    0
+   ],
+   "kcov_pass_fail": [
+    25,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    25,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_scope_check": {
+   "test_sha256": "2b1a1fb2d94358f603ef149f47a47655cfa7ff40c0f58bf257b29b75d972550f",
+   "host_pass_fail": [
+    50,
+    0
+   ],
+   "kcov_pass_fail": [
+    50,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    50,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_validate_cheap": {
+   "test_sha256": "f8341b6f48ae4db94edac6fbc654c82c826aea21e27d392a54bcd0c7f5868769",
+   "host_pass_fail": [
+    106,
+    0
+   ],
+   "kcov_pass_fail": [
+    106,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    106,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_commit_recursive": {
+   "test_sha256": "41b3c068c953d4d1db80498681ffc47a6ed775e18b650ac5572a5ea10ceca8b2",
+   "host_pass_fail": [
+    55,
+    0
+   ],
+   "kcov_pass_fail": [
+    55,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    55,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_push_recursive": {
+   "test_sha256": "5c55a24218c73678f062078faff1a11ce14f026a021f309fd68e00d03b6f9564",
+   "host_pass_fail": [
+    92,
+    0
+   ],
+   "kcov_pass_fail": [
+    92,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    92,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_integrate_merge": {
+   "test_sha256": "e484c4a6ddd839034f62a056cda09dc759652fefed6e82d6c83431552e587960",
+   "host_pass_fail": [
+    117,
+    0
+   ],
+   "kcov_pass_fail": [
+    117,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    117,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_integrate_ff_only": {
+   "test_sha256": "b2a61fd232b189335753f94aeae5592a11378719d5ecf093df94ecf9d2cc879e",
+   "host_pass_fail": [
+    80,
+    0
+   ],
+   "kcov_pass_fail": [
+    80,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    80,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_record_deferral": {
+   "test_sha256": "3babdf3db5a6b4416b96c548e29cc32bd599dfeaab747fa1bd8fbbacce7fabcc",
+   "host_pass_fail": [
+    26,
+    0
+   ],
+   "kcov_pass_fail": [
+    24,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    24,
+    0
+   ],
+   "same_as_host": false
+  },
+  "test_check_classes": {
+   "test_sha256": "4ae7335cf4078d9958e32dfd97730f1a1d75c581415f72fd9db84686d24562bb",
+   "host_pass_fail": [
+    131,
+    0
+   ],
+   "kcov_pass_fail": [
+    131,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    131,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_fixture_roots": {
+   "test_sha256": "9f0874d8f53fff96c3b291176758141219209d0cd9adbccfea880d866d88a196",
+   "host_pass_fail": [
+    30,
+    0
+   ],
+   "kcov_pass_fail": [
+    30,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    30,
+    0
+   ],
+   "same_as_host": true
+  },
+  "test_verify_repos": {
+   "test_sha256": "a9ff7f367554583ffab3bed7e6a4152567537f54ee1cfa43f7d3885b2635b005",
+   "host_pass_fail": [
+    336,
+    0
+   ],
+   "kcov_pass_fail": [
+    169,
+    167
+   ],
+   "kcov_first_attempt_pass_fail": [
+    169,
+    167
+   ],
+   "same_as_host": false
+  },
+  "test_check_review_provenance": {
+   "test_sha256": "3b76ebc01af86c915d460f65da01de28473c6f7f04f052c837900589d57ba12c",
+   "host_pass_fail": [
+    113,
+    0
+   ],
+   "kcov_pass_fail": [
+    113,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    109,
+    4
+   ],
+   "same_as_host": true
+  },
+  "test_project_gate_ledger": {
+   "test_sha256": "8c38fb1c43aaa4227b56e913c48627ada883087c8e3f65538643fa3a6a68781b",
+   "host_pass_fail": [
+    43,
+    0
+   ],
+   "kcov_pass_fail": [
+    43,
+    0
+   ],
+   "kcov_first_attempt_pass_fail": [
+    43,
+    0
+   ],
+   "same_as_host": true
+  }
+ },
+ "raw_outputs_sha256": {
+  ".audit/scratch/kcov/run/test_check_classes/cov/test_check_classes.sh.dd39818248a7aa17/cobertura.xml": "2ddb94ec7538f65c1bfe0f548fedcc6a7b85eb5d0d79e858350234533941f4cc",
+  ".audit/scratch/kcov/run/test_check_no_ci/cov/test_check_no_ci.sh.2381cdfe003485e4/cobertura.xml": "3c078c97005d14169f66424ea6fac6df1ec7cb836bdfddaaa82e797ceed448b1",
+  ".audit/scratch/kcov/run/test_check_review_provenance/cov/test_check_review_provenance.sh.8975959e8dc4322b/cobertura.xml": "0fd3d8a7d9ee5d5caf748b502de9239241e324dfabac4e1f16f97426142ef43b",
+  ".audit/scratch/kcov/run/test_check_revision_headers/cov/test_check_revision_headers.sh.a359797f3d7adbb/cobertura.xml": "a48ca8d7cbd1f29991cb24d4c966c13fddcba3a3eeb239e27d89a9eb0e475abe",
+  ".audit/scratch/kcov/run/test_commit_recursive/cov/test_commit_recursive.sh.737223e1deffe12e/cobertura.xml": "ec4b5fdbdfa8f2edecf4c7ca78b947ab50003e70e2620c3faf06e70bb854c57b",
+  ".audit/scratch/kcov/run/test_fixture_roots/cov/test_fixture_roots.sh.e8a7cfbd6f67a6a5/cobertura.xml": "6094625fe43b757ccd66564429aca0e1dfe7ceac0aae103845bcb9839c99cfc2",
+  ".audit/scratch/kcov/run/test_integrate_ff_only/cov/test_integrate_ff_only.sh.af46c106adfe14d0/cobertura.xml": "25fd292a19e32c92544e073ab7f5ad965b8132ac28ea2262430950420cc7a21c",
+  ".audit/scratch/kcov/run/test_integrate_merge/cov/test_integrate_merge.sh.6cf2dc66ac416e42/cobertura.xml": "27a70076b92b36a2720bdd7ba043860c5579a6ec199070a8c4b8276a1349fdc0",
+  ".audit/scratch/kcov/run/test_project_gate_ledger/cov/test_project_gate_ledger.sh.23f988278edb24e8/cobertura.xml": "8f39d77379baab085240b71bb869c425d6047aecd5dadd4796353513564de915",
+  ".audit/scratch/kcov/run/test_push_recursive/cov/test_push_recursive.sh.8f78d309ceb94928/cobertura.xml": "a6f00bd5ccd0e68f9dc617c19e494c11aa56cb0a8a5535debe2d9a6b3a319ade",
+  ".audit/scratch/kcov/run/test_record_deferral/cov/test_record_deferral.sh.e832fd60b4bf03d4/cobertura.xml": "acaf8aa0b1b5bc745758c557d3ab9f75b9394601dc83bdd1ea0c8e0e33cec827",
+  ".audit/scratch/kcov/run/test_scope_check/cov/test_scope_check.sh.bdbcb7c408730a8a/cobertura.xml": "597e087a971f1434ab6e882039f5a6eca2d2ac49c19f7879f9d6009a07008f20",
+  ".audit/scratch/kcov/run/test_validate_cheap/cov/test_validate_cheap.sh.8de581979ed4ece5/cobertura.xml": "1dafea4f7e833444fb7771922b3ce99555b08f5fa8225fab0545b0e7a968f9d0",
+  ".audit/scratch/kcov/run/test_verify_repos/cov/test_verify_repos.sh.a2b3db79ec59ad83/cobertura.xml": "442382e7d7ddb3e49e43c4c8126b04e3b7f941f23f553798f656d1cc564a9c67",
+  ".audit/scratch/kcov/run3/test_check_review_provenance/cov/test_check_review_provenance.sh.8975959e8dc4322b/cobertura.xml": "098dfa0ad765554b0eed30d2700439c7bd7124a463a5059434f7d5f74b815a1e",
+  ".audit/scratch/kcov/run3/test_verify_repos/cov/test_verify_repos.sh.a2b3db79ec59ad83/cobertura.xml": "dccd25b7a4d7cfd53ff56cff42690df28f1e3aea117808fa351425fed81140b5",
+  ".audit/scratch/kcov/run4/test_verify_repos/cov/test_verify_repos.sh.a2b3db79ec59ad83/cobertura.xml": "241341e287ff256818f2eb2eb7bff64dde66d3d8d9d4325ec283bc27cde2d17d",
+  ".audit/scratch/kcov/host/test_check_classes.out": "ec8ad793625a5b5af3e7dc8ebf8c88e5acaba5348369f6489b08c1fb09627035",
+  ".audit/scratch/kcov/host/test_check_no_ci.out": "bba7cb5dcb9de7b909a2dfa60eb69ed0ec4c77799ed6664b842ad108bcbfda79",
+  ".audit/scratch/kcov/host/test_check_review_provenance.out": "f54ec19242a6a9287d721eb3805f9adbab1b64989f43aacc726663b1c922f539",
+  ".audit/scratch/kcov/host/test_check_revision_headers.out": "fd41184c7b705550ec9a491967cf9232cff8c78be6223cd7cec72884cdf53a4b",
+  ".audit/scratch/kcov/host/test_commit_recursive.out": "1fe28bb77ad2023e1e9c98ecbb527d2d95decc594fc333754d5e5362a749bce4",
+  ".audit/scratch/kcov/host/test_fixture_roots.out": "0306121db6a28fd7cac4aa9dc509309871edc6b07a069cc30f41bcd04e44fd30",
+  ".audit/scratch/kcov/host/test_integrate_ff_only.out": "a196efdff0b3a424c0a0e9826342e8b90c64463f6dd5bb9e432b6532d78c32c8",
+  ".audit/scratch/kcov/host/test_integrate_merge.out": "f8736545df50ec7db0759f721bca13b6c4c2e06963b7d97a6605bfdceabf28ca",
+  ".audit/scratch/kcov/host/test_project_gate_ledger.out": "05529af217bba15a7638b29ebd9b81d7e11165262b2dfa23da0c9cf190c849d6",
+  ".audit/scratch/kcov/host/test_push_recursive.out": "4eadf1363d9413b7634205adafff24bdb9fd687b0c7e4bcc1284716c22216209",
+  ".audit/scratch/kcov/host/test_record_deferral.out": "8a1bf9b59bc7eb452ccd44111fc4f98d8ea14c361ad9d21b3ce61969cb02fdfb",
+  ".audit/scratch/kcov/host/test_scope_check.out": "bb5a8ce0ebed1007f1ee15911dab15347df69cca1a4a96749f75cc18179802b3",
+  ".audit/scratch/kcov/host/test_validate_cheap.out": "cb90dad1ca65bdd649fa069da6dd23e11dfaeeeb2c7e725b8a3a0b8787cf198e",
+  ".audit/scratch/kcov/host/test_verify_repos.out": "389536f2dc194f4037982bdf3636cd9d274b5ef4c554c02c0bd7efc808ae7650",
+  ".audit/scratch/kcov/run/test_check_classes.out": "577ab24fde5a05eba802255e1b0513c19c4c03af9f1b1fea6e4a650fac28b4e0",
+  ".audit/scratch/kcov/run/test_check_no_ci.out": "2129161314b939f4282736512eaeebd91eabc5e720293afadc989cd8d90bdf99",
+  ".audit/scratch/kcov/run/test_check_review_provenance.out": "9819ba7df5e1cb98a8c234b177a3c3c00fc0c0dd20208d2667b69e35c36026e6",
+  ".audit/scratch/kcov/run/test_check_revision_headers.out": "5e64638330789d47f9cd3b37409a48ebfe7c7b728944151d173125e0442e4b3e",
+  ".audit/scratch/kcov/run/test_commit_recursive.out": "12439243704815952dc92f0b503e4912b2aee5026edb1a0b8d173d5d241291b7",
+  ".audit/scratch/kcov/run/test_fixture_roots.out": "11b8454cda9ca5d000d2d320ca4d06c6253ac98b49408ae9fe7d961dbceb20ce",
+  ".audit/scratch/kcov/run/test_integrate_ff_only.out": "75fea87abd9482eea4a721b1a7ddb17b4cb85d0ff937704ba1638fc619359c38",
+  ".audit/scratch/kcov/run/test_integrate_merge.out": "20ba9a9ff1cce6859c86bc894fce65d502ceaf936ec07714192b5fc6088451e7",
+  ".audit/scratch/kcov/run/test_project_gate_ledger.out": "05529af217bba15a7638b29ebd9b81d7e11165262b2dfa23da0c9cf190c849d6",
+  ".audit/scratch/kcov/run/test_push_recursive.out": "e3017874c07d882d70824c89a38a83a0745ac5fdb2d152dacc74f74f41f663e8",
+  ".audit/scratch/kcov/run/test_record_deferral.out": "f4c2de09e9afa8d9b58c8b64adeaecd5865ef51619444e7435d47524038dd109",
+  ".audit/scratch/kcov/run/test_scope_check.out": "e9c3da901c57839770ca2eb9d6e31f1957a62328c96fb2a2956b3274bdf4b533",
+  ".audit/scratch/kcov/run/test_validate_cheap.out": "72e605d5be3de7b0679305d3b78a44ae9b520c3df8a0cdfd3c17dfd482ad70d3",
+  ".audit/scratch/kcov/run/test_verify_repos.out": "0e5f79f6231fe9741adc04cc32a27826cddf5ad52d31c4159185ce1674d2aa0d",
+  ".audit/scratch/kcov/run2_envattempt_aborted/test_verify_repos.out": "ffa7b4defa322411240374cbee88c373bbacfc6d0be0848ed279614e5a807bad",
+  ".audit/scratch/kcov/run3/test_check_review_provenance.out": "f54ec19242a6a9287d721eb3805f9adbab1b64989f43aacc726663b1c922f539",
+  ".audit/scratch/kcov/run3/test_verify_repos.out": "6cbeb08bb6a2b37218a5a332a9851c16e2410a1576fc664bff352e3a01ce7398",
+  ".audit/scratch/kcov/run4/test_verify_repos.out": "29ae8b9c542ddd55955d7d83203fb82c6057c8093368e1d2113cbc2638e62fe2"
+ }
+}
