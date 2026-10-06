@@ -145,6 +145,33 @@ expect "WF6-R2 a document name CM-ALPHA registered only as a prefix of CM-ALPHA-
 # golden-false: both names exactly present and registered passes
 mk; printf 'CM-ALPHA-ONE\nCM-ALPHA\n' >>"$T/f/docs/a.md"; printf 'CM-ALPHA-ONE\tDEFERRED\tCAT-6\nCM-ALPHA\tDEFERRED\tCAT-5\n' >>"$T/f/ledger.tsv"; echo 3 >"$T/f/baseline"; printf 'CM-ALPHA-ONE\nCM-ALPHA\n' >>"$T/f/prev"
 expect "WF6-R3 golden-false: both CM-ALPHA and CM-ALPHA-ONE exactly present and registered passes" 0
+# WF7-1: IMPLEMENTED site match is a whole-token match (boundaries on identifier characters), never a substring
+wf7() { # $1 = content of impl/one.sh body line; the document names CM-ALPHA, ledger says IMPLEMENTED in impl/one.sh
+  mk; printf 'CM-ALPHA\n' >>"$T/f/docs/a.md"; printf '#!/bin/sh\n%s\n' "$1" >"$T/f/impl/one.sh"
+  printf 'CM-ALPHA\tIMPLEMENTED\timpl/one.sh\n' >>"$T/f/ledger.tsv"; printf 'CM-ALPHA\n' >>"$T/f/prev"; }
+wf7 'echo CM-ALPHA-ONE'
+expect "WF7-P1 a site that carries only the longer token CM-ALPHA-ONE does not implement CM-ALPHA (prefix collision)" 1 "F1 CM-ALPHA implementation site"
+wf7 'echo CM-ALPHAX_HELPER'
+expect "WF7-P1b a site that carries only the unrelated identifier CM-ALPHAX_HELPER does not implement CM-ALPHA (embedded suffix)" 1 "F1 CM-ALPHA implementation site"
+wf7 'echo XCM-ALPHA'
+expect "WF7-P1c a site that carries only XCM-ALPHA does not implement CM-ALPHA (embedded prefix)" 1 "F1 CM-ALPHA implementation site"
+wf7 'echo CM-ALPHA_2'
+expect "WF7-P1d a site that carries only CM-ALPHA_2 does not implement CM-ALPHA (underscore continues the identifier)" 1 "F1 CM-ALPHA implementation site"
+wf7 'echo CM-ALPHA-ONE; echo CM-ALPHAX'
+expect "WF7-P1e a site holding several look-alikes and no exact token still FAILs" 1 "F1 CM-ALPHA implementation site"
+for body in 'echo CM-ALPHA' 'echo "CM-ALPHA"' "case \$1 in 'CM-ALPHA') ;; esac" 'run(CM-ALPHA);' 'x=CM-ALPHA,y' 'CM-ALPHA'; do
+  wf7 "$body"; echo 1 >"$T/f/baseline"; : # one DEFERRED row from mk (CM-BBB-TWO)
+  expect "WF7-P1g golden-false: a real implementation spelling the exact token ($body) passes" 0
+done
+# WF7-3 (LR1): F2 presence is exact-name, not substring
+mk; printf 'CM-ALPHA-ONE\n' >>"$T/f/docs/a.md"; printf 'CM-ALPHA-ONE\tDEFERRED\tCAT-6\n' >>"$T/f/ledger.tsv"; echo 2 >"$T/f/baseline"; printf 'CM-ALPHA-ONE\nCM-ALPHA\n' >>"$T/f/prev"
+expect "WF7-LR1 a prev name CM-ALPHA that is only a prefix of the document name CM-ALPHA-ONE vanished uncited FAILs (F2 is exact-name)" 1 "F2 CM-ALPHA vanished"
+# WF7-3 (LR2): F1d is case-sensitive: an orphan row that differs only by case keeps freed slack
+mk; printf 'cm-bbb-two\tDEFERRED\tCAT-7\n' >>"$T/f/ledger.tsv"; echo 2 >"$T/f/baseline"
+expect "WF7-LR2 an orphan row cm-bbb-two differing only by case from the document name CM-BBB-TWO FAILs (F1d is case-sensitive)" 1 "F1d cm-bbb-two ledger row"
+# WF7-3 (LR3): F2b is case-sensitive: a document name registered only in lower case is not registered
+mk; printf 'CM-NEW-GATE\n' >>"$T/f/docs/a.md"; printf 'CM-NEW-GATE\tDEFERRED\tCAT-8\n' >>"$T/f/ledger.tsv"; echo 2 >"$T/f/baseline"; printf 'cm-new-gate\n' >>"$T/f/prev"
+expect "WF7-LR3 a document name CM-NEW-GATE registered in prev-names only as cm-new-gate FAILs (F2b is case-sensitive)" 1 "F2b CM-NEW-GATE is in the documents"
 mk; # control needle: instrument sees a planted name through the same path
 printf 'CM-NEEDLE-PLANT\n' >>"$T/f/docs/a.md"; run >/dev/null
 if grep -q "CM-NEEDLE-PLANT" "$T/err"; then pass=$((pass+1)); echo "ok   control needle seen"; else failn=$((failn+1)); echo "FAIL control needle not seen"; fi

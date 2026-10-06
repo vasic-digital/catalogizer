@@ -50,7 +50,7 @@ pm LM2_trailing_dash_ledger_row_ok "case \"\$n\" in *'*'*|*-) say \"F1b" "case \
 pm LM3_extraction_drops_digits "'CM-[A-Z0-9*]+(-[A-Z0-9*]+)*(-[a-z]|-)?'" "'CM-[A-Z*]+(-[A-Z*]+)*(-[a-z]|-)?'"
 pm I5a_non_code_site_accepted "      case \"\$ref\" in *.sh|*.bash|*.py|*.go|*.js|*.ts|*.rb|*.pl) ;; *) say \"F1 \$n implementation site \$ref is not a code file (data and name lists are carriers, not gates)\"; continue;; esac
 " ""
-pm I5a_comment_line_counts "grep -Ev '^[[:space:]]*(#|//|--)' \"\$f\" | grep -qF" "cat \"\$f\" | grep -qF"
+pm I5a_comment_line_counts "grep -Ev '^[[:space:]]*(#|//|--)' \"\$f\" | grep -Eq" "cat \"\$f\" | grep -Eq"
 pm I5a_own_inputs_allowed 'if grep -qxF -- "$(realpath -m "$f")" "$tmp/inputs"; then' 'if false; then'
 pm I5a_site_outside_root_allowed "case \"\$ref\" in *..*|'') say" "case \"\$ref\" in 'never_matches_xx') say"
 pm I5b_baseline_digits_concatenated 'if [ "${blines:-0}" != 1 ] || ! [[ ${base:-x} =~ ^[0-9]+$ ]]; then' 'base=$(tr -dc "0-9" <"$baseline"); if false; then'
@@ -79,6 +79,15 @@ pm I3_F2b_applied_to_family_only_names 'case "$n" in *'"'"'*'"'"'*|*-) continue;
 # WF6 (OWED-WP06-8): exact-name membership weakened to substring
 pm R1_F1d_substring_match 'grep -qxF -- "$n" "$tmp/names" || say "F1d' 'grep -qF -- "$n" "$tmp/names" || say "F1d'
 pm R2_F2b_substring_match 'grep -qxF -- "$n" "$tmp/prevall" || say "F2b' 'grep -qF -- "$n" "$tmp/prevall" || say "F2b'
+# WF7 (round 7): IMPLEMENTED site match weakened to substring, and the sibling exact-name guards
+pm P1_F1_site_substring_match '| grep -Eq -- "(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"; then say "F1 $n implementation site' '| grep -qF -- "$n"; then say "F1 $n implementation site'
+pm P1b_F1_site_no_left_boundary '"(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"' '"${n}([^A-Za-z0-9_-]|\$)"'
+pm P1c_F1_site_no_right_boundary '"(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"' '"(^|[^A-Za-z0-9_-])${n}"'
+pm P1d_F1_site_hyphen_not_identifier '"(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"' '"(^|[^A-Za-z0-9_])${n}([^A-Za-z0-9_]|\$)"'
+pm P1e_F1_site_underscore_not_identifier '"(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"' '"(^|[^A-Za-z0-9-])${n}([^A-Za-z0-9-]|\$)"'
+pm LR1_F2_presence_substring 'grep -qxF -- "$p" "$tmp/names" && continue' 'grep -qF -- "$p" "$tmp/names" && continue'
+pm LR2_F1d_case_insensitive 'grep -qxF -- "$n" "$tmp/names" || say "F1d' 'grep -qixF -- "$n" "$tmp/names" || say "F1d'
+pm LR3_F2b_case_insensitive 'grep -qxF -- "$n" "$tmp/prevall" || say "F2b' 'grep -qixF -- "$n" "$tmp/prevall" || say "F2b'
 echo "mutants=$total caught=$killed survived_or_error=$((total-killed))"
 [ "$bad" -eq 0 ] && echo "ALL MUTANTS CAUGHT" || echo "MUTATION GAP"
 exit "$bad"

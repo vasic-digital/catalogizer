@@ -1,0 +1,15 @@
+# identity: utc=2026-10-06T15:39:33Z host=anton git_head=26755ca512a59abaa529332ca066fc2ee71f6022 ratchet_sha256=fb354ebc3fe451e98e4df0409f2ccdefdd30ddef05f677598711ba356357e119 test_sha256=68c98b54418f83afea2c6b81c5e3ae61790637885c5ec020806bcc5f948fc9e8
+# RED: WF7-1 fixtures against the shipped (grep -qF) ratchet
+FAIL WF7-P1 a site that carries only the longer token CM-ALPHA-ONE does not implement CM-ALPHA (prefix collision) (rc=0 want 1, pat=F1 CM-ALPHA implementation site)
+FAIL WF7-P1b a site that carries only the unrelated identifier CM-ALPHAX_HELPER does not implement CM-ALPHA (embedded suffix) (rc=0 want 1, pat=F1 CM-ALPHA implementation site)
+FAIL WF7-P1c a site that carries only XCM-ALPHA does not implement CM-ALPHA (embedded prefix) (rc=0 want 1, pat=F1 CM-ALPHA implementation site)
+FAIL WF7-P1d a site that carries only CM-ALPHA_2 does not implement CM-ALPHA (underscore continues the identifier) (rc=0 want 1, pat=F1 CM-ALPHA implementation site)
+FAIL WF7-P1e a site holding several look-alikes and no exact token still FAILs (rc=0 want 1, pat=F1 CM-ALPHA implementation site)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (echo CM-ALPHA) passes (rc=0)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (echo "CM-ALPHA") passes (rc=0)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (case $1 in 'CM-ALPHA') ;; esac) passes (rc=0)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (run(CM-ALPHA);) passes (rc=0)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (x=CM-ALPHA,y) passes (rc=0)
+ok   WF7-P1g golden-false: a real implementation spelling the exact token (CM-ALPHA) passes (rc=0)
+ok   WF7-LR1 a prev name CM-ALPHA that is only a prefix of the document name CM-ALPHA-ONE vanished uncited FAILs (F2 is exact-name) (rc=1)
+RESULT pass=65 fail=5

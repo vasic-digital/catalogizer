@@ -42,7 +42,7 @@ if ! "$SQLITE3" -readonly "$DB" ".backup '$COPY'" >"$W/bk.out" 2>&1 || [ ! -s "$
 fi
 q() { "$SQLITE3" -readonly "$COPY" "$@" 2>&1; }
 sane() { printf '%s' "$1" | tr -cd '[:alnum:]_ .,;()*-' | cut -c1-60; }
-sane_full() { printf '%s' "$1" | tr -cd '[:alnum:]_ .,;()*-' | cut -c1-600; }   # same character set, 600-char cap instead of 60 (the differing tail of a definition must be visible, WF6-4)
+sane_full() { printf '%s' "$1" | LC_ALL=C tr -cd '[:print:]' | cut -c1-600; }   # printable ASCII only (quotes, brackets and backticks kept so a quoting-only forgery stays visible, WF7-4), 600-char cap (WF6-4); control characters and newlines are still dropped
 
 step_engine_validate() { "$WI" validate --db "$COPY" >"$W/val.out" 2>&1 || fail "engine validate: $(head -c 300 "$W/val.out")"; }
 step_integrity()       { r=$(q 'PRAGMA integrity_check;'); [ "$r" = ok ] || fail "integrity_check: $(printf '%s' "$r" | head -c 300)"; }

@@ -43,6 +43,8 @@ mk stat_all_narrowed_to_stat1    "/^STAT_ALL=/s/sqlite_stat\\[1-4\\]/sqlite_stat
 mk stat_pins_234_removed         '/.sqlite_stat[234]\|sqlite_stat/d;s/(stat\).)\|\\$/\1) ;;/'                    # R2: SQLite's exact stat2/3/4 definitions refused
 mk stat3_pin_mixed_case          's/(sqlite_stat3\(tbl,idx,)neq,nlt,ndlt/\1nEq,nLt,nDLt/'                         # WF6-1 restored for stat3
 mk stat4_pin_mixed_case          's/(sqlite_stat4\(tbl,idx,)neq,nlt,ndlt/\1nEq,nLt,nDLt/'                         # WF6-1 restored for stat4
+# WF7-4: the diagnostic strips quote characters again (a quoting-only forgery prints identical to SQLite's own text)
+mk sane_full_strips_quotes       "s/LC_ALL=C tr -cd '\\[:print:\\]'/tr -cd '[:alnum:]_ .,;()*-'/"
 mk url_skip_any_colon            's/^      \[A-Za-z\]\*:\/\/\*\)/      *:*)/'
 mk url_any_kind_skipped          's/if \[ "\$kind" = tracker_receipt \]; then skipped/if true; then skipped/'
 mk partial_exits_zero_no_flag    's/if \[ \$ALLOW_URL = 1 \]; then echo/if true; then echo/'

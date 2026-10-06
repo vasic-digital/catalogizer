@@ -1,0 +1,16 @@
+# capture: utc=2026-10-06T16:10:58Z host=anton uid=1000 git_head=26755ca512a59abaa529332ca066fc2ee71f6022
+# sha256 ratchet=5911f4954b5a10856705b8f30d594749b84ddd90c92da07fce8b3904ee2dc4ba ledger=58f4f2d44cc2275d13e3c4700d3670706cb3e271bd27de566dd0a7067a59d2e0 baseline=dc8ec3558c9612b2bfd830138c8b955ec23f736c92f7fe2fd1c2c3a67deae888 prev=c292b92b907f0bd170e6d8da9e0747a2c72c0dfa631ccd9990030ac984739dde removals=072f3e61b7e4b318fa3ce20f6f8c5b161b135a1afbf201705e01716c1338874d wp06_readme=6460b81fe8fdc142d6ddef8a52920bafd52f5e9958e32194a7955996bf3500d9 wp08_readme=9fea2e26249778d5c4ddea6044016efec6b9afa1a407cc5fa43ff6ababdb18ac
+# Round 7 real run after WF7-1 and WF7-2, with the final README state. EXPECTED RED: only the five known unledgered names (owner decision, not added to the baseline).
+WARN: generic family reference in documents, not a gate name: CM-*
+WARN: generic family reference in documents, not a gate name: CM-ATM-TICKET-IDS-*
+FAIL: F1 CM-ATM-TICKET-IDS-MONOTONIC has neither implementation nor deferral row
+FAIL: F1 CM-ATM-TICKET-IDS-UNIQUE has neither implementation nor deferral row
+FAIL: F1 CM-TICKET-IDS-COMPLETE has neither implementation nor deferral row
+FAIL: F1 CM-TICKET-IDS-MONOTONIC has neither implementation nor deferral row
+FAIL: F1 CM-TICKET-IDS-UNIQUE has neither implementation nor deferral row
+FAIL: F2b CM-ATM-TICKET-IDS-MONOTONIC is in the documents but not registered in --prev-names (add it there, in the same change)
+FAIL: F2b CM-ATM-TICKET-IDS-UNIQUE is in the documents but not registered in --prev-names (add it there, in the same change)
+FAIL: F2b CM-TICKET-IDS-COMPLETE is in the documents but not registered in --prev-names (add it there, in the same change)
+FAIL: F2b CM-TICKET-IDS-MONOTONIC is in the documents but not registered in --prev-names (add it there, in the same change)
+FAIL: F2b CM-TICKET-IDS-UNIQUE is in the documents but not registered in --prev-names (add it there, in the same change)
+rc=1

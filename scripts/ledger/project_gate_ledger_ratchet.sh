@@ -79,7 +79,7 @@ while read -r n; do
       case "$ref" in *..*|'') say "F1 $n implementation site path is empty or leaves the root: $ref"; continue;; esac
       case "$ref" in *.sh|*.bash|*.py|*.go|*.js|*.ts|*.rb|*.pl) ;; *) say "F1 $n implementation site $ref is not a code file (data and name lists are carriers, not gates)"; continue;; esac
       if grep -qxF -- "$(realpath -m "$f")" "$tmp/inputs"; then say "F1 $n implementation site $ref is one of the ratchet's own input files"; continue; fi
-      if [ ! -f "$f" ] || ! grep -Ev '^[[:space:]]*(#|//|--)' "$f" | grep -qF -- "$n"; then say "F1 $n implementation site $ref missing or lacks the token on a non-comment line"; fi;;
+      if [ ! -f "$f" ] || ! grep -Ev '^[[:space:]]*(#|//|--)' "$f" | grep -Eq -- "(^|[^A-Za-z0-9_-])${n}([^A-Za-z0-9_-]|\$)"; then say "F1 $n implementation site $ref missing or lacks the token on a non-comment line"; fi;;
     DEFERRED)
       if [[ $ref =~ ^[A-Z][A-Z0-9]*-[0-9]+$ ]]; then :
       elif [[ $ref == PENDING-REGISTER-ITEM\(* ]]; then

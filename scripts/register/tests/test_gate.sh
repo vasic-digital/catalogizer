@@ -202,6 +202,11 @@ for spec in "sqlite_stat2|CREATE TABLE sqlite_stat2(a)" \
 done
 # WF6-4(1): the refusal shows the differing definition tail untruncated (diagnosability, section 11.4.201(5))
 must_fail "B43.5 the stat-mismatch refusal prints the full definition tail (not cut at 60 characters)" "$D/gf4.db" 'extra_forged_tail'
+# WF7-4: the refusal must not strip quote characters, so a quoting-only forgery is visible in the printed definition
+good_db "$D/gq1.db"; wsx "$D/gq1.db" 'CREATE TABLE sqlite_stat4(tbl,idx,neq,nlt,ndlt,"sample")'
+must_fail "B43.6 a quoting-only forgery of sqlite_stat4 is refused and the printed definition shows the double quotes" "$D/gq1.db" 'ndlt,"sample"\)'
+good_db "$D/gq2.db"; wsx "$D/gq2.db" "CREATE TABLE sqlite_stat4(tbl,idx,neq,nlt,ndlt,'sample')"
+must_fail "B43.7 a single-quote forgery of sqlite_stat4 is refused and the printed definition shows the single quotes" "$D/gq2.db" "ndlt,'sample'\\)"
 # I-8: weakened table definition and dropped index (the rest of step_reference_diff)
 good_db "$D/x5.db"; sql "$D/x5.db" "PRAGMA foreign_keys=OFF; DROP TABLE reg_reviews; CREATE TABLE reg_reviews (review_id INTEGER PRIMARY KEY AUTOINCREMENT, atm_id TEXT NOT NULL REFERENCES reg_ids(atm_id), author TEXT NOT NULL, reviewer TEXT NOT NULL, model TEXT NOT NULL, effort TEXT NOT NULL, verdict TEXT NOT NULL CHECK (verdict IN ('GO','NO-GO')), evidence_id INTEGER NOT NULL REFERENCES reg_evidence(evidence_id), reviewed_at TEXT NOT NULL);" >/dev/null
 "$REG_DIR/apply_ext.sh" --db "$D/x5.db" >/dev/null 2>&1   # the table drop removed its triggers; re-apply recreates them, the CHECK stays gone
