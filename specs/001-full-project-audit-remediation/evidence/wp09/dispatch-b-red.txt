@@ -1,0 +1,14 @@
+# dispatch (dispatcher slice, T005a/T005b) evidence, kind=RED
+# captured: 2026-10-06T17:11:48Z (host UTC)
+# command: DISPATCH_SCRIPT=/nonexistent/dispatch.sh bash scripts/build/tests/test_dispatch.sh (script under test absent; NOTE: the implementation was drafted before the test file, so this RED only proves the harness refuses an absent script; the RED evidence of each check is its paired mutation, dispatch-b-mutations.txt)
+# scripts/build/dispatch.sh sha256=cb0ac3a767beac8baaadc9e8b6ea9c7656ea8908a401cdb0fce2d9cde28d4744
+# scripts/build/remote/emit.sh sha256=8fc57b9f14dcdaaf7cf550fb94f76375a96e1f9a04bb40c0007534010411aa08
+# scripts/build/lib/evwait.py sha256=684a7f1f00030d0cac83c5dad6563544e0c3156c3c4d0b9ac0190145c58bb3f5
+# scripts/build/callbacks.tsv sha256=65428dd12b09b28154cf26b346545a8d1509de544cc75f7c1eb39fe6d22e25b9
+# scripts/build/tests/test_dispatch.sh sha256=93d80221928172a11a682be8bb3e8a603ce682e1d46988b71bd230973fa3c880
+# scripts/build/tests/test_dispatch_e2e.sh sha256=c53efd87d7d8b3302ab763b852f1ac8b674dbe1358571dc89b5be2f7ad3019e3
+# scripts/build/tests/mutate_dispatch.sh sha256=9724171c4008887f68affe2b34d07704895fdf488a005f9c0bf5eaa1880fece3
+# docs/scripts/dispatch.md sha256=c15091514c83dc97f364bcb921b33e8ac697a3d90bc69d44be64eafdbf20d457
+# scripts/build/event_core.sh sha256=6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+FAIL script absent: /nonexistent/dispatch.sh
+RESULT pass=0 fail=1 skip=0

@@ -1,0 +1,92 @@
+# dispatch (dispatcher slice, T005a/T005b) evidence, kind=green run 1
+# captured: 2026-10-06T17:11:48Z (host UTC)
+# command: bash scripts/build/tests/test_dispatch.sh
+# scripts/build/dispatch.sh sha256=cb0ac3a767beac8baaadc9e8b6ea9c7656ea8908a401cdb0fce2d9cde28d4744
+# scripts/build/remote/emit.sh sha256=8fc57b9f14dcdaaf7cf550fb94f76375a96e1f9a04bb40c0007534010411aa08
+# scripts/build/lib/evwait.py sha256=684a7f1f00030d0cac83c5dad6563544e0c3156c3c4d0b9ac0190145c58bb3f5
+# scripts/build/callbacks.tsv sha256=65428dd12b09b28154cf26b346545a8d1509de544cc75f7c1eb39fe6d22e25b9
+# scripts/build/tests/test_dispatch.sh sha256=93d80221928172a11a682be8bb3e8a603ce682e1d46988b71bd230973fa3c880
+# scripts/build/tests/test_dispatch_e2e.sh sha256=c53efd87d7d8b3302ab763b852f1ac8b674dbe1358571dc89b5be2f7ad3019e3
+# scripts/build/tests/mutate_dispatch.sh sha256=9724171c4008887f68affe2b34d07704895fdf488a005f9c0bf5eaa1880fece3
+# docs/scripts/dispatch.md sha256=c15091514c83dc97f364bcb921b33e8ac697a3d90bc69d44be64eafdbf20d457
+# scripts/build/event_core.sh sha256=6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+ok   s1 malformed purpose key refused (20 purpose_malformed)
+ok   s1 reason is purpose_malformed
+ok   s1 a 63-hex digest is refused as malformed
+ok   s1 no build directory left
+ok   s2 a callback id outside the registry is refused (20)
+ok   s2 reason callback_not_registered
+ok   s2 nothing submitted, no build directory left
+ok   s2 an id in the table is accepted
+ok   s3 a purpose key whose snapshot digest does not match the tree is refused
+ok   s3 reason purpose_digest_mismatch (snapshot)
+ok   s3 a purpose key whose argv digest does not match the argv is refused
+ok   s3 an edit of the tree changes the snapshot digest
+ok   s4 the local transport is refused without the declared exception (20)
+ok   s4 reason local_transport_forbidden
+ok   s5 hosts.env absent: submit refused (20)
+ok   s5 reason no_qualified_host (absent)
+ok   s5 hosts.env naming no host: submit refused (20)
+ok   s5 no build directory left
+ok   s6 submit returned a build id at once
+ok   s6 (a) terminal kind completed
+ok   s6 (a) callback done, keyed effect applied once
+ok   s6 events consumed in order 1..4 (accepted, 2 heartbeats, completed)
+ok   s6 artifact brought back and its digest equals the event's
+ok   s6 status reports terminal completed, callback done
+ok   s7 the same purpose gives the same build id (build once)
+ok   s7 no second run: the run id, the journal and the daemon start count are unchanged
+ok   s7 a fresh iteration is a fresh build
+ok   s7 a terminal-but-not-completed purpose is refused until a fresh iteration (20)
+ok   s8 resume of a terminal build drains and runs no second effect
+ok   s8 resume added no second consume of the completed event (journal unchanged, DUP dropped)
+ok   s9 (c) heartbeats stop: blocked-unavailable build_liveness_lost
+ok   s9 (c) never a pass; callback once
+ok   s9 (c) the remote build was cancelled and reaped
+ok   s10 (c) heartbeats arrive but progress is flat: build_progress_flat
+ok   s10 (c) heartbeats were consumed before the verdict (the stream was alive)
+ok   s10 (c) remote cancelled, callback once
+ok   s11 (c) a build that advances past the wall-clock cap: build_wallclock_exceeded, with every sent_at skewed to 2001 (the cap is the emitter's monotonic time)
+ok   s11 (c) the skewed fixture really carried skewed sent_at values
+ok   s11 (c) control: an ordinary build with skewed sent_at still completes (sent_at changes nothing)
+ok   s12 (d) the build is HUNG first
+ok   s12 (d) the late completed event is recorded late_ignored and never flips the verdict
+ok   s13 (m) a bring-back whose digest differs from its completed event ends infra_failed, never completed
+ok   s13 (m) the mismatching artifact was never kept; callback once
+ok   s13 (m) status reads infra_failed with the detail
+ok   s14 (f) the run still completes after a forged heartbeat
+ok   s14 (f) the wrongly signed event was refused (event_unauthenticated) and never consumed
+ok   s14 (f) golden-good: every correctly signed event was consumed (seq 1, 2, 4, 5; the forged seq 3 slot is a refused line)
+ok   s14b (f) a forged completed event (wrong key) neither ends nor poisons the build: the genuine completion is consumed, kind completed
+ok   s14b (f) the forged event was refused and no bring-back was attempted for it (artifacts match the genuine digest)
+ok   s15 (h) failover at submit time to the next qualified host, recorded
+ok   s15 (h) the unreachable and the non-rootless host are recorded with their reasons
+ok   s15 (h) the build ran on the qualified host through ssh and completed once
+ok   s15 (h) the emitter was shipped (its sha256 recorded) and the tree went through the content-addressed cache
+ok   s15 (h) none left: blocked-unavailable no_qualified_host, callback once, never a pass
+ok   s15 (h) no local build ran (no remote directory, no daemon)
+ok   s22 wait on a build that never reaches a callback times out with exit 3 and says so
+ok   s22 wait on an unknown build is refused (20)
+ok   s23 the disk gate runs first: a submit with no headroom is refused (20) before anything is created
+ok   s23 reason disk_below_headroom (passed through)
+ok   s23 no build directory, no pump left
+ok   s16 (k) idle event stream: the pump and its blocking wait start no process in 3.5 s
+ok   s16 (k) control needle: the same strace and the same window logic see the process starts of a sleep loop
+ok   s16 (k) the wait primitive starts no process during its idle window (after its own start-up, 2.5 s of idle)
+ok   s17 (l) the second submit is queued, never started, while one build runs
+ok   s17 (l) status of the queued build reads queued
+ok   s17 (l) when the first ends, the queued build is started
+ok   s17 (l) both builds completed, effects once each, never more than 1 running at a time
+ok   s18 cancel ends the build cancelled, callback once
+ok   s18 the remote cancel was sent
+ok   s18 the pump is gone
+ok   s19 (r0) the pump died while the remote build runs
+ok   s19 (i/r0) the restarted pump resumed without resubmission: completed once, daemon started once
+ok   s19 (q3) the resumed pump did not mark the build HUNG for its own downtime
+ok   s20 the secret file lost: blocked-unavailable driver_secret_lost, callback once
+ok   s20 never resubmitted (daemon started once)
+ok   s21 (t) the driver secret and the per-build key (hex and base64) are in no file of the run outside the state directory
+ok   s21 (t) control needle: the scan sees a planted copy of the key
+OWED: (i) driver crash between completed and consumption with a real hub, (i2) emitter re-signing after restart, (j) kill before submit, (n0-n2/n/o/p) beyond the core's cases, (q2) keyring refill, (r) second hub refused, (u/u2) git snapshot and closure, (v) groups, (w) transfer budget, (x) hub identity: event_hub.sh and run_callback.sh are OWED
+RESULT pass=77 fail=0 skip=0
+exit=0

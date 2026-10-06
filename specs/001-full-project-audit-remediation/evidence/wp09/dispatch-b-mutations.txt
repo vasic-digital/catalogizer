@@ -1,0 +1,131 @@
+# dispatch (dispatcher slice, T005a/T005b) evidence, kind=paired mutations
+# captured: 2026-10-06T17:20:40Z (host UTC)
+# command: bash scripts/build/tests/mutate_dispatch.sh all
+# scripts/build/dispatch.sh sha256=cb0ac3a767beac8baaadc9e8b6ea9c7656ea8908a401cdb0fce2d9cde28d4744
+# scripts/build/remote/emit.sh sha256=8fc57b9f14dcdaaf7cf550fb94f76375a96e1f9a04bb40c0007534010411aa08
+# scripts/build/lib/evwait.py sha256=684a7f1f00030d0cac83c5dad6563544e0c3156c3c4d0b9ac0190145c58bb3f5
+# scripts/build/callbacks.tsv sha256=65428dd12b09b28154cf26b346545a8d1509de544cc75f7c1eb39fe6d22e25b9
+# scripts/build/tests/test_dispatch.sh sha256=93d80221928172a11a682be8bb3e8a603ce682e1d46988b71bd230973fa3c880
+# scripts/build/tests/test_dispatch_e2e.sh sha256=c53efd87d7d8b3302ab763b852f1ac8b674dbe1358571dc89b5be2f7ad3019e3
+# scripts/build/tests/mutate_dispatch.sh sha256=9724171c4008887f68affe2b34d07704895fdf488a005f9c0bf5eaa1880fece3
+# docs/scripts/dispatch.md sha256=c15091514c83dc97f364bcb921b33e8ac697a3d90bc69d44be64eafdbf20d457
+# scripts/build/event_core.sh sha256=6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+=== m_callback_registry (dispatch.sh, cases: s2)
+FAIL s2 a callback id outside the registry is refused (20)
+FAIL s2 reason callback_not_registered -- b-fd53d665140ab486d066d1f4
+FAIL s2 nothing submitted, no build directory left
+RESULT pass=1 fail=3 skip=0
+KILLED m_callback_registry
+=== m_purpose_regex (dispatch.sh, cases: s1)
+FAIL s1 a 63-hex digest is refused as malformed
+RESULT pass=3 fail=1 skip=0
+KILLED m_purpose_regex
+=== m_snapshot_check (dispatch.sh, cases: s3)
+FAIL s3 a purpose key whose snapshot digest does not match the tree is refused
+FAIL s3 snapshot reason -- b-b8e92484114b589e8625c11c
+RESULT pass=2 fail=2 skip=0
+KILLED m_snapshot_check
+=== m_argv_check (dispatch.sh, cases: s3)
+FAIL s3 a purpose key whose argv digest does not match the argv is refused
+RESULT pass=3 fail=1 skip=0
+KILLED m_argv_check
+=== m_local_guard (dispatch.sh, cases: s4)
+FAIL s4 the local transport is refused without the declared exception (20)
+FAIL s4 reason -- b-a3302fc0a0c0706215a56daf
+RESULT pass=0 fail=2 skip=0
+KILLED m_local_guard
+=== m_hosts_absent (dispatch.sh, cases: s5)
+FAIL s5 hosts.env absent: submit refused (20)
+FAIL s5 no build directory left
+RESULT pass=2 fail=2 skip=0
+KILLED m_hosts_absent
+=== m_disk_gate (dispatch.sh, cases: s23)
+FAIL s23 the disk gate runs first: a submit with no headroom is refused (20) before anything is created
+FAIL s23 reason disk_below_headroom -- b-d3d41ce6b8c9a88a452cec65
+FAIL s23 no build directory, no pump left
+RESULT pass=0 fail=3 skip=0
+KILLED m_disk_gate
+=== m_build_once (dispatch.sh, cases: s7)
+FAIL s7 the same purpose gives the same build id (build once)
+RESULT pass=3 fail=1 skip=0
+KILLED m_build_once
+=== m_liveness (dispatch.sh, cases: s9)
+FAIL s9 (c) heartbeats stop: blocked-unavailable build_liveness_lost
+FAIL s9 (c) never a pass; callback once
+RESULT pass=1 fail=2 skip=0
+KILLED m_liveness
+=== m_progress_flat (dispatch.sh, cases: s10)
+FAIL s10 (c) heartbeats arrive but progress is flat: build_progress_flat
+FAIL s10 (c) remote cancelled, callback once
+RESULT pass=1 fail=2 skip=0
+KILLED m_progress_flat
+=== m_wallclock (dispatch.sh, cases: s11)
+FAIL s11 (c) a build that advances past the wall-clock cap: build_wallclock_exceeded, with every sent_at skewed to 2001 (the cap is the emitter's monotonic time)
+RESULT pass=2 fail=1 skip=0
+KILLED m_wallclock
+=== m_bringback_verify (dispatch.sh, cases: s13)
+FAIL s13 (m) a bring-back whose digest differs from its completed event ends infra_failed, never completed
+FAIL s13 (m) the mismatching artifact was never kept; callback once
+FAIL s13 (m) status reads infra_failed with the detail
+RESULT pass=0 fail=3 skip=0
+KILLED m_bringback_verify
+=== m_event_auth_before_bringback (dispatch.sh, cases: s14b)
+FAIL s14b (f) a forged completed event (wrong key) neither ends nor poisons the build: the genuine completion is consumed, kind completed
+FAIL s14b (f) the forged event was refused and no bring-back was attempted for it (artifacts match the genuine digest)
+RESULT pass=0 fail=2 skip=0
+KILLED m_event_auth_before_bringback
+=== m_queue (dispatch.sh, cases: s17)
+FAIL s17 (l) the second submit is queued, never started, while one build runs
+FAIL s17 (l) status of the queued build reads queued
+FAIL s17 (l) both builds completed, effects once each, never more than 1 running at a time
+RESULT pass=1 fail=3 skip=0
+KILLED m_queue
+=== m_cancel_remote (dispatch.sh, cases: s18)
+FAIL s18 the remote cancel was sent
+RESULT pass=2 fail=1 skip=0
+KILLED m_cancel_remote
+=== m_secret_lost (dispatch.sh, cases: s20)
+FAIL s20 the secret file lost: blocked-unavailable driver_secret_lost, callback once
+RESULT pass=1 fail=1 skip=0
+KILLED m_secret_lost
+=== m_failover_reachability (dispatch.sh, cases: s15)
+FAIL s15 (h) the unreachable and the non-rootless host are recorded with their reasons
+RESULT pass=5 fail=1 skip=0
+KILLED m_failover_reachability
+=== m_rootless_check (dispatch.sh, cases: s15)
+FAIL s15 (h) failover at submit time to the next qualified host, recorded
+FAIL s15 (h) the unreachable and the non-rootless host are recorded with their reasons
+FAIL s15 (h) none left: blocked-unavailable no_qualified_host, callback once, never a pass
+FAIL s15 (h) no local build ran (no remote directory, no daemon)
+RESULT pass=2 fail=4 skip=0
+KILLED m_rootless_check
+=== m_polling (dispatch.sh, cases: s16)
+FAIL s16 (k) idle event stream: the pump and its blocking wait start no process in 3.5 s
+RESULT pass=2 fail=1 skip=0
+KILLED m_polling
+=== m_emit_resign_key (emit.sh, cases: s6)
+FAIL s6 (a) terminal kind completed
+FAIL s6 events consumed in order 1..4 (accepted, 2 heartbeats, completed)
+FAIL s6 status reports terminal completed, callback done
+RESULT pass=3 fail=3 skip=0
+KILLED m_emit_resign_key
+=== m_emit_cancel_kill (emit.sh, cases: s9 s18)
+FAIL s9 (c) the remote build was cancelled and reaped
+FAIL s18 the remote cancel was sent
+RESULT pass=4 fail=2 skip=0
+KILLED m_emit_cancel_kill
+=== m_emit_run_idempotent (emit.sh, cases: s19)
+FAIL s19 (i/r0) the restarted pump resumed without resubmission: completed once, daemon started once
+RESULT pass=2 fail=1 skip=0
+KILLED m_emit_run_idempotent
+=== m_wait_timeout_code (evwait.py, cases: s22)
+FAIL s22 wait on a build that never reaches a callback times out with exit 3 and says so
+RESULT pass=1 fail=1 skip=0
+KILLED m_wait_timeout_code
+=== m_tail_stops_early (evwait.py, cases: s14b)
+FAIL s14b (f) a forged completed event (wrong key) neither ends nor poisons the build: the genuine completion is consumed, kind completed
+FAIL s14b (f) the forged event was refused and no bring-back was attempted for it (artifacts match the genuine digest)
+RESULT pass=0 fail=2 skip=0
+KILLED m_tail_stops_early
+SURVIVORS: none
+exit=0

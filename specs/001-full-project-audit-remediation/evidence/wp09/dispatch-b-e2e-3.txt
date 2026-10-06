@@ -1,0 +1,43 @@
+# dispatch (dispatcher slice, T005a/T005b) evidence, kind=e2e real container build run 3
+# captured: 2026-10-06T17:20:05Z (host UTC)
+# command: bash scripts/build/tests/test_dispatch_e2e.sh
+# scripts/build/dispatch.sh sha256=cb0ac3a767beac8baaadc9e8b6ea9c7656ea8908a401cdb0fce2d9cde28d4744
+# scripts/build/remote/emit.sh sha256=8fc57b9f14dcdaaf7cf550fb94f76375a96e1f9a04bb40c0007534010411aa08
+# scripts/build/lib/evwait.py sha256=684a7f1f00030d0cac83c5dad6563544e0c3156c3c4d0b9ac0190145c58bb3f5
+# scripts/build/callbacks.tsv sha256=65428dd12b09b28154cf26b346545a8d1509de544cc75f7c1eb39fe6d22e25b9
+# scripts/build/tests/test_dispatch.sh sha256=93d80221928172a11a682be8bb3e8a603ce682e1d46988b71bd230973fa3c880
+# scripts/build/tests/test_dispatch_e2e.sh sha256=c53efd87d7d8b3302ab763b852f1ac8b674dbe1358571dc89b5be2f7ad3019e3
+# scripts/build/tests/mutate_dispatch.sh sha256=9724171c4008887f68affe2b34d07704895fdf488a005f9c0bf5eaa1880fece3
+# docs/scripts/dispatch.md sha256=c15091514c83dc97f364bcb921b33e8ac697a3d90bc69d44be64eafdbf20d457
+# scripts/build/event_core.sh sha256=6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+submitted b-24bd5a2e20f9df6d6ad94484
+ok   e1 wait returned done (callback done) in 15 s
+ok   e1 terminal completed / succeeded
+ok   e1 an executable artifact came back
+ok   e1 content-addressed: the brought-back tree digest equals the digest in the signed completed event (ac6c6d0bdd05160801ff1fbddc94332178da4604c8d500c32aa5488841bd6c5c)
+ok   e1 the binary prints the expected line when run (the artifact is the real build output)
+ok   e1 callback applied exactly once
+ok   e1 build once: the same purpose returns the same build and starts no second container
+e1 events:
+{"seq":1,"kind":"accepted","progress_offset":null,"stage":null,"exit_class":null}
+{"seq":2,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":3,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":4,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":5,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":6,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":7,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":8,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":9,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":10,"kind":"heartbeat","progress_offset":0,"stage":0,"exit_class":null}
+{"seq":11,"kind":"completed","progress_offset":null,"stage":null,"exit_class":"succeeded"}
+ok   e2 a failing compile ends completed with exit_class build_failed
+ok   e2 callback once, no artifact kept
+ok   e2 the log holds the compiler's real error text
+ok   e3 the container is running, labelled with the op id
+e3 container inspect: docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437|12173467444|2048|catalogizer|1000:1000|[]
+ok   e4 digest-pinned image (a sha256 reference), memory and pids limits set, project label, non-root user, no effective capability
+ok   e4 rootless runtime: podman reports rootless
+ok   e3 cancelled: terminal kind cancelled, callback once
+ok   e3 no container left (reaped by its label)
+RESULT pass=15 fail=0
+exit=0
