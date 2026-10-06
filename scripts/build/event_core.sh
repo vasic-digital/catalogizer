@@ -73,9 +73,18 @@ if not ok:
     except OSError: pass
     sys.exit(1)' "$1/events.jsonl" 2>/dev/null || return 1
   fsync_dir "$1"; }
+excl_write() { # file content : the temp-file writer. Any entry already at the name is removed (rm never opens it), then the file is created with O_CREAT|O_EXCL|O_NOFOLLOW|O_NONBLOCK and content+newline is written:
+  # a FIFO or a symlink planted at a predictable temp name (round 7, F-D) can neither block the writer, which holds a build lock, nor redirect the write to a file outside the build directory.
+  command rm -f -- "$1" 2>/dev/null
+  printf '%s\n' "$2" | python3 -c 'import os, sys
+d = sys.stdin.buffer.read()
+fd = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_NONBLOCK, 0o644)
+try: ok = os.write(fd, d) == len(d)
+finally: os.close(fd)
+sys.exit(0 if ok else 1)' "$1" 2>/dev/null; }
 atomic_write() { # builddir file content   (temp lives in <builddir>/tmp, never beside the data)
   local d=$1 f=$2 t; mkdir -p "$d/tmp" 2>/dev/null || return 1; t="$d/tmp/w.$$.$RANDOM"
-  { printf '%s\n' "$3" > "$t"; } 2>/dev/null && [ -s "$t" ] && fsync_file "$t" && mv -fT "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
+  excl_write "$t" "$3" && [ -s "$t" ] && fsync_file "$t" && mv -fT "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
   fsync_dir "$(dirname "$f")"; }
 # lock fd opener: append-open (never truncates), refused when the path is not the regular file the fd points at (symlink swap)
 lock_ok() { # fd path : after `exec N>>path` succeeded, the open file must be the inode that path names (lstat, no follow)
@@ -121,7 +130,7 @@ run_callback() { # builddir [redo] : idempotent, durable state in terminal/callb
         # round 6, EC-1: the line is already there (an earlier attempt wrote it, perhaps failing the fsync): it is durable only once THIS attempt's checked fsync passes
         fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
       fi
-      { printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null || { cb_fail "$d" effect_temp_write_failed; return 1; }
+      excl_write "$d/tmp/e.$$" "$(now)" || { cb_fail "$d" effect_temp_write_failed; return 1; }   # round 7, F-D: exclusive create, never `>` on a predictable name under the callback lock
       ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
       rm -f "$d/tmp/e.$$"
       # EEXIST (a concurrent writer of the same key) is success; any other failure leaves no effect and must not become "done"

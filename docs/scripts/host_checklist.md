@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06 |
-| Status | draft, untracked work product of WP-10 (T100 on the local host); the scripts index `docs/scripts/README.md` and the root `README.md` link are NOT created here (they edit tracked files, deferred) |
+| Last modified | 2026-10-06T16:00:00Z |
+| Status | tracked since commit 26755ca5; revision 2 re-aligned to the script after rounds 5 to 7 (independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md` |
 | Source | `scripts/containers/host_checklist.sh`; test `scripts/containers/tests/test_host_checklist.sh` |
 
 ## Purpose
@@ -13,7 +13,7 @@
 Runs the docs/16 section 9.5 host checklist (items 1 to 8) for the one host that exists. Owner decision 2026-10-06: the build and
 measurement host is this host (anton) and there is no remote host. The checks that only mean something against a remote host are
 therefore recorded `status=not_applicable_local_host`, `verdict=na`, with the decision cited in the item; they are never faked as `pass`
-and never dropped. It complements `probe_host.sh` (which writes `evidence/host-probe.json`) and does not edit it, and it reads the
+and never dropped. It complements `probe_host.sh` (which writes `$EV/host-probe.json`; `$EV` is the evidence root, default `specs/001-full-project-audit-remediation/evidence`) and does not edit it, and it reads the
 absolute `min_free_bytes` rule of `disk_headroom.conf` without calling `disk_headroom.sh`. It uses no network and pulls nothing.
 
 ## Usage
@@ -39,7 +39,7 @@ item has `verdict=fail`; 2 on usage or a missing `jq`; 3 when the record cannot 
 | C09 | 2 | `ulimit -u` (at least 4096) and `-n` | pass, fail |
 | C10, C11 | 2 | free bytes under the podman graphroot and on the repository filesystem | pass, fail |
 | C12 | 2 | both free values against `min_free_bytes` of `disk_headroom.conf` (need 0) | pass, fail |
-| C13 | 3 | every image of `build/containers/images.lock.yaml` present locally and pinned (stored `.Digest` or a RepoDigest matches) | pass, fail |
+| C13 | 3 | every image of `build/containers/images.lock.yaml` present locally and pinned (the lock `digest` must itself be present, as a RepoDigest `@<digest>` or as the stored `.Digest`; when the lock lists a `platform_digest` it must ALSO be present, and it never substitutes for the digest: round 7, F-A). The lock is read with python3 and PyYAML (the reader `run_pinned.sh` uses), which are required for C13; each entry shape is validated and every digest must be exactly `sha256:` plus 64 lowercase hex characters. Per-image statuses: `present_pinned`, `absent`, `digest_mismatch`, `lock_malformed`; whole-lock errors: `lock_unreadable`, `lock_reader_failed` | pass, fail (error when the lock cannot be read) |
 | C14 | 3 | outbound pull policy | `unconfirmed` (no network use here) |
 | C15 | 4 | instantaneous load only; whether other work shares the host is an owner fact | `unconfirmed` |
 | C16 | 5 | `timedatectl` NTPSynchronized | pass, fail |
@@ -54,7 +54,7 @@ disk-headroom conf) and a `summary` of counts.
 
 `scripts/containers/tests/test_host_checklist.sh` drives the script with `podman`, `df`, `nproc` and `timedatectl` shims and scratch files
 for every `/proc`, `/sys` and `/etc` input (baseline, usage and `--strict`, one broken input per check with a no-collateral assertion,
-a real-host leg, and 19 paired mutations each of which must change a fixture result). `HOST_CHECKLIST_SUT` points it at another script
+a real-host leg, and 35 paired mutations (`mut_case` rows, round 7 count: 31 plus `c13pdreq`, `c13pdalone`, `c13iso`, `c13digz`) each of which must change a fixture result). `HOST_CHECKLIST_SUT` points it at another script
 (the RED run uses an absent path); `HOST_CHECKLIST_MUTATION_RECORD` names the mutation record file.
 
 ## Honest boundary (11.4.6)

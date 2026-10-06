@@ -146,6 +146,10 @@ m_r6_ec2_journal_no_regular_check	event_core.sh	if not stat.S_ISREG(st.st_mode):
 m_r6_ec2_cbstate_head	event_core.sh	cbstate() { read_regular "$1/terminal/callback.state" | head -c 64 | tr -d '\n'; }	cbstate() { head -c 64 "$1/terminal/callback.state" 2>/dev/null | tr -d '\n'; }
 m_r6_ec3_redo_claimed_only	event_core.sh	claimed|running) ;; *) flock -u 8; return 0;;	claimed) ;; *) flock -u 8; return 0;;
 m_r6_ec4_progress_unbounded	event_core.sh	 or st.st_size > 4096	
+m_r7_fd1_callback_temp_gt	event_core.sh	excl_write "$d/tmp/e.$$" "$(now)"	{ printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null
+m_r7_fd2_atomic_temp_gt	event_core.sh	excl_write "$t" "$3" && [ -s "$t" ]	{ printf '%s\n' "$3" > "$t"; } 2>/dev/null && [ -s "$t" ]
+m_r7_excl_stale_kept	event_core.sh	command rm -f -- "$1" 2>/dev/null	:
+m_r7_regular_or_absent_follow	event_core.sh	try: fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)	try: fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK)
 M
 )
 names() { printf '%s\n' "$MUTANTS" | cut -f1; }

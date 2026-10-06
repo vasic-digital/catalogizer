@@ -78,7 +78,7 @@ else add C12_disk_headroom_rule 2 error fail "min_free_bytes missing, duplicated
 # Round 6 (F3, F6): the lock is read with PyYAML, the reader run_pinned.sh uses, NOT an awk field splitter: a `|` or an odd key order can no longer shift a
 # value into another field, and an entry whose first key is not `id` is seen. python3 validates the SHAPE of every entry (a mapping, an id, a reference path,
 # an OCI tag, string values, no duplicate id); a violation is BAD (lock_malformed). Digests are validated here (hexd). Any failure to read is C13 error/fail.
-LOCKREAD=$(python3 -I - "$LOCK" <<'PY' 2>/dev/null
+LOCKREAD=$(python3 -I - "$LOCK" <<'PY' 2>/dev/null   # MUT:c13iso
 import re, sys
 try:
     import yaml
@@ -91,7 +91,7 @@ if not isinstance(imgs, list):
 ID = re.compile(r"IMG-[A-Z0-9][A-Za-z0-9-]*\Z")
 REF = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*(:[0-9]+)?(/[A-Za-z0-9][A-Za-z0-9._-]*)+\Z")
 TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9._-]{0,127}\Z")
-DIG = re.compile(r"[A-Za-z0-9:._-]*\Z")
+DIG = re.compile(r"[A-Za-z0-9:._-]*\Z")  # MUT:c13digz
 ids = set(); n = 0
 for i, e in enumerate(imgs, 1):  # MUT:c13idfirst
     n += 1; bad = 0
@@ -134,7 +134,9 @@ while IFS='|' read -r kind id ref tag dg pd; do
     m=0
     case " $sd " in *"@$dg "*) m=1;; esac   # MUT:c13repo
     case " $sd " in *" $dg "*) m=1;; esac   # MUT:c13dig MUT:c13digdrop
-    if [ -n "$pd" ]; then case " $sd " in *" $pd "*) m=1;; esac; fi
+    # round 7 (WF7 F-A): the platform_digest never SUBSTITUTES for the digest run_pinned.sh runs (it was a second way to match, so a lock whose digest
+    # is not present locally read present_pinned); when the lock lists one it is an ADDITIONAL requirement on top of the digest match
+    if [ -n "$pd" ]; then case " $sd " in *" $pd "*) ;; *) m=0;; esac; fi   # MUT:c13pdreq MUT:c13pdalone
     if [ "$m" = 1 ]; then st=present_pinned; else st=digest_mismatch; ibad=$((ibad+1)); fi   # MUT:c13
   else st=absent; ibad=$((ibad+1)); fi   # MUT:c13b
   IMGJ=$(jq -c --arg id "$id" --arg r "$ref:$tag" --arg st "$st" --arg dg "$dg" '. + [{id:$id,reference:$r,status:$st,pinned_digest:$dg}]' <<<"$IMGJ")

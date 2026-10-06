@@ -1099,6 +1099,40 @@ printf '{"progress_offset":10,"stage":1}\n' > "$builds/$b/progress.json"
 out=$(bash "$EC" consume "$builds" "$state" "$(efile "$(ev $b RR6E4 3 heartbeat "$HB")")" 2>&1); rc=$?
 { [ $rc -eq 0 ] && printf '%s' "$out" | grep -q 'consumed seq=3'; } && ok "(R6-EC4) control: the same JSON without the padding is consumed" || bad "(R6-EC4 control) rc=$rc out=$out"
 
+# =====================================================================================================================
+# Review round 7 (WF7-REVIEW runner-checklist-eventcore-r6): F-D (temp files written under a lock) and EM1 (a symlinked effects.log)
+# =====================================================================================================================
+# callbk: a callback prepared to run (claimed, no effect, no audit line) in a fresh build
+callbk() { local b=$1; newbuild $b "R$b"; consume "$(efile "$(ev $b "R$b" 1 accepted)")" >/dev/null; consume "$(efile "$(ev $b "R$b" 2 completed "$CMP")")" >/dev/null
+  cbset $b claimed; rm -rf "${builds:?}/${b:?}/effects" "${builds:?}/${b:?}/effects.log" "${builds:?}/${b:?}/tmp"; }
+# ---- F-D1: the callback's effect temp tmp/e.<pid> is created exclusively: a FIFO or a symlink planted at that name neither blocks the callback under .cblock nor overwrites a file outside the build ----
+b=R7D1F; callbk $b; mkdir -p "$builds/$b/tmp"
+bounded bash -c 'source "$1"; d=$2; mkfifo "$d/tmp/e.$$"; run_callback "$d"; echo "rc=$? state=$(cbstate "$d")"' _ "$EC" "$builds/$b"; out=$bout; rc=$brc
+{ [ $rc -eq 0 ] && printf '%s' "$out" | grep -q 'rc=0 state=done' && [ "$(efiles $b)" = 1 ] && [ "$(effects $b)" = 1 ] && lockfree "$builds/$b/.cblock"; } && ok "(R7-FD1) a FIFO planted at tmp/e.<pid> does not block the callback under .cblock: it is replaced by an exclusively created file and the callback completes (one effect, one audit line)" || bad "(R7-FD1 fifo) rc=$rc (124 = blocked) out=$out"
+unfifo "$builds/$b/tmp/e."*
+b=R7D1S; callbk $b; mkdir -p "$builds/$b/tmp"; victim=$tmp/victim.d1; printf 'precious\n' > "$victim"
+bounded bash -c 'source "$1"; d=$2; ln -s "$3" "$d/tmp/e.$$"; run_callback "$d"; echo "rc=$? state=$(cbstate "$d")"' _ "$EC" "$builds/$b" "$victim"; out=$bout; rc=$brc
+{ [ $rc -eq 0 ] && printf '%s' "$out" | grep -q 'rc=0 state=done' && [ "$(cat "$victim")" = precious ] && [ ! -L "$builds/$b/effects/effect-$b" ] && [ "$(efiles $b)" = 1 ]; } && ok "(R7-FD1) a symlink planted at tmp/e.<pid> does not make the callback overwrite the file it points to; the effect proof is a regular file" || bad "(R7-FD1 symlink) rc=$rc victim='$(cat "$victim")' out=$out"
+# ---- F-D2: atomic_write's temp tmp/w.<pid>.<RANDOM> is created exclusively too (the name is predictable: RANDOM is seeded, here 42) ----
+rv=$( RANDOM=42; echo $RANDOM )
+b=R7D2F; newbuild $b RR7D2F; mkdir -p "$builds/$b/tmp"
+bounded bash -c 'source "$1"; d=$2; RANDOM=42; mkfifo "$d/tmp/w.$$.$3"; atomic_write "$d" "$d/state.out" "payload"; echo "rc=$?"' _ "$EC" "$builds/$b" "$rv"; out=$bout; rc=$brc
+{ [ $rc -eq 0 ] && printf '%s' "$out" | grep -q 'rc=0' && [ "$(cat "$builds/$b/state.out" 2>/dev/null)" = payload ]; } && ok "(R7-FD2) a FIFO planted at the predictable atomic_write temp name does not block it: the write completes and the state file holds the payload" || bad "(R7-FD2 fifo) rc=$rc (124 = blocked) out=$out"
+unfifo "$builds/$b/tmp/w."*
+b=R7D2S; newbuild $b RR7D2S; mkdir -p "$builds/$b/tmp"; victim=$tmp/victim.d2; printf 'precious\n' > "$victim"
+bounded bash -c 'source "$1"; d=$2; RANDOM=42; ln -s "$4" "$d/tmp/w.$$.$3"; atomic_write "$d" "$d/state.out" "payload"; echo "rc=$?"' _ "$EC" "$builds/$b" "$rv" "$victim"; out=$bout; rc=$brc
+{ [ $rc -eq 0 ] && [ "$(cat "$victim")" = precious ] && [ "$(cat "$builds/$b/state.out" 2>/dev/null)" = payload ] && [ ! -L "$builds/$b/state.out" ]; } && ok "(R7-FD2) a symlink planted at the atomic_write temp name does not make it overwrite the file it points to" || bad "(R7-FD2 symlink) rc=$rc victim='$(cat "$victim")' out=$out"
+# ---- EM1: an effects.log that is a SYMLINK (to an existing file, or dangling) fails the callback: nothing is written through it ----
+b=R7EM1A; callbk $b; victim=$tmp/victim.em1; printf 'precious\n' > "$victim"; ln -s "$victim" "$builds/$b/effects.log"
+bounded bash "$EC" resume-callback "$builds" $b; out=$bout; rc=$brc
+{ [ $rc -eq 21 ] && [ "$(cbs $b)" = failed ] && grep -q '^effects_log_not_regular$' "$builds/$b/terminal/callback.reason" && [ "$(cat "$victim")" = precious ] && [ "$(efiles $b)" = 0 ]; } && ok "(R7-EM1) a symlinked effects.log fails the callback (effects_log_not_regular) and the file it points to is untouched" || bad "(R7-EM1 live link) rc=$rc state=$(cbs $b) victim='$(cat "$victim")' out=$out"
+b=R7EM1B; callbk $b; victim=$tmp/victim.em1b; rm -f "$victim"; ln -s "$victim" "$builds/$b/effects.log"
+bounded bash "$EC" resume-callback "$builds" $b; out=$bout; rc=$brc
+{ [ $rc -eq 21 ] && [ "$(cbs $b)" = failed ] && grep -q '^effects_log_not_regular$' "$builds/$b/terminal/callback.reason" && [ ! -e "$victim" ]; } && ok "(R7-EM1) a DANGLING symlinked effects.log fails the callback too and nothing is created at the link target" || bad "(R7-EM1 dangling) rc=$rc state=$(cbs $b) target-exists=$([ -e "$victim" ] && echo y || echo n) out=$out"
+b=R7EM1C; callbk $b; command rm -f -- "$builds/$b/effects.log"
+bounded bash "$EC" resume-callback "$builds" $b; out=$bout; rc=$brc
+{ [ $rc -eq 0 ] && [ "$(cbs $b)" = done ] && [ "$(efiles $b)" = 1 ] && [ "$(effects $b)" = 1 ]; } && ok "(R7-EM1) control: with no effects.log the callback completes (one effect, one audit line)" || bad "(R7-EM1 control) rc=$rc state=$(cbs $b) out=$out"
+
 echo "OWED (not covered by this slice): $OWED_CASES"
 echo "RESULT pass=$pass fail=$fail skip=$skipn"
 [ $fail -eq 0 ]

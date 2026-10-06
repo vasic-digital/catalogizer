@@ -2,11 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 6 |
+| Revision | 7 |
 | Created | 2026-10-05 |
-| Last modified | 2026-10-06T07:00:00Z |
-| Status | draft, untracked work product of T094a (WP-09), round 5 after the xhigh review of round 4 (NO-GO: I-1, I-2, I-3, m-1..m-3); re-review owed |
+| Last modified | 2026-10-06T16:00:00Z |
+| Status | tracked since commit 26755ca5; revision 7 re-aligned to the script after round 6 (PR-1 HOME is the private work dir, PR-3, PR-4 residual names `unset` and `command`); round 5 review passed WF6, independent review of this revision owed (constitution 11.4.142) |
 | Source | `scripts/review/check_review_provenance.sh` |
+
+> `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative), as defined in `specs/001-full-project-audit-remediation/evidence/wp09/README.md`.
+
 
 Companion guide (Helix Constitution 11.4.18) for the script above (task T094a, plan KC-P1; 11.4.209, 11.4.231(F.2)).
 Index row: owed to `docs/scripts/README.md` (T036 lists it, the index does not exist yet).
@@ -76,7 +79,7 @@ first manifest only because T046 lists it for review. Asking the owner to add th
   script's private empty 0700 work dir. After the scrub the script smoke-tests `jq -n 1` and `python3 -I -c ''`: a tool
   that cannot start (for example one that needs `LD_LIBRARY_PATH`) is exit 2, "tool unusable", never a record refusal
   (exit 20). The allow-list environment for T042 excludes `HOME`, `SHELLOPTS` and `BASHOPTS` by construction (they are
-  not in the enumerated set). Residual (owed, owner O4): an exported `unset` function defeats the in-script scrub.
+  not in the enumerated set). Residual (owed, owner O4): an exported `unset` or `command` function defeats the in-script scrub (round 6, PR-4 names `command`: every jq call goes through it).
 - **Requirement for T042 (cpa-host): an allow-list environment, not a deny-list.** The earlier requirement ("a scrubbed
   environment: PATH and `CRP_*`") was a two-item deny-list; `PYTHONPATH`, `BASH_ENV` and exported functions each
   defeated trusted mode in the review's probes. `cpa-host` MUST start the checker, in every mode (`--exec-approved`,
@@ -122,7 +125,7 @@ first manifest only because T046 lists it for review. Asking the owner to add th
   carries an effort key (0 hits for `effort`, `reasoningEffort`, `effortLevel`; the class-matched needle `model`
   is recorded), so the record's `effort` and `effort_argument` can only be copied from what the dispatcher asked for.
   This check attests a requested `xhigh`, not an observed one. To be recorded on the KC-P1 register item (T094b).
-- **What is still owed.** (1) Review of round 4. (2) The `CPA_APPROVED_DIR` layout (`released/` mirroring repository
+- **What is still owed.** (1) Review of this revision (round 4, 5 and 6 reviews are recorded in the evidence INDEX). (2) The `CPA_APPROVED_DIR` layout (`released/` mirroring repository
   paths) is UNCONFIRMED until T042's `cpa-host` exists and can be exercised with this checker. (3) The wiring through
   `cpa-host --check-provenance` and `approve` (C5, C6) is T042/T094d, not this task. (4) The run-id shape and the
   model allow-list stay UNCONFIRMED across harness versions.
@@ -138,5 +141,5 @@ first manifest only because T046 lists it for review. Asking the owner to add th
 `scripts/review/tests/test_check_review_provenance.sh` (`CRP_SCRIPT` overrides the script for mutation runs; refusals
 are asserted on exit code 20 and the reason, usage errors on 2; the schema fixtures use a copy of the real schema as
 the approved copy). Mutations: `scripts/review/tests/mutations_check_review_provenance.sh` (prints each mutant's diff
-and whether the suite killed it; `EQ*` mutants are documented equivalents and must survive). Evidence: see
+and whether the suite killed it; `EQ*` mutants are documented equivalents and must survive). Exit 0 only when at least one mutant ran and every mutant that ran was killed: exit 3 when no mutant ran (a stray `MUT_ONLY` naming nothing), exit 4 for `MUT_ANCHORS_ONLY` (anchors checked, suite not run, nothing killed), exit 1 on a survivor or an unapplied anchor (round 7, F-F). Evidence: see
 `specs/001-full-project-audit-remediation/evidence/wp09/review-provenance-INDEX.txt`.

@@ -1,0 +1,811 @@
+# identity: wf7fix-hc-GREEN-x3
+# run_pinned_sha256: 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# test_run_pinned_sha256: b984e5e3abda7a6c7ca0e7b0442f49c4d6a139e7c8adaa657438b318f07c8ae6
+# host_checklist_sha256: 9ffbfaf17687cdcbee584436766b924d58e543d8fc389292250f9672b13f0fda
+# test_host_checklist_sha256: ddc13341605f0dd7c1938a98cb4fd097459008815fd4050ee8dfccf006be6311
+# event_core_sha256: 6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+# test_dispatch_events_sha256: 8c4583bfc11db66241e5fb0ca8056e0dc7849e8ce09fbde3344455711c150026
+# mutate_dispatch_events_sha256: fedf7fdc9317f7cc30bedbf0c206904a085b1dbf6830937a7e0396efe83ecca0
+# check_review_provenance_sha256: 9f4fdbf89993a225f5f8d179fa95c0005f38a9ac17a13fd665e0d34a4f208c00
+# test_check_review_provenance_sha256: ed5f4e0222125813547e29cca5d8fd3c6cd03f97bce91805a5211566fc4245a4
+# mutations_check_review_provenance_sha256: 478b408ed8cafa6c8e5abebf5a5790cd9dc352aa9f645c684071573b5c291cae
+# host: anton uid: 1000
+# command: bash scripts/containers/tests/test_host_checklist.sh (three runs)
+=== run 1 (run_at 2026-10-06T15:55:16Z)
+PASS: A1 baseline exit 0
+PASS: A2 baseline record written
+PASS: A3 baseline schema
+PASS: A4 19 unique item ids
+PASS: A5 baseline C02 pass
+PASS: A5 baseline C03 pass
+PASS: A5 baseline C04 pass
+PASS: A5 baseline C05 pass
+PASS: A5 baseline C06 pass
+PASS: A5 baseline C07 pass
+PASS: A5 baseline C08 pass
+PASS: A5 baseline C09 pass
+PASS: A5 baseline C10 pass
+PASS: A5 baseline C11 pass
+PASS: A5 baseline C12 pass
+PASS: A5 baseline C13 pass
+PASS: A5 baseline C16 pass
+PASS: A6 C01 verdict na
+PASS: A6 C01 status not_applicable_local_host
+PASS: A6 C01 cites owner decision
+PASS: A6 C17 verdict na
+PASS: A6 C17 status not_applicable_local_host
+PASS: A6 C17 cites owner decision
+PASS: A6 C18 verdict na
+PASS: A6 C18 status not_applicable_local_host
+PASS: A6 C18 cites owner decision
+PASS: A6 C19 verdict na
+PASS: A6 C19 status not_applicable_local_host
+PASS: A6 C19 cites owner decision
+PASS: A7 C14 unconfirmed
+PASS: A7 C15 unconfirmed
+PASS: A8 summary pass count
+PASS: A9 summary fail count
+PASS: A10 control negative absent
+PASS: A11 control positive present
+PASS: A12 lock parser saw 2 images
+PASS: A13 identity script sha
+PASS: A14 identity lock sha
+PASS: A15 no pull and no network verb used
+PASS: A16 no temp residue
+PASS: A17 values: mem_total bytes
+PASS: A18 values: disk margins
+PASS: A19 images both present_pinned
+PASS: B1 unknown arg exit 2
+PASS: B2 --strict with a fail exits 1
+PASS: B3 default exit 0 with a fail
+PASS: B4 --strict clean exits 0
+PASS: C C02 podman --version fails
+PASS: C02 collateral fails
+PASS: C C03 rootless=false
+PASS: C03 collateral fails
+PASS: C C03 rootless unparsable
+PASS: C03 collateral fails
+PASS: C C03 podman info fails
+PASS: C03 collateral fails
+PASS: C C04 cgroup v1 (no controllers file)
+PASS: C04 collateral fails
+PASS: C C04 cgroot unreadable
+PASS: C04 collateral fails
+PASS: C C05 meminfo unparsable
+PASS: C05 collateral fails
+PASS: C C06 nproc prints 0
+PASS: C06 collateral fails
+PASS: C C06 nproc fails
+PASS: C06 collateral fails
+PASS: C C07 kvm absent
+PASS: C07 collateral fails
+PASS: C C07 kvm present but not rw
+PASS: C07 collateral fails
+PASS: C C08 no subuid range
+PASS: C08 collateral fails
+PASS: C C08 max_user_namespaces=0
+PASS: C08 collateral fails
+PASS: C C08 no newuidmap
+PASS: C08 collateral fails
+PASS: C C09 ulimit -u 1000
+PASS: C09 collateral fails
+PASS: C C09 ulimit unreadable
+PASS: C09 collateral fails
+PASS: C C10 graphroot empty
+PASS: C10 collateral fails
+PASS: C C10 df graphroot fails
+PASS: C10 collateral fails
+PASS: C C11 df repo fails
+PASS: C11 collateral fails
+PASS: C C12 graphroot below min
+PASS: C12 collateral fails
+PASS: C C12 repo below min (graphroot fine)
+PASS: C12 collateral fails
+PASS: C C12 duplicate min_free_bytes
+PASS: C12 collateral fails
+PASS: C C12 exactly at the minimum passes
+PASS: C12 collateral fails
+PASS: C C13 image a absent
+PASS: C13 collateral fails
+PASS: C C13 image a digest mismatch
+PASS: C13 collateral fails
+PASS: C C13 empty lock (parser blind)
+PASS: C13 collateral fails
+PASS: C C13 N1 lock entry with neither digest nor platform_digest
+PASS: C13 collateral fails
+PASS: N1 ...and its status is lock_malformed, not present_pinned
+PASS: C C13 N1 empty digest value (platform_digest alone is not enough)
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed digest (no sha256: prefix)
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with an empty hex part
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with non-hex characters
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed platform_digest
+PASS: C13 collateral fails
+PASS: C C13 N1 no platform_digest and the local image does not match the digest
+PASS: C13 collateral fails
+PASS: C C13 N1 guard against false refusal: no platform_digest but the digest matches the local image
+PASS: C13 collateral fails
+PASS: C C13 F3 field shift (digest key absent, tag_intent t1|<digest>) fails
+PASS: C13 collateral fails
+PASS: F3 ...and the shifted entry is lock_malformed, never present_pinned
+PASS: F3 ...and --strict exits 1
+PASS: C C13 F3 entry with id not first and absent locally fails (was invisible)
+PASS: C13 collateral fails
+PASS: F3 ...both entries are counted by the parser
+PASS: F3 ...IMG-B is checked: absent
+PASS: C C13 F3 guard against false refusal: id-not-first entries that are present and pinned pass
+PASS: C13 collateral fails
+PASS: F3 ...both counted
+PASS: C C13 F3 entry with no id at all fails
+PASS: C13 collateral fails
+PASS: F3 ...counted (2 entries seen)
+PASS: C C13 F3 duplicate id fails (run_pinned.sh refuses lock_duplicate_id too)
+PASS: C13 collateral fails
+PASS: C C13 F3 a list entry that is not a mapping fails
+PASS: C13 collateral fails
+PASS: C C13 F3 control: the mk_a builder with healthy values passes
+PASS: C13 collateral fails
+PASS: C C13 F3 malformed field fails: reference with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference carrying @digest
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference with a leading dash
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference without a path
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a pipe
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: unquoted tag_intent 1.20 (YAML float, would silently read 1.2)
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: empty tag_intent
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: id with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest that is a YAML integer
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 YAML-quoted digest and platform_digest are read, not misparsed, and pass
+PASS: C13 collateral fails
+PASS: C C13 F3 images is not a list fails
+PASS: C13 collateral fails
+PASS: F3 ...nothing seen
+PASS: C C13 F3 a lock that is not YAML fails
+PASS: C13 collateral fails
+PASS: C C13 F3 the lock reader (python3) cannot run: fails closed
+PASS: C13 collateral fails
+PASS: F3 ...status is error
+PASS: C C13 F6 digest of the wrong length or case (8 chars: sha256:a...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (70 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (72 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (71 chars: sha256:AAAAAAA...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 a truncated platform_digest fails
+PASS: C13 collateral fails
+PASS: C C13 F6 a local RepoDigest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 a local .Digest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 an image whose only record is its .Digest matches the lock digest (false-refusal guard)
+PASS: C13 collateral fails
+PASS: C C13 R7 F-A: a well-formed lock digest that is NOT present locally fails even though the platform_digest matches the local .Digest
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A: the digest is present but a listed platform_digest is not: fails
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A guard against false refusal: digest and platform_digest both present pass
+PASS: C13 collateral fails
+PASS: C C13 R7 HM1: a forged yaml.py on PYTHONPATH is not imported by the lock reader (the absent IMG-B is still seen)
+PASS: C13 collateral fails
+PASS: R7 HM1 ...both lock entries counted
+PASS: C C13 R7 HM4: a digest carrying an embedded newline fails
+PASS: C13 collateral fails
+PASS: R7 HM4 ...as lock_malformed
+PASS: C C15 loadavg unreadable
+PASS: C15 collateral fails
+PASS: C C16 ntp not synchronised
+PASS: C16 collateral fails
+PASS: C C16 timedatectl fails
+PASS: C16 collateral fails
+PASS: C C16 ntp garbage
+PASS: C16 collateral fails
+PASS: C13 value names the absent image
+PASS: D1 real host exit 0
+PASS: D2 real nproc equals nproc
+PASS: D3 real kvm verdict agrees with the filesystem
+PASS: D4 real rootless agrees with podman
+PASS: D5 real record has 19 items
+PASS: D6 real lock parser saw the lock images
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13dg caught
+PASS: E mutation c13pd caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+PASS: E mutation c13shape caught
+PASS: E mutation c13hexlen caught
+PASS: E mutation c13repo caught
+PASS: E mutation c13dig caught
+PASS: E mutation c13digdrop caught
+PASS: E mutation c13seen caught
+PASS: E mutation c13dup caught
+PASS: E mutation c13idfirst caught
+PASS: E mutation c13readerfail caught
+PASS: E mutation c13pdalone caught
+PASS: E mutation c13pdreq caught
+PASS: E mutation c13iso caught
+PASS: E mutation c13digz caught
+host_checklist test: 263 passed, 0 failed (mutation record: /tmp/hc-test.rnHEpt/mutation.txt)
+=== run 1 rc=0
+=== run 2 (run_at 2026-10-06T15:56:37Z)
+PASS: A1 baseline exit 0
+PASS: A2 baseline record written
+PASS: A3 baseline schema
+PASS: A4 19 unique item ids
+PASS: A5 baseline C02 pass
+PASS: A5 baseline C03 pass
+PASS: A5 baseline C04 pass
+PASS: A5 baseline C05 pass
+PASS: A5 baseline C06 pass
+PASS: A5 baseline C07 pass
+PASS: A5 baseline C08 pass
+PASS: A5 baseline C09 pass
+PASS: A5 baseline C10 pass
+PASS: A5 baseline C11 pass
+PASS: A5 baseline C12 pass
+PASS: A5 baseline C13 pass
+PASS: A5 baseline C16 pass
+PASS: A6 C01 verdict na
+PASS: A6 C01 status not_applicable_local_host
+PASS: A6 C01 cites owner decision
+PASS: A6 C17 verdict na
+PASS: A6 C17 status not_applicable_local_host
+PASS: A6 C17 cites owner decision
+PASS: A6 C18 verdict na
+PASS: A6 C18 status not_applicable_local_host
+PASS: A6 C18 cites owner decision
+PASS: A6 C19 verdict na
+PASS: A6 C19 status not_applicable_local_host
+PASS: A6 C19 cites owner decision
+PASS: A7 C14 unconfirmed
+PASS: A7 C15 unconfirmed
+PASS: A8 summary pass count
+PASS: A9 summary fail count
+PASS: A10 control negative absent
+PASS: A11 control positive present
+PASS: A12 lock parser saw 2 images
+PASS: A13 identity script sha
+PASS: A14 identity lock sha
+PASS: A15 no pull and no network verb used
+PASS: A16 no temp residue
+PASS: A17 values: mem_total bytes
+PASS: A18 values: disk margins
+PASS: A19 images both present_pinned
+PASS: B1 unknown arg exit 2
+PASS: B2 --strict with a fail exits 1
+PASS: B3 default exit 0 with a fail
+PASS: B4 --strict clean exits 0
+PASS: C C02 podman --version fails
+PASS: C02 collateral fails
+PASS: C C03 rootless=false
+PASS: C03 collateral fails
+PASS: C C03 rootless unparsable
+PASS: C03 collateral fails
+PASS: C C03 podman info fails
+PASS: C03 collateral fails
+PASS: C C04 cgroup v1 (no controllers file)
+PASS: C04 collateral fails
+PASS: C C04 cgroot unreadable
+PASS: C04 collateral fails
+PASS: C C05 meminfo unparsable
+PASS: C05 collateral fails
+PASS: C C06 nproc prints 0
+PASS: C06 collateral fails
+PASS: C C06 nproc fails
+PASS: C06 collateral fails
+PASS: C C07 kvm absent
+PASS: C07 collateral fails
+PASS: C C07 kvm present but not rw
+PASS: C07 collateral fails
+PASS: C C08 no subuid range
+PASS: C08 collateral fails
+PASS: C C08 max_user_namespaces=0
+PASS: C08 collateral fails
+PASS: C C08 no newuidmap
+PASS: C08 collateral fails
+PASS: C C09 ulimit -u 1000
+PASS: C09 collateral fails
+PASS: C C09 ulimit unreadable
+PASS: C09 collateral fails
+PASS: C C10 graphroot empty
+PASS: C10 collateral fails
+PASS: C C10 df graphroot fails
+PASS: C10 collateral fails
+PASS: C C11 df repo fails
+PASS: C11 collateral fails
+PASS: C C12 graphroot below min
+PASS: C12 collateral fails
+PASS: C C12 repo below min (graphroot fine)
+PASS: C12 collateral fails
+PASS: C C12 duplicate min_free_bytes
+PASS: C12 collateral fails
+PASS: C C12 exactly at the minimum passes
+PASS: C12 collateral fails
+PASS: C C13 image a absent
+PASS: C13 collateral fails
+PASS: C C13 image a digest mismatch
+PASS: C13 collateral fails
+PASS: C C13 empty lock (parser blind)
+PASS: C13 collateral fails
+PASS: C C13 N1 lock entry with neither digest nor platform_digest
+PASS: C13 collateral fails
+PASS: N1 ...and its status is lock_malformed, not present_pinned
+PASS: C C13 N1 empty digest value (platform_digest alone is not enough)
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed digest (no sha256: prefix)
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with an empty hex part
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with non-hex characters
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed platform_digest
+PASS: C13 collateral fails
+PASS: C C13 N1 no platform_digest and the local image does not match the digest
+PASS: C13 collateral fails
+PASS: C C13 N1 guard against false refusal: no platform_digest but the digest matches the local image
+PASS: C13 collateral fails
+PASS: C C13 F3 field shift (digest key absent, tag_intent t1|<digest>) fails
+PASS: C13 collateral fails
+PASS: F3 ...and the shifted entry is lock_malformed, never present_pinned
+PASS: F3 ...and --strict exits 1
+PASS: C C13 F3 entry with id not first and absent locally fails (was invisible)
+PASS: C13 collateral fails
+PASS: F3 ...both entries are counted by the parser
+PASS: F3 ...IMG-B is checked: absent
+PASS: C C13 F3 guard against false refusal: id-not-first entries that are present and pinned pass
+PASS: C13 collateral fails
+PASS: F3 ...both counted
+PASS: C C13 F3 entry with no id at all fails
+PASS: C13 collateral fails
+PASS: F3 ...counted (2 entries seen)
+PASS: C C13 F3 duplicate id fails (run_pinned.sh refuses lock_duplicate_id too)
+PASS: C13 collateral fails
+PASS: C C13 F3 a list entry that is not a mapping fails
+PASS: C13 collateral fails
+PASS: C C13 F3 control: the mk_a builder with healthy values passes
+PASS: C13 collateral fails
+PASS: C C13 F3 malformed field fails: reference with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference carrying @digest
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference with a leading dash
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference without a path
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a pipe
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: unquoted tag_intent 1.20 (YAML float, would silently read 1.2)
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: empty tag_intent
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: id with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest that is a YAML integer
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 YAML-quoted digest and platform_digest are read, not misparsed, and pass
+PASS: C13 collateral fails
+PASS: C C13 F3 images is not a list fails
+PASS: C13 collateral fails
+PASS: F3 ...nothing seen
+PASS: C C13 F3 a lock that is not YAML fails
+PASS: C13 collateral fails
+PASS: C C13 F3 the lock reader (python3) cannot run: fails closed
+PASS: C13 collateral fails
+PASS: F3 ...status is error
+PASS: C C13 F6 digest of the wrong length or case (8 chars: sha256:a...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (70 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (72 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (71 chars: sha256:AAAAAAA...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 a truncated platform_digest fails
+PASS: C13 collateral fails
+PASS: C C13 F6 a local RepoDigest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 a local .Digest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 an image whose only record is its .Digest matches the lock digest (false-refusal guard)
+PASS: C13 collateral fails
+PASS: C C13 R7 F-A: a well-formed lock digest that is NOT present locally fails even though the platform_digest matches the local .Digest
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A: the digest is present but a listed platform_digest is not: fails
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A guard against false refusal: digest and platform_digest both present pass
+PASS: C13 collateral fails
+PASS: C C13 R7 HM1: a forged yaml.py on PYTHONPATH is not imported by the lock reader (the absent IMG-B is still seen)
+PASS: C13 collateral fails
+PASS: R7 HM1 ...both lock entries counted
+PASS: C C13 R7 HM4: a digest carrying an embedded newline fails
+PASS: C13 collateral fails
+PASS: R7 HM4 ...as lock_malformed
+PASS: C C15 loadavg unreadable
+PASS: C15 collateral fails
+PASS: C C16 ntp not synchronised
+PASS: C16 collateral fails
+PASS: C C16 timedatectl fails
+PASS: C16 collateral fails
+PASS: C C16 ntp garbage
+PASS: C16 collateral fails
+PASS: C13 value names the absent image
+PASS: D1 real host exit 0
+PASS: D2 real nproc equals nproc
+PASS: D3 real kvm verdict agrees with the filesystem
+PASS: D4 real rootless agrees with podman
+PASS: D5 real record has 19 items
+PASS: D6 real lock parser saw the lock images
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13dg caught
+PASS: E mutation c13pd caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+PASS: E mutation c13shape caught
+PASS: E mutation c13hexlen caught
+PASS: E mutation c13repo caught
+PASS: E mutation c13dig caught
+PASS: E mutation c13digdrop caught
+PASS: E mutation c13seen caught
+PASS: E mutation c13dup caught
+PASS: E mutation c13idfirst caught
+PASS: E mutation c13readerfail caught
+PASS: E mutation c13pdalone caught
+PASS: E mutation c13pdreq caught
+PASS: E mutation c13iso caught
+PASS: E mutation c13digz caught
+host_checklist test: 263 passed, 0 failed (mutation record: /tmp/hc-test.sjF00A/mutation.txt)
+=== run 2 rc=0
+=== run 3 (run_at 2026-10-06T15:58:01Z)
+PASS: A1 baseline exit 0
+PASS: A2 baseline record written
+PASS: A3 baseline schema
+PASS: A4 19 unique item ids
+PASS: A5 baseline C02 pass
+PASS: A5 baseline C03 pass
+PASS: A5 baseline C04 pass
+PASS: A5 baseline C05 pass
+PASS: A5 baseline C06 pass
+PASS: A5 baseline C07 pass
+PASS: A5 baseline C08 pass
+PASS: A5 baseline C09 pass
+PASS: A5 baseline C10 pass
+PASS: A5 baseline C11 pass
+PASS: A5 baseline C12 pass
+PASS: A5 baseline C13 pass
+PASS: A5 baseline C16 pass
+PASS: A6 C01 verdict na
+PASS: A6 C01 status not_applicable_local_host
+PASS: A6 C01 cites owner decision
+PASS: A6 C17 verdict na
+PASS: A6 C17 status not_applicable_local_host
+PASS: A6 C17 cites owner decision
+PASS: A6 C18 verdict na
+PASS: A6 C18 status not_applicable_local_host
+PASS: A6 C18 cites owner decision
+PASS: A6 C19 verdict na
+PASS: A6 C19 status not_applicable_local_host
+PASS: A6 C19 cites owner decision
+PASS: A7 C14 unconfirmed
+PASS: A7 C15 unconfirmed
+PASS: A8 summary pass count
+PASS: A9 summary fail count
+PASS: A10 control negative absent
+PASS: A11 control positive present
+PASS: A12 lock parser saw 2 images
+PASS: A13 identity script sha
+PASS: A14 identity lock sha
+PASS: A15 no pull and no network verb used
+PASS: A16 no temp residue
+PASS: A17 values: mem_total bytes
+PASS: A18 values: disk margins
+PASS: A19 images both present_pinned
+PASS: B1 unknown arg exit 2
+PASS: B2 --strict with a fail exits 1
+PASS: B3 default exit 0 with a fail
+PASS: B4 --strict clean exits 0
+PASS: C C02 podman --version fails
+PASS: C02 collateral fails
+PASS: C C03 rootless=false
+PASS: C03 collateral fails
+PASS: C C03 rootless unparsable
+PASS: C03 collateral fails
+PASS: C C03 podman info fails
+PASS: C03 collateral fails
+PASS: C C04 cgroup v1 (no controllers file)
+PASS: C04 collateral fails
+PASS: C C04 cgroot unreadable
+PASS: C04 collateral fails
+PASS: C C05 meminfo unparsable
+PASS: C05 collateral fails
+PASS: C C06 nproc prints 0
+PASS: C06 collateral fails
+PASS: C C06 nproc fails
+PASS: C06 collateral fails
+PASS: C C07 kvm absent
+PASS: C07 collateral fails
+PASS: C C07 kvm present but not rw
+PASS: C07 collateral fails
+PASS: C C08 no subuid range
+PASS: C08 collateral fails
+PASS: C C08 max_user_namespaces=0
+PASS: C08 collateral fails
+PASS: C C08 no newuidmap
+PASS: C08 collateral fails
+PASS: C C09 ulimit -u 1000
+PASS: C09 collateral fails
+PASS: C C09 ulimit unreadable
+PASS: C09 collateral fails
+PASS: C C10 graphroot empty
+PASS: C10 collateral fails
+PASS: C C10 df graphroot fails
+PASS: C10 collateral fails
+PASS: C C11 df repo fails
+PASS: C11 collateral fails
+PASS: C C12 graphroot below min
+PASS: C12 collateral fails
+PASS: C C12 repo below min (graphroot fine)
+PASS: C12 collateral fails
+PASS: C C12 duplicate min_free_bytes
+PASS: C12 collateral fails
+PASS: C C12 exactly at the minimum passes
+PASS: C12 collateral fails
+PASS: C C13 image a absent
+PASS: C13 collateral fails
+PASS: C C13 image a digest mismatch
+PASS: C13 collateral fails
+PASS: C C13 empty lock (parser blind)
+PASS: C13 collateral fails
+PASS: C C13 N1 lock entry with neither digest nor platform_digest
+PASS: C13 collateral fails
+PASS: N1 ...and its status is lock_malformed, not present_pinned
+PASS: C C13 N1 empty digest value (platform_digest alone is not enough)
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed digest (no sha256: prefix)
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with an empty hex part
+PASS: C13 collateral fails
+PASS: C C13 N1 digest with non-hex characters
+PASS: C13 collateral fails
+PASS: C C13 N1 malformed platform_digest
+PASS: C13 collateral fails
+PASS: C C13 N1 no platform_digest and the local image does not match the digest
+PASS: C13 collateral fails
+PASS: C C13 N1 guard against false refusal: no platform_digest but the digest matches the local image
+PASS: C13 collateral fails
+PASS: C C13 F3 field shift (digest key absent, tag_intent t1|<digest>) fails
+PASS: C13 collateral fails
+PASS: F3 ...and the shifted entry is lock_malformed, never present_pinned
+PASS: F3 ...and --strict exits 1
+PASS: C C13 F3 entry with id not first and absent locally fails (was invisible)
+PASS: C13 collateral fails
+PASS: F3 ...both entries are counted by the parser
+PASS: F3 ...IMG-B is checked: absent
+PASS: C C13 F3 guard against false refusal: id-not-first entries that are present and pinned pass
+PASS: C13 collateral fails
+PASS: F3 ...both counted
+PASS: C C13 F3 entry with no id at all fails
+PASS: C13 collateral fails
+PASS: F3 ...counted (2 entries seen)
+PASS: C C13 F3 duplicate id fails (run_pinned.sh refuses lock_duplicate_id too)
+PASS: C13 collateral fails
+PASS: C C13 F3 a list entry that is not a mapping fails
+PASS: C13 collateral fails
+PASS: C C13 F3 control: the mk_a builder with healthy values passes
+PASS: C13 collateral fails
+PASS: C C13 F3 malformed field fails: reference with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference carrying @digest
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference with a leading dash
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: reference without a path
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: tag_intent with a pipe
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: unquoted tag_intent 1.20 (YAML float, would silently read 1.2)
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: empty tag_intent
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: id with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest with a space
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 malformed field fails: digest that is a YAML integer
+PASS: C13 collateral fails
+PASS: F3 ...and the entry is lock_malformed
+PASS: C C13 F3 YAML-quoted digest and platform_digest are read, not misparsed, and pass
+PASS: C13 collateral fails
+PASS: C C13 F3 images is not a list fails
+PASS: C13 collateral fails
+PASS: F3 ...nothing seen
+PASS: C C13 F3 a lock that is not YAML fails
+PASS: C13 collateral fails
+PASS: C C13 F3 the lock reader (python3) cannot run: fails closed
+PASS: C13 collateral fails
+PASS: F3 ...status is error
+PASS: C C13 F6 digest of the wrong length or case (8 chars: sha256:a...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (70 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (72 chars: sha256:aaaaaaa...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 digest of the wrong length or case (71 chars: sha256:AAAAAAA...) fails
+PASS: C13 collateral fails
+PASS: F6 ...as lock_malformed
+PASS: C C13 F6 a truncated platform_digest fails
+PASS: C13 collateral fails
+PASS: C C13 F6 a local RepoDigest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 a local .Digest that merely starts with the lock digest is a mismatch
+PASS: C13 collateral fails
+PASS: C C13 F6 an image whose only record is its .Digest matches the lock digest (false-refusal guard)
+PASS: C13 collateral fails
+PASS: C C13 R7 F-A: a well-formed lock digest that is NOT present locally fails even though the platform_digest matches the local .Digest
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A: the digest is present but a listed platform_digest is not: fails
+PASS: C13 collateral fails
+PASS: R7 F-A ...as digest_mismatch
+PASS: C C13 R7 F-A guard against false refusal: digest and platform_digest both present pass
+PASS: C13 collateral fails
+PASS: C C13 R7 HM1: a forged yaml.py on PYTHONPATH is not imported by the lock reader (the absent IMG-B is still seen)
+PASS: C13 collateral fails
+PASS: R7 HM1 ...both lock entries counted
+PASS: C C13 R7 HM4: a digest carrying an embedded newline fails
+PASS: C13 collateral fails
+PASS: R7 HM4 ...as lock_malformed
+PASS: C C15 loadavg unreadable
+PASS: C15 collateral fails
+PASS: C C16 ntp not synchronised
+PASS: C16 collateral fails
+PASS: C C16 timedatectl fails
+PASS: C16 collateral fails
+PASS: C C16 ntp garbage
+PASS: C16 collateral fails
+PASS: C13 value names the absent image
+PASS: D1 real host exit 0
+PASS: D2 real nproc equals nproc
+PASS: D3 real kvm verdict agrees with the filesystem
+PASS: D4 real rootless agrees with podman
+PASS: D5 real record has 19 items
+PASS: D6 real lock parser saw the lock images
+PASS: E mutation c01 caught
+PASS: E mutation c17 caught
+PASS: E mutation c18 caught
+PASS: E mutation c19 caught
+PASS: E mutation c02 caught
+PASS: E mutation c03 caught
+PASS: E mutation c04 caught
+PASS: E mutation c05 caught
+PASS: E mutation c06 caught
+PASS: E mutation c07 caught
+PASS: E mutation c08 caught
+PASS: E mutation c09 caught
+PASS: E mutation c10 caught
+PASS: E mutation c11 caught
+PASS: E mutation c12 caught
+PASS: E mutation c13 caught
+PASS: E mutation c13dg caught
+PASS: E mutation c13pd caught
+PASS: E mutation c13b caught
+PASS: E mutation c14 caught
+PASS: E mutation c15 caught
+PASS: E mutation c16 caught
+PASS: E mutation c13shape caught
+PASS: E mutation c13hexlen caught
+PASS: E mutation c13repo caught
+PASS: E mutation c13dig caught
+PASS: E mutation c13digdrop caught
+PASS: E mutation c13seen caught
+PASS: E mutation c13dup caught
+PASS: E mutation c13idfirst caught
+PASS: E mutation c13readerfail caught
+PASS: E mutation c13pdalone caught
+PASS: E mutation c13pdreq caught
+PASS: E mutation c13iso caught
+PASS: E mutation c13digz caught
+host_checklist test: 263 passed, 0 failed (mutation record: /tmp/hc-test.ye2NkH/mutation.txt)
+=== run 3 rc=0

@@ -1,0 +1,1165 @@
+# identity: wf7fix-runp-GREEN-x3
+# run_pinned_sha256: 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# test_run_pinned_sha256: b984e5e3abda7a6c7ca0e7b0442f49c4d6a139e7c8adaa657438b318f07c8ae6
+# host_checklist_sha256: 9ffbfaf17687cdcbee584436766b924d58e543d8fc389292250f9672b13f0fda
+# test_host_checklist_sha256: ddc13341605f0dd7c1938a98cb4fd097459008815fd4050ee8dfccf006be6311
+# event_core_sha256: 6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+# test_dispatch_events_sha256: 8c4583bfc11db66241e5fb0ca8056e0dc7849e8ce09fbde3344455711c150026
+# mutate_dispatch_events_sha256: fedf7fdc9317f7cc30bedbf0c206904a085b1dbf6830937a7e0396efe83ecca0
+# check_review_provenance_sha256: 9f4fdbf89993a225f5f8d179fa95c0005f38a9ac17a13fd665e0d34a4f208c00
+# test_check_review_provenance_sha256: ed5f4e0222125813547e29cca5d8fd3c6cd03f97bce91805a5211566fc4245a4
+# mutations_check_review_provenance_sha256: 478b408ed8cafa6c8e5abebf5a5790cd9dc352aa9f645c684071573b5c291cae
+# host: anton uid: 1000
+# command: bash scripts/containers/tests/test_run_pinned.sh (three runs)
+=== run 1 (run_at 2026-10-06T15:55:16Z)
+PASS: the launcher names no unrooted evidence path
+PASS: usage: no arguments is a usage error
+PASS: usage: no command after the image is a usage error
+PASS: usage: unknown option is a usage error
+PASS: usage: image id must be IMG-<NAME>
+PASS: unknown lock id is refused
+PASS: unknown lock id names reason image_id_unknown
+PASS: print-argv mode exits 0
+PASS: argv starts with podman run
+PASS: argv carries --rm
+PASS: argv carries --userns=keep-id
+PASS: argv carries --cap-drop=ALL
+PASS: argv carries --memory
+PASS: argv carries --memory-swap
+PASS: argv carries --pids-limit
+PASS: argv carries --cpus
+PASS: argv carries --workdir
+PASS: memory and memory-swap are equal (no swap)
+PASS: memory is the formula result: min(0.6 MemTotal, MemAvailable - 4.8 GB)
+PASS: --workdir is /src
+PASS: source is mounted read-only
+PASS: label project=catalogizer present
+PASS: image reference is digest-pinned, preceded by --
+PASS: command words follow the image
+PASS: no podman call in print mode
+PASS: run mode exits 0 with the shim
+PASS: both oracles agree: shim argv equals print argv minus the leading podman
+PASS: out directory created in run mode
+PASS: default out bind is .audit/out/<op_id>
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:ggggggggggggg...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:AAAAAAAAAAAAA...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'md5:abc...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest '...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: a tag-only reference (tag in reference) is refused
+PASS: tag reference names reason tag_only_reference
+PASS: an empty digest (UNPINNED) is refused
+PASS: empty digest names reason tag_only_reference
+PASS: a well-formed digest passes print mode (format check only)
+PASS: a well-formed digest not present locally is refused in run mode
+PASS: names reason image_not_present_locally
+PASS:   ...no podman run in the shim log
+PASS: entrypoint_override image composes
+PASS: --entrypoint carries the override
+PASS: leading command word dropped: image followed only by the arguments
+PASS: shim agrees: shellcheck word occurs exactly once (as the entrypoint, never as a command)
+PASS: shim agrees: the entrypoint element is present once
+PASS: a command word that does not name the entrypoint is refused
+PASS: names reason entrypoint_word_mismatch
+PASS: no --entrypoint without entrypoint_override
+PASS: headroom refusal refuses the run
+PASS: the disk_below_headroom reason is passed through
+PASS:   ...nothing composed
+PASS: headroom refusal in run mode
+PASS:   ...no podman run
+PASS: ample free space passes
+PASS: DISK_HEADROOM_OUT_DIR is passed through: record written there
+PASS: the lock entry's size_bytes is the headroom need
+PASS: --need overrides the lock size
+PASS: without --rw no writable bind except /out
+PASS: --rw docs composes
+PASS: --rw docs adds exactly one extra writable bind
+PASS: the docs bind is $PWD/docs:/src/docs:rw
+PASS: the rw bind comes after the read-only source mount
+PASS: --rw .audit/scratch composes
+PASS: the scratch bind is $PWD/.audit/scratch:/src/.audit/scratch:rw
+PASS: --rw '.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/x' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/..' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw './docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/etc' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/abs/path' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '../docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/../.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: a second --rw is refused
+PASS: a .audit/scratch symlink to docs is refused
+PASS: names reason rw_source_not_canonical
+PASS:   ...no podman run in the shim log
+PASS: a symlinked .audit component is refused
+PASS: names reason rw_source_not_canonical (parent symlink)
+PASS: a docs symlink is refused
+PASS: the real directories pass
+PASS: --out composes
+PASS: --out <dir> composes exactly -v <dir>:/out:rw
+PASS: --out replaces the default out bind (one /out mount)
+PASS: secret control: a mount of the state directory is detected
+PASS: default run composes
+PASS: needle absent from every mount source (print mode)
+PASS: needle absent from every mount source (shim log)
+PASS: --out under the state directory is refused
+PASS: --out equal to the state directory is refused
+PASS: --out reaching the state directory through .. is refused
+PASS: --out containing the state directory is refused
+PASS: a checkout at $HOME (state directory under the source mount) is refused
+PASS: names reason secret_state_in_mount
+PASS: a state directory placed inside the checkout is refused
+PASS: XDG_STATE_HOME elsewhere does not refuse
+PASS: --network=none composes the option
+PASS: no network option by default
+PASS: RUNP_LOCK: the fixture entry's digest is shown
+PASS: without RUNP_LOCK the tracked lock is read
+PASS: with RUNP_LOCK set no other digest is shown
+PASS: MemAvailable below the reserve refuses (memory_budget_unavailable)
+PASS: RUNP_MEMORY overrides the formula
+PASS: --security-opt is followed by no-new-privileges
+PASS: argv carries --pull=never
+PASS: --tmpfs carries /tmp:rw,mode=1777
+PASS: cache path set by environment: -e HOME=/tmp
+PASS: cache path set by environment: -e XDG_CACHE_HOME=/tmp/.cache
+PASS: cache path set by environment: -e GOCACHE=/tmp/.cache/go-build
+PASS: cache path set by environment: -e GOMODCACHE=/tmp/go/pkg/mod
+PASS: --user defaults to the host uid:gid
+PASS: --userns=keep-id is kept next to --user
+PASS: exactly one --user element
+PASS: RUNP_USER=0:0 is the documented explicit root override
+PASS:   ...and it is the value composed
+PASS:   ...an explicit uid:gid is composed
+PASS: RUNP_USER='root' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER=':1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000 --privileged' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000,extra' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='-1:-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='a:b' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000|0:0' is refused
+PASS:   ...nothing composed
+PASS: names reason user_override_malformed
+PASS: --out under docs (no --rw) is refused
+PASS: names reason out_dir_in_source
+PASS:   ...nothing composed
+PASS: --out below docs is refused
+PASS: --out equal to the source tree is refused
+PASS: --out above the source tree (it would mount the tree writable) is refused
+PASS: --out equal to .audit (not a sanctioned root) is refused
+PASS: --out at an arbitrary source path is refused
+PASS: --out reaching docs through .. is refused
+PASS: --out under .audit/out is accepted
+PASS: --out under .audit/scratch is accepted
+PASS: --out under the evidence tree is accepted
+PASS: --out outside the source tree is accepted
+PASS: --out through an .audit/out symlink to docs is refused
+PASS: relative --out 'relout' is refused
+PASS: relative --out './relout' is refused
+PASS: relative --out '../relout' is refused
+PASS: relative --out '.' is refused
+PASS: names reason out_dir_not_absolute
+PASS:   ...nothing composed
+PASS: --out through a symlink composes
+PASS: the RESOLVED path is bound (not the raw spelling)
+PASS: raw spelling absent from argv
+PASS: .. is resolved in the bind
+PASS: run mode creates the RESOLVED out directory
+PASS: RUNP_MEMORY='0' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='00' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='abc' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='1e9' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='999999999999999999' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='19660800001' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY=0 (no limit) is a refusal, exit 1
+PASS: names reason memory_override_out_of_bounds
+PASS: RUNP_MEMORY one byte above the ceiling is refused, exit 1
+PASS: RUNP_MEMORY exactly at the ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_MEMORY=1 (positive, under the ceiling) is accepted
+PASS: memory is MemAvailable bound: MemAvailable - 15% reserve
+PASS: the 4 GiB reserve floor binds on a small host (9216000000 - 4294967296)
+PASS: default cpus on a 10-cpu host
+PASS: default cpus on a 2-cpu host is capped to the 60% ceiling (1)
+PASS: RUNP_CPUS at the ceiling (6 of 10) is accepted
+PASS: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1
+PASS: names reason cpus_override_out_of_bounds
+PASS: RUNP_CPUS=0 is refused
+PASS: RUNP_CPUS='abc' is refused
+PASS: RUNP_CPUS='1.5' is refused
+PASS: RUNP_CPUS='-1' is refused
+PASS: RUNP_CPUS='00' is refused
+PASS: RUNP_PIDS=0 (unlimited pids) is refused
+PASS:   ...nothing composed
+PASS: RUNP_PIDS='abc' is refused
+PASS: RUNP_PIDS='-1' is refused
+PASS: RUNP_PIDS='01' is refused
+PASS: RUNP_PIDS=100 composes
+PASS: RUNP_PIDS exactly at the 8192 ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_PIDS=8193 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=4194303 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=999999999999999999 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: ulimit -u 4000: RUNP_PIDS=2000 (half of it) is accepted
+PASS: ulimit -u 4000: RUNP_PIDS=2001 (above half of it) is refused, exit 1
+PASS: ulimit -u 1000: the default is clamped to the ceiling (500)
+PASS: ulimit unlimited: the absolute 8192 ceiling still applies
+PASS: ulimit unlimited: 8193 is refused
+PASS: default pids is 2048 on a normal host
+PASS: --out whose resolved path contains ':' (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: a checkout path containing ':' is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS: a checkout reached through a symlink whose RESOLVED path contains ':' is refused
+PASS: a symlinked checkout (resolved path has ':') with an explicit --out outside the tree is refused, exit 1
+PASS:   ...and the reason is source_path_malformed (the resolved checkout path, not the default out)
+PASS:   ...nothing composed
+PASS: control: an ordinary --out still composes
+PASS: a checkout path containing a SPACE composes (default --out), exit 0
+PASS:   ...the space path is bound as ONE argv element (source)
+PASS:   ...and the default out directory under it is bound as one element
+PASS:   ...no refusal text on stderr
+PASS: a checkout path containing a TAB composes (default --out), exit 0
+PASS:   ...the TAB path is bound as one element
+PASS: a space checkout with --rw docs composes
+PASS:   ...the rw bind carries the space path as one element
+PASS: run mode in a space checkout exits 0
+PASS:   ...the out directory exists
+PASS:   ...the shim saw the space path as ONE element
+PASS: a checkout path containing a NEWLINE is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...and says the cause is a newline
+PASS:   ...the refusal is ONE stderr line
+PASS:   ...nothing composed
+PASS: a newline checkout with an explicit --out outside the tree is refused, exit 1
+PASS:   ...the reason is source_path_malformed (the checkout path itself)
+PASS: --out containing a space composes (outside the tree)
+PASS:   ...bound as one element
+PASS: --out containing a TAB composes
+PASS: --out containing a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: --out whose resolved path contains a newline (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS: --out containing ':' is still refused
+PASS:   ...and the reason names the volume separator
+PASS: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...nothing composed
+PASS: R7 RM1: a symlinked checkout (a newline-free logical path) whose RESOLVED path holds a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed (the resolved half of the check)
+PASS:   ...nothing composed
+PASS: R7 F-B: --out through a symlink to a directory ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed (no bind of the newline-stripped, different directory)
+PASS: R7 RM2: a raw --out value ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...refused by the raw-value check (the message does not speak of the resolved path)
+PASS:   ...nothing composed
+PASS: R7 I-2: an --out that cannot be resolved (symlink loop) is refused, exit 1
+PASS:   ...names reason out_dir_unresolvable, not a misleading state-directory overlap
+PASS: R7 control: an ordinary --out still composes
+PASS: R7 F-C: a yaml.py in the checkout (the working directory) is not imported by the lock reader, exit 0
+PASS:   ...the real lock entry is composed
+PASS:   ...the forged entry is not composed
+PASS: R7 F-C: a yaml.py on PYTHONPATH is not imported by the lock reader, exit 0
+PASS:   ...the forged entry is not composed
+PASS:   ...the real lock entry is composed
+PASS: RUNP_ULIMIT_U without RUNP_TEST_MODE is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: an exported RUNP_MEMINFO without RUNP_TEST_MODE is refused (fake meminfo cannot be honoured)
+PASS:   ...names reason test_hook_outside_test_mode
+PASS: a fake 4 TiB meminfo + RUNP_MEMORY=1 TiB cannot compose without the test mode, exit 1
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_ULIMIT_U without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode (not the later pids_budget_unavailable)
+PASS: RUNP_TEST_MODE='0' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='true' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='yes' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='2' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='' is not the declared test mode (only 1): the hooks are refused
+PASS: production path (no hooks, no test mode) composes with the real meminfo and ulimit
+PASS:   ...with the real pids ceiling applied: the default is min(2048, ceiling)
+PASS: RUNP_ULIMIT_U='garbage' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0100' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='-5' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='1 2' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='12abc' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='$((1))' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='a[$(touch /tmp/runp-test.dm0n6M/pwn.d/pwned)]' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='2**64' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='99999999999999999999' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS:   ...names reason pids_budget_unavailable
+PASS: an arithmetic-injection hook value executed nothing
+PASS: ulimit -u 1: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 2: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 3: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 1: RUNP_PIDS=2 is refused above the ceiling of 1, exit 1
+PASS: an unparsable meminfo hook file is refused, exit 1
+PASS:   ...names reason meminfo_unreadable
+PASS: real ulimit -u 10000: the default is 2048
+PASS: real ulimit -u 10000: RUNP_PIDS=5000 (half of it) composes
+PASS: real ulimit -u 10000: RUNP_PIDS=5001 is refused
+PASS: probe runs and writes toolchain.json
+PASS: probe: a tool that prints a loader error and exits 127 is error, not present
+PASS: probe: a tool that exits 126 is error
+PASS: probe: the error records the exit status
+PASS: probe: a tool that exits 0 with output is present
+PASS: probe: a tool with a stated exit-code exception (gofmt -h exits 2) is present
+PASS: probe: a tool that exits 0 with NO output is error
+PASS: probe: the absent needle is absent
+PASS: probe: the errored needle (exit 3) is error
+PASS: probe: the read-only write needle failed as expected
+PASS: probe: uid recorded
+PASS: probe: toolchain.json is valid JSON
+test_run_pinned: 381 passed, 0 failed
+=== run 1 rc=0
+=== run 2 (run_at 2026-10-06T15:56:12Z)
+PASS: the launcher names no unrooted evidence path
+PASS: usage: no arguments is a usage error
+PASS: usage: no command after the image is a usage error
+PASS: usage: unknown option is a usage error
+PASS: usage: image id must be IMG-<NAME>
+PASS: unknown lock id is refused
+PASS: unknown lock id names reason image_id_unknown
+PASS: print-argv mode exits 0
+PASS: argv starts with podman run
+PASS: argv carries --rm
+PASS: argv carries --userns=keep-id
+PASS: argv carries --cap-drop=ALL
+PASS: argv carries --memory
+PASS: argv carries --memory-swap
+PASS: argv carries --pids-limit
+PASS: argv carries --cpus
+PASS: argv carries --workdir
+PASS: memory and memory-swap are equal (no swap)
+PASS: memory is the formula result: min(0.6 MemTotal, MemAvailable - 4.8 GB)
+PASS: --workdir is /src
+PASS: source is mounted read-only
+PASS: label project=catalogizer present
+PASS: image reference is digest-pinned, preceded by --
+PASS: command words follow the image
+PASS: no podman call in print mode
+PASS: run mode exits 0 with the shim
+PASS: both oracles agree: shim argv equals print argv minus the leading podman
+PASS: out directory created in run mode
+PASS: default out bind is .audit/out/<op_id>
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:ggggggggggggg...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:AAAAAAAAAAAAA...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'md5:abc...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest '...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: a tag-only reference (tag in reference) is refused
+PASS: tag reference names reason tag_only_reference
+PASS: an empty digest (UNPINNED) is refused
+PASS: empty digest names reason tag_only_reference
+PASS: a well-formed digest passes print mode (format check only)
+PASS: a well-formed digest not present locally is refused in run mode
+PASS: names reason image_not_present_locally
+PASS:   ...no podman run in the shim log
+PASS: entrypoint_override image composes
+PASS: --entrypoint carries the override
+PASS: leading command word dropped: image followed only by the arguments
+PASS: shim agrees: shellcheck word occurs exactly once (as the entrypoint, never as a command)
+PASS: shim agrees: the entrypoint element is present once
+PASS: a command word that does not name the entrypoint is refused
+PASS: names reason entrypoint_word_mismatch
+PASS: no --entrypoint without entrypoint_override
+PASS: headroom refusal refuses the run
+PASS: the disk_below_headroom reason is passed through
+PASS:   ...nothing composed
+PASS: headroom refusal in run mode
+PASS:   ...no podman run
+PASS: ample free space passes
+PASS: DISK_HEADROOM_OUT_DIR is passed through: record written there
+PASS: the lock entry's size_bytes is the headroom need
+PASS: --need overrides the lock size
+PASS: without --rw no writable bind except /out
+PASS: --rw docs composes
+PASS: --rw docs adds exactly one extra writable bind
+PASS: the docs bind is $PWD/docs:/src/docs:rw
+PASS: the rw bind comes after the read-only source mount
+PASS: --rw .audit/scratch composes
+PASS: the scratch bind is $PWD/.audit/scratch:/src/.audit/scratch:rw
+PASS: --rw '.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/x' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/..' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw './docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/etc' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/abs/path' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '../docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/../.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: a second --rw is refused
+PASS: a .audit/scratch symlink to docs is refused
+PASS: names reason rw_source_not_canonical
+PASS:   ...no podman run in the shim log
+PASS: a symlinked .audit component is refused
+PASS: names reason rw_source_not_canonical (parent symlink)
+PASS: a docs symlink is refused
+PASS: the real directories pass
+PASS: --out composes
+PASS: --out <dir> composes exactly -v <dir>:/out:rw
+PASS: --out replaces the default out bind (one /out mount)
+PASS: secret control: a mount of the state directory is detected
+PASS: default run composes
+PASS: needle absent from every mount source (print mode)
+PASS: needle absent from every mount source (shim log)
+PASS: --out under the state directory is refused
+PASS: --out equal to the state directory is refused
+PASS: --out reaching the state directory through .. is refused
+PASS: --out containing the state directory is refused
+PASS: a checkout at $HOME (state directory under the source mount) is refused
+PASS: names reason secret_state_in_mount
+PASS: a state directory placed inside the checkout is refused
+PASS: XDG_STATE_HOME elsewhere does not refuse
+PASS: --network=none composes the option
+PASS: no network option by default
+PASS: RUNP_LOCK: the fixture entry's digest is shown
+PASS: without RUNP_LOCK the tracked lock is read
+PASS: with RUNP_LOCK set no other digest is shown
+PASS: MemAvailable below the reserve refuses (memory_budget_unavailable)
+PASS: RUNP_MEMORY overrides the formula
+PASS: --security-opt is followed by no-new-privileges
+PASS: argv carries --pull=never
+PASS: --tmpfs carries /tmp:rw,mode=1777
+PASS: cache path set by environment: -e HOME=/tmp
+PASS: cache path set by environment: -e XDG_CACHE_HOME=/tmp/.cache
+PASS: cache path set by environment: -e GOCACHE=/tmp/.cache/go-build
+PASS: cache path set by environment: -e GOMODCACHE=/tmp/go/pkg/mod
+PASS: --user defaults to the host uid:gid
+PASS: --userns=keep-id is kept next to --user
+PASS: exactly one --user element
+PASS: RUNP_USER=0:0 is the documented explicit root override
+PASS:   ...and it is the value composed
+PASS:   ...an explicit uid:gid is composed
+PASS: RUNP_USER='root' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER=':1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000 --privileged' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000,extra' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='-1:-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='a:b' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000|0:0' is refused
+PASS:   ...nothing composed
+PASS: names reason user_override_malformed
+PASS: --out under docs (no --rw) is refused
+PASS: names reason out_dir_in_source
+PASS:   ...nothing composed
+PASS: --out below docs is refused
+PASS: --out equal to the source tree is refused
+PASS: --out above the source tree (it would mount the tree writable) is refused
+PASS: --out equal to .audit (not a sanctioned root) is refused
+PASS: --out at an arbitrary source path is refused
+PASS: --out reaching docs through .. is refused
+PASS: --out under .audit/out is accepted
+PASS: --out under .audit/scratch is accepted
+PASS: --out under the evidence tree is accepted
+PASS: --out outside the source tree is accepted
+PASS: --out through an .audit/out symlink to docs is refused
+PASS: relative --out 'relout' is refused
+PASS: relative --out './relout' is refused
+PASS: relative --out '../relout' is refused
+PASS: relative --out '.' is refused
+PASS: names reason out_dir_not_absolute
+PASS:   ...nothing composed
+PASS: --out through a symlink composes
+PASS: the RESOLVED path is bound (not the raw spelling)
+PASS: raw spelling absent from argv
+PASS: .. is resolved in the bind
+PASS: run mode creates the RESOLVED out directory
+PASS: RUNP_MEMORY='0' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='00' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='abc' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='1e9' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='999999999999999999' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='19660800001' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY=0 (no limit) is a refusal, exit 1
+PASS: names reason memory_override_out_of_bounds
+PASS: RUNP_MEMORY one byte above the ceiling is refused, exit 1
+PASS: RUNP_MEMORY exactly at the ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_MEMORY=1 (positive, under the ceiling) is accepted
+PASS: memory is MemAvailable bound: MemAvailable - 15% reserve
+PASS: the 4 GiB reserve floor binds on a small host (9216000000 - 4294967296)
+PASS: default cpus on a 10-cpu host
+PASS: default cpus on a 2-cpu host is capped to the 60% ceiling (1)
+PASS: RUNP_CPUS at the ceiling (6 of 10) is accepted
+PASS: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1
+PASS: names reason cpus_override_out_of_bounds
+PASS: RUNP_CPUS=0 is refused
+PASS: RUNP_CPUS='abc' is refused
+PASS: RUNP_CPUS='1.5' is refused
+PASS: RUNP_CPUS='-1' is refused
+PASS: RUNP_CPUS='00' is refused
+PASS: RUNP_PIDS=0 (unlimited pids) is refused
+PASS:   ...nothing composed
+PASS: RUNP_PIDS='abc' is refused
+PASS: RUNP_PIDS='-1' is refused
+PASS: RUNP_PIDS='01' is refused
+PASS: RUNP_PIDS=100 composes
+PASS: RUNP_PIDS exactly at the 8192 ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_PIDS=8193 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=4194303 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=999999999999999999 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: ulimit -u 4000: RUNP_PIDS=2000 (half of it) is accepted
+PASS: ulimit -u 4000: RUNP_PIDS=2001 (above half of it) is refused, exit 1
+PASS: ulimit -u 1000: the default is clamped to the ceiling (500)
+PASS: ulimit unlimited: the absolute 8192 ceiling still applies
+PASS: ulimit unlimited: 8193 is refused
+PASS: default pids is 2048 on a normal host
+PASS: --out whose resolved path contains ':' (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: a checkout path containing ':' is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS: a checkout reached through a symlink whose RESOLVED path contains ':' is refused
+PASS: a symlinked checkout (resolved path has ':') with an explicit --out outside the tree is refused, exit 1
+PASS:   ...and the reason is source_path_malformed (the resolved checkout path, not the default out)
+PASS:   ...nothing composed
+PASS: control: an ordinary --out still composes
+PASS: a checkout path containing a SPACE composes (default --out), exit 0
+PASS:   ...the space path is bound as ONE argv element (source)
+PASS:   ...and the default out directory under it is bound as one element
+PASS:   ...no refusal text on stderr
+PASS: a checkout path containing a TAB composes (default --out), exit 0
+PASS:   ...the TAB path is bound as one element
+PASS: a space checkout with --rw docs composes
+PASS:   ...the rw bind carries the space path as one element
+PASS: run mode in a space checkout exits 0
+PASS:   ...the out directory exists
+PASS:   ...the shim saw the space path as ONE element
+PASS: a checkout path containing a NEWLINE is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...and says the cause is a newline
+PASS:   ...the refusal is ONE stderr line
+PASS:   ...nothing composed
+PASS: a newline checkout with an explicit --out outside the tree is refused, exit 1
+PASS:   ...the reason is source_path_malformed (the checkout path itself)
+PASS: --out containing a space composes (outside the tree)
+PASS:   ...bound as one element
+PASS: --out containing a TAB composes
+PASS: --out containing a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: --out whose resolved path contains a newline (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS: --out containing ':' is still refused
+PASS:   ...and the reason names the volume separator
+PASS: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...nothing composed
+PASS: R7 RM1: a symlinked checkout (a newline-free logical path) whose RESOLVED path holds a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed (the resolved half of the check)
+PASS:   ...nothing composed
+PASS: R7 F-B: --out through a symlink to a directory ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed (no bind of the newline-stripped, different directory)
+PASS: R7 RM2: a raw --out value ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...refused by the raw-value check (the message does not speak of the resolved path)
+PASS:   ...nothing composed
+PASS: R7 I-2: an --out that cannot be resolved (symlink loop) is refused, exit 1
+PASS:   ...names reason out_dir_unresolvable, not a misleading state-directory overlap
+PASS: R7 control: an ordinary --out still composes
+PASS: R7 F-C: a yaml.py in the checkout (the working directory) is not imported by the lock reader, exit 0
+PASS:   ...the real lock entry is composed
+PASS:   ...the forged entry is not composed
+PASS: R7 F-C: a yaml.py on PYTHONPATH is not imported by the lock reader, exit 0
+PASS:   ...the forged entry is not composed
+PASS:   ...the real lock entry is composed
+PASS: RUNP_ULIMIT_U without RUNP_TEST_MODE is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: an exported RUNP_MEMINFO without RUNP_TEST_MODE is refused (fake meminfo cannot be honoured)
+PASS:   ...names reason test_hook_outside_test_mode
+PASS: a fake 4 TiB meminfo + RUNP_MEMORY=1 TiB cannot compose without the test mode, exit 1
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_ULIMIT_U without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode (not the later pids_budget_unavailable)
+PASS: RUNP_TEST_MODE='0' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='true' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='yes' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='2' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='' is not the declared test mode (only 1): the hooks are refused
+PASS: production path (no hooks, no test mode) composes with the real meminfo and ulimit
+PASS:   ...with the real pids ceiling applied: the default is min(2048, ceiling)
+PASS: RUNP_ULIMIT_U='garbage' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0100' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='-5' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='1 2' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='12abc' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='$((1))' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='a[$(touch /tmp/runp-test.04iJae/pwn.d/pwned)]' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='2**64' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='99999999999999999999' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS:   ...names reason pids_budget_unavailable
+PASS: an arithmetic-injection hook value executed nothing
+PASS: ulimit -u 1: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 2: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 3: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 1: RUNP_PIDS=2 is refused above the ceiling of 1, exit 1
+PASS: an unparsable meminfo hook file is refused, exit 1
+PASS:   ...names reason meminfo_unreadable
+PASS: real ulimit -u 10000: the default is 2048
+PASS: real ulimit -u 10000: RUNP_PIDS=5000 (half of it) composes
+PASS: real ulimit -u 10000: RUNP_PIDS=5001 is refused
+PASS: probe runs and writes toolchain.json
+PASS: probe: a tool that prints a loader error and exits 127 is error, not present
+PASS: probe: a tool that exits 126 is error
+PASS: probe: the error records the exit status
+PASS: probe: a tool that exits 0 with output is present
+PASS: probe: a tool with a stated exit-code exception (gofmt -h exits 2) is present
+PASS: probe: a tool that exits 0 with NO output is error
+PASS: probe: the absent needle is absent
+PASS: probe: the errored needle (exit 3) is error
+PASS: probe: the read-only write needle failed as expected
+PASS: probe: uid recorded
+PASS: probe: toolchain.json is valid JSON
+test_run_pinned: 381 passed, 0 failed
+=== run 2 rc=0
+=== run 3 (run_at 2026-10-06T15:57:10Z)
+PASS: the launcher names no unrooted evidence path
+PASS: usage: no arguments is a usage error
+PASS: usage: no command after the image is a usage error
+PASS: usage: unknown option is a usage error
+PASS: usage: image id must be IMG-<NAME>
+PASS: unknown lock id is refused
+PASS: unknown lock id names reason image_id_unknown
+PASS: print-argv mode exits 0
+PASS: argv starts with podman run
+PASS: argv carries --rm
+PASS: argv carries --userns=keep-id
+PASS: argv carries --cap-drop=ALL
+PASS: argv carries --memory
+PASS: argv carries --memory-swap
+PASS: argv carries --pids-limit
+PASS: argv carries --cpus
+PASS: argv carries --workdir
+PASS: memory and memory-swap are equal (no swap)
+PASS: memory is the formula result: min(0.6 MemTotal, MemAvailable - 4.8 GB)
+PASS: --workdir is /src
+PASS: source is mounted read-only
+PASS: label project=catalogizer present
+PASS: image reference is digest-pinned, preceded by --
+PASS: command words follow the image
+PASS: no podman call in print mode
+PASS: run mode exits 0 with the shim
+PASS: both oracles agree: shim argv equals print argv minus the leading podman
+PASS: out directory created in run mode
+PASS: default out bind is .audit/out/<op_id>
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:aaaaaaaaaaaaa...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:ggggggggggggg...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'sha256:AAAAAAAAAAAAA...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest 'md5:abc...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: mutated digest '...' is refused (print mode)
+PASS:   ...and no podman run was composed
+PASS: mutated digest refused in run mode
+PASS:   ...no podman run in the shim log
+PASS: a tag-only reference (tag in reference) is refused
+PASS: tag reference names reason tag_only_reference
+PASS: an empty digest (UNPINNED) is refused
+PASS: empty digest names reason tag_only_reference
+PASS: a well-formed digest passes print mode (format check only)
+PASS: a well-formed digest not present locally is refused in run mode
+PASS: names reason image_not_present_locally
+PASS:   ...no podman run in the shim log
+PASS: entrypoint_override image composes
+PASS: --entrypoint carries the override
+PASS: leading command word dropped: image followed only by the arguments
+PASS: shim agrees: shellcheck word occurs exactly once (as the entrypoint, never as a command)
+PASS: shim agrees: the entrypoint element is present once
+PASS: a command word that does not name the entrypoint is refused
+PASS: names reason entrypoint_word_mismatch
+PASS: no --entrypoint without entrypoint_override
+PASS: headroom refusal refuses the run
+PASS: the disk_below_headroom reason is passed through
+PASS:   ...nothing composed
+PASS: headroom refusal in run mode
+PASS:   ...no podman run
+PASS: ample free space passes
+PASS: DISK_HEADROOM_OUT_DIR is passed through: record written there
+PASS: the lock entry's size_bytes is the headroom need
+PASS: --need overrides the lock size
+PASS: without --rw no writable bind except /out
+PASS: --rw docs composes
+PASS: --rw docs adds exactly one extra writable bind
+PASS: the docs bind is $PWD/docs:/src/docs:rw
+PASS: the rw bind comes after the read-only source mount
+PASS: --rw .audit/scratch composes
+PASS: the scratch bind is $PWD/.audit/scratch:/src/.audit/scratch:rw
+PASS: --rw '.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/x' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/..' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw './docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/etc' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '/abs/path' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '../docs' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw 'docs/../.audit' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: --rw '.audit/scratch/' is refused
+PASS:   ...nothing composed
+PASS:   ...no podman run in the shim log
+PASS: a second --rw is refused
+PASS: a .audit/scratch symlink to docs is refused
+PASS: names reason rw_source_not_canonical
+PASS:   ...no podman run in the shim log
+PASS: a symlinked .audit component is refused
+PASS: names reason rw_source_not_canonical (parent symlink)
+PASS: a docs symlink is refused
+PASS: the real directories pass
+PASS: --out composes
+PASS: --out <dir> composes exactly -v <dir>:/out:rw
+PASS: --out replaces the default out bind (one /out mount)
+PASS: secret control: a mount of the state directory is detected
+PASS: default run composes
+PASS: needle absent from every mount source (print mode)
+PASS: needle absent from every mount source (shim log)
+PASS: --out under the state directory is refused
+PASS: --out equal to the state directory is refused
+PASS: --out reaching the state directory through .. is refused
+PASS: --out containing the state directory is refused
+PASS: a checkout at $HOME (state directory under the source mount) is refused
+PASS: names reason secret_state_in_mount
+PASS: a state directory placed inside the checkout is refused
+PASS: XDG_STATE_HOME elsewhere does not refuse
+PASS: --network=none composes the option
+PASS: no network option by default
+PASS: RUNP_LOCK: the fixture entry's digest is shown
+PASS: without RUNP_LOCK the tracked lock is read
+PASS: with RUNP_LOCK set no other digest is shown
+PASS: MemAvailable below the reserve refuses (memory_budget_unavailable)
+PASS: RUNP_MEMORY overrides the formula
+PASS: --security-opt is followed by no-new-privileges
+PASS: argv carries --pull=never
+PASS: --tmpfs carries /tmp:rw,mode=1777
+PASS: cache path set by environment: -e HOME=/tmp
+PASS: cache path set by environment: -e XDG_CACHE_HOME=/tmp/.cache
+PASS: cache path set by environment: -e GOCACHE=/tmp/.cache/go-build
+PASS: cache path set by environment: -e GOMODCACHE=/tmp/go/pkg/mod
+PASS: --user defaults to the host uid:gid
+PASS: --userns=keep-id is kept next to --user
+PASS: exactly one --user element
+PASS: RUNP_USER=0:0 is the documented explicit root override
+PASS:   ...and it is the value composed
+PASS:   ...an explicit uid:gid is composed
+PASS: RUNP_USER='root' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER=':1000' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000 --privileged' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000,extra' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='-1:-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='a:b' is refused
+PASS:   ...nothing composed
+PASS: RUNP_USER='1000:1000|0:0' is refused
+PASS:   ...nothing composed
+PASS: names reason user_override_malformed
+PASS: --out under docs (no --rw) is refused
+PASS: names reason out_dir_in_source
+PASS:   ...nothing composed
+PASS: --out below docs is refused
+PASS: --out equal to the source tree is refused
+PASS: --out above the source tree (it would mount the tree writable) is refused
+PASS: --out equal to .audit (not a sanctioned root) is refused
+PASS: --out at an arbitrary source path is refused
+PASS: --out reaching docs through .. is refused
+PASS: --out under .audit/out is accepted
+PASS: --out under .audit/scratch is accepted
+PASS: --out under the evidence tree is accepted
+PASS: --out outside the source tree is accepted
+PASS: --out through an .audit/out symlink to docs is refused
+PASS: relative --out 'relout' is refused
+PASS: relative --out './relout' is refused
+PASS: relative --out '../relout' is refused
+PASS: relative --out '.' is refused
+PASS: names reason out_dir_not_absolute
+PASS:   ...nothing composed
+PASS: --out through a symlink composes
+PASS: the RESOLVED path is bound (not the raw spelling)
+PASS: raw spelling absent from argv
+PASS: .. is resolved in the bind
+PASS: run mode creates the RESOLVED out directory
+PASS: RUNP_MEMORY='0' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='00' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='abc' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='-1' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='1e9' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='999999999999999999' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY='19660800001' is refused
+PASS:   ...nothing composed
+PASS: RUNP_MEMORY=0 (no limit) is a refusal, exit 1
+PASS: names reason memory_override_out_of_bounds
+PASS: RUNP_MEMORY one byte above the ceiling is refused, exit 1
+PASS: RUNP_MEMORY exactly at the ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_MEMORY=1 (positive, under the ceiling) is accepted
+PASS: memory is MemAvailable bound: MemAvailable - 15% reserve
+PASS: the 4 GiB reserve floor binds on a small host (9216000000 - 4294967296)
+PASS: default cpus on a 10-cpu host
+PASS: default cpus on a 2-cpu host is capped to the 60% ceiling (1)
+PASS: RUNP_CPUS at the ceiling (6 of 10) is accepted
+PASS: RUNP_CPUS above the ceiling (7 of 10) is refused, exit 1
+PASS: names reason cpus_override_out_of_bounds
+PASS: RUNP_CPUS=0 is refused
+PASS: RUNP_CPUS='abc' is refused
+PASS: RUNP_CPUS='1.5' is refused
+PASS: RUNP_CPUS='-1' is refused
+PASS: RUNP_CPUS='00' is refused
+PASS: RUNP_PIDS=0 (unlimited pids) is refused
+PASS:   ...nothing composed
+PASS: RUNP_PIDS='abc' is refused
+PASS: RUNP_PIDS='-1' is refused
+PASS: RUNP_PIDS='01' is refused
+PASS: RUNP_PIDS=100 composes
+PASS: RUNP_PIDS exactly at the 8192 ceiling is accepted
+PASS:   ...and is the value composed
+PASS: RUNP_PIDS=8193 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=4194303 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: RUNP_PIDS=999999999999999999 (above the ceiling) is refused, exit 1
+PASS:   ...names reason pids_override_out_of_bounds
+PASS:   ...nothing composed
+PASS: ulimit -u 4000: RUNP_PIDS=2000 (half of it) is accepted
+PASS: ulimit -u 4000: RUNP_PIDS=2001 (above half of it) is refused, exit 1
+PASS: ulimit -u 1000: the default is clamped to the ceiling (500)
+PASS: ulimit unlimited: the absolute 8192 ceiling still applies
+PASS: ulimit unlimited: 8193 is refused
+PASS: default pids is 2048 on a normal host
+PASS: --out whose resolved path contains ':' (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: a checkout path containing ':' is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS: a checkout reached through a symlink whose RESOLVED path contains ':' is refused
+PASS: a symlinked checkout (resolved path has ':') with an explicit --out outside the tree is refused, exit 1
+PASS:   ...and the reason is source_path_malformed (the resolved checkout path, not the default out)
+PASS:   ...nothing composed
+PASS: control: an ordinary --out still composes
+PASS: a checkout path containing a SPACE composes (default --out), exit 0
+PASS:   ...the space path is bound as ONE argv element (source)
+PASS:   ...and the default out directory under it is bound as one element
+PASS:   ...no refusal text on stderr
+PASS: a checkout path containing a TAB composes (default --out), exit 0
+PASS:   ...the TAB path is bound as one element
+PASS: a space checkout with --rw docs composes
+PASS:   ...the rw bind carries the space path as one element
+PASS: run mode in a space checkout exits 0
+PASS:   ...the out directory exists
+PASS:   ...the shim saw the space path as ONE element
+PASS: a checkout path containing a NEWLINE is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...and says the cause is a newline
+PASS:   ...the refusal is ONE stderr line
+PASS:   ...nothing composed
+PASS: a newline checkout with an explicit --out outside the tree is refused, exit 1
+PASS:   ...the reason is source_path_malformed (the checkout path itself)
+PASS: --out containing a space composes (outside the tree)
+PASS:   ...bound as one element
+PASS: --out containing a TAB composes
+PASS: --out containing a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed
+PASS: --out whose resolved path contains a newline (through a symlink) is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS: --out containing ':' is still refused
+PASS:   ...and the reason names the volume separator
+PASS: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed
+PASS:   ...nothing composed
+PASS: R7 RM1: a symlinked checkout (a newline-free logical path) whose RESOLVED path holds a newline is refused, exit 1
+PASS:   ...names reason source_path_malformed (the resolved half of the check)
+PASS:   ...nothing composed
+PASS: R7 F-B: --out through a symlink to a directory ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...nothing composed (no bind of the newline-stripped, different directory)
+PASS: R7 RM2: a raw --out value ending in a newline is refused, exit 1
+PASS:   ...names reason out_dir_malformed
+PASS:   ...refused by the raw-value check (the message does not speak of the resolved path)
+PASS:   ...nothing composed
+PASS: R7 I-2: an --out that cannot be resolved (symlink loop) is refused, exit 1
+PASS:   ...names reason out_dir_unresolvable, not a misleading state-directory overlap
+PASS: R7 control: an ordinary --out still composes
+PASS: R7 F-C: a yaml.py in the checkout (the working directory) is not imported by the lock reader, exit 0
+PASS:   ...the real lock entry is composed
+PASS:   ...the forged entry is not composed
+PASS: R7 F-C: a yaml.py on PYTHONPATH is not imported by the lock reader, exit 0
+PASS:   ...the forged entry is not composed
+PASS:   ...the real lock entry is composed
+PASS: RUNP_ULIMIT_U without RUNP_TEST_MODE is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: an exported RUNP_MEMINFO without RUNP_TEST_MODE is refused (fake meminfo cannot be honoured)
+PASS:   ...names reason test_hook_outside_test_mode
+PASS: a fake 4 TiB meminfo + RUNP_MEMORY=1 TiB cannot compose without the test mode, exit 1
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode
+PASS:   ...nothing composed
+PASS: R7 RM3: a set-but-empty RUNP_ULIMIT_U without the test mode is refused, exit 1
+PASS:   ...names reason test_hook_outside_test_mode (not the later pids_budget_unavailable)
+PASS: RUNP_TEST_MODE='0' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='true' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='yes' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='2' is not the declared test mode (only 1): the hooks are refused
+PASS: RUNP_TEST_MODE='' is not the declared test mode (only 1): the hooks are refused
+PASS: production path (no hooks, no test mode) composes with the real meminfo and ulimit
+PASS:   ...with the real pids ceiling applied: the default is min(2048, ceiling)
+PASS: RUNP_ULIMIT_U='garbage' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='0100' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='-5' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='1 2' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='12abc' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='$((1))' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='a[$(touch /tmp/runp-test.mcBfmo/pwn.d/pwned)]' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='2**64' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS: RUNP_ULIMIT_U='99999999999999999999' is refused (fail closed), exit 1
+PASS:   ...nothing composed
+PASS:   ...names reason pids_budget_unavailable
+PASS: an arithmetic-injection hook value executed nothing
+PASS: ulimit -u 1: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 2: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 3: the default composes --pids-limit 1 (never 0 = unlimited)
+PASS: ulimit -u 1: RUNP_PIDS=2 is refused above the ceiling of 1, exit 1
+PASS: an unparsable meminfo hook file is refused, exit 1
+PASS:   ...names reason meminfo_unreadable
+PASS: real ulimit -u 10000: the default is 2048
+PASS: real ulimit -u 10000: RUNP_PIDS=5000 (half of it) composes
+PASS: real ulimit -u 10000: RUNP_PIDS=5001 is refused
+PASS: probe runs and writes toolchain.json
+PASS: probe: a tool that prints a loader error and exits 127 is error, not present
+PASS: probe: a tool that exits 126 is error
+PASS: probe: the error records the exit status
+PASS: probe: a tool that exits 0 with output is present
+PASS: probe: a tool with a stated exit-code exception (gofmt -h exits 2) is present
+PASS: probe: a tool that exits 0 with NO output is error
+PASS: probe: the absent needle is absent
+PASS: probe: the errored needle (exit 3) is error
+PASS: probe: the read-only write needle failed as expected
+PASS: probe: uid recorded
+PASS: probe: toolchain.json is valid JSON
+test_run_pinned: 381 passed, 0 failed
+=== run 3 rc=0

@@ -1,0 +1,19 @@
+# identity: wf7fix-hc-real-host
+# host_checklist_sha256: 9ffbfaf17687cdcbee584436766b924d58e543d8fc389292250f9672b13f0fda
+# lock_sha256: d2e8fa9d23863776a53549b292d771d7b0b0de9902c53ef668f475268cf1a1c3
+# host: anton uid: 1000
+# run_at: 2026-10-06T16:15:56Z
+## 1. real host, tracked lock: bash scripts/containers/host_checklist.sh --strict
+host_checklist: wrote /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp10/host-checklist.json
+strict rc=0
+{"pass":13,"fail":0,"na":4,"unconfirmed":2}
+{"verdict":"pass","detail":"all 5 lock images present locally and pinned","images":[{"id":"IMG-GO","status":"present_pinned"},{"id":"IMG-SHELLCHECK","status":"present_pinned"},{"id":"IMG-TESTUTIL-BASE","status":"present_pinned"},{"id":"IMG-TESTUTIL","status":"present_pinned"},{"id":"IMG-KCOV","status":"present_pinned"}]}
+## 2. real host and real podman, copy of the lock with ONE hex character of the IMG-GO digest flipped (platform_digest untouched): EV=scratch CHK_LOCK=copy --strict
+host_checklist: wrote /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/wf7r7/realflip/ev/wp10/host-checklist.json
+strict rc=1
+{"verdict":"fail","detail":"1 of 5 lock images absent, malformed in the lock, or with a digest mismatch (no pull is done here: T005d pulls)","images":[{"id":"IMG-GO","status":"digest_mismatch"},{"id":"IMG-SHELLCHECK","status":"present_pinned"},{"id":"IMG-TESTUTIL-BASE","status":"present_pinned"},{"id":"IMG-TESTUTIL","status":"present_pinned"},{"id":"IMG-KCOV","status":"present_pinned"}]}
+## 3. the same copy against the PRE-FIX script (WF7 reviewer finding F-A: pass)
+host_checklist: wrote /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/wf7r7/realflip/ev/wp10/host-checklist.json
+strict rc=1
+{"verdict":"pass","images":[{"id":"IMG-GO","status":"present_pinned"},{"id":"IMG-SHELLCHECK","status":"present_pinned"},{"id":"IMG-TESTUTIL-BASE","status":"present_pinned"},{"id":"IMG-TESTUTIL","status":"present_pinned"},{"id":"IMG-KCOV","status":"present_pinned"}]}
+# note on section 3: the pre-fix copy lives outside the repository tree, so its ROOT-relative disk_headroom.conf is absent and C12 fails there; that is why its strict exit is 1. Only the C13 line is the comparison.

@@ -753,6 +753,7 @@ docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 - **[Architecture Overview](docs/architecture/ARCHITECTURE.md)**: System design
 - **[Security Guide](docs/SECURITY_TESTING_GUIDE.md)**: Security best practices
 - **[Build System](docs/BUILD_SYSTEM.md)**: Release build system with versioning
+- **[Script companion guides](docs/scripts/README.md)**: Index of every script guide (audit tooling, catalog QA, Firebase) and the remediation evidence index
 - **[Troubleshooting](docs/guides/TROUBLESHOOTING.md)**: Common issues and solutions
 
 <!-- doc-link-section:begin -->

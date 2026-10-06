@@ -19,6 +19,9 @@ command -v jq >/dev/null 2>&1 || { echo "FAIL: jq is required by this test"; exi
 
 T="$(mktemp -d "${TMPDIR:-/tmp}/dh-test.XXXXXX")"
 trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$T"' EXIT
+# Round 7 (WF7 F7-8): every run of the gate under test that does not get its own TMPDIR (a gate killed with SIGKILL cannot remove its private
+# mktemp -d directory) now leaves its junk inside $T, which the trap above removes, not in the caller's TMPDIR. Which suite leaves it is UNCONFIRMED.
+mkdir -p "$T/tmproot" && export TMPDIR="$T/tmproot"
 MUT_RECORD="${DISK_HEADROOM_MUTATION_RECORD:-$T/disk-headroom-mutation.txt}"
 SHIMS="$T/shims"; mkdir -p "$SHIMS"
 cat >"$SHIMS/podman" <<'SH'
@@ -631,6 +634,14 @@ children_of() { # $1 pid: its children, from the kernel's own list (fast), else 
   for d in /proc/[0-9]*; do p="${d#/proc/}"; [ "$(ppid_of "$p" 2>/dev/null)" = "$1" ] && echo "$p"; done; return 0
 }
 cmdline_of() { tr '\0' ' ' 2>/dev/null <"/proc/$1/cmdline"; }
+# wait_gate_image <pid> <script under test>: prints the command line of <pid> once it has exec'd the gate (it starts with `bash <script> `); polls for at most
+# 10 s; if never seen it prints the last read, so the caller's observation fails honestly (a never-exec'd or foreign image can never satisfy the match: the
+# pattern is a quoted prefix). Round 7 (WF7 F7-3): factored out so that the single-early-read reversion has an in-repo regression guard (gate_image_suite).
+wait_gate_image() {
+  local pid="$1" S="$2" i=0 g=""
+  while [ "$i" -lt 100 ]; do g="$(cmdline_of "$pid")"; case "$g" in "bash $S "*) break ;; esac; sleep 0.1; i=$((i + 1)); done
+  printf '%s' "$g"
+}
 preexec_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
   local S="$1" label="$2" before=$FAILS tool TO
   TS_FAILS=0
@@ -641,6 +652,10 @@ preexec_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
   for tool in podman reaper; do
     local R="$T/pre-$label-$tool" i=0 CP="" GP="" SP
     rm -rf "$R"; mkdir -p "$R/tmp" "$R/.audit"; mk_hang_shims "$R" podman
+    # Round 7 (WF7 F7-3): a DETERMINISTIC window in which strace's child shows a non-gate image. A `bash` shim first on PATH sleeps 2.5 s once (marker file
+    # below $R), then execs the real bash; while it sleeps the child's command line is `/bin/sh <shim> <script> ...`, which must never satisfy wait_gate_image.
+    # Without it the race only appears under host load (the WF5 N1 false red), so the single-early-read form passed this suite on an idle host.
+    printf '%s\n' '#!/bin/sh' '[ -e "$SIG_DIR/bash.widened" ] || { : >"$SIG_DIR/bash.widened"; sleep 2.5; }' "exec $(command -v bash) \"\$@\"" >"$R/shims/bash"; chmod +x "$R/shims/bash"
     # Which exec is held: the probes run `timeout` from the gate's cwd, the reaper subshell runs it after `cd "$ROOT_DIR"`. For the reaper a RELATIVE
     # PATH entry (rtbin, present only below $ROOT_DIR) makes that exec, and only that one, name a different file ($R/rtbin/timeout, a wrapper), which
     # is the one strace is told to hold.
@@ -660,7 +675,7 @@ preexec_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
     # strace's own image for a while, and a read taken then matches no pre-exec child (a false red). Bounded, 10 s; if never seen, gcmd stays
     # the last read and the observation below fails honestly.
     local gcmd p1=""; i=0
-    while [ "$i" -lt 100 ]; do gcmd="$(cmdline_of "$GP")"; case "$gcmd" in "bash $S "*) break ;; esac; sleep 0.1; i=$((i + 1)); done
+    gcmd="$(wait_gate_image "$GP" "$S")"
     i=0
     while [ -z "$CP" ] && [ "$i" -lt 100 ]; do
       p1="$(for c in $(children_of "$GP"); do [ "$(cmdline_of "$c")" = "$gcmd" ] && echo "$c"; done | head -1)"
@@ -668,6 +683,7 @@ preexec_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
       [ -n "$p1" ] && [ "$(cmdline_of "$p1")" = "$gcmd" ] && CP="$p1"
       i=$((i + 1))
     done
+    check "[$label] I1 $tool: the widened window was real (the bash shim delayed the first exec)" "$([ -e "$R/bash.widened" ] && echo yes || echo no)" "yes"
     check "[$label] I1 $tool: a pre-exec child (still the gate's own image) is observed" "$([ -n "$CP" ] && echo yes || echo no)" "yes"
     local t0 t1 lat; t0=$(date +%s%N)
     kill -TERM "$GP" 2>/dev/null
@@ -684,6 +700,18 @@ preexec_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
     local q; for q in "$(cat "$R/grandchild.pid" 2>/dev/null)" "$(cat "$R/stub.pid" 2>/dev/null)" "$CP"; do [ -n "$q" ] && alive "$q" && kill -KILL "$q" 2>/dev/null; done
     wait "$SP" 2>/dev/null
   done
+  TS_FAILS=$((FAILS-before))
+}
+
+# gate_image_suite: wait_gate_image against a process whose command line is first a foreign image and becomes the gate image 1.5 s later (no strace needed)
+gate_image_suite() { # $1 = function name to test (default wait_gate_image); $2 = label; sets TS_FAILS
+  local fn="${1:-wait_gate_image}" label="${2:-real}" before=$FAILS S="/x/disk_headroom.sh" P got
+  TS_FAILS=0
+  bash -c 'sleep 1.5; exec -a "bash $0 --need 1 --op-id u" sleep 6' "$S" &
+  P=$!
+  got="$("$fn" "$P" "$S")"
+  kill -KILL "$P" 2>/dev/null; wait "$P" 2>/dev/null
+  check "[$label] F7-3 wait_gate_image waits past the foreign image and returns the gate image" "$got" "bash $S --need 1 --op-id u 6 "
   TS_FAILS=$((FAILS-before))
 }
 
@@ -880,6 +908,8 @@ QUIET=0 write_signal_suite "$SUT" real
 REAL_WSIG_FAILS=$TS_FAILS
 QUIET=0 preexec_suite "$SUT" real
 REAL_PRE_FAILS=$TS_FAILS
+QUIET=0 gate_image_suite wait_gate_image real
+REAL_GI_FAILS=$TS_FAILS
 QUIET=0 freeze_suite "$SUT" real
 REAL_FREEZE_FAILS=$TS_FAILS
 QUIET=0 conf_suite "$SUT" real
@@ -942,6 +972,20 @@ mutate timeout-zero-allowed 's/valid_pos_int\(\) \{ valid_int "\$1" && \[ "\$1" 
 mutate preexec-image-dropped   '/# MUT:own-preexec$/c\  :' own_suite
 mutate preexec-image-dropped-it '/# MUT:own-preexec$/c\  :' preexec_suite
 mutate preexec-kill-dropped    '/# MUT:preexec-kill$/c\  :' preexec_suite
+
+# Round 7 (WF7 F7-3): paired mutation of the test's own wait loop: the single early read (the pre-fix form) must make gate_image_suite FAIL.
+mut_gate_image_single_read() {
+  local keepf=$FAILS keepp=$PASSES orig mutd
+  orig="$(declare -f wait_gate_image)"; mutd="$(printf '%s\n' "$orig" | sed 's/wait_gate_image/wait_gate_image_mut/; s/-lt 100/-lt 1/')"
+  if [ "$mutd" = "$(printf '%s\n' "$orig" | sed 's/wait_gate_image/wait_gate_image_mut/')" ]; then bad "mutation gate-image-single-read changed nothing"; echo "mutation gate-image-single-read: NOT APPLIED" >>"$MUT_RECORD"; return; fi
+  eval "$mutd"
+  QUIET=1 gate_image_suite wait_gate_image_mut mut-gate-image-single-read >"$T/mut-gate-image.out" 2>&1
+  local caught=$TS_FAILS
+  FAILS=$keepf; PASSES=$keepp
+  if [ "$caught" -gt 0 ]; then ok "mutation gate-image-single-read observed failing ($caught assertion(s) RED)"; echo "mutation gate-image-single-read: CAUGHT, $caught assertion(s) failed" >>"$MUT_RECORD"
+  else bad "mutation gate-image-single-read survived (suite stayed green)"; echo "mutation gate-image-single-read: SURVIVED" >>"$MUT_RECORD"; fi
+}
+mut_gate_image_single_read
 mutate bound-keeps-failed-output '/# MUT:bound-rc$/c\  if :; then' bound_suite
 mutate bound-no-kill-after     '/# MUT:kill-after$/c\  timeout "$CMD_TO" "$@" >"$OUT_F" 2>/dev/null \&' bound_suite
 mutate opid-charset-dropped    '/# MUT:opid-charset$/c\  :' core_suite
@@ -963,6 +1007,7 @@ check "real script: bound suite has zero failures" "$REAL_BOUND_FAILS" "0"
 check "real script: dependency-preflight suite has zero failures" "$REAL_DEP_FAILS" "0"
 check "real script: record-write signal suite has zero failures" "$REAL_WSIG_FAILS" "0"
 check "real script: fork-to-exec (pre-exec child) suite has zero failures" "$REAL_PRE_FAILS" "0"
+check "real script: gate-image wait suite has zero failures" "$REAL_GI_FAILS" "0"
 check "real script: turn-freeze suite has zero failures" "$REAL_TURN_FAILS" "0"
 check "real script: signal suite has zero failures" "$REAL_SIGNAL_FAILS" "0"
 check "real script: bounded-probe signal suite has zero failures" "$REAL_BSIG_FAILS" "0"

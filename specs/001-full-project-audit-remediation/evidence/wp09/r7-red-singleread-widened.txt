@@ -1,0 +1,10 @@
+# identity: r7-red-singleread-driver
+# test_disk_headroom.sh sha256: d6290390d950a23bdaa6879a686d07c6c5ffb23a19ab713534cc8b9abb589d13
+# disk_headroom.sh sha256: b5d59685a3f7719fa737bac47f1a1618bd3aa590e43f99dc06c39090982624a0
+# run_at: 2026-10-06T15:44:50Z host: anton uid: 1000
+FAIL: [real] I1 podman: a pre-exec child (still the gate's own image) is observed (got 'no' want 'yes')
+FAIL: [real] I1 podman: the delayed child never exec'd (hang shim never started) (got 'started' want 'never')
+FAIL: [real] I1 reaper: a pre-exec child (still the gate's own image) is observed (got 'no' want 'yes')
+FAIL: [real] I1 reaper: the delayed child never exec'd (hang shim never started) (got 'started' want 'never')
+driver preexec: TS_FAILS=4 total 77 passed, 4 failed
+rc=0

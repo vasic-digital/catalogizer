@@ -2,6 +2,8 @@
 
 | Field | Value |
 |---|---|
+| Revision | 3 (round 7; round 4 text = revision 1, round 5 to 6 additions = revision 2) |
+| Last modified | 2026-10-06T16:30:00Z |
 | Date (UTC) | 2026-10-06 |
 | Scope | T003 (RUNP test), T005d, T006, T007 (`run_pinned.sh`), T008 (`smoke_probe.sh`, `smoke_images.sh`) |
 | Source of the round-4 changes | independent review `WF3-REVIEW-wp09-images-runner` (findings I1 to I6) and `wp04/verify-repos-container-rootcause.md` (cause 3) |
@@ -103,3 +105,34 @@ own effort is not reported by the dispatch path.
   `terminal/callback.state` no longer blocks under a lock (EC-2); fixtures for a DUP redo of a `running` callback (EC-3) and an oversize `progress.json` (EC-4);
   provenance checker: the jq HOME and the python smoke-test isolation have fixtures (PR-1, PR-2).
 - RED, GREEN x3 and mutation results: see the `wf6fix-*` files and `round6-notes.md` (Results). Independent review of this round is owed.
+
+## Round 7 (WF7 review `disk-docs-governance`; evidence files `r7-*`; the `n1-*` and `n3-*` files are WF5 N1 to N3 closure evidence of round 6)
+
+Index of the round-6 files that were reachable only through `SHA256SUMS`:
+
+| File | Content and honest limits |
+|---|---|
+| `n1-red-early.txt`, `n1-red-load.txt` | RED of the single-early-`gcmd`-read form (WF5 N1). The header `test_disk_headroom.sh sha256` names the FIXED test; the run itself used a scratch driver (its sha256 is on the `# driver:` line), so that line, not the test sha, identifies what ran |
+| `n1-green-early-{1,2,3}.txt` | GREEN x3 of the fixed wait loop without load |
+| `n1-green-load-3.txt` | GREEN under load, ONE run only (GREEN x3 under load is NOT evidenced) |
+| `n1-disk-suite-full.txt` | full `test_disk_headroom.sh`: only the summary tail was kept (`370 passed, 0 failed`, `rc=0`). The 46 mutation verdicts of that run are NOT in the file; the WF7 reviewer re-ran the suite and saw 46/46 observed failing, which is the reviewer's statement, not this file's |
+| `n3-probe-suite-green.txt` | `test_probe_host.sh`: tail of the run only (`122 passed, 0 failed`); its header says `identity: n1-probe-suite` (a mislabel, the content is the N3 probe run). The 24 mutation verdicts are NOT in the file (the WF7 reviewer saw 24/24 in its own run) |
+
+Transcripts are not edited; the omissions above are stated here instead.
+
+Round 7 changes (author statement, independent review owed, constitution 11.4.142):
+
+- WF7 F7-3 (the N1 fix had no in-repo guard): `test_disk_headroom.sh` now has `wait_gate_image` (the wait loop, factored out), a `bash` shim first on strace's PATH that delays the first exec by 2.5 s so the foreign-image window is real on every host (a check asserts the delay happened), `gate_image_suite` (a unit test with no strace need) and the paired mutation `gate-image-single-read` (the pre-fix single read must fail it). RED: `r7-red-singleread-widened.txt` (the single-read form under the widened window: 4 failures, both tools); GREEN: `r7-green-preexec-driver.txt` (the preexec suite alone: 81 passed, 0 failed) and `r7-disk-full-{1,2,3}.txt` (full suite x3, each `375 passed, 0 failed`, `rc=0`, 47 of 47 mutations CAUGHT and none SURVIVED, mutation record appended to each transcript, run with nice 10 on the shared host). The pass lines were filtered out of the transcripts (`grep -v '^PASS'`); the summary line, the rc and the mutation record are kept.
+- WF7 F7-8 (empty `disk_headroom.XXXXXX` left in the caller's TMPDIR): the test now exports a TMPDIR below its own scratch directory, removed by its trap. Which suite leaves the directory is UNCONFIRMED (not bisected); after the three full runs no new `disk_headroom.*` directory existed in `/tmp` (the one present is dated before the fix).
+- Docs: the `docs/scripts/` guides were re-aligned to their scripts (host_checklist rev 2: 31 mutations, PyYAML C13, exact-64-hex rule, new statuses; event_core rev 7: `effects_log_not_regular`, `read_regular` reads, fsync on every attempt; check_review_provenance rev 7; index_health, scope_to_lumen_json, verify_repos counts re-measured; stale "draft, untracked" statuses corrected) and `docs/scripts/README.md` was created and linked from the root `README.md` (11.4.212).
+
+Not changed, tracked:
+
+- WF7 F7-6 (owner decision): T001 `test_disk_headroom.sh` is a host-only leg (inside IMG-TESTUTIL the `/dev` device check differs); recording it as host-only in the T008 table is owed to the task owner. No skip logic was added.
+- WF7 F7-7 (cross-area, wp02): `mutate_index_health.sh` at HEAD reports `m29-noncanonical-no-control-char-check` SURVIVED; UNCONFIRMED whether equivalent to a round-6 check. Noted in `docs/scripts/index_health.md`.
+- WF7 F7-5: 19 of 33 scripts have no guide; listed in `docs/scripts/README.md`.
+- `$EV/wp09/SHA256SUMS` now also lists the `r7-*` files.
+
+### Owed docs/04 sync patch: current state (note only, owner-decision text NOT applied)
+
+`evidence/wp06/owed-docs04-sync.diff` was cut against `docs/04-findings-register-design.md` sha256 `e25ebd31...`; the file is now `bd128a40...` (the owner edited it). A `patch --dry-run` of the diff against a copy of the current file (run 2026-10-06, scratch copy) applies 10 of 11 hunks and rejects hunk 8 (at line 962); the rejected hunk text is the exact replacement for that region. The docs/04 text still says `ext_schema_version=4`, so the v5 sync (DDL v5: 43 triggers) remains OWED to the owner; this round did not edit docs/04.

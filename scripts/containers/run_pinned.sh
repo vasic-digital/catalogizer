@@ -24,6 +24,8 @@
 #   volume separator (probed: rc 125). A NEWLINE is refused by launcher policy, not because podman fails on it (it binds it, probed): the print
 #   mode and the shim log are one argv element per line, and an element holding a newline would make that oracle ambiguous. A space or a TAB
 #   in a path is NOT refused: probed with real podman, both are bound correctly by `-v <path>:<dest>`.
+#   A trailing newline counts too (the resolved paths are captured without the $(...) strip, round 7); a --out that cannot be resolved (a symlink loop)
+#   is out_dir_unresolvable. The lock is read by python3 -I, so a yaml.py in the working directory or on PYTHONPATH is never imported.
 #   RUNP_USER=<uid>:<gid>   the container user. Default: the host uid:gid ($(id -u):$(id -g)), so files written to /out belong to the host
 #               user, git sees no dubious ownership on the source mount, and root-only test skips do not skip. `RUNP_USER=0:0` is the
 #               explicit, documented override for a run that needs root (it is never the default). Malformed: user_override_malformed.
@@ -45,6 +47,10 @@ HEADROOM="$HERE/disk_headroom.sh"
 
 refuse() { echo "run_pinned: REFUSED reason=$1 ${2:-}" >&2; exit 1; }
 usage()  { echo "run_pinned: usage: $1" >&2; echo "run_pinned: run_pinned.sh [--rw docs|.audit/scratch] [--out <dir>] [--network=none] [--need <bytes>] [--op-id <id>] <IMG-ID> -- <cmd>..." >&2; exit 2; }
+# rp <varname> <realpath args>: set <varname> to the resolved path with its TRAILING newlines kept. A $(realpath ...) strips them (a path ending in a newline
+# would be checked and bound as a different path), and so would any caller that captured rp's output with $(...): hence the variable is set with printf -v.
+# A sentinel byte after the newline realpath prints is removed together with that newline. Failure: status 1.
+rp() { local _v=$1 _x; shift; _x="$(realpath "$@" && printf x)" || return 1; printf -v "$_v" '%s' "${_x%?x}"; }
 valid_int() { case "$1" in ''|*[!0-9]*) return 1;; 0) return 0;; 0*) return 1;; esac; [ "${#1}" -le 18 ]; }
 
 RW=""; OUT=""; NET=""; NEED=""; OP_ID=""; IMG=""; SEEN_RW=0; SEEN_OUT=0
@@ -77,7 +83,7 @@ fi
 
 # ---- lock entry (python3 + PyYAML; one entry by exact id) ----
 [ -r "$LOCK" ] || refuse lock_unreadable "$LOCK"
-ENTRY="$(python3 - "$LOCK" "$IMG" <<'PY'
+ENTRY="$(python3 -I - "$LOCK" "$IMG" <<'PY'
 import sys
 try:
     import yaml
@@ -118,11 +124,11 @@ fi
 if [ -z "$NEED" ]; then if [ -n "$SIZE" ]; then valid_int "$SIZE" || refuse lock_size_malformed "id=$IMG"; NEED="$SIZE"; else NEED=0; fi; fi
 
 # ---- paths: secret store, --rw allow-list, --out ----
-PWD_REAL="$(realpath -- "$PWD")"
+rp PWD_REAL -- "$PWD" || refuse source_path_malformed "the checkout path $(printf '%q' "$PWD") cannot be resolved"
 case "$PWD$PWD_REAL" in *:*) refuse source_path_malformed "the checkout path ($PWD, resolved $PWD_REAL) contains ':' and cannot be a podman bind source";; esac   # MUT:pwd-colon
 case "$PWD$PWD_REAL" in *$'\n'*) refuse source_path_malformed "the checkout path contains a newline: refused by policy so the one-element-per-line argv (the print-mode oracle) stays unambiguous (podman itself would bind it)";; esac   # MUT:pwd-newline
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/catalogizer"
-STATE_REAL="$(realpath -m -- "$STATE_DIR")"
+rp STATE_REAL -m -- "$STATE_DIR" || refuse state_dir_unresolvable "$(printf '%q' "$STATE_DIR")"
 # overlap(a, b): true when a equals b or one lies under the other (the secret store must never be inside a mount, nor contain one)
 overlaps() { local a="${1%/}" b="${2%/}"; [ "$a" = "$b" ] && return 0; case "$a/" in "$b"/*) return 0;; esac; case "$b/" in "$a"/*) return 0;; esac; return 1; }
 if overlaps "$PWD_REAL" "$STATE_REAL"; then refuse secret_state_in_mount "the source mount $PWD_REAL and the state directory $STATE_REAL overlap"; fi   # MUT:secret
@@ -149,7 +155,7 @@ if [ -n "$OUT" ]; then
 else
   OUT="$PWD/.audit/out/$OP_ID"
 fi
-_o="$(realpath -m -- "$OUT")"
+rp _o -m -- "$OUT" || refuse out_dir_unresolvable "$(printf '%q' "$OUT") cannot be resolved (a symlink loop or an unreadable component)"
 # the RESOLVED path is what podman sees: ':' there would be read as a volume separator (the raw-value check above cannot see a symlink target);
 # a newline is refused by policy (podman binds it; the one-per-line argv oracle would be ambiguous). Space and TAB are fine (probed with real podman, round 6, F1). The default out
 # ($PWD/.audit/out/<op id>) is covered too; its only way in is the checkout path, which source_path_malformed has already named.

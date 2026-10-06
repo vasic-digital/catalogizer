@@ -1,0 +1,126 @@
+# identity: wf7fix-dispatch-mutations
+# run_pinned_sha256: 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# test_run_pinned_sha256: b984e5e3abda7a6c7ca0e7b0442f49c4d6a139e7c8adaa657438b318f07c8ae6
+# host_checklist_sha256: 9ffbfaf17687cdcbee584436766b924d58e543d8fc389292250f9672b13f0fda
+# test_host_checklist_sha256: ddc13341605f0dd7c1938a98cb4fd097459008815fd4050ee8dfccf006be6311
+# event_core_sha256: 6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+# test_dispatch_events_sha256: 8c4583bfc11db66241e5fb0ca8056e0dc7849e8ce09fbde3344455711c150026
+# mutate_dispatch_events_sha256: fedf7fdc9317f7cc30bedbf0c206904a085b1dbf6830937a7e0396efe83ecca0
+# check_review_provenance_sha256: 9f4fdbf89993a225f5f8d179fa95c0005f38a9ac17a13fd665e0d34a4f208c00
+# test_check_review_provenance_sha256: ed5f4e0222125813547e29cca5d8fd3c6cd03f97bce91805a5211566fc4245a4
+# mutations_check_review_provenance_sha256: 478b408ed8cafa6c8e5abebf5a5790cd9dc352aa9f645c684071573b5c291cae
+# host: anton uid: 1000
+# command: bash scripts/build/tests/mutate_dispatch_events.sh <4 new m_r7_* + 4 affected> (one run)
+== m_r7_fd1_callback_temp_gt  (event_core.sh)
+@@ -130,7 +130,7 @@
+         # round 6, EC-1: the line is already there (an earlier attempt wrote it, perhaps failing the fsync): it is durable only once THIS attempt's checked fsync passes
+         fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
+       fi
+-      excl_write "$d/tmp/e.$$" "$(now)" || { cb_fail "$d" effect_temp_write_failed; return 1; }   # round 7, F-D: exclusive create, never `>` on a predictable name under the callback lock
++      { printf '%s\n' "$(now)" > "$d/tmp/e.$$"; } 2>/dev/null || { cb_fail "$d" effect_temp_write_failed; return 1; }   # round 7, F-D: exclusive create, never `>` on a predictable name under the callback lock
+       ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
+       rm -f "$d/tmp/e.$$"
+       # EEXIST (a concurrent writer of the same key) is success; any other failure leaves no effect and must not become "done"
+FAIL (R7-FD1 fifo) rc=124 (124 = blocked) out=
+FAIL (R7-FD1 symlink) rc=0 victim='2026-10-06T16:14:47Z' out=rc=0 state=done
+RESULT pass=308 fail=2 skip=0
+-> KILLED
+== m_r7_fd2_atomic_temp_gt  (event_core.sh)
+@@ -84,7 +84,7 @@
+ sys.exit(0 if ok else 1)' "$1" 2>/dev/null; }
+ atomic_write() { # builddir file content   (temp lives in <builddir>/tmp, never beside the data)
+   local d=$1 f=$2 t; mkdir -p "$d/tmp" 2>/dev/null || return 1; t="$d/tmp/w.$$.$RANDOM"
+-  excl_write "$t" "$3" && [ -s "$t" ] && fsync_file "$t" && mv -fT "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
++  { printf '%s\n' "$3" > "$t"; } 2>/dev/null && [ -s "$t" ] && fsync_file "$t" && mv -fT "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
+   fsync_dir "$(dirname "$f")"; }
+ # lock fd opener: append-open (never truncates), refused when the path is not the regular file the fd points at (symlink swap)
+ lock_ok() { # fd path : after `exec N>>path` succeeded, the open file must be the inode that path names (lstat, no follow)
+FAIL (R7-FD2 fifo) rc=124 (124 = blocked) out=
+FAIL (R7-FD2 symlink) rc=0 victim='payload' out=rc=0
+RESULT pass=308 fail=2 skip=0
+-> KILLED
+== m_r7_excl_stale_kept  (event_core.sh)
+@@ -75,7 +75,7 @@
+   fsync_dir "$1"; }
+ excl_write() { # file content : the temp-file writer. Any entry already at the name is removed (rm never opens it), then the file is created with O_CREAT|O_EXCL|O_NOFOLLOW|O_NONBLOCK and content+newline is written:
+   # a FIFO or a symlink planted at a predictable temp name (round 7, F-D) can neither block the writer, which holds a build lock, nor redirect the write to a file outside the build directory.
+-  command rm -f -- "$1" 2>/dev/null
++  :
+   printf '%s\n' "$2" | python3 -c 'import os, sys
+ d = sys.stdin.buffer.read()
+ fd = os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_NONBLOCK, 0o644)
+FAIL (R7-FD1 fifo) rc=0 (124 = blocked) out=callback failed: effect_temp_write_failed
+FAIL (R7-FD1 symlink) rc=0 victim='precious' out=callback failed: effect_temp_write_failed
+FAIL (R7-FD2 fifo) rc=0 (124 = blocked) out=rc=1
+FAIL (R7-FD2 symlink) rc=0 victim='precious' out=rc=1
+RESULT pass=306 fail=4 skip=0
+-> KILLED
+== m_r7_regular_or_absent_follow  (event_core.sh)
+@@ -28,7 +28,7 @@
+ sys.stdout.buffer.write(os.read(fd, 4097))' "$1" 2>/dev/null; }
+ regular_or_absent() { # file : 0 when the path is absent or a regular non-symlink file; 1 for anything else (FIFO, device, directory, symlink, dangling link). Judged by fstat of an O_NONBLOCK|O_NOFOLLOW open, so it can never block
+   python3 -c 'import errno, os, stat, sys
+-try: fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
++try: fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK)
+ except OSError as e: sys.exit(0 if e.errno == errno.ENOENT else 1)
+ sys.exit(0 if stat.S_ISREG(os.fstat(fd).st_mode) else 1)' "$1" 2>/dev/null; }
+ isint() { [[ ${1:-} =~ ^(0|[1-9][0-9]{0,15})$ ]]; }       # base-10, at most 2^53 in practice (the verifier bounds it)
+FAIL (R7-EM1 live link) rc=0 state=done victim='precious
+FAIL (R7-EM1 dangling) rc=0 state=done target-exists=y out=callback_state=done
+RESULT pass=308 fail=2 skip=0
+-> KILLED
+== m_r6_ec2_effects_log_regular_off  (event_core.sh)
+@@ -121,7 +121,7 @@
+     fsync_dir "$d" || { cb_fail "$d" effects_dir_not_durable; return 1; }
+     mkdir -p "$d/tmp" 2>/dev/null || { cb_fail "$d" effects_dir_unavailable; return 1; }
+     # round 6, EC-2: effects.log is read (awk), appended to and fsynced below, all under the callback lock: only an absent or regular file is ever opened
+-    regular_or_absent "$d/effects.log" || { cb_fail "$d" effects_log_not_regular; return 1; }
++    :
+     if [ ! -e "$d/effects/$key" ]; then
+       # audit line first (once per key, literal whole-key match), then the keyed effect: a crash between the two is repaired on resume
+       if ! awk -v k="$key" '$1 == k { f = 1 } END { exit !f }' "$d/effects.log" 2>/dev/null; then
+FAIL (R6-EC2 effects.log fifo) rc=124 (124 = blocked) state=running out=
+FAIL (R7-EM1 live link) rc=0 state=done victim='precious
+FAIL (R7-EM1 dangling) rc=0 state=done target-exists=y out=callback_state=done
+RESULT pass=307 fail=3 skip=0
+-> KILLED
+== R4_atomic_mv_notT  (event_core.sh)
+@@ -84,7 +84,7 @@
+ sys.exit(0 if ok else 1)' "$1" 2>/dev/null; }
+ atomic_write() { # builddir file content   (temp lives in <builddir>/tmp, never beside the data)
+   local d=$1 f=$2 t; mkdir -p "$d/tmp" 2>/dev/null || return 1; t="$d/tmp/w.$$.$RANDOM"
+-  excl_write "$t" "$3" && [ -s "$t" ] && fsync_file "$t" && mv -fT "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
++  excl_write "$t" "$3" && [ -s "$t" ] && fsync_file "$t" && mv -f "$t" "$f" 2>/dev/null || { rm -f "$t"; return 1; }
+   fsync_dir "$(dirname "$f")"; }
+ # lock fd opener: append-open (never truncates), refused when the path is not the regular file the fd points at (symlink swap)
+ lock_ok() { # fd path : after `exec N>>path` succeeded, the open file must be the inode that path names (lstat, no follow)
+FAIL (R4-m2 callback.state dir) rc=0 out=callback_state= inside=w.4156509.10808 w.4156509.24496 
+RESULT pass=309 fail=1 skip=0
+-> KILLED
+== m_r5_n2_follow_symlink  (event_core.sh)
+@@ -22,7 +22,7 @@
+ starttime() { awk '{print $22}' /proc/$$/stat 2>/dev/null || echo 0; }
+ read_regular() { # file : print a regular, non-symlink file of at most 4096 bytes; anything else (FIFO, device, directory, symlink, dangling, oversize) fails. Opened O_NONBLOCK|O_NOFOLLOW and judged by fstat, so a swap after a check cannot block
+   python3 -c 'import os, stat, sys
+-fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
++fd = os.open(sys.argv[1], os.O_RDONLY | os.O_NONBLOCK)
+ st = os.fstat(fd)
+ if not stat.S_ISREG(st.st_mode) or st.st_size > 4096: sys.exit(1)
+ sys.stdout.buffer.write(os.read(fd, 4097))' "$1" 2>/dev/null; }
+FAIL (R5-N2 symlink) rc=0 out=consumed seq=3 kind=heartbeat
+RESULT pass=309 fail=1 skip=0
+-> KILLED
+== m_r6_ec1_log_fsync_only_on_append  (event_core.sh)
+@@ -128,7 +128,7 @@
+         { printf '%s %s\n' "$key" "$(now)" >> "$d/effects.log"; } 2>/dev/null && fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
+       else
+         # round 6, EC-1: the line is already there (an earlier attempt wrote it, perhaps failing the fsync): it is durable only once THIS attempt's checked fsync passes
+-        fsync_file "$d/effects.log" || { cb_fail "$d" effects_log_write_failed; return 1; }
++        :
+       fi
+       excl_write "$d/tmp/e.$$" "$(now)" || { cb_fail "$d" effect_temp_write_failed; return 1; }   # round 7, F-D: exclusive create, never `>` on a predictable name under the callback lock
+       ln "$d/tmp/e.$$" "$d/effects/$key" 2>/dev/null; lrc=$?
+FAIL (R6-EC1 retry log) rc=0 state=done efiles=1 out=callback_state=done
+RESULT pass=309 fail=1 skip=0
+-> KILLED
+=== rc=0

@@ -1,7 +1,8 @@
 # event_core.sh — User Guide (T005b slice)
 
-**Revision:** 6
-**Last modified:** 2026-10-06T07:30:00Z
+**Revision:** 7
+**Last modified:** 2026-10-06T16:00:00Z
+**Status:** tracked since commit 26755ca5; revision 7 re-aligned to `event_core.sh` after round 6 (independent review of this revision owed, constitution 11.4.142). `$EV` below is the evidence root, default `specs/001-full-project-audit-remediation/evidence`.
 
 Companion guide (Helix Constitution §11.4.18) for `scripts/build/event_core.sh` and `scripts/build/lib/bev_crypto.py`.
 This is a SLICE of T005b: event verification, replay guard, ordering, exactly-once terminal claim (rename of a prepared
@@ -19,7 +20,7 @@ capture it as evidence), `consume <builds_root> <statedir> <event.json>`, `cance
 not `done` afterwards).
 Refusals exit 20 with `REFUSED reason=`: `secret_dir_not_absolute`, `event_malformed`, `event_unknown_build`, `event_unauthenticated`,
 `event_replayed`, `illegal_transition`, `seq_conflict`, `secret_unusable`, `secret_create_failed`, `lock_unavailable`,
-`state_corrupt`, `state_write_failed`, `journal_failed`, `terminal_claim_failed`, `no_terminal`. Callback failure reasons (in `terminal/callback.reason`): `effect_unreadable`, `effect_key_missing`, `effect_key_invalid`, `effects_dir_unavailable`, `effects_dir_not_durable`, `effect_not_durable`, `effects_log_write_failed`, `effect_temp_write_failed`, `effect_not_applied`. A secret file that cannot be read is `secret_unusable key_unreadable` (never `event_malformed`). Text taken from an unauthenticated event (field and key names in `event_malformed` messages) is printed as ASCII with control characters and non-ASCII escaped, at most 64 characters. Other outcomes (exit 0):
+`state_corrupt`, `state_write_failed`, `journal_failed`, `terminal_claim_failed`, `no_terminal`. Callback failure reasons (in `terminal/callback.reason`): `effect_unreadable`, `effect_key_missing`, `effect_key_invalid`, `effects_dir_unavailable`, `effects_dir_not_durable`, `effect_not_durable`, `effects_log_not_regular`, `effects_log_write_failed`, `effect_temp_write_failed`, `effect_not_applied`. A secret file that cannot be read is `secret_unusable key_unreadable` (never `event_malformed`). Text taken from an unauthenticated event (field and key names in `event_malformed` messages) is printed as ASCII with control characters and non-ASCII escaped, at most 64 characters. Other outcomes (exit 0):
 consumed, `DUP`, `late_ignored`, superseded (a lost race, only when a whole terminal record exists).
 A refusal never acknowledges anything: nothing is written as consumed, so the hub keeps the event and redelivers it.
 
@@ -106,9 +107,11 @@ location are documented.
 - OWED (T005a/T005b, not in this slice): the dispatcher, hub, runner, ssh shim, liveness/poll, artifact verification,
   resubmit, snapshot, and the cases listed in the test's `OWED_CASES`.
 
+- Round-7 status (review WF7): every temp file written under a lock (`tmp/e.<pid>` of the callback effect, `tmp/w.<pid>.<RANDOM>` of `atomic_write`) is created by `excl_write`: any entry already at the name is removed (`rm` never opens it), then the file is created `O_CREAT|O_EXCL|O_NOFOLLOW|O_NONBLOCK`, so a FIFO or a symlink planted at the predictable name can neither block the writer nor redirect the write outside the build directory (F-D). A symlinked `effects.log` fails the callback `effects_log_not_regular` with nothing written through the link (mutant EM1 now killed). Owed, not decided here: a retried fsync that returns 0 is not proof the first attempt's page reached the disk (reviewer I-1, UNCONFIRMED; the robust form re-writes the line before the fsync).
+- Round-6 status (script `8850750f`, review WF6): `effects.log` that exists but is not a regular file (FIFO, directory, symlink) fails the callback `effects_log_not_regular` instead of blocking an append (EC-1 family); `consumed/<seq>` is read through `read_regular`, so a FIFO or oversize file there is `state_corrupt` under the lock, never a blocked cut (EC-2); `terminal/callback.state` is read through `read_regular` (a FIFO is "no state"); the effects directory fsync runs on every attempt (EC-1). The WF6 EC-5 items persist as owed. Their evidence is the round-6 wp09 files, indexed by `$EV/wp09/README.md`.
 - Round-4 status (WF3-REVIEW): fixed I1 (effects directory fsync), I2 (W1-W5 fixtures and mutant rows), m1 (number-typed sha), m2 (`mv -fT`, directory
   state files), m3 (DUP/superseded re-run a claimed or running callback), m4 (escaped pre-authentication text), m6 (usage line), m8 (`key_unreadable`),
-  m10 (isolated `xchk` fixtures). Owed (not fixed in round 4, recorded in `evidence/wp09/dispatch-r4-notes.md`): the schema is laxer than the core on
+  m10 (isolated `xchk` fixtures). Owed (not fixed in round 4, recorded in `$EV/wp09/dispatch-r4-notes.md`): the schema is laxer than the core on
   kind-specific fields (it does not require the heartbeat or completed fields); the latent run-binding TOCTOU (m9: the owed resubmit/dispatcher must
   write `submit.json` under the per-build lock and re-check the verified `run_id` after `flock`); the won-but-unjournaled false audit line (a journal
   failure after a won claim, `journal_failed`); mapping the deferred items into tasks.md / progress.yml (m7, owner action); `SHA256SUMS` / `README`
@@ -129,5 +132,5 @@ no environment-variable seam (sourcing it defines functions and runs nothing). F
 `jq`/`ln`/`mv`/`openssl` first on PATH (they fail, truncate or log calls whose arguments match a pattern), an `LD_PRELOAD` shim
 compiled by the test fails `fsync(2)` with EIO on a chosen path (control-needle checked), `ulimit -f` produces short journal writes, and
 `strace` proves the single-write and the fsync calls (temp file before its rename, journal, directories). `scripts/build/tests/mutate_dispatch_events.sh list|all|<name>` applies
-each paired mutation to a copy and requires the test to FAIL. Honest degradation: the test needs python3, jq, openssl, flock, realpath, awk and python3 `jsonschema` (a missing one is a FAIL with the tool named); the oracle tools `node` (ECMA-262 pattern oracle), `strace` and `gcc` (the fsync fault shim) are optional, and a section that needs a missing one reports `SKIP ... (oracle tool missing: <tool>)` and counts it in `RESULT pass= fail= skip=`, never a pass. IMG-TESTUTIL has none of node, strace, gcc (recorded in `dispatch-r4-container.txt`). Evidence (round 4, supersedes the round-3 pointers, which were made with an earlier test file): `evidence/wp09/dispatch-r4-red.txt`, `dispatch-r4-green-x3.txt`, `dispatch-r4-mutations.txt`, `dispatch-r4-container.txt`, `dispatch-r4-notes.md`, `dispatch-r4-sha256sums.txt` (final-file round 3: `dispatch-r3-green-x3-final.txt`, `dispatch-r3-mutations-rerun.txt`; earlier rounds: `dispatch-red.txt`, `dispatch-green-x3.txt`, `dispatch-mutations.txt`).
-Index row in `docs/scripts/README.md`: owed (T036, index absent).
+each paired mutation to a copy and requires the test to FAIL. Honest degradation: the test needs python3, jq, openssl, flock, realpath, awk and python3 `jsonschema` (a missing one is a FAIL with the tool named); the oracle tools `node` (ECMA-262 pattern oracle), `strace` and `gcc` (the fsync fault shim) are optional, and a section that needs a missing one reports `SKIP ... (oracle tool missing: <tool>)` and counts it in `RESULT pass= fail= skip=`, never a pass. IMG-TESTUTIL has none of node, strace, gcc (recorded in `dispatch-r4-container.txt`). Evidence (round 4, supersedes the round-3 pointers, which were made with an earlier test file): `$EV/wp09/dispatch-r4-red.txt`, `dispatch-r4-green-x3.txt`, `dispatch-r4-mutations.txt`, `dispatch-r4-container.txt`, `dispatch-r4-notes.md`, `dispatch-r4-sha256sums.txt` (final-file round 3: `dispatch-r3-green-x3-final.txt`, `dispatch-r3-mutations-rerun.txt`; earlier rounds: `dispatch-red.txt`, `dispatch-green-x3.txt`, `dispatch-mutations.txt`).
+Index row in `docs/scripts/README.md`: present (index created in round 7).

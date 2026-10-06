@@ -397,6 +397,48 @@ grep -q 'reason=out_dir_malformed' "$T/err" && ok "  ...names reason out_dir_mal
 runp --out "$T/ws out/c:d" IMG-TOOL -- true; check "--out containing ':' is still refused" "$RC" 1
 grep -qi 'volume separator' "$T/err" && ok "  ...and the reason names the volume separator" || bad "  reason: $(cat "$T/err")"
 
+# ---------- round 7 (WF7 F-B, F-C, I-2, RM1, RM2): a TRAILING newline survives the path resolution (a bare $(realpath) would strip it);
+# the lock reader is isolated like the checklist reader; an unresolvable --out is named as such ----------
+TNL="$T/tnl"$'\n'; mkdir -p "$TNL/docs" "$TNL/.audit/scratch"; ln -sfn "$TNL" "$T/tnllink"
+runp_in_args "$T/tnllink" --out "$T/outdir/tn-ck" IMG-TOOL -- true
+check "R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit 1" "$RC" 1
+grep -q 'reason=source_path_malformed' "$T/err" && ok "  ...names reason source_path_malformed" || bad "  reason: $(cat "$T/err")"
+check "  ...nothing composed" "$(wc -c <"$T/argv")" 0
+MNLCK="$T/mn"$'\n'"x/ck"; mkdir -p "$MNLCK/docs" "$MNLCK/.audit/scratch"; ln -sfn "$MNLCK" "$T/mnlink"
+runp_in_args "$T/mnlink" --out "$T/outdir/mn-ck" IMG-TOOL -- true
+check "R7 RM1: a symlinked checkout (a newline-free logical path) whose RESOLVED path holds a newline is refused, exit 1" "$RC" 1
+grep -q 'reason=source_path_malformed' "$T/err" && ok "  ...names reason source_path_malformed (the resolved half of the check)" || bad "  reason: $(cat "$T/err")"
+check "  ...nothing composed" "$(wc -c <"$T/argv")" 0
+mkdir -p "$T/trail"$'\n'; ln -sfn "$T/trail"$'\n' "$T/traillink"
+runp --out "$T/traillink" IMG-TOOL -- true
+check "R7 F-B: --out through a symlink to a directory ending in a newline is refused, exit 1" "$RC" 1
+grep -q 'reason=out_dir_malformed' "$T/err" && ok "  ...names reason out_dir_malformed" || bad "  reason: $(cat "$T/err")"
+check "  ...nothing composed (no bind of the newline-stripped, different directory)" "$(wc -c <"$T/argv")" 0
+runp --out "$T/ws out/tn"$'\n' IMG-TOOL -- true
+check "R7 RM2: a raw --out value ending in a newline is refused, exit 1" "$RC" 1
+grep -q 'reason=out_dir_malformed' "$T/err" && ok "  ...names reason out_dir_malformed" || bad "  reason: $(cat "$T/err")"
+grep -q 'resolved out directory' "$T/err" && bad "  ...refused by the RAW-value check, not left to the resolved check: $(cat "$T/err")" || ok "  ...refused by the raw-value check (the message does not speak of the resolved path)"
+check "  ...nothing composed" "$(wc -c <"$T/argv")" 0
+ln -sfn loopb "$T/loopa"; ln -sfn loopa "$T/loopb"
+runp --out "$T/loopa/x" IMG-TOOL -- true
+check "R7 I-2: an --out that cannot be resolved (symlink loop) is refused, exit 1" "$RC" 1
+grep -q 'reason=out_dir_unresolvable' "$T/err" && ok "  ...names reason out_dir_unresolvable, not a misleading state-directory overlap" || bad "  reason: $(cat "$T/err")"
+runp --out "$T/outdir/plain2" IMG-TOOL -- true; check "R7 control: an ordinary --out still composes" "$RC" 0
+# F-C: a yaml.py in the working directory or on PYTHONPATH must not replace PyYAML in the lock reader (python3 -I)
+FORGED='def safe_load(f):
+    return {"images": [{"id": "IMG-TOOL", "reference": "docker.io/evil/forged", "digest": "sha256:'"$(printf 'f%.0s' $(seq 64))"'"}]}'
+printf '%s\n' "$FORGED" >"$CK/yaml.py"
+runp --op-id fc1 IMG-TOOL -- true
+check "R7 F-C: a yaml.py in the checkout (the working directory) is not imported by the lock reader, exit 0" "$RC" 0
+argv_has "docker.io/example/tool@$D1" && ok "  ...the real lock entry is composed" || bad "  argv: $(tr '\n' ' ' <"$T/argv")"
+argv_has "docker.io/evil/forged@sha256:$(printf 'f%.0s' $(seq 64))" && bad "  ...the forged entry was composed (reader not isolated)" || ok "  ...the forged entry is not composed"
+rm -f "$CK/yaml.py"
+mkdir -p "$T/forgedpp"; printf '%s\n' "$FORGED" >"$T/forgedpp/yaml.py"
+PYTHONPATH="$T/forgedpp" runp --op-id fc2 IMG-TOOL -- true
+check "R7 F-C: a yaml.py on PYTHONPATH is not imported by the lock reader, exit 0" "$RC" 0
+argv_has "docker.io/evil/forged@sha256:$(printf 'f%.0s' $(seq 64))" && bad "  ...the forged entry was composed (reader not isolated)" || ok "  ...the forged entry is not composed"
+argv_has "docker.io/example/tool@$D1" && ok "  ...the real lock entry is composed" || bad "  argv: $(tr '\n' ' ' <"$T/argv")"
+
 # ---------- round 6, F2: the test hooks cannot lift a ceiling; an unreadable or zero limit is the most restrictive outcome, never the permissive one ----------
 runp_nomode() { ( cd "$CK" && env -u RUNP_TEST_MODE PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 "$@" bash "$SUT" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?; }
 runp_nomode RUNP_ULIMIT_U=100000
@@ -410,6 +452,14 @@ printf 'MemTotal:     4294967296 kB\nMemAvailable: 4294967296 kB\n' >"$T/meminfo
 ( cd "$CK" && env -u RUNP_TEST_MODE PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 RUNP_MEMINFO="$T/meminfo.fake" RUNP_MEMORY=1099511627776 bash "$SUT" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
 check "a fake 4 TiB meminfo + RUNP_MEMORY=1 TiB cannot compose without the test mode, exit 1" "$RC" 1
 check "  ...nothing composed" "$(wc -c <"$T/argv")" 0
+# round 7 (WF7 RM3): a hook that is set but EMPTY is still a hook (the check is "is set", not "is non-empty"), each one tested alone
+( cd "$CK" && env -u RUNP_TEST_MODE -u RUNP_ULIMIT_U PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 RUNP_MEMINFO= RUNP_MEMORY=1073741824 bash "$SUT" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
+check "R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1" "$RC" 1
+grep -q 'reason=test_hook_outside_test_mode' "$T/err" && ok "  ...names reason test_hook_outside_test_mode" || bad "  reason: $(cat "$T/err")"
+check "  ...nothing composed" "$(wc -c <"$T/argv")" 0
+( cd "$CK" && env -u RUNP_TEST_MODE -u RUNP_MEMINFO PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 RUNP_ULIMIT_U= RUNP_MEMORY=1073741824 bash "$SUT" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
+check "R7 RM3: a set-but-empty RUNP_ULIMIT_U without the test mode is refused, exit 1" "$RC" 1
+grep -q 'reason=test_hook_outside_test_mode' "$T/err" && ok "  ...names reason test_hook_outside_test_mode (not the later pids_budget_unavailable)" || bad "  reason: $(cat "$T/err")"
 for tm in 0 true yes 2 ""; do
   ( cd "$CK" && PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 RUNP_TEST_MODE="$tm" bash "$SUT" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
   check "RUNP_TEST_MODE='$tm' is not the declared test mode (only 1): the hooks are refused" "$RC" 1
@@ -485,6 +535,18 @@ if [ "${RUNP_TEST_MUTANT:-0}" != 1 ] && [ "${RUNP_TEST_NO_MUTATIONS:-0}" != 1 ];
   REC="${RUNP_MUTATION_RECORD:-$T/runp-mutations.txt}"; : >"$REC"
   echo "run_pinned.sh paired mutations (test_run_pinned.sh, $(date -u +%FT%TZ)); sha256 of SUT: $(sha256sum "$SUT" | cut -d' ' -f1)" >>"$REC"
   MUTS="$(grep -o '# MUT:[a-z-]*' "$SUT" | sed 's/# MUT://' | sort -u)"
+  # round 7 (WF7): mutants that are NOT a whole-line removal (a partial text change of one clause). Table: name TAB old TAB new; the old text must occur exactly once.
+  XMT="$(cat <<'XM'
+x-pwd-real-newline	case "$PWD$PWD_REAL" in *$'\n'*) refuse source_path_malformed	case "$PWD" in *$'\n'*) refuse source_path_malformed
+x-out-raw-newline	  case "$OUT" in *:*|*$'\n'*|-*) refuse out_dir_malformed	  case "$OUT" in *:*|-*) refuse out_dir_malformed
+x-hook-empty	[ -n "${RUNP_MEMINFO+x}" ]	[ -n "${RUNP_MEMINFO:+x}" ]
+x-lock-isolation	ENTRY="$(python3 -I - "$LOCK" "$IMG" <<'PY'	ENTRY="$(python3 - "$LOCK" "$IMG" <<'PY'
+x-rp-trailing	printf -v "$_v" '%s' "${_x%?x}"	_x=${_x%?x}; printf -v "$_v" '%s' "${_x%$'\n'}"
+x-out-unresolvable	|| refuse out_dir_unresolvable	|| :
+XM
+)"
+  XNAMES="$(printf '%s\n' "$XMT" | cut -f1 | tr '\n' ' ')"
+  MUTS="$MUTS $XNAMES"
   [ -z "${RUNP_ONLY_MUTATIONS:-}" ] || MUTS="$RUNP_ONLY_MUTATIONS"   # a space-separated subset (round 6: the mutations of the new code); unset = every marker
   MF=0
   for m in $MUTS; do
@@ -504,6 +566,13 @@ if [ "${RUNP_TEST_MUTANT:-0}" != 1 ] && [ "${RUNP_TEST_NO_MUTATIONS:-0}" != 1 ];
       rw-allowlist) sed -E 's#^    docs\|\.audit/scratch\) ;;.*#    docs|.audit/scratch*) ;;#' "$SUT" >"$MS";;
       entrypoint) sed -E 's#^if \[ -n "\$EPO" \]; then A\+=.*#if false; then :#' "$SUT" >"$MS";;
       test-hooks) sed -E '/# MUT:test-hooks$/s/^if .*$/if false; then/' "$SUT" >"$MS";;
+      x-*) XL="$(printf '%s\n' "$XMT" | grep -P "^$m\t")" && XOLD="$(printf '%s' "$XL" | cut -f2)" XNEW="$(printf '%s' "$XL" | cut -f3)" python3 - "$SUT" "$MS" <<'XP' || echo "MUTATION $m: ANCHOR NOT FOUND exactly once (mutation script defect)" | tee -a "$REC"
+import os, sys
+s = open(sys.argv[1]).read(); o = os.environ["XOLD"]
+if not o or s.count(o) != 1: sys.exit(1)
+open(sys.argv[2], "w").write(s.replace(o, os.environ["XNEW"]))
+XP
+        ;;
       *) sed -E "/# MUT:$m\$/s/^.*\$/:/" "$SUT" >"$MS";;
     esac
     chmod +x "$MS"

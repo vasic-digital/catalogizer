@@ -504,6 +504,29 @@ if [ -n "$ush" ]; then
   else bad "R6 PR-2 control: python3 ignored the user-site fixture (rc=$urc), the isolation fixture cannot discriminate"; fi
 else bad "R6 PR-2: python3 reported no user site directory"; fi
 
+# R7 F-F: the mutation harness never reports success for a run in which no mutant was killed (a stray MUT_ONLY or MUT_ANCHORS_ONLY used to exit 0)
+mh=${CRP_HARNESS:-$here/mutations_check_review_provenance.sh}
+if [ -z "${CRP_SCRIPT:-}" ] && [ -f "$mh" ]; then
+  out=$(MUT_ONLY=no-such-id timeout 120 bash "$mh" 2>&1); rc=$?
+  if [ $rc -eq 3 ] && printf '%s' "$out" | grep -q 'no mutant ran'; then ok "the mutation harness refuses (exit 3) a run in which no mutant ran (MUT_ONLY naming nothing) (R7 F-F)"; else bad "R7 F-F MUT_ONLY=no-such-id: rc=$rc (want 3 and 'no mutant ran'): $(printf '%s' "$out" | tail -2 | tr '\n' ' ')"; fi
+  out=$(MUT_ANCHORS_ONLY=1 timeout 300 bash "$mh" 2>&1); rc=$?
+  if [ $rc -eq 4 ] && printf '%s' "$out" | grep -q 'not a kill result'; then ok "the mutation harness exits 4, not 0, for MUT_ANCHORS_ONLY (the suite was not run, nothing was killed) (R7 F-F)"; else bad "R7 F-F MUT_ANCHORS_ONLY=1: rc=$rc (want 4 and 'not a kill result'): $(printf '%s' "$out" | tail -2 | tr '\n' ' ')"; fi
+  # the instrument sees the defect: the harness without the two guards exits 0 for both stray switches (what it did before round 7)
+  if python3 - "$mh" "$tmp/harness_unguarded.sh" <<'HGPY'
+import re, sys
+s = open(sys.argv[1]).read()
+if len(re.findall(r"# MUTGUARD", s)) != 2: sys.exit(1)
+s = s.replace('exit 3; fi   # MUTGUARD', ':; fi').replace('exit 4   # MUTGUARD', ':')
+open(sys.argv[2], "w").write(s)
+HGPY
+  then
+    sed -i "s#^here=.*#here=$here#" "$tmp/harness_unguarded.sh"
+    MUT_ONLY=no-such-id timeout 120 bash "$tmp/harness_unguarded.sh" >/dev/null 2>&1; r1=$?
+    MUT_ANCHORS_ONLY=1 timeout 300 bash "$tmp/harness_unguarded.sh" >/dev/null 2>&1; r2=$?
+    if [ $r1 -eq 0 ] && [ $r2 -eq 0 ]; then ok "control: the harness with its guards removed exits 0 for both stray switches (the two checks above discriminate) (R7 F-F)"; else bad "R7 F-F control: the unguarded harness gave rc $r1 / $r2 (want 0 / 0)"; fi
+  else bad "R7 F-F control: the two MUTGUARD markers were not found in the harness"; fi
+fi
+
 # ---- doc checks (text only; failures ARE counted in RESULT fail, passes are reported on the DOCCHECKS line only)
 doc=$here/../../../docs/scripts/check_review_provenance.md
 dpass=0; dfail=0

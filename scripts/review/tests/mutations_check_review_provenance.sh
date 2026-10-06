@@ -2,7 +2,9 @@
 # mutations_check_review_provenance.sh - paired mutations for scripts/review/check_review_provenance.sh (T094a).
 # Each mutant is a literal python str.replace on a copy; the diff against the original is printed, so a
 # recorded run is reproducible from its own output. A mutant must make the suite FAIL (killed).
-# Usage: mutations_check_review_provenance.sh   (exit 0 only when every mutant is killed and every anchor applied)
+# Usage: mutations_check_review_provenance.sh   (exit 0 only when at least one mutant ran, every mutant that ran was killed and every anchor applied)
+#   Exit 3: no mutant ran (a stray MUT_ONLY naming no mutant is NOT a result). Exit 4: MUT_ANCHORS_ONLY (every anchor applies; the suite was not run,
+#   so nothing was killed: not a kill result). Exit 1: a mutant survived or an anchor was not found. (round 7, WF7 F-F; the guards are marked MUTGUARD)
 set -u
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 orig=$here/../check_review_provenance.sh
@@ -111,4 +113,10 @@ mut r5f2b "R5 F2: the python3 start smoke test dropped" "python3 -I -c '' >/dev/
 mut r6pr1 "R6 PR-1: the jq HOME is the work dir's PARENT (TMPDIR, a shared directory) instead of the private work dir" 'jq() { HOME=$w command jq "$@"; }' 'jq() { HOME=$w/.. command jq "$@"; }'
 mut r6pr2 "R6 PR-2: the python3 start smoke test runs without -I (the user site and PYTHON* are honoured)" "python3 -I -c '' >/dev/null 2>&1 || {" "python3 -c '' >/dev/null 2>&1 || {"
 echo "MUTATIONS total=$n survived_or_unapplied=$survived documented_equivalent=$equiv"
+# round 7 (WF7 F-F): a run that executed no mutant, or only checked anchors, must never read as a green mutation gate (a stray exported switch used to exit 0 with zero kills)
+if [ "$n" -eq 0 ]; then echo "MUTATIONS REFUSED: no mutant ran (MUT_ONLY='${MUT_ONLY:-}' names no mutant); this is not a result" >&2; exit 3; fi   # MUTGUARD
+if [ -n "${MUT_ANCHORS_ONLY:-}" ]; then
+  [ $survived -eq 0 ] || exit 1
+  echo "MUTATIONS ANCHORS ONLY: every anchor applies exactly once; the suite was not run, so nothing was killed: not a kill result (exit 4)" >&2; exit 4   # MUTGUARD
+fi
 [ $survived -eq 0 ]

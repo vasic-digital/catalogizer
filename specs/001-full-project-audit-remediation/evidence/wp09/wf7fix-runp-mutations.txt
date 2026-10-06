@@ -1,0 +1,38 @@
+# identity: wf7fix-runp-mutations
+# run_pinned_sha256: 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+# test_run_pinned_sha256: b984e5e3abda7a6c7ca0e7b0442f49c4d6a139e7c8adaa657438b318f07c8ae6
+# host_checklist_sha256: 9ffbfaf17687cdcbee584436766b924d58e543d8fc389292250f9672b13f0fda
+# test_host_checklist_sha256: ddc13341605f0dd7c1938a98cb4fd097459008815fd4050ee8dfccf006be6311
+# event_core_sha256: 6d8abc165610053e4b72a9420f11ba0062a8447b8bd0f3b5f6791dc7c77e1f8a
+# test_dispatch_events_sha256: 8c4583bfc11db66241e5fb0ca8056e0dc7849e8ce09fbde3344455711c150026
+# mutate_dispatch_events_sha256: fedf7fdc9317f7cc30bedbf0c206904a085b1dbf6830937a7e0396efe83ecca0
+# check_review_provenance_sha256: 9f4fdbf89993a225f5f8d179fa95c0005f38a9ac17a13fd665e0d34a4f208c00
+# test_check_review_provenance_sha256: ed5f4e0222125813547e29cca5d8fd3c6cd03f97bce91805a5211566fc4245a4
+# mutations_check_review_provenance_sha256: 478b408ed8cafa6c8e5abebf5a5790cd9dc352aa9f645c684071573b5c291cae
+# host: anton uid: 1000
+# command: RUNP_ONLY_MUTATIONS=<new x-* and affected> bash scripts/containers/tests/test_run_pinned.sh (one run)
+MUTATION x-pwd-real-newline: caught (6 failing checks; first: FAIL: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit |FAIL:   reason: |)
+MUTATION x-out-raw-newline: caught (1 failing checks; first: FAIL:   ...refused by the RAW-value check, not left to the resolved check: run_pinned: REF|)
+MUTATION x-hook-empty: caught (3 failing checks; first: FAIL: R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1 (got '|FAIL:   reason: |)
+MUTATION x-lock-isolation: caught (4 failing checks; first: FAIL:   argv: podman run --rm --pull=never --userns=keep-id --user 1000:1000 --cap-drop=AL|FAIL:   ...the forged entry was composed (reader not isolated)|)
+MUTATION x-rp-trailing: caught (6 failing checks; first: FAIL: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit |FAIL:   reason: |)
+MUTATION x-out-unresolvable: caught (1 failing checks; first: FAIL:   reason: realpath: /tmp/runp-test.XjqioQ/loopa/x: Too many levels of symbolic links|)
+MUTATION test-hooks: caught (16 failing checks; first: FAIL: RUNP_ULIMIT_U without RUNP_TEST_MODE is refused, exit 1 (got '0' want '1')|FAIL:   reason: |)
+MUTATION pwd-colon: caught (4 failing checks; first: FAIL:   reason: run_pinned: REFUSED reason=out_dir_malformed the resolved out directory /t|FAIL: a symlinked checkout (resolved path has ':') with an explicit --out outside the tree|)
+MUTATION pwd-newline: caught (9 failing checks; first: FAIL:   reason: run_pinned: REFUSED reason=out_dir_malformed the resolved out directory $'|FAIL: a newline checkout with an explicit --out outside the tree is refused, exit 1 (got '|)
+MUTATION out-resolved: caught (8 failing checks; first: FAIL: --out whose resolved path contains ':' (through a symlink) is refused, exit 1 (got '|FAIL:   reason: |)
+MUTATION secret: caught (7 failing checks; first: FAIL: --out under the state directory is refused (got '0' want '1')|FAIL: --out equal to the state directory is refused (got '0' want '1')|)
+test_run_pinned: 382 passed, 0 failed
+=== rc=0
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-06T15:59:05Z); sha256 of SUT: 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+MUTATION x-pwd-real-newline: caught (6 failing checks; first: FAIL: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit |FAIL:   reason: |)
+MUTATION x-out-raw-newline: caught (1 failing checks; first: FAIL:   ...refused by the RAW-value check, not left to the resolved check: run_pinned: REF|)
+MUTATION x-hook-empty: caught (3 failing checks; first: FAIL: R7 RM3: a set-but-empty RUNP_MEMINFO without the test mode is refused, exit 1 (got '|FAIL:   reason: |)
+MUTATION x-lock-isolation: caught (4 failing checks; first: FAIL:   argv: podman run --rm --pull=never --userns=keep-id --user 1000:1000 --cap-drop=AL|FAIL:   ...the forged entry was composed (reader not isolated)|)
+MUTATION x-rp-trailing: caught (6 failing checks; first: FAIL: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit |FAIL:   reason: |)
+MUTATION x-out-unresolvable: caught (1 failing checks; first: FAIL:   reason: realpath: /tmp/runp-test.XjqioQ/loopa/x: Too many levels of symbolic links|)
+MUTATION test-hooks: caught (16 failing checks; first: FAIL: RUNP_ULIMIT_U without RUNP_TEST_MODE is refused, exit 1 (got '0' want '1')|FAIL:   reason: |)
+MUTATION pwd-colon: caught (4 failing checks; first: FAIL:   reason: run_pinned: REFUSED reason=out_dir_malformed the resolved out directory /t|FAIL: a symlinked checkout (resolved path has ':') with an explicit --out outside the tree|)
+MUTATION pwd-newline: caught (9 failing checks; first: FAIL:   reason: run_pinned: REFUSED reason=out_dir_malformed the resolved out directory $'|FAIL: a newline checkout with an explicit --out outside the tree is refused, exit 1 (got '|)
+MUTATION out-resolved: caught (8 failing checks; first: FAIL: --out whose resolved path contains ':' (through a symlink) is refused, exit 1 (got '|FAIL:   reason: |)
+MUTATION secret: caught (7 failing checks; first: FAIL: --out under the state directory is refused (got '0' want '1')|FAIL: --out equal to the state directory is refused (got '0' want '1')|)

@@ -296,6 +296,23 @@ fx C13 "F6 a local .Digest that merely starts with the lock digest is a mismatch
 # F6: an image stored with only its .Digest (no RepoDigests) matches that digest
 mkworld "$W"; mklock2 "  digest: $DA" ""; printf 'example.invalid/a:t1|%s \nexample.invalid/b:t2|%s example.invalid/b@%s \n' "$DA" "$DB1" "$DB" >"$W/imgdb"
 fx C13 "F6 an image whose only record is its .Digest matches the lock digest (false-refusal guard)" pass
+# ---- round 7 (WF7 F-A, HM1, HM4): the lock digest `run_pinned.sh` runs must itself be present; the platform_digest never substitutes for it
+DAW="sha256:$(hx c)"   # a well-formed digest that is NOT the one of the local image
+mkworld "$W"; mklock2 "  digest: $DA" "  platform_digest: $DA1"; printf 'example.invalid/a:t1|%s example.invalid/a@%s \nexample.invalid/b:t2|%s example.invalid/b@%s \n' "$DA1" "$DAW" "$DB1" "$DB" >"$W/imgdb"
+fx C13 "R7 F-A: a well-formed lock digest that is NOT present locally fails even though the platform_digest matches the local .Digest" fail
+check "R7 F-A ...as digest_mismatch" "$(imgstatus IMG-A)" digest_mismatch
+mkworld "$W"; mklock2 "  digest: $DA" "  platform_digest: $DA1"; printf 'example.invalid/a:t1|%s example.invalid/a@%s \nexample.invalid/b:t2|%s example.invalid/b@%s \n' "$DAW" "$DA" "$DB1" "$DB" >"$W/imgdb"
+fx C13 "R7 F-A: the digest is present but a listed platform_digest is not: fails" fail
+check "R7 F-A ...as digest_mismatch" "$(imgstatus IMG-A)" digest_mismatch
+mkworld "$W"; mklock2 "  digest: $DA" "  platform_digest: $DA1"; fx C13 "R7 F-A guard against false refusal: digest and platform_digest both present pass" pass
+# HM1: a yaml.py on PYTHONPATH must not replace PyYAML (python3 -I): the forged reader would report only IMG-A and hide the absent IMG-B
+mkdir -p "$T/forge"; printf 'def safe_load(f):\n    return {"images": [{"id": "IMG-A", "reference": "example.invalid/a", "tag_intent": "t1", "digest": "%s", "platform_digest": "%s"}]}\n' "$DA" "$DA1" >"$T/forge/yaml.py"
+mkworld "$W"; printf 'example.invalid/a:t1|%s example.invalid/a@%s \n' "$DA1" "$DA" >"$W/imgdb"
+fx C13 "R7 HM1: a forged yaml.py on PYTHONPATH is not imported by the lock reader (the absent IMG-B is still seen)" fail PYTHONPATH="$T/forge"
+check "R7 HM1 ...both lock entries counted" "$(seen)" 2
+# HM4: a digest with an embedded newline is not sha256:<64 hex>; the Python regex must end at the string end (\Z)
+mkworld "$W"; mk_a IMG-A example.invalid/a t1 "\"${DA}\\nextra\"" "$DA1"; fx C13 "R7 HM4: a digest carrying an embedded newline fails" fail
+check "R7 HM4 ...as lock_malformed" "$(imgstatus IMG-A)" lock_malformed
 mkworld "$W"; fx C15 "loadavg unreadable" fail CHK_LOADAVG="$W/noload"
 mkworld "$W"; fx C16 "ntp not synchronised" fail SHIM_NTP=no
 mkworld "$W"; fx C16 "timedatectl fails" fail SHIM_NTP_FAIL=1
@@ -365,7 +382,7 @@ mut_case c13 'st=digest_mismatch; ibad=$((ibad+1))' 'st=digest_mismatch' s_badim
 s_nodig2(){ sed -i "s/^  platform_digest: $DA1\$/  platform_digest: nonsense/" "$W/lock"; }
 s_nodig(){ printf 'schema: 1\nimages:\n- id: IMG-A\n  reference: example.invalid/a\n  tag_intent: t1\n  size_bytes: 1\n- id: IMG-B\n  reference: example.invalid/b\n  tag_intent: t2\n  digest: '"$DB"'\n  platform_digest: '"$DB1"'\n  size_bytes: 1\n' >"$W/lock"; }
 mut_case c13dg '! hexd "$dg"' 'false' s_nodig C13 fail verdict
-mut_case c13pd '[ -n "$pd" ] && ! hexd "$pd"' 'false' s_nodig2 C13 fail verdict
+mut_case c13pd '[ -n "$pd" ] && ! hexd "$pd"' 'false' s_nodig2 IMG-A lock_malformed img:IMG-A   # round 7: the platform_digest requirement also fails it, so the STATUS (lock_malformed) is what tells the two apart
 mut_case c13b 'st=absent; ibad=$((ibad+1))' 'st=absent' s_noimga C13 fail verdict
 mut_case c14 'unconfirmed unconfirmed "UNCONFIRMED: not probed' 'present pass "not probed' s_none C14 unconfirmed verdict
 mut_case c15 'error fail "$LOADAVG' 'error pass "$LOADAVG' s_none C15 fail verdict CHK_LOADAVG=/nonexistent/x
@@ -408,6 +425,15 @@ mut_case c13seen 'icount=$((icount+1))' 'icount=$((icount+0))' s_idnotfirst IMG-
 mut_case c13dup 'elif i_d in ids: bad = 1' 'elif False: bad = 1' s_dupid C13 fail verdict
 mut_case c13idfirst 'for i, e in enumerate(imgs, 1):' 'for i, e in enumerate(imgs[:1], 1):' s_idnotfirst C13 fail verdict
 mut_case c13readerfail 'lockerr=lock_reader_failed' 'lockerr=""' s_none C13 true detail SHIM_PY_FAIL=1
+s_pdwrong(){ mklock2 "  digest: $DA" "  platform_digest: $DA1"; printf 'example.invalid/a:t1|%s example.invalid/a@%s \nexample.invalid/b:t2|%s example.invalid/b@%s \n' "$DA1" "$DAW" "$DB1" "$DB" >"$W/imgdb"; }
+s_pdmissing(){ mklock2 "  digest: $DA" "  platform_digest: $DA1"; printf 'example.invalid/a:t1|%s example.invalid/a@%s \nexample.invalid/b:t2|%s example.invalid/b@%s \n' "$DAW" "$DA" "$DB1" "$DB" >"$W/imgdb"; }
+s_forge(){ printf 'example.invalid/a:t1|%s example.invalid/a@%s \n' "$DA1" "$DA" >"$W/imgdb"; }
+s_digeol(){ mk_a IMG-A example.invalid/a t1 "\"${DA}\\nextra\"" "$DA1"; }
+# round 7 (WF7): mutations of the exact-digest rule and of the reader isolation
+mut_case c13pdalone '*" $pd "*) ;;' '*" $pd "*) m=1;;' s_pdwrong C13 fail verdict
+mut_case c13pdreq '*) m=0;; esac; fi' '*) ;; esac; fi' s_pdmissing C13 fail verdict
+mut_case c13iso 'python3 -I -' 'python3 -' s_forge C13 fail verdict PYTHONPATH="$T/forge"
+mut_case c13digz '*\Z")' '*")' s_digeol C13 fail verdict
 
 echo "host_checklist test: $PASSES passed, $FAILS failed (mutation record: $MUT_RECORD)"
 [ "$FAILS" -eq 0 ]
