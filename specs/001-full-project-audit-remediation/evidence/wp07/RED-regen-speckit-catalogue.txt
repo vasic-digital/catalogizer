@@ -1,0 +1,22 @@
+# generated 2026-10-06T16:49:10Z by wp07 agent; git HEAD 26755ca512a59abaa529332ca066fc2ee71f6022 (tree uncommitted; sha256 below identify it)
+# sha256 5733567f9f4e1b492719fac79e25a34b741f5dad73733d5c0026d44d72b723b6  scripts/governance/tests/test_regen_speckit_catalogue.py
+# fixtures sha256 a3e0906e78dde449cd98736be0cd47a3d40c580244eb5895f26358c8ab74a5e0 (cat of fixtures/speckit_catalogue/* in glob order)
+# command: scripts/containers/run_pinned.sh IMG-TESTUTIL -- python3 scripts/governance/tests/test_regen_speckit_catalogue.py   (script under test absent: RED)
+script absent: /src/scripts/governance/regen_speckit_catalogue.py
+FAIL write-reproduces-golden-constitution  :: regen_speckit_catalogue.py does not exist
+FAIL write-reproduces-golden-appendix  :: regen_speckit_catalogue.py does not exist
+FAIL write-idempotent  :: regen_speckit_catalogue.py does not exist
+FAIL check-in-sync-exits-0  :: regen_speckit_catalogue.py does not exist
+FAIL check-fresh-input-reports-drift  :: regen_speckit_catalogue.py does not exist
+FAIL hand-edited-catalogue-drift  :: regen_speckit_catalogue.py does not exist
+FAIL hand-edited-pin-line-drift  :: regen_speckit_catalogue.py does not exist
+FAIL hand-edited-appendix-drift  :: regen_speckit_catalogue.py does not exist
+FAIL write-repairs-hand-edit  :: regen_speckit_catalogue.py does not exist
+FAIL lagging-index-golden-constitution  :: regen_speckit_catalogue.py does not exist
+FAIL lagging-index-golden-appendix  :: regen_speckit_catalogue.py does not exist
+FAIL trailing-whitespace-and-single-final-newline  :: regen_speckit_catalogue.py does not exist
+FAIL no-final-newline-gets-one  :: regen_speckit_catalogue.py does not exist
+FAIL bad-index-exit-2-untouched  :: regen_speckit_catalogue.py does not exist
+FAIL missing-marker-exit-2-untouched  :: regen_speckit_catalogue.py does not exist
+TOTAL 15 PASS 0 FAIL 15
+# exit 1

@@ -1,0 +1,70 @@
+# T077 lockstep and anchor-block integrity at the new constitution tip(s). Generated 2026-10-06T17:00:34Z by wp07 agent; git HEAD 87909608416f9c13b6b9e116866b6efbdc827cad (tree uncommitted)
+# Trees extracted READ-ONLY with git -C submodules/constitution archive <rev> into .audit/scratch/wp07/<rev>; the submodule stays at 10b7a06 (checked: 10b7a06c4a2ec3f06b4cde9b1611a622a79320ad)
+# sha256 5a80fe1ac6b24b3d91736a68f30811db0d95d78d4bc29ce9deaaa83546ff4100  specs/001-full-project-audit-remediation/evidence/wp07/lockstep-driver.sh
+# sha256 be0fbcac2201b5070ef9452abcb2e44dac957d16bde28d2ddc37aa15732d50c6  specs/001-full-project-audit-remediation/evidence/wp07/anchor-blocks.py
+# Constitution.md sha256 10b7a06: d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72
+# Constitution.md sha256 e44f22f: 8cc29e0d71989fb7de2c42d1e116a4bf8a2f4bb24fd0aa6f488ca9a6700ccb39
+# Constitution.md sha256 a71b1767: 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e
+# Tip identity: 10b7a06 = current pin; e44f22f = tip named by T074/T077; a71b1767 = LIVE tip on all 8 remotes (ls-remote 2026-10-06, see range-review.md). 10b7a06 is the CONTROL: same instruments on the known pin.
+
+## A. Propagation family (anchor block-start, exactly-once per carrier, byte-identical lockstep across CLAUDE/AGENTS/QWEN/GEMINI), every CM-COVENANT-114-<N>-PROPAGATION wrapper named in scripts/gates/covenant_propagation_anchors.tsv (82 wrappers at 10b7a06 and e44f22f, 86 at a71b1767), run in IMG-TESTUTIL by lockstep-driver.sh
+### A1. Top-level carriers only (the constitution's own CLAUDE/AGENTS/QWEN/GEMINI; nested submodules/ empty): the relevant check
+--- TOP-LEVEL carriers only, tree 10b7a06 (nested submodules/ empty)
+PROPAGATION-FAMILY pass=82 fail=0 failed: none
+--- TOP-LEVEL carriers only, tree e44f22f (nested submodules/ empty)
+PROPAGATION-FAMILY pass=82 fail=0 failed: none
+--- TOP-LEVEL carriers only, tree a71b1767 (nested submodules/ empty)
+PROPAGATION-FAMILY pass=86 fail=0 failed: none
+Reading A1: all wrappers PASS at all three trees (control 10b7a06 included): every anchor each wrapper names has exactly one block-start and a byte-identical block in each of the four mirrors, so the new tips introduce no duplication or divergence among them, and the 4 new wrappers of a71b1767 (11.4.272, 273, 274, 276) PASS.
+### A2. Whole tree as --root (nested submodule consumers' CLAUDE/AGENTS.md included; their content copied from the real 10b7a06 checkout)
+--- WITH NESTED carriers (copied from the real 10b7a06 checkout), tree 10b7a06
+PROPAGATION-FAMILY pass=0 fail=82 failed: (every wrapper, rc=1; same at the control tree)
+--- WITH NESTED carriers (copied from the real 10b7a06 checkout), tree e44f22f
+PROPAGATION-FAMILY pass=0 fail=82 failed: (every wrapper, rc=1; same at the control tree)
+--- WITH NESTED carriers (copied from the real 10b7a06 checkout), tree a71b1767
+PROPAGATION-FAMILY pass=0 fail=86 failed: (every wrapper, rc=1; same at the control tree)
+Reading A2: EVERY wrapper FAILs at EVERY tree including the control 10b7a06, with the same shape ('16 MISSING/DUPLICATED' nested carriers for 11.4.234, confirmed directly on the REAL checkout: `bash submodules/constitution/scripts/gates/cm_covenant_114_234_propagation.sh --root <real submodule>` -> 4 PRESENT, 13 POINTER-INHERITANCE-SKIP, 16 MISSING/DUPLICATED, FAIL). So the fleet-wide scan fails because nested consumers (claude-video, agentic-validation, ...) lack the blocks, a PRE-EXISTING condition that the range neither causes nor fixes (their gitlinks are bumped in 77db11f but the new nested content is not local: UNCONFIRMED whether it would change A2).
+
+## B. Gate-ledger ratchet (CM-GATE-LEDGER-RATCHET, 11.4.227(A)) in IMG-TESTUTIL
+### B0 INSTRUMENT FINDING (11.4.201(7)(c), the path is part of the instrument): on a bare git-archive extraction the ratchet reports FAIL unimplemented=517 (10b7a06 control) / 517 (e44f22f) / 518 (a71b1767) against baseline 402, on host AND in the container. The CONTROL (the real checkout of 10b7a06 on the host) gives unimplemented=397 PASS, so those FAILs are an artifact: gate_ledger.sh keeps only git-TRACKED gate sites (git ls-files) and the extraction sits inside the catalogizer repository, where none of its files is tracked. Fix of the instrument use: a throwaway git repository inside each scratch tree (git init; git add -A; nothing committed, the real repository untouched). After that the control reproduces the real checkout exactly (397):
+--- tree 10b7a06
+LEDGER: unimplemented=397 baseline=402 fails=0
+✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+--- tree e44f22f
+LEDGER: unimplemented=397 baseline=402 fails=0
+✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+--- tree a71b1767
+LEDGER: unimplemented=394 baseline=402 fails=0
+✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+Caveat: the nested submodules/ directories of the scratch trees are copied from the REAL 10b7a06 checkout (the archive does not contain nested submodule content); the range bumps 4 nested gitlinks (claude-video, design-toolkit, polyscreen-mcp, verification) whose new content is not local, so their effect on the ratchet is UNCONFIRMED.
+
+## C. Independent complete census (anchor-blocks.py, own instrument with control needle), in IMG-TESTUTIL
+tree=/src/.audit/scratch/wp07/10b7a06 canon_numbered_anchors=242
+  CLAUDE.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  AGENTS.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  QWEN.md    missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  GEMINI.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  divergent anchors (blocks differ across the mirrors that carry exactly one): 1 162
+  fully lockstep (one block in all four, identical): 74 of 242
+tree=/src/.audit/scratch/wp07/e44f22f canon_numbered_anchors=242
+  CLAUDE.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  AGENTS.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  QWEN.md    missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  GEMINI.md  missing=167 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  divergent anchors (blocks differ across the mirrors that carry exactly one): 1 162
+  fully lockstep (one block in all four, identical): 74 of 242
+tree=/src/.audit/scratch/wp07/a71b1767 canon_numbered_anchors=243
+  CLAUDE.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  AGENTS.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  QWEN.md    missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  GEMINI.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  divergent anchors (blocks differ across the mirrors that carry exactly one): 1 162
+  fully lockstep (one block in all four, identical): 78 of 243
+Reading C: the four mirrors carry full blocks only for the newer anchors (older anchors appear as index lines), so 'missing' is by design and only the DELTA matters. Over the range: duplicated = 0 in every mirror at every tree; fully-lockstep anchors 74 (10b7a06, e44f22f) -> 78 (a71b1767), the 4 added are 11.4.272-274 (the mirror-gap fix 1901233) and 11.4.276; the one divergent anchor (11.4.162) is identical in all three trees, so PRE-EXISTING and not introduced by the range (UNCONFIRMED: its cause, not investigated).
+
+## D. Upstream index generator gate (relevant to T078; run on the three trees, host python3 + PyYAML)
+`bash scripts/gates/gate_constitution_generate_no_drift.sh` (constitution_generate.py check of groups/*.md and constitution_index.yaml against Constitution.md):
+- 10b7a06: rc=0, `check: no drift` (control: the instrument sees a clean state).
+- e44f22f: rc=1, `FATAL: committed constitution_index.yaml diverges from a fresh generate - diverged field(s): anchors: fields differ for id(s): ['11.4.235']; generated_from: sub-field(s) differ: ['source_sha256']`.
+- a71b1767: rc=6, `FATAL: anchor '11.4.276' matches no group rule` (the generator cannot even regenerate: the new anchor has no group rule in scripts/anchors/anchor_lib.py).
+So upstream's own standing guard is RED at both candidate tips. See upstream-report.md.

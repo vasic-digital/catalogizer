@@ -1,0 +1,7 @@
+# generated 2026-10-06T17:08:19Z by wp07 agent; git HEAD 87909608416f9c13b6b9e116866b6efbdc827cad (tree uncommitted; sha256 below identify it)
+# sha256 c34035357e2ed73bcf3e7828282e6ddc8a594eb707eb9ffdbe983a92884c0f49  scripts/governance/regen_speckit_catalogue.py
+# sha256 7c62eac474016cebdeea0888b94724bea5b0810578a71c29d4d530a359602301  scripts/governance/tests/test_regen_speckit_catalogue.py
+# fixtures sha256 599280150e9f3e3f7cb43685d62816b0ba321ff00716f4377ef316d3c3890806
+# RED for a defect found by the dry run at a71b1767 (regen-new-tip-dry-run.txt): numbered SECTION headings '### §8.' were reported as anchors absent from the index ('8., 9., 10., 11., 12.'). Fixture canon_lag.md gained a '### §8. ...' heading that must NOT be reported; script not yet fixed.
+FAIL lagging-index-golden-constitution  :: rc=0 stderr=
+TOTAL 17 PASS 16 FAIL 1

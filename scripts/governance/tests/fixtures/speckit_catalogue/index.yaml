@@ -1,0 +1,34 @@
+schema_version: 1
+generated_at: '2026-01-01T00:00:00+00:00'
+generated_from:
+  source: constitution/Constitution.md
+  commit: 0000000000000000000000000000000000000000
+  source_sha256: f8c2986faac9a7a651156bbb4d7673edb7b7737d32e27eeb853d8c3e2dcf6082
+groups:
+- name: anti-bluff-and-evidence
+  path: constitution/groups/anti-bluff-and-evidence.md
+  anchor_count: 2
+- name: testing-and-tdd
+  path: constitution/groups/testing-and-tdd.md
+  anchor_count: 3
+anchors:
+- id: '7.1'
+  title: NO BLUFF — positive-evidence-only validation
+  group: anti-bluff-and-evidence
+  location: constitution/groups/anti-bluff-and-evidence.md
+- id: 11.4.1
+  title: — FAIL-bluffs are equally forbidden
+  group: anti-bluff-and-evidence
+  location: constitution/groups/anti-bluff-and-evidence.md
+- id: 11.4.3
+  title: Per-environment-topology test dispatch
+  group: testing-and-tdd
+  location: constitution/groups/testing-and-tdd.md
+- id: 11.4.5
+  title: 'Mandatory exhaustive context-and-spirit-aware translation review: every localized artifact independently reviewed for CONTEXT (source) + SPIRIT (target-language idiom/register) + technical fidelity and non-translatable preservation across the whole delivery'
+  group: testing-and-tdd
+  location: constitution/groups/testing-and-tdd.md
+- id: 11.4.10
+  title: Credentials-handling mandate
+  group: testing-and-tdd
+  location: constitution/groups/testing-and-tdd.md

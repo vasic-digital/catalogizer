@@ -1,0 +1,23 @@
+# generated 2026-10-06T17:09:21Z by wp07 agent; git HEAD 87909608416f9c13b6b9e116866b6efbdc827cad (tree uncommitted; sha256 below identify it)
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# Fidelity check of the regeneration on the REAL files at the CURRENT pin (copies in .audit/scratch/wp07/real; nothing written to .specify). index and canon read with git show 10b7a06:<file>.
+WROTE .audit/scratch/wp07/real/c.md
+WROTE .audit/scratch/wp07/real/a.md
+--- diff .specify/memory/constitution.md vs regenerated copy (expected: only the Pinned-sources wording; the 283-anchor catalogue is byte-identical)
+32c32
+< **Pinned sources (verified this session):** `submodules/constitution` at commit
+---
+> **Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `submodules/constitution` at commit
+--- diff of the appendix (expected: only the T040b whitespace line 2868)
+2868c2868
+< #### M-BM-'11.4.231 M-bM-^@M-^T Nano-precision model-tier selection (lightest-capable-first, dynamic escalation, effort tiering) 
+---
+> #### M-BM-'11.4.231 M-bM-^@M-^T Nano-precision model-tier selection (lightest-capable-first, dynamic escalation, effort tiering)
+--- check on the regenerated copies: expected exit 0
+OK in sync .audit/scratch/wp07/real/c.md
+OK in sync .audit/scratch/wp07/real/a.md
+--- check on the real committed files at the pin: expected exit 1
+DRIFT .specify/memory/constitution.md differs from its regeneration (first difference at line 32); run write to repair
+DRIFT .specify/memory/constitution-appendix.md differs from its regeneration (first difference at line 2868); run write to repair
+exit 1
+--- real files untouched by this check (git diff --quiet on them): untouched-vs-HEAD

@@ -1,0 +1,28 @@
+# regen_speckit_catalogue.py DRY RUN at the live tip a71b1767 on scratch COPIES (what T081 would generate; .specify untouched). 2026-10-06T17:08:51Z; git HEAD 87909608416f9c13b6b9e116866b6efbdc827cad
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# (first dry run of this file listed '8., 9., 10., 11., 12.' as missing anchors: a real defect, section headings matched as anchors; fixed test-first, see RED-regen-section-heading-regression.txt)
+INDEX-LAG index source_sha256 d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72 != canon sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e; anchors in canon but not in the index: 11.4.276
+WROTE .audit/scratch/wp07/newtip/c.md
+WROTE .audit/scratch/wp07/newtip/a.md
+exit 0
+--- diff constitution.md (pin 10b7a06 text vs regenerated for a71b1767): only the Pinned-sources paragraph; the 283-anchor catalogue is byte-identical because the index (stale) is unchanged
+32,35c32,35
+< **Pinned sources (verified this session):** `submodules/constitution` at commit
+< `10b7a06c4a2ec3f06b4cde9b1611a622a79320ad`; `Constitution.md` sha256
+< `d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72`, identical to the hash
+< recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
+---
+> **Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `submodules/constitution` at commit
+> `a71b1767b40229c8e88140924352fbe990b3049e`; `Constitution.md` sha256
+> `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`; `constitution_index.yaml` records sha256
+> `d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72`, which differs, so the index lags this pin: the catalogue below lists the anchors the index knows. Anchors present in `Constitution.md` but absent from the index: 11.4.276.
+--- diff appendix: only the Canon pin row and the T040b whitespace line
+10c10
+< | Canon pin | `submodules/constitution` at `10b7a06c4a2ec3f06b4cde9b1611a622a79320ad`; `Constitution.md` sha256 `d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72` |
+---
+> | Canon pin | `submodules/constitution` at `a71b1767b40229c8e88140924352fbe990b3049e`; `Constitution.md` sha256 `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`; `constitution_index.yaml` records sha256 `d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72` (the index lags this pin) |
+2868c2868
+< #### M-BM-'11.4.231 M-bM-^@M-^T Nano-precision model-tier selection (lightest-capable-first, dynamic escalation, effort tiering) 
+---
+> #### M-BM-'11.4.231 M-bM-^@M-^T Nano-precision model-tier selection (lightest-capable-first, dynamic escalation, effort tiering)
+--- NOTE: the regenerated catalogue still says 'All 283 anchors'; 11.4.276 is absent because the index lags (upstream-report.md)

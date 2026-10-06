@@ -1,0 +1,26 @@
+# T074 step 1: pre-op backup of the working tree (constitution 9.2). Written 2026-10-06T17:05:12Z by wp07 agent.
+Identity: catalogizer / 001-full-project-audit-remediation / WP-07 T074 | backup of the UNCOMMITTED state at git HEAD 26755ca512a59abaa529332ca066fc2ee71f6022 | the submodule submodules/constitution was at 10b7a06c4a2ec3f06b4cde9b1611a622a79320ad (clean, nothing to back up beyond its HEAD)
+Location (ignored, local): .audit/backups/wp07-20261006T164710Z
+Method: REAL COPIES, not hardlinks (other agents edit tracked files in place, a hardlink would change the backup with them; docs/12 14.3 step 1 allows 'archive backup'). Content: every modified tracked file and every untracked non-ignored file (213 paths, 2299723 bytes) under files/, a full 'git diff' of the tracked modifications (tracked-modifications.patch), HEAD, status. .git is NOT copied (history is immutable here and its HEAD is recorded; no rewrite is planned, 11.4.113). The register DB and SQLite files were NOT touched or copied by this step.
+Disk headroom before the step: scripts/containers/disk_headroom.sh --need 100000000 --op-id wp07-t074 -> pass (record: specs/001-full-project-audit-remediation/evidence/disk/wp07-t074.json)
+
+## sha256 of the backup metadata
+93e3bdcea17810a63a11a4b452fbca65daef036041aee8a0544d7625170ca58b  files.list
+014f38993d4d9404a23753f163c404fd47258b73497c539d9ce1183e31c35a96  tracked-modifications.patch
+45edd0db64c4de1be61573cdcfdab6e3265a2dc698c00ee127e475c3f54a751e  HEAD.txt
+76d31461a36a90a895cb0fd8a31bd70fe6e27bdf7bcb68be4b51c2beb67a091e  status.txt
+sha256 of the per-file list (files.sha256, 213 entries): 9aefe68075c9e965420320ed367a176583ddcd38ea42a03c8b443abf919b59e6
+
+## Restore probe (sample of 6 paths, copied back to .audit/scratch/wp07-restore and verified against files.sha256; scratch removed after)
+specs/001-full-project-audit-remediation/evidence/wp06/disk/locked-20261006T164331-773459-16817.json: OK
+docs/scripts/scope_to_lumen_json.md: OK
+specs/001-full-project-audit-remediation/evidence/wp06/disk/locked-20261006T164334-775079-7305.json: OK
+README.md: OK
+specs/001-full-project-audit-remediation/evidence/wp06/disk/locked-20261006T164342-782405-24212.json: OK
+scripts/anti-mess/sweep.sh: OK
+Sample paths: .audit/backups/wp07-20261006T164710Z/sample.list; each also compared with the LIVE file at probe time: all 6 byte-identical (the live files had not changed since the copy).
+git apply --stat of the patch against the live tree read:  47 files changed, 724 insertions(+), 218 deletions(-)
+
+## Honest limits
+* The tree is live: other agents keep editing while this runs, so the backup is a point-in-time copy of the paths listed at 20261006T164710Z; files created or edited later are not in it.
+* Not tested: restoring the whole backup over the tree (only the 6-path sample), and 'git apply' of the patch onto a clean checkout (the stat read succeeded).

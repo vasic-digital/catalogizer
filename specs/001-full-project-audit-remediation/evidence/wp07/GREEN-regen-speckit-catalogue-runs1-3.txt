@@ -1,0 +1,65 @@
+# generated 2026-10-06T17:08:40Z by wp07 agent; git HEAD 87909608416f9c13b6b9e116866b6efbdc827cad (tree uncommitted; sha256 below identify it)
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# sha256 7c62eac474016cebdeea0888b94724bea5b0810578a71c29d4d530a359602301  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 8e6d31934a4488db11236fa5977dbd75a3e097104bf302f553a243d0adcf3fab  scripts/governance/tests/mutate_regen_speckit_catalogue.py
+# fixtures sha256 599280150e9f3e3f7cb43685d62816b0ba321ff00716f4377ef316d3c3890806
+## GREEN run 1: scripts/containers/run_pinned.sh IMG-TESTUTIL -- python3 scripts/governance/tests/test_regen_speckit_catalogue.py
+PASS write-reproduces-golden-constitution
+PASS write-reproduces-golden-appendix
+PASS write-idempotent
+PASS check-in-sync-exits-0
+PASS check-fresh-input-reports-drift
+PASS check-does-not-write
+PASS hand-edited-catalogue-drift
+PASS hand-edited-pin-line-drift
+PASS hand-edited-appendix-drift
+PASS write-repairs-hand-edit
+PASS lagging-index-golden-constitution
+PASS lagging-index-golden-appendix
+PASS trailing-whitespace-and-single-final-newline
+PASS no-final-newline-gets-one
+PASS bad-index-exit-2-untouched
+PASS missing-pin-marker-exit-2-untouched
+PASS missing-catalogue-marker-exit-2-untouched
+TOTAL 17 PASS 17 FAIL 0
+# exit 0
+## GREEN run 2: scripts/containers/run_pinned.sh IMG-TESTUTIL -- python3 scripts/governance/tests/test_regen_speckit_catalogue.py
+PASS write-reproduces-golden-constitution
+PASS write-reproduces-golden-appendix
+PASS write-idempotent
+PASS check-in-sync-exits-0
+PASS check-fresh-input-reports-drift
+PASS check-does-not-write
+PASS hand-edited-catalogue-drift
+PASS hand-edited-pin-line-drift
+PASS hand-edited-appendix-drift
+PASS write-repairs-hand-edit
+PASS lagging-index-golden-constitution
+PASS lagging-index-golden-appendix
+PASS trailing-whitespace-and-single-final-newline
+PASS no-final-newline-gets-one
+PASS bad-index-exit-2-untouched
+PASS missing-pin-marker-exit-2-untouched
+PASS missing-catalogue-marker-exit-2-untouched
+TOTAL 17 PASS 17 FAIL 0
+# exit 0
+## GREEN run 3: scripts/containers/run_pinned.sh IMG-TESTUTIL -- python3 scripts/governance/tests/test_regen_speckit_catalogue.py
+PASS write-reproduces-golden-constitution
+PASS write-reproduces-golden-appendix
+PASS write-idempotent
+PASS check-in-sync-exits-0
+PASS check-fresh-input-reports-drift
+PASS check-does-not-write
+PASS hand-edited-catalogue-drift
+PASS hand-edited-pin-line-drift
+PASS hand-edited-appendix-drift
+PASS write-repairs-hand-edit
+PASS lagging-index-golden-constitution
+PASS lagging-index-golden-appendix
+PASS trailing-whitespace-and-single-final-newline
+PASS no-final-newline-gets-one
+PASS bad-index-exit-2-untouched
+PASS missing-pin-marker-exit-2-untouched
+PASS missing-catalogue-marker-exit-2-untouched
+TOTAL 17 PASS 17 FAIL 0
+# exit 0
