@@ -1,0 +1,20 @@
+# identity: utc=2026-10-06T16:47:20Z host=anton uid=1000 git_head=26755ca512a59abaa529332ca066fc2ee71f6022 host-side (container leg UNCONFIRMED)
+# sha256 scripts: lib.sh=7bf11e05fcbac7a5 register.sh=e231dab43af9c8ad acquire.sh=79fdd96c48854c76 release.sh=e5204f86f0ec18a0 heartbeat.sh=f30a9cd966174b8f holder.sh=58d8f6121caf375b classify.sh=31eb7c512335304e reap.sh=09caca00d38b677b check_no_build_writing_tracked.sh=0c2c1cffb8e714ea require_verdicts.sh=86334fb369890cd3  sweep.sh=4eeec9e535335b16 catalogue.yaml=2708968ad04566aa
+CAUGHT   S01 the heartbeat check is disabled in AM-P1 (a hung op is never reported) :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S02 INV-9: the finished-run removal skips the remote check (a held commit no remote holds) :: FAIL I5 removed|FAIL I5d the kept held record is reported kept_held_commit :: got [] want [kept_held_commit]|
+CAUGHT   S03 AM-R1 at S0 treats every path as declared :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S04 AM-R1 ignores the reviewed exceptions.tsv :: FAIL R5 the same repository WITH its reviewed exceptions.tsv row passes (control needle R4) :: got [drift] wan|
+CAUGHT   S05 a catalogued invariant with no detector is reported clean :: FAIL C2 AM-R3 is not_evaluated, never clean :: got [clean] want [not_evaluated]|FAIL C2 AM-R4 is not_evaluated, never clean :: got [clean] want [not_evaluated]|
+CAUGHT   S06 AM-R2 ignores whether a process holds the lock open :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R2 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S07 INV-9 reconcile removes an interrupted run :: FAIL I1b removed|FAIL I2 a live run (pid from the run id, cmdline contains commit-push-all) is not interrupted :: got [] want [|
+CAUGHT   S08 a pending pin move is reported as drift :: FAIL R6 a pointer drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt :: got [dr|
+CAUGHT   S09 a blocking core.hooksPath is not refused at S0 :: FAIL G3 at S0 a blocking core.hooksPath is REFUSED with 20 :: rc=10 want 20|
+CAUGHT   S10 INV-9: a live merge holder is reported as interrupted :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 INV-9 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S11 INV-9: a suspended run with a live holder is reported interrupted :: FAIL I7 a run awaiting_remote_checks with a live suspended-run holder is suspended, never interrupted, never r|
+CAUGHT   S12 AM-P3: the temp dir of a live process is reaped :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P3 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S13 AM-P1: the orphan-container age budget is ignored :: FAIL P5 golden-false carrier: a container younger than the budget is informational only :: got [drift] want [c|FAIL P5b it is listed as orphan_container_young :: got [] want [orphan_container_young]|
+CAUGHT   S14 AM-P2: an attached op still counts as a duplicate owner :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P2 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S15 a failing control needle no longer makes the detector blind :: FAIL H1 rc=0 [ID      STATUS         NEEDLE    DETAIL|FAIL Z1 rc=0 [ID      STATUS         NEEDLE    DETAIL|
+CAUGHT   S16 AM-R2 ignores the minimum lock age :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R2 clean on the clean state :: got [blind] want [clean]|
+MUTATION RESULT caught=16 survived=0 total=16
+exit=0

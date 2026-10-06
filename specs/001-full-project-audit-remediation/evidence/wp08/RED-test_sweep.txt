@@ -1,0 +1,154 @@
+# identity: task=T090 utc=2026-10-06T16:18:24Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=26755ca512a59abaa529332ca066fc2ee71f6022 (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=f869a5410bc93be11fceb324407d347ed96f958621ce38c08ff785eb613181b4
+# sha256 register.sh=e231dab43af9c8ad2bca0085edff088bc0c5c95769d8d1f0af3b193042efd34f
+# sha256 acquire.sh=79fdd96c48854c76512443f0ea07fb8d01c84a8f9669f46a031cf98acdacffdf
+# sha256 release.sh=e5204f86f0ec18a0341c726dfd6fda7d8b49350a7b0b10d56dc3e1d43d746395
+# sha256 heartbeat.sh=f30a9cd966174b8f4127e9b3ef27f44eeed8af2633ed1032ecd1e9e96e76da98
+# sha256 holder.sh=58d8f6121caf375bbc48b8294ebaf1ee55ae7bc0d03092f01e72f7843336fa98
+# sha256 classify.sh=31eb7c512335304e6512a71c2c1a79dab0cac5fd76af1f7c698996221e5005ae
+# sha256 reap.sh=09caca00d38b677b38af81989945dc378734ecfde361e099b6ccac156f59269a
+# sha256 check_no_build_writing_tracked.sh=0c2c1cffb8e714eadca6ef6d85853fdca75e961b3c737757d16dc82751189fd3
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+# sha256 sweep.sh= catalogue.yaml=
+== clean state, control needles ==
+FAIL C1 clean state exits 0 :: rc=127 want 0
+FAIL C1 AM-R1 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-R1 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-R2 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-R2 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-R5 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-R5 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-G2 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-G2 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-P1 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-P1 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-P2 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-P2 control needle seen on the same path :: got [] want [seen]
+FAIL C1 AM-P3 clean on the clean state :: got [] want [clean]
+FAIL C1 AM-P3 control needle seen on the same path :: got [] want [seen]
+FAIL C1 INV-9 clean on the clean state :: got [] want [clean]
+FAIL C1 INV-9 control needle seen on the same path :: got [] want [seen]
+ok   C1b the sweep wrote nothing into the swept tree (read-only)
+jq: error: Could not open file /tmp/longops-test.rNoLRu/c1/out.json: No such file or directory
+FAIL C1c report schema :: got [] want [anti-mess-sweep/1]
+FAIL C2 the full cadence sweep exits 0 on the clean fixture :: rc=127 want 0
+FAIL C2 AM-R3 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 AM-R4 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 AM-G1 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 AM-S1 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 INV-6 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 INV-7 is not_evaluated, never clean :: got [] want [not_evaluated]
+FAIL C2 INV-8 is not_evaluated, never clean :: got [] want [not_evaluated]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/c1/out.json: No such file or directory
+FAIL C2b
+jq: error: Could not open file /tmp/longops-test.rNoLRu/c1/out.json: No such file or directory
+FAIL C2c summary counts :: got [] want [8 7 0 0]
+FAIL C3 a cadence-only invariant is skipped_stage at S0 :: got [] want [skipped_stage]
+FAIL C4 an unknown stage is a usage refusal (20) :: rc=127 want 20
+== AM-P1 registry vs reality: hung, dead owner, orphan container ==
+FAIL P1 a hung op (live owner, flat offset past budget) is drift (10) :: rc=127 want 10
+FAIL P1b exactly the hung op is reported :: got [] want [hung_op]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/p1/out.json: No such file or directory
+FAIL P1c
+FAIL P2 a dead-owner registry row is reported too :: got [] want [hung_op registry_row_dead_owner]
+FAIL P3 once both ops are terminal the sweep is clean :: got [] want [clean]
+FAIL P4 an orphan labelled container (no registry row, older than budget) is reported :: got [] want [orphan_container]
+grep: /tmp/longops-test.rNoLRu/p1/out.json: No such file or directory
+FAIL P4b
+FAIL P5 golden-false carrier: a container younger than the budget is informational only :: got [] want [clean]
+FAIL P5b it is listed as orphan_container_young :: got [] want [orphan_container_young]
+FAIL P6 golden-false carrier: a container whose op has a live registry row is not reported :: got [] want [clean]
+FAIL P7 a container of a TERMINAL op is reported :: got [] want [container_of_terminal_op]
+FAIL P8 an unreadable container runtime is reported (info) and never breaks the sweep :: got [] want [containers_unread]
+== AM-P2 duplicate owner ==
+FAIL D1 two non-terminal ops with one purpose_key: drift :: rc=127 want 10
+FAIL D1b class :: got [] want [duplicate_owner]
+FAIL D2 golden-false: the second op is attached to the first :: got [] want [clean]
+== the heartbeat check is load-bearing (mutation inside the sweep tests) ==
+cp: cannot stat '/nonexistent/sweep.sh': No such file or directory
+FAIL H1 rc=127 [bash: /tmp/longops-test.rNoLRu/m1/mt/scripts/anti-mess/sweep.sh: No such file or directory]
+== AM-R2 stale git lock (dead holder) and its carriers ==
+FAIL L1 a stale lock (no process has it open, no git running in the repo, old enough) is drift :: got [] want [stale_git_lock]
+FAIL L2 golden-false carrier: the same lock held open by a live process is not stale :: got [] want [clean]
+FAIL L2b it is listed as held open :: got [] want [lock_held_open]
+FAIL L3 golden-false carrier: a young lock is not stale :: got [] want [clean]
+FAIL L4 golden-false carrier: a .lock file outside .git is not a git lock :: got [] want [clean]
+FAIL L5 a stale lock in a submodule gitdir under .git/modules is found :: got [] want [stale_git_lock]
+== AM-R1: change set, exceptions, pending pins ==
+FAIL R1 at S7 nothing is excluded: the dirty tree is drift :: got [] want [dirty_repository]
+FAIL R2 S0: an undeclared change and an untracked evidence file of another stream are reported :: got [] want [dirty_outside_change_set]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/r1/out.json: No such file or directory
+FAIL R2b
+FAIL R3 S0: a tree whose only changes are the declared change set (with a declared recorder blob and a declared row appended to deferrals.jsonl) passes :: got [] want [clean]
+FAIL R3b it is recorded as declared_change_set_only :: got [] want [declared_change_set_only]
+FAIL R4 a dirty submodule WITHOUT an exceptions.tsv row is reported :: got [] want [dirty_repository]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/r2/out.json: No such file or directory
+FAIL R4b
+FAIL R5 the same repository WITH its reviewed exceptions.tsv row passes (control needle R4) :: got [] want [clean]
+FAIL R6 a pointer drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt :: got [:] want [clean:pending_pin_move]
+FAIL R7 the same drift without the row is not dirt either (pin rules own it) :: got [] want [clean]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/r2/out.json: No such file or directory
+FAIL R8 --repo scopes AM-R1 to that repository only :: got [] want [third/dl ]
+== AM-R5 uninitialised submodule ==
+FAIL U1 a declared but uninitialised submodule is drift :: got [] want [uninitialised_submodule]
+FAIL U2 golden-false: the initialised submodule is clean :: got [] want [clean]
+== AM-G2 CI pipelines and core.hooksPath ==
+FAIL G1 a planted workflow file is reported on the cadence (through scripts/repo/check_no_ci.sh) :: got [] want [ci_pipeline_definition]
+FAIL G1b at S0 only the hooksPath half runs: the workflow file is not reported :: got [] want [clean]
+FAIL G2 a blocking core.hooksPath is reported on the cadence :: got [] want [blocking_hooks_path]
+FAIL G2b cadence reports it (10), does not refuse :: rc=127 want 10
+FAIL G3 at S0 a blocking core.hooksPath is REFUSED with 20 :: rc=127 want 20
+FAIL G3b at S7 it is reported (10), not refused :: rc=127 want 10
+FAIL G4 golden-false: core.hooksPath pointing at a non-blocking (empty) directory is clean :: got [] want [clean]
+FAIL G5 golden-false: core.hooksPath unset is clean :: got [] want [clean]
+== INV-9 commit-push run directories ==
+FAIL I1 a directory without report.json whose process is gone is an interrupted run :: got [] want [interrupted_run]
+ok   I1b an interrupted run is never removed, not even by --reconcile
+FAIL I2 a live run (pid from the run id, cmdline contains commit-push-all) is not interrupted :: got [] want [interrupted_run]
+FAIL I2b the live one is listed live_run :: got [] want [live_run]
+FAIL I3 merge.json, no report.json, MERGE_HEAD, process gone: interrupted merge :: got [] want [interrupted_merge]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/i1/out.json: No such file or directory
+FAIL I3b
+FAIL I4 golden-false: the merge process lives (paused between merge --no-commit and commit): the live holder, no remediation :: got [:] want [clean:live_merge_holder]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/i1/out.json: No such file or directory
+ok   I4b no remediation offered while the holder lives
+ok   I5 a finished directory past both bounds whose held commit no remote holds is KEPT
+FAIL I5b not removed
+ok   I5c a directory inside the newest retain_runs is kept
+FAIL I5d the kept held record is reported kept_held_commit :: got [] want [kept_held_commit]
+FAIL I6
+FAIL I7 a run awaiting_remote_checks with a live suspended-run holder is suspended, never interrupted, never reaped :: got [:] want [clean:suspended_run]
+ok   I7b not removed
+FAIL I8 a run in state ready_to_resume is its own class, never interrupted, suspended or stale :: got [:] want [clean:ready_to_resume]
+FAIL I9 an expired ready_to_resume holder is REPORTED :: got [] want [ready_to_resume_expired]
+ok   I9b and never released by the sweep (release is acquire.sh --expire)
+FAIL I10 with CPA_APPROVED_DIR unset and no cpa-host the commit_push holder is reported unread, never a sweep failure :: got [0] want [1]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/i3/out.json: No such file or directory
+FAIL I11
+== AM-P3 leftover build temp dirs, open builds ==
+FAIL B1 a .tmp-<pid>-<start> directory whose process is gone is drift; open builds with no hub are reported :: got [] want [build_without_registry_row build_without_registry_row open_builds_without_hub open_builds_without_hub stale_build_tmp]
+FAIL B2
+ok   B2b the temp dir of a live process is untouched
+ok   B2c a terminal build is untouched
+ok   B3 with a live hub record open_builds_without_hub is no longer reported
+== reconcile only the catalogued auto-safe classes ==
+FAIL X1 drift remains after a reconcile that could not fix everything (10) :: rc=127 want 10
+FAIL X1b
+ok   X1c the operator-gated dirty file is byte-unchanged
+ok   X1d the interrupted run was not touched
+jq: error: Could not open file /tmp/longops-test.rNoLRu/x1/out.json: No such file or directory
+FAIL X1e the report records the reconcile result :: got [] want [removed]
+FAIL X2 a dead-owner registry row is reaped by --reconcile :: got [registered] want [reaped]
+grep: /tmp/longops-test.rNoLRu/x2/podlog: No such file or directory
+FAIL X3 []
+FAIL X4
+== a blind detector never prints clean ==
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+FileNotFoundError: [Errno 2] No such file or directory: '/nonexistent/sweep.sh'
+FAIL Z1 rc=127 [bash: /tmp/longops-test.rNoLRu/z1/bt/scripts/anti-mess/sweep.sh: No such file or directory]
+jq: error: Could not open file /tmp/longops-test.rNoLRu/z1/ok.json: No such file or directory
+FAIL Z2 control: the unmutated sweep sees the same lock :: got [] want [drift]
+RESULT pass=12 fail=97

@@ -1,0 +1,22 @@
+# identity: utc=2026-10-06T16:47:20Z host=anton uid=1000 git_head=26755ca512a59abaa529332ca066fc2ee71f6022 host-side (container leg UNCONFIRMED)
+# sha256 scripts: lib.sh=7bf11e05fcbac7a5 register.sh=e231dab43af9c8ad acquire.sh=79fdd96c48854c76 release.sh=e5204f86f0ec18a0 heartbeat.sh=f30a9cd966174b8f holder.sh=58d8f6121caf375b classify.sh=31eb7c512335304e reap.sh=09caca00d38b677b check_no_build_writing_tracked.sh=0c2c1cffb8e714ea require_verdicts.sh=86334fb369890cd3  sweep.sh=4eeec9e535335b16 catalogue.yaml=2708968ad04566aa
+CAUGHT   M01 drop the flock: every CAS runs unlocked (adopt vs expire gives two winners) :: FAIL S10 over 6 trials adopt vs expire has exactly one winner each time :: got [6] want [0]|
+CAUGHT   M02 check_no_build_writing_tracked made always-pass :: FAIL K3 golden-false: a live build writing a TRACKED path is refused :: rc=0 want 1|FAIL K3b []|
+CAUGHT   M03 require_verdicts accepts a missing verdict :: FAIL V2 golden-false: a missing verdict file is refused :: rc=0 want 1|FAIL V2b|
+CAUGHT   M04 signal guards on pid and pgid removed (the real kill is replaced by a no-op IN THE SAME MUTANT: a guard-less kill of 0 or -1 would signal the whole session) :: FAIL P3b process still alive|FAIL P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each) :: got [0 0 0 0 0 ] want [7 7 7 7 7 ]|
+CAUGHT   M05 classification never reports hung (flat offset never detected) :: FAIL H4 flat progress offset past no_progress_s is HUNG :: got [advancing] want [hung]|FAIL P2 --dry-run on a hung op exits 0 and signals nothing :: rc=5 want 0|
+CAUGHT   M06 a live advancing op may be reaped :: FAIL P1 a live advancing op is never reaped :: rc=0 want 5|FAIL P3b process still alive|
+CAUGHT   M07 process identity ignores the /proc start time (a recycled pid reads live) :: FAIL P5 a recycled pid (start time differs) is dead_owner: reaped :: rc=5 want 0|FAIL L4 a pid that now belongs to another process (start time differs) gives none :: got [{"kind":"process","p|
+CAUGHT   M08 record write is not atomic (remove, pause, rename) :: FAIL H11 a reader looping over 60 record rewrites never reads a torn file :: got [746] want [0]|FAIL S9b the reader never read none across suspend, callback done and adopt :: got [39] want [0]|
+CAUGHT   M09 the purpose claim is not exclusive (no existing-claim check, mkdir -p) :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|FAIL R3b|
+CAUGHT   M10 tmpfs state accepted :: FAIL R5b state on tmpfs is refused (not tmpfs, 11.4.232 A) :: rc=0 want 20|
+CAUGHT   M11 reap does not resolve the real identity from /proc :: FAIL P4 an unresolvable identity (cmdline differs) is refused :: rc=0 want 6|FAIL P4b|
+CAUGHT   M12 --expire ignores the resume_ttl :: FAIL S8 --expire refuses a holder still inside resume_ttl :: rc=0 want 4|
+CAUGHT   M13 CPA_APPROVED_DIR check dropped for commit_push :: FAIL C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20 :: rc=0 want 20|FAIL C1b|
+CAUGHT   M14 a dead process holder reads live :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|FAIL R3b|
+CAUGHT   M15 write paths under $EV/$AUD no longer block :: FAIL K6 any live op declaring a write path under $EV is refused (not only builds) :: rc=0 want 1|FAIL K6b|
+CAUGHT   M16 fingerprint not compared :: FAIL V3 a stale fingerprint is refused :: rc=0 want 1|
+CAUGHT   M17 adopt does not check it adopts a suspended-run of that run (no CAS) :: FAIL S11 adopt with no holder is a cas_mismatch :: rc=1 want 4|FAIL S12 adopt of a run that is a live process holder (not suspended) is a cas_mismatch :: rc=0 want 4|
+CAUGHT   M18 stale-holder reader does not re-read the record (snapshot race) :: FAIL S13 a reader that read the holder before the hub moved it (callback running, build terminal) judges the C|
+MUTATION RESULT caught=18 survived=0 total=18
+exit=0

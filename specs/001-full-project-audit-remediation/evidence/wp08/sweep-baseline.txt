@@ -1,0 +1,28 @@
+# identity: task=T091 utc=2026-10-06T16:28:31Z host=anton uid=1000
+# git_head=26755ca512a59abaa529332ca066fc2ee71f6022 (sweep and catalogue are uncommitted at this time: content hashes identify them)
+# command: bash scripts/anti-mess/sweep.sh --stage cadence --json specs/001-full-project-audit-remediation/evidence/wp08/sweep-baseline.json (READ-ONLY, no --reconcile; real podman; exit 10 = drift reported)
+# sha256 sweep.sh=4eeec9e535335b16577ef983ef63c250387932102f867603d388300a8d679399 catalogue.yaml=2708968ad04566aa24f589c7ff533523b24210471911e07a27fa1727f6f17695 longops-lib.sh=7bf11e05fcbac7a515e010b41413afff64e8bef00347c065f88df5079093ef66
+# sha256 sweep-baseline.json=7f42ff5db27aacaac96e9223136e7c574d091f5c0b3983136d9e28d81a3c55ae
+# tracked tree, untracked files and .audit/ were byte-unchanged by the sweep (status before/after compared, excluding this task's own new files)
+# podman=podman version 5.7.0 container_image_digest=UNCONFIRMED (host-side run)
+ID      STATUS         NEEDLE    DETAIL
+AM-R1   drift          seen      1 drift finding(s): dirty_repository .
+AM-R2   clean          seen      no drift (0 informational)
+AM-R3   not_evaluated  not_applicable needs the network (git ls-remote on ~98 repositories); owned by scripts/repo/verify_repos.sh without --no-remote, not re-implemented here (docs/12 17.
+AM-R4   not_evaluated  not_applicable needs the network and the object store decision of verify_repos.sh --fetch; not re-implemented here
+AM-R5   clean          seen      no drift (0 informational)
+AM-G1   not_evaluated  not_applicable the pinned-hash location of the Spec Kit layer and the mirror set are owned by WP-G1 (T081a); no detector without that source of truth (11.4.6: no gue
+AM-G2   clean          seen      no drift (0 informational)
+AM-S1   not_evaluated  not_applicable the drift gates of document 04 (scripts/register/gate.sh over the real register DB, fingerprints of the derived documents) are WP-06 deliverables not 
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+INV-6   not_evaluated  not_applicable the volume label scheme and byte budget belong to the container wrappers (WP-02 T006); no budget exists yet to compare against
+INV-7   not_evaluated  not_applicable scripts/containers/check_pins.sh is not present in the tree; owed (T006 follow-up)
+INV-8   not_evaluated  not_applicable no build records exist yet (the dispatcher T005b is not implemented)
+INV-9   clean          seen      no drift (0 informational)
+SUMMARY drift=1 clean=7 not_evaluated=7 unread=0 blind=0 skipped_stage=0
+
+real	0m13.368s
+user	0m9.534s
+sys	0m19.811s

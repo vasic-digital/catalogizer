@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# release.sh - end a long operation in a terminal state and release its purpose claim (11.4.232 A, D; docs/16 13.2).
+#
+# Usage   release.sh --op-id <id> --state complete|failed|reaped|handoff|blocked-escape [--verdict <v>] [--evidence-path <p>]
+#         release.sh --purpose <key> --run-id <id>        release a claim that has no op record (an acquire.sh lock)
+# Effect  the op record gets its terminal state (success is the verdict the operation wrote, never a process exit code); the claim is
+#         removed by compare-and-swap on the holder's run id under the purpose flock. `handoff` records a re-adoptable stop (11.4.232 D).
+# Exits   0; 2 usage; 4 cas_mismatch (the claim belongs to another run, left untouched).
+set -u
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+opid=""; state=""; verdict=""; evp=""; purpose=""; runid=""
+while [ $# -gt 0 ]; do
+  case "$1" in --op-id) opid=${2:-}; shift 2 ;; --state) state=${2:-}; shift 2 ;; --verdict) verdict=${2:-}; shift 2 ;; --evidence-path) evp=${2:-}; shift 2 ;;
+    --purpose) purpose=${2:-}; shift 2 ;; --run-id) runid=${2:-}; shift 2 ;; *) lo_die usage_error "unknown argument $(printf '%q' "$1")" ;; esac
+done
+if [ -n "$opid" ]; then
+  lo_safe_name "$opid" || lo_die usage_error "unsafe op id"
+  case "$state" in complete|failed|reaped|handoff|blocked-escape) ;; *) lo_die usage_error "--state must be a terminal state" ;; esac
+  f=$(lo_op_file "$opid"); [ -s "$f" ] || lo_die unknown_op "$opid" "$RC_CAS"
+  purpose=$(jq -r .purpose_key "$f"); runid=$(jq -r .run_id "$f")
+  _rel() {
+    local j; j=$(cat "$f")
+    j=$(jq -c --arg s "$state" --arg v "$verdict" --arg e "$evp" --arg u "$(lo_utc "$(lo_now)")" '.state=$s|.verdict=$v|.evidence_path=$e|.last_heartbeat_utc=$u' <<<"$j")
+    lo_wjson "$f" "$j" && lo_unclaim "$purpose" "$runid"
+  }
+  lo_with_lock "$purpose" _rel; rc=$?
+  [ $rc -eq 0 ] && lo_event released --arg op "$opid" --arg state "$state"
+  exit $rc
+fi
+[ -n "$purpose" ] && [ -n "$runid" ] || lo_die usage_error "--op-id, or --purpose with --run-id, is required"
+lo_with_lock "$purpose" lo_unclaim "$purpose" "$runid"

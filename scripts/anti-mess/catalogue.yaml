@@ -1,0 +1,144 @@
+# catalogue.yaml - the declared invariant catalogue of the anti-mess control plane (T090; constitution 11.4.233 A).
+# docs/12 section 17.3 (AM-*) reconciled with docs/16 section 13.3 (INV-1..INV-9); the catalogue IS the desired clean state and the
+# sweep (sweep.sh) re-derives the actual state and diffs it against it. It is DATA: an un-catalogued mess class is a tracked gap, not
+# a claimed-covered class (11.4.233 honest boundary).
+#
+# Keys per invariant
+#   id          stable id (AM-* from docs/12; INV-n kept for docs/16 classes that have no AM id)
+#   aliases     the other document's id for the same invariant (docs/16 INV-n)
+#   plane       repository | governance | tracking | runtime
+#   desired     the condition
+#   detector    function of sweep.sh that decides it; `none` when no detector is implemented in WP-08 (reported not_evaluated, never clean)
+#   stages      where the sweep evaluates it: S0 (commit-push preflight), S7 (commit-push verify_clean), cadence (standing run)
+#   reconcile   auto-safe (sweep --reconcile may repair it) | operator-gated (reported, never changed) | refuse (the gated transition is refused)
+#   needle      yes when the detector has a control needle + golden-false-with-carrier run on every sweep (11.4.201 7b)
+#   not_evaluated_reason  required when detector is none: what is missing, so the gap is tracked and never silent
+schema: anti-mess-catalogue/1
+invariants:
+  - id: AM-R1
+    aliases: [INV-2]
+    plane: repository
+    desired: "every repository (main and each submodule at any depth) has a clean tracked tree: dirty minus dirty_excepted as the verifier counts it; at S0 the declared change set is excluded; a drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt"
+    detector: det_AM_R1
+    stages: [S0, S7, cadence]
+    reconcile: operator-gated
+    needle: yes
+  - id: AM-R2
+    aliases: [INV-1]
+    plane: repository
+    desired: "no git lock file (*.lock under any .git, submodule gitdirs under .git/modules included) whose holder is dead"
+    detector: det_AM_R2
+    stages: [cadence]
+    reconcile: auto-safe
+    needle: yes
+  - id: AM-R3
+    aliases: []
+    plane: repository
+    desired: "every repository tip equals its tip on every upstream, or the lag is reported"
+    detector: none
+    stages: [cadence]
+    reconcile: operator-gated
+    needle: no
+    not_evaluated_reason: "needs the network (git ls-remote on ~98 repositories); owned by scripts/repo/verify_repos.sh without --no-remote, not re-implemented here (docs/12 17.3 AM-R3); the sweep starts no remote contact"
+  - id: AM-R4
+    aliases: [INV-5]
+    plane: repository
+    desired: "each submodule pointer resolves on at least one remote of that submodule"
+    detector: none
+    stages: [cadence]
+    reconcile: operator-gated
+    needle: no
+    not_evaluated_reason: "needs the network and the object store decision of verify_repos.sh --fetch; not re-implemented here"
+  - id: AM-R5
+    aliases: []
+    plane: repository
+    desired: "no submodule is declared but uninitialised"
+    detector: det_AM_R5
+    stages: [cadence]
+    reconcile: auto-safe
+    needle: yes
+  - id: AM-G1
+    aliases: []
+    plane: governance
+    desired: "the five constitution mirror files agree; Constitution.md hash equals the pinned hash in the Spec Kit layer"
+    detector: none
+    stages: [cadence]
+    reconcile: refuse
+    needle: no
+    not_evaluated_reason: "the pinned-hash location of the Spec Kit layer and the mirror set are owned by WP-G1 (T081a); no detector without that source of truth (11.4.6: no guessed path)"
+  - id: AM-G2
+    aliases: []
+    plane: governance
+    desired: "no CI pipeline definition in the main or an own-organisation repository (scripts/repo/check_no_ci.sh, cadence only); core.hooksPath unset or pointing at a non-blocking directory (S0, S7 and cadence)"
+    detector: det_AM_G2
+    stages: [S0, S7, cadence]
+    reconcile: operator-gated
+    needle: yes
+  - id: AM-S1
+    aliases: []
+    plane: tracking
+    desired: "register DB, derived documents and exports agree (document 04 drift gates)"
+    detector: none
+    stages: [cadence]
+    reconcile: auto-safe
+    needle: no
+    not_evaluated_reason: "the drift gates of document 04 (scripts/register/gate.sh over the real register DB, fingerprints of the derived documents) are WP-06 deliverables not yet wired to a sweep entry; owed"
+  - id: AM-P1
+    aliases: [INV-3]
+    plane: runtime
+    desired: "the live long-op set equals the registry live rows; no hung op (flat progress offset past no_progress_s); no labelled container without a registry row"
+    detector: det_AM_P1
+    stages: [S0, S7, cadence]
+    reconcile: auto-safe
+    needle: yes
+  - id: AM-P2
+    aliases: [INV-4]
+    plane: runtime
+    desired: "no two non-terminal operations share a purpose_key unless one is attached or superseded"
+    detector: det_AM_P2
+    stages: [S0, S7, cadence]
+    reconcile: operator-gated
+    needle: yes
+  - id: AM-P3
+    aliases: []
+    plane: runtime
+    desired: "every dispatched build under .audit/builds/<build_id>/ has a registry row and a progressing heartbeat or exactly one terminal/ directory; leftover .tmp-<pid>-<start> directories whose process is gone are reaped; open builds with no live hub are reported"
+    detector: det_AM_P3
+    stages: [cadence]
+    reconcile: auto-safe
+    needle: yes
+  - id: INV-6
+    aliases: []
+    plane: runtime
+    desired: "cache volumes within budget (labelled volumes only)"
+    detector: none
+    stages: [cadence]
+    reconcile: auto-safe
+    needle: no
+    not_evaluated_reason: "the volume label scheme and byte budget belong to the container wrappers (WP-02 T006); no budget exists yet to compare against"
+  - id: INV-7
+    aliases: []
+    plane: runtime
+    desired: "no image used by a build without a digest pin"
+    detector: none
+    stages: [cadence]
+    reconcile: operator-gated
+    needle: no
+    not_evaluated_reason: "scripts/containers/check_pins.sh is not present in the tree; owed (T006 follow-up)"
+  - id: INV-8
+    aliases: []
+    plane: runtime
+    desired: "no bare-host build evidence: every build record carries image@sha256 and a container id"
+    detector: none
+    stages: [cadence]
+    reconcile: operator-gated
+    needle: no
+    not_evaluated_reason: "no build records exist yet (the dispatcher T005b is not implemented)"
+  - id: INV-9
+    aliases: []
+    plane: repository
+    desired: "commit-push run directories: an interrupted run, an interrupted merge, a suspended run and a ready_to_resume run are each reported as their own class and never mixed; a finished directory is removed only beyond both retention bounds and when no held commit is missing from a reachable remote tip of main"
+    detector: det_INV_9
+    stages: [S0, S7, cadence]
+    reconcile: auto-safe
+    needle: yes

@@ -1,0 +1,450 @@
+# identity: task=T088 utc=2026-10-06T15:55:51Z host=anton uid=1000 scripts=/tmp/emptyscripts-1555001
+# git_head=26755ca512a59abaa529332ca066fc2ee71f6022 (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=
+# sha256 register.sh=
+# sha256 acquire.sh=
+# sha256 release.sh=
+# sha256 heartbeat.sh=
+# sha256 holder.sh=
+# sha256 classify.sh=
+# sha256 reap.sh=
+# sha256 check_no_build_writing_tracked.sh=
+# sha256 require_verdicts.sh=
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== register / claim ==
+scripts/longops/tests/test_registry.sh: line 12: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+FAIL R1 register exits 0 and prints an op id :: rc=127 want 0
+FAIL R1b record state is registered before any start :: got [] want [registered]
+FAIL R1c record carries the declared write paths :: got [] want [[".audit/out/x"]]
+FAIL R1d record carries the owner's /proc start time :: got [] want [34761135]
+FAIL R2 a duplicate purpose_key is refused (atomic mkdir claim, live holder) :: rc=127 want 3
+FAIL R2b [scripts/longops/tests/test_registry.sh: line 19: /tmp/emptyscripts-1555001/register.sh: No such file or directory]
+ls: cannot access '/tmp/longops-test.hIYlmn/r1/repo/.audit/longops/ops': No such file or directory
+FAIL R2c the refused register wrote no op record :: got [0] want [1]
+scripts/longops/tests/test_registry.sh: line 24: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=127 want 4
+FAIL R3b
+FAIL R4 reap.sh --purpose releases the stale claim :: rc=127 want 0
+FAIL R4b the purpose can be registered after the reap :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 30: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+find: '/tmp/longops-test.hIYlmn/r5/repo/.audit/longops': No such file or directory
+ok   R5 no temp file is left behind (temp-then-rename)
+FAIL R5b state on tmpfs is refused (not tmpfs, 11.4.232 A) :: rc=127 want 20
+FAIL R6 a purpose with a slash is refused :: rc=127 want 2
+== heartbeat / hung ==
+scripts/longops/tests/test_registry.sh: line 40: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 41: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+FAIL H1 heartbeat --sample-log exits 0 :: rc=127 want 0
+jq: error: Could not open file /tmp/longops-test.hIYlmn/h1/repo/.audit/longops/ops/.json: No such file or directory
+FAIL H1b first heartbeat moves registered -> running :: got [] want [running]
+jq: error: Could not open file /tmp/longops-test.hIYlmn/h1/repo/.audit/longops/ops/.json: No such file or directory
+FAIL H1c offset sampled from the log size :: got [] want [4]
+scripts/longops/tests/test_registry.sh: line 45: /tmp/emptyscripts-1555001/classify.sh: No such file or directory
+FAIL H2 advancing within budget :: got [] want [advancing]
+scripts/longops/tests/test_registry.sh: line 46: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+jq: error: Could not open file /tmp/longops-test.hIYlmn/h1/repo/.audit/longops/ops/.json: No such file or directory
+FAIL H3 a heartbeat on a flat offset is not progress :: got [] want [1000]
+scripts/longops/tests/test_registry.sh: line 48: /tmp/emptyscripts-1555001/classify.sh: No such file or directory
+FAIL H4 flat progress offset past no_progress_s is HUNG :: got [] want [hung]
+scripts/longops/tests/test_registry.sh: line 49: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 49: /tmp/emptyscripts-1555001/classify.sh: No such file or directory
+FAIL H5 a grown offset is advancing again :: got [] want [advancing]
+scripts/longops/tests/test_registry.sh: line 50: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 50: /tmp/emptyscripts-1555001/classify.sh: No such file or directory
+FAIL H6 an op-written heartbeat (no offset) counts as progress :: got [] want [advancing]
+jq: error: Could not open file /tmp/longops-test.hIYlmn/h1/repo/.audit/longops/ops/.json: No such file or directory
+FAIL H7 heartbeat_seq is monotone :: got [] want [4]
+scripts/longops/tests/test_registry.sh: line 52: /tmp/emptyscripts-1555001/release.sh: No such file or directory
+FAIL H8 release exits 0 :: rc=127 want 0
+FAIL H9 a terminal op takes no heartbeat :: rc=127 want 4
+ok   H10 release removed the claim
+scripts/longops/tests/test_registry.sh: line 56: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 58: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+FAIL H11 a reader looping over 60 record rewrites never reads a torn file :: got [18] want [0]
+== reap ==
+scripts/longops/tests/test_registry.sh: line 64: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 64: /tmp/emptyscripts-1555001/heartbeat.sh: No such file or directory
+FAIL P1 a live advancing op is never reaped :: rc=127 want 5
+ok   P1b the advancing process is still alive
+scripts/longops/tests/test_registry.sh: line 68: /tmp/emptyscripts-1555001/reap.sh: No such file or directory
+FAIL P2 --dry-run on a hung op exits 0 and signals nothing :: rc=127 want 0
+ok   P2b dry-run left the process alive
+FAIL P3 a hung op is reaped :: rc=127 want 0
+FAIL P3b process still alive
+jq: error: Could not open file /tmp/longops-test.hIYlmn/p1/repo/.audit/longops/ops/.json: No such file or directory
+FAIL P3c record state is reaped :: got [] want [reaped]
+grep: /tmp/longops-test.hIYlmn/p1/repo/.audit/longops/signals.log: No such file or directory
+FAIL P3d
+ok   P3e claim released after the reap
+scripts/longops/tests/test_registry.sh: line 77: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+jq: error: Could not open file /tmp/longops-test.hIYlmn/p2/repo/.audit/longops/ops/.json: No such file or directory
+FAIL P4 an unresolvable identity (cmdline differs) is refused :: rc=127 want 6
+ok   P4b the process with a different identity is untouched
+scripts/longops/tests/test_registry.sh: line 83: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+jq: error: Could not open file /tmp/longops-test.hIYlmn/p3/repo/.audit/longops/ops/.json: No such file or directory
+FAIL P5 a recycled pid (start time differs) is dead_owner: reaped :: rc=127 want 0
+ok   P5b the recycled-pid process is NOT signalled
+ok   P5c no signal was recorded
+scripts/longops/tests/test_registry.sh: line 88: /tmp/emptyscripts-1555001/lib.sh: No such file or directory
+FAIL P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each) :: got [127 127 127 127 127 ] want [7 7 7 7 7 ]
+ok   P6b no signal audit entry exists for any refused target
+scripts/longops/tests/test_registry.sh: line 92: /tmp/emptyscripts-1555001/classify.sh: No such file or directory
+FAIL P7 an op naming pid 1 is never live: dead_owner :: got [] want [dead_owner]
+FAIL P7b reaping it sends nothing and succeeds as dead_owner :: rc=127 want 0
+ok   P7c no signal sent to pid 1
+scripts/longops/tests/test_registry.sh: line 104: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+FAIL P8 hung op with a labelled container is reaped :: rc=127 want 0
+grep: /tmp/longops-test.hIYlmn/p5/podlog: No such file or directory
+FAIL P8b []
+grep: /tmp/longops-test.hIYlmn/p5/podlog: No such file or directory
+FAIL P8c
+grep: /tmp/emptyscripts-1555001/*.sh: No such file or directory
+ok   P9 no script of the registry uses pgrep, pkill or killall
+== holder, suspend, adopt, expire ==
+scripts/longops/tests/test_registry.sh: line 114: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL L1 acquire exits 0 :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 115: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL L1b holder prints the run id :: got [] want [run-1]
+FAIL L1c holder prints the pid :: got [] want [1558045]
+FAIL L1d holder prints the process start time from /proc/<pid>/stat :: got [] want [34761257]
+FAIL L1e status live :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 120: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL L2 no lock gives none :: got [] want [none]
+scripts/longops/tests/test_registry.sh: line 121: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL L3 a dead holder gives none :: got [] want [none]
+scripts/longops/tests/test_registry.sh: line 122: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+jq: error: Could not open file /tmp/longops-test.hIYlmn/l1/repo/.audit/longops/claims/lock2/holder.json: No such file or directory
+scripts/longops/tests/test_registry.sh: line 123: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL L4 a pid that now belongs to another process (start time differs) gives none :: got [] want [none]
+FAIL L4b acquiring over a dead holder is a stale_claim refusal :: rc=127 want 4
+-- suspended-run --
+scripts/longops/tests/test_registry.sh: line 128: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 129: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S1 --suspend swaps process -> suspended-run :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 130: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S1b a suspended-run holder with non-terminal builds is live :: got [] want [live]
+FAIL S1c kind is suspended-run and builds are listed :: got [] want [suspended-run:b1,b2]
+scripts/longops/tests/test_registry.sh: line 133: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S1d the dead CPA process does not make the suspended run stale :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 134: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S2 live while ANY member build is non-terminal :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 135: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S3 all builds terminal, callback none, state suspended: none :: got [] want [none]
+scripts/longops/tests/test_registry.sh: line 136: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 136: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S4 callback running keeps the holder live :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 138: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S5 callback done + ready_to_resume in one swap :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 139: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S5b ready_to_resume within resume_ttl is live :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 140: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S5c one second before the ttl: live :: got [] want [live]
+scripts/longops/tests/test_registry.sh: line 141: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S6 ready_to_resume past resume_ttl is reported expired by the read-only holder :: got [] want [expired]
+FAIL S6b
+scripts/longops/tests/test_registry.sh: line 143: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S7 acquire --expire releases the expired holder :: rc=127 want 0
+jq: error: Could not open file /tmp/longops-test.hIYlmn/s1/repo/.audit/out/op1/resume_expired.json: No such file or directory
+FAIL S7b the claim is gone and the record names the expired run :: got [gone:] want [gone:sr1]
+FAIL S7c expire with no holder is a cas_mismatch :: rc=127 want 4
+scripts/longops/tests/test_registry.sh: line 146: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 146: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 147: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S8 --expire refuses a holder still inside resume_ttl :: rc=127 want 4
+-- a reader never sees none across the swaps --
+scripts/longops/tests/test_registry.sh: line 153: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 suspend 1
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 update 1
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 adopt 1
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 suspend 2
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 update 2
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 adopt 2
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 suspend 3
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 update 3
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 adopt 3
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 suspend 4
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 update 4
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 adopt 4
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 suspend 5
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 update 5
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 adopt 5
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 suspend 6
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 update 6
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 adopt 6
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 suspend 7
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 update 7
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 adopt 7
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 157: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 suspend 8
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 159: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 update 8
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 160: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL S9 adopt 8
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 154: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL S9 reader made only 0 reads
+ok   S9b the reader never read none across suspend, callback done and adopt
+-- adopt racing expire: exactly one winner --
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 1: adopt rc=127 expire rc=127
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 2: adopt rc=127 expire rc=127
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 3: adopt rc=127 expire rc=127
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 4: adopt rc=127 expire rc=127
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 5: adopt rc=127 expire rc=127
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 171: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 172: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+  trial 6: adopt rc=127 expire rc=127
+FAIL S10 over 6 trials adopt vs expire has exactly one winner each time :: got [6] want [0]
+-- CENTRAL C2: commit_push needs CPA_APPROVED_DIR --
+FAIL C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20 :: rc=127 want 20
+FAIL C1b
+FAIL C2 --expire unset gives 20 helper_not_approved FIRST (before the --op-id usage check) :: rc=127 want 20
+FAIL C2b [scripts/longops/tests/test_registry.sh: line 186: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory]
+ok   C2c nothing was written
+scripts/longops/tests/test_registry.sh: line 190: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 191: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL C3 with it set, a live process holder reads without any conf (ttl is read lazily) :: got [] want [cp1]
+FAIL C4 --expire outside a run without --op-id gives 20 usage_error :: rc=127 want 20
+FAIL C4b [scripts/longops/tests/test_registry.sh: line 192: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory]
+ok   C4c nothing written
+scripts/longops/tests/test_registry.sh: line 195: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 195: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL C5 a ready_to_resume holder with no commit_push.conf is refused (the lazy read fails loudly) :: rc=127 want 20
+scripts/longops/tests/test_registry.sh: line 198: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL C6
+scripts/longops/tests/test_registry.sh: line 199: /tmp/emptyscripts-1555001/holder.sh: No such file or directory
+FAIL C6b past the conf's ttl: expired :: got [] want [expired]
+scripts/longops/tests/test_registry.sh: line 201: /tmp/emptyscripts-1555001/acquire.sh: No such file or directory
+FAIL C7 --expire inside a run :: rc=127 want 0
+jq: error: Could not open file /tmp/longops-test.hIYlmn/c2/callrun/resume_expired.json: No such file or directory
+FAIL C7b resume_expired goes into the calling run's own report directory, naming the expired run :: got [] want [cp1]
+ok   C7c the expired run's directory is byte-unchanged
+== check_no_build_writing_tracked ==
+scripts/longops/tests/test_registry.sh: line 207: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K1 golden-true: no registered op, exit 0 :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 208: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 209: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K2 golden-true: a live build writing only an untracked, ignored path :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 210: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 210: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K3 golden-false: a live build writing a TRACKED path is refused :: rc=127 want 1
+FAIL K3b []
+scripts/longops/tests/test_registry.sh: line 213: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K4 the caller's own op can be excepted :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 214: /tmp/emptyscripts-1555001/release.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 214: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K5 a terminal op blocks nothing :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 215: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 216: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K6 any live op declaring a write path under $EV is refused (not only builds) :: rc=127 want 1
+FAIL K6b
+scripts/longops/tests/test_registry.sh: line 218: /tmp/emptyscripts-1555001/release.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 219: /tmp/emptyscripts-1555001/register.sh: No such file or directory
+scripts/longops/tests/test_registry.sh: line 219: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K7 a write path under $AUD is refused :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 220: /tmp/emptyscripts-1555001/check_no_build_writing_tracked.sh: No such file or directory
+FAIL K8 a dead-owner row is not a writer (it never wedges the window) :: rc=127 want 0
+ok   K9 fixture control: the fixture repository really tracks tracked/a.txt
+== require_verdicts ==
+scripts/longops/tests/test_registry.sh: line 230: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V1 golden-true: fresh PASS with the right fingerprint :: rc=127 want 0
+scripts/longops/tests/test_registry.sh: line 231: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V2 golden-false: a missing verdict file is refused :: rc=127 want 1
+FAIL V2b
+scripts/longops/tests/test_registry.sh: line 233: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V3 a stale fingerprint is refused :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 234: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V4 a verdict older than max-age is refused :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 235: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V5 a FAIL verdict is refused :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 236: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V6 an absent utc is stale, never fresh :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 237: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V7 one missing file among several refuses the lot :: rc=127 want 1
+scripts/longops/tests/test_registry.sh: line 238: /tmp/emptyscripts-1555001/require_verdicts.sh: No such file or directory
+FAIL V8 an unparsable verdict is refused :: rc=127 want 1
+RESULT pass=16 fail=121
+
+real	0m2.328s
+user	0m0.536s
+sys	0m1.756s
