@@ -1,0 +1,1 @@
+group=export mutants=16 killed=16 equivalent_reviewed=0 survived_unreviewed=0 golden_good=pass negative_control=ok

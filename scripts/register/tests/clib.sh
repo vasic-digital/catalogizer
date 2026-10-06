@@ -11,6 +11,24 @@
 # a private copy of the image lock (another agent or a lock refresh may rewrite the tracked file while a long run reads it: observed as a transient
 # run_pinned lock_unreadable); RUNP_LOCK is the documented test input of RUNP and is read by backup_db.sh and export.sh for the image digest too
 if [ -z "${RUNP_LOCK:-}" ]; then for _i in 1 2 3 4 5 6 7 8 9 10; do cp "$ROOT/build/containers/images.lock.yaml" "$T_SCR/images.lock.yaml" && python3 -I -c 'import sys,yaml;d=yaml.safe_load(open(sys.argv[1]));sys.exit(0 if isinstance(d,dict) and d.get("images") else 1)' "$T_SCR/images.lock.yaml" 2>/dev/null && break; sleep 1; done; export RUNP_LOCK="$T_SCR/images.lock.yaml"; fi
+# F11 (WF10 review fix r1): every RUNP call composed by a test writes its disk-headroom record into the scratch root, never into the real repository's
+# specs/.../evidence/disk (which is also where the commit-turn freeze of a REAL grant would be read). The suite fails when a record named after one of
+# its own register operations shows up in the real directory (rt_guard, run by finish).
+DISK_HEADROOM_OUT_DIR="$T_SCR/disk/"; mkdir -p "$DISK_HEADROOM_OUT_DIR"; export DISK_HEADROOM_OUT_DIR
+RT_MARK="$T_SCR/.rt_start"; : >"$RT_MARK"; sleep 0.01
+RT_REAL_DISK="$ROOT/specs/001-full-project-audit-remediation/evidence/disk"
+rt_guard() {
+  [ -d "$RT_REAL_DISK" ] || return 0
+  local ids new leaked
+  ids=$(find "$T_SCR" -path '*/.audit/register/journal.jsonl' -print0 2>/dev/null | xargs -0 -r cat 2>/dev/null | python3 -I -c 'import json,sys
+for l in sys.stdin:
+    try: print(json.loads(l)["op_id"])
+    except Exception: pass' | sort -u)
+  new=$(find "$RT_REAL_DISK" -maxdepth 1 -newer "$RT_MARK" -name '*.json' -printf '%f\n' 2>/dev/null | sed 's/\.json$//' | sort -u)
+  leaked=$(comm -12 <(printf '%s\n' "$ids" | grep -v '^$') <(printf '%s\n' "$new" | grep -v '^$') | head -5 | tr '\n' ' ')   # empty sets give an empty list (a blank line must not read as a leak)
+  if [ -z "$leaked" ]; then ok "RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)"; else bad "RT this suite wrote disk-headroom records into the real repository: $leaked"; fi
+}
+finish() { rt_guard; echo "RESULT pass=$PASS fail=$FAIL"; [ "$FAIL" -eq 0 ]; }
 RUNP=${LOCKED_RUNP:-$ROOT/scripts/containers/run_pinned.sh}
 LOCKED=${LOCKED:-$REG_DIR/locked.sh}
 BACKUP=${BACKUP:-$REG_DIR/backup_db.sh}
@@ -38,6 +56,7 @@ evhead() {  # container-leg identity header (no credential, no env dump)
   echo "# git_head=$(git -C "$ROOT" rev-parse HEAD 2>/dev/null) tree_dirty_files=$(git -C "$ROOT" status --porcelain 2>/dev/null | wc -l)"
   echo "# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: $(grep -A4 '^- id: IMG-TESTUTIL$' "${RUNP_LOCK:-$ROOT/build/containers/images.lock.yaml}" | grep -o 'sha256:[0-9a-f]*' | head -1)"
   echo "# sha256 locked=$(sha256sum "$LOCKED" 2>/dev/null | cut -c1-64) backup_db=$(sha256sum "$BACKUP" 2>/dev/null | cut -c1-64) test=$(sha256sum "${BASH_SOURCE[1]:-$0}" 2>/dev/null | cut -c1-64) clib=$(sha256sum "${BASH_SOURCE[0]}" | cut -c1-64)"
+  echo "# sha256 dump=$(fsha "${DUMP:-$REG_DIR/dump.sh}" | cut -c1-64) export=$(fsha "${EXPORT:-$REG_DIR/export.sh}" | cut -c1-64) reconcile=$(fsha "${RECONCILE:-$REG_DIR/reconcile.sh}" | cut -c1-64) replay=$(fsha "${REPLAY:-$REG_DIR/replay.sh}" | cut -c1-64)"
   echo "# engine=$WI sha256=$(sha256sum "$WI" 2>/dev/null | cut -d' ' -f1)"; }
 fsha() { sha256sum "$1" 2>/dev/null | cut -d' ' -f1; }
 DUMP=${DUMP:-$REG_DIR/dump.sh}; EXPORT=${EXPORT:-$REG_DIR/export.sh}; REPLAY=${REPLAY:-$REG_DIR/replay.sh}

@@ -1,0 +1,87 @@
+# identity: task=FIX-R1 utc=2026-10-06T21:39:46Z host=anton uid=1000
+# git_head=34db9504594c4a1f883769d5c3d80238c87d48fb tree_dirty_files=1802
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=09100a82a647669bc62d98c9bec7aa346b2c9bef66713d4bc00931588a78dd73 clib=fea85984ffa504080fbe5bc951b8c07aef4a50692bfc1b1710e1bfc9516eb816
+# sha256 dump=c2dc63a307c44b8371f7857d8d9909ccc58464c80b40d0a67f4f57a52782f33c export=ef89727493868b7dab609bc4381043cf277477ad011d55751854110ca781d433 reconcile=adf8b54ae3c9ceab328ea5d1fbe4496645e6752c3ecd42c7242250d57920b85c replay=c1a52c75675eddda6701dd8800c4abca250cd187b056f0028c13f08d9449c40c
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/red/scripts/register sha256 locked=7cab8cb149d83a9a backup=eb1ef7444dbf9841 dump=c2dc63a307c44b83 export=ef89727493868b7d reconcile=adf8b54ae3c9ceab replay=c1a52c75675eddda
+== F3 signal handling of locked.sh ==
+ok   F3-0 fixture: exact locked.sh pid 9757 proven ours via /proc, writer pid 10286 running
+FAIL F3-1 the register lock was never free while the killed call's writer was still running :: got [1] want [0]
+ok   F3-2 the writer is gone when locked.sh has exited
+ok   F3-3 locked.sh reports the interruption (exit 143 = 128+SIGTERM)
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+AssertionError: [{'argv': ['sh', '-c', 'echo second'], 'db': 'docs/workable_items.db', 'db_sha_after': '7ebe1ad4f636d96eb71d1dc2bc50e27690164ac0b182a1921fbd7454c1e72b15', 'db_sha_before': '7ebe1ad4f636d96eb71d1dc2bc50e27690164ac0b182a1921fbd7454c1e72b15', 'exit': 0, 'ids_minted': [], 'ids_snapshot': 'ok', 'input_args': {}, 'inputs': [], 'mode': 'register', 'op_id': 'f3-b', 'stdin': None, 'time': '2026-10-06T21:39:50.093445Z', 'wal_bytes_after': 0}]
+FAIL F3-4 journal: {"argv": ["sh", "-c", "echo second"], "db": "docs/workable_items.db", "db_sha_after": "7ebe1ad4f636d96eb71d1dc2bc50e27690164ac0b182a1921fbd7454c1e72b15", "db_sha_before": "7ebe1ad4f636d96eb71d1dc2bc50e27690164ac0b182a1921fbd7454c1e72b15", "exit": 0, "ids_minted": [], "ids_snapshot": "ok", "input_args": {}, "inputs": [], "mode": "register", "op_id": "f3-b", "stdin": null, "time": "2026-10-06T21:39:50.093445Z", "wal_bytes_after": 0}
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+AssertionError: ['s', 's', 'e', 'e']
+FAIL F3-5 overlap: s 1791322788606787543 10286 s 1791322788935550395 10910 e 1791322789960229817 10910 done e 1791322794629609601 10286 done 
+ok   F3-6 no pending marker is left once the interrupted op is journaled
+ok   F3-7 the second caller completed normally
+== F4 id snapshot pipeline status ==
+ok   F4-1 control: both snapshots answer: ids_snapshot ok, CAT-003 minted
+FAIL F4-2 the AFTER snapshot fails: ids_snapshot is failed (never ok with no mint) :: got ["ok"] want ["failed"]
+FAIL F4-3 the BEFORE snapshot fails: ids_snapshot is failed (no false mint of every id) :: got ["ok"["CAT-001", "CAT-002", "CAT-003"]] want ["failed"[]]
+ok   F4-4 golden-FALSE: an empty table (both snapshots answer an empty row) is ok with no mint
+== F5 journal append failure ==
+FAIL F5-1 rc=0 wrote=yes [Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+IsADirectoryError: [Errno 21] Is a directory: '.audit/register/journal.jsonl']
+FAIL F5-2 rc=0 [Traceback (most recent call last):
+  File "<stdin>", line 11, in <module>
+IsADirectoryError: [Errno 21] Is a directory: '.audit/register/journal.jsonl']
+FAIL F5-3 no pending marker
+ok   F5-4 golden-true: a normal call exits 0, journals one row and leaves no pending marker
+== F6 LOCKED_LOCK_HELD ==
+ok   F6-0 control needle: another process holds the register lock
+FAIL F6-1 rc=0 228ms rows=1 []
+FAIL F6-2 rc=0 []
+ok   F6-3 golden-true: a locked.sh nested under a lock-holding locked.sh (fd 9 inherited) is accepted and journaled
+== F13 reaper ==
+ok   F13-0 fixture: the grant stays held, locked.sh refuses commit_turn_held
+FAIL F13-1 the register lock is free as soon as locked.sh exits (a child the reaper left behind does not hold it) :: got [0] want [1]
+FAIL F13-2 rc=124 dt=40s []
+== F8 LOCKED hook outside test mode, output verification ==
+FAIL F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign wrapper was called 0 times) :: got [59] want [0]
+FAIL F8-2 rc=0 [dump: OK docs/s.db -> docs/register/s.sql]
+FAIL F8-3 rc=0 []
+FAIL F8-4 rc=0 []
+== F1/F2 replay planning (stub tools) ==
+ok   F2-0 control: base W1, the local mint W2 is replayed
+FAIL F2-1 [rc=0 replay: OK replayed=0 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/rh/out_scr]
+FAIL F2-2 [rc=0 replay: OK replayed=0 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/rh/out_scr2]
+FAIL F2-3 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/rh/out_walrow]
+ok   F2-7 golden-true: a recorded input whose content hashes to its name is re-bound and replayed
+ok   F2-8 a recorded input whose content no longer hashes to its name is refused input_missing
+FAIL F2-4 [rc=0 replay: OK replayed=2 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/rh/out_seq]
+FAIL F2-5 [rc=1 Traceback (most recent call last):
+  File "<stdin>", line 24, in <module>
+  File "/usr/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)]
+FAIL F2-6 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/rh/out_pend]
+== F11 test isolation ==
+ok   F11-1 clib.sh routes the disk-headroom records into the scratch root (/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_stub/regtest.KTjXNS/disk/)
+ok   F11-2 the disk-headroom record of a register call (locked-20261006T214048-123223-28305) is in the scratch root
+ok   F11-3 and not in the real repository's evidence/disk
+FAIL F11-4 no export-check directory in the scratch root
+ok   F11-5 no export-check directory was created under the real repository's .audit/out during this run
+== F12 reconcile empty views ==
+ok   F12-0 reconcile succeeds on a register database with empty views
+FAIL F12-1 every CSV of an empty view carries its header line (no 0-byte CSV) :: got [7] want [0]
+FAIL F12-2 'Rows: -1' in Reconciliation.md
+FAIL F12-3 every empty view reads Rows: 0 (7 sections) :: got [0] want [7]
+FAIL F12-4
+FAIL F12-5 []
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=20 fail=28
+exit=1

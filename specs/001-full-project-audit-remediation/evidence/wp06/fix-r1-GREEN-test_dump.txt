@@ -1,0 +1,38 @@
+# identity: task=T066 utc=2026-10-06T23:38:53Z host=anton uid=1000
+# git_head=178ee136c632ed4de72d146f0f19ef5e7b5a5a7a tree_dirty_files=2244
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=b0073943bf4d42dc5b13f1f788d48d0d61a205eef903d45f343c62715ceffc1f backup_db=dda468837c6c2ac73cca9926df107bb4af5480d7fa881bc349a6fd6598fedad3 test=18505d96ed510a9150e1fa8696f8ec73337d81ee56bb664b12e2a0829d8e0658 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=5b03fe64a00f952b9f67042a0d84a932f037ef88da574f097671d2e5320d3769 replay=3b3f9f27082e8bc5b657950d4bf62aabb06d2f647dcfcf3dc282a89ee64bdc8f
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== determinism ==
+ok   D1 the dump is written (register mode, docs/register/s.sql)
+ok   D2 two consecutive dumps of an unchanged database hash identically (recorded: 1a8359241c2b90a99a219056b13a5d802286558ede8af42b7980fb39688fefac)
+ok   D3 a third dump hashes identically
+ok   D4 no PRAGMA line in the dump
+ok   D5 the dump holds the register's rows (CAT-001)
+== the dump follows the database ==
+ok   D6 a database change changes the dump (the new item CAT-003 is in it)
+== a restored dump dumps to the same bytes ==
+ok   D7 dump -> restore -> dump is byte-identical
+== the dump does not alter the register ==
+ok   D8 the database file keeps its sha256 (the checkpoint finds nothing to move)
+== out mode ==
+ok   D9 out mode dumps <dir>/<db-file> to <dir>/<out> with the same bytes as register mode
+== a row still in the -wal file is in the dump (the checkpoint comes first) ==
+ok   D14a fixture: a committed row is pending in docs/s.db-wal (12392 bytes)
+ok   D14 the pending row is in the dump (checkpoint, then dump)
+== refusals ==
+ok   D10 refused: --db ../x.db
+ok   D10 refused: --db docs/a_b.db/../../x.db
+ok   D10 refused: --db /abs.db
+ok   D10 refused: --out docs/../x.sql
+ok   D10 refused: --out outside/x.sql
+ok   D10 refused: --out docs/x.txt
+ok   D10 refused: --db docs/x.txt
+ok   D11 unknown argument: exit 2
+ok   D12 refused calls wrote nothing
+== the commit procedure is written down ==
+ok   D13 docs/scripts/register_dump.md writes the commit procedure down (checkpoint, export, one commit through commit-push-all.sh)
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=22 fail=0
+exit=0

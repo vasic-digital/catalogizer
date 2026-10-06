@@ -1,0 +1,15 @@
+# identity: group=backup utc=2026-10-06T22:42:43Z host=anton uid=1000 git_head=e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# runner_sha256=e17f03f11f33d153dc945f3cf9c92fa6b241f22a48c920f805045a17d9fc0d1f test_sha256=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 sut_sha256=dda468837c6c2ac73cca9926df107bb4af5480d7fa881bc349a6fd6598fedad3 followup_tests=test_fix_r1.sh|F7 F14 F8 M6|1 fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_backup_db.sh
+cp_al_backup	yes	test_backup_db.sh: FAIL B11 after one more row in the source (checkpointed) the backup's sha256 is unchanged :: got [4967e0ff58f9
+failed_backup_kept	yes	test_backup_db.sh: FAIL B15 left: workable_items.db
+integrity_unchecked	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL M6-1 rc=1 [backup_db: BACKUP FAILED: restore probe produced no dump]
+restore_dump_unchecked	yes	test_backup_db.sh: FAIL B18 rc=0 [backup_db: OK docs/workable_items.db.bak-20261006T224714Z-310428-027607753 sha256=a2bac1cd86e5f
+no_checkpoint	EQUIV	reviewed-equivalent: the online backup copies a consistent snapshot including the WAL content, so the checkpoint does not change the backup; it moves the register file to the committed state (docs/04 R-2)
+record_without_rows_check	EQUIV	reviewed-equivalent (redundancy): byte-equal canonical dumps imply equal INSERT row counts
+backup_name_not_unique	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F7-1 rc=01 a=[docs/workable_items.db.bak-20261006T225602Z] b=[]
+source_hash_after_unlock	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F14-1 rc=0 rec=c7616baadfdfe3ad at-lock=e41c5ce0eb6ef577 now=c7616baadfdfe3ad [backup_db: OK docs/workabl
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign
+integrity_gate_both_layers_removed	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL M6-1 rc=0 [backup_db: OK docs/workable_items.db.bak-20261006T230653Z-1498611-741792567 sha256=72648c54056
+negative_control_comment	NO	test_fix_r1.sh [F7 F14 F8 M6]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=14 fail=0

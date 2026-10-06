@@ -1,0 +1,139 @@
+# identity: task=T063 utc=2026-10-06T23:45:15Z host=anton uid=1000
+# git_head=6d5ebb6489c02814870d59abce387924a5b4937b tree_dirty_files=2253
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=784173e6c5839e8a2f8c183761fdc7cbf9f57f03c7c3b0bb32eaab9191df82f0 test=1ffc1ef626238e76695070de26d13b1cd744398befcd634fb477214eb67c0788
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== golden-good ==
+ok   G1 clean DB with one item prints GATE OK (rc 0)
+ok   G2 freshly applied empty register passes
+ok   G3 the gate does not modify the DB under test
+ok   G4 missing --db exits 2 with a usage message
+ok   G5 absent DB file exits 1 naming the absence (and not created)
+ok   G6 absent DB file was not created
+== golden-bad fixtures ==
+ok   B1 orphan finding (no item row) fails
+ok   B2 illegal logged status edge fails
+ok   B3 dropped trigger fails (v_gate_missing_objects)
+ok   B4 same-name view redefinition fails (schema differs from the reference)
+ok   B5 edited edge graph fails (seed differs)
+ok   B6 foreign-key violation fails (foreign_key_check)
+ok   B7 item without a mint fails (v_items_without_mint)
+ok   B8 edited gate registry fails (seed differs)
+ok   B9 a file that is not a database fails
+ok   B10 page corruption in a data page fails (integrity_check)
+ok   B11 terminal item with no custody chain fails (v_custody_violations)
+ok   B12 injected registry name 'v_open_items WHERE 0' fails closed (invalid registry name)
+ok   B13 injected registry name with a statement separator fails closed
+ok   B13b the injected DROP did not run (reg_meta exists)
+ok   B14 a registered name that is a TABLE, not a view, fails (not a view)
+ok   B15 registry row naming sqlite_master fails closed
+ok   B16 the view list comes from the reference: all 11 views checked though the DB registry lost a row
+ok   B17 tampered DB left unmodified by the gate
+ok   B18 hostile name in the reference registry fails the gate
+ok   B19 engine-only violation fails (engine validate step)
+== WF2 fix round 3: fail-open gaps (I-1 I-2 I-3 I-8), minors m-1 m-2 m-3 m-4 ==
+ok   G7 --db without a value exits 2 (no hang)
+ok   G7b --ext without a value exits 2 (no hang)
+ok   G8.0 fixture: an uncheckpointed -wal exists
+ok   G8 the gate leaves a WAL database file byte-identical
+ok   G8b the gate leaves the -wal file byte-identical and present
+ok   B20 an added trigger named outside the old globs fails (unexpected object)
+ok   B21 an added view of an unrelated name fails
+ok   B22 an added index of an unrelated name fails
+ok   B23 an added table of an unrelated name fails
+ok   B35 an added trigger named sqliteX... (LIKE-wildcard boundary of the object filter) fails
+ok   B36 an added view named sqlite1... fails
+ok   B37 an added table named sqlitezz (no underscore) fails
+ok   B40.1 fixture: trigger sqlite_swallow exists in the database under test
+ok   B40.1 an added trigger named sqlite_swallow (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.2 fixture: trigger SQLITE_SWALLOW exists in the database under test
+ok   B40.2 an added trigger named SQLITE_SWALLOW (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.3 fixture: trigger Sqlite_Swallow exists in the database under test
+ok   B40.3 an added trigger named Sqlite_Swallow (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.4 fixture: view sqlite_hidden_v exists in the database under test
+ok   B40.4 an added view named sqlite_hidden_v (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.5 fixture: view SQLite_Hidden_V exists in the database under test
+ok   B40.5 an added view named SQLite_Hidden_V (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.6 fixture: index sqlite_hidden_i exists in the database under test
+ok   B40.6 an added index named sqlite_hidden_i (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.7 fixture: index SQLITE_HIDDEN_I exists in the database under test
+ok   B40.7 an added index named SQLITE_HIDDEN_I (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.8 fixture: table sqlite_hidden_t exists in the database under test
+ok   B40.8 an added table named sqlite_hidden_t (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.9 fixture: table Sqlite_Hidden_T exists in the database under test
+ok   B40.9 an added table named Sqlite_Hidden_T (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.10 fixture: trigger sqlite_stat1 exists in the database under test
+ok   B40.10 an added trigger named sqlite_stat1 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.11 fixture: view sqlite_stat2 exists in the database under test
+ok   B40.11 an added view named sqlite_stat2 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.12 fixture: index sqlite_stat3 exists in the database under test
+ok   B40.12 an added index named sqlite_stat3 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.13 fixture: table sqlite_sequence_x exists in the database under test
+ok   B40.13 an added table named sqlite_sequence_x (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.14 fixture: table sqlite_stat9 exists in the database under test
+ok   B40.14 an added table named sqlite_stat9 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.15 fixture: table sqlite_autoindex_fake exists in the database under test
+ok   B40.15 an added table named sqlite_autoindex_fake (reserved-prefix name, writable_schema) fails, not hidden
+ok   B40.16 fixture: index sqlite_autoindex_fake_1 exists in the database under test
+ok   B40.16 an added index named sqlite_autoindex_fake_1 (reserved-prefix name, writable_schema) fails, not hidden
+ok   B41.0 control: without the trigger the illegal status-log insert is refused (rc 19)
+ok   B41 the sqlite_swallow trigger persists in the file (new connection sees it)
+ok   B41.1 the trigger is effective: the illegal insert is swallowed (rc 0, rows 1 -> 1), the guard never runs
+ok   G9.0 fixture: ANALYZE created sqlite_stat1
+ok   G9 a register after ANALYZE (sqlite_stat1 present) still prints GATE OK
+ok   B42 a forged sqlite_stat1 (definition differs from SQLite's own) fails
+ok   G10.1 fixture: sqlite_stat2 exists with SQLite's exact definition
+ok   G10.1 a register holding SQLite's exact sqlite_stat2 still prints GATE OK (no false refusal)
+ok   G10.2 fixture: sqlite_stat3 exists with SQLite's exact definition
+ok   G10.2 a register holding SQLite's exact sqlite_stat3 still prints GATE OK (no false refusal)
+ok   G10.3 fixture: sqlite_stat4 exists with SQLite's exact definition
+ok   G10.3 a register holding SQLite's exact sqlite_stat4 still prints GATE OK (no false refusal)
+ok   B43.1 a forged sqlite_stat2 (CREATE TABLE sqlite_stat2(a)) fails, not hidden
+ok   B43.2 a forged sqlite_stat3 (CREATE TABLE sqlite_stat3(x,y)) fails, not hidden
+ok   B43.3 a forged sqlite_stat4 (CREATE TABLE sqlite_stat4(a)) fails, not hidden
+ok   B43.4 a forged sqlite_stat4 (CREATE TABLE sqlite_stat4(tbl,idx,neq,nlt,ndlt,sample,extra_forged_tail)) fails, not hidden
+ok   B43.5 the stat-mismatch refusal prints the full definition tail (not cut at 60 characters)
+ok   B43.6 a quoting-only forgery of sqlite_stat4 is refused and the printed definition shows the double quotes
+ok   B43.7 a single-quote forgery of sqlite_stat4 is refused and the printed definition shows the single quotes
+ok   B24 reg_reviews rebuilt without the author != reviewer CHECK (triggers intact) fails
+ok   B25 a dropped index fails (missing object)
+ok   B26 a dropped ENGINE view fails (missing object)
+ok   B26b a dropped idx_ index fails
+ok   B26c a redefined ENGINE view (same name, other body) fails (schema differs)
+ok   B26d an index redefined under the same name (WHERE clause dropped) fails (schema differs)
+ok   B27 engine schema_version other than engine_schema_required fails
+ok   B28 an edited reg_meta row fails (seed differs)
+ok   B29 an engine Reopened event the status log lacks fails (v_reopen_unlogged)
+ok   B30 a raw DELETE of an item (and its doc_segments) fails (v_deleted_items)
+ok   X9.0 fixture: the legacy item is closed through the import-time exemption
+ok   X9.1 control: before the attack the register passes
+ok   X9.2 with the silent trigger present the gate fails (unexpected object)
+ok   X9.3 after the silent trigger is dropped again the reopen it hid is still detected (v_reopen_unlogged)
+ok   E1 an evidence row whose file re-hashes to its sha256 passes (control)
+ok   E2 an evidence row citing a file that does not exist fails (WF2 X1)
+ok   E3 an evidence row whose recorded sha256 differs from the file fails
+ok   E4 an evidence row whose recorded size differs from the file fails
+ok   E5 an evidence path holding a tab fails closed
+ok   E6 a tracker_receipt URL is counted as skipped, the run is PASS-PARTIAL (rc 3), never GATE OK
+ok   E6a with --allow-url-evidence the partial run exits 0 but still reads PASS-PARTIAL with the count, never GATE OK
+ok   E6b a URL-shaped path on a custody-bearing kind (log) fails: only a tracker_receipt may be a non-file (WF3 I2)
+ok   E6c the allow flag does not legalise a URL path on a red_run (rc 1)
+ok   E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5)
+ok   E7 a relative evidence path resolves under the tree root (control)
+ok   S1 a failing run never prints a bare GATE OK line even when database text tries to (rc 1)
+ok   S2 the missing-objects report cannot spoof GATE OK either
+== WF3 I4: golden-good boundary fixtures of the I-1/I-2 views (a gate that refuses a clean register is a FAIL-bluff, 11.4.201(1)) ==
+ok   GF1.0 fixture: the engine recorded one Reopened event and the register logged it
+ok   GF1 a legitimately reopened item (logged reopen == engine reopen) passes; v_reopen_unlogged is empty
+ok   GF2 a minted id with no item row yet passes; v_deleted_items is empty
+ok   GF3 a brownfield reopen older than the id's first log row passes (the T069 go-live case)
+ok   S3.0 fixture: integrity_check reports the corrupted newline-named index
+ok   S3 a corrupted index named ix<LF>GATE OK never prints a bare GATE OK line (rc 1)
+== view_empty views each have a golden-bad fixture ==
+ok   B31 a scanned source entry with no mapping fails (v_unmapped_entries)
+ok   B32 a legacy_import row with no primary source mapping fails (v_legacy_import_unbacked)
+ok   B33 a SAME_DEFECT link on a terminal head that was never reopened fails (v_recurrence_violations)
+ok   B34 a custody-bearing evidence file recorded again after the reopen fails (v_replayed_evidence)
+RESULT pass=126 fail=0
+exit=0

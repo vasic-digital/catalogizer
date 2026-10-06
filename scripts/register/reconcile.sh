@@ -8,6 +8,8 @@
 #   Reconciliation.md   (one section per view, each a Markdown table, headed by the revision header table; class `generated`, T040b)
 # Every output is a pure function of the DB content: no clock, no host name, no counter (two runs on an unchanged DB are byte-identical);
 # "Last modified" of the header is the largest items.last_modified (or `none`).
+# Empty views (WF10 F12): sqlite prints no header line for an empty result, so every view's column list is held in HDR below; an empty view is written as its header
+# line alone (CSV) and its table header (Markdown) with `Rows: 0`; for a non-empty view the first CSV line must equal HDR (else exit 4, the table is out of sync).
 # Exit: 0 ok; 2 usage; 3 database unreadable; 4 query failed.
 set -u
 DB=""; OUT=""
@@ -27,7 +29,16 @@ VIEWS=(
 "reverify_queue|Re-verification queue (v_reverify_queue)|SELECT atm_id,legacy_status,status,severity FROM v_reverify_queue ORDER BY CASE severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END,1,2,3"
 "reopen_counts|Most-reopened ranking (v_reopen_counts)|SELECT atm_id,reopens FROM v_reopen_counts ORDER BY 2 DESC,1"
 "stale_tracker_sync|Tracker status report (v_stale_tracker_sync)|SELECT tracker_id,atm_id,last_status FROM v_stale_tracker_sync ORDER BY 1,2,3"
-"findings|Findings report (reg_findings JOIN reg_evidence)|SELECT f.finding_id,f.unit_alias,f.atm_id,f.category,f.severity,f.location_path,f.detector,IFNULL(e.path,''),IFNULL(e.sha256,'') FROM reg_findings f LEFT JOIN reg_evidence e ON e.evidence_id=f.evidence_id ORDER BY f.finding_seq"
+"findings|Findings report (reg_findings JOIN reg_evidence)|SELECT f.finding_id,f.unit_alias,f.atm_id,f.category,f.severity,f.location_path,f.detector,IFNULL(e.path,'') AS evidence_path,IFNULL(e.sha256,'') AS evidence_sha256 FROM reg_findings f LEFT JOIN reg_evidence e ON e.evidence_id=f.evidence_id ORDER BY f.finding_seq"
+)
+declare -A HDR=(
+  [reconciliation]="kind,source,entry_locator,legacy_id,relation,atm_id,status"
+  [unmapped_entries]="entry_id,source,locator"
+  [legacy_id_collisions]="legacy_id,entries,distinct_titles"
+  [reverify_queue]="atm_id,legacy_status,status,severity"
+  [reopen_counts]="atm_id,reopens"
+  [stale_tracker_sync]="tracker_id,atm_id,last_status"
+  [findings]="finding_id,unit_alias,atm_id,category,severity,location_path,detector,evidence_path,evidence_sha256"
 )
 LM="$(q "select IFNULL(max(last_modified),'none') from items")" || exit 4
 T="$OUT/.Reconciliation.md.tmp.$$"
@@ -47,10 +58,15 @@ for v in "${VIEWS[@]}"; do
   # the query text holds no '|' (checked: the three-field split above) except inside this array's last field, which is re-joined
   sqlq="${v#*|*|}"
   q -csv -header "$sqlq" >"$OUT/.$n.csv.tmp.$$" 2>"$OUT/.err.$$" || { echo "reconcile: query $n failed: $(cat "$OUT/.err.$$")" >&2; rm -f "$OUT"/.*.tmp.$$ "$OUT/.err.$$"; exit 4; }
+  if [ -s "$OUT/.$n.csv.tmp.$$" ]; then
+    [ "$(head -n1 "$OUT/.$n.csv.tmp.$$")" = "${HDR[$n]}" ] || { echo "reconcile: the header of view $n is [$(head -n1 "$OUT/.$n.csv.tmp.$$")], the HDR table says [${HDR[$n]}]" >&2; rm -f "$OUT"/.*.tmp.$$ "$OUT/.err.$$"; exit 4; }   # MUT:header-table
+    rows="$(( $(wc -l <"$OUT/.$n.csv.tmp.$$") - 1 ))"
+  else printf '%s\n' "${HDR[$n]}" >"$OUT/.$n.csv.tmp.$$"; rows=0; fi   # MUT:empty-header
   mv -f -- "$OUT/.$n.csv.tmp.$$" "$OUT/$n.csv"
-  rows="$(( $(wc -l <"$OUT/$n.csv") - 1 ))"
   { echo "<a id=\"$n\"></a>"; echo "## $t"; echo; echo "Rows: $rows"; echo
-    q -markdown -header "$sqlq" 2>>"$OUT/.err.$$" ; echo; } >>"$T"
+    if [ "$rows" -gt 0 ]; then q -markdown -header "$sqlq" 2>>"$OUT/.err.$$"
+    else IFS=, read -r -a cols <<<"${HDR[$n]}"; printf '| %s |\n' "$(IFS='|'; echo "${cols[*]}" | sed 's/|/ | /g')"; printf '|%s\n' "$(printf -- '---|%.0s' "${cols[@]}")"; fi
+    echo; } >>"$T"
 done
 rm -f "$OUT/.err.$$"
 mv -f -- "$T" "$OUT/Reconciliation.md" || exit 4

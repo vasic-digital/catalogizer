@@ -1,0 +1,21 @@
+# identity: group=export utc=2026-10-06T22:42:45Z host=anton uid=1000 git_head=e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# runner_sha256=e17f03f11f33d153dc945f3cf9c92fa6b241f22a48c920f805045a17d9fc0d1f test_sha256=d9c88e453d9a2b520a389752ae4b2e82a3bef6f41894d87442ee7274caf6fc1b sut_sha256=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c followup_tests=test_fix_r1.sh|F8 F9 F12|1 fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_export.sh
+check_fingerprint_ignored	yes	test_export.sh: FAIL E17b rc=0 [export-check: OK (export_id 4, fingerprint 47661ececf9255156b86363efeaf80ac74d3b3ebcea5b12e877
+check_file_hash_ignored	yes	test_export.sh: FAIL E15 rc=1 [export-check: STALE; Issues.md no longer matches export-manifest.sha256; engine diff: ~ CAT-003
+check_manifest_ignored	yes	test_export.sh: FAIL E16 rc=1 [export-check: STALE; legacy_id_collisions.csv differs from the CSV regenerated from the databas
+diff_gate_removed	yes	test_export.sh: FAIL E20 rc=0 [reconcile: wrote 7 CSV files and Reconciliation.md into /src/docs/register
+fingerprint_includes_bookkeeping	yes	test_export.sh: FAIL E9 both runs recorded the same fingerprint (unchanged DB; the run's own rows are excluded) :: got [2] wan
+siblings_marked_written	yes	test_export.sh: FAIL E11 each run has 5 written Markdown rows and 15 skipped sibling rows :: got [written:20 ] want [skipped_t
+check_writes_checkpoint	yes	test_export.sh: FAIL E27 rc=0 [export-check: OK (export_id 1, fingerprint ec688ae110d285c9729d7cde2342ca2a06f9408651124ae94d65
+reconcile_nondeterministic_header	yes	test_export.sh: FAIL E3 two runs on an unchanged DB give identical sha256 for every Markdown and CSV output :: got [f6761dc215
+reconcile_view_dropped	yes	test_export.sh: FAIL E5 the unmapped CSV holds the two unmapped entries :: got [0] want [2]
+check_manifest_names_unchecked	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F9-7 rc=0 [export-check: OK (export_id 1, fingerprint 678eefe95d808b3e651c83ff68f8df517e4544b5380035467c6
+check_manifest_missing_ok	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F9-4 rc=0 [export-check: OK (export_id 1, fingerprint e7224d0d3dee44d59a005e4d6aad6116ffb13d9e435ab7d1619
+check_regenerate_removed	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F9-5 rc=0 [export-check: OK (export_id 1, fingerprint 3b647c0e3c850ddece7826ca238b516f3fe3a9746bd3e164701
+check_verdict_unchecked	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F8-4 rc=0 []
+export_output_unchecked	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F8-3b rc=0 []
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F8 F9 F12]: FAIL F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign
+reconcile_empty_header_dropped	yes	test_export.sh: FAIL E1 rc=1 [reconcile: wrote 7 CSV files and Reconciliation.md into /src/docs/register
+negative_control_comment	NO	test_fix_r1.sh [F8 F9 F12]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=22 fail=0

@@ -1,0 +1,41 @@
+# identity: task=FIX-R1 utc=2026-10-06T21:39:46Z host=anton uid=1000
+# git_head=34db9504594c4a1f883769d5c3d80238c87d48fb tree_dirty_files=1802
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=09100a82a647669bc62d98c9bec7aa346b2c9bef66713d4bc00931588a78dd73 clib=fea85984ffa504080fbe5bc951b8c07aef4a50692bfc1b1710e1bfc9516eb816
+# sha256 dump=c2dc63a307c44b8371f7857d8d9909ccc58464c80b40d0a67f4f57a52782f33c export=ef89727493868b7dab609bc4381043cf277477ad011d55751854110ca781d433 reconcile=adf8b54ae3c9ceab328ea5d1fbe4496645e6752c3ecd42c7242250d57920b85c replay=c1a52c75675eddda6701dd8800c4abca250cd187b056f0028c13f08d9449c40c
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/red/scripts/register sha256 locked=7cab8cb149d83a9a backup=eb1ef7444dbf9841 dump=c2dc63a307c44b83 export=ef89727493868b7d reconcile=adf8b54ae3c9ceab replay=c1a52c75675eddda
+== F1/F2 replay planning (stub tools) ==
+FAIL F1-1 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_cont/regtest.FOJfM4/rh/out_unav]
+FAIL F1-2
+FAIL F1-3 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_cont/regtest.FOJfM4/rh/out_fail]
+FAIL F1-5 [rc=20 replay: REFUSED reason=journal_missing /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_cont/regtest.FOJfM4/rh/j/ctl/journal.jsonl]
+ok   F1-4 golden-FALSE: an unchanged-database row with an unavailable snapshot is a no_database_change skip, not a refusal
+== F10 dump with a busy checkpoint ==
+FAIL F10-1 rc=0 [dump: OK docs/s.db -> docs/register/s.sql] dump=0
+ok   F10-2 golden-true: with no reader the dump is written and holds CAT-002
+== F9 export --check manifest ==
+ok   F9-0 golden-true: an untouched export checks OK
+FAIL F9-1 rc=0 [export-check: OK (export_id 1, fingerprint 032dc5eb2c5cc801a24d2a2d4ebb7173892dec7a5045a09c67a6cb752bbfdae8; diff: DB and Markdown are in sync (compared 1 Markdown item(s) against 1 DB item(s); read /src/docs/register/Issues.md, /src/docs/register/Fixed.md))]
+FAIL F9-2 rc=0 [export-check: OK (export_id 1, fingerprint 032dc5eb2c5cc801a24d2a2d4ebb7173892dec7a5045a09c67a6cb752bbfdae8; diff: DB and Markdown are in sync (compared 1 Markdown item(s) against 1 DB item(s); read /src/docs/register/Issues.md, /src/docs/register/Fixed.md))]
+FAIL F9-3 rc=0 [export-check: OK (export_id 1, fingerprint 032dc5eb2c5cc801a24d2a2d4ebb7173892dec7a5045a09c67a6cb752bbfdae8; diff: DB and Markdown are in sync (compared 1 Markdown item(s) against 1 DB item(s); read /src/docs/register/Issues.md, /src/docs/register/Fixed.md))]
+ok   F9-4 manifest missing: STALE
+FAIL F9-5 rc=0 [export-check: OK (export_id 1, fingerprint 032dc5eb2c5cc801a24d2a2d4ebb7173892dec7a5045a09c67a6cb752bbfdae8; diff: DB and Markdown are in sync (compared 1 Markdown item(s) against 1 DB item(s); read /src/docs/register/Issues.md, /src/docs/register/Fixed.md))]
+FAIL F9-7 rc=0 [export-check: OK (export_id 1, fingerprint 032dc5eb2c5cc801a24d2a2d4ebb7173892dec7a5045a09c67a6cb752bbfdae8; diff: DB and Markdown are in sync (compared 1 Markdown item(s) against 1 DB item(s); read /src/docs/register/Issues.md, /src/docs/register/Fixed.md))]
+ok   F9-6 golden-true again after restoring the export
+== F7/F14 backup_db.sh ==
+FAIL F7-1 rc=00 a=[docs/workable_items.db.bak-20261006T214115Z] b=[docs/workable_items.db.bak-20261006T214115Z]
+ok   F7-2 each record's backup_sha256 equals its own file
+FAIL F7-3 g.rc=1 f.rc=1 pg=[] exists=n
+FAIL F14-1 rc=0 rec=83c72694cfc1c88b at-lock=145b71bf34e72e51 now=83c72694cfc1c88b [backup_db: OK docs/workable_items.db.bak-20261006T214207Z sha256=b425655664ae6010859d6fba5ea3bdcaa3150366bc1b93971ce841ca9662aa49 rows=115 integrity=ok restore_probe=equal]
+== F1/F2 end to end (real containers, pending -wal) ==
+ok   E2E-0 fixture: a committed write is pending in the -wal file (4152 bytes)
+# E2E replay rc=0 (local mint printed CAT-003, remote mint CAT-003) :: replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_cont/regtest.FOJfM4/e2e_out :: items=[CAT-001=scratch item | CAT-002=scratch item | CAT-003=REMOTE-ITEM | CAT-004=scratch item]
+FAIL E2E-1 the local item was silently renumbered to CAT-004 with replay verdict rc=0
+FAIL E2E-2
+== M6 backup integrity check (index root pages swapped in the backup between step 1 and step 2) ==
+ok   M6-1 index damage invisible to the canonical dump: the backup is refused (integrity_check), no record, no file
+ok   M6-2 golden-true: the same register without the damage backs up
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=10 fail=15
+exit=1

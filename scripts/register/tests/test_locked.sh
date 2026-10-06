@@ -156,10 +156,11 @@ out=$(LK_BACKUP="$BK" CPA_HOST_ENTRY=/nonexistent lk "$R" import-sql .audit/out/
 rm -f "$R/.audit/commit_turn.json"
 
 echo "== DISK_HEADROOM_OUT_DIR: set for a scratch import, never for a register write =="
-SPY="$T_SCR/runp_spy.sh"; printf '#!/bin/sh\necho "HR=${DISK_HEADROOM_OUT_DIR-UNSET} ARGS=$*" >> "%s"\nexec "%s" "$@"\n' "$T_SCR/spy.log" "$RUNP" >"$SPY"; chmod +x "$SPY"; : >"$T_SCR/spy.log"
-LK_RUNP="$SPY" LOCKED_SCRATCH_DB="$R/.audit/scratch/s5.db" lk "$R" --op-id spy1 import-sql .audit/out/op1/x.sql >/dev/null 2>&1
+# the spy logs what locked.sh handed to RUNP, then runs the real RUNP with the suite's scratch isolation (F11: no record may reach the real repository)
+SPY="$T_SCR/runp_spy.sh"; printf '#!/bin/sh\necho "HR=${DISK_HEADROOM_OUT_DIR-UNSET} ARGS=$*" >> "%s"\nDISK_HEADROOM_OUT_DIR="%s"\nexport DISK_HEADROOM_OUT_DIR\nexec "%s" "$@"\n' "$T_SCR/spy.log" "$T_SCR/disk/" "$RUNP" >"$SPY"; chmod +x "$SPY"; : >"$T_SCR/spy.log"
+( unset DISK_HEADROOM_OUT_DIR; LK_RUNP="$SPY" LOCKED_SCRATCH_DB="$R/.audit/scratch/s5.db" lk "$R" --op-id spy1 import-sql .audit/out/op1/x.sql >/dev/null 2>&1 )
 grep -- '--rw .audit/scratch' "$T_SCR/spy.log" | grep -q '^HR=.audit/out/spy1/disk/ ' && ok "L49a a scratch import sets DISK_HEADROOM_OUT_DIR=.audit/out/<op_id>/disk/ for its RUNP call" || bad "L49a [$(tr '\n' '|' <"$T_SCR/spy.log")]"
-: >"$T_SCR/spy.log"; LK_RUNP="$SPY" lk "$R" -- true >/dev/null 2>&1
+: >"$T_SCR/spy.log"; ( unset DISK_HEADROOM_OUT_DIR; LK_RUNP="$SPY" lk "$R" -- true >/dev/null 2>&1 )
 grep -- '--rw docs' "$T_SCR/spy.log" | grep -q '^HR=UNSET ' && ok "L49b the RUNP call of a register write leaves DISK_HEADROOM_OUT_DIR unset" || bad "L49b [$(tr '\n' '|' <"$T_SCR/spy.log")]"
 
 echo "== the real leg: binaries recorded =="

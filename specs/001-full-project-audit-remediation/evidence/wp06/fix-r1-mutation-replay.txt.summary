@@ -1,0 +1,1 @@
+group=replay mutants=15 killed=15 equivalent_reviewed=0 survived_unreviewed=0 golden_good=pass negative_control=ok

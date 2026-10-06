@@ -1,0 +1,14 @@
+# identity: group=dump utc=2026-10-06T22:42:43Z host=anton uid=1000 git_head=e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# runner_sha256=e17f03f11f33d153dc945f3cf9c92fa6b241f22a48c920f805045a17d9fc0d1f test_sha256=18505d96ed510a9150e1fa8696f8ec73337d81ee56bb664b12e2a0829d8e0658 sut_sha256=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 followup_tests=test_fix_r1.sh|F8 F10|1 fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_dump.sh
+pragma_kept	yes	test_dump.sh: FAIL D4 PRAGMA lines present
+nondeterministic	yes	test_dump.sh: FAIL D2 two consecutive dumps of an unchanged database hash identically (recorded: 0869233b36c66cc450c1b0c6c10
+no_checkpoint	yes	test_dump.sh: FAIL D14 the dump misses the row that was only in the -wal file
+paths_unchecked	yes	test_dump.sh: FAIL D10 --db docs/a_b.db/../../x.db rc=20 [Error: unable to open database "/src/docs/a_b.db/../../x.db": unab
+db_suffix_unchecked	yes	test_dump.sh: FAIL D10 --db docs/x.txt rc=0 [dump: OK docs/x.txt -> docs/register/register.sql]
+out_suffix_unchecked	yes	test_dump.sh: FAIL D10 --out outside/x.sql rc=1 [mkdir: cannot create directory '/src/outside': Read-only file system]
+checkpoint_checks_removed	yes	test_fix_r1.sh [F8 F10]: FAIL F10-1 rc=0 [dump: OK docs/s.db -> docs/register/s.sql] dump=0
+dump_output_unchecked	yes	test_fix_r1.sh [F8 F10]: FAIL F8-2b rc=0 [dump: OK docs/s.db -> docs/register/stale.sql]
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F8 F10]: FAIL F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign
+negative_control_comment	NO	test_fix_r1.sh [F8 F10]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=10 fail=0

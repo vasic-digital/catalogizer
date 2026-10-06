@@ -1,0 +1,27 @@
+# identity: group=locked utc=2026-10-06T22:42:47Z host=anton uid=1000 git_head=e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# runner_sha256=e17f03f11f33d153dc945f3cf9c92fa6b241f22a48c920f805045a17d9fc0d1f test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=b0073943bf4d42dc5b13f1f788d48d0d61a205eef903d45f343c62715ceffc1f followup_tests=test_replay.sh|| test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+no_flock	yes	test_locked.sh: FAIL L12 intervals overlap: s 1791326581468393757 s 1791326581500486128 e 1791326582493956634 e 17913265825283
+grant_ignored	yes	test_locked.sh: FAIL L25 rc=0 [CAT-003]
+reap_direct	yes	test_locked.sh: FAIL L27 the reaper ran once, only through --exec-approved :: got [00] want [11]
+test_hooks_honoured	yes	test_locked.sh: FAIL L3 rc=1 [run_pinned: disk headroom precondition failed: disk_headroom: REFUSED reason=disk_below_headroom
+scratch_any_subcommand	yes	test_locked.sh: FAIL L33 rc=0 []
+scratch_path_unchecked	yes	test_locked.sh: FAIL L37 rc=1 [Error: unable to open database "/src/.audit/out/s.db": unable to open database file]
+import_sha_unchecked	yes	test_locked.sh: FAIL L35 rc=1 [Parse error near line 1: table zz already exists
+import_without_backup	yes	test_locked.sh: FAIL L43 a register import succeeds and calls the backup helper exactly once :: got [0 0] want [0 1]
+scratch_headroom_unset	yes	test_locked.sh: FAIL L49a [HR=UNSET ARGS=--rw .audit/scratch --op-id spy1 IMG-TESTUTIL -- sqlite3 /src/.audit/scratch/s5.db .r
+capture_src_only	yes	test_locked.sh: FAIL L15
+scratch_binds_docs	yes	test_locked.sh: FAIL L34 rc=1 v=[] [Error: unable to open database "/src/.audit/scratch/s.db": unable to open database file]
+out_run_binds_docs	yes	test_locked.sh: FAIL L20 docs written
+exit_status_lost	yes	test_locked.sh: FAIL L4 the wrapped command's exit status is passed through :: got [0] want [7]
+scratch_import_runs_backup	yes	test_locked.sh: FAIL L34 rc=20 v=[] [backup_db: REFUSED no source database docs/workable_items.db
+RMa_db_inputs_copied	yes	test_replay.sh: FAIL P5 the local file-input edit was replayed (CAT-001 title) :: got [scratch item] want [from-file]
+signal_not_forwarded	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F3-4 journal: {"argv": ["sh", "-c", "echo write"], "db": "docs/workable_items.db", "db_sha_after": "7ebe1
+lock_claim_unchecked	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F6-1 rc=0 352ms rows=1 []
+journal_precheck_removed	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F5-1 rc=21 wrote=yes [locked: JOURNAL_APPEND_FAILED IsADirectoryError: [Errno 21] Is a directory: '.audit
+pending_marker_removed	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F5-3 no pending marker
+reaper_unbounded	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F13-2 rc=124 dt=40s []
+reaper_inherits_lock_fd	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F13-1 the register lock is free as soon as locked.sh exits (a child the reaper left behind does not hold 
+snapshot_status_ignored	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F4-2 the AFTER snapshot fails: ids_snapshot is failed (never ok with no mint) :: got ["ok"] want ["failed
+negative_control_comment	NO	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=29 fail=0

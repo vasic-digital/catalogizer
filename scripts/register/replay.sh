@@ -11,6 +11,12 @@
 #   3. runs scripts/register/gate.sh on the copy (must print GATE OK), checks that it holds every reg_ids id of both sides, and writes the dump
 #      (dump.sh, T066) and the exports (export.sh, T067) of the copy into <dir> (register.sql, export/);
 #   4. writes <dir>/replay-report.json (rows replayed, rows skipped and why, ids, gate, sha256 of every output).
+# Base row (WF10 F2): only rows of mode "register" on docs/workable_items.db are base candidates, and a row is the base only when its db_sha_after equals --since AND
+# the -wal file was empty after it (wal_bytes_after = 0): the main-file hash alone does not identify a state while committed pages sit in the -wal file. A journal whose
+# rows carry seq must be strictly increasing (else 20 journal_order_invalid); a corrupt line is 20 journal_corrupt; a pending marker next to the journal (a write that
+# never reached it) is 20 replay_pending_ops.
+# Ids (WF10 F1): a planned register row whose ids_snapshot is not "ok" (unavailable under a pending -wal, or failed) is REFUSED replay_ids_unknown: its minted ids are not
+# known, so replaying it blind could give its item the next free id of the remote side (a renumbering). The tool never renumbers and never guesses.
 # Rows skipped and listed: a row whose command failed (command_failed), a row that is not a register write (not_a_register_write: --out and scratch
 # rows), a row that left the database unchanged (no_database_change: reads, backups), the regeneration rows of dump.sh/export.sh (regenerated_by_replay:
 # step 3 regenerates them), and `export.sh --install` rows (install_replay_owed_T175a: the T175a installer does not exist yet; UNCONFIRMED).
@@ -57,13 +63,29 @@ if os.path.realpath(E["REPLAY_ONTO"] if os.path.isabs(E["REPLAY_ONTO"]) else os.
     refuse("onto_not_register_database", "--onto must be docs/workable_items.db of this checkout")
 jr = E["REPLAY_JOURNAL"]
 if not os.path.isfile(jr): refuse("journal_missing", jr)
-rows = [json.loads(l) for l in open(jr) if l.strip()]
-# the rows to consider: those after the base row
+rows = []
+for ln, l in enumerate(open(jr), 1):
+    if not l.strip(): continue
+    try: r = json.loads(l)
+    except ValueError: refuse("journal_corrupt", "line %d of %s is not JSON" % (ln, jr))
+    if not isinstance(r, dict): refuse("journal_corrupt", "line %d of %s is not a journal row" % (ln, jr))
+    rows.append(r)
+pend = os.path.join(os.path.dirname(os.path.abspath(jr)), "pending")
+if os.path.isdir(pend) and os.listdir(pend): refuse("replay_pending_ops", "%s holds %s: a register write started but its journal row was never written" % (pend, " ".join(sorted(os.listdir(pend))[:5])))
+last = None
+for r in rows:
+    if "seq" in r:
+        if not isinstance(r["seq"], int) or (last is not None and r["seq"] <= last): refuse("journal_order_invalid", "row %s has seq %r after seq %r" % (r.get("op_id"), r["seq"], last))
+        last = r["seq"]
+REGDB = "docs/workable_items.db"
+def is_reg(r): return r.get("mode") == "register" and r.get("db", REGDB) == REGDB
+# the rows to consider: those after the base row (a register row on the register database whose state is the file hash with an EMPTY -wal)
 idx = None
 for i, r in enumerate(rows):
-    if r.get("db_sha_after") == SINCE: idx = i            # the LAST row that produced the base state
+    if is_reg(r) and r.get("db_sha_after") == SINCE and not r.get("wal_bytes_after"): idx = i   # MUT:base-row  # the LAST row that produced the base state
 if idx is None:
-    if rows and rows[0].get("db_sha_before") == SINCE: idx = -1
+    first = next((i for i, r in enumerate(rows) if is_reg(r)), None)
+    if first is not None and rows[first].get("db_sha_before") == SINCE and not rows[first].get("wal_bytes_before"): idx = first - 1
     else: refuse("since_not_found", "no journal row has db_sha_after equal to %s" % SINCE)
 todo = rows[idx + 1:]
 if os.path.exists(OUT) and os.listdir(OUT): refuse("out_dir_not_empty", OUT)
@@ -93,8 +115,9 @@ for r in todo:
     if "# register-regenerate:" in txt: skipped.append({"op_id": r["op_id"], "reason": "regenerated_by_replay"}); continue
     if "--install" in r.get("argv", []) and "export.sh" in txt: skipped.append({"op_id": r["op_id"], "reason": "install_replay_owed_T175a"}); continue
     if False: continue   # MUT:skip-mints
-    if r.get("db_sha_before") == r.get("db_sha_after") and not r.get("ids_minted") and not r.get("wal_bytes_after"):
+    if r.get("db_sha_before") == r.get("db_sha_after") and not r.get("ids_minted") and not r.get("wal_bytes_after") and not r.get("wal_bytes_before"):
         skipped.append({"op_id": r["op_id"], "reason": "no_database_change"}); continue
+    if r.get("ids_snapshot", "ok") != "ok": refuse("replay_ids_unknown", "row %s changed the register but its id snapshot is %r: the ids it minted are unknown, so it is not replayed blind (never a renumbering); the plan owner decides, nothing was written" % (r["op_id"], r.get("ids_snapshot")))   # MUT:ids-unknown
     plan.append(r)
 local_ids = []
 for r in plan:

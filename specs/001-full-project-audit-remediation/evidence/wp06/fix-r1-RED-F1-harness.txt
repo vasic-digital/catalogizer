@@ -1,0 +1,16 @@
+# identity: task=FIX-R1 utc=2026-10-06T21:48:07Z host=anton uid=1000
+# git_head=8bc60bd70441bcf134c57d2e90da7dab72f28ebd tree_dirty_files=1748
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=963c65bc9d47ac23a327d92e4102457dc6273705f28d7fad2b2f07387874731b clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=c2dc63a307c44b8371f7857d8d9909ccc58464c80b40d0a67f4f57a52782f33c export=ef89727493868b7dab609bc4381043cf277477ad011d55751854110ca781d433 reconcile=adf8b54ae3c9ceab328ea5d1fbe4496645e6752c3ecd42c7242250d57920b85c replay=c1a52c75675eddda6701dd8800c4abca250cd187b056f0028c13f08d9449c40c
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/red/scripts/register sha256 locked=7cab8cb149d83a9a backup=eb1ef7444dbf9841 dump=c2dc63a307c44b83 export=ef89727493868b7d reconcile=adf8b54ae3c9ceab replay=c1a52c75675eddda
+== F1/F2 replay planning (stub tools) ==
+FAIL F1-1 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_f1h/regtest.dgZ8bq/rh/out_unav]
+FAIL F1-2
+FAIL F1-3 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fixr1/scr_f1h/regtest.dgZ8bq/rh/out_fail]
+ok   F1-5 a replayed database that lacks a local mint's id is refused replay_id_lost
+ok   F1-4 golden-FALSE: an unchanged-database row with an unavailable snapshot is a no_database_change skip, not a refusal
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=3 fail=3
+exit=1

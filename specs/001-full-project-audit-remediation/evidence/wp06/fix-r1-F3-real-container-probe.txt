@@ -1,0 +1,16 @@
+# identity: task=F3-real utc=2026-10-06T21:34:59Z host=anton uid=1000
+# git_head=34db9504594c4a1f883769d5c3d80238c87d48fb tree_dirty_files=1760
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=d51a4e00fa923174ede8f5c8ca8e282b2bf35e2142735645adb0da8cbf4195cb backup_db=dda468837c6c2ac73cca9926df107bb4af5480d7fa881bc349a6fd6598fedad3 test=2cdcc9c6ee4d328fc0449d4dec55505c6dbb6ebbd4c1969faafc06ae3d81e482 clib=fea85984ffa504080fbe5bc951b8c07aef4a50692bfc1b1710e1bfc9516eb816
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=5b03fe64a00f952b9f67042a0d84a932f037ef88da574f097671d2e5320d3769 replay=3b3f9f27082e8bc5b657950d4bf62aabb06d2f647dcfcf3dc282a89ee64bdc8f
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+fixture: the in-container writer started (docs/f3.started)
+pid 3699816 is our locked.sh (proven via /proc)
+locked.sh child (RUNP -> podman client) pid: 3706287 /usr/bin/podman run --rm --pull=never --userns=keep-id --user 1000:1000 --cap-dr
+locked.sh exit status after SIGTERM: 143, took 19.6 s (the command sleeps 30 s)
+lock free while locked.sh was still alive: 0 (0 = never free); lock observed held: 1
+finished marker (the writer ran to the end): YES
+container still running: 1 (all testutil containers on the host)
+journal row: {'op_id': 'f3real', 'exit': 0, 'interrupted': 'TERM', 'mode': 'register', 'seq': 2}
+after exit: lock is free
+pending markers left: 0

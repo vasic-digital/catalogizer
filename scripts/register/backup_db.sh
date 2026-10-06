@@ -11,35 +11,42 @@
 #   3. writes the record --record <file> (backup_path, utc, both sha256 values, both row counts (INSERT rows of the canonical dumps), the
 #      integrity result, the restore-probe result, the image digest, op ids); it exits non-zero, removes the backup file and writes NO record
 #      when any check fails: a backup that fails a check is not a backup and the bulk step does not start.
-# Exit: 0 ok; 1 a check failed or the wrapper failed; 2 usage. Test hooks (need LOCKED_TEST_MODE=1): LOCKED_ROOT, LOCKED_RUNP, LOCKED, BACKUP_FAULT=truncate|dumpdiff.
+# Name and hash (WF10 F7, F14): the backup is docs/workable_items.db.bak-<UTC>-<pid>-<ns>, created with O_EXCL (noclobber) before anything runs, so two backups started
+# in the same second never share a file and fail() removes only the file this run created; source_sha256 is computed INSIDE step 1 (under the lock, right after the
+# online backup, by the image's sha256sum) and read back from the op's /out, never from the source after the lock was released.
+# Exit: 0 ok; 1 a check failed or the wrapper failed; 2 usage. Test hooks (need LOCKED_TEST_MODE=1, ignored otherwise): LOCKED_ROOT, LOCKED_RUNP, LOCKED, BACKUP_FAULT=truncate|dumpdiff.
 set -u
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"
 REAL_ROOT="$(cd "$SELF_DIR/../.." && pwd)"
-RUNP="${LOCKED_RUNP:-$REAL_ROOT/scripts/containers/run_pinned.sh}"
+if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"; RUNP="${LOCKED_RUNP:-$REAL_ROOT/scripts/containers/run_pinned.sh}"   # MUT:hook-gate
+else unset LOCKED LOCKED_RUNP LOCKED_ROOT BACKUP_FAULT; LOCKED="$SELF_DIR/locked.sh"; RUNP="$REAL_ROOT/scripts/containers/run_pinned.sh"; fi
 die() { echo "backup_db: $*" >&2; exit 1; }
 REC=""
 while [ $# -gt 0 ]; do case "$1" in
   --record) [ $# -ge 2 ] || { echo "backup_db: --record needs a value" >&2; exit 2; }; REC="$2"; shift 2;;
   *) echo "backup_db: unknown argument '$1'" >&2; echo "usage: backup_db.sh --record <file>" >&2; exit 2;; esac; done
 [ -n "$REC" ] || { echo "usage: backup_db.sh --record <file>" >&2; exit 2; }
-if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then ROOT="${LOCKED_ROOT:-$REAL_ROOT}"; else ROOT="$REAL_ROOT"; unset BACKUP_FAULT; fi
+if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then ROOT="${LOCKED_ROOT:-$REAL_ROOT}"; else ROOT="$REAL_ROOT"; fi
 cd "$ROOT" || die "cannot enter $ROOT"
 DBREL=docs/workable_items.db
 [ -f "$DBREL" ] || die "REFUSED no source database $DBREL"
-UTC="$(date -u +%Y%m%dT%H%M%SZ)"
-BAKREL="$DBREL.bak-$UTC"
-[ ! -e "$BAKREL" ] || die "REFUSED backup $BAKREL already exists (one backup per second)"
-OP="backup-$UTC-$$"; OPV="$OP-verify"
+UTC="$(date -u +%Y%m%dT%H%M%SZ)"; NS="$(date -u +%N)"
+BAKREL="$DBREL.bak-$UTC-$$-$NS"
+OP="backup-$UTC-$$-$NS"; OPV="$OP-verify"
+OWN=0
+( set -o noclobber; : >"$BAKREL" ) 2>/dev/null || die "REFUSED backup $BAKREL already exists or cannot be created"   # MUT:backup-excl
+OWN=1
 OUT1=".audit/out/$OP"; mkdir -p "$OUT1" || die "cannot create $OUT1"
-fail() { rm -f -- "$BAKREL"   # MUT:fail-keeps-file
+fail() { [ "$OWN" = 1 ] && rm -f -- "$BAKREL"   # MUT:fail-keeps-file
   echo "backup_db: BACKUP FAILED: $*" >&2; exit 1; }
 # ---- 1. under the lock: checkpoint, online backup, canonical source dump (one sqlite3 script, one wrapper call) ----
-"$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".backup /src/$BAKREL" ".output /out/source.dump.sql" ".dump" >"$OUT1/step1.out" 2>"$OUT1/step1.err"   # MUT:backup-method
+"$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".backup /src/$BAKREL" ".output /out/source.dump.sql" ".dump" ".output stdout" ".shell sha256sum /src/$DBREL >/out/source.sha256" >"$OUT1/step1.out" 2>"$OUT1/step1.err"   # MUT:backup-method
 rc=$?
 [ $rc -eq 0 ] || fail "step 1 (checkpoint, backup, dump) exited $rc: $(head -c 300 "$OUT1/step1.err")"
 [ -s "$BAKREL" ] || fail "step 1 left no backup file"
 [ -s "$OUT1/source.dump.sql" ] || fail "step 1 wrote no source dump"
+SSHA="$(head -1 "$OUT1/source.sha256" 2>/dev/null | cut -d' ' -f1)"
+case "$SSHA" in *[!0-9a-f]*|"") fail "step 1 did not record the source sha256 under the lock";; esac; [ "${#SSHA}" -eq 64 ] || fail "step 1 recorded a malformed source sha256 [$SSHA]"
 if [ "${BACKUP_FAULT:-}" = truncate ]; then : >"$BAKREL"; head -c 200 /dev/urandom >"$BAKREL"; fi
 # ---- 2. read-only checks (immutable URI, no side files), restore probe into a scratch database under /out ----
 OUT2=".audit/out/$OPV"; mkdir -p "$OUT2"
@@ -61,7 +68,7 @@ SROWS="$(grep -c '^INSERT INTO' "$OUT1/source.dump.sql")"; BROWS="$(grep -c '^IN
 [ "$SROWS" = "$BROWS" ] || fail "row counts differ: source $SROWS, backup $BROWS"
 # ---- 3. the record ----
 DIGEST="$(grep -A4 '^- id: IMG-TESTUTIL$' "${RUNP_LOCK:-$REAL_ROOT/build/containers/images.lock.yaml}" | grep -o 'sha256:[0-9a-f]*' | head -1)"
-SSHA="$(sha256sum -- "$DBREL" | cut -d' ' -f1)"; BSHA="$(sha256sum -- "$BAKREL" | cut -d' ' -f1)"
+BSHA="$(sha256sum -- "$BAKREL" | cut -d' ' -f1)"
 mkdir -p -- "$(dirname "$REC")"
 TMP="$REC.tmp.$$"
 python3 -I - "$TMP" "$BAKREL" "$UTC" "$SSHA" "$BSHA" "$SROWS" "$BROWS" "$INTEG" "$DIGEST" "$OP" "$OPV" <<'PY' || fail "cannot write the record"

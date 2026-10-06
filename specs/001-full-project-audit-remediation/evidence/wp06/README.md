@@ -174,3 +174,28 @@ Review: `WF6-REVIEW-register-gate.md` (GO-with-fixes; not tracked in this direct
   * OWED-WP06-12 (WF7-6, mutation adequacy, harmless): a widened stat4 pin with a trailing wildcard survives test_gate; only a trailing SQL comment could exploit it. An optional fixture with a trailing comment would kill it. Not added.
   * OWED-WP06-13 (WF7-5, docs): docs/04 sync (OWED-WP06-9) is untouched here by instruction.
   * UNCONFIRMED: the stat2 and stat3 definition texts remain unconfirmed against a real SQLite writer (fail closed; no project tool writes them).
+
+## WF10 review fix round 1 of the register operations (locked, backup_db, dump, export, reconcile, replay)
+
+Review: `WF10-REVIEW-register-ops.md` (NO-GO: F1-F3 blocking, F4-F11 important, F12-F14 minor, M1 mutation adequacy). All files are `fix-r1-*` here; every transcript starts with an identity header holding the sha256 of the scripts and the test it ran.
+
+| Finding | Fix | RED (committed e7a6a9b9 scripts) | GREEN |
+|---|---|---|---|
+| F1 silent renumbering | `replay.sh` refuses a planned register row whose `ids_snapshot` is not ok (`replay_ids_unknown`) | `RED-container-sections` (E2E: local item became CAT-004, verdict OK), `RED-F1-harness` | `GREEN-new-run1..3` |
+| F2 base row | register-mode rows only, empty `-wal`, `seq` order, pending markers | `RED-stub-sections` F2-1..F2-6 | same |
+| F3 SIGTERM | trap, forward to the exact child, lock kept until it is gone, journal `interrupted` | `RED-stub-sections` F3-1, F3-4, F3-5; real podman: `F3-real-container-probe` | same |
+| F4 snapshot status | status of the call, `ids_snapshot` ok/failed/unavailable | F4-2, F4-3 | same |
+| F5 journal failure | precheck (20), pending marker, append failure exits 21 | F5-1..F5-3 | same |
+| F6 LOCKED_LOCK_HELD | proven claim (ancestor pid + fd 9 + lock really held) | F6-1, F6-2 | same |
+| F7, F14 backup | unique O_EXCL name, source hash under the lock | `RED-container-sections` F7-1, F7-3, F14-1 | same |
+| F8 hooks and outputs | hooks only in test mode (backup, dump, export, replay), outputs verified (fresh, complete), `--check` verdict required | F8-1..F8-4 | same |
+| F9 manifest | exact name set, CSVs regenerated and compared | F9-1..F9-7 | same |
+| F10 busy checkpoint | result row and empty `-wal` checked (`checkpoint_incomplete`) | F10-1 | same |
+| F11 isolation | `DISK_HEADROOM_OUT_DIR` in clib.sh, `export.sh --check` under the test root, suite-end guard on op ids | `RED-F11` | F11-1..F11-5, `RT` line in every suite |
+| F12 reconcile | header-only CSV, `Rows: 0` | F12-1..F12-5 | same |
+| F13 fd 9, reaper | `9>&-`, `timeout` | F13-1, F13-2 | same |
+| M1 mutation adequacy | follow-up tests per group; named mutants RMa..RMd, new mutants for every fix | n/a | `mutation-{locked,backup,dump,export,replay}.txt(.summary)` |
+
+Totals (final run): `test_fix_r1.sh` 75/0 three times; `test_locked` 59/0, `test_backup_db` 25/0, `test_dump` 22/0, `test_export` 35/0, `test_replay` 23/0, `test_gate` 126/0. Mutants: locked 22/22 killed, backup 8 killed + 2 reviewed-equivalent (`no_checkpoint`, `record_without_rows_check`), dump 9/9, export 16/16, replay 15/15; negative control and golden control pass in every group.
+
+Notes and limits (UNCONFIRMED or owed): the RED container transcript ran an earlier copy of the same test (its F1-5 needed the F2 fixtures; fixed, see `RED-F1-harness`). `M6` (index damage invisible to the dump) is a mutation-adequacy fixture, not a RED (the committed code already refuses). The F3 real-container probe shows the podman client receives SIGTERM but the container's PID 1 `sh` ignores it, so the writer ran to its end with the lock held (the designed invariant; no KILL escalation, owed). SIGKILL of `locked.sh` is not trappable (pending marker only). The manifest hash is not recorded in the database (schema has no column; replaced by regeneration, owed to docs/04). Recomputing ids from the pre and post snapshots during replay is not implemented (refusal instead). The real `cpa-host` reaper behaviour is UNCONFIRMED (stub only). F11-5 and the `RT` guard compare this suite's own op ids with files newer than the suite start; a file count is not used because other agents write the same directories concurrently.

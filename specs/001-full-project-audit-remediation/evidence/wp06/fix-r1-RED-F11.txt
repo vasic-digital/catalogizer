@@ -1,0 +1,4 @@
+DISK_HEADROOM_OUT_DIR in the committed test environment: UNSET
+last register op: locked-20261006T214150-227027-30377
+disk-headroom record under $EV/disk (outside every scratch root): 1  | files written there by 1 cdb + 1 mint: 2
+disk-headroom record inside the scratch root: 0

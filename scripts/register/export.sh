@@ -18,11 +18,19 @@
 # --check: refuses (20 register_not_checkpointed) while <db>-wal is non-empty (never checkpoints); copies the database file to /tmp inside the
 # image and reports STALE (exit 1, the reasons named) when the fingerprint differs from the last export run, a recorded 'written' file or a
 # manifest line no longer matches the file on disk, or the engine diff does not say "in sync"; OK (exit 0) otherwise. No row is written.
-# Exit: 0 ok; 1 STALE; 2 usage; 5 engine diff not in sync; 20 refused. Needs: locked.sh (+ RUNP, podman, IMG-TESTUTIL).
+# --check also (WF10 F9): the manifest must list EXACTLY the expected names (every Markdown and CSV output once, nothing else: an emptied or trimmed manifest is STALE),
+# and the seven CSV files and Reconciliation.md are REGENERATED from the database copy (reconcile.sh, a pure function of the database) and compared byte for byte, so a
+# CSV edited together with its manifest line is STALE too. The manifest's own hash is NOT recorded in the database: the schema has no column for it (owed to docs/04;
+# a reg_export_files row would change the per-run row counts the schema reviewers rely on, and reg_meta is compared against its seed by gate.sh).
+# Output checks (WF10 F8): the LOCKED hook is honoured only with LOCKED_TEST_MODE=1; after the wrapper exits 0 an export must have (re)written the manifest and every
+# expected output on the host, and a --check must have printed its verdict line (export-check: OK|STALE|REFUSED), else exit 1 FAILED reason=output_missing / no_verdict.
+# The --check output directory is under the (test) root's .audit/out, never the real repository's when a scratch root is in use.
+# Exit: 0 ok; 1 STALE, or the wrapper reported success but produced no verdict/outputs; 2 usage; 5 engine diff not in sync; 20 refused. Needs: locked.sh (+ RUNP, podman, IMG-TESTUTIL).
 set -u
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REAL_ROOT="$(cd "$SELF_DIR/../.." && pwd)"
-LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"
+if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"; ROOT="${LOCKED_ROOT:-$REAL_ROOT}"   # MUT:hook-gate
+else unset LOCKED; LOCKED="$SELF_DIR/locked.sh"; ROOT="$REAL_ROOT"; fi
 DB=docs/workable_items.db; OUTD=docs/register; OUTMODE=""; DBFILE=workable_items.db; CHECK=0
 usage() { echo "usage: export.sh [--check] [--db docs/<name>.db] [--out-dir docs/<dir>] | export.sh --out-mode <abs dir> [--db-file <name>] [--check]" >&2; exit 2; }
 refuse() { echo "export: REFUSED reason=$1 ${2:-}" >&2; exit 20; }
@@ -37,12 +45,12 @@ WIIN=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linu
 if [ -n "$OUTMODE" ]; then
   case "$OUTMODE" in /*) ;; *) usage;; esac
   case "$DBFILE" in ""|*[!A-Za-z0-9_.-]*|-*|.*) refuse path_invalid "--db-file must be a plain file name";; esac
-  CDB="/out/$DBFILE"; COUT=/out/export; PFX=export; MNT=/out; WRAP=(--out "$OUTMODE"); DBLABEL="$DBFILE"
+  CDB="/out/$DBFILE"; COUT=/out/export; PFX=export; MNT=/out; WRAP=(--out "$OUTMODE"); DBLABEL="$DBFILE"; HOSTD="$OUTMODE/export"
 else
   for p in "$DB" "$OUTD"; do case "$p" in ""|*[!A-Za-z0-9_./-]*|/*|*..*|-*) refuse path_invalid "$p";; esac; done
   case "$DB" in docs/*.db) ;; *) refuse path_invalid "--db must be docs/<name>.db";; esac
   case "$OUTD" in docs/*) ;; *) refuse path_invalid "--out-dir must be under docs/";; esac
-  CDB="/src/$DB"; COUT="/src/$OUTD"; PFX="$OUTD"; MNT=/src; WRAP=(); DBLABEL="$DB"
+  CDB="/src/$DB"; COUT="/src/$OUTD"; PFX="$OUTD"; MNT=/src; WRAP=(); DBLABEL="$DB"; HOSTD="$ROOT/$OUTD"
 fi
 DIGEST="$(grep -A4 '^- id: IMG-TESTUTIL$' "${RUNP_LOCK:-$REAL_ROOT/build/containers/images.lock.yaml}" | grep -o 'sha256:[0-9a-f]*' | head -1)"
 MDS="Issues Fixed Issues_Summary Fixed_Summary Reconciliation"
@@ -69,7 +77,15 @@ while IFS='|' read -r path sha st; do
 done < <(sqlite3 /tmp/chk.db "select path,sha256,status from reg_export_files where export_id=$eid order by path")
 if [ -f "$d/export-manifest.sha256" ]; then
   while read -r h n; do [ "$(sha256sum "$d/$n" 2>/dev/null | cut -d' ' -f1)" = "$h" ] || P="$P; $n no longer matches export-manifest.sha256"; done < "$d/export-manifest.sha256"   # MUT:check-manifest
+  want=$({ for n in @MDS@; do echo "$n.md"; done; for n in @CSVS@; do echo "$n.csv"; done; } | sort)
+  have=$(awk '{print $2}' "$d/export-manifest.sha256" | sort)
+  [ "$want" = "$have" ] || P="$P; export-manifest.sha256 does not list exactly the export's files (missing: $(comm -23 <(echo "$want") <(echo "$have") | tr '\n' ' ')extra: $(comm -13 <(echo "$want") <(echo "$have") | tr '\n' ' '))"   # MUT:check-manifest-names
 else P="$P; export-manifest.sha256 is missing"; fi
+rcd=/tmp/chk.rc; rm -rf "$rcd"
+if bash /src/scripts/register/reconcile.sh --db /tmp/chk.db --out-dir "$rcd" >/dev/null 2>&1; then
+  for n in @CSVS@; do cmp -s "$rcd/$n.csv" "$d/$n.csv" || P="$P; $n.csv differs from the CSV regenerated from the database"; done   # MUT:check-regenerate
+  cmp -s "$rcd/Reconciliation.md" "$d/Reconciliation.md" || P="$P; Reconciliation.md differs from the one regenerated from the database"
+else P="$P; the reconciliation could not be regenerated from the database for comparison"; fi
 dv=$("$WI" diff --db /tmp/chk.db --issues "$d/Issues.md" --fixed "$d/Fixed.md" 2>&1)
 case "$dv" in *"in sync"*) ;; *) P="$P; engine diff: $(printf '%s' "$dv" | head -1 | cut -c1-160)";; esac
 if [ -n "$P" ]; then echo "export-check: STALE${P}"; exit 1; fi
@@ -105,10 +121,19 @@ done
 sqlite3 "$db" "$S COMMIT;"
 echo "export: OK fingerprint=$fp files=$(ls "$d" | wc -l)"
 EOS
+STARTM="$(mktemp "${TMPDIR:-/tmp}/export-start.XXXXXX")" || { echo "export: cannot create a temporary marker" >&2; exit 1; }; trap 'rm -f "$STARTM"' EXIT; sleep 0.01
 if [ "$CHECK" = 1 ]; then
-  CO="${OUTMODE:-$REAL_ROOT/.audit/out/export-check-$$}"; mkdir -p -- "$CO"
-  "$LOCKED" --out "$CO" -- bash -c "$(sub "$CHECK_TPL")"
-  exit $?
+  CO="${OUTMODE:-$ROOT/.audit/out/export-check-$$}"; mkdir -p -- "$CO"
+  out="$("$LOCKED" --out "$CO" -- bash -c "$(sub "$CHECK_TPL")")"; rc=$?
+  [ -z "$out" ] || printf '%s\n' "$out"
+  if [ $rc -eq 0 ] && ! printf '%s\n' "$out" | grep -q '^export-check: OK'; then echo "export-check: FAILED reason=no_verdict the wrapper exited 0 without an OK verdict line" >&2; exit 1; fi   # MUT:verdict-check
+  exit $rc
 fi
 "$LOCKED" "${WRAP[@]}" -- bash -c "$(sub "$EXPORT_TPL")"
-exit $?
+rc=$?
+if [ $rc -eq 0 ]; then
+  miss=""; for n in $MDS; do [ -f "$HOSTD/$n.md" ] || miss="$miss $n.md"; done; for n in $CSVS; do [ -s "$HOSTD/$n.csv" ] || miss="$miss $n.csv"; done   # a Markdown output may be empty (no closed items); a CSV always has its header line
+  [ -s "$HOSTD/export-manifest.sha256" ] && [ "$HOSTD/export-manifest.sha256" -nt "$STARTM" ] || miss="$miss export-manifest.sha256(not written by this run)"
+  [ -z "$miss" ] || { echo "export: FAILED reason=output_missing the wrapper exited 0 but these outputs are missing under $HOSTD:$miss" >&2; exit 1; }   # MUT:output-check
+fi
+exit $rc
