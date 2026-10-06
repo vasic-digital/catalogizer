@@ -6,7 +6,7 @@
 | Created | 2026-10-06 |
 | Last modified | 2026-10-06 |
 | Status | round 6 fix evidence; independent review of this change owed (author is not the reviewer) |
-| Source | the WF6 review `WF6-REVIEW-wp04-helpers` (scratchpad copy), findings W6-1 to W6-12; part B items are in `$EV/wp03/round6-notes.md` |
+| Source | the WF6 review `WF6-REVIEW-wp04-helpers` (scratchpad copy), findings W6-1 to W6-12; part B items (N6-1 to N6-6) have NO separate round-6 note: `$EV/wp03/round6-notes.md` was never written (WF7 E-1, repointed in round 8); they are described in `docs/scripts/verify_repos.md` section "Round 6", `docs/scripts/index_health.md` and `docs/scripts/scope_to_lumen_json.md`, and recorded in `$EV/wp03/round6-*.txt` and `$EV/wp04/wp04f-*.txt` |
 
 `$EV` = `specs/001-full-project-audit-remediation/evidence`.
 

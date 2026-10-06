@@ -162,6 +162,20 @@ def p2():
     return row("P2", "FAIL" if why else "PASS", cmd=cmd, reasons=why, tracked_in_scope=len(tracked),
                indexed=len(indexed), missing_count=len(missing), missing=missing[:50], **needles)
 
+def root_hits(r):
+    """True when the root names an indexed path: the path equals it or lies below it (exact spelling)."""
+    q = r.rstrip("/")
+    return bool(indexed) and any(p == q or p.startswith(q + "/") for p in indexed)
+
+def root_case_mismatch(r):
+    """A root that matches NO indexed path exactly but matches one when case is ignored: a case variant of a real root (`Third` for `third`) reads
+    as clean in exactly the way an encoding mismatch does (WF7 M-6a). A root that matches nothing in any case is legitimate (the tree is not indexed)."""
+    q = r.rstrip("/")
+    if root_hits(r) or not indexed:
+        return False
+    ql = q.casefold()
+    return any(p.casefold() == ql or p.casefold().startswith(ql + "/") for p in indexed)
+
 def noncanonical_root(r):
     """A roots-file line must be a plain repo-relative path: no control character (CRLF included), no surrounding whitespace, no leading
     './' or '/', no empty, '.' or '..' component. A line that is not is refused, never normalised silently and never matched as written
@@ -177,7 +191,9 @@ def noncanonical_root(r):
         cat = unicodedata.category(c)
         if c == "\\" or c == "\ufffd" or cat[0] == "C" or (cat[0] == "Z" and c != " "):
             return True
-    if unicodedata.normalize("NFC", r) != r:
+    if unicodedata.normalize("NFC", r) != r and not root_hits(r):
+        # a decomposed spelling never equals the composed one git normally records; but a root that names a path git REALLY indexed in that spelling
+        # (a macOS-made commit) is a normal hit, not a refusal (WF7 M-6b)
         return True
     comps = r.rstrip("/").split("/")
     return r.startswith("/") or any(c in ("", ".", "..") for c in comps)
@@ -203,6 +219,10 @@ def p3():
                 why.append("third_party_root_not_canonical")
                 third_bad = [r for r in bad_roots][:50]
             else:
+                case_bad = [r for r in roots if root_case_mismatch(r)]
+                if case_bad:
+                    why.append("third_party_root_case_mismatch")
+                    third_bad = case_bad[:50]
                 third = sorted(p for p in indexed if any(p == r.rstrip("/") or p.startswith(r.rstrip("/") + "/") for r in roots))
                 if third:
                     why.append("third_party_files_indexed")

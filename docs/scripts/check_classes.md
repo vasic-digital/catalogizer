@@ -2,11 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-05 |
-| Last modified | 2026-10-06 (round 4) |
-| Status | draft, untracked work product of T040b (WP-04); the scripts index `docs/scripts/README.md` and the root `README.md` link are NOT created here (they edit tracked files, deferred) |
+| Last modified | 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 (round 4) |
+| Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of T040b (WP-04) |
 | Source | `scripts/repo/check_class.sh`, `scripts/repo/check_classes.tsv`, `scripts/repo/check_exemptions.tsv`, `scripts/repo/fixture_roots.txt`; consumers `scripts/repo/validate_cheap.sh`, `scripts/repo/validate_checks.tsv` |
+
+> `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative), as defined in `specs/001-full-project-audit-remediation/evidence/wp09/README.md`.
+
 
 ## Purpose
 
@@ -93,7 +96,7 @@ Tests: `scripts/repo/tests/test_check_classes.sh` (loader), `test_validate_cheap
 ## Not covered
 
 The moved-legacy-file rule, the S2 side of the held-table rules (the secret fold and the private-key carriers are T040a, `detect-secrets` is absent on the host) and
-the pinned-container run of the checks are open; see `evidence/wp04/README.md` and `wp04b-notes.md`.
+the pinned-container run of the checks are open; see `$EV/wp04/README.md` and `wp04b-notes.md`.
 
 ## Declared symlinks and held rows (round 4, WF3 review B-1, m1, m8)
 

@@ -120,5 +120,22 @@ printf 'na\303\257ve\n' > "$T/tp_nfc2.txt"; base --cg-files "$T/f_enc.json" --th
 chk "N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS" 0 P3 PASS
 printf 'a b\n' > "$T/tp_sp.txt"; base --cg-files "$T/f_enc.json" --third-party-roots "$T/tp_sp.txt"
 chk "N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS" 0 P3 PASS
+# ---- round 7 (WF7 M-6): (a) a CASE VARIANT of a real third-party root reads P3 clean unless refused; (b) an NFD root that names an NFD path git really indexed is a hit, not a refusal
+files a/main.go a/b.go third/x.go > "$T/f_case.json"
+printf 'Third\n' > "$T/tp_case.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case.txt"
+chk "M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch" 1 P3 FAIL third_party_root_case_mismatch
+printf 'third\n' > "$T/tp_case2.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case2.txt"
+chk "M-6a control: the exact root third -> P3 FAIL third_party_files_indexed" 1 P3 FAIL third_party_files_indexed
+case "$(reason P3)" in *case_mismatch*) bad "M-6a control: an exact root is no case mismatch (reasons: $(reason P3))" ;; *) ok "M-6a control: an exact root is no case mismatch" ;; esac
+printf 'Vendorx\n' > "$T/tp_case3.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case3.txt"
+chk "M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS" 0 P3 PASS
+printf 'THIRD/x.go\n' > "$T/tp_case4.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case4.txt"
+chk "M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch" 1 P3 FAIL third_party_root_case_mismatch
+files a/main.go a/b.go "$(printf 'cafe\314\201/y.go')" > "$T/f_nfd.json"
+printf 'cafe\314\201\n' > "$T/tp_nfd.txt"; base --cg-files "$T/f_nfd.json" --third-party-roots "$T/tp_nfd.txt"
+chk "M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical)" 1 P3 FAIL third_party_files_indexed
+files a/main.go a/b.go "$(printf 'caf\303\251/y.go')" > "$T/f_nfc.json"
+base --cg-files "$T/f_nfc.json" --third-party-roots "$T/tp_nfd.txt"
+chk "M-6b golden-false: the same NFD root while only the NFC path is indexed stays refused -> P3 FAIL third_party_root_not_canonical" 1 P3 FAIL third_party_root_not_canonical
 echo "SUMMARY pass=$PASSN fail=$FAILN"
 [ "$FAILN" -eq 0 ]

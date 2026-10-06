@@ -1,0 +1,60 @@
+# round7 evidence | utc=2026-10-06T16:55:55Z host=anton head=26755ca512a59abaa529332ca066fc2ee71f6022 (working tree holds the uncommitted round-7 changes)
+# sha256 a05d5ae913b171e0505503f00b8b24f2a9026e690e6bc68044d1bd21ccc43828  scripts/audit/index_health.sh
+# sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# cmd: scripts/containers/run_pinned.sh --network=none --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp03/.rp IMG-TESTUTIL -- bash <test>   (inside the image: git 2.39.5 jq 1.6 python 3.11.2, mawk-class awk)
+ok   X1 positive needle missing while tracked set is complete -> P2 FAIL
+ok   X2 absent pendingChanges -> P1 FAIL required_field_absent
+ok   X3 Chunks 0 -> P7 FAIL
+ok   X4 Files != Indexed -> P7 FAIL
+ok   X5 no Captured line -> P7 FAIL
+ok   X6 .env.distributed indexed -> P3 FAIL
+ok   X7 .env.example allowed -> P3 PASS (false-positive guard)
+ok   X8 file under a third-party root -> P3 FAIL
+ok   X9 own-org root with no indexed file -> P3 FAIL
+ok   X10 tracked file not indexed -> P2 FAIL
+ok   X11 executable --lumen-bin without a status capture -> P-Lumen FAIL (probe refused)
+ok   X12 no --lumen-files -> P8 SKIP
+ok   X12b skipped proofs make complete=false
+ok   X13a option-like value -> rc 2
+ok   X13b unknown option -> rc 2
+ok   X13c duplicate option -> rc 2
+ok   X13d negative tolerance -> rc 2
+ok   X14 unreadable status file -> P1 FAIL
+ok   X15 identical inputs -> byte-identical output
+ok   X16 inputs.cg_files.sha256 equals the sha256 of the file
+ok   R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a ] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ / a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / . / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / . . / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a \ 0 0 1] -> P3 FAIL third_party_root_not_canonical
+ok   R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard)
+ok   R4 control: a canonical root with ONE trailing slash that holds an indexed file -> P3 FAIL third_party_files_indexed
+ok   R4 control: blank lines in the roots file are ignored -> P3 PASS
+ok   M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind
+ok   M5-3 index.state indexing (everything else clean) -> P1 FAIL index.state_not_complete
+ok   N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 342 200 213] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 177] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 302 240] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ 342 200 213 a] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 342 200 250 b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 golden-false: a non-ASCII root in NFC that holds an indexed file is a normal hit -> P3 FAIL third_party_files_indexed
+ok   N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS
+ok   N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS
+ok   M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch
+ok   M-6a control: the exact root third -> P3 FAIL third_party_files_indexed
+ok   M-6a control: an exact root is no case mismatch
+ok   M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS
+ok   M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch
+ok   M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical)
+ok   M-6b golden-false: the same NFD root while only the NFC path is indexed stays refused -> P3 FAIL third_party_root_not_canonical
+SUMMARY pass=54 fail=0
+rc=0

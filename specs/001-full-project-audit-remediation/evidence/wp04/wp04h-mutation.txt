@@ -1,0 +1,198 @@
+# WP-04 round 8 mutation records: drivers run_wp04h (24 + FF7), run_wp04g (20, M2 re-mapped), run_wp04f (47, V16-V18 new, EQ-V10 re-classified) | utc=2026-10-06T17:49:35Z host=anton head=b53be11ab4015963247ce14252d00ff1f4a30891 (working tree holds the uncommitted round-8 changes and other streams' uncommitted work) git=2.53.0
+# sha256 cb3bb25cbea5e68b833a580463bdcf643885ad654e4d0e0f1ad85b50dadb6874  scripts/repo/tests/run_wp04f_mutations.sh
+# sha256 ffefa59c0c1bdcfff60231813634e4298302481b02be4e9f54f8b437536b5527  scripts/repo/tests/run_wp04g_mutations.sh
+# sha256 31a627af9b204793ad000847e1cbe242165b319b8d0aa908277c6c99ea396976  scripts/repo/tests/run_wp04h_mutations.sh
+=== run_wp04h_mutations.sh (full)
+# WP-04/WP-02/WP-03 round 8 mutations (host run: bash scripts/repo/tests/run_wp04h_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 3373642b1800f791ded72f86037ebe5deb4de08b6029e267c4c0f6cb40081b14
+# test sha256 c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c65693f73d4d08426f9950052944ef532dc8154c656f5e44591671f80dd938c9  scripts/repo/tests/test_wp04h.sh
+CONTROL  scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_scope_to_lumen_json.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   H1 PR: the submodule pin check is switched off (I-3)  -> 15 failing case(s), e.g. FAIL I-3a the parent is named withheld: submodule_commit_not_held (no 'NOPUSH	.	r1	submodule_commit_not_held' 
+CAUGHT   H2 PR: every gitlink is checked, also one the remote tip already carries (I-3h)  -> 2 failing case(s), e.g. FAIL I-3h golden-false: only a gitlink the remote tip already carries is unheld: the parent change is pushed, 
+CAUGHT   H3 PR: a pin is held only by EQUALITY with a tip, a descendant tip does not hold it (I-3i)  -> 1 failing case(s), e.g. FAIL I-3i the parent is pushed (no 'PUSHED	.	r1' in 'NOPUSH	sub	origin	remote_moved_since_s1
+CAUGHT   H4 PR: an unreachable submodule remote counts as holding the pin (I-3e)  -> 2 failing case(s), e.g. FAIL I-3e the parent is withheld submodule_commit_not_held (no 'NOPUSH	.	r1	submodule_commit_not_held' in 'NOP
+CAUGHT   H5 PR: tags are not branch or tag tips of the submodule remote (I-3g)  -> 1 failing case(s), e.g. FAIL I-3g a pin held by a remote tag is held: the parent is not withheld for it (no 'PUSHED	.	r1' in 'REFUSED	
+CAUGHT   H6 PR: a submodule with no remote counts as held (I-3j)  -> 2 failing case(s), e.g. FAIL I-3j the reason names it (no 'submodule has no remote' in 'REFUSED	sub	unrecorded_local_commit	02b5dcf20b
+CAUGHT   H7 PR: an uninitialised submodule counts as held (I-3k)  -> 3 failing case(s), e.g. FAIL I-3k a changed gitlink whose submodule is not initialised: exit 11 (golden-false control below: unchanged
+CAUGHT   H8 PR: the withheld parent is not counted in the exit status (I-3b exit 11)  -> 3 failing case(s), e.g. FAIL I-3b held submodule commit: exit 11 (parent withheld) (got '14', want '11')
+CAUGHT   H9 PR: a failing gitlink listing of the target is ignored (git_listing_failed)  -> 15 failing case(s), e.g. FAIL I-3a the parent is named withheld: submodule_commit_not_held (no 'NOPUSH	.	r1	submodule_commit_not_held' 
+CAUGHT   FF1 FF: vet_remotes reads a failing git remote as no remotes  -> 4 failing case(s), e.g. FAIL M-3 the failing git remote call #1 of 8: exit 20 (got '0', want '20')
+CAUGHT   FF2 FF: the submodule fetch loop reads a failing git remote as no remotes  -> 2 failing case(s), e.g. FAIL M-3 the failing git remote call #4 of 8: exit 20 (got '0', want '20')
+CAUGHT   FF3 FF: the R4 pin loop reads a failing git remote as no remotes  -> 1 failing case(s), e.g. FAIL M-3 call #5: reason git_listing_failed (got 'pin_not_on_remote', want 'git_listing_failed')
+CAUGHT   FF4 FF: unrec reads a failing git remote as no remotes  -> 4 failing case(s), e.g. FAIL M-3 the failing git remote call #6 of 8: exit 20 (got '0', want '20')
+CAUGHT   FF5 FF: the caller ignores the unrec listing-failed marker  -> 2 failing case(s), e.g. FAIL M-3 call #6: reason git_listing_failed (got 'unrecorded_local_commit', want 'git_listing_failed')
+CAUGHT   FF6 FF: the owned-submodule organisation loop reads a failing git remote as no remotes  -> 2 failing case(s), e.g. FAIL M-3 the failing git remote call #7 of 8: exit 20 (got '0', want '20')
+CAUGHT   IM1 IM: every remote unreachable is nothing_to_merge again (INFO-1)  -> 4 failing case(s), e.g. FAIL INFO-1 EVERY remote unreachable: exit 11, not a clean 0 (got '0', want '11')
+CAUGHT   IM2 IM: one unreachable remote is already remote_unreachable (golden-false: a reachable remote answered)  -> 1 failing case(s), e.g. FAIL INFO-1 golden-false: one remote reachable, one not, nothing diverged: exit 0 (a reachable remote answered
+CAUGHT   IM3 IM: a failed fetch (as opposed to a failed ls-remote) is not counted  -> 1 failing case(s), e.g. FAIL INFO-1 every remote lists a tip but every object fetch fails: exit 11, not a clean 0 (got '0', want '11')
+CAUGHT   VM1 VR: the exit-20 cleanup is not installed (M-6)  -> 3 failing case(s), e.g. FAIL M-6 the stale --json FILE of the earlier run survived the exit-20 failure ({"STALE":"report of an earlier
+CAUGHT   VM2 VR: the cleanup does not remove a symlink (M-6)  -> 1 failing case(s), e.g. FAIL M-6 a stale DANGLING --json symlink survived
+CAUGHT   VM3 VR: the cleanup removes the file also for a bad argument (usage error before any run)  -> 1 failing case(s), e.g. FAIL M-6 an unknown option deleted the named file
+CAUGHT   VM4 VR: --jobs misuse removes the named file too (posint before the run)  -> 1 failing case(s), e.g. FAIL M-6 a usage error deleted the named file
+CAUGHT   ST1 ST: the reserved class name third_party_nested is accepted (M-7)  -> 3 failing case(s), e.g. FAIL M-7 a baseline_excludes class named third_party_nested (reserved for the derived nested-third-party class
+CAUGHT   ST2 ST: a duplicated or reordered classes list passes --check (M-8)  -> 2 failing case(s), e.g. FAIL M-8 duplicate in classes: want rc=1 naming a duplicate in caches, got rc=0: 
+---- 24 mutations listed, 0 not caught or errored
+=== run_wp04h_mutations.sh FF7 (added after the full run)
+# WP-04/WP-02/WP-03 round 8 mutations (host run: bash scripts/repo/tests/run_wp04h_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 31a627af9b204793ad000847e1cbe242165b319b8d0aa908277c6c99ea396976
+# test sha256 c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c65693f73d4d08426f9950052944ef532dc8154c656f5e44591671f80dd938c9  scripts/repo/tests/test_wp04h.sh
+CONTROL  scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   FF7 FF: the main repository fetch loop reads a failing git remote as no remotes (the round-7 site, now second in line behind vet_remotes)  -> 2 failing case(s), e.g. FAIL M-3 the failing git remote call #2 of 8: exit 20 (got '0', want '20')
+---- 25 mutations listed, 0 not caught or errored
+=== first h run (before the IM3/VM2 test additions: 22 caught, IM3 and VM2 SURVIVED, fixed by the 'every fetch fails' and the dangling-symlink cases)
+SURVIVED IM3 IM: a failed fetch (as opposed to a failed ls-remote) is not counted  -> test passed against the mutated copy
+SURVIVED VM2 VR: the cleanup does not remove a symlink (M-6)  -> test passed against the mutated copy
+---- 24 mutations listed, 2 not caught or errored
+=== IM3 and VM2 re-run after the test additions
+# WP-04/WP-02/WP-03 round 8 mutations (host run: bash scripts/repo/tests/run_wp04h_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+CAUGHT   IM3 IM: a failed fetch (as opposed to a failed ls-remote) is not counted  -> 1 failing case(s), e.g. FAIL INFO-1 every remote lists a tip but every object fetch fails: exit 11, not a clean 0 (got '0', want '11')
+# WP-04/WP-02/WP-03 round 8 mutations (host run: bash scripts/repo/tests/run_wp04h_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+CAUGHT   VM2 VR: the cleanup does not remove a symlink (M-6)  -> 1 failing case(s), e.g. FAIL M-6 a stale DANGLING --json symlink survived
+=== run_wp04g_mutations.sh (full, before the M2 re-mapping: M2 SURVIVED because vet_remotes now answers first)
+# WP-04/WP-02/WP-03 round 7 mutations (host run: bash scripts/repo/tests/run_wp04g_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 b7d15121c4b75a6893592b1b1993c37da16ad5d8305e3d37dc891703ed0bcb14
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 7d4d8790e56279018b0277c5c4481790275443d69b83036769c1b6f13e3555c2  scripts/repo/tests/test_integrate_ff_only.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3  scripts/repo/tests/test_wp04g.sh
+CONTROL  scripts/repo/tests/test_wp04g.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_wp04g.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_ff_only.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   J1 VR: a required filter driver is not switched to required=false (I-1)  -> 4 failing case(s), e.g. FAIL I-1 a required filter and a touched (content-identical) file: exit 0, not 20 (got '20', want '0')
+CAUGHT   J2 VR: the tag object line is not decided by its peeled twin (I-2)  -> 2 failing case(s), e.g. FAIL I-2 an annotated tag whose peeled commit is held does not make the answer undecided: exit 11 (got '14', w
+CAUGHT   J3 VR: a held blob or tree tag is read as undecided (I-2)  -> 2 failing case(s), e.g. FAIL I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11 (got '14', want '11')
+CAUGHT   J4 VR: core.alternateRefsCommand is not neutralised (M-5)  -> 1 failing case(s), e.g. FAIL M-5 the repository's core.alternateRefsCommand program ran under the verifier's --fetch
+CAUGHT   J5 VR: the driver name is cut at its first dot (a dotted driver name keeps required=true)  -> 1 failing case(s), e.g. FAIL I-1 a required filter whose name contains a dot: exit 0 (got '20', want '0')
+CAUGHT   J6 VR: undecided only for a DIVERGED pin class (reviewer mutant RM2)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (got '11', want '1
+CAUGHT   J7 VR: process filters are not switched off (reviewer mutant RM3)  -> 2 failing case(s), e.g. FAIL RM3 a process filter and a touched file: exit 0 (got '20', want '0')
+CAUGHT   J8 VR: tags are not branch or tag tips (reviewer mutant RM4)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (got '11', want '14')
+CAUGHT   K1 SC: a .git that git walks past to the parent is skipped again (I-3)  -> 4 failing case(s), e.g. FAIL I-3 a .git DIRECTORY with a truncated (empty) HEAD: 20, not a silent skip (got '0', want '20')
+CAUGHT   K2 SC: an unresolvable HEAD is always read as no commit yet (M-2)  -> 1 failing case(s), e.g. FAIL M-2 an emptied packed-refs: 20 (got '0', want '20')
+CAUGHT   K3 SC: the HEAD reflog is not consulted (M-2: an emptied packed-refs)  -> 1 failing case(s), e.g. FAIL M-2 an emptied packed-refs: 20 (got '0', want '20')
+EQUIVALENT EQ-K4 SC: the loose ref file is not consulted (the HEAD reflog of every repository with history decides the same cases; they differ only where reflogs are disabled)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   K5 SC: a detached HEAD that does not resolve is read as an unborn branch (M-2)  -> 3 failing case(s), e.g. FAIL M-2 a zero-length branch ref: 20, the rewritten store is not a new one (got '0', want '20')
+CAUGHT   L1 PR: a broken submodule is skipped by discover again (I-4)  -> 5 failing case(s), e.g. FAIL I-4 a submodule whose .git points at a missing git dir: 20 (got '11', want '20')
+CAUGHT   L2 PR: a dangling .git symlink is not a .git entry (I-4)  -> 1 failing case(s), e.g. FAIL I-4 a dangling .git symlink: 20 (got '11', want '20')
+CAUGHT   M1 IM: a failing git remote reads as no remotes (M-3)  -> 2 failing case(s), e.g. FAIL git remote failing (shim): 20, never nothing_to_merge (M-3) (got '0', want '20')
+SURVIVED M2 FF: a failing git remote reads as no remotes (M-3)  -> test passed against the mutated copy
+CAUGHT   N1 IH: a case variant of a real third-party root is accepted (M-6a)  -> 2 failing case(s), e.g. FAIL M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3
+CAUGHT   N2 IH: an NFD root naming an indexed NFD path is refused again (M-6b)  -> 1 failing case(s), e.g. FAIL M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_
+CAUGHT   N3 IH: an exact root also counts as a case mismatch (M-6a false refusal)  -> 1 failing case(s), e.g. FAIL M-6a control: an exact root is no case mismatch (reasons: third_party_root_case_mismatch,third_party_file
+---- 20 mutations listed, 1 not caught or errored
+=== run_wp04g M2 re-run with test_wp04h.sh mapped
+# WP-04/WP-02/WP-03 round 7 mutations (host run: bash scripts/repo/tests/run_wp04g_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 ffefa59c0c1bdcfff60231813634e4298302481b02be4e9f54f8b437536b5527
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 7d4d8790e56279018b0277c5c4481790275443d69b83036769c1b6f13e3555c2  scripts/repo/tests/test_integrate_ff_only.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3  scripts/repo/tests/test_wp04g.sh
+# test sha256 c65693f73d4d08426f9950052944ef532dc8154c656f5e44591671f80dd938c9  scripts/repo/tests/test_wp04h.sh
+CONTROL  scripts/repo/tests/test_integrate_ff_only.sh + scripts/repo/tests/test_wp04h.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   M2 FF: a failing git remote reads as no remotes (M-3)  -> 2 failing case(s), e.g. FAIL M-3 the failing git remote call #2 of 8: exit 20 (got '0', want '20')
+---- 20 mutations listed, 0 not caught or errored
+=== run_wp04f_mutations.sh (full)
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 306e60f44d74ddf6b4b42ab5cebcd5f467168473f69ea89c2399b75fff9f499c
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# test sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# test sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# test sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+CONTROL  scripts/repo/tests/test_push_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_scope_check.sh + scripts/repo/tests/test_wp04d.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_no_ci.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_revision_headers.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh + scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_scope_to_lumen_json.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   F1 PR: a failing rev-list is ignored (the old mapfile reading)  -> 8 failing case(s), e.g. FAIL rev-list failing, CPA commit only: 20 (W6-2) (got '0', want '20')
+CAUGHT   F2 PR: a moved remote with unrecorded commits is judged 20 again (W6-1)  -> 10 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F3 PR: a failing gitlink listing under --recursive is read as no submodules  -> 6 failing case(s), e.g. FAIL gitlink listing failing under --recursive: 20 (F3) (got '0', want '20')
+CAUGHT   F4 PR: the nested listing refusal only at depth 0 (R1 of the review)  -> 3 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   F5 PR: a failing git remote is read as no remotes  -> 1 failing case(s), e.g. FAIL named git_listing_failed (remote) (no 'git_listing_failed' in 'REFUSED	.	unrecorded_local_commit	aa944161
+CAUGHT   F6 PR: an unsafe gitlink path is skipped instead of refused (W6-4)  -> 3 failing case(s), e.g. FAIL gitlink path -evil under --recursive: 20 (W6-4) (got '0', want '20')
+CAUGHT   F7 PR: MOVED is recorded only for a remote without a tracking ref (R3 of the review)  -> 11 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F8 PR: a failing parents listing of a held commit is ignored  -> 3 failing case(s), e.g. FAIL parents listing failing for a held commit: 20 (W6-12) (got '14', want '20')
+CAUGHT   F9 PR: the discover marker problem again: a path with a leading ? is judged a failure  -> 4 failing case(s), e.g. FAIL submodule at the path ?x, nothing outgoing there: 0 (W6-3) (got '20', want '0')
+CAUGHT   G1 SC: a broken submodule .git is skipped silently  -> 3 failing case(s), e.g. FAIL submodule .git pointing at a missing git dir: 20 (W6-6) (got '0', want '20')
+CAUGHT   G2 SC: an unreadable HEAD tree is read as a new store  -> 3 failing case(s), e.g. FAIL HEAD tree of the evidence directory unreadable (object missing): 20, not 0 (W6-7) (got '0', want '20')
+CAUGHT   G3 SC: no commit yet is read as an unreadable tree (false refusal)  -> 1 failing case(s), e.g. FAIL golden-false: a repository without any commit (no HEAD) holds no store yet: 0 (got '20', want '0')
+CAUGHT   G4 SC: the nested listing failure is judged only at depth 0 (R2 of the review)  -> 2 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   G5 SC: a symlink store is not refused (HM link test dropped)  -> 2 failing case(s), e.g. FAIL HEAD holds the link, the work tree a regular file starting with the link text (type change): 13 (B-1) (go
+CAUGHT   H1 NC: no EXIT trap for the listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated run (W6-5) (got 'check_no_ci.U3JIyv ', want '')
+EQUIVALENT EQ-H2 NC: no TERM trap (bash runs the EXIT trap itself on SIGTERM; the TERM trap only keeps the status explicit)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   H3 RH: no EXIT trap for the --measure listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated --measure run (W6-5) (got 'check_rh.BhgKSc ', want '')
+CAUGHT   I1 IM: a failing git status reads as nothing dirty  -> 2 failing case(s), e.g. FAIL git status failing (shim): 20 (W6-12) (got '12', want '20')
+CAUGHT   I2 IM: a failing git diff reads as no overlap  -> 2 failing case(s), e.g. FAIL git diff --name-only failing (shim): 20, never a silent merge (W6-12) (got '12', want '20')
+CAUGHT   V1 VR: ls-remote tail matches count as branch or tag tips (N6-1)  -> 2 failing case(s), e.g. FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0
+CAUGHT   V2 VR: a tip that is not held locally is not undecided (N6-2)  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+EQUIVALENT EQ-V3 VR: a missing pin object is not undecided (classify already answers UNKNOWN-DIFFERENT for a pin object that is not held)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   V4 VR: the tip-equality shortcut is dropped (MR1)  -> 1 failing case(s), e.g. FAIL MR1 a pin equal to a remote branch tip is held even when its object is absent locally: exit 0 (got '14', 
+CAUGHT   V5 VR: undecided keeps the definite class  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V6 VR: the dirty count failure is not fatal (MR2 family)  -> 6 failing case(s), e.g. FAIL N6-3 dirty count unreadable, --json FILE: exit 20 (got '0', want '20')
+CAUGHT   V7 VR: the diverged count failure is not fatal (MR2)  -> 2 failing case(s), e.g. FAIL MR2 the diverged count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V8 VR: the pin count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the pin count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V9 VR: the behind count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the behind count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+SURVIVED V10 VR: the report is written before the counts are read (N6-3)  -> test passed against the mutated copy
+CAUGHT   V11 VR: core.fsmonitor is not disabled on every command (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+CAUGHT   V12 VR: no configured filter driver is switched off (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the clean filter ran under the verifier
+CAUGHT   V13 VR: the plain ls-remote of the branch keeps the repository uploadpack (N6-4)  -> 3 failing case(s), e.g. FAIL N6-4 the remote.origin.uploadpack program ran
+CAUGHT   V14 VR: the fetch keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+CAUGHT   V15 VR: the default-branch ls-remote keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran in the default-branch lookup
+CAUGHT   W1 IH: a replacement character in a root is accepted (invalid UTF-8)  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W2 IH: a format character (BOM, zero-width space) is accepted  -> 3 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=
+CAUGHT   W3 IH: a backslash is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W4 IH: a decomposed (NFD) spelling is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want r
+CAUGHT   W5 IH: a no-break space inside a root is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 
+EQUIVALENT EQ-W6 IH: DEL not named (covered by the C* category check)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   V16 VR: undecided only for a DIVERGED pin class (reviewer mutant RM2, WF7 MA-1)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (got '11', want '1
+CAUGHT   V17 VR: process filters are not switched off (reviewer mutant RM3, WF7 MA-2)  -> 2 failing case(s), e.g. FAIL RM3 a process filter and a touched file: exit 0 (got '20', want '0')
+CAUGHT   V18 VR: tags are not branch or tag tips, a pin held only by a remote tag reads as not held (reviewer mutant RM4, WF7 MA-3)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (got '11', want '14')
+CAUGHT   S1 ST: a non-string class name is accepted  -> 3 failing case(s), e.g. FAIL N6-6 an integer class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceb
+CAUGHT   S2 ST: a non-UTF-8 input raises (UnicodeDecodeError not caught)  -> 3 failing case(s), e.g. FAIL N6-6 a submodules TSV that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (mos
+CAUGHT   S3 ST: root_files is compared without its type  -> 1 failing case(s), e.g. FAIL N6-6 root_files 1: want rc=1 naming root_files, got rc=0: 
+CAUGHT   S4 ST: the files are read with the locale encoding  -> 1 failing case(s), e.g. FAIL N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=3: unreadable input: 'ascii' codec
+---- 47 mutations listed, 1 not caught or errored
+=== EQ-V10 re-run
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 cb3bb25cbea5e68b833a580463bdcf643885ad654e4d0e0f1ad85b50dadb6874
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# test sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# test sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# test sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh + scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+EQUIVALENT EQ-V10 VR: the report is written before the counts are read (N6-3; since round 8 the exit-20 cleanup of M-6 removes a file written before the failure, so the END state is identical and only the transient order differs, which no test can observe without timing)  -> survived as documented (the guard it removes has a second layer)
+---- 47 mutations listed, 0 not caught or errored
+=== V16-V18 individually (control = r6 + r7)
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh + scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   V16 VR: undecided only for a DIVERGED pin class (reviewer mutant RM2, WF7 MA-1)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (got '11', want '1
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh + scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   V17 VR: process filters are not switched off (reviewer mutant RM3, WF7 MA-2)  -> 2 failing case(s), e.g. FAIL RM3 a process filter and a touched file: exit 0 (got '20', want '0')
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh + scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   V18 VR: tags are not branch or tag tips, a pin held only by a remote tag reads as not held (reviewer mutant RM4, WF7 MA-3)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (got '11', want '14')

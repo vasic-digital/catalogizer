@@ -1,0 +1,23 @@
+# round7 evidence | utc=2026-10-06T16:55:55Z host=anton head=26755ca512a59abaa529332ca066fc2ee71f6022 (working tree holds the uncommitted round-7 changes)
+# sha256 e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618  scripts/repo/verify_repos.sh
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# cmd: scripts/containers/run_pinned.sh --network=none --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp03/.rp IMG-TESTUTIL -- bash <test>   (inside the image: git 2.39.5 jq 1.6 python 3.11.2, mawk-class awk)
+ok   golden-good report validates
+ok   POC run1.json rejected for exactly the missing no_remote
+ok   missing_summary: rejected
+ok   missing_no_remote: rejected
+ok   wrong_tool: rejected
+ok   excepted_null_reason: rejected
+ok   excepted_empty_reason: rejected
+ok   extra_reason_property: rejected
+ok   real output via --json validates
+ok   real output via --json-out validates
+ok   real output with an excepted row validates (exit 0, excepted true)
+ok   real output for a repository with no remote validates (exit 14, unproven)
+ok   real output with an uninitialised submodule row validates
+ok   real output with a detached owned submodule row validates (class SAME)
+<string>:1: DeprecationWarning: Accessing jsonschema.__version__ is deprecated and will be removed in a future release. Use importlib.metadata directly to query for jsonschema's version.
+IDENTITY test=b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d verifier=e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618 head=26755ca512a59abaa529332ca066fc2ee71f6022 host=e7a75cd7ad31 git=2.39.5 jq=jq-1.6 jsonschema=4.10.3 utc=2026-10-06T16:52:07Z
+SUMMARY pass=14 fail=0
+rc=0

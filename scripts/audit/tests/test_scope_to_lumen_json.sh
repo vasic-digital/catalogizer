@@ -225,6 +225,26 @@ python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$
 printf 'submodules/caf\303\251\town\tu\town\t-\n' > "$T/subs_utf8.tsv"
 LC_ALL=C PYTHONCOERCECLOCALE=0 PYTHONUTF8=0 python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs_utf8.tsv" --out "$T/utf8.json" >/dev/null 2>"$T/r.err"; rc=$?
 { [ "$rc" -eq 0 ] && jq -e '.allow|index("submodules/café")!=null' "$T/utf8.json" >/dev/null 2>&1; } && ok "N6-6 a UTF-8 TSV with a non-ASCII path is read as UTF-8 under an ASCII locale (rc=0)" || bad "N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=$rc: $(head -c 120 "$T/r.err")"
+# round 8 (WF7 review M-7, M-8)
+# M-7: a baseline_excludes class named like the derived class `third_party_nested` would be OVERWRITTEN by it (its patterns vanish from deny while --check re-derives
+# the same loss and passes): the reserved class name is refused (rc 3), never silently merged or dropped
+sed 's#^  qa_corpora:.*#  qa_corpora: ["**/qa-results/"]\n  third_party_nested: ["**/secretdir", "/own1/vendor/x/"]#' "$T/scope.yaml" > "$T/scope_res.yaml"
+grep -q '^  third_party_nested:' "$T/scope_res.yaml" && ok "M-7 fixture: the scope names the reserved class third_party_nested" || bad "M-7 fixture: the reserved class is not in the scope"
+refuse "M-7 a baseline_excludes class named third_party_nested (reserved for the derived nested-third-party class)" "$T/scope_res.yaml" "$T/subs.tsv"
+grep -q third_party_nested "$T/r.err" && ok "M-7 the refusal names the reserved class" || bad "M-7 the refusal does not name third_party_nested: $(head -c 160 "$T/r.err")"
+python3 "$STJ" --scope "$T/scope_res.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/golden.json" >/dev/null 2>"$T/r.err"; rc=$?
+[ "$rc" -eq 3 ] && ok "M-7 --check of the golden against the reserved-class scope is rc 3, not a pass on a re-derived loss" || bad "M-7 --check: want rc=3, got rc=$rc"
+python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --out "$T/res_ok.json" >/dev/null 2>&1; rc=$?
+{ [ "$rc" -eq 0 ] && cmp -s "$T/res_ok.json" "$T/golden.json"; } && ok "M-7 golden-false: the scope without the reserved class still derives the golden byte for byte (rc 0)" || bad "M-7 golden-false: rc=$rc or the output differs from the golden"
+# M-8: --check is EXACT for the classes lists too: a duplicated pattern inside a class list (same set, different list) is a difference (rc 1, named duplicate)
+jq '.classes.caches += ["**/node_modules/"]' "$T/golden.json" > "$T/c_cdup.json"
+python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/c_cdup.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 1 ] && grep -q duplicate "$T/r.err" && grep -q caches "$T/r.err"; } && ok "M-8 a duplicated pattern in a classes list is a difference (rc=1, names duplicate and the class)" || bad "M-8 duplicate in classes: want rc=1 naming a duplicate in caches, got rc=$rc: $(head -c 200 "$T/r.err")"
+jq '.classes.caches |= reverse' "$T/golden.json" > "$T/c_crev.json"
+python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/c_crev.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 1 ] && grep -q caches "$T/r.err"; } && ok "M-8 a misplaced (reordered) classes list is a difference (rc=1): the comparison is exact, not set-wise" || bad "M-8 reordered classes list: want rc=1, got rc=$rc"
+python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/golden.json" >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 0 ] && ok "M-8 golden-false: the unmodified golden still passes the exact check (rc=0)" || bad "M-8 golden-false: --check rc=$rc"
 echo "IDENTITY test=$(sha256sum "${BASH_SOURCE[0]}" | cut -c1-64) script=$(sha256sum "$STJ" 2>/dev/null | cut -c1-64) head=$(git rev-parse HEAD) host=$(hostname) python=$(python3 -V 2>&1 | cut -d" " -f2) utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "SUMMARY pass=$PASSN fail=$FAILN"
 [ "$FAILN" -eq 0 ]

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-05 |
-| Last modified | 2026-10-05 (WF2-REVIEW round 3: m-g) |
-| Status | draft, untracked work product of T017 (WP-02) and its review fixes (DM1-DM6); the scripts index `docs/scripts/README.md` and the root `README.md` link are NOT created here (they edit tracked files, deferred) |
+| Last modified | 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-05 (WF2-REVIEW round 3: m-g) |
+| Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of T017 (WP-02) and its review fixes (DM1-DM6) |
 | Source | `scripts/audit/derive_scope.sh` (parser `scripts/audit/org_of.py`, inputs `scripts/audit/own_orgs.txt`, `scripts/audit/own_orgs_pending.txt`) |
 
 ## Purpose

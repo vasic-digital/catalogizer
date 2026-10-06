@@ -17,11 +17,13 @@ Outputs: JSON, sort_keys, indent 2, final newline, no timestamp, keys: allow, de
   it, so a directory such as secretmgr/ loses semantic coverage: recorded, not hidden).
   --check is an EXACT re-derive-and-compare: allow, deny, root_files, classes and dropped_negations of FILE must equal what the
   scope and the TSV derive, so a missing entry AND an extra one (a third-party root in allow, an extra deny pattern, a
-  flipped root_files) are both found.
+  flipped root_files) are both found; a duplicated or reordered entry inside a list (also inside a classes list) is a
+  difference too (exit 1, "duplicate or misplaced entries"), not a pass.
 Exit:    0 ok; 1 --check found a difference; 2 usage; 3 fail closed (empty allow, unreadable or malformed input, a TSV row whose
          class is not own|third_party or that lacks a path or a tab, a path classed both ways, a --check list with a
          non-string element, a lumen_allow_roots entry equal to or inside a third_party
-         row (11.4.79(6): scope.yaml can not let third-party code into the semantic index), an unwritable --out).
+         row (11.4.79(6): scope.yaml can not let third-party code into the semantic index), a baseline_excludes class named
+         third_party_nested (reserved: the derived nested-third-party class would overwrite it), an unwritable --out).
 Side effects: writes --out only on success.
 """
 import argparse
@@ -56,6 +58,8 @@ def validate(scope):
         fail(3, "malformed scope: baseline_excludes must map class names to lists of patterns")
     if be is not None and any(not isinstance(k, str) for k in be):   # a YAML key `1:` or `null:` is no class name (N6-6): rc 3, not a TypeError in sorted()
         fail(3, "malformed scope: every class name of baseline_excludes must be a string, got %r" % [k for k in be if not isinstance(k, str)][:3])
+    if be is not None and "third_party_nested" in be:   # reserved: derive() writes the nested-third-party class under this name and would overwrite it (M-7, WF8)
+        fail(3, "malformed scope: baseline_excludes must not use the reserved class name third_party_nested (it is derived from the submodules TSV and would overwrite it)")
     for k in ("project_excludes", "pathological_excludes", "lumen_allow_roots"):
         if scope.get(k) is not None and not isinstance(scope[k], list):
             fail(3, "malformed scope: %s must be a list" % k)
@@ -185,6 +189,8 @@ def main():
                         diffs.append("pattern missing: %s in class %s" % (pat, c))
                     for pat in sorted(set(have[key][c]) - set(want[key][c])):
                         diffs.append("pattern not in the scope (extra): %s in class %s" % (pat, c))
+                    if set(have[key][c]) == set(want[key][c]) and have[key][c] != want[key][c]:   # same members, different list: duplicates or a misplaced order (M-8, WF8)
+                        diffs.append("class %s has duplicate or misplaced entries (have %d, derived %d)" % (c, len(have[key][c]), len(want[key][c])))
         elif isinstance(want[key], list):
             for x in sorted(set(want[key]) - set(have[key])):
                 diffs.append("%s entry missing: %s" % (key, x))

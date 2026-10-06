@@ -1,0 +1,66 @@
+# WP-02 round 8 RED: the new M-7 / M-8 cases of test_scope_to_lumen_json.sh against the PRE-FIX scope_to_lumen_json.py | utc=2026-10-06T17:49:35Z host=anton head=b53be11ab4015963247ce14252d00ff1f4a30891 (working tree holds the uncommitted round-8 changes and other streams' uncommitted work) git=2.53.0
+# sha256 1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/r8/red/scripts/audit/scope_to_lumen_json.py.pre
+# sha256 c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5  scripts/audit/tests/test_scope_to_lumen_json.sh
+# cmd: STJ=<pre-fix copy> bash scripts/audit/tests/test_scope_to_lumen_json.sh
+ok   derive exits 0
+ok   output equals the golden JSON byte-for-byte
+ok   second run byte-identical
+ok   empty allow-list refused (rc=3, nothing written)
+ok   --check passes on the golden JSON
+ok   --check FAILs when a scope.yaml class is missing from the JSON (rc=1)
+ok   --check rc=1: a third-party root added to allow (would index third-party code)
+ok   --check rc=1: root_files flipped to false
+ok   --check rc=1: root_files removed
+ok   --check rc=1: an allow root missing (SM2)
+ok   --check rc=1: a deny pattern missing from deny while still in its class (SM1)
+ok   --check rc=1: an extra deny pattern
+ok   --check rc=1: an extra class
+ok   --check rc=1: an extra pattern inside a class
+ok   --check rc=1: the nested third-party deny missing (class and deny)
+ok   --check rc=1: dropped_negations changed
+ok   a non-mapping scope.yaml is rc=3, no traceback
+ok   a non-mapping baseline_excludes is rc=3 (also under --check)
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row
+ok   refused (rc=3, reason on stderr, no output): the same under --check (the leak is not re-derived as legal)
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots lies INSIDE a third_party row
+ok   refused (rc=3, reason on stderr, no output): a trailing slash does not hide a third_party root
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row nested under an own root
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an unknown class (third-party)
+ok   refused (rc=3, reason on stderr, no output): a TSV row without a tab
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty class
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty path
+ok   control: blank lines in the TSV are tolerated (rc=0)
+ok   own_ab/x (a sibling, not nested under own_a) is not denied as nested
+ok   allowed roots with a trailing slash or padding derive the identical golden JSON
+ok   refused (rc=3, reason on stderr, no output): --check file whose classes is a list
+ok   --out to an unwritable path is rc=3 without a traceback
+ok   m-3 a sibling root (third_bx next to third_b) is accepted, not refused (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-5a a path classed both own and third_party
+ok   m-5b a nested third_party path with [ ] is denied literally (backslash-escaped)
+ok   m-5b control: --check of the escaped derivation is exact (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-8 --check file whose allow holds a non-string element
+ok   m-8 a duplicated allow entry in the --check file is a difference (rc=1, named duplicate)
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a list element
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a number
+ok   round5 D1 no traceback and rc=3 for a non-string classes element
+ok   refused (rc=3, reason on stderr, no output): N6-6 an integer class name in baseline_excludes
+ok   refused (rc=3, reason on stderr, no output): N6-6 a null class name in baseline_excludes
+ok   N6-6 integer class name: rc=3 and no traceback (was TypeError, rc 1)
+ok   refused (rc=3, reason on stderr, no output): N6-6 a submodules TSV that is not UTF-8
+ok   N6-6 non-UTF-8 TSV: rc=3 and no traceback (was UnicodeDecodeError, rc 1)
+ok   refused (rc=3, reason on stderr, no output): N6-6 a scope.yaml that is not UTF-8
+ok   refused (rc=3, reason on stderr, no output): N6-6 a --check file that is not UTF-8
+ok   N6-6 root_files: 1 is NOT true: the exact check finds the difference (rc=1, root_files named)
+ok   N6-6 control: root_files true (the golden) still passes the exact check (rc=0)
+ok   N6-6 a UTF-8 TSV with a non-ASCII path is read as UTF-8 under an ASCII locale (rc=0)
+ok   M-7 fixture: the scope names the reserved class third_party_nested
+FAIL M-7 a baseline_excludes class named third_party_nested (reserved for the derived nested-third-party class): want rc=3 with a message and no output, got rc=0: 
+FAIL M-7 the refusal does not name third_party_nested: 
+FAIL M-7 --check: want rc=3, got rc=0
+ok   M-7 golden-false: the scope without the reserved class still derives the golden byte for byte (rc 0)
+FAIL M-8 duplicate in classes: want rc=1 naming a duplicate in caches, got rc=0: 
+FAIL M-8 reordered classes list: want rc=1, got rc=0
+ok   M-8 golden-false: the unmodified golden still passes the exact check (rc=0)
+IDENTITY test=c6e3f33d4848040d321143ba8fe347c292e685ffebb3c980c0708ee2d44c30e5 script=1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219 head=b53be11ab4015963247ce14252d00ff1f4a30891 host=anton python=3.14.4 utc=2026-10-06T17:49:19Z
+SUMMARY pass=55 fail=5

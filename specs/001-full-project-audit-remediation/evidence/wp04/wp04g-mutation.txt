@@ -1,0 +1,192 @@
+# WP-04 round 7 (wp04g) mutations: the 20 mutants of the round-7 code, the round-6 driver re-run (G3 and W4 re-pointed at the moved text, V2 re-pointed), mutate_index_health.sh and mutate_anti_bluff_scan_wrapper.sh
+# 2026-10-06T16:55:39Z host=anton head=26755ca512a59abaa529332ca066fc2ee71f6022
+# sha256 b7d15121c4b75a6893592b1b1993c37da16ad5d8305e3d37dc891703ed0bcb14  scripts/repo/tests/run_wp04g_mutations.sh
+# sha256 64ca21657d204c07a408d3dff476db5ede87e5689513dd88ce0ede36b5bdc7f5  scripts/repo/tests/run_wp04f_mutations.sh
+# sha256 2c0db10b4cc580aedd9cfddc6f7a55686f109dde2f8c02d519693fcfd21cae97  scripts/audit/tests/mutate_index_health.sh
+# sha256 8884708d9217b99e27777a476a8783a5787db2059b9e03f5a4056f92f76e1dee  scripts/audit/tests/mutate_anti_bluff_scan_wrapper.sh
+# sha256 e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618  scripts/repo/verify_repos.sh
+# sha256 70a7e97e31d8a1dfdfe928fbdfa3faec0151938c126dffc6e248d3eed33471eb  scripts/repo/scope_check.sh
+# sha256 2fe8971b1826f830e27c0f54022b9d086d7da8c9705777a514a60386aa949c58  scripts/repo/push_recursive.sh
+# sha256 d275680c1797287c965314cf7e535d406634ed5c555eae4ce9ccc5163c7ca52f  scripts/repo/integrate_merge.sh
+# sha256 2528c7a22d78215bf1edd861d9cd33417c322fbb927c4e7f050a6a4bd074ff57  scripts/repo/integrate_ff_only.sh
+# sha256 a05d5ae913b171e0505503f00b8b24f2a9026e690e6bc68044d1bd21ccc43828  scripts/audit/index_health.sh
+
+=== run_wp04g_mutations.sh
+# WP-04/WP-02/WP-03 round 7 mutations (host run: bash scripts/repo/tests/run_wp04g_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 b7d15121c4b75a6893592b1b1993c37da16ad5d8305e3d37dc891703ed0bcb14
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 7d4d8790e56279018b0277c5c4481790275443d69b83036769c1b6f13e3555c2  scripts/repo/tests/test_integrate_ff_only.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3  scripts/repo/tests/test_wp04g.sh
+CONTROL  scripts/repo/tests/test_wp04g.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_wp04g.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_ff_only.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_verify_repos_r7.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   J1 VR: a required filter driver is not switched to required=false (I-1)  -> 4 failing case(s), e.g. FAIL I-1 a required filter and a touched (content-identical) file: exit 0, not 20 (got '20', want '0')
+CAUGHT   J2 VR: the tag object line is not decided by its peeled twin (I-2)  -> 2 failing case(s), e.g. FAIL I-2 an annotated tag whose peeled commit is held does not make the answer undecided: exit 11 (got '14', w
+CAUGHT   J3 VR: a held blob or tree tag is read as undecided (I-2)  -> 2 failing case(s), e.g. FAIL I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11 (got '14', want '11')
+CAUGHT   J4 VR: core.alternateRefsCommand is not neutralised (M-5)  -> 1 failing case(s), e.g. FAIL M-5 the repository's core.alternateRefsCommand program ran under the verifier's --fetch
+CAUGHT   J5 VR: the driver name is cut at its first dot (a dotted driver name keeps required=true)  -> 1 failing case(s), e.g. FAIL I-1 a required filter whose name contains a dot: exit 0 (got '20', want '0')
+CAUGHT   J6 VR: undecided only for a DIVERGED pin class (reviewer mutant RM2)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (got '11', want '1
+CAUGHT   J7 VR: process filters are not switched off (reviewer mutant RM3)  -> 2 failing case(s), e.g. FAIL RM3 a process filter and a touched file: exit 0 (got '20', want '0')
+CAUGHT   J8 VR: tags are not branch or tag tips (reviewer mutant RM4)  -> 2 failing case(s), e.g. FAIL I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (got '11', want '14')
+CAUGHT   K1 SC: a .git that git walks past to the parent is skipped again (I-3)  -> 4 failing case(s), e.g. FAIL I-3 a .git DIRECTORY with a truncated (empty) HEAD: 20, not a silent skip (got '0', want '20')
+CAUGHT   K2 SC: an unresolvable HEAD is always read as no commit yet (M-2)  -> 1 failing case(s), e.g. FAIL M-2 an emptied packed-refs: 20 (got '0', want '20')
+CAUGHT   K3 SC: the HEAD reflog is not consulted (M-2: an emptied packed-refs)  -> 1 failing case(s), e.g. FAIL M-2 an emptied packed-refs: 20 (got '0', want '20')
+EQUIVALENT EQ-K4 SC: the loose ref file is not consulted (the HEAD reflog of every repository with history decides the same cases; they differ only where reflogs are disabled)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   K5 SC: a detached HEAD that does not resolve is read as an unborn branch (M-2)  -> 3 failing case(s), e.g. FAIL M-2 a zero-length branch ref: 20, the rewritten store is not a new one (got '0', want '20')
+CAUGHT   L1 PR: a broken submodule is skipped by discover again (I-4)  -> 7 failing case(s), e.g. FAIL I-4 a submodule whose .git points at a missing git dir: 20 (got '0', want '20')
+CAUGHT   L2 PR: a dangling .git symlink is not a .git entry (I-4)  -> 1 failing case(s), e.g. FAIL I-4 a dangling .git symlink: 20 (got '0', want '20')
+CAUGHT   M1 IM: a failing git remote reads as no remotes (M-3)  -> 2 failing case(s), e.g. FAIL git remote failing (shim): 20, never nothing_to_merge (M-3) (got '0', want '20')
+CAUGHT   M2 FF: a failing git remote reads as no remotes (M-3)  -> 2 failing case(s), e.g. FAIL git remote failing (shim): exit 20 (got '0', want '20')
+CAUGHT   N1 IH: a case variant of a real third-party root is accepted (M-6a)  -> 2 failing case(s), e.g. FAIL M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3
+CAUGHT   N2 IH: an NFD root naming an indexed NFD path is refused again (M-6b)  -> 1 failing case(s), e.g. FAIL M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_
+CAUGHT   N3 IH: an exact root also counts as a case mismatch (M-6a false refusal)  -> 1 failing case(s), e.g. FAIL M-6a control: an exact root is no case mismatch (reasons: third_party_root_case_mismatch,third_party_file
+---- 20 mutations listed, 0 not caught or errored
+
+=== run_wp04f_mutations.sh (full run; V2 was reported ERROR there because the round-7 edit moved its old text; re-pointed and re-run with the V prefix below)
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 4440a95aef6c9aa3783f49cb5504ae9946b6ce741e39033fa66dfc91dcbcc9f2
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# test sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# test sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# test sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# test sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+CONTROL  scripts/repo/tests/test_push_recursive.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_scope_check.sh + scripts/repo/tests/test_wp04d.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_no_ci.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_check_revision_headers.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_integrate_merge.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_index_health_extra.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CONTROL  scripts/audit/tests/test_scope_to_lumen_json.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   F1 PR: a failing rev-list is ignored (the old mapfile reading)  -> 8 failing case(s), e.g. FAIL rev-list failing, CPA commit only: 20 (W6-2) (got '0', want '20')
+CAUGHT   F2 PR: a moved remote with unrecorded commits is judged 20 again (W6-1)  -> 10 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F3 PR: a failing gitlink listing under --recursive is read as no submodules  -> 6 failing case(s), e.g. FAIL gitlink listing failing under --recursive: 20 (F3) (got '0', want '20')
+CAUGHT   F4 PR: the nested listing refusal only at depth 0 (R1 of the review)  -> 3 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   F5 PR: a failing git remote is read as no remotes  -> 1 failing case(s), e.g. FAIL named git_listing_failed (remote) (no 'git_listing_failed' in 'REFUSED	.	unrecorded_local_commit	ae32bdda
+CAUGHT   F6 PR: an unsafe gitlink path is skipped instead of refused (W6-4)  -> 3 failing case(s), e.g. FAIL gitlink path -evil under --recursive: 20 (W6-4) (got '0', want '20')
+CAUGHT   F7 PR: MOVED is recorded only for a remote without a tracking ref (R3 of the review)  -> 11 failing case(s), e.g. FAIL every remote moved AND a real hand commit: 11 (round 6 W6-1: conservative, was 20 in round 5; the hand co
+CAUGHT   F8 PR: a failing parents listing of a held commit is ignored  -> 3 failing case(s), e.g. FAIL parents listing failing for a held commit: 20 (W6-12) (got '14', want '20')
+CAUGHT   F9 PR: the discover marker problem again: a path with a leading ? is judged a failure  -> 4 failing case(s), e.g. FAIL submodule at the path ?x, nothing outgoing there: 0 (W6-3) (got '20', want '0')
+CAUGHT   G1 SC: a broken submodule .git is skipped silently  -> 3 failing case(s), e.g. FAIL submodule .git pointing at a missing git dir: 20 (W6-6) (got '0', want '20')
+CAUGHT   G2 SC: an unreadable HEAD tree is read as a new store  -> 3 failing case(s), e.g. FAIL HEAD tree of the evidence directory unreadable (object missing): 20, not 0 (W6-7) (got '0', want '20')
+CAUGHT   G3 SC: no commit yet is read as an unreadable tree (false refusal)  -> 1 failing case(s), e.g. FAIL golden-false: a repository without any commit (no HEAD) holds no store yet: 0 (got '20', want '0')
+CAUGHT   G4 SC: the nested listing failure is judged only at depth 0 (R2 of the review)  -> 2 failing case(s), e.g. FAIL listing failing only inside mods/sub: 20 (W6-8) (got '0', want '20')
+CAUGHT   G5 SC: a symlink store is not refused (HM link test dropped)  -> 2 failing case(s), e.g. FAIL HEAD holds the link, the work tree a regular file starting with the link text (type change): 13 (B-1) (go
+CAUGHT   H1 NC: no EXIT trap for the listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated run (W6-5) (got 'check_no_ci.tzREjm ', want '')
+EQUIVALENT EQ-H2 NC: no TERM trap (bash runs the EXIT trap itself on SIGTERM; the TERM trap only keeps the status explicit)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   H3 RH: no EXIT trap for the --measure listing temp file  -> 1 failing case(s), e.g. FAIL no temp file left behind by the terminated --measure run (W6-5) (got 'check_rh.LKlcrS ', want '')
+CAUGHT   I1 IM: a failing git status reads as nothing dirty  -> 2 failing case(s), e.g. FAIL git status failing (shim): 20 (W6-12) (got '12', want '20')
+CAUGHT   I2 IM: a failing git diff reads as no overlap  -> 2 failing case(s), e.g. FAIL git diff --name-only failing (shim): 20, never a silent merge (W6-12) (got '12', want '20')
+CAUGHT   V1 VR: ls-remote tail matches count as branch or tag tips (N6-1)  -> 2 failing case(s), e.g. FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0
+ERROR    V2 VR: a tip that is not held locally is not undecided (N6-2)  -> old text not found in scripts/repo/verify_repos.sh: '$GIT -C "$abs" cat-file -e "${tt}^{commit}" 2>/dev/null || { undecided'
+EQUIVALENT EQ-V3 VR: a missing pin object is not undecided (classify already answers UNKNOWN-DIFFERENT for a pin object that is not held)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   V4 VR: the tip-equality shortcut is dropped (MR1)  -> 1 failing case(s), e.g. FAIL MR1 a pin equal to a remote branch tip is held even when its object is absent locally: exit 0 (got '14', 
+CAUGHT   V5 VR: undecided keeps the definite class  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V6 VR: the dirty count failure is not fatal (MR2 family)  -> 6 failing case(s), e.g. FAIL N6-3 dirty count unreadable, --json FILE: exit 20 (got '0', want '20')
+CAUGHT   V7 VR: the diverged count failure is not fatal (MR2)  -> 2 failing case(s), e.g. FAIL MR2 the diverged count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V8 VR: the pin count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the pin count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V9 VR: the behind count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the behind count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V10 VR: the report is written before the counts are read (N6-3)  -> 4 failing case(s), e.g. FAIL N6-3 a report file exists after an exit-20 count failure
+CAUGHT   V11 VR: core.fsmonitor is not disabled on every command (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+CAUGHT   V12 VR: no configured filter driver is switched off (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the clean filter ran under the verifier
+CAUGHT   V13 VR: the plain ls-remote of the branch keeps the repository uploadpack (N6-4)  -> 3 failing case(s), e.g. FAIL N6-4 the remote.origin.uploadpack program ran
+CAUGHT   V14 VR: the fetch keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+CAUGHT   V15 VR: the default-branch ls-remote keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran in the default-branch lookup
+CAUGHT   W1 IH: a replacement character in a root is accepted (invalid UTF-8)  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W2 IH: a format character (BOM, zero-width space) is accepted  -> 3 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=
+CAUGHT   W3 IH: a backslash is accepted  -> 1 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAI
+CAUGHT   W4 IH: a decomposed (NFD) spelling is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want r
+CAUGHT   W5 IH: a no-break space inside a root is accepted  -> 2 failing case(s), e.g. FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 
+EQUIVALENT EQ-W6 IH: DEL not named (covered by the C* category check)  -> survived as documented (the guard it removes has a second layer)
+CAUGHT   S1 ST: a non-string class name is accepted  -> 3 failing case(s), e.g. FAIL N6-6 an integer class name in baseline_excludes: want rc=3 with a message and no output, got rc=1: Traceb
+CAUGHT   S2 ST: a non-UTF-8 input raises (UnicodeDecodeError not caught)  -> 3 failing case(s), e.g. FAIL N6-6 a submodules TSV that is not UTF-8: want rc=3 with a message and no output, got rc=1: Traceback (mos
+CAUGHT   S3 ST: root_files is compared without its type  -> 1 failing case(s), e.g. FAIL N6-6 root_files 1: want rc=1 naming root_files, got rc=0: 
+CAUGHT   S4 ST: the files are read with the locale encoding  -> 1 failing case(s), e.g. FAIL N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=3: unreadable input: 'ascii' codec
+---- 44 mutations listed, 1 not caught or errored
+
+=== run_wp04f_mutations.sh V (re-run after re-pointing V2)
+# WP-04/WP-02/WP-03 round 6 mutations (host run: bash scripts/repo/tests/run_wp04f_mutations.sh; each mutation = one edit of a COPY; CAUGHT = the covering test exits non-zero)
+# driver sha256 64ca21657d204c07a408d3dff476db5ede87e5689513dd88ce0ede36b5bdc7f5
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# test sha256 37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+# test sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# test sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# test sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# test sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# test sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+CONTROL  scripts/repo/tests/test_verify_repos_r6.sh against an unmutated copy -> exit 0, 0 failing case(s)
+CAUGHT   V1 VR: ls-remote tail matches count as branch or tag tips (N6-1)  -> 2 failing case(s), e.g. FAIL N6-1 a pin advertised only under refs/archive/refs/heads/old is held by NO branch or tag: exit 12 (got '0
+CAUGHT   V2 VR: a tip that is not held locally is not undecided (N6-2)  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V4 VR: the tip-equality shortcut is dropped (MR1)  -> 1 failing case(s), e.g. FAIL MR1 a pin equal to a remote branch tip is held even when its object is absent locally: exit 0 (got '14', 
+CAUGHT   V5 VR: undecided keeps the definite class  -> 2 failing case(s), e.g. FAIL N6-2 pin below a remote branch tip that is not held locally: exit 14, not 12 (got '12', want '14')
+CAUGHT   V6 VR: the dirty count failure is not fatal (MR2 family)  -> 6 failing case(s), e.g. FAIL N6-3 dirty count unreadable, --json FILE: exit 20 (got '0', want '20')
+CAUGHT   V7 VR: the diverged count failure is not fatal (MR2)  -> 2 failing case(s), e.g. FAIL MR2 the diverged count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V8 VR: the pin count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the pin count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V9 VR: the behind count failure is not fatal  -> 2 failing case(s), e.g. FAIL MR2 the behind count unreadable: exit 20 (fail-closed, not 0) (got '0', want '20')
+CAUGHT   V10 VR: the report is written before the counts are read (N6-3)  -> 4 failing case(s), e.g. FAIL N6-3 a report file exists after an exit-20 count failure
+CAUGHT   V11 VR: core.fsmonitor is not disabled on every command (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the repository's core.fsmonitor program ran 1 time(s)
+CAUGHT   V12 VR: no configured filter driver is switched off (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the clean filter ran under the verifier
+CAUGHT   V13 VR: the plain ls-remote of the branch keeps the repository uploadpack (N6-4)  -> 3 failing case(s), e.g. FAIL N6-4 the remote.origin.uploadpack program ran
+CAUGHT   V14 VR: the fetch keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran under the verifier's --fetch
+CAUGHT   V15 VR: the default-branch ls-remote keeps the repository uploadpack (N6-4)  -> 1 failing case(s), e.g. FAIL N6-4 the uploadpack program ran in the default-branch lookup
+---- 44 mutations listed, 0 not caught or errored
+
+=== mutate_index_health.sh
+baseline (unmutated) rc=0 SUMMARY pass=54 fail=0
+CAUGHT   m01-good-needs-pendingrefs-1 (8 failing check(s): FAIL all-good fixture: want rc=0 verdict=PASS, got rc=1 verdict=FAIL f)
+CAUGHT   m02-pendingrefs-ignored (1 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m03-absent-field-read-as-zero (2 failing check(s): FAIL required field index.pendingRefs absent: want rc=1 verdict=FAIL P)
+CAUGHT   m04-worktree-ignored (1 failing check(s): FAIL worktreeMismatch non-null: want rc=1 verdict=FAIL P1=FAIL, got rc)
+CAUGHT   m05-negative-needle-ignored (1 failing check(s): FAIL negative needle zz/does_not_exist.go found: want rc=1 verdict=FAI)
+CAUGHT   m06-positive-needle-ignored (1 failing check(s): FAIL X1 positive needle missing while tracked set is complete -> P2 FA)
+CAUGHT   m07-stale-ignored (1 failing check(s): FAIL Lumen status Stale: yes: want rc=1 verdict=FAIL P7=FAIL, got rc=0)
+CAUGHT   m08-no-status-passes (1 failing check(s): FAIL no Lumen status file and no probe: want rc=1 verdict=FAIL P-Lumen)
+CAUGHT   m09-bin-absent-passes (1 failing check(s): FAIL --lumen-bin path does not exist: want rc=1 verdict=FAIL P-Lumen=F)
+CAUGHT   m10-parity-tolerance-ignored (1 failing check(s): FAIL scope parity outside tolerance: want rc=1 verdict=FAIL P8=FAIL, g)
+CAUGHT   m11-out-optional (1 failing check(s): FAIL missing --out: want rc=2, got rc=1)
+CAUGHT   m12-schema-marker (1 failing check(s): FAIL schema: want index-health/1, got index-health/2)
+CAUGHT   m13-p2-needles-not-recorded (1 failing check(s): FAIL P2 row must record needle_pos and needle_neg)
+CAUGHT   m14-verdict-always-pass (48 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m15-chunks-zero-ok (1 failing check(s): FAIL X3 Chunks 0 -> P7 FAIL: want rc=1 P7=FAIL chunks_zero, got rc=0 P)
+CAUGHT   m16-files-ne-indexed-ok (1 failing check(s): FAIL X4 Files != Indexed -> P7 FAIL: want rc=1 P7=FAIL files_ne_indexe)
+CAUGHT   m17-secret-class-ignored (1 failing check(s): FAIL X6 .env.distributed indexed -> P3 FAIL: want rc=1 P3=FAIL secret_)
+CAUGHT   m18-env-example-flagged (1 failing check(s): FAIL X7 .env.example allowed -> P3 PASS (false-positive guard): want r)
+CAUGHT   m19-third-party-ignored (5 failing check(s): FAIL X8 file under a third-party root -> P3 FAIL: want rc=1 P3=FAIL th)
+CAUGHT   m20-own-org-ignored (1 failing check(s): FAIL X9 own-org root with no indexed file -> P3 FAIL: want rc=1 P3=FAI)
+CAUGHT   m21-tracked-missing-ignored (1 failing check(s): FAIL X10 tracked file not indexed -> P2 FAIL: want rc=1 P2=FAIL tracke)
+CAUGHT   m22-bin-probe-passes (1 failing check(s): FAIL X11 executable --lumen-bin without a status capture -> P-Lumen FA)
+CAUGHT   m23-skip-p8-not-incomplete (1 failing check(s): FAIL X12b complete flag)
+CAUGHT   m24-hash-not-of-file (1 failing check(s): FAIL X16 want b8a990bee2c8304cf6ffb1c46fa3a99c295ba27ece5c6434cae86563)
+CAUGHT   m25-dup-option-allowed (1 failing check(s): FAIL X13c rc=0)
+CAUGHT   m26-empty-tracked-not-blind (1 failing check(s): FAIL M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind: wa)
+CAUGHT   m27-state-not-complete-ignored (1 failing check(s): FAIL M5-3 index.state indexing (everything else clean) -> P1 FAIL inde)
+CAUGHT   m28-noncanonical-third-party-root-ignored (20 failing check(s): FAIL R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_)
+EQUIVALENT m29-eq-noncanonical-no-control-char-check-covered-by-C-category (survived as documented: every control character is a Unicode C* category character and noncanonical_root refuses those in its next loop; WF7 equivalence entry)
+CAUGHT   m30-noncanonical-no-whitespace-check (2 failing check(s): FAIL R4 non-canonical third-party root line [ a ] -> P3 FAIL third_par)
+CAUGHT   m31-noncanonical-no-dot-component-check (3 failing check(s): FAIL R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_)
+MUTATIONS total=31 survived=0
+rc=0
+
+=== mutate_anti_bluff_scan_wrapper.sh
+baseline (unmutated, mirror tree) rc=0 SUMMARY pass=45 fail=0
+CAUGHT   m01-no-declpath-check (5 failing check(s); first: FAIL hostile path: dotdot: want rc=2 + REFUSED + empty stdout; got rc=0 out=[] e)
+CAUGHT   m02-symlink-followed (3 failing check(s); first: FAIL hostile path: symlink_file: want rc=2 + REFUSED + empty stdout; got rc=1 ou)
+CAUGHT   m03-empty-list-clean (1 failing check(s); first: FAIL empty list file (scans nothing, must not read as clean): want rc=2 + REFUSE)
+CAUGHT   m04-always-exit-0 (6 failing check(s); first: FAIL whole tree with violations exits non-zero and reports them: want rc=1 grep=)
+CAUGHT   m05-list-optionlike-allowed (1 failing check(s); first: FAIL option-like --files-from value (an existing file named -x must still be ref)
+CAUGHT   m06-scan-whole-tree-in-list-mode (7 failing check(s); first: FAIL listed clean file, unlisted violations elsewhere IGNORED -> 0, no finding: )
+CAUGHT   m07-inner-rc-only (1 failing check(s); first: FAIL finding printed by the inner scanner with exit 0 still fails the wrapper: w)
+CAUGHT   m08-copy-skips-regular-file-check (1 failing check(s); first: FAIL hostile path: fifo: want rc=2 + REFUSED + empty stdout; got rc=124 out=[] e)
+MUTATIONS total=8 survived=0
+rc=0

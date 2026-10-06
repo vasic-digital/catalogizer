@@ -1,0 +1,65 @@
+# round7 evidence (wp02): host runs of the audit suites after the M-6 change, 3 sequential runs; head=26755ca512a59abaa529332ca066fc2ee71f6022 utc=2026-10-06T16:55:55Z host=anton
+# sha256 a05d5ae913b171e0505503f00b8b24f2a9026e690e6bc68044d1bd21ccc43828  scripts/audit/index_health.sh
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183  scripts/audit/derive_scope.sh
+# sha256 1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  scripts/audit/scope_to_lumen_json.py
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# sha256 f4c9ca6ae0b02cd3395daa8adc4744d4f38b4fb4816fde03145956d61d090b5d  scripts/audit/tests/test_index_health.sh
+# sha256 2c0db10b4cc580aedd9cfddc6f7a55686f109dde2f8c02d519693fcfd21cae97  scripts/audit/tests/mutate_index_health.sh
+1	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+1	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+1	test_index_health	rc=0	SUMMARY pass=13 fail=0
+1	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+1	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+2	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+2	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+2	test_index_health	rc=0	SUMMARY pass=13 fail=0
+2	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+2	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+3	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+3	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+3	test_index_health	rc=0	SUMMARY pass=13 fail=0
+3	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+3	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+== mutate_index_health.sh
+baseline (unmutated) rc=0 SUMMARY pass=54 fail=0
+CAUGHT   m01-good-needs-pendingrefs-1 (8 failing check(s): FAIL all-good fixture: want rc=0 verdict=PASS, got rc=1 verdict=FAIL f)
+CAUGHT   m02-pendingrefs-ignored (1 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m03-absent-field-read-as-zero (2 failing check(s): FAIL required field index.pendingRefs absent: want rc=1 verdict=FAIL P)
+CAUGHT   m04-worktree-ignored (1 failing check(s): FAIL worktreeMismatch non-null: want rc=1 verdict=FAIL P1=FAIL, got rc)
+CAUGHT   m05-negative-needle-ignored (1 failing check(s): FAIL negative needle zz/does_not_exist.go found: want rc=1 verdict=FAI)
+CAUGHT   m06-positive-needle-ignored (1 failing check(s): FAIL X1 positive needle missing while tracked set is complete -> P2 FA)
+CAUGHT   m07-stale-ignored (1 failing check(s): FAIL Lumen status Stale: yes: want rc=1 verdict=FAIL P7=FAIL, got rc=0)
+CAUGHT   m08-no-status-passes (1 failing check(s): FAIL no Lumen status file and no probe: want rc=1 verdict=FAIL P-Lumen)
+CAUGHT   m09-bin-absent-passes (1 failing check(s): FAIL --lumen-bin path does not exist: want rc=1 verdict=FAIL P-Lumen=F)
+CAUGHT   m10-parity-tolerance-ignored (1 failing check(s): FAIL scope parity outside tolerance: want rc=1 verdict=FAIL P8=FAIL, g)
+CAUGHT   m11-out-optional (1 failing check(s): FAIL missing --out: want rc=2, got rc=1)
+CAUGHT   m12-schema-marker (1 failing check(s): FAIL schema: want index-health/1, got index-health/2)
+CAUGHT   m13-p2-needles-not-recorded (1 failing check(s): FAIL P2 row must record needle_pos and needle_neg)
+CAUGHT   m14-verdict-always-pass (48 failing check(s): FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=0 verdict=P)
+CAUGHT   m15-chunks-zero-ok (1 failing check(s): FAIL X3 Chunks 0 -> P7 FAIL: want rc=1 P7=FAIL chunks_zero, got rc=0 P)
+CAUGHT   m16-files-ne-indexed-ok (1 failing check(s): FAIL X4 Files != Indexed -> P7 FAIL: want rc=1 P7=FAIL files_ne_indexe)
+CAUGHT   m17-secret-class-ignored (1 failing check(s): FAIL X6 .env.distributed indexed -> P3 FAIL: want rc=1 P3=FAIL secret_)
+CAUGHT   m18-env-example-flagged (1 failing check(s): FAIL X7 .env.example allowed -> P3 PASS (false-positive guard): want r)
+CAUGHT   m19-third-party-ignored (5 failing check(s): FAIL X8 file under a third-party root -> P3 FAIL: want rc=1 P3=FAIL th)
+CAUGHT   m20-own-org-ignored (1 failing check(s): FAIL X9 own-org root with no indexed file -> P3 FAIL: want rc=1 P3=FAI)
+CAUGHT   m21-tracked-missing-ignored (1 failing check(s): FAIL X10 tracked file not indexed -> P2 FAIL: want rc=1 P2=FAIL tracke)
+CAUGHT   m22-bin-probe-passes (1 failing check(s): FAIL X11 executable --lumen-bin without a status capture -> P-Lumen FA)
+CAUGHT   m23-skip-p8-not-incomplete (1 failing check(s): FAIL X12b complete flag)
+CAUGHT   m24-hash-not-of-file (1 failing check(s): FAIL X16 want b8a990bee2c8304cf6ffb1c46fa3a99c295ba27ece5c6434cae86563)
+CAUGHT   m25-dup-option-allowed (1 failing check(s): FAIL X13c rc=0)
+CAUGHT   m26-empty-tracked-not-blind (1 failing check(s): FAIL M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind: wa)
+CAUGHT   m27-state-not-complete-ignored (1 failing check(s): FAIL M5-3 index.state indexing (everything else clean) -> P1 FAIL inde)
+CAUGHT   m28-noncanonical-third-party-root-ignored (20 failing check(s): FAIL R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_)
+EQUIVALENT m29-eq-noncanonical-no-control-char-check-covered-by-C-category (survived as documented: every control character is a Unicode C* category character and noncanonical_root refuses those in it
+CAUGHT   m30-noncanonical-no-whitespace-check (2 failing check(s): FAIL R4 non-canonical third-party root line [ a ] -> P3 FAIL third_par)
+CAUGHT   m31-noncanonical-no-dot-component-check (3 failing check(s): FAIL R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_)
+MUTATIONS total=31 survived=0
+rc=0
+== RED (pre-fix index_health.sh, the M-6 cases only)
+== test_index_health_extra.sh (IH=pre-fix)
+FAIL M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=0 P3=PASS reason=[]
+FAIL M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=0 P3=PASS reason=[]
+FAIL M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical): want rc=1 P3=FAIL third_party_files_indexed, got rc=1 P3=FAIL reason=[third_party_root_not_canonical]
+SUMMARY pass=51 fail=3
+rc=1

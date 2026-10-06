@@ -25,8 +25,8 @@
 #         20 usage, unsafe path (absolute, `..`, leading dash, control character, glob character, non-canonical spelling), a declared
 #         directory (`declared_directory`), root that is no repository, and a git read that failed (never read as clean): `git_listing_failed` (a
 #         gitlink listing, at any depth), `git_status_failed` (a submodule's status), `submodule_git_unreadable` (a submodule with a `.git` entry that
-#         git cannot read: only an ABSENT `.git` is an uninitialised submodule; WF6 W6-6), `git_tree_unreadable` (HEAD's tree cannot be listed, so
-#         "is the store in HEAD?" cannot be answered; presence is decided only from a successful `git ls-tree`, a repository with no commit yet holds
+#         git cannot read: only an ABSENT `.git` is an uninitialised submodule; WF6 W6-6), `git_tree_unreadable` (HEAD's tree cannot be listed, or HEAD does not resolve in a repository that has history (a zero-length or garbage branch ref,
+#         an emptied packed-refs; WF7 M-2), so "is the store in HEAD?" cannot be answered; presence is decided only from a successful `git ls-tree`, a repository with no commit yet holds
 #         no store; WF6 W6-7).
 # Links   a declared store or blob path is judged by what git will COMMIT: a symlink (the path itself or any parent directory of it) or a path whose
 #         HEAD entry is a symlink (a type change rewrites every byte) is refused append_only / blob_name; `-f`, `stat`, `cmp` and `sha256sum` follow a
@@ -81,7 +81,17 @@ has_link() { # has_link <p>: the path or one of its parent directories is a syml
 HM=""
 head_mode() {
   local o; HM=""
-  git -C "$ROOT" rev-parse -q --verify HEAD >/dev/null 2>&1 || return 0
+  if ! git -C "$ROOT" rev-parse -q --verify HEAD >/dev/null 2>&1; then
+    # "no commit yet" is decided from the repository, not from a failing rev-parse: a zero-length or garbage branch ref, a detached HEAD that does not
+    # resolve, or an emptied packed-refs fails the same call in a repository that HAS commits, and a rewritten store would read as a new one (WF7 M-2).
+    # An unborn branch has no ref file and an empty HEAD reflog.
+    local hb rp lg
+    hb="$(git -C "$ROOT" symbolic-ref -q HEAD 2>/dev/null)" || die git_tree_unreadable "HEAD does not resolve and is not an unborn branch"
+    rp="$(git -C "$ROOT" rev-parse --git-path "$hb" 2>/dev/null)"; lg="$(git -C "$ROOT" rev-parse --git-path logs/HEAD 2>/dev/null)"
+    case "$rp" in /*) ;; *) rp="$ROOT/$rp" ;; esac; case "$lg" in /*) ;; *) lg="$ROOT/$lg" ;; esac
+    if [ -e "$rp" ] || [ -s "$lg" ]; then die git_tree_unreadable "HEAD does not resolve but the repository has history ($hb): its ref is unreadable"; fi
+    return 0
+  fi
   o="$(git -C "$ROOT" ls-tree HEAD -- "$1" 2>/dev/null)" || die git_tree_unreadable "$(printf '%q' "$1"): HEAD's tree cannot be listed"
   HM="${o%% *}"
 }
@@ -130,7 +140,9 @@ walk() { # walk <repo dir> <path prefix from the main root>
     if [ -e "$sub/.git" ] || [ -L "$sub/.git" ]; then
       git -C "$sub" rev-parse --git-dir >/dev/null 2>&1 || die submodule_git_unreadable "$(printf '%q' "$pre$sp") has a .git entry that git cannot read"
     else continue; fi
-    [ "$(cd "$sub" && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd "$sub" && pwd -P)" ] || continue
+    # git walks UP to the parent repository when the .git entry is a directory that is no valid git dir (a truncated HEAD) or a dangling symlink, so
+    # `rev-parse --git-dir` above succeeds for them: the work tree git resolves must be the submodule's own, else the submodule is broken (WF7 I-3)
+    [ "$(cd "$sub" && git rev-parse --show-toplevel 2>/dev/null)" = "$(cd "$sub" && pwd -P)" ] || die submodule_git_unreadable "$(printf '%q' "$pre$sp") has a .git entry that is no repository of its own (git resolves it to another work tree)"
     stf="$W/st.$$.$RANDOM"
     git -C "$sub" status --porcelain=v1 -z --ignore-submodules=all >"$stf" 2>/dev/null || { rm -f "$stf"; die git_status_failed "$(printf '%q' "$pre$sp")"; }
     while IFS= read -r -d '' entry; do

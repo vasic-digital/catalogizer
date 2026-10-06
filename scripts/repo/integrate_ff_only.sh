@@ -81,13 +81,15 @@ LOCAL="$(g rev-parse HEAD)"
 tm() { timeout "$TMO" "$@"; }
 # vet_remotes <repo dir>: every remote name and URL (fetch and push) of the repository passes lib_safe; sets VETREASON on a refusal
 vet_remotes() {
-  local d="$1" r u
+  local d="$1" r u rl
+  # the remote list is read with its status: a failing `git remote` inside a process substitution was "no remotes" and nothing was vetted (WF8)
+  rl="$(git -C "$d" remote 2>/dev/null)" || { VETREASON=git_listing_failed; return 1; }
   while IFS= read -r r; do
     [ -n "$r" ] || continue
     safe_remote "$r" || { VETREASON=unsafe_remote_name; return 1; }
     while IFS= read -r u; do safe_url "$u" || { VETREASON=unsafe_remote_url; return 1; }; done \
       < <(git -C "$d" config --get-all "remote.$r.url" 2>/dev/null; git -C "$d" config --get-all "remote.$r.pushurl" 2>/dev/null)
-  done < <(git -C "$d" remote)
+  done <<< "$rl"
   return 0
 }
 heads_tips() { awk '$1 ~ /^[0-9a-f]+$/ && (length($1)==40 || length($1)==64) {print $1}'; }
@@ -95,7 +97,7 @@ VETREASON=""
 vet_remotes "$ROOT" || finish 20 refused "$VETREASON"
 
 # ---- fetch objects, per remote, main repository: no ref and no FETCH_HEAD is written (T032 form) ----------------------
-TIPS=""; NREM=0; NFAIL=0; REMS="$(g remote)"
+TIPS=""; NREM=0; NFAIL=0; REMS="$(g remote 2>/dev/null)" || finish 20 refused git_listing_failed   # a failing `git remote` is never "no remotes" (WF7 M-3, the F3 class)
 for r in $REMS; do
   NREM=$((NREM+1))
   if ! lr="$(tm git -C "$ROOT" ls-remote -- "$r" "refs/heads/$BRANCH" 2>&1)"; then
@@ -116,7 +118,8 @@ for p in $SUBS; do safe_relpath "$p" || finish 20 refused unsafe_path; vet_remot
 for p in $SUBS; do
   d="$ROOT/$p"; sh="$(git -C "$d" rev-parse HEAD 2>/dev/null)" || continue
   st=current; subtips=""; rows=""
-  for r in $(git -C "$d" remote); do
+  rl="$(git -C "$d" remote 2>/dev/null)" || finish 20 refused git_listing_failed   # a failing `git remote` is never "no remotes" (WF8)
+  for r in $rl; do
     if lr="$(tm git -C "$d" ls-remote --heads -- "$r" 2>&1)" && tm git -C "$d" fetch -q --no-tags --no-recurse-submodules --no-write-fetch-head --refmap= -- "$r" $(printf '%s\n' "$lr" | heads_tips) >/dev/null 2>&1; then
       rows="$rows $r:ok"; for t in $(printf '%s\n' "$lr" | heads_tips); do subtips="$subtips $t"; done
     else rows="$rows $r:fetch_failed:$r"; fi
@@ -147,7 +150,8 @@ if [ -n "$CHANGED" ]; then
     { [ -d "$d" ] && [ "$(git -C "$d" rev-parse --show-toplevel 2>/dev/null)" = "$(cd "$d" && pwd -P)" ]; } || finish 20 refused pin_unverifiable
     pin="$(git -C "$d" rev-parse HEAD 2>/dev/null)" || finish 20 refused pin_unverifiable
     held=""; lack=""; failed=0; alltips=""; rrows=""; nrem=0
-    for r in $(git -C "$d" remote); do
+    rl="$(git -C "$d" remote 2>/dev/null)" || finish 20 refused git_listing_failed
+    for r in $rl; do
       nrem=$((nrem+1)); has=false; fst=ok
       if ! lr="$(tm git -C "$d" ls-remote --heads -- "$r" 2>/dev/null)"; then fst=failed
       else
@@ -180,9 +184,11 @@ is_cpa() {  # is_cpa <repo dir> <sha>: the one shared predicate (lib_safe.sh cpa
 }
 unrec() {  # unrec <repo dir> <branch> -> prints the non-CPA local-only commits; `!<tip>` instead when a remote tip is not held locally;
            # `?unreachable` after the commits when a remote could not be reached AND this clone knows no tip of it (cannot compute, WF3 review I-1)
-  local dir="$1" br="$2" ts="" r t c unk=0 cannot=0 lr kt out=""
-  [ -n "$(git -C "$dir" remote)" ] || return 0
-  for r in $(git -C "$dir" remote); do
+  local dir="$1" br="$2" ts="" r t c unk=0 cannot=0 lr kt out="" rl
+  # `%git_listing_failed` is the in-band marker for a failing `git remote` (this runs in a command substitution, where finish could not exit the script; WF8)
+  rl="$(git -C "$dir" remote 2>/dev/null)" || { echo '%git_listing_failed'; return 0; }
+  [ -n "$rl" ] || return 0
+  for r in $rl; do
     if ! lr="$(tm git -C "$dir" ls-remote -- "$r" "refs/heads/$br" 2>/dev/null)"; then
       # an unreachable remote is never a remote that holds nothing: what it last held is the last fetched tip, and without one it is unknown
       kt="$(known_tip "$dir" "$r" "$br")"; if [ -n "$kt" ]; then ts="$ts $kt"; else cannot=1; fi; continue; fi
@@ -202,7 +208,8 @@ if [ -z "$bad" ] && [ -n "$OWNED" ]; then
   [ -r "$ORGOF" ] || finish 20 refused org_of_missing
   for p in $SUBS; do
     d="$ROOT/$p"; own=0
-    for r in $(git -C "$d" remote); do u="$(git -C "$d" remote get-url "$r" 2>/dev/null)"; org="$(python3 "$ORGOF" "$u" 2>/dev/null | head -1)"
+    rl="$(git -C "$d" remote 2>/dev/null)" || finish 20 refused git_listing_failed
+    for r in $rl; do u="$(git -C "$d" remote get-url "$r" 2>/dev/null)"; org="$(python3 "$ORGOF" "$u" 2>/dev/null | head -1)"
       [ -n "$org" ] || continue
       case ",$OWNEDL," in *",$org,"*) own=1 ;; esac; done
     [ "$own" = 1 ] || continue
@@ -212,6 +219,7 @@ if [ -z "$bad" ] && [ -n "$OWNED" ]; then
   done
 fi
 if [ -n "$bad" ]; then
+  case "$bad" in '%'*) finish 20 refused git_listing_failed ;; esac
   case "$bad" in '!'*) COMMITS="$(js ${bad//!/})"; finish 20 refused remote_tip_not_held ;; esac
   CANNOT=0; case $'\n'"$bad" in *$'\n?unreachable'*) CANNOT=1; bad="$(printf '%s\n' "$bad" | grep -v '^?')" ;; esac
   COMMITS="$(js $bad)"

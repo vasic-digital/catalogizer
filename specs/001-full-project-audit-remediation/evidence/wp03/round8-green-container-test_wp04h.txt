@@ -1,0 +1,78 @@
+IDENTITY test=c65693f73d4d08426f9950052944ef532dc8154c656f5e44591671f80dd938c9 push_recursive=598d8db5c482d20ef0a96db2e16d7495d75ec6216e547cd55fb8dbc0f7c96b96 integrate_ff_only=e5737a291b8c658698904fa6db6f1a5d25101d08a5e3875e95220d29f73964ab integrate_merge=bb81c3c281740a8023a10a37cb7faf9f2f773d0a56434651c009016f452d8a88 verify_repos=dd2df842ebf7a76e683dff01ab0e67722f9b7cf1024dac9c75f00ef0ab2ef15c head=7f5e9f4ba15896356c340a053a377681b8dd2a37 host=fb7ce1f53284 git=2.39.5 utc=2026-10-06T17:24:53Z
+ok   I-3a unrecorded submodule commit: exit 20 (the submodule refusal stays the class) (=20)
+ok   I-3a the submodule is refused unrecorded_local_commit
+ok   I-3a the parent is named withheld: submodule_commit_not_held
+ok   I-3a main on r1 is UNCHANGED (nothing pushed for the parent) (=45d622b08c1770a89e1057a7ee20b7b4fe7cd8fb)
+ok   I-3a the submodule remote does not hold the pinned commit (the cause) (=no)
+ok   I-3b held submodule commit: exit 11 (parent withheld) (=11)
+ok   I-3b the submodule commit is HELD
+ok   I-3b the parent is withheld submodule_commit_not_held
+ok   I-3b main on r1 is UNCHANGED (=ccd0522f58946491dd3e55417f22bde39ab6df9f)
+ok   I-3c golden-false: every submodule commit pushed in the run: exit 0 (=0)
+ok   I-3c the submodule is pushed
+ok   I-3c the parent is pushed
+ok   I-3c a fresh clone --recurse-submodules of the published main works (=0)
+ok   I-3d golden-false: the pinned commit already on the submodule remote: exit 0 (=0)
+ok   I-3d the parent is pushed
+ok   I-3d a fresh clone --recurse-submodules works (=0)
+ok   I-3e submodule remote unreachable: exit 11 (=11)
+ok   I-3e the parent is withheld submodule_commit_not_held
+ok   I-3e main on r1 is UNCHANGED (=d1189295ac7f03355a5def4ed5fc0662b6efe879)
+ok   I-3f no --recursive, gitlink to a commit the submodule remote lacks: exit 11 (=11)
+ok   I-3f main on r1 is UNCHANGED (=31aba23758931b49707ed0ccb8eea0ff8cee43c3)
+ok   I-3f golden-false: once the submodule remote holds the commit the parent is pushed: exit 0 (=0)
+ok   I-3f the parent is pushed
+ok   I-3g a pin held by a remote tag is held: the parent is not withheld for it
+ok   I-3h golden-false: only a gitlink the remote tip already carries is unheld: the parent change is pushed, exit 0 (=0)
+ok   I-3h the parent is pushed
+ok   I-3i the submodule's own remote is ahead of its branch (the submodule row is remote_moved_since_s1): exit 11, and the parent is still pushed (the pin IS held) (=11)
+ok   I-3i the submodule row is remote_moved_since_s1, not submodule_commit_not_held
+ok   I-3i the parent is pushed
+ok   I-3j a submodule with no remote: exit 20 (its whole history is outgoing and unrecorded: the submodule refusal class) (=20)
+ok   I-3j the reason names it
+ok   I-3j main on r1 is UNCHANGED (=16d4fb05c246f39e7613343877427092081475a5)
+ok   I-3k a changed gitlink whose submodule is not initialised: exit 11 (golden-false control below: unchanged one is fine) (=11)
+ok   I-3k the reason names it
+ok   I-3k main on r1 is UNCHANGED (=1ea58cbb0cef61d6495e88e8049ed01c5391897e)
+ok   M-3 control: the fixture (owned submodule in the change set) runs clean with the counting shim: exit 0 (=0)
+ok   M-3 control: the run makes 8 `git remote` calls (every site is reached)
+ok   M-3 the failing git remote call #1 of 8: exit 20 (=20)
+ok   M-3 call #1: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #2 of 8: exit 20 (=20)
+ok   M-3 call #2: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #3 of 8: exit 20 (=20)
+ok   M-3 call #3: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #4 of 8: exit 20 (=20)
+ok   M-3 call #4: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #5 of 8: exit 20 (=20)
+ok   M-3 call #5: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #6 of 8: exit 20 (=20)
+ok   M-3 call #6: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #7 of 8: exit 20 (=20)
+ok   M-3 call #7: reason git_listing_failed (=git_listing_failed)
+ok   M-3 the failing git remote call #8 of 8: exit 20 (=20)
+ok   M-3 call #8: reason git_listing_failed (=git_listing_failed)
+ok   INFO-1 golden-false: all remotes reachable and in step: nothing_to_merge, exit 0 (=0)
+ok   INFO-1 control reports nothing_to_merge
+ok   INFO-1 golden-false: one remote reachable, one not, nothing diverged: exit 0 (a reachable remote answered) (=0)
+ok   INFO-1 EVERY remote unreachable: exit 11, not a clean 0 (=11)
+ok   INFO-1 reason remote_unreachable
+ok   INFO-1 it is not reported as nothing_to_merge
+ok   INFO-1 every remote lists a tip but every object fetch fails: exit 11, not a clean 0 (=11)
+ok   INFO-1 golden-false: the same remotes with a working fetch merge or fast-forward the remote tip (not 11) (=notEleven)
+ok   INFO-1 golden-false: a repository with NO remote at all: nothing_to_merge, exit 0 (=0)
+ok   M-6 a count cannot be read: exit 20 (=20)
+ok   M-6 no --json FILE exists after the exit-20 failure (no report contradicts the exit status)
+ok   M-6 golden-false: a good run exits 0 (=0)
+ok   M-6 golden-false: a good run overwrites the old file with a real report (=true)
+ok   M-6 a non-regular --json target (/dev/null) with an exit-20 failure: exit 20 (=20)
+ok   M-6 /dev/null is still a character device (the cleanup never removes a non-regular file)
+ok   M-6 a stale dangling --json symlink is removed
+ok   M-6 a stale --json symlink is removed (the link, not its target)
+ok   M-6 the symlink target itself is left alone (=kept)
+ok   M-6 a bad argument: exit 20 (=20)
+ok   M-6 a usage error does not delete the named file
+ok   M-6 an unknown option: exit 20 (=20)
+ok   M-6 an unknown option does not delete the named file
+SUMMARY pass=75 fail=0
+---- 75 ok, 0 failed

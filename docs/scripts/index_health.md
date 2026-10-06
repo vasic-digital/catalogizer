@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 5 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06 (round 6: N6-5 encoding class of third-party roots) |
-| Status | draft, untracked work product of T021 (WP-02); the scripts index `docs/scripts/README.md` and the root `README.md` link are NOT created here (they edit tracked files, deferred) |
-| Source | `scripts/audit/index_health.sh`; tests `scripts/audit/tests/test_index_health.sh` (T016, 13 checks), `test_index_health_extra.sh` (20 checks), `mutate_index_health.sh` (25 mutants) |
+| Last modified | 2026-10-06T17:00:00Z (round 7 fixes: P3 case variants and NFD roots, m29 equivalence); earlier: 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 (round 6: N6-5 encoding class of third-party roots) |
+| Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of T021 (WP-02) |
+| Source | `scripts/audit/index_health.sh`; tests `scripts/audit/tests/test_index_health.sh` (T016, 13 checks), `test_index_health_extra.sh` (54 checks), `mutate_index_health.sh` (31 mutants: 30 caught, 1 EQUIVALENT `m29-eq-...`, 0 survived; the harness prints EQUIVALENT for `-eq-` ids and does not count them: every control character is a Unicode `C*` category character that the next loop of `noncanonical_root` refuses, so dropping the explicit test cannot change a result) |
 
 ## Purpose
 
@@ -58,3 +58,5 @@ tracked file fails P2 independently); the supplementary X1 case isolates it.
 ## Round 6 (N6-5, MR4; revision 3)
 
 The round-5 canonical-root check closed the reported spellings, not the class. A root that can never equal an indexed path for an ENCODING reason read as clean exactly the same way, so P3 PASSED while third-party files were indexed. A third-party root line is now refused (`P3 FAIL third_party_root_not_canonical`) also when it holds: a character of a Unicode category `C*` (control, format: a byte order mark U+FEFF, a zero-width space U+200B; unassigned; private use; surrogate) or `Z*` other than an ordinary space (no-break space, U+2028, U+2029), the replacement character U+FFFD (an invalid UTF-8 byte decoded with `errors="replace"`), a backslash, or a spelling that is not NFC (a decomposed spelling never equals the composed one that git normally records). Golden-false cases that must NOT fire: an NFC non-ASCII root that holds an indexed file is a normal `third_party_files_indexed` hit, an NFC root with no indexed file is PASS, an inner ASCII space is a plain character. Residual (stated): a repository that genuinely records NFD file names has its roots refused until they are written in NFC; DEL (MR4) is also covered by the `C*` category check, so the single mutant that drops only the explicit `ord(c) == 127` test is equivalent (it stays documented in `run_wp04f_mutations.sh` as `EQ-W6`). Tests: `test_index_health_extra.sh` 45 checks (was 34).
+
+Round 7 (WF7 M-6): two residuals of the P3 root check are closed. (a) A CASE VARIANT of a real third-party root (`Third` for an indexed `third/`) matches nothing exactly and read as clean; it now FAILs `third_party_root_case_mismatch` (a root that matches nothing in any case is still legitimate: the tree is simply not indexed, which is why a typo or a homoglyph root stays PASS, an owner decision recorded in `$EV/wp04/wp04g-notes.md`). (b) An NFD root that names an NFD path git really indexed (a macOS-made commit) is a normal `third_party_files_indexed` hit, no longer refused `third_party_root_not_canonical`; an NFD root while only the NFC path is indexed stays refused. Tests: `test_index_health_extra.sh` 54 checks (was 47), mutants N1 to N3 in `scripts/repo/tests/run_wp04g_mutations.sh`.

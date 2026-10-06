@@ -141,4 +141,8 @@ PATH="$T/fshim:$PATH" FAILPAT='*diff --name-only*' run; eq "git diff --name-only
 fresh; loc l.txt 'l\n'; rc_ c1 base.txt 'incoming\n'; echo mine >> "$M/base.txt"; LT="$(head_)"
 PATH="$T/fshim:$PATH" FAILPAT='*status --porcelain=v1*' run; eq "git status failing (shim): 20 (W6-12)" "$RC" 20; has "named git_status_failed" "$(cat "$T/err")" git_status_failed; eq "HEAD unchanged when the dirty list cannot be read" "$(head_)" "$LT"
 fresh; loc l.txt 'l\n'; rc_ c1 base.txt 'incoming\n'; echo mine >> "$M/base.txt"; run; eq "control, real git: the overlap is still 12" "$RC" 12
+# (WF7 M-3) the remote list is read with its status: a failing `git remote` was "no remotes" (nothing_to_merge, exit 0) while a remote held a diverged tip
+fresh; loc l.txt 'l\n'; rc_ c1 r.txt 'r\n'; LT="$(head_)"
+PATH="$T/fshim:$PATH" FAILPAT='* remote' run; eq "git remote failing (shim): 20, never nothing_to_merge (M-3)" "$RC" 20; has "named git_listing_failed" "$(cat "$T/err")" git_listing_failed; eq "HEAD unchanged when the remote list cannot be read" "$(head_)" "$LT"
+fresh; loc l.txt 'l\n'; rc_ c1 r.txt 'r\n'; run; eq "control, real git: the diverged remote tip is merged (exit 0 with a MERGED row)" "$RC" 0; has "MERGED row" "$(cat "$T/out")" MERGED
 fin

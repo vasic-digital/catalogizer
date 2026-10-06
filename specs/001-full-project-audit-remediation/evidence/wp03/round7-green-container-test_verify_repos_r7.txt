@@ -1,0 +1,30 @@
+# round7 evidence | utc=2026-10-06T16:55:55Z host=anton head=26755ca512a59abaa529332ca066fc2ee71f6022 (working tree holds the uncommitted round-7 changes)
+# sha256 e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618  scripts/repo/verify_repos.sh
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# cmd: scripts/containers/run_pinned.sh --network=none --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp03/.rp IMG-TESTUTIL -- bash <test>   (inside the image: git 2.39.5 jq 1.6 python 3.11.2, mawk-class awk)
+IDENTITY test=e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89 verifier=e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618 head=26755ca512a59abaa529332ca066fc2ee71f6022 host=09f2d89e5ca2 git=2.39.5 jq=jq-1.6 python=3.11.2 utc=2026-10-06T16:51:48Z
+ok   I-1 control: plain git status with the required filter configured succeeds (=0)
+ok   I-1 a required filter and a touched (content-identical) file: exit 0, not 20 (=0)
+ok   I-1 the repository is not reported dirty (=false)
+ok   I-1 golden-false: a really modified file under the required filter is still dirty (exit 13) (=13)
+ok   I-1 control: plain status with the global required filter succeeds (=0)
+ok   I-1 a required filter set only in the global config: exit 0 (=0)
+ok   I-1 a required filter whose name contains a dot: exit 0 (=0)
+ok   I-2 baseline: a pin no remote ref holds: exit 11 (REMOTE-BEHIND) (=11)
+ok   I-2 fixture: the annotated tag object is not held by the submodule (=absent)
+ok   I-2 an annotated tag whose peeled commit is held does not make the answer undecided: exit 11 (=11)
+ok   I-2 the same under --fetch: exit 11 (=11)
+ok   I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11 (=11)
+ok   I-2 a tag on a held tree: exit 11 (=11)
+ok   I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (=14)
+ok   I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (=14)
+ok   I-2 golden-false: a tag whose commit is the pin holds it: exit 0 (=0)
+ok   M-5 control: a plain fetch runs core.alternateRefsCommand (the fixture is live)
+ok   M-5 diverged repository under --fetch: exit 12 (=12)
+ok   M-5 core.alternateRefsCommand never ran
+ok   RM3 control: a plain git status on a touched file runs the process filter (the fixture is live)
+ok   RM3 a process filter and a touched file: exit 0 (=0)
+ok   RM3 the process filter never ran
+SUMMARY pass=22 fail=0
+rc=0

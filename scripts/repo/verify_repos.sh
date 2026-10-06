@@ -57,9 +57,11 @@
 # Repository-configured code  A repository is data under examination and its configuration can name programs. What the verifier switches off, on EVERY git
 #          command (`$GIT`): core.hooksPath=/dev/null (no hook of .git/hooks and none of a repository-set core.hooksPath: git runs the
 #          reference-transaction hook even for a fetch that writes no ref), core.fsmonitor=false (a configured fsmonitor program), credential.helper
-#          and core.askPass empty, core.gitProxy empty, protocol.ext.allow=never (an `ext::` URL, also one reached through url.<base>.insteadOf);
-#          per repository, every configured filter.<name>.clean|smudge|process is overridden with an EMPTY command (the status / ls-files /
-#          hash-object comparison then runs UNFILTERED: a file a filter normalises can read modified, never clean by mistake); per remote,
+#          and core.askPass empty, core.gitProxy empty, protocol.ext.allow=never (an `ext::` URL, also one reached through url.<base>.insteadOf),
+#          core.alternateRefsCommand=true (git fetch runs that program for a repository with an alternate object store; `true` lists no refs; WF7 M-5);
+#          per repository, every configured filter.<name>.clean|smudge|process is overridden with an EMPTY command AND filter.<name>.required=false
+#          (the status / ls-files / hash-object comparison then runs UNFILTERED: a file a filter normalises can read modified, never clean by mistake;
+#          a REQUIRED driver with no command would make git die "clean filter failed" on every touched file, a false exit 20: WF7 I-1); per remote,
 #          the explicit option --upload-pack=git-upload-pack on every ls-remote and fetch (a `-c remote.<n>.uploadpack=` would NOT do: git keeps the
 #          FIRST of several values and the repository's own is first). NOT switched off, and stated rather than claimed: a remote
 #          helper chosen by remote.<name>.vcs or by a `<helper>::` URL (such a URL is unclassifiable and never sent to git here), and
@@ -84,10 +86,14 @@ GIT="${VERIFY_GIT:-git}"
 # No repository hook ever runs in the verifier (R1, round 5): git runs the reference-transaction hook even for the empty transaction of a
 # fetch that writes no ref, and a hook is code of the repository under examination. Every git command below goes through $GIT. Round 6
 # (N6-4) widens this to the other repository-configured programs, see "Repository-configured code" in the header.
-GIT="$GIT -c core.hooksPath=/dev/null -c core.fsmonitor=false -c credential.helper= -c core.askPass= -c core.gitProxy= -c protocol.ext.allow=never"
+GIT="$GIT -c core.hooksPath=/dev/null -c core.fsmonitor=false -c credential.helper= -c core.askPass= -c core.gitProxy= -c protocol.ext.allow=never -c core.alternateRefsCommand=true"
 ROOT="$(pwd)"; JSON_OUT=""; DO_FETCH=0; NO_REMOTE=0; STRICT=0; JOBS=6; TMO=25; QUIET=0; SELFTEST=0
 OWNED_ORGS=""; EXC_FILE="$HERE/exceptions.tsv"
 die20() { echo "verify_repos: $*" >&2; exit 20; }
+# once the arguments are parsed (see below) a run that exits 20 must not leave the --json FILE of an EARLIER run behind: that report would contradict this exit status
+# (WF7 M-6, WF8). A regular file or a symlink is removed (a symlink itself, never its target); a device such as /dev/null is never touched; a bad ARGUMENT exits
+# through the first definition, before any run exists, and removes nothing.
+die20_run() { echo "verify_repos: $*" >&2; if [ -n "$JSON_OUT" ] && { [ -f "$JSON_OUT" ] || [ -L "$JSON_OUT" ]; }; then rm -f -- "$JSON_OUT"; fi; exit 20; }
 usage() { awk 'NR>=2 { if ($0 !~ /^#/) exit; print }' "$SELF" | sed 's/^# \{0,1\}//'; }
 SSH_CMD='ssh -o BatchMode=yes -o ConnectTimeout=10'
 # ONE status invocation, used by the workers AND by the control needle. --untracked-files=all is explicit so a repository-level
@@ -115,10 +121,13 @@ worker() {
   if [ "$rel" != "." ]; then [ -e "$abs/.git" ] || { fail "no .git entry (pin '$pin'); not a checked-out repository"; return 1; }; fi
   # every configured filter driver is switched off for this worker's git commands (an empty command is no filter): git config injected through the
   # environment applies to every git child of the worker, including those in pipelines (N6-4)
-  local fk nfk=0; GIT_CONFIG_COUNT=0
+  local fk fnm nfk=0; declare -A fseen=(); GIT_CONFIG_COUNT=0
   while IFS= read -r fk; do
     [ -n "$fk" ] || continue
     export "GIT_CONFIG_KEY_$nfk=$fk" "GIT_CONFIG_VALUE_$nfk="; nfk=$((nfk+1))
+    # a REQUIRED driver without a command is a hard git error, not "no filter": every driver name also gets required=false (WF7 I-1; the name may contain dots)
+    fnm="${fk#filter.}"; fnm="${fnm%.*}"
+    if [ -z "${fseen[$fnm]+x}" ]; then fseen["$fnm"]=1; export "GIT_CONFIG_KEY_$nfk=filter.$fnm.required" "GIT_CONFIG_VALUE_$nfk=false"; nfk=$((nfk+1)); fi
   done < <($GIT -C "$abs" config --name-only --get-regexp '^filter\..*\.(clean|smudge|process)$' 2>/dev/null)
   export GIT_CONFIG_COUNT=$nfk
   top="$($GIT -C "$abs" rev-parse --show-toplevel 2>/dev/null)" || { fail "git rev-parse --show-toplevel failed"; return 1; }
@@ -283,6 +292,9 @@ worker() {
               # R3 (round 5): not being on the compared branch is not "the remote does not hold the pin": the pin is held when ANY remote branch or
               # tag tip equals it or descends from it (a fresh clone fetches every branch and tag, and submodule update then finds the commit).
               held=0; undecided=0; alltips="$(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="$SSH_CMD" timeout "$TMO" $GIT -C "$abs" ls-remote --upload-pack=git-upload-pack -- "$r" 'refs/heads/*' 'refs/tags/*' 2>/dev/null)" || alltips=""
+              # an annotated tag is advertised twice: the tag OBJECT (refs/tags/v1) and its peeled commit (refs/tags/v1^{}). The object line is decided by
+              # its peeled twin, never "a tip this clone does not hold" (WF7 I-2)
+              alltips="$(printf '%s\n' "$alltips" | awk '{ r[$2]=1; l[NR]=$0; n[NR]=$2 } END { for (i=1;i<=NR;i++) { if (n[i] ~ /^refs\/tags\// && n[i] !~ /\^\{\}$/ && ((n[i] "^{}") in r)) continue; print l[i] } }')"
               while IFS= read -r tl; do
                 tt="${tl%%[[:space:]]*}"; [ "${#tt}" = 40 ] && [ -z "${tt//[0-9a-f]/}" ] || continue
                 # the pattern match of ls-remote is a TAIL match (refs/archive/refs/heads/old answers `refs/heads/*`): only a ref whose name STARTS with
@@ -291,7 +303,11 @@ worker() {
                 if [ "$tt" = "$attpin" ]; then held=1; break; fi
                 # a tip or the pin whose object this clone does not hold cannot be compared: that leaves the question UNDECIDED, which is
                 # UNKNOWN-DIFFERENT below, never a definite "the remote does not hold the pin" (N6-2)
-                $GIT -C "$abs" cat-file -e "${tt}^{commit}" 2>/dev/null || { undecided=1; continue; }
+                if ! $GIT -C "$abs" cat-file -e "${tt}^{commit}" 2>/dev/null; then
+                  # a HELD blob or tree (a tag on a non-commit) can never descend from the pin: decided, not undecided (WF7 I-2); anything else is not held
+                  case "$($GIT -C "$abs" cat-file -t "$tt" 2>/dev/null)" in blob|tree) continue ;; esac
+                  undecided=1; continue
+                fi
                 $GIT -C "$abs" cat-file -e "${attpin}^{commit}" 2>/dev/null || { undecided=1; continue; }
                 $GIT -C "$abs" merge-base --is-ancestor "$attpin" "$tt" 2>/dev/null; a=$?
                 case "$a" in 0) held=1; break ;; 1) ;; *) fail "git merge-base (pin vs a remote ref) failed against remote $r"; return 1 ;; esac
@@ -367,6 +383,7 @@ if [ "$SELFTEST" = 1 ]; then
   needle && { echo "SELF-TEST: pass=1 fail=0 (control needle: sees a dirty file, reads a clean tree clean, a corrupt index fails); full matrix: scripts/repo/tests/test_verify_repos.sh"; exit 0; }
   echo "SELF-TEST: the control needle FAILED" >&2; exit 20
 fi
+die20() { die20_run "$@"; }
 command -v jq >/dev/null || die20 "jq required"
 command -v python3 >/dev/null || die20 "python3 required (the shared organisation parser)"
 command -v sha256sum >/dev/null || die20 "sha256sum required"

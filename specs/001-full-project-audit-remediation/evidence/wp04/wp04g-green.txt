@@ -1,0 +1,121 @@
+# WP-04 round 7 (wp04g) green runs: 22 suites x 3 sequential runs (WP-04 helpers, verify, audit) + the full verify_repos matrix x 3
+# 2026-10-06T16:26:28Z host=anton head=26755ca512a59abaa529332ca066fc2ee71f6022 git=2.53.0  (the working tree holds the uncommitted round-7 changes; hashes below identify them)
+# sha256 dc469a64aee2dd38f8995c54995718d57f5b4163074be10470b60b19a99d7bbc  scripts/repo/check_class.sh
+# sha256 02c1d2a9d31364ffd73bb1da50e7f4c42c739afe778174b4337d9f129698e66c  scripts/repo/check_no_ci.sh
+# sha256 1e421f83128eb403c98931bba2d4df1e815454bfd0da2b8e2a262de95e22d931  scripts/repo/check_revision_headers.sh
+# sha256 c1df5ca244228594c0b15060ed6b96611aded8028e539c35818624a2f8d80067  scripts/repo/commit_recursive.sh
+# sha256 3dfd618b9104a82c5cfdab4b2db48b263c122aa3f46bb43d48c322d87c8b3b0d  scripts/repo/fixture_roots.sh
+# sha256 2528c7a22d78215bf1edd861d9cd33417c322fbb927c4e7f050a6a4bd074ff57  scripts/repo/integrate_ff_only.sh
+# sha256 d275680c1797287c965314cf7e535d406634ed5c555eae4ce9ccc5163c7ca52f  scripts/repo/integrate_merge.sh
+# sha256 8f74c849ba05d912b000063a7cedd7bee2b7a022f0a8272325fcc850edc891cd  scripts/repo/lib_safe.sh
+# sha256 2fe8971b1826f830e27c0f54022b9d086d7da8c9705777a514a60386aa949c58  scripts/repo/push_recursive.sh
+# sha256 2f55cf136913d9d8f5e6ca06754359940322771184b380f1945980a4beb65ab1  scripts/repo/record_deferral.sh
+# sha256 70a7e97e31d8a1dfdfe928fbdfa3faec0151938c126dffc6e248d3eed33471eb  scripts/repo/scope_check.sh
+# sha256 79059ec6a66a11c7dfa5f35cb4f9918bd26a3ff5aa538317b5c52c404b9ff0ff  scripts/repo/validate_cheap.sh
+# sha256 e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618  scripts/repo/verify_repos.sh
+# sha256 a05d5ae913b171e0505503f00b8b24f2a9026e690e6bc68044d1bd21ccc43828  scripts/audit/index_health.sh
+# sha256 253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183  scripts/audit/derive_scope.sh
+# sha256 59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d  scripts/audit/org_of.py
+# sha256 1df20a5ff43a27d05c3727bb0b58496f894ca70e221c5b89dd8043c248d9a219  scripts/audit/scope_to_lumen_json.py
+# sha256 7cb28b2d2f93625ef6a234e028670121c71be893c34eca1a745d2cbd34074da4  scripts/anti-bluff-scan.sh
+# sha256 f11deaec778358549752cba3619447bd6874d5cc2e6a2836730cc243cc645158  scripts/audit/anti-bluff-scan.sh
+# sha256 4ae7335cf4078d9958e32dfd97730f1a1d75c581415f72fd9db84686d24562bb  scripts/repo/tests/test_check_classes.sh
+# sha256 c4bd61f62f1e80d55e759604d3682f693754e039cc049db2d1096a9cafa2fd1c  scripts/repo/tests/test_check_no_ci.sh
+# sha256 d25769eaa196ae38f61595b2e72e336ede6d7dc0045ed66b73c073847c89403e  scripts/repo/tests/test_check_revision_headers.sh
+# sha256 7d0a4bb444881a69f960110c93ae6d98dd30b456ba6628537e28ef7c3ba5a96f  scripts/repo/tests/test_commit_recursive.sh
+# sha256 9f0874d8f53fff96c3b291176758141219209d0cd9adbccfea880d866d88a196  scripts/repo/tests/test_fixture_roots.sh
+# sha256 7d4d8790e56279018b0277c5c4481790275443d69b83036769c1b6f13e3555c2  scripts/repo/tests/test_integrate_ff_only.sh
+# sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# sha256 fe7e42ea8c45ea61de432f2f0b3de87fd958c5c6cbab60b2d4217444f3043145  scripts/repo/tests/test_planned_paths_tracked.sh
+# sha256 6b7a32cc377a9c788732bc4afd571a824e3a9802e1cdcef27403a8be66257598  scripts/repo/tests/test_push_recursive.sh
+# sha256 3babdf3db5a6b4416b96c548e29cc32bd599dfeaab747fa1bd8fbbacce7fabcc  scripts/repo/tests/test_record_deferral.sh
+# sha256 0e92840153842a05858071fbfb14d1c8cdf95ca2b6649cb20a7e3d5eb915cc5f  scripts/repo/tests/test_scope_check.sh
+# sha256 3b61f92061ca033026c8d3f1530dca65e53d164e7ecc8c8a6f10f4f069a6992b  scripts/repo/tests/test_validate_cheap.sh
+# sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# sha256 86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e  scripts/repo/tests/test_verify_repos.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# sha256 e3920adbdbe485c2e2692b70d3317ecacbc97f885da7c90b4158916526db94dd  scripts/repo/tests/test_wp04c.sh
+# sha256 58fd484e64337b86585bdfbbef642f613b219a95b45ba19a342aafc72bc9476c  scripts/repo/tests/test_wp04d.sh
+# sha256 235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3  scripts/repo/tests/test_wp04g.sh
+# sha256 b7d15121c4b75a6893592b1b1993c37da16ad5d8305e3d37dc891703ed0bcb14  scripts/repo/tests/run_wp04g_mutations.sh
+# sha256 64ca21657d204c07a408d3dff476db5ede87e5689513dd88ce0ede36b5bdc7f5  scripts/repo/tests/run_wp04f_mutations.sh
+# sha256 16a87323009108af8fc4dbf40c10c42a794f4ce6a23c9e306a8a419965fc1757  scripts/audit/tests/test_anti_bluff_scan_wrapper.sh
+# sha256 2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2  scripts/audit/tests/test_derive_scope.sh
+# sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+# sha256 f4c9ca6ae0b02cd3395daa8adc4744d4f38b4fb4816fde03145956d61d090b5d  scripts/audit/tests/test_index_health.sh
+# sha256 37d992b2696bb710c189a39cfa1525533603e0e23a0ee533ca1dda89d64b67d6  scripts/audit/tests/test_scope_to_lumen_json.sh
+# sha256 2c0db10b4cc580aedd9cfddc6f7a55686f109dde2f8c02d519693fcfd21cae97  scripts/audit/tests/mutate_index_health.sh
+# run	suite	rc	last summary line
+1	test_check_no_ci	rc=0	---- 38 ok, 0 failed
+1	test_check_revision_headers	rc=0	---- 29 ok, 0 failed
+1	test_scope_check	rc=0	---- 70 ok, 0 failed
+1	test_validate_cheap	rc=0	---- 106 ok, 0 failed
+1	test_commit_recursive	rc=0	---- 58 ok, 0 failed
+1	test_push_recursive	rc=0	---- 153 ok, 0 failed
+1	test_integrate_merge	rc=0	---- 130 ok, 0 failed
+1	test_integrate_ff_only	rc=0	---- 84 ok, 0 failed
+1	test_record_deferral	rc=0	---- 26 ok, 0 failed
+1	test_check_classes	rc=0	---- 131 ok, 0 failed
+1	test_fixture_roots	rc=0	---- 30 ok, 0 failed
+1	test_wp04c	rc=0	---- 231 ok, 0 failed
+1	test_wp04d	rc=0	---- 124 ok, 0 failed
+1	test_wp04g	rc=0	---- 30 ok, 0 failed
+1	test_verify_repos_r6	rc=0	SUMMARY pass=41 fail=0
+1	test_verify_repos_r7	rc=0	SUMMARY pass=22 fail=0
+1	test_verify_schema	rc=0	SUMMARY pass=14 fail=0
+1	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+1	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+1	test_index_health	rc=0	SUMMARY pass=13 fail=0
+1	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+1	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+2	test_check_no_ci	rc=0	---- 38 ok, 0 failed
+2	test_check_revision_headers	rc=0	---- 29 ok, 0 failed
+2	test_scope_check	rc=0	---- 70 ok, 0 failed
+2	test_validate_cheap	rc=0	---- 106 ok, 0 failed
+2	test_commit_recursive	rc=0	---- 58 ok, 0 failed
+2	test_push_recursive	rc=0	---- 153 ok, 0 failed
+2	test_integrate_merge	rc=0	---- 130 ok, 0 failed
+2	test_integrate_ff_only	rc=0	---- 84 ok, 0 failed
+2	test_record_deferral	rc=0	---- 26 ok, 0 failed
+2	test_check_classes	rc=0	---- 131 ok, 0 failed
+2	test_fixture_roots	rc=0	---- 30 ok, 0 failed
+2	test_wp04c	rc=0	---- 231 ok, 0 failed
+2	test_wp04d	rc=0	---- 124 ok, 0 failed
+2	test_wp04g	rc=0	---- 30 ok, 0 failed
+2	test_verify_repos_r6	rc=0	SUMMARY pass=41 fail=0
+2	test_verify_repos_r7	rc=0	SUMMARY pass=22 fail=0
+2	test_verify_schema	rc=0	SUMMARY pass=14 fail=0
+2	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+2	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+2	test_index_health	rc=0	SUMMARY pass=13 fail=0
+2	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+2	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+3	test_check_no_ci	rc=0	---- 38 ok, 0 failed
+3	test_check_revision_headers	rc=0	---- 29 ok, 0 failed
+3	test_scope_check	rc=0	---- 70 ok, 0 failed
+3	test_validate_cheap	rc=0	---- 106 ok, 0 failed
+3	test_commit_recursive	rc=0	---- 58 ok, 0 failed
+3	test_push_recursive	rc=0	---- 153 ok, 0 failed
+3	test_integrate_merge	rc=0	---- 130 ok, 0 failed
+3	test_integrate_ff_only	rc=0	---- 84 ok, 0 failed
+3	test_record_deferral	rc=0	---- 26 ok, 0 failed
+3	test_check_classes	rc=0	---- 131 ok, 0 failed
+3	test_fixture_roots	rc=0	---- 30 ok, 0 failed
+3	test_wp04c	rc=0	---- 231 ok, 0 failed
+3	test_wp04d	rc=0	---- 124 ok, 0 failed
+3	test_wp04g	rc=0	---- 30 ok, 0 failed
+3	test_verify_repos_r6	rc=0	SUMMARY pass=41 fail=0
+3	test_verify_repos_r7	rc=0	SUMMARY pass=22 fail=0
+3	test_verify_schema	rc=0	SUMMARY pass=14 fail=0
+3	test_derive_scope	rc=0	SUMMARY pass=9 fail=0
+3	test_scope_to_lumen_json	rc=0	SUMMARY pass=52 fail=0
+3	test_index_health	rc=0	SUMMARY pass=13 fail=0
+3	test_index_health_extra	rc=0	SUMMARY pass=54 fail=0
+3	test_anti_bluff_scan_wrapper	rc=0	SUMMARY pass=45 fail=0
+1	test_verify_repos	rc=0	SUMMARY pass=404 fail=0
+2	test_verify_repos	rc=0	SUMMARY pass=404 fail=0
+3	test_verify_repos	rc=0	SUMMARY pass=404 fail=0
+# per-suite identity lines of the new tests (first run):
+IDENTITY test=e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89 verifier=e2eb22a94344d04a8d119ba9856e5905ca8eca7bdc5651dfd533e410d67fa618 head=26755ca512a59abaa529332ca066fc2ee71f6022 host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-06T16:04:41Z
+IDENTITY test=235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3 scope_check=70a7e97e31d8a1dfdfe928fbdfa3faec0151938c126dffc6e248d3eed33471eb push_recursive=2fe8971b1826f830e27c0f54022b9d086d7da8c9705777a514a60386aa949c58 head=26755ca512a59abaa529332ca066fc2ee71f6022 host=anton git=2.53.0 utc=2026-10-06T16:04:22Z

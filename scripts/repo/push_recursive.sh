@@ -23,6 +23,13 @@
 #   - per remote: its live tip is read with `git ls-remote`; the target is pushed as `git push -- <remote> <sha>:refs/heads/<branch>` only
 #     when that tip is an ancestor of the target (a remote without the branch has none and is pushed); a tip that is not an ancestor, or
 #     whose objects are not held locally, gives no push call and `remote_moved_since_s1`; a remote that already holds the target is not pushed.
+# Gitlinks (WF8 I-3, docs/16 S6 rule (b))  before a push of <target> to a remote, every gitlink of the target's tree that the remote's current tip does not already carry
+#         (all of them for a remote without the branch) is checked: its commit must be held by EVERY remote of that submodule, read live with `git ls-remote` AFTER the
+#         deeper pushes of the run (so a commit this run pushed first counts) and counted when a branch or tag tip of the remote is that commit or descends from it.
+#         Otherwise the parent is withheld: `NOPUSH <repo> <remote> submodule_commit_not_held <path> <sha> (<why>)`, exit 11, nothing pushed for it (a fresh
+#         `clone --recurse-submodules` of a published parent would fail `not our ref`). CONSERVATIVE, stated: a submodule that is not initialised, has no remote, an unsafe
+#         or unreachable remote, or a remote tip whose objects this clone does not hold (it could descend from the pin; unprovable here) is "not held". A gitlink the
+#         remote's tip already carries is never re-checked, and a remote that already holds the target gets no push and no check.
 # Unreachable remote  its live tip cannot be read. What it last held is taken from the last fetched tip refs/remotes/<remote>/<branch> when this clone has
 #         one (never "it holds nothing"); an unreachable remote with NO such tip is unknown: while a non-CPA local-only commit exists, nothing is
 #         pushed and every unreachable remote is reported `NOPUSH <repo> <remote> remote_unreachable` (exit 11), not `unrecorded_local_commit`
@@ -35,11 +42,13 @@
 #         ONLY when no remote moved and none is unknown. RESIDUAL (stated, not hidden): a genuinely unrecorded commit is reported 11 instead of 20
 #         while a remote has moved. Whether S1 should write refs/remotes/<r>/<branch> after a successful fetch (changes the T032 "no ref written"
 #         form) is the owner decision F2 (wp04e-notes.md owed item 1); this helper does not decide it.
-# Output  PUSHED <repo> <remote> <sha> | PUSH_FAILED <repo> <remote> <sha> <error> | NOPUSH <repo> <remote> <reason> (already_holds_tip,
+# Output  PUSHED <repo> <remote> <sha> | PUSH_FAILED <repo> <remote> <sha> <error> | NOPUSH <repo> <remote> <reason>[ <detail>] (submodule_commit_not_held, already_holds_tip,
 #         remote_moved_since_s1, remote_unreachable, no_target, held_below_remote_tip: the remote's tip is already inside the local branch and
 #         the releasable target lies below it because a held commit is unreleased; counted as the hold, exit 14, not as a moved remote) | HELD <repo> <sha> <verdict> <reason> | REFUSED <repo> <reason> <detail>
 # Exits   0 done or nothing to do; 11 a remote moved, was unreachable or rejected the push; 14 only holds withheld commits;
 #         20 refusal (force-like option, unsafe value, unrecorded_local_commit, unsafe remote name or URL, unsafe gitlink path under --recursive,
+#         `submodule_git_unreadable` under --recursive: a gitlink whose `.git` entry git cannot resolve to a repository of its own, only an ABSENT `.git` is an
+#         uninitialised submodule and skipped; WF7 I-4,
 #         and `git_listing_failed`: a gitlink listing, the remote list, the outgoing-commit list (`rev-list`) or a commit's parent list that git
 #         could not produce is never read as "nothing there"; WF5 F3, WF6 W6-2, W6-12). Precedence 20, 11, 14, 0.
 #         Exit codes 11 and 14 follow T042; their use for a rejected push and for holds is UNCONFIRMED until the T042 owner accepts it.
@@ -95,7 +104,12 @@ discover() { # discover <dir> <prefix>: append every initialised submodule below
   while IFS= read -r -d '' e; do case "$e" in 160000\ *) subs+=("${e#*$'\t'}") ;; esac; done < "$lf"; rm -f "$lf"
   for sp in "${subs[@]+"${subs[@]}"}"; do
     safe_relpath "$sp" || die unsafe_repo "gitlink $(printf '%q' "$sp")"
-    is_root "$dir/$sp" || continue
+    # a gitlink whose directory has a `.git` entry that git cannot resolve to a repository of its own is a BROKEN submodule, never an uninitialised one: skipping
+    # it would push the main repository with a pin that the submodule's remote may not hold (WF7 I-4); only an absent `.git` is uninitialised
+    if ! is_root "$dir/$sp"; then
+      if [ -e "$dir/$sp/.git" ] || [ -L "$dir/$sp/.git" ]; then die submodule_git_unreadable "$(printf '%q' "$pre$sp") has a .git entry that is no repository of its own"; fi
+      continue
+    fi
     DISC+=("$pre$sp"); discover "$dir/$sp" "$pre$sp/"
   done
 }
@@ -128,6 +142,43 @@ except Exception: print('invalid'); sys.exit()
 if v.get('verdict') != 'GO' or v.get('blocking_findings') != 0: print('not_go'); sys.exit()
 print('ok' if any(isinstance(e, dict) and e.get('cpa_run') == sys.argv[3] for e in (v.get('covers_runs') or [])) else 'not_covered')
 PY
+}
+# pin_held <submodule dir> <sha>: 0 when EVERY remote of the submodule advertises <sha> or a descendant of it on a branch or tag tip (a fresh clone of the parent
+# then fetches it), else 1 with the reason in PINWHY. The advertisement is read live (`git ls-remote`), so a commit the deeper push of THIS run published counts.
+# CONSERVATIVE: a submodule that is not initialised, has no remote, has an unsafe or unreachable remote, or a remote tip whose object this clone does not hold
+# (it could descend from <sha>, but that cannot be proven here) is "not held": the parent is withheld, never published on a guess (WF8 I-3, 11.4.233(G)).
+declare -A PINC=() PINR=()
+pin_held() {
+  local sd="$1" sha="$2" ck="$1|$2" rl rr u lr s ref held=0
+  if [ -n "${PINC[$ck]+x}" ]; then PINWHY="${PINR[$ck]}"; return "${PINC[$ck]}"; fi
+  PINWHY=""
+  if ! is_root "$sd"; then PINWHY="submodule not initialised"
+  elif ! rl="$(git -C "$sd" remote 2>/dev/null)"; then PINWHY="remote list unreadable"
+  elif [ -z "$rl" ]; then PINWHY="submodule has no remote"
+  else
+    while IFS= read -r rr; do
+      [ -n "$rr" ] || continue
+      if ! safe_remote "$rr"; then PINWHY="unsafe remote name"; break; fi
+      u=""; while IFS= read -r u; do safe_url "$u" || { PINWHY="unsafe remote url of $rr"; break; }; done < <(git -C "$sd" config --get-all "remote.$rr.url" 2>/dev/null; git -C "$sd" config --get-all "remote.$rr.pushurl" 2>/dev/null)
+      [ -z "$PINWHY" ] || break
+      if ! lr="$(tm git -C "$sd" ls-remote -- "$rr" 2>/dev/null)"; then PINWHY="remote $rr unreachable"; break; fi
+      held=0
+      while read -r s ref; do
+        safe_sha "$s" || continue
+        case "$ref" in refs/heads/*|refs/tags/*) ;; *) continue ;; esac
+        if [ "$s" = "$sha" ] || { git -C "$sd" cat-file -e "$s^{commit}" 2>/dev/null && git -C "$sd" merge-base --is-ancestor "$sha" "$s" 2>/dev/null; }; then held=1; break; fi
+      done <<< "$lr"
+      [ "$held" = 1 ] || { PINWHY="remote $rr does not hold it"; break; }
+    done <<< "$rl"
+  fi
+  PINC[$ck]=$([ -z "$PINWHY" ] && echo 0 || echo 1); PINR[$ck]="$PINWHY"; return "${PINC[$ck]}"
+}
+# gl_load <dir> <rev> <array name>: the gitlinks (path -> commit) of a revision's tree into the named associative array; 1 when the listing fails
+gl_load() {
+  local -n _gl="$3"; local lf e rest; _gl=()
+  lf="$W/gl.$RANDOM.$RANDOM"
+  git -C "$1" ls-tree -r -z "$2" >"$lf" 2>/dev/null || { rm -f "$lf"; return 1; }
+  while IFS= read -r -d '' e; do case "$e" in 160000\ commit\ *) rest="${e#160000 commit }"; _gl["${rest#*$'\t'}"]="${rest%%$'\t'*}" ;; esac; done < "$lf"; rm -f "$lf"; return 0
 }
 trailer() { git -C "$1" log -1 --format=%B "$2" 2>/dev/null | awk -v k="$3" 'index($0,k": ")==1 {v=substr($0,length(k)+3)} END{print v}'; }
 for key in "${LIST[@]}"; do
@@ -213,6 +264,10 @@ for key in "${LIST[@]}"; do
   elif [ "$cut" -gt 0 ]; then target="${U[$((cut-1))]}"
   else target="${U[$((${#U[@]}-1))]}"; fi
   [ "$mergeblock" = 1 ] && [ "$cut" -gt 0 ] && target="$(g rev-parse -q --verify "${U[0]}^" 2>/dev/null || true)"
+  declare -A TGL=(); declare -A BGL=()
+  if [ -n "$target" ] && ! gl_load "$dir" "$target" TGL; then
+    printf 'REFUSED\t%s\tgit_listing_failed\tgitlinks of the push target\n' "$key"; bump 20; unset TIP UNR MOVED TGL BGL; continue
+  fi
   for r in "${REM[@]+"${REM[@]}"}"; do
     if [ -n "${UNR[$r]+x}" ]; then printf 'NOPUSH\t%s\t%s\tremote_unreachable\n' "$key" "$r"; bump 11; continue; fi
     [ -n "$target" ] || { printf 'NOPUSH\t%s\t%s\tno_target\n' "$key" "$r"; continue; }
@@ -226,10 +281,25 @@ for key in "${LIST[@]}"; do
           printf 'NOPUSH\t%s\t%s\theld_below_remote_tip\n' "$key" "$r"; continue; fi
         printf 'NOPUSH\t%s\t%s\tremote_moved_since_s1\n' "$key" "$r"; bump 11; continue; fi
     fi
+    # WF8 I-3 (docs/16 S6 rule (b)): the push publishes every gitlink of the target that the remote's tip does not already carry; each such commit must be
+    # held by EVERY remote of its submodule (read live, after the deeper pushes of this run), else the parent is withheld: a fresh clone would fail `not our ref`
+    if [ "${#TGL[@]}" -gt 0 ]; then
+      if [ -n "$t" ]; then
+        if ! gl_load "$dir" "$t" BGL; then printf 'REFUSED\t%s\tgit_listing_failed\tgitlinks of the tip of %s\n' "$key" "$r"; bump 20; continue; fi
+      else BGL=(); fi
+      nh=0
+      for gp in "${!TGL[@]}"; do
+        [ "${BGL[$gp]-}" = "${TGL[$gp]}" ] && continue
+        if ! pin_held "$dir/$gp" "${TGL[$gp]}"; then
+          printf 'NOPUSH\t%s\t%s\tsubmodule_commit_not_held\t%s %s (%s)\n' "$key" "$r" "$(printf '%q' "$gp")" "${TGL[$gp]}" "$PINWHY"; nh=1; break
+        fi
+      done
+      if [ "$nh" = 1 ]; then bump 11; continue; fi
+    fi
     if err="$(tm git -C "$dir" push -q -- "$r" "$target:refs/heads/$BR" 2>&1)"; then printf 'PUSHED\t%s\t%s\t%s\n' "$key" "$r" "$target"
     else printf 'PUSH_FAILED\t%s\t%s\t%s\t%s\n' "$key" "$r" "$target" "$(printf '%s' "$err" | tr '\n\t' '  ' | head -c 200)"; bump 11; fi
   done
   [ "$held_any" = 0 ] || bump 14
-  unset TIP UNR MOVED
+  unset TIP UNR MOVED TGL BGL
 done
 exit "$EXIT"

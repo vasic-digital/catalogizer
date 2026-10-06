@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06 |
-| Status | draft, untracked work product of the owner decision of 2026-10-05 (WP-04); the scripts index and root README links are NOT created here |
+| Last modified | 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 |
+| Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of the owner decision of 2026-10-05 (WP-04) |
 | Source | `scripts/anti-bluff-scan.sh` over `scripts/audit/anti-bluff-scan.sh`; validators from `scripts/repo/lib_safe.sh`; tests `scripts/audit/tests/test_anti_bluff_scan_wrapper.sh` (45 checks), `mutate_anti_bluff_scan_wrapper.sh` (8 mutants) |
 
 ## Purpose

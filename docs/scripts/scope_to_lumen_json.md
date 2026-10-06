@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 |
+| Revision | 7 |
 | Created | 2026-10-05 |
-| Last modified | 2026-10-06 round 6 (N6-6); earlier 2026-10-05 (WF2-REVIEW round 3: N-I5, m-g); round 4 2026-10-06: m-3, m-5, m-8) |
-| Status | draft, untracked work product of T018 (WP-02) and its review fixes (SM1-SM12); the scripts index `docs/scripts/README.md` and the root `README.md` link are NOT created here (they edit tracked files, deferred) |
+| Last modified | 2026-10-06T18:00:00Z (round 8: M-7, M-8); earlier: 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 round 6 (N6-6); earlier 2026-10-05 (WF2-REVIEW round 3: N-I5, m-g); round 4 2026-10-06: m-3, m-5, m-8) |
+| Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of T018 (WP-02) and its review fixes (SM1-SM12) |
 | Source | `scripts/audit/scope_to_lumen_json.py` (input `scope.yaml`, TSV from `scripts/audit/derive_scope.sh`) |
 
 ## Purpose
@@ -76,4 +76,11 @@ Writes `--out` only on success. `--check` writes nothing. Needs python3 and PyYA
 - A class name in `baseline_excludes` that is not a string (a YAML key `1:` or `null:`) is exit 3 with a named reason (it raised TypeError in `sorted()`, rc 1, and an int-only name derived rc 0 and then crashed its own `--check`).
 - Input that is not UTF-8 (the TSV, `scope.yaml`, the `--check` file) is exit 3 without a traceback: every file is opened with `encoding="utf-8"` explicitly (not the locale's) and `UnicodeDecodeError` is part of the unreadable-input refusal.
 - `root_files` is compared with its type in `--check`: Python's `1 == True` let `"root_files": 1` pass an "exact" comparison; it is now a difference (exit 1, `root_files` named).
-- Tests: `test_scope_to_lumen_json.sh` 51 checks (was 42).
+- Tests: `test_scope_to_lumen_json.sh` 52 checks in the WF7 real-tree run (was 51, 42 before).
+
+## Round 8 (WF7 review M-7, M-8; revision 7)
+
+- **M-7 reserved class name.** A `baseline_excludes` class named `third_party_nested` is exit 3 with a named reason (in `--out` and in `--check`). The derived nested-third-party class is written under that name and OVERWROTE it, so its patterns vanished from `deny` while `--check` re-derived the same loss and passed. Refused rather than merged, so a scope file never says one thing and derives another.
+- **M-8 `--check` is exact for `classes` lists.** A duplicated or reordered pattern inside a `classes` list (same members, different list) is a difference: exit 1, `class <name> has duplicate or misplaced entries (have N, derived M)`, as the list keys already did (round 4, m-8). It stays exit 1 (a difference found), not 3: exit 3 is reserved for a `--check` file that is malformed (non-list, non-string element). UNCONFIRMED against the review text, which asks for "rc 3"; the docstring never promised 3 for a duplicate.
+- Tests: `test_scope_to_lumen_json.sh` 60 checks (55 before round 8, 5 RED against the round-7 script).
+

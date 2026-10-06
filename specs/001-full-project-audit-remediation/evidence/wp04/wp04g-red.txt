@@ -1,0 +1,59 @@
+# WP-04 round 7 (wp04g) RED: the round-7 test cases against the PRE-FIX helpers (a copy of HEAD 26755ca512a59abaa529332ca066fc2ee71f6022, extracted with git archive; no tracked file was changed to produce it)
+# 2026-10-06T15:56:22Z host=anton git=2.53.0
+# pre-fix sha256 af6468ce5196d6a289f1e333e5a5990c5e3e61cfbb477df2e12e002e301a4dfd  scripts/repo/verify_repos.sh
+# pre-fix sha256 b266393f67b40e7e6df365b93e1995a9be6963a708440c6cceace2b910ff655d  scripts/repo/scope_check.sh
+# pre-fix sha256 3161a9e26ef33270ec5c399657dd4bdecbac90918747fa5a1d5cab80cf6b04aa  scripts/repo/push_recursive.sh
+# pre-fix sha256 0bd37606fdaa6ceed468949f3e12c9ff6a5f4d31a282b5e9da1a13a0b9a4cb1f  scripts/repo/integrate_merge.sh
+# pre-fix sha256 096f9fe84d2ec89264facaabaa138a8fa0d0acf3a44f56e1f321dffa941cef6c  scripts/repo/integrate_ff_only.sh
+# pre-fix sha256 d9821d8a38416b1e38cb19c544e46867c3ec0b3e35f4e2f615ab118032dd82fc  scripts/audit/index_health.sh
+# test sha256 e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89  scripts/repo/tests/test_verify_repos_r7.sh
+# test sha256 235be5fbacfffed6773d78f8ac42494f10cba599e4b4586e3019b3c9d3d580e3  scripts/repo/tests/test_wp04g.sh
+# test sha256 eaaa03adba30daa0761e0e286dcdffda8b06e59867af96f6a027f025d9fab444  scripts/repo/tests/test_integrate_merge.sh
+# test sha256 7d4d8790e56279018b0277c5c4481790275443d69b83036769c1b6f13e3555c2  scripts/repo/tests/test_integrate_ff_only.sh
+# test sha256 fb6606c89a145df1798a370a78bfc249dfd2a5ba3450c43bcb5007f393246a8c  scripts/audit/tests/test_index_health_extra.sh
+== test_verify_repos_r7.sh (VR=pre-fix verify_repos.sh)
+FAIL I-1 a required filter and a touched (content-identical) file: exit 0, not 20 (got '20', want '0')
+FAIL I-1 the repository is not reported dirty (got '?', want 'false')
+FAIL I-1 a required filter set only in the global config: exit 0 (got '20', want '0')
+FAIL I-1 a required filter whose name contains a dot: exit 0 (got '20', want '0')
+FAIL I-2 an annotated tag whose peeled commit is held does not make the answer undecided: exit 11 (got '14', want '11')
+FAIL I-2 the same under --fetch: exit 11 (got '14', want '11')
+FAIL I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11 (got '14', want '11')
+FAIL I-2 a tag on a held tree: exit 11 (got '14', want '11')
+FAIL M-5 the repository's core.alternateRefsCommand program ran under the verifier's --fetch
+SUMMARY pass=13 fail=9
+rc=1
+== test_wp04g.sh (SC, PR = pre-fix)
+FAIL I-3 a .git DIRECTORY with a truncated (empty) HEAD: 20, not a silent skip (got '0', want '20')
+FAIL I-3 named submodule_git_unreadable (no 'submodule_git_unreadable' in '')
+FAIL I-3 a dangling .git SYMLINK: 20 (got '0', want '20')
+FAIL I-3 dangling symlink named submodule_git_unreadable (no 'submodule_git_unreadable' in '')
+FAIL M-2 a zero-length branch ref: 20, the rewritten store is not a new one (got '0', want '20')
+FAIL M-2 zero-length ref named git_tree_unreadable (no 'git_tree_unreadable' in '')
+FAIL M-2 a garbage branch ref: 20 (got '0', want '20')
+FAIL M-2 an emptied packed-refs: 20 (got '0', want '20')
+FAIL I-4 a submodule whose .git points at a missing git dir: 20 (got '0', want '20')
+FAIL I-4 named submodule_git_unreadable (no 'submodule_git_unreadable' in '')
+FAIL I-4 the main repository was NOT pushed (got '3d8527739be176e11738c950d47c043fb22b6853', want '135c6ee5a041b86831f123bbbb132e60bf001b8a')
+FAIL I-4 a legacy .git directory with a truncated HEAD: 20 (got '0', want '20')
+FAIL I-4 legacy named submodule_git_unreadable (no 'submodule_git_unreadable' in '')
+FAIL I-4 legacy: the main repository was not pushed (got 'pushed', want 'absent')
+FAIL I-4 a dangling .git symlink: 20 (got '0', want '20')
+---- 15 ok, 15 failed
+rc=1
+== test_integrate_merge.sh (H=pre-fix)
+FAIL git remote failing (shim): 20, never nothing_to_merge (M-3) (got '0', want '20')
+FAIL named git_listing_failed (no 'git_listing_failed' in 'fatal: shim')
+---- 128 ok, 2 failed
+rc=1
+== test_integrate_ff_only.sh (H=pre-fix)
+FAIL git remote failing (shim): exit 20 (got '0', want '20')
+FAIL git remote failing: reason (got 'null', want 'git_listing_failed')
+---- 82 ok, 2 failed
+rc=1
+== test_index_health_extra.sh (IH=pre-fix)
+FAIL M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=0 P3=PASS reason=[]
+FAIL M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=0 P3=PASS reason=[]
+FAIL M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical): want rc=1 P3=FAIL third_party_files_indexed, got rc=1 P3=FAIL reason=[third_party_root_not_canonical]
+SUMMARY pass=51 fail=3
+rc=1

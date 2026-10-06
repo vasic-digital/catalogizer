@@ -38,7 +38,8 @@
 #         record does not name `re-recorded`, whose resolved file does not extend the remote side byte for byte, or whose verify tool
 #         (tools/evidence/verify, scripts/register/gate.sh) is absent (fail closed). The S2 secret fold (T040a) is NOT built: a resolution that
 #         passed every check above exits 20 `secret_fold_unavailable` and nothing is written, so this slice never completes a resolved merge.
-# Exits   0 merged or nothing to do; 10 conflict marker in a resolved file; 12 blocked (reasons above); 20 refusal (force_refused, usage, unsafe
+# Exits   0 merged or nothing to do; 10 conflict marker in a resolved file; 11 `remote_unreachable`: the repository has remotes and NONE could be read (ls-remote or fetch
+#         failed for all of them; WF8: it was nothing_to_merge, exit 0); 12 blocked (reasons above); 20 refusal (force_refused, usage, unsafe
 #         value, not_a_repository, wrong_branch, merge_in_progress, backup_failed, ...). 13 (S2 secret refusal) is not produced in this slice.
 # Never   a rebase, a reset (but `merge --abort`, which restores the pre-merge state), a push, a force; every value that reaches git is
 #         validated and follows `--` or is a validated hex object name.
@@ -80,19 +81,26 @@ tm() { timeout "$TMO" "$@"; }
 LOCAL="$(g rev-parse HEAD)"
 # ---- live tips -------------------------------------------------------------------------------------------------------------------
 REMS=(); TIPOF=(); ALLTIPS=()
+# the remote list is read with its status (a failing `git remote` inside `g remote | sort` was "no remotes" and the merge path reported nothing_to_merge, exit 0; WF7 M-3)
+rl="$(g remote 2>/dev/null)" || die git_listing_failed "remote list"
+rl="$(printf '%s\n' "$rl" | sort)"
 while IFS= read -r r; do
   [ -n "$r" ] || continue
   safe_remote "$r" || die unsafe_remote_name "$(printf '%q' "$r")"
   while IFS= read -r u; do safe_url "$u" || die unsafe_remote_url "$r $(printf '%q' "$u")"; done < <(g config --get-all "remote.$r.url" 2>/dev/null; g config --get-all "remote.$r.pushurl" 2>/dev/null)
   REMS+=("$r")
-done < <(g remote | sort)
+done <<<"$rl"
+NFAILR=0
 for r in "${REMS[@]+"${REMS[@]}"}"; do
-  if ! lr="$(tm git -C "$ROOT" ls-remote -- "$r" "refs/heads/$BR" 2>&1)"; then echo "fetch_failed:$r" >&2; TIPOF+=(""); continue; fi
+  if ! lr="$(tm git -C "$ROOT" ls-remote -- "$r" "refs/heads/$BR" 2>&1)"; then echo "fetch_failed:$r" >&2; NFAILR=$((NFAILR+1)); TIPOF+=(""); continue; fi
   t="$(printf '%s\n' "$lr" | lr_exact "$BR")"
   if [ -z "$t" ] || ! safe_sha "$t"; then TIPOF+=(""); continue; fi
-  if ! tm git -C "$ROOT" fetch -q --no-tags --no-recurse-submodules --no-write-fetch-head --refmap= -- "$r" "refs/heads/$BR" >/dev/null 2>&1; then echo "fetch_failed:$r" >&2; TIPOF+=(""); continue; fi
+  if ! tm git -C "$ROOT" fetch -q --no-tags --no-recurse-submodules --no-write-fetch-head --refmap= -- "$r" "refs/heads/$BR" >/dev/null 2>&1; then echo "fetch_failed:$r" >&2; NFAILR=$((NFAILR+1)); TIPOF+=(""); continue; fi
   TIPOF+=("$t"); ALLTIPS+=("$t")
 done
+# every remote could not be read: nothing is known about what any of them holds, so "nothing to merge" would be a guess that reads clean (WF7 INFO-1, WF8): 11, as
+# integrate_ff_only.sh does. One reachable remote that answered is enough to proceed (its answer is what is merged); the failed ones stay on stderr.
+if [ "${#REMS[@]}" -gt 0 ] && [ "$NFAILR" -ge "${#REMS[@]}" ]; then echo "integrate_merge: remote_unreachable: none of the ${#REMS[@]} remote(s) could be read; nothing was merged and nothing can be said about them" ; exit 11; fi
 # ---- targets -----------------------------------------------------------------------------------------------------------------------
 adopt_ok() { # adopt_ok <tip>: first-parent chain of the tip holds the adoption commit (true when none is required)
   [ -n "$ADOPT" ] || return 0

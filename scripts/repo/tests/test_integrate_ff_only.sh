@@ -160,4 +160,9 @@ for opt in --force --force-with-lease +main --rebase --reset; do fx; other f2 x;
   eq "option $opt refused: exit" "$RC" 20; eq "option $opt: reason" "$(j .reason)" force_refused
   eq "option $opt: nothing moved" "$(head_)|$(tips)" "$h0|$t0"; done
 fx; run --no-such-option;                         eq "unknown option: exit" "$RC" 20
+# 16 (WF7 M-3) a failing `git remote` is never "no remotes": exit 20 git_listing_failed, nothing moves (shim model: the failure is injected, git itself does not fail here)
+mkdir -p "$T/fshim"; printf '#!/bin/sh\ncase "$*" in *" remote") echo "fatal: shim" >&2; exit 128 ;; esac\nexec "%s" "$@"\n' "$(command -v git)" > "$T/fshim/git"; chmod +x "$T/fshim/git"
+fx; other f2 x; h0="$(head_)"; t0="$(tips)"; PATH="$T/fshim:$PATH" run
+eq "git remote failing (shim): exit 20" "$RC" 20; eq "git remote failing: reason" "$(j .reason)" git_listing_failed; eq "git remote failing: nothing moved" "$(head_)|$(tips)" "$h0|$t0"
+fx; other f2 x; run; eq "control, real git: the same state fast-forwards (exit 0)" "$RC" 0
 echo "---- $PASSN ok, $FAILN failed"; [ "$FAILN" = 0 ] && [ -x "$H" ]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Mutation test for scripts/audit/index_health.sh (T021, constitution 1.1): every mutant below breaks ONE check and the
 # T016 test or the T021 supplementary test (run with IH pointing at the mutant) MUST then FAIL.
-# Usage: bash scripts/audit/tests/mutate_index_health.sh      exit 0 = every mutant caught and the unmutated script passes.
+# Usage: bash scripts/audit/tests/mutate_index_health.sh      exit 0 = every mutant caught (or listed as EQUIVALENT, name contains -eq-) and the unmutated script passes.
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 SRC=scripts/audit/index_health.sh; TEST=scripts/audit/tests/test_index_health.sh; TEST2=scripts/audit/tests/test_index_health_extra.sh
@@ -36,7 +36,7 @@ MUTS=(
 'm26-empty-tracked-not-blind|    if not tracked:\n        why.append("tracked_list_empty_blind")\n|'
 'm27-state-not-complete-ignored|    if lookup(st, "index", "state")[1] != "complete":\n        why.append("index.state_not_complete")\n|'
 'm28-noncanonical-third-party-root-ignored|bad_roots = [r for r in roots if noncanonical_root(r)]|bad_roots = []'
-'m29-noncanonical-no-control-char-check|if r != r.strip() or any(ord(c) < 32 or ord(c) == 127 for c in r):|if r != r.strip():'
+'m29-eq-noncanonical-no-control-char-check-covered-by-C-category|if r != r.strip() or any(ord(c) < 32 or ord(c) == 127 for c in r):|if r != r.strip():'
 'm30-noncanonical-no-whitespace-check|if r != r.strip() or any(ord(c) < 32 or ord(c) == 127 for c in r):|if any(ord(c) < 32 or ord(c) == 127 for c in r):'
 'm31-noncanonical-no-dot-component-check|any(c in ("", ".", "..") for c in comps)|any(c in ("",) for c in comps)'
 'm14-verdict-always-pass|verdict = "FAIL" if any(r["verdict"] == "FAIL" for r in all_rows) else "PASS"  # MUT:verdict|verdict = "PASS"  # MUT:verdict'
@@ -59,6 +59,7 @@ for f in "$T"/m*.sh; do
   n="$(basename "$f" .sh)"; chmod +x "$f"; N=$((N+1))
   IH="$f" bash "$TEST" >"$T/$n.out" 2>&1; rc=$?; IH="$f" bash "$TEST2" >>"$T/$n.out" 2>&1; rc=$((rc+$?))
   if [ "$rc" -ne 0 ]; then echo "CAUGHT   $n ($(grep -c '^FAIL' "$T/$n.out") failing check(s): $(grep '^FAIL' "$T/$n.out" | head -1 | cut -c1-70))"
+  elif case "$n" in *-eq-*) true ;; *) false ;; esac; then echo "EQUIVALENT $n (survived as documented: every control character is a Unicode C* category character and noncanonical_root refuses those in its next loop; WF7 equivalence entry)"
   else echo "SURVIVED $n"; SURV=$((SURV+1)); fi
 done
 echo "MUTATIONS total=$N survived=$SURV"
