@@ -1,0 +1,12 @@
+# Does `helixqa run` emit the conduit stream? (T217: 'check and record', doc12 8.1 step 3, UNCONFIRMED in doc12)
+# static reading of the pinned submodule, 2026-10-06T20:43:00Z, submodules/helix_qa @ 1caceb6ec121573bed4be9d8db20a6a41a4fe0b1
+# UNCONFIRMED at runtime: IMG-QA (helixqa binary) does not exist, so no run was executed; this is the source reading only.
+
+cmdRun spans: 119-262 (cmd/helixqa/main.go)
+cmdAutonomous starts at: 518
+occurrences of 'conduit' in cmd/helixqa/main.go (line: text):
+34:	"digital.vasic.helixqa/pkg/conduit"
+892:		if cw, cerr := conduit.NewWriter(conduit.Config{
+897:				"warning: conduit channel disabled: %v\n", cerr)
+HELIXQA_CONDUIT is read at line: 891 
+conclusion: every conduit use lies inside cmdAutonomous; cmdRun (lines above) does not reference the conduit package. A `helixqa run` therefore has NO direct conduit wiring (an indirect path through another package, e.g. a sink set by the test-bank dispatcher, was not traced: UNCONFIRMED) and is expected to write no conduit.events.jsonl unless the pinned submodule is changed upstream (WP-Q3); scripts/qa/run_profile.sh treats an absent stream as an invalid run (exit 5), never a fabricated verdict.

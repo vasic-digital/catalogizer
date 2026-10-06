@@ -1,0 +1,13 @@
+{
+ "build_ids": null,
+ "head": "f04c555d33a83e55d8f6541ba6afccdb358630b3",
+ "lanes": {
+  "qa api": null,
+  "qa e2e": null
+ },
+ "manifest_sha256": null,
+ "reason": "The two compile-half builds (one per lane qa api / qa e2e) must be submitted through scripts/build/dispatch.sh and their `completed` manifests read for artifact_kind. IMG-QA does not exist (T211 BLOCKED), so there is nothing to build a QA artifact with, and the dispatcher / hub host entry point (ODG-07, CENTRAL C10) is not installed. artifact_kind is therefore NOT recorded and was not assumed (native vs bundle).",
+ "schema": "qa-artifact-kind/1",
+ "status": "BLOCKED",
+ "task": "T212"
+}

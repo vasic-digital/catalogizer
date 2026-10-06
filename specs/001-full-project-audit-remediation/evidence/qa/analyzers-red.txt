@@ -1,0 +1,34 @@
+# RED capture 2026-10-06T20:32:10Z HEAD=f04c555d test_sha256=e8731ac9ca3252ce cmd=analyzers self-test entry + pytest (analyzers absent)
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): registry_row_dead_owner catalogizer-test-t3179771350-up-20261006T201937-1443635); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+python3: can't open file '/src/tools/evidence/analyzers/selftest.py': [Errno 2] No such file or directory
+VIA=run_pinned.sh direct (sweep bypassed) RC=2
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-milosvasic/pytest-0/test_selftest_cli_writes_evide0/analyzers_selftest.json'
+
+/usr/lib/python3.11/pathlib.py:1045: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_modules_exist
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_pngio_reads_vision_gt_ground_truth
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_colour_oracle_calibrated_on_vision_gt
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_frame_analyzer_golden_good_passes
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_frame_analyzer_golden_bad_fails_with_pinpoint
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_frame_analyzer_negative_control_passes
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_blank_frame_is_detected
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_empty_or_unreadable_input_is_blind_not_clean
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_ocr_blocked_when_engine_absent
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_ocr_logic_with_a_stub_engine
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_ocr_empty_output_is_not_a_pass
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_selftest_trusts_only_after_failing_golden_bad
+FAILED tools/evidence/analyzers/tests/test_analyzers.py::test_selftest_cli_writes_evidence_and_exit_code
+13 failed, 1 passed in 0.30s
+VIA=run_pinned.sh direct (sweep bypassed) RC=1

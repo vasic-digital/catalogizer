@@ -1,0 +1,41 @@
+# RED capture 2026-10-06T20:30:13Z HEAD=f04c555d test_sha256=92c674eab601902c cmd=pytest test_conduit_to_ledger.py (conduit_to_ledger.py absent)
+E       assert (2 == 0)
+E        +  where 2 = CompletedProcess(args=['/usr/bin/python3', '-I', '/src/scripts/qa/conduit_to_ledger.py', '--stream', '/tmp/pytest-of-m...derr="/usr/bin/python3: can't open file '/src/scripts/qa/conduit_to_ledger.py': [Errno 2] No such file or directory\n").returncode
+
+scripts/qa/tests/test_conduit_to_ledger.py:178: AssertionError
+______________ test_existing_ledger_lines_of_other_runs_are_kept _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-milosvasic/pytest-0/test_existing_ledger_lines_of_0')
+
+    def test_existing_ledger_lines_of_other_runs_are_kept(tmp_path):
+        s, l = tmp_path / "c.jsonl", tmp_path / "ledger.jsonl"
+        l.write_text(json.dumps({"schema": "qa-verdict/1", "run": "other", "challenge": "z", "verdict": "pass"}) + "\n")
+        write_stream(s, good_events())
+>       assert run(s, l).returncode == 0
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/usr/bin/python3', '-I', '/src/scripts/qa/conduit_to_ledger.py', '--stream', '/tmp/pytest-of-m...derr="/usr/bin/python3: can't open file '/src/scripts/qa/conduit_to_ledger.py': [Errno 2] No such file or directory\n").returncode
+E        +    where CompletedProcess(args=['/usr/bin/python3', '-I', '/src/scripts/qa/conduit_to_ledger.py', '--stream', '/tmp/pytest-of-m...derr="/usr/bin/python3: can't open file '/src/scripts/qa/conduit_to_ledger.py': [Errno 2] No such file or directory\n") = run(PosixPath('/tmp/pytest-of-milosvasic/pytest-0/test_existing_ledger_lines_of_0/c.jsonl'), PosixPath('/tmp/pytest-of-milosvasic/pytest-0/test_existing_ledger_lines_of_0/ledger.jsonl'))
+
+scripts/qa/tests/test_conduit_to_ledger.py:185: AssertionError
+=========================== short test summary info ============================
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_adapter_exists - Asse...
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_valid_stream_one_ledger_line_per_verdict
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_skip_in_deterministic_lane_makes_run_invalid_and_writes_nothing
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_skip_accepted_in_exploratory_lane
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_blocked_without_closed_set_reason_fails[None]
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_blocked_without_closed_set_reason_fails[]
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_blocked_without_closed_set_reason_fails[because]
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_blocked_without_closed_set_reason_fails[SERVICE_UNREACHABLE]
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_blocked_with_closed_set_reason_is_blocked
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_llm_and_vision_calls_are_advisory_and_outside_the_chain
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_pass_never_derived_from_advisory_only
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_reconciliation_mismatch_is_invalid
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_reconciliation_counts_what_was_written
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_non_monotonic_seq_is_invalid
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_missing_or_empty_evidence_file_is_invalid
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_missing_fingerprint_is_invalid
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_malformed_line_is_invalid
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_check_only_writes_nothing
+FAILED scripts/qa/tests/test_conduit_to_ledger.py::test_existing_ledger_lines_of_other_runs_are_kept
+19 failed in 0.51s
+VIA=run_pinned.sh direct (sweep bypassed) RC=1

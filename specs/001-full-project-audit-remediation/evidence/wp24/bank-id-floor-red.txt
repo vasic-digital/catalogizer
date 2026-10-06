@@ -1,0 +1,5 @@
+# RED capture 2026-10-06T20:31:14Z HEAD=f04c555d test_sha256=58388630a5b87a38 cmd=bash test_bank_id_floor.sh (floor file absent)
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): registry_row_dead_owner catalogizer-test-t3179771350-up-20261006T201937-1443635); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+FAIL floor file absent: /src/challenges/helixqa-banks/.bank-id-floor.txt
+test_bank_id_floor: FAIL
+VIA=run_pinned.sh direct (sweep bypassed) RC=1

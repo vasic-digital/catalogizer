@@ -1,0 +1,22 @@
+version: '2.0'
+name: golden-bad-R-8
+test_cases:
+- id: bad-r8
+  name: golden bad R-8
+  category: fixture
+  priority: low
+  platforms: [android]
+
+  steps:
+  - name: s1
+    action: "tap: 960,540"
+    expected: something opens
+    timeout: 5
+  metadata:
+    v3:
+      schema: bank-case/3
+      surface: fixture
+      oracle: {strategy: specified, independent_of_sut: true}
+      needs: {device: android-emulator}
+      flow: deterministic
+      evidence: [http_exchange]

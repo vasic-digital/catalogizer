@@ -1,0 +1,14 @@
+# IMG-QA build feasibility, measured 2026-10-06T20:42:38Z HEAD=f04c555d: helix_qa (pin 1caceb6e) built with the pinned IMG-GO (go1.25.14), no network, read-only source
+go: go.mod requires go >= 1.26 (running go 1.25.14; GOTOOLCHAIN=local)
+--- helix_qa go.mod requires: go 1.26
+--- go.mod replace targets present in this checkout:
+present  submodules/challenges
+present  submodules/containers
+present  submodules/doc_processor
+present  submodules/llm_orchestrator
+present  submodules/llm_provider
+present  submodules/security
+present  submodules/vision_engine
+ABSENT   submodules/llms_verifier/llm-verifier
+--- IMG-PW (the pinned base with the browsers) carries: has-python3 has-node lacks-tesseract lacks-ffmpeg lacks-pyyaml lacks-pytest 
+--- disk gate: disk_headroom: pass op=op-20261006T204243Z-3542785 need=8000000000 min_free=12172240540 record=/home/milosvasic/Projects

@@ -1,0 +1,8 @@
+# run_qa.sh paired mutation (T212), 2026-10-06T20:54:54Z HEAD=f04c555d33a83e55d8f6541ba6afccdb358630b3
+# SPEC mutation: a lanes row sending `qa api` to run_go makes the control needle `TIC qa api -- true` FAIL. NOT RUNNABLE: scripts/test-in-container.sh refuses the app qa unconditionally (line 71) and scripts/containers/lanes.tsv + that script are being edited by another change set (T200a); no qa row was added. Owed with the lanes rows.
+# WRAPPER-level mutation performed instead (scripts/containers/tests/test_run_qa.sh, mutation leg): a copy of run_qa.sh whose RUNNER_IMAGES is changed IMG-QA -> IMG-GO must make the test body FAIL:
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+# sha256 test_run_qa.sh eb6c5b84e500bab01961f60ec14b7a3e5a32f6d9fdd0df41c599340d34237abd
+# sha256 run_qa.sh 6ef1fd2b52320f2c408c1e9f212b578313a7beef7fa6cd165127a0a5800b17b5

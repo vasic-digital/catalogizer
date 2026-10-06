@@ -1,0 +1,40 @@
+# GREEN capture 2026-10-06T20:43:47Z HEAD=f04c555d (working tree, uncommitted)
+== run 1: run_profile
+PASS: a different verdict in run 2: exit 6 (nondeterministic)
+PASS: a crashing runner is reported by its own status, not hidden by post-processing (QF-05): exit 7
+PASS: no conduit stream from the runner: exit 5, never fabricated
+PASS: the refusal names the missing conduit stream
+RESULT pass=26 fail=0
+MUTATION runner-status: test FAILED as required (rc=1)
+MUTATION blocked-as-pass: test FAILED as required (rc=1)
+MUTATION below-floor: test FAILED as required (rc=1)
+MUTATION probes-first: test FAILED as required (rc=1)
+MUTATION hash-compare: test FAILED as required (rc=1)
+MUTATION lane: test FAILED as required (rc=1)
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 2: run_profile
+PASS: a different verdict in run 2: exit 6 (nondeterministic)
+PASS: a crashing runner is reported by its own status, not hidden by post-processing (QF-05): exit 7
+PASS: no conduit stream from the runner: exit 5, never fabricated
+PASS: the refusal names the missing conduit stream
+RESULT pass=26 fail=0
+MUTATION runner-status: test FAILED as required (rc=1)
+MUTATION blocked-as-pass: test FAILED as required (rc=1)
+MUTATION below-floor: test FAILED as required (rc=1)
+MUTATION probes-first: test FAILED as required (rc=1)
+MUTATION hash-compare: test FAILED as required (rc=1)
+MUTATION lane: test FAILED as required (rc=1)
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 3: run_profile
+PASS: a different verdict in run 2: exit 6 (nondeterministic)
+PASS: a crashing runner is reported by its own status, not hidden by post-processing (QF-05): exit 7
+PASS: no conduit stream from the runner: exit 5, never fabricated
+PASS: the refusal names the missing conduit stream
+RESULT pass=26 fail=0
+MUTATION runner-status: test FAILED as required (rc=1)
+MUTATION blocked-as-pass: test FAILED as required (rc=1)
+MUTATION below-floor: test FAILED as required (rc=1)
+MUTATION probes-first: test FAILED as required (rc=1)
+MUTATION hash-compare: test FAILED as required (rc=1)
+MUTATION lane: test FAILED as required (rc=1)
+VIA=run_pinned.sh direct (sweep bypassed) RC=0

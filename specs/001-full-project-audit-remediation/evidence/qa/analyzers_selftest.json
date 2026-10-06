@@ -1,0 +1,40 @@
+{
+ "analyzers": {
+  "calibration": {
+   "red_circle_blue_blobs": 0,
+   "red_circle_red_fraction": 0.284,
+   "three_blue_circles_blobs": 3,
+   "three_blue_circles_red_fraction": 0.0,
+   "trusted": true
+  },
+  "frame": {
+   "golden_bad": "fail",
+   "golden_good": "pass",
+   "negative_control": "pass",
+   "trusted": true
+  },
+  "ocr": {
+   "note": "tesseract is carried by IMG-QA only; this leg is BLOCKED here, never passed",
+   "reason": "host_resource_unavailable",
+   "status": "blocked",
+   "trusted": false
+  }
+ },
+ "exit_code": 4,
+ "schema": "analyzers-selftest/1",
+ "sha256_fixtures": {
+  "submodules/helix_qa/data/vision_gt/red_circle.png": "c358f1474ba61d56e281114d0fb1285b7cdce98481a6d1b34cfcb99aa5cce384",
+  "submodules/helix_qa/data/vision_gt/spatial_left_right.png": "30cb3dc1e730723f7039090f8951a9a0accf235396876924e9ae7860e2ee9d39",
+  "submodules/helix_qa/data/vision_gt/text_helix.png": "90e1c2f36b7526690639735339f9ee468f22ed74780c2ac2fade103a730c6f70",
+  "submodules/helix_qa/data/vision_gt/three_blue_circles.png": "16cbfedfbce0e0a36225244c83ed3a9bc05842eb56ba636e38517c41d60c78b8",
+  "tools/evidence/analyzers/fixtures/golden_bad/frame_0000.png": "42956c82f1538809656345738da97ad9c6c83aaa24f616608961b2ecaa142b9e",
+  "tools/evidence/analyzers/fixtures/golden_bad/frame_0001.png": "42956c82f1538809656345738da97ad9c6c83aaa24f616608961b2ecaa142b9e",
+  "tools/evidence/analyzers/fixtures/golden_bad/frame_0002.png": "42956c82f1538809656345738da97ad9c6c83aaa24f616608961b2ecaa142b9e",
+  "tools/evidence/analyzers/fixtures/golden_good/frame_0000.png": "7c27ef2af38725bcd06b474c3607dca04696efdcf03bb1f8dc34a605793dffa5",
+  "tools/evidence/analyzers/fixtures/golden_good/frame_0001.png": "69e81e5981bd42f17f16b56529fbe3a336610fd282d08969ae2843cdbd9ea14d",
+  "tools/evidence/analyzers/fixtures/golden_good/frame_0002.png": "4f3ee6a7bbd0af9d13061c58e8dd63dac5fad4a9b60d1ec909d95efdd742f9f6",
+  "tools/evidence/analyzers/fixtures/negative_control/frame_0000.png": "41d6aafaab4760a9418877da2c1436fa5a1a83ebaefe0b1c890f3878867f33b5",
+  "tools/evidence/analyzers/fixtures/negative_control/frame_0001.png": "eaa6143b67dd7ed8c37d586f538411a235098fa0afc4548cd413ab629904f078",
+  "tools/evidence/analyzers/fixtures/negative_control/frame_0002.png": "2cd40c10b263368a8711b4fd0ddfcc5273667a4d76dbf021e238f833bb01a66a"
+ }
+}

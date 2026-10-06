@@ -1,0 +1,22 @@
+# GREEN capture 2026-10-06T20:56:03Z HEAD=f04c555d (working tree, uncommitted; re-run after test additions)
+== run 1: probes
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+...................................                                      [100%]
+35 passed in 3.04s
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 2: probes
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+...................................                                      [100%]
+35 passed in 3.22s
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 3: probes
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+...................................                                      [100%]
+35 passed in 3.08s
+VIA=TIC (wrapper, sweep clean) TIC_RC=0

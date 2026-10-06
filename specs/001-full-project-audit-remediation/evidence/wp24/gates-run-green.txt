@@ -1,0 +1,40 @@
+# GREEN capture 2026-10-06T20:52:10Z HEAD=f04c555d (working tree, uncommitted)
+== run 1: gates_run
+ok   MUTATION lane exploratory: the mutant lets the injected SKIP through (rc=0)
+ok   MUTATION is detected: the real gate FAILs the same injected SKIP (rc=1), the mutant does not
+ok   all pass, exit 0: PASS
+ok   blocked verdict with exit 0: FAIL
+ok   blocked verdict with exit 4: PASS (blocked is correctly non-zero)
+ok   failed verdict with exit 0: FAIL
+ok   failed verdict with exit 1: PASS
+ok   non-deterministic lane summary: FAIL
+ok   malformed summary: REFUSED
+ok   MUTATION blocked-as-pass: the mutant PASSes the blocked-with-exit-0 summary that the real gate FAILs (detected)
+test_gates_run: PASS
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 2: gates_run
+ok   MUTATION lane exploratory: the mutant lets the injected SKIP through (rc=0)
+ok   MUTATION is detected: the real gate FAILs the same injected SKIP (rc=1), the mutant does not
+ok   all pass, exit 0: PASS
+ok   blocked verdict with exit 0: FAIL
+ok   blocked verdict with exit 4: PASS (blocked is correctly non-zero)
+ok   failed verdict with exit 0: FAIL
+ok   failed verdict with exit 1: PASS
+ok   non-deterministic lane summary: FAIL
+ok   malformed summary: REFUSED
+ok   MUTATION blocked-as-pass: the mutant PASSes the blocked-with-exit-0 summary that the real gate FAILs (detected)
+test_gates_run: PASS
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 3: gates_run
+ok   MUTATION lane exploratory: the mutant lets the injected SKIP through (rc=0)
+ok   MUTATION is detected: the real gate FAILs the same injected SKIP (rc=1), the mutant does not
+ok   all pass, exit 0: PASS
+ok   blocked verdict with exit 0: FAIL
+ok   blocked verdict with exit 4: PASS (blocked is correctly non-zero)
+ok   failed verdict with exit 0: FAIL
+ok   failed verdict with exit 1: PASS
+ok   non-deterministic lane summary: FAIL
+ok   malformed summary: REFUSED
+ok   MUTATION blocked-as-pass: the mutant PASSes the blocked-with-exit-0 summary that the real gate FAILs (detected)
+test_gates_run: PASS
+VIA=run_pinned.sh direct (sweep bypassed) RC=0

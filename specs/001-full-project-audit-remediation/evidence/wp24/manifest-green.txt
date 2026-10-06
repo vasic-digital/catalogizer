@@ -1,0 +1,31 @@
+# GREEN capture 2026-10-06T20:59:44Z HEAD=f04c555d (working tree, uncommitted; re-run after test additions)
+== run 1: manifest
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): container_without_op_label 8bf48bf9349f); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+ok   REAL manifest lists every bank, floors hold, no unreviewed bank-path literal
+ok   CONTROL scratch copy is clean
+ok   NEEDLE-A unlisted bank reported
+ok   NEEDLE-B script naming a bank reported
+ok   NEEDLE-B2 bare basename reported
+ok   NEEDLE-C floor above the case count reported
+test_manifest: PASS
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 2: manifest
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): container_without_op_label 8bf48bf9349f); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+ok   REAL manifest lists every bank, floors hold, no unreviewed bank-path literal
+ok   CONTROL scratch copy is clean
+ok   NEEDLE-A unlisted bank reported
+ok   NEEDLE-B script naming a bank reported
+ok   NEEDLE-B2 bare basename reported
+ok   NEEDLE-C floor above the case count reported
+test_manifest: PASS
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 3: manifest
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): container_without_op_label 8bf48bf9349f); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+ok   REAL manifest lists every bank, floors hold, no unreviewed bank-path literal
+ok   CONTROL scratch copy is clean
+ok   NEEDLE-A unlisted bank reported
+ok   NEEDLE-B script naming a bank reported
+ok   NEEDLE-B2 bare basename reported
+ok   NEEDLE-C floor above the case count reported
+test_manifest: PASS
+VIA=run_pinned.sh direct (sweep bypassed) RC=0

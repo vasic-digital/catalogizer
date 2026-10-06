@@ -1,0 +1,23 @@
+version: '2.0'
+name: golden-bad-R-4
+test_cases:
+- id: bad-r4
+  name: golden bad R-4
+  category: fixture
+  priority: low
+  platforms: [api]
+  final_status: skipped
+  steps:
+  - name: s1
+    action: "http: GET /api/v1/health"
+    expect_status: 200
+    expected: ok
+    timeout: 5
+  metadata:
+    v3:
+      schema: bank-case/3
+      surface: fixture
+      oracle: {strategy: specified, independent_of_sut: true}
+      needs: {service: catalog-api, credential_env: [QA_USER]}
+      flow: deterministic
+      evidence: [http_exchange]

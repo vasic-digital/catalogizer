@@ -1,0 +1,4 @@
+# Transitional, reviewed list for scripts/qa/tests/test_manifest.sh (T213): tracked scripts that still name a bank file because they are the
+# legacy drivers that scripts/qa/run_profile.sh (T217) replaces. A listed file that stops naming a bank is reported as stale (delete the row);
+# a file not listed that names a bank is a finding. The drivers are not edited by T213 (outside its file set); their removal is the WP-60 conversion.
+scripts/run-helixqa.sh

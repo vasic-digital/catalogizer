@@ -1,0 +1,40 @@
+# GREEN capture 2026-10-06T20:57:31Z HEAD=f04c555d (working tree, uncommitted; re-run after test additions)
+== run 1: bank_id_floor
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ok   floor file exists: /src/challenges/helixqa-banks/.bank-id-floor.txt
+ok   floor holds 1269 case ids (not header-only)
+ok   floor ids are unique
+ok   independent grep count of unique case ids (1269) equals the floor (1269)
+ok   directory scan passes on the real banks
+ok   CONTROL scratch copy passes
+ok   MUTATION deleting case neg-wizard-back-data-loss: the scan FAILS and names it
+ok   CONTROL adding a case does not trip the floor
+ok   no floor file: reported as not enforced
+test_bank_id_floor: PASS
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 2: bank_id_floor
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ok   floor file exists: /src/challenges/helixqa-banks/.bank-id-floor.txt
+ok   floor holds 1269 case ids (not header-only)
+ok   floor ids are unique
+ok   independent grep count of unique case ids (1269) equals the floor (1269)
+ok   directory scan passes on the real banks
+ok   CONTROL scratch copy passes
+ok   MUTATION deleting case neg-wizard-back-data-loss: the scan FAILS and names it
+ok   CONTROL adding a case does not trip the floor
+ok   no floor file: reported as not enforced
+test_bank_id_floor: PASS
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 3: bank_id_floor
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ok   floor file exists: /src/challenges/helixqa-banks/.bank-id-floor.txt
+ok   floor holds 1269 case ids (not header-only)
+ok   floor ids are unique
+ok   independent grep count of unique case ids (1269) equals the floor (1269)
+ok   directory scan passes on the real banks
+ok   CONTROL scratch copy passes
+ok   MUTATION deleting case neg-wizard-back-data-loss: the scan FAILS and names it
+ok   CONTROL adding a case does not trip the floor
+ok   no floor file: reported as not enforced
+test_bank_id_floor: PASS
+VIA=TIC (wrapper, sweep clean) TIC_RC=0

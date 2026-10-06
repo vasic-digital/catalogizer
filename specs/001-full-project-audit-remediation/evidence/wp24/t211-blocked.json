@@ -1,0 +1,23 @@
+{
+ "head": "f04c555d33a83e55d8f6541ba6afccdb358630b3",
+ "measured": {
+  "IMG-PW_has": "python3, node, playwright browsers",
+  "IMG-PW_lacks": "tesseract, ffmpeg (system), PyYAML, pytest",
+  "disk_gate_need_8GB": "pass (disk_headroom.sh)",
+  "go_mod_replace_target_absent": "submodules/llms_verifier/llm-verifier (the sibling submodule keeps go.mod at its root)",
+  "go_required_by_helix_qa": "go 1.26",
+  "pinned_IMG-GO": "go1.25.14 (GOTOOLCHAIN=local refuses: go.mod requires go >= 1.26)",
+  "ubuntu_snapshot_reachable": "HTTP/2 200 (snapshot.ubuntu.com 20260918T000000Z)"
+ },
+ "owed": [
+  "a pinned Go 1.26 base in the lock",
+  "the llms_verifier replace target (upstream layout) or a go.work/replace fix in helix_qa (WP-Q3)",
+  "build/containers/qa/Containerfile (FROM IMG-PW + apt tesseract-ocr ffmpeg python3-yaml python3-pytest from a dated Ubuntu snapshot + the helixqa binary stage)",
+  "dispatcher submission (T005b) and the lock entry IMG-QA class compile + libc (T121b/T121a)",
+  "scripts/containers/local_allowlist.tsv rows (T211 version smokes, T212, T214, T217, T218) held on the T219 verdict"
+ ],
+ "reason": "helixqa cannot be built from the pinned submodule with any locked toolchain: (1) the lock has no Go 1.26 base (a new reviewed lock entry would be needed), (2) the go.mod replace directory ../llms_verifier/llm-verifier does not exist in this checkout, so even a Go 1.26 build fails module resolution. In addition the official path is blocked on ODG-07 (owner host entry point). No IMG-QA was built, no lock entry was written, no allow-list row was written.",
+ "schema": "t211-status/1",
+ "status": "BLOCKED",
+ "task": "T211"
+}

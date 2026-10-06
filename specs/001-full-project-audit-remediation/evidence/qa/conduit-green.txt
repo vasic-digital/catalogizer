@@ -1,0 +1,16 @@
+# GREEN capture 2026-10-06T20:41:01Z HEAD=f04c555d (working tree, uncommitted)
+== run 1: conduit
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      2 drift finding(s): container_without_op_label 1557437f821a; container_without_op_label 4be7a32976fe); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+...................                                                      [100%]
+19 passed in 0.65s
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 2: conduit
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      2 drift finding(s): container_without_op_label 1557437f821a; container_without_op_label 30dc8cd9f292); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+...................                                                      [100%]
+19 passed in 0.64s
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 3: conduit
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): container_without_op_label 1557437f821a); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+...................                                                      [100%]
+19 passed in 0.61s
+VIA=run_pinned.sh direct (sweep bypassed) RC=0

@@ -1,0 +1,22 @@
+# GREEN capture 2026-10-06T20:53:25Z HEAD=f04c555d (working tree, uncommitted)
+== run 1: test_run_qa.sh (host control-plane test, shims)
+PASS: anti-mess drift refuses the run
+PASS: drift: reason anti_mess_drift
+NOTE: real lock has no IMG-QA entry (T211 BLOCKED); run_qa.sh against the real lock is refused:
+run_qa: REFUSED reason=image_not_in_lock BLOCKED: IMG-QA is not in the lock /home/milosvasic/Projects/catalogizer/build/containers/images.lock.yaml; IMG-QA is built by T211 (BLOCKED on the owner host entry point ODG-07 and on its lock entry); until its digest is in build/containers/images.lock.yaml this wrapper refuses every run
+RESULT pass=32 fail=0
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+== run 2: test_run_qa.sh (host control-plane test, shims)
+PASS: anti-mess drift refuses the run
+PASS: drift: reason anti_mess_drift
+NOTE: real lock has no IMG-QA entry (T211 BLOCKED); run_qa.sh against the real lock is refused:
+run_qa: REFUSED reason=image_not_in_lock BLOCKED: IMG-QA is not in the lock /home/milosvasic/Projects/catalogizer/build/containers/images.lock.yaml; IMG-QA is built by T211 (BLOCKED on the owner host entry point ODG-07 and on its lock entry); until its digest is in build/containers/images.lock.yaml this wrapper refuses every run
+RESULT pass=32 fail=0
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+== run 3: test_run_qa.sh (host control-plane test, shims)
+PASS: anti-mess drift refuses the run
+PASS: drift: reason anti_mess_drift
+NOTE: real lock has no IMG-QA entry (T211 BLOCKED); run_qa.sh against the real lock is refused:
+run_qa: REFUSED reason=image_not_in_lock BLOCKED: IMG-QA is not in the lock /home/milosvasic/Projects/catalogizer/build/containers/images.lock.yaml; IMG-QA is built by T211 (BLOCKED on the owner host entry point ODG-07 and on its lock entry); until its digest is in build/containers/images.lock.yaml this wrapper refuses every run
+RESULT pass=32 fail=0
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)

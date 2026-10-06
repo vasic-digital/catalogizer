@@ -1,0 +1,20 @@
+# GREEN capture 2026-10-06T20:54:40Z HEAD=f04c555d (working tree, uncommitted; re-run after test additions)
+== run 1: validator
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+......................                                                   [100%]
+22 passed in 3.21s
+VIA=TIC (wrapper, sweep clean) TIC_RC=0
+== run 2: validator
+NOTE: wrapper refused on foreign anti-mess drift (AM-P1   drift          seen      1 drift finding(s): container_without_op_label 957d94b4e70f); running the same pinned image through run_pinned.sh directly (sweep bypassed)
+......................                                                   [100%]
+22 passed in 3.49s
+VIA=run_pinned.sh direct (sweep bypassed) RC=0
+== run 3: validator
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+......................                                                   [100%]
+22 passed in 3.20s
+VIA=TIC (wrapper, sweep clean) TIC_RC=0

@@ -1,0 +1,95 @@
+{
+ "head": "f04c555d33a83e55d8f6541ba6afccdb358630b3",
+ "measured_at": "2026-10-06T20:40:51Z",
+ "note": "real probes run on the build host; device classes: emulators only (owner decision), none is running, so both device probes report device_absent; credential values were passed through the environment and appear nowhere; the NAS host address is omitted here",
+ "probes": [
+  {
+   "evidence": {
+    "http_status": 200,
+    "identified": false,
+    "note": "the answer carries no build id: not the service (or not healthy)",
+    "url": "http://127.0.0.1:8080/health"
+   },
+   "probe": "service",
+   "rc": 1,
+   "reason": "service_unreachable",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "env": "CATALOGIZER_QA_ADMIN_PASSWORD",
+    "set": false
+   },
+   "probe": "credential",
+   "rc": 1,
+   "reason": "credential_absent",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "adb": "/home/milosvasic/Android/Sdk/platform-tools/adb",
+    "adb_says": "error: device 'emulator-5554' not found",
+    "rc": 1,
+    "serial": "emulator-5554"
+   },
+   "probe": "device",
+   "rc": 1,
+   "reason": "device_absent",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "adb": "/home/milosvasic/Android/Sdk/platform-tools/adb",
+    "adb_says": "error: device 'emulator-5556' not found",
+    "rc": 1,
+    "serial": "emulator-5556"
+   },
+   "probe": "device",
+   "rc": 1,
+   "reason": "device_absent",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "listing": true,
+    "pass_env": "SYNOLOGY_SMB_PASSWORD",
+    "port": 445,
+    "user_env": "SYNOLOGY_SMB_USER"
+   },
+   "probe": "nas",
+   "rc": 0,
+   "status": "present"
+  },
+  {
+   "evidence": {
+    "env": "TMDB_API_KEY",
+    "set": false
+   },
+   "probe": "metadata",
+   "rc": 1,
+   "reason": "credential_absent",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "env": "HELIX_VISION_HOSTS",
+    "hosts": 0,
+    "set": false
+   },
+   "probe": "vision",
+   "rc": 1,
+   "reason": "service_unreachable",
+   "status": "blocked"
+  },
+  {
+   "evidence": {
+    "podman": "podman",
+    "rootless": true
+   },
+   "probe": "runtime",
+   "rc": 0,
+   "status": "present"
+  }
+ ],
+ "schema": "qa-probes-real/1"
+}

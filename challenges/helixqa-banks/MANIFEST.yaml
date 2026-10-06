@@ -1,0 +1,107 @@
+# MANIFEST.yaml - T213 (doc12 6.7). The ONE place that names the HelixQA bank files of this repository: every bank, its platform, the run profile
+# that executes it, its case-count floor and the container image that runs it. No script names a bank file (QF-04); scripts/qa/run_profile.sh resolves a
+# profile from this file. Verified by scripts/qa/tests/test_manifest.sh (no unlisted bank; no bank-file path literal in any tracked script).
+# The case_floor is the number of cases the bank holds today (a floor: a bank holding fewer cases is refused by run_profile.sh). Raising it is a reviewed edit.
+# image: IMG-QA is T211. Its digest is recorded here only after T211 builds it and verifies the digest; until then status is BLOCKED and run_profile.sh
+# refuses every profile (never a run on another image).
+schema: qa-manifest/1
+image:
+  id: IMG-QA
+  digest: null
+  status: BLOCKED
+  blocked_by: "T211 (IMG-QA is not built: submitted through scripts/build/dispatch.sh, owner host entry point ODG-07 not installed)"
+profiles: [api, web, desktop, android, androidtv, installer]
+# profile_probes: the availability probes (scripts/qa/probes, doc12 10.3) run FIRST for a profile; `$NAME` words are expanded from the environment by
+# scripts/qa/manifest_resolve.py (the NAMES only are recorded here, never a value); an unset variable makes that probe blocked: credential_absent.
+# UNCONFIRMED: the variable names below are this manifest's proposal (QA_API_HEALTH_URL, QA_API_LOGIN_URL, QA_WEB_URL, QA_ANDROID_SERIAL, QA_ANDROID_SERIALNO,
+# QA_ANDROIDTV_SERIAL, QA_ANDROIDTV_SERIALNO, CATALOGIZER_QA_ADMIN_USER/_PASSWORD from doc12 6.5); their rows in .env.example are owed. Owner decision: emulators only.
+profile_probes:
+  api:
+    - {probe: service, args: ["--url", "$QA_API_HEALTH_URL"]}
+    - {probe: credential, args: ["--env", "CATALOGIZER_QA_ADMIN_PASSWORD", "--user-env", "CATALOGIZER_QA_ADMIN_USER", "--login-url", "$QA_API_LOGIN_URL"]}
+  web:
+    - {probe: service, args: ["--url", "$QA_WEB_URL"]}
+  desktop:
+    - {probe: runtime, args: []}
+  installer:
+    - {probe: runtime, args: []}
+  android:
+    - {probe: device, args: ["--serial", "$QA_ANDROID_SERIAL", "--expect-serialno", "$QA_ANDROID_SERIALNO"]}
+  androidtv:
+    - {probe: device, args: ["--serial", "$QA_ANDROIDTV_SERIAL", "--expect-serialno", "$QA_ANDROIDTV_SERIALNO", "--package", "com.catalogizer.androidtv"]}
+banks:
+  - file: catalogizer-android-comprehensive-executable.yaml
+    platforms: [android]
+    profiles: [android]
+    case_floor: 80
+    platform_cases: {android: 80}
+  - file: catalogizer-android-negative-paths-executable.yaml
+    platforms: [android]
+    profiles: [android]
+    case_floor: 69
+    platform_cases: {android: 69}
+  - file: catalogizer-androidtv-comprehensive-executable.yaml
+    platforms: [androidtv]
+    profiles: [androidtv]
+    case_floor: 88
+    platform_cases: {androidtv: 88}
+  - file: catalogizer-androidtv-executable.yaml
+    platforms: [androidtv]
+    profiles: [androidtv]
+    case_floor: 4
+    platform_cases: {androidtv: 4}
+  - file: catalogizer-androidtv-full-executable.yaml
+    platforms: [androidtv]
+    profiles: [androidtv]
+    case_floor: 8
+    platform_cases: {androidtv: 8}
+  - file: catalogizer-androidtv-negative-paths-executable.yaml
+    platforms: [androidtv]
+    profiles: [androidtv]
+    case_floor: 51
+    platform_cases: {androidtv: 51}
+  - file: catalogizer-api-comprehensive-executable.yaml
+    platforms: [api]
+    profiles: [api]
+    case_floor: 313
+    platform_cases: {api: 313}
+  - file: catalogizer-api-negative-paths-executable.yaml
+    platforms: [api]
+    profiles: [api]
+    case_floor: 119
+    platform_cases: {api: 119}
+  - file: catalogizer-cross-platform-flows-executable.yaml
+    platforms: [android, androidtv, api, desktop, web]
+    profiles: [android, androidtv, api, desktop, web]
+    case_floor: 15
+    platform_cases: {android: 1, androidtv: 6, api: 15, desktop: 1, web: 12}
+  - file: catalogizer-desktop-comprehensive-executable.yaml
+    platforms: [desktop]
+    profiles: [desktop]
+    case_floor: 64
+    platform_cases: {desktop: 64}
+  - file: catalogizer-desktop-negative-paths-executable.yaml
+    platforms: [desktop]
+    profiles: [desktop]
+    case_floor: 25
+    platform_cases: {desktop: 25}
+  - file: catalogizer-web-comprehensive-executable.yaml
+    platforms: [web]
+    profiles: [web]
+    case_floor: 255
+    platform_cases: {web: 255}
+  - file: catalogizer-web-negative-paths-executable.yaml
+    platforms: [web]
+    profiles: [web]
+    case_floor: 95
+    platform_cases: {web: 95}
+  - file: catalogizer-wizard-comprehensive-executable.yaml
+    platforms: [desktop]
+    profiles: [installer]
+    case_floor: 63
+    platform_cases: {desktop: 63}
+  - file: catalogizer-wizard-negative-paths-executable.yaml
+    platforms: [desktop]
+    profiles: [installer]
+    case_floor: 20
+    platform_cases: {desktop: 20}
