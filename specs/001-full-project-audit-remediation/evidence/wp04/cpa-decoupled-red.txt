@@ -1,0 +1,24 @@
+# T045a RED: scripts/repo/tests/test_tooling_decoupled.sh with the check disabled (TD_DISABLE_CHECK=1: the check does not exist yet), so the control needle is NOT reported
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04 (working tree); date_utc: 2026-10-06T18:31:26Z; bash 5.3.9(1)-release; test sha256: 1ba6f325e91c482d208a7914a21a564e17e05d46715cc8b19e31bd4740913c58
+FAIL needle: the scratch copy with the project name inserted is reported (exit 1) (got '0', want '1')
+FAIL needle: the hit is named by file and line (no 'needle/cpa-host:' in '')
+ok   the host entry point and its sourced files carry no project literal (=0)
+ok   no hit printed
+FAIL a literal planted in a sourced file is reported by the real check (got '0', want '1')
+FAIL named by its file (no 'src/lib.sh:' in '')
+ok   mutation (skip the sourced files): the planted literal is MISSED, so the real-check assertion above catches it (=0)
+ok   the closed list holds the project name and the checkout path (+ 7 remote URL(s))
+ok   kebab-case exception listed in the companion: scripts/commit-push-all.sh
+ok   kebab-case exception listed in the companion: cpa-host
+ok   kebab-case exception listed in the companion: tools/evidence/wrap-go.sh
+ok   kebab-case exception listed in the companion: wrap-bash.sh
+ok   kebab-case exception listed in the companion: wrap-vitest.sh
+ok   kebab-case exception listed in the companion: wrap-gradle.sh
+ok   kebab-case exception listed in the companion: wrap-cargo.sh
+ok   kebab-case exception listed in the companion: scripts/test-in-container.sh
+ok   kebab-case exception listed in the companion: scripts/audit/android-container.sh
+ok   kebab-case exception listed in the companion: scripts/bash-coverage.sh
+ok   kebab-case exception listed in the companion: scripts/audit/adb-container.sh
+ok   the companion records the cpa-host rename question as an owner item
+---- 16 ok, 4 failed
+exit=1

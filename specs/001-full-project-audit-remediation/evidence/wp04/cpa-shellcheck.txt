@@ -1,0 +1,35 @@
+# T044 lint (final files): RUNP IMG-SHELLCHECK -- shellcheck (IMG-SHELLCHECK digest sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d, version: 0.11.0)
+# head: 8bc60bd70441bcf134c57d2e90da7dab72f28ebd (working tree); date_utc: 2026-10-06T21:46:15Z; runner sha256 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226
+## A. the files of this task (scripts/commit-push-all.sh, scripts/repo/host_entry/cpa-host) with -x (sources followed); then their tests with -x
+sha256 59a53a653481142046451d518072896399cb777ead5c15bcd8661ad18b7d44b2  scripts/commit-push-all.sh
+sha256 3bf95676a91cee438baffbb1cfccb0e73c62fb3d1586d8c6db2d922f203ddc6e  scripts/repo/host_entry/cpa-host
+sha256 133ac3413f5ddacc0106cfa15d2a5202e17896ed00e75acb75a9c3058dac19b1  scripts/repo/tests/test_commit_push_all.sh
+sha256 1ba6f325e91c482d208a7914a21a564e17e05d46715cc8b19e31bd4740913c58  scripts/repo/tests/test_tooling_decoupled.sh
+sha256 42fd83296b19cc9e0bbb0cac68d442f1e88fc7260c3a1841ecfdf1604b90af3c  scripts/repo/tests/run_wp04i_mutations.sh
+rc(core, -x)=0
+rc(tests, -x)=1 ; findings by rule in the TEST files (info and warning, no error; SC2046 is the intended word-split of the harness's ENVV, the unused-variable warnings HC, hh, hit, PREV and TRUSTKEY are leftovers in the tests, an owed cleanup that was NOT made after the matrix was frozen for the mutation and kcov evidence; the core files above are clean):
+     32 SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+      8 SC2012 (info): Use find instead of ls to better handle non-alphanumeric filenames.
+      7 SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+      5 SC2046 (warning): Quote this to prevent word splitting.
+      1 SC2086 (info): Double quote to prevent globbing and word splitting.
+      1 SC2034 (warning): hit appears unused. Verify use (or export if used externally).
+      1 SC2034 (warning): hh appears unused. Verify use (or export if used externally).
+      1 SC2034 (warning): TRUSTKEY appears unused. Verify use (or export if used externally).
+      1 SC2034 (warning): PREV appears unused. Verify use (or export if used externally).
+      1 SC2034 (warning): HC appears unused. Verify use (or export if used externally).
+      1 SC2019 (info): Use '[:upper:]' to support accents and foreign alphabets.
+      1 SC2018 (info): Use '[:lower:]' to support accents and foreign alphabets.
+## B. the form written in T044 (the host shell expands the glob; no -x): shellcheck scripts/commit-push-all.sh scripts/repo/*.sh
+rc(B)=1
+findings located in scripts/commit-push-all.sh or scripts/repo/host_entry/cpa-host: 0
+findings in the committed helpers (other tasks' files, NOT touched by this task), count by file:
+      1 In scripts/repo/check_no_ci.sh
+      1 In scripts/repo/check_revision_headers.sh
+      3 In scripts/repo/commit_recursive.sh
+     14 In scripts/repo/integrate_ff_only.sh
+      4 In scripts/repo/integrate_merge.sh
+      1 In scripts/repo/lib_safe.sh
+      1 In scripts/repo/push_recursive.sh
+      1 In scripts/repo/scope_check.sh
+      6 In scripts/repo/verify_repos.sh

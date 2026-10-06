@@ -1,0 +1,50 @@
+{
+ "commit-push-all.sh": {
+  "path": "scripts/commit-push-all.sh",
+  "entries_unioned": 120,
+  "executable": 320,
+  "covered": 288,
+  "percent": 90.0,
+  "uncovered_ranges": [
+   "85",
+   "96-102",
+   "173",
+   "199",
+   "235",
+   "242",
+   "244",
+   "254",
+   "259-261",
+   "264",
+   "267",
+   "287",
+   "307",
+   "320",
+   "323-324",
+   "353",
+   "358",
+   "404",
+   "410",
+   "441",
+   "444",
+   "447",
+   "450"
+  ],
+  "file_lines": 467,
+  "sha256": "59a53a653481142046451d518072896399cb777ead5c15bcd8661ad18b7d44b2"
+ },
+ "cpa-host": {
+  "path": "scripts/repo/host_entry/cpa-host",
+  "entries_unioned": 69,
+  "executable": 61,
+  "covered": 61,
+  "percent": 100.0,
+  "uncovered_ranges": [],
+  "file_lines": 118,
+  "sha256": "3bf95676a91cee438baffbb1cfccb0e73c62fb3d1586d8c6db2d922f203ddc6e"
+ },
+ "_raw": {
+  "cobertura_sha256": "0b0b4b497a7ce8be8b402db6e72858c3bb5b6970ed46e600022e2eb14245df29",
+  "cobertura_path": ".audit/scratch/cpa/out_kcov3/cov/test_commit_push_all.sh.737dded6da63d790/cobertura.xml"
+ }
+}

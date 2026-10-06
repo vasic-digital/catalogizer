@@ -1,0 +1,69 @@
+# T043 paired mutations (FINAL run): scripts/repo/tests/run_wp04i_mutations.sh (data: scripts/repo/tests/cpa_mutants.py); each mutant is a throwaway copy of the scripts the matrix reads, run through the ONE section meant to catch it; CAUGHT = that section exits non-zero; control = the unmutated copy through every section used (all must pass)
+# head: 8bc60bd70441bcf134c57d2e90da7dab72f28ebd (working tree); date_utc: 2026-10-06T21:45:47Z; bash 5.3.9(1)-release; matrix sha256 133ac3413f5ddacc0106cfa15d2a5202e17896ed00e75acb75a9c3058dac19b1; mutants sha256 0eb1b18da496476c58af52a5e861249598f144f7f09e453d4ec08c8510e88440; runner sha256 42fd83296b19cc9e0bbb0cac68d442f1e88fc7260c3a1841ecfdf1604b90af3c; commit-push-all.sh sha256 59a53a653481142046451d518072896399cb777ead5c15bcd8661ad18b7d44b2; cpa-host sha256 3bf95676a91cee438baffbb1cfccb0e73c62fb3d1586d8c6db2d922f203ddc6e
+# history of this run set (stated, not hidden): a first full run printed every mutant as 'equivalent' because of a reporting bug of the runner (an empty field collapsed under read with a TAB IFS; fixed, the verdict files were unaffected); a later full run had 36 caught and 2 SURVIVED (M27 deferral write ignored, M28 helper status mapped to 10): matrix cases 4.4 and 4.5 refused with unrecorded_local_commit (their shim commit was never pushed) so they passed for the wrong reason; fixed in the test (the shim commit is pushed first, the reason is asserted), M27 and M28 then CAUGHT; mutants M41 to M48 were added with the tests that kill them; the whole set below is the run on the final code and matrix. Two mutants are equivalent at the matrix level because a second layer enforces the same property (listed, never counted as caught).
+== control: the unmutated copy through each section used
+control 1 exit       exit=0  ---- 36 ok, 0 failed
+control 10 host      exit=0  ---- 53 ok, 0 failed
+control 11 static    exit=0  ---- 4 ok, 0 failed
+control 12 hooks     exit=0  ---- 4 ok, 0 failed
+control 13 helpers   exit=0  ---- 15 ok, 0 failed
+control 2 usage      exit=0  ---- 34 ok, 0 failed
+control 3 lock       exit=0  ---- 9 ok, 0 failed
+control 4 deferral   exit=0  ---- 25 ok, 0 failed
+control 5 scope      exit=0  ---- 10 ok, 0 failed
+control 6 held       exit=0  ---- 30 ok, 0 failed
+control 7 merge      exit=0  ---- 90 ok, 0 failed
+control 8 verifier   exit=0  ---- 8 ok, 0 failed
+control 9 repo       exit=0  ---- 18 ok, 0 failed
+== mutants (jobs=5)
+mutant                             section      result     first failing line (or the models-what)
+M01_no_scope_check                 5 scope      CAUGHT     FAIL 5.1 a .env file: 13 (got '0', want '13')
+M02_no_cheap_checks                1 exit       CAUGHT     FAIL 1.4 failing cheap check: 10 (got '0', want '10')
+M03_no_push                        1 exit       CAUGHT     FAIL 1.1 clean run: 0 (got '11', want '0')
+M04_verify_without_remote          8 verifier   CAUGHT     FAIL 8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (got '0', want '11')
+M05_failing_check_is_success       1 exit       CAUGHT     FAIL 1.4 failing cheap check: 10 (got '0', want '10')
+M06_scope_refusal_is_success       5 scope      CAUGHT     FAIL 5.1 a .env file: 13 (got '0', want '13')
+M07_lock_never_released            1 exit       CAUGHT     FAIL 1.2 second run after a clean run: 0 (got '20', want '0')
+M08_report_only_on_success         1 exit       CAUGHT     FAIL 1.4: report.json missing at /tmp/cpa_test.0mUtKL/badcheck/w/.audit/commit-push/20261006T212202Z-2578666-e
+M09_verdict_already_go_removed     6 held       CAUGHT     FAIL 6.4 a hold on a verdict that holds GO in HEAD: 20 (got '14', want '20')
+M10_held_paths_unheld              6 held       CAUGHT     FAIL 6.1 review_pending (no 'review_pending' in 'cpa: exit=14 run=20261006T212131Z-2531200-551b837a stage=S8 r
+M11_ignored_option                 2 usage      CAUGHT     FAIL 2.1 argument after the message: 20 (got '0', want '20')
+M12_merge_by_rebase                7 merge      CAUGHT     FAIL SHIM: a forbidden git call: 62:-C /tmp/cpa_test.bplmJW/merge1/w rebase origin/main
+M13_local_only_pushes              4 deferral   CAUGHT     FAIL 4.2 no push call (got '2', want '0')
+M14_skip_long_not_recorded         4 deferral   CAUGHT     FAIL 4.1 SKIP_LONG: 14 (got '0', want '14')
+M15_sweep_absent_not_deferred      1 exit       CAUGHT     FAIL 1.3 no sweep: 14 (got '0', want '14')
+M16_no_self_test                   10 host      CAUGHT     FAIL 10.1 not_via_host_entry (no 'not_via_host_entry' in '/tmp/cpa_test.eQQLPf/host/w/scripts/commit-push-all.
+M17_host_no_rehash                 10 host      CAUGHT     FAIL 10.12 a store blob changed by one byte: 20 (got '0', want '20')
+M18_host_run_id_reuse              10 host      CAUGHT     FAIL 10.10 run_id_in_use (no 'run_id_in_use' in 'mkdir: .audit/commit-push/fixed-id-1/no-hooks: File exists
+M19_host_no_adoption_check         10 host      CAUGHT     FAIL 10.6 an adoption commit off the first-parent chain: 20 (got '0', want '20')
+M20_selftest_ignores_revoke        10 host      CAUGHT     FAIL 10.14 a revoked manifest is refused by the self-test: 20 (got '0', want '20')
+M21_force_with_lease_token         11 static    CAUGHT     FAIL 11.1 commit-push-all.sh contains a force/lease/+refspec/no-verify/reset/rebase token: 31:PUSHFLAG="--forc
+M22_no_lock                        3 lock       CAUGHT     FAIL 3.2 a second run while the lock is held: 20 (got '0', want '20')
+M23_pending_ignores_head           8 verifier   CAUGHT     FAIL 8.4 a pending row whose sha differs from the head: still 15 (got '0', want '15')
+M24_verifier_14_stays_14           8 verifier   CAUGHT     FAIL 8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (got '14', want '11')
+M25_missing_report_is_clean        8 verifier   CAUGHT     FAIL 8.2 a verifier exit 0 whose report is missing: 20 (fail closed) (got '0', want '20')
+M26_no_remote_reachable_removed    1 exit       CAUGHT     FAIL 1.7 every remote unreachable: 20 (got '11', want '20')
+M27_deferral_write_ignored         4 deferral   CAUGHT     FAIL 4.4 a record_deferral.sh that fails to write its row: 20, never a 14 without its row (got '14', want '20'
+M28_helper_status_to_10            4 deferral   CAUGHT     FAIL 4.5 a stage helper exiting outside its set (commit_recursive 2): 20, never 10 (got '10', want '20')
+M29_held_without_local_only        6 held       CAUGHT     FAIL 6.1 the held commit carries LOCAL_ONLY (no 'Deferred-Gates: LOCAL_ONLY' in 'unheld and held
+M30_no_pending_pin_row             9 repo       CAUGHT     FAIL 9.1 a pending pin row is recorded (got '', want 'ec2bb3446c034a191920f981f44b34b338da9602')
+M31_report_without_hashes          1 exit       CAUGHT     FAIL 1.4 files map missing
+M32_hooks_not_disabled             12 hooks     CAUGHT     FAIL 12.1 hooks ran: commit-msg post-commit pre-commit pre-push reference-transaction 
+M33_no_integration                 7 merge      CAUGHT     FAIL 7.1 diverged repository, no held commit, no conflict: 0 (got '11', want '0')
+M34_merge_conflict_is_success      7 merge      CAUGHT     FAIL 7.6 a merge with a conflict: 12 (got '11', want '12')
+M35_no_s1a_backup                  7 merge      CAUGHT     FAIL 7.11 no backup/s1a/backup.json
+M36_bundle_not_verified            7 merge      CAUGHT     FAIL 7.13 a bundle that git bundle verify rejects: 20 (got '0', want '20')
+M37_held_push_not_mapped           6 held       CAUGHT     FAIL 6.1 a held path: 14 (got '11', want '14')
+M38_pins_unmatched_ignored         8 verifier   CAUGHT     FAIL 8.3 pointer drift with no pending row: 15 (got '0', want '15')
+M39_path_in_submodule_removed      2 usage      equivalent equivalent: commit_recursive.sh refuses the same path with 20 path_in_submodule at S5 (second layer), so the matrix result is unchanged
+M40_resolution_dir_check_removed   7 merge      equivalent equivalent: integrate_merge.sh --resolution refuses the same directory with 20 resolution_dir_invalid (second layer)
+M41_awaits_review_ignored          6 held       CAUGHT     FAIL 6.8 --awaits-review holds every path without a verdict of its own: 14 (got '0', want '14')
+M42_long_gate_missing_ignored      4 deferral   CAUGHT     FAIL 4.7 a missing long-gate verdict: 10 (got '0', want '10')
+M43_live_holder_not_refused        7 merge      CAUGHT     FAIL 7.16 lock_held (no 'lock_held' in 'cpa: FAIL S0 20 merge_in_progress (MERGE_HEAD present: git merge --abo
+M44_ff_status_outside_set_is_success 13 helpers   CAUGHT     FAIL 13.4 integrate_ff_only exit 7 (outside its set): 20, never read as success (got '0', want '20')
+M45_verifier_blind_ignored         13 helpers   CAUGHT     FAIL 13.7 a verifier exit 20 with a readable report: 20 (blind verifier) (got '0', want '20')
+M46_s1a_unrecorded_guard_removed   7 merge      CAUGHT     FAIL 7.18 nothing committed (got '1ef7e74c1bc26f82a0f3e5765507adadc9133477', want '43c7ce95c25653169d004b802b7
+M47_pending_check_is_zero          4 deferral   CAUGHT     FAIL 4.9 a registry row that the approved copy lacks is pending, never run: 14, not 10 (got '0', want '14')
+M48_host_empty_trust_file_accepted 10 host      CAUGHT     FAIL 10.20 trust_file_absent (no 'trust_file_absent' in '{"refusal":"project_not_trusted","reason":"trust_file
+---- mutants: 48 total, 46 caught, 0 survived, 2 equivalent (second layer, not counted), 0 inapplicable
+exit=0

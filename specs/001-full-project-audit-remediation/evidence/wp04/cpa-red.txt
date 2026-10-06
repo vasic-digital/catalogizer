@@ -1,0 +1,298 @@
+# T039 RED: scripts/repo/tests/test_commit_push_all.sh against the ABSENT scripts/commit-push-all.sh and scripts/repo/host_entry/cpa-host (true failing-first; 47 'ok' lines are vacuous absence assertions: nothing happened, so 'nothing committed/pushed' holds; hardened afterwards, see cpa-green)
+# head: a7cfc6d37ce903fc79b11f13d3877a4de3a797a3 (working tree, nothing committed by this task); date_utc: 2026-10-06T18:03:51Z; bash 5.3.9(1)-release; git version 2.53.0
+# test sha256 (at capture): 9c19cbe727c59b43b9532247450a4fab7f0d051a47802ce571f9f2497b808f2b
+NOTE: /home/milosvasic/Projects/catalogizer/scripts/commit-push-all.sh is absent or not executable (RED state: every case must FAIL)
+FAIL 1.1 clean run: 0 (got '127', want '0')
+FAIL 1.1: report.json missing at /tmp/cpa_test.lxBqBg/clean/w/.audit/commit-push//report.json
+ok   1.1 origin holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+ok   1.1 mirror holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 1.1 the commit carries the CPA-Run trailer of the run (no 'CPA-Run: ' in 'add submodule')
+ok   1.1 no Deferred-Gates line
+FAIL 1.1 tracked tree dirty: ?? src/a.txt
+FAIL 1.1 report exit (got '', want '0')
+FAIL 1.1 the sweep shim was never called
+FAIL 1.2 second run after a clean run: 0 (got '127', want '0')
+ok   1.2 commits nothing (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 1.2 dirty
+FAIL 1.2 equal run ids
+FAIL 1.2 run id shape: 
+FAIL 1.3 no sweep: 14 (got '127', want '14')
+FAIL 1.3 SWEEP_ABSENT in the commit's Deferred-Gates line (no 'Deferred-Gates: SWEEP_ABSENT' in 'add submodule')
+ok   1.3 still pushed to origin (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 1.4 failing cheap check: 10 (got '127', want '10')
+ok   1.4 nothing committed (=6582c39adbff7c9248c2f956ab650b575f915094)
+ok   1.4 no push call (=0)
+FAIL 1.4: report.json missing at /tmp/cpa_test.lxBqBg/badcheck/w/.audit/commit-push//report.json
+FAIL 1.4 report names stage S3 (got '', want 'S3')
+ok   1.4 lock released (=0)
+FAIL 1.4 files map missing
+FAIL 1.5 rejected push: 11 (got '127', want '11')
+FAIL 1.5 the commit is local (got 'add submodule', want 'r')
+FAIL 1.5 origin has it
+FAIL 1.5: report.json missing at /tmp/cpa_test.lxBqBg/reject/w/.audit/commit-push//report.json
+FAIL 1.5 failed stage S6 (got '', want 'S6')
+FAIL 1.6 one remote unreachable: 11 (got '127', want '11')
+FAIL 1.7 every remote unreachable: 20 (got '127', want '20')
+FAIL 1.7 reason no_remote_reachable (no 'no_remote_reachable' in 'env: '/tmp/cpa_test.lxBqBg/allunreach/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 1.7 also under --local-only: 20 (got '127', want '20')
+FAIL 1.7 reason (no 'no_remote_reachable' in 'env: '/tmp/cpa_test.lxBqBg/allunreach/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 2.1 argument after the message: 20 (got '127', want '20')
+FAIL 2.1 usage_error (no 'usage_error' in 'env: '/tmp/cpa_test.lxBqBg/usage/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   2.1 no push call (=0)
+ok   2.1 nothing committed (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 2.2 unknown option: 20 (got '127', want '20')
+FAIL 2.2 usage_error (no 'usage_error' in 'env: '/tmp/cpa_test.lxBqBg/usage/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 2.3 --paths-from without a message: 20 (got '127', want '20')
+FAIL 2.4 --commit-before-integrate without --paths-from: 20 (got '127', want '20')
+FAIL 2.4 usage_error (no 'usage_error' in 'env: '/tmp/cpa_test.lxBqBg/usage/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 2.5 with --resolve-merge: 20 (got '127', want '20')
+FAIL 2.6 unreadable --paths-from: 20 (got '127', want '20')
+FAIL 2.7 unsafe declared path: 20 (got '127', want '20')
+ok   2.7 nothing committed (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 2.8 declared path below a gitlink: 20 (got '127', want '20')
+FAIL 2.8 path_in_submodule (no 'path_in_submodule' in 'env: '/tmp/cpa_test.lxBqBg/usage/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   2.8 nothing committed in the main repository (=6582c39adbff7c9248c2f956ab650b575f915094)
+ok   2.8 nothing committed in the submodule (=1)
+FAIL 2.9 MERGE_HEAD present: 20 merge_in_progress (got '127', want '20')
+FAIL 2.9 reason (no 'merge_in_progress' in 'env: '/tmp/cpa_test.lxBqBg/mergeprog/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 2.10 a plain git commit that no remote holds: 20 (got '127', want '20')
+FAIL 2.10 unrecorded_local_commit (no 'unrecorded_local_commit' in 'env: '/tmp/cpa_test.lxBqBg/hand/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   2.10 no push call (=0)
+FAIL 2.11 a copied CPA-Run trailer proves nothing: 20 (got '127', want '20')
+FAIL 2.11 unrecorded_local_commit (no 'unrecorded_local_commit' in 'env: '/tmp/cpa_test.lxBqBg/handtrailer/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 2.12 a live writer in the registry: 20 (got '127', want '20')
+ok   2.12 nothing pushed (=0)
+FAIL 2.13 a sweep finding (undeclared change): 20 (got '127', want '20')
+FAIL 2.14 with the sweep present an undeclared file is refused at S0: 20 (got '127', want '20')
+FAIL 2.14 the sweep was asked to exclude the declared change set (got '0', want '1')
+FAIL 2.15 without the sweep an undeclared untracked file gives 13 at S7 (got '127', want '13')
+FAIL 2.16 clean run beside a run directory without a report: 0 (got '127', want '0')
+FAIL 2.16 the report lists the interrupted run (no '20260101T000000Z-1-dead' in '')
+ok   2.16 the interrupted run's directory is byte-unchanged (=223c19bdd432c0bfd9714956eca011f057ad900b9beef5755fcce23b1364e3c4  -)
+FAIL 3.1 no pause reached
+ls: cannot access '/tmp/cpa_test.lxBqBg/lock/w/.audit/commit-push/*/': No such file or directory
+scripts/repo/tests/test_commit_push_all.sh: line 214: cd: null directory
+FAIL 3.2 a second run while the lock is held: 20 (got '127', want '20')
+FAIL 3.2 reason lock_held (no 'lock_held' in 'env: '/tmp/cpa_test.lxBqBg/lock/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   3.2 names the holder's run id
+scripts/repo/tests/test_commit_push_all.sh: line 216: cd: null directory
+ok   3.2 the holder's run directory is byte-unchanged (=)
+ls: cannot access '/tmp/cpa_test.lxBqBg/lock/w/.audit/commit-push/*/': No such file or directory
+FAIL 3.2 the second run wrote its own run directory (got '0', want '2')
+FAIL 3.3 the holder finishes with its own code: 0 (got '127', want '0')
+FAIL 3.4 after the holder ended the lock is free: 0 (got '127', want '0')
+FAIL 4.1 SKIP_LONG: 14 (got '127', want '14')
+FAIL 4.1 Deferred-Gates SKIP_LONG (no 'Deferred-Gates: SKIP_LONG' in 'add submodule')
+ok   4.1 the commit is pushed (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 4.2 --local-only: 14 (got '127', want '14')
+FAIL 4.2 LOCAL_ONLY in the Deferred-Gates line (no 'LOCAL_ONLY' in 'add submodule')
+ok   4.2 no push call (=0)
+FAIL 4.2 origin has it
+FAIL 4.2 S7 ran without remote contact: report exit (got '', want '14')
+FAIL 4.3 SKIP_LONG, integrate-only run, diverged repository: 14 (got '127', want '14')
+FAIL 4.3 the merge commit's Deferred-Gates carries SKIP_LONG (no 'SKIP_LONG' in 'add submodule')
+FAIL 4.3 HEAD is a merge commit (got '2', want '3')
+FAIL 4.4 a record_deferral.sh that fails to write its row: 20, never a 14 without its row (got '127', want '20')
+FAIL 4.5 a stage helper exiting outside its set (commit_recursive 2): 20, never 10 (got '127', want '20')
+FAIL 5.1 a .env file: 13 (got '127', want '13')
+ok   5.1 no push (=0)
+FAIL 5.1: report.json missing at /tmp/cpa_test.lxBqBg/scope/w/.audit/commit-push//report.json
+FAIL 5.1 failed stage S2 (got '', want 'S2')
+FAIL 5.2 an edited earlier ledger line: 13 (got '127', want '13')
+FAIL 5.3 a pure append passes: 0 (got '127', want '0')
+FAIL 5.4 a blob whose name is not the sha256 of its content: 13 (got '127', want '13')
+FAIL 5.5 a dirty submodule: 13 at S2 (declared or not) (got '127', want '13')
+FAIL 5.6 a dirty submodule with a declared change set: 13 (got '127', want '13')
+ok   5.6 nothing pushed (=0)
+FAIL 6.1 a held path: 14 (got '127', want '14')
+FAIL 6.1 review_pending (no 'review_pending' in 'env: '/tmp/cpa_test.lxBqBg/held/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   6.1 two commits: unheld first, held second (=2)
+FAIL 6.1 the held commit awaits the verdict (no 'Awaits-Review: specs/001-full-project-audit-remediation/evidence/reviews/WP-X.json' in 'add submodule')
+FAIL 6.1 the held commit carries LOCAL_ONLY (no 'Deferred-Gates: LOCAL_ONLY' in 'add submodule')
+ok   6.1 the unheld commit is not held
+ok   6.1 the unheld commit has no LOCAL_ONLY
+FAIL 6.1 origin holds the unheld commit (got '6582c39adbff7c9248c2f956ab650b575f915094', want '37a0d9c746b0d27e2bb733e9a27eaf2c3a74a84b')
+FAIL 6.2 a later unheld commit above the held one: 14 (got '127', want '14')
+fatal: ambiguous argument 'HEAD~2': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+FAIL 6.2 origin still at the unheld commit (got '6582c39adbff7c9248c2f956ab650b575f915094', want 'HEAD~2')
+FAIL 6.3 a NO-GO verdict keeps the hold: 14 (got '127', want '14')
+FAIL 6.3 review_pending (no 'review_pending' in 'env: '/tmp/cpa_test.lxBqBg/held/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 6.3 a GO whose covers_runs lacks the held run keeps the hold: 14 (got '127', want '14')
+FAIL 6.4 a hold on a verdict that holds GO in HEAD: 20 (got '127', want '20')
+FAIL 6.4 verdict_already_go (no 'verdict_already_go' in 'env: '/tmp/cpa_test.lxBqBg/held/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   6.4 nothing committed (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 6.5 a GO committed in HEAD naming the held run releases the range: 0 (got '127', want '0')
+ok   6.5 origin holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+ok   6.5 mirror holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 7.1 setup: a --local-only commit: 14 (got '127', want '14')
+FAIL 7.1 diverged repository, no held commit, no conflict: 0 (got '127', want '0')
+FAIL 7.1 HEAD is a merge commit (got '2', want '3')
+FAIL 7.1 the local tip is the merge's first parent (got '37a0d9c746b0d27e2bb733e9a27eaf2c3a74a84b', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.1 the merge carries the CPA-Run trailer (no 'CPA-Run: ' in 'add submodule')
+FAIL 7.1 one Foreign-Commit line for the foreign commit (no 'Foreign-Commit: 9b3d5af21e4682d6036a5f163aa4f6dbc6a85892' in 'add submodule')
+FAIL 7.1 origin holds the merge (got '9b3d5af21e4682d6036a5f163aa4f6dbc6a85892', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.1 mirror holds the merge (got '9b3d5af21e4682d6036a5f163aa4f6dbc6a85892', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.1 no verifying backup bundle under backup/ (ls: cannot access '/tmp/cpa_test.lxBqBg/merge1/w/.audit/commit-push//backup': No such file or directory )
+FAIL 7.1 the local commit keeps its sha below the merge (got '37a0d9c746b0d27e2bb733e9a27eaf2c3a74a84b', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.1 dirty
+FAIL 7.2 setup: held commit: 14 (got '127', want '14')
+FAIL 7.2 a held commit below the merge: merge held, 14 (got '127', want '14')
+FAIL 7.2 the merge awaits its merge-review file (no 'Awaits-Review: specs/001-full-project-audit-remediation/evidence/reviews/CPA-merge-.json' in 'add submodule')
+fatal: ambiguous argument 'HEAD^2': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+FAIL 7.2 nothing pushed to origin (got '10bad86555af8368312a271ee651dd32966a1197', want 'HEAD^2')
+ok   7.2 no push call past the held commit (=0)
+FAIL 7.3 held verdict GO but merge verdict absent: 14 (got '127', want '14')
+ok   7.3 no push call for any remote (=0)
+FAIL 7.3 names the merge-review file (no 'CPA-merge-.json' in 'env: '/tmp/cpa_test.lxBqBg/merge2/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 7.4 both verdicts GO: whole range pushed, 0 (got '127', want '0')
+FAIL 7.4 origin holds HEAD (got '10bad86555af8368312a271ee651dd32966a1197', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.4 mirror holds HEAD (got '10bad86555af8368312a271ee651dd32966a1197', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.5 a remote moved after S1: 11 (got '127', want '11')
+FAIL 7.5 remote_moved_since_s1 (no 'remote_moved_since_s1' in 'env: '/tmp/cpa_test.lxBqBg/moved/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 7.5 the next run integrates it: 0 (got '127', want '0')
+ok   7.5 mirror holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+ok   7.5 origin holds HEAD (=6582c39adbff7c9248c2f956ab650b575f915094)
+sha256sum: README.txt: No such file or directory
+sha256sum: mods/sub: No such file or directory
+sha256sum: src/conf.txt: No such file or directory
+sha256sum: src/z.txt: No such file or directory
+FAIL 7.6 a merge with a conflict: 12 (got '127', want '12')
+FAIL 7.6 merge_conflict (no 'merge_conflict' in 'env: '/tmp/cpa_test.lxBqBg/conflict/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   7.6 HEAD unchanged (=6582c39adbff7c9248c2f956ab650b575f915094)
+sha256sum: README.txt: No such file or directory
+sha256sum: mods/sub: No such file or directory
+sha256sum: src/conf.txt: No such file or directory
+sha256sum: src/z.txt: No such file or directory
+ok   7.6 sha256 of every tracked file unchanged (=b76a52c3a84b0cad0e98f6b549511cb1aacd2672341c70888257d0c85b1d9670  -)
+FAIL 7.6 no conflicts/src/conf.txt with markers
+FAIL 7.7 a --resolve-merge directory at any other path: 20 (got '127', want '20')
+FAIL 7.7 resolution_dir_invalid (no 'resolution_dir_invalid' in 'env: '/tmp/cpa_test.lxBqBg/conflict/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 7.8 a record naming another model or effort: 20 (got '127', want '20')
+FAIL 7.8 merge_resolver_not_pinned (no 'merge_resolver_not_pinned' in 'env: '/tmp/cpa_test.lxBqBg/conflict/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 7.9 two conflicting remote tips: 12 (got '127', want '12')
+FAIL 7.9 remotes_diverged (no 'remotes_diverged' in 'env: '/tmp/cpa_test.lxBqBg/rdiv/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   7.9 nothing moved (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 7.10 incoming commits change a declared, uncommitted path: 12 (got '127', want '12')
+FAIL 7.10 ff_blocked_by_local_changes (no 'ff_blocked_by_local_changes' in 'env: '/tmp/cpa_test.lxBqBg/ffblock/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   7.10 nothing moved (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 7.11 --commit-before-integrate over other lines: clean merge pushed, 0 (got '127', want '0')
+FAIL 7.11 origin holds HEAD (got '40492766a6379b78d72bafa0cc4a9aa7b2e885a0', want '6582c39adbff7c9248c2f956ab650b575f915094')
+FAIL 7.11 the content of both sides survived (got '1', want '2')
+FAIL 7.11 the merge names the foreign commit (no 'Foreign-Commit: 40492766a6379b78d72bafa0cc4a9aa7b2e885a0' in 'add submodule')
+ok   7.11 the run's S5 commit names no foreign commit
+FAIL 7.11 no backup/s1a/backup.json
+FAIL 7.11 S1a: no bundle, reason local_range_empty (got '', want 'null:local_range_empty')
+FAIL 7.11 no S1b backup under backup/
+FAIL 7.12 --commit-before-integrate over the same lines: 12 (got '127', want '12')
+FAIL 7.12 merge_conflict (no 'merge_conflict' in 'env: '/tmp/cpa_test.lxBqBg/cbiconf/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 7.12 commit lost
+ok   7.12 pushed nowhere (=0)
+FAIL 7.12 no conflicts copy
+FAIL 7.13 a bundle that git bundle verify rejects: 20 (got '127', want '20')
+FAIL 7.13 backup_failed (no 'backup_failed' in 'env: '/tmp/cpa_test.lxBqBg/cbibk/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   7.13 nothing committed (=6582c39adbff7c9248c2f956ab650b575f915094)
+FAIL 8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (got '127', want '11')
+FAIL 8.2 a verifier exit 0 whose report is missing: 20 (fail closed) (got '127', want '20')
+FAIL 8.3 pointer drift with no pending row: 15 (got '127', want '15')
+FAIL 8.3 the drifted path is named (no 'mods/sub' in 'env: '/tmp/cpa_test.lxBqBg/drift/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   8.3 a drifted submodule is not moved (=ed1fbf3238ddb5d0460fb7db4742a395c87e74d1)
+scripts/repo/tests/test_commit_push_all.sh: line 378: /tmp/cpa_test.lxBqBg/drift/w/.audit/pending_pins.tsv: No such file or directory
+FAIL 8.4 a pending row whose sha differs from the head: still 15 (got '127', want '15')
+scripts/repo/tests/test_commit_push_all.sh: line 380: /tmp/cpa_test.lxBqBg/drift/w/.audit/pending_pins.tsv: No such file or directory
+FAIL 8.5 a pending row that matches path and head: reported pending, 0 (got '127', want '0')
+FAIL 8.5 reported as pending (no 'mods/sub' in '')
+FAIL 9.1 --repo commit in a submodule: 0 (got '127', want '0')
+ok   9.1 the main HEAD and the recorded gitlink are unchanged (=6582c39adbff7c9248c2f956ab650b575f915094:ed1fbf3238ddb5d0460fb7db4742a395c87e74d1)
+FAIL 9.1 the submodule holds the commit (got 'sub init', want 'sub work')
+FAIL 9.1 the commit carries CPA-Run (no 'CPA-Run: ' in 'sub init')
+fatal: cannot change to '/tmp/cpa_test.lxBqBg/seedfx/sub.git': No such file or directory
+FAIL 9.1 the submodule's remote holds it (got '', want 'ed1fbf3238ddb5d0460fb7db4742a395c87e74d1')
+FAIL 9.1 a pending pin row is recorded (got '', want 'ed1fbf3238ddb5d0460fb7db4742a395c87e74d1')
+ok   9.1 no push call for the main repository
+FAIL 9.2 a main-repository run after a --repo run reports the pin as pending, never 15: 0 (got '127', want '0')
+FAIL 9.3 --repo of a path that is no repository: 20 (got '127', want '20')
+FAIL 10.1 the tracked script started directly: 20 (got '127', want '20')
+FAIL 10.1 not_via_host_entry (no 'not_via_host_entry' in 'env: '/tmp/cpa_test.lxBqBg/host/w/scripts/commit-push-all.sh': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   10.1 wrote nothing
+FAIL 10.2 through cpa-host: 0 (control) (got '127', want '0')
+FAIL 10.3 started from a subdirectory: 0 (got '127', want '0')
+ok   10.3 only the main root's .audit is written
+FAIL 10.4 started from inside a submodule: 0 (got '127', want '0')
+ok   10.4 only the main root's .audit is written
+FAIL 10.5 no trust file: 20 project_not_trusted (got '127', want '20')
+FAIL 10.5 reason (no 'project_not_trusted' in 'env: '/tmp/cpa_test.lxBqBg/host/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   10.5 no run directory
+FAIL 10.6 an adoption commit off the first-parent chain: 20 (got '127', want '20')
+FAIL 10.6 adoption_commit_not_first_parent (no 'adoption_commit_not_first_parent' in 'env: '/tmp/cpa_test.lxBqBg/host/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+cp: cannot stat '/tmp/cpa_test.lxBqBg/host2/bin/cpa-host': No such file or directory
+On branch main
+
+Initial commit
+
+nothing to commit (create/copy files and use "git add" to track)
+FAIL 10.7 a stand-alone repository with no trust entry: 20 project_not_trusted (got '127', want '20')
+FAIL 10.7 reason (no 'project_not_trusted' in 'env: '/tmp/cpa_test.lxBqBg/host2/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.8 a malformed --run-id: 20 (got '127', want '20')
+FAIL 10.8 run_id_malformed (no 'run_id_malformed' in 'env: '/tmp/cpa_test.lxBqBg/host3/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.9 a fresh --run-id is used: 0 (got '127', want '0')
+ls: cannot access '/tmp/cpa_test.lxBqBg/host3/w/.audit/commit-push': No such file or directory
+FAIL 10.9 the run directory carries it (got '', want 'fixed-id-1')
+FAIL 10.10 a run id in use: 20 (got '127', want '20')
+FAIL 10.10 run_id_in_use (no 'run_id_in_use' in 'env: '/tmp/cpa_test.lxBqBg/host3/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.11 --run-id with --resume: 20 usage_error (got '127', want '20')
+FAIL 10.11 usage_error (no 'usage_error' in 'env: '/tmp/cpa_test.lxBqBg/host3/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.12 a store blob changed by one byte: 20 (got '127', want '20')
+FAIL 10.12 approved_copy_invalid (no 'approved_copy_invalid' in 'env: '/tmp/cpa_test.lxBqBg/host4/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+ok   10.12 no run directory is left (=0)
+chmod: cannot access '/tmp/cpa_test.lxBqBg/host5/w/.audit/commit-push//released/trust-snapshot.json': No such file or directory
+jq: error: Could not open file /tmp/cpa_test.lxBqBg/host5/w/.audit/commit-push//released/trust-snapshot.json: No such file or directory
+scripts/repo/tests/test_commit_push_all.sh: line 430: /tmp/cpa_test.lxBqBg/host5/w/.audit/commit-push//released/trust-snapshot.json: No such file or directory
+FAIL 10.13 a snapshot whose manifest no approval recorded: 20 (got '127', want '20')
+FAIL 10.13 snapshot_not_trusted (no 'snapshot_not_trusted' in 'env: '/tmp/cpa_test.lxBqBg/host5/w/.audit/commit-push//released/scripts/commit-push-all.sh': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.14 a revoked manifest is refused by the self-test: 20 (got '127', want '20')
+FAIL 10.14 snapshot_not_trusted (no 'snapshot_not_trusted' in 'env: '/tmp/cpa_test.lxBqBg/host6/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.15 --show: 0 (got '127', want '0')
+FAIL 10.15 --show prints the project entry (no 'adoption_commit' in 'env: '/tmp/cpa_test.lxBqBg/host7/bin/cpa-host': No such file or directory
+env: use -[v]S to pass options in shebang lines')
+FAIL 10.16 an owner operation is not an agent operation: 20 (got '127', want '20')
+FAIL 11.1 /home/milosvasic/Projects/catalogizer/scripts/commit-push-all.sh is absent
+FAIL 11.1 /home/milosvasic/Projects/catalogizer/scripts/repo/host_entry/cpa-host is absent
+---- 47 ok, 180 failed
+exit=1

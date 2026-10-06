@@ -1,0 +1,36 @@
+# T044 coverage: the matrix under kcov 43 in the WP-09 image IMG-KCOV (digest sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164), line coverage as kcov determines it (LINE, not branch)
+# head: 34db9504594c4a1f883769d5c3d80238c87d48fb (working tree); date_utc: 2026-10-06T21:36:31Z; runner scripts/containers/run_pinned.sh sha256 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226; lock sha256 (working tree at run time) cfce9f81a097679bea16483fb6d554f42eab22a5bfd4c2a2bd1204cdc16d74d9
+# command: RUNP_CPUS=6 scripts/containers/run_pinned.sh --rw .audit/scratch --out <dir> --network=none IMG-KCOV -- kcov --include-pattern=/released/scripts/commit-push-all.sh,/bin/cpa-host /out/cov scripts/repo/tests/test_commit_push_all.sh
+# DEVIATION from the T044 text (stated, not hidden): 'kcov /out/cov bash scripts/repo/tests/test_commit_push_all.sh' does not work (kcov treats 'bash' as an ELF binary; finding F1 of coverage-kcov-baseline.md), so the test script is given to kcov directly; the include patterns select the copies that cpa-host makes under <run dir>/released/ and the installed entry point copy, because the scripts under test run from there, not from /src/scripts
+# test sha256: 133ac3413f5ddacc0106cfa15d2a5202e17896ed00e75acb75a9c3058dac19b1
+# result of the run under kcov: ---- 336 ok, 0 failed / exit=0
+# measurement: union over every released copy / invocation of the same file (each CPA run executes its own released copy, so one source line is hit in many copies); covered = hits>0 in any copy; executable = lines kcov lists. kcov counts continuation lines of a multi-line statement, a 'done < file' loop terminator and a case ';;' label as lines it may never mark hit: the uncovered list below shows which are those artifacts. A line percentage is a floor-measuring instrument (11.4.224 (C)): it proves no assertion, the matrix and the paired mutations do.
+commit-push-all.sh: 288 / 320 executable lines (kcov) = 90.0%  (union over 120 released copies / invocations)
+  uncovered: 85, 96-102, 173, 199, 235, 242, 244, 254, 259-261, 264, 267, 287, 307, 320, 323-324, 353, 358, 404, 410, 441, 444, 447, 450
+    85: files="$(cd "$CPA_RUN" && find . -type f ! -path ./report.json ! -name 'report.json.tmp' -print0 2>/dev/null | sort -z | xargs -0 -r sha256sum 2>/dev/
+    96: failed_stage:(if $fs=="" then null else $fs end),reason:(if $fr=="" then null else $fr end),detail:(if $fd=="" then null else $fd end),
+    173: done < "$CPA_RUN/paths.txt"
+    199: *) fail S0 20 lock_error "acquire.sh exit $lrc: $(head -c 200 "$CPA_RUN/lock.out")" ;;
+    235: mkdir -p "$CPA_RUN/settle"; "$RD/record_pending_pin.sh" --settle-nested "$ROOT" "$from" "$to" --in-hold "$RUN_ID" --out "$CPA_RUN/settle/" >>"$LOG" 2>
+    242: diverged|remotes_diverged|merge_path_required) ;;
+    244: esac ;;
+    254: 0) # integrate_ff_only.sh sent this repository to the merge path, but integrate_merge.sh only merges tips that fast-forward cannot take (a tip that
+    259: fi ;;
+    264: 13) fail "$st" 13 secret_fold_refused "see integrate-merge-$st.out" ;;
+    267: *) fail "$st" 20 internal_error "integrate_merge.sh exit $rc" ;;
+    287: done < <(git -C "$TARGET" status --porcelain=v1 -z -uall --ignore-submodules=all 2>/dev/null)
+    307: done < "$CPA_RUN/paths.list"
+    320: 0) ;;
+    323: 20) fail S3 20 check_error "$(head -c 300 "$CPA_RUN/validate.out" | tr '\n' ' ')" ;;
+    353: done < "$CPA_RUN/held.tsv"
+    358: done < "$CPA_RUN/paths.list"
+    404: done < <(git -C "$ROOT" submodule status --recursive 2>/dev/null | awk '$1 !~ /^-/ {print $2}' | awk -F/ '{print NF "\t" $0}' | sort -rn | cut -f2-)
+    410: 0) ;;
+    441: done < "$CPA_RUN/drift.tsv"
+    444: 0) ;;
+    447: 15) ;;
+    450: *) fail S7 20 internal_error "unexpected verifier exit $vrc" ;;
+cpa-host: 61 / 61 executable lines (kcov) = 100.0%  (union over 69 released copies / invocations)
+  uncovered: 
+
+raw: cobertura.xml sha256 0b0b4b497a7ce8be8b402db6e72858c3bb5b6970ed46e600022e2eb14245df29 (kept under .audit/scratch/cpa/out_kcov3/, git-ignored); summary json: cpa-kcov.json

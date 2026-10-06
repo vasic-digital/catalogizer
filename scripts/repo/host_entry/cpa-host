@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+# cpa-host - the host entry point of the commit-push script (docs/16 section 12.2.8; tasks.md T042, CENTRAL C3, C5; constitution 11.4.234).
+#
+# Purpose   A CPA run starts only here. This small fixed script is installed by the OWNER outside every repository ($CPA_HOST_ENTRY, default
+#           $HOME/.local/bin/cpa-host, procedure scripts/repo/host_entry/INSTALL.md) and holds NO review logic: it resolves the main repository,
+#           reads the owner's trust file once, copies the approved manifest from the content-addressed store into the run's own directory and
+#           executes the copied scripts/commit-push-all.sh from there. So what a run executes is decided only by the owner's approvals, never by
+#           the working tree, a held change or a foreign commit.
+# Usage     cpa-host [--run-id <id>] <commit-push-all.sh arguments...>      run mode
+#           cpa-host --show                                                  read-only: its own sha256 and the project's trust entry
+#           cpa-host --owner-trust <op> ...      NOT BUILT (20 owner_op_unimplemented): approve, retire, revoke and reanchor are the owner
+#                                                  checkpoint T046a; a test harness writes its own throwaway trust state directly
+#           cpa-host --resume | --check-provenance | --exec-approved ...     NOT BUILT (20 mode_unimplemented): T121b, T094d, CENTRAL C5/C8
+# State     $CPA_HOST_STATE (default $HOME/.local/state/cpa-host/, mode 0700, outside every repository): trust.json (cpa-host-trust/1) and the
+#           store blobs/<sha256> of approved file copies (mode 0400). This script reads them and never writes them.
+# Run mode  (i) the project root: from the working directory, the innermost repository of the chain (git rev-parse --show-toplevel upwards by
+#           --show-superproject-working-tree) whose work tree holds scripts/repo/host_entry/cpa-host; none gives 20 project_not_trusted
+#           (no_project_root). (ii) the trust entry, keyed by the root commit of HEAD's first-parent chain; an absent or unparsable trust file, no
+#           entry, a manifest without scripts/commit-push-all.sh, or an adoption_commit that is not on HEAD's first-parent chain gives 20
+#           project_not_trusted. (iii) the run id: the UTC time, the process id and a random suffix, or --run-id <id> (^[A-Za-z0-9_-]+$ and no
+#           such run directory yet, else 20 run_id_invalid with reason run_id_malformed or run_id_in_use); --run-id with --resume is a usage_error.
+#           (iv) mkdir -p .audit/commit-push, then mkdir of the run directory WITHOUT -p (of two runs given one id only one proceeds), the empty
+#           no-hooks/ directory, every manifest path copied from the store into released/ and re-hashed (a mismatch gives 20 approved_copy_invalid
+#           and the run directory is removed again), released/trust-snapshot.json (cpa-host-snapshot/1: entries and manifest_sha256, the sha256 of
+#           the canonical bytes of the entries sorted by path). (v) exec released/scripts/commit-push-all.sh with the same arguments, CPA_ROOT,
+#           CPA_RUN_ID and CPA_ADOPTION_COMMIT in the environment.
+# Refusals  printed as one JSON line on stderr, before any run directory exists (apart from approved_copy_invalid, which removes its own).
+# Exits     whatever the copied script gives (0, 10 to 15, 20); 20 for every refusal of this script.
+# Never     writes into the repository's tracked tree, into the state directory or into the store; installs or edits itself; runs a git command
+#           that moves a ref; a force, a rebase, a reset.
+set -u
+LC_ALL=C
+STATE="${CPA_HOST_STATE:-$HOME/.local/state/cpa-host}"
+TRUST="$STATE/trust.json"
+SELF_REL="scripts/repo/host_entry/cpa-host"
+CORE_REL="scripts/commit-push-all.sh"
+
+refuse() { # refuse <code word> <reason> [detail]: one JSON line on stderr, exit 20
+  jq -nc --arg r "$1" --arg w "$2" --arg d "${3:-}" '{refusal:$r,reason:$w,detail:$d,see:"scripts/repo/host_entry/INSTALL.md"}' >&2 2>/dev/null \
+    || printf '{"refusal":"%s","reason":"%s"}\n' "$1" "$2" >&2
+  exit 20
+}
+for t in git jq sha256sum realpath; do command -v "$t" >/dev/null 2>&1 || refuse tool_missing "$t" "INSTALL.md checks jq, sha256sum and realpath before the install"; done
+
+# ---- modes that need no project --------------------------------------------------------------------------------------------------------
+case "${1:-}" in
+  --owner-trust) refuse owner_op_unimplemented "${2:-}" "approve, retire, revoke and reanchor are the owner checkpoint T046a (CENTRAL C5, C6); not built in this slice" ;;
+  --check-provenance|--exec-approved|--resume) refuse mode_unimplemented "$1" "T094d / T121b / CENTRAL C5, C8; not built in this slice" ;;
+esac
+
+# ---- (i) the project root --------------------------------------------------------------------------------------------------------------
+root=""; cur="$(git rev-parse --show-toplevel 2>/dev/null)" || cur=""
+while [ -n "$cur" ]; do
+  [ -f "$cur/$SELF_REL" ] && { root="$cur"; break; }
+  cur="$(git -C "$cur" rev-parse --show-superproject-working-tree 2>/dev/null)" || cur=""
+done
+[ -n "$root" ] || refuse project_not_trusted no_project_root "no repository of the chain from the working directory holds $SELF_REL"
+cd "$root" || refuse project_not_trusted no_project_root "cannot enter $root"
+
+# ---- (ii) the trust entry ---------------------------------------------------------------------------------------------------------------
+key="$(git rev-list --first-parent --max-parents=0 HEAD 2>/dev/null | head -1)"
+[ -n "$key" ] || refuse project_not_trusted no_root_commit "HEAD has no root commit"
+[ -s "$TRUST" ] || refuse project_not_trusted trust_file_absent "$TRUST (owner install checkpoint T046a)"
+jq -e . "$TRUST" >/dev/null 2>&1 || refuse project_not_trusted trust_file_unparsable "$TRUST"
+entry="$(jq -c --arg k "$key" '.projects[$k] // empty' "$TRUST" 2>/dev/null)"
+[ -n "$entry" ] || refuse project_not_trusted no_entry "no trust entry for the project root $key (owner install checkpoint T046a)"
+jq -e --arg p "$CORE_REL" '.manifest|map(.path)|index($p)!=null' <<< "$entry" >/dev/null 2>&1 || refuse project_not_trusted core_not_in_manifest "$CORE_REL is not in the approved manifest"
+adopt="$(jq -r '.adoption_commit // empty' <<< "$entry")"
+if ! git rev-list --first-parent HEAD 2>/dev/null | grep -qx -- "$adopt"; then refuse project_not_trusted adoption_commit_not_first_parent "$adopt"; fi
+
+if [ "${1:-}" = "--show" ]; then
+  printf 'cpa-host sha256 %s\n' "$(sha256sum "$0" | cut -d' ' -f1)"; printf 'project %s\n' "$key"; printf '%s\n' "$entry"; exit 0
+fi
+
+# ---- (iii) the run id --------------------------------------------------------------------------------------------------------------------
+rid=""; args=(); resume=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --run-id) [ $# -ge 2 ] || refuse usage_error run_id_missing "--run-id needs a value"; rid="$2"; shift 2 ;;
+    --resume) [ $# -ge 2 ] || refuse usage_error resume_missing "--resume needs a run id"; resume="$2"; shift 2 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+[ -z "$resume" ] || { [ -z "$rid" ] || refuse usage_error run_id_with_resume "--run-id together with --resume"; refuse mode_unimplemented --resume "T121b; not built in this slice"; }
+if [ -n "$rid" ]; then
+  [[ "$rid" =~ ^[A-Za-z0-9_-]+$ ]] || refuse run_id_invalid run_id_malformed "$rid"
+  [ ! -e ".audit/commit-push/$rid" ] || refuse run_id_invalid run_id_in_use "$rid"
+else
+  rid="$(date -u +%Y%m%dT%H%M%SZ)-$$-$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')"
+fi
+
+# ---- (iv) the run directory and the approved copies --------------------------------------------------------------------------------------
+mkdir -p .audit/commit-push 2>/dev/null || refuse run_dir_unwritable ".audit/commit-push"
+RUN=".audit/commit-push/$rid"
+mkdir "$RUN" 2>/dev/null || refuse run_id_invalid run_id_in_use "$rid"
+mkdir "$RUN/no-hooks" "$RUN/released" || { rm -rf "$RUN"; refuse run_dir_unwritable "$RUN"; }
+n="$(jq '.manifest|length' <<< "$entry")"; i=0
+while [ "$i" -lt "$n" ]; do
+  p="$(jq -r --argjson i "$i" '.manifest[$i].path' <<< "$entry")"; s="$(jq -r --argjson i "$i" '.manifest[$i].sha256' <<< "$entry")"
+  x="$(jq -r --argjson i "$i" '.manifest[$i].exec' <<< "$entry")"; i=$((i+1))
+  case "$p" in /*|..|../*|*/..|*/../*|-*) rm -rf "$RUN"; refuse approved_copy_invalid unsafe_manifest_path "$p" ;; esac
+  blob="$STATE/blobs/$s"
+  [ -r "$blob" ] || { rm -rf "$RUN"; refuse approved_copy_invalid store_blob_missing "$p $s"; }
+  if ! { mkdir -p "$RUN/released/$(dirname "$p")" && cp -- "$blob" "$RUN/released/$p"; }; then rm -rf "$RUN"; refuse approved_copy_invalid copy_failed "$p"; fi
+  chmod u+w "$RUN/released/$p"
+  got="$(sha256sum "$RUN/released/$p" | cut -d' ' -f1)"
+  [ "$got" = "$s" ] || { rm -rf "$RUN"; refuse approved_copy_invalid hash_mismatch "$p wants $s got $got"; }
+  if [ "$x" = true ]; then chmod 755 "$RUN/released/$p"; else chmod 644 "$RUN/released/$p"; fi
+done
+entries="$(jq -cS '.manifest|sort_by(.path)' <<< "$entry")"
+msha="$(printf '%s' "$entries" | sha256sum | cut -d' ' -f1)"
+jq -nc --argjson e "$entries" --arg m "$msha" '{schema:"cpa-host-snapshot/1",entries:$e,manifest_sha256:$m}' > "$RUN/released/trust-snapshot.json" \
+  || { rm -rf "$RUN"; refuse run_dir_unwritable "snapshot"; }
+
+# ---- (v) execute the copied script --------------------------------------------------------------------------------------------------------
+export CPA_ROOT="$root" CPA_RUN_ID="$rid" CPA_ADOPTION_COMMIT="$adopt" CPA_HOST_STATE="$STATE"
+exec "$root/$RUN/released/$CORE_REL" "${args[@]+"${args[@]}"}"

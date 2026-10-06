@@ -1,0 +1,71 @@
+# T045a GREEN x3 (final files): scripts/repo/tests/test_tooling_decoupled.sh
+# head: 8bc60bd70441bcf134c57d2e90da7dab72f28ebd (working tree); date_utc: 2026-10-06T21:47:17Z; bash 5.3.9(1)-release; test sha256: 1ba6f325e91c482d208a7914a21a564e17e05d46715cc8b19e31bd4740913c58; cpa-host sha256: 3bf95676a91cee438baffbb1cfccb0e73c62fb3d1586d8c6db2d922f203ddc6e; doc sha256: d7791ef42e6d038dd801e3831e616a6a83c81439f6735f02b15064ab0786a229
+== run 1
+ok   needle: the scratch copy with the project name inserted is reported (exit 1) (=1)
+ok   needle: the hit is named by file and line
+ok   the host entry point and its sourced files carry no project literal (=0)
+ok   no hit printed
+ok   a literal planted in a sourced file is reported by the real check (=1)
+ok   named by its file
+ok   mutation (skip the sourced files): the planted literal is MISSED, so the real-check assertion above catches it (=0)
+ok   the closed list holds the project name and the checkout path (+ 7 remote URL(s))
+ok   kebab-case exception listed in the companion: scripts/commit-push-all.sh
+ok   kebab-case exception listed in the companion: cpa-host
+ok   kebab-case exception listed in the companion: tools/evidence/wrap-go.sh
+ok   kebab-case exception listed in the companion: wrap-bash.sh
+ok   kebab-case exception listed in the companion: wrap-vitest.sh
+ok   kebab-case exception listed in the companion: wrap-gradle.sh
+ok   kebab-case exception listed in the companion: wrap-cargo.sh
+ok   kebab-case exception listed in the companion: scripts/test-in-container.sh
+ok   kebab-case exception listed in the companion: scripts/audit/android-container.sh
+ok   kebab-case exception listed in the companion: scripts/bash-coverage.sh
+ok   kebab-case exception listed in the companion: scripts/audit/adb-container.sh
+ok   the companion records the cpa-host rename question as an owner item
+---- 20 ok, 0 failed
+exit=0
+== run 2
+ok   needle: the scratch copy with the project name inserted is reported (exit 1) (=1)
+ok   needle: the hit is named by file and line
+ok   the host entry point and its sourced files carry no project literal (=0)
+ok   no hit printed
+ok   a literal planted in a sourced file is reported by the real check (=1)
+ok   named by its file
+ok   mutation (skip the sourced files): the planted literal is MISSED, so the real-check assertion above catches it (=0)
+ok   the closed list holds the project name and the checkout path (+ 7 remote URL(s))
+ok   kebab-case exception listed in the companion: scripts/commit-push-all.sh
+ok   kebab-case exception listed in the companion: cpa-host
+ok   kebab-case exception listed in the companion: tools/evidence/wrap-go.sh
+ok   kebab-case exception listed in the companion: wrap-bash.sh
+ok   kebab-case exception listed in the companion: wrap-vitest.sh
+ok   kebab-case exception listed in the companion: wrap-gradle.sh
+ok   kebab-case exception listed in the companion: wrap-cargo.sh
+ok   kebab-case exception listed in the companion: scripts/test-in-container.sh
+ok   kebab-case exception listed in the companion: scripts/audit/android-container.sh
+ok   kebab-case exception listed in the companion: scripts/bash-coverage.sh
+ok   kebab-case exception listed in the companion: scripts/audit/adb-container.sh
+ok   the companion records the cpa-host rename question as an owner item
+---- 20 ok, 0 failed
+exit=0
+== run 3
+ok   needle: the scratch copy with the project name inserted is reported (exit 1) (=1)
+ok   needle: the hit is named by file and line
+ok   the host entry point and its sourced files carry no project literal (=0)
+ok   no hit printed
+ok   a literal planted in a sourced file is reported by the real check (=1)
+ok   named by its file
+ok   mutation (skip the sourced files): the planted literal is MISSED, so the real-check assertion above catches it (=0)
+ok   the closed list holds the project name and the checkout path (+ 7 remote URL(s))
+ok   kebab-case exception listed in the companion: scripts/commit-push-all.sh
+ok   kebab-case exception listed in the companion: cpa-host
+ok   kebab-case exception listed in the companion: tools/evidence/wrap-go.sh
+ok   kebab-case exception listed in the companion: wrap-bash.sh
+ok   kebab-case exception listed in the companion: wrap-vitest.sh
+ok   kebab-case exception listed in the companion: wrap-gradle.sh
+ok   kebab-case exception listed in the companion: wrap-cargo.sh
+ok   kebab-case exception listed in the companion: scripts/test-in-container.sh
+ok   kebab-case exception listed in the companion: scripts/audit/android-container.sh
+ok   kebab-case exception listed in the companion: scripts/bash-coverage.sh
+ok   kebab-case exception listed in the companion: scripts/audit/adb-container.sh
+ok   the companion records the cpa-host rename question as an owner item
+---- 20 ok, 0 failed
+exit=0

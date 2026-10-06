@@ -1,0 +1,281 @@
+# T044 part 1: the matrix in the WP-09 image, no coverage tool: RUNP IMG-KCOV -- bash scripts/repo/tests/test_commit_push_all.sh (IMG-KCOV: jq-1.6, git 2.39.5, bash 5.2.15, python 3.11.2, coreutils 9.1; the host has jq 1.8.1, git 2.53, bash 5.3)
+# head: e7a6a9b9b30762598915e847aee9edc9b66da80b (working tree); date_utc: 2026-10-06T20:01:50Z; image_id IMG-KCOV image_digest sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164; runner scripts/containers/run_pinned.sh sha256 98e825682b75890edc36823180c7169011b453c341c890b9d4973600dc8bf226; lock sha256 (working tree at run time) cfce9f81a097679bea16483fb6d554f42eab22a5bfd4c2a2bd1204cdc16d74d9; RUNP_CPUS=8, --network=none, --rw .audit/scratch
+# finding of this run: jq 1.6 exits 0 under 'jq -e' on EMPTY input (jq 1.7+ does not): a first run in the image gave verdict_already_go for a path absent from HEAD; fixed by checking emptiness before jq (commit-push-all.sh json_is/head_json_is); also the jq 1.6 reserved word $def in the report builder (renamed)
+# test sha256: 134dab79e382b8f514817a14e40c842ece84c582cf370f28f9baff3fbd86f95b  commit-push-all.sh sha256: 2e9702123b98d49558c38445af187a5499e6e3d8f143c49a21a2c66c4f883e41  cpa-host sha256: 3bf95676a91cee438baffbb1cfccb0e73c62fb3d1586d8c6db2d922f203ddc6e
+ok   1.1 clean run: 0 (=0)
+ok   1.1: report.json exists
+ok   1.1: HEAD moved (the commit was made)
+ok   1.1 origin holds HEAD (=8e8dda3d06cdbfd60f03ee3d4d400d13d4ecb7e8)
+ok   1.1 mirror holds HEAD (=8e8dda3d06cdbfd60f03ee3d4d400d13d4ecb7e8)
+ok   1.1 the commit carries the CPA-Run trailer of the run
+ok   1.1 no Deferred-Gates line
+ok   1.1 tracked tree clean after exit 0
+ok   1.1 report exit (=0)
+ok   1.1 the sweep shim was called
+ok   1.2 second run after a clean run: 0 (=0)
+ok   1.2 commits nothing (=8e8dda3d06cdbfd60f03ee3d4d400d13d4ecb7e8)
+ok   1.2 clean
+ok   1.2 run ids differ
+ok   1.2 run id holds UTC time, pid and a suffix
+ok   1.3: HEAD moved (the commit was made)
+ok   1.3 no sweep: 14 (=14)
+ok   1.3 SWEEP_ABSENT in the commit's Deferred-Gates line
+ok   1.3 still pushed to origin (=d36ddf31fa2e92a49f9cbdc19a25831589d85873)
+ok   1.4 failing cheap check: 10 (=10)
+ok   1.4 nothing committed (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   1.4 no push call (=0)
+ok   1.4: report.json exists
+ok   1.4 report names stage S3 (=S3)
+ok   1.4 lock released (=0)
+ok   1.4 report holds the sha256 of the run's files
+ok   1.5 rejected push: 11 (=11)
+ok   1.5 the commit is local (=r)
+ok   1.5 origin lacks it
+ok   1.5: report.json exists
+ok   1.5 failed stage S6 (=S6)
+ok   1.6 one remote unreachable: 11 (=11)
+ok   1.7 every remote unreachable: 20 (=20)
+ok   1.7 reason no_remote_reachable
+ok   1.7 also under --local-only: 20 (=20)
+ok   1.7 reason
+ok   2.1 argument after the message: 20 (=20)
+ok   2.1 usage_error
+ok   2.1 no push call (=0)
+ok   2.1 nothing committed (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   2.2 unknown option: 20 (=20)
+ok   2.2 usage_error
+ok   2.3 --paths-from without a message: 20 (=20)
+ok   2.4 --commit-before-integrate without --paths-from: 20 (=20)
+ok   2.4 usage_error
+ok   2.5 with --resolve-merge: 20 (=20)
+ok   2.6 unreadable --paths-from: 20 (=20)
+ok   2.7 unsafe declared path: 20 (=20)
+ok   2.7 nothing committed (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   2.8 declared path below a gitlink: 20 (=20)
+ok   2.8 path_in_submodule
+ok   2.8 nothing committed in the main repository (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   2.8 nothing committed in the submodule (=1)
+ok   2.9 MERGE_HEAD present: 20 merge_in_progress (=20)
+ok   2.9 reason
+ok   2.10 a plain git commit that no remote holds: 20 (=20)
+ok   2.10 unrecorded_local_commit
+ok   2.10 no push call (=0)
+ok   2.11 a copied CPA-Run trailer proves nothing: 20 (=20)
+ok   2.11 unrecorded_local_commit
+ok   2.12 a live writer in the registry: 20 (=20)
+ok   2.12 evidence_writer_active
+ok   2.12 nothing pushed (=0)
+ok   2.13 a sweep finding (undeclared change): 20 (=20)
+ok   2.14 with the sweep present an undeclared file is refused at S0: 20 (=20)
+ok   2.14 the sweep was asked to exclude the declared change set (=1)
+ok   2.15 without the sweep an undeclared untracked file gives 13 at S7 (=13)
+ok   2.16 clean run beside a run directory without a report: 0 (=0)
+ok   2.16 the report lists the interrupted run
+ok   2.16 the interrupted run's directory is byte-unchanged (=223c19bdd432c0bfd9714956eca011f057ad900b9beef5755fcce23b1364e3c4  -)
+ok   3.1 the first run is paused between S6 and S7
+ok   3.1 the holder's run directory was found
+ok   3.2 a second run while the lock is held: 20 (=20)
+ok   3.2 reason lock_held
+ok   3.2 names the holder's run id
+ok   3.2 the holder's run directory is byte-unchanged (=ca72970d3ca0ae8ca822595f463abd258091160ab8e6eb3fe1ef397a3f6c7325  -)
+ok   3.2 the second run wrote its own run directory (=2)
+ok   3.3 the holder finishes with its own code: 0 (=0)
+ok   3.4 after the holder ended the lock is free: 0 (=0)
+ok   4.1: HEAD moved (the commit was made)
+ok   4.1 SKIP_LONG: 14 (=14)
+ok   4.1 Deferred-Gates SKIP_LONG
+ok   4.1 the commit is pushed (=b8a80b3514bde55a87055fd9858642348364c22f)
+ok   4.2 --local-only: 14 (=14)
+ok   4.2 LOCAL_ONLY in the Deferred-Gates line
+ok   4.2 no push call (=0)
+ok   4.2 origin lacks the commit
+ok   4.2 S7 ran without remote contact: report exit (=14)
+ok   4.3 SKIP_LONG, integrate-only run, diverged repository: 14 (=14)
+ok   4.3 the merge commit's Deferred-Gates carries SKIP_LONG
+ok   4.3 HEAD is a merge commit (=3)
+ok   4.6 the next run pushes the earlier --local-only commit: 0 (=0)
+ok   4.6 origin holds HEAD (=e27dac0faf92a1f17759b03e0d36e97ccf8889d6)
+ok   4.4 a record_deferral.sh that fails to write its row: 20, never a 14 without its row (=20)
+ok   4.4 deferral_write_failed
+ok   4.5 a stage helper exiting outside its set (commit_recursive 2): 20, never 10 (=20)
+ok   4.5 commit_failed
+ok   5.1 a .env file: 13 (=13)
+ok   5.1 no push (=0)
+ok   5.1: report.json exists
+ok   5.1 failed stage S2 (=S2)
+ok   5.2 an edited earlier ledger line: 13 (=13)
+ok   5.3 a pure append passes: 0 (=0)
+ok   5.4 a blob whose name is not the sha256 of its content: 13 (=13)
+ok   5.5 a dirty submodule: 13 at S2 (declared or not) (=13)
+ok   5.6 a dirty submodule with a declared change set: 13 (=13)
+ok   5.6 nothing pushed (=0)
+ok   6.1 a held path: 14 (=14)
+ok   6.1 review_pending
+ok   6.1 two commits: unheld first, held second (=2)
+ok   6.1 the held commit awaits the verdict
+ok   6.1 the held commit carries LOCAL_ONLY
+ok   6.1 the unheld commit is not held
+ok   6.1 the unheld commit has no LOCAL_ONLY
+ok   6.1 origin holds the unheld commit (=0e9cc9d7cd5be811cfd541b809e154e1e8d8e8d1)
+ok   6.2 a later unheld commit above the held one: 14 (=14)
+ok   6.2 origin still at the unheld commit (=0e9cc9d7cd5be811cfd541b809e154e1e8d8e8d1)
+ok   6.3 a NO-GO verdict keeps the hold: 14 (=14)
+ok   6.3 review_pending
+ok   6.4 a hold on a verdict that holds GO in HEAD: 20 (=20)
+ok   6.4 verdict_already_go
+ok   6.4 nothing committed (=d2b81cde2f0e8ccabd07a59e5fba1a4832e908a1)
+ok   6.4 a change to a verdict file that holds GO in HEAD: 20 (=20)
+ok   6.4 verdict_already_go
+ok   6.4 a hold together with that verdict declared GO in the same change set: 20 (=20)
+ok   6.4 verdict_already_go
+ok   6.5 a GO committed in HEAD naming the held run releases the range: 0 (=0)
+ok   6.5 origin holds HEAD (=c1558b604bee1acd0e39bb3102043e227294fbab)
+ok   6.5 mirror holds HEAD (=c1558b604bee1acd0e39bb3102043e227294fbab)
+ok   6.6 setup: held commit: 14 (=14)
+ok   6.6 a GO whose covers_runs lacks the held run keeps the hold: 14 (=14)
+ok   6.6 review_pending
+ok   6.6 nothing past the held commit reached origin (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   6.7 a GO that exists only in the working tree, not committed: the hold stays (14) or the stray file is refused (13) (=ok)
+ok   6.7 nothing past the held commit reached origin (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   7.1 setup: a --local-only commit: 14 (=14)
+ok   7.1 diverged repository, no held commit, no conflict: 0 (=0)
+ok   7.1 HEAD is a merge commit (=3)
+ok   7.1 the local tip is the merge's first parent (=25caff75443bc84dc554bdd032bc903a4b361395)
+ok   7.1 the merge carries the CPA-Run trailer
+ok   7.1 one Foreign-Commit line for the foreign commit
+ok   7.1 origin holds the merge (=79457f49c4160614c3cd99a9f2137208df33f1a3)
+ok   7.1 mirror holds the merge (=79457f49c4160614c3cd99a9f2137208df33f1a3)
+ok   7.1 the backup bundle verifies
+ok   7.1 the local commit keeps its sha below the merge (=25caff75443bc84dc554bdd032bc903a4b361395)
+ok   7.1 tracked tree clean
+ok   7.2 setup: held commit: 14 (=14)
+ok   7.2 a held commit below the merge: merge held, 14 (=14)
+ok   7.2 the merge awaits its merge-review file
+ok   7.2 nothing pushed to origin (=e38b62450277d7fd501269d7e77a6e58245de7c2)
+ok   7.2 no push call past the held commit (=0)
+ok   7.3 held verdict GO but merge verdict absent: 14 (=14)
+ok   7.3 no push call for any remote (=0)
+ok   7.3 names the merge-review file
+ok   7.4 both verdicts GO: whole range pushed, 0 (=0)
+ok   7.4 origin holds HEAD (=1819de68af69d136fdb191ce0391fc5dc7424b15)
+ok   7.4 mirror holds HEAD (=1819de68af69d136fdb191ce0391fc5dc7424b15)
+ok   7.5 a remote moved after S1: 11 (=11)
+ok   7.5 remote_moved_since_s1
+ok   7.5 the next run integrates it: 0 (=0)
+ok   7.5 mirror holds HEAD (=e0b0ee79ec87adfa1c45c252512e9a3f221219dd)
+ok   7.5 origin holds HEAD (=e0b0ee79ec87adfa1c45c252512e9a3f221219dd)
+ok   7.6 a merge with a conflict: 12 (=12)
+ok   7.6 merge_conflict
+ok   7.6 HEAD unchanged (=0546b376adfd05fd664d51027ae8b046030406e7)
+ok   7.6 sha256 of every tracked file unchanged (=df2df3a2e6fa85c8256c7ae2b6a9f27198e1e5626b9a65bddc5761d283e21a7a  -)
+ok   7.6 the conflicting file is copied with its markers
+ok   7.7 a --resolve-merge directory at any other path: 20 (=20)
+ok   7.7 resolution_dir_invalid
+ok   7.8 a record naming another model or effort: 20 (=20)
+ok   7.8 merge_resolver_not_pinned
+ok   7.9 two conflicting remote tips: 12 (=12)
+ok   7.9 remotes_diverged
+ok   7.9 nothing moved (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   7.9 no push call (=0)
+ok   7.9c a local commit and two conflicting remote tips: 12 (=12)
+ok   7.9c remotes_diverged naming the pair
+ok   7.9c nothing moved (=fd5099baa8157b90ebe5eb10180066d78ef54be2)
+ok   7.9c no push call (=0)
+ok   7.9d two remote tips that do not conflict, a local commit: merged in turn, 0 (=0)
+ok   7.9d both foreign commits are in HEAD
+ok   7.9d origin holds HEAD (=f7d830917a2aa2dc1369dcde1002a76be5df361a)
+ok   7.9d mirror holds HEAD (=f7d830917a2aa2dc1369dcde1002a76be5df361a)
+ok   7.10 incoming commits change a declared, uncommitted path: 12 (=12)
+ok   7.10 ff_blocked_by_local_changes
+ok   7.10 nothing moved (=236e698f07ed85332be0e405a95768cd794b90fe)
+ok   7.11 --commit-before-integrate over other lines: clean merge pushed, 0 (=0)
+ok   7.11 origin holds HEAD (=0268e0310c6a4dc2cf42a7e0312623b4a3b9d405)
+ok   7.11 the content of both sides survived (=2)
+ok   7.11 the merge names the foreign commit
+ok   7.11 the run's S5 commit names no foreign commit
+ok   7.11 the S1a backup lies under backup/s1a/
+ok   7.11 S1a: no bundle, reason local_range_empty (=null:local_range_empty)
+ok   7.11 the S1b merge backup lies under backup/ beside the S1a one
+ok   7.12 --commit-before-integrate over the same lines: 12 (=12)
+ok   7.12 merge_conflict
+ok   7.12 the run's commit is kept in the local branch
+ok   7.12 pushed nowhere (=0)
+ok   7.12 the conflicting file is copied
+ok   7.13 a bundle that git bundle verify rejects: 20 (=20)
+ok   7.13 backup_failed
+ok   7.13 nothing committed (=997d9b2f6535de3b975e158f97c137f15a35c86c)
+ok   7.14 a fast-forwarded foreign commit and an own change: 0 (=0)
+ok   7.14 the run's first commit names the foreign commit
+ok   7.14 no commit is named twice
+ok   7.15 a fast-forward that changed a gitlink with no settle helper: 15 (=15)
+ok   7.15 the path is named
+ok   7.15 reason
+ok   8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (=11)
+ok   8.2 a verifier exit 0 whose report is missing: 20 (fail closed) (=20)
+ok   8.3 pointer drift with no pending row: 15 (=15)
+ok   8.3 the drifted path is named
+ok   8.3 a drifted submodule is not moved (=8839a366e61970a4b0dd47be4f5ee17a0edb808f)
+ok   8.4 a pending row whose sha differs from the head: still 15 (=15)
+ok   8.5 a pending row that matches path and head: reported pending, 0 (=0)
+ok   8.5 reported as pending
+ok   9.1 --repo commit in a submodule: 0 (=0)
+ok   9.1 the main HEAD and the recorded gitlink are unchanged (=236e698f07ed85332be0e405a95768cd794b90fe:8839a366e61970a4b0dd47be4f5ee17a0edb808f)
+ok   9.1 the submodule holds the commit (=sub work)
+ok   9.1 the commit carries CPA-Run
+ok   9.1 the submodule's remote holds it (=5d399bedbafe85f5ffd24906d4ba74dac5253857)
+ok   9.1 a pending pin row is recorded (=5d399bedbafe85f5ffd24906d4ba74dac5253857)
+ok   9.1 no push call for the main repository
+ok   9.2 a main-repository run after a --repo run reports the pin as pending, never 15: 0 (=0)
+ok   9.3 --repo of a path that is no repository: 20 (=20)
+ok   9.4 --repo of a third-party repository: 20 (=20)
+ok   9.4 repo_not_owned
+ok   9.5 a held --repo commit: 14 (=14)
+ok   9.5 review_pending
+ok   9.5 the submodule's remote does not hold it (=8839a366e61970a4b0dd47be4f5ee17a0edb808f)
+ok   9.6 a GO without the held run in covers_runs: the --repo commit stays held, 14 (=14)
+ok   9.6 still not on the submodule's remote (=8839a366e61970a4b0dd47be4f5ee17a0edb808f)
+ok   9.7 a main-repository run after the GO also pushes the submodule's released range: 0 (=0)
+ok   9.7 the submodule's remote holds the released commit (=c5c47c0c72b56a1a0f0dc81e2f16d880ec972d29)
+ok   10.1 the tracked script started directly: 20 (=20)
+ok   10.1 not_via_host_entry
+ok   10.1 wrote nothing
+ok   10.2 through cpa-host: 0 (control) (=0)
+ok   10.3 started from a subdirectory: 0 (=0)
+ok   10.3 only the main root's .audit is written
+ok   10.4 started from inside a submodule: 0 (=0)
+ok   10.4 only the main root's .audit is written
+ok   10.5 no trust file: 20 project_not_trusted (=20)
+ok   10.5 reason
+ok   10.5 no run directory was created (=3)
+ok   10.6 an adoption commit off the first-parent chain: 20 (=20)
+ok   10.6 adoption_commit_not_first_parent
+ok   10.7 a stand-alone repository with no trust entry: 20 project_not_trusted (=20)
+ok   10.7 reason
+ok   10.8 a malformed --run-id: 20 (=20)
+ok   10.8 run_id_malformed
+ok   10.9 a fresh --run-id is used: 0 (=0)
+ok   10.9 the run directory carries it (=fixed-id-1)
+ok   10.10 a run id in use: 20 (=20)
+ok   10.10 run_id_in_use
+ok   10.11 --run-id with --resume: 20 usage_error (=20)
+ok   10.11 usage_error
+ok   10.12 a store blob changed by one byte: 20 (=20)
+ok   10.12 approved_copy_invalid
+ok   10.12 no run directory is left (=0)
+ok   10.13 a snapshot whose manifest no approval recorded: 20 (=20)
+ok   10.13 snapshot_not_trusted
+ok   10.14 a revoked manifest is refused by the self-test: 20 (=20)
+ok   10.14 snapshot_not_trusted
+ok   10.15 --show: 0 (=0)
+ok   10.15 --show prints the project entry
+ok   10.16 an owner operation is not an agent operation: 20 (=20)
+ok   12.0 control needle: a planted hook fires in an ordinary commit
+ok   12.1 a window that commits, merges and pushes under planted hooks: 0 (=0)
+ok   12.1 the merge was made (=3)
+ok   12.1 no hook ran (pre-commit, commit-msg, post-commit, pre-push, post-merge, reference-transaction, pre-merge-commit)
+ok   11.1 commit-push-all.sh has no force/lease/+refspec/no-verify/reset/rebase token
+ok   11.2 commit-push-all.sh parses
+ok   11.1 cpa-host has no force/lease/+refspec/no-verify/reset/rebase token
+ok   11.2 cpa-host parses
+---- 275 ok, 0 failed
+exit=0
