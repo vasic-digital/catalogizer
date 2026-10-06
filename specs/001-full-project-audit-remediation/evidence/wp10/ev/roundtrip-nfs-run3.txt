@@ -1,0 +1,12 @@
+STEP resolve_server ok
+STEP write_read_empty ok
+STEP write_read_one_byte ok
+STEP write_read_20000 ok
+STEP write_read_1mib ok
+STEP write_read_unicode_name ok
+STEP listing_shows_size ok
+STEP listing_shows_1mib ok
+STEP write_original ok
+STEP second_create_refused_content_intact ok
+STEP unexported_path_refused ok
+PASS roundtrip nfs steps=11

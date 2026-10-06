@@ -1,0 +1,42 @@
+# identity: T131 GREEN run 3
+# head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# run_at: 2026-10-06T20:52:23Z
+# sha256 scripts/test-infra/up.sh 3ebc88b6e695107f1ed94b422503377135ad4b5306cd2a42e7187b89849d61a6
+# sha256 scripts/test-infra/down.sh c55c48567225bb704c3fba26167e9f18513dee367a799a259c38cc5b411d2db0
+# sha256 scripts/test-infra/lib.sh 22e24459ed7dbbc072b3cb1e64e503c92eba30393d439908a1644484cbc6f4d3
+# sha256 scripts/test-infra/gen_env.sh 57e67b0c708ec3eaed8fd2af46e57579ee72abf84dc8bc27820dd3a8713d9c0f
+# sha256 tests/infra/test_up_down.sh d39768300fe9d109f6b1c25f538151b1ad91517a35d3d31ce0fabacf9cab771f
+# command: bash tests/infra/test_up_down.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up A exits 0
+PASS: up A prints its project
+PASS: up A: one container labelled with the project
+PASS: up A: the lease is held
+PASS: up A: the holder record names the stack operation (catalogizer-test-t3199449769-up-20261006T205224-109944)
+PASS: A answers its redis probe
+PASS: a second owner of the SAME project is refused (exit 3)
+PASS: the refusal names lease_held
+PASS: the refused second up changed nothing (still one container)
+PASS: a DIFFERENT project is admitted while A is up (exit 0)
+PASS: up B: one container labelled with B
+PASS: both leases are held at once
+PASS: A and B use distinct redis ports
+PASS: fixture: the foreign container is running
+PASS: down A exits 0
+PASS: down A removed every container labelled with A
+PASS: down A removed A's network
+PASS: the foreign unlabelled container (name carries A's project name) SURVIVES
+PASS: the OTHER project's container survives
+PASS: B still answers its redis probe after A went down
+PASS: down A released A's lease
+PASS: down A left B's lease alone
+PASS: down A removed A's credentials file
+PASS: down A again is a no-op (idempotent, exit 0)
+PASS: down with an invalid build id exits 2
+PASS: A can be started again after its lease was released (exit 0)
+PASS: down B removed B's containers
+PASS: all leases released at the end
+PASS: the foreign container still survives both teardowns
+SUMMARY pass=31 fail=0 blocked=0
+# exit: 0

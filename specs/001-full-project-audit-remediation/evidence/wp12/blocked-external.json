@@ -1,0 +1,26 @@
+{
+  "schema": "blocked-external/1",
+  "task": "T135",
+  "run_at": "2026-10-06T19:19:05Z",
+  "legs": [
+    {
+      "leg": "nas_smb_readonly",
+      "state": "available",
+      "note": "credentials present in the gitignored env file (names only checked); the leg itself records its own result"
+    },
+    {
+      "leg": "minio",
+      "state": "blocked-unavailable",
+      "reason": "image_unavailable",
+      "blocked_on": "owner choice of an S3 image",
+      "evidence": "wp12/minio-blocked.txt"
+    },
+    {
+      "leg": "nfs_owner_host",
+      "state": "blocked-unavailable",
+      "reason": "odg08_unanswered",
+      "blocked_on": "ODG-08",
+      "note": "the owner NFS host that ODG-08 names; NFS is closed from this host on all seven Synology hosts"
+    }
+  ]
+}

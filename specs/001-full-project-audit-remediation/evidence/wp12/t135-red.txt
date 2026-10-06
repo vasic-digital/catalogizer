@@ -1,0 +1,9 @@
+# identity: T135 RED (blocked_external.sh absent)
+# head: 40a1f8e32fb7f36e1818610c0514ee826697f31e
+# run_at: 2026-10-06T19:18:42Z
+# sha256 scripts/test-infra/blocked_external.sh ABSENT
+# sha256 tests/infra/test_blocked_external.sh 5aea1e6f9116d2fd01c9dbd9cb07dbad718d16cee5dfc1426dbc27da36b95309
+# command: bash tests/infra/test_blocked_external.sh
+FAIL: script absent: scripts/test-infra/absent.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

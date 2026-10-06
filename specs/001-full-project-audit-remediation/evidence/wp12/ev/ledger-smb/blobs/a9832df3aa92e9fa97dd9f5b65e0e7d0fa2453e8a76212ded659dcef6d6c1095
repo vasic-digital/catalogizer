@@ -1,0 +1,11 @@
+STEP corpus_ascii_file ok
+STEP corpus_nested_file ok
+STEP corpus_unicode_file ok
+STEP corpus_cjk_file ok
+STEP upload ok
+STEP list_shows_upload ok
+STEP download_back ok
+STEP delete_upload ok
+STEP upload_gone ok
+STEP wrong_password_refused ok
+PASS roundtrip smb steps=10

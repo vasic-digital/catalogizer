@@ -1,0 +1,43 @@
+{
+  "schema": "wp12-nas-readonly/1",
+  "task": "T132",
+  "run_at": "2026-10-06T23:40:31Z",
+  "head": "178ee136c632ed4de72d146f0f19ef5e7b5a5a7a",
+  "protocol": "SMB3 read-only",
+  "requests_per_second_max": 2,
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_recorded": false,
+  "hosts": [
+    {
+      "shares_seen": "1",
+      "share": "DATA12",
+      "entries": "12",
+      "dirs": "11",
+      "files": "1",
+      "names_sha256": "cf55d86d667b8e2f6c42650c5d7d3a908fd7d135f8bf7663b73e3608303ca65e",
+      "read_size": "14340",
+      "read_sha256": "3b21ef4b1a0f4d9107717fbb10059fcefcfa24ededc6656a96deadcf1e5d8acc",
+      "requests": "3",
+      "writes_performed": "0",
+      "dialect": "SMB3",
+      "alias": "Synology3",
+      "ok": true
+    },
+    {
+      "shares_seen": "1",
+      "share": "DATA18",
+      "entries": "13",
+      "dirs": "12",
+      "files": "1",
+      "names_sha256": "9e37608b9c00683dcc7c09c5dd80658b805f2d0b3ce95d81aa485450c1d1af6b",
+      "read_size": "10244",
+      "read_sha256": "43df0c0d10a1c7af38092cb35669206bf188a587c8dc9caa0f333e50610159b8",
+      "requests": "3",
+      "writes_performed": "0",
+      "dialect": "SMB3",
+      "alias": "Synology4",
+      "ok": true
+    }
+  ]
+}

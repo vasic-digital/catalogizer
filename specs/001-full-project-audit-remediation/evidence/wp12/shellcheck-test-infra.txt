@@ -1,0 +1,69 @@
+# identity: shellcheck -x -S warning over scripts/test-infra, tests/infra (IMG-SHELLCHECK via run_pinned)
+# head: 178ee136c632ed4de72d146f0f19ef5e7b5a5a7a
+# run_at: 2026-10-06T23:41:17Z
+# exit: 1 (warnings only, no error-level finding; listed below, none fixed in this round: the evidence above was recorded against these files)
+
+In scripts/test-infra/client/nas_smb_ro.sh line 30:
+  size="${pick%%$'\t'*}"; name="${pick#*$'\t'}"
+  ^--^ SC2034 (warning): size appears unused. Verify use (or export if used externally).
+
+
+In scripts/test-infra/lib.sh line 5:
+TI_HERE="${TI_SCRIPT_DIR:-$(cd "$(dirname "${BASH_SOURCE[1]:-${BASH_SOURCE[0]}}")" && pwd)}"
+^-----^ SC2034 (warning): TI_HERE appears unused. Verify use (or export if used externally).
+
+
+In scripts/test-infra/roundtrip.sh line 33:
+SRC="$TI_ROOT/$CDIR/roundtrip_$PROTO.sh"; ITEM=RUN-132; [ "$PROTO" != nfs ] || ITEM=RUN-134   # the register item of the task whose evidence this is (T132 round trips, T134 NFS)
+                                               ^-----^ SC2100 (warning): Use $((..)) for arithmetics, e.g. i=$((i - 2))
+                                                                                    ^-----^ SC2100 (warning): Use $((..)) for arithmetics, e.g. i=$((i - 2))
+
+
+In tests/infra/test_concurrency.sh line 12:
+export TI_ROOT="$TI_REPO"; TI_DOWN="$TI_REPO/$SD/down.sh"
+                           ^-----^ SC2034 (warning): TI_DOWN appears unused. Verify use (or export if used externally).
+
+
+In tests/infra/test_concurrency.sh line 57:
+check "host side: the marker file is in A's data directory" "$(ls "$(ti_val "$A" TI_DATA_DIR)/dav" | grep -c "marker-$MK.txt")" 1
+                                                               ^-- SC2010 (warning): Don't use ls | grep. Use a glob or a for loop with a condition to allow non-alphanumeric filenames.
+
+
+In tests/infra/test_concurrency.sh line 58:
+check "host side: the marker file is NOT in B's data directory" "$(ls "$(ti_val "$B" TI_DATA_DIR)/dav" | grep -c "marker-$MK.txt")" 0
+                                                                   ^-- SC2010 (warning): Don't use ls | grep. Use a glob or a for loop with a condition to allow non-alphanumeric filenames.
+
+
+In tests/infra/test_probes.sh line 14:
+TI_DOWN="$TI_REPO/$SD/down.sh"
+^-----^ SC2034 (warning): TI_DOWN appears unused. Verify use (or export if used externally).
+
+
+In tests/infra/test_probes.sh line 16:
+UP="$TI_REPO/$SD/up.sh"; DOWN="$TI_REPO/$SD/down.sh"
+                         ^--^ SC2034 (warning): DOWN appears unused. Verify use (or export if used externally).
+
+
+In tests/infra/test_probes.sh line 31:
+  cnt=$(podman ps -a -q | wc -l)
+  ^-^ SC2034 (warning): cnt appears unused. Verify use (or export if used externally).
+
+
+In tests/infra/test_roundtrip.sh line 45:
+  local hv="TI_PROBE_HOST_$(echo "$PROTO" | tr a-z A-Z)"
+        ^-- SC2155 (warning): Declare and assign separately to avoid masking return values.
+
+
+In tests/infra/test_roundtrip.sh line 72:
+vo=$(cd /tmp && EV_LEDGER="$LEDGER/ledger.jsonl" EV_ANCHOR="$LEDGER/anchor.jsonl" EV_BLOBS="$LEDGER/blobs" EVREC_REPO_ROOT=/tmp python3 "$TI_REPO/tools/evidence/verify" 2>&1); vrc=$?
+^-- SC2034 (warning): vo appears unused. Verify use (or export if used externally).
+
+
+In tests/infra/test_up_down.sh line 16:
+TI_DOWN="$DOWN"
+^-----^ SC2034 (warning): TI_DOWN appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2010 -- Don't use ls | grep. Use a glob o...
+  https://www.shellcheck.net/wiki/SC2034 -- DOWN appears unused. Verify use (...
+  https://www.shellcheck.net/wiki/SC2100 -- Use $((..)) for arithmetics, e.g....

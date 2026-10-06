@@ -1,0 +1,9 @@
+# identity: T131 RED (scripts absent: SUT dir scripts/test-infra-absent)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:36:02Z
+# sha256 scripts/test-infra/up.sh 96fa953cde6265b9a79920f06e63e2fc1ad16ba09b01bbed8ef8d567c33bcda1
+# sha256 tests/infra/test_up_down.sh 0fb1e0ffcd4baa08a069c291481f8a42086ff1ccbdd5f1cbac6531a399e25a52
+# command: bash tests/infra/test_up_down.sh
+FAIL: script absent: scripts/test-infra-absent/up.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

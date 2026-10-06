@@ -1,0 +1,31 @@
+# identity: T132 GREEN round trip redis run 1
+# head: e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# run_at: 2026-10-06T23:19:13Z
+# sha256 scripts/test-infra/roundtrip.sh c66680d42c35e693839c095bb03f5c18d5242c5f6c384f5c11b2ce6d986403be
+# sha256 scripts/test-infra/client/roundtrip_redis.sh 602187be7dc048e812c5689deaf6f8368446a41463e4c6017350c9e8e8dae6f5
+# sha256 scripts/test-infra/client/lib.sh 455f9751eee28c4a5e7307f40337b1c273fbc6d768371da831526d9f933333ad
+# sha256 tests/infra/test_roundtrip.sh 883830867e65cc71aa555b0dbe32f678c7ba8721ce012131cb0da602477d160b
+# command: bash tests/infra/test_roundtrip_redis.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: client script present: scripts/test-infra/client/roundtrip_redis.sh
+PASS: up (redis) exits 0
+PASS: criteria hold: PASS with exactly 7 ok steps; a sabotaged run FAILs
+PASS: recorded run 1 exits 0
+PASS: run 1: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 1: PASS roundtrip redis steps=7 (plain run, rc=0)
+PASS: recorded run 2 exits 0
+PASS: run 2: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 2: PASS roundtrip redis steps=7 (plain run, rc=0)
+PASS: recorded run 3 exits 0
+PASS: run 3: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 3: PASS roundtrip redis steps=7 (plain run, rc=0)
+PASS: ledger: 3 ev/1 records, GREEN, exit 0, verdict pass, evidence class runtime, oracle specified
+PASS: tools/evidence/verify walks the chain (exit 0)
+PASS: mutation step_runner_always_ok CAUGHT (FAIL a sabotaged round trip (service host unresolvable) did not fail (rc=0))
+PASS: mutation step_removed CAUGHT (FAIL the round trip did not PASS with exactly 7 ok steps (rc=1: FAIL roundtrip redis steps=6 failed=)
+PASS: mutation failfast_exits_zero CAUGHT (FAIL a sabotaged round trip (service host unresolvable) did not fail (rc=0))
+SUMMARY pass=21 fail=0 blocked=0
+# exit: 0

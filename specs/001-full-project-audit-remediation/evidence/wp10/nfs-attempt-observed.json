@@ -1,0 +1,22 @@
+{
+  "round_trips": [
+    {
+      "iteration": 1,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq1",
+      "output": "nfs-roundtrip-run1.txt"
+    },
+    {
+      "iteration": 2,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq2",
+      "output": "nfs-roundtrip-run2.txt"
+    },
+    {
+      "iteration": 3,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq3",
+      "output": "nfs-roundtrip-run3.txt"
+    }
+  ]
+}

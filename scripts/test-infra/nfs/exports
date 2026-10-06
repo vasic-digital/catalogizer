@@ -1,0 +1,2 @@
+# exports - T134: one read-write export of the container directory /export (mounted as tmpfs by the compose file); the test network is private to the compose project.
+/export (rw,no_root_squash,insecure)

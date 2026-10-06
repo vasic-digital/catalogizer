@@ -1,0 +1,13 @@
+{
+  "schema": "nfs-fallback/1",
+  "finding": "D-10",
+  "task": "T134a",
+  "state": "not_needed",
+  "reason": "",
+  "attempt_record": {
+    "file": "wp10/nfs-attempt.json",
+    "state": "pass",
+    "sha256": "e4338ca4ff20492195e13b54a536fde53ae4e168125ce542ae05b8bb0492cb9d"
+  },
+  "fallback_run": false
+}

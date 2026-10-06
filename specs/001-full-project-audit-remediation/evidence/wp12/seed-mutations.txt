@@ -1,0 +1,6 @@
+nondeterministic CAUGHT
+seed_ignored CAUGHT
+no_unicode CAUGHT
+no_longpath CAUGHT
+bad_magic CAUGHT
+digest_constant CAUGHT

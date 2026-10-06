@@ -1,0 +1,34 @@
+{
+  "schema": "nfs-attempt/1",
+  "finding": "D-10",
+  "state": "pass",
+  "reason": "",
+  "client_verdict": {
+    "file": "wp11/nfs-client.json",
+    "verdict": "VERIFIED",
+    "sha256": "2f20c4f0494c39800d55235a17cf516b567c24c35bdc49f2f73f37e260117c84"
+  },
+  "round_trip_attempted": true,
+  "round_trips": [
+    {
+      "iteration": 1,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq1",
+      "output": "nfs-roundtrip-run1.txt"
+    },
+    {
+      "iteration": 2,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq2",
+      "output": "nfs-roundtrip-run2.txt"
+    },
+    {
+      "iteration": 3,
+      "ok": true,
+      "record": "ledger-nfs/ledger.jsonl#seq3",
+      "output": "nfs-roundtrip-run3.txt"
+    }
+  ],
+  "proves": "an NFSv3 round trip between a user-space server and the libnfs user-space client, rootless and unprivileged",
+  "does_not_prove": "the application NFS path (syscall.Mount, a kernel NFS client): UNCONFIRMED on this host, see evidence wp12/nfs-codepath.md"
+}

@@ -1,0 +1,26 @@
+# identity: T129 RED (the files of git HEAD 960c553a: literals present)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:39:24Z
+# sha256 docker-compose.test-infra.yml 64761701f7f2ea9ac4beadeb8e117a962cdab2b14dd593017d61b4d5b738def5
+# sha256 docker-compose.build.yml b0a32602eb5979e33df5e661b6bac822f209ae7edaa3a13d87530117dd6b0e9f
+# sha256 tests/infra/test_compose_files.sh 67ae8889cebd2e14fd6499b0bba52309791e6916ad2c646c3b3501a5c5d8d272
+# NOTE: the sha256 lines above are the CURRENT (reworked) files; the RED run judged the files of git HEAD 960c553a, copies below:
+# RED subject test-infra.yml sha256 d3875e186928ead2673642ce553df3e7fae6dda183ca1a098accc1cc35ae74fc
+# RED subject build.yml sha256 d7ed5945170d8f7ee7d1febd78fe9e65824870a28d61477cb93a653ad8b6fcb8
+# command: bash tests/infra/test_compose_files.sh
+PASS: parses: test-infra.yml
+PASS: parses: build.yml
+FAIL: test-infra.yml: 47 finding(s): literal_credential ftp.FTP_USER_NAME;literal_credential ftp.FTP_USER_PASS;historical_literal ftp contains testpass;historical_literal ftp contains testuser;
+FAIL: build.yml: 20 finding(s): literal_credential postgres.POSTGRES_USER;literal_credential postgres.POSTGRES_PASSWORD;historical_literal postgres contains catalogizer_test_pass;historical_literal postgres contains catalogizer_test;
+PASS: gen_env.sh exits 0 (run 1)
+PASS: gen_env.sh exits 0 (run 2)
+PASS: env file mode is 0600
+PASS: ports file holds no credential variable
+FAIL: the compose files reference no TI_* variable at all (everything is literal)
+PASS: credentials and ports differ between two runs (random per run)
+PASS: generated password has >= 24 characters
+PASS: the default env file location is git-ignored
+PASS: podman-compose config renders docker-compose.test-infra.yml with the generated env, nothing unsubstituted
+FAIL: the compose file rendered without the per-run env (a variable has a literal default)
+SUMMARY pass=10 fail=4 blocked=0
+# exit: 1

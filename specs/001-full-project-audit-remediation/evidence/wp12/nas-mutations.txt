@@ -1,0 +1,3 @@
+write_verb_in_client CAUGHT
+password_in_argv CAUGHT
+auth_file_left CAUGHT

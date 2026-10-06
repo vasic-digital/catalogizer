@@ -1,0 +1,42 @@
+# identity: T133 GREEN run 3
+# head: e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# run_at: 2026-10-06T23:02:13Z
+# sha256 scripts/test-infra/up.sh 3ebc88b6e695107f1ed94b422503377135ad4b5306cd2a42e7187b89849d61a6
+# sha256 scripts/test-infra/gen_env.sh 57e67b0c708ec3eaed8fd2af46e57579ee72abf84dc8bc27820dd3a8713d9c0f
+# sha256 scripts/test-infra/probe.sh f44bee8ee0916ac9d183be428fb9c89cfa6cf032056c6ddc4d033fbdb3d1a845
+# sha256 tests/infra/test_concurrency.sh 6c4d2ae0477bb005a0097bdf63d2cb3c8d40aaa46071ef2f8bbece7f6cb8360c
+# command: bash tests/infra/test_concurrency.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: stack A starts (all five services) while B starts (exit 0)
+PASS: stack B starts (all five services) while A starts (exit 0)
+PASS: A runs 5 containers
+PASS: B runs 5 containers
+PASS: distinct compose projects
+PASS: twelve host ports across the two stacks
+PASS: all host ports distinct
+PASS: no host port below 1024
+PASS: two distinct networks exist
+PASS: distinct data directories
+PASS: distinct credentials
+PASS: no container belongs to both projects
+PASS: both leases are held
+PASS: a second owner of A is refused (exit 3) while both run
+PASS: a second owner of B is refused (exit 3) while both run
+PASS: the refused second owners changed nothing (still 5 + 5 containers)
+PASS: A answers all five probes while B is up
+PASS: B answers all five probes while A is up
+PASS: marker put on A
+PASS: marker present on A
+PASS: marker absent from B (webdav and postgres)
+PASS: host side: the marker file is in A's data directory
+PASS: host side: the marker file is NOT in B's data directory
+PASS: down A exits 0
+PASS: after down A: B still has 5 containers
+PASS: after down A: B still answers all probes
+PASS: after down A: A's lease is free and B's is held
+PASS: evidence written: /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp12/concurrency.json
+SUMMARY pass=32 fail=0 blocked=0
+# exit: 0

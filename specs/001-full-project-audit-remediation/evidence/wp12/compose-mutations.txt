@@ -1,0 +1,9 @@
+needle_literal_password CAUGHT
+needle_literal_password_build CAUGHT
+tag_not_digest CAUGHT
+digest_not_in_lock CAUGHT
+literal_host_port CAUGHT
+privileged_service CAUGHT
+label_project_removed CAUGHT
+kernel_nfs_back CAUGHT
+gen_env_mode644 CAUGHT

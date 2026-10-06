@@ -1,0 +1,9 @@
+# identity: T130 RED (seeder absent)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:21:44Z
+# sha256 scripts/test-infra/seed_corpus.sh ABSENT
+# sha256 tests/infra/test_seed_corpus.sh 0a29b16e6aa280ac07f4a5a411048e30f82ecf95efb84409d748d9c2b7e13d58
+# command: bash tests/infra/test_seed_corpus.sh
+FAIL: seeder absent: scripts/test-infra/seed_corpus.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

@@ -1,0 +1,17 @@
+# identity: T134 user-space NFS servers tried (rootless, unprivileged, this host anton)
+# head: see nfs-attempt.json (the terminal record); run_at: 2026-10-06 and 2026-10-07 UTC
+# note: the transcripts below were observed interactively while building the attempt (commands listed so they can be repeated); they are NOT ledger records. The ledger records of the
+#       final round trips are `ledger-nfs/` (three `ev/1` records, item RUN-134, verified with tools/evidence/verify) and the three `nfs-roundtrip-run<n>.txt` files.
+
+Client for every attempt: the libnfs user-space utilities of IMG-INFRA-CLIENT (`nfs-ls`, `nfs-cp`, `nfs-cat`, libnfs-utils 4.0.0-1, verdict VERIFIED in `wp11/nfs-client.json`). No `--privileged`, no added capability, no kernel mount in any attempt.
+
+| # | Server | Result | Cause (observed) |
+|---|---|---|---|
+| 1 | nfs-ganesha 4.3-2, FSAL MEM + rpcbind (Debian bookworm snapshot 20260918) | server starts; MOUNT, CREATE, WRITE, READDIR work; **read-back content is wrong** | `echo hello-nfs > h.txt; nfs-cp ... ; nfs-cat nfs://IP/export/h.txt` printed `aaaaaaaaaa` (10 bytes of filler, the length of the written file): the MEM driver does not keep file data. Unusable as an oracle for a data round trip. Not a rootless limitation. |
+| 2 | nfs-ganesha 4.3-2, FSAL VFS | MOUNT works, every operation answers `NFS3ERR_PERM` | root cause by a direct probe in the same rootless container (python ctypes, tmpfs `/export`): `name_to_handle_at -> 0 ok`, `open_by_handle_at -> -1 EPERM`. The VFS driver needs `open_by_handle_at`, which needs CAP_DAC_READ_SEARCH in the initial user namespace. Structural for the VFS driver under rootless podman (scope: this driver; not NFS in general). |
+| 3 | rclone 1.75.1 `serve nfs` (go-nfs), image `docker.io/rclone/rclone@sha256:4055fb65b7a975caf3cb54a94bf12713e81947d6f3d0bb221907a05b0f6ab390` | libnfs 4.0.0 and libnfs 6.0.2 (built from source in a scratch image, not kept) both fail: `libnfs_rpc_reply_body failed to decode ACCEPTED` | server log: `nfs: Mounting subpath "/export"` then `ERROR : nfs: No handler for 100005.5`: the client calls the MOUNT program procedure 5 (EXPORT), which go-nfs does not implement. Server-side incompatibility; the same failure with two client versions. |
+| 4 | **unfs3 0.11.0** (commit ec1660ba33c80d5c67131e163e68834c1a10e243) + rpcbind, built by `scripts/test-infra/nfs_build.sh` | **works**: write 0 B, 1 B, 20000 B, 1 MiB and a unicode name, listing with sizes, read-back sha256 equal, a second CREATE refused with NFS3ERR_EXIST, unexported path refused | unfs3 addresses files by path, not by kernel file handle, so it needs no privilege; the libnfs client completes MOUNT, EXPORT and the file operations. |
+
+Terminal state: `nfs-attempt.json` (`state: pass`, chosen by `scripts/test-infra/nfs_terminal_state.sh`, which read `wp11/nfs-client.json` first). The record states what the pass does NOT prove: the application's own NFS path mounts through the kernel (`wp12/nfs-codepath.md`) and is UNCONFIRMED here.
+
+Owed (not done here): a lock entry `IMG-INFRA-NFS` (class service) and the matching entry in the image map of `scripts/containers/tests/test_containerfiles.sh` by a reviewed change of the WP-11 files; the 11.4.270 existence verdict for unfs3 (existence verified by the build at the pinned commit; maintenance of the project UNKNOWN); `libnfs-utils` 4.0.0 is old (2019) but completes the round trip.

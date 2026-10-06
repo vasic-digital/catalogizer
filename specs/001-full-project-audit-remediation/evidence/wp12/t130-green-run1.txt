@@ -1,0 +1,36 @@
+# identity: T130 GREEN run 1
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:35:19Z
+# sha256 scripts/test-infra/seed_corpus.sh 376032fcbd8ce82c5382d4a91f2df2adb91fe0d38e03cb3b81f268a5a61bf1cb
+# sha256 tests/infra/test_seed_corpus.sh 6d677cb885fb759198a435b1e19d900246d8fed0b25b0696462e62036e95d867
+# command: bash tests/infra/test_seed_corpus.sh
+PASS: run a exits 0
+PASS: run b exits 0
+PASS: two runs: trees byte-identical (diff -r)
+PASS: two runs: names, mtimes and types identical
+PASS: checksum file holds a sha256 digest
+PASS: two runs: corpus digest identical
+PASS: digest equals an independent recomputation over the tree
+PASS: run c (other seed) exits 0
+PASS: control needle: a changed seed changes the digest
+PASS: corpus has >= 20 files (24)
+PASS: file type .png has its magic number
+PASS: file type .jpg has its magic number
+PASS: file type .mp3 has its magic number
+PASS: file type .flac has its magic number
+PASS: file type .pdf has its magic number
+PASS: file type .zip has its magic number
+PASS: file type .mkv has its magic number
+PASS: file type .mp4 has its magic number
+PASS: file type .gif has its magic number
+PASS: unicode file names present (4)
+PASS: long path present (359 chars)
+PASS: an empty directory is present
+PASS: mutation nondeterministic CAUGHT (FAIL: two runs: trees differ)
+PASS: mutation seed_ignored CAUGHT (FAIL: control needle: changed seed left the digest unchanged ('ec4a2184dd26fdd0df2d5a98915)
+PASS: mutation no_unicode CAUGHT (FAIL: unicode file names missing (0))
+PASS: mutation no_longpath CAUGHT (FAIL: no long path (66 chars))
+PASS: mutation bad_magic CAUGHT (FAIL: file type .png missing or wrong magic)
+PASS: mutation digest_constant CAUGHT (FAIL: digest equals an independent recomputation over the tree (got '000000000000000000000)
+SUMMARY pass=28 fail=0 blocked=0
+# exit: 0

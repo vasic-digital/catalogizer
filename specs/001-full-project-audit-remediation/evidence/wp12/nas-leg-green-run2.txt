@@ -1,0 +1,28 @@
+# identity: T132 real-NAS leg GREEN run 2
+# head: 178ee136c632ed4de72d146f0f19ef5e7b5a5a7a
+# run_at: 2026-10-06T23:39:41Z
+# sha256 scripts/test-infra/nas_readonly_leg.sh c3824af3ed0c983182929221e9ff64011c6f82c949c27367eb5cd2631999c884
+# sha256 scripts/test-infra/client/nas_smb_ro.sh a8579801188f0167380129d7b2fded05c617b822d0c83594c458f52566c5a711
+# sha256 tests/infra/test_nas_readonly_leg.sh c3075344f181cee288c29e2943d523fe95d8eb85ea4164837548380c963533f7
+# command: bash tests/infra/test_nas_readonly_leg.sh
+PASS: script present: scripts/test-infra/nas_readonly_leg.sh
+PASS: script present: scripts/test-infra/client/nas_smb_ro.sh
+PASS: A: every smbclient -c command of the client starts with ls or get
+PASS: A: the client has 2 smbclient -c commands (the scan is not blind)
+PASS: A: control needle: a planted del is found by the same scan
+PASS: A: the host script runs no smbclient itself (it only starts the read-only client script)
+PASS: B: absent env file exits 0 (SKIP, not FAIL)
+PASS: B: the output is SKIP nas_readonly reason=env_absent
+PASS: B: nothing was created for the skipped run
+PASS: B: an env file without the credentials exits 0 (SKIP)
+PASS: B: the SKIP names the missing variables (names only)
+PASS: C: sentinel credentials never appear in argv, container environment, output or files; the auth file is deleted; the unreachable host FAILs
+PASS: D: the real two-host read-only leg exits 0
+PASS: D: both hosts PASS
+PASS: D: the record states writes_performed 0, names and content not recorded, at most 3 requests per host
+PASS: D: no IP address is recorded
+PASS: D: the real password occurs in no output of the leg
+PASS: D: the real password occurs in no evidence file under /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp12
+PASS: D: no auth file is left behind
+SUMMARY pass=19 fail=0 blocked=0
+# exit: 0

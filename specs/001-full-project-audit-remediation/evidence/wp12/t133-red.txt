@@ -1,0 +1,9 @@
+# identity: T133 RED (scripts absent: scripts/test-infra-absent)
+# head: 178ee136c632ed4de72d146f0f19ef5e7b5a5a7a
+# run_at: 2026-10-06T23:41:49Z
+# sha256 scripts/test-infra/up.sh 3ebc88b6e695107f1ed94b422503377135ad4b5306cd2a42e7187b89849d61a6
+# sha256 tests/infra/test_concurrency.sh 6c4d2ae0477bb005a0097bdf63d2cb3c8d40aaa46071ef2f8bbece7f6cb8360c
+# command: bash tests/infra/test_concurrency.sh
+FAIL: script absent: scripts/test-infra-absent/up.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

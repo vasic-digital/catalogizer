@@ -1,0 +1,54 @@
+# identity: T114/T128/T132 MinIO legs BLOCKED, image not obtainable (registry probes, read-only)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:20:45Z
+# host: anton
+
+$ podman manifest inspect quay.io/minio/minio:latest
+Error: reading image "docker://quay.io/minio/minio:latest": reading manifest latest in quay.io/minio/minio: unauthorized: access to the requested resource is not authorized
+
+
+$ podman manifest inspect docker.io/minio/minio:latest
+Error: reading image "docker://minio/minio:latest": reading manifest latest in docker.io/minio/minio: requested access to the resource is denied
+
+
+$ podman manifest inspect docker.io/bitnami/minio:latest
+Error: reading image "docker://bitnami/minio:latest": reading manifest latest in docker.io/bitnami/minio: manifest unknown
+
+
+$ podman manifest inspect docker.io/chrislusf/seaweedfs:latest
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 2183,
+            "digest": "sha256:3498e39f8f3e32eaaebc6e8c9c4b0084be3839e614d410b741a6784b77d04a52",
+            "platform": {
+                "architecture": "386",
+                "os": "lin
+
+$ podman manifest inspect docker.io/dxflrs/garage:v1.0.1
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+            "size": 427,
+            "digest": "sha256:795d30f4a37f466fabc3e4aca322464e48670adfbe50bdb1e30779ed9f48fc53",
+            "platform": {
+                "architecture": "arm64
+
+$ podman manifest inspect ghcr.io/zenko/cloudserver:latest
+Error: reading image "docker://ghcr.io/zenko/cloudserver:latest": Requesting bearer token: received unexpected HTTP status: 403 Forbidden
+
+
+# Reading (FACT from the transcripts above): the MinIO server image is refused by every registry probed
+# (quay.io: unauthorized; docker.io/minio/minio: access denied; docker.io/bitnami/minio: manifest unknown).
+# The MinIO CLIENT `mc` is already in IMG-INFRA-CLIENT (built from source, T106) and speaks generic S3.
+# Alternatives the OWNER could choose (not chosen here; each was only probed for a manifest, none was pulled, run or verified):
+#   - SeaweedFS  docker.io/chrislusf/seaweedfs   (manifest list resolves; S3 gateway built in; Apache-2.0; UNCONFIRMED: maintenance, rootless behaviour)
+#   - Garage     docker.io/dxflrs/garage:v1.0.1  (manifest list resolves; S3 API; AGPL-3.0; UNCONFIRMED: needs a layout bootstrap step)
+# Both would need a 11.4.270 existence verdict, a lock entry (class service) and a decision recorded by the owner (ODG register).
+# Until then every MinIO leg (T114 compose pin, T128 probe, T132 round trip) is BLOCKED, never a pass.

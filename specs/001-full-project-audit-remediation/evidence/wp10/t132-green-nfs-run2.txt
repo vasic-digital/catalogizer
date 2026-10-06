@@ -1,0 +1,28 @@
+# identity: T132 GREEN round trip nfs run 2
+# head: 178ee136c632ed4de72d146f0f19ef5e7b5a5a7a
+# run_at: 2026-10-06T23:37:24Z
+# sha256 scripts/test-infra/roundtrip.sh c66680d42c35e693839c095bb03f5c18d5242c5f6c384f5c11b2ce6d986403be
+# sha256 scripts/test-infra/client/roundtrip_nfs.sh 4e0c345a112679eeb19036c4c72accb0de23e1ebca550c1978b90b8fcc6037f6
+# sha256 scripts/test-infra/client/lib.sh 455f9751eee28c4a5e7307f40337b1c273fbc6d768371da831526d9f933333ad
+# sha256 tests/infra/test_roundtrip.sh 883830867e65cc71aa555b0dbe32f678c7ba8721ce012131cb0da602477d160b
+# command: bash tests/infra/test_roundtrip_nfs.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: client script present: scripts/test-infra/client/roundtrip_nfs.sh
+PASS: up (nfs) exits 0
+PASS: criteria hold: PASS with exactly 11 ok steps; a sabotaged run FAILs
+PASS: recorded run 1 exits 0
+PASS: run 1: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 1: PASS roundtrip nfs steps=11 (plain run, rc=0)
+PASS: recorded run 2 exits 0
+PASS: run 2: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 2: PASS roundtrip nfs steps=11 (plain run, rc=0)
+PASS: recorded run 3 exits 0
+PASS: run 3: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 3: PASS roundtrip nfs steps=11 (plain run, rc=0)
+PASS: ledger: 3 ev/1 records, GREEN, exit 0, verdict pass, evidence class runtime, oracle specified
+PASS: tools/evidence/verify walks the chain (exit 0)
+SUMMARY pass=18 fail=0 blocked=0
+# exit: 0

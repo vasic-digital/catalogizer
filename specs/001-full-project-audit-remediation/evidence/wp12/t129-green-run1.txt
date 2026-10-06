@@ -1,0 +1,34 @@
+# identity: T129 GREEN run 1
+# head: f981e385a4caff4ddb1c81c6fb7b2ccc4ca2d44f
+# run_at: 2026-10-06T19:12:49Z
+# sha256 docker-compose.test-infra.yml 64761701f7f2ea9ac4beadeb8e117a962cdab2b14dd593017d61b4d5b738def5
+# sha256 docker-compose.build.yml b0a32602eb5979e33df5e661b6bac822f209ae7edaa3a13d87530117dd6b0e9f
+# sha256 scripts/test-infra/gen_env.sh 57e67b0c708ec3eaed8fd2af46e57579ee72abf84dc8bc27820dd3a8713d9c0f
+# sha256 tests/infra/test_compose_files.sh e7368c349bde675256f51f189d68d0ef71a00b41f5a85542380da2135f7e6d00
+# command: bash tests/infra/test_compose_files.sh
+PASS: parses: docker-compose.test-infra.yml
+PASS: parses: docker-compose.build.yml
+PASS: docker-compose.test-infra.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: check_pins.sh: docker-compose.test-infra.yml has no unpinned reference
+PASS: gen_env.sh exits 0 (run 1)
+PASS: gen_env.sh exits 0 (run 2)
+PASS: env file mode is 0600
+PASS: ports file holds no credential variable
+PASS: gen_env.sh defines every TI_* variable the compose files reference (20)
+PASS: credentials and ports differ between two runs (random per run)
+PASS: generated password has >= 24 characters
+PASS: the default env file location is git-ignored
+PASS: podman-compose config renders docker-compose.test-infra.yml with the generated env, nothing unsubstituted
+PASS: without the env file the compose file is refused (required variables)
+PASS: mutation needle_literal_password CAUGHT (literal_credential postgres.POSTGRES_PASSWORD)
+PASS: mutation needle_literal_password_build CAUGHT (literal_credential postgres.POSTGRES_PASSWORD)
+PASS: mutation tag_not_digest CAUGHT (image_not_digest_pinned redis docker.io/library/redis:7-alpine)
+PASS: mutation digest_not_in_lock CAUGHT (image_digest_not_in_lock redis)
+PASS: mutation literal_host_port CAUGHT (literal_host_port redis 6379:6379)
+PASS: mutation privileged_service CAUGHT (privileged ftp)
+PASS: mutation label_project_removed CAUGHT (label_project_missing postgres)
+PASS: mutation kernel_nfs_back CAUGHT (kernel_nfs_service_present nfs)
+PASS: mutation gen_env_mode644 CAUGHT (mode 644 != 600)
+SUMMARY pass=24 fail=0 blocked=0
+# exit: 0

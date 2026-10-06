@@ -1,0 +1,11 @@
+STEP create_table ok
+STEP insert_row ok
+STEP read_back ok
+STEP update_row ok
+STEP read_updated ok
+STEP duplicate_key_refused ok
+STEP delete_row ok
+STEP count_zero ok
+STEP drop_table ok
+STEP wrong_password_refused ok
+PASS roundtrip postgres steps=10

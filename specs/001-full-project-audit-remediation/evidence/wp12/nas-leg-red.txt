@@ -1,0 +1,9 @@
+# identity: T132 real-NAS leg RED (scripts absent: scripts/test-infra-absent)
+# head: f981e385a4caff4ddb1c81c6fb7b2ccc4ca2d44f
+# run_at: 2026-10-06T19:14:23Z
+# sha256 scripts/test-infra/nas_readonly_leg.sh c3824af3ed0c983182929221e9ff64011c6f82c949c27367eb5cd2631999c884
+# sha256 tests/infra/test_nas_readonly_leg.sh 240af87a58e632c8b10f7a01ace6a762273c2c269fad302c7dd6ccc00a82ff9b
+# command: bash tests/infra/test_nas_readonly_leg.sh
+FAIL: script absent: scripts/test-infra-absent/nas_readonly_leg.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

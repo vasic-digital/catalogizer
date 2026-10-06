@@ -1,0 +1,13 @@
+# identity: T132 RED webdav (client scripts absent: TI_RT_CLIENT_DIR=scripts/test-infra/client-absent)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T18:52:33Z
+# sha256 scripts/test-infra/roundtrip.sh ea138c42bd3bd162586fd70baea10b6501a5f6410cbab0026c7e7972f4e96355
+# sha256 tests/infra/test_roundtrip.sh 324b557ef337efc90be13dc3c44e8fa87b56cd8b7eb73035b9c0029d70f8d479
+# command: bash tests/infra/test_roundtrip_webdav.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+FAIL: client script absent: scripts/test-infra/client-absent/roundtrip_webdav.sh
+SUMMARY pass=4 fail=1 blocked=0
+# exit: 1

@@ -1,0 +1,34 @@
+# Containerfile - T134: user-space NFS server for the unprivileged NFS attempt of docs/16 DR-16-2: unfs3 (unfsd 0.11.0, an NFSv3 server that works on file PATHS,
+# not kernel file handles) plus rpcbind (the portmapper the libnfs client asks first). Rootless and unprivileged: no kernel NFS server, no kernel mount, no added
+# capability, no privileged port needed by the host. Data lives in the export directory /export of the container (the compose file mounts a tmpfs there).
+# Stage 1 builds unfsd from the upstream git repository at ONE commit (checked below: a mismatch fails the build, the commit hash being the content address) on Debian
+# bookworm at the dated snapshot; stage 2 is Debian bookworm by digest with rpcbind, libtirpc3 and netbase at exact versions of the same snapshot, verified by the signed
+# archive keyring. Built locally on the build host anton (owner decision: this host) by scripts/test-infra/nfs_build.sh.
+# Why not nfs-ganesha / rclone (tried first, evidence wp10/nfs-attempt-servers.md): Ganesha MEM stores no data, Ganesha VFS needs open_by_handle_at (EPERM unprivileged),
+# rclone's NFS server lacks the MOUNT EXPORT procedure the libnfs client calls.
+FROM docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251 AS build
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources \
+ && rm -f /etc/apt/sources.list \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "3";\n' > /etc/apt/apt.conf.d/99snapshot
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ca-certificates build-essential autoconf automake libtool bison flex libtirpc-dev pkg-config git \
+ && rm -rf /var/lib/apt/lists/*
+RUN git clone -q https://github.com/unfs3/unfs3.git /src \
+ && cd /src && git checkout -q ec1660ba33c80d5c67131e163e68834c1a10e243 \
+ && test "$(git rev-parse HEAD)" = ec1660ba33c80d5c67131e163e68834c1a10e243 \
+ && ./bootstrap >/dev/null 2>&1 && ./configure --prefix=/opt/unfs3 >/dev/null 2>&1 && make -j"$(nproc)" >/dev/null 2>&1 \
+ && install -D -m 0755 unfsd /out/unfsd
+FROM docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources \
+ && rm -f /etc/apt/sources.list \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "3";\n' > /etc/apt/apt.conf.d/99snapshot
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends rpcbind=1.2.6-6+b1 libtirpc3=1.3.3+ds-1 netbase=6.4 \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=build /out/unfsd /usr/local/sbin/unfsd
+COPY exports /etc/exports
+COPY entrypoint.sh /usr/local/bin/ti-nfs-entrypoint
+RUN chmod 755 /usr/local/bin/ti-nfs-entrypoint && mkdir -p /export
+LABEL project=catalogizer image=IMG-INFRA-NFS-ATTEMPT
+EXPOSE 111 2049
+ENTRYPOINT ["/usr/local/bin/ti-nfs-entrypoint"]

@@ -1,0 +1,34 @@
+# identity: T128 GREEN run 3
+# head: e5f568f63411db0e5bd2f64c785f8b6cf047128e
+# run_at: 2026-10-06T23:14:43Z
+# sha256 scripts/test-infra/probe.sh f44bee8ee0916ac9d183be428fb9c89cfa6cf032056c6ddc4d033fbdb3d1a845
+# sha256 scripts/test-infra/run_client.sh 468bc23ac80d75de2d6102886eed85f13ff0d5fed08d63d8afe111ad86708c7c
+# sha256 scripts/test-infra/client/probe_postgres.sh b10ec1a23f693f7595827911bab73af417311f46c84a6b242cf697e3506103e9
+# sha256 scripts/test-infra/client/probe_redis.sh bb35804ddeb6d4d9e235b01beddbfa62b20daaa90a6f40bea66ff1613d440e48
+# sha256 scripts/test-infra/client/probe_ftp.sh c411005b735da1e79d027a57d387ec14b99bbafb182bae0a601eae5e314b1045
+# sha256 scripts/test-infra/client/probe_smb.sh 2afdf280c940a0156308442fb6f799d414986bf57de74fc59bf2cdaa91417b9a
+# sha256 scripts/test-infra/client/probe_webdav.sh 81cbab150ff5201ff0d6cfadece123e8a0647ae07edc69b81c12ab52b3e8e571
+# sha256 scripts/test-infra/client/probe_nfs.sh 398cd0b94fa174b89a2c8a2eaf9c3010a1d86f15e0cc233fd97b798bba4760e9
+# sha256 tests/infra/test_probes.sh 7c6ba2ce365c5d859a197fd1125b2484c7d7a6a22048c7b5be84e154208bfdb1
+# command: bash tests/infra/test_probes.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up exits 0 (postgres, redis, ftp, smb, webdav)
+PASS: carrier fixture started (accepts TCP on 5432, speaks nothing)
+PASS: control: a TCP-only check WOULD pass on the carrier (the open-port trap is real)
+PASS: probe.sh (all) exits 0
+PASS: probe postgres PASS with its protocol answer (SELECT 1 answered 1)
+PASS: probe redis PASS with its protocol answer (PING answered PONG)
+PASS: probe ftp PASS with its protocol answer (passive transfer (sha256 equals the corpus manifest))
+PASS: probe smb PASS with its protocol answer (testshare)
+PASS: probe webdav PASS with its protocol answer (PROPFIND answered 207)
+BLOCKED: minio probe BLOCKED (image not obtainable, evidence/wp12/minio-blocked.txt)
+PASS: summary line: pass=5 fail=0 blocked=1 (blocked is not counted as a pass)
+PASS: no script of scripts/test-infra execs into a container
+PASS: control needle: the exec scan sees a planted podman exec
+PASS: no protocol client is invoked outside the IMG-INFRA-CLIENT scripts (scripts/test-infra/client)
+PASS: fixtures: host probe refused, service-class image refused, carrier FAILs, wrong credentials FAIL (5 protocols)
+SUMMARY pass=18 fail=0 blocked=1
+# exit: 0
