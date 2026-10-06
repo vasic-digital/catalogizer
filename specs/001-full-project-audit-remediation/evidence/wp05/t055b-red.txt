@@ -1,0 +1,75 @@
+# T055b RED: the NEW test_anchors.sh (probe_kind=config contract + no-force-push scan) against the PREVIOUS evanchor.py (git-untracked round-8 version that runs a forced push at a scratch bare repository)
+# generated_utc=2026-10-06T21:29:08Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=34db9504594c4a1f883769d5c3d80238c87d48fb (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 f62cd26238908c87f4a4e8ffa83c6af0f31e3f31399ba035116bf59e58d262f8  tools/evidence/evanchor.py (PREVIOUS, force-based, under test)
+# sha256 cc43ff1c795ca062b1fa9edaebaa79b81fcdcacab2099f87781ab6a26923620b  tools/evidence/tests/test_anchors.sh (NEW)
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+ok   anchor: evrec anchor exits 0
+ok   anchor row: schema ev-anchor/1, head = ledger head, count 4, UTC time, strength policy
+ok   verify: ledger and anchor agree (exit 0)
+ok   tamper: delete entry 2 without repair exits 1 (chain)
+ok   tamper: delete-and-recompute that keeps the old seq values is caught by the chain's contiguity check alone (exit 1, the documented bonus)
+ok   tamper: delete-and-recompute (the careful forger renumbers) passes the chain alone (no anchor to compare: exit 0, stated)
+ok   tamper: delete-and-recompute is caught by the anchor (exit 2)
+ok   tamper: deleting a different entry (3) and recomputing is caught by the anchor too (exit 2)
+ok   tamper: truncated tail passes the chain alone (exit 0)
+ok   tamper: truncated tail is caught by the anchor (exit 2)
+ok   tamper: two reordered entries with the chain recomputed but the seq values kept: caught by the chain (exit 1)
+ok   tamper: two reordered entries, chain recomputed AND renumbered, caught by the anchor (exit 2)
+ok   tamper: an edited entry, chain recomputed, caught by the anchor (exit 2)
+ok   original restored exits 0
+ok   anchor unreadable (a directory in its place) is UNVERIFIED, exit 3 anchor_unreadable
+ok   anchor unreadable (mode 000) is UNVERIFIED, exit 3 anchor_unreadable
+ok   a malformed anchor row is UNVERIFIED, exit 3 anchor_not_compared
+ok   an anchor that is not JSON is UNVERIFIED, exit 3
+ok   lagging anchor (ledger grew by 2 after it): exit 0, valid growth
+ok   a fresh anchor over the grown ledger agrees
+ok   after growth, delete-and-recompute is still caught against the NEWEST anchor (exit 2)
+ok   an old anchor row that the rewritten history contradicts is caught although the newest row agrees (exit 2)
+ok   two anchor rows with the same count and different heads are inconsistent (exit 2)
+ok   anchor: refuses to anchor a ledger whose chain fails (reason=chain_failure, nothing written)
+ok   anchor: a forged chain is not re-anchored (exit 2 anchor_disagrees, the anchor file is byte-unchanged)
+ok   anchor: refuses an absent ledger (reason=UNVERIFIED)
+ok   anchor: --strength mechanism without a probe is refused (strength_unproven)
+ok   anchor: nothing written for the refused claim
+ok   verify: a hand-written mechanism row with no probe evidence is UNVERIFIED (exit 3, strength_unproven)
+FAIL probe(deny): exit 64 strength= evrec: refused reason=probe_needs_scratch_remote the probe pushes and then REWRITES a throw-away branch: it needs --probe-scratch-ok, declaring the remote a scratch one (no rewrite was attempted)
+tail: cannot open '/tmp/tmp.zWU6mwdKJU/w/anchors.jsonl' for reading: No such file or directory
+tail: cannot open '/tmp/tmp.zWU6mwdKJU/w/anchors.jsonl' for reading: No such file or directory
+FAIL probe(deny): config values not recorded: 
+FAIL probe: a git push was attempted: 
+ok   probe: nothing was pushed to the bare repository (no refs)
+FAIL verify: the probed mechanism row verifies (exit 0) (exit ok, output lacks /mechanism/: verify: ledger=/tmp/tmp.zWU6mwdKJU/w/ledger.jsonl blobs=/tmp/tmp.zWU6mwdKJU/w/blobs
+OK chain=4 entries head=7c2751464d16 (chain, ev/1 schema, canonical form and)
+FAIL probe(policy requested): exit 64 strength=
+FAIL probe(onlynff): exit 64 strength= evrec: refused reason=probe_needs_scratch_remote the probe pushes and then REWRITES a throw-away branch: it needs --probe-scratch-ok, declaring the remote a scratch one (no rewrite was attempted)
+FAIL probe(onlydel): exit 64 strength= evrec: refused reason=probe_needs_scratch_remote the probe pushes and then REWRITES a throw-away branch: it needs --probe-scratch-ok, declaring the remote a scratch one (no rewrite was attempted)
+FAIL probe(allow): exit 64 strength= evrec: refused reason=probe_needs_scratch_remote the probe pushes and then REWRITES a throw-away branch: it needs --probe-scratch-ok, declaring the remote a scratch one (no rewrite was attempted)
+FAIL probe(mechanism, onlynff): exit 64
+tail: cannot open '/tmp/tmp.zWU6mwdKJU/w/anchors.jsonl' for reading: No such file or directory
+FAIL probe(hook): exit 64 strength= 
+tail: cannot open '/tmp/tmp.zWU6mwdKJU/w/anchors.jsonl' for reading: No such file or directory
+tail: cannot open '/tmp/tmp.zWU6mwdKJU/w/anchors.jsonl' for reading: No such file or directory
+FAIL probe(global): origin not recorded: 
+FAIL probe(non-bare): exit 64 strength=
+ok   probe: a network remote is never probed (probe_remote_not_local)
+FAIL probe(unreachable): exit 64 strength=
+FAIL probe(retired flag): exit 64
+FAIL verify: a mechanism row whose probe is not probe_kind=config (the retired push probe) is UNVERIFIED strength_unproven (exit 0, want 3: verify: ledger=/tmp/tmp.zWU6mwdKJU/w/ledger.jsonl blobs=/tmp/tmp.zWU6mwdKJU/w/blobs OK chain=4 entries head=4533f5509042 (chain, ev/1 schema, canonical form, bl )
+tools/evidence/evanchor.py:143: a push is built in code: p1 = gw("push", "-q", remote, "HEAD:refs/heads/" + branch)
+tools/evidence/evanchor.py:150: p2 = gw("push", "--force", remote, "HEAD:refs/heads/" + branch)       # scratch remote only (marker 
+tools/evidence/evanchor.py:150: a push is built in code: p2 = gw("push", "--force", remote, "HEAD:refs/heads/" + branch)       # scratch remote only (marker 
+tools/evidence/evanchor.py:153: a push is built in code: gw("push", "-q", remote, ":refs/heads/" + branch)                    # best-effort clean-up of the s
+docs/scripts/evidence-recorder.md: missing
+FAIL no-force-push scan found usage (rc=1), see lines above
+ok   rerecord anchor leg: exits 0
+ok   rerecord anchor leg: the remote anchors are kept verbatim, the local anchors after the prefix are replaced by ONE anchor over the re-chained head
+ok   rerecord anchor leg: verify accepts the output ledger against the output anchors (exit 0)
+ok   remap-refs ignores the anchor entry of the seq map and still remaps ledger entries
+ok   rerecord without the anchor options writes no anchors (the T049 behaviour is unchanged)
+ok   rerecord: a local anchors file that does not verify against its ledger is refused, nothing written
+ok   rerecord: --onto-anchors without --local-anchors is a usage error (64, they go together)
+ok   hermetic: no call reached the host entry
+checks=55 failures=16
+rc=1
+# DONE

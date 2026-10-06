@@ -13,6 +13,10 @@ bad() { n=$((n+1)); fails=$((fails+1)); echo "FAIL $1"; }
 F=specs/001-full-project-audit-remediation
 mkdir -p "$S/repo/tools/evidence/tests" "$S/repo/$F/contracts" "$S/repo/scripts/repo" "$S/repo/.audit" "$S/home/.local/bin"
 cp "$root/tools/evidence/evrec" "$root/tools/evidence/verify" "$root/tools/evidence/evcore.py" "$S/repo/tools/evidence/"
+# WP-05 tools written after round 3 (T051..T055): the copied suites call them, so the scratch checkout carries them too (additive, round 8)
+for f in evanchor.py evparse.py evverdict.py verdict wrap-go.sh wrap-bash.sh wrap-vitest.sh wrap-gradle.sh wrap-cargo.sh census_ab_pass.py; do
+  [ -e "$root/tools/evidence/$f" ] && cp "$root/tools/evidence/$f" "$S/repo/tools/evidence/"; done
+[ -d "$root/tools/evidence/lib" ] && cp -r "$root/tools/evidence/lib" "$S/repo/tools/evidence/"
 cp "$here"/*.sh "$here"/*.py "$S/repo/tools/evidence/tests/"
 cp "$root/$F/contracts/evidence-record.schema.json" "$S/repo/$F/contracts/"; cp "$root/scripts/repo/check_classes.tsv" "$S/repo/scripts/repo/"
 sleep 300 & holder=$!

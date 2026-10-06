@@ -1,0 +1,12 @@
+## PART C: ts02_mutation.sh (a restored per-script copy)
+## control (unmodified migrated tree)
+ok   two calls: two entries with iterations 1 and 2, SUMMARY_ROWS keeps the legacy tab format
+ok   without EVREC_ITEM the entry is filed under RUN-<pid> (a canonical run id)
+checks=19 failures=0
+## mutant: the legacy local copy restored into catalog_browse_filter_search.sh (scratch tree)
+FAIL repo census: 1 per-script definitions under scripts/testing/full_automation
+FAIL repo census: shipping definitions = scripts/testing/full_automation/catalog_browse_filter_search.sh,tools/evidence/lib/ab_pass_with_evidence.sh
+FAIL 10 of 11 suites source the shared definition
+checks=19 failures=3
+control_rc=0 mutant_rc=1 cause_named=yes
+rc=0

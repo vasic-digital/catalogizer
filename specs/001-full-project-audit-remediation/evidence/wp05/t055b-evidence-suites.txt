@@ -1,0 +1,113 @@
+# T055b: every tools/evidence test file once inside IMG-TESTUTIL via scripts/containers/run_pinned.sh --network=none (after the probe rewrite)
+# generated_utc=2026-10-06T21:34:32Z host=anton kernel=7.0.0-34-generic
+# git_head=34db9504594c4a1f883769d5c3d80238c87d48fb (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 4b218e8d5ecc6fa9a49b7255c45b6f803e494724af9288703e63f9519b28c336  tools/evidence/verdict
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+# sha256 6f77a02e50cea01703fabf5b3745b0a57b5627b945e746e90f086c7024192f80  tools/evidence/evparse.py
+# sha256 23cff2961b8353f7c9ffd88b44e79e59a2be9f079a19a1922c834b91531e5606  tools/evidence/evverdict.py
+# sha256 9828d9a5ec77a29c62b0545f5b6c50cc9ce10fb7266af78e68a80764ef3ddcc9  tools/evidence/evanchor.py
+# sha256 cc43ff1c795ca062b1fa9edaebaa79b81fcdcacab2099f87781ab6a26923620b  tools/evidence/tests/test_anchors.sh
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 70efe855aa5b7a17cd2e5a54bf391fe6d51d6b6428fb9592e09f2da459bbbc05  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 2a25ea8886cbe2fed15d76bd06ae8d2a9791fda21ed5a2433682874fc6fa5e7f  tools/evidence/tests/test_evrec_r4.sh
+# sha256 6f359e57c2ada71ba6c1c1278a1d0d5e32a1c404df0319a2e786837cba6f0497  tools/evidence/tests/test_evrec_r5.sh
+# sha256 85fe80bc85feb3f6807a8368f363d859182bdc049a79ab1ec4a34fd9ded8fde8  tools/evidence/tests/test_evrec_r6.sh
+# sha256 fe2a3b09f1667bf1e87806a976e76077ea50f31329388b946be0ffb1d8625f97  tools/evidence/tests/test_evrec_r7.sh
+# sha256 7ba0a58b4b74bb77b2637c76a3f321694c4bfa00b3a5ecd0aa1d1469197ab3fa  tools/evidence/tests/test_evrec.sh
+# sha256 aafb9a458ac4c5a4c16ca6d29ba44d7440bd5d3dadcbc595faff29dbef4020b3  tools/evidence/tests/test_ts02.sh
+# sha256 827cb04b427c551f1e7ca9a9ed9ac0e04e4bcb7441247f466a316a8fd8627f0b  tools/evidence/tests/test_verdict.sh
+# sha256 1064732182d3cefe161735935310dfdafc16cc308387f168e2bd5a59bbde70d5  tools/evidence/tests/test_wrap_bash.sh
+# sha256 b49c0803139a9730cb3f86659d6279007cf33c8adcfd4f1c27d97d583a0447fb  tools/evidence/tests/test_wrap_cargo.sh
+# sha256 bf5ef8b6891d54c066f7b4cb9aee9aa91e0d9556bc8b368be78eb1838c41da3c  tools/evidence/tests/test_wrap_go.sh
+# sha256 49ec3ee2f6c7f467cf28115d049c97067cd0926e24568a2366aafdeb8fb227a1  tools/evidence/tests/test_wrap_gradle.sh
+# sha256 c692b6fea1b75e16a1c3f72f31c5a18c0b4052d396114631baa097b527738533  tools/evidence/tests/test_wrap_vitest.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 5bfa204e0980dc7418fcd3f8f792a21dd3a6185050e759f33d32df7bb67af1d5  tools/evidence/tests/run_mutations.py
+# sha256 429f79a583ffe74fcec55531513f72e557bb7cf2566a6d10186cfcd000c30131  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+## container test_evcore_golden.py
+rc=0
+## container test_evidence_record_schema.sh
+failures=0
+rc=0
+## container test_evrec.sh
+checks=66 failures=0
+rc=0
+## container test_evrec_golden.sh
+checks=73 failures=0
+rc=0
+## container test_evrec_hermetic.sh
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=66 failures=0)
+ok   hermetic: test_evrec_more.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=24 failures=0)
+ok   hermetic: test_evrec_r3.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=140 failures=0)
+ok   hermetic: test_evrec_golden.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=73 failures=0)
+checks=6 failures=0
+rc=0
+## container test_evrec_more.sh
+checks=24 failures=0
+rc=0
+## container test_evrec_r3.sh
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+checks=140 failures=0
+rc=0
+## container test_evrec_r4.sh
+checks=105 failures=0
+rc=0
+## container test_evrec_r5.sh
+ok   F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED is refused (operand_directory_too_large, never silently skipped)
+checks=57 failures=0
+rc=0
+## container test_evrec_r6.sh
+ok   R6-4: the same operand on a PROBE is skipped, not a traceback
+ok   R6-4: a FIFO inside a directory operand is skipped, never opened (no hang)
+ok   R6-5: the same directory over the byte cap on a PROBE is skipped, not refused
+checks=102 failures=0
+rc=0
+## container test_evrec_r7.sh
+ok   W7-2: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   W7-3: the same plain operand on a PROBE is skipped, not refused
+ok   W7-4: the same operand on a PROBE is skipped
+ok   W7-4: the execute-only directory on a PROBE is skipped
+checks=202 failures=0
+rc=0
+## container test_anchors.sh
+ok   no-force-push scan: evanchor.py, test_anchors.sh, run_mutations_wp05b.py and the guide contain no forced, lease-guarded, plus-ref or built push (11.4.113)
+checks=55 failures=0
+rc=0
+## container test_verdict.sh
+ok   strict mode refuses a forged RED that passed (exit 3 schema_invalid)
+checks=26 failures=0
+rc=0
+## container test_ts02.sh
+checks=19 failures=0
+rc=0
+## container test_wrap_bash.sh
+checks=24 failures=0
+rc=0
+## container test_wrap_cargo.sh
+ok   authored pass: 3 tests, 2 passed, 1 ignored
+ok   a FAILED line before a later ok summary is still a failure
+ok   exit 101 with no FAILED line and no summary is a failure
+checks=11 failures=0
+rc=0
+## container test_wrap_go.sh
+ok   recorded pass: 3 tests, 2 passed, 1 skipped, exit 0
+skip live leg: go is not in PATH or T051_SKIP_LIVE is set (11.4.173: the live leg compiles and runs go test, so it runs inside IMG-GO: scripts/containers/run_pinned.sh IMG-GO -- bash tools/evidence/te
+checks=16 failures=0
+rc=0
+## container test_wrap_gradle.sh
+ok   authored pass: 3 tests, 2 passed, 1 skipped
+ok   a suite header that says failures=0 over a failing testcase: the testcase wins
+checks=10 failures=0
+rc=0
+## container test_wrap_vitest.sh
+ok   a header that counts failures the assertions do not show fails (hidden failure)
+checks=11 failures=0
+rc=0
+# DONE

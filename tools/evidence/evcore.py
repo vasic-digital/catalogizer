@@ -8,12 +8,16 @@ without entry_hash)); prev_hash of seq 1 is 64 zeros; canonical JSON = keys sort
 (ensure_ascii false). This is NOT continuum's construction (see evidence/wp05/T050-implementation.md, DR-E1).
 
 Exit codes (named reasons are printed on stderr as `reason=<name>`):
-  verify  0 verified, 1 chain / blob / schema failure, 3 unverifiable (blob missing, anchor present and not compared,
-          ledger absent or empty), 64 usage_error (docs/06 section 8; 2 anchor disagreement is T055)
+  verify  0 verified, 1 chain / blob / schema failure or run_token_reused, 2 anchor disagreement (T055: anchor_disagrees,
+          anchor_inconsistent), 3 unverifiable (blob missing, anchor unreadable / malformed / mechanism without probe evidence,
+          ledger absent or empty), 64 usage_error (docs/06 section 8)
   evrec   0 done, 64 usage_error, 65 record_invalid, 66 ledger_inconsistent, 67 schema_unavailable,
           68 side_unverifiable / no_common_prefix / map_incomplete (rerecord, remap-refs),
           69 interpreter_without_test_sources (docs/06 rule 11), 70 out_is_shared_store (rerecord --out guard),
           75 lock_held, 76 commit_turn_held, 77 target_unreadable
+          anchor (T055): 1 / 3 the ledger does not verify, 2 existing anchor rows disagree, 64 usage_error / probe_needs_scratch_remote /
+          probe_remote_not_local, 71 strength_unproven
+          token (T051a): prints a fresh random 128-bit hex run token (see the run-token notes below)
 """
 import datetime
 import hashlib
@@ -464,21 +468,52 @@ def redact_text(t, reds):
     return (b.decode("utf-8", "replace") if hit else t), hit
 
 
+_TOKEN32 = re.compile(r"[0-9a-f]{32}")
+
+
+def argv_token(argv):
+    """The per-run evidence token (T051a) of an entry: the value after `--run-token` in its argv when it is 32 lowercase hex digits
+    (the shape `evrec token` prints). None otherwise."""
+    if isinstance(argv, list):
+        for i, a in enumerate(argv[:-1]):
+            if a == "--run-token" and isinstance(argv[i + 1], str) and _TOKEN32.fullmatch(argv[i + 1]):
+                return argv[i + 1]
+    return None
+
+
 def redact_argv(argv, reds):
     """Return (argv', hit). Each element goes through redact_text; in addition the element that follows a bare credential
     flag (`--password VALUE`, `--secret-key VALUE`) is replaced whole, because the value alone matches no pattern. Residual
     limits are declared in $EV/wp05/round4-notes.md (short flags such as -p, encoded or split secrets)."""
-    out, hit, prev_cred = [], False, False
+    out, hit, prev_cred, prev = [], False, False, None
     for a in argv:
         if prev_cred and a and not a.startswith("-"):
-            out.append("[REDACTED:pattern:argv_flag]")
-            hit, prev_cred = True, False
+            if prev == "--run-token" and _TOKEN32.fullmatch(a):      # T051a: the per-run token is a public nonce, not a secret; the
+                out.append(a)                                        # recorded argv must hold it so the deriver can match it to its stdout
+            else:
+                out.append("[REDACTED:pattern:argv_flag]")
+                hit = True
+            prev_cred, prev = False, a
             continue
         t, h = redact_text(a, reds)
         out.append(t)
         hit |= h
-        prev_cred = _is_cred_flag(a)
+        prev_cred, prev = _is_cred_flag(a), a
     return out, hit
+
+
+_TOKPH = b"\x01T\x02"
+
+
+def redact_stream(b, reds, tok):
+    """redact_bytes for a captured stream, except that the run token of this very run (argv `--run-token`) survives: it is swapped for a
+    3-byte placeholder (too short for the value patterns) before redaction and restored after, so a test that writes the token into its
+    post-state (`nonce=<token>`) leaves it readable in the stored blob (T051a). A stream that already holds the placeholder bytes, or no
+    token, goes through redact_bytes unchanged. A token inside a longer redacted span is redacted with it."""
+    if tok and _TOKPH not in b and tok.encode() in b:
+        r, hit = redact_bytes(b.replace(tok.encode(), _TOKPH), reds)
+        return r.replace(_TOKPH, tok.encode()), hit
+    return redact_bytes(b, reds)
 
 
 # ----------------------------------------------------------------------------- run
@@ -949,8 +984,9 @@ def cmd_run(args):
     if os.environ.get("EVREC_FAULT") == "stall_before_lock":
         _stall_for_test(ledger_path())
 
-    out, h1 = redact_bytes(out, reds)
-    err, h2 = redact_bytes(err, reds)
+    rtok = argv_token(argv)
+    out, h1 = redact_stream(out, reds, rtok)
+    err, h2 = redact_stream(err, reds, rtok)
     rec["duration_ms"], rec["exit_status"], rec["verdict"] = dur, rc, verdict_of(rc)
     rec["stdout_sha256"], rec["stderr_sha256"] = sha_bytes(out), sha_bytes(err)   # digest of the stored (redacted) bytes
     if h1 or h2:
@@ -966,6 +1002,20 @@ def cmd_run(args):
 
 
 # ----------------------------------------------------------------------------- check-record / reconcile
+
+def cmd_anchor(args):
+    import evanchor                      # imported on use: the other commands never need the module (scratch trees that copy only evcore.py still run them)
+    return evanchor.cmd_anchor(args)
+
+
+def cmd_token(args):
+    """evrec token: a fresh random 128-bit hex token for one run (T051a, constitution 7.1). The caller passes it to the runner wrapper
+    as `--run-token <token>`; the recorded argv then holds it (no new ev/1 field) and the wrapper exports it to the test."""
+    if args:
+        raise Refuse("usage_error", 64, "evrec token takes no argument")
+    print(os.urandom(16).hex())
+    return 0
+
 
 def cmd_check_record(args):
     if len(args) != 1:
@@ -1150,12 +1200,27 @@ def cmd_verify(args):
     bound, src = ledger_bound()
     entries, head = chain_walk(led)
     check_blobs(entries, bdir)
+    toks = {}
+    for rec in entries:                                  # T051a: one token, one run
+        t = argv_token(rec.get("argv"))
+        if t:
+            toks.setdefault(t, []).append(rec["seq"])
+    reused = {t: s for t, s in toks.items() if len(s) > 1}
+    if reused:
+        t, s = sorted(reused.items())[0]
+        raise Refuse("run_token_reused", 1, "run token %s... is carried by %d entries (seq %s): a token names ONE run; a reused token is the "
+                     "stale-state bluff (T051a)" % (t[:8], len(s), ",".join(map(str, s[:6]))))
     a = anchor_path() if default or os.environ.get("EV_ANCHOR") else os.path.join(os.path.dirname(os.path.abspath(led)), "anchors.jsonl")
-    if os.path.exists(a) and os.path.getsize(a) > 0:
-        raise Refuse("anchor_not_compared", 3, "chain, schema and blobs of %d entries verified, but anchor %s is present and NOT compared "
-                     "(anchor check is T055): UNVERIFIED against the anchor" % (len(entries), a))
-    print("OK chain=%d entries head=%s (chain, ev/1 schema, canonical form and blobs verified)" % (len(entries), head[:12]))
-    print("note: no anchor compared (T055); chain-only verification")
+    arows = newest = None
+    if os.path.exists(a) and (os.path.isdir(a) or os.path.getsize(a) > 0):
+        import evanchor
+        arows, newest = evanchor.verify_anchors(a, entries)
+    if newest is not None:
+        print("OK chain=%d entries head=%s (chain, ev/1 schema, canonical form, blobs and anchor verified)" % (len(entries), head[:12]))
+        print(evanchor.describe(arows, newest))
+    else:
+        print("OK chain=%d entries head=%s (chain, ev/1 schema, canonical form and blobs verified)" % (len(entries), head[:12]))
+        print("note: no anchor compared (T055); chain-only verification")
     flake = os.environ.get("EV_FLAKE_LEDGER") or os.path.join(os.path.dirname(led), "flake_ledger.jsonl")
     for p in (led, flake):
         if os.path.exists(p):
@@ -1208,6 +1273,9 @@ def _guard_out(o):
     shared_dirs = {rp(os.path.dirname(ledger_path()) or "."), rp(ev_dir()), rp(blobs_path())}
     protected = {rp(o["onto"]), rp(o["local"]), rp(ledger_path()), rp(anchor_path())}
     outs = {rp(os.path.join(outdir, o["name"])), rp(os.path.join(outdir, "ledger-seq-map.json"))}
+    if "onto-anchors" in o:                              # T055 anchor leg: one more output file and two more inputs
+        protected |= {rp(o["onto-anchors"]), rp(o["local-anchors"])}
+        outs.add(rp(os.path.join(outdir, "anchors.jsonl")))
     if any(_inside(outdir, sd) for sd in shared_dirs) or outs & protected:
         raise Refuse("out_is_shared_store", 70, "--out %s would write into the shared store or over an input; rerecord writes a "
                      "separate output directory only (the shared ledger is never rewritten here)" % o["out"])
@@ -1225,13 +1293,17 @@ def cmd_rerecord(args):
         if a == "--append-only":
             o["append_only"] = True
             i += 1
-        elif a in ("--onto", "--local", "--out", "--name") and i + 1 < len(args):
+        elif a in ("--onto", "--local", "--out", "--name", "--onto-anchors", "--local-anchors") and i + 1 < len(args):
             o[a[2:]] = args[i + 1]
             i += 2
         else:
-            raise Refuse("usage_error", 64, "evrec rerecord --onto F --local F --out DIR [--append-only] [--name N]")
+            raise Refuse("usage_error", 64, "evrec rerecord --onto F --local F --out DIR [--append-only] [--name N] [--onto-anchors F --local-anchors F]")
     if not all(k in o for k in ("onto", "local", "out")):
         raise Refuse("usage_error", 64, "evrec rerecord needs --onto, --local and --out")
+    if ("onto-anchors" in o) != ("local-anchors" in o):
+        raise Refuse("usage_error", 64, "--onto-anchors and --local-anchors go together (the anchor leg replaces the local anchors after the common prefix)")
+    if "onto-anchors" in o and o["append_only"]:
+        raise Refuse("usage_error", 64, "the anchor leg applies to the chained ledger only, not to --append-only files")
     _guard_name(o["name"])
     _guard_out(o)
     sides = []
@@ -1255,6 +1327,7 @@ def cmd_rerecord(args):
     if cp == 0:
         raise Refuse("no_common_prefix", 68, "the two sides share no leading entry")
     suffix = llines[cp:]
+    anchors_out = seq_anchor = None
     if o["append_only"]:
         data, seqmap = rraw + b"".join(l + b"\n" for l in suffix), None
     else:
@@ -1275,6 +1348,12 @@ def cmd_rerecord(args):
             out_lines.append(canon(rec) + b"\n")
             seqmap.append({"old": old, "new": seq, "digest": prev})
         data = rraw + b"".join(out_lines)
+        if "onto-anchors" in o:                           # T055 anchor leg (docs/06 s8): rows are re-chained with the entries they cover
+            import evanchor
+            anchors_out, seq_anchor = evanchor.rerecord_anchor_leg(o["onto"], o["local"], o["onto-anchors"], o["local-anchors"], cp,
+                                                                    seq, prev, [e["old"] for e in seqmap])
+            if seq_anchor is not None:
+                seqmap.append(seq_anchor)
     lock = LedgerLock(os.path.join(o["out"], o["name"]), lock_timeout())
     try:
         lock.acquire()                                   # one writer per output ledger (11.4.180)
@@ -1284,6 +1363,8 @@ def cmd_rerecord(args):
         atomic_write(os.path.join(o["out"], o["name"]), data)
         if seqmap is not None:
             atomic_write(os.path.join(o["out"], "ledger-seq-map.json"), canon(seqmap) + b"\n")
+        if anchors_out is not None:
+            atomic_write(os.path.join(o["out"], "anchors.jsonl"), anchors_out)
     except OSError as e:
         raise Refuse("out_unwritable", 70, "cannot write into %s: %s" % (o["out"], e.strerror or type(e).__name__))
     finally:
@@ -1304,7 +1385,7 @@ def cmd_remap_refs(args):
         raise Refuse("usage_error", 64, "evrec remap-refs needs --map and --files-from")
     try:
         with open(o["map"], "rb") as f:
-            m = {int(e["old"]): int(e["new"]) for e in json.loads(f.read().decode("utf-8"))}
+            m = {int(e["old"]): int(e["new"]) for e in json.loads(f.read().decode("utf-8")) if e.get("kind") != "anchor"}   # T055: anchor rows are not ledger#<seq> references
         with open(o["files-from"], encoding="utf-8") as f:
             files = [l.rstrip("\n") for l in f if l.strip()]
     except (OSError, ValueError, KeyError, TypeError) as e:
@@ -1333,7 +1414,7 @@ def cmd_remap_refs(args):
 
 def evrec_main(argv):
     cmds = {"run": cmd_run, "check-record": cmd_check_record, "reconcile": cmd_reconcile,
-            "rerecord": cmd_rerecord, "remap-refs": cmd_remap_refs}
+            "rerecord": cmd_rerecord, "remap-refs": cmd_remap_refs, "token": cmd_token, "anchor": cmd_anchor}
     try:
         if not argv or argv[0] not in cmds:
             raise Refuse("usage_error", 64, "evrec {%s} ..." % "|".join(cmds))
@@ -1349,6 +1430,6 @@ def verify_main(argv):
         return cmd_verify(argv)
     except Refuse as r:
         code = 3 if r.reason == "schema_unavailable" else r.code      # docs/06 s8: a verifier that cannot check is UNVERIFIED
-        print("%s: %s" % ("FAIL" if code == 1 else ("UNVERIFIED" if r.reason == "schema_unavailable" else r.reason), r.detail))
+        print("%s: %s" % ("FAIL" if code in (1, 2) else ("UNVERIFIED" if r.reason == "schema_unavailable" else r.reason), r.detail))
         eprint("verify: reason=%s" % r.reason)
         return code

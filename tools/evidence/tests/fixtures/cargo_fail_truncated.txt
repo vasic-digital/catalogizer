@@ -1,0 +1,8 @@
+   Compiling t v0.1.0 (/src/t)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.55s
+     Running unittests src/lib.rs (target/debug/deps/t-0123456789abcdef)
+
+running 3 tests
+test tests::adds ... ok
+test tests::seeded_failure ... FAILED
+test tests::subs ... ok

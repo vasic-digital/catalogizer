@@ -1,0 +1,641 @@
+{
+ "after": {
+  "calls": [
+   {
+    "count": 7,
+    "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh"
+   },
+   {
+    "count": 11,
+    "path": "scripts/testing/full_automation/catalog_auth_pagination.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh"
+   },
+   {
+    "count": 10,
+    "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh"
+   },
+   {
+    "count": 15,
+    "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh"
+   },
+   {
+    "count": 6,
+    "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh"
+   },
+   {
+    "count": 10,
+    "path": "scripts/testing/full_automation/catalog_favorites_resume_lifecycle.sh"
+   },
+   {
+    "count": 15,
+    "path": "scripts/testing/full_automation/catalog_functional_matrix.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh"
+   },
+   {
+    "count": 1,
+    "path": "tools/evidence/tests/test_ts02.sh"
+   }
+  ],
+  "carriers": [
+   {
+    "count": 7,
+    "path": ".specify/memory/constitution-appendix.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_aggregation_granularity.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_auth_pagination.md"
+   },
+   {
+    "count": 2,
+    "path": "docs/scripts/catalog_books_comics_resume.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_browse_filter_search.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_collections_downloads_stats.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_details_assets_caching.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_episode_titles_dedup.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_favorites_resume_lifecycle.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_functional_matrix.md"
+   },
+   {
+    "count": 2,
+    "path": "docs/scripts/catalog_music_album_tracks.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_playback_progress_favorites.md"
+   },
+   {
+    "count": 5,
+    "path": "docs/scripts/evidence-ts02.md"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_auth_pagination.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh"
+   },
+   {
+    "count": 3,
+    "path": "scripts/testing/full_automation/catalog_favorites_resume_lifecycle.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_functional_matrix.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/tasks.md"
+   },
+   {
+    "count": 2,
+    "path": "specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/mutations.part-a.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t048-continuum-probe.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t048a-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t050-existing-suites-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t051-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t051a-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t051a-red.txt"
+   },
+   {
+    "count": 4,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t052-green-x3.txt"
+   },
+   {
+    "count": 9,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t052-red.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t053-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t054-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t054-red.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t055-green-x3.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/t055-red.txt"
+   },
+   {
+    "count": 4,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/ts02-census.json"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/wrappers-red.txt"
+   },
+   {
+    "count": 1,
+    "path": "specs/001-full-project-audit-remediation/evidence/wp05/wrappers2-red.txt"
+   },
+   {
+    "count": 7,
+    "path": "tools/evidence/census_ab_pass.py"
+   },
+   {
+    "count": 3,
+    "path": "tools/evidence/lib/ab_pass_with_evidence.sh"
+   },
+   {
+    "count": 2,
+    "path": "tools/evidence/tests/run_mutations_wp05b.py"
+   },
+   {
+    "count": 19,
+    "path": "tools/evidence/tests/test_ts02.sh"
+   },
+   {
+    "count": 3,
+    "path": "tools/evidence/tests/ts02_capture.sh"
+   },
+   {
+    "count": 3,
+    "path": "tools/evidence/tests/ts02_mutation.sh"
+   },
+   {
+    "count": 1,
+    "path": "tools/evidence/tests/fixtures/ab_pass_legacy.sh"
+   }
+  ],
+  "definitions": [
+   {
+    "body_lines": 23,
+    "body_sha256": "6ba1117a141a63732278e6746b30a163db186aef551223f922922fa11d0f1e80",
+    "class": "shipping",
+    "form": "parens",
+    "line": 23,
+    "path": "tools/evidence/lib/ab_pass_with_evidence.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "fixture",
+    "form": "parens",
+    "line": 4,
+    "path": "tools/evidence/tests/fixtures/ab_pass_legacy.sh"
+   }
+  ],
+  "excluded": [
+   ".audit",
+   ".git",
+   ".venv",
+   "__pycache__",
+   "build",
+   "dist",
+   "node_modules",
+   "qa-results",
+   "submodules",
+   "target",
+   "venv"
+  ],
+  "needle_found": true,
+  "scanned_files": 12200
+ },
+ "before": {
+  "calls": [
+   {
+    "count": 7,
+    "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh"
+   },
+   {
+    "count": 11,
+    "path": "scripts/testing/full_automation/catalog_auth_pagination.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh"
+   },
+   {
+    "count": 10,
+    "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh"
+   },
+   {
+    "count": 15,
+    "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh"
+   },
+   {
+    "count": 6,
+    "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh"
+   },
+   {
+    "count": 10,
+    "path": "scripts/testing/full_automation/catalog_favorites_resume_lifecycle.sh"
+   },
+   {
+    "count": 15,
+    "path": "scripts/testing/full_automation/catalog_functional_matrix.sh"
+   },
+   {
+    "count": 5,
+    "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh"
+   },
+   {
+    "count": 4,
+    "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh"
+   }
+  ],
+  "carriers": [
+   {
+    "count": 7,
+    "path": ".specify/memory/constitution-appendix.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_aggregation_granularity.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_auth_pagination.md"
+   },
+   {
+    "count": 2,
+    "path": "docs/scripts/catalog_books_comics_resume.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_browse_filter_search.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_collections_downloads_stats.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_details_assets_caching.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_episode_titles_dedup.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_favorites_resume_lifecycle.md"
+   },
+   {
+    "count": 4,
+    "path": "docs/scripts/catalog_functional_matrix.md"
+   },
+   {
+    "count": 2,
+    "path": "docs/scripts/catalog_music_album_tracks.md"
+   },
+   {
+    "count": 3,
+    "path": "docs/scripts/catalog_playback_progress_favorites.md"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh"
+   },
+   {
+    "count": 2,
+    "path": "scripts/testing/full_automation/catalog_auth_pagination.sh"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh"
+   },
+   {
+    "count": 2,
+    "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh"
+   },
+   {
+    "count": 2,
+    "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh"
+   },
+   {
+    "count": 2,
+    "path": "scripts/testing/full_automation/catalog_functional_matrix.sh"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh"
+   },
+   {
+    "count": 1,
+    "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh"
+   },
+   {
+    "count": 2,
+    "path": "specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md"
+   }
+  ],
+  "definitions": [
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 139,
+    "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 119,
+    "path": "scripts/testing/full_automation/catalog_auth_pagination.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 177,
+    "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 106,
+    "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 132,
+    "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 178,
+    "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 154,
+    "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 105,
+    "path": "scripts/testing/full_automation/catalog_favorites_resume_lifecycle.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 103,
+    "path": "scripts/testing/full_automation/catalog_functional_matrix.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 157,
+    "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh"
+   },
+   {
+    "body_lines": 13,
+    "body_sha256": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+    "class": "shipping",
+    "form": "parens",
+    "line": 167,
+    "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh"
+   }
+  ],
+  "excluded": [
+   ".audit",
+   ".git",
+   ".venv",
+   "__pycache__",
+   "build",
+   "dist",
+   "node_modules",
+   "qa-results",
+   "submodules",
+   "target",
+   "venv"
+  ],
+  "needle_found": true,
+  "scanned_files": 25
+ },
+ "before_note": "scratch tree: the HEAD versions of scripts/testing/full_automation/*.sh plus the current carrier documents (docs/scripts/catalog_*.md, .specify/memory/*.md, docs/05)",
+ "census_tool": "tools/evidence/census_ab_pass.py",
+ "census_tool_sha256": "23f890ddc89e4a06b1b6879662b793fa4976e1a7ee8f306165f1041fc1df2e3d",
+ "migration": [
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 139,
+   "file_sha256_after": "fa7d2ff24b65c39cac77547d788f69f2878264edd368a1dc8e9668a7ea90e1b3",
+   "path": "scripts/testing/full_automation/catalog_aggregation_granularity.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 119,
+   "file_sha256_after": "642d402f9685ddf2cefa7d62ed38c2654ab1d8b61546c9ae14a891b543631535",
+   "path": "scripts/testing/full_automation/catalog_auth_pagination.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 177,
+   "file_sha256_after": "8ad5edd3e99ca7f15d73a2c02a294cc9741ea2f0abf7466dd8dea8f60fd7d7be",
+   "path": "scripts/testing/full_automation/catalog_books_comics_resume.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 106,
+   "file_sha256_after": "d6f6d345e8f7014b0e7e7d9c8ea0d1ad0213bb215b91a16d3efa0431734bf840",
+   "path": "scripts/testing/full_automation/catalog_browse_filter_search.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 132,
+   "file_sha256_after": "f778ff7051557d6074e94e4c9cffcf50571d8707570014fdfecad527d233f5a4",
+   "path": "scripts/testing/full_automation/catalog_collections_downloads_stats.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 178,
+   "file_sha256_after": "75a84fa9ffd4f12e4c56bcf08383b4f811698bac57a6607970823595571291cd",
+   "path": "scripts/testing/full_automation/catalog_details_assets_caching.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 154,
+   "file_sha256_after": "1ee492a32a51c1ac5026690377d9e99840d4628308222e8f6b728d8f09dea976",
+   "path": "scripts/testing/full_automation/catalog_episode_titles_dedup.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 105,
+   "file_sha256_after": "36e34aabd1746021582125d45a99bbc756cc1fb2fb551c37852a9f1efb7a8c83",
+   "path": "scripts/testing/full_automation/catalog_favorites_resume_lifecycle.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 103,
+   "file_sha256_after": "c1c32ff1f6da06db0719b94c20b17d5900e539c34d05adad3ae2dec5e1891c0d",
+   "path": "scripts/testing/full_automation/catalog_functional_matrix.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 157,
+   "file_sha256_after": "092058af80d422802c46b6b4290113e37f0f612d609947a190b4d95eb9afa7e5",
+   "path": "scripts/testing/full_automation/catalog_music_album_tracks.sh",
+   "sources_shared_definition_after": true
+  },
+  {
+   "body_sha256_before": "5a7d385e44f49319079f53908a5ac70f365df4572cf428ed358db43526666a9d",
+   "definition_after": false,
+   "definition_line_before": 167,
+   "file_sha256_after": "956adf5b2d1013e1e15efc162b62315c751827aaf0ccabe3da7f353ae6061356",
+   "path": "scripts/testing/full_automation/catalog_playback_progress_favorites.sh",
+   "sources_shared_definition_after": true
+  }
+ ],
+ "shared_definition": "tools/evidence/lib/ab_pass_with_evidence.sh",
+ "shared_definition_sha256": "6e96a8419d7340257cdab8785b38717fc0d925df8b985f1d4e18d1bbba7f3c84",
+ "summary": {
+  "copies_left_behind": [],
+  "definitions_under_full_automation_after": 0,
+  "definitions_under_full_automation_before": 11,
+  "finding_filing": "none needed: no copy is left behind (the filing depends on T069 in any case)",
+  "shipping_definitions_after": [
+   "tools/evidence/lib/ab_pass_with_evidence.sh"
+  ]
+ },
+ "task": "T052 / docs/05 TS-02"
+}

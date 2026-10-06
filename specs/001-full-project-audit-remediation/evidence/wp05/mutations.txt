@@ -1,0 +1,94 @@
+# T056 paired mutations (WP-05 evidence tooling)
+# generated_utc=2026-10-06T20:43:09Z host=anton
+# git_head=f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+# sha256 6f77a02e50cea01703fabf5b3745b0a57b5627b945e746e90f086c7024192f80  tools/evidence/evparse.py
+# sha256 23cff2961b8353f7c9ffd88b44e79e59a2be9f079a19a1922c834b91531e5606  tools/evidence/evverdict.py
+# sha256 f62cd26238908c87f4a4e8ffa83c6af0f31e3f31399ba035116bf59e58d262f8  tools/evidence/evanchor.py
+# sha256 23f890ddc89e4a06b1b6879662b793fa4976e1a7ee8f306165f1041fc1df2e3d  tools/evidence/census_ab_pass.py
+# sha256 6e96a8419d7340257cdab8785b38717fc0d925df8b985f1d4e18d1bbba7f3c84  tools/evidence/lib/ab_pass_with_evidence.sh
+# sha256 34666b743b692f5607f948a9704519f39ced8f88b067cd5ede48849826c5f457  tools/evidence/lib/wrap_common.sh
+# sha256 12b81dea13f94c230fc58c3057964c73b1b342401b991e84be2834add76158ad  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 9db2b99069a6883103e870418a9b074580bf5c963ff1a816b10ca1ea7fa61a46  tools/evidence/tests/run_mutations.py
+## PART A: run_mutations_wp05b.py (anchors, deriver, token, parsers, wrappers, TS-02 library and census)
+T056-A1-anchor-comparison-removed-in-verify             CAUGHT             FAIL tamper: delete-and-recompute is caught by the anchor (exit 2) (exit 0, want 2: verify: ledger=/tmp/tmp.cuZjMJBNrU/w/ledger.jsonl blobs=
+T056-A2-head-not-compared                               CAUGHT             FAIL tamper: two reordered entries, chain recomputed AND renumbered, caught by the anchor (exit 2) (exit 0, want 2: verify: ledger=/tmp/tmp.
+T056-A3-count-not-compared                              CAUGHT             FAIL tamper: truncated tail is caught by the anchor (exit 2) (exit 1, want 2: verify: ledger=/tmp/tmp.L7ZK7Gm9iZ/w/ledger.jsonl blobs=/tmp/t
+A4-only-newest-row-compared                             CAUGHT             FAIL an old anchor row that the rewritten history contradicts is caught although the newest row agrees (exit 2) (exit 0, want 2: verify: led
+A5-mechanism-without-probe-accepted                     CAUGHT             FAIL verify: a hand-written mechanism row with no probe evidence is UNVERIFIED (exit 3, strength_unproven) (exit 0, want 3: verify: ledger=/
+A6-anchor-writer-skips-chain-check                      CAUGHT             FAIL anchor row malformed: 
+A7-probe-without-scratch-declaration                    CAUGHT             FAIL probe without scratch declaration: exit 0
+A8-network-remote-probed                                CAUGHT             FAIL probe(url): exit 0
+A9-rerecord-keeps-local-anchors                         CAUGHT             FAIL rerecord anchor leg: wrong anchors
+A10-mechanism-claim-without-evidence-written            CAUGHT             FAIL anchor: mechanism claimed without evidence (exit 0)
+A11-allow-remote-gives-mechanism                        CAUGHT             FAIL probe(allow): exit 0 strength=mechanism 
+A13-explicit-strength-policy-ignored                    CAUGHT             FAIL probe(policy requested): exit 0 strength=mechanism
+A12-existing-anchor-history-not-checked-when-adding     NOT_CAUSE_CAUGHT   1 unrelated FAIL line(s), e.g. FAIL anchor: re-anchored a forged chain (exit 0)
+T056-D1-green-without-prior-red                         CAUGHT             FAIL case green_first: exit 0, want 1 ()
+D1b-green-without-any-red                               CAUGHT             FAIL case reopen_no_new: wrong checks: {"item": "CAT-001", "cycle_after_seq": 5, "reopens_counted": 1, "reopens_ignored": [], "red_ok": true
+D2-red-accepts-any-nonzero                              CAUGHT             FAIL case exit127: wrong checks: {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "gre
+D3-same-test-ignores-test-fingerprint                   CAUGHT             FAIL case typo_red: exit 0, want 1 ()
+D4-green-iterations-not-distinct                        CAUGHT             FAIL case green_dup_iter: exit 0, want 1 ()
+D5-fingerprints-new-dropped                             CAUGHT             FAIL case green_on_reopen_fp: exit 0, want 1 ()
+D6-reopen-cuts-without-genuine-failure                  CAUGHT             FAIL case reopen_pass: exit 0, want 1 ()
+D7-reopen-cuts-an-incomplete-cycle                      CAUGHT             FAIL case reopen_after_fail: exit 0, want 1 ()
+D8-same-test-compares-argv-with-token                   CAUGHT             FAIL T051a golden-good: exit 1 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green
+D9-green-identical-unmasked                             CAUGHT             FAIL T051a golden-good: exit 1 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green
+D10-strict-mode-skips-schema                            CAUGHT             FAIL strict mode on a forged ledger: exit 1
+D11-deriver-trusts-a-broken-chain                       CAUGHT             FAIL deleted entry: exit 1
+T056-K1-deriver-skips-token-comparison                  CAUGHT             FAIL T051a golden-bad: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_
+K2-token-rule-only-with-flag                            CAUGHT             FAIL T051a: rule not applied by token presence: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": []
+K3-token-compared-against-any-blob-not-own              CAUGHT             FAIL T051a golden-bad: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_
+K4-token-shared-between-entries-allowed                 CAUGHT             FAIL T051a: shared token accepted by the deriver: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": 
+K5-verify-ignores-reused-token                          CAUGHT             FAIL T051a: verify on a reused token: exit 0 verify: ledger=/tmp/tmp.MxGBAv3NsN/tk-re/ledger.jsonl blobs=/tmp/tmp.MxGBAv3NsN/tk-re/blobs
+K6-argv-token-redacted                                  CAUGHT             FAIL T051a: token missing or redacted in the recorded argv: ["/tmp/mut.h0lvhkhf/tools/evidence/wrap-bash.sh","--run-token","[REDACTED:patter
+K7-stream-token-redacted                                CAUGHT             FAIL T051a: token not in the stdout blob
+K8-token-not-random                                     CAUGHT             FAIL T051a: tokens equal or absent
+K9-token-short                                          CAUGHT             FAIL T051a: evrec token printed [df4313e9]
+P-go1-test-level-failures-ignored                       CAUGHT             FAIL recorded seeded failure is reported through the parser (exit 126, want 1; )
+P-go2-truncation-not-detected                           CAUGHT             FAIL a test that started and never finished is no pass and no failure verdict (126) (exit 0, want 126; )
+P-go3-zero-tests-pass                                   CAUGHT             FAIL a package without test files ran zero tests: error (summary lacks /reason=no_tests/: wrap: runner=go status=error tests=0 passed=0 fail
+P-go4-build-failure-is-a-test-failure                   CAUGHT             FAIL a package that does not compile is an error, not a test failure (exit 1, want 126; )
+P-bash1-summary-beats-fail-lines                        CAUGHT             FAIL recorded seeded failure (summary lacks /failed=1/: wrap: runner=bash status=fail tests=1 passed=1 failed=0 skipped=0|wrap: reason=summa
+P-bash2-exit-status-ignored                             CAUGHT             FAIL death under set -e: no FAIL line, no summary, exit 1 is still a failure (exit 0, want 1; )
+P-bash3-lost-line-ignored                               CAUGHT             FAIL a lost line (summary counts 3, two seen) is a failure (exit 0, want 1; )
+P-vt1-header-trusted-over-assertions                    CAUGHT             FAIL recorded seeded failure is reported through the parser (summary lacks /tests=4/: wrap: runner=vitest status=fail tests=3 passed=2 faile
+P-vt2-truncated-report-passes                           CAUGHT             FAIL hidden failure behind a TRUNCATED report is still found (exit 126, want 1; )
+P-vt3-header-failures-ignored                           CAUGHT             FAIL a header that counts failures the assertions do not show fails (hidden failure) (exit 0, want 1; )
+P-gr1-header-counts-trusted                             CAUGHT             FAIL authored seeded failure across two result files (summary lacks /failed=1/: wrap: runner=gradle status=fail tests=4 passed=4 failed=0 sk
+P-gr2-truncated-xml-passes                              CAUGHT             FAIL a truncated XML report still shows the failure (exit 126, want 1; )
+P-cg1-last-summary-wins                                 CAUGHT             FAIL authored seeded failure (summary lacks /failed=1/: wrap: runner=cargo status=fail tests=2 passed=2 failed=0 skipped=0|wrap: reason=summ
+P-cg2-build-error-is-pass-or-fail                       CAUGHT             FAIL a compile error is an error, not a test failure (exit 1, want 126; )
+W1-token-not-exported-bash                              CAUGHT             FAIL live: EVREC_RUN_TOKEN is exported to the test (exit 1, want 0; )
+W2-token-not-required                                   CAUGHT             FAIL no --run-token is refused (run_token_missing) (exit 126, want 126 reason=run_token_missing; stderr: wrap: refused reason=run_token_malf
+W3-token-shape-not-checked                              CAUGHT             FAIL a malformed --run-token is refused (run_token_malformed) (exit 0, want 126 reason=run_token_malformed; stderr: )
+W4-wrapper-prints-the-token                             CAUGHT             FAIL live: the wrapper itself printed the token
+W5-missing-runner-is-a-test-failure                     CAUGHT             FAIL live: a command that does not exist is an error (126), never a test failure (exit 1, stderr: bad )
+T52-L1-library-prints-pass-without-the-recorder         CAUGHT             FAIL recorder unavailable: PASS: d [evidence: /tmp/tmp.DB1iiNM6zm/w/evidence.json]
+T52-L2-library-never-calls-the-recorder                 CAUGHT             FAIL recorder unavailable: PASS: d [evidence: /tmp/tmp.haJzy0N1sv/w/evidence.json]
+T52-L3-empty-evidence-passes                            CAUGHT             FAIL negative control: PASS: d [evidence: /tmp/tmp.H3yysKlW9V/w/empty.json]
+T52-C1-census-counts-substrings                         CAUGHT             FAIL census: carriers
+T52-C2-census-blind-heredoc                             CAUGHT             FAIL census: tool failed on the scratch tree (exit 2) census: blind reason=needle_not_found the census instrument cannot see its own control
+T52-C4-census-misses-function-keyword-form              CAUGHT             FAIL census: tool failed on the scratch tree (exit 2) census: blind reason=needle_not_found the census instrument cannot see its own control
+mutants=59 caught=58 reported_unspecified=0 not_caught_or_invalid=1
+SURVIVOR/INVALID: A12-existing-anchor-history-not-checked-when-adding (NOT_CAUSE_CAUGHT) 1 unrelated FAIL line(s), e.g. FAIL anchor: re-anchored a forged chain (exit 0)
+rc=1
+## PART B: the T056 commit-turn mutants, run by the T050 mutation runner (run_mutations.py) on the current tree
+C1-no-commit-turn-check            CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C2-unreadable-grant-ignored        CAUGHT                     mode 000 grant not refused; non-JSON grant not refused; T051a: token missing or redacted in the recorded argv: ["/tmp/mut
+C3-matching-run-id-refused         CAUGHT                     matching run id: append succeeds, stub never called; stub called for matching run id; T051a: token missing or redacted in the recorded argv: ["/tmp/mut
+C4-matching-run-id-calls-reaper    CAUGHT                     stub called for matching run id; T051a: token missing or redacted in the recorded argv: ["/tmp/mut; T051a: token not in the stdout blob
+C5-reaper-never-called             CAUGHT                     dead-holder grant reaped, append then succeeds; --reap call count: 0; no --exec-approved entry in host log
+C6-reap-direct-not-exec-approved   CAUGHT                     no --exec-approved entry in host log; T051a: token missing or redacted in the recorded argv: ["/tmp/mut; T051a: token not in the stdout blob
+C7-reap-by-grant-age               CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C8-host-refusal-crash-allowed      CAUGHT                     T051a: token missing or redacted in the recorded argv: ["/tmp/mut; T051a: token not in the stdout blob; T051a golden-good: exit 127 
+C9-blobs-written-before-check      CAUGHT                     stores changed under a held grant; dead-holder grant reaped, append then succeeds; --reap call count: 0
+C10-reaper-called-repeatedly       CAUGHT                     no run id: Traceback (most recent call last):; different run id not refused; live old grant not refused
+RV-X4-no-in-lock-grant-recheck     CAUGHT                     T051a: token missing or redacted in the recorded argv: ["/tmp/mut; T051a: token not in the stdout blob; T051a golden-good: exit 127 
+mutants=11 caught=11 equivalent=0 not_caught=0
+rc=0
+## PART C: see ts02-mutation.txt (the restored per-script copy, control PASS / mutant FAIL)
+checks=19 failures=3
+control_rc=0 mutant_rc=1 cause_named=yes
+rc=0
+# DONE

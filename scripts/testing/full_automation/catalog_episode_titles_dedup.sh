@@ -151,19 +151,11 @@ trap cleanup EXIT INT TERM
 # ------------------------------------------------------------------------------
 
 # ab_pass_with_evidence <description> <evidence_path>
-ab_pass_with_evidence() {
-  ab_desc="$1"; ab_evidence="$2"
-  if [ ! -s "${ab_evidence}" ]; then
-    printf 'FAIL: %s [evidence MISSING or empty: %s]\n' "${ab_desc}" "${ab_evidence}"
-    FAIL_COUNT=$((FAIL_COUNT + 1))
-    SUMMARY_ROWS="${SUMMARY_ROWS}FAIL\t${ab_desc}\t${ab_evidence}\n"
-    return 1
-  fi
-  printf 'PASS: %s [evidence: %s]\n' "${ab_desc}" "${ab_evidence}"
-  PASS_COUNT=$((PASS_COUNT + 1))
-  SUMMARY_ROWS="${SUMMARY_ROWS}PASS\t${ab_desc}\t${ab_evidence}\n"
-  return 0
-}
+# NOTE (T052, docs/05 TS-02): this suite no longer carries its own copy of the helper above. The ONE definition is
+# tools/evidence/lib/ab_pass_with_evidence.sh: it keeps the evidence-exists-and-non-empty check and, before it prints PASS, records the check
+# as an ev/1 entry through tools/evidence/evrec (a PASS without an entry is a FAIL). Environment: EVREC_ITEM (register item or run id, default
+# RUN-<pid>), EVREC_BIN (the recorder). Counters and line formats (PASS_COUNT, FAIL_COUNT, SUMMARY_ROWS) are unchanged.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../tools/evidence/lib/ab_pass_with_evidence.sh" || { echo "FAIL: cannot load tools/evidence/lib/ab_pass_with_evidence.sh"; exit 1; }
 
 ab_fail() {
   af_desc="$1"; af_evidence="${2:-none}"

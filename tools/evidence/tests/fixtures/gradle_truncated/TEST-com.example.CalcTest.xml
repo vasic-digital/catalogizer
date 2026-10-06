@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.CalcTest" tests="3" skipped="0" failures="1" errors="0" timestamp="2026-10-06T19:00:00" hostname="localhost" time="0.020">
+  <properties/>
+  <testcase name="adds" classname="com.example.CalcTest" time="0.003"/>
+  <testcase name="seededFailure" classname="com.example.CalcTest" time="0.009">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;5&gt; but was: &lt;-1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;5&gt; but was: &lt;-1&gt;
+	at app//com.example.CalcTest.seededFailure(CalcTest.java:14)
+</failure>
+  </testcase>
+  <testcase name="subtracts" class

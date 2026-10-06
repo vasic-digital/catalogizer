@@ -128,3 +128,7 @@ AGG-A2/B2/B3/C.
 
 **Last verified:** 2026-06-25 (live run against `http://127.0.0.1:8080`,
 PASS=7 FAIL=0 SKIP=0).
+
+## TS-02 adoption (T052, 2026-10-07)
+
+`ab_pass_with_evidence` is no longer defined inside this script: it is sourced from `tools/evidence/lib/ab_pass_with_evidence.sh`, the single shared definition. It keeps the evidence-exists-and-non-empty check and, before it prints PASS, records the check as an ev/1 entry through `tools/evidence/evrec` (a recorder that is absent or refuses makes the assertion a FAIL, never a PASS). Environment: `EVREC_ITEM` (register item or run id, default `RUN-<pid>`), `EVREC_BIN` (the recorder). Counters and PASS/FAIL line formats are unchanged. Guide: `docs/scripts/evidence-ts02.md`.

@@ -1,0 +1,123 @@
+# RED: the CURRENT tests against the BASELINE tools (HEAD: evcore.py sha256 1b285c6faf4098922cf664c85c4cf22ec14b44bcaeb0708ec7599bbbc7143761, no new tool file present), scratch tree removed after; every FAIL line is the observed failure
+# generated_utc=2026-10-06T20:21:19Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=f04c555d33a83e55d8f6541ba6afccdb358630b3 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+# sha256 f62cd26238908c87f4a4e8ffa83c6af0f31e3f31399ba035116bf59e58d262f8  tools/evidence/evanchor.py
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+# sha256 6f77a02e50cea01703fabf5b3745b0a57b5627b945e746e90f086c7024192f80  tools/evidence/evparse.py
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 23cff2961b8353f7c9ffd88b44e79e59a2be9f079a19a1922c834b91531e5606  tools/evidence/evverdict.py
+# sha256 6e96a8419d7340257cdab8785b38717fc0d925df8b985f1d4e18d1bbba7f3c84  tools/evidence/lib/ab_pass_with_evidence.sh
+# sha256 34666b743b692f5607f948a9704519f39ced8f88b067cd5ede48849826c5f457  tools/evidence/lib/wrap_common.sh
+# sha256 993665fcfaec42882d391505f97326d632553526fe44b8e53e2a17c00e5313da  tools/evidence/tests/capture_evidence.sh
+# sha256 d0cbb280597e19da3712841a4d977a2174d2787ae482d21076b916b4658b3274  tools/evidence/tests/capture_wp05b.sh
+# sha256 12d0780b7538eac759d2866d16b1bf3b9c15bc51ab63687be308ace1adfa4697  tools/evidence/tests/continuum_probe.sh
+# sha256 101ba58937c4235858f31dae916c765c8af9338f094670f461e1669f2f81fadd  tools/evidence/tests/forge.py
+# sha256 fbcbd8c921ae4b0953af258a71db789d7b7cb2df84a27dcc83bd8d797cecf626  tools/evidence/tests/hermetic.sh
+# sha256 a4606eff23b9933ffa9091bb4083a26b79fe0b8a6ba588d28a95f9266ddc7b52  tools/evidence/tests/rollout_capture.sh
+# sha256 9db2b99069a6883103e870418a9b074580bf5c963ff1a816b10ca1ea7fa61a46  tools/evidence/tests/run_mutations.py
+# sha256 12b81dea13f94c230fc58c3057964c73b1b342401b991e84be2834add76158ad  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 182e1bf9bb6365cc5f82b018475091bf5da546f24af8e5aa9dbdefcf1d8554a9  tools/evidence/tests/test_anchors.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 7ba0a58b4b74bb77b2637c76a3f321694c4bfa00b3a5ecd0aa1d1469197ab3fa  tools/evidence/tests/test_evrec.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 70efe855aa5b7a17cd2e5a54bf391fe6d51d6b6428fb9592e09f2da459bbbc05  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 2a25ea8886cbe2fed15d76bd06ae8d2a9791fda21ed5a2433682874fc6fa5e7f  tools/evidence/tests/test_evrec_r4.sh
+# sha256 6f359e57c2ada71ba6c1c1278a1d0d5e32a1c404df0319a2e786837cba6f0497  tools/evidence/tests/test_evrec_r5.sh
+# sha256 85fe80bc85feb3f6807a8368f363d859182bdc049a79ab1ec4a34fd9ded8fde8  tools/evidence/tests/test_evrec_r6.sh
+# sha256 fe2a3b09f1667bf1e87806a976e76077ea50f31329388b946be0ffb1d8625f97  tools/evidence/tests/test_evrec_r7.sh
+# sha256 aafb9a458ac4c5a4c16ca6d29ba44d7440bd5d3dadcbc595faff29dbef4020b3  tools/evidence/tests/test_ts02.sh
+# sha256 827cb04b427c551f1e7ca9a9ed9ac0e04e4bcb7441247f466a316a8fd8627f0b  tools/evidence/tests/test_verdict.sh
+# sha256 1064732182d3cefe161735935310dfdafc16cc308387f168e2bd5a59bbde70d5  tools/evidence/tests/test_wrap_bash.sh
+# sha256 b49c0803139a9730cb3f86659d6279007cf33c8adcfd4f1c27d97d583a0447fb  tools/evidence/tests/test_wrap_cargo.sh
+# sha256 bf5ef8b6891d54c066f7b4cb9aee9aa91e0d9556bc8b368be78eb1838c41da3c  tools/evidence/tests/test_wrap_go.sh
+# sha256 49ec3ee2f6c7f467cf28115d049c97067cd0926e24568a2366aafdeb8fb227a1  tools/evidence/tests/test_wrap_gradle.sh
+# sha256 c692b6fea1b75e16a1c3f72f31c5a18c0b4052d396114631baa097b527738533  tools/evidence/tests/test_wrap_vitest.sh
+# sha256 ecde9e75e922cacb47b059cd60c0e0032522cddf0ffcb4c16ca7780641e82599  tools/evidence/tests/ts02_capture.sh
+# sha256 38cb57424f29ba550ff1978337cc9db32b3b6df9ad75169cb95062ede2f92923  tools/evidence/tests/ts02_mutation.sh
+# sha256 0b8d85e37724a95e48f96fa08e93106428dabcceba6c25f93ee5d24478ffd6b7  tools/evidence/tests/verdict_cases/expected.tsv
+# sha256 8598b47705b7378e9cd8ef1e25da45a4d5c1d162d50c3dfe6596babffff42e60  tools/evidence/tests/verdict_cases/scenario.sh
+# sha256 2157e6f811ab6c40d14e1587f66bfb0a7ffb9efa3e9465e7b703eb21258fe898  tools/evidence/tests/wraplib.sh
+# sha256 4b218e8d5ecc6fa9a49b7255c45b6f803e494724af9288703e63f9519b28c336  tools/evidence/verdict
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 2ea1597f07f878ec2aab5b299960b6cd55d45ed0250510ef15736a5d0b9e6787  tools/evidence/wrap-bash.sh
+# sha256 1c74f7a83983e2a1e195dc88f070e69fafd201d20c82e14b9736f9d7e2f86e15  tools/evidence/wrap-cargo.sh
+# sha256 ef50e40192d625605f20e4a9b2d3ad9b168532485a110b355ee3bb3028b36f2f  tools/evidence/wrap-go.sh
+# sha256 22b782e9f8ca0bd850fbe1422171e69d4db02d5725492507cfe521a1c0db4dda  tools/evidence/wrap-gradle.sh
+# sha256 a3a1545aab50a5d57bca38825204b1ed0689d710ae3b630df7685234f8e0a7a1  tools/evidence/wrap-vitest.sh
+# sha256-tree fixtures 74b67dbf97991261a6da8e6ec3532bd7c1c3ca952c9e8ff5e191ef4f04d7d204  tools/evidence/tests/fixtures
+## RED test_evrec.sh
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (306 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+tools/evidence/tests/test_evrec.sh: line 92: 1627336 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+ok   hermetic: no call reached the host entry outside the commit-turn fixtures
+FAIL T051a: evrec token printed []
+FAIL T051a: tokens equal or absent
+FAIL T051a: token missing or redacted in the recorded argv: ["<tree>/tools/evidence/wrap-bash.sh","--run-token","","--","./st.sh","art.txt","state.txt"]
+FAIL T051a: token not in the stdout blob
+FAIL T051a golden-good: exit 127 
+FAIL T051a golden-bad: exit 127 
+FAIL T051a: rule not applied by token presence: exit 127 
+FAIL T051a negative control: exit 127 
+FAIL T051a: shared token accepted by the deriver: exit 127 
+FAIL T051a: verify on a reused token: exit 0 verify: ledger=/tmp/tmp.iq1fWqu9qA/tk-re/ledger.jsonl blobs=/tmp/tmp.iq1fWqu9qA/tk-re/blobs
+OK chain=2 entries head=bb56f8dbca68 (chain, ev/1 schema, canonical 
+ok   T051a: two entries with distinct tokens verify (exit 0)
+checks=66 failures=10
+rc=1
+# DONE

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.CalcTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-06T19:00:00" hostname="localhost" time="0.010">
+  <properties/>
+  <testcase name="adds" classname="com.example.CalcTest" time="0.003"/>
+  <testcase name="crashes" classname="com.example.CalcTest" time="0.004">
+    <error message="java.lang.IllegalStateException: boom" type="java.lang.IllegalStateException">java.lang.IllegalStateException: boom
+	at app//com.example.CalcTest.crashes(CalcTest.java:20)
+</error>
+  </testcase>
+</testsuite>

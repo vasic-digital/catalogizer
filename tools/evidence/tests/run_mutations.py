@@ -372,6 +372,14 @@ def run_one(mut, scratch_base, check_only=False):
             os.makedirs(os.path.join(d, sub))
         for f in ("evrec", "verify", "evcore.py"):
             shutil.copy2(os.path.join(ROOT, "tools/evidence", f), os.path.join(d, "tools/evidence", f))
+        # round 8: the WP-05 tools written after the recorder (anchors, deriver, wrappers, census, shared definition) are part of the tree the
+        # core suites now exercise (test_evrec.sh carries the T051a cases); without them every mutant would show spurious FAIL lines and a
+        # SURVIVOR would read as CAUGHT-OTHER-CHECKS-ONLY
+        for f in ("evanchor.py", "evparse.py", "evverdict.py", "verdict", "wrap-go.sh", "wrap-bash.sh", "wrap-vitest.sh", "wrap-gradle.sh", "wrap-cargo.sh", "census_ab_pass.py"):
+            if os.path.exists(os.path.join(ROOT, "tools/evidence", f)):
+                shutil.copy2(os.path.join(ROOT, "tools/evidence", f), os.path.join(d, "tools/evidence", f))
+        if os.path.isdir(os.path.join(ROOT, "tools/evidence/lib")):
+            shutil.copytree(os.path.join(ROOT, "tools/evidence/lib"), os.path.join(d, "tools/evidence/lib"))
         for f in os.listdir(HERE):
             if f.endswith((".sh", ".py")) and f not in ("run_mutations.py", "capture_evidence.sh"):
                 shutil.copy2(os.path.join(HERE, f), os.path.join(d, "tools/evidence/tests", f))

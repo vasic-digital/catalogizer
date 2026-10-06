@@ -1,0 +1,6 @@
+{"ImportPath":"example.com/t051/build [example.com/t051/build.test]","Action":"build-output","Output":"# example.com/t051/build [example.com/t051/build.test]\n"}
+{"ImportPath":"example.com/t051/build [example.com/t051/build.test]","Action":"build-output","Output":"build/build_test.go:5:52: cannot use \"not an int\" (untyped string constant) as int value in variable declaration\n"}
+{"ImportPath":"example.com/t051/build [example.com/t051/build.test]","Action":"build-fail"}
+{"Time":"2026-10-06T19:18:16.378380558Z","Action":"start","Package":"example.com/t051/build"}
+{"Time":"2026-10-06T19:18:16.378454589Z","Action":"output","Package":"example.com/t051/build","Output":"FAIL\texample.com/t051/build [build failed]\n"}
+{"Time":"2026-10-06T19:18:16.378463229Z","Action":"fail","Package":"example.com/t051/build","Elapsed":0,"FailedBuild":"example.com/t051/build [example.com/t051/build.test]"}

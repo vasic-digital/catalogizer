@@ -166,3 +166,7 @@ CATALOGIZER_TRACK_POSITION=240 \
 **Last verified:** 2026-06-25 (album browse + children + playback round-trip
 probed live against `http://127.0.0.1:8080`; 3 `music_album` entities present,
 0 track children, playback read-back `last_position` exact).
+
+## TS-02 adoption (T052, 2026-10-07)
+
+`ab_pass_with_evidence` is no longer defined inside this script: it is sourced from `tools/evidence/lib/ab_pass_with_evidence.sh`, the single shared definition. It keeps the evidence-exists-and-non-empty check and, before it prints PASS, records the check as an ev/1 entry through `tools/evidence/evrec` (a recorder that is absent or refuses makes the assertion a FAIL, never a PASS). Environment: `EVREC_ITEM` (register item or run id, default `RUN-<pid>`), `EVREC_BIN` (the recorder). Counters and PASS/FAIL line formats are unchanged. Guide: `docs/scripts/evidence-ts02.md`.

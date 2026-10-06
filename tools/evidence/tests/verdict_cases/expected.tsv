@@ -1,0 +1,21 @@
+# case	verdict	checks that must be false (comma list; `-` none)	extra assertions (key=json value; `-` none)	derive mode (strict|chain-only)
+# Source: docs/06 s13.4 (revision 5 tables). `good` and `second_cycle` derive PASS with every check true; the other 16 derive FAIL.
+# The named false checks are required; other checks may also be false (the POC tables name the cause, not every consequence).
+good	PASS	-	reopens_counted=0,reopens_ignored=[]	strict
+blind_red	FAIL	red_ok,fingerprints_differ	-	chain-only
+exit127	FAIL	red_ok	-	strict
+exit126	FAIL	red_ok	-	strict
+signal	FAIL	red_ok	-	strict
+other_argv	FAIL	same_test	-	strict
+other_target	FAIL	same_test	-	strict
+dash_argv	FAIL	same_test	-	strict
+typo_red	FAIL	same_test	-	strict
+green_dup_iter	FAIL	green_ok	-	strict
+green_first	FAIL	red_before_green	-	strict
+reopen_no_new	FAIL	red_ok,green_ok	cycle_after_seq=5	strict
+second_cycle	PASS	-	cycle_after_seq=5,reopens_counted=1,reopens_ignored=[]	strict
+launder	FAIL	green_ok,red_before_green	reopens_ignored=[5]	chain-only
+reopen_pass	FAIL	red_before_green	reopens_ignored=[5]	chain-only
+reopen_after_fail	FAIL	red_before_green	reopens_ignored=[4]	strict
+green_on_reopen_fp	FAIL	fingerprints_new	-	strict
+green_old_fp	FAIL	fingerprints_new	-	strict

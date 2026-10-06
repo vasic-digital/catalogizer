@@ -1,0 +1,28 @@
+# T056 mutations ADDENDUM (the two corrections made after tools/evidence/tests/run_mutations_wp05b.py and run_mutations.py were used for mutations.txt)
+# generated_utc=2026-10-06T21:03:34Z host=anton
+# git_head=f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+# sha256 f62cd26238908c87f4a4e8ffa83c6af0f31e3f31399ba035116bf59e58d262f8  tools/evidence/evanchor.py
+# sha256 4de82287c6aa3a5d7d2a0a022ad19572b4b1342d8368f5cecb856969d65e5f1a  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 5bfa204e0980dc7418fcd3f8f792a21dd3a6185050e759f33d32df7bb67af1d5  tools/evidence/tests/run_mutations.py
+# sha256 182e1bf9bb6365cc5f82b018475091bf5da546f24af8e5aa9dbdefcf1d8554a9  tools/evidence/tests/test_anchors.sh
+# sha256 7ba0a58b4b74bb77b2637c76a3f321694c4bfa00b3a5ecd0aa1d1469197ab3fa  tools/evidence/tests/test_evrec.sh
+## 1. A12 re-run with the corrected expectation (the first run was a label mismatch: the mutant WAS caught by a FAIL line named 'anchor: re-anchored a forged chain', the expectation named the ok-label)
+A12-existing-anchor-history-not-checked-when-adding     CAUGHT             FAIL anchor: re-anchored a forged chain (exit 0)
+mutants=1 caught=1 reported_unspecified=0 not_caught_or_invalid=0
+rc=0
+## 2. PART B re-run with the T050 mutation runner now copying the WP-05 tools into its scratch tree (no spurious T051a FAIL lines)
+C1-no-commit-turn-check            CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C2-unreadable-grant-ignored        CAUGHT                     mode 000 grant not refused; non-JSON grant not refused; W3-8: grant body {} is a malformed grant: commit_turn_held (rc=0 
+C3-matching-run-id-refused         CAUGHT                     matching run id: append succeeds, stub never called; stub called for matching run id; F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) stil
+C4-matching-run-id-calls-reaper    CAUGHT                     stub called for matching run id
+C5-reaper-never-called             CAUGHT                     dead-holder grant reaped, append then succeeds; --reap call count: 0; no --exec-approved entry in host log
+C6-reap-direct-not-exec-approved   CAUGHT                     no --exec-approved entry in host log
+C7-reap-by-grant-age               CAUGHT                     no run id: rc=0; stores changed under a held grant; different run id not refused
+C8-host-refusal-crash-allowed      CAUGHT                     C8: the command ran under a held grant
+C9-blobs-written-before-check      CAUGHT                     stores changed under a held grant; dead-holder grant reaped, append then succeeds; --reap call count: 0
+C10-reaper-called-repeatedly       CAUGHT                     no run id: Traceback (most recent call last):; different run id not refused; live old grant not refused
+RV-X4-no-in-lock-grant-recheck     CAUGHT                     I2: in-lock check: rc=0 recorded seq=1 item=CAT-001 pol=PROBE it=; I2: stores written after the in-lock refusal
+mutants=11 caught=11 equivalent=0 not_caught=0
+rc=0
+# DONE

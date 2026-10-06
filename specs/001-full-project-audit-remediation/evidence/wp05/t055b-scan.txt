@@ -1,0 +1,12 @@
+# T055b scan: absolute-rule patterns in the new/changed WP-05 files (tools/evidence excl. matrix, docs/scripts, wp05 notes, migrated suites)
+# generated_utc=2026-10-06T21:34:42Z
+# files scanned: 118; list sha256 e76474115efe409759b9ffe68d8c69f64f02de430da027a1aaf09aa85f89bd75
+# pattern: kill -1 / kill -9 -1 / killall / pkill / killpg / --no-verify / force + force-with-lease flags / +ref pushes / reset --hard / rebase / filter-branch / commit --amend / pgrep -f
+# control needle: the same grep over a string that must match:
+#   needle hits=1
+## hits (file:line):
+docs/scripts/commit-push-all.md:20:(the trailers below) plus the ignored run directory. It never forces: no `--force`, no `--force-with-lease`, no `+refspec`, no `--no-verify`, no
+docs/scripts/commit-push-all.md:124:backup; `--repo` and the pending pin rows; the S7 mapping; the report on every path; no hooks; no force/lease/`+ref`/`--no-verify`/`rebase`/`reset` (git shim log plus a
+docs/scripts/longops.md:48:- A process is judged by `/proc/<pid>/stat` start time and `/proc/<pid>/cmdline`, never by `pgrep` (11.4.196 D; a test greps the scripts for `pgrep`, `pkill`, `killall`). `kill -0` is only a pr
+tools/evidence/tests/test_anchors.sh:165:# --- 11.4.113: no force push, no +ref push, no force-with-lease anywhere in the anchor tooling, its tests, its mutation runner or its guide
+# DONE

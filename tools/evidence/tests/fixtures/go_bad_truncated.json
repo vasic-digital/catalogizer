@@ -1,0 +1,12 @@
+{"Time":"2026-10-06T19:18:16.262891523Z","Action":"start","Package":"example.com/t051/bad"}
+{"Time":"2026-10-06T19:18:16.265598364Z","Action":"run","Package":"example.com/t051/bad","Test":"TestFirstPasses"}
+{"Time":"2026-10-06T19:18:16.265635434Z","Action":"output","Package":"example.com/t051/bad","Test":"TestFirstPasses","Output":"=== RUN   TestFirstPasses\n"}
+{"Time":"2026-10-06T19:18:16.266011146Z","Action":"output","Package":"example.com/t051/bad","Test":"TestFirstPasses","Output":"ok first\n"}
+{"Time":"2026-10-06T19:18:16.266024466Z","Action":"output","Package":"example.com/t051/bad","Test":"TestFirstPasses","Output":"--- PASS: TestFirstPasses (0.00s)\n"}
+{"Time":"2026-10-06T19:18:16.266036416Z","Action":"pass","Package":"example.com/t051/bad","Test":"TestFirstPasses","Elapsed":0}
+{"Time":"2026-10-06T19:18:16.266044676Z","Action":"run","Package":"example.com/t051/bad","Test":"TestSeededFailure"}
+{"Time":"2026-10-06T19:18:16.266048796Z","Action":"output","Package":"example.com/t051/bad","Test":"TestSeededFailure","Output":"=== RUN   TestSeededFailure\n"}
+{"Time":"2026-10-06T19:18:16.266054296Z","Action":"output","Package":"example.com/t051/bad","Test":"TestSeededFailure","Output":"    bad_test.go:13: seeded failure: got -1 want 5\n"}
+{"Time":"2026-10-06T19:18:16.266064236Z","Action":"output","Package":"example.com/t051/bad","Test":"TestSeededFailure","Output":"--- FAIL: TestSeededFailure (0.00s)\n"}
+{"Time":"2026-10-06T19:18:16.266069616Z","Action":"fail","Package":"example.com/t051/bad","Test":"TestSeededFailure","Elapsed":0}
+{"Time":"2026-10-06T19:18:16.266074486Z","Action":"run","Package":"example.com/t051/bad","

@@ -1,0 +1,2260 @@
+# GREEN x3: the tests against the current tools
+# generated_utc=2026-10-06T20:27:40Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=f04c555d33a83e55d8f6541ba6afccdb358630b3 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+# sha256 f62cd26238908c87f4a4e8ffa83c6af0f31e3f31399ba035116bf59e58d262f8  tools/evidence/evanchor.py
+# sha256 91ed7404282b6012f89b2250c3cbbfcdc7f69d3e071ead60dc0cdbd7d68c3bc9  tools/evidence/evcore.py
+# sha256 6f77a02e50cea01703fabf5b3745b0a57b5627b945e746e90f086c7024192f80  tools/evidence/evparse.py
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 23cff2961b8353f7c9ffd88b44e79e59a2be9f079a19a1922c834b91531e5606  tools/evidence/evverdict.py
+# sha256 6e96a8419d7340257cdab8785b38717fc0d925df8b985f1d4e18d1bbba7f3c84  tools/evidence/lib/ab_pass_with_evidence.sh
+# sha256 34666b743b692f5607f948a9704519f39ced8f88b067cd5ede48849826c5f457  tools/evidence/lib/wrap_common.sh
+# sha256 993665fcfaec42882d391505f97326d632553526fe44b8e53e2a17c00e5313da  tools/evidence/tests/capture_evidence.sh
+# sha256 d0cbb280597e19da3712841a4d977a2174d2787ae482d21076b916b4658b3274  tools/evidence/tests/capture_wp05b.sh
+# sha256 12d0780b7538eac759d2866d16b1bf3b9c15bc51ab63687be308ace1adfa4697  tools/evidence/tests/continuum_probe.sh
+# sha256 101ba58937c4235858f31dae916c765c8af9338f094670f461e1669f2f81fadd  tools/evidence/tests/forge.py
+# sha256 fbcbd8c921ae4b0953af258a71db789d7b7cb2df84a27dcc83bd8d797cecf626  tools/evidence/tests/hermetic.sh
+# sha256 a4606eff23b9933ffa9091bb4083a26b79fe0b8a6ba588d28a95f9266ddc7b52  tools/evidence/tests/rollout_capture.sh
+# sha256 9db2b99069a6883103e870418a9b074580bf5c963ff1a816b10ca1ea7fa61a46  tools/evidence/tests/run_mutations.py
+# sha256 12b81dea13f94c230fc58c3057964c73b1b342401b991e84be2834add76158ad  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 182e1bf9bb6365cc5f82b018475091bf5da546f24af8e5aa9dbdefcf1d8554a9  tools/evidence/tests/test_anchors.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 7ba0a58b4b74bb77b2637c76a3f321694c4bfa00b3a5ecd0aa1d1469197ab3fa  tools/evidence/tests/test_evrec.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 70efe855aa5b7a17cd2e5a54bf391fe6d51d6b6428fb9592e09f2da459bbbc05  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 2a25ea8886cbe2fed15d76bd06ae8d2a9791fda21ed5a2433682874fc6fa5e7f  tools/evidence/tests/test_evrec_r4.sh
+# sha256 6f359e57c2ada71ba6c1c1278a1d0d5e32a1c404df0319a2e786837cba6f0497  tools/evidence/tests/test_evrec_r5.sh
+# sha256 85fe80bc85feb3f6807a8368f363d859182bdc049a79ab1ec4a34fd9ded8fde8  tools/evidence/tests/test_evrec_r6.sh
+# sha256 fe2a3b09f1667bf1e87806a976e76077ea50f31329388b946be0ffb1d8625f97  tools/evidence/tests/test_evrec_r7.sh
+# sha256 aafb9a458ac4c5a4c16ca6d29ba44d7440bd5d3dadcbc595faff29dbef4020b3  tools/evidence/tests/test_ts02.sh
+# sha256 827cb04b427c551f1e7ca9a9ed9ac0e04e4bcb7441247f466a316a8fd8627f0b  tools/evidence/tests/test_verdict.sh
+# sha256 1064732182d3cefe161735935310dfdafc16cc308387f168e2bd5a59bbde70d5  tools/evidence/tests/test_wrap_bash.sh
+# sha256 b49c0803139a9730cb3f86659d6279007cf33c8adcfd4f1c27d97d583a0447fb  tools/evidence/tests/test_wrap_cargo.sh
+# sha256 bf5ef8b6891d54c066f7b4cb9aee9aa91e0d9556bc8b368be78eb1838c41da3c  tools/evidence/tests/test_wrap_go.sh
+# sha256 49ec3ee2f6c7f467cf28115d049c97067cd0926e24568a2366aafdeb8fb227a1  tools/evidence/tests/test_wrap_gradle.sh
+# sha256 c692b6fea1b75e16a1c3f72f31c5a18c0b4052d396114631baa097b527738533  tools/evidence/tests/test_wrap_vitest.sh
+# sha256 ecde9e75e922cacb47b059cd60c0e0032522cddf0ffcb4c16ca7780641e82599  tools/evidence/tests/ts02_capture.sh
+# sha256 38cb57424f29ba550ff1978337cc9db32b3b6df9ad75169cb95062ede2f92923  tools/evidence/tests/ts02_mutation.sh
+# sha256 0b8d85e37724a95e48f96fa08e93106428dabcceba6c25f93ee5d24478ffd6b7  tools/evidence/tests/verdict_cases/expected.tsv
+# sha256 8598b47705b7378e9cd8ef1e25da45a4d5c1d162d50c3dfe6596babffff42e60  tools/evidence/tests/verdict_cases/scenario.sh
+# sha256 2157e6f811ab6c40d14e1587f66bfb0a7ffb9efa3e9465e7b703eb21258fe898  tools/evidence/tests/wraplib.sh
+# sha256 4b218e8d5ecc6fa9a49b7255c45b6f803e494724af9288703e63f9519b28c336  tools/evidence/verdict
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 2ea1597f07f878ec2aab5b299960b6cd55d45ed0250510ef15736a5d0b9e6787  tools/evidence/wrap-bash.sh
+# sha256 1c74f7a83983e2a1e195dc88f070e69fafd201d20c82e14b9736f9d7e2f86e15  tools/evidence/wrap-cargo.sh
+# sha256 ef50e40192d625605f20e4a9b2d3ad9b168532485a110b355ee3bb3028b36f2f  tools/evidence/wrap-go.sh
+# sha256 22b782e9f8ca0bd850fbe1422171e69d4db02d5725492507cfe521a1c0db4dda  tools/evidence/wrap-gradle.sh
+# sha256 a3a1545aab50a5d57bca38825204b1ed0689d710ae3b630df7685234f8e0a7a1  tools/evidence/wrap-vitest.sh
+# sha256-tree fixtures 74b67dbf97991261a6da8e6ec3532bd7c1c3ca952c9e8ff5e191ef4f04d7d204  tools/evidence/tests/fixtures
+## run 1 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+ok   hermetic: no call reached the host entry
+checks=24 failures=0
+rc=0
+## run 1 test_evrec_r3.sh
+ok   I1: live holder with unreadable /proc cmdline is not reaped (lock_held)
+ok   I1: that holder process untouched
+ok   I1: no ledger written under the unreadable-cmdline holder
+ok   I1: 3 writers x 6 appends with unreadable /proc: 18 entries, no duplicate seq
+ok   I1: that ledger verifies
+ok   I1: live pid with a different recorded cmdline (pid reuse) is reaped, append succeeds
+ok   I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":1,"cmdline":"init"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":4242,"cmdline":7} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity not json at all is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity ["list"] is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I2: grant appearing DURING the command: refused after the run (76, commit_turn_held, where=post_command)
+ok   I2: the command did run once before the grant appeared (stated in the refusal, not hidden)
+ok   I2: no ledger and no blob written under the foreign grant
+ok   I2: recorder reached the stall point after the command
+ok   I2: grant appearing before the lock: refused inside the lock (where=in_lock)
+ok   I2: nothing written after the in-lock refusal
+ok   I2: the reaper was never called (post-command and in-lock checks do not reap)
+ok   C8: a held grant and a refusing host entry: refused before the command runs (commit_turn_held, where=pre_run)
+ok   C8: the command was not run under the held grant
+ok   I3: verify with a positional file is refused (usage_error)
+ok   I3: verify --bogus is refused (usage_error)
+ok   I3: verify --ledger without a value is refused (usage_error)
+ok   I3: verify --ledger twice is refused (usage_error)
+ok   I3: verify --ledger names the file it read and fails the tampered one although EV_LEDGER is pristine
+ok   I3: verify names the default ledger it read
+ok   I4: forged stdout blob: refused (blob_mismatch, exit 1)
+ok   I4: blob restored verifies
+ok   I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK
+ok   I4: re-chained entry without argv is refused by verify (schema_invalid)
+ok   I4: re-chained entry with exit_status 0 and verdict fail is refused (schema_invalid)
+ok   I4: EV_SCHEMA={} does not weaken verify
+ok   I4: under PYTHONOPTIMIZE=1 the refusal is the same (no assert-based checks)
+ok   I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_invalid)
+ok   I8: a BASELINE entry with the unresolved-fingerprint sentinel is refused by verify (unresolved_fingerprint)
+ok   X12: a re-chained entry without the schema key is an undecodable entry (chain_failure)
+ok   I4: duplicate key in a line is refused (non_canonical_line)
+ok   I4: a hash-valid line that is not byte-canonical (spaced separators) is refused (non_canonical_line)
+ok   I4: anchor present and not compared: UNVERIFIED exit 3
+ok   I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceback or a chain failure
+ok   I5: golden-good: a ledger hashed independently with jq|sha256sum (non-ASCII cwd, exit_status 3) verifies
+ok   I5: construction 'noprefix' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'noprefix' named as bad hash at line 1
+ok   I5: construction 'ascii' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'ascii' named as bad hash at line 1
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+ok   I5: flipping exit_status alone (hash not recomputed) is a bad hash
+ok   I6: evrec run lists a blob above the bound as owed_relocation (bytes and bound named)
+ok   I6: verify lists the same large blob
+ok   I6: a small blob is not listed
+ok   I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before the command runs
+ok   I6: the command was not run and nothing was written
+ok   I6: nothing is listed as owed in the default environment (no leaked EV_BLOB_BOUND)
+ok   I6: the default blob bound is the check_classes.tsv 'evidence large_file' value (1024000); an empty EV_BLOB_BOUND counts as unset
+ok   I6: rerecord --out <shared ledger dir> is refused (out_is_shared_store)
+ok   I6: the shared ledger is byte-unchanged after the refused --out run
+ok   I6: rerecord --out <shared dir> --name <other file> is refused too (the directory is the shared store)
+ok   I6: no stray output file in the shared directory
+ok   I6: rerecord --out <elsewhere> succeeds
+ok   I6: the shared ledger is byte-unchanged after a legitimate rerecord (store_not_rerecorded shape)
+ok   I6: rerecord --out writing over one of its own input files is refused (out_is_shared_store)
+ok   I6: rerecord takes the lock of the output ledger (a live holder: lock_held)
+ok   I6: seq map content is exactly [{old,new,digest=new entry_hash}]
+ok   I6: seq map of a diverged rerecord maps old 2,3 to new 3,4 with the new entry hashes
+ok   I7: a secret that is a prefix of another leaves no fragment of either
+ok   I7: partially overlapping secrets leave no fragment
+ok   I7: a named secret printed only on stdout or only on stderr is absent from blobs and ledger
+ok   I7: redacted: true is set for a stdout-only and for a stderr-only hit (argv carries no secret)
+ok   I7: Bearer token redacted by the default pattern scan (no variable named)
+ok   I7: entry records redacted: true for a default-pattern hit
+ok   I7: AWS key id, password= value and URL userinfo password redacted
+ok   I7: a GitHub token is redacted
+ok   I7: a secret in the working directory name is redacted from the ledger
+ok   I7: a PEM private key block is redacted
+ok   I7: a secret in target_ref is redacted from the ledger and redacted: true is set
+ok   I7: a clean entry carries no redacted flag (no false positive)
+ok   I8: BASELINE on an unresolvable target is refused (target_unreadable)
+ok   I8: BASELINE wrote nothing
+ok   I8: PREFLIGHT on an unresolvable target is refused (target_unreadable)
+ok   I8: PREFLIGHT wrote nothing
+ok   I8: NEEDLE on an unresolvable target is refused (target_unreadable)
+ok   I8: NEEDLE wrote nothing
+ok   I8: ANALYZER_FIXTURE on an unresolvable target is refused (target_unreadable)
+ok   I8: ANALYZER_FIXTURE wrote nothing
+ok   I8: a PROBE on an unresolved target carries the all-zero sentinel, not a digest of the ref
+ok   I9: RED with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: GREEN with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: MUTATION with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: declared sources make the test_fingerprint differ for different test bytes and agree for the same ones
+ok   I9: nothing written for the undeclared interpreter RED
+ok   I9: a script executed directly is its own test bytes: no source declaration needed
+ok   I9: PROBE with an interpreter and no sources is allowed (no verdict claim)
+ok   I9: EV_TEST_SOURCES counts as a declaration
+ok   I10: --oracle without --oracle-independent is refused (oracle_independence_undeclared) before the command runs
+ok   I10: the command did not run and nothing was written
+ok   I10: --oracle-independent without --oracle is refused (usage_error)
+ok   I10: the declared oracle is recorded as given
+ok   I11: RED without oracle (schema refusal) before the run
+ok   I11: RED without oracle (schema refusal) before the run: command not run, nothing stored
+ok   I11: invalid --mutation-json before the run
+ok   I11: invalid --mutation-json before the run: command not run, nothing stored
+ok   I11: non-UTF-8 argv byte before the run
+ok   I11: non-UTF-8 argv byte before the run: command not run, nothing stored
+ok   I11: missing --test-source file before the run
+ok   I11: missing --test-source file before the run: command not run, nothing stored
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11)
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11): command not run, nothing stored
+ok   I11: unknown flag before the run
+ok   I11: unknown flag before the run: command not run, nothing stored
+ok   I11: --pre-release without --test-state-go (schema) before the run
+ok   I11: --pre-release without --test-state-go (schema) before the run: command not run, nothing stored
+ok   I11: non-UTF-8 cwd is refused before the run (usage_error)
+ok   I11: non-UTF-8 cwd: command not run
+ok   I11: schema_unavailable is refused before the command runs (67)
+ok   I11: schema_unavailable: command not run
+ok   I11: GREEN that fails is refused after the run (record_invalid) and leaves no blob
+ok   I11: no orphan blob after the post-run refusal
+ok   X19: golden-good check-record accepts a valid unchained record ('record valid')
+ok   minor5: check-record asserts the date-time format (record_invalid)
+ok   X16: check-record refusal is the named record_invalid
+ok   X20: --pre-release, --test-state-go, --closes-item, --mutation-json, --container-image-digest, --precondition-provenance, --evidence-class all land in the entry
+ok   X7: a non-executable command is exit 126, verdict error (not fail)
+ok   X8: directory fingerprint equals the independently computed sha256 over sorted 'relpath NUL filehash' lines
+ok   X8: changing a file's content changes the directory fingerprint
+ok   X11: the flake ledger is measured against the bound and named by ledger_raise_owed
+ok   X6: a self-consistent last entry with seq 7 on line 1 refuses the append (ledger_inconsistent)
+ok   X13: rerecord of sides with no common prefix names no_common_prefix
+ok   rerecord of a side verify rejects names side_unverifiable
+ok   X14: remap-refs with an uncovered reference names map_incomplete
+ok   X14: nothing was rewritten on the map_incomplete refusal
+ok   X15: a live lock holder yields the named lock_held (75)
+ok   usage: evrec run with a non-numeric ITER names usage_error
+ok   usage: unknown subcommand names usage_error
+ok   reconcile: runner count mismatch names count_mismatch
+ok   hermetic: no call reached the host entry
+checks=140 failures=0
+rc=0
+## run 1 test_evrec_r4.sh
+ok   N1: --name ../flake_ledger.jsonl (escape from --out) is refused
+ok   N1: --name <absolute path of a shared file> is refused
+ok   N1: --name 'a/b' is not a plain token and is refused
+ok   N1: --name '.' is not a plain token and is refused
+ok   N1: --name '..' is not a plain token and is refused
+ok   N1: --name '' is not a plain token and is refused
+ok   N1: --name '-x' is not a plain token and is refused
+ok   N1: --name '.hidden' is not a plain token and is refused
+ok   N1: --name 'ledger-seq-map.json' is not a plain token and is refused
+ok   N1: --name 'a b' is not a plain token and is refused
+ok   N1: --name 'x/../y' is not a plain token and is refused
+ok   N1: --out <subdirectory of the evidence dir> is refused (any depth)
+ok   N1: --out <blob store> is refused
+ok   N1: --out <subdirectory of the blob store> is refused
+ok   N1: --out through a symlink into the evidence dir is refused
+ok   N1: --out inside a relocated blob store (EV_BLOBS elsewhere) is refused
+ok   N1: the shared flake ledger, deferrals and ledger are byte-unchanged after all refused attempts
+ok   N1: no file was created anywhere in the evidence directory by the refused attempts
+ok   N1: --out inside the evidence dir is refused even when the ledger lives in another directory
+ok   N1: a plain --name into a separate --out still works
+ok   N1: that output holds remote then the local suffix
+ok   N2: JSON login body {"username":..,"password":..} on stdout
+ok   N2: JSON token {"access_token":"<jwt>"} on stdout
+ok   N2: JSON "api_key": "..." with a space after the colon
+ok   N2: JSON client_secret and refresh_token keys
+ok   N2: single-quoted key form 'password': 'x'
+ok   N2: password value containing a space inside JSON quotes
+ok   N2: stream text '--password VALUE' pair
+ok   N2: Authorization: Basic <base64> header
+ok   N2: Authorization with a lower-case header and an unknown scheme
+ok   N2: Cookie header value
+ok   N2: Set-Cookie header value
+ok   N2: a bare three-part JWT in prose
+ok   N2: x-api-key header
+ok   N2: argv pair '--password VALUE' redacts the value, keeps the flag name, sets redacted
+ok   N2: argv pairs for --token, --secret-key and the --api-key=VALUE form are redacted
+ok   N2: JSON password inside an argv element is redacted
+ok   N2: benign JSON and flags are NOT redacted (no false positive)
+ok   N3: RED through launcher 'kcov' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'podman' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'docker' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ssh' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'adb' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'pytest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bats' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'vitest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'jest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'xvfb-run' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'strace' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'uv' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'poetry' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bundle' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'rake' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'flutter' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ctest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through the project runner run_pinned.sh without a declared test source is refused
+ok   N3: GREEN through run_pinned.sh without a declared test source is refused
+ok   N3: MUTATION through run_pinned.sh without a declared test source is refused
+ok   N3: RED python3 -c without a declared test source is refused
+ok   N3: RED env bash -c without a declared test source is refused
+ok   N3: RED python3.12-style versioned interpreter without a source is refused
+ok   N3: with declared sources RED and GREEN through run_pinned.sh get different test_fingerprints
+ok   N3: test_fingerprint of an interpreter with a declared source is exactly sha256(sha256(argv0)\nsha256(source)\n); operands are not added
+ok   N3: test_fingerprint of an unlisted launcher is exactly sha256(sha256(argv0)\nsha256(file operand)\n)
+ok   N3: an unlisted launcher: RED and GREEN over different test files get different test_fingerprints (operands hashed)
+ok   N3: the same operand bytes give the same test_fingerprint again (deterministic)
+ok   N4: a failing GREEN is refused after the run (nothing stored)
+ok   N4: fixture: the ledger holds 5 entries, one foreign (the runner ran 5 commands)
+ok   N4: reconcile --run run4 --runner-count 5 is a mismatch (the foreign entry does not count, the failed GREEN left no entry)
+ok   N4: reconcile --run run4 --runner-count 4 passes (its own 4 stored entries)
+ok   N4: the token may come from EVREC_RUN_TOKEN
+ok   N4: another run's token sees 0 entries of run4
+ok   N4: unscoped reconcile on a ledger that holds tokened entries is refused
+ok   N4: a token that is not a plain token is refused
+ok   N4: reconcile with an unknown option is refused
+ok   N4: EVREC_RUN_TOKEN that is not a plain token refuses the run before the command runs
+ok   N4: a run-index row whose entry_hash does not match the ledger entry is not counted
+ok   N4: legacy: untokened runs on a ledger without tokened entries still reconcile unscoped
+ok   W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismatch, not UNVERIFIED 3
+ok   W3-7: verify --ledger beside its own blobs dir passes when intact
+ok   W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch
+ok   W3-7: verify --ledger --blobs DIR with a forged blob is FAIL 1 too
+ok   m1: verify --ledger with anchors.jsonl beside the ledger is UNVERIFIED 3 anchor_not_compared
+ok   W3-8: grant body {} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {}
+ok   W3-8: grant body {"run_id":7} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":7}
+ok   W3-8: grant body [] is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant []
+ok   W3-8: grant body "x" is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant "x"
+ok   W3-8: grant body null is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant null
+ok   W3-8: grant body {"run_id":null} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":null}
+ok   W3-5: check-record refuses started_at 2026-02-30T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-13-01T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-04-31T10:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T24:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T10:61:00Z
+ok   W3-5: a real date (2026-02-28T23:59:59Z) is accepted
+ok   m2: the executable bit survives remap-refs
+ok   m2: remap-refs through a symlink keeps the link and updates its target
+ok   m4: evrec run in a deleted cwd is usage_error 64, no traceback
+ok   hermetic: no call reached the host entry
+checks=105 failures=0
+rc=0
+## run 1 test_evrec_r5.sh
+ok   F1: redact_bytes on a run of 100000 dashes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "a-" returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 letters returns in under 15 s (0.3 s)
+ok   F1: redact_bytes on a run of 100000 x "_." returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'token' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'password' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a double quote then 'token' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a single quote then 'secret' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on -token repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a long run of dashes then a flag name returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on '--' then 100000 letters returns in under 15 s (0.3 s)
+ok   F1: redact_bytes on 'api-key' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'access_key.' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_argv on a 100000-byte credential-flag-shaped element returns in under 15 s (0.2 s)
+ok   F1: still redacted: kv after a long dash run
+ok   F1: still redacted: kv name prefix
+ok   F1: still redacted: kv name with a 100-char tail
+ok   F1: still redacted: kv after a long letter run
+ok   F1: still redacted: json double quote
+ok   F1: still redacted: flag pair after dashes
+ok   F1: still redacted: flag pair prefix flag
+ok   F1: evrec run of a command printing 100000 dashes finishes (rc=65, not a timeout)
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID set and empty is refused (commit_turn_held, 76)
+ok   F2: nothing recorded under the empty run_id grant
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID unset is refused too
+ok   F2: a real grant with EVREC_TURN_RUN_ID set and empty is refused (empty is unset)
+ok   F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) still records
+ok   F2: a whitespace-only run_id is refused
+ok   F2: the only host-entry calls were the reaper's (--exec-approved ... --reap)
+ok   F3: an unlisted launcher with --bank=FILE: RED and GREEN over different test files get different test_fingerprints
+ok   F3: the --opt=FILE fingerprint is sha256(sha256(argv0)\nsha256(the file after '=')\n)
+ok   F3: an unlisted launcher with a DIRECTORY operand: different directory contents give different test_fingerprints
+ok   F3: the same directory contents give the same test_fingerprint (deterministic)
+ok   F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED is refused (operand_directory_too_large, never silently skipped)
+ok   F3: the same oversized directory operand on a PROBE is not refused
+ok   F3: RED through a renamed symlink to bash with -c is refused (interpreter_without_test_sources)
+ok   F3: RED through a renamed symlink to python3 with -c is refused
+ok   F3: the same through PATH lookup of a renamed symlink is refused
+ok   F3: with a declared test source the renamed-symlink interpreter records
+ok   F3: a PROBE through a renamed-symlink interpreter needs no source
+ok   F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is UNVERIFIED 3 anchor_not_compared
+ok   F5: the same ledger without an anchors.jsonl beside it verifies 0
+ok   F5: an explicit EV_ANCHOR still wins over the file beside the ledger
+ok   F6: fixture: one tokened entry reconciles with --runner-count 1
+ok   F6: with that run-index row duplicated, --runner-count 2 is a count_mismatch
+ok   F6: with that run-index row duplicated, --runner-count 1 still passes
+ok   F6: run-index rows whose seq is not an integer are ignored, not a crash (count still 1)
+ok   F7: --out <parent of EV> --name <basename of EV> (an existing directory) is refused cleanly
+ok   F7: no <name>.tmp.<pid> or <name>.lock.guard was left in the parent directory
+ok   F7: the evidence directory tree is unchanged
+ok   F7: --name that is an existing directory inside --out is refused (out_is_directory)
+ok   F7: nothing else was created in --out
+ok   F7: the seq-map path being an existing directory is refused too
+ok   F7: atomic_write onto a directory raises OSError and removes its tmp file
+ok   F7: an unwritable --out is a named refusal (out_unwritable), not a traceback
+ok   F7: a plain --name into a fresh --out still works
+ok   hermetic: no call reached the host entry
+checks=57 failures=0
+rc=0
+## run 1 test_evrec_r6.sh
+ok   R6-2: still redacted: kv: credential word + 128 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 128 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<128 chars>=V
+ok   R6-2: still redacted: flag head: --<128 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><128 chars> V
+ok   R6-2: still redacted: JSON double quotes, 128-char tail
+ok   R6-2: still redacted: JSON single quotes, 128-char tail
+ok   R6-2: still redacted: JSON double quotes, 128-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><128 chars>=V
+ok   R6-2: still redacted: argv element --<word><128 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 128-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 128-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 129 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 129 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<129 chars>=V
+ok   R6-2: still redacted: flag head: --<129 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><129 chars> V
+ok   R6-2: still redacted: JSON double quotes, 129-char tail
+ok   R6-2: still redacted: JSON single quotes, 129-char tail
+ok   R6-2: still redacted: JSON double quotes, 129-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><129 chars>=V
+ok   R6-2: still redacted: argv element --<word><129 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 129-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 129-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 5000 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 5000 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<5000 chars>=V
+ok   R6-2: still redacted: flag head: --<5000 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><5000 chars> V
+ok   R6-2: still redacted: JSON double quotes, 5000-char tail
+ok   R6-2: still redacted: JSON single quotes, 5000-char tail
+ok   R6-2: still redacted: JSON double quotes, 5000-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><5000 chars>=V
+ok   R6-2: still redacted: argv element --<word><5000 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 5000-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 5000-char head, value in the next element
+ok   R6-2: negative control, not redacted: a 5000-char name with no credential word, then =V
+ok   R6-2: negative control, not redacted: a credential word followed by a value shorter than 6
+ok   R6-2: negative control, not redacted: a credential word in prose with no separator
+ok   R6-2: negative control, not redacted: a flag whose value starts with a dash
+ok   R6-2: negative control, not redacted: a 5000-char dashed name with no credential word
+ok   R6-2: end to end: a 5000-char-tail credential printed by a command is in no ledger line and no blob
+ok   R6-1: redact_bytes on '-eyJ' repeated (100000 bytes) returns in under 10 s (0.24 s)
+ok   R6-1: redact_bytes on a run of dashes (100000 bytes) returns in under 10 s (0.23 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (200000 bytes) returns in under 10 s (0.34 s)
+ok   R6-1: redact_bytes on a run of dashes (200000 bytes) returns in under 10 s (0.34 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a run of dashes (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on 'eyJ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJ-' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJaaaaaaaaa.bbbbbbbbb.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.bbbbbbbbb' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a run of letters (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of x "a-" (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of x "_." (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-token' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'password' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '--password ' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on 'token:' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a double quote then 'token' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a single quote then 'secret' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on '"token":"' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'api-key' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: a bare JWT
+ok   R6-1: a JWT after a dash
+ok   R6-1: a JWT after dashes after a long dash run
+ok   R6-1: a JWT after a dash inside a name run
+ok   R6-1: a JWT at the start
+ok   R6-1: a too-short three-part token is not touched (negative control)
+ok   R6-4: a directory operand holding a non-UTF-8 file name records (no traceback)
+ok   R6-4: two different non-UTF-8 file names give different test_fingerprints
+ok   R6-4: a directory operand holding a file that cannot be read is refused on a RED (operand_unreadable, 69)
+ok   R6-4: the same operand on a PROBE is skipped, not a traceback
+ok   R6-4: the refused RED stored nothing (only the PROBE line)
+ok   R6-4: a directory operand holding an unlistable subdirectory is refused on a RED (operand_unreadable, 69)
+ok   R6-4: a FIFO inside a directory operand is skipped, never opened (no hang)
+ok   R6-4: a target directory holding a non-UTF-8 file name records (no traceback)
+ok   R6-5: a directory operand with more entries than the cap (empty subdirectories count) is refused on a RED
+ok   R6-5: exactly N=3 files with EVREC_OPERAND_DIR_MAX=3 is accepted
+ok   R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused
+ok   R6-5: a directory operand holding more bytes than EVREC_OPERAND_DIR_BYTES_MAX is refused on a RED
+ok   R6-5: the same directory under the byte cap is accepted
+ok   R6-5: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   R6-5: a directory operand holding a 4 GiB file is refused by the DEFAULT byte cap
+ok   R6-5: the 4 GiB refusal needs no hashing (0 s, under 10 s)
+ok   R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: a valid EVREC_OPERAND_DIR_MAX still records
+ok   R6-6: RED {a.sh pass, t.sh fail} and GREEN {t.sh pass, z.sh fail} get DIFFERENT directory fingerprints (relative names are hashed)
+ok   R6-6: RED through a TWO-level symlink chain to bash with -c is refused (interpreter_without_test_sources)
+ok   R6-6: a MUTATION record over the directory cap is refused (operand_directory_too_large)
+ok   R6-6: _is_holder({run_id:''}) with EVREC_TURN_RUN_ID set empty is False (second layer pinned)
+ok   R6-7: evcore.py holds no dead _NAMEMAX constant
+ok   hermetic: no call reached the host entry
+checks=102 failures=0
+rc=0
+## run 1 test_evrec_r7.sh
+tools/evidence/tests/test_evrec_r7.sh: line 57: --: command not found
+tools/evidence/tests/test_evrec_r7.sh: line 57: _-: command not found
+ok   W7-1: after ESC[1m (bold): --password<space>V
+ok   W7-1: after ESC[1m (bold): --password<TAB>V
+ok   W7-1: after ESC[1m (bold): --token<space>V
+ok   W7-1: after ESC[1m (bold): --token<TAB>V
+ok   W7-1: after ESC[1m (bold): --api-key<space>V
+ok   W7-1: after ESC[1m (bold): --api-key<TAB>V
+ok   W7-1: after ESC[1m (bold): --secret<space>V
+ok   W7-1: after ESC[1m (bold): --secret<TAB>V
+ok   W7-1: after ESC[33m: --password<space>V
+ok   W7-1: after ESC[33m: --password<TAB>V
+ok   W7-1: after ESC[33m: --token<space>V
+ok   W7-1: after ESC[33m: --token<TAB>V
+ok   W7-1: after ESC[33m: --api-key<space>V
+ok   W7-1: after ESC[33m: --api-key<TAB>V
+ok   W7-1: after ESC[33m: --secret<space>V
+ok   W7-1: after ESC[33m: --secret<TAB>V
+ok   W7-1: after ESC[0m: --password<space>V
+ok   W7-1: after ESC[0m: --password<TAB>V
+ok   W7-1: after ESC[0m: --token<space>V
+ok   W7-1: after ESC[0m: --token<TAB>V
+ok   W7-1: after ESC[0m: --api-key<space>V
+ok   W7-1: after ESC[0m: --api-key<TAB>V
+ok   W7-1: after ESC[0m: --secret<space>V
+ok   W7-1: after ESC[0m: --secret<TAB>V
+ok   W7-1: after ESC[1;31m: --password<space>V
+ok   W7-1: after ESC[1;31m: --password<TAB>V
+ok   W7-1: after ESC[1;31m: --token<space>V
+ok   W7-1: after ESC[1;31m: --token<TAB>V
+ok   W7-1: after ESC[1;31m: --api-key<space>V
+ok   W7-1: after ESC[1;31m: --api-key<TAB>V
+ok   W7-1: after ESC[1;31m: --secret<space>V
+ok   W7-1: after ESC[1;31m: --secret<TAB>V
+ok   W7-1: after ESC[m: --password<space>V
+ok   W7-1: after ESC[m: --password<TAB>V
+ok   W7-1: after ESC[m: --token<space>V
+ok   W7-1: after ESC[m: --token<TAB>V
+ok   W7-1: after ESC[m: --api-key<space>V
+ok   W7-1: after ESC[m: --api-key<TAB>V
+ok   W7-1: after ESC[m: --secret<space>V
+ok   W7-1: after ESC[m: --secret<TAB>V
+ok   W7-1: after ESC[38;5;208m: --password<space>V
+ok   W7-1: after ESC[38;5;208m: --password<TAB>V
+ok   W7-1: after ESC[38;5;208m: --token<space>V
+ok   W7-1: after ESC[38;5;208m: --token<TAB>V
+ok   W7-1: after ESC[38;5;208m: --api-key<space>V
+ok   W7-1: after ESC[38;5;208m: --api-key<TAB>V
+ok   W7-1: after ESC[38;5;208m: --secret<space>V
+ok   W7-1: after ESC[38;5;208m: --secret<TAB>V
+ok   W7-1: after an alphanumeric char: --password<space>V
+ok   W7-1: after an alphanumeric char: --password<TAB>V
+ok   W7-1: after an alphanumeric char: --token<space>V
+ok   W7-1: after an alphanumeric char: --token<TAB>V
+ok   W7-1: after an alphanumeric char: --api-key<space>V
+ok   W7-1: after an alphanumeric char: --api-key<TAB>V
+ok   W7-1: after an alphanumeric char: --secret<space>V
+ok   W7-1: after an alphanumeric char: --secret<TAB>V
+ok   W7-1: after letters and digits: --password<space>V
+ok   W7-1: after letters and digits: --password<TAB>V
+ok   W7-1: after letters and digits: --token<space>V
+ok   W7-1: after letters and digits: --token<TAB>V
+ok   W7-1: after letters and digits: --api-key<space>V
+ok   W7-1: after letters and digits: --api-key<TAB>V
+ok   W7-1: after letters and digits: --secret<space>V
+ok   W7-1: after letters and digits: --secret<TAB>V
+ok   W7-1: after a dash: --password<space>V
+ok   W7-1: after a dash: --password<TAB>V
+ok   W7-1: after a dash: --token<space>V
+ok   W7-1: after a dash: --token<TAB>V
+ok   W7-1: after a dash: --api-key<space>V
+ok   W7-1: after a dash: --api-key<TAB>V
+ok   W7-1: after a dash: --secret<space>V
+ok   W7-1: after a dash: --secret<TAB>V
+ok   W7-1: after an underscore: --password<space>V
+ok   W7-1: after an underscore: --password<TAB>V
+ok   W7-1: after an underscore: --token<space>V
+ok   W7-1: after an underscore: --token<TAB>V
+ok   W7-1: after an underscore: --api-key<space>V
+ok   W7-1: after an underscore: --api-key<TAB>V
+ok   W7-1: after an underscore: --secret<space>V
+ok   W7-1: after an underscore: --secret<TAB>V
+ok   W7-1: after a long name: --password<space>V
+ok   W7-1: after a long name: --password<TAB>V
+ok   W7-1: after a long name: --token<space>V
+ok   W7-1: after a long name: --token<TAB>V
+ok   W7-1: after a long name: --api-key<space>V
+ok   W7-1: after a long name: --api-key<TAB>V
+ok   W7-1: after a long name: --secret<space>V
+ok   W7-1: after a long name: --secret<TAB>V
+ok   W7-1: single-dash flag, 128-char head
+ok   W7-1: single-dash flag, 128-char tail
+ok   W7-1: single-dash flag, 129-char head
+ok   W7-1: single-dash flag, 129-char tail
+ok   W7-1: single-dash flag, 5000-char head
+ok   W7-1: single-dash flag, 5000-char tail
+ok   W7-1: a_-password V
+ok   W7-1: x--password V (dash run before the flag)
+ok   W7-1: --password V alone
+ok   W7-1: -password V (single dash at the start)
+ok   W7-1: negative control, not redacted: reset-password link (a single dash after a letter, prose)
+ok   W7-1: negative control, not redacted: a flag with no credential word after a dash prefix
+ok   W7-1: negative control, not redacted: a credential flag whose value starts with a dash
+ok   W7-1: negative control, not redacted: ESC[1m then a flag with no credential word
+ok   W7-1: redact_bytes on 'x--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '_-' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (100000 bytes) returns in under 10 s (0.21 s)
+ok   W7-1: redact_bytes on '--' repeated (100000 bytes) returns in under 10 s (0.23 s)
+ok   W7-1: redact_bytes on 'x--' repeated (200000 bytes) returns in under 10 s (0.34 s)
+ok   W7-1: redact_bytes on '_-' repeated (200000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (200000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--' repeated (200000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'x--' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on '_-' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--pas' repeated (a credential-word prefix) (400000 bytes) returns in under 10 s (0.44 s)
+ok   W7-1: redact_bytes on 'x--passwor' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m--password ' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'a--password ' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'x--token' repeated, no separator (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '-a' repeated after a first '--' (400000 bytes) returns in under 10 s (0.44 s)
+ok   W7-1: redact_bytes on 'x-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on '--a-' repeated, then 'token ' (400000 bytes) returns in under 10 s (0.42 s)
+ok   W7-1: end to end: an ANSI-coloured --password value is in no ledger line and no blob, redacted=true, verify exits 0
+ok   W7-2: a directory operand holding a file that reports st_size 0 but yields more bytes than the cap is refused on a RED
+ok   W7-2: the same directory under the byte cap is accepted
+ok   W7-2: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   W7-2: two size-0 files that each fit under the cap but together exceed it are refused (the read-time count is cumulative)
+ok   W7-2: one such file under the same cap is accepted
+ok   W7-2: a 5000-byte file with a budget of 1000 raises too_large while reading
+ok   W7-2: a budget equal to the size hashes the file
+ok   W7-2: a budget one byte under the size raises too_large
+ok   W7-5: three 600-byte files with a 1000-byte cap (each under the cap, the sum over it) are refused on a RED
+ok   W7-5: a directory whose total is under the 1000-byte cap is accepted
+ok   W7-2: a 4 GiB mode-000 file in a directory operand is refused as too large by the st_size fast path (before any open)
+ok   W7-5: three mode-000 600-byte files with a 1000-byte cap are refused as too large by the CUMULATIVE st_size count (before any open)
+ok   W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte cap on a RED (operand_file_too_large)
+ok   W7-3: the same file through --input=FILE is refused too
+ok   W7-3: both refusals together took 0 s (under 10 s, the file was not hashed)
+ok   W7-3: the same plain operand on a PROBE is skipped, not refused
+ok   W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=1000 is refused on a GREEN
+ok   W7-3: a small plain operand under the cap still records on a RED
+ok   W7-3: a plain procfs operand (st_size 0) over the cap is refused by the read-time count
+ok   W7-4: a mode-000 plain file operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same operand on a PROBE is skipped
+ok   W7-4: a mode-000 file inside a directory operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: an execute-only directory operand (the runner can run t.sh by name, evrec cannot list it) is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same execute-only directory on a GREEN is refused too
+ok   W7-4: the execute-only directory on a PROBE is skipped
+ok   W7-4: a TARGET directory with an unlistable sub-directory is refused (target_unreadable, 77), not fingerprinted without it
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_MAX set to the empty string is the default (records)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty string is the default (records)
+ok   W7-10: a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a regular file is still hashed (the bytes of its target)
+ok   W7-10: a directory whose entry became a FIFO between the two passes is refused as unreadable, not blocked on
+ok   W7-5: a spaced JSON value, double quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: negative control: a long credential-word name with no value is untouched
+ok   W7-6: a bare Bearer token, X-Api-Auth header
+ok   W7-6: a bare Bearer token, prose
+ok   W7-6: a bare Bearer token, a tab separator
+ok   W7-6: a mutant that compiles but cannot be imported is INVALID (got INVALID)
+ok   W7-6: an importable mutant passes the --check stage (got CAUGHT)
+ok   hermetic: no call reached the host entry
+checks=202 failures=0
+rc=0
+## run 1 test_evrec_golden.sh
+ok   canon: sorted keys, compact separators, non-ASCII kept as UTF-8 bytes
+ok   canon: quote and backslash escaped as in jq
+ok   entry_hash golden vector 1 (genesis prev, non-ASCII cwd, exit_status 3): 413af748bd2c
+ok   entry_hash golden vector 2 (prev = vector 1): 7e7f041978f6
+ok   entry_hash covers field exit_status (changing it changes the hash)
+ok   entry_hash covers field verdict (changing it changes the hash)
+ok   entry_hash covers field item (changing it changes the hash)
+ok   entry_hash covers field cwd (changing it changes the hash)
+ok   entry_hash covers field argv (changing it changes the hash)
+ok   entry_hash covers field started_at (changing it changes the hash)
+ok   entry_hash covers field duration_ms (changing it changes the hash)
+ok   entry_hash covers field stdout_sha256 (changing it changes the hash)
+ok   entry_hash covers field stderr_sha256 (changing it changes the hash)
+ok   entry_hash covers field target_fingerprint (changing it changes the hash)
+ok   entry_hash covers field target_ref (changing it changes the hash)
+ok   entry_hash covers field seq (changing it changes the hash)
+ok   entry_hash covers field prev_hash (changing it changes the hash)
+ok   entry_hash covers field iteration (changing it changes the hash)
+ok   entry_hash covers field polarity (changing it changes the hash)
+ok   entry_hash covers field target_class (changing it changes the hash)
+ok   entry_hash is computed without the entry_hash field itself
+ok   entry_hash is not the hash of the canonical body alone (prev_hash is a hashed prefix)
+ok   entry_hash is sha256(prev_hash ASCII || canonical body) exactly (re-derived here)
+ok   redaction: partially overlapping secrets leave no fragment of either
+ok   redaction: a secret that is a prefix of another (any value order) leaves no suffix
+ok   redaction: the same with the values in the other order
+ok   redaction: a single named secret keeps the [REDACTED:NAME] marker
+ok   redaction: clean bytes are returned unchanged with no hit
+ok   redaction: default pattern bearer hit
+ok   redaction: default pattern kv password hit
+ok   redaction: default pattern url userinfo hit
+ok   redaction: default pattern pem hit
+ok   stale: live pid with its recorded cmdline is NOT stale
+ok   stale: live pid with a different recorded cmdline (pid reuse) IS stale
+ok   stale: live pid whose /proc cmdline is unreadable is NOT stale (never reaped on an unreadable identity)
+ok   stale: a dead pid IS stale
+ok   stale: unreadable holder identity {'pid': 'x', 'cmdline': 'y'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 1, 'cmdline': 'init'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 0, 'cmdline': 'z'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 4242, 'cmdline': 7} is NOT stale
+ok   stale: unreadable holder identity {} is NOT stale
+ok   lock.release does not delete a lock that another pid now holds (X5)
+ok   lock.release deletes the caller's own lock
+ok   X18: a re-chained record that ev/1 refuses stops rerecord (record_invalid)
+ok   portable_schema: the relative $id 'ev/1' becomes an absolute URN
+ok   portable_schema: nothing else of the contract changes and the input is not modified
+ok   portable_schema: an absolute $id is left as it is
+ok   portable_schema: a schema without $id is left as it is
+ok   W3-1: a holder that answers EPERM (alive, other uid) with its recorded cmdline is NOT stale
+ok   W3-1: a holder that answers EPERM and whose cmdline cannot be read is NOT stale
+ok   W3-1: a holder that answers EPERM whose live cmdline differs (pid reuse) IS stale
+ok   W3-6: the lock records the holder's own pid
+ok   W3-6: the lock records the holder's real, non-empty cmdline (the 11.4.180 identity)
+ok   W3-6: a second reader with the same /proc does NOT find the live lock stale
+ok   W3-6: a lock taken while /proc was unreadable records NO cmdline (never an empty string)
+ok   W3-6: and a reader with a readable /proc does not reap that live holder
+ok   W3-6: but a holder with an unreadable-identity marker whose pid is dead IS stale
+ok   redaction r4: json password is redacted with no fragment left
+ok   redaction r4: json spaced api_key is redacted with no fragment left
+ok   redaction r4: json single quotes is redacted with no fragment left
+ok   redaction r4: json value with a space is redacted with no fragment left
+ok   redaction r4: flag pair is redacted with no fragment left
+ok   redaction r4: basic is redacted with no fragment left
+ok   redaction r4: cookie is redacted with no fragment left
+ok   redaction r4: set-cookie is redacted with no fragment left
+ok   redaction r4: jwt is redacted with no fragment left
+ok   redaction r4: slack is redacted with no fragment left
+ok   redaction r4: stripe is redacted with no fragment left
+ok   redaction r4: benign json is left unchanged
+ok   redaction r4: prose with basic is left unchanged
+ok   redaction r4: flag without credential name is left unchanged
+ok   redact_argv: the value after a credential flag is redacted and the flag name kept
+ok   m4: verify without a readable schema exits 3 (UNVERIFIED), not 67
+checks=73 failures=0
+rc=0
+## run 1 test_evrec_hermetic.sh
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=66 failures=0)
+ok   hermetic: test_evrec_more.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=24 failures=0)
+ok   hermetic: test_evrec_r3.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=140 failures=0)
+ok   hermetic: test_evrec_golden.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=73 failures=0)
+ok   hermetic: the stand-in for ~/.local/bin/cpa-host was called 0 times
+ok   hermetic: nothing was written to the hostile caller-supplied store paths
+checks=6 failures=0
+rc=0
+## run 2 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+ok   hermetic: no call reached the host entry
+checks=24 failures=0
+rc=0
+## run 2 test_evrec_r3.sh
+ok   I1: live holder with unreadable /proc cmdline is not reaped (lock_held)
+ok   I1: that holder process untouched
+ok   I1: no ledger written under the unreadable-cmdline holder
+ok   I1: 3 writers x 6 appends with unreadable /proc: 18 entries, no duplicate seq
+ok   I1: that ledger verifies
+ok   I1: live pid with a different recorded cmdline (pid reuse) is reaped, append succeeds
+ok   I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":1,"cmdline":"init"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":4242,"cmdline":7} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity not json at all is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity ["list"] is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I2: grant appearing DURING the command: refused after the run (76, commit_turn_held, where=post_command)
+ok   I2: the command did run once before the grant appeared (stated in the refusal, not hidden)
+ok   I2: no ledger and no blob written under the foreign grant
+ok   I2: recorder reached the stall point after the command
+ok   I2: grant appearing before the lock: refused inside the lock (where=in_lock)
+ok   I2: nothing written after the in-lock refusal
+ok   I2: the reaper was never called (post-command and in-lock checks do not reap)
+ok   C8: a held grant and a refusing host entry: refused before the command runs (commit_turn_held, where=pre_run)
+ok   C8: the command was not run under the held grant
+ok   I3: verify with a positional file is refused (usage_error)
+ok   I3: verify --bogus is refused (usage_error)
+ok   I3: verify --ledger without a value is refused (usage_error)
+ok   I3: verify --ledger twice is refused (usage_error)
+ok   I3: verify --ledger names the file it read and fails the tampered one although EV_LEDGER is pristine
+ok   I3: verify names the default ledger it read
+ok   I4: forged stdout blob: refused (blob_mismatch, exit 1)
+ok   I4: blob restored verifies
+ok   I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK
+ok   I4: re-chained entry without argv is refused by verify (schema_invalid)
+ok   I4: re-chained entry with exit_status 0 and verdict fail is refused (schema_invalid)
+ok   I4: EV_SCHEMA={} does not weaken verify
+ok   I4: under PYTHONOPTIMIZE=1 the refusal is the same (no assert-based checks)
+ok   I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_invalid)
+ok   I8: a BASELINE entry with the unresolved-fingerprint sentinel is refused by verify (unresolved_fingerprint)
+ok   X12: a re-chained entry without the schema key is an undecodable entry (chain_failure)
+ok   I4: duplicate key in a line is refused (non_canonical_line)
+ok   I4: a hash-valid line that is not byte-canonical (spaced separators) is refused (non_canonical_line)
+ok   I4: anchor present and not compared: UNVERIFIED exit 3
+ok   I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceback or a chain failure
+ok   I5: golden-good: a ledger hashed independently with jq|sha256sum (non-ASCII cwd, exit_status 3) verifies
+ok   I5: construction 'noprefix' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'noprefix' named as bad hash at line 1
+ok   I5: construction 'ascii' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'ascii' named as bad hash at line 1
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+ok   I5: flipping exit_status alone (hash not recomputed) is a bad hash
+ok   I6: evrec run lists a blob above the bound as owed_relocation (bytes and bound named)
+ok   I6: verify lists the same large blob
+ok   I6: a small blob is not listed
+ok   I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before the command runs
+ok   I6: the command was not run and nothing was written
+ok   I6: nothing is listed as owed in the default environment (no leaked EV_BLOB_BOUND)
+ok   I6: the default blob bound is the check_classes.tsv 'evidence large_file' value (1024000); an empty EV_BLOB_BOUND counts as unset
+ok   I6: rerecord --out <shared ledger dir> is refused (out_is_shared_store)
+ok   I6: the shared ledger is byte-unchanged after the refused --out run
+ok   I6: rerecord --out <shared dir> --name <other file> is refused too (the directory is the shared store)
+ok   I6: no stray output file in the shared directory
+ok   I6: rerecord --out <elsewhere> succeeds
+ok   I6: the shared ledger is byte-unchanged after a legitimate rerecord (store_not_rerecorded shape)
+ok   I6: rerecord --out writing over one of its own input files is refused (out_is_shared_store)
+ok   I6: rerecord takes the lock of the output ledger (a live holder: lock_held)
+ok   I6: seq map content is exactly [{old,new,digest=new entry_hash}]
+ok   I6: seq map of a diverged rerecord maps old 2,3 to new 3,4 with the new entry hashes
+ok   I7: a secret that is a prefix of another leaves no fragment of either
+ok   I7: partially overlapping secrets leave no fragment
+ok   I7: a named secret printed only on stdout or only on stderr is absent from blobs and ledger
+ok   I7: redacted: true is set for a stdout-only and for a stderr-only hit (argv carries no secret)
+ok   I7: Bearer token redacted by the default pattern scan (no variable named)
+ok   I7: entry records redacted: true for a default-pattern hit
+ok   I7: AWS key id, password= value and URL userinfo password redacted
+ok   I7: a GitHub token is redacted
+ok   I7: a secret in the working directory name is redacted from the ledger
+ok   I7: a PEM private key block is redacted
+ok   I7: a secret in target_ref is redacted from the ledger and redacted: true is set
+ok   I7: a clean entry carries no redacted flag (no false positive)
+ok   I8: BASELINE on an unresolvable target is refused (target_unreadable)
+ok   I8: BASELINE wrote nothing
+ok   I8: PREFLIGHT on an unresolvable target is refused (target_unreadable)
+ok   I8: PREFLIGHT wrote nothing
+ok   I8: NEEDLE on an unresolvable target is refused (target_unreadable)
+ok   I8: NEEDLE wrote nothing
+ok   I8: ANALYZER_FIXTURE on an unresolvable target is refused (target_unreadable)
+ok   I8: ANALYZER_FIXTURE wrote nothing
+ok   I8: a PROBE on an unresolved target carries the all-zero sentinel, not a digest of the ref
+ok   I9: RED with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: GREEN with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: MUTATION with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: declared sources make the test_fingerprint differ for different test bytes and agree for the same ones
+ok   I9: nothing written for the undeclared interpreter RED
+ok   I9: a script executed directly is its own test bytes: no source declaration needed
+ok   I9: PROBE with an interpreter and no sources is allowed (no verdict claim)
+ok   I9: EV_TEST_SOURCES counts as a declaration
+ok   I10: --oracle without --oracle-independent is refused (oracle_independence_undeclared) before the command runs
+ok   I10: the command did not run and nothing was written
+ok   I10: --oracle-independent without --oracle is refused (usage_error)
+ok   I10: the declared oracle is recorded as given
+ok   I11: RED without oracle (schema refusal) before the run
+ok   I11: RED without oracle (schema refusal) before the run: command not run, nothing stored
+ok   I11: invalid --mutation-json before the run
+ok   I11: invalid --mutation-json before the run: command not run, nothing stored
+ok   I11: non-UTF-8 argv byte before the run
+ok   I11: non-UTF-8 argv byte before the run: command not run, nothing stored
+ok   I11: missing --test-source file before the run
+ok   I11: missing --test-source file before the run: command not run, nothing stored
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11)
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11): command not run, nothing stored
+ok   I11: unknown flag before the run
+ok   I11: unknown flag before the run: command not run, nothing stored
+ok   I11: --pre-release without --test-state-go (schema) before the run
+ok   I11: --pre-release without --test-state-go (schema) before the run: command not run, nothing stored
+ok   I11: non-UTF-8 cwd is refused before the run (usage_error)
+ok   I11: non-UTF-8 cwd: command not run
+ok   I11: schema_unavailable is refused before the command runs (67)
+ok   I11: schema_unavailable: command not run
+ok   I11: GREEN that fails is refused after the run (record_invalid) and leaves no blob
+ok   I11: no orphan blob after the post-run refusal
+ok   X19: golden-good check-record accepts a valid unchained record ('record valid')
+ok   minor5: check-record asserts the date-time format (record_invalid)
+ok   X16: check-record refusal is the named record_invalid
+ok   X20: --pre-release, --test-state-go, --closes-item, --mutation-json, --container-image-digest, --precondition-provenance, --evidence-class all land in the entry
+ok   X7: a non-executable command is exit 126, verdict error (not fail)
+ok   X8: directory fingerprint equals the independently computed sha256 over sorted 'relpath NUL filehash' lines
+ok   X8: changing a file's content changes the directory fingerprint
+ok   X11: the flake ledger is measured against the bound and named by ledger_raise_owed
+ok   X6: a self-consistent last entry with seq 7 on line 1 refuses the append (ledger_inconsistent)
+ok   X13: rerecord of sides with no common prefix names no_common_prefix
+ok   rerecord of a side verify rejects names side_unverifiable
+ok   X14: remap-refs with an uncovered reference names map_incomplete
+ok   X14: nothing was rewritten on the map_incomplete refusal
+ok   X15: a live lock holder yields the named lock_held (75)
+ok   usage: evrec run with a non-numeric ITER names usage_error
+ok   usage: unknown subcommand names usage_error
+ok   reconcile: runner count mismatch names count_mismatch
+ok   hermetic: no call reached the host entry
+checks=140 failures=0
+rc=0
+## run 2 test_evrec_r4.sh
+ok   N1: --name ../flake_ledger.jsonl (escape from --out) is refused
+ok   N1: --name <absolute path of a shared file> is refused
+ok   N1: --name 'a/b' is not a plain token and is refused
+ok   N1: --name '.' is not a plain token and is refused
+ok   N1: --name '..' is not a plain token and is refused
+ok   N1: --name '' is not a plain token and is refused
+ok   N1: --name '-x' is not a plain token and is refused
+ok   N1: --name '.hidden' is not a plain token and is refused
+ok   N1: --name 'ledger-seq-map.json' is not a plain token and is refused
+ok   N1: --name 'a b' is not a plain token and is refused
+ok   N1: --name 'x/../y' is not a plain token and is refused
+ok   N1: --out <subdirectory of the evidence dir> is refused (any depth)
+ok   N1: --out <blob store> is refused
+ok   N1: --out <subdirectory of the blob store> is refused
+ok   N1: --out through a symlink into the evidence dir is refused
+ok   N1: --out inside a relocated blob store (EV_BLOBS elsewhere) is refused
+ok   N1: the shared flake ledger, deferrals and ledger are byte-unchanged after all refused attempts
+ok   N1: no file was created anywhere in the evidence directory by the refused attempts
+ok   N1: --out inside the evidence dir is refused even when the ledger lives in another directory
+ok   N1: a plain --name into a separate --out still works
+ok   N1: that output holds remote then the local suffix
+ok   N2: JSON login body {"username":..,"password":..} on stdout
+ok   N2: JSON token {"access_token":"<jwt>"} on stdout
+ok   N2: JSON "api_key": "..." with a space after the colon
+ok   N2: JSON client_secret and refresh_token keys
+ok   N2: single-quoted key form 'password': 'x'
+ok   N2: password value containing a space inside JSON quotes
+ok   N2: stream text '--password VALUE' pair
+ok   N2: Authorization: Basic <base64> header
+ok   N2: Authorization with a lower-case header and an unknown scheme
+ok   N2: Cookie header value
+ok   N2: Set-Cookie header value
+ok   N2: a bare three-part JWT in prose
+ok   N2: x-api-key header
+ok   N2: argv pair '--password VALUE' redacts the value, keeps the flag name, sets redacted
+ok   N2: argv pairs for --token, --secret-key and the --api-key=VALUE form are redacted
+ok   N2: JSON password inside an argv element is redacted
+ok   N2: benign JSON and flags are NOT redacted (no false positive)
+ok   N3: RED through launcher 'kcov' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'podman' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'docker' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ssh' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'adb' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'pytest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bats' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'vitest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'jest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'xvfb-run' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'strace' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'uv' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'poetry' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bundle' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'rake' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'flutter' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ctest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through the project runner run_pinned.sh without a declared test source is refused
+ok   N3: GREEN through run_pinned.sh without a declared test source is refused
+ok   N3: MUTATION through run_pinned.sh without a declared test source is refused
+ok   N3: RED python3 -c without a declared test source is refused
+ok   N3: RED env bash -c without a declared test source is refused
+ok   N3: RED python3.12-style versioned interpreter without a source is refused
+ok   N3: with declared sources RED and GREEN through run_pinned.sh get different test_fingerprints
+ok   N3: test_fingerprint of an interpreter with a declared source is exactly sha256(sha256(argv0)\nsha256(source)\n); operands are not added
+ok   N3: test_fingerprint of an unlisted launcher is exactly sha256(sha256(argv0)\nsha256(file operand)\n)
+ok   N3: an unlisted launcher: RED and GREEN over different test files get different test_fingerprints (operands hashed)
+ok   N3: the same operand bytes give the same test_fingerprint again (deterministic)
+ok   N4: a failing GREEN is refused after the run (nothing stored)
+ok   N4: fixture: the ledger holds 5 entries, one foreign (the runner ran 5 commands)
+ok   N4: reconcile --run run4 --runner-count 5 is a mismatch (the foreign entry does not count, the failed GREEN left no entry)
+ok   N4: reconcile --run run4 --runner-count 4 passes (its own 4 stored entries)
+ok   N4: the token may come from EVREC_RUN_TOKEN
+ok   N4: another run's token sees 0 entries of run4
+ok   N4: unscoped reconcile on a ledger that holds tokened entries is refused
+ok   N4: a token that is not a plain token is refused
+ok   N4: reconcile with an unknown option is refused
+ok   N4: EVREC_RUN_TOKEN that is not a plain token refuses the run before the command runs
+ok   N4: a run-index row whose entry_hash does not match the ledger entry is not counted
+ok   N4: legacy: untokened runs on a ledger without tokened entries still reconcile unscoped
+ok   W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismatch, not UNVERIFIED 3
+ok   W3-7: verify --ledger beside its own blobs dir passes when intact
+ok   W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch
+ok   W3-7: verify --ledger --blobs DIR with a forged blob is FAIL 1 too
+ok   m1: verify --ledger with anchors.jsonl beside the ledger is UNVERIFIED 3 anchor_not_compared
+ok   W3-8: grant body {} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {}
+ok   W3-8: grant body {"run_id":7} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":7}
+ok   W3-8: grant body [] is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant []
+ok   W3-8: grant body "x" is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant "x"
+ok   W3-8: grant body null is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant null
+ok   W3-8: grant body {"run_id":null} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":null}
+ok   W3-5: check-record refuses started_at 2026-02-30T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-13-01T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-04-31T10:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T24:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T10:61:00Z
+ok   W3-5: a real date (2026-02-28T23:59:59Z) is accepted
+ok   m2: the executable bit survives remap-refs
+ok   m2: remap-refs through a symlink keeps the link and updates its target
+ok   m4: evrec run in a deleted cwd is usage_error 64, no traceback
+ok   hermetic: no call reached the host entry
+checks=105 failures=0
+rc=0
+## run 2 test_evrec_r5.sh
+ok   F1: redact_bytes on a run of 100000 dashes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "a-" returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "_." returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'token' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'password' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a double quote then 'token' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a single quote then 'secret' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on -token repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a long run of dashes then a flag name returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on '--' then 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'api-key' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'access_key.' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_argv on a 100000-byte credential-flag-shaped element returns in under 15 s (0.2 s)
+ok   F1: still redacted: kv after a long dash run
+ok   F1: still redacted: kv name prefix
+ok   F1: still redacted: kv name with a 100-char tail
+ok   F1: still redacted: kv after a long letter run
+ok   F1: still redacted: json double quote
+ok   F1: still redacted: flag pair after dashes
+ok   F1: still redacted: flag pair prefix flag
+ok   F1: evrec run of a command printing 100000 dashes finishes (rc=65, not a timeout)
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID set and empty is refused (commit_turn_held, 76)
+ok   F2: nothing recorded under the empty run_id grant
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID unset is refused too
+ok   F2: a real grant with EVREC_TURN_RUN_ID set and empty is refused (empty is unset)
+ok   F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) still records
+ok   F2: a whitespace-only run_id is refused
+ok   F2: the only host-entry calls were the reaper's (--exec-approved ... --reap)
+ok   F3: an unlisted launcher with --bank=FILE: RED and GREEN over different test files get different test_fingerprints
+ok   F3: the --opt=FILE fingerprint is sha256(sha256(argv0)\nsha256(the file after '=')\n)
+ok   F3: an unlisted launcher with a DIRECTORY operand: different directory contents give different test_fingerprints
+ok   F3: the same directory contents give the same test_fingerprint (deterministic)
+ok   F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED is refused (operand_directory_too_large, never silently skipped)
+ok   F3: the same oversized directory operand on a PROBE is not refused
+ok   F3: RED through a renamed symlink to bash with -c is refused (interpreter_without_test_sources)
+ok   F3: RED through a renamed symlink to python3 with -c is refused
+ok   F3: the same through PATH lookup of a renamed symlink is refused
+ok   F3: with a declared test source the renamed-symlink interpreter records
+ok   F3: a PROBE through a renamed-symlink interpreter needs no source
+ok   F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is UNVERIFIED 3 anchor_not_compared
+ok   F5: the same ledger without an anchors.jsonl beside it verifies 0
+ok   F5: an explicit EV_ANCHOR still wins over the file beside the ledger
+ok   F6: fixture: one tokened entry reconciles with --runner-count 1
+ok   F6: with that run-index row duplicated, --runner-count 2 is a count_mismatch
+ok   F6: with that run-index row duplicated, --runner-count 1 still passes
+ok   F6: run-index rows whose seq is not an integer are ignored, not a crash (count still 1)
+ok   F7: --out <parent of EV> --name <basename of EV> (an existing directory) is refused cleanly
+ok   F7: no <name>.tmp.<pid> or <name>.lock.guard was left in the parent directory
+ok   F7: the evidence directory tree is unchanged
+ok   F7: --name that is an existing directory inside --out is refused (out_is_directory)
+ok   F7: nothing else was created in --out
+ok   F7: the seq-map path being an existing directory is refused too
+ok   F7: atomic_write onto a directory raises OSError and removes its tmp file
+ok   F7: an unwritable --out is a named refusal (out_unwritable), not a traceback
+ok   F7: a plain --name into a fresh --out still works
+ok   hermetic: no call reached the host entry
+checks=57 failures=0
+rc=0
+## run 2 test_evrec_r6.sh
+ok   R6-2: still redacted: kv: credential word + 128 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 128 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<128 chars>=V
+ok   R6-2: still redacted: flag head: --<128 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><128 chars> V
+ok   R6-2: still redacted: JSON double quotes, 128-char tail
+ok   R6-2: still redacted: JSON single quotes, 128-char tail
+ok   R6-2: still redacted: JSON double quotes, 128-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><128 chars>=V
+ok   R6-2: still redacted: argv element --<word><128 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 128-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 128-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 129 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 129 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<129 chars>=V
+ok   R6-2: still redacted: flag head: --<129 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><129 chars> V
+ok   R6-2: still redacted: JSON double quotes, 129-char tail
+ok   R6-2: still redacted: JSON single quotes, 129-char tail
+ok   R6-2: still redacted: JSON double quotes, 129-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><129 chars>=V
+ok   R6-2: still redacted: argv element --<word><129 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 129-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 129-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 5000 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 5000 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<5000 chars>=V
+ok   R6-2: still redacted: flag head: --<5000 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><5000 chars> V
+ok   R6-2: still redacted: JSON double quotes, 5000-char tail
+ok   R6-2: still redacted: JSON single quotes, 5000-char tail
+ok   R6-2: still redacted: JSON double quotes, 5000-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><5000 chars>=V
+ok   R6-2: still redacted: argv element --<word><5000 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 5000-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 5000-char head, value in the next element
+ok   R6-2: negative control, not redacted: a 5000-char name with no credential word, then =V
+ok   R6-2: negative control, not redacted: a credential word followed by a value shorter than 6
+ok   R6-2: negative control, not redacted: a credential word in prose with no separator
+ok   R6-2: negative control, not redacted: a flag whose value starts with a dash
+ok   R6-2: negative control, not redacted: a 5000-char dashed name with no credential word
+ok   R6-2: end to end: a 5000-char-tail credential printed by a command is in no ledger line and no blob
+ok   R6-1: redact_bytes on '-eyJ' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of dashes (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJ' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'eyJ-' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on 'eyJaaaaaaaaa.bbbbbbbbb.' repeated (400000 bytes) returns in under 10 s (0.42 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.bbbbbbbbb' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a run of letters (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of x "a-" (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of x "_." (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'password' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '--password ' repeated (400000 bytes) returns in under 10 s (0.34 s)
+ok   R6-1: redact_bytes on 'token:' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a double quote then 'token' repeated (400000 bytes) returns in under 10 s (0.23 s)
+ok   R6-1: redact_bytes on a single quote then 'secret' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '"token":"' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on 'api-key' repeated (400000 bytes) returns in under 10 s (0.21 s)
+ok   R6-1: a bare JWT
+ok   R6-1: a JWT after a dash
+ok   R6-1: a JWT after dashes after a long dash run
+ok   R6-1: a JWT after a dash inside a name run
+ok   R6-1: a JWT at the start
+ok   R6-1: a too-short three-part token is not touched (negative control)
+ok   R6-4: a directory operand holding a non-UTF-8 file name records (no traceback)
+ok   R6-4: two different non-UTF-8 file names give different test_fingerprints
+ok   R6-4: a directory operand holding a file that cannot be read is refused on a RED (operand_unreadable, 69)
+ok   R6-4: the same operand on a PROBE is skipped, not a traceback
+ok   R6-4: the refused RED stored nothing (only the PROBE line)
+ok   R6-4: a directory operand holding an unlistable subdirectory is refused on a RED (operand_unreadable, 69)
+ok   R6-4: a FIFO inside a directory operand is skipped, never opened (no hang)
+ok   R6-4: a target directory holding a non-UTF-8 file name records (no traceback)
+ok   R6-5: a directory operand with more entries than the cap (empty subdirectories count) is refused on a RED
+ok   R6-5: exactly N=3 files with EVREC_OPERAND_DIR_MAX=3 is accepted
+ok   R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused
+ok   R6-5: a directory operand holding more bytes than EVREC_OPERAND_DIR_BYTES_MAX is refused on a RED
+ok   R6-5: the same directory under the byte cap is accepted
+ok   R6-5: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   R6-5: a directory operand holding a 4 GiB file is refused by the DEFAULT byte cap
+ok   R6-5: the 4 GiB refusal needs no hashing (0 s, under 10 s)
+ok   R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: a valid EVREC_OPERAND_DIR_MAX still records
+ok   R6-6: RED {a.sh pass, t.sh fail} and GREEN {t.sh pass, z.sh fail} get DIFFERENT directory fingerprints (relative names are hashed)
+ok   R6-6: RED through a TWO-level symlink chain to bash with -c is refused (interpreter_without_test_sources)
+ok   R6-6: a MUTATION record over the directory cap is refused (operand_directory_too_large)
+ok   R6-6: _is_holder({run_id:''}) with EVREC_TURN_RUN_ID set empty is False (second layer pinned)
+ok   R6-7: evcore.py holds no dead _NAMEMAX constant
+ok   hermetic: no call reached the host entry
+checks=102 failures=0
+rc=0
+## run 2 test_evrec_r7.sh
+tools/evidence/tests/test_evrec_r7.sh: line 57: --: command not found
+tools/evidence/tests/test_evrec_r7.sh: line 57: _-: command not found
+ok   W7-1: after ESC[1m (bold): --password<space>V
+ok   W7-1: after ESC[1m (bold): --password<TAB>V
+ok   W7-1: after ESC[1m (bold): --token<space>V
+ok   W7-1: after ESC[1m (bold): --token<TAB>V
+ok   W7-1: after ESC[1m (bold): --api-key<space>V
+ok   W7-1: after ESC[1m (bold): --api-key<TAB>V
+ok   W7-1: after ESC[1m (bold): --secret<space>V
+ok   W7-1: after ESC[1m (bold): --secret<TAB>V
+ok   W7-1: after ESC[33m: --password<space>V
+ok   W7-1: after ESC[33m: --password<TAB>V
+ok   W7-1: after ESC[33m: --token<space>V
+ok   W7-1: after ESC[33m: --token<TAB>V
+ok   W7-1: after ESC[33m: --api-key<space>V
+ok   W7-1: after ESC[33m: --api-key<TAB>V
+ok   W7-1: after ESC[33m: --secret<space>V
+ok   W7-1: after ESC[33m: --secret<TAB>V
+ok   W7-1: after ESC[0m: --password<space>V
+ok   W7-1: after ESC[0m: --password<TAB>V
+ok   W7-1: after ESC[0m: --token<space>V
+ok   W7-1: after ESC[0m: --token<TAB>V
+ok   W7-1: after ESC[0m: --api-key<space>V
+ok   W7-1: after ESC[0m: --api-key<TAB>V
+ok   W7-1: after ESC[0m: --secret<space>V
+ok   W7-1: after ESC[0m: --secret<TAB>V
+ok   W7-1: after ESC[1;31m: --password<space>V
+ok   W7-1: after ESC[1;31m: --password<TAB>V
+ok   W7-1: after ESC[1;31m: --token<space>V
+ok   W7-1: after ESC[1;31m: --token<TAB>V
+ok   W7-1: after ESC[1;31m: --api-key<space>V
+ok   W7-1: after ESC[1;31m: --api-key<TAB>V
+ok   W7-1: after ESC[1;31m: --secret<space>V
+ok   W7-1: after ESC[1;31m: --secret<TAB>V
+ok   W7-1: after ESC[m: --password<space>V
+ok   W7-1: after ESC[m: --password<TAB>V
+ok   W7-1: after ESC[m: --token<space>V
+ok   W7-1: after ESC[m: --token<TAB>V
+ok   W7-1: after ESC[m: --api-key<space>V
+ok   W7-1: after ESC[m: --api-key<TAB>V
+ok   W7-1: after ESC[m: --secret<space>V
+ok   W7-1: after ESC[m: --secret<TAB>V
+ok   W7-1: after ESC[38;5;208m: --password<space>V
+ok   W7-1: after ESC[38;5;208m: --password<TAB>V
+ok   W7-1: after ESC[38;5;208m: --token<space>V
+ok   W7-1: after ESC[38;5;208m: --token<TAB>V
+ok   W7-1: after ESC[38;5;208m: --api-key<space>V
+ok   W7-1: after ESC[38;5;208m: --api-key<TAB>V
+ok   W7-1: after ESC[38;5;208m: --secret<space>V
+ok   W7-1: after ESC[38;5;208m: --secret<TAB>V
+ok   W7-1: after an alphanumeric char: --password<space>V
+ok   W7-1: after an alphanumeric char: --password<TAB>V
+ok   W7-1: after an alphanumeric char: --token<space>V
+ok   W7-1: after an alphanumeric char: --token<TAB>V
+ok   W7-1: after an alphanumeric char: --api-key<space>V
+ok   W7-1: after an alphanumeric char: --api-key<TAB>V
+ok   W7-1: after an alphanumeric char: --secret<space>V
+ok   W7-1: after an alphanumeric char: --secret<TAB>V
+ok   W7-1: after letters and digits: --password<space>V
+ok   W7-1: after letters and digits: --password<TAB>V
+ok   W7-1: after letters and digits: --token<space>V
+ok   W7-1: after letters and digits: --token<TAB>V
+ok   W7-1: after letters and digits: --api-key<space>V
+ok   W7-1: after letters and digits: --api-key<TAB>V
+ok   W7-1: after letters and digits: --secret<space>V
+ok   W7-1: after letters and digits: --secret<TAB>V
+ok   W7-1: after a dash: --password<space>V
+ok   W7-1: after a dash: --password<TAB>V
+ok   W7-1: after a dash: --token<space>V
+ok   W7-1: after a dash: --token<TAB>V
+ok   W7-1: after a dash: --api-key<space>V
+ok   W7-1: after a dash: --api-key<TAB>V
+ok   W7-1: after a dash: --secret<space>V
+ok   W7-1: after a dash: --secret<TAB>V
+ok   W7-1: after an underscore: --password<space>V
+ok   W7-1: after an underscore: --password<TAB>V
+ok   W7-1: after an underscore: --token<space>V
+ok   W7-1: after an underscore: --token<TAB>V
+ok   W7-1: after an underscore: --api-key<space>V
+ok   W7-1: after an underscore: --api-key<TAB>V
+ok   W7-1: after an underscore: --secret<space>V
+ok   W7-1: after an underscore: --secret<TAB>V
+ok   W7-1: after a long name: --password<space>V
+ok   W7-1: after a long name: --password<TAB>V
+ok   W7-1: after a long name: --token<space>V
+ok   W7-1: after a long name: --token<TAB>V
+ok   W7-1: after a long name: --api-key<space>V
+ok   W7-1: after a long name: --api-key<TAB>V
+ok   W7-1: after a long name: --secret<space>V
+ok   W7-1: after a long name: --secret<TAB>V
+ok   W7-1: single-dash flag, 128-char head
+ok   W7-1: single-dash flag, 128-char tail
+ok   W7-1: single-dash flag, 129-char head
+ok   W7-1: single-dash flag, 129-char tail
+ok   W7-1: single-dash flag, 5000-char head
+ok   W7-1: single-dash flag, 5000-char tail
+ok   W7-1: a_-password V
+ok   W7-1: x--password V (dash run before the flag)
+ok   W7-1: --password V alone
+ok   W7-1: -password V (single dash at the start)
+ok   W7-1: negative control, not redacted: reset-password link (a single dash after a letter, prose)
+ok   W7-1: negative control, not redacted: a flag with no credential word after a dash prefix
+ok   W7-1: negative control, not redacted: a credential flag whose value starts with a dash
+ok   W7-1: negative control, not redacted: ESC[1m then a flag with no credential word
+ok   W7-1: redact_bytes on 'x--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '_-' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'x--' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '_-' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '--' repeated (200000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '_-' repeated (400000 bytes) returns in under 10 s (0.43 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--pas' repeated (a credential-word prefix) (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--passwor' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m--password ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'a--password ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--token' repeated, no separator (400000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '-a' repeated after a first '--' (400000 bytes) returns in under 10 s (0.42 s)
+ok   W7-1: redact_bytes on 'x-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.34 s)
+ok   W7-1: redact_bytes on 'ESC[1m' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on '--a-' repeated, then 'token ' (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: end to end: an ANSI-coloured --password value is in no ledger line and no blob, redacted=true, verify exits 0
+ok   W7-2: a directory operand holding a file that reports st_size 0 but yields more bytes than the cap is refused on a RED
+ok   W7-2: the same directory under the byte cap is accepted
+ok   W7-2: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   W7-2: two size-0 files that each fit under the cap but together exceed it are refused (the read-time count is cumulative)
+ok   W7-2: one such file under the same cap is accepted
+ok   W7-2: a 5000-byte file with a budget of 1000 raises too_large while reading
+ok   W7-2: a budget equal to the size hashes the file
+ok   W7-2: a budget one byte under the size raises too_large
+ok   W7-5: three 600-byte files with a 1000-byte cap (each under the cap, the sum over it) are refused on a RED
+ok   W7-5: a directory whose total is under the 1000-byte cap is accepted
+ok   W7-2: a 4 GiB mode-000 file in a directory operand is refused as too large by the st_size fast path (before any open)
+ok   W7-5: three mode-000 600-byte files with a 1000-byte cap are refused as too large by the CUMULATIVE st_size count (before any open)
+ok   W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte cap on a RED (operand_file_too_large)
+ok   W7-3: the same file through --input=FILE is refused too
+ok   W7-3: both refusals together took 1 s (under 10 s, the file was not hashed)
+ok   W7-3: the same plain operand on a PROBE is skipped, not refused
+ok   W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=1000 is refused on a GREEN
+ok   W7-3: a small plain operand under the cap still records on a RED
+ok   W7-3: a plain procfs operand (st_size 0) over the cap is refused by the read-time count
+ok   W7-4: a mode-000 plain file operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same operand on a PROBE is skipped
+ok   W7-4: a mode-000 file inside a directory operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: an execute-only directory operand (the runner can run t.sh by name, evrec cannot list it) is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same execute-only directory on a GREEN is refused too
+ok   W7-4: the execute-only directory on a PROBE is skipped
+ok   W7-4: a TARGET directory with an unlistable sub-directory is refused (target_unreadable, 77), not fingerprinted without it
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_MAX set to the empty string is the default (records)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty string is the default (records)
+ok   W7-10: a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a regular file is still hashed (the bytes of its target)
+ok   W7-10: a directory whose entry became a FIFO between the two passes is refused as unreadable, not blocked on
+ok   W7-5: a spaced JSON value, double quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: negative control: a long credential-word name with no value is untouched
+ok   W7-6: a bare Bearer token, X-Api-Auth header
+ok   W7-6: a bare Bearer token, prose
+ok   W7-6: a bare Bearer token, a tab separator
+ok   W7-6: a mutant that compiles but cannot be imported is INVALID (got INVALID)
+ok   W7-6: an importable mutant passes the --check stage (got CAUGHT)
+ok   hermetic: no call reached the host entry
+checks=202 failures=0
+rc=0
+## run 2 test_evrec_golden.sh
+ok   canon: sorted keys, compact separators, non-ASCII kept as UTF-8 bytes
+ok   canon: quote and backslash escaped as in jq
+ok   entry_hash golden vector 1 (genesis prev, non-ASCII cwd, exit_status 3): 413af748bd2c
+ok   entry_hash golden vector 2 (prev = vector 1): 7e7f041978f6
+ok   entry_hash covers field exit_status (changing it changes the hash)
+ok   entry_hash covers field verdict (changing it changes the hash)
+ok   entry_hash covers field item (changing it changes the hash)
+ok   entry_hash covers field cwd (changing it changes the hash)
+ok   entry_hash covers field argv (changing it changes the hash)
+ok   entry_hash covers field started_at (changing it changes the hash)
+ok   entry_hash covers field duration_ms (changing it changes the hash)
+ok   entry_hash covers field stdout_sha256 (changing it changes the hash)
+ok   entry_hash covers field stderr_sha256 (changing it changes the hash)
+ok   entry_hash covers field target_fingerprint (changing it changes the hash)
+ok   entry_hash covers field target_ref (changing it changes the hash)
+ok   entry_hash covers field seq (changing it changes the hash)
+ok   entry_hash covers field prev_hash (changing it changes the hash)
+ok   entry_hash covers field iteration (changing it changes the hash)
+ok   entry_hash covers field polarity (changing it changes the hash)
+ok   entry_hash covers field target_class (changing it changes the hash)
+ok   entry_hash is computed without the entry_hash field itself
+ok   entry_hash is not the hash of the canonical body alone (prev_hash is a hashed prefix)
+ok   entry_hash is sha256(prev_hash ASCII || canonical body) exactly (re-derived here)
+ok   redaction: partially overlapping secrets leave no fragment of either
+ok   redaction: a secret that is a prefix of another (any value order) leaves no suffix
+ok   redaction: the same with the values in the other order
+ok   redaction: a single named secret keeps the [REDACTED:NAME] marker
+ok   redaction: clean bytes are returned unchanged with no hit
+ok   redaction: default pattern bearer hit
+ok   redaction: default pattern kv password hit
+ok   redaction: default pattern url userinfo hit
+ok   redaction: default pattern pem hit
+ok   stale: live pid with its recorded cmdline is NOT stale
+ok   stale: live pid with a different recorded cmdline (pid reuse) IS stale
+ok   stale: live pid whose /proc cmdline is unreadable is NOT stale (never reaped on an unreadable identity)
+ok   stale: a dead pid IS stale
+ok   stale: unreadable holder identity {'pid': 'x', 'cmdline': 'y'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 1, 'cmdline': 'init'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 0, 'cmdline': 'z'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 4242, 'cmdline': 7} is NOT stale
+ok   stale: unreadable holder identity {} is NOT stale
+ok   lock.release does not delete a lock that another pid now holds (X5)
+ok   lock.release deletes the caller's own lock
+ok   X18: a re-chained record that ev/1 refuses stops rerecord (record_invalid)
+ok   portable_schema: the relative $id 'ev/1' becomes an absolute URN
+ok   portable_schema: nothing else of the contract changes and the input is not modified
+ok   portable_schema: an absolute $id is left as it is
+ok   portable_schema: a schema without $id is left as it is
+ok   W3-1: a holder that answers EPERM (alive, other uid) with its recorded cmdline is NOT stale
+ok   W3-1: a holder that answers EPERM and whose cmdline cannot be read is NOT stale
+ok   W3-1: a holder that answers EPERM whose live cmdline differs (pid reuse) IS stale
+ok   W3-6: the lock records the holder's own pid
+ok   W3-6: the lock records the holder's real, non-empty cmdline (the 11.4.180 identity)
+ok   W3-6: a second reader with the same /proc does NOT find the live lock stale
+ok   W3-6: a lock taken while /proc was unreadable records NO cmdline (never an empty string)
+ok   W3-6: and a reader with a readable /proc does not reap that live holder
+ok   W3-6: but a holder with an unreadable-identity marker whose pid is dead IS stale
+ok   redaction r4: json password is redacted with no fragment left
+ok   redaction r4: json spaced api_key is redacted with no fragment left
+ok   redaction r4: json single quotes is redacted with no fragment left
+ok   redaction r4: json value with a space is redacted with no fragment left
+ok   redaction r4: flag pair is redacted with no fragment left
+ok   redaction r4: basic is redacted with no fragment left
+ok   redaction r4: cookie is redacted with no fragment left
+ok   redaction r4: set-cookie is redacted with no fragment left
+ok   redaction r4: jwt is redacted with no fragment left
+ok   redaction r4: slack is redacted with no fragment left
+ok   redaction r4: stripe is redacted with no fragment left
+ok   redaction r4: benign json is left unchanged
+ok   redaction r4: prose with basic is left unchanged
+ok   redaction r4: flag without credential name is left unchanged
+ok   redact_argv: the value after a credential flag is redacted and the flag name kept
+ok   m4: verify without a readable schema exits 3 (UNVERIFIED), not 67
+checks=73 failures=0
+rc=0
+## run 2 test_evrec_hermetic.sh
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=66 failures=0)
+ok   hermetic: test_evrec_more.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=24 failures=0)
+ok   hermetic: test_evrec_r3.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=140 failures=0)
+ok   hermetic: test_evrec_golden.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=73 failures=0)
+ok   hermetic: the stand-in for ~/.local/bin/cpa-host was called 0 times
+ok   hermetic: nothing was written to the hostile caller-supplied store paths
+checks=6 failures=0
+rc=0
+## run 3 test_evrec_more.sh
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+ok   hermetic: no call reached the host entry
+checks=24 failures=0
+rc=0
+## run 3 test_evrec_r3.sh
+ok   I1: live holder with unreadable /proc cmdline is not reaped (lock_held)
+ok   I1: that holder process untouched
+ok   I1: no ledger written under the unreadable-cmdline holder
+ok   I1: 3 writers x 6 appends with unreadable /proc: 18 entries, no duplicate seq
+ok   I1: that ledger verifies
+ok   I1: live pid with a different recorded cmdline (pid reuse) is reaped, append succeeds
+ok   I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":1,"cmdline":"init"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":4242,"cmdline":7} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity not json at all is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity ["list"] is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I2: grant appearing DURING the command: refused after the run (76, commit_turn_held, where=post_command)
+ok   I2: the command did run once before the grant appeared (stated in the refusal, not hidden)
+ok   I2: no ledger and no blob written under the foreign grant
+ok   I2: recorder reached the stall point after the command
+ok   I2: grant appearing before the lock: refused inside the lock (where=in_lock)
+ok   I2: nothing written after the in-lock refusal
+ok   I2: the reaper was never called (post-command and in-lock checks do not reap)
+ok   C8: a held grant and a refusing host entry: refused before the command runs (commit_turn_held, where=pre_run)
+ok   C8: the command was not run under the held grant
+ok   I3: verify with a positional file is refused (usage_error)
+ok   I3: verify --bogus is refused (usage_error)
+ok   I3: verify --ledger without a value is refused (usage_error)
+ok   I3: verify --ledger twice is refused (usage_error)
+ok   I3: verify --ledger names the file it read and fails the tampered one although EV_LEDGER is pristine
+ok   I3: verify names the default ledger it read
+ok   I4: forged stdout blob: refused (blob_mismatch, exit 1)
+ok   I4: blob restored verifies
+ok   I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK
+ok   I4: re-chained entry without argv is refused by verify (schema_invalid)
+ok   I4: re-chained entry with exit_status 0 and verdict fail is refused (schema_invalid)
+ok   I4: EV_SCHEMA={} does not weaken verify
+ok   I4: under PYTHONOPTIMIZE=1 the refusal is the same (no assert-based checks)
+ok   I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_invalid)
+ok   I8: a BASELINE entry with the unresolved-fingerprint sentinel is refused by verify (unresolved_fingerprint)
+ok   X12: a re-chained entry without the schema key is an undecodable entry (chain_failure)
+ok   I4: duplicate key in a line is refused (non_canonical_line)
+ok   I4: a hash-valid line that is not byte-canonical (spaced separators) is refused (non_canonical_line)
+ok   I4: anchor present and not compared: UNVERIFIED exit 3
+ok   I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceback or a chain failure
+ok   I5: golden-good: a ledger hashed independently with jq|sha256sum (non-ASCII cwd, exit_status 3) verifies
+ok   I5: construction 'noprefix' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'noprefix' named as bad hash at line 1
+ok   I5: construction 'ascii' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'ascii' named as bad hash at line 1
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+ok   I5: flipping exit_status alone (hash not recomputed) is a bad hash
+ok   I6: evrec run lists a blob above the bound as owed_relocation (bytes and bound named)
+ok   I6: verify lists the same large blob
+ok   I6: a small blob is not listed
+ok   I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before the command runs
+ok   I6: the command was not run and nothing was written
+ok   I6: nothing is listed as owed in the default environment (no leaked EV_BLOB_BOUND)
+ok   I6: the default blob bound is the check_classes.tsv 'evidence large_file' value (1024000); an empty EV_BLOB_BOUND counts as unset
+ok   I6: rerecord --out <shared ledger dir> is refused (out_is_shared_store)
+ok   I6: the shared ledger is byte-unchanged after the refused --out run
+ok   I6: rerecord --out <shared dir> --name <other file> is refused too (the directory is the shared store)
+ok   I6: no stray output file in the shared directory
+ok   I6: rerecord --out <elsewhere> succeeds
+ok   I6: the shared ledger is byte-unchanged after a legitimate rerecord (store_not_rerecorded shape)
+ok   I6: rerecord --out writing over one of its own input files is refused (out_is_shared_store)
+ok   I6: rerecord takes the lock of the output ledger (a live holder: lock_held)
+ok   I6: seq map content is exactly [{old,new,digest=new entry_hash}]
+ok   I6: seq map of a diverged rerecord maps old 2,3 to new 3,4 with the new entry hashes
+ok   I7: a secret that is a prefix of another leaves no fragment of either
+ok   I7: partially overlapping secrets leave no fragment
+ok   I7: a named secret printed only on stdout or only on stderr is absent from blobs and ledger
+ok   I7: redacted: true is set for a stdout-only and for a stderr-only hit (argv carries no secret)
+ok   I7: Bearer token redacted by the default pattern scan (no variable named)
+ok   I7: entry records redacted: true for a default-pattern hit
+ok   I7: AWS key id, password= value and URL userinfo password redacted
+ok   I7: a GitHub token is redacted
+ok   I7: a secret in the working directory name is redacted from the ledger
+ok   I7: a PEM private key block is redacted
+ok   I7: a secret in target_ref is redacted from the ledger and redacted: true is set
+ok   I7: a clean entry carries no redacted flag (no false positive)
+ok   I8: BASELINE on an unresolvable target is refused (target_unreadable)
+ok   I8: BASELINE wrote nothing
+ok   I8: PREFLIGHT on an unresolvable target is refused (target_unreadable)
+ok   I8: PREFLIGHT wrote nothing
+ok   I8: NEEDLE on an unresolvable target is refused (target_unreadable)
+ok   I8: NEEDLE wrote nothing
+ok   I8: ANALYZER_FIXTURE on an unresolvable target is refused (target_unreadable)
+ok   I8: ANALYZER_FIXTURE wrote nothing
+ok   I8: a PROBE on an unresolved target carries the all-zero sentinel, not a digest of the ref
+ok   I9: RED with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: GREEN with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: MUTATION with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: declared sources make the test_fingerprint differ for different test bytes and agree for the same ones
+ok   I9: nothing written for the undeclared interpreter RED
+ok   I9: a script executed directly is its own test bytes: no source declaration needed
+ok   I9: PROBE with an interpreter and no sources is allowed (no verdict claim)
+ok   I9: EV_TEST_SOURCES counts as a declaration
+ok   I10: --oracle without --oracle-independent is refused (oracle_independence_undeclared) before the command runs
+ok   I10: the command did not run and nothing was written
+ok   I10: --oracle-independent without --oracle is refused (usage_error)
+ok   I10: the declared oracle is recorded as given
+ok   I11: RED without oracle (schema refusal) before the run
+ok   I11: RED without oracle (schema refusal) before the run: command not run, nothing stored
+ok   I11: invalid --mutation-json before the run
+ok   I11: invalid --mutation-json before the run: command not run, nothing stored
+ok   I11: non-UTF-8 argv byte before the run
+ok   I11: non-UTF-8 argv byte before the run: command not run, nothing stored
+ok   I11: missing --test-source file before the run
+ok   I11: missing --test-source file before the run: command not run, nothing stored
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11)
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11): command not run, nothing stored
+ok   I11: unknown flag before the run
+ok   I11: unknown flag before the run: command not run, nothing stored
+ok   I11: --pre-release without --test-state-go (schema) before the run
+ok   I11: --pre-release without --test-state-go (schema) before the run: command not run, nothing stored
+ok   I11: non-UTF-8 cwd is refused before the run (usage_error)
+ok   I11: non-UTF-8 cwd: command not run
+ok   I11: schema_unavailable is refused before the command runs (67)
+ok   I11: schema_unavailable: command not run
+ok   I11: GREEN that fails is refused after the run (record_invalid) and leaves no blob
+ok   I11: no orphan blob after the post-run refusal
+ok   X19: golden-good check-record accepts a valid unchained record ('record valid')
+ok   minor5: check-record asserts the date-time format (record_invalid)
+ok   X16: check-record refusal is the named record_invalid
+ok   X20: --pre-release, --test-state-go, --closes-item, --mutation-json, --container-image-digest, --precondition-provenance, --evidence-class all land in the entry
+ok   X7: a non-executable command is exit 126, verdict error (not fail)
+ok   X8: directory fingerprint equals the independently computed sha256 over sorted 'relpath NUL filehash' lines
+ok   X8: changing a file's content changes the directory fingerprint
+ok   X11: the flake ledger is measured against the bound and named by ledger_raise_owed
+ok   X6: a self-consistent last entry with seq 7 on line 1 refuses the append (ledger_inconsistent)
+ok   X13: rerecord of sides with no common prefix names no_common_prefix
+ok   rerecord of a side verify rejects names side_unverifiable
+ok   X14: remap-refs with an uncovered reference names map_incomplete
+ok   X14: nothing was rewritten on the map_incomplete refusal
+ok   X15: a live lock holder yields the named lock_held (75)
+ok   usage: evrec run with a non-numeric ITER names usage_error
+ok   usage: unknown subcommand names usage_error
+ok   reconcile: runner count mismatch names count_mismatch
+ok   hermetic: no call reached the host entry
+checks=140 failures=0
+rc=0
+## run 3 test_evrec_r4.sh
+ok   N1: --name ../flake_ledger.jsonl (escape from --out) is refused
+ok   N1: --name <absolute path of a shared file> is refused
+ok   N1: --name 'a/b' is not a plain token and is refused
+ok   N1: --name '.' is not a plain token and is refused
+ok   N1: --name '..' is not a plain token and is refused
+ok   N1: --name '' is not a plain token and is refused
+ok   N1: --name '-x' is not a plain token and is refused
+ok   N1: --name '.hidden' is not a plain token and is refused
+ok   N1: --name 'ledger-seq-map.json' is not a plain token and is refused
+ok   N1: --name 'a b' is not a plain token and is refused
+ok   N1: --name 'x/../y' is not a plain token and is refused
+ok   N1: --out <subdirectory of the evidence dir> is refused (any depth)
+ok   N1: --out <blob store> is refused
+ok   N1: --out <subdirectory of the blob store> is refused
+ok   N1: --out through a symlink into the evidence dir is refused
+ok   N1: --out inside a relocated blob store (EV_BLOBS elsewhere) is refused
+ok   N1: the shared flake ledger, deferrals and ledger are byte-unchanged after all refused attempts
+ok   N1: no file was created anywhere in the evidence directory by the refused attempts
+ok   N1: --out inside the evidence dir is refused even when the ledger lives in another directory
+ok   N1: a plain --name into a separate --out still works
+ok   N1: that output holds remote then the local suffix
+ok   N2: JSON login body {"username":..,"password":..} on stdout
+ok   N2: JSON token {"access_token":"<jwt>"} on stdout
+ok   N2: JSON "api_key": "..." with a space after the colon
+ok   N2: JSON client_secret and refresh_token keys
+ok   N2: single-quoted key form 'password': 'x'
+ok   N2: password value containing a space inside JSON quotes
+ok   N2: stream text '--password VALUE' pair
+ok   N2: Authorization: Basic <base64> header
+ok   N2: Authorization with a lower-case header and an unknown scheme
+ok   N2: Cookie header value
+ok   N2: Set-Cookie header value
+ok   N2: a bare three-part JWT in prose
+ok   N2: x-api-key header
+ok   N2: argv pair '--password VALUE' redacts the value, keeps the flag name, sets redacted
+ok   N2: argv pairs for --token, --secret-key and the --api-key=VALUE form are redacted
+ok   N2: JSON password inside an argv element is redacted
+ok   N2: benign JSON and flags are NOT redacted (no false positive)
+ok   N3: RED through launcher 'kcov' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'podman' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'docker' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ssh' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'adb' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'pytest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bats' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'vitest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'jest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'xvfb-run' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'strace' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'uv' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'poetry' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bundle' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'rake' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'flutter' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ctest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through the project runner run_pinned.sh without a declared test source is refused
+ok   N3: GREEN through run_pinned.sh without a declared test source is refused
+ok   N3: MUTATION through run_pinned.sh without a declared test source is refused
+ok   N3: RED python3 -c without a declared test source is refused
+ok   N3: RED env bash -c without a declared test source is refused
+ok   N3: RED python3.12-style versioned interpreter without a source is refused
+ok   N3: with declared sources RED and GREEN through run_pinned.sh get different test_fingerprints
+ok   N3: test_fingerprint of an interpreter with a declared source is exactly sha256(sha256(argv0)\nsha256(source)\n); operands are not added
+ok   N3: test_fingerprint of an unlisted launcher is exactly sha256(sha256(argv0)\nsha256(file operand)\n)
+ok   N3: an unlisted launcher: RED and GREEN over different test files get different test_fingerprints (operands hashed)
+ok   N3: the same operand bytes give the same test_fingerprint again (deterministic)
+ok   N4: a failing GREEN is refused after the run (nothing stored)
+ok   N4: fixture: the ledger holds 5 entries, one foreign (the runner ran 5 commands)
+ok   N4: reconcile --run run4 --runner-count 5 is a mismatch (the foreign entry does not count, the failed GREEN left no entry)
+ok   N4: reconcile --run run4 --runner-count 4 passes (its own 4 stored entries)
+ok   N4: the token may come from EVREC_RUN_TOKEN
+ok   N4: another run's token sees 0 entries of run4
+ok   N4: unscoped reconcile on a ledger that holds tokened entries is refused
+ok   N4: a token that is not a plain token is refused
+ok   N4: reconcile with an unknown option is refused
+ok   N4: EVREC_RUN_TOKEN that is not a plain token refuses the run before the command runs
+ok   N4: a run-index row whose entry_hash does not match the ledger entry is not counted
+ok   N4: legacy: untokened runs on a ledger without tokened entries still reconcile unscoped
+ok   W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismatch, not UNVERIFIED 3
+ok   W3-7: verify --ledger beside its own blobs dir passes when intact
+ok   W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch
+ok   W3-7: verify --ledger --blobs DIR with a forged blob is FAIL 1 too
+ok   m1: verify --ledger with anchors.jsonl beside the ledger is UNVERIFIED 3 anchor_not_compared
+ok   W3-8: grant body {} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {}
+ok   W3-8: grant body {"run_id":7} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":7}
+ok   W3-8: grant body [] is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant []
+ok   W3-8: grant body "x" is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant "x"
+ok   W3-8: grant body null is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant null
+ok   W3-8: grant body {"run_id":null} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":null}
+ok   W3-5: check-record refuses started_at 2026-02-30T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-13-01T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-04-31T10:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T24:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T10:61:00Z
+ok   W3-5: a real date (2026-02-28T23:59:59Z) is accepted
+ok   m2: the executable bit survives remap-refs
+ok   m2: remap-refs through a symlink keeps the link and updates its target
+ok   m4: evrec run in a deleted cwd is usage_error 64, no traceback
+ok   hermetic: no call reached the host entry
+checks=105 failures=0
+rc=0
+## run 3 test_evrec_r5.sh
+ok   F1: redact_bytes on a run of 100000 dashes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "a-" returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "_." returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'token' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'password' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a double quote then 'token' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a single quote then 'secret' repeated returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on -token repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a long run of dashes then a flag name returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on '--' then 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'api-key' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'access_key.' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_argv on a 100000-byte credential-flag-shaped element returns in under 15 s (0.2 s)
+ok   F1: still redacted: kv after a long dash run
+ok   F1: still redacted: kv name prefix
+ok   F1: still redacted: kv name with a 100-char tail
+ok   F1: still redacted: kv after a long letter run
+ok   F1: still redacted: json double quote
+ok   F1: still redacted: flag pair after dashes
+ok   F1: still redacted: flag pair prefix flag
+ok   F1: evrec run of a command printing 100000 dashes finishes (rc=65, not a timeout)
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID set and empty is refused (commit_turn_held, 76)
+ok   F2: nothing recorded under the empty run_id grant
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID unset is refused too
+ok   F2: a real grant with EVREC_TURN_RUN_ID set and empty is refused (empty is unset)
+ok   F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) still records
+ok   F2: a whitespace-only run_id is refused
+ok   F2: the only host-entry calls were the reaper's (--exec-approved ... --reap)
+ok   F3: an unlisted launcher with --bank=FILE: RED and GREEN over different test files get different test_fingerprints
+ok   F3: the --opt=FILE fingerprint is sha256(sha256(argv0)\nsha256(the file after '=')\n)
+ok   F3: an unlisted launcher with a DIRECTORY operand: different directory contents give different test_fingerprints
+ok   F3: the same directory contents give the same test_fingerprint (deterministic)
+ok   F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED is refused (operand_directory_too_large, never silently skipped)
+ok   F3: the same oversized directory operand on a PROBE is not refused
+ok   F3: RED through a renamed symlink to bash with -c is refused (interpreter_without_test_sources)
+ok   F3: RED through a renamed symlink to python3 with -c is refused
+ok   F3: the same through PATH lookup of a renamed symlink is refused
+ok   F3: with a declared test source the renamed-symlink interpreter records
+ok   F3: a PROBE through a renamed-symlink interpreter needs no source
+ok   F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is UNVERIFIED 3 anchor_not_compared
+ok   F5: the same ledger without an anchors.jsonl beside it verifies 0
+ok   F5: an explicit EV_ANCHOR still wins over the file beside the ledger
+ok   F6: fixture: one tokened entry reconciles with --runner-count 1
+ok   F6: with that run-index row duplicated, --runner-count 2 is a count_mismatch
+ok   F6: with that run-index row duplicated, --runner-count 1 still passes
+ok   F6: run-index rows whose seq is not an integer are ignored, not a crash (count still 1)
+ok   F7: --out <parent of EV> --name <basename of EV> (an existing directory) is refused cleanly
+ok   F7: no <name>.tmp.<pid> or <name>.lock.guard was left in the parent directory
+ok   F7: the evidence directory tree is unchanged
+ok   F7: --name that is an existing directory inside --out is refused (out_is_directory)
+ok   F7: nothing else was created in --out
+ok   F7: the seq-map path being an existing directory is refused too
+ok   F7: atomic_write onto a directory raises OSError and removes its tmp file
+ok   F7: an unwritable --out is a named refusal (out_unwritable), not a traceback
+ok   F7: a plain --name into a fresh --out still works
+ok   hermetic: no call reached the host entry
+checks=57 failures=0
+rc=0
+## run 3 test_evrec_r6.sh
+ok   R6-2: still redacted: kv: credential word + 128 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 128 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<128 chars>=V
+ok   R6-2: still redacted: flag head: --<128 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><128 chars> V
+ok   R6-2: still redacted: JSON double quotes, 128-char tail
+ok   R6-2: still redacted: JSON single quotes, 128-char tail
+ok   R6-2: still redacted: JSON double quotes, 128-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><128 chars>=V
+ok   R6-2: still redacted: argv element --<word><128 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 128-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 128-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 129 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 129 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<129 chars>=V
+ok   R6-2: still redacted: flag head: --<129 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><129 chars> V
+ok   R6-2: still redacted: JSON double quotes, 129-char tail
+ok   R6-2: still redacted: JSON single quotes, 129-char tail
+ok   R6-2: still redacted: JSON double quotes, 129-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><129 chars>=V
+ok   R6-2: still redacted: argv element --<word><129 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 129-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 129-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 5000 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 5000 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<5000 chars>=V
+ok   R6-2: still redacted: flag head: --<5000 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><5000 chars> V
+ok   R6-2: still redacted: JSON double quotes, 5000-char tail
+ok   R6-2: still redacted: JSON single quotes, 5000-char tail
+ok   R6-2: still redacted: JSON double quotes, 5000-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><5000 chars>=V
+ok   R6-2: still redacted: argv element --<word><5000 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 5000-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 5000-char head, value in the next element
+ok   R6-2: negative control, not redacted: a 5000-char name with no credential word, then =V
+ok   R6-2: negative control, not redacted: a credential word followed by a value shorter than 6
+ok   R6-2: negative control, not redacted: a credential word in prose with no separator
+ok   R6-2: negative control, not redacted: a flag whose value starts with a dash
+ok   R6-2: negative control, not redacted: a 5000-char dashed name with no credential word
+ok   R6-2: end to end: a 5000-char-tail credential printed by a command is in no ledger line and no blob
+ok   R6-1: redact_bytes on '-eyJ' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (400000 bytes) returns in under 10 s (0.31 s)
+ok   R6-1: redact_bytes on a run of dashes (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJ' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'eyJ-' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJaaaaaaaaa.bbbbbbbbb.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.bbbbbbbbb' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of letters (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of x "a-" (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on a run of x "_." (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'password' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '--password ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'token:' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a double quote then 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a single quote then 'secret' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '"token":"' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'api-key' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: a bare JWT
+ok   R6-1: a JWT after a dash
+ok   R6-1: a JWT after dashes after a long dash run
+ok   R6-1: a JWT after a dash inside a name run
+ok   R6-1: a JWT at the start
+ok   R6-1: a too-short three-part token is not touched (negative control)
+ok   R6-4: a directory operand holding a non-UTF-8 file name records (no traceback)
+ok   R6-4: two different non-UTF-8 file names give different test_fingerprints
+ok   R6-4: a directory operand holding a file that cannot be read is refused on a RED (operand_unreadable, 69)
+ok   R6-4: the same operand on a PROBE is skipped, not a traceback
+ok   R6-4: the refused RED stored nothing (only the PROBE line)
+ok   R6-4: a directory operand holding an unlistable subdirectory is refused on a RED (operand_unreadable, 69)
+ok   R6-4: a FIFO inside a directory operand is skipped, never opened (no hang)
+ok   R6-4: a target directory holding a non-UTF-8 file name records (no traceback)
+ok   R6-5: a directory operand with more entries than the cap (empty subdirectories count) is refused on a RED
+ok   R6-5: exactly N=3 files with EVREC_OPERAND_DIR_MAX=3 is accepted
+ok   R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused
+ok   R6-5: a directory operand holding more bytes than EVREC_OPERAND_DIR_BYTES_MAX is refused on a RED
+ok   R6-5: the same directory under the byte cap is accepted
+ok   R6-5: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   R6-5: a directory operand holding a 4 GiB file is refused by the DEFAULT byte cap
+ok   R6-5: the 4 GiB refusal needs no hashing (0 s, under 10 s)
+ok   R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: a valid EVREC_OPERAND_DIR_MAX still records
+ok   R6-6: RED {a.sh pass, t.sh fail} and GREEN {t.sh pass, z.sh fail} get DIFFERENT directory fingerprints (relative names are hashed)
+ok   R6-6: RED through a TWO-level symlink chain to bash with -c is refused (interpreter_without_test_sources)
+ok   R6-6: a MUTATION record over the directory cap is refused (operand_directory_too_large)
+ok   R6-6: _is_holder({run_id:''}) with EVREC_TURN_RUN_ID set empty is False (second layer pinned)
+ok   R6-7: evcore.py holds no dead _NAMEMAX constant
+ok   hermetic: no call reached the host entry
+checks=102 failures=0
+rc=0
+## run 3 test_evrec_r7.sh
+tools/evidence/tests/test_evrec_r7.sh: line 57: --: command not found
+tools/evidence/tests/test_evrec_r7.sh: line 57: _-: command not found
+ok   W7-1: after ESC[1m (bold): --password<space>V
+ok   W7-1: after ESC[1m (bold): --password<TAB>V
+ok   W7-1: after ESC[1m (bold): --token<space>V
+ok   W7-1: after ESC[1m (bold): --token<TAB>V
+ok   W7-1: after ESC[1m (bold): --api-key<space>V
+ok   W7-1: after ESC[1m (bold): --api-key<TAB>V
+ok   W7-1: after ESC[1m (bold): --secret<space>V
+ok   W7-1: after ESC[1m (bold): --secret<TAB>V
+ok   W7-1: after ESC[33m: --password<space>V
+ok   W7-1: after ESC[33m: --password<TAB>V
+ok   W7-1: after ESC[33m: --token<space>V
+ok   W7-1: after ESC[33m: --token<TAB>V
+ok   W7-1: after ESC[33m: --api-key<space>V
+ok   W7-1: after ESC[33m: --api-key<TAB>V
+ok   W7-1: after ESC[33m: --secret<space>V
+ok   W7-1: after ESC[33m: --secret<TAB>V
+ok   W7-1: after ESC[0m: --password<space>V
+ok   W7-1: after ESC[0m: --password<TAB>V
+ok   W7-1: after ESC[0m: --token<space>V
+ok   W7-1: after ESC[0m: --token<TAB>V
+ok   W7-1: after ESC[0m: --api-key<space>V
+ok   W7-1: after ESC[0m: --api-key<TAB>V
+ok   W7-1: after ESC[0m: --secret<space>V
+ok   W7-1: after ESC[0m: --secret<TAB>V
+ok   W7-1: after ESC[1;31m: --password<space>V
+ok   W7-1: after ESC[1;31m: --password<TAB>V
+ok   W7-1: after ESC[1;31m: --token<space>V
+ok   W7-1: after ESC[1;31m: --token<TAB>V
+ok   W7-1: after ESC[1;31m: --api-key<space>V
+ok   W7-1: after ESC[1;31m: --api-key<TAB>V
+ok   W7-1: after ESC[1;31m: --secret<space>V
+ok   W7-1: after ESC[1;31m: --secret<TAB>V
+ok   W7-1: after ESC[m: --password<space>V
+ok   W7-1: after ESC[m: --password<TAB>V
+ok   W7-1: after ESC[m: --token<space>V
+ok   W7-1: after ESC[m: --token<TAB>V
+ok   W7-1: after ESC[m: --api-key<space>V
+ok   W7-1: after ESC[m: --api-key<TAB>V
+ok   W7-1: after ESC[m: --secret<space>V
+ok   W7-1: after ESC[m: --secret<TAB>V
+ok   W7-1: after ESC[38;5;208m: --password<space>V
+ok   W7-1: after ESC[38;5;208m: --password<TAB>V
+ok   W7-1: after ESC[38;5;208m: --token<space>V
+ok   W7-1: after ESC[38;5;208m: --token<TAB>V
+ok   W7-1: after ESC[38;5;208m: --api-key<space>V
+ok   W7-1: after ESC[38;5;208m: --api-key<TAB>V
+ok   W7-1: after ESC[38;5;208m: --secret<space>V
+ok   W7-1: after ESC[38;5;208m: --secret<TAB>V
+ok   W7-1: after an alphanumeric char: --password<space>V
+ok   W7-1: after an alphanumeric char: --password<TAB>V
+ok   W7-1: after an alphanumeric char: --token<space>V
+ok   W7-1: after an alphanumeric char: --token<TAB>V
+ok   W7-1: after an alphanumeric char: --api-key<space>V
+ok   W7-1: after an alphanumeric char: --api-key<TAB>V
+ok   W7-1: after an alphanumeric char: --secret<space>V
+ok   W7-1: after an alphanumeric char: --secret<TAB>V
+ok   W7-1: after letters and digits: --password<space>V
+ok   W7-1: after letters and digits: --password<TAB>V
+ok   W7-1: after letters and digits: --token<space>V
+ok   W7-1: after letters and digits: --token<TAB>V
+ok   W7-1: after letters and digits: --api-key<space>V
+ok   W7-1: after letters and digits: --api-key<TAB>V
+ok   W7-1: after letters and digits: --secret<space>V
+ok   W7-1: after letters and digits: --secret<TAB>V
+ok   W7-1: after a dash: --password<space>V
+ok   W7-1: after a dash: --password<TAB>V
+ok   W7-1: after a dash: --token<space>V
+ok   W7-1: after a dash: --token<TAB>V
+ok   W7-1: after a dash: --api-key<space>V
+ok   W7-1: after a dash: --api-key<TAB>V
+ok   W7-1: after a dash: --secret<space>V
+ok   W7-1: after a dash: --secret<TAB>V
+ok   W7-1: after an underscore: --password<space>V
+ok   W7-1: after an underscore: --password<TAB>V
+ok   W7-1: after an underscore: --token<space>V
+ok   W7-1: after an underscore: --token<TAB>V
+ok   W7-1: after an underscore: --api-key<space>V
+ok   W7-1: after an underscore: --api-key<TAB>V
+ok   W7-1: after an underscore: --secret<space>V
+ok   W7-1: after an underscore: --secret<TAB>V
+ok   W7-1: after a long name: --password<space>V
+ok   W7-1: after a long name: --password<TAB>V
+ok   W7-1: after a long name: --token<space>V
+ok   W7-1: after a long name: --token<TAB>V
+ok   W7-1: after a long name: --api-key<space>V
+ok   W7-1: after a long name: --api-key<TAB>V
+ok   W7-1: after a long name: --secret<space>V
+ok   W7-1: after a long name: --secret<TAB>V
+ok   W7-1: single-dash flag, 128-char head
+ok   W7-1: single-dash flag, 128-char tail
+ok   W7-1: single-dash flag, 129-char head
+ok   W7-1: single-dash flag, 129-char tail
+ok   W7-1: single-dash flag, 5000-char head
+ok   W7-1: single-dash flag, 5000-char tail
+ok   W7-1: a_-password V
+ok   W7-1: x--password V (dash run before the flag)
+ok   W7-1: --password V alone
+ok   W7-1: -password V (single dash at the start)
+ok   W7-1: negative control, not redacted: reset-password link (a single dash after a letter, prose)
+ok   W7-1: negative control, not redacted: a flag with no credential word after a dash prefix
+ok   W7-1: negative control, not redacted: a credential flag whose value starts with a dash
+ok   W7-1: negative control, not redacted: ESC[1m then a flag with no credential word
+ok   W7-1: redact_bytes on 'x--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '_-' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'x--' repeated (200000 bytes) returns in under 10 s (0.21 s)
+ok   W7-1: redact_bytes on '_-' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (200000 bytes) returns in under 10 s (0.21 s)
+ok   W7-1: redact_bytes on '--' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'x--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '_-' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--' repeated (400000 bytes) returns in under 10 s (0.31 s)
+ok   W7-1: redact_bytes on 'x--pas' repeated (a credential-word prefix) (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--passwor' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m--password ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'a--password ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--token' repeated, no separator (400000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '-a' repeated after a first '--' (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'ESC[1m' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '--a-' repeated, then 'token ' (400000 bytes) returns in under 10 s (0.42 s)
+ok   W7-1: end to end: an ANSI-coloured --password value is in no ledger line and no blob, redacted=true, verify exits 0
+ok   W7-2: a directory operand holding a file that reports st_size 0 but yields more bytes than the cap is refused on a RED
+ok   W7-2: the same directory under the byte cap is accepted
+ok   W7-2: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   W7-2: two size-0 files that each fit under the cap but together exceed it are refused (the read-time count is cumulative)
+ok   W7-2: one such file under the same cap is accepted
+ok   W7-2: a 5000-byte file with a budget of 1000 raises too_large while reading
+ok   W7-2: a budget equal to the size hashes the file
+ok   W7-2: a budget one byte under the size raises too_large
+ok   W7-5: three 600-byte files with a 1000-byte cap (each under the cap, the sum over it) are refused on a RED
+ok   W7-5: a directory whose total is under the 1000-byte cap is accepted
+ok   W7-2: a 4 GiB mode-000 file in a directory operand is refused as too large by the st_size fast path (before any open)
+ok   W7-5: three mode-000 600-byte files with a 1000-byte cap are refused as too large by the CUMULATIVE st_size count (before any open)
+ok   W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte cap on a RED (operand_file_too_large)
+ok   W7-3: the same file through --input=FILE is refused too
+ok   W7-3: both refusals together took 0 s (under 10 s, the file was not hashed)
+ok   W7-3: the same plain operand on a PROBE is skipped, not refused
+ok   W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=1000 is refused on a GREEN
+ok   W7-3: a small plain operand under the cap still records on a RED
+ok   W7-3: a plain procfs operand (st_size 0) over the cap is refused by the read-time count
+ok   W7-4: a mode-000 plain file operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same operand on a PROBE is skipped
+ok   W7-4: a mode-000 file inside a directory operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: an execute-only directory operand (the runner can run t.sh by name, evrec cannot list it) is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same execute-only directory on a GREEN is refused too
+ok   W7-4: the execute-only directory on a PROBE is skipped
+ok   W7-4: a TARGET directory with an unlistable sub-directory is refused (target_unreadable, 77), not fingerprinted without it
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_MAX set to the empty string is the default (records)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty string is the default (records)
+ok   W7-10: a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a regular file is still hashed (the bytes of its target)
+ok   W7-10: a directory whose entry became a FIFO between the two passes is refused as unreadable, not blocked on
+ok   W7-5: a spaced JSON value, double quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: negative control: a long credential-word name with no value is untouched
+ok   W7-6: a bare Bearer token, X-Api-Auth header
+ok   W7-6: a bare Bearer token, prose
+ok   W7-6: a bare Bearer token, a tab separator
+ok   W7-6: a mutant that compiles but cannot be imported is INVALID (got INVALID)
+ok   W7-6: an importable mutant passes the --check stage (got CAUGHT)
+ok   hermetic: no call reached the host entry
+checks=202 failures=0
+rc=0
+## run 3 test_evrec_golden.sh
+ok   canon: sorted keys, compact separators, non-ASCII kept as UTF-8 bytes
+ok   canon: quote and backslash escaped as in jq
+ok   entry_hash golden vector 1 (genesis prev, non-ASCII cwd, exit_status 3): 413af748bd2c
+ok   entry_hash golden vector 2 (prev = vector 1): 7e7f041978f6
+ok   entry_hash covers field exit_status (changing it changes the hash)
+ok   entry_hash covers field verdict (changing it changes the hash)
+ok   entry_hash covers field item (changing it changes the hash)
+ok   entry_hash covers field cwd (changing it changes the hash)
+ok   entry_hash covers field argv (changing it changes the hash)
+ok   entry_hash covers field started_at (changing it changes the hash)
+ok   entry_hash covers field duration_ms (changing it changes the hash)
+ok   entry_hash covers field stdout_sha256 (changing it changes the hash)
+ok   entry_hash covers field stderr_sha256 (changing it changes the hash)
+ok   entry_hash covers field target_fingerprint (changing it changes the hash)
+ok   entry_hash covers field target_ref (changing it changes the hash)
+ok   entry_hash covers field seq (changing it changes the hash)
+ok   entry_hash covers field prev_hash (changing it changes the hash)
+ok   entry_hash covers field iteration (changing it changes the hash)
+ok   entry_hash covers field polarity (changing it changes the hash)
+ok   entry_hash covers field target_class (changing it changes the hash)
+ok   entry_hash is computed without the entry_hash field itself
+ok   entry_hash is not the hash of the canonical body alone (prev_hash is a hashed prefix)
+ok   entry_hash is sha256(prev_hash ASCII || canonical body) exactly (re-derived here)
+ok   redaction: partially overlapping secrets leave no fragment of either
+ok   redaction: a secret that is a prefix of another (any value order) leaves no suffix
+ok   redaction: the same with the values in the other order
+ok   redaction: a single named secret keeps the [REDACTED:NAME] marker
+ok   redaction: clean bytes are returned unchanged with no hit
+ok   redaction: default pattern bearer hit
+ok   redaction: default pattern kv password hit
+ok   redaction: default pattern url userinfo hit
+ok   redaction: default pattern pem hit
+ok   stale: live pid with its recorded cmdline is NOT stale
+ok   stale: live pid with a different recorded cmdline (pid reuse) IS stale
+ok   stale: live pid whose /proc cmdline is unreadable is NOT stale (never reaped on an unreadable identity)
+ok   stale: a dead pid IS stale
+ok   stale: unreadable holder identity {'pid': 'x', 'cmdline': 'y'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 1, 'cmdline': 'init'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 0, 'cmdline': 'z'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 4242, 'cmdline': 7} is NOT stale
+ok   stale: unreadable holder identity {} is NOT stale
+ok   lock.release does not delete a lock that another pid now holds (X5)
+ok   lock.release deletes the caller's own lock
+ok   X18: a re-chained record that ev/1 refuses stops rerecord (record_invalid)
+ok   portable_schema: the relative $id 'ev/1' becomes an absolute URN
+ok   portable_schema: nothing else of the contract changes and the input is not modified
+ok   portable_schema: an absolute $id is left as it is
+ok   portable_schema: a schema without $id is left as it is
+ok   W3-1: a holder that answers EPERM (alive, other uid) with its recorded cmdline is NOT stale
+ok   W3-1: a holder that answers EPERM and whose cmdline cannot be read is NOT stale
+ok   W3-1: a holder that answers EPERM whose live cmdline differs (pid reuse) IS stale
+ok   W3-6: the lock records the holder's own pid
+ok   W3-6: the lock records the holder's real, non-empty cmdline (the 11.4.180 identity)
+ok   W3-6: a second reader with the same /proc does NOT find the live lock stale
+ok   W3-6: a lock taken while /proc was unreadable records NO cmdline (never an empty string)
+ok   W3-6: and a reader with a readable /proc does not reap that live holder
+ok   W3-6: but a holder with an unreadable-identity marker whose pid is dead IS stale
+ok   redaction r4: json password is redacted with no fragment left
+ok   redaction r4: json spaced api_key is redacted with no fragment left
+ok   redaction r4: json single quotes is redacted with no fragment left
+ok   redaction r4: json value with a space is redacted with no fragment left
+ok   redaction r4: flag pair is redacted with no fragment left
+ok   redaction r4: basic is redacted with no fragment left
+ok   redaction r4: cookie is redacted with no fragment left
+ok   redaction r4: set-cookie is redacted with no fragment left
+ok   redaction r4: jwt is redacted with no fragment left
+ok   redaction r4: slack is redacted with no fragment left
+ok   redaction r4: stripe is redacted with no fragment left
+ok   redaction r4: benign json is left unchanged
+ok   redaction r4: prose with basic is left unchanged
+ok   redaction r4: flag without credential name is left unchanged
+ok   redact_argv: the value after a credential flag is redacted and the flag name kept
+ok   m4: verify without a readable schema exits 3 (UNVERIFIED), not 67
+checks=73 failures=0
+rc=0
+## run 3 test_evrec_hermetic.sh
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=66 failures=0)
+ok   hermetic: test_evrec_more.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=24 failures=0)
+ok   hermetic: test_evrec_r3.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=140 failures=0)
+ok   hermetic: test_evrec_golden.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=73 failures=0)
+ok   hermetic: the stand-in for ~/.local/bin/cpa-host was called 0 times
+ok   hermetic: nothing was written to the hostile caller-supplied store paths
+checks=6 failures=0
+rc=0
+# DONE

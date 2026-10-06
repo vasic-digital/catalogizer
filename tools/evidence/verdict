@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""tools/evidence/verdict - verdict deriver (tasks.md T054). See evverdict.py."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+sys.dont_write_bytecode = True
+import evverdict
+sys.exit(evverdict.main(sys.argv[1:]))

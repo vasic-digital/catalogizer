@@ -1,0 +1,17 @@
+{"Time":"2026-10-06T19:18:15.8764754Z","Action":"start","Package":"example.com/t051/good"}
+{"Time":"2026-10-06T19:18:15.880967058Z","Action":"run","Package":"example.com/t051/good","Test":"TestAdd"}
+{"Time":"2026-10-06T19:18:15.881008298Z","Action":"output","Package":"example.com/t051/good","Test":"TestAdd","Output":"=== RUN   TestAdd\n"}
+{"Time":"2026-10-06T19:18:15.88148094Z","Action":"output","Package":"example.com/t051/good","Test":"TestAdd","Output":"--- PASS: TestAdd (0.00s)\n"}
+{"Time":"2026-10-06T19:18:15.8814975Z","Action":"pass","Package":"example.com/t051/good","Test":"TestAdd","Elapsed":0}
+{"Time":"2026-10-06T19:18:15.88150414Z","Action":"run","Package":"example.com/t051/good","Test":"TestSub"}
+{"Time":"2026-10-06T19:18:15.88150791Z","Action":"output","Package":"example.com/t051/good","Test":"TestSub","Output":"=== RUN   TestSub\n"}
+{"Time":"2026-10-06T19:18:15.88151366Z","Action":"output","Package":"example.com/t051/good","Test":"TestSub","Output":"--- PASS: TestSub (0.00s)\n"}
+{"Time":"2026-10-06T19:18:15.88151947Z","Action":"pass","Package":"example.com/t051/good","Test":"TestSub","Elapsed":0}
+{"Time":"2026-10-06T19:18:15.88152402Z","Action":"run","Package":"example.com/t051/good","Test":"TestSkipped"}
+{"Time":"2026-10-06T19:18:15.88152797Z","Action":"output","Package":"example.com/t051/good","Test":"TestSkipped","Output":"=== RUN   TestSkipped\n"}
+{"Time":"2026-10-06T19:18:15.88153193Z","Action":"output","Package":"example.com/t051/good","Test":"TestSkipped","Output":"    good_test.go:7: seeded skip\n"}
+{"Time":"2026-10-06T19:18:15.88153673Z","Action":"output","Package":"example.com/t051/good","Test":"TestSkipped","Output":"--- SKIP: TestSkipped (0.00s)\n"}
+{"Time":"2026-10-06T19:18:15.88154102Z","Action":"skip","Package":"example.com/t051/good","Test":"TestSkipped","Elapsed":0}
+{"Time":"2026-10-06T19:18:15.88154524Z","Action":"output","Package":"example.com/t051/good","Output":"PASS\n"}
+{"Time":"2026-10-06T19:18:15.882892596Z","Action":"output","Package":"example.com/t051/good","Output":"ok  \texample.com/t051/good\t0.006s\n"}
+{"Time":"2026-10-06T19:18:15.882932676Z","Action":"pass","Package":"example.com/t051/good","Elapsed":0.006}

@@ -1,0 +1,28 @@
+# T055b mutations A5..A19 (anchor/probe mutants, 11.4.113 contract): run_mutations_wp05b.py -j 4 A (host)
+# generated_utc=2026-10-06T21:33:46Z host=anton
+# sha256 9828d9a5ec77a29c62b0545f5b6c50cc9ce10fb7266af78e68a80764ef3ddcc9  tools/evidence/evanchor.py
+# sha256 cc43ff1c795ca062b1fa9edaebaa79b81fcdcacab2099f87781ab6a26923620b  tools/evidence/tests/test_anchors.sh
+# sha256 429f79a583ffe74fcec55531513f72e557bb7cf2566a6d10186cfcd000c30131  tools/evidence/tests/run_mutations_wp05b.py
+# sha256 e9f8ed3f486f75036bf09991ef5947e83cb6065c66165428bf8fc7d7be3febfa  docs/scripts/evidence-recorder.md
+T056-A1-anchor-comparison-removed-in-verify             CAUGHT             FAIL tamper: delete-and-recompute is caught by the anchor (exit 2) (exit 0, want 2: verify: ledger=/tmp/tmp.A7DMX1hnyK/w/ledger.jsonl blobs=
+T056-A2-head-not-compared                               CAUGHT             FAIL tamper: two reordered entries, chain recomputed AND renumbered, caught by the anchor (exit 2) (exit 0, want 2: verify: ledger=/tmp/tmp.
+T056-A3-count-not-compared                              CAUGHT             FAIL tamper: truncated tail is caught by the anchor (exit 2) (exit 1, want 2: verify: ledger=/tmp/tmp.kp5tEdXoIW/w/ledger.jsonl blobs=/tmp/t
+A4-only-newest-row-compared                             CAUGHT             FAIL an old anchor row that the rewritten history contradicts is caught although the newest row agrees (exit 2) (exit 0, want 2: verify: led
+A5-mechanism-without-probe-accepted                     CAUGHT             FAIL verify: a hand-written mechanism row with no probe evidence is UNVERIFIED (exit 3, strength_unproven) (exit 0, want 3: verify: ledger=/
+A6-anchor-writer-skips-chain-check                      CAUGHT             FAIL anchor row malformed: 
+A7-retired-scratch-flag-accepted                        CAUGHT             FAIL probe(retired flag): exit 0
+A8-network-remote-probed                                CAUGHT             FAIL probe(url): exit 0
+A9-rerecord-keeps-local-anchors                         CAUGHT             FAIL rerecord anchor leg: wrong anchors
+A10-mechanism-claim-without-evidence-written            CAUGHT             FAIL anchor: mechanism claimed without evidence (exit 0)
+A11-allow-remote-gives-mechanism                        CAUGHT             FAIL probe(allow): exit 0 strength=mechanism 
+A13-explicit-strength-policy-ignored                    CAUGHT             FAIL probe(policy requested): exit 0 strength=mechanism
+A12-existing-anchor-history-not-checked-when-adding     CAUGHT             FAIL anchor: re-anchored a forged chain (exit 0)
+A14-one-deny-key-suffices                               CAUGHT             FAIL probe(onlynff): exit 0 strength=mechanism 
+A15-executable-hook-counts-as-proof                     CAUGHT             FAIL probe(hook): exit 0 strength=mechanism {"at":"2026-10-06T21:32:23Z","count":4,"head":"ac3ebac568ae7f1d78bee8493524fead474e64787f232ab02
+A16-global-config-ignored                               CAUGHT             FAIL probe(global): origin not recorded: {"at":"2026-10-06T21:32:26Z","count":4,"head":"5d974aaa9a0d12061b393934b3391e6ffd6961a97bebe5eba2f5
+A17-forced-push-readded                                 CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+A18-plus-ref-push-readded                               CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+A18b-plain-push-built-in-code                           CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+A19-mechanism-row-without-probe-kind-accepted           CAUGHT             FAIL verify: a mechanism row whose probe is not probe_kind=config (the retired push probe) is UNVERIFIED strength_unproven (exit 0, want 3: 
+mutants=20 caught=20 reported_unspecified=0 not_caught_or_invalid=0
+# DONE rc=0
