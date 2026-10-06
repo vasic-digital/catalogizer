@@ -1,0 +1,19 @@
+# build IMG-GOTOOLS 2026-10-06T17:34:04Z hash=fd92f08b69b893d3 host=anton
+# containerfile sha256: c9cab96c5c4bc2e723c32a8fe3db6551a07de67733c14e96d4b4c476b7e89950
+disk_headroom: pass op=build-IMG-GOTOOLS need=900000000 min_free=12172240540 record=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp11/disk/build-IMG-GOTOOLS.json
+STEP 1/4: FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+STEP 2/4: ENV GOTOOLCHAIN=local GOFLAGS=-mod=mod CGO_ENABLED=0
+--> 8fb7ca87d69a
+STEP 3/4: RUN GOBIN=/usr/local/bin go install golang.org/x/tools/cmd/goimports@v0.49.0  && go clean -cache -modcache
+go: downloading golang.org/x/tools v0.49.0
+go: downloading golang.org/x/telemetry v0.0.0-20260811182544-a038080d80e5
+go: downloading golang.org/x/mod v0.39.0
+go: downloading golang.org/x/sync v0.22.0
+--> e3be3cd0f012
+STEP 4/4: LABEL project=catalogizer image=IMG-GOTOOLS
+COMMIT localhost/catalogizer-gotools:fd92f08b69b893d3
+--> bf0d238bb811
+Successfully tagged localhost/catalogizer-gotools:fd92f08b69b893d3
+bf0d238bb8113bdc3ff34c9f7c634a536be57316bf3594623a018c0aaacbda8f
+# build rc=0
+resolve_pin: IMG-GOTOOLS localhost/catalogizer-gotools@sha256:e4bbe8b97e0396269a3f64d8aa246d4acf0e31f74a9a043e75ad2695b0ab72cd platform=sha256:e4bbe8b97e0396269a3f64d8aa246d4acf0e31f74a9a043e75ad2695b0ab72cd size=840625535

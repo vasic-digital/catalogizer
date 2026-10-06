@@ -1,0 +1,19 @@
+# IMG-DOCS (T106): documentation render and check tools (docs/16 section 6.1). FROM docker.io/library/node:20-bookworm, the index digest of IMG-NODE
+# in build/containers/images.lock.yaml (Debian bookworm userland). Debian packages come from the dated snapshot of 2026-09-18 (the same snapshot
+# as IMG-TESTUTIL; the node image's own apt sources are replaced). Contents: pandoc and weasyprint (html, pdf, docx exports), chromium (the
+# headless browser of the diagram renderer), fonts, python3 with pytest, PyYAML and jsonschema, bash, git, jq; the Node tools below at exact versions.
+# npm verifies each tarball against the integrity (sha512) its registry metadata records; there is no lock file for these two global installs,
+# so the pin is version-exact, not tarball-hash-exact: UNCONFIRMED until a package-lock for them is committed (honest gap, see README.md).
+FROM docker.io/library/node@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
+USER root
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm bookworm-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20260918T000000Z\nSuites: bookworm-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "3";\n' > /etc/apt/apt.conf.d/99snapshot
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+      bash git jq ca-certificates pandoc weasyprint chromium fonts-noto-core fonts-noto-color-emoji fonts-dejavu-core \
+      python3 python3-pytest python3-yaml python3-jsonschema \
+ && rm -rf /var/lib/apt/lists/*
+ENV PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+RUN npm install -g --ignore-scripts --no-audit --no-fund @mermaid-js/mermaid-cli@12.0.0 vitepress@1.6.4 \
+ && npm cache clean --force
+LABEL project=catalogizer image=IMG-DOCS

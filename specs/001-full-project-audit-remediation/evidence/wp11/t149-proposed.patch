@@ -1,0 +1,56 @@
+--- a/docker-compose.security.yml
++++ b/docker-compose.security.yml
+@@ -6,7 +6,7 @@
+ services:
+   # SonarQube Community Edition (Enhanced for Freemium)
+   sonarqube:
+-    image: docker.io/library/sonarqube:community
++    image: docker.io/library/sonarqube:community@sha256:c0f1160bccfa435db4168c2d7df69af3c3ea7bfeb87395613014048fb33a68c1
+     container_name: catalogizer-sonarqube
+     environment:
+       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
+@@ -54,7 +54,7 @@
+ 
+   # SonarQube Database
+   sonarqube-db:
+-    image: docker.io/library/postgres:15-alpine
++    image: docker.io/library/postgres:15-alpine@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81
+     container_name: catalogizer-sonarqube-db
+     environment:
+       POSTGRES_USER: sonar
+@@ -84,7 +84,7 @@
+ 
+   # Snyk CLI Container (Enhanced for freemium scanning)
+   snyk-cli:
+-    image: docker.io/library/node:18-alpine
++    image: docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+     container_name: catalogizer-snyk-cli
+     environment:
+       SNYK_TOKEN: ${SNYK_TOKEN:-dummy-token}
+@@ -130,7 +130,7 @@
+ 
+   # OWASP Dependency Check
+   dependency-check:
+-    image: docker.io/owasp/dependency-check:latest
++    image: docker.io/owasp/dependency-check:13.0.0@sha256:0e8f69ad5b00d62000937f4e57189812343f6903d9c83ee712012d51542a020a
+     container_name: catalogizer-dependency-check
+     environment:
+       - JAVA_OPTS=-Xmx2g -Xms1g
+@@ -235,7 +235,7 @@
+ 
+   # Semgrep SAST Scanner
+   semgrep-scanner:
+-    image: docker.io/semgrep/semgrep:latest
++    image: docker.io/semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
+     container_name: catalogizer-semgrep
+     volumes:
+       - .:/project:ro
+@@ -273,7 +273,7 @@
+ 
+   # Hadolint Dockerfile Linter
+   hadolint:
+-    image: docker.io/hadolint/hadolint:latest
++    image: docker.io/hadolint/hadolint:v2.15.1@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d
+     volumes:
+       - .:/src:ro
+     working_dir: /src

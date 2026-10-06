@@ -1,0 +1,4 @@
+# build/containers/sigverify/digests.lock (T106)
+base docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251  # IMG-TESTUTIL-BASE debian bookworm-slim
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z
+download https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-linux-amd64 sha256:4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71  # equals cosign_checksums.txt of the release, read 2026-10-06

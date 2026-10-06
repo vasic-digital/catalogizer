@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "pull-IMG-SCAN-HADOLINT",
+  "at": "2026-10-06T17:30:00Z",
+  "need_bytes": 100000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 166273466368,
+      "free_after": 166173466368,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 166273445888,
+      "free_after": 166173445888,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

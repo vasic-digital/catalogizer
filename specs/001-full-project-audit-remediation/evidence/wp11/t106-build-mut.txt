@@ -1,0 +1,11 @@
+# build IMG-MUT 2026-10-06T17:35:53Z hash=4b8d57cacab11fa9 host=anton
+# containerfile sha256: e9845e094a2a192efa378eacf8712999884538f37d81017fc5d83417e91b3ba0
+disk_headroom: pass op=build-IMG-MUT need=900000000 min_free=12172240540 record=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp11/disk/build-IMG-MUT.json
+STEP 1/2: FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+STEP 2/2: LABEL project=catalogizer image=IMG-MUT
+COMMIT localhost/catalogizer-mut:4b8d57cacab11fa9
+--> 532734afcc7f
+Successfully tagged localhost/catalogizer-mut:4b8d57cacab11fa9
+532734afcc7fc0a775e511c6ab48cd3426d7e4d628d5deabc6baa3438efd7a93
+# build rc=0
+resolve_pin: IMG-MUT localhost/catalogizer-mut@sha256:2dd7f44d4c21a3ad5bdc9a64a6bcd35ffc167e234e80c891d854cbc3289843d7 platform=sha256:2dd7f44d4c21a3ad5bdc9a64a6bcd35ffc167e234e80c891d854cbc3289843d7 size=832629387

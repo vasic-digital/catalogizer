@@ -1,0 +1,24 @@
+# identity: T106-RED
+# head: b3728d76 (uncommitted work tree)
+# sha256 scripts/containers/tests/test_containerfiles.sh: 2fcf0cb961ff4209921d1bf9e5ebd86c937cc28798ac0f0060090f353c47b6a6
+# run_at: 2026-10-06T17:29:38Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-KCOV -- bash -c CF_TEST_NO_MUTATIONS=1 bash scripts/containers/tests/test_containerfiles.sh
+FAIL: REAL build/containers tree has 23 violations: C1-missing-directory go: required image directory is absent|C1-missing-directory gotools: required image directory is absent|C1-missing-directory node: required image directory is absent|C1-missing-directory playwright: required image directory is absent|C1-missing-directory docs: required image directory is absent|C1-missing-directory rust: required image directory is absent|
+PASS: GOLDEN-GOOD a compliant directory produces no violation
+PASS: GOLDEN-BAD tag-only FROM -> C3-check_pins fires
+PASS: GOLDEN-BAD pipe-to-shell -> C3-check_pins fires
+PASS: GOLDEN-BAD download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD README.md missing -> C2-README.md fires
+PASS: GOLDEN-BAD digests.lock missing -> C2-digests.lock fires
+PASS: GOLDEN-BAD digests.lock does not name the FROM digest -> C5-digests.lock-from fires
+PASS: GOLDEN-BAD digests.lock does not name the checked SHA-256 -> C5-digests.lock-sha256 fires
+PASS: GOLDEN-BAD no images.lock.yaml entry -> C6-lock-entry fires
+PASS: GOLDEN-BAD lock entry without a class -> C6-class fires
+PASS: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest -> C6-digest-mismatch fires
+PASS: GOLDEN-GOOD rust needs no lock entry (T143 writes it)
+PASS: GOLDEN-BAD required directory absent -> C1-missing-directory fires
+PASS: GOLDEN-BAD empty Containerfile -> C2-containerfile fires
+PASS: NEGCTL the compliant directory 'go' is never named
+PASS: NEGCTL the bad directory 'node' is named
+test_containerfiles: 16 passed, 1 failed
+# rc=1

@@ -1,0 +1,11 @@
+# identity: T106-goimports-baseline
+# head: b3728d76 (uncommitted work tree)
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# sha256 .audit/scratch/gi/files.txt: aa07a2b6653b9a0c3f1c2bd705a0d77dcae4c8d89f126e2c1ab77680c701b1bc
+# run_at: 2026-10-06T17:37:11Z host: anton
+# cmd: scripts/containers/run_pinned.sh --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp11/out-goimports IMG-GOTOOLS -- bash -c echo "needle (control, a mis-ordered import planted in a scratch file): $(goimports -l .audit/scratch/gi/needle | tr "\n" " ")"; echo "files measured (main repo tracked .go plus every own-organisation submodule .go, derive_scope own rows): $(wc -l < .audit/scratch/gi/files.txt)"; xargs -a .audit/scratch/gi/files.txt -d "\n" -n 300 goimports -l > /tmp/gi.txt 2>/tmp/gi.err; echo "goimports rc=$? stderr_lines=$(wc -l </tmp/gi.err)"; echo "violations: $(wc -l < /tmp/gi.txt) (list in out-goimports/goimports-violations.txt)"; sort /tmp/gi.txt > /out/goimports-violations.txt
+needle (control, a mis-ordered import planted in a scratch file): .audit/scratch/gi/needle/bad.go 
+files measured (main repo tracked .go plus every own-organisation submodule .go, derive_scope own rows): 5243
+goimports rc=0 stderr_lines=0
+violations: 324 (list in out-goimports/goimports-violations.txt)
+# rc=0

@@ -1,0 +1,30 @@
+# identity: T105-mutation-record (container run, IMG-KCOV via RUNP)
+# check_pins.sh sha256: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# mutation table sha256: 10507bd73fd57af28bd1a78939b509672c8915b85b3388d311b7fc37dcbd778b
+# check-pins-mutation record: paired mutations of scripts/containers/check_pins.sh (G-GATE)
+# run_at: 2026-10-06T17:21:55Z host: 2ed80db9ccf5
+# sut_sha256: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+MUTANT digest-relaxed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose short digest: exit status 1 (got '0' want '1')
+MUTANT compose-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT from-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Dockerfile FROM tag only: exit status 1 (got '0' want '1')
+MUTANT arg-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD FROM ${ARG} whose default is unpinned: exit status 1 (got '0' want '1')
+MUTANT copyfrom-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD COPY --from external image tag only: exit status 1 (got '0' want '1')
+MUTANT script-run-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script podman run registry image: exit status 1 (got '0' want '1')
+MUTANT script-tag-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script registry reference with a tag in an assignment: exit status 1 (got '0' want '1')
+MUTANT pipe-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Containerfile download piped into sh: exit status 1 (got '0' want '1')
+MUTANT pipe-substitution-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script bash <(download) process substitution: exit status 1 (got '0' want '1')
+MUTANT pipe-sudo-handling-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script download piped into sudo bash: exit status 1 (got '0' want '1')
+MUTANT pipe-or-or-guard-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT alias-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: exit status 0 (got '1' want '0')
+MUTANT comment-strip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER comments in a script: exit status 0 (got '1' want '0')
+MUTANT continuation-join-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1 (got '0' want '1')
+MUTANT heredoc-skip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER here-document body (fixture data) in a script under tests/: exit status 0 (got '1' want '0')
+MUTANT heredoc-skip-always: CAUGHT rc=1 first_fail=FAIL: HEREDOC a here-document body in a production script is judged like code (exit 1) (got '0' want '1')
+MUTANT variable-without-default-judged: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '1' want '0')
+MUTANT value-option-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script docker run short image: exit status 1 (got '0' want '1')
+MUTANT compose-dispatch-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: no 'VIOLATION compose_image_unpinned <path>:3:' line in: VIOLATION script_image_unpinned docker-compose.security.yml:3: docker.io/aquasec/trivy:latest|check_pins: 1 violations in 1 files scanned
+MUTANT markdown-exclusion-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER documentation (Markdown and text are not scanned): exit status 0 (got '1' want '0')
+MUTANT exit-status-always-zero: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT dynamic-digest-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT localhost-compose-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '1' want '0')
+# mutations: 23

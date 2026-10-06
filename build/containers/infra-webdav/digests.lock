@@ -1,0 +1,2 @@
+# build/containers/infra-webdav/digests.lock: every external digest and checksum the Containerfile relies on (T106). Edited only with the Containerfile.
+base docker.io/bytemark/webdav@sha256:bcabbc024c511b9c63ed3345f88573e31d84c952ee493c9acb3fe345f4f80f57  # tag intent 2.4, platform manifest sha256:bcabbc024c511b9c63ed3345f88573e31d84c952ee493c9acb3fe345f4f80f57

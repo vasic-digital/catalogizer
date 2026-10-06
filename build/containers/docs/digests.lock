@@ -1,0 +1,5 @@
+# build/containers/docs/digests.lock (T106)
+base docker.io/library/node@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5  # IMG-NODE node:20-bookworm
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z (bookworm, bookworm-updates) and debian-security/20260918T000000Z
+npm @mermaid-js/mermaid-cli@12.0.0  # sha512 integrity from registry metadata, no lock file (honest gap)
+npm vitepress@1.6.4  # same

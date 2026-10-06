@@ -1,0 +1,15 @@
+# identity: T106-smoke-docs
+# head: b3728d76 (uncommitted work tree)
+# run_at: 2026-10-06T17:40:21Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-DOCS -- bash -c python3 -c 'import pytest, yaml, jsonschema; print("py ok")'; pandoc --version | head -1; weasyprint --version; chromium --version; mmdc --version; npm ls -g --depth=0 2>/dev/null | grep -E 'vitepress|mermaid'; jq --version; git --version; bash --version | head -1
+py ok
+pandoc 2.17.1.1
+WeasyPrint version 57.2
+Chromium 152.0.7977.82 built on Debian GNU/Linux 12 (bookworm)
+12.0.0
++-- @mermaid-js/mermaid-cli@12.0.0
+`-- vitepress@1.6.4
+jq-1.6
+git version 2.39.5
+GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)
+# rc=0

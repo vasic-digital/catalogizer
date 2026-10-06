@@ -1,0 +1,20 @@
+# IMG-INFRA-CLIENT (T106, IMG-INFRA-CLIENT, round-24 review I5): interpreter-class image with the protocol clients of the WP-13 probes and round
+# trips, so no probe runs a client on the bare host or inside a service-class image: psql, redis-cli, mc (MinIO client), lftp (FTP, passive
+# mode), smbclient, curl (WebDAV PROPFIND), and the user-space NFS client utilities of libnfs (nfs-ls, nfs-cp, nfs-cat; no kernel mount).
+# Stage 1 builds mc from source: the upstream binary download (dl.min.io) answers 410 Gone since the project was archived (probed 2026-10-06),
+# so the module is fetched through the Go module proxy and verified by the Go checksum database; mc is therefore an archived, unmaintained
+# client (11.4.270 verdict in evidence wp11/mc-client.json). Stage 2: Debian bookworm at the dated snapshot, every package at an exact
+# version; the signed archive keyring verifies the packages.
+FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 AS mcbuild
+ENV GOTOOLCHAIN=local CGO_ENABLED=0
+RUN GOBIN=/out go install github.com/minio/mc@v0.0.0-20251106162529-77f82e18b540
+FROM docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+RUN printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20260918T000000Z\nSuites: bookworm\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\n' > /etc/apt/sources.list.d/debian.sources \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "3";\n' > /etc/apt/apt.conf.d/99snapshot
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+      ca-certificates=20230311+deb12u1 curl=7.88.1-10+deb12u15 postgresql-client=15+248+deb12u1 redis-tools=5:7.0.15-1~deb12u7 \
+      lftp=4.9.2-2+b1 smbclient=2:4.17.12+dfsg-0+deb12u4 libnfs-utils=4.0.0-1 \
+ && rm -rf /var/lib/apt/lists/*
+COPY --from=mcbuild /out/mc /usr/local/bin/mc
+LABEL project=catalogizer image=IMG-INFRA-CLIENT

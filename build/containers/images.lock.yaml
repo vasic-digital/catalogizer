@@ -54,3 +54,297 @@ images:
   purpose: kcov + P0 harness tools (FROM IMG-TESTUTIL, built locally on anton)
   signature_status: UNKNOWN
   size_bytes: 283106672
+- id: IMG-NODE
+  reference: docker.io/library/node
+  tag_intent: 20-bookworm
+  digest: sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
+  platform_digest: sha256:cacf10e99285cbbc891452e31249c1b5ec3ba225f40028fae946b75aeaf1b66a
+  resolved_at: '2026-10-06T17:27:13Z'
+  resolved_on: anton
+  purpose: catalog-web and TypeScript module build (Node 20 matches catalog-web/Dockerfile)
+  signature_status: UNKNOWN
+  size_bytes: 1119538401
+  class: compile
+- id: IMG-PW
+  reference: mcr.microsoft.com/playwright
+  tag_intent: v1.57.0-noble
+  digest: sha256:3bed4b1a12f2338642f3d8cba28e291deef3c66bd4a964bbeb3e57bbff511dbd
+  platform_digest: sha256:8fb7af3bb488c51364d6554876a8eddf377736608327dbdf4177b4901faf7bc9
+  resolved_at: '2026-10-06T17:27:55Z'
+  resolved_on: anton
+  purpose: web E2E and visual regression (version aligned with catalog-web/package.json
+    @playwright/test ^1.57.0)
+  signature_status: UNKNOWN
+  size_bytes: 2385219146
+  class: compile
+- id: IMG-INFRA-POSTGRES
+  reference: docker.io/library/postgres
+  tag_intent: 15-alpine
+  digest: sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81
+  platform_digest: sha256:25d430274d8a31184f9435cc5b2f56aff254952065bbbcac0c51acedb5a1d1e7
+  resolved_at: '2026-10-06T17:28:09Z'
+  resolved_on: anton
+  purpose: test infrastructure PostgreSQL (docs/16 section 10.2)
+  signature_status: UNKNOWN
+  size_bytes: 294913943
+  class: service
+- id: IMG-INFRA-REDIS
+  reference: docker.io/library/redis
+  tag_intent: 7-alpine
+  digest: sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+  platform_digest: sha256:ca0acbb137c1dc3339c8b147a58fd6f42775d4599327b50e7b116c23de501af2
+  resolved_at: '2026-10-06T17:28:16Z'
+  resolved_on: anton
+  purpose: test infrastructure Redis (docs/16 section 10.2)
+  signature_status: UNKNOWN
+  size_bytes: 39876957
+  class: service
+- id: IMG-INFRA-FTP
+  reference: docker.io/stilliard/pure-ftpd
+  tag_intent: latest
+  digest: sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a
+  platform_digest: sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a
+  resolved_at: '2026-10-06T17:28:37Z'
+  resolved_on: anton
+  purpose: test infrastructure FTP (image last updated 2018-12, maintenance UNKNOWN,
+    docs/16 section 10.2)
+  signature_status: UNKNOWN
+  size_bytes: 177925397
+  class: service
+- id: IMG-INFRA-SMB
+  reference: docker.io/dperson/samba
+  tag_intent: latest
+  digest: sha256:66088b78a19810dd1457a8f39340e95e663c728083efa5fe7dc0d40b2478e869
+  platform_digest: sha256:e1d2a7366690749a7be06f72bdbf6a5a7d15726fc84e4e4f41e967214516edfd
+  resolved_at: '2026-10-06T17:28:53Z'
+  resolved_on: anton
+  purpose: test infrastructure SMB (image last updated 2021, maintenance UNKNOWN,
+    docs/16 section 10.2)
+  signature_status: UNKNOWN
+  size_bytes: 53643842
+  class: service
+- id: IMG-INFRA-WEBDAV
+  reference: docker.io/bytemark/webdav
+  tag_intent: '2.4'
+  digest: sha256:bcabbc024c511b9c63ed3345f88573e31d84c952ee493c9acb3fe345f4f80f57
+  platform_digest: sha256:bcabbc024c511b9c63ed3345f88573e31d84c952ee493c9acb3fe345f4f80f57
+  resolved_at: '2026-10-06T17:29:00Z'
+  resolved_on: anton
+  purpose: test infrastructure WebDAV (image last updated 2018-12, maintenance UNKNOWN,
+    docs/16 section 10.2)
+  signature_status: UNKNOWN
+  size_bytes: 100294647
+  class: service
+- id: IMG-SCAN-TRIVY
+  reference: docker.io/aquasec/trivy
+  tag_intent: 0.75.0
+  digest: sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
+  platform_digest: sha256:9db099105405c648166e6b94155eb32f8da12673cf1f455207f7385cc9a77283
+  resolved_at: '2026-10-06T17:29:11Z'
+  resolved_on: anton
+  purpose: Trivy filesystem scan (docs/20 W20-01/W20-02; 0.75.0 is above every patched
+    version of the GHSA-69fq-xp46-6x23 supply-chain advisory and the 0.71.0 to 0.72.0
+    advisories)
+  signature_status: VERIFIED
+  size_bytes: 195331422
+  class: interpreter
+- id: IMG-SCAN-GITLEAKS
+  reference: ghcr.io/gitleaks/gitleaks
+  tag_intent: v8.30.1
+  digest: sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+  platform_digest: sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb
+  resolved_at: '2026-10-06T17:29:17Z'
+  resolved_on: anton
+  purpose: gitleaks secret scan (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 50835518
+  class: interpreter
+- id: IMG-SCAN-TRUFFLEHOG
+  reference: docker.io/trufflesecurity/trufflehog
+  tag_intent: 3.98.1
+  digest: sha256:7f1763b872981561538f5d67a4c8247144729dda8110dee83d60b942cd138432
+  platform_digest: sha256:aac69b0129baf7984d3f6670102cddc2bf3e9438829abc84c13980b1f0ec0882
+  resolved_at: '2026-10-06T17:29:24Z'
+  resolved_on: anton
+  purpose: trufflehog secret scan (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 64616571
+  class: interpreter
+- id: IMG-SCAN-SEMGREP
+  reference: docker.io/semgrep/semgrep
+  tag_intent: 1.179.0
+  digest: sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b
+  platform_digest: sha256:cab19964e6c93019934252a9cd591d9b27df1e5b5d1734b26f4069ae51c295f8
+  resolved_at: '2026-10-06T17:29:45Z'
+  resolved_on: anton
+  purpose: Semgrep static analysis (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 1118732921
+  class: interpreter
+- id: IMG-SCAN-GOSEC
+  reference: docker.io/securego/gosec
+  tag_intent: 2.24.6
+  digest: sha256:2cf71ea78210c496c65e3a987576a9c8317b68e20f2960520b3f6f8f9f539be5
+  platform_digest: sha256:c538dc03cf999d1f2c6d012b5e82169882564b062baa47f07a03a95285ab1636
+  resolved_at: '2026-10-06T17:29:58Z'
+  resolved_on: anton
+  purpose: gosec Go security analyser (Go-toolchain analyser, class compile, docs/20
+    W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 509563601
+  class: compile
+- id: IMG-SCAN-HADOLINT
+  reference: docker.io/hadolint/hadolint
+  tag_intent: v2.15.1
+  digest: sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d
+  platform_digest: sha256:fdf19d026b54834f88c62774fdf2a61ff3b586a42632e5070674d41a796bfdf3
+  resolved_at: '2026-10-06T17:30:05Z'
+  resolved_on: anton
+  purpose: hadolint Dockerfile lint (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 55667105
+  class: interpreter
+- id: IMG-SCAN-SYFT
+  reference: docker.io/anchore/syft
+  tag_intent: v1.54.1
+  digest: sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa
+  platform_digest: sha256:507b76f097cd0f4a0f998a346afe61f5776329913d6ab3c0bd678b6635356120
+  resolved_at: '2026-10-06T17:30:13Z'
+  resolved_on: anton
+  purpose: syft SBOM generation over a directory (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 92015689
+  class: interpreter
+- id: IMG-SCAN-ZAP
+  reference: ghcr.io/zaproxy/zaproxy
+  tag_intent: 2.17.0
+  digest: sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef
+  platform_digest: sha256:71db37cd5b75663b35758d10aaec05bf6fbac23f5020e3046c70e628a5f84efa
+  resolved_at: '2026-10-06T17:30:18Z'
+  resolved_on: anton
+  purpose: OWASP ZAP dynamic scan (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 2430356365
+  class: interpreter
+- id: IMG-SCAN-TESTSSL
+  reference: docker.io/drwetter/testssl.sh
+  tag_intent: '3.2'
+  digest: sha256:61f638ce55000e759949e52df5a25804e90bb88c8bae5ef74dee3b5b61fe23b3
+  platform_digest: sha256:61f638ce55000e759949e52df5a25804e90bb88c8bae5ef74dee3b5b61fe23b3
+  resolved_at: '2026-10-06T17:30:27Z'
+  resolved_on: anton
+  purpose: testssl.sh TLS scan (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 54058273
+  class: interpreter
+- id: IMG-SCAN-SONAR-SCANNER
+  reference: docker.io/sonarsource/sonar-scanner-cli
+  tag_intent: '12.2'
+  digest: sha256:a3f4215076706c95a17a68c19322ee916e40a3acd081a8c1a1e839e0194afa57
+  platform_digest: sha256:a3f4215076706c95a17a68c19322ee916e40a3acd081a8c1a1e839e0194afa57
+  resolved_at: '2026-10-06T17:30:45Z'
+  resolved_on: anton
+  purpose: sonar-scanner CLI (docs/20 W20-01)
+  signature_status: UNKNOWN
+  size_bytes: 1010464124
+  class: interpreter
+- id: IMG-SCAN-SONARQUBE
+  reference: docker.io/library/sonarqube
+  tag_intent: community
+  digest: sha256:c0f1160bccfa435db4168c2d7df69af3c3ea7bfeb87395613014048fb33a68c1
+  platform_digest: sha256:2561a3ceb4e80c3cd2db2a110683a896f99efb5363855a0c4876936d51a882ca
+  resolved_at: '2026-10-06T17:31:12Z'
+  resolved_on: anton
+  purpose: SonarQube server of docker-compose.security.yml
+  signature_status: UNKNOWN
+  size_bytes: 1443331365
+  class: service
+- id: IMG-SCAN-DEPCHECK
+  reference: docker.io/owasp/dependency-check
+  tag_intent: 13.0.0
+  digest: sha256:0e8f69ad5b00d62000937f4e57189812343f6903d9c83ee712012d51542a020a
+  platform_digest: sha256:a56d7e182706a22fdf1a5f70421fa415b9a096c9a4ba5a479cd4936e90dd8ba9
+  resolved_at: '2026-10-06T17:31:29Z'
+  resolved_on: anton
+  purpose: OWASP dependency-check of docker-compose.security.yml
+  signature_status: UNKNOWN
+  size_bytes: 630737719
+  class: interpreter
+- id: IMG-SCAN-NODE18
+  reference: docker.io/library/node
+  tag_intent: 18-alpine
+  digest: sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+  platform_digest: sha256:929b04d7c782f04f615cf785488fed452b6569f87c73ff666ad553a7554f0006
+  resolved_at: '2026-10-06T17:31:39Z'
+  resolved_on: anton
+  purpose: node:18-alpine image of docker-compose.security.yml (snyk CLI service)
+  signature_status: UNKNOWN
+  size_bytes: 129446790
+  class: compile
+- id: IMG-UBUNTU-BASE
+  reference: docker.io/library/ubuntu
+  tag_intent: '24.04'
+  digest: sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
+  platform_digest: sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b
+  resolved_at: '2026-10-06T17:31:50Z'
+  resolved_on: anton
+  purpose: base of IMG-ANDROID (JDK 21 is packaged in noble)
+  signature_status: UNKNOWN
+  size_bytes: 80701300
+- id: IMG-SIGVERIFY
+  reference: localhost/catalogizer-sigverify
+  tag_intent: fa955f05851f57b1
+  digest: sha256:79bd8290eb36fa3fc7e9ab208fa3688d1ca07f0cb06c9dc7cc07ecde246dc0fb
+  platform_digest: sha256:79bd8290eb36fa3fc7e9ab208fa3688d1ca07f0cb06c9dc7cc07ecde246dc0fb
+  resolved_at: '2026-10-06T17:34:04Z'
+  resolved_on: anton
+  purpose: 'cosign for publisher-signature verification (T149; built locally on the
+    build host anton, owner decision: this host)'
+  signature_status: UNKNOWN
+  size_bytes: 228658497
+  class: interpreter
+- id: IMG-GOTOOLS
+  reference: localhost/catalogizer-gotools
+  tag_intent: fd92f08b69b893d3
+  digest: sha256:e4bbe8b97e0396269a3f64d8aa246d4acf0e31f74a9a043e75ad2695b0ab72cd
+  platform_digest: sha256:e4bbe8b97e0396269a3f64d8aa246d4acf0e31f74a9a043e75ad2695b0ab72cd
+  resolved_at: '2026-10-06T17:34:21Z'
+  resolved_on: anton
+  purpose: goimports for the commit-push S3 checks (built locally on anton)
+  signature_status: UNKNOWN
+  size_bytes: 840625535
+  class: compile
+- id: IMG-INFRA-CLIENT
+  reference: localhost/catalogizer-infra-client
+  tag_intent: d8de959044d4a102
+  digest: sha256:83085e496b6219f5bf477dd5e099a767b9b6889e33dfa50a6c59106a8d137f62
+  platform_digest: sha256:83085e496b6219f5bf477dd5e099a767b9b6889e33dfa50a6c59106a8d137f62
+  resolved_at: '2026-10-06T17:35:53Z'
+  resolved_on: anton
+  purpose: protocol clients of the WP-13 probes and round trips (built locally on
+    anton)
+  signature_status: UNKNOWN
+  size_bytes: 269598900
+  class: interpreter
+- id: IMG-MUT
+  reference: localhost/catalogizer-mut
+  tag_intent: 4b8d57cacab11fa9
+  digest: sha256:2dd7f44d4c21a3ad5bdc9a64a6bcd35ffc167e234e80c891d854cbc3289843d7
+  platform_digest: sha256:2dd7f44d4c21a3ad5bdc9a64a6bcd35ffc167e234e80c891d854cbc3289843d7
+  resolved_at: '2026-10-06T17:35:56Z'
+  resolved_on: anton
+  purpose: mutation-testing base, tools added by T479 to T481 (built locally on anton)
+  signature_status: UNKNOWN
+  size_bytes: 832629387
+  class: compile
+- id: IMG-DOCS
+  reference: localhost/catalogizer-docs
+  tag_intent: 510f09d560e96117
+  digest: sha256:6eec84b4ae76533131a706bc81a517f08046f2eb9ebc64e1979708c26b8db07c
+  platform_digest: sha256:6eec84b4ae76533131a706bc81a517f08046f2eb9ebc64e1979708c26b8db07c
+  resolved_at: '2026-10-06T17:38:43Z'
+  resolved_on: anton
+  purpose: documentation render and check tools (built locally on anton)
+  signature_status: UNKNOWN
+  size_bytes: 3162777280
+  class: compile

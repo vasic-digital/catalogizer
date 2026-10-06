@@ -1,0 +1,9 @@
+# IMG-GOTOOLS (T106): Go source tools for the commit-push S3 checks. FROM the IMG-GO digest (docker.io/library/golang:1.25-bookworm).
+# goimports from golang.org/x/tools at v0.49.0 (go.mod of that version: go 1.25.0, so it builds with the Go 1.25 toolchain of IMG-GO; v0.50.0
+# and later require go 1.26.0). The module and its dependencies are verified through the Go checksum database (sum.golang.org) at build time:
+# GONOSUMDB/GONOSUMCHECK/GOFLAGS=-insecure are never set, GOTOOLCHAIN=local forbids a toolchain download.
+FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+ENV GOTOOLCHAIN=local GOFLAGS=-mod=mod CGO_ENABLED=0
+RUN GOBIN=/usr/local/bin go install golang.org/x/tools/cmd/goimports@v0.49.0 \
+ && go clean -cache -modcache
+LABEL project=catalogizer image=IMG-GOTOOLS

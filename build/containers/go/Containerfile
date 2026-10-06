@@ -1,0 +1,5 @@
+# IMG-GO (T106): the Go build and test image. docs/16 section 6.1 chose tag 1.25-bookworm (glibc: CGO links docx.c against glibc fortify symbols).
+# The lock entry IMG-GO IS this upstream image by its index digest, so this Containerfile adds nothing: it is the declared, digest-pinned
+# build input that a local derivation (build cache layers, extra system libraries) would extend, and the file the pin checks cover.
+FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+LABEL project=catalogizer image=IMG-GO

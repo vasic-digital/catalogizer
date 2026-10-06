@@ -1,0 +1,7 @@
+# identity: T106-smoke-mut
+# head: b3728d76 (uncommitted work tree)
+# run_at: 2026-10-06T17:39:01Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-MUT -- bash -c go version; git --version
+go version go1.25.14 linux/amd64
+git version 2.39.5
+# rc=0

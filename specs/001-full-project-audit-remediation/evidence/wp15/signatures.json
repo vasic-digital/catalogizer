@@ -1,0 +1,144 @@
+{
+  "identity": "T149 signature verification",
+  "generated_at": "2026-10-06T17:40:46Z",
+  "host": "anton",
+  "verifier": {
+    "id": "IMG-SIGVERIFY",
+    "image": "localhost/catalogizer-sigverify@sha256:79bd8290eb36fa3fc7e9ab208fa3688d1ca07f0cb06c9dc7cc07ecde246dc0fb",
+    "tool": "cosign v3.1.3 (GitCommit 11926fa5bbbbde47e88fc006b625a17769b743b2)",
+    "recorded_before_any_verdict": true
+  },
+  "method": "scripts/containers/run_pinned.sh IMG-SIGVERIFY -- cosign verify --certificate-identity-regexp <publisher workflow identity> --certificate-oidc-issuer https://token.actions.githubusercontent.com <reference>@<digest>; the identity regexps are my reading of each publisher's GitHub organisation (UNCONFIRMED against the publishers' documentation except where stated), so UNKNOWN may also mean a wrong identity guess.",
+  "images": [
+    {
+      "id": "IMG-SCAN-TRIVY",
+      "image": "docker.io/aquasec/trivy@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa",
+      "signature_status": "VERIFIED",
+      "reason": "cosign verify exit 0: claims validated, transparency-log inclusion verified offline, certificate chain verified; identity regexp and issuer matched",
+      "cosign_rc": 0,
+      "identity_regexp": "^https://github.com/aquasecurity/trivy/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": " Verification for index.docker.io/aquasec/trivy@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa -- The following checks were performed on each of these signatures:   - The cosign claims were validated   - Existence of the claims in the transparency log was verified offline   "
+    },
+    {
+      "id": "IMG-SCAN-GITLEAKS",
+      "image": "ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/gitleaks/gitleaks/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-TRUFFLEHOG",
+      "image": "docker.io/trufflesecurity/trufflehog@sha256:7f1763b872981561538f5d67a4c8247144729dda8110dee83d60b942cd138432",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/trufflesecurity/trufflehog/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-SEMGREP",
+      "image": "docker.io/semgrep/semgrep@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/(semgrep|returntocorp)/semgrep",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-GOSEC",
+      "image": "docker.io/securego/gosec@sha256:2cf71ea78210c496c65e3a987576a9c8317b68e20f2960520b3f6f8f9f539be5",
+      "signature_status": "UNKNOWN",
+      "reason": "a signature was found but cosign verification FAILED (not recorded as verified): Error: no matching attestations: failed to verify log inclusion: transparency log certificate does not match failed to verify log inclusion: transparency log certificate does not match failed to verif",
+      "cosign_rc": 1,
+      "identity_regexp": "^https://github.com/securego/gosec/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no matching attestations: failed to verify log inclusion: transparency log certificate does not match failed to verify log inclusion: transparency log certificate does not match failed to verify log inclusion: transparency log certificate does not match error during command execution: no matc"
+    },
+    {
+      "id": "IMG-SCAN-HADOLINT",
+      "image": "docker.io/hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/hadolint/hadolint/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-SYFT",
+      "image": "docker.io/anchore/syft@sha256:3eb5379ba7b409c3f4069b686110527af0c47df993fa5c10d13e7cf34f49b1aa",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/anchore/syft/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-ZAP",
+      "image": "ghcr.io/zaproxy/zaproxy@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/zaproxy/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-TESTSSL",
+      "image": "docker.io/drwetter/testssl.sh@sha256:61f638ce55000e759949e52df5a25804e90bb88c8bae5ef74dee3b5b61fe23b3",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/(testssl|drwetter)/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-SONAR-SCANNER",
+      "image": "docker.io/sonarsource/sonar-scanner-cli@sha256:a3f4215076706c95a17a68c19322ee916e40a3acd081a8c1a1e839e0194afa57",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/SonarSource/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-SONARQUBE",
+      "image": "docker.io/library/sonarqube@sha256:c0f1160bccfa435db4168c2d7df69af3c3ea7bfeb87395613014048fb33a68c1",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/SonarSource/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    },
+    {
+      "id": "IMG-SCAN-DEPCHECK",
+      "image": "docker.io/owasp/dependency-check@sha256:0e8f69ad5b00d62000937f4e57189812343f6903d9c83ee712012d51542a020a",
+      "signature_status": "UNKNOWN",
+      "reason": "no cosign signature found for this digest in the image's repository (the publisher may sign elsewhere or not at all: UNCONFIRMED)",
+      "cosign_rc": 10,
+      "identity_regexp": "^https://github.com/(jeremylong|dependency-check)/",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cosign_output_head": "Error: no signatures found error during command execution: no signatures found"
+    }
+  ],
+  "not_covered": [
+    {
+      "id": "govulncheck",
+      "reason": "no upstream image exists for govulncheck (golang.org/x/vuln); it would be added to IMG-GOTOOLS or its own image (owner decision), so it has no lock entry: OWED"
+    },
+    {
+      "id": "IMG-INFRA-*, IMG-NODE, IMG-PW",
+      "reason": "docker official images and Microsoft's Playwright image were not verified by this task (no cosign check run): signature_status stays UNKNOWN"
+    }
+  ]
+}

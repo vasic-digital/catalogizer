@@ -1,0 +1,5 @@
+# IMG-MUT (T106): mutation-testing base. FROM the IMG-GO digest (Go toolchain, gcc, git). The mutation tools themselves are NOT installed here:
+# each is added by the task that adopts it, after its 11.4.270 existence verdict (T479 go-mutesting fork, T480 Stryker, T481 PIT and
+# cargo-mutants), as an additional pinned layer of this file. Runs only through scripts/containers/run_pinned.sh IMG-MUT.
+FROM docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437
+LABEL project=catalogizer image=IMG-MUT

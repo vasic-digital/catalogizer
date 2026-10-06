@@ -1,0 +1,5 @@
+# IMG-INFRA-FTP (T106): Test-infrastructure FTP server (pure-ftpd). Service class. The image was last updated 2018-12-14 (Docker Hub), maintenance UNKNOWN (docs/16 section 10.2).
+# The lock entry IMG-INFRA-FTP IS this upstream image by its index digest (tag intent latest, resolved 2026-10-06T17:28:37Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM docker.io/stilliard/pure-ftpd@sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a
+LABEL project=catalogizer image=IMG-INFRA-FTP

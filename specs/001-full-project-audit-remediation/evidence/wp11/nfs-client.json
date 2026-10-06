@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-10-06T17:40:33Z",
+  "host": "anton",
+  "constitution": "11.4.270 dependency-existence verdict",
+  "task": "T106",
+  "dependency": "libnfs-utils (nfs-ls, nfs-cp, nfs-cat) from Debian bookworm at snapshot 20260918T000000Z",
+  "version": "4.0.0-1",
+  "verdict": "VERIFIED",
+  "evidence": {
+    "apt_cache_policy_candidate": "libnfs-utils 4.0.0-1, libnfs13 4.0.0-1 (probed in debian bookworm-slim at the 2026-09-18 snapshot before the Containerfile was written)",
+    "installed_in_IMG-INFRA-CLIENT": [
+      "Package: libnfs-utils",
+      "Status: install ok installed",
+      "Version: 4.0.0-1",
+      "-rwxr-xr-x 1 root root 14568 Sep  4  2019 /usr/bin/nfs-cat",
+      "-rwxr-xr-x 1 root root 14632 Sep  4  2019 /usr/bin/nfs-cp",
+      "-rwxr-xr-x 1 root root 14624 Sep  4  2019 /usr/bin/nfs-ls",
+      "No URL specified.",
+      "Usage: nfs-ls [-?|--help|--usage] [-R|--recursive] [-s|--summary] [-D|--discovery] <url>",
+      "/usr/bin/nfs-cat",
+      "/usr/bin/nfs-cp",
+      "/usr/bin/nfs-ls"
+    ],
+    "run_rc": 0
+  },
+  "note": "VERIFIED for existence and installation: the package resolves from the signed Debian archive snapshot and its three binaries are present in the built image. Whether they complete a real NFS round trip is UNCONFIRMED: that needs an NFS server reachable without privileges (docs/16 DR-16-2, T134), not provided here."
+}

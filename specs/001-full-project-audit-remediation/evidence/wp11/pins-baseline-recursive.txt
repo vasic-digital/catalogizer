@@ -1,0 +1,283 @@
+# identity: T105-pins-baseline-recursive (git ls-files --recurse-submodules; includes third-party submodules, own-organisation filter is CPA's, T040 rule W, UNCONFIRMED)
+# run_at: 2026-10-06T17:24:36Z
+# cmd: scripts/containers/check_pins.sh --list --recurse
+from_unpinned	OCU-CUDA-Sidecar/Dockerfile	15	nvidia/cuda:12.2.0-devel-ubuntu22.04
+from_unpinned	OCU-CUDA-Sidecar/Dockerfile	64	nvidia/cuda:12.2.0-runtime-ubuntu22.04
+from_unpinned	catalog-api/Dockerfile	8	docker.io/library/golang:1.25
+from_unpinned	catalog-api/Dockerfile	56	docker.io/library/debian:trixie-slim
+from_unpinned	catalog-api/Dockerfile.dev	1	golang:1.25-alpine
+from_unpinned	catalog-api/Dockerfile.runtime	12	docker.io/library/debian:trixie-slim
+from_unpinned	catalog-web/Dockerfile	1	docker.io/node:20-alpine
+from_unpinned	catalog-web/Dockerfile	64	docker.io/nginx:alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	4	postgres:15-alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	13	redis:7-alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	18	quay.io/minio/minio:latest
+compose_image_unpinned	deploy/infra-compose.yml	4	postgres:15-alpine
+compose_image_unpinned	deploy/infra-compose.yml	22	redis:7-alpine
+compose_image_unpinned	deploy/infra-compose.yml	36	quay.io/minio/minio:latest
+script_image_unpinned	deployment/amber-up.sh	70	docker.io/library/postgres:16-alpine
+script_image_unpinned	deployment/amber-up.sh	92	docker.io/library/redis:7-alpine
+script_image_unpinned	deployment/amber-up.sh	132	host.containers.internal:host-gateway
+compose_image_unpinned	deployment/docker-compose.yml	6	postgres:15-alpine
+compose_image_unpinned	deployment/docker-compose.yml	29	redis:7-alpine
+compose_image_unpinned	deployment/docker-compose.yml	47	catalogizer/server:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	117	catalogizer/transcoder:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	144	catalogizer/web:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	166	prom/prometheus:latest
+compose_image_unpinned	deployment/docker-compose.yml	192	grafana/grafana:latest
+compose_image_unpinned	deployment/docker-compose.yml	218	catalogizer/backup:${CATALOGIZER_VERSION:-latest}
+script_image_unpinned	deployment/thinker-up.sh	74	docker.io/library/postgres:16-alpine
+script_image_unpinned	deployment/thinker-up.sh	95	docker.io/library/redis:7-alpine
+script_image_unpinned	deployment/thinker-up.sh	133	host.containers.internal:host-gateway
+compose_image_unpinned	docker-compose.build.yml	10	docker.io/library/postgres:15-alpine
+compose_image_unpinned	docker-compose.build.yml	35	docker.io/library/redis:7-alpine
+compose_image_unpinned	docker-compose.build.yml	118	docker.io/budtmo/docker-android:emulator_14.0
+compose_image_unpinned	docker-compose.dev.yml	6	postgres:15-alpine
+compose_image_unpinned	docker-compose.dev.yml	28	redis:7-alpine
+compose_image_unpinned	docker-compose.dev.yml	101	dpage/pgadmin4:latest
+compose_image_unpinned	docker-compose.dev.yml	120	rediscommander/redis-commander:latest
+compose_image_unpinned	docker-compose.dev.yml	135	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.qa.yml	39	docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy
+compose_image_unpinned	docker-compose.qa.yml	232	docker.io/library/node:18-bookworm-slim
+compose_image_unpinned	docker-compose.security.yml	9	docker.io/library/sonarqube:community
+compose_image_unpinned	docker-compose.security.yml	57	docker.io/library/postgres:15-alpine
+compose_image_unpinned	docker-compose.security.yml	87	docker.io/library/node:18-alpine
+compose_image_unpinned	docker-compose.security.yml	133	docker.io/owasp/dependency-check:latest
+compose_image_unpinned	docker-compose.security.yml	169	docker.io/aquasec/trivy:latest
+compose_image_unpinned	docker-compose.security.yml	216	docker.io/aquasec/trivy:latest
+compose_image_unpinned	docker-compose.security.yml	238	docker.io/semgrep/semgrep:latest
+compose_image_unpinned	docker-compose.security.yml	276	docker.io/hadolint/hadolint:latest
+compose_image_unpinned	docker-compose.test-infra.yml	41	docker.io/stilliard/pure-ftpd:latest
+compose_image_unpinned	docker-compose.test-infra.yml	87	docker.io/dperson/samba:latest
+compose_image_unpinned	docker-compose.test-infra.yml	127	docker.io/bytemark/webdav:latest
+compose_image_unpinned	docker-compose.test-infra.yml	168	docker.io/erichough/nfs-server:latest
+compose_image_unpinned	docker-compose.test-infra.yml	208	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.test-infra.yml	243	docker.io/library/alpine:3.19
+compose_image_unpinned	docker-compose.test.yml	42	catalogizer-api:test
+compose_image_unpinned	docker-compose.test.yml	91	catalogizer-web:test
+compose_image_unpinned	docker-compose.test.yml	124	docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy
+compose_image_unpinned	docker-compose.test.yml	170	catalogizer-android-emulator:test
+compose_image_unpinned	docker-compose.test.yml	229	catalogizer-tauri-desktop:test
+compose_image_unpinned	docker-compose.test.yml	289	catalogizer-tauri-wizard:test
+compose_image_unpinned	docker-compose.yml	9	postgres:15-alpine
+compose_image_unpinned	docker-compose.yml	40	redis:7-alpine
+compose_image_unpinned	docker-compose.yml	143	prom/prometheus:latest
+compose_image_unpinned	docker-compose.yml	171	grafana/grafana:latest
+compose_image_unpinned	docker-compose.yml	201	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.yml	231	nginx:alpine
+from_unpinned	docker/Dockerfile.android	5	docker.io/library/openjdk:21-jdk
+from_unpinned	docker/Dockerfile.android2	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.android3	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.android4	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.builder	5	ubuntu:22.04
+pipe_to_shell	docker/Dockerfile.builder	66	curl -fsSL https://deb.nodesource.com/setup_18.x && break || (echo "Attempt $i failed, waiting 15s..." && sleep 15); done | bash
+pipe_to_shell	docker/Dockerfile.builder	80	curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+script_image_unpinned	scripts/api-up.sh	58	synology.local:192.168.0.241
+pipe_to_shell	scripts/complete-remaining-tasks.sh	45	curl -s https://get.sdkman.io | bash
+script_image_unpinned	scripts/containers/tests/test_run_pinned.sh	131	docker.io/example/tool:1.2
+pipe_to_shell	scripts/distribute.sh	58	curl -sL firebase.tools | bash
+script_image_unpinned	scripts/helixqa-orchestrator.sh	151	localhost/catalogizer-builder:latest
+pipe_to_shell	scripts/install-security-tools.sh	29	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/install.sh	443	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+pipe_to_shell	scripts/install.sh	459	curl -s https://get.sdkman.io | bash
+pipe_to_shell	scripts/install.sh	469	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+script_image_unpinned	scripts/postgres-up.sh	33	docker.io/library/postgres:15-alpine
+pipe_to_shell	scripts/quick-start-phase0.sh	148	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/quick-start-phase0.sh	161	curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh
+pipe_to_shell	scripts/quick-start-phase0.sh	188	curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh
+script_image_unpinned	scripts/run-all-platform-tests.sh	117	docker.io/grafana/k6:latest
+script_image_unpinned	scripts/run-sonarqube-scan.sh	46	docker.io/sonarsource/sonar-scanner-cli:latest
+pipe_to_shell	scripts/scan-trivy.sh	99	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/security-scan-comprehensive.sh	68	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/security-scan-full.sh	40	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+script_image_unpinned	scripts/setup-implementation.sh	110	postgres:15-alpine
+script_image_unpinned	scripts/web-up.sh	18	docker.io/library/node:18-alpine
+compose_image_unpinned	submodules/constitution/scripts/sonarqube/compose/docker-compose.sonarqube.yml	30	docker.io/library/sonarqube:community
+compose_image_unpinned	submodules/constitution/scripts/sonarqube/compose/docker-compose.sonarqube.yml	55	docker.io/library/postgres:16
+from_unpinned	submodules/constitution/submodules/MVT/Dockerfile	18	httpd:latest
+pipe_to_shell	submodules/constitution/submodules/agentic-validation/.devcontainer/post-create.sh	9	curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh
+script_image_unpinned	submodules/constitution/submodules/repo-qa/scripts/integration/os_sandbox_bubblewrap_probe_docker.sh	11	debian:bookworm-slim
+compose_image_unpinned	submodules/constitution/submodules/repo-qa/scripts/integration/skills_sources_docker.compose.yml	3	redis:7-alpine
+compose_image_unpinned	submodules/constitution/submodules/repo-qa/scripts/integration/skills_sources_docker.compose.yml	7	postgres:16-alpine
+compose_image_unpinned	submodules/constitution/submodules/repo-qa/scripts/integration/skills_sources_docker.compose.yml	17	python:3.11-slim
+from_unpinned	submodules/constitution/submodules/verfix/Dockerfile.server	6	golang:1.22-alpine
+from_unpinned	submodules/constitution/submodules/verfix/Dockerfile.server	22	node:22-alpine
+from_unpinned	submodules/constitution/submodules/verfix/Dockerfile.server	44	node:22-alpine
+from_unpinned	submodules/constitution/submodules/verfix/Dockerfile.server	74	node:22-slim
+compose_image_unpinned	submodules/constitution/submodules/verfix/docker-compose.yml	3	redis:alpine
+compose_image_unpinned	submodules/constitution/submodules/verfix/docker-compose.yml	8	postgres:15-alpine
+pipe_to_shell	submodules/constitution/submodules/verification/plugins/agentloop/bootstrap/check-env.sh	21	curl -fsSL https://bun.sh/install | bash
+pipe_to_shell	submodules/constitution/submodules/verification/plugins/arc/scripts/ensure-arc.sh	53	curl -fsSL https://arc.afsd.io/install.sh | bash
+from_unpinned	submodules/constitution/submodules/watch-skill/Dockerfile	11	python:3.13-slim-bookworm
+copy_from_unpinned	submodules/constitution/submodules/watch-skill/Dockerfile	19	ghcr.io/astral-sh/uv:latest
+pipe_to_shell	submodules/constitution/submodules/watch-skill/scripts/install.sh	30	curl -fsSL https://astral.sh/uv/install.sh | sh
+script_image_unpinned	submodules/containers/challenges/scripts/apple_container_linux_challenge.sh	33	docker.io/library/alpine:latest
+from_unpinned	submodules/containers/images/android-test/Dockerfile	8	ghcr.io/vasic-digital/android-emulator-base:latest
+from_unpinned	submodules/containers/images/core/Dockerfile	2	gcr.io/distroless/static:nonroot
+from_unpinned	submodules/containers/images/discovery/Dockerfile	2	gcr.io/distroless/static:nonroot
+from_unpinned	submodules/containers/images/host-agent/Dockerfile	2	ubuntu:24.04
+from_unpinned	submodules/containers/images/ota-device-emu/Dockerfile	26	alpine:3.21
+compose_image_unpinned	submodules/containers/images/ota-device-emu/docker-compose.example.yml	23	ota-control-plane:dev
+compose_image_unpinned	submodules/containers/images/ota-device-emu/docker-compose.example.yml	31	ota-device-emu:dev
+script_image_unpinned	submodules/containers/images/ota-device-emu/entrypoint.sh	58	ota-device-emu:dev
+from_arg_unpinned	submodules/containers/pkg/crossbuild/linux_container.Containerfile	36	debian:12-slim
+from_arg_unpinned	submodules/containers/pkg/crossbuild/windows_wine.Containerfile	22	debian:12-slim
+from_arg_unpinned	submodules/containers/pkg/cuttlefish/Containerfile	90	debian:12
+from_arg_unpinned	submodules/containers/pkg/emulator/Containerfile	23	ubuntu:24.04
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	5	letta/letta:latest
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	25	mem0ai/mem0:latest
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	47	topoteretes/cognee:latest
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	74	qdrant/qdrant:latest
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	92	neo4j:5-community
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	113	redis:7-alpine
+compose_image_unpinned	submodules/helix_memory/docker/docker-compose.yml	131	postgres:15-alpine
+from_unpinned	submodules/helix_qa/Dockerfile	1	docker.io/library/golang:1.25-bookworm
+from_unpinned	submodules/helix_qa/Dockerfile	8	docker.io/library/debian:bookworm-slim
+compose_image_unpinned	submodules/helix_qa/docker-compose.stack.yml	41	nats:2.10-alpine
+compose_image_unpinned	submodules/helix_qa/docker-compose.stack.yml	68	ollama/ollama:latest
+compose_image_unpinned	submodules/helix_qa/docker-compose.stack.yml	174	prom/prometheus:latest
+compose_image_unpinned	submodules/helix_qa/docker-compose.stack.yml	198	grafana/grafana:latest
+compose_image_unpinned	submodules/helix_qa/docker-compose.stack.yml	222	redis:7-alpine
+from_unpinned	submodules/helix_qa/docker/base-opencv-gstreamer/Dockerfile	5	docker.io/library/ubuntu:22.04
+from_unpinned	submodules/helix_qa/docker/mediamtx/Dockerfile	2	docker.io/bluenviron/mediamtx:latest
+pipe_to_shell	submodules/helix_qa/scripts/setup-video-host.sh	425	curl -fsSL https://ollama.com/install.sh | sh
+from_unpinned	submodules/helix_qa/tools/opensource/anthropic-quickstarts/browser-use-demo/Dockerfile	1	docker.io/ubuntu:22.04
+compose_image_unpinned	submodules/helix_qa/tools/opensource/anthropic-quickstarts/browser-use-demo/docker-compose.yml	5	browser-use-demo:latest
+from_unpinned	submodules/helix_qa/tools/opensource/anthropic-quickstarts/computer-use-demo/Dockerfile	1	docker.io/ubuntu:22.04
+from_unpinned	submodules/helix_qa/tools/opensource/browser-use/Dockerfile	20	python:3.12-slim
+copy_from_unpinned	submodules/helix_qa/tools/opensource/browser-use/Dockerfile	141	ghcr.io/astral-sh/uv:latest
+from_unpinned	submodules/helix_qa/tools/opensource/browser-use/Dockerfile.fast	4	${REGISTRY}/base-python-deps:${BASE_TAG}
+pipe_to_shell	submodules/helix_qa/tools/opensource/browser-use/bin/setup.sh	31	curl -LsSf https://astral.sh/uv/install.sh | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/browser-use/browser_use/skill_cli/install.sh	301	curl -LsSf https://astral.sh/uv/install.sh | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/browser-use/browser_use/skill_cli/install_lite.sh	256	curl -LsSf https://astral.sh/uv/install.sh | sh
+from_unpinned	submodules/helix_qa/tools/opensource/browser-use/docker/base-images/chromium/Dockerfile	2	browseruse/base-system:${BASE_TAG}
+from_unpinned	submodules/helix_qa/tools/opensource/browser-use/docker/base-images/python-deps/Dockerfile	2	browseruse/base-chromium:${BASE_TAG}
+from_unpinned	submodules/helix_qa/tools/opensource/browser-use/docker/base-images/system/Dockerfile	1	python:3.12-slim
+copy_from_unpinned	submodules/helix_qa/tools/opensource/browser-use/docker/base-images/system/Dockerfile	10	ghcr.io/astral-sh/uv:latest
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/.github/actions/bandit-scan/Dockerfile	1	python:3.10-alpine
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/Dockerfile	1	python:3.11-slim-bookworm
+pipe_to_shell	submodules/helix_qa/tools/opensource/chroma/Dockerfile	4	curl make && curl https://sh.rustup.rs -sSf | sh
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/Dockerfile	70	python:3.11-slim-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/Dockerfile.windows	1	python:3.11.9
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/bin/templates/docker-compose.yml	9	ghcr.io/chroma-core/chroma:${ChromaVersion}
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/deployments/aws/docker-compose.yml	9	ghcr.io/chroma-core/chroma:CHROMA_VERSION
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/docker-compose.server.example.yml	8	ghcr.io/chroma-core/chroma:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/docker-compose.yml	9	server
+script_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/deployments/aws-terraform/startup.sh	29	httpd:2
+script_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/deployments/common/startup.sh	29	httpd:2
+script_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/deployments/google-cloud-compute/startup.sh	29	httpd:2
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/observability/docker-compose.local-observability.yml	7	openzipkin/zipkin
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/observability/docker-compose.local-observability.yml	14	otel/opentelemetry-collector-contrib
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/observability/docker-compose.local-observability.yml	24	server
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/server_side_embeddings/huggingface/docker-compose.yml	9	server
+compose_image_unpinned	submodules/helix_qa/tools/opensource/chroma/examples/server_side_embeddings/huggingface/docker-compose.yml	34	ghcr.io/huggingface/text-embeddings-inference:cpu-0.3.0
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/go/Dockerfile	1	golang:bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/go/Dockerfile	47	debian:bookworm-slim
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/go/Dockerfile.migration	1	arigaio/atlas:latest
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/k8s/test/postgres/Dockerfile	1	docker.io/postgres:15
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/rust/Dockerfile	1	rust:1.92.0
+from_unpinned	submodules/helix_qa/tools/opensource/chroma/rust/Dockerfile	73	debian:stable-slim
+script_image_unpinned	submodules/helix_qa/tools/opensource/docker-android/app.sh	109	python:3.12-slim
+from_unpinned	submodules/helix_qa/tools/opensource/docling/.actor/Dockerfile	2	node:20-slim
+from_unpinned	submodules/helix_qa/tools/opensource/docling/.actor/Dockerfile	23	quay.io/ds4sd/docling-serve-cpu:latest
+from_unpinned	submodules/helix_qa/tools/opensource/docling/Dockerfile	1	python:3.11-slim-bookworm
+from_arg_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/Dockerfile	3	quay.io/centos/centos:stream10
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/docker-compose.yml	6	mariadb:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/docker-compose.yml	24	pub.kiwitcms.eu/kiwitcms/kiwi:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/docker-compose.yml	43	nginx
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/azureboards/docker-compose.yml	8	pub.kiwitcms.eu/kiwitcms/kiwi
+from_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/bugzilla/Dockerfile	2	fedora:43
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/bugzilla/docker-compose.yml	11	kiwitcms/bugzilla
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/github/docker-compose.yml	8	pub.kiwitcms.eu/kiwitcms/kiwi
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/gitlab_ce/docker-compose.yml	6	gitlab/gitlab-ce
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/gitlab_com/docker-compose.yml	8	pub.kiwitcms.eu/kiwitcms/kiwi
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/gitlab_ee/docker-compose.yml	6	gitlab/gitlab-ee
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/jira/docker-compose.yml	8	pub.kiwitcms.eu/kiwitcms/kiwi
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/kiwitcms/docker-compose.yml	8	pub.kiwitcms.eu/kiwitcms/kiwi
+from_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/redmine/Dockerfile	2	redmine:6
+compose_image_unpinned	submodules/helix_qa/tools/opensource/kiwi-tcms/tests/redmine/docker-compose.yml	10	kiwitcms/redmine
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-core/tests/docker-compose.yml	5	docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-core/tests/docker-compose.yml	37	ghcr.io/chroma-core/chroma:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/embeddings/llama-index-embeddings-elasticsearch/docker-compose.yml	5	docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-clickhouse/docker-compose.yml	5	clickhouse/clickhouse-server:24.1
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-elasticsearch/tests/docker-compose.yml	5	docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-mariadb/tests/docker-compose.yaml	3	mariadb:11.7.1-rc
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-opensearch/tests/docker-compose.yml	5	opensearchproject/opensearch:2.19.0
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-solr/tests/docker-compose.yml	6	zookeeper:3.9
+compose_image_unpinned	submodules/helix_qa/tools/opensource/llama-index/llama-index-integrations/vector_stores/llama-index-vector-stores-solr/tests/docker-compose.yml	13	solr:9-slim
+compose_image_unpinned	submodules/helix_qa/tools/opensource/mem0/evaluation/docker-compose.yml	39	qdrant/qdrant:latest
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/evaluation/docker/mem0/Dockerfile	1	python:3.12-slim
+pipe_to_shell	submodules/helix_qa/tools/opensource/mem0/examples/nemoclaw/setup-mem0-nemoclaw.sh	89	curl -fsSL https://raw.githubusercontent.com/mem0ai/mem0/main/scripts/setup-mem0-nemoclaw.sh | bash
+script_image_unpinned	submodules/helix_qa/tools/opensource/mem0/examples/nemoclaw/setup-mem0-nemoclaw.sh	417	ubuntu:24.04
+pipe_to_shell	submodules/helix_qa/tools/opensource/mem0/examples/nemoclaw/setup-mem0-nemoclaw.sh	440	curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+pipe_to_shell	submodules/helix_qa/tools/opensource/mem0/examples/nemoclaw/setup-mem0-nemoclaw.sh	476	curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/api/Dockerfile	1	python:3.12-slim
+compose_image_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/docker-compose.yml	3	qdrant/qdrant
+compose_image_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/docker-compose.yml	9	mem0/openmemory-mcp
+compose_image_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/docker-compose.yml	28	mem0/openmemory-ui:latest
+script_image_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/run.sh	378	mem0/openmemory-ui:latest
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/openmemory/ui/Dockerfile	4	node:18-alpine
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/server/Dockerfile	1	python:3.12-slim
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/server/dashboard/Dockerfile	1	node:20-alpine
+from_unpinned	submodules/helix_qa/tools/opensource/mem0/server/dev.Dockerfile	1	python:3.12
+compose_image_unpinned	submodules/helix_qa/tools/opensource/mem0/server/docker-compose.yaml	33	pgvector/pgvector:pg17
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/bigtrace/clickhouse/Dockerfile	17	clickhouse/clickhouse-server
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/bigtrace/docker/orchestrator/Dockerfile	15	debian:12
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/bigtrace/docker/worker/Dockerfile	15	debian:12
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/ci/sandbox/Dockerfile	16	ubuntu:22.04
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/ci/worker/Dockerfile	15	debian:bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/infra/ui.perfetto.dev/builder/Dockerfile	18	debian:bookworm-slim
+from_unpinned	submodules/helix_qa/tools/opensource/perfetto/ui/playwright/Dockerfile	18	ubuntu:22.04
+pipe_to_shell	submodules/helix_qa/tools/opensource/perfetto/ui/playwright/Dockerfile	22	curl ca-certificates git && curl -fsSL https://deb.nodesource.com/setup_20.x | bash
+from_unpinned	submodules/helix_qa/tools/opensource/redroid/android-builder-docker/Dockerfile	1	ubuntu:20.04
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/clickhouse/compose.yaml	3	clickhouse/clickhouse-server:25.5.6
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/clickhouse/compose.yaml	21	clickhouse/clickhouse-server:25.5.6
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/clickhouse/compose.yaml	54	signoz/zookeeper:3.7.1
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/clickhouse/compose.yaml	70	signoz/signoz-otel-collector:v0.142.0
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/postgres/compose.yaml	4	postgres:15
+compose_image_unpinned	submodules/helix_qa/tools/opensource/signoz/.devenv/docker/signoz-otel-collector/compose.yaml	3	signoz/signoz-otel-collector:v0.142.0
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/community/Dockerfile	1	alpine:3.20.3
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/community/Dockerfile.multi-arch	3	alpine@sha256:${ALPINE_SHA}
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/enterprise/Dockerfile	1	alpine:3.20.3
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/enterprise/Dockerfile.integration	1	golang:1.25-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/enterprise/Dockerfile.multi-arch	3	alpine@sha256:${ALPINE_SHA}
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/enterprise/Dockerfile.with-web.integration	1	node:22-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/cmd/enterprise/Dockerfile.with-web.integration	10	golang:1.25-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/signoz/tests/Dockerfile.seeder	8	python:3.13-slim
+copy_from_unpinned	submodules/helix_qa/tools/opensource/signoz/tests/Dockerfile.seeder	10	ghcr.io/astral-sh/uv:latest
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/Dockerfile	1	python:3.11
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/Dockerfile	5	curl -LsSf https://astral.sh/uv/install.sh | sh
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/Dockerfile	11	python:3.11-slim-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/Dockerfile.ui	2	node:24.14-slim
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/Dockerfile.ui	40	node:24.14-slim
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/bitwarden-cli-server/Dockerfile	1	node:24-alpine
+compose_image_unpinned	submodules/helix_qa/tools/opensource/skyvern/docker-compose.yml	3	postgres:14-alpine
+compose_image_unpinned	submodules/helix_qa/tools/opensource/skyvern/docker-compose.yml	21	public.ecr.aws/skyvern/skyvern:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/skyvern/docker-compose.yml	152	public.ecr.aws/skyvern/skyvern-ui:latest
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/install.sh	25	curl -LsSf https://install.skyvern.com | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/install.sh	26	curl -LsSf https://install.skyvern.com | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/install.sh	27	curl -LsSf https://install.skyvern.com | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/install.sh	28	curl -LsSf https://install.skyvern.com | sh
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/install.sh	29	curl -LsSf https://install.skyvern.com | sh
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/integrations/mcp/Dockerfile	1	python:3.11
+pipe_to_shell	submodules/helix_qa/tools/opensource/skyvern/integrations/mcp/Dockerfile	4	curl -LsSf https://astral.sh/uv/install.sh | sh
+from_unpinned	submodules/helix_qa/tools/opensource/skyvern/integrations/mcp/Dockerfile	10	python:3.11-slim-bookworm
+from_unpinned	submodules/helix_qa/tools/opensource/ui-tars-desktop/packages/agent-infra/mcp-servers/filesystem/Dockerfile	1	node:22.12-alpine
+from_unpinned	submodules/helix_qa/tools/opensource/ui-tars-desktop/packages/agent-infra/mcp-servers/filesystem/Dockerfile	13	node:22-alpine
+from_unpinned	submodules/helix_qa/tools/opensource/unstructured/Dockerfile	1	cgr.dev/chainguard/wolfi-base:latest
+copy_from_unpinned	submodules/helix_qa/tools/opensource/unstructured/Dockerfile	55	ghcr.io/astral-sh/uv:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/elasticsearch-test-helpers/common/docker-compose.yaml	3	docker.elastic.co/elasticsearch/elasticsearch:8.19.10
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/kafka-test-helpers/docker-compose.yml	3	confluentinc/cp-zookeeper:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/kafka-test-helpers/docker-compose.yml	11	confluentinc/cp-kafka:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/minio-test-helpers/docker-compose.yaml	3	quay.io/minio/minio
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/opensearch-test-helpers/common/docker-compose.yaml	3	opensearchproject/opensearch:2.19.4
+script_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/performance/benchmark.sh	38	unstructured:perf-test
+script_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/performance/profile.sh	60	unstructured:dev
+pipe_to_shell	submodules/helix_qa/tools/opensource/unstructured/scripts/setup_al2.sh	52	curl https://pyenv.run | bash
+pipe_to_shell	submodules/helix_qa/tools/opensource/unstructured/scripts/setup_ubuntu.sh	54	curl https://pyenv.run | bash
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/sftp-test-helpers/docker-compose.yaml	3	atmoz/sftp
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/singlestore-test-helpers/docker-compose.yml	4	ghcr.io/singlestore-labs/singlestoredb-dev:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/singlestore-test-helpers/docker-compose.yml	17	hello-world:latest
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/sql-test-helpers/docker-compose-pgvector.yaml	3	ankane/pgvector
+compose_image_unpinned	submodules/helix_qa/tools/opensource/unstructured/scripts/weaviate-test-helpers/docker-compose.yml	11	semitechnologies/weaviate:1.35.3
+from_unpinned	submodules/vision_engine/Dockerfile.vision	5	golang:1.24-bookworm

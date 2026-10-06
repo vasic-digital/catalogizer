@@ -1,0 +1,5 @@
+# build/containers/kcov/digests.lock (T006 tree, completed by T106)
+base docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251  # IMG-TESTUTIL-BASE, base of IMG-TESTUTIL
+arg TESTUTIL_REF = localhost/catalogizer-testutil@sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08  # passed by the builder; the IMG-TESTUTIL digest of images.lock.yaml
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z and debian-security/20260918T000000Z
+download https://github.com/SimonKagstrom/kcov/archive/refs/tags/v43.tar.gz sha256:4cbba86af11f72de0c7514e09d59c7927ed25df7cebdad087f6d3623213b95bf  # pin of the bytes seen; the publisher publishes no checksum

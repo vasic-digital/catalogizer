@@ -1,0 +1,5 @@
+# IMG-INFRA-REDIS (T106): Test-infrastructure Redis 7 (alpine). Service class.
+# The lock entry IMG-INFRA-REDIS IS this upstream image by its index digest (tag intent 7-alpine, resolved 2026-10-06T17:28:16Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+LABEL project=catalogizer image=IMG-INFRA-REDIS

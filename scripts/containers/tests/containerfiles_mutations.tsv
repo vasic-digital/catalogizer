@@ -1,0 +1,11 @@
+# name<TAB>old text (exact, unique in test_containerfiles.sh)<TAB>new text; each mutant must make test_containerfiles.sh FAIL (the fixtures catch it)
+c4-download-check-removed	m = re.search(r"\b(curl|wget)\b.*?(sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln)   # MUT-ANCHOR c4-check	m = True   # MUT-ANCHOR c4-check
+c5-from-check-removed	if DIGEST.search(ref).group(1) not in locktxt:               # MUT-ANCHOR c5-from	if False:               # MUT-ANCHOR c5-from
+c6-class-check-removed	if d not in NO_CLASS_CHECK and e.get("class") not in CLASSES:     # MUT-ANCHOR c6-class	if False:     # MUT-ANCHOR c6-class
+c1-missing-dir-check-removed	if not os.path.isdir(os.path.join(tree, r)):	if False:
+c2-companion-file-check-removed	if not os.path.isfile(fp) or os.path.getsize(fp) == 0:	if False:
+c2-containerfile-check-removed	if not os.path.isfile(cf) or os.path.getsize(cf) == 0:	if False:
+c3-check-pins-removed	if r.returncode != 0:	if False:
+c5-sha256-check-removed	if h not in locktxt:	if False:
+c6-entry-check-removed	if d not in DEFERRED:	if False:
+c6-digest-mismatch-removed	if e.get("reference") == base and e.get("digest") != dg:	if False:

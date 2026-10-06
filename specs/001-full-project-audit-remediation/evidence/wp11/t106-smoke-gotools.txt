@@ -1,0 +1,8 @@
+# identity: T106-smoke-gotools
+# head: b3728d76 (uncommitted work tree)
+# run_at: 2026-10-06T17:38:54Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-GOTOOLS -- bash -c goimports -h 2>&1 | head -2; ls -l /usr/local/bin/goimports
+usage: goimports [flags] [path ...]
+  -cpuprofile string
+-rwxr-xr-x 1 root root 7913047 Oct  6 17:34 /usr/local/bin/goimports
+# rc=0

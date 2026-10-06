@@ -1,0 +1,20 @@
+# identity: T148-GREEN-run-2 (check_pins over the patched COPIES in .audit/scratch/t148, tracked files untouched)
+# head: b3728d76 (uncommitted work tree)
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# sha256 .audit/scratch/t148/docker-compose.security.yml: 8132393448df55a3e2ec880b5f1740bc59ab18e14b980d64ccdb8c6fc2db6b63
+# sha256 .audit/scratch/t148/scripts/security-scan-full.sh: 46d4f5cd533ccb42ed7c05444eadba0b3ab21c5826b6d3eb7856c92525864b01
+# sha256 specs/001-full-project-audit-remediation/evidence/wp11/t148-proposed.patch: d45a4fb569bfc46d3d6d63dd49330c89fad79a684ed4e5aa6d1307ab28a81760
+# run_at: 2026-10-06T17:35:40Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-KCOV -- bash -c bash scripts/containers/check_pins.sh --root .audit/scratch/t148 > /tmp/o.txt; echo check_pins_rc=$?; cat /tmp/o.txt; echo "T148 rows (trivy image lines or pipe_to_shell) remaining: $(grep -cE "aquasec/trivy|pipe_to_shell" /tmp/o.txt)"; echo "trailing-whitespace lines: $(grep -c "[[:space:]]$" .audit/scratch/t148/docker-compose.security.yml)"; echo "last byte: $(tail -c1 .audit/scratch/t148/docker-compose.security.yml | od -An -c)"
+check_pins_rc=1
+VIOLATION compose_image_unpinned docker-compose.security.yml:9: docker.io/library/sonarqube:community
+VIOLATION compose_image_unpinned docker-compose.security.yml:57: docker.io/library/postgres:15-alpine
+VIOLATION compose_image_unpinned docker-compose.security.yml:87: docker.io/library/node:18-alpine
+VIOLATION compose_image_unpinned docker-compose.security.yml:133: docker.io/owasp/dependency-check:latest
+VIOLATION compose_image_unpinned docker-compose.security.yml:238: docker.io/semgrep/semgrep:latest
+VIOLATION compose_image_unpinned docker-compose.security.yml:276: docker.io/hadolint/hadolint:latest
+check_pins: 6 violations in 2 files scanned
+T148 rows (trivy image lines or pipe_to_shell) remaining: 0
+trailing-whitespace lines: 0
+last byte:   \n
+# rc=0

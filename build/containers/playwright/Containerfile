@@ -1,0 +1,5 @@
+# IMG-PW (T106): Playwright image for web E2E and visual regression. Tag v1.57.0-noble is aligned with catalog-web/package.json ("@playwright/test": "^1.57.0"); the compose files' v1.40.0-jammy is not used (V-06).
+# The lock entry IMG-PW IS this upstream image by its index digest (tag intent v1.57.0-noble, resolved 2026-10-06T17:27:55Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM mcr.microsoft.com/playwright@sha256:3bed4b1a12f2338642f3d8cba28e291deef3c66bd4a964bbeb3e57bbff511dbd
+LABEL project=catalogizer image=IMG-PW

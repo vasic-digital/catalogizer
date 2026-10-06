@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "pull-IMG-UBUNTU-BASE",
+  "at": "2026-10-06T17:31:46Z",
+  "need_bytes": 200000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 162740932608,
+      "free_after": 162540932608,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 162740912128,
+      "free_after": 162540912128,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

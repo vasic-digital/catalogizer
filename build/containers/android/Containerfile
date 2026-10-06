@@ -1,0 +1,24 @@
+# IMG-ANDROID (T106 authors this file; the first remote build and the images.lock.yaml entry belong to T144, WP-14): Gradle and Android SDK build
+# image, consolidating docker/Dockerfile.android4 and the Android part of docker/Dockerfile.builder (docs/10 W10-01; the old variants stay in
+# place until this image is proven, their removal is an owner question, 11.4.122). FROM docker.io/library/ubuntu:24.04 (index digest of
+# IMG-UBUNTU-BASE in build/containers/images.lock.yaml): JDK 21 is packaged there (bookworm has no openjdk-21). apt is pinned to the dated
+# Ubuntu snapshot below (UNCONFIRMED until T144 builds it: the snapshot service must serve this timestamp). The command-line tools zip is
+# verified against SHA-256 2d2d5085... (the value the repository's own pin, commandlinetools-linux-11076708, has on Google's download page; the
+# page now lists build 15859902, the bump is a separate reviewed change). The Gradle wrapper of the repository is used, not a host Gradle.
+FROM docker.io/library/ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
+ENV DEBIAN_FRONTEND=noninteractive ANDROID_HOME=/opt/android-sdk ANDROID_SDK_ROOT=/opt/android-sdk JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+ENV PATH=/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:${PATH}
+RUN printf 'Types: deb\nURIs: http://snapshot.ubuntu.com/ubuntu/20260918T000000Z\nSuites: noble noble-updates noble-security\nComponents: main universe\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' > /etc/apt/sources.list.d/ubuntu.sources \
+ && printf 'Acquire::Check-Valid-Until "false";\nAcquire::Retries "3";\n' > /etc/apt/apt.conf.d/99snapshot
+RUN apt-get update -qq \
+ && apt-get install -y -qq --no-install-recommends openjdk-21-jdk-headless unzip curl ca-certificates git \
+ && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /opt/android-sdk/cmdline-tools \
+ && curl --retry 5 --retry-delay 10 -fsSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip \
+ && echo "2d2d50857e4eb553af5a6dc3ad507a17adf43d115264b1afc116f95c92e5e258  /tmp/cmdline-tools.zip" | sha256sum -c - \
+ && unzip -q /tmp/cmdline-tools.zip -d /opt/android-sdk/cmdline-tools \
+ && mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest \
+ && rm /tmp/cmdline-tools.zip
+RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+RUN sdkmanager "platform-tools" "build-tools;34.0.0" "build-tools;35.0.0" "platforms;android-34" "platforms;android-35"
+LABEL project=catalogizer image=IMG-ANDROID

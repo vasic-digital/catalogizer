@@ -1,0 +1,9 @@
+# identity: T106-GREEN-run-2
+# head: b3728d76 (uncommitted work tree)
+# sha256 scripts/containers/tests/test_containerfiles.sh: 5f0786b38096b1a0770f7f30fa3c465a90e543d47c65cd976ae41705c72472a9
+# sha256 scripts/containers/tests/containerfiles_mutations.tsv: e18830e2f6d15a90bffd376d499c4fab99f5f49e64ffdd072de2c1088ac296c6
+# sha256 build/containers/images.lock.yaml: a32c672cad257849d3d822414ae8abf302cc26238ca3beec0a2fb6cc34473ffc
+# run_at: 2026-10-06T17:43:11Z host: anton
+# cmd: scripts/containers/run_pinned.sh --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp11/out-t106 IMG-KCOV -- bash -c CF_MUTATION_RECORD=/out/mut-run2.txt bash scripts/containers/tests/test_containerfiles.sh | grep -v '^PASS'
+test_containerfiles: 28 passed, 0 failed
+# rc=0

@@ -1,0 +1,5 @@
+# IMG-INFRA-POSTGRES (T106): Test-infrastructure PostgreSQL 15 (alpine). Service class: started only by the stack scripts, never given a build or test command.
+# The lock entry IMG-INFRA-POSTGRES IS this upstream image by its index digest (tag intent 15-alpine, resolved 2026-10-06T17:28:09Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM docker.io/library/postgres@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81
+LABEL project=catalogizer image=IMG-INFRA-POSTGRES

@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-10-06T17:34:01Z",
+  "head": "b3728d76",
+  "host": "anton",
+  "constitution": "11.4.270 dependency-existence verdict",
+  "task": "T106",
+  "dependency": "github.com/minio/mc",
+  "version": "v0.0.0-20251106162529-77f82e18b540",
+  "verdict": "VERIFIED",
+  "evidence": {
+    "proxy_latest": {
+      "Version": "v0.0.0-20251106162529-77f82e18b540",
+      "Time": "2025-11-06T16:25:29Z",
+      "Origin": {
+        "VCS": "git",
+        "URL": "https://github.com/minio/mc",
+        "Hash": "77f82e18b5401a65958f1619df6ebb994634bd88"
+      }
+    },
+    "github_repo": {
+      "archived": true,
+      "pushed_at": "2025-11-20T03:07:53Z",
+      "full_name": "minio/mc"
+    },
+    "upstream_binary_download_status": 410,
+    "upstream_binary_download_body_head": "410 Gone\n\nThe open-source MinIO Server, MinIO Client (mc) and MinIO KES projects are\narchived and no longer maintained. MinIO does not provide product support,\nsecurity updates, or security advisories"
+  },
+  "note": "VERIFIED for existence (11.4.270 register scope): the module resolves through the Go module proxy and has a checksum-database record, so IMG-INFRA-CLIENT builds it from source. Fitness caveats are recorded, not hidden: the GitHub project is archived (last push 2025-11-20) and its binary distribution answers 410 Gone, so the client is unmaintained; whether it works against a real S3 service in the WP-13 probes is UNCONFIRMED until the image is built and exercised. No MinIO server image is obtainable (quay.io, docker.io, ghcr.io probed 2026-10-06: unauthorized, denied, 403), so the S3 round trip needs an owner decision on a replacement S3 service (infra-minio is blocked)."
+}

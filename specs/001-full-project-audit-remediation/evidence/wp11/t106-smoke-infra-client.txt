@@ -1,0 +1,20 @@
+# identity: T106-smoke-infra-client
+# head: b3728d76 (uncommitted work tree)
+# run_at: 2026-10-06T17:38:56Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-INFRA-CLIENT -- bash -c psql --version; redis-cli --version; mc --version; lftp --version | head -1; smbclient --version; curl --version | head -1; for t in nfs-ls nfs-cp nfs-cat; do command -v $t; done; dpkg -s libnfs-utils | grep -E "^(Package|Version|Status)"
+psql (PostgreSQL) 15.18 (Debian 15.18-0+deb12u1)
+redis-cli 7.0.15
+mc version DEVELOPMENT.GOGET (commit-id=DEVELOPMENT.GOGET)
+Runtime: go1.25.14 linux/amd64
+Copyright (c) 2015-0000 MinIO, Inc.
+License GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
+LFTP | Version 4.9.2 | Copyright (c) 1996-2020 Alexander V. Lukyanov
+Version 4.17.12-Debian
+curl 7.88.1 (x86_64-pc-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.20 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13
+/usr/bin/nfs-ls
+/usr/bin/nfs-cp
+/usr/bin/nfs-cat
+Package: libnfs-utils
+Status: install ok installed
+Version: 4.0.0-1
+# rc=0

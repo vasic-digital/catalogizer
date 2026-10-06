@@ -1,0 +1,2 @@
+# build/containers/infra-ftp/digests.lock: every external digest and checksum the Containerfile relies on (T106). Edited only with the Containerfile.
+base docker.io/stilliard/pure-ftpd@sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a  # tag intent latest, platform manifest sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a

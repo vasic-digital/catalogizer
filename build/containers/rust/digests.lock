@@ -1,0 +1,7 @@
+# build/containers/rust/digests.lock (T106; first build and lock entry: T143)
+base docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251  # IMG-TESTUTIL-BASE debian bookworm-slim
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z (bookworm, bookworm-updates) and debian-security/20260918T000000Z
+download https://static.rust-lang.org/rustup/archive/1.29.0/x86_64-unknown-linux-gnu/rustup-init sha256:4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10  # equals rustup-init.sha256 of the release, read 2026-10-06
+toolchain 1.99.0 + llvm-tools-preview
+crate cargo-llvm-cov@0.9.1 (--locked)
+crate tauri-cli@2.12.1 (--locked)

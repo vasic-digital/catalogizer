@@ -1,0 +1,24 @@
+# name<TAB>old text (exact, unique in check_pins.sh)<TAB>new text; \n and \t escapes are decoded. Each mutant must make test_check_pins.sh FAIL.
+digest-relaxed	@sha256:[0-9a-f]{64}(?![0-9A-Za-z])	@sha256:[0-9a-f]+
+compose-check-removed	if not pinned(ref):  # MUT-ANCHOR compose-check	if False:  # MUT-ANCHOR compose-check
+from-check-removed	if not pinned(ref):  # MUT-ANCHOR from-check	if False:  # MUT-ANCHOR from-check
+arg-check-removed	if not pinned(default):  # MUT-ANCHOR arg-check	if False:  # MUT-ANCHOR arg-check
+copyfrom-check-removed	if not pinned(src):  # MUT-ANCHOR copyfrom-check	if False:  # MUT-ANCHOR copyfrom-check
+script-run-check-removed	if not pinned(op):  # MUT-ANCHOR script-run-check	if False:  # MUT-ANCHOR script-run-check
+script-tag-check-removed	if re.search(r":[A-Za-z0-9._-]+$", ref):	if False:
+pipe-check-removed	m = PIPE_RE.search(ln)  # MUT-ANCHOR pipe-check	m = None  # MUT-ANCHOR pipe-check
+pipe-substitution-removed	s = SUBST_RE.search(ln)	s = None
+pipe-sudo-handling-removed	(?:sudo\\s+(?:-\\S+\\s+)*)?(?:env	(?:env
+pipe-or-or-guard-removed	(?<!\\|)\\|(?!\\|)\\s*	\\|\\s*
+alias-skip-removed	continue  # MUT-ANCHOR alias-skip	pass  # MUT-ANCHOR alias-skip
+comment-strip-removed	elif ch == "#" and (i == 0 or s[i - 1].isspace()):	elif False:
+continuation-join-removed	cont = line.rstrip().endswith("\\\\")	cont = False
+heredoc-skip-removed	if skip_heredocs:	if False:
+heredoc-skip-always	if skip_heredocs:	if True:
+variable-without-default-judged	if v.group(1) is None:	if False:
+value-option-skip-removed	if "=" not in t and t in VALUE_OPTS:	if False:
+compose-dispatch-removed	if kind == "compose":  # MUT-ANCHOR compose-dispatch	if False:  # MUT-ANCHOR compose-dispatch
+markdown-exclusion-removed	if low.endswith((".md", ".txt", ".html", ".json", ".tsv", ".lock")):	if False:
+exit-status-always-zero	sys.exit(1 if uniq else 0)	sys.exit(0)
+dynamic-digest-skip-removed	if ref.endswith("@sha256:") and ln[g.end():g.end() + 1] == "$":	if False:
+localhost-compose-skip-removed	if ref.startswith("localhost/"):	if False:

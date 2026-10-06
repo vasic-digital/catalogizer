@@ -1,0 +1,2 @@
+# build/containers/infra-redis/digests.lock: every external digest and checksum the Containerfile relies on (T106). Edited only with the Containerfile.
+base docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499  # tag intent 7-alpine, platform manifest sha256:ca0acbb137c1dc3339c8b147a58fd6f42775d4599327b50e7b116c23de501af2

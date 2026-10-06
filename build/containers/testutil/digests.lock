@@ -1,0 +1,4 @@
+# build/containers/testutil/digests.lock (T006 tree, completed by T106)
+base docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251  # IMG-TESTUTIL-BASE debian bookworm-slim
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z
+pip requirements: build/containers/testutil/requirements.txt (pip --require-hashes; the hashes live in that file)

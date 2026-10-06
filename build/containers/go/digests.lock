@@ -1,0 +1,2 @@
+# build/containers/go/digests.lock (T106)
+base docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437  # tag intent 1.25-bookworm, platform manifest sha256:c268a04d59aea0b180ed9946a658cfab9e7b3391dc90eed6e4969ccff98c851f

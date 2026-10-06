@@ -1,0 +1,9 @@
+# identity: T104-GREEN-run-2
+# head: 7f5e9f4b (uncommitted work tree)
+# sha256 scripts/containers/tests/test_check_pins.sh: 52c407c08056b88ec554c3d08e1d29125d1b648fb8f53f31e8c41a996c04d409
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# sha256 scripts/containers/tests/check_pins_mutations.tsv: 10507bd73fd57af28bd1a78939b509672c8915b85b3388d311b7fc37dcbd778b
+# run_at: 2026-10-06T17:22:33Z host: anton
+# cmd: scripts/containers/run_pinned.sh --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp11/out-t104 IMG-KCOV -- bash -c CHECKPINS_MUTATION_RECORD=/out/mut-run2.txt bash scripts/containers/tests/test_check_pins.sh | grep -v '^PASS'
+test_check_pins: 89 passed, 0 failed
+# rc=0

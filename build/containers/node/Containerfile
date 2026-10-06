@@ -1,0 +1,5 @@
+# IMG-NODE (T106): Web build image (Node 20, Debian bookworm) for catalog-web, the TypeScript modules and catalogizer-api-client. Node 20 matches catalog-web/Dockerfile.
+# The lock entry IMG-NODE IS this upstream image by its index digest (tag intent 20-bookworm, resolved 2026-10-06T17:27:13Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM docker.io/library/node@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
+LABEL project=catalogizer image=IMG-NODE

@@ -1,0 +1,2 @@
+# build/containers/infra-postgres/digests.lock: every external digest and checksum the Containerfile relies on (T106). Edited only with the Containerfile.
+base docker.io/library/postgres@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81  # tag intent 15-alpine, platform manifest sha256:25d430274d8a31184f9435cc5b2f56aff254952065bbbcac0c51acedb5a1d1e7

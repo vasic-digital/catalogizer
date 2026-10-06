@@ -1,0 +1,4 @@
+# IMG-INFRA-CLIENT
+
+Interpreter-class image with the protocol clients of the WP-13 probes and round trips: `psql`, `redis-cli`, the MinIO client `mc`, `lftp` (FTP, passive mode), `smbclient`, `curl` (WebDAV `PROPFIND`) and the libnfs user-space NFS utilities `nfs-ls`, `nfs-cp`, `nfs-cat` (no kernel mount). Attached to the run's compose network through RUNP (T128, T132).
+Every Debian package is at an exact version from the 2026-09-18 snapshot. `mc` is built from source (stage 1) because the upstream binary download answers 410 Gone: the MinIO client project is archived, so this client is unmaintained (verdict `evidence/wp11/mc-client.json`). The libnfs verdict is `evidence/wp11/nfs-client.json` (VERIFIED: an AMBIGUOUS or UNVERIFIED verdict would have left the utilities out and ended T134 `blocked` with `nfs_client_unverified`).

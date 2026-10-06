@@ -1,0 +1,7 @@
+# identity: T104-RED
+# head: 7f5e9f4b (uncommitted work tree)
+# sha256 scripts/containers/tests/test_check_pins.sh: d0ed9940d98dc85779b1fe21523befcb69af34319d079561af4abae5c2a6630b
+# run_at: 2026-10-06T17:16:27Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-KCOV -- bash scripts/containers/tests/test_check_pins.sh
+FAIL: check_pins.sh not found at /src/scripts/containers/tests/../check_pins.sh
+# rc=1

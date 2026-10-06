@@ -1,0 +1,5 @@
+# IMG-INFRA-SMB (T106): Test-infrastructure SMB server (dperson/samba). Service class. The image was last updated 2021-03-31 (Docker Hub), maintenance UNKNOWN (docs/16 section 10.2).
+# The lock entry IMG-INFRA-SMB IS this upstream image by its index digest (tag intent latest, resolved 2026-10-06T17:28:53Z on anton), so this file adds nothing:
+# it is the declared, digest-pinned build input that a local derivation would extend, and the file the pin checks cover.
+FROM docker.io/dperson/samba@sha256:66088b78a19810dd1457a8f39340e95e663c728083efa5fe7dc0d40b2478e869
+LABEL project=catalogizer image=IMG-INFRA-SMB

@@ -1,0 +1,98 @@
+# identity: T105-pins-baseline (main repository tracked files; own-organisation submodules NOT included: UNCONFIRMED scope, see t105-notes.md)
+# head: 7f5e9f4b (uncommitted work tree)
+# check_pins.sh sha256: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# run_at: 2026-10-06T17:24:35Z host: anton
+# cmd: scripts/containers/check_pins.sh --list
+# control needle (same path, planted fixture): compose_image_unpinned docker-compose.needle.yml 3 docker.io/aquasec/trivy:latest
+# rows: 91 (rule<TAB>path<TAB>line<TAB>reference)
+from_unpinned	OCU-CUDA-Sidecar/Dockerfile	15	nvidia/cuda:12.2.0-devel-ubuntu22.04
+from_unpinned	OCU-CUDA-Sidecar/Dockerfile	64	nvidia/cuda:12.2.0-runtime-ubuntu22.04
+from_unpinned	catalog-api/Dockerfile	8	docker.io/library/golang:1.25
+from_unpinned	catalog-api/Dockerfile	56	docker.io/library/debian:trixie-slim
+from_unpinned	catalog-api/Dockerfile.dev	1	golang:1.25-alpine
+from_unpinned	catalog-api/Dockerfile.runtime	12	docker.io/library/debian:trixie-slim
+from_unpinned	catalog-web/Dockerfile	1	docker.io/node:20-alpine
+from_unpinned	catalog-web/Dockerfile	64	docker.io/nginx:alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	4	postgres:15-alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	13	redis:7-alpine
+compose_image_unpinned	deploy/infra-compose-test.yml	18	quay.io/minio/minio:latest
+compose_image_unpinned	deploy/infra-compose.yml	4	postgres:15-alpine
+compose_image_unpinned	deploy/infra-compose.yml	22	redis:7-alpine
+compose_image_unpinned	deploy/infra-compose.yml	36	quay.io/minio/minio:latest
+script_image_unpinned	deployment/amber-up.sh	70	docker.io/library/postgres:16-alpine
+script_image_unpinned	deployment/amber-up.sh	92	docker.io/library/redis:7-alpine
+script_image_unpinned	deployment/amber-up.sh	132	host.containers.internal:host-gateway
+compose_image_unpinned	deployment/docker-compose.yml	6	postgres:15-alpine
+compose_image_unpinned	deployment/docker-compose.yml	29	redis:7-alpine
+compose_image_unpinned	deployment/docker-compose.yml	47	catalogizer/server:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	117	catalogizer/transcoder:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	144	catalogizer/web:${CATALOGIZER_VERSION:-latest}
+compose_image_unpinned	deployment/docker-compose.yml	166	prom/prometheus:latest
+compose_image_unpinned	deployment/docker-compose.yml	192	grafana/grafana:latest
+compose_image_unpinned	deployment/docker-compose.yml	218	catalogizer/backup:${CATALOGIZER_VERSION:-latest}
+script_image_unpinned	deployment/thinker-up.sh	74	docker.io/library/postgres:16-alpine
+script_image_unpinned	deployment/thinker-up.sh	95	docker.io/library/redis:7-alpine
+script_image_unpinned	deployment/thinker-up.sh	133	host.containers.internal:host-gateway
+compose_image_unpinned	docker-compose.build.yml	10	docker.io/library/postgres:15-alpine
+compose_image_unpinned	docker-compose.build.yml	35	docker.io/library/redis:7-alpine
+compose_image_unpinned	docker-compose.build.yml	118	docker.io/budtmo/docker-android:emulator_14.0
+compose_image_unpinned	docker-compose.dev.yml	6	postgres:15-alpine
+compose_image_unpinned	docker-compose.dev.yml	28	redis:7-alpine
+compose_image_unpinned	docker-compose.dev.yml	101	dpage/pgadmin4:latest
+compose_image_unpinned	docker-compose.dev.yml	120	rediscommander/redis-commander:latest
+compose_image_unpinned	docker-compose.dev.yml	135	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.qa.yml	39	docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy
+compose_image_unpinned	docker-compose.qa.yml	232	docker.io/library/node:18-bookworm-slim
+compose_image_unpinned	docker-compose.security.yml	9	docker.io/library/sonarqube:community
+compose_image_unpinned	docker-compose.security.yml	57	docker.io/library/postgres:15-alpine
+compose_image_unpinned	docker-compose.security.yml	87	docker.io/library/node:18-alpine
+compose_image_unpinned	docker-compose.security.yml	133	docker.io/owasp/dependency-check:latest
+compose_image_unpinned	docker-compose.security.yml	169	docker.io/aquasec/trivy:latest
+compose_image_unpinned	docker-compose.security.yml	216	docker.io/aquasec/trivy:latest
+compose_image_unpinned	docker-compose.security.yml	238	docker.io/semgrep/semgrep:latest
+compose_image_unpinned	docker-compose.security.yml	276	docker.io/hadolint/hadolint:latest
+compose_image_unpinned	docker-compose.test-infra.yml	41	docker.io/stilliard/pure-ftpd:latest
+compose_image_unpinned	docker-compose.test-infra.yml	87	docker.io/dperson/samba:latest
+compose_image_unpinned	docker-compose.test-infra.yml	127	docker.io/bytemark/webdav:latest
+compose_image_unpinned	docker-compose.test-infra.yml	168	docker.io/erichough/nfs-server:latest
+compose_image_unpinned	docker-compose.test-infra.yml	208	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.test-infra.yml	243	docker.io/library/alpine:3.19
+compose_image_unpinned	docker-compose.test.yml	42	catalogizer-api:test
+compose_image_unpinned	docker-compose.test.yml	91	catalogizer-web:test
+compose_image_unpinned	docker-compose.test.yml	124	docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy
+compose_image_unpinned	docker-compose.test.yml	170	catalogizer-android-emulator:test
+compose_image_unpinned	docker-compose.test.yml	229	catalogizer-tauri-desktop:test
+compose_image_unpinned	docker-compose.test.yml	289	catalogizer-tauri-wizard:test
+compose_image_unpinned	docker-compose.yml	9	postgres:15-alpine
+compose_image_unpinned	docker-compose.yml	40	redis:7-alpine
+compose_image_unpinned	docker-compose.yml	143	prom/prometheus:latest
+compose_image_unpinned	docker-compose.yml	171	grafana/grafana:latest
+compose_image_unpinned	docker-compose.yml	201	quay.io/minio/minio:latest
+compose_image_unpinned	docker-compose.yml	231	nginx:alpine
+from_unpinned	docker/Dockerfile.android	5	docker.io/library/openjdk:21-jdk
+from_unpinned	docker/Dockerfile.android2	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.android3	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.android4	5	ubuntu:22.04
+from_unpinned	docker/Dockerfile.builder	5	ubuntu:22.04
+pipe_to_shell	docker/Dockerfile.builder	66	curl -fsSL https://deb.nodesource.com/setup_18.x && break || (echo "Attempt $i failed, waiting 15s..." && sleep 15); done | bash
+pipe_to_shell	docker/Dockerfile.builder	80	curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+script_image_unpinned	scripts/api-up.sh	58	synology.local:192.168.0.241
+pipe_to_shell	scripts/complete-remaining-tasks.sh	45	curl -s https://get.sdkman.io | bash
+script_image_unpinned	scripts/containers/tests/test_run_pinned.sh	131	docker.io/example/tool:1.2
+pipe_to_shell	scripts/distribute.sh	58	curl -sL firebase.tools | bash
+script_image_unpinned	scripts/helixqa-orchestrator.sh	151	localhost/catalogizer-builder:latest
+pipe_to_shell	scripts/install-security-tools.sh	29	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/install.sh	443	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+pipe_to_shell	scripts/install.sh	459	curl -s https://get.sdkman.io | bash
+pipe_to_shell	scripts/install.sh	469	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+script_image_unpinned	scripts/postgres-up.sh	33	docker.io/library/postgres:15-alpine
+pipe_to_shell	scripts/quick-start-phase0.sh	148	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/quick-start-phase0.sh	161	curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh
+pipe_to_shell	scripts/quick-start-phase0.sh	188	curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh
+script_image_unpinned	scripts/run-all-platform-tests.sh	117	docker.io/grafana/k6:latest
+script_image_unpinned	scripts/run-sonarqube-scan.sh	46	docker.io/sonarsource/sonar-scanner-cli:latest
+pipe_to_shell	scripts/scan-trivy.sh	99	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/security-scan-comprehensive.sh	68	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+pipe_to_shell	scripts/security-scan-full.sh	40	curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+script_image_unpinned	scripts/setup-implementation.sh	110	postgres:15-alpine
+script_image_unpinned	scripts/web-up.sh	18	docker.io/library/node:18-alpine

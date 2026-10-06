@@ -1,0 +1,12 @@
+# build/containers/infra-client/digests.lock (T106)
+base docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437  # IMG-GO, build stage of mc
+base docker.io/library/debian@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251  # IMG-TESTUTIL-BASE debian bookworm-slim
+snapshot http://snapshot.debian.org/archive/debian/20260918T000000Z
+module github.com/minio/mc@v0.0.0-20251106162529-77f82e18b540  # sum.golang.org verifies it at build time; upstream binary downloads answer 410 Gone
+package ca-certificates=20230311+deb12u1
+package curl=7.88.1-10+deb12u15
+package postgresql-client=15+248+deb12u1
+package redis-tools=5:7.0.15-1~deb12u7
+package lftp=4.9.2-2+b1
+package smbclient=2:4.17.12+dfsg-0+deb12u4
+package libnfs-utils=4.0.0-1

@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "build-IMG-MUT",
+  "at": "2026-10-06T17:35:56Z",
+  "need_bytes": 900000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 159096094720,
+      "free_after": 158196094720,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 159085187072,
+      "free_after": 158185187072,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}
