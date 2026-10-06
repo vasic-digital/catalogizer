@@ -1,0 +1,301 @@
+{
+  "codegraph": {
+    "proofs": [
+      {
+        "cmd": "codegraph status --json (captured file)",
+        "id": "P1",
+        "reasons": [
+          "pendingChanges.added_nonzero",
+          "pendingChanges.modified_nonzero"
+        ],
+        "verdict": "FAIL"
+      },
+      {
+        "cmd": "codegraph files --json (captured file) vs tracked list",
+        "id": "P2",
+        "indexed": 7150,
+        "missing": [
+          "build/containers/images.lock.yaml",
+          "catalogizer-android/app/src/main/res/values/strings.xml",
+          "catalogizer-android/app/src/main/res/values/styles.xml",
+          "catalogizer-android/app/src/main/res/xml/backup_rules.xml",
+          "catalogizer-android/app/src/main/res/xml/data_extraction_rules.xml",
+          "catalogizer-android/app/src/main/res/xml/file_paths.xml",
+          "catalogizer-android/app/src/main/res/xml/network_security_config.xml",
+          "catalogizer-androidtv/app/src/main/res/layout/activity_exo_tv_player.xml",
+          "catalogizer-androidtv/app/src/main/res/values/strings.xml",
+          "catalogizer-androidtv/app/src/main/res/values/styles.xml",
+          "catalogizer-androidtv/app/src/main/res/xml/backup_rules.xml",
+          "catalogizer-androidtv/app/src/main/res/xml/data_extraction_rules.xml",
+          "catalogizer-androidtv/app/src/main/res/xml/file_paths.xml",
+          "catalogizer-androidtv/app/src/main/res/xml/network_security_config.xml",
+          "config/index/scope.yaml",
+          "config/subagent_tiering.yaml",
+          "docker-compose.test-infra.nfs.yml",
+          "scripts/anti-mess/catalogue.yaml",
+          "scripts/audit/org_of.py",
+          "scripts/audit/scope_to_lumen_json.py",
+          "scripts/build/lib/bev_crypto.py",
+          "scripts/build/lib/evwait.py",
+          "scripts/build/lib/snapshot.py",
+          "scripts/build/lib/treecache.py",
+          "scripts/governance/appendix_token_check.py",
+          "scripts/governance/regen_speckit_catalogue.py",
+          "scripts/governance/tests/fixtures/speckit_catalogue/index.yaml",
+          "scripts/governance/tests/mutate_appendix_digests.py",
+          "scripts/governance/tests/mutate_appendix_token_check.py",
+          "scripts/governance/tests/mutate_regen_speckit_catalogue.py",
+          "scripts/governance/tests/test_appendix_token_check.py",
+          "scripts/governance/tests/test_regen_speckit_catalogue.py",
+          "scripts/register/mutate_ddl.py",
+          "scripts/repo/tests/cpa_mutants.py",
+          "specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml",
+          "specs/001-full-project-audit-remediation/poc/doc_links/crawl_links.py",
+          "specs/001-full-project-audit-remediation/poc/route_drift/route_drift.py",
+          "specs/001-full-project-audit-remediation/progress.yml",
+          "submodules/constitution/scripts/fastcycle/review/lib/tower_detector_run.py",
+          "submodules/doc_processor/pkg/coverage/tracker.go",
+          "submodules/doc_processor/pkg/coverage/tracker_stress_test.go",
+          "submodules/doc_processor/pkg/coverage/tracker_test.go",
+          "tools/evidence/census_ab_pass.py",
+          "tools/evidence/evanchor.py",
+          "tools/evidence/evcore.py",
+          "tools/evidence/evparse.py",
+          "tools/evidence/evverdict.py",
+          "tools/evidence/tests/fixtures/gradle_fail/TEST-com.example.CalcTest.xml",
+          "tools/evidence/tests/fixtures/gradle_fail/TEST-com.example.OtherTest.xml",
+          "tools/evidence/tests/fixtures/gradle_header_lies/TEST-com.example.CalcTest.xml"
+        ],
+        "missing_count": 62,
+        "needle_neg": {
+          "found": false,
+          "path": "__helix_scope_fabricated_needle__/none.c"
+        },
+        "needle_pos": {
+          "found": true,
+          "path": "catalog-api/main.go"
+        },
+        "reasons": [
+          "tracked_files_not_indexed"
+        ],
+        "tracked_in_scope": 5269,
+        "verdict": "FAIL"
+      },
+      {
+        "cmd": "scope of codegraph files --json (captured file)",
+        "id": "P3",
+        "not_checked": [],
+        "own_org_roots_empty": [],
+        "reasons": [
+          "secret_class_files_indexed",
+          "third_party_files_indexed"
+        ],
+        "secret_hits": [
+          ".trivy-secrets.yaml",
+          "submodules/constitution/submodules/watch-skill/scripts/secret_scan.py",
+          "submodules/constitution/submodules/watch-skill/tests/test_secret_scan.py"
+        ],
+        "third_party_hits": [
+          "submodules/constitution/submodules/MVT/.github/workflows/cla.yml",
+          "submodules/constitution/submodules/MVT/.prettierrc.yml",
+          "submodules/constitution/submodules/MVT/anyplayer/actions.js",
+          "submodules/constitution/submodules/MVT/anyplayer/main.js",
+          "submodules/constitution/submodules/MVT/anyplayer/players.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/compactTestList.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/compactTestView.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/constants.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/eventListener.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/focusManager.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/key.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/logger.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/main.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/test.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/testTypes.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/testView.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/timeout.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/util.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/harness/xhr.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/eme/emeManager.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/eme/emutil.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/eme/encryptedMediaPortability.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/eme/licenseManager.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/mse/mediaSourcePortability.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/mse/msutil.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/mse/videoPerformance.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/parsers/mp4.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/parsers/webm.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/lib/streams/mediaStreams.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/conformanceTest.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/emeTest.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/mseCodecTest.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/playbackperfTest.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/progressiveTest.js",
+          "submodules/constitution/submodules/MVT/js_mse_eme/media/sphericalOnCobaltTest.js",
+          "submodules/constitution/submodules/MVT/media/mpd_processor.py",
+          "submodules/constitution/submodules/MVT/media/subs_generator.py",
+          "submodules/constitution/submodules/MVT/src/common.js",
+          "submodules/constitution/submodules/MVT/src/constants.js",
+          "submodules/constitution/submodules/MVT/src/coverage.js",
+          "submodules/constitution/submodules/MVT/src/engines.js",
+          "submodules/constitution/submodules/MVT/src/main.js",
+          "submodules/constitution/submodules/MVT/src/mediaStreams.js",
+          "submodules/constitution/submodules/MVT/src/mediaTests.js",
+          "submodules/constitution/submodules/MVT/src/mvtTest.js",
+          "submodules/constitution/submodules/MVT/src/mvtWsClient.js",
+          "submodules/constitution/submodules/MVT/src/profiles.js",
+          "submodules/constitution/submodules/MVT/src/suites.js",
+          "submodules/constitution/submodules/agentic-validation/.github/workflows/copilot-setup-steps.yml",
+          "submodules/constitution/submodules/agentic-validation/skills/validate/scripts/run_formal_check.py"
+        ],
+        "third_party_roots_refused": [],
+        "verdict": "FAIL"
+      },
+      {
+        "id": "P4",
+        "reason": "golden_questions_need_live_index_queries_not_an_input_of_this_read_only_gate",
+        "verdict": "SKIP"
+      },
+      {
+        "id": "P5",
+        "reason": "freshness_needs_lastIndexed_and_git_log_not_an_input_of_this_read_only_gate",
+        "verdict": "SKIP"
+      }
+    ],
+    "status": {
+      "backend": "node-sqlite",
+      "dbSizeBytes": 525885440,
+      "edgeCount": 414476,
+      "fileCount": 7150,
+      "index": {
+        "builtWithExtractionVersion": 25,
+        "builtWithVersion": "1.6.0",
+        "currentExtractionVersion": 25,
+        "pendingRefs": 0,
+        "reindexRecommended": false,
+        "state": "complete"
+      },
+      "indexPath": "/home/milosvasic/Projects/catalogizer/.codegraph",
+      "initialized": true,
+      "journalMode": "wal",
+      "languages": [
+        "c",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "liquid",
+        "properties",
+        "python",
+        "rust",
+        "tsx",
+        "typescript",
+        "xml",
+        "yaml"
+      ],
+      "lastIndexed": "2026-10-02T19:24:35.111Z",
+      "nodeCount": 128472,
+      "nodesByKind": {
+        "class": 1466,
+        "component": 39,
+        "constant": 6337,
+        "enum": 87,
+        "enum_member": 387,
+        "field": 519,
+        "file": 6639,
+        "function": 41547,
+        "import": 36975,
+        "interface": 1697,
+        "method": 21155,
+        "namespace": 270,
+        "property": 593,
+        "route": 1178,
+        "struct": 5457,
+        "trait": 7,
+        "type_alias": 773,
+        "variable": 3346
+      },
+      "pendingChanges": {
+        "added": 26,
+        "modified": 2,
+        "removed": 0
+      },
+      "projectPath": "/home/milosvasic/Projects/catalogizer",
+      "version": "1.6.0",
+      "walSizeBytes": 0,
+      "worktreeMismatch": null
+    }
+  },
+  "complete": false,
+  "inputs": {
+    "cg_files": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/codegraph-files-before.json",
+      "readable": true,
+      "sha256": "603c9d346326faf110e424ecd22243d6eae3a16e9d1be20b39e4f5cc5bf00810"
+    },
+    "cg_status": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/codegraph-status-before.json",
+      "readable": true,
+      "sha256": "e666c2cd155f110a29b1ac00154b43b5f7743aebfa3e22e613bc615a9ce7b4fe"
+    },
+    "lumen_status": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/lumen-index-status-before.txt",
+      "readable": true,
+      "sha256": "a4cb4e1dcf26a61eb05892af14d51159125ed1375baed87facc7dde6dc1bbcba"
+    },
+    "own_org_roots": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/own-org-roots.txt",
+      "readable": true,
+      "sha256": "c9949f04e9f728134924943a64b5db2c64f88444a76fd32d1cb4fbd8a09fe42f"
+    },
+    "third_party_roots": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/third-party-roots.txt",
+      "readable": true,
+      "sha256": "82299e268eb49e2067d358848478595b3aa4a4ae55455d605e4856219c21f29f"
+    },
+    "tracked": {
+      "path": "specs/001-full-project-audit-remediation/audit/refresh/expected-scope-enumeration.txt",
+      "readable": true,
+      "sha256": "1149564b3621934f10ecaa3429bdde2a32db7f2134e2698fc95aa44fb187ed4f"
+    }
+  },
+  "lumen": {
+    "proofs": [
+      {
+        "id": "P-Lumen",
+        "source": "index_status_capture",
+        "verdict": "PASS"
+      },
+      {
+        "id": "P6",
+        "reason": "embed_call_needs_a_live_embedder_not_an_input_of_this_read_only_gate",
+        "verdict": "SKIP"
+      },
+      {
+        "captured": "2026-10-06T19:52:59Z",
+        "chunks": 184172,
+        "cmd": "index_status text (captured file)",
+        "files": 10744,
+        "id": "P7",
+        "indexed": 10744,
+        "reasons": [
+          "stale"
+        ],
+        "stale": "yes",
+        "verdict": "FAIL"
+      }
+    ]
+  },
+  "parity": {
+    "id": "P8",
+    "reason": "no_lumen_files_list_supplied",
+    "verdict": "SKIP"
+  },
+  "schema": "index-health/1",
+  "skipped_proofs": [
+    "P4",
+    "P5",
+    "P6",
+    "P8"
+  ],
+  "verdict": "FAIL"
+}

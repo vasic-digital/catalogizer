@@ -1,0 +1,76 @@
+# ============================================================================
+# config/index/scope.yaml - Catalogizer CodeGraph index scope DATA (T019, WP-02)
+# ============================================================================
+# Purpose      The ONE declarative source for the structural (CodeGraph) index scope and, through
+#              scripts/audit/scope_to_lumen_json.py, for the semantic (Lumen) scope (constitution 11.4.78/79/275).
+#              Rendered ONLY by: python3 submodules/constitution/scripts/codegraph/scope_render.py
+#              --scope config/index/scope.yaml --root . --write   (outputs: codegraph.json and the delimited
+#              helix-codegraph-scope block of .gitignore). Rendered files are generated: hand edits are refused.
+# Schema       submodules/constitution/scripts/codegraph/scope.example.yaml (inherited by reference, never copied).
+# Own-org list Derived from the .gitmodules recursion (scripts/audit/derive_scope.sh, scripts/audit/own_orgs.txt):
+#              vasic-digital and HelixDevelopment (owner decision T017); other accounts are third party.
+#              ODG-15 pending accounts are NOT own (conservative reading), as in own_orgs.txt.
+# Tracked by   specs/001-full-project-audit-remediation tasks T019/T029 (commit waits for the T020 and WP-02 reviews).
+# ============================================================================
+schema_version: 1
+
+runner:
+  config_filename: codegraph.json
+  dist_dir: ""
+
+own_orgs:
+  hosts: [github.com, gitlab.com]
+  orgs:
+    - vasic-digital
+    - HelixDevelopment
+
+submodule_class_overrides: {}
+
+baseline_excludes:
+  build_outputs: ["/out/", "/dist/", "/target/", ".compressed/"]
+  caches: ["**/ccache/", "**/.ccache/", "**/.gradle/", "**/__pycache__/", "**/.pytest_cache/",
+           "**/.mypy_cache/", "**/.ruff_cache/", "**/node_modules/", "**/.cache/", "**/.venv/",
+           "**/logs/"]
+  secrets: [".env", ".env.*", "*.env", "*secret*", "!*secret*/", "**/secrets/",
+            "*.jks", "*.keystore", "*.p12", "*.pfx", "*.pk8", "*.pem", "*.key",
+            "**/service-account*.json", "**/google-services.json", "**/credentials*.json"]
+  qa_corpora: ["**/qa-results/", "**/recordings/"]
+
+# Rubbish only, never a source tree: host-local index databases, machine evidence stores written by the audit itself
+# (churn that would make two audit runs read different index states), and recorded QA session captures.
+project_excludes:
+  - /.codegraph/
+  - /.audit/
+  - /specs/001-full-project-audit-remediation/evidence/
+  - /docs/reports/qa-sessions/
+  - /docs/qa/
+
+# Pathological single files (a 14 MB logcat dump is not source; temporary until the runner patch lands).
+pathological_excludes:
+  - /docs/reports/qa-sessions/2026-04-22-T16-28/logcat.txt
+
+include_patterns: []
+# Own-org / first-party source that the engine's built-in directory skips drop (found with the guard's --explain census):
+# Go package submodules/doc_processor/pkg/coverage (3 files) and the Android res/xml configuration directories (4 files each), res/values and res/layout.
+reinclude_negations:
+  - /submodules/doc_processor/pkg/coverage/
+  - /catalogizer-android/app/src/main/res/xml/
+  - /catalogizer-androidtv/app/src/main/res/xml/
+  - /catalogizer-android/app/src/main/res/values/
+  - /catalogizer-androidtv/app/src/main/res/values/
+  - /catalogizer-androidtv/app/src/main/res/layout/
+
+forbidden_classes:
+  - {name: env_file,        regex: '(^|/)\.env($|\.)|\.env$',                positive: 'a/.env.local',        negative: 'a/environment.c'}
+  - {name: secrets_dir,     regex: '(^|/)secrets/',                          positive: 'x/secrets/a.py',      negative: 'x/secretsauce/a.py'}
+  - {name: secret_basename, regex: '(?i)(^|/)[^/]*secret[^/]*$',            positive: 'a/api_Secret.py',     negative: 'a/secure.py'}
+  - {name: keystore,        regex: '\.(jks|keystore|p12|pfx|pk8|pem|key)$', positive: 'a/release.jks',       negative: 'a/keys.c'}
+  - {name: qa_corpus,       regex: '(^|/)(qa-results|recordings)/',          positive: 'd/qa-results/r.py',   negative: 'd/qa_resultsx/r.py'}
+  - {name: cache_dir,       regex: '(^|/)(\.?ccache|__pycache__|node_modules|\.gradle)/', positive: 'a/__pycache__/x.py', negative: 'a/pycache.py'}
+
+enumeration_controls:
+  present: [catalog-api/main.go]
+  fabricated: ["__helix_scope_fabricated_needle__/none.c"]
+
+accepted_count: 5269
+tolerance_pct: 2.0

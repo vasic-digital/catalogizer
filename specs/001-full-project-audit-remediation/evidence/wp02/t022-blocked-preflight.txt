@@ -1,0 +1,24 @@
+# T022 preflight capture (read-only op 'preflight' of codegraph_safe.sh; no DB opened) 2026-10-06T19:51:28Z
+# sha256 codegraph_safe.sh: 92b12a2e4bc4a19e2fd7d3e439931de8ec616f53d0f2f64c67dcb4f307250f1c  submodules/constitution/scripts/codegraph/codegraph_safe.sh
+# constitution pin: a71b176
+free_bytes=97723265024
+db_bytes=525885440
+min_free_bytes=64424509440
+mem_avail_kb=16960596
+min_mem_avail_kb=33554432
+PREFLIGHT FAIL memory: MemAvailable 16960596 kB < 32 GiB
+thread_limit=123699
+threads_used=2733
+min_thread_headroom=1024
+heap_mb=8281
+heap_cap_mb=18584
+writer_rc=6
+--- /proc/meminfo
+MemTotal:       31717548 kB
+MemAvailable:   17004700 kB
+SwapTotal:       8388604 kB
+SwapFree:            252 kB
+--- df
+Mounted on       Avail
+/          97723359232
+/          97723359232

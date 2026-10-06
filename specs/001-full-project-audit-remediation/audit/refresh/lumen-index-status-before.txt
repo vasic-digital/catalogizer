@@ -1,0 +1,6 @@
+Index: /home/milosvasic/Projects/catalogizer
+Files: 10744 | Indexed: 10744 | Chunks: 184172 | Model: ordis/jina-embeddings-v2-base-code
+Vectors: 183049 unique | Shared refs: 1123 | Dedup: 0.6% | Storage: int8 | DB: 190341120 bytes | Reclaimable: 0 bytes
+Last indexed: 2026-10-06T14:38:00Z | Stale: yes
+Captured: 2026-10-06T19:52:59Z
+Source: Lumen MCP tool index_status (path=/home/milosvasic/Projects/catalogizer) in this session; Lumen backend ollama, health_check OK

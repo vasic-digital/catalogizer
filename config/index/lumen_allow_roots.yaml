@@ -1,0 +1,41 @@
+# config/index/lumen_allow_roots.yaml - DATA (T019). Semantic (Lumen) allow roots: the main repository's first-party top-level
+# directories (every tracked top-level directory except .codegraph and submodules/; own-org submodule roots come from the
+# derive_scope TSV). Kept OUT of scope.yaml because scope_render.py fails closed on an unknown top-level key
+# ('lumen_allow_roots'), while scripts/audit/scope_to_lumen_json.py documents it as a scope.yaml key: tool conflict recorded
+# as owed item OWED-T019-1 in specs/001-full-project-audit-remediation/audit/index-scope-notes.md.
+# Reproduce lumen_scope.json: merge this file into a copy of scope.yaml and pass the copy as --scope (recipe in index-scope-notes.md).
+lumen_allow_roots:
+  - .github
+  - .implementation
+  - .specify
+  - Build
+  - OCU-CUDA-Sidecar
+  - Upstreams
+  - Website
+  - build
+  - build-scripts
+  - catalog-api
+  - catalog-web
+  - catalogizer-android
+  - catalogizer-androidtv
+  - catalogizer-api-client
+  - catalogizer-desktop
+  - challenges
+  - config
+  - database
+  - deploy
+  - deployment
+  - docker
+  - docs
+  - examples
+  - installer-wizard
+  - issues
+  - monitoring
+  - qa-ai-system
+  - scripts
+  - sonarqube
+  - specs
+  - templates
+  - tests
+  - tools
+

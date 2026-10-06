@@ -1,0 +1,19 @@
+## wrapper dry-run (codegraph_mcp.sh --project . --dry-run)
+codegraph_mcp: cannot provide the read-only runner (no fallback to the PATH codegraph): {"status": "REFUSED", "reason": "mcpro1: anchor 'DatabaseConnection.open -> read-only, no migrate/heal' occurs 0x in lib/dist/db/index.js (expected exactly 1) \u2014 upstream shape changed, re-derive the patch"} 
+rc=5
+
+## preflight on candidate
+PREFLIGHT P1 PASS 'codegraph' server -> /home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/codegraph/codegraph_mcp.sh
+PREFLIGHT P2 PASS no other server entry launches the stock codegraph
+PREFLIGHT P4 FAIL wrapper cannot provide a valid mcpro1 runner (rc=5): codegraph_mcp: cannot provide the read-only runner (no fallback to the PATH codegraph): {"status": "REFUSED", "reason": "mcpro1: anchor 'DatabaseConnection.open -> read-only, no migrate/heal' occurs 0
+PREFLIGHT P5 FAIL fixture session failed (probe rc=1): json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0) json=
+PREFLIGHT P6 FAIL wrapper refuses the real project (rc=5): codegraph_mcp: cannot provide the read-only runner (no fallback to the PATH codegraph): {"status": "REFUSED", "reason": "mcpro1: anchor 'DatabaseConnection.open -> read-only, no migrate/heal' occurs 0x in lib/dist/db/ind
+SUMMARY fail=3 warn=0
+rc=1
+
+## diagnostics (added after the failing run; not part of the required transcripts)
+PATH codegraph: 1.6.0 at /home/milosvasic/.codegraph/versions/v1.6.0/bin/codegraph
+npm-global codegraph (fk_index_patch.py default --src):   "version": "1.6.1",
+installed 1.6.1 db/index.js has 'static open(dbPath, options = {}) {'; the mcpro1 anchor is 'static open(dbPath) {' (present once only in the PATH 1.6.0 dist): anchor occurs 0x in the 1.6.1 package
+HELIX_CODEGRAPH_SRC=~/.codegraph/versions/v1.6.0 -> REFUSED cannot read package version (layout differs); .../lib -> REFUSED cannot read lib/dist/db/index.js
+Result: no .mcp.json entry was merged (the task requires the candidate preflight to print SUMMARY fail=0)

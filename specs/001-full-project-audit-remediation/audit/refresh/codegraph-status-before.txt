@@ -1,0 +1,53 @@
+
+CodeGraph Status
+
+Project: /home/milosvasic/Projects/catalogizer
+
+Index Statistics:
+  Files:     7,150
+  Nodes:     128,472
+  Edges:     414,476
+  DB Size:   501.52 MB
+  Backend:   node:sqlite — built-in (full WAL)
+  Journal:   wal
+
+Nodes by Kind:
+  function        41,547
+  import          36,975
+  method          21,155
+  file            6,639
+  constant        6,337
+  struct          5,457
+  variable        3,346
+  interface       1,697
+  class           1,466
+  route           1,178
+  type_alias      773
+  property        593
+  field           519
+  enum_member     387
+  namespace       270
+  enum            87
+  component       39
+  trait           7
+
+Files by Language:
+  go              3,683
+  python          1,055
+  typescript      690
+  yaml            478
+  javascript      422
+  tsx             380
+  kotlin          279
+  rust            110
+  properties      33
+  xml             10
+  liquid          7
+  java            2
+  c               1
+
+Pending Changes:
+  Added:     26 files
+  Modified:  2 files
+ℹ Run "codegraph sync" to update the index
+

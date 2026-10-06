@@ -464,3 +464,12 @@ __pycache__/
 /build/containers/**/hosts.env
 /tools/evidence/**/.cache
 # END helix-t004-repo-wide-secrets
+
+# BEGIN helix-codegraph-scope (rendered by scope_render.py; do not edit by hand)
+!/submodules/doc_processor/pkg/coverage/
+!/catalogizer-android/app/src/main/res/xml/
+!/catalogizer-androidtv/app/src/main/res/xml/
+!/catalogizer-android/app/src/main/res/values/
+!/catalogizer-androidtv/app/src/main/res/values/
+!/catalogizer-androidtv/app/src/main/res/layout/
+# END helix-codegraph-scope

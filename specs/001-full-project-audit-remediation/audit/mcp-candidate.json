@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "command": "submodules/constitution/scripts/codegraph/codegraph_mcp.sh",
+      "args": ["serve", "--mcp"]
+    }
+  }
+}

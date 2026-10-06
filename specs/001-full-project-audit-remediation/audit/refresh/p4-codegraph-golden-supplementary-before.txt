@@ -1,0 +1,30 @@
+== query ScanHandler
+struct ScanHandler catalog-api/handlers/scan_handler.go 26
+function NewScanHandler catalog-api/handlers/scan_handler.go 32
+struct ScanHandlerTestSuite catalog-api/handlers/scan_handler_test.go 55
+method TestNewScanHandler catalog-api/handlers/scan_handler_test.go 94
+method ListScans catalog-api/handlers/scan_handler.go 265
+count 5
+== query Ladder
+struct Ladder submodules/rate_limiter/pkg/ladder/ladder.go 25
+function ladder submodules/constitution/submodules/token_optimizer/pkg/pipeline/pipeline_test.go 29
+function ladder submodules/constitution/submodules/token_optimizer/pkg/router/router_test.go 30
+file ladder.go submodules/rate_limiter/pkg/ladder/ladder.go 1
+file ladder.py submodules/constitution/submodules/watch-skill/src/watch_skill/answer/ladder.py 1
+count 5
+== query zz_no_such_symbol_9f3a
+count 0
+== query GetDirectoriesBySize (G-CG-2 route handler; route node probed via 'by-size')
+-- GetDirectoriesBySize
+method GetDirectoriesBySize catalog-api/internal/services/catalog.go 21
+method GetDirectoriesBySize catalog-api/internal/services/catalog.go 359
+method GetDirectoriesBySize catalog-api/internal/handlers/catalog.go 267
+method GetDirectoriesBySize catalog-api/internal/handlers/catalog_test.go 122
+method GetDirectoriesBySize catalog-api/internal/handlers/stream_handler_test.go 46
+count 5
+-- directories/by-size
+route GET /stats/directories/by-size catalog-api/main.go 1306
+route GET /stats/directories/by-size catalog-api/internal/handlers/catalog_test.go 88
+method GetDirectoriesBySizeLimited catalog-api/internal/services/catalog.go 617
+method GetDirectoriesBySize catalog-api/internal/handlers/catalog.go 267
+count 4
