@@ -1,0 +1,125 @@
+# command: scripts/test-in-container.sh build-scripts unit -- bash scripts/bash-coverage.sh --src-root /src --out /out/bc2 --exclusions /src/coverage/exclusions/build-scripts.yaml --target Build/lib/common.sh --target Build/lib/hash.sh --target Build/lib/orchestrator.sh --target Build/lib/version.sh --target scripts/containers/envelope.sh --target scripts/coverage/check_exclusions.sh -- env ENVELOPE_TEST_NO_MUTATIONS=1 bash -c bash scripts/containers/tests/test_envelope.sh; bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations
+# date_utc: 2026-10-06T21:12:40Z
+# git_head: 34db9504594c4a1f883769d5c3d80238c87d48fb
+# sha256 2e38069e77772a0d95abd8fab8e6bbb5d0a9cc65b71f3d0dd0b7c46b98c810a9  scripts/bash-coverage.sh
+# sha256 caafe0190a62c6e1d4f284b7bdf101d24547f390165ef60b209c8b4c8dc4a9e7  scripts/coverage/bashcov.py
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: golden: exit 0
+PASS: golden: schema
+PASS: golden: nproc
+PASS: golden: reserve_cpu = max(2, ceil(0.125*16)) = 2
+PASS: golden: reserve_mem = max(4 GiB, 0.15*MemTotal)
+PASS: golden: ceiling_mem = floor(0.60*MemTotal)
+PASS: golden: mem_budget
+PASS: golden: cpu_budget
+PASS: golden: per_job status measured
+PASS: golden: jobs = max(1, min(14, 12))
+PASS: golden: container memory equals mem_budget
+PASS: golden: container cpus is the cpu budget under 0.60*nproc (9)
+PASS: golden: pids = min(2048, min(8192, ulimit/2))
+PASS: unknown (profile absent): exit 0
+PASS: unknown (profile absent): per_job_mem UNKNOWN
+PASS: unknown (profile absent): status names the reason
+PASS: unknown (profile absent): jobs = 1
+PASS: unknown (toolchain not in profile): jobs = 1
+PASS: unknown (toolchain not in profile): status
+PASS: unknown (no --toolchain): jobs = 1
+PASS: invalid per_job value 0: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 0: status names per_job_invalid
+PASS: invalid per_job value -5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value -5: status names per_job_invalid
+PASS: invalid per_job value "x": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "x": status names per_job_invalid
+PASS: invalid per_job value null: jobs = 1 (never a division by zero)
+PASS: invalid per_job value null: status names per_job_invalid
+PASS: invalid per_job value 1.5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 1.5: status names per_job_invalid
+PASS: invalid per_job value "1610612736": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "1610612736": status names per_job_invalid
+PASS: malformed profile: jobs = 1
+PASS: malformed profile: status
+PASS: per_job above mem_budget: jobs = max(1, 0) = 1
+PASS: per_job above mem_budget: still measured
+PASS: cpu bound: jobs = cpu_budget
+PASS: nproc 1: reserve_cpu floor 2
+PASS: nproc 1: cpu_budget may be negative (-1)
+PASS: nproc 1: jobs still 1
+PASS: nproc 1: container cpus floor 1
+PASS: nproc 64: reserve_cpu = ceil(64/8) = 8
+PASS: nproc 64: cpu_budget 56
+PASS: nproc 64: container cpus = floor(0.60*64) = 38
+PASS: nproc 17: reserve_cpu = ceil(2.125) = 3
+PASS: small host: reserve_mem floor is 4 GiB
+PASS: small host: ceiling_mem
+PASS: small host: mem_budget = MemAvailable - reserve (the lower term)
+PASS: MemAvailable below reserve: exit 1
+PASS: MemAvailable below reserve: reason memory_budget_unavailable
+PASS: unparsable meminfo: exit 1
+PASS: unparsable meminfo: reason meminfo_unreadable
+PASS: nproc 0: exit 1
+PASS: nproc 0: reason cpu_budget_unavailable
+PASS: ulimit -u 0: exit 1 (fail closed, never the permissive 8192)
+PASS: ulimit 0: reason pids_budget_unavailable
+PASS: test hook without ENVELOPE_TEST_MODE: refused
+PASS: hook reason test_hook_outside_test_mode
+PASS: ENVELOPE_NPROC without test mode: refused
+PASS: usage: unknown option
+PASS: usage: toolchain name must be [a-z0-9_-]+
+PASS: usage: unknown format
+PASS: pids = ulimit/2 when that is below 2048
+PASS: pids with ulimit unlimited = 2048
+PASS: fixture: two operations registered through the real register.sh
+PASS: registry: used_mem counts the live op only
+PASS: registry: used_cpu counts the live op only
+PASS: registry: mem_budget = min(ceiling - used, avail - reserve)
+PASS: registry: cpu_budget = nproc - reserve_cpu - used
+PASS: registry: jobs = min(12, floor(17660800000/1073741824)=16)
+PASS: registry: a hung (flat-progress, owner alive) op is still subtracted
+PASS: registry: a dead-owner op is not subtracted
+PASS: registry empty: used 0
+PASS: json: valid and jobs matches
+PASS: json: schema
+PASS: json: per_job_mem_bytes is a number when measured
+PASS: json: per_job_mem_bytes is null when UNKNOWN
+PASS: json: per_job_status carries the reason
+PASS: derived oracle: 60 seeded random cases agree with the independent python implementation
+PASS: negative control: different hosts give different envelopes (19660800000/14 vs 39321600000/28)
+PASS: real host: exit 0
+RESULT pass=81 fail=0
+PASS: golden-good: exit 0
+PASS: golden-good: the verdict file says PASS
+PASS: golden-good: the verdict names the application
+PASS: golden-good: the verdict carries the sha256 of the checked file
+PASS: golden-good: the first-party entry is reported as an honest gap
+PASS: unlisted exclusion: exit 1
+PASS: unlisted exclusion: stderr names the pattern
+PASS: unlisted exclusion: the verdict file says FAIL
+PASS: golden-false: every used pattern is listed: exit 0
+PASS: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0
+PASS: unjustified entry: exit 1 naming it
+PASS: a one-character justification is not a justification: exit 1
+PASS: first-party entry without a tracked item: exit 1 naming it
+PASS: a tracked item that is not an item id is refused
+PASS: an unknown class is refused naming it
+PASS: an over-broad pattern (**) is refused
+PASS: an absolute path is refused
+PASS: a path with .. is refused
+PASS: a duplicate path is refused
+PASS: a wrong schema is refused
+PASS: an application that differs from the file stem is refused
+PASS: an unreadable file is a refusal, never a pass
+PASS: no argument is a usage error
+PASS: an explicit empty list passes
+PASS: a file without the exclusions key is refused
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches one file
+PASS: --root: the testdata entry matches none and is reported stale
+Summary: PASS=28 FAIL=0 SKIP=0
+bash-coverage: 6 target(s), 62 of 669 executable lines executed = 9.27% (command rc 0)
+scripts/containers/tests/test_envelope.sh: line 251: 3.24788e+10: syntax error: invalid arithmetic operator (error token is ".24788e+10")
+# exit: 0

@@ -1,0 +1,14 @@
+# collector paired mutation (T198) in IMG-TESTUTIL through TIC tooling unit
+# command: scripts/test-in-container.sh tooling unit -- bash scripts/coverage/tests/test_track_coverage.sh
+# date_utc: 2026-10-06T20:59:08Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 9cff2c67fce646a4f1bf9b16cba56f0fd8e3a9b1d0127cf597538b84d9e79857  scripts/coverage/track-coverage.sh
+# sha256 e4dd34dea0ba7793c6a7de90c448868669fee41d2beec0abd82e4a8a56c85e0a  scripts/coverage/tests/test_track_coverage.sh
+PASS: mutation run-half-or-true caught (1 failing legs)
+PASS: mutation verify-skipped caught (5 failing legs)
+PASS: mutation foreground-wait caught (1 failing legs)
+PASS: mutation panic-unchecked caught (2 failing legs)
+PASS: mutation empty-profile-ok caught (3 failing legs)
+PASS: mutation infra-detail-dropped caught (1 failing legs)
+Summary: PASS=68 FAIL=0 SKIP=0
+# exit: 0

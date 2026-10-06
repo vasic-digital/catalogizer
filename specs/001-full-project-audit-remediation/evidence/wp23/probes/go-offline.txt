@@ -1,0 +1,17 @@
+# command: scripts/test-in-container.sh catalog-api unit -- sh -c cd catalog-api && go list -m all 2>&1 | head -5; echo go_list_rc=$?
+# date_utc: 2026-10-06T21:02:18Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 96c64bb73540461f5949fb0f4a6cee77c6e61c2f4d4a746e15c4ea7826d3ef63  catalog-api/go.mod
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+go: cel.dev/expr@v0.25.2: Get "https://proxy.golang.org/cel.dev/expr/@v/v0.25.2.info": dial tcp: lookup proxy.golang.org on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+go: cloud.google.com/go@v0.123.0: Get "https://proxy.golang.org/cloud.google.com/go/@v/v0.123.0.info": dial tcp: lookup proxy.golang.org on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+go: cloud.google.com/go/auth@v0.20.0: Get "https://proxy.golang.org/cloud.google.com/go/auth/@v/v0.20.0.info": dial tcp: lookup proxy.golang.org on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+go: cloud.google.com/go/auth/oauth2adapt@v0.2.8: Get "https://proxy.golang.org/cloud.google.com/go/auth/oauth2adapt/@v/v0.2.8.info": dial tcp: lookup proxy.golang.org on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+go: cloud.google.com/go/compute/metadata@v0.9.0: Get "https://proxy.golang.org/cloud.google.com/go/compute/metadata/@v/v0.9.0.info": dial tcp: lookup proxy.golang.org on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+go_list_rc=0
+# exit: 0

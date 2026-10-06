@@ -1,0 +1,10 @@
+# installer-wizard/vitest.config.ts coverage.exclude (read 2026-10-06). `src-tauri/**` is dropped: it is the Rust leg's scope (the Rust instrument measures it), not an exclusion from the program figure.
+node_modules/**
+dist/**
+**/*.d.ts
+src/test/**
+src/main.tsx
+vite.config.ts
+vitest.config.ts
+tailwind.config.js
+postcss.config.js

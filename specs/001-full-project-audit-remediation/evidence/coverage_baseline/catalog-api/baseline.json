@@ -1,0 +1,21 @@
+{
+  "application": "catalog-api",
+  "blocked": {
+    "detail": "The Go module cache is a tmpfs in every wrapper container (run_pinned.sh sets GOMODCACHE=/tmp/go/pkg/mod) and no cache is mounted; with --network=none `go list -m all` in IMG-GO cannot resolve any module (proxy.golang.org unreachable, evidence specs/001-full-project-audit-remediation/evidence/wp23/probes/go-offline.txt); a network fetch is not allowed here. The split-lane collector (T198) cannot run either: the compile-half lane rows (T121a) and verify_artifact.sh (T121b) are not built. The host has a populated module cache, but a host `go test` is a bare-host build, forbidden by constitution 11.4.173.",
+    "reason": "deps_absent_offline",
+    "reason_scope": "local"
+  },
+  "branch_percent": null,
+  "estimate": "none: no number is given",
+  "evidence": [
+    "specs/001-full-project-audit-remediation/evidence/wp23/probes/go-offline.txt"
+  ],
+  "instrument": null,
+  "line_percent": null,
+  "measured_at": "2026-10-06T21:04:18Z",
+  "owed": "a read-only module-cache mount in run_pinned.sh (an extension of the pinned runner, a WP-11 item) or an offline vendor/ tree; then T201 runs three times through the collector",
+  "runs": 0,
+  "schema": "coverage-baseline/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "status": "blocked"
+}

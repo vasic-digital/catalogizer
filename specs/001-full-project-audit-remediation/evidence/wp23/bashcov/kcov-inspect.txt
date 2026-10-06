@@ -1,0 +1,28 @@
+# command: scripts/test-in-container.sh build-scripts unit -- sh -c mkdir -p /out/k && kcov --bash-method=DEBUG /out/k scripts/coverage/tests/fixtures/cov_fixture.sh >/dev/null 2>&1; find /out/k -name "*.json" | head; for f in $(find /out/k -name coverage.json | head -1); do head -c 900 $f; done
+# date_utc: 2026-10-06T21:10:27Z
+# git_head: 34db9504594c4a1f883769d5c3d80238c87d48fb
+# sha256 c780b60ee95c64f08dfb7729faf4a7de37b1e0bedfbd4459229630be1d9cde0c  scripts/coverage/tests/fixtures/cov_fixture.sh
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+/out/k/cov_fixture.sh.bbea4b0547a96717/coverage.json
+/out/k/cov_fixture.sh.bbea4b0547a96717/codecov.json
+{
+  "files": [
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_excluded.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "3"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_driver.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "4"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_fixture2.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "6"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_fixture.sh", "percent_covered": "70.00", "covered_lines": "7", "total_lines": "10"}
+  ],
+  "percent_covered": "30.43",
+  "covered_lines": 7,
+  "total_lines": 23,
+  "percent_low": 25,
+  "percent_high": 75,
+  "command": "cov_fixture.sh",
+  "date": "2026-10-06 21:11:07"
+}
+# exit: 0

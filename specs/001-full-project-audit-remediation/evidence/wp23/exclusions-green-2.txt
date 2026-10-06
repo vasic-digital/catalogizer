@@ -1,0 +1,41 @@
+# command: scripts/test-in-container.sh tooling unit -- bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations
+# date_utc: 2026-10-06T20:54:12Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 3afeb89fa868a5230134d89d59cc742ece98435223f484586d945e8e57e13563  scripts/coverage/check_exclusions.py
+# sha256 02db269ca25683c2ac776bf23bee4433c127eba1d04aa47152f00e3184cd9968  scripts/coverage/tests/test_check_exclusions.sh
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: golden-good: exit 0
+PASS: golden-good: the verdict file says PASS
+PASS: golden-good: the verdict names the application
+PASS: golden-good: the verdict carries the sha256 of the checked file
+PASS: golden-good: the first-party entry is reported as an honest gap
+PASS: unlisted exclusion: exit 1
+PASS: unlisted exclusion: stderr names the pattern
+PASS: unlisted exclusion: the verdict file says FAIL
+PASS: golden-false: every used pattern is listed: exit 0
+PASS: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0
+PASS: unjustified entry: exit 1 naming it
+PASS: a one-character justification is not a justification: exit 1
+PASS: first-party entry without a tracked item: exit 1 naming it
+PASS: a tracked item that is not an item id is refused
+PASS: an unknown class is refused naming it
+PASS: an over-broad pattern (**) is refused
+PASS: an absolute path is refused
+PASS: a path with .. is refused
+PASS: a duplicate path is refused
+PASS: a wrong schema is refused
+PASS: an application that differs from the file stem is refused
+PASS: an unreadable file is a refusal, never a pass
+PASS: no argument is a usage error
+PASS: an explicit empty list passes
+PASS: a file without the exclusions key is refused
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches one file
+PASS: --root: the testdata entry matches none and is reported stale
+Summary: PASS=28 FAIL=0 SKIP=0
+# exit: 0

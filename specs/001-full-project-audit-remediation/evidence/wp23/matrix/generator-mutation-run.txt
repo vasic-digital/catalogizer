@@ -1,0 +1,61 @@
+# command: scripts/test-in-container.sh tooling unit -- bash tools/evidence/matrix/tests/test_gen_matrix.sh
+# date_utc: 2026-10-06T20:50:55Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 4a8ebfb304a4cf9471189895e1f867ea7e0ae4e8b9afb7d044c9d87ab5bef9d7  tools/evidence/matrix/gen_matrix.py
+# sha256 561398b9c5307afdef56a0dced8431197efb3cd84846451834e3198fe57941a1  tools/evidence/matrix/tests/test_gen_matrix.sh
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: golden-good: exit 0
+PASS: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a)
+PASS: golden-good: two components x 15 types = 30 cells
+PASS: golden-good: no cell is '?'
+PASS: golden-good: the md ends with one newline
+PASS: golden-good: the md has no trailing whitespace
+PASS: golden-good: the md carries the 11.4.44 revision header
+PASS: golden-good: two runs are byte-identical (md)
+PASS: golden-good: two runs are byte-identical (json)
+PASS: one '?' cell: the generator exits non-zero (got 3)
+PASS: one '?' cell: the refusal says the cell could not be classified
+PASS: one '?' cell: stderr names the component and the type
+PASS: one '?' cell: no matrix file was written
+PASS: an n/a cell without a reason is refused (rc 3)
+PASS: a component missing a type is refused naming it (rc 3)
+PASS: an unknown state is refused (rc 3)
+PASS: a wrong schema is refused (rc 3)
+PASS: a missing input is refused (rc 3)
+PASS: a hand-edited count is overwritten on regeneration
+PASS: a hand edit of the md does not survive regeneration
+PASS: the doc05 4.4 table has 11 columns x 15 rows = 165 cells (P=14 ~=26 A=84 n/a=32 ?=9)
+PASS: the doc05 4.4 table as written (it still holds 9 '?' cells) is refused by the generator
+PASS: the refusal lists the '?' cells
+PASS: doc05 4.4 with '?' resolved to A: declared counts equal the document tally
+PASS: gate golden-false: a complete ledger passes (exit 0)
+PASS: gate: a removed ledger record flips the cell and the gate fails naming it (rc 1)
+PASS: gate: a record whose runs are not three identical is not present (rc 1)
+PASS: gate: a record with no caught mutation is not present (rc 1)
+PASS: gate: a stronger evidence class than the type requires still passes (golden-false)
+PASS: mint: first run exits 0
+PASS: mint: one absent and one partial cell yield exactly two items
+PASS: mint: the items name the cells (alpha unit absent, alpha integration partial)
+PASS: mint: a second run mints none (11.4.214)
+PASS: mint: the ledger links both cells to their item
+PASS: mint: no mint command is an honest recorded skip (mint_cmd_absent), never a fabricated item
+PASS: mint: no item was recorded when nothing was minted
+PASS: mint: a failing mint command fails the run (rc 4)
+PASS: mint: a failed mint leaves no ledger row
+PASS: T196 applicability.yaml: accepted (no '?' cell, every cell has a reason)
+PASS: T196 applicability.yaml: cells = components x 15 and the per-state counts add up
+PASS: mutation qcheck caught (1 failing legs)
+PASS: mutation noreason caught (1 failing legs)
+PASS: mutation missingtype caught (1 failing legs)
+PASS: mutation gate_runs caught (1 failing legs)
+PASS: mutation gate_mut caught (1 failing legs)
+PASS: mutation mint_always caught (1 failing legs)
+PASS: mutation mint_fail caught (2 failing legs)
+PASS: mutation overwrite caught (4 failing legs)
+Summary: PASS=48 FAIL=0 SKIP=0
+# exit: 0

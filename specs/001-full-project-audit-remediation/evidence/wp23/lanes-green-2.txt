@@ -1,0 +1,10 @@
+# command: bash scripts/containers/tests/test_run_rust_kcov.sh --no-mutations (host; wrappers on shims, TIC with a shim wrapper dir, nothing starts a container)
+# date_utc: 2026-10-06T21:29:21Z
+# git_head: 34db9504594c4a1f883769d5c3d80238c87d48fb
+# sha256 acfd059e78c0603105b76f098ac16091c91873a5ef99a88a2f0511d18dfc4409  scripts/containers/run_rust.sh
+# sha256 b14dbc8353e8132fee2b8c3f908ec34fd1f868b31306b5299d87ea25dd141d5e  scripts/containers/run_kcov.sh
+# sha256 f721717d10098178dcc3a66fd9d3bcc66ba456e18175e9c44d08eb08e8d49a09  scripts/containers/lanes.tsv
+# sha256 e879d77472688363a52b745495e91af52088874fb04c42df2f86f17c8d1c37c4  scripts/test-in-container.sh
+# sha256 3d1e89bae3040fe466643a2176e620d009b66c3624a49b20327d8f482f247a73  scripts/containers/tests/test_run_rust_kcov.sh
+Summary: PASS=33 FAIL=0 SKIP=0
+# exit: 0

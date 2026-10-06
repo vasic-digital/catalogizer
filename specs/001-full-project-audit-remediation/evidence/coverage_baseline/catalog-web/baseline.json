@@ -1,0 +1,22 @@
+{
+  "application": "catalog-web",
+  "blocked": {
+    "detail": "catalog-web/node_modules does not exist and no network install is allowed (evidence specs/001-full-project-audit-remediation/evidence/wp23/probes/node-deps.txt). The provider @vitest/coverage-v8 ^4.0.18 is declared and locked (coverage-tools-existence.json); the lane TIC catalog-web unit exists but runs locally (no site column yet, T121a) and T202 requires the remote lane. Finding: docs/05 4.2 says coverage thresholds 80 are set in catalog-web/vitest.config.ts, but that file does not exist and catalog-web/vite.config.ts has a test block with no coverage section: no threshold is configured today.",
+    "reason": "deps_absent",
+    "reason_scope": "local"
+  },
+  "branch_percent": null,
+  "estimate": "none: no number is given",
+  "evidence": [
+    "specs/001-full-project-audit-remediation/evidence/wp23/probes/node-deps.txt",
+    "specs/001-full-project-audit-remediation/evidence/coverage_baseline/coverage-tools-existence.json"
+  ],
+  "instrument": null,
+  "line_percent": null,
+  "measured_at": "2026-10-06T21:04:18Z",
+  "owed": "node_modules through an offline image layer or cache, T121a remote lane",
+  "runs": 0,
+  "schema": "coverage-baseline/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "status": "blocked"
+}

@@ -1,0 +1,1 @@
+scripts/containers/tests/test_envelope.sh: line 251: 3.24788e+10: syntax error: invalid arithmetic operator (error token is ".24788e+10")

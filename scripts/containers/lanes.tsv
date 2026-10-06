@@ -1,6 +1,6 @@
 # lanes.tsv - T121. The lane table of scripts/test-in-container.sh (TIC): one reviewed row per (app, lane), naming the wrapper that runs it.
 # Columns (TAB separated): app, lane, wrapper (a file of scripts/containers/, without .sh). Lines starting with # and blank lines are ignored.
-# Apps: catalog-api, catalog-web, qa, docs, tooling. Lanes: unit, contract, integration, e2e, api, docs, render, tooling.
+# Apps: catalog-api, catalog-web, qa, docs, tooling, build-scripts, catalogizer-desktop, installer-wizard (T200a). Lanes: unit, contract, integration, e2e, api, docs, render, tooling, rust (T200a).
 # A new app or lane exists only by a REVIEWED row added here; TIC refuses any (app, lane) that has no row, with a non-zero exit (never a bare-host fallback).
 # `qa` is a RESERVED app key with NO row: until T212 adds the run_qa.sh rows, `TIC qa ...` is refused as an unknown app, never sent to another image.
 # The wrappers run_rust.sh and run_kcov.sh (T200a) and the Android rows of T204 (scripts/audit/android-container.sh, T145) are added by their own reviewed rows.
@@ -16,3 +16,11 @@ catalog-web	e2e	run_playwright
 docs	docs	run_docs
 docs	render	run_docs
 tooling	unit	run_testutil
+# T200a coverage rows (3 columns: the `site` column of T121a does not exist yet). `build-scripts unit` is the interpreter-class local lane of the bash line-trace
+# harness (scripts/bash-coverage.sh, T199). The two `rust` rows name run_rust, class `compile`: a local start of it is refused with 20 compile_class_local
+# (T121b), so they are safe before the dispatcher; they run only as remote commands composed by the T005b emitter. HELD (BLOCKED on T121a, which adds the
+# `site` column and the remote dispatch): the `run_node` rows `catalogizer-api-client unit`, `catalogizer-desktop unit`, `installer-wizard unit` and one
+# `<module> unit` row per TypeScript submodule, because a run_node row with no site would run vitest on the LOCAL host, which T121a forbids.
+build-scripts	unit	run_kcov
+catalogizer-desktop	rust	run_rust
+installer-wizard	rust	run_rust

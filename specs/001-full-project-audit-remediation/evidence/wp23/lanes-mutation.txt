@@ -1,0 +1,6 @@
+CAUGHT rust-local-allowed: FAIL: run_rust: a local start is refused with exit 20 (got '0' want '20')|FAIL: run_rust: reason missing: AM-P1 clean|
+CAUGHT rust-image-swapped: FAIL: run_rust: IMG-RUST missing|FAIL: run_rust: not-in-lock refusal missing (rc 0): AM-P1 clean|
+CAUGHT kcov-image-swapped: FAIL: run_kcov: IMG-KCOV missing from the shim calls|
+CAUGHT lane-kcov-to-testutil: FAIL: lane needle: build-scripts unit did not reach run_kcov: WRAPPER run_testutil --memory 19660800000 --cpus 9 -- true|
+CAUGHT lane-rust-local: FAIL: lane needle: installer-wizard rust did not reach run_rust: WRAPPER run_testutil --memory 19660800000 --cpus 9 -- t|
+CAUGHT lane-desktop-node-row: FAIL: lane: catalogizer-desktop unit ran or exited 0|

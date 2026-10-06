@@ -1,0 +1,15 @@
+{
+  "files": [
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_excluded.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "3"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_driver.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "4"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_fixture2.sh", "percent_covered": "0.00", "covered_lines": "0", "total_lines": "6"},
+    {"file": "/src/scripts/coverage/tests/fixtures/cov_fixture.sh", "percent_covered": "70.00", "covered_lines": "7", "total_lines": "10"}
+  ],
+  "percent_covered": "30.43",
+  "covered_lines": 7,
+  "total_lines": 23,
+  "percent_low": 25,
+  "percent_high": 75,
+  "command": "cov_fixture.sh",
+  "date": "2026-10-06 21:11:07"
+}

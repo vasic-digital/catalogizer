@@ -1,0 +1,60 @@
+{
+  "application": "catalogizer-android",
+  "entries": [
+    {
+      "class": "generated-code",
+      "justification_chars": 109,
+      "matched_files": 0,
+      "path": "**/R.class",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 79,
+      "matched_files": 0,
+      "path": "**/R$*.class",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 78,
+      "matched_files": 0,
+      "path": "**/BuildConfig.*",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 106,
+      "matched_files": 0,
+      "path": "**/Manifest*.*",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 134,
+      "matched_files": 0,
+      "path": "**/com/catalogizer/android/databinding/**",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 196,
+      "matched_files": 77,
+      "path": "**/*Test*.*",
+      "stale": false,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/catalogizer-android.yaml",
+  "first_party_entries": [],
+  "problems": [],
+  "schema": "exclusions-check/1",
+  "sha256": "b78dbb7274d18d22ca40203b9ef4d888dffb227d5f07cc4423797dd4ee5f2f51",
+  "unlisted": [],
+  "verdict": "PASS"
+}

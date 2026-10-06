@@ -1,0 +1,58 @@
+{
+  "application": "installer-wizard",
+  "entries": [
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 116,
+      "matched_files": 3,
+      "path": "src/test/**",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 115,
+      "matched_files": 4,
+      "path": "src-tauri/gen/**",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "vendored-third-party",
+      "justification_chars": 103,
+      "matched_files": 0,
+      "path": "node_modules/**",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 98,
+      "matched_files": 0,
+      "path": "dist/**",
+      "stale": true,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/installer-wizard.yaml",
+  "first_party_entries": [],
+  "problems": [
+    "unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes 'src/main.tsx' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes 'vite.config.ts' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes 'vitest.config.ts' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes 'tailwind.config.js' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes 'postcss.config.js' but the checked-in list does not carry it"
+  ],
+  "schema": "exclusions-check/1",
+  "sha256": "52ff3266b630ed8a74768cfda9adddbce18c604175d05fffe389e8aba28aed08",
+  "unlisted": [
+    "**/*.d.ts",
+    "src/main.tsx",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js"
+  ],
+  "verdict": "FAIL"
+}

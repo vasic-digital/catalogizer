@@ -1,0 +1,5294 @@
+{
+  "cells": [
+    {
+      "component": "A1",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A1",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row security",
+      "type": "security"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row ddos",
+      "type": "ddos"
+    },
+    {
+      "component": "A1",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row scaling",
+      "type": "scaling"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A1",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A1",
+      "declared": "n/a",
+      "reason": "no user interface (a Gin HTTP API; its handlers render no UI)",
+      "type": "ui"
+    },
+    {
+      "component": "A1",
+      "declared": "n/a",
+      "reason": "no user interface (a Gin HTTP API); accessibility and locale concerns are those of its clients",
+      "type": "ux"
+    },
+    {
+      "component": "A1",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A1",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A1 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "~",
+      "reason": "TS-00 read (9 test files, 36 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 9 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 9 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 9 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 9 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 9 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 9 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:assets",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "P",
+      "reason": "TS-00 read (15 test files, 189 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "A",
+      "reason": "TS-00 read: 3 non-test file(s) import net, database or exec, and no chaos or fault test marker among 15 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 15 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:auth",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "P",
+      "reason": "TS-00 read (16 test files, 249 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 16 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "~",
+      "reason": "structural: 2 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:cache",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "P",
+      "reason": "TS-00 read (22 test files, 281 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "A",
+      "reason": "TS-00 read: 1 non-test file(s) import net, database or exec, and no chaos or fault test marker among 22 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "~",
+      "reason": "structural: 4 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 22 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "~",
+      "reason": "structural: 4 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:concurrency",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:config",
+      "declared": "~",
+      "reason": "TS-00 read (5 test files, 101 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 5 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 5 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:config",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:config",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:config",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 5 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 5 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 5 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:config",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:config",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:config",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:database",
+      "declared": "P",
+      "reason": "TS-00 read (24 test files, 394 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:database",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags ['integration']; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:database",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:database",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:database",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:database",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:database",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:database",
+      "declared": "A",
+      "reason": "TS-00 read: 5 non-test file(s) import net, database or exec, and no chaos or fault test marker among 24 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:database",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:database",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 24 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:database",
+      "declared": "~",
+      "reason": "structural: 4 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:database",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:database",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:database",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:database",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "P",
+      "reason": "TS-00 read (15 test files, 157 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 15 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 15 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: 2 non-test file(s) import net, database or exec, and no chaos or fault test marker among 15 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 15 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 15 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 15 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:discovery",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "~",
+      "reason": "TS-00 read (5 test files, 50 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 5 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 5 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 5 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 5 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 5 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:entities",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "P",
+      "reason": "TS-00 read (13 test files, 187 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 13 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:event_bus",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "P",
+      "reason": "TS-00 read (11 test files, 186 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 11 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 11 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 11 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: 3 non-test file(s) import net, database or exec, and no chaos or fault test marker among 11 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 11 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 11 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 11 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:filesystem",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "~",
+      "reason": "TS-00 read (5 test files, 79 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 5 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 5 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 5 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 5 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 5 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:lazy",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:media",
+      "declared": "P",
+      "reason": "TS-00 read (19 test files, 184 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 19 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 19 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 19 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:media",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:media",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:media",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 19 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 19 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:media",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:media",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:media",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:media",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "P",
+      "reason": "TS-00 read (13 test files, 147 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 13 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:memory",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "P",
+      "reason": "TS-00 read (24 test files, 179 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 24 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 24 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 24 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: a rate-limiting/protective module (flood behaviour is its purpose); no flood test marker among 24 test files",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: 13 non-test file(s) import net, database or exec, and no chaos or fault test marker among 24 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 24 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 24 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 24 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:middleware",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "P",
+      "reason": "TS-00 read (18 test files, 359 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "A",
+      "reason": "TS-00 read: 4 non-test file(s) import net, database or exec, and no chaos or fault test marker among 18 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 18 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:observability",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "P",
+      "reason": "TS-00 read (18 test files, 136 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 18 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 18 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 18 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: a rate-limiting/protective module (flood behaviour is its purpose); no flood test marker among 18 test files",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: 3 non-test file(s) import net, database or exec, and no chaos or fault test marker among 18 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 18 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 18 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 18 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:rate_limiter",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "P",
+      "reason": "TS-00 read (10 test files, 86 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 10 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 10 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 10 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 10 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 10 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 10 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:recovery",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:security",
+      "declared": "P",
+      "reason": "TS-00 read (43 test files, 384 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:security",
+      "declared": "~",
+      "reason": "structural: 3 test file(s) with an integration path marker, build tags ['integration']; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:security",
+      "declared": "~",
+      "reason": "structural: 13 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:security",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:security",
+      "declared": "~",
+      "reason": "structural: 10 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:security",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:security",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:security",
+      "declared": "A",
+      "reason": "TS-00 read: 2 non-test file(s) import net, database or exec, and no chaos or fault test marker among 43 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:security",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:security",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 43 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:security",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:security",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:security",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:security",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:security",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "P",
+      "reason": "TS-00 read (31 test files, 358 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 31 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "~",
+      "reason": "structural: 2 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:storage",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "P",
+      "reason": "TS-00 read (23 test files, 279 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "A",
+      "reason": "TS-00 read: 6 non-test file(s) import net, database or exec, and no chaos or fault test marker among 23 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 23 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "~",
+      "reason": "structural: 3 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:streaming",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "P",
+      "reason": "TS-00 read (11 test files, 110 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 11 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 11 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 11 test files",
+      "type": "security"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "n/a",
+      "reason": "a library, not a network service; the flood tests target the API (A1) which composes this module",
+      "type": "ddos"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "n/a",
+      "reason": "TS-00 read: no net/http, net, database/sql or os/exec import in non-test sources, so no process or network boundary to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 11 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 11 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 11 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A10:watcher",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "~",
+      "reason": "TS-00 read (2 test files, 32 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 2 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 2 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 2 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 2 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 2 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:auth_context_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "P",
+      "reason": "TS-00 read (7 test files, 85 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 7 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 7 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 7 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 7 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 7 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "n/a",
+      "reason": "a non-visual TypeScript module (types, API client or socket client): no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "n/a",
+      "reason": "a non-visual TypeScript module: no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:catalogizer_api_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "P",
+      "reason": "TS-00 read (5 test files, 76 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "~",
+      "reason": "structural: 4 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:collection_manager_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "P",
+      "reason": "TS-00 read (5 test files, 55 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "~",
+      "reason": "structural: 4 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:dashboard_analytics_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "P",
+      "reason": "TS-00 read (5 test files, 40 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 5 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 5 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "~",
+      "reason": "structural: 5 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:media_browser_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "P",
+      "reason": "TS-00 read (4 test files, 55 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 4 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "~",
+      "reason": "structural: 3 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:media_player_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "P",
+      "reason": "TS-00 read (4 test files, 68 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 4 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "n/a",
+      "reason": "a non-visual TypeScript module (types, API client or socket client): no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "n/a",
+      "reason": "a non-visual TypeScript module: no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:media_types_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "P",
+      "reason": "TS-00 read (18 test files, 262 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 18 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 18 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 18 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 18 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 18 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "~",
+      "reason": "structural: 16 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:ui_components_react",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "P",
+      "reason": "TS-00 read (4 test files, 69 it/test declarations); `P` from 4 test files for a module of this size (doc05 4.4 `P (most)`)",
+      "type": "unit"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker among 4 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: a library module; the flows run in catalog-web E2E (A2)",
+      "type": "e2e"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no per-feature automation suite for this module",
+      "type": "full_automation"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no security test marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "security"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos/fault marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "chaos"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "n/a",
+      "reason": "a client-side library: no sustained-load surface (doc05 4.4 A11 `n/a`)",
+      "type": "stress"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no performance marker among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "performance"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark among 4 test files (doc05 4.4 A11 `A`)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) render a component with a testing-library or render() call; visual proof UNCONFIRMED (doc05 4.4 A11 `~`)",
+      "type": "ui"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: a React module; the WCAG 2.2 AA checks and walkthroughs are authored in WP-61 (docs/05 13.4: automated axe checks in component tests with a real DOM)",
+      "type": "ux"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge script targets this module (doc05 4.4 A11 `A`)",
+      "type": "challenges"
+    },
+    {
+      "component": "A11:websocket_client_ts",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module (doc05 4.4 A11 `A`)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "P",
+      "reason": "TS-00 read (127 test files, 1345 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 127 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 127 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 127 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "~",
+      "reason": "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 127 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 127 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "~",
+      "reason": "structural: the module is the Challenges / HelixQA framework itself; its own tests are its unit cell and its framework use is UNCONFIRMED",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:challenges",
+      "declared": "~",
+      "reason": "structural: the module is the Challenges / HelixQA framework itself; UNCONFIRMED",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "P",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101))",
+      "type": "unit"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "integration"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "security"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service)",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service)",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service: no load to apply)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "performance"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (no benchmarkable logic: governance text and shell)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (no user interface)",
+      "type": "ui"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "n/a",
+      "reason": "a governance submodule (no user interface)",
+      "type": "ux"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:constitution",
+      "declared": "A",
+      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "P",
+      "reason": "TS-00 read (323 test files, 2223 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 3 test file(s) with an integration path marker, build tags ['!integration', '!race', 'e2e', 'integration', 'security', 'stress']; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 3 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 323 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "~",
+      "reason": "structural: 1 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:containers",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "P",
+      "reason": "TS-00 read (19 test files, 207 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "~",
+      "reason": "structural: 3 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 19 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "~",
+      "reason": "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 19 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 19 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:doc_processor",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "P",
+      "reason": "TS-00 read (35 test files, 320 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "A",
+      "reason": "TS-00 read: 6 non-test file(s) import net, database or exec, and no chaos or fault test marker among 35 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 35 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "~",
+      "reason": "structural: 2 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:helix_memory",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "P",
+      "reason": "TS-00 read (401 test files, 3752 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 17 test file(s) with an integration path marker, build tags ['!race', 'darwin', 'helixqa_external', 'integration', 'linux', 'live_device', 'nexus_appium_integration', 'nexus_chromedp_integration', 'race', 'vision']; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 4 test file(s) with a security/inject/fuzz path marker, 5 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "A",
+      "reason": "TS-00 read: 135 non-test file(s) import net, database or exec, and no chaos or fault test marker among 401 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 20 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 4 test file(s) with a perf/latency marker; baselines UNCONFIRMED",
+      "type": "performance"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: 33 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "A",
+      "reason": "applicable until the WP-34 audit row decides: HelixQA tracks two operator web pages (docs/website/challenges-dashboard, docs/website/ticket-viewer); counted as an absent cell, not hidden (docs/05 13.4)",
+      "type": "ui"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "A",
+      "reason": "applicable until the WP-34 audit row decides (see ui); counted as an absent cell, not hidden",
+      "type": "ux"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: the module is the Challenges / HelixQA framework itself; its own tests are its unit cell and its framework use is UNCONFIRMED",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:helix_qa",
+      "declared": "~",
+      "reason": "structural: the module is the Challenges / HelixQA framework itself; UNCONFIRMED",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "P",
+      "reason": "TS-00 read (37 test files, 413 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 37 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: 11 non-test file(s) import net, database or exec, and no chaos or fault test marker among 37 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 37 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 37 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:llm_orchestrator",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "P",
+      "reason": "TS-00 read (103 test files, 1345 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 103 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 103 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 103 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "~",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 103 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "~",
+      "reason": "structural: 45 file(s) with `func Benchmark`; drift detection UNCONFIRMED",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ui"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:llm_provider",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "~",
+      "reason": "TS-00 read (1 test files, 22 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 1 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 1 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 1 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: 1 non-test file(s) import net, database or exec, and no chaos or fault test marker among 1 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 1 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 1 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 1 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ui"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ux"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:replay_buffer",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "~",
+      "reason": "TS-00 read (1 test files, 32 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 1 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 1 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 1 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 1 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 1 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 1 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 1 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ui"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ux"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:screen_diff",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0))",
+      "type": "unit"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "integration"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "security"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service)",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service)",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (not a service: no load to apply)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "performance"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (no benchmarkable logic: governance text and shell)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (no user interface)",
+      "type": "ui"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "n/a",
+      "reason": "a governance submodule (no user interface)",
+      "type": "ux"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:superspec",
+      "declared": "A",
+      "reason": "TS-00 read (0 test files (shell 0, python 0, go 0, ts 0)): governance text and scripts with no test of this type found",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "~",
+      "reason": "TS-00 read (1 test files, 13 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 1 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 1 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 1 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 1 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 1 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 1 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 1 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ui"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ux"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:training_collector",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "P",
+      "reason": "TS-00 read (25 test files, 460 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with an integration path marker, build tags ['vision']; real-service use UNCONFIRMED",
+      "type": "integration"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED",
+      "type": "security"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: 10 non-test file(s) import net, database or exec, and no chaos or fault test marker among 25 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "~",
+      "reason": "structural: 1 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "type": "stress"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 25 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 25 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ui"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ux"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:vision_engine",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "~",
+      "reason": "TS-00 read (1 test files, 33 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "type": "unit"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no integration path marker or build tag among 1 test files",
+      "type": "integration"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a e2e marker among its 1 test files",
+      "type": "e2e"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)",
+      "type": "full_automation"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no security, injection or fuzz test among 1 test files",
+      "type": "security"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "n/a",
+      "reason": "a QA/governance Go module, not a network service",
+      "type": "ddos"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "n/a",
+      "reason": "a library, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 1 test files",
+      "type": "chaos"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no test file name carries a stress/load/soak marker among its 1 test files",
+      "type": "stress"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no performance/latency test marker among 1 test files",
+      "type": "performance"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no `func Benchmark` among 1 test files",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ui"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "n/a",
+      "reason": "an image/vision library with no user interface of its own",
+      "type": "ux"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api",
+      "type": "challenges"
+    },
+    {
+      "component": "A12:visual_regression",
+      "declared": "A",
+      "reason": "TS-00 read: no HelixQA bank targets this module directly",
+      "type": "helixqa"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 95 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)",
+      "type": "unit"
+    },
+    {
+      "component": "A13",
+      "declared": "A",
+      "reason": "TS-00 read: the harness has no test of its own that drives its parts together",
+      "type": "integration"
+    },
+    {
+      "component": "A13",
+      "declared": "n/a",
+      "reason": "test and harness code: it is the instrument that runs the end-to-end flows, not their subject",
+      "type": "e2e"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 11 bash suites under scripts/testing/full_automation; they drive the API, so they are the instrument, not a test of the harness",
+      "type": "full_automation"
+    },
+    {
+      "component": "A13",
+      "declared": "A",
+      "reason": "TS-00 read: the harness handles credentials and runs commands; no security test of it is known",
+      "type": "security"
+    },
+    {
+      "component": "A13",
+      "declared": "n/a",
+      "reason": "test and harness code, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A13",
+      "declared": "n/a",
+      "reason": "test and harness code, not a service",
+      "type": "scaling"
+    },
+    {
+      "component": "A13",
+      "declared": "A",
+      "reason": "TS-00 read: no chaos test of the harness is known",
+      "type": "chaos"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 16 k6 scripts under tests/k6 apply load to A1; they are instruments, not a stress test of the harness",
+      "type": "stress"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 16 k6 scripts under tests/k6; instruments, not subject",
+      "type": "performance"
+    },
+    {
+      "component": "A13",
+      "declared": "A",
+      "reason": "TS-00 read: no benchmark of the harness",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A13",
+      "declared": "n/a",
+      "reason": "no user interface (test and harness code)",
+      "type": "ui"
+    },
+    {
+      "component": "A13",
+      "declared": "n/a",
+      "reason": "no user interface (test and harness code)",
+      "type": "ux"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 5 files under challenges/scripts; the Challenges are instruments applied to A1..A6",
+      "type": "challenges"
+    },
+    {
+      "component": "A13",
+      "declared": "~",
+      "reason": "TS-00 read: 15 bank files under challenges/helixqa-banks; doc05 4.4 records 1178 non-executable placeholder steps (finding F-1)",
+      "type": "helixqa"
+    },
+    {
+      "component": "A2",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A2",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row security",
+      "type": "security"
+    },
+    {
+      "component": "A2",
+      "declared": "n/a",
+      "reason": "client application, not a service; the flood tests target the API (A1)",
+      "type": "ddos"
+    },
+    {
+      "component": "A2",
+      "declared": "n/a",
+      "reason": "client application, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A2",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A2",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A2",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A2",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A2",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A2 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A3",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A3",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row security",
+      "type": "security"
+    },
+    {
+      "component": "A3",
+      "declared": "n/a",
+      "reason": "client application, not a service; the flood tests target the API (A1)",
+      "type": "ddos"
+    },
+    {
+      "component": "A3",
+      "declared": "n/a",
+      "reason": "client application, no replicas to add or remove",
+      "type": "scaling"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A3",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A3",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A3",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A3 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A4",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row security",
+      "type": "security"
+    },
+    {
+      "component": "A4",
+      "declared": "n/a",
+      "reason": "client-side installer, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A4",
+      "declared": "n/a",
+      "reason": "client-side installer, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A4",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A4",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A4 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A5",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A5",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A5",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row security",
+      "type": "security"
+    },
+    {
+      "component": "A5",
+      "declared": "n/a",
+      "reason": "client application, not a service; the flood tests target the API (A1)",
+      "type": "ddos"
+    },
+    {
+      "component": "A5",
+      "declared": "n/a",
+      "reason": "client application, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A5",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A5",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A5",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A5 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A6",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row security",
+      "type": "security"
+    },
+    {
+      "component": "A6",
+      "declared": "n/a",
+      "reason": "client application, not a service; the flood tests target the API (A1)",
+      "type": "ddos"
+    },
+    {
+      "component": "A6",
+      "declared": "n/a",
+      "reason": "client application, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A6",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A6",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A6",
+      "declared": "~",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A6 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A7",
+      "declared": "P",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row security",
+      "type": "security"
+    },
+    {
+      "component": "A7",
+      "declared": "n/a",
+      "reason": "a TypeScript library, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A7",
+      "declared": "n/a",
+      "reason": "a TypeScript library, no replicas",
+      "type": "scaling"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row stress",
+      "type": "stress"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A7",
+      "declared": "n/a",
+      "reason": "a library with no user interface (docs/05 3: A7 is a TypeScript library)",
+      "type": "ui"
+    },
+    {
+      "component": "A7",
+      "declared": "n/a",
+      "reason": "a library with no user interface",
+      "type": "ux"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A7",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A7 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row e2e",
+      "type": "e2e"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row security",
+      "type": "security"
+    },
+    {
+      "component": "A8",
+      "declared": "n/a",
+      "reason": "TS-00 read: Website/ holds VitePress markdown, config.ts, package.json and package-lock.json and no server, container or hosting configuration (a search for nginx, Dockerfile, docker-compose, netlify, vercel, pages configuration returned none), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this read supersedes it",
+      "type": "ddos"
+    },
+    {
+      "component": "A8",
+      "declared": "n/a",
+      "reason": "static VitePress site (Website/package.json has dev/build/preview only); hosting platform concern",
+      "type": "scaling"
+    },
+    {
+      "component": "A8",
+      "declared": "n/a",
+      "reason": "static VitePress site: no process, database or network dependency of its own to disturb",
+      "type": "chaos"
+    },
+    {
+      "component": "A8",
+      "declared": "n/a",
+      "reason": "static VitePress site: no server code in the repository to load",
+      "type": "stress"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A8",
+      "declared": "n/a",
+      "reason": "static VitePress site: no benchmarkable server logic (frontend speed is the performance type)",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row ui",
+      "type": "ui"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row ux",
+      "type": "ux"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A8",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A8 row helixqa",
+      "type": "helixqa"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row unit",
+      "type": "unit"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row integration",
+      "type": "integration"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "the build framework has no end-user flow; its runs are the integration and full-automation cells",
+      "type": "e2e"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row full_automation",
+      "type": "full_automation"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row security",
+      "type": "security"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "a bash build framework, not a service",
+      "type": "ddos"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "a bash build framework, not a service",
+      "type": "scaling"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row chaos",
+      "type": "chaos"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "a bash build framework, not a service: no load to apply",
+      "type": "stress"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row performance",
+      "type": "performance"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row benchmarking",
+      "type": "benchmarking"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "no user interface (bash build framework)",
+      "type": "ui"
+    },
+    {
+      "component": "A9",
+      "declared": "n/a",
+      "reason": "no user interface (bash build framework)",
+      "type": "ux"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row challenges",
+      "type": "challenges"
+    },
+    {
+      "component": "A9",
+      "declared": "A",
+      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row helixqa",
+      "type": "helixqa"
+    }
+  ],
+  "counts": {
+    "by_component": {
+      "A1": {
+        "A": 1,
+        "P": 4,
+        "n/a": 2,
+        "~": 8
+      },
+      "A10:assets": {
+        "A": 9,
+        "P": 0,
+        "n/a": 4,
+        "~": 2
+      },
+      "A10:auth": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:cache": {
+        "A": 4,
+        "P": 1,
+        "n/a": 5,
+        "~": 5
+      },
+      "A10:concurrency": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:config": {
+        "A": 9,
+        "P": 0,
+        "n/a": 5,
+        "~": 1
+      },
+      "A10:database": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:discovery": {
+        "A": 9,
+        "P": 1,
+        "n/a": 4,
+        "~": 1
+      },
+      "A10:entities": {
+        "A": 9,
+        "P": 0,
+        "n/a": 5,
+        "~": 1
+      },
+      "A10:event_bus": {
+        "A": 4,
+        "P": 1,
+        "n/a": 5,
+        "~": 5
+      },
+      "A10:filesystem": {
+        "A": 10,
+        "P": 1,
+        "n/a": 4,
+        "~": 0
+      },
+      "A10:lazy": {
+        "A": 9,
+        "P": 0,
+        "n/a": 5,
+        "~": 1
+      },
+      "A10:media": {
+        "A": 8,
+        "P": 1,
+        "n/a": 5,
+        "~": 1
+      },
+      "A10:memory": {
+        "A": 4,
+        "P": 1,
+        "n/a": 5,
+        "~": 5
+      },
+      "A10:middleware": {
+        "A": 11,
+        "P": 1,
+        "n/a": 3,
+        "~": 0
+      },
+      "A10:observability": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:rate_limiter": {
+        "A": 11,
+        "P": 1,
+        "n/a": 3,
+        "~": 0
+      },
+      "A10:recovery": {
+        "A": 9,
+        "P": 1,
+        "n/a": 5,
+        "~": 0
+      },
+      "A10:security": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:storage": {
+        "A": 4,
+        "P": 1,
+        "n/a": 5,
+        "~": 5
+      },
+      "A10:streaming": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A10:watcher": {
+        "A": 9,
+        "P": 1,
+        "n/a": 5,
+        "~": 0
+      },
+      "A11:auth_context_react": {
+        "A": 10,
+        "P": 0,
+        "n/a": 3,
+        "~": 2
+      },
+      "A11:catalogizer_api_client_ts": {
+        "A": 9,
+        "P": 1,
+        "n/a": 5,
+        "~": 0
+      },
+      "A11:collection_manager_react": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A11:dashboard_analytics_react": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A11:media_browser_react": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A11:media_player_react": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A11:media_types_ts": {
+        "A": 9,
+        "P": 1,
+        "n/a": 5,
+        "~": 0
+      },
+      "A11:ui_components_react": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A11:websocket_client_ts": {
+        "A": 10,
+        "P": 1,
+        "n/a": 3,
+        "~": 1
+      },
+      "A12:challenges": {
+        "A": 6,
+        "P": 1,
+        "n/a": 4,
+        "~": 4
+      },
+      "A12:constitution": {
+        "A": 8,
+        "P": 1,
+        "n/a": 6,
+        "~": 0
+      },
+      "A12:containers": {
+        "A": 4,
+        "P": 1,
+        "n/a": 4,
+        "~": 6
+      },
+      "A12:doc_processor": {
+        "A": 6,
+        "P": 1,
+        "n/a": 4,
+        "~": 4
+      },
+      "A12:helix_memory": {
+        "A": 5,
+        "P": 1,
+        "n/a": 4,
+        "~": 5
+      },
+      "A12:helix_qa": {
+        "A": 4,
+        "P": 1,
+        "n/a": 2,
+        "~": 8
+      },
+      "A12:llm_orchestrator": {
+        "A": 7,
+        "P": 1,
+        "n/a": 4,
+        "~": 3
+      },
+      "A12:llm_provider": {
+        "A": 7,
+        "P": 1,
+        "n/a": 4,
+        "~": 3
+      },
+      "A12:replay_buffer": {
+        "A": 10,
+        "P": 0,
+        "n/a": 4,
+        "~": 1
+      },
+      "A12:screen_diff": {
+        "A": 10,
+        "P": 0,
+        "n/a": 4,
+        "~": 1
+      },
+      "A12:superspec": {
+        "A": 9,
+        "P": 0,
+        "n/a": 6,
+        "~": 0
+      },
+      "A12:training_collector": {
+        "A": 10,
+        "P": 0,
+        "n/a": 4,
+        "~": 1
+      },
+      "A12:vision_engine": {
+        "A": 6,
+        "P": 1,
+        "n/a": 4,
+        "~": 4
+      },
+      "A12:visual_regression": {
+        "A": 10,
+        "P": 0,
+        "n/a": 4,
+        "~": 1
+      },
+      "A13": {
+        "A": 4,
+        "P": 0,
+        "n/a": 5,
+        "~": 6
+      },
+      "A2": {
+        "A": 3,
+        "P": 3,
+        "n/a": 2,
+        "~": 7
+      },
+      "A3": {
+        "A": 9,
+        "P": 1,
+        "n/a": 2,
+        "~": 3
+      },
+      "A4": {
+        "A": 11,
+        "P": 1,
+        "n/a": 2,
+        "~": 1
+      },
+      "A5": {
+        "A": 8,
+        "P": 1,
+        "n/a": 2,
+        "~": 4
+      },
+      "A6": {
+        "A": 10,
+        "P": 1,
+        "n/a": 2,
+        "~": 2
+      },
+      "A7": {
+        "A": 10,
+        "P": 1,
+        "n/a": 4,
+        "~": 0
+      },
+      "A8": {
+        "A": 10,
+        "P": 0,
+        "n/a": 5,
+        "~": 0
+      },
+      "A9": {
+        "A": 9,
+        "P": 0,
+        "n/a": 6,
+        "~": 0
+      }
+    },
+    "by_type": {
+      "benchmarking": {
+        "A": 35,
+        "P": 0,
+        "n/a": 3,
+        "~": 16
+      },
+      "challenges": {
+        "A": 49,
+        "P": 1,
+        "n/a": 0,
+        "~": 4
+      },
+      "chaos": {
+        "A": 38,
+        "P": 0,
+        "n/a": 11,
+        "~": 5
+      },
+      "ddos": {
+        "A": 2,
+        "P": 0,
+        "n/a": 51,
+        "~": 1
+      },
+      "e2e": {
+        "A": 33,
+        "P": 1,
+        "n/a": 2,
+        "~": 18
+      },
+      "full_automation": {
+        "A": 51,
+        "P": 1,
+        "n/a": 0,
+        "~": 2
+      },
+      "helixqa": {
+        "A": 45,
+        "P": 0,
+        "n/a": 0,
+        "~": 9
+      },
+      "integration": {
+        "A": 34,
+        "P": 0,
+        "n/a": 0,
+        "~": 20
+      },
+      "performance": {
+        "A": 50,
+        "P": 0,
+        "n/a": 0,
+        "~": 4
+      },
+      "scaling": {
+        "A": 1,
+        "P": 0,
+        "n/a": 53,
+        "~": 0
+      },
+      "security": {
+        "A": 36,
+        "P": 0,
+        "n/a": 0,
+        "~": 18
+      },
+      "stress": {
+        "A": 21,
+        "P": 1,
+        "n/a": 13,
+        "~": 19
+      },
+      "ui": {
+        "A": 3,
+        "P": 1,
+        "n/a": 40,
+        "~": 10
+      },
+      "unit": {
+        "A": 3,
+        "P": 41,
+        "n/a": 0,
+        "~": 10
+      },
+      "ux": {
+        "A": 13,
+        "P": 0,
+        "n/a": 40,
+        "~": 1
+      }
+    },
+    "cells": 810,
+    "declared": {
+      "A": 414,
+      "P": 46,
+      "n/a": 213,
+      "~": 137
+    }
+  },
+  "generated_at": "2026-10-06T22:22:12Z",
+  "schema": "coverage-matrix/1",
+  "source": "applicability.yaml"
+}

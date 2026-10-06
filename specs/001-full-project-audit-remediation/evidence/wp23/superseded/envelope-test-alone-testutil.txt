@@ -1,0 +1,9 @@
+# command: scripts/test-in-container.sh tooling unit -- env ENVELOPE_TEST_NO_MUTATIONS=1 bash scripts/containers/tests/test_envelope.sh
+# date_utc: 2026-10-06T21:51:51Z
+# git_head: 8bc60bd70441bcf134c57d2e90da7dab72f28ebd
+# sha256 c44ea86a40fdd106a728664c87727596335d8afd18033953b322e4bf01c13f6d  scripts/containers/tests/test_envelope.sh
+# sha256 76a7ba9f61e58b99030e7418b8141b70bdbadeea8b39c10d6f86b4e68a27cb24  scripts/containers/envelope.sh
+
+test-in-container: REFUSED reason=envelope_refused /home/milosvasic/Projects/catalogizer/scripts/containers/envelope.sh: line 119: syntax error near unexpected token `('
+/home/milosvasic/Projects/catalogizer/scripts/containers/envelope.sh: line 119: `[ "$MEM_BUDGET" -ge 536870912 ] || refuse memory_budget_unavailable "budget $MEM_BUDGET bytes is below 512 MiB (MemAvailable ${MA_KB} kB, reserve $RES_MEM, ceiling $CEIL, used by registered operations $USED_MEM)"   # MUT:refusal'
+# exit: 1

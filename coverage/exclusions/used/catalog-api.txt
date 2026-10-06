@@ -1,0 +1,1 @@
+# patterns the Go measuring tool excludes: the instrument (`go test -coverpkg=./...`) takes no exclude list, so none.

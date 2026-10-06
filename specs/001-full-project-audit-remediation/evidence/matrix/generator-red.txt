@@ -1,0 +1,3 @@
+# RED (T195): the generator test run before tools/evidence/matrix/gen_matrix.py existed (host run, python3 3.14; the GREEN runs are in IMG-TESTUTIL via TIC)
+FAIL: generator not found at /home/milosvasic/Projects/catalogizer/tools/evidence/matrix/tests/../gen_matrix.py
+Summary: PASS=0 FAIL=1 SKIP=0

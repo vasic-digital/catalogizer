@@ -1,0 +1,49 @@
+# command: scripts/test-in-container.sh build-scripts unit -- bash scripts/bash-coverage.sh --src-root /src --out /out/bc --exclusions /src/coverage/exclusions/build-scripts.yaml --target Build/lib/common.sh --target Build/lib/hash.sh --target Build/lib/orchestrator.sh --target Build/lib/version.sh --target scripts/coverage/check_exclusions.sh -- bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations
+# date_utc: 2026-10-06T22:17:19Z
+# git_head: 11ba4b1d237b80ac04f21edef8d9cf4d9c0c7142
+# sha256 2e38069e77772a0d95abd8fab8e6bbb5d0a9cc65b71f3d0dd0b7c46b98c810a9  scripts/bash-coverage.sh
+# sha256 caafe0190a62c6e1d4f284b7bdf101d24547f390165ef60b209c8b4c8dc4a9e7  scripts/coverage/bashcov.py
+# sha256 a3fd9ede8d5f90bb089230a04614c50ce81e9dd8c1e8d970540494328c5268f3  Build/lib/common.sh
+# sha256 0f16029048c7b8cbac8c60c58378580daca5d7db826790c1039234434cfda64e  Build/lib/hash.sh
+# sha256 bb336ec61d698a6ad56a5e6ddcf4a678a7fd82691ba20bef13257ff393b373f0  Build/lib/orchestrator.sh
+# sha256 9a438ce5549ca4eb370fe3471d29cfc57d5b42ed38d05748bf9e70c429e87dae  Build/lib/version.sh
+# sha256 1180489d7a5da55c1aca2f46ebbcdca882549c4910c3de3c314d6e1f4840a1e1  scripts/coverage/check_exclusions.sh
+# sha256 02db269ca25683c2ac776bf23bee4433c127eba1d04aa47152f00e3184cd9968  scripts/coverage/tests/test_check_exclusions.sh
+# sha256 24b3d434fa50dc0d87e14d72ca54a286dc57842dfc725a989b2d2c119cd391c2  coverage/exclusions/build-scripts.yaml
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: golden-good: exit 0
+PASS: golden-good: the verdict file says PASS
+PASS: golden-good: the verdict names the application
+PASS: golden-good: the verdict carries the sha256 of the checked file
+PASS: golden-good: the first-party entry is reported as an honest gap
+PASS: unlisted exclusion: exit 1
+PASS: unlisted exclusion: stderr names the pattern
+PASS: unlisted exclusion: the verdict file says FAIL
+PASS: golden-false: every used pattern is listed: exit 0
+PASS: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0
+PASS: unjustified entry: exit 1 naming it
+PASS: a one-character justification is not a justification: exit 1
+PASS: first-party entry without a tracked item: exit 1 naming it
+PASS: a tracked item that is not an item id is refused
+PASS: an unknown class is refused naming it
+PASS: an over-broad pattern (**) is refused
+PASS: an absolute path is refused
+PASS: a path with .. is refused
+PASS: a duplicate path is refused
+PASS: a wrong schema is refused
+PASS: an application that differs from the file stem is refused
+PASS: an unreadable file is a refusal, never a pass
+PASS: no argument is a usage error
+PASS: an explicit empty list passes
+PASS: a file without the exclusions key is refused
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches one file
+PASS: --root: the testdata entry matches none and is reported stale
+Summary: PASS=28 FAIL=0 SKIP=0
+bash-coverage: 5 target(s), 1 of 598 executable lines executed = 0.17% (command rc 0)
+# exit: 0

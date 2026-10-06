@@ -1,0 +1,52 @@
+# command: scripts/test-in-container.sh build-scripts unit -- bash scripts/coverage/tests/test_bash_coverage.sh --no-mutations
+# date_utc: 2026-10-06T21:39:03Z
+# git_head: 34db9504594c4a1f883769d5c3d80238c87d48fb
+# sha256 2e38069e77772a0d95abd8fab8e6bbb5d0a9cc65b71f3d0dd0b7c46b98c810a9  scripts/bash-coverage.sh
+# sha256 caafe0190a62c6e1d4f284b7bdf101d24547f390165ef60b209c8b4c8dc4a9e7  scripts/coverage/bashcov.py
+# sha256 ad50af7e66b72821e895c02b1b8b24dc3a9302b83a90a4441e3d40627c2ad02f  scripts/coverage/tests/test_bash_coverage.sh
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: fixture 1: exit 0
+PASS: fixture 1: schema
+PASS: fixture 1: executable lines (hand count 10)
+PASS: fixture 1: executed lines (hand count 7)
+PASS: fixture 1: percent
+PASS: fixture 1: the uncovered lines are 10 11 15
+PASS: fixture 1: the never-called function is REPORTED
+PASS: fixture 1: the called function is not reported uncovered
+PASS: fixture 1: no traced line was classified non-executable (the classifier agrees with the tracer)
+PASS: fixture 1: totals equal the single target
+PASS: fixture 1: the record states the PS4 that was used
+PASS: fixture 1: the honest limit (line, not branch) is written into the record
+PASS: fixture 1: the set +x / trap limit is written into the record
+PASS: fixture 1 with the branch taken: executed 8 (line 15 now executes)
+PASS: fixture 2: executable (hand count 6)
+PASS: fixture 2: executed (hand count 5)
+PASS: fixture 2: percent
+PASS: fixture 2: the uncovered line is the case arm 6
+PASS: fixture 2: no traced line outside the classifier's executable set
+PASS: driver with a fence: exit 0
+PASS: driver: child processes are traced (totals 12 executed of 16 executable)
+PASS: driver: the excluded file is not in the targets
+PASS: driver: the excluded file is listed with its class
+PASS: driver: the totals percent is 75.00
+PASS: driver without a fence: all three count (14 executed of 19 executable)
+PASS: a fence the gate refuses is refused by the harness (exit 3 exclusions_gate_failed)
+PASS: a refused fence writes no coverage record
+PASS: a failing command: the harness exits with the command's status
+PASS: a failing command: the record says command_failed with the status
+PASS: an empty trace is refused as trace_empty (exit 3), never reported as 0 percent
+PASS: a target the command never ran is reported 0.00 (the trace is not empty)
+PASS: a missing target is refused (exit 3 target_missing)
+PASS: two targets with one basename are refused (the PS4 names the base name only)
+PASS: no -- command is a usage error
+PASS: no target is a usage error
+PASS: the caller's BASH_ENV is untouched after the run
+PASS: determinism: two runs give identical executed lines
+PASS: kcov cross-check: kcov and this harness agree on executed/executable lines of fixture 1
+Summary: PASS=38 FAIL=0 SKIP=0
+# exit: 0

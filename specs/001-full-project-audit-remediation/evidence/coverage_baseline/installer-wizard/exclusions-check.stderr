@@ -1,0 +1,6 @@
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/main.tsx' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'vite.config.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'vitest.config.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'tailwind.config.js' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'postcss.config.js' but the checked-in list does not carry it

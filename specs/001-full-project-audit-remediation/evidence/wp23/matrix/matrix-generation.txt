@@ -1,0 +1,15 @@
+# command: scripts/test-in-container.sh tooling unit -- python3 -I tools/evidence/matrix/gen_matrix.py --applicability specs/001-full-project-audit-remediation/matrix/applicability.yaml --out /out/matrix --mint --mint-ledger /out/matrix/mint-ledger.json
+# date_utc: 2026-10-06T22:21:35Z
+# git_head: 11ba4b1d237b80ac04f21edef8d9cf4d9c0c7142
+# sha256 4a8ebfb304a4cf9471189895e1f867ea7e0ae4e8b9afb7d044c9d87ab5bef9d7  tools/evidence/matrix/gen_matrix.py
+# sha256 baa25979e9b91a1f56da2b5ae6558e85ca292640d862414a53a51b43467be2bb  specs/001-full-project-audit-remediation/matrix/applicability.yaml
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+gen_matrix: 810 cells, declared P=46 ~=137 A=414 n/a=213
+mint: skipped reason=mint_cmd_absent (551 cell(s) owe an item; the register creation path of T069 is not wired, so none was minted)
+gen_matrix: mint: skipped reason=mint_cmd_absent (551 cell(s) owe an item; the register creation path of T069 is not wired, so none was minted)
+# exit: 0

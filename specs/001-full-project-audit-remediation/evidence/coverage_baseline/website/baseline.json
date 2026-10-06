@@ -1,0 +1,9 @@
+{
+  "application": "website",
+  "line_percent": null,
+  "measured_at": "2026-10-06T21:04:18Z",
+  "reason": "Website/ holds VitePress markdown, .vitepress/config.ts and package.json: no executable code of ours is measured (docs/05 7.4 A8); coverage/exclusions/website.yaml states an empty list; link and render checks are the test types, not coverage",
+  "schema": "coverage-baseline/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "status": "n/a"
+}

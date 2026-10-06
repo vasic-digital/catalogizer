@@ -1,0 +1,18 @@
+# coverage/exclusions/installer-wizard.yaml - T200. The checked-in exclusion fence of installer-wizard (docs/05 7.3, constitution 11.4.224 E): every entry is justified from the closed class set
+# (generated-code | vendored-third-party | non-shipping-fixtures-and-golden-assets); a first-party entry needs a tracked item. Written from direct reads of the tree on 2026-10-06;
+# the gate is scripts/coverage/check_exclusions.sh, its verdict on this file is recorded in specs/001-full-project-audit-remediation/evidence/coverage_baseline/installer-wizard/exclusions-check.json.
+schema: coverage-exclusions/1
+application: installer-wizard
+exclusions:
+  - path: "src/test/**"
+    class: non-shipping-fixtures-and-golden-assets
+    justification: "test setup, test render utilities and the lucide-react module mock under src/test: used by tests only, never shipped"
+  - path: "src-tauri/gen/**"
+    class: generated-code
+    justification: "the JSON schemas written by the Tauri build step into src-tauri/gen/schemas: generated, not Rust or TypeScript code"
+  - path: "node_modules/**"
+    class: vendored-third-party
+    justification: "npm-installed third-party packages, not tracked in this repository and owned by their upstream projects"
+  - path: "dist/**"
+    class: generated-code
+    justification: "the Vite production build output directory written by the package build step; not a source of ours"

@@ -1,0 +1,7 @@
+mutation: tracked-item check ignored (if cls == "first-party" and not item_ok -> if False), application installer-wizard
+date_utc: 2026-10-06T20:29:10Z
+fence_file: coverage/exclusions/installer-wizard.yaml sha256 52ff3266b630ed8a74768cfda9adddbce18c604175d05fffe389e8aba28aed08
+poisoned copy (the file plus a first-party entry without a tracked item): real gate rc=1 (want 1), mutant gate rc=0 (want 0: the mutant accepts it)
+real gate stderr: check_exclusions: FAIL: entry 5 (poison/first_party_without_item.src): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+real gate on the unmodified file with its used list: rc=1
+result: CAUGHT

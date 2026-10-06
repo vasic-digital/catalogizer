@@ -1,0 +1,11 @@
+RED (T198): the test run before scripts/coverage/track-coverage.sh exists
+FAIL: the collector /home/milosvasic/Projects/catalogizer/scripts/coverage/track-coverage.sh does not exist
+Summary: PASS=0 FAIL=1 SKIP=0
+rc=1
+
+The old scripts/track-coverage.sh swallows a failing package (doc05 7.4 A1), measured by reading it:
+19:cd catalog-api 2>/dev/null || true
+21:    GOMAXPROCS=3 go test ./... -p 2 -parallel 2 -coverprofile=../${COVERAGE_DIR}/go-coverage-${TIMESTAMP}.out 2>/dev/null || true
+26:cd .. 2>/dev/null || true
+31:    GO_COVERAGE=$(cd catalog-api && go tool cover -func=../${COVERAGE_DIR}/go-coverage-${TIMESTAMP}.out 2>/dev/null | grep total | awk '{print $3}' | sed 's/%//' || echo "0")
+NOTE: an attempt to run the new test with COLLECTOR=scripts/track-coverage.sh was started by mistake; that script ignores its arguments and started 'go test ./...' on the host for about 2 minutes before it was stopped (TaskStop); its stray output file was removed. Never repeat: the old script is not a safe RED target.

@@ -1,0 +1,66 @@
+{
+  "application": "catalogizer-desktop",
+  "entries": [
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 172,
+      "matched_files": 7,
+      "path": "src/test-utils/**",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 176,
+      "matched_files": 4,
+      "path": "src-tauri/gen/**",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 88,
+      "matched_files": 25,
+      "path": "**/__tests__/**",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 81,
+      "matched_files": 27,
+      "path": "**/*.test.*",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 81,
+      "matched_files": 3,
+      "path": "**/*.spec.*",
+      "stale": false,
+      "tracked_item": null
+    },
+    {
+      "class": "vendored-third-party",
+      "justification_chars": 103,
+      "matched_files": 0,
+      "path": "node_modules/**",
+      "stale": true,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/catalogizer-desktop.yaml",
+  "first_party_entries": [],
+  "problems": [
+    "unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it",
+    "unlisted exclusion: the measuring tool excludes '**/*.config.*' but the checked-in list does not carry it"
+  ],
+  "schema": "exclusions-check/1",
+  "sha256": "ce789e53b9796baf0ae3b1ec02c207eec0a33374e1cf30a1781b533bca45954a",
+  "unlisted": [
+    "**/*.d.ts",
+    "**/*.config.*"
+  ],
+  "verdict": "FAIL"
+}

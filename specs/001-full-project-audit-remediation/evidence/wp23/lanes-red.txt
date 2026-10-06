@@ -1,0 +1,4 @@
+# RED (T200a): the test before run_rust.sh, run_kcov.sh and the rows existed
+FAIL: run_rust.sh not found ... (T200a: the wrapper does not exist yet)
+FAIL: run_kcov.sh not found ... (T200a: the wrapper does not exist yet)
+Summary: PASS=0 FAIL=2 SKIP=0 (captured at authoring time, host run)

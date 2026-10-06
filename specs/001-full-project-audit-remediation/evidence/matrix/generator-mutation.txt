@@ -1,0 +1,17 @@
+# paired mutation record (T197), run in IMG-TESTUTIL through TIC tooling unit: 8 of 8 mutations caught, 0 survived
+# command: scripts/test-in-container.sh tooling unit -- bash tools/evidence/matrix/tests/test_gen_matrix.sh
+# date_utc: 2026-10-06T20:50:55Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 4a8ebfb304a4cf9471189895e1f867ea7e0ae4e8b9afb7d044c9d87ab5bef9d7  tools/evidence/matrix/gen_matrix.py
+# sha256 561398b9c5307afdef56a0dced8431197efb3cd84846451834e3198fe57941a1  tools/evidence/matrix/tests/test_gen_matrix.sh
+PASS: gate: a record with no caught mutation is not present (rc 1)
+PASS: mutation qcheck caught (1 failing legs)
+PASS: mutation noreason caught (1 failing legs)
+PASS: mutation missingtype caught (1 failing legs)
+PASS: mutation gate_runs caught (1 failing legs)
+PASS: mutation gate_mut caught (1 failing legs)
+PASS: mutation mint_always caught (1 failing legs)
+PASS: mutation mint_fail caught (2 failing legs)
+PASS: mutation overwrite caught (4 failing legs)
+Summary: PASS=48 FAIL=0 SKIP=0
+# exit: 0

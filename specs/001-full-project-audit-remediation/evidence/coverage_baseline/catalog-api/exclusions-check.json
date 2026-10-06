@@ -1,0 +1,20 @@
+{
+  "application": "catalog-api",
+  "entries": [
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 225,
+      "matched_files": 5,
+      "path": "tests/mocks/**",
+      "stale": false,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/catalog-api.yaml",
+  "first_party_entries": [],
+  "problems": [],
+  "schema": "exclusions-check/1",
+  "sha256": "30149d27bcf10fc753bb27598f7358da8077236bed80a815cfb36ca0d760d081",
+  "unlisted": [],
+  "verdict": "PASS"
+}

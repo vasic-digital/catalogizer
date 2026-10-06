@@ -1,0 +1,30 @@
+{
+  "application": "installer-wizard",
+  "blocked": {
+    "detail": "TypeScript leg: node_modules absent, no network; vitest ^0.34.0 and @vitest/coverage-v8 ^0.34.0 are declared and locked (0.34.6). Rust leg (cargo llvm-cov via run_rust.sh): blocked-unavailable, reason `image_not_built` (local code, reason_scope local): IMG-RUST is not in build/containers/images.lock.yaml (T143), and the host check of T005a was not run by this task. installer-wizard/test-results.json is not used (BLOCKED-ON OD-75).",
+    "reason": "deps_absent",
+    "reason_scope": "local"
+  },
+  "branch_percent": null,
+  "estimate": "none: no number is given",
+  "exclusions_check": "specs/001-full-project-audit-remediation/evidence/coverage_baseline/installer-wizard/exclusions-check.json (FAIL: findings, see docs/scripts/check_exclusions.md)",
+  "instrument": null,
+  "legs": {
+    "rust": {
+      "names": "T143",
+      "reason": "image_not_built",
+      "reason_scope": "local",
+      "status": "blocked-unavailable"
+    },
+    "typescript": {
+      "reason": "deps_absent",
+      "status": "blocked"
+    }
+  },
+  "line_percent": null,
+  "measured_at": "2026-10-06T21:04:18Z",
+  "runs": 0,
+  "schema": "coverage-baseline/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "status": "blocked"
+}

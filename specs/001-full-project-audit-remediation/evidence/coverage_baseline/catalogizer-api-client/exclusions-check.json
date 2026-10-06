@@ -1,0 +1,24 @@
+{
+  "application": "catalogizer-api-client",
+  "entries": [
+    {
+      "class": "generated-code",
+      "justification_chars": 202,
+      "matched_files": 28,
+      "path": "dist/**",
+      "stale": false,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/catalogizer-api-client.yaml",
+  "first_party_entries": [],
+  "problems": [
+    "unlisted exclusion: the measuring tool excludes 'src/**/*.d.ts' but the checked-in list does not carry it"
+  ],
+  "schema": "exclusions-check/1",
+  "sha256": "d6572fc0bfb47d850c3b1e669c2bedd9ac9e92f402bec870f2d1e1d82303900c",
+  "unlisted": [
+    "src/**/*.d.ts"
+  ],
+  "verdict": "FAIL"
+}

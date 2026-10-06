@@ -1,0 +1,1 @@
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/**/*.d.ts' but the checked-in list does not carry it

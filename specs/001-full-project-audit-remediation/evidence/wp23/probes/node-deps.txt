@@ -1,0 +1,13 @@
+# command: scripts/test-in-container.sh catalog-web unit -- sh -c ls catalog-web/node_modules 2>&1 | head -3; ls catalog-web/node_modules/.bin/vitest 2>&1 | head -1
+# date_utc: 2026-10-06T21:03:03Z
+# git_head: f04c555d33a83e55d8f6541ba6afccdb358630b3
+# sha256 76e4d41bcc7c729e2958ae21ca9be8a5418e37aa2245a162c69a351c64f9fbc0  catalog-web/package.json
+
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ls: cannot access 'catalog-web/node_modules': No such file or directory
+ls: cannot access 'catalog-web/node_modules/.bin/vitest': No such file or directory
+# exit: 0

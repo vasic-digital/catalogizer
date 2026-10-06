@@ -1,0 +1,2 @@
+FAIL: generator not found at /home/milosvasic/Projects/catalogizer/tools/evidence/matrix/tests/../gen_matrix.py
+Summary: PASS=0 FAIL=1 SKIP=0

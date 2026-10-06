@@ -1,0 +1,2 @@
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.config.*' but the checked-in list does not carry it

@@ -1,0 +1,60 @@
+{
+  "application": "catalogizer-androidtv",
+  "entries": [
+    {
+      "class": "generated-code",
+      "justification_chars": 109,
+      "matched_files": 0,
+      "path": "**/R.class",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 79,
+      "matched_files": 0,
+      "path": "**/R$*.class",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 78,
+      "matched_files": 0,
+      "path": "**/BuildConfig.*",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 106,
+      "matched_files": 0,
+      "path": "**/Manifest*.*",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 134,
+      "matched_files": 0,
+      "path": "**/com/catalogizer/androidtv/databinding/**",
+      "stale": true,
+      "tracked_item": null
+    },
+    {
+      "class": "non-shipping-fixtures-and-golden-assets",
+      "justification_chars": 196,
+      "matched_files": 87,
+      "path": "**/*Test*.*",
+      "stale": false,
+      "tracked_item": null
+    }
+  ],
+  "file": "coverage/exclusions/catalogizer-androidtv.yaml",
+  "first_party_entries": [],
+  "problems": [],
+  "schema": "exclusions-check/1",
+  "sha256": "a693d646487c2e1cf0038af56bfa960fdabc62b8d1aa10f385d1cf7a2d74ef75",
+  "unlisted": [],
+  "verdict": "PASS"
+}

@@ -1,0 +1,2 @@
+# catalogizer-api-client/jest.config.js collectCoverageFrom: `src/**/*.ts` minus `!src/**/*.d.ts` (read 2026-10-06; vitest has no config file here)
+src/**/*.d.ts

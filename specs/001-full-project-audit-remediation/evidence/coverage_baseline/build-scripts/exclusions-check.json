@@ -1,0 +1,11 @@
+{
+  "application": "build-scripts",
+  "entries": [],
+  "file": "coverage/exclusions/build-scripts.yaml",
+  "first_party_entries": [],
+  "problems": [],
+  "schema": "exclusions-check/1",
+  "sha256": "24b3d434fa50dc0d87e14d72ca54a286dc57842dfc725a989b2d2c119cd391c2",
+  "unlisted": [],
+  "verdict": "PASS"
+}

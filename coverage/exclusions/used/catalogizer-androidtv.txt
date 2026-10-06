@@ -1,0 +1,7 @@
+# catalogizer-androidtv/app/build.gradle.kts jacocoTestReport fileFilter (read 2026-10-06)
+**/R.class
+**/R$*.class
+**/BuildConfig.*
+**/Manifest*.*
+**/*Test*.*
+**/com/catalogizer/androidtv/databinding/**

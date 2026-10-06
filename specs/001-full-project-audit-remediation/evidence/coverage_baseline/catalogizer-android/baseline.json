@@ -1,0 +1,19 @@
+{
+  "application": "catalogizer-android",
+  "blocked": {
+    "detail": "IMG-ANDROID is not in build/containers/images.lock.yaml (T144), so the Gradle lane cannot run; scripts/audit/android-container.sh (T145) does not exist. The jacocoTestReport task is registered with a fileFilter (coverage fence file passes the gate). The T204 rows of lanes.tsv are not added: they are added with the measured baselines once T144 and T145 have run. The host check of T005a was not run by this task, so no host reason is claimed.",
+    "reason": "image_not_built",
+    "reason_scope": "local"
+  },
+  "branch_percent": null,
+  "estimate": "none: no number is given",
+  "instrument": null,
+  "instrument_limits": "line only, debug classes, Robolectric noise (planned)",
+  "line_percent": null,
+  "measured_at": "2026-10-06T21:04:18Z",
+  "reason_order": "host, image, wrapper (T203/T204 blocked_reason.sh not built: owed)",
+  "runs": 0,
+  "schema": "coverage-baseline/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "status": "blocked"
+}

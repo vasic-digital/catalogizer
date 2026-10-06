@@ -1,0 +1,218 @@
+{
+  "applications": {
+    "catalog-web": {
+      "coverage_v8_declared": "^4.0.18",
+      "coverage_v8_locked": {
+        "integrity_present": true,
+        "version": "4.0.18"
+      },
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "76e4d41bcc7c729e2958ae21ca9be8a5418e37aa2245a162c69a351c64f9fbc0",
+      "verdict": "VERIFIED",
+      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "vitest_declared": "^4.0.18",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "4.0.18"
+      }
+    },
+    "catalogizer-api-client": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": "^29.5.0",
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "115c6d63a1bbb31e0367056c61648de44af715fc5fcf9a633730eb19391d0f43",
+      "verdict": "UNVERIFIED",
+      "verdict_basis": "not declared and not locked: the provider would be ADDED by T200a(c) only after its 11.4.270 existence verdict; none could be obtained offline, so it is left out and the baseline records blocked naming it",
+      "vitest_declared": "^4.0.18",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "4.0.18"
+      }
+    },
+    "catalogizer-desktop": {
+      "coverage_v8_declared": "^0.34.0",
+      "coverage_v8_locked": {
+        "integrity_present": true,
+        "version": "0.34.6"
+      },
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "ca7463d6d74b8aab3d0ea7f69c8692395cd8a5cbfe701a8143436faa11a9d14b",
+      "verdict": "VERIFIED",
+      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "vitest_declared": "^0.34.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "0.34.6"
+      }
+    },
+    "installer-wizard": {
+      "coverage_v8_declared": "^0.34.0",
+      "coverage_v8_locked": {
+        "integrity_present": true,
+        "version": "0.34.6"
+      },
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "5d5f82d391de52b477806169c6589c3980b72807c780e0fbb90955fa82ba20ec",
+      "verdict": "VERIFIED",
+      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "vitest_declared": "^0.34.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "0.34.6"
+      }
+    }
+  },
+  "bash": {
+    "basis": "scripts/bash-coverage.sh (T199) measured in IMG-KCOV; kcov 43 present in IMG-KCOV as a cross-check",
+    "verdict": "VERIFIED"
+  },
+  "jacoco": {
+    "basis": "the jacocoTestReport task is registered in catalogizer-android/app/build.gradle.kts and catalogizer-androidtv/app/build.gradle.kts (read 2026-10-06); the JaCoCo version resolves inside IMG-ANDROID, which is not built (T144): UNCONFIRMED",
+    "verdict": "VERIFIED"
+  },
+  "measured_at": "2026-10-06T21:04:18Z",
+  "note": "Read from package.json and package-lock.json only (no network). A lockfile entry with an integrity hash and a registry URL is the existence evidence available offline; whether the registry still serves the version is UNCONFIRMED (no network call was made, none is allowed).",
+  "rust": {
+    "basis": "IMG-RUST is not in build/containers/images.lock.yaml (T143 has not built it); $EV/wp11/rust-coverage-tools.json (T106) does not exist; the Rust legs record blocked naming the tool, never another tool",
+    "tool": "cargo llvm-cov",
+    "verdict": "UNVERIFIED"
+  },
+  "schema": "coverage-tools-existence/1",
+  "source_commit": "34db9504594c4a1f883769d5c3d80238c87d48fb",
+  "typescript_submodules": {
+    "auth_context_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "c3a20e9dc7ada388652c9a1cf85994a7a4dcd78194b8a9ad9a994b8f1cc782de",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "catalogizer_api_client_ts": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "0fb47fe5ebdaa108dbbd2be03c3d8a492bc1ed06fb2dfd91716b1b2e8ae44e14",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "collection_manager_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "615d75f756e0692790df1917a9cd95476e9d09e20b5536fc29d926dc6fbfce53",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "dashboard_analytics_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "40baaf3a2fa69975d0634c28e33f84d3b7e204594ea022f14f9d9e7875d8cb00",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "media_browser_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "10300f61a90fbbe45872680fb73eb0b81a10dfbd06c743a0855805e6f1a82fec",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "media_player_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "f08dd5f45c3348911b61d739851ad7e1b3fabfbaf4fd2cd77df4f1926f9f032a",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "media_types_ts": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "8725570bb9885781bb2a4195189a008c9d452d6521196c9d1228acbc53ee52dd",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "ui_components_react": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "0f1c8ccd372751b6d38ba2ac1027a8f836c084b57533be4faed177d7ebe63480",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    },
+    "websocket_client_ts": {
+      "coverage_v8_declared": null,
+      "coverage_v8_locked": null,
+      "jest_declared": null,
+      "lockfile": true,
+      "node_modules_present": false,
+      "package_json_sha256": "6f06cfb2b80b487b06845b7761235b09804755594628b7c7567dbdb946973575",
+      "verdict": "UNVERIFIED",
+      "vitest_declared": "^2.0.0",
+      "vitest_locked": {
+        "integrity_present": true,
+        "version": "2.1.9"
+      }
+    }
+  }
+}

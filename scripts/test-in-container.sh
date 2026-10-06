@@ -20,8 +20,8 @@ refuse() { echo "test-in-container: REFUSED reason=$1 ${2:-}" >&2; exit 1; }
 usage()  { echo "test-in-container: usage: $1" >&2; echo "test-in-container: test-in-container.sh [wrapper options] <app> <lane> -- <cmd>..." >&2; exit 2; }
 valid_int() { case "$1" in ''|*[!0-9]*) return 1;; 0) return 0;; 0*) return 1;; esac; [ "${#1}" -le 18 ]; }
 
-APPS="catalog-api catalog-web qa docs tooling"
-LANES="unit contract integration e2e api docs render tooling"
+APPS="catalog-api catalog-web qa docs tooling build-scripts catalogizer-desktop installer-wizard"
+LANES="unit contract integration e2e api docs render tooling rust"
 KNOWN_WRAPPERS="run_go run_node run_docs run_scan run_playwright run_testutil run_qa run_rust run_kcov"
 APP=""; LANE=""; PASS=()
 while [ $# -gt 0 ]; do
@@ -77,6 +77,9 @@ fi
 ENVJ="$(bash "$CDIR/envelope.sh" --toolchain "${WRAPPER#run_}" --format json 2>&1)" || refuse envelope_refused "$ENVJ"
 MEM="$(jq -r .memory_bytes <<<"$ENVJ" 2>/dev/null)"; CPUS="$(jq -r .cpus <<<"$ENVJ" 2>/dev/null)"
 { valid_int "$MEM" && valid_int "$CPUS" && [ "$MEM" -ge 1 ] && [ "$CPUS" -ge 1 ]; } || refuse envelope_refused "unparsable envelope: $ENVJ"
+# the wrapper reads the envelope again moments later and (fix round r1, review F2/F16) no longer tolerates a request above its own reading, so TIC asks for LESS:
+# 98% of its reading covers a 2% fall of MemAvailable between the two reads (a request below the wrapper's reading is always honoured)
+MEM=$(( MEM - MEM / 50 ))
 
 bash "$WDIR/$WRAPPER.sh" --memory "$MEM" --cpus "$CPUS" "${PASS[@]}" -- "${CMD[@]}"   # MUT:memory MUT:cpus
 exit $?   # MUT:exit

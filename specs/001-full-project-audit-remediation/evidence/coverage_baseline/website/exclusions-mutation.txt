@@ -1,0 +1,7 @@
+mutation: tracked-item check ignored (if cls == "first-party" and not item_ok -> if False), application website
+date_utc: 2026-10-06T20:29:12Z
+fence_file: coverage/exclusions/website.yaml sha256 5ca2f8bff2726efd5f3235e466501c0185a80477a4bbd626d30e60b01ac0927b
+poisoned copy (the file plus a first-party entry without a tracked item): real gate rc=1 (want 1), mutant gate rc=0 (want 0: the mutant accepts it)
+real gate stderr: check_exclusions: FAIL: entry 1 (poison/first_party_without_item.src): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+real gate on the unmodified file with its used list: rc=0
+result: CAUGHT
