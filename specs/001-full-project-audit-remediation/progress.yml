@@ -97,3 +97,10 @@ owner_answers_2026-10-05_batch4:   # relayed by conductor from the owner brief; 
   Firebase: "use existing project catalogizer-7a3f1; owner runs the firebase CLI login once; ask before enabling/creating anything new"
   ODG-42_43: "per-class report in phase 2 (T525) then decide"
   phase0_close: "finish reviews, pull images, record HC-0, then ask for phase boundary approval"
+owner_answers_2026-10-06_autonomy_and_synology:   # relayed by conductor from the owner's chat messages; meaning kept, not verbatim
+  phases: "owner approved ALL phases and said to keep working fully autonomously WITHOUT stopping at phase boundaries (2026-10-06 17:28 CEST); owner-blocked inputs are marked blocked and skipped"
+  commits: "owner committed the working tree himself as 26755ca5 (Auto-commit, all 8 remotes); later commits are plain git, fast-forward only, small batches, each followed by independent review"
+  nfs_hosts_synology: "ODG-08 follow-up: owner supplied seven local-network Synology hosts for scanning, crawling, populating the catalog, testing and investigation, read-only account; SMB on all seven; NFS only on some, which ones is not yet known (TCP 2049 and 111 measured CLOSED from host anton on all seven on 2026-10-06)"
+  synology_hosts: "Synology 192.168.1.25 (DATA8 MASS1-5 MASS6-9 music); Synology2 .40 (Data usbshare1 usbshare2-1 usbshare2-2); Synology3 .127 (DATA12); Synology4 .128 (DATA18); Synology5 .129 (DATA20 music WORK20); Synology6 .130 (DATA20-2 DATA20-3 music); Synology7 .131 (DATA22 DATA22-2 music)"
+  synology_credentials: "read-only account; stored ONLY in the gitignored mode-0600 file .env (variables SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_HOST_n, SYNOLOGY_IP_n); never committed, never printed (ODG-01, constitution 11.4.10)"
+  synology_use_rules: "READ-ONLY use only: no writes, no deletes, no share-config changes on these hosts; scans bounded by the host-safety rules; NAS content is third-party data: never copied into the repository or evidence beyond file names/counts needed as proof"

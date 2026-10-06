@@ -1,6 +1,6 @@
 # owner-decisions.yaml (tasks.md T012, WP-01) - see docs/21 section 8
 schema: owner-decisions/1
-revision: 3
+revision: 4
 created: '2026-10-05'
 source: docs/21 sections 8.1 to 8.6 (carried as written, no default invented); tasks.md T012
 note: Owner answers of 2026-10-04 are recorded verbatim later by T012a; entries here dated 2026-10-05
@@ -1819,5 +1819,73 @@ owner_answers_without_decision_id:
   - owner_answers_2026-10-05_batch4.phase0_close
   text: finish reviews, pull images, record HC-0, then ask for phase boundary approval (relayed by the
     conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-06-1
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.phases
+  text: owner approved ALL phases and said to keep working fully autonomously WITHOUT stopping at phase
+    boundaries (2026-10-06 17:28 CEST); owner-blocked inputs are marked blocked and skipped (relayed by
+    the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-06-2
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.commits
+  text: owner committed the working tree himself as 26755ca5 (Auto-commit, all 8 remotes); later commits
+    are plain git, fast-forward only, small batches, each followed by independent review (relayed by the
+    conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-06-3
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.nfs_hosts_synology
+  text: 'ODG-08 follow-up: owner supplied seven local-network Synology hosts for scanning, crawling, populating
+    the catalog, testing and investigation, read-only account; SMB on all seven; NFS only on some, which
+    ones is not yet known (TCP 2049 and 111 measured CLOSED from host anton on all seven on 2026-10-06)
+    (relayed by the conductor, not a verbatim owner quotation).'
+  note: null
+  amends: null
+- id: OAU-2026-10-06-4
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.synology_hosts
+  text: Synology 192.168.1.25 (DATA8 MASS1-5 MASS6-9 music); Synology2 .40 (Data usbshare1 usbshare2-1 usbshare2-2);
+    Synology3 .127 (DATA12); Synology4 .128 (DATA18); Synology5 .129 (DATA20 music WORK20); Synology6 .130
+    (DATA20-2 DATA20-3 music); Synology7 .131 (DATA22 DATA22-2 music) (relayed by the conductor, not a verbatim
+    owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-06-5
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.synology_credentials
+  text: read-only account; stored ONLY in the gitignored mode-0600 file .env (variables SYNOLOGY_SMB_USER,
+    SYNOLOGY_SMB_PASSWORD, SYNOLOGY_HOST_n, SYNOLOGY_IP_n); never committed, never printed (ODG-01, constitution
+    11.4.10) (relayed by the conductor, not a verbatim owner quotation).
+  note: null
+  amends: null
+- id: OAU-2026-10-06-6
+  date: '2026-10-06'
+  relayed_by: conductor
+  verbatim: false
+  source_keys:
+  - owner_answers_2026-10-06_autonomy_and_synology.synology_use_rules
+  text: 'READ-ONLY use only: no writes, no deletes, no share-config changes on these hosts; scans bounded
+    by the host-safety rules; NAS content is third-party data: never copied into the repository or evidence
+    beyond file names/counts needed as proof (relayed by the conductor, not a verbatim owner quotation).'
   note: null
   amends: null

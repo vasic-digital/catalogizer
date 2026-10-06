@@ -1,0 +1,603 @@
+{
+ "schema": "synology-survey/1",
+ "generated_utc": "2026-10-06T18:08:20Z",
+ "from_host": "anton",
+ "tools": {
+  "smbclient_host": "Version 4.23.6-Ubuntu-4.23.6+dfsg-1ubuntu2.2",
+  "container": "IMG-INFRA-CLIENT sha256:83085e496b6219f5bf477dd5e099a767b9b6889e33dfa50a6c59106a8d137f62 (smbclient 4.17.12, libnfs-utils 4.0.0, bash /dev/tcp)"
+ },
+ "credentials": "variables SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD in the gitignored .env; no value recorded; read via a 0600 auth file outside the repository",
+ "rules": "read-only, depth-1 listings, <=2 requests/s per host, names and counts only, no file content copied",
+ "hosts": [
+  {
+   "alias": "Synology",
+   "ip": "192.168.1.25",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA8",
+     "MASS1-5",
+     "MASS6-9",
+     "music"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA8",
+     "MASS1-5",
+     "MASS6-9",
+     "music"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.25 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA8": {
+      "rc": 0,
+      "entries_total": 7,
+      "dirs": 7,
+      "files": 0,
+      "names_first50": [
+       "Филмови/",
+       "Серије/",
+       "Инсталације/",
+       "Разно/",
+       "Виртуализација/",
+       "Стрипови/",
+       "Музика/"
+      ],
+      "capacity_bytes": 7933543456768,
+      "free_bytes": 93461159936
+     },
+     "MASS1-5": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     },
+     "MASS6-9": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     },
+     "music": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology2",
+   "ip": "192.168.1.40",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "Data",
+     "usbshare1",
+     "usbshare2-1",
+     "usbshare2-2"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "Data",
+     "usbshare1",
+     "usbshare2-1",
+     "usbshare2-2"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.40 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "Data": {
+      "rc": 0,
+      "entries_total": 14,
+      "dirs": 13,
+      "files": 1,
+      "names_first50": [
+       "Филмови/",
+       "Руски/",
+       "Графика/",
+       "Инсталације/",
+       "Документарци/",
+       "Часописи/",
+       "Концерти/",
+       "Фонтови/",
+       "Сигурносне копије/",
+       "Цртаћи/",
+       "Музика/",
+       "Тренинзи/",
+       "Серије/",
+       ".DS_Store"
+      ],
+      "capacity_bytes": 7933543456768,
+      "free_bytes": 47140843520
+     },
+     "usbshare1": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     },
+     "usbshare2-1": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     },
+     "usbshare2-2": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology3",
+   "ip": "192.168.1.127",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA12"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA12"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.127 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA12": {
+      "rc": 0,
+      "entries_total": 12,
+      "dirs": 11,
+      "files": 1,
+      "names_first50": [
+       "Филмови/",
+       "Концерти/",
+       "Цртани филмови/",
+       "Привремено/",
+       "Инсталације/",
+       "Филмови - Марвел/",
+       "Тренинзи/",
+       "Серије/",
+       "Стрипови/",
+       "Музика/",
+       "Документарци/",
+       ".DS_Store"
+      ],
+      "capacity_bytes": 11900583469056,
+      "free_bytes": 1601137905664
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology4",
+   "ip": "192.168.1.128",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA18"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA18"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.128 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA18": {
+      "rc": 0,
+      "entries_total": 13,
+      "dirs": 12,
+      "files": 1,
+      "names_first50": [
+       "Серије/",
+       "Инсталације/",
+       "Документарци/",
+       "Тренинзи/",
+       "Концерти/",
+       "ISO/",
+       "Књиге/",
+       "Часописи/",
+       ".DS_Store",
+       "Музика/",
+       "Стрипови/",
+       "Цртани филмови/",
+       "Филмови/"
+      ],
+      "capacity_bytes": 17916570050560,
+      "free_bytes": 884650962944
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology5",
+   "ip": "192.168.1.129",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA20",
+     "music",
+     "WORK20"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA20",
+     "music",
+     "WORK20"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.129 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA20": {
+      "rc": 0,
+      "entries_total": 8,
+      "dirs": 7,
+      "files": 1,
+      "names_first50": [
+       ".DS_Store",
+       "Mounted/",
+       "Документарци/",
+       "Инсталације/",
+       "Mounted2/",
+       "Серије/",
+       "Тренинзи/",
+       "Цртани филмови/"
+      ],
+      "capacity_bytes": 19189209235456,
+      "free_bytes": 1288217460736
+     },
+     "music": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     },
+     "WORK20": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology6",
+   "ip": "192.168.1.130",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA20-2",
+     "DATA20-3",
+     "music"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA20-2",
+     "DATA20-3",
+     "music"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.130 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA20-2": {
+      "rc": 0,
+      "entries_total": 7,
+      "dirs": 6,
+      "files": 1,
+      "names_first50": [
+       "Филмови/",
+       "Серије/",
+       "Инсталације/",
+       ".DS_Store",
+       "Концерти/",
+       "Цртани филмови/",
+       "Тренинзи/"
+      ],
+      "capacity_bytes": 19189209235456,
+      "free_bytes": 103381143552
+     },
+     "DATA20-3": {
+      "rc": 0,
+      "entries_total": 11,
+      "dirs": 10,
+      "files": 1,
+      "names_first50": [
+       ".DS_Store",
+       "Тренинзи/",
+       "Концерти/",
+       "Музика/",
+       "Филмови/",
+       "Цртани филмови/",
+       "Инсталације/",
+       "Серије/",
+       "Књиге/",
+       "Стрипови/",
+       "Документарци/"
+      ],
+      "capacity_bytes": 19189209235456,
+      "free_bytes": 198871744512
+     },
+     "music": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  },
+  {
+   "alias": "Synology7",
+   "ip": "192.168.1.131",
+   "claim": {
+    "smb": "yes",
+    "nfs": "some hosts (which: unknown)",
+    "shares": [
+     "DATA22",
+     "DATA22-2",
+     "music"
+    ]
+   },
+   "measured": {
+    "tcp": {
+     "445": "open",
+     "139": "open",
+     "2049": "closed_refused",
+     "111": "closed_refused",
+     "5000": "open",
+     "5001": "open"
+    },
+    "udp111_portmap": "udp111_no_reply",
+    "anonymous_list": "NT_STATUS_LOGON_FAILURE",
+    "guest_list": "NT_STATUS_ACCOUNT_DISABLED",
+    "readonly_account_list_ok": true,
+    "shares_listed": [
+     "DATA22",
+     "DATA22-2",
+     "music"
+    ],
+    "shares_claim_equals_listed": true,
+    "smb_dialects_accepted": [
+     "SMB3_11",
+     "SMB3_02",
+     "SMB3_00",
+     "SMB2_10",
+     "SMB2_02"
+    ],
+    "smb_dialects_refused": {
+     "NT1": "fail:smbXcli_negprot_smb1_done: No compatible protocol selected b"
+    },
+    "smb_security_probe": {
+     "signing_off": "ok",
+     "signing_required": "ok",
+     "encrypt_required": "ok",
+     "encrypt_off": "ok"
+    },
+    "nfs_from_container_IMG-INFRA-CLIENT": "192.168.1.131 tcp445=open tcp2049=closed_or_filtered tcp111=closed_or_filtered nfs-ls: Failed to mount nfs share : nfs_service failed",
+    "share_access": {
+     "DATA22": {
+      "rc": 0,
+      "entries_total": 12,
+      "dirs": 11,
+      "files": 1,
+      "names_first50": [
+       "Mounted/",
+       "Стрипови/",
+       "Тренинзи/",
+       "Филмови/",
+       "Документарци/",
+       "Концерти/",
+       "Музика/",
+       "Серије/",
+       "Mounted2/",
+       "Цртани филмови/",
+       "Књиге/",
+       ".DS_Store"
+      ],
+      "capacity_bytes": 19189209235456,
+      "free_bytes": 7668448034816
+     },
+     "DATA22-2": {
+      "rc": 0,
+      "entries_total": 2,
+      "dirs": 1,
+      "files": 1,
+      "names_first50": [
+       "Инсталације/",
+       ".DS_Store"
+      ],
+      "capacity_bytes": 19189209235456,
+      "free_bytes": 2230474616832
+     },
+     "music": {
+      "rc": 1,
+      "error": "NT_STATUS_ACCESS_DENIED"
+     }
+    }
+   },
+   "nfs_verdict": "closed from anton (TCP 2049 and 111 refused; UDP 111 portmap no reply; nfs-ls from pinned container: nfs_service failed). NFS export list and allowed client address UNCONFIRMED (cannot be read while the portmapper is unreachable)",
+   "signing_encryption": "UNCONFIRMED whether SMB signing is required: smbclient accepts both signing=off and required on all hosts (client option does not prove the server policy). Encryption is not required by the server (client smb encrypt=off connected) and SMB3 encryption is supported (smb encrypt=required connected), tested on the IPC listing only, per-share encryption policy UNCONFIRMED"
+  }
+ ]
+}
