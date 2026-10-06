@@ -1,0 +1,9 @@
+# wf10fix-p1 F5 probe, run 2026-10-06T22:41:40Z: amd64 manifest digest per tag (podman manifest inspect, read only), and the local alias
+1.25 sha256:54b6b88db6fe375c6676625d87d668273f85c6d09153635d0cbba89cba7a207a
+1.25-trixie sha256:54b6b88db6fe375c6676625d87d668273f85c6d09153635d0cbba89cba7a207a
+1.25-bookworm sha256:c268a04d59aea0b180ed9946a658cfab9e7b3391dc90eed6e4969ccff98c851f
+--- local storage (podman images --digests, golang 1.25 rows)
+docker.io/library/golang                     1.25                      sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437  e3c6b02e5322  6 weeks ago    833 MB
+docker.io/library/golang                     1.25-bookworm             sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437  e3c6b02e5322  6 weeks ago    833 MB
+--- Dockerfile reference
+8:FROM docker.io/library/golang:1.25 AS builder

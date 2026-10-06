@@ -19,6 +19,7 @@ RUN mkdir -p /opt/android-sdk/cmdline-tools \
  && unzip -q /tmp/cmdline-tools.zip -d /opt/android-sdk/cmdline-tools \
  && mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest \
  && rm /tmp/cmdline-tools.zip
-RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+# The pipeline's exit status is sdkmanager's (no `|| true`, WF10 p1 F6): a failure to accept the licenses fails the build, as in docker/Dockerfile.builder (T110).
+RUN yes | sdkmanager --licenses >/dev/null
 RUN sdkmanager "platform-tools" "build-tools;34.0.0" "build-tools;35.0.0" "platforms;android-34" "platforms;android-35"
 LABEL project=catalogizer image=IMG-ANDROID

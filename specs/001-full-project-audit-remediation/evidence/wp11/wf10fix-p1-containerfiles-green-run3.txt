@@ -40,28 +40,5 @@ PASS: GOLDEN-BAD C3 reports each VIOLATION line of an exit-1 verdict -> C3-check
 PASS: GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict
 PASS: GOLDEN-GOOD C3 accepts exit 0 with no VIOLATION line
 PASS: GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line) -> C3-check_pins fires
-PASS: MUT c4-download-check-removed: caught
-PASS: MUT c5-from-check-removed: caught
-PASS: MUT c6-class-check-removed: caught
-PASS: MUT c1-missing-dir-check-removed: caught
-PASS: MUT c2-companion-file-check-removed: caught
-PASS: MUT c2-containerfile-check-removed: caught
-PASS: MUT c5-sha256-check-removed: caught
-PASS: MUT c6-entry-check-removed: caught
-PASS: MUT c6-digest-mismatch-removed: caught
-PASS: MUT CR1-wget-not-a-download: caught
-PASS: MUT CR2-class-only-presence: caught
-PASS: MUT CR3-empty-companion-ok: caught
-PASS: MUT CR4-unknown-dir-silent: caught
-PASS: MUT CR5-c3-bad-exit-silent: caught
-PASS: MUT CR6-checksum-any-sha256sum: caught
-PASS: MUT N1-c3-clean-always: caught
-PASS: MUT N2-c3-violation-lines-not-named: caught
-PASS: MUT N3-c4-count-rule-removed: caught
-PASS: MUT N4-c4-download-count-fixed-one: caught
-PASS: MUT N5-c4-check-count-loosened: caught
-PASS: MUT N6-c4-add-checksum-not-required: caught
-PASS: MUT N7-c7-swallow-removed: caught
-PASS: MUT N8-c7-colon-form-removed: caught
-test_containerfiles: 65 passed, 0 failed
+test_containerfiles: 42 passed, 0 failed
 rc=0

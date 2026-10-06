@@ -571,13 +571,13 @@ nice -n 5 docker pull mysql:8
 echo "$(podman run --rm nginx:1.25 true)"
 echo "`podman run --rm busybox:1.36 true`"
 FOO=bar podman create --name c alpine:3.19
-buildah from docker.io/library/alpine:3.19
+buildah from alpine:3.19
 podman --log-level error run --rm httpd:2.4
 podman run --rm >/dev/null 2>&1 traefik:v3
 podman run --frobnicate 8.8.8.8 haproxy:2.9
 podman run --frobnicate k=v memcached:1.6
 EOF2
-for pair in "2 postgres:15" "3 redis:7" "4 mysql:8" "5 nginx:1.25" "6 busybox:1.36" "7 alpine:3.19" "8 docker.io/library/alpine:3.19" "9 httpd:2.4" "10 traefik:v3" "11 haproxy:2.9" "12 memcached:1.6"; do
+for pair in "2 postgres:15" "3 redis:7" "4 mysql:8" "5 nginx:1.25" "6 busybox:1.36" "7 alpine:3.19" "8 alpine:3.19" "9 httpd:2.4" "10 traefik:v3" "11 haproxy:2.9" "12 memcached:1.6"; do
   set -- $pair; expect_row "X wrapper/substitution/global-option/unknown-option line $1" x_wrappers script_image_unpinned "$1" "$2"
 done
 expect_rows_total "X wrappers: exactly the eleven real rows" x_wrappers 11

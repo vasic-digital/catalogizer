@@ -2,6 +2,8 @@
 # check_pins.sh - T105 (docs/16 section 7.1 step 3, finding D-07, D-05; constitution 11.4.246/11.4.264 digest identity, 11.4.173).
 # Fails when a compose file, a Dockerfile/Containerfile or a shell script references an EXTERNAL image without a full
 # `@sha256:<64 lowercase hex>` digest, or installs software by piping a download into a shell.
+# Revision 2 (WF10 review p1 fixes, 2026-10-07): false positives and false negatives removed, exit 3 for an internal error; the full
+# rule text is docs/scripts/check_pins.md.
 #
 # Usage: check_pins.sh [--root DIR] [--list] [--recurse] [--exclude-dir NAME]... [PATH...]
 #   --root DIR          directory the reported paths are relative to (default: the git top level of the cwd, else the cwd)
@@ -11,29 +13,42 @@
 #                       .audit are never entered.
 #   --list              print one TSV row per violation `rule<TAB>path<TAB>line<TAB>reference` and nothing else (the baseline form)
 #   --exclude-dir NAME  skip directories with this exact name (repeatable)
-# Exit: 0 no violation; 1 at least one violation; 2 usage error (unknown option, root missing or not a directory).
+# Exit: 0 no violation; 1 at least one violation; 2 usage error (unknown option, root missing or not a directory);
+#       3 internal error (an uncaught exception; nothing on stdout, a traceback and `check_pins: internal error` on stderr). A caller
+#       comparing rows with a baseline must treat 3 as a failed check, never as zero rows.
 #
 # Rules (the rule id is the second word of every `VIOLATION <rule> <path>:<line>: <reference or excerpt>` line):
-#   compose_image_unpinned  `image:` of a compose file (a name containing `compose`, extension .yml/.yaml) without a full digest.
-#                           `${VAR:-default}` is judged by its default; a bare `${VAR}` is resolved by the caller and not judged;
-#                           `localhost/...` images are locally built (their FROM lines are judged), not external, and are skipped.
+#   compose_image_unpinned  `image:` of a compose file (a name containing `compose`, extension .yml/.yaml) without a full digest
+#                           (the value may be on the next line). `${VAR:-default}` is judged by its default; a bare `${VAR}` / `$VAR`
+#                           is resolved by the caller and not judged; `localhost/...` images are locally built, not external, and are
+#                           skipped; an image without a registry host in a service that also has a `build:` key is the tag the build
+#                           produces (local) and is skipped, a registry-qualified one is judged.
 #   from_unpinned           `FROM` of a Dockerfile/Containerfile naming an external image without a full digest (tag-only and
 #                           no-tag references alike; build-stage aliases, `scratch` and `localhost/` bases are not external).
-#   from_arg_unpinned       `FROM ${ARG}` whose `ARG` default is present and carries no full digest (an ARG without a default is
-#                           supplied by the builder and is not judged here).
-#   copy_from_unpinned      `COPY --from=<external image>` without a full digest (a stage alias or stage number is not an image).
-#   script_image_unpinned   a shell script naming an external image without a digest: the image operand of `docker|podman|nerdctl
-#                           run|pull|create`, or any registry-qualified reference carrying a tag (docker.io, ghcr.io, quay.io,
-#                           mcr.microsoft.com, gcr.io, lscr.io, registry.*, *.pkg.dev, public.ecr.aws).
-#   pipe_to_shell           a download (`curl`, `wget`, `fetch`) piped into a shell (`| sh`, `| bash -`, `| sudo bash`), the
-#                           `bash <(curl ...)` and `sh -c "$(curl ...)"` forms, in a Dockerfile/Containerfile or a script; a
-#                           pipe after a `for ... done` loop spread over continuation lines is one logical line and is caught;
-#                           the quoted install hint a script prints for the operator is flagged too (it instructs an unverified
-#                           install). Reported at the first physical line of the logical line.
+#   from_arg_unpinned       `FROM ${ARG}` / `${ARG:-default}` whose default is present and carries no full digest (an `ARG` without a
+#                           default is supplied by the builder and is not judged here). Only ARG lines before the first FROM are global
+#                           (a stage-local `ARG X` redeclaration never hides the global default); several NAME=value per ARG line count.
+#   copy_from_unpinned      `COPY --from=` / `ADD --from=` / `RUN --mount=...,from=` naming an external image without a full digest (a
+#                           stage alias or stage number is not an image).
+#   script_image_unpinned   a shell script naming an external image without a digest: the image operand (a bare name counts: implicit
+#                           :latest) of `docker|podman|nerdctl run|pull|create` and `buildah from|pull` in every simple command of a
+#                           line (through wrappers, global options, `image`/`container`, `sh -c`/`ssh`/`eval` strings and `$(...)`),
+#                           or any registry-qualified reference carrying a tag (docker.io, ghcr.io, quay.io, mcr.microsoft.com, gcr.io,
+#                           lscr.io, registry.*, *.pkg.dev, public.ecr.aws; a `docker://` prefix is removed first). `localhost/` and
+#                           `$VAR` operands are not judged; option values are skipped (table of value options, see the guide).
+#   pipe_to_shell           a download (`curl`, `wget`, `fetch`) piped into a shell (`| sh|bash|zsh|dash|ash|ksh`, `| bash -`,
+#                           `| sudo bash`, by path too) or an interpreter reading stdin (`| python3 -`, `| perl -`, `| ruby -`), the
+#                           `bash <(curl ...)`, `source <(curl ...)`, `. <(curl ...)`, `sh -c "$(curl ...)"` and `eval "$(curl ...)"`
+#                           forms, in a Dockerfile/Containerfile or a script; a pipe continued by a trailing `|` or a backslash, and a pipe
+#                           after a `for ... done` loop spread over continuation lines, is one logical line and is caught; the quoted
+#                           install hint a script prints for the operator is flagged too (it instructs an unverified install).
+#                           Reported at the first physical line of the logical line.
 # Carriers do NOT fire (11.4.201: a mention is not the thing): full-line and trailing `#` comments are removed before judging, and
 # Markdown, text and every other file type is not scanned at all. In a script under a `tests` directory, or named test_* /
-# mutate_*, here-document bodies are fixture DATA and are not judged (a violation fixture written by a test is not a violation of the
-# test); in any other script a here-document body is judged like code (a script that generates a Dockerfile is scanned).
+# mutate_*, here-document bodies are fixture DATA and are not judged, nor are the simple commands that only write or filter data
+# (printf, echo, sed, tee, grep, awk, a bare VAR=value) or a registry literal outside a real engine command (a violation fixture written by
+# a test is not a violation of the test); in any other script a here-document body is judged like code (a script that generates a
+# Dockerfile is scanned).
 # Determinism: output is sorted by path, line, rule; two runs over the same tree print the same bytes.
 # Honest boundary: the scan reads text; it does not resolve a registry, does not expand variables other than a `${VAR:-default}`
 # default, and does not prove a digest exists or is signed (T149). Documented in docs/scripts/check_pins.md.

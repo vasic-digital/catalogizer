@@ -1,0 +1,6 @@
+# wf10fix-p1 F6: the C7 check run on the HEAD android Containerfile (before) and the fixed one (after); python3 checker extracted from test_containerfiles.sh
+== before: 22:RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+C7-swallowed-failure android: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+rc-lines-with-C7: 1
+== after: 23:RUN yes | sdkmanager --licenses >/dev/null
+rc-lines-with-C7: 0

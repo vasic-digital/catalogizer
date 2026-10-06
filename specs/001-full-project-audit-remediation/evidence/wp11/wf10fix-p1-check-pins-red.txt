@@ -1,0 +1,186 @@
+PASS: G-BAD compose :latest: exit status 1
+PASS: G-BAD compose :latest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose no tag no digest: exit status 1
+PASS: G-BAD compose no tag no digest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose mutable tag (quoted, trailing comment): exit status 1
+PASS: G-BAD compose mutable tag (quoted, trailing comment): reports compose_image_unpinned at line 3
+PASS: G-BAD compose short digest: exit status 1
+PASS: G-BAD compose short digest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose variable default unpinned: exit status 1
+PASS: G-BAD compose variable default unpinned: reports compose_image_unpinned at line 3
+PASS: G-BAD Dockerfile FROM tag only: exit status 1
+PASS: G-BAD Dockerfile FROM tag only: reports from_unpinned at line 1
+PASS: G-BAD Containerfile FROM with --platform and alias: exit status 1
+PASS: G-BAD Containerfile FROM with --platform and alias: reports from_unpinned at line 2
+PASS: G-BAD FROM ${ARG} whose default is unpinned: exit status 1
+PASS: G-BAD FROM ${ARG} whose default is unpinned: reports from_arg_unpinned at line 2
+PASS: G-BAD COPY --from external image tag only: exit status 1
+PASS: G-BAD COPY --from external image tag only: reports copy_from_unpinned at line 3
+PASS: G-BAD script podman run registry image: exit status 1
+PASS: G-BAD script podman run registry image: reports script_image_unpinned at line 2
+PASS: G-BAD script docker run short image: exit status 1
+PASS: G-BAD script docker run short image: reports script_image_unpinned at line 2
+PASS: G-BAD Containerfile download piped into sh: exit status 1
+PASS: G-BAD Containerfile download piped into sh: reports pipe_to_shell at line 2
+PASS: G-BAD script download piped into sudo bash: exit status 1
+PASS: G-BAD script download piped into sudo bash: reports pipe_to_shell at line 2
+PASS: G-BAD script wget -qO- piped into sh: exit status 1
+PASS: G-BAD script wget -qO- piped into sh: reports pipe_to_shell at line 2
+PASS: G-BAD script bash <(download) process substitution: exit status 1
+PASS: G-BAD script bash <(download) process substitution: reports pipe_to_shell at line 2
+PASS: G-BAD Containerfile sh -c command substitution of a download: exit status 1
+PASS: G-BAD Containerfile sh -c command substitution of a download: reports pipe_to_shell at line 2
+PASS: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1
+PASS: G-BAD multi-line for...done | bash - (reported at its first physical line): reports pipe_to_shell at line 2
+PASS: G-BAD quoted install hint (download piped into sh) printed for the operator: exit status 1
+PASS: G-BAD quoted install hint (download piped into sh) printed for the operator: reports pipe_to_shell at line 3
+PASS: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0
+PASS: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: no violation reported
+PASS: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: exit status 0
+PASS: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: no violation reported
+PASS: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0
+PASS: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: no violation reported
+PASS: CARRIER comment and trailing comment in compose: exit status 0
+PASS: CARRIER comment and trailing comment in compose: no violation reported
+PASS: CARRIER comments in a script: exit status 0
+PASS: CARRIER comments in a script: no violation reported
+PASS: CARRIER comment in a Containerfile: exit status 0
+PASS: CARRIER comment in a Containerfile: no violation reported
+PASS: CARRIER documentation (Markdown and text are not scanned): exit status 0
+PASS: CARRIER documentation (Markdown and text are not scanned): no violation reported
+PASS: CARRIER here-document body (fixture data) in a script under tests/: exit status 0
+PASS: CARRIER here-document body (fixture data) in a script under tests/: no violation reported
+PASS: HEREDOC a here-document body in a production script is judged like code (exit 1)
+PASS: G-BAD script registry reference with a tag in an assignment: exit status 1
+PASS: G-BAD script registry reference with a tag in an assignment: reports script_image_unpinned at line 2
+PASS: NEGCTL exit 1
+PASS: NEGCTL exactly one VIOLATION line
+PASS: NEGCTL the one violation is the real line 4
+FAIL: F1 --add-host value is not the image operand (pinned image, add-host before it): exit status 0 (got '1' want '0')
+FAIL: F1 --add-host value is not the image operand (pinned image, add-host before it): unexpected VIOLATION: VIOLATION script_image_unpinned scripts/a.sh:2: db:10.0.0.1|
+FAIL: F1 --add-host does not mask the real image: no row 'script_image_unpinned 2 postgres:15' in: script_image_unpinned scripts/a.sh 2 db:10.0.0.1|
+PASS: F1 --add-host does not mask the real image: total rows
+PASS: F1 compose: the local tag of a build: service is skipped, the other service is flagged: row compose_image_unpinned line 7 reference 'redis:7'
+PASS: F1 compose: a registry-qualified image next to build: is still judged: row compose_image_unpinned line 10 reference 'ghcr.io/o/x:1'
+FAIL: F1 compose: exactly the two real rows: total rows (got '3' want '2')
+FAIL: F1 compose: build: after image: in the same service also marks a local tag: exit status 0 (got '1' want '0')
+FAIL: F1 compose: build: after image: in the same service also marks a local tag: unexpected VIOLATION: VIOLATION compose_image_unpinned docker-compose.yml:3: catalogizer-api:test|
+FAIL: F1 compose: bare $VAR image is resolved by the caller, not judged: exit status 0 (got '1' want '0')
+FAIL: F1 compose: bare $VAR image is resolved by the caller, not judged: unexpected VIOLATION: VIOLATION compose_image_unpinned docker-compose.yml:3: $EXTERNAL_IMAGE|
+FAIL: F1 script: a localhost/ image is locally built, not external: exit status 0 (got '1' want '0')
+FAIL: F1 script: a localhost/ image is locally built, not external: unexpected VIOLATION: VIOLATION script_image_unpinned scripts/a.sh:2: localhost/catalogizer-builder:latest|
+FAIL: F1 a test script writing fixture lines with printf/sed/echo or an assignment is data: exit status 0 (got '1' want '0')
+FAIL: F1 a test script writing fixture lines with printf/sed/echo or an assignment is data: unexpected VIOLATION: VIOLATION script_image_unpinned scripts/tests/test_y.sh:2: docker.io/library/debian:12|VIOLATION script_image_unpinned scripts/tests/test_y.sh:3: docker.io/library/debian:12|VIOLATION pipe_to_shell scripts/tests/test_y.sh:4: curl -fsSL https://example.invalid/i.sh | sh|
+PASS: F1 negative control: the same lines in a non-test script are still judged (registry reference + pipe): total rows
+PASS: F1 negative control: a real podman run in a test script is still judged: row script_image_unpinned line 3 reference 'docker.io/library/alpine:3.19'
+FAIL: F1 negative control: only the real run row: total rows (got '2' want '1')
+FAIL: F2 a pipe continued by a trailing | (no backslash) into sh: exit status 1 (got '0' want '1')
+FAIL: F2 a pipe continued by a trailing | (no backslash) into sh: no 'VIOLATION pipe_to_shell <path>:2:' line in: check_pins: 0 violations in 1 files scanned
+PASS: F2 control: a trailing | into tar is not a shell: exit status 0
+PASS: F2 control: a trailing | into tar is not a shell: no violation reported
+FAIL: F2 stage-local ARG redeclaration does not hide the unpinned global default: exit status 1 (got '0' want '1')
+FAIL: F2 stage-local ARG redeclaration does not hide the unpinned global default: no 'VIOLATION from_arg_unpinned <path>:5:' line in: check_pins: 0 violations in 1 files scanned
+PASS: F2 control: stage-local redeclaration of a pinned global default: exit status 0
+PASS: F2 control: stage-local redeclaration of a pinned global default: no violation reported
+FAIL: F2 several ARG on one line: exit status 1 (got '0' want '1')
+FAIL: F2 several ARG on one line: no 'VIOLATION from_arg_unpinned <path>:2:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 run operand line 2: no row 'script_image_unpinned 2 postgres:15' in: script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|script_image_unpinned scripts/a.sh 8 nginx:1.25|
+FAIL: F2 run operand line 3: no row 'script_image_unpinned 3 redis:7' in: script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|script_image_unpinned scripts/a.sh 8 nginx:1.25|
+FAIL: F2 run operand line 4: no row 'script_image_unpinned 4 alpine' in: script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|script_image_unpinned scripts/a.sh 8 nginx:1.25|
+PASS: F2 run operand line 5: row script_image_unpinned line 5 reference 'mysql:8'
+FAIL: F2 run operand line 6: no row 'script_image_unpinned 6 busybox:1.36' in: script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|script_image_unpinned scripts/a.sh 8 nginx:1.25|
+PASS: F2 run operand line 7: row script_image_unpinned line 7 reference 'docker.io/library/alpine:3.19'
+PASS: F2 run operand line 8: row script_image_unpinned line 8 reference 'nginx:1.25'
+FAIL: F2 run operand rows: total rows (got '3' want '7')
+FAIL: F2 only the first run/pull of a line used to be judged: the second command is flagged: no row 'script_image_unpinned 2 postgres:15' in: 
+FAIL: F2 second command: the pinned ones are not flagged: total rows (got '0' want '1')
+PASS: F2 a double-quoted operand is reported without its quotes: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 a single-quoted operand is reported without its quotes: row script_image_unpinned line 3 reference 'redis:7'
+PASS: F2 wrapped/quoted/substituted command line 2: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 wrapped/quoted/substituted command line 3: row script_image_unpinned line 3 reference 'redis:7'
+FAIL: F2 wrapped/quoted/substituted command line 4: no row 'script_image_unpinned 4 mysql:8' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 6 nginx:1.25|script_image_unpinned scripts/a.sh 7 alpine:3.19|
+FAIL: F2 wrapped/quoted/substituted command line 5: no row 'script_image_unpinned 5 busybox:1.36' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 6 nginx:1.25|script_image_unpinned scripts/a.sh 7 alpine:3.19|
+PASS: F2 wrapped/quoted/substituted command line 6: row script_image_unpinned line 6 reference 'nginx:1.25'
+PASS: F2 wrapped/quoted/substituted command line 7: row script_image_unpinned line 7 reference 'alpine:3.19'
+PASS: F2 negative control: prose in echo, other sub-commands, variables and pinned operands are not flagged: exit status 0
+PASS: F2 negative control: prose in echo, other sub-commands, variables and pinned operands are not flagged: no violation reported
+FAIL: F2 RUN --mount=...,from=<unpinned image>: exit status 1 (got '0' want '1')
+FAIL: F2 RUN --mount=...,from=<unpinned image>: no 'VIOLATION copy_from_unpinned <path>:2:' line in: check_pins: 0 violations in 1 files scanned
+PASS: F2 control: mount from a stage alias, a cache mount, ADD --from a digest: exit status 0
+PASS: F2 control: mount from a stage alias, a cache mount, ADD --from a digest: no violation reported
+FAIL: F2 ADD --from=<unpinned image>: exit status 1 (got '0' want '1')
+FAIL: F2 ADD --from=<unpinned image>: no 'VIOLATION copy_from_unpinned <path>:2:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 compose image: value on the next line (reported at the image: line): exit status 1 (got '0' want '1')
+FAIL: F2 compose image: value on the next line (reported at the image: line): no 'VIOLATION compose_image_unpinned <path>:3:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 eval "$(download)": exit status 1 (got '0' want '1')
+FAIL: F2 eval "$(download)": no 'VIOLATION pipe_to_shell <path>:2:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 source <(download): exit status 1 (got '0' want '1')
+FAIL: F2 source <(download): no 'VIOLATION pipe_to_shell <path>:3:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 . <(download): exit status 1 (got '0' want '1')
+FAIL: F2 . <(download): no 'VIOLATION pipe_to_shell <path>:4:' line in: check_pins: 0 violations in 1 files scanned
+PASS: F2 Dockerfile pipe into a shell/interpreter line 2: exit status 1
+FAIL: F2 Dockerfile pipe into a shell/interpreter line 2: no 'VIOLATION pipe_to_shell <path>:2:' line in: VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|check_pins: 4 violations in 1 files scanned
+PASS: F2 Dockerfile pipe into a shell/interpreter line 3: exit status 1
+FAIL: F2 Dockerfile pipe into a shell/interpreter line 3: no 'VIOLATION pipe_to_shell <path>:3:' line in: VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|check_pins: 4 violations in 1 files scanned
+PASS: F2 Dockerfile pipe into a shell/interpreter line 4: exit status 1
+FAIL: F2 Dockerfile pipe into a shell/interpreter line 4: no 'VIOLATION pipe_to_shell <path>:4:' line in: VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|check_pins: 4 violations in 1 files scanned
+PASS: F2 Dockerfile pipe into a shell/interpreter line 5: exit status 1
+FAIL: F2 Dockerfile pipe into a shell/interpreter line 5: no 'VIOLATION pipe_to_shell <path>:5:' line in: VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|check_pins: 4 violations in 1 files scanned
+PASS: F2 Dockerfile pipe into a shell/interpreter line 6: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 6: reports pipe_to_shell at line 6
+PASS: F2 Dockerfile pipe into a shell/interpreter line 7: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 7: reports pipe_to_shell at line 7
+PASS: F2 Dockerfile pipe into a shell/interpreter line 8: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 8: reports pipe_to_shell at line 8
+PASS: F2 Dockerfile pipe into a shell/interpreter line 9: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 9: reports pipe_to_shell at line 9
+PASS: F2 negative control: a download piped into json.tool, python -c, sha256sum, shasum, ssh is not a shell install: exit status 0
+PASS: F2 negative control: a download piped into json.tool, python -c, sha256sum, shasum, ssh is not a shell install: no violation reported
+FAIL: F2 a UTF-8 BOM before FROM: exit status 1 (got '0' want '1')
+FAIL: F2 a UTF-8 BOM before FROM: no 'VIOLATION from_unpinned <path>:1:' line in: check_pins: 0 violations in 1 files scanned
+FAIL: F2 skopeo docker:// transport reference: no row 'script_image_unpinned 2 docker.io/library/alpine:3.19' in: 
+FAIL: F2 arithmetic << in a test script is not a here-document opener (line 3 scanned): no row 'script_image_unpinned 3 docker.io/library/alpine:3.19' in: 
+FAIL: F2 a << inside a quoted string is not a here-document opener (line 5 scanned): no row 'script_image_unpinned 5 docker.io/library/alpine:3.20' in: 
+PASS: F2 control: a real here-document in a test script is still data; the line after it is scanned: total rows
+PASS: F2 control: the real run after the here-document is the one row: row script_image_unpinned line 5 reference 'docker.io/library/alpine:3.20'
+PASS: F2 control: a registry path with no tag is not a tagged reference: exit status 0
+PASS: F2 control: a registry path with no tag is not a tagged reference: no violation reported
+PASS: F3 crash copy of the script written
+FAIL: F3 an internal exception exits 3 (not 1) (got '1' want '3')
+PASS: F3 an internal exception prints no violation rows on stdout
+FAIL: F3 no 'internal error' on stderr: Traceback (most recent call last):
+  File "<stdin>", line 315, in <module>
+  File "<stdin>", line 293, in main
+PASS: F3 negative control: the crash copy exits 0 on a tree that has a compose file only (no Dockerfile scanned)
+PASS: F3 negative control: the real script exits 0 on a clean tree
+PASS: F4 lowercase from keyword: exit status 1
+PASS: F4 lowercase from keyword: reports from_unpinned at line 1
+PASS: F4 a .bash file is scanned: exit status 1
+PASS: F4 a .bash file is scanned: reports script_image_unpinned at line 2
+PASS: F4 a compose .yaml file is scanned: exit status 1
+PASS: F4 a compose .yaml file is scanned: reports compose_image_unpinned at line 3
+PASS: F4 inline ${VAR:-default} FROM default is judged: exit status 1
+PASS: F4 inline ${VAR:-default} FROM default is judged: reports from_arg_unpinned at line 1
+PASS: F4 control: inline default with a digest: exit status 0
+PASS: F4 control: inline default with a digest: no violation reported
+PASS: F4 a # inside a quoted string does not start a comment (the pipe after it is seen): exit status 1
+PASS: F4 a # inside a quoted string does not start a comment (the pipe after it is seen): reports pipe_to_shell at line 2
+PASS: F4 control: a real trailing comment is removed: exit status 0
+PASS: F4 control: a real trailing comment is removed: no violation reported
+PASS: F4 the output is sorted by line (the pipe at line 2 before the FROM at line 4)
+PASS: F4 control: a violation under third/ is found without --exclude-dir (exit 1)
+PASS: F4 --exclude-dir skips the directory in the default file set (exit 0)
+PASS: F4 --exclude-dir skips the directory when a PATH is walked (exit 0)
+PASS: F4 control: the walked PATH finds it without --exclude-dir (exit 1)
+PASS: F4 submodule files are not scanned without --recurse (exit 0)
+PASS: F4 --recurse scans the submodule (exit 1)
+PASS: F4 --recurse reports the submodule path
+PASS: DETERMINISM two runs print identical output
+PASS: LIST exit status 1 on a violation
+PASS: LIST one TSV row rule<TAB>path<TAB>line<TAB>reference
+PASS: SUMMARY line on a clean tree
+PASS: USAGE unknown option exits 2
+PASS: USAGE missing root exits 2
+PASS: ARG explicit file path is scanned (violation exit 1)
+test_check_pins: 131 passed, 51 failed
+rc=1
