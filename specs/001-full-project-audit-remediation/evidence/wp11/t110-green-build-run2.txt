@@ -1,0 +1,116 @@
+# identity: T110-GREEN-build-run2
+# head: a9186016 (uncommitted work tree)
+# run_at: 2026-10-06T18:11:22Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f docker/Dockerfile.builder .
+# sha256 docker/Dockerfile.builder: 13fa3f1ee3918167de611bc3b769a9e7582cf80eb8c0a4df1927c5aad279fa7e
+# disk gate:
+disk_headroom: pass op=T110-GREEN-build-run2 need=8000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T110-GREEN-build-run2.json
+disk_gate_rc=0
+[1/3] STEP 1/1: FROM docker.io/library/golang:1.25-bookworm@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 AS gotoolchain
+--> e3c6b02e5322
+[2/3] STEP 1/1: FROM docker.io/library/node:20-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5 AS nodetoolchain
+--> 33ed5ef90e83
+[3/3] STEP 1/34: FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+[3/3] STEP 2/34: LABEL maintainer="Catalogizer Team"
+--> Using cache 98377cf208711a7c90e5e8858e1344f7879454b04ad4b5af753d1f0c5c658b7a
+--> 98377cf20871
+[3/3] STEP 3/34: LABEL description="Multi-toolchain builder for Catalogizer project"
+--> Using cache aae5657d3fab3d2db947d160218067368a2aa85c68d78879c73b0897f32d4b5f
+--> aae5657d3fab
+[3/3] STEP 4/34: ENV DEBIAN_FRONTEND=noninteractive
+--> Using cache 331e23da23620e4d478d0420df9e70260dd0ac4530fb435b6840d6cc7ce18191
+--> 331e23da2362
+[3/3] STEP 5/34: ENV TZ=UTC
+--> Using cache 1e02cd776a2a04f2b3556a3cbd8f6f7a668835ba95f58c61dbc1e86b81dc0671
+--> 1e02cd776a2a
+[3/3] STEP 6/34: RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     git     curl     wget     pkg-config     libssl-dev     ca-certificates     gnupg     unzip     zip     webkit2gtk-4.1-dev     libayatana-appindicator3-dev     librsvg2-dev     libgtk-3-dev     patchelf     xvfb     postgresql-client     redis-tools     jq     file     bc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 3252ce39804c9f872b2e77974409d02002de0f57bd85fd53916f2a5ccd2e2501
+--> 3252ce39804c
+[3/3] STEP 7/34: RUN apt-get update && apt-get install -y --no-install-recommends     libvlc-dev     libvlccore-dev     vlc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 5a70401327f142ac4ccd224544fe18051958519bdeb29010e71a8cb4079e3bc4
+--> 5a70401327f1
+[3/3] STEP 8/34: COPY --from=gotoolchain /usr/local/go /usr/local/go
+--> Using cache e6323ea114e9858b782f731c6d5925817a4fdc4614113bac374b5259346386e3
+--> e6323ea114e9
+[3/3] STEP 9/34: ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
+--> Using cache f4fcd6c40cf676d86dda0b988a8c536b40e4e9fdf403c4203f93df0c12b9d45a
+--> f4fcd6c40cf6
+[3/3] STEP 10/34: ENV GOPATH="/root/go"
+--> Using cache 2a5013f0183a31e6a8bf0ca963f78a691e371c06ae58772588a9d793104b3d09
+--> 2a5013f0183a
+[3/3] STEP 11/34: ENV CGO_ENABLED=1
+--> Using cache fd1b0ccb14030b222439687cd85306a939d8a59c005cc75ababba628df793af6
+--> fd1b0ccb1403
+[3/3] STEP 12/34: RUN go version
+--> Using cache 06636671233b6202f15c2b535487e64229fc2980a8c2bb226b58f599dfc735b1
+--> 06636671233b
+[3/3] STEP 13/34: COPY --from=nodetoolchain /usr/local/bin/node /usr/local/bin/node
+--> Using cache b674abecee3d9f45771c4e62aa6663561448a86283d57af3bd939ab0f216cde0
+--> b674abecee3d
+[3/3] STEP 14/34: COPY --from=nodetoolchain /usr/local/lib/node_modules /usr/local/lib/node_modules
+--> Using cache 85b3d3d5b2e942f24ab7bdfb8e2d4fcdba49aee887fb64ab67ea165febbacf4a
+--> 85b3d3d5b2e9
+[3/3] STEP 15/34: RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm     && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+--> Using cache afba5293690ed5346a74dfcfd37d86dc3b57a1d79decb02c0d2ef11a1708572c
+--> afba5293690e
+[3/3] STEP 16/34: RUN node --version && npm --version
+--> Using cache 63da8ecccadee23a2650fcf0011a920642061c8b15610e8d7f7bdf66109f4db5
+--> 63da8ecccade
+[3/3] STEP 17/34: ENV RUSTUP_HOME="/opt/rustup"
+--> Using cache 68c10f18c7bad0ed166578119725c3129eff247e01decc10816b6a16b5777d2e
+--> 68c10f18c7ba
+[3/3] STEP 18/34: ENV CARGO_HOME="/opt/cargo"
+--> Using cache cbe81595904e5b9b66a082b847ff8c200be22e4c5a0bd53f7d4ce28215ae05e9
+--> cbe81595904e
+[3/3] STEP 19/34: RUN curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -fsSL -o /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.29.0/x86_64-unknown-linux-gnu/rustup-init     && echo "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10  /tmp/rustup-init" | sha256sum -c -     && chmod +x /tmp/rustup-init     && /tmp/rustup-init -y --no-modify-path --default-toolchain 1.99.0     && rm /tmp/rustup-init
+--> Using cache 9257d4500ff8aea8e6f380cb826775cf078c09508be5d8549df0db84bf260df5
+--> 9257d4500ff8
+[3/3] STEP 20/34: ENV PATH="/opt/cargo/bin:${PATH}"
+--> Using cache 8ccb8b86184578874e2d99dc91e771b46a0025a30c613366d1a473fa5d28ca75
+--> 8ccb8b861845
+[3/3] STEP 21/34: RUN cargo install --locked --version 2.12.1 tauri-cli
+--> Using cache 15876580e1759dc760ed898ce37063f7392f2dbb32a053242dd015638f11ee57
+--> 15876580e175
+[3/3] STEP 22/34: RUN chmod -R a+rX /opt/rustup /opt/cargo
+--> Using cache c18ac9be92f1f5cd850178d1068c0f8efe1544463ba5422439f62300fb14f74b
+--> c18ac9be92f1
+[3/3] STEP 23/34: RUN rustc --version && cargo --version
+--> Using cache 8e58cbb45083a61e9027bc658a5b79e7be0380754f20f7d9213c1418bdfd7be6
+--> 8e58cbb45083
+[3/3] STEP 24/34: RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jdk && rm -rf /var/lib/apt/lists/*
+--> Using cache 71aa62b6af98dd30d2c9c7ff58f9275ea7915641526b23b001c504a7f723cf1e
+--> 71aa62b6af98
+[3/3] STEP 25/34: ENV JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+--> Using cache 07597cb0ef5253901ad3fc00704220dea69a7857bd7b3269bf43d9e992ae7603
+--> 07597cb0ef52
+[3/3] STEP 26/34: ENV ANDROID_HOME="/opt/android-sdk"
+--> Using cache d03574ffa4fe3d9a0abd513abbdd02287283b5c1311f1689b34ae5c5537abb1b
+--> d03574ffa4fe
+[3/3] STEP 27/34: ENV ANDROID_SDK_ROOT="${ANDROID_HOME}"
+--> Using cache 899bfd7cb1d56a36ba6d48cc3270c2493cd5a16cf3ba7ce05534124be6c230e3
+--> 899bfd7cb1d5
+[3/3] STEP 28/34: ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+--> Using cache 5cf9066e7afa9e939031daf679355b8e6bef5f4bced1e02364295e46225f5266
+--> 5cf9066e7afa
+[3/3] STEP 29/34: RUN mkdir -p "${ANDROID_HOME}/cmdline-tools"     && cd "${ANDROID_HOME}/cmdline-tools"     && for i in 1 2 3 4 5; do         echo "Attempt $i: Downloading Android cmdline-tools..." &&         curl --retry 5 --retry-delay 10 --retry-all-errors -fSL             "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o cmdline-tools.zip &&         break || (echo "Attempt $i failed, waiting 15s..." && sleep 15);     done     && echo "2d2d50857e4eb553af5a6dc3ad507a17adf43d115264b1afc116f95c92e5e258  cmdline-tools.zip" | sha256sum -c -     && unzip -q cmdline-tools.zip     && mv cmdline-tools latest     && rm cmdline-tools.zip
+--> Using cache a04bc061429a293b68b5bce1341b485ed31923c088c59a79241ef24f85be9a25
+--> a04bc061429a
+[3/3] STEP 30/34: RUN yes | sdkmanager --licenses >/dev/null
+--> Using cache 9961e8fb85849fa6818df05a536201b99bd868639f66c86d7a3f3e7a2b85e015
+--> 9961e8fb8584
+[3/3] STEP 31/34: RUN sdkmanager     "platform-tools"     "build-tools;34.0.0"     "build-tools;35.0.0"     "platforms;android-34"     "platforms;android-35"
+--> Using cache 808a3dc003717ec500603e8f5df14b0cec964d18ce352cb2e5fcdb58657ebbcd
+--> 808a3dc00371
+[3/3] STEP 32/34: RUN npx --yes playwright@1.57.0 install --with-deps chromium
+--> Using cache df7374e0a61c3510d372ca1ae6d779d121cd99673615961beb648c4e371b1012
+--> df7374e0a61c
+[3/3] STEP 33/34: WORKDIR /project
+--> Using cache 52c1d0172e60fefd005522b68cc304fe0cab3adfffd7e2d11733cb2c495ce9db
+--> 52c1d0172e60
+[3/3] STEP 34/34: ENTRYPOINT ["/project/scripts/build-test-release.sh"]
+--> Using cache 8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9
+[3/3] COMMIT localhost/t110-builder:green
+--> 8ac2c1471fcf
+Successfully tagged localhost/t110-builder:green
+8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9
+build_rc=0

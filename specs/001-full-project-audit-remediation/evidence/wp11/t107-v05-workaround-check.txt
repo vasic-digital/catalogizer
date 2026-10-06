@@ -1,0 +1,29 @@
+# identity: V-05 out-of-tree workaround check (T107), before the RED
+# run_at: 2026-10-06T18:12:08Z
+$ grep -rn catalog-web/Dockerfile and context references in scripts, compose, Makefiles (excluding node_modules, .git, specs, .audit)
+docker-compose.dev.yml:48:      dockerfile: catalog-api/Dockerfile.dev
+docker-compose.security.yml:281:    command: ["docker/Dockerfile.builder"]
+docker-compose.yml:69:      dockerfile: catalog-api/Dockerfile
+docker-compose.build.yml:61:      dockerfile: docker/Dockerfile.builder
+docker-compose.test.yml:40:      dockerfile: catalog-api/Dockerfile
+docker-compose.test.yml:89:      dockerfile: catalog-web/Dockerfile
+docker-compose.test.yml:227:      dockerfile: docker/Dockerfile.builder
+docker-compose.test.yml:287:      dockerfile: docker/Dockerfile.builder
+scripts/quick-security-scan.sh:28:if [ -f "catalog-api/Dockerfile" ]; then
+scripts/setup-security-scanning.sh:210:if [ -f "catalog-api/Dockerfile" ]; then
+scripts/reorg_submodules.sh:317:# 4c. catalog-api/Dockerfile — `COPY <Name>/ /build/<Name>/`
+scripts/reorg_submodules.sh:320:  log "── Step 4c: catalog-api/Dockerfile COPY lines ──"
+scripts/reorg_submodules.sh:327:  rewrite_file "catalog-api/Dockerfile" "${exprs[@]}"
+scripts/reorg_submodules.sh:507:      [ ] docker build -f catalog-api/Dockerfile .   # COPY submodules/<snake>/ paths valid
+scripts/build-test-release.sh:4:# Runs INSIDE the builder container (docker/Dockerfile.builder)
+scripts/api-up.sh:50:        -f "${PROJECT_ROOT}/catalog-api/Dockerfile" \
+scripts/lib/project-config.sh:20:BUILD_DOCKERFILE="docker/Dockerfile.builder"
+scripts/lib/build-desktop.sh:27:    # headers pre-installed per docker/Dockerfile.builder.
+scripts/lib/auto-container.sh:44:        -f docker/Dockerfile.builder \
+scripts/containers/tests/test_check_pins.sh:152:# the multi-line form of docker/Dockerfile.builder:66-68: a pipe after a for ... done loop spread over continuation lines
+scripts/containers/tests/test_check_pins.sh:153:fx bad_pipe_multi docker/Dockerfile.builder <<'EOF'
+Build/lib/orchestrator.sh:232:        local dockerfile="${BUILD_DOCKERFILE:-docker/Dockerfile.builder}"
+build/containers/images.lock.yaml:64:  purpose: catalog-web and TypeScript module build (Node 20 matches catalog-web/Dockerfile)
+build/containers/images.lock.yaml:358:  purpose: base of docker/Dockerfile.builder (T110, docs/16 D-05); jammy because the
+control needle (same grep for a string known present): 0 hits in docker-compose.test.yml before the T113 fix is not recomputable now; HEAD copy: 1
+verdict: no script builds catalog-web/Dockerfile with a different context; scripts/api-up.sh builds catalog-api/Dockerfile (context is the repository root); no out-of-tree workaround found

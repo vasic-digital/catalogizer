@@ -65,8 +65,8 @@ services:
   # Catalogizer API
   api:
     build:
-      context: ./catalog-api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: catalog-api/Dockerfile
       args:
         GO_VERSION: ${GO_VERSION:-1.25}
     container_name: catalogizer-api

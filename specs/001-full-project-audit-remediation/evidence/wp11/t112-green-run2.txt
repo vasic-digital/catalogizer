@@ -1,0 +1,185 @@
+# identity: T112-GREEN-run2
+# head: b9bd2d2b (uncommitted work tree)
+# run_at: 2026-10-06T17:59:20Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f catalog-web/Dockerfile .
+# sha256 catalog-web/Dockerfile: ef2be37b40d4e8cd2f43746cbef9587d0b2a5af779bf175f9663ce2867af8539
+# disk gate:
+disk_headroom: pass op=T112-GREEN-run2 need=3000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T112-GREEN-run2.json
+disk_gate_rc=0
+[1/2] STEP 1/52: FROM docker.io/node:20-alpine AS builder
+[1/2] STEP 2/52: WORKDIR /app
+--> Using cache dcf6b31b7f3e2e6d798510a60a54815ab6c0bfecad36901ba313ee9ed6877a7d
+--> dcf6b31b7f3e
+[1/2] STEP 3/52: COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/
+--> Using cache 50622b4e4a68905062e48ab0b41d4ba24d9973ce84e2e560ee45b6a54811cea3
+--> 50622b4e4a68
+[1/2] STEP 4/52: COPY submodules/media_types_ts/package*.json /app/submodules/media_types_ts/
+--> Using cache d979e85900753fd89ee4566dd744139b5afe251243d6896221c8e13a421c8397
+--> d979e8590075
+[1/2] STEP 5/52: COPY submodules/ui_components_react/package*.json /app/submodules/ui_components_react/
+--> Using cache 6263dcee33a9a7d9fa0699db14a6cc4b13eca5929d8f4762af94d573ab3c23c3
+--> 6263dcee33a9
+[1/2] STEP 6/52: COPY submodules/media_browser_react/package*.json /app/submodules/media_browser_react/
+--> Using cache c13d1246acef2a7309d0210b696d7b484323f15fabf4333d29c0986a2bfb2613
+--> c13d1246acef
+[1/2] STEP 7/52: COPY submodules/media_player_react/package*.json /app/submodules/media_player_react/
+--> Using cache d697022c205dfc1311c954d1d455b93e820fee0b154cc10dedd4418b0505a040
+--> d697022c205d
+[1/2] STEP 8/52: COPY submodules/collection_manager_react/package*.json /app/submodules/collection_manager_react/
+--> Using cache 7292672b2553a5d2dbc62a85a506199a9df6d4bbbdc61803a4e5be92c75355d3
+--> 7292672b2553
+[1/2] STEP 9/52: COPY submodules/dashboard_analytics_react/package*.json /app/submodules/dashboard_analytics_react/
+--> Using cache 7b2f0159d1e9442a4cf7dc3c0e23346a1f6486f10b0669a8a7a09a4d49a7ab27
+--> 7b2f0159d1e9
+[1/2] STEP 10/52: COPY submodules/auth_context_react/package*.json /app/submodules/auth_context_react/
+--> Using cache 2c3643473def84902c0376d1bf7bdaa21fc5439bede1ac91383f6b8be71fb30d
+--> 2c3643473def
+[1/2] STEP 11/52: COPY submodules/catalogizer_api_client_ts/package*.json /app/submodules/catalogizer_api_client_ts/
+--> Using cache 1a31e6f77c8372180d831c4a00e4652bf3e2700c04b4aaaa85c16e724a2db074
+--> 1a31e6f77c83
+[1/2] STEP 12/52: COPY catalog-web/package*.json /app/catalog-web/
+--> Using cache 3b6ab6563ec65172f987491e8e2d0ed80e92b7c4eee1c8cd47ee3b488c11ea5b
+--> 3b6ab6563ec6
+[1/2] STEP 13/52: WORKDIR /app/submodules/media_types_ts
+--> Using cache a85eb482ceae81cef494fca2ea5ab2f493975b27de24b7b8cf229d82e132d2c7
+--> a85eb482ceae
+[1/2] STEP 14/52: RUN npm ci --legacy-peer-deps
+--> Using cache ce71d0b974371a73871317dc23e650671616c80312adafa7d568ab8a9cd3f53e
+--> ce71d0b97437
+[1/2] STEP 15/52: WORKDIR /app/submodules/websocket_client_ts
+--> Using cache c89da7dee33e3407a49e96be2e04d490abff033653931da6e023bf56f476604f
+--> c89da7dee33e
+[1/2] STEP 16/52: RUN npm ci --legacy-peer-deps
+--> Using cache a893b28301773d538bf23d4d291656bd239628eab7aeb83053a9f526fd53d2ec
+--> a893b2830177
+[1/2] STEP 17/52: WORKDIR /app/submodules/catalogizer_api_client_ts
+--> Using cache e16373cbbf807e7fe3f587d956257d3218756514c137bd0703ce34c31ff0ca56
+--> e16373cbbf80
+[1/2] STEP 18/52: RUN npm ci --legacy-peer-deps
+--> Using cache d205a83125baaeac77aebb9802c9d8f1d3ec8dd6cdc7c9bb8d3459770108694f
+--> d205a83125ba
+[1/2] STEP 19/52: WORKDIR /app/submodules/auth_context_react
+--> Using cache 013929ba4027e21776450ca0b004d7a8031c51bb25c63ef11a9c1fa1f78d8b47
+--> 013929ba4027
+[1/2] STEP 20/52: RUN npm ci --legacy-peer-deps
+--> Using cache 4126dcf5bad724ae61f12346990db712fba42f4765539547d9f077cf00d92292
+--> 4126dcf5bad7
+[1/2] STEP 21/52: WORKDIR /app/submodules/ui_components_react
+--> Using cache 65d44b219fc0271566a84271ed4a5108283e44d7586144b9a3cdf101c3d5f578
+--> 65d44b219fc0
+[1/2] STEP 22/52: RUN npm ci --legacy-peer-deps
+--> Using cache 083dc07cfbf53e9378bb11b207d59541c02ef3fd3f851c140a6730facd3e9dc4
+--> 083dc07cfbf5
+[1/2] STEP 23/52: WORKDIR /app/submodules/media_browser_react
+--> Using cache 10d10161702725122ad515bf46278bb0d353b4430b7a9a944914c776f01c8327
+--> 10d101617027
+[1/2] STEP 24/52: RUN npm ci --legacy-peer-deps
+--> Using cache a8a38db209c50c19466a494783099a5766ca175a0beede467a1b89f0db0c00d6
+--> a8a38db209c5
+[1/2] STEP 25/52: WORKDIR /app/submodules/media_player_react
+--> Using cache bd28d2705a6faf4d12388f6d9b4e011f99fff8aab0cb735f47280558eee9bfc9
+--> bd28d2705a6f
+[1/2] STEP 26/52: RUN npm ci --legacy-peer-deps
+--> Using cache 9006215d7e184237a7a5048f9e80bed356abc9d166b673e3c8bdf14eab96b818
+--> 9006215d7e18
+[1/2] STEP 27/52: WORKDIR /app/submodules/collection_manager_react
+--> Using cache d45406bfce02840d006eaea2ded568f80a0566c5c72ebecf034a6d07b1325e35
+--> d45406bfce02
+[1/2] STEP 28/52: RUN npm ci --legacy-peer-deps
+--> Using cache 4511f063df703ba1a5be5dad52c4427f92d8afa3b450c41feb0e9c6ae54ce80a
+--> 4511f063df70
+[1/2] STEP 29/52: WORKDIR /app/submodules/dashboard_analytics_react
+--> Using cache ea9772a72757bce326ee9c9805f59ebe85457602fb16eb6f1163578c78bca50f
+--> ea9772a72757
+[1/2] STEP 30/52: RUN npm ci --legacy-peer-deps
+--> Using cache 37f3ef2bc77302f30a52e31e6cd05f7320b4bb5c69d132af40bc1d56e542848b
+--> 37f3ef2bc773
+[1/2] STEP 31/52: COPY submodules/websocket_client_ts/ /app/submodules/websocket_client_ts/
+--> Using cache 86eb86751c2177aba21f9e0faf9c54caa4058f19b0297f106ca5fe74e9b56602
+--> 86eb86751c21
+[1/2] STEP 32/52: COPY submodules/media_types_ts/ /app/submodules/media_types_ts/
+--> Using cache 1d5100ec672e9f6a0f61ccb2b1c2a27344675bfc2247b0afa1f18a99e969596c
+--> 1d5100ec672e
+[1/2] STEP 33/52: COPY submodules/ui_components_react/ /app/submodules/ui_components_react/
+--> Using cache 64fb973e8a3cc447b7684d7c802b37460f917aeefa621d0d174cb1119d6c43df
+--> 64fb973e8a3c
+[1/2] STEP 34/52: COPY submodules/media_browser_react/ /app/submodules/media_browser_react/
+--> Using cache 288c357a31af11eebd735161cb696e6a0c5b3e19ea05810183a04e3f33bd3f1a
+--> 288c357a31af
+[1/2] STEP 35/52: COPY submodules/media_player_react/ /app/submodules/media_player_react/
+--> Using cache 90fff7718936317c649f1b60960403a987103a498196d3fdff629e4a80f001de
+--> 90fff7718936
+[1/2] STEP 36/52: COPY submodules/collection_manager_react/ /app/submodules/collection_manager_react/
+--> Using cache dfdd321f9a710684fcb41f2c93a4f057de1c08c61a76fd8e3030a52e45e94d19
+--> dfdd321f9a71
+[1/2] STEP 37/52: COPY submodules/dashboard_analytics_react/ /app/submodules/dashboard_analytics_react/
+--> Using cache 8b90381ef63762f6f826aa2c2446a1a020fa0dd0fe912709e5412dabfff2c76d
+--> 8b90381ef637
+[1/2] STEP 38/52: COPY submodules/auth_context_react/ /app/submodules/auth_context_react/
+--> Using cache ca895d810d8a430a2a0872e8c6c6966e69fcf85c55426a4177c7104d12cf4f85
+--> ca895d810d8a
+[1/2] STEP 39/52: COPY submodules/catalogizer_api_client_ts/ /app/submodules/catalogizer_api_client_ts/
+--> Using cache d8f4266717f8a9886b891a3837ef1477f3a5a68654bc59e96536242fcf80be59
+--> d8f4266717f8
+[1/2] STEP 40/52: RUN cd /app/submodules/media_types_ts && npm run build
+--> Using cache c304238c9f7249fb340ea36ca5f8e9a1899b5b2898f1c030c506bff5c515fdcc
+--> c304238c9f72
+[1/2] STEP 41/52: RUN cd /app/submodules/websocket_client_ts && npm run build
+--> Using cache 882d6fd5b8b6cf577b999a587858bd8bc744d90f0cf12a18b570bdcd404afdf6
+--> 882d6fd5b8b6
+[1/2] STEP 42/52: RUN cd /app/submodules/catalogizer_api_client_ts && npm run build
+--> Using cache e1efdba9f8b2c8ced7754cb85d606818a7eb07161d4e02df1fa776fa72a60dce
+--> e1efdba9f8b2
+[1/2] STEP 43/52: RUN cd /app/submodules/auth_context_react && npm run build
+--> Using cache b20860b1a0540d5467678375b262010de3d255c04aa8217aef1bfebf96f2c4e9
+--> b20860b1a054
+[1/2] STEP 44/52: RUN cd /app/submodules/ui_components_react && npm run build
+--> Using cache 24d02323bb4ac769a8e2da6938aedc26213d7a3a7531fd2a92fb656252f3b317
+--> 24d02323bb4a
+[1/2] STEP 45/52: RUN cd /app/submodules/media_browser_react && npm run build
+--> Using cache 140c68369f5217cfd146dd09538a7a75f124b3fd8d3794c937c017e46f3a529b
+--> 140c68369f52
+[1/2] STEP 46/52: RUN cd /app/submodules/media_player_react && npm run build
+--> Using cache 84ac75768fd14bf331929f5e6474ff02089f5e7e5bc1376cf6d4b7e7e8230d05
+--> 84ac75768fd1
+[1/2] STEP 47/52: RUN cd /app/submodules/collection_manager_react && npm run build
+--> Using cache 2864721c4ca559507d70c792b17995a66ef2cdf9cff4aa624ca68e96b48e22d0
+--> 2864721c4ca5
+[1/2] STEP 48/52: RUN cd /app/submodules/dashboard_analytics_react && npm run build
+--> Using cache d0f70aec801d023b0e2386db67dd72eb2c91092e2c9a2ed42e174ccaa3d9a9bb
+--> d0f70aec801d
+[1/2] STEP 49/52: COPY catalog-web/ /app/catalog-web/
+--> Using cache 133438aaa86479c61b402cf396a94216069b9fe41d966be276de1e3e2a07e525
+--> 133438aaa864
+[1/2] STEP 50/52: WORKDIR /app/catalog-web
+--> Using cache c41ec949dc1bd78d77e20fab5e1ed903f430f8de8965cff5024e84d5a4cb0f7b
+--> c41ec949dc1b
+[1/2] STEP 51/52: RUN npm ci --legacy-peer-deps
+--> Using cache 02c1965bd22aec343aae442ace5f9aee65816ed8be6c9f61e22bc2e7e32aa62c
+--> 02c1965bd22a
+[1/2] STEP 52/52: RUN npm run build || npm run build -- --skipLibCheck
+--> Using cache de24a84b5fcef2576ea4c016cf982ca0022980462847b0e297b6a95ba13c8a33
+--> de24a84b5fce
+[2/2] STEP 1/7: FROM docker.io/nginx:alpine
+[2/2] STEP 2/7: COPY --from=builder --chown=nginx:nginx /app/catalog-web/dist /usr/share/nginx/html
+--> Using cache b2572816a245f34841316aae519e093428f128b125aad8d113c2624c8d403843
+--> b2572816a245
+[2/2] STEP 3/7: COPY --chown=nginx:nginx catalog-web/nginx.conf /etc/nginx/conf.d/default.conf
+--> Using cache 2550524512b2c993a13c8ab735b3b42b7d3de36803463a9f6485b37e4937a634
+--> 2550524512b2
+[2/2] STEP 4/7: RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx &&     touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+--> Using cache 6d3a1a083c2ef7825fceae588f9c893d4a5184dbba6f337ae36ce549835f973d
+--> 6d3a1a083c2e
+[2/2] STEP 5/7: EXPOSE 3000
+--> Using cache 733b8f72e0124d875605c7b9b6a56b64c6e06d5519f160188382fe570c44eab0
+--> 733b8f72e012
+[2/2] STEP 6/7: USER nginx
+--> Using cache 151075fbd6ce94a1c81b4fa9623457b81e6df8c4eb9d05d9238eadc9aa551584
+--> 151075fbd6ce
+[2/2] STEP 7/7: CMD ["nginx", "-g", "daemon off;"]
+--> Using cache e44576ce94bbfdc9d7bed8fe93f5a252656790b02629a14f66cbc3601a6281fb
+[2/2] COMMIT localhost/t112-web:green
+--> e44576ce94bb
+Successfully tagged localhost/t112-web:green
+e44576ce94bbfdc9d7bed8fe93f5a252656790b02629a14f66cbc3601a6281fb
+build_rc=0

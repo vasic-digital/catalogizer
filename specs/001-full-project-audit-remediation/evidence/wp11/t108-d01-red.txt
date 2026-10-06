@@ -1,0 +1,37 @@
+# identity: T108-D01-RED
+# head: b53be11a (uncommitted work tree)
+# run_at: 2026-10-06T17:47:55Z host: anton
+# cmd: podman build --pull=never --build-arg GO_VERSION=1.25 -f catalog-api/Dockerfile ./catalog-api
+# sha256 docker-compose.yml: 6cdd76e243559ab095556b343cc57fbb8359eefe46bb0f254d5e3d2cf95363e2
+# sha256 catalog-api/Dockerfile: 31196d2f64e74ea6cea34f5ef37d0884bb0ed7768de32938ccd879673fbda981
+# disk gate:
+disk_headroom: pass op=T108-D01-RED need=3000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T108-D01-RED.json
+disk_gate_rc=0
+[1/2] STEP 1/33: FROM docker.io/library/golang:1.25 AS builder
+[1/2] STEP 2/33: RUN apt-get update && apt-get install -y --no-install-recommends     git make gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [349 kB]
+Fetched 9388 kB in 1s (7260 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.39.5-0+deb12u3).
+make is already the newest version (4.3-4.1).
+gcc is already the newest version (4:12.2.0-3).
+libc6-dev is already the newest version (2.36-9+deb12u14).
+0 upgraded, 0 newly installed, 0 to remove and 14 not upgraded.
+--> f10c09abbbb1
+[1/2] STEP 3/33: ENV GOTOOLCHAIN=local
+--> c66a084977b3
+[1/2] STEP 4/33: ENV CGO_ENABLED=1
+--> 70c490acd7a5
+[1/2] STEP 5/33: WORKDIR /build
+--> ca041546e0a7
+[1/2] STEP 6/33: COPY submodules/assets/ /build/submodules/assets/
+Error: building at STEP "COPY submodules/assets/ /build/submodules/assets/": checking on sources under "/home/milosvasic/Projects/catalogizer/catalog-api": copier: stat: "/submodules/assets": no such file or directory
+build_rc=125

@@ -1,0 +1,7 @@
+# identity: T110 manual structural checks (non-comment lines only; carrier: the explanatory comment above the license RUN mentions the removed token)
+# sha256 docker/Dockerfile.builder: 13fa3f1ee3918167de611bc3b769a9e7582cf80eb8c0a4df1927c5aad279fa7e
+needle (RUN lines present): 14
+cargo install tauri-cli unpinned: 0
+licenses swallowed: 0
+sha256sum -c lines: 2
+FROM lines: 3, without @sha256: 0

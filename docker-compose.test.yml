@@ -85,8 +85,8 @@ services:
   # ---------------------------------------------------------------------------
   catalog-web:
     build:
-      context: ./catalog-web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: catalog-web/Dockerfile
       network: host
     image: catalogizer-web:test
     container_name: catalogizer-web-test

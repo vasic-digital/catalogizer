@@ -1,0 +1,16 @@
+# identity: T110-RED (check_pins on the HEAD copy of docker/Dockerfile.builder in .audit/scratch/t110)
+# head: b53be11a
+# sha256 .audit/scratch/t110/docker/Dockerfile.builder: c90bb85461312395338fefbb55f71346d5280c4c78a85803254f8ca5b7c0cf5f
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# run_at: 2026-10-06T17:50:44Z host: anton
+# cmd: run_pinned IMG-KCOV -- bash scripts/containers/check_pins.sh --root .audit/scratch/t110
+VIOLATION from_unpinned docker/Dockerfile.builder:5: ubuntu:22.04
+VIOLATION pipe_to_shell docker/Dockerfile.builder:66: curl -fsSL https://deb.nodesource.com/setup_18.x && break || (echo "Attempt $i failed, waiting 15s..." && sleep 15); done | bash
+VIOLATION pipe_to_shell docker/Dockerfile.builder:80: curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+check_pins: 3 violations in 1 files scanned
+check_pins_rc=1
+# findings check_pins has no rule for (manual grep, control needle = the same pattern run on a line known present):
+needle(FROM present): 1
+83:RUN cargo install tauri-cli
+104:            "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o cmdline-tools.zip && \
+111:RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true

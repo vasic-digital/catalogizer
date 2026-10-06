@@ -3,57 +3,68 @@ FROM docker.io/node:20-alpine AS builder
 WORKDIR /app
 
 # Copy submodule package files first
-COPY WebSocket-Client-TS/package*.json /app/WebSocket-Client-TS/
-COPY Media-Types-TS/package*.json /app/Media-Types-TS/
-COPY UI-Components-React/package*.json /app/UI-Components-React/
-COPY Media-Browser-React/package*.json /app/Media-Browser-React/
-COPY Media-Player-React/package*.json /app/Media-Player-React/
-COPY Collection-Manager-React/package*.json /app/Collection-Manager-React/
-COPY Dashboard-Analytics-React/package*.json /app/Dashboard-Analytics-React/
-COPY Auth-Context-React/package*.json /app/Auth-Context-React/
-COPY Catalogizer-API-Client-TS/package*.json /app/Catalogizer-API-Client-TS/
+COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/
+COPY submodules/media_types_ts/package*.json /app/submodules/media_types_ts/
+COPY submodules/ui_components_react/package*.json /app/submodules/ui_components_react/
+COPY submodules/media_browser_react/package*.json /app/submodules/media_browser_react/
+COPY submodules/media_player_react/package*.json /app/submodules/media_player_react/
+COPY submodules/collection_manager_react/package*.json /app/submodules/collection_manager_react/
+COPY submodules/dashboard_analytics_react/package*.json /app/submodules/dashboard_analytics_react/
+COPY submodules/auth_context_react/package*.json /app/submodules/auth_context_react/
+COPY submodules/catalogizer_api_client_ts/package*.json /app/submodules/catalogizer_api_client_ts/
 
 # Copy main app package files
 COPY catalog-web/package*.json /app/catalog-web/
 
-# Install dependencies for submodules
-WORKDIR /app/Media-Types-TS
-RUN npm ci --legacy-peer-deps && npm run build || true
+# Install dependencies for submodules (only package files are present at this point; the builds follow the source copy below)
+WORKDIR /app/submodules/media_types_ts
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/WebSocket-Client-TS
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/websocket_client_ts
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Catalogizer-API-Client-TS
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/catalogizer_api_client_ts
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Auth-Context-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/auth_context_react
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/UI-Components-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/ui_components_react
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Media-Browser-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/media_browser_react
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Media-Player-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/media_player_react
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Collection-Manager-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/collection_manager_react
+RUN npm ci --legacy-peer-deps
 
-WORKDIR /app/Dashboard-Analytics-React
-RUN npm ci --legacy-peer-deps && npm run build || true
+WORKDIR /app/submodules/dashboard_analytics_react
+RUN npm ci --legacy-peer-deps
 
 # Copy submodule source
-COPY WebSocket-Client-TS/ /app/WebSocket-Client-TS/
-COPY Media-Types-TS/ /app/Media-Types-TS/
-COPY UI-Components-React/ /app/UI-Components-React/
-COPY Media-Browser-React/ /app/Media-Browser-React/
-COPY Media-Player-React/ /app/Media-Player-React/
-COPY Collection-Manager-React/ /app/Collection-Manager-React/
-COPY Dashboard-Analytics-React/ /app/Dashboard-Analytics-React/
-COPY Auth-Context-React/ /app/Auth-Context-React/
-COPY Catalogizer-API-Client-TS/ /app/Catalogizer-API-Client-TS/
+COPY submodules/websocket_client_ts/ /app/submodules/websocket_client_ts/
+COPY submodules/media_types_ts/ /app/submodules/media_types_ts/
+COPY submodules/ui_components_react/ /app/submodules/ui_components_react/
+COPY submodules/media_browser_react/ /app/submodules/media_browser_react/
+COPY submodules/media_player_react/ /app/submodules/media_player_react/
+COPY submodules/collection_manager_react/ /app/submodules/collection_manager_react/
+COPY submodules/dashboard_analytics_react/ /app/submodules/dashboard_analytics_react/
+COPY submodules/auth_context_react/ /app/submodules/auth_context_react/
+COPY submodules/catalogizer_api_client_ts/ /app/submodules/catalogizer_api_client_ts/
+
+# Build the modules from their sources, in dependency order (media_types_ts first); a failing module build fails the image
+RUN cd /app/submodules/media_types_ts && npm run build
+RUN cd /app/submodules/websocket_client_ts && npm run build
+RUN cd /app/submodules/catalogizer_api_client_ts && npm run build
+RUN cd /app/submodules/auth_context_react && npm run build
+RUN cd /app/submodules/ui_components_react && npm run build
+RUN cd /app/submodules/media_browser_react && npm run build
+RUN cd /app/submodules/media_player_react && npm run build
+RUN cd /app/submodules/collection_manager_react && npm run build
+RUN cd /app/submodules/dashboard_analytics_react && npm run build
 
 # Build main app
 COPY catalog-web/ /app/catalog-web/

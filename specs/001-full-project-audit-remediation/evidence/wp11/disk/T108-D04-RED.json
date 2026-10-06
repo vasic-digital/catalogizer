@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "T108-D04-RED",
+  "at": "2026-10-06T17:47:57Z",
+  "need_bytes": 8000000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 119581503488,
+      "free_after": 111581503488,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 119581503488,
+      "free_after": 111581503488,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

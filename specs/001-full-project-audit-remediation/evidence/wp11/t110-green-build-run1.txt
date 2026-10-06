@@ -1,0 +1,1875 @@
+# identity: T110-GREEN-build-run1
+# head: a7cfc6d3 (uncommitted work tree)
+# run_at: 2026-10-06T18:03:23Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f docker/Dockerfile.builder .
+# sha256 docker/Dockerfile.builder: 13fa3f1ee3918167de611bc3b769a9e7582cf80eb8c0a4df1927c5aad279fa7e
+# disk gate:
+disk_headroom: pass op=T110-GREEN-build-run1 need=8000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T110-GREEN-build-run1.json
+disk_gate_rc=0
+[1/3] STEP 1/1: FROM docker.io/library/golang:1.25-bookworm@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 AS gotoolchain
+--> e3c6b02e5322
+[2/3] STEP 1/1: FROM docker.io/library/node:20-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5 AS nodetoolchain
+--> 33ed5ef90e83
+[3/3] STEP 1/34: FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+[3/3] STEP 2/34: LABEL maintainer="Catalogizer Team"
+--> Using cache 98377cf208711a7c90e5e8858e1344f7879454b04ad4b5af753d1f0c5c658b7a
+--> 98377cf20871
+[3/3] STEP 3/34: LABEL description="Multi-toolchain builder for Catalogizer project"
+--> Using cache aae5657d3fab3d2db947d160218067368a2aa85c68d78879c73b0897f32d4b5f
+--> aae5657d3fab
+[3/3] STEP 4/34: ENV DEBIAN_FRONTEND=noninteractive
+--> Using cache 331e23da23620e4d478d0420df9e70260dd0ac4530fb435b6840d6cc7ce18191
+--> 331e23da2362
+[3/3] STEP 5/34: ENV TZ=UTC
+--> Using cache 1e02cd776a2a04f2b3556a3cbd8f6f7a668835ba95f58c61dbc1e86b81dc0671
+--> 1e02cd776a2a
+[3/3] STEP 6/34: RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     git     curl     wget     pkg-config     libssl-dev     ca-certificates     gnupg     unzip     zip     webkit2gtk-4.1-dev     libayatana-appindicator3-dev     librsvg2-dev     libgtk-3-dev     patchelf     xvfb     postgresql-client     redis-tools     jq     file     bc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 3252ce39804c9f872b2e77974409d02002de0f57bd85fd53916f2a5ccd2e2501
+--> 3252ce39804c
+[3/3] STEP 7/34: RUN apt-get update && apt-get install -y --no-install-recommends     libvlc-dev     libvlccore-dev     vlc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 5a70401327f142ac4ccd224544fe18051958519bdeb29010e71a8cb4079e3bc4
+--> 5a70401327f1
+[3/3] STEP 8/34: COPY --from=gotoolchain /usr/local/go /usr/local/go
+--> Using cache e6323ea114e9858b782f731c6d5925817a4fdc4614113bac374b5259346386e3
+--> e6323ea114e9
+[3/3] STEP 9/34: ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
+--> Using cache f4fcd6c40cf676d86dda0b988a8c536b40e4e9fdf403c4203f93df0c12b9d45a
+--> f4fcd6c40cf6
+[3/3] STEP 10/34: ENV GOPATH="/root/go"
+--> Using cache 2a5013f0183a31e6a8bf0ca963f78a691e371c06ae58772588a9d793104b3d09
+--> 2a5013f0183a
+[3/3] STEP 11/34: ENV CGO_ENABLED=1
+--> Using cache fd1b0ccb14030b222439687cd85306a939d8a59c005cc75ababba628df793af6
+--> fd1b0ccb1403
+[3/3] STEP 12/34: RUN go version
+--> Using cache 06636671233b6202f15c2b535487e64229fc2980a8c2bb226b58f599dfc735b1
+--> 06636671233b
+[3/3] STEP 13/34: COPY --from=nodetoolchain /usr/local/bin/node /usr/local/bin/node
+--> b674abecee3d
+[3/3] STEP 14/34: COPY --from=nodetoolchain /usr/local/lib/node_modules /usr/local/lib/node_modules
+--> 85b3d3d5b2e9
+[3/3] STEP 15/34: RUN ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm     && ln -s ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+--> afba5293690e
+[3/3] STEP 16/34: RUN node --version && npm --version
+v20.20.2
+10.8.2
+--> 63da8ecccade
+[3/3] STEP 17/34: ENV RUSTUP_HOME="/opt/rustup"
+--> 68c10f18c7ba
+[3/3] STEP 18/34: ENV CARGO_HOME="/opt/cargo"
+--> cbe81595904e
+[3/3] STEP 19/34: RUN curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -fsSL -o /tmp/rustup-init https://static.rust-lang.org/rustup/archive/1.29.0/x86_64-unknown-linux-gnu/rustup-init     && echo "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10  /tmp/rustup-init" | sha256sum -c -     && chmod +x /tmp/rustup-init     && /tmp/rustup-init -y --no-modify-path --default-toolchain 1.99.0     && rm /tmp/rustup-init
+/tmp/rustup-init: OK
+warn: It looks like you have an existing rustup settings file at:
+warn: /opt/rustup/settings.toml
+warn: Rustup will install the default toolchain as specified in the settings file,
+warn: instead of the one inferred from the default host triple.
+info: profile set to default
+info: default host triple is x86_64-unknown-linux-gnu
+info: syncing channel updates for 1.99.0-x86_64-unknown-linux-gnu
+info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+info: downloading 6 components
+info: default toolchain set to 1.99.0-x86_64-unknown-linux-gnu
+
+  1.99.0-x86_64-unknown-linux-gnu installed - rustc 1.99.0 (b940084d7 2026-09-28)
+
+
+Rust is installed now. Great!
+
+To get started you need Cargo's bin directory (/opt/cargo/bin) in your PATH
+environment variable. This has not been done automatically.
+
+To configure your current shell, you need to source
+the corresponding env file under /opt/cargo.
+
+This is usually done by running one of the following (note the leading DOT):
+. "/opt/cargo/env"            # For sh/bash/zsh/ash/dash/pdksh
+source "/opt/cargo/env.fish"  # For fish
+source "/opt/cargo/env.nu"  # For nushell
+source "/opt/cargo/env.tcsh"  # For tcsh
+. "/opt/cargo/env.ps1"        # For pwsh
+source "/opt/cargo/env.xsh"   # For xonsh
+--> 9257d4500ff8
+[3/3] STEP 20/34: ENV PATH="/opt/cargo/bin:${PATH}"
+--> 8ccb8b861845
+[3/3] STEP 21/34: RUN cargo install --locked --version 2.12.1 tauri-cli
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded tauri-cli v2.12.1
+  Installing tauri-cli v2.12.1
+    Updating crates.io index
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded aead v0.5.2
+  Downloaded aligned v0.4.3
+  Downloaded adler2 v2.0.0
+  Downloaded aligned-vec v0.6.4
+  Downloaded ahash v0.8.11
+  Downloaded aligned-vec v0.5.0
+  Downloaded allocator-api2 v0.2.21
+  Downloaded avif-serialize v0.8.9
+  Downloaded aes-kw v0.2.1
+  Downloaded anstyle-parse v0.2.6
+  Downloaded aes-gcm v0.10.3
+  Downloaded aho-corasick v1.1.3
+  Downloaded anyhow v1.0.103
+  Downloaded arg_enum_proc_macro v0.3.4
+  Downloaded arrayref v0.3.9
+  Downloaded as-slice v0.2.1
+  Downloaded built v0.8.1
+  Downloaded cfg-if v1.0.1
+  Downloaded chrono v0.4.41
+  Downloaded crc32fast v1.5.0
+  Downloaded aes v0.8.4
+  Downloaded async-trait v0.1.88
+  Downloaded bit_field v0.10.2
+  Downloaded ar v0.9.0
+  Downloaded arrayvec v0.7.6
+  Downloaded base64ct v1.6.0
+  Downloaded bitflags v2.13.0
+  Downloaded anstyle v1.0.10
+  Downloaded anstream v0.6.18
+  Downloaded bzip2-sys v0.1.11+1.0.8
+  Downloaded bs58 v0.5.1
+  Downloaded argon2 v0.5.3
+  Downloaded bitfield v0.14.0
+  Downloaded bytemuck v1.25.0
+  Downloaded anstyle-query v1.1.2
+  Downloaded base64 v0.22.1
+  Downloaded cfb v0.14.0
+  Downloaded clap_builder v4.5.26
+  Downloaded clap_lex v0.7.4
+  Downloaded derive_builder_core v0.20.2
+  Downloaded dirs v7.0.0
+  Downloaded atomic-waker v1.1.2
+  Downloaded axum-core v0.5.6
+  Downloaded cfg_aliases v0.2.1
+  Downloaded common-path v1.0.0
+  Downloaded bytes v1.11.1
+  Downloaded crypto-bigint v0.5.5
+  Downloaded compact_str v0.9.1
+  Downloaded cargo-mobile2 v0.22.5
+  Downloaded colorchoice v1.0.3
+  Downloaded const-oid v0.10.2
+  Downloaded oxc_syntax v0.110.0
+  Downloaded block-buffer v0.10.4
+  Downloaded byteorder v1.5.0
+  Downloaded castaway v0.2.3
+  Downloaded phf_macros v0.14.0
+  Downloaded precomputed-hash v0.1.1
+  Downloaded bytecount v0.6.8
+  Downloaded byteorder-lite v0.1.0
+  Downloaded bit-vec v0.8.0
+  Downloaded block-buffer v0.12.1
+  Downloaded camellia v0.1.0
+  Downloaded crossbeam-deque v0.8.6
+  Downloaded autocfg v1.4.0
+  Downloaded bitstream-io v4.10.0
+  Downloaded crypto-common v0.2.2
+  Downloaded console v0.16.4
+  Downloaded bitflags v1.3.2
+  Downloaded bumpalo v3.16.0
+  Downloaded cfb-mode v0.8.2
+  Downloaded colored v3.1.1
+  Downloaded cpufeatures v0.3.0
+  Downloaded color_quant v1.1.0
+  Downloaded crc24 v0.1.6
+  Downloaded blake2 v0.10.6
+  Downloaded clap_derive v4.5.24
+  Downloaded colored v2.2.0
+  Downloaded cpio v0.4.1
+  Downloaded crossbeam-epoch v0.9.20
+  Downloaded cmac v0.7.2
+  Downloaded core_maths v0.1.0
+  Downloaded cpufeatures v0.2.16
+  Downloaded crossbeam-utils v0.8.21
+  Downloaded css-color v0.2.8
+  Downloaded ctrlc v3.4.5
+  Downloaded rpassword v7.5.4
+  Downloaded serde_fmt v1.0.3
+  Downloaded base16ct v0.2.0
+  Downloaded blowfish v0.9.1
+  Downloaded bytesize v2.7.0
+  Downloaded clap v4.5.26
+  Downloaded const-oid v0.9.6
+  Downloaded crypto-common v0.1.6
+  Downloaded av1-grain v0.2.3
+  Downloaded chacha20 v0.10.2
+  Downloaded axum v0.8.9
+  Downloaded buffer-redux v1.0.2
+  Downloaded clap_complete v4.5.42
+  Downloaded darling_macro v0.20.10
+  Downloaded ctr v0.9.2
+  Downloaded cast5 v0.11.1
+  Downloaded euclid v0.22.14
+  Downloaded block-padding v0.3.3
+  Downloaded derive_more v2.0.1
+  Downloaded cc v1.2.51
+  Downloaded futures-executor v0.3.31
+  Downloaded bstr v1.11.3
+  Downloaded av-scenechange v0.14.1
+  Downloaded borrow-or-share v0.2.4
+  Downloaded cow-utils v0.1.3
+  Downloaded oxc_ecmascript v0.110.0
+  Downloaded bzip2 v0.4.4
+  Downloaded float-cmp v0.9.0
+  Downloaded toml_writer v1.0.6+spec-1.1.0
+  Downloaded cipher v0.4.4
+  Downloaded dunce v1.0.5
+  Downloaded base64 v0.13.1
+  Downloaded group v0.13.0
+  Downloaded erased-serde v0.4.9
+  Downloaded icu_normalizer v2.1.1
+  Downloaded hashbrown v0.16.1
+  Downloaded eax v0.5.0
+  Downloaded equator-macro v0.4.2
+  Downloaded value-bag-sval2 v1.12.0
+  Downloaded x448 v0.6.0
+  Downloaded ucd-trie v0.1.7
+  Downloaded email_address v0.2.9
+  Downloaded foldhash v0.2.0
+  Downloaded phf_shared v0.14.0
+  Downloaded bit-set v0.8.0
+  Downloaded english-numbers v0.3.3
+  Downloaded futures-macro v0.3.31
+  Downloaded ghash v0.5.1
+  Downloaded equator v0.4.2
+  Downloaded ed25519-dalek v2.1.1
+  Downloaded elliptic-curve v0.13.8
+  Downloaded ff v0.13.0
+  Downloaded quote v1.0.46
+  Downloaded oxc_estree v0.110.0
+  Downloaded oxc_parser v0.110.0
+  Downloaded enum-primitive-derive v0.3.0
+  Downloaded equivalent v1.0.1
+  Downloaded fnv v1.0.7
+  Downloaded dyn-clone v1.0.17
+  Downloaded ecdsa v0.16.9
+  Downloaded env_home v0.1.0
+  Downloaded serde_spanned v1.0.4
+  Downloaded deunicode v1.6.0
+  Downloaded freedesktop_entry_parser v2.0.1
+  Downloaded phf_shared v0.13.1
+  Downloaded rand_core v0.10.1
+  Downloaded serde_urlencoded v0.7.1
+  Downloaded darling_macro v0.23.0
+  Downloaded globset v0.4.20
+  Downloaded memmap2 v0.9.11
+  Downloaded getrandom v0.4.3
+  Downloaded rayon-core v1.13.0
+  Downloaded elf v0.8.0
+  Downloaded fontconfig-parser v0.5.7
+  Downloaded getrandom v0.3.4
+  Downloaded hyper v1.8.1
+  Downloaded flate2 v1.1.1
+  Downloaded glob v0.3.4
+  Downloaded html5ever v0.39.0
+  Downloaded oxc_diagnostics v0.110.0
+  Downloaded oxc_span v0.110.0
+  Downloaded fax v0.2.7
+  Downloaded futures-util v0.3.31
+  Downloaded http-body v1.0.1
+  Downloaded idna_adapter v1.2.1
+  Downloaded oxc_regular_expression v0.110.0
+  Downloaded hmac v0.12.1
+  Downloaded socket2 v0.5.8
+  Downloaded enum-display-derive v0.1.1
+  Downloaded fastrand v2.3.0
+  Downloaded generic-array v0.14.7
+  Downloaded string_cache_codegen v0.6.1
+  Downloaded dragonbox_ecma v0.1.12
+  Downloaded fluent-uri v0.4.1
+  Downloaded errno v0.3.10
+  Downloaded futures-task v0.3.31
+  Downloaded hkdf v0.12.4
+  Downloaded ident_case v1.0.1
+  Downloaded schemars v0.9.0
+  Downloaded file-id v0.2.3
+  Downloaded futures-core v0.3.31
+  Downloaded futures-timer v3.0.3
+  Downloaded home v0.5.9
+  Downloaded qoi v0.4.1
+  Downloaded rustls-native-certs v0.8.3
+  Downloaded textwrap v0.16.2
+  Downloaded fdeflate v0.3.7
+  Downloaded httparse v1.9.5
+  Downloaded iana-time-zone v0.1.61
+  Downloaded tiff v0.11.3
+  Downloaded icu_provider v2.1.1
+  Downloaded env_logger v0.11.6
+  Downloaded rpm v0.16.0
+  Downloaded sec1 v0.7.3
+  Downloaded p256 v0.13.2
+  Downloaded hex v0.4.3
+  Downloaded httpdate v1.0.3
+  Downloaded env_filter v0.1.3
+  Downloaded futures-channel v0.3.31
+  Downloaded getrandom v0.2.15
+  Downloaded half v2.4.1
+  Downloaded http-body-util v0.1.2
+  Downloaded sigchld v0.2.4
+  Downloaded tinyvec_macros v0.1.1
+  Downloaded futures-sink v0.3.31
+  Downloaded idea v0.5.1
+  Downloaded form_urlencoded v1.2.2
+  Downloaded infer v0.22.0
+  Downloaded oxc_ast_macros v0.110.0
+  Downloaded selectors v0.38.0
+  Downloaded url v2.5.8
+  Downloaded either v1.13.0
+  Downloaded oxc_index v4.1.0
+  Downloaded ref-cast v1.0.23
+  Downloaded shell-words v1.1.0
+  Downloaded heck v0.5.0
+  Downloaded rand_chacha v0.3.1
+  Downloaded route-recognizer v0.3.1
+  Downloaded simplecss v0.2.2
+  Downloaded sync_wrapper v1.0.2
+  Downloaded schemars v0.8.22
+  Downloaded rustls v0.23.45
+  Downloaded icu_collections v2.1.1
+  Downloaded regex-syntax v0.8.11
+  Downloaded futures-io v0.3.31
+  Downloaded icu_normalizer_data v2.1.1
+  Downloaded imagesize v0.14.0
+  Downloaded p384 v0.13.0
+  Downloaded signal-hook v0.3.18
+  Downloaded filetime v0.2.25
+  Downloaded humantime v2.1.0
+  Downloaded rfc6979 v0.4.0
+  Downloaded find-msvc-tools v0.1.6
+  Downloaded futures v0.3.31
+  Downloaded seq-macro v0.3.6
+  Downloaded serialize-to-javascript v0.1.2
+  Downloaded ed25519 v2.2.3
+  Downloaded pin-utils v0.1.0
+  Downloaded string_cache v0.9.0
+  Downloaded toml_parser v1.0.9+spec-1.1.0
+  Downloaded value-bag-serde1 v1.12.0
+  Downloaded serde_spanned v0.6.8
+  Downloaded uuid-simd v0.8.0
+  Downloaded icu_properties v2.1.2
+  Downloaded image-webp v0.2.4
+  Downloaded strict-num v0.1.1
+  Downloaded unicode-xid v0.2.6
+  Downloaded darling v0.23.0
+  Downloaded roxmltree v0.20.0
+  Downloaded slotmap v1.0.7
+  Downloaded lock_api v0.4.12
+  Downloaded smawk v0.3.2
+  Downloaded ureq-proto v0.5.3
+  Downloaded zerofrom-derive v0.1.5
+  Downloaded zerotrie v0.2.3
+  Downloaded darling_core v0.23.0
+  Downloaded gif v0.14.2
+  Downloaded handlebars v6.3.0
+  Downloaded hybrid-array v0.4.13
+  Downloaded icu_locale_core v2.1.1
+  Downloaded ignore v0.4.33
+  Downloaded os_info v3.9.2
+  Downloaded pin-project-internal v1.1.8
+  Downloaded rustversion v1.0.19
+  Downloaded smallvec v1.15.2
+  Downloaded strsim v0.11.1
+  Downloaded thiserror-impl v2.0.12
+  Downloaded tinyvec v1.8.1
+  Downloaded typeid v1.0.2
+  Downloaded toml_datetime v0.6.8
+  Downloaded writeable v0.6.3
+  Downloaded x25519-dalek v2.0.1
+  Downloaded fraction v0.15.3
+  Downloaded hashbrown v0.12.3
+  Downloaded hashbrown v0.17.1
+  Downloaded jsonschema-value v0.49.9
+  Downloaded num-bigint v0.4.6
+  Downloaded owo-colors v4.1.0
+  Downloaded profiling v1.0.16
+  Downloaded rand_core v0.6.4
+  Downloaded strum v0.28.0
+  Downloaded http v1.3.1
+  Downloaded new_debug_unreachable v1.0.6
+  Downloaded pastey v0.1.1
+  Downloaded phf_macros v0.13.1
+  Downloaded scrypt v0.11.0
+  Downloaded serde_with v3.21.0
+  Downloaded utf-8 v0.7.6
+  Downloaded fontdb v0.23.0
+  Downloaded lebe v0.5.2
+  Downloaded sval_buffer v2.13.2
+  Downloaded typenum v1.20.0
+  Downloaded v_frame v0.3.8
+  Downloaded curve25519-dalek-derive v0.1.1
+  Downloaded hyper-util v0.1.19
+  Downloaded tower v0.5.2
+  Downloaded md-5 v0.10.6
+  Downloaded value-bag v1.12.0
+  Downloaded y4m v0.8.0
+  Downloaded data-encoding v2.11.0
+  Downloaded profiling-procmacros v1.0.16
+  Downloaded utf8_iter v1.0.4
+  Downloaded zerofrom v0.1.5
+  Downloaded zerovec v0.11.5
+  Downloaded path_abs v0.5.1
+  Downloaded pin-project v1.1.8
+  Downloaded simd-adler32 v0.3.7
+  Downloaded tokio-stream v0.1.17
+  Downloaded try-lock v0.2.5
+  Downloaded zeroize_derive v1.4.2
+  Downloaded lazy_static v1.5.0
+  Downloaded num-complex v0.4.6
+  Downloaded serde_path_to_error v0.1.16
+  Downloaded icu_properties_data v2.1.2
+  Downloaded idna v1.1.0
+  Downloaded k256 v0.13.4
+  Downloaded nonmax v0.5.5
+  Downloaded h2 v0.4.17
+  Downloaded include_dir v0.7.4
+  Downloaded libz-rs-sys v0.5.0
+  Downloaded resvg v0.47.0
+  Downloaded typed-path v0.12.3
+  Downloaded digest v0.11.3
+  Downloaded openssl-probe v0.2.0
+  Downloaded dirs-sys v0.5.0
+  Downloaded dialoguer v0.12.0
+  Downloaded imgref v1.12.2
+  Downloaded itertools v0.13.0
+  Downloaded tokio-macros v2.5.0
+  Downloaded num v0.4.3
+  Downloaded same-file v1.0.6
+  Downloaded zerovec-derive v0.11.3
+  Downloaded json-patch v4.2.0
+  Downloaded jsonrpsee-types v0.26.0
+  Downloaded oxc_data_structures v0.110.0
+  Downloaded strum_macros v0.28.0
+  Downloaded mime v0.3.17
+  Downloaded darling v0.20.10
+  Downloaded markup5ever v0.39.0
+  Downloaded parking_lot_core v0.9.10
+  Downloaded paste v1.0.15
+  Downloaded ravif v0.13.0
+  Downloaded proc-macro2 v1.0.106
+  Downloaded proc-macro-crate v3.2.0
+  Downloaded thiserror-impl v1.0.69
+  Downloaded des v0.8.1
+  Downloaded pkcs8 v0.10.2
+  Downloaded itertools v0.14.0
+  Downloaded time-macros v0.2.30
+  Downloaded tungstenite v0.29.0
+  Downloaded tracing-core v0.1.33
+  Downloaded semver v1.0.28
+  Downloaded rand v0.9.4
+  Downloaded sval v2.13.2
+  Downloaded password-hash v0.5.0
+  Downloaded ed448-goldilocks v0.7.2
+  Downloaded parking_lot v0.12.3
+  Downloaded zerocopy-derive v0.7.35
+  Downloaded fiat-crypto v0.1.20
+  Downloaded derive_more-impl v2.0.1
+  Downloaded vlq v0.5.1
+  Downloaded notify-types v2.0.0
+  Downloaded jsonrpsee-server v0.26.0
+  Downloaded option-ext v0.2.0
+  Downloaded zeroize v1.8.1
+  Downloaded unicode-id-start v1.3.1
+  Downloaded vsimd v0.8.0
+  Downloaded fancy-regex v0.19.0
+  Downloaded num-derive v0.4.2
+  Downloaded derive_more-impl v1.0.0
+  Downloaded signal-hook-registry v1.4.2
+  Downloaded unicode-ident v1.0.14
+  Downloaded indexmap v2.11.4
+  Downloaded unicode-general-category v1.1.0
+  Downloaded version_check v0.9.5
+  Downloaded lockfree-object-pool v0.1.6
+  Downloaded num-conv v0.2.2
+  Downloaded exr v1.74.0
+  Downloaded micromap v0.3.0
+  Downloaded urlpattern v0.6.0
+  Downloaded walkdir v2.5.0
+  Downloaded ureq v3.1.4
+  Downloaded notify v8.2.0
+  Downloaded rustix v1.0.7
+  Downloaded duct v1.1.1
+  Downloaded jsonrpsee-client-transport v0.26.0
+  Downloaded libm v0.2.11
+  Downloaded num-traits v0.2.19
+  Downloaded opaque-debug v0.3.1
+  Downloaded pest_generator v2.7.15
+  Downloaded pest_meta v2.7.15
+  Downloaded pgp v0.14.2
+  Downloaded pin-project-lite v0.2.16
+  Downloaded pkcs1 v0.7.5
+  Downloaded regex v1.11.1
+  Downloaded roxmltree v0.21.1
+  Downloaded serde-untagged v0.1.6
+  Downloaded serde_core v1.0.228
+  Downloaded serde_json v1.0.145
+  Downloaded serde_with_macros v3.21.0
+  Downloaded sha1 v0.10.6
+  Downloaded shlex v1.3.0
+  Downloaded signature v2.2.0
+  Downloaded spin v0.9.9
+  Downloaded spki v0.7.3
+  Downloaded subtle v2.6.1
+  Downloaded sval_json v2.13.2
+  Downloaded terminal_size v0.4.4
+  Downloaded thiserror v1.0.69
+  Downloaded thiserror v2.0.12
+  Downloaded tower-layer v0.3.3
+  Downloaded tracing v0.1.41
+  Downloaded tracing-attributes v0.1.28
+  Downloaded usvg v0.47.0
+  Downloaded utf8parse v0.2.2
+  Downloaded uuid v1.11.0
+  Downloaded wasm-bindgen-shared v0.2.125
+  Downloaded which v8.0.0
+  Downloaded winnow v0.7.14
+  Downloaded zstd v0.13.2
+  Downloaded zstd-safe v7.2.1
+  Downloaded ctor v1.0.7
+  Downloaded darling_core v0.20.10
+  Downloaded dtoa-short v0.3.5
+  Downloaded iter-read v1.1.0
+  Downloaded local-ip-address v0.6.3
+  Downloaded miniz_oxide v0.8.8
+  Downloaded nix v0.29.0
+  Downloaded noop_proc_macro v0.3.0
+  Downloaded notify-debouncer-full v0.7.0
+  Downloaded os_pipe v1.2.3
+  Downloaded p521 v0.13.3
+  Downloaded scopeguard v1.2.0
+  Downloaded serde-value v0.7.0
+  Downloaded webpki-roots v1.0.5
+  Downloaded moxcms v0.8.1
+  Downloaded num-iter v0.1.45
+  Downloaded zerocopy v0.7.35
+  Downloaded derive_more v1.0.0
+  Downloaded ryu v1.0.18
+  Downloaded num-order v1.2.0
+  Downloaded num-rational v0.4.2
+  Downloaded schemars_derive v0.8.22
+  Downloaded pbkdf2 v0.12.2
+  Downloaded java-properties v2.0.0
+  Downloaded pico-args v0.5.0
+  Downloaded num_enum v0.7.3
+  Downloaded indexmap v1.9.3
+  Downloaded minimal-lexical v0.2.1
+  Downloaded pem-rfc7468 v0.7.0
+  Downloaded rand_core v0.9.3
+  Downloaded image v0.25.10
+  Downloaded rand_core v0.5.1
+  Downloaded sval_dynamic v2.13.2
+  Downloaded serde_derive v1.0.228
+  Downloaded tauri-utils v2.10.1
+  Downloaded xattr v1.6.1
+  Downloaded phf_generator v0.14.0
+  Downloaded libc v0.2.189
+  Downloaded ttf-parser v0.25.1
+  Downloaded unicode-bidi-mirroring v0.4.0
+  Downloaded keccak v0.1.6
+  Downloaded rtoolbox v0.0.2
+  Downloaded servo_arc v0.4.3
+  Downloaded rustybuzz v0.20.1
+  Downloaded data-url v0.3.1
+  Downloaded kurbo v0.13.1
+  Downloaded derive_builder v0.20.2
+  Downloaded phf_generator v0.13.1
+  Downloaded salsa20 v0.10.2
+  Downloaded toml_edit v0.25.4+spec-1.1.0
+  Downloaded no_std_io2 v0.9.4
+  Downloaded jsonrpsee-core v0.26.0
+  Downloaded tendril v0.5.0
+  Downloaded unicode-bidi v0.3.18
+  Downloaded ordered-float v2.10.1
+  Downloaded yoke v0.8.1
+  Downloaded siphasher v1.0.1
+  Downloaded twofish v0.7.1
+  Downloaded derive_builder_macro v0.20.2
+  Downloaded xz2 v0.1.7
+  Downloaded phf v0.14.0
+  Downloaded sha2 v0.11.0
+  Downloaded sval_ref v2.13.2
+  Downloaded phf_codegen v0.13.1
+  Downloaded magic_string v0.3.4
+  Downloaded rustc_version v0.4.1
+  Downloaded sha1 v0.11.0
+  Downloaded yoke-derive v0.8.2
+  Downloaded minisign v0.9.1
+  Downloaded neli v0.6.4
+  Downloaded once_cell v1.21.4
+  Downloaded inotify-sys v0.1.5
+  Downloaded quick-error v2.0.1
+  Downloaded itertools v0.15.0
+  Downloaded referencing v0.49.9
+  Downloaded jobserver v0.1.32
+  Downloaded rustc-hash v2.1.1
+  Downloaded is_terminal_polyfill v1.70.1
+  Downloaded serde v1.0.228
+  Downloaded sval_nested v2.13.2
+  Downloaded deranged v0.5.8
+  Downloaded litemap v0.8.2
+  Downloaded jsonrpsee v0.26.0
+  Downloaded socket2 v0.6.1
+  Downloaded wasm-bindgen-macro-support v0.2.125
+  Downloaded tauri-icns v0.1.0
+  Downloaded web-time v1.1.0
+  Downloaded rand v0.8.6
+  Downloaded oxc-miette v2.7.1
+  Downloaded nom v7.1.3
+  Downloaded shared_child v1.1.1
+  Downloaded zlib-rs v0.5.0
+  Downloaded itoa v1.0.14
+  Downloaded static_assertions v1.1.0
+  Downloaded web_atoms v0.2.3
+  Downloaded zopfli v0.8.1
+  Downloaded polycool v0.4.0
+  Downloaded digest v0.10.7
+  Downloaded socks v0.3.4
+  Downloaded sha1_smol v1.0.1
+  Downloaded synstructure v0.13.1
+  Downloaded std_prelude v0.2.12
+  Downloaded zip v8.0.0
+  Downloaded jsonrpsee-ws-client v0.26.0
+  Downloaded ref-cast-impl v1.0.23
+  Downloaded jsonschema v0.49.9
+  Downloaded pkg-config v0.3.31
+  Downloaded universal-hash v0.5.1
+  Downloaded rustls-platform-verifier v0.6.2
+  Downloaded json5 v0.4.1
+  Downloaded phf v0.13.1
+  Downloaded quick-xml v0.41.0
+  Downloaded xmlwriter v0.1.0
+  Downloaded rand v0.10.2
+  Downloaded num-integer v0.1.46
+  Downloaded schemars v1.2.2
+  Downloaded rustls-pki-types v1.13.2
+  Downloaded rustls-webpki v0.103.15
+  Downloaded weezl v0.1.12
+  Downloaded neli-proc-macros v0.1.3
+  Downloaded tar v0.4.46
+  Downloaded jsonptr v0.7.1
+  Downloaded slab v0.4.9
+  Downloaded oxc_allocator v0.110.0
+  Downloaded tokio-tungstenite v0.29.0
+  Downloaded ocb3 v0.1.0
+  Downloaded svgtypes v0.16.1
+  Downloaded tempfile v3.23.0
+  Downloaded tiny-skia-path v0.12.0
+  Downloaded num-cmp v0.1.0
+  Downloaded time-core v0.1.9
+  Downloaded maybe-rayon v0.1.1
+  Downloaded jsonschema-regex v0.49.9
+  Downloaded stable_deref_trait v1.2.0
+  Downloaded sublime_fuzzy v0.7.0
+  Downloaded unicode-vo v0.1.0
+  Downloaded powerfmt v0.2.0
+  Downloaded png v0.17.16
+  Downloaded num-bigint-dig v0.8.6
+  Downloaded rayon v1.12.0
+  Downloaded unicode-linebreak v0.1.5
+  Downloaded percent-encoding v2.3.2
+  Downloaded want v0.3.1
+  Downloaded plist v1.10.0
+  Downloaded nom v8.0.0
+  Downloaded simd_helpers v0.1.0
+  Downloaded sval_fmt v2.13.2
+  Downloaded shared_thread v0.2.0
+  Downloaded sval_serde v2.13.2
+  Downloaded include_dir_macros v0.7.4
+  Downloaded potential_utf v0.1.4
+  Downloaded toml_edit v0.22.24
+  Downloaded inout v0.1.3
+  Downloaded dbl v0.3.2
+  Downloaded serialize-to-javascript-impl v0.1.2
+  Downloaded polyval v0.6.2
+  Downloaded primeorder v0.13.6
+  Downloaded wasm-bindgen-macro v0.2.125
+  Downloaded sha2 v0.10.8
+  Downloaded rand_chacha v0.9.0
+  Downloaded soketto v0.8.1
+  Downloaded syn v1.0.109
+  Downloaded ppv-lite86 v0.2.20
+  Downloaded dsa v0.6.3
+  Downloaded rgb v0.8.53
+  Downloaded matchit v0.8.4
+  Downloaded oxc-miette-derive v2.7.1
+  Downloaded unicode-properties v0.1.3
+  Downloaded zune-inflate v0.2.54
+  Downloaded displaydoc v0.2.5
+  Downloaded loop9 v0.1.5
+  Downloaded unicode-ccc v0.4.0
+  Downloaded log v0.4.29
+  Downloaded der v0.7.9
+  Downloaded unicode-width v0.2.0
+  Downloaded ripemd v0.1.3
+  Downloaded toml_datetime v1.0.0+spec-1.1.0
+  Downloaded tower-service v0.3.3
+  Downloaded zune-core v0.5.1
+  Downloaded rsa v0.9.10
+  Downloaded memchr v2.8.2
+  Downloaded cssparser-macros v0.7.0
+  Downloaded ct-codecs v1.1.7
+  Downloaded md5 v0.8.0
+  Downloaded pest_derive v2.7.15
+  Downloaded outref v0.5.1
+  Downloaded inotify v0.11.0
+  Downloaded untrusted v0.9.0
+  Downloaded curve25519-dalek v4.1.3
+  Downloaded tinystr v0.8.2
+  Downloaded serde_derive_internals v0.29.1
+  Downloaded ipnet v2.10.1
+  Downloaded num_enum_derive v0.7.3
+  Downloaded tauri-bundler v2.10.1
+  Downloaded dtoa v1.0.9
+  Downloaded time v0.3.51
+  Downloaded pest v2.7.15
+  Downloaded stfu8 v0.2.7
+  Downloaded num-modular v0.6.1
+  Downloaded dom_query v0.28.0
+  Downloaded oxc_ast v0.110.0
+  Downloaded toml v1.0.6+spec-1.1.0
+  Downloaded unicode-script v0.5.7
+  Downloaded cssparser v0.37.0
+  Downloaded wasm-bindgen v0.2.125
+  Downloaded zune-jpeg v0.5.15
+  Downloaded tokio-util v0.7.13
+  Downloaded mio v1.0.3
+  Downloaded tiny-skia v0.12.0
+  Downloaded unicode-segmentation v1.12.0
+  Downloaded png v0.18.1
+  Downloaded syn v2.0.117
+  Downloaded regex-automata v0.4.18
+  Downloaded tokio v1.45.1
+  Downloaded sha1-checked v0.10.0
+  Downloaded lzma-sys v0.1.20
+  Downloaded zstd-sys v2.0.13+zstd.1.5.6
+  Downloaded sha3 v0.10.8
+  Downloaded pxfm v0.1.30
+  Downloaded encoding_rs v0.8.35
+  Downloaded rav1e v0.8.1
+  Downloaded ring v0.17.14
+  Downloaded linux-raw-sys v0.9.4
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.46
+   Compiling unicode-ident v1.0.14
+   Compiling libc v0.2.189
+   Compiling cfg-if v1.0.1
+   Compiling version_check v0.9.5
+   Compiling typenum v1.20.0
+   Compiling autocfg v1.4.0
+   Compiling subtle v2.6.1
+   Compiling memchr v2.8.2
+   Compiling value-bag v1.12.0
+   Compiling serde_core v1.0.228
+   Compiling const-oid v0.9.6
+   Compiling serde v1.0.228
+   Compiling itoa v1.0.14
+   Compiling smallvec v1.15.2
+   Compiling allocator-api2 v0.2.21
+   Compiling thiserror v2.0.12
+   Compiling libm v0.2.11
+   Compiling generic-array v0.14.7
+   Compiling log v0.4.29
+   Compiling bitflags v2.13.0
+   Compiling byteorder v1.5.0
+   Compiling cpufeatures v0.2.16
+   Compiling siphasher v1.0.1
+   Compiling hashbrown v0.16.1
+   Compiling equivalent v1.0.1
+   Compiling num-traits v0.2.19
+   Compiling once_cell v1.21.4
+   Compiling stable_deref_trait v1.2.0
+   Compiling ryu v1.0.18
+   Compiling find-msvc-tools v0.1.6
+   Compiling shlex v1.3.0
+   Compiling bytes v1.11.1
+   Compiling phf_shared v0.13.1
+   Compiling fastrand v2.3.0
+   Compiling fnv v1.0.7
+   Compiling serde_json v1.0.145
+   Compiling pin-project-lite v0.2.16
+   Compiling simd-adler32 v0.3.7
+   Compiling base64ct v1.6.0
+   Compiling syn v2.0.117
+   Compiling phf_generator v0.13.1
+   Compiling indexmap v2.11.4
+   Compiling percent-encoding v2.3.2
+   Compiling http v1.3.1
+   Compiling futures-core v0.3.31
+   Compiling rustix v1.0.7
+   Compiling futures-sink v0.3.31
+   Compiling slab v0.4.9
+   Compiling crc32fast v1.5.0
+   Compiling futures-io v0.3.31
+   Compiling linux-raw-sys v0.9.4
+   Compiling pem-rfc7468 v0.7.0
+   Compiling lock_api v0.4.12
+   Compiling adler2 v2.0.0
+   Compiling strsim v0.11.1
+   Compiling getrandom v0.3.4
+   Compiling ident_case v1.0.1
+   Compiling num-integer v0.1.46
+   Compiling parking_lot_core v0.9.10
+   Compiling miniz_oxide v0.8.8
+   Compiling getrandom v0.2.15
+   Compiling mio v1.0.3
+   Compiling rand_core v0.6.4
+   Compiling zlib-rs v0.5.0
+   Compiling jobserver v0.1.32
+   Compiling rustc-hash v2.1.1
+   Compiling base64 v0.22.1
+   Compiling scopeguard v1.2.0
+   Compiling pkg-config v0.3.31
+   Compiling httparse v1.9.5
+   Compiling cc v1.2.51
+   Compiling futures-channel v0.3.31
+   Compiling pin-utils v0.1.0
+   Compiling crossbeam-utils v0.8.21
+   Compiling regex-syntax v0.8.11
+   Compiling parking_lot v0.12.3
+   Compiling num-bigint v0.4.6
+   Compiling socket2 v0.5.8
+   Compiling aho-corasick v1.1.3
+   Compiling crossbeam-epoch v0.9.20
+   Compiling litemap v0.8.2
+   Compiling writeable v0.6.3
+   Compiling futures-task v0.3.31
+   Compiling icu_properties_data v2.1.2
+   Compiling icu_normalizer_data v2.1.1
+   Compiling arrayvec v0.7.6
+   Compiling spin v0.9.9
+   Compiling tracing-core v0.1.33
+   Compiling new_debug_unreachable v1.0.6
+   Compiling lazy_static v1.5.0
+   Compiling unicode-width v0.2.0
+   Compiling num-rational v0.4.2
+   Compiling crossbeam-deque v0.8.6
+   Compiling ff v0.13.0
+   Compiling phf_codegen v0.13.1
+   Compiling either v1.13.0
+   Compiling base16ct v0.2.0
+   Compiling terminal_size v0.4.4
+   Compiling rand_core v0.9.3
+   Compiling num-iter v0.1.45
+   Compiling group v0.13.0
+   Compiling synstructure v0.13.1
+   Compiling darling_core v0.20.10
+   Compiling http-body v1.0.1
+   Compiling bytemuck v1.25.0
+   Compiling unicode-linebreak v0.1.5
+   Compiling rayon-core v1.13.0
+   Compiling owo-colors v4.1.0
+   Compiling rustversion v1.0.19
+   Compiling smawk v0.3.2
+   Compiling textwrap v0.16.2
+   Compiling ring v0.17.14
+   Compiling form_urlencoded v1.2.2
+   Compiling semver v1.0.28
+   Compiling tower-service v0.3.3
+   Compiling libz-rs-sys v0.5.0
+   Compiling regex-automata v0.4.18
+   Compiling anyhow v1.0.103
+   Compiling utf8_iter v1.0.4
+   Compiling ucd-trie v0.1.7
+   Compiling flate2 v1.1.1
+   Compiling rustc_version v0.4.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling unicode-segmentation v1.12.0
+   Compiling tower-layer v0.3.3
+   Compiling minimal-lexical v0.2.1
+   Compiling precomputed-hash v0.1.1
+   Compiling zeroize_derive v1.4.2
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.12
+   Compiling zerocopy-derive v0.7.35
+   Compiling zerofrom-derive v0.1.5
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.5
+   Compiling zeroize v1.8.1
+   Compiling tokio-macros v2.5.0
+   Compiling der v0.7.9
+   Compiling phf_macros v0.13.1
+   Compiling futures-macro v0.3.31
+   Compiling tracing-attributes v0.1.28
+   Compiling zerocopy v0.7.35
+   Compiling tokio v1.45.1
+   Compiling darling_macro v0.20.10
+   Compiling pest v2.7.15
+   Compiling rustls-pki-types v1.13.2
+   Compiling crypto-common v0.1.6
+   Compiling block-buffer v0.10.4
+   Compiling inout v0.1.3
+   Compiling zerofrom v0.1.5
+   Compiling digest v0.10.7
+   Compiling cipher v0.4.4
+   Compiling ppv-lite86 v0.2.20
+   Compiling yoke v0.8.1
+   Compiling phf v0.13.1
+   Compiling futures-util v0.3.31
+   Compiling zerovec v0.11.5
+   Compiling hmac v0.12.1
+   Compiling zerotrie v0.2.3
+   Compiling rand_chacha v0.3.1
+   Compiling spki v0.7.3
+   Compiling sha1 v0.10.6
+   Compiling signature v2.2.0
+   Compiling sha2 v0.10.8
+   Compiling hkdf v0.12.4
+   Compiling pkcs8 v0.10.2
+   Compiling rand v0.8.6
+   Compiling crypto-bigint v0.5.5
+   Compiling tracing v0.1.41
+   Compiling tinystr v0.8.2
+   Compiling potential_utf v0.1.4
+   Compiling sec1 v0.7.3
+   Compiling icu_locale_core v2.1.1
+   Compiling icu_collections v2.1.1
+   Compiling rfc6979 v0.4.0
+   Compiling rand_chacha v0.9.0
+   Compiling regex v1.11.1
+   Compiling darling v0.20.10
+   Compiling rand v0.9.4
+   Compiling oxc-miette-derive v2.7.1
+   Compiling sync_wrapper v1.0.2
+   Compiling utf-8 v0.7.6
+   Compiling syn v1.0.109
+   Compiling derive_builder_core v0.20.2
+   Compiling icu_provider v2.1.1
+   Compiling elliptic-curve v0.13.8
+   Compiling pest_meta v2.7.15
+   Compiling ctr v0.9.2
+   Compiling oxc-miette v2.7.1
+   Compiling aead v0.5.2
+   Compiling icu_properties v2.1.2
+   Compiling tokio-util v0.7.13
+   Compiling icu_normalizer v2.1.1
+   Compiling ecdsa v0.16.9
+   Compiling http-body-util v0.1.2
+   Compiling universal-hash v0.5.1
+   Compiling nom v7.1.3
+   Compiling web_atoms v0.2.3
+   Compiling castaway v0.2.3
+   Compiling curve25519-dalek v4.1.3
+   Compiling zstd-sys v2.0.13+zstd.1.5.6
+   Compiling fdeflate v0.3.7
+   Compiling oxc_data_structures v0.110.0
+   Compiling num-bigint-dig v0.8.6
+   Compiling winnow v0.7.14
+   Compiling aligned-vec v0.5.0
+   Compiling static_assertions v1.1.0
+   Compiling same-file v1.0.6
+   Compiling idna_adapter v1.2.1
+   Compiling untrusted v0.9.0
+   Compiling toml_datetime v0.6.8
+   Compiling opaque-debug v0.3.1
+   Compiling walkdir v2.5.0
+   Compiling idna v1.1.0
+   Compiling v_frame v0.3.8
+   Compiling polyval v0.6.2
+   Compiling compact_str v0.9.1
+   Compiling oxc_allocator v0.110.0
+   Compiling oxc_ast_macros v0.110.0
+   Compiling url v2.5.8
+   Compiling pest_generator v2.7.15
+   Compiling derive_builder_macro v0.20.2
+   Compiling tower v0.5.2
+   Compiling primeorder v0.13.6
+   Compiling aes v0.8.4
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling equator-macro v0.4.2
+   Compiling pin-project-internal v1.1.8
+   Compiling string_cache v0.9.0
+   Compiling toml_edit v0.22.24
+   Compiling rayon v1.12.0
+   Compiling darling_core v0.23.0
+   Compiling num-complex v0.4.6
+   Compiling hybrid-array v0.4.13
+   Compiling as-slice v0.2.1
+   Compiling bstr v1.11.3
+   Compiling foldhash v0.2.0
+   Compiling atomic-waker v1.1.2
+   Compiling typeid v1.0.2
+   Compiling built v0.8.1
+   Compiling oxc_estree v0.110.0
+   Compiling quick-error v2.0.1
+   Compiling paste v1.0.15
+   Compiling thiserror v1.0.69
+   Compiling dtoa v1.0.9
+   Compiling cow-utils v0.1.3
+   Compiling av-scenechange v0.14.1
+   Compiling rustls v0.23.45
+   Compiling heck v0.5.0
+   Compiling bit-vec v0.8.0
+   Compiling signal-hook v0.3.18
+   Compiling utf8parse v0.2.2
+   Compiling dragonbox_ecma v0.1.12
+   Compiling sha1_smol v1.0.1
+   Compiling uuid v1.11.0
+   Compiling bit-set v0.8.0
+   Compiling anstyle-parse v0.2.6
+   Compiling proc-macro-crate v3.2.0
+   Compiling rav1e v0.8.1
+   Compiling dtoa-short v0.3.5
+   Compiling oxc_span v0.110.0
+   Compiling pin-project v1.1.8
+   Compiling h2 v0.4.17
+   Compiling num v0.4.3
+   Compiling aligned v0.4.3
+   Compiling equator v0.4.2
+   Compiling pest_derive v2.7.15
+   Compiling derive_builder v0.20.2
+   Compiling ghash v0.5.1
+   Compiling tokio-stream v0.1.17
+   Compiling futures v0.3.31
+   Compiling tendril v0.5.0
+   Compiling jsonrpsee-types v0.26.0
+   Compiling dbl v0.3.2
+   Compiling cssparser-macros v0.7.0
+   Compiling toml_parser v1.0.9+spec-1.1.0
+   Compiling thiserror-impl v1.0.69
+   Compiling darling_macro v0.23.0
+   Compiling rustls-webpki v0.103.15
+   Compiling arg_enum_proc_macro v0.3.4
+   Compiling derive_more-impl v2.0.1
+   Compiling num-derive v0.4.2
+   Compiling async-trait v0.1.88
+   Compiling profiling-procmacros v1.0.16
+   Compiling selectors v0.38.0
+   Compiling lzma-sys v0.1.20
+   Compiling bzip2-sys v0.1.11+1.0.8
+   Compiling serde_spanned v1.0.4
+   Compiling toml_datetime v1.0.0+spec-1.1.0
+   Compiling signal-hook-registry v1.4.2
+   Compiling os_pipe v1.2.3
+   Compiling core_maths v0.1.0
+   Compiling no_std_io2 v0.9.4
+   Compiling ahash v0.8.11
+   Compiling slotmap v1.0.7
+   Compiling futures-timer v3.0.3
+   Compiling weezl v0.1.12
+   Compiling ref-cast v1.0.23
+   Compiling is_terminal_polyfill v1.70.1
+   Compiling fiat-crypto v0.1.20
+   Compiling y4m v0.8.0
+   Compiling unicode-xid v0.2.6
+   Compiling float-cmp v0.9.0
+   Compiling openssl-probe v0.2.0
+   Compiling pastey v0.1.1
+   Compiling zstd-safe v7.2.1
+   Compiling toml_writer v1.0.6+spec-1.1.0
+   Compiling zune-core v0.5.1
+   Compiling nonmax v0.5.5
+   Compiling cpufeatures v0.3.0
+   Compiling httpdate v1.0.3
+   Compiling crc24 v0.1.6
+   Compiling erased-serde v0.4.9
+   Compiling hex v0.4.3
+   Compiling colorchoice v1.0.3
+   Compiling anstyle v1.0.10
+   Compiling unicode-id-start v1.3.1
+   Compiling anstyle-query v1.1.2
+   Compiling anstream v0.6.18
+   Compiling oxc_index v4.1.0
+   Compiling zune-jpeg v0.5.15
+   Compiling rustls-native-certs v0.8.3
+   Compiling strict-num v0.1.1
+   Compiling derive_more-impl v1.0.0
+   Compiling jsonrpsee-core v0.26.0
+   Compiling bitstream-io v4.10.0
+   Compiling ttf-parser v0.25.1
+   Compiling derive_more v2.0.1
+   Compiling profiling v1.0.16
+   Compiling cssparser v0.37.0
+   Compiling darling v0.23.0
+   Compiling markup5ever v0.39.0
+   Compiling cmac v0.7.2
+   Compiling soketto v0.8.1
+   Compiling hyper v1.8.1
+   Compiling aes-gcm v0.10.3
+   Compiling num_enum_derive v0.7.3
+   Compiling aligned-vec v0.6.4
+   Compiling maybe-rayon v0.1.1
+   Compiling oxc_diagnostics v0.110.0
+   Compiling block-buffer v0.12.1
+   Compiling crypto-common v0.2.2
+   Compiling av1-grain v0.2.3
+   Compiling png v0.18.1
+   Compiling pkcs1 v0.7.5
+   Compiling ed25519 v2.2.3
+   Compiling blake2 v0.10.6
+   Compiling ref-cast-impl v1.0.23
+   Compiling rgb v0.8.53
+   Compiling itertools v0.14.0
+   Compiling serde_derive_internals v0.29.1
+   Compiling polycool v0.4.0
+   Compiling password-hash v0.5.0
+   Compiling simd_helpers v0.1.0
+   Compiling servo_arc v0.4.3
+   Compiling half v2.4.1
+   Compiling keccak v0.1.6
+   Compiling num-modular v0.6.1
+   Compiling ed448-goldilocks v0.7.2
+   Compiling cfg_aliases v0.2.1
+   Compiling num-conv v0.2.2
+   Compiling getrandom v0.4.3
+   Compiling const-oid v0.10.2
+   Compiling data-encoding v2.11.0
+   Compiling rand_core v0.5.1
+   Compiling rand_core v0.10.1
+   Compiling noop_proc_macro v0.3.0
+   Compiling color_quant v1.1.0
+   Compiling imgref v1.12.2
+   Compiling time-core v0.1.9
+   Compiling arrayref v0.3.9
+   Compiling tinyvec_macros v0.1.1
+   Compiling byteorder-lite v0.1.0
+   Compiling deranged v0.5.8
+   Compiling web-time v1.1.0
+   Compiling schemars v0.8.22
+   Compiling powerfmt v0.2.0
+   Compiling roxmltree v0.20.0
+   Compiling iana-time-zone v0.1.61
+   Compiling loop9 v0.1.5
+   Compiling image-webp v0.2.4
+   Compiling cfb v0.14.0
+   Compiling chrono v0.4.41
+   Compiling tinyvec v1.8.1
+   Compiling tiny-skia-path v0.12.0
+   Compiling gif v0.14.2
+   Compiling time v0.3.51
+   Compiling fontconfig-parser v0.5.7
+   Compiling x448 v0.6.0
+   Compiling digest v0.11.3
+   Compiling nix v0.29.0
+   Compiling num-order v1.2.0
+   Compiling rustls-platform-verifier v0.6.2
+   Compiling sha3 v0.10.8
+   Compiling schemars_derive v0.8.22
+   Compiling argon2 v0.5.3
+   Compiling kurbo v0.13.1
+   Compiling rsa v0.9.10
+   Compiling ed25519-dalek v2.1.1
+   Compiling hyper-util v0.1.19
+   Compiling oxc_regular_expression v0.110.0
+   Compiling num_enum v0.7.3
+   Compiling oxc_syntax v0.110.0
+   Compiling derive_more v1.0.0
+   Compiling html5ever v0.39.0
+   Compiling eax v0.5.0
+   Compiling serde_with_macros v3.21.0
+   Compiling sigchld v0.2.4
+   Compiling toml v1.0.6+spec-1.1.0
+   Compiling dsa v0.6.3
+   Compiling x25519-dalek v2.0.1
+   Compiling aes-kw v0.2.1
+   Compiling p384 v0.13.0
+   Compiling p521 v0.13.3
+   Compiling p256 v0.13.2
+   Compiling k256 v0.13.4
+   Compiling ocb3 v0.1.0
+   Compiling jsonptr v0.7.1
+   Compiling sha1-checked v0.10.0
+   Compiling ripemd v0.1.3
+   Compiling md-5 v0.10.6
+   Compiling blowfish v0.9.1
+   Compiling camellia v0.1.0
+   Compiling des v0.8.1
+   Compiling cfb-mode v0.8.2
+   Compiling idea v0.5.1
+   Compiling twofish v0.7.1
+   Compiling cast5 v0.11.1
+   Compiling webpki-roots v1.0.5
+   Compiling block-padding v0.3.3
+   Compiling serialize-to-javascript-impl v0.1.2
+   Compiling avif-serialize v0.8.9
+   Compiling ureq-proto v0.5.3
+   Compiling socks v0.3.4
+   Compiling memmap2 v0.9.11
+   Compiling inotify-sys v0.1.5
+   Compiling zune-inflate v0.2.54
+   Compiling phf_shared v0.14.0
+   Compiling quick-xml v0.41.0
+   Compiling buffer-redux v1.0.2
+   Compiling fax v0.2.7
+   Compiling unicode-properties v0.1.3
+   Compiling env_home v0.1.0
+   Compiling iter-read v1.1.0
+   Compiling pxfm v0.1.30
+   Compiling bit_field v0.10.2
+   Compiling bitfield v0.14.0
+   Compiling lockfree-object-pool v0.1.6
+   Compiling unicode-script v0.5.7
+   Compiling unicode-general-category v1.1.0
+   Compiling lebe v0.5.2
+   Compiling dunce v1.0.5
+   Compiling unicode-ccc v0.4.0
+   Compiling borrow-or-share v0.2.4
+   Compiling bumpalo v3.16.0
+   Compiling clap_lex v0.7.4
+   Compiling dyn-clone v1.0.17
+   Compiling unicode-bidi-mirroring v0.4.0
+   Compiling option-ext v0.2.0
+   Compiling dirs-sys v0.5.0
+   Compiling zopfli v0.8.1
+   Compiling rustybuzz v0.20.1
+   Compiling neli-proc-macros v0.1.3
+   Compiling tempfile v3.23.0
+   Compiling clap_builder v4.5.26
+   Compiling plist v1.10.0
+   Compiling exr v1.74.0
+   Compiling fluent-uri v0.4.1
+   Compiling pgp v0.14.2
+   Compiling tiff v0.11.3
+   Compiling which v8.0.0
+   Compiling moxcms v0.8.1
+   Compiling ureq v3.1.4
+   Compiling phf_generator v0.14.0
+   Compiling ravif v0.13.0
+   Compiling serialize-to-javascript v0.1.2
+   Compiling fontdb v0.23.0
+   Compiling inotify v0.11.0
+   Compiling json-patch v4.2.0
+   Compiling enum-primitive-derive v0.3.0
+   Compiling serde_with v3.21.0
+   Compiling dom_query v0.28.0
+   Compiling oxc_ast v0.110.0
+   Compiling shared_child v1.1.1
+   Compiling xz2 v0.1.7
+   Compiling serde-untagged v0.1.6
+   Compiling svgtypes v0.16.1
+   Compiling handlebars v6.3.0
+   Compiling bzip2 v0.4.4
+   Compiling infer v0.22.0
+   Compiling tungstenite v0.29.0
+   Compiling enum-display-derive v0.1.1
+   Compiling json5 v0.4.1
+   Compiling fraction v0.15.3
+   Compiling strum_macros v0.28.0
+   Compiling clap_derive v4.5.24
+   Compiling globset v0.4.20
+   Compiling hashbrown v0.17.1
+   Compiling urlpattern v0.6.0
+   Compiling pbkdf2 v0.12.2
+   Compiling salsa20 v0.10.2
+   Compiling qoi v0.4.1
+   Compiling itertools v0.13.0
+   Compiling xattr v1.6.1
+   Compiling filetime v0.2.25
+   Compiling rtoolbox v0.0.2
+   Compiling simplecss v0.2.2
+   Compiling roxmltree v0.21.1
+   Compiling nom v8.0.0
+   Compiling encoding_rs v0.8.35
+   Compiling data-url v0.3.1
+   Compiling shared_thread v0.2.0
+   Compiling stfu8 v0.2.7
+   Compiling imagesize v0.14.0
+   Compiling num-cmp v0.1.0
+   Compiling route-recognizer v0.3.1
+   Compiling outref v0.5.1
+   Compiling std_prelude v0.2.12
+   Compiling glob v0.3.4
+   Compiling cpio v0.4.1
+   Compiling bitflags v1.3.2
+   Compiling mime v0.3.17
+   Compiling xmlwriter v0.1.0
+   Compiling typed-path v0.12.3
+   Compiling micromap v0.3.0
+   Compiling vsimd v0.8.0
+   Compiling pico-args v0.5.0
+   Compiling ctor v1.0.7
+   Compiling unicode-bidi v0.3.18
+   Compiling bytecount v0.6.8
+   Compiling notify-types v2.0.0
+   Compiling cargo-mobile2 v0.22.5
+   Compiling unicode-vo v0.1.0
+   Compiling notify v8.2.0
+   Compiling jsonschema-value v0.49.9
+   Compiling usvg v0.47.0
+   Compiling uuid-simd v0.8.0
+   Compiling zip v8.0.0
+   Compiling freedesktop_entry_parser v2.0.1
+   Compiling referencing v0.49.9
+   Compiling tauri-utils v2.10.1
+   Compiling axum-core v0.5.6
+   Compiling png v0.17.16
+   Compiling path_abs v0.5.1
+   Compiling jsonrpsee-server v0.26.0
+   Compiling java-properties v2.0.0
+   Compiling duct v1.1.1
+   Compiling rpassword v7.5.4
+   Compiling tar v0.4.46
+   Compiling image v0.25.10
+   Compiling strum v0.28.0
+   Compiling scrypt v0.11.0
+   Compiling clap v4.5.26
+   Compiling ignore v0.4.33
+   Compiling oxc_ecmascript v0.110.0
+   Compiling tokio-tungstenite v0.29.0
+   Compiling phf_macros v0.14.0
+   Compiling neli v0.6.4
+   Compiling dirs v7.0.0
+   Compiling sha2 v0.11.0
+   Compiling sha1 v0.11.0
+   Compiling tiny-skia v0.12.0
+   Compiling chacha20 v0.10.2
+   Compiling jsonrpsee-client-transport v0.26.0
+   Compiling fancy-regex v0.19.0
+   Compiling env_filter v0.1.3
+   Compiling email_address v0.2.9
+   Compiling serde_urlencoded v0.7.1
+   Compiling serde_path_to_error v0.1.16
+   Compiling jsonschema-regex v0.49.9
+   Compiling console v0.16.4
+   Compiling colored v2.2.0
+   Compiling ordered-float v2.10.1
+   Compiling include_dir_macros v0.7.4
+   Compiling zstd v0.13.2
+   Compiling file-id v0.2.3
+   Compiling md5 v0.8.0
+   Compiling matchit v0.8.4
+   Compiling english-numbers v0.3.3
+   Compiling rpm v0.16.0
+   Compiling tauri-cli v2.12.1
+   Compiling shell-words v1.1.0
+   Compiling deunicode v1.6.0
+   Compiling bytesize v2.7.0
+   Compiling humantime v2.1.0
+   Compiling ct-codecs v1.1.7
+   Compiling seq-macro v0.3.6
+   Compiling home v0.5.9
+   Compiling vlq v0.5.1
+   Compiling ar v0.9.0
+   Compiling base64 v0.13.1
+   Compiling minisign v0.9.1
+   Compiling env_logger v0.11.6
+   Compiling oxc_parser v0.110.0
+   Compiling magic_string v0.3.4
+   Compiling axum v0.8.9
+   Compiling dialoguer v0.12.0
+   Compiling tauri-bundler v2.10.1
+   Compiling phf v0.14.0
+   Compiling include_dir v0.7.4
+   Compiling notify-debouncer-full v0.7.0
+   Compiling serde-value v0.7.0
+   Compiling jsonschema v0.49.9
+   Compiling jsonrpsee-ws-client v0.26.0
+   Compiling local-ip-address v0.6.3
+   Compiling resvg v0.47.0
+   Compiling rand v0.10.2
+   Compiling ctrlc v3.4.5
+   Compiling clap_complete v4.5.42
+   Compiling jsonrpsee v0.26.0
+   Compiling tauri-icns v0.1.0
+   Compiling toml_edit v0.25.4+spec-1.1.0
+   Compiling os_info v3.9.2
+   Compiling itertools v0.15.0
+   Compiling css-color v0.2.8
+   Compiling common-path v1.0.0
+   Compiling sublime_fuzzy v0.7.0
+   Compiling colored v3.1.1
+   Compiling elf v0.8.0
+    Finished `release` profile [optimized] target(s) in 3m 52s
+  Installing /opt/cargo/bin/cargo-tauri
+   Installed package `tauri-cli v2.12.1` (executable `cargo-tauri`)
+--> 15876580e175
+[3/3] STEP 22/34: RUN chmod -R a+rX /opt/rustup /opt/cargo
+--> c18ac9be92f1
+[3/3] STEP 23/34: RUN rustc --version && cargo --version
+rustc 1.99.0 (b940084d7 2026-09-28)
+cargo 1.99.0 (5f94df478 2026-08-27)
+--> 8e58cbb45083
+[3/3] STEP 24/34: RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jdk && rm -rf /var/lib/apt/lists/*
+Get:1 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+Get:2 http://archive.ubuntu.com/ubuntu jammy InRelease [270 kB]
+Get:3 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [7907 kB]
+Get:4 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [84.6 kB]
+Get:5 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1321 kB]
+Get:6 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [4419 kB]
+Get:7 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+Get:8 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+Get:9 http://archive.ubuntu.com/ubuntu jammy/multiverse amd64 Packages [266 kB]
+Get:10 http://archive.ubuntu.com/ubuntu jammy/universe amd64 Packages [17.5 MB]
+Get:11 http://archive.ubuntu.com/ubuntu jammy/restricted amd64 Packages [164 kB]
+Get:12 http://archive.ubuntu.com/ubuntu jammy/main amd64 Packages [1792 kB]
+Get:13 http://archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [93.2 kB]
+Get:14 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [8212 kB]
+Get:15 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1623 kB]
+Get:16 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [4757 kB]
+Get:17 http://archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [82.9 kB]
+Get:18 http://archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [35.6 kB]
+Fetched 48.9 MB in 3s (14.5 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  ca-certificates-java java-common libgif7 libnspr4 libnss3 libpcsclite1
+  openjdk-21-jdk-headless openjdk-21-jre openjdk-21-jre-headless
+Suggested packages:
+  default-jre pcscd openjdk-21-demo openjdk-21-source visualvm libnss-mdns
+  fonts-dejavu-extra fonts-ipafont-gothic fonts-ipafont-mincho
+  fonts-wqy-microhei | fonts-wqy-zenhei fonts-indic
+Recommended packages:
+  libxt-dev libatk-wrapper-java-jni fonts-dejavu-extra
+The following NEW packages will be installed:
+  ca-certificates-java java-common libgif7 libnspr4 libnss3 libpcsclite1
+  openjdk-21-jdk openjdk-21-jdk-headless openjdk-21-jre
+  openjdk-21-jre-headless
+0 upgraded, 10 newly installed, 0 to remove and 25 not upgraded.
+Need to get 133 MB of archives.
+After this operation, 306 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy/main amd64 java-common all 0.72build2 [6782 B]
+Get:2 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libnspr4 amd64 2:4.35-0ubuntu0.22.04.1 [119 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libnss3 amd64 2:3.98-0ubuntu0.22.04.4 [1347 kB]
+Get:4 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libpcsclite1 amd64 1.9.5-3ubuntu1 [19.8 kB]
+Get:5 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 openjdk-21-jre-headless amd64 21.0.12.1+1-1~22.04.4 [46.9 MB]
+Get:6 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 ca-certificates-java all 20190909ubuntu1.3 [12.3 kB]
+Get:7 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libgif7 amd64 5.1.9-2ubuntu0.3 [34.3 kB]
+Get:8 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 openjdk-21-jre amd64 21.0.12.1+1-1~22.04.4 [239 kB]
+Get:9 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 openjdk-21-jdk-headless amd64 21.0.12.1+1-1~22.04.4 [82.8 MB]
+Get:10 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 openjdk-21-jdk amd64 21.0.12.1+1-1~22.04.4 [1665 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 133 MB in 4s (30.5 MB/s)
+Selecting previously unselected package java-common.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38364 files and directories currently installed.)
+Preparing to unpack .../0-java-common_0.72build2_all.deb ...
+Unpacking java-common (0.72build2) ...
+Selecting previously unselected package libnspr4:amd64.
+Preparing to unpack .../1-libnspr4_2%3a4.35-0ubuntu0.22.04.1_amd64.deb ...
+Unpacking libnspr4:amd64 (2:4.35-0ubuntu0.22.04.1) ...
+Selecting previously unselected package libnss3:amd64.
+Preparing to unpack .../2-libnss3_2%3a3.98-0ubuntu0.22.04.4_amd64.deb ...
+Unpacking libnss3:amd64 (2:3.98-0ubuntu0.22.04.4) ...
+Selecting previously unselected package libpcsclite1:amd64.
+Preparing to unpack .../3-libpcsclite1_1.9.5-3ubuntu1_amd64.deb ...
+Unpacking libpcsclite1:amd64 (1.9.5-3ubuntu1) ...
+Selecting previously unselected package openjdk-21-jre-headless:amd64.
+Preparing to unpack .../4-openjdk-21-jre-headless_21.0.12.1+1-1~22.04.4_amd64.deb ...
+Unpacking openjdk-21-jre-headless:amd64 (21.0.12.1+1-1~22.04.4) ...
+Selecting previously unselected package ca-certificates-java.
+Preparing to unpack .../5-ca-certificates-java_20190909ubuntu1.3_all.deb ...
+Unpacking ca-certificates-java (20190909ubuntu1.3) ...
+Selecting previously unselected package libgif7:amd64.
+Preparing to unpack .../6-libgif7_5.1.9-2ubuntu0.3_amd64.deb ...
+Unpacking libgif7:amd64 (5.1.9-2ubuntu0.3) ...
+Selecting previously unselected package openjdk-21-jre:amd64.
+Preparing to unpack .../7-openjdk-21-jre_21.0.12.1+1-1~22.04.4_amd64.deb ...
+Unpacking openjdk-21-jre:amd64 (21.0.12.1+1-1~22.04.4) ...
+Selecting previously unselected package openjdk-21-jdk-headless:amd64.
+Preparing to unpack .../8-openjdk-21-jdk-headless_21.0.12.1+1-1~22.04.4_amd64.deb ...
+Unpacking openjdk-21-jdk-headless:amd64 (21.0.12.1+1-1~22.04.4) ...
+Selecting previously unselected package openjdk-21-jdk:amd64.
+Preparing to unpack .../9-openjdk-21-jdk_21.0.12.1+1-1~22.04.4_amd64.deb ...
+Unpacking openjdk-21-jdk:amd64 (21.0.12.1+1-1~22.04.4) ...
+Setting up java-common (0.72build2) ...
+Setting up libnspr4:amd64 (2:4.35-0ubuntu0.22.04.1) ...
+Setting up libpcsclite1:amd64 (1.9.5-3ubuntu1) ...
+Setting up libgif7:amd64 (5.1.9-2ubuntu0.3) ...
+Setting up libnss3:amd64 (2:3.98-0ubuntu0.22.04.4) ...
+Setting up ca-certificates-java (20190909ubuntu1.3) ...
+head: cannot open '/etc/ssl/certs/java/cacerts' for reading: No such file or directory
+Adding debian:Amazon_Root_CA_1.pem
+Adding debian:Actalis_Authentication_Root_CA.pem
+Adding debian:Hellenic_Academic_and_Research_Institutions_RootCA_2015.pem
+Adding debian:Microsoft_RSA_Root_Certificate_Authority_2017.pem
+Adding debian:Sectigo_Public_Server_Authentication_Root_E46.pem
+Adding debian:TrustAsia_TLS_ECC_Root_CA.pem
+Adding debian:UCA_Extended_Validation_Root.pem
+Adding debian:GTS_Root_R1.pem
+Adding debian:Go_Daddy_Root_Certificate_Authority_-_G2.pem
+Adding debian:SSL.com_TLS_ECC_Root_CA_2022.pem
+Adding debian:certSIGN_Root_CA_G2.pem
+Adding debian:Telekom_Security_TLS_RSA_Root_2023.pem
+Adding debian:Starfield_Services_Root_Certificate_Authority_-_G2.pem
+Adding debian:vTrus_Root_CA.pem
+Adding debian:emSign_ECC_Root_CA_-_C3.pem
+Adding debian:BJCA_Global_Root_CA2.pem
+Adding debian:vTrus_ECC_Root_CA.pem
+Adding debian:Amazon_Root_CA_4.pem
+Adding debian:CFCA_EV_ROOT.pem
+Adding debian:ISRG_Root_X2.pem
+Adding debian:SecureSign_Root_CA12.pem
+Adding debian:Microsec_e-Szigno_Root_CA_2009.pem
+Adding debian:T-TeleSec_GlobalRoot_Class_2.pem
+Adding debian:SecureSign_Root_CA14.pem
+Adding debian:OISTE_WISeKey_Global_Root_GB_CA.pem
+Adding debian:HiPKI_Root_CA_-_G1.pem
+Adding debian:D-TRUST_EV_Root_CA_2_2023.pem
+Adding debian:Security_Communication_ECC_RootCA1.pem
+Adding debian:Autoridad_de_Certificacion_Firmaprofesional_CIF_A62634068.pem
+Adding debian:emSign_Root_CA_-_C1.pem
+Adding debian:DigiCert_Global_Root_G3.pem
+Adding debian:Atos_TrustedRoot_Root_CA_ECC_TLS_2021.pem
+Adding debian:DigiCert_TLS_ECC_P384_Root_G5.pem
+Adding debian:GlobalSign_ECC_Root_CA_-_R4.pem
+Adding debian:CA_Disig_Root_R2.pem
+Adding debian:T-TeleSec_GlobalRoot_Class_3.pem
+Adding debian:emSign_Root_CA_-_G1.pem
+Adding debian:DigiCert_TLS_RSA4096_Root_G5.pem
+Adding debian:Telekom_Security_TLS_ECC_Root_2020.pem
+Adding debian:Hellenic_Academic_and_Research_Institutions_ECC_RootCA_2015.pem
+Adding debian:SSL.com_TLS_RSA_Root_CA_2022.pem
+Adding debian:Atos_TrustedRoot_Root_CA_RSA_TLS_2021.pem
+Adding debian:ePKI_Root_Certification_Authority.pem
+Adding debian:Hongkong_Post_Root_CA_3.pem
+Adding debian:GlobalSign_ECC_Root_CA_-_R5.pem
+Adding debian:GDCA_TrustAUTH_R5_ROOT.pem
+Adding debian:Buypass_Class_3_Root_CA.pem
+Adding debian:Certum_Trusted_Root_CA.pem
+Adding debian:Izenpe.com.pem
+Adding debian:SwissSign_RSA_TLS_Root_CA_2022_-_1.pem
+Adding debian:Buypass_Class_2_Root_CA.pem
+Adding debian:OISTE_Server_Root_ECC_G1.pem
+Adding debian:UCA_Global_G2_Root.pem
+Adding debian:ISRG_Root_X1.pem
+Adding debian:Certigna_Root_CA.pem
+Adding debian:Amazon_Root_CA_3.pem
+Adding debian:GlobalSign_Root_CA_-_R6.pem
+Adding debian:IdenTrust_Public_Sector_Root_CA_1.pem
+Adding debian:D-TRUST_BR_Root_CA_2_2023.pem
+Adding debian:Certum_EC-384_CA.pem
+Adding debian:HARICA_TLS_ECC_Root_CA_2021.pem
+Adding debian:NAVER_Global_Root_Certification_Authority.pem
+Adding debian:GTS_Root_R4.pem
+Adding debian:AC_RAIZ_FNMT-RCM.pem
+Adding debian:Certum_Trusted_Network_CA_2.pem
+Adding debian:TWCA_Global_Root_CA.pem
+Adding debian:USERTrust_ECC_Certification_Authority.pem
+Adding debian:TWCA_CYBER_Root_CA.pem
+Adding debian:Certum_Trusted_Network_CA.pem
+Adding debian:Amazon_Root_CA_2.pem
+Adding debian:SSL.com_Root_Certification_Authority_RSA.pem
+Adding debian:TrustAsia_TLS_RSA_Root_CA.pem
+Adding debian:SSL.com_EV_Root_Certification_Authority_RSA_R2.pem
+Adding debian:Certainly_Root_E1.pem
+Adding debian:Sectigo_Public_Server_Authentication_Root_R46.pem
+Adding debian:GlobalSign_Root_E46.pem
+Adding debian:COMODO_ECC_Certification_Authority.pem
+Adding debian:USERTrust_RSA_Certification_Authority.pem
+Adding debian:HARICA_TLS_RSA_Root_CA_2021.pem
+Adding debian:Entrust_Root_Certification_Authority.pem
+Adding debian:e-Szigno_TLS_Root_CA_2023.pem
+Adding debian:BJCA_Global_Root_CA1.pem
+Adding debian:OISTE_WISeKey_Global_Root_GC_CA.pem
+Adding debian:SSL.com_Root_Certification_Authority_ECC.pem
+Adding debian:GlobalSign_Root_CA_-_R3.pem
+Adding debian:GlobalSign_Root_R46.pem
+Adding debian:QuoVadis_Root_CA_2_G3.pem
+Adding debian:AC_RAIZ_FNMT-RCM_SERVIDORES_SEGUROS.pem
+Adding debian:SSL.com_EV_Root_Certification_Authority_ECC.pem
+Adding debian:TrustAsia_Global_Root_CA_G3.pem
+Adding debian:DigiCert_Global_Root_G2.pem
+Adding debian:ANF_Secure_Server_Root_CA.pem
+Adding debian:TUBITAK_Kamu_SM_SSL_Kok_Sertifikasi_-_Surum_1.pem
+Adding debian:GTS_Root_R3.pem
+Adding debian:QuoVadis_Root_CA_3_G3.pem
+Adding debian:D-TRUST_EV_Root_CA_1_2020.pem
+Adding debian:e-Szigno_Root_CA_2017.pem
+Adding debian:SecureSign_Root_CA15.pem
+Adding debian:QuoVadis_Root_CA_1_G3.pem
+Adding debian:COMODO_RSA_Certification_Authority.pem
+Adding debian:ACCVRAIZ1.pem
+Adding debian:Atos_TrustedRoot_2011.pem
+Adding debian:D-TRUST_BR_Root_CA_1_2020.pem
+Adding debian:Certainly_Root_R1.pem
+Adding debian:SZAFIR_ROOT_CA2.pem
+Adding debian:DigiCert_Trusted_Root_G4.pem
+Adding debian:emSign_ECC_Root_CA_-_G3.pem
+Adding debian:TrustAsia_Global_Root_CA_G4.pem
+Adding debian:NetLock_Arany_=Class_Gold=_Főtanúsítvány.pem
+Adding debian:TunTrust_Root_CA.pem
+Adding debian:D-TRUST_Root_Class_3_CA_2_2009.pem
+Adding debian:DigiCert_Assured_ID_Root_G3.pem
+Adding debian:OISTE_Server_Root_RSA_G1.pem
+Adding debian:Security_Communication_RootCA2.pem
+Adding debian:TWCA_Root_Certification_Authority.pem
+Adding debian:Telia_Root_CA_v2.pem
+Adding debian:DigiCert_Assured_ID_Root_G2.pem
+Adding debian:Microsoft_ECC_Root_Certificate_Authority_2017.pem
+Adding debian:Starfield_Root_Certificate_Authority_-_G2.pem
+Adding debian:D-TRUST_Root_Class_3_CA_2_EV_2009.pem
+Adding debian:IdenTrust_Commercial_Root_CA_1.pem
+done.
+Setting up openjdk-21-jre-headless:amd64 (21.0.12.1+1-1~22.04.4) ...
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/java to provide /usr/bin/java (java) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jpackage to provide /usr/bin/jpackage (jpackage) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/keytool to provide /usr/bin/keytool (keytool) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/rmiregistry to provide /usr/bin/rmiregistry (rmiregistry) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/lib/jexec to provide /usr/bin/jexec (jexec) in auto mode
+Setting up openjdk-21-jre:amd64 (21.0.12.1+1-1~22.04.4) ...
+Setting up openjdk-21-jdk-headless:amd64 (21.0.12.1+1-1~22.04.4) ...
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jar to provide /usr/bin/jar (jar) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jarsigner to provide /usr/bin/jarsigner (jarsigner) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/javac to provide /usr/bin/javac (javac) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/javadoc to provide /usr/bin/javadoc (javadoc) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/javap to provide /usr/bin/javap (javap) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jcmd to provide /usr/bin/jcmd (jcmd) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jdb to provide /usr/bin/jdb (jdb) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jdeprscan to provide /usr/bin/jdeprscan (jdeprscan) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jdeps to provide /usr/bin/jdeps (jdeps) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jfr to provide /usr/bin/jfr (jfr) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jimage to provide /usr/bin/jimage (jimage) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jinfo to provide /usr/bin/jinfo (jinfo) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jlink to provide /usr/bin/jlink (jlink) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jmap to provide /usr/bin/jmap (jmap) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jmod to provide /usr/bin/jmod (jmod) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jps to provide /usr/bin/jps (jps) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jrunscript to provide /usr/bin/jrunscript (jrunscript) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jshell to provide /usr/bin/jshell (jshell) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jstack to provide /usr/bin/jstack (jstack) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jstat to provide /usr/bin/jstat (jstat) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jstatd to provide /usr/bin/jstatd (jstatd) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jwebserver to provide /usr/bin/jwebserver (jwebserver) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/serialver to provide /usr/bin/serialver (serialver) in auto mode
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jhsdb to provide /usr/bin/jhsdb (jhsdb) in auto mode
+Setting up openjdk-21-jdk:amd64 (21.0.12.1+1-1~22.04.4) ...
+update-alternatives: using /usr/lib/jvm/java-21-openjdk-amd64/bin/jconsole to provide /usr/bin/jconsole (jconsole) in auto mode
+Processing triggers for ca-certificates (20260601~22.04.1) ...
+Updating certificates in /etc/ssl/certs...
+0 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+
+done.
+done.
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.14) ...
+--> 71aa62b6af98
+[3/3] STEP 25/34: ENV JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+--> 07597cb0ef52
+[3/3] STEP 26/34: ENV ANDROID_HOME="/opt/android-sdk"
+--> d03574ffa4fe
+[3/3] STEP 27/34: ENV ANDROID_SDK_ROOT="${ANDROID_HOME}"
+--> 899bfd7cb1d5
+[3/3] STEP 28/34: ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+--> 5cf9066e7afa
+[3/3] STEP 29/34: RUN mkdir -p "${ANDROID_HOME}/cmdline-tools"     && cd "${ANDROID_HOME}/cmdline-tools"     && for i in 1 2 3 4 5; do         echo "Attempt $i: Downloading Android cmdline-tools..." &&         curl --retry 5 --retry-delay 10 --retry-all-errors -fSL             "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o cmdline-tools.zip &&         break || (echo "Attempt $i failed, waiting 15s..." && sleep 15);     done     && echo "2d2d50857e4eb553af5a6dc3ad507a17adf43d115264b1afc116f95c92e5e258  cmdline-tools.zip" | sha256sum -c -     && unzip -q cmdline-tools.zip     && mv cmdline-tools latest     && rm cmdline-tools.zip
+Attempt 1: Downloading Android cmdline-tools...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0  146M    0  784k    0     0  1981k      0  0:01:15 --:--:--  0:01:15 1979k 72  146M   72  105M    0     0  75.6M      0  0:00:01  0:00:01 --:--:-- 75.6M100  146M  100  146M    0     0  82.9M      0  0:00:01  0:00:01 --:--:-- 82.9M
+cmdline-tools.zip: OK
+--> a04bc061429a
+[3/3] STEP 30/34: RUN yes | sdkmanager --licenses >/dev/null
+--> 9961e8fb8584
+[3/3] STEP 31/34: RUN sdkmanager     "platform-tools"     "build-tools;34.0.0"     "build-tools;35.0.0"     "platforms;android-34"     "platforms;android-35"
+Loading package information...                                                  Loading local repository...                                                     [                                       ] 3% Loading local repository...        [                                       ] 3% Fetch remote repository...         [=                                      ] 3% Fetch remote repository...         [=                                      ] 4% Fetch remote repository...         [=                                      ] 5% Fetch remote repository...         [==                                     ] 5% Fetch remote repository...         [==                                     ] 6% Fetch remote repository...         [==                                     ] 7% Fetch remote repository...         [==                                     ] 7% Computing updates...               [===                                    ] 8% Computing updates...               [===                                    ] 10% Computing updates...              [===                                    ] 10% Installing Android SDK Platform 35[===                                    ] 10% Downloading platform-35_r02.zip...[====                                   ] 10% Downloading platform-35_r02.zip...[====                                   ] 11% Downloading platform-35_r02.zip...[====                                   ] 12% Downloading platform-35_r02.zip...[=====                                  ] 13% Downloading platform-35_r02.zip...[=====                                  ] 14% Downloading platform-35_r02.zip...[=====                                  ] 15% Downloading platform-35_r02.zip...[=====                                  ] 15% Unzipping...                      [=====                                  ] 15% Unzipping... android-35/android-st[======                                 ] 15% Unzipping... android-35/android-st[======                                 ] 15% Unzipping... android-35/android.ja[======                                 ] 16% Unzipping... android-35/android.ja[======                                 ] 17% Unzipping... android-35/android.ja[======                                 ] 17% Unzipping... android-35/build.prop[======                                 ] 17% Unzipping... android-35/core-for-s[======                                 ] 17% Unzipping... android-35/framework.[======                                 ] 17% Unzipping... android-35/sdk.proper[======                                 ] 17% Unzipping... android-35/source.pro[======                                 ] 17% Unzipping... android-35/uiautomato[======                                 ] 17% Unzipping... android-35/data/NOTIC[======                                 ] 17% Unzipping... android-35/data/activ[======                                 ] 17% Unzipping... android-35/data/annot[======                                 ] 17% Unzipping... android-35/data/api-v[======                                 ] 17% Unzipping... android-35/data/broad[======                                 ] 17% Unzipping... android-35/data/categ[======                                 ] 17% Unzipping... android-35/data/featu[======                                 ] 17% Unzipping... android-35/data/servi[======                                 ] 17% Unzipping... android-35/data/widge[======                                 ] 17% Unzipping... android-35/data/res/a[======                                 ] 17% Unzipping... android-35/data/res/c[======                                 ] 17% Unzipping... android-35/data/res/d[=======                                ] 18% Unzipping... android-35/data/res/d[=======                                ] 18% Unzipping... android-35/data/res/i[=======                                ] 18% Unzipping... android-35/data/res/l[=======                                ] 18% Unzipping... android-35/data/res/m[=======                                ] 18% Unzipping... android-35/data/res/r[=======                                ] 18% Unzipping... android-35/data/res/t[=======                                ] 18% Unzipping... android-35/data/res/v[=======                                ] 19% Unzipping... android-35/data/res/v[=======                                ] 19% Unzipping... android-35/data/res/x[=======                                ] 19% Unzipping... android-35/optional/a[=======                                ] 19% Unzipping... android-35/optional/o[=======                                ] 19% Unzipping... android-35/optional/l[=======                                ] 19% Unzipping... android-35/skins/NOTI[=======                                ] 19% Unzipping... android-35/skins/HVGA[=======                                ] 19% Unzipping... android-35/skins/QVGA[=======                                ] 19% Unzipping... android-35/skins/WQVG[=======                                ] 19% Unzipping... android-35/skins/WSVG[=======                                ] 19% Unzipping... android-35/skins/WVGA[=======                                ] 19% Unzipping... android-35/skins/WXGA[=======                                ] 19% Unzipping... android-35/templates/[===========                            ] 28% Unzipping... android-35/templates/[===========                            ] 28% Installing Android SDK Platform 34[===========                            ] 28% Downloading platform-34-ext7_r03.z[===========                            ] 29% Downloading platform-34-ext7_r03.z[===========                            ] 30% Downloading platform-34-ext7_r03.z[============                           ] 30% Downloading platform-34-ext7_r03.z[============                           ] 31% Downloading platform-34-ext7_r03.z[============                           ] 32% Downloading platform-34-ext7_r03.z[============                           ] 33% Downloading platform-34-ext7_r03.z[============                           ] 33% Unzipping... android-35/templates/[============                           ] 33% Unzipping... android-34/          [============                           ] 33% Unzipping... android-34/android.ja[=============                          ] 33% Unzipping... android-34/android.ja[=============                          ] 34% Unzipping... android-34/android.ja[=============                          ] 34% Unzipping... android-34/optional/ [=============                          ] 34% Unzipping... android-34/optional/a[=============                          ] 34% Unzipping... android-34/optional/l[=============                          ] 34% Unzipping... android-34/optional/o[=============                          ] 34% Unzipping... android-34/optional/a[=============                          ] 34% Unzipping... android-34/optional/o[=============                          ] 34% Unzipping... android-34/templates/[=============                          ] 34% Unzipping... android-34/core-for-s[=============                          ] 34% Unzipping... android-34/build.prop[=============                          ] 34% Unzipping... android-34/android-st[=============                          ] 35% Unzipping... android-34/android-st[=============                          ] 35% Unzipping... android-34/uiautomato[=============                          ] 35% Unzipping... android-34/source.pro[=============                          ] 35% Unzipping... android-34/data/     [=============                          ] 35% Unzipping... android-34/data/servi[=============                          ] 35% Unzipping... android-34/data/NOTIC[=============                          ] 35% Unzipping... android-34/data/widge[=============                          ] 35% Unzipping... android-34/data/broad[=============                          ] 35% Unzipping... android-34/data/api-v[=============                          ] 35% Unzipping... android-34/data/featu[=============                          ] 35% Unzipping... android-34/data/annot[=============                          ] 35% Unzipping... android-34/data/res/ [=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/l[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/m[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/a[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/d[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/x[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/l[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/l[=============                          ] 35% Unzipping... android-34/data/res/v[=============                          ] 35% Unzipping... android-34/data/res/r[=============                          ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/x[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/r[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/a[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/r[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/c[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/d[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/t[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/x[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/r[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/r[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/l[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/r[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/d[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 35% Unzipping... android-34/data/res/d[==============                         ] 35% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/m[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/c[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/c[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/m[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/i[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/m[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/x[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/a[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/m[==============                         ] 36% Unzipping... android-34/data/res/x[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/a[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/i[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/m[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/l[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/c[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/r[==============                         ] 36% Unzipping... android-34/data/res/v[==============                         ] 36% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/m[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/m[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/r[==============                         ] 37% Unzipping... android-34/data/res/l[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/r[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/r[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/res/d[==============                         ] 37% Unzipping... android-34/data/res/v[==============                         ] 37% Unzipping... android-34/data/categ[==============                         ] 37% Unzipping... android-34/data/activ[==============                         ] 37% Unzipping... android-34/sdk.proper[==============                         ] 37% Unzipping... android-34/skins/    [==============                         ] 37% Unzipping... android-34/skins/WXGA[==============                         ] 37% Unzipping... android-34/skins/WQVG[==============                         ] 37% Unzipping... android-34/skins/NOTI[==============                         ] 37% Unzipping... android-34/skins/HVGA[==============                         ] 37% Unzipping... android-34/skins/WVGA[==============                         ] 37% Unzipping... android-34/skins/WQVG[==============                         ] 37% Unzipping... android-34/skins/WVGA[==============                         ] 37% Unzipping... android-34/skins/QVGA[==============                         ] 37% Unzipping... android-34/skins/WXGA[==============                         ] 37% Unzipping... android-34/skins/WSVG[==============                         ] 37% Unzipping... android-34/skins/WXGA[==============                         ] 37% Unzipping... android-34/framework.[==================                     ] 46% Unzipping... android-34/framework.[==================                     ] 46% Installing Android SDK Build-Tools[==================                     ] 46% Downloading build-tools_r35_linux.[==================                     ] 47% Downloading build-tools_r35_linux.[===================                    ] 48% Downloading build-tools_r35_linux.[===================                    ] 49% Downloading build-tools_r35_linux.[===================                    ] 50% Downloading build-tools_r35_linux.[====================                   ] 50% Downloading build-tools_r35_linux.[====================                   ] 51% Downloading build-tools_r35_linux.[====================                   ] 51% Unzipping... android-34/framework.[====================                   ] 51% Unzipping... android-15/NOTICE.txt[====================                   ] 51% Unzipping... android-15/aapt      [====================                   ] 51% Unzipping... android-15/aapt2     [====================                   ] 51% Unzipping... android-15/aarch64-li[====================                   ] 51% Unzipping... android-15/aidl      [====================                   ] 51% Unzipping... android-15/apksigner [====================                   ] 51% Unzipping... android-15/arm-linux-[====================                   ] 51% Unzipping... android-15/bcc_compat[====================                   ] 51% Unzipping... android-15/core-lambd[====================                   ] 51% Unzipping... android-15/d8        [====================                   ] 51% Unzipping... android-15/dexdump   [====================                   ] 51% Unzipping... android-15/i686-linux[====================                   ] 51% Unzipping... android-15/lld       [====================                   ] 51% Unzipping... android-15/llvm-rs-cc[====================                   ] 51% Unzipping... android-15/mipsel-lin[====================                   ] 51% Unzipping... android-15/runtime.pr[====================                   ] 51% Unzipping... android-15/source.pro[====================                   ] 51% Unzipping... android-15/split-sele[====================                   ] 51% Unzipping... android-15/x86_64-lin[====================                   ] 51% Unzipping... android-15/zipalign  [====================                   ] 51% Unzipping... android-15/lib/apksig[====================                   ] 51% Unzipping... android-15/lib/d8.jar[====================                   ] 52% Unzipping... android-15/lib/d8.jar[====================                   ] 52% Unzipping... android-15/lib64/libL[=====================                  ] 53% Unzipping... android-15/lib64/libL[=====================                  ] 53% Unzipping... android-15/lib64/libb[=====================                  ] 53% Unzipping... android-15/lib64/libc[=====================                  ] 53% Unzipping... android-15/lld-bin/ll[=====================                  ] 54% Unzipping... android-15/lld-bin/ll[=====================                  ] 54% Unzipping... android-15/renderscri[=====================                  ] 55% Unzipping... android-15/renderscri[=========================              ] 64% Unzipping... android-15/renderscri[=========================              ] 64% Installing Android SDK Build-Tools[=========================              ] 64% Downloading build-tools_r34-linux.[=========================              ] 65% Downloading build-tools_r34-linux.[==========================             ] 65% Downloading build-tools_r34-linux.[==========================             ] 66% Downloading build-tools_r34-linux.[==========================             ] 67% Downloading build-tools_r34-linux.[===========================            ] 68% Downloading build-tools_r34-linux.[===========================            ] 69% Downloading build-tools_r34-linux.[===========================            ] 69% Unzipping... android-15/renderscri[===========================            ] 69% Unzipping... android-14/NOTICE.txt[===========================            ] 69% Unzipping... android-14/aapt      [===========================            ] 69% Unzipping... android-14/aapt2     [===========================            ] 69% Unzipping... android-14/aarch64-li[===========================            ] 69% Unzipping... android-14/aidl      [===========================            ] 69% Unzipping... android-14/apksigner [===========================            ] 69% Unzipping... android-14/arm-linux-[===========================            ] 69% Unzipping... android-14/bcc_compat[===========================            ] 69% Unzipping... android-14/core-lambd[===========================            ] 69% Unzipping... android-14/d8        [===========================            ] 69% Unzipping... android-14/dexdump   [===========================            ] 69% Unzipping... android-14/i686-linux[===========================            ] 69% Unzipping... android-14/lld       [===========================            ] 69% Unzipping... android-14/llvm-rs-cc[===========================            ] 69% Unzipping... android-14/mipsel-lin[===========================            ] 69% Unzipping... android-14/runtime.pr[===========================            ] 69% Unzipping... android-14/source.pro[===========================            ] 69% Unzipping... android-14/split-sele[===========================            ] 69% Unzipping... android-14/x86_64-lin[===========================            ] 69% Unzipping... android-14/zipalign  [===========================            ] 69% Unzipping... android-14/lib/apksig[===========================            ] 69% Unzipping... android-14/lib/d8.jar[===========================            ] 70% Unzipping... android-14/lib/d8.jar[===========================            ] 70% Unzipping... android-14/lib64/libL[============================           ] 70% Unzipping... android-14/lib64/libL[============================           ] 71% Unzipping... android-14/lib64/libL[============================           ] 71% Unzipping... android-14/lib64/libb[============================           ] 71% Unzipping... android-14/lib64/libc[============================           ] 71% Unzipping... android-14/lld-bin/ll[============================           ] 72% Unzipping... android-14/lld-bin/ll[============================           ] 72% Unzipping... android-14/renderscri[=============================          ] 73% Unzipping... android-14/renderscri[================================       ] 82% Unzipping... android-14/renderscri[================================       ] 82% Installing Android SDK Platform-To[================================       ] 82% Downloading platform-tools_r37.0.1[=================================      ] 83% Downloading platform-tools_r37.0.1[=================================      ] 84% Downloading platform-tools_r37.0.1[=================================      ] 85% Downloading platform-tools_r37.0.1[==================================     ] 85% Downloading platform-tools_r37.0.1[==================================     ] 86% Downloading platform-tools_r37.0.1[==================================     ] 87% Downloading platform-tools_r37.0.1[==================================     ] 87% Unzipping... android-14/renderscri[==================================     ] 87% Unzipping... platform-tools/NOTICE[==================================     ] 87% Unzipping... platform-tools/adb   [===================================    ] 88% Unzipping... platform-tools/adb   [===================================    ] 89% Unzipping... platform-tools/adb   [===================================    ] 89% Unzipping... platform-tools/etc1to[===================================    ] 89% Unzipping... platform-tools/fastbo[===================================    ] 90% Unzipping... platform-tools/fastbo[===================================    ] 90% Unzipping... platform-tools/hprof-[===================================    ] 90% Unzipping... platform-tools/lib64/[===================================    ] 90% Unzipping... platform-tools/make_f[===================================    ] 90% Unzipping... platform-tools/mke2fs[====================================   ] 90% Unzipping... platform-tools/mke2fs[====================================   ] 90% Unzipping... platform-tools/source[====================================   ] 90% Unzipping... platform-tools/sqlite[====================================   ] 91% Unzipping... platform-tools/sqlite[=======================================] 100% Unzipping... platform-tools/sqlit
+
+--> 808a3dc00371
+[3/3] STEP 32/34: RUN npx --yes playwright@1.57.0 install --with-deps chromium
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║ WARNING: It looks like you are running 'npx playwright install' without first ║
+║ installing your project's dependencies.                                       ║
+║                                                                               ║
+║ To avoid unexpected behavior, please install your dependencies first, and     ║
+║ then run Playwright's install command:                                        ║
+║                                                                               ║
+║     npm install                                                               ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+║ If your project does not yet depend on Playwright, first install the          ║
+║ applicable npm package (most commonly @playwright/test), and                  ║
+║ then run Playwright's install command to download the browsers:               ║
+║                                                                               ║
+║     npm install @playwright/test                                              ║
+║     npx playwright install                                                    ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+Installing dependencies...
+Get:1 http://archive.ubuntu.com/ubuntu jammy InRelease [270 kB]
+Get:2 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+Get:4 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
+Get:5 http://archive.ubuntu.com/ubuntu jammy/restricted amd64 Packages [164 kB]
+Get:6 http://archive.ubuntu.com/ubuntu jammy/multiverse amd64 Packages [266 kB]
+Get:7 http://archive.ubuntu.com/ubuntu jammy/universe amd64 Packages [17.5 MB]
+Get:8 http://security.ubuntu.com/ubuntu jammy-security/restricted amd64 Packages [7907 kB]
+Get:9 http://archive.ubuntu.com/ubuntu jammy/main amd64 Packages [1792 kB]
+Get:10 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1623 kB]
+Get:11 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [4757 kB]
+Get:12 http://archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [93.2 kB]
+Get:13 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [8212 kB]
+Get:14 http://archive.ubuntu.com/ubuntu jammy-backports/main amd64 Packages [82.9 kB]
+Get:15 http://archive.ubuntu.com/ubuntu jammy-backports/universe amd64 Packages [35.6 kB]
+Get:16 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1321 kB]
+Get:17 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [84.6 kB]
+Get:18 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [4419 kB]
+Fetched 48.9 MB in 3s (15.8 MB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+libatk-bridge2.0-0 is already the newest version (2.38.0-3).
+libatk-bridge2.0-0 set to manually installed.
+libatk1.0-0 is already the newest version (2.36.0-3build1).
+libatk1.0-0 set to manually installed.
+libatspi2.0-0 is already the newest version (2.44.0-3).
+libatspi2.0-0 set to manually installed.
+libfontconfig1 is already the newest version (2.13.1-4.2ubuntu5).
+libfontconfig1 set to manually installed.
+libxcb1 is already the newest version (1.14-3ubuntu3).
+libxcb1 set to manually installed.
+libxcomposite1 is already the newest version (1:0.4.5-1build2).
+libxcomposite1 set to manually installed.
+libxdamage1 is already the newest version (1:1.1.5-2build2).
+libxdamage1 set to manually installed.
+libxext6 is already the newest version (2:1.3.4-1build1).
+libxext6 set to manually installed.
+libxfixes3 is already the newest version (1:6.0.0-1).
+libxfixes3 set to manually installed.
+libxkbcommon0 is already the newest version (1.4.0-1).
+libxkbcommon0 set to manually installed.
+libxrandr2 is already the newest version (2:1.5.2-1build1).
+libxrandr2 set to manually installed.
+libasound2 is already the newest version (1.2.6.1-1ubuntu1.2).
+libasound2 set to manually installed.
+libcairo2 is already the newest version (1.16.0-5ubuntu2.1).
+libcairo2 set to manually installed.
+libcups2 is already the newest version (2.4.1op1-1ubuntu4.21).
+libcups2 set to manually installed.
+libdbus-1-3 is already the newest version (1.12.20-2ubuntu4.1).
+libdbus-1-3 set to manually installed.
+libdrm2 is already the newest version (2.4.113-2~ubuntu0.22.04.1).
+libdrm2 set to manually installed.
+libfreetype6 is already the newest version (2.11.1+dfsg-1ubuntu0.4).
+libfreetype6 set to manually installed.
+libgbm1 is already the newest version (23.2.1-1ubuntu3.1~22.04.4).
+libgbm1 set to manually installed.
+libglib2.0-0 is already the newest version (2.72.4-0ubuntu2.10).
+libglib2.0-0 set to manually installed.
+libnspr4 is already the newest version (2:4.35-0ubuntu0.22.04.1).
+libnspr4 set to manually installed.
+libnss3 is already the newest version (2:3.98-0ubuntu0.22.04.4).
+libnss3 set to manually installed.
+libpango-1.0-0 is already the newest version (1.50.6+ds-2ubuntu1).
+libpango-1.0-0 set to manually installed.
+libwayland-client0 is already the newest version (1.20.0-1ubuntu0.1).
+libwayland-client0 set to manually installed.
+libx11-6 is already the newest version (2:1.7.5-1ubuntu0.3).
+libx11-6 set to manually installed.
+xvfb is already the newest version (2:21.1.4-2ubuntu1.7~22.04.16).
+The following additional packages will be installed:
+  xfonts-encodings xfonts-utils
+Recommended packages:
+  fonts-ipafont-mincho fonts-tlwg-loma
+The following NEW packages will be installed:
+  fonts-freefont-ttf fonts-ipafont-gothic fonts-liberation
+  fonts-noto-color-emoji fonts-tlwg-loma-otf fonts-unifont fonts-wqy-zenhei
+  xfonts-cyrillic xfonts-encodings xfonts-scalable xfonts-utils
+0 upgraded, 11 newly installed, 0 to remove and 25 not upgraded.
+Need to get 29.3 MB of archives.
+After this operation, 70.1 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+Get:2 http://archive.ubuntu.com/ubuntu jammy/main amd64 fonts-freefont-ttf all 20120503-10build1 [2388 kB]
+Get:3 http://archive.ubuntu.com/ubuntu jammy/main amd64 fonts-liberation all 1:1.07.4-11 [822 kB]
+Get:4 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 fonts-noto-color-emoji all 2.047-0ubuntu0.22.04.1 [10.0 MB]
+Get:5 http://archive.ubuntu.com/ubuntu jammy/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+Get:6 http://archive.ubuntu.com/ubuntu jammy/universe amd64 fonts-unifont all 1:14.0.01-1 [3551 kB]
+Get:7 http://archive.ubuntu.com/ubuntu jammy/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+Get:8 http://archive.ubuntu.com/ubuntu jammy/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+Get:9 http://archive.ubuntu.com/ubuntu jammy/main amd64 xfonts-utils amd64 1:7.7+6build2 [94.6 kB]
+Get:10 http://archive.ubuntu.com/ubuntu jammy/universe amd64 xfonts-cyrillic all 1:1.0.5 [386 kB]
+Get:11 http://archive.ubuntu.com/ubuntu jammy/main amd64 xfonts-scalable all 1:1.0.3-1.2ubuntu1 [306 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 29.3 MB in 1s (36.1 MB/s)
+Selecting previously unselected package fonts-ipafont-gothic.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38904 files and directories currently installed.)
+Preparing to unpack .../00-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+Selecting previously unselected package fonts-freefont-ttf.
+Preparing to unpack .../01-fonts-freefont-ttf_20120503-10build1_all.deb ...
+Unpacking fonts-freefont-ttf (20120503-10build1) ...
+Selecting previously unselected package fonts-liberation.
+Preparing to unpack .../02-fonts-liberation_1%3a1.07.4-11_all.deb ...
+Unpacking fonts-liberation (1:1.07.4-11) ...
+Selecting previously unselected package fonts-noto-color-emoji.
+Preparing to unpack .../03-fonts-noto-color-emoji_2.047-0ubuntu0.22.04.1_all.deb ...
+Unpacking fonts-noto-color-emoji (2.047-0ubuntu0.22.04.1) ...
+Selecting previously unselected package fonts-tlwg-loma-otf.
+Preparing to unpack .../04-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+Selecting previously unselected package fonts-unifont.
+Preparing to unpack .../05-fonts-unifont_1%3a14.0.01-1_all.deb ...
+Unpacking fonts-unifont (1:14.0.01-1) ...
+Selecting previously unselected package fonts-wqy-zenhei.
+Preparing to unpack .../06-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+Selecting previously unselected package xfonts-encodings.
+Preparing to unpack .../07-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+Selecting previously unselected package xfonts-utils.
+Preparing to unpack .../08-xfonts-utils_1%3a7.7+6build2_amd64.deb ...
+Unpacking xfonts-utils (1:7.7+6build2) ...
+Selecting previously unselected package xfonts-cyrillic.
+Preparing to unpack .../09-xfonts-cyrillic_1%3a1.0.5_all.deb ...
+Unpacking xfonts-cyrillic (1:1.0.5) ...
+Selecting previously unselected package xfonts-scalable.
+Preparing to unpack .../10-xfonts-scalable_1%3a1.0.3-1.2ubuntu1_all.deb ...
+Unpacking xfonts-scalable (1:1.0.3-1.2ubuntu1) ...
+Setting up fonts-noto-color-emoji (2.047-0ubuntu0.22.04.1) ...
+Setting up fonts-wqy-zenhei (0.9.45-8) ...
+Setting up fonts-freefont-ttf (20120503-10build1) ...
+Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+Setting up fonts-liberation (1:1.07.4-11) ...
+Setting up fonts-unifont (1:14.0.01-1) ...
+Setting up xfonts-utils (1:7.7+6build2) ...
+Setting up xfonts-cyrillic (1:1.0.5) ...
+Setting up xfonts-scalable (1:1.0.3-1.2ubuntu1) ...
+Processing triggers for fontconfig (2.13.1-4.2ubuntu5) ...
+Downloading Chromium 143.0.7499.4 (playwright build v1200) from https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1200/chromium-linux.zip
+|                                                                                |   0% of 164.7 MiB
+|■■■■■■■■                                                                        |  10% of 164.7 MiB
+|■■■■■■■■■■■■■■■■                                                                |  20% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 164.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 164.7 MiB
+Chromium 143.0.7499.4 (playwright build v1200) downloaded to /root/.cache/ms-playwright/chromium-1200
+Downloading FFMPEG playwright build v1011 from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+|                                                                                |   0% of 2.3 MiB
+|■■■■■■■■                                                                        |  10% of 2.3 MiB
+|■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+FFMPEG playwright build v1011 downloaded to /root/.cache/ms-playwright/ffmpeg-1011
+Downloading Chromium Headless Shell 143.0.7499.4 (playwright build v1200) from https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1200/chromium-headless-shell-linux.zip
+|                                                                                |   0% of 109.7 MiB
+|■■■■■■■■                                                                        |  10% of 109.7 MiB
+|■■■■■■■■■■■■■■■■                                                                |  20% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 109.7 MiB
+|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 109.7 MiB
+Chromium Headless Shell 143.0.7499.4 (playwright build v1200) downloaded to /root/.cache/ms-playwright/chromium_headless_shell-1200
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+--> df7374e0a61c
+[3/3] STEP 33/34: WORKDIR /project
+--> 52c1d0172e60
+[3/3] STEP 34/34: ENTRYPOINT ["/project/scripts/build-test-release.sh"]
+[3/3] COMMIT localhost/t110-builder:green
+--> 8ac2c1471fcf
+Successfully tagged localhost/t110-builder:green
+8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9
+build_rc=0

@@ -1,0 +1,44 @@
+# identity: T116 paired mutations D-01..D-04 (reverting each fix to its HEAD version in a scratch copy, tracked files untouched)
+# head: a7cfc6d3
+# run_at: 2026-10-06T18:03:40Z host: anton
+# script: specs/001-full-project-audit-remediation/evidence/wp11/t116-mutate.sh (sha256 f46a29257461ba2f200a927e8ef60402faf75e24fa7cbadd9300e3980744b9da)
+# guard = the real rootless podman build; pass condition for a mutant = build fails at the COPY step
+## d01 mutant = HEAD docker-compose.yml service api
+parsed (mutant): context=catalog-api dockerfile=catalog-api/Dockerfile
+build_rc=125
+Error: building at STEP "COPY submodules/assets/ /build/submodules/assets/": checking on sources under "/home/milosvasic/Projects/catalogizer/catalog-api": copier: stat: "/submodules/assets": no such file or directory
+mutant_rc=125
+## d01 fixed side skipped (T116_SKIP_FIXED=1): the fixed build is the GREEN evidence t111/t113
+
+## d02 mutant = HEAD docker-compose.test.yml service catalog-web
+parsed (mutant): context=catalog-web dockerfile=catalog-web/Dockerfile
+build_rc=125
+Error: building at STEP "COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/": checking on sources under "/home/milosvasic/Projects/catalogizer/catalog-web": Rel: can't make  relative to /home/milosvasic/Projects/catalogizer/
+mutant_rc=125
+## d02 fixed side skipped (T116_SKIP_FIXED=1): the fixed build is the GREEN evidence t111/t113
+
+## d03 mutant = HEAD catalog-web/Dockerfile, context . (docker-compose.test.yml fixed context)
+build_rc=125
+Error: building at STEP "COPY WebSocket-Client-TS/package*.json /app/WebSocket-Client-TS/": checking on sources under "/home/milosvasic/Projects/catalogizer": Rel: can't make  relative to /home/milosvasic/Projects/catalogizer; copier: stat: ["/WebSocket-Client
+mutant_rc=125
+
+## d04 mutant = HEAD docker/Dockerfile.builder (tarball COPY), context . as docker-compose.build.yml
+build_rc=125
+Error: building at STEP "COPY docker/go${GO_VERSION}.linux-amd64.tar.gz /tmp/go.tar.gz": checking on sources under "/home/milosvasic/Projects/catalogizer": copier: stat: "/docker/go1.26.1.linux-amd64.tar.gz": no such file or directory
+mutant_rc=125
+
+# identity: T110/T114/T148 pins mutations (check_pins on scratch mutants of the fixed files)
+# run_at: 2026-10-06T18:03:52Z
+## mutant a
+VIOLATION from_unpinned docker/Dockerfile.builder:12: ubuntu:22.04
+check_pins: 1 violations in 1 files scanned
+check_pins_rc=1
+## mutant b
+VIOLATION pipe_to_shell docker/Dockerfile.builder:85: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+check_pins: 1 violations in 1 files scanned
+check_pins_rc=1
+## mutant c
+VIOLATION compose_image_unpinned docker-compose.security.yml:169: docker.io/aquasec/trivy:latest
+VIOLATION compose_image_unpinned docker-compose.security.yml:216: docker.io/aquasec/trivy:latest
+check_pins: 2 violations in 1 files scanned
+check_pins_rc=1

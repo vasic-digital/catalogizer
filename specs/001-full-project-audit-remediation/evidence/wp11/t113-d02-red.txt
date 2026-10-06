@@ -1,0 +1,16 @@
+# identity: T113-D02-RED
+# head: b53be11a (uncommitted work tree)
+# run_at: 2026-10-06T17:49:11Z host: anton
+# cmd: podman build --pull=never -f catalog-web/Dockerfile ./catalog-web
+# sha256 docker-compose.test.yml: e91dd9b63b53d449fdbfb239a7d0af603f5fc7c8cb22686a14f85ed59a87934d
+# sha256 catalog-web/Dockerfile: 6efabb70d607718475cceb689b766c91fc6b11b50c76d298d984b74cfd90ad67
+# disk gate:
+disk_headroom: pass op=T113-D02-RED need=3000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T113-D02-RED.json
+disk_gate_rc=0
+[1/2] STEP 1/43: FROM docker.io/node:20-alpine AS builder
+[1/2] STEP 2/43: WORKDIR /app
+--> Using cache dcf6b31b7f3e2e6d798510a60a54815ab6c0bfecad36901ba313ee9ed6877a7d
+--> dcf6b31b7f3e
+[1/2] STEP 3/43: COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/
+Error: building at STEP "COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/": checking on sources under "/home/milosvasic/Projects/catalogizer/catalog-web": Rel: can't make  relative to /home/milosvasic/Projects/catalogizer/catalog-web; copier: stat: ["/submodules/websocket_client_ts/package*.json"]: no such file or directory
+build_rc=125

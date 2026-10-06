@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # PostgreSQL Database - matching production setup
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15-alpine@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81
     container_name: catalogizer-postgres-dev
     restart: unless-stopped
     environment:
@@ -25,7 +25,7 @@ services:
 
   # Redis Cache - matching production setup
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     container_name: catalogizer-redis-dev
     restart: unless-stopped
     ports:
@@ -98,7 +98,7 @@ services:
 
   # Optional: pgAdmin for database management
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: docker.io/dpage/pgadmin4:9.18.0@sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
     container_name: catalogizer-pgadmin-dev
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@catalogizer.dev
@@ -117,7 +117,7 @@ services:
 
   # Optional: Redis Commander for Redis management
   redis-commander:
-    image: rediscommander/redis-commander:latest
+    image: docker.io/rediscommander/redis-commander:latest@sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a
     container_name: catalogizer-redis-commander-dev
     environment:
       REDIS_HOSTS: local:redis:6379

@@ -1,0 +1,10 @@
+# identity: T148+T149-GREEN-run-3 (tracked files after patches applied)
+# head: b53be11a (uncommitted work tree)
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# sha256 docker-compose.security.yml: 0e7fa2f37ec74088461eaaf410f17272ece4fcb5a75dc385c15fe50ae1ec220e
+# sha256 scripts/security-scan-full.sh: 46d4f5cd533ccb42ed7c05444eadba0b3ab21c5826b6d3eb7856c92525864b01
+# run_at: 2026-10-06T17:46:58Z host: anton
+# cmd: scripts/containers/run_pinned.sh IMG-KCOV -- bash scripts/containers/check_pins.sh docker-compose.security.yml scripts/security-scan-full.sh
+check_pins: 0 violations in 2 files scanned
+check_pins_rc=0
+trailing-ws: 0  lastbyte:   \n

@@ -1,0 +1,8 @@
+# identity: T110-GREEN-check-run-1
+# head: a7cfc6d3 (uncommitted work tree)
+# sha256 docker/Dockerfile.builder: 13fa3f1ee3918167de611bc3b769a9e7582cf80eb8c0a4df1927c5aad279fa7e
+# sha256 scripts/containers/check_pins.sh: ebea8051753c91a7c9e4329afd6e9f087a58fb3906ca65af51a1bed61cc2252a
+# run_at: 2026-10-06T18:03:13Z host: anton
+check_pins: 0 violations in 1 files scanned
+check_pins_rc=0
+manual: tauri unpinned=0 licenses-or-true=1 sha256sum lines=2

@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "T113-GREEN-run1",
+  "at": "2026-10-06T18:00:11Z",
+  "need_bytes": 3000000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 105111527424,
+      "free_after": 102111527424,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 105111527424,
+      "free_after": 102111527424,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

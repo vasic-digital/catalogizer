@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15-alpine@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81
     container_name: catalogizer-postgres-test
     environment:
       POSTGRES_USER: catalogizer
@@ -10,7 +10,7 @@ services:
     ports: ["35432:5432"]
     volumes: ["postgres_test_data:/var/lib/postgresql/data"]
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     container_name: catalogizer-redis-test
     ports: ["36379:6379"]
     command: redis-server --appendonly yes

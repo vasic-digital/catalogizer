@@ -1,0 +1,89 @@
+# identity: T111-GREEN-run1
+# head: a7cfc6d3 (uncommitted work tree)
+# run_at: 2026-10-06T18:01:01Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt --build-arg GO_VERSION=1.25 -f catalog-api/Dockerfile .
+# sha256 docker-compose.yml: 45dfbb17acc8cd4247708609effa4b5742ba4a82f41dcff1c3bcff9dc8a3b819
+# sha256 catalog-api/Dockerfile: 31196d2f64e74ea6cea34f5ef37d0884bb0ed7768de32938ccd879673fbda981
+# disk gate:
+disk_headroom: pass op=T111-GREEN-run1 need=5000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T111-GREEN-run1.json
+disk_gate_rc=0
+[1/2] STEP 1/33: FROM docker.io/library/golang:1.25 AS builder
+[1/2] STEP 2/33: RUN apt-get update && apt-get install -y --no-install-recommends     git make gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+--> Using cache f10c09abbbb15ae4bda62668a8c2adfea6d7ad37ef2779fab5231e5abf699913
+--> f10c09abbbb1
+[1/2] STEP 3/33: ENV GOTOOLCHAIN=local
+--> Using cache c66a084977b3a9d9218558a780d8b4054c9371f8c51db6e5b8be29a5c8a2af69
+--> c66a084977b3
+[1/2] STEP 4/33: ENV CGO_ENABLED=1
+--> Using cache 70c490acd7a5a77e4bba771663715d92ace0c4914c211c25e68140eb8a67e10e
+--> 70c490acd7a5
+[1/2] STEP 5/33: WORKDIR /build
+--> Using cache ca041546e0a760c3b71c136466b13297d946b31177e0c450e988cc1ed86c3b69
+--> ca041546e0a7
+[1/2] STEP 6/33: COPY submodules/assets/ /build/submodules/assets/
+--> 4ed60b57970a
+[1/2] STEP 7/33: COPY submodules/auth/ /build/submodules/auth/
+--> 0058c1733f7a
+[1/2] STEP 8/33: COPY submodules/cache/ /build/submodules/cache/
+--> 5c02a8e4bcb7
+[1/2] STEP 9/33: COPY submodules/challenges/ /build/submodules/challenges/
+--> 9de6f35ecbdc
+[1/2] STEP 10/33: COPY submodules/concurrency/ /build/submodules/concurrency/
+--> 062b3ecd05fb
+[1/2] STEP 11/33: COPY submodules/config/ /build/submodules/config/
+--> 9971990c5835
+[1/2] STEP 12/33: COPY submodules/containers/ /build/submodules/containers/
+--> bff05c5a703a
+[1/2] STEP 13/33: COPY submodules/database/ /build/submodules/database/
+--> bfcc1df14923
+[1/2] STEP 14/33: COPY submodules/discovery/ /build/submodules/discovery/
+--> 028becdc09f1
+[1/2] STEP 15/33: COPY submodules/entities/ /build/submodules/entities/
+--> e5ba0ab7eec4
+[1/2] STEP 16/33: COPY submodules/event_bus/ /build/submodules/event_bus/
+--> 11f840c7c039
+[1/2] STEP 17/33: COPY submodules/filesystem/ /build/submodules/filesystem/
+--> 4080f5d90498
+[1/2] STEP 18/33: COPY submodules/lazy/ /build/submodules/lazy/
+--> 8b29cf30dfd9
+[1/2] STEP 19/33: COPY submodules/media/ /build/submodules/media/
+--> 90f78cc19529
+[1/2] STEP 20/33: COPY submodules/memory/ /build/submodules/memory/
+--> 0374bb4e1ca8
+[1/2] STEP 21/33: COPY submodules/middleware/ /build/submodules/middleware/
+--> 87511c167c1c
+[1/2] STEP 22/33: COPY submodules/observability/ /build/submodules/observability/
+--> 46077c9ffe06
+[1/2] STEP 23/33: COPY submodules/rate_limiter/ /build/submodules/rate_limiter/
+--> c2266263c012
+[1/2] STEP 24/33: COPY submodules/recovery/ /build/submodules/recovery/
+--> 4bc95081d588
+[1/2] STEP 25/33: COPY submodules/security/ /build/submodules/security/
+--> 9bf3f27b9bd5
+[1/2] STEP 26/33: COPY submodules/storage/ /build/submodules/storage/
+--> 373993d6dfc4
+[1/2] STEP 27/33: COPY submodules/streaming/ /build/submodules/streaming/
+--> 087f2eabad91
+[1/2] STEP 28/33: COPY submodules/watcher/ /build/submodules/watcher/
+--> 69c54fdf7947
+[1/2] STEP 29/33: COPY catalog-api/go.mod catalog-api/go.sum /build/catalog-api/
+--> aeb3b60bad05
+[1/2] STEP 30/33: WORKDIR /build/catalog-api
+--> 302e8891e5d2
+[1/2] STEP 31/33: RUN go mod download
+--> 9e1a7499fe42
+[1/2] STEP 32/33: COPY catalog-api/ /build/catalog-api/
+--> c21ba35193db
+[1/2] STEP 33/33: RUN go build -a -ldflags="-w -s" -o catalogizer-api .
+# github.com/mutecomm/go-sqlcipher
+sqlite3.c: In function 'sqlite3SelectNew':
+sqlite3.c:120891:10: warning: function may return address of local variable [-Wreturn-local-addr]
+120891 |   return pNew;
+       |          ^~~~
+sqlite3.c:120852:10: note: declared here
+120852 |   Select standin;
+       |          ^~~~~~~
+--> 09e14a555cc6
+[2/2] STEP 1/12: FROM docker.io/library/debian:trixie-slim
+Error: creating build container: docker.io/library/debian:trixie-slim: image not known
+build_rc=125

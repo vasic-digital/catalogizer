@@ -1,0 +1,145 @@
+# identity: T111-GREEN-run2
+# head: a9186016 (uncommitted work tree)
+# run_at: 2026-10-06T18:12:27Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt --build-arg GO_VERSION=1.25 -f catalog-api/Dockerfile .
+# sha256 docker-compose.yml: 45dfbb17acc8cd4247708609effa4b5742ba4a82f41dcff1c3bcff9dc8a3b819
+# sha256 catalog-api/Dockerfile: 31196d2f64e74ea6cea34f5ef37d0884bb0ed7768de32938ccd879673fbda981
+# disk gate:
+disk_headroom: pass op=T111-GREEN-run2 need=5000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T111-GREEN-run2.json
+disk_gate_rc=0
+[1/2] STEP 1/33: FROM docker.io/library/golang:1.25 AS builder
+[1/2] STEP 2/33: RUN apt-get update && apt-get install -y --no-install-recommends     git make gcc libc6-dev && rm -rf /var/lib/apt/lists/*
+--> Using cache f10c09abbbb15ae4bda62668a8c2adfea6d7ad37ef2779fab5231e5abf699913
+--> f10c09abbbb1
+[1/2] STEP 3/33: ENV GOTOOLCHAIN=local
+--> Using cache c66a084977b3a9d9218558a780d8b4054c9371f8c51db6e5b8be29a5c8a2af69
+--> c66a084977b3
+[1/2] STEP 4/33: ENV CGO_ENABLED=1
+--> Using cache 70c490acd7a5a77e4bba771663715d92ace0c4914c211c25e68140eb8a67e10e
+--> 70c490acd7a5
+[1/2] STEP 5/33: WORKDIR /build
+--> Using cache ca041546e0a760c3b71c136466b13297d946b31177e0c450e988cc1ed86c3b69
+--> ca041546e0a7
+[1/2] STEP 6/33: COPY submodules/assets/ /build/submodules/assets/
+--> Using cache 4ed60b57970a68ab331183180527600f3d81d963b1cc3fd1b52261ebcb16ef1b
+--> 4ed60b57970a
+[1/2] STEP 7/33: COPY submodules/auth/ /build/submodules/auth/
+--> Using cache 0058c1733f7a4994b566f0f5d73f6887199216c84e2ac1fb63f094f80a89ad75
+--> 0058c1733f7a
+[1/2] STEP 8/33: COPY submodules/cache/ /build/submodules/cache/
+--> Using cache 5c02a8e4bcb7a7c400848324b074af5daa7a7d1f66abf7d6820f74f562f9040d
+--> 5c02a8e4bcb7
+[1/2] STEP 9/33: COPY submodules/challenges/ /build/submodules/challenges/
+--> Using cache 9de6f35ecbdc9e14b4135be83a26407bd4555a62a834d47de4cff3aec3ca593c
+--> 9de6f35ecbdc
+[1/2] STEP 10/33: COPY submodules/concurrency/ /build/submodules/concurrency/
+--> Using cache 062b3ecd05fb88e49b040d5d298066f5ca205029aabe5a717aa280b24ecc16e9
+--> 062b3ecd05fb
+[1/2] STEP 11/33: COPY submodules/config/ /build/submodules/config/
+--> Using cache 9971990c583544694b117fead5400624464f3176ccc846bf4ef8be01ff26551d
+--> 9971990c5835
+[1/2] STEP 12/33: COPY submodules/containers/ /build/submodules/containers/
+--> Using cache bff05c5a703a6a3ff4882dcc3b2e7705be5f064ba93c46e662c70461311cf6e2
+--> bff05c5a703a
+[1/2] STEP 13/33: COPY submodules/database/ /build/submodules/database/
+--> Using cache bfcc1df1492307d8a1ef02b6ab0e5a18a0eb5819e730a581b9320ee236021134
+--> bfcc1df14923
+[1/2] STEP 14/33: COPY submodules/discovery/ /build/submodules/discovery/
+--> Using cache 028becdc09f15437377111b0cb6f0dc425f7639ebb41b58c9a91e6476e3e5ce9
+--> 028becdc09f1
+[1/2] STEP 15/33: COPY submodules/entities/ /build/submodules/entities/
+--> Using cache e5ba0ab7eec4a4b607c74c7eeeb6660fb4a2d2dc4e2726a7d1bb51a8f16231dd
+--> e5ba0ab7eec4
+[1/2] STEP 16/33: COPY submodules/event_bus/ /build/submodules/event_bus/
+--> Using cache 11f840c7c039a6aaea5fdb038b00368ef007e1da1b3ea424ca3c761f1f026cda
+--> 11f840c7c039
+[1/2] STEP 17/33: COPY submodules/filesystem/ /build/submodules/filesystem/
+--> Using cache 4080f5d90498dd52ed4f31716225b8cff426c5f234450926161c7b7a667d4b7b
+--> 4080f5d90498
+[1/2] STEP 18/33: COPY submodules/lazy/ /build/submodules/lazy/
+--> Using cache 8b29cf30dfd9c86f9def40142b07c791ae61aa43d4a60b3cc635e719ad16058c
+--> 8b29cf30dfd9
+[1/2] STEP 19/33: COPY submodules/media/ /build/submodules/media/
+--> Using cache 90f78cc19529ee603d4f6614cc1cd5d78a98f7872db7d655a12f282064abb50a
+--> 90f78cc19529
+[1/2] STEP 20/33: COPY submodules/memory/ /build/submodules/memory/
+--> Using cache 0374bb4e1ca85135d3af24623e9d897312352ffd2a3a3c0ee5e7485a276ecce9
+--> 0374bb4e1ca8
+[1/2] STEP 21/33: COPY submodules/middleware/ /build/submodules/middleware/
+--> Using cache 87511c167c1c27e2dd5950165ca447f9e341a40e519036631982c651a83714ee
+--> 87511c167c1c
+[1/2] STEP 22/33: COPY submodules/observability/ /build/submodules/observability/
+--> Using cache 46077c9ffe0688df96f41890fb2a685214e5dffa55d5c116e4492d9bcb847fa3
+--> 46077c9ffe06
+[1/2] STEP 23/33: COPY submodules/rate_limiter/ /build/submodules/rate_limiter/
+--> Using cache c2266263c01215398aaa378ad18717df3918cb649fc2b6b910174bd85a268b92
+--> c2266263c012
+[1/2] STEP 24/33: COPY submodules/recovery/ /build/submodules/recovery/
+--> Using cache 4bc95081d588c319cec4e7dc187f9355128ce078807e243d385e8b14e514296a
+--> 4bc95081d588
+[1/2] STEP 25/33: COPY submodules/security/ /build/submodules/security/
+--> Using cache 9bf3f27b9bd5a28f253ed38994eff7dd1998a3b24df4894d3c4b62e25504beca
+--> 9bf3f27b9bd5
+[1/2] STEP 26/33: COPY submodules/storage/ /build/submodules/storage/
+--> Using cache 373993d6dfc4aea328db0ac05f4de5841c7a430b9f0f9e266fdb34d474f77f72
+--> 373993d6dfc4
+[1/2] STEP 27/33: COPY submodules/streaming/ /build/submodules/streaming/
+--> Using cache 087f2eabad910ce2572ec0c42a5689d0e78af3c7168a8c866cac9de12fb2baa7
+--> 087f2eabad91
+[1/2] STEP 28/33: COPY submodules/watcher/ /build/submodules/watcher/
+--> Using cache 69c54fdf794793586cf4551b0b756ad5024a2e413ca9eca8673c0b551ac8cbf2
+--> 69c54fdf7947
+[1/2] STEP 29/33: COPY catalog-api/go.mod catalog-api/go.sum /build/catalog-api/
+--> Using cache aeb3b60bad05ff54509797658bcef17780534cc87cddb4c9f7c5d67c963efbce
+--> aeb3b60bad05
+[1/2] STEP 30/33: WORKDIR /build/catalog-api
+--> Using cache 302e8891e5d2fb31cff4856171ea4eddd71a7bb0338f9b1d9ddf443ed5e7a75a
+--> 302e8891e5d2
+[1/2] STEP 31/33: RUN go mod download
+--> Using cache 9e1a7499fe42a91fd06edefb775555339b6ea4e647e69f92d97343733c67eb52
+--> 9e1a7499fe42
+[1/2] STEP 32/33: COPY catalog-api/ /build/catalog-api/
+--> Using cache c21ba35193dbb40fc30b7684619248b22fe65d6ce78c59afd16504dd8a96d129
+--> c21ba35193db
+[1/2] STEP 33/33: RUN go build -a -ldflags="-w -s" -o catalogizer-api .
+--> Using cache 09e14a555cc65e01825aad98c9147242a4abfe09bf925582b8978fa95cd3c540
+--> 09e14a555cc6
+[2/2] STEP 1/12: FROM docker.io/library/debian:trixie-slim
+[2/2] STEP 2/12: RUN apt-get update && apt-get install -y --no-install-recommends     ca-certificates tzdata wget && rm -rf /var/lib/apt/lists/*
+--> Using cache 1d77c6310f8d675d32c00637a9d7a59204aa3d3fedf41685db0cefff5d4edc5f
+--> 1d77c6310f8d
+[2/2] STEP 3/12: WORKDIR /app
+--> Using cache 8e7c3dccc1076cbf059499fd5c53d929f834a2840a30afd325fe0d12a6870e89
+--> 8e7c3dccc107
+[2/2] STEP 4/12: COPY --from=builder /build/catalog-api/catalogizer-api /app/catalogizer-api
+--> Using cache 8becda614e5ff4bfe0c44f2c3b4e25928f7802489b83824d68e76b508403611d
+--> 8becda614e5f
+[2/2] STEP 5/12: COPY --from=builder /build/catalog-api/migrations /app/migrations
+--> Using cache 5aa1e657b8b554ab08d8825cc3b5d039af47c443c4e1dc98d11439f8f8e0226f
+--> 5aa1e657b8b5
+[2/2] STEP 6/12: COPY --from=builder /build/catalog-api/challenges/config /app/challenges/config
+--> Using cache 5d260a0918480164021154a31b159738de2d8d980588973b6848232699148281
+--> 5d260a091848
+[2/2] STEP 7/12: RUN groupadd --system --gid 1001 appgroup &&     useradd --system --uid 1001 --gid appgroup --no-create-home appuser
+--> Using cache c84cd65f539c6545478e67a7ba92eb501aa34f8158724d806abf962dd90739f7
+--> c84cd65f539c
+[2/2] STEP 8/12: RUN mkdir -p /app/data /app/logs /app/temp &&     chown -R appuser:appgroup /app
+--> Using cache 2ba775e4a01b39b7498798d76611c39c846a3aa67db13696a885e53785715f04
+--> 2ba775e4a01b
+[2/2] STEP 9/12: EXPOSE 8080
+--> Using cache b39a918a5b28078ccb4f40139d34f2dec7a069244bdb21c13646bb60a84c042e
+--> b39a918a5b28
+[2/2] STEP 10/12: HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+--> Using cache d7bac2bdcf48cfaa5b6ad8032b65d94dce42b149321d7585e1fa5fc2e57e679e
+--> d7bac2bdcf48
+[2/2] STEP 11/12: USER appuser
+--> Using cache fe0169897db92a33da44b6418ba898b78377652209cbf5b3701961aad67fcef1
+--> fe0169897db9
+[2/2] STEP 12/12: ENTRYPOINT ["/app/catalogizer-api"]
+--> Using cache 133ae24506e45e0081b43a65158e3456538e7e8066967619b5cd8b4881ed9085
+[2/2] COMMIT localhost/t111-api:green
+--> 133ae24506e4
+[Warning] one or more build args were not consumed: [GO_VERSION]
+Successfully tagged localhost/t111-api:green
+133ae24506e45e0081b43a65158e3456538e7e8066967619b5cd8b4881ed9085
+build_rc=0

@@ -1,0 +1,19 @@
+# identity: T148/T149 post-apply consistency (compose digests vs lock, YAML service set before/after)
+# run_at: 2026-10-06T18:06:32Z
+services before: ['dependency-check', 'hadolint', 'semgrep-scanner', 'snyk-cli', 'sonarqube', 'sonarqube-db', 'trivy-scanner', 'trivy-server']
+services after : ['dependency-check', 'hadolint', 'semgrep-scanner', 'snyk-cli', 'sonarqube', 'sonarqube-db', 'trivy-scanner', 'trivy-server']
+same set: True
+dependency-check docker.io/owasp/dependency-check:13.0.0 -> IMG-SCAN-DEPCHECK
+hadolint docker.io/hadolint/hadolint:v2.15.1 -> IMG-SCAN-HADOLINT
+semgrep-scanner docker.io/semgrep/semgrep:1.179.0 -> IMG-SCAN-SEMGREP
+snyk-cli docker.io/library/node:18-alpine -> IMG-SCAN-NODE18
+sonarqube docker.io/library/sonarqube:community -> IMG-SCAN-SONARQUBE
+sonarqube-db docker.io/library/postgres:15-alpine -> IMG-INFRA-POSTGRES
+trivy-scanner docker.io/aquasec/trivy:0.75.0 -> IMG-SCAN-TRIVY
+trivy-server docker.io/aquasec/trivy:0.75.0 -> IMG-SCAN-TRIVY
+security-scan-full.sh lines 40-43:
+check_tool trivy "download Trivy 0.75.0 from https://github.com/aquasecurity/trivy/releases/tag/v0.75.0, verify the SHA-256 of the archive against trivy_0.75.0_checksums.txt of that release, then install the binary (or run the digest-pinned image of build/containers/images.lock.yaml, IMG-SCAN-TRIVY)"
+check_tool gosec "go install github.com/securego/gosec/v2/cmd/gosec@v2.24.6"
+check_tool nancy "download nancy v2.1.0 (nancy-v2.1.0-linux-amd64) from https://github.com/sonatype-nexus-community/nancy/releases/tag/v2.1.0, verify its SHA-256 against the release, then install it into /usr/local/bin"
+check_tool semgrep "pip install semgrep==1.179.0"
+bash -n rc=0

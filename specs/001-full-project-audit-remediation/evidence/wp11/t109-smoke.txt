@@ -1,0 +1,9 @@
+# identity: T109 smoke of localhost/t109-builder:green (post-GREEN)
+# run_at: 2026-10-06T18:03:05Z
+go version go1.25.14 linux/amd64
+v18.20.8
+rustc 1.99.0 (b940084d7 2026-09-28)
+tauri-cli 2.12.1
+openjdk version "21.0.12.1" 2026-08-18
+rc=0
+id=3d508f75f8c11fbc5f7090226c1021d21264b11954018ccd62ec99863b511b0b

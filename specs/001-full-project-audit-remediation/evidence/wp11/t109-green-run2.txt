@@ -1,0 +1,108 @@
+# identity: T109-GREEN-run2
+# head: a7cfc6d3 (uncommitted work tree)
+# run_at: 2026-10-06T18:02:14Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f docker/Dockerfile.builder .
+# sha256 docker/Dockerfile.builder: 4bf90bee3d2dec13be44be4369d486e2c1a3a5b6dba733ce3b12241bfa38f8c0
+# disk gate:
+disk_headroom: pass op=T109-GREEN-run2 need=8000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T109-GREEN-run2.json
+disk_gate_rc=0
+[1/2] STEP 1/1: FROM docker.io/library/golang:1.25-bookworm@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 AS gotoolchain
+--> e3c6b02e5322
+[2/2] STEP 1/32: FROM ubuntu:22.04
+[2/2] STEP 2/32: LABEL maintainer="Catalogizer Team"
+--> Using cache 98377cf208711a7c90e5e8858e1344f7879454b04ad4b5af753d1f0c5c658b7a
+--> 98377cf20871
+[2/2] STEP 3/32: LABEL description="Multi-toolchain builder for Catalogizer project"
+--> Using cache aae5657d3fab3d2db947d160218067368a2aa85c68d78879c73b0897f32d4b5f
+--> aae5657d3fab
+[2/2] STEP 4/32: ENV DEBIAN_FRONTEND=noninteractive
+--> Using cache 331e23da23620e4d478d0420df9e70260dd0ac4530fb435b6840d6cc7ce18191
+--> 331e23da2362
+[2/2] STEP 5/32: ENV TZ=UTC
+--> Using cache 1e02cd776a2a04f2b3556a3cbd8f6f7a668835ba95f58c61dbc1e86b81dc0671
+--> 1e02cd776a2a
+[2/2] STEP 6/32: RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     git     curl     wget     pkg-config     libssl-dev     ca-certificates     gnupg     unzip     zip     webkit2gtk-4.1-dev     libayatana-appindicator3-dev     librsvg2-dev     libgtk-3-dev     patchelf     xvfb     postgresql-client     redis-tools     jq     file     bc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 3252ce39804c9f872b2e77974409d02002de0f57bd85fd53916f2a5ccd2e2501
+--> 3252ce39804c
+[2/2] STEP 7/32: RUN apt-get update && apt-get install -y --no-install-recommends     libvlc-dev     libvlccore-dev     vlc     && rm -rf /var/lib/apt/lists/*
+--> Using cache 5a70401327f142ac4ccd224544fe18051958519bdeb29010e71a8cb4079e3bc4
+--> 5a70401327f1
+[2/2] STEP 8/32: COPY --from=gotoolchain /usr/local/go /usr/local/go
+--> Using cache e6323ea114e9858b782f731c6d5925817a4fdc4614113bac374b5259346386e3
+--> e6323ea114e9
+[2/2] STEP 9/32: ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
+--> Using cache f4fcd6c40cf676d86dda0b988a8c536b40e4e9fdf403c4203f93df0c12b9d45a
+--> f4fcd6c40cf6
+[2/2] STEP 10/32: ENV GOPATH="/root/go"
+--> Using cache 2a5013f0183a31e6a8bf0ca963f78a691e371c06ae58772588a9d793104b3d09
+--> 2a5013f0183a
+[2/2] STEP 11/32: ENV CGO_ENABLED=1
+--> Using cache fd1b0ccb14030b222439687cd85306a939d8a59c005cc75ababba628df793af6
+--> fd1b0ccb1403
+[2/2] STEP 12/32: RUN go version
+--> Using cache 06636671233b6202f15c2b535487e64229fc2980a8c2bb226b58f599dfc735b1
+--> 06636671233b
+[2/2] STEP 13/32: RUN for i in $(seq 1 10); do     curl -fsSL https://deb.nodesource.com/setup_18.x && break || (echo "Attempt $i failed, waiting 15s..." && sleep 15);     done | bash - && apt-get install -y nodejs && rm -rf /var/lib/apt/lists/*
+--> Using cache a2619770ab9313ad2635b2a9d805a9751d350345cd0dc539b2622ff8dd546100
+--> a2619770ab93
+[2/2] STEP 14/32: RUN node --version && npm --version
+--> Using cache 29a358134ee6da8f59e7fbddfdec855e9a501091f673dad7fd89b3cc6b0e6fbc
+--> 29a358134ee6
+[2/2] STEP 15/32: ENV RUSTUP_HOME="/opt/rustup"
+--> Using cache 7131b2672f5bdef8a8d3a58066a4f74a49b2889ff445662af273726309009df3
+--> 7131b2672f5b
+[2/2] STEP 16/32: ENV CARGO_HOME="/opt/cargo"
+--> Using cache d9c1a5410ee610d653eafbf9d984fc62771c15f3d7c28b1a9dfa6d54869d9e64
+--> d9c1a5410ee6
+[2/2] STEP 17/32: RUN curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+--> Using cache c4c4def7d59ea97c9e03cd9f150ef34544fcec8bbad3f9d61c3102821006cf53
+--> c4c4def7d59e
+[2/2] STEP 18/32: ENV PATH="/opt/cargo/bin:${PATH}"
+--> Using cache b7c5f6a63c8b8466b2369adbb00ca97599589609f12c8a465eae29630e075cd3
+--> b7c5f6a63c8b
+[2/2] STEP 19/32: RUN cargo install tauri-cli
+--> Using cache 1f0bfa201f43e3e636355d528fcc4889c7d00e01c489d068b7703338cd3da447
+--> 1f0bfa201f43
+[2/2] STEP 20/32: RUN chmod -R a+rX /opt/rustup /opt/cargo
+--> Using cache 32fd75b4633b1d63e97c85be025399955fdf01254692f686550bda9fb7e2cc6f
+--> 32fd75b4633b
+[2/2] STEP 21/32: RUN rustc --version && cargo --version
+--> Using cache 762d3636e0ec039b0e737d1b7507f6af3c7e33853be59ff68b7f3420dc607a0a
+--> 762d3636e0ec
+[2/2] STEP 22/32: RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jdk && rm -rf /var/lib/apt/lists/*
+--> Using cache 7ee6433753b1e46289b31f6756e95d647eec2b60b29b14fa59e55516ba6f1ddd
+--> 7ee6433753b1
+[2/2] STEP 23/32: ENV JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+--> Using cache 785a99dc06a5aefc03012de7f35ba305db69b6fa092676717fedb6433fe7a745
+--> 785a99dc06a5
+[2/2] STEP 24/32: ENV ANDROID_HOME="/opt/android-sdk"
+--> Using cache c0a6c2722f2cd1eff67a7c92c304a57e6d46f53f60d75dd62ae2c60230af9c9d
+--> c0a6c2722f2c
+[2/2] STEP 25/32: ENV ANDROID_SDK_ROOT="${ANDROID_HOME}"
+--> Using cache b0d0d5d6482f5da9b896ca20a08a3389651497a06a73873e9348239fdf37b045
+--> b0d0d5d6482f
+[2/2] STEP 26/32: ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+--> Using cache 8fef1272463222f00b2ba56b536dd703f0f19d1cdd2b191e5e9aded16ac855f9
+--> 8fef12724632
+[2/2] STEP 27/32: RUN mkdir -p "${ANDROID_HOME}/cmdline-tools"     && cd "${ANDROID_HOME}/cmdline-tools"     && for i in 1 2 3 4 5; do         echo "Attempt $i: Downloading Android cmdline-tools..." &&         curl --retry 5 --retry-delay 10 --retry-all-errors -fSL             "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip" -o cmdline-tools.zip &&         break || (echo "Attempt $i failed, waiting 15s..." && sleep 15);     done     && unzip -q cmdline-tools.zip     && mv cmdline-tools latest     && rm cmdline-tools.zip
+--> Using cache d468625a7596b2f1596c573dda867e59a84880c288fc14a63efae4bbf031a8e3
+--> d468625a7596
+[2/2] STEP 28/32: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+--> Using cache f318b0662996de8716c6418cce1bec986c414cd142f3ce91984f0d2ae4887157
+--> f318b0662996
+[2/2] STEP 29/32: RUN sdkmanager     "platform-tools"     "build-tools;34.0.0"     "build-tools;35.0.0"     "platforms;android-34"     "platforms;android-35"
+--> Using cache 4b3b7d028b85a6c54d94464dc1c740cf7f949c90fb6396e2ffb988a2c4ed2f89
+--> 4b3b7d028b85
+[2/2] STEP 30/32: RUN npx playwright install --with-deps chromium
+--> Using cache 7318c0efb1fe651c70411b928f713b39ea2e369afbbdaad0dbf50a62566f460a
+--> 7318c0efb1fe
+[2/2] STEP 31/32: WORKDIR /project
+--> Using cache 52b8abec05f7ad9e759b0ffa27444b7106cd32985c45a7def22794b2445edf82
+--> 52b8abec05f7
+[2/2] STEP 32/32: ENTRYPOINT ["/project/scripts/build-test-release.sh"]
+--> Using cache 3d508f75f8c11fbc5f7090226c1021d21264b11954018ccd62ec99863b511b0b
+[2/2] COMMIT localhost/t109-builder:green
+--> 3d508f75f8c1
+Successfully tagged localhost/t109-builder:green
+3d508f75f8c11fbc5f7090226c1021d21264b11954018ccd62ec99863b511b0b
+build_rc=0

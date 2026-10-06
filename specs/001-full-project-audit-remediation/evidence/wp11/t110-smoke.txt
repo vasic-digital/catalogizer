@@ -1,0 +1,18 @@
+# identity: T110 smoke of localhost/t110-builder:green
+# run_at: 2026-10-06T18:11:58Z
+# sha256 docker/Dockerfile.builder: 13fa3f1ee3918167de611bc3b769a9e7582cf80eb8c0a4df1927c5aad279fa7e
+go version go1.25.14 linux/amd64
+v20.20.2
+10.8.2
+10.8.2
+rustc 1.99.0 (b940084d7 2026-09-28)
+tauri-cli 2.12.1
+openjdk version "21.0.12.1" 2026-08-18
+12.0
+
+android-34
+android-35
+rc=0
+8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9
+8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9
+8ac2c1471fcf6bc990287059a5667ff76efd578a3925f4410df4e652d61a66e9

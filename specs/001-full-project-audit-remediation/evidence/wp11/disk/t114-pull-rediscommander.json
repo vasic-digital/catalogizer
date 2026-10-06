@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "t114-pull-rediscommander",
+  "at": "2026-10-06T17:52:11Z",
+  "need_bytes": 300000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 114828423168,
+      "free_after": 114528423168,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 114828423168,
+      "free_after": 114528423168,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

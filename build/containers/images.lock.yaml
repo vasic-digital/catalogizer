@@ -348,3 +348,38 @@ images:
   signature_status: UNKNOWN
   size_bytes: 3162777280
   class: compile
+- id: IMG-UBUNTU-JAMMY
+  reference: docker.io/library/ubuntu
+  tag_intent: '22.04'
+  digest: sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+  platform_digest: sha256:79676deb51ebb02885b0b9d33788e78a37cf1045ad79d1bb04c6a222c3556b3d
+  resolved_at: '2026-10-06T17:50:19Z'
+  resolved_on: anton
+  purpose: base of docker/Dockerfile.builder (T110, docs/16 D-05); jammy because the
+    builder installs webkit2gtk-4.1 and the Tauri toolchain on 22.04
+  signature_status: UNKNOWN
+  size_bytes: 80634738
+  class: compile
+- id: IMG-INFRA-PGADMIN
+  reference: docker.io/dpage/pgadmin4
+  tag_intent: 9.18.0
+  digest: sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
+  platform_digest: sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
+  resolved_at: '2026-10-06T17:52:23Z'
+  resolved_on: anton
+  purpose: pgAdmin of docker-compose.dev.yml (T114; was :latest)
+  signature_status: UNKNOWN
+  size_bytes: 557090871
+  class: interpreter
+- id: IMG-INFRA-REDISCOMMANDER
+  reference: docker.io/rediscommander/redis-commander
+  tag_intent: latest
+  digest: sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a
+  platform_digest: sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a
+  resolved_at: '2026-10-06T17:52:24Z'
+  resolved_on: anton
+  purpose: Redis Commander of docker-compose.dev.yml (T114; the repository publishes
+    no versioned tag, tag intent latest recorded as pinned by digest)
+  signature_status: UNKNOWN
+  size_bytes: 84653752
+  class: interpreter

@@ -36,7 +36,7 @@ services:
   # Screenshots taken at every page transition.
   # ---------------------------------------------------------------------------
   helixqa-web:
-    image: docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy
+    image: mcr.microsoft.com/playwright:v1.57.0-noble@sha256:3bed4b1a12f2338642f3d8cba28e291deef3c66bd4a964bbeb3e57bbff511dbd
     container_name: catalogizer-helixqa-web
     network_mode: host
     environment:
@@ -229,7 +229,7 @@ services:
   # helixqa-api: API endpoint validation against live containerized backend
   # ---------------------------------------------------------------------------
   helixqa-api:
-    image: docker.io/library/node:18-bookworm-slim
+    image: docker.io/library/node:20-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
     container_name: catalogizer-helixqa-api
     network_mode: host
     entrypoint: ["bash", "-c"]

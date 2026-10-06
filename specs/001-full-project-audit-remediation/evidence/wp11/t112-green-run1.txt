@@ -1,0 +1,539 @@
+# identity: T112-GREEN-run1
+# head: b9bd2d2b (uncommitted work tree)
+# run_at: 2026-10-06T17:53:57Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f catalog-web/Dockerfile .
+# sha256 catalog-web/Dockerfile: ef2be37b40d4e8cd2f43746cbef9587d0b2a5af779bf175f9663ce2867af8539
+# disk gate:
+disk_headroom: pass op=T112-GREEN-run1 need=3000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T112-GREEN-run1.json
+disk_gate_rc=0
+[1/2] STEP 1/52: FROM docker.io/node:20-alpine AS builder
+[1/2] STEP 2/52: WORKDIR /app
+--> Using cache dcf6b31b7f3e2e6d798510a60a54815ab6c0bfecad36901ba313ee9ed6877a7d
+--> dcf6b31b7f3e
+[1/2] STEP 3/52: COPY submodules/websocket_client_ts/package*.json /app/submodules/websocket_client_ts/
+--> Using cache 50622b4e4a68905062e48ab0b41d4ba24d9973ce84e2e560ee45b6a54811cea3
+--> 50622b4e4a68
+[1/2] STEP 4/52: COPY submodules/media_types_ts/package*.json /app/submodules/media_types_ts/
+--> Using cache d979e85900753fd89ee4566dd744139b5afe251243d6896221c8e13a421c8397
+--> d979e8590075
+[1/2] STEP 5/52: COPY submodules/ui_components_react/package*.json /app/submodules/ui_components_react/
+--> Using cache 6263dcee33a9a7d9fa0699db14a6cc4b13eca5929d8f4762af94d573ab3c23c3
+--> 6263dcee33a9
+[1/2] STEP 6/52: COPY submodules/media_browser_react/package*.json /app/submodules/media_browser_react/
+--> Using cache c13d1246acef2a7309d0210b696d7b484323f15fabf4333d29c0986a2bfb2613
+--> c13d1246acef
+[1/2] STEP 7/52: COPY submodules/media_player_react/package*.json /app/submodules/media_player_react/
+--> Using cache d697022c205dfc1311c954d1d455b93e820fee0b154cc10dedd4418b0505a040
+--> d697022c205d
+[1/2] STEP 8/52: COPY submodules/collection_manager_react/package*.json /app/submodules/collection_manager_react/
+--> Using cache 7292672b2553a5d2dbc62a85a506199a9df6d4bbbdc61803a4e5be92c75355d3
+--> 7292672b2553
+[1/2] STEP 9/52: COPY submodules/dashboard_analytics_react/package*.json /app/submodules/dashboard_analytics_react/
+--> Using cache 7b2f0159d1e9442a4cf7dc3c0e23346a1f6486f10b0669a8a7a09a4d49a7ab27
+--> 7b2f0159d1e9
+[1/2] STEP 10/52: COPY submodules/auth_context_react/package*.json /app/submodules/auth_context_react/
+--> Using cache 2c3643473def84902c0376d1bf7bdaa21fc5439bede1ac91383f6b8be71fb30d
+--> 2c3643473def
+[1/2] STEP 11/52: COPY submodules/catalogizer_api_client_ts/package*.json /app/submodules/catalogizer_api_client_ts/
+--> Using cache 1a31e6f77c8372180d831c4a00e4652bf3e2700c04b4aaaa85c16e724a2db074
+--> 1a31e6f77c83
+[1/2] STEP 12/52: COPY catalog-web/package*.json /app/catalog-web/
+--> Using cache 3b6ab6563ec65172f987491e8e2d0ed80e92b7c4eee1c8cd47ee3b488c11ea5b
+--> 3b6ab6563ec6
+[1/2] STEP 13/52: WORKDIR /app/submodules/media_types_ts
+--> Using cache a85eb482ceae81cef494fca2ea5ab2f493975b27de24b7b8cf229d82e132d2c7
+--> a85eb482ceae
+[1/2] STEP 14/52: RUN npm ci --legacy-peer-deps
+
+added 45 packages, and audited 46 packages in 3s
+
+12 packages are looking for funding
+  run `npm fund` for details
+
+10 vulnerabilities (3 moderate, 5 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+--> ce71d0b97437
+[1/2] STEP 15/52: WORKDIR /app/submodules/websocket_client_ts
+--> c89da7dee33e
+[1/2] STEP 16/52: RUN npm ci --legacy-peer-deps
+
+added 138 packages, and audited 139 packages in 3s
+
+26 packages are looking for funding
+  run `npm fund` for details
+
+12 vulnerabilities (3 moderate, 7 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> a893b2830177
+[1/2] STEP 17/52: WORKDIR /app/submodules/catalogizer_api_client_ts
+--> e16373cbbf80
+[1/2] STEP 18/52: RUN npm ci --legacy-peer-deps
+
+added 71 packages, and audited 74 packages in 2s
+
+18 packages are looking for funding
+  run `npm fund` for details
+
+11 vulnerabilities (3 moderate, 6 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> d205a83125ba
+[1/2] STEP 19/52: WORKDIR /app/submodules/auth_context_react
+--> 013929ba4027
+[1/2] STEP 20/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 235 packages, and audited 240 packages in 4s
+
+73 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (1 low, 4 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 4126dcf5bad7
+[1/2] STEP 21/52: WORKDIR /app/submodules/ui_components_react
+--> 65d44b219fc0
+[1/2] STEP 22/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 165 packages, and audited 166 packages in 2s
+
+30 packages are looking for funding
+  run `npm fund` for details
+
+13 vulnerabilities (3 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 083dc07cfbf5
+[1/2] STEP 23/52: WORKDIR /app/submodules/media_browser_react
+--> 10d101617027
+[1/2] STEP 24/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 232 packages, and audited 235 packages in 3s
+
+73 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (1 low, 4 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> a8a38db209c5
+[1/2] STEP 25/52: WORKDIR /app/submodules/media_player_react
+--> bd28d2705a6f
+[1/2] STEP 26/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 230 packages, and audited 233 packages in 2s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (1 low, 4 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 9006215d7e18
+[1/2] STEP 27/52: WORKDIR /app/submodules/collection_manager_react
+--> d45406bfce02
+[1/2] STEP 28/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 230 packages, and audited 233 packages in 2s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (1 low, 4 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 4511f063df70
+[1/2] STEP 29/52: WORKDIR /app/submodules/dashboard_analytics_react
+--> ea9772a72757
+[1/2] STEP 30/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 230 packages, and audited 233 packages in 3s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+15 vulnerabilities (1 low, 4 moderate, 8 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 37f3ef2bc773
+[1/2] STEP 31/52: COPY submodules/websocket_client_ts/ /app/submodules/websocket_client_ts/
+--> 86eb86751c21
+[1/2] STEP 32/52: COPY submodules/media_types_ts/ /app/submodules/media_types_ts/
+--> 1d5100ec672e
+[1/2] STEP 33/52: COPY submodules/ui_components_react/ /app/submodules/ui_components_react/
+--> 64fb973e8a3c
+[1/2] STEP 34/52: COPY submodules/media_browser_react/ /app/submodules/media_browser_react/
+--> 288c357a31af
+[1/2] STEP 35/52: COPY submodules/media_player_react/ /app/submodules/media_player_react/
+--> 90fff7718936
+[1/2] STEP 36/52: COPY submodules/collection_manager_react/ /app/submodules/collection_manager_react/
+--> dfdd321f9a71
+[1/2] STEP 37/52: COPY submodules/dashboard_analytics_react/ /app/submodules/dashboard_analytics_react/
+--> 8b90381ef637
+[1/2] STEP 38/52: COPY submodules/auth_context_react/ /app/submodules/auth_context_react/
+--> ca895d810d8a
+[1/2] STEP 39/52: COPY submodules/catalogizer_api_client_ts/ /app/submodules/catalogizer_api_client_ts/
+--> d8f4266717f8
+[1/2] STEP 40/52: RUN cd /app/submodules/media_types_ts && npm run build
+
+> @vasic-digital/media-types@0.1.0 build
+> tsc
+
+--> c304238c9f72
+[1/2] STEP 41/52: RUN cd /app/submodules/websocket_client_ts && npm run build
+
+> @vasic-digital/websocket-client@1.0.0 build
+> tsup src/index.ts --format cjs,esm --dts
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: esnext
+CJS Build start
+ESM Build start
+
+ WARN  [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe condition "types" here will never be used as it comes after both "import" and "require"[0m [package.json]
+
+    package.json:12:6:
+[37m      12 │       [32m"types"[37m: "./dist/index.d.ts"
+         ╵       [32m~~~~~~~[0m
+
+  The "import" condition comes earlier and will be used for all "import" statements:
+
+    package.json:10:6:
+[37m      10 │       [32m"import"[37m: "./dist/index.mjs",
+         ╵       [32m~~~~~~~~[0m
+
+  The "require" condition comes earlier and will be used for all "require" calls:
+
+    package.json:11:6:
+[37m      11 │       [32m"require"[37m: "./dist/index.js",
+         ╵       [32m~~~~~~~~~[0m
+
+
+
+
+ WARN  [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe condition "types" here will never be used as it comes after both "import" and "require"[0m [package.json]
+
+    package.json:12:6:
+[37m      12 │       [32m"types"[37m: "./dist/index.d.ts"
+         ╵       [32m~~~~~~~[0m
+
+  The "import" condition comes earlier and will be used for all "import" statements:
+
+    package.json:10:6:
+[37m      10 │       [32m"import"[37m: "./dist/index.mjs",
+         ╵       [32m~~~~~~~~[0m
+
+  The "require" condition comes earlier and will be used for all "require" calls:
+
+    package.json:11:6:
+[37m      11 │       [32m"require"[37m: "./dist/index.js",
+         ╵       [32m~~~~~~~~~[0m
+
+
+
+CJS dist/index.js 15.40 KB
+CJS ⚡️ Build success in 103ms
+ESM dist/index.mjs 13.82 KB
+ESM ⚡️ Build success in 102ms
+DTS Build start
+DTS ⚡️ Build success in 1685ms
+DTS dist/index.d.ts  8.91 KB
+DTS dist/index.d.mts 8.91 KB
+--> 882d6fd5b8b6
+[1/2] STEP 42/52: RUN cd /app/submodules/catalogizer_api_client_ts && npm run build
+
+> @vasic-digital/catalogizer-api-client@2.4.0 build
+> tsc
+
+--> e1efdba9f8b2
+[1/2] STEP 43/52: RUN cd /app/submodules/auth_context_react && npm run build
+
+> @vasic-digital/auth-context@0.1.0 build
+> tsc
+
+--> b20860b1a054
+[1/2] STEP 44/52: RUN cd /app/submodules/ui_components_react && npm run build
+
+> @vasic-digital/ui-components@1.0.0 build
+> tsup src/index.ts --format cjs,esm --dts
+
+CLI Building entry: src/index.ts
+CLI Using tsconfig: tsconfig.json
+CLI tsup v8.5.1
+CLI Target: es2020
+CJS Build start
+ESM Build start
+
+ WARN  [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe condition "types" here will never be used as it comes after both "import" and "require"[0m [package.json]
+
+    package.json:12:6:
+[37m      12 │       [32m"types"[37m: "./dist/index.d.ts"
+         ╵       [32m~~~~~~~[0m
+
+  The "import" condition comes earlier and will be used for all "import" statements:
+
+    package.json:10:6:
+[37m      10 │       [32m"import"[37m: "./dist/index.mjs",
+         ╵       [32m~~~~~~~~[0m
+
+  The "require" condition comes earlier and will be used for all "require" calls:
+
+    package.json:11:6:
+[37m      11 │       [32m"require"[37m: "./dist/index.js",
+         ╵       [32m~~~~~~~~~[0m
+
+
+
+
+ WARN  [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mThe condition "types" here will never be used as it comes after both "import" and "require"[0m [package.json]
+
+    package.json:12:6:
+[37m      12 │       [32m"types"[37m: "./dist/index.d.ts"
+         ╵       [32m~~~~~~~[0m
+
+  The "import" condition comes earlier and will be used for all "import" statements:
+
+    package.json:10:6:
+[37m      10 │       [32m"import"[37m: "./dist/index.mjs",
+         ╵       [32m~~~~~~~~[0m
+
+  The "require" condition comes earlier and will be used for all "require" calls:
+
+    package.json:11:6:
+[37m      11 │       [32m"require"[37m: "./dist/index.js",
+         ╵       [32m~~~~~~~~~[0m
+
+
+
+CJS dist/index.js 25.43 KB
+CJS ⚡️ Build success in 86ms
+ESM dist/index.mjs 21.29 KB
+ESM ⚡️ Build success in 85ms
+DTS Build start
+DTS ⚡️ Build success in 2220ms
+DTS dist/index.d.ts  11.85 KB
+DTS dist/index.d.mts 11.85 KB
+--> 24d02323bb4a
+[1/2] STEP 45/52: RUN cd /app/submodules/media_browser_react && npm run build
+
+> @vasic-digital/media-browser@0.1.0 build
+> tsc
+
+--> 140c68369f52
+[1/2] STEP 46/52: RUN cd /app/submodules/media_player_react && npm run build
+
+> @vasic-digital/media-player@0.1.0 build
+> tsc
+
+--> 84ac75768fd1
+[1/2] STEP 47/52: RUN cd /app/submodules/collection_manager_react && npm run build
+
+> @vasic-digital/collection-manager@0.1.0 build
+> tsc
+
+--> 2864721c4ca5
+[1/2] STEP 48/52: RUN cd /app/submodules/dashboard_analytics_react && npm run build
+
+> @vasic-digital/dashboard-analytics@0.1.0 build
+> tsc
+
+--> d0f70aec801d
+[1/2] STEP 49/52: COPY catalog-web/ /app/catalog-web/
+--> 133438aaa864
+[1/2] STEP 50/52: WORKDIR /app/catalog-web
+--> c41ec949dc1b
+[1/2] STEP 51/52: RUN npm ci --legacy-peer-deps
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 599 packages, and audited 618 packages in 2m
+
+173 packages are looking for funding
+  run `npm fund` for details
+
+31 vulnerabilities (1 low, 7 moderate, 22 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+--> 02c1965bd22a
+[1/2] STEP 52/52: RUN npm run build || npm run build -- --skipLibCheck
+
+> catalog-web@2.4.0 build
+> tsc && vite build
+
+vite v6.4.2 building for production...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+transforming...
+node_modules/react-helmet-async/lib/index.module.js (1:7186): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/react-helmet-async/lib/index.module.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/react-helmet-async/lib/index.module.js (1:13561): A comment
+
+"/*#__PURE__*/"
+
+in "node_modules/react-helmet-async/lib/index.module.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+Browserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2901 modules transformed.
+Generated an empty chunk: "vendor".
+rendering chunks...
+[plugin vite:reporter] 
+(!) /app/catalog-web/src/components/collections/SmartCollectionBuilder.tsx is dynamically imported by /app/catalog-web/src/components/performance/LazyComponents.tsx, /app/catalog-web/src/components/performance/LazyComponents.tsx but also statically imported by /app/catalog-web/src/pages/Collections.tsx, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter] 
+(!) /app/catalog-web/src/components/collections/BulkOperations.tsx is dynamically imported by /app/catalog-web/src/components/performance/LazyComponents.tsx, /app/catalog-web/src/components/performance/LazyComponents.tsx but also statically imported by /app/catalog-web/src/pages/Collections.tsx, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter] 
+(!) /app/catalog-web/src/components/collections/CollectionAnalytics.tsx is dynamically imported by /app/catalog-web/src/components/performance/LazyComponents.tsx, /app/catalog-web/src/components/performance/LazyComponents.tsx but also statically imported by /app/catalog-web/src/pages/Collections.tsx, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                     1.24 kB │ gzip:   0.57 kB
+dist/assets/app-icon-cCuzJkzL.jpeg              1,017.70 kB
+dist/assets/index-CHbDtWI-.css                     70.49 kB │ gzip:  11.36 kB
+dist/assets/vendor-l0sNRNKZ.js                      0.05 kB │ gzip:   0.07 kB │ map:     0.10 kB
+dist/assets/analyticsApi-PoM7borK.js                0.50 kB │ gzip:   0.26 kB │ map:     2.40 kB
+dist/assets/Progress-W6uqXmoK.js                    0.61 kB │ gzip:   0.39 kB │ map:     1.60 kB
+dist/assets/Badge-B-qhqLKQ.js                       0.64 kB │ gzip:   0.39 kB │ map:     1.39 kB
+dist/assets/Select-CVdJ_CXs.js                      0.98 kB │ gzip:   0.56 kB │ map:     2.81 kB
+dist/assets/Card-R4mLxyQO.js                        1.13 kB │ gzip:   0.46 kB │ map:     3.26 kB
+dist/assets/Input-DBctVB4N.js                       1.29 kB │ gzip:   0.65 kB │ map:     2.80 kB
+dist/assets/PageHeader-B3j2RpFC.js                  1.32 kB │ gzip:   0.61 kB │ map:     3.57 kB
+dist/assets/TypeSelector-BEmC-XQ6.js                1.69 kB │ gzip:   0.86 kB │ map:     4.38 kB
+dist/assets/statsApi-B3bfcuym.js                    1.73 kB │ gzip:   0.58 kB │ map:     5.73 kB
+dist/assets/Tabs-Di8DpD9S.js                        2.10 kB │ gzip:   0.82 kB │ map:     6.14 kB
+dist/assets/mediaApi-UXrsu0g_.js                    2.56 kB │ gzip:   0.87 kB │ map:     8.85 kB
+dist/assets/ForgotPassword-DNpH25DV.js              3.06 kB │ gzip:   1.31 kB │ map:     6.88 kB
+dist/assets/MediaDistributionChart-D-FJxNR9.js      3.24 kB │ gzip:   1.33 kB │ map:     9.53 kB
+dist/assets/UploadManager-DSE-fB5W.js               4.55 kB │ gzip:   1.95 kB │ map:    15.28 kB
+dist/assets/EntityBrowser-BfGxb0sv.js               4.79 kB │ gzip:   1.94 kB │ map:    14.74 kB
+dist/assets/LoginForm-Lqdynhzv.js                   5.05 kB │ gzip:   1.96 kB │ map:    12.57 kB
+dist/assets/FavoriteToggle-9qmlngss.js              5.50 kB │ gzip:   1.90 kB │ map:    19.34 kB
+dist/assets/RegisterForm-DQz6TJSi.js                5.92 kB │ gzip:   1.91 kB │ map:    15.19 kB
+dist/assets/MediaPlayer-LAXgwJSR.js                 6.12 kB │ gzip:   2.07 kB │ map:    22.28 kB
+dist/assets/MediaDetailModal-DnL5WO2C.js            6.89 kB │ gzip:   1.98 kB │ map:    19.35 kB
+dist/assets/ConversionTools-D3khJx1p.js            10.60 kB │ gzip:   3.47 kB │ map:    32.12 kB
+dist/assets/AIComponents-1ooNCfnJ.js               10.85 kB │ gzip:   3.44 kB │ map:    28.40 kB
+dist/assets/Analytics-kgSgUK2z.js                  11.82 kB │ gzip:   3.34 kB │ map:    32.43 kB
+dist/assets/Favorites-Cu9eT3oB.js                  12.51 kB │ gzip:   3.71 kB │ map:    35.87 kB
+dist/assets/AdvancedSearch-DHBPIGUx.js             12.82 kB │ gzip:   3.66 kB │ map:    35.46 kB
+dist/assets/MediaBrowser-Ykr5IWMa.js               13.17 kB │ gzip:   3.90 kB │ map:    37.43 kB
+dist/assets/AIDashboard-DdoYt7SC.js                13.24 kB │ gzip:   2.98 kB │ map:    31.07 kB
+dist/assets/Settings-DISEmgVY.js                   13.31 kB │ gzip:   3.53 kB │ map:    39.09 kB
+dist/assets/MediaGrid-atA5Y-y7.js                  13.61 kB │ gzip:   4.58 kB │ map:    41.79 kB
+dist/assets/EntityDetail-5EVGYQXk.js               13.82 kB │ gzip:   3.72 kB │ map:    37.56 kB
+dist/assets/Admin-DIFLTqnj.js                      17.40 kB │ gzip:   3.98 kB │ map:    48.71 kB
+dist/assets/Dashboard-BonhfqpJ.js                  17.59 kB │ gzip:   4.93 kB │ map:    46.63 kB
+dist/assets/AIAnalytics-Bo26Kqc8.js                17.60 kB │ gzip:   4.16 kB │ map:    42.16 kB
+dist/assets/AIMetadata-DI4pTI9D.js                 17.76 kB │ gzip:   4.69 kB │ map:    48.10 kB
+dist/assets/CollectionAutomation-CTWMPKwk.js       18.20 kB │ gzip:   5.11 kB │ map:    51.13 kB
+dist/assets/CollectionTemplates-CO3oqLOR.js        18.38 kB │ gzip:   4.54 kB │ map:    46.02 kB
+dist/assets/IdentityManager-CkLMF12N.js            19.00 kB │ gzip:   5.14 kB │ map:    56.74 kB
+dist/assets/ExternalIntegrations-Dp_lltFn.js       20.10 kB │ gzip:   5.04 kB │ map:    57.58 kB
+dist/assets/SubtitleManager-wX9_7wNs.js            27.16 kB │ gzip:   6.38 kB │ map:    79.31 kB
+dist/assets/Playlists-BWFS6gVU.js                  54.98 kB │ gzip:  12.74 kB │ map:   173.92 kB
+dist/assets/utils-JaN4yl2W.js                      69.63 kB │ gzip:  25.37 kB │ map:   349.88 kB
+dist/assets/index-zBpCvStj.js                     101.71 kB │ gzip:  30.03 kB │ map:   344.18 kB
+dist/assets/Collections-DVlZNKaH.js               159.46 kB │ gzip:  34.24 kB │ map:   458.32 kB
+dist/assets/router-BjSwswdG.js                    164.45 kB │ gzip:  53.81 kB │ map:   706.62 kB
+dist/assets/ui-CwqyixC_.js                        171.17 kB │ gzip:  56.93 kB │ map:   799.69 kB
+dist/assets/charts-RlH8LYmu.js                    431.49 kB │ gzip: 114.88 kB │ map: 1,833.82 kB
+✓ built in 10.50s
+--> de24a84b5fce
+[2/2] STEP 1/7: FROM docker.io/nginx:alpine
+[2/2] STEP 2/7: COPY --from=builder --chown=nginx:nginx /app/catalog-web/dist /usr/share/nginx/html
+--> b2572816a245
+[2/2] STEP 3/7: COPY --chown=nginx:nginx catalog-web/nginx.conf /etc/nginx/conf.d/default.conf
+--> 2550524512b2
+[2/2] STEP 4/7: RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx &&     touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+--> 6d3a1a083c2e
+[2/2] STEP 5/7: EXPOSE 3000
+--> 733b8f72e012
+[2/2] STEP 6/7: USER nginx
+--> 151075fbd6ce
+[2/2] STEP 7/7: CMD ["nginx", "-g", "daemon off;"]
+[2/2] COMMIT localhost/t112-web:green
+--> e44576ce94bb
+Successfully tagged localhost/t112-web:green
+e44576ce94bbfdc9d7bed8fe93f5a252656790b02629a14f66cbc3601a6281fb
+build_rc=0

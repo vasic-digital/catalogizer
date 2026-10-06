@@ -1,0 +1,14 @@
+# identity: T107-RED
+# head: b53be11a (uncommitted work tree)
+# run_at: 2026-10-06T17:47:55Z host: anton
+# cmd: podman build --pull=never --ignorefile /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/ignore.txt -f catalog-web/Dockerfile .
+# sha256 catalog-web/Dockerfile: dfbd3d241bfc227844e998c487c5a43d2452ce5b80a8c4dc6fd486fed6738185
+# disk gate:
+disk_headroom: pass op=T107-RED need=3000000000 min_free=12172240540 record=specs/001-full-project-audit-remediation/evidence/wp11/disk/T107-RED.json
+disk_gate_rc=0
+[1/2] STEP 1/43: FROM docker.io/node:20-alpine AS builder
+[1/2] STEP 2/43: WORKDIR /app
+--> dcf6b31b7f3e
+[1/2] STEP 3/43: COPY WebSocket-Client-TS/package*.json /app/WebSocket-Client-TS/
+Error: building at STEP "COPY WebSocket-Client-TS/package*.json /app/WebSocket-Client-TS/": checking on sources under "/home/milosvasic/Projects/catalogizer": Rel: can't make  relative to /home/milosvasic/Projects/catalogizer; copier: stat: ["/WebSocket-Client-TS/package*.json"]: no such file or directory
+build_rc=125

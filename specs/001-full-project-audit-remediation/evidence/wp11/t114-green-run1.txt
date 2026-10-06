@@ -1,0 +1,13 @@
+# identity: T114-GREEN-run-1 (MinIO rows remain: image unavailable, BLOCKED)
+# head: b9bd2d2b
+# sha256 docker-compose.dev.yml: 1d86b44fdeba14269a1901def9ef0df0d6559df909daf1b0456bb50b53c09cc7
+# sha256 docker-compose.qa.yml: a512214e8a573cc3b69acca7f7030cea81a36b9a8883e17605b1e85f1e9d0879
+# sha256 deploy/infra-compose.yml: 1359539ea76d292a7be93554ca4049ad72240d9d87380cf70cfdd9e462f2d920
+# sha256 deploy/infra-compose-test.yml: c2e344d571c83d241a408a01785d7eba11698a9503d64300c4c5f7f5b63a4fbe
+# sha256 build/containers/images.lock.yaml: cfce9f81a097679bea16483fb6d554f42eab22a5bfd4c2a2bd1204cdc16d74d9
+# run_at: 2026-10-06T17:52:54Z host: anton
+VIOLATION compose_image_unpinned deploy/infra-compose-test.yml:18: quay.io/minio/minio:latest
+VIOLATION compose_image_unpinned deploy/infra-compose.yml:36: quay.io/minio/minio:latest
+VIOLATION compose_image_unpinned docker-compose.dev.yml:135: quay.io/minio/minio:latest
+check_pins: 3 violations in 4 files scanned
+check_pins_rc=1

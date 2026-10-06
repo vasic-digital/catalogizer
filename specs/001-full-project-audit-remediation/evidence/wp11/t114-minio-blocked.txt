@@ -1,0 +1,13 @@
+# identity: T114 MinIO blocked
+# run_at: 2026-10-06T17:53:02Z
+$ podman manifest inspect quay.io/minio/minio:latest
+Error: reading image "docker://quay.io/minio/minio:latest": reading manifest latest in quay.io/minio/minio: unauthorized: access to the requested resource is not authorized
+$ curl quay.io API
+{"detail": "Requires authentication", "error_message": "Requires authentication", "error_type": "invalid_token", "title": "invalid_token", "type": "https://quay.io/api/v1/error/invalid_token", "status": 401}
+
+$ docker hub minio/minio
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import sys,json;t=json.load(sys.stdin)["tags"];print(len(t),t[-5:],sorted(t)[-5:])
+                      ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+KeyError: 'tags'

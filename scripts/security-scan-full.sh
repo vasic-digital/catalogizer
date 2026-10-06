@@ -37,10 +37,10 @@ check_tool() {
 }
 
 echo "Checking required tools..."
-check_tool trivy "curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh"
-check_tool gosec "go install github.com/securego/gosec/v2/cmd/gosec@latest"
-check_tool nancy "curl -L -o nancy https://github.com/sonatype-nexus-community/nancy/releases/latest/download/nancy-linux.amd64 && chmod +x nancy && sudo mv nancy /usr/local/bin/"
-check_tool semgrep "pip install semgrep"
+check_tool trivy "download Trivy 0.75.0 from https://github.com/aquasecurity/trivy/releases/tag/v0.75.0, verify the SHA-256 of the archive against trivy_0.75.0_checksums.txt of that release, then install the binary (or run the digest-pinned image of build/containers/images.lock.yaml, IMG-SCAN-TRIVY)"
+check_tool gosec "go install github.com/securego/gosec/v2/cmd/gosec@v2.24.6"
+check_tool nancy "download nancy v2.1.0 (nancy-v2.1.0-linux-amd64) from https://github.com/sonatype-nexus-community/nancy/releases/tag/v2.1.0, verify its SHA-256 against the release, then install it into /usr/local/bin"
+check_tool semgrep "pip install semgrep==1.179.0"
 echo ""
 
 # Track failures
