@@ -1,0 +1,8 @@
+# T050 round 7 RED for W7-6 (runner import check): the round-7 selftest of test_evrec_r7.sh (sha256 fe2a3b09f1667bf1e87806a976e76077ea50f31329388b946be0ffb1d8625f97) run against the ROUND-6 run_mutations.py (git HEAD b3728d76adbfa2efd1055d6878881c9298e3c22b, sha256 194ae23a3119fe644d2a63d191609fdd752015cb0fd9dcd38732da2a9d178753); the other RED captures use the round-6 evcore.py but the CURRENT run_mutations.py, so this one needs its own run
+# generated_utc=2026-10-06T17:44:28Z
+ok   W7-6: a bare Bearer token, X-Api-Auth header
+ok   W7-6: a bare Bearer token, prose
+ok   W7-6: a bare Bearer token, a tab separator
+FAIL W7-6: a mutant that compiles but cannot be imported is INVALID (got CAUGHT)
+ok   W7-6: an importable mutant passes the --check stage (got CAUGHT)
+# DONE

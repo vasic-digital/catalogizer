@@ -1,0 +1,117 @@
+# T050 round 7 paired mutations (run_mutations.py): every selected mutant must be CAUGHT by a check that names its cause (MUT_IDS limits the sweep to the new and affected mutants)
+# generated_utc=2026-10-06T18:00:07Z host=anton kernel=7.0.0-34-generic python=Python 3.14.4 bash=5.3.9(1)-release
+# git_head=b9bd2d2be80c9121d7f4d92a944f8b5a16bd9ec6 (tree under test is uncommitted; the sha256 lines identify it)
+# sha256 535dd4121b58d763284280c3593dfb94629b9b3188fc4673892e180066961d04  tools/evidence/evrec
+# sha256 81f546e0856cf6825181c59e0962b05e30665eb58942d9a383c8536e6dea3076  tools/evidence/verify
+# sha256 1b285c6faf4098922cf664c85c4cf22ec14b44bcaeb0708ec7599bbbc7143761  tools/evidence/evcore.py
+# sha256 fbcbd8c921ae4b0953af258a71db789d7b7cb2df84a27dcc83bd8d797cecf626  tools/evidence/tests/hermetic.sh
+# sha256 532cc86c944e3721b0046a4c6534ebaa097d01a149f282857571ef3838281840  tools/evidence/tests/test_evcore_golden.py
+# sha256 9db2b99069a6883103e870418a9b074580bf5c963ff1a816b10ca1ea7fa61a46  tools/evidence/tests/run_mutations.py
+# sha256 68bc306f7b09d4aeba86d62996c39556957d12e05914349d91fceca201898104  tools/evidence/tests/test_evrec.sh
+# sha256 fc00ec3297b6391d9bbb8097cd30bb05171e9b946bd1448894c07641a4c258e1  tools/evidence/tests/test_evrec_more.sh
+# sha256 ee9e341c4471cdb38dbafaa046bac5cdb23e6eb39450ab81d1cae3999b51e8a5  tools/evidence/tests/test_evrec_r3.sh
+# sha256 2a25ea8886cbe2fed15d76bd06ae8d2a9791fda21ed5a2433682874fc6fa5e7f  tools/evidence/tests/test_evrec_r4.sh
+# sha256 6f359e57c2ada71ba6c1c1278a1d0d5e32a1c404df0319a2e786837cba6f0497  tools/evidence/tests/test_evrec_r5.sh
+# sha256 85fe80bc85feb3f6807a8368f363d859182bdc049a79ab1ec4a34fd9ded8fde8  tools/evidence/tests/test_evrec_r6.sh
+# sha256 fe2a3b09f1667bf1e87806a976e76077ea50f31329388b946be0ffb1d8625f97  tools/evidence/tests/test_evrec_r7.sh
+# sha256 c53b6eeafe0794146498d693e3fb895d6d64aed37dd3e75d843031d179c21882  tools/evidence/tests/test_evrec_golden.sh
+# sha256 fb38d5f8d19939398e8cd30283adbe00b2b35e47186535edd09a7c4f723c68cd  tools/evidence/tests/test_evrec_hermetic.sh
+# sha256 17772cadfc98a08ee69c3a5b1f842bf7a34d8c77aee92f49be480eb94bde18ed  tools/evidence/tests/test_evidence_record_schema.sh
+# sha256 541e33377881c676b62f84d53ba53089e5401671655e0cfb7984a47449e6eab3  specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
+R6-reap-live-holder                CAUGHT                     concurrent appenders: seqs=[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 1; live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock
+R9-no-redaction                    CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R10-redacted-flag-dropped          CAUGHT                     I7: stream-only redacted flags: [null,null]; N2: JSON login body {"username":..,"password":..} on stdout (secr; N2: JSON token {"access_token":"<jwt>"} on stdout (secret survive
+R11-argv-not-redacted              CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R18-target-fp-invented             CAUGHT                     unresolvable RED target accepted (rc=0); I8: BASELINE on an unresolvable target is refused (target_unreada; I8: BASELINE wrote an entry
+R19-target-fp-not-file-bytes       CAUGHT                     target_fingerprint is not the target's sha256
+C6-reap-direct-not-exec-approved   CAUGHT                     no --exec-approved entry in host log
+RV-X8-dir-fingerprint-ignores-content CAUGHT                     X8: dir fingerprint 9fd2bb5e5f5d1b1bc3dd7748b9a7a9d4bf9fc9e71717a; X8: directory fingerprint ignores content; R6-4: a target directory holding a non-UTF-8 file name records (n
+RV-X20-pre-release-flag-dropped    CAUGHT                     I11: --pre-release without --test-state-go (schema) before the ru; I11: --pre-release without --test-state-go (schema) before the ru; X20: optional fields: 
+N-I4b-blob-hash-never-compared     CAUGHT                     I4: forged stdout blob: refused (blob_mismatch, exit 1) (rc=0 wan; W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismat; W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch 
+N-I5-unicode-escape-in-line-check  CAUGHT                     I5: golden-good: a ledger hashed independently with jq|sha256sum ; I5: exit_status flip not detected as bad hash; X18: a re-chained record that ev/1 refuses stops rerecord (record
+N-I6g-out-guard-only-checks-the-directory CAUGHT                     I6: rerecord --out writing over one of its own input files is ref
+N-I7a-overlapping-spans-not-merged CAUGHT                     I7: prefix-overlapping secrets leaked (longer value's suffix visi; N2: password value containing a space inside JSON quotes (secret ; redaction: a secret that is a prefix of another (any value order)
+N-I7b-default-patterns-off         CAUGHT                     I7: Bearer token stored verbatim with EVREC_REDACT_VARS unset; I7: redacted flag missing; I7: AWS key id, password= value or URL userinfo password stored
+N-I7c-target-ref-not-redacted      CAUGHT                     I7: target_ref secret in the ledger: {"argv":["true"],"cwd":"/tmp
+N-I7d-cwd-not-redacted             CAUGHT                     I7: cwd secret stored: "/tmp/claude-1000/-home-milosvasic-Project
+N-I7e-streams-without-patterns     CAUGHT                     I7: Bearer token stored verbatim with EVREC_REDACT_VARS unset; I7: AWS key id, password= value or URL userinfo password stored; I7: GitHub token stored
+N-I7f-named-values-not-redacted-in-streams CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+N-I7g-pattern-bearer-never-matches CAUGHT                     W7-6: a bare Bearer token, X-Api-Auth header; W7-6: a bare Bearer token, prose; W7-6: a bare Bearer token, a tab separator
+N-I7g-pattern-aws-never-matches    CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored
+N-I7g-pattern-github-never-matches CAUGHT                     I7: GitHub token stored
+N-I7g-pattern-url_userinfo-never-matches CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: target_ref secret in the ledger: {"argv":["true"],"cwd":"/tmp; redaction: default pattern url userinfo hit b'https://u:pw1234567
+N-I7g-pattern-pem-never-matches    CAUGHT                     I7: private key body stored; redaction: default pattern pem hit b'-----BEGIN PRIVATE KEY-----\
+N-I7h-kv-pattern-never-matches     CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: cwd secret stored: "/tmp/claude-1000/-home-milosvasic-Project; N2: x-api-key header (secret survived or redacted flag missing: X
+N-I8b-baseline-with-unresolved-target-accepted CAUGHT                     I8: BASELINE on an unresolvable target is refused (target_unreada; I8: BASELINE wrote an entry; I8: PREFLIGHT on an unresolvable target is refused (target_unread
+N-I11e-unknown-flag-is-positional  CAUGHT                     I11: a flag standing where REF belongs is refused, not taken as t; I11: a flag standing where REF belongs is refused, not taken as t
+N-I7i-stderr-hit-does-not-set-redacted CAUGHT                     I7: stream-only redacted flags: [true,null]
+N1-ev-dir-not-shared               CAUGHT                     N1: --out inside the evidence dir is refused even when the ledger
+N2-no-json-secret                  CAUGHT                     N2: password value containing a space inside JSON quotes (secret ; W7-5: a spaced JSON value, double quotes, tail, 128-char name run; W7-5: a spaced JSON value, double quotes, head, 128-char name run
+N2-no-flag-pair-pattern            CAUGHT                     W7-1: single-dash flag, 128-char head; W7-1: single-dash flag, 128-char tail; W7-1: single-dash flag, 129-char head
+N2-no-authorization-pattern        CAUGHT                     N2: Authorization: Basic <base64> header (secret survived or reda; N2: Authorization with a lower-case header and an unknown scheme ; redaction r4: basic is redacted with no fragment left b'Authoriza
+N2-no-cookie-pattern               CAUGHT                     N2: Cookie header value (secret survived or redacted flag missing; N2: Set-Cookie header value (secret survived or redacted flag mis; redaction r4: cookie is redacted with no fragment left b'Cookie: 
+N2-no-jwt-pattern                  CAUGHT                     N2: a bare three-part JWT in prose (secret survived or redacted f; R6-1: a bare JWT; R6-1: a JWT after a dash
+N2-argv-pair-not-redacted          CAUGHT                     N2: argv pair: ["bash","-c",":","--password","Pw0rdSpaced9"]; N2: argv credential flags leaked: ["bash","-c",":","--token","Pw0; R6-2: NOT redacted: argv bare flag with a 128-char name, value in
+N2-argv-flag-regex-too-narrow      CAUGHT                     N2: argv credential flags leaked: ["bash","-c",":","--token","Pw0; redact_argv: the value after a credential flag is redacted and th
+N2-redact-everything               CAUGHT                     argv not verbatim; I6: no owed_relocation for a 2000 byte blob: recorded seq=1 item=; I6: verify lists no owed_relocation
+N3-operands-not-hashed             CAUGHT                     N3: unlisted-launcher fingerprint 0fab9f7fbf683c97d2762de33b99b71; N3: unlisted launcher gives 1 distinct fingerprint(s) over differ; F3: --opt=FILE launcher gives 1 distinct fingerprint(s)
+N3-operands-always-hashed          CAUGHT                     N3: test_fingerprint of an interpreter with a declared source is 
+F1-kv-pattern-quadratic            CAUGHT                     timeout in test_evrec_r3.sh; F1: redact_bytes on a run of 100000 dashes did not finish in 15 s; F1: redact_bytes on a run of 100000 x "a-" did not finish in 15 s
+F1-flag-pair-quadratic             CAUGHT                     F1: redact_bytes on a run of 100000 dashes did not finish in 15 s; F1: redact_bytes on a run of 100000 x "a-" did not finish in 15 s; F1: redact_bytes on a long run of dashes then a flag name did not
+F1-json-tail-quadratic             SURVIVED                   
+F1-argv-flag-quadratic             CAUGHT                     F1: redact_argv did not finish in 15 s (rc=124)
+F1-kv-pattern-dropped              CAUGHT                     I7: AWS key id, password= value or URL userinfo password stored; I7: cwd secret stored: "/tmp/claude-1000/-home-milosvasic-Project; N2: x-api-key header (secret survived or redacted flag missing: X
+F3-opt-equals-value-not-hashed     CAUGHT                     F3: --opt=FILE launcher gives 1 distinct fingerprint(s); F3: --opt=FILE fingerprint 498ac28f1c1c8c61c4908e3be6b936a119abcf; W7-3: the same file through --input=FILE is refused too (rc=0 wan
+F3-directory-operand-not-hashed    CAUGHT                     F3: directory operand gives 1 distinct fingerprint(s); F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED; R6-4: non-UTF-8 name fingerprints: '6caa53f50642b921eed4314461ada
+F3-realpath-of-argv0-ignored       CAUGHT                     F3: RED through a renamed symlink to bash with -c is refused (int; F3: RED through a renamed symlink to python3 with -c is refused (; F3: the same through PATH lookup of a renamed symlink is refused 
+F3-oversized-directory-silently-skipped CAUGHT                     F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED; R6-5: a directory operand with more entries than the cap (empty s; R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused (rc=69 
+F3-dir-digest-ignores-content      CAUGHT                     F3: directory operand gives 1 distinct fingerprint(s)
+F7-existing-directory-not-refused  CAUGHT                     F7: --out <parent of EV> --name <basename of EV> (an existing dir; F7: the parent directory changed: 8a9 > /tmp/claude-1000/-home-mi; F7: --name that is an existing directory inside --out is refused 
+R6-bound-name-run-128              CAUGHT                     R6-2: NOT redacted: kv: credential word + 128 name chars + =V; R6-2: NOT redacted: kv YAML form (word + 128 chars + ": V"); R6-2: NOT redacted: env dump export SVC_<WORD>_<128 chars>=V
+R6-bound-name-run-100              CAUGHT                     F1: NOT redacted: kv name with a 100-char tail; R6-2: NOT redacted: kv: credential word + 128 name chars + =V; R6-2: NOT redacted: kv YAML form (word + 128 chars + ": V")
+R6-bound-flag-run-8                CAUGHT                     W7-1: single-dash flag, 128-char head; W7-1: single-dash flag, 128-char tail; W7-1: single-dash flag, 129-char head
+R6-bound-flag-lookahead-128        CAUGHT                     W7-1: single-dash flag, 129-char head; W7-1: single-dash flag, 5000-char head
+R6-bound-json-run-128              CAUGHT                     W7-5: a spaced JSON value, double quotes, tail, 129-char name run; W7-5: a spaced JSON value, double quotes, head, 129-char name run; W7-5: a spaced JSON value, double quotes, tail, 5000-char name ru
+R6-jwt-old-quadratic-pattern       CAUGHT                     R6-1: redact_bytes on '-eyJ' repeated (200000 bytes) did not fini; R6-1: redact_bytes on '-eyJ' repeated (400000 bytes) did not fini; R6-1: redact_bytes on 'eyJ-' repeated (400000 bytes) did not fini
+R6-jwt-after-dash-lost             CAUGHT                     R6-1: a JWT after a dash; R6-1: a JWT after dashes after a long dash run; R6-1: a JWT after a dash inside a name run
+R6-jwt-pattern-dropped             CAUGHT                     N2: a bare three-part JWT in prose (secret survived or redacted f; R6-1: a bare JWT; R6-1: a JWT after a dash
+R6-nonutf8-dir-name-traceback      CAUGHT                     R6-4: a directory operand holding a non-UTF-8 file name records (; R6-4: non-UTF-8 name fingerprints: '' vs ''
+R6-nonutf8-target-name-traceback   CAUGHT                     R6-4: a target directory holding a non-UTF-8 file name records (n
+R6-unreadable-file-traceback       CAUGHT                     R6-4: a directory operand holding a file that cannot be read is r; R6-4: the same operand on a PROBE is skipped, not a traceback (rc
+R6-unlistable-dir-ignored          CAUGHT                     R6-4: a directory operand holding an unlistable subdirectory is r; W7-4: an execute-only directory operand (the runner can run t.sh ; W7-4: the same execute-only directory on a GREEN is refused too (
+R6-unreadable-refused-on-probe     CAUGHT                     F3: the same oversized directory operand on a PROBE is not refuse; R6-4: the same operand on a PROBE is skipped, not a traceback (rc; R6-5: the same directory over the byte cap on a PROBE is skipped,
+R6-byte-cap-ignored                CAUGHT                     W7-2: a 4 GiB mode-000 file in a directory operand is refused as ; W7-5: three mode-000 600-byte files with a 1000-byte cap are refu
+R6-dirs-not-counted                CAUGHT                     R6-5: a directory operand with more entries than the cap (empty s
+WF6-7-cap-off-by-one               CAUGHT                     R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused (rc=0 w; R6-6: a MUTATION record over the directory cap is refused (operan
+R6-cap-off-by-one-low              CAUGHT                     R6-5: exactly N=3 files with EVREC_OPERAND_DIR_MAX=3 is accepted 
+R6-caps-not-validated-at-start     CAUGHT                     R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no ; R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even wi; R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no
+R6-cap-zero-accepted               CAUGHT                     R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no ; R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even wi; W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64) (rc=0 want 
+R6-cap-non-integer-is-default      CAUGHT                     R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no ; R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even wi; R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no
+WF6-3-dir-digest-drops-relpath     CAUGHT                     R6-4: non-UTF-8 name fingerprints: '5d039c3798ad2044bb67aa08520da; R6-6: name-swapped directories collide
+WF6-5-one-level-symlink-only       CAUGHT                     R6-6: RED through a TWO-level symlink chain to bash with -c is re
+WF6-6-mutation-not-refused-over-cap CAUGHT                     R6-6: a MUTATION record over the directory cap is refused (operan
+WF6-4-is-holder-empty-env-holds    CAUGHT                     R6-6: _is_holder gave 'holder'
+R6-dead-namemax-back               CAUGHT                     R6-7: _NAMEMAX is still defined (it is dead or the patterns must 
+W7-1-inrun-pattern-dropped         CAUGHT                     W7-1: after ESC[1m (bold): --password<space>V; W7-1: after ESC[1m (bold): --password<TAB>V; W7-1: after ESC[1m (bold): --token<space>V
+W7-1-inrun-underscore-marker-dropped CAUGHT                     W7-1: a_-password V
+W7-1-inrun-lookahead-not-atomic    CAUGHT                     F1: redact_bytes on a run of 100000 dashes did not finish in 15 s; F1: redact_argv did not finish in 15 s (rc=124); F1: the functional redaction check did not finish in 60 s
+W7-1-inrun-marker-not-required     CAUGHT                     I7: redacted set on a clean entry; W7-1: negative control, not redacted: reset-password link (a sing; redaction: clean bytes are returned unchanged with no hit b'nothi
+W7-1-inrun-value-may-start-with-dash CAUGHT                     R6-2: negative control WAS redacted: a flag whose value starts wi; W7-1: negative control, not redacted: a credential flag whose val
+W7-2-read-time-cap-dropped         CAUGHT                     W7-2: a directory operand holding a file that reports st_size 0 b; W7-2: two size-0 files that each fit under the cap but together e; W7-3: a plain procfs operand (st_size 0) over the cap is refused 
+W7-2-read-budget-not-cumulative    CAUGHT                     W7-2: two size-0 files that each fit under the cap but together e
+W7-5-st-size-total-per-file        CAUGHT                     W7-5: three mode-000 600-byte files with a 1000-byte cap are refu
+W7-3-plain-file-uncapped           CAUGHT                     W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte c; W7-3: the same file through --input=FILE is refused too (rc=0 wan; W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=
+W7-3-plain-file-reason-is-directory CAUGHT                     W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte c; W7-3: the same file through --input=FILE is refused too (rc=69 wa; W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=
+W7-4-operand-files-requires-read-access CAUGHT                     W7-4: a mode-000 plain file operand is refused on a RED (operand_; W7-4: an execute-only directory operand (the runner can run t.sh ; W7-4: the same execute-only directory on a GREEN is refused too (
+W7-4-dir-pass1-skips-unreadable-files CAUGHT                     W7-2: a 4 GiB mode-000 file in a directory operand is refused as ; W7-5: three mode-000 600-byte files with a 1000-byte cap are refu; W7-4: a mode-000 file inside a directory operand is refused on a 
+W7-4-target-listing-error-ignored  CAUGHT                     W7-4: a TARGET directory with an unlistable sub-directory is refu
+W7-8-cap-lenient-int               CAUGHT                     W7-8: EVREC_OPERAND_DIR_MAX=\ 5\  is a usage_error (64) (rc=0 wan; W7-8: EVREC_OPERAND_DIR_MAX=5\  is a usage_error (64) (rc=0 want ; W7-8: EVREC_OPERAND_DIR_MAX=\ 5 is a usage_error (64) (rc=0 want 
+W7-8-leading-zeros-and-zero-allowed CAUGHT                     R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no ; R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even wi; W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64) (rc=0 want 
+W7-5-empty-cap-not-default         CAUGHT                     W7-5: EVREC_OPERAND_DIR_MAX set to the empty string is the defaul; W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty string is the 
+W7-10-no-nonblock-open             CAUGHT                     W7-10: the FIFO check did not finish in 40 s (rc=124): pass 2 blo
+W7-10-no-regular-file-check        CAUGHT                     W7-10: a FIFO is refused as unreadable, not blocked on; W7-10: a symlink to a FIFO is refused as unreadable, not blocked ; W7-10: a directory whose entry became a FIFO between the two pass
+W7-10-no-realpath-before-open      CAUGHT                     W7-2: a directory operand holding a file that reports st_size 0 b; W7-2: the same directory under the byte cap is accepted (rc=69 wa; W7-2: two size-0 files that each fit under the cap but together e
+EQUIVALENT F1-json-tail-quadratic         `*` vs `*+` after a name run that the next token (a quote) cannot match inside: backtracking can never succeed, so the match set is identical; the run-start look-behind, not the possessive, makes the scan linear (2200 differential cases, 0 differences, linear at 400 KB)
+mutants=93 caught=92 equivalent=1 not_caught=0
+rc=0
+# DONE

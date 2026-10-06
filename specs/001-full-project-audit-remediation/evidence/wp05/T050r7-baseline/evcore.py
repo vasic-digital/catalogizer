@@ -381,11 +381,6 @@ SECRET_PATTERNS = [
     ("json_secret", re.compile(rb"(?i)[\"']" + _NAMERUN + rb"[\"'][ \t]*:[ \t]*\"(" + _QV + rb"{4,}+)\""), 1),
     ("json_secret_sq", re.compile(rb"(?i)[\"']" + _NAMERUN + rb"[\"'][ \t]*:[ \t]*'(" + _QS + rb"{4,}+)'"), 1),
     ("flag_pair", re.compile(rb"(?i)(?<!" + _FM + rb")-{1,2}+(?=" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"*+[ \t]++([^\s-][^\s]{3,})"), 1),
-    # a credential flag that sits INSIDE a name run, not at its start: `1m--password V` (after an ANSI colour sequence, whose last
-    # character is a name character), `abc--password V`, `a_-password V` (review W7-1; round 6 only started a flag where no name
-    # character precedes the dashes). Linear: one start per run (look-behind), one atomic look-ahead to the FIRST `--` / `_-` of the
-    # run (a later marker has a suffix of the same text after it, so the first marker decides), one scan for the credential word.
-    ("flag_pair_inrun", re.compile(rb"(?i)(?<!" + _FM + rb")(?=(?>" + _FM + rb"*?(?:--|_-))" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"*+[ \t]++([^\s-][^\s]{3,})"), 1),
     ("cookie", re.compile(rb"(?i)\b(?:set-)?cookie[ \t]*:[ \t]*([^\r\n]+)"), 1),
     ("jwt", re.compile(_JWT), 1),
     ("aws_key_id", re.compile(rb"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"), 0),
@@ -499,9 +494,7 @@ def fingerprint_target(ref):
             return file_sha(ref), True
         if os.path.isdir(ref):
             h = hashlib.sha256()
-            def listing_error(e):
-                raise e                       # an unlistable sub-directory is a refusal, never a fingerprint without it (review W7-4)
-            for root, dirs, files in os.walk(ref, onerror=listing_error):
+            for root, dirs, files in os.walk(ref):
                 dirs.sort()
                 for fn in sorted(files):
                     p = os.path.join(root, fn)
@@ -560,10 +553,13 @@ def _env_cap(name, default):
     raw = os.environ.get(name)
     if raw is None or raw == "":
         return default
-    # strictly a positive ASCII decimal integer without a sign, blank, underscore or leading zero (review W7-8)
-    if re.fullmatch(r"[1-9][0-9]*", raw) is None:
+    try:
+        v = int(raw)
+    except ValueError:
+        v = 0
+    if v <= 0:
         raise Refuse("usage_error", 64, "%s=%r is not a positive integer" % (name, raw))
-    return int(raw)
+    return v
 
 
 def _operand_dir_max():
@@ -581,7 +577,7 @@ def validate_operand_caps():
 
 
 def operand_files(argv):
-    """Files and directories named by argv operands: a plain operand, or the value after the first `=` of an
+    """Readable files and directories named by argv operands: a plain operand, or the value after the first `=` of an
     `--opt=VALUE` option. For a command outside the interpreter/launcher list, whose own bytes may be only a wrapper, each
     such operand is part of 'its own test bytes' (reviews N3, F3). Limits (declared, not closed): a path the launcher only
     DISCOVERS (config, rootdir, an environment variable, a file named inside an operand file) or reads from stdin is not
@@ -594,46 +590,18 @@ def operand_files(argv):
                 continue
             cand = a.split("=", 1)[1]
         try:
-            if cand and (os.path.isfile(cand) or os.path.isdir(cand)):      # an operand that exists but cannot be read is refused later, never dropped (review W7-4)
+            if cand and (os.path.isfile(cand) or os.path.isdir(cand)) and os.access(cand, os.R_OK):
                 out.append(cand)
         except (OSError, ValueError):
             pass
     return out
 
 
-def _operand_file_sha_n(p, budget):
-    """(sha256, bytes read) of the regular file p, counting the bytes ACTUALLY READ against `budget` (a procfs file reports
-    st_size 0, a file may grow after it was examined: review W7-2). The file is resolved first and then opened O_NONBLOCK |
-    O_NOFOLLOW, and fstat must say regular file, so an entry that became a FIFO after it was listed is refused and never
-    blocks (review W7-10). Raises _OperandSkip: `too_large` over the budget, `unreadable` otherwise."""
+def _operand_file_sha(p):
     try:
-        fd = os.open(os.path.realpath(p), os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0))
-    except (OSError, ValueError) as e:
-        raise _OperandSkip("unreadable", "%s cannot be read: %s" % (p, getattr(e, "strerror", None) or e))
-    try:
-        st = os.fstat(fd)
-        if not stat.S_ISREG(st.st_mode):
-            raise _OperandSkip("unreadable", "%s is not a regular file" % p)
-        if st.st_size > budget:
-            raise _OperandSkip("too_large", "%s holds more than %d bytes" % (p, budget))
-        h, n = hashlib.sha256(), 0
-        while True:
-            chunk = os.read(fd, 1 << 20)
-            if not chunk:
-                break
-            n += len(chunk)
-            if n > budget:
-                raise _OperandSkip("too_large", "%s holds more than %d bytes" % (p, budget))
-            h.update(chunk)
-        return h.hexdigest(), n
+        return file_sha(p)
     except OSError as e:
         raise _OperandSkip("unreadable", "%s cannot be read: %s" % (p, e.strerror or e))
-    finally:
-        os.close(fd)
-
-
-def _operand_file_sha(p, budget):
-    return _operand_file_sha_n(p, budget)[0]
 
 
 def _dir_digest(path, limit, byte_limit):
@@ -652,7 +620,7 @@ def _dir_digest(path, limit, byte_limit):
             raise _OperandSkip("too_large", "%s holds more than %d entries" % (path, limit))
         for fn in sorted(fnames):
             p = os.path.join(root, fn)
-            if os.path.isfile(p):
+            if os.path.isfile(p) and os.access(p, os.R_OK):
                 try:
                     total += os.stat(p).st_size
                 except OSError as e:
@@ -660,11 +628,9 @@ def _dir_digest(path, limit, byte_limit):
                 if total > byte_limit:
                     raise _OperandSkip("too_large", "%s holds more than %d bytes of files" % (path, byte_limit))
                 files.append(p)
-    h, remaining = hashlib.sha256(), byte_limit
+    h = hashlib.sha256()
     for p in files:
-        d, n = _operand_file_sha_n(p, remaining)         # the bytes actually read, over the whole directory, count against the cap
-        remaining -= n
-        h.update(os.fsencode(os.path.relpath(p, path)) + b"\0" + d.encode() + b"\n")
+        h.update(os.fsencode(os.path.relpath(p, path)) + b"\0" + _operand_file_sha(p).encode() + b"\n")
     return h.hexdigest()
 
 
@@ -679,14 +645,10 @@ def test_fingerprint(argv0, sources, operands=(), polarity=""):
             if os.path.isdir(p):
                 lines.append(_dir_digest(p, _operand_dir_max(), _operand_dir_bytes_max()))
             else:
-                lines.append(_operand_file_sha(p, _operand_dir_bytes_max()))
+                lines.append(_operand_file_sha(p))
         except _OperandSkip as e:
             if not claims_test:
                 continue
-            if e.reason == "too_large" and not os.path.isdir(p):
-                raise Refuse("operand_file_too_large", 69,
-                             "file operand %s: %s; name the test files with --test-source (docs/06 rule 11), a file this large "
-                             "is not fingerprinted (EVREC_OPERAND_DIR_BYTES_MAX)" % (p, e.detail))
             if e.reason == "too_large":
                 raise Refuse("operand_directory_too_large", 69,
                              "directory operand %s: %s; name the test files with --test-source (docs/06 rule 11), a directory "

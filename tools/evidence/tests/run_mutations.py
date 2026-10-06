@@ -202,7 +202,10 @@ m("N-I7e-streams-without-patterns", [('    out, h1 = redact_bytes(out, reds)\n  
 m("N-I7f-named-values-not-redacted-in-streams", [('    out, h1 = redact_bytes(out, reds)\n    err, h2 = redact_bytes(err, reds)', '    out, h1 = redact_bytes(out, [], patterns=True)\n    err, h2 = redact_bytes(err, [], patterns=True)')], ["planted secret present", "leaked", "stream-only secret stored"])
 for lab, rxstart in (("bearer", '("bearer", re.compile(rb"(?i)\\bBearer'), ("aws", '("aws_key_id", re.compile(rb"\\b(?:AKIA'), ("github", '("github_token", re.compile(rb"\\bgh'),
                      ("url_userinfo", '("url_userinfo", re.compile(rb"://'), ("pem", '("pem_private_key", re.compile(rb"-----BEGIN')):
-    m("N-I7g-pattern-%s-never-matches" % lab, [(rxstart, rxstart.replace('re.compile(rb"', 're.compile(rb"(?!x)x', 1))], ["I7:", "default pattern"])
+    # the never-matching prefix goes AFTER a leading global flag: before it, `(?i)` is not at the start and the module cannot be imported
+    # (review W7-6: round 3-6 "caught" the bearer mutant by crashing every call)
+    m("N-I7g-pattern-%s-never-matches" % lab, [(rxstart, rxstart.replace('rb"(?i)', 'rb"(?i)(?!x)x', 1) if 'rb"(?i)' in rxstart else rxstart.replace('re.compile(rb"', 're.compile(rb"(?!x)x', 1))],
+      ["I7:", "default pattern"] + (["W7-6: a bare Bearer"] if lab == "bearer" else []))
 m("N-I7h-kv-pattern-never-matches", [('("kv_secret", re.compile(rb"(?i)" + _NAMERUN', '("kv_secret", re.compile(rb"(?!x)x" + _NAMERUN')], ["I7:", "default pattern kv"])
 m("N-I8a-unresolved-fingerprint-allowed-in-verify", [('            if rec.get("target_fingerprint") == ZERO and rec.get("polarity") != "PROBE":', '            if False:')], ["unresolved-fingerprint sentinel"])
 m("N-I8b-baseline-with-unresolved-target-accepted", [('    if not resolved and polarity != "PROBE":', '    if not resolved and polarity in ("RED", "GREEN", "MUTATION", "REOPEN"):')], ["I8:"])
@@ -253,7 +256,7 @@ m("N1-blob-store-not-shared", [('    shared_dirs = {rp(os.path.dirname(ledger_pa
 m("N1-ev-dir-not-shared", [('    shared_dirs = {rp(os.path.dirname(ledger_path()) or "."), rp(ev_dir()), rp(blobs_path())}', '    shared_dirs = {rp(os.path.dirname(ledger_path()) or "."), rp(blobs_path())}')], ["evidence dir"])
 m("N1-inside-only-equal", [('    return path == base or path.startswith(base.rstrip(os.sep) + os.sep)', '    return path == base')], ["any depth"])
 m("N2-no-json-secret", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("json_secret", re.compile(', '    ("json_secret", _NEVER or re.compile(')], ["N2: password value containing a space"])
-m("N2-no-flag-pair-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("flag_pair", re.compile(', '    ("flag_pair", _NEVER or re.compile(')], ["N2: stream text"])
+m("N2-no-flag-pair-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("flag_pair", re.compile(', '    ("flag_pair", _NEVER or re.compile(')], ["N2: stream text", "W7-1: -password V (single dash at the start)"])
 m("N2-no-authorization-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("authorization", re.compile(', '    ("authorization", _NEVER or re.compile(')], ["N2: Authorization"])
 m("N2-no-cookie-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("cookie", re.compile(', '    ("cookie", _NEVER or re.compile(')], ["N2: Cookie"])
 m("N2-no-jwt-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("jwt", re.compile(', '    ("jwt", _NEVER or re.compile(')], ["N2: a bare three-part JWT"])
@@ -297,7 +300,7 @@ m("F3-opt-equals-value-not-hashed", [('            cand = a.split("=", 1)[1]', '
 m("F3-directory-operand-not-hashed", [('(os.path.isfile(cand) or os.path.isdir(cand))', '(os.path.isfile(cand))')], ["F3: directory operand gives"])
 m("F3-realpath-of-argv0-ignored", [('        return bool(f) and _is_interp_name(os.path.basename(os.path.realpath(f)))', '        return False')], ["F3: RED through a renamed symlink"])
 m("F3-oversized-directory-silently-skipped", [('            if e.reason == "too_large":\n                raise Refuse("operand_directory_too_large"', '            if False:\n                raise Refuse("operand_directory_too_large"')], ["F3: a directory operand over EVREC_OPERAND_DIR_MAX"])
-m("F3-dir-digest-ignores-content", [('h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + _operand_file_sha(p).encode() + b"\\n")', 'h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0")')], ["F3: directory operand gives"])
+m("F3-dir-digest-ignores-content", [('h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + d.encode() + b"\\n")', 'h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0")')], ["F3: directory operand gives"])
 m("F5-ev-ledger-ignores-anchor-beside", [('    if os.environ.get("EV_LEDGER"):\n        return os.path.join(os.path.dirname(os.path.abspath(os.environ["EV_LEDGER"])), "anchors.jsonl")\n', '')], ["F5: EV_LEDGER with anchors.jsonl beside it"])
 m("F5-explicit-anchor-ignored", [('    if os.environ.get("EV_ANCHOR"):\n        return os.environ["EV_ANCHOR"]\n', '')], ["F5: an explicit EV_ANCHOR still wins"])
 m("F6-duplicate-index-row-counted-twice", [('                        seen.add(r["seq"])', '                        seen.add(object())')], ["F6: with that run-index row duplicated"])
@@ -309,31 +312,56 @@ m("F7-lock-error-traceback", [('    except OSError as e:\n        raise Refuse("
 # ---- round 6 (WF6-REVIEW findings R6-1 R6-2 R6-4 R6-5 R6-6 R6-7 R6-8 R6-11): the reviewer mutants WF6-1..7 re-expressed on the unbounded code, plus one or more per new guard
 m("R6-bound-name-run-128", [('_NAMERUN = rb"(?<!" + _NM + rb")(?=" + _NM + rb"*?" + _CRED + rb")" + _NM + rb"*+"', '_NAMERUN = rb"(?<!" + _NM + rb")(?=" + _NM + rb"*?" + _CRED + rb")" + _NM + rb"{0,128}"')], ["R6-2: NOT redacted"])
 m("R6-bound-name-run-100", [('_NAMERUN = rb"(?<!" + _NM + rb")(?=" + _NM + rb"*?" + _CRED + rb")" + _NM + rb"*+"', '_NAMERUN = rb"(?<!" + _NM + rb")(?=" + _NM + rb"*?" + _CRED + rb")" + _NM + rb"{0,100}"')], ["R6-2: NOT redacted"])
-m("R6-bound-flag-run-8", [('rb"(?i)(?<!" + _FM + rb")-{1,2}+(?=" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"*+[ \\t]++', 'rb"(?i)(?<!" + _FM + rb")-{1,2}+(?=" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"{0,8}+[ \\t]++')], ["R6-2: NOT redacted"])
-m("R6-bound-flag-lookahead-128", [('-{1,2}+(?=" + _FM + rb"*?" + _CRED', '-{1,2}+(?=" + _FM + rb"{0,128}?" + _CRED')], ["R6-2: NOT redacted"])
-m("R6-bound-json-run-128", [('("json_secret", re.compile(rb"(?i)[\\"\']" + _NAMERUN +', '("json_secret", re.compile(rb"(?i)[\\"\']" + _NM + rb"{0,128}" +')], ["R6-2: NOT redacted"])
+m("R6-bound-flag-run-8", [('rb"(?i)(?<!" + _FM + rb")-{1,2}+(?=" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"*+[ \\t]++', 'rb"(?i)(?<!" + _FM + rb")-{1,2}+(?=" + _FM + rb"*?" + _CRED + rb")" + _FM + rb"{0,8}+[ \\t]++')], ["R6-2: NOT redacted", "W7-1: single-dash flag"])
+m("R6-bound-flag-lookahead-128", [('-{1,2}+(?=" + _FM + rb"*?" + _CRED', '-{1,2}+(?=" + _FM + rb"{0,128}?" + _CRED')], ["R6-2: NOT redacted", "W7-1: single-dash flag"])
+m("R6-bound-json-run-128", [('("json_secret", re.compile(rb"(?i)[\\"\']" + _NAMERUN +', '("json_secret", re.compile(rb"(?i)[\\"\']" + _NM + rb"{0,128}" + _CRED + _NM + rb"{0,128}" +')], ["R6-2: NOT redacted", "W7-5: a spaced JSON value"])   # re-authored (review W7-7): the first form dropped the credential-word requirement
 m("R6-jwt-old-quadratic-pattern", [('("jwt", re.compile(_JWT), 1)', '("jwt", re.compile(rb"\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]*"), 0)')], ["R6-1: redact_bytes on"])
 m("R6-jwt-after-dash-lost", [('rb"*?(?<![A-Za-z0-9_])"', 'rb"*?(?<![A-Za-z0-9_-])"')], ["R6-1: a JWT after"])
 m("R6-jwt-pattern-dropped", [('("jwt", re.compile(_JWT), 1)', '("jwt", re.compile(rb"(?!x)x"), 1)')], ["R6-1: a bare JWT"])
-m("R6-nonutf8-dir-name-traceback", [('        h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + _operand_file_sha(p).encode() + b"\\n")', '        h.update(os.path.relpath(p, path).encode() + b"\\0" + _operand_file_sha(p).encode() + b"\\n")')], ["R6-4: a directory operand holding a non-UTF-8"])
+m("R6-nonutf8-dir-name-traceback", [('        h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + d.encode() + b"\\n")', '        h.update(os.path.relpath(p, path).encode() + b"\\0" + d.encode() + b"\\n")')], ["R6-4: a directory operand holding a non-UTF-8"])
 m("R6-nonutf8-target-name-traceback", [('h.update(os.fsencode(os.path.relpath(p, ref)) +', 'h.update(os.path.relpath(p, ref).encode() +')], ["R6-4: a target directory holding a non-UTF-8"])
 m("R6-unreadable-file-traceback", [('        raise _OperandSkip("unreadable", "%s cannot be read: %s" % (p, e.strerror or e))', '        raise')], ["R6-4: a directory operand holding a file that cannot be read"])
 m("R6-unlistable-dir-ignored", [('os.walk(path, onerror=listing_error)', 'os.walk(path)')], ["R6-4: a directory operand holding an unlistable"])
 m("R6-unreadable-refused-on-probe", [('            if not claims_test:\n                continue\n', '            if False:\n                continue\n')], ["R6-4: the same operand on a PROBE", "R6-5: the same directory over the byte cap on a PROBE"])
-m("R6-byte-cap-ignored", [('                if total > byte_limit:', '                if False:')], ["R6-5: a directory operand holding more bytes", "R6-5: a directory operand holding a 4 GiB"])
+m("R6-byte-cap-ignored", [('                if total > byte_limit:', '                if False:')], ["R6-5: a directory operand holding more bytes", "R6-5: a directory operand holding a 4 GiB", "W7-2: a 4 GiB mode-000"])
 m("R6-dirs-not-counted", [('        entries += len(dirs) + len(fnames)', '        entries += len(fnames)')], ["R6-5: a directory operand with more entries"])
 m("WF6-7-cap-off-by-one", [('        if entries > limit:', '        if entries > limit + 1:')], ["R6-5: N+1=4 files"])
 m("R6-cap-off-by-one-low", [('        if entries > limit:', '        if entries >= limit:')], ["R6-5: exactly N=3 files"])
 m("R6-caps-not-validated-at-start", [('        validate_operand_caps()\n', '')], ["R6-8"])
-m("R6-cap-zero-accepted", [('    if v <= 0:\n        raise Refuse("usage_error", 64, "%s=%r is not a positive integer"', '    if v < 0:\n        raise Refuse("usage_error", 64, "%s=%r is not a positive integer"')], ["R6-8: EVREC_OPERAND_DIR_MAX=0", "R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0"])
-m("R6-cap-non-integer-is-default", [('    except ValueError:\n        v = 0\n', '    except ValueError:\n        return default\n')], ["R6-8"])
-m("WF6-3-dir-digest-drops-relpath", [('h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + _operand_file_sha(p).encode() + b"\\n")', 'h.update(_operand_file_sha(p).encode() + b"\\n")')], ["R6-6: RED {a.sh pass"])
+m("R6-cap-zero-accepted", [('    if re.fullmatch(r"[1-9][0-9]*", raw) is None:', '    if re.fullmatch(r"[0-9][0-9]*", raw) is None:')], ["R6-8: EVREC_OPERAND_DIR_MAX=0", "R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0"])
+m("R6-cap-non-integer-is-default", [('        raise Refuse("usage_error", 64, "%s=%r is not a positive integer" % (name, raw))', '        return default')], ["R6-8"])
+m("WF6-3-dir-digest-drops-relpath", [('h.update(os.fsencode(os.path.relpath(p, path)) + b"\\0" + d.encode() + b"\\n")', 'h.update(d.encode() + b"\\n")')], ["R6-6: name-swapped directories collide"])   # fragment corrected (review W7-7): it matched only the check's ok text
 m("WF6-5-one-level-symlink-only", [('        return bool(f) and _is_interp_name(os.path.basename(os.path.realpath(f)))', '        return bool(f) and _is_interp_name(os.path.basename(os.path.join(os.path.dirname(f), os.readlink(f)) if os.path.islink(f) else f))')], ["R6-6: RED through a TWO-level"])
 m("WF6-6-mutation-not-refused-over-cap", [('    claims_test = polarity in ("RED", "GREEN", "MUTATION")', '    claims_test = polarity in ("RED", "GREEN")')], ["R6-6: a MUTATION record over the directory cap"])
 m("WF6-4-is-holder-empty-env-holds", [('    me = os.environ.get("EVREC_TURN_RUN_ID") or None\n', '    me = os.environ.get("EVREC_TURN_RUN_ID")\n')], ["R6-6: _is_holder", "F2:"])
 m("R6-dead-namemax-back", [('_NM = rb"[A-Za-z0-9_.-]"\n', '_NAMEMAX = 128\n_NM = rb"[A-Za-z0-9_.-]"\n')], ["R6-7"])
 
-CORE = ("test_evrec.sh", "test_evrec_more.sh", "test_evrec_r3.sh", "test_evrec_r4.sh", "test_evrec_r5.sh", "test_evrec_r6.sh", "test_evrec_golden.sh")
+# mutants proven behaviour-equivalent (review W7-7): reported EQUIVALENT with the reason, not counted as not-caught
+EQUIVALENT = {"F1-json-tail-quadratic": "`*` vs `*+` after a name run that the next token (a quote) cannot match inside: backtracking can never succeed, so the match "
+              "set is identical; the run-start look-behind, not the possessive, makes the scan linear (2200 differential cases, 0 differences, linear at 400 KB)"}
+
+# ---- round 7 (WF7-REVIEW findings W7-1 W7-2 W7-3 W7-4 W7-5 W7-6 W7-8 W7-10): one or more paired mutants per fix
+m("W7-1-inrun-pattern-dropped", [('("flag_pair_inrun", re.compile(rb"(?i)(?<!"', '("flag_pair_inrun", re.compile(rb"(?i)(?!x)x(?<!"')], ["W7-1: after"])
+m("W7-1-inrun-underscore-marker-dropped", [('(?>" + _FM + rb"*?(?:--|_-))"', '(?>" + _FM + rb"*?(?:--))"')], ["W7-1: a_-password V"])
+m("W7-1-inrun-lookahead-not-atomic", [('(?=(?>" + _FM + rb"*?(?:--|_-))"', '(?=(?:" + _FM + rb"*?(?:--|_-))"')], ["W7-1: redact_bytes on"])
+m("W7-1-inrun-marker-not-required", [('(?=(?>" + _FM + rb"*?(?:--|_-))" + _FM + rb"*?" + _CRED', '(?=" + _FM + rb"*?" + _CRED')], ["W7-1: negative control, not redacted: reset-password"])
+m("W7-1-inrun-value-may-start-with-dash", [('[^\\s-][^\\s]{3,})"), 1),\n    ("cookie"', '[^\\s]{4,})"), 1),\n    ("cookie"')], ["W7-1: negative control, not redacted: a credential flag whose value starts"])
+m("W7-2-read-time-cap-dropped", [('            if n > budget:\n                raise _OperandSkip("too_large", "%s holds more than %d bytes" % (p, budget))\n            h.update(chunk)', '            h.update(chunk)')], ["W7-2:", "W7-3: a plain procfs operand"])
+m("W7-2-read-budget-not-cumulative", [('        d, n = _operand_file_sha_n(p, remaining)', '        d, n = _operand_file_sha_n(p, byte_limit)')], ["W7-2: two size-0 files"])
+m("W7-5-st-size-total-per-file", [('                    total += os.stat(p).st_size', '                    total = os.stat(p).st_size')], ["W7-5: three 600-byte files", "W7-5: three mode-000"])
+m("W7-3-plain-file-uncapped", [('lines.append(_operand_file_sha(p, _operand_dir_bytes_max()))', 'lines.append(_operand_file_sha(p, 1 << 62))')], ["W7-3:"])
+m("W7-3-plain-file-reason-is-directory", [('raise Refuse("operand_file_too_large", 69,', 'raise Refuse("operand_directory_too_large", 69,')], ["W7-3: a 4 GiB plain"])
+m("W7-4-operand-files-requires-read-access", [('if cand and (os.path.isfile(cand) or os.path.isdir(cand)):', 'if cand and (os.path.isfile(cand) or os.path.isdir(cand)) and os.access(cand, os.R_OK):')], ["W7-4: a mode-000 plain", "W7-4: an execute-only"])
+m("W7-4-dir-pass1-skips-unreadable-files", [('            if os.path.isfile(p):\n                try:', '            if os.path.isfile(p) and os.access(p, os.R_OK):\n                try:')], ["W7-4: a mode-000 file inside"])
+m("W7-4-target-listing-error-ignored", [('os.walk(ref, onerror=listing_error)', 'os.walk(ref)')], ["W7-4: a TARGET directory"])
+m("W7-8-cap-lenient-int", [('    if re.fullmatch(r"[1-9][0-9]*", raw) is None:', '    if not raw.strip().replace("_", "").lstrip("+").isdigit() or int(raw.replace("_", "")) <= 0:')], ["W7-8:"])
+m("W7-8-leading-zeros-and-zero-allowed", [('    if re.fullmatch(r"[1-9][0-9]*", raw) is None:', '    if re.fullmatch(r"[0-9]+", raw) is None:')], ["W7-8:"])
+m("W7-5-empty-cap-not-default", [('    if raw is None or raw == "":', '    if raw is None:')], ["W7-5: EVREC_OPERAND_DIR_MAX set to the empty", "W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty"])
+m("W7-10-no-nonblock-open", [('os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW', 'os.O_RDONLY | os.O_NOFOLLOW')], ["W7-10:"])
+m("W7-10-no-regular-file-check", [('        if not stat.S_ISREG(st.st_mode):', '        if False:')], ["W7-10:"])
+m("W7-10-no-realpath-before-open", [('fd = os.open(os.path.realpath(p), ', 'fd = os.open(p, ')], ["W7-10: a symlink to a regular file"])
+
+CORE = ("test_evrec.sh", "test_evrec_more.sh", "test_evrec_r3.sh", "test_evrec_r4.sh", "test_evrec_r5.sh", "test_evrec_r6.sh", "test_evrec_r7.sh", "test_evrec_golden.sh")
 
 
 def run_one(mut, scratch_base, check_only=False):
@@ -362,6 +390,13 @@ def run_one(mut, scratch_base, check_only=False):
                 except SyntaxError as err:
                     return mid, "INVALID", "mutated source does not compile: %s (line %s)" % (err.msg, err.lineno), []
             open(p, "w").write(mutated)
+        # a file that compiles can still fail when IMPORTED (a regex with a misplaced global flag raises at import): that is INVALID,
+        # never "caught by crashing every call" (review W7-6)
+        if any((e[0] if len(e) == 3 else "tools/evidence/evcore.py").endswith(".py") for e in edits):
+            imp = subprocess.run([sys.executable, "-B", "-I", "-c", "import sys; sys.path.insert(0, sys.argv[1]); import evcore",
+                                  os.path.join(d, "tools/evidence")], capture_output=True, text=True, timeout=120)
+            if imp.returncode != 0:
+                return mid, "INVALID", "mutated source compiles but cannot be imported: %s" % (imp.stderr.strip().splitlines() or ["?"])[-1][:120], []
         if check_only:
             return mid, "CAUGHT", "", []
         fails = []
@@ -396,8 +431,11 @@ def main():
             res.append(r)
             mid, st, note, fails = r
             print("%-34s %-26s %s" % (mid, st, ("; ".join(f[5:70] for f in fails[:3]) or note)), flush=True)
-    bad = [r for r in res if r[1] != "CAUGHT"]
-    print("mutants=%d caught=%d not_caught=%d" % (len(res), len(res) - len(bad), len(bad)))
+    equiv = [r for r in res if r[1] == "SURVIVED" and r[0] in EQUIVALENT]
+    for r in equiv:
+        print("EQUIVALENT %-30s %s" % (r[0], EQUIVALENT[r[0]]))
+    bad = [r for r in res if r[1] != "CAUGHT" and r not in equiv]
+    print("mutants=%d caught=%d equivalent=%d not_caught=%d" % (len(res), len(res) - len(bad) - len(equiv), len(equiv), len(bad)))
     return 0 if not bad else 1
 
 

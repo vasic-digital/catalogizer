@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""tools/evidence/evrec - evidence recorder (tasks.md T050). See evcore.py."""
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+sys.dont_write_bytecode = True
+import evcore
+sys.exit(evcore.evrec_main(sys.argv[1:]))
