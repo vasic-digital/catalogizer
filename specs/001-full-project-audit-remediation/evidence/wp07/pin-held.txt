@@ -1,0 +1,10 @@
+# T080 pin-held: merge-base --is-ancestor <target> <live tip of each remote>, 2026-10-06T18:12:25Z
+target a71b1767b40229c8e88140924352fbe990b3049e
+gitflic HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+github HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+gitlab HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+gitverse HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+origin HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+upstream HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+vasic_digital_github HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)
+vasic_digital_gitlab HOLDS (tip a71b1767b40229c8e88140924352fbe990b3049e, ancestor-or-equal)

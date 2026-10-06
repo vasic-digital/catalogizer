@@ -45,6 +45,14 @@ MUTATIONS = [
     ("section-heading-counted-as-anchor", "(\\d+(?:\\.\\d+)+(?:", "(\\d+(?:\\.\\d+)*(?:", ["lagging-index-golden-constitution"]),
     ("missing-marker-tolerated", "raise InputError(\"constitution file has no '## Anchor Catalogue' heading\")",
      "cstart = len(lines)", ["missing-catalogue-marker-exit-2-untouched"]),
+    # WF8 F4 (2026-10-06): the four reviewer-authored mutants that survived the first 14 are now named and killed
+    ("notes-silenced", "    for line in notes(old[\"constitution\"], len(index[\"anchors\"])):\n        print(line)",
+     "    for line in notes(old[\"constitution\"], len(index[\"anchors\"])):\n        pass", ["stale-anchor-count-prints-NOTE-line"]),
+    ("lag-ids-reversed", "key=key)", "key=key, reverse=True)", ["lag-ids-numeric-order-in-stdout-and-both-files"]),
+    ("lag-ids-string-sorted", "return sorted(heads - set(index_ids), key=key)", "return sorted(heads - set(index_ids))",
+     ["lag-ids-numeric-order-in-stdout-and-both-files"]),
+    ("index-lag-banner-silenced", "        print(\"INDEX-LAG index source_sha256 %s != canon sha256 %s; anchors in canon but not in the index: %s\"\n              % (index_sha, canon_sha, \", \".join(lag_ids) if lag_ids else \"none\"))",
+     "        pass", ["lagging-index-stdout-banner"]),
 ]
 
 

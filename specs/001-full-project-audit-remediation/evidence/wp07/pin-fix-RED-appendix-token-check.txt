@@ -1,0 +1,35 @@
+# generated 2026-10-06T18:42Z by pin-fix agent (RED run, host python3, before scripts/governance/appendix_token_check.py existed); git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04
+# sha256 427356672853fe5370ca116629bda03231c938e191073497b60e394987faeee4  scripts/governance/tests/test_appendix_token_check.py (the 22-case version of that time; grown to 26 afterwards)
+FAIL clean fixture exits 0  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL clean fixture reports counted tokens  :: 
+FAIL missing --second-flag -> exit 1 naming anchor and token  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL missing CM-FIRST-GATE -> exit 1 naming anchor and token  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL missing CM-COVENANT-114-1-PROPAGATION -> exit 1 naming anchor and token  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL bold-block token missing is charged to 11.4.2, not 11.4.1  :: 
+FAIL moving a token between digests of correct anchor passes  :: 
+PASS a--b carrier is not a token
+FAIL canon anchor without digest -> exit 1 (no-digest)  :: 
+FAIL appendix-only digest is informational (exit 0, listed)  :: 
+FAIL zero canon blocks -> BLIND exit 2  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL zero appendix digests -> BLIND exit 2  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL duplicate canon block-start -> exit 2  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL allow entry with reason exempts exactly that token  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+FAIL allow entry does not hide a different missing token  :: 
+PASS allow entry without reason -> exit 2
+FAIL stale allow entry (token present in digest) -> exit 1  :: 
+FAIL stale allow entry (token not in canon block) -> exit 1  :: 
+FAIL allow whole-anchor no-digest exemption with reason -> exit 0  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+PASS no arguments -> exit 2 usage
+PASS unreadable input -> exit 2
+FAIL --json writes identity hashes  :: /usr/bin/python3: can't open file '/home/milosvasic/Projects/catalogizer/scripts/governance/appendix_token_check.py': [Errno 2] No such file or directory
+
+TOTAL 22 PASS 4 FAIL 18

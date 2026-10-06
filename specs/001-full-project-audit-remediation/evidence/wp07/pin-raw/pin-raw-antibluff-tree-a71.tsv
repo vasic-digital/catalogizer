@@ -1,0 +1,10 @@
+./scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")

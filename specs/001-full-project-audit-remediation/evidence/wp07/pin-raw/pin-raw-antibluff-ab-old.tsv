@@ -1,0 +1,4 @@
+./verification/plugins/agentloop/skills/epic-conductor/scripts/assert-no-blocked-prs.test.ts	676	SKIP_WITHOUT_TICKET	    expect(text).toMatch(/assert-no-blocked-prs[\s\S]{0,1200}[Ee]xit 0/);
+./polyscreen-mcp/test/recording-analyze.test.ts	18	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./polyscreen-mcp/test/flash-detective-workflow.test.ts	16	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./verification/plugins/agentloop/lib/scenario.test.ts	821	ASSERT_TAUTOLOGY	        test("unrelated", () => expect(true).toBe(true));

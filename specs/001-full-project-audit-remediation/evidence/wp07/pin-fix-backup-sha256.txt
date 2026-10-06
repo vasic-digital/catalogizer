@@ -1,0 +1,15 @@
+# generated 2026-10-06T18:55:50Z by pin-fix agent; git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04 (F8: the sha256 list the review package promised for the pin backup .audit/backups/wp07-pin-20261006T181153Z, now also stored there as files.sha256)
+# files.sha256 sha256 69408fca4ad1db5c8ff2f95025a00089bae748358d25c46f12851e8d257517d0
+3451205190117ac15d647bdf1ae502e6015ff214aad3185c07964b671226bf6b  AGENTS.md
+7219fe3031a3f895b97fb1b4bd174fd525a0ef06ab6ec35d5ec2fb98675a6afb  CLAUDE.md
+6db2d59f1554434b533123840d6f14ecc35ab122f746f5a1c906bb6fe089fe66  GEMINI.md
+49ba7d487aa9baf2e2d724892ac523ea32f2bc4cd97a4e7bb0aee138a1b11f99  .specify/memory/constitution-appendix.md
+8b6e96edf8f677ce5604e9ee09e4e0e90500f119b57a0dc79f01a5a88fb70ad0  .specify/memory/constitution.md
+d8a7693bc75bd63adae009410e7ef21f2423aa137ffe2fcd8f178693eaf423fa  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+AGENTS.md: OK
+CLAUDE.md: OK
+GEMINI.md: OK
+.specify/memory/constitution-appendix.md: OK
+.specify/memory/constitution.md: OK
+specs/001-full-project-audit-remediation/decisions/owner-request-list.md: OK
+# note: the backup holds the 6 files as they stood at HEAD before the pin move; the working-tree edits of this fix pass have no pre-op copy (the HEAD versions plus this backup plus git cover recovery of every prior version)

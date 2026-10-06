@@ -1,0 +1,13 @@
+diff --git a/specs/001-full-project-audit-remediation/decisions/owner-request-list.md b/specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+index 3ad4110c..794026d2 100644
+--- a/specs/001-full-project-audit-remediation/decisions/owner-request-list.md
++++ b/specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+@@ -111,6 +111,8 @@ Relayed 2026-10-05: yes to all three: `helixdevelopment1` and `milos85vasic` are
+ 
+ Relayed 2026-10-05: ODG-12 "variant B, always fetch and fast-forward pull the latest constitution; sweep must pass". The go-aheads for the WP-07 pin bump and the final WP-73 constitution update follow from this answer and the FR-017 confirmation; confirm: ____
+ 
++WP-07 owner question OD-WP07-SONNET-FALLBACK (recorded 2026-10-06 by the pin-move step, NOT decided by an agent): the constitution at the new pin (`a71b1767`, amendment of 2026-10-04) changes 11.4.209 (code review) and 11.4.211 (merge-conflict resolution): Opus at `xhigh` stays the primary substrate, but when Opus is genuinely unavailable (a captured fact) the work MUST run on Sonnet instead of being blocked; only when both Opus and Sonnet are unavailable is it blocked. This project's own text (`.specify/memory/constitution.md`) says the opposite and is stricter: Opus `xhigh` only, no fallback model, blocked when Opus is unavailable. A project rule may tighten the constitution but never weaken it, so the stricter project rule stands and the appendix records it as a project extension. Question: keep the stricter project rule (recommended default, nothing changes), or adopt the upstream Sonnet fallback for review and conflict resolution? Answer: ____
++
+ ### 4.3 Licence policy (ODG-40; blocks WP-35, WP-57; input to T269)
+ 
+ Relayed 2026-10-05, partial: "Apache-2.0-compatible for shipped code". OPEN, still to supply: (1) the allow-list and deny-list of licence identifiers for the server images and the development or QA tools; (2) a licence for each own-organisation repository that has no licence file. Lists: ____

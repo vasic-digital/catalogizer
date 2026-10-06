@@ -1,5 +1,13 @@
 # Catalogizer Constitution
 
+| Field | Value |
+|---|---|
+| Revision | 7 |
+| Created | 2026-10-02 |
+| Last modified | 2026-10-06T18:55:00Z |
+| Status | active, BINDING; the 2026-10-06 canon pin move (constitution version 2.2.0) is held for its G-PIN review (WP-07 T084) and owner ratification (T081a) |
+| Binds | the Catalogizer Spec Kit layer, together with `.specify/memory/constitution-appendix.md` |
+
 This is the Spec Kit governance layer for Catalogizer. It **incorporates** the Helix Universal
 Constitution (`submodules/constitution`), the project constitution (`CONSTITUTION.md`) and every
 project and module override (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md` at the root and in each module).
@@ -29,10 +37,10 @@ no-duplicate (§11.4.227) rules:
 Where a digest here or in the appendix is shorter than canon, canon governs. Read the anchor block before relying
 on it: `grep -n '§11\.4\.<N> —' submodules/constitution/Constitution.md`.
 
-**Pinned sources (verified this session):** `submodules/constitution` at commit
-`10b7a06c4a2ec3f06b4cde9b1611a622a79320ad`; `Constitution.md` sha256
-`d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72`, identical to the hash
-recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
+**Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `submodules/constitution` at commit
+`a71b1767b40229c8e88140924352fbe990b3049e`; `Constitution.md` sha256
+`95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`; `constitution_index.yaml` records sha256
+`d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72`, which differs, so the index lags this pin: the catalogue below lists the anchors the index knows. Anchors present in `Constitution.md` but absent from the index: 11.4.276.
 
 ## Core Principles
 
@@ -94,9 +102,21 @@ No change is accepted on the author's say-so. Every change, including a one-line
 edit, MUST pass an independent review before acceptance, commit or build (§11.4.142, §11.4.125).
 
 - The reviewer MUST be structurally separate from the author and MUST run on the Opus model at
-  `xhigh` effort. No Fable, no other model and no lower effort is permitted. If Opus at `xhigh` is
-  unavailable the review is BLOCKED, never substituted (§11.4.209). The same pin binds
-  merge-conflict resolution (§11.4.211).
+  `xhigh` effort. No Fable and no lower effort for Opus is permitted. Canon §11.4.209 (review) and
+  §11.4.211 (merge-conflict resolution), as amended 2026-10-04 (pin `a71b1767`), REQUIRE a Sonnet
+  fallback when Opus at `xhigh` is genuinely unavailable (a captured fact, never a guess): the work
+  MUST then run on Sonnet at the highest effort the dispatch path can set, with the Opus
+  unavailability fact and the substitution recorded in the evidence, and it is blocked only when
+  both Opus and Sonnet are unavailable. Leaving it blocked or deferred while Sonnet is reachable is
+  the canon no-escape-hatch flag `--leave-review-blocked-while-sonnet-reachable`. The earlier text
+  of this principle ("BLOCKED, never substituted") digested the pre-amendment canon; it is not an
+  owner mandate: the owner record for ODG-19 reads "Opus xhigh as pinned (§11.4.209)" and OA-2026-10-05-23
+  reads "run independent reviews ... with Opus xhigh and record effort", and neither says "no
+  fallback" or "blocked". Status: an OPEN canon conflict (Known Conflicts item 17, owner question
+  OD-WP07-SONNET-FALLBACK, default: follow canon). Interim practice, an agent's interim choice and
+  NOT an owner decision: follow canon, Opus at `xhigh` first and the Sonnet fallback only on a
+  captured Opus-unavailability fact, recorded with model and effort. The same pin binds
+  merge-conflict resolution (§11.4.209, §11.4.211).
 - Review iterates to a zero-finding GO (§11.4.134), considers every scenario and angle, and
   verifies fixes against captured runtime evidence (§11.4.194).
 - The producer of a change, artifact or verdict MUST NOT be the actor that gates it. Separation is
@@ -963,8 +983,11 @@ follow-up), NOTE (informational).
    exists, but no `scripts/commit_all.sh` or `commit-push-all.sh` was found (**OPEN**).
    `docs/CONTINUATION.md` exists.
 8. **Host-level index lag.** The host index file loaded by the agent lists anchors only through
-   §11.4.271; the pinned canon defines through §11.4.275 (§11.4.272 to §11.4.275 are real). The
-   Anchor Catalogue above is generated from the canon and is authoritative.
+   §11.4.271; the pinned canon defines through §11.4.276 (§11.4.272 to §11.4.276 are real). The
+   Anchor Catalogue above is generated from the canon's machine index `constitution_index.yaml`,
+   and at the current pin that index itself lags `Constitution.md` (see item 18): the catalogue
+   lists the 283 anchors the index knows and omits §11.4.276, whose operative digest is in
+   `.specify/memory/constitution-appendix.md`, Part 1. `Constitution.md` is authoritative.
 9. **Owed operator decision.** Brownfield adoption of the 85% coverage floor (immediate hard
    floor, one-time monotone ratchet, per-corpus phase-in, or changed-code-only with a deadline)
    is the operator's call under §11.4.224 and §11.4.66. **DECIDED by the operator (2026-10-03):**
@@ -1019,6 +1042,31 @@ follow-up), NOTE (informational).
     updated. Pulling the governance submodule includes its post-pull sweep and hook (§11.4.26,
     §11.4.32, §11.4.164). **DECIDED (operator).**
 
+17. **Canon Sonnet fallback (found by the 2026-10-06 pin move to `a71b1767`).** Canon §11.4.209
+    (code review) and §11.4.211 (merge-conflict resolution), amended 2026-10-04, REQUIRE a fallback:
+    when Opus at `xhigh` is genuinely unavailable (a captured fact) the work MUST be dispatched on
+    Sonnet rather than blocked, and it is blocked only when both Opus and Sonnet are unavailable;
+    canon names `--leave-review-blocked-while-sonnet-reachable` as a forbidden escape hatch. An
+    earlier text of this document (Principle III) said "blocked, never substituted"; that digested
+    the pre-amendment canon and was never an owner mandate (ODG-19: "Opus xhigh as pinned
+    (§11.4.209)"; OA-2026-10-05-23: "run independent reviews ... with Opus xhigh and record effort";
+    the id OA-2026-10-05-23 was not found in any tracked markdown by the 2026-10-06 fix pass, so it
+    is cited as the review reported it, UNCONFIRMED locator). **OPEN canon conflict, owner decision,
+    not made by an agent:** whether the project wants the canon fallback (default, follow canon) or
+    to ask for a canon change; a project rule that blocks where canon requires a fallback would
+    weaken canon, which a project may not do. Interim practice, an agent's interim choice and not an
+    owner rule: follow canon (Opus `xhigh` first, Sonnet fallback only on a captured Opus
+    unavailability fact, recorded with model and effort). Recorded as OD-WP07-SONNET-FALLBACK in
+    `decisions/owner-request-list.md`.
+18. **Upstream index and groups lag at `a71b1767` (reported, not fixed here).** At the new pin the
+    machine index `constitution_index.yaml` is byte-identical to the one at the old pin: it records
+    the `Constitution.md` hash of the old canon and lacks §11.4.276, and its generator guard
+    stops with `anchor 11.4.276 matches no group rule`. The `groups/*.md` files also lack the
+    amendments to §11.4.134, §11.4.209, §11.4.211, §11.4.230, §11.4.231, §11.4.235, §11.4.240 and
+    §11.4.267 and the whole of §11.4.276. The appendix digests of those anchors were written from
+    `Constitution.md` (the pinned canon), not from the groups files. Evidence:
+    `specs/001-full-project-audit-remediation/evidence/wp07/pin-upstream-findings.md`.
+
 ## Governance
 
 This constitution is the highest governing document for Spec Kit development activities in this
@@ -1045,4 +1093,4 @@ between a module rule and canon is recorded under Known Conflicts.
 **Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults (those not marked as operator decisions) may be
 replaced by the operator.
 
-**Version**: 2.1.2 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-03
+**Version**: 2.2.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-06

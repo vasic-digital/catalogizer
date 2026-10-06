@@ -1,0 +1,9 @@
+ok[INV1]: submodules/constitution/ exists
+FAIL[INV2]: Constitution.md is present but the verified anchor HEADING '§11.4 End-user quality guarantee — forensic anchor' is MISSING — the §11.4 End-user quality guarantee section was stripped or the file is not the canonical Constitution
+ok[INV3]: constitution/CLAUDE.md present + contains 'MANDATORY ANTI-BLUFF COVENANT'
+ok[INV4]: constitution/AGENTS.md present + references the anti-bluff covenant
+ok[INV5:CLAUDE.md]: CLAUDE.md references submodules/constitution
+ok[INV5:AGENTS.md]: AGENTS.md references submodules/constitution
+ok[INV5:CONSTITUTION.md]: CONSTITUTION.md references submodules/constitution
+GATE FAILED: 1 constitution-inheritance invariant(s) broken — see FAIL[...] lines above
+rc=1

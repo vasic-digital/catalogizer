@@ -1,0 +1,55 @@
+a71b176 fix(hooks): carrier-strip #35 — bounded-3-pass iterative entity-decode
+a398270 docs: regenerate remaining doc twins (README/CHANGELOG/AGENT_GUARDRAILS/codegraph-Status/owed-gates)
+7a422e0 fix(hooks): carrier-strip #34 extended to detector-1 — double-escaped HTML tag FP
+60e1f42 fix(hooks): carrier-strips #32-#34 — AKIA doc-placeholder + HTML-rendering FPs
+ac5d70d cascade: docs(mistiq-vader): close ATM-1117 round-4 scope + file ATM-1121 follow-up
+a174007 fix(hooks): carrier-strip #31 — ssh:// URL-form git remote email-adjacency FP
+4d0172c docs(constitution): add helixconstitution-v69 CHANGELOG entry
+f9d1cde docs(constitution): regenerate html/pdf/docx twins — §11.4.276 + §11.4.272-274 mirror-gap fix
+1901233 fix(governance): close §11.4.157 lockstep gap — §11.4.272-274 missing from all 4 mirrors
+8671bac docs: pre-release currency pass — README Rev 5, 3 doc spot-checks
+b0cff47 feat(governance): add §11.4.276 review-round budget (5-7 max, root-cause-driven)
+52da419 feat(§11.4.209/§11.4.211): add genuine-unavailability Sonnet review fallback; fix carrier-strip #28/#29 false-positive test fixtures
+e971a01 fix(release_prefix): S8/S9 round-7 fix -- I-1 FULL remediation: table-driven near-miss basename sweep closes mC (PREFIX) + mD (CASE-FOLD) gaps, replaces D10+D11, fixes M1 temp-file leak + M2 dead generator code + M3 comment-enumeration drift
+00697b5 fix(governance): §11.4.230(D) round-3 precision fix -- coalescing failed/refused-build handling + per-branch multi-coexistence clause + ledger row 107/108 parity
+2da2ed4 fix(release_prefix): S8/S9 round-6 fix -- I-1 residual (D11 line-preserving basename-insert mutation coverage) + M-1 residual (defaulted count in diagnostic message) + M-4a residual (F3 ingest-failure also leaves ATM_STILL_WORKS unset)
+567581b fix(governance): §11.4.230(D) round-2 fix-forward on Opus-xhigh review NO-GO (2 Important, 6 Minor)
+5fd59fa feat(governance): §11.4.230 extended with clause (D) INCREMENTAL DELIVERY GRANULARITY + DECLARED QA-BUILD CADENCE
+b195981 fix(release_prefix): S8/S9 round-5 fix -- I-1 (D10 basename-substring mutation coverage) + M-1 (grep -c doubled-output footgun) + M-4 (4 comment-accuracy corrections)
+518d38d test(transcript_ingest): track the extra_prefix_attribution fixture (T048 S8/S9 round-5 B-1)
+0c1c588 fix(release_prefix): S8/S9 round-4 -- I-A (4 reviewer mutations) + M-a..M-d closed
+be06384 fix(cycle_report): S12 round-6 GO -- REVIEW_SPAN_INVERTED/REVIEW_ELAPSED_NEGATIVE data-quality flags, proof-of-correctness gaps closed
+3e9389a fix(release_prefix): S8/S9 round-3 -- B1/I1/I2/I3/M1 fixed, source build-eligible per S11.4.235(D)
+e1c6c3a fix(independence_tier): T048 round-37 review B3 -- absolute-path stat/id
+03c73c6 fix(cycle_report): S12 F5/F6/F13 follow-ups, round 3 GO -- summed_review_duration_ms, --review-records-dir refusal, inverted-span exclusion
+49006bf fix(execution_record): T048 round-36 review R36-I1 -- absolute-path grep in exec_record_lookup()
+72f5d61 fix(cycle_report): ATM-1055 status-desync false positive + composition defects (T048 S12)
+97fd777 fix(transcript_ingest): decouple hardcoded ATM- item-tag prefix (T048 S9)
+54010ed fix(release_prefix): CWD-independent + standalone/embedded dual-layout project-root resolution (T048 S8)
+77db11f chore: bump 4 nested-submodule gitlinks + add stray TOWER_DETECTOR export siblings
+f41a83f feat(review_record): add optional finding_layer field per §11.4.235(D)
+e44f22f feat(governance): §11.4.235 extended with clause (D) FINDING-LAYER CLASSIFIER
+4bd12c6 fix(fastcycle/T177-r30): close independent-review Important -- a present-but-CORRUPT (not merely missing) base-commit object in an attacker-writable destination made rev-list --objects --missing=print fail outright, and Round 29's own exit-status capture around that call was correctly built but WRONGLY claimed to close no reachable gap
+eb790ce fix(fastcycle/T177-r29): close R28 NO-GO -- fc_is_partial_clone() missed every promisor boolean spelling but 'true' plus partialclonefilter-only configs (Important-A), and the destination-side cat-file -e probe fired before the detector ever ran (Important-B)
+07beade fix(fastcycle/CA-026-round2): close independent-review BLOCKING-1 -- git-dir isolation alone does not stop argv option injection via a dash-leading repo-local URL, re-enabling local RCE (ATM-1112)
+36a351a docs(fastcycle): T048 Round 24 review M1 fix -- drop the hand-maintained line-number citation that drifted twice in two rounds
+38f8c3f fix(fastcycle/CA-026): isolate remote-contact git-dir in verify_remote/_remote_head_tip -- untrusted repo-local core.sshCommand/credential.helper/remote.uploadpack fired arbitrary attacker code
+9d5068a fix(fastcycle/T177-r28): close R27 NO-GO -- a thin-pack destination without a partial-clone check could lazy-fetch an attacker promisor remote (Important-1), the sync hop's own bound was untested (Important-2), the disk-safety framing overstated what was actually fixed (Important-3); DISCLOSES a separate, OUT-OF-SCOPE finding in repo_verify.py's own remote-reachability check
+9b1470f docs(fastcycle): T048 Round 23 review M2/N1 fixes -- known_flaky_gates.tsv deletion comment + r22 regression line-citation drift
+660d2f3 fix(fastcycle/T177-r27): close R26 NO-GO -- unbounded object transfer could write ~71GiB per migration (I-1), `=` in a .gitmodules section name silently bypassed the R25-I1 submodule-pin fix (I-2), stderr suppression hid real diagnostics (M-a), partial-clone lazy-fetch hardening added
+fae49d8 fix(fastcycle/T177-r26): close R25 NO-GO -- push-into-untrusted-repo spawned receive-side hooks (B1), submodule config pins keyed by path not section name (I1), vacuous C4j + unanchored regex from the push-shape refactor (I2/M1), undisclosed protocol-allowlist scope narrowing (M2), header still describing the superseded push mechanism (M4)
+afe8fe5 fix(fastcycle/T177-r25): close R24 NO-GO -- protocol.allow=never was blocking ssh/https (B1), insteadOf still redirected hop-2/sync-fetch (B2), submodule.<name>.url bypassed the trusted URL on first-init (I1), stale wording (M2), repo_verify.py divergence documented (M1)
+b209fd9 feat(fastcycle/T081): wire render_keys.py into sync_all_markdown_exports.sh's freshness gate (US2)
+dc972ea fix(fastcycle/T177-r24): close R23 NO-GO -- full-scope filter neutralisation (git-lfs gateway), transport-executable closures, header correction, I23-1 dead-code removal, 2 minor wording fixes
+7b573e2 fix(fastcycle/T085-r6): close R5-B1 BLOCKING D-Bus/systemd-run + USB-umount escapes, R5-I1 immediate-detach race, R5-I2 sibling-search field-presence bluff
+07db39b fix(fastcycle/T177-r23): close R22 NO-GO -- process-wide, full-effective-config filter-driver neutralisation; withdraw the Round 22 "CLOSED" overclaim
+36d2a9a fix(fastcycle/review): tower_detector Round 3 independent review -- verdict GO; close the 1 new MINOR + 2 cosmetic notes; 102 -> 103 assertions
+1dc5872 fix(fastcycle/review): tower_detector Round 2 independent review -- verdict GO; remediate 5 new MINOR findings (unpinned MINOR-5/NEW-5 fixes, stale docs, selective T177 row, inaccurate ordering-rationale claim); 88 -> 102 assertions
+071f325 fix(fastcycle/review): tower_detector Round 1 independent review remediation -- 2 IMPORTANT (symbol-attribution false-positives, untested headline output), 5 MINOR; 56 -> 88 assertions, all 5 reviewer mutations now caught
+9073277 fix(fastcycle/T177-r22): close R21-I1 filter-driver RCE + J19/J28 disposition-record misattribution
+204aa7d fix(hooks/test_credential_scan_lib): remediate 2 minor review notes, comment-only
+b48b2c2 fix(fastcycle/review): tower_detector test suite -- shellcheck SC2016 hygiene (info-level), zero behavior change
+1edb7c5 fix(hooks/test_credential_scan_lib): shellcheck cleanup, zero behavior change
+f662b4d feat(fastcycle/review): git-history "patch-tower" (S11.4.250) detector -- new standalone, zero-overlap tooling
+1dea38d fix(hooks/test_credential_scan_lib): restructure GOLDEN-BAD fixtures so this test's own source bytes never trip precheck_pack_run.py's check_secret_scan()
+68ddb80 fix(fastcycle/T085-r5): shellcheck hygiene -- SC2181+SC2329, zero behavior change

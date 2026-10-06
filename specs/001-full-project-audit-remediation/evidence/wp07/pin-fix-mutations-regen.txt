@@ -1,0 +1,26 @@
+# generated 2026-10-06T18:53:38Z by pin-fix agent; git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04 (working tree uncommitted)
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1722f4449fe7a0d422c79f45c0cbee928262aa1e201cb733bf47f193357fff3a  scripts/governance/tests/mutate_regen_speckit_catalogue.py
+# golden-good control: unmutated script
+  control rc=0 TOTAL 21 PASS 21 FAIL 0
+KILLED   drift-check-ignores-edits              rc=1 failing=4  TOTAL 21 PASS 17 FAIL 4  (named cases failed: hand-edited-catalogue-drift,check-fresh-input-reports-drift,hand-edited-pin-line-drift,hand-edited-appendix-drift)
+KILLED   drift-exit-code-zero                   rc=1 failing=4  TOTAL 21 PASS 17 FAIL 4  (named cases failed: hand-edited-catalogue-drift)
+KILLED   title-limit-300                        rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   keeps-leading-em-dash                  rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   no-trailing-whitespace-strip           rc=1 failing=5  TOTAL 21 PASS 16 FAIL 5  (named cases failed: trailing-whitespace-and-single-final-newline)
+KILLED   no-final-newline-normalisation         rc=1 failing=8  TOTAL 21 PASS 13 FAIL 8  (named cases failed: trailing-whitespace-and-single-final-newline)
+KILLED   lag-never-reported-in-constitution     rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: lagging-index-golden-constitution)
+KILLED   lag-never-reported-in-appendix         rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lagging-index-golden-appendix)
+KILLED   lag-ids-dropped                        rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: lagging-index-golden-constitution)
+KILLED   appendix-pin-not-updated               rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-appendix)
+KILLED   range-run-threshold                    rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   acronyms-not-uppercased                rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   section-heading-counted-as-anchor      rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lagging-index-golden-constitution)
+KILLED   missing-marker-tolerated               rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: missing-catalogue-marker-exit-2-untouched)
+KILLED   notes-silenced                         rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: stale-anchor-count-prints-NOTE-line)
+KILLED   lag-ids-reversed                       rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lag-ids-numeric-order-in-stdout-and-both-files)
+KILLED   lag-ids-string-sorted                  rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lag-ids-numeric-order-in-stdout-and-both-files)
+KILLED   index-lag-banner-silenced              rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: lagging-index-stdout-banner)
+MUTATIONS killed=18 survivors=0 not_applied=0 (control rc=0)
+rc=0

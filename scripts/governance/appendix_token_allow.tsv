@@ -1,0 +1,7 @@
+# appendix_token_check allow list: <anchor id> TAB <token or *> TAB <reason>. Every entry needs a reason; a stale entry fails the check.
+11.4.141	CM-COVENANT-114-N-PROPAGATION	template placeholder naming the propagation-gate family, not a gate
+11.4.161	--rootful	Podman CLI argument inside the example `--rootful=false`, not a no-escape-hatch flag of this anchor
+11.4.214	--skip-item-creation	a section 11.4.202/11.4.213 flag cited inside 11.4.214 to state the precedence, not 11.4.214's own
+11.4.232	CM-COVENANT-114-182-PROPAGATION	gate of the 11.4.182 model-in-label extension that canon places beside 11.4.232; digested at 11.4.182
+11.4.232	CM-TRACK-BRANCH-LABEL	gate of the 11.4.182 model-in-label extension that canon places beside 11.4.232; digested at 11.4.182
+11.4.78	--help	CLI argument named as the source of a fact (`codegraph --help` text), not a flag of this anchor

@@ -1,0 +1,29 @@
+# generated 2026-10-06T18:52:24Z by pin-fix agent; git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04 (working tree uncommitted; sha256 below identify the files)
+# sha256 325f9286f974f1c754a48c973f571034b6363dc6d5cc2c8b580aee5d4724a79e  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 427356672853fe5370ca116629bda03231c938e191073497b60e394987faeee4  scripts/governance/tests/test_appendix_token_check.py
+# sha256 86ae821271637ed72a03dff932d802941a71564e9c1b78f2c498e448b3421781  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1abd56fddaba30654aa36ed0c9687158d0032ae92dd5c67a4774d76986886235  .specify/memory/constitution.md
+# sha256 fc5950c2b8b6ccd95d7a7bd78d10f09e78d27735313916b9032b3145474c38a1  .specify/memory/constitution-appendix.md
+# sha256 f3762e9794ea885cb5da4dd873db4e503e0cc332ac03816c4840d6c144234573  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## paired mutations of appendix_token_check
+KILLED   flags-not-tokenised  (TOTAL 26 PASS 22 FAIL 4)
+KILLED   gate-names-not-tokenised  (TOTAL 26 PASS 22 FAIL 4)
+KILLED   hyphen-wrap-not-joined  (TOTAL 26 PASS 24 FAIL 2)
+KILLED   bold-block-start-ignored  (TOTAL 26 PASS 16 FAIL 10)
+KILLED   bare-prose-citation-is-block-start  (TOTAL 26 PASS 1 FAIL 25)
+KILLED   sub-clause-continuation-off  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   exit-always-0  (TOTAL 26 PASS 16 FAIL 10)
+KILLED   no-digest-not-failing  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   stale-exemption-not-failing  (TOTAL 26 PASS 24 FAIL 2)
+KILLED   allow-reason-optional  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   allow-exempts-everything-of-the-anchor  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   blind-canon-allowed  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   blind-appendix-allowed  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   duplicate-canon-allowed  (TOTAL 26 PASS 25 FAIL 1)
+KILLED   digest-token-set-ignored  (TOTAL 26 PASS 18 FAIL 8)
+MUTANTS 15 SURVIVED_OR_FAILED 0
+rc=0

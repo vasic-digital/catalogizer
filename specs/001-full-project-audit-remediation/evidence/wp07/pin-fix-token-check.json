@@ -1,0 +1,12 @@
+{
+ "canon_sha256": "95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e",
+ "appendix_sha256": "fc5950c2b8b6ccd95d7a7bd78d10f09e78d27735313916b9032b3145474c38a1",
+ "canon_blocks": 277,
+ "appendix_digests": 277,
+ "tokens_checked": 1808,
+ "gaps": [],
+ "no_digest": [],
+ "exempt": 6,
+ "stale_exemptions": [],
+ "appendix_only": []
+}

@@ -1,0 +1,16 @@
+# generated 2026-10-06T18:52:05Z by pin-fix agent; git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04 (working tree uncommitted; sha256 below identify the files)
+# sha256 325f9286f974f1c754a48c973f571034b6363dc6d5cc2c8b580aee5d4724a79e  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 427356672853fe5370ca116629bda03231c938e191073497b60e394987faeee4  scripts/governance/tests/test_appendix_token_check.py
+# sha256 86ae821271637ed72a03dff932d802941a71564e9c1b78f2c498e448b3421781  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 ac962b7dd4dfc1001c8169fc7d833963a150c3507be04c4e0b8b60bcf77074e3  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1abd56fddaba30654aa36ed0c9687158d0032ae92dd5c67a4774d76986886235  .specify/memory/constitution.md
+# sha256 fc5950c2b8b6ccd95d7a7bd78d10f09e78d27735313916b9032b3145474c38a1  .specify/memory/constitution-appendix.md
+# sha256 f3762e9794ea885cb5da4dd873db4e503e0cc332ac03816c4840d6c144234573  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## token check, real files, in IMG-TESTUTIL
+## scripts/containers/run_pinned.sh --out /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp07/pin-fix-out --network=none IMG-TESTUTIL -- python3 -I scripts/governance/appendix_token_check.py --canon submodules/constitution/Constitution.md --appendix .specify/memory/constitution-appendix.md --allow scripts/governance/appendix_token_allow.tsv --json /out/pin-fix-token-check.json
+canon_blocks=277 appendix_digests=277 tokens_checked=1808 gaps=0 no_digest=0 exempt=6 stale_exemptions=0
+INFO appendix digests without a canon block-start: none
+rc=0

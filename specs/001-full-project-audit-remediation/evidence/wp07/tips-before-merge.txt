@@ -1,0 +1,10 @@
+# T080 live remote tips, 2026-10-06T18:12:04Z, git ls-remote <remote> refs/heads/main (tracking refs not trusted)
+# agent wp07-pin; submodule HEAD 10b7a06c4a2ec3f06b4cde9b1611a622a79320ad
+gitflic git@gitflic.ru:helixdevelopment/helixconstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+github git@github.com:HelixDevelopment/HelixConstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+gitlab git@gitlab.com:helixdevelopment1/helixconstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+gitverse git@gitverse.ru:helixdevelopment/HelixConstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+origin git@github.com:HelixDevelopment/HelixConstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+upstream git@gitflic.ru:helixdevelopment/helixconstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+vasic_digital_github git@github.com:vasic-digital/HelixConstitution.git a71b1767b40229c8e88140924352fbe990b3049e
+vasic_digital_gitlab git@gitlab.com:vasic-digital/HelixConstitution.git a71b1767b40229c8e88140924352fbe990b3049e

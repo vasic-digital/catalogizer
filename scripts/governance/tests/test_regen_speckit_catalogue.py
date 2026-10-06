@@ -153,6 +153,28 @@ def main():
         case("lagging-index-golden-appendix", read(os.path.join(w6, "appendix.md")) == read(os.path.join(FIX, "appendix.lag.golden.md")),
              "appendix differs from lag golden")
 
+        # 10b: diagnostics on stdout (WF8 F4: the reviewer's mutants R5 INDEX-LAG banner silenced, R1 NOTE lines silenced survived)
+        so = r.stdout
+        case("lagging-index-stdout-banner", "INDEX-LAG" in so and "11.4.99" in so and so.splitlines()[0].startswith("INDEX-LAG"),
+             "stdout=%r" % so[:300])
+        wn = fresh(tmp, "n")
+        put(os.path.join(wn, "constitution.md"), read(os.path.join(wn, "constitution.md")) + b"\nStale prose that still mentions 99 anchors.\n")
+        rn = run("write", wn)
+        case("stale-anchor-count-prints-NOTE-line", rn.returncode == 0 and "NOTE manual:" in rn.stdout and "mentions 99 anchors" in rn.stdout,
+             "stdout=%r" % rn.stdout[:300])
+        rn2 = run("check", wn)
+        case("NOTE-never-changes-exit-code", rn2.returncode in (0, 1) and "NOTE manual:" in rn2.stdout, "rc=%s" % rn2.returncode)
+
+        # 10c: several canon-only ids are listed in NUMERIC order whatever their order in the canon (a string sort or a reversal is wrong)
+        wm = fresh(tmp, "m")
+        multi = read(os.path.join(wm, "canon_lag.md")) + b"\n### \xc2\xa711.4.101 \xe2\x80\x94 third\n\nBody.\n\n### \xc2\xa711.4.100 \xe2\x80\x94 second\n\nBody.\n"
+        put(os.path.join(wm, "canon_lag.md"), multi)
+        rm = run("write", wm, canon="canon_lag.md")
+        want = "11.4.99, 11.4.100, 11.4.101"
+        case("lag-ids-numeric-order-in-stdout-and-both-files",
+             rm.returncode == 0 and want in rm.stdout and want in read(os.path.join(wm, "constitution.md")).decode("utf-8"),
+             "stdout=%r" % rm.stdout[:300])
+
         # 12: governance-carrier hygiene, asserted on the output itself (independent of the golden)
         out = read(os.path.join(w, "appendix.md"))
         lines = out.decode("utf-8").split("\n")

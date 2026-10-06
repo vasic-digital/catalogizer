@@ -1,0 +1,96 @@
+{
+ "identity": "catalogizer / 001-full-project-audit-remediation / WP-07 T083 run A | Revision 1 | 2026-10-06 | draft, UNREVIEWED | agent wp07-pin | git HEAD 960c553a198d9c17218cb2ad4283a599bdc83b04 (tree uncommitted) (these files were generated while HEAD was a91860162b5f; the commits a9186016..960c553a touch none of the WP-07 files, checked by the WF8 reviewer; identity re-stamped by the WF8 fix pass, F6) | pin moved 10b7a06c4a2ec3f06b4cde9b1611a622a79320ad -> a71b1767b40229c8e88140924352fbe990b3049e",
+ "task": "T083 substitute sweep on the moved pin (run A), no hook variant needed; every command ran through scripts/containers/run_pinned.sh IMG-TESTUTIL",
+ "baseline_note": "T040 ratchet baselines (scripts/repo/validate_baselines/) do not exist yet; the baseline at the old pin was therefore MEASURED here with the same instruments on the old-pin trees (controls), never assumed",
+ "checks": [
+  {
+   "id": "verify_constitution_inheritance",
+   "result": "FAIL",
+   "failing": [
+    "INV2"
+   ],
+   "beyond_baseline": false,
+   "baseline_at_old_pin": "the same single FAIL (INV2) on an extracted old-pin tree (pin-raw-inherit-control-old-pin.txt) and on an extracted new-pin tree",
+   "root_cause": "instrument defect, not a pin effect: under set -o pipefail, `printf '%s\\n' \"$VAR\" | grep -qF ...` gets SIGPIPE because grep -q exits at the first match; probe: here-string form 100/100 pass, printf-pipe form 0/100 pass on the same 35940-byte heading list, absent-needle control matched 0 (pin-raw-inv2-sigpipe-probe.out). The heading '§11.4 End-user quality guarantee — forensic anchor' IS present at both tips (line 454 of Constitution.md at 10b7a06 and a71b1767).",
+   "action": "to be filed as a register item (Status Queued, Type Bug) by the owner of the register; ready text in pin-review-package.md section 6; the script scripts/verify_constitution_inheritance.sh was NOT edited here",
+   "evidence": [
+    "pin-raw-inherit-real.txt",
+    "pin-raw-inherit-control-old-pin.txt",
+    "pin-raw-inherit-control-new-pin.txt",
+    "pin-raw-inv2-sigpipe-probe.sh",
+    "pin-raw-inv2-sigpipe-probe.out"
+   ]
+  },
+  {
+   "id": "anti-bluff-scan",
+   "result": "findings present at both pins, no delta",
+   "exit_code": 1,
+   "findings_total_real_tree": 184,
+   "findings_in_submodules_constitution": 20,
+   "baseline_at_old_pin": "constitution top-level tree: 10 findings at 10b7a06 and 10 at a71b1767, identical by file and kind; the four nested submodules whose gitlink the range moves (claude-video, design-toolkit, polyscreen-mcp, verification): 4 findings old, 4 new, identical by file and kind (scenario.test.ts was rewritten, 1547 lines to 15 insertions and 1532 deletions, and still carries its ASSERT_TAUTOLOGY finding); all other findings are project files the pin move does not touch",
+   "beyond_baseline": false,
+   "evidence": [
+    "pin-raw-antibluff-real-tree.tsv",
+    "pin-raw-antibluff-tree-10b.tsv",
+    "pin-raw-antibluff-tree-a71.tsv",
+    "pin-raw-antibluff-ab-old.tsv",
+    "pin-raw-antibluff-ab-new.tsv"
+   ],
+   "action": "the 184 pre-existing findings are the standing project baseline (T040 baseline file absent: UNCONFIRMED how it will count them); none is introduced by the move"
+  },
+  {
+   "id": "constitution propagation family (anchor-block integrity, exactly-once, byte-identical lockstep across CLAUDE/AGENTS/QWEN/GEMINI, 11.4.227 B)",
+   "result": "PASS",
+   "scope": "top-level carriers of the constitution tree extracted at each tip",
+   "old_pin": "pass=82 fail=0",
+   "new_pin": "pass=86 fail=0 (new wrappers for 11.4.272, 273, 274, 276)",
+   "caveat": "run on the REAL checkout (--root submodules/constitution, nested submodule consumers' own CLAUDE/AGENTS.md included) every wrapper FAILs, 86 of 86; the same happens at the old pin (82 of 82, predecessor lockstep.txt section A2): a pre-existing baseline of the fleet-wide scan, not an effect of the move",
+   "evidence": [
+    "pin-raw-lockstep-A1-old-pin-toplevel.txt",
+    "pin-raw-lockstep-A1-new-pin-toplevel.txt",
+    "pin-raw-lockstep-A2-real-checkout.txt"
+   ]
+  },
+  {
+   "id": "cm_gate_ledger_ratchet (11.4.227 A)",
+   "result": "PASS",
+   "real_checkout": "unimplemented=394 baseline=402 fails=0",
+   "caveat": "on a git-archive extraction (no nested engine checkouts) the same gate reads unimplemented=517 at the old pin and 518 at the new pin against baseline 402 (FAIL at both: an extraction artefact, the implementation sites are in the nested submodules); the gate is judged on the real checkout",
+   "evidence": [
+    "pin-raw-gate-ledger-ratchet-real.txt",
+    "pin-raw-lockstep-A1-old-pin-toplevel.txt",
+    "pin-raw-lockstep-A1-new-pin-toplevel.txt"
+   ]
+  },
+  {
+   "id": "regen_speckit_catalogue.py test + check, check_revision_headers.sh, test_decision_intake.sh, test_no_atm_prefix.sh",
+   "result": "PASS",
+   "detail": "test_regen_speckit_catalogue.py TOTAL 17 PASS 17 FAIL 0; regen check on the real .specify files exit 0 (OK in sync, both files); check_revision_headers.sh on both .specify files exit 0; test_decision_intake.sh exit 0; test_no_atm_prefix.sh exit 0"
+  }
+ ],
+ "run_a_verdict": "GREEN WITH ONE BASELINE FAIL: no check reports a FAIL beyond the baseline measured at the old pin. The one FAIL (verify_constitution_inheritance INV2) is identical at the old pin (control) and is an instrument defect; per T083 a pre-existing baseline row is the baseline, never a pass claim, and the FAIL stays to be filed. Whether this meets 'GREEN' for the T085 push is for the T084 reviewer and the owner to judge.",
+ "not_run": [
+  "scripts/meta_test_constitution_inheritance.sh: it mutates Constitution.md inside the submodule (the helper strips an anchor heading), which this step must not do to the live submodule; UNCONFIRMED by this run",
+  "the post-hoc fleet scan of every nested consumer: pre-existing FAIL at the old pin, see caveat"
+ ],
+ "raw_sha256": {
+  "pin-raw-antibluff-ab-new.tsv": "e0a019c1667eac909bf413121839f0f105db5c8216f07cdbaea068654970df3f",
+  "pin-raw-antibluff-ab-old.tsv": "0bedcd3adce0ebe45f3a7796f4bcd5ed5ade3a7df7a3a4aef5e8111fd4d6d86e",
+  "pin-raw-antibluff-real-tree.tsv": "fb5d20b2ab99034d2dd481fb80d2b05f94db1910115fb20e03d67573efc49ed1",
+  "pin-raw-antibluff-tree-10b.tsv": "e24915787442a97e10e9c54bf1547ba4d9d43345faf5065d42ce10af52b10771",
+  "pin-raw-antibluff-tree-a71.tsv": "e24915787442a97e10e9c54bf1547ba4d9d43345faf5065d42ce10af52b10771",
+  "pin-raw-edit-appendix.py": "0d18a3ee2ceda13cb45c455f9304349fb7b01d51e10e98119b9989d5654ff39f",
+  "pin-raw-gate-ledger-ratchet-real.txt": "611d0293119e012db810f3013d2e17247a242108197a2a30c04aba1e7718b4e9",
+  "pin-raw-inherit-control-new-pin.txt": "33efc40182df4b51f20e8290d046be7023d3f34e762cd51358fe1b003f3e0f79",
+  "pin-raw-inherit-control-old-pin.txt": "33efc40182df4b51f20e8290d046be7023d3f34e762cd51358fe1b003f3e0f79",
+  "pin-raw-inherit-real.txt": "33efc40182df4b51f20e8290d046be7023d3f34e762cd51358fe1b003f3e0f79",
+  "pin-raw-inv2-sigpipe-probe.out": "3b253f9e0310c4056c1fe0475028c31b67e48e105aa4ada9a836dc02f1f12754",
+  "pin-raw-inv2-sigpipe-probe.sh": "51a4e49b987cf4af3eac29a3c98516faad996ee7259a3968328aef3fb8e8687d",
+  "pin-raw-lockstep-A1-new-pin-toplevel.txt": "cbebafa2973a06983a9694f4dcd43aa03a06cc635e41a64fcfd52f59bfc0ed5e",
+  "pin-raw-lockstep-A1-old-pin-toplevel.txt": "75c115d3e1bc0fc40ec0570ffcc40cf97f17634964aafe0ce739b4951b9f8d1a",
+  "pin-raw-lockstep-A2-real-checkout.txt": "34d61a0a7dc152e36caca8aad4ca3f208c544f159b3ca3915b2fa54b5f7525af",
+  "pin-raw-owner-request-list.diff": "55667b934df276055da9e3a879a7ff91ae49e90fa3038cdd43d05187f3347710",
+  "pin-raw-range-log.txt": "8eb676995efe5692ab416cf34ffae3f0b4651bc4cbdd31dacd2f8975d2251844",
+  "pin-raw-specify-layer.diff": "ffd4c1839b37d619a4fe960cd217ebe49facab48ba9c0e343d8ef0a1c4eaf30c"
+ }
+}

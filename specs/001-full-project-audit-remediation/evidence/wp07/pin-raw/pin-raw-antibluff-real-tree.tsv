@@ -1,0 +1,184 @@
+./.audit/scratch/wp07/top/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/top/e44f22f/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/top/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/top/10b7a06/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/top/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/top/a71b1767/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/e44f22f/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/e44f22f/submodules/session_orchestrator/alias/registry_test.go	122	GO_RACE_ONLY	func TestRegistryConcurrent(t *testing.T) {
+./.audit/scratch/wp07/e44f22f/submodules/continuum/pkg/lock/lock_test.go	75	GO_NIL_ONLY	func TestTTLReapNoPID(t *testing.T) {
+./.audit/scratch/wp07/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/10b7a06/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/10b7a06/submodules/session_orchestrator/alias/registry_test.go	122	GO_RACE_ONLY	func TestRegistryConcurrent(t *testing.T) {
+./.audit/scratch/wp07/10b7a06/submodules/continuum/pkg/lock/lock_test.go	75	GO_NIL_ONLY	func TestTTLReapNoPID(t *testing.T) {
+./.audit/scratch/wp07/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07/a71b1767/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./.audit/scratch/wp07/a71b1767/submodules/session_orchestrator/alias/registry_test.go	122	GO_RACE_ONLY	func TestRegistryConcurrent(t *testing.T) {
+./.audit/scratch/wp07/a71b1767/submodules/continuum/pkg/lock/lock_test.go	75	GO_NIL_ONLY	func TestTTLReapNoPID(t *testing.T) {
+./.audit/scratch/wp07pin/tree-a71/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./.audit/scratch/wp07pin/tree-a71/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./submodules/containers/pkg/remoteexec/wave20_rxhard_test.go	55	GO_NIL_ONLY	func TestWave20_RX1_LingerActive_YesVerdict(t *testing.T) {
+./submodules/containers/pkg/remoteexec/wave17_remoteexec_audit_test.go	61	GO_NIL_ONLY	func TestWave17_Remoteexec_IsActive_ActiveVerdict(t *testing.T) {
+./submodules/containers/pkg/distribution/hardening_dist2_undistribute_race_test.go	21	GO_RACE_ONLY	func TestConcurrentUndistributeAndHealthCheck_NoDataRace(t *testing.T) {
+./submodules/containers/pkg/scheduler/scheduler_race_test.go	32	GO_RACE_ONLY	func TestDefaultScheduler_ConcurrentSchedule_Race(t *testing.T) {
+./submodules/containers/pkg/compose/wave20_comphard_test.go	104	GO_RACE_ONLY	func TestComp1_RunOutputConcurrent_NoDataRace(t *testing.T) {
+./submodules/containers/pkg/brokertest/wave20_brokhard_test.go	290	GO_NIL_ONLY	func TestPgStartupProbe_AcceptsProtocolSpeakingServer(t *testing.T) {
+./submodules/containers/pkg/monitor/wave18_mon_hardening_test.go	18	GO_RACE_ONLY	func TestHardenMON1_ConcurrentCollect_Race(t *testing.T) {
+./submodules/containers/pkg/crossbuild/wave20_xbuild2hard_test.go	326	GO_RACE_ONLY	func TestXB2_4_Selector_ConcurrentRegisterAndChooseNoRace(t *testing.T) {
+./submodules/constitution/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	346	GO_NO_ASSERT	func TestFastcycleStatusConsistency_T044ContractStub(t *testing.T) {
+./submodules/constitution/scripts/scheduled-work-engine/internal/store/store_test.go	95	GO_NIL_ONLY	func TestPersistenceRoundTrip(t *testing.T) {
+./submodules/constitution/submodules/session_orchestrator/alias/registry_test.go	122	GO_RACE_ONLY	func TestRegistryConcurrent(t *testing.T) {
+./submodules/constitution/submodules/continuum/pkg/lock/lock_test.go	75	GO_NIL_ONLY	func TestTTLReapNoPID(t *testing.T) {
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	21	PROSE_HELIXQA_ACTION	action="helixvpnctl enroll --token $ENROLLMENT_TOKEN --out"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	22	PROSE_HELIXQA_ACTION	action="helixvpnctl connect --config device.toml"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	23	PROSE_HELIXQA_ACTION	action="curl http://$TEST_LAN_HOST/"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	24	PROSE_HELIXQA_ACTION	action="Inspect host-iface pcap for WG handshake + inner p"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	42	PROSE_HELIXQA_ACTION	action="helixvpnctl connect; start iperf3 to LAN host"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	43	PROSE_HELIXQA_ACTION	action="ip netns exec client ip link set eth0 down; sleep "
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	44	PROSE_HELIXQA_ACTION	action="Wait for status transition Reconnecting → Connecte"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	45	PROSE_HELIXQA_ACTION	action="Run LeakDetector over gap pcap"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	22	PROSE_HELIXQA_ACTION	action="helixvpnctl connect"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	64	PROSE_HELIXQA_ACTION	action="iperf3 -c $TEST_LAN_HOST -t 30"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	65	PROSE_HELIXQA_ACTION	action="ip route del default via $GATEWAY_IP; kill edge pr"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	66	PROSE_HELIXQA_ACTION	action="tcpdump -i any -w gap.pcap during 10 s gap"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	22	PROSE_HELIXQA_ACTION	action="helixvpnctl connect"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	84	PROSE_HELIXQA_ACTION	action="for d in $TEST_DOMAINS; do dig +short $d; done"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	85	PROSE_HELIXQA_ACTION	action="tshark -r dns.pcap -Y 'udp.port == 53'"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	86	PROSE_HELIXQA_ACTION	action="Compare resolver IPs against tunnel DNS config"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	104	PROSE_HELIXQA_ACTION	action="helixvpnctl connect; iperf3 -c $TEST_LAN_HOST -t 6"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	105	PROSE_HELIXQA_ACTION	action="systemctl stop helix-coordinator; podman stop heli"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	106	PROSE_HELIXQA_ACTION	action="Check iperf3 continuity and WG handshake age"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	107	PROSE_HELIXQA_ACTION	action="systemctl start helix-coordinator; podman start he"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	125	PROSE_HELIXQA_ACTION	action="Start app flavor=Access platform=$PLATFORM"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	126	PROSE_HELIXQA_ACTION	action="panoptic capture --window-scope --out ui_connect.m"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	127	PROSE_HELIXQA_ACTION	action="vision_engine --input ui_connect.mp4 --expect-stat"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	128	PROSE_HELIXQA_ACTION	action="Compare vision state sequence with helix_status_st"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	146	PROSE_HELIXQA_ACTION	action="Send 10 GET /api/v1/health requests; record p95"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	147	PROSE_HELIXQA_ACTION	action="Send 200 POST /api/v1/auth/login with invalid cred"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	148	PROSE_HELIXQA_ACTION	action="During flood, send 5 valid requests from different"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	149	PROSE_HELIXQA_ACTION	action="Scrape /metrics for ratelimit_rejected"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	167	PROSE_HELIXQA_ACTION	action="helix-core probe enroll + WG handshake + iperf3"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	168	PROSE_HELIXQA_ACTION	action="rig/wg_init_flood --target gw:51820 --pps $ATTACK_"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	169	PROSE_HELIXQA_ACTION	action="Collect handshake latency samples during flood"
+./submodules/helix_qa/banks/helix_vpn/helix_vpn_bank.json	170	PROSE_HELIXQA_ACTION	action="Scrape helix_edge_up and RSS counters"
+./submodules/challenges/challenges/scripts/verify_two_sum_vector_uniqueness.sh	208	CHALLENGE_BLIND_SHELL	run_uniqueness_sweep "${WORK}/historical_vecgen.py" "$N" "HISTORICAL_PRE_FIX" | tee "${WORK}/historical_sweep.txt"
+./submodules/challenges/challenges/scripts/verify_two_sum_vector_uniqueness.sh	213	CHALLENGE_BLIND_SHELL	run_uniqueness_sweep "${WORK}/current_vecgen.py" "$N" "CURRENT_LIVE" | tee "${WORK}/current_sweep.txt"
+./submodules/challenges/challenges/scripts/node_membership_challenge.sh	100	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/node_membership_challenge.sh	108	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/node_membership_challenge.sh	162	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/provider_aliases_challenge.sh	95	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/helixd_control_plane_challenge.sh	63	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/helixd_control_plane_challenge.sh	75	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/helixd_control_plane_challenge.sh	84	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./submodules/challenges/challenges/scripts/etcd_quorum_challenge.sh	73	CHALLENGE_BLIND_SHELL	  ab_summary || true
+./.audit/scratch/wp07/top/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/top/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/top/e44f22f/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/top/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/top/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/top/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/top/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/top/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/top/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/top/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/top/10b7a06/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/top/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/top/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/top/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/top/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/top/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/top/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/top/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/top/a71b1767/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/top/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/top/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/top/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/top/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/top/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/e44f22f/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/e44f22f/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/e44f22f/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/e44f22f/submodules/verification/plugins/agentloop/skills/epic-conductor/scripts/assert-no-blocked-prs.test.ts	676	SKIP_WITHOUT_TICKET	    expect(text).toMatch(/assert-no-blocked-prs[\s\S]{0,1200}[Ee]xit 0/);
+./.audit/scratch/wp07/e44f22f/submodules/helix_perf_cache/pkg/backend/anthropic_promptcache_test.go	141	SKIP_WITHOUT_TICKET	  t.Skip("SKIP (credentials_absent): ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN not set — the live Track-B prompt-cache measurement is MEASUREMENT PENDING. Set a credential (operator-gated: paid API call) and re-run.")
+./.audit/scratch/wp07/e44f22f/submodules/helix_perf_cache/pkg/backend/llamacpp_test.go	31	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP (network_unreachable_external): no live llama.cpp /health OK at %s", ep)
+./.audit/scratch/wp07/e44f22f/submodules/polyscreen-mcp/test/recording-analyze.test.ts	18	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/e44f22f/submodules/polyscreen-mcp/test/flash-detective-workflow.test.ts	16	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/e44f22f/submodules/continuum/pkg/verify/verify_refusal_test.go	66	SKIP_WITHOUT_TICKET	  t.Skip("host can read a 0000 file (running as root?); the unreadable-store premise " +
+./.audit/scratch/wp07/e44f22f/submodules/continuum/pkg/chain/exec_call_test.go	251	SKIP_WITHOUT_TICKET	  t.Skip("SKIP(producer_path_not_supplied): set CONTINUUM_EXEC_RECORDER_SH to the " +
+./.audit/scratch/wp07/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/10b7a06/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/10b7a06/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/10b7a06/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/10b7a06/submodules/verification/plugins/agentloop/skills/epic-conductor/scripts/assert-no-blocked-prs.test.ts	676	SKIP_WITHOUT_TICKET	    expect(text).toMatch(/assert-no-blocked-prs[\s\S]{0,1200}[Ee]xit 0/);
+./.audit/scratch/wp07/10b7a06/submodules/helix_perf_cache/pkg/backend/anthropic_promptcache_test.go	141	SKIP_WITHOUT_TICKET	  t.Skip("SKIP (credentials_absent): ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN not set — the live Track-B prompt-cache measurement is MEASUREMENT PENDING. Set a credential (operator-gated: paid API call) and re-run.")
+./.audit/scratch/wp07/10b7a06/submodules/helix_perf_cache/pkg/backend/llamacpp_test.go	31	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP (network_unreachable_external): no live llama.cpp /health OK at %s", ep)
+./.audit/scratch/wp07/10b7a06/submodules/polyscreen-mcp/test/recording-analyze.test.ts	18	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/10b7a06/submodules/polyscreen-mcp/test/flash-detective-workflow.test.ts	16	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/10b7a06/submodules/continuum/pkg/verify/verify_refusal_test.go	66	SKIP_WITHOUT_TICKET	  t.Skip("host can read a 0000 file (running as root?); the unreadable-store premise " +
+./.audit/scratch/wp07/10b7a06/submodules/continuum/pkg/chain/exec_call_test.go	251	SKIP_WITHOUT_TICKET	  t.Skip("SKIP(producer_path_not_supplied): set CONTINUUM_EXEC_RECORDER_SH to the " +
+./.audit/scratch/wp07/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07/a71b1767/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07/a71b1767/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07/a71b1767/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./.audit/scratch/wp07/a71b1767/submodules/verification/plugins/agentloop/skills/epic-conductor/scripts/assert-no-blocked-prs.test.ts	676	SKIP_WITHOUT_TICKET	    expect(text).toMatch(/assert-no-blocked-prs[\s\S]{0,1200}[Ee]xit 0/);
+./.audit/scratch/wp07/a71b1767/submodules/helix_perf_cache/pkg/backend/anthropic_promptcache_test.go	141	SKIP_WITHOUT_TICKET	  t.Skip("SKIP (credentials_absent): ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN not set — the live Track-B prompt-cache measurement is MEASUREMENT PENDING. Set a credential (operator-gated: paid API call) and re-run.")
+./.audit/scratch/wp07/a71b1767/submodules/helix_perf_cache/pkg/backend/llamacpp_test.go	31	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP (network_unreachable_external): no live llama.cpp /health OK at %s", ep)
+./.audit/scratch/wp07/a71b1767/submodules/polyscreen-mcp/test/recording-analyze.test.ts	18	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/a71b1767/submodules/polyscreen-mcp/test/flash-detective-workflow.test.ts	16	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./.audit/scratch/wp07/a71b1767/submodules/continuum/pkg/verify/verify_refusal_test.go	66	SKIP_WITHOUT_TICKET	  t.Skip("host can read a 0000 file (running as root?); the unreadable-store premise " +
+./.audit/scratch/wp07/a71b1767/submodules/continuum/pkg/chain/exec_call_test.go	251	SKIP_WITHOUT_TICKET	  t.Skip("SKIP(producer_path_not_supplied): set CONTINUUM_EXEC_RECORDER_SH to the " +
+./.audit/scratch/wp07pin/tree-a71/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./.audit/scratch/wp07pin/tree-a71/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./.audit/scratch/wp07pin/tree-a71/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./.audit/scratch/wp07pin/tree-a71/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./.audit/scratch/wp07pin/tree-a71/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./.audit/scratch/wp07pin/tree-a71/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./.audit/scratch/wp07pin/tree-a71/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./.audit/scratch/wp07pin/tree-a71/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./submodules/containers/pkg/remoteexec/remoteexec_test.go	139	SKIP_WITHOUT_TICKET	  t.Skip("no systemd --user manager available (honest skip: durability requires systemd-run --user)")
+./submodules/containers/pkg/remoteexec/remoteexec_test.go	210	SKIP_WITHOUT_TICKET	  t.Skip("no systemd --user manager available (honest skip)")
+./submodules/containers/pkg/runtime/wave20_rthard_test.go	285	SKIP_WITHOUT_TICKET	 t.Skip("RT-RACE-1 evidence-only: intentionally races against the " +
+./submodules/containers/pkg/runtime/run_test.go	348	SKIP_WITHOUT_TICKET	  t.Skip("cat not on PATH")
+./submodules/containers/pkg/runtime/run_test.go	371	SKIP_WITHOUT_TICKET	  t.Skip("sh not on PATH")
+./submodules/containers/pkg/applesim/wave20_simhard_test.go	151	SKIP_WITHOUT_TICKET	  t.Skip("SIM-2 real-process guard uses a POSIX shell; skipped on windows")
+./submodules/containers/pkg/applesim/wave20_simhard_test.go	154	SKIP_WITHOUT_TICKET	  t.Skipf("SIM-2 real-process guard needs /bin/sh: %v", err)
+./submodules/containers/pkg/crossbuild/wave20_xbuild2hard_test.go	74	SKIP_WITHOUT_TICKET	  t.Skip("XB2-1: process-group kill (SysProcAttr.Setpgid + negative-pid SIGKILL) is Unix-only; " +
+./submodules/containers/pkg/crossbuild/wave20_xbuild2_test.go	289	SKIP_WITHOUT_TICKET	  t.Skip("XBUILD2-3: FIFO/named-pipe special files + `mkfifo` are a POSIX concept; " +
+./submodules/containers/pkg/crossbuild/wave20_xb3hard_test.go	164	SKIP_WITHOUT_TICKET	  t.Skip("XB3-2: process-group kill (SysProcAttr.Setpgid + negative-pid SIGKILL) is Unix-only; " +
+./submodules/containers/pkg/crossbuild/wave20_xb3hard_test.go	210	SKIP_WITHOUT_TICKET	  t.Skip("XB3-3: process-group kill (SysProcAttr.Setpgid + negative-pid SIGKILL) is Unix-only; " +
+./submodules/containers/pkg/vm/e2e_test.go	32	SKIP_WITHOUT_TICKET	  t.Skipf("qemu binary not found at %s: %v", qemuBin, err)
+./submodules/containers/pkg/lazyservice/orchestrator_depcycle_test.go	44	SKIP_WITHOUT_TICKET	  t.Skip("subprocess worker; inert unless " + cycleWorkerEnv + "=1")
+./submodules/helix_qa/pkg/vision/llm_ollama_test.go	296	SKIP_WITHOUT_TICKET	   t.Skip("Ollama daemon reachable but reports zero models — pull a vision model " +
+./submodules/constitution/scripts/workable-items/cmd/workable-items/fastcycle_status_consistency_test.go	130	SKIP_WITHOUT_TICKET	  t.Skipf("live tracker DB unreachable at %s (skipping live-count assertions): %v", dbPath, err)
+./submodules/constitution/scripts/workable-items/cmd/workable-items/fastcycle_sibling_search_test.go	213	SKIP_WITHOUT_TICKET	  t.Skipf("cannot build a fresh workable-items binary for this subprocess-based RED test: %v", sharedWIBinErr)
+./submodules/constitution/scripts/workable-items/cmd/workable-items/close_evidence_recordtime_test.go	365	SKIP_WITHOUT_TICKET	  t.Skipf("fixture unavailable: %v", err)
+./submodules/constitution/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	46	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN not set -- point it at a built " +
+./submodules/constitution/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	50	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: LLM_ALIAS_HEALTH_TEST_BRIDGE_BIN=%q does not exist: %v", bin, err)
+./submodules/constitution/scripts/llm-alias-health/cmd/llm-alias-health/probe_integration_test.go	77	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP: real bridge probe could not complete in this environment (ccr/claude unreachable or too contended): err=%v rep=%+v", err, rep)
+./submodules/constitution/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	111	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: POSIX permission-bit semantics not applicable on windows")
+./submodules/constitution/scripts/llm-alias-health/cmd/llm-alias-health/probe_chaos_test.go	114	SKIP_WITHOUT_TICKET	  t.Skip("SKIP: running as root ignores directory permission bits, so this chaos scenario cannot be reproduced")
+./submodules/constitution/submodules/verification/plugins/agentloop/skills/epic-conductor/scripts/assert-no-blocked-prs.test.ts	676	SKIP_WITHOUT_TICKET	    expect(text).toMatch(/assert-no-blocked-prs[\s\S]{0,1200}[Ee]xit 0/);
+./submodules/constitution/submodules/helix_perf_cache/pkg/backend/anthropic_promptcache_test.go	141	SKIP_WITHOUT_TICKET	  t.Skip("SKIP (credentials_absent): ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN not set — the live Track-B prompt-cache measurement is MEASUREMENT PENDING. Set a credential (operator-gated: paid API call) and re-run.")
+./submodules/constitution/submodules/helix_perf_cache/pkg/backend/llamacpp_test.go	31	SKIP_WITHOUT_TICKET	  t.Skipf("SKIP (network_unreachable_external): no live llama.cpp /health OK at %s", ep)
+./submodules/constitution/submodules/polyscreen-mcp/test/recording-analyze.test.ts	18	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./submodules/constitution/submodules/polyscreen-mcp/test/flash-detective-workflow.test.ts	16	SKIP_WITHOUT_TICKET	const itFfmpeg = hasFfmpegTools() ? it : it.skip;
+./submodules/constitution/submodules/continuum/pkg/verify/verify_refusal_test.go	66	SKIP_WITHOUT_TICKET	  t.Skip("host can read a 0000 file (running as root?); the unreadable-store premise " +
+./submodules/constitution/submodules/continuum/pkg/chain/exec_call_test.go	251	SKIP_WITHOUT_TICKET	  t.Skip("SKIP(producer_path_not_supplied): set CONTINUUM_EXEC_RECORDER_SH to the " +
+./.audit/scratch/wp07/e44f22f/submodules/verification/plugins/agentloop/lib/scenario.test.ts	821	ASSERT_TAUTOLOGY	        test("unrelated", () => expect(true).toBe(true));
+./.audit/scratch/wp07/10b7a06/submodules/verification/plugins/agentloop/lib/scenario.test.ts	821	ASSERT_TAUTOLOGY	        test("unrelated", () => expect(true).toBe(true));
+./.audit/scratch/wp07/a71b1767/submodules/verification/plugins/agentloop/lib/scenario.test.ts	821	ASSERT_TAUTOLOGY	        test("unrelated", () => expect(true).toBe(true));
+./submodules/constitution/submodules/verification/plugins/agentloop/lib/scenario.test.ts	585	ASSERT_TAUTOLOGY	        test("unrelated", () => expect(true).toBe(true));
