@@ -1,0 +1,1 @@
+group=backup mutants=6 killed=3 equivalent_reviewed=3 survived_unreviewed=0 golden_good=pass negative_control=ok

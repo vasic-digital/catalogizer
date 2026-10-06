@@ -25,6 +25,12 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [org_of.md](org_of.md) | `scripts/audit/org_of.py` | |
 | [scope_to_lumen_json.md](scope_to_lumen_json.md) | `scripts/audit/scope_to_lumen_json.py` | |
 | [verify_repos.md](verify_repos.md) | `scripts/repo/verify_repos.sh` | |
+| [locked.md](locked.md) | `scripts/register/locked.sh` | T064 single-writer wrapper of the register |
+| [backup_db.md](backup_db.md) | `scripts/register/backup_db.sh` | T064a pre-op backup (online backup, never `cp -al`) |
+| [register_dump.md](register_dump.md) | `scripts/register/dump.sh` | T066 deterministic dump and the commit procedure |
+| [register_export.md](register_export.md) | `scripts/register/export.sh` | T067 export, run recording, drift check |
+| [reconcile.md](reconcile.md) | `scripts/register/reconcile.sh` | T067 reconciliation CSV and Markdown reports |
+| [register_replay.md](register_replay.md) | `scripts/register/replay.sh` | T067a replay of the local journal onto a remote-side database |
 
 ## Catalog and QA scripts
 

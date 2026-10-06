@@ -1,0 +1,53 @@
+# identity: task=T067 utc=2026-10-06T19:34:50Z host=anton uid=1000
+# git_head=40a1f8e32fb7f36e1818610c0514ee826697f31e tree_dirty_files=679
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=d9c88e453d9a2b520a389752ae4b2e82a3bef6f41894d87442ee7274caf6fc1b clib=80f3f16b8d3a01a956ef737b51cc726cc2b3b2ba5033b0c910b9c657cf0533fe
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== export ==
+ok   E1 export succeeds and the engine diff prints in sync
+ok   E2 every output exists (4 engine files, Reconciliation.md, 7 CSV, manifest)
+ok   E3 two runs on an unchanged DB give identical sha256 for every Markdown and CSV output
+== reconcile content (golden) ==
+ok   E4 the collision CSV names legacy id LEG-1
+ok   E5 the unmapped CSV holds the two unmapped entries
+ok   E6 the reconciliation CSV holds the mapped entry's item
+ok   E7 Reconciliation.md carries its header table and a section per view
+== recorded run ==
+ok   E8 two runs recorded two reg_export_runs rows, both OK
+ok   E9 both runs recorded the same fingerprint (unchanged DB; the run's own rows are excluded)
+ok   E10 fingerprint is 64 hex, engine version is the engine's .source.sha256, the image digest is recorded
+ok   E11 each run has 5 written Markdown rows and 15 skipped sibling rows
+ok   E12 skipped rows: html/pdf/docx, the sentinel sha256 of zeros
+ok   E13 no HTML, PDF or DOCX file was faked
+== drift check ==
+ok   E14 --check on an unchanged export: OK, exit 0
+ok   E15 a twin edited after export: STALE, exit non-zero, the file named
+ok   E16 a CSV edited after export: STALE through the manifest
+ok   E17 a database change after export: STALE (fingerprint and engine diff)
+ok   E17b a change invisible to the engine diff (a minted id without an item): STALE through the fingerprint
+ok   E18 after a re-export the check is OK again (golden-true)
+ok   E19 --check writes nothing: the database keeps its sha256
+== diff gate: an engine diff that is not in sync records nothing ==
+ok   E20 an engine diff that is not in sync: exit 5
+ok   E20b ... no reg_export_runs row recorded and no manifest written
+ok   E20c golden-true: the same DB with the real engine exports
+== refusals ==
+ok   E21 refused: --db ../x.db
+ok   E21 refused: --db docs/x.txt
+ok   E21 refused: --out-dir /abs
+ok   E21 refused: --out-dir outside
+ok   E21 refused: --out-dir docs/../x
+ok   E22 unknown argument: exit 2
+== --check never checkpoints: a pending -wal file is refused ==
+ok   E27a fixture: a committed row is pending in docs/s.db-wal
+ok   E27 --check on a database with a pending -wal file is refused register_not_checkpointed (20) and does not checkpoint it
+== out mode (replay.sh) ==
+ok   E23 out mode exports <dir>/export with the same Issues.md as register mode
+ok   E24 out mode --check is OK
+== export header (information for docs/04 section 11, never a gate) ==
+{"Issues.md": {"has_header_table": false, "has_last_modified": false, "has_revision": false}, "Issues_Summary.md": {"has_header_table": false, "has_last_modified": false, "has_revision": false}, "Reconciliation.md": {"has_header_table": true, "has_last_modified": false, "has_revision": false}}
+ok   E26 header presence recorded as information (export-header.json), not asserted as a gate
+== size (db-size.json) ==
+ok   E25 db-size.json written (fixture measurement; projection owed)
+RESULT pass=35 fail=0
+rc=0

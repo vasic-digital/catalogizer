@@ -1,0 +1,4 @@
+# group	mutant	reason (reviewed equivalent: no fixture can distinguish it from the original)
+backup	integrity_unchecked	reviewed-equivalent (redundancy): every corruption the harness can inject also fails the restore probe or the backup step, so no fixture isolates the integrity_check call; the call stays because it catches index-page damage that a table dump cannot see (UNCONFIRMED: no fixture for that class)
+backup	no_checkpoint	reviewed-equivalent: the online backup copies a consistent snapshot including the WAL content, so the checkpoint does not change the backup; it moves the register file to the committed state (docs/04 R-2)
+backup	record_without_rows_check	reviewed-equivalent (redundancy): byte-equal canonical dumps imply equal INSERT row counts

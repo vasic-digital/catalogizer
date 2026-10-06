@@ -1,0 +1,19 @@
+# identity: group=locked utc=2026-10-06T18:28:45Z host=anton uid=1000 git_head=960c553a198d9c17218cb2ad4283a599bdc83b04
+# runner_sha256=5889df44ff69ec42d7c49f093fe859e56dba6a92033cf3cd180f3f0a83cfc99d test_sha256=d072d6c861587da1147b65c4104aff63d962175daf684c4464a1b3ec8d31789d sut_sha256=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+no_flock	yes	FAIL L12 intervals overlap: s 1791311336663590378 s 1791311336703105573 e 1791311337691747920 e 17913113377285
+grant_ignored	yes	FAIL L25 rc=0 [CAT-003]
+reap_direct	yes	FAIL L27 the reaper ran once, only through --exec-approved :: got [00] want [11]
+test_hooks_honoured	yes	FAIL L3 rc=1 [run_pinned: disk headroom precondition failed: disk_headroom: REFUSED reason=disk_below_headroom
+scratch_any_subcommand	yes	FAIL L33 rc=0 []
+scratch_path_unchecked	yes	FAIL L37 rc=1 [Error: unable to open database "/src/.audit/out/s.db": unable to open database file]
+import_sha_unchecked	yes	FAIL L35 rc=1 [Parse error near line 1: table zz already exists
+import_without_backup	yes	FAIL L43 a register import succeeds and calls the backup helper exactly once :: got [0 0] want [0 1]
+scratch_headroom_unset	yes	FAIL L49a [HR=UNSET ARGS=--rw .audit/scratch --op-id spy1 IMG-TESTUTIL -- sqlite3 /src/.audit/scratch/s5.db .r
+capture_src_only	yes	FAIL L15
+scratch_binds_docs	yes	FAIL L34 rc=1 v=[] [Error: unable to open database "/src/.audit/scratch/s.db": unable to open database file]
+out_run_binds_docs	yes	FAIL L20 docs written
+exit_status_lost	yes	FAIL L4 the wrapped command's exit status is passed through :: got [0] want [7]
+scratch_import_runs_backup	yes	FAIL L34 rc=20 v=[] [backup_db: REFUSED no source database docs/workable_items.db
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=58 fail=0

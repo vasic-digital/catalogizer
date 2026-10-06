@@ -1,0 +1,11 @@
+# identity: group=dump utc=2026-10-06T19:26:24Z host=anton uid=1000 git_head=40a1f8e32fb7f36e1818610c0514ee826697f31e
+# runner_sha256=5889df44ff69ec42d7c49f093fe859e56dba6a92033cf3cd180f3f0a83cfc99d test_sha256=18505d96ed510a9150e1fa8696f8ec73337d81ee56bb664b12e2a0829d8e0658 sut_sha256=c2dc63a307c44b8371f7857d8d9909ccc58464c80b40d0a67f4f57a52782f33c
+# mutant<TAB>killed<TAB>first failing check of test_dump.sh
+pragma_kept	yes	FAIL D4 PRAGMA lines present
+nondeterministic	yes	FAIL D2 two consecutive dumps of an unchanged database hash identically (recorded: e632c4c273bf70c41d00002bc67
+no_checkpoint	yes	FAIL D14 the dump misses the row that was only in the -wal file
+paths_unchecked	yes	FAIL D10 --db docs/a_b.db/../../x.db rc=1 [Error: unable to open database "/src/docs/a_b.db/../../x.db": unabl
+db_suffix_unchecked	yes	FAIL D10 --db docs/x.txt rc=0 [dump: OK docs/x.txt -> docs/register/register.sql]
+out_suffix_unchecked	yes	FAIL D10 --out outside/x.sql rc=1 [mkdir: cannot create directory '/src/outside': Read-only file system]
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=21 fail=0

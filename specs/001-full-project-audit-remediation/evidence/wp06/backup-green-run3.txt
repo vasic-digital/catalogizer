@@ -1,0 +1,35 @@
+# identity: task=T064a utc=2026-10-06T17:43:51Z host=anton uid=1000
+# git_head=b3728d76adbfa2efd1055d6878881c9298e3c22b tree_dirty_files=263
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 clib=80f3f16b8d3a01a956ef737b51cc726cc2b3b2ba5033b0c910b9c657cf0533fe
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== helper ==
+ok   B1 no --record: exit 2 and a usage text
+ok   B2 the helper succeeds and writes the record
+ok   B3 the backup is docs/workable_items.db.bak-<UTC>
+ok   B4 record field source_sha256
+ok   B4 record field backup_sha256
+ok   B4 record field source_rows
+ok   B4 record field backup_rows
+ok   B4 record field integrity
+ok   B4 record field restore_probe
+ok   B4 record field image_digest
+ok   B5 integrity_check result is ok
+ok   B6 restore probe: the restored backup's canonical dump equals the source dump
+ok   B7 both row counts are equal and non-zero (120)
+ok   B8 the record's backup sha256 is the file's
+ok   B9 the helper's sqlite work ran in the image: the run calls name the pinned image
+ok   B10 no -wal/-shm side file beside the backup (immutable reads)
+== the backup stays what it was; the hardlink control changes ==
+ok   B11 after one more row in the source (checkpointed) the backup's sha256 is unchanged
+ok   B12 the backup still holds 3 items, the source 4
+ok   B13 CONTROL: the cp -al copy changed with the source (the test can see the failure it guards against)
+== a failed check means no backup ==
+ok   B14 a backup that fails the integrity check exits non-zero and writes no record
+ok   B15 the failed backup file is removed (never reported as a backup)
+ok   B16 a normal run with the fault hook unset succeeds again
+ok   B18 a restore probe whose dump differs from the source dump fails: non-zero, no record, no backup file
+== a missing source database ==
+ok   B17 no source database: refused, no record
+RESULT pass=24 fail=0
+rc=0

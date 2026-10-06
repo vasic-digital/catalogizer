@@ -1,0 +1,36 @@
+# identity: task=T066 utc=2026-10-06T19:25:38Z host=anton uid=1000
+# git_head=40a1f8e32fb7f36e1818610c0514ee826697f31e tree_dirty_files=626
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=18505d96ed510a9150e1fa8696f8ec73337d81ee56bb664b12e2a0829d8e0658 clib=80f3f16b8d3a01a956ef737b51cc726cc2b3b2ba5033b0c910b9c657cf0533fe
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== determinism ==
+ok   D1 the dump is written (register mode, docs/register/s.sql)
+ok   D2 two consecutive dumps of an unchanged database hash identically (recorded: 9b75880f2d0903c8e5490baaac2fd2011ff13a1615da70add15c25249029a673)
+ok   D3 a third dump hashes identically
+ok   D4 no PRAGMA line in the dump
+ok   D5 the dump holds the register's rows (CAT-001)
+== the dump follows the database ==
+ok   D6 a database change changes the dump (the new item CAT-003 is in it)
+== a restored dump dumps to the same bytes ==
+ok   D7 dump -> restore -> dump is byte-identical
+== the dump does not alter the register ==
+ok   D8 the database file keeps its sha256 (the checkpoint finds nothing to move)
+== out mode ==
+ok   D9 out mode dumps <dir>/<db-file> to <dir>/<out> with the same bytes as register mode
+== a row still in the -wal file is in the dump (the checkpoint comes first) ==
+ok   D14a fixture: a committed row is pending in docs/s.db-wal (12392 bytes)
+ok   D14 the pending row is in the dump (checkpoint, then dump)
+== refusals ==
+ok   D10 refused: --db ../x.db
+ok   D10 refused: --db docs/a_b.db/../../x.db
+ok   D10 refused: --db /abs.db
+ok   D10 refused: --out docs/../x.sql
+ok   D10 refused: --out outside/x.sql
+ok   D10 refused: --out docs/x.txt
+ok   D10 refused: --db docs/x.txt
+ok   D11 unknown argument: exit 2
+ok   D12 refused calls wrote nothing
+== the commit procedure is written down ==
+ok   D13 docs/scripts/register_dump.md writes the commit procedure down (checkpoint, export, one commit through commit-push-all.sh)
+RESULT pass=21 fail=0
+rc=0

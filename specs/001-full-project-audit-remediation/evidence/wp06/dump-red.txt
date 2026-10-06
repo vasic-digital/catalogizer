@@ -1,0 +1,7 @@
+# identity: task=T066 utc=2026-10-06T16:55:23Z host=anton uid=1000
+# git_head=26755ca512a59abaa529332ca066fc2ee71f6022 tree_dirty_files=190
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=b5a63642618975bd1f3ccfc863e7d560b75af9a3aa2de98af9b2998186554d5f backup_db=d0fc993a6bbedf99f360fedde4b3e1f01cb27a66f65eadb7092a5fdc7aba25a2 test=82fdfc191e4481ddaf31c1a364c8f2252d9a96fcc82fef06167bc7b1f9716f21 clib=3fef919515303dd9f3f89d39d084c2874227819039fe2a03bba6e9b664a7e532
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+FAIL T0 dump script absent: /home/milosvasic/Projects/catalogizer/scripts/register/dump.sh
+RESULT pass=0 fail=1

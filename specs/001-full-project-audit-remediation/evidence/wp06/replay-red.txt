@@ -1,0 +1,7 @@
+# identity: task=T067a utc=2026-10-06T16:58:27Z host=anton uid=1000
+# git_head=9be72f0b6bf1feb5d5200d95c86270a89e3d804b tree_dirty_files=92
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=d0fc993a6bbedf99f360fedde4b3e1f01cb27a66f65eadb7092a5fdc7aba25a2 test=10263c82826c12504b6a6bf1c19c556ba2eec0e7bfdcc4bf0daff3f12aea3138 clib=e150ab39cb0895808ef14812bd7680604f869d9fa9f592805b087a8f463e222d
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+FAIL T0 replay script absent: /home/milosvasic/Projects/catalogizer/scripts/register/replay.sh
+RESULT pass=0 fail=1

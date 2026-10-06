@@ -1,0 +1,13 @@
+# identity: group=replay utc=2026-10-06T19:03:06Z host=anton uid=1000 git_head=960c553a198d9c17218cb2ad4283a599bdc83b04
+# runner_sha256=5889df44ff69ec42d7c49f093fe859e56dba6a92033cf3cd180f3f0a83cfc99d test_sha256=f781f69c6ea94cd7366c00364360bc6039ac2b68c3a1175ededeabb1cadac7bb sut_sha256=c1a52c75675eddda6701dd8800c4abca250cd187b056f0028c13f08d9449c40c
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh
+skip_mint_rows	yes	FAIL P3 the replayed database holds every reg_ids id of both sides (CAT-001..003) :: got [CAT-001,CAT-002] wan
+no_collision_refusal	yes	FAIL P12 rc=0 [replay: OK replayed=2 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/tmp/mutops.CWa2eu/s.no_colli
+since_unchecked	yes	FAIL P14 rc=20 [replay: REFUSED reason=replay_id_collision local id CAT-001 (row locked-20261006T190323-358090
+gate_unchecked	yes	FAIL P21 rc=0 [replay: OK replayed=3 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/tmp/mutops.CWa2eu/s.gate_unc
+failed_rows_replayed	yes	FAIL P7 report: {
+input_not_rebound	yes	FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261006T191137-141721-26042 exited 1: Erro
+regenerated_rows_replayed	yes	FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261006T191458-468908-22219 exited 1: mkdi
+db_arg_not_rewritten	yes	FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261006T191623-591445-31994 exited 3: Erro
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=22 fail=0

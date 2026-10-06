@@ -1,0 +1,76 @@
+# identity: task=T064 utc=2026-10-06T18:27:15Z host=anton uid=1000
+# git_head=960c553a198d9c17218cb2ad4283a599bdc83b04 tree_dirty_files=186
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7cab8cb149d83a9a6e9e4038b531c62b41b82a40668ce2e393d6f7dda19af98c backup_db=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2 test=d072d6c861587da1147b65c4104aff63d962175daf684c4464a1b3ec8d31789d clib=80f3f16b8d3a01a956ef737b51cc726cc2b3b2ba5033b0c910b9c657cf0533fe
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== usage and argument handling ==
+ok   L1 no arguments: exit 2 and a usage text
+ok   L2 unknown option exit 2
+ok   L3 LOCKED_ROOT without LOCKED_TEST_MODE=1 is refused (a hook cannot redirect the register)
+== composed call, lock file, pass-through ==
+ok   L4 the wrapped command's exit status is passed through
+ok   L5 the wrapped command's stdout is passed through
+ok   L6 composed call is RUNP --rw docs IMG-TESTUTIL -- <cmd> (docs bound rw, the pinned image, the command)
+ok   L6b no scratch bind in a register write
+ok   L7 the lock file is docs/.register.lock
+ok   L8 docs/.register.lock is ignored by git (never tracked, T004)
+== two concurrent mints never overlap ==
+ok   L9 both concurrent mints succeed
+ok   L10 distinct ids minted (CAT-001, CAT-002)
+ok   L11 no 'database is locked' error
+ok   L12 the two intervals do not overlap (the lock serialises the writers)
+== journal and input capture ==
+ok   L13 two commands give two journal rows
+ok   L14 journal row has field time
+ok   L14 journal row has field op_id
+ok   L14 journal row has field argv
+ok   L14 journal row has field exit
+ok   L14 journal row has field db_sha_before
+ok   L14 journal row has field db_sha_after
+ok   L14 journal row has field ids_minted
+ok   L15 a repository-relative file argument is copied to inputs/<sha256> (hash equals name)
+ok   L16 a /src/<p> container-path argument is copied the same way
+ok   L17 an argument naming no file copies nothing (exactly two input files)
+ok   L18 the row records the inner argv and the exit status
+== --out writes only there ==
+ok   L19 --out directory is /out
+ok   L20 a command run with --out cannot write docs/
+ok   L21 no --rw docs for a --out run
+ok   L22 register DB unchanged by the --out run
+== stdin is unsupported ==
+ok   L23 SQL piped on stdin writes no row and leaves the DB sha256 unchanged
+ok   L24 usage text states that stdin is unsupported
+== commit-turn freeze ==
+ok   L25 a grant naming another run (live holder) refuses with commit_turn_held
+ok   L26 docs/ byte-unchanged and no podman run call during the refusal
+ok   L27 the reaper ran once, only through --exec-approved
+ok   L28 a grant whose holder pid has exited is reaped by the one --reap call and the mint then succeeds
+ok   L29 EVREC_TURN_RUN_ID equal to the grant's run_id lets the mint succeed (golden-true)
+ok   L30 no grant: the mint succeeds (golden-true)
+ok   L31 a grant body that is not JSON is refused commit_turn_held (an absent reaper counts as failing)
+ok   L32 an unreadable grant file (mode 000) is refused commit_turn_held
+== scratch import and import-sql ==
+ok   L33 LOCKED_SCRATCH_DB with any other command is refused scratch_db_subcommand_invalid (20)
+ok   L34 a scratch import writes the scratch database
+ok   L35 an import whose sha256 differs from its sibling is refused import_sha256_mismatch
+ok   L36 a sibling that is not one bare hash is refused import_sha256_malformed
+ok   L37 a scratch path that leaves .audit/scratch (after '..' collapse) is refused scratch_db_path_invalid
+ok   L38 a scratch import composes --rw .audit/scratch
+ok   L39 a scratch import never mounts docs rw
+ok   L40 docs/workable_items-style register DB keeps its sha256 during a scratch import
+ok   L41 .audit/scratch as a symlink to docs is refused (no write into docs)
+ok   L42 no podman run call and docs/ unchanged for the symlinked scratch
+== register import-sql calls the pre-op backup helper once; a scratch import never does ==
+ok   L43 a register import succeeds and calls the backup helper exactly once
+ok   L44 the backup helper is called with --record
+ok   L45 the register copy received the imported rows
+ok   L46 a scratch import never calls the backup helper
+ok   L47 a scratch import under a held grant exits 0, empty backup log, docs/ unchanged, scratch DB written
+ok   L48 a register import under the same grant is refused commit_turn_held
+== DISK_HEADROOM_OUT_DIR: set for a scratch import, never for a register write ==
+ok   L49a a scratch import sets DISK_HEADROOM_OUT_DIR=.audit/out/<op_id>/disk/ for its RUNP call
+ok   L49b the RUNP call of a register write leaves DISK_HEADROOM_OUT_DIR unset
+== the real leg: binaries recorded ==
+ok   L50 register-binaries.json written (sqlite3 version, engine validate probe, both sha256)
+RESULT pass=58 fail=0
+rc=0

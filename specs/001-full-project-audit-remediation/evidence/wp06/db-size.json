@@ -1,0 +1,20 @@
+{
+ "export_files": {
+  "Fixed.md": 0,
+  "Fixed_Summary.md": 333,
+  "Issues.md": 640,
+  "Issues_Summary.md": 784,
+  "Reconciliation.md": 2300,
+  "export-manifest.sha256": 990,
+  "findings.csv": 0,
+  "legacy_id_collisions.csv": 44,
+  "reconciliation.csv": 199,
+  "reopen_counts.csv": 0,
+  "reverify_queue.csv": 0,
+  "stale_tracker_sync.csv": 0,
+  "unmapped_entries.csv": 68
+ },
+ "items": 4,
+ "note": "scratch measurement of a 4-item fixture only; the 2,010-item projection of T067 is owed to the T168 importer (UNCONFIRMED)",
+ "scratch_db_bytes": 434176
+}

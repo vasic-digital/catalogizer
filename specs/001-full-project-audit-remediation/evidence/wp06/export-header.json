@@ -1,0 +1,21 @@
+{
+ "files": {
+  "Issues.md": {
+   "has_header_table": false,
+   "has_last_modified": false,
+   "has_revision": false
+  },
+  "Issues_Summary.md": {
+   "has_header_table": false,
+   "has_last_modified": false,
+   "has_revision": false
+  },
+  "Reconciliation.md": {
+   "has_header_table": true,
+   "has_last_modified": false,
+   "has_revision": false
+  }
+ },
+ "information_only": true,
+ "note": "export_revision.go replays the header of the last sync md-to-db import; a DB built only by add/export carries none; Reconciliation.md carries its own header table"
+}

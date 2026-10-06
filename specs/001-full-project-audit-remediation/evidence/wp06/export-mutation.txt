@@ -1,0 +1,14 @@
+# identity: group=export utc=2026-10-06T19:37:18Z host=anton uid=1000 git_head=40a1f8e32fb7f36e1818610c0514ee826697f31e
+# runner_sha256=5889df44ff69ec42d7c49f093fe859e56dba6a92033cf3cd180f3f0a83cfc99d test_sha256=d9c88e453d9a2b520a389752ae4b2e82a3bef6f41894d87442ee7274caf6fc1b sut_sha256=ef89727493868b7dab609bc4381043cf277477ad011d55751854110ca781d433
+# mutant<TAB>killed<TAB>first failing check of test_export.sh
+check_fingerprint_ignored	yes	FAIL E17b rc=0 [export-check: OK (export_id 4, fingerprint e5d19bc8d7142e8576f91c6ce63b566680756b0505c8c5f1587
+check_file_hash_ignored	yes	FAIL E15 rc=1 [export-check: STALE; Issues.md no longer matches export-manifest.sha256; engine diff: ~ CAT-003
+check_manifest_ignored	yes	FAIL E16 rc=0 [export-check: OK (export_id 2, fingerprint 97913d63e67e26f432f85a8ae039259c481102d21bb094a98e18
+diff_gate_removed	yes	FAIL E20 rc=0 [reconcile: wrote 7 CSV files and Reconciliation.md into /src/docs/register
+fingerprint_includes_bookkeeping	yes	FAIL E9 both runs recorded the same fingerprint (unchanged DB; the run's own rows are excluded) :: got [2] wan
+siblings_marked_written	yes	FAIL E11 each run has 5 written Markdown rows and 15 skipped sibling rows :: got [written:20 ] want [skipped_t
+check_writes_checkpoint	yes	FAIL E27 rc=0 [export-check: OK (export_id 1, fingerprint a7dd6228958259fa9e3c680fdf80e2fba73f0c8d707b541f660f
+reconcile_nondeterministic_header	yes	FAIL E3 two runs on an unchanged DB give identical sha256 for every Markdown and CSV output :: got [e3b0c44298
+reconcile_view_dropped	yes	FAIL E5 the unmapped CSV holds the two unmapped entries :: got [-1] want [2]
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=35 fail=0

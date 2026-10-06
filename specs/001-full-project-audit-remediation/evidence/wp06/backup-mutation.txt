@@ -1,0 +1,11 @@
+# identity: group=backup utc=2026-10-06T18:40:15Z host=anton uid=1000 git_head=960c553a198d9c17218cb2ad4283a599bdc83b04
+# runner_sha256=5889df44ff69ec42d7c49f093fe859e56dba6a92033cf3cd180f3f0a83cfc99d test_sha256=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 sut_sha256=eb1ef7444dbf9841fa99ff82f07eae881f4986a6515576d4fb5bf0bc31bbd6f2
+# mutant<TAB>killed<TAB>first failing check of test_backup_db.sh
+cp_al_backup	yes	FAIL B11 after one more row in the source (checkpointed) the backup's sha256 is unchanged :: got [fe8f8dee2046
+failed_backup_kept	yes	FAIL B15 left: workable_items.db
+integrity_unchecked	EQUIV	reviewed-equivalent (redundancy): every corruption the harness can inject also fails the restore probe or the backup step, so no fixture isolates the integrity_check call; the call stays because it catches index-page damage that a table dump cannot see (UNCONFIRMED: no fixture for that class)
+restore_dump_unchecked	yes	FAIL B18 rc=0 [backup_db: OK docs/workable_items.db.bak-20261006T184416Z sha256=147b8a9494066db9d0a0225b411df0
+no_checkpoint	EQUIV	reviewed-equivalent: the online backup copies a consistent snapshot including the WAL content, so the checkpoint does not change the backup; it moves the register file to the committed state (docs/04 R-2)
+record_without_rows_check	EQUIV	reviewed-equivalent (redundancy): byte-equal canonical dumps imply equal INSERT row counts
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=24 fail=0
