@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T18:00:00Z |
-| Status | new in the working tree (T119), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-06T22:00:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): fail-closed registry accounting, measured CPU count; its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/envelope.sh`; test `scripts/containers/tests/test_envelope.sh` |
 
 ## Purpose
@@ -42,19 +42,22 @@ measured or `UNKNOWN`: the status then reads `UNKNOWN:<reason>` (`no_toolchain`,
 
 `envelope: REFUSED reason=<code>` on stderr and exit 1: `meminfo_unreadable`, `cpu_budget_unavailable`, `pids_budget_unavailable` (an unreadable, zero
 or unparsable `ulimit -u` is a refusal, never the permissive 8192), `memory_budget_unavailable` (budget below 512 MiB), `dependency_missing`,
-`test_hook_outside_test_mode`. Usage errors exit 2.
+`test_hook_outside_test_mode`, and the registry refusals of the fix round r1 (review F3; the accounting FAILS CLOSED, an input that cannot be read is never read as `used = 0`): `registry_override_outside_test_mode` (a `LONGOPS_REPO` / `LONGOPS_DIR` / `LONGOPS_AUDIT` set outside a declared test run), `registry_library_missing` (no `scripts/longops/lib.sh` in the tree the script runs from), `registry_unreadable` (the ops directory, or a parent of it, cannot be read; an ops directory that does not exist is the honest empty registry), `registry_record_unreadable`, `registry_record_malformed` (a record that is not JSON, or a live op whose budget is not a non-negative integer), `registry_classify_failed`. Usage errors exit 2.
 
 ## Test hooks
 
 `ENVELOPE_MEMINFO`, `ENVELOPE_NPROC`, `ENVELOPE_ULIMIT_U` replace a real reading and are honoured only with `ENVELOPE_TEST_MODE=1`; set without it they
-are refused, so a stray exported variable can never lift a ceiling. The registry is relocated with the `LONGOPS_*` variables of `scripts/longops/lib.sh`.
+are refused, so a stray exported variable can never lift a ceiling. The registry is relocated with `LONGOPS_REPO` / `LONGOPS_DIR` / `LONGOPS_AUDIT` of `scripts/longops/lib.sh`, which now ALSO needs `ENVELOPE_TEST_MODE=1` (review F3: a stray exported variable could point the accounting at an empty registry and hide every live budget).
+
+## The CPU count is measured
+
+`nproc` is read with `OMP_NUM_THREADS` and `OMP_THREAD_LIMIT` removed (`env -u ... nproc`): GNU `nproc` honours both, so `OMP_NUM_THREADS=1000` used to report 1000 CPUs and lift the 0.60 CPU ceiling (review F7). `run_pinned.sh` reads `nproc` the same naive way; fixing it is an OWED request (it is another agent's file in this round).
 
 ## Test
 
 `scripts/containers/tests/test_envelope.sh`: SPECIFIED oracle (hand-computed goldens from the formulas) and DERIVED oracle (an independent python3
 implementation over a seeded random sweep of 60 hosts), a registry fixture filled through the real `register.sh`, refusals, formats, a negative control
-(two hosts give two envelopes) and a real-host leg, then 18 paired mutations (one expression changed per copy, python str replace, exactly one
-occurrence; every copy must make the test FAIL; `ENVELOPE_MUTATION_RECORD` names the record file).
+(two hosts give two envelopes) and a real-host leg, then 29 paired mutations. Each copy is placed in a working tree layout (`<dir>/scripts/containers/envelope.sh` beside a link to `scripts/longops`: a copy dropped in `/tmp` could not read the registry and every mutant failed the same registry checks, review M1), an UNMUTATED copy placed the same way is the negative control (it must pass the whole body), and a mutant counts as caught only when a failing check NAMES its cause. The set contains the reviewer's mutants R1-R4 (the JSON `memory_bytes`, the `ENVELOPE_ULIMIT_U` hook gate, the `pids` floor, the sum over live ops). `ENVELOPE_MUTATION_RECORD` names the record file.
 
 ## Honest boundary (11.4.6)
 

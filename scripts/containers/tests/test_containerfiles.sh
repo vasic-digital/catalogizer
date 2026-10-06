@@ -4,8 +4,10 @@
 #      infra-redis infra-ftp infra-smb infra-webdav; infra-minio is absent: no MinIO server image is obtainable from any official registry, T106 blocked item; plus the two T006 directories kcov and testutil);
 #   C2 each directory has a non-empty Containerfile, README.md and digests.lock;
 #   C3 the Containerfile passes scripts/containers/check_pins.sh (digest-pinned FROM, no pipe-to-shell; T105);
-#   C4 every download line (curl or wget in a RUN) is followed, in the same RUN, by a SHA-256 check (sha256sum -c or shasum -a 256 -c);
+#   C4 every download line (curl or wget in a RUN) is followed, in the same RUN, by a SHA-256 check (sha256sum -c or shasum -a 256 -c), and a
+#      RUN holds at least as many checks as downloads; an `ADD <url>` carries `--checksum=sha256:<64 hex>`;
 #   C5 digests.lock names every FROM digest and every SHA-256 literal the Containerfile checks (the lock and the file cannot drift);
+#   C7 no RUN swallows a failure (`|| true`, `|| :`): a step that may fail is handled explicitly or not run (WF10 p1 F6, the android licence swallow);
 #   C6 the directory has a matching images.lock.yaml entry (rust and android are the two images whose entry T143 and T144 write), the
 #      entry carries a `class` from {compile, interpreter, service, runtime, runtime-base} for the entries T106 writes, and when the
 #      entry's reference is one of the Containerfile's FROM references the two digests are equal.
@@ -77,16 +79,27 @@ for d in sorted(x for x in os.listdir(tree) if os.path.isdir(os.path.join(tree, 
             v("C2-" + f, d, f + " missing or empty")
     text = open(cf).read()
     r = subprocess.run(["bash", pins, "--root", tree, d], capture_output=True, text=True)   # C3
-    if r.returncode != 0:
-        for line in r.stdout.splitlines():
-            if line.startswith("VIOLATION"): v("C3-check_pins", d, line)
-        if r.returncode not in (0, 1): v("C3-check_pins", d, "check_pins exited %d" % r.returncode)
+    vl = [x for x in r.stdout.splitlines() if x.startswith("VIOLATION")]
+    if r.returncode == 0 and not vl:      # MUT-ANCHOR c3-clean
+        pass
+    elif r.returncode == 1 and vl:
+        for line in vl: v("C3-check_pins", d, line)
+    else:                                 # a crash (3), a usage error (2), a missing script (127) or an inconsistent verdict is never "clean"
+        v("C3-check_pins", d, "check_pins exited %d with %d VIOLATION lines (not a clean verdict)" % (r.returncode, len(vl)))   # MUT-ANCHOR c3-else
     shas = []
     for ln in logical(text):                                         # C4
         if re.match(r"^RUN\b", ln, re.I) and re.search(r"\b(curl|wget)\s+(-|https?://)", ln):
             m = re.search(r"\b(curl|wget)\b.*?(sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln)   # MUT-ANCHOR c4-check
-            if not m: v("C4-download-without-sha256", d, ln[:140])
+            n_dl = len(re.findall(r"\b(?:curl|wget)\s+(?:-|https?://)", ln))
+            n_ck = len(re.findall(r"(?:sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln))
+            if not m or n_ck < n_dl: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
             shas += re.findall(r"\b([0-9a-f]{64})\b", ln)
+        if re.match(r"^ADD\b", ln, re.I) and re.search(r"\bhttps?://", ln):
+            ck = re.search(r"--checksum=sha256:([0-9a-f]{64})\b", ln)    # MUT-ANCHOR c4-add
+            if not ck: v("C4-download-without-sha256", d, ln[:140])
+            else: shas.append(ck.group(1))
+        if re.match(r"^RUN\b", ln, re.I) and re.search(r"\|\|\s*(true|:)\s*($|[;&)|])", ln):    # C7  MUT-ANCHOR c7-swallow
+            v("C7-swallowed-failure", d, ln[:140])
     froms = []
     args = {}
     for ln in logical(text):
@@ -203,6 +216,76 @@ mkfix neg; gooddir neg go; gooddir neg node; sed -i "1s#.*#FROM docker.io/librar
 fxcheck neg; check "NEGCTL the compliant directory 'go' is never named" "$(printf '%s\n' "$OUT" | grep -c ' go:')" "0"
 check "NEGCTL the bad directory 'node' is named" "$([ "$(printf '%s\n' "$OUT" | grep -c ' node:')" -ge 1 ] && echo yes || echo no)" "yes"
 
+# ---------------------------------------------------------------- WF10 review p1 fixes (F3 C3 on a crash, F4 survivors, F6 swallowed failure, ADD url, download/check counts)
+fxcheck_pins() { # <fxname> <check_pins path or stub> [required] -> OUT
+  OUT="$(python3 -I "$CHECKER" "$REPO" "$T/fx-$1/tree" "$T/fx-$1/lock.yaml" "$2" "${3:-}" 2>&1)"; }
+expect_no_rule() { # <label> <rule-prefix>
+  if printf '%s\n' "$OUT" | grep -q "^$2"; then bad "$1: unexpected '$2' line in: $(printf '%s' "$OUT" | head -3 | tr '\n' '|')"; else ok "$1 -> $2 silent"; fi; }
+
+mkfix wget; gooddir wget go; printf 'RUN wget -qO /tmp/g https://example.invalid/g && chmod +x /tmp/g\n' >>"$T/fx-wget/tree/go/Containerfile"; addlock wget IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck wget; expect_rule "GOLDEN-BAD wget download without a SHA-256 check" C4-download-without-sha256
+
+mkfix nosum; gooddir nosum go; printf 'RUN curl -fsSL -o /tmp/g https://example.invalid/g && echo "%s  /tmp/g" | sha256sum\n' "$SH64" >>"$T/fx-nosum/tree/go/Containerfile"; addlock nosum IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck nosum; expect_rule "GOLDEN-BAD sha256sum without -c is not a check" C4-download-without-sha256
+
+mkfix twodl; gooddir twodl go; printf 'RUN curl -fsSL -o /tmp/a https://example.invalid/a && curl -fsSL -o /tmp/b https://example.invalid/b && echo "%s  /tmp/a" | sha256sum -c -\n' "$SH64" >>"$T/fx-twodl/tree/go/Containerfile"; addlock twodl IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck twodl; expect_rule "GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c" C4-download-without-sha256
+
+mkfix twodl2; gooddir twodl2 go; printf 'RUN curl -fsSL -o /tmp/a https://example.invalid/a && echo "%s  /tmp/a" | sha256sum -c - && curl -fsSL -o /tmp/b https://example.invalid/b && echo "%s  /tmp/b" | sha256sum -c -\n' "$SH64" "$SH64" >>"$T/fx-twodl2/tree/go/Containerfile"; addlock twodl2 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck twodl2; expect_no_rule "GOLDEN-GOOD two downloads each followed by its own check" C4-
+
+mkfix order; gooddir order go; printf 'RUN echo "%s  /tmp/g" | sha256sum -c - && curl -fsSL -o /tmp/g https://example.invalid/g && sha256sum /tmp/g\n' "$SH64" >>"$T/fx-order/tree/go/Containerfile"; addlock order IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck order; expect_rule "GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check)" C4-download-without-sha256
+
+mkfix twodl3; gooddir twodl3 go; printf 'RUN curl -fsSL -o /tmp/a https://example.invalid/a && curl -fsSL -o /tmp/b https://example.invalid/b && echo "%s  /tmp/a" | sha256sum -c - && sha256sum /tmp/b\n' "$SH64" >>"$T/fx-twodl3/tree/go/Containerfile"; addlock twodl3 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck twodl3; expect_rule "GOLDEN-BAD two downloads, one real check and one plain sha256sum" C4-download-without-sha256
+
+mkfix addurl; gooddir addurl go; printf 'ADD https://example.invalid/h.tgz /opt/h.tgz\n' >>"$T/fx-addurl/tree/go/Containerfile"; addlock addurl IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck addurl; expect_rule "GOLDEN-BAD ADD <url> without --checksum" C4-download-without-sha256
+
+mkfix addurl2; gooddir addurl2 go; printf 'ADD --checksum=sha256:%s https://example.invalid/h.tgz /opt/h.tgz\n' "$SH64" >>"$T/fx-addurl2/tree/go/Containerfile"; addlock addurl2 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck addurl2; expect_no_rule "GOLDEN-GOOD ADD <url> with --checksum=sha256:<64 hex>" C4-
+
+mkfix swallow; gooddir swallow go; printf 'RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true\n' >>"$T/fx-swallow/tree/go/Containerfile"; addlock swallow IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck swallow; expect_rule "GOLDEN-BAD a RUN that swallows a failure with || true" C7-swallowed-failure
+
+mkfix swallow2; gooddir swallow2 go; printf 'RUN rm -f /tmp/x || :\n' >>"$T/fx-swallow2/tree/go/Containerfile"; addlock swallow2 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck swallow2; expect_rule "GOLDEN-BAD a RUN that swallows a failure with || :" C7-swallowed-failure
+
+mkfix swallow3; gooddir swallow3 go; printf '# || true is discussed here only\nRUN yes | sdkmanager --licenses >/dev/null\nRUN test -f /a || test -f /b\n' >>"$T/fx-swallow3/tree/go/Containerfile"; addlock swallow3 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck swallow3; expect_no_rule "GOLDEN-GOOD a comment mentioning || true, a plain pipeline, an || with a real command" C7-
+
+mkfix badclass; gooddir badclass node; addlock badclass IMG-NODE docker.io/library/debian "sha256:$D64" bogus
+fxcheck badclass; expect_rule "GOLDEN-BAD lock entry class outside the closed set" C6-class
+
+mkfix emptyreadme; gooddir emptyreadme go; : >"$T/fx-emptyreadme/tree/go/README.md"; addlock emptyreadme IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck emptyreadme; expect_rule "GOLDEN-BAD empty README.md" C2-README.md
+
+mkfix emptylock; gooddir emptylock go; : >"$T/fx-emptylock/tree/go/digests.lock"; addlock emptylock IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck emptylock; expect_rule "GOLDEN-BAD empty digests.lock" C2-digests.lock
+
+mkfix unknowndir; gooddir unknowndir zzz
+fxcheck unknowndir; expect_rule "GOLDEN-BAD a directory with no id mapping" C6-unknown-directory
+
+# C3 must refuse anything that is not a clean verdict: a crash (3), a usage error (2), a missing script (127), exit 1 with no VIOLATION line, exit 0 with a VIOLATION line
+STUB="$T/stubs"; mkdir -p "$STUB"
+printf '#!/bin/sh\nexit 2\n' >"$STUB/rc2.sh"; printf '#!/bin/sh\necho boom >&2\nexit 3\n' >"$STUB/rc3.sh"; printf '#!/bin/sh\nexit 1\n' >"$STUB/rc1_empty.sh"
+printf '#!/bin/sh\necho "VIOLATION r p:1: x"\nexit 0\n' >"$STUB/rc0_viol.sh"; printf '#!/bin/sh\nexit 0\n' >"$STUB/rc0.sh"; printf '#!/bin/sh\necho "VIOLATION r p:1: x"\nexit 1\n' >"$STUB/rc1_viol.sh"
+mkfix c3; gooddir c3 go; addlock c3 IMG-GO docker.io/library/debian "sha256:$D64" compile
+for st in rc2 rc3 rc1_empty rc0_viol; do fxcheck_pins c3 "$STUB/$st.sh"; expect_rule "GOLDEN-BAD C3 refuses check_pins stub $st" C3-check_pins; done
+fxcheck_pins c3 "$T/stubs/does-not-exist.sh"; expect_rule "GOLDEN-BAD C3 refuses a missing check_pins (exit 127)" C3-check_pins
+fxcheck_pins c3 "$STUB/rc1_viol.sh"; expect_rule "GOLDEN-BAD C3 reports each VIOLATION line of an exit-1 verdict" C3-check_pins
+check "GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict" "$OUT" "C3-check_pins go: VIOLATION r p:1: x"
+fxcheck_pins c3 "$STUB/rc0.sh"; check "GOLDEN-GOOD C3 accepts exit 0 with no VIOLATION line" "$OUT" ""
+# the reviewer's own demonstration: a real check_pins copy that crashes inside scan_dockerfile
+python3 -I - "$REPO/scripts/containers/check_pins.sh" "$STUB/crash_pins.sh" <<'PYEND'
+import sys
+src = open(sys.argv[1]).read(); old = "def scan_dockerfile(path, text):\n"
+if src.count(old) != 1: sys.exit(3)
+open(sys.argv[2], "w").write(src.replace(old, old + "    raise RuntimeError('injected crash')\n"))
+PYEND
+fxcheck_pins c3 "$STUB/crash_pins.sh"; expect_rule "GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line)" C3-check_pins
+
 # ---------------------------------------------------------------- paired mutations of this file
 if [ -z "${CF_TEST_MUTANT:-}" ] && [ -z "${CF_TEST_NO_MUTATIONS:-}" ]; then
   REC="${CF_MUTATION_RECORD:-$T/containerfiles-mutation.txt}"
@@ -213,7 +296,7 @@ if [ -z "${CF_TEST_MUTANT:-}" ] && [ -z "${CF_TEST_NO_MUTATIONS:-}" ]; then
     nm=$((nm+1)); cp_="$T/mutant-$name.sh"
     if ! python3 -I - "$SELF" "$cp_" "$old" "$new" <<'PY'
 import sys
-s = open(sys.argv[1]).read(); old, new = sys.argv[3], sys.argv[4]
+s = open(sys.argv[1]).read(); old = sys.argv[3].encode().decode("unicode_escape"); new = sys.argv[4].encode().decode("unicode_escape")
 if old == new or s.count(old) != 1: print("anchor count %d" % s.count(old)); sys.exit(3)
 open(sys.argv[2], "w").write(s.replace(old, new))
 PY

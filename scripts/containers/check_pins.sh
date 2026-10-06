@@ -46,16 +46,47 @@ SKIP_DIRS = {".git", "node_modules", "vendor", ".audit"}
 REGISTRY_RE = re.compile(
     r"(?<![\w./-])((?:docker\.io|ghcr\.io|quay\.io|mcr\.microsoft\.com|gcr\.io|lscr\.io|registry\.[\w.-]+|[\w-]+\.pkg\.dev|public\.ecr\.aws)"
     r"/[A-Za-z0-9._/-]+(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?)")
+SHELL_ALT = r"(?:(?:ba|z|da|a|k)?sh\b|(?:python[0-9.]*|perl|ruby)\s+-(?![\w-]))"
 PIPE_RE = re.compile(
-    r"\b(?:curl|wget|fetch)\b[^\n]*?(?<!\|)\|(?!\|)\s*(?:sudo\s+(?:-\S+\s+)*)?(?:env\s+\S+=\S+\s+)*(?:/usr/bin/|/bin/)?(?:ba|z|da)?sh\b")
+    r"\b(?:curl|wget|fetch)\b[^\n]*?(?<!\|)\|(?!\|)\s*(?:sudo\s+(?:-\S+\s+)*)?(?:env\s+\S+=\S+\s+)*(?:/usr/(?:local/)?bin/|/bin/)?" + SHELL_ALT)
 SUBST_RE = re.compile(
-    r"(?:\b(?:ba|z|da)?sh\s+(?:-c\s+)?[\"']?\$\(\s*(?:curl|wget|fetch)\b[^\n]*|\b(?:ba|z|da)?sh\s+<\(\s*(?:curl|wget|fetch)\b[^\n]*)")
-VALUE_OPTS = {"-v", "--volume", "-e", "--env", "-p", "--publish", "-w", "--workdir", "--name", "-u", "--user", "--network", "--net",
-              "--entrypoint", "--memory", "-m", "--cpus", "--pids-limit", "--userns", "--security-opt", "--cap-add", "--cap-drop",
-              "--device", "--label", "-l", "--env-file", "--tmpfs", "--mount", "--platform", "--pull", "--restart", "--hostname",
-              "-h", "--group-add", "--ulimit", "--memory-swap", "--shm-size", "--log-driver", "--cidfile", "--pid", "--ipc"}
-RUNVERB_RE = re.compile(r"(?:^|[\s;&|(])(?:sudo\s+)?(?:docker|podman|nerdctl)\s+(?:container\s+|image\s+)?(run|pull|create)\b(.*)$")
-HEREDOC_RE = re.compile(r"(?<!<)<<(?!<)-?\s*(['\"]?)(\w+)\1")
+    r"(?:\b(?:(?:ba|z|da|a|k)?sh|eval)\s+(?:-c\s+)?[\"']?\$\(\s*(?:curl|wget|fetch)\b[^\n]*"
+    r"|(?:\b(?:(?:ba|z|da|a|k)?sh|source)|(?<![\w.])\.)\s+<\(\s*(?:curl|wget|fetch)\b[^\n]*)")
+# options of `docker|podman|nerdctl run|create|pull` that take a separate value (so the value is not the image operand)
+VALUE_OPTS = {
+    "-a", "--attach", "--add-host", "--annotation", "--arch", "--authfile", "--blkio-weight", "--blkio-weight-device", "--cap-add",
+    "--cap-drop", "--cert-dir", "--cgroup-conf", "--cgroup-parent", "--cgroupns", "--cgroups", "--cidfile", "--conmon-pidfile", "--cpu-period",
+    "--cpu-quota", "--cpu-rt-period", "--cpu-rt-runtime", "--cpu-shares", "--cpus", "--cpuset-cpus", "--cpuset-mems", "--creds",
+    "--decryption-key", "--detach-keys", "--device", "--device-cgroup-rule", "--device-read-bps", "--device-read-iops", "--device-write-bps",
+    "--device-write-iops", "--dns", "--dns-option", "--dns-search", "--domainname", "-e", "--env", "--entrypoint", "--env-file", "--env-host",
+    "--env-merge", "--expose", "--gidmap", "--gpus", "--group-add", "--group-entry", "--health-cmd", "--health-interval", "--health-on-failure",
+    "--health-retries", "--health-start-period", "--health-startup-cmd", "--health-startup-interval", "--health-startup-retries",
+    "--health-startup-success", "--health-startup-timeout", "--health-timeout", "-h", "--hostname", "--hooks-dir", "--hostuser", "--image-volume",
+    "--init-path", "--ip", "--ip6", "--ipc", "--isolation", "-l", "--label", "--label-file", "--link", "--link-local-ip", "--log-driver",
+    "--log-opt", "--mac-address", "-m", "--memory", "--memory-reservation", "--memory-swap", "--memory-swappiness", "--mount", "--name", "--net",
+    "--network", "--network-alias", "--no-healthcheck-x", "--oom-score-adj", "--os", "--passwd-entry", "--personality", "--pid", "--pidfile",
+    "--pids-limit", "--platform", "--pod", "--pod-id-file", "-p", "--publish", "--pull", "--rdt-class", "--restart", "--retry", "--retry-delay",
+    "--runtime", "--seccomp-policy", "--secret", "--security-opt", "--shm-size", "--shm-size-systemd", "--stop-signal", "--stop-timeout",
+    "--storage-opt", "--subgidname", "--subuidname", "--sysctl", "--timeout", "--tmpfs", "--tz", "--uidmap", "-u", "--user", "--userns",
+    "--uts", "--variant", "-v", "--volume", "--volumes-from", "-w", "--workdir"}
+# global options (before the sub-command) that take a separate value
+GLOBAL_VALUE_OPTS = {"--log-level", "--root", "--runroot", "--storage-driver", "--storage-opt", "--url", "--connection", "-c", "--host", "-H",
+                     "--config", "--context", "--namespace", "--cgroup-manager", "--conmon", "--events-backend", "--hooks-dir", "--identity",
+                     "--imagestore", "--network-cmd-path", "--network-config-dir", "--runtime", "--runtime-flag", "--ssh", "--tmpdir",
+                     "--volumepath", "--cdi-spec-dir", "--userns-uid-map", "--userns-gid-map", "--module", "-l"}
+ENGINES = {"docker", "podman", "nerdctl"}
+ENGINE_VERBS = {"run", "pull", "create"}
+WRAPPERS = {"sudo", "env", "time", "exec", "nohup", "command", "timeout", "nice", "ionice", "xargs", "stdbuf", "then", "do", "else", "elif",
+            "if", "while", "until", "!", "{", "watch", "setsid", "builtin", "doas"}
+SHELLISH = {"sh", "bash", "zsh", "dash", "ash", "ksh", "eval", "ssh"}
+# in a test script these commands only WRITE or FILTER data: a fixture line they carry is not a command of the test
+DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep", "awk"}
+ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+DURATION_RE = re.compile(r"^\d+(?:\.\d+)?[smhd]?$")
+IMG_SHAPE = re.compile(r"^[a-z0-9][A-Za-z0-9._-]*(?::[0-9]+)?(?:/[A-Za-z0-9._-]+)*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?$")
+# a here-document opener at the top level of a logical line: quoted strings and arithmetic `$((..))` / `((..))` are consumed first
+HDOC_SCAN_RE = re.compile(r"""'[^']*'|"(?:[^"\\]|\\.)*"|\$?\(\([^()]*\)\)|(?<!<)<<(?!<)-?\s*(['"]?)(\w+)\1""")
+CONT_TRAIL_RE = re.compile(r"(?:(?<!\|)\||\|\||&&)\s*$")
 
 viol = []      # (path, line, rule, reference)
 files_scanned = 0
@@ -85,8 +116,15 @@ def strip_comment(s):
     return s
 
 
+def top_level_heredoc(acc):
+    for m in HDOC_SCAN_RE.finditer(acc):
+        if m.group(2):
+            return m.group(2)
+    return None
+
+
 def logical_lines(text, skip_heredocs):
-    """Yield (first_physical_line_no, text) with continuation lines joined and comments removed."""
+    """Yield (first_physical_line_no, text) with continuation lines (backslash, or a trailing | || &&) joined and comments removed."""
     out = []
     acc = None
     start = 0
@@ -100,11 +138,13 @@ def logical_lines(text, skip_heredocs):
         stripped = line.strip()
         if stripped.startswith("#"):
             continue
-        cont = line.rstrip().endswith("\\")
         body = strip_comment(line)
         body = body.rstrip()
+        cont = line.rstrip().endswith("\\")
         if body.endswith("\\"):
             body = body[:-1]
+        elif CONT_TRAIL_RE.search(body):
+            cont = True
         if acc is None:
             acc, start = body, no
         else:
@@ -112,9 +152,9 @@ def logical_lines(text, skip_heredocs):
         if not cont:
             out.append((start, acc))
             if skip_heredocs:
-                m = HEREDOC_RE.search(acc)
-                if m:
-                    heredoc_end = m.group(2)
+                delim = top_level_heredoc(acc)
+                if delim:
+                    heredoc_end = delim
             acc = None
     if acc is not None:
         out.append((start, acc))
@@ -125,13 +165,222 @@ def add(path, line, rule, ref):
     viol.append((path, line, rule, " ".join(ref.split())[:200]))
 
 
+def split_commands(s):
+    """Split one logical line into simple commands at unquoted ; & | ( ) ` and newlines.
+    Returns [(start, end, [(token_text_without_quotes, was_quoted), ...]), ...]; start/end are offsets into s."""
+    cmds, toks, cur = [], [], []
+    state = {"quoted": False, "has": False, "seg": 0}
+    n = len(s)
+
+    def endtok():
+        if state["has"]:
+            toks.append(("".join(cur), state["quoted"]))
+        del cur[:]
+        state["quoted"] = False
+        state["has"] = False
+
+    def endcmd(pos):
+        endtok()
+        if toks:
+            cmds.append((state["seg"], pos, list(toks)))
+        del toks[:]
+        state["seg"] = pos + 1
+
+    i = 0
+    while i < n:
+        ch = s[i]
+        if ch == "\\" and i + 1 < n:
+            cur.append(s[i + 1]); state["has"] = True; i += 2
+        elif ch == "'":
+            j = s.find("'", i + 1)
+            if j < 0:
+                j = n
+            cur.append(s[i + 1:j]); state["has"] = True; state["quoted"] = True; i = j + 1
+        elif ch == '"':
+            j = i + 1
+            buf = []
+            while j < n and s[j] != '"':
+                if s[j] == "\\" and j + 1 < n:
+                    buf.append(s[j + 1] if s[j + 1] in '"\\$`' else s[j:j + 2]); j += 2
+                else:
+                    buf.append(s[j]); j += 1
+            cur.append("".join(buf)); state["has"] = True; state["quoted"] = True; i = j + 1
+        elif ch in " \t":
+            endtok(); i += 1
+        elif ch in ";\n|()`":
+            endcmd(i); i += 1
+        elif ch == "&":
+            if cur and cur[-1][-1:] in ("<", ">"):
+                cur.append("&"); state["has"] = True
+            else:
+                endcmd(i)
+            i += 1
+        else:
+            cur.append(ch); state["has"] = True; i += 1
+    endcmd(n)
+    return cmds
+
+
+def head_index(tokens):
+    """Index of the command word after wrappers (sudo, env, timeout 30, VAR=x, ...); None when there is none."""
+    i = 0
+    while i < len(tokens):
+        t, q = tokens[i]
+        if ASSIGN_RE.match(t):              # VAR=value (the value may have been quoted)
+            i += 1
+            continue
+        if q:
+            break
+        base = os.path.basename(t)
+        if base == "sudo":
+            i += 1
+            while i < len(tokens) and tokens[i][0].startswith("-") and not tokens[i][1]:
+                opt = tokens[i][0]
+                i += 1
+                if opt in ("-u", "-g", "-C", "-h", "-p", "-r", "-t", "-U", "-D") and i < len(tokens):
+                    i += 1
+            continue
+        if base in WRAPPERS or DURATION_RE.match(t) or (t.startswith("-") and i > 0):
+            i += 1
+            continue
+        break
+    return i if i < len(tokens) else None
+
+
+def looks_like_value(t):
+    """A token that is the value of an unknown option, not an image (key=value, a port or address, host:ip, host:host-gateway)."""
+    return ("=" in t or re.match(r"^\d+(?:\.\d+){0,3}(?::\d+)?$", t) is not None
+            or re.match(r"^[A-Za-z0-9.-]+:(?:\d+\.){3}\d+$", t) is not None or re.match(r"^[A-Za-z0-9.-]+:host-gateway$", t) is not None)
+
+
+def image_operand(tokens):
+    i = 0
+    after_unknown = False
+    while i < len(tokens):
+        t, q = tokens[i]
+        if t == "--" and not q:
+            i += 1
+            after_unknown = False
+            continue
+        if not q and t.startswith("-") and len(t) > 1:
+            if "=" in t:
+                i += 1
+                after_unknown = False
+            elif t in VALUE_OPTS:
+                i += 2
+                after_unknown = False
+            else:
+                i += 1
+                after_unknown = True      # an unknown option: a boolean unless the next token cannot be an image operand
+            continue
+        if re.match(r"^\d*[<>]", t) and not q:
+            i += 1
+            continue
+        if after_unknown and looks_like_value(t):
+            i += 1
+            after_unknown = False
+            continue
+        return t
+    return None
+
+
+def subst_texts(t):
+    """Texts of $(...) and `...` substitutions inside a quoted token."""
+    out = []
+    k = t.find("$(")
+    while k >= 0:
+        out.append(t[k + 2:])
+        k = t.find("$(", k + 2)
+    parts = t.split("`")
+    for idx in range(1, len(parts), 2):
+        out.append(parts[idx])
+    return out
+
+
+def cmd_images(tokens, depth):
+    """Image operands of every docker|podman|nerdctl run|pull|create (and `buildah from`) in one simple command, looking through
+    wrapper words, global options, `image`/`container`, shell -c / ssh / eval strings and $(...) substitutions."""
+    res = []
+    if depth < 4:
+        for t, q in tokens:
+            if q and ("$(" in t or "`" in t):
+                for inner in subst_texts(t):
+                    res += text_images(inner, depth + 1)
+    h = head_index(tokens)
+    if h is None:
+        return res
+    base = os.path.basename(tokens[h][0])
+    rest = tokens[h + 1:]
+    if base in ENGINES or base == "buildah":
+        verbs = {"from", "pull"} if base == "buildah" else ENGINE_VERBS
+        j = 0
+        while j < len(rest) and not rest[j][1] and rest[j][0].startswith("-"):
+            j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1
+        if j < len(rest) and rest[j][0] in ("container", "image"):
+            j += 1
+        if j < len(rest) and rest[j][0] in verbs:
+            op = image_operand(rest[j + 1:])
+            if op:
+                res.append(op)
+    elif base in SHELLISH and depth < 4:
+        for t, q in rest:
+            if q and re.search(r"\s", t):
+                res += text_images(t, depth + 1)
+    return res
+
+
+def text_images(text, depth=0):
+    res = []
+    for s, e, tokens in split_commands(text):
+        res += cmd_images(tokens, depth)
+    return res
+
+
+def mask_data(ln):
+    """Blank out the simple commands that only write or filter data (printf, echo, sed, tee, grep, awk, a bare assignment)."""
+    chars = list(ln)
+    for s, e, tokens in split_commands(ln):
+        h = head_index(tokens)
+        if h is None or os.path.basename(tokens[h][0]) in DATA_CMDS:
+            for k in range(s, min(e, len(chars))):
+                chars[k] = " "
+    return "".join(chars)
+
+
+def has_build_sibling(lines, idx, col):
+    def ind(l):
+        return len(l) - len(l.lstrip(" "))
+    for rng in (range(idx - 1, -1, -1), range(idx + 1, len(lines))):
+        for k in rng:
+            l = strip_comment(lines[k].rstrip("\r"))
+            if not l.strip():
+                continue
+            if ind(l) < col:
+                break
+            if ind(l) == col and re.match(r"^\s*build\s*:", l):
+                return True
+    return False
+
+
 def scan_compose(path, text):
-    for no, raw in enumerate(text.split("\n"), 1):
+    lines = text.split("\n")
+    for idx, raw in enumerate(lines):
         line = strip_comment(raw.rstrip("\r"))
-        m = re.match(r"^\s*-?\s*image:\s*(\S.*?)\s*$", line)
+        m = re.match(r"^(\s*(?:-\s*)?)image:\s*(.*?)\s*$", line)
         if not m:
             continue
-        ref = m.group(1).strip("\"'")
+        val = m.group(2)
+        if val == "":                       # the value is on a following line
+            for nxt in lines[idx + 1:]:
+                c = strip_comment(nxt.rstrip("\r")).strip()
+                if c:
+                    val = c
+                    break
+            if val == "":
+                continue
+        ref = val.strip("\"'")
+        if re.match(r"^\$[A-Za-z_][A-Za-z0-9_]*$", ref):
+            continue                        # a bare $VAR is resolved by the caller
         v = re.match(r"^\$\{[A-Za-z_][A-Za-z0-9_]*(?::?-(.*))?\}$", ref)
         if v:
             if v.group(1) is None:
@@ -139,20 +388,38 @@ def scan_compose(path, text):
             ref = v.group(1)
         if ref.startswith("localhost/"):
             continue
+        first = ref.split("/")[0]
+        qualified = "/" in ref and ("." in first or ":" in first)
+        if not qualified and has_build_sibling(lines, idx, len(m.group(1))):   # the tag a build: service produces is a local image
+            continue
         if not pinned(ref):  # MUT-ANCHOR compose-check
-            add(path, no, "compose_image_unpinned", ref)
+            add(path, idx + 1, "compose_image_unpinned", ref)
+
+
+def judge_source(path, no, src, aliases):
+    src = src.strip("\"'")
+    if src.lower() in aliases or src.isdigit() or src.startswith("$") or src.startswith("localhost/"):
+        return
+    if not pinned(src):  # MUT-ANCHOR copyfrom-check
+        add(path, no, "copy_from_unpinned", src)
 
 
 def scan_dockerfile(path, text):
     aliases = set()
     args = {}
+    seen_from = False
     for no, ln in logical_lines(text, False):
-        am = re.match(r"^\s*ARG\s+([A-Za-z_][A-Za-z0-9_]*)(?:=(.*))?\s*$", ln, re.I)
+        am = re.match(r"^\s*ARG\s+(.*?)\s*$", ln, re.I)
         if am:
-            args[am.group(1)] = am.group(2).strip().strip("\"'") if am.group(2) is not None else None
+            if not seen_from:               # an ARG after the first FROM is stage-local and never feeds a later FROM
+                for tok in am.group(1).split():
+                    name, eq, val = tok.partition("=")
+                    if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+                        args[name] = val.strip("\"'") if eq else None
             continue
         fm = re.match(r"^\s*FROM\s+(?:--\S+\s+)*(\S+)(?:\s+AS\s+(\S+))?", ln, re.I)
         if fm:
+            seen_from = True
             ref, alias = fm.group(1), fm.group(2)
             is_alias = ref.lower() in aliases
             if alias:
@@ -172,31 +439,15 @@ def scan_dockerfile(path, text):
             if not pinned(ref):  # MUT-ANCHOR from-check
                 add(path, no, "from_unpinned", ref)
             continue
-        cm = re.search(r"\bCOPY\b.*?--from=(\S+)", ln, re.I)
+        cm = re.match(r"^\s*(?:ONBUILD\s+)?(?:COPY|ADD)\b.*?--from=(\S+)", ln, re.I)
         if cm:
-            src = cm.group(1).strip("\"'")
-            if src.lower() in aliases or src.isdigit() or src.startswith("$") or src.startswith("localhost/"):
-                continue
-            if not pinned(src):  # MUT-ANCHOR copyfrom-check
-                add(path, no, "copy_from_unpinned", src)
-
-
-def image_operand(rest):
-    toks = rest.split()
-    i = 0
-    while i < len(toks):
-        t = toks[i]
-        if t == "--":
-            i += 1
+            judge_source(path, no, cm.group(1), aliases)
             continue
-        if t.startswith("-"):
-            if "=" not in t and t in VALUE_OPTS:
-                i += 2
-            else:
-                i += 1
-            continue
-        return t.strip("\"'")
-    return None
+        if re.match(r"^\s*(?:ONBUILD\s+)?RUN\b", ln, re.I):
+            for mt in re.finditer(r"--mount=(\S+)", ln):
+                mf = re.search(r"(?:^|,)from=([^,\s]+)", mt.group(1))
+                if mf:
+                    judge_source(path, no, mf.group(1), aliases)
 
 
 def scan_pipe(path, no, ln):
@@ -209,27 +460,29 @@ def scan_pipe(path, no, ln):
 
 def scan_script(path, text, is_test):
     for no, ln in logical_lines(text, is_test):
+        work = mask_data(ln) if is_test else ln
         seen = set()
-        rm = RUNVERB_RE.search(ln)
-        if rm:
-            op = image_operand(rm.group(2))
-            if op and not op.startswith("$") and not op.startswith("-") and not op.startswith("(") and re.match(r"^[a-z0-9][A-Za-z0-9._/-]*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?$", op) and ("/" in op or ":" in op or "@" in op):
-                seen.add(op)
-                if not pinned(op):  # MUT-ANCHOR script-run-check
-                    add(path, no, "script_image_unpinned", op)
-        for g in REGISTRY_RE.finditer(ln):
+        for op in text_images(work):
+            if op.startswith("$") or op.startswith("localhost/") or not IMG_SHAPE.match(op):
+                continue
+            seen.add(op)
+            if not pinned(op):  # MUT-ANCHOR script-run-check
+                add(path, no, "script_image_unpinned", op)
+        wreg = work.replace("docker://", " ")
+        # in a test script a registry-qualified literal outside a real engine command is fixture data (an argument of a helper, a table row)
+        for g in ([] if is_test else REGISTRY_RE.finditer(wreg)):  # MUT-ANCHOR registry-literal-rule
             ref = g.group(1)
             if ref in seen:
                 continue
             if "@sha256:" in ref:
-                if ref.endswith("@sha256:") and ln[g.end():g.end() + 1] == "$":
+                if ref.endswith("@sha256:") and wreg[g.end():g.end() + 1] == "$":
                     continue  # the digest is produced by a command substitution at run time: not a literal reference
                 if not pinned(ref):
                     add(path, no, "script_image_unpinned", ref)
                 continue
             if re.search(r":[A-Za-z0-9._-]+$", ref):  # a registry reference with a tag and no digest
                 add(path, no, "script_image_unpinned", ref)
-        scan_pipe(path, no, ln)
+        scan_pipe(path, no, work)
 
 
 def classify(rel):
@@ -323,7 +576,7 @@ def main(argv):
         if not os.path.isfile(full) or os.path.islink(full):
             continue
         try:
-            text = open(full, encoding="utf-8", errors="replace").read()
+            text = open(full, encoding="utf-8-sig", errors="replace").read()
         except OSError:
             continue
         files_scanned += 1
@@ -337,7 +590,7 @@ def main(argv):
             base = os.path.basename(rel)
             is_test = "tests" in parts[:-1] or base.startswith(("test_", "mutate_"))
             scan_script(rel, text, is_test)
-    viol.sort(key=lambda v: (v[0], v[1], v[2], v[3]))
+    viol.sort(key=lambda v: (v[0], v[1], v[2], v[3]))  # MUT-ANCHOR output-sort
     uniq = []
     for v in viol:
         if not uniq or uniq[-1] != v:
@@ -352,5 +605,11 @@ def main(argv):
     sys.exit(1 if uniq else 0)
 
 
-main(sys.argv[1:])
+try:
+    main(sys.argv[1:])
+except Exception as exc:  # exit 3: an internal error is neither "clean" (0) nor "violations" (1); nothing was printed to stdout
+    import traceback
+    traceback.print_exc()
+    sys.stderr.write("check_pins: internal error: %s: %s\n" % (type(exc).__name__, exc))
+    sys.exit(3)  # MUT-ANCHOR crash-exit
 PY

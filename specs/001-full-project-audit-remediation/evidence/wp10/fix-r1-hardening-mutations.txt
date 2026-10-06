@@ -1,0 +1,97 @@
+# identity: task=fix-r1 utc=2026-10-06T22:06:40Z host=anton uid=1000 git_head=8bc60bd70441bcf134c57d2e90da7dab72f28ebd (working tree has uncommitted work, content hashes identify the files)
+# sha256 scripts/containers/envelope.sh=e9f108fc6f8e6c272e2d93207a3203ce83446af3fb2b033821e45d3e3312753d
+# sha256 scripts/containers/runner_lib.sh=7a321d12e92de9aa8e50ba2a32c36ad2aae2d56b5058342b882014f4bdeef860
+# sha256 scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 scripts/containers/run_node.sh=44dc9bf4aa52567538722f0989a59fa8d36da4bd1436d32f4715d9b2e5c6db53
+# sha256 scripts/containers/run_docs.sh=eeda61cdd5d61df9291f19b4f0ac7aff6e16d8b857ffcf1ad5e3d3e215806e1d
+# sha256 scripts/containers/run_scan.sh=6e582ada4e268dfc5051925f5fa10408a32dd47a83a3c1377e8ce1be1b8df92a
+# sha256 scripts/containers/run_playwright.sh=05fdab626a9d088c00f0dc48baaa4d5c0170660917037c83b6d0c8b09b49798b
+# sha256 scripts/containers/run_testutil.sh=635ef4c7ad2d7417f40579bc375749252ff3297302fa78f82236b6840cc669fa
+# sha256 scripts/test-in-container.sh=5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b
+# sha256 scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# sha256 scripts/containers/tests/test_race_detector.sh=39a803f74434288080770d36b58c81079b595a950211aca52e8bcf3b6b3b2676
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp R1_MUTATION_RECORD=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp/hardening-mutation-record.txt bash /home/milosvasic/Projects/catalogizer/scripts/containers/tests/test_runners_hardening.sh
+# ---- output ----
+PASS: F1 six concurrent starts, each asking 4000000000: exactly four are admitted (4 x 4e9 fits the 0.60 ceiling, a fifth does not)
+PASS: F1 sum of live budgets 16000000000 is within the 0.60 ceiling 19660800000
+PASS: F1 two of the six are refused limit_exceeds_envelope, none silently dropped
+PASS: F1 four concurrent starts with no --memory: sum of live budgets 19660800000 within the ceiling
+PASS: F1 four concurrent starts with no --memory: only the first is admitted
+PASS: F1 the other three are refused envelope_refused (no head-room left)
+PASS: F2 --memory above (ceiling - live ops) inside the nominal 2%: refused
+PASS: F2 reason limit_exceeds_envelope
+PASS: F2 --memory exactly the live envelope (ceiling - live ops): accepted
+PASS: F2 --cpus above the live cpu budget (5) by the nominal +1: refused (the slack never enters the reserve)
+PASS: F2 --cpus exactly the live cpu budget: accepted
+PASS: F2 MemAvailable binds: 1 byte above the live envelope would enter the reserve: refused
+PASS: F2 MemAvailable binds: exactly the live envelope: accepted
+PASS: F4 the run itself succeeds
+PASS: F4 RUNP_PRINT_ARGV is not handed to run_pinned.sh (it would print its argv and start nothing)
+PASS: F4 RUNP_TEST_MODE is scrubbed (a test hook gate the wrapper does not own)
+PASS: F4 RUNP_MEMINFO is scrubbed (a test hook)
+PASS: F4 RUNP_ULIMIT_U is scrubbed (a test hook)
+PASS: F4 the probe call is scrubbed too
+PASS: F4 RUNP_USER (a documented input) passes through
+PASS: F4 the scrub is announced on stderr
+PASS: F5 run A left a log of 16 bytes
+PASS: F5 a finished op id reused: refused (exit 1)
+PASS: F5 the reason is op_exists (not purpose_conflict)
+PASS: F5 run A's log is byte-identical after the refused reuse
+PASS: F5 run A's record is still complete
+PASS: F5 reuse of a RUNNING op id: reason op_exists
+PASS: F5 the running run's log was not truncated by the refused start
+PASS: F5 run A's replayed stdout is exactly its own output (no NUL bytes, no lost lines)
+PASS: F6 TERM during the toolchain probe: the wrapper ends 130
+PASS: F6 TERM during the probe: the op is released failed
+PASS: F6 TERM during the probe: the verdict is interrupted
+PASS: F6 TERM during the probe: no op is left with a dead owner
+PASS: F6 INT during the toolchain probe: the wrapper ends 130
+PASS: F6 INT during the probe: the op is released failed
+PASS: F6 INT during the probe: the verdict is interrupted
+PASS: F6 INT during the probe: no op is left with a dead owner
+PASS: F6 HUP during the toolchain probe: the wrapper ends 130
+PASS: F6 HUP during the probe: the op is released failed
+PASS: F6 HUP during the probe: the verdict is interrupted
+PASS: F6 HUP during the probe: no op is left with a dead owner
+PASS: F6 TERM during the run: the wrapper ends 130
+PASS: F6 TERM during the run: the op is failed / interrupted
+PASS: F8 a run past --wall-s 2 is terminated: exit 124
+PASS: F8 the run was cut short (4s of a 12 s sleep)
+PASS: F8 the op is failed with verdict wall_clock_exceeded
+PASS: F8 the heartbeat reported elapsed time (the registry's wall-clock rule can see it)
+PASS: F8 control: a run well inside --wall-s is not terminated
+PASS: F9 a run that writes only /out (3 s in, no-progress budget 2 s): advancing
+PASS: F9 the same run 2 s later: still advancing
+PASS: F9 control needle: a run that writes nothing anywhere is hung after its budget (the instrument can see a stall)
+PASS: F10 the container client of the killed wrapper is gone (identity: pid 2272026 start 36992664)
+PASS: F10 the op of the killed wrapper is released failed
+PASS: F10 the verdict names the cause: wrapper_died
+PASS: F10 the heartbeat loop ended: the sequence did not advance in 3 s
+PASS: F11 a failing version command is a refusal (exit 1), the run does not start
+PASS: F11 reason version_probe_failed
+PASS: F11 the main run did not start
+PASS: F11 control: a working version command runs
+PASS: F11 control: the record carries the real tool version
+PASS: F11 control: the control needle (write to the read-only source mount fails) is yes
+PASS: TREE no disk-headroom record of these real runs was written into the real evidence/disk
+PASS: TREE the records went to DISK_HEADROOM_OUT_DIR in scratch (2 records)
+  (evidence/disk listing hash before/after: cf67b85ffac19c3e233ec5dc17073a9784410b7f4aad1ed5dd1470cb05a19062 / cf67b85ffac19c3e233ec5dc17073a9784410b7f4aad1ed5dd1470cb05a19062; other agents may add files meanwhile, only files carrying this run's token count)
+RESULT pass=63 fail=0
+CAUGHT   budget-lock-dropped by a check naming 'F1 ' (6 failing checks)
+CAUGHT   slack-ceiling-cap-dropped by a check naming 'F2 ' (2 failing checks)
+CAUGHT   slack-reserve-cap-dropped by a check naming 'F2 MemAvailable' (1 failing checks)
+CAUGHT   cpu-slack-budget-cap-dropped by a check naming 'F2 --cpus' (1 failing checks)
+CAUGHT   scrub-dropped by a check naming 'F4 ' (6 failing checks)
+CAUGHT   op-exists-check-dropped by a check naming 'F5 ' (2 failing checks)
+CAUGHT   trap-not-installed by a check naming 'F6 ' (7 failing checks)
+CAUGHT   signal-verdict-flipped by a check naming 'F6 TERM during the run' (1 failing checks)
+CAUGHT   probe-checkpoint-dropped by a check naming 'F6 ' (6 failing checks)
+CAUGHT   wall-enforce-dropped by a check naming 'F8 ' (3 failing checks)
+CAUGHT   out-bytes-not-progress by a check naming 'F9 a run that writes only /out' (2 failing checks)
+CAUGHT   parent-liveness-dropped by a check naming 'F10 ' (4 failing checks)
+CAUGHT   progress-offset-zero by a check naming 'F9 a run that writes only /out' (2 failing checks)
+MUTATION RESULT caught=13 survived=0 total=13
+# rc=0

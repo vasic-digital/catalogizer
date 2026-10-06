@@ -1,0 +1,9 @@
+# identity: T134a GREEN nfs_fallback_state run 2
+# head: e7a6a9b9b30762598915e847aee9edc9b66da80b
+# run_at: 2026-10-06T20:08:19Z
+# sha256 scripts/test-infra/nfs_fallback_state.sh 2f67202f20d03089ea9c4c36d35efe503b02eb0507e843c206be6785a98b9c9a
+# sha256 tests/infra/test_nfs_fallback_state.sh b4cb1e5b68543475338e15a1e2ec651796cae5d1a80ae5b0f553fabfcc3dd2ee
+# command: bash tests/infra/test_nfs_fallback_state.sh
+PASS: all fixtures hold (not_needed on pass; refused on structural / blocked; blocked odg08_unanswered; refusals)
+SUMMARY pass=1 fail=0 blocked=0
+# exit: 0

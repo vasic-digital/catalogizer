@@ -1,0 +1,54 @@
+# identity: task=fix-r1 utc=2026-10-06T22:10:52Z host=anton uid=1000 git_head=8bc60bd70441bcf134c57d2e90da7dab72f28ebd (working tree has uncommitted work, content hashes identify the files)
+# sha256 scripts/containers/envelope.sh=e9f108fc6f8e6c272e2d93207a3203ce83446af3fb2b033821e45d3e3312753d
+# sha256 scripts/containers/runner_lib.sh=7a321d12e92de9aa8e50ba2a32c36ad2aae2d56b5058342b882014f4bdeef860
+# sha256 scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 scripts/containers/run_node.sh=44dc9bf4aa52567538722f0989a59fa8d36da4bd1436d32f4715d9b2e5c6db53
+# sha256 scripts/containers/run_docs.sh=eeda61cdd5d61df9291f19b4f0ac7aff6e16d8b857ffcf1ad5e3d3e215806e1d
+# sha256 scripts/containers/run_scan.sh=6e582ada4e268dfc5051925f5fa10408a32dd47a83a3c1377e8ce1be1b8df92a
+# sha256 scripts/containers/run_playwright.sh=05fdab626a9d088c00f0dc48baaa4d5c0170660917037c83b6d0c8b09b49798b
+# sha256 scripts/containers/run_testutil.sh=635ef4c7ad2d7417f40579bc375749252ff3297302fa78f82236b6840cc669fa
+# sha256 scripts/test-in-container.sh=5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b
+# sha256 scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# sha256 scripts/containers/tests/test_race_detector.sh=39a803f74434288080770d36b58c81079b595a950211aca52e8bcf3b6b3b2676
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp bash /home/milosvasic/Projects/catalogizer/scripts/containers/tests/test_run_qa.sh
+# ---- output ----
+PASS: no arguments is a usage error
+PASS: missing -- command is a usage error
+PASS: unknown option is a usage error
+PASS: --image is not an option (the wrapper has exactly one image)
+PASS: usage errors start no container and register nothing
+PASS: run: exit 0
+PASS: run: probe then run (two containers through run_pinned.sh)
+PASS: run: both calls name IMG-QA
+PASS: run: no other image appears
+PASS: run: RUNP_MEMORY is the envelope memory
+PASS: run: RUNP_CPUS is the envelope cpus
+PASS: run: RUNP_PIDS is the envelope pids
+PASS: run: the user command is passed through
+PASS: run: exactly one long-op registered, complete
+PASS: run: the op was registered BEFORE the first container started
+PASS: run: the sweep ran once at the cadence stage
+PASS: run: toolchain.json image id
+PASS: run: toolchain.json wrapper
+PASS: run: toolchain.json digest_match
+PASS: run: toolchain.json read-only source control needle
+PASS: run: container exit code passes through
+PASS: run: a failed run ends the op failed
+PASS: unpinned IMG-QA: refused (exit 1)
+PASS: unpinned IMG-QA: reason image_unpinned
+PASS: unpinned IMG-QA: no container, no op
+PASS: altered IMG-QA (podman reports another digest): refused
+PASS: altered IMG-QA: reason image_digest_mismatch
+PASS: altered IMG-QA: no run container started
+PASS: IMG-QA absent from the lock: refused (never another image)
+PASS: IMG-QA absent: reason image_not_in_lock
+PASS: anti-mess drift refuses the run
+PASS: drift: reason anti_mess_drift
+NOTE: real lock has no IMG-QA entry (T211 BLOCKED); run_qa.sh against the real lock is refused:
+run_qa: REFUSED reason=image_not_in_lock BLOCKED: IMG-QA is not in the lock /home/milosvasic/Projects/catalogizer/build/containers/images.lock.yaml; IMG-QA is built by T211 (BLOCKED on the owner host entry point ODG-07 and on its lock entry); until its digest is in build/containers/images.lock.yaml this wrapper refuses every run
+RESULT pass=32 fail=0
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+# rc=0

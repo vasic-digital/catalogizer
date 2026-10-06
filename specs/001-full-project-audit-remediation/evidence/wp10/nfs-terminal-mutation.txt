@@ -1,0 +1,3 @@
+skip_verdict_read CAUGHT
+client_failure_as_structural CAUGHT
+transcript_not_required CAUGHT

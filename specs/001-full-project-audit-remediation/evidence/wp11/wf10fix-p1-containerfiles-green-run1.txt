@@ -1,0 +1,53 @@
+PASS: REAL build/containers tree: every required directory, file, pin, checksum and lock entry check passes
+PASS: GOLDEN-GOOD a compliant directory produces no violation
+PASS: GOLDEN-BAD tag-only FROM -> C3-check_pins fires
+PASS: GOLDEN-BAD pipe-to-shell -> C3-check_pins fires
+PASS: GOLDEN-BAD download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD README.md missing -> C2-README.md fires
+PASS: GOLDEN-BAD digests.lock missing -> C2-digests.lock fires
+PASS: GOLDEN-BAD digests.lock does not name the FROM digest -> C5-digests.lock-from fires
+PASS: GOLDEN-BAD digests.lock does not name the checked SHA-256 -> C5-digests.lock-sha256 fires
+PASS: GOLDEN-BAD no images.lock.yaml entry -> C6-lock-entry fires
+PASS: GOLDEN-BAD lock entry without a class -> C6-class fires
+PASS: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest -> C6-digest-mismatch fires
+PASS: GOLDEN-GOOD apt-get installing the curl package is not a download line
+PASS: GOLDEN-GOOD rust needs no lock entry (T143 writes it)
+PASS: GOLDEN-BAD required directory absent -> C1-missing-directory fires
+PASS: GOLDEN-BAD empty Containerfile -> C2-containerfile fires
+PASS: NEGCTL the compliant directory 'go' is never named
+PASS: NEGCTL the bad directory 'node' is named
+PASS: GOLDEN-BAD wget download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD sha256sum without -c is not a check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD two downloads each followed by its own check -> C4- silent
+PASS: GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check) -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads, one real check and one plain sha256sum -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD ADD <url> without --checksum -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD ADD <url> with --checksum=sha256:<64 hex> -> C4- silent
+PASS: GOLDEN-BAD a RUN that swallows a failure with || true -> C7-swallowed-failure fires
+PASS: GOLDEN-BAD a RUN that swallows a failure with || : -> C7-swallowed-failure fires
+PASS: GOLDEN-GOOD a comment mentioning || true, a plain pipeline, an || with a real command -> C7- silent
+PASS: GOLDEN-BAD lock entry class outside the closed set -> C6-class fires
+PASS: GOLDEN-BAD empty README.md -> C2-README.md fires
+PASS: GOLDEN-BAD empty digests.lock -> C2-digests.lock fires
+PASS: GOLDEN-BAD a directory with no id mapping -> C6-unknown-directory fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc2 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc3 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc1_empty -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc0_viol -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses a missing check_pins (exit 127) -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 reports each VIOLATION line of an exit-1 verdict -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict
+PASS: GOLDEN-GOOD C3 accepts exit 0 with no VIOLATION line
+PASS: GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line) -> C3-check_pins fires
+PASS: MUT c4-download-check-removed: caught
+PASS: MUT c5-from-check-removed: caught
+PASS: MUT c6-class-check-removed: caught
+PASS: MUT c1-missing-dir-check-removed: caught
+PASS: MUT c2-companion-file-check-removed: caught
+PASS: MUT c2-containerfile-check-removed: caught
+PASS: MUT c5-sha256-check-removed: caught
+PASS: MUT c6-entry-check-removed: caught
+PASS: MUT c6-digest-mismatch-removed: caught
+PASS: MUT CR1-wget-not-a-download: caught
+PASS: MUT CR2-class-only-presence: caught

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T18:00:00Z |
-| Status | new in the working tree (T124, test-first part), not yet committed; independent review owed (constitution 11.4.142) |
+| Last modified | 2026-10-06T22:00:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): the wrap-go presence is counted as a skip, not a pass (review M3); real-tree check added |
 | Source | `scripts/containers/tests/test_race_detector.sh` |
 
 ## Purpose
@@ -22,7 +22,7 @@ committed (a deliberate-violation fixture for the anti-bluff ratchet).
 | L1 | the racy copy: `GOMAXPROCS=3 go test -race -p 2 -parallel 2 -count=1 -json ./... > /out/go-test.jsonl` through `run_go.sh` in IMG-GO exits non-zero; the jsonl has a `DATA RACE` output event and a failed test event; the fixture itself printed `race=enabled` and `gomaxprocs=3` from inside the container; the registered long op ended `failed`; the fixed copy exits 0, no race event, package passed, op `complete`; negative control: the racy copy WITHOUT `-race` exits 0 with `race=disabled` | GREEN |
 | L2 | with a `run_pinned.sh` shim the lane command reaches RUNP through `run_go.sh` as `env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 sh -c 'go test -race -p 2 -parallel 2 ...'` with the envelope limits | GREEN |
 | L3 | `scripts/run-race-detector.sh` runs NO bare-host `go` and starts a container run of `go test` on the IMG-GO digest with `--memory` | RED today: the script still calls the bare-host `go`; GREEN only when the script is moved to `run_go.sh` (T124 migration, remote lane through `scripts/build/dispatch.sh`, blocked on T121a / T005b) |
-| wrap-go | the race report through `tools/evidence/wrap-go.sh` | SKIP, BLOCKED-ON-T051 (the wrapper does not exist) |
+| wrap-go | the race report through `tools/evidence/wrap-go.sh` | SKIP: BLOCKED-ON-T051 while the wrapper does not exist; once it exists the check is still a SKIP (its integration is not asserted here), never a PASS (review M3) |
 
 `RACE_TEST_SKIP_L3=1` runs L1 and L2 only. `RACE_SUT` names the script L3 tests. `RACE_RESULT_JSON` receives a machine-readable summary.
 

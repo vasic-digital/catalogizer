@@ -1,0 +1,146 @@
+# identity: task=fix-r1 phase=RED utc=2026-10-06T22:02:35Z host=anton uid=1000 subject=git archive of HEAD 34db9504 (the committed scripts, a7cfc6d3 for the review's files) tests=the fix-r1 versions
+# sha256 (committed) scripts/containers/envelope.sh=4c454e97da7d0e795adc34c871149ba9c0b92eb543981face5bccc38e2856cd9
+# sha256 (committed) scripts/containers/runner_lib.sh=205f353b381def8d9aa77590d6abf70bd46d2ef2ccf341757f1cfeefb3a3472d
+# sha256 (committed) scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 (committed) scripts/test-in-container.sh=cf5adf4be7293be8caa07f923cdda07dc7fcf1162673697b0e1e788a5e570a5f
+# sha256 (fix-r1 test) scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 (fix-r1 test) scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp DISK_HEADROOM_REPO_ROOT=/home/milosvasic/Projects/catalogizer TIC_TEST_NO_REAL=1 TIC_TEST_NO_MUTATIONS=1 bash /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tic-red/scripts/containers/tests/test_test_in_container.sh
+# ---- output ----
+PASS: the real lane table equals the hand-written table (11 reviewed rows, no extra row)
+PASS: the reserved qa key has no row
+PASS: catalog-api unit: dispatched (exit 0)
+PASS: catalog-api unit: reached the run_go shim
+PASS: catalog-api unit: exactly one wrapper call
+FAIL: catalog-api unit: --memory missing or wrong: ---CALL--- WRAPPER:run_go ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-api unit 
+PASS: catalog-api unit: --cpus is the envelope cpus
+PASS: catalog-api contract: dispatched (exit 0)
+PASS: catalog-api contract: reached the run_go shim
+PASS: catalog-api contract: exactly one wrapper call
+FAIL: catalog-api contract: --memory missing or wrong: ---CALL--- WRAPPER:run_go ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-api contract 
+PASS: catalog-api contract: --cpus is the envelope cpus
+PASS: catalog-api integration: dispatched (exit 0)
+PASS: catalog-api integration: reached the run_go shim
+PASS: catalog-api integration: exactly one wrapper call
+FAIL: catalog-api integration: --memory missing or wrong: ---CALL--- WRAPPER:run_go ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-api integration 
+PASS: catalog-api integration: --cpus is the envelope cpus
+PASS: catalog-api e2e: dispatched (exit 0)
+PASS: catalog-api e2e: reached the run_go shim
+PASS: catalog-api e2e: exactly one wrapper call
+FAIL: catalog-api e2e: --memory missing or wrong: ---CALL--- WRAPPER:run_go ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-api e2e 
+PASS: catalog-api e2e: --cpus is the envelope cpus
+PASS: catalog-web unit: dispatched (exit 0)
+PASS: catalog-web unit: reached the run_node shim
+PASS: catalog-web unit: exactly one wrapper call
+FAIL: catalog-web unit: --memory missing or wrong: ---CALL--- WRAPPER:run_node ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-web unit 
+PASS: catalog-web unit: --cpus is the envelope cpus
+PASS: catalog-web contract: dispatched (exit 0)
+PASS: catalog-web contract: reached the run_node shim
+PASS: catalog-web contract: exactly one wrapper call
+FAIL: catalog-web contract: --memory missing or wrong: ---CALL--- WRAPPER:run_node ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-web contract 
+PASS: catalog-web contract: --cpus is the envelope cpus
+PASS: catalog-web tooling: dispatched (exit 0)
+PASS: catalog-web tooling: reached the run_node shim
+PASS: catalog-web tooling: exactly one wrapper call
+FAIL: catalog-web tooling: --memory missing or wrong: ---CALL--- WRAPPER:run_node ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-web tooling 
+PASS: catalog-web tooling: --cpus is the envelope cpus
+PASS: catalog-web e2e: dispatched (exit 0)
+PASS: catalog-web e2e: reached the run_playwright shim
+PASS: catalog-web e2e: exactly one wrapper call
+FAIL: catalog-web e2e: --memory missing or wrong: ---CALL--- WRAPPER:run_playwright ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go catalog-web e2e 
+PASS: catalog-web e2e: --cpus is the envelope cpus
+PASS: docs docs: dispatched (exit 0)
+PASS: docs docs: reached the run_docs shim
+PASS: docs docs: exactly one wrapper call
+FAIL: docs docs: --memory missing or wrong: ---CALL--- WRAPPER:run_docs ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go docs docs 
+PASS: docs docs: --cpus is the envelope cpus
+PASS: docs render: dispatched (exit 0)
+PASS: docs render: reached the run_docs shim
+PASS: docs render: exactly one wrapper call
+FAIL: docs render: --memory missing or wrong: ---CALL--- WRAPPER:run_docs ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go docs render 
+PASS: docs render: --cpus is the envelope cpus
+PASS: tooling unit: dispatched (exit 0)
+PASS: tooling unit: reached the run_testutil shim
+PASS: tooling unit: exactly one wrapper call
+FAIL: tooling unit: --memory missing or wrong: ---CALL--- WRAPPER:run_testutil ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:-- ARG:echo ARG:go tooling unit 
+PASS: tooling unit: --cpus is the envelope cpus
+PASS: control needle: catalog-api unit reaches run_go
+PASS: the command words follow -- in the composed call
+FAIL: composed: ---CALL--- WRAPPER:run_testutil ARG:--memory ARG:19660800000 ARG:--cpus ARG:9 ARG:--out ARG:/tmp/x ARG:--network=none ARG:--purpose ARG:p:1 ARG:--op-id ARG:oid-1 ARG:--need ARG:5 ARG:--rw ARG:docs ARG:--no-progress-s ARG:9 ARG:--wall-s ARG:100 ARG:-- ARG:pytest ARG:-q 
+PASS: words with spaces and metacharacters are passed as single argv words
+PASS: the wrapper's stdout reaches the caller
+PASS: the wrapper exit code is passed through
+PASS: bogus unit: refused with a non-zero exit
+PASS: bogus unit: exit code is 1 (REFUSED)
+PASS: bogus unit: reason unknown_app
+PASS: bogus unit: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: qa unit: refused with a non-zero exit
+PASS: qa unit: exit code is 1 (REFUSED)
+PASS: qa unit: reason unknown_app
+PASS: qa unit: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: qa api: refused with a non-zero exit
+PASS: qa api: exit code is 1 (REFUSED)
+PASS: qa api: reason unknown_app
+PASS: qa api: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: catalog-api bogus: refused with a non-zero exit
+PASS: catalog-api bogus: exit code is 1 (REFUSED)
+PASS: catalog-api bogus: reason unknown_lane
+PASS: catalog-api bogus: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: catalog-api docs: refused with a non-zero exit
+PASS: catalog-api docs: exit code is 1 (REFUSED)
+PASS: catalog-api docs: reason no_lane_row
+PASS: catalog-api docs: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: docs unit: refused with a non-zero exit
+PASS: docs unit: exit code is 1 (REFUSED)
+PASS: docs unit: reason no_lane_row
+PASS: docs unit: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: tooling e2e: refused with a non-zero exit
+PASS: tooling e2e: exit code is 1 (REFUSED)
+PASS: tooling e2e: reason no_lane_row
+PASS: tooling e2e: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: catalog-web api: refused with a non-zero exit
+PASS: catalog-web api: exit code is 1 (REFUSED)
+PASS: catalog-web api: reason no_lane_row
+PASS: catalog-web api: the command did not run anywhere (no wrapper call, no bare-host run)
+PASS: qa: the refusal explains the reservation until T212
+PASS: usage: no arguments
+PASS: usage: lane missing
+PASS: usage: missing --
+PASS: usage: missing command after --
+PASS: usage: unknown option
+PASS: usage: --memory is not a TIC option (composed from the envelope)
+PASS: usage: --cpus is not a TIC option
+PASS: usage: a third positional word
+PASS: usage errors call no wrapper
+PASS: missing wrapper: refused
+PASS: missing wrapper: reason wrapper_missing
+PASS: missing wrapper: the command did not run
+PASS: envelope refusal: refused
+PASS: envelope refusal: reason envelope_refused
+PASS: envelope refusal: no wrapper call
+PASS: a one-row table works
+PASS: duplicate (app, lane) rows: refused
+PASS: duplicate: reason lane_table_duplicate
+PASS: duplicate rows: no wrapper call
+PASS: a four-column row: refused
+PASS: four columns: reason lane_table_malformed
+PASS: a two-column row: refused
+PASS: a row naming an unreviewed wrapper: refused
+PASS: unreviewed wrapper: reason lane_table_malformed
+PASS: a row with an unknown app: refused
+PASS: a row with an unknown lane: refused
+PASS: a bad row refuses an unrelated good lane too
+PASS: comments and blank lines are ignored
+PASS: an unreadable lane table: refused
+PASS: unreadable table: reason lane_table_unreadable
+PASS: TIC_WRAPPER_DIR without TIC_TEST_MODE: refused
+PASS: hook reason test_hook_outside_test_mode
+PASS: hooks outside test mode: no shim wrapper called
+PASS: the TIC_LANES hook alone without TIC_TEST_MODE: refused (exit 1)
+PASS: the TIC_LANES hook alone: reason test_hook_outside_test_mode
+PASS: the TIC_WRAPPER_DIR hook alone without TIC_TEST_MODE: refused (exit 1)
+PASS: the TIC_WRAPPER_DIR hook alone: reason test_hook_outside_test_mode
+RESULT pass=121 fail=12
+# rc=1

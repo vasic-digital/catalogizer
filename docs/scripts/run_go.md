@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T18:00:00Z |
-| Status | new in the working tree (T120), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed |
+| Last modified | 2026-10-06T22:00:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): contract moved to runner_lib.md revision 2; its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/run_go.sh` (a few lines: it sets the `RUNNER_*` variables and sources `runner_lib.sh`); test `scripts/containers/tests/test_runners.sh` |
 
 ## Purpose

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T17:30:00Z |
-| Status | tracked from the WP-06 slice T064a; independent review of this revision owed (constitution 11.4.142) |
+| Last modified | 2026-10-06T23:30:00Z |
+| Status | tracked from the WP-06 slice T064a; independent review of this revision owed (constitution 11.4.142); revision 2: WF10 review fix round 1 (F1-F14); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/backup_db.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -22,11 +22,11 @@ scripts/register/backup_db.sh --record <file>
 
 ## Behaviour
 
-1. One `scripts/register/locked.sh` call runs one `sqlite3` script inside IMG-TESTUTIL: `PRAGMA wal_checkpoint(TRUNCATE);`, `.backup docs/workable_items.db.bak-<UTC>`, and a canonical `.dump` of the source into the op's `/out`.
+1. One `scripts/register/locked.sh` call runs one `sqlite3` script inside IMG-TESTUTIL: `PRAGMA wal_checkpoint(TRUNCATE);`, `.backup docs/workable_items.db.bak-<UTC>-<pid>-<ns>`, a canonical `.dump` of the source into the op's `/out`, and the sha256 of the source (`/out/source.sha256`), all under the one lock hold. The backup file is created with O_EXCL before the call (WF10 F7: two backups started in the same second never share a file, and a failing run removes only its own file); `source_sha256` is the hash taken under the lock (WF10 F14), never one read after the lock was released.
 2. Read-only through the `immutable=1` URI (no `-shm`/`-wal` beside the backup): `PRAGMA integrity_check` must print `ok`, and a restore probe (the backup restored into a scratch database under `/out`) must dump to the same bytes as the source dump of step 1.
 3. The record `--record <file>`: `backup_path`, `utc`, both sha256 values, both row counts (INSERT rows of the canonical dumps), `integrity`, `restore_probe`, `image_digest`, the op ids.
 
-Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
+Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>-<pid>-<ns>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
 
 ## Exit codes
 
@@ -34,8 +34,8 @@ Any failed check exits 1, removes the backup file and writes no record: a backup
 
 ## Tests and evidence
 
-`scripts/register/tests/test_backup_db.sh`: after the helper ran, one more row is written and checkpointed in the source, and the backup's sha256 and item count stay as recorded; the control, a `cp -al` copy in the same test, changes. Fault hook `BACKUP_FAULT=truncate|dumpdiff` (test mode only). Paired mutation: a copy that replaces the online backup with `cp -al` fails the unchanged-after-write assertion (`mutate_register_ops.sh backup`, `$EV/wp06/backup-mutation.txt`). Evidence `$EV/wp06/backup-*`.
+`scripts/register/tests/test_backup_db.sh`: after the helper ran, one more row is written and checkpointed in the source, and the backup's sha256 and item count stay as recorded; the control, a `cp -al` copy in the same test, changes. Fault hook `BACKUP_FAULT=truncate|dumpdiff` (test mode only). The `LOCKED`, `LOCKED_RUNP`, `LOCKED_ROOT` and `BACKUP_FAULT` environment overrides are ignored outside `LOCKED_TEST_MODE=1` (WF10 F8). `scripts/register/tests/test_fix_r1.sh` sections F7, F14, F8 and M6 pin the revision-2 behaviour (M6: a real index-damage fixture, the reviewer's control needle, makes the integrity check refuse). Paired mutation: a copy that replaces the online backup with `cp -al` fails the unchanged-after-write assertion (`mutate_register_ops.sh backup`, `$EV/wp06/backup-mutation.txt`). Evidence `$EV/wp06/backup-*`.
 
 ## Honest limits
 
-`PRAGMA integrity_check` and the restore probe are each redundant with the other for every fault the harness can inject (a truncated file fails both); the two mutants that remove one of them are recorded as reviewed-equivalent, not claimed killed.
+`PRAGMA integrity_check` and the restore probe are each redundant with the other for every fault the harness can inject (a truncated file fails both); `no_checkpoint` and `record_without_rows_check` stay recorded as reviewed-equivalent. Revision 1 also listed `integrity_unchecked` as equivalent: that was wrong for two reasons (WF10 M6). The host-side line alone is redundant in effect (the in-container line skips the restore probe when the integrity result is not `ok`, so the host then fails on the missing restore dump) but the revision-2 run KILLS it, through the message of the M6 fixture (`restore probe produced no dump`); and the integrity check itself IS load-bearing for index-page damage that the canonical `.dump` cannot see: the two-layer mutant `integrity_gate_both_layers_removed` passes a corrupt backup and is killed by `test_fix_r1.sh` M6. Its entry was removed from `equivalent_ops_mutants.tsv`.

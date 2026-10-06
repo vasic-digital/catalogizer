@@ -13,6 +13,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../../.." && pwd)"
 SUT="${TIC_SUT:-$REPO/scripts/test-in-container.sh}"
 FAILS=0; PASSES=0
+# count_tok <dir> <token>: how many files in <dir> carry <token> in their name (a glob, never ls | grep)
+count_tok() { local n=0 f; for f in "$1"/*"$2"*; do [ -e "$f" ] && n=$((n+1)); done; echo "$n"; }
 ok()  { PASSES=$((PASSES+1)); [ "${QUIET:-0}" = 1 ] || echo "PASS: $1"; }
 bad() { FAILS=$((FAILS+1)); echo "FAIL: $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2' want '$3')"; fi; }
@@ -41,7 +43,9 @@ CK="$T/checkout"; mkdir -p "$CK"
 export TIC_TEST_MODE=1 TIC_WRAPPER_DIR="$SH" SHIM_LOG="$T/shim.log"
 export ENVELOPE_TEST_MODE=1 ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000
 export LONGOPS_REPO="$T/reg/repo" LONGOPS_DIR="$T/reg/repo/.audit/longops" LONGOPS_AUDIT="$T/reg/repo/.audit" LONGOPS_ALLOW_TMPFS=1; mkdir -p "$T/reg/repo/.audit"
-EXP_MEM=19660800000; EXP_CPUS=9
+export DISK_HEADROOM_OUT_DIR="$T/disk"; mkdir -p "$DISK_HEADROOM_OUT_DIR"   # the real leg's disk-headroom records go to scratch, never into the real evidence/disk
+TOK="tc$$x$RANDOM"; RN=0
+EXP_MEM=19267584000; EXP_CPUS=9   # 98% of the fixture host envelope 19660800000 (TIC asks for less than its reading: the wrapper refuses a request above its own, review F2/F16)
 tic() { : >"$SHIM_LOG"; unset SHIM_RC; ( cd "$CK" && bash "$SUT" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
 ncalls() { grep -c '^---CALL---$' "$SHIM_LOG"; }
 wrapper_of() { sed -n 's/^WRAPPER://p' "$SHIM_LOG" | head -1; }
@@ -128,7 +132,7 @@ lt 'catalog-api\tunit\trun_go\textra\n'; tic_lt catalog-api unit -- true
 check "a four-column row: refused" "$RC" 1; refused lane_table_malformed && ok "four columns: reason lane_table_malformed" || bad "reason: $(cat "$T/stderr")"
 lt 'catalog-api\tunit\n'; tic_lt catalog-api unit -- true; check "a two-column row: refused" "$RC" 1
 lt 'catalog-api\tunit\trun_evil\n'; tic_lt catalog-api unit -- true
-check "a row naming an unreviewed wrapper: refused" "$RC" 1; refused lane_table_malformed && ok "unreviewed wrapper: reason lane_table_malformed" || bad "reason: $(cat "$T/stderr")"
+check "a row naming an unreviewed wrapper: refused" "$RC" 1; refused lane_table_malformed && ok "unreviewed wrapper: reason lane_table_malformed" || bad "a row naming an unreviewed wrapper: the reason is not lane_table_malformed: $(cat "$T/stderr")"
 lt 'bogusapp\tunit\trun_go\n'; tic_lt catalog-api unit -- true; check "a row with an unknown app: refused" "$RC" 1
 lt 'catalog-api\tbogus\trun_go\n'; tic_lt catalog-api unit -- true; check "a row with an unknown lane: refused" "$RC" 1
 # a bad row anywhere refuses EVERY lane (the table is reviewed as a whole): a good lane next to the bad row is refused too
@@ -136,15 +140,24 @@ lt 'tooling\tunit\trun_testutil\ncatalog-api\tunit\trun_evil\n'; tic_lt tooling 
 lt '# comment\n\ntooling\tunit\trun_testutil\n'; tic_lt tooling unit -- true; check "comments and blank lines are ignored" "$RC" 0
 tic_lt() { :; }
 ( cd "$CK" && TIC_LANES="$T/no-such-table.tsv" bash "$SUT" tooling unit -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
-check "an unreadable lane table: refused" "$RC" 1; refused lane_table_unreadable && ok "unreadable table: reason lane_table_unreadable" || bad "reason: $(cat "$T/stderr")"
+check "an unreadable lane table: refused" "$RC" 1; refused lane_table_unreadable && ok "unreadable table: reason lane_table_unreadable" || bad "an unreadable lane table: the reason is not lane_table_unreadable: $(cat "$T/stderr")"
 # the test hooks are honoured only in a declared test run
 : >"$SHIM_LOG"; ( cd "$CK" && env -u TIC_TEST_MODE bash "$SUT" tooling unit -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
 check "TIC_WRAPPER_DIR without TIC_TEST_MODE: refused" "$RC" 1; refused test_hook_outside_test_mode && ok "hook reason test_hook_outside_test_mode" || bad "reason: $(cat "$T/stderr")"
 check "hooks outside test mode: no shim wrapper called" "$(ncalls)" 0
 
+# a single hook alone (review R5) is refused too: each hook is gated on its own
+for hv in TIC_LANES TIC_WRAPPER_DIR; do
+  : >"$SHIM_LOG"
+  if [ "$hv" = TIC_LANES ]; then ( cd "$CK" && env -u TIC_TEST_MODE -u TIC_WRAPPER_DIR TIC_LANES="$REPO/scripts/containers/lanes.tsv" bash "$SUT" tooling unit -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
+  else ( cd "$CK" && env -u TIC_TEST_MODE -u TIC_LANES TIC_WRAPPER_DIR="$SH" bash "$SUT" tooling unit -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?; fi
+  check "the $hv hook alone without TIC_TEST_MODE: refused (exit 1)" "$RC" 1
+  refused test_hook_outside_test_mode && ok "the $hv hook alone: reason test_hook_outside_test_mode" || bad "the $hv hook alone reason: $(cat "$T/stderr")"
+done
+
 # ============== the real chain: TIC -> the real wrapper -> the real run_pinned.sh -> the pinned image ==============
 if [ "${TIC_TEST_NO_REAL:-0}" != 1 ]; then
-  realtic() { local o=$1; shift; ( cd "$REPO" && env -u TIC_WRAPPER_DIR -u TIC_LANES -u ENVELOPE_TEST_MODE -u ENVELOPE_MEMINFO -u ENVELOPE_NPROC -u ENVELOPE_ULIMIT_U -u RUNP_LOCK RUNNER_TEST_MODE=1 RUNNER_SWEEP="$T/sweep-shim.sh" bash "$SUT" --out "$o" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
+  realtic() { local o=$1; shift; RN=$((RN+1)); ( cd "$REPO" && env -u TIC_WRAPPER_DIR -u TIC_LANES -u ENVELOPE_MEMINFO -u ENVELOPE_NPROC -u ENVELOPE_ULIMIT_U -u RUNP_LOCK RUNNER_TEST_MODE=1 RUNNER_SWEEP="$T/sweep-shim.sh" bash "$SUT" --out "$o" --op-id "$TOK-$RN" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
   printf '#!/usr/bin/env bash\nexit 0\n' >"$T/sweep-shim.sh"
   # an isolated registry for the real leg (the real container census is covered by test_runners.sh)
   realtic "$T/real-1" tooling unit -- python3 -c 'import yaml, jsonschema, pytest; print("tic-real-ok")'
@@ -168,6 +181,10 @@ if [ "${TIC_TEST_NO_REAL:-0}" != 1 ]; then
   check "real: TIC qa api is refused as an unknown app" "$RC" 1
 fi
 
+if [ "${TIC_TEST_NO_REAL:-0}" != 1 ]; then
+  EVD="$REPO/specs/001-full-project-audit-remediation/evidence/disk"
+  check "no disk-headroom record carrying this run's token ($TOK) was written into the real evidence/disk" "$(count_tok "$EVD" "$TOK")" 0
+fi
 echo "RESULT pass=$PASSES fail=$FAILS"
 [ "$FAILS" = 0 ] || EXIT=1
 EXIT="${EXIT:-0}"
@@ -176,36 +193,54 @@ EXIT="${EXIT:-0}"
 if [ "${TIC_TEST_MUTANT:-0}" = 1 ] || [ "${TIC_TEST_NO_MUTATIONS:-0}" = 1 ]; then exit "$EXIT"; fi
 MREC="${TIC_MUTATION_RECORD:-$T/mutation.txt}"; : >"$MREC"
 CAUGHT=0; SURV=0; TOTAL=0
-mut_case() { # <id> <old> <new>
-  local id=$1 old=$2 new=$3 d="$T/mut-$1"
-  TOTAL=$((TOTAL+1))
-  rm -rf "$d"; mkdir -p "$d"
-  ln -s "$REPO/scripts/containers" "$d/containers"
-  python3 -I - "$SUT" "$d/test-in-container.sh" "$old" "$new" <<'PY' || { echo "INVALID $id: pattern not found exactly once" | tee -a "$MREC"; SURV=$((SURV+1)); return; }
+# A mutant copy is placed in a WORKING tree layout: <d>/scripts/test-in-container.sh beside links to <repo>/scripts/containers and <repo>/scripts/longops. The envelope
+# fails CLOSED when it cannot read the registry (review F3), so a layout without scripts/longops would make EVERY mutant fail for that one reason whatever its mutation
+# (the blindness of review M1 in the TIC harness). An UNMUTATED copy placed the same way is the negative control: it must pass the whole body.
+place() { # <dir> <python-old> <python-new>: rc 1 when the pattern is not found exactly once
+  local d=$1
+  rm -rf "$d"; mkdir -p "$d/scripts"
+  ln -s "$REPO/scripts/containers" "$d/scripts/containers"; ln -s "$REPO/scripts/longops" "$d/scripts/longops"
+  python3 -I - "$SUT" "$d/scripts/test-in-container.sh" "${2-}" "${3-}" <<'PY'
 import sys
 s = open(sys.argv[1]).read()
-if s.count(sys.argv[3]) != 1: sys.exit(1)
-open(sys.argv[2], "w").write(s.replace(sys.argv[3], sys.argv[4]))
+old, new = sys.argv[3], sys.argv[4]
+if old:
+    if s.count(old) != 1: sys.exit(1)
+    s = s.replace(old, new)
+open(sys.argv[2], "w").write(s)
 PY
-  ( TIC_SUT="$d/test-in-container.sh" TIC_TEST_MUTANT=1 TIC_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-$id.log" 2>&1; local rc=$?
-  if [ "$rc" -ne 0 ]; then CAUGHT=$((CAUGHT+1)); echo "CAUGHT   $id ($(grep -c '^FAIL' "$T/mut-$id.log") failing checks)" | tee -a "$MREC"
+}
+place "$T/mut-control" "" ""
+( TIC_SUT="$T/mut-control/scripts/test-in-container.sh" TIC_TEST_MUTANT=1 TIC_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-control.log" 2>&1; CRC=$?
+if [ "$CRC" = 0 ]; then echo "CONTROL  an unmutated copy placed like a mutant passes the body ($(grep '^RESULT' "$T/mut-control.log"))" | tee -a "$MREC"
+else echo "CONTROL FAILED: the unmutated copy fails the body ($(grep -c '^FAIL' "$T/mut-control.log") checks): the mutation harness is blind" | tee -a "$MREC"; EXIT=1; fi
+mut_case() { # <id> <expected failing-check substring> <old> <new>: caught only by a check whose NAME contains the substring
+  local id=$1 expect=$2 old=$3 new=$4
+  TOTAL=$((TOTAL+1))
+  place "$T/mut-$id" "$old" "$new" || { echo "INVALID $id: pattern not found exactly once" | tee -a "$MREC"; SURV=$((SURV+1)); return; }
+  ( TIC_SUT="$T/mut-$id/scripts/test-in-container.sh" TIC_TEST_MUTANT=1 TIC_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-$id.log" 2>&1; local rc=$?
+  if [ "$rc" -ne 0 ] && grep -q "^FAIL: .*$expect" "$T/mut-$id.log"; then CAUGHT=$((CAUGHT+1)); echo "CAUGHT   $id by a check naming '$expect' ($(grep -c '^FAIL' "$T/mut-$id.log") failing checks)" | tee -a "$MREC"
+  elif [ "$rc" -ne 0 ]; then SURV=$((SURV+1)); echo "SURVIVED $id (failed, but no failing check names '$expect': $(grep '^FAIL' "$T/mut-$id.log" | head -2 | cut -c1-110 | tr '\n' '|'))" | tee -a "$MREC"
   else SURV=$((SURV+1)); echo "SURVIVED $id (test stayed green on the mutant)" | tee -a "$MREC"; fi
 }
-mut_case drop-memory '--memory "$MEM" ' ''
-mut_case drop-cpus '--cpus "$CPUS" ' ''
-mut_case lookup-ignores-lane '[ "$ra" = "$APP" ] && [ "$rl" = "$LANE" ]' '[ "$ra" = "$APP" ]'
-mut_case bare-host-fallback 'refuse no_lane_row "($APP $LANE) has no row in $TABLE; a lane exists only by a reviewed row, and there is no bare-host fallback"' '{ "${CMD[@]}"; exit $?; } #'
-mut_case wrapper-missing-ignored '[ -f "$WDIR/$WRAPPER.sh" ] || refuse wrapper_missing' 'true'
-mut_case unknown-app-ignored 'refuse unknown_app "'"'"'$APP'"'"' is not one of: $APPS"' 'true'
-mut_case unknown-lane-ignored 'refuse unknown_lane "'"'"'$LANE'"'"' is not one of: $LANES"' 'true'
-mut_case qa-not-reserved 'if [ "$APP" = qa ]; then' 'if false; then'
-mut_case duplicate-ignored 'refuse lane_table_duplicate' 'true'
-mut_case columns-unchecked '[ -z "${extra:-}" ]' 'true'
-mut_case wrapper-name-unchecked 'refuse lane_table_malformed "row ($a $l) names' 'true "row ($a $l) names'
-mut_case exit-masked 'exit $?   # MUT:exit' 'exit 0'
-mut_case test-hooks '[ "${TIC_TEST_MODE:-}" != 1 ]; then' '[ "${TIC_TEST_MODE:-}" != 1 ] && false; then'
-mut_case table-unreadable-ignored '[ -r "$TABLE" ] || refuse lane_table_unreadable "$TABLE"' 'true'
-mut_case memory-composed-wrong 'MEM="$(jq -r .memory_bytes' 'MEM="$(jq -r .mem_total_bytes'
+mut_case drop-memory '--memory missing or wrong' '--memory "$MEM" ' ''
+mut_case drop-cpus '--cpus missing or wrong' '--cpus "$CPUS" ' ''
+mut_case lookup-ignores-lane 'catalog-api docs' '[ "$ra" = "$APP" ] && [ "$rl" = "$LANE" ]' '[ "$ra" = "$APP" ]'
+mut_case bare-host-fallback 'refused with a non-zero exit' 'refuse no_lane_row "($APP $LANE) has no row in $TABLE; a lane exists only by a reviewed row, and there is no bare-host fallback"' '{ "${CMD[@]}"; exit $?; } #'
+mut_case wrapper-missing-ignored 'missing wrapper' '[ -f "$WDIR/$WRAPPER.sh" ] || refuse wrapper_missing' 'true'
+mut_case unknown-app-ignored 'bogus unit' 'refuse unknown_app "'"'"'$APP'"'"' is not one of: $APPS"' 'true'
+mut_case unknown-lane-ignored 'catalog-api bogus' 'refuse unknown_lane "'"'"'$LANE'"'"' is not one of: $LANES"' 'true'
+mut_case qa-not-reserved 'qa unit: reason' 'if [ "$APP" = qa ]; then' 'if false; then'
+mut_case duplicate-ignored 'duplicate' 'refuse lane_table_duplicate' 'true'
+mut_case columns-unchecked 'four-column' '[ -z "${extra:-}" ]' 'true'
+mut_case wrapper-name-unchecked 'unreviewed wrapper' 'refuse lane_table_malformed "row ($a $l) names' 'true "row ($a $l) names'
+mut_case exit-masked 'the wrapper exit code is passed through' 'exit $?   # MUT:exit' 'exit 0'
+mut_case test-hooks 'TIC_WRAPPER_DIR without TIC_TEST_MODE' '[ "${TIC_TEST_MODE:-}" != 1 ]; then' '[ "${TIC_TEST_MODE:-}" != 1 ] && false; then'
+mut_case R5-lanes-hook-gate 'TIC_LANES hook alone' ' || [ -n "${TIC_LANES+x}" ]' ''
+mut_case R5b-wrapper-dir-hook-gate 'TIC_WRAPPER_DIR hook alone' '{ [ -n "${TIC_WRAPPER_DIR+x}" ] || ' '{ '
+mut_case table-unreadable-ignored 'unreadable lane table' '[ -r "$TABLE" ] || refuse lane_table_unreadable "$TABLE"' 'true'
+mut_case memory-composed-wrong '--memory missing or wrong' 'MEM="$(jq -r .memory_bytes' 'MEM="$(jq -r .mem_total_bytes'
+mut_case memory-margin-dropped '--memory missing or wrong' 'MEM=$(( MEM - MEM / 50 ))' 'true'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"
 [ "$SURV" = 0 ] || EXIT=1
 exit "$EXIT"

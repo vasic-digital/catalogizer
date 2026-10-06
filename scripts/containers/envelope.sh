@@ -17,9 +17,14 @@
 # Output keys: schema toolchain nproc mem_total_bytes mem_available_bytes reserve_cpu reserve_mem_bytes ceiling_mem_bytes used_mem_bytes used_cpu
 #   mem_budget_bytes cpu_budget per_job_mem_bytes per_job_status jobs memory_bytes cpus pids
 # Test hooks (replace a real reading, so honoured ONLY with ENVELOPE_TEST_MODE=1, else REFUSED test_hook_outside_test_mode):
-#   ENVELOPE_MEMINFO (file in /proc/meminfo format), ENVELOPE_NPROC, ENVELOPE_ULIMIT_U. The long-op registry is relocated with the LONGOPS_* variables of scripts/longops/lib.sh.
+#   ENVELOPE_MEMINFO (file in /proc/meminfo format), ENVELOPE_NPROC, ENVELOPE_ULIMIT_U. The long-op registry is relocated with LONGOPS_REPO / LONGOPS_DIR / LONGOPS_AUDIT of scripts/longops/lib.sh, which ALSO needs
+#   ENVELOPE_TEST_MODE=1 (else REFUSED registry_override_outside_test_mode: a stray variable can no longer hide the live budgets). The CPU count is measured
+#   with OMP_NUM_THREADS and OMP_THREAD_LIMIT removed (GNU nproc would honour them). Registry accounting fails closed: an unreadable ops directory, a record
+#   that is not JSON or has a non-integer budget, or a missing scripts/longops refuses with a named reason, never "used = 0" (an absent ops directory is the
+#   honest empty registry).
 # Refusals exit 1 with `envelope: REFUSED reason=<code>` (meminfo_unreadable, cpu_budget_unavailable, pids_budget_unavailable, memory_budget_unavailable,
-#   dependency_missing, test_hook_outside_test_mode); usage errors exit 2. Never contacts the network, never writes.
+#   dependency_missing, test_hook_outside_test_mode, registry_override_outside_test_mode, registry_library_missing, registry_unreadable,
+#   registry_record_unreadable, registry_record_malformed, registry_classify_failed); usage errors exit 2. Never contacts the network, never writes.
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$HERE/../.." && pwd)"
@@ -49,25 +54,48 @@ mem_kb() { awk -v k="$1" '$1==k":" {print $2}' "${ENVELOPE_MEMINFO:-/proc/meminf
 MT_KB="$(mem_kb MemTotal)"; MA_KB="$(mem_kb MemAvailable)"
 { valid_int "$MT_KB" && valid_int "$MA_KB" && [ "$MT_KB" -gt 0 ]; } || refuse meminfo_unreadable "MemTotal/MemAvailable"
 MT=$(( MT_KB * 1024 )); MA=$(( MA_KB * 1024 ))
-NPROC="${ENVELOPE_NPROC-$(nproc 2>/dev/null)}"
+# the CPU count is MEASURED: GNU nproc honours OMP_NUM_THREADS / OMP_THREAD_LIMIT (OMP_NUM_THREADS=1000 prints 1000), which would lift the 0.60 CPU ceiling
+NPROC="${ENVELOPE_NPROC-$(env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT nproc 2>/dev/null)}"   # MUT:nproc-measured
 { valid_int "$NPROC" && [ "$NPROC" -ge 1 ]; } || refuse cpu_budget_unavailable "nproc reads '$NPROC'"
 UL="${ENVELOPE_ULIMIT_U-$(ulimit -u 2>/dev/null)}"
 { [ "$UL" = unlimited ] || { valid_int "$UL" && [ "$UL" -gt 0 ]; }; } || refuse pids_budget_unavailable "ulimit -u reads '$UL': neither 'unlimited' nor a positive integer"   # MUT:ulimit-closed
 
-# used by registered long operations: a subshell sources the registry library, the parent's variables stay untouched
-USED="$( ( LONGOPS_REPO="${LONGOPS_REPO:-$ROOT_DIR}"; . "$ROOT_DIR/scripts/longops/lib.sh" 2>/dev/null || exit 0
+# used by registered long operations (F3: FAIL CLOSED - an input that cannot be read is a refusal with a named reason, never "used = 0").
+# Relocating the registry (LONGOPS_REPO / LONGOPS_DIR / LONGOPS_AUDIT) replaces a real reading, so it needs the declared test run like the other hooks.
+if { [ -n "${LONGOPS_REPO+x}" ] || [ -n "${LONGOPS_DIR+x}" ] || [ -n "${LONGOPS_AUDIT+x}" ]; } && [ "${ENVELOPE_TEST_MODE:-}" != 1 ]; then   # MUT:registry-hook
+  refuse registry_override_outside_test_mode "LONGOPS_REPO / LONGOPS_DIR / LONGOPS_AUDIT relocate the registry and need ENVELOPE_TEST_MODE=1"
+fi
+# a subshell sources the registry library, the parent's variables stay untouched; it answers one line: `OK <mem> <cpu>` or `ERR <reason> <detail>`
+USED="$( ( LONGOPS_REPO="${LONGOPS_REPO:-$ROOT_DIR}"; . "$ROOT_DIR/scripts/longops/lib.sh" >/dev/null 2>&1 || { echo "ERR registry_library_missing could not source $ROOT_DIR/scripts/longops/lib.sh (a copy of envelope.sh outside the repository layout cannot read the registry)"; exit 0; }   # MUT:registry-lib
+
+    ops="$LD/ops"
+    if ! st="$(stat -c %F -- "$ops" 2>&1)"; then
+      case "$st" in *"No such file"*) echo "OK 0 0"; exit 0;; *) echo "ERR registry_unreadable cannot stat $ops: $st"; exit 0;; esac   # MUT:registry-stat
+    fi
+    { [ "$st" = directory ] && [ -r "$ops" ] && [ -x "$ops" ]; } || { echo "ERR registry_unreadable $ops is not a readable directory ($st)"; exit 0; }   # MUT:registry-dir
     um=0; uc=0
-    for f in "$LD"/ops/*.json; do
+    for f in "$ops"/*.json; do
       [ -e "$f" ] || continue
-      j="$(cat "$f" 2>/dev/null)" || continue
-      case "$(lo_classify_op "$j" 2>/dev/null | head -1)" in advancing|hung)   # MUT:used-classes
-        um=$(( um + $(jq -r '.budget.memory_bytes // 0' <<<"$j" 2>/dev/null || echo 0) ))
-        uc=$(( uc + $(jq -r '.budget.cpus // 0' <<<"$j" 2>/dev/null || echo 0) )) ;;
+      j="$(cat -- "$f" 2>&1)" || { echo "ERR registry_record_unreadable $f: $j"; exit 0; }
+      jq -e . >/dev/null 2>&1 <<<"$j" || { echo "ERR registry_record_malformed $f is not a JSON record"; exit 0; }   # MUT:registry-malformed
+      cl="$(lo_classify_op "$j" 2>/dev/null | head -1)"
+      case "$cl" in
+        advancing|hung)   # MUT:used-classes
+          mb="$(jq -r '(.budget.memory_bytes // 0) | if type == "number" and . == floor and . >= 0 then tostring else "INVALID" end' <<<"$j" 2>/dev/null)"
+          cb="$(jq -r '(.budget.cpus // 0) | if type == "number" and . == floor and . >= 0 then tostring else "INVALID" end' <<<"$j" 2>/dev/null)"
+          { valid_int "$mb" && valid_int "$cb"; } || { echo "ERR registry_record_malformed $f has a budget that is not a non-negative integer (memory '$mb', cpus '$cb')"; exit 0; }   # MUT:registry-budget
+          um=$(( um + mb )); uc=$(( uc + cb )) ;;
+        terminal|dead_owner) ;;
+        *) echo "ERR registry_classify_failed $f classified as '$cl'"; exit 0;;   # MUT:registry-classify
       esac
     done
-    echo "$um $uc" ) 2>/dev/null )"
-USED_MEM="${USED%% *}"; USED_CPU="${USED##* }"
-valid_int "$USED_MEM" || USED_MEM=0; valid_int "$USED_CPU" || USED_CPU=0
+    echo "OK $um $uc" ) 2>/dev/null )"
+case "$USED" in
+  "OK "*) read -r _ USED_MEM USED_CPU <<<"$USED"
+          { valid_int "${USED_MEM:-}" && valid_int "${USED_CPU:-}"; } || refuse registry_unreadable "the registry accounting answered '$USED'";;
+  "ERR "*) read -r _ _reason _detail <<<"$USED"; refuse "${_reason:-registry_unreadable}" "${_detail:-}";;
+  *) refuse registry_unreadable "the registry accounting gave no answer";;
+esac
 
 # per_job_mem: measured value or UNKNOWN:<reason>
 PER_JOB=""; PJ_STATUS="UNKNOWN:no_toolchain"

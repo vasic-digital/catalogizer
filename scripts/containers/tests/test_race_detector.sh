@@ -27,6 +27,8 @@ REPO="$(cd "$HERE/../../.." && pwd)"
 RUNGO="${RACE_RUN_GO:-$REPO/scripts/containers/run_go.sh}"
 SUT="${RACE_SUT:-$REPO/scripts/run-race-detector.sh}"
 FAILS=0; PASSES=0; SKIPS=0
+# count_tok <dir> <token>: how many files in <dir> carry <token> in their name (a glob, never ls | grep)
+count_tok() { local n=0 f; for f in "$1"/*"$2"*; do [ -e "$f" ] && n=$((n+1)); done; echo "$n"; }
 ok()   { PASSES=$((PASSES+1)); echo "PASS: $1"; }
 bad()  { FAILS=$((FAILS+1)); echo "FAIL: $1"; }
 skip() { SKIPS=$((SKIPS+1)); echo "SKIP: $1"; }
@@ -118,11 +120,15 @@ race_cmd() { # <extra go test flags>
 printf '#!/usr/bin/env bash\nexit 0\n' >"$T/sweep-shim.sh"
 # an isolated long-op registry: the test never writes the real .audit/
 mkdir -p "$T/reg/repo/.audit"
-export LONGOPS_REPO="$T/reg/repo" LONGOPS_DIR="$T/reg/repo/.audit/longops" LONGOPS_AUDIT="$T/reg/repo/.audit" LONGOPS_ALLOW_TMPFS=1
+export LONGOPS_REPO="$T/reg/repo" LONGOPS_DIR="$T/reg/repo/.audit/longops" LONGOPS_AUDIT="$T/reg/repo/.audit" LONGOPS_ALLOW_TMPFS=1 ENVELOPE_TEST_MODE=1
+# the disk-headroom records of the real runs go to scratch; the ones of run_go legs carry a token so the real evidence/disk can be checked untouched
+export DISK_HEADROOM_OUT_DIR="$T/disk"; mkdir -p "$DISK_HEADROOM_OUT_DIR"
+TOK="rd$$x$RANDOM"; RN=0
 # run_go <fixture-dir> <out-dir> <go test flags>: the fixture dir is the working directory, hence /src of the container; sets RC, RUNLOG
 rungo() {
   local dir=$1 out=$2 flags=$3
-  ( cd "$dir" && env RUNNER_TEST_MODE=1 RUNNER_SWEEP="$T/sweep-shim.sh" bash "$RUNGO" --out "$out" -- sh -c "$(race_cmd "$flags")" ) >"$T/stdout" 2>"$T/stderr"; RC=$?
+  RN=$((RN+1))
+  ( cd "$dir" && env RUNNER_TEST_MODE=1 RUNNER_SWEEP="$T/sweep-shim.sh" bash "$RUNGO" --out "$out" --op-id "$TOK-$RN" -- sh -c "$(race_cmd "$flags")" ) >"$T/stdout" 2>"$T/stderr"; RC=$?
 }
 out_events() { jq -c 'select(.Action=="output") | .Output' "$1/go-test.jsonl" 2>/dev/null; }
 
@@ -187,7 +193,7 @@ grep -q 'ENV:RUNP_MEMORY=[0-9][0-9]* RUNP_CPUS=[0-9][0-9]* RUNP_PIDS=[0-9][0-9]*
 
 # ============== wrap-go.sh: BLOCKED ==============
 if [ -f "$REPO/tools/evidence/wrap-go.sh" ]; then
-  ok "tools/evidence/wrap-go.sh exists: (its integration is the T051 / T124 GREEN step, not asserted by this test)"
+  skip "tools/evidence/wrap-go.sh exists, but its integration (the T051 / T124 GREEN step) is not asserted by this test: counted as a skip, never as a pass (review M3)"
 else
   skip "BLOCKED-ON-T051: tools/evidence/wrap-go.sh does not exist, so the race report through it is not asserted; the machine output is read with jq above"
 fi
@@ -224,5 +230,7 @@ fi
 if [ -n "${RACE_RESULT_JSON:-}" ]; then
   jq -nc --argjson p "$PASSES" --argjson f "$FAILS" --argjson s "$SKIPS" --arg racy "$RACY_RC" --arg fixed "$FIXED_RC" '{schema:"race-test/1", pass:$p, fail:$f, skip:$s, racy_rc:($racy|tonumber), fixed_rc:($fixed|tonumber)}' >"$RACE_RESULT_JSON"
 fi
+EVD="$REPO/specs/001-full-project-audit-remediation/evidence/disk"
+check "no disk-headroom record carrying this run's token ($TOK) was written into the real evidence/disk" "$(count_tok "$EVD" "$TOK")" 0
 echo "RESULT pass=$PASSES fail=$FAILS skip=$SKIPS"
 [ "$FAILS" = 0 ]

@@ -1,0 +1,82 @@
+# identity: task=fix-r1 phase=RED utc=2026-10-06T21:59:56Z host=anton uid=1000 subject=git archive of HEAD 34db9504 (the committed scripts, a7cfc6d3 for the review's files) tests=the fix-r1 versions
+# sha256 (committed) scripts/containers/envelope.sh=4c454e97da7d0e795adc34c871149ba9c0b92eb543981face5bccc38e2856cd9
+# sha256 (committed) scripts/containers/runner_lib.sh=205f353b381def8d9aa77590d6abf70bd46d2ef2ccf341757f1cfeefb3a3472d
+# sha256 (committed) scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 (committed) scripts/test-in-container.sh=cf5adf4be7293be8caa07f923cdda07dc7fcf1162673697b0e1e788a5e570a5f
+# sha256 (fix-r1 test) scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 (fix-r1 test) scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp DISK_HEADROOM_REPO_ROOT=/home/milosvasic/Projects/catalogizer R1_TEST_NO_MUTATIONS=1 bash /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/committed/scripts/containers/tests/test_runners_hardening.sh
+# ---- output ----
+FAIL: F1 six concurrent starts, each asking 4000000000: exactly four are admitted (4 x 4e9 fits the 0.60 ceiling, a fifth does not) (got '6' want '4')
+FAIL: F1 sum of live budgets 24000000000 exceeds the 0.60 ceiling 19660800000 (N=6)
+FAIL: F1 two of the six are refused limit_exceeds_envelope, none silently dropped (got '0' want '2')
+FAIL: F1 four concurrent starts with no --memory: sum 78643200000 exceeds the ceiling 19660800000 (N=4, each was handed the full envelope)
+FAIL: F1 four concurrent starts with no --memory: only the first is admitted (got '4' want '1')
+FAIL: F1 the other three are refused envelope_refused (no head-room left) (got '0' want '3')
+FAIL: F2 --memory above (ceiling - live ops) inside the nominal 2%: refused (got '0' want '1')
+FAIL: F2 reason: AM-P1 clean
+main-run-stderr
+PASS: F2 --memory exactly the live envelope (ceiling - live ops): accepted
+FAIL: F2 --cpus above the live cpu budget (5) by the nominal +1: refused (the slack never enters the reserve) (got '0' want '1')
+PASS: F2 --cpus exactly the live cpu budget: accepted
+FAIL: F2 MemAvailable binds: 1 byte above the live envelope would enter the reserve: refused (got '0' want '1')
+PASS: F2 MemAvailable binds: exactly the live envelope: accepted
+PASS: F4 the run itself succeeds
+FAIL: F4 RUNP_PRINT_ARGV is not handed to run_pinned.sh (it would print its argv and start nothing) (got '1' want '<unset>')
+FAIL: F4 RUNP_TEST_MODE is scrubbed (a test hook gate the wrapper does not own) (got '1' want '<unset>')
+FAIL: F4 RUNP_MEMINFO is scrubbed (a test hook) (got '/nonexistent' want '<unset>')
+FAIL: F4 RUNP_ULIMIT_U is scrubbed (a test hook) (got '99999' want '<unset>')
+FAIL: F4 the probe call is scrubbed too (got '1' want '<unset>')
+PASS: F4 RUNP_USER (a documented input) passes through
+FAIL: F4 no note on stderr: AM-P1 clean
+main-run-stderr
+PASS: F5 run A left a log of 16 bytes
+PASS: F5 a finished op id reused: refused (exit 1)
+FAIL: F5 reason: run_go: REFUSED reason=purpose_conflict longops: op_exists: op id dup1 is already registered
+FAIL: F5 run A's log is byte-identical after the refused reuse (got 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' want '94ec151d46c4c27d1aee9fcb6b064c27c416d3dc826588a7f45efa4d6e766963')
+PASS: F5 run A's record is still complete
+FAIL: F5 running reuse reason: run_go: REFUSED reason=envelope_refused envelope: REFUSED reason=memory_budget_unavailable budget 0 bytes is below 512 MiB (MemAvailable 30000000 kB, reserve 4915200000, ceiling 19660800000, used by registered operations 19660800000)
+PASS: F5 the running run's log was not truncated by the refused start
+PASS: F5 run A's replayed stdout is exactly its own output (no NUL bytes, no lost lines)
+FAIL: F6 TERM during the toolchain probe: the wrapper ends 130 (got '143' want '130')
+FAIL: F6 TERM during the probe: the op is released failed (got 'registered' want 'failed')
+FAIL: F6 TERM during the probe: the verdict is interrupted (got '' want 'interrupted')
+FAIL: F6 TERM during the probe: no op is left with a dead owner (got '1' want '0')
+PASS: F6 INT during the toolchain probe: the wrapper ends 130
+FAIL: F6 INT during the probe: the op is released failed (got 'registered' want 'failed')
+FAIL: F6 INT during the probe: the verdict is interrupted (got '' want 'interrupted')
+FAIL: F6 INT during the probe: no op is left with a dead owner (got '1' want '0')
+/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/committed/scripts/containers/tests/test_runners_hardening.sh: line 221: 1689695 Hangup                     ( cd "$CK" && exec python3 -I -c 'import os, signal, sys
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+os.execvp("bash", ["bash"] + sys.argv[1:])' "$SUTDIR/$w.sh" "$@" ) > "$T/$tag.out" 2> "$T/$tag.err"
+FAIL: F6 HUP during the toolchain probe: the wrapper ends 130 (got '129' want '130')
+FAIL: F6 HUP during the probe: the op is released failed (got 'registered' want 'failed')
+FAIL: F6 HUP during the probe: the verdict is interrupted (got '' want 'interrupted')
+FAIL: F6 HUP during the probe: no op is left with a dead owner (got '1' want '0')
+PASS: F6 TERM during the run: the wrapper ends 130
+PASS: F6 TERM during the run: the op is failed / interrupted
+FAIL: F8 a run past --wall-s 2 is terminated: exit 124 (got '0' want '124')
+FAIL: F8 the run lasted 14s: --wall-s never took effect
+FAIL: F8 the op is failed with verdict wall_clock_exceeded (got 'complete/rc=0' want 'failed/wall_clock_exceeded')
+FAIL: F8 no elapsed_ms in the op record
+PASS: F8 control: a run well inside --wall-s is not terminated
+FAIL: F9 a run that writes only /out (3 s in, no-progress budget 2 s): advancing (got 'hung' want 'advancing')
+FAIL: F9 the same run 2 s later: still advancing (got 'hung' want 'advancing')
+PASS: F9 control needle: a run that writes nothing anywhere is hung after its budget (the instrument can see a stall)
+FAIL: F10 the container client of the killed wrapper is gone (identity: pid 1736901 start 36953931) (got 'alive' want 'gone')
+FAIL: F10 the op of the killed wrapper is released failed (got 'running' want 'failed')
+FAIL: F10 the verdict names the cause: wrapper_died (got '' want 'wrapper_died')
+FAIL: F10 the heartbeat loop ended: the sequence did not advance in 3 s (got '13' want '11')
+FAIL: F11 a failing version command is a refusal (exit 1), the run does not start (got '0' want '1')
+FAIL: F11 reason:  / record: "sh: 1: r1-no-such-tool: not found"
+FAIL: F11 the main run started after a failed version probe
+PASS: F11 control: a working version command runs
+PASS: F11 control: the record carries the real tool version
+PASS: F11 control: the control needle (write to the read-only source mount fails) is yes
+PASS: TREE no disk-headroom record of these real runs was written into the real evidence/disk
+PASS: TREE the records went to DISK_HEADROOM_OUT_DIR in scratch (2 records)
+  (evidence/disk listing hash before/after: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 / e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855; other agents may add files meanwhile, only files carrying this run's token count)
+RESULT pass=20 fail=43
+# rc=1

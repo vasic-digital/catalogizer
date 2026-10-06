@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T17:30:00Z |
-| Status | tracked from the WP-06 slice T067; independent review of this revision owed (constitution 11.4.142) |
+| Last modified | 2026-10-06T23:30:00Z |
+| Status | tracked from the WP-06 slice T067; independent review of this revision owed (constitution 11.4.142); revision 2: WF10 review fix round 1 (F1-F14); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/export.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -34,6 +34,10 @@ scripts/register/export.sh --out-mode <absolute dir> [--db-file <name>] [--check
 - **CSV outputs** have no `reg_export_files` row: the schema's `format` enum is `md`, `html`, `pdf`, `docx`. Their sha256 are held by `export-manifest.sha256`.
 - The size projection at 2,010 items (`$EV/wp06/db-size.json`) needs the T168 importer; this slice measures a 4-item fixture only (UNCONFIRMED projection).
 - The export header (`**Revision:**` / `**Last modified:**`, `export_header` information item of T067) of the engine's own `Issues.md` is not recorded here.
+
+## --check, output checks and reconcile headers (revision 2)
+
+WF10 F9: `--check` also requires the manifest to list exactly the expected names (every Markdown and CSV output once, nothing else: an emptied or trimmed manifest is STALE) and regenerates the seven CSV files and `Reconciliation.md` from the database copy (`reconcile.sh` is a pure function of the database) and compares them byte for byte, so a CSV edited together with its manifest line is STALE too. The manifest's own hash is NOT recorded in the database (owed to the docs/04 owner: the schema has no column for it, a `reg_export_files` row would change the per-run row counts and `reg_meta` is compared against its seed by `gate.sh`). WF10 F8: the `LOCKED` override is honoured only with `LOCKED_TEST_MODE=1`; after the wrapper exits 0 an export must have written every expected output and a fresh manifest, and a `--check` must have printed an `export-check: OK` line, else exit 1 (`output_missing` / `no_verdict`). The `--check` output directory is under the (test) root's `.audit/out`. WF10 F12: `reconcile.sh` writes an empty view as its header line (CSV) and its table header with `Rows: 0` (it wrote `Rows: -1` and a 0-byte CSV); the `findings` columns are named `evidence_path` and `evidence_sha256`. Pinned by `test_fix_r1.sh` sections F8, F9, F11, F12.
 
 ## Exit codes
 

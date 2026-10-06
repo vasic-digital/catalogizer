@@ -1,0 +1,9 @@
+# identity: T134a RED nfs_fallback_state (check path absent: scripts/test-infra/nfs_fallback_state_absent.sh)
+# head: f981e385a4caff4ddb1c81c6fb7b2ccc4ca2d44f
+# run_at: 2026-10-06T19:11:16Z
+# sha256 scripts/test-infra/nfs_fallback_state.sh 2f67202f20d03089ea9c4c36d35efe503b02eb0507e843c206be6785a98b9c9a
+# sha256 tests/infra/test_nfs_fallback_state.sh b4cb1e5b68543475338e15a1e2ec651796cae5d1a80ae5b0f553fabfcc3dd2ee
+# command: bash tests/infra/test_nfs_fallback_state.sh
+FAIL: check absent: scripts/test-infra/nfs_fallback_state_absent.sh
+SUMMARY pass=0 fail=1 blocked=0
+# exit: 1

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_node.sh - T120. Node wrapper (catalog-web build and unit tests, TypeScript modules, catalogizer-api-client). BLOCKED until IMG-NODE is pinned in the lock (T106).
+# run_node.sh - T120. Node wrapper (catalog-web build and unit tests, TypeScript modules, catalogizer-api-client). Runs while the lock has IMG-NODE (it does: pinned by T106); without its lock entry the run is refused image_not_in_lock with a BLOCKED note, never faked.
 # Runs ONE command in the pinned image(s) `IMG-NODE` through scripts/containers/run_pinned.sh, with the dynamic envelope limits, the anti-mess sweep at
 # start, a registered long operation and a toolchain record. The full contract (usage, refusals, exit codes, environment) is in runner_lib.sh and
 # docs/scripts/run_node.md.
@@ -13,6 +13,6 @@ RUNNER_TOOLCHAIN=node
 RUNNER_PROBE_MODE=sh
 RUNNER_PROBE_VERSION='node --version'
 RUNNER_CMD_PREFIX=''
-RUNNER_BLOCKED_NOTE='IMG-NODE has no lock entry yet: the image is created by T106 (build/containers tree and its lock entries, built through the T005b dispatcher); until it is pinned no run is possible and none is faked'
+RUNNER_BLOCKED_NOTE='IMG-NODE is pinned by T106; this message is only reachable if its lock entry is removed'
 . "$(dirname "${BASH_SOURCE[0]}")/runner_lib.sh"
 runner_main "$@"

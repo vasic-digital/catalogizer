@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T17:30:00Z |
-| Status | tracked from the WP-06 slice T066; independent review of this revision owed (constitution 11.4.142) |
+| Last modified | 2026-10-06T23:30:00Z |
+| Status | tracked from the WP-06 slice T066; independent review of this revision owed (constitution 11.4.142); revision 2: WF10 review fix round 1 (F1-F14); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/dump.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -22,6 +22,10 @@ scripts/register/dump.sh --out-dir <absolute dir> [--db-file <name>] [--out <nam
 ```
 
 One `locked.sh` call: `PRAGMA wal_checkpoint(TRUNCATE)` first (R-2), then `sqlite3 'file:<db>?immutable=1' .dump` with the `PRAGMA` lines removed, written to a temporary file and renamed. The immutable read is exact because it runs right after the checkpoint under the register lock. Paths outside `docs/` or with `..`, spaces or quotes are refused (`path_invalid`, 20).
+
+## Checkpoint and output checks (revision 2)
+
+WF10 F10 (docs/04 section 12.2): the result row of `PRAGMA wal_checkpoint(TRUNCATE)` is checked (busy must be 0) and the `-wal` file must be empty afterwards, else the call is REFUSED `checkpoint_incomplete` (exit 20) and no dump is written: any other open connection (a reader outside the lock) blocks the TRUNCATE, and the immutable read would then miss committed rows still held in the `-wal` file (reproduced with a host reader holding an old snapshot: the committed `CAT-002` was missing from a dump reported OK). WF10 F8: after the wrapper exits 0 the dump must exist on the host, be newer than the start of the run and end with `COMMIT;`, else exit 1 (`FAILED reason=output_missing` / `output_incomplete`); the `LOCKED` override is honoured only with `LOCKED_TEST_MODE=1`. Pinned by `scripts/register/tests/test_fix_r1.sh` sections F8 and F10.
 
 ## Commit procedure (written down; run in T069 and by `scripts/commit-push-all.sh`)
 

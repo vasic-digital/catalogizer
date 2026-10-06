@@ -1,11 +1,25 @@
-# name<TAB>old text (exact, unique in test_containerfiles.sh)<TAB>new text; each mutant must make test_containerfiles.sh FAIL (the fixtures catch it)
-c4-download-check-removed	m = re.search(r"\b(curl|wget)\b.*?(sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln)   # MUT-ANCHOR c4-check	m = True   # MUT-ANCHOR c4-check
+# name<TAB>old text (exact, unique in test_containerfiles.sh)<TAB>new text; each mutant must make test_containerfiles.sh FAIL (the fixtures catch it); \n \t decoded, a literal backslash is written doubled
+# CR1-CR6 are the independent reviewer's survivors (WF10 p1 F4); N-rows mutate the rules added by the WF10 fix.
+c4-download-check-removed	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln)   # MUT-ANCHOR c4-check	m = True   # MUT-ANCHOR c4-check
 c5-from-check-removed	if DIGEST.search(ref).group(1) not in locktxt:               # MUT-ANCHOR c5-from	if False:               # MUT-ANCHOR c5-from
 c6-class-check-removed	if d not in NO_CLASS_CHECK and e.get("class") not in CLASSES:     # MUT-ANCHOR c6-class	if False:     # MUT-ANCHOR c6-class
 c1-missing-dir-check-removed	if not os.path.isdir(os.path.join(tree, r)):	if False:
 c2-companion-file-check-removed	if not os.path.isfile(fp) or os.path.getsize(fp) == 0:	if False:
 c2-containerfile-check-removed	if not os.path.isfile(cf) or os.path.getsize(cf) == 0:	if False:
-c3-check-pins-removed	if r.returncode != 0:	if False:
 c5-sha256-check-removed	if h not in locktxt:	if False:
 c6-entry-check-removed	if d not in DEFERRED:	if False:
 c6-digest-mismatch-removed	if e.get("reference") == base and e.get("digest") != dg:	if False:
+CR1-wget-not-a-download	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\b(curl|wget)\\s+(-|https?://)", ln):	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\b(curl)\\s+(-|https?://)", ln):
+CR2-class-only-presence	if d not in NO_CLASS_CHECK and e.get("class") not in CLASSES:	if d not in NO_CLASS_CHECK and e.get("class") is None:
+CR3-empty-companion-ok	if not os.path.isfile(fp) or os.path.getsize(fp) == 0:	if not os.path.isfile(fp):
+CR4-unknown-dir-silent	v("C6-unknown-directory", d, "directory has no id mapping in the checker")	pass
+CR5-c3-bad-exit-silent	v("C3-check_pins", d, "check_pins exited %d with %d VIOLATION lines (not a clean verdict)" % (r.returncode, len(vl)))   # MUT-ANCHOR c3-else	pass   # MUT-ANCHOR c3-else
+CR6-checksum-any-sha256sum	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln)   # MUT-ANCHOR c4-check	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum|shasum)", ln)   # MUT-ANCHOR c4-check
+N1-c3-clean-always	if r.returncode == 0 and not vl:      # MUT-ANCHOR c3-clean	if True:      # MUT-ANCHOR c3-clean
+N2-c3-violation-lines-not-named	elif r.returncode == 1 and vl:	elif False:
+N3-c4-count-rule-removed	if not m or n_ck < n_dl: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count	if not m: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
+N4-c4-download-count-fixed-one	n_dl = len(re.findall(r"\\b(?:curl|wget)\\s+(?:-|https?://)", ln))	n_dl = 1
+N5-c4-check-count-loosened	n_ck = len(re.findall(r"(?:sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln))	n_ck = len(re.findall(r"(?:sha256sum|shasum)", ln))
+N6-c4-add-checksum-not-required	ck = re.search(r"--checksum=sha256:([0-9a-f]{64})\\b", ln)    # MUT-ANCHOR c4-add	ck = re.search(r"(.)", ln)    # MUT-ANCHOR c4-add
+N7-c7-swallow-removed	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\|\\|\\s*(true|:)\\s*($|[;&)|])", ln):    # C7  MUT-ANCHOR c7-swallow	if False:    # C7  MUT-ANCHOR c7-swallow
+N8-c7-colon-form-removed	(true|:)\\s*($|[;&)|])	(true)\\s*($|[;&)|])

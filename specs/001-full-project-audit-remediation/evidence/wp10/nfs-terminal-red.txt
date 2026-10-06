@@ -1,0 +1,13 @@
+# identity: T134 RED nfs_terminal_state (run through TIC tooling unit against an absent check path scripts/test-infra/nfs_terminal_state_absent.sh)
+# head: 960c553a198d9c17218cb2ad4283a599bdc83b04
+# run_at: 2026-10-06T19:03:43Z
+# sha256 scripts/test-infra/nfs_terminal_state.sh 48672b35b664be279c3d6ad5fe719e460824b4c62314b068a134f5f733c3f832
+# sha256 tests/infra/test_nfs_terminal_state.sh b1196e7b84fa75df8d60ef8bb40404834a6d53af6e187402f0e868db5c0052b8
+# command: bash scripts/test-in-container.sh tooling unit -- bash /src/scripts/test-infra/nfs_terminal_state_absent.sh --client-json /src/specs/001-full-project-audit-remediation/evidence/wp11/nfs-client.json
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+bash: /src/scripts/test-infra/nfs_terminal_state_absent.sh: No such file or directory
+# exit: 127

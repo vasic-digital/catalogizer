@@ -1,0 +1,13 @@
+# identity: T134 GREEN nfs_terminal_state run 1
+# head: f981e385a4caff4ddb1c81c6fb7b2ccc4ca2d44f
+# run_at: 2026-10-06T19:13:12Z
+# sha256 scripts/test-infra/nfs_terminal_state.sh 2e04e8933eb52a3081939493bd1e347180cc2311e6d41289825ca4f0c87a55b6
+# sha256 tests/infra/test_nfs_terminal_state.sh f9a9cac4f20b89a5e4e403e15325ba67ec535a10dd4e07b10decb59cc2abe81e
+# command: bash tests/infra/test_nfs_terminal_state.sh
+PASS: all fixtures hold (missing / UNVERIFIED / AMBIGUOUS / VERIFIED+server failure / transcript / client failure / pass / inconclusive / unreadable)
+PASS: the check is only ever started through TIC tooling unit
+PASS: mutation skip_verdict_read CAUGHT (FAIL unverified verdict did not yield blocked nfs_client_unverified citing the file sha256 (rc=0 state=structu)
+PASS: mutation client_failure_as_structural CAUGHT (FAIL a client-side failure was recorded as a state instead of refused (rc=127 state=))
+PASS: mutation transcript_not_required CAUGHT (FAIL a server failure without the client transcript was not refused (rc=0))
+SUMMARY pass=5 fail=0 blocked=0
+# exit: 0

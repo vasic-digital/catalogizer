@@ -1,0 +1,11 @@
+# identity: T134a GREEN nfs_fallback_state run 1
+# head: 259d855cc14e753537fe8615933f3acdc63cb073
+# run_at: 2026-10-06T19:47:37Z
+# sha256 scripts/test-infra/nfs_fallback_state.sh 2f67202f20d03089ea9c4c36d35efe503b02eb0507e843c206be6785a98b9c9a
+# sha256 tests/infra/test_nfs_fallback_state.sh b4cb1e5b68543475338e15a1e2ec651796cae5d1a80ae5b0f553fabfcc3dd2ee
+# command: bash tests/infra/test_nfs_fallback_state.sh
+PASS: all fixtures hold (not_needed on pass; refused on structural / blocked; blocked odg08_unanswered; refusals)
+PASS: mutation not_needed_without_reading_state CAUGHT (FAIL not_needed was written for a structural-impossibility record (rc=0 state=not_needed))
+PASS: mutation blocked_when_passed CAUGHT (FAIL blocked was written although the attempt passed (rc=0))
+SUMMARY pass=3 fail=0 blocked=0
+# exit: 0

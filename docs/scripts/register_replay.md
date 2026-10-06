@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T17:30:00Z |
-| Status | tracked from the WP-06 slice T067a; independent review of this revision owed (constitution 11.4.142) |
+| Last modified | 2026-10-06T23:30:00Z |
+| Status | tracked from the WP-06 slice T067a; independent review of this revision owed (constitution 11.4.142); revision 2: WF10 review fix round 1 (F1-F14); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/replay.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -32,9 +32,14 @@ Skipped and listed: `command_failed`, `not_a_register_write` (`--out` and scratc
 
 Refused (20), `<dir>` removed: `replay_id_collision` (a local mint whose id the remote side holds for another item; the id is named, nothing is replayed, the plan owner decides, never a renumbering), `since_not_found`, `since_malformed`, `input_missing`, `out_dir_not_empty` (left untouched), `onto_not_register_database`, `replay_row_failed`, `replay_id_lost`, `replay_gate_failed`.
 
+## Safety rules (revision 2)
+
+- **Base row** (WF10 F2): only `register` rows on `docs/workable_items.db` are base candidates, and a row is the base only when its `db_sha_after` equals `--since` AND the `-wal` file was empty after it (`wal_bytes_after` 0): the main-file hash alone does not identify a state while committed pages sit in the `-wal` file, and a `scratch` or `--out` row whose database file happens to hash the same is never the base. Rows carrying `seq` must be strictly increasing (`journal_order_invalid`); a corrupt line is `journal_corrupt`; a pending marker next to the journal (a write that never reached it) is `replay_pending_ops`.
+- **Ids** (WF10 F1): a planned register row whose `ids_snapshot` is not `ok` (`unavailable` under a pending `-wal`, or `failed`) is refused `replay_ids_unknown`: its minted ids are unknown, so replaying it blind could give its item the next free id of the remote side. The earlier text "never a renumbering" was false for that case (reproduced end to end with real containers: the local item silently became `CAT-004` with verdict OK). Recomputing the ids safely from the pre and post snapshots is not implemented (owed): the tool refuses and the plan owner decides.
+
 ## Tests and evidence
 
-`scripts/register/tests/test_replay.sh`: two scratch clones diverged from one base; the replay of the local mint and file-input edit onto the remote side passes the gate and holds the ids of both sides; the collision, unknown base, missing input and non-empty directory refusals; paired mutation: a replay that skips the mint rows loses the local ids and fails the both-sides fixture (`$EV/wp06/replay-mutation.txt`). Evidence `$EV/wp06/replay-*`.
+`scripts/register/tests/test_fix_r1.sh` (sections F1, F2: synthetic journals with stub tools, and an end-to-end run with real containers and a pending `-wal`); `scripts/register/tests/test_replay.sh`: two scratch clones diverged from one base; the replay of the local mint and file-input edit onto the remote side passes the gate and holds the ids of both sides; the collision, unknown base, missing input and non-empty directory refusals; paired mutation: a replay that skips the mint rows loses the local ids and fails the both-sides fixture (`$EV/wp06/replay-mutation.txt`). Evidence `$EV/wp06/replay-*`.
 
 ## Honest limits
 

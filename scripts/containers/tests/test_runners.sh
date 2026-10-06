@@ -4,8 +4,8 @@
 # Two independent oracles must agree: (1) a run_pinned.sh SHIM (RUNNER_RUNP, test hook) that logs its argv and the RUNP_* limit environment it was
 # given and the long-op registry state at the moment it was called, and (2) the REAL long-op registry (scripts/longops, fixture state) read back with jq.
 # The anti-mess sweep is a shim too (RUNNER_SWEEP), except in the real-sweep leg that runs the real scripts/anti-mess/sweep.sh. A real leg at the end
-# runs the real run_pinned.sh against the pinned images that exist on this host (IMG-TESTUTIL, IMG-GO, IMG-SHELLCHECK); images that do not exist yet
-# (IMG-NODE, IMG-PW, IMG-DOCS) must be REFUSED honestly (image_not_in_lock), never faked.
+# runs the real run_pinned.sh against the pinned images that exist on this host (IMG-TESTUTIL, IMG-GO, IMG-SHELLCHECK); images that are absent from the lock
+# (a fixture lock without IMG-NODE / IMG-PW / IMG-DOCS; the real lock pins all three, T106) must be REFUSED honestly (image_not_in_lock), never faked.
 # Paired mutations: copies of the containers directory whose runner_lib.sh has ONE expression changed (python str replace, exactly one occurrence); this
 # body is re-run against each copy (RUNNER_SUT_DIR=<copy>, RUNNER_TEST_MUTANT=1) and every copy must make it FAIL. The `--memory` removal mutation (the
 # limit is not handed to run_pinned.sh) is one of them.
@@ -17,6 +17,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../../.." && pwd)"
 SUTDIR="${RUNNER_SUT_DIR:-$HERE/..}"
 FAILS=0; PASSES=0
+# count_tok <dir> <token>: how many files in <dir> carry <token> in their name (a glob, never ls | grep)
+count_tok() { local n=0 f; for f in "$1"/*"$2"*; do [ -e "$f" ] && n=$((n+1)); done; echo "$n"; }
 ok()  { PASSES=$((PASSES+1)); [ "${QUIET:-0}" = 1 ] || echo "PASS: $1"; }
 bad() { FAILS=$((FAILS+1)); echo "FAIL: $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2' want '$3')"; fi; }
@@ -97,6 +99,8 @@ CK="$T/checkout"; mkdir -p "$CK"
 export RUNNER_TEST_MODE=1 RUNNER_RUNP="$SHIMS/run_pinned.sh" RUNNER_SWEEP="$SHIMS/sweep.sh" RUNP_LOCK="$LOCKF" RUNNER_HEARTBEAT_S=1
 export ENVELOPE_TEST_MODE=1 ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000
 export SHIM_LOG="$T/run.log" SWEEP_LOG="$T/sweep.log" PODMAN_LOG="$T/podman.log" SHIM_PROBE_OUT="$PROBE_OK" SHIM_INSPECT_DIGEST="$D1"
+export DISK_HEADROOM_OUT_DIR="$T/disk"; mkdir -p "$DISK_HEADROOM_OUT_DIR"   # the real legs' disk-headroom records go to scratch, never into the real evidence/disk
+TOK="rt$$x$RANDOM"; RN=0
 ORIG_PATH="$PATH"; export PATH="$SHIMS:$PATH"
 # the expected envelope for the fixture host (hand computed, section 8.2): memory 19660800000 (ceiling 0.60*32768000000), cpus min(14, 9) = 9, pids 2048
 EXP_MEM=19660800000; EXP_CPUS=9; EXP_PIDS=2048
@@ -203,12 +207,16 @@ resetlogs; newreg
 wr run_go --out "$T/o6" --cpus $((EXP_CPUS + 1)) -- true
 check "cpus above the envelope: refused" "$RC" 1
 refused limit_exceeds_envelope && ok "cpus above the envelope: reason limit_exceeds_envelope" || bad "reason: $(cat "$T/stderr")"
-# the 2% / 1 cpu slack (the envelope is a live reading): host where MemAvailable binds (20000000 kB: budget 15564800000, slack to 15876096000)
+# the nominal 2% / 1 cpu allowance is capped by head-room (review F2): host where MemAvailable binds (20000000 kB: budget 15564800000, the reserve starts above it)
 printf 'MemTotal:       32000000 kB\nMemAvailable:   20000000 kB\n' >"$T/meminfo"
 resetlogs; newreg
 wr run_go --out "$T/o6b" --memory 15564800001 -- true
-check "memory 1 byte above the live envelope but inside the 2% slack: accepted" "$RC" 0
-check "the accepted slack value reaches run_pinned.sh" "$(callenv 2 RUNP_MEMORY)" 15564800001
+check "memory 1 byte above the live envelope would enter the MemAvailable reserve: refused (the 2% allowance is capped by head-room, review F2)" "$RC" 1
+refused limit_exceeds_envelope && ok "reserve entry: reason limit_exceeds_envelope" || bad "reason: $(cat "$T/stderr")"
+resetlogs; newreg
+wr run_go --out "$T/o6b2" --memory 15564800000 -- true
+check "memory exactly the live envelope (MemAvailable binds): accepted" "$RC" 0
+check "the accepted value reaches run_pinned.sh" "$(callenv 2 RUNP_MEMORY)" 15564800000
 resetlogs; newreg
 wr run_go --out "$T/o6c" --memory 15876096001 -- true
 check "memory above the 2% slack: refused" "$RC" 1
@@ -262,8 +270,8 @@ wr run_go --out "$T/o10" -- true
 check "malformed digest: refused" "$RC" 1
 refused image_unpinned && ok "malformed digest: reason image_unpinned" || bad "reason: $(cat "$T/stderr")"
 cp "$T/lock.keep" "$LOCKF"
-# the three wrappers whose image does not exist yet: honest blocked, never a faked run
-for pair in run_node:IMG-NODE:T107 run_playwright:IMG-PW:T108 run_docs:IMG-DOCS:T106; do
+# the three wrappers whose image is absent from the FIXTURE lock: honest blocked, never a faked run
+for pair in run_node:IMG-NODE:T106 run_playwright:IMG-PW:T106 run_docs:IMG-DOCS:T106; do
   w="${pair%%:*}"; rest="${pair#*:}"; IMG="${rest%%:*}"
   resetlogs; newreg
   wr "$w" --out "$T/o11" -- true
@@ -329,6 +337,19 @@ resetlogs; newreg
 check "RUNNER_RUNP / RUNNER_SWEEP without RUNNER_TEST_MODE: refused" "$RC" 1
 refused test_hook_outside_test_mode && ok "hook reason test_hook_outside_test_mode" || bad "reason: $(cat "$T/stderr")"
 check "hooks outside test mode: nothing started" "$(ncalls)" 0
+for hv in RUNNER_SWEEP RUNNER_RUNP; do
+  resetlogs; newreg
+  if [ "$hv" = RUNNER_SWEEP ]; then ( cd "$CK" && env -u RUNNER_TEST_MODE -u RUNNER_RUNP bash "$SUTDIR/run_go.sh" --out "$T/o18$hv" -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
+  else ( cd "$CK" && env -u RUNNER_TEST_MODE -u RUNNER_SWEEP bash "$SUTDIR/run_go.sh" --out "$T/o18$hv" -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?; fi
+  check "the $hv hook alone without RUNNER_TEST_MODE: refused (exit 1)" "$RC" 1
+  refused test_hook_outside_test_mode && ok "the $hv hook alone: reason test_hook_outside_test_mode" || bad "the $hv hook alone reason: $(cat "$T/stderr")"
+done
+# an empty inspected digest never passes (a podman that printed nothing reads as the lock digest only when the lock has an empty platform digest)
+resetlogs; newreg; export SHIM_INSPECT_DIGEST=""
+wr run_go --out "$T/o18e" -- true
+check "an empty inspected digest: refused (exit 1)" "$RC" 1
+refused image_digest_mismatch && ok "empty inspected digest: reason image_digest_mismatch" || bad "empty digest reason: $(cat "$T/stderr")"
+export SHIM_INSPECT_DIGEST="$D1"
 
 # ============== the toolchain probe: a probe that cannot detect a failure is itself detected (11.4.201) ==============
 resetlogs; newreg; printf 'version=x\nout_writable=yes\ncache_writable=yes\nsrc_readonly=no\n' >"$T/probe_blind.txt"; export SHIM_PROBE_OUT="$T/probe_blind.txt"
@@ -386,8 +407,9 @@ echo "  (real sweep verdict for this run: rc=$SWRC)"
 # ============== the real container leg: real run_pinned.sh, real pinned images present on this host ==============
 if [ "${RUNNER_TEST_NO_REAL:-0}" != 1 ]; then
   # the sweep stays the shim (its container census would see other agents' labelled containers that have no row in THIS fixture registry); the
-  # real-sweep leg above proves the wiring to the real sweep. Everything else is real: PATH without the shims, the real lock, the real /proc.
-  realrun() { local w=$1 o=$2; shift 2; ( cd "$REPO" && env -u RUNNER_RUNP -u RUNP_LOCK -u ENVELOPE_TEST_MODE -u ENVELOPE_MEMINFO -u ENVELOPE_NPROC -u ENVELOPE_ULIMIT_U PATH="$ORIG_PATH" bash "$SUTDIR/$w.sh" --out "$o" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
+  # real-sweep leg above proves the wiring to the real sweep. Everything else is real: PATH without the shims, the real lock, the real /proc (ENVELOPE_TEST_MODE stays: it only
+  # permits the scratch long-op registry; the three reading hooks are removed).
+  realrun() { local w=$1 o=$2; shift 2; RN=$((RN+1)); ( cd "$REPO" && env -u RUNNER_RUNP -u RUNP_LOCK -u ENVELOPE_MEMINFO -u ENVELOPE_NPROC -u ENVELOPE_ULIMIT_U PATH="$ORIG_PATH" bash "$SUTDIR/$w.sh" --out "$o" --op-id "$TOK-$RN" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
   resetlogs; newreg
   REALOUT="$T/real-testutil"
   realrun run_testutil "$REALOUT" -- python3 -c 'import yaml, jsonschema, pytest; print("real-testutil-ok")'
@@ -430,6 +452,13 @@ PY2
   done
 fi
 
+# ============== the real evidence tree is untouched by the real legs ==============
+if [ "${RUNNER_TEST_NO_REAL:-0}" != 1 ]; then
+  EVD="$REPO/specs/001-full-project-audit-remediation/evidence/disk"
+  check "no disk-headroom record carrying this run's token ($TOK) was written into the real evidence/disk" "$(count_tok "$EVD" "$TOK")" 0
+  [ "$(count_tok "$DISK_HEADROOM_OUT_DIR" "$TOK")" -ge 1 ] && ok "the real legs' records went to DISK_HEADROOM_OUT_DIR in scratch ($(count_tok "$DISK_HEADROOM_OUT_DIR" "$TOK"))" || bad "no record in the scratch DISK_HEADROOM_OUT_DIR"
+fi
+
 echo "RESULT pass=$PASSES fail=$FAILS"
 [ "$FAILS" = 0 ] || EXIT=1
 EXIT="${EXIT:-0}"
@@ -459,7 +488,7 @@ mut_case no-memory-limit 'RUNP_MEMORY="$LIM_MEM"' 'RUNP_MEMORY_DROPPED="$LIM_MEM
 mut_case no-cpus-limit 'RUNP_CPUS="$LIM_CPUS"' 'RUNP_CPUS_DROPPED="$LIM_CPUS"'
 mut_case no-pids-limit 'RUNP_PIDS="$LIM_PIDS"' 'RUNP_PIDS_DROPPED="$LIM_PIDS"'
 mut_case limit-above-envelope '[ "$LIM_MEM" -le "$ALLOW_MEM" ]' 'true'
-mut_case slack-unclamped '[ "$ALLOW_MEM" -le "$ENV_CEIL" ] || ALLOW_MEM="$ENV_CEIL"' 'true'
+mut_case slack-reserve-cap-dropped '[ "$ALLOW_MEM" -le $(( ENV_MA - ENV_RES )) ] || ALLOW_MEM=$(( ENV_MA - ENV_RES ))' 'true'
 mut_case cpus-above-envelope '[ "$LIM_CPUS" -le "$ALLOW_CPUS" ]' 'true'
 mut_case cpu-slack-unclamped '[ "$ALLOW_CPUS" -le "$CPU_CEIL" ] || ALLOW_CPUS="$CPU_CEIL"' 'true'
 mut_case sweep-drift-accepted 'if [ "$SW_RC" = 10 ]' 'if [ "$SW_RC" = 9999 ]'
@@ -470,7 +499,7 @@ mut_case unpinned-accepted 'rl_refuse image_unpinned "id=$IMG has no sha256 dige
 mut_case not-in-lock-accepted 'rl_refuse image_not_in_lock "BLOCKED: $IMG is not in the lock' 'true "BLOCKED: $IMG is not in the lock'
 mut_case image-not-allowed-accepted 'rl_refuse image_not_allowed' 'true'
 mut_case register-skipped 'bash "$ROOT_DIR/scripts/longops/register.sh"' 'true'
-mut_case purpose-conflict-ignored '[ "$REG_RC" != 3 ] || rl_refuse purpose_conflict' 'true'
+mut_case purpose-conflict-ignored 'rl_refuse purpose_conflict "$REG_ERR"   # MUT:purpose-conflict' 'true'
 mut_case needle-unchecked '[ "$P_SRC" = yes ] || rl_fail_op probe_blind' 'true'
 mut_case out-writable-unchecked '[ "$P_OUT" = yes ] || rl_fail_op out_not_writable' 'true'
 mut_case cache-writable-unchecked '[ "$P_CACHE" = yes ] || rl_fail_op cache_not_writable' 'true'
@@ -481,6 +510,8 @@ mut_case rc-masked 'rl_release_op "$RUN_RC"' 'rl_release_op 0'
 mut_case exit-masked 'exit "$RUN_RC"   # MUT:exit' 'exit 0'
 mut_case no-heartbeat 'bash "$ROOT_DIR/scripts/longops/heartbeat.sh"' 'true'
 mut_case test-hooks '[ "${RUNNER_TEST_MODE:-}" != 1 ]; then' '[ "${RUNNER_TEST_MODE:-}" != 1 ] && false; then'
+mut_case R9-empty-digest-accepted '[ -n "$PDIGEST" ] && [ "$INSPECTED" = "$PDIGEST" ]' '[ "$INSPECTED" = "$PDIGEST" ]'
+mut_case R10-sweep-hook-gate ' || [ -n "${RUNNER_SWEEP+x}" ]' ''
 mut_case prefix-dropped '${RUNNER_CMD_PREFIX:-}' '${RUNNER_CMD_PREFIX_DROPPED:-}'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"
 [ "$SURV" = 0 ] || EXIT=1

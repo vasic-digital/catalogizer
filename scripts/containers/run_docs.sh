@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_docs.sh - T120. Documentation wrapper (link crawl, header and fingerprint checks, exports, diagram render). BLOCKED until IMG-DOCS is pinned in the lock (T106).
+# run_docs.sh - T120. Documentation wrapper (link crawl, header and fingerprint checks, exports, diagram render). Runs while the lock has IMG-DOCS (it does: pinned by T106); without its lock entry the run is refused image_not_in_lock with a BLOCKED note, never faked.
 # Runs ONE command in the pinned image(s) `IMG-DOCS` through scripts/containers/run_pinned.sh, with the dynamic envelope limits, the anti-mess sweep at
 # start, a registered long operation and a toolchain record. The full contract (usage, refusals, exit codes, environment) is in runner_lib.sh and
 # docs/scripts/run_docs.md.
@@ -13,6 +13,6 @@ RUNNER_TOOLCHAIN=docs
 RUNNER_PROBE_MODE=sh
 RUNNER_PROBE_VERSION='python3 --version'
 RUNNER_CMD_PREFIX=''
-RUNNER_BLOCKED_NOTE='IMG-DOCS has no lock entry yet: the image is created by T106 (documentation render image, dispatched build); until it is pinned no run is possible and none is faked'
+RUNNER_BLOCKED_NOTE='IMG-DOCS is pinned by T106; this message is only reachable if its lock entry is removed'
 . "$(dirname "${BASH_SOURCE[0]}")/runner_lib.sh"
 runner_main "$@"

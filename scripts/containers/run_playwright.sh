@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# run_playwright.sh - T120. Playwright wrapper (web E2E, visual regression). BLOCKED until IMG-PW is pinned in the lock (T106/T114).
+# run_playwright.sh - T120. Playwright wrapper (web E2E, visual regression). Runs while the lock has IMG-PW (it does: pinned by T106); without its lock entry the run is refused image_not_in_lock with a BLOCKED note, never faked.
 # Runs ONE command in the pinned image(s) `IMG-PW` through scripts/containers/run_pinned.sh, with the dynamic envelope limits, the anti-mess sweep at
 # start, a registered long operation and a toolchain record. The full contract (usage, refusals, exit codes, environment) is in runner_lib.sh and
 # docs/scripts/run_playwright.md.
@@ -13,6 +13,6 @@ RUNNER_TOOLCHAIN=playwright
 RUNNER_PROBE_MODE=sh
 RUNNER_PROBE_VERSION='npx playwright --version'
 RUNNER_CMD_PREFIX=''
-RUNNER_BLOCKED_NOTE='IMG-PW has no lock entry yet: the image is created by T106/T114 (the Playwright image pin); until it is pinned no run is possible and none is faked'
+RUNNER_BLOCKED_NOTE='IMG-PW is pinned by T106; this message is only reachable if its lock entry is removed'
 . "$(dirname "${BASH_SOURCE[0]}")/runner_lib.sh"
 runner_main "$@"

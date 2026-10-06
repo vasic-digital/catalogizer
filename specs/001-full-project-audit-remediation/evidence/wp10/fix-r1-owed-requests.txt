@@ -1,0 +1,18 @@
+# identity: task=fix-r1 kind=owed-requests (files outside the fix round's scope; nothing below was changed by it)
+# 1. OWED REQUEST for scripts/containers/run_pinned.sh (pre-existing file, not in this round's list) - review finding F7:
+#    run_pinned.sh reads the CPU count with a bare `nproc`, which honours OMP_NUM_THREADS / OMP_THREAD_LIMIT (OMP_NUM_THREADS=1000 nproc prints 1000 on a 16-CPU host).
+#    With OMP_NUM_THREADS=20 its RUNP_CPUS bound becomes floor(0.60*20)=12 of 16 CPUs (75%, above the 12.6 ceiling); the review's probe: RUNP_CPUS=12 is refused
+#    cpus_override_out_of_bounds (1..9) without the variable and composes `--cpus 12` with it.
+#    Requested change: read the count as envelope.sh now does: `env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT nproc` (or `python3 -c 'import os; print(len(os.sched_getaffinity(0)))'`),
+#    with a RED first (OMP_NUM_THREADS=20 + RUNP_CPUS=12 must be REFUSED) and its paired mutation in tests/test_run_pinned.sh.
+#    The wrappers are not exposed through this path any more: runner_lib.sh hands RUNP_CPUS computed from the (now measured) envelope, and the envelope no longer trusts OMP_*.
+# 2. OWED: docs/scripts/README.md rows for envelope, runner_lib, run_*, test-in-container, test_race_detector, test_runners_hardening (the review's F14 orphan finding; that
+#    file is being edited by another agent).
+# 3. OWNER DECISIONS carried from the review (not fixed, recorded): F12 (the run can rewrite its own toolchain.json: record the sha256 of the record in the op's evidence_path
+#    or write it outside /out), F13 (inspected_digest is rewritten to the lock digest when podman reports the platform digest: keep the raw reading), F15 (the envelope `jobs`
+#    value is consumed by nothing; docs/16 8.1 cgroup memory.pressure / cpu.stat inputs, 8.4 --ulimit nofile and the /tmp tmpfs size cap are not implemented; run_go always
+#    prefixes GOMAXPROCS=3 even when the envelope hands --cpus 1), F16 (TIC and the wrapper each read the envelope: TIC now asks for 98% of its reading so a 2% fall of
+#    MemAvailable between the reads is covered; a second concurrent TIC lane that read the envelope before the first registered is refused limit_exceeds_envelope by the
+#    wrapper, which is the fail-closed outcome of F1).
+# 4. UNCONFIRMED: a TERM that arrives while register.sh is mid-write (between its record write and the wrapper reading its exit status) is honoured at the next checkpoint
+#    and the op released; the case of a signal sent to the whole process group of a wrapper is not tested (no wrapper signals a group).

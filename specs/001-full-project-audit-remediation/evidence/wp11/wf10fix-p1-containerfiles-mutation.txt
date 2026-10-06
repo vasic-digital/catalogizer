@@ -1,0 +1,14 @@
+# containerfiles-mutation record: paired mutations of the checker in scripts/containers/tests/test_containerfiles.sh
+# run_at: 2026-10-06T22:38:50Z host: anton
+# self_sha256: 8c58193d57fff62d7ed5c24a765c7b149c9253d5daafbfaacf0239e9a73cd7ef
+MUTANT c4-download-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check): no 'C4-download-without-sha256' line in: 
+MUTANT c5-from-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD digests.lock does not name the FROM digest: no 'C5-digests.lock-from' line in: C5-digests.lock-sha256 go: sha256 cccccccccccc... not in digests.lock
+MUTANT c6-class-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry without a class: no 'C6-class' line in: 
+MUTANT c1-missing-dir-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD required directory absent: no 'C1-missing-directory' line in: 
+MUTANT c2-companion-file-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD README.md missing: no 'C2-README.md' line in: 
+MUTANT c2-containerfile-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD empty Containerfile: no 'C2-containerfile' line in: C2-README.md go: README.md missing or empty|C2-digests.lock go: digests.lock missing or empty|C2-from go: no FROM line|C6-lock-entry go: no images.lock.yaml entry IMG-GO
+MUTANT c5-sha256-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD digests.lock does not name the checked SHA-256: no 'C5-digests.lock-sha256' line in: C5-digests.lock-from go: FROM digest of docker.io/library/debian not in digests.lock
+MUTANT c6-entry-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD no images.lock.yaml entry: no 'C6-lock-entry' line in: 
+MUTANT c6-digest-mismatch-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest: no 'C6-digest-mismatch' line in: 
+MUTANT CR1-wget-not-a-download: CAUGHT first_fail=FAIL: GOLDEN-BAD wget download without a SHA-256 check: no 'C4-download-without-sha256' line in: 
+MUTANT CR2-class-only-presence: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry class outside the closed set: no 'C6-class' line in: 

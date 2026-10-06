@@ -1,0 +1,135 @@
+# identity: task=fix-r1 phase=RED utc=2026-10-06T21:59:40Z host=anton uid=1000 subject=git archive of HEAD 34db9504 (the committed scripts, a7cfc6d3 for the review's files) tests=the fix-r1 versions
+# sha256 (committed) scripts/containers/envelope.sh=4c454e97da7d0e795adc34c871149ba9c0b92eb543981face5bccc38e2856cd9
+# sha256 (committed) scripts/containers/runner_lib.sh=205f353b381def8d9aa77590d6abf70bd46d2ef2ccf341757f1cfeefb3a3472d
+# sha256 (committed) scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 (committed) scripts/test-in-container.sh=cf5adf4be7293be8caa07f923cdda07dc7fcf1162673697b0e1e788a5e570a5f
+# sha256 (fix-r1 test) scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 (fix-r1 test) scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 (fix-r1 test) scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp ENVELOPE_SUT=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/committed/scripts/containers/envelope.sh ENVELOPE_TEST_NO_MUTATIONS=1 bash /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/committed/scripts/containers/tests/test_envelope.sh
+# ---- output ----
+PASS: golden: exit 0
+PASS: golden: schema
+PASS: golden: nproc
+PASS: golden: reserve_cpu = max(2, ceil(0.125*16)) = 2
+PASS: golden: reserve_mem = max(4 GiB, 0.15*MemTotal)
+PASS: golden: ceiling_mem = floor(0.60*MemTotal)
+PASS: golden: mem_budget
+PASS: golden: cpu_budget
+PASS: golden: per_job status measured
+PASS: golden: jobs = max(1, min(14, 12))
+PASS: golden: container memory equals mem_budget
+PASS: golden: container cpus is the cpu budget under 0.60*nproc (9)
+PASS: golden: pids = min(2048, min(8192, ulimit/2))
+PASS: unknown (profile absent): exit 0
+PASS: unknown (profile absent): per_job_mem UNKNOWN
+PASS: unknown (profile absent): status names the reason
+PASS: unknown (profile absent): jobs = 1
+PASS: unknown (toolchain not in profile): jobs = 1
+PASS: unknown (toolchain not in profile): status
+PASS: unknown (no --toolchain): jobs = 1
+PASS: invalid per_job value 0: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 0: status names per_job_invalid
+PASS: invalid per_job value -5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value -5: status names per_job_invalid
+PASS: invalid per_job value "x": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "x": status names per_job_invalid
+PASS: invalid per_job value null: jobs = 1 (never a division by zero)
+PASS: invalid per_job value null: status names per_job_invalid
+PASS: invalid per_job value 1.5: jobs = 1 (never a division by zero)
+PASS: invalid per_job value 1.5: status names per_job_invalid
+PASS: invalid per_job value "1610612736": jobs = 1 (never a division by zero)
+PASS: invalid per_job value "1610612736": status names per_job_invalid
+PASS: malformed profile: jobs = 1
+PASS: malformed profile: status
+PASS: per_job above mem_budget: jobs = max(1, 0) = 1
+PASS: per_job above mem_budget: still measured
+PASS: cpu bound: jobs = cpu_budget
+PASS: nproc 1: reserve_cpu floor 2
+PASS: nproc 1: cpu_budget may be negative (-1)
+PASS: nproc 1: jobs still 1
+PASS: nproc 1: container cpus floor 1
+PASS: nproc 64: reserve_cpu = ceil(64/8) = 8
+PASS: nproc 64: cpu_budget 56
+PASS: nproc 64: container cpus = floor(0.60*64) = 38
+PASS: nproc 17: reserve_cpu = ceil(2.125) = 3
+PASS: small host: reserve_mem floor is 4 GiB
+PASS: small host: ceiling_mem
+PASS: small host: mem_budget = MemAvailable - reserve (the lower term)
+PASS: MemAvailable below reserve: exit 1
+PASS: MemAvailable below reserve: reason memory_budget_unavailable
+PASS: unparsable meminfo: exit 1
+PASS: unparsable meminfo: reason meminfo_unreadable
+PASS: nproc 0: exit 1
+PASS: nproc 0: reason cpu_budget_unavailable
+PASS: ulimit -u 0: exit 1 (fail closed, never the permissive 8192)
+PASS: ulimit 0: reason pids_budget_unavailable
+PASS: test hook without ENVELOPE_TEST_MODE: refused
+PASS: hook reason test_hook_outside_test_mode
+PASS: ENVELOPE_NPROC without test mode: refused
+PASS: usage: unknown option
+PASS: usage: toolchain name must be [a-z0-9_-]+
+PASS: usage: unknown format
+PASS: pids = ulimit/2 when that is below 2048
+PASS: pids with ulimit unlimited = 2048
+PASS: fixture: two operations registered through the real register.sh
+PASS: registry: used_mem counts the live op only
+PASS: registry: used_cpu counts the live op only
+PASS: registry: mem_budget = min(ceiling - used, avail - reserve)
+PASS: registry: cpu_budget = nproc - reserve_cpu - used
+PASS: registry: jobs = min(12, floor(17660800000/1073741824)=16)
+PASS: registry: a hung (flat-progress, owner alive) op is still subtracted
+PASS: registry: the op in that fixture really IS classified hung (the class is exercised, not assumed)
+PASS: registry: a dead-owner op is not subtracted
+PASS: registry: used_mem sums two live ops (2e9 + 3e9; the dead-owner and terminal records stay out)
+PASS: registry: used_cpu sums two live ops (2 + 4)
+PASS: registry empty: used 0
+PASS: fail closed control: a readable registry with a live 6e9 op: exit 0, used 6e9
+FAIL: fail closed: a record with a float budget (1.5) refuses (exit 1), it does not zero the whole sum (got '0' want '1')
+FAIL: float budget reason: 
+FAIL: fail closed: a malformed record (not JSON) refuses (exit 1) (got '0' want '1')
+FAIL: malformed record reason: 
+FAIL: fail closed: an unreadable record refuses (exit 1) (got '0' want '1')
+FAIL: unreadable record reason: 
+FAIL: fail closed: an ops dir unreadable (EACCES) refuses (exit 1), it is not read as used = 0 (got '0' want '1')
+FAIL: ops dir unreadable reason: 
+FAIL: fail closed: a parent directory unreadable (stat gives EACCES, not ENOENT) refuses (exit 1) (got '0' want '1')
+FAIL: parent directory unreadable reason: 
+FAIL: stray LONGOPS_DIR without ENVELOPE_TEST_MODE: refused (exit 1) (got '0' want '1')
+FAIL: stray LONGOPS_DIR reason: 
+FAIL: stray LONGOPS_REPO without ENVELOPE_TEST_MODE: refused (exit 1) (got '0' want '1')
+FAIL: stray LONGOPS_REPO reason: 
+FAIL: stray LONGOPS_AUDIT without ENVELOPE_TEST_MODE: refused (exit 1) (got '0' want '1')
+FAIL: stray LONGOPS_AUDIT reason: 
+FAIL: registry library missing (copy outside the repository layout): refused (exit 1) (got '0' want '1')
+FAIL: registry library missing reason: 
+PASS: OMP_NUM_THREADS=1000 on the real host: exit 0
+FAIL: OMP_NUM_THREADS=1000: nproc is the measured count, not 1000 (got '1000' want '16')
+FAIL: OMP_NUM_THREADS lifted the cpu ceiling: cpus 600 nproc 16
+FAIL: OMP_THREAD_LIMIT=2: nproc is the measured count, not 2 (got '2' want '16')
+PASS: the ENVELOPE_MEMINFO hook alone without ENVELOPE_TEST_MODE: refused (exit 1)
+PASS: the ENVELOPE_MEMINFO hook alone: reason test_hook_outside_test_mode
+PASS: the ENVELOPE_NPROC hook alone without ENVELOPE_TEST_MODE: refused (exit 1)
+PASS: the ENVELOPE_NPROC hook alone: reason test_hook_outside_test_mode
+PASS: the ENVELOPE_ULIMIT_U hook alone without ENVELOPE_TEST_MODE: refused (exit 1)
+PASS: the ENVELOPE_ULIMIT_U hook alone: reason test_hook_outside_test_mode
+PASS: pids at ulimit 1: floor 1, never 0 (a 0 pids-limit is no limit in some runtimes)
+PASS: pids at ulimit 2: floor 1, never 0 (a 0 pids-limit is no limit in some runtimes)
+PASS: pids at ulimit 3: floor 1, never 0 (a 0 pids-limit is no limit in some runtimes)
+PASS: kv memory_bytes equals mem_budget_bytes when MemAvailable binds (15564800000, not the 0.60 ceiling)
+PASS: json memory_bytes equals mem_budget_bytes when MemAvailable binds (15564800000, not the 0.60 ceiling)
+PASS: json mem_budget_bytes when MemAvailable binds
+PASS: json: valid and jobs matches
+PASS: json: schema
+PASS: json: per_job_mem_bytes is a number when measured
+PASS: json: per_job_mem_bytes is null when UNKNOWN
+PASS: json: per_job_status carries the reason
+PASS: derived oracle: 60 seeded random cases agree with the independent python implementation
+PASS: negative control: different hosts give different envelopes (19660800000/14 vs 39321600000/28)
+PASS: real host: exit 0
+PASS: real host: ceiling_mem is 0.60*MemTotal from /proc/meminfo
+PASS: real host: nproc equals nproc(1) with OMP_NUM_THREADS removed
+PASS: real host: container memory within the 12.6 ceiling
+RESULT pass=101 fail=21
+# rc=1

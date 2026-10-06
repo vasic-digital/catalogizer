@@ -1,0 +1,33 @@
+# check-pins-mutation record: paired mutations of scripts/containers/check_pins.sh (G-GATE)
+# run_at: 2026-10-06T22:35:59Z host: anton
+# sut_sha256: d96d1b7318e52d7cbba60b419c03a09ffff685240fb0449a4aa015a4798de37f
+MUTANT digest-relaxed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose short digest: exit status 1 (got '0' want '1')
+MUTANT compose-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT from-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Dockerfile FROM tag only: exit status 1 (got '0' want '1')
+MUTANT arg-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD FROM ${ARG} whose default is unpinned: exit status 1 (got '0' want '1')
+MUTANT copyfrom-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD COPY --from external image tag only: exit status 1 (got '0' want '1')
+MUTANT script-run-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script podman run registry image: exit status 1 (got '0' want '1')
+MUTANT script-tag-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script registry reference with a tag in an assignment: exit status 1 (got '0' want '1')
+MUTANT pipe-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Containerfile download piped into sh: exit status 1 (got '0' want '1')
+MUTANT pipe-substitution-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script bash <(download) process substitution: exit status 1 (got '0' want '1')
+MUTANT pipe-sudo-handling-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script download piped into sudo bash: exit status 1 (got '0' want '1')
+MUTANT pipe-or-or-guard-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT alias-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: exit status 0 (got '1' want '0')
+MUTANT comment-strip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER comments in a script: exit status 0 (got '1' want '0')
+MUTANT continuation-join-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1 (got '0' want '1')
+MUTANT heredoc-skip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER here-document body (fixture data) in a script under tests/: exit status 0 (got '1' want '0')
+MUTANT heredoc-skip-always: CAUGHT rc=1 first_fail=FAIL: HEREDOC a here-document body in a production script is judged like code (exit 1) (got '0' want '1')
+MUTANT variable-without-default-judged: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '3' want '0')
+MUTANT compose-dispatch-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: no 'VIOLATION compose_image_unpinned <path>:3:' line in: VIOLATION script_image_unpinned docker-compose.security.yml:3: docker.io/aquasec/trivy:latest|check_pins: 1 violations in 1 files scanned
+MUTANT markdown-exclusion-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER documentation (Markdown and text are not scanned): exit status 0 (got '1' want '0')
+MUTANT exit-status-always-zero: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT localhost-compose-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '1' want '0')
+MUTANT dynamic-digest-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT value-option-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script docker run short image: exit status 1 (got '0' want '1')
+MUTANT R1-from-case-sensitive: CAUGHT rc=1 first_fail=FAIL: F4 lowercase from keyword: exit status 1 (got '0' want '1')
+MUTANT R2-single-quote-not-removed: CAUGHT rc=1 first_fail=FAIL: F2 a single-quoted operand is reported without its quotes: no row 'script_image_unpinned 3 redis:7' in: script_image_unpinned scripts/a.sh 2 postgres:15|
+MUTANT R2b-double-quote-not-removed: CAUGHT rc=1 first_fail=FAIL: F2 a double-quoted operand is reported without its quotes: no row 'script_image_unpinned 2 postgres:15' in: script_image_unpinned scripts/a.sh 3 redis:7|
+MUTANT R3-image-subcommand-dropped: CAUGHT rc=1 first_fail=FAIL: F2 run operand line 8: no row 'script_image_unpinned 8 nginx:1.25' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 alpine|script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|
+MUTANT R4-inline-from-default-ignored: CAUGHT rc=1 first_fail=FAIL: F4 inline ${VAR:-default} FROM default is judged: exit status 1 (got '0' want '1')
+MUTANT R5-pipe-abs-shell-path-dropped: CAUGHT rc=1 first_fail=FAIL: F2 Dockerfile pipe into a shell/interpreter line 4: no 'VIOLATION pipe_to_shell <path>:4:' line in: VIOLATION pipe_to_shell Dockerfile:2: wget -qO- https://x.invalid/i.sh | ash|VIOLATION pipe_to_shell Dockerfile:3: curl -sSL https://x.invalid/p.py | python3 -|VIOLATION pipe_to_shell Dockerfile:5: curl -sSL https://x.invalid/p.sh | ksh|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|
+MUTANT R6-zsh-dash-ash-ksh-dropped: CAUGHT rc=1 first_fail=FAIL: F2 Dockerfile pipe into a shell/interpreter line 2: no 'VIOLATION pipe_to_shell <path>:2:' line in: VIOLATION pipe_to_shell Dockerfile:3: curl -sSL https://x.invalid/p.py | python3 -|VIOLATION pipe_to_shell Dockerfile:4: curl -sSL https://x.invalid/p.rb | /usr/bin/ruby -|VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|check_pins: 4 violations in 1 files scanned

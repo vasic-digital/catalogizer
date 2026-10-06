@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T16:30:00Z |
+| Last modified | 2026-10-06T20:30:00Z |
 | Status | new, uncommitted when written (WP-08 T088/T089); independent review owed (constitution 11.4.142); NOT yet listed in `docs/scripts/README.md` (that index belongs to another stream: the row is owed, see "Index row owed") |
 | Source | `scripts/longops/{lib,register,acquire,release,heartbeat,holder,classify,reap,check_no_build_writing_tracked,require_verdicts}.sh`; tests `scripts/longops/tests/{lib.sh,test_registry.sh,mutate_registry.sh}` |
 
@@ -84,10 +84,21 @@ the scripts and requires the test to fail; the signal-guard mutant also removes 
 `LONGOPS_NOW`, `LONGOPS_ALLOW_TMPFS`, `LONGOPS_TEST_SLEEP_IN_CS` (widens the critical section so a missing flock is observable). HOST-SIDE run: RUNP/IMG-TESTUTIL (T007/T008)
 do not exist yet; container leg UNCONFIRMED.
 
+## T089a: the build dispatcher is bound to this registry (round c)
+
+`scripts/build/dispatch.sh` registers every dispatched build here (the pump, before the remote start; owner `dispatch`; op id = the build id, `<id>-a<N>` on a re-adoption) and feeds it with the build's events: see
+`dispatch.md` "Long-op registry". Additions to the scripts of this directory for it (additive; tests `G1` to `G3b` and `W1` to `W4` in `test_registry.sh`, mutants `M19` to `M21`):
+- `register.sh --grammar build`: validates the purpose-key grammar of T005b, `build:<component>:<lane-or-target>:<snapshot digest 64 hex>:<argv digest 64 hex>:<primary|repro-cold>[:<iteration>]`, component, lane and iteration
+  at most 16 characters (the key must fit the 200-character safe name); a malformed key is exit 2 `purpose_key_malformed`. Without `--grammar` a purpose keeps the older rule (any safe name), so existing callers are unchanged.
+- `heartbeat.sh --elapsed-ms N`: the op's own elapsed MONOTONIC time (a build reports its build host's clock); `classify.sh` marks an op `hung` once `elapsed_ms` passes `budget.wall_clock_s` (evidence `wall_clock: ...`), so an
+  advancing but over-long build is hung too. A wall cap of 0 (not recorded) never fires.
+- `purposes.tsv` (new, reviewed data): `class TAB no_progress_s TAB wall_clock_s TAB basis`; every row is `UNKNOWN` until T115 measures the lane (the dispatcher then uses its defaults and records `default:UNKNOWN`).
+- Registry states a build ends in: `complete` (completed and succeeded), `failed`, `reaped` (HUNG: the remote container cancelled by its label), `blocked-escape` (the other blocked reasons), `handoff` (a driver stop).
+
 ## Not done here
 
-T089a (bind `scripts/build/dispatch.sh submit` to this registry) is BLOCKED-ON T005b: the dispatcher does not exist. The purpose-key grammar of T005b is therefore not validated by `register.sh`
-(any safe name is accepted); `wall_clock_s` is recorded but not yet enforced by `classify.sh`.
+The registry scripts do not signal a remote build host (a HUNG build's remote container is cancelled by the emitter by its label, not by `reap.sh`, which only knows local containers); the sweep's `build_without_registry_row`
+mapping (op id equals the build id) holds for the first op of a build. `wall_clock_s` is enforced only for ops that report `--elapsed-ms`.
 
 ## Index row owed (docs/scripts/README.md)
 

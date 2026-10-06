@@ -1,4 +1,5 @@
-# name<TAB>old text (exact, unique in check_pins.sh)<TAB>new text; \n and \t escapes are decoded. Each mutant must make test_check_pins.sh FAIL.
+# name<TAB>old text (exact, unique in check_pins.sh)<TAB>new text; \n and \t escapes are decoded, a literal backslash is written doubled. Each mutant must make test_check_pins.sh FAIL.
+# Rows 1-21 are the original T104 table (anchors that moved were re-pointed); R1-R12 are the independent reviewer's surviving mutants (WF10 p1 F4); N-rows mutate the code added by the WF10 fix.
 digest-relaxed	@sha256:[0-9a-f]{64}(?![0-9A-Za-z])	@sha256:[0-9a-f]+
 compose-check-removed	if not pinned(ref):  # MUT-ANCHOR compose-check	if False:  # MUT-ANCHOR compose-check
 from-check-removed	if not pinned(ref):  # MUT-ANCHOR from-check	if False:  # MUT-ANCHOR from-check
@@ -16,9 +17,59 @@ continuation-join-removed	cont = line.rstrip().endswith("\\\\")	cont = False
 heredoc-skip-removed	if skip_heredocs:	if False:
 heredoc-skip-always	if skip_heredocs:	if True:
 variable-without-default-judged	if v.group(1) is None:	if False:
-value-option-skip-removed	if "=" not in t and t in VALUE_OPTS:	if False:
 compose-dispatch-removed	if kind == "compose":  # MUT-ANCHOR compose-dispatch	if False:  # MUT-ANCHOR compose-dispatch
 markdown-exclusion-removed	if low.endswith((".md", ".txt", ".html", ".json", ".tsv", ".lock")):	if False:
 exit-status-always-zero	sys.exit(1 if uniq else 0)	sys.exit(0)
-dynamic-digest-skip-removed	if ref.endswith("@sha256:") and ln[g.end():g.end() + 1] == "$":	if False:
 localhost-compose-skip-removed	if ref.startswith("localhost/"):	if False:
+dynamic-digest-skip-removed	if ref.endswith("@sha256:") and wreg[g.end():g.end() + 1] == "$":	if False:
+value-option-skip-removed	elif t in VALUE_OPTS:	elif False:
+R1-from-case-sensitive	fm = re.match(r"^\\s*FROM\\s+(?:--\\S+\\s+)*(\\S+)(?:\\s+AS\\s+(\\S+))?", ln, re.I)	fm = re.match(r"^\\s*FROM\\s+(?:--\\S+\\s+)*(\\S+)(?:\\s+AS\\s+(\\S+))?", ln)
+R2-single-quote-not-removed	elif ch == "'":	elif False:
+R2b-double-quote-not-removed	elif ch == '"':	elif False:
+R3-image-subcommand-dropped	if j < len(rest) and rest[j][0] in ("container", "image"):	if False:
+R4-inline-from-default-ignored	default = vm.group(2) if vm.group(2) is not None else args.get(vm.group(1))	default = args.get(vm.group(1))
+R5-pipe-abs-shell-path-dropped	(?:/usr/(?:local/)?bin/|/bin/)?" + SHELL_ALT)	" + SHELL_ALT)
+R6-zsh-dash-ash-ksh-dropped	SHELL_ALT = r"(?:(?:ba|z|da|a|k)?sh\\b|	SHELL_ALT = r"(?:(?:ba)?sh\\b|
+R7-dotbash-not-scanned	if low.endswith((".sh", ".bash")):	if low.endswith((".sh",)):
+R8-yaml-compose-not-scanned	if "compose" in low and low.endswith((".yml", ".yaml")):	if "compose" in low and low.endswith((".yml",)):
+R9-comment-quote-tracking-off	elif ch in "'\\"":	elif False:
+R10-recurse-ignored	cmd = ["git", "-C", root, "ls-files", "-z"] + (["--recurse-submodules"] if recurse else [])	cmd = ["git", "-C", root, "ls-files", "-z"]
+R11-exclude-dir-ignored	excl.add(argv[i + 1])	pass
+R12-output-unsorted	viol.sort(key=lambda v: (v[0], v[1], v[2], v[3]))  # MUT-ANCHOR output-sort	pass  # MUT-ANCHOR output-sort
+N01-trailing-pipe-continuation-removed	elif CONT_TRAIL_RE.search(body):	elif False:
+N03-arg-after-from-honoured	if not seen_from:               # an ARG after the first FROM	if True:               # an ARG after the first FROM
+N04-multi-arg-first-only	for tok in am.group(1).split():	for tok in am.group(1).split()[:1]:
+N05-mount-from-not-judged	mf = re.search(r"(?:^|,)from=([^,\\s]+)", mt.group(1))	mf = None
+N06-add-from-not-judged	(?:ONBUILD\\s+)?(?:COPY|ADD)\\b.*?--from=(\\S+)	(?:ONBUILD\\s+)?(?:COPY)\\b.*?--from=(\\S+)
+N07-compose-next-line-value-ignored	if val == "":                       # the value is on a following line	if False:                       # the value is on a following line
+N08-build-sibling-ignored	if not qualified and has_build_sibling(lines, idx, len(m.group(1))):	if False:
+N09-registry-image-with-build-skipped	qualified = "/" in ref and ("." in first or ":" in first)	qualified = False
+N10-build-key-any-depth	if ind(l) == col and re.match(r"^\\s*build\\s*:", l):	if ind(l) >= col and re.match(r"^\\s*build\\s*:", l):
+N11-bare-dollar-var-judged	if re.match(r"^\\$[A-Za-z_][A-Za-z0-9_]*$", ref):	if False:
+N13-sudo-options-not-skipped	if base == "sudo":	if False:
+N14-duration-not-skipped	if base in WRAPPERS or DURATION_RE.match(t) or (t.startswith("-") and i > 0):	if base in WRAPPERS or (t.startswith("-") and i > 0):
+N15-wrapper-options-not-skipped	if base in WRAPPERS or DURATION_RE.match(t) or (t.startswith("-") and i > 0):	if base in WRAPPERS or DURATION_RE.match(t):
+N16-shell-strings-not-recursed	elif base in SHELLISH and depth < 4:	elif False:
+N17-quoted-substitution-not-recursed	if q and ("$(" in t or "`" in t):	if False:
+N18-test-data-commands-judged	if h is None or os.path.basename(tokens[h][0]) in DATA_CMDS:	if False:
+N19-heredoc-scan-quotes-ignored	HDOC_SCAN_RE = re.compile(r"""'[^']*'|"(?:[^"\\\\]|\\\\.)*"|	HDOC_SCAN_RE = re.compile(r"""
+N20-heredoc-scan-arithmetic-ignored	\\$?\\(\\([^()]*\\)\\)|(?<!<)<<(?!<)	(?<!<)<<(?!<)
+N21-crash-exit-code-1	sys.exit(3)  # MUT-ANCHOR crash-exit	sys.exit(1)  # MUT-ANCHOR crash-exit
+N22-crash-not-caught	except Exception as exc:	except KeyboardInterrupt as exc:
+N23-bom-not-stripped	encoding="utf-8-sig"	encoding="utf-8"
+N24-registry-literal-judged-in-tests	for g in ([] if is_test else REGISTRY_RE.finditer(wreg)):  # MUT-ANCHOR registry-literal-rule	for g in REGISTRY_RE.finditer(wreg):  # MUT-ANCHOR registry-literal-rule
+N25-docker-transport-not-stripped	wreg = work.replace("docker://", " ")	wreg = work
+N26-localhost-script-judged	if op.startswith("$") or op.startswith("localhost/") or not IMG_SHAPE.match(op):	if op.startswith("$") or not IMG_SHAPE.match(op):
+N28-unknown-option-value-taken-as-image	if after_unknown and looks_like_value(t):	if False:
+N29-global-option-value-not-skipped	j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1	j += 1
+N31-create-verb-dropped	ENGINE_VERBS = {"run", "pull", "create"}	ENGINE_VERBS = {"run", "pull"}
+N32-buildah-verbs-ignored	verbs = {"from", "pull"} if base == "buildah" else ENGINE_VERBS	verbs = ENGINE_VERBS
+N33-redirect-not-skipped	if re.match(r"^\\d*[<>]", t) and not q:	if False:
+N36-fd-dup-ampersand-splits	if cur and cur[-1][-1:] in ("<", ">"):	if False:
+N40-python-stdin-interpreter-dropped	|(?:python[0-9.]*|perl|ruby)\\s+-(?![\\w-]))"	)"
+N41-python-dash-lookahead-dropped	\\s+-(?![\\w-]))"	\\s+-)"
+N42-eval-substitution-dropped	(?:(?:ba|z|da|a|k)?sh|eval)\\s+(?:-c\\s+)?	(?:(?:ba|z|da|a|k)?sh)\\s+(?:-c\\s+)?
+N43-source-procsubst-dropped	|source)|(?<![\\w.])\\.)\\s+<\\(	|ZZZ)|(?<![\\w.])\\.)\\s+<\\(
+N44-dot-procsubst-dropped	|(?<![\\w.])\\.)\\s+<\\(	|(?<![\\w.])ZZZ)\\s+<\\(
+N46-build-sibling-after-ignored	for rng in (range(idx - 1, -1, -1), range(idx + 1, len(lines))):	for rng in (range(idx - 1, -1, -1),):
+N47-sibling-scan-crosses-services	if ind(l) < col:\n                break	if False:\n                break

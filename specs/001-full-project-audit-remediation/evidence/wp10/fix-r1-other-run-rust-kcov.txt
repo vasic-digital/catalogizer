@@ -1,0 +1,58 @@
+# identity: task=fix-r1 utc=2026-10-06T22:11:01Z host=anton uid=1000 git_head=11ba4b1d237b80ac04f21edef8d9cf4d9c0c7142 (working tree has uncommitted work, content hashes identify the files)
+# sha256 scripts/containers/envelope.sh=e9f108fc6f8e6c272e2d93207a3203ce83446af3fb2b033821e45d3e3312753d
+# sha256 scripts/containers/runner_lib.sh=7a321d12e92de9aa8e50ba2a32c36ad2aae2d56b5058342b882014f4bdeef860
+# sha256 scripts/containers/run_go.sh=61bf268e7cb0890f380ce1892aac2c7254916c3d06d8775336f2ae7b94846f16
+# sha256 scripts/containers/run_node.sh=44dc9bf4aa52567538722f0989a59fa8d36da4bd1436d32f4715d9b2e5c6db53
+# sha256 scripts/containers/run_docs.sh=eeda61cdd5d61df9291f19b4f0ac7aff6e16d8b857ffcf1ad5e3d3e215806e1d
+# sha256 scripts/containers/run_scan.sh=6e582ada4e268dfc5051925f5fa10408a32dd47a83a3c1377e8ce1be1b8df92a
+# sha256 scripts/containers/run_playwright.sh=05fdab626a9d088c00f0dc48baaa4d5c0170660917037c83b6d0c8b09b49798b
+# sha256 scripts/containers/run_testutil.sh=635ef4c7ad2d7417f40579bc375749252ff3297302fa78f82236b6840cc669fa
+# sha256 scripts/test-in-container.sh=5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b
+# sha256 scripts/containers/tests/test_envelope.sh=d7794633541ac59b028ffb1f2fca1878aab8298265a584315689a7fc62f5d08b
+# sha256 scripts/containers/tests/test_runners.sh=64865aa69c640904104585464301831c6e71bf695847e198ee0198d8894349e4
+# sha256 scripts/containers/tests/test_runners_hardening.sh=ce935b9bfe9f97d69dd013e8d4102531f639b7e3bb102319a04c964c09a58ec2
+# sha256 scripts/containers/tests/test_test_in_container.sh=82e934cf4be6162eecd85ba20c98403a336a359f6065f29c995628b7d762cb1c
+# sha256 scripts/containers/tests/test_race_detector.sh=39a803f74434288080770d36b58c81079b595a950211aca52e8bcf3b6b3b2676
+# command: TMPDIR=/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/80fd5f96-ce40-f6fc-6eb6-74c496826149/scratchpad/fix-r1/tmp bash /home/milosvasic/Projects/catalogizer/scripts/containers/tests/test_run_rust_kcov.sh
+# ---- output ----
+PASS: run_kcov: success exit 0
+PASS: run_kcov: two containers go through run_pinned.sh (probe, then run)
+PASS: run_kcov: both calls name IMG-KCOV
+PASS: run_kcov: the envelope memory limit is handed to run_pinned.sh
+PASS: run_kcov: the long operation ends complete
+PASS: run_kcov: a toolchain record is written
+PASS: run_kcov: no arguments is a usage error
+PASS: run_kcov: the exit code of the run is passed through
+PASS: run_kcov: an unreadable lock is refused
+PASS: run_kcov: --image is not an option (a single-image wrapper), usage error
+PASS: run_rust: a local start is refused with exit 20
+PASS: run_rust: stderr names compile_class_local
+PASS: run_rust: a refused local start runs no container (control needle: the shim was never reached)
+PASS: run_rust: a refused local start registers no long operation
+PASS: run_rust: a refused local start touches podman not at all
+PASS: run_rust: a call composed by the remote emitter (RUNNER_REMOTE_CALL=1) runs: exit 0
+PASS: run_rust: two containers (probe, run)
+PASS: run_rust: both calls name IMG-RUST
+PASS: run_rust: the long operation ends complete
+PASS: run_rust: IMG-RUST not in the lock is refused naming T143 (BLOCKED, never another image)
+PASS: run_rust: that refusal runs no container
+PASS: run_rust: RUNNER_REMOTE_CALL=0 is not a remote call: refused 20
+PASS: run_rust: only RUNNER_REMOTE_CALL=1 counts as the emitter: refused 20
+PASS: run_rust: no arguments is a usage error even for a remote call
+PASS: lane: TIC build-scripts unit -- true exits 0
+PASS: lane needle: build-scripts unit reaches the run_kcov wrapper (never run_testutil, never a bare podman)
+PASS: lane: TIC installer-wizard rust -- true exits 0 on the shim
+PASS: lane needle: installer-wizard rust reaches the run_rust wrapper
+PASS: lane needle: catalogizer-desktop rust reaches the run_rust wrapper
+PASS: lane: an app key not in the table is still refused (unknown_app), nothing ran
+PASS: lane: (build-scripts, rust) has no row and is refused
+PASS: lane: (catalogizer-desktop, unit) stays refused: its remote row waits for the T121a site column (BLOCKED)
+PASS: lane table: the added coverage rows are exactly the reviewed ones
+PASS: mutation rust-local-allowed caught (7 failing legs)
+PASS: mutation rust-image-swapped caught (3 failing legs)
+PASS: mutation kcov-image-swapped caught (1 failing legs)
+PASS: mutation lane-kcov-to-testutil caught (1 failing legs)
+PASS: mutation lane-rust-local caught (1 failing legs)
+PASS: mutation lane-desktop-node-row caught (1 failing legs)
+Summary: PASS=39 FAIL=0 SKIP=0
+# rc=0
