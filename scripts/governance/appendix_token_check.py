@@ -5,7 +5,15 @@ Contract: every `CM-*` gate token and every `--flag` (no-escape-hatch flags) tha
 matching `#### §<id>` digest of the appendix. Restating is the digest's whole job (appendix Part 1 says it states every gate and flag);
 this tool is the deterministic instrument for that claim, which no other tool checked (regen check guards only generated regions).
 
-Usage: appendix_token_check.py --canon <Constitution.md> --appendix <constitution-appendix.md> [--allow <tsv>] [--json <out.json>]
+Usage: appendix_token_check.py --canon <Constitution.md> --appendix <constitution-appendix.md> [--allow <tsv>] [--floor <tsv>] [--phrases <tsv>]
+       [--json <out.json>]        appendix_token_check.py ... --write-floor <tsv>   (regenerates the wording floor from the current digests)
+
+Two wording checks (WF9 G3) sit beside the token comparison, because a token comparison proves names, not sentences:
+  --floor    <tsv>  per digest `<id>\tMUST=n,NEVER=n,FORBIDDEN=n\t<composes ids or ->`; the digest MUST keep at least that many of each
+                    word (WEAKENED otherwise) and every listed Composes id (COMPOSE-LOST otherwise). A floor, not an equality: a digest may
+                    gain. A floor row whose anchor has no digest is STALE. Lowering a floor is a reviewed edit of the tsv.
+  --phrases  <tsv>  `<id>\t<phrase>\t<reason>`: a sentence the digest MUST carry (PHRASE-LOST otherwise) and the canon block MUST still carry
+                    (STALE phrase otherwise: a phrase cannot outlive the canon wording it quotes).
 
 Canon block-starts (forms that occur in Constitution.md): `### §<id> ...`, `#### §<id> ...`, and a line beginning `**§<id> — ` (bold
 block form; a bare `§<id> ` at the start of a prose line, or `**§<id> precedence`, is a citation, never a block-start). A block ends at the next block-start or at any `## ` / `# ` heading. Appendix digests start at `#### §<id>` and end at the next
@@ -16,12 +24,14 @@ Allow file (TSV: `<id>\t<token or *>\t<reason>`): an exemption for a token that 
 `*`, an anchor that has no digest by design. A reason is mandatory (exit 2 otherwise). A STALE exemption (token already present in the
 digest, or not in the canon block, or the anchor is not missing its digest) is a failure: an exemption list must not rot.
 
-Exit: 0 no gaps; 1 gaps / no-digest / stale exemption; 2 usage, unreadable input, BLIND (zero blocks or zero digests extracted), duplicate
+Scope: every canon block-start with a dotted numeric id (7.1, 9.1-9.4, 11.4, 11.4.N, 12.N): nothing is excluded by id.
+
+Exit: 0 no gaps; 1 gaps / no-digest / stale exemption / weakened / compose-lost / phrase-lost / stale floor or phrase row; 2 usage, unreadable input, BLIND (zero blocks or zero digests extracted), duplicate
 canon block-start, malformed allow file.
 """
 import argparse, hashlib, json, re, sys
 
-ID = r'(11\.4\.\d+(?:\.[A-Za-z0-9]+)*|12\.\d+(?:\.[A-Za-z0-9]+)*)'
+ID = r'(\d+(?:\.[A-Za-z0-9]+)*)'  # every dotted anchor id: 7.1, 9.x, 11.4, 11.4.N(.x), 12.N (no scope exclusion, WF9 G2)
 CANON_START = re.compile(r'^ {0,3}(?:#{3,4} +§' + ID + r'(?=\s|—)|\*\*§' + ID + r'\s+—)')
 APP_START = re.compile(r'^#### +§' + ID + r'(?=\s|—)')
 HEAD = re.compile(r'^#{1,2} ')
@@ -67,6 +77,31 @@ def segment(text, start_re, end_re, cont_re=None):
     return blocks, dups
 
 
+WORDS = ("MUST", "NEVER", "FORBIDDEN")
+COMP_LINE = re.compile(r'^[ \t]*[-*]?[ \t]*\*\*Composes:\*\*(.*)$', re.M)
+REFID = re.compile(r'§\s?(\d+(?:\.\d+)*)')
+
+
+def idkey(k):
+    return tuple((int(x), "") if x.isdigit() else (-1, x) for x in k.split("."))
+
+
+def counts(text):
+    return dict((w, len(re.findall(r'\b' + w + r'\b', text))) for w in WORDS)
+
+
+def composes(text):
+    ids = set()
+    for m in COMP_LINE.finditer(text):
+        ids.update(REFID.findall(m.group(1)))
+    return ids
+
+
+def norm(text):
+    """Whitespace-collapsed text with markdown emphasis and code ticks removed: a phrase is compared as words, not as markup."""
+    return " ".join(re.sub(r"[*`]", "", joined(text)).split())
+
+
 def read(p):
     try:
         with open(p, "rb") as f:
@@ -87,12 +122,46 @@ def load_allow(p):
     return out
 
 
+def load_floor(p):
+    out = {}
+    for n, line in enumerate(read(p).decode("utf-8").splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) < 3:
+            usage("floor file line %d: id, counts and composes columns are required" % n)
+        cnt = {}
+        for kv in parts[1].split(","):
+            w, _, v = kv.partition("=")
+            if w.strip() not in WORDS or not v.strip().isdigit():
+                usage("floor file line %d: bad count %r" % (n, kv))
+            cnt[w.strip()] = int(v)
+        comp = set() if parts[2].strip() == "-" else set(x.strip() for x in parts[2].split(",") if x.strip())
+        out[parts[0].strip()] = (cnt, comp)
+    return out
+
+
+def load_phrases(p):
+    out = []
+    for n, line in enumerate(read(p).decode("utf-8").splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) < 3 or not parts[1].strip() or not parts[2].strip():
+            usage("phrases file line %d: id, phrase and a non-empty reason are required" % n)
+        out.append((parts[0].strip(), norm(parts[1]), parts[2].strip()))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(add_help=True)
     ap.add_argument("--canon", required=True)
     ap.add_argument("--appendix", required=True)
     ap.add_argument("--allow")
     ap.add_argument("--json")
+    ap.add_argument("--floor")
+    ap.add_argument("--phrases")
+    ap.add_argument("--write-floor")
     try:
         a = ap.parse_args()
     except SystemExit as e:
@@ -133,6 +202,35 @@ def main():
             continue
         stale.append((k, t, why))
     ainfo = sorted(set(ab) - set(cb))
+    if a.write_floor:
+        with open(a.write_floor, "w", encoding="utf-8") as f:
+            f.write("# appendix wording floor: <anchor id> TAB MUST=n,NEVER=n,FORBIDDEN=n TAB <Composes ids or -> ; regenerated by appendix_token_check.py --write-floor from the digests; lowering a row is a reviewed edit\n")
+            for k in sorted(ab, key=idkey):
+                c = counts(ab[k])
+                comp = sorted(composes(ab[k]), key=idkey)
+                f.write("%s\t%s\t%s\n" % (k, ",".join("%s=%d" % (w, c[w]) for w in WORDS), ",".join(comp) if comp else "-"))
+    weak, lost, stale_floor, pgaps, stale_phr, nfloor, nphr = [], [], [], [], [], 0, 0
+    if a.floor:
+        fl = load_floor(a.floor)
+        nfloor = len(fl)
+        for k, (cnt, comp) in sorted(fl.items(), key=lambda kv: idkey(kv[0])):
+            if k not in ab:
+                stale_floor.append(k)
+                continue
+            have = counts(ab[k])
+            for w in WORDS:
+                if have[w] < cnt.get(w, 0):
+                    weak.append((k, w, have[w], cnt.get(w, 0)))
+            for r in sorted(comp - composes(ab[k]), key=idkey):
+                lost.append((k, r))
+    if a.phrases:
+        ph = load_phrases(a.phrases)
+        nphr = len(ph)
+        for k, phrase, why in ph:
+            if k not in cb or k not in ab or phrase not in norm(cb[k]):
+                stale_phr.append((k, phrase))
+            elif phrase not in norm(ab[k]):
+                pgaps.append((k, phrase))
     print("canon_blocks=%d appendix_digests=%d tokens_checked=%d gaps=%d no_digest=%d exempt=%d stale_exemptions=%d" % (
         len(cb), len(ab), checked, len(gaps), len(nodigest), exempt, len(stale)))
     for k, t in gaps:
@@ -142,14 +240,31 @@ def main():
     for k, t, why in stale:
         print("STALE exemption §%s %s: not needed (%s)" % (k, t, why))
     print("INFO appendix digests without a canon block-start: %s" % (", ".join(ainfo) if ainfo else "none"))
+    if a.floor or a.phrases:
+        print("wording_floor_rows=%d weakened=%d compose_lost=%d stale_floor=%d phrases=%d phrase_gaps=%d stale_phrases=%d" % (
+            nfloor, len(weak), len(lost), len(stale_floor), nphr, len(pgaps), len(stale_phr)))
+    for k, w, have, want in weak:
+        print("WEAKENED §%s: digest has %d x %s, the floor is %d" % (k, have, w, want))
+    for k, r in lost:
+        print("COMPOSE-LOST §%s: digest Composes no longer lists §%s" % (k, r))
+    for k in stale_floor:
+        print("STALE floor row §%s: the anchor has no digest" % k)
+    for k, phrase in pgaps:
+        print("PHRASE-LOST §%s: the digest no longer carries: %s" % (k, phrase))
+    for k, phrase in stale_phr:
+        print("STALE phrase §%s: not in the canon block or digest any more: %s" % (k, phrase))
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:
             json.dump({"canon_sha256": hashlib.sha256(craw).hexdigest(), "appendix_sha256": hashlib.sha256(araw).hexdigest(),
                        "canon_blocks": len(cb), "appendix_digests": len(ab), "tokens_checked": checked,
                        "gaps": [{"id": k, "token": t} for k, t in gaps], "no_digest": nodigest, "exempt": exempt,
-                       "stale_exemptions": [{"id": k, "token": t} for k, t, _ in stale], "appendix_only": ainfo}, f, indent=1)
+                       "stale_exemptions": [{"id": k, "token": t} for k, t, _ in stale], "appendix_only": ainfo,
+                       "weakened": [{"id": k, "word": w, "have": h, "floor": fl_} for k, w, h, fl_ in weak],
+                       "compose_lost": [{"id": k, "ref": r} for k, r in lost], "stale_floor": stale_floor,
+                       "phrase_gaps": [{"id": k, "phrase": p_} for k, p_ in pgaps],
+                       "stale_phrases": [{"id": k, "phrase": p_} for k, p_ in stale_phr]}, f, indent=1)
             f.write("\n")
-    sys.exit(1 if (gaps or nodigest or stale) else 0)
+    sys.exit(1 if (gaps or nodigest or stale or weak or lost or stale_floor or pgaps or stale_phr) else 0)
 
 
 if __name__ == "__main__":

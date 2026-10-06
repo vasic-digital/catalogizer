@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 7 |
+| Revision | 8 (WF9 pin re-review minor findings G1-G7: owner-record citations corrected, anchor counts and catalogue-staleness stated, both Sonnet-fallback flags named, Known Conflicts preamble covers items 17 and 18) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-06T18:55:00Z |
+| Last modified | 2026-10-06T19:37:16Z |
 | Status | active, BINDING; the 2026-10-06 canon pin move (constitution version 2.2.0) is held for its G-PIN review (WP-07 T084) and owner ratification (T081a) |
 | Binds | the Catalogizer Spec Kit layer, together with `.specify/memory/constitution-appendix.md` |
 
@@ -25,10 +25,12 @@ no-duplicate (§11.4.227) rules:
    anchor's text, its gate names and its "no escape hatch" list. Nothing here narrows that.
 2. **Stated here.** The principles, the digest of §1–§12, the project overrides, the technology
    and the known conflicts are written out below.
-3. **Enumerated here.** All 283 anchors are listed in the Anchor Catalogue, generated from the
-   canon's own machine index, so no anchor can be missed or mis-transcribed.
+3. **Enumerated here.** The 283 anchors the canon's machine index lists are in the Anchor Catalogue,
+   generated from that index, so none of them can be missed or mis-transcribed; the canon has 284
+   anchors at this pin and the index lacks §11.4.276 (Known Conflicts item 18), which is stated in
+   the appendix only.
 4. **Ported in the binding appendix.** `.specify/memory/constitution-appendix.md` (about 1 MB)
-   states the operative rules of every one of the 283 anchors (every MUST clause, lettered clause,
+   states the operative rules of every anchor of the canon (284 at this pin: 283 from the index plus §11.4.276; every MUST clause, lettered clause,
    gate name, no-escape-hatch flag and honest boundary) and every project and module rule. It is
    part of this constitution and binds with it. It is a separate file only because Spec Kit loads
    the main file on every command; Spec Kit commands MUST read the appendix when a plan, task or
@@ -108,12 +110,19 @@ edit, MUST pass an independent review before acceptance, commit or build (§11.4
   MUST then run on Sonnet at the highest effort the dispatch path can set, with the Opus
   unavailability fact and the substitution recorded in the evidence, and it is blocked only when
   both Opus and Sonnet are unavailable. Leaving it blocked or deferred while Sonnet is reachable is
-  the canon no-escape-hatch flag `--leave-review-blocked-while-sonnet-reachable`. The earlier text
+  the canon no-escape-hatch flag `--leave-review-blocked-while-sonnet-reachable` (merge-conflict
+  resolution has the twin flag `--leave-merge-blocked-while-sonnet-reachable`). The earlier text
   of this principle ("BLOCKED, never substituted") digested the pre-amendment canon; it is not an
-  owner mandate: the owner record for ODG-19 reads "Opus xhigh as pinned (§11.4.209)" and OA-2026-10-05-23
-  reads "run independent reviews ... with Opus xhigh and record effort", and neither says "no
-  fallback" or "blocked". Status: an OPEN canon conflict (Known Conflicts item 17, owner question
-  OD-WP07-SONNET-FALLBACK, default: follow canon). Interim practice, an agent's interim choice and
+  owner mandate. What the records hold: ODG-19 (`owner-decisions.yaml` lines 355-358, status
+  Operator-blocked) carries the plan's own options ("Opus at xhigh as pinned; other") and the plan's
+  recommendation ("as pinned (§11.4.209)"), which are not an owner answer; the owner's recorded
+  answer is OA-2026-10-05-23 (`owner-decisions.yaml` line 1216, relayed by the conductor, not a
+  verbatim owner quotation): "run independent reviews through the Workflow path with Opus xhigh
+  and record effort". Neither says "no fallback" or "blocked". Status: an OPEN canon conflict
+  (Known Conflicts item 17, owner question OD-WP07-SONNET-FALLBACK, default: follow canon). The
+  generated Anchor Catalogue titles of §11.4.209 and §11.4.211 below are the machine index's
+  pre-amendment titles ("ALWAYS ... no fallback model"): they are stale index lag (Known
+  Conflicts item 18), and this principle controls. Interim practice, an agent's interim choice and
   NOT an owner decision: follow canon, Opus at `xhigh` first and the Sonnet fallback only on a
   captured Opus-unavailability fact, recorded with model and effort. The same pin binds
   merge-conflict resolution (§11.4.209, §11.4.211).
@@ -320,7 +329,7 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
 | Surface | Contents (in `submodules/constitution/`) |
 |---------|------------------------------------------|
 | Groups | 12 topic groups under `groups/` (see the Anchor Catalogue) |
-| Index | `constitution_index.yaml`, machine-readable list of all 283 anchors |
+| Index | `constitution_index.yaml`, machine-readable list of the 283 anchors it knows (it lacks §11.4.276 at this pin) |
 | Action prefixes | `actions/registry.yaml`: BACKGROUND, REMINDER, CRITICAL, IMPORTANT, NOTE, BUG, TASK, ISSUE, FEATURE and sub-system shortcuts, in the six grammar forms of §11.4.140 and §11.4.202 |
 | Model tiering | `actions/subagent_tiering.yaml`, `scripts/subagent_tier.sh` (see Known Conflicts, item 3) |
 | Skills | `action-prefix-system`, `media-validator`, `multitrack`, `reporting-workable-items`, `scheduled-work-queue`, `session-sync`, `skill-catalog`, `workable-item-lifecycle` |
@@ -571,7 +580,7 @@ This project follows **specification-driven development** using the superspec pi
 
 ## Anchor Catalogue
 
-All 283 anchors of the pinned canon, grouped as the canon groups them. Each line is the anchor id
+All 283 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
 and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are
 in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors
 numbered 62, 64, 175 and 203 to 206 do not exist in canon and are cited-but-undefined elsewhere.
@@ -926,7 +935,8 @@ These were found while reading every source in full. Canon wins on each. Items m
 (§11.4.6). Items 2 to 4, 7, 11 and 13 carry a mixed FIXED/OPEN status inline; the others are: 1 DECIDED (the
 stricter project limit governs), 5 DECIDED (operator), 6 OPEN, 8 NOTE (informational), 9 DECIDED
 (operator, per-application phase-in), 10 OPEN, 12 DECIDED (workflow narrowed), 14 NOTE (state at
-commit time), 15 DECIDED (operator), 16 DECIDED (operator). Statuses: FIXED in this change
+commit time), 15 DECIDED (operator), 16 DECIDED (operator), 17 OPEN (owner decision: the canon
+Sonnet fallback), 18 NOTE (upstream index and groups lag, reported not fixed). Statuses: FIXED in this change
 (main-repo files only), DECIDED (an autonomous reversible default under §11.4.101 where no
 "operator" is named, otherwise a decision the operator gave), OPEN (an operator decision or a
 follow-up), NOTE (informational).
@@ -1046,12 +1056,15 @@ follow-up), NOTE (informational).
     (code review) and §11.4.211 (merge-conflict resolution), amended 2026-10-04, REQUIRE a fallback:
     when Opus at `xhigh` is genuinely unavailable (a captured fact) the work MUST be dispatched on
     Sonnet rather than blocked, and it is blocked only when both Opus and Sonnet are unavailable;
-    canon names `--leave-review-blocked-while-sonnet-reachable` as a forbidden escape hatch. An
-    earlier text of this document (Principle III) said "blocked, never substituted"; that digested
-    the pre-amendment canon and was never an owner mandate (ODG-19: "Opus xhigh as pinned
-    (§11.4.209)"; OA-2026-10-05-23: "run independent reviews ... with Opus xhigh and record effort";
-    the id OA-2026-10-05-23 was not found in any tracked markdown by the 2026-10-06 fix pass, so it
-    is cited as the review reported it, UNCONFIRMED locator). **OPEN canon conflict, owner decision,
+    canon names `--leave-review-blocked-while-sonnet-reachable` (review) and
+    `--leave-merge-blocked-while-sonnet-reachable` (merge-conflict resolution) as forbidden
+    escape hatches. An earlier text of this document (Principle III) said "blocked, never
+    substituted"; that digested the pre-amendment canon and was never an owner mandate. The
+    records: ODG-19 (`owner-decisions.yaml` lines 355-358, Operator-blocked) holds the plan's
+    options ("Opus at xhigh as pinned; other") and the plan's recommendation ("as pinned
+    (§11.4.209)"), not an owner answer; the owner's recorded answer is OA-2026-10-05-23
+    (`owner-decisions.yaml` line 1216, relayed by the conductor, not verbatim): "run independent
+    reviews through the Workflow path with Opus xhigh and record effort". **OPEN canon conflict, owner decision,
     not made by an agent:** whether the project wants the canon fallback (default, follow canon) or
     to ask for a canon change; a project rule that blocks where canon requires a fallback would
     weaken canon, which a project may not do. Interim practice, an agent's interim choice and not an
@@ -1064,7 +1077,10 @@ follow-up), NOTE (informational).
     stops with `anchor 11.4.276 matches no group rule`. The `groups/*.md` files also lack the
     amendments to §11.4.134, §11.4.209, §11.4.211, §11.4.230, §11.4.231, §11.4.235, §11.4.240 and
     §11.4.267 and the whole of §11.4.276. The appendix digests of those anchors were written from
-    `Constitution.md` (the pinned canon), not from the groups files. Evidence:
+    `Constitution.md` (the pinned canon), not from the groups files. Consequence for this file: the
+    generated Anchor Catalogue lists the index's titles, so the entries for §11.4.209 and §11.4.211
+    still read "ALWAYS ... no fallback model" (the pre-amendment titles) and §11.4.276 is not listed
+    at all; those entries are stale index lag, and Principle III and item 17 control over them. Evidence:
     `specs/001-full-project-audit-remediation/evidence/wp07/pin-upstream-findings.md`.
 
 ## Governance

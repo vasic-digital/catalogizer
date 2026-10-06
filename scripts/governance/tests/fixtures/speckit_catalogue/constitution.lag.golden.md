@@ -13,7 +13,7 @@ Principle text that the regeneration must keep byte for byte.
 
 ## Anchor Catalogue
 
-All 5 anchors of the pinned canon, grouped as the canon groups them. Each line is the anchor id
+All 5 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
 and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are
 in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors
 numbered 2, 4 and 6 to 9 do not exist in canon and are cited-but-undefined elsewhere.

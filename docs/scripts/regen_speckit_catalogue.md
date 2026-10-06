@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 (WF9 pin-fix 2, findings G6 and G7: the generated catalogue sentence now reads "All N anchors the machine index lists", which is true while the index lags the pin; the paired-mutation count is corrected to 18) |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T19:05:00Z |
-| Status | new, untracked when written; implemented test-first (T075 RED, T076 GREEN x3, 14 paired mutations); independent review owed (constitution 11.4.142); not yet indexed by `docs/scripts/README.md` (that file is another agent's, not edited here) |
+| Last modified | 2026-10-06T19:37:16Z |
+| Status | new, untracked when written; implemented test-first (T075 RED, T076 GREEN x3, 18 paired mutations, all killed); independent review owed (constitution 11.4.142); not yet indexed by `docs/scripts/README.md` (that file is another agent's, not edited here) |
 | Source | `scripts/governance/regen_speckit_catalogue.py`; test `scripts/governance/tests/test_regen_speckit_catalogue.py`; mutations `scripts/governance/tests/mutate_regen_speckit_catalogue.py`; fixtures `scripts/governance/tests/fixtures/speckit_catalogue/` |
 
 ## Purpose
@@ -42,7 +42,7 @@ its first 200 characters and ends with ` …`; group display names come from the
 
 Index lag: the index records the sha256 of the `Constitution.md` it was generated from. When it differs from the hash of `--canon-md`, both files say so
 and name the anchors whose `### §<id>` heading (an id has at least one dot, so `### §8.` section headings do not count) is in the canon but not in the index.
-The catalogue can only list what the index knows. `NOTE manual:` lines (stdout) point at hand-written text that still names the old anchor count.
+The catalogue can only list what the index knows, and it lists the index's titles: while the index lags a pin, a title can predate the canon amendment (at `a71b1767` the entries of 11.4.209 and 11.4.211 still carry the pre-amendment titles); the hand-written text of the constitution file says so (Known Conflicts item 18). `NOTE manual:` lines (stdout) point at hand-written text that still names the old anchor count.
 
 ## Exit codes
 
@@ -62,7 +62,7 @@ Not run by anything automatically yet: T081 runs it at the pin bump; whether a s
 21 cases, each an executing run of the script on fixtures with hand-written golden outputs (the oracle is independent of the implementation): golden
 reproduction of both files, idempotence, `check` exit 0 / 1, hand-edited catalogue / pin line / appendix reported as DRIFT, repair by `write`, lagging
 index (and a `### §8.` section heading that must not be listed), trailing whitespace and single final newline, input without a final newline, bad index and
-missing markers exit 2 with nothing touched, plus (WF8 F4, 2026-10-06) the stdout `INDEX-LAG` banner, the `NOTE manual:` lines and the numeric ordering of several canon-only ids. 14 paired mutations (one defect per copy of the script) are each killed by a named case.
+missing markers exit 2 with nothing touched, plus (WF8 F4, 2026-10-06) the stdout `INDEX-LAG` banner, the `NOTE manual:` lines and the numeric ordering of several canon-only ids. 18 paired mutations (one defect per copy of the script: the first 14, then the four reviewer-authored mutants of WF8 F4) are each killed by a named case.
 
 ## Known limits
 

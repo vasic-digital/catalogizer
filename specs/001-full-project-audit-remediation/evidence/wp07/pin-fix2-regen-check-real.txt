@@ -1,0 +1,25 @@
+# generated 2026-10-06T19:41:41Z by pin-fix2 agent (WF9 minor findings G1-G7); git HEAD 40a1f8e32fb7f36e1818610c0514ee826697f31e (working tree uncommitted; sha256 below identify the files)
+# sha256 87f6f908463cf067874ffd66ef7c22c53e037b26171324a77cb5d030a9cb89d8  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 5f8b65a1cdb7f0e0155f42562db3e3138f124c38de4f6d3cd7589358cef5220f  scripts/governance/appendix_wording_floor.tsv
+# sha256 28e5690988585510f956c0c1542dd45c545e41ac49d8fa340a6a9985d4e580bf  scripts/governance/appendix_required_phrases.tsv
+# sha256 d2ea1bbfff3fb4a0bb402ddc1e153450bf72a0d93c89d4c48a703937927bb666  scripts/governance/tests/test_appendix_token_check.py
+# sha256 34a4d6413fdc853739eaccf7d4424da8b77634c76670434fcc9b8f674fc2ca87  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 d8266a1ce42d250e0ae388b587f8887b9548b2a43d9ea02a146cd3f8e49bfe06  scripts/governance/tests/mutate_appendix_digests.py
+# sha256 0991bf4a29a9690d9b00c173f6a46f89ff84ed0e511c0d73dd9993cfc02713eb  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1283f7c21d006adbd188f42e7e72aedf97e2625503ccc0ba42c05296bf24b3db  .specify/memory/constitution.md
+# sha256 960adf6269b020e0b0535442cbeb628fb2fac864b333f5326bcc62af36122888  .specify/memory/constitution-appendix.md
+# sha256 e1cfa136c973fe62f273defe2f4764c69faff1618c17734f943a618206e3982b  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## regen check on the real files, and control with the old commit
+-- real
+INDEX-LAG index source_sha256 d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72 != canon sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e; anchors in canon but not in the index: 11.4
+OK in sync .specify/memory/constitution.md
+OK in sync .specify/memory/constitution-appendix.md
+rc=0
+-- control: --commit 10b7a06 (must DRIFT)
+INDEX-LAG index source_sha256 d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72 != canon sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e; anchors in canon but no
+DRIFT .specify/memory/constitution.md differs from its regeneration (first difference at line 43); run write to repair
+DRIFT .specify/memory/constitution-appendix.md differs from its regeneration (first difference at line 10); run write to repair
+rc=1

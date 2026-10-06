@@ -1,0 +1,37 @@
+# generated 2026-10-06T19:39:56Z by pin-fix2 agent (WF9 minor findings G1-G7); git HEAD 40a1f8e32fb7f36e1818610c0514ee826697f31e (working tree uncommitted; sha256 below identify the files)
+# sha256 87f6f908463cf067874ffd66ef7c22c53e037b26171324a77cb5d030a9cb89d8  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 5f8b65a1cdb7f0e0155f42562db3e3138f124c38de4f6d3cd7589358cef5220f  scripts/governance/appendix_wording_floor.tsv
+# sha256 28e5690988585510f956c0c1542dd45c545e41ac49d8fa340a6a9985d4e580bf  scripts/governance/appendix_required_phrases.tsv
+# sha256 d2ea1bbfff3fb4a0bb402ddc1e153450bf72a0d93c89d4c48a703937927bb666  scripts/governance/tests/test_appendix_token_check.py
+# sha256 34a4d6413fdc853739eaccf7d4424da8b77634c76670434fcc9b8f674fc2ca87  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 d8266a1ce42d250e0ae388b587f8887b9548b2a43d9ea02a146cd3f8e49bfe06  scripts/governance/tests/mutate_appendix_digests.py
+# sha256 0991bf4a29a9690d9b00c173f6a46f89ff84ed0e511c0d73dd9993cfc02713eb  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1283f7c21d006adbd188f42e7e72aedf97e2625503ccc0ba42c05296bf24b3db  .specify/memory/constitution.md
+# sha256 960adf6269b020e0b0535442cbeb628fb2fac864b333f5326bcc62af36122888  .specify/memory/constitution-appendix.md
+# sha256 e1cfa136c973fe62f273defe2f4764c69faff1618c17734f943a618206e3982b  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## regen mutants (18), driver run as shipped from the repository root (host python3 -I orchestrating run_pinned.sh containers; copies under the ignored .audit/scratch/wp07/mut)
+# golden-good control: unmutated script
+  control rc=0 TOTAL 21 PASS 21 FAIL 0
+KILLED   drift-check-ignores-edits              rc=1 failing=4  TOTAL 21 PASS 17 FAIL 4  (named cases failed: hand-edited-catalogue-drift,check-fresh-input-reports-drift,hand-edited-pin-line-drift,han
+KILLED   drift-exit-code-zero                   rc=1 failing=4  TOTAL 21 PASS 17 FAIL 4  (named cases failed: hand-edited-catalogue-drift)
+KILLED   title-limit-300                        rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   keeps-leading-em-dash                  rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   no-trailing-whitespace-strip           rc=1 failing=5  TOTAL 21 PASS 16 FAIL 5  (named cases failed: trailing-whitespace-and-single-final-newline)
+KILLED   no-final-newline-normalisation         rc=1 failing=8  TOTAL 21 PASS 13 FAIL 8  (named cases failed: trailing-whitespace-and-single-final-newline)
+KILLED   lag-never-reported-in-constitution     rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: lagging-index-golden-constitution)
+KILLED   lag-never-reported-in-appendix         rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lagging-index-golden-appendix)
+KILLED   lag-ids-dropped                        rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: lagging-index-golden-constitution)
+KILLED   appendix-pin-not-updated               rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-appendix)
+KILLED   range-run-threshold                    rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   acronyms-not-uppercased                rc=1 failing=3  TOTAL 21 PASS 18 FAIL 3  (named cases failed: write-reproduces-golden-constitution)
+KILLED   section-heading-counted-as-anchor      rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lagging-index-golden-constitution)
+KILLED   missing-marker-tolerated               rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: missing-catalogue-marker-exit-2-untouched)
+KILLED   notes-silenced                         rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: stale-anchor-count-prints-NOTE-line)
+KILLED   lag-ids-reversed                       rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lag-ids-numeric-order-in-stdout-and-both-files)
+KILLED   lag-ids-string-sorted                  rc=1 failing=1  TOTAL 21 PASS 20 FAIL 1  (named cases failed: lag-ids-numeric-order-in-stdout-and-both-files)
+KILLED   index-lag-banner-silenced              rc=1 failing=2  TOTAL 21 PASS 19 FAIL 2  (named cases failed: lagging-index-stdout-banner)
+MUTATIONS killed=18 survivors=0 not_applied=0 (control rc=0)
+rc=0

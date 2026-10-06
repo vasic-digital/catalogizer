@@ -1,0 +1,93 @@
+# generated 2026-10-06T19:37:25Z by pin-fix2 agent (WF9 minor findings G1-G7); git HEAD 40a1f8e32fb7f36e1818610c0514ee826697f31e (working tree uncommitted; sha256 below identify the files)
+# sha256 87f6f908463cf067874ffd66ef7c22c53e037b26171324a77cb5d030a9cb89d8  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 5f8b65a1cdb7f0e0155f42562db3e3138f124c38de4f6d3cd7589358cef5220f  scripts/governance/appendix_wording_floor.tsv
+# sha256 28e5690988585510f956c0c1542dd45c545e41ac49d8fa340a6a9985d4e580bf  scripts/governance/appendix_required_phrases.tsv
+# sha256 d2ea1bbfff3fb4a0bb402ddc1e153450bf72a0d93c89d4c48a703937927bb666  scripts/governance/tests/test_appendix_token_check.py
+# sha256 34a4d6413fdc853739eaccf7d4424da8b77634c76670434fcc9b8f674fc2ca87  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 d8266a1ce42d250e0ae388b587f8887b9548b2a43d9ea02a146cd3f8e49bfe06  scripts/governance/tests/mutate_appendix_digests.py
+# sha256 0991bf4a29a9690d9b00c173f6a46f89ff84ed0e511c0d73dd9993cfc02713eb  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1283f7c21d006adbd188f42e7e72aedf97e2625503ccc0ba42c05296bf24b3db  .specify/memory/constitution.md
+# sha256 960adf6269b020e0b0535442cbeb628fb2fac864b333f5326bcc62af36122888  .specify/memory/constitution-appendix.md
+# sha256 e1cfa136c973fe62f273defe2f4764c69faff1618c17734f943a618206e3982b  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## RED: the new 53-case test against the HEAD tool (backup .audit/backups/wp07-pin-fix2-20261006T192945Z), before the tool change
+PASS clean fixture exits 0
+PASS clean fixture reports counted tokens
+PASS missing --second-flag -> exit 1 naming anchor and token
+PASS missing CM-FIRST-GATE -> exit 1 naming anchor and token
+PASS missing CM-COVENANT-114-1-PROPAGATION -> exit 1 naming anchor and token
+PASS bold-block token missing is charged to 11.4.2, not 11.4.1
+PASS moving a token between digests of correct anchor passes
+PASS prose citation lines do not start blocks nor create duplicates
+PASS hyphen-wrapped tokens are joined (no truncated-prefix false gap)
+PASS hyphen-wrapped token missing from digest is still a gap, under its FULL name
+PASS sub-clause heading continues the parent digest
+PASS a--b carrier is not a token
+PASS canon anchor without digest -> exit 1 (no-digest)
+PASS appendix-only digest is informational (exit 0, listed)
+PASS zero canon blocks -> BLIND exit 2
+PASS zero appendix digests -> BLIND exit 2
+PASS duplicate canon block-start -> exit 2
+PASS allow entry with reason exempts exactly that token
+PASS allow entry does not hide a different missing token
+PASS allow entry without reason -> exit 2
+PASS stale allow entry (token present in digest) -> exit 1
+PASS stale allow entry (token not in canon block) -> exit 1
+PASS allow whole-anchor no-digest exemption with reason -> exit 0
+PASS no arguments -> exit 2 usage
+PASS unreadable input -> exit 2
+PASS --json writes identity hashes
+FAIL scope: 7.1, 9.2, 11.4, 12.6 blocks all compared (clean, 4 blocks, 5 tokens)  :: canon_blocks=1 appendix_digests=1 tokens_checked=2 gaps=0 no_digest=0 exempt=0 stale_exemptions=0
+INFO appendix digests without a canon block-start: none
+
+FAIL scope: CM-SEVEN-GATE missing from the §7.1 digest -> exit 1 naming it  :: canon_blocks=1 appendix_digests=1 tokens_checked=2 gaps=0 no_digest=0 exempt=0 stale_exemptions=0
+INFO appendix digests without a canon block-start: none
+
+FAIL scope: --force-with-lease missing from the §9.2 digest -> exit 1 naming it  :: canon_blocks=1 appendix_digests=1 tokens_checked=2 gaps=0 no_digest=0 exempt=0 stale_exemptions=0
+INFO appendix digests without a canon block-start: none
+
+FAIL scope: CM-COVENANT-PROPAGATION missing from the §11.4 digest -> exit 1 naming it  :: canon_blocks=1 appendix_digests=1 tokens_checked=2 gaps=0 no_digest=0 exempt=0 stale_exemptions=0
+INFO appendix digests without a canon block-start: none
+
+PASS scope: --twelve-flag missing from the §12.6 digest -> exit 1 naming it
+PASS duplicate appendix digest -> exit 2
+PASS exact counters on the clean fixture
+PASS --json canon_sha256 is the canon file hash and appendix_sha256 the appendix hash
+PASS stale * exemption (the anchor has a digest) -> exit 1
+PASS dotted ids: 11.4.10 and 11.4.10.A are two blocks, two digests
+FAIL --write-floor with a parent id and a dotted sub-id sorts numerically (11.4.10 before 11.4.10.A)  :: usage: appendix_token_check.py [-h] --canon CANON --appendix APPENDIX
+                               [--allow ALLOW] [--json JSON]
+appendix_token_check.py: error: unrecognized arguments: --write-floor /tmp/tmpnyoy7gkx/dotfloor.tsv
+[]
+PASS dotted ids: a token missing from the .A digest is charged to 11.4.10.A, not 11.4.10
+PASS text after a ## heading is not charged to the preceding anchor
+FAIL --write-floor records MUST/NEVER/FORBIDDEN counts and Composes ids per digest  :: usage: appendix_token_check.py [-h] --canon CANON --appendix APPENDIX
+                               [--allow ALLOW] [--json JSON]
+appendix_token_check.py: error: unrecognized arguments: --write-floor /tmp/tmpnyoy7gkx/floor.tsv
+
+FAIL floor satisfied by the digest it was written from -> exit 0  :: usage: appendix_token_check.py [-h] --canon CANON --appendix APPENDIX
+                               [--allow ALLOW] [--json JSON]
+appendix_token_check.py: error: unrecognized arguments: --floor /tmp/tmpnyoy7gkx/floor.tsv
+
+FAIL every MUST softened to SHOULD -> WEAKENED, exit 1 naming the anchor  :: 
+FAIL ONE MUST dropped (count below the floor) -> WEAKENED, exit 1  :: 
+FAIL NEVER dropped -> WEAKENED, exit 1  :: 
+FAIL a Composes entry deleted -> COMPOSE-LOST, exit 1 naming the id  :: 
+FAIL a digest that GAINS MUSTs and Composes entries is fine (a floor, not an equality)  :: 
+FAIL floor row for an anchor that has no digest -> STALE floor, exit 1  :: 
+PASS unreadable floor file -> exit 2
+FAIL required phrase present in digest and canon -> exit 0  :: usage: appendix_token_check.py [-h] --canon CANON --appendix APPENDIX
+                               [--allow ALLOW] [--json JSON]
+appendix_token_check.py: error: unrecognized arguments: --phrases /tmp/tmpnyoy7gkx/phr.tsv
+
+FAIL required phrase replaced by its opposite -> PHRASE-LOST, exit 1  :: 
+FAIL required phrase no longer in the canon block -> STALE phrase, exit 1  :: 
+FAIL phrase comparison ignores markdown emphasis and code ticks on both sides  :: usage: appendix_token_check.py [-h] --canon CANON --appendix APPENDIX
+                               [--allow ALLOW] [--json JSON]
+appendix_token_check.py: error: unrecognized arguments: --phrases /tmp/tmpnyoy7gkx/phr.tsv
+
+PASS phrase row without a reason -> exit 2
+TOTAL 53 PASS 36 FAIL 17
+rc=1

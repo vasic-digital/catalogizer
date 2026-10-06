@@ -1,0 +1,14 @@
+# appendix required phrases: <anchor id> TAB <phrase> TAB <reason>. Each phrase is a canon sentence (whitespace-collapsed, markdown emphasis ignored)
+# that the digest MUST still carry and the canon block MUST still carry; a phrase that left the canon block is a stale row and fails the check.
+# Chosen where a softened or inverted digest would change a binding rule (WF9 data mutants D3, D6; WF8 A3, F2, F9).
+11.4.209	Fable is NOT permitted in any role	the Fable ban of the review substrate: a digest stating Fable as an escalation tier would invert the rule
+11.4.209	ONLY when BOTH Opus and Sonnet are genuinely unavailable	the only condition under which a review is blocked: the Sonnet fallback is a MUST, not an option
+11.4.209	NEVER left undone / blocked / deferred solely because Opus is unavailable while Sonnet is reachable	the canon sentence (WF9 G4: the digest had dropped blocked / deferred)
+11.4.209	Work MUST BE performed with all means we have at particular moment!	the last sentence of the verbatim 2026-10-04 operator mandate that the digest quotes (WF9 G4)
+11.4.211	Fable is NOT permitted in any role	the Fable ban of merge-conflict resolution
+11.4.211	ONLY when BOTH Opus and Sonnet are genuinely unavailable	the only condition under which merge-conflict resolution is blocked
+11.4.230	adds the four invariants they did not each state on their own	the digest said three; clause (D) is the fourth invariant (WF9 G4)
+11.4.230	MUST leave the deliverable correct on every path a user or QA tester can reach	clause (D.2) MUST wording (WF9 G4)
+11.4.134	bounded PER APPROACH by §11.4.276's declared round budget	the iterate-to-GO loop is bounded per approach by 11.4.276
+11.4.209	no Fable, no escalation tier	the title of the anchor: a digest title that permits Fable as an escalation tier would invert the rule (WF9 data mutant D6)
+11.4.209	no escalation tier, no Fable, no other fallback model	the lead of clause (A): the substrate is Opus with the sanctioned Sonnet fallback and nothing else (WF9 data mutant D6)

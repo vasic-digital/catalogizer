@@ -163,7 +163,7 @@ def catalogue_lines(index, has_following_heading):
     anchors = index["anchors"]
     lines = ["## Anchor Catalogue", ""]
     miss = missing_numbers(anchors)
-    lines += ["All %d anchors of the pinned canon, grouped as the canon groups them. Each line is the anchor id" % len(anchors),
+    lines += ["All %d anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id" % len(anchors),
               "and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are"]
     if miss:
         lines += ["in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors",

@@ -1,0 +1,37 @@
+# generated 2026-10-06T19:39:43Z by pin-fix2 agent (WF9 minor findings G1-G7); git HEAD 40a1f8e32fb7f36e1818610c0514ee826697f31e (working tree uncommitted; sha256 below identify the files)
+# sha256 87f6f908463cf067874ffd66ef7c22c53e037b26171324a77cb5d030a9cb89d8  scripts/governance/appendix_token_check.py
+# sha256 7401ae1f0bcbe962a8d0d5977ac11de595906ec7d6fbd80d5648caccedd0d23c  scripts/governance/appendix_token_allow.tsv
+# sha256 5f8b65a1cdb7f0e0155f42562db3e3138f124c38de4f6d3cd7589358cef5220f  scripts/governance/appendix_wording_floor.tsv
+# sha256 28e5690988585510f956c0c1542dd45c545e41ac49d8fa340a6a9985d4e580bf  scripts/governance/appendix_required_phrases.tsv
+# sha256 d2ea1bbfff3fb4a0bb402ddc1e153450bf72a0d93c89d4c48a703937927bb666  scripts/governance/tests/test_appendix_token_check.py
+# sha256 34a4d6413fdc853739eaccf7d4424da8b77634c76670434fcc9b8f674fc2ca87  scripts/governance/tests/mutate_appendix_token_check.py
+# sha256 d8266a1ce42d250e0ae388b587f8887b9548b2a43d9ea02a146cd3f8e49bfe06  scripts/governance/tests/mutate_appendix_digests.py
+# sha256 0991bf4a29a9690d9b00c173f6a46f89ff84ed0e511c0d73dd9993cfc02713eb  scripts/governance/regen_speckit_catalogue.py
+# sha256 00c9ef0ad36c4806d9f8e2d8f10ac69c346564e276d7d5d6c214fa967347c77c  scripts/governance/tests/test_regen_speckit_catalogue.py
+# sha256 1283f7c21d006adbd188f42e7e72aedf97e2625503ccc0ba42c05296bf24b3db  .specify/memory/constitution.md
+# sha256 960adf6269b020e0b0535442cbeb628fb2fac864b333f5326bcc62af36122888  .specify/memory/constitution-appendix.md
+# sha256 e1cfa136c973fe62f273defe2f4764c69faff1618c17734f943a618206e3982b  specs/001-full-project-audit-remediation/decisions/owner-request-list.md
+# sha256 95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e  submodules/constitution/Constitution.md
+## data mutants of the real appendix (control + 19)
+CONTROL unmutated appendix rc=0  canon_blocks=283 appendix_digests=283 tokens_checked=1814 gaps=0 no_digest=0 exempt=6 stale_exemptions=0
+EQUIVALENT D1 one of two occurrences of the 209 Sonnet flag removed (EQUIVALENT)  rc=0
+KILLED    D1b every occurrence of the 209 Sonnet flag removed  rc=1 GAP §11.4.209: digest lacks --leave-review-blocked-while-sonnet-reachable (present in canon block)
+KILLED    D2 276 flag --unbounded-review-rounds removed  rc=1 GAP §11.4.276: digest lacks --unbounded-review-rounds (present in canon block)
+KILLED    D3 209 every MUST softened to SHOULD  rc=1 WEAKENED §11.4.209: digest has 0 x MUST, the floor is 14
+KILLED    D3b 209 ONE MUST softened to SHOULD  rc=1 WEAKENED §11.4.209: digest has 13 x MUST, the floor is 14
+KILLED    D4 211 Composes entry 11.4.209 deleted  rc=1 COMPOSE-LOST §11.4.211: digest Composes no longer lists §11.4.209
+KILLED    D5 211 flag --merge-conflict-any-model misspelled  rc=1 GAP §11.4.211: digest lacks --merge-conflict-any-model (present in canon block)
+KILLED    D6 209 'no Fable' replaced by 'Fable as escalation tier'  rc=1 PHRASE-LOST §11.4.209: the digest no longer carries: no Fable, no escalation tier
+KILLED    D7 9.2 digest loses --force-with-lease  rc=1 GAP §9.2: digest lacks --force-with-lease (present in canon block)
+KILLED    D8 276 gate CM-FIX-GROUND-TRUTH-AND-CLASS-INVENTORY removed  rc=1 GAP §11.4.276: digest lacks CM-FIX-GROUND-TRUTH-AND-CLASS-INVENTORY (present in canon block)
+KILLED    D9 235 gate CM-VERSION-INCREMENT-ON-DEPLOY removed  rc=1 GAP §11.4.235: digest lacks CM-VERSION-INCREMENT-ON-DEPLOY (present in canon block)
+KILLED    D10 weakened duplicate 230 digest inserted before the real one  rc=2 appendix_token_check: duplicate appendix digest for 11.4.230
+KILLED    D11 230 heading typo (§11.4.23O)  rc=1 NO-DIGEST §11.4.230: no digest in the appendix for this canon block
+KILLED    D12 231 whole Gates line deleted  rc=1 GAP §11.4.231: digest lacks CM-COVENANT-114-231-PROPAGATION (present in canon block)
+KILLED    D13 230 Composes entry §11.4.24 deleted  rc=1 COMPOSE-LOST §11.4.230: digest Composes no longer lists §11.4.24
+KILLED    D14 230 (D.2) MUST softened  rc=1 WEAKENED §11.4.230: digest has 5 x MUST, the floor is 6
+KILLED    D15 209 last sentence of the quoted operator mandate dropped  rc=1 WEAKENED §11.4.209: digest has 13 x MUST, the floor is 14
+KILLED    D16 209 'NEVER left undone / blocked / deferred' cut to 'NEVER left undone'  rc=1 PHRASE-LOST §11.4.209: the digest no longer carries: NEVER left undone / blocked / deferred solely because Opu
+KILLED    D17 230 'four invariants' back to 'three invariants'  rc=1 PHRASE-LOST §11.4.230: the digest no longer carries: adds the four invariants they did not each state on their
+DATA-MUTANTS 19 BAD 0
+rc=0

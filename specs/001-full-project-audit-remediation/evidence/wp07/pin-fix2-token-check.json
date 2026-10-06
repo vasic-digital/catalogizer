@@ -1,0 +1,17 @@
+{
+ "canon_sha256": "95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e",
+ "appendix_sha256": "960adf6269b020e0b0535442cbeb628fb2fac864b333f5326bcc62af36122888",
+ "canon_blocks": 283,
+ "appendix_digests": 283,
+ "tokens_checked": 1814,
+ "gaps": [],
+ "no_digest": [],
+ "exempt": 6,
+ "stale_exemptions": [],
+ "appendix_only": [],
+ "weakened": [],
+ "compose_lost": [],
+ "stale_floor": [],
+ "phrase_gaps": [],
+ "stale_phrases": []
+}
