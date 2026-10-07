@@ -1,0 +1,43 @@
+# needle: pre-fix heartbeat.sh .pid= writes:
+1
+# post-fix write sites:
+scripts/longops/heartbeat.sh:17:  case "$1" in --op-id) opid=${2:-}; shift 2 ;; --progress-offset) off=${2:-}; shift 2 ;; --sample-log) sample=1; shif
+scripts/longops/heartbeat.sh:21:[ -z "$pid" ] || lo_pid_ok "$pid" || lo_die usage_error "--pid must be an integer > 1 naming a process that exists now
+scripts/longops/heartbeat.sh:32:  j=$(jq -c --argjson now "$now" --arg u "$(lo_utc "$now")" --argjson off "$new" --argjson prog "$prog" --arg pid "$pi
+scripts/longops/heartbeat.sh:34:      | (if .state=="registered" then .state="running" else . end) | (if $pid!="" then .pid=($pid|tonumber)|.start_tim
+scripts/longops/heartbeat.sh:37:  if [ -n "$pid" ]; then
+scripts/longops/heartbeat.sh:42:        h=$(jq -c --argjson pid "$pid" --arg st "$(lo_pstart "$pid")" --arg c "$(lo_cmdline "$pid")" '.pid=$pid|.start
+scripts/longops/register.sh:17:    --purpose) purpose=${2:-}; shift 2 ;; --owner) owner=${2:-}; shift 2 ;; --op-id) opid=${2:-}; shift 2 ;; --pid) pid
+scripts/longops/register.sh:31:lo_pid_ok "$pid" || lo_die usage_error "--pid must be an integer > 1 naming a process that exists now"
+scripts/longops/register.sh:38:now=$(lo_now); st=$(lo_pstart "$pid")
+scripts/longops/register.sh:40:rec=$(jq -nc --arg id "$opid" --arg p "$purpose" --arg o "$owner" --argjson pid "$pid" --arg st "$st" --arg cmd "$(lo_c
+scripts/longops/register.sh:43:  '{op_id:$id,purpose_key:$p,owner:$o,run_id:$id,pid:$pid,pgid:0,start_time:$st,cmdline:$cmd,container_id:$cid,containe
+scripts/longops/register.sh:47:  lo_with_lock "$purpose" lo_claim "$purpose" "$(lo_holder_json "$purpose" "$opid" "$pid")" || exit $?
+scripts/longops/acquire.sh:26:    --purpose) purpose=${2:-}; shift 2 ;; --run-id) run=${2:-}; shift 2 ;; --pid) pid=${2:-}; shift 2 ;; --builds) build
+scripts/longops/acquire.sh:35:lo_pid_ok "$pid" || lo_die usage_error "--pid must be an integer > 1 naming a process that exists now"
+scripts/longops/acquire.sh:51:  claim) lo_with_lock "$purpose" lo_claim "$purpose" "$(lo_holder_json "$purpose" "$run" "$pid")"; rc=$?; [ $rc -eq 0 ] 
+scripts/longops/acquire.sh:66:      _swap "$(lo_holder_json "$purpose" "$run" "$pid")"; }
+scripts/longops/reap.sh:92:      want=$(jq -r .cmdline <<<"$j"); have=$(lo_cmdline "$pid")
+scripts/longops/reap.sh:96:      [ "$(lo_pstart "$pid")" = "$pst" ] || { echo "refused: pid $pid is no longer the process that was judged (start time 
+scripts/longops/reap.sh:97:      lo_signal TERM "$pid"; rc=$?
+scripts/longops/reap.sh:99:      printf '%s %s\n' "$pid" "$pst" >"$SF"; return 0 ;;
+scripts/longops/reap.sh:121:  lo_alive "$pid" "$pst" || break
+scripts/longops/lib.sh:87:  { lo_uint "$pid" && [ "$pid" -gt 1 ] && [ -n "$st" ]; } || return 1
+scripts/longops/lib.sh:89:  [ "$(lo_pstart "$pid")" = "$st" ] || return 1
+scripts/longops/lib.sh:90:  [ "$(lo_pstate "$pid")" != Z ] || return 1
+scripts/longops/lib.sh:91:  kill -0 "$pid" 2>/dev/null || [ ! -O "/proc/$pid" ]   # EPERM on a foreign uid's live process is alive, not dead
+scripts/longops/lib.sh:97:  [[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
+scripts/longops/lib.sh:98:  pg=$(lo_ppgrp "$pid"); [[ "$pg" =~ ^[0-9]+$ && "$pg" -gt 1 ]] || return "$RC_UNSAFE"
+scripts/longops/lib.sh:99:  printf '%s %s pid=%s pgid=%s\n' "$(lo_utc "$(lo_now)")" "$sig" "$pid" "$pg" >>"$LD/signals.log"
+scripts/longops/lib.sh:100:  kill -s "$sig" -- "$pid" 2>/dev/null
+scripts/longops/lib.sh:106:  [[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
+scripts/longops/lib.sh:107:  pg=$(lo_ppgrp "$pid"); [[ "$pg" =~ ^[0-9]+$ && "$pg" -gt 1 ]] || return "$RC_UNSAFE"
+scripts/longops/lib.sh:108:  kill -s TERM -- "$pid" 2>/dev/null
+scripts/longops/lib.sh:166:             lo_uint "$pid" || { echo unreadable; return 0; }
+scripts/longops/lib.sh:167:             if lo_alive "$pid" "$st"; then echo live; else echo dead; fi ;;
+scripts/longops/lib.sh:191:  { lo_uint "$pid" && [[ "$pst" =~ ^[0-9]*$ ]]; } || { echo unreadable; echo "pid '$pid' or start_time '$pst' of the record
+scripts/longops/lib.sh:192:  if ! lo_alive "$pid" "$pst"; then echo dead_owner; echo "pid=$pid start_time=$pst not running (resolved from /proc)"; ret
+scripts/longops/lib.sh:240:lo_holder_json() {  # lo_holder_json <purpose> <run_id> <pid>
+scripts/longops/lib.sh:241:  local pid=$3 st; st=$(lo_pstart "$pid")
+scripts/longops/lib.sh:242:  jq -nc --arg p "$1" --arg r "$2" --argjson pid "$pid" --arg st "$st" --arg c "$(lo_cmdline "$pid")" --argjson t "$(lo_now
+scripts/longops/lib.sh:243:    '{kind:"process",purpose:$p,run_id:$r,pid:$pid,start_time:$st,cmdline:$c,state:"running",since:$t}'

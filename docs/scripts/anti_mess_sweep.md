@@ -2,17 +2,17 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T01:20:00Z |
-| Status | WP-08 T090/T091; WF11 review round 1 (NO-GO) remediated in revision 2 (see "WF11 fix round"); the independent RE-REVIEW is owed (constitution 11.4.142, 11.4.276 round 2); NOT yet listed in `docs/scripts/README.md` (row owed, see `docs/scripts/longops.md`) |
+| Last modified | 2026-10-07T04:45:00Z |
+| Status | WP-08 T090/T091; WF11 round 1 (NO-GO) remediated in revision 2; WF14 round 2 (NO-GO) remediated in revision 3 by a structural round 3 (see "WF14 round 3"); the independent RE-REVIEW is owed (constitution 11.4.142, 11.4.276 round 3); NOT yet listed in `docs/scripts/README.md` (row owed, see `docs/scripts/longops.md`) |
 | Source | `scripts/anti-mess/sweep.sh`, `scripts/anti-mess/catalogue.yaml`; tests `scripts/anti-mess/tests/{test_sweep.sh,mutate_sweep.sh}` (containment: `scripts/longops/tests/mutation_safety.sh`); baseline `$EV/wp08/sweep-baseline.json` |
 
 ## Purpose
 
 The level-triggered control plane of constitution 11.4.233 at project scale (docs/12 section 17, docs/16 section 13.3): it RE-DERIVES the actual persistent state and diffs it
 against the declared invariant catalogue, before gated transitions (CPA S0 and S7, build start, tag) and on a cadence. It detects; it reconciles only on `--reconcile` and only the
-catalogued auto-safe classes; it never builds, commits, merges or pushes (11.4.233 F) and contacts no remote.
+catalogued auto-safe classes; it never builds, commits, merges or pushes (11.4.233 F). It contacts a remote ONLY in INV-9 (`git ls-remote` to prove a held commit is on every reachable remote tip of main, before a finished commit-push run directory is reported removable or removed); every other invariant reads the local state only.
 
 ## Usage
 
@@ -25,7 +25,7 @@ scripts/anti-mess/sweep.sh [--stage S0|S7|cadence] [--paths-from FILE] [--repo P
 | `--stage` | `S0`: AM-R1 excludes the declared change set; a blocking `core.hooksPath` is refused with 20. `S7`: nothing excluded. `cadence` (default): every invariant. An invariant outside the stage is `skipped_stage` |
 | `--paths-from FILE` | the declared change set (S0 only): one path per line relative to the main repository root, optionally TAB and a verdict path |
 | `--repo PATH` | AM-R1 scoped to that repository (and below) |
-| `--reconcile` | repair catalogued `auto-safe` classes only (stale git lock, dead-owner registry row, orphan or terminal-op container, leftover build `.tmp-<pid>-<start>` directory, uninitialised submodule, finished CPA run beyond both retention bounds with every held commit on every reachable remote tip of main). Every action re-verifies its precondition AT ACTION TIME (rmlock: no holder, no git activity, still old enough; stopcontainer: the container's op class is re-derived from the current registry; rmdir `build_tmp`: the owner is still gone; rmdir `finished_run`: report.json still finished and every held commit still on a remote tip; initsub: still uninitialised; reapop: `reap.sh` re-classifies under the purpose lock); operator-gated classes are never touched |
+| `--reconcile` | repair catalogued `auto-safe` classes only (stale git lock, dead-owner registry row, container of a TERMINAL op (an orphan container is reported, never stopped), leftover build `.tmp-<pid>-<start>` directory, uninitialised submodule, finished CPA run beyond both retention bounds with every held commit on every reachable remote tip of main). Every action re-verifies its precondition AT ACTION TIME (rmlock: no holder, no git activity, still old enough; stopcontainer: the container's op class is re-derived from the current registry; rmdir `build_tmp`: the owner is still gone; rmdir `finished_run`: report.json still finished and every held commit still on a remote tip; initsub: still uninitialised; reapop: `reap.sh` re-classifies under the purpose lock); operator-gated classes are never touched |
 | `--json OUT` | report `anti-mess-sweep/1` (written by temp-then-rename) |
 
 Exits: 0 no drift; 10 drift reported; 11 a source could not be read and no drift was found (unread: never clean); 20 refusal (usage, an unknown `--only` id, a BLIND detector, a blocking `core.hooksPath` at S0). Env: `ANTIMESS_ROOT`, `LONGOPS_*`, `ANTIMESS_OWNED_ORGS`
@@ -62,7 +62,15 @@ mtime of `report.json`.
 (3) Handoff (F10): a `handoff` op is re-adoptable, so its container is never stopped. (4) Label: containers are matched on `catalogizer.op_id` (the label the launcher really sets), so a `run_pinned.sh` container of a live op is no longer `container_without_op_label`, which had made TIC refuse.
 F18: the `not_evaluated_reason` of INV-7 and INV-8 now states the facts (check_pins.sh and dispatch.sh exist; no detector reads them yet). Honest boundary: `rmdir` `build_tmp` re-verification (the owner is still gone) cannot be varied by a test (the pid is part of the directory name); its other conditions are tested.
 
+## WF14 round 3 (structural; constitution 11.4.276 E)
+
+(1) A container is stopped by `--reconcile` ONLY when its op is in THIS checkout's registry and terminal: the registry is per checkout and the podman namespace is per user, so a container whose op is absent here may belong to another checkout, track or scratch copy. `orphan_container` is still reported (drift) and never stopped
+(R2-11: absence from one registry is not proof of staleness, 11.4.232 E). (2) A container is matched to its op by the op id OR the record's own `container_label` (a dispatched build: label `catalogizer.op_id=dispatch-<build id>`, op id `<build id>`; R2-4). (3) AM-P4 `handoff_unadopted`: a handoff op is adopted when a LATER op of the same
+`purpose_key` exists (what `scripts/build/dispatch.sh` `reg_adopt` really writes: `<id>-aN`), or when `superseded_by`/`attached_to`/`adopted_by` is set (accepted, but no producer writes them); the old record is no longer left as permanent drift after every driver restart (R2-2). (4) A record is readable only when `op_id`, `purpose_key` and `state` are strings;
+valid JSON with a missing or mistyped field is `unread`, never skipped (RM6); an op whose state cannot be read is never `terminal` (its container is never stopped, RM9); a record whose `pid` or `start_time` is not an integer is `unreadable`, never reaped as `dead_owner`. (5) INV-9: a `commit_push` holder that could not be read makes a run awaiting its remote checks `unread`
+(`suspended_run_holder_unread`), never drift `suspended_run_without_live_holder` (R2-7). (6) `podman ps` and `podman stop` run under `timeout 60`. Tests: `RA*` (the REAL `reg_adopt`), `LB*`, `FC*`, `BF*`, `HU*` in `test_sweep.sh`; mutants S33 to S40.
+
 ## Tests and mutations
 
-`test_sweep.sh`: real git repositories, processes and `/proc`; stand-ins only for `podman` and `cpa-host` (unit level). `mutate_sweep.sh`: thirty-two one-line mutants of the sweep (S01 to S32; S17 is the reviewer's RMS1), each must fail the test, run inside the containment of `scripts/longops/tests/mutation_safety.sh` (a mutant that adds or edits a signal line aborts; the kill builtin is disabled and `kill` is a guard function; see `longops.md`).
+`test_sweep.sh`: real git repositories, processes and `/proc`; stand-ins only for `podman` and `cpa-host` (unit level). `mutate_sweep.sh`: forty one-line mutants of the sweep (S01 to S40; S17 is the round-1 reviewer's RMS1, S33 and S34 are the round-2 reviewer mutants RM6 and RM9), each must fail the test, run inside the containment of `scripts/longops/tests/mutation_safety.sh` (a mutant that adds or edits a signal line aborts; the kill builtin is disabled and `kill` is a guard function; see `longops.md`).
 HOST-SIDE run (RUNP/IMG-TESTUTIL absent, container leg UNCONFIRMED).

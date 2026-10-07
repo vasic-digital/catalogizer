@@ -1,0 +1,125 @@
+# identity: task=WF11-F15 utc=2026-10-07T06:35:02Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=67f4d247c62aa50d1ce2935210c7181608ab6f9c (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=5be2458f76aa68dbb610327f136df3384453b3fdedab6d7a317febd2fcd495f4
+# sha256 register.sh=05058ea2be980e9f0a8b013968f29ad3e73a835643b999dad08927232d557c30
+# sha256 acquire.sh=c5ac9da387f0af94caed400f4025d541439ccac5d4810a4f2cc7db98eaee42dd
+# sha256 release.sh=db66b0a24bd0f9dba00cbf97281f03c802b6d8d786f411166e71ea77ffaf8d9c
+# sha256 heartbeat.sh=7f99bd50cba1173a50da7671412847b2d1f78a2099f349170776fa7edc2ff2b8
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=d162812e2a86b67fb66db88af1bf73512bc8b649a8d67a9622bda05ed3dea3a6
+# sha256 reap.sh=cd68e7648ee17e6d565a3383656abfb7d0ce8f80ae6cf1405fa28015350972db
+# sha256 check_no_build_writing_tracked.sh=51a9256750a819853386147c88aed47cf8236010683f7c5088a6335842285337
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# sha256 tests/mutation_safety.sh=8ef1820f660585a16c2d2a2d0c019b3e7b844b72f84f4127c6c4457a28c1d51a
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== layer 1: ms_scan on golden-true mutants (must run) and hypothetical bad mutants (must abort) ==
+ok   S1 golden-true: an identical tree is safe
+ok   S2 golden-true: the M04 shape (guards removed, the kill replaced by a no-op) carries no signal line and runs
+mk g3: pattern not found
+ok   S3 golden-true: an edit of a line without any signal token runs
+ok   S4 golden-true: a COMMENT that names kill cannot execute and is allowed
+ok   S5 golden-true: a signal line kept byte-identical is allowed
+ok   S6 H1 kill target replaced by -1, guards intact: aborted (the old grep ran it)
+ok   S6b the offending line is printed
+ok   S7 H2 kill target replaced by the process group -pid: aborted
+ok   S8 H3 pid guard weakened AND the kill line re-spelled: aborted
+ok   S9 hypothetical bad mutant appends [command kill -9 -1]: aborted
+ok   S10 hypothetical bad mutant appends [builtin kill -9 -1]: aborted
+ok   S11 hypothetical bad mutant appends [/bin/kill -9 -1]: aborted
+ok   S12 hypothetical bad mutant appends [/usr/bin/kill -9 -1]: aborted
+ok   S13 hypothetical bad mutant appends [pkill -u "$USER"]: aborted
+ok   S14 hypothetical bad mutant appends [killall -u "$USER"]: aborted
+ok   S15 hypothetical bad mutant appends [xargs kill -9]: aborted
+ok   S16 hypothetical bad mutant appends [exec kill -9 -1]: aborted
+ok   S17 hypothetical bad mutant appends [systemctl suspend]: aborted
+ok   S18 hypothetical bad mutant appends [loginctl terminate-user "$USER"]: aborted
+ok   S19 hypothetical bad mutant appends [reboot]: aborted
+ok   S20 hypothetical bad mutant appends [poweroff]: aborted
+ok   S21 hypothetical bad mutant appends [shutdown -h now]: aborted
+ok   S22 hypothetical bad mutant appends [echo x; kill -9 -1]: aborted
+ok   S23 a NEW file carrying a kill line is aborted
+ok   S24 a NEW python file with os.kill is aborted
+ok   S25 a token smuggled into an existing non-kill line is aborted
+ok   S26 WF14 RB5 python os.killpg(1, 9) (the 11.4.263 incident itself) is aborted
+ok   S27 WF14 RB5 python os.killpg(os.getpgid(0), 9) is aborted
+ok   S28 WF14 RB5 psutil Process(1).kill() is aborted
+ok   S28b WF14 RB5 an interpreter signal API [import psutil as p] is aborted
+ok   S28b WF14 RB5 an interpreter signal API [p.send_signal(9)] is aborted
+ok   S28b WF14 RB5 an interpreter signal API [psutil.Process(1).terminate()] is aborted
+ok   S29 WF14 RB7 a glob-built absolute path [/usr/bin/k?ll -9 -1] is aborted
+ok   S29 WF14 RB7 a glob-built absolute path [/bin/k*ll -9 -1] is aborted
+ok   S29 WF14 RB7 a glob-built absolute path [/usr/bin/[k]ill -9 -1] is aborted
+ok   S29 WF14 RB7 a glob-built absolute path [/usr/sbin/sh*utdown] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [ms_kill_guard() { "$MS_REAL_KILL" "$@"; }] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [unset -f kill] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [enable kill] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [BASH_ENV=/dev/null bash -c x] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [MS_REAL_KILL=/bin/true] is aborted
+ok   S30 WF14 RB8 a mutant that redefines or disables the containment [ms_blocked() { return 0; }] is aborted
+ok   S31 WF14 RM8 a kill line with a TRAILING comment is code, not a comment: aborted
+ok   S31b a # inside a string before a kill command does not hide it: aborted
+ok   S32 WF14 R2-T2 a new podman side effect ["$PODMAN" stop -t 5 "$(podman ps -q | head -1)"] is aborted
+ok   S32 WF14 R2-T2 a new podman side effect [podman rm -f x] is aborted
+ok   S32 WF14 R2-T2 a new podman side effect [/usr/bin/podman stop x] is aborted
+ok   S32 WF14 R2-T2 a new podman side effect [podman system prune -af] is aborted
+ok   S33 golden-true: a pure comment naming podman stop and kill is allowed
+mk hh: pattern not found
+ok   S34 golden-true: an ordinary edit still runs after the token set grew
+== layer 2: the BASH_ENV shim and the PATH stubs, with a RECORDER instead of the real kill (signal 0 only) ==
+ok   L1 canary: inside the containment kill is a FUNCTION
+ok   L1b the kill BUILTIN is disabled (builtin kill fails; signal 0 at our own pid)
+ok   L2 CONTROL NEEDLE: a legitimate target (a sleeper of ours, pid > 1, pgrp > 1) is allowed through
+ok   L2b the recorder SAW that call: an empty recorder below is evidence, not blindness
+ok   L3 kill -0 -1 is refused by the shim (rc 1)
+ok   L3 kill -s 0 -- -1 is refused by the shim (rc 1)
+ok   L3 kill -0 0 is refused by the shim (rc 1)
+ok   L3 kill -0 1 is refused by the shim (rc 1)
+ok   L3 kill -0 -1029236 is refused by the shim (rc 1)
+ok   L3 kill -s 0 -- -1035567 is refused by the shim (rc 1)
+ok   L3 kill -0 abc is refused by the shim (rc 1)
+ok   L3 kill -0 %1 is refused by the shim (rc 1)
+ok   L3 kill -0 '' is refused by the shim (rc 1)
+ok   L3 kill -0 99999999999999999999 is refused by the shim (rc 1)
+ok   L3 kill -0 1035567 -1 is refused by the shim (rc 1)
+ok   L3 kill -0 1035567 1 is refused by the shim (rc 1)
+ok   L3 kill -- -1 is refused by the shim (rc 1)
+ok   L3 kill -0 is refused by the shim (rc 1)
+ok   L3b a kernel thread (10, pgrp 0) is refused
+ok   L4 NOTHING of the above reached the kill binary (recorder empty)
+ok   L4b every refusal was logged as BLOCKED
+ok   L5 command kill finds only the PATH stub and is refused
+ok   L5b env kill is refused by the stub
+ok   L5c pkill is refused
+ok   L5d killall is refused
+ok   L5e command pkill is refused by the stub
+ok   L5f the recorder is still empty
+== WF14 layer 2: podman is contained, the shim cannot be redefined from inside a mutant ==
+ok   L6 WF14 R2-T2 inside the containment 'podman' resolves to the PATH stub, never the host binary
+ok   L6b podman stop is refused by the stub (1)
+ok   L6c command podman rm is refused too (1)
+ok   L6d CONTROL NEEDLE: a read-only podman ps goes through the stub and lists nothing (0, empty)
+ok   L6e both refused calls were logged
+ok   L7 WF14 RB8 redefining the guard function from inside the containment fails (readonly): kill -0 -1 is still refused
+ok   L7b unset -f kill fails (readonly): kill -0 -1 is still refused
+ok   L7c redefining kill itself fails (readonly): refused
+ok   L7d CONTROL: the recorder is still empty; the shim logged the refusals
+ok   L7e CONTROL NEEDLE: a legitimate target still reaches the recorder after the readonly hardening
+== layer 2 on HYPOTHETICAL BAD MUTANTS that layer 1 would also stop: run anyway, with signal 0, to prove the shim alone holds ==
+ok   R1 H1 (target -1) run under the shim: lo_signal fails (rc 1), the target was never delivered
+ok   R2 H2 (target -pid) run under the shim: refused
+ok   R3 H3 (guards weakened to -gt -2, kernel thread 10) run under the shim: refused by the shim's own pgrp check
+ok   R4a H4 = the ORIGINAL INCIDENT (guards removed, the real kill kept byte-identical): layer 1 lets it run
+ok   R4 H4 run with pid 0 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid 1 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid -1 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid -2 under the shim: refused, nothing delivered
+ok   R4b WF14 RB8 H5 = guards removed AND the shim guard redefined: layer 1 aborts it
+ok   R4c WF14 RB8 H5 run anyway with pid 0: the readonly shim still refuses
+ok   R4c WF14 RB8 H5 run anyway with pid 1: the readonly shim still refuses
+ok   R4c WF14 RB8 H5 run anyway with pid -1: the readonly shim still refuses
+ok   R4c WF14 RB8 H5 run anyway with pid -2: the readonly shim still refuses
+ok   R5 the recorder is STILL empty after four hypothetical bad mutants
+ok   R5b and the shim logged their attempts as BLOCKED
+ok   R6 control: the same H4 mutant with a legitimate sleeper reaches the recorder
+ok   R6b the recorder recorded exactly that one call
+RESULT pass=104 fail=0

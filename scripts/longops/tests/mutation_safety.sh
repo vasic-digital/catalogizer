@@ -12,11 +12,18 @@
 #      job specs and kernel threads are all refused, one line BLOCKED is logged), (c) defines pkill/killall as refusals, and PATH begins with stub `kill`, `pkill`,
 #      `killall`, `skill` executables that refuse. The real signal goes out only through MS_REAL_KILL (default /usr/bin/kill).
 #   3. the runner refuses to start when it cannot build the containment (no external kill binary, root).
-# Honest limits (11.4.6): an absolute path to a kill binary (/bin/kill) or a language-level kill (python os.kill) is caught by layer 1 only; a mutant that builds a
-# command name at run time ("k=ki; ${k}ll") is caught by layer 2 only for the shell forms (the function and the PATH stubs), not for an exotic interpreter.
-# Layer 2 is a function, not a kernel boundary: a rootless container with a private PID namespace would be (11.4.161/11.4.173; `unshare` is refused on this host).
+# Honest limits (11.4.6; WF14 R2-D1 corrected the earlier "structurally impossible" claim): this is CONTAINMENT IN LAYERS, not a kernel boundary. Layer 1 is textual: it catches the
+# shell and interpreter spellings listed above, including python os.kill/os.killpg/psutil, a glob-built absolute path (/usr/bin/k?ll) and any line that names or redefines the
+# containment itself (ms_*, MS_*, BASH_ENV, enable, unset -f); it does NOT catch a command name computed at run time inside an interpreter (getattr(os, "ki"+"ll")) nor a language that is not
+# listed. Layer 2 is a shell function, a set of PATH stubs (kill, pkill, killall, skill and, since WF14, podman) and read-only function definitions: it covers every shell form and
+# the stub binaries, and NOTHING that does not pass through bash (a python process never sees the shim; an absolute /usr/bin/podman is caught by layer 1 only). A STRUCTURAL boundary
+# would be a rootless container with a private PID namespace (11.4.161/11.4.173; `unshare --user --pid` is refused on this host): until it exists, no mutant that this scan cannot read is safe,
+# and the mutants of the two runners are reviewed (11.4.142) before they are added.
 
-MS_TOKEN_RE='(^|[^A-Za-z0-9_.-])(kill|killall|pkill|skill|killpg|os\.kill|signal\.|xargs[[:space:]]+kill|/bin/kill|/usr/bin/kill|systemctl|loginctl|reboot|poweroff|shutdown|halt|suspend|hibernate)([^A-Za-z0-9_-]|$)'
+# MS_TOKEN_RE: a signal, host-power, containment-tampering or container side-effect token. The left boundary admits `.` (WF14 RB5: `os.killpg(` and `.kill(` were invisible while `.` was excluded).
+MS_TOKEN_RE='(^|[^A-Za-z0-9_-])(kill|killall|pkill|skill|killpg|tgkill|sigqueue|pidfd_send_signal|send_signal|terminate|psutil|os\.kill|signal\.|xargs[[:space:]]+kill|/bin/kill|/usr/bin/kill|systemctl|loginctl|reboot|poweroff|shutdown|halt|suspend|hibernate|enable|BASH_ENV|MS_[A-Z_]+|ms_[a-z_]+|unset[[:space:]]+-f|(/usr)?/s?bin/podman|podman"?[[:space:]]+(stop|kill|rm|rmi|restart|pause|unpause|prune|system|volume|network|pod|container|exec|run|create|start)|PODMAN"?[[:space:]]+(stop|kill|rm|rmi|restart|pause|unpause|prune|system|volume|network|pod|container|exec|run|create|start))([^A-Za-z0-9_-]|$)'
+# MS_GLOB_RE: an absolute path into a bin directory that contains a glob character: it can name a kill binary without spelling it (WF14 RB7: /usr/bin/k?ll).
+MS_GLOB_RE='/(usr/)?s?bin/[^[:space:]]*[?*[]'
 
 # ms_scan <pristine-dir> <mutant-dir>: 0 safe; 1 a new/edited signal line (printed) in a regular file of the mutant tree.
 ms_scan() {
@@ -26,7 +33,7 @@ ms_scan() {
     rel=${f#"$mu"/}
     while IFS= read -r line || [ -n "$line" ]; do
       case "${line#"${line%%[![:space:]]*}"}" in '#'*) continue ;; esac     # a comment line cannot execute
-      [[ "$line" =~ $MS_TOKEN_RE ]] || continue
+      [[ "$line" =~ $MS_TOKEN_RE ]] || [[ "$line" =~ $MS_GLOB_RE ]] || continue
       if [ -f "$pr/$rel" ] && grep -qxF -- "$line" "$pr/$rel"; then continue; fi
       echo "SAFETY: $rel carries a signal/host-power line that is not byte-identical to the pristine tree: $line"; bad=1
     done <"$f"
@@ -41,6 +48,8 @@ ms_make_shim() {
   local n; for n in kill pkill killall skill; do
     printf '#!/bin/sh\necho "BLOCKED stub %s $*" >>"%s"\nexit 1\n' "$n" "$MS_LOG" >"$MS_BIN/$n"; chmod +x "$MS_BIN/$n"
   done
+  # WF14 R2-T2: podman inside the containment is a stub: `ps` lists nothing (exit 0), every other subcommand is refused and logged. The host podman is never reached through PATH.
+  printf '#!/bin/sh\ncase "$1" in ps|ls|list|inspect|version|info) exit 0 ;; esac\necho "BLOCKED stub podman $*" >>"%s"\nexit 1\n' "$MS_LOG" >"$MS_BIN/podman"; chmod +x "$MS_BIN/podman"
   cat >"$MS_SHIM" <<'SHIM'
 # bashenv.sh - sourced by every non-interactive bash of a contained mutant run (BASH_ENV). See mutation_safety.sh.
 enable -n kill 2>/dev/null
@@ -69,6 +78,9 @@ ms_kill_guard() {
 kill() { ms_kill_guard "$@"; }
 pkill() { ms_blocked "pkill $*"; }
 killall() { ms_blocked "killall $*"; }
+podman() { case "${1:-}" in ps|ls|list|inspect|version|info) return 0 ;; esac; ms_blocked "podman $*"; }
+# WF14 RB8: the containment cannot be redefined or removed from inside a contained run (a redefinition fails, the original stays).
+readonly -f kill pkill killall podman ms_blocked ms_kill_guard 2>/dev/null
 SHIM
 }
 

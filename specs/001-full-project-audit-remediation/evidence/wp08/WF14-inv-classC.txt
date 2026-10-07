@@ -1,0 +1,4 @@
+# needle: pre-fix sweep fields with no writer (must list adopted_by/superseded_by/attached_to):
+.adopted_by .attached_to .blind .class .clean .control_needle .dirty .dirty_tracked .dirty_untracked .drift .excepted .findings .invariants .json .not_evaluated .owned .path .pin_state .repo .repos .run_id .severity .skipped_stage .status .subject .summary .superseded_by .unread 
+# post-fix (coarse; hits classified by hand, see README):
+.adopted_by .attached_to .blind .budget .builds .callback_state .class .clean .container_label .control_needle .dirty .dirty_tracked .dirty_untracked .drift .excepted .findings .invariants .json .jsonl .kind .named .no_progress_s .not_evaluated .owned .path .pin_state .ready_at .repo .repos .resume_ttl .run_id .severity .skipped_stage .started_utc .start_time .status .subject .summary .superseded_by .unread .wall_clock_s 

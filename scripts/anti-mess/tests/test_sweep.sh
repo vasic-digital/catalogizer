@@ -136,7 +136,13 @@ echo "== INV-9 commit-push run directories =="
 swfx i1; B=$R/.audit/commit-push; mkdir -p "$B"
 mkdir -p "$B/20260101T000000Z-999999-ab12"; sw --only INV-9; assert_eq "I1 a directory without report.json whose process is gone is an interrupted run" "$(cls INV-9)" interrupted_run
 sw --only INV-9 --reconcile; [ -d "$B/20260101T000000Z-999999-ab12" ] && ok "I1b an interrupted run is never removed, not even by --reconcile" || bad "I1b removed"
-printf 'sleep 600\n' >"$FXN/commit-push-all.sh"; bash "$FXN/commit-push-all.sh" >/dev/null 2>&1 & CP=$!; KILLME+=("$CP")
+cat >"$FXN/commit-push-all.sh" <<'CPS'
+trap 'kill $c 2>/dev/null; exit' TERM
+sleep 600 &
+c=$!
+wait $c
+CPS
+bash "$FXN/commit-push-all.sh" >/dev/null 2>&1 & CP=$!; KILLME+=("$CP")
 mkdir -p "$B/20260102T000000Z-$CP-ef56"; sw --only INV-9; assert_eq "I2 a live run (pid from the run id, cmdline contains commit-push-all) is not interrupted" "$(cls INV-9)" interrupted_run
 assert_eq "I2b the live one is listed live_run" "$(infocls INV-9)" live_run
 rm -rf "${B:?}/20260101T000000Z-999999-ab12" "${B:?}/20260102T000000Z-$CP-ef56"
@@ -195,7 +201,7 @@ assert_eq "X1e the report records the reconcile result" "$(jq -r '.invariants[]|
 swfx x2; mkll; A=$LL; id=$("$S/register.sh" --purpose dead:op --owner t --pid "$A"); kill "$A"; wait "$A" 2>/dev/null; sw --only AM-P1 --reconcile
 assert_eq "X2 a dead-owner registry row is reaped by --reconcile" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" reaped
 printf '[{"Id":"ghostghostghostghost","Labels":{"op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"; sw --only AM-P1 --reconcile
-grep -q 'stop -t 5 ghostghostgh' "$PODLOG" && ok "X3 an orphan labelled container is stopped by --reconcile (podman stop)" || bad "X3 [$(cat "$PODLOG" 2>/dev/null)]"
+grep -q 'stop' "$PODLOG" 2>/dev/null && bad "X3 WF14 R2-11 an orphan labelled container is NOT stopped by --reconcile (absence from this registry is not proof of staleness): [$(cat "$PODLOG")]" || ok "X3 WF14 R2-11 an orphan labelled container (no row in THIS registry) is reported but never stopped by --reconcile"
 swfx x3; mkrepo "$FXN/sm"; echo 1 >"$FXN/sm/f"; cmt "$FXN/sm"; git -C "$R" submodule add -q "$FXN/sm" vendor/sm 2>/dev/null; cmt "$R" sub; git clone -q "$R" "$FXN/clone" 2>/dev/null
 ANTIMESS_ROOT=$FXN/clone sw --only AM-R5 --reconcile; [ -e "$FXN/clone/vendor/sm/f" ] && ok "X4 --reconcile initialises an uninitialised submodule (auto-safe)" || bad "X4"
 
@@ -246,10 +252,10 @@ swfx r1x; mkll; A=$LL; idh=$("$S/register.sh" --purpose r1x:h --owner t --pid "$
 printf '[{"Id":"handoffhandoffhand","Labels":{"catalogizer.op_id":"%s","project":"catalogizer"},"Created":100}]' "$idh" >"$PODJSON"
 sw --only AM-P1 --reconcile; assert_eq "H1 a container of a HANDOFF op is informational only" "$(cls AM-P1):$(infocls AM-P1)" ":container_of_handoff_op"
 assert_eq "H1b and --reconcile did not stop it" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
-swfx r2x; mkdir -p "$LONGOPS_DIR/ops"; printf '[{"Id":"racerackeracerackera","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"
+swfx r2x; mkdir -p "$LONGOPS_DIR/ops"; jq -nc '{op_id:"ghost-op",purpose_key:"r2x:p",run_id:"ghost-op",pid:0,start_time:"",state:"complete",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}' >"$LONGOPS_DIR/ops/ghost-op.json"; printf '[{"Id":"racerackeracerackera","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"
 printf '#!/bin/bash\njq -nc --arg id ghost-op --arg p r2x:p '"'"'{op_id:$id,purpose_key:$p,run_id:$id,pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}'"'"' >"%s/ops/ghost-op.json"\n' "$LONGOPS_DIR" >"$FXN/hook.sh"
 ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only AM-P1 --reconcile
-assert_eq "H2 an orphan container whose op got a registry row between detection and action is NOT stopped" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
+assert_eq "H2 a container of a TERMINAL op whose record turned live between detection and action is NOT stopped (WF14: the re-verified action is the terminal-op stop; the orphan stop is gone)" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
 assert_eq "H2b the report records why" "$(jq -r '.invariants[]|select(.id=="AM-P1")|.reconciled[]|select(.action|startswith("stopcontainer"))|.result' "$J" | head -1)" skipped_precondition_changed_live
 ANTIMESS_TEST_BEFORE_ACTION=/bin/true bash "$SW" --only AM-P1 >"$FXN/o" 2>&1; assert_rc "H3 a test hook outside ANTIMESS_TEST_MODE=1 is refused (20)" $? 20
 swfx r3x; : >"$R/.git/index.lock"; touch -d '10 minutes ago' "$R/.git/index.lock"; printf '#!/bin/bash\ntouch "%s/.git/index.lock"\n' "$R" >"$FXN/hook.sh"
@@ -286,5 +292,52 @@ PY
 bash "$FXN/bt/scripts/anti-mess/sweep.sh" --only AM-R2 --json "$FXN/bt.json" >"$FXN/bt.out" 2>&1; rc=$?
 [ $rc -eq 20 ] && [ "$(jq -r '.invariants[0].status' "$FXN/bt.json")" = blind ] && ok "Z1 a detector that cannot see the seeded drift is BLIND: exit 20, not a clean report" || bad "Z1 rc=$rc [$(cat "$FXN/bt.out")]"
 bash "$SW" --only AM-R2 --json "$FXN/ok.json" >/dev/null 2>&1; assert_eq "Z2 control: the unmutated sweep sees the same lock" "$(jq -r '.invariants[0].status' "$FXN/ok.json")" drift
+
+echo "== WF14 round 3: ground truth from the real producers; foreign containers are never stopped; valid-JSON-with-one-bad-field records =="
+# R2-2 / R2-T5: the REAL reg_adopt of scripts/build/dispatch.sh (extracted verbatim) produces the handoff-then-readopt records; no hand-edited field
+swfx ra; H64=$(printf '%064d' 1); A64=$(printf '%064d' 2); BD=$FXN/bld1; mkdir -p "$BD/tmp"
+jq -nc --arg p "build:app:lane:$H64:$A64:primary" '{purpose:$p,no_progress_budget_s:600,wallclock_cap_s:3600}' >"$BD/submit.json"
+awk '/^reg_adopt\(\)/{p=1} /^reg_beat\(\)/{p=0} p' "$TROOT/scripts/build/dispatch.sh" >"$FXN/reg_adopt.fn"
+grep -q 'register.sh' "$FXN/reg_adopt.fn" && grep -q 'reg_adopt()' "$FXN/reg_adopt.fn" && ok "RA0 control needle: the extraction holds the real reg_adopt (it calls register.sh)" || bad "RA0 the extraction is empty or blind"
+drv() { LO=$S bash -c 'pump_log() { :; }; . "$1"; reg_adopt "$2"; echo "$OPID" >"$3"; exec sleep 600' _ "$FXN/reg_adopt.fn" "$BD" "$1" >/dev/null 2>&1 &
+  KILLME+=("$!"); local i; for i in $(seq 1 60); do [ -s "$1" ] && break; sleep 0.1; done; }
+drv "$FXN/op1"; assert_eq "RA1 driver 1 registered the build through the real reg_adopt" "$(cat "$FXN/op1" 2>/dev/null)" bld1
+bash "$S/release.sh" --op-id bld1 --state handoff --verdict driver_stop >/dev/null 2>&1; assert_rc "RA2 driver stop: the pump trap's reg_handoff (release --state handoff)" $? 0
+sw --only AM-P4; assert_eq "RA2b before the restart the handoff op IS un-adopted (control: the detector sees a real handoff)" "$(cls AM-P4)" handoff_unadopted
+drv "$FXN/op2"; assert_eq "RA3 driver 2 (the resume) re-adopted the build as bld1-a2 through the real reg_adopt" "$(cat "$FXN/op2" 2>/dev/null)" bld1-a2
+sw --only AM-P4; assert_eq "RA4 WF14 R2-2 after the REAL re-adoption the old handoff op is adopted: AM-P4 is clean" "$(st AM-P4)" clean
+assert_eq "RA4b the sweep as a whole is clean (no permanent drift after every driver restart)" "$(sw; echo $SWRC)" 0
+bash "$S/release.sh" --op-id bld1 --state complete --verdict adopted >/dev/null 2>&1; assert_rc "RA5 the remedy the drift names (release --state <terminal>) succeeds even though the successor holds the claim" $? 0
+# a handoff of ANOTHER purpose, or an older completed op of the same purpose, is not an adoption (negative controls)
+mkll; Q=$LL; ido=$("$S/register.sh" --purpose ra:other --owner t --pid "$Q" --no-progress-s 5000); "$S/release.sh" --op-id "$ido" --state handoff --verdict driver_stop >/dev/null
+sw --only AM-P4; assert_eq "RA6 a handoff of a purpose nothing re-registered stays un-adopted (the successor rule keys on the purpose)" "$(cls AM-P4)" handoff_unadopted
+# R2-4: a dispatched build's container carries catalogizer.op_id=dispatch-<build id>, the op id is <build id>
+swfx lb; mkll; P=$LL; id=$("$S/register.sh" --purpose lb:x --owner dispatch --op-id bld7 --pid "$P" --no-progress-s 5000 --container-label "catalogizer.op_id=dispatch-bld7")
+printf '[{"Id":"dispdispdispdispdisp","Labels":{"catalogizer.op_id":"dispatch-bld7","project":"catalogizer"},"Created":100}]' >"$PODJSON"
+sw --only AM-P1 --reconcile; assert_eq "LB1 WF14 R2-4 the container of a LIVE dispatched build (label dispatch-bld7, op bld7) is clean and is never stopped" "$(st AM-P1):$(grep -c 'stop' "$PODLOG" 2>/dev/null)" "clean:0"
+"$S/release.sh" --op-id "$id" --state complete --verdict PASS >/dev/null; sw --only AM-P1 --reconcile
+assert_eq "LB2 control: once that op is TERMINAL its container (found through the record's container_label) is reported and stopped" "$(cls AM-P1):$(grep -c 'stop -t 5 dispdispdisp' "$PODLOG" 2>/dev/null)" "container_of_terminal_op:1"
+# R2-11: a container whose op is not in THIS checkout's registry (another checkout / track / scratch copy owns it) is reported, never stopped
+swfx fc; printf '[{"Id":"foreignforeignforei","Labels":{"catalogizer.op_id":"op-of-checkout-b","project":"catalogizer"},"Created":100}]' >"$PODJSON"
+sw --only AM-P1 --reconcile; assert_eq "FC1 WF14 R2-11 a container older than the budget with no row in this registry is reported orphan_container" "$(cls AM-P1)" orphan_container
+assert_eq "FC1b ... and --reconcile does NOT stop it (no podman stop call, no reconcile entry)" "$(grep -c 'stop' "$PODLOG" 2>/dev/null):$(jq -r '.invariants[]|select(.id=="AM-P1")|.reconciled|length' "$J")" "0:0"
+jq -r '.invariants[]|select(.id=="AM-P1")|.findings[]|select(.class=="orphan_container")|.evidence' "$J" | grep -q 'not proof of staleness' && ok "FC1c the evidence says why it is left alone" || bad "FC1c"
+# class D: valid JSON with one bad field -> unread (reviewer mutants RM6, RM9)
+swfx bf; mkll; P=$LL; printf '{"op_id":"nostate","purpose_key":"bf:p"}' >"$LONGOPS_DIR/ops/nostate.json" 2>/dev/null || { mkdir -p "$LONGOPS_DIR/ops"; printf '{"op_id":"nostate","purpose_key":"bf:p"}' >"$LONGOPS_DIR/ops/nostate.json"; }
+sw --only AM-P1; assert_eq "BF1 RM6 a valid-JSON op record with NO state is unread (exit 11), never clean" "$(st AM-P1):$SWRC" "unread:11"
+rm -f "$LONGOPS_DIR/ops/nostate.json"; printf '{"purpose_key":"bf:p","state":"running"}' >"$LONGOPS_DIR/ops/noid.json"; sw --only AM-P1; assert_eq "BF2 a valid-JSON record with no op_id is unread" "$(st AM-P1)" unread
+rm -f "$LONGOPS_DIR/ops/noid.json"; printf '{"op_id":"nopurp","state":"running"}' >"$LONGOPS_DIR/ops/nopurp.json"; sw --only AM-P1; assert_eq "BF3 a valid-JSON record with no purpose_key is unread" "$(st AM-P1)" unread
+rm -f "$LONGOPS_DIR/ops/nopurp.json"; printf '{"op_id":"badpid","purpose_key":"bf:q","state":"running","pid":"abc","start_time":"1"}' >"$LONGOPS_DIR/ops/badpid.json"; sw --only AM-P1 --reconcile
+assert_eq "BF4 a record with pid 'abc' is unread and is NOT reaped as a dead owner by --reconcile" "$(st AM-P1):$(jq -r .state "$LONGOPS_DIR/ops/badpid.json")" "unread:running"
+rm -f "$LONGOPS_DIR/ops/badpid.json"; printf '{"op_id":"nostate","purpose_key":"bf:p"}' >"$LONGOPS_DIR/ops/nostate.json"
+printf '[{"Id":"nostatenostatenosta","Labels":{"catalogizer.op_id":"nostate","project":"catalogizer"},"Created":100}]' >"$PODJSON"; : >"$PODLOG"
+sw --only AM-P1 --reconcile; assert_eq "BF5 RM9 the container of an op whose record cannot be read is NEVER stopped (unreadable is not terminal)" "$(grep -c 'stop' "$PODLOG" 2>/dev/null):$(st AM-P1)" "0:unread"
+# R2-7: INV-9 never asserts a fact it could not read
+swfx hu; B=$R/.audit/commit-push; mkdir -p "$B/susp"; mkll; A=$LL; export LONGOPS_BUILDS=$FXN/bld; mkdir -p "$FXN/bld/b1"
+"$S/acquire.sh" --purpose commit_push --run-id susp --pid "$A" >/dev/null; "$S/acquire.sh" --suspend susp --builds b1 >/dev/null; echo '{"status":"awaiting_remote_checks"}' >"$B/susp/report.json"
+sw --only INV-9; assert_eq "HU0 control: a readable live suspended-run holder is clean (suspended_run)" "$(st INV-9):$(infocls INV-9)" "clean:suspended_run"
+printf '{"kind":"proc' >"$LONGOPS_DIR/claims/commit_push/holder.json"; sw --only INV-9
+assert_eq "HU1 WF14 R2-7 a truncated commit_push holder makes INV-9 UNREAD for that run, never drift suspended_run_without_live_holder" "$(st INV-9):$(cls INV-9)" "unread:"
+unset LONGOPS_BUILDS
 
 finish

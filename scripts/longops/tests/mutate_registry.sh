@@ -32,7 +32,7 @@ PY
   if [ $rc -ne 0 ]; then caught=$((caught+1)); echo "CAUGHT   $id $desc :: $(grep -m2 '^FAIL' "$FX/mut-$id.out" | cut -c1-110 | tr '\n' '|')"
   else surv=$((surv+1)); echo "SURVIVED $id $desc"; fi
 }
-M M01 lib.sh "drop the flock: every CAS runs unlocked (adopt vs expire gives two winners)" '( flock -w 15 9 || exit 70; "$@" ) 9>' '( "$@" ) 9>'
+M M01 lib.sh "drop the flock: every CAS runs unlocked (adopt vs expire gives two winners)" '( flock -w "$LO_LOCK_WAIT" 9 || exit 70; "$@" ) 9>' '( "$@" ) 9>'
 M M02 check_no_build_writing_tracked.sh "check_no_build_writing_tracked made always-pass" 'set -u
 ' 'set -u
 exit 0
@@ -64,12 +64,12 @@ M M23 lib.sh "RM2: the zombie check of lo_alive is dropped" '  [ "$(lo_pstate "$
 ' ''
 M M24 lib.sh "RM3: lo_safe_name accepts a slash after the first character" '[A-Za-z0-9._@+:=-]{0,199}$' '[A-Za-z0-9._@+:=/-]{0,199}$'
 M M25 lib.sh "RM4: lo_claim swallows the conf-unreadable refusal" '[ "$rc" -eq "$RC_REFUSE" ] && return "$RC_REFUSE"; [ "$rc" -eq 0 ] || s=nohold' '[ "$rc" -eq 0 ] || s=nohold'
-M M26 reap.sh "F1: a process that survived TERM is still recorded reaped" '      if lo_alive "$pid" "$pst"; then
-        rec=' '      if false; then
-        rec='
-M M27 reap.sh "F2: the reap decision uses a snapshot taken before the lock (decision outside the lock)" 'j=$(cat "$f"); r=$(lo_classify_op "$j"); cls=' 'j=${SNAP:-$(cat "$f")}; r=$(lo_classify_op "$j"); cls=' 'lo_test_pause
-_reap_op() {' 'SNAP=$(cat "$f"); lo_test_pause
-_reap_op() {'
+M M26 reap.sh "F1: a process that survived TERM is still recorded reaped" '    dead_owner) _reap_write "$j" hung' '    dead_owner|advancing|hung) _reap_write "$j" hung'
+M M27 reap.sh "F2: the reap decision uses a snapshot taken before the lock (decision outside the lock)" 'j=$(cat "$f"); r=$(lo_classify_op "$j"); cls=' 'j=${SNAP:-$(cat "$f")}; r=$(lo_classify_op "$j"); cls=' 'lo_load_op "$opid"
+lo_test_pause
+SF=' 'lo_load_op "$opid"
+SNAP=$(cat "$f"); lo_test_pause
+SF='
 M M28 reap.sh "F2: reap --purpose judges a holder snapshot taken before the lock" '    s=$(lo_holder_status "$purpose"); rc=$?
     [ "$rc" -ne "$RC_REFUSE" ] || return "$RC_REFUSE"' '    s=$PRE; rc=0
     [ "$rc" -ne "$RC_REFUSE" ] || return "$RC_REFUSE"' '  lo_require_approved "$purpose"
@@ -98,6 +98,22 @@ M M38 lib.sh "class 3: lo_uint accepts any number of digits" '^[0-9]{1,15}$ ]]; 
 M M39 check_no_build_writing_tracked.sh "class 2: an unreadable op record is read as no writer" 'if [ "$cls" = unreadable ]; then printf' 'if false; then printf'
 M M40 holder.sh "class 2: an unreadable holder is reported none" '  unreadable) lo_die holder_unreadable' '  unreadable_x) lo_die holder_unreadable'
 M M41 classify.sh "F14: classify --op-id of an unknown op succeeds with empty output" '[ -e "$(lo_op_file "$only")" ] || lo_die unknown_op' 'true || lo_die unknown_op'
-M M42 reap.sh "label: reap does not look at the label the launcher sets (catalogizer.op_id)" 'for c in "op_id=$opid" "catalogizer.op_id=$opid"; do' 'for c in "op_id=$opid"; do'
+M M42 reap.sh "label: reap does not look at the label the launcher sets (catalogizer.op_id)" 'cands=("op_id=$opid" "catalogizer.op_id=$opid")' 'cands=("op_id=$opid")'
+M M43 lib.sh "RM5 (round-2 reviewer, verbatim): the last_progress_epoch is not validated: a valid-JSON record with a text epoch reads as an empty class / shell error" 'for v in "$np" "$lp" "$wc" "$el"; do' 'for v in "$np" "$wc" "$el"; do'
+M M44 lib.sh "RM11 (round-2 reviewer, verbatim): a holder whose pid is not a number is judged by lo_alive instead of being unreadable" 'lo_uint "$pid" || { echo unreadable; return 0; }' ':'
+M M45 reap.sh "WF14 R2-1: the grace wait runs INSIDE the purpose lock (an owner whose exit path takes the lock cannot finish: the dispatch pump shape)" 'printf '"'"'%s %s\n'"'"' "$pid" "$pst" >"$SF"; return 0 ;;' 'printf '"'"'%s %s\n'"'"' "$pid" "$pst" >"$SF"; n=0; while [ "$n" -lt $((GRACE * 5)) ]; do lo_alive "$pid" "$pst" || break; sleep 0.2; n=$((n+1)); done; return 0 ;;'
+M M46 heartbeat.sh "WF14 R2-3: a rebind does not move the claim holder with the op owner" 'if [ "$(jq -r '"'"'.run_id // ""'"'"' <<<"$h" 2>/dev/null)" = "$(jq -r .run_id <<<"$j")" ]; then' 'if false; then'
+M M47 reap.sh "WF14 R2-3: reap --purpose ignores a live op of the purpose" 'if lo=$(_live_op_of_purpose); then' 'if false; then'
+M M48 lib.sh "WF14 R2-5: lo_pid_ok accepts a zombie" '[ "$(lo_pstate "$1")" != Z ] && ' ''
+M M49 lib.sh "WF14 R2-5: lo_pid_ok accepts a kernel thread (process group 0)" ' && g=$(lo_ppgrp "$1") && [[ "$g" =~ ^[0-9]+$ && "$g" -gt 1 ]]; }' '; }'
+M M50 lib.sh "WF14 R2-6: the default budget is not validated (0 or junk brings back never-hung)" 'lo_uint "$LO_DEFAULT_NP" && [ "$LO_DEFAULT_NP" -gt 0 ] ||' 'true ||'
+M M51 release.sh "WF14 R2-10: release reports a claim that belongs to another run as a failed CAS after the record was written" 'lo_unclaim_own "$purpose" "$runid"' 'lo_unclaim "$purpose" "$runid"'
+M M52 reap.sh "WF14 R2-10: reap of a --no-claim op fails the CAS after the record was written" 'lo_unclaim_own "$purpose" "$(jq -r .run_id <<<"$1")"' 'lo_unclaim "$purpose" "$(jq -r .run_id <<<"$1")"'
+M M53 reap.sh "WF14 R2-4: the record's own container_label is not used to find the container" 'case "$clab" in "$opid"|"") ;; *=*) cands+=("$clab") ;; *) cands+=("catalogizer.op_id=$clab" "op_id=$clab") ;; esac' ':'
+M M54 lib.sh "WF14 class D: a record whose pid is not a number is classified by lo_alive (dead_owner), not unreadable" '{ lo_uint "$pid" && [[ "$pst" =~ ^[0-9]*$ ]]; } ||' 'true ||'
+M M55 lib.sh "WF14: lo_unclaim_own releases a claim that belongs to another run" 'if [ "$cur" = "$run" ]; then rm -rf' 'if true; then rm -rf'
+M M56 lib.sh "WF14: the lock wait budget is ignored (fixed 15 s)" '( flock -w "$LO_LOCK_WAIT" 9 || exit 70; "$@" ) 9>' '( flock -w 15 9 || exit 70; "$@" ) 9>'
+M M57 lib.sh "WF14 class D: a process holder whose start_time cannot identify a process is judged dead, not unreadable" '[[ "$st" =~ ^[0-9]+$ ]] || { echo unreadable; return 0; }' ':'
+M M58 lib.sh "WF14 class D: a suspended-run holder with a mistyped field is judged dead, not unreadable" '((.builds // [])|type=="array" and all(.[]; type=="string")) and (.state|type=="string") and ((.callback_state // "none")|type=="string")' 'true'
 echo "MUTATION RESULT caught=$caught survived=$surv total=$tot"
 [ "$surv" -eq 0 ]

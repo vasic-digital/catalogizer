@@ -2,7 +2,8 @@
 # sweep.sh - the anti-mess control plane sweep: re-derive the ACTUAL persistent state and diff it against the declared invariant
 # catalogue (T090/T091; constitution 11.4.233 B, C, E, F; docs/12 section 17; docs/16 section 13.3). Level-triggered: it reads the
 # state, never an event. It detects and, only on request and only for catalogued auto-safe classes, reconciles; it never builds, commits,
-# merges or pushes (11.4.233 F: control plane and data plane stay apart) and contacts no remote.
+# merges or pushes (11.4.233 F: control plane and data plane stay apart). It contacts a remote ONLY in INV-9 (`git ls-remote`, to prove a held commit is on every reachable remote tip of main before a finished
+# commit-push run directory is reported removable or removed, WF14 R2-D2); every other invariant reads the local state only.
 #
 # Usage   sweep.sh [--stage S0|S7|cadence] [--paths-from FILE] [--repo PATH] [--reconcile] [--json OUT] [--only AM-R1,AM-R2,...]
 #   --stage        S0 (commit-push preflight: AM-R1 excludes the declared change set; a blocking core.hooksPath is refused with 20),
@@ -21,7 +22,9 @@
 #         ANTIMESS_TEST_BEFORE_ACTION (a script run before every reconcile action, with ANTIMESS_TEST_MODE=1 only) lets a test move the state between detection and action.
 # Exits   0 no drift; 10 drift reported; 11 a source could not be read and no drift was found (never read as clean: a corrupt op record, podman failing, the verifier
 #         giving no report); 20 refusal (usage, an unknown --only id, a blind detector, a blocking core.hooksPath at S0). Reading only unless --reconcile.
-# Reconcile  every action RE-VERIFIES its precondition at action time (WF11 F10): rmlock, stopcontainer (the container's op class is re-derived from the current registry),
+# Reconcile  a container is stopped ONLY when its op is in THIS registry and terminal (WF14 R2-11): the registry is per checkout and the podman namespace is per user, so a container whose op is
+#         absent here may belong to another checkout, track or scratch copy; it is reported (orphan_container) and never stopped. Absence from one registry is not proof of staleness (11.4.232 E).
+#         every action RE-VERIFIES its precondition at action time (WF11 F10): rmlock, stopcontainer (the container's op class is re-derived from the current registry),
 #         rmdir (build_tmp: owner still gone; finished_run: report.json still finished and every held commit still on a remote tip), initsub (still uninitialised), reapop
 #         (reap.sh re-classifies under the purpose lock). A `handoff` op is re-adoptable (11.4.232 D): its container is never stopped.
 set -u
@@ -191,18 +194,29 @@ needle_AM_G2() {
 # ---------- registry: AM-P1, AM-P2 ----------
 # _ops: every readable op record, one compact JSON per line, each FILE parsed on its own (a corrupt record never hides the records after it, WF11 F4);
 # _ops_unread: the files that are empty, unparsable or have no string state: reported `unread`, never skipped silently.
-_ops() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -ce 'select(type=="object" and (.state|type=="string"))' "$f" 2>/dev/null; done; }
-_ops_unread() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -e 'type=="object" and (.state|type=="string")' "$f" >/dev/null 2>&1 || echo "$f"; done; }
+# a record is READABLE only when it names its op, its purpose and its state as strings (WF14 class D: valid JSON with one missing or mistyped field is unread, never skipped, never clean)
+_OPS_OK='type=="object" and (.op_id|type=="string") and (.purpose_key|type=="string") and (.state|type=="string")'
+_ops() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -ce "select($_OPS_OK)" "$f" 2>/dev/null; done; }
+_ops_unread() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -e "$_OPS_OK" "$f" >/dev/null 2>&1 || echo "$f"; done; }
 _emit_unread_ops() { local f; while IFS= read -r f; do [ -n "$f" ] || continue; emit unread corrupt_op_record "$f" "the op record is empty, unparsable or has no string state; the invariant is evaluated on the readable records only"; done < <(_ops_unread); }
 # the label the launcher really sets is catalogizer.op_id (scripts/containers/run_pinned.sh); op_id is accepted too
 _P1_JQ='.[]?|[(.Id|.[0:12]),((.Labels // {})["catalogizer.op_id"] // (.Labels // {}).op_id // "-"),(.Created // 0)]|@tsv'
-_p1_list() { local ps; ps=$("$PODMAN" ps --filter label=project=catalogizer --format json 2>"$W/pod.err") || return 1; [ -n "$ps" ] || ps='[]'; jq -r "$_P1_JQ" <<<"$ps"; }
+_p1_list() { local ps; ps=$(timeout 60 "$PODMAN" ps --filter label=project=catalogizer --format json 2>"$W/pod.err") || return 1; [ -n "$ps" ] || ps='[]'; jq -r "$_P1_JQ" <<<"$ps"; }
 # _p1_class <op> <created>: terminal | handoff | live | orphan | young | nolabel | unreadable, from the CURRENT registry (also the re-verification of a stopcontainer action)
+# _op_file_of_label <label value>: the record of THIS registry that owns that container label value: the op id itself (runner_lib.sh: label = op id) or a record whose container_label names it
+# (dispatch.sh: op id <build id>, label catalogizer.op_id=dispatch-<build id>; WF14 R2-4). Nothing when this registry has no such op.
+_op_file_of_label() {
+  local v=$1 f
+  lo_safe_name "$v" || return 1
+  f=$(lo_op_file "$v"); if [ -e "$f" ]; then echo "$f"; return 0; fi
+  for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue
+    jq -e --arg v "$v" 'type=="object" and ((.container_label // "")|type=="string") and ((.container_label // "") as $c | $c==$v or $c=="catalogizer.op_id="+$v or $c=="op_id="+$v)' "$f" >/dev/null 2>&1 && { echo "$f"; return 0; }
+  done; return 1
+}
 _p1_class() {
   local op=$1 created=$2 f st age
   [ "$op" != - ] && [ -n "$op" ] || { echo nolabel; return; }
-  f=$(lo_op_file "$op")
-  if [ -e "$f" ]; then st=$(jq -r 'if type=="object" then .state // "" else "" end' "$f" 2>/dev/null)
+  if f=$(_op_file_of_label "$op"); then st=$(jq -r 'if type=="object" then .state // "" else "" end' "$f" 2>/dev/null)
     case "$st" in complete|failed|reaped|blocked-escape) echo terminal ;; handoff) echo handoff ;; "") echo unreadable ;; *) echo live ;; esac; return; fi
   age=$(( $(now) - ${created:-0} ))
   if [ "$age" -gt "${ANTIMESS_ORPHAN_AGE_S:-300}" ]; then echo orphan; else echo young; fi
@@ -227,7 +241,7 @@ det_AM_P1() {
       nolabel) emit drift container_without_op_label "$cid" "labelled project=catalogizer but carries neither a catalogizer.op_id nor an op_id label (cannot be matched to a registry row)" ;;
       terminal) emit drift container_of_terminal_op "$cid" "op $op is terminal but its labelled container still runs" "stopcontainer:$cid:terminal" ;;
       handoff) emit info container_of_handoff_op "$cid" "op $op is handed off (re-adoptable, 11.4.232 D): its container is never stopped by the sweep" ;;
-      orphan) emit drift orphan_container "$cid" "op_id=$op has no registry row; age ${age}s > ${budget}s" "stopcontainer:$cid:orphan" ;;
+      orphan) emit drift orphan_container "$cid" "op_id=$op has no row in THIS checkout's registry; age ${age}s > ${budget}s; reported only: absence from one registry is not proof of staleness (another checkout, track or scratch copy may own it, 11.4.232 E), stop it by hand once its owner is known" ;;
       young) emit info orphan_container_young "$cid" "op_id=$op has no registry row yet; age ${age}s <= ${budget}s" ;;
       live|unreadable) ;;
     esac
@@ -254,7 +268,7 @@ cat <<'J'
 J
 PE
   chmod +x "$n/podman"
-  o=$( LD=$n/ld2; mkdir -p "$LD/ops"; LONGOPS_NOW=1000; echo '{"op_id":"liveop","state":"running","pid":0,"start_time":"","budget":{"no_progress_s":0}}' >"$LD/ops/liveop.json"; PODMAN=$n/podman; det_AM_P1 )
+  o=$( LD=$n/ld2; mkdir -p "$LD/ops"; LONGOPS_NOW=1000; echo '{"op_id":"liveop","purpose_key":"lp","state":"running","pid":0,"start_time":"","budget":{"no_progress_s":0}}' >"$LD/ops/liveop.json"; PODMAN=$n/podman; det_AM_P1 )
   grep -q "orphan_container${F}aaaaaaaaaaaa" <<<"$o" && ! grep -q "bbbbbbbbbbbb\|cccccccccccc" <<<"$(grep '^drift' <<<"$o" | grep -v registry_row_dead_owner)" || { echo "orphan container not reported or a registered one (op_id or catalogizer.op_id label) reported: [$o]"; return 1; }
   grep -q "container_without_op_label${F}dddddddddddd" <<<"$o" || { echo "a container with no op label at all not reported: [$o]"; return 1; }
 }
@@ -295,10 +309,15 @@ det_AM_P4() {
       unreadable) emit drift claim_unreadable "$p" "the holder record cannot be read: the purpose is blocked and the claim is never taken over; resolve it by hand" ;;
     esac
   done
+  # a handoff op is ADOPTED when the real producer re-registered the purpose: scripts/build/dispatch.sh reg_adopt registers `<id>-aN` with the same purpose_key, started no earlier than the handoff op
+  # (WF14 R2-2: no producer writes superseded_by / attached_to / adopted_by; those fields stay accepted when someone does write them). Resolving the op by hand also clears it (it is no longer `handoff`).
+  local all; all=$(_ops)
   while IFS= read -r j; do [ -n "$j" ] || continue
     [ "$(jq -r .state <<<"$j")" = handoff ] || continue
     [ -z "$(jq -r '(.superseded_by // "") + (.attached_to // "") + (.adopted_by // "")' <<<"$j")" ] || continue
-    op=$(jq -r .op_id <<<"$j"); emit drift handoff_unadopted "$op" "op $op was handed off (11.4.232 D: re-adoptable) and no op supersedes, adopts or resolves it: scripts/longops/release.sh --op-id $op --state <terminal> resolves it"
+    op=$(jq -r .op_id <<<"$j")
+    [ -n "$(jq -rs --arg id "$op" --arg p "$(jq -r .purpose_key <<<"$j")" --arg s "$(jq -r '.started_utc // ""' <<<"$j")" 'map(select(.purpose_key==$p and .op_id!=$id and ((.started_utc // "") >= $s)))|map(.op_id)|first // empty' <<<"$all")" ] && continue
+    emit drift handoff_unadopted "$op" "op $op was handed off (11.4.232 D: re-adoptable) and no later op of the same purpose re-adopted it and nothing resolves it: scripts/longops/release.sh --op-id $op --state <terminal> resolves it"
   done < <(_ops)
 }
 needle_AM_P4() {
@@ -311,10 +330,13 @@ needle_AM_P4() {
        touch -d '10 minutes ago' "$LD/claims/nohold"
        echo '{"op_id":"h1","purpose_key":"h","state":"handoff"}' >"$LD/ops/h1.json"; echo '{"op_id":"h2","purpose_key":"h2","state":"handoff","superseded_by":"x"}' >"$LD/ops/h2.json"
        echo '{"op_id":"c1","purpose_key":"c","state":"complete"}' >"$LD/ops/c1.json"
+       # the REAL re-adoption (dispatch.sh reg_adopt): a later op of the same purpose adopts the handoff op (h3); an EARLIER completed op of the purpose does not (h4)
+       echo '{"op_id":"h3","purpose_key":"p3","state":"handoff","started_utc":"2026-01-01T00:00:00Z"}' >"$LD/ops/h3.json"; echo '{"op_id":"h3-a2","purpose_key":"p3","state":"running","started_utc":"2026-01-01T00:00:05Z"}' >"$LD/ops/h3-a2.json"
+       echo '{"op_id":"h4","purpose_key":"p4","state":"handoff","started_utc":"2026-01-01T00:00:05Z"}' >"$LD/ops/h4.json"; echo '{"op_id":"p4old","purpose_key":"p4","state":"complete","started_utc":"2026-01-01T00:00:00Z"}' >"$LD/ops/p4old.json"
        det_AM_P4; lo_kill_child "$P" )
-  [ "$(grep -c '^drift' <<<"$o")" -eq 4 ] && grep -q "stale_claim${F}stalep" <<<"$o" && grep -q "claim_without_holder${F}nohold" <<<"$o" && grep -q "claim_unreadable${F}badhold" <<<"$o" && grep -q "handoff_unadopted${F}h1" <<<"$o" \
-    || { echo "seeded stale claim / holderless claim / unreadable holder / un-adopted handoff not all reported: [$o]"; return 1; }
-  grep '^drift' <<<"$o" | grep -q "livep\|h2\|c1" && { echo "a golden-false carrier (live holder, superseded handoff, complete op) was reported: [$o]"; return 1; }
+  [ "$(grep -c '^drift' <<<"$o")" -eq 5 ] && grep -q "handoff_unadopted${F}h4" <<<"$o" && grep -q "stale_claim${F}stalep" <<<"$o" && grep -q "claim_without_holder${F}nohold" <<<"$o" && grep -q "claim_unreadable${F}badhold" <<<"$o" && grep -q "handoff_unadopted${F}h1" <<<"$o" \
+    || { echo "seeded stale claim / holderless claim / unreadable holder / un-adopted handoff (and the one with only an EARLIER op of its purpose) not all reported: [$o]"; return 1; }
+  grep '^drift' <<<"$o" | grep -q "livep\|h2\|c1\|h3" && { echo "a golden-false carrier (live holder, superseded handoff, complete op) was reported: [$o]"; return 1; }
   return 0
 }
 
@@ -376,8 +398,8 @@ _held_ok() {  # _held_ok <commits.tsv>: 0 when every listed commit is on every r
 det_INV_9() {
   local base="$AUDIT_DIR/commit-push"; [ -d "$base" ] || return 0
   read_cp_holder
-  local hstat="" hrun="" hst=""
-  case "$CP_HOLDER" in unread:*) emit info commit_push_holder_unread commit_push "${CP_HOLDER#unread:}" ;; none) ;; *) hrun=$(jq -r .run_id <<<"$CP_HOLDER" 2>/dev/null); hst=$(jq -r .state <<<"$CP_HOLDER" 2>/dev/null); hstat=$(jq -r .status <<<"$CP_HOLDER" 2>/dev/null) ;; esac
+  local hstat="" hrun="" hst="" hunread=""
+  case "$CP_HOLDER" in unread:*) hunread=1; emit info commit_push_holder_unread commit_push "${CP_HOLDER#unread:}" ;; none) ;; *) hrun=$(jq -r .run_id <<<"$CP_HOLDER" 2>/dev/null); hst=$(jq -r .state <<<"$CP_HOLDER" 2>/dev/null); hstat=$(jq -r .status <<<"$CP_HOLDER" 2>/dev/null) ;; esac
   local d id rep st rr rd mrepo mpid mst gitp ts pid now_=$(now) n=0 finished=()
   local retain_runs retain_days; retain_runs=$(_conf_val retain_runs); retain_days=$(_conf_val retain_days)
   for d in "$base"/*/; do d=${d%/}; [ -d "$d" ] || continue; id=${d##*/}; rep=$d/report.json
@@ -405,6 +427,7 @@ det_INV_9() {
       st=$(jq -r '.status // ""' "$rep" 2>/dev/null)
       case "$st" in
         awaiting_remote_checks) if [ "$hrun" = "$id" ] && [ "$hstat" = live ]; then emit info suspended_run "$id" "report.json awaiting_remote_checks and the suspended-run holder is live: reported suspended, never interrupted, never reaped"
+          elif [ -n "$hunread" ]; then emit unread suspended_run_holder_unread "$id" "report.json says awaiting_remote_checks but the commit_push holder could not be read (${CP_HOLDER#unread:}): whether the run is suspended or abandoned is NOT known"
           else emit drift suspended_run_without_live_holder "$id" "report.json says awaiting_remote_checks but the suspended-run holder is not live (holder: ${hrun:-none}/${hstat:-none}); reported, never removed"; fi ;;
         ready_to_resume) emit info ready_to_resume "$id" "report.json ready_to_resume"; [ "$hrun" = "$id" ] && [ "$hstat" = expired ] && emit drift ready_to_resume_expired "$id" "ready_to_resume window ran out; reported only: release is acquire.sh --expire commit_push" ;;
         *) finished+=("$d") ;;
@@ -465,7 +488,8 @@ reconcile_action() {  # <action> -> prints a result word; every action re-verifi
     stopcontainer) local cid=${arg%%:*} want=${arg#*:} lst c3 op3 cr3 now_class=gone
       lst=$(_p1_list) || { echo skipped_containers_unreadable; return; }
       while IFS=$'\t' read -r c3 op3 cr3; do [ "$c3" = "$cid" ] || continue; now_class=$(_p1_class "$op3" "$cr3"); done <<<"$lst"
-      if [ "$now_class" != "$want" ]; then echo "skipped_precondition_changed_${now_class}"; else "$PODMAN" stop -t 5 "$cid" >/dev/null 2>&1 && echo stopped || echo failed; fi ;;
+      if [ "$now_class" != "$want" ]; then echo "skipped_precondition_changed_${now_class}"; else
+        timeout 60 "$PODMAN" stop -t 5 "$cid" >/dev/null 2>&1 && echo stopped || echo failed; fi ;;
     rmdir) local kind=${arg%%:*} path=${arg#*:}
       case "$kind" in
         build_tmp)

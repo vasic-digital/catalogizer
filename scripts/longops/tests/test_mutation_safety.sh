@@ -5,7 +5,7 @@
 # be signalled. Every "nothing reached the kill binary" claim is paired with a control needle: the same recorder DOES record the one call the guard must allow.
 . "$(dirname "$0")/lib.sh"
 ident_header WF11-F15
-. "$(dirname "$0")/mutation_safety.sh"
+. "${MS_LIB:-$(dirname "$0")/mutation_safety.sh}"   # MS_LIB lets mutate_safety.sh substitute a mutated containment library (WF14 R2-T4 RM8)
 export LC_ALL=C
 PR=$FX/pristine; mkdir -p "$PR"; cp "$S"/*.sh "$PR/"
 mk() {  # mk <name> [<file> <old> <new>]...: a mutant tree (textual only)
@@ -66,6 +66,26 @@ mk hp; printf 'import os\nos.kill(-1, 9)\n' >"$FX/m-hp/evil.py"; ms_scan "$PR" "
 mk hq lib.sh 'lo_die() { echo "longops: $1: $2" >&2; exit "${3:-$RC_USAGE}"; }' 'lo_die() { killall -u me; echo "longops: $1: $2" >&2; exit "${3:-$RC_USAGE}"; }'
 ms_scan "$PR" "$FX/m-hq" >/dev/null 2>&1; assert_rc "S25 a token smuggled into an existing non-kill line is aborted" $? 1
 
+# WF14 round 3: the four bypasses the round-2 review demonstrated (R2-T1 RB5, RB7, RB8) and the reviewer mutant RM8 (any `#` made the whole line a comment)
+mk hy; app hy "python3 -c 'import os; os.killpg(1, 9)'"; ms_scan "$PR" "$FX/m-hy" >/dev/null 2>&1; assert_rc "S26 WF14 RB5 python os.killpg(1, 9) (the 11.4.263 incident itself) is aborted" $? 1
+mk hz; app hz "python3 -c 'import os; os.killpg(os.getpgid(0), 9)'"; ms_scan "$PR" "$FX/m-hz" >/dev/null 2>&1; assert_rc "S27 WF14 RB5 python os.killpg(os.getpgid(0), 9) is aborted" $? 1
+mk ha; app ha "python3 -c 'import psutil; psutil.Process(1).kill()'"; ms_scan "$PR" "$FX/m-ha" >/dev/null 2>&1; assert_rc "S28 WF14 RB5 psutil Process(1).kill() is aborted" $? 1
+for spec in 'import psutil as p' 'p.send_signal(9)' 'psutil.Process(1).terminate()'; do
+  mk hi; app hi "$spec"; ms_scan "$PR" "$FX/m-hi" >/dev/null 2>&1; assert_rc "S28b WF14 RB5 an interpreter signal API [$spec] is aborted" $? 1
+done
+for spec in '/usr/bin/k?ll -9 -1' '/bin/k*ll -9 -1' '/usr/bin/[k]ill -9 -1' '/usr/sbin/sh*utdown'; do
+  n=$((n+1)); mk hb; app hb "$spec"; ms_scan "$PR" "$FX/m-hb" >/dev/null 2>&1; assert_rc "S29 WF14 RB7 a glob-built absolute path [$spec] is aborted" $? 1
+done
+for spec in 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; }' 'unset -f kill' 'enable kill' 'BASH_ENV=/dev/null bash -c x' 'MS_REAL_KILL=/bin/true' 'ms_blocked() { return 0; }'; do
+  mk hc; app hc "$spec"; ms_scan "$PR" "$FX/m-hc" >/dev/null 2>&1; assert_rc "S30 WF14 RB8 a mutant that redefines or disables the containment [$spec] is aborted" $? 1
+done
+mk hd; app hd 'kill -9 -1   # cleanup'; ms_scan "$PR" "$FX/m-hd" >/dev/null 2>&1; assert_rc "S31 WF14 RM8 a kill line with a TRAILING comment is code, not a comment: aborted" $? 1
+mk hd2; app hd2 'echo "x # y"; kill -9 -1'; ms_scan "$PR" "$FX/m-hd2" >/dev/null 2>&1; assert_rc "S31b a # inside a string before a kill command does not hide it: aborted" $? 1
+for spec in '"$PODMAN" stop -t 5 "$(podman ps -q | head -1)"' 'podman rm -f x' '/usr/bin/podman stop x' 'podman system prune -af'; do
+  mk he; app he "$spec"; ms_scan "$PR" "$FX/m-he" >/dev/null 2>&1; assert_rc "S32 WF14 R2-T2 a new podman side effect [$spec] is aborted" $? 1
+done
+mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0
+mk hh lib.sh 'flock -w 15' 'flock -w 2'; ms_scan "$PR" "$FX/m-hh" >/dev/null 2>&1; assert_rc "S34 golden-true: an ordinary edit still runs after the token set grew" $? 0
 echo "== layer 2: the BASH_ENV shim and the PATH stubs, with a RECORDER instead of the real kill (signal 0 only) =="
 ms_prepare "$FX/shim" || { bad "L0 containment cannot be built on this host"; finish; }
 cat >"$FX/rec-kill" <<EOF
@@ -96,6 +116,21 @@ ms_run bash -c 'killall -0 nosuchprocess' >/dev/null 2>&1; assert_rc "L5d killal
 ms_run bash -c 'command pkill -0 -x nosuchprocess' >/dev/null 2>&1; assert_rc "L5e command pkill is refused by the stub" $? 1
 assert_eq "L5f the recorder is still empty" "$(wc -l <"$FX/rec.log")" 0
 
+echo "== WF14 layer 2: podman is contained, the shim cannot be redefined from inside a mutant =="
+: >"$FX/rec.log"; : >"$MS_LOG"
+assert_eq "L6 WF14 R2-T2 inside the containment 'podman' resolves to the PATH stub, never the host binary" "$(ms_run bash -c 'type -P podman')" "$MS_BIN/podman"
+ms_run bash -c 'podman stop wf14-no-such-container' >/dev/null 2>&1; assert_rc "L6b podman stop is refused by the stub (1)" $? 1
+ms_run bash -c 'command podman rm -f wf14-no-such-container' >/dev/null 2>&1; assert_rc "L6c command podman rm is refused too (1)" $? 1
+assert_eq "L6d CONTROL NEEDLE: a read-only podman ps goes through the stub and lists nothing (0, empty)" "$(ms_run bash -c 'podman ps --format {{.ID}}; echo rc=$?')" "rc=0"
+grep -c 'BLOCKED.*podman' "$MS_LOG" | grep -qx 2 && ok "L6e both refused calls were logged" || bad "L6e [$(cat "$MS_LOG")]"
+: >"$FX/rec.log"; : >"$MS_LOG"
+ms_run bash -c 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; } 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7 WF14 RB8 redefining the guard function from inside the containment fails (readonly): kill -0 -1 is still refused" $? 1
+ms_run bash -c 'unset -f kill 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7b unset -f kill fails (readonly): kill -0 -1 is still refused" $? 1
+ms_run bash -c 'kill() { "$MS_REAL_KILL" "$@"; } 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7c redefining kill itself fails (readonly): refused" $? 1
+assert_eq "L7d CONTROL: the recorder is still empty; the shim logged the refusals" "$(wc -l <"$FX/rec.log"):$(grep -c BLOCKED "$MS_LOG" | awk '$1>=3{print "ok"}')" "0:ok"
+ms_run bash -c "kill -0 $P" >/dev/null 2>&1; assert_rc "L7e CONTROL NEEDLE: a legitimate target still reaches the recorder after the readonly hardening" $? 0
+: >"$FX/rec.log"; : >"$MS_LOG"
+
 echo "== layer 2 on HYPOTHETICAL BAD MUTANTS that layer 1 would also stop: run anyway, with signal 0, to prove the shim alone holds =="
 run_mut() {  # run_mut <mutant-name> <pid-arg>: lo_signal of the mutant, signal 0
   ms_run bash -c ". '$FX/m-$1/lib.sh'; LD='$FX/lsig-$1'; mkdir -p \"\$LD\"; lo_signal 0 '$2'; echo rc=\$?" 2>&1 | tail -1
@@ -109,6 +144,11 @@ mk h4 lib.sh '[[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
   printf' 'printf'
 ms_scan "$PR" "$FX/m-h4" >/dev/null 2>&1; assert_rc "R4a H4 = the ORIGINAL INCIDENT (guards removed, the real kill kept byte-identical): layer 1 lets it run" $? 0
 for bad in 0 1 -1 -2; do r=$(run_mut h4 "$bad"); assert_eq "R4 H4 run with pid $bad under the shim: refused, nothing delivered" "$r" rc=1; done
+mk h5 lib.sh '[[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
+  pg=$(lo_ppgrp "$pid"); [[ "$pg" =~ ^[0-9]+$ && "$pg" -gt 1 ]] || return "$RC_UNSAFE"
+  printf' 'printf'; app h5 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; }'
+ms_scan "$PR" "$FX/m-h5" >/dev/null 2>&1; assert_rc "R4b WF14 RB8 H5 = guards removed AND the shim guard redefined: layer 1 aborts it" $? 1
+for bad in 0 1 -1 -2; do r=$(run_mut h5 "$bad"); assert_eq "R4c WF14 RB8 H5 run anyway with pid $bad: the readonly shim still refuses" "$r" rc=1; done
 assert_eq "R5 the recorder is STILL empty after four hypothetical bad mutants" "$(wc -l <"$FX/rec.log")" 0
 assert_eq "R5b and the shim logged their attempts as BLOCKED" "$(grep -c BLOCKED "$MS_LOG" | awk '$1>=6{print "ok"}')" ok
 r=$(run_mut h4 "$P"); assert_eq "R6 control: the same H4 mutant with a legitimate sleeper reaches the recorder" "$r" rc=0

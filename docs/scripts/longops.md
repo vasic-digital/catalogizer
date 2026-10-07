@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T01:15:00Z |
-| Status | WP-08 T088/T089/T089a; WF11 review round 1 (NO-GO, findings F1-F20) remediated in revision 3 (see "WF11 fix round"); the independent RE-REVIEW of revision 3 is owed (constitution 11.4.142, 11.4.276 round 2); NOT yet listed in `docs/scripts/README.md` (that index belongs to another stream: the row is owed, see "Index row owed") |
-| Source | `scripts/longops/{lib,register,acquire,release,heartbeat,holder,classify,reap,check_no_build_writing_tracked,require_verdicts}.sh`; tests `scripts/longops/tests/{lib.sh,test_registry.sh,mutate_registry.sh,mutation_safety.sh,test_mutation_safety.sh}` |
+| Last modified | 2026-10-07T04:45:00Z |
+| Status | WP-08 T088/T089/T089a; WF11 review round 1 (NO-GO) remediated in revision 3; WF14 review round 2 (NO-GO, R2-1..R2-11, R2-T1..T6, R2-D1..D3) remediated in revision 4 by a STRUCTURAL round 3 (see "WF14 round 3"); the independent RE-REVIEW of revision 4 is owed (constitution 11.4.142, 11.4.276 round 3); NOT yet listed in `docs/scripts/README.md` (that index belongs to another stream: the row is owed, see "Index row owed") |
+| Source | `scripts/longops/{lib,register,acquire,release,heartbeat,holder,classify,reap,check_no_build_writing_tracked,require_verdicts}.sh`; tests `scripts/longops/tests/{lib.sh,test_registry.sh,mutate_registry.sh,mutation_safety.sh,test_mutation_safety.sh,mutate_safety.sh}` |
 
 ## Purpose
 
@@ -48,8 +48,12 @@ Every write is temp-then-rename in the same directory with an fsync. States: `re
 - A process is judged by `/proc/<pid>/stat` start time and `/proc/<pid>/cmdline`, never by `pgrep` (11.4.196 D; a test greps the scripts for `pgrep`, `pkill`, `killall`). `kill -0` is only a pre-filter. A recycled pid reads `dead_owner`.
 - All signals go through `lo_signal`: it refuses pid or pgid <= 1 (11.4.263), sends to ONE pid and never to a group, and writes `signals.log`. `lo_kill_child` (a needle's own sleeper) has the same guards; with the `kill -0` of `lo_alive` these are the ONLY three `kill` lines of the scope (a test asserts the set). `reap.sh` first re-resolves the cmdline (a mismatch is exit 6, nothing signalled) and, for a hung op, the labelled container (`podman ps --filter label=op_id=<id>` and `label=catalogizer.op_id=<id>`, the label `scripts/containers/run_pinned.sh` really sets), which it stops.
 - A live advancing op is never reaped (exit 5). A dead-owner op is reaped with no signal at all.
-- THE LOCK (WF11 class 1): classification, identity check, signal and the terminal write of `reap.sh` are ONE critical section under the purpose lock, re-derived there; `reap.sh --purpose` re-reads the holder under the lock. A heartbeat that landed before the lock is seen; a live holder that took the purpose meanwhile is never released. Test hook `LONGOPS_TEST_SLEEP_BEFORE_LOCK` makes the window observable.
-- SURVIVOR (F1): the op is recorded `reaped` and its claim released ONLY when the process is gone after the grace period. A process that ignores TERM keeps its record (state unchanged, `reap_survived_utc` set) and its claim (the purpose keeps exactly ONE owner) and the script exits 8: an operator decision, never two live owners.
+- THE LOCK (WF11 class 1, WF14 R2-1/R2-8): `reap.sh` holds the purpose lock for DECISIONS and WRITES only, never across waiting or a container runtime. Step A (locked): classify, identity, re-check the owner's start time, TERM to the one pid. Wait (UNLOCKED): `timeout 30 podman stop` of the op's container, then up to `LONGOPS_REAP_GRACE_S` (default 15) for the owner to exit, so an owner whose exit path takes the same lock (the dispatch pump's TERM trap runs `release.sh --state handoff`; the runner wrapper stops its container, then releases) can finish. Step B (locked): the record is RE-DERIVED: released by the owner -> reported (exit 0, "released the op itself"), owner gone -> `reaped`, still alive -> survivor. `reap.sh --purpose` re-reads the holder under the lock and never releases the claim of a purpose that has a non-terminal op with a LIVE owner (5) or an op that cannot be judged (20). Test hooks `LONGOPS_TEST_SLEEP_BEFORE_LOCK`, `LONGOPS_LOCK_WAIT_S` (default 15), `LONGOPS_REAP_GRACE_S`.
+- SURVIVOR (F1): the op is recorded `reaped` and its claim released ONLY when the process is gone after the grace period AND the owner did not release the op itself. A process that ignores TERM keeps its record (state unchanged, `reap_survived_utc` set) and its claim (the purpose keeps exactly ONE owner) and the script exits 8: an operator decision, never two live owners.
+- OWNER AND CLAIM HOLDER (WF14 R2-3, R2-5): `heartbeat.sh --pid` moves the op's owner AND the purpose claim's holder record (when the claim is the op's own, run id equal) in one critical section, so a launcher that hands over to a worker and exits never leaves a dead holder beside a live op. A pid is accepted only when it is an integer > 1 that exists now, is not a zombie and has a process group > 1 (the test `lo_alive` and `lo_signal` apply).
+- A CLAIM THAT BELONGS TO ANOTHER RUN (WF14 R2-10): a terminal write by `release.sh --op-id` or `reap.sh --op-id` releases the claim only when this op holds it; a claim now held by another run (the successor that re-adopted a `handoff` purpose, another op of the purpose) is left untouched and is NOT an error (the record write succeeded). `release.sh --purpose K --run-id R` keeps its compare-and-swap (4).
+- FIELDS (WF14 class D): a valid-JSON record whose `pid` or `start_time` is not a non-negative integer, or whose numeric fields are not integers of at most 15 digits, is `unreadable`, never `dead_owner`. `LONGOPS_DEFAULT_NO_PROGRESS_S` and `LONGOPS_LOCK_WAIT_S` are validated at load (a positive integer).
+- CONTAINER LABELS (WF14 R2-4): the container of an op is found by `op_id=<id>`, `catalogizer.op_id=<id>` AND the record's own `container_label` (a dispatched build: label `catalogizer.op_id=dispatch-<build id>`, op id `<build id>`).
 - UNREADABLE (WF11 class 2): an empty, unparsable or non-numeric op record is `unreadable` (reap, heartbeat and release exit 20, `check_no_build_writing_tracked` blocks); an unparsable, unknown-kind or non-numeric holder record is `unreadable` (`holder.sh` and `reap.sh --purpose` exit 20, `register.sh`/`acquire.sh` exit 20, never `stale_claim`); an unset `CPA_APPROVED_DIR` or an unreadable `commit_push.conf` makes `reap.sh --purpose commit_push` exit 20. Nothing unreadable is ever read as clean, stale, dead or advancing.
 - INPUT (WF11 class 3): `lo_wjson` refuses empty or invalid JSON (a refused write leaves the old file intact); every numeric option and every number read from a record is a non-negative integer of at most 15 digits; `--pid` (register, heartbeat, acquire) is an integer > 1 naming an existing process; `LONGOPS_NOW` is validated at load.
 - A stale claim (dead holder) is refused by `register.sh`/`acquire.sh` (exit 4), never taken over silently; `reap.sh --purpose K` releases it (also a claim directory with no holder record, a crash between `mkdir` and the record).
@@ -75,7 +79,7 @@ yet); the scripts read `resume_ttl=<seconds>` (also `:`), and a missing key is e
 | 1 | `check_no_build_writing_tracked` blocked; `require_verdicts` refused |
 | 2 | usage |
 | 3 | `purpose_conflict` (a live or expired holder, or an op id already registered) |
-| 4 | stale claim, `cas_mismatch`, unknown op, `already_terminal`, `not_expired` |
+| 4 | stale claim, `cas_mismatch` (`acquire.sh`, `release.sh --purpose`), unknown op, `already_terminal`, `not_expired` |
 | 5 | `reap.sh` refused a live advancing op, or a live/expired holder (`--purpose`) |
 | 6 | `reap.sh` could not resolve the identity from `/proc` |
 | 7 | unsafe signal target (pid or pgid <= 1) |
@@ -84,19 +88,21 @@ yet); the scripts read `resume_ttl=<seconds>` (also `:`), and a missing key is e
 
 ## Tests and mutations
 
-`scripts/longops/tests/test_registry.sh` (real processes, real flock, real `/proc`; scratch state only). `mutate_registry.sh` breaks one load-bearing line per mutant (M01 to M42) in a COPY of
+`scripts/longops/tests/test_registry.sh` (real processes, real flock, real `/proc`; scratch state only). `mutate_registry.sh` breaks one load-bearing line per mutant (M01 to M56; M43 and M44 are the round-2 reviewer mutants RM5 and RM11 verbatim) in a COPY of
 the scripts and requires the test to fail. Test-only hooks: `LONGOPS_NOW`, `LONGOPS_ALLOW_TMPFS`, `LONGOPS_TEST_SLEEP_IN_CS` (widens the critical section so a missing flock is observable; `register.sh` also pauses
 between the claim and the record), `LONGOPS_TEST_SLEEP_AFTER_READ`, `LONGOPS_TEST_SLEEP_BEFORE_LOCK`. HOST-SIDE run: RUNP/IMG-TESTUTIL (T007/T008) do not exist yet; container leg UNCONFIRMED.
 
-### Mutant containment (WF11 F15, 11.4.263): a real kill of pid <= 1 or -1 is structurally impossible
+### Mutant containment (WF11 F15, WF14 R2-T1/T2; 11.4.263): CONTAINMENT IN LAYERS, not a kernel boundary
 
-The old guard was a two-string grep on `lib.sh` only (hypothetical mutants "target -1", "target -pid" and "guard weakened, `${sig}`" all evaluated to RUN). `tests/mutation_safety.sh`, shared by `mutate_registry.sh` and
-`scripts/anti-mess/tests/mutate_sweep.sh`, replaces it with three layers: (1) `ms_scan` aborts a mutant tree that carries any signal or host-power line (kill, pkill, killall, killpg, os.kill, command/builtin/exec kill, /bin/kill,
-xargs kill, systemctl, loginctl, reboot, poweroff, shutdown, halt, suspend, hibernate) that is not byte-identical to a pristine line, in EVERY regular file of the mutant tree; (2) every mutant runs under a `BASH_ENV` shim that disables the
-`kill` builtin and defines `kill` as a guard that refuses pid 0, 1, -1, -pgid, junk, job specs and any process group <= 1, plus `pkill`/`killall` refusals and PATH stubs, so the original-incident mutant (guards removed, real kill kept
-byte-identical, which layer 1 lets run) is still contained; (3) the runner exits 2 when it cannot build the containment. `tests/test_mutation_safety.sh` tests the layers by running hypothetical bad mutants (signal 0 only, a recorder in
-place of the kill binary, a control needle that proves the recorder can see the one allowed call). Honest limits: an absolute path to a kill binary or a language-level kill is caught by layer 1 only; layer 2 is a function, not a kernel
-boundary (a rootless container with a private PID namespace would be one; `unshare --user --pid` is refused on this host).
+(Corrected in revision 4: revision 3 called a real kill of pid <= 1 "structurally impossible"; the WF14 review demonstrated four bypasses and that was an overclaim. The honest statement is below.)
+`tests/mutation_safety.sh`, shared by `mutate_registry.sh` and `scripts/anti-mess/tests/mutate_sweep.sh`, puts three layers between a mutant and a real effect: (1) `ms_scan` aborts a mutant tree that carries a signal, host-power, containment-tampering or container side-effect
+line that is not byte-identical to a pristine line, in EVERY regular file of the mutant tree: kill, pkill, killall, skill, killpg, tgkill, sigqueue, pidfd_send_signal, send_signal, terminate, psutil, os.kill (a `.` before the token no longer hides `os.killpg(` or `.kill(`), command/builtin/exec kill, /bin/kill,
+xargs kill, systemctl, loginctl, reboot, poweroff, shutdown, halt, suspend, hibernate, an absolute path into a bin directory with a glob character (`/usr/bin/k?ll`), `podman stop|kill|rm|...`, an `/usr/bin/podman` path, and any line that names or redefines the containment (`ms_*`, `MS_*`, `BASH_ENV`, `enable`, `unset -f`); a comment is a line whose FIRST non-blank character is `#`
+(a trailing comment does not hide a command: reviewer mutant RM8). (2) every mutant runs under a `BASH_ENV` shim that disables the `kill` builtin, defines `kill` as a guard that refuses pid 0, 1, -1, -pgid, junk, job specs and any process group <= 1, plus `pkill`/`killall` refusals, PATH stubs for `kill`, `pkill`, `killall`,
+`skill` AND `podman` (inside the containment `ps` lists nothing and every other subcommand is refused and logged: the host podman is never reached through PATH), and makes the shim functions READ-ONLY so a mutant cannot redefine the guard; every test fixture also defaults `LONGOPS_PODMAN` to a null stub (no test ever reaches the real podman). (3) the runner exits 2 when it cannot build the containment.
+`tests/test_mutation_safety.sh` tests the layers by running hypothetical bad mutants (signal 0 only, a recorder in place of the kill binary, a control needle that proves the recorder can see the one allowed call); `tests/mutate_safety.sh` (MS01 to MS08) mutates the containment library itself.
+HONEST LIMITS: layer 1 is textual. It does NOT catch a command name computed at run time inside an interpreter (`getattr(os, "ki"+"ll")`) or an interpreter and API that are not listed; a python process never passes the shell shim, so only layer 1 stands between it and a signal; an absolute `/usr/bin/podman` is caught by layer 1 only.
+Layer 2 is a function and a set of stubs, not a kernel boundary. A STRUCTURAL boundary would be a rootless container with a private PID namespace (11.4.161/11.4.173; `unshare --user --pid` is refused on this host); until it exists the mutants of the two runners are reviewed (11.4.142) before they are added.
 
 ## T089a: the build dispatcher is bound to this registry (round c)
 
@@ -115,7 +121,15 @@ Defect CLASSES named and every member closed (the finding ids are the review's):
 (2) refusal or unreadable input collapsed into clean, stale, dead or advancing: `reap.sh --purpose` (F3), unparsable op records (`classify.sh`, `check_no_build_writing_tracked.sh`, `reap.sh`, `heartbeat.sh`, `release.sh`), unparsable holder records (`holder.sh`, `lo_claim`), `classify.sh` unknown op (F14), elapsed beyond int64 (F13);
 (3) unvalidated input producing an empty write or a rebinding to init / pid <= 1: `lo_wjson` (F5), `heartbeat.sh --pid/--elapsed-ms/--progress-offset` (F5/F6), `register.sh --pid` (F6), `acquire.sh --pid/--resume-ttl/--callback-state/--state` (F5/F6), a non-numeric `resume_ttl` or `LONGOPS_NOW`;
 (4) terminal-state handling: a TERM-ignoring process was recorded `reaped` and its claim released (F1), a terminal record could be rewritten (F11), a stale release could reach another owner's claim; (5) the mutation runners (F15, above). F7: no op is "never hung" (default budget). F16: reviewer mutants RM1 to RM4 are mutants `M22` to `M25` and fail the suite (tests `M1` to `M3`, `X6`).
-F17: the stray `kill -0 1` is gone and a test asserts the set of kill lines. Honest boundary: `scripts/build/dispatch.sh` passes `--container-label catalogizer.op_id=dispatch-<id>` (the label VALUE differs from the op id); that file is out of this scope and the sweep matches containers on the op id the launcher labels (`catalogizer.op_id=<op id>`).
+F17: the stray `kill -0 1` is gone and a test asserts the set of kill lines. Boundary of round 3, superseded in WF14: `scripts/build/dispatch.sh` passes `--container-label catalogizer.op_id=dispatch-<id>`; the registry and the sweep now read the record's own `container_label` (R2-4).
+
+## WF14 round 3 (STRUCTURAL; constitution 11.4.276 E): ground truth first, classes, not instances
+
+Round 2 found four important source-defects, three introduced by round-1 fixes, with ONE shared cause: a fix verified against a SIMPLIFIED model of the real composition path. The ground truth was re-derived from the real producers before any fix: `scripts/build/dispatch.sh` (the pump's TERM trap runs `release.sh --state handoff`
+under the same purpose lock; `reg_adopt` registers `<id>-aN` for the same purpose and never marks the old record; the container label is `catalogizer.op_id=dispatch-<id>`), `scripts/containers/runner_lib.sh` (stops its container for `STOP_GRACE_S`, default 10 s, before the EXIT trap releases the op) and `scripts/containers/run_pinned.sh` (label `catalogizer.op_id=<op id>`).
+Classes (each inventoried with a control-needled instrument, evidence in `evidence/wp08/README.md`): (A) a lock held across waiting or a slow external call (R2-1, R2-8); (B) owner identity and claim-holder consistency (R2-3, R2-5, R2-9); (C) records and fields a reader depends on that no real producer writes (R2-2, R2-4);
+(D) valid JSON with one bad field read as a definite fact (RM5, RM11, RM6, RM9, the pid/start_time branch, R2-7); (E) containment of mutant side effects (R2-T1, R2-T2); (F) a record written successfully and then reported as a failure (R2-10); (G) a destructive auto-action resting on an unproven staleness predicate (R2-11).
+Tests now drive the REAL producers: the real `reg_adopt` (extracted verbatim from `dispatch.sh`) in `test_sweep.sh`, the pump-shaped cooperating owner in `test_registry.sh`. UNCONFIRMED: the R2-9 window (a pid recycled between the identity check and the signal) is closed by a start-time re-check immediately before the signal but has no deterministic test.
 
 ## Not done here
 

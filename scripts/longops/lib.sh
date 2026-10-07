@@ -13,7 +13,10 @@
 #            LONGOPS_TEST_SLEEP_IN_CS (seconds) widens the compare-and-swap critical section so a missing flock is observable;
 #            LONGOPS_TEST_SLEEP_AFTER_READ (seconds) pauses a holder reader between its snapshot and its judgement so a missing re-read is observable;
 #            LONGOPS_TEST_SLEEP_BEFORE_LOCK (seconds) pauses reap.sh before it takes the purpose lock so a decision made outside the lock is observable (WF11 F2);
-#            LONGOPS_DEFAULT_NO_PROGRESS_S (seconds, default 3600) is the no-progress budget of an op that declares none (WF11 F7: never "never hung").
+#            LONGOPS_DEFAULT_NO_PROGRESS_S (seconds, default 3600) is the no-progress budget of an op that declares none (WF11 F7: never "never hung"); validated at load: a positive integer (WF14 R2-6).
+#            LONGOPS_LOCK_WAIT_S (seconds, default 15, positive) is how long any script waits for a purpose lock before it exits 70 (a test shortens it to make a lock held across waiting observable, WF14 R2-1).
+#            LONGOPS_REAP_GRACE_S (seconds, default 15, a non-negative integer) is how long reap.sh waits, WITHOUT holding the purpose lock, for a signalled owner to exit (it must cover the owner's own stop grace:
+#            the runner wrapper stops its container for 10 s before it releases the op, WF14 R2-1).
 LC_ALL=C
 _LO_HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=${LONGOPS_REPO:-$(cd "$_LO_HERE/../.." && pwd)}
@@ -27,12 +30,16 @@ PODMAN=${LONGOPS_PODMAN:-podman}
 # exit codes (documented in docs/scripts/longops.md)
 RC_USAGE=2; RC_CONFLICT=3; RC_CAS=4; RC_LIVE=5; RC_IDENT=6; RC_UNSAFE=7; RC_SURVIVED=8; RC_REFUSE=20
 LO_DEFAULT_NP=${LONGOPS_DEFAULT_NO_PROGRESS_S:-3600}
+LO_LOCK_WAIT=${LONGOPS_LOCK_WAIT_S:-15}
 
 lo_die() { echo "longops: $1: $2" >&2; exit "${3:-$RC_USAGE}"; }
 # lo_uint <s>: a non-negative integer of at most 15 digits (fits int64 with room for the arithmetic below); every number read from an argument or a record goes through it.
 lo_uint() { [[ "$1" =~ ^[0-9]{1,15}$ ]]; }
-# lo_pid_ok <pid>: a pid a record may name: an integer > 1 whose /proc entry exists now (pid 0, 1, junk and a pid that does not exist are refused).
-lo_pid_ok() { lo_uint "${1:-}" && [ "$1" -gt 1 ] && [ -r "/proc/$1/stat" ]; }
+# lo_pid_ok <pid>: a pid a record may name: an integer > 1 whose /proc entry exists now, that is not a zombie and whose process group is > 1 (pid 0, 1, junk, a pid that does not exist,
+# a zombie and a kernel thread are refused: none of them can own an operation, WF14 R2-5; the same test lo_alive and lo_signal apply).
+lo_pid_ok() { local g; lo_uint "${1:-}" && [ "$1" -gt 1 ] && [ -r "/proc/$1/stat" ] && [ "$(lo_pstate "$1")" != Z ] && g=$(lo_ppgrp "$1") && [[ "$g" =~ ^[0-9]+$ && "$g" -gt 1 ]]; }
+lo_uint "$LO_LOCK_WAIT" && [ "$LO_LOCK_WAIT" -gt 0 ] || lo_die bad_lock_wait "LONGOPS_LOCK_WAIT_S must be a positive integer" "$RC_USAGE"
+lo_uint "$LO_DEFAULT_NP" && [ "$LO_DEFAULT_NP" -gt 0 ] || lo_die bad_default_budget "LONGOPS_DEFAULT_NO_PROGRESS_S must be a positive integer of at most 15 digits (an unvalidated 0 or junk would bring back \"never hung\", WF14 R2-6)" "$RC_USAGE"
 [ -z "${LONGOPS_NOW:-}" ] || lo_uint "$LONGOPS_NOW" || lo_die bad_clock "LONGOPS_NOW is not a non-negative integer" "$RC_USAGE"
 lo_now() { echo "${LONGOPS_NOW:-$(date +%s)}"; }
 lo_test_pause() { [ -z "${LONGOPS_TEST_SLEEP_BEFORE_LOCK:-}" ] || sleep "$LONGOPS_TEST_SLEEP_BEFORE_LOCK"; }
@@ -105,7 +112,7 @@ lo_kill_child() {
 lo_with_lock() {
   local p=$1; shift
   lo_safe_name "$p" || lo_die usage_error "unsafe purpose $(printf '%q' "$p")"
-  ( flock -w 15 9 || exit 70; "$@" ) 9>"$LD/$p.lock"
+  ( flock -w "$LO_LOCK_WAIT" 9 || exit 70; "$@" ) 9>"$LD/$p.lock"
 }
 lo_cs_pause() { [ -z "${LONGOPS_TEST_SLEEP_IN_CS:-}" ] || sleep "$LONGOPS_TEST_SLEEP_IN_CS"; }
 
@@ -157,9 +164,12 @@ _lo_holder_status_of() {   # prints live|expired|dead|unreadable; return 1 = no 
   case "$kind" in
     process) pid=$(jq -r '.pid' <<<"$h"); st=$(jq -r '.start_time' <<<"$h")
              lo_uint "$pid" || { echo unreadable; return 0; }
+             [[ "$st" =~ ^[0-9]+$ ]] || { echo unreadable; return 0; }   # an identity that cannot be compared is unreadable, never `dead` (WF14 class D)
              if lo_alive "$pid" "$st"; then echo live; else echo dead; fi ;;
     suspended-run)
-      local b st2 cb rdy ttl now; now=$(lo_now)
+      local b st2 cb rdy ttl now
+      jq -e '((.builds // [])|type=="array" and all(.[]; type=="string")) and (.state|type=="string") and ((.callback_state // "none")|type=="string")' >/dev/null 2>&1 <<<"$h" || { echo unreadable; return 0; }   # WF14 class D: a mistyped field is unreadable, never `dead`
+      now=$(lo_now)
       while IFS= read -r b; do [ -n "$b" ] || continue; [ -d "$BUILDS_DIR/$b/terminal" ] || { echo live; return 0; }; done < <(jq -r '.builds[]?' <<<"$h")
       cb=$(jq -r '.callback_state // "none"' <<<"$h"); case "$cb" in claimed|running) echo live; return 0 ;; esac
       st2=$(jq -r '.state' <<<"$h")
@@ -179,7 +189,9 @@ lo_classify_op() {
   jq -e 'type=="object" and (.state|type=="string")' >/dev/null 2>&1 <<<"$j" || { echo unreadable; echo "op record is empty, unparsable or has no string state"; return 0; }
   st=$(jq -r '.state' <<<"$j")
   case "$st" in complete|failed|reaped|handoff|blocked-escape) echo terminal; return 0 ;; esac
+  # WF14 class D: a valid-JSON record whose owner fields are not a pid and a start time is unreadable, never dead_owner (a dead_owner row is reaped automatically by the sweep)
   pid=$(jq -r '.pid // 0' <<<"$j"); pst=$(jq -r '.start_time // ""' <<<"$j")
+  { lo_uint "$pid" && [[ "$pst" =~ ^[0-9]*$ ]]; } || { echo unreadable; echo "pid '$pid' or start_time '$pst' of the record is not a non-negative integer"; return 0; }
   if ! lo_alive "$pid" "$pst"; then echo dead_owner; echo "pid=$pid start_time=$pst not running (resolved from /proc)"; return 0; fi
   now=$(lo_now); np=$(jq -r '.budget.no_progress_s // 0' <<<"$j"); lp=$(jq -r '.last_progress_epoch // 0' <<<"$j")
   # an advancing but over-long op is hung too (T089a): its own elapsed monotonic time (heartbeat.sh --elapsed-ms) passed the wall-clock cap recorded at registration
@@ -218,6 +230,15 @@ lo_unclaim() {
   cur=$(jq -r '.run_id // ""' "$(lo_holder_file "$p")" 2>/dev/null)
   [ "$cur" = "$want" ] || { echo "cas_mismatch: $p held by run '$cur', expected '$want'" >&2; return "$RC_CAS"; }
   rm -rf -- "$LD/claims/$p"
+}
+# lo_unclaim_own <purpose> <run-id>: release the claim ONLY when this run holds it. A claim that belongs to another run (a successor that re-adopted the purpose, another op of the purpose) is left
+# untouched and that is NOT a failure: the caller's own record write already succeeded (WF14 R2-10: a post-write CAS failure reported a correct write as exit 4).
+lo_unclaim_own() {
+  local p=$1 run=$2 cur
+  [ -d "$LD/claims/$p" ] || return 0
+  cur=$(jq -r '.run_id // ""' "$(lo_holder_file "$p")" 2>/dev/null)
+  if [ "$cur" = "$run" ]; then rm -rf -- "$LD/claims/$p"; else echo "claim_not_ours: $p is held by run '$cur', not '$run': left untouched" >&2; fi
+  return 0
 }
 lo_holder_json() {  # lo_holder_json <purpose> <run_id> <pid>
   local pid=$3 st; st=$(lo_pstart "$pid")

@@ -1,0 +1,5 @@
+/dev/shm/wf14/inv/reap_old.sh:58:       cid=""; for c in "op_id=$opid" "catalogizer.op_id=$opid"; do cid=$("$PODMAN" ps --filter "label=$c" --fo
+/dev/shm/wf14/inv/reap_old.sh:62:       [ -z "$cid" ] || "$PODMAN" stop -t 5 "$cid" >/dev/null 2>&1
+/dev/shm/wf14/inv/reap_old.sh:63:       for _ in 1 2 3 4 5 6 7 8 9 10; do lo_alive "$pid" "$pst" || break; sleep 0.2; done
+# post-fix (expected empty):
+# instrument: scratchpad classA.sh (awk over locked function bodies)

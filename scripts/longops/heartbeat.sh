@@ -6,7 +6,8 @@
 # Progress advances only when the offset GROWS (a log byte offset: --sample-log reads the size of the op's log file) or, with neither
 #         option, when the operation writes its own heartbeat (the sequence number is the monotone proof). A repeated flat offset is a
 #         heartbeat that proves nothing: `classify.sh` reports it hung once no_progress_s passes. The first call moves registered to running.
-#         --pid        rebinds the op's owner identity (pid, /proc start time AND cmdline, recorded together): an integer > 1 naming a process that exists now.
+#         --pid        rebinds the op's owner identity (pid, /proc start time AND cmdline, recorded together) AND the identity of the purpose claim when that claim is this op's own: an integer > 1 naming a
+#                      live process (not a zombie, not a kernel thread) that exists now.
 #         Every numeric option is validated BEFORE any write (a non-number never reaches a record, WF11 F5/F6/F13): 2 usage otherwise.
 # Exits   0 recorded; 2 usage; 4 the op is terminal or unknown.
 set -u
@@ -31,6 +32,17 @@ _hb() {
   j=$(jq -c --argjson now "$now" --arg u "$(lo_utc "$now")" --argjson off "$new" --argjson prog "$prog" --arg pid "$pid" --arg st "${pid:+$(lo_pstart "$pid")}" --arg cmd "${pid:+$(lo_cmdline "$pid")}" --arg el "$elapsed" '
       .heartbeat_seq+=1 | .last_heartbeat_utc=$u | .progress_offset=$off | (if $prog==1 then .last_progress_epoch=$now else . end)
       | (if .state=="registered" then .state="running" else . end) | (if $pid!="" then .pid=($pid|tonumber)|.start_time=$st|.cmdline=$cmd else . end) | (if $el!="" then .elapsed_ms=($el|tonumber) else . end)' <<<"$j")
+  # WF14 R2-3: a rebind moves the CLAIM HOLDER with the op owner, in the same critical section (a launcher that hands over to a worker and exits must not leave a dead holder beside a live op:
+  # reap.sh --purpose would free the claim of a live op and a second owner could register). Only a holder that is THIS op's own claim (run id equal) is rewritten.
+  if [ -n "$pid" ]; then
+    local hf h; hf=$(lo_holder_file "$purpose")
+    if [ -r "$hf" ]; then
+      h=$(cat "$hf" 2>/dev/null)
+      if [ "$(jq -r '.run_id // ""' <<<"$h" 2>/dev/null)" = "$(jq -r .run_id <<<"$j")" ]; then
+        h=$(jq -c --argjson pid "$pid" --arg st "$(lo_pstart "$pid")" --arg c "$(lo_cmdline "$pid")" '.pid=$pid|.start_time=$st|.cmdline=$c' <<<"$h") && lo_wjson "$hf" "$h" || return 1
+      fi
+    fi
+  fi
   lo_wjson "$f" "$j"
 }
 lo_with_lock "$purpose" _hb; rc=$?

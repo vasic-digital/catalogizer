@@ -1,0 +1,340 @@
+# identity: task=T088 utc=2026-10-07T06:28:44Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=67f4d247c62aa50d1ce2935210c7181608ab6f9c (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=5be2458f76aa68dbb610327f136df3384453b3fdedab6d7a317febd2fcd495f4
+# sha256 register.sh=05058ea2be980e9f0a8b013968f29ad3e73a835643b999dad08927232d557c30
+# sha256 acquire.sh=c5ac9da387f0af94caed400f4025d541439ccac5d4810a4f2cc7db98eaee42dd
+# sha256 release.sh=db66b0a24bd0f9dba00cbf97281f03c802b6d8d786f411166e71ea77ffaf8d9c
+# sha256 heartbeat.sh=7f99bd50cba1173a50da7671412847b2d1f78a2099f349170776fa7edc2ff2b8
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=d162812e2a86b67fb66db88af1bf73512bc8b649a8d67a9622bda05ed3dea3a6
+# sha256 reap.sh=cd68e7648ee17e6d565a3383656abfb7d0ce8f80ae6cf1405fa28015350972db
+# sha256 check_no_build_writing_tracked.sh=51a9256750a819853386147c88aed47cf8236010683f7c5088a6335842285337
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# sha256 tests/mutation_safety.sh=8ef1820f660585a16c2d2a2d0c019b3e7b844b72f84f4127c6c4457a28c1d51a
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== register / claim ==
+ok   R1 register exits 0 and prints an op id
+ok   R1b record state is registered before any start
+ok   R1c record carries the declared write paths
+ok   R1d record carries the owner's /proc start time
+ok   R2 a duplicate purpose_key is refused (atomic mkdir claim, live holder)
+ok   R2b refusal names purpose_conflict and the holder
+ok   R2c the refused register wrote no op record
+ok   R3 a stale claim (dead holder) is refused, never taken over silently
+ok   R3b refusal names stale_claim
+ok   R4 reap.sh --purpose releases the stale claim
+ok   R4b the purpose can be registered after the reap
+ok   R5 no temp file is left behind (temp-then-rename)
+ok   R5b state on tmpfs is refused (not tmpfs, 11.4.232 A)
+ok   R6 a purpose with a slash is refused
+== heartbeat / hung ==
+ok   H1 heartbeat --sample-log exits 0
+ok   H1b first heartbeat moves registered -> running
+ok   H1c offset sampled from the log size
+ok   H2 advancing within budget
+ok   H3 a heartbeat on a flat offset is not progress
+ok   H4 flat progress offset past no_progress_s is HUNG
+ok   H5 a grown offset is advancing again
+ok   H6 an op-written heartbeat (no offset) counts as progress
+ok   H7 heartbeat_seq is monotone
+ok   H8 release exits 0
+ok   H9 a terminal op takes no heartbeat
+ok   H10 release removed the claim
+ok   H11 a reader looping over 60 record rewrites never reads a torn file
+== reap ==
+ok   P1 a live advancing op is never reaped
+ok   P1b the advancing process is still alive
+ok   P2 --dry-run on a hung op exits 0 and signals nothing
+ok   P2b dry-run left the process alive
+ok   P3 a hung op is reaped
+ok   P3b the hung process was terminated
+ok   P3c record state is reaped
+ok   P3d signal audit trail names the single pid
+ok   P3e claim released after the reap
+ok   P4 an unresolvable identity (cmdline differs) is refused
+ok   P4b the process with a different identity is untouched
+ok   P5 a recycled pid (start time differs) is dead_owner: reaped
+ok   P5b the recycled-pid process is NOT signalled
+ok   P5c no signal was recorded
+ok   P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each)
+ok   P6b no signal audit entry exists for any refused target
+ok   P7 a record naming pid 1 (hand-written: register refuses it, W16) is never live: dead_owner
+ok   P7b reaping it sends nothing and succeeds as dead_owner
+ok   P7c no signal sent to pid 1
+ok   P8 hung op with a labelled container is reaped
+ok   P8b the container is resolved by label op_id=<id> AND catalogizer.op_id=<id> (the one run_pinned.sh sets)
+ok   P8c the resolved container is stopped
+ok   P9 no script of the registry uses pgrep, pkill or killall
+== holder, suspend, adopt, expire ==
+ok   L1 acquire exits 0
+ok   L1b holder prints the run id
+ok   L1c holder prints the pid
+ok   L1d holder prints the process start time from /proc/<pid>/stat
+ok   L1e status live
+ok   L2 no lock gives none
+ok   L3 a dead holder gives none
+ok   L4 a pid that now belongs to another process (start time differs) gives none
+ok   L4b acquiring over a dead holder is a stale_claim refusal
+-- suspended-run --
+ok   S1 --suspend swaps process -> suspended-run
+ok   S1b a suspended-run holder with non-terminal builds is live
+ok   S1c kind is suspended-run and builds are listed
+ok   S1d the dead CPA process does not make the suspended run stale
+ok   S2 live while ANY member build is non-terminal
+ok   S3 all builds terminal, callback none, state suspended: none
+ok   S4 callback running keeps the holder live
+ok   S5 callback done + ready_to_resume in one swap
+ok   S5b ready_to_resume within resume_ttl is live
+ok   S5c one second before the ttl: live
+ok   S6 ready_to_resume past resume_ttl is reported expired by the read-only holder
+ok   S6b holder.sh released nothing
+ok   S7 acquire --expire releases the expired holder
+ok   S7b the claim is gone and the record names the expired run
+ok   S7c expire with no holder is a cas_mismatch
+ok   S8 --expire refuses a holder still inside resume_ttl
+-- a reader never sees none across the swaps --
+ok   S9 reader made 37 reads while 8 suspend/update/adopt rounds ran
+ok   S9b the reader never read none across suspend, callback done and adopt
+-- a reader whose snapshot went stale retries (deterministic) --
+ok   S13 a reader that read the holder before the hub moved it (callback running, build terminal) judges the CURRENT record: live, never none
+-- adopt racing expire: exactly one winner --
+ok   S10 over 6 trials adopt vs expire has exactly one winner each time
+ok   S11 adopt with no holder is a cas_mismatch
+ok   S11b a failed adopt creates no claim
+ok   S12 adopt of a run that is a live process holder (not suspended) is a cas_mismatch
+-- CENTRAL C2: commit_push needs CPA_APPROVED_DIR --
+ok   C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20
+ok   C1b the refusal names helper_not_approved
+ok   C2 --expire unset gives 20 helper_not_approved FIRST (before the --op-id usage check)
+ok   C2b it is helper_not_approved, not usage_error
+ok   C2c nothing was written
+ok   C3 with it set, a live process holder reads without any conf (ttl is read lazily)
+ok   C4 --expire outside a run without --op-id gives 20 usage_error
+ok   C4b it names usage_error
+ok   C4c nothing written
+ok   C5 a ready_to_resume holder with no commit_push.conf is refused (the lazy read fails loudly)
+ok   C6 resume_ttl from the approved conf: inside the window is live
+ok   C6b past the conf's ttl: expired
+ok   C7 --expire inside a run
+ok   C7b resume_expired goes into the calling run's own report directory, naming the expired run
+ok   C7c the expired run's directory is byte-unchanged
+== check_no_build_writing_tracked ==
+ok   K1 golden-true: no registered op, exit 0
+ok   K2 golden-true: a live build writing only an untracked, ignored path
+ok   K3 golden-false: a live build writing a TRACKED path is refused
+ok   K3b the refusal names the op
+ok   K4 the caller's own op can be excepted
+ok   K5 a terminal op blocks nothing
+ok   K6 any live op declaring a write path under $EV is refused (not only builds)
+ok   K6b names the op
+ok   K7 a write path under $AUD is refused
+ok   K8 a dead-owner row is not a writer (it never wedges the window)
+ok   K9 fixture control: the fixture repository really tracks tracked/a.txt
+== require_verdicts ==
+ok   V1 golden-true: fresh PASS with the right fingerprint
+ok   V2 golden-false: a missing verdict file is refused
+ok   V2b names missing
+ok   V3 a stale fingerprint is refused
+ok   V4 a verdict older than max-age is refused
+ok   V5 a FAIL verdict is refused
+ok   V6 an absent utc is stale, never fresh
+ok   V7 one missing file among several refuses the lot
+ok   V8 an unparsable verdict is refused
+== T089a: purpose-key grammar of a dispatched build, wall-clock cap ==
+ok   G1 golden-true: a well-formed build purpose key is registered
+ok   G1b golden-true: variant repro-cold with an iteration id is registered
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:abc:def:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:fast)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary:bad iter)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build::lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2b the refusal names purpose_key_malformed
+ok   G3 without --grammar build a purpose keeps the older rule (any safe name)
+ok   G3b an unknown --grammar is a usage error
+ok   W1 heartbeat records the build host's elapsed monotonic time
+ok   W2 under the cap and advancing: advancing
+ok   W3 an advancing but over-long build (elapsed > wall_clock_s) is hung
+ok   W3b the evidence names the wall-clock cap
+ok   W4 no cap recorded (wall_clock_s 0): never hung by elapsed time
+== WF11 class 1: every decision is made UNDER the lock and re-derived there (reap) ==
+ok   W1 F1 a process that IGNORES TERM is not reaped: exit 8 (survived), never 0
+ok   W1b control: the process really ignores TERM and is still alive
+ok   W1c the record keeps its state (never reaped while the process lives)
+ok   W1d the claim is kept: the purpose still has exactly one owner
+ok   W1e a second registration of the purpose is refused (one owner)
+ok   W1f the survival is recorded on the op (reap_survived_utc)
+ok   W1g an operator decision can still end it (release --state reaped)
+ok   W2 F2 a heartbeat that lands before the reap takes the lock is SEEN: the op is advancing, refused (5)
+ok   W2b the advancing process was never signalled
+ok   W2c no signal was recorded
+ok   W2d the record is still running
+ok   W3 F2 reap --purpose re-reads the holder UNDER the lock: a live holder that took the purpose in the window is refused (5)
+ok   W3b the new live holder's claim is intact
+ok   W4 F2 two registrations of ONE op id under different purposes: exactly one wins (record created exclusively)
+ok   W4b the loser's claim was rolled back (one claim, the winner's)
+ok   W4c the record belongs to the winner
+== WF11 class 2: refusal / unreadable input is a distinct status, never clean, stale or advancing ==
+ok   X1 F3 reap --purpose commit_push with CPA_APPROVED_DIR unset REFUSES (20), it is never read as a stale claim
+ok   X1b the claim of the live holder is still there
+ok   X2 with it set, a live holder is refused (5)
+ok   X3 holder.sh on a truncated holder record is 20, never none
+ok   X3b names holder_unreadable
+ok   X4 reap --purpose on an unreadable holder record REFUSES (20): a live holder's claim is never released
+ok   X4b the claim survives
+ok   X4c register on an unreadable claim is refused (20), not stale_claim (4)
+ok   X5 a claim directory with no holder record at all is stale: released (0)
+ok   X6 RM4 acquiring over a ready_to_resume holder whose conf is unreadable is 20, never a stale_claim takeover (4)
+ok   X6b the holder is still cp1
+ok   X6c register hits the same refusal (20)
+ok   X7 a 0-byte op record is classified unreadable (never dead_owner or advancing)
+ok   X7b reap refuses it (20)
+ok   X7c heartbeat refuses it (20), not unknown_op
+ok   X7d release refuses it (20)
+ok   X7e check_no_build_writing_tracked BLOCKS on an unreadable record (1), never reads it as no writer
+ok   X7f a truncated record is unreadable too
+ok   X8 F13 an elapsed_ms beyond 15 digits is unreadable, never read as advancing
+ok   X9 F14 classify --op-id of an op that does not exist is 4 (unknown_op), not an empty success
+ok   X9b classify with an unknown argument is a usage error (2)
+ok   X10 a non-numeric LONGOPS_NOW is refused (2) at load
+== WF11 class 3: unvalidated input never writes an empty record or rebinds an op to init / a dead pid ==
+ok   V1 F5/F6 heartbeat --pid abc is refused (2)
+ok   V1 F5/F6 heartbeat --pid 1 is refused (2)
+ok   V1 F5/F6 heartbeat --pid 0 is refused (2)
+ok   V1 F5/F6 heartbeat --pid 99999999 is refused (2)
+ok   V1 F5/F6 heartbeat --elapsed-ms abc is refused (2)
+ok   V1 F5/F6 heartbeat --elapsed-ms 1e20 is refused (2)
+ok   V1 F5/F6 heartbeat --elapsed-ms 99999999999999999999 is refused (2)
+ok   V1 F5/F6 heartbeat --progress-offset -5 is refused (2)
+ok   V1 F5/F6 heartbeat --progress-offset x is refused (2)
+ok   V1b none of them changed the record (no 0-byte write, no rebind)
+ok   V2 a heartbeat may rebind to a live pid > 1
+ok   V2b the rebind records pid, start time AND cmdline of the new process together
+ok   V3 F6 register --pid '1' is refused (2)
+ok   V3 F6 register --pid '0' is refused (2)
+ok   V3 F6 register --pid 'abc' is refused (2)
+ok   V3 F6 register --pid '99999999' is refused (2)
+ok   V3 F6 register --pid '-1' is refused (2)
+ok   V3 F6 register --pid '' is refused (2)
+ok   V3b no op record and no claim was created by them
+ok   V4 acquire --pid 1 is refused (2)
+ok   V5 F5 acquire --suspend --resume-ttl abc is refused (2)
+ok   V5b the holder is untouched (still a process holder, not an empty file)
+ok   V5c an unknown --callback-state is refused (2)
+ok   V6 F5 lo_wjson refuses empty and invalid JSON (1), writes valid JSON (0), and a refused write leaves the old file intact
+ok   V6b no temp file is left behind by a refused write
+ok   V7 a holder with a non-numeric resume_ttl is refused (20), not judged
+ok   V7b --expire on it is refused (20) and the claim stays
+ok   V7c the claim is still there
+== WF11 F7: no op is ever "never hung" ==
+ok   D1 register with no budget records the declared default (3600), not 0
+ok   D1b --no-progress-s 0 records the default too
+ok   D2 a flat offset for a day is HUNG under the default budget
+ok   D3 a legacy record with budget 0 is judged by the default too
+== WF11 class 4: terminal states are immutable; a stale release can never free another owner's claim ==
+ok   T1 release complete
+ok   T2 F11 a second release into another state is refused (4 already_terminal)
+ok   T2b the record is still complete/PASS
+ok   T3 the same state and verdict again is an idempotent no-op (0)
+ok   T3b the same state with another verdict is refused (4)
+ok   T4 a handoff (re-adoptable) may be resolved into a terminal state
+ok   T5 re-releasing a reaped op is refused (4)
+ok   T5b the NEW owner's claim is intact
+ok   T5c and the reaped record is unchanged
+== WF11 F16 reviewer mutants: tests that fail on RM1-RM3 ==
+ok   M1 RM1 a pid > 1 whose process GROUP is <= 1 (kernel thread 10, pgrp 0) is refused by lo_signal and lo_kill_child (7 7), no audit entry
+ok   M2a control: the target process really is a zombie (state Z)
+ok   M2c WF14 R2-5 register --pid <zombie> is refused (2): a zombie is no owner
+ok   M2 RM2 an op whose owner is a ZOMBIE (hand-written record: register refuses it) is dead_owner, not alive
+ok   M2d acquire --pid <zombie> is refused (2)
+ok   M2b a holder that is a zombie (hand-written record) reads none
+ok   M3 RM3 an unsafe purpose key is refused (2): a/b
+ok   M3 RM3 an unsafe purpose key is refused (2): a/../../x
+ok   M3 RM3 an unsafe purpose key is refused (2): x/..
+ok   M3 RM3 an unsafe purpose key is refused (2): ..
+ok   M3 RM3 an unsafe purpose key is refused (2): .hidden
+ok   M3 RM3 an unsafe purpose key is refused (2): -x
+ok   M3 RM3 an unsafe purpose key is refused (2): a\ b
+ok   M3 RM3 an unsafe purpose key is refused (2): $'a\nb'
+ok   M3 RM3 an unsafe purpose key is refused (2): a:b/c
+ok   M3b nothing was created outside the state directory
+== WF11: lo_signal and the guarded child kill are the ONLY kill sites of the scope (11.4.263 D) ==
+ok   K10 exactly three kill lines exist in the production scripts: lo_alive kill -0, lo_signal, lo_kill_child
+ok   K10b they are the three expected lines (single pid after the double dash, never a group)
+== WF14 round 3: ground truth taken from the REAL producers (dispatch.sh pump trap, heartbeat rebind, runner/dispatch container labels) ==
+ok   N1 R2-1 a COOPERATING owner (TERM trap releases the op itself, the dispatch pump shape) is reaped without a false survival: exit 0, not 8
+ok   N1b the owner's own release stands: state handoff
+ok   N1c no reap_survived marker was written for a cooperating owner
+ok   N1d the owner released the claim itself
+ok   N1e CONTROL: the owner really was signalled (the audit trail names it)
+ok   N1f the owner exited after its trap
+ok   N2 R2-8 a heartbeat during a slow container listing is recorded (0)
+ok   N2b it did not wait for the container runtime (the lock is not held across podman)
+ok   N3 R2-3 the rebind moved the claim holder to the new owner (pid, start time, cmdline)
+ok   N3b after the launcher exits the holder still reads live (the worker owns the purpose)
+ok   N3c reap --purpose refuses a live holder (5)
+ok   N3d a second registration is refused (3): one owner
+ok   N4 R2-3 reap --purpose of a DEAD holder refuses (5) while a non-terminal op of that purpose has a live owner
+ok   N4b the refusal names the op
+ok   N4c the claim is intact
+ok   N4d a valid-JSON op record of that purpose that cannot be judged (pid 'abc') also refuses (20): never read as dead
+ok   N5 R2-5 heartbeat --pid <zombie> is refused (2)
+ok   N5b heartbeat --pid <kernel thread 10, pgrp 0> is refused (2)
+ok   N5c register --pid <kernel thread> is refused (2)
+ok   N5d none of them changed the record
+ok   N6d LONGOPS_LOCK_WAIT_S='0' is refused (2) at load
+ok   N6 R2-6 LONGOPS_DEFAULT_NO_PROGRESS_S='0' is refused (2) at load, never 'never hung'
+ok   N6d LONGOPS_LOCK_WAIT_S='abc' is refused (2) at load
+ok   N6 R2-6 LONGOPS_DEFAULT_NO_PROGRESS_S='abc' is refused (2) at load, never 'never hung'
+ok   N6d LONGOPS_LOCK_WAIT_S='-5' is refused (2) at load
+ok   N6 R2-6 LONGOPS_DEFAULT_NO_PROGRESS_S='-5' is refused (2) at load, never 'never hung'
+ok   N6b register refuses it too (2)
+ok   N6c control: a valid override loads (0)
+ok   N7 R2-10 reaping a --no-claim op whose purpose is claimed by ANOTHER op succeeds (0): the record is written, the other claim untouched
+ok   N7b state reaped, the claim is still opA's
+ok   N8 R2-2/R2-10 resolving a HANDOFF op whose purpose was re-claimed by its successor succeeds (0), never a post-write failure (4)
+ok   N8b the handoff op is complete, the successor keeps its claim
+ok   N9 R2-4 a hung dispatched build is reaped (0)
+ok   N9b its container is resolved by the record's own container_label and stopped
+ok   N10 R2-T2 the default LONGOPS_PODMAN of every fixture is the null stub, never /usr/bin/podman
+ok   N11 a valid-JSON record with ONE bad field (.last_progress_epoch="abc") is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.last_progress_epoch="abc")
+ok   N11 a valid-JSON record with ONE bad field (.budget.no_progress_s="x") is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.budget.no_progress_s="x")
+ok   N11 a valid-JSON record with ONE bad field (.budget.wall_clock_s=-1) is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.budget.wall_clock_s=-1)
+ok   N11 a valid-JSON record with ONE bad field (.elapsed_ms="1e3") is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.elapsed_ms="1e3")
+ok   N11 a valid-JSON record with ONE bad field (.pid="abc") is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.pid="abc")
+ok   N11 a valid-JSON record with ONE bad field (.pid=[1]) is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.pid=[1])
+ok   N11 a valid-JSON record with ONE bad field (.start_time={"a":1}) is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.start_time={"a":1})
+ok   N11 a valid-JSON record with ONE bad field (.pid=1.5) is unreadable, never dead, advancing or an empty class
+ok   N11b ... and it raises no shell error (.pid=1.5)
+ok   N11c control: the unmodified record is advancing
+ok   N12 a holder record with ONE bad field (.pid="abc") is refused (20), never none
+ok   N12b reap --purpose does not release it (20)
+ok   N12c the claim survives (.pid="abc")
+ok   N12 a holder record with ONE bad field (.pid=null) is refused (20), never none
+ok   N12b reap --purpose does not release it (20)
+ok   N12c the claim survives (.pid=null)
+ok   N12 a holder record with ONE bad field (.pid=[1]) is refused (20), never none
+ok   N12b reap --purpose does not release it (20)
+ok   N12c the claim survives (.pid=[1])
+ok   N14 a held purpose lock makes a script exit 70 after LONGOPS_LOCK_WAIT_S
+ok   N14b it waited the configured 1 s, not the default 15 s
+ok   N13 a process holder with a start_time that cannot identify a process (.start_time={"a":1}) is refused (20), never none
+ok   N13b reap --purpose does not release it (20)
+ok   N13 a process holder with a start_time that cannot identify a process (.start_time=null) is refused (20), never none
+ok   N13b reap --purpose does not release it (20)
+ok   N13 a process holder with a start_time that cannot identify a process (.start_time="") is refused (20), never none
+ok   N13b reap --purpose does not release it (20)
+ok   N13c control: the unmodified holder is live
+ok   N13d a suspended-run holder with ONE mistyped field (.builds="abc") is refused (20), never none (dead)
+ok   N13d a suspended-run holder with ONE mistyped field (.builds=[1]) is refused (20), never none (dead)
+ok   N13d a suspended-run holder with ONE mistyped field (del(.state)) is refused (20), never none (dead)
+ok   N13d a suspended-run holder with ONE mistyped field (.callback_state=7) is refused (20), never none (dead)
+ok   N13e control: the unmodified suspended-run holder is live (build b1 not terminal)
+RESULT pass=305 fail=0

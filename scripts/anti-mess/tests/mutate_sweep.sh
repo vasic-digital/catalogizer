@@ -66,5 +66,13 @@ M S29 "F4: AM-P2 never reports a corrupt op record" 'det_AM_P2() {
 M S30 "AM-P4: a claim with no holder record is never reported" 'emit drift claim_without_holder' 'emit info claim_without_holder'
 M S31 "AM-P4: an unreadable claim is never reported" 'unreadable) emit drift claim_unreadable' 'unreadable) emit info claim_unreadable'
 M S32 "AM-P4: a holder that cannot be judged is informational" 'emit unread claim_holder_unread' 'emit info claim_holder_unread'
+M S33 "RM6 (round-2 reviewer): _ops_unread checks only type==object: a valid-JSON record with no state is skipped silently" 'continue; jq -e "$_OPS_OK" "$f" >/dev/null 2>&1 || echo "$f"' 'continue; jq -e '"'"'type=="object"'"'"' "$f" >/dev/null 2>&1 || echo "$f"'
+M S34 "RM9 (round-2 reviewer): an unreadable op state is classed terminal (its container is stopped)" 'handoff) echo handoff ;; "") echo unreadable ;;' 'handoff) echo handoff ;; "") echo terminal ;;'
+M S35 "WF14 R2-11: an orphan container (no row in THIS registry) is stopped by --reconcile again" 'stop it by hand once its owner is known" ;;' 'stop it by hand once its owner is known" "stopcontainer:$cid:orphan" ;;'
+M S36 "WF14 R2-4: a container is matched to its op by the op id only (the record container_label is ignored)" 'f=$(lo_op_file "$v"); if [ -e "$f" ]; then echo "$f"; return 0; fi' 'f=$(lo_op_file "$v"); if [ -e "$f" ]; then echo "$f"; return 0; fi; return 1'
+M S37 "WF14 R2-2: a handoff op re-adopted by a later op of its purpose is still reported un-adopted" '<<<"$all")" ] && continue' '<<<"$all")" ] && false'
+M S38 "WF14 R2-7: INV-9 asserts a missing live holder it could not read" 'elif [ -n "$hunread" ]; then emit unread suspended_run_holder_unread' 'elif false; then emit unread suspended_run_holder_unread'
+M S39 "WF14 class D: a record with no op_id or purpose_key is accepted as readable" '_OPS_OK='"'"'type=="object" and (.op_id|type=="string") and (.purpose_key|type=="string") and (.state|type=="string")'"'"'' '_OPS_OK='"'"'type=="object" and (.state|type=="string")'"'"''
+M S40 "WF14: a handoff op is adopted by ANY op of the purpose, also an earlier one" "(.started_utc // \"\") >= \$s)" "true)"
 echo "MUTATION RESULT caught=$caught survived=$surv total=$tot"
 [ "$surv" -eq 0 ]
