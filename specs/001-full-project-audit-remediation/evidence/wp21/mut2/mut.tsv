@@ -1,0 +1,32 @@
+# identity: task=T180 utc=2026-10-07T16:44:33Z host=9bebbca0f0a8 uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d
+# gate_sha256=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f ext_sha256=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 test_sha256=2683acff6d8a1f36d15c2f8cc68c8f42ed5bb83aaab3487d5a838391c6728761 runner_sha256=c283acdeaff8cb81fc2756228b6f685c1ead4e0973d82638207ef9ab1da3250a
+# mutant<TAB>killed<TAB>first failing check of test_reverify_gate.sh (CONTROL_* rows must read NO)
+CONTROL_noop_comment	NO	
+CONTROL_unmutated	NO	
+completion_always_on	yes	FAIL C3 rc=4 [INFO view_empty checked=11
+completion_fail_ignored	yes	FAIL F1 rc=4 [FAIL schema object of the reference missing in the database under test: triggerreg_ids_no_delete
+completion_flag_ignored	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK]
+empty_list_ok	yes	FAIL E1 rc=0 [INFO view_empty checked=11
+exit_code_one	yes	FAIL R1b the exit status is 4 (NOT DONE), distinct from gate failure 1 and partial 3 :: got [1] want [4]
+exit_code_zero	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|NOT DONE v_reverify_queue 
+guard_nd_dbrow_regex	yes	FAIL F3 rc=1 [FAIL seed differs from /src/scripts/register/register_ext.sql (1 differing lines; first: < G|v_x
+guard_nd_exit	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|NOT DONE v_reverify_queue 
+guard_nd_isview	yes	FAIL F4 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: tablev_reverify_
+guard_nd_numeric	yes	FAIL F5 rc=1 [FAIL schema differs from /src/scripts/register/register_ext.sql (2 differing definition lines; f
+guard_nd_regex	yes	FAIL E4 rc=1 [FAIL v_gate_missing_objects: v_Bad Name
+info_line_dropped	yes	FAIL C1b [INFO view_empty checked=11
+list_from_db	yes	FAIL F2 rc=1 [FAIL seed differs from /src/scripts/register/register_ext.sql (1 differing lines; first: > G|v_r
+list_wrong_kind	yes	FAIL R1 rc=1 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|INFO not_done checked=11|F
+not_done_line_dropped	yes	FAIL R1 rc=4 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|INFO not_done checked=1|CO
+not_done_outranks_fail	yes	FAIL F1 rc=4 [FAIL schema object of the reference missing in the database under test: triggerreg_ids_no_delete
+ok_line_is_gate_ok	yes	FAIL C1 rc=0 [INFO view_empty checked=11
+partial_prefix_gate	yes	FAIL P2 rc=0 [INFO view_empty checked=11
+rows_off_by_one	yes	FAIL R3 rc=4 [INFO view_empty checked=11
+skip_step_not_done	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|COMPLETION OK]
+threshold_gt1	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|INFO not_done checked=1|CO
+views_not_counted	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|NOT DONE v_reverify_queue 
+ext_check_drops_kind	yes	FAIL R1 rc=1 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|FAIL reference gate regist
+ext_row_kind_empty	yes	FAIL R1 rc=1 [FAIL v_reverify_queue rows=1|INFO view_empty checked=12|INFO evidence_rehash files=0 url_skipped
+ext_row_kind_report	yes	FAIL R1 rc=1 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|FAIL reference gate regist
+ext_row_other_view	yes	FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|INFO not_done checked=1|CO
+ext_row_removed	yes	FAIL R1 rc=1 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|FAIL reference gate regist

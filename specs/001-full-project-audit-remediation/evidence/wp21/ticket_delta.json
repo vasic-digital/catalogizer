@@ -1,0 +1,74 @@
+{
+  "schema": "ticket_delta/1",
+  "task": "T185",
+  "id": "IC-26/OD-19",
+  "git_head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+  "report": {
+    "path": ".implementation/ALL-TICKETS-VALIDATION-REPORT-2026-04-17.md",
+    "claims_total": 1965,
+    "claims_open": 460,
+    "claims_closed": 1505,
+    "commit": "3e2f2b4f"
+  },
+  "tree": {
+    "files_at_report_parent": 1778,
+    "files_at_report_commit": 1778,
+    "files_at_HEAD": 1778,
+    "status_parent": {
+      "open": 299,
+      "fixed": 492,
+      "resolved": 704,
+      "wontfix": 283
+    },
+    "status_report_commit": {
+      "closed": 299,
+      "fixed": 492,
+      "resolved": 704,
+      "wontfix": 283
+    },
+    "commit_changed_files": 299,
+    "commit_message_claims": 460
+  },
+  "history": {
+    "distinct_paths_ever_under_docs_issues": 1855,
+    "deleted_paths_ever": 77,
+    "renames": 0,
+    "deleting_commits": [
+      {
+        "commit": "00e24588",
+        "date": "2026-04-07",
+        "subject": "fix: Delete 77 garbage issues from broken QA screenshots + update HelixQA",
+        "files": 77
+      }
+    ],
+    "distinct_helix_ids_in_dir": 676,
+    "distinct_helix_ids_ever": 676,
+    "report_ids_named": 39,
+    "report_ids_missing_from_dir": 0,
+    "report_ids_missing_from_history": 0
+  },
+  "arithmetic": {
+    "difference": 187,
+    "open_gap_460_minus_299": 161,
+    "closed_gap_1505_minus_1479": 26,
+    "sum": 187,
+    "ever_minus_dir_deleted": 77,
+    "report_minus_ever_paths": 110
+  },
+  "fact": [
+    "FACT: the 187 difference equals 161 (report open 460 minus 299 open files in the tree before the closing commit) plus 26 (report closed 1505 minus 1479 closed-class files: fixed 492 + resolved 704 + wontfix 283).",
+    "FACT: the closing commit 3e2f2b4f changed 299 files although its message and the report say 460; the tree held 1778 files before and after it.",
+    "FACT: only one commit removed files under docs/issues (00e24588, 2026-04-07, 77 files, before the report date); the 77 deletions do not explain the 187.",
+    "FACT: 1855 distinct paths ever existed in this repository history; the report total 1965 exceeds that by 110, so at least 110 of the reported tickets never existed as files in this repository."
+  ],
+  "unconfirmed": [
+    "UNCONFIRMED: where the 161 reported-open and 26 reported-closed tickets that have no file lived (an uncommitted QA output directory, a submodule such as helix_qa, or a miscount in the report); no commit of this repository adds or removes them. Owner knowledge (OD-19) is still the only other source."
+  ],
+  "commands": [
+    "git ls-tree -r --name-only 3e2f2b4f^ -- docs/issues | wc -l",
+    "git log --diff-filter=D --name-only -- docs/issues",
+    "git log --all --name-only --format= -- docs/issues | sort -u | wc -l",
+    "git show <rev>:<file> | grep -m1 -i ^status: (per file, both trees)"
+  ],
+  "population_statement": "The register source population for docs/issues is the 1,778 files present at HEAD; the report 1,965 is not reconciled to files and must not be used as a count (SC-001)."
+}

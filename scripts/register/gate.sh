@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# gate.sh - register gate, docs/04 §12.3 step 2. Usage: gate.sh --db <db> [--ext <register_ext.sql>] [--allow-url-evidence]
+# gate.sh - register gate, docs/04 §12.3 step 2, and with --completion the completion gate of step 3.
+# Usage: gate.sh --db <db> [--ext <register_ext.sql>] [--allow-url-evidence] [--completion]
 # Steps (each prints FAIL <what> and sets rc=1; the run continues so one report lists every failure):
 #   engine validate | PRAGMA integrity_check = ok | PRAGMA foreign_key_check empty |
 #   v_gate_missing_objects empty | every reg_gate_checks view_empty view returns 0 rows |
@@ -14,7 +15,14 @@
 # tracker_receipt is counted, never claimed verified: the run then ends `GATE PASS-PARTIAL url_skipped=N` (docs/04
 # section 7.1(a), K-11: the re-hash is the compensating control, so a run that skipped paths is partial) with exit 3,
 # or exit 0 (still PASS-PARTIAL, never a bare GATE OK) when --allow-url-evidence is given.
-# Exit 0 ok (or PASS-PARTIAL allowed), 1 gate failure, 2 usage, 3 PASS-PARTIAL not allowed.
+# --completion (T180, docs/04 §12.3 step 3, §13.3): after the register steps, the FEATURE COMPLETION gate: every row of every
+#   reg_gate_checks view_not_done view is open work and counts as NOT done. The list of views is read from the trusted reference
+#   (like view_empty), so a row deleted from the DB under test cannot hide the queue (the seed diff FAILs it as well). Prints one
+#   `NOT DONE <view> rows=N` line per populated view (name order), then `COMPLETION NOT DONE views=V rows=R`, exit 4. A clean run
+#   prints `COMPLETION OK`. A reference with no view_not_done row, a name that is not a view, or a count that is not a number is a
+#   FAIL. Without --completion the register gate is unchanged (view_not_done rows are not counted).
+# Exit 0 ok (or PASS-PARTIAL allowed), 1 gate failure, 2 usage, 3 PASS-PARTIAL not allowed, 4 NOT DONE (--completion only; a
+#   register FAIL (1) outranks it, it outranks PASS-PARTIAL (3)).
 # Env: WI, SQLITE3 (the container image's binaries once RUNP exists), REG_ROOT (tree root, for tests; also the
 #      base of a relative reg_evidence.path), REG_EXT_SQL (DDL reference, for the mutation runner).
 set -u
@@ -22,13 +30,14 @@ export LC_ALL=C   # sort and comm must agree on the collation
 ROOT=${REG_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 WI=${WI:-$ROOT/submodules/constitution/scripts/workable-items/bin/workable-items-linux}
 SQLITE3=${SQLITE3:-sqlite3}
-DB=""; EXT=${REG_EXT_SQL:-$ROOT/scripts/register/register_ext.sql}; ALLOW_URL=0
+DB=""; EXT=${REG_EXT_SQL:-$ROOT/scripts/register/register_ext.sql}; ALLOW_URL=0; COMPLETION=0
 while [ $# -gt 0 ]; do case "$1" in
   --allow-url-evidence) ALLOW_URL=1; shift;;
+  --completion) COMPLETION=1; shift;;
   --db|--ext) [ $# -ge 2 ] || { echo "gate: $1 needs a value" >&2; exit 2; }   # a missing value must not loop (m-1)
               if [ "$1" = --db ]; then DB=$2; else EXT=$2; fi; shift 2;;
   *) echo "gate: unknown argument $1" >&2; exit 2;; esac; done
-[ -n "$DB" ] || { echo "usage: gate.sh --db <db> [--ext <ddl>] [--allow-url-evidence]" >&2; exit 2; }
+[ -n "$DB" ] || { echo "usage: gate.sh --db <db> [--ext <ddl>] [--allow-url-evidence] [--completion]" >&2; exit 2; }
 [ -f "$DB" ] || { echo "FAIL database file absent: $DB" >&2; exit 1; }
 rc=0
 # a message may carry text read from the database under test: newlines and carriage returns are flattened so no
@@ -149,6 +158,30 @@ step_evidence_rehash() {
   echo "INFO evidence_rehash files=$n url_skipped=$skipped"
   URL_SKIPPED=$skipped
 }
+# T180 (docs/04 §12.3 step 3): every row of a view_not_done view is open work. Same untrusted-name rule as step_view_empty: the
+# list comes from the TRUSTED reference, each name must match ^v_[a-z0-9_]+$ and be a VIEW of the database under test, and the
+# registry of the database under test is only cross-checked. A count that is not a number (the view errors) is a FAIL, never zero.
+ND_VIEWS=0; ND_ROWS=0
+step_not_done() {
+  [ -s "${REF:-}" ] || { fail "not_done not run: no trusted reference database"; return; }
+  views=$(qr "SELECT name FROM reg_gate_checks WHERE kind='view_not_done' ORDER BY name")
+  [ -n "$views" ] || { fail "reference gate registry holds no view_not_done row"; return; }
+  checked=0
+  for v in $views; do
+    [[ $v =~ ^v_[a-z0-9_]+$ ]] || { fail "invalid view name in the reference registry: $(sane "$v")"; continue; }   # GUARD_ND_REGEX
+    k=$(q "SELECT count(*) FROM sqlite_master WHERE type='view' AND name='$v'")
+    [ "$k" = 1 ] || { fail "$v is not a view in the database under test"; continue; }   # GUARD_ND_ISVIEW
+    n=$(q "SELECT count(*) FROM \"$v\"")
+    [[ $n =~ ^[0-9]+$ ]] || { fail "$v not counted: $(sane "$n")"; continue; }   # GUARD_ND_NUMERIC
+    checked=$((checked+1))
+    if [ "$n" != 0 ]; then echo "NOT DONE $v rows=$n"; ND_VIEWS=$((ND_VIEWS+1)); ND_ROWS=$((ND_ROWS+n)); fi
+  done
+  echo "INFO not_done checked=$checked"
+  while IFS= read -r row; do
+    [[ $row =~ ^v_[a-z0-9_]+$ ]] || { fail "invalid registry name in the database under test: $(sane "$row")"; continue; }   # GUARD_ND_DBROW_REGEX
+    printf '%s\n' "$views" | grep -qx -- "$row" || fail "registry row not in the reference: $row"
+  done < <(q "SELECT name FROM reg_gate_checks WHERE kind='view_not_done'")
+}
 
 URL_SKIPPED=0
 step_reference_diff   # first: builds the trusted reference and compares schema + seed before any query uses DB contents
@@ -159,9 +192,13 @@ step_fk
 step_missing_objects
 step_view_empty
 step_evidence_rehash
+[ $COMPLETION = 1 ] && step_not_done
 if [ $rc != 0 ]; then echo "GATE FAILED"; exit 1; fi
+if [ $COMPLETION = 1 ] && [ "$ND_VIEWS" -gt 0 ]; then echo "COMPLETION NOT DONE views=$ND_VIEWS rows=$ND_ROWS"; exit 4; fi   # GUARD_ND_EXIT
+PFX=GATE; [ $COMPLETION = 1 ] && PFX=COMPLETION
 if [ "${URL_SKIPPED:-0}" -gt 0 ]; then   # a run that skipped evidence paths is never a bare GATE OK
-  if [ $ALLOW_URL = 1 ]; then echo "GATE PASS-PARTIAL url_skipped=$URL_SKIPPED (allowed by --allow-url-evidence; those receipts are NOT re-hashed)"; exit 0; fi
-  echo "GATE PASS-PARTIAL url_skipped=$URL_SKIPPED (refused: URL-shaped evidence is not re-hashed; pass --allow-url-evidence to accept the partial result)"; exit 3
+  if [ $ALLOW_URL = 1 ]; then echo "$PFX PASS-PARTIAL url_skipped=$URL_SKIPPED (allowed by --allow-url-evidence; those receipts are NOT re-hashed)"; exit 0; fi
+  echo "$PFX PASS-PARTIAL url_skipped=$URL_SKIPPED (refused: URL-shaped evidence is not re-hashed; pass --allow-url-evidence to accept the partial result)"; exit 3
 fi
+if [ $COMPLETION = 1 ]; then echo "COMPLETION OK"; exit 0; fi
 echo "GATE OK"; exit 0
