@@ -18,7 +18,12 @@
 # Env     ANTIMESS_ROOT (repository to sweep, default this one), LONGOPS_* (registry, see scripts/longops/lib.sh), ANTIMESS_OWNED_ORGS (fixtures),
 #         ANTIMESS_LOCK_MIN_AGE (seconds a git lock must exist before it can be stale, default 60), ANTIMESS_ORPHAN_AGE_S (default 300),
 #         CPA_APPROVED_DIR (the approved copy of the CPA run being served: S0, S7), PODMAN via LONGOPS_PODMAN.
-# Exits   0 no drift; 10 drift reported; 20 refusal (usage, a blind detector, a blocking core.hooksPath at S0). Reading only unless --reconcile.
+#         ANTIMESS_TEST_BEFORE_ACTION (a script run before every reconcile action, with ANTIMESS_TEST_MODE=1 only) lets a test move the state between detection and action.
+# Exits   0 no drift; 10 drift reported; 11 a source could not be read and no drift was found (never read as clean: a corrupt op record, podman failing, the verifier
+#         giving no report); 20 refusal (usage, an unknown --only id, a blind detector, a blocking core.hooksPath at S0). Reading only unless --reconcile.
+# Reconcile  every action RE-VERIFIES its precondition at action time (WF11 F10): rmlock, stopcontainer (the container's op class is re-derived from the current registry),
+#         rmdir (build_tmp: owner still gone; finished_run: report.json still finished and every held commit still on a remote tip), initsub (still uninitialised), reapop
+#         (reap.sh re-classifies under the purpose lock). A `handoff` op is re-adoptable (11.4.232 D): its container is never stopped.
 set -u
 LC_ALL=C
 SD=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -27,6 +32,7 @@ AM_ROOT=${ANTIMESS_ROOT:-$TOOLS}
 export LONGOPS_REPO=${LONGOPS_REPO:-$AM_ROOT}
 . "$TOOLS/scripts/longops/lib.sh"
 CATALOGUE=${ANTIMESS_CATALOGUE:-$SD/catalogue.yaml}
+UNREAD=0
 STAGE=cadence; PATHS_FROM=""; ARG_REPO=""; RECON=0; JSON_OUT=""; ONLY=""
 die() { echo "sweep: $1: $2" >&2; exit 20; }
 while [ $# -gt 0 ]; do
@@ -37,6 +43,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 case "$STAGE" in S0|S7|cadence) ;; *) die usage "--stage must be S0, S7 or cadence" ;; esac
+[ -z "${ANTIMESS_TEST_BEFORE_ACTION:-}" ] || [ "${ANTIMESS_TEST_MODE:-}" = 1 ] || die test_hook_outside_test_mode "ANTIMESS_TEST_BEFORE_ACTION is a test hook and needs ANTIMESS_TEST_MODE=1"
 [ -z "$PATHS_FROM" ] || [ "$STAGE" = S0 ] || die usage "--paths-from is for --stage S0 only"
 [ -z "$PATHS_FROM" ] || [ -r "$PATHS_FROM" ] || die usage "--paths-from file unreadable"
 [ -d "$AM_ROOT/.git" ] || [ -f "$AM_ROOT/.git" ] || die not_a_repository "$AM_ROOT"
@@ -182,30 +189,49 @@ needle_AM_G2() {
 }
 
 # ---------- registry: AM-P1, AM-P2 ----------
-_ops() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] && cat "$f" && echo; done | jq -c . 2>/dev/null; }
+# _ops: every readable op record, one compact JSON per line, each FILE parsed on its own (a corrupt record never hides the records after it, WF11 F4);
+# _ops_unread: the files that are empty, unparsable or have no string state: reported `unread`, never skipped silently.
+_ops() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -ce 'select(type=="object" and (.state|type=="string"))' "$f" 2>/dev/null; done; }
+_ops_unread() { local f; for f in "$LD"/ops/*.json; do [ -e "$f" ] || continue; jq -e 'type=="object" and (.state|type=="string")' "$f" >/dev/null 2>&1 || echo "$f"; done; }
+_emit_unread_ops() { local f; while IFS= read -r f; do [ -n "$f" ] || continue; emit unread corrupt_op_record "$f" "the op record is empty, unparsable or has no string state; the invariant is evaluated on the readable records only"; done < <(_ops_unread); }
+# the label the launcher really sets is catalogizer.op_id (scripts/containers/run_pinned.sh); op_id is accepted too
+_P1_JQ='.[]?|[(.Id|.[0:12]),((.Labels // {})["catalogizer.op_id"] // (.Labels // {}).op_id // "-"),(.Created // 0)]|@tsv'
+_p1_list() { local ps; ps=$("$PODMAN" ps --filter label=project=catalogizer --format json 2>"$W/pod.err") || return 1; [ -n "$ps" ] || ps='[]'; jq -r "$_P1_JQ" <<<"$ps"; }
+# _p1_class <op> <created>: terminal | handoff | live | orphan | young | nolabel | unreadable, from the CURRENT registry (also the re-verification of a stopcontainer action)
+_p1_class() {
+  local op=$1 created=$2 f st age
+  [ "$op" != - ] && [ -n "$op" ] || { echo nolabel; return; }
+  f=$(lo_op_file "$op")
+  if [ -e "$f" ]; then st=$(jq -r 'if type=="object" then .state // "" else "" end' "$f" 2>/dev/null)
+    case "$st" in complete|failed|reaped|blocked-escape) echo terminal ;; handoff) echo handoff ;; "") echo unreadable ;; *) echo live ;; esac; return; fi
+  age=$(( $(now) - ${created:-0} ))
+  if [ "$age" -gt "${ANTIMESS_ORPHAN_AGE_S:-300}" ]; then echo orphan; else echo young; fi
+}
 det_AM_P1() {
   local j cls ev id age budget=${ANTIMESS_ORPHAN_AGE_S:-300} line
+  _emit_unread_ops
   while IFS= read -r j; do [ -n "$j" ] || continue
     id=$(jq -r .op_id <<<"$j"); line=$(lo_classify_op "$j"); cls=$(sed -n 1p <<<"$line"); ev=$(sed -n 2p <<<"$line")
     case "$cls" in
       hung) emit drift hung_op "$id" "purpose $(jq -r .purpose_key <<<"$j"): $ev" ;;
       dead_owner) emit drift registry_row_dead_owner "$id" "purpose $(jq -r .purpose_key <<<"$j"): $ev" "reapop:$id" ;;
+      unreadable) emit unread corrupt_op_record "$id" "$ev" ;;
     esac
   done < <(_ops)
-  local ps rc; ps=$("$PODMAN" ps --filter label=project=catalogizer --format json 2>"$W/pod.err"); rc=$?
-  if [ $rc -ne 0 ]; then emit info containers_unread podman "podman ps exit $rc: $(head -c 160 "$W/pod.err")"; return; fi
-  [ -n "$ps" ] || ps='[]'
-  local cid op created st
+  local lst rc cid op created cc; lst=$(_p1_list); rc=$?
+  if [ $rc -ne 0 ]; then emit unread containers_unread podman "podman ps failed or was unparsable (rc $rc): $(head -c 160 "$W/pod.err" 2>/dev/null); the containers were NOT evaluated (never clean)"; return; fi
   while IFS=$'\t' read -r cid op created; do
     [ -n "$cid" ] || continue
-    age=$(( $(now) - ${created:-0} ))
-    [ "$op" = - ] && op=""
-    if [ -z "$op" ]; then emit drift container_without_op_label "$cid" "labelled project=catalogizer but carries no op_id label (cannot be matched to a registry row)"; continue; fi
-    if [ -s "$(lo_op_file "$op")" ]; then st=$(jq -r .state "$(lo_op_file "$op")")
-      case "$st" in complete|failed|reaped|handoff|blocked-escape) emit drift container_of_terminal_op "$cid" "op $op is $st but its labelled container still runs" "stopcontainer:$cid" ;; esac
-    elif [ "$age" -gt "$budget" ]; then emit drift orphan_container "$cid" "op_id=$op has no registry row; age ${age}s > ${budget}s" "stopcontainer:$cid"
-    else emit info orphan_container_young "$cid" "op_id=$op has no registry row yet; age ${age}s <= ${budget}s"; fi
-  done < <(jq -r '.[]?|[(.Id|.[0:12]),(.Labels.op_id // "-"),(.Created // 0)]|@tsv' <<<"$ps")
+    cc=$(_p1_class "$op" "$created"); age=$(( $(now) - ${created:-0} ))
+    case "$cc" in
+      nolabel) emit drift container_without_op_label "$cid" "labelled project=catalogizer but carries neither a catalogizer.op_id nor an op_id label (cannot be matched to a registry row)" ;;
+      terminal) emit drift container_of_terminal_op "$cid" "op $op is terminal but its labelled container still runs" "stopcontainer:$cid:terminal" ;;
+      handoff) emit info container_of_handoff_op "$cid" "op $op is handed off (re-adoptable, 11.4.232 D): its container is never stopped by the sweep" ;;
+      orphan) emit drift orphan_container "$cid" "op_id=$op has no registry row; age ${age}s > ${budget}s" "stopcontainer:$cid:orphan" ;;
+      young) emit info orphan_container_young "$cid" "op_id=$op has no registry row yet; age ${age}s <= ${budget}s" ;;
+      live|unreadable) ;;
+    esac
+  done <<<"$lst"
 }
 needle_AM_P1() {
   local n="$W/nd-p1" id1 id2 id3; mkdir -p "$n"
@@ -214,23 +240,27 @@ needle_AM_P1() {
   o=$( LD=$n/ld; mkdir -p "$LD/ops"; LONGOPS_NOW=1000
        fake_op() { jq -nc --arg id "$1" --arg p "$2" --argjson pid "$3" --arg st "$(lo_pstart "$3")" --argjson lp "$4" --arg s "$5" '{op_id:$id,purpose_key:$p,run_id:$id,pid:$pid,start_time:$st,state:$s,last_progress_epoch:$lp,progress_offset:0,budget:{no_progress_s:30}}' >"$LD/ops/$1.json"; }
        fake_op hungop pa "$P1" 100 running; fake_op goodop pb "$P2" 990 running; fake_op doneop pc "$P2" 1 complete
+       printf '{"op_id":"trunc",' >"$LD/ops/00corrupt.json"   # a corrupt record sorted BEFORE the others: it must not hide them (WF11 F4)
        PODMAN=$n/podman-none; det_AM_P1 )
-  kill "$P1" "$P2" 2>/dev/null
-  grep -q "hung_op${F}hungop" <<<"$o" || { echo "seeded hung op (flat offset, live owner) not reported: [$o]"; return 1; }
+  lo_kill_child "$P1"; lo_kill_child "$P2"
+  grep -q "hung_op${F}hungop" <<<"$o" || { echo "seeded hung op (flat offset, live owner) not reported (a corrupt record hid it?): [$o]"; return 1; }
+  grep -q "^unread${F}corrupt_op_record${F}.*00corrupt.json" <<<"$o" || { echo "seeded corrupt op record not reported unread: [$o]"; return 1; }
   [ "$(grep -c "^drift" <<<"$o")" -eq 1 ] || { echo "golden-false carriers (advancing op, terminal op) were reported: [$o]"; return 1; }
   # containers (a unit-level stand-in for podman: the real one runs on the real state)
   cat >"$n/podman" <<'PE'
 #!/usr/bin/env bash
 cat <<'J'
-[{"Id":"aaaaaaaaaaaaaaaaaaaa","Labels":{"op_id":"ghost","project":"catalogizer"},"Created":100},{"Id":"bbbbbbbbbbbbbbbbbbbb","Labels":{"op_id":"liveop","project":"catalogizer"},"Created":100}]
+[{"Id":"aaaaaaaaaaaaaaaaaaaa","Labels":{"op_id":"ghost","project":"catalogizer"},"Created":100},{"Id":"bbbbbbbbbbbbbbbbbbbb","Labels":{"op_id":"liveop","project":"catalogizer"},"Created":100},{"Id":"cccccccccccccccccccc","Labels":{"catalogizer.op_id":"liveop","project":"catalogizer"},"Created":100},{"Id":"dddddddddddddddddddd","Labels":{"project":"catalogizer"},"Created":100}]
 J
 PE
   chmod +x "$n/podman"
   o=$( LD=$n/ld2; mkdir -p "$LD/ops"; LONGOPS_NOW=1000; echo '{"op_id":"liveop","state":"running","pid":0,"start_time":"","budget":{"no_progress_s":0}}' >"$LD/ops/liveop.json"; PODMAN=$n/podman; det_AM_P1 )
-  grep -q "orphan_container${F}aaaaaaaaaaaa" <<<"$o" && ! grep -q "bbbbbbbbbbbb" <<<"$(grep '^drift' <<<"$o" | grep -v registry_row_dead_owner)" || { echo "orphan container not reported or a registered one reported: [$o]"; return 1; }
+  grep -q "orphan_container${F}aaaaaaaaaaaa" <<<"$o" && ! grep -q "bbbbbbbbbbbb\|cccccccccccc" <<<"$(grep '^drift' <<<"$o" | grep -v registry_row_dead_owner)" || { echo "orphan container not reported or a registered one (op_id or catalogizer.op_id label) reported: [$o]"; return 1; }
+  grep -q "container_without_op_label${F}dddddddddddd" <<<"$o" || { echo "a container with no op label at all not reported: [$o]"; return 1; }
 }
 det_AM_P2() {
   local p
+  _emit_unread_ops
   while IFS= read -r p; do [ -n "$p" ] || continue
     emit drift duplicate_owner "$p" "more than one non-terminal operation holds purpose_key $p: $(_dup_ops "$p")"
   done < <(_ops | jq -rs 'map(select(.state as $s|["complete","failed","reaped","handoff","blocked-escape"]|index($s)|not)|select((.attached_to//"")=="" and (.superseded_by//"")==""))|group_by(.purpose_key)|map(select(length>1)|.[0].purpose_key)|.[]')
@@ -241,8 +271,51 @@ needle_AM_P2() {
     echo '{"op_id":"a1","purpose_key":"dup","state":"running"}' >"$LD/ops/a1.json"; echo '{"op_id":"a2","purpose_key":"dup","state":"running"}' >"$LD/ops/a2.json"
     echo '{"op_id":"b1","purpose_key":"ok","state":"running"}' >"$LD/ops/b1.json"; echo '{"op_id":"c1","purpose_key":"att","state":"running"}' >"$LD/ops/c1.json"; echo '{"op_id":"c2","purpose_key":"att","state":"running","attached_to":"c1"}' >"$LD/ops/c2.json"
     echo '{"op_id":"d1","purpose_key":"term","state":"complete"}' >"$LD/ops/d1.json"; echo '{"op_id":"d2","purpose_key":"term","state":"running"}' >"$LD/ops/d2.json"
+    printf '{"op_id":"trunc",' >"$LD/ops/00corrupt.json"
     det_AM_P2 )
-  [ "$(grep -c '^drift' <<<"$o")" -eq 1 ] && grep -q "duplicate_owner${F}dup" <<<"$o" || { echo "seeded duplicate owner not reported, or a carrier (attached op, terminal twin) reported: [$o]"; return 1; }
+  [ "$(grep -c '^drift' <<<"$o")" -eq 1 ] && grep -q "duplicate_owner${F}dup" <<<"$o" || { echo "seeded duplicate owner not reported (a corrupt record hid it?), or a carrier (attached op, terminal twin) reported: [$o]"; return 1; }
+  grep -q "^unread${F}corrupt_op_record" <<<"$o" || { echo "seeded corrupt op record not reported unread: [$o]"; return 1; }
+}
+
+# ---------- AM-P4 purpose claims and un-adopted handoffs (WF11 F9; 11.4.232 B, D, F) ----------
+det_AM_P4() {
+  local d p s rc age minage=${ANTIMESS_LOCK_MIN_AGE:-60} op j
+  _emit_unread_ops
+  for d in "$LD"/claims/*/; do [ -d "$d" ] || continue; p=${d%/}; p=${p##*/}
+    s=$(lo_holder_status "$p" 2>"$W/p4.err"); rc=$?
+    if [ "$rc" -eq "$RC_REFUSE" ]; then emit unread claim_holder_unread "$p" "the holder of $p could not be judged: $(head -c 160 "$W/p4.err")"; continue; fi
+    if [ "$rc" -ne 0 ]; then   # a claim directory with no holder record: a crash between mkdir and the record, unless it is being written right now
+      age=$(( $(now) - $(stat -c %Y -- "${d%/}" 2>/dev/null || echo 0) ))
+      if [ "$age" -lt "$minage" ]; then emit info claim_young "$p" "claim directory with no holder record, age ${age}s < ${minage}s (a registration in progress)"
+      else emit drift claim_without_holder "$p" "claim directory with no holder record, age ${age}s: the purpose is blocked and nothing owns it; release is scripts/longops/reap.sh --purpose $p"; fi
+      continue
+    fi
+    case "$s" in
+      dead) emit drift stale_claim "$p" "the holder is dead (resolved from /proc): the purpose is blocked (register exits 4); release is scripts/longops/reap.sh --purpose $p" ;;
+      unreadable) emit drift claim_unreadable "$p" "the holder record cannot be read: the purpose is blocked and the claim is never taken over; resolve it by hand" ;;
+    esac
+  done
+  while IFS= read -r j; do [ -n "$j" ] || continue
+    [ "$(jq -r .state <<<"$j")" = handoff ] || continue
+    [ -z "$(jq -r '(.superseded_by // "") + (.attached_to // "") + (.adopted_by // "")' <<<"$j")" ] || continue
+    op=$(jq -r .op_id <<<"$j"); emit drift handoff_unadopted "$op" "op $op was handed off (11.4.232 D: re-adoptable) and no op supersedes, adopts or resolves it: scripts/longops/release.sh --op-id $op --state <terminal> resolves it"
+  done < <(_ops)
+}
+needle_AM_P4() {
+  local n="$W/nd-p4" o; mkdir -p "$n"
+  o=$( LD=$n/ld; mkdir -p "$LD/ops" "$LD/claims/stalep" "$LD/claims/nohold" "$LD/claims/badhold" "$LD/claims/livep"; LONGOPS_NOW=$(date +%s)
+       sleep 300 >/dev/null 2>&1 & P=$!
+       jq -nc '{kind:"process",purpose:"stalep",run_id:"r1",pid:999999,start_time:"1",state:"running"}' >"$LD/claims/stalep/holder.json"
+       printf '{"kind":"proc' >"$LD/claims/badhold/holder.json"
+       jq -nc --argjson pid "$P" --arg st "$(lo_pstart "$P")" '{kind:"process",purpose:"livep",run_id:"r2",pid:$pid,start_time:$st,state:"running"}' >"$LD/claims/livep/holder.json"
+       touch -d '10 minutes ago' "$LD/claims/nohold"
+       echo '{"op_id":"h1","purpose_key":"h","state":"handoff"}' >"$LD/ops/h1.json"; echo '{"op_id":"h2","purpose_key":"h2","state":"handoff","superseded_by":"x"}' >"$LD/ops/h2.json"
+       echo '{"op_id":"c1","purpose_key":"c","state":"complete"}' >"$LD/ops/c1.json"
+       det_AM_P4; lo_kill_child "$P" )
+  [ "$(grep -c '^drift' <<<"$o")" -eq 4 ] && grep -q "stale_claim${F}stalep" <<<"$o" && grep -q "claim_without_holder${F}nohold" <<<"$o" && grep -q "claim_unreadable${F}badhold" <<<"$o" && grep -q "handoff_unadopted${F}h1" <<<"$o" \
+    || { echo "seeded stale claim / holderless claim / unreadable holder / un-adopted handoff not all reported: [$o]"; return 1; }
+  grep '^drift' <<<"$o" | grep -q "livep\|h2\|c1" && { echo "a golden-false carrier (live holder, superseded handoff, complete op) was reported: [$o]"; return 1; }
+  return 0
 }
 
 # ---------- AM-P3 builds ----------
@@ -252,7 +325,7 @@ det_AM_P3() {
   if [ -s "$BUILDS_DIR/hub.json" ]; then lo_alive "$(jq -r .pid "$BUILDS_DIR/hub.json" 2>/dev/null)" "$(jq -r .start_time "$BUILDS_DIR/hub.json" 2>/dev/null)" && hub=1; fi
   for d in "$BUILDS_DIR"/*/*.tmp-*-*; do [ -e "$d" ] || continue
     if [[ "$d" =~ \.tmp-([0-9]+)-([0-9]+)$ ]]; then pid=${BASH_REMATCH[1]}; st=${BASH_REMATCH[2]}
-      if lo_alive "$pid" "$st"; then emit info build_tmp_live "$d" "owner pid $pid still running"; else emit drift stale_build_tmp "$d" "owner pid $pid start $st is gone (resolved from /proc, 11.4.180)" "rmdir:$d"; fi
+      if lo_alive "$pid" "$st"; then emit info build_tmp_live "$d" "owner pid $pid still running"; else emit drift stale_build_tmp "$d" "owner pid $pid start $st is gone (resolved from /proc, 11.4.180)" "rmdir:build_tmp:$d"; fi
     fi
   done
   for d in "$BUILDS_DIR"/*/; do d=${d%/}; id=${d##*/}; [ -d "$d" ] || continue; case "$id" in .*|groups|hub*) continue ;; esac
@@ -344,7 +417,7 @@ det_INV_9() {
   sorted=$(for d in "${finished[@]}"; do printf '%s\t%s\n' "$(stat -c %Y -- "$d/report.json")" "$d"; done | sort -rn)
   while IFS=$'\t' read -r ts d; do i=$((i+1)); age_d=$(( (now_ - ts) / 86400 ))
     [ "$i" -gt "$retain_runs" ] && [ "$age_d" -gt "$retain_days" ] || continue
-    if [ ! -s "$d/commits.tsv" ] || _held_ok "$d/commits.tsv"; then emit drift removable_finished_run "${d##*/}" "beyond the newest $retain_runs runs and older than $retain_days days (age ${age_d}d); every commit is on every reachable remote tip of main" "rmdir:$d"
+    if [ ! -s "$d/commits.tsv" ] || _held_ok "$d/commits.tsv"; then emit drift removable_finished_run "${d##*/}" "beyond the newest $retain_runs runs and older than $retain_days days (age ${age_d}d); every commit is on every reachable remote tip of main" "rmdir:finished_run:$d"
     else emit info kept_held_commit "${d##*/}" "a commit of commits.tsv is missing from a reachable remote tip of main: its record stays while it awaits its GO"; fi
   done <<<"$sorted"
 }
@@ -359,7 +432,7 @@ needle_INV_9() {
   sleep 300 >/dev/null 2>&1 & local P=$!
   echo "{\"repo\":\".\",\"pid\":$P,\"start_time\":\"$(lo_pstart "$P")\"}" >"$b/mrg/merge.json"; rm -rf "$b/20260101T000000Z-999999-aaaa" "$b/20260101T000001Z-1-bbbb"
   mkdir -p "$b/fin"; echo '{"status":"complete"}' >"$b/fin/report.json"
-  o=$( AM_ROOT=$n/r; AUDIT_DIR=$n/r/.audit; CPA_APPROVED_DIR=""; read_cp_holder() { CP_HOLDER=none; }; det_INV_9 ); kill "$P" 2>/dev/null
+  o=$( AM_ROOT=$n/r; AUDIT_DIR=$n/r/.audit; CPA_APPROVED_DIR=""; read_cp_holder() { CP_HOLDER=none; }; det_INV_9 ); lo_kill_child "$P"
   [ "$(grep -c '^drift' <<<"$o")" -eq 0 ] && grep -q "live_merge_holder${F}mrg" <<<"$o" || { echo "a live merge holder or a finished dir inside retention reported as drift: [$o]"; return 1; }
 }
 
@@ -376,16 +449,38 @@ for i in d["invariants"]:
 PY
 ) || die catalogue "cannot read $CATALOGUE"
 [ "${#IDS[@]}" -gt 0 ] || die catalogue "no invariants"
+if [ -n "$ONLY" ]; then   # an unknown id (a typo, a lower-case id) is a usage refusal, never an empty successful sweep (WF11 F12)
+  _o=${ONLY#,}; _o=${_o%,}; IFS=, read -r -a _ol <<<"$_o"
+  [ "${#_ol[@]}" -gt 0 ] || die usage "--only names no invariant id"
+  for _i in "${_ol[@]}"; do _k=0; for id in "${IDS[@]}"; do [ "$id" = "$_i" ] && _k=1; done; [ "$_k" = 1 ] || die usage "--only names an unknown invariant id '$_i' (catalogue ids: ${IDS[*]})"; done
+fi
 RESULTS="$W/results"; : >"$RESULTS"; REFUSE=0; DRIFT=0
-reconcile_action() {  # <action> -> prints a result word; every action re-verifies its own precondition
+reconcile_action() {  # <action> -> prints a result word; every action re-verifies its own precondition AT ACTION TIME (WF11 F2/F10)
   local a=${1%%:*} arg=${1#*:}
+  [ -z "${ANTIMESS_TEST_BEFORE_ACTION:-}" ] || bash "$ANTIMESS_TEST_BEFORE_ACTION" "$1" >/dev/null 2>&1
   case "$a" in
     rmlock) local age; age=$(( $(now) - $(stat -c %Y -- "$arg" 2>/dev/null || echo 0) ))
       if [ -e "$arg" ] && ! _open_by_any "$arg" >/dev/null && [ "$(_git_active)" -eq 0 ] && [ "$age" -ge "${ANTIMESS_LOCK_MIN_AGE:-60}" ]; then rm -f -- "$arg" && echo removed || echo failed; else echo skipped_not_provably_stale; fi ;;
     reapop) bash "$TOOLS/scripts/longops/reap.sh" --op-id "$arg" >/dev/null 2>&1 && echo reaped || echo refused ;;
-    stopcontainer) "$PODMAN" stop -t 5 "$arg" >/dev/null 2>&1 && echo stopped || echo failed ;;
-    rmdir) case "$arg" in "$AUDIT_DIR"/*) rm -rf -- "$arg" && echo removed || echo failed ;; *) echo refused_outside_audit ;; esac ;;
-    initsub) git -C "$AM_ROOT" submodule update --init -- "$arg" >/dev/null 2>&1 && echo initialised || echo failed ;;
+    stopcontainer) local cid=${arg%%:*} want=${arg#*:} lst c3 op3 cr3 now_class=gone
+      lst=$(_p1_list) || { echo skipped_containers_unreadable; return; }
+      while IFS=$'\t' read -r c3 op3 cr3; do [ "$c3" = "$cid" ] || continue; now_class=$(_p1_class "$op3" "$cr3"); done <<<"$lst"
+      if [ "$now_class" != "$want" ]; then echo "skipped_precondition_changed_${now_class}"; else "$PODMAN" stop -t 5 "$cid" >/dev/null 2>&1 && echo stopped || echo failed; fi ;;
+    rmdir) local kind=${arg%%:*} path=${arg#*:}
+      case "$kind" in
+        build_tmp)
+          if [[ "$path" =~ \.tmp-([0-9]+)-([0-9]+)$ ]] && case "$path" in "$BUILDS_DIR"/*) true ;; *) false ;; esac && [ -d "$path" ] && ! lo_alive "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"; then rm -rf -- "$path" && echo removed || echo failed
+          else echo skipped_precondition_changed; fi ;;
+        finished_run)
+          local rep="$path/report.json" st4
+          case "$path" in "$AUDIT_DIR"/commit-push/*) ;; *) echo refused_outside_commit_push; return ;; esac
+          [ -s "$rep" ] || { echo skipped_precondition_changed; return; }
+          st4=$(jq -r '.status // ""' "$rep" 2>/dev/null); case "$st4" in awaiting_remote_checks|ready_to_resume) echo skipped_precondition_changed; return ;; esac
+          if [ -s "$path/commits.tsv" ] && ! _held_ok "$path/commits.tsv"; then echo skipped_held_commit_not_on_remote; return; fi
+          rm -rf -- "$path" && echo removed || echo failed ;;
+        *) echo unknown_rmdir_kind ;;
+      esac ;;
+    initsub) if git -C "$AM_ROOT" submodule status --recursive -- "$arg" 2>/dev/null | grep -q '^-'; then git -C "$AM_ROOT" submodule update --init -- "$arg" >/dev/null 2>&1 && echo initialised || echo failed; else echo skipped_already_initialised; fi ;;
     *) echo unknown_action ;;
   esac
 }
@@ -401,8 +496,8 @@ for id in "${IDS[@]}"; do
     fi
     if [ -z "$status" ]; then
       "$fn" >"$fl" 2>"$W/err.$id"
-      if grep -q '^unread' "$fl"; then status=unread; reason=$(grep '^unread' "$fl" | cut -f4 | head -1)
-      elif grep -q '^drift' "$fl"; then status=drift; else status=clean; fi
+      if grep -q '^drift' "$fl"; then status=drift; elif grep -q '^unread' "$fl"; then status=unread; else status=clean; fi
+      grep -q '^unread' "$fl" && reason=$(grep '^unread' "$fl" | cut -f4 | head -1)
     fi
   fi
   rec_json='[]'
@@ -410,6 +505,7 @@ for id in "${IDS[@]}"; do
     while IFS=$'\t' read -r sev cls sub ev act; do [ -n "${act:-}" ] || continue; res=$(reconcile_action "$act"); rec_json=$(jq -c --arg a "$act" --arg r "$res" '. + [{action:$a,result:$r}]' <<<"$rec_json"); done <"$fl"
   fi
   [ "$status" = drift ] && DRIFT=$((DRIFT+1)); [ "$status" = blind ] && REFUSE=1
+  { [ "$status" = unread ] || grep -q '^unread' "$fl"; } && UNREAD=$((UNREAD+1))
   grep -q "^drift${F}blocking_hooks_path" "$fl" && [ "$STAGE" = S0 ] && REFUSE=1
   findings=$(jq -R -s -c 'split("\n")|map(select(length>0)|split("\t"))|map({severity:.[0],class:.[1],subject:.[2],evidence:.[3],action:(.[4]//"")})' <"$fl")
   jq -nc --arg id "$id" --arg al "${ALI[$id]}" --arg pl "${PLN[$id]}" --arg st "$status" --arg nd "$needle" --arg rs "$reason" --arg rc "${REC[$id]}" --argjson f "$findings" --argjson r "$rec_json" \
@@ -426,4 +522,5 @@ jq -r '.invariants[]|[.id,.status,.control_needle,(if .status=="drift" then ((.f
 jq -r '"SUMMARY drift=\(.summary.drift) clean=\(.summary.clean) not_evaluated=\(.summary.not_evaluated) unread=\(.summary.unread) blind=\(.summary.blind) skipped_stage=\(.summary.skipped_stage)"' <<<"$REPORT"
 [ "$REFUSE" = 1 ] && exit 20
 [ "$DRIFT" -gt 0 ] && exit 10
+[ "$UNREAD" -gt 0 ] && exit 11
 exit 0

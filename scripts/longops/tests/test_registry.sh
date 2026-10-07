@@ -20,7 +20,7 @@ mkll; B=$LL
 assert_rc "R2 a duplicate purpose_key is refused (atomic mkdir claim, live holder)" $rc 3
 grep -q purpose_conflict "$FXN/e" && ok "R2b refusal names purpose_conflict and the holder" || bad "R2b [$(cat "$FXN/e")]"
 n=$(ls "$LONGOPS_DIR/ops" | grep -c json); assert_eq "R2c the refused register wrote no op record" "$n" 1
-newfx r3; kill -0 1 2>/dev/null; mkll; D=$LL
+newfx r3; mkll; D=$LL
 "$S/register.sh" --purpose p3 --owner t --pid "$D" >/dev/null; kill "$D"; wait "$D" 2>/dev/null
 "$S/register.sh" --purpose p3 --owner t --pid "$$" >/dev/null 2>"$FXN/e"; rc=$?
 assert_rc "R3 a stale claim (dead holder) is refused, never taken over silently" $rc 4
@@ -88,8 +88,8 @@ kill -0 "$P" 2>/dev/null && ok "P5b the recycled-pid process is NOT signalled" |
 ( . "$S/lib.sh"; LD=$FXN/sig; mkdir -p "$LD"; rcs=""; for t in 1 0 -1 abc ""; do lo_signal TERM "$t" >/dev/null 2>&1; rcs="$rcs$? "; done; echo "$rcs" ) >"$FXN/o"
 assert_eq "P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each)" "$(cat "$FXN/o")" "7 7 7 7 7 "
 [ ! -e "$FXN/sig/signals.log" ] && ok "P6b no signal audit entry exists for any refused target" || bad "P6b"
-newfx p4; id=$("$S/register.sh" --purpose p4 --owner t --pid 1 --no-progress-s 1 2>/dev/null); export LONGOPS_NOW=9999
-r=$("$S/classify.sh" --op-id "$id" | cut -f2); assert_eq "P7 an op naming pid 1 is never live: dead_owner" "$r" dead_owner
+newfx p4; mkll; id=$("$S/register.sh" --purpose p4 --owner t --pid "$LL" --no-progress-s 1); jq -c '.pid=1|.start_time="4"|.cmdline="init"' "$LONGOPS_DIR/ops/$id.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$id.json"; export LONGOPS_NOW=9999
+r=$("$S/classify.sh" --op-id "$id" | cut -f2); assert_eq "P7 a record naming pid 1 (hand-written: register refuses it, W16) is never live: dead_owner" "$r" dead_owner
 "$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P7b reaping it sends nothing and succeeds as dead_owner" $? 0
 [ ! -s "$LONGOPS_DIR/signals.log" ] && ok "P7c no signal sent to pid 1" || bad "P7c"
 # container label resolution (a unit-level stand-in for podman; the sweep runs against the real one)
@@ -97,13 +97,13 @@ newfx p5; mkll; P=$LL; export LONGOPS_NOW=4000
 cat >"$FXN/podman" <<'PE'
 #!/usr/bin/env bash
 echo "$*" >>"$PODLOG"
-[ "$1" = ps ] && echo cid1234
+[ "$1" = ps ] && case "$*" in *label=catalogizer.op_id=*) echo cid1234 ;; esac   # only the label scripts/containers/run_pinned.sh really sets resolves the container
 exit 0
 PE
 chmod +x "$FXN/podman"; export LONGOPS_PODMAN=$FXN/podman PODLOG=$FXN/podlog
 id=$("$S/register.sh" --purpose p5 --owner t --pid "$P" --no-progress-s 5); export LONGOPS_NOW=4100
 "$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P8 hung op with a labelled container is reaped" $? 0
-grep -q "ps --filter label=op_id=$id" "$FXN/podlog" && ok "P8b the container is resolved by label op_id=<id>" || bad "P8b [$(cat "$FXN/podlog" 2>/dev/null)]"
+grep -q "ps --filter label=op_id=$id" "$FXN/podlog" && grep -q "ps --filter label=catalogizer.op_id=$id" "$FXN/podlog" && ok "P8b the container is resolved by label op_id=<id> AND catalogizer.op_id=<id> (the one run_pinned.sh sets)" || bad "P8b [$(cat "$FXN/podlog" 2>/dev/null)]"
 grep -q 'stop -t 5 cid1234' "$FXN/podlog" && ok "P8c the resolved container is stopped" || bad "P8c"
 unset LONGOPS_PODMAN
 bare=$(grep -h -E '^[^#]*\b(pgrep|pkill|killall)\b' "$S"/*.sh | wc -l); assert_eq "P9 no script of the registry uses pgrep, pkill or killall" "$bare" 0
@@ -274,5 +274,146 @@ grep -q wall_clock <<<"$r" && ok "W3b the evidence names the wall-clock cap" || 
 mkll; W2=$LL; id2=$("$S/register.sh" --purpose "build:app:lane2:$H64:$A64:primary" --owner dispatch --pid "$W2" --no-progress-s 600)
 "$S/heartbeat.sh" --op-id "$id2" --progress-offset 5 --elapsed-ms 999999999 >/dev/null; assert_eq "W4 no cap recorded (wall_clock_s 0): never hung by elapsed time" "$("$S/classify.sh" --op-id "$id2" | cut -f2)" advancing
 unset LONGOPS_NOW
+
+echo "== WF11 class 1: every decision is made UNDER the lock and re-derived there (reap) =="
+newfx w1; export LONGOPS_NOW=2000
+bash -c 'trap "" TERM; while :; do sleep 1; done' >/dev/null 2>&1 & TP=$!; KILL9ME+=("$TP"); sleep 0.4
+id=$("$S/register.sh" --purpose ta:x --owner t --pid "$TP" --no-progress-s 10); "$S/heartbeat.sh" --op-id "$id" --progress-offset 5; export LONGOPS_NOW=2100
+"$S/reap.sh" --op-id "$id" >"$FXN/o" 2>"$FXN/e"; rc=$?
+assert_rc "W1 F1 a process that IGNORES TERM is not reaped: exit 8 (survived), never 0" $rc 8
+kill -0 "$TP" 2>/dev/null && ok "W1b control: the process really ignores TERM and is still alive" || bad "W1b it died"
+assert_eq "W1c the record keeps its state (never reaped while the process lives)" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" running
+assert_eq "W1d the claim is kept: the purpose still has exactly one owner" "$([ -d "$LONGOPS_DIR/claims/ta:x" ] && echo present || echo gone)" present
+mkll; "$S/register.sh" --purpose ta:x --owner other --pid "$LL" >/dev/null 2>&1; assert_rc "W1e a second registration of the purpose is refused (one owner)" $? 3
+[ "$(jq -r '.reap_survived_utc // "null"' "$LONGOPS_DIR/ops/$id.json")" != null ] && ok "W1f the survival is recorded on the op (reap_survived_utc)" || bad "W1f"
+"$S/release.sh" --op-id "$id" --state reaped --verdict operator >/dev/null 2>&1; assert_rc "W1g an operator decision can still end it (release --state reaped)" $? 0
+unset LONGOPS_NOW
+newfx w2; mkll; P=$LL; export LONGOPS_NOW=2000
+id=$("$S/register.sh" --purpose tb:x --owner t --pid "$P" --no-progress-s 10); "$S/heartbeat.sh" --op-id "$id" --progress-offset 5; export LONGOPS_NOW=2100
+LONGOPS_TEST_SLEEP_BEFORE_LOCK=1.5 "$S/reap.sh" --op-id "$id" >"$FXN/o" 2>"$FXN/e" & RP=$!
+sleep 0.5; "$S/heartbeat.sh" --op-id "$id" --progress-offset 500; wait "$RP"; rc=$?
+assert_rc "W2 F2 a heartbeat that lands before the reap takes the lock is SEEN: the op is advancing, refused (5)" $rc 5
+kill -0 "$P" 2>/dev/null && ok "W2b the advancing process was never signalled" || bad "W2b it was terminated although it was advancing"
+[ ! -s "$LONGOPS_DIR/signals.log" ] && ok "W2c no signal was recorded" || bad "W2c"
+assert_eq "W2d the record is still running" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" running
+newfx w3; mkll; A=$LL; "$S/register.sh" --purpose tp:x --owner t --pid "$A" >/dev/null; kill "$A"; wait "$A" 2>/dev/null
+LONGOPS_TEST_SLEEP_BEFORE_LOCK=1.5 "$S/reap.sh" --purpose tp:x >"$FXN/o" 2>"$FXN/e" & RP=$!
+sleep 0.4; "$S/reap.sh" --purpose tp:x >/dev/null 2>&1; mkll; B=$LL; "$S/register.sh" --purpose tp:x --owner new --pid "$B" >/dev/null 2>&1
+wait "$RP"; rc=$?
+assert_rc "W3 F2 reap --purpose re-reads the holder UNDER the lock: a live holder that took the purpose in the window is refused (5)" $rc 5
+assert_eq "W3b the new live holder's claim is intact" "$(jq -r .pid "$LONGOPS_DIR/claims/tp:x/holder.json" 2>/dev/null)" "$B"
+unset LONGOPS_NOW
+newfx w4; mkll; A=$LL; mkll; B=$LL; export LONGOPS_TEST_SLEEP_IN_CS=1
+"$S/register.sh" --purpose px:1 --owner a --op-id same-id --pid "$A" >"$FXN/oa" 2>"$FXN/ea" & W1=$!; sleep 0.3
+unset LONGOPS_TEST_SLEEP_IN_CS; "$S/register.sh" --purpose py:1 --owner b --op-id same-id --pid "$B" >"$FXN/ob" 2>"$FXN/eb"; rb=$?; wait "$W1"; ra=$?
+assert_eq "W4 F2 two registrations of ONE op id under different purposes: exactly one wins (record created exclusively)" "$(( (ra == 0) + (rb == 0) ))" 1
+assert_eq "W4b the loser's claim was rolled back (one claim, the winner's)" "$(ls "$LONGOPS_DIR/claims" | tr '\n' ' ')" "py:1 "
+assert_eq "W4c the record belongs to the winner" "$(jq -r .purpose_key "$LONGOPS_DIR/ops/same-id.json")" py:1
+
+echo "== WF11 class 2: refusal / unreadable input is a distinct status, never clean, stale or advancing =="
+newfx w5; mkll; A=$LL; unset CPA_APPROVED_DIR
+"$S/acquire.sh" --purpose commit_push --run-id cpx --pid "$A" >/dev/null 2>&1
+"$S/reap.sh" --purpose commit_push >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "X1 F3 reap --purpose commit_push with CPA_APPROVED_DIR unset REFUSES (20), it is never read as a stale claim" $rc 20
+assert_eq "X1b the claim of the live holder is still there" "$([ -d "$LONGOPS_DIR/claims/commit_push" ] && echo present || echo gone)" present
+mkdir -p "$FXN/approved/scripts/repo"; export CPA_APPROVED_DIR=$FXN/approved
+"$S/reap.sh" --purpose commit_push >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "X2 with it set, a live holder is refused (5)" $rc 5
+printf '{"kind":"proc' >"$LONGOPS_DIR/claims/commit_push/holder.json"
+"$S/holder.sh" commit_push >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "X3 holder.sh on a truncated holder record is 20, never none" $rc 20
+grep -q holder_unreadable "$FXN/e" && ok "X3b names holder_unreadable" || bad "X3b [$(cat "$FXN/e")]"
+"$S/reap.sh" --purpose commit_push >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "X4 reap --purpose on an unreadable holder record REFUSES (20): a live holder's claim is never released" $rc 20
+assert_eq "X4b the claim survives" "$([ -d "$LONGOPS_DIR/claims/commit_push" ] && echo present || echo gone)" present
+"$S/register.sh" --purpose commit_push --owner t --pid "$$" >/dev/null 2>"$FXN/e"; rc=$?; assert_rc "X4c register on an unreadable claim is refused (20), not stale_claim (4)" $rc 20
+rm -rf "$LONGOPS_DIR/claims/commit_push"; mkdir "$LONGOPS_DIR/claims/commit_push"
+"$S/reap.sh" --purpose commit_push >/dev/null 2>&1; rc=$?; assert_rc "X5 a claim directory with no holder record at all is stale: released (0)" $rc 0
+unset CPA_APPROVED_DIR
+# RM4: lo_claim must not swallow the conf-unreadable refusal
+newfx w6; mkll; A=$LL; mkdir -p "$FXN/approved/scripts/repo" "$LONGOPS_AUDIT/builds/b9/terminal"; export CPA_APPROVED_DIR=$FXN/approved
+"$S/acquire.sh" --purpose commit_push --run-id cp1 --pid "$A" >/dev/null; "$S/acquire.sh" --suspend cp1 --builds b9 >/dev/null; "$S/acquire.sh" --update cp1 --callback-state done --state ready_to_resume >/dev/null
+"$S/acquire.sh" --purpose commit_push --run-id cp9 --pid "$$" >/dev/null 2>"$FXN/e"; rc=$?; assert_rc "X6 RM4 acquiring over a ready_to_resume holder whose conf is unreadable is 20, never a stale_claim takeover (4)" $rc 20
+assert_eq "X6b the holder is still cp1" "$(jq -r .run_id "$LONGOPS_DIR/claims/commit_push/holder.json")" cp1
+"$S/register.sh" --purpose commit_push --owner t --pid "$$" >/dev/null 2>&1; assert_rc "X6c register hits the same refusal (20)" $? 20
+unset CPA_APPROVED_DIR
+newfx w7; mkll; P=$LL; id=$("$S/register.sh" --purpose uo:x --owner t --pid "$P" --no-progress-s 30); : >"$LONGOPS_DIR/ops/$id.json"
+assert_eq "X7 a 0-byte op record is classified unreadable (never dead_owner or advancing)" "$("$S/classify.sh" --op-id "$id" | cut -f2)" unreadable
+"$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "X7b reap refuses it (20)" $? 20
+"$S/heartbeat.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "X7c heartbeat refuses it (20), not unknown_op" $? 20
+"$S/release.sh" --op-id "$id" --state failed >/dev/null 2>&1; assert_rc "X7d release refuses it (20)" $? 20
+"$S/check_no_build_writing_tracked.sh" >"$FXN/o" 2>/dev/null; rc=$?; assert_rc "X7e check_no_build_writing_tracked BLOCKS on an unreadable record (1), never reads it as no writer" $rc 1
+printf '{"op_id":"trunc",' >"$LONGOPS_DIR/ops/trunc.json"; assert_eq "X7f a truncated record is unreadable too" "$("$S/classify.sh" --op-id trunc | cut -f2)" unreadable
+newfx w8; mkll; P=$LL; id=$("$S/register.sh" --purpose ov:x --owner t --pid "$P" --no-progress-s 600 --wall-s 5)
+jq -c '.elapsed_ms=99999999999999999999' "$LONGOPS_DIR/ops/$id.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$id.json"
+assert_eq "X8 F13 an elapsed_ms beyond 15 digits is unreadable, never read as advancing" "$("$S/classify.sh" --op-id "$id" | cut -f2)" unreadable
+"$S/classify.sh" --op-id no-such-op >/dev/null 2>"$FXN/e"; rc=$?; assert_rc "X9 F14 classify --op-id of an op that does not exist is 4 (unknown_op), not an empty success" $rc 4
+"$S/classify.sh" bogus-arg >/dev/null 2>&1; assert_rc "X9b classify with an unknown argument is a usage error (2)" $? 2
+LONGOPS_NOW=abc "$S/classify.sh" >/dev/null 2>"$FXN/e"; assert_rc "X10 a non-numeric LONGOPS_NOW is refused (2) at load" $? 2
+
+echo "== WF11 class 3: unvalidated input never writes an empty record or rebinds an op to init / a dead pid =="
+newfx w9; mkll; P=$LL; id=$("$S/register.sh" --purpose va:x --owner t --pid "$P" --no-progress-s 30); h0=$(sha256sum "$LONGOPS_DIR/ops/$id.json" | cut -c1-64)
+for a in "--pid abc" "--pid 1" "--pid 0" "--pid 99999999" "--elapsed-ms abc" "--elapsed-ms 1e20" "--elapsed-ms 99999999999999999999" "--progress-offset -5" "--progress-offset x"; do
+  "$S/heartbeat.sh" --op-id "$id" $a >/dev/null 2>&1; rc=$?; assert_rc "V1 F5/F6 heartbeat $a is refused (2)" $rc 2
+done
+assert_eq "V1b none of them changed the record (no 0-byte write, no rebind)" "$(sha256sum "$LONGOPS_DIR/ops/$id.json" | cut -c1-64)" "$h0"
+mkll; Q=$LL; "$S/heartbeat.sh" --op-id "$id" --pid "$Q" >/dev/null 2>&1; assert_rc "V2 a heartbeat may rebind to a live pid > 1" $? 0
+assert_eq "V2b the rebind records pid, start time AND cmdline of the new process together" "$(jq -r '[.pid,.start_time,.cmdline]|@tsv' "$LONGOPS_DIR/ops/$id.json")" "$(printf '%s\t%s\t%s' "$Q" "$(pstart "$Q")" "$(tr '\0' ' ' </proc/$Q/cmdline | sed 's/ $//')")"
+for pp in 1 0 abc 99999999 -1 ""; do "$S/register.sh" --purpose "vb:$pp" --owner t --pid "$pp" >/dev/null 2>&1; rc=$?; assert_rc "V3 F6 register --pid '$pp' is refused (2)" $rc 2; done
+assert_eq "V3b no op record and no claim was created by them" "$(ls "$LONGOPS_DIR/ops" | wc -l):$(ls "$LONGOPS_DIR/claims" | wc -l)" "1:1"
+"$S/acquire.sh" --purpose vc:x --run-id r1 --pid 1 >/dev/null 2>&1; assert_rc "V4 acquire --pid 1 is refused (2)" $? 2
+"$S/acquire.sh" --purpose vd:x --run-id r1 --pid "$P" >/dev/null; "$S/acquire.sh" --suspend r1 --purpose vd:x --builds b1 --resume-ttl abc >/dev/null 2>&1; assert_rc "V5 F5 acquire --suspend --resume-ttl abc is refused (2)" $? 2
+assert_eq "V5b the holder is untouched (still a process holder, not an empty file)" "$(jq -r .kind "$LONGOPS_DIR/claims/vd:x/holder.json")" process
+"$S/acquire.sh" --update r1 --purpose vd:x --callback-state bogus >/dev/null 2>&1; assert_rc "V5c an unknown --callback-state is refused (2)" $? 2
+( . "$S/lib.sh"; LD=$FXN/wj; mkdir -p "$LD"; lo_wjson "$LD/a.json" ""; r1=$?; lo_wjson "$LD/a.json" "abc"; r2=$?; lo_wjson "$LD/a.json" '{"a":1}'; r3=$?; lo_wjson "$LD/a.json" ""; r4=$?; echo "$r1 $r2 $r3 $r4 $(cat "$LD/a.json")" ) >"$FXN/o"
+assert_eq "V6 F5 lo_wjson refuses empty and invalid JSON (1), writes valid JSON (0), and a refused write leaves the old file intact" "$(cat "$FXN/o")" '1 1 0 1 {"a":1}'
+mkdir -p "$FXN/wj"; [ -z "$(find "$FXN/wj" -name '.tmp.*')" ] && ok "V6b no temp file is left behind by a refused write" || bad "V6b"
+# a suspended holder whose resume_ttl is not a number: refused, never a silent empty swap
+newfx w10; mkll; A=$LL; mkdir -p "$LONGOPS_AUDIT/builds/b1/terminal"; "$S/acquire.sh" --purpose rt:x --run-id q1 --pid "$A" >/dev/null; "$S/acquire.sh" --suspend q1 --purpose rt:x --builds b1 --resume-ttl 50 >/dev/null; "$S/acquire.sh" --update q1 --purpose rt:x --callback-state done --state ready_to_resume >/dev/null
+jq -c '.resume_ttl="abc"' "$LONGOPS_DIR/claims/rt:x/holder.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/claims/rt:x/holder.json"
+"$S/holder.sh" rt:x >/dev/null 2>&1; assert_rc "V7 a holder with a non-numeric resume_ttl is refused (20), not judged" $? 20
+"$S/acquire.sh" --expire rt:x --op-id e1 >/dev/null 2>&1; assert_rc "V7b --expire on it is refused (20) and the claim stays" $? 20
+[ -d "$LONGOPS_DIR/claims/rt:x" ] && ok "V7c the claim is still there" || bad "V7c"
+
+echo "== WF11 F7: no op is ever \"never hung\" =="
+newfx w11; mkll; P=$LL; id=$("$S/register.sh" --purpose df:x --owner t --pid "$P"); mkll; P2=$LL; id2=$("$S/register.sh" --purpose df:y --owner t --pid "$P2" --no-progress-s 0)
+assert_eq "D1 register with no budget records the declared default (3600), not 0" "$(jq -r .budget.no_progress_s "$LONGOPS_DIR/ops/$id.json")" 3600
+assert_eq "D1b --no-progress-s 0 records the default too" "$(jq -r .budget.no_progress_s "$LONGOPS_DIR/ops/$id2.json")" 3600
+export LONGOPS_NOW=$(( $(date +%s) + 86400 )); assert_eq "D2 a flat offset for a day is HUNG under the default budget" "$("$S/classify.sh" --op-id "$id" | cut -f2)" hung
+jq -c '.budget.no_progress_s=0' "$LONGOPS_DIR/ops/$id2.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$id2.json"; assert_eq "D3 a legacy record with budget 0 is judged by the default too" "$("$S/classify.sh" --op-id "$id2" | cut -f2)" hung
+unset LONGOPS_NOW
+
+echo "== WF11 class 4: terminal states are immutable; a stale release can never free another owner's claim =="
+newfx w12; mkll; P=$LL; id=$("$S/register.sh" --purpose tm:x --owner t --pid "$P")
+"$S/release.sh" --op-id "$id" --state complete --verdict PASS >/dev/null; assert_rc "T1 release complete" $? 0
+"$S/release.sh" --op-id "$id" --state reaped --verdict x >/dev/null 2>"$FXN/e"; rc=$?; assert_rc "T2 F11 a second release into another state is refused (4 already_terminal)" $rc 4
+assert_eq "T2b the record is still complete/PASS" "$(jq -r '.state+"/"+.verdict' "$LONGOPS_DIR/ops/$id.json")" complete/PASS
+"$S/release.sh" --op-id "$id" --state complete --verdict PASS >/dev/null 2>&1; assert_rc "T3 the same state and verdict again is an idempotent no-op (0)" $? 0
+"$S/release.sh" --op-id "$id" --state complete --verdict OTHER >/dev/null 2>&1; assert_rc "T3b the same state with another verdict is refused (4)" $? 4
+mkll; P=$LL; id=$("$S/register.sh" --purpose tm:y --owner t --pid "$P"); "$S/release.sh" --op-id "$id" --state handoff --verdict driver_stop >/dev/null
+"$S/release.sh" --op-id "$id" --state complete --verdict adopted >/dev/null 2>&1; assert_rc "T4 a handoff (re-adoptable) may be resolved into a terminal state" $? 0
+newfx w13; mkll; A=$LL; ida=$("$S/register.sh" --purpose tz:x --owner t --pid "$A" --op-id opa); kill "$A"; wait "$A" 2>/dev/null; "$S/reap.sh" --op-id "$ida" >/dev/null 2>&1
+mkll; B=$LL; idb=$("$S/register.sh" --purpose tz:x --owner t --pid "$B" --op-id opb)
+"$S/release.sh" --op-id "$ida" --state failed >/dev/null 2>&1; rc=$?; assert_rc "T5 re-releasing a reaped op is refused (4)" $rc 4
+assert_eq "T5b the NEW owner's claim is intact" "$(jq -r .run_id "$LONGOPS_DIR/claims/tz:x/holder.json")" opb
+assert_eq "T5c and the reaped record is unchanged" "$(jq -r .state "$LONGOPS_DIR/ops/$ida.json")" reaped
+
+echo "== WF11 F16 reviewer mutants: tests that fail on RM1-RM3 =="
+kt=""; for d in /proc/[0-9]*; do n=${d#/proc/}; [ "$n" -gt 1 ] 2>/dev/null || continue; pg=$(sed 's/^.*) //' "$d/stat" 2>/dev/null | cut -d' ' -f3); [ "$pg" = 0 ] && { kt=$n; break; }; done
+if [ -n "$kt" ]; then
+  ( . "$S/lib.sh"; LD=$FXN/sig2; mkdir -p "$LD"; lo_signal TERM "$kt" >/dev/null 2>&1; a=$?; lo_kill_child "$kt" >/dev/null 2>&1; b=$?; echo "$a $b $(ls "$LD" | wc -l)" ) >"$FXN/o"
+  assert_eq "M1 RM1 a pid > 1 whose process GROUP is <= 1 (kernel thread $kt, pgrp 0) is refused by lo_signal and lo_kill_child (7 7), no audit entry" "$(cat "$FXN/o")" "7 7 0"
+else ok "M1 skipped: no kernel thread (pgrp 0) on this host; UNCONFIRMED here (11.4.3)"; fi
+python3 -I -c 'import os,sys,time
+pid=os.fork()
+if pid==0: os._exit(0)
+print(pid); sys.stdout.flush(); time.sleep(120)' >"$FXN/zpid" 2>/dev/null & ZP=$!; KILLME+=("$ZP"); sleep 0.6; Z=$(head -1 "$FXN/zpid")
+newfx w14; zs=$(sed 's/^.*) //' "/proc/$Z/stat" 2>/dev/null | cut -d' ' -f1); assert_eq "M2a control: the target process really is a zombie (state Z)" "$zs" Z
+zid=$("$S/register.sh" --purpose zb:x --owner t --pid "$Z" --no-progress-s 30 2>/dev/null); assert_eq "M2 RM2 an op whose owner is a ZOMBIE is dead_owner, not alive" "$("$S/classify.sh" --op-id "$zid" | cut -f2)" dead_owner
+"$S/acquire.sh" --purpose zc:x --run-id zr --pid "$Z" >/dev/null 2>&1; assert_eq "M2b a holder that is a zombie reads none" "$("$S/holder.sh" zc:x)" none
+newfx w15; mkll
+for bp in 'a/b' 'a/../../x' 'x/..' '..' '.hidden' '-x' 'a b' $'a\nb' 'a:b/c'; do "$S/register.sh" --purpose "$bp" --owner t --pid "$LL" >/dev/null 2>&1; rc=$?; assert_rc "M3 RM3 an unsafe purpose key is refused (2): $(printf '%q' "$bp")" $rc 2; done
+[ -z "$(find "$FXN" -name 'x.lock' -o -name 'b.lock')" ] && ok "M3b nothing was created outside the state directory" || bad "M3b"
+
+echo "== WF11: lo_signal and the guarded child kill are the ONLY kill sites of the scope (11.4.263 D) =="
+ks=$(awk 'FNR==1{f=FILENAME} { l=$0; sub(/^[ \t]+/,"",l); if (l ~ /^#/) next; if (l ~ /(^|[^A-Za-z0-9_.-])kill([ \t]|$)/) { sub(/[ \t]+#.*$/,"",l); print l } }' "$S"/*.sh "$TROOT/scripts/anti-mess/sweep.sh" | sort)
+assert_eq "K10 exactly three kill lines exist in the production scripts: lo_alive kill -0, lo_signal, lo_kill_child" "$(printf '%s\n' "$ks" | wc -l)" 3
+printf '%s\n' "$ks" | grep -qx 'kill -s "$sig" -- "$pid" 2>/dev/null' && printf '%s\n' "$ks" | grep -qx 'kill -s TERM -- "$pid" 2>/dev/null' && printf '%s\n' "$ks" | grep -q 'kill -0 "$pid" 2>/dev/null' && ok "K10b they are the three expected lines (single pid after the double dash, never a group)" || bad "K10b [$ks]"
 
 finish

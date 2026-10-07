@@ -1,0 +1,34 @@
+CAUGHT   S01 the heartbeat check is disabled in AM-P1 (a hung op is never reported) :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S02 INV-9: the finished-run removal skips the remote check (a held commit no remote holds) :: FAIL I5d the kept held record is reported kept_held_commit :: got [] want [kept_held_commit]|
+CAUGHT   S03 AM-R1 at S0 treats every path as declared :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S04 AM-R1 ignores the reviewed exceptions.tsv :: FAIL R5 the same repository WITH its reviewed exceptions.tsv row passes (control needle R4) :: got [drift] wan|
+CAUGHT   S05 a catalogued invariant with no detector is reported clean :: FAIL C2 AM-R3 is not_evaluated, never clean :: got [clean] want [not_evaluated]|FAIL C2 AM-R4 is not_evaluated, never clean :: got [clean] want [not_evaluated]|
+CAUGHT   S06 AM-R2 ignores whether a process holds the lock open :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R2 clean on the clean state :: got [blind] want [clean]|
+SURVIVED S07 INV-9 reconcile removes an interrupted run
+CAUGHT   S08 a pending pin move is reported as drift :: FAIL R6 a pointer drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt :: got [dr|
+CAUGHT   S09 a blocking core.hooksPath is not refused at S0 :: FAIL G3 at S0 a blocking core.hooksPath is REFUSED with 20 :: rc=10 want 20|
+CAUGHT   S10 INV-9: a live merge holder is reported as interrupted :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 INV-9 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S11 INV-9: a suspended run with a live holder is reported interrupted :: FAIL I7 a run awaiting_remote_checks with a live suspended-run holder is suspended, never interrupted, never r|
+CAUGHT   S12 AM-P3: the temp dir of a live process is reaped :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P3 clean on the clean state :: got [blind] want [clean]|
+INVALID S13 AM-P1: the orphan-container age budget is ignored: pattern not found
+CAUGHT   S14 AM-P2: an attached op still counts as a duplicate owner :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P2 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S15 a failing control needle no longer makes the detector blind :: FAIL H1 rc=0 [ID      STATUS         NEEDLE    DETAIL|FAIL Z1 rc=0 [ID      STATUS         NEEDLE    DETAIL|
+CAUGHT   S16 AM-R2 ignores the minimum lock age :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-R2 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S17 RMS1: the rmlock reconcile no longer re-verifies its precondition :: FAIL H4 RMS1 a lock that became young (touched) between detection and action is NOT removed :: got [removed] w|FAIL H4b the report says skipped_not_provably_stale :: got [removed] want [skipped_not_provably_stale]|
+CAUGHT   S18 F4: corrupt op records are never reported :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S19 F8: an unreadable podman is informational (AM-P1 clean) :: FAIL P8 F8 an unreadable container runtime makes AM-P1 unread, NEVER clean :: got [clean] want [unread]|FAIL P8b the sweep exits 11 (a source was not read), not 0 :: rc=0 want 11|
+CAUGHT   S20 F9: a stale claim is informational :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P4 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S21 F9: an un-adopted handoff is informational :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P4 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S22 F10: the container of a handoff op is stopped by --reconcile :: FAIL H1 a container of a HANDOFF op is informational only :: got [container_of_terminal_op:] want [:container_|FAIL H1b and --reconcile did not stop it :: got [1] want [0]|
+CAUGHT   S23 F10: stopcontainer does not re-verify :: FAIL H2 an orphan container whose op got a registry row between detection and action is NOT stopped :: got [1]|FAIL H2b the report records why :: got [stopped] want [skipped_precondition_changed_live]|
+CAUGHT   S24 F12: an unknown --only id is accepted :: FAIL O1 --only 'NOPE' is refused (20), never an empty clean sweep :: rc=0 want 20|FAIL O1 --only 'am-p1' is refused (20), never an empty clean sweep :: rc=0 want 20|
+CAUGHT   S25 label: the catalogizer.op_id label of the launcher is ignored :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P1 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S26 F10: the finished-run removal does not re-check the held commits :: FAIL H6 removed|FAIL H6b the report says why :: got [removed] want [skipped_held_commit_not_on_remote]|
+CAUGHT   S27 F10: initsub does not re-verify :: FAIL H5 initsub re-verifies: a submodule initialised between detection and action is skipped_already_initialis|
+CAUGHT   S28 F8: a sweep with only unread sources exits 0 :: FAIL P8b the sweep exits 11 (a source was not read), not 0 :: rc=0 want 11|FAIL N2 only corrupt records (and a 0-byte one): exit 11, never 0 :: rc=0 want 11|
+CAUGHT   S29 F4: AM-P2 never reports a corrupt op record :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P2 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S30 AM-P4: a claim with no holder record is never reported :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P4 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S31 AM-P4: an unreadable claim is never reported :: FAIL C1 clean state exits 0 :: rc=20 want 0|FAIL C1 AM-P4 clean on the clean state :: got [blind] want [clean]|
+CAUGHT   S32 AM-P4: a holder that cannot be judged is informational :: FAIL Q6 a holder that cannot be judged (ready_to_resume, no conf) is unread, never clean :: got [clean] want [|
+MUTATION RESULT caught=30 survived=2 total=32
+# S07 and S13 re-run after the mutant text was adapted to the new code: CAUGHT 2 of 2 (caught=2 survived=0)

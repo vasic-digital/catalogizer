@@ -11,7 +11,7 @@
 #                      ready_to_resume past resume_ttl is reported `expired`, never stale and never released here (acquire.sh --expire).
 # CENTRAL C2   for purpose commit_push, CPA_APPROVED_DIR must be set (checked first) and resume_ttl is read lazily from
 #         $CPA_APPROVED_DIR/scripts/repo/commit_push.conf, only when a ready_to_resume holder exists; unset gives exit 20 helper_not_approved.
-# Exits   0 (JSON or none); 2 usage; 20 helper_not_approved / conf unreadable. Writes nothing.
+# Exits   0 (JSON or none); 2 usage; 20 helper_not_approved / conf unreadable / holder record unreadable (never `none`). Writes nothing.
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 [ $# -eq 1 ] && lo_safe_name "$1" || lo_die usage_error "usage: holder.sh <purpose>"
@@ -21,5 +21,6 @@ s=$(lo_holder_status "$p"); rc=$?
 [ "$rc" -eq 0 ] || { echo none; exit 0; }
 case "$s" in
   live|expired) jq -c --arg s "$s" '. + {status:$s}' "$(lo_holder_file "$p")" ;;
+  unreadable) lo_die holder_unreadable "the holder record of $p cannot be read; it is never reported as none (WF11 F3)" "$RC_REFUSE" ;;
   *) echo none ;;
 esac

@@ -1,0 +1,82 @@
+# identity: task=WF11-F15 utc=2026-10-07T02:41:29Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head= (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=ff038492e21c08681822bf3458b0c46e30eaff8e3760a6bf99766561bb73c66f
+# sha256 register.sh=05058ea2be980e9f0a8b013968f29ad3e73a835643b999dad08927232d557c30
+# sha256 acquire.sh=c5ac9da387f0af94caed400f4025d541439ccac5d4810a4f2cc7db98eaee42dd
+# sha256 release.sh=4980f312b5ed81c43ced6cd036b6ccbd3a785c2e48a6060e9ddd69137e4662ba
+# sha256 heartbeat.sh=0d89361bd6f330e027118a22738c1c0c498c186e546e9eac1bb90a53dad66cd4
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=d162812e2a86b67fb66db88af1bf73512bc8b649a8d67a9622bda05ed3dea3a6
+# sha256 reap.sh=fe24208aca4e61f9e4312e3aac27e751c3cd2c777ca40c08f6229f9c70446deb
+# sha256 check_no_build_writing_tracked.sh=51a9256750a819853386147c88aed47cf8236010683f7c5088a6335842285337
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== layer 1: ms_scan on golden-true mutants (must run) and hypothetical bad mutants (must abort) ==
+ok   S1 golden-true: an identical tree is safe
+ok   S2 golden-true: the M04 shape (guards removed, the kill replaced by a no-op) carries no signal line and runs
+ok   S3 golden-true: an edit of a line without any signal token runs
+ok   S4 golden-true: a COMMENT that names kill cannot execute and is allowed
+ok   S5 golden-true: a signal line kept byte-identical is allowed
+ok   S6 H1 kill target replaced by -1, guards intact: aborted (the old grep ran it)
+ok   S6b the offending line is printed
+ok   S7 H2 kill target replaced by the process group -pid: aborted
+ok   S8 H3 pid guard weakened AND the kill line re-spelled: aborted
+ok   S9 hypothetical bad mutant appends [command kill -9 -1]: aborted
+ok   S10 hypothetical bad mutant appends [builtin kill -9 -1]: aborted
+ok   S11 hypothetical bad mutant appends [/bin/kill -9 -1]: aborted
+ok   S12 hypothetical bad mutant appends [/usr/bin/kill -9 -1]: aborted
+ok   S13 hypothetical bad mutant appends [pkill -u "$USER"]: aborted
+ok   S14 hypothetical bad mutant appends [killall -u "$USER"]: aborted
+ok   S15 hypothetical bad mutant appends [xargs kill -9]: aborted
+ok   S16 hypothetical bad mutant appends [exec kill -9 -1]: aborted
+ok   S17 hypothetical bad mutant appends [systemctl suspend]: aborted
+ok   S18 hypothetical bad mutant appends [loginctl terminate-user "$USER"]: aborted
+ok   S19 hypothetical bad mutant appends [reboot]: aborted
+ok   S20 hypothetical bad mutant appends [poweroff]: aborted
+ok   S21 hypothetical bad mutant appends [shutdown -h now]: aborted
+ok   S22 hypothetical bad mutant appends [echo x; kill -9 -1]: aborted
+ok   S23 a NEW file carrying a kill line is aborted
+ok   S24 a NEW python file with os.kill is aborted
+ok   S25 a token smuggled into an existing non-kill line is aborted
+== layer 2: the BASH_ENV shim and the PATH stubs, with a RECORDER instead of the real kill (signal 0 only) ==
+ok   L1 canary: inside the containment kill is a FUNCTION
+ok   L1b the kill BUILTIN is disabled (builtin kill fails; signal 0 at our own pid)
+ok   L2 CONTROL NEEDLE: a legitimate target (a sleeper of ours, pid > 1, pgrp > 1) is allowed through
+ok   L2b the recorder SAW that call: an empty recorder below is evidence, not blindness
+ok   L3 kill -0 -1 is refused by the shim (rc 1)
+ok   L3 kill -s 0 -- -1 is refused by the shim (rc 1)
+ok   L3 kill -0 0 is refused by the shim (rc 1)
+ok   L3 kill -0 1 is refused by the shim (rc 1)
+ok   L3 kill -0 -491061 is refused by the shim (rc 1)
+ok   L3 kill -s 0 -- -492273 is refused by the shim (rc 1)
+ok   L3 kill -0 abc is refused by the shim (rc 1)
+ok   L3 kill -0 %1 is refused by the shim (rc 1)
+ok   L3 kill -0 '' is refused by the shim (rc 1)
+ok   L3 kill -0 99999999999999999999 is refused by the shim (rc 1)
+ok   L3 kill -0 492273 -1 is refused by the shim (rc 1)
+ok   L3 kill -0 492273 1 is refused by the shim (rc 1)
+ok   L3 kill -- -1 is refused by the shim (rc 1)
+ok   L3 kill -0 is refused by the shim (rc 1)
+FAIL L3b a kernel thread (10, pgrp 0) is refused :: rc=0 want 1
+FAIL L4 NOTHING of the above reached the kill binary (recorder empty) :: got [1] want [0]
+FAIL L4b every refusal was logged as BLOCKED :: got [14] want [15]
+ok   L5 command kill finds only the PATH stub and is refused
+ok   L5b env kill is refused by the stub
+ok   L5c pkill is refused
+ok   L5d killall is refused
+ok   L5e command pkill is refused by the stub
+FAIL L5f the recorder is still empty :: got [1] want [0]
+== layer 2 on HYPOTHETICAL BAD MUTANTS that layer 1 would also stop: run anyway, with signal 0, to prove the shim alone holds ==
+ok   R1 H1 (target -1) run under the shim: lo_signal fails (rc 1), the target was never delivered
+ok   R2 H2 (target -pid) run under the shim: refused
+FAIL R3 H3 (guards weakened to -gt -2, kernel thread 10) run under the shim: refused by the shim's own pgrp check :: got [rc=0] want [rc=1]
+ok   R4a H4 = the ORIGINAL INCIDENT (guards removed, the real kill kept byte-identical): layer 1 lets it run
+ok   R4 H4 run with pid 0 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid 1 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid -1 under the shim: refused, nothing delivered
+ok   R4 H4 run with pid -2 under the shim: refused, nothing delivered
+FAIL R5 the recorder is STILL empty after four hypothetical bad mutants :: got [1] want [0]
+ok   R5b and the shim logged their attempts as BLOCKED
+ok   R6 control: the same H4 mutant with a legitimate sleeper reaches the recorder
+ok   R6b the recorder recorded exactly that one call
+RESULT pass=59 fail=6

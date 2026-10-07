@@ -30,19 +30,19 @@ st() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.status' "$J" 2>/dev/nu
 cls() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.findings[]|select(.severity=="drift")|.class' "$J" 2>/dev/null | sort | tr '\n' ' ' | sed 's/ $//'; }
 infocls() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.findings[]|select(.severity=="info")|.class' "$J" 2>/dev/null | sort | tr '\n' ' ' | sed 's/ $//'; }
 needle() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.control_needle' "$J" 2>/dev/null; }
-ALL=AM-R1,AM-R2,AM-R5,AM-G2,AM-P1,AM-P2,AM-P3,INV-9
+ALL=AM-R1,AM-R2,AM-R5,AM-G2,AM-P1,AM-P2,AM-P3,AM-P4,INV-9
 tree_hash() { ( cd "$1" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -c1-64; git -C "$1" status --porcelain | sha256sum | cut -c1-64 ); }
 
 echo "== clean state, control needles =="
 swfx c1; before=$(tree_hash "$R"); sw --only "$ALL"
 assert_rc "C1 clean state exits 0" $SWRC 0
-for i in AM-R1 AM-R2 AM-R5 AM-G2 AM-P1 AM-P2 AM-P3 INV-9; do assert_eq "C1 $i clean on the clean state" "$(st $i)" clean; assert_eq "C1 $i control needle seen on the same path" "$(needle $i)" seen; done
+for i in AM-R1 AM-R2 AM-R5 AM-G2 AM-P1 AM-P2 AM-P3 AM-P4 INV-9; do assert_eq "C1 $i clean on the clean state" "$(st $i)" clean; assert_eq "C1 $i control needle seen on the same path" "$(needle $i)" seen; done
 assert_eq "C1b the sweep wrote nothing into the swept tree (read-only)" "$(tree_hash "$R")" "$before"
 assert_eq "C1c report schema" "$(jq -r .schema "$J")" anti-mess-sweep/1
 sw; assert_rc "C2 the full cadence sweep exits 0 on the clean fixture" $SWRC 0
 for i in AM-R3 AM-R4 AM-G1 AM-S1 INV-6 INV-7 INV-8; do assert_eq "C2 $i is not_evaluated, never clean" "$(st $i)" not_evaluated; done
 [ -n "$(jq -r '.invariants[]|select(.id=="AM-R3")|.reason' "$J")" ] && ok "C2b a not_evaluated invariant carries its reason" || bad "C2b"
-assert_eq "C2c summary counts" "$(jq -r '"\(.summary.clean) \(.summary.not_evaluated) \(.summary.drift) \(.summary.blind)"' "$J")" "8 7 0 0"
+assert_eq "C2c summary counts" "$(jq -r '"\(.summary.clean) \(.summary.not_evaluated) \(.summary.drift) \(.summary.blind)"' "$J")" "9 7 0 0"
 sw --stage S0 --only AM-R2; assert_eq "C3 a cadence-only invariant is skipped_stage at S0" "$(st AM-R2)" skipped_stage
 bash "$SW" --stage bogus >/dev/null 2>&1; assert_rc "C4 an unknown stage is a usage refusal (20)" $? 20
 
@@ -66,7 +66,8 @@ mkll; R3=$LL; id3=$("$S/register.sh" --purpose live:z --owner t --pid "$R3" --no
 sw --only AM-P1; assert_eq "P6 golden-false carrier: a container whose op has a live registry row is not reported" "$(st AM-P1)" clean
 "$S/release.sh" --op-id "$id3" --state complete >/dev/null; sw --only AM-P1; assert_eq "P7 a container of a TERMINAL op is reported" "$(cls AM-P1)" container_of_terminal_op
 echo '[]' >"$PODJSON"
-export LONGOPS_PODMAN=$FXN/does-not-exist; sw --only AM-P1; assert_eq "P8 an unreadable container runtime is reported (info) and never breaks the sweep" "$(infocls AM-P1)" containers_unread; export LONGOPS_PODMAN=$FXN/podman
+export LONGOPS_PODMAN=$FXN/does-not-exist; sw --only AM-P1; assert_eq "P8 F8 an unreadable container runtime makes AM-P1 unread, NEVER clean" "$(st AM-P1)" unread; assert_rc "P8b the sweep exits 11 (a source was not read), not 0" $SWRC 11
+jq -r '.invariants[]|select(.id=="AM-P1")|.findings[]|select(.severity=="unread")|.class' "$J" | grep -qx containers_unread && ok "P8c the finding is containers_unread" || bad "P8c"; export LONGOPS_PODMAN=$FXN/podman
 
 echo "== AM-P2 duplicate owner =="
 swfx p2; mkll; A=$LL; "$S/register.sh" --purpose dup:k --owner a --pid "$A" >/dev/null
@@ -197,6 +198,82 @@ printf '[{"Id":"ghostghostghostghost","Labels":{"op_id":"ghost-op","project":"ca
 grep -q 'stop -t 5 ghostghostgh' "$PODLOG" && ok "X3 an orphan labelled container is stopped by --reconcile (podman stop)" || bad "X3 [$(cat "$PODLOG" 2>/dev/null)]"
 swfx x3; mkrepo "$FXN/sm"; echo 1 >"$FXN/sm/f"; cmt "$FXN/sm"; git -C "$R" submodule add -q "$FXN/sm" vendor/sm 2>/dev/null; cmt "$R" sub; git clone -q "$R" "$FXN/clone" 2>/dev/null
 ANTIMESS_ROOT=$FXN/clone sw --only AM-R5 --reconcile; [ -e "$FXN/clone/vendor/sm/f" ] && ok "X4 --reconcile initialises an uninitialised submodule (auto-safe)" || bad "X4"
+
+
+echo "== WF11 class 2: a corrupt op record, an unreadable source: reported unread, never clean, and never hiding the rest (F4, F8) =="
+swfx n1; mkll; P=$LL; mkll; Q=$LL
+id=$("$S/register.sh" --purpose n1:hung --owner t --pid "$P" --no-progress-s 5 --log "$FXN/l.log"); printf 'abc' >"$FXN/l.log"; LONGOPS_NOW=$(( $(date +%s) - 100 )) "$S/heartbeat.sh" --op-id "$id" --sample-log
+"$S/register.sh" --purpose n1:dup --owner a --pid "$Q" >/dev/null; jq -nc '{op_id:"manual-dup",purpose_key:"n1:dup",run_id:"manual-dup",pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}' >"$LONGOPS_DIR/ops/manual-dup.json"
+sw --only AM-P1,AM-P2; assert_rc "N0 control: without the corrupt record the hung op and the duplicate owner are reported (10)" $SWRC 10
+assert_eq "N0b control: AM-P1 hung_op (+ the hand-written pid-0 row), AM-P2 duplicate_owner" "$(cls AM-P1)/$(cls AM-P2)" "hung_op registry_row_dead_owner/duplicate_owner"
+printf '{"op_id":"trunc",' >"$LONGOPS_DIR/ops/00corrupt.json"
+sw --only AM-P1,AM-P2; assert_rc "N1 F4 one unparsable record sorted first does not blind AM-P1 / AM-P2: still drift (10)" $SWRC 10
+assert_eq "N1b the hung op is still reported" "$(cls AM-P1)" "hung_op registry_row_dead_owner"
+assert_eq "N1c the duplicate owner is still reported" "$(cls AM-P2)" duplicate_owner
+for i in AM-P1 AM-P2; do assert_eq "N1d $i also reports the corrupt record as an unread finding" "$(jq -r --arg i $i '.invariants[]|select(.id==$i)|.findings[]|select(.severity=="unread")|.class' "$J")" corrupt_op_record; done
+swfx n2; printf '{"op_id":"trunc",' >"$LONGOPS_DIR/ops/00corrupt.json" 2>/dev/null || { mkdir -p "$LONGOPS_DIR/ops"; printf '{"op_id":"trunc",' >"$LONGOPS_DIR/ops/00corrupt.json"; }; : >"$LONGOPS_DIR/ops/01empty.json"
+sw --only AM-P1,AM-P2; assert_rc "N2 only corrupt records (and a 0-byte one): exit 11, never 0" $SWRC 11
+assert_eq "N2b AM-P1 and AM-P2 are unread, not clean" "$(st AM-P1)/$(st AM-P2)" unread/unread
+assert_eq "N2c both files are named" "$(jq -r '.invariants[]|select(.id=="AM-P1")|.findings[]|select(.severity=="unread")|.subject' "$J" | sed 's#.*/##' | tr '\n' ' ')" "00corrupt.json 01empty.json "
+echo "-- the label the launcher really sets (catalogizer.op_id, scripts/containers/run_pinned.sh) --"
+swfx n3; mkll; P=$LL; id=$("$S/register.sh" --purpose n3:x --owner t --pid "$P" --no-progress-s 5000)
+printf '[{"Id":"labelllabelllabelll","Labels":{"catalogizer.op_id":"%s","project":"catalogizer"},"Created":100}]' "$id" >"$PODJSON"
+sw --only AM-P1; assert_eq "N3 F-label a container labelled catalogizer.op_id of a LIVE op is not container_without_op_label (and not reported at all)" "$(st AM-P1)" clean
+printf '[{"Id":"nolabelnolabelnolabe","Labels":{"project":"catalogizer"},"Created":100}]' >"$PODJSON"; sw --only AM-P1; assert_eq "N3b a container with no op label at all is still reported" "$(cls AM-P1)" container_without_op_label
+printf '[{"Id":"orphanorphanorphano","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"; sw --only AM-P1; assert_eq "N3c catalogizer.op_id of an unknown op older than the budget is an orphan_container" "$(cls AM-P1)" orphan_container
+"$S/release.sh" --op-id "$id" --state complete --verdict PASS >/dev/null; printf '[{"Id":"termtermtermtermterm","Labels":{"catalogizer.op_id":"%s","project":"catalogizer"},"Created":100}]' "$id" >"$PODJSON"
+sw --only AM-P1 --reconcile; assert_eq "N3d a container (catalogizer.op_id) of a TERMINAL op is reported and stopped by --reconcile" "$(cls AM-P1):$(grep -c 'stop -t 5 termtermterm' "$PODLOG")" "container_of_terminal_op:1"
+
+echo "== WF11 F9 AM-P4: stale claims, holderless claims, unreadable holders and un-adopted handoffs are visible =="
+swfx q1; sw --only AM-P4; assert_eq "Q0 control: a clean registry is clean" "$(st AM-P4)" clean
+mkll; A=$LL; id=$("$S/register.sh" --purpose q1:stale --owner t --pid "$A"); kill "$A"; wait "$A" 2>/dev/null; rm -f "$LONGOPS_DIR/ops/$id.json"
+sw --only AM-P4; assert_eq "Q1 a dead holder with no op record (register now exits 4) is drift stale_claim" "$(cls AM-P4)" stale_claim; assert_rc "Q1b exit 10" $SWRC 10
+mkdir "$LONGOPS_DIR/claims/q1:nohold"; sw --only AM-P4; assert_eq "Q2 a YOUNG claim directory with no holder record is informational (a registration in progress)" "$(cls AM-P4):$(infocls AM-P4)" "stale_claim:claim_young"
+touch -d '10 minutes ago' "$LONGOPS_DIR/claims/q1:nohold"; sw --only AM-P4; assert_eq "Q2b the same directory older than the minimum age is claim_without_holder" "$(cls AM-P4)" "claim_without_holder stale_claim"
+mkdir "$LONGOPS_DIR/claims/q1:bad"; printf '{"kind":"proc' >"$LONGOPS_DIR/claims/q1:bad/holder.json"; sw --only AM-P4; assert_eq "Q3 an unreadable holder record is drift claim_unreadable" "$(cls AM-P4)" "claim_unreadable claim_without_holder stale_claim"
+swfx q2; mkll; B=$LL; id=$("$S/register.sh" --purpose q2:live --owner t --pid "$B" --no-progress-s 5000)
+sw --only AM-P4; assert_eq "Q4 golden-false: a live holder with its op is clean" "$(st AM-P4)" clean
+mkll; C=$LL; idh=$("$S/register.sh" --purpose q2:ho --owner t --pid "$C" --no-progress-s 5000); "$S/release.sh" --op-id "$idh" --state handoff --verdict driver_stop >/dev/null
+sw --only AM-P4; assert_eq "Q5 an op in the re-adoptable handoff state that nothing supersedes is drift handoff_unadopted" "$(cls AM-P4)" handoff_unadopted
+jq -c '.superseded_by="newop"' "$LONGOPS_DIR/ops/$idh.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$idh.json"; sw --only AM-P4; assert_eq "Q5b golden-false: a superseded handoff is clean" "$(st AM-P4)" clean
+jq -c 'del(.superseded_by)' "$LONGOPS_DIR/ops/$idh.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$idh.json"; "$S/release.sh" --op-id "$idh" --state complete --verdict adopted >/dev/null; sw --only AM-P4; assert_eq "Q5c golden-false: once the handoff is resolved into a terminal state it is clean" "$(st AM-P4)" clean
+swfx q3; rm -f "$FXN/ap/scripts/repo/commit_push.conf"; mkll; D=$LL
+"$S/acquire.sh" --purpose commit_push --run-id cpq --pid "$D" >/dev/null; mkdir -p "$FXN/bld/b1"; "$S/acquire.sh" --suspend cpq --builds b1 >/dev/null; "$S/acquire.sh" --update cpq --callback-state done --state ready_to_resume >/dev/null; mkdir -p "$FXN/bld/b1/terminal"
+LONGOPS_BUILDS=$FXN/bld sw --only AM-P4; assert_eq "Q6 a holder that cannot be judged (ready_to_resume, no conf) is unread, never clean" "$(st AM-P4)" unread
+
+echo "== WF11 F10 handoff containers are never stopped; stopcontainer re-verifies =="
+swfx r1x; mkll; A=$LL; idh=$("$S/register.sh" --purpose r1x:h --owner t --pid "$A" --no-progress-s 5000); "$S/release.sh" --op-id "$idh" --state handoff --verdict driver_stop >/dev/null
+printf '[{"Id":"handoffhandoffhand","Labels":{"catalogizer.op_id":"%s","project":"catalogizer"},"Created":100}]' "$idh" >"$PODJSON"
+sw --only AM-P1 --reconcile; assert_eq "H1 a container of a HANDOFF op is informational only" "$(cls AM-P1):$(infocls AM-P1)" ":container_of_handoff_op"
+assert_eq "H1b and --reconcile did not stop it" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
+swfx r2x; mkdir -p "$LONGOPS_DIR/ops"; printf '[{"Id":"racerackeracerackera","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"
+printf '#!/bin/bash\njq -nc --arg id ghost-op --arg p r2x:p '"'"'{op_id:$id,purpose_key:$p,run_id:$id,pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}'"'"' >"%s/ops/ghost-op.json"\n' "$LONGOPS_DIR" >"$FXN/hook.sh"
+ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only AM-P1 --reconcile
+assert_eq "H2 an orphan container whose op got a registry row between detection and action is NOT stopped" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
+assert_eq "H2b the report records why" "$(jq -r '.invariants[]|select(.id=="AM-P1")|.reconciled[]|select(.action|startswith("stopcontainer"))|.result' "$J" | head -1)" skipped_precondition_changed_live
+ANTIMESS_TEST_BEFORE_ACTION=/bin/true bash "$SW" --only AM-P1 >"$FXN/o" 2>&1; assert_rc "H3 a test hook outside ANTIMESS_TEST_MODE=1 is refused (20)" $? 20
+swfx r3x; : >"$R/.git/index.lock"; touch -d '10 minutes ago' "$R/.git/index.lock"; printf '#!/bin/bash\ntouch "%s/.git/index.lock"\n' "$R" >"$FXN/hook.sh"
+ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only AM-R2 --reconcile
+assert_eq "H4 RMS1 a lock that became young (touched) between detection and action is NOT removed" "$([ -e "$R/.git/index.lock" ] && echo kept || echo removed)" kept
+assert_eq "H4b the report says skipped_not_provably_stale" "$(jq -r '.invariants[]|select(.id=="AM-R2")|.reconciled[0].result' "$J")" skipped_not_provably_stale
+swfx r4x; mkrepo "$FXN/sm"; echo 1 >"$FXN/sm/f"; cmt "$FXN/sm"; git -C "$R" submodule add -q "$FXN/sm" vendor/sm 2>/dev/null; cmt "$R" sub; git clone -q "$R" "$FXN/clone" 2>/dev/null
+printf '#!/bin/bash\ngit -C "%s" submodule update --init -- vendor/sm >/dev/null 2>&1\n' "$FXN/clone" >"$FXN/hook.sh"
+ANTIMESS_ROOT=$FXN/clone ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only AM-R5 --reconcile
+assert_eq "H5 initsub re-verifies: a submodule initialised between detection and action is skipped_already_initialised" "$(jq -r '.invariants[]|select(.id=="AM-R5")|.reconciled[0].result' "$J")" skipped_already_initialised
+swfx r5x; B=$R/.audit/commit-push; mkdir -p "$B" "$R/scripts/repo"; printf 'retain_runs=1\nretain_days=1\n' >"$R/scripts/repo/commit_push.conf"; cmt "$R" conf
+git init -q --bare "$FXN/origin.git" 2>/dev/null; git -C "$R" branch -M main; git -C "$R" remote add origin "$FXN/origin.git"; git -C "$R" push -q origin main 2>/dev/null
+for r in old2 new1; do mkdir -p "$B/$r"; echo '{"status":"complete"}' >"$B/$r/report.json"; done; touch -d '4 days ago' "$B/old2" "$B/old2/report.json"
+echo x >"$R/held.txt"; cmt "$R" held; UNPUSHED=$(git -C "$R" rev-parse HEAD)
+printf '#!/bin/bash\nprintf ".\\t%%s\\n" "%s" >"%s/old2/commits.tsv"\n' "$UNPUSHED" "$B" >"$FXN/hook.sh"
+ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only INV-9 --reconcile
+[ -d "$B/old2" ] && ok "H6 a finished run that gained an unpushed held commit between detection and action is KEPT (rmdir re-verifies)" || bad "H6 removed"
+assert_eq "H6b the report says why" "$(jq -r '.invariants[]|select(.id=="INV-9")|.reconciled[0].result' "$J")" skipped_held_commit_not_on_remote
+
+echo "== WF11 F12: an unknown --only id is a usage refusal =="
+swfx o1
+for o in NOPE am-p1 "AM-P1,NOPE" "" ","; do bash "$SW" --only "$o" >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "O1 --only '$o' is refused (20), never an empty clean sweep" $rc 20; done
+grep -q 'unknown invariant id' "$FXN/e" && ok "O1b it names the unknown id" || bad "O1b [$(cat "$FXN/e")]"
+bash "$SW" --only AM-P1,AM-P2 >"$FXN/o" 2>&1; assert_rc "O2 control: valid ids still run (0)" $? 0
 
 echo "== a blind detector never prints clean =="
 swfx z1; mkdir -p "$FXN/bt/scripts/anti-mess"; cp "$TROOT/scripts/anti-mess/catalogue.yaml" "$FXN/bt/scripts/anti-mess/"; for d in repo longops; do cp -r "$TROOT/scripts/$d" "$FXN/bt/scripts/$d"; done

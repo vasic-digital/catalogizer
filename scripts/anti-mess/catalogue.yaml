@@ -107,6 +107,14 @@ invariants:
     stages: [cadence]
     reconcile: auto-safe
     needle: yes
+  - id: AM-P4
+    aliases: []
+    plane: runtime
+    desired: "no purpose claim is stale, holderless or unreadable (each blocks its purpose and nothing owns it), and no op in the re-adoptable `handoff` state is left un-adopted (11.4.232 B, D); a corrupt op record is reported unread"
+    detector: det_AM_P4
+    stages: [cadence]
+    reconcile: operator-gated
+    needle: yes
   - id: INV-6
     aliases: []
     plane: runtime
@@ -124,7 +132,7 @@ invariants:
     stages: [cadence]
     reconcile: operator-gated
     needle: no
-    not_evaluated_reason: "scripts/containers/check_pins.sh is not present in the tree; owed (T006 follow-up)"
+    not_evaluated_reason: "scripts/containers/check_pins.sh exists (last changed in 178ee136) but no detector of this sweep invokes it yet: wiring it as a det_ function is owed (T006 follow-up)"
   - id: INV-8
     aliases: []
     plane: runtime
@@ -133,7 +141,7 @@ invariants:
     stages: [cadence]
     reconcile: operator-gated
     needle: no
-    not_evaluated_reason: "no build records exist yet (the dispatcher T005b is not implemented)"
+    not_evaluated_reason: "scripts/build/dispatch.sh exists and registers builds as long ops, but no detector reads its build records for image@sha256 and a container id yet; owed (T005b follow-up)"
   - id: INV-9
     aliases: []
     plane: repository

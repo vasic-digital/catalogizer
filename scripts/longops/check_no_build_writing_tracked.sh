@@ -8,6 +8,7 @@
 #         - ANY registered live op declares a write path under $EV or $AUD: another stream's evidence is committed only at a commit window.
 #         Live = a non-terminal op whose owner still matches /proc (pid and start time), or a `registered` op that has not started.
 #         A dead-owner row is not a writer (it is reported by the sweep as AM-P1), so a crashed op never wedges the window.
+#         An unreadable op record blocks too (its write paths are unknown): a corrupt record is never read as "no writer".
 # Exits   0 no live writer; 1 blocked; 2 usage. Writes nothing.
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -15,9 +16,11 @@ ex=()
 while [ $# -gt 0 ]; do case "$1" in --except-op-id) ex+=("${2:-}"); shift 2 ;; *) lo_die usage_error "unknown argument $(printf '%q' "$1")" ;; esac; done
 rc=0
 for f in "$LD"/ops/*.json; do
-  [ -e "$f" ] || continue; j=$(cat "$f") || continue; id=$(jq -r .op_id <<<"$j")
-  for e in "${ex[@]:-}"; do [ "$e" = "$id" ] && continue 2; done
+  [ -e "$f" ] || continue; j=$(cat "$f") || { printf 'blocked\t%s\t-\t-\tthe op record cannot be read (fail closed)\n' "$f"; rc=1; continue; }
   cls=$(lo_classify_op "$j" | head -1)
+  if [ "$cls" = unreadable ]; then printf 'blocked\t%s\t-\t-\tthe op record is empty, unparsable or non-numeric: its write paths are unknown (fail closed, WF11 class 2)\n' "$f"; rc=1; continue; fi
+  id=$(jq -r .op_id <<<"$j")
+  for e in "${ex[@]:-}"; do [ "$e" = "$id" ] && continue 2; done
   case "$cls" in terminal|dead_owner) continue ;; esac
   purpose=$(jq -r .purpose_key <<<"$j")
   while IFS= read -r wpth; do

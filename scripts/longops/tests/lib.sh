@@ -4,9 +4,9 @@
 # so the tests run on the host with coreutils, jq, flock and git; the identity header says so.
 TROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 S=${LONGOPS_SCRIPTS:-$TROOT/scripts/longops}
-PASS=0; FAIL=0; KILLME=()
+PASS=0; FAIL=0; KILLME=(); KILL9ME=()   # KILL9ME: a process a test made ignore TERM on purpose (killed with KILL, one pid, never a group)
 FX=$(mktemp -d "${TMPDIR:-/tmp}/longops-test.XXXXXX")
-cleanup() { local p; for p in "${KILLME[@]:-}"; do [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && kill "$p" 2>/dev/null; done; rm -rf "$FX"; }
+cleanup() { local p; for p in "${KILLME[@]:-}"; do [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && kill "$p" 2>/dev/null; done; for p in "${KILL9ME[@]:-}"; do [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && kill -9 "$p" 2>/dev/null; done; rm -rf "$FX"; }
 trap cleanup EXIT
 ok()  { PASS=$((PASS+1)); echo "ok   $*"; }
 bad() { FAIL=$((FAIL+1)); echo "FAIL $*"; }

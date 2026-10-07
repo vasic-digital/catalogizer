@@ -5,7 +5,9 @@
 #         release.sh --purpose <key> --run-id <id>        release a claim that has no op record (an acquire.sh lock)
 # Effect  the op record gets its terminal state (success is the verdict the operation wrote, never a process exit code); the claim is
 #         removed by compare-and-swap on the holder's run id under the purpose flock. `handoff` records a re-adoptable stop (11.4.232 D).
-# Exits   0; 2 usage; 4 cas_mismatch (the claim belongs to another run, left untouched).
+# Terminal states are IMMUTABLE (WF11 F11): a record already complete, failed, reaped or blocked-escape is never rewritten (4 already_terminal; the same state and
+#         verdict again is an idempotent no-op, 0); `handoff` is the one re-adoptable state and may be resolved into any terminal state.
+# Exits   0; 2 usage; 4 cas_mismatch (the claim belongs to another run, left untouched) or already_terminal; 20 op_record_unreadable.
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 opid=""; state=""; verdict=""; evp=""; purpose=""; runid=""
@@ -16,10 +18,15 @@ done
 if [ -n "$opid" ]; then
   lo_safe_name "$opid" || lo_die usage_error "unsafe op id"
   case "$state" in complete|failed|reaped|handoff|blocked-escape) ;; *) lo_die usage_error "--state must be a terminal state" ;; esac
-  f=$(lo_op_file "$opid"); [ -s "$f" ] || lo_die unknown_op "$opid" "$RC_CAS"
-  purpose=$(jq -r .purpose_key "$f"); runid=$(jq -r .run_id "$f")
+  lo_load_op "$opid"
+  runid=$(jq -r .run_id "$f")
   _rel() {
-    local j; j=$(cat "$f")
+    local j cur; j=$(cat "$f"); cur=$(jq -r .state <<<"$j")
+    case "$cur" in
+      complete|failed|reaped|blocked-escape)
+        if [ "$cur" = "$state" ] && [ "$(jq -r .verdict <<<"$j")" = "$verdict" ]; then return 0; fi
+        echo "already_terminal: op $opid is $cur (verdict '$(jq -r .verdict <<<"$j")'); a terminal state is never rewritten" >&2; return "$RC_CAS" ;;
+    esac
     j=$(jq -c --arg s "$state" --arg v "$verdict" --arg e "$evp" --arg u "$(lo_utc "$(lo_now)")" '.state=$s|.verdict=$v|.evidence_path=$e|.last_heartbeat_utc=$u' <<<"$j")
     lo_wjson "$f" "$j" && lo_unclaim "$purpose" "$runid"
   }

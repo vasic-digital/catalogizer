@@ -1,0 +1,188 @@
+# identity: task=T090 utc=2026-10-07T02:18:03Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=846d441fa49ea6f7c0f456d81fdfc584c1593de4 (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=ff038492e21c08681822bf3458b0c46e30eaff8e3760a6bf99766561bb73c66f
+# sha256 register.sh=05058ea2be980e9f0a8b013968f29ad3e73a835643b999dad08927232d557c30
+# sha256 acquire.sh=c5ac9da387f0af94caed400f4025d541439ccac5d4810a4f2cc7db98eaee42dd
+# sha256 release.sh=4980f312b5ed81c43ced6cd036b6ccbd3a785c2e48a6060e9ddd69137e4662ba
+# sha256 heartbeat.sh=0d89361bd6f330e027118a22738c1c0c498c186e546e9eac1bb90a53dad66cd4
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=d162812e2a86b67fb66db88af1bf73512bc8b649a8d67a9622bda05ed3dea3a6
+# sha256 reap.sh=fe24208aca4e61f9e4312e3aac27e751c3cd2c777ca40c08f6229f9c70446deb
+# sha256 check_no_build_writing_tracked.sh=51a9256750a819853386147c88aed47cf8236010683f7c5088a6335842285337
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+# sha256 sweep.sh=a8fa7f668b726aaf6e3ec241b728d4c31c98ac10c59c34d393dafe739ff8d71c catalogue.yaml=d8daa82a4f637d91384aeac57d87650e3ac08a29abbcae32c7d0afd43084f152
+== clean state, control needles ==
+ok   C1 clean state exits 0
+ok   C1 AM-R1 clean on the clean state
+ok   C1 AM-R1 control needle seen on the same path
+ok   C1 AM-R2 clean on the clean state
+ok   C1 AM-R2 control needle seen on the same path
+ok   C1 AM-R5 clean on the clean state
+ok   C1 AM-R5 control needle seen on the same path
+ok   C1 AM-G2 clean on the clean state
+ok   C1 AM-G2 control needle seen on the same path
+ok   C1 AM-P1 clean on the clean state
+ok   C1 AM-P1 control needle seen on the same path
+ok   C1 AM-P2 clean on the clean state
+ok   C1 AM-P2 control needle seen on the same path
+ok   C1 AM-P3 clean on the clean state
+ok   C1 AM-P3 control needle seen on the same path
+ok   C1 AM-P4 clean on the clean state
+ok   C1 AM-P4 control needle seen on the same path
+ok   C1 INV-9 clean on the clean state
+ok   C1 INV-9 control needle seen on the same path
+ok   C1b the sweep wrote nothing into the swept tree (read-only)
+ok   C1c report schema
+ok   C2 the full cadence sweep exits 0 on the clean fixture
+ok   C2 AM-R3 is not_evaluated, never clean
+ok   C2 AM-R4 is not_evaluated, never clean
+ok   C2 AM-G1 is not_evaluated, never clean
+ok   C2 AM-S1 is not_evaluated, never clean
+ok   C2 INV-6 is not_evaluated, never clean
+ok   C2 INV-7 is not_evaluated, never clean
+ok   C2 INV-8 is not_evaluated, never clean
+ok   C2b a not_evaluated invariant carries its reason
+ok   C2c summary counts
+ok   C3 a cadence-only invariant is skipped_stage at S0
+ok   C4 an unknown stage is a usage refusal (20)
+== AM-P1 registry vs reality: hung, dead owner, orphan container ==
+ok   P1 a hung op (live owner, flat offset past budget) is drift (10)
+ok   P1b exactly the hung op is reported
+ok   P1c the finding names the op id
+ok   P2 a dead-owner registry row is reported too
+ok   P3 once both ops are terminal the sweep is clean
+ok   P4 an orphan labelled container (no registry row, older than budget) is reported
+ok   P4b the finding names the container id
+ok   P5 golden-false carrier: a container younger than the budget is informational only
+ok   P5b it is listed as orphan_container_young
+ok   P6 golden-false carrier: a container whose op has a live registry row is not reported
+ok   P7 a container of a TERMINAL op is reported
+ok   P8 F8 an unreadable container runtime makes AM-P1 unread, NEVER clean
+ok   P8b the sweep exits 11 (a source was not read), not 0
+ok   P8c the finding is containers_unread
+== AM-P2 duplicate owner ==
+ok   D1 two non-terminal ops with one purpose_key: drift
+ok   D1b class
+ok   D2 golden-false: the second op is attached to the first
+== the heartbeat check is load-bearing (mutation inside the sweep tests) ==
+ok   H1 with the heartbeat check disabled the sweep fails its own control needle (blind, exit 20), never prints clean
+== AM-R2 stale git lock (dead holder) and its carriers ==
+ok   L1 a stale lock (no process has it open, no git running in the repo, old enough) is drift
+ok   L2 golden-false carrier: the same lock held open by a live process is not stale
+ok   L2b it is listed as held open
+ok   L3 golden-false carrier: a young lock is not stale
+ok   L4 golden-false carrier: a .lock file outside .git is not a git lock
+ok   L5 a stale lock in a submodule gitdir under .git/modules is found
+== AM-R1: change set, exceptions, pending pins ==
+ok   R1 at S7 nothing is excluded: the dirty tree is drift
+ok   R2 S0: an undeclared change and an untracked evidence file of another stream are reported
+ok   R2b the evidence names the undeclared files
+ok   R3 S0: a tree whose only changes are the declared change set (with a declared recorder blob and a declared row appended to deferrals.jsonl) passes
+ok   R3b it is recorded as declared_change_set_only
+ok   R4 a dirty submodule WITHOUT an exceptions.tsv row is reported
+ok   R4b it names third/dl
+ok   R5 the same repository WITH its reviewed exceptions.tsv row passes (control needle R4)
+ok   R6 a pointer drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt
+ok   R7 the same drift without the row is not dirt either (pin rules own it)
+ok   R8 --repo scopes AM-R1 to that repository only
+== AM-R5 uninitialised submodule ==
+ok   U1 a declared but uninitialised submodule is drift
+ok   U2 golden-false: the initialised submodule is clean
+== AM-G2 CI pipelines and core.hooksPath ==
+ok   G1 a planted workflow file is reported on the cadence (through scripts/repo/check_no_ci.sh)
+ok   G1b at S0 only the hooksPath half runs: the workflow file is not reported
+ok   G2 a blocking core.hooksPath is reported on the cadence
+ok   G2b cadence reports it (10), does not refuse
+ok   G3 at S0 a blocking core.hooksPath is REFUSED with 20
+ok   G3b at S7 it is reported (10), not refused
+ok   G4 golden-false: core.hooksPath pointing at a non-blocking (empty) directory is clean
+ok   G5 golden-false: core.hooksPath unset is clean
+== INV-9 commit-push run directories ==
+ok   I1 a directory without report.json whose process is gone is an interrupted run
+ok   I1b an interrupted run is never removed, not even by --reconcile
+ok   I2 a live run (pid from the run id, cmdline contains commit-push-all) is not interrupted
+ok   I2b the live one is listed live_run
+ok   I3 merge.json, no report.json, MERGE_HEAD, process gone: interrupted merge
+ok   I3b with the T042 S0 remediation
+ok   I4 golden-false: the merge process lives (paused between merge --no-commit and commit): the live holder, no remediation
+ok   I4b no remediation offered while the holder lives
+ok   I5 a finished directory past both bounds whose held commit no remote holds is KEPT
+ok   I5b a finished directory past both bounds with no held commit is removed (auto-safe)
+ok   I5c a directory inside the newest retain_runs is kept
+ok   I5d the kept held record is reported kept_held_commit
+ok   I6 the first sweep after every reachable remote holds the commit removes the directory
+ok   I7 a run awaiting_remote_checks with a live suspended-run holder is suspended, never interrupted, never reaped
+ok   I7b not removed
+ok   I8 a run in state ready_to_resume is its own class, never interrupted, suspended or stale
+ok   I9 an expired ready_to_resume holder is REPORTED
+ok   I9b and never released by the sweep (release is acquire.sh --expire)
+ok   I10 with CPA_APPROVED_DIR unset and no cpa-host the commit_push holder is reported unread, never a sweep failure
+ok   I11 a project_not_trusted refusal of cpa-host is reported as the purpose unread
+== AM-P3 leftover build temp dirs, open builds ==
+ok   B1 a .tmp-<pid>-<start> directory whose process is gone is drift; open builds with no hub are reported
+ok   B2 --reconcile reaps the dead-owner temp dir (auto-safe)
+ok   B2b the temp dir of a live process is untouched
+ok   B2c a terminal build is untouched
+ok   B3 with a live hub record open_builds_without_hub is no longer reported
+== reconcile only the catalogued auto-safe classes ==
+ok   X1 drift remains after a reconcile that could not fix everything (10)
+ok   X1b the auto-safe class (stale git lock) was removed
+ok   X1c the operator-gated dirty file is byte-unchanged
+ok   X1d the interrupted run was not touched
+ok   X1e the report records the reconcile result
+ok   X2 a dead-owner registry row is reaped by --reconcile
+ok   X3 an orphan labelled container is stopped by --reconcile (podman stop)
+ok   X4 --reconcile initialises an uninitialised submodule (auto-safe)
+== WF11 class 2: a corrupt op record, an unreadable source: reported unread, never clean, and never hiding the rest (F4, F8) ==
+ok   N0 control: without the corrupt record the hung op and the duplicate owner are reported (10)
+ok   N0b control: AM-P1 hung_op (+ the hand-written pid-0 row), AM-P2 duplicate_owner
+ok   N1 F4 one unparsable record sorted first does not blind AM-P1 / AM-P2: still drift (10)
+ok   N1b the hung op is still reported
+ok   N1c the duplicate owner is still reported
+ok   N1d AM-P1 also reports the corrupt record as an unread finding
+ok   N1d AM-P2 also reports the corrupt record as an unread finding
+anti-mess/tests/test_sweep.sh: line 214: /tmp/longops-test.7s9twT/n2/root/.audit/longops/ops/00corrupt.json: No such file or directory
+ok   N2 only corrupt records (and a 0-byte one): exit 11, never 0
+ok   N2b AM-P1 and AM-P2 are unread, not clean
+ok   N2c both files are named
+-- the label the launcher really sets (catalogizer.op_id, scripts/containers/run_pinned.sh) --
+ok   N3 F-label a container labelled catalogizer.op_id of a LIVE op is not container_without_op_label (and not reported at all)
+ok   N3b a container with no op label at all is still reported
+ok   N3c catalogizer.op_id of an unknown op older than the budget is an orphan_container
+ok   N3d a container (catalogizer.op_id) of a TERMINAL op is reported and stopped by --reconcile
+== WF11 F9 AM-P4: stale claims, holderless claims, unreadable holders and un-adopted handoffs are visible ==
+ok   Q0 control: a clean registry is clean
+ok   Q1 a dead holder with no op record (register now exits 4) is drift stale_claim
+ok   Q1b exit 10
+ok   Q2 a YOUNG claim directory with no holder record is informational (a registration in progress)
+ok   Q2b the same directory older than the minimum age is claim_without_holder
+ok   Q3 an unreadable holder record is drift claim_unreadable
+ok   Q4 golden-false: a live holder with its op is clean
+ok   Q5 an op in the re-adoptable handoff state that nothing supersedes is drift handoff_unadopted
+ok   Q5b golden-false: a superseded handoff is clean
+ok   Q5c golden-false: once the handoff is resolved into a terminal state it is clean
+ok   Q6 a holder that cannot be judged (ready_to_resume, no conf) is unread, never clean
+== WF11 F10 handoff containers are never stopped; stopcontainer re-verifies ==
+ok   H1 a container of a HANDOFF op is informational only
+ok   H1b and --reconcile did not stop it
+ok   H2 an orphan container whose op got a registry row between detection and action is NOT stopped
+ok   H2b the report records why
+ok   H3 a test hook outside ANTIMESS_TEST_MODE=1 is refused (20)
+ok   H4 RMS1 a lock that became young (touched) between detection and action is NOT removed
+ok   H4b the report says skipped_not_provably_stale
+ok   H5 initsub re-verifies: a submodule initialised between detection and action is skipped_already_initialised
+ok   H6 a finished run that gained an unpushed held commit between detection and action is KEPT (rmdir re-verifies)
+ok   H6b the report says why
+== WF11 F12: an unknown --only id is a usage refusal ==
+ok   O1 --only 'NOPE' is refused (20), never an empty clean sweep
+ok   O1 --only 'am-p1' is refused (20), never an empty clean sweep
+ok   O1 --only 'AM-P1,NOPE' is refused (20), never an empty clean sweep
+ok   O1 --only '' is refused (20), never an empty clean sweep
+ok   O1 --only ',' is refused (20), never an empty clean sweep
+ok   O1b it names the unknown id
+ok   O2 control: valid ids still run (0)
+== a blind detector never prints clean ==
+ok   Z1 a detector that cannot see the seeded drift is BLIND: exit 20, not a clean report
+ok   Z2 control: the unmutated sweep sees the same lock
+RESULT pass=155 fail=0

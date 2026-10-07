@@ -5,8 +5,10 @@
 #                     [--write-path <path>]... [--no-progress-s <n>] [--wall-s <n>] [--memory-bytes <n>] [--cpus <n>] [--log <file>] [--no-claim] [--grammar build]
 # Effect  writes ops/<op_id>.json (state `registered`, every declared write path recorded), claims claims/<purpose> by `mkdir`
 #         (a live holder gives exit 3 purpose_conflict, a stale one exit 4, nothing started twice), appends an event. Prints the op id.
-# Pid     defaults to the caller's parent (the wrapper that outlives this script); identity is its /proc start time and cmdline.
-# Exits   0 registered; 2 usage; 3 purpose_conflict; 4 stale claim; 20 refusal (tmpfs state).
+# Pid     defaults to the caller's parent (the wrapper that outlives this script); identity is its /proc start time and cmdline. A pid must be an
+#         integer > 1 that exists now (0, 1, junk and a vanished pid are refused, WF11 F6). No --no-progress-s (or 0) records the default budget
+#         (LONGOPS_DEFAULT_NO_PROGRESS_S, 3600 s): an op is never "never hung" (WF11 F7). Every numeric option is a non-negative integer of at most 15 digits.
+# Exits   0 registered; 2 usage; 3 purpose_conflict (or op_exists); 4 stale claim; 20 refusal (tmpfs state, unreadable holder record).
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 purpose=""; owner=""; opid=""; grammar=""; pid=$PPID; clab=""; cid=""; wp=(); np=0; wall=0; mem=0; cpus=0; log=""; claim=1
@@ -26,10 +28,11 @@ lo_safe_name "$purpose" || lo_die usage_error "unsafe purpose"
 # Enforced with `--grammar build` (what scripts/build/dispatch.sh passes); without it a purpose keeps the older rule (any safe name).
 case "$grammar" in "") ;; build) [[ "$purpose" =~ ^build:[A-Za-z0-9_.-]{1,16}:[A-Za-z0-9_.-]{1,16}:[0-9a-f]{64}:[0-9a-f]{64}:(primary|repro-cold)(:[A-Za-z0-9_-]{1,16})?$ ]] \
   || lo_die purpose_key_malformed "a build purpose key is build:<component>:<lane>:<snapshot-digest 64 hex>:<argv-digest 64 hex>:<primary|repro-cold>[:<iteration>]" ;; *) lo_die usage_error "--grammar is build" ;; esac
-[[ "$pid" =~ ^[0-9]+$ ]] || lo_die usage_error "--pid must be an integer"
+lo_pid_ok "$pid" || lo_die usage_error "--pid must be an integer > 1 naming a process that exists now"
 [ -n "$opid" ] || opid="$(date -u +%Y%m%dT%H%M%SZ)-$$-$RANDOM"
 lo_safe_name "$opid" || lo_die usage_error "unsafe op id"
-for n in "$np" "$wall" "$mem" "$cpus"; do [[ "$n" =~ ^[0-9]+$ ]] || lo_die usage_error "numeric option expected"; done
+for n in "$np" "$wall" "$mem" "$cpus"; do lo_uint "$n" || lo_die usage_error "numeric option expected (a non-negative integer of at most 15 digits)"; done
+[ "$np" -gt 0 ] || np=$LO_DEFAULT_NP
 lo_init
 [ ! -e "$(lo_op_file "$opid")" ] || lo_die op_exists "op id $opid is already registered" "$RC_CONFLICT"
 now=$(lo_now); st=$(lo_pstart "$pid")
@@ -43,6 +46,12 @@ rec=$(jq -nc --arg id "$opid" --arg p "$purpose" --arg o "$owner" --argjson pid 
 if [ "$claim" = 1 ]; then
   lo_with_lock "$purpose" lo_claim "$purpose" "$(lo_holder_json "$purpose" "$opid" "$pid")" || exit $?
 fi
-lo_wjson "$(lo_op_file "$opid")" "$rec" || lo_die write_failed "cannot write the op record" 1
+lo_cs_pause   # test hook: widens the window between the claim and the record so an op-id race is observable
+# the op record is created EXCLUSIVELY (a hard link never overwrites): two registrations of one op id under different purposes cannot both win (WF11 F2 member)
+if ! lo_wjson_new "$(lo_op_file "$opid")" "$rec"; then
+  [ "$claim" != 1 ] || lo_with_lock "$purpose" lo_unclaim "$purpose" "$opid" >/dev/null 2>&1   # roll back OUR claim (run id = op id); another op's claim is never touched
+  if [ -e "$(lo_op_file "$opid")" ]; then lo_die op_exists "op id $opid is already registered" "$RC_CONFLICT"; fi
+  lo_die write_failed "cannot write the op record" 1
+fi
 lo_event registered --arg op "$opid" --arg purpose "$purpose"
 echo "$opid"

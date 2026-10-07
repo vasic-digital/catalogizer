@@ -10,6 +10,7 @@
 #         acquire.sh --adopt <run_id> [--purpose commit_push] [--pid <pid>]   swap suspended-run -> process (the resumed run's pid, start time)
 #         acquire.sh --expire <purpose> [--op-id <id>]                    release a holder in ready_to_resume past resume_ttl (compare-and-swap only;
 #                                                                         with --adopt this pair is the whole cancel of a suspended run, CENTRAL C2)
+# Every numeric option and enumerated state is validated BEFORE any write; --pid is an integer > 1 naming a process that exists now (WF11 F5/F6).
 # Locking every transition is a compare-and-swap on the expected prior holder (run id and state) under ONE flock on <purpose>.lock;
 #         the holder record is replaced by temp-then-rename, so a reader never sees `none` across a suspend, update or adopt.
 #         An --adopt racing --expire has exactly one winner: the loser sees the other's result as a cas_mismatch (4).
@@ -31,7 +32,10 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$purpose" ] || purpose=commit_push
 lo_safe_name "$purpose" || lo_die usage_error "unsafe purpose"
-[[ "$pid" =~ ^[0-9]+$ ]] || lo_die usage_error "--pid must be an integer"
+lo_pid_ok "$pid" || lo_die usage_error "--pid must be an integer > 1 naming a process that exists now"
+[ -z "$ttl" ] || lo_uint "$ttl" || lo_die usage_error "--resume-ttl must be a non-negative integer of at most 15 digits"
+case "$cbs" in ""|none|claimed|running|done) ;; *) lo_die usage_error "--callback-state is none|claimed|running|done" ;; esac
+case "$nst" in ""|suspended|ready_to_resume) ;; *) lo_die usage_error "--state is suspended|ready_to_resume" ;; esac
 [ "$mode" != expire ] || lo_require_approved "$purpose"           # CENTRAL C2: checked first
 [ "$mode" = claim ] || [ "$mode" = expire ] || lo_require_approved "$purpose"
 if [ "$mode" != expire ]; then [ -n "$run" ] || lo_die usage_error "a run id is required"; [[ "$run" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$ ]] || lo_die usage_error "unsafe run id"; fi
