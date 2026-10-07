@@ -7,6 +7,5 @@ exclusions:
   - path: "src/components/__tests__/__snapshots__/**"
     class: non-shipping-fixtures-and-golden-assets
     justification: "the recorded snapshot file snapshots.test.tsx.snap: golden output read only by tests, never shipped"
-  - path: "e2e/fixtures/**"
-    class: non-shipping-fixtures-and-golden-assets
-    justification: "Playwright fixture files under catalog-web/e2e/fixtures: test inputs, never shipped"
+# e2e/fixtures/** (Playwright inputs) is NOT listed: vite.config.ts has no coverage.exclude and vitest instruments only the files its tests load, so the fence
+# cannot claim an exclusion the tool does not apply (review round 1 of WP-23, I6: listed-but-not-applied). The files are non-code inputs read by Playwright.

@@ -7,3 +7,6 @@ exclusions:
   - path: "dist/**"
     class: generated-code
     justification: "the tracked TypeScript compiler output under catalogizer-api-client/dist (index.js, services, types, utils with their .d.ts and .map files): generated from src by the package build, not a source of ours"
+  - path: "src/**/*.d.ts"
+    class: generated-code
+    justification: "jest.config.js collectCoverageFrom negates src/**/*.d.ts: type declaration files the TypeScript compiler emits; none is tracked under src today (the tracked .d.ts files are the dist output above), and the class check refuses a hand-written one that appears"

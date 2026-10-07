@@ -1,5 +1,8 @@
 {
   "application": "catalogizer-android",
+  "applied_checked": true,
+  "applied_source": "jacoco fileFilter of build.gradle.kts",
+  "content_checked": true,
   "entries": [
     {
       "class": "generated-code",
@@ -43,7 +46,7 @@
     },
     {
       "class": "non-shipping-fixtures-and-golden-assets",
-      "justification_chars": 196,
+      "justification_chars": 403,
       "matched_files": 77,
       "path": "**/*Test*.*",
       "stale": false,
@@ -52,9 +55,10 @@
   ],
   "file": "coverage/exclusions/catalogizer-android.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
-  "sha256": "b78dbb7274d18d22ca40203b9ef4d888dffb227d5f07cc4423797dd4ee5f2f51",
+  "sha256": "043e0bc1ab35104a03984e4e92df146becb4d93d2e31641832b42f13b9e09406",
   "unlisted": [],
   "verdict": "PASS"
 }

@@ -1,5 +1,8 @@
 {
   "application": "catalog-api",
+  "applied_checked": true,
+  "applied_source": "the collector applies the fence file itself",
+  "content_checked": true,
   "entries": [
     {
       "class": "non-shipping-fixtures-and-golden-assets",
@@ -12,6 +15,7 @@
   ],
   "file": "coverage/exclusions/catalog-api.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
   "sha256": "30149d27bcf10fc753bb27598f7358da8077236bed80a815cfb36ca0d760d081",

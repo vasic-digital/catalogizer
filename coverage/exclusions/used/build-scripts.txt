@@ -1,0 +1,1 @@
+# the collector of this repository applies the fence file itself (coverage/exclusions/tools.yaml kind fence): the applied list IS the fence, written here by scripts/coverage tooling, not by hand.

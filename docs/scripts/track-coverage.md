@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | new in the working tree (T198), not yet committed; independent review owed (constitution 11.4.142, T208); its row in `docs/scripts/README.md` is owed |
+| Last modified | 2026-10-07T00:58:05Z |
+| Status | new in the working tree (T198), not yet committed; independent review owed (constitution 11.4.142, T208); its row in `docs/scripts/README.md` is owed; review round 1 (WF11, 2026-10-06 UTC): fixes I10, I6 applied; independent re-review owed (constitution 11.4.142) |
 | Source | `scripts/coverage/track-coverage.sh`, `scripts/coverage/gocov_merge.py`; test `scripts/coverage/tests/test_track_coverage.sh`. Replaces the role of the old `scripts/track-coverage.sh`, which is left in place and unmodified |
 
 ## Purpose
@@ -19,3 +19,8 @@ The Go coverage collector for the split lanes (docs/05 7.4 A1). The old script s
 
 ## Stated limits (11.4.6)
 UNCONFIRMED against the real dispatcher: T121a (the compile-half lane rows) and T121b (`verify_artifact.sh`) are not built, so the `status` fields `artifact_dir` and `artifact_name`, the call form `verify_artifact.sh --build-id ID --file PATH`, the group callback that triggers `collect`, and the run-half command are this script's stated interface, exercised only against shims that replay recorded records. The registry row that fires `collect` (`scripts/build/callbacks.tsv`) is owed to the dispatcher owner. Statement coverage from Go's atomic profile is a proxy (11.4.224 C).
+
+## Review round 1 (WF11, 2026-10-06 UTC)
+- **I10**: `go list {{.Dir}}` is an absolute path. The collector now normalises `/src/<dir>` to the checkout-relative `<dir>` (compile target `./<pkg>`, run half `cd /src/<dir>`), and refuses an absolute directory outside `/src` (`package_dir_outside_source`). UNCONFIRMED against a real `go list` output in this session (no Go run on the host); proven against the documented absolute form by the new test legs.
+- **I6**: the fence file of the application is gated (`check_exclusions.sh --root <app>`) and then APPLIED to the merged profile (`gocov_merge.py summary --exclusions`): the blocks of every file the fence names are dropped from the figure and counted in `excluded` (also in the baseline record). Before, the fence was only recorded by path, so a figure claimed a scope it did not have.
+- Test hook added: `TC_FENCE_DIR` (the directory holding `<app>.yaml` fences; honoured only with `TC_TEST_MODE=1`, refused otherwise like the other `TC_*` hooks) so the test can show that a fence the gate refuses fails the collection.

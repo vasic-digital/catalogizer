@@ -134,8 +134,8 @@
     },
     {
       "component": "A10:assets",
-      "declared": "~",
-      "reason": "structural: 1 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "declared": "A",
+      "reason": "TS-00 read: 1 non-test file(s) import net, database or exec, and no chaos or fault test marker among 9 test files",
       "type": "chaos"
     },
     {
@@ -411,7 +411,7 @@
     {
       "component": "A10:concurrency",
       "declared": "~",
-      "reason": "structural: 4 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
       "type": "stress"
     },
     {
@@ -1635,7 +1635,7 @@
     {
       "component": "A10:security",
       "declared": "~",
-      "reason": "structural: 13 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "reason": "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)",
       "type": "e2e"
     },
     {
@@ -1647,7 +1647,7 @@
     {
       "component": "A10:security",
       "declared": "~",
-      "reason": "structural: 10 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED",
+      "reason": "structural: 9 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED",
       "type": "security"
     },
     {
@@ -2841,7 +2841,7 @@
     {
       "component": "A12:challenges",
       "declared": "~",
-      "reason": "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "reason": "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
       "type": "stress"
     },
     {
@@ -2883,31 +2883,31 @@
     {
       "component": "A12:constitution",
       "declared": "P",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101))",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0))",
       "type": "unit"
     },
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "integration"
     },
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "e2e"
     },
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "full_automation"
     },
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "security"
     },
     {
@@ -2925,7 +2925,7 @@
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "chaos"
     },
     {
@@ -2937,7 +2937,7 @@
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "performance"
     },
     {
@@ -2961,13 +2961,13 @@
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "challenges"
     },
     {
       "component": "A12:constitution",
       "declared": "A",
-      "reason": "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found",
+      "reason": "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found",
       "type": "helixqa"
     },
     {
@@ -3063,7 +3063,7 @@
     {
       "component": "A12:doc_processor",
       "declared": "P",
-      "reason": "TS-00 read (19 test files, 207 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
+      "reason": "TS-00 read (21 test files, 229 Test functions); `P` from 10 test files, doc05 4.4 reading rule",
       "type": "unit"
     },
     {
@@ -3105,25 +3105,25 @@
     {
       "component": "A12:doc_processor",
       "declared": "A",
-      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 19 test files",
+      "reason": "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 21 test files",
       "type": "chaos"
     },
     {
       "component": "A12:doc_processor",
       "declared": "~",
-      "reason": "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "reason": "structural: 3 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
       "type": "stress"
     },
     {
       "component": "A12:doc_processor",
       "declared": "A",
-      "reason": "TS-00 read: no performance/latency test marker among 19 test files",
+      "reason": "TS-00 read: no performance/latency test marker among 21 test files",
       "type": "performance"
     },
     {
       "component": "A12:doc_processor",
       "declared": "A",
-      "reason": "TS-00 read: no `func Benchmark` among 19 test files",
+      "reason": "TS-00 read: no `func Benchmark` among 21 test files",
       "type": "benchmarking"
     },
     {
@@ -3291,13 +3291,13 @@
     {
       "component": "A12:helix_qa",
       "declared": "~",
-      "reason": "structural: 20 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
+      "reason": "structural: 17 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)",
       "type": "stress"
     },
     {
       "component": "A12:helix_qa",
       "declared": "~",
-      "reason": "structural: 4 test file(s) with a perf/latency marker; baselines UNCONFIRMED",
+      "reason": "structural: 3 test file(s) with a perf/latency marker; baselines UNCONFIRMED",
       "type": "performance"
     },
     {
@@ -4053,7 +4053,7 @@
     {
       "component": "A13",
       "declared": "~",
-      "reason": "TS-00 read: 95 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)",
+      "reason": "TS-00 read: 114 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)",
       "type": "unit"
     },
     {
@@ -4713,7 +4713,7 @@
     {
       "component": "A8",
       "declared": "n/a",
-      "reason": "TS-00 read: Website/ holds VitePress markdown, config.ts, package.json and package-lock.json and no server, container or hosting configuration (a search for nginx, Dockerfile, docker-compose, netlify, vercel, pages configuration returned none), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this read supersedes it",
+      "reason": "TS-00 re-read (43 tracked file(s) under Website/): no server, container or hosting configuration (no nginx, Dockerfile, docker-compose, netlify, vercel, wrangler, firebase, .htaccess, _redirects, _headers or app.yaml file), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this measurement supersedes it",
       "type": "ddos"
     },
     {
@@ -4772,14 +4772,14 @@
     },
     {
       "component": "A9",
-      "declared": "A",
-      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row unit",
+      "declared": "~",
+      "reason": "TS-00 re-read: tests/test_build_system.sh sources 4 Build/lib script(s) (common.sh, hash.sh, orchestrator.sh, version.sh) from a temp copy of Build/ and defines 15 test function(s); structural reading, whether the lines are executed is for the bash line harness (docs/05 7.1) to measure; docs/05 4.4 recorded `A` (0 test files in Build/), this read supersedes it",
       "type": "unit"
     },
     {
       "component": "A9",
       "declared": "A",
-      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row integration",
+      "reason": "docs/05 4.4 column A9 row integration, re-read: no test runs Build/ as a whole through its entrypoint; tests/test_build_system.sh exercises the libraries separately (present)",
       "type": "integration"
     },
     {
@@ -4791,7 +4791,7 @@
     {
       "component": "A9",
       "declared": "A",
-      "reason": "docs/05 4.4 (measured 2026-10-03), column A9 row full_automation",
+      "reason": "docs/05 4.4 column A9 row full_automation, re-read: no test runs Build/ as a whole through its entrypoint; tests/test_build_system.sh exercises the libraries separately (present)",
       "type": "full_automation"
     },
     {
@@ -4870,10 +4870,10 @@
         "~": 8
       },
       "A10:assets": {
-        "A": 9,
+        "A": 10,
         "P": 0,
         "n/a": 4,
-        "~": 2
+        "~": 1
       },
       "A10:auth": {
         "A": 5,
@@ -5182,10 +5182,10 @@
         "~": 0
       },
       "A9": {
-        "A": 9,
+        "A": 8,
         "P": 0,
         "n/a": 6,
-        "~": 0
+        "~": 1
       }
     },
     "by_type": {
@@ -5202,10 +5202,10 @@
         "~": 4
       },
       "chaos": {
-        "A": 38,
+        "A": 39,
         "P": 0,
         "n/a": 11,
-        "~": 5
+        "~": 4
       },
       "ddos": {
         "A": 2,
@@ -5268,10 +5268,10 @@
         "~": 10
       },
       "unit": {
-        "A": 3,
+        "A": 2,
         "P": 41,
         "n/a": 0,
-        "~": 10
+        "~": 11
       },
       "ux": {
         "A": 13,
@@ -5288,7 +5288,7 @@
       "~": 137
     }
   },
-  "generated_at": "2026-10-06T22:22:12Z",
+  "generated_at": "2026-10-07T00:57:57Z",
   "schema": "coverage-matrix/1",
   "source": "applicability.yaml"
 }

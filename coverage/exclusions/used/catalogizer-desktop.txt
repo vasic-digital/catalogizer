@@ -1,4 +1,4 @@
-# catalogizer-desktop/vitest.config.ts coverage.exclude (read 2026-10-06)
+# EXTRACTED by scripts/coverage/fence_lib.py from the measuring tool's own config (coverage.exclude of vitest.config.ts) via coverage/exclusions/tools.yaml - do not hand-edit; check_exclusions.py compares this file with a fresh extraction and FAILs a stale copy (review round 1 of WP-23, I6).
 node_modules/
 src/test-utils/
 **/*.d.ts

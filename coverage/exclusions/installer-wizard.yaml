@@ -16,3 +16,7 @@ exclusions:
   - path: "dist/**"
     class: generated-code
     justification: "the Vite production build output directory written by the package build step; not a source of ours"
+  - path: "src-tauri/**"
+    class: first-party
+    measured_by: {app: installer-wizard, lane: rust}
+    justification: "the Rust crate of the installer: vitest.config.ts excludes it from the JavaScript figure because the Rust lane (cargo llvm-cov through run_rust.sh) measures it; the files stay in the program figure through that lane, so this is an exclusion from ONE instrument, not from coverage"

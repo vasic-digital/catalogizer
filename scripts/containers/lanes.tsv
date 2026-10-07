@@ -18,7 +18,7 @@ docs	render	run_docs
 tooling	unit	run_testutil
 # T200a coverage rows (3 columns: the `site` column of T121a does not exist yet). `build-scripts unit` is the interpreter-class local lane of the bash line-trace
 # harness (scripts/bash-coverage.sh, T199). The two `rust` rows name run_rust, class `compile`: a local start of it is refused with 20 compile_class_local
-# (T121b), so they are safe before the dispatcher; they run only as remote commands composed by the T005b emitter. HELD (BLOCKED on T121a, which adds the
+# (T121b), so they are safe before the dispatcher; they run only on a designated build host (a root-owned /etc/catalogizer/build-host naming the host; WF11 I8: the old RUNNER_REMOTE_CALL claim was false). HELD (BLOCKED on T121a, which adds the
 # `site` column and the remote dispatch): the `run_node` rows `catalogizer-api-client unit`, `catalogizer-desktop unit`, `installer-wizard unit` and one
 # `<module> unit` row per TypeScript submodule, because a run_node row with no site would run vitest on the LOCAL host, which T121a forbids.
 build-scripts	unit	run_kcov

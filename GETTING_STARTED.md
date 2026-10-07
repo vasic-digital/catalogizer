@@ -37,7 +37,7 @@ You've received a comprehensive report and implementation plan for the Catalogiz
    - `scripts/security-scan-full.sh` - Comprehensive security scanning
    - `scripts/security-gates.sh` - Security threshold validation
    - `scripts/local-ci.sh` - Local CI/CD pipeline
-   - `scripts/track-coverage.sh` - Coverage tracking over time
+   - `scripts/track-coverage.sh` - Coverage tracking over time (the old script ignores a failing package; the Go collector that does not is `scripts/coverage/track-coverage.sh`, see `docs/scripts/track-coverage.md`)
    - `scripts/setup-test-env.sh` - Test infrastructure provisioning
    - `scripts/generate-sbom.sh` - SBOM generation
 

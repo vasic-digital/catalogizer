@@ -1,0 +1,50 @@
+# command: bash scripts/test-in-container.sh catalog-api unit -- sh -c 'cd catalog-api && go list -m all >/tmp/gl.out 2>/tmp/gl.err; echo go_list_rc=$?; head -3 /tmp/gl.err'
+# purpose: WF11 m5 - the earlier probe printed go_list_rc=0, which was the exit of `head` in a pipeline, not of go list (11.4.273 g); this one captures go list's own status before anything else runs
+# date_utc: 2026-10-07T00:56:03Z
+# git_head: bd51e3e8cf28f5f2eb4a790e326f6698af28f397
+# sha256 96c64bb73540461f5949fb0f4a6cee77c6e61c2f4d4a746e15c4ea7826d3ef63  catalog-api/go.mod
+# attempt 1 exit: 0
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+go_list_rc=0
+
+# second probe in the same file: what the first one means (go env, number of modules listed, a package-load that needs the module graph)
+# attempt 1 exit: 1
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   drift          seen      2 drift finding(s): registry_row_dead_owner catalogizer-test-t3346103759-up-20261007T005650-3879463; registry_row_dead_owner catalogizer-test-t3346108467-up-20261007T005657-3881274
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=1 clean=2 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+run_go: REFUSED reason=anti_mess_drift the anti-mess sweep reports drift (see its table above); reconcile it before starting a container
+# NOTE (author of this record, WF11 round 1): the first probe above ran with the anti-mess sweep clean and printed go_list_rc=0 with NOTHING on stderr: `go list -m all` exited 0 in
+# the container. The earlier record (probes/go-offline.txt, 21:02Z) showed five "dial tcp ... network is unreachable" lines, but its `go_list_rc=0` was the exit status of `head`, so
+# that record never established go list's own status. The two records are not the same state: the module cache or network of the container may have changed since 21:02Z.
+# UNCONFIRMED: whether the Go compile leg (`go test -c`, T201) is still blocked on dependency download; the T201 owner should re-probe `go test -c -o /dev/null ./...` offline before
+# keeping the blocked status. The second probe (module count, a package load) was REFUSED by the anti-mess sweep: `registry_row_dead_owner` rows of other sessions' test-infra operations
+# (catalogizer-test-t3346103759-up-..., catalogizer-test-t3346108467-up-...); they are not this task's (11.4.174) and were not touched.
+
+# retry of the second probe 2026-10-07T00:59:09Z, exit 0
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+
+https://proxy.golang.org,direct
+/tmp/go/pkg/mod
+ls: cannot access '/tmp/go/pkg/mod': No such file or directory
+go_list_m_rc=0
+399
+go_list_pkgs_rc=0
+29
+go: downloading github.com/gin-gonic/gin v1.12.0
+go: downloading github.com/golang-jwt/jwt/v5 v5.3.1
+go: downloading go.uber.org/zap v1.27.1
+go version go1.25.14 linux/amd64
+# RESULT of the retry: `go list -m all` exit 0 with 399 module lines, `go list ./internal/...` exit 0 with 29 packages, and stderr shows `go: downloading github.com/gin-gonic/gin v1.12.0` etc.:
+# the container reached the module proxy (GOMODCACHE /tmp/go/pkg/mod was empty, so the modules were DOWNLOADED during this probe). The "Go offline" state of probes/go-offline.txt (21:02Z) does
+# NOT hold at this time. The blocked status of T201 (the catalog-api Go coverage baseline) therefore rests on a reason that is no longer observed; whether the rest of the T201 path
+# (dispatcher T121a, split-lane compile with `go test -c`) is runnable was NOT tried here and is UNCONFIRMED.

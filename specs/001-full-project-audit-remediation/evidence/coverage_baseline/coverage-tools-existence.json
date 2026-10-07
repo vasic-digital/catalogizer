@@ -10,8 +10,8 @@
       "lockfile": true,
       "node_modules_present": false,
       "package_json_sha256": "76e4d41bcc7c729e2958ae21ca9be8a5418e37aa2245a162c69a351c64f9fbc0",
-      "verdict": "VERIFIED",
-      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "verdict": "UNVERIFIED",
+      "verdict_basis": "a lockfile entry with an integrity hash is a CLAIM of existence; no resolve, no checksum match against fetched bytes and no import was run (node_modules is absent, no network), so 11.4.270(B) is not met and the honest verdict is UNVERIFIED (WF11 review m6, 2026-10-06 UTC). It becomes VERIFIED when `npm ci` verifies the integrity hash and the provider imports in IMG-NODE",
       "vitest_declared": "^4.0.18",
       "vitest_locked": {
         "integrity_present": true,
@@ -43,8 +43,8 @@
       "lockfile": true,
       "node_modules_present": false,
       "package_json_sha256": "ca7463d6d74b8aab3d0ea7f69c8692395cd8a5cbfe701a8143436faa11a9d14b",
-      "verdict": "VERIFIED",
-      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "verdict": "UNVERIFIED",
+      "verdict_basis": "a lockfile entry with an integrity hash is a CLAIM of existence; no resolve, no checksum match against fetched bytes and no import was run (node_modules is absent, no network), so 11.4.270(B) is not met and the honest verdict is UNVERIFIED (WF11 review m6, 2026-10-06 UTC). It becomes VERIFIED when `npm ci` verifies the integrity hash and the provider imports in IMG-NODE",
       "vitest_declared": "^0.34.0",
       "vitest_locked": {
         "integrity_present": true,
@@ -61,8 +61,8 @@
       "lockfile": true,
       "node_modules_present": false,
       "package_json_sha256": "5d5f82d391de52b477806169c6589c3980b72807c780e0fbb90955fa82ba20ec",
-      "verdict": "VERIFIED",
-      "verdict_basis": "locked with integrity hash in package-lock.json",
+      "verdict": "UNVERIFIED",
+      "verdict_basis": "a lockfile entry with an integrity hash is a CLAIM of existence; no resolve, no checksum match against fetched bytes and no import was run (node_modules is absent, no network), so 11.4.270(B) is not met and the honest verdict is UNVERIFIED (WF11 review m6, 2026-10-06 UTC). It becomes VERIFIED when `npm ci` verifies the integrity hash and the provider imports in IMG-NODE",
       "vitest_declared": "^0.34.0",
       "vitest_locked": {
         "integrity_present": true,
@@ -79,7 +79,7 @@
     "verdict": "VERIFIED"
   },
   "measured_at": "2026-10-06T21:04:18Z",
-  "note": "Read from package.json and package-lock.json only (no network). A lockfile entry with an integrity hash and a registry URL is the existence evidence available offline; whether the registry still serves the version is UNCONFIRMED (no network call was made, none is allowed).",
+  "note": "Read from package.json and package-lock.json only (no network). A lockfile entry with an integrity hash and a registry URL is the existence evidence available offline; whether the registry still serves the version is UNCONFIRMED (no network call was made, none is allowed). Review round 1 (WF11 m6): the application verdicts that rested on the lockfile integrity hash alone were corrected from VERIFIED to UNVERIFIED.",
   "rust": {
     "basis": "IMG-RUST is not in build/containers/images.lock.yaml (T143 has not built it); $EV/wp11/rust-coverage-tools.json (T106) does not exist; the Rust legs record blocked naming the tool, never another tool",
     "tool": "cargo llvm-cov",

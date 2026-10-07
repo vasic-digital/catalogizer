@@ -1,0 +1,75 @@
+# command: bash scripts/coverage/tests/test_check_exclusions.sh (host, mutations included)
+# date_utc: 2026-10-07T00:32:18Z
+# git_head: 28e3662bccb77d2773d5c38cd8bb81d003e07d33
+# sha256 d7395f3f2681d5fa7ce67c20207b5ef7e814283b2f5c76f4f2a0f36a7ebc0e7b  scripts/coverage/tests/test_check_exclusions.sh
+PASS: golden-good: exit 0
+PASS: golden-good: the verdict file says PASS
+PASS: golden-good: the verdict names the application
+PASS: golden-good: the verdict carries the sha256 of the checked file
+PASS: golden-good: the first-party entry is reported as an honest gap
+PASS: unlisted exclusion: exit 1
+PASS: unlisted exclusion: stderr names the pattern
+PASS: unlisted exclusion: the verdict file says FAIL
+PASS: golden-false: every used pattern is listed: exit 0
+PASS: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0
+PASS: unjustified entry: exit 1 naming it
+PASS: a one-character justification is not a justification: exit 1
+PASS: first-party entry without a tracked item: exit 1 naming it
+PASS: a tracked item that is not an item id is refused
+PASS: an unknown class is refused naming it
+PASS: an over-broad pattern (**) is refused
+PASS: an absolute path is refused
+PASS: a path with .. is refused
+PASS: a duplicate path is refused
+PASS: a wrong schema is refused
+PASS: an application that differs from the file stem is refused
+PASS: an unreadable file is a refusal, never a pass
+PASS: no argument is a usage error
+PASS: an explicit empty list passes
+PASS: a file without the exclusions key is refused
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches one file
+PASS: --root: the testdata entry matches none and is reported stale
+PASS: I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)
+PASS: I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it
+PASS: I5 golden-false: a first-party entry measured_by a lane that exists in the lanes table passes (no item needed)
+PASS: I5: measured_by naming a lane no row measures is refused
+PASS: I5: **/*.go labelled generated-code (7 of 11 files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist
+PASS: I5: and the UNION rule names the same excess separately
+PASS: I5: and the class claim is refuted by the content (no generated marker, not a generated directory)
+PASS: I5: ?*/** (a glob outside the old denylist) is refused (exit 1)
+PASS: I5: a class that is false of the matched files is refused naming the count
+PASS: I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 10 files, true class)
+PASS: I5 golden-false: a generated directory labelled generated-code passes
+PASS: I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes
+PASS: I5 golden-false: a file with a generated marker in its header passes as generated-code
+PASS: I5: the same label on a hand-written file (no marker) is refused
+PASS: I5: entries that each name under half but together name more than half are refused (the union is what voids the figure)
+PASS: m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test files) passes
+PASS: m10: a main-source file named TestHelper.kt that the glob also names is refused by the class evidence (naming the file)
+PASS: I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)
+PASS: I6 golden-false: the fence lists everything the tool config applies: exit 0
+PASS: I6 golden-false: the verdict records that the applied list was checked
+PASS: I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)
+PASS: I6 golden-false: a listed entry naming only files the tool cannot instrument (json) is not a scope claim: exit 0
+PASS: I6: a hand-kept used list that differs from the tool config extraction is stale and refused
+PASS: I6 golden-false: a hand list equal to the extraction passes
+PASS: I6: an unreadable tool config is UNVERIFIABLE (exit 1), never an empty used list
+PASS: mutation sandbox control: an UNMUTATED copy passes this body
+PASS: mutation tracked-item-ignored caught (2 failing legs)
+PASS: mutation justification-ignored caught (2 failing legs)
+PASS: mutation unlisted-ignored caught (4 failing legs)
+PASS: mutation class-unchecked caught (1 failing legs)
+PASS: mutation overbroad-ignored caught (1 failing legs)
+PASS: mutation duplicate-ignored caught (1 failing legs)
+PASS: mutation exit-masked caught (27 failing legs)
+PASS: mutation item-unverifiable-passes caught (1 failing legs)
+PASS: mutation item-missing-passes caught (1 failing legs)
+PASS: mutation measured-by-unchecked caught (1 failing legs)
+PASS: mutation fraction-entry-off caught (1 failing legs)
+PASS: mutation fraction-union-off caught (2 failing legs)
+PASS: mutation class-evidence-off caught (4 failing legs)
+PASS: mutation applied-unreadable-passes caught (1 failing legs)
+PASS: mutation listed-not-applied-off caught (1 failing legs)
+PASS: mutation hand-list-stale-off caught (1 failing legs)
+Summary: PASS=70 FAIL=0 SKIP=0

@@ -1,0 +1,17 @@
+CONTROL PASS
+CAUGHT tracked-item-ignored: FAIL: first-party w/o item: rc 0: |FAIL: a bogus tracked item accepted|
+CAUGHT justification-ignored: FAIL: unjustified entry: rc 0: |FAIL: a one-character justification accepted|
+CAUGHT unlisted-ignored: FAIL: unlisted exclusion: exit 0|FAIL: unlisted exclusion: stderr: |
+CAUGHT class-unchecked: FAIL: unknown class accepted|
+CAUGHT overbroad-ignored: FAIL: over-broad pattern accepted|
+CAUGHT duplicate-ignored: FAIL: duplicate path accepted|
+CAUGHT exit-masked: FAIL: unlisted exclusion: exit 0|FAIL: unjustified entry: rc 0: check_exclusions: FAIL: entry 1 (gen/schemas/**): unjustified: a justification |
+CAUGHT item-unverifiable-passes: FAIL: I5: unverifiable item accepted (rc 1): Traceback (most recent call last):|
+CAUGHT item-missing-passes: FAIL: I5: fabricated item accepted (rc 0): |
+CAUGHT measured-by-unchecked: FAIL: I5: bogus measured_by accepted (rc 0)|
+CAUGHT fraction-entry-off: FAIL: I5: **/*.go accepted or wrong reason (rc 1): check_exclusions: FAIL: entry 1 (**/*.go): class generated-|
+CAUGHT fraction-union-off: FAIL: I5: union message missing: check_exclusions: FAIL: entry 1 (**/*.go): over-broad: it names 7 of the root|FAIL: I5: union not refused (rc 1): check_exclusions: FAIL: entry 2 (src/*.go): over-broad: it names 7 of the |
+CAUGHT class-evidence-off: FAIL: I5: class evidence missing: check_exclusions: FAIL: entry 1 (**/*.go): over-broad: it names 7 of the roo|FAIL: I5: false class accepted (rc 1): check_exclusions: FAIL: entry 1 (src/**): over-broad: it names 6 of the|
+CAUGHT applied-unreadable-passes: FAIL: I6: unreadable config accepted (rc 0)|
+CAUGHT listed-not-applied-off: FAIL: I6: listed-not-applied missed (rc 0): |
+CAUGHT hand-list-stale-off: FAIL: I6: stale hand list accepted (rc 0): |

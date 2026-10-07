@@ -1,5 +1,8 @@
 {
   "application": "catalogizer-androidtv",
+  "applied_checked": true,
+  "applied_source": "jacoco fileFilter of build.gradle.kts",
+  "content_checked": true,
   "entries": [
     {
       "class": "generated-code",
@@ -43,7 +46,7 @@
     },
     {
       "class": "non-shipping-fixtures-and-golden-assets",
-      "justification_chars": 196,
+      "justification_chars": 403,
       "matched_files": 87,
       "path": "**/*Test*.*",
       "stale": false,
@@ -52,9 +55,10 @@
   ],
   "file": "coverage/exclusions/catalogizer-androidtv.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
-  "sha256": "a693d646487c2e1cf0038af56bfa960fdabc62b8d1aa10f385d1cf7a2d74ef75",
+  "sha256": "33728df7146ab2efa098289f2eecd7a63bc52f01aaec3aef622f80120e755421",
   "unlisted": [],
   "verdict": "PASS"
 }

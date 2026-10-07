@@ -1,8 +1,12 @@
 {
   "application": "build-scripts",
+  "applied_checked": true,
+  "applied_source": "the collector applies the fence file itself",
+  "content_checked": true,
   "entries": [],
   "file": "coverage/exclusions/build-scripts.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
   "sha256": "24b3d434fa50dc0d87e14d72ca54a286dc57842dfc725a989b2d2c119cd391c2",

@@ -1,5 +1,8 @@
 {
   "application": "catalogizer-desktop",
+  "applied_checked": true,
+  "applied_source": "coverage.exclude of vitest.config.ts",
+  "content_checked": true,
   "entries": [
     {
       "class": "non-shipping-fixtures-and-golden-assets",
@@ -52,6 +55,7 @@
   ],
   "file": "coverage/exclusions/catalogizer-desktop.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [
     "unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it",
     "unlisted exclusion: the measuring tool excludes '**/*.config.*' but the checked-in list does not carry it"

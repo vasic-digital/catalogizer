@@ -2,48 +2,48 @@
   "application": "build-scripts",
   "branch_percent": null,
   "evidence": [
-    "evidence/wp23/bashcov/baseline-run-1.txt",
-    "evidence/wp23/bashcov/baseline-run-2.txt",
-    "evidence/wp23/bashcov/baseline-run-3.txt",
-    "evidence/wp23/bashcov/baseline-out-1/bash-coverage.json",
-    "evidence/wp23/bashcov/baseline-out-2/bash-coverage.json",
-    "evidence/wp23/bashcov/baseline-out-3/bash-coverage.json"
+    "evidence/wp23/review-r1/b2/run-1.txt",
+    "evidence/wp23/review-r1/b2/run-2.txt",
+    "evidence/wp23/review-r1/b2/run-3.txt",
+    "evidence/wp23/review-r1/b2/out-1/bc/bash-coverage.json",
+    "evidence/wp23/review-r1/b2/out-2/bc/bash-coverage.json",
+    "evidence/wp23/review-r1/b2/out-3/bc/bash-coverage.json"
   ],
-  "executable_lines": 598,
-  "executed_lines": 1,
+  "executable_lines": 593,
+  "executed_lines": 168,
   "findings": [
-    "scripts/containers/tests/test_envelope.sh line 333 prints `3.24788e+10: syntax error: invalid arithmetic operator` in IMG-KCOV and still exits 0 (the awk of the image prints a large number in exponent form and the shell arithmetic rejects it): the test swallows an instrument error (evidence wp23/bashcov/envelope-test-alone-kcov.txt). Owner: WP-11 (scripts/containers tests)."
+    "scripts/containers/tests/test_envelope.sh line 333 prints `3.24788e+10: syntax error: invalid arithmetic operator` in IMG-KCOV and still exits 0 (the awk of the image prints a large number in exponent form and the shell arithmetic rejects it): the test swallows an instrument error (evidence wp23/bashcov/envelope-test-alone-kcov.txt). Owner: WP-11 (scripts/containers tests).",
+    "tests/test_build_system.sh is not hermetic: it runs `git commit` in a temp project and fails with exit 128 (`Author identity unknown`) in IMG-KCOV, where no git identity is configured (measured: the first re-baseline attempt, 0 of 593 executed for exactly that reason). The harness command supplies GIT_AUTHOR_* and GIT_COMMITTER_* variables; the test should set its own identity. Owner: the Build framework tests (not WP-23).",
+    "the tracer's line for a continued simple command depends on the bash version (5.3.9 on the host reports its first line, 5.2.15 in IMG-KCOV its last): measured by the container run of test_bash_coverage.sh; bashcov.py now folds either onto the command's counted line (review round 1 of WP-23)."
   ],
-  "honest_reading": "Build/lib/*.sh (A9) have no test that executes them (docs/05 4.2: 0 test files): 0 of 597 executable lines. The only executed target line is the one-line launcher scripts/coverage/check_exclusions.sh. This is a real baseline of a deliberately narrow scope (the four Build/lib scripts and one tool script), NOT the figure of all build and bash scripts: widening it needs the scripts that other work packages are editing now (scripts/containers, scripts/longops, scripts/build, scripts/repo were modified in the working tree during this task, so they are not a stable measurement target); the first measurement over scripts/containers (62 of 669 executable lines = 9.27%, test_envelope.sh) is kept in evidence/wp23/superseded as a diagnostic, not a baseline.",
-  "instrument": "ps4-line-trace (scripts/bash-coverage.sh) in IMG-KCOV through TIC build-scripts unit",
+  "honest_reading": "Re-measured after the WF11 review (B2). tests/test_build_system.sh (tracked, 40 tests, 40 passed in each of the three runs) copies Build/ into a temp project and sources all four Build/lib libraries, so the earlier 0 of 597 (0.17 percent) was an artefact of the WRONG harness command (test_check_exclusions.sh cannot reach Build/lib) and a claim ('no test executes them') that was never measured against tests/. The figure is the line coverage of the four Build/lib scripts by THAT suite: 168 of 593 executable lines = 28.33 percent, identical in three runs (same executed and uncovered line sets, bash 5.2.15(1)-release). It is a minimum on a proxy (line, not branch; 11.4.224 C); orchestrator.sh is 3.89 percent: the suite sources it but runs almost none of its functions. It is still NOT the figure of all build and bash scripts: widening it needs the scripts other work packages are editing now (scripts/containers, scripts/longops, scripts/build, scripts/repo).",
+  "instrument": "ps4-line-trace (scripts/bash-coverage.sh, full-path PS4, path-aware attribution) in IMG-KCOV through TIC build-scripts unit, bash 5.2.15(1)-release",
   "limits": [
     "line, not branch: an if/else line counts covered when either side ran (the measured founding case of 11.4.224 C)",
     "regions under `set +x`, commands run by `sh` (dash) or a process that unsets BASH_ENV, and traps are not traced and count as uncovered",
     "the executable-line rule is a heuristic: structural lines, function definitions, here-document bodies and continuation lines are not counted (bashcov.py docstring)",
     "a coverage percentage is a minimum on a proxy, necessary and never sufficient (11.4.224 C): it does not show that a test would catch a defect"
   ],
-  "line_percent": "0.17",
-  "measured_at": "2026-10-06T22:21:07Z",
+  "line_percent": "28.33",
+  "measured_at": "2026-10-07T00:16:33Z",
   "per_file": {
-    "Build/lib/common.sh": "0.00",
-    "Build/lib/hash.sh": "0.00",
-    "Build/lib/orchestrator.sh": "0.00",
-    "Build/lib/version.sh": "0.00",
-    "scripts/coverage/check_exclusions.sh": "100.00"
+    "Build/lib/common.sh": "62.03",
+    "Build/lib/hash.sh": "54.43",
+    "Build/lib/orchestrator.sh": "3.89",
+    "Build/lib/version.sh": "62.38"
   },
   "runs": 3,
   "runs_identical": true,
   "schema": "coverage-baseline/1",
   "scope": {
-    "command": "bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations",
+    "command": "bash tests/test_build_system.sh (with GIT_AUTHOR_/GIT_COMMITTER_ identity variables: the suite runs git commit in a temp project)",
     "exclusion_list": "coverage/exclusions/build-scripts.yaml (empty list)",
     "include": [
       "Build/lib/common.sh",
       "Build/lib/hash.sh",
       "Build/lib/orchestrator.sh",
-      "Build/lib/version.sh",
-      "scripts/coverage/check_exclusions.sh"
+      "Build/lib/version.sh"
     ]
   },
-  "source_commit": "11ba4b1d237b80ac04f21edef8d9cf4d9c0c7142"
+  "source_commit": "28e3662bccb77d2773d5c38cd8bb81d003e07d33"
 }

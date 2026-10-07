@@ -2,6 +2,7 @@
 # repository: do not hand-edit a cell, change the derivation or the repository and re-run it. Every cell carries the state and the reason that
 # names its measurement. States: P present, ~ partial, A absent (applicable), n/a not applicable. There is no `?` cell (docs/05 4.4 legend).
 # States other than `A` and `n/a` are STRUCTURAL readings (11.4.6): the evidence ledger (doc 06) and gen_matrix.py decide the 13.1 status.
+# enumeration: git-tracked; files_fingerprint: f4f4df4fb40fdd5d5ebc42f0265cc3a0 (52 roots, 9159 files)
 schema: applicability/1
 types: [unit, integration, e2e, full_automation, security, ddos, scaling, chaos, stress, performance, benchmarking, ui, ux, challenges, helixqa]
 source: "tools/evidence/matrix/derive_applicability.py over the tree, docs/05 4.4 for A1..A9"
@@ -156,7 +157,7 @@ components:
       e2e: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A8 row e2e"}
       full_automation: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A8 row full_automation"}
       security: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A8 row security"}
-      ddos: {state: "n/a", reason: "TS-00 read: Website/ holds VitePress markdown, config.ts, package.json and package-lock.json and no server, container or hosting configuration (a search for nginx, Dockerfile, docker-compose, netlify, vercel, pages configuration returned none), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this read supersedes it"}
+      ddos: {state: "n/a", reason: "TS-00 re-read (43 tracked file(s) under Website/): no server, container or hosting configuration (no nginx, Dockerfile, docker-compose, netlify, vercel, wrangler, firebase, .htaccess, _redirects, _headers or app.yaml file), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this measurement supersedes it"}
       scaling: {state: "n/a", reason: "static VitePress site (Website/package.json has dev/build/preview only); hosting platform concern"}
       chaos: {state: "n/a", reason: "static VitePress site: no process, database or network dependency of its own to disturb"}
       stress: {state: "n/a", reason: "static VitePress site: no server code in the repository to load"}
@@ -171,10 +172,10 @@ components:
     name: "build"
     path: "Build/"
     cells:
-      unit: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A9 row unit"}
-      integration: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A9 row integration"}
+      unit: {state: "~", reason: "TS-00 re-read: tests/test_build_system.sh sources 4 Build/lib script(s) (common.sh, hash.sh, orchestrator.sh, version.sh) from a temp copy of Build/ and defines 15 test function(s); structural reading, whether the lines are executed is for the bash line harness (docs/05 7.1) to measure; docs/05 4.4 recorded `A` (0 test files in Build/), this read supersedes it"}
+      integration: {state: A, reason: "docs/05 4.4 column A9 row integration, re-read: no test runs Build/ as a whole through its entrypoint; tests/test_build_system.sh exercises the libraries separately (present)"}
       e2e: {state: "n/a", reason: "the build framework has no end-user flow; its runs are the integration and full-automation cells"}
-      full_automation: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A9 row full_automation"}
+      full_automation: {state: A, reason: "docs/05 4.4 column A9 row full_automation, re-read: no test runs Build/ as a whole through its entrypoint; tests/test_build_system.sh exercises the libraries separately (present)"}
       security: {state: A, reason: "docs/05 4.4 (measured 2026-10-03), column A9 row security"}
       ddos: {state: "n/a", reason: "a bash build framework, not a service"}
       scaling: {state: "n/a", reason: "a bash build framework, not a service"}
@@ -198,7 +199,7 @@ components:
       security: {state: A, reason: "TS-00 read: no security, injection or fuzz test among 9 test files"}
       ddos: {state: "n/a", reason: "a library, not a network service; the flood tests target the API (A1) which composes this module"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
-      chaos: {state: "~", reason: "structural: 1 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      chaos: {state: A, reason: "TS-00 read: 1 non-test file(s) import net, database or exec, and no chaos or fault test marker among 9 test files"}
       stress: {state: A, reason: "TS-00 read: no test file name carries a stress/load/soak marker among its 9 test files"}
       performance: {state: A, reason: "TS-00 read: no performance/latency test marker among 9 test files"}
       benchmarking: {state: A, reason: "TS-00 read: no `func Benchmark` among 9 test files"}
@@ -259,7 +260,7 @@ components:
       ddos: {state: "n/a", reason: "a library, not a network service; the flood tests target the API (A1) which composes this module"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
       chaos: {state: A, reason: "TS-00 read: 1 non-test file(s) import net, database or exec, and no chaos or fault test marker among 22 test files"}
-      stress: {state: "~", reason: "structural: 4 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      stress: {state: "~", reason: "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
       performance: {state: A, reason: "TS-00 read: no performance/latency test marker among 22 test files"}
       benchmarking: {state: "~", reason: "structural: 4 file(s) with `func Benchmark`; drift detection UNCONFIRMED"}
       ui: {state: "n/a", reason: "a library with no user interface"}
@@ -533,9 +534,9 @@ components:
     cells:
       unit: {state: P, reason: "TS-00 read (43 test files, 384 Test functions); `P` from 10 test files, doc05 4.4 reading rule"}
       integration: {state: "~", reason: "structural: 3 test file(s) with an integration path marker, build tags ['integration']; real-service use UNCONFIRMED"}
-      e2e: {state: "~", reason: "structural: 13 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      e2e: {state: "~", reason: "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)"}
       full_automation: {state: A, reason: "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)"}
-      security: {state: "~", reason: "structural: 10 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED"}
+      security: {state: "~", reason: "structural: 9 test file(s) with a security/inject/fuzz path marker, 1 fuzz file(s); content UNCONFIRMED"}
       ddos: {state: "n/a", reason: "a library, not a network service; the flood tests target the API (A1) which composes this module"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
       chaos: {state: A, reason: "TS-00 read: 2 non-test file(s) import net, database or exec, and no chaos or fault test marker among 43 test files"}
@@ -799,7 +800,7 @@ components:
       ddos: {state: "n/a", reason: "a QA/governance Go module, not a network service"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
       chaos: {state: "~", reason: "structural: 2 test file(s) whose path carries a chaos/fault marker; use of a real system is UNCONFIRMED (the ledger decides)"}
-      stress: {state: "~", reason: "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      stress: {state: "~", reason: "structural: 2 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
       performance: {state: A, reason: "TS-00 read: no performance/latency test marker among 127 test files"}
       benchmarking: {state: A, reason: "TS-00 read: no `func Benchmark` among 127 test files"}
       ui: {state: "n/a", reason: "a library with no user interface"}
@@ -839,8 +840,8 @@ components:
       ddos: {state: "n/a", reason: "a QA/governance Go module, not a network service"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
       chaos: {state: A, reason: "TS-00 read: 135 non-test file(s) import net, database or exec, and no chaos or fault test marker among 401 test files"}
-      stress: {state: "~", reason: "structural: 20 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
-      performance: {state: "~", reason: "structural: 4 test file(s) with a perf/latency marker; baselines UNCONFIRMED"}
+      stress: {state: "~", reason: "structural: 17 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      performance: {state: "~", reason: "structural: 3 test file(s) with a perf/latency marker; baselines UNCONFIRMED"}
       benchmarking: {state: "~", reason: "structural: 33 file(s) with `func Benchmark`; drift detection UNCONFIRMED"}
       ui: {state: A, reason: "applicable until the WP-34 audit row decides: HelixQA tracks two operator web pages (docs/website/challenges-dashboard, docs/website/ticket-viewer); counted as an absent cell, not hidden (docs/05 13.4)"}
       ux: {state: A, reason: "applicable until the WP-34 audit row decides (see ui); counted as an absent cell, not hidden"}
@@ -851,17 +852,17 @@ components:
     name: "doc_processor"
     path: "submodules/doc_processor/"
     cells:
-      unit: {state: P, reason: "TS-00 read (19 test files, 207 Test functions); `P` from 10 test files, doc05 4.4 reading rule"}
+      unit: {state: P, reason: "TS-00 read (21 test files, 229 Test functions); `P` from 10 test files, doc05 4.4 reading rule"}
       integration: {state: "~", reason: "structural: 1 test file(s) with an integration path marker, build tags none; real-service use UNCONFIRMED"}
       e2e: {state: "~", reason: "structural: 1 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)"}
       full_automation: {state: A, reason: "TS-00 read: no orchestrated per-feature full-automation suite for this module (the repository suites of A13 drive the API)"}
       security: {state: "~", reason: "structural: 3 test file(s) with a security/inject/fuzz path marker, 0 fuzz file(s); content UNCONFIRMED"}
       ddos: {state: "n/a", reason: "a QA/governance Go module, not a network service"}
       scaling: {state: "n/a", reason: "a library, no replicas to add or remove"}
-      chaos: {state: A, reason: "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 19 test files"}
-      stress: {state: "~", reason: "structural: 5 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
-      performance: {state: A, reason: "TS-00 read: no performance/latency test marker among 19 test files"}
-      benchmarking: {state: A, reason: "TS-00 read: no `func Benchmark` among 19 test files"}
+      chaos: {state: A, reason: "TS-00 read: 0 non-test file(s) import net, database or exec, and no chaos or fault test marker among 21 test files"}
+      stress: {state: "~", reason: "structural: 3 test file(s) whose path carries a stress/load/soak marker; use of a real system is UNCONFIRMED (the ledger decides)"}
+      performance: {state: A, reason: "TS-00 read: no performance/latency test marker among 21 test files"}
+      benchmarking: {state: A, reason: "TS-00 read: no `func Benchmark` among 21 test files"}
       ui: {state: "n/a", reason: "a library with no user interface"}
       ux: {state: "n/a", reason: "a library with no user interface"}
       challenges: {state: A, reason: "TS-00 read: no Challenge scripts bound to this module are known; the Challenges of A1 exercise it through catalog-api"}
@@ -1011,21 +1012,21 @@ components:
     name: "constitution"
     path: "submodules/constitution/"
     cells:
-      unit: {state: P, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101))"}
-      integration: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
-      e2e: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
-      full_automation: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
-      security: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
+      unit: {state: P, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0))"}
+      integration: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
+      e2e: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
+      full_automation: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
+      security: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
       ddos: {state: "n/a", reason: "a governance submodule (not a service)"}
       scaling: {state: "n/a", reason: "a governance submodule (not a service)"}
-      chaos: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
+      chaos: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
       stress: {state: "n/a", reason: "a governance submodule (not a service: no load to apply)"}
-      performance: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
+      performance: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
       benchmarking: {state: "n/a", reason: "a governance submodule (no benchmarkable logic: governance text and shell)"}
       ui: {state: "n/a", reason: "a governance submodule (no user interface)"}
       ux: {state: "n/a", reason: "a governance submodule (no user interface)"}
-      challenges: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
-      helixqa: {state: A, reason: "TS-00 read (987 test files (shell 356, python 362, go 168, ts 101)): governance text and scripts with no test of this type found"}
+      challenges: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
+      helixqa: {state: A, reason: "TS-00 read (453 test files (shell 350, python 22, go 81, ts 0)): governance text and scripts with no test of this type found"}
   "A12:helix_memory":
     group: governance_qa_module
     name: "helix_memory"
@@ -1071,7 +1072,7 @@ components:
     name: "harness"
     path: "scripts/ tools/ tests/ challenges/"
     cells:
-      unit: {state: "~", reason: "TS-00 read: 95 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)"}
+      unit: {state: "~", reason: "TS-00 read: 114 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)"}
       integration: {state: A, reason: "TS-00 read: the harness has no test of its own that drives its parts together"}
       e2e: {state: "n/a", reason: "test and harness code: it is the instrument that runs the end-to-end flows, not their subject"}
       full_automation: {state: "~", reason: "TS-00 read: 11 bash suites under scripts/testing/full_automation; they drive the API, so they are the instrument, not a test of the harness"}

@@ -98,29 +98,58 @@ resetlogs; newreg; RUNP_LOCK="$T/lock-missing.yaml" wr run_kcov --out "$T/out-kc
 resetlogs; newreg; wr run_kcov --image IMG-TESTUTIL --out "$T/out-kcov4" -- true
 [ "$RC" = 2 ] && ok "run_kcov: --image is not an option (a single-image wrapper), usage error" || bad "run_kcov: --image accepted (rc $RC)"
 
-# ---------------- run_rust: class compile, a local start is refused with 20 compile_class_local ----------------
+# ---------------- run_rust: class compile (review round 1, WF11 I8: a HOST FACT decides, never a caller-settable variable) ----------------
+# The shipped script carries two CONSTANTS (the attestation path and the owner uid) and no test seam; the legs that need an attested host run a sed-patched COPY of the
+# script under test inside a mirror of the containers directory (so a mutant of run_rust.sh flows through).
+HOSTN="$(hostname -s)"
+rustbox() { # rustbox NAME ATTEST_PATH OWNER_UID : mirror of $SUTDIR with the two constants patched; prints the script path
+  local d="$T/box-$1"; rm -rf "$d"; mkdir -p "$d/scripts"; cp -a "$SUTDIR" "$d/scripts/containers"; ln -s "$REPO/scripts/longops" "$d/scripts/longops"; ln -s "$REPO/scripts/anti-mess" "$d/scripts/anti-mess"
+  sed -i "s#^BUILD_HOST_ATTEST=.*#BUILD_HOST_ATTEST=$2#; s#^ATTEST_OWNER_UID=.*#ATTEST_OWNER_UID=$3#" "$d/scripts/containers/run_rust.sh"
+  grep -q "^BUILD_HOST_ATTEST=$2" "$d/scripts/containers/run_rust.sh" && grep -q "^ATTEST_OWNER_UID=$3" "$d/scripts/containers/run_rust.sh" || echo "BOX-PATCH-FAILED"
+  echo "$d/scripts/containers/run_rust.sh"
+}
+wrbox() { local sc="$1"; shift; ( cd "$CK" && bash "$sc" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
+ATT="$T/attest"; ME="$(id -u)"
 resetlogs; newreg
 wr run_rust --out "$T/out-rust0" -- cargo --version
-check "run_rust: a local start is refused with exit 20" "$RC" 20
+check "run_rust: a start on a host with no attestation is refused with exit 20" "$RC" 20
 grep -q 'REFUSED reason=compile_class_local' "$T/stderr" && ok "run_rust: stderr names compile_class_local" || bad "run_rust: reason missing: $(cat "$T/stderr")"
 check "run_rust: a refused local start runs no container (control needle: the shim was never reached)" "$(ncalls)" 0
 check "run_rust: a refused local start registers no long operation" "$(nops)" 0
 [ ! -s "$PODMAN_LOG" ] && ok "run_rust: a refused local start touches podman not at all" || bad "run_rust: podman was called: $(cat "$PODMAN_LOG")"
+# I8: the OLD guard trusted this variable (and the emitter never set it). It must not unlock the wrapper any more - on the REAL script, with no attestation on this host
 resetlogs; newreg
-RUNNER_REMOTE_CALL=1 wr run_rust --out "$T/out-rust1" -- cargo --version
-check "run_rust: a call composed by the remote emitter (RUNNER_REMOTE_CALL=1) runs: exit 0" "$RC" 0
+RUNNER_REMOTE_CALL=1 wr run_rust --out "$T/out-rust1x" -- cargo --version
+check "I8: RUNNER_REMOTE_CALL=1 no longer unlocks run_rust (exit 20: a caller-settable variable is not a capability)" "$RC" 20
+check "I8: and nothing ran (no container call)" "$(ncalls)" 0
+resetlogs; newreg; RUNNER_REMOTE_CALL=1 RUNNER_TEST_MODE=1 RUNNER_BUILD_HOST_ATTEST="$T/forged" wr run_rust --out "$T/out-rust1y" -- true
+check "I8: neither a test-mode variable nor an attestation path in the environment unlocks it (the path is a constant)" "$RC" 20
+# an attested host (a file owned by the expected uid, not group/other writable, naming THIS host exactly)
+printf 'build-host %s\n' "$HOSTN" >"$ATT"; chmod 644 "$ATT"
+BOX="$(rustbox ok "$ATT" "$ME")"; [ "$BOX" != "BOX-PATCH-FAILED" ] && case "$BOX" in *BOX-PATCH-FAILED*) bad "box patch failed";; esac
+resetlogs; newreg
+wrbox "$(echo "$BOX" | tail -1)" --out "$T/out-rust1" -- cargo --version
+check "run_rust: an attested build host runs: exit 0" "$RC" 0
 check "run_rust: two containers (probe, run)" "$(ncalls)" 2
 callarg 1 IMG-RUST && callarg 2 IMG-RUST && ok "run_rust: both calls name IMG-RUST" || bad "run_rust: IMG-RUST missing"
 check "run_rust: the long operation ends complete" "$(jq -r .state "$LONGOPS_DIR"/ops/*.json)" complete
+refbox() { # refbox NAME ATTEST OWNER : the patched copy must refuse with 20 and reach nothing
+  local sc; sc="$(rustbox "$1" "$2" "$3" | tail -1)"; resetlogs; newreg; wrbox "$sc" --out "$T/out-$1" -- cargo --version
+  [ "$RC" = 20 ] && [ "$(ncalls)" = 0 ] && grep -q 'compile_class_local' "$T/stderr" && ok "I8: $4 (exit 20, nothing ran)" || bad "I8: $4 was not refused (rc $RC, calls $(ncalls)): $(cat "$T/stderr")"
+}
+printf 'build-host some-other-host\n' >"$T/attest-other"; chmod 644 "$T/attest-other"; refbox otherhost "$T/attest-other" "$ME" "an attestation naming ANOTHER host is not this host"
+printf 'build-host %sx\n' "$HOSTN" >"$T/attest-prefix"; chmod 644 "$T/attest-prefix"; refbox prefix "$T/attest-prefix" "$ME" "an attestation naming a host that merely starts with this host name is refused (exact line match)"
+printf 'build-host %s\n' "$HOSTN" >"$T/attest-gw"; chmod 664 "$T/attest-gw"; refbox gw "$T/attest-gw" "$ME" "a group-writable attestation is refused (anyone in the group could forge it)"
+printf 'build-host %s\n' "$HOSTN" >"$T/attest-ow"; chmod 646 "$T/attest-ow"; refbox ow "$T/attest-ow" "$ME" "an other-writable attestation is refused"
+printf 'build-host %s\n' "$HOSTN" >"$T/attest-uid"; chmod 644 "$T/attest-uid"; refbox uid "$T/attest-uid" "$((ME + 1))" "an attestation owned by a different uid than the expected one is refused (the owner check)"
+ln -sf "$ATT" "$T/attest-link"; refbox link "$T/attest-link" "$ME" "an attestation that is a symlink is refused"
+refbox absent "$T/no-such-attest" "$ME" "an absent attestation is refused"
+# the compile-class refusal must come BEFORE the usage check of an attested box too: no arguments is a usage error on an attested host
+resetlogs; wrbox "$(rustbox usage "$ATT" "$ME" | tail -1)"; check "run_rust: no arguments is a usage error on an attested host" "$RC" 2
 resetlogs; newreg
-RUNNER_REMOTE_CALL=1 RUNP_LOCK="$LOCKNORUST" wr run_rust --out "$T/out-rust2" -- cargo --version
+BOXN="$(rustbox nolock "$ATT" "$ME" | tail -1)"; RUNP_LOCK="$LOCKNORUST" wrbox "$BOXN" --out "$T/out-rust2" -- cargo --version
 [ "$RC" = 1 ] && grep -q 'REFUSED reason=image_not_in_lock' "$T/stderr" && grep -q 'T143' "$T/stderr" && ok "run_rust: IMG-RUST not in the lock is refused naming T143 (BLOCKED, never another image)" || bad "run_rust: not-in-lock refusal missing (rc $RC): $(cat "$T/stderr")"
 check "run_rust: that refusal runs no container" "$(ncalls)" 0
-resetlogs; newreg; RUNNER_REMOTE_CALL=0 wr run_rust --out "$T/out-rust3" -- true
-check "run_rust: RUNNER_REMOTE_CALL=0 is not a remote call: refused 20" "$RC" 20
-resetlogs; newreg; RUNNER_REMOTE_CALL=yes wr run_rust --out "$T/out-rust4" -- true
-check "run_rust: only RUNNER_REMOTE_CALL=1 counts as the emitter: refused 20" "$RC" 20
-resetlogs; RUNNER_REMOTE_CALL=1 wr run_rust; check "run_rust: no arguments is a usage error even for a remote call" "$RC" 2
 
 # ---------------- the lane rows, through the REAL test-in-container.sh with a shim wrapper directory ----------------
 WD="$T/wrappers"; mkdir -p "$WD"
@@ -175,7 +204,16 @@ PY
     if env "${env[@]}" bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-$name.out" 2>&1; then bad "mutation $name SURVIVED"; echo "SURVIVED $name" >>"$REC"
     else ok "mutation $name caught ($(grep -c '^FAIL:' "$T/mut-$name.out") failing legs)"; echo "CAUGHT $name: $(grep '^FAIL:' "$T/mut-$name.out" | head -2 | cut -c1-120 | tr '\n' '|')" >>"$REC"; fi
   }
-  mutcp rust-local-allowed run_rust.sh '[ "${RUNNER_REMOTE_CALL:-}" != 1 ]' 'false'
+  # SANDBOX CONTROL (review round 1): an UNMUTATED mirror must pass this body, or every CAUGHT below could be a broken sandbox
+  rm -rf "$T/mut-ctl"; mkdir -p "$T/mut-ctl/scripts"; cp -a "$HERE/.." "$T/mut-ctl/scripts/containers"; ln -s "$REPO/scripts/longops" "$T/mut-ctl/scripts/longops"; ln -s "$REPO/scripts/anti-mess" "$T/mut-ctl/scripts/anti-mess"
+  if RUNNER_SUT_DIR="$T/mut-ctl/scripts/containers" bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-ctl.out" 2>&1; then ok "mutation sandbox control: an UNMUTATED mirror passes this body"; echo "CONTROL PASS" >>"$REC"
+  else bad "mutation sandbox control FAILED ($(grep -c '^FAIL:' "$T/mut-ctl.out") failing legs): every CAUGHT below is suspect"; echo "CONTROL FAIL" >>"$REC"; fi
+  mutcp rust-local-allowed run_rust.sh 'if ! build_host_attested; then   # MUT:class-compile' 'if false; then   # MUT:class-compile'
+  mutcp rust-env-trusted run_rust.sh 'if ! build_host_attested; then   # MUT:class-compile' 'if ! build_host_attested && [ "${RUNNER_REMOTE_CALL:-}" != 1 ]; then   # MUT:class-compile'
+  mutcp rust-attest-perm-off run_rust.sh '[ $(( 8#$mode & 8#022 )) -eq 0 ] || return 1   # MUT:attest-perm' ':'
+  mutcp rust-attest-owner-off run_rust.sh '[ "$owner" = "$ATTEST_OWNER_UID" ] || return 1' ':'
+  mutcp rust-attest-symlink-ok run_rust.sh '[ -f "$BUILD_HOST_ATTEST" ] && [ ! -L "$BUILD_HOST_ATTEST" ] || return 1' '[ -f "$BUILD_HOST_ATTEST" ] || return 1'
+  mutcp rust-attest-host-unmatched run_rust.sh 'grep -qxF "build-host $(hostname -s 2>/dev/null)" "$BUILD_HOST_ATTEST"' 'grep -qF "build-host" "$BUILD_HOST_ATTEST"'
   mutcp rust-image-swapped run_rust.sh 'RUNNER_IMAGES="IMG-RUST"' 'RUNNER_IMAGES="IMG-TESTUTIL"'
   mutcp kcov-image-swapped run_kcov.sh 'RUNNER_IMAGES="IMG-KCOV"' 'RUNNER_IMAGES="IMG-TESTUTIL"'
   mutcp lane-kcov-to-testutil lanes.tsv 'build-scripts\tunit\trun_kcov' 'build-scripts\tunit\trun_testutil' lanes

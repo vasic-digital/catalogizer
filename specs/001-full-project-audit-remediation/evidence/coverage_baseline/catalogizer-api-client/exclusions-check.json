@@ -1,5 +1,8 @@
 {
   "application": "catalogizer-api-client",
+  "applied_checked": true,
+  "applied_source": "negated collectCoverageFrom of jest.config.js",
+  "content_checked": true,
   "entries": [
     {
       "class": "generated-code",
@@ -8,17 +11,22 @@
       "path": "dist/**",
       "stale": false,
       "tracked_item": null
+    },
+    {
+      "class": "generated-code",
+      "justification_chars": 256,
+      "matched_files": 0,
+      "path": "src/**/*.d.ts",
+      "stale": true,
+      "tracked_item": null
     }
   ],
   "file": "coverage/exclusions/catalogizer-api-client.yaml",
   "first_party_entries": [],
-  "problems": [
-    "unlisted exclusion: the measuring tool excludes 'src/**/*.d.ts' but the checked-in list does not carry it"
-  ],
+  "listed_not_applied": [],
+  "problems": [],
   "schema": "exclusions-check/1",
-  "sha256": "d6572fc0bfb47d850c3b1e669c2bedd9ac9e92f402bec870f2d1e1d82303900c",
-  "unlisted": [
-    "src/**/*.d.ts"
-  ],
-  "verdict": "FAIL"
+  "sha256": "fe53669c6bc5328390c58b61232582e26c91db8deba4e40eba3cd48e9bf19a04",
+  "unlisted": [],
+  "verdict": "PASS"
 }

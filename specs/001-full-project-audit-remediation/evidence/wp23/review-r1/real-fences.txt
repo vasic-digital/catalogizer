@@ -1,0 +1,38 @@
+# command: scripts/coverage/check_exclusions.py <fence> --root <app root> --used coverage/exclusions/used/<app>.txt (host, python3 + PyYAML)
+# date_utc: 2026-10-07T00:15:08Z
+# git_head: 28e3662bccb77d2773d5c38cd8bb81d003e07d33
+== catalog-api (root catalog-api)
+check_exclusions: PASS coverage/exclusions/catalog-api.yaml (1 entry, 0 first-party)
+# exit: 0
+== catalog-web (root catalog-web)
+check_exclusions: PASS coverage/exclusions/catalog-web.yaml (1 entry, 0 first-party)
+# exit: 0
+== catalogizer-desktop (root catalogizer-desktop)
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.config.*' but the checked-in list does not carry it
+check_exclusions: FAIL coverage/exclusions/catalogizer-desktop.yaml (6 entries, 0 first-party)
+# exit: 1
+== installer-wizard (root installer-wizard)
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/main.tsx' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'vite.config.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'vitest.config.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'tailwind.config.js' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'postcss.config.js' but the checked-in list does not carry it
+check_exclusions: FAIL coverage/exclusions/installer-wizard.yaml (5 entries, 1 first-party)
+# exit: 1
+== catalogizer-android (root catalogizer-android)
+check_exclusions: PASS coverage/exclusions/catalogizer-android.yaml (6 entries, 0 first-party)
+# exit: 0
+== catalogizer-androidtv (root catalogizer-androidtv)
+check_exclusions: PASS coverage/exclusions/catalogizer-androidtv.yaml (6 entries, 0 first-party)
+# exit: 0
+== catalogizer-api-client (root catalogizer-api-client)
+check_exclusions: PASS coverage/exclusions/catalogizer-api-client.yaml (2 entries, 0 first-party)
+# exit: 0
+== website (root Website)
+check_exclusions: PASS coverage/exclusions/website.yaml (0 entries, 0 first-party)
+# exit: 0
+== build-scripts (root .)
+check_exclusions: PASS coverage/exclusions/build-scripts.yaml (0 entries, 0 first-party)
+# exit: 0

@@ -36,7 +36,9 @@ exclusions:
     justification: "shipped parser kept out of the figure until its rewrite lands, plan in the tracked item"
 Y
 }
-run() { bash "$GATE" "$@" >"$T/out" 2>"$T/err"; RC=$?; }
+printf 'ATM-1234\n' >"$T/items.txt"
+runraw() { bash "$GATE" "$@" >"$T/out" 2>"$T/err"; RC=$?; }
+run() { runraw "$@" --items-file "$T/items.txt"; }   # a first-party item is verified against a register export; the golden fixture's ATM-1234 is in it
 good; run "$T/app/demo.yaml" --json "$T/verdict.json"
 check "golden-good: exit 0" "$RC" 0
 check "golden-good: the verdict file says PASS" "$(jq -r .verdict "$T/verdict.json" 2>/dev/null)" PASS
@@ -87,17 +89,89 @@ run; check "no argument is a usage error" "$RC" 2
 printf 'schema: coverage-exclusions/1\napplication: empty\nexclusions: []\n' >"$T/app/empty.yaml"; run "$T/app/empty.yaml"; check "an explicit empty list passes" "$RC" 0
 printf 'schema: coverage-exclusions/1\napplication: nokey\n' >"$T/app/nokey.yaml"; run "$T/app/nokey.yaml"; check "a file without the exclusions key is refused" "$RC" 1
 # with --root: an entry that matches no file is reported stale (a note, not a failure); one that matches is counted
-mkdir -p "$T/root/vendor" "$T/root/gen/schemas"; echo x >"$T/root/vendor/a.go"; echo y >"$T/root/gen/schemas/b.json"
+mkdir -p "$T/root/vendor" "$T/root/gen/schemas" "$T/root/src"; echo x >"$T/root/vendor/a.go"; echo y >"$T/root/gen/schemas/b.json"
+for f in 1 2 3 4 5 6; do echo "$f" >"$T/root/src/f$f.go"; done   # the shipped code the fence must leave in the figure (the matched-fraction rule needs a real majority)
 good; run "$T/app/demo.yaml" --root "$T/root" --json "$T/v3.json"
 check "--root: still exit 0 (a stale entry is a note)" "$RC" 0
 check "--root: the vendor entry matches one file" "$(jq -r '.entries[] | select(.path=="vendor/**") | .matched_files' "$T/v3.json")" 1
 check "--root: the testdata entry matches none and is reported stale" "$(jq -r '.entries[] | select(.path=="testdata/**") | .stale' "$T/v3.json")" true
 
+# ================= review round 1 (WF11 I5, I6): the real conditions, not proxies =================
+# -- first-party items must be VERIFIABLE (a well-formed id nobody can check is not a pass)
+good; runraw "$T/app/demo.yaml"
+[ "$RC" = 1 ] && grep -q 'tracked_item_unverifiable' "$T/err" && ok "I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)" || bad "I5: unverifiable item accepted (rc $RC): $(cat "$T/err")"
+good; sed -i 's/tracked_item: ATM-1234/tracked_item: ZZZ-999999/' "$T/app/demo.yaml"; run "$T/app/demo.yaml"
+[ "$RC" = 1 ] && grep -q 'ZZZ-999999 does not exist' "$T/err" && ok "I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it" || bad "I5: fabricated item accepted (rc $RC): $(cat "$T/err")"
+printf 'schema: x\n' >/dev/null
+mkdir -p "$T/lanes"; printf 'demo\trust\trun_rust\n' >"$T/lanes/lanes.tsv"
+good; python3 -I - "$T/app/demo.yaml" <<'PY'
+import sys
+s=open(sys.argv[1]).read().replace("    tracked_item: ATM-1234\n","    measured_by: {app: demo, lane: rust}\n"); open(sys.argv[1],"w").write(s)
+PY
+runraw "$T/app/demo.yaml" --lanes "$T/lanes/lanes.tsv"; check "I5 golden-false: a first-party entry measured_by a lane that exists in the lanes table passes (no item needed)" "$RC" 0
+sed -i 's/lane: rust}/lane: nothing}/' "$T/app/demo.yaml"; runraw "$T/app/demo.yaml" --lanes "$T/lanes/lanes.tsv"
+[ "$RC" = 1 ] && grep -q 'measured_by demo/nothing is not a row' "$T/err" && ok "I5: measured_by naming a lane no row measures is refused" || bad "I5: bogus measured_by accepted (rc $RC)"
+# -- the content half of 11.4.224 E, with --root: matched fraction and class evidence
+R5="$T/r5"; rm -rf "$R5"; mkdir -p "$R5/src" "$R5/vendor/lib" "$R5/gen/schemas" "$R5/tests/fixtures"
+for f in a b c d e f; do printf 'package x\n' >"$R5/src/$f.go"; done; echo '{}' >"$R5/gen/schemas/s.json"; echo l >"$R5/vendor/lib/l.go"; echo f >"$R5/tests/fixtures/f.json"
+mkfence() { printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "%s"\n    class: %s\n    justification: "a justification that is long enough to pass the length rule"\n' "$1" "$2" >"$T/app/demo.yaml"; }
+mkfence '**/*.go' generated-code; run "$T/app/demo.yaml" --root "$R5"
+[ "$RC" = 1 ] && grep -q 'over-broad: it names 7 of the root' "$T/err" && ok "I5: **/*.go labelled generated-code (7 of 11 files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist" || bad "I5: **/*.go accepted or wrong reason (rc $RC): $(cat "$T/err")"
+grep -q 'the exclusions together name 7 of the root' "$T/err" && ok "I5: and the UNION rule names the same excess separately" || bad "I5: union message missing: $(cat "$T/err")"
+grep -q 'class generated-code is not true' "$T/err" && ok "I5: and the class claim is refuted by the content (no generated marker, not a generated directory)" || bad "I5: class evidence missing: $(cat "$T/err")"
+mkfence '?*/**' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5: ?*/** (a glob outside the old denylist) is refused (exit 1)" "$RC" 1
+mkfence 'src/**' vendored-third-party; run "$T/app/demo.yaml" --root "$R5"
+[ "$RC" = 1 ] && grep -q 'class vendored-third-party is not true of 6 of 6' "$T/err" && ok "I5: a class that is false of the matched files is refused naming the count" || bad "I5: false class accepted (rc $RC): $(cat "$T/err")"
+mkfence 'vendor/**' vendored-third-party; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 10 files, true class)" "$RC" 0
+mkfence 'gen/schemas/**' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: a generated directory labelled generated-code passes" "$RC" 0
+mkfence 'tests/fixtures/**' non-shipping-fixtures-and-golden-assets; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes" "$RC" 0
+printf '// Code generated by protoc-gen-go. DO NOT EDIT.\npackage x\n' >"$R5/src/zz_pb.go"; mkfence 'src/zz_pb.go' generated-code; run "$T/app/demo.yaml" --root "$R5"
+check "I5 golden-false: a file with a generated marker in its header passes as generated-code" "$RC" 0
+mkfence 'src/a.go' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5: the same label on a hand-written file (no marker) is refused" "$RC" 1
+# two entries that are each under half but together name more than half
+printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "vendor/**"\n    class: vendored-third-party\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "src/*.go"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "tests/**"\n    class: non-shipping-fixtures-and-golden-assets\n    justification: "a justification that is long enough to pass the length rule"\n' >"$T/app/demo.yaml"
+runraw "$T/app/demo.yaml" --root "$R5" --lanes "$T/lanes/lanes.tsv"
+[ "$RC" = 1 ] && grep -q 'the exclusions together name' "$T/err" && ok "I5: entries that each name under half but together name more than half are refused (the union is what voids the figure)" || bad "I5: union not refused (rc $RC): $(cat "$T/err")"
+# -- m10: a glob broader than its justification is caught by the class evidence over the real files: `**/*Test*.*` also names TestHelper.kt in main sources
+RA="$T/rA"; rm -rf "$RA"; mkdir -p "$RA/app/src/main/java" "$RA/app/src/test/java" "$RA/app/src/androidTest/java"
+for i in 1 2 3 4; do echo "$i" >"$RA/app/src/main/java/Main$i.kt"; done; echo x >"$RA/app/src/test/java/FooTest.kt"; echo x >"$RA/app/src/androidTest/java/BarTests.kt"
+mkfence '**/*Test*.*' non-shipping-fixtures-and-golden-assets; run "$T/app/demo.yaml" --root "$RA"; check "m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test files) passes" "$RC" 0
+echo x >"$RA/app/src/main/java/TestHelper.kt"; run "$T/app/demo.yaml" --root "$RA"
+[ "$RC" = 1 ] && grep -q 'TestHelper.kt' "$T/err" && ok "m10: a main-source file named TestHelper.kt that the glob also names is refused by the class evidence (naming the file)" || bad "m10: TestHelper.kt accepted (rc $RC): $(cat "$T/err")"
+
+# -- I6: the patterns the tool APPLIES come from the tool's own config
+RP="$T/repo6"; rm -rf "$RP"; mkdir -p "$RP/coverage/exclusions" "$RP/demo/src" "$RP/demo/gen" "$RP/demo/fixtures" "$RP/scripts/containers"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, config: demo/vitest.config.ts}\n' >"$RP/coverage/exclusions/tools.yaml"
+printf "export default { test: { coverage: { exclude: [ 'gen/**', 'src/main.tsx' ], all: true } } }\n" >"$RP/demo/vitest.config.ts"
+echo 'x' >"$RP/demo/src/main.tsx"; echo 'y' >"$RP/demo/src/app.ts"; echo 'g' >"$RP/demo/gen/x.ts"; echo '{}' >"$RP/demo/fixtures/a.json"; echo 'z' >"$RP/demo/src/legacy.ts"
+for i in 1 2 3 4 5 6 7 8; do echo "$i" >"$RP/demo/src/f$i.ts"; done
+fence6() { printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n%s' "$1" >"$RP/coverage/exclusions/demo.yaml"; }
+ENT_GEN='  - path: "gen/**"\n    class: generated-code\n    justification: "a justification that is long enough to pass the length rule"\n'
+ENT_MAIN='  - path: "src/main.tsx"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "the entry point is excluded by the tool config; measured by the rust lane here"\n'
+printf 'demo\trust\trun_rust\n' >"$RP/scripts/containers/lanes.tsv"
+fence6 "$(printf "$ENT_GEN")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/main.tsx'" "$T/err" && ok "I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)" || bad "I6: unlisted-from-config not found (rc $RC): $(cat "$T/err")"
+fence6 "$(printf "$ENT_GEN$ENT_MAIN")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"; check "I6 golden-false: the fence lists everything the tool config applies: exit 0" "$RC" 0
+check "I6 golden-false: the verdict records that the applied list was checked" "$(runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --json "$T/v6.json"; jq -r .applied_checked "$T/v6.json")" true
+ENT_LEG='  - path: "src/legacy.ts"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n'
+fence6 "$(printf "$ENT_GEN$ENT_MAIN$ENT_LEG")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+[ "$RC" = 1 ] && grep -q "listed but not applied: the fence lists 'src/legacy.ts'" "$T/err" && ok "I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)" || bad "I6: listed-not-applied missed (rc $RC): $(cat "$T/err")"
+ENT_JSON='  - path: "fixtures/**"\n    class: non-shipping-fixtures-and-golden-assets\n    justification: "a justification that is long enough to pass the length rule"\n'
+fence6 "$(printf "$ENT_GEN$ENT_MAIN$ENT_JSON")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+[ "$RC" = 0 ] && ok "I6 golden-false: a listed entry naming only files the tool cannot instrument (json) is not a scope claim: exit 0" || bad "I6 golden-false: json entry refused (rc $RC): $(cat "$T/err")"
+fence6 "$(printf "$ENT_GEN$ENT_MAIN")"; printf 'gen/**\n' >"$RP/used.txt"
+runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --used "$RP/used.txt"
+[ "$RC" = 1 ] && grep -q 'hand-kept used list' "$T/err" && ok "I6: a hand-kept used list that differs from the tool config extraction is stale and refused" || bad "I6: stale hand list accepted (rc $RC): $(cat "$T/err")"
+printf 'gen/**\nsrc/main.tsx\n' >"$RP/used.txt"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --used "$RP/used.txt"; check "I6 golden-false: a hand list equal to the extraction passes" "$RC" 0
+rm "$RP/demo/vitest.config.ts"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "I6: an unreadable tool config is UNVERIFIABLE (exit 1), never an empty used list" || bad "I6: unreadable config accepted (rc $RC)"
+
+
 if [ "${1:-}" != --no-mutations ] && [ -z "${GATE_MUTANT:-}" ]; then
   REC="${MUTATION_RECORD:-$T/mutations.txt}"; : >"$REC"
   PY="$(cd "$(dirname "$GATE")" && pwd)/check_exclusions.py"
   mut() { # mut NAME OLD NEW
-    local name="$1" old="$2" new="$3" d="$T/mut-$1"; rm -rf "$d"; mkdir -p "$d"; cp "$(dirname "$GATE")/check_exclusions.sh" "$d/"; cp "$PY" "$d/"
+    local name="$1" old="$2" new="$3" d="$T/mut-$1"; rm -rf "$d"; mkdir -p "$d"; cp "$(dirname "$GATE")/check_exclusions.sh" "$d/"; cp "$PY" "$(dirname "$PY")/fence_lib.py" "$d/"
     python3 -I - "$d/check_exclusions.py" "$old" "$new" <<'PY' || { bad "mutation $name: anchor not unique"; return; }
 import sys
 s=open(sys.argv[1]).read()
@@ -107,13 +181,27 @@ PY
     if GATE="$d/check_exclusions.sh" GATE_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-$name.out" 2>&1; then bad "mutation $name SURVIVED"; echo "SURVIVED $name" >>"$REC"
     else ok "mutation $name caught ($(grep -c '^FAIL:' "$T/mut-$name.out") failing legs)"; echo "CAUGHT $name: $(grep '^FAIL:' "$T/mut-$name.out" | head -2 | cut -c1-110 | tr '\n' '|')" >>"$REC"; fi
   }
-  mut tracked-item-ignored 'if cls == "first-party" and not item_ok:' 'if False:'
+  # SANDBOX CONTROL (review round 1): an UNMUTATED copy in the same sandbox must pass this body, or every CAUGHT below could be a broken sandbox (a missing import)
+  d="$T/mut-ctl"; rm -rf "$d"; mkdir -p "$d"; cp "$(dirname "$GATE")/check_exclusions.sh" "$PY" "$(dirname "$PY")/fence_lib.py" "$d/"
+  if GATE="$d/check_exclusions.sh" GATE_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-ctl.out" 2>&1; then ok "mutation sandbox control: an UNMUTATED copy passes this body"; echo "CONTROL PASS" >>"$REC"
+  else bad "mutation sandbox control FAILED ($(grep -c '^FAIL:' "$T/mut-ctl.out") failing legs): every CAUGHT below is suspect"; echo "CONTROL FAIL" >>"$REC"; fi
+  mut tracked-item-ignored 'if not item_ok and not mby_ok:' 'if False:'
   mut justification-ignored 'if len(just) < MIN_JUST:' 'if False:'
   mut unlisted-ignored 'if used_unlisted:' 'if False:'
   mut class-unchecked 'if cls not in CLASSES:' 'if False:'
   mut overbroad-ignored 'if overbroad(p):' 'if False:'
   mut duplicate-ignored 'if p in seen:' 'if False:'
   mut exit-masked 'sys.exit(1 if problems else 0)' 'sys.exit(0)'
+  # review round 1: the real conditions
+  mut item-unverifiable-passes 'if known_items is None:   # MUT:item_unverifiable' 'if False:   # MUT:item_unverifiable'
+  mut item-missing-passes 'elif item not in known_items:   # MUT:item_missing' 'elif False:   # MUT:item_missing'
+  mut measured-by-unchecked 'elif (mby["app"], mby["lane"]) not in lane_rows:   # MUT:measured_by' 'elif False:   # MUT:measured_by'
+  mut fraction-entry-off 'if root_files and len(matched) * 2 > len(root_files):   # MUT:fraction_entry' 'if False:'
+  mut fraction-union-off 'if len(union) * 2 > len(root_files):   # MUT:fraction_union' 'if False:'
+  mut class-evidence-off 'if cls in CLASSES and cls != "first-party" and matched:   # MUT:class_evidence' 'if False:'
+  mut applied-unreadable-passes 'problems.append("applied exclusions unverifiable: %s" % applied_note)   # MUT:applied_unreadable' 'pass'
+  mut listed-not-applied-off 'if still:   # MUT:listed_not_applied' 'if False:'
+  mut hand-list-stale-off 'if applied is not None and sorted(set(norm(x) for x in hand)) != sorted(set(norm(x) for x in applied)):   # MUT:hand_stale' 'if False:'
 fi
 echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"
 [ "$FAILS" = 0 ]

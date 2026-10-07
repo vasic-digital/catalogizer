@@ -33,7 +33,7 @@
 - `scripts/nancy-scan.sh` - Dependency scanning
 - `scripts/security-gates.sh` - Security validation
 - `scripts/local-ci.sh` - Local CI/CD pipeline
-- `scripts/track-coverage.sh` - Coverage tracking
+- `scripts/track-coverage.sh` - Coverage tracking (the old script ignores a failing package; the Go collector that does not is `scripts/coverage/track-coverage.sh`, see `docs/scripts/track-coverage.md`)
 - `scripts/setup-test-env.sh` - Test infrastructure
 
 ---

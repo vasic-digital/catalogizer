@@ -1,4 +1,4 @@
-# catalogizer-android/app/build.gradle.kts jacocoTestReport fileFilter (read 2026-10-06)
+# EXTRACTED by scripts/coverage/fence_lib.py from the measuring tool's own config (jacoco fileFilter of build.gradle.kts) via coverage/exclusions/tools.yaml - do not hand-edit; check_exclusions.py compares this file with a fresh extraction and FAILs a stale copy (review round 1 of WP-23, I6).
 **/R.class
 **/R$*.class
 **/BuildConfig.*

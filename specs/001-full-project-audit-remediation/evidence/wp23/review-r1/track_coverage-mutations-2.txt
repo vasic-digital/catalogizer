@@ -1,0 +1,10 @@
+CONTROL PASS
+CAUGHT run-half-or-true: FAIL: package_failed: stderr lacks 'beta (unit): package_failed': track-coverage: FAIL: beta (unit): profile_e|
+CAUGHT verify-skipped: FAIL: collect: every binary is verified before it runs (2 verify calls) (got '0' want '2')|FAIL: collect: a run preceded the first verification|
+CAUGHT foreground-wait: FAIL: collect: it waited in the foreground|
+CAUGHT panic-unchecked: FAIL: package_panicked: stderr lacks 'beta (unit): package_panicked': track-coverage: FAIL: beta (unit): packa|FAIL: panic_with_exit_zero: stderr lacks 'beta (unit): package_panicked': track-coverage: FAIL: beta (unit): p|
+CAUGHT empty-profile-ok: FAIL: profile_empty: exit 0 (a failing package was swallowed)|FAIL: profile_empty: stderr lacks 'beta (unit): profile_empty': |
+CAUGHT infra-detail-dropped: FAIL: infra_failed: stderr lacks 'beta (unit): infra_failed (snapshot_mismatch)': track-coverage: FAIL: beta (|
+CAUGHT dir-abs-unhandled: FAIL: I10: compile target wrong: dispatch submit --purpose build:catalog-api:unit:0000000000000000000000000000|FAIL: I10: members.tsv records the checkout-relative directory (the run half's cd /src/<dir>) (got '/src/catal|
+CAUGHT fence-not-applied: FAIL: I6: statements exclude the fenced file's 7 (hand count 15, was 22 before the fence was applied) (got '22|FAIL: I6: the percent is the unfenced 80.00 (got '54.55' want '80.00')|
+CAUGHT fence-gate-skipped: FAIL: I6: refused fence was accepted (rc 0): |FAIL: I6: result status is not failed after a refused fence|

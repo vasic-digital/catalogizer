@@ -1,5 +1,8 @@
 {
   "application": "installer-wizard",
+  "applied_checked": true,
+  "applied_source": "coverage.exclude of vitest.config.ts",
+  "content_checked": true,
   "entries": [
     {
       "class": "non-shipping-fixtures-and-golden-assets",
@@ -32,10 +35,28 @@
       "path": "dist/**",
       "stale": true,
       "tracked_item": null
+    },
+    {
+      "class": "first-party",
+      "justification_chars": 279,
+      "matched_files": 19,
+      "path": "src-tauri/**",
+      "stale": false,
+      "tracked_item": null
     }
   ],
   "file": "coverage/exclusions/installer-wizard.yaml",
-  "first_party_entries": [],
+  "first_party_entries": [
+    {
+      "measured_by": {
+        "app": "installer-wizard",
+        "lane": "rust"
+      },
+      "path": "src-tauri/**",
+      "tracked_item": null
+    }
+  ],
+  "listed_not_applied": [],
   "problems": [
     "unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it",
     "unlisted exclusion: the measuring tool excludes 'src/main.tsx' but the checked-in list does not carry it",
@@ -45,7 +66,7 @@
     "unlisted exclusion: the measuring tool excludes 'postcss.config.js' but the checked-in list does not carry it"
   ],
   "schema": "exclusions-check/1",
-  "sha256": "52ff3266b630ed8a74768cfda9adddbce18c604175d05fffe389e8aba28aed08",
+  "sha256": "05562143c7517dc09c594d55eb44dc7b3a51791b1b607655bb24f8e6dee4325d",
   "unlisted": [
     "**/*.d.ts",
     "src/main.tsx",

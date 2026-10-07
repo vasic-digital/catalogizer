@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """gocov_merge.py - T198. Merges Go cover profiles (mode atomic or count: counts are SUMMED per block) and computes statement coverage.
   gocov_merge.py merge --out FILE profile...            writes the merged profile; prints {"blocks","statements","covered"}; exit 1 if a profile has a different mode
-  gocov_merge.py summary --profile FILE [--module M]    prints JSON: totals and per source package (the directory of each block's file, the module prefix removed)
+  gocov_merge.py summary --profile FILE [--module M] [--exclusions FILE]   prints JSON: totals and per source package (the directory of each block's file, the module prefix removed);
+                                with --exclusions the blocks of every file the fence names are DROPPED from the figure and counted in `excluded` (review I6: a fence the collector
+                                does not apply claims a scope the figure does not have)
   gocov_merge.py blocks FILE                            prints the number of blocks of a profile (the header is not a block)
   gocov_merge.py baseline --result FILE --out FILE --app NAME --runs N [--commit SHA] [--exclusions FILE]   writes the coverage-baseline/1 record of docs/05 7.2
 A block line is `file:startline.col,endline.col numstmt count`. The statement coverage is covered statements (count > 0) over all statements, the figure `go tool cover` calls total."""
 import json, os, sys, collections, datetime, subprocess
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fence_lib
 
 
 def read(path):
@@ -77,12 +81,23 @@ def main(a):
         prof = a[a.index("--profile") + 1]; module = a[a.index("--module") + 1] if "--module" in a else None
         mode, blocks = read(prof)
         per = collections.OrderedDict(); st = cv = 0
+        excl = []; excluded = {"files": set(), "statements": 0}
+        if "--exclusions" in a:
+            import yaml
+            excl = [e["path"] for e in ((yaml.safe_load(open(a[a.index("--exclusions") + 1], encoding="utf-8")) or {}).get("exclusions") or [])]
         for k, (s, c) in blocks.items():
+            if excl:
+                f = k.split(":", 1)[0]
+                rel = f[len(module) + 1:] if module and f.startswith(module + "/") else f
+                if any(fence_lib.matches(e_, rel) for e_ in excl):   # MUT:go_exclusions
+                    excluded["files"].add(rel); excluded["statements"] += s
+                    continue
             p = pkg_of(k, module)
             d = per.setdefault(p, [0, 0]); d[0] += s; d[1] += s if c > 0 else 0
             st += s; cv += s if c > 0 else 0
         pk = [{"package": p, "statements": v[0], "covered": v[1], "percent": "%.2f" % (100.0 * v[1] / v[0]) if v[0] else "0.00"} for p, v in sorted(per.items())]
-        print(json.dumps({"statements": st, "covered": cv, "percent": "%.2f" % (100.0 * cv / st) if st else "0.00", "packages": pk}))
+        print(json.dumps({"statements": st, "covered": cv, "percent": "%.2f" % (100.0 * cv / st) if st else "0.00", "packages": pk,
+                          "excluded": {"files": sorted(excluded["files"]), "statements": excluded["statements"]}}))
     elif cmd == "baseline":
         g = lambda k, d=None: a[a.index(k) + 1] if k in a else d
         res = json.load(open(g("--result")))
@@ -94,7 +109,7 @@ def main(a):
                "measured_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "source_commit": commit,
                "scope": {"include": ["./..."], "exclusion_list": g("--exclusions")}, "runs": int(g("--runs", "1")),
                "line_percent": res["percent"], "branch_percent": None, "statements": res["statements"], "covered": res["covered"],
-               "per_package": {p["package"]: p["percent"] for p in res["packages"]}, "evidence": [os.path.basename(g("--result"))]}
+               "per_package": {p["package"]: p["percent"] for p in res["packages"]}, "excluded": res.get("excluded"), "evidence": [os.path.basename(g("--result"))]}
         open(g("--out"), "w").write(json.dumps(rec, indent=2, sort_keys=True) + "\n")
     else:
         sys.exit("gocov_merge.py: unknown command %s" % cmd)

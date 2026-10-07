@@ -1,0 +1,56 @@
+# command: bash tools/evidence/matrix/tests/test_derive_applicability.sh (host, mutations included)
+# date_utc: 2026-10-07T00:47:27Z
+# git_head: bd51e3e8cf28f5f2eb4a790e326f6698af28f397
+# sha256 d6c9db5a3bf30cd4f7eb262824c408d5eb8c72911430e23d0cbeb4a64ad8338a  tools/evidence/matrix/tests/test_derive_applicability.sh
+# sha256 71496ea1dd0b985b658725043c299bfe1f619cc997d981d636175edcab2d25dc  tools/evidence/matrix/derive_applicability.py
+PASS: golden: the deriver exits 0 on a populated fixture
+PASS: golden: two runs over the same tree are byte-identical
+PASS: golden: 30 modules + 2 governance modules + 9 applications + A13 = 42 components
+PASS: m1: the header records the enumeration mode and a files_fingerprint (provenance of what was counted)
+PASS: m1: the fingerprint is a real digest (not empty, not constant zeros)
+PASS: m1: the fingerprint changes when a counted file is added
+PASS: m1: the fingerprint changes when a file is only RENAMED (same file count)
+PASS: m1 control: restoring the name restores the fingerprint (it is a function of the counted files)
+PASS: I1: an empty submodule directory is refused (exit 3)
+PASS: I1: the refusal names submodule_uninitialised and the module
+PASS: I1: a refused derivation writes no applicability file
+PASS: I1: a MISSING directory is refused too, every empty module is named (2 listed)
+PASS: I1 control: the same fixture populated again derives (exit 0)
+PASS: I2: pkg/defaults/defaults_test.go does not make chaos partial (fault is not defaults): the cell stays A
+PASS: I2: pkg/e2ee/* is not e2e (e2ee is encryption): the e2e cell stays A
+PASS: I2: loader_test.go does not make stress partial (load is not loader)
+PASS: I2: perfetto_test.go does not make performance partial (perf is not perfetto)
+PASS: I2: injector_test.go does not make security partial (inject is not injector)
+PASS: I2 golden-false: tests/e2e/flow_test.go IS e2e: the cell becomes ~ (1 file)
+PASS: I2: the e2e reason counts exactly the 1 real file (not the e2ee ones)
+PASS: I2 golden-false: pkg/stress/stress_test.go IS a stress marker: the cell becomes ~
+PASS: I2: a build tag that merely CONTAINS integration (disintegration) does not make the integration cell partial
+PASS: I2 golden-false: the build tag integration makes the cell partial
+PASS: I2: prerender( is not a render( call: the ui cell stays A
+PASS: I2 golden-false: a real render( call makes the ui cell partial
+PASS: I2: scripts/build, scripts/coverage and scripts/other tests are counted (3); node_modules and tools/opensource are not
+PASS: I11: without a build test the unit cell keeps docs/05's reading (A)
+PASS: I11: tests/test_build_system.sh that sources Build/lib makes the unit cell ~
+PASS: I11: the reason names the 2 libraries and the 2 test functions it counted
+PASS: m2: 3 banks + MANIFEST.yaml count as 3 banks
+PASS: m11: Website with no hosting config: DDoS n/a
+PASS: m11: a Website/nginx.conf flips the DDoS cell to A (there is now server config of ours)
+PASS: m11: the reason names the file found
+PASS: RM5: 9 Go test files: unit is ~
+PASS: RM5: 10 Go test files: unit is P
+PASS: RM5: no Go test file: unit is A
+PASS: real repository: derives (exit 0)
+PASS: real repository: two runs are byte-identical
+PASS: real repository: counted from git-tracked files
+PASS: mutation sandbox control: an UNMUTATED copy passes this body
+PASS: mutation tag_token_off caught (1 failing legs)
+PASS: mutation render_call_off caught (1 failing legs)
+PASS: mutation RM5_unit_threshold caught (2 failing legs)
+PASS: mutation empty_submodule_guard caught (4 failing legs)
+PASS: mutation token_markers_off caught (7 failing legs)
+PASS: mutation vendored_only caught (1 failing legs)
+PASS: mutation manifest_counted caught (1 failing legs)
+PASS: mutation website_frozen caught (2 failing legs)
+PASS: mutation build_reread_off caught (2 failing legs)
+PASS: mutation fingerprint_const caught (3 failing legs)
+Summary: PASS=50 FAIL=0 SKIP=0

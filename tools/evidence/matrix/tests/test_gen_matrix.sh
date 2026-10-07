@@ -210,6 +210,65 @@ assert c["cells"]==n*15==c["declared"]["P"]+c["declared"]["~"]+c["declared"]["A"
 PY
 else bad "T196 applicability.yaml not found at $REAL"; fi
 
+
+# ---- review round 1 (WF11 B1, RM1-RM4): the gate needs evidence; every cell rule has a leg that can fail ----
+python3 -I "$GEN" --applicability "$T/g.yaml" --out "$T/og6" --timestamp "$TS" --gate >"$T/g6.out" 2>"$T/g6.err"; rc=$?
+check "gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass" "$rc" 2
+grep -q 'requires --ledger' "$T/g6.err" && ok "gate B1: the refusal names the missing ledger" || bad "gate B1: refusal text missing: $(cat "$T/g6.err")"
+[ ! -e "$T/og6/coverage-matrix.json" ] && ok "gate B1: a refused gate wrote no matrix" || bad "gate B1: output written despite the refusal"
+python3 -I "$GEN" --applicability "$T/g.yaml" --out "$T/og6b" --timestamp "$TS" >/dev/null 2>&1; rc=$?
+check "gate B1 control: the same map without --gate and without a ledger still renders (exit 0)" "$rc" 0
+cat >"$T/ledger-typo.json" <<'J'
+[{"component":"alpha","type":"unit","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"source"},
+ {"component":"alpah","type":"unit","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"source"}]
+J
+python3 -I "$GEN" --applicability "$T/g.yaml" --ledger "$T/ledger-typo.json" --out "$T/og7" --timestamp "$TS" --gate >/dev/null 2>"$T/g7.err"; rc=$?
+[ "$rc" = 3 ] && grep -q 'ledger_record_unmatched' "$T/g7.err" && ok "gate: a record naming no component of the map is refused (3 ledger_record_unmatched)" || bad "gate: stray record accepted (rc $rc)"
+mkmap "$T/allna.yaml" "alpha:na na na na na na na na na na na na na na na"
+python3 -I "$GEN" --applicability "$T/allna.yaml" --ledger "$T/ledger-empty.json" --out "$T/og8" --timestamp "$TS" --gate >/dev/null 2>"$T/g8.err"; rc=$?
+[ "$rc" = 3 ] && grep -q 'gate_vacuous' "$T/g8.err" && ok "gate: a map with no applicable cell is refused (3 gate_vacuous)" || bad "gate: vacuous map accepted (rc $rc)"
+# RM1: an evidence class BELOW the type's need is not present (e2e needs runtime, ui needs user-visible) - and the exact class is present
+mkmap "$T/cls.yaml" "alpha:na na P na na na na na na na na P na na na"
+cat >"$T/lc-low.json" <<'J'
+[{"component":"alpha","type":"e2e","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"source"},
+ {"component":"alpha","type":"ui","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"runtime"}]
+J
+python3 -I "$GEN" --applicability "$T/cls.yaml" --ledger "$T/lc-low.json" --out "$T/oc1" --timestamp "$TS" --gate >/dev/null 2>"$T/c1.err"; rc=$?
+check "RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails" "$rc" 1
+grep -q 'evidence class source is below runtime' "$T/c1.err" && grep -q 'evidence class runtime is below user-visible' "$T/c1.err" && ok "RM1: both cells are named with their class gap" || bad "RM1: class gap not named: $(cat "$T/c1.err")"
+check "RM1: e2e and ui are partial in the json" "$(python3 -I -c "import json;d=json.load(open('$T/oc1/coverage-matrix.json'));print(sorted(c['status'] for c in d['cells'] if c['declared']!='n/a'))")" "['partial', 'partial']"
+cat >"$T/lc-ok.json" <<'J'
+[{"component":"alpha","type":"e2e","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"runtime"},
+ {"component":"alpha","type":"ui","verdict":"PASS","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"user-visible"}]
+J
+python3 -I "$GEN" --applicability "$T/cls.yaml" --ledger "$T/lc-ok.json" --out "$T/oc2" --timestamp "$TS" --gate >/dev/null 2>&1; rc=$?
+check "RM1 golden-false: runtime for e2e and user-visible for ui pass the gate" "$rc" 0
+# RM2: a FAIL verdict is not present even with three identical runs, a caught mutation and a sufficient class
+cat >"$T/lv-fail.json" <<'J'
+[{"component":"alpha","type":"unit","verdict":"FAIL","runs":3,"identical_runs":3,"mutation_caught":true,"evidence_class":"user-visible"}]
+J
+python3 -I "$GEN" --applicability "$T/g.yaml" --ledger "$T/lv-fail.json" --out "$T/ov1" --timestamp "$TS" --gate >/dev/null 2>"$T/v1.err"; rc=$?
+check "RM2: a FAIL verdict never counts as present: the gate fails" "$rc" 1
+grep -q 'verdict FAIL is not PASS' "$T/v1.err" && ok "RM2: the verdict is named" || bad "RM2: verdict reason missing: $(cat "$T/v1.err")"
+check "RM2: the cell is partial in the json" "$(python3 -I -c "import json;d=json.load(open('$T/ov1/coverage-matrix.json'));print([c['status'] for c in d['cells'] if c['declared']!='n/a'])")" "['partial']"
+# RM3: a record that says blocked yields the status `blocked` (not partial), and the gate still fails
+cat >"$T/lb.json" <<'J'
+[{"component":"alpha","type":"unit","verdict":"blocked","runs":0,"identical_runs":0,"mutation_caught":false,"evidence_class":"source","blocked":"image not built"}]
+J
+python3 -I "$GEN" --applicability "$T/g.yaml" --ledger "$T/lb.json" --out "$T/ob1" --timestamp "$TS" --gate >/dev/null 2>"$T/b1.err"; rc=$?
+check "RM3: a blocked cell still fails the gate (blocked is not present)" "$rc" 1
+check "RM3: the cell status is blocked in the json" "$(python3 -I -c "import json;d=json.load(open('$T/ob1/coverage-matrix.json'));print([c['status'] for c in d['cells'] if c['declared']!='n/a'])")" "['blocked']"
+grep -q 'a record says blocked' "$T/b1.err" && ok "RM3: the gate output says blocked" || bad "RM3: blocked reason missing: $(cat "$T/b1.err")"
+# m3: the 11.4.44 header carries Created forward and raises Revision only when the body changed
+H="$T/out-hdr"; mkdir -p "$H"
+python3 -I "$GEN" --applicability "$T/good.yaml" --out "$H" --timestamp "2026-10-06T00:00:00Z" >/dev/null 2>&1
+python3 -I "$GEN" --applicability "$T/good.yaml" --out "$H" --timestamp "2026-10-07T00:00:00Z" >/dev/null 2>&1
+check "m3: Created is carried forward (not overwritten by the second run)" "$(sed -n 's/^| Created | \(.*\) |$/\1/p' "$H/coverage-matrix.md")" "2026-10-06T00:00:00Z"
+check "m3: Last modified is the second run" "$(sed -n 's/^| Last modified | \(.*\) |$/\1/p' "$H/coverage-matrix.md")" "2026-10-07T00:00:00Z"
+check "m3: Revision stays 1 while the body is unchanged" "$(sed -n 's/^| Revision | \(.*\) |$/\1/p' "$H/coverage-matrix.md")" 1
+python3 -I "$GEN" --applicability "$T/m.yaml" --out "$H" --timestamp "2026-10-08T00:00:00Z" >/dev/null 2>&1
+check "m3: Revision rises to 2 when the body changed" "$(sed -n 's/^| Revision | \(.*\) |$/\1/p' "$H/coverage-matrix.md")" 2
+
 # ---- paired mutations ----
 if [ "${1:-}" != --no-mutations ] && [ -z "${GEN_MUTANT:-}" ]; then
   REC="${MUTATION_RECORD:-$T/mutations.txt}"; : >"$REC"
@@ -233,6 +292,16 @@ PY
   mut mint_always 'if key in ledger["items"]:' 'if False:'
   mut mint_fail 'if rc != 0:' 'if False:'
   mut overwrite 'os.replace(tmp, path)' 'None if os.path.exists(path) else os.replace(tmp, path)'
+  # review round 1: RM1-RM4 adopted verbatim (the reviewer's four gen_matrix mutations) plus the gate-input guards and the header carry-forward
+  mut RM1_class_check 'if CLASS_RANK.get(rec.get("evidence_class"), 0) < need:' 'if False:'
+  mut RM2_verdict_check 'if rec.get("verdict") != "PASS":' 'if False:'
+  mut RM3_blocked_branch 'if any(r.get("blocked") or r.get("verdict") == "blocked" for r in mine):' 'if False:'
+  mut RM4_gate_exit 'if a["gate"] and gate_fail:' 'if a["gate"] and gate_fail and False:'
+  mut gate_needs_ledger 'if a["gate"] and not a.get("ledger"):' 'if False:'
+  mut gate_unmatched 'if stray:' 'if False:'
+  mut gate_vacuous 'if not any(cells[t][0] != "n/a" for _cid, cells in comps for t in TYPES):' 'if False:'
+  mut header_created 'created = prev[1]' 'created = ts'
+  mut header_revision 'revision = prev[0] if pbody == nbody else prev[0] + 1' 'revision = prev[0]'
 fi
 echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"
 [ "$FAILS" = 0 ]

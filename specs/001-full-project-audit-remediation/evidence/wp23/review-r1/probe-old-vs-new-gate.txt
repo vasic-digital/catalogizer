@@ -1,0 +1,20 @@
+# the reviewer's I5 probes (P6), replayed on the OLD gate (e5f568f6) and on the NEW gate, same fixture root (6 hand-written .go files, nothing in a register export)
+== old gate
+check_exclusions: PASS demo.yaml (1 entry, 0 fir
+(rc 0) **/*.go as generated-code
+check_exclusions: PASS demo.yaml (1 entry, 0 fir
+(rc 0) ?*/**
+check_exclusions: PASS demo.yaml (1 entry, 1 first-party)
+(rc 0) first-party src/** with the fabricated item ZZZ-999999
+== new gate
+check_exclusions: FAIL: entry 1 (**/*.go): over-broad: it names 6 of the root's 6 files (more than half): an exclusion that removes most of the tree voids the figure
+check_exclusions: FAIL: entry 1 (**/*.go): class generated-code is not true of 6 of 6 matched file(s), e.g. src/a.go (no generated-code marker in the first 4 KiB and not 
+check_exclusions: FAIL: the exclusions together name 6 of the root's 6 files (more than half): the figure would describe a minority of the code
+(rc 1) **/*.go as generated-code
+check_exclusions: FAIL: entry 1 (?*/**): over-broad pattern: it would exclude the whole tree
+check_exclusions: FAIL: entry 1 (?*/**): over-broad: it names 6 of the root's 6 files (more than half): an exclusion that removes most of the tree voids the figure
+(rc 1) ?*/**
+check_exclusions: FAIL: entry 1 (src/**): tracked_item_unverifiable: ZZZ-999999 is well-formed but there is no register export (--items-file) to prove it exists
+check_exclusions: FAIL: entry 1 (src/**): over-broad: it names 6 of the root's 6 files (more than half): an exclusion that removes most of the tree voids the figure
+check_exclusions: FAIL: the exclusions together name 6 of the root's 6 files (more than half): the figure would describe a minority of the code
+(rc 1) first-party src/** with the fabricated item ZZZ-999999

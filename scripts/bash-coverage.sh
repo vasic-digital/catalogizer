@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # bash-coverage.sh - T199. Bash line-coverage harness (docs/05 7.1, constitution 11.4.224 E): a PS4 line trace. Every bash process the command starts (children
-# included) is made to trace itself through BASH_ENV: `PS4='+COV:${BASH_SOURCE##*/}:${LINENO}:'` and `set -x` with the trace sent to its own file descriptor
+# included) is made to trace itself through BASH_ENV: `PS4='+COV:${BASH_SOURCE}:${LINENO}:'` and `set -x` with the trace sent to its own file descriptor
 # (BASH_XTRACEFD), so a script's own `exec 2>/dev/null` cannot blind it. The executed lines of the targets divided by their executable lines is the figure.
 # Usage: bash-coverage.sh --src-root DIR --target FILE [--target FILE ...] [--exclusions FILE] [--out DIR] -- <command word>...
 #   --src-root DIR     the tree the targets are relative to
-#   --target FILE      a script to measure, relative to --src-root (repeatable); two targets with one base name are refused (the PS4 carries the base name only)
+#   --target FILE      a script to measure, relative to --src-root (repeatable); the PS4 carries the FULL path (review I3), a traced line is credited to a target by path
+#                      (same file, or a copy that keeps the target's relative layout), never by base name alone; two --target arguments naming one file are refused
 #   --exclusions FILE  a coverage-exclusions/1 fence (coverage/exclusions/<app>.yaml): it must pass scripts/coverage/check_exclusions.sh FIRST, then the files it
 #                      lists are left out of the figure and named in the record with their class
 #   --out DIR          receives bash-coverage.json (schema bash-coverage/1) and trace.log
 # Exit: the command's own exit status when it fails (the record says command_failed, a failing suite is never swallowed); 0 otherwise; 2 usage; 3 refusal
-#   (reason on stderr: target_missing, basename_collision, exclusions_gate_failed, trace_empty - the trace saw no line at all, so the instrument was blind and
+#   (reason on stderr: target_missing, duplicate_target, exclusions_gate_failed, trace_empty - the trace saw no line at all, so the instrument was blind and
 #   a 0 percent would be a lie, 11.4.201). HONEST LIMITS written into every record: line, not branch; `set +x` regions, traps and `sh` (dash) children are
 #   not traced; the executable-line rule is a documented heuristic (scripts/coverage/bashcov.py). Contract: docs/scripts/bash-coverage.md.
 set -u
@@ -30,16 +31,22 @@ esac; done
 [ "${#TARGETS[@]}" -ge 1 ] || usage "at least one --target is required"
 [ $# -ge 1 ] || usage "the command is missing after --"
 [ -n "$OUT" ] || OUT="$PWD/.audit/out/bash-coverage-$(date -u +%Y%m%dT%H%M%S)-$$"
+# review I4: --out and --exclusions are made ABSOLUTE before anything uses them: BASH_ENV and COV_TRACE_FILE are read by children that may `cd`, and a relative
+# path would then name a different file (the measured failure: 70.00 percent became 0.00 percent with exit 0)
+mkdir -p "$OUT" || refuse out_uncreatable "$OUT"
+OUT="$(cd "$OUT" && pwd)"   # MUT:abs_out
+[ -z "$EXCL" ] || { [ -f "$EXCL" ] || refuse exclusions_gate_failed "fence file $EXCL not found"; EXCL="$(cd "$(dirname "$EXCL")" && pwd)/$(basename "$EXCL")"; }
+SRC="$(cd "$SRC" && pwd)"
 if [ -n "$EXCL" ]; then
   [ -f "$EXCL" ] || refuse exclusions_gate_failed "fence file $EXCL not found"
-  GOUT="$(bash "$GATE" "$EXCL" 2>&1)" || refuse exclusions_gate_failed "the T200 gate refused $EXCL: $(printf '%s' "$GOUT" | tr '\n' ' ' | cut -c1-400)"   # MUT:gate
+  GOUT="$(bash "$GATE" "$EXCL" --root "$SRC" 2>&1)" || refuse exclusions_gate_failed "the T200 gate refused $EXCL: $(printf '%s' "$GOUT" | tr '\n' ' ' | cut -c1-400)"   # MUT:gate
 fi
 mkdir -p "$OUT" || refuse out_uncreatable "$OUT"
 TRACE="$OUT/trace.log"; : >"$TRACE"
 BENV="$OUT/.cov-bashenv.sh"
 cat >"$BENV" <<'BE'
 # written by bash-coverage.sh: every non-interactive bash that inherits BASH_ENV traces itself to its own descriptor
-PS4='+COV:${BASH_SOURCE##*/}:${LINENO}:'
+PS4='+COV:${BASH_SOURCE}:${LINENO}:'
 exec {COV_FD}>>"$COV_TRACE_FILE"
 BASH_XTRACEFD=$COV_FD
 set -x
@@ -48,7 +55,7 @@ BE
 COV_TRACE_FILE="$TRACE" BASH_ENV="$BENV" "$@" >"$OUT/command.out" 2>"$OUT/command.err" </dev/null; CMD_RC=$?
 cat "$OUT/command.out"; cat "$OUT/command.err" >&2
 python3 -I "$HERE/coverage/bashcov.py" report --src-root "$SRC" --trace "$TRACE" --out "$OUT/bash-coverage.json" ${EXCL:+--exclusions "$EXCL"} \
-  --command "$*" --command-rc "$CMD_RC" --bash-version "$BASH_VERSION" -- "${TARGETS[@]}"; PYRC=$?
+  --cwd "$PWD" --command "$*" --command-rc "$CMD_RC" --bash-version "$BASH_VERSION" -- "${TARGETS[@]}"; PYRC=$?
 [ "$PYRC" = 0 ] || exit "$PYRC"
 [ "$CMD_RC" = 0 ] || exit "$CMD_RC"   # MUT:rc
 exit 0

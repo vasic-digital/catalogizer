@@ -1,7 +1,7 @@
 {
   "application": "catalogizer-desktop",
   "blocked": {
-    "detail": "TypeScript leg: node_modules absent, no network; vitest ^0.34.0 and @vitest/coverage-v8 ^0.34.0 are declared and locked (0.34.6). Rust leg (cargo llvm-cov via run_rust.sh): blocked-unavailable, reason `image_not_built` (local code, reason_scope local): IMG-RUST is not in build/containers/images.lock.yaml (T143), and the host check of T005a was not run by this task. installer-wizard/test-results.json is not used (BLOCKED-ON OD-75).",
+    "detail": "TypeScript leg: node_modules absent, no network; vitest ^0.34.0 and @vitest/coverage-v8 ^0.34.0 are declared and locked (0.34.6). Rust leg (cargo llvm-cov via run_rust.sh): blocked-unavailable, reason `image_not_built` (local code, reason_scope local): IMG-RUST is not in build/containers/images.lock.yaml (T143), and the host check of T005a was not run by this task. catalogizer-desktop/test-results.json does not exist (checked 2026-10-06 UTC), so there is no recorded test result to use here (WF11 review m7: the earlier sentence was copied from the installer-wizard record, which is a different component's file).",
     "reason": "deps_absent",
     "reason_scope": "local"
   },

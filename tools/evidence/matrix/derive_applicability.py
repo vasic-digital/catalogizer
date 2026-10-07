@@ -14,14 +14,24 @@ Sources, in order of authority:
 
 HONEST LIMITS (11.4.6): a state other than `A`/`n/a` is a STRUCTURAL reading (a file with the marker exists), never a verdict that the test uses a real
 system or passes; `P` is given only for `unit` (the doc05 4.4 reading rule) and every other present-looking cell is `~` until the evidence ledger
-(doc 06) proves it. The ledger-derived status of docs/05 13.1 is computed by gen_matrix.py, not here. The output is a pure function of the repository
-tree, so two runs over the same tree are byte-identical (checked by the test).
+(doc 06) proves it. The ledger-derived status of docs/05 13.1 is computed by gen_matrix.py, not here. The output is a pure function of the TRACKED files of
+the repository (`git ls-files` per root: build output and untracked scratch are never counted; a root that is not a work tree is walked, and the header says so),
+so two runs over the same tracked tree are byte-identical (checked by tests/test_derive_applicability.sh). The header carries `enumeration` and a
+`files_fingerprint` (sha256 over the counted file list) so a reader can verify a re-derivation against the same fingerprint.
+
+Review round 1 of WP-23 (WF11 I1, I2, I11, m1, m2, m11): an uninitialised or empty submodule is REFUSED (exit 3 `submodule_uninitialised`), never read as "no tests";
+markers are matched as path TOKENS (`e2e` is not `e2ee`, `load` is not `loader`, `fault` is not `defaults`, `perf` is not `perfetto`); the only directories skipped are
+vendored third-party trees, so first-party `scripts/build`, `scripts/coverage` and `pkg/coverage` are counted; the A9 build cells are RE-READ from tests/ instead of copied
+from docs/05; the Website DDoS cell is re-measured every run.
 """
-import json, os, re, sys
+import hashlib, json, os, re, subprocess, sys
 
 TYPES = ["unit", "integration", "e2e", "full_automation", "security", "ddos", "scaling", "chaos", "stress",
          "performance", "benchmarking", "ui", "ux", "challenges", "helixqa"]
-SKIP_DIRS = {".git", "node_modules", "vendor", "opensource", "dist", "build", "target", "coverage"}
+SKIP_DIRS = {".git", "node_modules", "vendor", "opensource"}   # vendored third-party trees only (review I2: build/ and coverage/ hold first-party code here)
+WALK_ONLY_SKIP = {"dist", "target"}   # build output, skipped only when the root is not a git work tree (a tracked list never contains them)
+_FPR = {}   # repo-relative root label -> (mode, file count, sha256 of the sorted list): the provenance of the counted files
+_REPO = [""]
 
 DOC05 = "specs/001-full-project-audit-remediation/docs/05-test-strategy-and-coverage-matrix.md"
 # doc05 4.4 columns that are applications (A10 and A11 are aggregates, expanded per module below)
@@ -58,19 +68,74 @@ NA_REASON = {  # per (application, type): the reason of an n/a cell of doc05 4.4
     ("build", "ui"): "no user interface (bash build framework)",
     ("build", "ux"): "no user interface (bash build framework)",
 }
-# TS-00 correction of docs/05 4.4: it records A8 DDoS as `A`; docs/05 13.2 proposes n/a. The read decides: no server code or hosting config of the site is in the repo.
-WEBSITE_DDOS = ("n/a", "TS-00 read: Website/ holds VitePress markdown, config.ts, package.json and package-lock.json and no server, container or hosting "
-                       "configuration (a search for nginx, Dockerfile, docker-compose, netlify, vercel, pages configuration returned none), so there is no code of "
-                       "ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this read supersedes it")
+# TS-00 correction of docs/05 4.4: it records A8 DDoS as `A`; docs/05 13.2 proposes n/a. The read decides (website_ddos, re-measured on every run).
 
 APP_READING = "docs/05 4.4 (measured 2026-10-03)"
+HOSTING_RE = re.compile(r"(^|/)(nginx[^/]*|dockerfile[^/]*|docker-compose[^/]*|netlify\.toml|vercel\.json|wrangler\.toml|firebase\.json|\.htaccess|_redirects|_headers|app\.yaml)$", re.I)
 
 
-def walk(root):
-    for dp, dns, fns in os.walk(root):
-        dns[:] = sorted(d for d in dns if d not in SKIP_DIRS)
-        for f in sorted(fns):
-            yield os.path.join(dp, f)
+def website_ddos(repo):
+    """Review m11: the Website DDoS cell is re-measured, not a frozen sentence. n/a only while Website/ holds no server, container or hosting configuration."""
+    files = [os.path.relpath(p, repo) for p in walk(repo, "Website")]
+    hits = sorted(r for r in files if HOSTING_RE.search(r))
+    if hits:
+        return ("A", "TS-00 re-read: Website/ holds hosting or server configuration (%s), so there is code of ours to flood; applicable and unverified" % ", ".join(hits[:5]))
+    if not files:
+        return ("A", "TS-00 re-read: Website/ holds no tracked file, so the DDoS applicability could not be measured; counted as an absent cell, never n/a")
+    return ("n/a", "TS-00 re-read (%d tracked file(s) under Website/): no server, container or hosting configuration (no nginx, Dockerfile, docker-compose, netlify, vercel, wrangler, firebase, .htaccess, _redirects, _headers or app.yaml file), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this measurement supersedes it" % len(files))
+
+
+def build_reread(repo, cells):
+    """Review I11: the A9 unit cell is read from tests/, not copied from docs/05 4.4 (which said 0 test files in Build/). tests/test_build_system.sh copies Build/ into a
+    temp project and sources its libraries, so the unit cell is partial (structural reading); integration and full_automation stay as docs/05 recorded them, with the re-read named."""
+    t = os.path.join(repo, "tests", "test_build_system.sh")
+    txt = read(t)
+    libs = sorted(set(re.findall(r"Build/lib/([A-Za-z_]+\.sh)", txt)))
+    out = {}
+    if libs:
+        n = len(re.findall(r"^test_[A-Za-z0-9_]+\(\)", txt, re.M))
+        out["unit"] = ("~", "TS-00 re-read: tests/test_build_system.sh sources %d Build/lib script(s) (%s) from a temp copy of Build/ and defines %d test function(s); structural reading, whether the lines are executed is for the bash line harness (docs/05 7.1) to measure; docs/05 4.4 recorded `A` (0 test files in Build/), this read supersedes it" % (len(libs), ", ".join(libs), n))
+    for k in ("integration", "full_automation"):
+        if cells[k][0] == "A":
+            out[k] = ("A", "docs/05 4.4 column A9 row %s, re-read: no test runs Build/ as a whole through its entrypoint; tests/test_build_system.sh exercises the libraries separately (%s)" % (k, "present" if libs else "absent"))
+    return out
+
+
+def _tracked(root, sub=""):
+    """Tracked files of `root` (relative to root), or None when root is not a git work tree."""
+    if not os.path.exists(os.path.join(root, ".git")):
+        return None
+    try:
+        p = subprocess.run(["git", "-C", root, "ls-files", "-z"] + (["--", sub] if sub else []), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    except OSError:
+        return None
+    if p.returncode != 0:
+        return None
+    return [n for n in p.stdout.decode("utf-8", "replace").split("\0") if n]
+
+
+def _vendored(rel):
+    return any(part in SKIP_DIRS for part in rel.split("/")[:-1]) or ("tools/opensource/" in rel)
+
+
+def walk(root, sub=""):
+    """Absolute paths of the counted files under root/sub, sorted; the list is also recorded for the provenance fingerprint."""
+    tracked = _tracked(root, sub)
+    if tracked is not None:
+        rels = sorted(r for r in tracked if not _vendored(r))
+        mode = "git-tracked"
+    else:
+        base = os.path.join(root, sub) if sub else root
+        rels = []
+        for dp, dns, fns in os.walk(base):
+            dns[:] = sorted(d for d in dns if d not in SKIP_DIRS and d not in WALK_ONLY_SKIP)
+            for f in sorted(fns):
+                rels.append(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
+        rels.sort(); mode = "walk"
+    label = os.path.relpath(os.path.join(root, sub) if sub else root, _REPO[0] or root).replace(os.sep, "/")
+    _FPR[label] = (mode, len(rels), hashlib.sha256("\n".join(rels).encode("utf-8")).hexdigest())
+    for r in rels:
+        yield os.path.join(root, r)
 
 
 def read(p):
@@ -81,12 +146,22 @@ def read(p):
         return ""
 
 
+def _tok(words):
+    """A marker is a TOKEN of the path (review I2): split on anything that is not a letter or digit and on camelCase, lower-cased; `e2e` never matches `e2ee`,
+    `load` never `loader` or `LoadingSpinner`, `fault` never `defaults`, `perf` never `perfetto`. `end_to_end` is the three-token sequence."""
+    class M:
+        def search(self, rel):
+            toks = [t for t in re.split(r"[^a-z0-9]+", re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", rel).lower()) if t]
+            joined = "_" + "_".join(toks) + "_"
+            return any(("_" + w + "_") in joined for w in words)
+    return M()
+
+
 def module_facts(root):
     f = dict(go_tests=0, go_funcs=0, bench=0, fuzz=0, ts_tests=0, ts_decl=0, sh_tests=0, py_tests=0, tags=set(),
              n_int=0, n_e2e=0, n_sec=0, n_st=0, n_ch=0, n_pf=0, n_ui=0, n_chal=0, a11y=0, has_go=False, has_pkg=False, react=False, io_files=0)
-    rx = lambda s: re.compile(s, re.I)
-    r_int, r_e2e, r_sec, r_st, r_ch, r_pf, r_ui = rx(r"integration"), rx(r"e2e|end_to_end"), rx(r"security|inject|fuzz"), rx(r"stress|load|soak"), \
-        rx(r"chaos|fault"), rx(r"perf|latency"), rx(r"visual|screenshot")
+    r_int, r_e2e, r_sec, r_st, r_ch, r_pf, r_ui = (_tok(s) for s in (("integration", "integrations"), ("e2e", "end_to_end"), ("security", "inject", "injection", "fuzz", "fuzzing"),
+                                                  ("stress", "load", "soak"), ("chaos", "fault", "faults"), ("perf", "performance", "latency"), ("visual", "screenshot", "screenshots")))
     for p in walk(root):
         base = os.path.basename(p)
         rel = os.path.relpath(p, root)
@@ -109,7 +184,7 @@ def module_facts(root):
             t = read(p)
             f["ts_tests"] += 1
             f["ts_decl"] += len(re.findall(r"^\s*(?:it|test)\(", t, re.M))
-            if "@testing-library" in t or "render(" in t: f["a11y"] += 1
+            if "@testing-library" in t or re.search(r"(?<![A-Za-z0-9_])render\(", t): f["a11y"] += 1   # MUT:render_call  (`prerender(` is not a render call)
         elif re.match(r"(test_.*|.*_test)\.sh$", base):
             test_file = True; f["sh_tests"] += 1
         elif re.match(r"test_.*\.py$", base) or re.match(r".*_test\.py$", base):
@@ -156,7 +231,7 @@ def go_lib_cells(name, f, kind):
         if n:
             return ("~", "structural: %d test file(s) whose path carries a %s marker; use of a real system is UNCONFIRMED (the ledger decides)" % (n, what))
         return ("A", "TS-00 read: %s carries a %s marker among its %d test files" % (absent_when.replace("no file name", "no test file name"), what, tf))
-    tagint = [t for t in f["tags"] if "integration" in t]
+    tagint = [t for t in f["tags"] if _tok(("integration", "integrations")).search(t)]   # MUT:tag_token  (a build tag is matched as a token too: `disintegration` is not one)
     if f["n_int"] or tagint:
         c["integration"] = ("~", "structural: %d test file(s) with an integration path marker, build tags %s; real-service use UNCONFIRMED" % (f["n_int"], f["tags"] or "none"))
     else:
@@ -259,7 +334,9 @@ def build_components(repo):
             else:
                 sys.exit("derive_applicability: unexpected state %r for (%s, %s)" % (v, cid, t))
         if name == "website":
-            cells["ddos"] = WEBSITE_DDOS
+            cells["ddos"] = website_ddos(repo)
+        if name == "build":
+            cells.update(build_reread(repo, cells))
         comps.append((cid, "application", name, {"A1": "catalog-api/", "A2": "catalog-web/", "A3": "catalogizer-desktop/", "A4": "installer-wizard/",
                                                     "A5": "catalogizer-android/", "A6": "catalogizer-androidtv/", "A7": "catalogizer-api-client/",
                                                     "A8": "Website/", "A9": "Build/"}[cid], cells))
@@ -275,6 +352,12 @@ def build_components(repo):
     for n in a10 + a11 + a12:
         if n not in names:
             sys.exit("derive_applicability: %s is not in .gitmodules" % n)
+    # review I1: a submodule that is not checked out holds no files, and "no files" would be read as "no tests" - 51 applicable cells became n/a that way in the
+    # reviewer's probe. Fail closed (11.4.233 G): every module root must hold at least one tracked/regular file before anything is derived.
+    empty = [n for n in a10 + a11 + a12 if not any(True for _ in walk(os.path.join(repo, "submodules", n)))]   # MUT:empty_submodule
+    if empty:
+        sys.stderr.write("derive_applicability: REFUSED reason=submodule_uninitialised %d submodule(s) hold no file (run `git submodule update --init --recursive`): %s\n" % (len(empty), ", ".join(empty)))
+        sys.exit(3)
     for group, lst, gid in (("go_module", a10, "A10"), ("ts_module", a11, "A11"), ("governance_qa_module", a12, "A12")):
         for n in lst:
             f = module_facts(os.path.join(repo, "submodules", n))
@@ -285,13 +368,13 @@ def build_components(repo):
     # A13: the repository-level harness, measured
     f = dict(sh=0, k6=0, banks=0, chal=0)
     for top in ("scripts", "tools", "tests"):
-        for p in walk(os.path.join(repo, top)):
+        for p in walk(repo, top):
             if re.match(r"(test_.*|.*_test)\.sh$", os.path.basename(p)): f["sh"] += 1
-            if p.endswith(".js") and "/k6/" in p: f["k6"] += 1
-    f["k6"] = len([p for p in walk(os.path.join(repo, "tests", "k6")) if p.endswith(".js")]) if os.path.isdir(os.path.join(repo, "tests", "k6")) else 0
-    f["banks"] = len([p for p in walk(os.path.join(repo, "challenges", "helixqa-banks")) if p.endswith(".yaml")]) if os.path.isdir(os.path.join(repo, "challenges", "helixqa-banks")) else 0
-    f["chal"] = len([p for p in walk(os.path.join(repo, "challenges", "scripts"))]) if os.path.isdir(os.path.join(repo, "challenges", "scripts")) else 0
-    fa = len([p for p in walk(os.path.join(repo, "scripts", "testing", "full_automation")) if p.endswith(".sh")]) if os.path.isdir(os.path.join(repo, "scripts", "testing", "full_automation")) else 0
+    sub = lambda rel: [p for p in walk(repo, rel)] if os.path.isdir(os.path.join(repo, rel)) else []
+    f["k6"] = len([p for p in sub("tests/k6") if p.endswith(".js")])
+    f["banks"] = len([p for p in sub("challenges/helixqa-banks") if p.endswith(".yaml") and os.path.basename(p) != "MANIFEST.yaml"])   # review m2: the manifest is not a bank
+    f["chal"] = len(sub("challenges/scripts"))
+    fa = len([p for p in sub("scripts/testing/full_automation") if p.endswith(".sh")])
     c = {}
     c["unit"] = ("~", "TS-00 read: %d `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)" % f["sh"])
     c["integration"] = ("A", "TS-00 read: the harness has no test of its own that drives its parts together")
@@ -343,12 +426,17 @@ def q(s):
 
 
 def render(repo):
+    _REPO[0] = repo; _FPR.clear()
     comps = build_components(repo)
     out = []
     out.append("# applicability.yaml - T196 (TS-00), docs/05 13.2 format. GENERATED by tools/evidence/matrix/derive_applicability.py from direct reads of the")
     out.append("# repository: do not hand-edit a cell, change the derivation or the repository and re-run it. Every cell carries the state and the reason that")
     out.append("# names its measurement. States: P present, ~ partial, A absent (applicable), n/a not applicable. There is no `?` cell (docs/05 4.4 legend).")
     out.append("# States other than `A` and `n/a` are STRUCTURAL readings (11.4.6): the evidence ledger (doc 06) and gen_matrix.py decide the 13.1 status.")
+    # provenance (review m1): what was counted. `enumeration` is git-tracked for a work tree, walk otherwise; the fingerprint is the sha256 of the per-root file-list hashes.
+    modes = sorted(set(v[0] for v in _FPR.values())) or ["walk"]
+    out.append("# enumeration: %s; files_fingerprint: %s (%d roots, %d files)" % ("+".join(modes), hashlib.sha256("\n".join("%s %s %d %s" % ((k,) + v) for k, v in sorted(_FPR.items())).encode()).hexdigest()[:32],
+                                                                           len(_FPR), sum(v[1] for v in _FPR.values())))
     out.append("schema: applicability/1")
     out.append("types: [%s]" % ", ".join(TYPES))
     out.append("source: %s" % q("tools/evidence/matrix/derive_applicability.py over the tree, docs/05 4.4 for A1..A9"))

@@ -1,2 +1,2 @@
-# catalogizer-api-client/jest.config.js collectCoverageFrom: `src/**/*.ts` minus `!src/**/*.d.ts` (read 2026-10-06; vitest has no config file here)
+# EXTRACTED by scripts/coverage/fence_lib.py from the measuring tool's own config (negated collectCoverageFrom of jest.config.js) via coverage/exclusions/tools.yaml - do not hand-edit; check_exclusions.py compares this file with a fresh extraction and FAILs a stale copy (review round 1 of WP-23, I6).
 src/**/*.d.ts

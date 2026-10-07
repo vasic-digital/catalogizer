@@ -32,6 +32,17 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [reconcile.md](reconcile.md) | `scripts/register/reconcile.sh` | T067 reconciliation CSV and Markdown reports |
 | [register_replay.md](register_replay.md) | `scripts/register/replay.sh` | T067a replay of the local journal onto a remote-side database |
 
+## Coverage and matrix tooling (WP-23)
+
+| Guide | Script | Notes |
+|---|---|---|
+| [bash-coverage.md](bash-coverage.md) | `scripts/bash-coverage.sh`, `scripts/coverage/bashcov.py` | T199 bash line-coverage harness (PS4 trace, path-aware attribution) |
+| [check_exclusions.md](check_exclusions.md) | `scripts/coverage/check_exclusions.sh`, `scripts/coverage/fence_lib.py` | T200 exclusion-fence gate (11.4.224 E) |
+| [track-coverage.md](track-coverage.md) | `scripts/coverage/track-coverage.sh`, `scripts/coverage/gocov_merge.py` | T198 Go coverage collector (split lanes) |
+| [gen_matrix.md](gen_matrix.md) | `tools/evidence/matrix/gen_matrix.py`, `tools/evidence/matrix/derive_applicability.py` | T195-T197 coverage matrix and its gate |
+| [run_kcov.md](run_kcov.md) | `scripts/containers/run_kcov.sh` | T200a IMG-KCOV wrapper |
+| [run_rust.md](run_rust.md) | `scripts/containers/run_rust.sh` | T200a IMG-RUST wrapper (class compile, build host only) |
+
 ## Catalog and QA scripts
 
 | Guide | Script |

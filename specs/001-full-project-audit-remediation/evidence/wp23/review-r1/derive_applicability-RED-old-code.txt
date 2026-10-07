@@ -1,0 +1,33 @@
+PASS: golden: the deriver exits 0 on a populated fixture
+PASS: golden: two runs over the same tree are byte-identical
+PASS: golden: 30 modules + 2 governance modules + 9 applications + A13 = 42 components
+FAIL: m1: provenance header missing: schema: applicability/1
+FAIL: m1: the fingerprint did not change
+FAIL: I1: an empty submodule directory is refused (exit 3) (got '0' want '3')
+FAIL: I1: refusal text: 
+FAIL: I1: output written despite the refusal
+FAIL: I1: missing dirs not both named (rc 0): 
+PASS: I1 control: the same fixture populated again derives (exit 0)
+FAIL: I2: pkg/defaults/defaults_test.go does not make chaos partial (fault is not defaults): the cell stays A (got '~' want 'A')
+FAIL: I2: pkg/e2ee/* is not e2e (e2ee is encryption): the e2e cell stays A (got '~' want 'A')
+FAIL: I2: loader_test.go does not make stress partial (load is not loader) (got '~' want 'A')
+FAIL: I2: perfetto_test.go does not make performance partial (perf is not perfetto) (got '~' want 'A')
+FAIL: I2: injector_test.go does not make security partial (inject is not injector) (got '~' want 'A')
+PASS: I2 golden-false: tests/e2e/flow_test.go IS e2e: the cell becomes ~ (1 file)
+FAIL: I2: e2e reason: structural: 2 test file(s) whose path carries a e2e marker; use of a real system is UNCONFIRMED (the ledger decides)
+PASS: I2 golden-false: pkg/stress/stress_test.go IS a stress marker: the cell becomes ~
+FAIL: I2: A13 unit reason: TS-00 read: 1 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; whether they cover the harness code is UNCONFIRMED (docs/05 7.1: the bash line harness measures it)
+PASS: I11: without a build test the unit cell keeps docs/05's reading (A)
+FAIL: I11: tests/test_build_system.sh that sources Build/lib makes the unit cell ~ (got 'A' want '~')
+FAIL: I11: reason: docs/05 4.4 (measured 2026-10-03), column A9 row unit
+FAIL: m2: helixqa reason: TS-00 read: 4 bank files under challenges/helixqa-banks; doc05 4.4 records 1178 non-executable placeholder steps (finding F-1)
+PASS: m11: Website with no hosting config: DDoS n/a
+FAIL: m11: a Website/nginx.conf flips the DDoS cell to A (there is now server config of ours) (got 'n/a' want 'A')
+FAIL: m11: reason: TS-00 read: Website/ holds VitePress markdown, config.ts, package.json and package-lock.json and no server, container or hosting configuration (a search for nginx, Dockerfile, docker-compose, netlify, vercel, pages configuration returned none), so there is no code of ours to flood; the hosting platform owns it (docs/05 13.2). docs/05 4.4 recorded `A`, this read supersedes it
+PASS: RM5: 9 Go test files: unit is ~
+PASS: RM5: 10 Go test files: unit is P
+PASS: RM5: no Go test file: unit is A
+PASS: real repository: derives (exit 0)
+PASS: real repository: two runs are byte-identical
+FAIL: real repository: not git-tracked: schema: applicability/1
+Summary: PASS=13 FAIL=19 SKIP=0

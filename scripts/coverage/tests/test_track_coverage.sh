@@ -113,7 +113,7 @@ awk '/^verify /{v++} /^tic /{ if (v<1) bad=1 } END{exit bad}' "$SHIM_LOG" && ok 
 #   statements: 3+2+3+2+4+1 = 15; covered: 3+2+3+4 = 12  -> 80.00 %
 M="$W/out/merged.cover"; [ -f "$M" ] && ok "collect: the merged profile exists" || bad "collect: no merged profile"
 check "collect: merged profile header" "$(head -1 "$M" 2>/dev/null)" "mode: atomic"
-check "collect: merged blocks (6)" "$(grep -c ':' "$M" 2>/dev/null)" 7
+check "collect: merged blocks (7: six distinct plus the header line)" "$(grep -c ':' "$M" 2>/dev/null)" 7
 check "collect: the block both binaries instrument is counted once with the SUMMED count" "$(grep 'a.go:1.1,2.1' "$M" | awk '{print $3}')" 2
 check "collect: statements total (hand count 15)" "$(jq -r .statements "$W/out/result.json")" 15
 check "collect: statements covered (hand count 12)" "$(jq -r .covered "$W/out/result.json")" 12
@@ -126,6 +126,41 @@ check "collect: the baseline names the instrument" "$(jq -r .instrument "$W/out/
 # GREEN x3 from three replays over the same records
 P3=""; for i in 1 2 3; do goodworld "g3-$i"; submit; collect; P3="$P3 $(jq -r .percent "$W/out/result.json")"; done
 check "GREEN x3: three replays give the identical percent" "$P3" " 80.00 80.00 80.00"
+
+# ================= review round 1 (WF11 I10, I6) =================
+# I10: `go list {{.Dir}}` is ABSOLUTE; an absolute directory under /src is normalised to the checkout-relative path, one outside /src is refused
+printf 'catalogizer/alpha\t/src/catalog-api/alpha\ncatalogizer/beta\t/src/catalog-api/beta\n' >"$T/packages-abs.tsv"
+goodworld ia; bash "$COLLECTOR" submit --app catalog-api --src "$SRC" --lanes unit --packages "$T/packages-abs.tsv" --state "$W/state" --group tcg-abs >"$W/submit.out" 2>"$W/submit.err"; SRC_RC=$?
+check "I10: submit with absolute go-list directories exits 0" "$SRC_RC" 0
+grep '^dispatch submit ' "$SHIM_LOG" | head -1 | grep -q -- '-o /out/unit/alpha.test ./alpha$' && ok "I10: the compile target is ./alpha, never ./src/catalog-api/alpha" || bad "I10: compile target wrong: $(grep '^dispatch submit ' "$SHIM_LOG" | head -1)"
+check "I10: members.tsv records the checkout-relative directory (the run half's cd /src/<dir>)" "$(cut -f3 "$W/state/members.tsv" | head -1)" "catalog-api/alpha"
+printf 'catalogizer/alpha\t/tmp/elsewhere/alpha\n' >"$T/packages-out.tsv"
+goodworld ib; bash "$COLLECTOR" submit --app catalog-api --src "$SRC" --lanes unit --packages "$T/packages-out.tsv" --state "$W/state" --group tcg-out >"$W/submit.out" 2>"$W/submit.err"; SRC_RC=$?
+[ "$SRC_RC" != 0 ] && grep -q 'package_dir_outside_source' "$W/submit.err" && ok "I10: an absolute directory outside /src is refused (package_dir_outside_source)" || bad "I10: outside-/src directory accepted ($SRC_RC): $(cat "$W/submit.err")"
+check "I10: that refusal submitted no build" "$(grep -c '^dispatch submit ' "$SHIM_LOG")" 0
+# I6: the fence is APPLIED to the figure: blocks of a file the fence names (catalog-api tests/mocks/**) are dropped and counted
+goodworld ex
+mkbin "$W/art/unit__alpha.test" "$A_BLK" "$A_BLK2" "$A_BLK3" "$A_BLK4" 'catalogizer/tests/mocks/ftp/s.go:1.1,2.1 7 0'
+submit; collect
+check "I6: exit 0 with a fenced file in the profile" "$COL_RC" 0
+check "I6: statements exclude the fenced file's 7 (hand count 15, was 22 before the fence was applied)" "$(jq -r .statements "$W/out/result.json")" 15
+check "I6: the percent is the unfenced 80.00" "$(jq -r .percent "$W/out/result.json")" "80.00"
+check "I6: the record names the excluded file" "$(jq -r '.excluded.files | join(",")' "$W/out/result.json")" "tests/mocks/ftp/s.go"
+check "I6: the record counts the excluded statements" "$(jq -r '.excluded.statements' "$W/out/result.json")" 7
+check "I6: the baseline record carries the exclusion" "$(jq -r '.excluded.statements' "$W/out/baseline.json" 2>/dev/null)" 7
+
+# I6: a fence the T200 gate refuses blocks the figure (the gate runs before the fence is applied)
+mkdir -p "$T/badfence"; cat >"$T/badfence/catalog-api.yaml" <<'Y'
+schema: coverage-exclusions/1
+application: catalog-api
+exclusions:
+  - path: "poison/first_party_without_item.go"
+    class: first-party
+    justification: "a first-party entry written without a tracked item, the case the gate must refuse"
+Y
+goodworld bf; submit; TC_FENCE_DIR="$T/badfence" collect
+[ "$COL_RC" != 0 ] && grep -q 'exclusion fence refused by the T200 gate' "$W/collect.err" && ok "I6: a fence the gate refuses fails the collection (exit $COL_RC) and says why" || bad "I6: refused fence was accepted (rc $COL_RC): $(cat "$W/collect.err")"
+[ "$(jq -r .status "$W/out/result.json" 2>/dev/null)" = failed ] && ok "I6: and result.json says failed (no baseline over an unchecked scope)" || bad "I6: result status is not failed after a refused fence"
 
 # ================= each failure names the package and exits non-zero =================
 failcase() { # failcase NAME PATTERN setup-fn
@@ -169,27 +204,42 @@ newworld r2; bash "$COLLECTOR" submit --app catalog-api --src "$SRC" --lanes uni
 # the test hooks are honoured only in test mode
 ( unset TC_TEST_MODE; goodworld r3; bash "$COLLECTOR" submit --app catalog-api --src "$SRC" --lanes unit --packages "$T/packages.tsv" --state "$W/state" >/dev/null 2>"$T/r3e"; echo $? >"$T/r3rc" )
 [ "$(cat "$T/r3rc")" != 0 ] && grep -q 'test_hook_outside_test_mode' "$T/r3e" && ok "TC_DISPATCH and the other hooks are refused outside test mode" || bad "hooks honoured outside test mode"
+( unset TC_TEST_MODE TC_DISPATCH TC_VERIFY TC_TIC TC_RECORDER; goodworld r4; TC_FENCE_DIR="$T/badfence" bash "$COLLECTOR" submit --app catalog-api --src "$SRC" --lanes unit --packages "$T/packages.tsv" --state "$W/state" >/dev/null 2>"$T/r4e"; echo $? >"$T/r4rc" )
+[ "$(cat "$T/r4rc")" != 0 ] && grep -q 'test_hook_outside_test_mode' "$T/r4e" && ok "TC_FENCE_DIR alone is refused outside test mode (a caller cannot point the figure at a fence of its choosing)" || bad "TC_FENCE_DIR honoured outside test mode"
 
 # ================= paired mutation =================
 if [ "${1:-}" != --no-mutations ] && [ -z "${COLLECTOR_MUTANT:-}" ]; then
   REC="${MUTATION_RECORD:-$T/mutations.txt}"; : >"$REC"
   mut() { # mut NAME OLD NEW
-    local name="$1" old="$2" new="$3" d="$T/mut-$1"; rm -rf "$d"; mkdir -p "$d"; cp "$REPO/scripts/coverage/"track-coverage.sh "$REPO/scripts/coverage/gocov_merge.py" "$d/"
-    python3 -I - "$d/track-coverage.sh" "$old" "$new" <<'PY' || { bad "mutation $name: anchor not unique"; return; }
+    # the mutant is a MIRROR of the repository layout (ROOT = two levels above the collector), so the fence legs run against a real fence and a real go.mod
+    local name="$1" old="$2" new="$3" d="$T/mut-$1"; rm -rf "$d"; mkdir -p "$d/scripts/coverage" "$d/coverage" "$d/catalog-api"
+    cp "$REPO/scripts/coverage/track-coverage.sh" "$REPO/scripts/coverage/gocov_merge.py" "$REPO/scripts/coverage/fence_lib.py" "$REPO/scripts/coverage/check_exclusions.sh" "$REPO/scripts/coverage/check_exclusions.py" "$d/scripts/coverage/"
+    cp -r "$REPO/coverage/exclusions" "$d/coverage/"; cp "$REPO/catalog-api/go.mod" "$d/catalog-api/"
+    python3 -I - "$d/scripts/coverage/track-coverage.sh" "$old" "$new" <<'PY' || { bad "mutation $name: anchor not unique"; return; }
 import sys
 s=open(sys.argv[1]).read()
 if s.count(sys.argv[2])!=1: sys.exit(1)
 open(sys.argv[1],"w").write(s.replace(sys.argv[2],sys.argv[3]))
 PY
-    if COLLECTOR="$d/track-coverage.sh" COLLECTOR_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-$name.out" 2>&1; then bad "mutation $name SURVIVED"; echo "SURVIVED $name" >>"$REC"
+    if COLLECTOR="$d/scripts/coverage/track-coverage.sh" COLLECTOR_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-$name.out" 2>&1; then bad "mutation $name SURVIVED"; echo "SURVIVED $name" >>"$REC"
     else ok "mutation $name caught ($(grep -c '^FAIL:' "$T/mut-$name.out") failing legs)"; echo "CAUGHT $name: $(grep '^FAIL:' "$T/mut-$name.out" | head -2 | cut -c1-110 | tr '\n' '|')" >>"$REC"; fi
   }
+  # SANDBOX CONTROL (review round 1): an UNMUTATED mirror must pass this body, or every CAUGHT below could be a broken sandbox
+  d="$T/mut-ctl"; rm -rf "$d"; mkdir -p "$d/scripts/coverage" "$d/coverage" "$d/catalog-api"
+  cp "$REPO/scripts/coverage/track-coverage.sh" "$REPO/scripts/coverage/gocov_merge.py" "$REPO/scripts/coverage/fence_lib.py" "$REPO/scripts/coverage/check_exclusions.sh" "$REPO/scripts/coverage/check_exclusions.py" "$d/scripts/coverage/"
+  cp -r "$REPO/coverage/exclusions" "$d/coverage/"; cp "$REPO/catalog-api/go.mod" "$d/catalog-api/"
+  if COLLECTOR="$d/scripts/coverage/track-coverage.sh" COLLECTOR_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-ctl.out" 2>&1; then ok "mutation sandbox control: an UNMUTATED mirror passes this body"; echo "CONTROL PASS" >>"$REC"
+  else bad "mutation sandbox control FAILED ($(grep -c '^FAIL:' "$T/mut-ctl.out") failing legs): every CAUGHT below is suspect"; echo "CONTROL FAIL" >>"$REC"; fi
   mut run-half-or-true '"$BIN_RUN" "${RUNARGS[@]}"; RUN_RC=$?' '"$BIN_RUN" "${RUNARGS[@]}" || true; RUN_RC=0'
   mut verify-skipped 'bash "$VERIFY" --build-id "$BID" --file "$ART"' 'true'
   mut foreground-wait 'STATUS_JSON="$(bash "$DISPATCH" status "$BID" 2>/dev/null)"' 'bash "$DISPATCH" wait "$BID" 5 >/dev/null 2>&1; STATUS_JSON="$(bash "$DISPATCH" status "$BID" 2>/dev/null)"'
   mut panic-unchecked 'if grep -q "^panic:" "$RUNLOG"; then' 'if false; then'
   mut empty-profile-ok 'if [ "$PROFILE_BLOCKS" -eq 0 ]; then' 'if false; then'
   mut infra-detail-dropped 'infra_failed ($DETAIL)' 'infra_failed'
+  # review round 1: the absolute go-list directory and the applied fence
+  mut dir-abs-unhandled 'case "$DIR" in /src/*) DIR="${DIR#/src/}";; /*) refuse package_dir_outside_source "$IMPORT: $DIR is absolute and not under /src";; esac   # MUT:dir_abs' ':'
+  mut fence-not-applied '${FENCE:+--exclusions "$FENCE"}' ''
+  mut fence-gate-skipped 'FOUT="$(bash "$HERE/check_exclusions.sh" "$FENCE" --root "$ROOT/$APP" 2>&1)" ||' 'FOUT="$(true 2>&1)" ||'
 fi
 echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"
 [ "$FAILS" = 0 ]

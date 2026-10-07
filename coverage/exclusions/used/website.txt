@@ -1,0 +1,1 @@
+# EXTRACTED by scripts/coverage/fence_lib.py from the measuring tool's own config (no coverage tool is configured for the VitePress site) via coverage/exclusions/tools.yaml - do not hand-edit; check_exclusions.py compares this file with a fresh extraction and FAILs a stale copy (review round 1 of WP-23, I6).

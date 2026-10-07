@@ -1,0 +1,16 @@
+# coverage/exclusions/tools.yaml - WF11 review I6. For each application, WHICH measuring tool applies its exclusions and WHERE its own config says so. check_exclusions.py reads
+# the patterns the tool really applies from that config text (scripts/coverage/fence_lib.py extract_applied), so the `used/*.txt` lists are no longer the only witness: a pattern
+# the tool applies that the fence does not list is an UNLISTED exclusion, a fence entry the tool does not apply is LISTED-BUT-NOT-APPLIED (a figure would claim a scope it did
+# not have), both FAIL. kind: vitest | jest | jacoco | fence | none (`fence`: the collector of this repository applies the fence file itself: gocov_merge.py --exclusions
+# for Go, bash-coverage.sh --exclusions for bash; their tests prove it). config: repository-relative path of the tool's own config.
+schema: coverage-tools/1
+apps:
+  catalog-api:           {kind: fence, note: "scripts/coverage/gocov_merge.py applies --exclusions to the merged profile (go test -coverpkg takes no exclude list)"}
+  build-scripts:         {kind: fence, note: "scripts/bash-coverage.sh applies --exclusions (bashcov.py is_excluded)"}
+  catalog-web:           {kind: vitest, config: catalog-web/vite.config.ts}
+  catalogizer-desktop:   {kind: vitest, config: catalogizer-desktop/vitest.config.ts}
+  installer-wizard:      {kind: vitest, config: installer-wizard/vitest.config.ts}
+  catalogizer-api-client: {kind: jest, config: catalogizer-api-client/jest.config.js}
+  catalogizer-android:   {kind: jacoco, config: catalogizer-android/app/build.gradle.kts}
+  catalogizer-androidtv: {kind: jacoco, config: catalogizer-androidtv/app/build.gradle.kts}
+  website:               {kind: none, note: "no coverage tool is configured for the VitePress site"}

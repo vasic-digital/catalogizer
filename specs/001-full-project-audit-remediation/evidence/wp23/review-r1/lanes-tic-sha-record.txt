@@ -1,0 +1,15 @@
+# lanes-tic-sha-record.txt - WF11 I9 (evidence record only; the TIC memory margin belongs to commit 96779242 and was not touched)
+# date_utc: 2026-10-07T00:57:49Z
+# git_head: bd51e3e8cf28f5f2eb4a790e326f6698af28f397
+#
+# FINDING: evidence/wp23/lanes-green-{1,2,3}.txt record `sha256 e879d77472688363a52b745495e91af52088874fb04c42df2f86f17c8d1c37c4  scripts/test-in-container.sh`. That digest matches NO commit of the file
+# (git log -- scripts/test-in-container.sh: a7cfc6d3, e5f568f6): the lane evidence did not bind to the shipped TIC. The TIC at e5f568f6 and at the current HEAD is the digest below
+# (it carries the 2 percent memory margin added by the WP-09/10 review round, `MEM=$(( MEM - MEM / 50 ))`). The lane legs were re-run on THAT file: see
+# run_rust_kcov_lanes-GREEN-{1,2,3}.txt (each starts with the sha256 of the TIC, run_rust.sh, run_kcov.sh, lanes.tsv it ran against), 53 PASS 0 FAIL x3, 11 mutations caught x3.
+# sha256 5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b  scripts/test-in-container.sh
+# sha256 437c2bf2d30a9b4c1cf21541559849b403fa0996198d80d20cc5648e176c7a65  scripts/containers/run_rust.sh
+# sha256 b14dbc8353e8132fee2b8c3f908ec34fd1f868b31306b5299d87ea25dd141d5e  scripts/containers/run_kcov.sh
+# sha256 f80e58e1fa969db0e50c336c4f9c6334f64ccdd2568c4e68890eed3c41b6aa9b  scripts/containers/lanes.tsv
+# sha256 0bdecc30044c25a5fbde8fac21f1770d459685b92c5da58369602516e4ec47aa  scripts/containers/tests/test_run_rust_kcov.sh
+# committed digest of scripts/test-in-container.sh per git: 2f651aab73cdcaeab84ded227d0e594827d2fc30 (blob) / content sha256 of that blob: 5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b
+# the digest recorded by the old lane evidence found in any commit of the file: (empty = none)

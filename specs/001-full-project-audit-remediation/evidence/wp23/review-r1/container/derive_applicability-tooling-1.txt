@@ -1,0 +1,50 @@
+# command: bash scripts/test-in-container.sh tooling unit -- bash tools/evidence/matrix/tests/test_derive_applicability.sh --no-mutations
+# date_utc: 2026-10-07T00:19:28Z
+# git_head: 28e3662bccb77d2773d5c38cd8bb81d003e07d33
+# sha256 a9561265e4c68aab6380b9ea00c68790596cafe82ad24ca8921643c77f9ea83f  tools/evidence/matrix/tests/test_derive_applicability.sh
+# sha256 5923706516d039e4f016bb6ffb991e0037160850ff01260c2eb1ec0f44fecc5b  scripts/test-in-container.sh
+# sha256 b14dbc8353e8132fee2b8c3f908ec34fd1f868b31306b5299d87ea25dd141d5e  scripts/containers/run_kcov.sh
+# sha256 f80e58e1fa969db0e50c336c4f9c6334f64ccdd2568c4e68890eed3c41b6aa9b  scripts/containers/lanes.tsv
+# attempt 1 exit: 0
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+PASS: golden: the deriver exits 0 on a populated fixture
+PASS: golden: two runs over the same tree are byte-identical
+PASS: golden: 30 modules + 2 governance modules + 9 applications + A13 = 42 components
+PASS: m1: the header records the enumeration mode and a files_fingerprint (provenance of what was counted)
+PASS: m1: the fingerprint changes when a counted file is added
+PASS: I1: an empty submodule directory is refused (exit 3)
+PASS: I1: the refusal names submodule_uninitialised and the module
+PASS: I1: a refused derivation writes no applicability file
+PASS: I1: a MISSING directory is refused too, every empty module is named (2 listed)
+PASS: I1 control: the same fixture populated again derives (exit 0)
+PASS: I2: pkg/defaults/defaults_test.go does not make chaos partial (fault is not defaults): the cell stays A
+PASS: I2: pkg/e2ee/* is not e2e (e2ee is encryption): the e2e cell stays A
+PASS: I2: loader_test.go does not make stress partial (load is not loader)
+PASS: I2: perfetto_test.go does not make performance partial (perf is not perfetto)
+PASS: I2: injector_test.go does not make security partial (inject is not injector)
+PASS: I2 golden-false: tests/e2e/flow_test.go IS e2e: the cell becomes ~ (1 file)
+PASS: I2: the e2e reason counts exactly the 1 real file (not the e2ee ones)
+PASS: I2 golden-false: pkg/stress/stress_test.go IS a stress marker: the cell becomes ~
+PASS: I2: a build tag that merely CONTAINS integration (disintegration) does not make the integration cell partial
+PASS: I2 golden-false: the build tag integration makes the cell partial
+PASS: I2: prerender( is not a render( call: the ui cell stays A
+PASS: I2 golden-false: a real render( call makes the ui cell partial
+PASS: I2: scripts/build, scripts/coverage and scripts/other tests are counted (3); node_modules and tools/opensource are not
+PASS: I11: without a build test the unit cell keeps docs/05's reading (A)
+PASS: I11: tests/test_build_system.sh that sources Build/lib makes the unit cell ~
+PASS: I11: the reason names the 2 libraries and the 2 test functions it counted
+PASS: m2: 3 banks + MANIFEST.yaml count as 3 banks
+PASS: m11: Website with no hosting config: DDoS n/a
+PASS: m11: a Website/nginx.conf flips the DDoS cell to A (there is now server config of ours)
+PASS: m11: the reason names the file found
+PASS: RM5: 9 Go test files: unit is ~
+PASS: RM5: 10 Go test files: unit is P
+PASS: RM5: no Go test file: unit is A
+PASS: real repository: derives (exit 0)
+PASS: real repository: two runs are byte-identical
+PASS: real repository: counted from git-tracked files
+Summary: PASS=36 FAIL=0 SKIP=0

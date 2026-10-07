@@ -12,7 +12,7 @@
 #           `-test.coverprofile`; the per-package profiles are merged (counts summed per block) and the result goes through the recorder. Exit 1, naming each package and the reason,
 #           on: callback_record_missing, build_failed, infra_failed (its reason detail kept), cancelled/blocked, binary_missing, verify_refused, package_failed, package_panicked,
 #           profile_empty. Healthy packages are still run and merged; result.json says `failed` and lists every error.
-# Hooks (honoured ONLY with TC_TEST_MODE=1, else REFUSED test_hook_outside_test_mode): TC_DISPATCH, TC_VERIFY, TC_TIC, TC_RECORDER.
+# Hooks (honoured ONLY with TC_TEST_MODE=1, else REFUSED test_hook_outside_test_mode): TC_DISPATCH, TC_VERIFY, TC_TIC, TC_RECORDER, TC_FENCE_DIR (the directory holding <app>.yaml fences).
 # UNCONFIRMED against the real dispatcher (T121a/T121b are not built yet): the `status` fields artifact_dir, artifact_name and the verify_artifact.sh call form
 # `--build-id ID --file PATH`; the run-half command (a `sh -c 'cd /src/<dir> && /out/...'` through TIC). Contract and limits: docs/scripts/track-coverage.md.
 set -u
@@ -20,9 +20,10 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; ROOT="$(cd "$HERE/../.." &
 refuse() { echo "track-coverage: REFUSED reason=$1 ${2:-}" >&2; exit "${3:-1}"; }
 usage() { echo "track-coverage: usage: $1" >&2; echo "track-coverage: track-coverage.sh submit --app A --src D --lanes L --state D [--packages F] [--group G] | collect --state D --out D [--item ID]" >&2; exit 2; }
 DISPATCH="$ROOT/scripts/build/dispatch.sh"; VERIFY="$ROOT/scripts/build/verify_artifact.sh"; TIC="$ROOT/scripts/test-in-container.sh"; RECORDER="$ROOT/tools/evidence/evrec"
-if [ -n "${TC_DISPATCH+x}${TC_VERIFY+x}${TC_TIC+x}${TC_RECORDER+x}" ] && [ "${TC_TEST_MODE:-}" != 1 ]; then   # MUT:hooks
+if [ -n "${TC_DISPATCH+x}${TC_VERIFY+x}${TC_TIC+x}${TC_RECORDER+x}${TC_FENCE_DIR+x}" ] && [ "${TC_TEST_MODE:-}" != 1 ]; then   # MUT:hooks
   refuse test_hook_outside_test_mode "TC_DISPATCH / TC_VERIFY / TC_TIC / TC_RECORDER are test hooks and need TC_TEST_MODE=1"
 fi
+FENCE_DIR="$ROOT/coverage/exclusions"; [ -z "${TC_FENCE_DIR:-}" ] || FENCE_DIR="$TC_FENCE_DIR"
 [ -z "${TC_DISPATCH:-}" ] || DISPATCH="$TC_DISPATCH"; [ -z "${TC_VERIFY:-}" ] || VERIFY="$TC_VERIFY"; [ -z "${TC_TIC:-}" ] || TIC="$TC_TIC"; [ -z "${TC_RECORDER:-}" ] || RECORDER="$TC_RECORDER"
 MODE="${1:-}"; [ -n "$MODE" ] || usage "a mode (submit or collect) is required"; shift
 case "$MODE" in submit|collect) ;; *) usage "unknown mode '$MODE'";; esac
@@ -50,6 +51,9 @@ if [ "$MODE" = submit ]; then
     TAGS=(); [ "$LANE" != integration ] || TAGS=(-tags integration)
     while IFS=$'\t' read -r IMPORT DIR || [ -n "${IMPORT:-}" ]; do
       [ -n "${IMPORT:-}" ] || continue
+      # review I10: `go list {{.Dir}}` is an ABSOLUTE path (documented by the go command; the container mounts the checkout at /src). The compile target and the run half's
+      # `cd /src/<dir>` both want the path RELATIVE to the checkout root, so an absolute one is normalised here and one outside /src is refused, never composed into `/src//src/...`.
+      case "$DIR" in /src/*) DIR="${DIR#/src/}";; /*) refuse package_dir_outside_source "$IMPORT: $DIR is absolute and not under /src";; esac   # MUT:dir_abs
       NAME="$(pkgname "$IMPORT")"; REL="${DIR#*/}"; [ "$REL" != "$DIR" ] || REL="."
       ARGV=(go test "${TAGS[@]}" -c -cover -covermode=atomic -coverpkg=./... -o "/out/$LANE/$NAME.test" "./$REL")
       AD="$(bash "$DISPATCH" argv-digest "${ARGV[@]}" 2>/dev/null)" || refuse argv_digest_failed "$NAME"
@@ -101,7 +105,11 @@ NERR="$(wc -l <"$ERRORS" | tr -d ' ')"
 MODULE="$(sed -n 's/^module //p' "$ROOT/$APP/go.mod" 2>/dev/null | head -1)"
 if [ "${#PROFILES[@]}" -gt 0 ]; then
   python3 -I "$HERE/gocov_merge.py" merge --out "$OUT/merged.cover" "${PROFILES[@]}" >"$OUT/merge.json" || { err "merge: profiles could not be merged (see $OUT/merge.json)"; NERR=$((NERR+1)); }
-  [ ! -f "$OUT/merged.cover" ] || python3 -I "$HERE/gocov_merge.py" summary --profile "$OUT/merged.cover" ${MODULE:+--module "$MODULE"} >"$OUT/summary.json"
+  FENCE="$FENCE_DIR/$APP.yaml"
+  if [ -f "$FENCE" ]; then   # review I6: the fence is gated and then APPLIED, so the figure's scope is the fence's scope
+    FOUT="$(bash "$HERE/check_exclusions.sh" "$FENCE" --root "$ROOT/$APP" 2>&1)" || { err "exclusion fence refused by the T200 gate: $(printf '%s' "$FOUT" | tr '\n' ' ' | cut -c1-300)"; NERR=$((NERR+1)); }   # MUT:fence_gate
+  fi
+  [ ! -f "$OUT/merged.cover" ] || python3 -I "$HERE/gocov_merge.py" summary --profile "$OUT/merged.cover" ${MODULE:+--module "$MODULE"} ${FENCE:+--exclusions "$FENCE"} >"$OUT/summary.json"
 fi
 STATUS=ok; [ "$NERR" = 0 ] || STATUS=failed
 python3 -I - "$OUT" "$STATUS" "$ERRORS" <<'PY'

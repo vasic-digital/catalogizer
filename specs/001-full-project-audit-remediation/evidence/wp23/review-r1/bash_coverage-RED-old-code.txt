@@ -1,0 +1,61 @@
+PASS: fixture 1: exit 0
+PASS: fixture 1: schema
+PASS: fixture 1: executable lines (hand count 10)
+PASS: fixture 1: executed lines (hand count 7)
+PASS: fixture 1: percent
+PASS: fixture 1: the uncovered lines are 10 11 15
+PASS: fixture 1: the never-called function is REPORTED
+PASS: fixture 1: the called function is not reported uncovered
+PASS: fixture 1: no traced line was classified non-executable (the classifier agrees with the tracer)
+PASS: fixture 1: totals equal the single target
+FAIL: fixture 1: the record states the PS4 that was used (the FULL path, review I3) (got '+COV:${BASH_SOURCE##*/}:${LINENO}:' want '+COV:${BASH_SOURCE}:${LINENO}:')
+PASS: fixture 1: a clean run has status ok (no classifier disagreement)
+PASS: fixture 1: the honest limit (line, not branch) is written into the record
+PASS: fixture 1: the set +x / trap limit is written into the record
+PASS: fixture 1 with the branch taken: executed 8 (line 15 now executes)
+PASS: fixture 2: executable (hand count 6)
+PASS: fixture 2: executed (hand count 5)
+PASS: fixture 2: percent
+PASS: fixture 2: the uncovered line is the case arm 6
+PASS: fixture 2: no traced line outside the classifier's executable set
+PASS: driver with a fence: exit 0
+PASS: driver: child processes are traced (totals 12 executed of 16 executable)
+PASS: driver: the excluded file is not in the targets
+PASS: driver: the excluded file is listed with its class
+PASS: driver: the totals percent is 75.00
+PASS: driver without a fence: all three count (14 executed of 19 executable)
+PASS: a fence the gate refuses is refused by the harness (exit 3 exclusions_gate_failed)
+PASS: a refused fence writes no coverage record
+PASS: a failing command: the harness exits with the command's status
+PASS: a failing command: the record says command_failed with the status
+PASS: an empty trace is refused as trace_empty (exit 3), never reported as 0 percent
+PASS: a target the command never ran is reported 0.00 (the trace is not empty)
+PASS: a missing target is refused (exit 3 target_missing)
+FAIL: I3: two targets sharing a base name are accepted (exit 0) (got '3' want '0')
+jq: error: Could not open file /tmp/bashcov-test.MzTNEw/o10/bash-coverage.json: No such file or directory
+FAIL: I3: only the run one earns its lines (b/x.sh 70.00) (got '' want '70.00')
+jq: error: Could not open file /tmp/bashcov-test.MzTNEw/o10/bash-coverage.json: No such file or directory
+FAIL: I3: the sibling with the same base name that never ran stays 0.00 (control: the collision no longer shares credit) (got '' want '0.00')
+FAIL: I3 probe: running a DIFFERENT x.sh does not credit the target a/x.sh (0.00, was 30.00 on the basename rule) (got '70.00' want '0.00')
+jq: error (at /tmp/bashcov-test.MzTNEw/o10b/bash-coverage.json:51): Cannot iterate over null (null)
+FAIL: I3 probe: the foreign same-basename file is NAMED in the record (got '' want 'true')
+PASS: I3 probe: no traced line is credited to the non-target
+FAIL: I3 probe: a RELATIVE path that resolves to a different file is not credited (got '70.00' want '0.00')
+PASS: I3 golden-false: a RELATIVE path that resolves to the target is credited (70.00)
+PASS: I3: a copy that keeps the target's relative layout (.../a/x.sh) is credited (70.00)
+FAIL: I3: the copy path is recorded as a copy (got '0' want '1')
+FAIL: I3: a root-level target is not credited by any same-basename file elsewhere (0.00) (got '70.00' want '0.00')
+FAIL: duplicate target not refused (3): bash-coverage: REFUSED reason=basename_collision two targets share a base name (the PS4 carries the base name only): x.sh, x.sh
+PASS: I4: a RELATIVE --out with a child that cd's: exit 0
+FAIL: I4: the child's lines are traced (70.00, was 0.00 with exit 0) (got '0.00' want '70.00')
+FAIL: I4: a RELATIVE --exclusions file is resolved before any cd (the fence still applies) (got 'false' want 'true')
+FAIL: i1: pipeline fixture executable lines (hand count 8: 3 4 5 6 7 8 9 10) (got '4' want '8')
+FAIL: i1: pipeline fixture executed (8) (got '4' want '8')
+FAIL: i1: no traced line is classified non-executable (the classifier agrees with the tracer) (got '4' want '0')
+PASS: i1: an argument continuation (line 11) is not counted
+PASS: no -- command is a usage error
+PASS: no target is a usage error
+PASS: the caller's BASH_ENV is untouched after the run
+PASS: determinism: two runs give identical executed lines
+SKIP: kcov cross-check: kcov is not installed on this host (it is in IMG-KCOV: run through TIC build-scripts unit)
+Summary: PASS=41 FAIL=15 SKIP=1

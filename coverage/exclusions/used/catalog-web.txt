@@ -1,1 +1,1 @@
-# vite.config.ts test block (read 2026-10-06): no coverage section, so no coverage exclusion; the test.exclude globs select test files, they are not coverage exclusions.
+# EXTRACTED by scripts/coverage/fence_lib.py from the measuring tool's own config (no coverage block in vite.config.ts: the tool excludes nothing from coverage) via coverage/exclusions/tools.yaml - do not hand-edit; check_exclusions.py compares this file with a fresh extraction and FAILs a stale copy (review round 1 of WP-23, I6).

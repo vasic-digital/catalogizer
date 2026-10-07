@@ -1,0 +1,58 @@
+FAIL: golden-good: exit 0 (got '2' want '0')
+FAIL: golden-good: the verdict file says PASS (got '' want 'PASS')
+FAIL: golden-good: the verdict names the application (got '' want 'demo')
+FAIL: golden-good: the verdict carries the sha256 of the checked file (got '' want '2785a5d5cbd18f7bdb89cd785d9f96b5717470415258b6aa86dc98b3bddf39d9')
+FAIL: golden-good: the first-party entry is reported as an honest gap (got '' want '1')
+FAIL: unlisted exclusion: exit 2
+FAIL: unlisted exclusion: stderr: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+jq: error: Could not open file /tmp/chkexcl-test.Uqcvx9/v2.json: No such file or directory
+FAIL: unlisted exclusion: the verdict file says FAIL (got '' want 'FAIL')
+FAIL: golden-false: every used pattern is listed: exit 0 (got '2' want '0')
+FAIL: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0 (got '2' want '0')
+FAIL: unjustified entry: rc 2: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: a one-character justification accepted
+FAIL: first-party w/o item: rc 2: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: a bogus tracked item accepted
+FAIL: unknown class accepted
+FAIL: over-broad pattern accepted
+FAIL: absolute path accepted
+FAIL: .. accepted
+FAIL: duplicate path accepted
+FAIL: wrong schema accepted
+FAIL: application mismatch accepted
+FAIL: an unreadable file is a refusal, never a pass (got '2' want '1')
+PASS: no argument is a usage error
+FAIL: an explicit empty list passes (got '2' want '0')
+FAIL: a file without the exclusions key is refused (got '2' want '1')
+FAIL: --root: still exit 0 (a stale entry is a note) (got '2' want '0')
+jq: error: Could not open file /tmp/chkexcl-test.Uqcvx9/v3.json: No such file or directory
+FAIL: --root: the vendor entry matches one file (got '' want '1')
+jq: error: Could not open file /tmp/chkexcl-test.Uqcvx9/v3.json: No such file or directory
+FAIL: --root: the testdata entry matches none and is reported stale (got '' want 'true')
+FAIL: I5: unverifiable item accepted (rc 0): 
+FAIL: I5: fabricated item accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I5 golden-false: a first-party entry measured_by a lane that exists in the lanes table passes (no item needed) (got '2' want '0')
+FAIL: I5: bogus measured_by accepted (rc 2)
+FAIL: I5: **/*.go accepted or wrong reason (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I5: union message missing: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I5: class evidence missing: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I5: ?*/** (a glob outside the old denylist) is refused (exit 1) (got '2' want '1')
+FAIL: I5: false class accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 10 files, true class) (got '2' want '0')
+FAIL: I5 golden-false: a generated directory labelled generated-code passes (got '2' want '0')
+FAIL: I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes (got '2' want '0')
+FAIL: I5 golden-false: a file with a generated marker in its header passes as generated-code (got '2' want '0')
+FAIL: I5: the same label on a hand-written file (no marker) is refused (got '2' want '1')
+FAIL: I5: union not refused (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test files) passes (got '2' want '0')
+FAIL: m10: TestHelper.kt accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: I6: unlisted-from-config not found (rc 0): 
+FAIL: I6 golden-false: the fence lists everything the tool config applies: exit 0 (got '1' want '0')
+FAIL: I6 golden-false: the verdict records that the applied list was checked (got 'null' want 'true')
+FAIL: I6: listed-not-applied missed (rc 1): check_exclusions: FAIL: entry 2 (src/main.tsx): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+check_exclusions: FAIL: entry 3 (src/legacy.ts): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+FAIL: I6 golden-false: json entry refused (rc 1): check_exclusions: FAIL: entry 2 (src/main.tsx): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+FAIL: I6: stale hand list accepted (rc 1): check_exclusions: FAIL: entry 2 (src/main.tsx): a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope
+FAIL: I6 golden-false: a hand list equal to the extraction passes (got '1' want '0')
+FAIL: I6: unreadable config accepted (rc 1)
+Summary: PASS=1 FAIL=52 SKIP=0

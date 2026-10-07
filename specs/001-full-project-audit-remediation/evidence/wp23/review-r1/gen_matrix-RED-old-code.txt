@@ -1,0 +1,61 @@
+PASS: golden-good: exit 0
+PASS: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a)
+PASS: golden-good: two components x 15 types = 30 cells
+PASS: golden-good: no cell is '?'
+PASS: golden-good: the md ends with one newline
+PASS: golden-good: the md has no trailing whitespace
+PASS: golden-good: the md carries the 11.4.44 revision header
+PASS: golden-good: two runs are byte-identical (md)
+PASS: golden-good: two runs are byte-identical (json)
+PASS: one '?' cell: the generator exits non-zero (got 3)
+PASS: one '?' cell: the refusal says the cell could not be classified
+PASS: one '?' cell: stderr names the component and the type
+PASS: one '?' cell: no matrix file was written
+PASS: an n/a cell without a reason is refused (rc 3)
+PASS: a component missing a type is refused naming it (rc 3)
+PASS: an unknown state is refused (rc 3)
+PASS: a wrong schema is refused (rc 3)
+PASS: a missing input is refused (rc 3)
+PASS: a hand-edited count is overwritten on regeneration
+PASS: a hand edit of the md does not survive regeneration
+PASS: the doc05 4.4 table has 11 columns x 15 rows = 165 cells (P=14 ~=26 A=84 n/a=32 ?=9)
+PASS: the doc05 4.4 table as written (it still holds 9 '?' cells) is refused by the generator
+PASS: the refusal lists the '?' cells
+PASS: doc05 4.4 with '?' resolved to A: declared counts equal the document tally
+PASS: gate golden-false: a complete ledger passes (exit 0)
+PASS: gate: a removed ledger record flips the cell and the gate fails naming it (rc 1)
+PASS: gate: a record whose runs are not three identical is not present (rc 1)
+PASS: gate: a record with no caught mutation is not present (rc 1)
+PASS: gate: a stronger evidence class than the type requires still passes (golden-false)
+PASS: mint: first run exits 0
+PASS: mint: one absent and one partial cell yield exactly two items
+PASS: mint: the items name the cells (alpha unit absent, alpha integration partial)
+PASS: mint: a second run mints none (11.4.214)
+PASS: mint: the ledger links both cells to their item
+PASS: mint: no mint command is an honest recorded skip (mint_cmd_absent), never a fabricated item
+PASS: mint: no item was recorded when nothing was minted
+PASS: mint: a failing mint command fails the run (rc 4)
+PASS: mint: a failed mint leaves no ledger row
+PASS: T196 applicability.yaml: accepted (no '?' cell, every cell has a reason)
+PASS: T196 applicability.yaml: cells = components x 15 and the per-state counts add up
+FAIL: gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass (got '0' want '2')
+FAIL: gate B1: refusal text missing: 
+FAIL: gate B1: output written despite the refusal
+PASS: gate B1 control: the same map without --gate and without a ledger still renders (exit 0)
+FAIL: gate: stray record accepted (rc 0)
+FAIL: gate: vacuous map accepted (rc 0)
+PASS: RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails
+PASS: RM1: both cells are named with their class gap
+PASS: RM1: e2e and ui are partial in the json
+PASS: RM1 golden-false: runtime for e2e and user-visible for ui pass the gate
+PASS: RM2: a FAIL verdict never counts as present: the gate fails
+PASS: RM2: the verdict is named
+PASS: RM2: the cell is partial in the json
+PASS: RM3: a blocked cell still fails the gate (blocked is not present)
+PASS: RM3: the cell status is blocked in the json
+PASS: RM3: the gate output says blocked
+FAIL: m3: Created is carried forward (not overwritten by the second run) (got '2026-10-07T00:00:00Z' want '2026-10-06T00:00:00Z')
+PASS: m3: Last modified is the second run
+PASS: m3: Revision stays 1 while the body is unchanged
+FAIL: m3: Revision rises to 2 when the body changed (got '1' want '2')
+Summary: PASS=53 FAIL=7 SKIP=0

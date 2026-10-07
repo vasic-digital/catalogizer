@@ -1,0 +1,91 @@
+# command: bash scripts/coverage/tests/test_track_coverage.sh (host, mutations included)
+# date_utc: 2026-10-07T00:37:28Z
+# git_head: 28e3662bccb77d2773d5c38cd8bb81d003e07d33
+# sha256 2e1815ad9920befe110a539d2a7eac67326e2ca75cadc24e3091243d09698d6e  scripts/coverage/tests/test_track_coverage.sh
+PASS: submit: exit 0
+PASS: submit: ONE build group per run, two members (one per package)
+PASS: submit: every member names the same group
+PASS: submit: the compile half is go test -c -cover -covermode=atomic -coverpkg=./... -o /out/<lane>/<pkg>.test
+PASS: submit: the group is sealed after the last member
+PASS: submit: it does not wait (it returns after sealing)
+PASS: submit: it reads no result
+PASS: collect: exit 0 on the golden case
+PASS: collect: it never waits (results come from the callback records)
+PASS: collect: one status read per member
+PASS: collect: every binary is verified before it runs (2 verify calls)
+PASS: collect: no binary ran before its verification
+PASS: collect: the merged profile exists
+PASS: collect: merged profile header
+PASS: collect: merged blocks (7: six distinct plus the header line)
+PASS: collect: the block both binaries instrument is counted once with the SUMMED count
+PASS: collect: statements total (hand count 15)
+PASS: collect: statements covered (hand count 12)
+PASS: collect: percent
+PASS: collect: result status
+PASS: collect: per-package results are kept
+PASS: collect: the result is written through the recorder
+PASS: collect: the baseline record has the schema coverage-baseline/1
+PASS: collect: the baseline names the instrument
+PASS: GREEN x3: three replays give the identical percent
+PASS: I10: submit with absolute go-list directories exits 0
+PASS: I10: the compile target is ./alpha, never ./src/catalog-api/alpha
+PASS: I10: members.tsv records the checkout-relative directory (the run half's cd /src/<dir>)
+PASS: I10: an absolute directory outside /src is refused (package_dir_outside_source)
+PASS: I10: that refusal submitted no build
+PASS: I6: exit 0 with a fenced file in the profile
+PASS: I6: statements exclude the fenced file's 7 (hand count 15, was 22 before the fence was applied)
+PASS: I6: the percent is the unfenced 80.00
+PASS: I6: the record names the excluded file
+PASS: I6: the record counts the excluded statements
+PASS: I6: the baseline record carries the exclusion
+PASS: I6: a fence the gate refuses fails the collection (exit 1) and says why
+PASS: I6: and result.json says failed (no baseline over an unchecked scope)
+PASS: build_failed: exit non-zero (1)
+PASS: build_failed: stderr names the package and the reason (beta (unit): build_failed)
+PASS: build_failed: the result record says failed
+PASS: infra_failed: exit non-zero (1)
+PASS: infra_failed: stderr names the package and the reason (beta (unit): infra_failed (snapshot_mismatch))
+PASS: infra_failed: the result record says failed
+PASS: binary_missing: exit non-zero (1)
+PASS: binary_missing: stderr names the package and the reason (beta (unit): binary_missing)
+PASS: binary_missing: the result record says failed
+PASS: verify_refused: exit non-zero (1)
+PASS: verify_refused: stderr names the package and the reason (beta (unit): verify_refused)
+PASS: verify_refused: the result record says failed
+PASS: package_failed: exit non-zero (1)
+PASS: package_failed: stderr names the package and the reason (beta (unit): package_failed)
+PASS: package_failed: the result record says failed
+PASS: package_panicked: exit non-zero (1)
+PASS: package_panicked: stderr names the package and the reason (beta (unit): package_panicked)
+PASS: package_panicked: the result record says failed
+PASS: panic_with_exit_zero: exit non-zero (1)
+PASS: panic_with_exit_zero: stderr names the package and the reason (beta (unit): package_panicked)
+PASS: panic_with_exit_zero: the result record says failed
+PASS: profile_empty: exit non-zero (1)
+PASS: profile_empty: stderr names the package and the reason (beta (unit): profile_empty)
+PASS: profile_empty: the result record says failed
+PASS: callback_record_missing: exit non-zero (1)
+PASS: callback_record_missing: stderr names the package and the reason (beta (unit): callback_record_missing)
+PASS: callback_record_missing: the result record says failed
+PASS: cancelled: exit non-zero (1)
+PASS: cancelled: stderr names the package and the reason (beta (unit): cancelled)
+PASS: cancelled: the result record says failed
+PASS: one failing package: only the failing package is named
+PASS: one failing package: the healthy package alpha still ran
+PASS: collect without a submitted group is refused (rc 1)
+PASS: no mode is a usage error
+PASS: an unknown mode is a usage error
+PASS: submit with an unreadable package list is refused
+PASS: TC_DISPATCH and the other hooks are refused outside test mode
+PASS: TC_FENCE_DIR alone is refused outside test mode (a caller cannot point the figure at a fence of its choosing)
+PASS: mutation sandbox control: an UNMUTATED mirror passes this body
+PASS: mutation run-half-or-true caught (1 failing legs)
+PASS: mutation verify-skipped caught (5 failing legs)
+PASS: mutation foreground-wait caught (1 failing legs)
+PASS: mutation panic-unchecked caught (2 failing legs)
+PASS: mutation empty-profile-ok caught (3 failing legs)
+PASS: mutation infra-detail-dropped caught (1 failing legs)
+PASS: mutation dir-abs-unhandled caught (4 failing legs)
+PASS: mutation fence-not-applied caught (5 failing legs)
+PASS: mutation fence-gate-skipped caught (2 failing legs)
+Summary: PASS=86 FAIL=0 SKIP=0

@@ -1,0 +1,44 @@
+PASS: run_kcov: success exit 0
+PASS: run_kcov: two containers go through run_pinned.sh (probe, then run)
+PASS: run_kcov: both calls name IMG-KCOV
+PASS: run_kcov: the envelope memory limit is handed to run_pinned.sh
+PASS: run_kcov: the long operation ends complete
+PASS: run_kcov: a toolchain record is written
+PASS: run_kcov: no arguments is a usage error
+PASS: run_kcov: the exit code of the run is passed through
+PASS: run_kcov: an unreadable lock is refused
+PASS: run_kcov: --image is not an option (a single-image wrapper), usage error
+PASS: run_rust: a start on a host with no attestation is refused with exit 20
+PASS: run_rust: stderr names compile_class_local
+PASS: run_rust: a refused local start runs no container (control needle: the shim was never reached)
+PASS: run_rust: a refused local start registers no long operation
+PASS: run_rust: a refused local start touches podman not at all
+FAIL: I8: RUNNER_REMOTE_CALL=1 no longer unlocks run_rust (exit 20: a caller-settable variable is not a capability) (got '0' want '20')
+FAIL: I8: and nothing ran (no container call) (got '2' want '0')
+FAIL: I8: neither a test-mode variable nor an attestation path in the environment unlocks it (the path is a constant) (got '0' want '20')
+FAIL: box patch failed
+FAIL: run_rust: an attested build host runs: exit 0 (got '20' want '0')
+FAIL: run_rust: two containers (probe, run) (got '0' want '2')
+FAIL: run_rust: IMG-RUST missing
+jq: error: Could not open file /tmp/rustkcov-test.6BBdj2/reg/repo/.audit/longops/ops/*.json: No such file or directory
+FAIL: run_rust: the long operation ends complete (got '' want 'complete')
+PASS: I8: an attestation naming ANOTHER host is not this host (exit 20, nothing ran)
+PASS: I8: an attestation naming a host that merely starts with this host name is refused (exact line match) (exit 20, nothing ran)
+PASS: I8: a group-writable attestation is refused (anyone in the group could forge it) (exit 20, nothing ran)
+PASS: I8: an other-writable attestation is refused (exit 20, nothing ran)
+PASS: I8: an attestation owned by a different uid than the expected one is refused (the owner check) (exit 20, nothing ran)
+PASS: I8: an attestation that is a symlink is refused (exit 20, nothing ran)
+PASS: I8: an absent attestation is refused (exit 20, nothing ran)
+FAIL: run_rust: no arguments is a usage error on an attested host (got '20' want '2')
+FAIL: run_rust: not-in-lock refusal missing (rc 20): run_rust: REFUSED reason=compile_class_local run_rust.sh is class 'compile': it runs only as a remote command composed by the build emitter (scripts/build/remote/emit.sh, RUNNER_REMOTE_CALL=1), never on the local host
+PASS: run_rust: that refusal runs no container
+PASS: lane: TIC build-scripts unit -- true exits 0
+PASS: lane needle: build-scripts unit reaches the run_kcov wrapper (never run_testutil, never a bare podman)
+PASS: lane: TIC installer-wizard rust -- true exits 0 on the shim
+PASS: lane needle: installer-wizard rust reaches the run_rust wrapper
+PASS: lane needle: catalogizer-desktop rust reaches the run_rust wrapper
+PASS: lane: an app key not in the table is still refused (unknown_app), nothing ran
+PASS: lane: (build-scripts, rust) has no row and is refused
+PASS: lane: (catalogizer-desktop, unit) stays refused: its remote row waits for the T121a site column (BLOCKED)
+PASS: lane table: the added coverage rows are exactly the reviewed ones
+Summary: PASS=32 FAIL=10 SKIP=0

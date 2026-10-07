@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | new in the working tree (T195-T197), not yet committed; independent review owed (constitution 11.4.142, T208); its row in `docs/scripts/README.md` is owed |
+| Last modified | 2026-10-07T00:58:05Z |
+| Status | new in the working tree (T195-T197), not yet committed; independent review owed (constitution 11.4.142, T208); its row in `docs/scripts/README.md` is owed; review round 1 (WF11, 2026-10-06 UTC): fixes B1, I1, I2, I7, I11, m1, m2, m3, m11 applied; independent re-review owed (constitution 11.4.142) |
 | Source | `tools/evidence/matrix/gen_matrix.py`, `tools/evidence/matrix/derive_applicability.py`; tests `tools/evidence/matrix/tests/test_gen_matrix.sh`; data `specs/001-full-project-audit-remediation/matrix/applicability.yaml` |
 
 ## Purpose
@@ -28,3 +28,13 @@ With `--ledger` a cell is `present` only with a PASS record of three identical r
 
 ## Tests
 `test_gen_matrix.sh`: hand-counted golden counts, the doc05 4.4 table tallied from the document text (9 `?` cells today, refused by the generator), the one-`?` fixture, n/a without reason, missing type, hand-edit overwrite, gate legs, minting legs, and eight paired mutations.
+
+## Review round 1 (WF11, 2026-10-06 UTC)
+- **B1**: `gen_matrix.py --gate` without `--ledger` is now a usage refusal (exit 2, `requires --ledger`) and writes nothing: absence of evidence blocks exactly as a FAIL does (11.4.135). Under `--gate` a ledger record that names no component/type of the map is refused (exit 3 `ledger_record_unmatched`), and a map with no applicable cell is refused (exit 3 `gate_vacuous`). The class closed: every gate entry point that could pass over nothing (a missing ledger, a stray record, an empty scope).
+- **m3**: the 11.4.44 header carries `Created` forward and raises `Revision` only when the body (everything but the three header fields) changed.
+- **I1**: `derive_applicability.py` refuses an uninitialised or empty submodule (exit 3 `submodule_uninitialised`, every empty module named, nothing written): before, 51 applicable cells became n/a in the reviewer's probe.
+- **I2**: markers are matched as path TOKENS (`e2e` is not `e2ee`, `load` is not `loader`, `fault` is not `defaults`, `perf` is not `perfetto`, `inject` is not `injector`); the only directories skipped are vendored third-party trees (`node_modules`, `vendor`, `opensource`), so first-party `scripts/build`, `scripts/coverage` and `pkg/coverage` are counted.
+- **m1 / provenance**: the files are enumerated with `git ls-files` per root (build output and untracked scratch are not counted); the YAML header carries `enumeration` and a `files_fingerprint`, so a re-derivation is checkable. **m2**: `MANIFEST.yaml` is not a bank. **m11**: the Website DDoS cell is re-measured on every run (a hosting configuration file flips it to `A`).
+- **I11**: the A9 build `unit` cell is re-read from `tests/test_build_system.sh` (it sources the Build/lib libraries from a temp copy of `Build/`): `~`, not docs/05's `A`. `integration` and `full_automation` stay `A` with the re-read named.
+- Measured effect on the committed map: 2 of 810 cells change state (A9 unit `A` to `~`; A10:assets chaos `~` to `A`); the totals P 46, ~ 137, A 414, n/a 213 are unchanged.
+- **Tests**: `test_gen_matrix.sh` now has legs for the verdict, class and blocked rules and the gate inputs (the reviewer's RM1-RM4 mutations are adopted verbatim); the new `test_derive_applicability.sh` runs the deriver over synthetic repositories (determinism, empty submodule, token markers, A9, banks, Website, the unit `P` threshold = the reviewer's RM5) with a sandbox control for its mutations.

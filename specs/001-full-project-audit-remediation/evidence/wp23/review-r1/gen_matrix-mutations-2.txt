@@ -1,0 +1,17 @@
+CAUGHT qcheck: FAIL: one '?' cell: the refusal does not name the '?' rule: gen_matrix: the applicability map is invalid (1 pr|
+CAUGHT noreason: FAIL: n/a without reason accepted (rc 0): |
+CAUGHT missingtype: FAIL: missing type accepted (rc 1)|
+CAUGHT gate_runs: FAIL: gate accepted a non-identical-run record (rc 0)|
+CAUGHT gate_mut: FAIL: gate accepted a record without a caught mutation (rc 0)|
+CAUGHT mint_always: FAIL: mint: a second run mints none (11.4.214) (got '4' want '2')|
+CAUGHT mint_fail: FAIL: failing mint command exit 0|FAIL: a ledger row exists for a failed mint|
+CAUGHT overwrite: FAIL: a hand-edited count is overwritten on regeneration (got '999 9 11 6' want '4 9 11 6')|FAIL: a hand edit of the md survived regeneration|
+CAUGHT RM1_class_check: FAIL: RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails (g|FAIL: RM1: class gap not named: |
+CAUGHT RM2_verdict_check: FAIL: RM2: a FAIL verdict never counts as present: the gate fails (got '0' want '1')|FAIL: RM2: verdict reason missing: |
+CAUGHT RM3_blocked_branch: FAIL: RM3: the cell status is blocked in the json (got '['partial']' want '['blocked']')|FAIL: RM3: blocked reason missing: gen_matrix: GATE FAIL (SC-004): 1 applicable cell(s) are not `present`:|
+CAUGHT RM4_gate_exit: FAIL: gate did not fail on the empty ledger (rc 0): |FAIL: gate accepted a non-identical-run record (rc 0)|
+CAUGHT gate_needs_ledger: FAIL: gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass (got '1' want '2')|FAIL: gate B1: refusal text missing: Traceback (most recent call last):|
+CAUGHT gate_unmatched: FAIL: gate: stray record accepted (rc 0)|
+CAUGHT gate_vacuous: FAIL: gate: vacuous map accepted (rc 0)|
+CAUGHT header_created: FAIL: m3: Created is carried forward (not overwritten by the second run) (got '2026-10-07T00:00:00Z' want '202|
+CAUGHT header_revision: FAIL: m3: Revision rises to 2 when the body changed (got '1' want '2')|

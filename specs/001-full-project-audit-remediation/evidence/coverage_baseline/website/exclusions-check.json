@@ -1,8 +1,12 @@
 {
   "application": "website",
+  "applied_checked": true,
+  "applied_source": "the tool applies no exclusion",
+  "content_checked": true,
   "entries": [],
   "file": "coverage/exclusions/website.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
   "sha256": "5ca2f8bff2726efd5f3235e466501c0185a80477a4bbd626d30e60b01ac0927b",

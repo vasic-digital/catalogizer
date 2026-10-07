@@ -1,5 +1,8 @@
 {
   "application": "catalog-web",
+  "applied_checked": true,
+  "applied_source": "no coverage block in vite.config.ts: the tool excludes nothing from coverage",
+  "content_checked": true,
   "entries": [
     {
       "class": "non-shipping-fixtures-and-golden-assets",
@@ -8,21 +11,14 @@
       "path": "src/components/__tests__/__snapshots__/**",
       "stale": false,
       "tracked_item": null
-    },
-    {
-      "class": "non-shipping-fixtures-and-golden-assets",
-      "justification_chars": 83,
-      "matched_files": 2,
-      "path": "e2e/fixtures/**",
-      "stale": false,
-      "tracked_item": null
     }
   ],
   "file": "coverage/exclusions/catalog-web.yaml",
   "first_party_entries": [],
+  "listed_not_applied": [],
   "problems": [],
   "schema": "exclusions-check/1",
-  "sha256": "a95e967c9ad00628e677f1247917e880f2bc86b3780df8049bbaec8a7c2ce880",
+  "sha256": "991da0d5ad8585e03cf936e8ad65d9fe37b4aeb88baf4e0db4d27d4602036c81",
   "unlisted": [],
   "verdict": "PASS"
 }

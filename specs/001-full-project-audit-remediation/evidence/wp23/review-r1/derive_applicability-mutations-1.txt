@@ -1,0 +1,11 @@
+CONTROL PASS
+CAUGHT tag_token_off: FAIL: I2: a build tag that merely CONTAINS integration (disintegration) does not make the integration cell par|
+CAUGHT render_call_off: FAIL: I2: prerender( is not a render( call: the ui cell stays A (got '~' want 'A')|
+CAUGHT RM5_unit_threshold: FAIL: RM5: 9 Go test files: unit is ~ (got 'P' want '~')|FAIL: RM5: no Go test file: unit is A (got 'P' want 'A')|
+CAUGHT empty_submodule_guard: FAIL: I1: an empty submodule directory is refused (exit 3) (got '0' want '3')|FAIL: I1: refusal text: |
+CAUGHT token_markers_off: FAIL: I2: pkg/defaults/defaults_test.go does not make chaos partial (fault is not defaults): the cell stays A |FAIL: I2: pkg/e2ee/* is not e2e (e2ee is encryption): the e2e cell stays A (got '~' want 'A')|
+CAUGHT vendored_only: FAIL: I2: A13 unit reason: TS-00 read: 1 `test_*.sh` / `*_test.sh` files under scripts/, tools/, tests/; wheth|
+CAUGHT manifest_counted: FAIL: m2: helixqa reason: TS-00 read: 4 bank files under challenges/helixqa-banks; doc05 4.4 records 1178 non-|
+CAUGHT website_frozen: FAIL: m11: a Website/nginx.conf flips the DDoS cell to A (there is now server config of ours) (got 'n/a' want |FAIL: m11: reason: TS-00 re-read (2 tracked file(s) under Website/): no server, container or hosting configura|
+CAUGHT build_reread_off: FAIL: I11: tests/test_build_system.sh that sources Build/lib makes the unit cell ~ (got 'A' want '~')|FAIL: I11: reason: docs/05 4.4 (measured 2026-10-03), column A9 row unit|
+CAUGHT fingerprint_const: FAIL: m1: fingerprint is '00000000000000000000000000000000'|FAIL: m1: the fingerprint did not change on an added file|

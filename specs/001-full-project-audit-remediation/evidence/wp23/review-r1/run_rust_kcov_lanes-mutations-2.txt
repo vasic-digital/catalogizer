@@ -1,0 +1,12 @@
+CONTROL PASS
+CAUGHT rust-local-allowed: FAIL: run_rust: a start on a host with no attestation is refused with exit 20 (got '0' want '20')|FAIL: run_rust: reason missing: AM-P1 clean|
+CAUGHT rust-env-trusted: FAIL: I8: RUNNER_REMOTE_CALL=1 no longer unlocks run_rust (exit 20: a caller-settable variable is not a capability) (got|FAIL: I8: and nothing ran (no container call) (got '2' want '0')|
+CAUGHT rust-attest-perm-off: FAIL: I8: a group-writable attestation is refused (anyone in the group could forge it) was not refused (rc 0, calls 2): |FAIL: I8: an other-writable attestation is refused was not refused (rc 0, calls 2): AM-P1 clean|
+CAUGHT rust-attest-owner-off: FAIL: I8: an attestation owned by a different uid than the expected one is refused (the owner check) was not refused (rc|
+CAUGHT rust-attest-symlink-ok: FAIL: I8: an attestation that is a symlink is refused was not refused (rc 0, calls 2): AM-P1 clean|
+CAUGHT rust-attest-host-unmatched: FAIL: I8: an attestation naming ANOTHER host is not this host was not refused (rc 0, calls 2): AM-P1 clean|FAIL: I8: an attestation naming a host that merely starts with this host name is refused (exact line match) was not refu|
+CAUGHT rust-image-swapped: FAIL: run_rust: IMG-RUST missing|FAIL: run_rust: not-in-lock refusal missing (rc 0): AM-P1 clean|
+CAUGHT kcov-image-swapped: FAIL: run_kcov: IMG-KCOV missing from the shim calls|
+CAUGHT lane-kcov-to-testutil: FAIL: lane needle: build-scripts unit did not reach run_kcov: WRAPPER run_testutil --memory 19267584000 --cpus 9 -- true|
+CAUGHT lane-rust-local: FAIL: lane needle: installer-wizard rust did not reach run_rust: WRAPPER run_testutil --memory 19267584000 --cpus 9 -- t|
+CAUGHT lane-desktop-node-row: FAIL: lane: catalogizer-desktop unit ran or exited 0|

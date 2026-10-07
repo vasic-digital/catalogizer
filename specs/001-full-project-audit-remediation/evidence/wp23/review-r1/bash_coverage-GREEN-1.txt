@@ -1,0 +1,90 @@
+# command: bash scripts/coverage/tests/test_bash_coverage.sh (host, mutations included)
+# date_utc: 2026-10-07T00:29:25Z
+# git_head: 28e3662bccb77d2773d5c38cd8bb81d003e07d33
+# sha256 f8e81a59ee685ed5200a7d1a8b6685986a775b4f99660f3c2fb0126573232d6f  scripts/coverage/tests/test_bash_coverage.sh
+PASS: fixture 1: exit 0
+PASS: fixture 1: schema
+PASS: fixture 1: executable lines (hand count 10)
+PASS: fixture 1: executed lines (hand count 7)
+PASS: fixture 1: percent
+PASS: fixture 1: the uncovered lines are 10 11 15
+PASS: fixture 1: the never-called function is REPORTED
+PASS: fixture 1: the called function is not reported uncovered
+PASS: fixture 1: no traced line was classified non-executable (the classifier agrees with the tracer)
+PASS: fixture 1: totals equal the single target
+PASS: fixture 1: the record states the PS4 that was used (the FULL path, review I3)
+PASS: fixture 1: a clean run has status ok (no classifier disagreement)
+PASS: fixture 1: the honest limit (line, not branch) is written into the record
+PASS: fixture 1: the set +x / trap limit is written into the record
+PASS: fixture 1 with the branch taken: executed 8 (line 15 now executes)
+PASS: fixture 2: executable (hand count 6)
+PASS: fixture 2: executed (hand count 5)
+PASS: fixture 2: percent
+PASS: fixture 2: the uncovered line is the case arm 6
+PASS: fixture 2: no traced line outside the classifier's executable set
+PASS: driver with a fence: exit 0
+PASS: driver: child processes are traced (totals 12 executed of 16 executable)
+PASS: driver: the excluded file is not in the targets
+PASS: driver: the excluded file is listed with its class
+PASS: driver: the totals percent is 75.00
+PASS: driver without a fence: all three count (14 executed of 19 executable)
+PASS: a fence the gate refuses is refused by the harness (exit 3 exclusions_gate_failed)
+PASS: a refused fence writes no coverage record
+PASS: I5: a fence whose class is false of the file it excludes is refused by the harness (exit 3, content-checked through --root)
+PASS: a failing command: the harness exits with the command's status
+PASS: a failing command: the record says command_failed with the status
+PASS: an empty trace is refused as trace_empty (exit 3), never reported as 0 percent
+PASS: a target the command never ran is reported 0.00 (the trace is not empty)
+PASS: a missing target is refused (exit 3 target_missing)
+PASS: I3: two targets sharing a base name are accepted (exit 0)
+PASS: I3: only the run one earns its lines (b/x.sh 70.00)
+PASS: I3: the sibling with the same base name that never ran stays 0.00 (control: the collision no longer shares credit)
+PASS: I3 probe: running a DIFFERENT x.sh does not credit the target a/x.sh (0.00, was 30.00 on the basename rule)
+PASS: I3 probe: the foreign same-basename file is NAMED in the record
+PASS: I3 probe: no traced line is credited to the non-target
+PASS: I3 probe: a RELATIVE path that resolves to a different file is not credited
+PASS: I3 golden-false: a RELATIVE path that resolves to the target is credited (70.00)
+PASS: I3: a copy that keeps the target's relative layout (.../a/x.sh) is credited (70.00)
+PASS: I3: the copy path is recorded as a copy
+PASS: I3: a root-level target is not credited by any same-basename file elsewhere (0.00)
+PASS: I3: two --target arguments naming ONE file are refused (3 duplicate_target)
+PASS: I4: a RELATIVE --out with a child that cd's: exit 0
+PASS: I4: the child's lines are traced (70.00, was 0.00 with exit 0)
+PASS: I4: a RELATIVE --exclusions file is resolved before any cd (the fence still applies)
+PASS: i1: pipeline fixture executable lines (hand count 8: 3 4 5 6 7 8 9 10)
+PASS: i1: pipeline fixture executed (8)
+PASS: i1: no traced line is classified non-executable (the classifier agrees with the tracer)
+PASS: i1: a multi-line array assignment counts ONE executable line, its closing line (fixture hand count 2: lines 6 7)
+PASS: i1: both are executed (the assignment is traced at line 6)
+PASS: i1: no classifier disagreement on the array fixture (status ok)
+PASS: i1 synthetic (bash 5.3 style, the continuation traced at its first line 10): all 8 executed, none foreign
+PASS: i1 synthetic (bash 5.2 style, the continuation traced at its LAST line 11): the same 8 executed, none foreign
+PASS: i1 synthetic: the status is ok for both styles
+PASS: i1 synthetic control: with the continuation line never traced the command is NOT executed (7 of 8)
+PASS: i1 synthetic: a multi-line array reported at its OPENING line (an older bash) is folded onto its closing line: 2 of 2
+PASS: i1: an argument continuation (line 11) is not counted
+PASS: no -- command is a usage error
+PASS: no target is a usage error
+PASS: m9: the command is handed BASH_ENV and COV_TRACE_FILE inside its own --out directory
+PASS: m9 control: the same probe run without the harness sees neither variable (so the leg above can fail)
+PASS: determinism: two runs give identical executed lines
+SKIP: kcov cross-check: kcov is not installed on this host (it is in IMG-KCOV: run through TIC build-scripts unit)
+PASS: mutation sandbox control: an UNMUTATED copy of the harness passes this body (so a CAUGHT below is the mutation)
+PASS: mutation no-xtrace-fd caught (50 failing legs)
+PASS: mutation structural-counted caught (14 failing legs)
+PASS: mutation exclusions-ignored caught (4 failing legs)
+PASS: mutation command-rc-swallowed caught (1 failing legs)
+PASS: mutation empty-trace-accepted caught (1 failing legs)
+PASS: mutation fence-root-dropped caught (1 failing legs)
+PASS: mutation fence-gate-skipped caught (3 failing legs)
+PASS: mutation duplicate-target-unchecked caught (1 failing legs)
+PASS: mutation RM_basename_credit caught (5 failing legs)
+PASS: mutation copy-suffix-dropped caught (2 failing legs)
+PASS: mutation root-level-copy-credit caught (1 failing legs)
+PASS: mutation relative-out-kept caught (1 failing legs)
+PASS: mutation continuation-alias-dropped caught (2 failing legs)
+PASS: mutation array-alias-dropped caught (1 failing legs)
+PASS: mutation array-lines-counted caught (4 failing legs)
+PASS: mutation pipe-continuation-dropped caught (5 failing legs)
+PASS: mutation function-report-dropped caught (1 failing legs)
+Summary: PASS=84 FAIL=0 SKIP=1
