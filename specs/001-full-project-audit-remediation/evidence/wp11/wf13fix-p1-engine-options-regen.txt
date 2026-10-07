@@ -1,0 +1,12 @@
+# identity: wf13fix-p1 engine option snapshot vs regeneration from live podman
+# head: 3fa277e4 (uncommitted work tree)
+# sha256 check_pins.sh: 100f3409bfd162885e27d50eb186bf7004a0d6213736fc3b9a067f97fc9ed82e
+# sha256 test_check_pins.sh: 2cf8cda1abfa040fccb7c333d9d233d120a6355d8d9707ee64f8680adcc0ee84
+# sha256 test_containerfiles.sh: b4e1bde1f34f0507833a43b80ba340393f2b5e88948d3b69b26ca0401ef3f640
+# sha256 engine_options.tsv: da3bd335ceab69abfdda0a5735e78d5134384bb68b7804f137f7f4dd2afb1c95
+# run_at: 2026-10-07T03:28:52Z host: anton
+# cmd: gen_engine_options.sh <tmp>; diff engine_options.tsv <tmp>
+podman version 5.7.0
+IDENTICAL (rc 0)
+rows: 243
+value options in the check_pins tables: 195

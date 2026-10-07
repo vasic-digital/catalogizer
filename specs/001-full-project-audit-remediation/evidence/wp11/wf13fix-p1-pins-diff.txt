@@ -1,0 +1,10 @@
+# identity: wf13fix-p1 live rows, committed scanner (f94f45c2) vs round-3 scanner, same work tree
+# head: 3fa277e4 (uncommitted work tree)
+# sha256 committed check_pins.sh: f94f45c21169c8618758c4db2a590c2f94993ee25d84867376e04979e3aa85fc
+# sha256 round-3 check_pins.sh: 100f3409bfd162885e27d50eb186bf7004a0d6213736fc3b9a067f97fc9ed82e
+# run_at: 2026-10-07T03:29:07Z host: anton
+# cmd: diff <(old --list | cut -f1-3 | grep -vE EXC) <(new --list | cut -f1-3 | grep -vE EXC)   EXC='scripts/containers/check_pins.sh|scripts/containers/tests/test_check_pins.sh|scripts/containers/tests/test_containerfiles.sh' (the three files this change edits are compared separately: they hold the new fixtures, which the committed scanner reads as findings)
+# control needle: the committed scanner returned 60 rows on this tree in total, 51 outside EXC (instrument sees); the round-3 scanner 52 in total, 52 outside EXC
+35a36
+> script_image_unpinned	scripts/build_in_container.sh	25
+# diff rc=1 ('>' only in the round-3 scanner, '<' only in the committed one)

@@ -1,6 +1,5 @@
 # name<TAB>old text (exact, unique in test_containerfiles.sh)<TAB>new text; each mutant must make test_containerfiles.sh FAIL (the fixtures catch it); \n \t decoded, a literal backslash is written doubled
-# CR1-CR6 are the independent reviewer's survivors (WF10 p1 F4); N-rows mutate the rules added by the WF10 fix.
-c4-download-check-removed	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln)   # MUT-ANCHOR c4-check	m = True   # MUT-ANCHOR c4-check
+# CR1-CR6 are the independent reviewer's survivors (WF10 p1 F4); N-rows mutate the C4/C7 command-parsing rules (round 3, WF13 N4/N9); RC rows are the round-2 reviewer's survivors RC1-RC4 re-expressed (RC3 and RC4 have no counterpart: the regexes they mutated are replaced by the command parser, mutated by N7-N19).
 c5-from-check-removed	if DIGEST.search(ref).group(1) not in locktxt:               # MUT-ANCHOR c5-from	if False:               # MUT-ANCHOR c5-from
 c6-class-check-removed	if d not in NO_CLASS_CHECK and e.get("class") not in CLASSES:     # MUT-ANCHOR c6-class	if False:     # MUT-ANCHOR c6-class
 c1-missing-dir-check-removed	if not os.path.isdir(os.path.join(tree, r)):	if False:
@@ -9,17 +8,31 @@ c2-containerfile-check-removed	if not os.path.isfile(cf) or os.path.getsize(cf) 
 c5-sha256-check-removed	if h not in locktxt:	if False:
 c6-entry-check-removed	if d not in DEFERRED:	if False:
 c6-digest-mismatch-removed	if e.get("reference") == base and e.get("digest") != dg:	if False:
-CR1-wget-not-a-download	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\b(curl|wget)\\s+(-|https?://)", ln):	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\b(curl)\\s+(-|https?://)", ln):
 CR2-class-only-presence	if d not in NO_CLASS_CHECK and e.get("class") not in CLASSES:	if d not in NO_CLASS_CHECK and e.get("class") is None:
 CR3-empty-companion-ok	if not os.path.isfile(fp) or os.path.getsize(fp) == 0:	if not os.path.isfile(fp):
 CR4-unknown-dir-silent	v("C6-unknown-directory", d, "directory has no id mapping in the checker")	pass
 CR5-c3-bad-exit-silent	v("C3-check_pins", d, "check_pins exited %d with %d VIOLATION lines (not a clean verdict)" % (r.returncode, len(vl)))   # MUT-ANCHOR c3-else	pass   # MUT-ANCHOR c3-else
-CR6-checksum-any-sha256sum	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln)   # MUT-ANCHOR c4-check	m = re.search(r"\\b(curl|wget)\\b.*?(sha256sum|shasum)", ln)   # MUT-ANCHOR c4-check
 N1-c3-clean-always	if r.returncode == 0 and not vl:      # MUT-ANCHOR c3-clean	if True:      # MUT-ANCHOR c3-clean
 N2-c3-violation-lines-not-named	elif r.returncode == 1 and vl:	elif False:
-N3-c4-count-rule-removed	if not m or n_ck < n_dl: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count	if not m: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
-N4-c4-download-count-fixed-one	n_dl = len(re.findall(r"\\b(?:curl|wget)\\s+(?:-|https?://)", ln))	n_dl = 1
-N5-c4-check-count-loosened	n_ck = len(re.findall(r"(?:sha256sum\\s+-c|shasum\\s+-a\\s+256\\s+-c)", ln))	n_ck = len(re.findall(r"(?:sha256sum|shasum)", ln))
 N6-c4-add-checksum-not-required	ck = re.search(r"--checksum=sha256:([0-9a-f]{64})\\b", ln)    # MUT-ANCHOR c4-add	ck = re.search(r"(.)", ln)    # MUT-ANCHOR c4-add
-N7-c7-swallow-removed	if re.match(r"^RUN\\b", ln, re.I) and re.search(r"\\|\\|\\s*(true|:)\\s*($|[;&)|])", ln):    # C7  MUT-ANCHOR c7-swallow	if False:    # C7  MUT-ANCHOR c7-swallow
-N8-c7-colon-form-removed	(true|:)\\s*($|[;&)|])	(true)\\s*($|[;&)|])
+c4-download-check-removed	dl_bad, swallowed = run_violations(body)       # MUT-ANCHOR c4-check	dl_bad, swallowed = False, False       # MUT-ANCHOR c4-check
+CR1-wget-not-a-download	if i is None or b not in ("curl", "wget"): return False	if i is None or b not in ("curl",): return False
+CR6-checksum-any-sha256sum	    if b == "sha256sum": return any(x in ("-c", "--check") or (x.startswith("-") and not x.startswith("--") and "c" in x[1:]) for x in a)	    if b == "sha256sum": return True
+N3-c4-one-check-clears-all	    elif is_check(toks) and pending > 0: pending -= 1	    elif is_check(toks): pending = 0
+N4-c4-download-count-fixed-one	        if is_download(toks): pending += 1	        if is_download(toks): pending = 1
+N5-c4-shasum-not-checked	    if b == "shasum": return "256" in a and "-a" in a and "-c" in a	    if b == "shasum": return True
+N7-c7-swallow-removed	if swallowed: v("C7-swallowed-failure", d, ln[:140])        # C7  MUT-ANCHOR c7-swallow	if False: v("C7-swallowed-failure", d, ln[:140])        # C7  MUT-ANCHOR c7-swallow
+N8-c7-colon-form-removed	if b in ("true", ":", "echo", "printf"): continue	if b in ("true", "echo", "printf"): continue
+N9-c7-exit-zero-removed	if b == "exit" and a == ["0"]: continue	if False: continue
+N10-c7-echo-printf-removed	if b in ("true", ":", "echo", "printf"): continue	if b in ("true", ":"): continue
+N11-c7-set-plus-e-removed	if b == "set" and "+e" in toks[i + 1:]: swallow = True	pass
+N12-c7-group-rhs-ignored	            if swallows(sub): res = True	            pass
+N13-c7-and-chain-ignored	while k < len(cmds) and cmds[k][0] == "&&":	while False:
+N14-c4-lookup-is-download	if b == "command" and i + 1 < len(toks) and toks[i + 1] in ("-v", "-V"): return None, ""	pass
+N15-c4-version-is-download	return not set(toks[i + 1:]) <= {"--version", "-V", "--help", "-h"}	return True
+N16-c4-url-first-not-download	return not set(toks[i + 1:]) <= {"--version", "-V", "--help", "-h"}	return bool(toks[i + 1:i + 2]) and toks[i + 1].startswith("-") and not set(toks[i + 1:]) <= {"--version", "-V", "--help", "-h"}
+N17-c4-check-before-download-counts	    elif is_check(toks) and pending > 0: pending -= 1	    elif is_check(toks): pending -= 1
+N18-c4-unparseable-accepted	dl_bad, swallowed = bool(re.search(r"\\b(?:curl|wget)\\b", body)), False	dl_bad, swallowed = False, False
+N19-c7-only-parsed-with-curl	if re.search(r"\\b(?:curl|wget)\\b|\\|\\||set\\s+\\+e", body):	if re.search(r"\\b(?:curl|wget)\\b", body):
+RC1-add-checksum-not-locked	            else: shas.append(ck.group(1))	            else: pass
+RC2-no-from-silent	        v("C2-from", d, "no FROM line")	        pass

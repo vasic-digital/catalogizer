@@ -22,7 +22,7 @@ check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2' want '$3')"; 
 command -v python3 >/dev/null 2>&1 || { echo "FAIL: python3 is required by this test"; exit 2; }
 [ -f "$SUT" ] || { echo "FAIL: check_pins.sh not found at $SUT"; exit 1; }
 
-T="$(mktemp -d "${TMPDIR:-/tmp}/checkpins-test.XXXXXX")"
+T="$(mktemp -d "${TMPDIR:-/tmp}/checkpins-test.XXXXXX")" && [ -d "$T" ] || { echo "FAIL: cannot create the scratch directory under ${TMPDIR:-/tmp} (mktemp failed); nothing was run"; exit 2; }
 trap 'rm -rf "$T"' EXIT
 D64="$(printf 'a%.0s' $(seq 64))"
 DG="sha256:$D64"
@@ -672,6 +672,293 @@ if command -v git >/dev/null 2>&1; then
     check "F4 --recurse reports the submodule path" "$(printf '%s' "$RL" | cut -f2)" "subm/Dockerfile"
   else bad "F4 the submodule fixture could not be created (git submodule add failed)"; fi
 else bad "F4 git is required for the --recurse fixture"; fi
+
+# ------------------------------------------------------------------ WF13 round 3 (11.4.276 structural round): the classes behind N1-N10 (docs/scripts/check_pins.md "Classes")
+# Each class is exercised over its ENUMERATED members, not over the instances the reviewer reported: engine-command recognition over
+# wrapper/prefix shapes and over EVERY option of the engine's own help text; parameter-expansion operators; the compose pull_policy values;
+# pipe-reader stages; unreadable inputs; test-script classification; arithmetic forms. Control needles: parser needles on the option snapshot,
+# a clean control next to every flagged class, and the RED/GREEN record for each class (docs/scripts/check_pins.md).
+CN=0
+line_case() { # <label> <script line> <want ref | none>   (the line is line 2 of scripts/a.sh)
+  CN=$((CN+1)); local n="lc$CN" got
+  mkdir -p "$T/$n/scripts"; printf '#!/usr/bin/env bash\n%s\n' "$2" >"$T/$n/scripts/a.sh"
+  got="$(rows "$n" | cut -f1,3,4 | tr '\n\t' ';,')"
+  if [ "$3" = none ]; then check "$1 (no row)" "$got" ""; else check "$1" "$got" "script_image_unpinned,2,$3;"; fi
+}
+pipe_case() { # <label> <script line> <yes|no>
+  CN=$((CN+1)); local n="pc$CN" got
+  mkdir -p "$T/$n/scripts"; printf '#!/usr/bin/env bash\n%s\n' "$2" >"$T/$n/scripts/a.sh"
+  got="$(rows "$n" | cut -f1,3 | tr '\n\t' ';,')"
+  if [ "$3" = no ]; then check "$1 (no row)" "$got" ""; else check "$1" "$got" "pipe_to_shell,2;"; fi
+}
+# --- class A: an engine command is recognised wherever it is a command, not only after a closed wrapper list (N1)
+line_case "R3-A timeout with a signal option"            'timeout -s KILL 30 podman run --rm postgres:15' postgres:15
+line_case "R3-A \$SUDO prefix"                             '$SUDO podman run --rm postgres:15' postgres:15
+line_case "R3-A \${SUDO} prefix"                           '${SUDO} docker pull redis:7' redis:7
+line_case "R3-A helper function with an argument"          'retry 3 podman pull postgres:16' postgres:16
+line_case "R3-A helper function wrapper"                   'log_run podman run --rm mysql:8' mysql:8
+line_case "R3-A unquoted ssh remote command"               'ssh host podman run --rm nginx:1.25' nginx:1.25
+line_case "R3-A unquoted eval"                             'eval podman run --rm busybox:1.36' busybox:1.36
+line_case "R3-A env with a value option"                   'env -u FOO podman run --rm alpine:3.19' alpine:3.19
+line_case "R3-A sudo long value option"                    'sudo --user root podman run --rm httpd:2.4' httpd:2.4
+line_case "R3-A helper with a quoted argument"             'run_remote "$HOST" podman pull haproxy:2.9' haproxy:2.9
+line_case "R3-A engine in a variable \$DOCKER"             '$DOCKER run --rm memcached:1.6' memcached:1.6
+line_case "R3-A engine in \${CONTAINER_ENGINE}"            '${CONTAINER_ENGINE} pull traefik:v3' traefik:v3
+line_case "R3-A whole command line quoted into a helper"   'bash_wrapper "docker pull varnish:7"' varnish:7
+line_case "R3-A nice with a value option"                  'nice -n 5 podman run --rm redis:6' redis:6
+line_case "R3-A ionice and stdbuf stacked"                 'ionice -c 3 stdbuf -oL podman pull mongo:7' mongo:7
+line_case "R3-A busybox-style chroot wrapper word"         'chroot /r podman run --rm influxdb:2' influxdb:2
+line_case "R3-A control: echo of a command line"           'echo podman run --rm junk:1' none
+line_case "R3-A control: grep for the words"               'grep docker run notes.txt' none
+line_case "R3-A control: man page"                         'man docker run' none
+line_case "R3-A control: a message that starts with the words" 'log "docker pull of foo failed"' none
+line_case "R3-A control: podman ps / build / logs"         'podman ps -a; docker build -t x:1 .; podman logs c' none
+line_case "R3-A control: a pinned operand through a prefix" "\$SUDO podman run --rm docker.io/library/postgres@$DG true" none
+line_case "R3-A control: a bare variable engine with no verb" 'if [ -x "$DOCKER" ]; then :; fi' none
+# --- class A (N5): the option tables ARE the engine help text (podman 5.7.0 parsed + the docker reference), checked option by option
+ENGOPT="$HERE/engine_options.tsv"
+[ -r "$ENGOPT" ] || bad "R3-A engine_options.tsv is missing"
+grep -qP '^run\t--add-host\tvalue\t' "$ENGOPT" && ok "R3-A parser needle: --add-host is a value option in the snapshot" || bad "R3-A parser needle --add-host(value) missing"
+grep -qP '^run\t--rm\tbool\t' "$ENGOPT" && ok "R3-A parser needle: --rm is boolean in the snapshot" || bad "R3-A parser needle --rm(bool) missing"
+grep -qP '^pull\t-a\tbool\t' "$ENGOPT" && ok "R3-A parser needle: pull -a (--all-tags) is boolean in the snapshot" || bad "R3-A parser needle pull -a(bool) missing"
+DUMP="$(bash "$SUT" --dump-engine-options 2>&1 | LC_ALL=C sort)"
+WANT="$(awk -F'\t' '!/^#/ && $3=="value" {print $1"\t"$2}' "$ENGOPT" | LC_ALL=C sort)"
+check "R3-A the value-option tables of check_pins equal the snapshot exactly (no missing option, no extra or boolean entry)" "$(diff <(printf '%s\n' "$DUMP") <(printf '%s\n' "$WANT") | head -6 | tr '\n' '|')" ""
+mkdir -p "$T/o_run/scripts" "$T/o_runb/scripts" "$T/o_pull/scripts" "$T/o_pullb/scripts" "$T/o_glob/scripts" "$T/o_globb/scripts"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' -v d="$D64" '!/^#/ && $1=="run" && $3=="value" {printf "podman run --rm %s val docker.io/library/postgres@sha256:%s true\n", $2, d}' "$ENGOPT"; } >"$T/o_run/scripts/a.sh"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' '!/^#/ && $1=="run" && $3=="bool" && $2!="--rm" {printf "podman run --rm %s postgres:15\n", $2}' "$ENGOPT"; } >"$T/o_runb/scripts/a.sh"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' -v d="$D64" '!/^#/ && $1=="pull" && $3=="value" {printf "podman pull %s val docker.io/library/postgres@sha256:%s\n", $2, d}' "$ENGOPT"; } >"$T/o_pull/scripts/a.sh"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' '!/^#/ && $1=="pull" && $3=="bool" {printf "podman pull %s postgres:15\n", $2}' "$ENGOPT"; } >"$T/o_pullb/scripts/a.sh"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' -v d="$D64" '!/^#/ && $1=="global" && $3=="value" {printf "podman %s val run --rm docker.io/library/postgres@sha256:%s true\n", $2, d}' "$ENGOPT"; } >"$T/o_glob/scripts/a.sh"
+{ echo '#!/usr/bin/env bash'; awk -F'\t' '!/^#/ && $1=="global" && $3=="bool" && $2!="--help" {printf "podman %s run --rm postgres:15\n", $2}' "$ENGOPT"; } >"$T/o_globb/scripts/a.sh"
+for pair in "o_run run value options:every run/create value option hides its value" "o_pull pull value options:every pull value option hides its value" "o_glob global value options:every global value option hides its value"; do
+  n="${pair%% *}"; lab="${pair#* }"; lab="${lab#*:}"
+  check "R3-A $lab (offending values: none)" "$(rows "$n" | cut -f4 | sort -u | head -5 | tr '\n' ' ')" ""
+done
+for pair in "o_runb run" "o_pullb pull" "o_globb global"; do
+  n="${pair%% *}"; k="${pair#* }"; want="$(grep -c . "$T/$n/scripts/a.sh")"; want=$((want-1))
+  check "R3-A every $k boolean option leaves the operand visible (one row per line)" "$(nrows "$n")" "$want"
+done
+# the snapshot is regenerated from a live podman of the same version when there is one (drift detector); otherwise an honest SKIP, never a pass
+SNAPVER="$(grep -o 'podman-version-[0-9.]*' "$ENGOPT" | head -1)"
+LIVEVER="$(command -v podman >/dev/null 2>&1 && podman --version 2>/dev/null | awk '{print "podman-version-"$3}')"
+if [ -n "$SNAPVER" ] && [ "$SNAPVER" = "$LIVEVER" ]; then
+  bash "$HERE/gen_engine_options.sh" "$T/engine_live.tsv" >/dev/null 2>&1
+  check "R3-A the snapshot equals a regeneration from the live $LIVEVER help" "$(diff "$ENGOPT" "$T/engine_live.tsv" | head -4 | tr '\n' '|')" ""
+else echo "SKIP: R3-A live drift check (snapshot ${SNAPVER:-none}, live ${LIVEVER:-none}): not the same podman, the snapshot comparison above still ran"; fi
+# --- class B: a registry reference inside a parameter-expansion default is a reference (N2); every operator of the expansion grammar
+for op in ':-' '-' ':=' '='; do
+  line_case "R3-B script assignment with \${IMG${op}default}" "IMG=\"\${IMG${op}docker.io/library/postgres:15}\"" docker.io/library/postgres:15
+done
+line_case "R3-B ghcr default inside a command operand"     'podman run --rm ${IMG:-ghcr.io/o/tool:1.0} true' ghcr.io/o/tool:1.0
+line_case "R3-B quoted default operand, short name"        'podman run --rm "${IMG:-redis:7}" true' redis:7
+line_case "R3-B default operand through a prefix"          '$SUDO docker run --rm ${IMG-mysql:8}' mysql:8
+line_case "R3-B control: a pinned default"                 "podman run --rm \${IMG:-docker.io/library/redis@sha256:$D64} true" none
+line_case "R3-B control: a default that is another variable" 'podman run --rm ${IMG:-$OTHER} true' none
+line_case "R3-B control: a bare variable operand"          'podman run --rm ${IMG} true' none
+line_case "R3-B control: a registry reference after = and a quote still flagged" 'echo x --image=docker.io/library/redis:7' docker.io/library/redis:7
+# --- class C: compose image next to build: x pull_policy (N3). Matrix over the policy values of the compose spec (build.md / services.md)
+comp_case() { # <label> <image> <policy|-> <flag|skip>   (image: is line 4)
+  CN=$((CN+1)); local n="cc$CN" got
+  mkdir -p "$T/$n"; { printf 'services:\n  a:\n    build: .\n    image: %s\n' "$2"; [ "$3" = - ] || printf '    pull_policy: %s\n' "$3"; } >"$T/$n/docker-compose.yml"
+  got="$(rows "$n" | cut -f1,3 | tr '\n\t' ';,')"
+  if [ "$4" = skip ]; then check "$1 (skipped)" "$got" ""; else check "$1 (flagged)" "$got" "compose_image_unpinned,4;"; fi
+}
+comp_case "R3-C namespaced image, build, no policy"               someorg/tool:1.0 - flag
+comp_case "R3-C namespaced image, build, pull_policy always"      someorg/tool:1.0 always flag
+comp_case "R3-C namespaced image, build, pull_policy missing"     someorg/tool:1.0 missing flag
+comp_case "R3-C namespaced image, build, pull_policy if_not_present" someorg/tool:1.0 if_not_present flag
+comp_case "R3-C namespaced image, build, pull_policy daily"       someorg/tool:1.0 daily flag
+comp_case "R3-C namespaced image, build, pull_policy every_24h"   someorg/tool:1.0 every_24h flag
+comp_case "R3-C namespaced image, build, pull_policy from a variable" someorg/tool:1.0 '${POLICY}' flag
+comp_case "R3-C namespaced image, build, pull_policy never"       someorg/tool:1.0 never skip
+comp_case "R3-C namespaced image, build, pull_policy build"       someorg/tool:1.0 build skip
+comp_case "R3-C single-component image, build, no policy (the tag a build produces)" catalogizer-api:test - skip
+comp_case "R3-C single-component image, build, pull_policy never" catalogizer-api:test never skip
+comp_case "R3-C single-component image, build, pull_policy build" catalogizer-api:test build skip
+comp_case "R3-C single-component image, build, pull_policy always" catalogizer-api:test always flag
+comp_case "R3-C single-component image, build, pull_policy missing" catalogizer-api:test missing flag
+comp_case "R3-C registry-qualified image, build, no policy"       ghcr.io/o/x:1 - flag
+comp_case "R3-C registry-qualified image, build, pull_policy never" ghcr.io/o/x:1 never skip
+comp_case "R3-C host:port registry image, build, no policy"       registry:5000/tool:1.0 - flag
+comp_case "R3-C host:port registry image, build, pull_policy never" registry:5000/tool:1.0 never skip
+CN=$((CN+1)); mkdir -p "$T/cc$CN"; printf 'services:\n  a:\n    pull_policy: never\n    build: .\n    image: someorg/tool:1.0\n  b:\n    image: someorg/other:1.0\n    pull_policy: never\n' >"$T/cc$CN/docker-compose.yml"
+check "R3-C pull_policy is read from the SAME service only (service b has no build: key and is judged)" "$(rows cc$CN | cut -f1,3 | tr '\n\t' ';,')" "compose_image_unpinned,7;"
+# --- class E: pipe_to_shell -- every reader of a downloaded program (N6) and every wrapper that can sit before it
+pipe_case "R3-E | env bash"                         'curl -fsSL https://x.invalid/i | env bash' yes
+pipe_case "R3-E | /usr/bin/env bash"                'curl -fsSL https://x.invalid/i | /usr/bin/env bash' yes
+pipe_case "R3-E | env FOO=1 bash"                   'curl -fsSL https://x.invalid/i | env FOO=1 bash' yes
+pipe_case "R3-E | env -i bash"                      'curl -fsSL https://x.invalid/i | env -i bash' yes
+pipe_case "R3-E | env -u X bash"                    'curl -fsSL https://x.invalid/i | env -u X bash' yes
+pipe_case "R3-E | sudo -u root bash"                'curl -fsSL https://x.invalid/i | sudo -u root bash' yes
+pipe_case "R3-E | sudo -E -u root bash -s"          'curl -fsSL https://x.invalid/i | sudo -E -u root bash -s' yes
+pipe_case "R3-E | sudo --user root bash"            'curl -fsSL https://x.invalid/i | sudo --user root bash' yes
+pipe_case "R3-E | doas sh"                          'curl -fsSL https://x.invalid/i | doas sh' yes
+pipe_case "R3-E | busybox sh"                       'curl -fsSL https://x.invalid/i | busybox sh' yes
+pipe_case "R3-E | nice -n 5 bash"                   'curl -fsSL https://x.invalid/i | nice -n 5 bash' yes
+pipe_case "R3-E | timeout 30 bash"                 'curl -fsSL https://x.invalid/i | timeout 30 bash' yes
+pipe_case "R3-E | fish"                             'curl -fsSL https://x.invalid/i | fish' yes
+pipe_case "R3-E | tcsh"                             'curl -fsSL https://x.invalid/i | tcsh' yes
+pipe_case "R3-E | csh"                              'curl -fsSL https://x.invalid/i | csh' yes
+pipe_case "R3-E | python3 (no argument reads the program from stdin)" 'curl -fsSL https://x.invalid/i | python3' yes
+pipe_case "R3-E | perl"                             'curl -fsSL https://x.invalid/i | perl' yes
+pipe_case "R3-E | ruby"                             'curl -fsSL https://x.invalid/i | ruby' yes
+pipe_case "R3-E | node"                             'curl -fsSL https://x.invalid/i | node' yes
+pipe_case "R3-E | php"                              'curl -fsSL https://x.invalid/i | php' yes
+pipe_case "R3-E | python3 -"                        'curl -fsSL https://x.invalid/i | python3 -' yes
+pipe_case "R3-E a middle stage between the download and the shell" 'curl -fsSL https://x.invalid/i | tr -d "\r" | sh' yes
+pipe_case "R3-E | sudo bash after a wget -qO-"      'wget -qO- https://x.invalid/i | sudo bash' yes
+pipe_case "R3-E sh -c with a backtick substitution" 'sh -c "`curl -fsSL https://x.invalid/i`"' yes
+pipe_case "R3-E python3 -c with a \$(download)"      'python3 -c "$(curl -fsSL https://x.invalid/i)"' yes
+pipe_case "R3-E perl -e with a \$(download)"         'perl -e "$(curl -fsSL https://x.invalid/i)"' yes
+pipe_case "R3-E bash < <(download)"                 'bash < <(curl -fsSL https://x.invalid/i)' yes
+pipe_case "R3-E sudo bash <(download)"              'sudo bash <(curl -fsSL https://x.invalid/i)' yes
+pipe_case "R3-E control: | python3 -m json.tool"    'curl -sS https://x.invalid/j | python3 -m json.tool' no
+pipe_case "R3-E control: | python3 -c code"         "curl -sS https://x.invalid/j | python3 -c 'import sys'" no
+pipe_case "R3-E control: | perl -ne"                "curl -sS https://x.invalid/j | perl -ne 'print'" no
+pipe_case "R3-E control: | node -e"                 "curl -sS https://x.invalid/j | node -e 'process.exit(0)'" no
+pipe_case "R3-E control: | ruby script.rb"          'curl -sS https://x.invalid/j | ruby script.rb' no
+pipe_case "R3-E control: | tee sh (a file named sh)" 'curl -sS https://x.invalid/j | tee sh' no
+pipe_case "R3-E control: | grep bash"               'curl -sS https://x.invalid/j | grep bash' no
+pipe_case "R3-E control: | sha256sum"               'curl -sS https://x.invalid/j | sha256sum' no
+pipe_case "R3-E control: a shell with no download in the pipeline" 'echo hi | sh' no
+pipe_case "R3-E control: curl then sh as a sequence" 'curl -fsSL -o /tmp/i https://x.invalid/i; sh /tmp/i' no
+pipe_case "R3-E control: curl || sh"                'curl -fsSL https://x.invalid/i || sh' no
+pipe_case "R3-E control: curl | tee f && sh f"      'curl -fsSL https://x.invalid/i | tee /tmp/f && sh /tmp/f' no
+# --- class F: an input that cannot be read cannot be judged: exit 3, never "0 violations" (N7)
+mkdir -p "$T/unr"; printf 'FROM golang:1.21\n' >"$T/unr/Dockerfile"; chmod 000 "$T/unr/Dockerfile"
+if [ -r "$T/unr/Dockerfile" ]; then echo "SKIP: R3-F unreadable-file check (this user can read a mode-000 file, e.g. root)"
+else
+  UOUT="$(bash "$SUT" --root "$T/unr" 2>"$T/unr.err")"; URC=$?
+  check "R3-F an unreadable Dockerfile exits 3 (not 0)" "$URC" "3"
+  check "R3-F an unreadable Dockerfile prints no 'N violations' summary" "$(printf '%s' "$UOUT" | grep -c 'violations in')" "0"
+  grep -q 'Dockerfile' "$T/unr.err" && grep -q 'check_pins: cannot read' "$T/unr.err" && ok "R3-F stderr names the unreadable file" || bad "R3-F stderr does not name the file: $(head -2 "$T/unr.err")"
+  chmod 600 "$T/unr/Dockerfile"; bash "$SUT" --root "$T/unr" >/dev/null 2>&1; check "R3-F control: the same file, readable, is flagged (exit 1)" "$?" "1"
+fi
+# --- class G: test-script classification and here-document detection (N8, N10)
+fx g_opnamed scripts/test_infra_up.sh <<'EOF'
+#!/usr/bin/env bash
+IMG=docker.io/library/postgres:16
+podman run --rm "$IMG" true
+EOF
+expect_row "R3-G a test_*-named script OUTSIDE a tests directory is operational code: the registry literal is flagged" g_opnamed script_image_unpinned 2 docker.io/library/postgres:16
+fx g_opexport scripts/test_up.sh <<'EOF'
+#!/usr/bin/env bash
+export IMAGE=docker.io/library/redis:7
+podman run --rm "$IMAGE" true
+EOF
+expect_row "R3-G export IMAGE=<registry ref> in a test_*-named operational script is flagged" g_opexport script_image_unpinned 2 docker.io/library/redis:7
+fx g_intests scripts/tests/test_up.sh <<'EOF'
+#!/usr/bin/env bash
+IMG=docker.io/library/postgres:16
+podman run --rm "$IMG" true
+EOF
+expect_good "R3-G control: the same lines inside a tests directory are fixture data" g_intests
+fx g_arith1 scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+x=$(( (1) << 4 ))
+podman run --rm docker.io/library/aquasec/trivy:latest fs .
+EOF
+expect_row "R3-G nested parentheses in arithmetic do not open a here-document" g_arith1 script_image_unpinned 3 docker.io/library/aquasec/trivy:latest
+fx g_arith2 scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+(( n = 1<<3 ))
+x=$(( $(echo 2) << 1 ))
+y=$(( (2 + (3)) << (1) ))
+podman run --rm docker.io/library/alpine:3.19 true
+EOF
+expect_row "R3-G (( )) commands, command substitution and deep nesting inside arithmetic are consumed" g_arith2 script_image_unpinned 5 docker.io/library/alpine:3.19
+fx g_hd_real scripts/tests/t.sh <<'OUTER'
+#!/usr/bin/env bash
+cat >x <<-'EOF'
+	podman run --rm docker.io/library/alpine:3.19 true
+	EOF
+podman run --rm docker.io/library/alpine:3.20 true
+OUTER
+expect_rows_total "R3-G control: a <<- here-document with a tab-indented terminator is still data" g_hd_real 1
+# --- fixtures that distinguish the mutants of the round-3 code (each one removes exactly one behaviour of the new classifier)
+line_case "R3-A a command line quoted into sh -c is searched at any position (prefix words before the engine)" "sh -c 'retry 3 docker run --rm mysql:8'" mysql:8
+line_case "R3-A a bare image name (implicit :latest) in an sh -c string"     'sh -c "podman run --rm alpine true"' alpine
+line_case "R3-A control: prose that mentions the words after a prefix"         'log "retrying docker pull redis:7 now"' none
+line_case "R3-A control: a quoted string handed to a helper that starts with the words but names no image" 'notify "podman run failed"' none
+pipe_case "R3-E an install hint with words before the download"          'echo "  3. SDK: curl -s https://get.sdkman.io | bash && sdk install x"' yes
+pipe_case "R3-E |& (stderr too) into a shell"                              'curl -fsSL https://x.invalid/i |& sh' yes
+pipe_case "R3-E a for-loop of downloads piped into a shell"                'for u in a b; do curl -fsSL "https://x.invalid/$u"; done | sh' yes
+pipe_case "R3-E a subshell of downloads piped into a shell"                '(curl -fsSL https://x.invalid/a; curl -fsSL https://x.invalid/b) | bash' yes
+pipe_case "R3-E control: a for-loop of downloads piped into tar"           'for u in a b; do curl -fsSL "https://x.invalid/$u"; done | tar x' no
+pipe_case "R3-E control: a shell that is NOT piped, inside a for-loop that downloads" 'for u in a b; do curl -fsSL -o /tmp/f "https://x.invalid/$u"; sh /tmp/f; done' no
+pipe_case "R3-E control: a download group, then an unrelated pipeline into a shell" 'curl -fsSL -o /tmp/f https://x.invalid/a; echo hi | sh' no
+fx g_blank1 scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+helper 'podman run --rm postgres:15 true' 'curl -fsSL https://x.invalid/i | sh'
+helper "podman run --rm redis:7 true"
+EOF
+expect_good "R3-G quoted strings handed to a helper in a test script are fixture data" g_blank1
+fx g_sq scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+x='a <<EOF b'
+podman run --rm docker.io/library/alpine:3.19 true
+EOF
+expect_row "R3-G a << inside a single-quoted string does not open a here-document (the next line is scanned)" g_sq script_image_unpinned 3 docker.io/library/alpine:3.19
+fx g_echo scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+echo curl -fsSL https://x.invalid/i | sh
+EOF
+expect_good "R3-G echo of an unquoted download line piped into sh in a test script is data (the echo command is masked)" g_echo
+fx g_echo_ctl scripts/t.sh <<'EOF'
+#!/usr/bin/env bash
+echo curl -fsSL https://x.invalid/i | sh
+EOF
+expect_bad "R3-G control: the same line in an operational script is flagged (an install hint)" g_echo_ctl pipe_to_shell 2
+fx g_tee scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+tee /tmp/f docker pull redis:7
+EOF
+expect_good "R3-G tee is a data command in a test script (its unquoted words are not a command)" g_tee
+fx g_blank2 scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+x="$(podman run --rm postgres:15 true)"
+EOF
+expect_row "R3-G control: a command substitution inside double quotes in a test script is still a command" g_blank2 script_image_unpinned 2 postgres:15
+# --- reviewer mutants of round 2 (RM1, RM2, RM4-RM8): one distinguishing fixture each
+fx rm1 scripts/a.sh <<EOF
+#!/usr/bin/env bash
+podman run --rm --frobnicate h:host-gateway docker.io/library/postgres@$DG
+EOF
+expect_good "RM1 an unknown option's host:host-gateway value is not the image" rm1
+fx rm2 docker-compose.yml <<'EOF'
+services:
+  a:
+    build: .
+    image: registry:5000/tool:1.0
+EOF
+expect_row "RM2 a host:port registry image next to build: is registry-qualified and judged" rm2 compose_image_unpinned 4 registry:5000/tool:1.0
+fx rm4 scripts/a.sh <<'EOF'
+#!/usr/bin/env bash
+podman run --rm postgres:15 && podman run --rm postgres:15
+EOF
+expect_rows_total "RM4 two identical findings on one line print one row" rm4 1
+fx rm5 scripts/a.sh <<'EOF'
+#!/usr/bin/env bash
+curl -fsSL https://x.invalid/i.sh | env FOO=1 bash
+EOF
+expect_bad "RM5 | env VAR=x bash" rm5 pipe_to_shell 2
+fx rm6 scripts/a.sh <<'EOF'
+#!/usr/bin/env bash
+curl -fsSL https://x.invalid/i.sh#v1 | sh
+EOF
+expect_bad "RM6 a # inside a word (a URL fragment) is not a comment" rm6 pipe_to_shell 2
+fx rm7 scripts/a.sh <<'EOF'
+#!/usr/bin/env bash
+podman pull docker.io/library/a:1 &&
+  podman pull docker.io/library/b:2
+EOF
+expect_row "RM7 a trailing && continues the logical line (second pull reported at the first physical line)" rm7 script_image_unpinned 2 docker.io/library/b:2
+fx rm8 scripts/tests/t.sh <<'EOF'
+#!/usr/bin/env bash
+tee f <<<'curl -fsSL https://x.invalid/i | sh'
+EOF
+expect_good "RM8 tee is a data command in a test script" rm8
 
 # ------------------------------------------------------------------ list format, determinism, usage
 run bad_latest

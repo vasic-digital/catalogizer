@@ -2,10 +2,12 @@
 # check_pins.sh - T105 (docs/16 section 7.1 step 3, finding D-07, D-05; constitution 11.4.246/11.4.264 digest identity, 11.4.173).
 # Fails when a compose file, a Dockerfile/Containerfile or a shell script references an EXTERNAL image without a full
 # `@sha256:<64 lowercase hex>` digest, or installs software by piping a download into a shell.
-# Revision 2 (WF10 review p1 fixes, 2026-10-07): false positives and false negatives removed, exit 3 for an internal error; the full
-# rule text is docs/scripts/check_pins.md.
+# Revision 3 (WF13 round 3, 2026-10-07, constitution 11.4.276 structural round): the classifiers were rebuilt from the grammar of what they
+# classify (engine words at any position, option tables = the engine help text, parameter-expansion defaults, compose pull_policy, pipeline
+# stages that read a program from stdin), an unreadable input is exit 3; the full rule text and the class table are docs/scripts/check_pins.md.
 #
 # Usage: check_pins.sh [--root DIR] [--list] [--recurse] [--exclude-dir NAME]... [PATH...]
+#        check_pins.sh --dump-engine-options     print `table<TAB>option` of the value-option tables (the test compares them with engine_options.tsv)
 #   --root DIR          directory the reported paths are relative to (default: the git top level of the cwd, else the cwd)
 #   PATH...             files or directories (relative to the root) to scan; default: every tracked file of the root
 #                       (`git ls-files`; with --recurse also the files of every submodule checkout, `--recurse-submodules`),
@@ -14,15 +16,16 @@
 #   --list              print one TSV row per violation `rule<TAB>path<TAB>line<TAB>reference` and nothing else (the baseline form)
 #   --exclude-dir NAME  skip directories with this exact name (repeatable)
 # Exit: 0 no violation; 1 at least one violation; 2 usage error (unknown option, root missing or not a directory);
-#       3 internal error (an uncaught exception; nothing on stdout, a traceback and `check_pins: internal error` on stderr). A caller
-#       comparing rows with a baseline must treat 3 as a failed check, never as zero rows.
+#       3 internal error (an uncaught exception, or an input file that cannot be read: nothing on stdout, a traceback and
+#       `check_pins: internal error` / `check_pins: cannot read <path>` on stderr). A caller comparing rows with a baseline must treat 3 as a
+#       failed check, never as zero rows.
 #
 # Rules (the rule id is the second word of every `VIOLATION <rule> <path>:<line>: <reference or excerpt>` line):
 #   compose_image_unpinned  `image:` of a compose file (a name containing `compose`, extension .yml/.yaml) without a full digest
 #                           (the value may be on the next line). `${VAR:-default}` is judged by its default; a bare `${VAR}` / `$VAR`
 #                           is resolved by the caller and not judged; `localhost/...` images are locally built, not external, and are
-#                           skipped; an image without a registry host in a service that also has a `build:` key is the tag the build
-#                           produces (local) and is skipped, a registry-qualified one is judged.
+#                           skipped; with a `build:` key in the same service the image is local only with `pull_policy: never|build`, or
+#                           when it is a single-component name and no pull_policy is given (compose pulls first otherwise).
 #   from_unpinned           `FROM` of a Dockerfile/Containerfile naming an external image without a full digest (tag-only and
 #                           no-tag references alike; build-stage aliases, `scratch` and `localhost/` bases are not external).
 #   from_arg_unpinned       `FROM ${ARG}` / `${ARG:-default}` whose default is present and carries no full digest (an `ARG` without a
@@ -31,21 +34,23 @@
 #   copy_from_unpinned      `COPY --from=` / `ADD --from=` / `RUN --mount=...,from=` naming an external image without a full digest (a
 #                           stage alias or stage number is not an image).
 #   script_image_unpinned   a shell script naming an external image without a digest: the image operand (a bare name counts: implicit
-#                           :latest) of `docker|podman|nerdctl run|pull|create` and `buildah from|pull` in every simple command of a
-#                           line (through wrappers, global options, `image`/`container`, `sh -c`/`ssh`/`eval` strings and `$(...)`),
+#                           :latest) of `docker|podman|nerdctl run|pull|create` and `buildah from|pull`, the engine word found at ANY
+#                           position of every simple command of a line (prefix variables, helpers, wrappers with options, global options,
+#                           `image`/`container`, `sh -c`/`ssh`/`eval` strings, `$(...)`, engines kept in a variable such as $DOCKER),
 #                           or any registry-qualified reference carrying a tag (docker.io, ghcr.io, quay.io, mcr.microsoft.com, gcr.io,
 #                           lscr.io, registry.*, *.pkg.dev, public.ecr.aws; a `docker://` prefix is removed first). `localhost/` and
 #                           `$VAR` operands are not judged; option values are skipped (table of value options, see the guide).
-#   pipe_to_shell           a download (`curl`, `wget`, `fetch`) piped into a shell (`| sh|bash|zsh|dash|ash|ksh`, `| bash -`,
-#                           `| sudo bash`, by path too) or an interpreter reading stdin (`| python3 -`, `| perl -`, `| ruby -`), the
+#   pipe_to_shell           a download (`curl`, `wget`, `fetch`) in a pipeline that ends in a program reader: a shell (`sh bash zsh dash ash
+#                           ksh mksh csh tcsh fish`, behind sudo/doas/env/nice/busybox with their options, by path too) or an interpreter
+#                           with no script and no inline code (`python3`, `python3 -`, `perl`, `node`, `ruby`, `php`), the
 #                           `bash <(curl ...)`, `source <(curl ...)`, `. <(curl ...)`, `sh -c "$(curl ...)"` and `eval "$(curl ...)"`
 #                           forms, in a Dockerfile/Containerfile or a script; a pipe continued by a trailing `|` or a backslash, and a pipe
 #                           after a `for ... done` loop spread over continuation lines, is one logical line and is caught; the quoted
 #                           install hint a script prints for the operator is flagged too (it instructs an unverified install).
 #                           Reported at the first physical line of the logical line.
 # Carriers do NOT fire (11.4.201: a mention is not the thing): full-line and trailing `#` comments are removed before judging, and
-# Markdown, text and every other file type is not scanned at all. In a script under a `tests` directory, or named test_* /
-# mutate_*, here-document bodies are fixture DATA and are not judged, nor are the simple commands that only write or filter data
+# Markdown, text and every other file type is not scanned at all. In a script under a `tests` directory (only there), here-document bodies
+# and quoted strings handed to helpers are fixture DATA and are not judged, nor are the simple commands that only write or filter data
 # (printf, echo, sed, tee, grep, awk, a bare VAR=value) or a registry literal outside a real engine command (a violation fixture written by
 # a test is not a violation of the test); in any other script a here-document body is judged like code (a script that generates a
 # Dockerfile is scanned).
@@ -61,46 +66,71 @@ SKIP_DIRS = {".git", "node_modules", "vendor", ".audit"}
 REGISTRY_RE = re.compile(
     r"(?<![\w./-])((?:docker\.io|ghcr\.io|quay\.io|mcr\.microsoft\.com|gcr\.io|lscr\.io|registry\.[\w.-]+|[\w-]+\.pkg\.dev|public\.ecr\.aws)"
     r"/[A-Za-z0-9._/-]+(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?)")
-SHELL_ALT = r"(?:(?:ba|z|da|a|k)?sh\b|(?:python[0-9.]*|perl|ruby)\s+-(?![\w-]))"
-PIPE_RE = re.compile(
-    r"\b(?:curl|wget|fetch)\b[^\n]*?(?<!\|)\|(?!\|)\s*(?:sudo\s+(?:-\S+\s+)*)?(?:env\s+\S+=\S+\s+)*(?:/usr/(?:local/)?bin/|/bin/)?" + SHELL_ALT)
+READERS = r"(?:(?:ba|z|da|a|k|c|tc|f)?sh|eval|python[0-9.]*|perl|ruby|node|nodejs|php)"
 SUBST_RE = re.compile(
-    r"(?:\b(?:(?:ba|z|da|a|k)?sh|eval)\s+(?:-c\s+)?[\"']?\$\(\s*(?:curl|wget|fetch)\b[^\n]*"
-    r"|(?:\b(?:(?:ba|z|da|a|k)?sh|source)|(?<![\w.])\.)\s+<\(\s*(?:curl|wget|fetch)\b[^\n]*)")
-# options of `docker|podman|nerdctl run|create|pull` that take a separate value (so the value is not the image operand)
-VALUE_OPTS = {
-    "-a", "--attach", "--add-host", "--annotation", "--arch", "--authfile", "--blkio-weight", "--blkio-weight-device", "--cap-add",
-    "--cap-drop", "--cert-dir", "--cgroup-conf", "--cgroup-parent", "--cgroupns", "--cgroups", "--cidfile", "--conmon-pidfile", "--cpu-period",
-    "--cpu-quota", "--cpu-rt-period", "--cpu-rt-runtime", "--cpu-shares", "--cpus", "--cpuset-cpus", "--cpuset-mems", "--creds",
-    "--decryption-key", "--detach-keys", "--device", "--device-cgroup-rule", "--device-read-bps", "--device-read-iops", "--device-write-bps",
-    "--device-write-iops", "--dns", "--dns-option", "--dns-search", "--domainname", "-e", "--env", "--entrypoint", "--env-file", "--env-host",
-    "--env-merge", "--expose", "--gidmap", "--gpus", "--group-add", "--group-entry", "--health-cmd", "--health-interval", "--health-on-failure",
-    "--health-retries", "--health-start-period", "--health-startup-cmd", "--health-startup-interval", "--health-startup-retries",
-    "--health-startup-success", "--health-startup-timeout", "--health-timeout", "-h", "--hostname", "--hooks-dir", "--hostuser", "--image-volume",
-    "--init-path", "--ip", "--ip6", "--ipc", "--isolation", "-l", "--label", "--label-file", "--link", "--link-local-ip", "--log-driver",
-    "--log-opt", "--mac-address", "-m", "--memory", "--memory-reservation", "--memory-swap", "--memory-swappiness", "--mount", "--name", "--net",
-    "--network", "--network-alias", "--no-healthcheck-x", "--oom-score-adj", "--os", "--passwd-entry", "--personality", "--pid", "--pidfile",
-    "--pids-limit", "--platform", "--pod", "--pod-id-file", "-p", "--publish", "--pull", "--rdt-class", "--restart", "--retry", "--retry-delay",
-    "--runtime", "--seccomp-policy", "--secret", "--security-opt", "--shm-size", "--shm-size-systemd", "--stop-signal", "--stop-timeout",
-    "--storage-opt", "--subgidname", "--subuidname", "--sysctl", "--timeout", "--tmpfs", "--tz", "--uidmap", "-u", "--user", "--userns",
-    "--uts", "--variant", "-v", "--volume", "--volumes-from", "-w", "--workdir"}
-# global options (before the sub-command) that take a separate value
-GLOBAL_VALUE_OPTS = {"--log-level", "--root", "--runroot", "--storage-driver", "--storage-opt", "--url", "--connection", "-c", "--host", "-H",
-                     "--config", "--context", "--namespace", "--cgroup-manager", "--conmon", "--events-backend", "--hooks-dir", "--identity",
-                     "--imagestore", "--network-cmd-path", "--network-config-dir", "--runtime", "--runtime-flag", "--ssh", "--tmpdir",
-                     "--volumepath", "--cdi-spec-dir", "--userns-uid-map", "--userns-gid-map", "--module", "-l"}
+    r"(?:\b" + READERS + r"\s+(?:-\S+\s+)*[\"']?(?:\$\(|`)\s*(?:curl|wget|fetch)\b[^\n]*"
+    r"|(?:\b(?:(?:ba|z|da|a|k|c|tc|f)?sh|source)|(?<![\w.])\.)\s+(?:<\s*)?<\(\s*(?:curl|wget|fetch)\b[^\n]*)")
+# options that take a SEPARATE value, per table; generated from the engine help text (podman 5.7.0 parsed, docker from its CLI reference) into
+# scripts/containers/tests/engine_options.tsv by scripts/containers/tests/gen_engine_options.sh, and checked equal to it by test_check_pins.sh
+# (run = run|create|buildah from, pull = pull, global = the options before the sub-command). nerdctl/buildah are UNCONFIRMED (not installed).
+RUN_VALUE_OPTS = {
+    "--add-host", "--annotation", "--arch", "--attach", "--authfile", "--blkio-weight", "--blkio-weight-device", "--cap-add", "--cap-drop",
+    "--cert-dir", "--cgroup-conf", "--cgroup-parent", "--cgroupns", "--cgroups", "--chrootdirs", "--cidfile", "--conmon-pidfile",
+    "--cpu-count", "--cpu-percent", "--cpu-period", "--cpu-quota", "--cpu-rt-period", "--cpu-rt-runtime", "--cpu-shares", "--cpus",
+    "--cpuset-cpus", "--cpuset-mems", "--creds", "--decryption-key", "--detach-keys", "--device", "--device-cgroup-rule",
+    "--device-read-bps", "--device-read-iops", "--device-write-bps", "--device-write-iops", "--dns", "--dns-option", "--dns-search",
+    "--domainname", "--entrypoint", "--env", "--env-file", "--env-merge", "--expose", "--gidmap", "--gpus", "--group-add", "--group-entry",
+    "--health-cmd", "--health-interval", "--health-log-destination", "--health-max-log-count", "--health-max-log-size",
+    "--health-on-failure", "--health-retries", "--health-start-interval", "--health-start-period", "--health-startup-cmd",
+    "--health-startup-interval", "--health-startup-retries", "--health-startup-success", "--health-startup-timeout", "--health-timeout",
+    "--hostname", "--hosts-file", "--hostuser", "--image-volume", "--init-ctr", "--init-path", "--io-maxbandwidth", "--io-maxiops", "--ip",
+    "--ip6", "--ipc", "--isolation", "--label", "--label-file", "--link", "--link-local-ip", "--log-driver", "--log-opt", "--mac-address",
+    "--memory", "--memory-reservation", "--memory-swap", "--memory-swappiness", "--mount", "--name", "--network", "--network-alias",
+    "--oom-score-adj", "--os", "--passwd-entry", "--personality", "--pid", "--pidfile", "--pids-limit", "--platform", "--pod",
+    "--pod-id-file", "--preserve-fd", "--preserve-fds", "--publish", "--pull", "--rdt-class", "--requires", "--restart", "--retry",
+    "--retry-delay", "--runtime", "--sdnotify", "--seccomp-policy", "--secret", "--security-opt", "--shm-size", "--shm-size-systemd",
+    "--stop-signal", "--stop-timeout", "--storage-opt", "--subgidname", "--subuidname", "--sysctl", "--systemd", "--timeout", "--tmpfs",
+    "--tz", "--uidmap", "--ulimit", "--umask", "--unsetenv", "--user", "--userns", "--uts", "--variant", "--volume", "--volume-driver",
+    "--volumes-from", "--workdir", "-a", "-c", "-e", "-h", "-l", "-m", "-p", "-u", "-v", "-w"}
+PULL_VALUE_OPTS = {
+    "--arch", "--authfile", "--cert-dir", "--creds", "--decryption-key", "--os", "--platform", "--policy", "--retry", "--retry-delay",
+    "--variant"}
+GLOBAL_VALUE_OPTS = {
+    "--cdi-spec-dir", "--cgroup-manager", "--config", "--conmon", "--connection", "--context", "--events-backend", "--hooks-dir", "--host",
+    "--identity", "--imagestore", "--log-level", "--module", "--network-cmd-path", "--network-config-dir", "--out", "--root", "--runroot",
+    "--runtime", "--runtime-flag", "--ssh", "--storage-driver", "--storage-opt", "--tls-ca", "--tls-cert", "--tls-key", "--tlscacert",
+    "--tlscert", "--tlskey", "--tmpdir", "--url", "--volumepath", "-H", "-c", "-l"}
 ENGINES = {"docker", "podman", "nerdctl"}
 ENGINE_VERBS = {"run", "pull", "create"}
+# wrapper words that run the next word as a command; the value options of the ones that take them are skipped (a value is not the command)
 WRAPPERS = {"sudo", "env", "time", "exec", "nohup", "command", "timeout", "nice", "ionice", "xargs", "stdbuf", "then", "do", "else", "elif",
-            "if", "while", "until", "!", "{", "watch", "setsid", "builtin", "doas"}
+            "if", "while", "until", "!", "{", "watch", "setsid", "builtin", "doas", "busybox"}
+WRAP_VALUE_OPTS = {
+    "sudo": {"-u", "-g", "-C", "-h", "-p", "-r", "-t", "-U", "-D", "-R", "-T", "--user", "--group", "--host", "--prompt", "--role", "--type",
+             "--chdir", "--other-user", "--chroot", "--close-from", "--command-timeout"},
+    "doas": {"-u", "-C"}, "env": {"-u", "--unset", "-C", "--chdir", "-S", "--split-string"}, "nice": {"-n", "--adjustment"},
+    "ionice": {"-c", "-n", "-p", "-P", "-u", "--class", "--classdata"}, "stdbuf": {"-i", "-o", "-e", "--input", "--output", "--error"},
+    "timeout": {"-s", "--signal", "-k", "--kill-after"}}
 SHELLISH = {"sh", "bash", "zsh", "dash", "ash", "ksh", "eval", "ssh"}
 # in a test script these commands only WRITE or FILTER data: a fixture line they carry is not a command of the test
 DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep", "awk"}
+# commands that only talk ABOUT a command (their words are prose or a lookup key), never run it
+NON_EXEC_HEADS = DATA_CMDS | {"man", "which", "type", "whereis", "whatis", "info", "help", "apropos", "test", "[", "[["}
+# a container engine kept in a variable: $DOCKER, ${PODMAN}, ${CONTAINER_ENGINE:-podman}, ...
+ENGINE_VAR_RE = re.compile(r"^\$\{?(?:DOCKER|PODMAN|NERDCTL|CONTAINER_?ENGINE|CONTAINER_?RUNTIME|CTR_?ENGINE|OCI_?ENGINE|ENGINE)"
+                           r"(?:_?BIN|_?CMD|_?PATH)?(?::?-[^}]*)?\}?$", re.I)
+# a reader of a program from its standard input
+SHELLS = {"sh", "bash", "zsh", "dash", "ash", "ksh", "mksh", "csh", "tcsh", "fish", "rbash"}
+INTERP_RE = re.compile(r"^(?:python[0-9.]*|perl|ruby|node|nodejs|php|lua|deno|bun|Rscript)$")
+INLINE_FLAG_RE = re.compile(r"^-[A-Za-z]*[cEeprm]$")     # -c / -e / -E / -p / -r / -m: the program (or module) is given inline
+DL_WORDS = {"curl", "wget", "fetch"}
+EXP_OPEN_RE = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*:?[-=+?]")
+EXP_DEFAULT_RE = re.compile(r"^\$\{[A-Za-z_][A-Za-z0-9_]*:?[-=](.*)\}$", re.S)
 ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 DURATION_RE = re.compile(r"^\d+(?:\.\d+)?[smhd]?$")
 IMG_SHAPE = re.compile(r"^[a-z0-9][A-Za-z0-9._-]*(?::[0-9]+)?(?:/[A-Za-z0-9._-]+)*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?$")
 # a here-document opener at the top level of a logical line: quoted strings and arithmetic `$((..))` / `((..))` are consumed first
-HDOC_SCAN_RE = re.compile(r"""'[^']*'|"(?:[^"\\]|\\.)*"|\$?\(\([^()]*\)\)|(?<!<)<<(?!<)-?\s*(['"]?)(\w+)\1""")
+HDOC_OPEN_RE = re.compile(r"""<<-?\s*(['"]?)(\w+)\1""")
 CONT_TRAIL_RE = re.compile(r"(?:(?<!\|)\||\|\||&&)\s*$")
 
 viol = []      # (path, line, rule, reference)
@@ -131,10 +161,50 @@ def strip_comment(s):
     return s
 
 
+def skip_arith(s, i):
+    """s[i] is the first `(` of a `((`; return the index after the matching `))` (parentheses nest), or len(s)."""
+    depth = 0
+    n = len(s)
+    while i < n:
+        if s[i] == "(":
+            depth += 1
+        elif s[i] == ")":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    return n
+
+
 def top_level_heredoc(acc):
-    for m in HDOC_SCAN_RE.finditer(acc):
-        if m.group(2):
-            return m.group(2)
+    """Delimiter of a here-document opened at the top level of one logical line (quoted strings, here-strings `<<<` and arithmetic
+    `$(( ))` / `(( ))` with any nesting are consumed first); None when there is none."""
+    i, n = 0, len(acc)
+    while i < n:
+        c = acc[i]
+        if c == "'":
+            j = acc.find("'", i + 1)
+            i = n if j < 0 else j + 1
+        elif c == '"':
+            j = i + 1
+            while j < n and acc[j] != '"':
+                j += 2 if acc[j] == "\\" else 1
+            i = j + 1
+        elif c == "\\":
+            i += 2
+        elif c == "$" and acc.startswith("((", i + 1):
+            i = skip_arith(acc, i + 1)
+        elif c == "(" and acc.startswith("((", i) and (i == 0 or acc[i - 1] in " \t;&|`"):
+            i = skip_arith(acc, i)
+        elif acc.startswith("<<<", i):
+            i += 3
+        elif acc.startswith("<<", i):
+            m = HDOC_OPEN_RE.match(acc, i)
+            if m:
+                return m.group(2)
+            i += 2
+        else:
+            i += 1
     return None
 
 
@@ -237,9 +307,11 @@ def split_commands(s):
 
 
 def head_index(tokens):
-    """Index of the command word after wrappers (sudo, env, timeout 30, VAR=x, ...); None when there is none."""
+    """Index of the command word after wrappers (sudo, env, timeout 30, VAR=x, ...) and the value options of the wrappers that take one;
+    None when there is none."""
     i = 0
-    while i < len(tokens):
+    n = len(tokens)
+    while i < n:
         t, q = tokens[i]
         if ASSIGN_RE.match(t):              # VAR=value (the value may have been quoted)
             i += 1
@@ -247,19 +319,20 @@ def head_index(tokens):
         if q:
             break
         base = os.path.basename(t)
-        if base == "sudo":
+        if base in WRAPPERS:
             i += 1
-            while i < len(tokens) and tokens[i][0].startswith("-") and not tokens[i][1]:
+            vals = WRAP_VALUE_OPTS.get(base, ())
+            while i < n and tokens[i][0].startswith("-") and tokens[i][0] != "-" and not tokens[i][1]:
                 opt = tokens[i][0]
                 i += 1
-                if opt in ("-u", "-g", "-C", "-h", "-p", "-r", "-t", "-U", "-D") and i < len(tokens):
+                if "=" not in opt and opt in vals and i < n:
                     i += 1
             continue
-        if base in WRAPPERS or DURATION_RE.match(t) or (t.startswith("-") and i > 0):
+        if DURATION_RE.match(t):
             i += 1
             continue
         break
-    return i if i < len(tokens) else None
+    return i if i < n else None
 
 
 def looks_like_value(t):
@@ -268,7 +341,8 @@ def looks_like_value(t):
             or re.match(r"^[A-Za-z0-9.-]+:(?:\d+\.){3}\d+$", t) is not None or re.match(r"^[A-Za-z0-9.-]+:host-gateway$", t) is not None)
 
 
-def image_operand(tokens):
+def image_operand(tokens, table):
+    """The image operand of the tokens that follow `<engine> [globals] <verb>`: options of `table` (value options) take the next token."""
     i = 0
     after_unknown = False
     while i < len(tokens):
@@ -281,7 +355,7 @@ def image_operand(tokens):
             if "=" in t:
                 i += 1
                 after_unknown = False
-            elif t in VALUE_OPTS:
+            elif t in table:
                 i += 2
                 after_unknown = False
             else:
@@ -312,9 +386,35 @@ def subst_texts(t):
     return out
 
 
-def cmd_images(tokens, depth):
-    """Image operands of every docker|podman|nerdctl run|pull|create (and `buildah from`) in one simple command, looking through
-    wrapper words, global options, `image`/`container`, shell -c / ssh / eval strings and $(...) substitutions."""
+def engine_word(t, q):
+    """'engine' for docker|podman|nerdctl (by path too) or a variable that holds one, 'buildah' for buildah, else None."""
+    base = os.path.basename(t)
+    if base in ENGINES or ENGINE_VAR_RE.match(t):
+        return "engine"
+    if base == "buildah":
+        return "buildah"
+    return None
+
+
+def engine_operand(kind, rest):
+    """Image operand of `<engine> [global options] [image|container] run|pull|create|from ...` (rest = the tokens after the engine word), or None."""
+    verbs = {"from", "pull"} if kind == "buildah" else ENGINE_VERBS
+    j = 0
+    while j < len(rest) and not rest[j][1] and rest[j][0].startswith("-"):
+        j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1
+    if j < len(rest) and rest[j][0] in ("container", "image"):
+        j += 1
+    if j < len(rest) and rest[j][0] in verbs:
+        return image_operand(rest[j + 1:], PULL_VALUE_OPTS if rest[j][0] == "pull" else RUN_VALUE_OPTS)
+    return None
+
+
+def cmd_images(tokens, depth, strict=False):
+    """Image operands of every `<engine> run|pull|create` (and `buildah from|pull`) in one simple command. The engine word is looked for
+    at ANY position of the command (a prefix such as $SUDO, a helper function, ssh, eval, a wrapper with options all put words before it),
+    except in a command that only talks about commands (echo, grep, man, ...); engines kept in a variable are recognised by name; $(...)
+    substitutions and the quoted command line of a shell -c / ssh / eval are searched too. `strict` (a quoted string handed to an unknown
+    helper) only trusts a string that STARTS with the engine and keeps only operands shaped like an image reference."""
     res = []
     if depth < 4:
         for t, q in tokens:
@@ -325,29 +425,30 @@ def cmd_images(tokens, depth):
     if h is None:
         return res
     base = os.path.basename(tokens[h][0])
-    rest = tokens[h + 1:]
-    if base in ENGINES or base == "buildah":
-        verbs = {"from", "pull"} if base == "buildah" else ENGINE_VERBS
-        j = 0
-        while j < len(rest) and not rest[j][1] and rest[j][0].startswith("-"):
-            j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1
-        if j < len(rest) and rest[j][0] in ("container", "image"):
-            j += 1
-        if j < len(rest) and rest[j][0] in verbs:
-            op = image_operand(rest[j + 1:])
-            if op:
+    if base in NON_EXEC_HEADS:
+        return res
+    for k in range(h if strict else 0, len(tokens)):
+        if strict and k != h:
+            break
+        kind = engine_word(*tokens[k])
+        if kind is None:
+            continue
+        op = engine_operand(kind, tokens[k + 1:])
+        if op is not None:
+            if not strict or any(c in op for c in "/:."):
                 res.append(op)
-    elif base in SHELLISH and depth < 4:
-        for t, q in rest:
+            break
+    if depth < 4:
+        for t, q in tokens[h + 1:]:
             if q and re.search(r"\s", t):
-                res += text_images(t, depth + 1)
+                res += text_images(t, depth + 1, strict=base not in SHELLISH)
     return res
 
 
-def text_images(text, depth=0):
+def text_images(text, depth=0, strict=False):
     res = []
     for s, e, tokens in split_commands(text):
-        res += cmd_images(tokens, depth)
+        res += cmd_images(tokens, depth, strict)
     return res
 
 
@@ -356,15 +457,17 @@ def mask_data(ln):
     chars = list(ln)
     for s, e, tokens in split_commands(ln):
         h = head_index(tokens)
-        if h is None or os.path.basename(tokens[h][0]) in DATA_CMDS:
+        if (h is None or os.path.basename(tokens[h][0]) in DATA_CMDS) and not any(q and ("$(" in t or "`" in t) for t, q in tokens):
             for k in range(s, min(e, len(chars))):
                 chars[k] = " "
     return "".join(chars)
 
 
-def has_build_sibling(lines, idx, col):
+def sibling_value(lines, idx, col, key):
+    """Value of the `key:` line of the same service (same indentation as the image: line, within the same mapping); None when absent."""
     def ind(l):
         return len(l) - len(l.lstrip(" "))
+    rx = re.compile(r"^\s*%s\s*:\s*(.*?)\s*$" % key)
     for rng in (range(idx - 1, -1, -1), range(idx + 1, len(lines))):
         for k in rng:
             l = strip_comment(lines[k].rstrip("\r"))
@@ -372,9 +475,11 @@ def has_build_sibling(lines, idx, col):
                 continue
             if ind(l) < col:
                 break
-            if ind(l) == col and re.match(r"^\s*build\s*:", l):
-                return True
-    return False
+            if ind(l) == col:
+                m = rx.match(l)
+                if m:
+                    return m.group(1).strip("\"'")
+    return None
 
 
 def scan_compose(path, text):
@@ -403,10 +508,17 @@ def scan_compose(path, text):
             ref = v.group(1)
         if ref.startswith("localhost/"):
             continue
-        first = ref.split("/")[0]
-        qualified = "/" in ref and ("." in first or ":" in first)
-        if not qualified and has_build_sibling(lines, idx, len(m.group(1))):   # the tag a build: service produces is a local image
-            continue
+        col = len(m.group(1))
+        if sibling_value(lines, idx, col, "build") is not None:
+            # a service with build: AND image: names the tag the build produces, but compose pulls first unless pull_policy says otherwise
+            # (compose spec, build.md). Local only: pull_policy never|build (nothing is pulled), or a single-component name (no namespace, no
+            # registry: not creatable by a user on a registry; the tag the build produces) with no explicit pull policy. Everything else
+            # (a namespaced or registry-qualified name, or any other policy: always, missing, if_not_present, daily, weekly, every_*, a
+            # variable) can be pulled from a registry and is judged. Residual (documented): a single-component name with no policy that
+            # is also a real official image cannot be told from a local tag by its text.
+            pol = sibling_value(lines, idx, col, "pull_policy")
+            if pol in ("never", "build") or ("/" not in ref and pol is None):
+                continue
         if not pinned(ref):  # MUT-ANCHOR compose-check
             add(path, idx + 1, "compose_image_unpinned", ref)
 
@@ -465,25 +577,85 @@ def scan_dockerfile(path, text):
                     judge_source(path, no, mf.group(1), aliases)
 
 
+def reader_hit(tokens):
+    """True when this pipeline stage reads a PROGRAM from its stdin: a shell (any arguments), or an interpreter with no script/inline code."""
+    h = head_index(tokens)
+    if h is None:
+        return False
+    base = os.path.basename(tokens[h][0])
+    if base in SHELLS:
+        return True
+    if INTERP_RE.match(base):
+        for t, q in tokens[h + 1:]:
+            if t == "-":
+                return True
+            if t.startswith("-"):
+                if INLINE_FLAG_RE.match(t):
+                    return False
+                continue
+            return False                        # a script file operand: the program is the file, not stdin
+        return True
+    return False
+
+
+def pipe_hit(ln, depth=0):
+    """Text of the first `<download> | <program reader>` pipeline in the logical line `ln`, else None. A pipeline is a run of commands
+    joined by `|`; the download may be any earlier stage, or inside a group/loop/subshell that is piped (a for-loop of downloads piped into a shell)."""
+    ln = re.sub(r"^\s*(?:ONBUILD\s+)?RUN\s+(?:--\S+\s+)*", "", ln, flags=re.I)   # a Dockerfile RUN (also quoted into an echo): the shell command is what follows
+    cmds = split_commands(ln)
+    d = 0
+    dl_start = None
+    for s, e, toks in cmds:
+        sep = ln[s - 1] if s > 0 else ""
+        if sep == "(":
+            d += 1
+        piped = s > 0 and ((sep == "|" and (s < 2 or ln[s - 2] != "|")) or (sep == "&" and s >= 2 and ln[s - 2] == "|"))
+        h = head_index(toks)
+        word = os.path.basename(toks[h][0]) if h is not None else ""
+        if word in ("for", "while", "until", "if", "case", "select", "{"):
+            d += 1
+        if not piped and d == 0:
+            dl_start = None
+        if piped and dl_start is not None and reader_hit(toks):
+            return ln[dl_start:e]
+        if dl_start is None and any(not q and os.path.basename(t) in DL_WORDS for t, q in toks):   # a download word anywhere (also an install hint)
+            dl_start = s
+        if depth < 3:
+            for t, q in toks:
+                if q and re.search(r"\s", t) and re.search(r"\b(?:curl|wget|fetch)\b", t):
+                    inner = pipe_hit(t, depth + 1)
+                    if inner:
+                        return inner
+        if word in ("done", "fi", "esac", "}"):
+            d = max(0, d - 1)
+        if ln[e:e + 1] == ")":
+            d = max(0, d - 1)
+    return None
+
+
 def scan_pipe(path, no, ln):
-    m = PIPE_RE.search(ln)  # MUT-ANCHOR pipe-check
-    s = SUBST_RE.search(ln)
-    hit = m or s
+    hit = pipe_hit(ln)
     if hit:
-        add(path, no, "pipe_to_shell", hit.group(0))
+        add(path, no, "pipe_to_shell", hit)
+        return
+    m = SUBST_RE.search(ln)
+    if m:
+        add(path, no, "pipe_to_shell", m.group(0))
 
 
 def scan_script(path, text, is_test):
     for no, ln in logical_lines(text, is_test):
-        work = mask_data(ln) if is_test else ln
+        work = blank_quoted(mask_data(ln)) if is_test else ln
         seen = set()
         for op in text_images(work):
+            op = operand_ref(op)
             if op.startswith("$") or op.startswith("localhost/") or not IMG_SHAPE.match(op):
                 continue
             seen.add(op)
             if not pinned(op):  # MUT-ANCHOR script-run-check
                 add(path, no, "script_image_unpinned", op)
-        wreg = work.replace("docker://", " ")
+        # `${VAR:-ref}` / `${VAR=ref}`: the reference after the expansion operator is a reference (a space after the operator ends the `-` lookbehind)
+        wreg = EXP_OPEN_RE.sub(lambda mo: mo.group(0) + " ", work.replace("docker://", " "))
         # in a test script a registry-qualified literal outside a real engine command is fixture data (an argument of a helper, a table row)
         for g in ([] if is_test else REGISTRY_RE.finditer(wreg)):  # MUT-ANCHOR registry-literal-rule
             ref = g.group(1)
@@ -498,6 +670,36 @@ def scan_script(path, text, is_test):
             if re.search(r":[A-Za-z0-9._-]+$", ref):  # a registry reference with a tag and no digest
                 add(path, no, "script_image_unpinned", ref)
         scan_pipe(path, no, work)
+
+
+def blank_quoted(ln):
+    """In a test script a quoted string handed to a helper (or a here-string) is fixture data: blank single-quoted strings and double-quoted
+    strings without a command substitution (their quotes stay, their content becomes spaces)."""
+    out = list(ln)
+    i, n = 0, len(ln)
+    while i < n:
+        c = ln[i]
+        if c == "\\":
+            i += 2
+            continue
+        if c in "'\"":
+            j = i + 1
+            while j < n and ln[j] != c:
+                j += 2 if (c == '"' and ln[j] == "\\") else 1
+            body = ln[i + 1:j]
+            if c == "'" or ("$(" not in body and "`" not in body):
+                for k in range(i + 1, min(j, n)):
+                    out[k] = " "
+            i = j + 1
+            continue
+        i += 1
+    return "".join(out)
+
+
+def operand_ref(op):
+    """`${VAR:-default}` / `${VAR-default}` / `${VAR:=default}` is judged by its default (a bare `${VAR}` stays `$...` and is not judged)."""
+    m = EXP_DEFAULT_RE.match(op)
+    return m.group(1).strip("\"'") if m else op
 
 
 def classify(rel):
@@ -540,6 +742,11 @@ def main(argv):
                 usage("--exclude-dir requires a value")
             excl.add(argv[i + 1])
             i += 2
+        elif a == "--dump-engine-options":
+            for tname, tbl in (("run", RUN_VALUE_OPTS), ("pull", PULL_VALUE_OPTS), ("global", GLOBAL_VALUE_OPTS)):
+                for o in sorted(tbl):
+                    sys.stdout.write("%s\t%s\n" % (tname, o))
+            sys.exit(0)
         elif a in ("-h", "--help"):
             sys.stdout.write("see the header of check_pins.sh and docs/scripts/check_pins.md\n")
             sys.exit(0)
@@ -592,8 +799,9 @@ def main(argv):
             continue
         try:
             text = open(full, encoding="utf-8-sig", errors="replace").read()
-        except OSError:
-            continue
+        except OSError as exc:              # an input that cannot be read cannot be judged: never "0 violations" (exit 3 below the global handler)
+            sys.stderr.write("check_pins: cannot read %s: %s\n" % (rel, exc.strerror or exc))
+            sys.exit(3)
         files_scanned += 1
         if kind == "compose":  # MUT-ANCHOR compose-dispatch
             scan_compose(rel, text)
@@ -603,7 +811,7 @@ def main(argv):
                 scan_pipe(rel, no, ln)
         else:
             base = os.path.basename(rel)
-            is_test = "tests" in parts[:-1] or base.startswith(("test_", "mutate_"))
+            is_test = "tests" in parts[:-1]      # fixture data lives in a tests directory; a test_*-named script elsewhere is operational code
             scan_script(rel, text, is_test)
     viol.sort(key=lambda v: (v[0], v[1], v[2], v[3]))  # MUT-ANCHOR output-sort
     uniq = []

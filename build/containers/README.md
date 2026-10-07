@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07 |
+| Last modified | 2026-10-07T04:40:00Z |
 | Task | T116 (WP-11) |
 
 Catalogue of the container image definitions and of the single lock file `images.lock.yaml`, with the pinning and bump procedure. Status: this file was written before any review; every statement below was read from the repository files named in it on 2026-10-06.
@@ -51,3 +51,15 @@ OPEN OWNER ITEM (F5, not changed here): `catalog-api/Dockerfile` names `docker.i
 Recorded behaviour changes of 960c553a that its commit message did not list (F8, read from `git show 960c553a`): `docker/Dockerfile.builder` Go 1.26.1 from a local tarball -> `golang:1.25-bookworm` digest stage (go.mod needs 1.25.7); `docker-compose.qa.yml` Playwright `v1.40.0-jammy` -> `v1.57.0-noble`, and the `helixqa-api` base `node:18-bookworm-slim` -> `node:20-bookworm` (a full image, not slim).
 
 Notes (F7, F9, F10): the GREEN x3 builds of T110 and T111 are layer-cache replays after the first build (the README of the evidence directory says "cache-warm" only for T109); the wp11 `SHA256SUMS` predates the final evidence `README.md` and lists an untracked file, so the wf10fix evidence has its own `SHA256SUMS.wf10fix-p1`; `docker-compose.security.yml` `trivy-scanner` `command: >` keeps newlines (more-indented lines), so `sh -c` runs `trivy fs` without a target and then `--scanners ...` as a separate command (pre-existing, identical before and after the pin; outside this change's files, owed); lock `size_bytes` differs from today's `podman image inspect .Size` for several entries (cause UNCONFIRMED, `run_pinned.sh` uses `size_bytes` as its default disk need); no `.dockerignore` exists (owed).
+
+## WF13 round-2 review and the structural round 3 (2026-10-07)
+
+The round-2 review (`WF13-REVIEW-pins-containerfiles-r2`, NO-GO: N1-N4 important, N5-N10 minor, T1-T2, D1-D4) found that the round-1 replacement code of `check_pins.sh` and of the C4/C7 checks had traded one class of false results for another. Round 3 (constitution 11.4.276) is a structural round: the classes were named, their members enumerated from the engines' own grammar, and the classifiers rebuilt; the full account is `docs/scripts/check_pins.md` ("Round 3: classes") and `docs/scripts/test_containerfiles.md`. Evidence: `specs/001-full-project-audit-remediation/evidence/wp11/wf13fix-p1-*`.
+
+Still OPEN OWNER ITEMS, unchanged by this round and not decided here: F5 (the `golang:1.25` alias is bookworm locally, trixie upstream; see above), F9 (`docker-compose.security.yml` `trivy-scanner` `command: >` newlines), F10 (no root `.dockerignore`).
+
+Recorded, not fixed (owner decision, N9 / N3 / N2):
+- The four legacy `docker/Dockerfile.android`, `.android2`, `.android3`, `.android4` keep the exact licence swallow F6 removed from `build/containers/android/Containerfile` (`RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true`, lines 46, 54, 60, 60). They are outside `build/containers/` and stay until the new android image is proven; this is now written down as an owner item instead of an implication of the android README.
+- `scripts/build_in_container.sh:25` (`GO_IMAGE="${GO_BUILD_IMAGE:-docker.io/library/golang:1.25-bookworm}"`, the image of the 11.4.173 remote build) is an unpinned registry reference that the previous scanner never saw because of a regex lookbehind (N2); it is now a row of `check_pins.sh --list` (52 rows, was 51). The script is outside this change's files; pinning it is owed.
+- A compose service with `build:` and a single-component `image:` name and no `pull_policy` is treated as the local tag its build produces (five `docker-compose.test.yml` services). Compose pulls first by default (compose spec), so a single-component name that is also a real official image (`postgres:15` next to `build:`) cannot be told from a local tag by its text; no such service exists in the tree today (UNCONFIRMED whether docker compose / podman-compose follow the spec's pull-first for the default policy; for `pull_policy: always` or `missing` the image IS judged now).
+- Why the F1-F4 `check_pins` logic is not in commit 178ee136 (D1): it landed in 96779242 (message "envelope + wrappers review round 1", which does not mention `check_pins`); 178ee136 changed only a header comment and two test lines. Reverting 178ee136 therefore does not revert the fix, and reverting 96779242 would revert two unrelated fixes together; history is not rewritten (11.4.113), the fact is recorded here.

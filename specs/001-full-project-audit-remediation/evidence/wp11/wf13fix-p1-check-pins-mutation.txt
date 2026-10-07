@@ -1,0 +1,119 @@
+# identity: wf13fix-p1 check_pins mutation record (113 mutants) from the full run recorded in wf13fix-p1-check-pins-full-run.txt
+# head: 3fa277e4 (uncommitted work tree)
+# check-pins-mutation record: paired mutations of scripts/containers/check_pins.sh (G-GATE)
+# run_at: 2026-10-07T02:55:42Z host: anton
+# sut_sha256: 100f3409bfd162885e27d50eb186bf7004a0d6213736fc3b9a067f97fc9ed82e
+MUTANT digest-relaxed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose short digest: exit status 1 (got '0' want '1')
+MUTANT compose-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT from-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Dockerfile FROM tag only: exit status 1 (got '0' want '1')
+MUTANT arg-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD FROM ${ARG} whose default is unpinned: exit status 1 (got '0' want '1')
+MUTANT copyfrom-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD COPY --from external image tag only: exit status 1 (got '0' want '1')
+MUTANT script-run-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script podman run registry image: exit status 1 (got '0' want '1')
+MUTANT script-tag-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script registry reference with a tag in an assignment: exit status 1 (got '0' want '1')
+MUTANT alias-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: exit status 0 (got '1' want '0')
+MUTANT comment-strip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER comments in a script: exit status 0 (got '1' want '0')
+MUTANT continuation-join-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1 (got '0' want '1')
+MUTANT heredoc-skip-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER here-document body (fixture data) in a script under tests/: exit status 0 (got '1' want '0')
+MUTANT heredoc-skip-always: CAUGHT rc=1 first_fail=FAIL: HEREDOC a here-document body in a production script is judged like code (exit 1) (got '0' want '1')
+MUTANT variable-without-default-judged: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '3' want '0')
+MUTANT compose-dispatch-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: no 'VIOLATION compose_image_unpinned <path>:3:' line in: VIOLATION script_image_unpinned docker-compose.security.yml:3: docker.io/aquasec/trivy:latest|check_pins: 1 violations in 1 files scanned
+MUTANT markdown-exclusion-removed: CAUGHT rc=1 first_fail=FAIL: CARRIER documentation (Markdown and text are not scanned): exit status 0 (got '1' want '0')
+MUTANT exit-status-always-zero: CAUGHT rc=1 first_fail=FAIL: G-BAD compose :latest: exit status 1 (got '0' want '1')
+MUTANT localhost-compose-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0 (got '1' want '0')
+MUTANT dynamic-digest-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT R1-from-case-sensitive: CAUGHT rc=1 first_fail=FAIL: F4 lowercase from keyword: exit status 1 (got '0' want '1')
+MUTANT R2-single-quote-not-removed: CAUGHT rc=1 first_fail=FAIL: F2 a single-quoted operand is reported without its quotes: no row 'script_image_unpinned 3 redis:7' in: script_image_unpinned scripts/a.sh 2 postgres:15|
+MUTANT R2b-double-quote-not-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD quoted install hint (download piped into sh) printed for the operator: exit status 1 (got '0' want '1')
+MUTANT R3-image-subcommand-dropped: CAUGHT rc=1 first_fail=FAIL: F2 run operand line 8: no row 'script_image_unpinned 8 nginx:1.25' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 alpine|script_image_unpinned scripts/a.sh 5 mysql:8|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 docker.io/library/alpine:3.19|
+MUTANT R4-inline-from-default-ignored: CAUGHT rc=1 first_fail=FAIL: F4 inline ${VAR:-default} FROM default is judged: exit status 1 (got '0' want '1')
+MUTANT R7-dotbash-not-scanned: CAUGHT rc=1 first_fail=FAIL: F4 a .bash file is scanned: exit status 1 (got '0' want '1')
+MUTANT R8-yaml-compose-not-scanned: CAUGHT rc=1 first_fail=FAIL: F4 a compose .yaml file is scanned: exit status 1 (got '0' want '1')
+MUTANT R9-comment-quote-tracking-off: CAUGHT rc=1 first_fail=FAIL: F4 a # inside a quoted string does not start a comment (the pipe after it is seen): exit status 1 (got '0' want '1')
+MUTANT R10-recurse-ignored: CAUGHT rc=1 first_fail=FAIL: F4 --recurse scans the submodule (exit 1) (got '0' want '1')
+MUTANT R11-exclude-dir-ignored: CAUGHT rc=1 first_fail=FAIL: F4 --exclude-dir skips the directory in the default file set (exit 0) (got '1' want '0')
+MUTANT R12-output-unsorted: CAUGHT rc=1 first_fail=FAIL: F4 the output is sorted by line (the pipe at line 2 before the FROM at line 4) (got '4 2 ' want '2 4 ')
+MUTANT N01-trailing-pipe-continuation-removed: CAUGHT rc=1 first_fail=FAIL: F2 a pipe continued by a trailing | (no backslash) into sh: exit status 1 (got '0' want '1')
+MUTANT N03-arg-after-from-honoured: CAUGHT rc=1 first_fail=FAIL: F2 stage-local ARG redeclaration does not hide the unpinned global default: exit status 1 (got '0' want '1')
+MUTANT N04-multi-arg-first-only: CAUGHT rc=1 first_fail=FAIL: F2 several ARG on one line: exit status 1 (got '0' want '1')
+MUTANT N05-mount-from-not-judged: CAUGHT rc=1 first_fail=FAIL: F2 RUN --mount=...,from=<unpinned image>: exit status 1 (got '0' want '1')
+MUTANT N06-add-from-not-judged: CAUGHT rc=1 first_fail=FAIL: F2 ADD --from=<unpinned image>: exit status 1 (got '0' want '1')
+MUTANT N07-compose-next-line-value-ignored: CAUGHT rc=1 first_fail=FAIL: X compose: the next-line image value is the reported reference: no row 'compose_image_unpinned 3 postgres:15' in: compose_image_unpinned docker-compose.yml 3 |
+MUTANT N11-bare-dollar-var-judged: CAUGHT rc=1 first_fail=FAIL: F1 compose: bare $VAR image is resolved by the caller, not judged: exit status 0 (got '1' want '0')
+MUTANT N17-quoted-substitution-not-recursed: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 5: no row 'script_image_unpinned 5 nginx:1.25' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_unpinned scripts/a.sh 8 alpine:3.19|script_image_unpinned scripts/a.sh 9 httpd:2.4|script_image_unp
+MUTANT N21-crash-exit-code-1: CAUGHT rc=1 first_fail=FAIL: F3 an internal exception exits 3 (not 1) (got '1' want '3')
+MUTANT N22-crash-not-caught: CAUGHT rc=1 first_fail=FAIL: F3 an internal exception exits 3 (not 1) (got '1' want '3')
+MUTANT N23-bom-not-stripped: CAUGHT rc=1 first_fail=FAIL: F2 a UTF-8 BOM before FROM: exit status 1 (got '0' want '1')
+MUTANT N24-registry-literal-judged-in-tests: CAUGHT rc=1 first_fail=FAIL: F1 in a test script a registry literal outside an engine command is data (assignment, helper argument): exit status 0 (got '1' want '0')
+MUTANT N26-localhost-script-judged: CAUGHT rc=1 first_fail=FAIL: F1 script: a localhost/ image is locally built, not external: exit status 0 (got '1' want '0')
+MUTANT N28-unknown-option-value-taken-as-image: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 11: no row 'script_image_unpinned 11 haproxy:2.9' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_u
+MUTANT N29-global-option-value-not-skipped: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 9: no row 'script_image_unpinned 9 httpd:2.4' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_u
+MUTANT N31-create-verb-dropped: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 7: no row 'script_image_unpinned 7 alpine:3.19' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 8 alpine:3.19|script_image_u
+MUTANT N33-redirect-not-skipped: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 10: no row 'script_image_unpinned 10 traefik:v3' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_u
+MUTANT N36-fd-dup-ampersand-splits: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 10: no row 'script_image_unpinned 10 traefik:v3' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_u
+MUTANT N46-build-sibling-after-ignored: CAUGHT rc=1 first_fail=FAIL: F1 compose: build: after image: in the same service also marks a local tag: exit status 0 (got '1' want '0')
+MUTANT N47-sibling-scan-crosses-services: CAUGHT rc=1 first_fail=FAIL: F1 compose: the local tag of a build: service is skipped, the other service is flagged: no row 'compose_image_unpinned 7 redis:7' in: compose_image_unpinned docker-compose.test.yml 10 ghcr.io/o/x:1|
+MUTANT pipe-check-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD Containerfile download piped into sh: exit status 1 (got '0' want '1')
+MUTANT pipe-substitution-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script bash <(download) process substitution: exit status 1 (got '0' want '1')
+MUTANT pipe-sudo-handling-removed: CAUGHT rc=1 first_fail=FAIL: R3-E | sudo -u root bash (got '' want 'pipe_to_shell,2;')
+MUTANT pipe-or-or-guard-removed: CAUGHT rc=1 first_fail=FAIL: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0 (got '1' want '0')
+MUTANT value-option-skip-removed: CAUGHT rc=1 first_fail=FAIL: G-BAD script docker run short image: exit status 1 (got '0' want '1')
+MUTANT R5-pipe-abs-shell-path-dropped: CAUGHT rc=1 first_fail=FAIL: F2 Dockerfile pipe into a shell/interpreter line 4: no 'VIOLATION pipe_to_shell <path>:4:' line in: VIOLATION pipe_to_shell Dockerfile:2: wget -qO- https://x.invalid/i.sh | ash|VIOLATION pipe_to_shell Dockerfile:3: curl -sSL https://x.invalid/p.py | python3 -|VIOLATION pipe_to_shell Dockerfile:5: curl -sSL https://x.invalid/p.sh | ksh|VIOLATION pipe_to_shell Dockerfile:8: curl -sSL https://x.invalid/p.sh | zsh|VIOLATION pipe_to_shell Dockerfile:9: curl -sSL https://x.invalid/p.sh | dash|
+MUTANT R6-zsh-dash-ash-ksh-dropped: CAUGHT rc=1 first_fail=FAIL: F2 Dockerfile pipe into a shell/interpreter line 2: no 'VIOLATION pipe_to_shell <path>:2:' line in: VIOLATION pipe_to_shell Dockerfile:3: curl -sSL https://x.invalid/p.py | python3 -|VIOLATION pipe_to_shell Dockerfile:4: curl -sSL https://x.invalid/p.rb | /usr/bin/ruby -|VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|check_pins: 4 violations in 1 files scanned
+MUTANT N08-build-sibling-ignored: CAUGHT rc=1 first_fail=FAIL: F1 compose: exactly the two real rows: total rows (got '3' want '2')
+MUTANT N09-namespaced-image-with-build-skipped: CAUGHT rc=1 first_fail=FAIL: F1 compose: a registry-qualified image next to build: is still judged: no row 'compose_image_unpinned 10 ghcr.io/o/x:1' in: compose_image_unpinned docker-compose.test.yml 7 redis:7|
+MUTANT N10-build-key-any-depth: CAUGHT rc=1 first_fail=FAIL: X compose: a build: key nested deeper than image: is not a sibling: no row 'compose_image_unpinned 3 redis:7' in: 
+MUTANT N13-wrapper-value-options-not-skipped: CAUGHT rc=1 first_fail=FAIL: R3-E | env -u X bash (got '' want 'pipe_to_shell,2;')
+MUTANT N14-duration-not-skipped: CAUGHT rc=1 first_fail=FAIL: R3-E | timeout 30 bash (got '' want 'pipe_to_shell,2;')
+MUTANT N15-wrapper-options-not-skipped: CAUGHT rc=1 first_fail=FAIL: R3-E | env -i bash (got '' want 'pipe_to_shell,2;')
+MUTANT N18-test-data-commands-judged: CAUGHT rc=1 first_fail=FAIL: R3-G echo of an unquoted download line piped into sh in a test script is data (the echo command is masked): exit status 0 (got '1' want '0')
+MUTANT N16-shell-strings-searched-strict: CAUGHT rc=1 first_fail=FAIL: R3-A a command line quoted into sh -c is searched at any position (prefix words before the engine) (got '' want 'script_image_unpinned,2,mysql:8;')
+MUTANT N19-heredoc-scan-quotes-ignored: CAUGHT rc=1 first_fail=FAIL: R3-G a << inside a single-quoted string does not open a here-document (the next line is scanned): no row 'script_image_unpinned 3 docker.io/library/alpine:3.19' in: 
+MUTANT N20-heredoc-scan-arithmetic-ignored: CAUGHT rc=1 first_fail=FAIL: F2 arithmetic << in a test script is not a here-document opener (line 3 scanned): no row 'script_image_unpinned 3 docker.io/library/alpine:3.19' in: 
+MUTANT N20b-heredoc-scan-bare-arithmetic-ignored: CAUGHT rc=1 first_fail=FAIL: R3-G (( )) commands, command substitution and deep nesting inside arithmetic are consumed: no row 'script_image_unpinned 5 docker.io/library/alpine:3.19' in: 
+MUTANT N20c-arithmetic-nesting-ignored: CAUGHT rc=1 first_fail=FAIL: R3-G nested parentheses in arithmetic do not open a here-document: no row 'script_image_unpinned 3 docker.io/library/aquasec/trivy:latest' in: 
+MUTANT N25-docker-transport-not-stripped: CAUGHT rc=1 first_fail=FAIL: F2 skopeo docker:// transport reference: no row 'script_image_unpinned 2 docker.io/library/alpine:3.19' in: 
+MUTANT N25b-expansion-operator-not-spaced: CAUGHT rc=1 first_fail=FAIL: R3-B script assignment with ${IMG:-default} (got '' want 'script_image_unpinned,2,docker.io/library/postgres:15;')
+MUTANT N32-buildah-verbs-ignored: CAUGHT rc=1 first_fail=FAIL: X wrapper/substitution/global-option/unknown-option line 8: no row 'script_image_unpinned 8 alpine:3.19' in: script_image_unpinned scripts/a.sh 2 postgres:15|script_image_unpinned scripts/a.sh 3 redis:7|script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 nginx:1.25|script_image_unpinned scripts/a.sh 6 busybox:1.36|script_image_unpinned scripts/a.sh 7 alpine:3.19|script_image_u
+MUTANT N40-python-stdin-interpreter-dropped: CAUGHT rc=1 first_fail=FAIL: F2 Dockerfile pipe into a shell/interpreter line 3: no 'VIOLATION pipe_to_shell <path>:3:' line in: VIOLATION pipe_to_shell Dockerfile:2: wget -qO- https://x.invalid/i.sh | ash|VIOLATION pipe_to_shell Dockerfile:4: curl -sSL https://x.invalid/p.rb | /usr/bin/ruby -|VIOLATION pipe_to_shell Dockerfile:5: curl -sSL https://x.invalid/p.sh | ksh|VIOLATION pipe_to_shell Dockerfile:6: curl -sSL https://x.invalid/p.sh | /bin/sh|VIOLATION pipe_to_shell Dockerfile:7: curl -sSL https://x.invalid/p.sh | /usr/bin/bash|
+MUTANT N42-eval-substitution-dropped: CAUGHT rc=1 first_fail=FAIL: F2 eval "$(download)": no 'VIOLATION pipe_to_shell <path>:2:' line in: VIOLATION pipe_to_shell scripts/a.sh:3: source <(curl -fsSL https://x.invalid/i.sh)|VIOLATION pipe_to_shell scripts/a.sh:4: . <(curl -fsSL https://x.invalid/i.sh)|check_pins: 2 violations in 1 files scanned
+MUTANT N43-source-procsubst-dropped: CAUGHT rc=1 first_fail=FAIL: F2 source <(download): no 'VIOLATION pipe_to_shell <path>:3:' line in: VIOLATION pipe_to_shell scripts/a.sh:2: eval "$(curl -fsSL https://x.invalid/i.sh)"|VIOLATION pipe_to_shell scripts/a.sh:4: . <(curl -fsSL https://x.invalid/i.sh)|check_pins: 2 violations in 1 files scanned
+MUTANT N44-dot-procsubst-dropped: CAUGHT rc=1 first_fail=FAIL: F2 . <(download): no 'VIOLATION pipe_to_shell <path>:4:' line in: VIOLATION pipe_to_shell scripts/a.sh:2: eval "$(curl -fsSL https://x.invalid/i.sh)"|VIOLATION pipe_to_shell scripts/a.sh:3: source <(curl -fsSL https://x.invalid/i.sh)|check_pins: 2 violations in 1 files scanned
+MUTANT E9-here-string-procsubst-dropped: CAUGHT rc=1 first_fail=FAIL: R3-E bash < <(download) (got '' want 'pipe_to_shell,2;')
+MUTANT A1-engine-only-at-the-head: CAUGHT rc=1 first_fail=FAIL: F2 wrapped/quoted/substituted command line 2: no row 'script_image_unpinned 2 postgres:15' in: script_image_unpinned scripts/a.sh 4 mysql:8|script_image_unpinned scripts/a.sh 5 busybox:1.36|script_image_unpinned scripts/a.sh 6 nginx:1.25|
+MUTANT A2-non-exec-heads-judged: CAUGHT rc=1 first_fail=FAIL: R3-A control: echo of a command line (no row) (got 'script_image_unpinned,2,junk:1;' want '')
+MUTANT A3-engine-variable-not-recognised: CAUGHT rc=1 first_fail=FAIL: R3-A engine in a variable $DOCKER (got '' want 'script_image_unpinned,2,memcached:1.6;')
+MUTANT A4-strict-bare-operand-kept: CAUGHT rc=1 first_fail=FAIL: R3-A control: a message that starts with the words (no row) (got 'script_image_unpinned,2,of;' want '')
+MUTANT A5-strict-engine-anywhere: CAUGHT rc=1 first_fail=FAIL: R3-A control: prose that mentions the words after a prefix (no row) (got 'script_image_unpinned,2,redis:7;' want '')
+MUTANT A6-pull-uses-run-table: CAUGHT rc=1 first_fail=FAIL: R3-A every pull value option hides its value (offending values: none) (got 'val ' want '')
+MUTANT A7-run-table-loses-add-host: CAUGHT rc=1 first_fail=FAIL: R3-A the value-option tables of check_pins equal the snapshot exactly (no missing option, no extra or boolean entry) (got '46a47|> run	--add-host|' want '')
+MUTANT A8-run-table-gains-a-boolean: CAUGHT rc=1 first_fail=FAIL: G-BAD script docker run short image: exit status 1 (got '0' want '1')
+MUTANT A9-pull-table-loses-policy: CAUGHT rc=1 first_fail=FAIL: R3-A the value-option tables of check_pins equal the snapshot exactly (no missing option, no extra or boolean entry) (got '43c43|< pull	--policy-zz|---|> pull	--policy|' want '')
+MUTANT A10-global-table-loses-tlscacert: CAUGHT rc=1 first_fail=FAIL: R3-A the value-option tables of check_pins equal the snapshot exactly (no missing option, no extra or boolean entry) (got '27c27|< global	--tlscacert-zz|---|> global	--tlscacert|' want '')
+MUTANT B1-expansion-default-not-resolved: CAUGHT rc=1 first_fail=FAIL: R3-B quoted default operand, short name (got '' want 'script_image_unpinned,2,redis:7;')
+MUTANT B2-expansion-default-colon-only: CAUGHT rc=1 first_fail=FAIL: R3-B quoted default operand, short name (got '' want 'script_image_unpinned,2,redis:7;')
+MUTANT C1-build-policy-not-local: CAUGHT rc=1 first_fail=FAIL: R3-C namespaced image, build, pull_policy build (skipped) (got 'compose_image_unpinned,4;' want '')
+MUTANT C2-explicit-pull-policy-ignored: CAUGHT rc=1 first_fail=FAIL: R3-C single-component image, build, pull_policy always (flagged) (got '' want 'compose_image_unpinned,4;')
+MUTANT C3-pull-policy-not-read: CAUGHT rc=1 first_fail=FAIL: R3-C namespaced image, build, pull_policy never (skipped) (got 'compose_image_unpinned,4;' want '')
+MUTANT C4-port-registry-is-single-component: CAUGHT rc=1 first_fail=FAIL: R3-C host:port registry image, build, no policy (flagged) (got '' want 'compose_image_unpinned,4;')
+MUTANT E1-script-operand-is-stdin: CAUGHT rc=1 first_fail=FAIL: R3-E control: | ruby script.rb (no row) (got 'pipe_to_shell,2;' want '')
+MUTANT E2-groups-not-tracked: CAUGHT rc=1 first_fail=FAIL: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1 (got '0' want '1')
+MUTANT E4-download-only-at-head: CAUGHT rc=1 first_fail=FAIL: R3-E an install hint with words before the download (got '' want 'pipe_to_shell,2;')
+MUTANT E5-quoted-hint-not-recursed: CAUGHT rc=1 first_fail=FAIL: G-BAD quoted install hint (download piped into sh) printed for the operator: exit status 1 (got '0' want '1')
+MUTANT E6-stderr-pipe-dropped: CAUGHT rc=1 first_fail=FAIL: R3-E |& (stderr too) into a shell (got '' want 'pipe_to_shell,2;')
+MUTANT E7-not-piped-stage-is-reader: CAUGHT rc=1 first_fail=FAIL: R3-E control: a shell that is NOT piped, inside a for-loop that downloads (no row) (got 'pipe_to_shell,2;' want '')
+MUTANT E8-pipeline-not-reset: CAUGHT rc=1 first_fail=FAIL: R3-E control: a download group, then an unrelated pipeline into a shell (no row) (got 'pipe_to_shell,2;' want '')
+MUTANT F1-unreadable-file-skipped: CAUGHT rc=1 first_fail=FAIL: R3-F an unreadable Dockerfile exits 3 (not 0) (got '0' want '3')
+MUTANT F2-unreadable-is-internal-error: CAUGHT rc=1 first_fail=FAIL: R3-F stderr does not name the file: Traceback (most recent call last):
+MUTANT G1-test-named-script-is-test: CAUGHT rc=1 first_fail=FAIL: R3-G a test_*-named script OUTSIDE a tests directory is operational code: the registry literal is flagged: no row 'script_image_unpinned 2 docker.io/library/postgres:16' in: 
+MUTANT G2-test-quoted-strings-judged: CAUGHT rc=1 first_fail=FAIL: R3-G quoted strings handed to a helper in a test script are fixture data: exit status 0 (got '1' want '0')
+MUTANT G3-test-substitution-in-quotes-blanked: CAUGHT rc=1 first_fail=FAIL: R3-G control: a command substitution inside double quotes in a test script is still a command: no row 'script_image_unpinned 2 postgres:15' in: 
+MUTANT G4-substitution-assignment-masked: CAUGHT rc=1 first_fail=FAIL: R3-G control: a command substitution inside double quotes in a test script is still a command: no row 'script_image_unpinned 2 postgres:15' in: 
+MUTANT RM1-host-gateway-value-dropped: CAUGHT rc=1 first_fail=FAIL: RM1 an unknown option's host:host-gateway value is not the image: exit status 0 (got '1' want '0')
+MUTANT RM2-port-registry-not-qualified: CAUGHT rc=1 first_fail=FAIL: R3-C host:port registry image, build, no policy (flagged) (got '' want 'compose_image_unpinned,4;')
+MUTANT RM3-sudo-u-value-not-skipped: CAUGHT rc=1 first_fail=FAIL: R3-E | sudo -u root bash (got '' want 'pipe_to_shell,2;')
+MUTANT RM4-dedup-removed: CAUGHT rc=1 first_fail=FAIL: RM4 two identical findings on one line print one row: total rows (got '2' want '1')
+MUTANT RM5-env-assignment-not-skipped: CAUGHT rc=1 first_fail=FAIL: R3-E | env FOO=1 bash (got '' want 'pipe_to_shell,2;')
+MUTANT RM6-hash-anywhere-is-comment: CAUGHT rc=1 first_fail=FAIL: RM6 a # inside a word (a URL fragment) is not a comment: exit status 1 (got '0' want '1')
+MUTANT RM7-trailing-and-or-not-continuation: CAUGHT rc=1 first_fail=FAIL: RM7 a trailing && continues the logical line (second pull reported at the first physical line): no row 'script_image_unpinned 2 docker.io/library/b:2' in: script_image_unpinned scripts/a.sh 2 docker.io/library/a:1|script_image_unpinned scripts/a.sh 3 docker.io/library/b:2|
+MUTANT RM8-tee-not-data: CAUGHT rc=1 first_fail=FAIL: R3-G tee is a data command in a test script (its unquoted words are not a command): exit status 0 (got '1' want '0')
+# mutations: 113

@@ -1,0 +1,42 @@
+# identity: wf13fix-p1 containerfiles mutation record (36 mutants)
+# head: 3fa277e4 (uncommitted work tree)
+# containerfiles-mutation record: paired mutations of the checker in scripts/containers/tests/test_containerfiles.sh
+# run_at: 2026-10-07T03:28:38Z host: anton
+# self_sha256: b4e1bde1f34f0507833a43b80ba340393f2b5e88948d3b69b26ca0401ef3f640
+MUTANT c5-from-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD digests.lock does not name the FROM digest: no 'C5-digests.lock-from' line in: C5-digests.lock-sha256 go: sha256 cccccccccccc... not in digests.lock
+MUTANT c6-class-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry without a class: no 'C6-class' line in: 
+MUTANT c1-missing-dir-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD required directory absent: no 'C1-missing-directory' line in: 
+MUTANT c2-companion-file-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD README.md missing: no 'C2-README.md' line in: 
+MUTANT c2-containerfile-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD empty Containerfile: no 'C2-containerfile' line in: C2-README.md go: README.md missing or empty|C2-digests.lock go: digests.lock missing or empty|C2-from go: no FROM line|C6-lock-entry go: no images.lock.yaml entry IMG-GO
+MUTANT c5-sha256-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD digests.lock does not name the checked SHA-256: no 'C5-digests.lock-sha256' line in: C5-digests.lock-from go: FROM digest of docker.io/library/debian not in digests.lock
+MUTANT c6-entry-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD no images.lock.yaml entry: no 'C6-lock-entry' line in: 
+MUTANT c6-digest-mismatch-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest: no 'C6-digest-mismatch' line in: 
+MUTANT CR2-class-only-presence: CAUGHT first_fail=FAIL: GOLDEN-BAD lock entry class outside the closed set: no 'C6-class' line in: 
+MUTANT CR3-empty-companion-ok: CAUGHT first_fail=FAIL: GOLDEN-BAD empty README.md: no 'C2-README.md' line in: 
+MUTANT CR4-unknown-dir-silent: CAUGHT first_fail=FAIL: GOLDEN-BAD a directory with no id mapping: no 'C6-unknown-directory' line in: 
+MUTANT CR5-c3-bad-exit-silent: CAUGHT first_fail=FAIL: GOLDEN-BAD C3 refuses check_pins stub rc2: no 'C3-check_pins' line in: 
+MUTANT N1-c3-clean-always: CAUGHT first_fail=FAIL: GOLDEN-BAD tag-only FROM: no 'C3-check_pins' line in: C2-from go: no FROM line
+MUTANT N2-c3-violation-lines-not-named: CAUGHT first_fail=FAIL: GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict (got 'C3-check_pins go: check_pins exited 1 with 1 VIOLATION lines (not a clean verdict)' want 'C3-check_pins go: VIOLATION r p:1: x')
+MUTANT N6-c4-add-checksum-not-required: CAUGHT first_fail=FAIL: GOLDEN-BAD ADD <url> without --checksum: no 'C4-download-without-sha256' line in: C5-digests.lock-sha256 go: sha256 A... not in digests.lock
+MUTANT c4-download-check-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD download without a SHA-256 check: no 'C4-download-without-sha256' line in: 
+MUTANT CR1-wget-not-a-download: CAUGHT first_fail=FAIL: GOLDEN-BAD wget download without a SHA-256 check: no 'C4-download-without-sha256' line in: 
+MUTANT CR6-checksum-any-sha256sum: CAUGHT first_fail=FAIL: GOLDEN-BAD sha256sum without -c is not a check: no 'C4-download-without-sha256' line in: 
+MUTANT N3-c4-one-check-clears-all: CAUGHT first_fail=FAIL: GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c: no 'C4-download-without-sha256' line in: 
+MUTANT N4-c4-download-count-fixed-one: CAUGHT first_fail=FAIL: GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c: no 'C4-download-without-sha256' line in: 
+MUTANT N5-c4-shasum-not-checked: CAUGHT first_fail=FAIL: R3-C4 shasum -a 256 without -c is not a check: no 'C4-download-without-sha256' line in: 
+MUTANT N7-c7-swallow-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD a RUN that swallows a failure with || true: no 'C7-swallowed-failure' line in: 
+MUTANT N8-c7-colon-form-removed: CAUGHT first_fail=FAIL: GOLDEN-BAD a RUN that swallows a failure with || :: no 'C7-swallowed-failure' line in: 
+MUTANT N9-c7-exit-zero-removed: CAUGHT first_fail=FAIL: R3-C7 || exit 0: no 'C7-swallowed-failure' line in: 
+MUTANT N10-c7-echo-printf-removed: CAUGHT first_fail=FAIL: R3-C7 || echo ignored: no 'C7-swallowed-failure' line in: 
+MUTANT N11-c7-set-plus-e-removed: CAUGHT first_fail=FAIL: R3-C7 set +e: no 'C7-swallowed-failure' line in: 
+MUTANT N12-c7-group-rhs-ignored: CAUGHT first_fail=FAIL: R3-C7 || { true; }: no 'C7-swallowed-failure' line in: 
+MUTANT N13-c7-and-chain-ignored: CAUGHT first_fail=FAIL: R3-C7 control: || echo x && exit 1 (clean) (got 'C7-swallowed-failure go: RUN rm -f /tmp/x || echo x && exit 1' want '')
+MUTANT N14-c4-lookup-is-download: CAUGHT first_fail=FAIL: R3-C4 control: command -v curl with redirections is a lookup (clean) (got 'C4-download-without-sha256 go: RUN command -v curl >/dev/null 2>&1 && echo ok' want '')
+MUTANT N15-c4-version-is-download: CAUGHT first_fail=FAIL: R3-C4 control: command -v curl and curl --version are lookups (clean) (got 'C4-download-without-sha256 go: RUN command -v curl && curl --version' want '')
+MUTANT N16-c4-url-first-not-download: CAUGHT first_fail=FAIL: R3-C4 quoted URL: no 'C4-download-without-sha256' line in: 
+MUTANT N17-c4-check-before-download-counts: CAUGHT first_fail=FAIL: GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check): no 'C4-download-without-sha256' line in: 
+MUTANT N18-c4-unparseable-accepted: CAUGHT first_fail=FAIL: R3-C4 an unparseable RUN that names a download is refused: no 'C4-download-without-sha256' line in: 
+MUTANT N19-c7-only-parsed-with-curl: CAUGHT first_fail=FAIL: GOLDEN-BAD a RUN that swallows a failure with || true: no 'C7-swallowed-failure' line in: 
+MUTANT RC1-add-checksum-not-locked: CAUGHT first_fail=FAIL: RC1 the ADD --checksum value must be named in digests.lock: no 'C5-digests.lock-sha256' line in: 
+MUTANT RC2-no-from-silent: CAUGHT first_fail=FAIL: RC2 a Containerfile with no FROM line: no 'C2-from' line in: 
+# mutations: 36

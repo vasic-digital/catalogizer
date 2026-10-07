@@ -31,3 +31,19 @@ Builds ran rootless on this host (anton, owner decision) with `podman build` dir
 | `t114-red.txt`, `t114-green-run1..3.txt`, `t114-minio-blocked.txt` | T114 | 13 violations then 3 (MinIO, BLOCKED: image unavailable) |
 | `t148-green`/`t149-green-run1..3.txt`, `t149-consistency.txt` | T148/T149 | patches applied to the tracked files; 0 violations in the two files; compose digests all map to lock entries |
 | `mutations.txt`, `t116-mutate.sh` | T116 | D-01..D-04 revert mutants all fail at the COPY step; pins mutants caught by check_pins |
+
+## Round 3 fixes (WF10 round 1 fix files indexed, WF13 round 3) - 2026-10-07
+
+`wf10fix-p1-*` (WF10 p1 fix, 178ee136 and 96779242; these files carry no identity header, so a RED's target cannot be read from them: WF13 D2; the RED recorded there has 182 checks while the suite then had 205, so it predates 23 checks; `wf13fix-p1-check-pins-red.txt` re-records a RED for the full current suite): `check-pins-red/green-run1..3/container-run/mutation`, `containerfiles-red/green-run1..3/container-run/mutation`, `f5-golang-alias`, `f6-android-c7`, `pins-after.tsv`; their sums are `SHA256SUMS.wf10fix-p1`.
+
+`wf13fix-p1-*` (round 3, constitution 11.4.276 structural round; every file carries `# identity`, `# head`, `# sha256` of the files under test and `# run_at`; sums in `SHA256SUMS.wf13fix-p1`):
+
+| File | Content |
+|---|---|
+| `wf13fix-p1-check-pins-red.txt` | the round-3 `test_check_pins.sh` against the COMMITTED scanner (sha256 f94f45c2...): 281 passed, 71 failed |
+| `wf13fix-p1-check-pins-green-run1..3.txt`, `-full-run.txt`, `-mutation.txt`, `-container-run.txt` | GREEN x3 (352 checks, host), the full run (352 fixtures + 113 mutants all CAUGHT + 1 = 466 passed, 0 failed), the mutation record, one run through `run_pinned IMG-KCOV` (351: no podman inside, the live-drift check is an honest SKIP) |
+| `wf13fix-p1-containerfiles-red.txt`, `-green-run1..3.txt`, `-full-run.txt`, `-mutation.txt`, `-container-run.txt` | RED (the HEAD checker + the new fixture block: 62 passed, 15 failed), GREEN x3 (77), the full run (36 mutants all CAUGHT, 113 passed), the record, one container run |
+| `wf13fix-p1-pins-after.tsv`, `wf13fix-p1-pins-diff.txt` | the live rows of the round-3 scanner (52) and their difference to the committed scanner (control needle: the committed scanner returns 51 rows outside the three edited files): one added row, `scripts/build_in_container.sh:25` |
+| `wf13fix-p1-engine-options-regen.txt` | the committed option snapshot equals a regeneration from the live podman 5.7.0 help (243 rows) |
+
+`pins-baseline.txt` (91 rows) and `pins-baseline-recursive.txt` are SUPERSEDED for the main repository by `wf13fix-p1-pins-after.tsv`: the first contained the false positives removed since, and its header cites `t105-notes.md`, a file that was never written (WF13 D3). They are left byte-identical because `SHA256SUMS` lists them.

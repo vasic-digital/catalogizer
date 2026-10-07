@@ -26,7 +26,7 @@ ok()  { PASSES=$((PASSES+1)); [ "${QUIET:-0}" = 1 ] || echo "PASS: $1"; }
 bad() { FAILS=$((FAILS+1)); echo "FAIL: $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2' want '$3')"; fi; }
 command -v python3 >/dev/null 2>&1 || { echo "FAIL: python3 is required"; exit 2; }
-T="$(mktemp -d "${TMPDIR:-/tmp}/cf-test.XXXXXX")"; trap 'rm -rf "$T"' EXIT
+T="$(mktemp -d "${TMPDIR:-/tmp}/cf-test.XXXXXX")" && [ -d "$T" ] || { echo "FAIL: cannot create the scratch directory under ${TMPDIR:-/tmp} (mktemp failed); nothing was run"; exit 2; }; trap 'rm -rf "$T"' EXIT
 
 # the checker: prints one line per violation `<rule> <dir>: <message>`; exit 0 whatever it prints (the caller counts lines)
 CHECKER="$T/checker.py"
@@ -68,6 +68,99 @@ def logical(text):
     if cur: acc.append(cur.strip())
     return acc
 
+import shlex
+SEPS = {"&&", "||", ";", "|", "&", "(", ")", "{", "}", ";;", "|&", ";&"}
+WRAPS = {"sudo", "env", "nohup", "time", "command", "exec", "then", "do", "else", "!", "xargs", "nice", "timeout"}
+def run_commands(body):
+    """Split the shell text of one RUN into simple commands: [(separator-before, [tokens...]), ...]. Raises ValueError on an unparseable text."""
+    lex = shlex.shlex(body, posix=True, punctuation_chars=True)
+    lex.whitespace_split = True
+    out, cur, sep = [], [], ""
+    for tok in lex:
+        if tok in SEPS:
+            if cur: out.append((sep, cur))
+            cur, sep = [], tok
+        else:
+            cur.append(tok)
+    if cur: out.append((sep, cur))
+    return out
+def head_of(toks):
+    """(index of the command word, base name); lookups (`command -v X`) and assignments are not the command."""
+    i = 0
+    while i < len(toks):
+        t = toks[i]
+        if re.match(r"^[A-Za-z_]\w*=", t): i += 1; continue
+        b = os.path.basename(t)
+        if b in WRAPS:
+            if b == "command" and i + 1 < len(toks) and toks[i + 1] in ("-v", "-V"): return None, ""
+            i += 1
+            while i < len(toks) and toks[i].startswith("-") and toks[i] not in ("-",): i += 1
+            continue
+        return i, b
+    return None, ""
+def is_download(toks):
+    i, b = head_of(toks)
+    if i is None or b not in ("curl", "wget"): return False
+    return not set(toks[i + 1:]) <= {"--version", "-V", "--help", "-h"}
+def is_check(toks):
+    i, b = head_of(toks)
+    if i is None: return False
+    a = toks[i + 1:]
+    if b == "sha256sum": return any(x in ("-c", "--check") or (x.startswith("-") and not x.startswith("--") and "c" in x[1:]) for x in a)
+    if b == "shasum": return "256" in a and "-a" in a and "-c" in a
+    return False
+def swallows(cmds_after_oror):
+    """True when the right-hand side of an `||` only ever succeeds (true, :, echo, printf, exit 0): the failure of the left side is dropped."""
+    if not cmds_after_oror: return False
+    for toks in cmds_after_oror:
+        i, b = head_of(toks)
+        if i is None: return False
+        a = toks[i + 1:]
+        if b in ("true", ":", "echo", "printf"): continue
+        if b == "exit" and a == ["0"]: continue
+        return False
+    return True
+def run_violations(body):
+    """(download_without_check, swallowed_failure) of one RUN body. A download must be followed, LATER in the same RUN, by its own SHA-256
+    check (each check consumes one earlier download); a failure is swallowed by `|| <command that only succeeds>`, a `{ }`/`( )` group of
+    such commands, or `set +e`."""
+    pending, swallow = 0, False
+    cmds = run_commands(body)
+    for n, (sep, toks) in enumerate(cmds):
+        if is_download(toks): pending += 1
+        elif is_check(toks) and pending > 0: pending -= 1
+        i, b = head_of(toks)
+        if b == "set" and "+e" in toks[i + 1:]: swallow = True
+        if sep == "||":                                   # the right-hand side, extended by the `&&` commands chained to it (`|| echo x && exit 1` fails)
+            rhs, k = [toks], n + 1
+            while k < len(cmds) and cmds[k][0] == "&&": rhs.append(cmds[k][1]); k += 1
+            if swallows(rhs): swallow = True
+    return pending > 0, swallow or group_rhs_swallows(body)
+def group_rhs_swallows(body):
+    """Right-hand sides of `||` that are groups ({ a; b; } or ( a; b )): scanned on the token stream, because the group spans several commands."""
+    lex = shlex.shlex(body, posix=True, punctuation_chars=True); lex.whitespace_split = True
+    toks = list(lex)
+    res = False
+    for i, t in enumerate(toks):
+        if t == "||" and i + 1 < len(toks) and toks[i + 1] in ("{", "("):
+            close = "}" if toks[i + 1] == "{" else ")"
+            j, depth, grp = i + 2, 1, []
+            while j < len(toks) and depth:
+                if toks[j] in ("{", "("): depth += 1
+                elif toks[j] in ("}", ")"):
+                    depth -= 1
+                    if not depth: break
+                grp.append(toks[j]); j += 1
+            sub, cur = [], []
+            for g in grp:
+                if g in SEPS:
+                    if cur: sub.append(cur)
+                    cur = []
+                else: cur.append(g)
+            if cur: sub.append(cur)
+            if swallows(sub): res = True
+    return res
+
 for d in sorted(x for x in os.listdir(tree) if os.path.isdir(os.path.join(tree, x))):
     p = os.path.join(tree, d)
     cf = os.path.join(p, "Containerfile")
@@ -87,19 +180,21 @@ for d in sorted(x for x in os.listdir(tree) if os.path.isdir(os.path.join(tree, 
     else:                                 # a crash (3), a usage error (2), a missing script (127) or an inconsistent verdict is never "clean"
         v("C3-check_pins", d, "check_pins exited %d with %d VIOLATION lines (not a clean verdict)" % (r.returncode, len(vl)))   # MUT-ANCHOR c3-else
     shas = []
-    for ln in logical(text):                                         # C4
-        if re.match(r"^RUN\b", ln, re.I) and re.search(r"\b(curl|wget)\s+(-|https?://)", ln):
-            m = re.search(r"\b(curl|wget)\b.*?(sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln)   # MUT-ANCHOR c4-check
-            n_dl = len(re.findall(r"\b(?:curl|wget)\s+(?:-|https?://)", ln))
-            n_ck = len(re.findall(r"(?:sha256sum\s+-c|shasum\s+-a\s+256\s+-c)", ln))
-            if not m or n_ck < n_dl: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
-            shas += re.findall(r"\b([0-9a-f]{64})\b", ln)
+    for ln in logical(text):                                         # C4, C7
+        if re.match(r"^RUN\b", ln, re.I):
+            body = re.sub(r"^RUN\s+(?:--\S+\s+)*", "", ln, flags=re.I)
+            if re.search(r"\b(?:curl|wget)\b|\|\||set\s+\+e", body):
+                try:
+                    dl_bad, swallowed = run_violations(body)       # MUT-ANCHOR c4-check
+                except ValueError:                                 # unparseable shell text that names curl/wget: refused, not guessed
+                    dl_bad, swallowed = bool(re.search(r"\b(?:curl|wget)\b", body)), False
+                if dl_bad: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
+                if swallowed: v("C7-swallowed-failure", d, ln[:140])        # C7  MUT-ANCHOR c7-swallow
+            if re.search(r"\b(?:curl|wget)\b", body): shas += re.findall(r"\b([0-9a-f]{64})\b", ln)
         if re.match(r"^ADD\b", ln, re.I) and re.search(r"\bhttps?://", ln):
             ck = re.search(r"--checksum=sha256:([0-9a-f]{64})\b", ln)    # MUT-ANCHOR c4-add
             if not ck: v("C4-download-without-sha256", d, ln[:140])
             else: shas.append(ck.group(1))
-        if re.match(r"^RUN\b", ln, re.I) and re.search(r"\|\|\s*(true|:)\s*($|[;&)|])", ln):    # C7  MUT-ANCHOR c7-swallow
-            v("C7-swallowed-failure", d, ln[:140])
     froms = []
     args = {}
     for ln in logical(text):
@@ -285,6 +380,56 @@ if src.count(old) != 1: sys.exit(3)
 open(sys.argv[2], "w").write(src.replace(old, old + "    raise RuntimeError('injected crash')\n"))
 PYEND
 fxcheck_pins c3 "$STUB/crash_pins.sh"; expect_rule "GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line)" C3-check_pins
+
+# ---------------------------------------------------------------- WF13 round 3 (11.4.276 structural round): C4 and C7 judge the PARSED commands of a RUN, not a count of regex hits (N4, N9)
+CFN=0
+cf_case() { # <label> <Containerfile line> <C4-download-without-sha256 | C7-swallowed-failure | clean>
+  CFN=$((CFN+1)); local n="r3c$CFN"
+  mkfix "$n"; gooddir "$n" go; printf '%s\n' "$2" >>"$T/fx-$n/tree/go/Containerfile"; addlock "$n" IMG-GO docker.io/library/debian "sha256:$D64" compile
+  fxcheck "$n"
+  if [ "$3" = clean ]; then check "$1 (clean)" "$OUT" ""; else expect_rule "$1" "$3"; fi
+}
+C4B="C4-download-without-sha256"; C7B="C7-swallowed-failure"
+CHK="echo \"$SH64  /tmp/f\" | sha256sum -c -"
+cf_case "R3-C4 quoted URL"                                   'RUN curl "https://example.invalid/g" -o /tmp/g && chmod +x /tmp/g' "$C4B"
+cf_case "R3-C4 variable URL"                                 'RUN curl "$URL" -o /tmp/g' "$C4B"
+cf_case "R3-C4 wget with a quoted URL"                       'RUN wget "https://example.invalid/g" -O /tmp/g' "$C4B"
+cf_case "R3-C4 URL before the options (curl URL -o f)"       'RUN curl https://example.invalid/f -o /f' "$C4B"
+cf_case "R3-C4 wget URL first"                               'RUN wget https://example.invalid/f -O /f' "$C4B"
+cf_case "R3-C4 the second download comes AFTER both checks"  "RUN curl -fsSL -o /tmp/a https://a.invalid/a && $CHK && $CHK && curl -fsSL -o /tmp/b https://b.invalid/b" "$C4B"
+cf_case "R3-C4 two downloads (the second quoted), one check" "RUN curl -fsSL -o /tmp/a https://a.invalid/a && curl \"https://b.invalid/b\" -o /tmp/b && $CHK" "$C4B"
+cf_case "R3-C4 set -e does not replace a check"              'RUN set -e; curl -fsSL -o /tmp/f https://x.invalid/f && chmod +x /tmp/f' "$C4B"
+cf_case "R3-C4 download as the last command after a check of something else" "RUN $CHK && curl -fsSL -o /tmp/g https://x.invalid/g" "$C4B"
+cf_case "R3-C4 shasum -a 256 without -c is not a check"      "RUN curl -fsSL -o /tmp/f https://example.invalid/f && echo \"$SH64  /tmp/f\" | shasum -a 256" "$C4B"
+cf_case "R3-C4 sha256sum with an unrelated option is not a check" "RUN curl -fsSL -o /tmp/f https://example.invalid/f && echo \"$SH64  /tmp/f\" | sha256sum -b -" "$C4B"
+cf_case "R3-C4 control: quoted URL with its check"           "RUN curl \"https://example.invalid/f\" -o /tmp/f && $CHK" clean
+cf_case "R3-C4 control: sha256sum --check"                   "RUN curl -fsSL -o /tmp/f https://example.invalid/f && echo \"$SH64  /tmp/f\" | sha256sum --check -" clean
+cf_case "R3-C4 control: shasum -a 256 -c"                    "RUN curl -fsSL -o /tmp/f https://example.invalid/f && echo \"$SH64  /tmp/f\" | shasum -a 256 -c -" clean
+cf_case "R3-C4 control: command -v curl and curl --version are lookups" 'RUN command -v curl && curl --version' clean
+cf_case "R3-C4 control: command -v curl with redirections is a lookup" 'RUN command -v curl >/dev/null 2>&1 && echo ok' clean
+cf_case "R3-C4 control: which curl / type curl"              'RUN which curl; type curl' clean
+cf_case "R3-C7 || /bin/true"                                 'RUN rm -f /tmp/x || /bin/true' "$C7B"
+cf_case "R3-C7 || exit 0"                                    'RUN rm -f /tmp/x || exit 0' "$C7B"
+cf_case "R3-C7 || echo ignored"                              'RUN rm -f /tmp/x || echo ignored' "$C7B"
+cf_case "R3-C7 || { true; }"                                 'RUN rm -f /tmp/x || { true; }' "$C7B"
+cf_case "R3-C7 || ( true )"                                  'RUN rm -f /tmp/x || ( true )' "$C7B"
+cf_case "R3-C7 || { echo x; true; }"                         'RUN rm -f /tmp/x || { echo x; true; }' "$C7B"
+cf_case "R3-C7 set +e"                                       'RUN set +e; rm -f /tmp/x; echo done' "$C7B"
+cf_case "R3-C7 ||true without a space"                       'RUN rm -f /x ||true' "$C7B"
+cf_case "R3-C7 || printf"                                    'RUN rm -f /tmp/x || printf done' "$C7B"
+cf_case "R3-C7 control: || { echo; exit 1; } is an explicit handler" 'RUN rm -f /tmp/x || { echo fail >&2; exit 1; }' clean
+cf_case "R3-C7 control: || exit 1"                           'RUN rm -f /tmp/x || exit 1' clean
+cf_case "R3-C7 control: || false"                            'RUN rm -f /tmp/x || false' clean
+cf_case "R3-C7 control: || echo x && exit 1"                 'RUN rm -f /tmp/x || echo x && exit 1' clean
+cf_case "R3-C7 control: || ( echo x; exit 2 )"               'RUN rm -f /tmp/x || ( echo x; exit 2 )' clean
+cf_case "R3-C7 control: || test -f"                          'RUN test -f /a || test -f /b' clean
+# a RUN whose shell text cannot be parsed and names a download is refused, not guessed
+cf_case "R3-C4 an unparseable RUN that names a download is refused" "RUN curl -fsSL -o /tmp/f 'https://example.invalid/f && echo done" "$C4B"
+# the independent reviewer's round-2 survivors (RC1-RC4), each with its distinguishing input
+mkfix rc1; gooddir rc1 go; printf 'ADD --checksum=sha256:%s https://x.invalid/f /f\n' "$(printf 'e%.0s' $(seq 64))" >>"$T/fx-rc1/tree/go/Containerfile"; addlock rc1 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck rc1; expect_rule "RC1 the ADD --checksum value must be named in digests.lock" C5-digests.lock-sha256
+mkfix rc2; gooddir rc2 go; printf 'RUN echo hi\n' >"$T/fx-rc2/tree/go/Containerfile"; addlock rc2 IMG-GO docker.io/library/debian "sha256:$D64" compile
+fxcheck rc2; expect_rule "RC2 a Containerfile with no FROM line" C2-from
 
 # ---------------------------------------------------------------- paired mutations of this file
 if [ -z "${CF_TEST_MUTANT:-}" ] && [ -z "${CF_TEST_NO_MUTATIONS:-}" ]; then
