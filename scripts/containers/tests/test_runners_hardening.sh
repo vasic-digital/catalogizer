@@ -10,6 +10,11 @@
 #   Round 2 (WF13): B1 every stop path ends the CONTAINER (the shim's client ignores TERM like a container's PID 1; the real legs use IMG-TESTUTIL `sleep`)
 #   I1 the dispatcher passes no limit, the wrapper's locked reading is the only one    I2 a refused duplicate --op-id touches none of the running run's files
 #   m1 a wrapper killed during its probe        m2 TERM while waiting for the budget lock        m4 a negative control for the mutation harness
+#   Round 4 (WF15, the structural round for class A, termination of a run, as the MATRIX wrapper state x client phase x container state x trigger; the cells and their blocks
+#   are in evidence/wp10/fix-r4-convergence-assessment.txt): R4A signal in the window "client alive, container not yet there" (main run and toolchain probe, TERM INT HUP, and a client
+#   that never gets to create the container)   R4B a paused and a created container   R4C a foreign container with the same op-id label and another /out   R4D the wall clock does not
+#   count the probe   R4E podman cannot answer while the run is stopped   R4F a SIGKILLed wrapper that is an unreaped zombie   R4G OMP_* thread caps never reach run_pinned.sh
+#   R4I a stopped container that was not removed   R4J wall clock and R4K SIGKILL of the wrapper in the window   B1 real legs: window, paused, TIC, OMP
 # F3 and F7 (the envelope itself) are in test_envelope.sh. Oracle strategy (11.4.245): SPECIFIED (hand-computed limits of docs/16 8.2 on a fixture host) and a
 # second independent observer for every behaviour: a run_pinned.sh SHIM that records what it was given, the REAL long-op registry read back with jq, and /proc.
 # Paired mutations: copies of the containers directory whose runner_lib.sh has ONE expression changed; each mutant re-runs only the blocks that cover it
@@ -54,13 +59,19 @@ echo $$ >>"${SHIM_ALLPIDS:?}"
 # the shim stands for `podman run` + its container: PID 1 of a container ignores a TERM it has no handler for, and the client proxies TERM to it, so the shim
 # ignores TERM too; it ends only when the fake podman (below) "stops the container" with KILL (review round 2 B1: a shim that dies on TERM hid the defect)
 trap '' TERM
+# R4A: the window "the client is alive, its container does not exist yet" (the real one is 2.4-2.8 s of disk-headroom, lock and image checks and container creation):
+# the record of the fake container is written only after SHIM_DELAY (main command) / SHIM_PROBE_DELAY (toolchain probe) seconds
+case " $* " in *cpa-probe*|*" --version "*) D="${SHIM_PROBE_DELAY:-}"; ISPROBE=1;; *) D="${SHIM_DELAY:-}"; ISPROBE=0;; esac
+[ -z "$D" ] || { sleep "$D" & wait $!; }
 mkdir -p "${SHIM_CDIR:?}"; printf '%s\n%s\n' "$$" "$OUTD" >"$SHIM_CDIR/$OPID.c"
+# R4B: a container that is CREATED (not started yet) for SHIM_CREATED seconds
+if [ "$ISPROBE" = 0 ] && [ -n "${SHIM_CREATED:-}" ]; then : >"$SHIM_CDIR/$OPID.created"; sleep "$SHIM_CREATED"; rm -f "$SHIM_CDIR/$OPID.created"; fi
 # the unstoppable case: the "container" is a separate process (a client that is killed leaves it running, like a real container whose client died)
 case " $* " in *cpa-probe*|*" --version "*) ;; *) if [ -n "${SHIM_STUBBORN:-}" ]; then sleep 600 & printf '%s\n%s\n' "$!" "$OUTD" >"$SHIM_CDIR/$OPID.c"; wait; exit 0; fi;; esac
 {
   echo "---CALL---"
   printf 'ARG:%s\n' "$@"
-  printf 'ENV:RUNP_MEMORY=%s\nENV:RUNP_CPUS=%s\nENV:RUNP_PIDS=%s\n' "${RUNP_MEMORY-}" "${RUNP_CPUS-}" "${RUNP_PIDS-}"
+  printf 'ENV:RUNP_MEMORY=%s\nENV:RUNP_CPUS=%s\nENV:RUNP_PIDS=%s\nENV:OMP_NUM_THREADS=%s\n' "${RUNP_MEMORY-}" "${RUNP_CPUS-}" "${RUNP_PIDS-}" "${OMP_NUM_THREADS-<unset>}"
   for v in RUNP_PRINT_ARGV RUNP_TEST_MODE RUNP_MEMINFO RUNP_ULIMIT_U RUNP_USER; do
     if [ -n "$(eval "echo \${$v+x}")" ]; then printf 'ENV:%s=%s\n' "$v" "$(eval "echo \${$v}")"; else printf 'ENV:%s=<unset>\n' "$v"; fi
   done
@@ -73,6 +84,7 @@ esac
 if [ -n "${SHIM_OUTLINES:-}" ]; then for i in $(seq "$SHIM_OUTLINES"); do echo "line $i" >>"$OUTD/go-test.jsonl"; sleep 1; done; fi
 if [ -n "${SHIM_GATE:-}" ]; then while [ ! -e "$SHIM_GATE" ]; do sleep 0.2; done; fi
 [ -z "${SHIM_SLEEP:-}" ] || sleep "$SHIM_SLEEP"
+[ -z "${SHIM_MARK:-}" ] || echo done >"$OUTD/finished.txt"   # the work of the run completed (R4A: it must NOT after a stop)
 echo "main-run-stdout"; echo "main-run-stderr" >&2
 exit "${SHIM_RC:-0}"
 SH
@@ -82,19 +94,40 @@ echo "AM-P1 clean"; exit 0
 SH
 cat >"$SHIMS/podman" <<'SH'
 #!/usr/bin/env bash
-# a fake podman that knows the containers of the fake run_pinned.sh (records $SHIM_CDIR/<op id>.c: pid, out dir); `stop` and `kill` end the shim with KILL
+# a fake podman that knows the containers of the fake run_pinned.sh (records $SHIM_CDIR/<op id>.c: pid, out dir; `<op id>-foreign.c`: another run's container with the SAME
+# label and another /out). The states and their rules are the ones of the REAL podman 5.7.0 (measured in review round 4): `ps` without -a lists RUNNING containers only; `stop` of a
+# paused container fails ("state improper"), `kill` ends it; `stop` of a created one succeeds and does nothing, `kill` of it fails, only `rm -f` removes it; a killed container
+# stays as `stopped` when SHIM_KEEP is set (no --rm) until `rm`.
 case "$*" in "image inspect"*) echo "${SHIM_INSPECT_DIGEST:-}"; exit 0;; esac
 cpid() { head -1 "$SHIM_CDIR/$1.c" 2>/dev/null; }
 calive() { local p; p="$(cpid "$1")"; [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && kill -0 "$p" 2>/dev/null && [ "$(sed 's/^.*) //' "/proc/$p/stat" 2>/dev/null | cut -d' ' -f1)" != Z ]; }
+cstate() { local o=$1; if calive "$o"; then if [ -e "$SHIM_CDIR/$o.paused" ]; then echo paused; elif [ -e "$SHIM_CDIR/$o.created" ]; then echo created; else echo running; fi; elif [ -e "$SHIM_CDIR/$o.stopped" ]; then echo stopped; fi; }
 case "${1:-}" in
-  ps) opid=""; for a in "$@"; do case "$a" in label=catalogizer.op_id=*) opid=${a#label=catalogizer.op_id=};; esac; done
-      [ -z "$opid" ] || ! calive "$opid" || echo "shimcid-$opid"; exit 0;;
+  ps) [ ! -e "$SHIM_CDIR/ps.fail" ] || { echo "Error: the fake podman cannot answer" >&2; exit 125; }
+      opid=""; all=0; fmt=0
+      for a in "$@"; do case "$a" in label=catalogizer.op_id=*) opid=${a#label=catalogizer.op_id=};; -a) all=1;; --format) fmt=1;; esac; done
+      [ -n "$opid" ] || exit 0
+      for o in "$opid" "$opid-foreign"; do
+        st="$(cstate "$o")"; [ -n "$st" ] || continue
+        [ "$all" = 1 ] || [ "$st" = running ] || continue
+        if [ "$fmt" = 1 ]; then echo "shimcid-$o $st"; else echo "shimcid-$o"; fi
+      done; exit 0;;
   inspect) for a in "$@"; do case "$a" in shimcid-*) id=$a;; esac; done; sed -n 2p "$SHIM_CDIR/${id#shimcid-}.c" 2>/dev/null; exit 0;;
-  stop|kill) echo "$*" >>"${SHIM_PODLOG:?}"
+  stop|kill|rm) echo "$*" >>"${SHIM_PODLOG:?}"
       [ -z "${SHIM_STUBBORN:-}" ] || exit 0   # a container that survives stop and kill (the unstoppable case)
       for a in "$@"; do case "$a" in shimcid-*) id=$a;; esac; done
-      p="$(cpid "${id#shimcid-}")"
-      if [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && case "$(tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null)" in *"$SHIM_DIR/run_pinned.sh"*) true;; *) false;; esac; then kill -KILL "$p" 2>/dev/null; fi
+      o="${id#shimcid-}"; st="$(cstate "$o")"; p="$(cpid "$o")"
+      case "$1:$st" in
+        stop:paused) echo "Error: container state improper" >&2; exit 125;;
+        stop:created) exit 0;;
+        kill:created) echo "Error: can only kill running containers" >&2; exit 125;;
+      esac
+      if calive "$o"; then
+        if [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && case "$(tr '\0' ' ' <"/proc/$p/cmdline" 2>/dev/null)" in *"$SHIM_DIR/run_pinned.sh"*|"sleep 600 "*) true;; *) false;; esac; then
+          kill -KILL "$p" 2>/dev/null; rm -f "$SHIM_CDIR/$o.paused" "$SHIM_CDIR/$o.created"
+          if [ "$1" != rm ] && [ -n "${SHIM_KEEP:-}" ]; then : >"$SHIM_CDIR/$o.stopped"; fi
+        fi
+      elif [ "$1" = rm ]; then rm -f "$SHIM_CDIR/$o.stopped"; fi
       exit 0;;
 esac
 exit 0
@@ -126,7 +159,7 @@ export SHIM_LOG="$T/run.log" SHIM_ALLPIDS="$T/allpids" SHIM_PROBE_OUT="$PROBE_OK
 ORIG_PATH="$PATH"; export PATH="$SHIMS:$PATH"
 EXP_CEIL=19660800000
 : >"$SHIM_LOG"
-resetlogs() { : >"$SHIM_LOG"; unset SHIM_RC SHIM_SLEEP SHIM_PROBE_RC SHIM_PROBE_SLEEP SHIM_GATE SHIM_PIDFILE SHIM_EARLY SHIM_OUTLINES; export SHIM_PROBE_OUT="$PROBE_OK" SHIM_INSPECT_DIGEST="$D1"; }
+resetlogs() { : >"$SHIM_LOG"; unset SHIM_RC SHIM_SLEEP SHIM_PROBE_RC SHIM_PROBE_SLEEP SHIM_GATE SHIM_PIDFILE SHIM_EARLY SHIM_OUTLINES SHIM_DELAY SHIM_PROBE_DELAY SHIM_CREATED SHIM_MARK SHIM_KEEP SHIM_STUBBORN; rm -f "$SHIM_CDIR/ps.fail"; export SHIM_PROBE_OUT="$PROBE_OK" SHIM_INSPECT_DIGEST="$D1"; }
 wr() { local w=$1; shift; ( cd "$CK" && bash "$SUTDIR/$w.sh" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
 refused() { grep -q "REFUSED reason=$1" "$T/stderr"; }
 call() { awk -v n="$1" '/^---CALL---$/{c++; next} c==n{print}' "$SHIM_LOG"; }
@@ -484,6 +517,70 @@ os.execvp("bash", ["bash"] + sys.argv[1:])' "$SUTDIR/$w.sh" "$@" ) >"$T/$tag.out
     check "B1d at the moment the op is released the container is already gone (the budget is never freed while it runs)" "$(b1_up "$B1TOK-kill")" 0
     [ "$EL" -le 25 ] && ok "B1d released ${EL}s after the SIGKILL" || bad "B1d released ${EL}s after the SIGKILL"
     check "B1d envelope: the budget of the dead run is not counted any more (used_mem_bytes 0)" "$(cd "$ROOT" && env PATH="$ORIG_PATH" ENVELOPE_TEST_MODE=1 bash "$SUTDIR/envelope.sh" --format json 2>/dev/null | jq -r .used_mem_bytes)" 0
+    # ---- round 4 (WF15) real legs: the cells of the matrix whose ground truth is the real podman ----
+    b1_cnt() { PATH="$ORIG_PATH" podman ps -a --filter "label=catalogizer.op_id=$1" --format '{{.State}}' 2>/dev/null | grep -cE "$2" | tr -d ' '; }   # containers of an op in the given states
+    b1_live() { b1_cnt "$1" 'running|created|paused|stopping|configured|initialized'; }
+    b1logs="$T/b1-logs"
+    # (e) control needle for the window legs: the same shape of run, no signal: its container comes up after the window and the work finishes
+    newreg
+    bwr run_testutil --op-id "$B1TOK-wctl" --out "$T/b1-out-wctl" -- sh -c 'sleep 2; echo finished >/out/finished.txt'
+    check "B1e control needle: an unsignalled run of the window shape completes" "$RC" 0
+    [ -e "$T/b1-out-wctl/finished.txt" ] && ok "B1e control needle: the work of an unsignalled run finishes (a missing finished.txt after a signal means something)" || bad "B1e control needle: no finished.txt on an unsignalled run"
+    # (e) TERM / HUP inside the window: the main command is spawned ($RUNF exists), its container is not up yet (2.4-2.8 s on this host)
+    for sig in TERM HUP; do
+      op="$B1TOK-win$sig"; newreg
+      bbg "b1win$sig" run_testutil --op-id "$op" --out "$T/b1-out-win$sig" -- sh -c 'sleep 6; echo finished >/out/finished.txt'; PW=$BGPID
+      waitfor "[ -e '$b1logs/$op.run' ]" 300
+      [ "$(b1_live "$op")" = 0 ] && ok "B1e[$sig] precondition: the main command is spawned and no container of the op is up yet (the window)" || bad "B1e[$sig] precondition not met: $(b1_live "$op") containers of the op are already up"
+      kill -s "$sig" "$PW" 2>/dev/null; wait "$PW"; RCW=$?
+      check "B1e[$sig] $sig inside the window of a real start: the wrapper ends 130" "$RCW" 130
+      check "B1e[$sig] the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf "$op")" 2>/dev/null)" "failed/interrupted"
+      check "B1e[$sig] when the op is released no container of the run is up" "$(b1_live "$op")" 0
+      sleep 9
+      check "B1e[$sig] NO container came up after the wrapper had exited and released the op" "$(b1_live "$op")" 0
+      [ ! -e "$T/b1-out-win$sig/finished.txt" ] && ok "B1e[$sig] the interrupted command never did its work (no /out/finished.txt)" || bad "B1e[$sig] the interrupted command ran to completion after the wrapper said it was interrupted"
+    done
+    # (e) the toolchain-probe member: TERM as soon as the op is registered
+    op="$B1TOK-winprobe"; newreg
+    bbg b1winprobe run_testutil --op-id "$op" --out "$T/b1-out-winprobe" -- sh -c 'echo finished >/out/finished.txt'; PW=$BGPID
+    waitfor "[ -e '$(opf "$op")' ]" 300
+    kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?
+    check "B1e[probe] TERM right after the registration: the wrapper ends 130" "$RCW" 130
+    check "B1e[probe] when the op is released no container of the run is up" "$(b1_live "$op")" 0
+    sleep 6
+    check "B1e[probe] no probe container came up after the release" "$(b1_live "$op")" 0
+    [ ! -e "$T/b1-out-winprobe/finished.txt" ] && ok "B1e[probe] the main command never ran" || bad "B1e[probe] the main command ran"
+    # (f) a PAUSED container (podman ps without -a does not list it; podman stop fails on it)
+    op="$B1TOK-pause"; newreg
+    bbg b1pause run_testutil --op-id "$op" --out "$T/b1-out-pause" -- sleep 40; PW=$BGPID
+    waitfor '[ "$(b1_main "'"$op"'")" = 1 ]' 300 && ok "B1f control needle: the main container is up before it is paused" || bad "B1f control needle: the observer never saw the main container"
+    cid="$(PATH="$ORIG_PATH" podman ps -q --no-trunc --filter "label=catalogizer.op_id=$op" 2>/dev/null | head -1)"
+    PATH="$ORIG_PATH" podman pause -- "$cid" >/dev/null 2>&1
+    [ "$(b1_cnt "$op" paused)" = 1 ] && [ "$(b1_up "$op")" = 0 ] && ok "B1f control needle: the container is paused and NOT listed by podman ps without -a" || bad "B1f control needle: paused=$(b1_cnt "$op" paused) listed-by-ps=$(b1_up "$op")"
+    S0=$(date +%s); kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?; EL=$(( $(date +%s) - S0 ))
+    check "B1f TERM while the container is paused: the wrapper ends 130" "$RCW" 130
+    check "B1f the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf "$op")" 2>/dev/null)" "failed/interrupted"
+    check "B1f the paused container is gone when the op is released (not left paused)" "$(b1_live "$op")" 0
+    [ "$EL" -le 30 ] && ok "B1f ended ${EL}s after the TERM" || bad "B1f ${EL}s to end a paused container"
+    # (g) the dispatcher: a TERM to test-in-container.sh reaches the lane (it execs the wrapper)
+    op="$B1TOK-tic"; newreg
+    ( cd "$ROOT" && exec "${b1env[@]}" python3 -I -c 'import os, signal, sys
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+signal.signal(signal.SIGHUP, signal.SIG_DFL)
+os.execvp("bash", ["bash"] + sys.argv[1:])' "$SUTDIR/../test-in-container.sh" --op-id "$op" --out "$T/b1-out-tic" tooling unit -- sleep 40 ) >"$T/b1tic.out" 2>"$T/b1tic.err" &
+    PW=$!
+    waitfor '[ "$(b1_main "'"$op"'")" = 1 ]' 300 && ok "B1g control needle: the lane's main container is up before the TERM" || bad "B1g control needle: the observer never saw the lane's container"
+    S0=$(date +%s); kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?; EL=$(( $(date +%s) - S0 ))
+    check "B1g TERM to test-in-container.sh: the lane ends 130 (not 143: the dispatcher did not die alone)" "$RCW" 130
+    check "B1g the lane's container is gone when the dispatcher exits" "$(b1_live "$op")" 0
+    check "B1g the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf "$op")" 2>/dev/null)" "failed/interrupted"
+    [ "$EL" -le 25 ] && ok "B1g ended ${EL}s after the TERM" || bad "B1g ${EL}s"
+    check "B1g no op of the stopped lane is left with a live state" "$(case "$(jq -r .state "$(opf "$op")")" in complete|failed|reaped|handoff|blocked-escape) echo terminal;; *) echo live;; esac)" terminal
+    # (h) OMP_NUM_THREADS: the real run_pinned.sh reads the same CPU count as the envelope
+    check "B1h control needle: the instrument sees the cap (nproc with OMP_NUM_THREADS=1 prints 1)" "$(OMP_NUM_THREADS=1 nproc)" 1
+    newreg
+    ( cd "$ROOT" && "${b1env[@]}" OMP_NUM_THREADS=1 bash "$SUTDIR/run_testutil.sh" --op-id "$B1TOK-omp" --out "$T/b1-out-omp" -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
+    check "B1h run_testutil with OMP_NUM_THREADS=1 in the environment runs (it was refused probe_failed / cpus_override_out_of_bounds)" "$RC" 0
   else
     echo "SKIP: IMG-TESTUTIL is not in the lock on this host: the B1 real legs are not run (not faked)"
   fi
@@ -501,6 +598,189 @@ if want F15; then
   grep -q 'could not be stopped' "$T/stderr" && ok "F15 the wrapper says the container could not be stopped" || bad "F15 stderr: $(cat "$T/stderr")"
   p="$(head -1 "$SHIM_CDIR/f15.c")"; [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && [ "$({ tr '\0' ' ' <"/proc/$p/cmdline"; } 2>/dev/null)" = "sleep 600 " ] && kill -KILL "$p" 2>/dev/null
   unset SHIM_STUBBORN
+fi
+
+# ============================================================ R4 (round 4): the matrix of class A, termination of a run, in the fake world
+# The fake run_pinned.sh and the fake podman now model what the round-3 suites could not: a client that is alive while its container does not exist yet (SHIM_DELAY), a paused and a
+# created container (ground truth: real podman 5.7.0, see the header of the fake), a foreign container under the same label, a podman that cannot answer, a finished container that
+# was not removed. The oracle for "the run is over" is independent of the wrapper: the fake container record read through /proc (shim_up) and the work marker finished.txt.
+LDX="$CK/.audit/runner-logs"
+shim_ps() { cat "$SHIM_ALLPIDS" 2>/dev/null | wc -l | tr -d ' '; }
+# r4_window <op> <signal> <delay> <expect rc>: run, signal inside the window, then watch for a late container
+r4_window() {
+  local op=$1 sig=$2 dl=$3 want_rc=$4 n0 t0 el
+  resetlogs; newreg; export SHIM_DELAY="$dl" SHIM_SLEEP=2 SHIM_MARK=1
+  n0="$(shim_ps)"
+  bg "$op" run_go --out "$T/o-$op" --op-id "$op" -- true; PW=$BGPID
+  waitfor "[ -e '$LDX/$op.run' ] && [ \"\$(shim_ps)\" -gt $(( n0 + 1 )) ]" 300
+  # the precondition of the cell, proven: the client of the main command is alive and its container record does not exist
+  local cl; cl="$(tail -1 "$SHIM_ALLPIDS")"
+  [ "$(shim_up "$op")" = gone ] && [[ "$cl" =~ ^[0-9]+$ ]] && kill -0 "$cl" 2>/dev/null && ok "R4A[$op] precondition: the client (pid $cl) is alive and no container of the main command exists" || bad "R4A[$op] precondition not met: container $(shim_up "$op"), client $cl"
+  t0=$(date +%s); kill -s "$sig" "$PW" 2>/dev/null; wait "$PW"; RCW=$?; el=$(( $(date +%s) - t0 ))
+  check "R4A[$op] $sig inside the window: the wrapper ends $want_rc" "$RCW" "$want_rc"
+  check "R4A[$op] the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf "$op")" 2>/dev/null)" "failed/interrupted"
+  check "R4A[$op] when the op is released no container of the run is up" "$(shim_up "$op")" gone
+  [ "$dl" -le 5 ] || { [ "$el" -le 15 ] && ok "R4A[$op] the client that never created its container was ended in ${el}s" || bad "R4A[$op] ${el}s to end a client that never created its container (the client was not signalled)"; }
+  sleep $(( dl <= 5 ? dl + 2 : 4 ))
+  check "R4A[$op] NO container comes up after the wrapper has exited and released the op" "$(shim_up "$op")" gone
+  [ ! -e "$T/o-$op/finished.txt" ] && ok "R4A[$op] the interrupted command never did its work (no finished.txt)" || bad "R4A[$op] the interrupted command ran to completion after the wrapper said it was interrupted"
+}
+if want R4A; then
+  # control needle: the same run without a signal: the container comes up after the delay and the work finishes (the observer can see both)
+  resetlogs; newreg; export SHIM_DELAY=3 SHIM_SLEEP=2 SHIM_MARK=1
+  wr run_go --out "$T/o-r4actl" --op-id r4actl -- true
+  check "R4A control needle: an unsignalled run with a 3 s window completes" "$RC" 0
+  [ -e "$T/o-r4actl/finished.txt" ] && ok "R4A control needle: its container came up and the work finished (the later 'absent' means something)" || bad "R4A control needle: no finished.txt on an unsignalled run"
+  for sig in TERM INT HUP; do r4_window "r4a$sig" "$sig" 3 130; done
+  r4_window r4akill TERM 60 130   # the client never creates its container: it has to be ended itself (TERM ignored, KILL after 5 s)
+  # the toolchain probe member: TERM as soon as the probe client is alive and its container does not exist
+  resetlogs; newreg; export SHIM_PROBE_DELAY=3 SHIM_SLEEP=2 SHIM_MARK=1; N0="$(shim_ps)"
+  bg r4aprobe run_go --out "$T/o-r4aprobe" --op-id r4aprobe -- true; PW=$BGPID
+  waitfor "[ \"\$(shim_ps)\" -gt $N0 ]" 300
+  kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?
+  check "R4A[probe] TERM while the toolchain probe client is alive and its container does not exist: 130" "$RCW" 130
+  check "R4A[probe] the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf r4aprobe)" 2>/dev/null)" "failed/interrupted"
+  sleep 5
+  check "R4A[probe] no probe container comes up after the op was released" "$(shim_up r4aprobe)" gone
+  check "R4A[probe] the main command was never started (only the probe's shim ran)" "$(( $(shim_ps) - N0 ))" 1
+fi
+
+# R4B: a PAUSED container is up (podman ps without -a does not list it; stop fails, kill ends it) and a CREATED one is up (stop does nothing, only rm -f removes it)
+if want R4B; then
+  resetlogs; newreg; export SHIM_SLEEP=30
+  bg r4bpaused run_go --out "$T/o-r4bp" --op-id r4bpaused -- true; PW=$BGPID
+  waitfor '[ "$(grep -c "^---CALL---$" "$SHIM_LOG")" -ge 2 ] && [ "$(shim_up r4bpaused)" = up ]' 300
+  : >"$SHIM_CDIR/r4bpaused.paused"
+  [ "$(PATH="$SHIMS:$PATH" podman ps -q --filter label=catalogizer.op_id=r4bpaused | wc -l | tr -d ' ')" = 0 ] && ok "R4B control needle: the paused container is NOT listed by ps without -a (the real podman does the same)" || bad "R4B control needle: the fake lists a paused container without -a"
+  : >"$T/podman.log"; S0=$(date +%s); kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?; EL=$(( $(date +%s) - S0 ))
+  check "R4B TERM while the container is PAUSED: the wrapper ends 130" "$RCW" 130
+  check "R4B the op is failed / interrupted" "$(jq -r '.state + "/" + .verdict' "$(opf r4bpaused)" 2>/dev/null)" "failed/interrupted"
+  check "R4B the paused container is gone when the op is released" "$(shim_up r4bpaused)" gone
+  [ "$EL" -le 15 ] && ok "R4B ended ${EL}s after the TERM" || bad "R4B ${EL}s to end a paused container"
+  grep -q '^kill --signal KILL -- shimcid-r4bpaused' "$T/podman.log" && ok "R4B stop failed on the paused container and KILL ended it (the sequence of the real podman)" || bad "R4B podman log: $(cat "$T/podman.log")"
+  resetlogs; newreg; export SHIM_SLEEP=2 SHIM_CREATED=60
+  bg r4bcreated run_go --out "$T/o-r4bc" --op-id r4bcreated -- true; PW=$BGPID
+  waitfor '[ -e "$SHIM_CDIR/r4bcreated.created" ]' 300
+  : >"$T/podman.log"; S0=$(date +%s); kill -s TERM "$PW" 2>/dev/null; wait "$PW"; RCW=$?; EL=$(( $(date +%s) - S0 ))
+  check "R4B TERM while the container is only CREATED: the wrapper ends 130" "$RCW" 130
+  check "R4B the op is failed / interrupted (a created container is not left to start later)" "$(jq -r '.state + "/" + .verdict' "$(opf r4bcreated)" 2>/dev/null)" "failed/interrupted"
+  check "R4B the created container is gone" "$(shim_up r4bcreated)" gone
+  [ "$EL" -le 15 ] && ok "R4B created: ended ${EL}s after the TERM" || bad "R4B created: ${EL}s (stop does nothing to a created container: it has to be removed)"
+  grep -q '^rm -f -- shimcid-r4bcreated' "$T/podman.log" && ok "R4B the created container was removed with rm -f" || bad "R4B podman log: $(cat "$T/podman.log")"
+fi
+
+# R4C: a container of ANOTHER run with the same op-id label and another /out is never touched (the ownership proof is the /out mount)
+if want R4C; then
+  resetlogs; newreg; export SHIM_SLEEP=30
+  mkdir -p "$SHIM_CDIR"; sleep 600 >/dev/null 2>&1 & FOREIGN=$!; HOLDERS+=("$FOREIGN")
+  printf '%s\n%s\n' "$FOREIGN" "$T/another-runs-out" >"$SHIM_CDIR/r4c-foreign.c"
+  wr run_go --out "$T/o-r4c" --op-id r4c --wall-s 2 -- true
+  check "R4C the run itself is ended at the wall clock (124)" "$RC" 124
+  check "R4C its own container is gone" "$(shim_up r4c)" gone
+  check "R4C the foreign container (same label, another /out) is still up: it was never stopped" "$(shim_up r4c-foreign)" up
+  grep -q 'shimcid-r4c-foreign' "$T/podman.log" && bad "R4C podman was asked to touch the foreign container: $(grep foreign "$T/podman.log" | head -2)" || ok "R4C podman was never asked to touch the foreign container"
+  [[ "$FOREIGN" =~ ^[0-9]+$ && "$FOREIGN" -gt 1 ]] && kill "$FOREIGN" 2>/dev/null
+fi
+
+# R4D: the wall clock starts when the main command is spawned: the toolchain probe is guarded but not counted
+if want R4D; then
+  resetlogs; newreg; export SHIM_PROBE_SLEEP=4 SHIM_SLEEP=1
+  wr run_go --out "$T/o-r4d" --op-id r4d --wall-s 3 -- true
+  check "R4D a probe of 4 s and a main command of 1 s under --wall-s 3: the run completes (the probe is not counted)" "$RC" 0
+  check "R4D its op is complete" "$(jq -r '.state + "/" + .verdict' "$(opf r4d)" 2>/dev/null)" "complete/rc=0"
+  grep -q 'main-run-stdout' "$T/stdout" && ok "R4D the work of the main command was delivered" || bad "R4D no main output: $(cat "$T/stderr")"
+fi
+
+# R4E: podman cannot answer while the run is ended: the answer is never read as "no container" (the op stays registered, exit 125). The cell: the CLIENT is gone (killed), the
+# container lives on (a separate process, as with a real container whose client died), and `podman ps` fails; with a live client the same answer is also refused, by the client check.
+if want R4E; then
+  resetlogs; newreg; export SHIM_SLEEP=60 SHIM_STUBBORN=1; N0="$(shim_ps)"
+  bg r4e run_go --out "$T/o-r4e" --op-id r4e -- true; PW=$BGPID
+  waitfor "[ \"\$(shim_ps)\" -gt $(( N0 + 1 )) ] && [ \"\$(shim_up r4e)\" = up ]" 300
+  CLP="$(tail -1 "$SHIM_ALLPIDS")"
+  : >"$SHIM_CDIR/ps.fail"
+  [[ "$CLP" =~ ^[0-9]+$ && "$CLP" -gt 1 ]] && kill -KILL "$CLP" 2>/dev/null   # the client dies; its container (a separate process) lives on
+  wait "$PW"; RCW=$?
+  check "R4E the client is gone, the container is up and podman cannot list containers: the wrapper exits 125 (the run could not be proven stopped)" "$RCW" 125
+  check "R4E the container is still up (and the op says so)" "$(shim_up r4e)" up
+  check "R4E the op is NOT released (state is not terminal)" "$(case "$(jq -r .state "$(opf r4e)")" in complete|failed|reaped|handoff|blocked-escape) echo terminal;; *) echo live;; esac)" live
+  grep -q 'could not be stopped' "$T/r4e.err" && ok "R4E the wrapper says the container could not be stopped" || bad "R4E stderr: $(cat "$T/r4e.err")"
+  rm -f "$SHIM_CDIR/ps.fail"
+  p="$(head -1 "$SHIM_CDIR/r4e.c")"; [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && [ "$({ tr '\0' ' ' <"/proc/$p/cmdline"; } 2>/dev/null)" = "sleep 600 " ] && kill -KILL "$p" 2>/dev/null
+  unset SHIM_STUBBORN
+fi
+
+# R4F: the owner is a ZOMBIE (SIGKILLed, not yet reaped by its parent): the guard loop reads it as dead, like the registry does
+if want R4F; then
+  resetlogs; newreg; export SHIM_SLEEP=60
+  cat >"$T/r4f_driver.py" <<'PY'
+import os, subprocess, sys, time
+cmd, pidf, reapf = sys.argv[1], sys.argv[2], sys.argv[3]
+p = subprocess.Popen(["bash", cmd] + sys.argv[4:], cwd=os.environ["R4F_CWD"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+open(pidf, "w").write(str(p.pid))
+while not os.path.exists(reapf):   # the parent does NOT wait for the child: a SIGKILLed wrapper stays a zombie
+    time.sleep(0.2)
+p.wait()
+PY
+  rm -f "$T/r4f.pid" "$T/r4f.reap"
+  ( R4F_CWD="$CK" exec python3 -I "$T/r4f_driver.py" "$SUTDIR/run_go.sh" "$T/r4f.pid" "$T/r4f.reap" --out "$T/o-r4f" --op-id r4f -- true ) >/dev/null 2>&1 &
+  DRV=$!
+  waitfor '[ -s "$T/r4f.pid" ] && [ "$(grep -c "^---CALL---$" "$SHIM_LOG")" -ge 2 ] && [ "$(shim_up r4f)" = up ] && [ "$(jq -r .heartbeat_seq "$LONGOPS_DIR/ops/r4f.json" 2>/dev/null || echo 0)" -ge 1 ]' 300
+  WP="$(cat "$T/r4f.pid")"
+  kill -KILL "$WP" 2>/dev/null; sleep 0.5
+  check "R4F precondition: the SIGKILLed wrapper is a zombie (its parent has not reaped it)" "$(sed 's/^.*) //' "/proc/$WP/stat" 2>/dev/null | cut -d' ' -f1)" Z
+  waitfor '[ "$(jq -r .state "$LONGOPS_DIR/ops/r4f.json" 2>/dev/null)" = failed ]' 200
+  check "R4F the guard loop ends the run of a zombie owner: the op is released failed / wrapper_died" "$(jq -r '.state + "/" + .verdict' "$(opf r4f)" 2>/dev/null)" "failed/wrapper_died"
+  check "R4F the container is gone (the budget is not left running under a dead owner)" "$(shim_up r4f)" gone
+  check "R4F the wrapper is STILL an unreaped zombie when that happens (the cell was the one under test)" "$(sed 's/^.*) //' "/proc/$WP/stat" 2>/dev/null | cut -d' ' -f1)" Z
+  : >"$T/r4f.reap"; wait "$DRV" 2>/dev/null
+  : >"$LDX/r4f.stop"   # an orphan guard loop of a wrapper that was not fixed ends here
+  p="$(head -1 "$SHIM_CDIR/r4f.c")"; [[ "$p" =~ ^[0-9]+$ && "$p" -gt 1 ]] && kill -KILL "$p" 2>/dev/null
+fi
+
+# R4G: the OMP_* thread caps never reach run_pinned.sh (GNU nproc honours them: run_pinned.sh would read a CPU count the envelope did not)
+if want R4G; then
+  resetlogs; newreg
+  check "R4G control needle: the instrument sees the cap (nproc with OMP_NUM_THREADS=1 prints 1)" "$(OMP_NUM_THREADS=1 nproc)" 1
+  ( cd "$CK" && OMP_NUM_THREADS=1 OMP_THREAD_LIMIT=1 bash "$SUTDIR/run_go.sh" --out "$T/o-r4g" -- true ) >"$T/stdout" 2>"$T/stderr"; RC=$?
+  check "R4G the run succeeds with OMP_NUM_THREADS=1" "$RC" 0
+  check "R4G run_pinned.sh did not see OMP_NUM_THREADS (main call)" "$(callenv 2 OMP_NUM_THREADS)" "<unset>"
+  check "R4G run_pinned.sh did not see OMP_NUM_THREADS (probe call)" "$(callenv 1 OMP_NUM_THREADS)" "<unset>"
+fi
+
+# R4I: a container that was stopped but not removed (no --rm) is finished, never "up"; it is removed
+if want R4I; then
+  resetlogs; newreg; export SHIM_SLEEP=30 SHIM_KEEP=1; : >"$T/podman.log"
+  wr run_go --out "$T/o-r4i" --op-id r4i --wall-s 2 -- true
+  check "R4I a wall-clock stop that leaves a stopped container behind: the wrapper ends 124 (a stopped container is not 'up')" "$RC" 124
+  check "R4I the op is released failed / wall_clock_exceeded" "$(jq -r '.state + "/" + .verdict' "$(opf r4i)" 2>/dev/null)" "failed/wall_clock_exceeded"
+  grep -q '^rm -f -- shimcid-r4i' "$T/podman.log" && ok "R4I the finished container was removed (rm -f)" || bad "R4I podman log: $(cat "$T/podman.log")"
+  [ ! -e "$SHIM_CDIR/r4i.stopped" ] && ok "R4I nothing of the run is left" || bad "R4I a stopped container record is left"
+fi
+
+# R4J: the wall clock in the window (client alive, no container): the client itself is ended (exit 124), the container never comes up
+if want R4J; then
+  resetlogs; newreg; export SHIM_DELAY=60 SHIM_SLEEP=2 SHIM_MARK=1; S0=$(date +%s)
+  wr run_go --out "$T/o-r4j" --op-id r4j --wall-s 2 -- true; EL=$(( $(date +%s) - S0 ))
+  check "R4J --wall-s 2 while the container is not there yet: 124" "$RC" 124
+  [ "$EL" -le 25 ] && ok "R4J the client was ended (${EL}s)" || bad "R4J ${EL}s: the client of a run without a container was not ended"
+  check "R4J the container never came up" "$(shim_up r4j)" gone
+  check "R4J the op is failed / wall_clock_exceeded" "$(jq -r '.state + "/" + .verdict' "$(opf r4j)" 2>/dev/null)" "failed/wall_clock_exceeded"
+fi
+
+# R4K: SIGKILL of the wrapper in the window (client alive, no container): the guard loop ends the client, the op is released wrapper_died
+if want R4K; then
+  resetlogs; newreg; export SHIM_DELAY=60 SHIM_SLEEP=2 SHIM_MARK=1; N0="$(shim_ps)"
+  bg r4k run_go --out "$T/o-r4k" --op-id r4k -- true; PW=$BGPID
+  waitfor "[ -e '$LDX/r4k.run' ] && [ \"\$(shim_ps)\" -gt $(( N0 + 1 )) ]" 300
+  CLP="$(tail -1 "$SHIM_ALLPIDS")"; CLST="$(sed 's/^.*) //' "/proc/$CLP/stat" 2>/dev/null | cut -d' ' -f20)"
+  kill -KILL "$PW" 2>/dev/null; wait "$PW" 2>/dev/null
+  waitfor '[ "$(jq -r .state "$LONGOPS_DIR/ops/r4k.json" 2>/dev/null)" = failed ]' 200
+  check "R4K SIGKILL of the wrapper in the window: the op is released failed / wrapper_died" "$(jq -r '.state + "/" + .verdict' "$(opf r4k)" 2>/dev/null)" "failed/wrapper_died"
+  NOW="$(sed 's/^.*) //' "/proc/$CLP/stat" 2>/dev/null | cut -d' ' -f20)"
+  check "R4K the client of the dead wrapper is gone when the op is released (identity: pid $CLP start $CLST)" "$([ -n "$NOW" ] && [ "$NOW" = "$CLST" ] && echo alive || echo gone)" gone
+  check "R4K the container never came up" "$(shim_up r4k)" gone
+  : >"$LDX/r4k.stop"
 fi
 
 # ============================================================ F11 + TREE: the real container leg (IMG-TESTUTIL), the real evidence tree stays untouched
@@ -568,14 +848,17 @@ place_tree() { # <dir>: a working tree layout: scripts/containers (a copy), scri
   ln -s "$ROOT/build" "$d/build"
 }
 mut_case() {
-  local id=$1 blocks=$2 want_sub=$3 old=$4 new=$5 file="${6:-containers/runner_lib.sh}" d="$T/mut-$1"
+  local id=$1 blocks=$2 want_sub=$3 old=$4 new=$5 file="${6:-containers/runner_lib.sh}" old2="${7-}" new2="${8-}" d="$T/mut-$1"
   TOTAL=$((TOTAL+1))
   place_tree "$d"
-  python3 -I - "$d/scripts/$file" "$old" "$new" <<'PY' || { echo "INVALID $id: pattern not found exactly once" | tee -a "$MREC"; SURV=$((SURV+1)); return; }
+  python3 -I - "$d/scripts/$file" "$old" "$new" "$old2" "$new2" <<'PY' || { echo "INVALID $id: pattern not found exactly once" | tee -a "$MREC"; SURV=$((SURV+1)); return; }
 import sys
 s = open(sys.argv[1]).read()
-if s.count(sys.argv[2]) != 1: sys.exit(1)
-open(sys.argv[1], "w").write(s.replace(sys.argv[2], sys.argv[3]))
+for o, n in ((sys.argv[2], sys.argv[3]), (sys.argv[4], sys.argv[5])):
+    if not o: continue
+    if s.count(o) != 1: sys.exit(1)
+    s = s.replace(o, n)
+open(sys.argv[1], "w").write(s)
 PY
   ( R1_SUT_DIR="$d/scripts/containers" R1_ONLY="$blocks" R1_TEST_MUTANT=1 R1_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-$id.log" 2>&1; local rc=$?
   if [ "$rc" -ne 0 ] && grep -q "^FAIL: .*$want_sub" "$T/mut-$id.log"; then CAUGHT=$((CAUGHT+1)); echo "CAUGHT   $id by a check naming '$want_sub' ($(grep -c '^FAIL' "$T/mut-$id.log") failing checks)" | tee -a "$MREC"
@@ -584,7 +867,7 @@ PY
 }
 # NEGATIVE CONTROL (review round 2 m4): an UNMUTATED copy placed like a mutant must pass the blocks the mutants run, else every "caught" is meaningless
 place_tree "$T/mut-control"
-( R1_SUT_DIR="$T/mut-control/scripts/containers" R1_ONLY="F1 F6 F8 F9 F10 F10b F12 F13 F14 F15" R1_TEST_MUTANT=1 R1_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-control.log" 2>&1; CRC=$?
+( R1_SUT_DIR="$T/mut-control/scripts/containers" R1_ONLY="F1 F6 F8 F9 F10 F10b F12 F13 F14 F15 R4A R4B R4C R4D R4E R4F R4G R4I R4J R4K" R1_TEST_MUTANT=1 R1_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-control.log" 2>&1; CRC=$?
 if [ "$CRC" = 0 ]; then echo "CONTROL  an unmutated copy placed like a mutant passes the blocks ($(grep '^RESULT' "$T/mut-control.log"))" | tee -a "$MREC"
 else echo "CONTROL FAILED: the unmutated copy fails the blocks ($(grep -c '^FAIL' "$T/mut-control.log") checks: $(grep '^FAIL' "$T/mut-control.log" | head -2 | cut -c1-100 | tr '\n' '|')): the mutation harness is blind" | tee -a "$MREC"; EXIT=1; fi
 RLB='[ ! -e "$LDIR/ops/$OP_ID.json" ] || rl_refuse op_exists "op id $OP_ID is already registered; the other run'"'"'s logs and record are untouched"'
@@ -611,13 +894,25 @@ mut_case release-ignores-live-container "F15" "F15 the op is NOT released" 'if [
 mut_case parent-death-does-not-stop-the-container "F10" "F10 " '      if rl_terminate_run; then
         bash' '      if true; then
         bash'
-mut_case parent-liveness-dropped "F10" "F10 " 'if [ "$(rl_pstart "$wp")" != "$wst" ]; then   # MUT:parent-liveness' 'if false; then   # MUT:parent-liveness'
+mut_case parent-liveness-dropped "F10" "F10 " 'if ! rl_palive "$wp" "$wst"; then   # MUT:parent-liveness' 'if false; then   # MUT:parent-liveness'
 mut_case guard-loop-not-started-at-registration "F10b" "F10b " '  ( rl_hb_loop "$$" "$(rl_pstart "$$")" ) >/dev/null 2>&1 &   # the guard loop: heartbeats, wall clock, parent liveness; it covers the toolchain probe too
   HBP=$!' '  :'
 mut_case out-bytes-not-progress "F9" "F9 a run that writes only /out" 'c="$(find "$OUT" -type f -printf '"'"'%s\n'"'"' 2>/dev/null | awk '"'"'{s += $1} END {print s + 0}'"'"')"' 'c=0'
 mut_case progress-offset-zero "F9" "F9 a run that writes only /out" '--progress-offset "$(rl_progress)" --elapsed-ms "$el" >/dev/null 2>&1; rc=$?' '--progress-offset 0 --elapsed-ms "$el" >/dev/null 2>&1; rc=$?'
 mut_case I1-dispatcher-passes-memory-again "F14" "F14 " 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" --memory "$(bash "$CDIR/envelope.sh" --toolchain "${WRAPPER#run_}" --format json | jq -r .memory_bytes)" "${PASS[@]}" -- "${CMD[@]}"' "test-in-container.sh"
 mut_case I1-dispatcher-passes-cpus-again "F14" "F14 " 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" --cpus "$(bash "$CDIR/envelope.sh" --toolchain "${WRAPPER#run_}" --format json | jq -r .cpus)" "${PASS[@]}" -- "${CMD[@]}"' "test-in-container.sh"
+# ---- round 4 (WF15): the reviewer's mutants RM1-RM4 adopted verbatim in effect (the source text moved; the mutation is the same expression change), then the mutants of the round-4 code
+mut_case RM1-client-never-signalled "R4A" "R4A" 'if rl_client_alive; then   # the client of a run whose container does not exist (yet)' 'if false; then   # the client of a run whose container does not exist (yet)' "containers/runner_lib.sh" '  rl_client_alive && rl_client_signal KILL' '  :'
+mut_case RM2-out-ownership-dropped "R4C" "R4C " '[ "$src" = "$OUT_REAL" ] && echo "$id $st"' 'echo "$id $st"'
+mut_case RM3-wall-counts-the-probe "R4D" "R4D " 'if [ -z "$t0" ] && [ -e "$RUNF" ]; then' 'if [ -z "$t0" ]; then'
+mut_case RM4-podman-failure-read-as-none "R4E" "R4E " 'if ids="$(rl_our_containers)" && [ -z "$ids" ] && ! rl_client_alive; then return 0; fi' 'ids="$(rl_our_containers)"; if [ -z "$ids" ] && ! rl_client_alive; then return 0; fi'
+mut_case R4-fast-path-ignores-the-client "R4A" "R4A" '[ -z "$ids" ] && ! rl_client_alive; then return 0; fi' '[ -z "$ids" ]; then return 0; fi'
+mut_case R4-ps-without-a "R4B" "R4B " 'podman ps -a --no-trunc' 'podman ps --no-trunc'
+mut_case R4-created-not-removed "R4B" "R4B " 'created|configured|initialized) timeout 30 podman rm -f -- "$1" >/dev/null 2>&1;;' 'created|configured|initialized) timeout 30 podman stop -- "$1" >/dev/null 2>&1;;'
+mut_case R4-paused-no-kill-fallback "R4B" "R4B " '|| timeout 30 podman kill --signal KILL -- "$1" >/dev/null 2>&1 || timeout 30 podman rm -f -- "$1" >/dev/null 2>&1;;' '|| true;;'
+mut_case R4-finished-counts-as-up "R4I" "R4I " 'exited|stopped|removing|dead) continue;;' 'NEVER) continue;;'
+mut_case R4-zombie-owner-reads-alive "R4F" "R4F " 'if ! rl_palive "$wp" "$wst"; then   # MUT:parent-liveness' 'if [ "$(rl_pstart "$wp")" != "$wst" ]; then   # MUT:parent-liveness'
+mut_case R4-omp-reaches-run-pinned "R4G" "R4G " 'exec env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT bash' 'exec bash'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"
 [ "$SURV" = 0 ] || EXIT=1
 exit "$EXIT"

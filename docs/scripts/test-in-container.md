@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T03:30:00Z |
-| Status | committed in a7cfc6d3 (T121); revision 2 in 96779242 (single-hook gate tests); revision 3 is the fix round r2 for the WF13 review (TIC passes no limit, uncommitted until the owner commits it; I1, I3); independent re-review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed. T121a (remote lanes, the `site` column) and T121b are BLOCKED on `scripts/build/dispatch.sh` (T005b) |
+| Last modified | 2026-10-07T08:00:00Z |
+| Status | committed in a7cfc6d3 (T121); revision 2 in 96779242 (single-hook gate tests); revision 3 in d9162b7d (TIC passes no limit); revision 4 is fix round r4 for the WF15 review (TIC EXECS the wrapper: a TERM, INT or HUP to the dispatcher reaches the wrapper, which stops the container; the dispatcher used to die alone with 143 and leave the lane running, and a retry was refused `purpose_conflict`, I1; uncommitted until the owner commits it); independent re-review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed. T121a (remote lanes, the `site` column) and T121b are BLOCKED on `scripts/build/dispatch.sh` (T005b) |
 | Source | `scripts/test-in-container.sh` (TIC), lane table `scripts/containers/lanes.tsv`; test `scripts/containers/tests/test_test_in_container.sh` |
 
 ## Purpose
@@ -45,7 +45,7 @@ reviewed rows. The `site` column (`remote` / `split` / `local`) is T121a's and i
 
 ## Exits
 
-The wrapper's exit code on a run; 1 `test-in-container: REFUSED reason=<code>`: `unknown_app`, `unknown_lane`, `no_lane_row`, `lane_table_unreadable`,
+The wrapper's exit code on a run (TIC `exec`s the wrapper: the wrapper is the very process TIC was started as, so a TERM, INT or HUP sent to TIC reaches the lane and ends it with 130, WF15 I1); 1 `test-in-container: REFUSED reason=<code>`: `unknown_app`, `unknown_lane`, `no_lane_row`, `lane_table_unreadable`,
 `lane_table_malformed`, `lane_table_duplicate`, `wrapper_missing` (BLOCKED until its task adds the wrapper), `envelope_refused`,
 `test_hook_outside_test_mode`; 2 usage.
 

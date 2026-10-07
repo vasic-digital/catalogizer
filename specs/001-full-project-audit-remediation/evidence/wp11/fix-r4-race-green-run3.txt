@@ -1,0 +1,29 @@
+PASS: instrument: the jsonl reader sees a DATA RACE output event (needle)
+PASS: instrument: no false race on a clean line (negative control)
+  (racy -race run: rc=1, 19 s)
+PASS: L1 racy: the containerized -race run exits non-zero on the seeded race (rc 1)
+PASS: L1 racy: /out/go-test.jsonl was written by the run
+PASS: L1 racy: the machine output carries a 'DATA RACE' event
+PASS: L1 racy: the test event is a failure
+PASS: L1 racy: the fixture printed race=enabled from inside the container (the detector was on)
+PASS: L1 racy: GOMAXPROCS=3 inside the container (the docs/16 limit was applied)
+PASS: L1 racy: the toolchain record says the digest matched
+PASS: L1 racy: the registered long op ended failed with verdict rc=1
+  (fixed -race run: rc=0, 20 s)
+PASS: L1 fixed: the containerized -race run exits 0 on the fixed copy
+PASS: L1 fixed: no DATA RACE event on the fixed copy
+PASS: L1 fixed: the package passed
+PASS: L1 fixed: race=enabled inside the container
+PASS: L1 fixed: the registered long op ended complete
+PASS: L1 negative control: the racy copy without -race exits 0 (the detector is what fails it)
+PASS: L1 negative control: no race event without -race
+PASS: L1 negative control: race=disabled inside the container
+PASS: L2 shim: the lane command runs through run_go.sh (exit 0)
+PASS: L2 shim: GOMAXPROCS=3 + the docs/16 flags -race -p 2 -parallel 2 -json reach run_pinned.sh in the IMG-GO container call
+PASS: L2 shim: the image is IMG-GO
+PASS: L2 shim: the envelope limits (--memory, --cpus, --pids-limit) are handed to run_pinned.sh as container limits
+SKIP: tools/evidence/wrap-go.sh exists, but its integration (the T051 / T124 GREEN step) is not asserted by this test: counted as a skip, never as a pass (review M3)
+SKIP: L3 skipped by RACE_TEST_SKIP_L3=1
+PASS: no disk-headroom record carrying this run's token (rd1216618x19144) was written into the real evidence/disk
+RESULT pass=23 fail=0 skip=2
+rc=0

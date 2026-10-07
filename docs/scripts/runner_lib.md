@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T03:30:00Z |
-| Status | committed (a7cfc6d3, 96779242); revision 3 is the fix round r2 for the WF13 review (uncommitted until the owner commits it): every stop path now stops the CONTAINER (B1), the wrapper is the only source of the limits (I1), a refused duplicate `--op-id` touches none of the running run's files (I2); independent re-review owed; its row in `docs/scripts/README.md` is still owed (11.4.212) |
+| Last modified | 2026-10-07T08:00:00Z |
+| Status | committed (a7cfc6d3, 96779242; revision 3 = round 3 in d9162b7d); revision 4 is fix round r4 for the WF15 review of d9162b7d (uncommitted until the owner commits it): a start whose container is not up yet is ended too (B1), paused and created containers count as up (B1/P10), the guard loop reads the owner's liveness as the registry does (I2), `OMP_*` caps never reach `run_pinned.sh` (m1); independent re-review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is still owed (11.4.212) |
 | Source | `scripts/containers/runner_lib.sh` (sourced body), wrappers `run_go.sh`, `run_node.sh`, `run_docs.sh`, `run_scan.sh`, `run_playwright.sh`, `run_testutil.sh`; test `scripts/containers/tests/test_runners.sh` |
 
 ## Purpose
@@ -35,8 +35,8 @@ A wrapper adds what a run owes on top of it (docs/16 sections 6.3, 8, 13):
    `RUNNER_STOP_GRACE_S`, default 10), and the client is signalled only while no container exists yet. The same procedure serves `--wall-s N` (the clock of the
    run, from the spawn of the main command; the toolchain probe is guarded but not counted; exit 124, op `failed` / `wall_clock_exceeded`), TERM/INT/HUP at any
    point (also while waiting for the budget lock, at most 1 s late, WF13 m2) and the death of the wrapper itself (SIGKILL included: the guard loop stops the
-   container and releases the op `failed` / `wrapper_died`, WF13 m1). **The op is released only when no container of the run is Up any more** (the registry never
-   reports the budget freed while it runs); a container that survives the stop and the KILL keeps the op registered, the wrapper exits 125 and names it (the
+   container and releases the op `failed` / `wrapper_died`, WF13 m1). **The op is released only when no container of the run is Up any more AND the `podman run` client is gone** (the registry never
+   reports the budget freed while it runs; "up" is every state but finished: running, paused, created - `podman ps` without `-a` lists running ones only, `podman stop` fails on a paused container and is a no-op on a created one, so the call is chosen by state: stop, then kill, then `rm -f`; a start whose client is alive while its container is not listed yet (a window of 2.4-2.8 s measured) is ended through the client, never read as "down", WF15 B1); a container that survives the stop and the KILL keeps the op registered, the wrapper exits 125 and names it (the
    anti-mess sweep then reports the container). The run ends in a terminal state (`complete` on exit 0, `failed` otherwise, the verdict is `rc=<n>`). The per-op
    marker files (`.stop`, `.stop.wall`, `.ch`, `.run`) are named only after the wrapper registered the op id (WF13 I2: a start refused as a duplicate used to delete
    the running run's stop and wall files);
@@ -78,7 +78,7 @@ collected in `$PWD/.audit/runner-logs/<op id>.{out,err}` and replayed to the cal
 `cache_not_writable`, `record_unwritable`, `dependency_missing`, `test_hook_outside_test_mode`, and (fix round r1) `op_exists` (an `--op-id` that is already registered: refused BEFORE any log file is opened, so the other run's logs are never truncated, review F5; `purpose_conflict` is now only a held purpose), `version_probe_failed` (the version command exited non-zero in the container; its error text is no longer recorded as a version, review F11), `registry_library_missing`, `registry_unusable`, `budget_lock_unavailable`, `budget_lock_timeout`. A run that started exits with the container's exit
 code (a container may also exit 1: the `REFUSED` line tells a refusal from a container exit); 124 when `--wall-s` was exceeded; 125 when a container of the run could not be stopped (the op stays registered). Usage errors exit 2;
 a TERM, INT or HUP ends the run with 130 and the op `failed` with verdict `interrupted` (the container is stopped by its label and `/out` mount; the client is signalled only by identity: pid > 1 and
-the start time recorded by the child itself, never a group). The trap is installed BEFORE anything is registered and the toolchain probe runs as a background child, so a
+the start time recorded by the child itself, never a group). The guard loop judges the wrapper by the same rule as the registry (same start time AND not a zombie, WF15 I2: a SIGKILLed wrapper whose parent has not reaped it used to be read alive by the loop and dead by the registry, with the container running under a 10 GB limit and the envelope handing its budget to the next start). `OMP_NUM_THREADS` / `OMP_THREAD_LIMIT` are removed from the environment of `run_pinned.sh` (WF15 m1: GNU `nproc` honours them, so `OMP_NUM_THREADS=1` refused every lane `probe_failed`). The trap is installed BEFORE anything is registered and the toolchain probe runs as a background child, so a
 signal during the probe now ends the run at once with the op released (review F6: it used to leave a registered op with a dead owner, which made every later
 wrapper start refuse `anti_mess_drift`).
 
@@ -97,5 +97,5 @@ then 29 paired mutations (`RUNNER_MUTATION_RECORD`), among them the removal of `
 ## Honest boundary (11.4.6)
 
 The toolchain record proves the image is the pinned one and the probe could see a failure; it does not prove the build passes. IMG-DOCS, IMG-NODE and
-IMG-PW run for real in `test_runners.sh` while the lock has them; the scanner images other than IMG-SHELLCHECK are not exercised. OWED (not done in r1, other agents' or owner's scope): `run_pinned.sh` reads `nproc` with `OMP_NUM_THREADS` honoured (review F7: the same input the envelope no longer trusts); the toolchain record is written into the writable `/out` and the run can rewrite it (F12, owner decision); the record stores the lock digest when podman reports the platform digest (F13); `jobs` is computed and nothing consumes it, and docs/16 8.1 cgroup inputs and the 8.4 `--ulimit nofile` / tmpfs size cap are not implemented (F15); (F16, closed in round 2: TIC no longer computes a limit.) A container started without a wrapper (direct `run_pinned.sh` callers) is invisible to the budget; the anti-mess sweep is the backstop (WF13 i2, owner decision). A transient `probe_failed` was seen once while another agent was using podman
+IMG-PW run for real in `test_runners.sh` while the lock has them; the scanner images other than IMG-SHELLCHECK are not exercised. OWED (not done in r1, other agents' or owner's scope): `run_pinned.sh` reads `nproc` with `OMP_NUM_THREADS` honoured (review F7; since WF15 m1 the wrapper removes the `OMP_*` caps from the environment of `run_pinned.sh`, so no wrapper lane can hit it; a direct `run_pinned.sh` caller still can); the toolchain record is written into the writable `/out` and the run can rewrite it (F12, owner decision); the record stores the lock digest when podman reports the platform digest (F13); `jobs` is computed and nothing consumes it, and docs/16 8.1 cgroup inputs and the 8.4 `--ulimit nofile` / tmpfs size cap are not implemented (F15); (F16, closed in round 2: TIC no longer computes a limit.) A container started without a wrapper (direct `run_pinned.sh` callers) is invisible to the budget; the anti-mess sweep is the backstop (WF13 i2, owner decision). A transient `probe_failed` was seen once while another agent was using podman
 (`UNCONFIRMED:` cause; the refusal now carries the probe's stderr).

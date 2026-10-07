@@ -1,0 +1,78 @@
+# identity: fix-r4 real-shell ground truth: wrappers, compound commands as one pipeline stage, program readers (every block opens with a control needle)
+# head: 350372a8 (uncommitted work tree)
+# run_at: 2026-10-07T08:40:25Z host: anton
+# cmd: bash fix-r4-shell-ground-truth.sh
+# (1) wrappers
+control: echo MARK                                                             -> MARK
+timeout 60 echo                                                                -> MARK
+timeout -s KILL 60 echo                                                        -> MARK
+timeout --signal=KILL -k 5 60 echo                                             -> MARK
+timeout 1.5m echo                                                              -> MARK
+nice echo                                                                      -> MARK
+nice -n 5 echo                                                                 -> MARK
+ionice -c 3 echo                                                               -> MARK
+ionice -c 2 -n 4 echo                                                          -> MARK
+env echo                                                                       -> MARK
+env -u FOO echo                                                                -> MARK
+env FOO=1 echo                                                                 -> MARK
+env -i FOO=1 /usr/bin/echo                                                     -> MARK
+stdbuf -oL echo                                                                -> MARK
+stdbuf -i0 -o0 echo                                                            -> MARK
+nohup echo                                                                     -> MARK
+setsid echo                                                                    -> MARK
+busybox echo                                                                   -> MARK
+command echo                                                                   -> MARK
+exec echo                                                                      -> MARK
+time echo                                                                      -> MARK
+xargs echo                                                                     -> MARK
+stacked: env FOO=1 timeout -s KILL 60 nice -n 5 echo                           -> MARK
+sudo -h lists -u/--user as value options (help read, not run)                  -> user
+negative control: a wrong shape does not run the command (nice -n echo MARK: echo is the adjustment) -> none (ok)
+# (2) compound commands: the whole compound is one pipeline stage
+control: echo MARK | cat                                                       -> MARK
+for ... done | cat                                                             -> MARK
+while ... done < file | cat                                                    -> MARK
+until ... done | cat                                                           -> MARK
+if ... fi | cat                                                                -> MARK
+case ... esac | cat                                                            -> MARK
+{ ...; } | cat                                                                 -> MARK
+( ... ) | cat                                                                  -> MARK
+for ((;;)) ... done | cat                                                      -> MARK
+nested { for ...; } | cat                                                      -> MARK
+negative control: the compound is NOT the stage before | when a ; ends it      -> none (ok)
+# (3) program readers (stdin = PROGRAM or DATA)
+control: echo 'echo PROG' | bash                                               -> PROG
+sh                                                                             -> PROG
+bash -s -- arg                                                                 -> PROG
+bash -                                                                         -> PROG
+bash -eu                                                                       -> PROG
+bash -x                                                                        -> PROG
+bash -o pipefail                                                               -> PROG
+bash -O extglob                                                                -> PROG
+bash --norc                                                                    -> PROG
+bash -c 'cat' (inline program: stdin is DATA)                                  -> none (ok)
+bash -c 'cat' output is the data uppercased (proof stdin was data)             -> ECHO PROG
+bash ./script (script operand: stdin is DATA)                                  -> SCRIPTRAN
+bash ./script does not run the stdin program                                   -> none (ok)
+source /dev/stdin                                                              -> PROG
+. /dev/stdin                                                                   -> PROG
+python3 (no args)                                                              -> PROG
+python3 -                                                                      -> PROG
+python3 -W ignore                                                              -> PROG
+python3 -X dev -                                                               -> PROG
+python3 -I                                                                     -> PROG
+python3 -m json.tool (module: stdin is DATA)                                   -> none (ok)
+python3 -c (inline: stdin is DATA)                                             -> none (ok)
+perl                                                                           -> PROG
+perl -I lib                                                                    -> PROG
+perl -w                                                                        -> PROG
+perl -ne (inline loop: stdin is DATA)                                          -> none (ok)
+ruby                                                                           -> PROG
+ruby -r json                                                                   -> PROG
+ruby -I lib                                                                    -> PROG
+ruby -e (inline: stdin is DATA)                                                -> none (ok)
+node                                                                           -> PROG
+node -r module                                                                 -> PROG
+node -e (inline: stdin is DATA)                                                -> none (ok)
+# result: ALL-AS-MODELLED
+rc=0

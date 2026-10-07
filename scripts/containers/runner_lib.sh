@@ -64,15 +64,28 @@ rl_signal_child() { # rl_signal_child <pid> <start> <sig>: signal exactly that p
   kill -s "$3" "$1" 2>/dev/null
 }
 # ---- stopping a run = stopping its CONTAINER (review round 2 B1) ----
-# rl_our_containers [all]: the full ids of the containers that are exactly this run's: label catalogizer.op_id=<op id>, label project=catalogizer, and a /out
-# mount whose source is this run's resolved --out. Running ones only, or every state with `all`. Exit 1 when podman cannot answer (never read as "none").
+# rl_our_containers [all]: one line "<full id> <state>" per container that is exactly this run's: label catalogizer.op_id=<op id>, label project=catalogizer, and a /out
+# mount whose source is this run's resolved --out. Without `all`: every container that is not finished (state running, paused, created, ... : `podman ps` WITHOUT -a lists
+# running ones only, and a paused or just-created container of the run is as much "up" as a running one, review round 3 B1/P10; ground truth, podman 5.7.0: `podman stop` of a
+# paused container fails "state improper", `podman kill` ends it, `podman stop` of a created one is a no-op that leaves it created, only `podman rm -f` removes it); a state in
+# exited|stopped|removing|dead is finished. With `all`: every state. Exit 1 when podman cannot answer (never read as "none").
 rl_our_containers() {
-  local ids id src; ids="$(timeout 30 podman ps ${1:+-a} -q --no-trunc --filter "label=catalogizer.op_id=$OP_ID" --filter label=project=catalogizer 2>/dev/null)" || return 1
-  for id in $ids; do
+  local rows id st src
+  rows="$(timeout 30 podman ps -a --no-trunc --filter "label=catalogizer.op_id=$OP_ID" --filter label=project=catalogizer --format '{{.ID}} {{.State}}' 2>/dev/null)" || return 1
+  while read -r id st; do
+    [ -n "$id" ] || continue
+    if [ -z "${1:-}" ]; then case "$st" in exited|stopped|removing|dead) continue;; esac; fi
     src="$(timeout 30 podman inspect --format '{{range .Mounts}}{{if eq .Destination "/out"}}{{.Source}}{{end}}{{end}}' -- "$id" 2>/dev/null)" || return 1
-    [ "$src" = "$OUT_REAL" ] && echo "$id"
-  done
+    [ "$src" = "$OUT_REAL" ] && echo "$id $st"
+  done <<<"$rows"
   return 0
+}
+# rl_stop_one <id> <state>: end one container that is proven this run's (TERM then KILL after the grace; a created one has nothing to signal, so it is removed)
+rl_stop_one() {
+  case "$2" in
+    created|configured|initialized) timeout 30 podman rm -f -- "$1" >/dev/null 2>&1;;
+    *) timeout $(( STOP_GRACE_S + 30 )) podman stop --time "$STOP_GRACE_S" -- "$1" >/dev/null 2>&1 || timeout 30 podman kill --signal KILL -- "$1" >/dev/null 2>&1 || timeout 30 podman rm -f -- "$1" >/dev/null 2>&1;;
+  esac
 }
 # rl_client_ident: "<pid> <start>" of the `podman run` client of the current child. Its identity is recorded by the child itself before it execs ($CHF, read by the
 # guard loop and after a wrapper death); the wrapper's own record of the child it just forked ($CH) covers the instant before that file exists.
@@ -85,17 +98,17 @@ rl_client_ident() {
 rl_client_alive() { rl_client_ident >/dev/null; }
 rl_client_signal() { local p s; read -r p s < <(rl_client_ident) || return 1; rl_signal_child "$p" "$s" "$1"; }
 # rl_terminate_run: stop every container of this run (TERM then KILL after the grace), and the client only while no container exists. Returns 0 only when
-# no container of this run is Up and the client is gone; 1 otherwise (after a bounded effort: grace + 20 s).
+# no container of this run is Up (any state but finished) AND the client is gone; 1 otherwise (after a bounded effort: grace + 20 s).
 rl_terminate_run() {
-  local t_end ids id n=0 quiet=0 term_at=0 rc
+  local t_end rows id st n=0 quiet=0 term_at=0 rc
   t_end=$(( $(rl_ms) + (STOP_GRACE_S + 20) * 1000 ))
   while [ "$(rl_ms)" -lt "$t_end" ]; do
     n=0
-    if ids="$(rl_our_containers)"; then
-      for id in $ids; do
-        n=$((n + 1))
-        timeout $(( STOP_GRACE_S + 30 )) podman stop --time "$STOP_GRACE_S" -- "$id" >/dev/null 2>&1 || timeout 30 podman kill --signal KILL -- "$id" >/dev/null 2>&1
-      done
+    if rows="$(rl_our_containers)"; then
+      while read -r id st; do
+        [ -n "$id" ] || continue
+        n=$((n + 1)); rl_stop_one "$id" "$st"
+      done <<<"$rows"
     else n=1; fi   # podman could not answer: not "none"
     if [ "$n" = 0 ]; then
       if rl_client_alive; then   # the client of a run whose container does not exist (yet): TERM it once, KILL it when it still lingers 5 s later
@@ -107,19 +120,21 @@ rl_terminate_run() {
     sleep 0.2
   done
   rl_client_alive && rl_client_signal KILL
-  # whatever is still there after the deadline gets KILL; the verdict is a fresh scan
-  if ids="$(rl_our_containers)"; then for id in $ids; do timeout 30 podman kill --signal KILL -- "$id" >/dev/null 2>&1; done; fi
+  # whatever is still there after the deadline gets KILL (a created one is removed); the verdict is a fresh scan AND the client gone
+  if rows="$(rl_our_containers)"; then while read -r id st; do [ -z "$id" ] || rl_stop_one "$id" "$st"; done <<<"$rows"; fi
   sleep 0.5
-  ids="$(rl_our_containers)"; rc=$?
-  [ "$rc" = 0 ] && [ -z "$ids" ] || return 1
-  # stopped containers that were not removed (the client was killed before --rm ran): proven ours, so removed
-  if ids="$(rl_our_containers all)"; then for id in $ids; do timeout 30 podman rm -f -- "$id" >/dev/null 2>&1; done; fi
+  rows="$(rl_our_containers)"; rc=$?
+  [ "$rc" = 0 ] && [ -z "$rows" ] || return 1
+  ! rl_client_alive || return 1
+  # finished containers that were not removed (the client was killed before --rm ran): proven ours, so removed
+  if rows="$(rl_our_containers all)"; then while read -r id st; do [ -z "$id" ] || timeout 30 podman rm -f -- "$id" >/dev/null 2>&1; done <<<"$rows"; fi
   return 0
 }
-# rl_ensure_down: 0 when no container of this run is Up (stopping any that is); 1 when one cannot be stopped (OP_HOLD=1: the op must NOT be released)
+# rl_ensure_down: 0 when no container of this run is Up and the `podman run` client is gone (stopping any that is); 1 when one cannot be stopped (OP_HOLD=1: the op must NOT
+# be released). The fast path needs BOTH: a live client whose container is not listed yet is a run that is about to start (review round 3 B1: the window is 2.4-2.8 s).
 rl_ensure_down() {
   local ids
-  if ids="$(rl_our_containers)" && [ -z "$ids" ]; then return 0; fi
+  if ids="$(rl_our_containers)" && [ -z "$ids" ] && ! rl_client_alive; then return 0; fi
   rl_terminate_run && return 0
   OP_HOLD=1; [ -z "$STOP" ] || : >"$STOP.held"
   return 1
@@ -140,8 +155,8 @@ rl_release_op() {
 # the trap handler only RECORDS the signal (it never blocks); the checkpoints end the run and rl_release_op stops the container before the op is released
 rl_on_signal() { SIGNALLED=1; }
 rl_stop_hb() { if [ -n "$HBP" ]; then : >"$STOP" 2>/dev/null; wait "$HBP" 2>/dev/null; HBP=""; fi; [ -z "$STOP" ] || rm -f -- "$STOP" "$STOP.wall" "$CHF" "$CHF.tmp" "$RUNF"; }
-# rl_on_exit: any exit path ends the guard loop and never leaves a registered op with a live owner that is gone
-rl_on_exit() { rl_stop_hb; rl_release_op 1 wrapper_exited; [ -z "$STOP" ] || rm -f -- "$STOP.held"; }
+# rl_on_exit: any exit path stops the container, releases the op, and only then ends the guard loop: never a registered op with a live owner that is gone
+rl_on_exit() { rl_release_op 1 wrapper_exited; rl_stop_hb; [ -z "$STOP" ] || rm -f -- "$STOP.held"; }   # the guard loop outlives the stopping of the container (review round 3 m3)
 # rl_end_code: 125 when the op had to be kept because a container would not stop, else the given code
 rl_end_code() { if [ "$OP_HOLD" = 1 ] || [ -e "${STOP:-/nonexistent}.held" ]; then echo 125; else echo "$1"; fi; }
 # rl_checkpoint: a TERM/INT/HUP seen since the last checkpoint, or the wall clock marker, ends the run here (the op is released `failed` / `interrupted` or
@@ -155,7 +170,9 @@ rl_checkpoint() {
 # and rl_release_op stops the container (the child is NOT waited for after a signal: it is only a client of a container that is being stopped)
 rl_bg_wait() {
   while [ "$SIGNALLED" = 0 ] && rl_palive "$CH" "$CH_ST"; do sleep 0.2; done   # MUT:bg-wait-signal
-  if [ "$SIGNALLED" = 1 ]; then RL_RC=130; else wait "$CH"; RL_RC=$?; fi
+  if [ "$SIGNALLED" = 1 ]; then RL_RC=130; return 0; fi   # CH/CH_ST stay: the client is still there, and the release must know it (review round 3 B1)
+  wait "$CH"; RL_RC=$?
+  if [ "$SIGNALLED" = 1 ] && rl_palive "$CH" "$CH_ST"; then RL_RC=130; return 0; fi   # the wait was cut short by the signal, the child lives on
   CH=""; CH_ST=""
 }
 # rl_progress: the heartbeat's progress proof: bytes of the run's stdout and stderr plus the bytes under /out (a quiet run that writes only /out is progressing)
@@ -170,7 +187,7 @@ rl_progress() {
 rl_hb_loop() {
   local wp=$1 wst=$2 t0="" el=0 tick=0 per=$(( HB_S * 5 )) walled=0 rc
   while [ ! -e "$STOP" ]; do
-    if [ "$(rl_pstart "$wp")" != "$wst" ]; then   # MUT:parent-liveness
+    if ! rl_palive "$wp" "$wst"; then   # MUT:parent-liveness: the same test the registry applies to the owner (a zombie is dead; review round 3 I2)
       if rl_terminate_run; then
         bash "$ROOT_DIR/scripts/longops/release.sh" --op-id "$OP_ID" --state failed --verdict wrapper_died --evidence-path "${TR_OUT:-}" >/dev/null 2>&1
         rm -f -- "$CHF" "$CHF.tmp"
@@ -367,7 +384,8 @@ PY
     [ -z "$RW" ] || A+=(--rw "$RW")
     [ -z "$NEED" ] || A+=(--need "$NEED")
     [ "$NET" != none ] || A+=(--network=none)
-    RUNP_MEMORY="$LIM_MEM" RUNP_CPUS="$LIM_CPUS" RUNP_PIDS="$LIM_PIDS" exec bash "$RUNP" "${A[@]}" --out "$OUT" --op-id "$OP_ID" "$IMG" -- "$@"
+    # the OMP_* thread caps are scrubbed (GNU nproc honours them: run_pinned.sh would read a CPU count the envelope did not, review round 3 m1); they do not enter the container
+    RUNP_MEMORY="$LIM_MEM" RUNP_CPUS="$LIM_CPUS" RUNP_PIDS="$LIM_PIDS" exec env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT bash "$RUNP" "${A[@]}" --out "$OUT" --op-id "$OP_ID" "$IMG" -- "$@"
   }
   rl_spawn() { # rl_spawn <stdout-file> <stderr-file> <command word>...: background child CH, identity recorded; a signal that arrived meanwhile is honoured at once
     local so=$1 se=$2; shift 2

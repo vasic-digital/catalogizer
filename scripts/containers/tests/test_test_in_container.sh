@@ -187,6 +187,31 @@ if [ "${TIC_TEST_NO_REAL:-0}" != 1 ]; then
   EVD="$REPO/specs/001-full-project-audit-remediation/evidence/disk"
   check "no disk-headroom record carrying this run's token ($TOK) was written into the real evidence/disk" "$(count_tok "$EVD" "$TOK")" 0
 fi
+# ============== review round 3 I1: a TERM to the dispatcher reaches the lane (TIC EXECS the wrapper) ==============
+# The shim stands for the wrapper that stops the run on a TERM: it records its own pid and, on a TERM, writes a marker and exits 143. A dispatcher that stays behind as a parent
+# (a foreground child) dies alone on the TERM: the shim never sees it, and the lane keeps running. Observers independent of TIC: the pid the shim records vs the pid TIC was started as
+# (exec keeps the pid) and the marker.
+mkdir -p "$T/wterm"
+cat >"$T/wterm/run_go.sh" <<'EOF'
+#!/usr/bin/env bash
+echo $$ >"${SHIM_PIDF:?}"
+trap 'echo term >"${SHIM_TERMF:?}"; exit 143' TERM
+sleep 30 & wait $!
+exit 0
+EOF
+chmod +x "$T/wterm/run_go.sh"
+rm -f "$T/tic.pid" "$T/tic.term"
+( cd "$CK" && TIC_WRAPPER_DIR="$T/wterm" SHIM_PIDF="$T/tic.pid" SHIM_TERMF="$T/tic.term" exec bash "$SUT" catalog-api unit -- true ) >"$T/tic-term.out" 2>"$T/tic-term.err" &
+TICPID=$!
+n=0; while [ ! -s "$T/tic.pid" ] && [ "$n" -lt 100 ]; do sleep 0.1; n=$((n+1)); done
+[ -s "$T/tic.pid" ] && ok "control needle: the wrapper shim is running behind the dispatcher" || bad "control needle: the wrapper shim never started: $(cat "$T/tic-term.err")"
+check "TIC execs the wrapper: the wrapper runs as the very process TIC was started as (same pid)" "$(cat "$T/tic.pid" 2>/dev/null)" "$TICPID"
+kill -s TERM "$TICPID" 2>/dev/null; wait "$TICPID" 2>/dev/null; TRC=$?
+n=0; while [ ! -e "$T/tic.term" ] && [ "$n" -lt 20 ]; do sleep 0.1; n=$((n+1)); done
+[ -e "$T/tic.term" ] && ok "a TERM to the dispatcher reached the wrapper (the lane is told to stop)" || bad "a TERM to the dispatcher never reached the wrapper: the dispatcher died alone and the lane keeps running"
+check "the dispatcher's exit status after a TERM is the wrapper's (143)" "$TRC" 143
+# a dispatcher that did not exec leaves the shim running: stopped here by identity (its own pid file), never by a pattern
+tp="$(cat "$T/tic.pid" 2>/dev/null)"; [[ "$tp" =~ ^[0-9]+$ && "$tp" -gt 1 ]] && case "$({ tr '\0' ' ' <"/proc/$tp/cmdline"; } 2>/dev/null)" in *"$T/wterm/run_go.sh"*) kill -KILL "$tp" 2>/dev/null;; esac
 echo "RESULT pass=$PASSES fail=$FAILS"
 [ "$FAILS" = 0 ] || EXIT=1
 EXIT="${EXIT:-0}"
@@ -234,7 +259,8 @@ mut_case qa-not-reserved 'qa unit: reason' 'if [ "$APP" = qa ]; then' 'if false;
 mut_case duplicate-ignored 'duplicate' 'refuse lane_table_duplicate' 'true'
 mut_case columns-unchecked 'four-column' '[ -z "${extra:-}" ]' 'true'
 mut_case wrapper-name-unchecked 'unreviewed wrapper' 'refuse lane_table_malformed "row ($a $l) names' 'true "row ($a $l) names'
-mut_case exit-masked 'the wrapper exit code is passed through' 'exit $?   # MUT:exit' 'exit 0'
+mut_case exit-masked 'the wrapper exit code is passed through' 'exec bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"; exit 0   # MUT:no-limits'
+mut_case I1-dispatcher-stays-behind-as-a-parent 'TIC execs the wrapper' 'exec bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"; exit $?   # MUT:no-limits'
 mut_case test-hooks 'TIC_WRAPPER_DIR without TIC_TEST_MODE' '[ "${TIC_TEST_MODE:-}" != 1 ]; then' '[ "${TIC_TEST_MODE:-}" != 1 ] && false; then'
 mut_case R5-lanes-hook-gate 'TIC_LANES hook alone' ' || [ -n "${TIC_LANES+x}" ]' ''
 mut_case R5b-wrapper-dir-hook-gate 'TIC_WRAPPER_DIR hook alone' '{ [ -n "${TIC_WRAPPER_DIR+x}" ] || ' '{ '

@@ -1,0 +1,124 @@
+PASS: B1a --wall-s 4 on a real container whose PID 1 (sleep) ignores TERM: exit 124
+PASS: B1a the run ended 13s after its start (the sleep was 40 s; wall 4 s + the probe + a 2 s stop grace)
+PASS: B1a control needle: the observer saw the container up while the run was running
+PASS: B1a the container is gone when the wrapper exits
+PASS: B1a the op is failed / wall_clock_exceeded
+PASS: B1b run_go --wall-s 3 on 'sh -c sleep 25; echo ...': exit 124
+PASS: B1b the command did not complete: nothing printed after the wall clock
+PASS: B1b the container is gone
+PASS: B1c control needle: the observer saw the main container up before the TERM
+PASS: B1c TERM to the wrapper during a real run: it ends 130
+PASS: B1c it ended 5s after the TERM (the sleep was 40 s)
+PASS: B1c the container is gone when the wrapper exits
+PASS: B1c the op is failed / interrupted
+PASS: B1d control needle: the observer saw the main container up before the SIGKILL
+PASS: B1d the op of a SIGKILLed wrapper is released failed / wrapper_died
+PASS: B1d at the moment the op is released the container is already gone (the budget is never freed while it runs)
+PASS: B1d released 5s after the SIGKILL
+PASS: B1d envelope: the budget of the dead run is not counted any more (used_mem_bytes 0)
+PASS: B1e control needle: an unsignalled run of the window shape completes
+PASS: B1e control needle: the work of an unsignalled run finishes (a missing finished.txt after a signal means something)
+PASS: B1e[TERM] precondition: the main command is spawned and no container of the op is up yet (the window)
+PASS: B1e[TERM] TERM inside the window of a real start: the wrapper ends 130
+PASS: B1e[TERM] the op is failed / interrupted
+PASS: B1e[TERM] when the op is released no container of the run is up
+PASS: B1e[TERM] NO container came up after the wrapper had exited and released the op
+FAIL: B1e[TERM] the interrupted command ran to completion after the wrapper said it was interrupted
+PASS: B1e[HUP] precondition: the main command is spawned and no container of the op is up yet (the window)
+PASS: B1e[HUP] HUP inside the window of a real start: the wrapper ends 130
+PASS: B1e[HUP] the op is failed / interrupted
+PASS: B1e[HUP] when the op is released no container of the run is up
+PASS: B1e[HUP] NO container came up after the wrapper had exited and released the op
+FAIL: B1e[HUP] the interrupted command ran to completion after the wrapper said it was interrupted
+PASS: B1e[probe] TERM right after the registration: the wrapper ends 130
+PASS: B1e[probe] when the op is released no container of the run is up
+PASS: B1e[probe] no probe container came up after the release
+PASS: B1e[probe] the main command never ran
+PASS: B1f control needle: the main container is up before it is paused
+PASS: B1f control needle: the container is paused and NOT listed by podman ps without -a
+PASS: B1f TERM while the container is paused: the wrapper ends 130
+PASS: B1f the op is failed / interrupted
+FAIL: B1f the paused container is gone when the op is released (not left paused) (got '1' want '0')
+PASS: B1f ended 1s after the TERM
+PASS: B1g control needle: the lane's main container is up before the TERM
+FAIL: B1g TERM to test-in-container.sh: the lane ends 130 (not 143: the dispatcher did not die alone) (got '143' want '130')
+FAIL: B1g the lane's container is gone when the dispatcher exits (got '1' want '0')
+FAIL: B1g the op is failed / interrupted (got 'running/' want 'failed/interrupted')
+PASS: B1g ended 0s after the TERM
+FAIL: B1g no op of the stopped lane is left with a live state (got 'live' want 'terminal')
+PASS: B1h control needle: the instrument sees the cap (nproc with OMP_NUM_THREADS=1 prints 1)
+FAIL: B1h run_testutil with OMP_NUM_THREADS=1 in the environment runs (it was refused probe_failed / cpus_override_out_of_bounds) (got '1' want '0')
+PASS: R4A control needle: an unsignalled run with a 3 s window completes
+PASS: R4A control needle: its container came up and the work finished (the later 'absent' means something)
+PASS: R4A[r4aTERM] precondition: the client (pid 3083122) is alive and no container of the main command exists
+PASS: R4A[r4aTERM] TERM inside the window: the wrapper ends 130
+PASS: R4A[r4aTERM] the op is failed / interrupted
+PASS: R4A[r4aTERM] when the op is released no container of the run is up
+PASS: R4A[r4aTERM] NO container comes up after the wrapper has exited and released the op
+FAIL: R4A[r4aTERM] the interrupted command ran to completion after the wrapper said it was interrupted
+PASS: R4A[r4aINT] precondition: the client (pid 3088680) is alive and no container of the main command exists
+PASS: R4A[r4aINT] INT inside the window: the wrapper ends 130
+PASS: R4A[r4aINT] the op is failed / interrupted
+PASS: R4A[r4aINT] when the op is released no container of the run is up
+PASS: R4A[r4aINT] NO container comes up after the wrapper has exited and released the op
+FAIL: R4A[r4aINT] the interrupted command ran to completion after the wrapper said it was interrupted
+PASS: R4A[r4aHUP] precondition: the client (pid 3094163) is alive and no container of the main command exists
+PASS: R4A[r4aHUP] HUP inside the window: the wrapper ends 130
+PASS: R4A[r4aHUP] the op is failed / interrupted
+PASS: R4A[r4aHUP] when the op is released no container of the run is up
+PASS: R4A[r4aHUP] NO container comes up after the wrapper has exited and released the op
+FAIL: R4A[r4aHUP] the interrupted command ran to completion after the wrapper said it was interrupted
+PASS: R4A[r4akill] precondition: the client (pid 3099286) is alive and no container of the main command exists
+PASS: R4A[r4akill] TERM inside the window: the wrapper ends 130
+PASS: R4A[r4akill] the op is failed / interrupted
+PASS: R4A[r4akill] when the op is released no container of the run is up
+PASS: R4A[r4akill] the client that never created its container was ended in 1s
+PASS: R4A[r4akill] NO container comes up after the wrapper has exited and released the op
+PASS: R4A[r4akill] the interrupted command never did its work (no finished.txt)
+PASS: R4A[probe] TERM while the toolchain probe client is alive and its container does not exist: 130
+PASS: R4A[probe] the op is failed / interrupted
+PASS: R4A[probe] no probe container comes up after the op was released
+PASS: R4A[probe] the main command was never started (only the probe's shim ran)
+PASS: R4B control needle: the paused container is NOT listed by ps without -a (the real podman does the same)
+PASS: R4B TERM while the container is PAUSED: the wrapper ends 130
+PASS: R4B the op is failed / interrupted
+FAIL: R4B the paused container is gone when the op is released (got 'up' want 'gone')
+PASS: R4B ended 0s after the TERM
+FAIL: R4B podman log: 
+PASS: R4B TERM while the container is only CREATED: the wrapper ends 130
+PASS: R4B the op is failed / interrupted (a created container is not left to start later)
+FAIL: R4B the created container is gone (got 'up' want 'gone')
+PASS: R4B created: ended 1s after the TERM
+FAIL: R4B podman log: 
+PASS: R4C the run itself is ended at the wall clock (124)
+PASS: R4C its own container is gone
+PASS: R4C the foreign container (same label, another /out) is still up: it was never stopped
+PASS: R4C podman was never asked to touch the foreign container
+PASS: R4D a probe of 4 s and a main command of 1 s under --wall-s 3: the run completes (the probe is not counted)
+PASS: R4D its op is complete
+PASS: R4D the work of the main command was delivered
+PASS: R4E the client is gone, the container is up and podman cannot list containers: the wrapper exits 125 (the run could not be proven stopped)
+PASS: R4E the container is still up (and the op says so)
+PASS: R4E the op is NOT released (state is not terminal)
+PASS: R4E the wrapper says the container could not be stopped
+PASS: R4F precondition: the SIGKILLed wrapper is a zombie (its parent has not reaped it)
+FAIL: R4F the guard loop ends the run of a zombie owner: the op is released failed / wrapper_died (got 'running/' want 'failed/wrapper_died')
+FAIL: R4F the container is gone (the budget is not left running under a dead owner) (got 'up' want 'gone')
+PASS: R4F the wrapper is STILL an unreaped zombie when that happens (the cell was the one under test)
+PASS: R4G control needle: the instrument sees the cap (nproc with OMP_NUM_THREADS=1 prints 1)
+PASS: R4G the run succeeds with OMP_NUM_THREADS=1
+FAIL: R4G run_pinned.sh did not see OMP_NUM_THREADS (main call) (got '1' want '<unset>')
+FAIL: R4G run_pinned.sh did not see OMP_NUM_THREADS (probe call) (got '1' want '<unset>')
+PASS: R4I a wall-clock stop that leaves a stopped container behind: the wrapper ends 124 (a stopped container is not 'up')
+PASS: R4I the op is released failed / wall_clock_exceeded
+PASS: R4I the finished container was removed (rm -f)
+PASS: R4I nothing of the run is left
+PASS: R4J --wall-s 2 while the container is not there yet: 124
+PASS: R4J the client was ended (12s)
+PASS: R4J the container never came up
+PASS: R4J the op is failed / wall_clock_exceeded
+PASS: R4K SIGKILL of the wrapper in the window: the op is released failed / wrapper_died
+PASS: R4K the client of the dead wrapper is gone when the op is released (identity: pid 3166786 start 40388492)
+PASS: R4K the container never came up
+RESULT pass=103 fail=19
+RED-RUN-DONE rc=1

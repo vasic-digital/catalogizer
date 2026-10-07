@@ -1,0 +1,88 @@
+== control needles ==
+positive (a string known present: rl_terminate_run): 5 hits
+negative (a fabricated name rl_zzz_no_such_fn): 0 hits
+== A1 every way the wrapper process ends (exit sites) ==
+16:#      plus the bytes of /out, elapsed time is reported so --wall-s is enforced: the CONTAINER is stopped, exit 124) and ends in a terminal state w
+17:#      the exit code as its verdict. THE RUN IS ENDED BY STOPPING ITS CONTAINER, never by signalling the `podman run` client (review round 2 B1): t
+22:#      run is Up any more; if one cannot be stopped the op stays registered, exit 125, and the anti-mess sweep names the container. The same proced
+35:# Exits:  the container's exit code on a run; 124 --wall-s exceeded; 125 a container of this run could not be stopped (the op stays registered); 13
+51:rl_refuse() { echo "$RUNNER_NAME: REFUSED reason=$1 ${2:-}" >&2; exit 1; }
+52:rl_usage()  { echo "$RUNNER_NAME: usage: $1" >&2; echo "$RUNNER_NAME: $RUNNER_NAME.sh [--image IMG-ID] [--memory BYTES] [--cpus N] [--out DIR] [--r
+142:# rl_release_op <rc> [verdict]: end the registered op (state complete on rc 0, failed otherwise); the exit code is the verdict, never the state's 
+158:# rl_on_exit: any exit path stops the container, releases the op, and only then ends the guard loop: never a registered op with a live owner that 
+165:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi
+166:  if [ -n "$STOP" ] && [ -e "$STOP.wall" ]; then rl_release_op 1 wall_clock_exceeded; echo "$RUNNER_NAME: wall clock of ${WALL_S}s exceeded: the r
+252:  # ---- inherited RUNP_* controls the wrapper does not own are scrubbed (F4): RUNP_PRINT_ARGV=1 would make run_pinned.sh print its argv and exit 
+276:    print("ERR\tlock_unreadable"); sys.exit(0)
+279:    print("ERR\tlock_unreadable"); sys.exit(0)
+281:if not m: print("ERR\timage_not_in_lock"); sys.exit(0)
+282:if len(m) > 1: print("ERR\tlock_duplicate_id"); sys.exit(0)
+372:  [ "$REG_RC" = 0 ] || rl_refuse register_failed "register.sh exit $REG_RC: $REG_ERR"
+439:  # ---- the run: heartbeats while it is alive, the exit code is the verdict ----
+449:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi   # MUT:signal-release
+450:  if [ "$WALLED" = 1 ]; then rl_release_op 1 wall_clock_exceeded; echo "$RUNNER_NAME: wall clock of ${WALL_S}s exceeded: the run was terminated (i
+451:  rl_release_op "$RUN_RC" || exit 125
+452:  exit "$RUN_RC"   # MUT:exit
+== A2 every release of the op ==
+144:rl_release_op() {
+152:  bash "$ROOT_DIR/scripts/longops/release.sh" --op-id "$OP_ID" --state "$st" --verdict "$v" --evidence-path "${TR_OUT:-}" >/dev/null 2>&1
+159:rl_on_exit() { rl_release_op 1 wrapper_exited; rl_stop_hb; [ -z "$STOP" ] || rm -f -- "$STOP.held"; }   # the guard loop outlives the stopping of 
+165:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi
+166:  if [ -n "$STOP" ] && [ -e "$STOP.wall" ]; then rl_release_op 1 wall_clock_exceeded; echo "$RUNNER_NAME: wall clock of ${WALL_S}s exceeded: the r
+192:        bash "$ROOT_DIR/scripts/longops/release.sh" --op-id "$OP_ID" --state failed --verdict wrapper_died --evidence-path "${TR_OUT:-}" >/dev/nul
+213:rl_fail_op() { rl_release_op 1 "$1"; rl_refuse "$1" "${2:-}"; }
+449:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi   # MUT:signal-release
+450:  if [ "$WALLED" = 1 ]; then rl_release_op 1 wall_clock_exceeded; echo "$RUNNER_NAME: wall clock of ${WALL_S}s exceeded: the run was terminated (i
+451:  rl_release_op "$RUN_RC" || exit 125
+== A3 every site that decides a container of the run is down ==
+72:rl_our_containers() {
+102:rl_terminate_run() {
+107:    if rows="$(rl_our_containers)"; then
+124:  if rows="$(rl_our_containers)"; then while read -r id st; do [ -z "$id" ] || rl_stop_one "$id" "$st"; done <<<"$rows"; fi
+126:  rows="$(rl_our_containers)"; rc=$?
+130:  if rows="$(rl_our_containers all)"; then while read -r id st; do [ -z "$id" ] || timeout 30 podman rm -f -- "$id" >/dev/null 2>&1; done <<<"$row
+135:rl_ensure_down() {
+137:  if ids="$(rl_our_containers)" && [ -z "$ids" ] && ! rl_client_alive; then return 0; fi
+138:  rl_terminate_run && return 0
+147:  if [ "$OP_HOLD" = 1 ] || [ -e "${STOP:-/nonexistent}.held" ] || ! rl_ensure_down; then   # MUT:release-ensure-down
+191:      if rl_terminate_run; then
+203:      rl_terminate_run || : >"$STOP.held"   # MUT:wall-terminate
+== A4 every site that decides the client is alive/gone or signals it ==
+55:rl_pstart() { [ -r "/proc/$1/stat" ] && sed 's/^.*) //' "/proc/$1/stat" 2>/dev/null | cut -d' ' -f20; }
+57:rl_palive() { # rl_palive <pid> <start>: still that very process and not a zombie
+59:  [ "$(rl_pstart "$1")" = "$2" ] && [ "$(rl_pstate "$1")" != Z ]
+63:  rl_palive "$1" "$2" || return 1
+92:rl_client_ident() {
+94:  if [ -n "$CHF" ] && read -r p s <"$CHF" 2>/dev/null && rl_palive "${p:-0}" "${s:-}"; then echo "$p $s"; return 0; fi
+95:  if [ -n "$CH" ] && rl_palive "$CH" "$CH_ST"; then echo "$CH $CH_ST"; return 0; fi
+98:rl_client_alive() { rl_client_ident >/dev/null; }
+99:rl_client_signal() { local p s; read -r p s < <(rl_client_ident) || return 1; rl_signal_child "$p" "$s" "$1"; }
+114:      if rl_client_alive; then   # the client of a run whose container does not exist (yet): TERM it once, KILL it when it still lingers 5 s later
+116:        if [ "$term_at" = 0 ]; then rl_client_signal TERM; term_at="$(rl_ms)"
+117:        elif [ $(( $(rl_ms) - term_at )) -gt 5000 ]; then rl_client_signal KILL; fi
+122:  rl_client_alive && rl_client_signal KILL
+128:  ! rl_client_alive || return 1
+137:  if ids="$(rl_our_containers)" && [ -z "$ids" ] && ! rl_client_alive; then return 0; fi
+172:  while [ "$SIGNALLED" = 0 ] && rl_palive "$CH" "$CH_ST"; do sleep 0.2; done   # MUT:bg-wait-signal
+175:  if [ "$SIGNALLED" = 1 ] && rl_palive "$CH" "$CH_ST"; then RL_RC=130; return 0; fi   # the wait was cut short by the signal, the child lives on
+190:    if ! rl_palive "$wp" "$wst"; then   # MUT:parent-liveness: the same test the registry applies to the owner (a zombie is dead; review round 3 I
+377:  ( rl_hb_loop "$$" "$(rl_pstart "$$")" ) >/dev/null 2>&1 &   # the guard loop: heartbeats, wall clock, parent liveness; it covers the toolchain p
+395:    ( me=$BASHPID; { printf '%s %s\n' "$me" "$(rl_pstart "$me")" >"$CHF.tmp" && mv -f "$CHF.tmp" "$CHF"; } 2>/dev/null; rl_runp "$@" ) >"$so" 2>"$
+396:    CH=$!; CH_ST="$(rl_pstart "$CH")"
+== A5 every signal disposition (traps, SIGNALLED) ==
+49:OP_ID=""; OP_REGISTERED=0; OP_HOLD=0; TR_OUT=""; SIGNALLED=0; CH=""; CH_ST=""; HBP=""; STOP=""; CHF=""; RUNF=""; LOCKFD=""; LOGDIR=""; OUT_REAL="";
+156:rl_on_signal() { SIGNALLED=1; }
+165:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi
+172:  while [ "$SIGNALLED" = 0 ] && rl_palive "$CH" "$CH_ST"; do sleep 0.2; done   # MUT:bg-wait-signal
+173:  if [ "$SIGNALLED" = 1 ]; then RL_RC=130; return 0; fi   # CH/CH_ST stay: the client is still there, and the release must know it (review round 3
+175:  if [ "$SIGNALLED" = 1 ] && rl_palive "$CH" "$CH_ST"; then RL_RC=130; return 0; fi   # the wait was cut short by the signal, the child lives on
+332:  trap rl_on_signal TERM INT HUP
+333:  trap rl_on_exit EXIT
+337:  # a signal is honoured at the next 1 s checkpoint, not when the lock frees (review round 2 m2): a foreground `flock -w 120` would run the trap o
+449:  if [ "$SIGNALLED" = 1 ]; then rl_release_op 1 interrupted; exit "$(rl_end_code 130)"; fi   # MUT:signal-release
+== A6 every background child ==
+327:  LDIR="$( . "$ROOT_DIR/scripts/longops/lib.sh" >/dev/null 2>&1 && printf '%s' "$LD" )"
+377:  ( rl_hb_loop "$$" "$(rl_pstart "$$")" ) >/dev/null 2>&1 &   # the guard loop: heartbeats, wall clock, parent liveness; it covers the toolchain p
+395:    ( me=$BASHPID; { printf '%s %s\n' "$me" "$(rl_pstart "$me")" >"$CHF.tmp" && mv -f "$CHF.tmp" "$CHF"; } 2>/dev/null; rl_runp "$@" ) >"$so" 2>"$
+== A7 dispatcher ==
+82:exec bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits

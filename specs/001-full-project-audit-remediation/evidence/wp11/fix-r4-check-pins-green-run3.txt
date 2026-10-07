@@ -1,0 +1,450 @@
+# identity: fix-r4 check_pins GREEN run 3 (fixtures only)
+# head: 350372a8 (uncommitted work tree)
+# sha256 check_pins.sh: 74b764a53386ae6e421d4234b1476c9e627e27db522af53b2d6888a616d43084
+# sha256 test_check_pins.sh: 9defa2248c35d21ad08bc9275e01508fa2a508817cbb857bb455ae677d6a7a34
+# sha256 test_containerfiles.sh: cb75b151ce9b7450a6c86aa3bd67c7a0ea80feb3a31629c22c96a54b7bec40e6
+# sha256 engine_options.tsv: da3bd335ceab69abfdda0a5735e78d5134384bb68b7804f137f7f4dd2afb1c95
+# sha256 check_pins_mutations.tsv: 0575875a4e74ad1c3eeaff13438e1182ddb6d55e2bb8e0f8b067336b6c580679
+# sha256 containerfiles_mutations.tsv: 77b4fc22516578cd13c2abece38192f323b91422b6d752b3df810960d733f1fa
+# run_at: 2026-10-07T08:43:00Z host: anton
+# cmd: CHECKPINS_TEST_NO_MUTATIONS=1 bash scripts/containers/tests/test_check_pins.sh
+PASS: G-BAD compose :latest: exit status 1
+PASS: G-BAD compose :latest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose no tag no digest: exit status 1
+PASS: G-BAD compose no tag no digest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose mutable tag (quoted, trailing comment): exit status 1
+PASS: G-BAD compose mutable tag (quoted, trailing comment): reports compose_image_unpinned at line 3
+PASS: G-BAD compose short digest: exit status 1
+PASS: G-BAD compose short digest: reports compose_image_unpinned at line 3
+PASS: G-BAD compose variable default unpinned: exit status 1
+PASS: G-BAD compose variable default unpinned: reports compose_image_unpinned at line 3
+PASS: G-BAD Dockerfile FROM tag only: exit status 1
+PASS: G-BAD Dockerfile FROM tag only: reports from_unpinned at line 1
+PASS: G-BAD Containerfile FROM with --platform and alias: exit status 1
+PASS: G-BAD Containerfile FROM with --platform and alias: reports from_unpinned at line 2
+PASS: G-BAD FROM ${ARG} whose default is unpinned: exit status 1
+PASS: G-BAD FROM ${ARG} whose default is unpinned: reports from_arg_unpinned at line 2
+PASS: G-BAD COPY --from external image tag only: exit status 1
+PASS: G-BAD COPY --from external image tag only: reports copy_from_unpinned at line 3
+PASS: G-BAD script podman run registry image: exit status 1
+PASS: G-BAD script podman run registry image: reports script_image_unpinned at line 2
+PASS: G-BAD script docker run short image: exit status 1
+PASS: G-BAD script docker run short image: reports script_image_unpinned at line 2
+PASS: G-BAD Containerfile download piped into sh: exit status 1
+PASS: G-BAD Containerfile download piped into sh: reports pipe_to_shell at line 2
+PASS: G-BAD script download piped into sudo bash: exit status 1
+PASS: G-BAD script download piped into sudo bash: reports pipe_to_shell at line 2
+PASS: G-BAD script wget -qO- piped into sh: exit status 1
+PASS: G-BAD script wget -qO- piped into sh: reports pipe_to_shell at line 2
+PASS: G-BAD script bash <(download) process substitution: exit status 1
+PASS: G-BAD script bash <(download) process substitution: reports pipe_to_shell at line 2
+PASS: G-BAD Containerfile sh -c command substitution of a download: exit status 1
+PASS: G-BAD Containerfile sh -c command substitution of a download: reports pipe_to_shell at line 2
+PASS: G-BAD multi-line for...done | bash - (reported at its first physical line): exit status 1
+PASS: G-BAD multi-line for...done | bash - (reported at its first physical line): reports pipe_to_shell at line 2
+PASS: G-BAD quoted install hint (download piped into sh) printed for the operator: exit status 1
+PASS: G-BAD quoted install hint (download piped into sh) printed for the operator: reports pipe_to_shell at line 3
+PASS: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: exit status 0
+PASS: G-GOOD compose digest forms, locally built localhost image, variable with digest default, bare variable: no violation reported
+PASS: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: exit status 0
+PASS: G-GOOD Dockerfile digest FROM, stage aliases, scratch, ARG without default, COPY --from digest: no violation reported
+PASS: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: exit status 0
+PASS: G-GOOD script digest image, volume/port/env tokens, download then sha256sum, pipe into tar and jq: no violation reported
+PASS: CARRIER comment and trailing comment in compose: exit status 0
+PASS: CARRIER comment and trailing comment in compose: no violation reported
+PASS: CARRIER comments in a script: exit status 0
+PASS: CARRIER comments in a script: no violation reported
+PASS: CARRIER comment in a Containerfile: exit status 0
+PASS: CARRIER comment in a Containerfile: no violation reported
+PASS: CARRIER documentation (Markdown and text are not scanned): exit status 0
+PASS: CARRIER documentation (Markdown and text are not scanned): no violation reported
+PASS: CARRIER here-document body (fixture data) in a script under tests/: exit status 0
+PASS: CARRIER here-document body (fixture data) in a script under tests/: no violation reported
+PASS: HEREDOC a here-document body in a production script is judged like code (exit 1)
+PASS: G-BAD script registry reference with a tag in an assignment: exit status 1
+PASS: G-BAD script registry reference with a tag in an assignment: reports script_image_unpinned at line 2
+PASS: NEGCTL exit 1
+PASS: NEGCTL exactly one VIOLATION line
+PASS: NEGCTL the one violation is the real line 4
+PASS: F1 --add-host value is not the image operand (pinned image, add-host before it): exit status 0
+PASS: F1 --add-host value is not the image operand (pinned image, add-host before it): no violation reported
+PASS: F1 --add-host does not mask the real image: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F1 --add-host does not mask the real image: total rows
+PASS: F1 compose: the local tag of a build: service is skipped, the other service is flagged: row compose_image_unpinned line 7 reference 'redis:7'
+PASS: F1 compose: a registry-qualified image next to build: is still judged: row compose_image_unpinned line 10 reference 'ghcr.io/o/x:1'
+PASS: F1 compose: exactly the two real rows: total rows
+PASS: F1 compose: build: after image: in the same service also marks a local tag: exit status 0
+PASS: F1 compose: build: after image: in the same service also marks a local tag: no violation reported
+PASS: F1 compose: bare $VAR image is resolved by the caller, not judged: exit status 0
+PASS: F1 compose: bare $VAR image is resolved by the caller, not judged: no violation reported
+PASS: F1 script: a localhost/ image is locally built, not external: exit status 0
+PASS: F1 script: a localhost/ image is locally built, not external: no violation reported
+PASS: F1 a test script writing fixture lines with printf/sed/echo or an assignment is data: exit status 0
+PASS: F1 a test script writing fixture lines with printf/sed/echo or an assignment is data: no violation reported
+PASS: F1 negative control: the same lines in a non-test script are still judged (registry reference + pipe): total rows
+PASS: F1 negative control: a real podman run in a test script is still judged: row script_image_unpinned line 3 reference 'docker.io/library/alpine:3.19'
+PASS: F1 negative control: only the real run row: total rows
+PASS: F1 in a test script a registry literal outside an engine command is data (assignment, helper argument): exit status 0
+PASS: F1 in a test script a registry literal outside an engine command is data (assignment, helper argument): no violation reported
+PASS: F1 negative control: the same assignment in a non-test script is judged: total rows
+PASS: F2 a pipe continued by a trailing | (no backslash) into sh: exit status 1
+PASS: F2 a pipe continued by a trailing | (no backslash) into sh: reports pipe_to_shell at line 2
+PASS: F2 control: a trailing | into tar is not a shell: exit status 0
+PASS: F2 control: a trailing | into tar is not a shell: no violation reported
+PASS: F2 stage-local ARG redeclaration does not hide the unpinned global default: exit status 1
+PASS: F2 stage-local ARG redeclaration does not hide the unpinned global default: reports from_arg_unpinned at line 5
+PASS: F2 control: stage-local redeclaration of a pinned global default: exit status 0
+PASS: F2 control: stage-local redeclaration of a pinned global default: no violation reported
+PASS: F2 several ARG on one line: exit status 1
+PASS: F2 several ARG on one line: reports from_arg_unpinned at line 2
+PASS: F2 run operand line 2: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 run operand line 3: row script_image_unpinned line 3 reference 'redis:7'
+PASS: F2 run operand line 4: row script_image_unpinned line 4 reference 'alpine'
+PASS: F2 run operand line 5: row script_image_unpinned line 5 reference 'mysql:8'
+PASS: F2 run operand line 6: row script_image_unpinned line 6 reference 'busybox:1.36'
+PASS: F2 run operand line 7: row script_image_unpinned line 7 reference 'docker.io/library/alpine:3.19'
+PASS: F2 run operand line 8: row script_image_unpinned line 8 reference 'nginx:1.25'
+PASS: F2 run operand rows: total rows
+PASS: F2 only the first run/pull of a line used to be judged: the second command is flagged: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 second command: the pinned ones are not flagged: total rows
+PASS: F2 a double-quoted operand is reported without its quotes: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 a single-quoted operand is reported without its quotes: row script_image_unpinned line 3 reference 'redis:7'
+PASS: F2 wrapped/quoted/substituted command line 2: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: F2 wrapped/quoted/substituted command line 3: row script_image_unpinned line 3 reference 'redis:7'
+PASS: F2 wrapped/quoted/substituted command line 4: row script_image_unpinned line 4 reference 'mysql:8'
+PASS: F2 wrapped/quoted/substituted command line 5: row script_image_unpinned line 5 reference 'busybox:1.36'
+PASS: F2 wrapped/quoted/substituted command line 6: row script_image_unpinned line 6 reference 'nginx:1.25'
+PASS: F2 wrapped/quoted/substituted command line 7: row script_image_unpinned line 7 reference 'alpine:3.19'
+PASS: F2 negative control: prose in echo, other sub-commands, variables and pinned operands are not flagged: exit status 0
+PASS: F2 negative control: prose in echo, other sub-commands, variables and pinned operands are not flagged: no violation reported
+PASS: F2 RUN --mount=...,from=<unpinned image>: exit status 1
+PASS: F2 RUN --mount=...,from=<unpinned image>: reports copy_from_unpinned at line 2
+PASS: F2 control: mount from a stage alias, a cache mount, ADD --from a digest: exit status 0
+PASS: F2 control: mount from a stage alias, a cache mount, ADD --from a digest: no violation reported
+PASS: F2 ADD --from=<unpinned image>: exit status 1
+PASS: F2 ADD --from=<unpinned image>: reports copy_from_unpinned at line 2
+PASS: F2 compose image: value on the next line (reported at the image: line): exit status 1
+PASS: F2 compose image: value on the next line (reported at the image: line): reports compose_image_unpinned at line 3
+PASS: F2 eval "$(download)": exit status 1
+PASS: F2 eval "$(download)": reports pipe_to_shell at line 2
+PASS: F2 source <(download): exit status 1
+PASS: F2 source <(download): reports pipe_to_shell at line 3
+PASS: F2 . <(download): exit status 1
+PASS: F2 . <(download): reports pipe_to_shell at line 4
+PASS: F2 Dockerfile pipe into a shell/interpreter line 2: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 2: reports pipe_to_shell at line 2
+PASS: F2 Dockerfile pipe into a shell/interpreter line 3: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 3: reports pipe_to_shell at line 3
+PASS: F2 Dockerfile pipe into a shell/interpreter line 4: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 4: reports pipe_to_shell at line 4
+PASS: F2 Dockerfile pipe into a shell/interpreter line 5: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 5: reports pipe_to_shell at line 5
+PASS: F2 Dockerfile pipe into a shell/interpreter line 6: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 6: reports pipe_to_shell at line 6
+PASS: F2 Dockerfile pipe into a shell/interpreter line 7: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 7: reports pipe_to_shell at line 7
+PASS: F2 Dockerfile pipe into a shell/interpreter line 8: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 8: reports pipe_to_shell at line 8
+PASS: F2 Dockerfile pipe into a shell/interpreter line 9: exit status 1
+PASS: F2 Dockerfile pipe into a shell/interpreter line 9: reports pipe_to_shell at line 9
+PASS: F2 negative control: a download piped into json.tool, python -c, sha256sum, shasum, ssh is not a shell install: exit status 0
+PASS: F2 negative control: a download piped into json.tool, python -c, sha256sum, shasum, ssh is not a shell install: no violation reported
+PASS: F2 a UTF-8 BOM before FROM: exit status 1
+PASS: F2 a UTF-8 BOM before FROM: reports from_unpinned at line 1
+PASS: F2 skopeo docker:// transport reference: row script_image_unpinned line 2 reference 'docker.io/library/alpine:3.19'
+PASS: F2 arithmetic << in a test script is not a here-document opener (line 3 scanned): row script_image_unpinned line 3 reference 'docker.io/library/alpine:3.19'
+PASS: F2 a << inside a quoted string is not a here-document opener (line 5 scanned): row script_image_unpinned line 5 reference 'docker.io/library/alpine:3.20'
+PASS: F2 control: a real here-document in a test script is still data; the line after it is scanned: total rows
+PASS: F2 control: the real run after the here-document is the one row: row script_image_unpinned line 5 reference 'docker.io/library/alpine:3.20'
+PASS: F2 control: a registry path with no tag is not a tagged reference: exit status 0
+PASS: F2 control: a registry path with no tag is not a tagged reference: no violation reported
+PASS: X compose: the next-line image value is the reported reference: row compose_image_unpinned line 3 reference 'postgres:15'
+PASS: X compose: a pinned next-line image value passes: exit status 0
+PASS: X compose: a pinned next-line image value passes: no violation reported
+PASS: X compose: a build: key nested deeper than image: is not a sibling: row compose_image_unpinned line 3 reference 'redis:7'
+PASS: X wrapper/substitution/global-option/unknown-option line 2: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: X wrapper/substitution/global-option/unknown-option line 3: row script_image_unpinned line 3 reference 'redis:7'
+PASS: X wrapper/substitution/global-option/unknown-option line 4: row script_image_unpinned line 4 reference 'mysql:8'
+PASS: X wrapper/substitution/global-option/unknown-option line 5: row script_image_unpinned line 5 reference 'nginx:1.25'
+PASS: X wrapper/substitution/global-option/unknown-option line 6: row script_image_unpinned line 6 reference 'busybox:1.36'
+PASS: X wrapper/substitution/global-option/unknown-option line 7: row script_image_unpinned line 7 reference 'alpine:3.19'
+PASS: X wrapper/substitution/global-option/unknown-option line 8: row script_image_unpinned line 8 reference 'alpine:3.19'
+PASS: X wrapper/substitution/global-option/unknown-option line 9: row script_image_unpinned line 9 reference 'httpd:2.4'
+PASS: X wrapper/substitution/global-option/unknown-option line 10: row script_image_unpinned line 10 reference 'traefik:v3'
+PASS: X wrapper/substitution/global-option/unknown-option line 11: row script_image_unpinned line 11 reference 'haproxy:2.9'
+PASS: X wrapper/substitution/global-option/unknown-option line 12: row script_image_unpinned line 12 reference 'memcached:1.6'
+PASS: X wrappers: exactly the eleven real rows: total rows
+PASS: X known value options hide their values from the operand search (--name web is not the image): exit status 0
+PASS: X known value options hide their values from the operand search (--name web is not the image): no violation reported
+PASS: X control: a shell -c string without an engine command is not flagged: exit status 0
+PASS: X control: a shell -c string without an engine command is not flagged: no violation reported
+PASS: F3 crash copy of the script written
+PASS: F3 an internal exception exits 3 (not 1)
+PASS: F3 an internal exception prints no violation rows on stdout
+PASS: F3 the crash is reported on stderr
+PASS: F3 negative control: the crash copy exits 0 on a tree that has a compose file only (no Dockerfile scanned)
+PASS: F3 negative control: the real script exits 0 on a clean tree
+PASS: F4 lowercase from keyword: exit status 1
+PASS: F4 lowercase from keyword: reports from_unpinned at line 1
+PASS: F4 a .bash file is scanned: exit status 1
+PASS: F4 a .bash file is scanned: reports script_image_unpinned at line 2
+PASS: F4 a compose .yaml file is scanned: exit status 1
+PASS: F4 a compose .yaml file is scanned: reports compose_image_unpinned at line 3
+PASS: F4 inline ${VAR:-default} FROM default is judged: exit status 1
+PASS: F4 inline ${VAR:-default} FROM default is judged: reports from_arg_unpinned at line 1
+PASS: F4 control: inline default with a digest: exit status 0
+PASS: F4 control: inline default with a digest: no violation reported
+PASS: F4 a # inside a quoted string does not start a comment (the pipe after it is seen): exit status 1
+PASS: F4 a # inside a quoted string does not start a comment (the pipe after it is seen): reports pipe_to_shell at line 2
+PASS: F4 control: a real trailing comment is removed: exit status 0
+PASS: F4 control: a real trailing comment is removed: no violation reported
+PASS: F4 the output is sorted by line (the pipe at line 2 before the FROM at line 4)
+PASS: F4 control: a violation under third/ is found without --exclude-dir (exit 1)
+PASS: F4 --exclude-dir skips the directory in the default file set (exit 0)
+PASS: F4 --exclude-dir skips the directory when a PATH is walked (exit 0)
+PASS: F4 control: the walked PATH finds it without --exclude-dir (exit 1)
+PASS: F4 submodule files are not scanned without --recurse (exit 0)
+PASS: F4 --recurse scans the submodule (exit 1)
+PASS: F4 --recurse reports the submodule path
+PASS: R3-A timeout with a signal option
+PASS: R3-A $SUDO prefix
+PASS: R3-A ${SUDO} prefix
+PASS: R3-A helper function with an argument
+PASS: R3-A helper function wrapper
+PASS: R3-A unquoted ssh remote command
+PASS: R3-A unquoted eval
+PASS: R3-A env with a value option
+PASS: R3-A sudo long value option
+PASS: R3-A helper with a quoted argument
+PASS: R3-A engine in a variable $DOCKER
+PASS: R3-A engine in ${CONTAINER_ENGINE}
+PASS: R3-A whole command line quoted into a helper
+PASS: R3-A nice with a value option
+PASS: R3-A ionice and stdbuf stacked
+PASS: R3-A busybox-style chroot wrapper word
+PASS: R3-A control: echo of a command line (no row)
+PASS: R3-A control: grep for the words (no row)
+PASS: R3-A control: man page (no row)
+PASS: R3-A control: a message that starts with the words (no row)
+PASS: R3-A control: podman ps / build / logs (no row)
+PASS: R3-A control: a pinned operand through a prefix (no row)
+PASS: R3-A control: a bare variable engine with no verb (no row)
+PASS: R3-A parser needle: --add-host is a value option in the snapshot
+PASS: R3-A parser needle: --rm is boolean in the snapshot
+PASS: R3-A parser needle: pull -a (--all-tags) is boolean in the snapshot
+PASS: R3-A the option tables of check_pins (value AND boolean options) equal the snapshot exactly (no missing option, no extra entry, no wrong kind)
+PASS: R3-A every run/create value option hides its value (offending values: none)
+PASS: R3-A every pull value option hides its value (offending values: none)
+PASS: R3-A every global value option hides its value (offending values: none)
+PASS: R3-A every run boolean option leaves the operand visible (one row per line)
+PASS: R3-A every pull boolean option leaves the operand visible (one row per line)
+PASS: R3-A every global boolean option leaves the operand visible (one row per line)
+PASS: R3-A the snapshot equals a regeneration from the live podman-version-5.7.0 help
+PASS: R3-B script assignment with ${IMG:-default}
+PASS: R3-B script assignment with ${IMG-default}
+PASS: R3-B script assignment with ${IMG:=default}
+PASS: R3-B script assignment with ${IMG=default}
+PASS: R3-B ghcr default inside a command operand
+PASS: R3-B quoted default operand, short name
+PASS: R3-B default operand through a prefix
+PASS: R3-B control: a pinned default (no row)
+PASS: R3-B control: a default that is another variable (no row)
+PASS: R3-B control: a bare variable operand (no row)
+PASS: R3-B control: a registry reference after = and a quote still flagged
+PASS: R3-C namespaced image, build, no policy (flagged)
+PASS: R3-C namespaced image, build, pull_policy always (flagged)
+PASS: R3-C namespaced image, build, pull_policy missing (flagged)
+PASS: R3-C namespaced image, build, pull_policy if_not_present (flagged)
+PASS: R3-C namespaced image, build, pull_policy daily (flagged)
+PASS: R3-C namespaced image, build, pull_policy every_24h (flagged)
+PASS: R3-C namespaced image, build, pull_policy from a variable (flagged)
+PASS: R3-C namespaced image, build, pull_policy never (skipped)
+PASS: R3-C namespaced image, build, pull_policy build (skipped)
+PASS: R3-C single-component image, build, no policy (the tag a build produces) (skipped)
+PASS: R3-C single-component image, build, pull_policy never (skipped)
+PASS: R3-C single-component image, build, pull_policy build (skipped)
+PASS: R3-C single-component image, build, pull_policy always (flagged)
+PASS: R3-C single-component image, build, pull_policy missing (flagged)
+PASS: R3-C registry-qualified image, build, no policy (flagged)
+PASS: R3-C registry-qualified image, build, pull_policy never (skipped)
+PASS: R3-C host:port registry image, build, no policy (flagged)
+PASS: R3-C host:port registry image, build, pull_policy never (skipped)
+PASS: R3-C pull_policy is read from the SAME service only (service b has no build: key and is judged)
+PASS: R3-E | env bash
+PASS: R3-E | /usr/bin/env bash
+PASS: R3-E | env FOO=1 bash
+PASS: R3-E | env -i bash
+PASS: R3-E | env -u X bash
+PASS: R3-E | sudo -u root bash
+PASS: R3-E | sudo -E -u root bash -s
+PASS: R3-E | sudo --user root bash
+PASS: R3-E | doas sh
+PASS: R3-E | busybox sh
+PASS: R3-E | nice -n 5 bash
+PASS: R3-E | timeout 30 bash
+PASS: R3-E | fish
+PASS: R3-E | tcsh
+PASS: R3-E | csh
+PASS: R3-E | python3 (no argument reads the program from stdin)
+PASS: R3-E | perl
+PASS: R3-E | ruby
+PASS: R3-E | node
+PASS: R3-E | php
+PASS: R3-E | python3 -
+PASS: R3-E a middle stage between the download and the shell
+PASS: R3-E | sudo bash after a wget -qO-
+PASS: R3-E sh -c with a backtick substitution
+PASS: R3-E python3 -c with a $(download)
+PASS: R3-E perl -e with a $(download)
+PASS: R3-E bash < <(download)
+PASS: R3-E sudo bash <(download)
+PASS: R3-E control: | python3 -m json.tool (no row)
+PASS: R3-E control: | python3 -c code (no row)
+PASS: R3-E control: | perl -ne (no row)
+PASS: R3-E control: | node -e (no row)
+PASS: R3-E control: | ruby script.rb (no row)
+PASS: R3-E control: | tee sh (a file named sh) (no row)
+PASS: R3-E control: | grep bash (no row)
+PASS: R3-E control: | sha256sum (no row)
+PASS: R3-E control: a shell with no download in the pipeline (no row)
+PASS: R3-E control: curl then sh as a sequence (no row)
+PASS: R3-E control: curl || sh (no row)
+PASS: R3-E control: curl | tee f && sh f (no row)
+PASS: R3-F an unreadable Dockerfile exits 3 (not 0)
+PASS: R3-F an unreadable Dockerfile prints no 'N violations' summary
+PASS: R3-F stderr names the unreadable file
+PASS: R3-F control: the same file, readable, is flagged (exit 1)
+PASS: R3-G a test_*-named script OUTSIDE a tests directory is operational code: the registry literal is flagged: row script_image_unpinned line 2 reference 'docker.io/library/postgres:16'
+PASS: R3-G export IMAGE=<registry ref> in a test_*-named operational script is flagged: row script_image_unpinned line 2 reference 'docker.io/library/redis:7'
+PASS: R3-G control: the same lines inside a tests directory are fixture data: exit status 0
+PASS: R3-G control: the same lines inside a tests directory are fixture data: no violation reported
+PASS: R3-G nested parentheses in arithmetic do not open a here-document: row script_image_unpinned line 3 reference 'docker.io/library/aquasec/trivy:latest'
+PASS: R3-G (( )) commands, command substitution and deep nesting inside arithmetic are consumed: row script_image_unpinned line 5 reference 'docker.io/library/alpine:3.19'
+PASS: R3-G control: a <<- here-document with a tab-indented terminator is still data: total rows
+PASS: R3-A a command line quoted into sh -c is searched at any position (prefix words before the engine)
+PASS: R3-A a bare image name (implicit :latest) in an sh -c string
+PASS: R3-A control: prose that mentions the words after a prefix (no row)
+PASS: R3-A control: a quoted string handed to a helper that starts with the words but names no image (no row)
+PASS: R3-E an install hint with words before the download
+PASS: R3-E |& (stderr too) into a shell
+PASS: R3-E a for-loop of downloads piped into a shell
+PASS: R3-E a subshell of downloads piped into a shell
+PASS: R3-E control: a for-loop of downloads piped into tar (no row)
+PASS: R3-E control: a shell that is NOT piped, inside a for-loop that downloads (no row)
+PASS: R3-E control: a download group, then an unrelated pipeline into a shell (no row)
+PASS: R3-G quoted strings handed to a helper in a test script are fixture data: exit status 0
+PASS: R3-G quoted strings handed to a helper in a test script are fixture data: no violation reported
+PASS: R3-G a << inside a single-quoted string does not open a here-document (the next line is scanned): row script_image_unpinned line 3 reference 'docker.io/library/alpine:3.19'
+PASS: R3-G echo of an unquoted download line piped into sh in a test script is data (the echo command is masked): exit status 0
+PASS: R3-G echo of an unquoted download line piped into sh in a test script is data (the echo command is masked): no violation reported
+PASS: R3-G control: the same line in an operational script is flagged (an install hint): exit status 1
+PASS: R3-G control: the same line in an operational script is flagged (an install hint): reports pipe_to_shell at line 2
+PASS: R3-G tee is a data command in a test script (its unquoted words are not a command): exit status 0
+PASS: R3-G tee is a data command in a test script (its unquoted words are not a command): no violation reported
+PASS: R3-G control: a command substitution inside double quotes in a test script is still a command: row script_image_unpinned line 2 reference 'postgres:15'
+PASS: RM1 an unknown option's host:host-gateway value is not the image: exit status 0
+PASS: RM1 an unknown option's host:host-gateway value is not the image: no violation reported
+PASS: RM2 a host:port registry image next to build: is registry-qualified and judged: row compose_image_unpinned line 4 reference 'registry:5000/tool:1.0'
+PASS: RM4 two identical findings on one line print one row: total rows
+PASS: RM5 | env VAR=x bash: exit status 1
+PASS: RM5 | env VAR=x bash: reports pipe_to_shell at line 2
+PASS: RM6 a # inside a word (a URL fragment) is not a comment: exit status 1
+PASS: RM6 a # inside a word (a URL fragment) is not a comment: reports pipe_to_shell at line 2
+PASS: RM7 a trailing && continues the logical line (second pull reported at the first physical line): row script_image_unpinned line 2 reference 'docker.io/library/b:2'
+PASS: RM8 tee is a data command in a test script: exit status 0
+PASS: RM8 tee is a data command in a test script: no violation reported
+PASS: R4-H the structural and the text grammar give the same rows on all 36 compose fixtures of this suite (differing fixtures: none)
+PASS: R4-H differential needle: at least 12 compose fixtures were compared
+PASS: R4-S compound commands piped into a shell (23 lines, every one yes; offending lines: none)
+PASS: R4-S control: the same compound commands piped into a non-reader, or a shell that is not piped (17 lines, every one no; offending lines: none)
+PASS: R4-S Dockerfile RUN lines with a compound command piped into a shell: one row each, the two controls give none
+PASS: R4-S every shell word is a program reader (also by path, behind sudo, behind env) (44 lines, every one yes; offending lines: none)
+PASS: R4-S every stdin interpreter is a program reader when it has no script and no inline code (36 lines, every one yes; offending lines: none)
+PASS: R4-S shell/interpreter options that take a VALUE do not hide the stdin program (27 lines, every one yes; offending lines: none)
+PASS: R4-S control: a shell or interpreter with an inline program or a script operand reads data, not a program, from stdin (28 lines, every one no; offending lines: none)
+PASS: R4-S source / dot of the standard input is a program reader (5 lines, every one yes; offending lines: none)
+PASS: R4-S control: source / dot of a file (3 lines, every one no; offending lines: none)
+PASS: R4-S program-from-download forms: here-string, process substitution, command substitution (13 lines, every one yes; offending lines: none)
+PASS: R4-S the downloader kept in a variable (6 lines, every one yes; offending lines: none)
+PASS: R4-S control: a downloader variable with no reader, a reader fed by a variable (2 lines, every one no; offending lines: none)
+PASS: R4-S the grammar tables of check_pins (wrappers, wrapper value options, shells, interpreters, compound openers/closers, downloaders, stdin paths) equal the enumerated ground truth
+PASS: R4-A every run/create boolean option leaves an expansion operand visible (an expansion operand is not the value of an unknown option) (58 lines)
+PASS: R4-A every pull boolean option leaves an expansion operand visible (6 lines)
+PASS: R4-A every global boolean option leaves an expansion operand visible (8 lines)
+PASS: R4-A every long value option with an attached =value leaves the operand visible (139 lines)
+PASS: R4-A pflag short-flag clusters (boolean letters, then a value letter with an attached or a separate value) (179 lines)
+PASS: R4-A pull clusters (4 lines)
+PASS: R4-A -- ends the options: the next word is the operand, even when it is shaped like an option value (4 lines)
+PASS: R4-A an array or positional expansion before the image is an option list, not the image (4 lines)
+PASS: R4-A control: prose handed unquoted to a logging helper names no image (5 lines, every one no; offending lines: none)
+PASS: R4-A a quoted message handed to an UNKNOWN helper that does not start with the engine names no image (no row)
+PASS: R4-A control: the same words, starting with the engine, ARE a command line handed to the helper
+PASS: R4-A control: a helper that RUNS the command is still searched (3 lines)
+PASS: R4-B ${V:+alt} as an operand
+PASS: R4-B ${V+alt} as an operand
+PASS: R4-B nested default as an operand
+PASS: R4-B nested := inside :=
+PASS: R4-B nested default with a registry host
+PASS: R4-B control: a nested expansion whose innermost default is a variable (no row)
+PASS: R4-B control: ${V:?message} names no image (no row)
+PASS: R4-B registry host k8s.gcr.io/pause:3.9 as a literal
+PASS: R4-B registry host us.gcr.io/p/i:1 as a literal
+PASS: R4-B registry host eu.gcr.io/p/i:1 as a literal
+PASS: R4-B registry host nvcr.io/nvidia/cuda:12.4 as a literal
+PASS: R4-B registry host index.docker.io/library/redis:7 as a literal
+PASS: R4-B registry host registry-1.docker.io/library/redis:7 as a literal
+PASS: R4-B registry host registry.k8s.io/pause:3.9 as a literal
+PASS: R4-B control: the same registry hosts pinned (no row)
+PASS: R4-F an unreadable directory (non-git root) exits 3
+PASS: R4-F ... and prints no 'N violations' summary
+PASS: R4-F stderr names the failure
+PASS: R4-F an unreadable directory given as a PATH argument exits 3
+PASS: R4-F a file below an unreadable directory given as a PATH argument exits 3
+PASS: R4-F control: the same tree readable is flagged (exit 1)
+PASS: R4-F an unsearchable (mode 644) directory exits 3 (non-git root)
+PASS: R4-F a tracked file below an unsearchable directory exits 3 (git root)
+PASS: R4-F control: the same tracked tree searchable is flagged
+PASS: R4-G here-document <<EOF-X ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<\EOF ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<"END OF" ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<'A.B' ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<E.O.F ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<-"EOF-Y" ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-G here-document <<-EOF_Z ends at its own delimiter (the body is data, the line after it is code)
+PASS: R4-H a quoted key (JSON style)
+PASS: R4-H a flow mapping service
+PASS: R4-H a flow mapping with build and a registry-qualified image
+PASS: R4-H a flow mapping with build and a local single-component tag is local (no row)
+PASS: R4-H a compose file with another name (top-level services:)
+PASS: R4-H control: a YAML file that is no compose file is not scanned (no row)
+PASS: R4-H a recursive YAML alias does not loop (the structural walk visits each node once)
+PASS: R4-H the image value on the next line
+PASS: R4-H a YAML 1.1 anchor and merge key: the anchored mapping is judged once
+PASS: R4-H YAML the parser rejects (tab indentation) falls back to the text grammar and still flags the image
+PASS: R4-H CHECK_PINS_NO_YAML=1 forces the text grammar (same verdict on the tab file)
+PASS: R4-H pull_policy never: structural and text grammar agree
+PASS: R4-H pull_policy build: structural and text grammar agree
+PASS: R4-H pull_policy always: structural and text grammar agree
+PASS: R4-H pull_policy missing: structural and text grammar agree
+PASS: R4-H pull_policy "never": structural and text grammar agree
+PASS: R4-H pull_policy 'build': structural and text grammar agree
+PASS: R4-RV6 every recognised engine variable name is an engine word (12 lines)
+PASS: R4-RV7 awk / grep / sed talk about commands: their words are data (3 lines, every one no; offending lines: none)
+PASS: R4-RV8 a host:ip value after an unknown option (long or short) is not the image (2 lines, every one no; offending lines: none)
+PASS: R4-RV9 doas -u root sh: exit status 1
+PASS: R4-RV9 doas -u root sh: reports pipe_to_shell at line 2
+PASS: R4-RV11 COPY --from=localhost/... is a locally built image: exit status 0
+PASS: R4-RV11 COPY --from=localhost/... is a locally built image: no violation reported
+PASS: R4-RV12 FROM localhost/... is a locally built image: exit status 0
+PASS: R4-RV12 FROM localhost/... is a locally built image: no violation reported
+PASS: R4-RV5 a quoted pull_policy value is read without its quotes: exit status 0
+PASS: R4-RV5 a quoted pull_policy value is read without its quotes: no violation reported
+PASS: DETERMINISM two runs print identical output
+PASS: LIST exit status 1 on a violation
+PASS: LIST one TSV row rule<TAB>path<TAB>line<TAB>reference
+PASS: SUMMARY line on a clean tree
+PASS: USAGE unknown option exits 2
+PASS: USAGE missing root exits 2
+PASS: ARG explicit file path is scanned (violation exit 1)
+test_check_pins: 438 passed, 0 failed
+rc=0

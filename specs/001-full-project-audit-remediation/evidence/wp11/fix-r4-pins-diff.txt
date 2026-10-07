@@ -1,0 +1,5 @@
+# identity: fix-r4 live-row difference: round-3 scanner (committed HEAD) vs round-4 scanner on the same tree (control needle: the round-3 scanner returns 52 rows, so the instrument sees)
+# head: 350372a8
+# run_at: 2026-10-07T08:40:55Z
+# cmd: diff <(round-3 --list) <(round-4 --list)
+# no difference: 0 rows added, 0 rows removed

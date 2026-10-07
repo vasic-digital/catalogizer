@@ -1,0 +1,56 @@
+WF15 fix round 4 (constitution 11.4.276: the round AFTER the structural round 3) - convergence assessment
+=====================================================================================================
+Review under repair: scratchpad WF15-REVIEW-envelope-r3.md (NO-GO on d9162b7d: B1 blocking; I1, I2 source-defects; I3 test-instrumentation; m1 m2 m3 n1; reviewer mutants RM2, RM3, RM4 survived).
+Round budget: round 4 of 5-7. HONEST NOTE (11.4.6): the instruction was to write this file before any fix; the class design below was worked out before the edits, but the file itself was
+written after the code edits and the first test runs. The enumeration instrument output (fix-r4-class-enumeration.txt) is produced from the final source.
+
+Why round 3 did not converge on class A (root cause, not the instance)
+  Round 3 replaced the per-trigger patches by ONE mechanism (rl_terminate_run) and called class A closed "for every end-of-run path". The reviewer found 3 non-minor members in the
+  EDGES of that mechanism: (B1) a fast path in rl_ensure_down that bypasses it, (I1) a dispatcher that never reaches it, (I2) a liveness test weaker than the registry's. The shared
+  cause: the mechanism was proven only for the cells the test world could express. The fake run_pinned.sh wrote its "container" record at its first line, so "client alive, container
+  not there yet" did not exist; the fake podman had no paused / created / stopped state and never failed; the zombie owner needed a parent that does not reap. Every cell the shim could
+  not express was a cell no test visited (11.4.226: the shim modelled the wrong layer again). Round 3's convergence assessment enumerated trigger kinds, not the product of the axes.
+
+Class A = termination of a run, as the MATRIX (the reviewer's axes, enumerated; the member list is the output of the instrument in fix-r4-class-enumeration.txt, control-needled:
+positive needle rl_terminate_run = 5 hits, negative needle rl_zzz_no_such_fn = 0 hits; 7 grep families over runner_lib.sh and test-in-container.sh: exit sites, op releases, container-down
+decisions, client-liveness/signal sites, signal dispositions, background children, the dispatcher)
+  Axes (ground truth for the container axis measured on real podman 5.7.0 in this round: ps without -a lists RUNNING only; `podman stop` of a PAUSED container fails "state improper",
+  `kill` ends it; `stop` of a CREATED one rc 0 and does nothing, `kill` fails rc 125, only `rm -f` removes it; a killed container without --rm stays `stopped` until rm):
+    wrapper  : alive | zombie (SIGKILLed, parent has not reaped) | dead
+    client   : none | alive-before-container (the 2.4-2.8 s window: checks, lock, image, creation) | attached | gone
+    container: none | created | running | paused | stopped-not-removed | a foreign one under the same label | podman cannot answer
+    trigger  : TERM / INT / HUP to the wrapper | TERM to TIC | wall clock | SIGKILL of the wrapper | EXIT trap | the probe phase vs the main phase
+  Cell -> test (R4x = test_runners_hardening.sh fake world, B1x = same file real podman, TICx = test_test_in_container.sh):
+    TERM/INT/HUP x client alive before container (main)            R4A r4aTERM r4aINT r4aHUP (container appears 3 s later), B1e[TERM] B1e[HUP] (real, 2.4-2.8 s window)
+    TERM x client alive before container (probe)                   R4A[probe], B1e[probe]
+    TERM x client that never creates its container                 R4A r4akill (delay 60: TERM ignored, KILL after 5 s, bounded)
+    TERM x container paused                                        R4B paused (stop fails, kill ends), B1f (real pause)
+    TERM x container created                                       R4B created (stop no-op, rm -f removes)
+    TERM x running (existing)                                      F6, B1c
+    wall x client alive before container                           R4J        wall x running: F8, B1a, B1b        wall x stopped-not-removed: R4I
+    SIGKILL wrapper x client alive before container                R4K        SIGKILL x running: F10, B1d        x probe: F10b
+    SIGKILL wrapper, wrapper is a zombie                           R4F (parent does not reap; precondition Z proven before and after)
+    foreign container, same label, other /out                      R4C (never touched)       podman cannot answer, client gone, container up: R4E (125, op kept)
+    container that cannot be stopped                               F15
+    TERM to TIC                                                    TIC suite (same pid as TIC, TERM reaches the wrapper), B1g (real lane, rc 130, container gone)
+    EXIT trap with a live container                                no reachable path in a tested flow: the held path returns before ensure_down (rl_release_op sees .held)
+                                                                   UNCONFIRMED (the m3 reorder is hardening; no test can observe it)
+  Members the reviewer named and the fix closes (all by changing the mechanism once, not per trigger):
+    B1  rl_ensure_down fast path needs `! rl_client_alive` (a live client whose container is not listed is a run about to start); rl_bg_wait keeps CH/CH_ST on a signal (the client
+        record survives until the release looks at it); rl_our_containers lists every container that is not finished (podman ps -a, state not in exited|stopped|removing|dead), and
+        rl_stop_one picks the call by state: stop -> kill -> rm -f for running/paused, rm -f for created. The verdict of rl_terminate_run also requires the client gone (m3 doc).
+    I1  TIC execs the wrapper (a TERM to the dispatcher is a TERM to the wrapper; exit status is the wrapper's by construction).
+    I2  the guard loop judges the owner with rl_palive (the registry's own rule: start time AND not a zombie): ONE reading of the owner's liveness.
+    m1  rl_runp runs run_pinned.sh under `env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT` (OMP caps do not enter the container: the CPU count is read once by the envelope).
+    m3  rl_on_exit releases (stops the container) first and ends the guard loop after.      n1  envelope: an empty record keeps its reason registry_record_malformed.
+    m2  Status rows of the four docs.
+  Class D (test instrumentation) - the 3 surviving reviewer mutants and why they survived: the fake podman never failed, never listed two containers under one label, the fake probe
+  was instantaneous. Fix: the fake now models all three (SHIM_PS_FAIL file, <op>-foreign record, SHIM_PROBE_SLEEP used in R4D), RM2-RM4 are adopted as mutants (RM1 too, as a two-edit
+  mutant), each is paired with a block that fails for the real reason, and every new real-world fix has its own mutant (fast path ignores the client, ps without -a, created not removed,
+  paused without the kill fallback, finished counted as up, zombie owner read alive, OMP reaches run_pinned).
+
+Convergence assessment: the previous round enumerated trigger kinds; this round enumerates the PRODUCT of wrapper state x client phase x container state x trigger, gives each reachable cell
+a test whose precondition is itself asserted (client alive and no container record; paused and not listed; wrapper state Z before and after), and fixes the three edges at their cause.
+Residual risk (UNCONFIRMED, stated in the final report): (1) the clearing of CH on a signal (reviewer fix direction 2) is kept as 'keep' but not separately killable: the client record in
+$CHF (written by the child itself before its exec) already identifies the client except in the sub-millisecond between the fork and that write; no deterministic test can hit it;
+(2) the `wait` interrupted-by-signal branch of rl_bg_wait is defensive (the poll loop exits only when the child is already gone) and has no reachable test; (3) the EXIT-trap order (m3).

@@ -1,0 +1,12 @@
+# identity: task=fix-r4 kind=shellcheck utc=2026-10-07T07:43:39Z host=anton uid=1000
+# shellcheck -x -S warning over the round-4 scope scripts, through run_scan (real IMG-SHELLCHECK); sweep shimmed because the live registry holds other agents' drift (hung_op / dead_owner rows of a test-infra run), registry relocated to scratch
+rc=0
+# control needle (must report findings):
+
+In .audit/scratch/r4sc/needle.sh line 2:
+x=1
+^-- SC2034 (warning): x appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- x appears unused. Verify use (or ...
+rc=1

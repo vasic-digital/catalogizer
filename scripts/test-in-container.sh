@@ -9,7 +9,7 @@
 #                              [--no-progress-s N] [--wall-s N] <app> <lane> -- <command word>...
 #   The options are handed to the wrapper unchanged. App keys: catalog-api, catalog-web, qa (reserved, no rows until T212), docs, tooling.
 #   Lanes: unit, contract, integration, e2e, api, docs, render, tooling.
-# Exits:  the wrapper's exit code on a run; 1 REFUSED (`test-in-container: REFUSED reason=<code>` on stderr: unknown_app, unknown_lane, no_lane_row,
+# Exits:  the wrapper's exit code on a run (TIC execs the wrapper: it is the same process); 1 REFUSED (`test-in-container: REFUSED reason=<code>` on stderr: unknown_app, unknown_lane, no_lane_row,
 #   lane_table_unreadable, lane_table_malformed, lane_table_duplicate, wrapper_missing, test_hook_outside_test_mode; an envelope that cannot be read is refused by the wrapper, `<wrapper>: REFUSED reason=envelope_refused`); 2 usage.
 # Test hooks (honoured ONLY with TIC_TEST_MODE=1, else REFUSED test_hook_outside_test_mode): TIC_WRAPPER_DIR (directory holding the run_*.sh shims),
 #   TIC_LANES (lane table file). The envelope hooks of envelope.sh (ENVELOPE_*) are the wrapper's and have their own gate.
@@ -77,5 +77,6 @@ fi
 # (98% of its reading): the two readings are seconds apart on a loaded host (the wrapper's sweep, the budget lock wait and an envelope pass sit between them), so a
 # valid lane was refused `limit_exceeds_envelope` whenever the budget fell more than the margin in between - and no margin covers a registration in that window.
 # TIC passes NO --memory and NO --cpus: the wrapper's locked reading is the only source of the limits, so there is nothing for a second reading to disagree with.
-bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits
-exit $?   # MUT:exit
+# EXEC, not a foreground child (review round 3 I1): a TERM/INT/HUP to the dispatcher's pid must reach the wrapper, which stops the container; a dispatcher that stays
+# behind as a parent dies alone on a TERM, tells its caller "143" and leaves the lane running with its budget and its purpose. The wrapper's exit code is the exit code.
+exec bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits

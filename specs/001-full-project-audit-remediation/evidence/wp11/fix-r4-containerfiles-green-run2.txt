@@ -1,0 +1,115 @@
+# identity: fix-r4 containerfiles GREEN run 2 (fixtures only)
+# head: 350372a8 (uncommitted work tree)
+# sha256 check_pins.sh: 74b764a53386ae6e421d4234b1476c9e627e27db522af53b2d6888a616d43084
+# sha256 test_check_pins.sh: 9defa2248c35d21ad08bc9275e01508fa2a508817cbb857bb455ae677d6a7a34
+# sha256 test_containerfiles.sh: cb75b151ce9b7450a6c86aa3bd67c7a0ea80feb3a31629c22c96a54b7bec40e6
+# sha256 engine_options.tsv: da3bd335ceab69abfdda0a5735e78d5134384bb68b7804f137f7f4dd2afb1c95
+# sha256 check_pins_mutations.tsv: 0575875a4e74ad1c3eeaff13438e1182ddb6d55e2bb8e0f8b067336b6c580679
+# sha256 containerfiles_mutations.tsv: 77b4fc22516578cd13c2abece38192f323b91422b6d752b3df810960d733f1fa
+# run_at: 2026-10-07T08:42:38Z host: anton
+# cmd: CF_TEST_NO_MUTATIONS=1 bash scripts/containers/tests/test_containerfiles.sh
+PASS: REAL build/containers tree: every required directory, file, pin, checksum and lock entry check passes
+PASS: GOLDEN-GOOD a compliant directory produces no violation
+PASS: GOLDEN-BAD tag-only FROM -> C3-check_pins fires
+PASS: GOLDEN-BAD pipe-to-shell -> C3-check_pins fires
+PASS: GOLDEN-BAD download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD README.md missing -> C2-README.md fires
+PASS: GOLDEN-BAD digests.lock missing -> C2-digests.lock fires
+PASS: GOLDEN-BAD digests.lock does not name the FROM digest -> C5-digests.lock-from fires
+PASS: GOLDEN-BAD digests.lock does not name the checked SHA-256 -> C5-digests.lock-sha256 fires
+PASS: GOLDEN-BAD no images.lock.yaml entry -> C6-lock-entry fires
+PASS: GOLDEN-BAD lock entry without a class -> C6-class fires
+PASS: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest -> C6-digest-mismatch fires
+PASS: GOLDEN-GOOD apt-get installing the curl package is not a download line
+PASS: GOLDEN-GOOD rust needs no lock entry (T143 writes it)
+PASS: GOLDEN-BAD required directory absent -> C1-missing-directory fires
+PASS: GOLDEN-BAD empty Containerfile -> C2-containerfile fires
+PASS: NEGCTL the compliant directory 'go' is never named
+PASS: NEGCTL the bad directory 'node' is named
+PASS: GOLDEN-BAD wget download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD sha256sum without -c is not a check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD two downloads each followed by its own check -> C4- silent
+PASS: GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check) -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads, one real check and one plain sha256sum -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD ADD <url> without --checksum -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD ADD <url> with --checksum=sha256:<64 hex> -> C4- silent
+PASS: GOLDEN-BAD a RUN that swallows a failure with || true -> C7-swallowed-failure fires
+PASS: GOLDEN-BAD a RUN that swallows a failure with || : -> C7-swallowed-failure fires
+PASS: GOLDEN-GOOD a comment mentioning || true, a plain pipeline, an || with a real command -> C7- silent
+PASS: GOLDEN-BAD lock entry class outside the closed set -> C6-class fires
+PASS: GOLDEN-BAD empty README.md -> C2-README.md fires
+PASS: GOLDEN-BAD empty digests.lock -> C2-digests.lock fires
+PASS: GOLDEN-BAD a directory with no id mapping -> C6-unknown-directory fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc2 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc3 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc1_empty -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc0_viol -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses a missing check_pins (exit 127) -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 reports each VIOLATION line of an exit-1 verdict -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict
+PASS: GOLDEN-GOOD C3 accepts exit 0 with no VIOLATION line
+PASS: GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line) -> C3-check_pins fires
+PASS: R3-C4 quoted URL -> C4-download-without-sha256 fires
+PASS: R3-C4 variable URL -> C4-download-without-sha256 fires
+PASS: R3-C4 wget with a quoted URL -> C4-download-without-sha256 fires
+PASS: R3-C4 URL before the options (curl URL -o f) -> C4-download-without-sha256 fires
+PASS: R3-C4 wget URL first -> C4-download-without-sha256 fires
+PASS: R3-C4 the second download comes AFTER both checks -> C4-download-without-sha256 fires
+PASS: R3-C4 two downloads (the second quoted), one check -> C4-download-without-sha256 fires
+PASS: R3-C4 set -e does not replace a check -> C4-download-without-sha256 fires
+PASS: R3-C4 download as the last command after a check of something else -> C4-download-without-sha256 fires
+PASS: R3-C4 shasum -a 256 without -c is not a check -> C4-download-without-sha256 fires
+PASS: R3-C4 sha256sum with an unrelated option is not a check -> C4-download-without-sha256 fires
+PASS: R3-C4 control: quoted URL with its check (clean)
+PASS: R3-C4 control: sha256sum --check (clean)
+PASS: R3-C4 control: shasum -a 256 -c (clean)
+PASS: R3-C4 control: command -v curl and curl --version are lookups (clean)
+PASS: R3-C4 control: command -v curl with redirections is a lookup (clean)
+PASS: R3-C4 control: which curl / type curl (clean)
+PASS: R3-C7 || /bin/true -> C7-swallowed-failure fires
+PASS: R3-C7 || exit 0 -> C7-swallowed-failure fires
+PASS: R3-C7 || echo ignored -> C7-swallowed-failure fires
+PASS: R3-C7 || { true; } -> C7-swallowed-failure fires
+PASS: R3-C7 || ( true ) -> C7-swallowed-failure fires
+PASS: R3-C7 || { echo x; true; } -> C7-swallowed-failure fires
+PASS: R3-C7 set +e -> C7-swallowed-failure fires
+PASS: R3-C7 ||true without a space -> C7-swallowed-failure fires
+PASS: R3-C7 || printf -> C7-swallowed-failure fires
+PASS: R3-C7 control: || { echo; exit 1; } is an explicit handler (clean)
+PASS: R3-C7 control: || exit 1 (clean)
+PASS: R3-C7 control: || false (clean)
+PASS: R3-C7 control: || echo x && exit 1 (clean)
+PASS: R3-C7 control: || ( echo x; exit 2 ) (clean)
+PASS: R3-C7 control: || test -f (clean)
+PASS: R3-C4 an unparseable RUN that names a download is refused -> C4-download-without-sha256 fires
+PASS: RC1 the ADD --checksum value must be named in digests.lock -> C5-digests.lock-sha256 fires
+PASS: RC2 a Containerfile with no FROM line -> C2-from fires
+PASS: R4-S the wrapper batch was generated from the scanner's own grammar tables (needle: at least 40 forms)
+PASS: R4-S C4 every wrapper word and wrapper value option in front of an unchecked download (92 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none)
+PASS: R4-S C4 every wrapper word and wrapper value option in front of an unchecked download: exactly 92 C4-download-without-sha256 lines
+PASS: R4-S C4 control: the same wrapper forms with their own check (92 RUN lines, clean)
+PASS: R4-S C4 stacked wrappers, assignments, absolute paths, sh -c / bash -c / eval strings, helpers that run the next word (19 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none)
+PASS: R4-S C4 stacked wrappers, assignments, absolute paths, sh -c / bash -c / eval strings, helpers that run the next word: exactly 19 C4-download-without-sha256 lines
+PASS: R4-S C4 control: package names, lookups and quoted prose are not downloads (15 RUN lines, clean)
+PASS: R4-S C4 the exec form of RUN (a JSON array) is a command, and its sh -c string is parsed (3 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none)
+PASS: R4-S C4 the exec form of RUN (a JSON array) is a command, and its sh -c string is parsed: exactly 3 C4-download-without-sha256 lines
+PASS: R4-S C4 control: an exec-form RUN whose sh -c string checks the download (2 RUN lines, clean)
+PASS: R4-C4 a check of a DIFFERENT file does not check the download (19 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none)
+PASS: R4-C4 a check of a DIFFERENT file does not check the download: exactly 19 C4-download-without-sha256 lines
+PASS: R4-C4 control: every check form that names its downloaded file (38 RUN lines, clean)
+PASS: R4-C4 a comment line inside a continuation does not hide the download that follows it -> C4-download-without-sha256 fires
+PASS: R4-C4 control: a comment line between the download and its check (clean)
+PASS: R4-C4 control: a blank line between the download and its check does not end the instruction (clean)
+PASS: R4-C4 a blank line inside a continuation does not end the instruction -> C4-download-without-sha256 fires
+PASS: R4-C5 a SHA-256 held in an ARG and used by the check must be named in digests.lock -> C5-digests.lock-sha256 fires
+PASS: R4-C5 control: the ARG digest named in digests.lock
+PASS: R4-C5 FROM ${ARG} is resolved through the ARG default and its digest is looked up in digests.lock -> C5-digests.lock-from fires
+PASS: R4-C7 errexit switched off or a failure dropped by a command that only succeeds (12 RUN lines, every one gets its own C7-swallowed-failure line; missing: none)
+PASS: R4-C7 errexit switched off or a failure dropped by a command that only succeeds: exactly 12 C7-swallowed-failure lines
+PASS: R4-C7 control: errexit kept, explicit handlers (9 RUN lines, clean)
+PASS: R4-C4 control: a RUN that names a download and has an unterminated quote is refused -> C4-download-without-sha256 fires
+PASS: R4-RVC1/RVC3 sudo and an assignment prefix are not the command word (3 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none)
+PASS: R4-RVC1/RVC3 sudo and an assignment prefix are not the command word: exactly 3 C4-download-without-sha256 lines
+test_containerfiles: 103 passed, 0 failed
+rc=0

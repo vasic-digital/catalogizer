@@ -1,0 +1,8 @@
+# identity: fix-r4 engine option snapshot vs a regeneration from the live podman help (the committed engine_options.tsv is unchanged this round)
+# head: 350372a8
+# run_at: 2026-10-07T08:41:09Z host: anton
+# sha256 engine_options.tsv: da3bd335ceab69abfdda0a5735e78d5134384bb68b7804f137f7f4dd2afb1c95
+# cmd: scripts/containers/tests/gen_engine_options.sh <tmp>; diff engine_options.tsv <tmp>
+gen_engine_options: 243 rows -> /dev/shm/r4/engine_live.tsv
+podman version 5.7.0
+# identical: 243 rows

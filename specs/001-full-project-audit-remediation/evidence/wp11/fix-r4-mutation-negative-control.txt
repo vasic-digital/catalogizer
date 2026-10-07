@@ -1,0 +1,10 @@
+# identity: fix-r4 mutation-harness negative controls: the harness must tell a surviving mutant from a caught one (a comment-only edit SURVIVES, a no-op / missing-anchor mutant is NOT-APPLIED and refused) and must still catch real mutants (needles)
+# head: 350372a8
+# run_at: 2026-10-07T08:43:17Z host: anton
+# sha256 check_pins.sh: 74b764a53386ae6e421d4234b1476c9e627e27db522af53b2d6888a616d43084
+# cmd: python3 (harness: apply one exact-text replacement to a copy of check_pins.sh, run the fixtures with CHECKPINS_SUT=<copy>)
+negative control 1: a COMMENT-only edit of the scanner         -> SURVIVED (rc=0, 0 FAIL lines)
+negative control 2: an identical replacement (a no-op mutant)  -> NOT-APPLIED (anchor count 1, identical=True)
+negative control 3: an anchor that does not exist              -> NOT-APPLIED (anchor count 0, identical=False)
+positive control (needle): the engine-variable list narrowed (RV6) -> CAUGHT (rc=1, 1 FAIL lines)
+positive control (needle): the compound-command openers removed (RV1) -> CAUGHT (rc=1, 3 FAIL lines)

@@ -1,0 +1,57 @@
+# identity: fix-r4 convergence assessment (constitution 11.4.276(E)), pins / Containerfiles, round 4 (the round after the structural round 3, bfcd9fd9)
+# head: 350372a8 (scripts/containers/check_pins.sh and tests byte-identical to bfcd9fd9)
+# review input: WF15-REVIEW-pins-r3.md (NO-GO: I1-I4, m1-m8, T1-T3, D1-D2; 15 of 16 reviewer mutants survived)
+
+ROUND POSITION
+Round 4 of a 5-7 budget (R_max declared 7). Round 3 was the structural round. Round 4 is therefore not allowed to be an instance
+round: every finding below is mapped to a CLASS, the class is enumerated with an instrument that was control-needled first, and the
+class is closed or its remaining members are listed as explicit residuals with the reason they cannot be decided.
+
+WHY ROUND 3 DID NOT CONVERGE (root causes, not instances)
+1. Two hand-written shell tokenizers classify the same text. check_pins.sh (split_commands/head_index, a wrapper table with value
+   options) and test_containerfiles.sh (shlex + a shorter wrapper list, no value options) have DIFFERENT wrapper grammars. Round 3
+   rebuilt one and left the sibling (I2). Class = "shell grammar classified from an instance list, in more than one place".
+2. A rewrite replaced a working classifier by one whose depth bookkeeping tests the command word AFTER wrapper skipping, so every
+   keyword that is also a wrapper (while until if {) became a dead member (I1; reviewer mutant RV1 is equivalent = evidence). The
+   fixtures covered only the two forms that worked (for, subshell) - fixtures chosen where the classifier works (T3).
+3. The option grammar used half of the ground truth: only VALUE options were loaded from the engine help text, booleans fell into
+   the "unknown option" heuristic, and pflag short-flag clusters (-dp, -itw, -dv) were never modelled (I4).
+4. C4 pairs checks to downloads by COUNT (N4 reappeared, I3): the claim "its own SHA-256 check" was never bound to a file.
+5. Documentation claimed "every member enumerated and closed" without an enumeration the suite could compare (D1).
+
+CLASSES AND THEIR ENUMERATED MEMBERS (the instrument for each class is named; ground truth is a real shell / the live podman help / man pages)
+S  shell grammar (ONE grammar for both scanners)
+   members: compound commands (for, select, case, if, while, until, { }, ( ), nested, function body), wrapper words and their value
+   options (sudo doas env nice ionice nohup timeout stdbuf time setsid xargs busybox exec command chroot), shell reader grammar
+   (-c, -s, -, script operand, value options -o/-O/--rcfile), interpreter value options (python -W/-X, perl -I/-M, node -r, ruby -r/-I, php -d),
+   program-from-download forms (pipe, |&, $(..), `..`, <(..), < <(..), <<< $(..), source/. /dev/stdin), downloader words (curl wget fetch,
+   $CURL-style variables).
+   closure: the grammar tables live in check_pins.sh only; test_containerfiles.sh loads them from the scanner's own source (no second
+   copy); `--dump-grammar` prints them and the suite compares them with a hand-enumerated ground-truth list; fixtures for the wrapper
+   and compound classes are GENERATED from the tables, not typed.
+A  engine option grammar: members = every option of podman run/create/pull/global (value AND boolean, from live help), long and short,
+   attached values, pflag clusters, `--`, array expansions before the image. closure: both halves of the table, cluster parser, snapshot
+   equality incl. booleans; fixtures generated row by row with an expansion operand (the I4 blind spot of the round-3 boolean loop).
+B  parameter-expansion operands: members = :- - := = :+ + (and nested). closure: one operand resolver used by script, compose and arg
+   paths.
+F  unreadable input: members = unreadable file, unreadable directory, unsearchable parent of a tracked path, explicit PATH argument.
+   closure: every filesystem access of the scanner goes through one stat/open helper that exits 3.
+G  here-document delimiter grammar: members = \w+, hyphenated, quoted ('..' ".."), backslash-quoted, with spaces in quotes.
+H  compose structure: members = block key, quoted key, flow mapping, files not named *compose*. closure: structural YAML walk when PyYAML
+   parses the file, text grammar otherwise (both fixture-tested).
+C4 download/check pairing: members = wrapper-prefixed download (shared grammar), sh -c string, comment inside a continuation, check of a
+   DIFFERENT file, same check repeated, shasum -a256 / --algorithm forms, ARG-held digest, redirect target, -O remote name.
+   closure: a download is bound to its target file and a check is bound to the file named in the data it verifies.
+C7 swallows: members = || true/:/echo/printf/exit 0/sleep, groups, set +e / set +o errexit. Residuals recorded (pipe masking, `; true`).
+
+WHAT IS EXPLICITLY NOT CLOSED (decided residuals, never silent)
+- indirect downloads (a shell function or alias that wraps curl), `$EXTRA_ARGS` that expands to engine options before the image
+  (indistinguishable from `${IMG}` by text), registry hosts outside the closed list, C7 pipe masking and `; true`, C4 checks of a
+  checksum FILE (not decidable by text: refused with a message that names the supported form).
+- shfmt / bashlex / tree-sitter-bash are not installed on this host (verified by the reviewer); adopting one is a 11.4.270 decision and
+  is NOT taken here: the structural answer is ONE in-repo grammar used by both scanners.
+
+PROCESS (11.4.276(D))
+Every fixture drives the real check_pins.sh / the real Containerfile checker; every reviewer mutant (RV1-RV12, RVC1-RVC4) is adopted
+into the mutation tables (anchors re-expressed on the new code where the text moved) and must fail the suite; RED is captured on HEAD
+first, GREEN three times, mutation runs carry negative controls.

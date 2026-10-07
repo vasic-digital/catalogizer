@@ -204,6 +204,20 @@ env_run 32000000 30000000 16 --toolchain go --profile "$T/profile.json"
 check "fail closed: a malformed record (not JSON) refuses (exit 1)" "$RC" 1
 grep -q 'reason=registry_record_malformed' "$T/err" && ok "malformed record: reason registry_record_malformed" || bad "malformed record reason: $(cat "$T/err")"
 rm -f "$LONGOPS_DIR/ops/garbage.json"
+# review round 3 n1: jq prints nothing and exits 0 on empty input; the reason code of an empty record is the same as the one of any non-JSON record
+: >"$LONGOPS_DIR/ops/empty.json"
+env_run 32000000 30000000 16 --toolchain go --profile "$T/profile.json"
+check "fail closed: an EMPTY record refuses (exit 1)" "$RC" 1
+grep -q 'reason=registry_record_malformed' "$T/err" && ok "empty record: reason registry_record_malformed (not a classification failure)" || bad "empty record reason: $(cat "$T/err")"
+printf ' \n' >"$LONGOPS_DIR/ops/empty.json"
+env_run 32000000 30000000 16 --toolchain go --profile "$T/profile.json"
+grep -q 'reason=registry_record_malformed' "$T/err" && ok "whitespace-only record: reason registry_record_malformed" || bad "whitespace-only record reason: $(cat "$T/err")"
+# a valid object followed by garbage: jq prints the state of the first value and then fails; the failure (not the empty output) is what refuses it (a mutant that ignores jq's exit status survived the plain garbage case once the empty-output line existed)
+printf '{"state":"running"} trailing garbage' >"$LONGOPS_DIR/ops/empty.json"
+env_run 32000000 30000000 16 --toolchain go --profile "$T/profile.json"
+check "fail closed: a malformed record (valid JSON followed by garbage) refuses (exit 1)" "$RC" 1
+grep -q 'reason=registry_record_malformed' "$T/err" && ok "malformed record (valid then garbage): reason registry_record_malformed (jq's failure status is honoured)" || bad "malformed record (valid then garbage) reason: $(cat "$T/err")"
+rm -f "$LONGOPS_DIR/ops/empty.json"
 chmod 000 "$LONGOPS_DIR/ops/$OPX.json"
 env_run 32000000 30000000 16 --toolchain go --profile "$T/profile.json"
 check "fail closed: an unreadable record refuses (exit 1)" "$RC" 1
@@ -426,6 +440,7 @@ mut_case registry-lib 'registry library missing' '. "$ROOT_DIR/scripts/longops/l
 mut_case registry-dir 'ops dir unreadable' '{ [ "$st" = directory ] && [ -r "$ops" ] && [ -x "$ops" ]; } ||' 'true ||'
 mut_case registry-stat 'parent directory unreadable' '*) echo "ERR registry_unreadable cannot stat $ops: $st"; exit 0;; esac' '*) echo "OK 0 0"; exit 0;; esac'
 mut_case registry-malformed 'malformed record' '2>/dev/null <<<"$j")" || { echo "ERR registry_record_malformed $f is not a JSON record"; exit 0; }' '2>/dev/null <<<"$j")" || true'
+mut_case R4-n1-empty-record-passes-jq 'empty record' '[ -n "$st" ] || { echo "ERR registry_record_malformed $f is not a JSON record (empty: jq prints nothing and exits 0 on empty input, review round 3 n1)"; exit 0; }   # MUT:registry-empty' ':'
 mut_case terminal-skip-dropped 'terminal records are not classified' 'case "$st" in complete|failed|reaped|handoff|blocked-escape) continue;; esac' 'case "$st" in NEVER) continue;; esac'
 mut_case registry-budget 'float budget' '{ valid_int "$mb" && valid_int "$cb"; } ||' 'true ||'
 mut_case nproc-measured 'OMP_NUM_THREADS' '$(env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT nproc 2>/dev/null)' '$(nproc 2>/dev/null)'

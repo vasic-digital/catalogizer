@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T03:30:00Z |
-| Status | committed in a7cfc6d3 (T119, T120); revision 2 in 96779242 (fail-closed registry accounting, measured CPU count); revision 3 is the fix round r2 for the WF13 review (terminal records skipped, the classify-failure branch tested; uncommitted until the owner commits it); its row in `docs/scripts/README.md` is still owed |
+| Last modified | 2026-10-07T08:00:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 in 96779242 (fail-closed registry accounting, measured CPU count); revision 3 in d9162b7d (terminal records skipped, the classify-failure branch tested); revision 4 is fix round r4 for the WF15 review (an empty or whitespace-only record keeps its reason `registry_record_malformed`: jq prints nothing and exits 0 on empty input, n1; uncommitted until the owner commits it); its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/envelope.sh`; test `scripts/containers/tests/test_envelope.sh` |
 
 ## Purpose
@@ -51,7 +51,7 @@ are refused, so a stray exported variable can never lift a ceiling. The registry
 
 ## The CPU count is measured
 
-`nproc` is read with `OMP_NUM_THREADS` and `OMP_THREAD_LIMIT` removed (`env -u ... nproc`): GNU `nproc` honours both, so `OMP_NUM_THREADS=1000` used to report 1000 CPUs and lift the 0.60 CPU ceiling (review F7). `run_pinned.sh` reads `nproc` the same naive way; fixing it is an OWED request (it is another agent's file in this round).
+`nproc` is read with `OMP_NUM_THREADS` and `OMP_THREAD_LIMIT` removed (`env -u ... nproc`): GNU `nproc` honours both, so `OMP_NUM_THREADS=1000` used to report 1000 CPUs and lift the 0.60 CPU ceiling (review F7). `run_pinned.sh` reads `nproc` the same naive way; fixing it in `run_pinned.sh` stays an OWED request (another agent's file); the wrapper (`rl_runp`) removes both variables from the environment of `run_pinned.sh` since WF15 m1, so a wrapper lane reads the same CPU count as the envelope.
 
 ## Test
 

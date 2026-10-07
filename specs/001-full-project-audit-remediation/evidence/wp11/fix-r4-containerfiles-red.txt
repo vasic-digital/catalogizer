@@ -1,0 +1,118 @@
+# identity: fix-r4 containerfiles RED: the round-3 Containerfile checker (HEAD 350372a8 heredoc, own wrapper list and count pairing) with the round-4 fixtures; the scanner used for C3 and for --dump-grammar is the round-4 one
+# head: 350372a8 (uncommitted work tree)
+# sha256 check_pins.sh: 74b764a53386ae6e421d4234b1476c9e627e27db522af53b2d6888a616d43084
+# sha256 test_check_pins.sh: 9defa2248c35d21ad08bc9275e01508fa2a508817cbb857bb455ae677d6a7a34
+# sha256 test_containerfiles.sh: cb75b151ce9b7450a6c86aa3bd67c7a0ea80feb3a31629c22c96a54b7bec40e6
+# sha256 engine_options.tsv: da3bd335ceab69abfdda0a5735e78d5134384bb68b7804f137f7f4dd2afb1c95
+# sha256 check_pins_mutations.tsv: 0575875a4e74ad1c3eeaff13438e1182ddb6d55e2bb8e0f8b067336b6c580679
+# sha256 containerfiles_mutations.tsv: 77b4fc22516578cd13c2abece38192f323b91422b6d752b3df810960d733f1fa
+# run_at: 2026-10-07T08:40:42Z host: anton
+# cmd: CF_TEST_ROOT=$R CF_TEST_NO_MUTATIONS=1 bash <hybrid: round-4 test_containerfiles.sh with the round-3 checker block>
+PASS: REAL build/containers tree: every required directory, file, pin, checksum and lock entry check passes
+PASS: GOLDEN-GOOD a compliant directory produces no violation
+PASS: GOLDEN-BAD tag-only FROM -> C3-check_pins fires
+PASS: GOLDEN-BAD pipe-to-shell -> C3-check_pins fires
+PASS: GOLDEN-BAD download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD README.md missing -> C2-README.md fires
+PASS: GOLDEN-BAD digests.lock missing -> C2-digests.lock fires
+PASS: GOLDEN-BAD digests.lock does not name the FROM digest -> C5-digests.lock-from fires
+PASS: GOLDEN-BAD digests.lock does not name the checked SHA-256 -> C5-digests.lock-sha256 fires
+PASS: GOLDEN-BAD no images.lock.yaml entry -> C6-lock-entry fires
+PASS: GOLDEN-BAD lock entry without a class -> C6-class fires
+PASS: GOLDEN-BAD lock entry digest differs from the Containerfile FROM digest -> C6-digest-mismatch fires
+PASS: GOLDEN-GOOD apt-get installing the curl package is not a download line
+PASS: GOLDEN-GOOD rust needs no lock entry (T143 writes it)
+PASS: GOLDEN-BAD required directory absent -> C1-missing-directory fires
+PASS: GOLDEN-BAD empty Containerfile -> C2-containerfile fires
+PASS: NEGCTL the compliant directory 'go' is never named
+PASS: NEGCTL the bad directory 'node' is named
+PASS: GOLDEN-BAD wget download without a SHA-256 check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD sha256sum without -c is not a check -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads in one RUN checked by one sha256sum -c -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD two downloads each followed by its own check -> C4- silent
+PASS: GOLDEN-BAD the SHA-256 check runs BEFORE the download (a later plain sha256sum is not a check) -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD two downloads, one real check and one plain sha256sum -> C4-download-without-sha256 fires
+PASS: GOLDEN-BAD ADD <url> without --checksum -> C4-download-without-sha256 fires
+PASS: GOLDEN-GOOD ADD <url> with --checksum=sha256:<64 hex> -> C4- silent
+PASS: GOLDEN-BAD a RUN that swallows a failure with || true -> C7-swallowed-failure fires
+PASS: GOLDEN-BAD a RUN that swallows a failure with || : -> C7-swallowed-failure fires
+PASS: GOLDEN-GOOD a comment mentioning || true, a plain pipeline, an || with a real command -> C7- silent
+PASS: GOLDEN-BAD lock entry class outside the closed set -> C6-class fires
+PASS: GOLDEN-BAD empty README.md -> C2-README.md fires
+PASS: GOLDEN-BAD empty digests.lock -> C2-digests.lock fires
+PASS: GOLDEN-BAD a directory with no id mapping -> C6-unknown-directory fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc2 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc3 -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc1_empty -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses check_pins stub rc0_viol -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 refuses a missing check_pins (exit 127) -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 reports each VIOLATION line of an exit-1 verdict -> C3-check_pins fires
+PASS: GOLDEN-BAD C3 names the check_pins VIOLATION line of an exit-1 verdict
+PASS: GOLDEN-GOOD C3 accepts exit 0 with no VIOLATION line
+PASS: GOLDEN-BAD C3 refuses a crashing real check_pins (exit 3, no VIOLATION line) -> C3-check_pins fires
+PASS: R3-C4 quoted URL -> C4-download-without-sha256 fires
+PASS: R3-C4 variable URL -> C4-download-without-sha256 fires
+PASS: R3-C4 wget with a quoted URL -> C4-download-without-sha256 fires
+PASS: R3-C4 URL before the options (curl URL -o f) -> C4-download-without-sha256 fires
+PASS: R3-C4 wget URL first -> C4-download-without-sha256 fires
+PASS: R3-C4 the second download comes AFTER both checks -> C4-download-without-sha256 fires
+PASS: R3-C4 two downloads (the second quoted), one check -> C4-download-without-sha256 fires
+PASS: R3-C4 set -e does not replace a check -> C4-download-without-sha256 fires
+PASS: R3-C4 download as the last command after a check of something else -> C4-download-without-sha256 fires
+PASS: R3-C4 shasum -a 256 without -c is not a check -> C4-download-without-sha256 fires
+PASS: R3-C4 sha256sum with an unrelated option is not a check -> C4-download-without-sha256 fires
+PASS: R3-C4 control: quoted URL with its check (clean)
+PASS: R3-C4 control: sha256sum --check (clean)
+PASS: R3-C4 control: shasum -a 256 -c (clean)
+PASS: R3-C4 control: command -v curl and curl --version are lookups (clean)
+PASS: R3-C4 control: command -v curl with redirections is a lookup (clean)
+PASS: R3-C4 control: which curl / type curl (clean)
+PASS: R3-C7 || /bin/true -> C7-swallowed-failure fires
+PASS: R3-C7 || exit 0 -> C7-swallowed-failure fires
+PASS: R3-C7 || echo ignored -> C7-swallowed-failure fires
+PASS: R3-C7 || { true; } -> C7-swallowed-failure fires
+PASS: R3-C7 || ( true ) -> C7-swallowed-failure fires
+PASS: R3-C7 || { echo x; true; } -> C7-swallowed-failure fires
+PASS: R3-C7 set +e -> C7-swallowed-failure fires
+PASS: R3-C7 ||true without a space -> C7-swallowed-failure fires
+PASS: R3-C7 || printf -> C7-swallowed-failure fires
+PASS: R3-C7 control: || { echo; exit 1; } is an explicit handler (clean)
+PASS: R3-C7 control: || exit 1 (clean)
+PASS: R3-C7 control: || false (clean)
+PASS: R3-C7 control: || echo x && exit 1 (clean)
+PASS: R3-C7 control: || ( echo x; exit 2 ) (clean)
+PASS: R3-C7 control: || test -f (clean)
+PASS: R3-C4 an unparseable RUN that names a download is refused -> C4-download-without-sha256 fires
+PASS: RC1 the ADD --checksum value must be named in digests.lock -> C5-digests.lock-sha256 fires
+PASS: RC2 a Containerfile with no FROM line -> C2-from fires
+PASS: R4-S the wrapper batch was generated from the scanner's own grammar tables (needle: at least 40 forms)
+FAIL: R4-S C4 every wrapper word and wrapper value option in front of an unchecked download (92 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none) (got ' [doas -C 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [doas -u 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [env --argv0 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [env --chdir 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [env --file 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +] [env --split-string 7 curl -fsSL -o /tmp/g https://example.invalid/g &&] [env --unset 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [env -C 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [env -S 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [env -a 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [env -f 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [env -u 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [ionice --class=7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [ionice --class 7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [ionice --classdata=7 curl -fsSL -o /tmp/g https://example.invalid/g &&] [ionice --classdata 7 curl -fsSL -o /tmp/g https://example.invalid/g &&] [ionice -P 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [ionice -c 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [ionice -n 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [ionice -p 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [ionice -u 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [nice --adjustment 7 curl -fsSL -o /tmp/g https://example.invalid/g && ] [nice -n 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [stdbuf --error=7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [stdbuf --error 7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [stdbuf --input=7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [stdbuf --input 7 curl -fsSL -o /tmp/g https://example.invalid/g && chm] [stdbuf --output=7 curl -fsSL -o /tmp/g https://example.invalid/g && ch] [stdbuf --output 7 curl -fsSL -o /tmp/g https://example.invalid/g && ch] [stdbuf -e 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [stdbuf -i 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [stdbuf -o 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x] [sudo --chdir 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod] [sudo --chroot 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmo] [sudo --close-from 7 curl -fsSL -o /tmp/g https://example.invalid/g && ] [sudo --command-timeout 7 curl -fsSL -o /tmp/g https://example.invalid/] [sudo --group 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod] [sudo --host 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [sudo --other-user 7 curl -fsSL -o /tmp/g https://example.invalid/g && ] [sudo --prompt 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmo] [sudo --role 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [sudo --type 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [sudo --user 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod ] [sudo -C 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -D 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -R 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -T 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -U 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -g 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -h 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -p 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -r 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -t 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [sudo -u 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /] [timeout --kill-after 7 curl -fsSL -o /tmp/g https://example.invalid/g ] [timeout --signal 7 curl -fsSL -o /tmp/g https://example.invalid/g && c] [timeout -k 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +] [timeout -s 7 curl -fsSL -o /tmp/g https://example.invalid/g && chmod +] [builtin curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tm] [busybox curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tm] [doas curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tmp/g] [ionice curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tmp] [setsid curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tmp] [stdbuf curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tmp] [watch curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /tmp/]' want '')
+FAIL: R4-S C4 every wrapper word and wrapper value option in front of an unchecked download: exactly 92 C4-download-without-sha256 lines (got '27' want '92')
+PASS: R4-S C4 control: the same wrapper forms with their own check (92 RUN lines, clean)
+FAIL: R4-S C4 stacked wrappers, assignments, absolute paths, sh -c / bash -c / eval strings, helpers that run the next word (19 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none) (got ' [sudo -u root env FOO=1 timeout -s KILL 60 nice -n 5 curl -fsSL -o /tmp] [busybox wget -qO /tmp/g https://example.invalid/g] [sh -c "curl -fsSL -o /tmp/g https://example.invalid/g"] [bash -c 'curl -fsSL -o /tmp/g https://example.invalid/g && chmod +x /t] [eval curl -fsSL -o /tmp/g https://example.invalid/g] [chroot /r curl -fsSL -o /tmp/g https://example.invalid/g] [flock /tmp/l curl -fsSL -o /tmp/g https://example.invalid/g] [su -c "curl -fsSL -o /tmp/g https://example.invalid/g" root] [ssh host curl -fsSL -o /tmp/g https://example.invalid/g] [timeout 60 wget -qO /tmp/g https://example.invalid/g] [sudo -u root wget -qO /tmp/g https://example.invalid/g] [retry 3 curl -fsSL -o /tmp/g https://example.invalid/g]' want '')
+FAIL: R4-S C4 stacked wrappers, assignments, absolute paths, sh -c / bash -c / eval strings, helpers that run the next word: exactly 19 C4-download-without-sha256 lines (got '7' want '19')
+PASS: R4-S C4 control: package names, lookups and quoted prose are not downloads (15 RUN lines, clean)
+FAIL: R4-S C4 the exec form of RUN (a JSON array) is a command, and its sh -c string is parsed (3 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none) (got ' [["curl","-fsSL","-o","/tmp/g","https://x.invalid/g"]] [["wget","-qO","/tmp/g","https://x.invalid/g"]] [["sh","-c","curl -fsSL -o /tmp/g https://x.invalid/g && chmod +x /tmp/]' want '')
+FAIL: R4-S C4 the exec form of RUN (a JSON array) is a command, and its sh -c string is parsed: exactly 3 C4-download-without-sha256 lines (got '0' want '3')
+PASS: R4-S C4 control: an exec-form RUN whose sh -c string checks the download (2 RUN lines, clean)
+FAIL: R4-C4 a check of a DIFFERENT file does not check the download (19 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none) (got ' [curl -fsSL https://x.invalid/g > /tmp/h && echo "ccccccccccccccccccccc] [curl -fsSL -O https://x.invalid/pkg.tgz && echo "ccccccccccccccccccccc] [wget -qO- https://x.invalid/g | tar x && echo "ccccccccccccccccccccccc] [curl -fsSL https://x.invalid/g | tar x && echo "cccccccccccccccccccccc] [wget https://x.invalid/pkg.tgz && echo "cccccccccccccccccccccccccccccc]' want '')
+FAIL: R4-C4 a check of a DIFFERENT file does not check the download: exactly 19 C4-download-without-sha256 lines (got '6' want '19')
+FAIL: R4-C4 control: every check form that names its downloaded file (38 RUN lines, clean) (got 'C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://example.invalid/g && echo "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  /tmp/g" | shas
+C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://example.invalid/g && echo "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  /tmp/g" | shas
+C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://example.invalid/g && echo "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  /tmp/g" | shas
+C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://example.invalid/g && echo "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc  /tmp/g" | shas' want '')
+FAIL: R4-C4 a comment line inside a continuation does not hide the download that follows it: no 'C4-download-without-sha256' line in: 
+FAIL: R4-C4 control: a comment line between the download and its check (clean) (got 'C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://x.invalid/g # verify the download' want '')
+FAIL: R4-C4 control: a blank line between the download and its check does not end the instruction (clean) (got 'C4-download-without-sha256 go: RUN curl -fsSL -o /tmp/g https://x.invalid/g' want '')
+PASS: R4-C4 a blank line inside a continuation does not end the instruction -> C4-download-without-sha256 fires
+FAIL: R4-C5 a SHA-256 held in an ARG and used by the check must be named in digests.lock: no 'C5-digests.lock-sha256' line in: 
+PASS: R4-C5 control: the ARG digest named in digests.lock
+PASS: R4-C5 FROM ${ARG} is resolved through the ARG default and its digest is looked up in digests.lock -> C5-digests.lock-from fires
+FAIL: R4-C7 errexit switched off or a failure dropped by a command that only succeeds (12 RUN lines, every one gets its own C7-swallowed-failure line; missing: none) (got ' [set +ex; rm -f /tmp/x] [set +o errexit; rm -f /tmp/x] [set +eu; rm -f /tmp/x] [rm -f /tmp/x || sleep 0] [sh -c 'rm -f /tmp/x || true'] [sudo sh -c 'rm -f /tmp/x || :']' want '')
+FAIL: R4-C7 errexit switched off or a failure dropped by a command that only succeeds: exactly 12 C7-swallowed-failure lines (got '6' want '12')
+PASS: R4-C7 control: errexit kept, explicit handlers (9 RUN lines, clean)
+PASS: R4-C4 control: a RUN that names a download and has an unterminated quote is refused -> C4-download-without-sha256 fires
+FAIL: R4-RVC1/RVC3 sudo and an assignment prefix are not the command word (3 RUN lines, every one gets its own C4-download-without-sha256 line; missing: none) (got ' [FOO=1 BAR=2 sudo -u root curl -fsSL -o /tmp/g https://example.invalid/]' want '')
+FAIL: R4-RVC1/RVC3 sudo and an assignment prefix are not the command word: exactly 3 C4-download-without-sha256 lines (got '2' want '3')
+test_containerfiles: 86 passed, 17 failed
+rc=1

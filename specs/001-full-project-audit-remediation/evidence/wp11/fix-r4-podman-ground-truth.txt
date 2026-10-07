@@ -1,0 +1,24 @@
+# identity: fix-r4 podman ground truth: which word the REAL podman 5.7.0 takes as the image operand (--pull=never, an image that does not exist: no pull, no container; control line first)
+# head: 350372a8 (uncommitted work tree)
+# run_at: 2026-10-07T08:40:33Z host: anton
+# cmd: bash fix-r4-podman-ground-truth.sh
+podman run --pull=never  <image>                                       -> operand=IMAGE(1)
+podman run --pull=never --rm <image>                                   -> operand=IMAGE(2)
+podman run --pull=never -d <image>                                     -> operand=IMAGE(3)
+podman run --pull=never -dp 127.0.0.1:3999:3999 <image>                -> operand=IMAGE(4)
+podman run --pull=never -dv /tmp:/x <image>                            -> operand=IMAGE(5)
+podman run --pull=never -itw /src <image>                              -> operand=IMAGE(6)
+podman run --pull=never -dm 512m <image>                               -> operand=IMAGE(7)
+podman run --pull=never -dti -p 80:80 <image>                          -> operand=IMAGE(8)
+podman run --pull=never -dp127.0.0.1:3998:3998 <image>                 -> operand=IMAGE(9)
+podman run --pull=never -dv/tmp:/y <image>                             -> operand=IMAGE(10)
+podman run --pull=never --rm -d --init <image>                         -> operand=IMAGE(11)
+podman run --pull=never --name=x --rm <image>                          -> operand=IMAGE(12)
+podman run --pull=never -e A=b -d <image>                              -> operand=IMAGE(13)
+podman run --pull=never -dp=127.0.0.1:3997:3997 <image>                -> operand=IMAGE(14)
+podman create --pull=never -itw /src <image>                           -> operand=IMAGE(15)
+podman create --pull=never -dp 127.0.0.1:3999:3999 <image>             -> NOT-THE-IMAGE: Error: unknown shorthand flag: 'd' in -dp See 'podman create --help' 
+podman create --pull=never -dm 512m <image>                            -> NOT-THE-IMAGE: Error: unknown shorthand flag: 'd' in -dm See 'podman create --help' 
+podman run --pull=never --rm -- <image>                                -> operand=IMAGE(18)
+podman run --pull=never "${ARGS[@]}" <image>                           -> operand=IMAGE(19)
+rc=0

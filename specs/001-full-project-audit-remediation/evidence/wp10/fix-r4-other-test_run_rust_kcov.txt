@@ -1,0 +1,55 @@
+PASS: run_kcov: success exit 0
+PASS: run_kcov: two containers go through run_pinned.sh (probe, then run)
+PASS: run_kcov: both calls name IMG-KCOV
+PASS: run_kcov: the envelope memory limit is handed to run_pinned.sh
+PASS: run_kcov: the long operation ends complete
+PASS: run_kcov: a toolchain record is written
+PASS: run_kcov: no arguments is a usage error
+PASS: run_kcov: the exit code of the run is passed through
+PASS: run_kcov: an unreadable lock is refused
+PASS: run_kcov: --image is not an option (a single-image wrapper), usage error
+PASS: run_rust: a start on a host with no attestation is refused with exit 20
+PASS: run_rust: stderr names compile_class_local
+PASS: run_rust: a refused local start runs no container (control needle: the shim was never reached)
+PASS: run_rust: a refused local start registers no long operation
+PASS: run_rust: a refused local start touches podman not at all
+PASS: I8: RUNNER_REMOTE_CALL=1 no longer unlocks run_rust (exit 20: a caller-settable variable is not a capability)
+PASS: I8: and nothing ran (no container call)
+PASS: I8: neither a test-mode variable nor an attestation path in the environment unlocks it (the path is a constant)
+PASS: run_rust: an attested build host runs: exit 0
+PASS: run_rust: two containers (probe, run)
+PASS: run_rust: both calls name IMG-RUST
+PASS: run_rust: the long operation ends complete
+PASS: I8: an attestation naming ANOTHER host is not this host (exit 20, nothing ran)
+PASS: I8: an attestation naming a host that merely starts with this host name is refused (exact line match) (exit 20, nothing ran)
+PASS: I8: a group-writable attestation is refused (anyone in the group could forge it) (exit 20, nothing ran)
+PASS: I8: an other-writable attestation is refused (exit 20, nothing ran)
+PASS: I8: an attestation owned by a different uid than the expected one is refused (the owner check) (exit 20, nothing ran)
+PASS: I8: an attestation that is a symlink is refused (exit 20, nothing ran)
+PASS: I8: an absent attestation is refused (exit 20, nothing ran)
+PASS: run_rust: no arguments is a usage error on an attested host
+PASS: run_rust: IMG-RUST not in the lock is refused naming T143 (BLOCKED, never another image)
+PASS: run_rust: that refusal runs no container
+PASS: lane: TIC build-scripts unit -- true exits 0
+PASS: lane needle: build-scripts unit reaches the run_kcov wrapper (never run_testutil, never a bare podman)
+PASS: lane: TIC installer-wizard rust -- true exits 0 on the shim
+PASS: lane needle: installer-wizard rust reaches the run_rust wrapper
+PASS: lane needle: catalogizer-desktop rust reaches the run_rust wrapper
+PASS: lane: an app key not in the table is still refused (unknown_app), nothing ran
+PASS: lane: (build-scripts, rust) has no row and is refused
+PASS: lane: (catalogizer-desktop, unit) stays refused: its remote row waits for the T121a site column (BLOCKED)
+PASS: lane table: the added coverage rows are exactly the reviewed ones
+PASS: mutation sandbox control: an UNMUTATED mirror passes this body
+PASS: mutation rust-local-allowed caught (15 failing legs)
+PASS: mutation rust-env-trusted caught (3 failing legs)
+PASS: mutation rust-attest-perm-off caught (2 failing legs)
+PASS: mutation rust-attest-owner-off caught (1 failing legs)
+PASS: mutation rust-attest-symlink-ok caught (1 failing legs)
+PASS: mutation rust-attest-host-unmatched caught (2 failing legs)
+PASS: mutation rust-image-swapped caught (3 failing legs)
+PASS: mutation kcov-image-swapped caught (1 failing legs)
+PASS: mutation lane-kcov-to-testutil caught (1 failing legs)
+PASS: mutation lane-rust-local caught (1 failing legs)
+PASS: mutation lane-desktop-node-row caught (1 failing legs)
+Summary: PASS=53 FAIL=0 SKIP=0
+RUN-DONE rc=0
