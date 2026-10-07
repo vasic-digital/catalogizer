@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): the wrap-go presence is counted as a skip, not a pass (review M3); real-tree check added |
+| Last modified | 2026-10-07T03:30:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (committed in 96779242): the wrap-go presence is counted as a skip, not a pass (review M3); real-tree check added |
 | Source | `scripts/containers/tests/test_race_detector.sh` |
 
 ## Purpose

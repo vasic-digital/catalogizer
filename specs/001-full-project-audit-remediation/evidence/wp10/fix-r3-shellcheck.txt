@@ -1,0 +1,11 @@
+# shellcheck -x -S warning over the scope scripts, through run_scan (real IMG-SHELLCHECK); date 2026-10-07T05:19:51Z; the first run of this round reported SC2034 (unused local pj in rl_our_containers), fixed, this is the re-run
+rc=0
+# control needle (must report findings):
+
+In .audit/scratch/r3sc/needle.sh line 3:
+x=1
+^-- SC2034 (warning): x appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- x appears unused. Verify use (or ...
+rc=1

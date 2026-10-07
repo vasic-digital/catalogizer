@@ -2,16 +2,16 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | committed in a7cfc6d3 (T121); revision 2 is the fix round r1 (TIC asks for 98% of its envelope reading; single-hook gate tests; uncommitted until the owner commits it); independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent). T121a (remote lanes, the `site` column) and T121b are BLOCKED on `scripts/build/dispatch.sh` (T005b) |
+| Last modified | 2026-10-07T03:30:00Z |
+| Status | committed in a7cfc6d3 (T121); revision 2 in 96779242 (single-hook gate tests); revision 3 is the fix round r2 for the WF13 review (TIC passes no limit, uncommitted until the owner commits it; I1, I3); independent re-review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed. T121a (remote lanes, the `site` column) and T121b are BLOCKED on `scripts/build/dispatch.sh` (T005b) |
 | Source | `scripts/test-in-container.sh` (TIC), lane table `scripts/containers/lanes.tsv`; test `scripts/containers/tests/test_test_in_container.sh` |
 
 ## Purpose
 
 The lane dispatcher: every build and test lane is started through this one command. It looks the `(app, lane)` up in `scripts/containers/lanes.tsv`
-and hands the command to the wrapper that row names, with `--memory` and `--cpus` composed from `scripts/containers/envelope.sh` (`--memory` is 98% of TIC's reading: the wrapper reads the envelope again moments later and refuses a request above its own reading, so TIC asks for LESS and a 2% fall of `MemAvailable` between the two reads is covered; review F2/F16). There is no
+and hands the command to the wrapper that row names. TIC passes NO `--memory` and NO `--cpus` and reads no envelope: the wrapper reads the envelope itself, once, under its budget lock, so there is exactly one reading of the live quantity (WF13 I1: TIC used to pass 98% of its own earlier reading, and a budget that fell by more than 2%, or another op registering, in the seconds between the two readings refused a valid lane with `limit_exceeds_envelope`, about 1 start in 5 on a loaded host; no fixed margin covers a registration in that window). There is no
 bare-host fallback: an unknown app, an unknown lane, an `(app, lane)` without a row and a row whose wrapper does not exist yet are each REFUSED and the
 command never runs.
 
@@ -22,7 +22,7 @@ scripts/test-in-container.sh [--out DIR] [--rw docs|.audit/scratch] [--network=n
                              [--no-progress-s N] [--wall-s N] <app> <lane> -- <command word>...
 ```
 
-The options are handed to the wrapper unchanged, after the envelope `--memory` / `--cpus`; `--memory` and `--cpus` are not options of TIC.
+The options are handed to the wrapper unchanged, in the order given; `--memory` and `--cpus` are not options of TIC (a caller that needs less asks the wrapper directly).
 
 ## The lane table (`scripts/containers/lanes.tsv`)
 
@@ -55,10 +55,9 @@ The wrapper's exit code on a run; 1 `test-in-container: REFUSED reason=<code>`: 
 
 ## Test
 
-`scripts/containers/tests/test_test_in_container.sh`: the SPECIFIED oracle is a hand-written `(app, lane) -> wrapper` table that the real lane table must
+`scripts/containers/tests/test_test_in_container.sh`: the SPECIFIED oracle is a hand-written `(app, lane) -> wrapper` table (14 rows since T200a: build-scripts unit run_kcov, catalogizer-desktop rust run_rust, installer-wizard rust run_rust; WF13 I3: the oracle was not updated when they landed and the suite was red on main with its negative control declaring the mutation harness blind) that the real lane table must
 equal exactly; a shim per wrapper records the argv; the control needle (`catalog-api unit` reaches the `run_go.sh` shim); every refusal asserts that the
-command did not run anywhere; table validation; and a real chain TIC -> wrapper -> `run_pinned.sh` -> pinned image. 18 paired mutations (the fix round r1 adds the single-hook gates `TIC_LANES` and `TIC_WRAPPER_DIR`, review R5, and the 98% margin), among them the
-one the task names: a dispatcher copy that drops `--memory` from the composed call (`drop-memory`); the record is `TIC_MUTATION_RECORD`.
+command did not run anywhere; table validation; and a real chain TIC -> wrapper -> `run_pinned.sh` -> pinned image. paired mutations (the fix round r1 adds the single-hook gates `TIC_LANES` and `TIC_WRAPPER_DIR`, review R5; round 2 replaces the memory-composition mutants by `passes-memory-again`, `passes-cpus-again` and `reads-the-envelope-again`: a dispatcher that passes a limit or reads the envelope again fails), with an unmutated copy as the negative control; the record is `TIC_MUTATION_RECORD`. The F14 block of `test_runners_hardening.md` runs the real TIC against the real wrapper while the host and the registry change in the window between them (a 3.9% fall of the budget, another op registering 6 cpus, a 12-start stress loop with `MemAvailable` changing every 0.1 s: none may be refused `limit_exceeds_envelope`).
 
 ## Honest boundary (11.4.6)
 

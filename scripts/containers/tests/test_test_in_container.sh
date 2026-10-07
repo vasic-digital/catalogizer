@@ -29,7 +29,7 @@ if [ "$SUTROOT" != "$REPO/scripts" ]; then :; fi
 
 # --- shims: one per wrapper, logging argv ---
 SH="$T/wrappers"; mkdir -p "$SH"
-for w in run_go run_node run_docs run_scan run_playwright run_testutil; do
+for w in run_go run_node run_docs run_scan run_playwright run_testutil run_kcov run_rust run_qa; do
   cat >"$SH/$w.sh" <<EOF
 #!/usr/bin/env bash
 { echo "---CALL---"; echo "WRAPPER:$w"; printf 'ARG:%s\n' "\$@"; } >>"\${SHIM_LOG:?}"
@@ -45,16 +45,18 @@ export ENVELOPE_TEST_MODE=1 ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVE
 export LONGOPS_REPO="$T/reg/repo" LONGOPS_DIR="$T/reg/repo/.audit/longops" LONGOPS_AUDIT="$T/reg/repo/.audit" LONGOPS_ALLOW_TMPFS=1; mkdir -p "$T/reg/repo/.audit"
 export DISK_HEADROOM_OUT_DIR="$T/disk"; mkdir -p "$DISK_HEADROOM_OUT_DIR"   # the real leg's disk-headroom records go to scratch, never into the real evidence/disk
 TOK="tc$$x$RANDOM"; RN=0
-EXP_MEM=19267584000; EXP_CPUS=9   # 98% of the fixture host envelope 19660800000 (TIC asks for less than its reading: the wrapper refuses a request above its own, review F2/F16)
+# review round 2 I1: TIC reads no envelope and passes NO --memory and NO --cpus: the wrapper's own locked reading is the only source of the limits
 tic() { : >"$SHIM_LOG"; unset SHIM_RC; ( cd "$CK" && bash "$SUT" "$@" ) >"$T/stdout" 2>"$T/stderr"; RC=$?; }
 ncalls() { grep -c '^---CALL---$' "$SHIM_LOG"; }
 wrapper_of() { sed -n 's/^WRAPPER://p' "$SHIM_LOG" | head -1; }
 refused() { grep -q "REFUSED reason=$1" "$T/stderr"; }
 
 # ============== the lane table, as written by hand from the task text (the specified oracle) ==============
-EXPECT=$'catalog-api unit run_go\ncatalog-api contract run_go\ncatalog-api integration run_go\ncatalog-api e2e run_go\ncatalog-web unit run_node\ncatalog-web contract run_node\ncatalog-web tooling run_node\ncatalog-web e2e run_playwright\ndocs docs run_docs\ndocs render run_docs\ntooling unit run_testutil'
+# T121's eleven rows, then the three rows T200a added (build-scripts unit run_kcov, catalogizer-desktop rust run_rust, installer-wizard rust run_rust; review round 2 I3: this
+# oracle was not updated when they landed and the suite was red on main with its own negative control declaring the mutation harness blind)
+EXPECT=$'catalog-api unit run_go\ncatalog-api contract run_go\ncatalog-api integration run_go\ncatalog-api e2e run_go\ncatalog-web unit run_node\ncatalog-web contract run_node\ncatalog-web tooling run_node\ncatalog-web e2e run_playwright\ndocs docs run_docs\ndocs render run_docs\ntooling unit run_testutil\nbuild-scripts unit run_kcov\ncatalogizer-desktop rust run_rust\ninstaller-wizard rust run_rust'
 ACTUAL="$(grep -v '^#' "$REPO/scripts/containers/lanes.tsv" | grep -v '^[[:space:]]*$' | tr '\t' ' ')"
-check "the real lane table equals the hand-written table (11 reviewed rows, no extra row)" "$ACTUAL" "$EXPECT"
+check "the real lane table equals the hand-written table (14 reviewed rows, no extra row)" "$ACTUAL" "$EXPECT"
 [ "$(grep -c '^qa	' "$REPO/scripts/containers/lanes.tsv")" = 0 ] && ok "the reserved qa key has no row" || bad "qa has a row"
 
 # ============== every row dispatches to its wrapper, with the envelope limits composed in ==============
@@ -63,16 +65,16 @@ while read -r app lane want; do
   check "$app $lane: dispatched (exit 0)" "$RC" 0
   check "$app $lane: reached the $want shim" "$(wrapper_of)" "$want"
   check "$app $lane: exactly one wrapper call" "$(ncalls)" 1
-  grep -qxF -- "ARG:--memory" "$SHIM_LOG" && grep -qxF -- "ARG:$EXP_MEM" "$SHIM_LOG" && ok "$app $lane: --memory is the envelope memory" || bad "$app $lane: --memory missing or wrong: $(tr '\n' ' ' <"$SHIM_LOG")"
-  grep -qxF -- "ARG:--cpus" "$SHIM_LOG" && grep -qxF -- "ARG:$EXP_CPUS" "$SHIM_LOG" && ok "$app $lane: --cpus is the envelope cpus" || bad "$app $lane: --cpus missing or wrong"
+  grep -qxF -- "ARG:--memory" "$SHIM_LOG" && bad "$app $lane: TIC passed --memory (the wrapper's locked reading is the only source of the limit): $(tr '\n' ' ' <"$SHIM_LOG")" || ok "$app $lane: TIC passes no --memory"
+  grep -qxF -- "ARG:--cpus" "$SHIM_LOG" && bad "$app $lane: TIC passed --cpus" || ok "$app $lane: TIC passes no --cpus"
 done <<<"$EXPECT"
 # control needle (11.4.201): the catalog-api unit row must reach the run_go.sh shim, and the shim must see the command after --
 tic catalog-api unit -- go test ./...
 check "control needle: catalog-api unit reaches run_go" "$(wrapper_of)" run_go
 tr '\n' ' ' <"$SHIM_LOG" | grep -q -- 'ARG:-- ARG:go ARG:test ARG:\./\.\.\. ' && ok "the command words follow -- in the composed call" || bad "command: $(tr '\n' ' ' <"$SHIM_LOG")"
-# the option order: memory and cpus first, then the passthrough options, then --
+# the option order: the passthrough options exactly as given, then --
 tic --out /tmp/x --network=none --purpose p:1 --op-id oid-1 --need 5 --rw docs --no-progress-s 9 --wall-s 100 tooling unit -- pytest -q
-tr '\n' ' ' <"$SHIM_LOG" | grep -q -- "ARG:--memory ARG:$EXP_MEM ARG:--cpus ARG:$EXP_CPUS ARG:--out ARG:/tmp/x ARG:--network=none ARG:--purpose ARG:p:1 ARG:--op-id ARG:oid-1 ARG:--need ARG:5 ARG:--rw ARG:docs ARG:--no-progress-s ARG:9 ARG:--wall-s ARG:100 ARG:-- ARG:pytest ARG:-q" && ok "wrapper options are handed through unchanged, after the envelope limits" || bad "composed: $(tr '\n' ' ' <"$SHIM_LOG")"
+tr '\n' ' ' <"$SHIM_LOG" | grep -q -- "ARG:--out ARG:/tmp/x ARG:--network=none ARG:--purpose ARG:p:1 ARG:--op-id ARG:oid-1 ARG:--need ARG:5 ARG:--rw ARG:docs ARG:--no-progress-s ARG:9 ARG:--wall-s ARG:100 ARG:-- ARG:pytest ARG:-q" && ok "wrapper options are handed through unchanged, in order, with no limit added" || bad "composed: $(tr '\n' ' ' <"$SHIM_LOG")"
 # a command with spaces and shell metacharacters stays one argv word each
 tic tooling unit -- sh -c 'echo "a b"; touch x' 'arg with  spaces'
 grep -qxF 'ARG:echo "a b"; touch x' "$SHIM_LOG" && grep -qxF 'ARG:arg with  spaces' "$SHIM_LOG" && ok "words with spaces and metacharacters are passed as single argv words" || bad "words: $(tr '\n' '|' <"$SHIM_LOG")"
@@ -97,7 +99,7 @@ tic catalog-api; check "usage: lane missing" "$RC" 2
 tic catalog-api unit; check "usage: missing --" "$RC" 2
 tic catalog-api unit --; check "usage: missing command after --" "$RC" 2
 tic --bogus catalog-api unit -- true; check "usage: unknown option" "$RC" 2
-tic --memory 1 catalog-api unit -- true; check "usage: --memory is not a TIC option (composed from the envelope)" "$RC" 2
+tic --memory 1 catalog-api unit -- true; check "usage: --memory is not a TIC option (the wrapper reads the envelope itself)" "$RC" 2
 tic --cpus 1 catalog-api unit -- true; check "usage: --cpus is not a TIC option" "$RC" 2
 tic a b c -- true; check "usage: a third positional word" "$RC" 2
 check "usage errors call no wrapper" "$(ncalls)" 0
@@ -113,12 +115,12 @@ cat >"$SH/run_playwright.sh" <<'EOF'
 exit 0
 EOF
 chmod +x "$SH/run_playwright.sh"
-# the envelope refusing (MemAvailable below the reserve) refuses the lane, nothing runs
+# TIC does not read the envelope (review round 2 I1): a host below the memory reserve still reaches the wrapper, which is the one that reads the envelope and refuses it
+# (`<wrapper>: REFUSED reason=envelope_refused`, covered with the real wrapper in test_runners.sh); a dispatcher that read the envelope again would stop here
 printf 'MemTotal:       32000000 kB\nMemAvailable:   4000000 kB\n' >"$T/meminfo"
 tic catalog-api unit -- true
-check "envelope refusal: refused" "$RC" 1
-refused envelope_refused && ok "envelope refusal: reason envelope_refused" || bad "reason: $(cat "$T/stderr")"
-check "envelope refusal: no wrapper call" "$(ncalls)" 0
+check "TIC leaves the envelope to the wrapper: a host below the reserve still reaches the wrapper" "$RC" 0
+check "TIC leaves the envelope to the wrapper: exactly one wrapper call" "$(ncalls)" 1
 printf 'MemTotal:       32000000 kB\nMemAvailable:   30000000 kB\n' >"$T/meminfo"
 
 # ============== the lane table is validated as a whole (TIC_LANES hook) ==============
@@ -223,8 +225,6 @@ mut_case() { # <id> <expected failing-check substring> <old> <new>: caught only 
   elif [ "$rc" -ne 0 ]; then SURV=$((SURV+1)); echo "SURVIVED $id (failed, but no failing check names '$expect': $(grep '^FAIL' "$T/mut-$id.log" | head -2 | cut -c1-110 | tr '\n' '|'))" | tee -a "$MREC"
   else SURV=$((SURV+1)); echo "SURVIVED $id (test stayed green on the mutant)" | tee -a "$MREC"; fi
 }
-mut_case drop-memory '--memory missing or wrong' '--memory "$MEM" ' ''
-mut_case drop-cpus '--cpus missing or wrong' '--cpus "$CPUS" ' ''
 mut_case lookup-ignores-lane 'catalog-api docs' '[ "$ra" = "$APP" ] && [ "$rl" = "$LANE" ]' '[ "$ra" = "$APP" ]'
 mut_case bare-host-fallback 'refused with a non-zero exit' 'refuse no_lane_row "($APP $LANE) has no row in $TABLE; a lane exists only by a reviewed row, and there is no bare-host fallback"' '{ "${CMD[@]}"; exit $?; } #'
 mut_case wrapper-missing-ignored 'missing wrapper' '[ -f "$WDIR/$WRAPPER.sh" ] || refuse wrapper_missing' 'true'
@@ -239,8 +239,10 @@ mut_case test-hooks 'TIC_WRAPPER_DIR without TIC_TEST_MODE' '[ "${TIC_TEST_MODE:
 mut_case R5-lanes-hook-gate 'TIC_LANES hook alone' ' || [ -n "${TIC_LANES+x}" ]' ''
 mut_case R5b-wrapper-dir-hook-gate 'TIC_WRAPPER_DIR hook alone' '{ [ -n "${TIC_WRAPPER_DIR+x}" ] || ' '{ '
 mut_case table-unreadable-ignored 'unreadable lane table' '[ -r "$TABLE" ] || refuse lane_table_unreadable "$TABLE"' 'true'
-mut_case memory-composed-wrong '--memory missing or wrong' 'MEM="$(jq -r .memory_bytes' 'MEM="$(jq -r .mem_total_bytes'
-mut_case memory-margin-dropped '--memory missing or wrong' 'MEM=$(( MEM - MEM / 50 ))' 'true'
+mut_case passes-memory-again 'TIC passed --memory' 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" --memory 19660800000 "${PASS[@]}" -- "${CMD[@]}"'
+mut_case passes-cpus-again 'TIC passed --cpus' 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$WDIR/$WRAPPER.sh" --cpus 9 "${PASS[@]}" -- "${CMD[@]}"'
+mut_case reads-the-envelope-again 'leaves the envelope to the wrapper' 'bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits' 'bash "$CDIR/envelope.sh" --toolchain "${WRAPPER#run_}" --format json >/dev/null 2>&1 || refuse envelope_refused "the envelope"
+bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"
 [ "$SURV" = 0 ] || EXIT=1
 exit "$EXIT"

@@ -77,7 +77,10 @@ USED="$( ( LONGOPS_REPO="${LONGOPS_REPO:-$ROOT_DIR}"; . "$ROOT_DIR/scripts/longo
     for f in "$ops"/*.json; do
       [ -e "$f" ] || continue
       j="$(cat -- "$f" 2>&1)" || { echo "ERR registry_record_unreadable $f: $j"; exit 0; }
-      jq -e . >/dev/null 2>&1 <<<"$j" || { echo "ERR registry_record_malformed $f is not a JSON record"; exit 0; }   # MUT:registry-malformed
+      # ONE jq call both validates the record as JSON and reads its state: terminal records (the bulk of a long-lived registry: op records are never deleted) hold no
+      # budget and are skipped here without the classification and budget calls (review round 2 m7: the cost per record was paid inside the budget lock)
+      st="$(jq -r 'if type == "object" and (.state | type == "string") then .state else "-" end' 2>/dev/null <<<"$j")" || { echo "ERR registry_record_malformed $f is not a JSON record"; exit 0; }   # MUT:registry-malformed
+      case "$st" in complete|failed|reaped|handoff|blocked-escape) continue;; esac   # MUT:terminal-skip
       cl="$(lo_classify_op "$j" 2>/dev/null | head -1)"
       case "$cl" in
         advancing|hung)   # MUT:used-classes

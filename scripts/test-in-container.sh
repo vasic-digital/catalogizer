@@ -2,7 +2,7 @@
 # test-in-container.sh - T121 (TIC). The lane dispatcher: every build and test lane of the project is started through this one command, which
 # looks the (app, lane) up in scripts/containers/lanes.tsv and hands the command to the wrapper that row names (run_go.sh, run_node.sh, run_docs.sh,
 # run_scan.sh, run_playwright.sh, run_testutil.sh, later run_qa.sh, run_rust.sh, run_kcov.sh), with the dynamic envelope limits composed in
-# (scripts/containers/envelope.sh: --memory and --cpus are always passed). There is NO bare-host fallback: an unknown app, an unknown lane, an
+# (the wrapper reads scripts/containers/envelope.sh itself: TIC passes NO --memory and NO --cpus, review round 2 I1). There is NO bare-host fallback: an unknown app, an unknown lane, an
 # (app, lane) without a row, a row whose wrapper does not exist yet - each is REFUSED with a non-zero exit and the command never runs.
 #
 # Usage:  test-in-container.sh [--out DIR] [--rw docs|.audit/scratch] [--network=none] [--need BYTES] [--purpose KEY] [--op-id ID]
@@ -10,15 +10,14 @@
 #   The options are handed to the wrapper unchanged. App keys: catalog-api, catalog-web, qa (reserved, no rows until T212), docs, tooling.
 #   Lanes: unit, contract, integration, e2e, api, docs, render, tooling.
 # Exits:  the wrapper's exit code on a run; 1 REFUSED (`test-in-container: REFUSED reason=<code>` on stderr: unknown_app, unknown_lane, no_lane_row,
-#   lane_table_unreadable, lane_table_malformed, lane_table_duplicate, wrapper_missing, envelope_refused, test_hook_outside_test_mode); 2 usage.
+#   lane_table_unreadable, lane_table_malformed, lane_table_duplicate, wrapper_missing, test_hook_outside_test_mode; an envelope that cannot be read is refused by the wrapper, `<wrapper>: REFUSED reason=envelope_refused`); 2 usage.
 # Test hooks (honoured ONLY with TIC_TEST_MODE=1, else REFUSED test_hook_outside_test_mode): TIC_WRAPPER_DIR (directory holding the run_*.sh shims),
-#   TIC_LANES (lane table file). The envelope hooks of envelope.sh (ENVELOPE_*) are separate and have their own gate.
+#   TIC_LANES (lane table file). The envelope hooks of envelope.sh (ENVELOPE_*) are the wrapper's and have their own gate.
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CDIR="$HERE/containers"
 refuse() { echo "test-in-container: REFUSED reason=$1 ${2:-}" >&2; exit 1; }
 usage()  { echo "test-in-container: usage: $1" >&2; echo "test-in-container: test-in-container.sh [wrapper options] <app> <lane> -- <cmd>..." >&2; exit 2; }
-valid_int() { case "$1" in ''|*[!0-9]*) return 1;; 0) return 0;; 0*) return 1;; esac; [ "${#1}" -le 18 ]; }
 
 APPS="catalog-api catalog-web qa docs tooling build-scripts catalogizer-desktop installer-wizard"
 LANES="unit contract integration e2e api docs render tooling rust"
@@ -29,7 +28,7 @@ while [ $# -gt 0 ]; do
     --) shift; break;;
     --out|--rw|--need|--purpose|--op-id|--no-progress-s|--wall-s) [ $# -ge 2 ] || usage "$1 requires a value"; PASS+=("$1" "$2"); shift 2;;
     --network=none) PASS+=("$1"); shift;;
-    --memory|--cpus) usage "$1 is composed from the envelope by TIC and is not an option of it";;
+    --memory|--cpus) usage "$1 is not an option of TIC: the wrapper reads the envelope itself (a caller that needs less asks the wrapper directly)";;
     -*) usage "unknown option '$1'";;
     *) if [ -z "$APP" ]; then APP="$1"; elif [ -z "$LANE" ]; then LANE="$1"; else usage "unexpected argument '$1' before --"; fi; shift;;
   esac
@@ -73,13 +72,10 @@ if [ -z "$WRAPPER" ]; then
 fi
 [ -f "$WDIR/$WRAPPER.sh" ] || refuse wrapper_missing "($APP $LANE) names $WRAPPER.sh, which does not exist in $WDIR yet (BLOCKED until its task adds it); nothing was run"   # MUT:wrapper-missing
 
-# ---- the envelope limits, composed into the call ----
-ENVJ="$(bash "$CDIR/envelope.sh" --toolchain "${WRAPPER#run_}" --format json 2>&1)" || refuse envelope_refused "$ENVJ"
-MEM="$(jq -r .memory_bytes <<<"$ENVJ" 2>/dev/null)"; CPUS="$(jq -r .cpus <<<"$ENVJ" 2>/dev/null)"
-{ valid_int "$MEM" && valid_int "$CPUS" && [ "$MEM" -ge 1 ] && [ "$CPUS" -ge 1 ]; } || refuse envelope_refused "unparsable envelope: $ENVJ"
-# the wrapper reads the envelope again moments later and (fix round r1, review F2/F16) no longer tolerates a request above its own reading, so TIC asks for LESS:
-# 98% of its reading covers a 2% fall of MemAvailable between the two reads (a request below the wrapper's reading is always honoured)
-MEM=$(( MEM - MEM / 50 ))
-
-bash "$WDIR/$WRAPPER.sh" --memory "$MEM" --cpus "$CPUS" "${PASS[@]}" -- "${CMD[@]}"   # MUT:memory MUT:cpus
+# ---- the envelope limits: NOT composed here (review round 2 I1) ----
+# The wrapper reads the envelope itself, once, under its budget lock, and hands the limits to run_pinned.sh. TIC used to read the envelope too and pass a number
+# (98% of its reading): the two readings are seconds apart on a loaded host (the wrapper's sweep, the budget lock wait and an envelope pass sit between them), so a
+# valid lane was refused `limit_exceeds_envelope` whenever the budget fell more than the margin in between - and no margin covers a registration in that window.
+# TIC passes NO --memory and NO --cpus: the wrapper's locked reading is the only source of the limits, so there is nothing for a second reading to disagree with.
+bash "$WDIR/$WRAPPER.sh" "${PASS[@]}" -- "${CMD[@]}"   # MUT:no-limits
 exit $?   # MUT:exit

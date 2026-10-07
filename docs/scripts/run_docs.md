@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): state line corrected (the real lock pins IMG-DOCS); its row in `docs/scripts/README.md` is still owed |
+| Last modified | 2026-10-07T03:30:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (committed in 96779242): state line corrected (the real lock pins IMG-DOCS); its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/run_docs.sh` (a few lines: it sets the `RUNNER_*` variables and sources `runner_lib.sh`); test `scripts/containers/tests/test_runners.sh` |
 
 ## Purpose

@@ -207,11 +207,11 @@ resetlogs; newreg
 wr run_go --out "$T/o6" --cpus $((EXP_CPUS + 1)) -- true
 check "cpus above the envelope: refused" "$RC" 1
 refused limit_exceeds_envelope && ok "cpus above the envelope: reason limit_exceeds_envelope" || bad "reason: $(cat "$T/stderr")"
-# the nominal 2% / 1 cpu allowance is capped by head-room (review F2): host where MemAvailable binds (20000000 kB: budget 15564800000, the reserve starts above it)
+# there is no allowance above the live reading any more (review round 2 I1; it was arithmetically 0 after the F2 fix): host where MemAvailable binds (20000000 kB: budget 15564800000, the reserve starts above it)
 printf 'MemTotal:       32000000 kB\nMemAvailable:   20000000 kB\n' >"$T/meminfo"
 resetlogs; newreg
 wr run_go --out "$T/o6b" --memory 15564800001 -- true
-check "memory 1 byte above the live envelope would enter the MemAvailable reserve: refused (the 2% allowance is capped by head-room, review F2)" "$RC" 1
+check "memory 1 byte above the live envelope would enter the MemAvailable reserve: refused (the limits are the one reading)" "$RC" 1
 refused limit_exceeds_envelope && ok "reserve entry: reason limit_exceeds_envelope" || bad "reason: $(cat "$T/stderr")"
 resetlogs; newreg
 wr run_go --out "$T/o6b2" --memory 15564800000 -- true
@@ -219,11 +219,11 @@ check "memory exactly the live envelope (MemAvailable binds): accepted" "$RC" 0
 check "the accepted value reaches run_pinned.sh" "$(callenv 2 RUNP_MEMORY)" 15564800000
 resetlogs; newreg
 wr run_go --out "$T/o6c" --memory 15876096001 -- true
-check "memory above the 2% slack: refused" "$RC" 1
+check "memory 2% above the live envelope: refused (no allowance above the reading)" "$RC" 1
 refused limit_exceeds_envelope && ok "above the slack: reason limit_exceeds_envelope" || bad "reason: $(cat "$T/stderr")"
 resetlogs; newreg
 wr run_go --out "$T/o6d" --cpus 10 -- true
-check "cpus 1 above the live envelope but inside the 0.60*nproc ceiling (9): refused at the ceiling" "$RC" 1
+check "cpus 1 above the live envelope: refused" "$RC" 1
 printf 'MemTotal:       32000000 kB\nMemAvailable:   30000000 kB\n' >"$T/meminfo"
 # registered long operations shrink the envelope the wrapper hands out (docs/16 8.1): one live op with 2e9 memory and 9 cpus
 resetlogs; newreg
@@ -298,7 +298,12 @@ wr run_scan --out "$T/o13" -- shellcheck -x /src/scripts/containers/run_pinned.s
 check "run_scan: default image IMG-SHELLCHECK runs" "$RC" 0
 callarg 2 IMG-SHELLCHECK && ok "run_scan: names IMG-SHELLCHECK" || bad "run_scan: image missing"
 check "run_scan: the record states no shell probe is possible (entrypoint-only image)" "$(jq -r .probes.src_readonly "$T/o13/toolchain.json" 2>/dev/null)" "n/a:no_shell"
-check "run_scan: the record carries the first version line" "$(jq -r .version "$T/o13/toolchain.json" 2>/dev/null)" "ShellCheck - shell script analysis tool"
+check "run_scan: the record carries the version line, not the banner (review round 2 m5: shellcheck prints its banner first)" "$(jq -r .version "$T/o13/toolchain.json" 2>/dev/null)" "version: 0.10.0"
+resetlogs; newreg; printf 'ShellCheck - shell script analysis tool\n' >"$T/probe_sc0.txt"; export SHIM_PROBE_OUT="$T/probe_sc0.txt"
+wr run_scan --out "$T/o13c" -- shellcheck -x /src/scripts/containers/run_pinned.sh
+check "run_scan: a probe output with no line carrying a version number is refused (the banner is not a version)" "$RC" 1
+refused probe_blind && ok "run_scan: reason probe_blind for a banner-only probe" || bad "run_scan: banner-only reason: $(cat "$T/stderr")"
+resetlogs; newreg; export SHIM_PROBE_OUT="$T/probe_sc.txt"
 resetlogs; newreg
 wr run_scan --out "$T/o13b" --image IMG-SCAN-TRIVY -- trivy --version
 check "run_scan: an allowed scanner image with no defined version command is refused (blocked, never guessed)" "$RC" 1
@@ -477,20 +482,24 @@ mut_case() { # <id> <old> <new>
   python3 -I - "$d/scripts/containers/runner_lib.sh" "$old" "$new" <<'PY' || { echo "INVALID $id: pattern not found exactly once" | tee -a "$MREC"; SURV=$((SURV+1)); return; }
 import sys
 s = open(sys.argv[1]).read()
-if s.count(sys.argv[2]) != 1: sys.exit(1)
-open(sys.argv[1], "w").write(s.replace(sys.argv[2], sys.argv[3]))
+if sys.argv[2] and s.count(sys.argv[2]) != 1: sys.exit(1)
+open(sys.argv[1], "w").write(s.replace(sys.argv[2], sys.argv[3]) if sys.argv[2] else s)
 PY
   ( RUNNER_SUT_DIR="$d/scripts/containers" RUNNER_TEST_MUTANT=1 RUNNER_TEST_NO_REAL=1 QUIET=1 bash "${BASH_SOURCE[0]}" ) >"$T/mut-$id.log" 2>&1; local rc=$?
+  if [ "$id" = CONTROL ]; then   # the negative control (review round 2 m4): an UNMUTATED copy placed like a mutant must pass the whole body
+    if [ "$rc" = 0 ]; then echo "CONTROL  an unmutated copy placed like a mutant passes the body ($(grep '^RESULT' "$T/mut-$id.log"))" | tee -a "$MREC"; TOTAL=$((TOTAL-1))
+    else echo "CONTROL FAILED: the unmutated copy fails the body ($(grep -c '^FAIL' "$T/mut-$id.log") checks): the mutation harness is blind" | tee -a "$MREC"; SURV=$((SURV+1)); fi
+    return
+  fi
   if [ "$rc" -ne 0 ]; then CAUGHT=$((CAUGHT+1)); echo "CAUGHT   $id ($(grep -c '^FAIL' "$T/mut-$id.log") failing checks)" | tee -a "$MREC"
   else SURV=$((SURV+1)); echo "SURVIVED $id (test stayed green on the mutant)" | tee -a "$MREC"; fi
 }
+mut_case CONTROL '' ''
 mut_case no-memory-limit 'RUNP_MEMORY="$LIM_MEM"' 'RUNP_MEMORY_DROPPED="$LIM_MEM"'
 mut_case no-cpus-limit 'RUNP_CPUS="$LIM_CPUS"' 'RUNP_CPUS_DROPPED="$LIM_CPUS"'
 mut_case no-pids-limit 'RUNP_PIDS="$LIM_PIDS"' 'RUNP_PIDS_DROPPED="$LIM_PIDS"'
-mut_case limit-above-envelope '[ "$LIM_MEM" -le "$ALLOW_MEM" ]' 'true'
-mut_case slack-reserve-cap-dropped '[ "$ALLOW_MEM" -le $(( ENV_MA - ENV_RES )) ] || ALLOW_MEM=$(( ENV_MA - ENV_RES ))' 'true'
-mut_case cpus-above-envelope '[ "$LIM_CPUS" -le "$ALLOW_CPUS" ]' 'true'
-mut_case cpu-slack-unclamped '[ "$ALLOW_CPUS" -le "$CPU_CEIL" ] || ALLOW_CPUS="$CPU_CEIL"' 'true'
+mut_case limit-above-envelope '[ "$LIM_MEM" -le "$ENV_MEM" ]' 'true'
+mut_case cpus-above-envelope '[ "$LIM_CPUS" -le "$ENV_CPUS" ]' 'true'
 mut_case sweep-drift-accepted 'if [ "$SW_RC" = 10 ]' 'if [ "$SW_RC" = 9999 ]'
 mut_case sweep-blind-accepted '[ "$SW_RC" = 0 ] || rl_refuse anti_mess_blind' 'true'
 mut_case sweep-missing-accepted '[ -f "$SWEEP" ] || rl_refuse anti_mess_sweep_missing' 'true'
@@ -508,10 +517,11 @@ mut_case probe-rc-ignored '[ "$PROBE_RC" = 0 ] || rl_fail_op probe_failed' 'true
 mut_case digest-unchecked '[ "$INSPECTED" = "$DIGEST" ] || rl_refuse image_digest_mismatch' 'true'
 mut_case rc-masked 'rl_release_op "$RUN_RC"' 'rl_release_op 0'
 mut_case exit-masked 'exit "$RUN_RC"   # MUT:exit' 'exit 0'
-mut_case no-heartbeat 'bash "$ROOT_DIR/scripts/longops/heartbeat.sh"' 'true'
+mut_case no-heartbeat 'bash "$ROOT_DIR/scripts/longops/heartbeat.sh" --op-id "$OP_ID" --progress-offset "$(rl_progress)" --elapsed-ms "$el" >/dev/null 2>&1; rc=$?' 'true; rc=$?'
 mut_case test-hooks '[ "${RUNNER_TEST_MODE:-}" != 1 ]; then' '[ "${RUNNER_TEST_MODE:-}" != 1 ] && false; then'
 mut_case R9-empty-digest-accepted '[ -n "$PDIGEST" ] && [ "$INSPECTED" = "$PDIGEST" ]' '[ "$INSPECTED" = "$PDIGEST" ]'
 mut_case R10-sweep-hook-gate ' || [ -n "${RUNNER_SWEEP+x}" ]' ''
+mut_case version-banner-recorded 'grep -m1 -E '"'"'[0-9]+\.[0-9]+'"'"' || true' 'head -n 1'
 mut_case prefix-dropped '${RUNNER_CMD_PREFIX:-}' '${RUNNER_CMD_PREFIX_DROPPED:-}'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"
 [ "$SURV" = 0 ] || EXIT=1

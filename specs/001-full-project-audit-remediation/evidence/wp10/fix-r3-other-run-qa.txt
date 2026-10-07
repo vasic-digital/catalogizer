@@ -1,0 +1,37 @@
+PASS: no arguments is a usage error
+PASS: missing -- command is a usage error
+PASS: unknown option is a usage error
+PASS: --image is not an option (the wrapper has exactly one image)
+PASS: usage errors start no container and register nothing
+PASS: run: exit 0
+PASS: run: probe then run (two containers through run_pinned.sh)
+PASS: run: both calls name IMG-QA
+PASS: run: no other image appears
+PASS: run: RUNP_MEMORY is the envelope memory
+PASS: run: RUNP_CPUS is the envelope cpus
+PASS: run: RUNP_PIDS is the envelope pids
+PASS: run: the user command is passed through
+PASS: run: exactly one long-op registered, complete
+PASS: run: the op was registered BEFORE the first container started
+PASS: run: the sweep ran once at the cadence stage
+PASS: run: toolchain.json image id
+PASS: run: toolchain.json wrapper
+PASS: run: toolchain.json digest_match
+PASS: run: toolchain.json read-only source control needle
+PASS: run: container exit code passes through
+PASS: run: a failed run ends the op failed
+PASS: unpinned IMG-QA: refused (exit 1)
+PASS: unpinned IMG-QA: reason image_unpinned
+PASS: unpinned IMG-QA: no container, no op
+PASS: altered IMG-QA (podman reports another digest): refused
+PASS: altered IMG-QA: reason image_digest_mismatch
+PASS: altered IMG-QA: no run container started
+PASS: IMG-QA absent from the lock: refused (never another image)
+PASS: IMG-QA absent: reason image_not_in_lock
+PASS: anti-mess drift refuses the run
+PASS: drift: reason anti_mess_drift
+NOTE: real lock has no IMG-QA entry (T211 BLOCKED); run_qa.sh against the real lock is refused:
+run_qa: REFUSED reason=image_not_in_lock BLOCKED: IMG-QA is not in the lock /home/milosvasic/Projects/catalogizer/build/containers/images.lock.yaml; IMG-QA is built by T211 (BLOCKED on the owner host entry point ODG-07 and on its lock entry); until its digest is in build/containers/images.lock.yaml this wrapper refuses every run
+RESULT pass=32 fail=0
+MUTATION image IMG-QA -> IMG-GO: test FAILED as required (rc=1)
+rc=0

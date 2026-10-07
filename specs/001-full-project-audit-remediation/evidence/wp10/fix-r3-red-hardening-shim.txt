@@ -1,0 +1,59 @@
+PASS: F6 TERM during the toolchain probe: the wrapper ends 130
+PASS: F6 TERM during the probe: the op is released failed
+PASS: F6 TERM during the probe: the verdict is interrupted
+PASS: F6 TERM during the probe: no op is left with a dead owner
+PASS: F6 INT during the toolchain probe: the wrapper ends 130
+PASS: F6 INT during the probe: the op is released failed
+PASS: F6 INT during the probe: the verdict is interrupted
+PASS: F6 INT during the probe: no op is left with a dead owner
+PASS: F6 HUP during the toolchain probe: the wrapper ends 130
+PASS: F6 HUP during the probe: the op is released failed
+PASS: F6 HUP during the probe: the verdict is interrupted
+PASS: F6 HUP during the probe: no op is left with a dead owner
+PASS: F6 TERM during the run: the wrapper ends 130
+PASS: F6 TERM during the run: the op is failed / interrupted
+PASS: F6 TERM during the run: the container (a process that ignores TERM) is gone when the op is released
+FAIL: F6 TERM during the run: 30s after the TERM (the container was not stopped)
+FAIL: F6 no podman stop of the container: 
+PASS: F8 a run past --wall-s 2 is terminated: exit 124
+FAIL: F8 the run lasted 31s for --wall-s 2: the wall clock did not take effect
+PASS: F8 the container (ignoring TERM like a PID 1) is gone
+FAIL: F8 the run completed its work ('main-run-stdout'): it was not stopped
+PASS: F8 the wrapper says so on stderr
+FAIL: F8 the heartbeat reported the elapsed time 29104 ms: not about 2000-3500 ms for --wall-s 2
+PASS: F8 the op is failed with verdict wall_clock_exceeded
+PASS: F8 the heartbeat reported elapsed time (the registry's wall-clock rule can see it)
+PASS: F8 control: a run well inside --wall-s is not terminated
+FAIL: F10 the op is released only AFTER its container is gone (the budget is never freed while the container runs) (got 'up' want 'gone')
+FAIL: F10 the container client of the killed wrapper is gone (identity: pid 622673 start 39364303) (got 'alive' want 'gone')
+PASS: F10 the op of the killed wrapper is released failed
+PASS: F10 the verdict names the cause: wrapper_died
+PASS: F10 the heartbeat loop ended: the sequence did not advance in 3 s
+FAIL: F10b a wrapper killed during its probe: the op is released failed (not left registered with a dead owner) (got 'registered' want 'failed')
+FAIL: F10b the verdict names the cause: wrapper_died (got '' want 'wrapper_died')
+FAIL: F10b the probe container is gone when the op is released (got 'up' want 'gone')
+FAIL: F10b no op is left with a dead owner (got '1' want '0')
+FAIL: F12 TERM while waiting for the budget lock: the wrapper ends 130 (got '1' want '130')
+FAIL: F12 it took 117s to honour the TERM
+PASS: F12 nothing was registered
+FAIL: F13 the wall marker of the running run was deleted by a refused start
+PASS: F13 the running run ended on its own with its own exit code (0) after a burst of refused duplicates
+PASS: F13 its op is complete
+PASS: F13 it did not hang after the duplicates (a deleted stop file keeps the guard loop for ever)
+PASS: F14 baseline (no drift): the lane runs
+FAIL: F14 baseline: run_pinned got the live envelope memory (got '19267584000' want '19660800000')
+PASS: F14 baseline: run_pinned got the live envelope cpus
+FAIL: F14 the budget falls 3.9% between the dispatcher's start and the wrapper's reading: the lane still runs (no limit_exceeds_envelope) (got '1' want '0')
+FAIL: F14 the container gets the wrapper's own locked reading, not a number from before (got '' want '14950400000')
+FAIL: F14 another op registers 6 cpus in the window: the lane still runs (got '1' want '0')
+FAIL: F14 the container gets the cpus left after that op (14 - 6 = 8), not the 9 read before (got '' want '8')
+FAIL: F14 stress: 12 lane starts while MemAvailable changes every 0.1 s: none refused limit_exceeds_envelope (got '2' want '0')
+FAIL: F14 stress: every start either ran (exit 0) or was refused for lack of head-room (envelope_refused) and nothing else (got '2' want '0')
+PASS: F14 stress: at least four starts ran (the control needle: the instrument sees successes, not only refusals)
+FAIL: F15 a container that survives podman stop and kill: the wrapper exits 125 (not 124, not 0) (got '124' want '125')
+FAIL: F15 took 600s
+FAIL: F15 the op is NOT released while its container is Up (state is not terminal) (got 'terminal' want 'live')
+FAIL: F15 stderr: AM-P1 clean
+run_go: wall clock of 2s exceeded: the run was terminated (TERM to its container client)
+RESULT pass=31 fail=25
+rc=1

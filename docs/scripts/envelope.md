@@ -2,17 +2,17 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): fail-closed registry accounting, measured CPU count; its row in `docs/scripts/README.md` is still owed |
+| Last modified | 2026-10-07T03:30:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 in 96779242 (fail-closed registry accounting, measured CPU count); revision 3 is the fix round r2 for the WF13 review (terminal records skipped, the classify-failure branch tested; uncommitted until the owner commits it); its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/envelope.sh`; test `scripts/containers/tests/test_envelope.sh` |
 
 ## Purpose
 
 Computes the dynamic resource envelope of docs/16 section 8.2 (12.6, 12.11, 12.12) from the live host, read-only, so that no limit of a
 containerized run is hard-coded (11.4.6). The wrappers (`run_go.sh` and the others, through `runner_lib.sh`) hand its `memory_bytes`, `cpus`
-and `pids` to `run_pinned.sh`, and `scripts/test-in-container.sh` composes `--memory` and `--cpus` from it.
+and `pids` to `run_pinned.sh`; `scripts/test-in-container.sh` passes no limit of its own (the wrapper's locked reading is the only one, WF13 I1). The registry accounting reads one JSON call per record and skips terminal records (`complete`, `failed`, `reaped`, `handoff`, `blocked-escape`) without classifying them (WF13 m7: op records are never deleted, so the cost per read grew with the registry and was paid inside the budget lock; 10 s on 408 records before).
 
 ## Usage
 

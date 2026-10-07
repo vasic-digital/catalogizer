@@ -2,15 +2,15 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T22:00:00Z |
-| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (uncommitted until the owner commits it): contract moved to runner_lib.md revision 2; its row in `docs/scripts/README.md` is still owed |
+| Last modified | 2026-10-07T03:30:00Z |
+| Status | committed in a7cfc6d3 (T119, T120); revision 2 is the fix round r1 for the independent review (committed in 96779242): contract moved to runner_lib.md revision 2; its row in `docs/scripts/README.md` is still owed |
 | Source | `scripts/containers/run_scan.sh` (a few lines: it sets the `RUNNER_*` variables and sources `runner_lib.sh`); test `scripts/containers/tests/test_runners.sh` |
 
 ## Purpose
 
-Scanners over the read-only source, results in `/out`. Image: IMG-SHELLCHECK (default) or `--image` a scanner image of the lock. State now: IMG-SHELLCHECK runs; other scanner images are refused `probe_not_defined` until a reviewed row defines their version command. The whole contract (usage, limits from the envelope, anti-mess sweep, registered long operation,
+Scanners over the read-only source, results in `/out`. Image: IMG-SHELLCHECK (default) or `--image` a scanner image of the lock. The version recorded in `toolchain.json` is the first output line that carries a dotted version number (WF13 m5: shellcheck prints its banner first and `version: 0.10.0` second; a probe output with no such line is refused `probe_blind`). State now: IMG-SHELLCHECK runs; other scanner images are refused `probe_not_defined` until a reviewed row defines their version command. The whole contract (usage, limits from the envelope, anti-mess sweep, registered long operation,
 toolchain record, refusals, exit codes, test hooks) is in [`runner_lib.md`](runner_lib.md).
 
 ## Usage

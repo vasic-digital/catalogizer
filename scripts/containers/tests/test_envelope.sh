@@ -231,6 +231,28 @@ mkdir -p "$T/nolib/scripts/containers"; cp "$SUT" "$T/nolib/scripts/containers/e
 ( ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000 bash "$T/nolib/scripts/containers/envelope.sh" --toolchain go ) >"$T/out" 2>"$T/err"; RC=$?
 check "registry library missing (copy outside the repository layout): refused (exit 1)" "$RC" 1
 grep -q 'reason=registry_library_missing' "$T/err" && ok "registry library missing: reason registry_library_missing" || bad "registry library missing reason: $(cat "$T/err")"
+# review round 2 m3 (reviewer mutant N1): a registry library that cannot classify a record (no lo_classify_op) refuses registry_classify_failed with a live op in the registry;
+# the branch used to be untested and `*) ;;` there read the live 6e9 op as used = 0 (the fail-open the F3 fix forbids). Control: with the real library the same registry reads used 6e9.
+mkdir -p "$T/nocls/scripts/containers"; cp "$SUT" "$T/nocls/scripts/containers/envelope.sh"; cp -r "$REPO/scripts/longops" "$T/nocls/scripts/longops"
+sed -i 's/^lo_classify_op() {/lo_classify_op_renamed() {/' "$T/nocls/scripts/longops/lib.sh"
+grep -q '^lo_classify_op_renamed() {' "$T/nocls/scripts/longops/lib.sh" && ok "classify fixture: the copy of the registry library lacks lo_classify_op (control needle: the rename is in the copy)" || bad "classify fixture: the rename did not apply"
+( ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000 bash "$T/nocls/scripts/containers/envelope.sh" --toolchain go ) >"$T/out" 2>"$T/err"; RC=$?
+check "registry classify failed (a live op, a library that cannot classify): refused (exit 1), never used = 0" "$RC" 1
+grep -q 'reason=registry_classify_failed' "$T/err" && ok "registry classify failed: reason registry_classify_failed" || bad "registry classify failed reason: $(cat "$T/err")"
+( ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000 bash "$SUT" --toolchain go --format json ) >"$T/out" 2>"$T/err"; RC=$?
+check "registry classify control: the real library on the same registry reads the live 6e9 op" "$RC/$(jq -r .used_mem_bytes "$T/out" 2>/dev/null)" "0/6000000000"
+# review round 2 m7: the cost of the registry read must not grow with the terminal records (op records are never deleted; the read is paid inside the budget lock).
+# A copy whose lo_classify_op counts its calls: five terminal records and one live op -> ONE classification, the live op still counted (control: used 2e9).
+newreg; sleep 600 >/dev/null 2>&1 & SL6=$!; SLEEPERS+=("$SL6")
+OPL="$(bash "$REPO/scripts/longops/register.sh" --purpose t118:cnt --owner t118 --pid "$SL6" --memory-bytes 2000000000 --cpus 2 --no-progress-s 600 2>/dev/null)"
+for i in 1 2 3 4 5; do jq -c --arg id "term$i" '.op_id=$id | .state="complete"' "$LONGOPS_DIR/ops/$OPL.json" >"$LONGOPS_DIR/ops/term$i.json"; done
+mkdir -p "$T/cnt/scripts/containers"; cp "$SUT" "$T/cnt/scripts/containers/envelope.sh"; cp -r "$REPO/scripts/longops" "$T/cnt/scripts/longops"
+sed -i 's/^lo_classify_op() {/lo_classify_op_renamed() {/' "$T/cnt/scripts/longops/lib.sh"
+printf '\nlo_classify_op() { echo call >>"$CNT_FILE"; lo_classify_op_renamed "$@"; }\n' >>"$T/cnt/scripts/longops/lib.sh"
+: >"$T/cnt.calls"
+( CNT_FILE="$T/cnt.calls" ENVELOPE_MEMINFO="$T/meminfo" ENVELOPE_NPROC=16 ENVELOPE_ULIMIT_U=100000 bash "$T/cnt/scripts/containers/envelope.sh" --toolchain go --format json ) >"$T/out" 2>"$T/err"; RC=$?
+check "registry cost control: the live op is counted next to five terminal records (used 2e9)" "$RC/$(jq -r .used_mem_bytes "$T/out" 2>/dev/null)" "0/2000000000"
+check "terminal records are not classified: six records (5 complete, 1 live) cost ONE classification call" "$(wc -l <"$T/cnt.calls" | tr -d ' ')" 1
 newreg
 
 # ---------- the CPU count is measured: OMP_NUM_THREADS / OMP_THREAD_LIMIT do not lift the 0.60 ceiling (review F7) ----------
@@ -399,10 +421,12 @@ mut_case R3-pids-floor 'pids at ulimit' '[ "$PIDS_CEIL" -ge 1 ] || PIDS_CEIL=1' 
 mut_case R4-used-sum 'used_mem sums two live ops' 'um=$(( um + mb ))' 'um=$(( 0 + mb ))'
 # the fail-closed registry (review F3) and the measured CPU count (review F7)
 mut_case registry-hook 'stray LONGOPS' '[ "${ENVELOPE_TEST_MODE:-}" != 1 ]; then   # MUT:registry-hook' '[ "${ENVELOPE_TEST_MODE:-}" != 1 ] && false; then   # MUT:registry-hook'
+mut_case N1-classify-failure-silent 'registry classify failed' '*) echo "ERR registry_classify_failed $f classified as '"'"'$cl'"'"'"; exit 0;;' '*) ;;'
 mut_case registry-lib 'registry library missing' '. "$ROOT_DIR/scripts/longops/lib.sh" >/dev/null 2>&1 || {' 'true || {'
 mut_case registry-dir 'ops dir unreadable' '{ [ "$st" = directory ] && [ -r "$ops" ] && [ -x "$ops" ]; } ||' 'true ||'
 mut_case registry-stat 'parent directory unreadable' '*) echo "ERR registry_unreadable cannot stat $ops: $st"; exit 0;; esac' '*) echo "OK 0 0"; exit 0;; esac'
-mut_case registry-malformed 'malformed record' 'jq -e . >/dev/null 2>&1 <<<"$j" ||' 'true ||'
+mut_case registry-malformed 'malformed record' '2>/dev/null <<<"$j")" || { echo "ERR registry_record_malformed $f is not a JSON record"; exit 0; }' '2>/dev/null <<<"$j")" || true'
+mut_case terminal-skip-dropped 'terminal records are not classified' 'case "$st" in complete|failed|reaped|handoff|blocked-escape) continue;; esac' 'case "$st" in NEVER) continue;; esac'
 mut_case registry-budget 'float budget' '{ valid_int "$mb" && valid_int "$cb"; } ||' 'true ||'
 mut_case nproc-measured 'OMP_NUM_THREADS' '$(env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT nproc 2>/dev/null)' '$(nproc 2>/dev/null)'
 echo "MUTATION RESULT caught=$CAUGHT survived=$SURV total=$TOTAL" | tee -a "$MREC"

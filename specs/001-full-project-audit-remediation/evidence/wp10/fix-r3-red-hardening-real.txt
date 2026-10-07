@@ -1,0 +1,20 @@
+PASS: B1a --wall-s 4 on a real container whose PID 1 (sleep) ignores TERM: exit 124
+FAIL: B1a the run lasted 47s: the container was not stopped at the wall clock
+PASS: B1a control needle: the observer saw the container up while the run was running
+PASS: B1a the container is gone when the wrapper exits
+PASS: B1a the op is failed / wall_clock_exceeded
+PASS: B1b run_go --wall-s 3 on 'sh -c sleep 25; echo ...': exit 124
+FAIL: B1b the command completed ('slept-to-the-end' on stdout) although the wrapper reported it terminated
+PASS: B1b the container is gone
+PASS: B1c control needle: the observer saw the main container up before the TERM
+PASS: B1c TERM to the wrapper during a real run: it ends 130
+FAIL: B1c it ended 41s after the TERM: the container ignored it
+PASS: B1c the container is gone when the wrapper exits
+PASS: B1c the op is failed / interrupted
+PASS: B1d control needle: the observer saw the main container up before the SIGKILL
+PASS: B1d the op of a SIGKILLed wrapper is released failed / wrapper_died
+FAIL: B1d at the moment the op is released the container is already gone (the budget is never freed while it runs) (got '1' want '0')
+PASS: B1d released 6s after the SIGKILL
+PASS: B1d envelope: the budget of the dead run is not counted any more (used_mem_bytes 0)
+RESULT pass=14 fail=4
+rc=1

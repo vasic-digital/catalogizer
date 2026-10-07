@@ -1,0 +1,38 @@
+WF13 fix round 3 (constitution 11.4.276: round 3 = STRUCTURAL round) - convergence assessment, written BEFORE any fix
+=====================================================================================================================
+Review under repair: scratchpad WF13-REVIEW-envelope-wrappers-r2.md (NO-GO: B1 blocking; I1, I2 source-defects; I3 test-instrumentation; m1-m7; reviewer mutants N1, N3, N4 survived).
+Round budget: round 3 of 5-7. Round 1 (WF10) found F1-F16; round 2 fixed them and the reviewer found B1 + I1 + I2: the SAME two classes the
+round-1 fix touched (termination of a run; two readings of one live quantity) plus a regression the fix itself introduced (I2).
+
+Why the round-1 fix did not converge (root cause, not the instance)
+  Class A  TERMINATION OF A RUN. Round 1 fixed each stop trigger (wall clock F8, TERM F6, parent death F10) by sending TERM to the `podman run` CLIENT,
+           and proved it with a run_pinned SHIM that dies on TERM. Ground truth re-derived from the REAL mechanism in this round:
+             - `podman run` (sig-proxy, default) forwards TERM to the container; PID 1 of a PID namespace ignores a signal it has no handler for;
+               `sleep`, `sh`, python3, node have none. So TERM to the client never ended the run (reviewer P: container Up 24 s after the TERM).
+             - `podman stop --time 2 -- <id>` on the same container: "StopSignal SIGTERM failed to stop container ... in 2 seconds, resorting to SIGKILL",
+               2.145 s, container removed (--rm), client exited (this session, scratchpad r3/exp1).
+             - `podman ps --filter label=catalogizer.op_id=X --filter label=project=catalogizer` ANDs the label filters; `podman inspect` reports the
+               /out mount source = the resolved --out (this session). That is the proof a container is THIS run's.
+           The shim was the wrong-layer evidence (11.4.226): it modelled the client, not the container.
+           Members of the class (every way a run ends): wall clock (B1a, b), TERM/INT/HUP mid-run (B1c), SIGKILL of the wrapper mid-run (B1d),
+           SIGKILL of the wrapper during the toolchain probe (m1), signal while waiting for the budget lock (m2), signal in the window between a
+           checkpoint and the spawn, a container that cannot be stopped (new: the op must not be freed). All closed by ONE mechanism (rl_terminate_run),
+           not one patch per trigger. REPLACED, not layered: the signal-the-client code of round 1 is gone from every stop path.
+  Class B  TWO READINGS OF ONE LIVE QUANTITY (I1). Round 1 made the wrapper refuse a request above its own reading, then added a margin to the OTHER
+           reading (TIC 98%). A margin can never cover a registration in the window (the reviewer measured 14/80 10-s windows below 98%).
+           Ground truth: the allowance above the reading was arithmetically 0 (0 of 100363 hosts differ). Fix: ONE reading. TIC reads no envelope and passes
+           no number; the wrapper's locked reading is the only one; the dead allowance code is deleted. Members: memory, cpus, concurrent registration.
+  Class C  PER-OP SHARED FILES TOUCHED BY ANOTHER PROCESS (I2, introduced by the round-1 F5/F6 fix). Ground truth: op ids are unique under the budget
+           lock and op records are never deleted, so ownership of an op id is established exactly when register succeeds. Fix: the stop/wall/ch/run
+           marker paths are named only after that point; a refused start has no path to delete. Members: .stop, .stop.wall, .ch, .run, .held; the probe
+           file and the logs were already registration-scoped.
+  Class D  TEST INSTRUMENTATION THAT CANNOT FAIL FOR THE REAL REASON (I3, m3, m4 and the shim above). Members: (1) shims that die on TERM; (2) a hand oracle
+           (lane table) not updated when other commits added rows; (3) mutation harnesses without a negative control (hardening, test_runners);
+           (4) an F6 check that depends on the inherited SIGHUP disposition; (5) an untested fail-open branch (N1); (6) loose bounds (N3: EL < 9);
+           (7) my own first B1 observers read through the FAKE podman that the shim blocks put first on PATH, so every "container gone" passed for nothing
+           (found in this round by the control needle that was added for exactly that reason).
+
+Convergence assessment: the previous approach (patch the trigger, prove it with a shim) would not converge: three of the four round-2 findings are
+members of classes round 1 had touched. This round replaces the mechanism instead of adding a layer, proves each member on a REAL container where the
+defect is container-level, and gives every harness a negative control. Residual risk is stated in the final report (UNCONFIRMED items).
+Owner decisions F12 / F13 / F15 / F16 (F16 is closed here as a side effect of I1) and the owed run_pinned OMP request stay as recorded in fix-r1-owed-requests.txt.

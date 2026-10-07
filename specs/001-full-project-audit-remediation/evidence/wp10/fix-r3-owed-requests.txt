@@ -1,0 +1,20 @@
+# identity: task=fix-r3 kind=owed-requests (WF13 round 2 review, fixed in round 3; files outside this round's scope are only requested, nothing below was changed by it)
+# 1. STILL OWED, unchanged: scripts/containers/run_pinned.sh reads nproc with OMP_NUM_THREADS honoured (fix-r1-owed-requests.txt item 1). Not touched (run_pinned.sh is "never modified").
+#    NOTE for the owner of run_pinned.sh: the stop mechanism of round 3 depends on exactly two things run_pinned.sh already does and must keep doing: the labels
+#    `project=catalogizer` and `catalogizer.op_id=<op id>` on every container, and the `-v <resolved --out>:/out:rw` mount (the wrapper proves a container is THIS run's by those three).
+#    A `--cidfile` or `--name` would make the proof direct; it is not required.
+# 2. OWED REQUEST (WF13 i1, info): a wrapper that refuses foreign test hooks unless RUNNER_TEST_MODE=1: DISK_HEADROOM_REPO_ROOT / DISK_HEADROOM_CONF (scripts/containers/disk_headroom.sh,
+#    "Test overrides") and LONGOPS_ALLOW_TMPFS are honoured without any test mode, and ENVELOPE_* / LONGOPS_* pass through the wrapper (gated only inside envelope.sh). disk_headroom.sh and
+#    scripts/longops are outside this round's scope. The real legs of the suites use DISK_HEADROOM_REPO_ROOT and LONGOPS_ALLOW_TMPFS=1 only because /tmp is below the 12.17 GB gate on this host.
+# 3. OWNER DECISIONS, unchanged and recorded: F12 (the run can rewrite its own toolchain.json), F13 (runner_lib.sh rewrites the platform digest as the lock digest), F15 / WF13 i2 (a container
+#    started without a wrapper is invisible to the budget; the anti-mess AM-P1 `container_without_op_label` is the backstop; zero-budget registered ops such as test-infra-up are not subtracted),
+#    WF13 i3 (one registry and one budget lock per checkout: the 0.60 invariant holds per checkout only). F16 is CLOSED by round 3 (I1: TIC passes no limit).
+# 4. NEW, from the fix: a container that cannot be stopped (podman stop and KILL both failed, or podman cannot answer) keeps its op REGISTERED and the wrapper exits 125. The op then has a
+#    dead owner (the wrapper is gone) and the envelope counts a dead owner as holding nothing, so the budget of such a container is NOT subtracted; the anti-mess sweep reports the container
+#    (AM-P1 container_without_op_label) and refuses new wrappers until it is reconciled. That is the honest, detectable state; it was reached only with a fake podman in the tests (F15).
+# 5. UNCONFIRMED: a real container that survives `podman stop --time N` and `podman kill --signal KILL` was never observed (the F15 leg uses a fake podman and a separate "container" process);
+#    the 125 path against a real unstoppable container (a process in uninterruptible sleep) is not exercised.
+# 6. UNCONFIRMED: the guard loop of a SIGKILLed wrapper stops the container within grace + 20 s (+ the 0.5 s settle); on a host where `podman` itself hangs the `timeout 30` around each podman call
+#    bounds each call but the total can exceed that figure.
+# 7. WALL CLOCK SEMANTICS (documented, behaviour kept from round 1): --wall-s counts from the spawn of the main command; the toolchain probe is guarded (parent death, signals) but not counted, so a
+#    hung probe is bounded only by the registry's no-progress classification, not by --wall-s.
