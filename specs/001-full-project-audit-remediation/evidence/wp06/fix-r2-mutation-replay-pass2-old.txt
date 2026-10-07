@@ -1,0 +1,18 @@
+# identity: group=replay utc=2026-10-07T04:33:01Z host=anton uid=1000 git_head=bfcd9fd9dec1452eed6d98fa14100f86ed8f6762
+# runner_sha256=e6352eb384e169f14acdcecfdcd3b783c24235b89a70d0ac59d1cc9aec44978c test_sha256=f781f69c6ea94cd7366c00364360bc6039ac2b68c3a1175ededeabb1cadac7bb sut_sha256=18a0647bac5c8235e024bc0d7a3f187a3a6e56b92bca4bfd92f0dce1571d546e followup_tests=test_fix_r1.sh|F1 F2 F8|1 test_fix_r2.sh|N1S T5|1 test_fix_r2.sh|N1E| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh
+skip_mint_rows	yes	test_replay.sh: FAIL P3 the replayed database holds every reg_ids id of both sides (CAT-001..003) :: got [CAT-001,CAT-002] wan
+no_collision_refusal	yes	test_replay.sh: FAIL P12 rc=0 [replay: OK replayed=2 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.no_c
+since_unchecked	yes	test_replay.sh: FAIL P14 rc=20 [replay: REFUSED reason=replay_id_collision local id CAT-001 (row locked-20261007T043309-376725
+gate_unchecked	yes	test_replay.sh: FAIL P21 rc=0 [replay: OK replayed=3 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.gate
+input_not_rebound	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T043747-32649-18810 exited 1: Error
+db_arg_not_rewritten	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T043744-29810-28758 exited 3: Error
+base_row_any_mode	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-1 [rc=0 replay: OK replayed=0 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.base_row_
+ids_unknown_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F1-1 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.ids_unkno
+RMb_id_lost_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F1-5 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.RMb
+RMc_input_sha_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-8 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.RMc
+RMd_wal_rows_skipped	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-3 [rc=0 replay: OK replayed=1 skipped=1 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.RMd
+pending_ops_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-6 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.lWsW3M/s.pen
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F8-5 outside test mode replay.sh ignores the LOCKED/BACKUP/DUMP/EXPORT overrides (the foreign script was 
+negative_control_comment	NO	test_fix_r2.sh [N1E]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=3 fail=0

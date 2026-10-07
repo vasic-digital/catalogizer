@@ -1,0 +1,7 @@
+# identity: group=backup utc=2026-10-07T02:57:16Z host=anton uid=1000 git_head=3fa277e414c43186f937685e084d9752f529e336
+# runner_sha256=987c86f14427b3c6717adcc840da012196c97db4dd143a95a893beee1881710c test_sha256=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 sut_sha256=7e99bef33ea3396b3a53445232ed9b8ce6f4ac40c57dc1df524d9aeda6fea1e6 followup_tests=test_fix_r1.sh|F7 F14 F8 M6|1 test_fix_r2.sh|B| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_backup_db.sh
+die_keeps_backup_file	yes	test_fix_r2.sh [B]: FAIL B-1 rc=1 left=1 [mkdir: Not a directory
+checkpoint_result_ignored	yes	test_fix_r2.sh [B]: FAIL B-2 rc=0 rec=y left=1 [backup_db: OK docs/workable_items.db.bak-20261007T030148Z-1574010-245240395 sha256
+negative_control_comment	NO	test_fix_r2.sh [B]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=4 fail=0

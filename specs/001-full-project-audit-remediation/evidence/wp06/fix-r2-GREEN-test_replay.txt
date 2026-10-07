@@ -1,0 +1,34 @@
+# identity: task=T067a utc=2026-10-07T02:39:11Z host=anton uid=1000
+# git_head=846d441fa49ea6f7c0f456d81fdfc584c1593de4 tree_dirty_files=2595
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7a48105097de238902d36149d52cc4b1e59d15ec897bb0c51d152d953283738a backup_db=7e99bef33ea3396b3a53445232ed9b8ce6f4ac40c57dc1df524d9aeda6fea1e6 test=f781f69c6ea94cd7366c00364360bc6039ac2b68c3a1175ededeabb1cadac7bb clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=18a0647bac5c8235e024bc0d7a3f187a3a6e56b92bca4bfd92f0dce1571d546e
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+ok   P0 the base state hash is the last journal row's db_sha_after (c51d4edb4e2270ae1fc7d469e378abdbb466005375559a437b555fcf475f2e2d)
+ok   P1 local file-input edit applied
+== the replay of local mints, edits and closures onto the remote side ==
+ok   P2 replay exits 0 and the gate on the replayed database prints GATE OK
+ok   P3 the replayed database holds every reg_ids id of both sides (CAT-001..003)
+ok   P4 the local mint was replayed: CAT-003 is an item
+ok   P5 the local file-input edit was replayed (CAT-001 title)
+ok   P6 the remote side's own edit is kept (CAT-002 title)
+ok   P7 the report lists 2 rows replayed and the skipped rows with their reasons
+ok   P8 the remote checkout's own database was not rewritten (the result is only in <dir>)
+ok   P9 the dump of the replayed database equals a regenerated dump (register.sql)
+ok   P10 the exports in <dir>/export equal the regenerated ones (export --check OK)
+ok   P11 nothing was written into the remote checkout's docs/register
+== refusals ==
+ok   P12 a local mint whose id the remote side holds for another item is refused replay_id_collision, the id named
+ok   P13 nothing written: no output directory, the remote database unchanged
+ok   P14 a --since that matches no journal row is refused since_not_found
+ok   P15 a malformed --since is refused
+ok   P16 a recorded input that is missing is refused input_missing
+ok   P17 a non-empty output directory is refused and left untouched
+ok   P18 --onto that is not this checkout's register database is refused
+ok   P19 unknown argument: exit 2
+== export.sh --install rows (T175a) are listed, not replayed ==
+ok   P20 an export.sh --install row is listed as skipped install_replay_owed_T175a (UNCONFIRMED: the installer is not written)
+== a replayed row that breaks the register is refused by the gate ==
+ok   P21 a replayed row that drops a register guard is refused replay_gate_failed (no output directory)
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=23 fail=0

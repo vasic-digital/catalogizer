@@ -1,0 +1,13 @@
+# identity: group=replay utc=2026-10-07T03:11:11Z host=anton uid=1000 git_head=3fa277e414c43186f937685e084d9752f529e336
+# runner_sha256=987c86f14427b3c6717adcc840da012196c97db4dd143a95a893beee1881710c test_sha256=f781f69c6ea94cd7366c00364360bc6039ac2b68c3a1175ededeabb1cadac7bb sut_sha256=18a0647bac5c8235e024bc0d7a3f187a3a6e56b92bca4bfd92f0dce1571d546e followup_tests=test_fix_r1.sh|F1 F2 F8|1 test_fix_r2.sh|N1S T5|1 test_fix_r2.sh|N1E| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh
+failed_rows_replayed	yes	test_fix_r2.sh [N1S T5]: FAIL N1-1 a failed row that CHANGED the database (hash differs) is refused, never skipped (the local edit must
+regenerated_rows_replayed	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T031212-2319307-2103 exited 1: mkdi
+RMd_wal_rows_skipped	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-3 [rc=0 replay: OK replayed=1 skipped=1 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.zYFdJw/s.RMd
+NM5_replay_fallback_wal_ignored	yes	test_fix_r2.sh [N1S T5]: FAIL T5-2 [replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.zYFdJw/s.NM5_replay_fal
+failed_changed_row_skipped	yes	test_fix_r2.sh [N1S T5]: FAIL N1-1 a failed row that CHANGED the database (hash differs) is refused, never skipped (the local edit must
+regenerate_marker_substring	yes	test_fix_r2.sh [N1S T5]: FAIL N1-7 a register write whose SQL merely MENTIONS the regenerate marker or 'export.sh --install' is replaye
+install_substring	yes	test_fix_r2.sh [N1S T5]: FAIL N1-7 a register write whose SQL merely MENTIONS the regenerate marker or 'export.sh --install' is replaye
+failed_row_unchanged_refused	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_failed_row_changed_register row locked-20261007T031940-2861922-16
+negative_control_comment	NO	test_fix_r2.sh [N1E]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=3 fail=0

@@ -1,0 +1,1 @@
+group=export mutants=2 killed=2 equivalent_reviewed=0 survived_unreviewed=0 environment_unscored=0 golden_good=pass negative_control=ok

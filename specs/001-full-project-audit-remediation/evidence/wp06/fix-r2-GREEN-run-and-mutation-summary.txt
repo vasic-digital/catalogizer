@@ -1,0 +1,6 @@
+run1 rc=0 secs=270 RESULT pass=69 fail=0
+run2 rc=0 secs=268 RESULT pass=69 fail=0
+run3 rc=0 secs=284 RESULT pass=69 fail=0
+replay-old rc=0 secs=1497 group=replay mutants=13 killed=13 equivalent_reviewed=0 survived_unreviewed=0 environment_unscored=0 golden_good=pass negative_control=ok
+locked-old rc=0 secs=2208 group=locked mutants=21 killed=21 equivalent_reviewed=0 survived_unreviewed=0 environment_unscored=0 golden_good=pass negative_control=ok
+DONE

@@ -1,0 +1,7 @@
+test_fix_r1 rc=0 secs=250 RESULT pass=75 fail=0
+test_locked rc=0 secs=78 RESULT pass=59 fail=0
+test_backup_db rc=0 secs=89 RESULT pass=25 fail=0
+test_dump rc=0 secs=39 RESULT pass=22 fail=0
+test_export rc=0 secs=101 RESULT pass=35 fail=0
+test_replay rc=0 secs=204 RESULT pass=23 fail=0
+DONE

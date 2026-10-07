@@ -199,3 +199,28 @@ Review: `WF10-REVIEW-register-ops.md` (NO-GO: F1-F3 blocking, F4-F11 important, 
 Totals (final run): `test_fix_r1.sh` 75/0 three times; `test_locked` 59/0, `test_backup_db` 25/0, `test_dump` 22/0, `test_export` 35/0, `test_replay` 23/0, `test_gate` 126/0. Mutants: locked 22/22 killed, backup 8 killed + 2 reviewed-equivalent (`no_checkpoint`, `record_without_rows_check`), dump 9/9, export 16/16, replay 15/15; negative control and golden control pass in every group.
 
 Notes and limits (UNCONFIRMED or owed): the RED container transcript ran an earlier copy of the same test (its F1-5 needed the F2 fixtures; fixed, see `RED-F1-harness`). `M6` (index damage invisible to the dump) is a mutation-adequacy fixture, not a RED (the committed code already refuses). The F3 real-container probe shows the podman client receives SIGTERM but the container's PID 1 `sh` ignores it, so the writer ran to its end with the lock held (the designed invariant; no KILL escalation, owed). SIGKILL of `locked.sh` is not trappable (pending marker only). The manifest hash is not recorded in the database (schema has no column; replaced by regeneration, owed to docs/04). Recomputing ids from the pre and post snapshots during replay is not implemented (refusal instead). The real `cpa-host` reaper behaviour is UNCONFIRMED (stub only). F11-5 and the `RT` guard compare this suite's own op ids with files newer than the suite start; a file count is not used because other agents write the same directories concurrently.
+
+
+## WF13 fix round (11.4.276 round 3, structural), 2026-10-07
+
+Review `WF13-REVIEW-register-ops-r2.md` (NO-GO: blocking N1, N2; important N3, T1, T2; minor N4-N9, T3-T5, P1-P3). The convergence assessment, the ground truth re-derived against real podman and the defect classes C1-C6 with every member are in `fix-r2-convergence-assessment.md`. Tests: `scripts/register/tests/test_fix_r2.sh` (written first; RED on the committed scripts of 846d441f in `fix-r2-RED.txt`: 31 failing checks in the first full run, plus the deterministic RACE leg), GREEN `fix-r2-GREEN-run1..3.txt`, the six existing suites in `fix-r2-GREEN-test_*.txt`, mutation transcripts `fix-r2-mutation-*`.
+
+| Finding | Fix | Test (RED on committed, GREEN on fix) |
+|---|---|---|
+| N1 failed row dropped | `replay.sh`: a non-zero row whose database changed (hash, minted ids, `-wal` bytes) is refused `replay_failed_row_changed_register`; skips keyed on the program, not on a substring (regenerate marker must START a `bash -c` argument, `export.sh` must be a program argument) | N1-1..N1-8, N1E-1 (real containers) |
+| N2 SIGPIPE | `locked.sh` waits until no container labelled `catalogizer.op_id=<id>` exists before the journal row, takes the container's real exit status, `trap '' PIPE` after the fork | DRAIN-1..13, REAL-PIPE |
+| N3 SIGKILL | the NEXT `locked.sh` waits for the container of a pending marker whose owner is not a live `locked.sh` (refused `writer_still_running` / `writer_state_unverifiable`); residual limit tracked below | FENCE-1..5, REAL-KILL |
+| T1 real podman test | committed: REAL-TERM, REAL-PIPE, REAL-KILL | REAL-* |
+| T2 NM1 | `flock -n 9` proof; NM1 adopted as mutant `NM1_lock_claim_only_held_by_someone` | LC-1..LC-7 |
+| N4 | same | LC-2 |
+| N5 status race | `wait` status read, never preset | RACE-1 (deterministic, 12/12 lost on committed), RACE-2 |
+| N6, N7 | `die` removes the pre-created backup; busy checkpoint refused | B-1, B-2 |
+| N8 | `timeout -k 2` | RP-1 |
+| N9 | empty-view header compared with a TEMP view's columns | RC-2 |
+| T3 | `mutscore.sh`: an environmental or FAIL-less failure is `ENV`, never killed; the group fails while any mutant is ENV; `MUT_ONLY` filter | T3-1..T3-5 |
+| T4 / NM3, T5 / NM5 | adopted as mutants `NM3_snapshot_zero_byte_accepted`, `NM5_replay_fallback_wal_ignored` | T4-1, T5-1/T5-2 |
+| P1, P2, P3 | P1: docs and scripts of one fix must land in one commit (conductor); P2: the stale probe is marked SUPERSEDED; P3: `register_replay.md` and `locked.md` rewritten | docs |
+
+Owed / not fixed (11.4.197): **OWED-WP06-14** (SIGKILL residual): after a SIGKILL of `locked.sh` the register lock is released while the container writes; the next writer waits for it (fixed), but the killed write is not journaled (its pending marker stays and replay refuses `replay_pending_ops`) and nothing makes the container die with the wrapper; owner decision whether a killed writer's container should be stopped by a separate supervisor. I3 of the review (reconcile `Rows:` counts lines, a quoted field with an embedded newline over-counts) is pre-existing information and unchanged. The real `cpa-host` reaper behaviour stays UNCONFIRMED (stub only).
+
+Totals of the WF13 round (this session): `test_fix_r2.sh` 69/0 three times (`fix-r2-GREEN-run1..3.txt`, 270-284 s each); existing suites on the same scripts: `test_fix_r1` 75/0, `test_locked` 59/0, `test_backup_db` 25/0, `test_dump` 22/0, `test_export` 35/0, `test_replay` 23/0. Mutants (new in this round, all killed, golden-good and negative control pass): locked 15 + 2 re-run after a test was added (`pipe_not_ignored` first SURVIVED all suites, reviewed: it is a real member, SIGPIPE to locked.sh's OWN write; test DRAIN-13 added, then killed; `podman_failure_is_gone` was first killed only by an unbound-variable error, mutant re-anchored, then killed by DRAIN-12), backup 2, export (reconcile) 2, replay 8; older mutants re-run: locked 21/21, replay 13/13. Not re-run: the older backup (11), export (16) and dump (10) mutants; their anchors are unchanged except `fail`/`die` (checked by a MUT_DRY run: every mutant still differs from its source). The environment: `/tmp` is a tmpfs below the disk headroom, every run used `TMPDIR=/dev/shm`.

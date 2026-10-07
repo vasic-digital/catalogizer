@@ -1,0 +1,7 @@
+# identity: group=export utc=2026-10-07T03:06:21Z host=anton uid=1000 git_head=3fa277e414c43186f937685e084d9752f529e336
+# runner_sha256=987c86f14427b3c6717adcc840da012196c97db4dd143a95a893beee1881710c test_sha256=d9c88e453d9a2b520a389752ae4b2e82a3bef6f41894d87442ee7274caf6fc1b sut_sha256=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c followup_tests=test_fix_r1.sh|F8 F9 F12|1 test_fix_r2.sh|RC|1 fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_export.sh
+reconcile_empty_header_unchecked	yes	test_fix_r2.sh [RC]: FAIL RC-2 rc=0 csv=atm_id,reopen_count [reconcile: wrote 7 CSV files and Reconciliation.md into /dev/shm/mutop
+reconcile_empty_header_dropped	yes	test_export.sh: FAIL E1 rc=1 [reconcile: wrote 7 CSV files and Reconciliation.md into /src/docs/register
+negative_control_comment	NO	test_fix_r2.sh [RC]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=3 fail=0

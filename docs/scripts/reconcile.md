@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T17:30:00Z |
-| Status | tracked from the WP-06 slice T067; independent review of this revision owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T03:00:00Z |
+| Status | tracked; revision 2: WF13 review fix round (11.4.276 round 3, structural: defect classes C1-C6 of `scripts/register/tests/test_fix_r2.sh`); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/reconcile.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -25,6 +25,10 @@ Outputs: `reconciliation.csv`, `unmapped_entries.csv`, `legacy_id_collisions.csv
 ## Exit codes
 
 0 ok; 2 usage; 3 database unreadable; 4 query failed.
+
+## Empty views (WF13 N9)
+
+sqlite prints no header line for an empty result, so the column list of every view is held in `HDR`. For a non-empty view the first CSV line must equal `HDR`; for an EMPTY view the column list of a TEMP view over the same query (`PRAGMA table_info`) must equal `HDR`, else exit 4 (`the header of view <n> (empty) is [..], the HDR table says [..]`): a hand-kept header can no longer ship stale until the view has rows.
 
 ## Tests and evidence
 

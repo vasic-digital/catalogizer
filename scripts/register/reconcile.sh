@@ -9,7 +9,8 @@
 # Every output is a pure function of the DB content: no clock, no host name, no counter (two runs on an unchanged DB are byte-identical);
 # "Last modified" of the header is the largest items.last_modified (or `none`).
 # Empty views (WF10 F12): sqlite prints no header line for an empty result, so every view's column list is held in HDR below; an empty view is written as its header
-# line alone (CSV) and its table header (Markdown) with `Rows: 0`; for a non-empty view the first CSV line must equal HDR (else exit 4, the table is out of sync).
+# line alone (CSV) and its table header (Markdown) with `Rows: 0`; for a non-empty view the first CSV line must equal HDR, for an EMPTY view the column list of a TEMP view
+# over the query must (WF13 N9); else exit 4, the table is out of sync.
 # Exit: 0 ok; 2 usage; 3 database unreadable; 4 query failed.
 set -u
 DB=""; OUT=""
@@ -61,7 +62,11 @@ for v in "${VIEWS[@]}"; do
   if [ -s "$OUT/.$n.csv.tmp.$$" ]; then
     [ "$(head -n1 "$OUT/.$n.csv.tmp.$$")" = "${HDR[$n]}" ] || { echo "reconcile: the header of view $n is [$(head -n1 "$OUT/.$n.csv.tmp.$$")], the HDR table says [${HDR[$n]}]" >&2; rm -f "$OUT"/.*.tmp.$$ "$OUT/.err.$$"; exit 4; }   # MUT:header-table
     rows="$(( $(wc -l <"$OUT/.$n.csv.tmp.$$") - 1 ))"
-  else printf '%s\n' "${HDR[$n]}" >"$OUT/.$n.csv.tmp.$$"; rows=0; fi   # MUT:empty-header
+  else
+    # an empty view prints no header line: the hand-kept column list is checked against the view's own columns (a TEMP view over the query; PRAGMA table_info answers for an empty result)
+    hv="$(q "CREATE TEMP VIEW _hdr AS $sqlq; SELECT group_concat(name,',') FROM (SELECT name FROM pragma_table_info('_hdr') ORDER BY cid)" 2>"$OUT/.err.$$")" || { echo "reconcile: reading the columns of the empty view $n failed: $(cat "$OUT/.err.$$")" >&2; rm -f "$OUT"/.*.tmp.$$ "$OUT/.err.$$"; exit 4; }
+    [ "$hv" = "${HDR[$n]}" ] || { echo "reconcile: the header of view $n (empty) is [$hv], the HDR table says [${HDR[$n]}]" >&2; rm -f "$OUT"/.*.tmp.$$ "$OUT/.err.$$"; exit 4; }   # MUT:empty-header-check
+    printf '%s\n' "${HDR[$n]}" >"$OUT/.$n.csv.tmp.$$"; rows=0; fi   # MUT:empty-header
   mv -f -- "$OUT/.$n.csv.tmp.$$" "$OUT/$n.csv"
   { echo "<a id=\"$n\"></a>"; echo "## $t"; echo; echo "Rows: $rows"; echo
     if [ "$rows" -gt 0 ]; then q -markdown -header "$sqlq" 2>>"$OUT/.err.$$"

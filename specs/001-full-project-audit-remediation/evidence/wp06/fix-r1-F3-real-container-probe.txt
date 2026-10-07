@@ -1,3 +1,4 @@
+# SUPERSEDED (WF13 P2, 2026-10-07): this probe ran on locked.sh sha256 d51a4e00..., not on the committed b0073943..., and its script was never committed. The real-podman proof of the F3 class is now the committed test `scripts/register/tests/test_fix_r2.sh` section REAL (SIGTERM, SIGPIPE, SIGKILL) with transcripts fix-r2-GREEN-run*.txt.
 # identity: task=F3-real utc=2026-10-06T21:34:59Z host=anton uid=1000
 # git_head=34db9504594c4a1f883769d5c3d80238c87d48fb tree_dirty_files=1760
 # container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08

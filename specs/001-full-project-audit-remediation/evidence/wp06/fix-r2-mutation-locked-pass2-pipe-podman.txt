@@ -1,0 +1,7 @@
+# identity: group=locked utc=2026-10-07T04:01:44Z host=anton uid=1000 git_head=3fa277e414c43186f937685e084d9752f529e336
+# runner_sha256=e6352eb384e169f14acdcecfdcd3b783c24235b89a70d0ac59d1cc9aec44978c test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=7a48105097de238902d36149d52cc4b1e59d15ec897bb0c51d152d953283738a followup_tests=test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1 test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 test_fix_r2.sh|REAL| test_replay.sh|| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+pipe_not_ignored	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-13 head=[first-line] rc=141 row=
+podman_failure_is_gone	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-12 rc=3 row="none" marker=n
+negative_control_comment	NO	test_replay.sh: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=23 fail=0

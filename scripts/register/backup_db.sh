@@ -14,13 +14,16 @@
 # Name and hash (WF10 F7, F14): the backup is docs/workable_items.db.bak-<UTC>-<pid>-<ns>, created with O_EXCL (noclobber) before anything runs, so two backups started
 # in the same second never share a file and fail() removes only the file this run created; source_sha256 is computed INSIDE step 1 (under the lock, right after the
 # online backup, by the image's sha256sum) and read back from the op's /out, never from the source after the lock was released.
+# Checkpoint (WF13 N7): the result row of PRAGMA wal_checkpoint(TRUNCATE) must be 0|...; a busy checkpoint (a reader outside the lock) is REFUSED checkpoint_incomplete, because source_sha256 is the
+# main-file hash and would name a state without the WAL pages the backup holds. Every failure after the O_EXCL pre-creation removes the file (die as well as fail, WF13 N6).
 # Exit: 0 ok; 1 a check failed or the wrapper failed; 2 usage. Test hooks (need LOCKED_TEST_MODE=1, ignored otherwise): LOCKED_ROOT, LOCKED_RUNP, LOCKED, BACKUP_FAULT=truncate|dumpdiff.
 set -u
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REAL_ROOT="$(cd "$SELF_DIR/../.." && pwd)"
 if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"; RUNP="${LOCKED_RUNP:-$REAL_ROOT/scripts/containers/run_pinned.sh}"   # MUT:hook-gate
 else unset LOCKED LOCKED_RUNP LOCKED_ROOT BACKUP_FAULT; LOCKED="$SELF_DIR/locked.sh"; RUNP="$REAL_ROOT/scripts/containers/run_pinned.sh"; fi
-die() { echo "backup_db: $*" >&2; exit 1; }
+OWN=0
+die() { [ "$OWN" = 1 ] && rm -f -- "$BAKREL"; echo "backup_db: $*" >&2; exit 1; }   # a failure after the O_EXCL pre-creation must not leave the 0-byte file (WF13 N6)
 REC=""
 while [ $# -gt 0 ]; do case "$1" in
   --record) [ $# -ge 2 ] || { echo "backup_db: --record needs a value" >&2; exit 2; }; REC="$2"; shift 2;;
@@ -33,7 +36,6 @@ DBREL=docs/workable_items.db
 UTC="$(date -u +%Y%m%dT%H%M%SZ)"; NS="$(date -u +%N)"
 BAKREL="$DBREL.bak-$UTC-$$-$NS"
 OP="backup-$UTC-$$-$NS"; OPV="$OP-verify"
-OWN=0
 ( set -o noclobber; : >"$BAKREL" ) 2>/dev/null || die "REFUSED backup $BAKREL already exists or cannot be created"   # MUT:backup-excl
 OWN=1
 OUT1=".audit/out/$OP"; mkdir -p "$OUT1" || die "cannot create $OUT1"
@@ -45,6 +47,8 @@ rc=$?
 [ $rc -eq 0 ] || fail "step 1 (checkpoint, backup, dump) exited $rc: $(head -c 300 "$OUT1/step1.err")"
 [ -s "$BAKREL" ] || fail "step 1 left no backup file"
 [ -s "$OUT1/source.dump.sql" ] || fail "step 1 wrote no source dump"
+CKP="$(head -1 "$OUT1/step1.out" 2>/dev/null)"   # the result row of PRAGMA wal_checkpoint(TRUNCATE): busy|log|checkpointed (WF13 N7, as dump.sh F10)
+case "$CKP" in 0\|*) ;; *) fail "REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned [$CKP]: another connection holds the database, so source_sha256 would name a state without the WAL pages the backup holds";; esac   # MUT:checkpoint-result
 SSHA="$(head -1 "$OUT1/source.sha256" 2>/dev/null | cut -d' ' -f1)"
 case "$SSHA" in *[!0-9a-f]*|"") fail "step 1 did not record the source sha256 under the lock";; esac; [ "${#SSHA}" -eq 64 ] || fail "step 1 recorded a malformed source sha256 [$SSHA]"
 if [ "${BACKUP_FAULT:-}" = truncate ]; then : >"$BAKREL"; head -c 200 /dev/urandom >"$BAKREL"; fi

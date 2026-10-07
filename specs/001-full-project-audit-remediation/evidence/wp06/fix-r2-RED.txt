@@ -1,0 +1,130 @@
+# RED: test_fix_r2.sh (final test file) against the COMMITTED scripts of 846d441f (git archive copy under /dev/shm/head, SUT_DIR/LOCKED/BACKUP/DUMP/EXPORT/REPLAY/RECONCILE pointing at it; script hashes equal the WF13 review's: locked b0073943...)
+# RACE-1/RACE-2 were reworked to a deterministic leg after this run; their RED is the separate block at the end
+# identity: task=FIX-R2 utc=2026-10-07T02:23:00Z host=anton uid=1000
+# git_head=846d441fa49ea6f7c0f456d81fdfc584c1593de4 tree_dirty_files=2571
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=b0073943bf4d42dc5b13f1f788d48d0d61a205eef903d45f343c62715ceffc1f backup_db=dda468837c6c2ac73cca9926df107bb4af5480d7fa881bc349a6fd6598fedad3 test=5b0b950629fb50b84a99c766bf4c45d37f5bafbfb6826cc11de502c466941930 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=5b03fe64a00f952b9f67042a0d84a932f037ef88da574f097671d2e5320d3769 replay=3b3f9f27082e8bc5b657950d4bf62aabb06d2f647dcfcf3dc282a89ee64bdc8f
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/dev/shm/head/scripts/register sha256 locked=b0073943bf4d42dc backup=dda468837c6c2ac7 reconcile=5b03fe64a00f952b replay=3b3f9f27082e8bc5
+== N1 replay planning of failed / interrupted / marker-mentioning rows (stub tools, no container) ==
+ok   N1-0 control: an ok register row is replayed
+FAIL N1-1 a failed row that CHANGED the database (hash differs) is refused, never skipped (the local edit must not vanish with an OK verdict) :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_fch]
+FAIL N1-1b output directory left
+FAIL N1-2 a failed row that minted ids is refused :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_fmint]
+FAIL N1-3 a failed row whose change is pending in the -wal file (main-file hash unchanged) is refused :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_fwal]
+FAIL N1-4 an interrupted writer (exit 143) that changed the database is refused :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_fint]
+FAIL N1-5 a failed row with an unknown id snapshot that changed the database is refused as a failed row (never skipped) :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_fsnap]
+ok   N1-6 golden-FALSE: a failed row that changed nothing (hash equal, no ids, no -wal) is skipped and listed, the next row is replayed
+ok   N1-6b the report lists the skipped row with reason command_failed
+FAIL N1-7 a register write whose SQL merely MENTIONS the regenerate marker or 'export.sh --install' is replayed, not dropped (the skips key on the program, not on a substring) :: [rc=0 replay: OK replayed=1 skipped=2 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/rh/out_mention]
+ok   N1-8 golden-true: the real regeneration row (script starts with the marker) and the real export.sh --install row are still skipped
+== N1 end to end (real containers): a failed local write that committed ==
+ok   N1E-0 fixture: the local write exited 1 after its UPDATE committed
+# N1E replay rc=0 :: replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/n1out
+FAIL N1E-1 rc=0 [replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.YhrSew/n1out]
+== DRAIN client leaves before its container (stub podman, no real container) ==
+FAIL DRAIN-1 the register lock was never free while the container of the call whose client had already left was still running :: got [35] want [0]
+FAIL DRAIN-2 locked.sh exit status = the container's real exit status (5), not the dead client's (141) :: got [141] want [5]
+ok   DRAIN-3 the journal row of the first call is written AFTER its container's write: db_sha_before is the old state
+FAIL DRAIN-4 db_sha_after="7ebe1ad4f636d96eb71d1dc2bc50e27690164ac0b182a1921fbd7454c1e72b15" (the write had not landed when the row was taken)
+FAIL DRAIN-5 the row says how the lock was held: container_drain=waited :: got [null] want ["waited"]
+FAIL DRAIN-6 the row records the client's own status: client_exit=141 (exit differs) :: got [null] want [141]
+ok   DRAIN-7 no pending marker is left once the drained op is journaled
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+AssertionError: (1791339831194345487, 1791339835002611543)
+FAIL DRAIN-8 overlap: w 1791339830979964428 d1 s 1791339830987471174 ctr-d1 w 1791339831194345487 d2 s 1791339831201986153 ctr-d2 e 1791339832214128314 ctr-d2 e 1791339835002611543 ctr-d1 
+FAIL DRAIN-9 golden-FALSE: a call whose container is gone when the client exits drains nothing: container_drain=none, exit 0 :: got [0/null] want [0/"none"]
+FAIL DRAIN-10 dt=0s rc=141 killed=n row=null
+FAIL DRAIN-11 no pending marker after a killed container
+FAIL DRAIN-12 rc=3 row=null marker=n
+== SIG signals to locked.sh while the writer runs (stub RUNP) ==
+ok   SIG-TERM SIGTERM to locked.sh: the lock was never free while the writer lived, exit 143, journal interrupted=TERM
+ok   SIG-INT SIGINT to locked.sh: the lock was never free while the writer lived, exit 130, journal interrupted=INT
+ok   SIG-HUP SIGHUP to locked.sh: the lock was never free while the writer lived, exit 143, journal interrupted=HUP
+scripts/register/tests/test_fix_r2.sh: line 226: 3942404 User defined signal 1      python3 -I -c 'import os,signal,sys;signal.signal(signal.SIGINT,signal.SIG_DFL);signal.signal(signal.SIGQUIT,signal.SIG_DFL);os.execvp("env",sys.argv[1:])' env LOCKED_TEST_MODE=1 LOCKED_ROOT="$R" LOCKED_RUNP="$STUBRUNP" LOCKED_PODMAN="$STUBPODMAN" bash "$LOCKED" --op-id "sig-$S" -- sh -c 'w' > "$T_SCR/sig.out" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.YhrSew/sigUSR1/.audit/register/journal.jsonl'
+FAIL SIG-USR1 free_while_alive=44 exit=138 interrupted= out=[]
+scripts/register/tests/test_fix_r2.sh: line 226: 3947838 User defined signal 2      python3 -I -c 'import os,signal,sys;signal.signal(signal.SIGINT,signal.SIG_DFL);signal.signal(signal.SIGQUIT,signal.SIG_DFL);os.execvp("env",sys.argv[1:])' env LOCKED_TEST_MODE=1 LOCKED_ROOT="$R" LOCKED_RUNP="$STUBRUNP" LOCKED_PODMAN="$STUBPODMAN" bash "$LOCKED" --op-id "sig-$S" -- sh -c 'w' > "$T_SCR/sig.out" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.YhrSew/sigUSR2/.audit/register/journal.jsonl'
+FAIL SIG-USR2 free_while_alive=44 exit=140 interrupted= out=[]
+scripts/register/tests/test_fix_r2.sh: line 226: 3952758 Alarm clock                python3 -I -c 'import os,signal,sys;signal.signal(signal.SIGINT,signal.SIG_DFL);signal.signal(signal.SIGQUIT,signal.SIG_DFL);os.execvp("env",sys.argv[1:])' env LOCKED_TEST_MODE=1 LOCKED_ROOT="$R" LOCKED_RUNP="$STUBRUNP" LOCKED_PODMAN="$STUBPODMAN" bash "$LOCKED" --op-id "sig-$S" -- sh -c 'w' > "$T_SCR/sig.out" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.YhrSew/sigALRM/.audit/register/journal.jsonl'
+FAIL SIG-ALRM free_while_alive=45 exit=142 interrupted= out=[]
+ok   SIG-QUIT SIGQUIT was ignored at entry (SigIgn bit set: background job of a non-interactive shell): the call ran to its end, the lock was never free, exit 0
+== RACE fast-exiting writer: exit status 7, 120 calls ==
+ok   RACE-1 120 of 120 calls exited 7 and journaled exit 7 (status lost: 0, journal rows with another status: 0)
+== FENCE the next locked.sh waits for the container of a dead predecessor (stub podman) ==
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+IndexError: list index out of range
+FAIL FENCE-1 overlap: s 1791339889081474251 ctr-dead1 w 1791339889228436041 fe1  rc=0 []
+ok   FENCE-2 the dead predecessor's pending marker is left (its write was never journaled: replay refuses)
+FAIL FENCE-3 rc=0 []
+ok   FENCE-4 golden-FALSE: a dead predecessor whose container is gone does not delay or refuse the new writer (exit 0)
+ok   FENCE-5 golden-FALSE: a marker whose owner is a LIVE locked.sh is not an orphan: no wait (0s)
+== LC LOCKED_LOCK_HELD is accepted only for the ancestor whose fd 9 HOLDS the lock ==
+ok   LC-1 fd 9 is open on the lock file but NOBODY holds the lock: refused (an unlocked fd 9 proves nothing)
+ok   LC-0 control needle: another process holds the lock
+FAIL LC-2 fd 9 open on the lock file (never locked) while ANOTHER process holds it: refused (N4: the proof must show fd 9's own file description holds it) :: [rc=0]
+ok   LC-3 an ancestor with fd 9 closed while another process holds the lock: refused
+ok   LC-4 fd 9 open and locked on ANOTHER file while another process holds the register lock: refused (identity of fd 9's file)
+ok   LC-5 fd 9 really holds the lock but the claimed pid is a live process that is NOT an ancestor: refused
+ok   LC-6 golden-true: the ancestor whose fd 9 really holds the lock is accepted
+FAIL LC-7 journal rows: 2
+== RP a reaper that ignores SIGTERM is still bounded ==
+FAIL RP-1 rc=124 dt=40s []
+== B backup_db.sh: die leaves no file; a busy checkpoint is refused ==
+FAIL B-1 rc=1 left=1 [mkdir: Not a directory
+backup_db: cannot create .audit/out/backup-20261007T022543Z-4035812-150546377]
+FAIL B-2 rc=0 rec=y left=1 [backup_db: OK docs/workable_items.db.bak-20261007T022602Z-4052360-781904943 sha256=64ccfbb02098bee8be2317529a66042c033d72fd30cf4894ac203cca5efbab90 rows=115 integrity=ok restore_probe=equal]
+ok   B-3 golden-true: with no reader the same register backs up
+== RC reconcile.sh empty view header ==
+ok   RC-1 golden-true: a register whose views are all empty writes the hand-kept headers (they match the views)
+FAIL RC-2 rc=0 csv=atm_id,reopen_count [reconcile: wrote 7 CSV files and Reconciliation.md into /dev/shm/regtest.YhrSew/rc_out]
+== T3 mut_score ==
+ok   T3-1 a passing run is survived
+ok   T3-2 a failing run with a test FAIL line is killed
+ok   T3-3 a failing run whose FAIL line is a disk headroom refusal is env, never killed
+ok   T3-4 a failing run with no FAIL line at all (crash, kill) is env, never killed
+ok   T3-5 image lock unreadable is env
+== T4 zero-byte id snapshot ==
+ok   T4-1 both snapshots answer with zero bytes and exit 0: ids_snapshot is failed (sqlite3 always prints a row terminator)
+== T5 replay fallback base with wal_bytes_before ==
+ok   T5-1 control: the first register row has db_sha_before = --since and an empty -wal before it: it is the fallback base's successor and is replayed
+ok   T5-2 the same row with wal_bytes_before=4152 (a write pending in the -wal file before it) is NOT a base: since_not_found
+== REAL signals / SIGPIPE / SIGKILL with a real container ==
+ok   REAL-TERM SIGTERM to locked.sh with a real container: lock never free while the first container ran (0 free samples), the second writer ran after it (final title SECOND), journal interrupted=TERM
+ok   REAL-TERM-b the journal chains: the second row's db_sha_before equals the first row's db_sha_after (the first row was taken after its container's write)
+FAIL REAL-PIPE head=[first-line] lock_free_before_write=yes locked_end=early row_after="07a5c669707e4908d4fdd10622cee8c346f6879bf232c73aedbe3b9296a1fa55" final=ac9ef7945919dd4f2803a0a2bd3772df4997273557baa3201f1278553f1c7532 rc=141 1791340032.485795867
+ok   REAL-PIPE-b no pending marker is left (the op was journaled after the container was gone)
+FAIL REAL-KILL order=overlap title=FIRST-LATE second rc=0 out=[]
+ok   REAL-KILL-b the killed writer's pending marker is left (its write is not journaled: the documented residual limit, replay refuses)
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=36 fail=31
+# RED of the reworked RACE section (committed scripts): RACE-1 deterministic leg
+# identity: task=FIX-R2 utc=2026-10-07T02:57:24Z host=anton uid=1000
+# git_head=3fa277e414c43186f937685e084d9752f529e336 tree_dirty_files=2683
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=b0073943bf4d42dc5b13f1f788d48d0d61a205eef903d45f343c62715ceffc1f backup_db=dda468837c6c2ac73cca9926df107bb4af5480d7fa881bc349a6fd6598fedad3 test=0e031d55edabed5fcc33c34423c3daddbdb33aefeddfae42a2224547ecb6b3da clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=5b03fe64a00f952b9f67042a0d84a932f037ef88da574f097671d2e5320d3769 replay=3b3f9f27082e8bc5b657950d4bf62aabb06d2f647dcfcf3dc282a89ee64bdc8f
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/dev/shm/head/scripts/register sha256 locked=b0073943bf4d42dc backup=dda468837c6c2ac7 reconcile=5b03fe64a00f952b replay=3b3f9f27082e8bc5
+== RACE fast-exiting writer: exit status 7 ==
+FAIL RACE-1 the exit status was lost in 12 of 12 calls (the reaped child's status was never read)
+FAIL RACE-2 lost 0 of 60 calls; journal rows with another status: 12
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=1 fail=2

@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T23:30:00Z |
-| Status | tracked from the WP-06 slice T064a; independent review of this revision owed (constitution 11.4.142); revision 2: WF10 review fix round 1 (F1-F14); the independent re-review of this revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T03:00:00Z |
+| Status | tracked; revision 3: WF13 review fix round (11.4.276 round 3, structural: defect classes C1-C6 of `scripts/register/tests/test_fix_r2.sh`); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/backup_db.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -26,7 +26,7 @@ scripts/register/backup_db.sh --record <file>
 2. Read-only through the `immutable=1` URI (no `-shm`/`-wal` beside the backup): `PRAGMA integrity_check` must print `ok`, and a restore probe (the backup restored into a scratch database under `/out`) must dump to the same bytes as the source dump of step 1.
 3. The record `--record <file>`: `backup_path`, `utc`, both sha256 values, both row counts (INSERT rows of the canonical dumps), `integrity`, `restore_probe`, `image_digest`, the op ids.
 
-Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>-<pid>-<ns>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
+The result row of `PRAGMA wal_checkpoint(TRUNCATE)` must be `0|...` (WF13 N7, as `dump.sh` F10): a reader outside the lock blocks the TRUNCATE, and `source_sha256` (the main-file hash) would then name a state that lacks the WAL pages the backup holds, so the backup is refused `checkpoint_incomplete`. Every failure after the backup file was created (`die` as well as `fail`) removes that file (WF13 N6). Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>-<pid>-<ns>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
 
 ## Exit codes
 

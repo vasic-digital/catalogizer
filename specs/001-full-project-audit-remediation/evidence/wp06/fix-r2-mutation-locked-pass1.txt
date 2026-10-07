@@ -1,0 +1,20 @@
+# identity: group=locked utc=2026-10-07T03:27:39Z host=anton uid=1000 git_head=3fa277e414c43186f937685e084d9752f529e336
+# runner_sha256=987c86f14427b3c6717adcc840da012196c97db4dd143a95a893beee1881710c test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=7a48105097de238902d36149d52cc4b1e59d15ec897bb0c51d152d953283738a followup_tests=test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1 test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 test_fix_r2.sh|REAL| test_replay.sh|| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+reaper_unbounded	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RP-1 rc=124 dt=40s []
+NM1_lock_claim_only_held_by_someone	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL LC-4 fd 9 open and locked on ANOTHER file while another process holds the register lock: refused (identit
+NM3_snapshot_zero_byte_accepted	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL T4-1 both snapshots answer with zero bytes and exit 0: ids_snapshot is failed (sqlite3 always prints a ro
+lock_claim_not_ours	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL LC-2 fd 9 open on the lock file (never locked) while ANOTHER process holds it: refused (N4: the proof mus
+drain_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-1 the register lock was never free while the container of the call whose client had already left wa
+container_status_ignored	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-2 locked.sh exit status = the container's real exit status (5), not the dead client's (141) :: got 
+fence_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL FENCE-1 overlap: s 1791344161619710129 ctr-dead1 w 1791344161746376176 fe1  rc=0 []
+fence_waits_for_live_owner	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL FENCE-5 rc=0 dt=7s
+wait_status_preset	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RACE-1 the exit status was lost in 12 of 12 calls (the reaped child's status was never read)
+pipe_not_ignored	NO	test_replay.sh: 
+signals_only_term_int_hup	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL SIG-USR1 free_while_alive=44 exit=138 interrupted= out=[]
+killed_or_unverified_marker_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-11 no pending marker after a killed container
+container_wait_unbounded	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-10 dt=60s rc=5 killed=n row="waited"
+reaper_no_kill_escalation	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RP-1 rc=124 dt=40s []
+podman_failure_is_gone	yes	test_locked.sh: FAIL L10 [/dev/shm/mutops.zDkMUv/t/podman_failure_is_gone/scripts/register/locked.sh: line 164: ids: unbound v
+negative_control_comment	NO	test_replay.sh: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=23 fail=0
