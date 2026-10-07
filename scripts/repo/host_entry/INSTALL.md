@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T19:00:00Z |
+| Last modified | 2026-10-07T01:00:00Z |
 | Status | draft by T042 (WP-04, slice 9); NOT performed: installing the entry point and approving the first manifest is the owner checkpoint T046a (constitution 11.4.66); no agent runs any step below |
 | Status summary | install steps and the state layout; the `--owner-trust` operations that create and change the trust file are NOT built in this revision |
 | Source | `scripts/repo/host_entry/cpa-host`, `docs/scripts/commit-push-all.md` |
 | Issues | `cpa-host --owner-trust approve|retire|revoke|reanchor` answers 20 `owner_op_unimplemented` until T046a builds them; until then the trust file can only be written by hand, which this procedure does NOT recommend |
-| Fixed | first revision |
+| Fixed | revision 2: the run-id grammar, an unexecutable approved core is 20 (never 126), a relative `--paths-from` is read from the directory cpa-host was started in (WF11 review F9, F10, F12) |
 
 This document is the target of every refusal that `cpa-host` and the copied `commit-push-all.sh` print (`see: scripts/repo/host_entry/INSTALL.md`).
 

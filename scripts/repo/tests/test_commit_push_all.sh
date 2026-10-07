@@ -14,7 +14,7 @@ H="${H:-$SRC/scripts/commit-push-all.sh}"; case "$H" in /*) ;; *) H="$D0/$H" ;; 
 REALGIT="$(command -v git)"; T="$(mktemp -d "${TMPDIR:-/tmp}/cpa_test.XXXXXX")"; [ -n "${CPA_KEEP:-}" ] || trap 'rm -rf "$T"' EXIT; [ -z "${CPA_KEEP:-}" ] || echo "NOTE: CPA_KEEP set, scratch tree kept: $T"
 [ -x "$H" ] || echo "NOTE: $H is absent or not executable (RED state: every case must FAIL)"
 EVR=specs/001-full-project-audit-remediation/evidence; SCHEMA=specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json
-export LONGOPS_ALLOW_TMPFS=1 CPA_OWNED_ORGS=fx
+export LONGOPS_ALLOW_TMPFS=1
 
 # ---- the git shim: logs argv; hooks for pauses, a one-shot command before the first push, and failures (test hooks only) -----------------
 mkdir -p "$T/shim"; cat > "$T/shim/git" <<SHIM
@@ -45,6 +45,9 @@ cp "$SRC"/scripts/audit/org_of.py "$S/scripts/audit/"; cp "$SRC"/scripts/longops
 cp "$SRC/scripts/commit-push-all.sh" "$S/scripts/" 2>/dev/null; cp "$SRC/scripts/repo/host_entry/cpa-host" "$S/scripts/repo/host_entry/" 2>/dev/null
 printf 'fx\n' > "$S/scripts/audit/own_orgs.txt"
 cp "$D0/$SCHEMA" "$S/$SCHEMA"
+# a reduced owed-gates list (the fixture models "every gate built", like the reduced check registry below); the REAL list is exercised by section 14
+printf '# gate\twhen\tnote\n' > "$S/scripts/repo/owed_gates.tsv"
+printf '# the fixture names no long gate (an explicit empty list: S4 runs nothing and owes nothing)\n' > "$S/scripts/repo/long_gates.txt"
 # a reduced check registry (the real one has container rows): three file checks and the changeset check, all on the host
 { printf '# check\tcommand\timage\tmode\tbaseline\tscope\tnote\n'
   printf 'shell_parse\tbuiltin:shell_parse\tIMG-TESTUTIL\tplain\t-\tfiles\tbash -n\n'
@@ -98,14 +101,38 @@ trust_build() { # a test-state trust file built directly (the owner `approve` op
     '{schema:"cpa-host-trust/1",projects:{($k):{adoption_commit:$a,manifest:$e,history:[{op:"approve",verdict:"fixture",time:"2026-10-06T00:00:00Z",manifest:$e,manifest_sha256:$ms}]}}}' > "$C/state/trust.json"
   TRUSTKEY="$key"; TRUSTMS="$ms"
 }
-ENVV() { echo "CPA_HOST_STATE=$C/state" "CPA_HOST_ENTRY=$C/bin/cpa-host" "PATH=$T/shim:$PATH" "GITSHIM_LOG=$C/git.log" "SWEEP_LOG=$C/sweep.log" "CPA_OWNED_ORGS=fx"; }
+ENVV() { echo "CPA_HOST_STATE=$C/state" "CPA_HOST_ENTRY=$C/bin/cpa-host" "PATH=$T/shim:$PATH" "GITSHIM_LOG=$C/git.log" "SWEEP_LOG=$C/sweep.log"; }
 run() { # run <cpa-host args...>   (cwd $W or $CWD); sets RC, RUN (run id), RD (run dir), REP (report path), OUT (stdout+stderr)
   : > "$C/git.log"; ( cd "${CWD:-$W}" && env $(ENVV) ${XENV:-} "$C/bin/cpa-host" "$@" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
   OUT="$(cat "$C/out.txt" "$C/err.txt")"; RUN="$(printf '%s\n' "$OUT" | sed -n 's/.*cpa: exit=[0-9]* run=\([^ ]*\).*/\1/p' | tail -1)"
   RD="$W/.audit/commit-push/$RUN"; REP="$RD/report.json"; shimcheck
 }
-shimcheck() { # no force, no force-with-lease, no +refspec, no --no-verify, no rebase, no reset in any git call of the run
-  local l; l="$(grep -nE -- '--force|--force-with-lease|--no-verify|(^| )rebase( |$)|(^| )reset( |$)|(^| )\+[A-Za-z0-9_/.:-]+:|(^| )push .*( |:)\+' "$C/git.log" | head -3)"
+forbidden_calls() { # forbidden_calls <git shim log>: the log lines (argv of one git call each) that spell a force, lease, +refspec, deleting or mirroring push, a history rewrite or a hook bypass
+  awk '
+    function flag(why) { print why ": " $0; hit = 1 }
+    { hit = 0; n = split($0, t, " "); pi = 0
+      for (i = 1; i <= n; i++) if (t[i] == "push") { pi = i; break }
+      for (i = 1; i <= n; i++) {
+        if (t[i] ~ /^--force/ || t[i] == "--no-verify" || t[i] == "--amend") { flag("flag"); break }
+        if (t[i] == "rebase" || t[i] == "reset" || t[i] == "update-ref") { flag("verb"); break }
+      }
+      if (hit) next
+      if (pi) { opts = 1
+        for (i = pi + 1; i <= n; i++) {
+          if (t[i] == "--") { opts = 0; continue }
+          if (opts && (t[i] ~ /^-[a-zA-Z]*f[a-zA-Z]*$/ || t[i] ~ /^--(mirror|delete|prune)/ || t[i] == "-d")) { flag("push option"); break }
+          if (t[i] ~ /^\+/ || t[i] ~ /^:./ || t[i] ~ /:\+/) { flag("push refspec"); break }
+        } }
+      if (hit) next
+      for (i = 1; i <= n; i++) {
+        if (t[i] == "checkout") for (j = i + 1; j <= n; j++) if (t[j] ~ /^-[a-zA-Z]*B[a-zA-Z]*$/) { flag("checkout -B"); break }
+        if (t[i] == "branch") for (j = i + 1; j <= n; j++) if (t[j] ~ /^-[a-zA-Z]*[fF][a-zA-Z]*$/ || t[j] == "--force") { flag("branch -f"); break }
+        if (t[i] == "fetch") for (j = i + 1; j <= n; j++) if (t[j] ~ /^-[a-zA-Z]*f[a-zA-Z]*$/ || t[j] ~ /^\+/) { flag("fetch force"); break }
+        if (hit) break
+      } }' "$1"
+}
+shimcheck() { # no force, no lease, no +refspec, no --no-verify, no rebase, no reset, no mirror/delete/:ref push, no update-ref/--amend/branch -f/checkout -B in any git call of the run
+  local l; l="$(forbidden_calls "$C/git.log" | head -3)"
   [ -z "$l" ] || bad "SHIM: a forbidden git call: $l"
 }
 pushes() { grep -cE '(^| )push( |$)' "$C/git.log"; }
@@ -226,6 +253,8 @@ hb="$(cd "$HRUND" && find . -type f | sort | xargs sha256sum | sha256sum)"; [ -n
 run; eq "3.2 a second run while the lock is held: 20" "$RC" 20; has "3.2 reason lock_held" "$OUT" lock_held; has "3.2 names the holder's run id" "$OUT" "$(basename "$HRUND")"
 eq "3.2 the holder's run directory is byte-unchanged" "$(cd "$HRUND" && find . -type f | sort | xargs sha256sum | sha256sum)" "$hb"
 eq "3.2 the second run wrote its own run directory" "$(ls -1d "$W/.audit/commit-push/"*/ | wc -l)" 2
+hasnot "3.2 the report does not list the LIVE holder as an interrupted run (F8)" "$(jq -c .interrupted_runs "$REP" 2>/dev/null)" "$(basename "$HRUND")"
+has "3.2 it lists it as a live run" "$(jq -c .live_runs "$REP" 2>/dev/null)" "$(basename "$HRUND")"
 : > "$C/go"; wait $HP; hrc=$?; eq "3.3 the holder finishes with its own code: 0" "$hrc" 0
 unset GITSHIM_LOG GITSHIM_PAUSED GITSHIM_PAUSE_UNTIL
 run; eq "3.4 after the holder ended the lock is free: 0" "$RC" 0
@@ -236,6 +265,7 @@ if sect "4 deferral"; then
 mk skip
 echo s > "$W/src/s.txt"; paths 'src/s.txt\n'; export SKIP_LONG="long gates not run"; run --paths-from "$C/p.txt" "s"; unset SKIP_LONG
 moved 4.1; eq "4.1 SKIP_LONG: 14" "$RC" 14; has "4.1 Deferred-Gates SKIP_LONG" "$(msg)" "Deferred-Gates: SKIP_LONG"; eq "4.1 the commit is pushed" "$(tipof a)" "$(head_)"
+hasnot "4.1 the detail names no pending check that does not exist (F6)" "$(jq -r .detail "$REP" 2>/dev/null)" check_pending_release; eq "4.1 check_pending_release is false" "$(jq -r .check_pending_release "$REP" 2>/dev/null)" false
 mk localonly
 echo lo > "$W/src/lo.txt"; paths 'src/lo.txt\n'; run --local-only --paths-from "$C/p.txt" "lo"
 eq "4.2 --local-only: 14" "$RC" 14; has "4.2 LOCAL_ONLY in the Deferred-Gates line" "$(msg)" "LOCAL_ONLY"; eq "4.2 no push call" "$(pushes)" 0
@@ -264,6 +294,7 @@ printf 'extra\tscripts/repo/check_no_ci.sh --root /nonexistent\tIMG-TESTUTIL\tpl
 git -C "$W" add -A; git -C "$W" commit -qm "registry row"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main
 echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; run --paths-from "$C/p.txt" "a"
 eq "4.9 a registry row that the approved copy lacks is pending, never run: 14, not 10" "$RC" 14; eq "4.9 the report says check_pending_release" "$(jq -r .check_pending_release "$REP" 2>/dev/null)" true
+has "4.9 the commit's Deferred-Gates line carries CHECK_PENDING_RELEASE" "$(msg)" CHECK_PENDING_RELEASE
 mk skipfail
 mkdir -p "$W/scripts/repo"; printf '#!/bin/bash\nexit 1\n' > "$W/scripts/repo/record_deferral.sh"; chmod 755 "$W/scripts/repo/record_deferral.sh"; git -C "$W" add -A; git -C "$W" commit -qm shim; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"
 echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; export SKIP_LONG="x"; run --paths-from "$C/p.txt" "a"; unset SKIP_LONG
@@ -588,12 +619,146 @@ eq "12.1 a window that commits, merges and pushes under planted hooks: 0" "$RC" 
 [ ! -e "$C/hook.marker" ] && ok "12.1 no hook ran (pre-commit, commit-msg, post-commit, pre-push, post-merge, reference-transaction, pre-merge-commit)" || bad "12.1 hooks ran: $(sort -u "$C/hook.marker" | tr '\n' ' ')"
 fi
 
+# ======== 14 the exit-code contract (WF11 review of the launcher slice): a deferred or unbuilt part is never a success ============================
+# Defect classes (11.4.276 (C)), each closed for EVERY member: C3 a gate that did not run reads as exit 0 (a `deferred` registry row, an unbuilt secret fold,
+# private-key fold, path gate, G-PIN, remote check, container S3, an absent owed-gate list); C2 a helper status outside its documented set reads as success;
+# C4 report fields that state what did not happen; C5 a caller-environment variable that widens what a run may do; C6 a stale lock reported as a live one;
+# C7 three run-id grammars; C8 a host-entry exit outside its documented set.
+if sect "14 contract"; then
+realowed() { cp "$SRC/scripts/repo/owed_gates.tsv" "$W/scripts/repo/owed_gates.tsv"; }
+badowed() { printf 'X_GATE\tsometimes\tnot a condition\n' >> "$W/scripts/repo/owed_gates.tsv"; }
+defrows() { printf 'go_vet\t-\tIMG-GO\tdeferred\t-\tfiles\tremote measurement\nanti_bluff\t-\tIMG-TESTUTIL\tdeferred\t-\tfiles\tnot built\n' >> "$W/scripts/repo/validate_checks.tsv"; }
+# control needle of the real list: it names the unbuilt folds the reviewer found
+grep -q '^SECRET_FOLD	' "$SRC/scripts/repo/owed_gates.tsv" 2>/dev/null && grep -q '^PRIVATE_KEY_FOLD	' "$SRC/scripts/repo/owed_gates.tsv" 2>/dev/null && ok "14.0 the real owed-gate list names SECRET_FOLD and PRIVATE_KEY_FOLD" || bad "14.0 the real owed-gate list is absent or lacks the secret/private-key folds"
+
+PRE=realowed mk owed1
+printf -- '-----BEGIN OPENSSH PRIVATE KEY-----\nNOTAREALKEYNOTAREALKEYNOTAREALKEY\n-----END OPENSSH PRIVATE KEY-----\n' > "$W/src/id_fake"; paths 'src/id_fake\n'; run --paths-from "$C/p.txt" "key-shaped file"
+eq "14.1 unbuilt secret and private-key folds and a key-shaped file declared: 14, never 0" "$RC" 14; moved 14.1
+has "14.1 the report names GATES_NOT_BUILT" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" GATES_NOT_BUILT
+has "14.1 the deferral row names the private-key fold" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" PRIVATE_KEY_FOLD; has "14.1 and the secret fold" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" SECRET_FOLD
+has "14.1 the commit carries the flag in its Deferred-Gates line" "$(msg)" "Deferred-Gates: GATES_NOT_BUILT"; eq "14.1 the report reason" "$(jq -r .reason "$REP" 2>/dev/null)" deferral_recorded
+eq "14.1 the loud deferral still pushed (the mechanism is never blocked, 11.4.234 (D))" "$(tipof a)" "$(head_)"
+PRE=realowed mk owed2; run
+eq "14.2 the real list, nothing declared: the always-owed gates still give 14" "$RC" 14; has "14.2 REMOTE_CHECKS owed" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" REMOTE_CHECKS; hasnot "14.2 the folds of a declared change set are not owed when nothing is declared" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" SECRET_FOLD
+OMIT=scripts/repo/owed_gates.tsv mk owed3; echo o > "$W/src/o.txt"; paths 'src/o.txt\n'; run --paths-from "$C/p.txt" "o"
+eq "14.3 an approved copy without the owed-gate list: 14 (the unbuilt set cannot be read), never 0" "$RC" 14; has "14.3 the reason says the list is absent" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" "owed_gates.tsv absent"
+PRE=badowed mk owed4; run; eq "14.4 an owed-gate row with a condition outside {always, declared_paths}: 20" "$RC" 20; has "14.4 owed_gates_invalid" "$OUT" owed_gates_invalid
+PRE=defrows mk defrow; echo d > "$W/src/d.txt"; paths 'src/d.txt\n'; run --paths-from "$C/p.txt" "d"
+eq "14.5 deferred registry rows (go_vet, anti_bluff) in the approved registry: 14, never 0" "$RC" 14; moved 14.5
+has "14.5 the report names CHECKS_DEFERRED" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" CHECKS_DEFERRED; has "14.5 the row names go_vet" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" go_vet; has "14.5 and anti_bluff" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" anti_bluff
+has "14.5 the commit carries Deferred-Gates: CHECKS_DEFERRED" "$(msg)" "Deferred-Gates: CHECKS_DEFERRED"
+
+OMIT=scripts/repo/long_gates.txt mk nolong; echo n > "$W/src/n.txt"; paths 'src/n.txt\n'; run --paths-from "$C/p.txt" "n"
+eq "14.33 an approved copy without a long-gate list (no long gate was run): 14, never 0" "$RC" 14; has "14.33 GATES_NOT_BUILT names the long gates" "$(cat "$RD/deferrals.tsv" 2>/dev/null)" "long_gates.txt is absent"
+
+# ---- C6 a stale lock is named as one, with its remediation (F2) ----
+mk stale; echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; export GITSHIM_LOG="$C/git.log" GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
+: > "$C/git.log"; ( cd "$W" && env $(ENVV) GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" --paths-from "$C/p.txt" "l" ) >"$C/hold.out" 2>"$C/hold.err" &
+HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
+[ -e "$C/paused" ] && ok "14.6 the first run is paused between S6 and S7" || bad "14.6 no pause reached"
+hpid="$(jq -r .pid "$W/.audit/longops/claims/commit_push/holder.json" 2>/dev/null)"
+if [[ "$hpid" =~ ^[0-9]+$ ]] && [ "$hpid" -gt 1 ] && tr '\0' ' ' < "/proc/$hpid/cmdline" 2>/dev/null | grep -q 'commit-push-all.sh'; then kill -KILL "$hpid"; ok "14.6 the holder (a process of our released commit-push-all.sh) was killed"; else bad "14.6 the holder pid '$hpid' is not our released script"; fi
+: > "$C/go"; wait $HP 2>/dev/null; unset GITSHIM_LOG GITSHIM_PAUSED GITSHIM_PAUSE_UNTIL
+run; eq "14.6 a dead holder's claim: 20" "$RC" 20; eq "14.6 reason lock_stale_claim, not lock_held" "$(jq -r .reason "$REP" 2>/dev/null)" lock_stale_claim
+has "14.6 the message carries the real cause" "$OUT" "stale_claim"; has "14.6 and the reap remediation" "$OUT" "reap.sh --purpose commit_push"
+
+# ---- C2 every helper status outside its documented set is 20 (F5) ----
+mshim() { hshim scripts/repo/integrate_ff_only.sh 'j=""; while [ $# -gt 0 ]; do [ "$1" = --json ] && j="$2"; shift; done; echo "{\"reason\":\"remotes_diverged\"}" > "$j"; exit 12'; hshim scripts/repo/integrate_merge.sh "echo '$2'; exit $1"; }
+mk mg13; mshim 13 ''; run; eq "14.7 integrate_merge 13: 13 secret_fold_refused" "$RC" 13; has "14.7 reason" "$OUT" secret_fold_refused
+mk mg7; mshim 7 ''; run; eq "14.8 integrate_merge exit 7 (outside its set): 20, never read as success" "$RC" 20; has "14.8 internal_error" "$OUT" internal_error
+mk mg10; mshim 10 ''; run; eq "14.9 integrate_merge 10: 10" "$RC" 10; has "14.9 reason" "$OUT" resolved_file_holds_marker
+mk mg11; mshim 11 ''; run; eq "14.10 integrate_merge 11: 11" "$RC" 11; has "14.10 reason" "$OUT" remote_unreachable
+mk mg20; mshim 20 'resolution_invalid'; run; eq "14.11 integrate_merge 20: 20" "$RC" 20; has "14.11 reason" "$OUT" resolution_invalid
+vcs() { hshim scripts/repo/validate_cheap.sh "$2"; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; }
+mk vc20; vcs 20 'exit 20'; run --paths-from "$C/p.txt" "a"; eq "14.12 validate_cheap 20: 20 check_error" "$RC" 20; has "14.12 check_error" "$OUT" check_error; eq "14.12 nothing committed or pushed" "$(pushes)" 0
+mk vc7; vcs 7 'exit 7'; run --paths-from "$C/p.txt" "a"; eq "14.13 validate_cheap exit 7 (outside its set): 20, never read as success" "$RC" 20; has "14.13 internal_error" "$OUT" internal_error; eq "14.13 no push call" "$(pushes)" 0
+mk vc10; vcs 10 'echo "fail shim_check src/a.txt"; exit 10'; run --paths-from "$C/p.txt" "a"; eq "14.14 validate_cheap 10: 10" "$RC" 10; has "14.14 check_failed" "$OUT" check_failed
+mk vc14; vcs 14 'echo "check_pending_release extra"; exit 14'; run --paths-from "$C/p.txt" "a"; eq "14.15 validate_cheap 14: 14, never 0" "$RC" 14; eq "14.15 the report says check_pending_release" "$(jq -r .check_pending_release "$REP" 2>/dev/null)" true
+mk vr7; hshim scripts/repo/verify_repos.sh 'j=""; while [ $# -gt 0 ]; do [ "$1" = --json ] && j="$2"; shift; done; echo "{\"summary\":{\"pin_drift\":0,\"ahead\":0,\"dirty\":0},\"repos\":[]}" > "$j"; exit 7'; run
+eq "14.16 a verifier exit 7 with a readable report (outside its set): 20, never clean" "$RC" 20; has "14.16 internal_error" "$OUT" internal_error
+mk aq7; hshim scripts/longops/acquire.sh 'echo boom >&2; exit 7'; run; eq "14.17 acquire.sh exit 7 (outside its set): 20, the run does not proceed unlocked" "$RC" 20; has "14.17 lock_error" "$OUT" lock_error; eq "14.17 no push call" "$(pushes)" 0
+mk aq3; hshim scripts/longops/acquire.sh 'echo "purpose_conflict: commit_push held (live): {}" >&2; exit 3'; run; eq "14.18 acquire.sh 3: 20 lock_held" "$RC" 20; eq "14.18 reason" "$(jq -r .reason "$REP" 2>/dev/null)" lock_held; has "14.18 the message carries acquire.sh's own text" "$OUT" "purpose_conflict"
+mk aq4; hshim scripts/longops/acquire.sh 'echo "stale_claim: commit_push holder is dead (resolved from /proc); reap with scripts/longops/reap.sh --purpose commit_push" >&2; exit 4'; run; eq "14.19 acquire.sh 4 with a stale_claim text: lock_stale_claim" "$(jq -r .reason "$REP" 2>/dev/null)" lock_stale_claim; has "14.19 the reap hint" "$OUT" "reap.sh --purpose commit_push"
+
+# ---- C2 a signal mid-run: the catch-all of S8 is 20, never the signal's status read as success (F5) ----
+mk term; echo t > "$W/src/t.txt"; paths 'src/t.txt\n'; export GITSHIM_LOG="$C/git.log" GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
+: > "$C/git.log"; ( cd "$W" && env $(ENVV) GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" --run-id term-1 --paths-from "$C/p.txt" "t" ) >"$C/hold.out" 2>"$C/hold.err" &
+HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
+tpid="$(jq -r .pid "$W/.audit/longops/claims/commit_push/holder.json" 2>/dev/null)"
+if [[ "$tpid" =~ ^[0-9]+$ ]] && [ "$tpid" -gt 1 ] && tr '\0' ' ' < "/proc/$tpid/cmdline" 2>/dev/null | grep -q 'commit-push-all.sh'; then kill -TERM "$tpid"; ok "14.20 SIGTERM sent to our released commit-push-all.sh"; else bad "14.20 the run pid '$tpid' is not our released script"; fi
+: > "$C/go"; wait $HP; hrc=$?; unset GITSHIM_LOG GITSHIM_PAUSED GITSHIM_PAUSE_UNTIL
+eq "14.20 a SIGTERM mid-run: 20, not 143 and never 0" "$hrc" 20
+TR="$W/.audit/commit-push/term-1/report.json"; eq "14.20 the report exit" "$(jq -r .exit "$TR" 2>/dev/null)" 20; eq "14.20 reason internal_error" "$(jq -r .reason "$TR" 2>/dev/null)" internal_error; has "14.20 the detail names the signal status" "$(jq -r .detail "$TR" 2>/dev/null)" "exit 143"
+
+# ---- C8/self-test: a released copy changed by one byte beside the genuine snapshot is refused (F5, the own-sha256 check) ----
+mk tamper; run; RDT="$RD"; chmod u+w "$RDT/released/scripts/commit-push-all.sh"; echo '# tampered' >> "$RDT/released/scripts/commit-push-all.sh"
+( cd "$W" && env $(ENVV) CPA_ROOT="$W" CPA_RUN_ID="$(basename "$RDT")" "$RDT/released/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+eq "14.21 a released copy changed by one byte: 20" "$RC" 20; has "14.21 own sha256 differs from the snapshot entry" "$(cat "$C/err.txt")" "own sha256 differs from the snapshot entry"
+
+# ---- C5 no caller-environment variable widens the owned set (F1) ----
+mk own; git -C "$W/mods/ext" checkout -q -B main 2>/dev/null; git -C "$W/mods/ext" config user.email t@t; git -C "$W/mods/ext" config user.name t
+echo x > "$W/mods/ext/x.txt"; printf 'mods/ext/x.txt\n' > "$C/p.txt"; e0="$(git -C "$T/ext/t.git" rev-parse main)"
+run --repo mods/ext --paths-from "$C/p.txt" "third party"; eq "14.22 control: a --repo run of a third-party submodule: 20" "$RC" 20; has "14.22 repo_not_owned" "$OUT" repo_not_owned
+XENV="CPA_OWNED_ORGS=fx,ext" run --repo mods/ext --paths-from "$C/p.txt" "third party"; unset XENV
+eq "14.23 CPA_OWNED_ORGS in the caller's environment widens nothing: 20" "$RC" 20; has "14.23 repo_not_owned" "$OUT" repo_not_owned
+eq "14.23 the third-party remote did not move" "$(git -C "$T/ext/t.git" rev-parse main)" "$e0"
+
+# ---- C4 report fields state only what happened (F6, F7, F8) ----
+mk rep; run --bogus; eq "14.24 a usage_error run never took the lock: lock.held false" "$(jq -r .lock.held "$REP" 2>/dev/null)" false
+run; eq "14.25 a clean run held the lock" "$(jq -r .lock.held "$REP" 2>/dev/null)" true; eq "14.25 and released it" "$(jq -r .lock.released "$REP" 2>/dev/null)" true
+mk pend; printf 'extra\tscripts/repo/check_no_ci.sh --root /nonexistent\tIMG-TESTUTIL\tplain\t-\tchangeset\tnot in the approved copy\n' >> "$W/scripts/repo/validate_checks.tsv"; git -C "$W" add -A; git -C "$W" commit -qm "registry row"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main
+echo p > "$W/src/p.txt"; paths 'src/p.txt\n'; run --paths-from "$C/p.txt" "p"
+eq "14.26 a pending check: 14" "$RC" 14; has "14.26 CHECK_PENDING_RELEASE in the commit's Deferred-Gates line" "$(msg)" CHECK_PENDING_RELEASE; has "14.26 the report says so" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" CHECK_PENDING_RELEASE
+
+# ---- C8 the host entry's exit set is closed (F9), C7 one run-id grammar (F10), C5 no inherited git state (F11), file arguments (F12) ----
+mk noexec; jq '.projects|=with_entries(.value.manifest|=map(if .path=="scripts/commit-push-all.sh" then .exec=false else . end))' "$C/state/trust.json" > "$C/state/t2" && mv "$C/state/t2" "$C/state/trust.json"
+run; eq "14.27 a core the manifest marks non-executable: 20, never the shell's 126" "$RC" 20; has "14.27 approved_copy_invalid" "$OUT" approved_copy_invalid; eq "14.27 no run directory is left" "$(ls "$W/.audit/commit-push" 2>/dev/null | wc -l)" 0
+mk rid
+run --run-id _lead; eq "14.28 a run id with a leading underscore: 20 at the host entry" "$RC" 20; has "14.28 run_id_malformed" "$OUT" run_id_malformed
+long70="$(printf 'a%.0s' $(seq 1 70))"; run --run-id "$long70"; eq "14.29 a 70-character run id: 20 at the host entry, before any stage" "$RC" 20; has "14.29 run_id_malformed" "$OUT" run_id_malformed
+eq "14.29 no run directory exists" "$(ls "$W/.audit/commit-push" 2>/dev/null | wc -l)" 0
+run --run-id Ok_id-1; eq "14.30 a run id every grammar accepts: 0" "$RC" 0
+mk hookenv; mkdir -p "$C/chooks"; for h in pre-commit commit-msg post-commit pre-push post-merge reference-transaction pre-merge-commit; do printf '#!/bin/sh\necho %s >> "%s"\nexit 0\n' "$h" "$C/hook.marker" > "$C/chooks/$h"; chmod 755 "$C/chooks/$h"; done
+rm -rf "$T/henv"; mkrepo "$T/henv"; echo x > "$T/henv/x"; git -C "$T/henv" add x; ( cd "$T/henv" && GIT_CONFIG_PARAMETERS="'core.hookspath=$C/chooks'" git commit -qm x ) >/dev/null 2>&1
+[ -s "$C/hook.marker" ] && ok "14.31 control needle: the inherited GIT_CONFIG_PARAMETERS hook path fires in an ordinary commit" || bad "14.31 the inherited setting does not fire a hook here: the check below would be blind"
+rm -f "$C/hook.marker"; echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; XENV="GIT_CONFIG_PARAMETERS='core.hookspath=$C/chooks'" run --paths-from "$C/p.txt" "l"; unset XENV
+eq "14.31 a run under an inherited GIT_CONFIG_PARAMETERS hook path: 0" "$RC" 0; [ ! -e "$C/hook.marker" ] && ok "14.31 no inherited hook ran" || bad "14.31 inherited hooks ran: $(sort -u "$C/hook.marker" | tr '\n' ' ')"
+mk relp; mkdir -p "$W/.audit/cwd"; echo a > "$W/src/a.txt"; printf 'src/a.txt\n' > "$W/.audit/list.txt"; printf 'src/NOPE\n' > "$C/list.txt"
+CWD="$W/.audit/cwd" run --paths-from ../list.txt "rel"; unset CWD
+eq "14.32 a relative --paths-from is read from the directory cpa-host was started in (the decoy beside the root is not): 0" "$RC" 0; moved 14.32; has "14.32 the commit holds a.txt" "$(git -C "$W" show --stat --format= HEAD)" "src/a.txt"
+fi
+
 # ======== 11 static properties ================================================================================================================
+fscan() { # fscan <file>: the non-comment source lines that spell a forbidden git form (the refusal guards of the helpers, which carry `force_refused`, are not spellings of the form)
+  grep -nE -- '--force|force-with-lease|--no-verify|--mirror|--delete|update-ref|--amend|(^|[^A-Za-z_-])rebase( |"|$)|git[^|;]* reset( |")|git[^|;]*[[:space:]](push|fetch)([[:space:]][^|;]*)?[[:space:]]-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|git[^|;]*[[:space:]]checkout[[:space:]][^|;]*-[a-zA-Z]*B|git[^|;]*[[:space:]]branch[[:space:]][^|;]*-[a-zA-Z]*[fFD]([[:space:]]|$)|git[^|;]*[[:space:]](push|fetch)[[:space:]][^|;]*[[:space:]"'"'"'=]\+[A-Za-z$\{]|[[:space:]]\+refs/|[[:space:]]\+HEAD|git[^|;]*[[:space:]]push[[:space:]][^|;]*[[:space:]]:[A-Za-z$"]' "$1" | grep -vE '^[0-9]+:[[:space:]]*#' | grep -v 'force_refused'
+}
 if sect "11 static"; then
-for f in "$H" "$SRC/scripts/repo/host_entry/cpa-host"; do
+# 11.0 control needles: both oracles see every forbidden spelling and let the spellings the scripts really use pass (a blind oracle reads as a clean run)
+n=0; m=0; fl="$T/oracle.log"
+for line in '-C r push --force -- o x' '-C r push -f -- o x' '-C r push -qf -- o x' '-C r push -q --force-with-lease -- o x' '-C r push -q -- o +x:refs/heads/main' '-C r push -q -- o +refs/heads/main' '-C r push -q --mirror o' \
+  '-C r push -q -- o :refs/heads/main' '-C r push -q --delete o main' '-C r push -q -- o x:+refs/heads/main' 'commit --amend -m x' 'branch -f main abc' 'checkout -q -B main' 'update-ref refs/heads/main abc' 'rebase origin/main' 'reset --hard' 'commit --no-verify -m x' 'fetch -f o main'; do
+  m=$((m+1)); printf '%s\n' "$line" > "$fl"; [ -n "$(forbidden_calls "$fl")" ] && n=$((n+1)) || bad "11.0 shim oracle misses: $line"
+done; eq "11.0 the shim oracle flags every forbidden spelling ($m)" "$n" "$m"
+n=0; m=0
+for line in '-C r push -q -- origin abc:refs/heads/main' '-C r merge --ff-only abc' 'merge --no-ff --no-commit abc' 'commit -q --only -F x -- p' '-C r fetch -q --no-tags --no-write-fetch-head --refmap= -- o main' 'ls-remote -- o refs/heads/main' '-C r checkout -q main' 'branch --show-current' 'bundle create b main'; do
+  m=$((m+1)); printf '%s\n' "$line" > "$fl"; [ -z "$(forbidden_calls "$fl")" ] && n=$((n+1)) || bad "11.0 shim oracle flags a plain call: $line"
+done; eq "11.0 the shim oracle passes the plain calls the scripts use ($m)" "$n" "$m"
+n=0; m=0; sf="$T/oracle.sh"
+for line in 'git -C "$d" push --force -- "$r" "$x"' 'git -C "$d" push -f -- "$r" "$x"' 'tm git -C "$dir" push -qf -- "$r" "$t:refs/heads/$BR"' 'git push -- "$r" "+$t:refs/heads/$BR"' 'git push "$r" +refs/heads/x' 'git push --mirror "$r"' 'git push "$r" :refs/heads/x' 'git push --delete "$r" x' 'git commit --amend' 'git branch -f x y' 'git checkout -B x' 'git update-ref x y' 'git rebase x' 'git reset --hard' 'git commit --no-verify' 'git push --force-with-lease'; do
+  m=$((m+1)); printf '%s\n' "$line" > "$sf"; [ -n "$(fscan "$sf")" ] && n=$((n+1)) || bad "11.0 static scan misses: $line"
+done; eq "11.0 the static scan flags every forbidden spelling, quoted +refspec included ($m)" "$n" "$m"
+n=0; m=0
+for line in 'tm git -C "$dir" push -q -- "$r" "$target:refs/heads/$BR"' 'git -C "$d" merge --ff-only "$t"' 'git config -f "$sup/.gitmodules" --get x' '# git push --force' 'jq -n "{fetch:(\"fetch_failed:\"+\$n)}"' 'case "$a" in --force|-f|+*) die force_refused "$a" ;; esac'; do
+  m=$((m+1)); printf '%s\n' "$line" > "$sf"; [ -z "$(fscan "$sf")" ] && n=$((n+1)) || bad "11.0 static scan flags an innocent line: $line"
+done; eq "11.0 the static scan passes the lines the scripts really hold ($m)" "$n" "$m"
+for f in "$H" "$SRC"/scripts/repo/host_entry/cpa-host "$SRC"/scripts/repo/*.sh "$SRC"/scripts/longops/*.sh; do
   [ -f "$f" ] || { bad "11.1 $f is absent"; continue; }
-  if grep -nE -- "--force|force-with-lease|--no-verify|[[:space:]]\+refs/|[[:space:]]\+HEAD|git[^|;]* (push|reset|rebase)[^|;]* -f( |\$)|(^|[^a-z_-])rebase |git[^|;]* reset " "$f" | grep -vE '^[0-9]+:[[:space:]]*#' >/dev/null; then bad "11.1 $(basename "$f") contains a force/lease/+refspec/no-verify/reset/rebase token: $(grep -nE -- '--force|force-with-lease|--no-verify|[[:space:]]\+refs/|rebase |git[^|;]* reset ' "$f" | grep -vE '^[0-9]+:[[:space:]]*#' | head -2)"; else ok "11.1 $(basename "$f") has no force/lease/+refspec/no-verify/reset/rebase token"; fi
+  hit="$(fscan "$f" | head -2)"
+  [ -z "$hit" ] && ok "11.1 $(basename "$f") has no force/lease/+refspec/mirror/delete/:ref/update-ref/amend/no-verify/reset/rebase/branch -f/checkout -B spelling" || bad "11.1 $(basename "$f") spells a forbidden git form: $hit"
   bash -n "$f" 2>/dev/null && ok "11.2 $(basename "$f") parses" || bad "11.2 $(basename "$f") does not parse"
 done
+# 11.3 the owned set has ONE source, the approved scripts/audit/own_orgs.txt (a caller-environment override is an undocumented escape hatch; WF11 F1)
+grep -c 'CPA_RUN_ID' "$H" | grep -qv '^0$' && ok "11.3 control needle: the scan sees a token that is there" || bad "11.3 the scan is blind"
+eq "11.3 the script reads no caller-environment owned-organisation override" "$(grep -c 'CPA_OWNED_ORGS' "$H")" 0
 fi
 fin

@@ -24,6 +24,11 @@ eq "row carries flag and reason" "$(awk -F'\t' '$2=="SKIP_LONG"{print $3}' "$R/d
 # 2 duplicate flag is listed once
 run --run-dir "$R" --flag SKIP_LONG --reason "again"; run --run-dir "$R" --list
 eq "--list: duplicate flag listed once" "$(cat "$T/out")" "SKIP_LONG,SWEEP_ABSENT,LOCAL_ONLY"
+# 2b the flags of a gate that did not run (WF11 review F3) are in the closed set, after the first three, and listed in that order
+R2="$T/w/.audit/commit-push/run2"
+for f in GATES_NOT_BUILT CHECKS_DEFERRED CHECK_PENDING_RELEASE; do run --run-dir "$R2" --flag "$f" --reason "gate not run"; eq "$f recorded" "$RC" 0; done
+run --run-dir "$R2" --list; eq "--list: the three gate-not-run flags in closed-set order" "$(cat "$T/out")" "CHECK_PENDING_RELEASE,CHECKS_DEFERRED,GATES_NOT_BUILT"
+run --run-dir "$R2" --flag SKIP_LONG --reason x; run --run-dir "$R2" --list; eq "--list: the first three keep their place ahead of them" "$(cat "$T/out")" "SKIP_LONG,CHECK_PENDING_RELEASE,CHECKS_DEFERRED,GATES_NOT_BUILT"
 # 3 a held commit carries the verdict it waits for
 run --run-dir "$R" --flag SKIP_LONG --reason held --commit abc123 --awaits-review specs/x/reviews/WP-04.json
 eq "held commit with verdict recorded" "$RC" 0

@@ -1,0 +1,15 @@
+# gate	when	note
+# The gates of the commit-push stages that are NOT built yet (docs/scripts/commit-push-all.md, "Built and not built"). A run that reaches the stage a
+# gate belongs to without the gate being built records ONE deferral GATES_NOT_BUILT naming every row that applies, so the run exits 14 and the commits
+# carry `Deferred-Gates: GATES_NOT_BUILT` (constitution 11.4.234 (C): no gate is lost silently; 11.4.201: an unbuilt check is never a pass).
+# when: always = the gate belongs to every run; declared_paths = the gate judges the content of a declared change set (applies when one is declared).
+# Built a gate? Delete its row in the same change that builds it (the matrix section "14 contract" reads this file). An absent or unreadable list in the
+# approved copy is itself a deferral, never a clean run; a row with another `when` is 20 owed_gates_invalid.
+SECRET_FOLD	declared_paths	S2 secret fold (detect-secrets is absent on the host, T040a/T006)
+PRIVATE_KEY_FOLD	declared_paths	S2 private-key fold (T040a)
+PATH_GATES	declared_paths	path gates, the release_seam class and conf_code_split (scripts/repo/path_gates.tsv, T042)
+VERDICT_PROVENANCE	declared_paths	review_provenance_invalid and verdict_covers_incomplete (T042, T094d)
+G_PIN	always	G-PIN and accepted_pins (T042)
+RATCHET_BASELINES	always	held baseline and baseline_drift, the ratchet baselines (T040)
+REMOTE_CHECKS	always	remote checks and exit 16 awaiting_remote_checks (T121b)
+CONTAINER_S3	always	the S3 checks in the pinned containers through run_pinned.sh; S3 runs the host builtins and scripts only (T042, T121b)

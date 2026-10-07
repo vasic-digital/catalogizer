@@ -21,13 +21,18 @@
 # Stages    S0 preflight, S1 fetch+integrate (S1a/S1b), S2 scope_check, S3 validate_cheap, S4 long gates, S5 commit, S6 push, S7 verify, S8 report.
 # Outputs   every file of a run lies under $CPA_RUN (.audit/commit-push/<run id>/, git-ignored) except .audit/pending_pins.tsv and the lock
 #           records under .audit/longops/; the tracked tree is never written. report.json is written on EVERY exit path (S8).
-# Exits     0 clean; 10 a check failed; 11 push rejected/remote unreachable/remote moved; 12 integration blocked (diverged remotes, conflict, local
-#           changes); 13 scope refused or verification dirty; 14 recorded deferral or held push (never a clean pass); 15 pointer drift without a
-#           pending move; 20 refusal or internal error (any helper exit outside its documented set included).
-# Honest boundary (UNCONFIRMED / owed, see docs/scripts/commit-push-all.md): path gates, G-PIN accepted pins, verdict provenance, the covers_runs
-#           completeness checks, remote checks (exit 16), --resume, the S2 secret fold and the CHECK_PENDING_RELEASE trailer are NOT built here.
+# Exits     0 clean: every stage ran and NOTHING is owed; 10 a check failed; 11 push rejected/remote unreachable/remote moved; 12 integration blocked
+#           (diverged remotes, conflict, local changes); 13 scope refused or verification dirty; 14 a recorded deferral, held push or a gate that did not
+#           run (never a clean pass: SKIP_LONG, SWEEP_ABSENT, LOCAL_ONLY, CHECK_PENDING_RELEASE, CHECKS_DEFERRED = a `deferred` registry row,
+#           GATES_NOT_BUILT = a row of scripts/repo/owed_gates.tsv; each listed in report.json `deferred_gates` and in the commits' Deferred-Gates line);
+#           15 pointer drift without a pending move; 20 refusal or internal error (any helper exit outside its documented set, any signal included).
+# Honest boundary (UNCONFIRMED / owed, see docs/scripts/commit-push-all.md): the gates of scripts/repo/owed_gates.tsv (secret and private-key folds, path
+#           gates, G-PIN accepted pins, verdict provenance, ratchet baselines, remote checks and exit 16, container S3) and --resume are NOT built here;
+#           a run that reaches their stage says so with exit 14 and GATES_NOT_BUILT, it never reads as exit 0.
 set -u
 LC_ALL=C
+# no inherited git state steers a git call of a run (WF11 review F11): a caller's GIT_CONFIG_PARAMETERS would override the no-hooks setting made below
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_PREFIX GIT_CONFIG_PARAMETERS
 SELF="$(realpath -- "$0" 2>/dev/null)" || SELF="$0"
 D="$(dirname "$SELF")"; RD="$D/repo"; LO="$D/longops"
 
@@ -67,7 +72,12 @@ log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*" >> "$LOG" 2>/dev/null; }
 _n="${GIT_CONFIG_COUNT:-0}"; export "GIT_CONFIG_KEY_$_n=core.hooksPath" "GIT_CONFIG_VALUE_$_n=$CPA_RUN/no-hooks"; export GIT_CONFIG_COUNT=$((_n+1))
 export GIT_TERMINAL_PROMPT=0 LONGOPS_REPO="$ROOT" CPA_APPROVED_DIR="$CPA_RUN/released" CPA_RUN CPA_RUN_ID
 
-STG_ID=(); STG_NAME=(); CUR=""; FAILSTAGE=""; FAILREASON=""; FAILDETAIL=""; LOCKED=0; HELD=0; DEFERRED=(); PENDING_CHECKS=0; NESTED=()
+run_alive() { # run_alive <run dir>: the process named by <run dir>/run.pid ("pid start_ticks") is running (start time from /proc/<pid>/stat field 22, never a pgrep match)
+  local pid st cur; { read -r pid st < "$1/run.pid"; } 2>/dev/null || return 1
+  [[ "$pid" =~ ^[0-9]+$ ]] && [ "$pid" -gt 1 ] && [ -n "$st" ] || return 1
+  cur="$(sed -e 's/^.*) //' "/proc/$pid/stat" 2>/dev/null | awk '{print $20}')"; [ -n "$cur" ] && [ "$cur" = "$st" ]
+}
+STG_ID=(); STG_NAME=(); CUR=""; FAILSTAGE=""; FAILREASON=""; FAILDETAIL=""; LOCKED=0; LOCK_ACQ=0; LOCK_REL=0; HELD=0; DEFERRED=(); PENDING_CHECKS=0; NESTED=()
 MSG=""; PATHS=""; AWAIT=""; REPO=""; RESOLVE=""; LOCAL_ONLY=""; CBI=""; TARGET="$ROOT"; BR=""; OWNED=""; START_HEAD=""; HELDLINES=()
 stage() { CUR="$1"; STG_ID+=("$1"); STG_NAME+=("$2"); log "stage $1 $2"; }
 fail() { FAILSTAGE="$1"; FAILREASON="$3"; FAILDETAIL="${4:-}"; log "FAIL $1 $2 $3 $4"; printf 'cpa: FAIL %s %s %s%s\n' "$1" "$2" "$3" "${4:+ ($4)}" >&2; exit "$2"; }
@@ -80,27 +90,29 @@ finish() { # S8: the report on every exit path, the lock released, the summary l
   local rc=$? files commits interrupted deferrals
   trap - EXIT
   case "$rc" in 0|10|11|12|13|14|15|20) ;; *) FAILSTAGE="${FAILSTAGE:-${CUR:-S0}}"; FAILREASON="${FAILREASON:-internal_error}"; FAILDETAIL="${FAILDETAIL:-exit $rc}"; rc=20 ;; esac
-  if [ "$LOCKED" = 1 ]; then "$LO/release.sh" --purpose commit_push --run-id "$RUN_ID" >>"$LOG" 2>&1 || log "release.sh failed"; fi
+  if [ "$LOCKED" = 1 ]; then if "$LO/release.sh" --purpose commit_push --run-id "$RUN_ID" >>"$LOG" 2>&1; then LOCK_REL=1; else log "release.sh failed"; fi; fi
   if [ -d "$CPA_RUN" ]; then
     files="$(cd "$CPA_RUN" && find . -type f ! -path ./report.json ! -name 'report.json.tmp' -print0 2>/dev/null | sort -z | xargs -0 -r sha256sum 2>/dev/null \
       | awk '{h=$1; $1=""; sub(/^ +/,""); sub(/^\.\//,""); print h "\t" $0}' | jq -R -s 'split("\n")|map(select(length>0)|split("\t")|{(.[1]):.[0]})|add // {}' 2>/dev/null)" || files='{}'
     [ -n "$files" ] || files='{}'
     commits="$([ -f "$CPA_RUN/commits.tsv" ] && jq -R -s 'split("\n")|map(select(length>0)|split("\t")|{repo:.[0],sha:.[1],cpa_run:.[2]})' "$CPA_RUN/commits.tsv" 2>/dev/null || echo '[]')"
-    interrupted="$(cd "$AUDITD" 2>/dev/null && for d in */; do d="${d%/}"; [ "$d" = "$RUN_ID" ] && continue; [ -f "$d/report.json" ] || echo "$d"; done | jq -R -s 'split("\n")|map(select(length>0))' 2>/dev/null || echo '[]')"
+    # a run directory without a report is INTERRUPTED only when the process its run.pid names is gone (process id and start time against /proc); a live one is listed apart
+    interrupted="$(cd "$AUDITD" 2>/dev/null && for d in */; do d="${d%/}"; [ "$d" = "$RUN_ID" ] && continue; [ -f "$d/report.json" ] && continue; run_alive "$AUDITD/$d" || echo "$d"; done | jq -R -s 'split("\n")|map(select(length>0))' 2>/dev/null || echo '[]')"
+    live="$(cd "$AUDITD" 2>/dev/null && for d in */; do d="${d%/}"; [ "$d" = "$RUN_ID" ] && continue; [ -f "$d/report.json" ] && continue; run_alive "$AUDITD/$d" && echo "$d"; done | jq -R -s 'split("\n")|map(select(length>0))' 2>/dev/null || echo '[]')"
     deferrals="$("$RD/record_deferral.sh" --run-dir "$CPA_RUN" --list 2>/dev/null)"
     jq -n --arg id "$RUN_ID" --arg dir ".audit/commit-push/$RUN_ID/" --argjson rc "$rc" --arg fs "$FAILSTAGE" --arg fr "$FAILREASON" --arg fd "$FAILDETAIL" \
       --arg repo "$REPO" --arg lo "$LOCAL_ONLY" --arg pf "$PATHS" --arg aw "$AWAIT" --arg rm "$RESOLVE" --arg cbi "$CBI" --arg deferred "${deferrals:-}" \
-      --argjson held "$HELD" --argjson pend "$PENDING_CHECKS" --arg trust "$TRUSTF" --arg stages "$(for i in "${!STG_ID[@]}"; do printf '%s:%s\n' "${STG_ID[$i]}" "${STG_NAME[$i]}"; done)" \
+      --argjson held "$HELD" --argjson pend "$PENDING_CHECKS" --argjson lacq "$LOCK_ACQ" --argjson lrel "$LOCK_REL" --argjson live "${live:-[]}" --arg trust "$TRUSTF" --arg stages "$(for i in "${!STG_ID[@]}"; do printf '%s:%s\n' "${STG_ID[$i]}" "${STG_NAME[$i]}"; done)" \
       --argjson commits "${commits:-[]}" --argjson interrupted "${interrupted:-[]}" --argjson files "$files" --arg nested "${NESTED[*]:-}" --arg held_lines "$(printf '%s\n' "${HELDLINES[@]:-}")" \
       '{schema:1,run_id:$id,run_dir:$dir,exit:$rc,
         failed_stage:(if $fs=="" then null else $fs end),reason:(if $fr=="" then null else $fr end),detail:(if $fd=="" then null else $fd end),
         mode:{repo:(if $repo=="" then null else $repo end),local_only:($lo!=""),paths_from:(if $pf=="" then null else "paths.txt" end),awaits_review:(if $aw=="" then null else $aw end),
               resolve_merge:(if $rm=="" then null else $rm end),commit_before_integrate:($cbi!="")},
-        lock:{held:true},trust_file:$trust,
+        lock:{held:($lacq>0),released:($lrel>0)},trust_file:$trust,
         deferred_gates:($deferred|split(",")|map(select(length>0))),check_pending_release:($pend>0),held:($held>0),held_commits:($held_lines|split("\n")|map(select(length>0))),
         nested_unsettled:($nested|split(" ")|map(select(length>0))),
         commits:$commits,stages:($stages|split("\n")|map(select(length>0)|split(":")|{id:.[0],name:.[1]})),
-        interrupted_runs:$interrupted,files:$files}' > "$CPA_RUN/report.json.tmp" 2>>"$LOG" && mv -f "$CPA_RUN/report.json.tmp" "$CPA_RUN/report.json"
+        interrupted_runs:$interrupted,live_runs:$live,files:$files}' > "$CPA_RUN/report.json.tmp" 2>>"$LOG" && mv -f "$CPA_RUN/report.json.tmp" "$CPA_RUN/report.json"
   fi
   printf 'cpa: exit=%s run=%s stage=%s reason=%s\n' "$rc" "$RUN_ID" "${FAILSTAGE:-${CUR:-}}" "${FAILREASON:-}" >&2
   exit "$rc"
@@ -110,6 +122,7 @@ trap 'exit 143' TERM; trap 'exit 130' INT
 
 # ---- S0 preflight ---------------------------------------------------------------------------------------------------------------------------
 stage S0 preflight
+printf '%s %s\n' "$$" "$(sed -e 's/^.*) //' "/proc/$$/stat" 2>/dev/null | awk '{print $20}')" > "$CPA_RUN/run.pid" 2>/dev/null || log "run.pid not written"
 while [ $# -gt 0 ]; do
   case "$1" in
     --local-only) LOCAL_ONLY=1; shift ;;
@@ -136,7 +149,8 @@ if [ -n "$PATHS" ]; then
 else : > "$CPA_RUN/paths.txt"; fi
 [ -z "$AWAIT" ] || safe_relpath "$AWAIT" || fail S0 20 usage_error "--awaits-review: unsafe verdict path"
 
-OWNED="${CPA_OWNED_ORGS:-}"; [ -n "$OWNED" ] || OWNED="$( [ -r "$D/audit/own_orgs.txt" ] && grep -v '^[[:space:]]*#' "$D/audit/own_orgs.txt" | awk 'NF{print $1}' | paste -sd, - )"
+# the owned organisations have ONE source: the approved scripts/audit/own_orgs.txt of the released copy (no caller-environment override, WF11 review F1)
+OWNED="$( [ -r "$D/audit/own_orgs.txt" ] && grep -v '^[[:space:]]*#' "$D/audit/own_orgs.txt" | awk 'NF{print $1}' | paste -sd, - )"
 is_owned() { # is_owned <dir>: some remote URL of the repository names an organisation of the own list (scripts/audit/org_of.py, the one shared parser)
   local d="$1" r u org own=0; [ -n "$OWNED" ] || return 1
   for r in $(git -C "$d" remote 2>/dev/null); do
@@ -194,8 +208,12 @@ fi
 
 "$LO/acquire.sh" --purpose commit_push --run-id "$RUN_ID" --pid "$$" >"$CPA_RUN/lock.out" 2>&1; lrc=$?
 case "$lrc" in
-  0) LOCKED=1 ;;
-  3|4|5|6) h="$("$LO/holder.sh" commit_push 2>/dev/null)"; fail S0 20 lock_held "holder run $(jq -r '.run_id // "?"' <<< "$h" 2>/dev/null) pid $(jq -r '.pid // "?"' <<< "$h" 2>/dev/null); this run wrote only $CPA_RUN" ;;
+  0) LOCKED=1; LOCK_ACQ=1 ;;
+  3|4|5|6) lk="$(head -c 300 "$CPA_RUN/lock.out" | tr '\n\t' '  ')"
+     # a dead holder's claim is no live holder: holder.sh says `none` for it, so the cause is read from acquire.sh itself and the remediation is named
+     if [ "$lrc" = 4 ] && grep -q '^stale_claim' "$CPA_RUN/lock.out" 2>/dev/null; then fail S0 20 lock_stale_claim "a dead run left its claim, no run is live: $lk"; fi
+     h="$("$LO/holder.sh" commit_push 2>/dev/null)"
+     fail S0 20 lock_held "holder run $(jq -r '.run_id // "?"' <<< "$h" 2>/dev/null) pid $(jq -r '.pid // "?"' <<< "$h" 2>/dev/null); acquire.sh exit $lrc: $lk; this run wrote only $CPA_RUN" ;;
   *) fail S0 20 lock_error "acquire.sh exit $lrc: $(head -c 200 "$CPA_RUN/lock.out")" ;;
 esac
 export DISK_HEADROOM_OUT_DIR="$CPA_RUN/disk/"
@@ -309,6 +327,21 @@ done < <(gitlinks "$TARGET")
 "$RD/scope_check.sh" --root "$TARGET" --paths-from "$CPA_RUN/paths.list" >"$CPA_RUN/scope.out" 2>&1; rc=$?
 case "$rc" in 0) ;; 13) fail S2 13 scope_refused "$(head -c 300 "$CPA_RUN/scope.out" | tr '\n' ' ')" ;; 20) fail S2 20 scope_error "$(head -c 300 "$CPA_RUN/scope.out" | tr '\n' ' ')" ;; *) fail S2 20 internal_error "scope_check.sh exit $rc" ;; esac
 
+# the gates that are NOT built (scripts/repo/owed_gates.tsv of the approved copy): a run that reaches their stage without them is a deferral, never a clean pass
+# (WF11 review F3). An absent or unreadable list is itself owed; a row with another condition is 20.
+owed_gates() {
+  local f="$RD/owed_gates.tsv" g w n names=""
+  [ -r "$f" ] || { defer GATES_NOT_BUILT "owed_gates.tsv absent from the approved copy: the set of unbuilt gates cannot be read" S2; return 0; }
+  while IFS=$'\t' read -r g w n || [ -n "$g" ]; do
+    case "$g" in ''|'#'*) continue ;; esac
+    [[ "$g" =~ ^[A-Z][A-Z0-9_]*$ ]] || fail S2 20 owed_gates_invalid "gate name $(printf '%q' "$g")"
+    case "$w" in always) ;; declared_paths) [ -s "$CPA_RUN/paths.list" ] || continue ;; *) fail S2 20 owed_gates_invalid "$g: when=$(printf '%q' "$w")" ;; esac
+    names="${names:+$names,}$g"
+  done < "$f"
+  [ -z "$names" ] || defer GATES_NOT_BUILT "unbuilt gates, the run went on without them: $names" S2
+}
+owed_gates
+
 # ---- S3 cheap checks ---------------------------------------------------------------------------------------------------------------------------
 stage S3 validate_cheap
 vc=(--root "$TARGET" --files-from "$CPA_RUN/paths.list" --code-root "$D/.." --trusted-tables "$RD" --out "$CPA_RUN/validate")
@@ -319,19 +352,27 @@ mkdir -p "$CPA_RUN/validate"
 case "$rc" in
   0) ;;
   10) fail S3 10 check_failed "$(grep -E '^(fail|class_table_unreviewed|legacy_row_not_dropped)' "$CPA_RUN/validate.out" | head -3 | tr '\n\t' '  ')" ;;
-  14) PENDING_CHECKS=1 ;;     # check_pending_release rows: a deferral of class 14 (the CHECK_PENDING_RELEASE trailer needs a closed-set change of record_deferral.sh: owed)
+  14) PENDING_CHECKS=1     # check_pending_release rows: a registry row the approved copy lacks is not run; recorded below as CHECK_PENDING_RELEASE
+      pc="$(awk -F'\t' '$1=="check_pending_release" && NF>=2 {print $2}' "$CPA_RUN/validate.out" | sort -u | paste -sd, -)"
+      defer CHECK_PENDING_RELEASE "registry rows the approved copy lacks, not run: ${pc:-see validate.out}" S3 ;;
   20) fail S3 20 check_error "$(head -c 300 "$CPA_RUN/validate.out" | tr '\n' ' ')" ;;
   *) fail S3 20 internal_error "validate_cheap.sh exit $rc" ;;
 esac
+# a registry row whose mode is `deferred` did not run either, and validate_cheap.sh still exits 0 for it: read from its stdout, never assumed (WF11 review F3)
+dc="$(awk -F'\t' '$1=="deferred" && NF>=2 {print $2}' "$CPA_RUN/validate.out" | sort -u | paste -sd, -)"
+[ -z "$dc" ] || defer CHECKS_DEFERRED "registry rows with mode deferred, not run: $dc" S3
 
 # ---- S4 long gates -----------------------------------------------------------------------------------------------------------------------------
 stage S4 validate_long
 if [ -n "${SKIP_LONG:-}" ]; then log "S4 skipped: SKIP_LONG recorded at S0"
-elif [ -s "$RD/long_gates.txt" ]; then
-  lf=(); while IFS= read -r g; do [ -n "$g" ] && lf+=(--file "$ROOT/$g"); done < "$RD/long_gates.txt"
-  "$LO/require_verdicts.sh" "${lf[@]}" >"$CPA_RUN/long.out" 2>&1; rc=$?
-  case "$rc" in 0) ;; 1) fail S4 10 long_gate_verdict_missing "$(head -c 300 "$CPA_RUN/long.out" | tr '\n' ' ')" ;; *) fail S4 20 internal_error "require_verdicts.sh exit $rc" ;; esac
-else log "S4: no long gates configured in the approved copy"; fi
+elif [ -f "$RD/long_gates.txt" ]; then
+  # the list of the approved copy (comment and blank lines skipped) is the decision: an EMPTY list is an explicit "no long gates", an ABSENT one is not (below)
+  lf=(); while IFS= read -r g || [ -n "$g" ]; do case "$g" in ''|'#'*) continue ;; esac; lf+=(--file "$ROOT/$g"); done < "$RD/long_gates.txt"
+  if [ "${#lf[@]}" -gt 0 ]; then
+    "$LO/require_verdicts.sh" "${lf[@]}" >"$CPA_RUN/long.out" 2>&1; rc=$?
+    case "$rc" in 0) ;; 1) fail S4 10 long_gate_verdict_missing "$(head -c 300 "$CPA_RUN/long.out" | tr '\n' ' ')" ;; *) fail S4 20 internal_error "require_verdicts.sh exit $rc" ;; esac
+  else log "S4: the approved long-gate list names no gate"; fi
+else defer GATES_NOT_BUILT "S4 long gates: scripts/repo/long_gates.txt is absent from the approved copy, no long gate was run" S4; fi
 
 # ---- S5 commit ---------------------------------------------------------------------------------------------------------------------------------
 stage S5 commit
@@ -460,7 +501,7 @@ fi
 # ---- S8 happens in the EXIT trap: the report is written on every path --------------------------------------------------------------------------------
 stage S8 report
 if [ "${#DEFERRED[@]}" -gt 0 ] || [ "$HELD" = 1 ] || [ "$PENDING_CHECKS" = 1 ]; then
-  if [ "$HELD" = 1 ]; then FAILREASON="review_pending"; FAILDETAIL="${HELDLINES[*]:-}"; else FAILREASON="deferral_recorded"; FAILDETAIL="${DEFERRED[*]:-}${PENDING_CHECKS:+ check_pending_release}"; fi
+  if [ "$HELD" = 1 ]; then FAILREASON="review_pending"; FAILDETAIL="${HELDLINES[*]:-}"; else FAILREASON="deferral_recorded"; FAILDETAIL="${DEFERRED[*]:-}"; fi
   exit 14
 fi
 exit 0

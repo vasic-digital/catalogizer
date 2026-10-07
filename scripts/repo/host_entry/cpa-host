@@ -19,17 +19,24 @@
 #           entry, a manifest without scripts/commit-push-all.sh, or an adoption_commit that is not on HEAD's first-parent chain gives 20
 #           project_not_trusted. (iii) the run id: the UTC time, the process id and a random suffix, or --run-id <id> (^[A-Za-z0-9_-]+$ and no
 #           such run directory yet, else 20 run_id_invalid with reason run_id_malformed or run_id_in_use); --run-id with --resume is a usage_error.
+#           The grammar is ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$: the common subset of the three that read a run id (this script, longops/acquire.sh, lib_safe.sh
+#           safe_runid), so an id that passes here is never refused by a later stage. A relative `--paths-from FILE` is read from the directory cpa-host was
+#           STARTED in (resolved here, before the change into the root); `--repo PATH` and `--resolve-merge DIR` are relative to the repository root.
 #           (iv) mkdir -p .audit/commit-push, then mkdir of the run directory WITHOUT -p (of two runs given one id only one proceeds), the empty
 #           no-hooks/ directory, every manifest path copied from the store into released/ and re-hashed (a mismatch gives 20 approved_copy_invalid
 #           and the run directory is removed again), released/trust-snapshot.json (cpa-host-snapshot/1: entries and manifest_sha256, the sha256 of
 #           the canonical bytes of the entries sorted by path). (v) exec released/scripts/commit-push-all.sh with the same arguments, CPA_ROOT,
 #           CPA_RUN_ID and CPA_ADOPTION_COMMIT in the environment.
 # Refusals  printed as one JSON line on stderr, before any run directory exists (apart from approved_copy_invalid, which removes its own).
-# Exits     whatever the copied script gives (0, 10 to 15, 20); 20 for every refusal of this script.
+# Exits     whatever the copied script gives (0, 10 to 15, 20); 20 for every refusal of this script, an approved core that cannot be executed included
+#           (approved_copy_invalid core_not_executable: never the shell's own 126).
 # Never     writes into the repository's tracked tree, into the state directory or into the store; installs or edits itself; runs a git command
 #           that moves a ref; a force, a rebase, a reset.
 set -u
 LC_ALL=C
+# no inherited git state steers a git call of this script or of the run it starts (WF11 review F11)
+unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_PREFIX GIT_CONFIG_PARAMETERS
+CALLER_DIR="$PWD"
 STATE="${CPA_HOST_STATE:-$HOME/.local/state/cpa-host}"
 TRUST="$STATE/trust.json"
 SELF_REL="scripts/repo/host_entry/cpa-host"
@@ -78,12 +85,14 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --run-id) [ $# -ge 2 ] || refuse usage_error run_id_missing "--run-id needs a value"; rid="$2"; shift 2 ;;
     --resume) [ $# -ge 2 ] || refuse usage_error resume_missing "--resume needs a run id"; resume="$2"; shift 2 ;;
+    --paths-from) [ $# -ge 2 ] || { args+=("$1"); shift; continue; }   # a missing value is the copied script's usage_error
+      case "$2" in /*) args+=("$1" "$2") ;; *) args+=("$1" "$CALLER_DIR/$2") ;; esac; shift 2 ;;
     *) args+=("$1"); shift ;;
   esac
 done
 [ -z "$resume" ] || { [ -z "$rid" ] || refuse usage_error run_id_with_resume "--run-id together with --resume"; refuse mode_unimplemented --resume "T121b; not built in this slice"; }
 if [ -n "$rid" ]; then
-  [[ "$rid" =~ ^[A-Za-z0-9_-]+$ ]] || refuse run_id_invalid run_id_malformed "$rid"
+  [[ "$rid" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ ]] || refuse run_id_invalid run_id_malformed "$rid"
   [ ! -e ".audit/commit-push/$rid" ] || refuse run_id_invalid run_id_in_use "$rid"
 else
   rid="$(date -u +%Y%m%dT%H%M%SZ)-$$-$(od -An -N4 -tx1 /dev/urandom | tr -d ' \n')"
@@ -113,5 +122,11 @@ jq -nc --argjson e "$entries" --arg m "$msha" '{schema:"cpa-host-snapshot/1",ent
   || { rm -rf "$RUN"; refuse run_dir_unwritable "snapshot"; }
 
 # ---- (v) execute the copied script --------------------------------------------------------------------------------------------------------
+# the process id and start time of the run (the exec keeps the pid): a later run tells a LIVE concurrent run from an interrupted one by them
+printf '%s %s\n' "$$" "$(sed -e 's/^.*) //' "/proc/$$/stat" 2>/dev/null | awk '{print $20}')" > "$RUN/run.pid" 2>/dev/null || true
 export CPA_ROOT="$root" CPA_RUN_ID="$rid" CPA_ADOPTION_COMMIT="$adopt" CPA_HOST_STATE="$STATE"
+# an approved core that cannot be executed (the manifest marks it non-executable, or the directory sits on a noexec mount) is a refusal of ours, never the shell's 126
+[ -x "$root/$RUN/released/$CORE_REL" ] || { rm -rf "$RUN"; refuse approved_copy_invalid core_not_executable "$CORE_REL is not executable in the approved copy"; }
+shopt -s execfail
 exec "$root/$RUN/released/$CORE_REL" "${args[@]+"${args[@]}"}"
+rm -rf "$RUN"; refuse approved_copy_invalid exec_failed "$CORE_REL"
