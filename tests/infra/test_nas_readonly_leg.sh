@@ -26,11 +26,11 @@ printf "smbclient //h/s -A f -c 'del x'\n" >"$FX/needle.sh"; [ -n "$(write_verbs
 nh=$(grep -vE '^[[:space:]]*#' "$LEG" | grep -c 'smbclient'); check "A: the host script runs no smbclient itself (it only starts the read-only client script)" "$nh" 0
 
 # ---- B SKIP ----
-before=$(ls -d "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | wc -l)
+before=$(ls -d "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')
 o=$(TI_ENV_FILE="$FX/no-such.env" bash "$LEG" 2>&1); rc=$?
 check "B: absent env file exits 0 (SKIP, not FAIL)" "$rc" 0
 case "$o" in "SKIP nas_readonly reason=env_absent"*) ok "B: the output is SKIP nas_readonly reason=env_absent";; *) bad "B: wrong output: $o";; esac
-check "B: nothing was created for the skipped run" "$(ls -d "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | wc -l)" "$before"
+check "B: nothing was created for the skipped run" "$(ls -d "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')" "$before"
 printf 'SYNOLOGY_IP_3=192.0.2.1\n' >"$FX/partial.env"
 o=$(TI_ENV_FILE="$FX/partial.env" bash "$LEG" --hosts 3 2>&1); rc=$?
 check "B: an env file without the credentials exits 0 (SKIP)" "$rc" 0
@@ -40,24 +40,33 @@ case "$o" in "SKIP nas_readonly reason=credentials_absent variables: SYNOLOGY_SM
 SU="SENTINELUSER$RANDOM$RANDOM"; SP="SENTINELPASS$RANDOM$RANDOM"
 printf 'SYNOLOGY_SMB_USER=%s\nSYNOLOGY_SMB_PASSWORD=%s\nSYNOLOGY_IP_3=192.0.2.1\n' "$SU" "$SP" >"$FX/sentinel.env"; chmod 600 "$FX/sentinel.env"
 secrecy() { # secrecy <leg script>: runs the leg against the sentinel env, samples process argv and container env; prints one FAIL line per violation; exit status = count
-  local leg=$1 n=0 pid hits=0 s
-  rm -rf -- "${TI_REPO:?}"/.audit/out/nas-ro-*   # only this test's own out dirs exist at this point (a leg that left one behind would be hidden otherwise)
+  local leg=$1 n=0 pid hits=0 s mseen=0
+  # WF12 F14: only the out directory of THIS run (nas-ro-<pid of the leg>) is ever read or removed: a real NAS leg of another stream keeps its auth file
+  local od mh=0 m
   TI_ENV_FILE="$FX/sentinel.env" bash "$leg" --hosts 3 >"$FX/c.out" 2>"$FX/c.err" & pid=$!
+  od="$TI_REPO/.audit/out/nas-ro-$pid"
   while kill -0 "$pid" 2>/dev/null; do
     s="$(ps -eo args 2>/dev/null; podman ps -a --format '{{.Command}} {{.Names}}' 2>/dev/null; for c in $(podman ps -q --filter label=catalogizer.op_id 2>/dev/null); do podman inspect "$c" --format '{{.Config.Env}} {{.Config.Cmd}} {{.Args}}' 2>/dev/null; done)"
     if printf '%s' "$s" | grep -qF -e "$SP" -e "$SU"; then hits=$((hits+1)); fi
+    # WF12 F3: the leg's container must not have the repository (it holds the real .env) among its mounts
+    for c in $(podman ps -q --filter "label=catalogizer.op_id=nas-ro-$pid-3" 2>/dev/null); do
+      m="$(podman inspect "$c" --format '{{range .Mounts}}{{.Source}} {{end}}' 2>/dev/null)"; [ -n "$m" ] && mseen=1
+      printf '%s\n' "$m" | tr ' ' '\n' | grep -qxF "$TI_REPO" && mh=$((mh+1))
+    done
     sleep 1
   done
   wait "$pid"; local rc=$?
   [ "$hits" -eq 0 ] || { echo "FAIL a credential value appeared in process argv or a container environment ($hits samples)"; n=$((n+1)); }
+  [ "$mseen" = 1 ] || { echo "FAIL control: the leg's container mounts were never sampled (the mount check is blind)"; n=$((n+1)); }
+  [ "$mh" -eq 0 ] || { echo "FAIL the leg's container had the repository (and its .env) mounted ($mh samples)"; n=$((n+1)); }
   grep -qF -e "$SP" -e "$SU" "$FX/c.out" "$FX/c.err" && { echo "FAIL a credential value appeared in the leg's stdout or stderr"; n=$((n+1)); }
-  if grep -rqF -e "$SP" -e "$SU" "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null; then
+  if grep -rqF -e "$SP" -e "$SU" "$od" 2>/dev/null; then
     # the auth file is the one permitted holder while the leg runs; after the leg it must be gone, and no other file may hold a value
-    if [ -e "$(ls -d "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | head -1)/auth" ]; then echo "FAIL the auth file was left behind"; n=$((n+1)); else echo "FAIL a credential value is in a file of the out directory"; n=$((n+1)); fi
+    if [ -e "$od/auth" ]; then echo "FAIL the auth file was left behind"; n=$((n+1)); else echo "FAIL a credential value is in a file of the out directory"; n=$((n+1)); fi
   fi
   [ "$rc" -ne 0 ] || { echo "FAIL the leg against an unroutable address did not FAIL (rc=0)"; n=$((n+1)); }
   grep -q 'FAIL nas_readonly host=Synology3' "$FX/c.out" || { echo "FAIL the failure of the unreachable host was not reported"; n=$((n+1)); }
-  rm -rf -- "${TI_REPO:?}"/.audit/out/nas-ro-*
+  rm -rf -- "${od:?}"
   return "$n"
 }
 res=$(secrecy "$LEG"); n=$?
@@ -71,7 +80,10 @@ if [ "${NAS_NO_REAL:-0}" = 1 ] || [ ! -r "$REALENV" ]; then echo "SKIP: D: the r
   check "D: the real two-host read-only leg exits 0" "$rc" 0
   printf '%s\n' "$o" | grep -q '^NAS Synology3 ok=true' && printf '%s\n' "$o" | grep -q '^NAS Synology4 ok=true' && ok "D: both hosts PASS" || bad "D: a host did not pass: $(printf '%s' "$o" | tr '\n' ';' | cut -c1-300)"
   jq -e '.writes_performed == 0 and .names_recorded == false and .content_recorded == false and (.hosts | length == 2) and all(.hosts[]; .ok == true and .writes_performed == "0" and (.requests | tonumber) <= 3)' "$EVJ" >/dev/null 2>&1 && ok "D: the record states writes_performed 0, names and content not recorded, at most 3 requests per host" || bad "D: the record is wrong: $(cat "$EVJ" 2>/dev/null | head -c 300)"
-  if grep -qE '192\.168\.' "$EVJ" "$FX"/*.out 2>/dev/null; then bad "D: an IP address is in the record"; else ok "D: no IP address is recorded"; fi
+  # any dotted IPv4 (not only 192.168.): control needle first, the same pattern must see a planted 10.x address
+  IPRE='([0-9]{1,3}\.){3}[0-9]{1,3}'; echo "host 10.20.30.40" >"$FX/ipneedle.txt"
+  grep -qE "$IPRE" "$FX/ipneedle.txt" && ok "D: control needle: the IP scan sees a planted 10.x address" || bad "D: control needle: the IP scan is blind"
+  if grep -qE "$IPRE" "$EVJ" "$FX"/*.out 2>/dev/null; then bad "D: an IP address is in the record"; else ok "D: no IP address is recorded"; fi
   realpw="$(sed -n 's/^SYNOLOGY_SMB_PASSWORD=//p' "$REALENV" | head -1 | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/")"
   if [ -n "$realpw" ]; then
     leaks=$( { printf '%s\n' "$o"; cat "$EVJ"; } | grep -cF -- "$realpw"); check "D: the real password occurs in no output of the leg" "$leaks" 0
@@ -98,6 +110,8 @@ PY
   # mutation 2: the password goes into argv (the op id)
   pymut "$M/nas_readonly_leg.sh" '--op-id "nas-ro-$$-$i"' '--op-id "nas-ro-$$-$i-$(envval SYNOLOGY_SMB_PASSWORD)"' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation password_in_argv CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "password_in_argv CAUGHT" >>"$MUTLOG"; } || { bad "mutation password_in_argv SURVIVED"; echo "password_in_argv SURVIVED" >>"$MUTLOG"; }; }
   # mutation 3: the auth file is left behind
-  cp "$TI_REPO/$SD/nas_readonly_leg.sh" "$M/nas_readonly_leg.sh"; pymut "$M/nas_readonly_leg.sh" 'cleanup() { rm -f -- "${OUT:?}/auth"; }' 'cleanup() { true; }' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation auth_file_left CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "auth_file_left CAUGHT" >>"$MUTLOG"; } || { bad "mutation auth_file_left SURVIVED"; echo "auth_file_left SURVIVED" >>"$MUTLOG"; }; }
+  cp "$TI_REPO/$SD/nas_readonly_leg.sh" "$M/nas_readonly_leg.sh"; pymut "$M/nas_readonly_leg.sh" 'cleanup() { rm -f -- "${OUT:?}/auth"; case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }' 'cleanup() { case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation auth_file_left CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "auth_file_left CAUGHT" >>"$MUTLOG"; } || { bad "mutation auth_file_left SURVIVED"; echo "auth_file_left SURVIVED" >>"$MUTLOG"; }; }
+  # mutation 4 (WF12 F3): the leg's container gets the repository (and its .env) mounted again
+  cp "$TI_REPO/$SD/nas_readonly_leg.sh" "$M/nas_readonly_leg.sh"; pymut "$M/nas_readonly_leg.sh" '(cd "$VIEW" && bash "$TI_ROOT/scripts/containers/run_pinned.sh"' '(cd "$TI_ROOT" && bash "$TI_ROOT/scripts/containers/run_pinned.sh"' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation repo_mounted CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "repo_mounted CAUGHT" >>"$MUTLOG"; } || { bad "mutation repo_mounted SURVIVED"; echo "repo_mounted SURVIVED" >>"$MUTLOG"; }; }
 fi
 ti_summary

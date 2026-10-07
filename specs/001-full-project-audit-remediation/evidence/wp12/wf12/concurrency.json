@@ -1,0 +1,51 @@
+{
+ "schema": "wp13-concurrency/2",
+ "task": "T133",
+ "head": "350372a805ec571fc4de312b740c1eff82c4fd12",
+ "run_at": "2026-10-07T09:26:31Z",
+ "build_ids": [
+  "t3651137684",
+  "t3651134817"
+ ],
+ "projects": [
+  "catalogizer-test-t3651137684",
+  "catalogizer-test-t3651134817"
+ ],
+ "started_epoch": 1791365113,
+ "both_up_epoch": 1791365135,
+ "host_ports_all_distinct": true,
+ "host_ports": [
+  36199,
+  36281,
+  37505,
+  40905,
+  41781,
+  45271,
+  45409,
+  45439,
+  46307,
+  52273,
+  53657,
+  54625
+ ],
+ "containers_per_project": {
+  "catalogizer-test-t3651137684": 5,
+  "catalogizer-test-t3651134817": 5
+ },
+ "second_owner_refused": {
+  "catalogizer-test-t3651137684": 3,
+  "catalogizer-test-t3651134817": 3
+ },
+ "probes": {
+  "catalogizer-test-t3651137684": "PROBES pass=5 fail=0 blocked=1",
+  "catalogizer-test-t3651134817": "PROBES pass=5 fail=0 blocked=1"
+ },
+ "isolation_marker": "m179136515316502",
+ "marker_files_found_host_side": {
+  "A": 1,
+  "B": 0
+ },
+ "marker_probe_on_B_exit": 0,
+ "teardown_of_A_left_B_containers": 5,
+ "minio": "PROBE minio BLOCKED reason=image_unavailable no registry serves the MinIO image "
+}

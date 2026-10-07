@@ -1,0 +1,33 @@
+# identity: WF12 F3/F14/F18 NAS leg: sentinel + the one real read-only run + mutations
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T09:28:38Z
+# sha256 scripts/test-infra/nas_readonly_leg.sh 92c64d403fff0246286f4d36b9b4531a8e544a5f67e289f7364d81c58b62effb
+# sha256 scripts/test-infra/client/nas_smb_ro.sh 38269ab98a0a2c6e2cab3b53493f6452e9bc24660a2948317d56113a9d3eac32
+# sha256 tests/infra/test_nas_readonly_leg.sh e2bcc8a4d3e1e531547815f2d96692cfbc560cabb3268cb10088a3aae0403bbb
+# command: bash tests/infra/test_nas_readonly_leg.sh
+PASS: script present: scripts/test-infra/nas_readonly_leg.sh
+PASS: script present: scripts/test-infra/client/nas_smb_ro.sh
+PASS: A: every smbclient -c command of the client starts with ls or get
+PASS: A: the client has 2 smbclient -c commands (the scan is not blind)
+PASS: A: control needle: a planted del is found by the same scan
+PASS: A: the host script runs no smbclient itself (it only starts the read-only client script)
+PASS: B: absent env file exits 0 (SKIP, not FAIL)
+PASS: B: the output is SKIP nas_readonly reason=env_absent
+PASS: B: nothing was created for the skipped run
+PASS: B: an env file without the credentials exits 0 (SKIP)
+PASS: B: the SKIP names the missing variables (names only)
+PASS: C: sentinel credentials never appear in argv, container environment, output or files; the auth file is deleted; the unreachable host FAILs
+PASS: D: the real two-host read-only leg exits 0
+PASS: D: both hosts PASS
+PASS: D: the record states writes_performed 0, names and content not recorded, at most 3 requests per host
+PASS: D: control needle: the IP scan sees a planted 10.x address
+PASS: D: no IP address is recorded
+PASS: D: the real password occurs in no output of the leg
+PASS: D: the real password occurs in no evidence file under /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp12/wf12/..
+PASS: D: no auth file is left behind
+PASS: mutation write_verb_in_client CAUGHT (section A scan)
+PASS: mutation password_in_argv CAUGHT (FAIL a credential value appeared in process argv or a container environment (6 samples))
+PASS: mutation auth_file_left CAUGHT (FAIL the auth file was left behind)
+PASS: mutation repo_mounted CAUGHT (FAIL the leg's container had the repository (and its .env) mounted (4 samples))
+SUMMARY pass=24 fail=0 blocked=0
+# exit: 0

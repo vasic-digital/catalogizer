@@ -1,0 +1,32 @@
+# identity: WF12 F1 consumers GREEN run 2
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:18:31Z
+# sha256 scripts/container-build.sh b599a62f16afd85f4b576d64cc0d32db21abfa436d09245a11921e280d9efcb4
+# sha256 scripts/setup-test-env.sh 372ef815d33d153d11e009ff542a4e716d6ee91fff7819fca606b7d54b81feb9
+# sha256 scripts/test-infra/nfs_attempt.sh 375f06a64eb65c9fa306097f78d3796f11fefb70a21f27c339eeb70d86a61c20
+# sha256 catalog-api/tests/infra_helper.go f5a93ee356a0c4f95129b704f55ef671a7e26c24e5467bdf2d67a04f4e7a8a8c
+# sha256 tests/infra/test_consumers.sh 64749d5b658b418d88ef21aeac4e370cfc93800325d3a6d03c86b2356969741c
+# command: bash tests/infra/test_consumers.sh
+PASS: control: docker-compose.build.yml without the per-run env is refused (rc != 0)
+PASS: control: docker-compose.test-infra.yml without the per-run env is refused (rc != 0)
+PASS: container-build.sh --validate-only exits 0 (the compose file renders with the generated per-run env)
+PASS: container-build.sh reports 'Compose file is valid'
+PASS: container-build.sh left no per-run state directory behind
+PASS: container-build.sh --validate-only stopped before the signing keys (no key generation ran)
+PASS: setup-test-env.sh exits 0 and starts the stack through up.sh
+PASS: setup-test-env.sh printed the op_id of the start (catalogizer-test-t3611187196-up-20261007T081838-1036212)
+PASS: the redis container of the project runs
+PASS: the lease of the start is a live keeper
+PASS: setup-test-env.sh shows the random redis port
+PASS: setup-test-env.sh output carries no fixed port and no literal credential
+PASS: setup-test-env.sh reports a failed start as a FAILURE (exit != 0), not as 'not available'
+PASS: infra_helper.go: no fixed host port (2121, 1445, 8081, 2049) and no literal testuser/testpass
+PASS: infra_helper.go: no instruction to run the compose file bare
+PASS: infra_helper.go reads the per-run env file (CATALOGIZER_TEST_INFRA_ENV)
+PASS: no tracked live file instructs a bare run of docker-compose.test-infra.yml / docker-compose.build.yml
+PASS: control needle: the scan pattern sees a planted stale instruction
+PASS: every non-test caller of down.sh passes --op-id (nfs_attempt.sh, up.sh, setup-test-env.sh)
+PASS: control needle: the caller scan sees a planted down.sh call without --op-id
+PASS: the caller scan sees 4 down.sh call sites (not blind)
+SUMMARY pass=21 fail=0 blocked=0
+# exit: 0

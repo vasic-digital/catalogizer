@@ -1,0 +1,13 @@
+# identity: WF12 F7 nfs_fallback_state GREEN run 1
+# head: 3fa277e414c43186f937685e084d9752f529e336
+# run_at: 2026-10-07T02:58:24Z
+# sha256 scripts/test-infra/nfs_fallback_state.sh 8cc73790bc1fd04a009dc8fa03430d6c8be42f36e1bed778e877f338d6931097
+# sha256 tests/infra/test_nfs_fallback_state.sh a30e8fc9feb034721f8cc557034d7004a8a793ff7eff750fab4b9577777ea8f0
+# command: bash tests/infra/test_nfs_fallback_state.sh
+PASS: all fixtures hold (not_needed on pass; refused on structural / blocked; blocked odg08_unanswered; refusals)
+PASS: mutation not_needed_without_reading_state CAUGHT (FAIL not_needed was written for a structural-impossibility record (rc=1 state=))
+PASS: mutation not_needed_on_protocol_pass CAUGHT (FAIL not_needed was written for a user-space protocol pass (rc=0 state=not_needed))
+PASS: mutation blocked_when_kernel_proven CAUGHT (FAIL blocked was written although the attempt proves the kernel path (rc=0))
+PASS: mutation unconfirmed_not_recorded CAUGHT (FAIL a protocol-only pass did not yield blocked odg08_unanswered naming the unconfirmed kernel path (rc=0 stat)
+SUMMARY pass=5 fail=0 blocked=0
+# exit: 0

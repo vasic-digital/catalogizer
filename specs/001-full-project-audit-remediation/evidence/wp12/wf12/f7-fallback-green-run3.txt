@@ -1,0 +1,9 @@
+# identity: WF12 F7 nfs_fallback_state GREEN run 3
+# head: 3fa277e414c43186f937685e084d9752f529e336
+# run_at: 2026-10-07T03:34:04Z
+# sha256 scripts/test-infra/nfs_fallback_state.sh 8cc73790bc1fd04a009dc8fa03430d6c8be42f36e1bed778e877f338d6931097
+# sha256 tests/infra/test_nfs_fallback_state.sh a30e8fc9feb034721f8cc557034d7004a8a793ff7eff750fab4b9577777ea8f0
+# command: bash tests/infra/test_nfs_fallback_state.sh
+PASS: all fixtures hold (not_needed on pass; refused on structural / blocked; blocked odg08_unanswered; refusals)
+SUMMARY pass=1 fail=0 blocked=0
+# exit: 0

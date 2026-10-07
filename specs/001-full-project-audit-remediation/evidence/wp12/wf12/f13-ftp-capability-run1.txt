@@ -1,0 +1,13 @@
+# identity: WF12 F13 ftp capability control pair
+# head: bfcd9fd9dec1452eed6d98fa14100f86ed8f6762
+# run_at: 2026-10-07T04:47:49Z
+# sha256 docker-compose.test-infra.yml 64761701f7f2ea9ac4beadeb8e117a962cdab2b14dd593017d61b4d5b738def5
+# sha256 tests/infra/test_ftp_capability.sh ef87bcf15fdba64d83c76e9f9d927a54f1a5117f68a14ce3a910fad4fe690b1d
+# command: bash tests/infra/test_ftp_capability.sh
+PASS: WITHOUT AUDIT_WRITE the ftp service never becomes ready (up exits 1)
+PASS: the failure is the readiness / start failure (test-infra: up failed: services not ready within 40s: PROBE ftp FAIL rc=1 ftp login or passive listing failed: open: ftp)
+PASS: the failed start left no container and no lease
+PASS: WITH AUDIT_WRITE (the committed compose file) the ftp service starts and answers its probe (up exits 0)
+cut: range '1-0' was invalid: fields and positions are numbered from 1
+SUMMARY pass=4 fail=0 blocked=0
+# exit: 0

@@ -1,7 +1,7 @@
 {
   "schema": "blocked-external/1",
   "task": "T135",
-  "run_at": "2026-10-06T19:19:05Z",
+  "run_at": "2026-10-07T08:06:00Z",
   "legs": [
     {
       "leg": "nas_smb_readonly",
@@ -20,6 +20,11 @@
       "state": "blocked-unavailable",
       "reason": "odg08_unanswered",
       "blocked_on": "ODG-08",
+      "unconfirmed": "the application kernel NFS mount path (syscall.Mount): the T134 pass is a user-space protocol round trip only",
+      "derived_from": {
+        "file": "wp10/nfs-fallback.json",
+        "sha256": "96699f26a41e493515511f92ff276515d803244252177519ec1f3b74b40dbf03"
+      },
       "note": "the owner NFS host that ODG-08 names; NFS is closed from this host on all seven Synology hosts"
     }
   ]

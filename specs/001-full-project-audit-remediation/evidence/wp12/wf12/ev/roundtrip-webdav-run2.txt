@@ -1,0 +1,13 @@
+STEP corpus_ascii_file ok
+STEP corpus_nested_file ok
+STEP corpus_unicode_file ok
+STEP corpus_cjk_file ok
+STEP mkcol ok
+STEP put_file ok
+STEP get_back ok
+STEP propfind_lists ok
+STEP delete_file ok
+STEP get_after_delete_404 ok
+STEP delete_collection ok
+STEP unauthenticated_put_refused ok
+PASS roundtrip webdav steps=12

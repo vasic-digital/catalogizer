@@ -1,0 +1,30 @@
+# identity: WF12 F14 seed corpus (tests only)
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:34:20Z
+# sha256 scripts/test-infra/seed_corpus.sh 376032fcbd8ce82c5382d4a91f2df2adb91fe0d38e03cb3b81f268a5a61bf1cb
+# sha256 tests/infra/test_seed_corpus.sh b9c0d7a8ef5665213dddcfaa8b397fa1083010d401cfac845208c7aabab1028c
+# command: env SEED_NO_MUTATIONS=1 bash tests/infra/test_seed_corpus.sh
+PASS: run a exits 0
+PASS: run b exits 0
+PASS: two runs: trees byte-identical (diff -r)
+PASS: two runs: names, mtimes and types identical
+PASS: checksum file holds a sha256 digest
+PASS: two runs: corpus digest identical
+PASS: digest equals an independent recomputation over the tree
+PASS: run c (other seed) exits 0
+PASS: control needle: a changed seed changes the digest
+PASS: corpus has >= 20 files (24)
+PASS: file type .png has its magic number
+PASS: file type .jpg has its magic number
+PASS: file type .mp3 has its magic number
+PASS: file type .flac has its magic number
+PASS: file type .pdf has its magic number
+PASS: file type .zip has its magic number
+PASS: file type .mkv has its magic number
+PASS: file type .mp4 has its magic number
+PASS: file type .gif has its magic number
+PASS: unicode file names present (4)
+PASS: long path present (359 chars)
+PASS: an empty directory is present
+SUMMARY pass=22 fail=0 blocked=0
+# exit: 0

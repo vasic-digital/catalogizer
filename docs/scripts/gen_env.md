@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T129), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T05:00:00Z |
+| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
 | Source | `scripts/test-infra/gen_env.sh`; tests `tests/infra/test_compose_files.sh` |
 
 ## Purpose
@@ -34,3 +34,7 @@ Passwords are 24 to 28 characters of `[A-Za-z0-9]` from `/dev/urandom`; two runs
 ## Exits
 
 0 written; 2 usage / invalid build id; 1 failure (no free ports, cannot write). The env file is written to a temp file in the same directory and renamed, with `umask 077`.
+
+## WF12 review fixes (revision 2)
+
+- F12: the header said "five distinct free TCP ports"; six are chosen (postgres, redis, ftp, smb, webdav, nfs). The draw is still bind(0)+close; the lifecycle script retries a start whose port was taken in between (up.sh, F16).

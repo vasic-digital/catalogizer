@@ -1,10 +1,10 @@
 {
   "schema": "wp12-nas-readonly/1",
   "task": "T132",
-  "run_at": "2026-10-06T23:40:31Z",
-  "head": "178ee136c632ed4de72d146f0f19ef5e7b5a5a7a",
+  "run_at": "2026-10-07T09:28:58Z",
+  "head": "350372a805ec571fc4de312b740c1eff82c4fd12",
   "protocol": "SMB3 read-only",
-  "requests_per_second_max": 2,
+  "request_rate_policy_max_per_second": 2,
   "writes_performed": 0,
   "names_recorded": false,
   "content_recorded": false,
@@ -20,7 +20,7 @@
       "read_sha256": "3b21ef4b1a0f4d9107717fbb10059fcefcfa24ededc6656a96deadcf1e5d8acc",
       "requests": "3",
       "writes_performed": "0",
-      "dialect": "SMB3",
+      "max_protocol_requested": "SMB3",
       "alias": "Synology3",
       "ok": true
     },
@@ -35,7 +35,7 @@
       "read_sha256": "43df0c0d10a1c7af38092cb35669206bf188a587c8dc9caa0f333e50610159b8",
       "requests": "3",
       "writes_performed": "0",
-      "dialect": "SMB3",
+      "max_protocol_requested": "SMB3",
       "alias": "Synology4",
       "ok": true
     }

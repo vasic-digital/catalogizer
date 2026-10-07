@@ -1,0 +1,12 @@
+# identity: WF12 F7 blocked_external GREEN run 1
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:07:31Z
+# sha256 scripts/test-infra/blocked_external.sh 7bc580f2f2ad8ba3b12e91aa74fe6c25bc55804d426ebbf96b6bf3d6d9fe3219
+# sha256 tests/infra/test_blocked_external.sh 7cc989d6c7624e71cee7f7b9a82f7bb5250b5c9da205734b520ff6207063825c
+# command: bash tests/infra/test_blocked_external.sh
+PASS: all fixtures hold (available / credentials_absent with names / one missing name / no value leaked / never pass / minio and nfs host blocked)
+PASS: mutation always_available CAUGHT (FAIL an absent env file did not give blocked-unavailable credentials_absent with all four names (sta)
+PASS: mutation nfs_leg_hard_coded CAUGHT (FAIL a not_needed T134a record was not reflected as not_needed (state=blocked-unavailable))
+PASS: mutation value_leaked CAUGHT (FAIL an absent env file did not give blocked-unavailable credentials_absent with all four names (sta)
+SUMMARY pass=4 fail=0 blocked=0
+# exit: 0

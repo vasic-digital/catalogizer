@@ -1,0 +1,40 @@
+# identity: WF12 F4 compose scanner GREEN run 1
+# head: 3fa277e414c43186f937685e084d9752f529e336
+# run_at: 2026-10-07T02:57:58Z
+# sha256 docker-compose.test-infra.yml 64761701f7f2ea9ac4beadeb8e117a962cdab2b14dd593017d61b4d5b738def5
+# sha256 docker-compose.build.yml d7a1b5ce10c173a142b62567b9d33080b57d4188da1698b0c11e7a6a8c833ccf
+# sha256 scripts/test-infra/gen_env.sh 06ca421649dd77969588f70550753556a743537f0a222b1b8295c8f133ed5c2c
+# sha256 tests/infra/test_compose_files.sh e38c82dd58d4a5662bd63a2bb63fc3c1e2e54b51fc5e57b0f0cd5964dd6bc484
+# command: bash tests/infra/test_compose_files.sh
+PASS: parses: docker-compose.test-infra.yml
+PASS: parses: docker-compose.build.yml
+PASS: docker-compose.test-infra.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: check_pins.sh: docker-compose.test-infra.yml has no unpinned reference
+PASS: gen_env.sh exits 0 (run 1)
+PASS: gen_env.sh exits 0 (run 2)
+PASS: env file mode is 0600
+PASS: ports file holds no credential variable
+PASS: gen_env.sh defines every TI_* variable the compose files reference (20)
+PASS: credentials and ports differ between two runs (random per run)
+PASS: generated password has >= 24 characters
+PASS: the default env file location is git-ignored
+PASS: podman-compose config renders docker-compose.test-infra.yml with the generated env, nothing unsubstituted
+PASS: without the env file the compose file is refused (required variables)
+PASS: mutation needle_literal_password CAUGHT (literal_credential postgres.POSTGRES_PASSWORD)
+PASS: mutation needle_literal_password_build CAUGHT (literal_credential postgres.POSTGRES_PASSWORD)
+PASS: mutation rm1_literal_in_command CAUGHT (literal_credential_argument redis.command.2)
+PASS: mutation rm2_literal_in_url_env CAUGHT (literal_url_credential webdav.environment.DAV_DSN)
+PASS: mutation rm3_literal_in_healthcheck CAUGHT (literal_credential_argument redis.healthcheck.test.1)
+PASS: mutation rm5_trust_auth CAUGHT (auth_disabled postgres POSTGRES_HOST_AUTH_METHOD=trust (the server would accept any password))
+PASS: mutation rm7_audit_write_removed CAUGHT (ftp_audit_write_missing ftp (pure-ftpd never becomes ready without it, evidence/wp12/ftp-capability.txt))
+PASS: mutation literal_in_label_and_args CAUGHT (literal_credential_assignment postgres.labels.note)
+PASS: mutation tag_not_digest CAUGHT (image_not_digest_pinned redis docker.io/library/redis:7-alpine)
+PASS: mutation digest_not_in_lock CAUGHT (image_digest_not_in_lock redis)
+PASS: mutation literal_host_port CAUGHT (literal_host_port redis 6379:6379)
+PASS: mutation privileged_service CAUGHT (privileged ftp)
+PASS: mutation label_project_removed CAUGHT (label_project_missing postgres)
+PASS: mutation kernel_nfs_back CAUGHT (kernel_nfs_service_present nfs)
+PASS: mutation gen_env_mode644 CAUGHT (mode 644 != 600)
+SUMMARY pass=30 fail=0 blocked=0
+# exit: 0

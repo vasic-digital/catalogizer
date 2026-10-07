@@ -1,89 +1,53 @@
 #!/bin/bash
 #
 # Test Environment Setup Script
-# Starts test infrastructure for integration tests
+# Starts REAL test infrastructure (PostgreSQL, Redis, FTP, SMB, WebDAV; `nfs` on request) for integration tests through the lifecycle script
+# scripts/test-infra/up.sh: one compose project per run, per-run credentials and random loopback ports (no fixed port, no literal credential),
+# the per-project lease, and a bounded wait until every service answers its PROTOCOL (not merely an open port). docs/testing/real-service-stack.md.
+#
+# Usage: scripts/setup-test-env.sh [--build-id <id>] [--services postgres,redis,ftp,smb,webdav,nfs]
+#   --build-id   lowercase letters, digits, dash (default env-<UTC time>)
+#   --services   subset to start (default: postgres,redis,ftp,smb,webdav)
+# Exit: 0 every started service answered; non-zero when up.sh failed (its diagnostics are printed: a failed start is never reported as "not available").
+# Earlier versions generated a stub docker-compose.test-infra.yml with the fixed ports 1445/2121 and the literal credentials testuser/testpass when the file was
+# missing, and swallowed every start failure; both are gone (T129, WF12 F1): the compose file is a tracked, digest-pinned part of the repository.
 #
 
 set -e
 
+BUILD_ID="env-$(date -u +%m%d%H%M%S)"
+SERVICES=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --build-id) BUILD_ID="${2:-}"; shift 2 ;;
+        --services) SERVICES="${2:-}"; shift 2 ;;
+        -h|--help) sed -n 2,16p "$0"; exit 0 ;;
+        *) echo "Error: unknown argument '$1'" >&2; exit 2 ;;
+    esac
+done
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
 echo "=== Setting up Test Environment ==="
-
-# Check if docker-compose.test-infra.yml exists
 if [ ! -f "docker-compose.test-infra.yml" ]; then
-    echo "Error: docker-compose.test-infra.yml not found"
-    echo "Creating minimal test infrastructure..."
-    
-    # Create a minimal test infra compose file
-    cat > docker-compose.test-infra.yml << 'EOF'
-version: '3.8'
-
-services:
-  # FTP Server for testing
-  ftp-server:
-    image: docker.io/pureftpd/pure-ftpd
-    container_name: catalogizer-ftp-test
-    ports:
-      - "2121:21"
-    environment:
-      PUBLICHOST: localhost
-    command: -O clf:/var/log/pure-ftpd/transfer.log
-    networks:
-      - test-network
-
-  # SMB Server for testing  
-  smb-server:
-    image: docker.io/dperson/samba
-    container_name: catalogizer-smb-test
-    ports:
-      - "1445:445"
-    environment:
-      USER: testuser;testpass
-      SHARE: testshare;/mount;yes;no;no;testuser
-    networks:
-      - test-network
-
-networks:
-  test-network:
-    driver: bridge
-EOF
-    echo "Created docker-compose.test-infra.yml"
+    echo "Error: docker-compose.test-infra.yml not found (it is a tracked file of the repository: restore it with git)" >&2
+    exit 1
 fi
 
-# Try to start test infrastructure
-echo "Starting test infrastructure..."
-if command -v podman-compose > /dev/null 2>&1; then
-    podman-compose -f docker-compose.test-infra.yml up -d 2>/dev/null || echo "Note: Could not start test infrastructure (Podman may not be running)"
-elif command -v docker-compose > /dev/null 2>&1; then
-    docker-compose -f docker-compose.test-infra.yml up -d 2>/dev/null || echo "Note: Could not start test infrastructure (Docker may not be running)"
-else
-    echo "Warning: Neither podman-compose nor docker-compose found"
-    echo "Integration tests requiring external services will be skipped"
-fi
-
-# Wait for services
-echo "Waiting for test services to be ready..."
-sleep 5
-
-# Verify services
-echo ""
-echo "Checking service availability:"
-
-# Check SMB
-if timeout 2 bash -c "</dev/tcp/localhost/1445" 2>/dev/null; then
-    echo "  ✓ SMB server: localhost:1445"
-else
-    echo "  - SMB server: localhost:1445 (not available)"
-fi
-
-# Check FTP
-if timeout 2 bash -c "</dev/tcp/localhost/2121" 2>/dev/null; then
-    echo "  ✓ FTP server: localhost:2121"
-else
-    echo "  - FTP server: localhost:2121 (not available)"
-fi
+ARGS=(--build-id "$BUILD_ID")
+[ -z "$SERVICES" ] || ARGS+=(--services "$SERVICES")
+echo "Starting test infrastructure project catalogizer-test-$BUILD_ID ..."
+OUT="$(bash scripts/test-infra/up.sh "${ARGS[@]}")" || {
+    echo "Error: scripts/test-infra/up.sh failed (see its message above); nothing is left running" >&2
+    exit 1
+}
+echo "$OUT"
+OPID="$(printf '%s\n' "$OUT" | sed -n 's/^op_id=//p')"
 
 echo ""
 echo "Test environment setup complete!"
+echo "  per-run environment file (mode 0600, never commit it): .audit/test-infra/catalogizer-test-$BUILD_ID/env"
+echo "  host ports: the TI_PORT_* lines above (127.0.0.1 only)"
 echo ""
 echo "To stop test environment:"
-echo "  podman-compose -f docker-compose.test-infra.yml down"
+echo "  bash scripts/test-infra/down.sh --build-id $BUILD_ID --op-id $OPID"

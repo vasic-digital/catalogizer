@@ -1,0 +1,2 @@
+container_build_no_env_file CAUGHT
+setup_bare_compose CAUGHT

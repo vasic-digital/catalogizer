@@ -79,7 +79,7 @@ scripts/release-build.sh
 | Full release | `./scripts/release-build.sh --container --force --skip-tests` | ~17 min |
 | Backend only | `podman run --network host ... go build -o catalog-api` | ~2 min |
 | Frontend only | `podman run --network host ... npm run build` | ~3 min |
-| Build pipeline | `podman-compose -f docker-compose.build.yml up` | varies |
+| Build pipeline | `./scripts/container-build.sh` | varies |
 
 **Bullet Points**:
 - `--container`: use builder container for reproducible builds

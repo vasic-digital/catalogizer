@@ -8,5 +8,5 @@ out="$(timeout 20 nfs-ls "nfs://$IP/export" 2>&1)"; rc=$?
 [ "$rc" = 0 ] || fail "nfs-ls of the export failed rc=$rc: ${out:0:120}"
 case "$out" in *"Failed"*|*"failed"*) fail "nfs-ls reported a failure: ${out:0:120}";; esac
 bad="$(timeout 20 nfs-ls "nfs://$IP/no-such-export" 2>&1)"; brc=$?
-case "$bad" in *Failed*|*failed*|*MNT3ERR*) ;; *) fail "nfs: a mount of a non-existent export was not refused ('${bad:0:80}' rc=$brc)";; esac
+case "$bad" in *MNT3ERR_*) ;; *) fail "nfs: a mount of a non-existent export was not refused by the server's MOUNT protocol (no MNT3ERR_*: '${bad:0:120}' rc=$brc)";; esac   # WF12 F8: an unreachable server also "fails"
 pass "nfs MOUNT and READDIR of /export answered; a mount of an unexported path was refused (libnfs user-space client)"

@@ -1,0 +1,15 @@
+# identity: WF12 minio BLOCKED
+# head: bfcd9fd9dec1452eed6d98fa14100f86ed8f6762
+# run_at: 2026-10-07T05:17:34Z
+# sha256 scripts/test-infra/roundtrip.sh c66680d42c35e693839c095bb03f5c18d5242c5f6c384f5c11b2ce6d986403be
+# sha256 tests/infra/test_roundtrip.sh 11527e838e0b4db8e081da726cedcadf979254d96618dedae473d1ee8cbaa99b
+# command: bash tests/infra/test_roundtrip_minio.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: minio round trip is BLOCKED, exit 3 (never 0)
+BLOCKED: minio round trip BLOCKED: image not obtainable (evidence/wp12/minio-blocked.txt); not a pass
+PASS: the minio output contains no PASS
+SUMMARY pass=6 fail=0 blocked=1
+# exit: 0

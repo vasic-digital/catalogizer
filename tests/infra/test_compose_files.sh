@@ -29,6 +29,17 @@ sv = d.get("services", {}) or {}
 VAR = re.compile(r"^\$\{[A-Za-z_][A-Za-z0-9_]*(:?[-?][^}]*)?\}")
 SECRETISH = re.compile(r"(^|_)(PASSWORD|PASS|SECRET|TOKEN|KEY|USER(_?NAME)?)$", re.I)   # a credential-bearing variable name (PASSIVE_PORTS and USER_HOME are not)
 def parts(v): return str(v).split(";")
+SKIPKEYS = {"image", "ports", "volumes", "tmpfs", "networks", "pull_policy", "mem_limit", "cpus", "cap_add", "profiles", "deploy", "restart", "depends_on", "network_mode", "privileged"}
+URLCRED = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@]+:([^@\s/]+)@")
+SECRETFLAG = re.compile(r"(?:^|[\s'\"])(--requirepass|--password|--passwd|--pass|--auth|--secret|--token|-a)(?:=|\s+)([^\s'\"]+|\"[^\"]*\")")
+SECRETASSIGN = re.compile(r"\b([A-Z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN))=([^\s'\";]+)")
+def isref(v): v = str(v).strip("\\\"'"); return v.startswith("$") or v == ""
+def leaves(o, path=()):
+    if isinstance(o, dict):
+        for k, v in o.items(): yield from leaves(v, path + (k,))
+    elif isinstance(o, (list, tuple)):
+        for i, v in enumerate(o): yield from leaves(v, path + (i,))
+    elif isinstance(o, str): yield path, o
 for name, s in sv.items():
     env = s.get("environment") or {}
     if isinstance(env, list): env = dict(e.split("=", 1) if "=" in e else (e, "") for e in env)
@@ -37,6 +48,18 @@ for name, s in sv.items():
             print("literal_credential %s.%s" % (name, k))
     for hist in ("testpass", "testuser", "minioadmin", "catalogizer_test_pass", "catalogizer_test"):
         if hist in yaml.dump(s): print("historical_literal %s contains %s" % (name, hist))
+    # F4 (WF12): a literal credential is found by STRUCTURE in every string of the service (command, entrypoint, healthcheck, URL/DSN values, labels, build args), not only in
+    # environment keys with a credential-like name. A value is a reference when it starts with `$` (compose `${...}` or a container variable `$$X`), also after a quote.
+    for path, leaf in leaves(s):
+        if path and path[0] in SKIPKEYS: continue
+        where = "%s.%s" % (name, ".".join(str(x) for x in path))
+        for m in URLCRED.finditer(leaf):
+            if not isref(m.group(1)): print("literal_url_credential %s" % where)
+        for m in SECRETFLAG.finditer(leaf):
+            if not isref(m.group(2)): print("literal_credential_argument %s" % where)
+        for m in SECRETASSIGN.finditer(leaf):
+            if not isref(m.group(2)): print("literal_credential_assignment %s" % where)
+    if str(env.get("POSTGRES_HOST_AUTH_METHOD", "")).lower() == "trust": print("auth_disabled %s POSTGRES_HOST_AUTH_METHOD=trust (the server would accept any password)" % name)
     if name not in owned and not (kind == "infra" and name == "minio"): continue   # the build compose's builder and emulator are not T129 services
     for p in (s.get("ports") or []):
         # forms: "[127.0.0.1:]${PORT}:80" or "8080:80"; the host-side port must be a variable, and the bind address loopback
@@ -59,6 +82,7 @@ for name, s in sv.items():
         if kind == "infra" and "op_id" not in labels: print("label_op_id_missing %s" % name)
     for c in (s.get("cap_add") or []):
         if not (kind == "infra" and name == "ftp" and c == "AUDIT_WRITE"): print("cap_add %s %s" % (name, c))
+    if kind == "infra" and name == "ftp" and "AUDIT_WRITE" not in (s.get("cap_add") or []): print("ftp_audit_write_missing ftp (pure-ftpd never becomes ready without it, evidence/wp12/ftp-capability.txt)")
 if kind == "infra":
     for need in want:
         if need not in sv: print("service_missing %s" % need)
@@ -72,7 +96,7 @@ for f in "$INFRA" "$BUILD"; do if [ -f "$f" ] && python3 -I -c "import yaml,sys;
 # 2. no literals, pinned, labelled, rootless
 for pair in "$INFRA:infra" "$BUILD:build"; do
   f="${pair%:*}"; k="${pair##*:}"; res="$(scan "$f" "$k")"
-  if [ -z "$res" ]; then ok "$(basename "$f"): no literal credential or port, digest-pinned and labelled, rootless"; else bad "$(basename "$f"): $(printf '%s' "$res" | wc -l) finding(s): $(printf '%s' "$res" | head -4 | tr '\n' ';')"; fi
+  if [ -z "$res" ]; then ok "$(basename "$f"): no literal credential or port, digest-pinned and labelled, rootless"; else bad "$(basename "$f"): $(printf '%s\n' "$res" | grep -c .) finding(s): $(printf '%s' "$res" | head -4 | tr '\n' ';')"; fi
 done
 # the repository's own pin checker agrees about the test-infra file (it is the T105 gate)
 if [ -f "$INFRA" ] && [ "$INFRA" = "$TI_REPO/docker-compose.test-infra.yml" ]; then
@@ -116,6 +140,23 @@ PY
   }
   mutant needle_literal_password infra 'POSTGRES_PASSWORD: "${TI_POSTGRES_PASSWORD:?}"' 'POSTGRES_PASSWORD: "hunter2literal"'
   mutant needle_literal_password_build build 'POSTGRES_PASSWORD: "${TI_POSTGRES_PASSWORD:?}"' 'POSTGRES_PASSWORD: "catalogizer_test_pass"'
+  # reviewer-authored mutants RM1-RM3, RM5, RM7 of the WF12 review (adopted verbatim): a literal in `command`, in a URL-valued env with a neutral key, in a healthcheck,
+  # a server that accepts any password, and the removal of the one capability pure-ftpd needs
+  mutant rm1_literal_in_command infra '\"$$REDIS_PASSWORD\"' 'hunter2literal'
+  mutant rm2_literal_in_url_env infra '      PASSWORD: "${TI_WEBDAV_PASSWORD:?}"' '      PASSWORD: "${TI_WEBDAV_PASSWORD:?}"
+      DAV_DSN: "http://admin:hunter2literal@webdav/"'
+  mutant rm3_literal_in_healthcheck infra 'redis-cli ping | grep -qx PONG' 'redis-cli -a hunter2literal ping | grep -qx PONG'
+  mutant rm5_trust_auth infra '      POSTGRES_PASSWORD: "${TI_POSTGRES_PASSWORD:?}"' '      POSTGRES_PASSWORD: "${TI_POSTGRES_PASSWORD:?}"
+      POSTGRES_HOST_AUTH_METHOD: trust'
+  mutant rm7_audit_write_removed infra '    cap_add:
+      - AUDIT_WRITE
+' ''
+  mutant literal_in_label_and_args infra '  project: catalogizer
+  op_id: "${TI_OP_ID:?TI_OP_ID is generated by scripts/test-infra/gen_env.sh}"
+  catalogizer.op_id' '  project: catalogizer
+  note: "login=admin PASSWORD=hunter2literal"
+  op_id: "${TI_OP_ID:?TI_OP_ID is generated by scripts/test-infra/gen_env.sh}"
+  catalogizer.op_id'
   mutant tag_not_digest infra 'docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499' 'docker.io/library/redis:7-alpine'
   mutant digest_not_in_lock infra 'docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499' 'docker.io/library/redis@sha256:0000000000000000000000000000000000000000000000000000000000000000'
   mutant literal_host_port infra '"127.0.0.1:${TI_PORT_REDIS:?}:6379"' '"6379:6379"'

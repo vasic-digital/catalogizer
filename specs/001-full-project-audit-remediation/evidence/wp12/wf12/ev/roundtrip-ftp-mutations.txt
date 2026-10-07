@@ -1,0 +1,5 @@
+step_runner_always_ok CAUGHT
+step_removed CAUGHT
+rm6_negative_leg_unreachable CAUGHT
+not_listed_on_failed_listing CAUGHT
+failfast_exits_zero CAUGHT

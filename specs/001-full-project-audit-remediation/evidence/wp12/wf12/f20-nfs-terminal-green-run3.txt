@@ -1,0 +1,10 @@
+# identity: WF12 F19/F20 nfs_terminal_state GREEN run 3
+# head: bfcd9fd9dec1452eed6d98fa14100f86ed8f6762
+# run_at: 2026-10-07T04:25:44Z
+# sha256 scripts/test-infra/nfs_terminal_state.sh 2e04e8933eb52a3081939493bd1e347180cc2311e6d41289825ca4f0c87a55b6
+# sha256 tests/infra/test_nfs_terminal_state.sh 9110ce722ce698c8e81d18578ed8cc59a239807d0b74ecaca2672b4f9233c7ab
+# command: bash tests/infra/test_nfs_terminal_state.sh
+PASS: all fixtures hold (missing / UNVERIFIED / AMBIGUOUS / VERIFIED+server failure / transcript / client failure / pass / inconclusive / unreadable)
+PASS: the check is only ever started through TIC tooling unit
+SUMMARY pass=2 fail=0 blocked=0
+# exit: 0

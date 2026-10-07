@@ -71,6 +71,7 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 | [Test Results Summary](testing/TEST_RESULTS_SUMMARY.md) | Latest test execution results |
 | [Test Results](testing/TEST_RESULTS.md) | Detailed test output |
 | [Final Test Report](testing/FINAL_TEST_REPORT.md) | Comprehensive test verification report |
+| [Real-Service Test Stack](testing/real-service-stack.md) | Rootless per-run PostgreSQL, Redis, FTP, SMB, WebDAV and NFS test servers: lifecycle scripts, round trips, leases, leak sweep |
 | [Test Expansion Progress](testing/TEST_EXPANSION_PROGRESS.md) | Test coverage expansion tracking |
 | [Test Implementation Summary](testing/TEST_IMPLEMENTATION_SUMMARY.md) | Test implementation details |
 | [Testing Report](testing/TESTING_REPORT.md) | Testing phase report |

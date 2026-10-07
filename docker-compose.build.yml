@@ -1,6 +1,7 @@
 # Containerized Build, Test & Release Pipeline for Catalogizer
-# Usage: podman-compose -f docker-compose.build.yml up --build --abort-on-container-exit
-# Or via: ./scripts/container-build.sh [version]
+# Usage: ./scripts/container-build.sh [version]   (it generates the per-run env file this compose file REQUIRES and passes it with --env-file)
+# Direct use needs that file: bash scripts/test-infra/gen_env.sh --build-id <id>, then
+#   podman-compose --env-file .audit/test-infra/catalogizer-test-<id>/env -f docker-compose.build.yml up --build --abort-on-container-exit
 #
 # T129 (docs/16 D-06): the postgres and redis services use digest-pinned images (IMG-INFRA-POSTGRES, IMG-INFRA-REDIS of build/containers/images.lock.yaml),
 # every credential and host port is a ${TI_*} variable (no literal), and each service carries the project labels. The variables come from the per-run

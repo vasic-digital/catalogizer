@@ -1,0 +1,16 @@
+# identity: WF12 F3 client isolation GREEN run 3
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T09:25:05Z
+# sha256 scripts/test-infra/run_client.sh bd4bfccc2e89b5dfc887a5d9804b39e4a2c110a784e20f734969f3f1c2878c21
+# sha256 scripts/test-infra/nas_readonly_leg.sh 92c64d403fff0246286f4d36b9b4531a8e544a5f67e289f7364d81c58b62effb
+# sha256 tests/infra/test_client_isolation.sh debe313683415c8e4ef60978e44a08fbca2526bdabe9bb0b07ed8437f9831012
+# command: bash tests/infra/test_client_isolation.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/client/isolation_probe.sh
+PASS: up exits 0
+PASS: the client sees only its scripts: no .env, no per-run credential file of any project, no .git; its own credential arrives by --env-file; /src/.env is refused by name
+PASS: no view directory is left behind
+SUMMARY pass=7 fail=0 blocked=0
+# exit: 0

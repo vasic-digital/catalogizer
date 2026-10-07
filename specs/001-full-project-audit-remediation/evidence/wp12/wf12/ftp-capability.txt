@@ -1,0 +1,13 @@
+# WF12 F13: control pair for cap_add AUDIT_WRITE on the ftp service (tests/infra/test_ftp_capability.sh)
+without_capability_up_exit=1 (asserted above); last line of up.sh: 
+with_capability_up_exit=0
+--- kept log of the capability-less start (first 12 lines) ---
+Creating user...
+Password: 
+Enter it again: 
+ root user give /home/ftpusers/ftpdata directory ftpuser owner
+Setting default port range to: 30000:30009
+Setting default max clients to: 10
+Setting default max connections per ip to: 5
+Starting Pure-FTPd:
+  pure-ftpd  -l puredb:/etc/pure-ftpd/pureftpd.pdb -E -j -R -P localhost   -p 30000:30009 -c 10 -C 5

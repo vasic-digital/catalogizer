@@ -24,7 +24,7 @@ P="$(ti_project "$BID")"; S="$(ti_state "$BID")"
 [ -n "$ENVF" ] || ENVF="$S/env"
 [ -n "$PORTF" ] || PORTF="$S/ports.env"
 tok() { head -c 64 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c "${1:-24}"; }
-# five distinct free TCP ports: bind(0) one at a time and keep each until all are chosen (so they cannot repeat)
+# six distinct free TCP ports (postgres, redis, ftp, smb, webdav, nfs): bind(0) one at a time and keep each until all are chosen (so they cannot repeat)
 PORTS="$(python3 -I - <<'PY'
 import socket
 s = [socket.socket() for _ in range(6)]

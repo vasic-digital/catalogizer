@@ -1,0 +1,8 @@
+STEP set_key ok
+STEP get_key ok
+STEP incr_three ok
+STEP expire_set ok
+STEP delete_keys ok
+STEP key_gone ok
+STEP unauthenticated_refused ok
+PASS roundtrip redis steps=7

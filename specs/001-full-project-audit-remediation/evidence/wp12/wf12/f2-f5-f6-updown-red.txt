@@ -1,0 +1,69 @@
+# RED (WF12 F2/F5/F6/F15/F16/F17): the NEW tests/infra/test_up_down.sh against the scripts of git HEAD 6d5ebb64 (exported to .audit/scratch/red-head; TI_SUT_DIR)
+# command: UPDOWN_NO_MUTATIONS=1 TI_SUT_DIR=.audit/scratch/red-head/scripts/test-infra bash tests/infra/test_up_down.sh
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/up.sh
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/down.sh
+PASS: up A exits 0
+PASS: up A prints its project
+PASS: up A prints the operation it registered (catalogizer-test-t3408267326-up-20261007T024026-443778)
+PASS: up A: one container labelled with the project
+PASS: up A: the lease is held by a LIVE keeper of this very start (run id, pid > 1, /proc entry, keeper command line)
+FAIL: up A: no podman pod was created for the project (WF12 F2: label-scoped teardown cannot see a pod) (got 'present' want 'gone')
+PASS: A answers its redis probe
+PASS: a second owner of the SAME project is refused (exit 3)
+PASS: the refusal names reason=lease_held
+PASS: the refused second up changed nothing (still one container)
+PASS: the refused second owner left the LIVE holder alive and the lease intact (WF12 F5, reviewer mutant RM4)
+PASS: a THIRD up is still refused as lease_held (exit 3), not lease_stale (exit 4)
+PASS: the third refusal names reason=lease_held
+PASS: a DIFFERENT project is admitted while A is up (exit 0)
+PASS: up B: one container labelled with B
+PASS: both leases are live keepers of their own start, each its own
+PASS: A's holder is not B's (distinct operations)
+PASS: A and B use distinct redis ports
+FAIL: down A by a caller naming no operation is REFUSED (exit 5) (got '0' want '5')
+FAIL: the refusal does not name not_lease_owner (down: project=catalogizer-test-t3408267326 removed containers=1 networks=1 volumes=0)
+FAIL: the refused down touched nothing: A's container runs and its lease is intact (got '0free' want '1ok')
+FAIL: down A by the OWNER OF B (a live holder of another project) is REFUSED (exit 5) (got '2' want '5')
+FAIL: the second refused down touched nothing either (got '0free' want '1ok')
+PASS: fixture: the foreign container is running
+PASS: fixture: A's leaked-style pod, B's pod and the foreign pod exist
+FAIL: down A by its owner exits 0 (got '2' want '0')
+PASS: down A removed every container labelled with A
+PASS: down A removed A's network
+PASS: the foreign unlabelled container (name carries A's project name) SURVIVES
+PASS: the OTHER project's container survives
+PASS: B still answers its redis probe after A went down
+PASS: down A released A's lease
+PASS: down A left B's lease alone (B's live keeper)
+FAIL: down A removed A's empty podman-compose pod (got 'present' want 'gone')
+PASS: down A left B's pod and the foreign pod alone
+FAIL: down A removed A's -client and -seed output directories (got 'keptkept' want 'gonegone')
+PASS: down A left B's, the foreign project's, A's -logs and the adjacent -client2 directory alone
+PASS: down A removed A's credentials file
+PASS: the operation of A's start is terminal (complete)
+PASS: down A again is a no-op (idempotent, exit 0)
+PASS: down with an invalid build id exits 2
+PASS: A can be started again after its lease was released (exit 0)
+PASS: the restarted A holds a fresh lease of its own operation
+PASS: the holder of the restarted A is dead (its keeper file was removed)
+PASS: down A by a caller naming no operation succeeds when the holder is PROVEN dead (exit 0)
+PASS: the dead holder's lease is released
+FAIL: the dead holder's operation is recorded reaped (got 'complete' want 'reaped')
+PASS: the stale project's containers are gone
+FAIL: down B removed B's containers (got '1' want '0')
+FAIL: all leases released at the end (got 'freeheld' want 'freefree')
+PASS: the foreign container still survives all teardowns
+FAIL: a corrupted corpus cache is refused (exit 1) (got '0' want '1')
+FAIL: the refusal does not name the digest mismatch (TI_PORT_NFS=43709 corpus_sha256=613120847c8785adb5bcb854ddaf4fd2d033ecea6e6ca7373d354ea8966f643c)
+FAIL: the refused start left no container, no lease (got '1held' want '0free')
+FAIL: the pristine copy of the cache is accepted (exit 0) (got '3' want '0')
+FAIL: the printed corpus digest is the one RECOMPUTED from the files (equals the independent recorded digest) (got '' want '613120847c8785adb5bcb854ddaf4fd2d033ecea6e6ca7373d354ea8966f643c')
+PASS: fixture: the listener holds the port
+FAIL: a port taken between the draw and the bind is retried and the start succeeds (exit 0) (got '1' want '0')
+FAIL: no retry was announced (test-infra: up failed: podman-compose up failed: a57d41f6c388493f625e348027ed95988ecffd90da53e87e3c50c4474c7c9ad7 33bf3f87cee5957d7fe886d93fd79d1597fcfded86b7aeb84fa49c9631ace7bb Error: unable to star)
+sed: can't read /home/milosvasic/Projects/catalogizer/.audit/test-infra/catalogizer-test-t3408554925/env: No such file or directory
+PASS: the final redis port is not the occupied one
+FAIL: the start left exactly one container (the failed attempt was removed) (got '0' want '1')
+sed: can't read /home/milosvasic/Projects/catalogizer/.audit/test-infra/catalogizer-test-t3408554925/env: No such file or directory
+SUMMARY pass=43 fail=20 blocked=0
+exit=1

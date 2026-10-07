@@ -1,0 +1,7 @@
+no_empty_proof CAUGHT
+no_live_proof CAUGHT
+no_create_command_proof CAUGHT
+pod_pattern_wide CAUGHT
+dir_follows_symlink CAUGHT
+dir_live_ignored CAUGHT
+dir_logs_removed CAUGHT

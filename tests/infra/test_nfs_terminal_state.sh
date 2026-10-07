@@ -29,6 +29,12 @@ EOF
 cat >"$FX/att-pass.json" <<'EOF'
 {"round_trips":[{"iteration":1,"ok":true,"record":"RUN-134#1"},{"iteration":2,"ok":true,"record":"RUN-134#2"},{"iteration":3,"ok":true,"record":"RUN-134#3"}]}
 EOF
+cat >"$FX/att-mixed.json" <<'EOF'
+{"round_trips":[{"iteration":1,"ok":true,"record":"RUN-134#1"},{"iteration":2,"ok":false,"record":"RUN-134#2"},{"iteration":3,"ok":true,"record":"RUN-134#3"}]}
+EOF
+cat >"$FX/att-mixed4.json" <<'EOF'
+{"round_trips":[{"iteration":1,"ok":true},{"iteration":2,"ok":true},{"iteration":3,"ok":true},{"iteration":4,"ok":false}]}
+EOF
 cat >"$FX/att-two.json" <<'EOF'
 {"round_trips":[{"iteration":1,"ok":true},{"iteration":2,"ok":true}]}
 EOF
@@ -59,6 +65,11 @@ battery() {
   if [ "$RC" = 0 ] && [ "$(field .state)" = pass ] && [ "$(field '.round_trips | length')" = 3 ] && field .does_not_prove | grep -q 'application NFS path'; then :; else echo "FAIL 3 passing round trips did not yield pass (rc=$RC state=$(field .state))"; n=$((n+1)); fi
   st "$sut" --client-json "$FXC/verified.json" --attempt-json "$FXC/att-two.json"
   if [ "$RC" -ne 0 ] && grep -q 'reason=attempt_inconclusive' "$TI_SCRATCH/st.err"; then :; else echo "FAIL two passing round trips were not refused as inconclusive (rc=$RC state=$(field .state))"; n=$((n+1)); fi
+  # WF12 F20: three or more round trips of which one FAILED are never `pass`; a mixed run must not read as a green one
+  for mx in att-mixed att-mixed4; do
+    st "$sut" --client-json "$FXC/verified.json" --attempt-json "$FXC/$mx.json"
+    if [ "$RC" -ne 0 ] && grep -q 'reason=attempt_inconclusive' "$TI_SCRATCH/st.err" && [ ! -e "$OUTD/rec.json" ]; then :; else echo "FAIL $mx (a run with a failed round trip) was not refused attempt_inconclusive (rc=$RC state=$(field .state))"; n=$((n+1)); fi
+  done
   st "$sut" --client-json "$FXC/maybe.json"
   if [ "$RC" -ne 0 ] && grep -q 'reason=nfs_client_verdict_unreadable' "$TI_SCRATCH/st.err"; then :; else echo "FAIL an unknown verdict value was not refused (rc=$RC)"; n=$((n+1)); fi
   return "$n"
@@ -83,7 +94,11 @@ PY
     rm -f -- "${dst:?}"
   }
   mut skip_verdict_read 'VERDICT="$(jq -r '"'"'.verdict // empty'"'"' "$CLIENT" 2>/dev/null)"   # VERDICT-READ' 'VERDICT=VERIFIED'
-  mut client_failure_as_structural '  client) refuse client_side_failure_is_an_image_defect' '  client) refuse_off client_side_failure_is_an_image_defect'
+  # F19: models the DANGEROUS behaviour (a failing CLIENT step recorded as structural_impossibility), not a crash: `client` takes the server branch
+  mut client_failure_as_structural '  client) refuse client_side_failure_is_an_image_defect "step $(jq -r '"'"'.failing_step.step // "?"'"'"' "$ATT"): fix IMG-INFRA-CLIENT by a reviewed change, never record it as rootless_cannot_provide_kernel_nfs";;
+  server)' '  client|server)'
+  # RM8 of the WF12 review, verbatim: a run with a failed round trip records `pass`
+  mut rm8_pass_with_a_failed_round_trip 'if [ "$ALLN" -ge 3 ] && [ "$OKN" = "$ALLN" ]; then' 'if [ "$ALLN" -ge 3 ] && [ "$OKN" -ge 1 ]; then'
   mut transcript_not_required '[ -n "$TR" ] && [ -r "$TR" ] && grep -q '"'"'nfs-ls'"'"' "$TR" || refuse client_version_transcript_missing' 'true'
   [ -z "${NFSTS_EV:-}" ] || cp "$MUTLOG" "$NFSTS_EV/nfs-terminal-mutation.txt"
 fi

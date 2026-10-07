@@ -24,20 +24,23 @@ IFS=, read -r -a IDX <<<"$HOSTS"
 for i in "${IDX[@]}"; do [ -n "$(envval "SYNOLOGY_IP_$i")" ] || missing="$missing SYNOLOGY_IP_$i"; done
 if [ -n "$missing" ]; then echo "SKIP nas_readonly reason=credentials_absent variables:$missing"; exit 0; fi
 OUT="$TI_ROOT/.audit/out/nas-ro-$$"; mkdir -p "$OUT" && chmod 700 "$OUT" || ti_die "cannot create $OUT"
-cleanup() { rm -f -- "${OUT:?}/auth"; }
+# the container sees a scratch VIEW with the client script only, never the repository (the real `.env` is in it): WF12 F3
+mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"
+ti_view_dir "$VIEW" scripts/test-infra/client || ti_die "cannot build the client view"
+cleanup() { rm -f -- "${OUT:?}/auth"; case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }
 trap cleanup EXIT
 ( umask 077; printf 'username = %s\npassword = %s\n' "$(envval SYNOLOGY_SMB_USER)" "$(envval SYNOLOGY_SMB_PASSWORD)" >"$OUT/auth" ) || ti_die "cannot write the auth file"
 chmod 600 "$OUT/auth"
 res="[]"; rc=0
 for i in "${IDX[@]}"; do
   IP="$(envval "SYNOLOGY_IP_$i")"
-  (cd "$TI_ROOT" && bash scripts/containers/run_pinned.sh --out "$OUT" --op-id "nas-ro-$$-$i" IMG-INFRA-CLIENT -- bash /src/scripts/test-infra/client/nas_smb_ro.sh "$IP" "$i") >"$OUT/leg-$i.log" 2>&1; lrc=$?
+  (cd "$VIEW" && bash "$TI_ROOT/scripts/containers/run_pinned.sh" --out "$OUT" --op-id "nas-ro-$$-$i" IMG-INFRA-CLIENT -- bash /src/scripts/test-infra/client/nas_smb_ro.sh "$IP" "$i") >"$OUT/leg-$i.log" 2>&1; lrc=$?
   if [ "$lrc" = 0 ] && [ -s "$OUT/nas-$i.tsv" ]; then
     one="$(jq -Rn --arg alias "Synology$i" --argjson ok true '[inputs | split("\t") | {(.[0]): .[1]}] | add + {alias:$alias, ok:$ok}' <"$OUT/nas-$i.tsv")"
   else rc=1; one="$(jq -n --arg alias "Synology$i" --argjson rc "$lrc" '{alias:$alias, ok:false, exit_code:$rc}')"; echo "FAIL nas_readonly host=Synology$i rc=$lrc"; fi
   res="$(jq -c --argjson o "$one" '. + [$o]' <<<"$res")"
 done
-doc="$(jq -n --argjson hosts "$res" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg head "$(git -C "$TI_ROOT" rev-parse HEAD 2>/dev/null)" '{schema:"wp12-nas-readonly/1", task:"T132", run_at:$at, head:$head, protocol:"SMB3 read-only", requests_per_second_max:2, writes_performed:0, names_recorded:false, content_recorded:false, hosts:$hosts}')"
+doc="$(jq -n --argjson hosts "$res" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg head "$(git -C "$TI_ROOT" rev-parse HEAD 2>/dev/null)" '{schema:"wp12-nas-readonly/1", task:"T132", run_at:$at, head:$head, protocol:"SMB3 read-only", request_rate_policy_max_per_second:2, writes_performed:0, names_recorded:false, content_recorded:false, hosts:$hosts}')"
 if [ -n "$JSON" ]; then printf '%s\n' "$doc" >"$JSON"; fi
 echo "$doc" | jq -r '.hosts[] | "NAS " + .alias + " ok=" + (.ok|tostring) + " share=" + (.share // "-") + " entries=" + (.entries // "-") + " read_size=" + (.read_size // "-") + " writes=" + (.writes_performed // "-")'
 exit "$rc"

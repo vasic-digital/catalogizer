@@ -9,9 +9,9 @@ head -c 20480 /dev/urandom >/tmp/up.bin; UPSHA="$(sha256sum /tmp/up.bin | cut -d
 get_check() { local rel=$1 want dir base; want="$(manifest_sha "$rel")"; [ -n "$want" ] || { echo "no manifest entry for $rel"; return 1; }
   dir="$(dirname "$rel")"; base="$(basename "$rel")"; rm -f /tmp/dl.bin; sm "cd \"$dir\"; get \"$base\" /tmp/dl.bin" >/dev/null && expect_eq "$(sha256sum /tmp/dl.bin | cut -d' ' -f1)" "$want"; }
 listed() { sm "ls $1" | grep -qF "$1"; }
-not_listed() { ! sm "ls $1" 2>&1 | grep -qE "$1 +[A-Z]* +[0-9]+"; }
+not_listed() { local o; o="$(sm "ls $1" 2>&1)" && { echo "the listing still shows $1"; return 1; }; case "$o" in *NT_STATUS_NO_SUCH_FILE*) ;; *) echo "not listed, but not NT_STATUS_NO_SUCH_FILE: ${o:0:100}"; return 1;; esac; }
 back_equals() { rm -f /tmp/back.bin; sm "get $1 /tmp/back.bin" >/dev/null && expect_eq "$(sha256sum /tmp/back.bin | cut -d' ' -f1)" "$UPSHA"; }
-refused_pw() { local f; f="$(mktemp)"; chmod 600 "$f"; printf '%s\n' "username = $TI_SMB_USER" 'password = wrong-credential-1' >"$f"; ! timeout 30 smbclient "//$H/testshare" -A "$f" -m SMB3 -c 'ls' >/dev/null 2>&1; }
+refused_pw() { local f; f="$(mktemp)"; chmod 600 "$f"; printf '%s\n' "username = $TI_SMB_USER" 'password = wrong-credential-1' >"$f"; local o; o="$(timeout 30 smbclient "//$H/testshare" -A "$f" -m SMB3 -c 'ls' 2>&1)" && { echo "a wrong password was accepted"; return 1; }; case "$o" in *NT_STATUS_LOGON_FAILURE*) ;; *) echo "refused, but not NT_STATUS_LOGON_FAILURE: ${o:0:100}"; return 1;; esac; }
 step corpus_ascii_file get_check "movies/The.Matrix.1999.1080p.BluRay.mkv"
 step corpus_nested_file get_check "music/Pink Floyd/The Dark Side of the Moon/01 - Speak to Me.flac"
 step corpus_unicode_file get_check $'music/Björk - Jóga (Ünicöde).flac'

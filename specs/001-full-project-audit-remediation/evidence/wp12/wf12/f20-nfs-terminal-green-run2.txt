@@ -1,0 +1,10 @@
+# identity: WF12 F19/F20 nfs_terminal_state GREEN run 2
+# head: 3fa277e414c43186f937685e084d9752f529e336
+# run_at: 2026-10-07T04:18:08Z
+# sha256 scripts/test-infra/nfs_terminal_state.sh 2e04e8933eb52a3081939493bd1e347180cc2311e6d41289825ca4f0c87a55b6
+# sha256 tests/infra/test_nfs_terminal_state.sh 9110ce722ce698c8e81d18578ed8cc59a239807d0b74ecaca2672b4f9233c7ab
+# command: bash tests/infra/test_nfs_terminal_state.sh
+FAIL: 1 fixture(s) violated: FAIL unverified verdict did not yield blocked nfs_client_unverified citing the file sha256 (rc=1 state= reason=)
+PASS: the check is only ever started through TIC tooling unit
+SUMMARY pass=1 fail=1 blocked=0
+# exit: 1

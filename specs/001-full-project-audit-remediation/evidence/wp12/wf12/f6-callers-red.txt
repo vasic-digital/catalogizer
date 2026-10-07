@@ -1,0 +1,4 @@
+# RED (WF12 F1) callers of down.sh without --op-id and consumers at HEAD
+HEAD:scripts/test-infra/nfs_attempt.sh:19:trap 'bash "$HERE/down.sh" --build-id "$BID" >/dev/null 2>&1' EXIT
+HEAD:scripts/test-infra/nfs_attempt.sh:33:bash "$HERE/down.sh" --build-id "$BID" >"$EVD/nfs-down.txt" 2>&1
+HEAD:scripts/test-infra/up.sh:47:fail_down() { echo "test-infra: up failed: $1" >&2; bash "$HERE/down.sh" --build-id "$BID" --keep-logs >/dev/null 2>&

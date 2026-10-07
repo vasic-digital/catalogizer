@@ -6,7 +6,7 @@
 # One compose project per run: `catalogizer-test-<build_id>`. Start and stop only through the lifecycle scripts, which generate the
 # per-run credentials and random host ports (scripts/test-infra/gen_env.sh), seed the deterministic corpus and take the per-project lease:
 #
-#   scripts/test-infra/up.sh   --build-id <id>        scripts/test-infra/down.sh --build-id <id>
+#   scripts/test-infra/up.sh   --build-id <id>        scripts/test-infra/down.sh --build-id <id> --op-id <the op_id up.sh printed>
 #
 # Rules this file follows (docs/16 D-06, D-07):
 #   - every image is pinned by its index digest (the digests are the entries IMG-INFRA-* of build/containers/images.lock.yaml);

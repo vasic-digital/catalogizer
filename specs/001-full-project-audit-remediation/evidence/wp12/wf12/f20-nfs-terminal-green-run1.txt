@@ -1,0 +1,14 @@
+# identity: WF12 F19/F20 nfs_terminal_state GREEN run 1
+# head: 3fa277e414c43186f937685e084d9752f529e336
+# run_at: 2026-10-07T03:40:11Z
+# sha256 scripts/test-infra/nfs_terminal_state.sh 2e04e8933eb52a3081939493bd1e347180cc2311e6d41289825ca4f0c87a55b6
+# sha256 tests/infra/test_nfs_terminal_state.sh 9110ce722ce698c8e81d18578ed8cc59a239807d0b74ecaca2672b4f9233c7ab
+# command: bash tests/infra/test_nfs_terminal_state.sh
+PASS: all fixtures hold (missing / UNVERIFIED / AMBIGUOUS / VERIFIED+server failure / transcript / client failure / pass / inconclusive / unreadable)
+PASS: the check is only ever started through TIC tooling unit
+PASS: mutation skip_verdict_read CAUGHT (FAIL unverified verdict did not yield blocked nfs_client_unverified citing the file sha256 (rc=0 state=structu)
+PASS: mutation client_failure_as_structural CAUGHT (FAIL a client-side failure was recorded as a state instead of refused (rc=0 state=structural_impossibility))
+PASS: mutation rm8_pass_with_a_failed_round_trip CAUGHT (FAIL att-mixed (a run with a failed round trip) was not refused attempt_inconclusive (rc=0 state=pass))
+PASS: mutation transcript_not_required CAUGHT (FAIL a server failure without the client transcript was not refused (rc=0))
+SUMMARY pass=6 fail=0 blocked=0
+# exit: 0

@@ -37,8 +37,10 @@ the host resource budget (RULE-CONT-001).
 
 Start test infrastructure:
 ```bash
-podman-compose -f docker-compose.test-infra.yml up -d
+scripts/test-infra/up.sh --build-id <id>      # per-run credentials, random loopback ports, protocol-level readiness
+scripts/test-infra/down.sh --build-id <id> --op-id <op_id up.sh printed>
 ```
+(Starting the compose file directly, without the per-run env file, is refused: it requires generated credentials and ports; see docs/testing/real-service-stack.md.)
 
 Integration tests without the stack are **skipped** (not failed) via
 `catalog-api/tests/infra_helper.go#SkipIfInfraUnavailable`

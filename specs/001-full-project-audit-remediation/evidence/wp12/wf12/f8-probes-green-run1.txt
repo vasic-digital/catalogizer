@@ -1,0 +1,36 @@
+# identity: WF12 F8/F10 probes GREEN run 1
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:18:56Z
+# sha256 scripts/test-infra/probe.sh f44bee8ee0916ac9d183be428fb9c89cfa6cf032056c6ddc4d033fbdb3d1a845
+# sha256 scripts/test-infra/run_client.sh bd4bfccc2e89b5dfc887a5d9804b39e4a2c110a784e20f734969f3f1c2878c21
+# sha256 scripts/test-infra/client/probe_smb.sh 0adbc6e756070bd6472685faeebe0228dc659be84ba42168c5b8adc9c6880f98
+# sha256 tests/infra/test_probes.sh eb16ef6a0f05c6a9247d1456999cdab374f37fdb554ea996dee9c19ed56e94a2
+# command: bash tests/infra/test_probes.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up exits 0 (postgres, redis, ftp, smb, webdav)
+PASS: carrier fixture started (accepts TCP on 5432, speaks nothing)
+PASS: control: a TCP-only check WOULD pass on the carrier (the open-port trap is real)
+PASS: probe.sh (all) exits 0
+PASS: probe postgres PASS with its protocol answer (SELECT 1 answered 1)
+PASS: probe redis PASS with its protocol answer (PING answered PONG)
+PASS: probe ftp PASS with its protocol answer (passive transfer (sha256 equals the corpus manifest))
+PASS: probe smb PASS with its protocol answer (testshare)
+PASS: probe webdav PASS with its protocol answer (PROPFIND answered 207)
+BLOCKED: minio probe BLOCKED (image not obtainable, evidence/wp12/minio-blocked.txt)
+PASS: summary line: pass=5 fail=0 blocked=1 (blocked is not counted as a pass)
+PASS: no script of scripts/test-infra execs into a container
+PASS: control needle: the exec scan sees a planted podman exec
+PASS: no protocol client is invoked outside the IMG-INFRA-CLIENT scripts (scripts/test-infra/client)
+PASS: fixtures: host probe refused, service-class image refused, carrier FAILs, wrong credentials FAIL (5 protocols)
+PASS: mutation postgres_tcp_only CAUGHT (FAIL the TCP-only carrier passed the postgres probe (rc=0: PROBES pass=1 fail=0 blocked=0))
+PASS: mutation redis_accepts_any CAUGHT (FAIL redis probe did not fail with its refusal signal 'WRONGPASS' on a wrong credential (rc=0: ))
+PASS: mutation ftp_always_pass CAUGHT (FAIL ftp probe did not fail with its refusal signal '530' on a wrong credential (rc=0: ))
+PASS: mutation smb_always_pass CAUGHT (FAIL smb probe did not fail with its refusal signal 'NT_STATUS_LOGON_FAILURE' on a wrong credential (rc=0: ))
+PASS: mutation webdav_always_pass CAUGHT (FAIL webdav probe did not fail with its refusal signal 'HTTP.401' on a wrong credential (rc=0: ))
+PASS: mutation runner_check_removed CAUGHT (FAIL host-composed probe was not refused (rc=0))
+PASS: mutation class_check_removed CAUGHT (FAIL service-class image was not refused as client_image_not_interpreter_class (rc=0))
+SUMMARY pass=25 fail=0 blocked=1
+# exit: 0

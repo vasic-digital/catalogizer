@@ -13,7 +13,7 @@ put_get() { # put_get <local name> <size> <remote name>: write, read back, compa
 size_is() { local line; line="$(nfs-ls "$U" 2>/dev/null | awk -v n="$1" '{ if ($NF == n) print $5 }' | head -1)"; expect_eq "$line" "$2"; }
 dup_create_refused() { local o; mk ow2.bin 3000 >/dev/null; o="$(nfs-cp /tmp/ow2.bin "$U/ow-$N.bin" 2>&1)" && { echo "a second create of an existing name was accepted"; return 1; }; case "$o" in *NFS3ERR_EXIST*) ;; *) echo "refused, but not with NFS3ERR_EXIST: ${o:0:100}"; return 1;; esac
   expect_eq "$(nfs-cat "$U/ow-$N.bin" | sha256sum | cut -d' ' -f1)" "$(sha256sum /tmp/ow1.bin | cut -d' ' -f1)"; }
-unexported() { local o; o="$(timeout 20 nfs-ls "nfs://$IP/no-such-export" 2>&1)"; case "$o" in *Failed*|*failed*|*MNT3ERR*) return 0;; *) echo "$o"; return 1;; esac; }
+unexported() { local o; o="$(timeout 20 nfs-ls "nfs://$IP/no-such-export" 2>&1)"; case "$o" in *MNT3ERR_*) return 0;; *) echo "not refused by the server's MOUNT protocol (no MNT3ERR_*): ${o:0:120}"; return 1;; esac; }   # WF12 F8: an unreachable server also "fails"
 step resolve_server test -n "$IP"
 step write_read_empty put_get e.bin 0 "empty-$N.bin"
 step write_read_one_byte put_get b.bin 1 "one-$N.bin"

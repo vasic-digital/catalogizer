@@ -84,7 +84,7 @@ From `docs/TEST_INFRASTRUCTURE_AUDIT.md` + `tests/integration/filesystem_operati
 | Reconnect after drop | n/a | ✅ | ✅ | ✅ | ✅ |
 
 All covered by existing integration tests; executed when
-`docker-compose.test-infra.yml` is up.
+the per-run test-infra stack (`scripts/test-infra/up.sh`) is up.
 
 ## 5. WebSocket fan-out
 

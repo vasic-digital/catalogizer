@@ -1,0 +1,4 @@
+skip_verdict_read CAUGHT
+client_failure_as_structural CAUGHT
+rm8_pass_with_a_failed_round_trip CAUGHT
+transcript_not_required CAUGHT

@@ -1,0 +1,32 @@
+# identity: WF12 F8 round trip postgres (x3 recorded, mutations incl RM6)
+# head: bfcd9fd9dec1452eed6d98fa14100f86ed8f6762
+# run_at: 2026-10-07T05:06:17Z
+# sha256 scripts/test-infra/roundtrip.sh c66680d42c35e693839c095bb03f5c18d5242c5f6c384f5c11b2ce6d986403be
+# sha256 scripts/test-infra/client/roundtrip_postgres.sh 6240cd451496b0ea7117162e8fdc43a0fbed28a6ddf5a529a66d86c664441515
+# sha256 tests/infra/test_roundtrip.sh 11527e838e0b4db8e081da726cedcadf979254d96618dedae473d1ee8cbaa99b
+# command: bash tests/infra/test_roundtrip_postgres.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: client script present: scripts/test-infra/client/roundtrip_postgres.sh
+PASS: up (postgres) exits 0
+PASS: criteria hold: PASS with exactly 10 ok steps; a sabotaged run FAILs
+PASS: recorded run 1 exits 0
+PASS: run 1: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 1: PASS roundtrip postgres steps=10 (plain run, rc=0)
+PASS: recorded run 2 exits 0
+PASS: run 2: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 2: PASS roundtrip postgres steps=10 (plain run, rc=0)
+PASS: recorded run 3 exits 0
+PASS: run 3: recorded as ev/1 with exit 0 and verdict pass
+PASS: run 3: PASS roundtrip postgres steps=10 (plain run, rc=0)
+PASS: ledger: 3 ev/1 records, GREEN, exit 0, verdict pass, evidence class runtime, oracle specified
+PASS: tools/evidence/verify walks the chain (exit 0)
+PASS: mutation step_runner_always_ok CAUGHT (FAIL a sabotaged round trip (service host unresolvable) did not fail (rc=0))
+PASS: mutation step_removed CAUGHT (FAIL the round trip did not PASS with exactly 10 ok steps (rc=1: FAIL roundtrip postgres steps=9 fai)
+PASS: mutation rm6_negative_leg_unreachable CAUGHT (FAIL the round trip did not PASS with exactly 10 ok steps (rc=1: FAIL roundtrip postgres steps=10 fa)
+PASS: mutation negative_dup_not_a_duplicate CAUGHT (FAIL the round trip did not PASS with exactly 10 ok steps (rc=1: FAIL roundtrip postgres steps=10 fa)
+PASS: mutation failfast_exits_zero CAUGHT (FAIL a sabotaged round trip (service host unresolvable) did not fail (rc=0))
+SUMMARY pass=23 fail=0 blocked=0
+# exit: 0

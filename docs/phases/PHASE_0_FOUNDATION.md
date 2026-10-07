@@ -673,11 +673,11 @@ steps:
   # ==========================================
   - name: integration-tests
     commands:
-      - podman-compose -f docker-compose.test-infra.yml up -d
-      - sleep 10  # Wait for services
+      - scripts/test-infra/up.sh --build-id ci   # waits until every service answers its protocol
+      - sleep 0
       - cd catalog-api
       - go test -v ./tests/integration/... -tags=integration
-      - podman-compose -f docker-compose.test-infra.yml down
+      - scripts/test-infra/down.sh --build-id ci --op-id "$(sed -n 's/^TI_OP_ID=//p' .audit/test-infra/catalogizer-test-ci/env)"
     failure: ignore
 
   # ==========================================
@@ -879,7 +879,7 @@ set -e
 echo "=== Setting up Test Environment ==="
 
 # Start test infrastructure
-podman-compose -f docker-compose.test-infra.yml up -d
+scripts/test-infra/up.sh --build-id setup
 
 # Wait for services to be ready
 echo "Waiting for test services to be ready..."
@@ -921,7 +921,7 @@ echo ""
 echo "Test environment setup complete!"
 echo ""
 echo "To stop test environment:"
-echo "  podman-compose -f docker-compose.test-infra.yml down"
+echo "  scripts/test-infra/down.sh --build-id setup --op-id <op_id up.sh printed>"
 EOFSCRIPT
 chmod +x /run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/setup-test-env.sh
 ```

@@ -1,0 +1,2 @@
+# WF12 F7: nfs_fallback_state.sh --state not_needed on the real wp10/nfs-attempt.json (a protocol-only pass)
+nfs_fallback_state: REFUSED reason=nfs_pass_does_not_cover_kernel_mount the T134 pass is a user-space protocol round trip; the application's kernel mount path (syscall.Mount) is UNCONFIRMED and the owner-host leg stays owed

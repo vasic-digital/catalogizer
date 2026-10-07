@@ -1,0 +1,45 @@
+# identity: WF12 F5/F6/F11 concurrency GREEN run 2
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:31:12Z
+# sha256 scripts/test-infra/up.sh 0f2f1672b64a111207ae2a1feb3bbd6907e93a4502f87578088eafbb5a83fa68
+# sha256 scripts/test-infra/down.sh 5ce039d1c741b0472614acf2a5a478cf3ba4bd5999e6f804c5e8db77e40ce705
+# sha256 tests/infra/test_concurrency.sh a9bccb9381f82b8c19b4aa7a82420be1f9f10490ac132c983ab6da53edb8bec9
+# command: bash tests/infra/test_concurrency.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: stack A starts (all five services) while B starts (exit 0)
+PASS: stack B starts (all five services) while A starts (exit 0)
+PASS: A runs 5 containers
+PASS: B runs 5 containers
+PASS: distinct compose projects
+PASS: twelve host ports across the two stacks
+PASS: all host ports distinct
+PASS: no host port below 1024
+PASS: two distinct networks exist
+PASS: distinct data directories
+PASS: distinct credentials
+PASS: no container belongs to both projects
+PASS: both leases are live keepers of their own start (holder identity and liveness)
+PASS: a second owner of A is refused (exit 3) while both run
+PASS: a second owner of B is refused (exit 3) while both run
+PASS: the refused second owners left both live holders alive
+PASS: the refused second owners changed nothing (still 5 + 5 containers)
+PASS: A answers all five probes while B is up
+PASS: B answers all five probes while A is up
+PASS: marker put on A
+PASS: marker present on A
+PASS: marker absent from B (webdav and postgres)
+PASS: host side: the marker file is in A's data directory
+PASS: host side: the marker file is NOT in B's data directory
+PASS: down A by a caller naming no operation is REFUSED while A's holder lives (exit 5)
+PASS: the refused down changed nothing (5 + 5 containers)
+PASS: down A by B's owner is REFUSED (exit 5)
+PASS: down A by its owner exits 0
+PASS: after down A: B still has 5 containers
+PASS: after down A: B still answers all probes
+PASS: after down A: A's lease is free and B's is still a live keeper
+PASS: evidence written: /home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/wp12/wf12/concurrency.json
+SUMMARY pass=36 fail=0 blocked=0
+# exit: 0

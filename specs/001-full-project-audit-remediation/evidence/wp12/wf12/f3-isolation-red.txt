@@ -1,0 +1,10 @@
+# RED (WF12 F3): the NEW tests/infra/test_client_isolation.sh against the scripts of git HEAD (isolation_probe.sh added to the export)
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/up.sh
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/down.sh
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/run_client.sh
+PASS: script present: .audit/scratch/red-head/scripts/test-infra/client/isolation_probe.sh
+PASS: up exits 0
+FAIL: 8 violation(s): FAIL /src/.audit/test-infra/catalogizer-test-zziso6395/env is visible to the client (PATH .audit/test-infra/catalogizer-test-zziso6395/env readable);FAIL /src/.audit/scratch/decoy-zziso6395/secret.env is visible to the client (PATH .audit/scratch/decoy-zziso6395/secret.env readable);FAIL /src/.audit/test-infra/catalogizer-test-t3413923576/env is visible to the client (PATH .audit/test-infra/catalogizer-test-t3413923576/env readable);FAIL /src/docker-compose.test-infra.yml is visible to the clien
+PASS: no view directory is left behind
+SUMMARY pass=6 fail=1 blocked=0
+exit=1

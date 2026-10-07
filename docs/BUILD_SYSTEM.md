@@ -208,12 +208,18 @@ releases/
 For reproducible builds inside the builder container:
 
 ```bash
-# Via docker-compose
-BUILD_VERSION=1.0.0 BUILD_NUMBER=3 BUILD_COMPONENTS="catalog-api catalog-web" \
-  podman-compose -f docker-compose.build.yml up --build --abort-on-container-exit
-
-# Via container-build.sh (existing script)
+# Via container-build.sh (the entry point: it generates the per-run credentials and random ports
+# docker-compose.build.yml requires, passes them with --env-file and removes them afterwards)
 ./scripts/container-build.sh 1.0.0
+
+# Validate the compose file with a fresh per-run env, without building
+./scripts/container-build.sh --validate-only
+
+# Running the compose file directly needs that env file (without it podman-compose refuses to render):
+bash scripts/test-infra/gen_env.sh --build-id mybuild
+BUILD_VERSION=1.0.0 BUILD_NUMBER=3 BUILD_COMPONENTS="catalog-api catalog-web" \
+  podman-compose --env-file .audit/test-infra/catalogizer-test-mybuild/env \
+  -f docker-compose.build.yml up --build --abort-on-container-exit
 ```
 
 ### Container Environment Variables

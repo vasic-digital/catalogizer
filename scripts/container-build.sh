@@ -2,7 +2,9 @@
 # ============================================================
 # Catalogizer - Containerized Build Entry Point
 # Detects container runtime and launches the build pipeline
-# Usage: ./scripts/container-build.sh [version] [--skip-emulator] [--skip-e2e] [--with-emulator]
+# Usage: ./scripts/container-build.sh [version] [--skip-emulator] [--skip-e2e] [--with-emulator] [--validate-only]
+# docker-compose.build.yml needs the per-run credentials and random host ports of its postgres/redis services (T129: no literal credential, no fixed port): this script generates them
+# with scripts/test-infra/gen_env.sh into a mode 0600 env file under the gitignored .audit/test-infra/ tree, hands it to the compose tool with --env-file, and removes it on exit.
 # ============================================================
 
 set -euo pipefail
@@ -15,6 +17,7 @@ VERSION="1.0.0"
 SKIP_EMULATOR="true"
 SKIP_E2E="false"
 EXTRA_PROFILES=""
+VALIDATE_ONLY="false"
 
 # Colors
 RED='\033[0;31m'
@@ -38,6 +41,7 @@ usage() {
     echo "  --skip-emulator      Skip Android emulator tests (default)"
     echo "  --with-emulator      Enable Android emulator tests (requires /dev/kvm)"
     echo "  --skip-e2e           Skip Playwright E2E tests"
+    echo "  --validate-only      Generate the per-run env, validate docker-compose.build.yml with it, and stop (no keys, no build)"
     echo "  --help               Show this help message"
     echo ""
     echo "Examples:"
@@ -60,6 +64,10 @@ while [ $# -gt 0 ]; do
             ;;
         --skip-e2e)
             SKIP_E2E="true"
+            shift
+            ;;
+        --validate-only)
+            VALIDATE_ONLY="true"
             shift
             ;;
         --help|-h)
@@ -134,26 +142,41 @@ if [ "$SKIP_EMULATOR" = "false" ]; then
 fi
 
 # ============================================================
+# Per-run credentials + validate compose file
+# ============================================================
+BUILD_ID="build-$(date -u +%m%d%H%M%S)-$$"
+BUILD_STATE_DIR="$PROJECT_ROOT/.audit/test-infra/catalogizer-test-$BUILD_ID"
+cleanup_env() {
+    case "$BUILD_STATE_DIR" in "$PROJECT_ROOT"/.audit/test-infra/catalogizer-test-build-*) rm -rf -- "$BUILD_STATE_DIR" ;; esac
+}
+trap cleanup_env EXIT
+bash "$PROJECT_ROOT/scripts/test-infra/gen_env.sh" --build-id "$BUILD_ID" >/dev/null || {
+    log_error "cannot generate the per-run environment (scripts/test-infra/gen_env.sh)"
+    exit 1
+}
+ENV_ARGS=(--env-file "$BUILD_STATE_DIR/env")
+log_info "Validating docker-compose.build.yml..."
+cd "$PROJECT_ROOT"
+$COMPOSE_CMD "${ENV_ARGS[@]}" -f docker-compose.build.yml config --quiet 2>/dev/null || {
+    # Some compose versions don't support --quiet
+    $COMPOSE_CMD "${ENV_ARGS[@]}" -f docker-compose.build.yml config >/dev/null 2>&1 || {
+        log_error "docker-compose.build.yml validation failed"
+        exit 1
+    }
+}
+log_info "Compose file is valid"
+if [ "$VALIDATE_ONLY" = "true" ]; then
+    log_info "--validate-only: stopping before the signing keys and the build"
+    exit 0
+fi
+
+# ============================================================
 # Generate signing keys (before container build)
 # ============================================================
 log_info "Checking signing keys..."
 if [ -x "$PROJECT_ROOT/docker/signing/generate-keys.sh" ]; then
     "$PROJECT_ROOT/docker/signing/generate-keys.sh" || log_warn "Signing key generation had warnings"
 fi
-
-# ============================================================
-# Validate compose file
-# ============================================================
-log_info "Validating docker-compose.build.yml..."
-cd "$PROJECT_ROOT"
-$COMPOSE_CMD -f docker-compose.build.yml config --quiet 2>/dev/null || {
-    # Some compose versions don't support --quiet
-    $COMPOSE_CMD -f docker-compose.build.yml config >/dev/null 2>&1 || {
-        log_error "docker-compose.build.yml validation failed"
-        exit 1
-    }
-}
-log_info "Compose file is valid"
 
 # ============================================================
 # Initialize git submodules
@@ -179,14 +202,14 @@ export SKIP_EMULATOR_TESTS="$SKIP_EMULATOR"
 export SKIP_E2E_TESTS="$SKIP_E2E"
 
 # Build and run
-$COMPOSE_CMD -f docker-compose.build.yml $EXTRA_PROFILES up --build --abort-on-container-exit
+$COMPOSE_CMD "${ENV_ARGS[@]}" -f docker-compose.build.yml $EXTRA_PROFILES up --build --abort-on-container-exit
 EXIT_CODE=$?
 
 # ============================================================
 # Cleanup containers
 # ============================================================
 log_info "Stopping services..."
-$COMPOSE_CMD -f docker-compose.build.yml $EXTRA_PROFILES down --volumes 2>/dev/null || true
+$COMPOSE_CMD "${ENV_ARGS[@]}" -f docker-compose.build.yml $EXTRA_PROFILES down --volumes 2>/dev/null || true
 
 # ============================================================
 # Print results summary

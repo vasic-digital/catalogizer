@@ -17,12 +17,12 @@ if [ ! -f "$SUT" ]; then bad "seeder absent: $SUT_REL"; ti_summary; exit 1; fi
 
 seed_run() { # seed_run <seed> <outdir-name>   -> sets RC, stdout in $TI_SCRATCH/<name>.out
   local seed=$1 name=$2
-  rm -rf -- "${TI_REPO:?}/.audit/out/ti-seed-${name:?}"; mkdir -p "$TI_REPO/.audit/out/ti-seed-$name"
+  rm -rf -- "${TI_REPO:?}/.audit/out/ti-seed-$$-${name:?}"; mkdir -p "$TI_REPO/.audit/out/ti-seed-$$-$name"
   # the container sees the repository read-only at /src and the out dir at /out
-  "${TIC[@]}" --out "$TI_REPO/.audit/out/ti-seed-$name" tooling unit -- bash "/src/$SUT_REL" --seed "$seed" --out /out/corpus --checksum-file /out/corpus.sha256 >"$TI_SCRATCH/$name.out" 2>"$TI_SCRATCH/$name.err"; RC=$?
+  "${TIC[@]}" --out "$TI_REPO/.audit/out/ti-seed-$$-$name" tooling unit -- bash "/src/$SUT_REL" --seed "$seed" --out /out/corpus --checksum-file /out/corpus.sha256 >"$TI_SCRATCH/$name.out" 2>"$TI_SCRATCH/$name.err"; RC=$?
 }
-dir_of() { echo "$TI_REPO/.audit/out/ti-seed-$1"; }
-cleanup_out() { rm -rf -- "${TI_REPO:?}"/.audit/out/ti-seed-*; }
+dir_of() { echo "$TI_REPO/.audit/out/ti-seed-$$-$1"; }
+cleanup_out() { rm -rf -- "${TI_REPO:?}"/.audit/out/ti-seed-$$-*; }
 trap 'cleanup_out; ti_cleanup' EXIT
 
 seed_run "$SEED" a; check "run a exits 0" "$RC" 0

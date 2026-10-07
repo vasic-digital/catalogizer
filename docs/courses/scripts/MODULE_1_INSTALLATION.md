@@ -180,7 +180,7 @@ An important note for Podman users: always use fully qualified image names like 
 
 - Development: `podman-compose -f docker-compose.dev.yml up`
 - Production: `podman-compose up` (requires .env with POSTGRES_PASSWORD)
-- Build pipeline: `podman-compose -f docker-compose.build.yml up`
+- Build pipeline: `./scripts/container-build.sh` (generates the per-run env file docker-compose.build.yml requires)
 - Services: PostgreSQL 15, Redis 7, Nginx reverse proxy, catalog-api, catalog-web
 - Health checks configured for all database and cache services
 - Config files for nginx and redis live in the config/ directory -- do not move them without updating volume mounts

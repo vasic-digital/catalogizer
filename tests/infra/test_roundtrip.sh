@@ -96,6 +96,15 @@ PY
   mut step_runner_always_ok lib.sh 'step() { local n=$1; shift; local o; STEPS=$((STEPS+1)); if o="$("$@" 2>&1)"; then echo "STEP $n ok"; else BAD=$((BAD+1)); echo "STEP $n FAIL ${o:0:160}"; [ "${TI_RT_FAILFAST:-0}" != 1 ] || { echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 1; }; fi; }' 'step() { local n=$1; shift; STEPS=$((STEPS+1)); "$@" >/dev/null 2>&1; echo "STEP $n ok"; }'
   first=$(grep -m1 '^step ' "$TI_REPO/$CDIR/roundtrip_$PROTO.sh")
   mut step_removed "roundtrip_$PROTO.sh" "$first" ':'
+  # F8 / RM6 of the WF12 review: the NEGATIVE leg no longer reaches the server (an unreachable host also "fails"); the round trip must not pass on that
+  case "$PROTO" in
+    postgres) mut rm6_negative_leg_unreachable roundtrip_postgres.sh 'PGPASSWORD=wrong-credential-1 PGCONNECT_TIMEOUT=8 psql -h "$H"' 'PGPASSWORD=wrong-credential-1 PGCONNECT_TIMEOUT=8 psql -h "$H-unreachable"'
+                mut negative_dup_not_a_duplicate roundtrip_postgres.sh "q -c \"INSERT INTO ti_rt VALUES (1, 'dup')\" 2>&1" "q -c \"INSERT INTO ti_rt_absent VALUES (1, 'dup')\" 2>&1";;
+    ftp)      mut rm6_negative_leg_unreachable roundtrip_ftp.sh '"open -u $TI_FTP_USER,wrong-credential-1 ftp://$H"' '"open -u $TI_FTP_USER,wrong-credential-1 ftp://$H-unreachable"'
+              mut not_listed_on_failed_listing roundtrip_ftp.sh "o=\"\$(run 'cls -1' 2>&1)\" || { echo \"the listing failed" "o=\"\$(run 'cls -1 nothing-here' 2>&1)\" || { echo \"the listing failed";;
+    smb)      mut rm6_negative_leg_unreachable roundtrip_smb.sh 'timeout 30 smbclient "//$H/testshare" -A "$f"' 'timeout 30 smbclient "//$H-unreachable/testshare" -A "$f"';;
+    nfs)      mut rm6_negative_leg_unreachable roundtrip_nfs.sh 'nfs-ls "nfs://$IP/no-such-export"' 'nfs-ls "nfs://$IP-unreachable/no-such-export"';;
+  esac
   mut failfast_exits_zero lib.sh 'echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 1; }' 'echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 0; }'
 fi
 ti_summary

@@ -9,9 +9,10 @@ head -c 20480 /dev/urandom >/tmp/up.bin; UPSHA="$(sha256sum /tmp/up.bin | cut -d
 get_check() { local rel=$1 want; want="$(manifest_sha "$rel")"; [ -n "$want" ] || { echo "no manifest entry for $rel"; return 1; }
   rm -f /tmp/dl.bin; run "get '$rel' -o /tmp/dl.bin" >/dev/null && expect_eq "$(sha256sum /tmp/dl.bin | cut -d' ' -f1)" "$want"; }
 listed() { run 'cls -1' | grep -qxF "$1"; }
-not_listed() { ! run 'cls -1' | grep -qxF "$1"; }
+# a name is "gone" only when a listing that WORKS (it shows the corpus directory `movies`) lacks it: a failed listing is no evidence (WF12 F8)
+not_listed() { local o; o="$(run 'cls -1' 2>&1)" || { echo "the listing failed: ${o:0:80}"; return 1; }; printf '%s\n' "$o" | grep -qE '^movies/?$' || { echo "control: the listing lacks movies"; return 1; }; ! printf '%s\n' "$o" | grep -qxF "$1"; }
 back_equals() { rm -f /tmp/back.bin; run "get '$1' -o /tmp/back.bin" >/dev/null && expect_eq "$(sha256sum /tmp/back.bin | cut -d' ' -f1)" "$UPSHA"; }
-refused_pw() { local f; f="$(mktemp)"; chmod 600 "$f"; printf '%s\n' 'set ftp:passive-mode on' 'set net:max-retries 1' 'set net:persist-retries 0' 'set dns:max-retries 1' 'set dns:fatal-timeout 5' 'set net:timeout 8' "open -u $TI_FTP_USER,wrong-credential-1 ftp://$H" 'cls -1' >"$f"; ! lftp -f "$f" >/dev/null 2>&1; }
+refused_pw() { local f; f="$(mktemp)"; chmod 600 "$f"; printf '%s\n' 'set ftp:passive-mode on' 'set net:max-retries 1' 'set net:persist-retries 0' 'set dns:max-retries 1' 'set dns:fatal-timeout 5' 'set net:timeout 8' "open -u $TI_FTP_USER,wrong-credential-1 ftp://$H" 'cls -1' >"$f"; local o; o="$(lftp -f "$f" 2>&1)" && { echo "a wrong password was accepted"; return 1; }; case "$o" in *530*) ;; *) echo "refused, but not with FTP 530: ${o:0:100}"; return 1;; esac; }
 step corpus_ascii_file get_check "movies/The.Matrix.1999.1080p.BluRay.mkv"
 step corpus_nested_file get_check "music/Pink Floyd/The Dark Side of the Moon/01 - Speak to Me.flac"
 step corpus_unicode_file get_check $'music/Björk - Jóga (Ünicöde).flac'

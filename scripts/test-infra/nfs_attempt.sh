@@ -16,10 +16,12 @@ while [ $# -gt 0 ]; do case "$1" in --ev-dir) EVD=${2:-}; shift 2;; --client-jso
 ti_valid_id "$BID" || ti_die "invalid build id" 2
 mkdir -p "$EVD"; LEDGER="$EVD/ledger-nfs"; rm -rf -- "${LEDGER:?}"; mkdir -p "$LEDGER"
 ATT="$EVD/nfs-attempt-observed.json"
-trap 'bash "$HERE/down.sh" --build-id "$BID" >/dev/null 2>&1' EXIT
+OPID=""   # the operation of the start this script owns (up.sh prints `op_id=`): down.sh refuses any other caller of a live lease (WF12 F6)
+trap 'bash "$HERE/down.sh" --build-id "$BID" ${OPID:+--op-id "$OPID"} >/dev/null 2>&1' EXIT
 VERDICT="$(jq -r '.verdict // empty' "$CLIENT" 2>/dev/null)"
 if [ "$VERDICT" = VERIFIED ]; then
   bash "$HERE/up.sh" --build-id "$BID" --services nfs >"$EVD/nfs-up.txt" 2>&1 || { echo '{"round_trips":[{"iteration":1,"ok":false}],"failing_step":{"side":"server","step":"server_start"}}' >"$ATT"; echo "nfs_attempt: the server did not start (see $EVD/nfs-up.txt)" >&2; }
+  OPID="$(sed -n 's/^op_id=//p' "$EVD/nfs-up.txt" | head -1)"
   if [ ! -s "$ATT" ]; then
     rts="["; sep=""
     for i in 1 2 3; do
@@ -30,7 +32,7 @@ if [ "$VERDICT" = VERIFIED ]; then
     jq -n --slurpfile r <(cat "$EVD/.rts") '{round_trips:$r[0]}' >"$ATT"; rm -f "$EVD/.rts"
   fi
 fi
-bash "$HERE/down.sh" --build-id "$BID" >"$EVD/nfs-down.txt" 2>&1
+bash "$HERE/down.sh" --build-id "$BID" ${OPID:+--op-id "$OPID"} >"$EVD/nfs-down.txt" 2>&1
 OUTD="$TI_ROOT/.audit/out/nfs-attempt-$$"; mkdir -p "$OUTD"
 ARGS=(--client-json "/src/${CLIENT#"$TI_ROOT"/}"); [ ! -s "$ATT" ] || ARGS+=(--attempt-json "/src/${ATT#"$TI_ROOT"/}")
 n=0

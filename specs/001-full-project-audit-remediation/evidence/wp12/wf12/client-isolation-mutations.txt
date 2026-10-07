@@ -1,0 +1,3 @@
+client_sees_repository CAUGHT
+view_copies_repo_root_files CAUGHT
+allow_list_removed CAUGHT

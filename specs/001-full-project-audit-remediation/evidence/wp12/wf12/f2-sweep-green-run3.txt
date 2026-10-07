@@ -1,0 +1,12 @@
+# identity: WF12 F2 sweep_leaks GREEN run 3
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:08:11Z
+# sha256 scripts/test-infra/sweep_leaks.sh a7fea527e004b196b5b17ba523e2f20e48133ef480c23011b4b5cb264bbe39dd
+# sha256 tests/infra/test_sweep_leaks.sh 65e0288e88ad306ccb566a4efa7a0344d2ea404f7f9d4386949fd3f2dd9604c2
+# command: bash tests/infra/test_sweep_leaks.sh
+PASS: --dry-run announces the victim and removes nothing
+PASS: the victims are removed with their proofs, every survivor survives for its named reason
+PASS: a second sweep finds the victim gone (idempotent)
+PASS: control needle: the sweep still sees the surviving full pod on the second run
+SUMMARY pass=4 fail=0 blocked=0
+# exit: 0

@@ -1,0 +1,78 @@
+# identity: WF12 up/down GREEN after the last test-cleanup edits
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T09:31:22Z
+# sha256 scripts/test-infra/up.sh 0f2f1672b64a111207ae2a1feb3bbd6907e93a4502f87578088eafbb5a83fa68
+# sha256 scripts/test-infra/down.sh 5ce039d1c741b0472614acf2a5a478cf3ba4bd5999e6f804c5e8db77e40ce705
+# sha256 tests/infra/lib.sh 766409459863afed2297da046df437ded4df7406a942f114a741d3f41d322940
+# sha256 tests/infra/test_up_down.sh 888320fe907ef00987a5025d17481baaa435dc9e6bc88b55a8c7d3aadef6e150
+# command: bash tests/infra/test_up_down.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up A exits 0
+PASS: up A prints its project
+PASS: up A prints the operation it registered (catalogizer-test-t3654825399-up-20261007T093122-518804)
+PASS: up A: one container labelled with the project
+PASS: up A: the lease is held by a LIVE keeper of this very start (run id, pid > 1, /proc entry, keeper command line)
+PASS: up A: no podman pod was created for the project (WF12 F2: label-scoped teardown cannot see a pod)
+PASS: A answers its redis probe
+PASS: a second owner of the SAME project is refused (exit 3)
+PASS: the refusal names reason=lease_held
+PASS: the refused second up changed nothing (still one container)
+PASS: the refused second owner left the LIVE holder alive and the lease intact (WF12 F5, reviewer mutant RM4)
+PASS: a THIRD up is still refused as lease_held (exit 3), not lease_stale (exit 4)
+PASS: the third refusal names reason=lease_held
+PASS: a DIFFERENT project is admitted while A is up (exit 0)
+PASS: up B: one container labelled with B
+PASS: both leases are live keepers of their own start, each its own
+PASS: A's holder is not B's (distinct operations)
+PASS: A and B use distinct redis ports
+PASS: down A by a caller naming no operation is REFUSED (exit 5)
+PASS: the refusal names reason=not_lease_owner
+PASS: the refused down touched nothing: A's container runs and its lease is intact
+PASS: down A by the OWNER OF B (a live holder of another project) is REFUSED (exit 5)
+PASS: the second refused down touched nothing either
+PASS: fixture: the foreign container is running
+PASS: fixture: A's leaked-style pod, B's pod and the foreign pod exist
+PASS: down A by its owner exits 0
+PASS: down A removed every container labelled with A
+PASS: down A removed A's network
+PASS: the foreign unlabelled container (name carries A's project name) SURVIVES
+PASS: the OTHER project's container survives
+PASS: B still answers its redis probe after A went down
+PASS: down A released A's lease
+PASS: down A left B's lease alone (B's live keeper)
+PASS: down A removed A's empty podman-compose pod
+PASS: down A left B's pod and the foreign pod alone
+PASS: down A removed A's -client and -seed output directories
+PASS: down A left B's, the foreign project's, A's -logs and the adjacent -client2 directory alone
+PASS: down A removed A's credentials file
+PASS: the operation of A's start is terminal (complete)
+PASS: down A again is a no-op (idempotent, exit 0)
+PASS: down with an invalid build id exits 2
+PASS: A can be started again after its lease was released (exit 0)
+PASS: the restarted A holds a fresh lease of its own operation
+PASS: the holder of the restarted A is dead (its keeper file was removed)
+PASS: down A by a caller naming no operation succeeds when the holder is PROVEN dead (exit 0)
+PASS: the dead holder's lease is released
+PASS: the dead holder's operation is recorded reaped
+PASS: the stale project's containers are gone
+PASS: fixture: the kept state still names the OLD operation
+PASS: a start over pre-existing containers of the project fails (exit 1)
+PASS: the failure names the pre-existing containers
+PASS: the failed start released ITS OWN lease (no claim left)
+PASS: no operation of the project is left non-terminal
+PASS: down B removed B's containers
+PASS: all leases released at the end
+PASS: the foreign container still survives all teardowns
+PASS: a corrupted corpus cache is refused (exit 1)
+PASS: the refusal says the cache does not match its recorded digest
+PASS: the refused start left no container, no lease
+PASS: the pristine copy of the cache is accepted (exit 0)
+PASS: the printed corpus digest is the one RECOMPUTED from the files (equals the independent recorded digest)
+PASS: fixture: the listener holds the port
+PASS: a port taken between the draw and the bind is retried and the start succeeds (exit 0)
+PASS: the retry is announced, never silent
+PASS: the final redis port is not the occupied one
+PASS: the start left exactly one container (the failed attempt was removed)
+SUMMARY pass=68 fail=0 blocked=0
+# exit: 0

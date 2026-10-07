@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T00:00:00Z |
-| Status | new in the working tree (T135), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T05:00:00Z |
+| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
 | Source | `scripts/test-infra/blocked_external.sh`; test `tests/infra/test_blocked_external.sh` |
 
 ## Purpose
@@ -21,3 +21,7 @@ scripts/test-infra/blocked_external.sh [--out FILE]      # env: TI_ENV_FILE (def
 ```
 
 Exit 0 the record was written; 2 usage. Needs bash and jq.
+
+## WF12 review fixes (revision 2)
+
+- F7: the `nfs_owner_host` leg is DERIVED from the T134a record (`TI_NFS_FALLBACK`, default `specs/001-full-project-audit-remediation/evidence/wp10/nfs-fallback.json`): `blocked` -> `blocked-unavailable` with the record's reason and its `unconfirmed` path and a `derived_from` sha256; `not_needed` -> `not_needed`; absent or unreadable -> `blocked-unavailable` / `nfs_fallback_record_missing`. It is no longer hard-coded, so the two records cannot disagree.

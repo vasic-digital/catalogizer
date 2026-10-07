@@ -12,6 +12,9 @@
 # Lease: the exclusive resource is the project's namespace and data directory, so the purpose key is the project name. A second owner of the SAME
 #   project is refused (exit 3 `lease_held`); a different project is admitted at the same time. A dead holder is never taken over silently (exit 4
 #   `lease_stale`; scripts/longops/reap.sh decides). The holder is a keeper process that lives until down.sh; the registered operation is `<project>-up-<UTC time>-<pid>`, named in the env file as TI_OP_ID.
+# Containers run WITHOUT a podman pod (`podman-compose --in-pod false`): the pod podman-compose creates by default is unlabelled, so a label-scoped teardown never found it and every cycle leaked one (WF12 F2).
+#   A published host port that another process takes between gen_env.sh choosing it and the bind (bind(0)+close is a time-of-check/time-of-use gap, WF12 F16) is retried: up to 3 attempts, each with fresh credentials and ports.
+#   The seeded corpus cache is keyed on the seeder, the seed and the digest of the image that builds it, and is RE-VERIFIED on every start: its digest is recomputed from the files (WF12 F15).
 # Exit:   0 up and every probe passing; 3 lease held; 4 stale lease; 1 failure (the partial project is torn down); 2 usage.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib.sh"
@@ -44,7 +47,7 @@ if [ "$RC" -ne 0 ]; then
     *) ti_die "lease registration failed rc=$RC: $(tr '\n' ' ' <"$S/lease.err.$OPID" | cut -c1-200)" 1;;
   esac
 fi
-fail_down() { echo "test-infra: up failed: $1" >&2; bash "$HERE/down.sh" --build-id "$BID" --keep-logs >/dev/null 2>&1; exit 1; }
+fail_down() { echo "test-infra: up failed: $1" >&2; bash "$HERE/down.sh" --build-id "$BID" --op-id "$OPID" --keep-logs >/dev/null 2>&1; exit 1; }   # the owner (this start) tears its own project down
 if [ -n "$(podman ps -a -q --filter "label=catalogizer.test_project=$P" 2>/dev/null)" ]; then fail_down "containers of $P already exist"; fi
 # ---- credentials and ports ----
 bash "$HERE/gen_env.sh" --build-id "$BID" --op-id "$OPID" >/dev/null || fail_down "gen_env.sh failed"
@@ -53,8 +56,14 @@ ENVF="$S/env"
 # The corpus is deterministic (tests/infra/test_seed_corpus.sh: two runs byte-identical), so it is built through TIC ONCE per (seeder file, seed) and cached; a start copies the cache.
 # The cache key is the sha256 of the seeder script and the seed, so a changed seeder or seed rebuilds it. TIC is refused while any container of any stream trips the anti-mess sweep,
 # hence the retry (TI_TIC_RETRIES times, default 400, 5 s apart) on a cache miss only.
-CKEY="$(printf '%s\n%s' "$(sha256sum "$HERE/seed_corpus.sh" | cut -d' ' -f1)" "$SEED" | sha256sum | cut -c1-16)"
-CACHE="$TI_ROOT/.audit/out/test-infra-corpus-$CKEY"
+TUDIGEST="$(python3 -I - "$TI_LOCK" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1]))
+print([i["digest"] for i in d["images"] if i["id"] == "IMG-TESTUTIL"][0])
+PY
+)" || fail_down "cannot read the IMG-TESTUTIL digest from $TI_LOCK"
+CKEY="$(printf '%s\n%s\n%s' "$(sha256sum "$HERE/seed_corpus.sh" | cut -d' ' -f1)" "$SEED" "$TUDIGEST" | sha256sum | cut -c1-16)"
+CACHE="${TI_CORPUS_CACHE_DIR:-$TI_ROOT/.audit/out/test-infra-corpus-$CKEY}"   # TI_CORPUS_CACHE_DIR: a test relocates the cache to prove that a corrupted one is refused
 if [ ! -s "$CACHE/corpus.sha256" ] || [ ! -d "$CACHE/corpus" ]; then
   SEEDOUT="$TI_ROOT/.audit/out/$P-seed"; rm -rf -- "${SEEDOUT:?}"; mkdir -p "$SEEDOUT"
   n=0
@@ -67,6 +76,22 @@ if [ ! -s "$CACHE/corpus.sha256" ] || [ ! -d "$CACHE/corpus" ]; then
   rm -rf -- "${CACHE:?}.tmp.$$"; mkdir -p "${CACHE:?}.tmp.$$" && mv "$SEEDOUT/corpus" "$SEEDOUT/corpus.sha256" "${CACHE:?}.tmp.$$/" && { [ -d "$CACHE" ] || mv "${CACHE:?}.tmp.$$" "$CACHE"; }; rm -rf -- "${CACHE:?}.tmp.$$" "${SEEDOUT:?}"
 fi
 SEEDOUT="$CACHE"
+# the cache is trusted only after its digest is recomputed from the files (same definition as seed_corpus.sh: sha256 over the sorted `rel NUL kind NUL size NUL file-sha256` lines, names NFC)
+CDIGEST="$(python3 -I - "$SEEDOUT/corpus" <<'PY'
+import hashlib, os, sys, unicodedata
+out = sys.argv[1]; entries = []
+for d, ds, fs in os.walk(out):
+    for n in ds + fs: entries.append(os.path.join(d, n))
+lines = []
+for p in entries:
+    rel = unicodedata.normalize("NFC", os.path.relpath(p, out))
+    lines.append((rel, "dir", 0, "") if os.path.isdir(p) else (rel, "file", os.path.getsize(p), hashlib.sha256(open(p, "rb").read()).hexdigest()))
+lines.sort(); m = hashlib.sha256()
+for r, k, sz, h in lines: m.update(("%s\0%s\0%d\0%s\n" % (r, k, sz, h)).encode("utf-8"))
+print(m.hexdigest())
+PY
+)" || fail_down "cannot recompute the corpus digest"
+[ "$CDIGEST" = "$(cut -d' ' -f1 "$SEEDOUT/corpus.sha256")" ] || fail_down "the cached corpus does not match its recorded digest (recomputed ${CDIGEST:0:16}..., recorded $(cut -c1-16 "$SEEDOUT/corpus.sha256")...): remove $SEEDOUT and start again"
 rm -rf -- "${S:?}/data"; mkdir -p "$S/data"
 for d in ftp smb dav; do cp -a "$SEEDOUT/corpus" "$S/data/$d" || fail_down "cannot copy the corpus to $d"; done
 cp "$SEEDOUT/corpus.sha256" "$S/corpus.sha256"
@@ -79,7 +104,19 @@ case ",$SVC," in *,nfs,*)
   CF+=(-f "$TI_ROOT/docker-compose.test-infra.nfs.yml");;
 esac
 # ---- compose up (images are local and digest-pinned; pull_policy never) ----
-podman-compose -p "$P" "${CF[@]}" --env-file "$ENVF" up -d "${LIST[@]}" >"$S/compose-up.log" 2>&1 || fail_down "podman-compose up failed: $(tail -3 "$S/compose-up.log" | tr '\n' ' ' | cut -c1-240)"
+attempt=1
+while :; do
+  podman-compose --in-pod false -p "$P" "${CF[@]}" --env-file "$ENVF" up -d "${LIST[@]}" >"$S/compose-up.log" 2>&1 && break
+  # a host port taken between the choice in gen_env.sh and the bind: remove what this attempt created, draw fresh ports and credentials, try again (bounded)
+  if grep -qiE 'address already in use|port is already allocated|bind: .*in use' "$S/compose-up.log" && [ "$attempt" -lt 3 ]; then
+    echo "test-infra: a published port was taken before the bind (attempt $attempt of 3): drawing new ports" >&2
+    ti_rm_resources "$P" || fail_down "cannot remove the half-started project before the retry"
+    bash "$HERE/gen_env.sh" --build-id "$BID" --op-id "$OPID" >/dev/null || fail_down "gen_env.sh failed on the retry"
+    case ",$SVC," in *,nfs,*) printf 'TI_NFS_IMAGE=%s\n' "$(printf '%s\n' "$NB" | sed -n 's/^image_ref=//p')" >>"$ENVF";; esac
+    attempt=$((attempt+1)); continue
+  fi
+  fail_down "podman-compose up failed: $(tail -3 "$S/compose-up.log" | tr '\n' ' ' | cut -c1-240)"
+done
 # ---- wait for protocol-level readiness ----
 deadline=$(( $(date +%s) + TMO )); ready=0
 while [ "$(date +%s)" -lt "$deadline" ]; do
@@ -91,5 +128,5 @@ if [ "$ready" != 1 ]; then
   fail_down "services not ready within ${TMO}s: $(grep -E '^PROBE' "$S/ready.log" | grep -v PASS | head -3 | tr '\n' ' ' | cut -c1-240)"
 fi
 if [ -n "$EVDIR" ]; then mkdir -p "$EVDIR" && cp "$S/ports.env" "$EVDIR/$P.ports.env" && cp "$S/corpus.sha256" "$EVDIR/$P.corpus.sha256"; fi
-echo "project=$P"; echo "op_id=$OPID"; grep -E '^TI_PORT_' "$ENVF"; echo "corpus_sha256=$(cut -d' ' -f1 "$S/corpus.sha256")"
+echo "project=$P"; echo "op_id=$OPID"; grep -E '^TI_PORT_' "$ENVF"; echo "corpus_sha256=$CDIGEST"
 exit 0

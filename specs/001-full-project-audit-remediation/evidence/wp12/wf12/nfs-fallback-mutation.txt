@@ -1,0 +1,4 @@
+not_needed_without_reading_state CAUGHT
+not_needed_on_protocol_pass CAUGHT
+blocked_when_kernel_proven CAUGHT
+unconfirmed_not_recorded CAUGHT

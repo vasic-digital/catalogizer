@@ -55,14 +55,14 @@ Integration tests that exercise previously-disabled features:
 | Location | Reason | Recovery |
 |---|---|---|
 | `catalog-api/internal/tests/redis_helper.go:37` | Redis not reachable on the developer's machine | Start `podman-compose -f docker-compose.dev.yml up redis-dev` and re-run |
-| `catalog-api/tests/infra_helper.go:72-127` | Master gate: no test infrastructure services reachable | Start `podman-compose -f docker-compose.test-infra.yml up -d` and re-run |
+| `catalog-api/tests/infra_helper.go:72-127` | Master gate: no test infrastructure services reachable | Start the per-run stack with `scripts/test-infra/up.sh --build-id <id>`, set `CATALOGIZER_TEST_INFRA_ENV` to the env file it names, and re-run |
 | `catalog-api/tests/infra_helper.go:157` | Returns the infrastructure status for the caller to decide — not an unconditional skip | N/A — this is a helper |
 
 None of the four skips represents disabled functionality. They are
 **graceful degradation guards** so the test suite runs on machines where
 the Dockerized SMB / FTP / NFS / WebDAV / Redis test servers are not
 available, while the full matrix runs in CI with
-`docker-compose.test-infra.yml` started.
+the per-run test-infra stack (`scripts/test-infra/up.sh`) started.
 
 Policy per `docs/LANDMINES.md#RULE-GO-006`:
 > Disabled tests hide real bugs. `.go.disabled` files and unexplained

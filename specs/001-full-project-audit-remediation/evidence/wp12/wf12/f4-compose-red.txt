@@ -1,0 +1,21 @@
+# RED (WF12 F4): the scanner of git HEAD (tests/infra/test_compose_files.sh at HEAD) run with COMPOSE_TEST_INFRA=<reviewer mutant>
+== RED old scanner vs rm1
+PASS: rm1.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+SUMMARY pass=14 fail=0 blocked=0
+== RED old scanner vs rm2
+PASS: rm2.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+SUMMARY pass=14 fail=0 blocked=0
+== RED old scanner vs rm3
+PASS: rm3.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+SUMMARY pass=14 fail=0 blocked=0
+== RED old scanner vs rm5
+PASS: rm5.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+SUMMARY pass=14 fail=0 blocked=0
+== RED old scanner vs rm7
+PASS: rm7.yml: no literal credential or port, digest-pinned and labelled, rootless
+PASS: docker-compose.build.yml: no literal credential or port, digest-pinned and labelled, rootless
+SUMMARY pass=14 fail=0 blocked=0

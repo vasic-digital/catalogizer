@@ -1,0 +1,19 @@
+# identity: WF12 F2 sweep_leaks GREEN run 1
+# head: 350372a805ec571fc4de312b740c1eff82c4fd12
+# run_at: 2026-10-07T08:07:35Z
+# sha256 scripts/test-infra/sweep_leaks.sh a7fea527e004b196b5b17ba523e2f20e48133ef480c23011b4b5cb264bbe39dd
+# sha256 tests/infra/test_sweep_leaks.sh 65e0288e88ad306ccb566a4efa7a0344d2ea404f7f9d4386949fd3f2dd9604c2
+# command: bash tests/infra/test_sweep_leaks.sh
+PASS: --dry-run announces the victim and removes nothing
+PASS: the victims are removed with their proofs, every survivor survives for its named reason
+PASS: a second sweep finds the victim gone (idempotent)
+PASS: control needle: the sweep still sees the surviving full pod on the second run
+PASS: mutation no_empty_proof CAUGHT (FAIL a survivor pod was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:present cata)
+PASS: mutation no_live_proof CAUGHT (FAIL a survivor pod was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:present cata)
+PASS: mutation no_create_command_proof CAUGHT (FAIL a survivor pod was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:gone catalog)
+PASS: mutation pod_pattern_wide CAUGHT (FAIL a survivor pod was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:present cata)
+PASS: mutation dir_follows_symlink CAUGHT (FAIL a survivor directory was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:presen)
+PASS: mutation dir_live_ignored CAUGHT (FAIL a survivor directory was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:presen)
+PASS: mutation dir_logs_removed CAUGHT (FAIL a survivor directory was removed (catalogizer-test-zzsw28443v:gone catalogizer-test-zzsw28443shape:presen)
+SUMMARY pass=11 fail=0 blocked=0
+# exit: 0

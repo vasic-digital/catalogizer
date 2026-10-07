@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T128-T134a), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T05:00:00Z |
+| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
 | Source | `tests/infra/*.sh`; tests self |
 
 ## Tests
@@ -23,3 +23,9 @@
 
 Run a test with `bash tests/infra/test_<name>.sh` (mutations run by default; `*_NO_MUTATIONS=1` skips them). Tests must run one at a time: every `run_pinned` container trips the anti-mess sweep
 (`AM-P1 container_without_op_label`, UNCONFIRMED root cause: the sweep reads the label `op_id`, run_pinned sets `catalogizer.op_id`), so a concurrent TIC call is refused until it ends.
+
+## WF12 review fixes (revision 2)
+
+- New: `test_sweep_leaks.sh` (F2 leak sweep, 7 paired mutations), `test_client_isolation.sh` (F3), `test_consumers.sh` (F1: container-build, setup-test-env, the Go helper, an enumeration of every tracked reference), `test_ftp_capability.sh` (F13 control pair).
+- Changed: `test_compose_files.sh` (F4: literals found by structure in every string of a service; reviewer mutants RM1, RM2, RM3, RM5, RM7), `test_up_down.sh` (F2, F5, F6, F15, F16, F17; RM4), `test_concurrency.sh` (F5, F6, F11 measured evidence), `test_probes.sh` and `test_roundtrip.sh` (F8 specific refusal signals; RM6; F10), `test_nfs_terminal_state.sh` (F19, F20; RM8), `test_nfs_fallback_state.sh` / `test_blocked_external.sh` (F7), `test_nas_readonly_leg.sh` (F3, F14, F18), `test_seed_corpus.sh` (F14: per-run directory names).
+- Mutant runs use `TI_FAILFAST=1`: the first violated check ends the run; the owner-aware `ti_down` cleans up.

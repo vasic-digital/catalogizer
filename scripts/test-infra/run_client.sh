@@ -8,7 +8,7 @@
 #   --out DIR       output directory mounted at /out (default <repo>/.audit/out/<project>-client); must satisfy run_pinned's sanctioned roots
 #   --image ID      the image id (default IMG-INFRA-CLIENT; the option exists so the refusal of another image is testable)
 # The container gets the env file through `--env-file` (never argv), the label op_id of the project's registered long operation (so the anti-mess
-# sweep matches the container to its operation), the repository read-only at /src (client scripts live in scripts/test-infra/client/) and the seeded
+# sweep matches the container to its operation), a scratch VIEW read-only at /src (only the directories the command names: client scripts live in scripts/test-infra/client/; never `.env`) and the seeded
 # corpus manifest at /manifest.sha256 (read-only) when it exists.
 # Exit: the client's exit code; 1 REFUSED (`test-infra: REFUSED reason=<code>`); 2 usage.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -39,8 +39,24 @@ podman network exists "$NET" 2>/dev/null || ti_refuse network_absent "$NET"
 OPID="$(ti_env_get "$ENVF" TI_OP_ID)"
 [ -n "$OUT" ] || OUT="$TI_ROOT/.audit/out/$P-client"
 mkdir -p "$OUT" || ti_die "cannot create $OUT"
+# WF12 F3: the container's /src is NOT the repository. run_pinned.sh binds its working directory read-only at /src, and the repository holds the real `.env` (NAS credentials) and every
+# project's per-run credential file. The client therefore runs from a scratch VIEW that holds only the directories its command names under /src (client scripts): a /src/<path> word of
+# the command must lie under scripts/test-infra/ or .audit/scratch/, else REFUSED client_path_not_in_view. The project's own credentials reach it only through --env-file.
+VDIRS=()
+for a in "$@"; do
+  case "$a" in
+    /src/*) rel="${a#/src/}"; dir="$(dirname "$rel")"
+      case "$dir/" in scripts/test-infra/*|.audit/scratch/*) ;; *) ti_refuse client_path_not_in_view "$a is outside the directories a client may see (scripts/test-infra/, .audit/scratch/)";; esac
+      case "$rel" in *..*) ti_refuse client_path_not_in_view "$a contains '..'";; esac
+      [ -f "$TI_ROOT/$rel" ] || ti_refuse client_script_missing "$a"
+      VDIRS+=("$dir");;
+  esac
+done
+mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"
+trap 'case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac' EXIT
+ti_view_dir "$VIEW" "${VDIRS[@]}" || ti_refuse client_view_failed "cannot build the view of ${VDIRS[*]:-nothing}"
 ARGV=()
-while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$TI_ROOT" && RUNP_PRINT_ARGV=1 bash scripts/containers/run_pinned.sh --out "$OUT" --op-id "$P-client-$$-$RANDOM" "$IMG" -- "$@")
+while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$VIEW" && RUNP_PRINT_ARGV=1 bash "$TI_ROOT/scripts/containers/run_pinned.sh" --out "$OUT" --op-id "$P-client-$$-$RANDOM" "$IMG" -- "$@")
 [ "${#ARGV[@]}" -gt 5 ] && [ "${ARGV[0]}" = podman ] || ti_refuse run_pinned_failed "run_pinned.sh printed no podman argv (see its message above)"
 # insert the project's network, env file, op label and the manifest mount before the `--` that precedes the image
 NEW=(); done_ins=0
@@ -53,4 +69,4 @@ for a in "${ARGV[@]}"; do
   NEW+=("$a")
 done
 [ "$done_ins" = 1 ] || ti_refuse argv_malformed "no -- separator before the image in the composed argv"
-cd "$TI_ROOT" && exec "${NEW[@]}"
+"${NEW[@]}"; exit $?   # not exec: the EXIT trap removes the view

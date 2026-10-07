@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T128-T135), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T05:00:00Z |
+| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
 | Source | `scripts/test-infra/lib.sh`, `scripts/test-infra/client/lib.sh`, `scripts/test-infra/client/marker.sh`; tests `tests/infra/lib.sh`, `tests/infra/capture.sh` |
 
 ## `scripts/test-infra/lib.sh` (sourced)
@@ -22,3 +22,9 @@
 
 `tests/infra/lib.sh` (counters, identity header, `ti_new_id`, cleanup trap that downs every started project by label, `ti_tic` = TIC with a bounded retry on the transient refusals `anti_mess_drift` and
 `limit_exceeds_envelope`), `tests/infra/capture.sh` (runs one command and stores its output with an identity header: head, run_at, sha256 of the files under test, command, exit code).
+
+## WF12 review fixes (revision 2)
+
+- `scripts/test-infra/lib.sh` gained `ti_pod`, `ti_rm_resources`, `ti_rm_out_dirs`, `ti_valid_project` (teardown incl. pod and output directories) and `ti_view_dir` (the client view of F3; refuses `.`, `..`, absolute paths, `.env`, `.git`, `.audit/test-infra`, `.audit/out`).
+- `scripts/test-infra/client/isolation_probe.sh` reports what a client container can see (existence and readability only, never content).
+- `tests/infra/lib.sh` gained `ti_down` (tears down as the owner), `ti_lease_state` (holder identity AND liveness of a lease, never "the claim directory exists"), the fixtures arrays `TI_FOREIGN_PODS` / `TI_FOREIGN_DIRS`, and `TI_FAILFAST=1` (mutant runs end at the first violated check).

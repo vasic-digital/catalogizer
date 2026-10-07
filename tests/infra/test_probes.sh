@@ -28,21 +28,26 @@ fixtures() { # fixtures <repo-relative sut dir> <client dir or ''>; prints one F
   o=$(TI_PROBE_RUNNER=host bash "$pr" --build-id "$ID" --services redis 2>&1); rc=$?
   if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep -q probe_runner_not_container; then :; else echo "FAIL host-composed probe was not refused (rc=$rc)"; n=$((n+1)); fi
   # service-class image refused, and no container is started by the refused call
-  cnt=$(podman ps -a -q | wc -l)
+  cnt=$(podman ps -a -q --filter "label=catalogizer.test_project=$P" | wc -l)   # WF12 F10: measured and asserted (the project's own containers: other streams' containers do not move it)
   o=$(bash "$rcl" --build-id "$ID" --image IMG-INFRA-POSTGRES -- echo hi 2>&1); rc=$?
-  if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep -q 'REFUSED' && ! printf '%s' "$o" | grep -qx hi; then :; else echo "FAIL service-class image was not refused (rc=$rc)"; n=$((n+1)); fi
+  if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep -q 'reason=client_image_not_interpreter_class' && ! printf '%s' "$o" | grep -qx hi; then :; else echo "FAIL service-class image was not refused as client_image_not_interpreter_class (rc=$rc)"; n=$((n+1)); fi
+  [ "$(podman ps -a -q --filter "label=catalogizer.test_project=$P" | wc -l)" = "$cnt" ] || { echo "FAIL the refused call left a container of the project ($cnt before)"; n=$((n+1)); }
   o=$(bash "$rcl" --build-id "$ID" --image IMG-GO -- echo hi 2>&1); rc=$?
-  if [ "$rc" -ne 0 ] && ! printf '%s' "$o" | grep -qx hi; then :; else echo "FAIL a non-client image was not refused (rc=$rc)"; n=$((n+1)); fi
+  if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep -q 'reason=client_image_not_interpreter_class\|reason=not_the_infra_client' && ! printf '%s' "$o" | grep -qx hi; then :; else echo "FAIL a non-client image was not refused by name (rc=$rc)"; n=$((n+1)); fi
   # carrier: a listener that accepts TCP and speaks nothing; the postgres probe pointed at it must FAIL
   o=$(TI_PROBE_CLIENT_DIR="${cd_:-scripts/test-infra/client}" TI_PROBE_HOST_POSTGRES=ti-carrier bash "$pr" --build-id "$ID" --services postgres 2>&1); rc=$?
   if [ "$rc" -eq 1 ] && printf '%s' "$o" | grep -q 'PROBE postgres FAIL'; then :; else echo "FAIL the TCP-only carrier passed the postgres probe (rc=$rc: $(printf '%s' "$o" | tail -1 | cut -c1-120))"; n=$((n+1)); fi
   # negative control: a wrong credential makes each authenticated probe FAIL
   local cdir="${cd_:-scripts/test-infra/client}" pv
-  for pv in "postgres TI_POSTGRES_PASSWORD" "redis TI_REDIS_PASSWORD" "ftp TI_FTP_PASSWORD" "smb TI_SMB_PASSWORD" "webdav TI_WEBDAV_PASSWORD"; do
+  # WF12 F8: the FAIL must carry the protocol's own authentication-refusal signal (an unreachable host or a crashed server also "fails" and must not pass as a refusal)
+  for pv in "postgres TI_POSTGRES_PASSWORD password.authentication.failed" "redis TI_REDIS_PASSWORD WRONGPASS" "ftp TI_FTP_PASSWORD 530" "smb TI_SMB_PASSWORD NT_STATUS_LOGON_FAILURE" "webdav TI_WEBDAV_PASSWORD HTTP.401"; do
     set -- $pv
     o=$(bash "$rcl" --build-id "$ID" -- env "$2=wrong-credential-1" bash "/src/$cdir/probe_$1.sh" 2>&1); rc=$?
-    if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep -q '^FAIL'; then :; else echo "FAIL $1 probe passed with a wrong credential (rc=$rc)"; n=$((n+1)); fi
+    if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep '^FAIL' | grep -qE "$3"; then :; else echo "FAIL $1 probe did not fail with its refusal signal '$3' on a wrong credential (rc=$rc: $(printf '%s' "$o" | grep '^FAIL' | head -1 | cut -c1-120))"; n=$((n+1)); fi
   done
+  # and a probe whose host is unreachable fails for ANOTHER reason: it must not carry the refusal signal (the fixture can tell the two apart)
+  o=$(env TI_PROBE_HOST_POSTGRES=ti-no-such-host bash "$rcl" --build-id "$ID" -- env TI_PROBE_HOST_POSTGRES=ti-no-such-host bash "/src/$cdir/probe_postgres.sh" 2>&1)
+  if printf '%s' "$o" | grep '^FAIL' | grep -qE 'password.authentication.failed'; then echo "FAIL control: an unreachable host produced the authentication-refusal signal (the fixture cannot tell them apart)"; n=$((n+1)); fi
   return "$n"
 }
 # the carrier: a container on the project network that accepts TCP connections on 5432 and says nothing; labelled so down.sh removes it

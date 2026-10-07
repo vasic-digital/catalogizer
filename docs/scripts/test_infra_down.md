@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T131), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T05:00:00Z |
+| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
 | Source | `scripts/test-infra/down.sh`; tests `tests/infra/test_up_down.sh` |
 
 ## Purpose
@@ -17,7 +17,7 @@ file is removed; no signal is ever sent), and the state directory is removed wit
 ## Usage
 
 ```bash
-scripts/test-infra/down.sh --build-id <id> [--keep-state] [--keep-logs]
+scripts/test-infra/down.sh --build-id <id> [--op-id <op id>] [--keep-state] [--keep-logs]
 ```
 
 Idempotent: a project that is not up is a no-op (exit 0). Never uses a name pattern, never `podman system prune`, never signals a process.
@@ -25,3 +25,10 @@ Idempotent: a project that is not up is a no-op (exit 0). Never uses a name patt
 ## Exits
 
 0; 2 usage; 1 a resource of this project could not be removed.
+
+## WF12 review fixes (revision 2)
+
+- Ownership (F6): a project whose lease is held by a LIVE holder is torn down only by the caller that names its operation (`--op-id`, the `op_id=` line up.sh printed); any other caller gets `REFUSED reason=not_lease_owner`, exit 5, and nothing is touched. A holder proven dead (`scripts/longops/reap.sh --purpose <project> --dry-run`) is reaped by any caller: `reap.sh --op-id` records `reaped`, no signal is sent. No claim: no owner to check.
+- Leaks (F2): the empty unlabelled pod `pod_<project>` is removed (a pod that still holds a container is left alone and said so), and so are `<repo>/.audit/out/<project>-client` and `<project>-seed` (exactly those two names of exactly that project; `<project>-logs` stays).
+- Usage now: `down.sh --build-id <id> [--op-id <op id>] [--keep-state] [--keep-logs]`; exits: 0; 2 usage; 1 a resource could not be removed; 5 not the lease owner.
+- The removal logic lives in `lib.sh` (`ti_rm_resources`, `ti_rm_out_dirs`) so `up.sh`'s retry reuses it.

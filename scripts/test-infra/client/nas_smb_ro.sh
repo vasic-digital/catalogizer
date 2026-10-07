@@ -5,7 +5,7 @@
 #   (tests/infra/test_nas_readonly_leg.sh scans for them). At most 2 requests per second (a sleep of 1 s separates the requests).
 # Usage: nas_smb_ro.sh <ip> <index>     the credentials are read from the auth file /out/auth (mode 0600, created by the host script, deleted by it); never argv or env.
 # Output: /out/nas-<index>.tsv with `key<TAB>value` lines: share, entries, dirs, files, names_sha256 (the sha256 of the sorted entry NAMES: the names themselves are never recorded),
-#         read_size, read_sha256 (of the bytes of the one small file; its name and content are never recorded), smbclient dialect, requests, writes_performed=0.
+#         read_size, read_sha256 (of the bytes of the one small file; its name and content are never recorded), max_protocol_requested (the SMB3 ceiling asked for, not the negotiated dialect), requests, writes_performed=0 (by construction).
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 IP=${1:-}; IDX=${2:-}; AF=/out/auth; OUT="/out/nas-$IDX.tsv"
 [[ "$IP" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] && [[ "$IDX" =~ ^[1-7]$ ]] || fail "usage: nas_smb_ro.sh <ip> <1-7>"
@@ -32,5 +32,6 @@ if [ -n "$pick" ]; then
     kv read_size "$(stat -c %s /tmp/nas-small.bin)"; kv read_sha256 "$(sha256sum /tmp/nas-small.bin | cut -d' ' -f1)"; rm -f /tmp/nas-small.bin
   else kv read_size failed; fi
 else kv read_size none_small_file; fi
-kv requests "$REQ"; kv writes_performed 0; kv dialect SMB3
+# writes_performed is 0 BY CONSTRUCTION (no write-class template exists in this script; tests/infra/test_nas_readonly_leg.sh section A scans for them); max_protocol_requested is the `-m SMB3` ceiling we ask for, NOT the negotiated dialect (never read)
+kv requests "$REQ"; kv writes_performed 0; kv max_protocol_requested SMB3
 pass "read-only listing of one disk share and at most one bounded read (requests=$REQ, writes=0)"
