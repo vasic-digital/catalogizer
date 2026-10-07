@@ -1,0 +1,18 @@
+{
+  "counts_match_wire": true,
+  "db_deleted": 0,
+  "db_dirs": 458,
+  "db_files": 15,
+  "db_rows": 473,
+  "listing_requests": 13,
+  "max_depth": 3,
+  "names_recorded": false,
+  "scan_error": "",
+  "schema": "wp12-nas-scan/1",
+  "share": "DATA22-2",
+  "timeout_s": 420,
+  "wire_observed_dirs": 458,
+  "wire_observed_files": 15,
+  "wire_observed_total": 473,
+  "writes_performed": 0
+}

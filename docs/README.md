@@ -52,6 +52,7 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 
 | Document | Description |
 |----------|-------------|
+| [Synology hosts](infrastructure/synology-hosts.md) | Seven read-only NAS hosts: shares, access method, safety policy, survey results |
 | [Deployment Guide](DEPLOYMENT_GUIDE.md) | Full deployment instructions (dev to production) |
 | [Deployment (Detailed)](deployment/DEPLOYMENT.md) | Extended deployment documentation |
 | [Docker Setup](deployment/DOCKER_SETUP.md) | Docker and Docker Compose configuration |

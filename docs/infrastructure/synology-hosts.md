@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T18:10:00Z |
+| Last modified | 2026-10-07T00:00:00Z |
 | Status | active (survey of 2026-10-06) |
 | Decision | ODG-08 (NFS and real hosts), ODG-01 (credentials) |
 
@@ -38,4 +38,24 @@ Stored only in the gitignored, mode 0600 `/home/milosvasic/Projects/catalogizer/
 
 Evidence and full tables: `specs/001-full-project-audit-remediation/evidence/wp10/synology-survey/` (`host-table.md`, `hosts.json`).
 
-Owed: link this page from `docs/scripts/README.md` or the main README (constitution 11.4.212).
+## Bounded content survey and catalog-scanner run (2026-10-07)
+
+Read-only, 1 request per second, depth <= 3, <= 5000 entries and <= 80 listing requests per share, run in the pinned IMG-INFRA-CLIENT container (`scripts/test-infra/client/nas_survey.sh`). Only counts, a sha256 of the sorted top-level names and an extension histogram are recorded; names are never stored. Evidence: `specs/001-full-project-audit-remediation/evidence/wp12/nas-survey/` (`survey-1..7.json`, `SHA256SUMS`).
+
+| Host | Share | Top-level entries | Sampled entries | Truncated by bound |
+|---|---|---|---|---|
+| Synology | DATA8 | 7 | 637 | yes |
+| Synology2 | Data | 14 | 11169 | yes |
+| Synology3 | DATA12 | 12 | 5188 | yes |
+| Synology4 | DATA18 | 13 | 1000 | yes |
+| Synology5 | DATA20 | 8 | 4694 | yes |
+| Synology6 | DATA20-2 | 7 | 5025 | yes |
+| Synology6 | DATA20-3 | 11 | 589 | yes |
+| Synology7 | DATA22 | 12 | 1343 | yes |
+| Synology7 | DATA22-2 | 2 | 473 | no (complete to depth 3) |
+
+All other shares answered NT_STATUS_ACCESS_DENIED for the read-only account. Sampled counts are a bounded breadth-first sample, not share totals.
+
+Catalog scanner run: the real `SMBScanner` + `insertFileRecord` ran in the pinned IMG-GO container (overlay test `scripts/test-infra/nas_scan/zz_nas_scan_test.go`, a throttled decorator that refuses every write-class method) against `DATA22-2` into an in-memory SQLite database with the full migration chain: 473 rows ingested (458 directories, 15 files), equal to the 473 entries observed on the wire, 13 listing requests, 0 writes (`scan-DATA22-2.json`). Limits: in-memory database only (no persistent catalog populated), one share, depth 3, no file content read, no metadata providers run.
+
+NFS stays UNCONFIRMED (ports closed from anton).
