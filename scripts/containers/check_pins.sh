@@ -2,12 +2,15 @@
 # check_pins.sh - T105 (docs/16 section 7.1 step 3, finding D-07, D-05; constitution 11.4.246/11.4.264 digest identity, 11.4.173).
 # Fails when a compose file, a Dockerfile/Containerfile or a shell script references an EXTERNAL image without a full
 # `@sha256:<64 lowercase hex>` digest, or installs software by piping a download into a shell.
-# Revision 3 (WF13 round 3, 2026-10-07, constitution 11.4.276 structural round): the classifiers were rebuilt from the grammar of what they
-# classify (engine words at any position, option tables = the engine help text, parameter-expansion defaults, compose pull_policy, pipeline
-# stages that read a program from stdin), an unreadable input is exit 3; the full rule text and the class table are docs/scripts/check_pins.md.
+# Revision 4 (WF16 round 4, 2026-10-07, constitution 11.4.276, the round after the structural round): ONE shell grammar (compound commands tracked on
+# the raw words, wrapper tables, shell and interpreter reader grammar, loaded by the Containerfile checker from this very file), BOTH halves of the
+# engine help text (value and boolean options, pflag short clusters, `--`, array expansions), every expansion operator nested, every unreadable
+# input shape is exit 3, here-document delimiter words, compose files read structurally; the rule text and the class tables are
+# docs/scripts/check_pins.md (Round 3 and Round 4 classes).
 #
 # Usage: check_pins.sh [--root DIR] [--list] [--recurse] [--exclude-dir NAME]... [PATH...]
-#        check_pins.sh --dump-engine-options     print `table<TAB>option` of the value-option tables (the test compares them with engine_options.tsv)
+#        check_pins.sh --dump-engine-options     print `table<TAB>option<TAB>value|bool` of the option tables (the test compares them with engine_options.tsv)
+#        check_pins.sh --dump-grammar            print the shell-grammar tables (wrapper, wrapopt, shell, interp, opener, closer, dlword, stdinpath)
 #   --root DIR          directory the reported paths are relative to (default: the git top level of the cwd, else the cwd)
 #   PATH...             files or directories (relative to the root) to scan; default: every tracked file of the root
 #                       (`git ls-files`; with --recurse also the files of every submodule checkout, `--recurse-submodules`),
@@ -21,8 +24,10 @@
 #       failed check, never as zero rows.
 #
 # Rules (the rule id is the second word of every `VIOLATION <rule> <path>:<line>: <reference or excerpt>` line):
-#   compose_image_unpinned  `image:` of a compose file (a name containing `compose`, extension .yml/.yaml) without a full digest
-#                           (the value may be on the next line). `${VAR:-default}` is judged by its default; a bare `${VAR}` / `$VAR`
+#   compose_image_unpinned  `image:` of a compose file (a name containing `compose`, or any .yml/.yaml with a top-level `services:` key)
+#                           without a full digest, read structurally when PyYAML parses the file (quoted keys, flow mappings), else with the
+#                           text grammar (CHECK_PINS_NO_YAML=1 forces it); the value may be on the next line. `${VAR:-default}` (every
+#                           operator, nested) is judged by its innermost default; a bare `${VAR}` / `$VAR`
 #                           is resolved by the caller and not judged; `localhost/...` images are locally built, not external, and are
 #                           skipped; with a `build:` key in the same service the image is local only with `pull_policy: never|build`, or
 #                           when it is a single-component name and no pull_policy is given (compose pulls first otherwise).
@@ -39,13 +44,17 @@
 #                           `image`/`container`, `sh -c`/`ssh`/`eval` strings, `$(...)`, engines kept in a variable such as $DOCKER),
 #                           or any registry-qualified reference carrying a tag (docker.io, ghcr.io, quay.io, mcr.microsoft.com, gcr.io,
 #                           lscr.io, registry.*, *.pkg.dev, public.ecr.aws; a `docker://` prefix is removed first). `localhost/` and
-#                           `$VAR` operands are not judged; option values are skipped (table of value options, see the guide).
-#   pipe_to_shell           a download (`curl`, `wget`, `fetch`) in a pipeline that ends in a program reader: a shell (`sh bash zsh dash ash
-#                           ksh mksh csh tcsh fish`, behind sudo/doas/env/nice/busybox with their options, by path too) or an interpreter
-#                           with no script and no inline code (`python3`, `python3 -`, `perl`, `node`, `ruby`, `php`), the
-#                           `bash <(curl ...)`, `source <(curl ...)`, `. <(curl ...)`, `sh -c "$(curl ...)"` and `eval "$(curl ...)"`
-#                           forms, in a Dockerfile/Containerfile or a script; a pipe continued by a trailing `|` or a backslash, and a pipe
-#                           after a `for ... done` loop spread over continuation lines, is one logical line and is caught; the quoted
+#                           `$VAR` operands are not judged; option values are skipped (value AND boolean option tables, short-flag clusters,
+#                           `--`, array expansions; see the guide).
+#   pipe_to_shell           a download (`curl`, `wget`, `fetch`, or a variable that holds one) in a pipeline that ends in a program reader: a
+#                           shell (`sh bash zsh dash ash ksh mksh csh tcsh fish rbash`, behind sudo/doas/env/nice/busybox with their options,
+#                           by path too) with `-s`, `-`, or neither `-c` nor a script operand, an interpreter with no script and no inline
+#                           code (`python3`, `python3 -W ignore`, `perl`, `node -r x`, `ruby`, `php`, ...), `source`/`.` of /dev/stdin, the
+#                           `bash <(curl ...)`, `source <(curl ...)`, `. <(curl ...)`, `bash <<< "$(curl ...)"`, `sh -c "$(curl ...)"` and
+#                           `eval "$(curl ...)"` forms, in a Dockerfile/Containerfile or a script; the download may be inside a compound
+#                           command piped as a whole ((..), { ..; }, for/select/while/until, if, case); a pipe continued by a trailing `|`
+#                           or a backslash, and a pipe after a `for ... done` loop spread over continuation lines, is one logical line and
+#                           is caught; the quoted
 #                           install hint a script prints for the operator is flagged too (it instructs an unverified install).
 #                           Reported at the first physical line of the logical line.
 # Carriers do NOT fire (11.4.201: a mention is not the thing): full-line and trailing `#` comments are removed before judging, and
@@ -59,17 +68,18 @@
 # default, and does not prove a digest exists or is signed (T149). Documented in docs/scripts/check_pins.md.
 set -u
 exec python3 -I - "$@" <<'PY'
-import os, re, subprocess, sys
+import os, re, stat, subprocess, sys
+try:
+    import yaml                          # compose files are read structurally when PyYAML is there and the file parses (CHECK_PINS_NO_YAML=1 forces the text grammar)
+except Exception:
+    yaml = None
 
 DIGEST_RE = re.compile(r"@sha256:[0-9a-f]{64}(?![0-9A-Za-z])")
 SKIP_DIRS = {".git", "node_modules", "vendor", ".audit"}
 REGISTRY_RE = re.compile(
-    r"(?<![\w./-])((?:docker\.io|ghcr\.io|quay\.io|mcr\.microsoft\.com|gcr\.io|lscr\.io|registry\.[\w.-]+|[\w-]+\.pkg\.dev|public\.ecr\.aws)"
+    r"(?<![\w./-])((?:index\.docker\.io|registry-1\.docker\.io|docker\.io|ghcr\.io|quay\.io|mcr\.microsoft\.com|(?:[a-z0-9-]+\.)?gcr\.io|lscr\.io"
+    r"|nvcr\.io|registry\.[\w.-]+|[\w-]+\.pkg\.dev|public\.ecr\.aws)"
     r"/[A-Za-z0-9._/-]+(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?)")
-READERS = r"(?:(?:ba|z|da|a|k|c|tc|f)?sh|eval|python[0-9.]*|perl|ruby|node|nodejs|php)"
-SUBST_RE = re.compile(
-    r"(?:\b" + READERS + r"\s+(?:-\S+\s+)*[\"']?(?:\$\(|`)\s*(?:curl|wget|fetch)\b[^\n]*"
-    r"|(?:\b(?:(?:ba|z|da|a|k|c|tc|f)?sh|source)|(?<![\w.])\.)\s+(?:<\s*)?<\(\s*(?:curl|wget|fetch)\b[^\n]*)")
 # options that take a SEPARATE value, per table; generated from the engine help text (podman 5.7.0 parsed, docker from its CLI reference) into
 # scripts/containers/tests/engine_options.tsv by scripts/containers/tests/gen_engine_options.sh, and checked equal to it by test_check_pins.sh
 # (run = run|create|buildah from, pull = pull, global = the options before the sub-command). nerdctl/buildah are UNCONFIRMED (not installed).
@@ -100,6 +110,15 @@ GLOBAL_VALUE_OPTS = {
     "--identity", "--imagestore", "--log-level", "--module", "--network-cmd-path", "--network-config-dir", "--out", "--root", "--runroot",
     "--runtime", "--runtime-flag", "--ssh", "--storage-driver", "--storage-opt", "--tls-ca", "--tls-cert", "--tls-key", "--tlscacert",
     "--tlscert", "--tlskey", "--tmpdir", "--url", "--volumepath", "-H", "-c", "-l"}
+RUN_BOOL_OPTS = {
+    "--detach", "--disable-content-trust", "--env-host", "--help", "--http-proxy", "--init", "--interactive", "--no-healthcheck",
+    "--no-hostname", "--no-hosts", "--oom-kill-disable", "--passwd", "--privileged", "--publish-all", "--quiet", "--read-only",
+    "--read-only-tmpfs", "--replace", "--rm", "--rmi", "--rootfs", "--sig-proxy", "--tls-verify", "--tty", "--unsetenv-all",
+    "--use-api-socket", "-P", "-d", "-i", "-q", "-t"}
+PULL_BOOL_OPTS = {
+    "--all-tags", "--disable-content-trust", "--quiet", "--tls-verify", "-a", "-q"}
+GLOBAL_BOOL_OPTS = {
+    "--debug", "--help", "--remote", "--syslog", "--tls", "--tlsverify", "--transient-store", "--version", "-D", "-r", "-v"}
 ENGINES = {"docker", "podman", "nerdctl"}
 ENGINE_VERBS = {"run", "pull", "create"}
 # wrapper words that run the next word as a command; the value options of the ones that take them are skipped (a value is not the command)
@@ -108,29 +127,67 @@ WRAPPERS = {"sudo", "env", "time", "exec", "nohup", "command", "timeout", "nice"
 WRAP_VALUE_OPTS = {
     "sudo": {"-u", "-g", "-C", "-h", "-p", "-r", "-t", "-U", "-D", "-R", "-T", "--user", "--group", "--host", "--prompt", "--role", "--type",
              "--chdir", "--other-user", "--chroot", "--close-from", "--command-timeout"},
-    "doas": {"-u", "-C"}, "env": {"-u", "--unset", "-C", "--chdir", "-S", "--split-string"}, "nice": {"-n", "--adjustment"},
+    "doas": {"-u", "-C"}, "env": {"-u", "--unset", "-C", "--chdir", "-S", "--split-string", "-a", "--argv0", "-f", "--file"},
+    "nice": {"-n", "--adjustment"},
     "ionice": {"-c", "-n", "-p", "-P", "-u", "--class", "--classdata"}, "stdbuf": {"-i", "-o", "-e", "--input", "--output", "--error"},
     "timeout": {"-s", "--signal", "-k", "--kill-after"}}
 SHELLISH = {"sh", "bash", "zsh", "dash", "ash", "ksh", "eval", "ssh"}
 # in a test script these commands only WRITE or FILTER data: a fixture line they carry is not a command of the test
 DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep", "awk"}
 # commands that only talk ABOUT a command (their words are prose or a lookup key), never run it
-NON_EXEC_HEADS = DATA_CMDS | {"man", "which", "type", "whereis", "whatis", "info", "help", "apropos", "test", "[", "[["}
+# (also the logging helpers every shell script defines: their unquoted words are a message, `warn podman pull failed for redis` names no image)
+LOG_HELPERS = {"die", "warn", "warning", "err", "error", "fail", "fatal", "log", "info", "say", "msg", "note", "notice", "debug", "usage", "print",
+               "logger", "log_info", "log_warn", "log_error", "log_err", "log_debug", "log_fatal"}
+NON_EXEC_HEADS = DATA_CMDS | LOG_HELPERS | {"man", "which", "type", "whereis", "whatis", "info", "help", "apropos", "test", "[", "[[", "hash"}
+# package managers: their words are package NAMES (`apt-get install curl` installs a package, it does not download with curl)
+PKG_HEADS = {"apt", "apt-get", "aptitude", "apk", "yum", "dnf", "microdnf", "zypper", "pacman", "pip", "pip3", "npm", "yarn", "gem", "brew",
+             "dpkg", "rpm", "update-alternatives", "dnf5", "tdnf", "emerge", "opkg"}
 # a container engine kept in a variable: $DOCKER, ${PODMAN}, ${CONTAINER_ENGINE:-podman}, ...
 ENGINE_VAR_RE = re.compile(r"^\$\{?(?:DOCKER|PODMAN|NERDCTL|CONTAINER_?ENGINE|CONTAINER_?RUNTIME|CTR_?ENGINE|OCI_?ENGINE|ENGINE)"
                            r"(?:_?BIN|_?CMD|_?PATH)?(?::?-[^}]*)?\}?$", re.I)
-# a reader of a program from its standard input
+# a reader of a program from its standard input: shells (value options -o/-O/--rcfile/--init-file; -c = inline program, -s = read stdin) and
+# interpreters (per interpreter: the letters of its inline-program flags, its options that take a separate value, its inline long options;
+# ground truth: the live --help of python3, perl, ruby, node on this host; php, lua, deno, bun, Rscript are UNCONFIRMED, not installed)
 SHELLS = {"sh", "bash", "zsh", "dash", "ash", "ksh", "mksh", "csh", "tcsh", "fish", "rbash"}
-INTERP_RE = re.compile(r"^(?:python[0-9.]*|perl|ruby|node|nodejs|php|lua|deno|bun|Rscript)$")
-INLINE_FLAG_RE = re.compile(r"^-[A-Za-z]*[cEeprm]$")     # -c / -e / -E / -p / -r / -m: the program (or module) is given inline
+SHELL_VALUE_OPTS = {"-o", "+o", "-O", "+O", "--rcfile", "--init-file"}
+INTERPS = {
+    "python": ("cm", {"-W", "-X", "--check-hash-based-pycs"}, set()),
+    "perl": ("eE", {"-I"}, set()),
+    "ruby": ("e", {"-r", "-I", "-C", "-E", "-F"}, set()),
+    "node": ("ep", {"-r", "--require", "--import", "--loader", "--experimental-loader", "-C", "--conditions"}, {"--eval", "--print"}),
+    "php": ("rRBEf", {"-c", "-d", "-z"}, set()),
+    "lua": ("e", {"-l"}, set()),
+    "deno": ("e", set(), {"--eval"}),
+    "bun": ("e", set(), {"--eval"}),
+    "Rscript": ("e", set(), set()),
+}
+STDIN_PATHS = {"/dev/stdin", "/dev/fd/0", "/proc/self/fd/0"}
+# compound commands of the shell grammar: the words that open one (`{` too) and the words that close one
+OPENERS = {"for", "select", "case", "if", "while", "until", "{"}
+CLOSERS = {"done", "esac", "fi", "}"}
 DL_WORDS = {"curl", "wget", "fetch"}
+# a downloader kept in a variable: $CURL, "${WGET}", ${DOWNLOADER:-curl}
+DL_VAR_RE = re.compile(r"^\$\{?(?:CURL|WGET|FETCH|DOWNLOADER?)(?:_?BIN|_?CMD|_?PATH)?(?::?-[^}]*)?\}?$", re.I)
+ARRAY_EXP_RE = re.compile(r"^\$(?:\{[A-Za-z_][A-Za-z0-9_]*\[[@*]\]\}|[@*])$")
 EXP_OPEN_RE = re.compile(r"\$\{[A-Za-z_][A-Za-z0-9_]*:?[-=+?]")
-EXP_DEFAULT_RE = re.compile(r"^\$\{[A-Za-z_][A-Za-z0-9_]*:?[-=](.*)\}$", re.S)
+EXP_DEFAULT_RE = re.compile(r"^\$\{[A-Za-z_][A-Za-z0-9_]*:?[-=+](.*)\}$", re.S)
+# the programs that run a program read from text: shells, eval, interpreters; built from the sets above (one source of truth)
+READER_NAMES = "(?:" + "|".join(sorted(SHELLS, key=lambda w: -len(w))) + r"|eval|python[0-9.]*|perl|ruby|node(?:js)?|php|lua|deno|bun|Rscript)"
+DLX = r"(?:curl|wget|fetch|\$\{?(?:CURL|WGET|FETCH|DOWNLOADER?)\b)[^\n]*"
+SUBST_RE = re.compile(
+    # a command substitution as the program (also after -c / -e): sh -c "$(curl ...)", eval "$(curl ...)", python3 -c "`wget ...`"
+    r"(?<![\w.-])" + READER_NAMES + r"(?![\w-])\s+(?:-\S+\s+)*[\"']?(?:\$\(|`)\s*" + DLX
+    # a process substitution as the program file: bash <(curl ...), python3 <(curl ...), source <(curl ...), . <(curl ...), bash < <(curl ...)
+    + r"|(?<![\w.-])(?:" + READER_NAMES + r"|source)(?![\w-])\s+(?:-\S+\s+)*(?:<\s*)?<\(\s*" + DLX
+    + r"|(?<![\w.])\.\s+(?:<\s*)?<\(\s*" + DLX
+    # a here-string: bash <<< "$(curl ...)", sh -s <<<$(wget ...)
+    + r"|(?<![\w.-])" + READER_NAMES + r"(?![\w-])[^|;&\n]*?<<<\s*[\"']?(?:\$\(|`)\s*" + DLX)
 ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 DURATION_RE = re.compile(r"^\d+(?:\.\d+)?[smhd]?$")
 IMG_SHAPE = re.compile(r"^[a-z0-9][A-Za-z0-9._-]*(?::[0-9]+)?(?:/[A-Za-z0-9._-]+)*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9A-Za-z]*)?$")
 # a here-document opener at the top level of a logical line: quoted strings and arithmetic `$((..))` / `((..))` are consumed first
-HDOC_OPEN_RE = re.compile(r"""<<-?\s*(['"]?)(\w+)\1""")
+# (the delimiter is ONE shell word: 'quoted', "quoted" (spaces allowed), \backslash-quoted, or bare up to a blank or an operator character)
+HDOC_OPEN_RE = re.compile(r"""<<-?\s*(?:'([^']*)'|"([^"]*)"|\\?([^\s;&|()<>'"\\]+))""")
 CONT_TRAIL_RE = re.compile(r"(?:(?<!\|)\||\|\||&&)\s*$")
 
 viol = []      # (path, line, rule, reference)
@@ -201,7 +258,7 @@ def top_level_heredoc(acc):
         elif acc.startswith("<<", i):
             m = HDOC_OPEN_RE.match(acc, i)
             if m:
-                return m.group(2)
+                return next(g for g in m.groups() if g is not None)
             i += 2
         else:
             i += 1
@@ -341,29 +398,46 @@ def looks_like_value(t):
             or re.match(r"^[A-Za-z0-9.-]+:(?:\d+\.){3}\d+$", t) is not None or re.match(r"^[A-Za-z0-9.-]+:host-gateway$", t) is not None)
 
 
-def image_operand(tokens, table):
-    """The image operand of the tokens that follow `<engine> [globals] <verb>`: options of `table` (value options) take the next token."""
+def skip_option(tokens, i, vtab, btab):
+    """The option token at tokens[i] -> (index of the next token, unknown?). A long option takes a separate value when it is in the value
+    table (`--name=v` carries its own); a short-flag cluster is read left to right like pflag/getopt: boolean letters continue, the first
+    value letter takes the REST of the cluster as its value (`-dp8080:80`) or the next token (`-dp 8080:80`, `-itw /src`)."""
+    t = tokens[i][0]
+    if "=" in t:
+        return i + 1, False
+    if t.startswith("--"):
+        if t in vtab:
+            return i + 2, False
+        return i + 1, t not in btab
+    for j in range(1, len(t)):
+        o = "-" + t[j]
+        if o in vtab:
+            return (i + 1 if j < len(t) - 1 else i + 2), False
+        if o not in btab:
+            return i + 1, True
+    return i + 1, False
+
+
+def image_operand(tokens, vtab, btab):
+    """The image operand of the tokens that follow `<engine> [globals] <verb>`: `vtab` = options that take a separate value, `btab` = boolean
+    options (both halves of the engine help text); an UNKNOWN option (nerdctl, buildah, a new flag) is a boolean unless the next token cannot
+    be an image operand; `--` ends the options (the next word is the operand); an array/positional expansion is an option list."""
     i = 0
     after_unknown = False
-    while i < len(tokens):
+    n = len(tokens)
+    while i < n:
         t, q = tokens[i]
         if t == "--" and not q:
-            i += 1
-            after_unknown = False
-            continue
+            return tokens[i + 1][0] if i + 1 < n else None
         if not q and t.startswith("-") and len(t) > 1:
-            if "=" in t:
-                i += 1
-                after_unknown = False
-            elif t in table:
-                i += 2
-                after_unknown = False
-            else:
-                i += 1
-                after_unknown = True      # an unknown option: a boolean unless the next token cannot be an image operand
+            i, after_unknown = skip_option(tokens, i, vtab, btab)
             continue
         if re.match(r"^\d*[<>]", t) and not q:
             i += 1
+            continue
+        if ARRAY_EXP_RE.match(t):
+            i += 1
+            after_unknown = False
             continue
         if after_unknown and looks_like_value(t):
             i += 1
@@ -400,12 +474,14 @@ def engine_operand(kind, rest):
     """Image operand of `<engine> [global options] [image|container] run|pull|create|from ...` (rest = the tokens after the engine word), or None."""
     verbs = {"from", "pull"} if kind == "buildah" else ENGINE_VERBS
     j = 0
-    while j < len(rest) and not rest[j][1] and rest[j][0].startswith("-"):
-        j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1
+    while j < len(rest) and not rest[j][1] and rest[j][0].startswith("-") and rest[j][0] != "-":
+        j = skip_option(rest, j, GLOBAL_VALUE_OPTS, GLOBAL_BOOL_OPTS)[0]
     if j < len(rest) and rest[j][0] in ("container", "image"):
         j += 1
     if j < len(rest) and rest[j][0] in verbs:
-        return image_operand(rest[j + 1:], PULL_VALUE_OPTS if rest[j][0] == "pull" else RUN_VALUE_OPTS)
+        if rest[j][0] == "pull":
+            return image_operand(rest[j + 1:], PULL_VALUE_OPTS, PULL_BOOL_OPTS)
+        return image_operand(rest[j + 1:], RUN_VALUE_OPTS, RUN_BOOL_OPTS)
     return None
 
 
@@ -482,7 +558,62 @@ def sibling_value(lines, idx, col, key):
     return None
 
 
+def compose_ref(val):
+    """The reference an `image:` value stands for: None when it is a variable the caller resolves (`$VAR`, `${VAR}`, `${VAR:?msg}`) or a local image."""
+    ref = operand_ref(val.strip("\"'")).strip("\"'")
+    if ref.startswith("$") or ref.startswith("localhost/") or ref == "":
+        return None
+    return ref
+
+
+def judge_compose_image(path, line, val, has_build, pol):
+    ref = compose_ref(val)
+    if ref is None:
+        return
+    if has_build:
+        # a service with build: AND image: names the tag the build produces, but compose pulls first unless pull_policy says otherwise
+        # (compose spec, build.md). Local only: pull_policy never|build (nothing is pulled), or a single-component name (no namespace, no
+        # registry: not creatable by a user on a registry; the tag the build produces) with no explicit pull policy. Everything else
+        # (a namespaced or registry-qualified name, or any other policy: always, missing, if_not_present, daily, weekly, every_*, a
+        # variable) can be pulled from a registry and is judged. Residual (documented): a single-component name with no policy that
+        # is also a real official image cannot be told from a local tag by its text.
+        if pol in ("never", "build") or ("/" not in ref and pol is None):
+            return
+    if not pinned(ref):  # MUT-ANCHOR compose-check
+        add(path, line, "compose_image_unpinned", ref)
+
+
+def compose_walk(path, node, seen):
+    """Structural walk of a composed YAML node graph: every mapping with an `image` key (any depth; quoted keys and flow mappings included)."""
+    if id(node) in seen:
+        return
+    seen.add(id(node))
+    if isinstance(node, yaml.MappingNode):
+        items = [(k, v) for k, v in node.value if isinstance(k, yaml.ScalarNode)]
+        sib = {k.value: v for k, v in items}
+        for k, v in items:
+            if k.value == "image" and isinstance(v, yaml.ScalarNode):
+                pv = sib.get("pull_policy")
+                judge_compose_image(path, k.start_mark.line + 1, v.value, "build" in sib, pv.value if isinstance(pv, yaml.ScalarNode) else None)
+        for k, v in node.value:
+            compose_walk(path, v, seen)
+    elif isinstance(node, yaml.SequenceNode):
+        for c in node.value:
+            compose_walk(path, c, seen)
+
+
 def scan_compose(path, text):
+    if yaml is not None and not os.environ.get("CHECK_PINS_NO_YAML"):
+        try:
+            docs = list(yaml.compose_all(text))
+        except Exception:
+            docs = None                     # not YAML (a tab, a template): the text grammar below still judges it, never silently skips it
+        if docs is not None:
+            seen = set()
+            for d in docs:
+                if d is not None:
+                    compose_walk(path, d, seen)
+            return
     lines = text.split("\n")
     for idx, raw in enumerate(lines):
         line = strip_comment(raw.rstrip("\r"))
@@ -498,29 +629,8 @@ def scan_compose(path, text):
                     break
             if val == "":
                 continue
-        ref = val.strip("\"'")
-        if re.match(r"^\$[A-Za-z_][A-Za-z0-9_]*$", ref):
-            continue                        # a bare $VAR is resolved by the caller
-        v = re.match(r"^\$\{[A-Za-z_][A-Za-z0-9_]*(?::?-(.*))?\}$", ref)
-        if v:
-            if v.group(1) is None:
-                continue
-            ref = v.group(1)
-        if ref.startswith("localhost/"):
-            continue
         col = len(m.group(1))
-        if sibling_value(lines, idx, col, "build") is not None:
-            # a service with build: AND image: names the tag the build produces, but compose pulls first unless pull_policy says otherwise
-            # (compose spec, build.md). Local only: pull_policy never|build (nothing is pulled), or a single-component name (no namespace, no
-            # registry: not creatable by a user on a registry; the tag the build produces) with no explicit pull policy. Everything else
-            # (a namespaced or registry-qualified name, or any other policy: always, missing, if_not_present, daily, weekly, every_*, a
-            # variable) can be pulled from a registry and is judged. Residual (documented): a single-component name with no policy that
-            # is also a real official image cannot be told from a local tag by its text.
-            pol = sibling_value(lines, idx, col, "pull_policy")
-            if pol in ("never", "build") or ("/" not in ref and pol is None):
-                continue
-        if not pinned(ref):  # MUT-ANCHOR compose-check
-            add(path, idx + 1, "compose_image_unpinned", ref)
+        judge_compose_image(path, idx + 1, val, sibling_value(lines, idx, col, "build") is not None, sibling_value(lines, idx, col, "pull_policy"))
 
 
 def judge_source(path, no, src, aliases):
@@ -577,48 +687,132 @@ def scan_dockerfile(path, text):
                     judge_source(path, no, mf.group(1), aliases)
 
 
+def interp_kind(base):
+    """Canonical interpreter name of a command word (python3.12 -> python, nodejs -> node), else None."""
+    if re.match(r"^python[0-9.]*$", base):
+        return "python"
+    if base == "nodejs":
+        return "node"
+    return base if base in INTERPS else None
+
+
+def shell_args(args):
+    """Parse the arguments of a shell -> (inline program given with -c?, read stdin with -s or `-`?, first operand index or None)."""
+    c = sflag = False
+    i, n = 0, len(args)
+    while i < n:
+        t, q = args[i]
+        if q:
+            break
+        if t == "-":
+            return c, True, None
+        if t == "--":
+            i += 1
+            break
+        if t[:1] in "-+" and len(t) > 1:
+            if t.startswith("--"):
+                i += 2 if (t in SHELL_VALUE_OPTS and "=" not in t) else 1
+                continue
+            letters = t[1:]
+            if t[0] == "-" and "c" in letters:
+                c = True
+            if t[0] == "-" and "s" in letters:
+                sflag = True
+            i += 2 if any(ch in "oO" for ch in letters) else 1
+            continue
+        break
+    return c, sflag, (i if i < n else None)
+
+
+def shell_reads_stdin(args):
+    """A shell reads its PROGRAM from stdin when -s is given, or when it has neither an inline program (-c) nor a script operand."""
+    c, sflag, operand = shell_args(args)
+    if sflag:
+        return True
+    return not c and operand is None
+
+
+def interp_reads_stdin(kind, args):
+    """An interpreter reads its program from stdin with `-` or when it has no inline-program flag and no script operand."""
+    inline, vopts, ilong = INTERPS[kind]
+    i, n = 0, len(args)
+    while i < n:
+        t, q = args[i]
+        if q:
+            return False
+        if t == "-":
+            return True
+        if t == "--":
+            return i + 1 >= n
+        if t.startswith("--"):
+            name = t.split("=", 1)[0]
+            if name in ilong:
+                return False
+            i += 2 if (name in vopts and "=" not in t) else 1
+            continue
+        if t.startswith("-") and len(t) > 1:
+            for j in range(1, len(t)):
+                o = "-" + t[j]
+                if o in vopts:
+                    i += 1 if j < len(t) - 1 else 2
+                    break
+                if t[j] in inline:
+                    return False
+            else:
+                i += 1
+            continue
+        return False                            # a script file operand: the program is the file, not stdin
+    return True
+
+
 def reader_hit(tokens):
-    """True when this pipeline stage reads a PROGRAM from its stdin: a shell (any arguments), or an interpreter with no script/inline code."""
+    """True when this pipeline stage reads a PROGRAM from its stdin: a shell with no inline program and no script operand (or with -s / `-`),
+    an interpreter with no inline program and no script, `source`/`.` of the standard input."""
     h = head_index(tokens)
     if h is None:
         return False
     base = os.path.basename(tokens[h][0])
+    rest = tokens[h + 1:]
     if base in SHELLS:
-        return True
-    if INTERP_RE.match(base):
-        for t, q in tokens[h + 1:]:
-            if t == "-":
-                return True
-            if t.startswith("-"):
-                if INLINE_FLAG_RE.match(t):
-                    return False
-                continue
-            return False                        # a script file operand: the program is the file, not stdin
-        return True
-    return False
+        return shell_reads_stdin(rest)
+    if base in ("source", "."):
+        ops = [t for t, q in rest if not t.startswith("-")]
+        return bool(ops) and ops[0] in STDIN_PATHS
+    kind = interp_kind(base)
+    return kind is not None and interp_reads_stdin(kind, rest)
+
+
+def dl_token(t, q):
+    """A downloader word (curl, wget, fetch) or a variable that holds one ($CURL, ${WGET:-wget})."""
+    return (not q and os.path.basename(t) in DL_WORDS) or DL_VAR_RE.match(t) is not None
 
 
 def pipe_hit(ln, depth=0):
     """Text of the first `<download> | <program reader>` pipeline in the logical line `ln`, else None. A pipeline is a run of commands
-    joined by `|`; the download may be any earlier stage, or inside a group/loop/subshell that is piped (a for-loop of downloads piped into a shell)."""
+    joined by `|`; the download may be any earlier stage, or inside a compound command that is piped as a whole: (subshell), { group; },
+    for/select/while/until loops, if/case. Depth is tracked on the RAW words: parentheses from the separators, keywords from the words that open
+    (OPENERS, also behind then/do/else/{) and close (CLOSERS) a compound command, never from the command word after wrapper skipping."""
     ln = re.sub(r"^\s*(?:ONBUILD\s+)?RUN\s+(?:--\S+\s+)*", "", ln, flags=re.I)   # a Dockerfile RUN (also quoted into an echo): the shell command is what follows
     cmds = split_commands(ln)
-    d = 0
+    pd = kd = 0                                  # parenthesis depth, keyword depth
+    prev_e = 0
     dl_start = None
     for s, e, toks in cmds:
-        sep = ln[s - 1] if s > 0 else ""
-        if sep == "(":
-            d += 1
-        piped = s > 0 and ((sep == "|" and (s < 2 or ln[s - 2] != "|")) or (sep == "&" and s >= 2 and ln[s - 2] == "|"))
+        pre = ln[prev_e:s]                       # the separator run in front of this command: ; && || | |& ( ) newline
+        prev_e = e
+        pn = re.sub(r"\s", "", pre)
+        piped = re.search(r"(?<!\|)\|&?\(*$", pn) is not None
+        pd = max(0, pd - pn.count(")"))
+        depth_before = pd + kd
+        pd += pn.count("(")
         h = head_index(toks)
-        word = os.path.basename(toks[h][0]) if h is not None else ""
-        if word in ("for", "while", "until", "if", "case", "select", "{"):
-            d += 1
-        if not piped and d == 0:
-            dl_start = None
+        prefix = toks if h is None else toks[:h + 1]
+        kd += sum(1 for t, q in prefix if not q and t in OPENERS)
+        if not piped and depth_before == 0:
+            dl_start = None                      # a new pipeline outside any compound command forgets an earlier download
         if piped and dl_start is not None and reader_hit(toks):
             return ln[dl_start:e]
-        if dl_start is None and any(not q and os.path.basename(t) in DL_WORDS for t, q in toks):   # a download word anywhere (also an install hint)
+        if dl_start is None and any(dl_token(t, q) for t, q in toks):   # a download word anywhere (also an install hint)
             dl_start = s
         if depth < 3:
             for t, q in toks:
@@ -626,10 +820,8 @@ def pipe_hit(ln, depth=0):
                     inner = pipe_hit(t, depth + 1)
                     if inner:
                         return inner
-        if word in ("done", "fi", "esac", "}"):
-            d = max(0, d - 1)
-        if ln[e:e + 1] == ")":
-            d = max(0, d - 1)
+        if toks and not toks[0][1] and toks[0][0] in CLOSERS:
+            kd = max(0, kd - 1)
     return None
 
 
@@ -697,9 +889,13 @@ def blank_quoted(ln):
 
 
 def operand_ref(op):
-    """`${VAR:-default}` / `${VAR-default}` / `${VAR:=default}` is judged by its default (a bare `${VAR}` stays `$...` and is not judged)."""
-    m = EXP_DEFAULT_RE.match(op)
-    return m.group(1).strip("\"'") if m else op
+    """`${VAR:-default}`, `-`, `:=`, `=`, `:+alt`, `+alt` (nested too: `${A:-${B:-ref}}`) is judged by its innermost default / alternative (a bare
+    `${VAR}` or `${VAR:?msg}` stays `$...` and is not judged)."""
+    while True:
+        m = EXP_DEFAULT_RE.match(op)
+        if not m:
+            return op
+        op = m.group(1).strip("\"'")
 
 
 def classify(rel):
@@ -709,11 +905,38 @@ def classify(rel):
         return None
     if re.match(r"^(dockerfile|containerfile)([._-].*)?$", low) or re.search(r"\.(dockerfile|containerfile)$", low):
         return "dockerfile"
-    if "compose" in low and low.endswith((".yml", ".yaml")):
-        return "compose"
+    if low.endswith((".yml", ".yaml")):
+        return "compose?" if "compose" not in low else "compose"
     if low.endswith((".sh", ".bash")):
         return "script"
     return None
+
+
+def die_unreadable(rel, exc):
+    sys.stderr.write("check_pins: cannot read %s: %s\n" % (rel, getattr(exc, "strerror", None) or exc))
+    sys.exit(3)
+
+
+def stat_of(full, rel, follow):
+    """os.stat / os.lstat of a scan input: None when it is absent; ANY other failure (a permission, an I/O error) is exit 3, never a skip."""
+    try:
+        return os.stat(full) if follow else os.lstat(full)
+    except (FileNotFoundError, NotADirectoryError):
+        return None
+    except OSError as exc:
+        die_unreadable(rel, exc)
+
+
+def walk_files(top, root, excl):
+    """Every file below `top` (sorted, `excl` directories skipped); a directory that cannot be listed is exit 3."""
+    def onerr(exc):
+        die_unreadable(os.path.relpath(exc.filename, root) if exc.filename else top, exc)
+    out = []
+    for dp, dns, fns in os.walk(top, onerror=onerr):
+        dns[:] = sorted(d for d in dns if d not in excl)
+        for f in sorted(fns):
+            out.append(os.path.relpath(os.path.join(dp, f), root))
+    return out
 
 
 def main(argv):
@@ -743,9 +966,19 @@ def main(argv):
             excl.add(argv[i + 1])
             i += 2
         elif a == "--dump-engine-options":
-            for tname, tbl in (("run", RUN_VALUE_OPTS), ("pull", PULL_VALUE_OPTS), ("global", GLOBAL_VALUE_OPTS)):
-                for o in sorted(tbl):
-                    sys.stdout.write("%s\t%s\n" % (tname, o))
+            for tname, vt, bt in (("run", RUN_VALUE_OPTS, RUN_BOOL_OPTS), ("pull", PULL_VALUE_OPTS, PULL_BOOL_OPTS),
+                                  ("global", GLOBAL_VALUE_OPTS, GLOBAL_BOOL_OPTS)):
+                for o in sorted(vt):
+                    sys.stdout.write("%s\t%s\tvalue\n" % (tname, o))
+                for o in sorted(bt):
+                    sys.stdout.write("%s\t%s\tbool\n" % (tname, o))
+            sys.exit(0)
+        elif a == "--dump-grammar":
+            rows = [("wrapper", w) for w in WRAPPERS] + [("wrapopt", w, o) for w, os_ in WRAP_VALUE_OPTS.items() for o in os_]
+            rows += [("shell", w) for w in SHELLS] + [("interp", k) for k in INTERPS] + [("opener", w) for w in OPENERS]
+            rows += [("closer", w) for w in CLOSERS] + [("dlword", w) for w in DL_WORDS] + [("stdinpath", w) for w in STDIN_PATHS]
+            for r in sorted(rows):
+                sys.stdout.write("\t".join(r) + "\n")
             sys.exit(0)
         elif a in ("-h", "--help"):
             sys.stdout.write("see the header of check_pins.sh and docs/scripts/check_pins.md\n")
@@ -767,12 +1000,10 @@ def main(argv):
     if paths:
         for p in paths:
             full = os.path.join(root, p)
-            if os.path.isdir(full):
-                for dp, dns, fns in os.walk(full):
-                    dns[:] = sorted(d for d in dns if d not in excl)
-                    for f in sorted(fns):
-                        cand.append(os.path.relpath(os.path.join(dp, f), root))
-            elif os.path.isfile(full):
+            st = stat_of(full, p, True)
+            if st is not None and stat.S_ISDIR(st.st_mode):
+                cand += walk_files(full, root, excl)
+            elif st is not None and stat.S_ISREG(st.st_mode):
                 cand.append(os.path.relpath(full, root))
             else:
                 usage("path '%s' does not exist under the root" % p)
@@ -783,10 +1014,7 @@ def main(argv):
             usage("git ls-files failed in %s" % root)
         cand = [x for x in r.stdout.decode("utf-8", "replace").split("\0") if x]
     else:
-        for dp, dns, fns in os.walk(root):
-            dns[:] = sorted(d for d in dns if d not in excl)
-            for f in sorted(fns):
-                cand.append(os.path.relpath(os.path.join(dp, f), root))
+        cand += walk_files(root, root, excl)
     for rel in sorted(set(cand)):
         parts = rel.split("/")
         if any(p in excl for p in parts[:-1]):
@@ -795,13 +1023,17 @@ def main(argv):
         if kind is None:
             continue
         full = os.path.join(root, rel)
-        if not os.path.isfile(full) or os.path.islink(full):
-            continue
+        st = stat_of(full, rel, False)
+        if st is None or not stat.S_ISREG(st.st_mode):
+            continue                        # absent (a deleted tracked file), a symlink, a submodule directory
         try:
             text = open(full, encoding="utf-8-sig", errors="replace").read()
-        except OSError as exc:              # an input that cannot be read cannot be judged: never "0 violations" (exit 3 below the global handler)
-            sys.stderr.write("check_pins: cannot read %s: %s\n" % (rel, exc.strerror or exc))
-            sys.exit(3)
+        except OSError as exc:              # an input that cannot be read cannot be judged: never "0 violations"
+            die_unreadable(rel, exc)
+        if kind == "compose?":              # a YAML file with another name is a compose file when it has a top-level `services:` key
+            if not re.search(r"^services\s*:", text, re.M):
+                continue
+            kind = "compose"
         files_scanned += 1
         if kind == "compose":  # MUT-ANCHOR compose-dispatch
             scan_compose(rel, text)

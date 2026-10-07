@@ -1,4 +1,5 @@
 # name<TAB>old text (exact, unique in check_pins.sh)<TAB>new text; \n and \t escapes are decoded, a literal backslash is written doubled. Each mutant must make test_check_pins.sh FAIL.
+# Round 4 (WF16): rows RV1-RV12 are the WF15 reviewer's twelve mutants re-expressed on the round-4 code (RV1, the proof that while/until/if/{ were dead members of the round-3 depth tuple, is now the OPENERS set); S-/A-/B-/F-/G-/H-/R- rows mutate the round-4 class code (shell grammar, option grammar, expansion operators, unreadable input, here-document delimiters, compose structure, registry hosts); the text-path compose rows (N07, N08, N47, C3 text) are killed by the structural-vs-text differential; the two rows of round 3 that repeated another row verbatim (RM2 = C4-port-registry-is-single-component, RM3 = pipe-sudo-handling-removed) were dropped (WF15 T2). EQUIVALENT mutants (not in the table, proven, WF16): dropping the inline-program letters/long options of `interp_reads_stdin` and the `-c` flag of `shell_args` changes nothing, because an inline flag is always followed by its program text, which is itself an operand (or a quoted token) and returns the same verdict; the same holds for the round-3 inline-flag branch of `reader_hit` and `strip-line-comment`.
 # Rows 1-21 are the original T104 table (anchors that moved were re-pointed); R1-R12 (+R2b) are the independent reviewer's surviving mutants (WF10 p1 F4); N-rows mutate the code added by the WF10 fix (N-numbers are labels, not a sequence: N02, N12, N27, N30, N34, N35, N37-N39, N45 never appeared in the committed table, cause UNCONFIRMED); A/B/C/E/F/G rows mutate the round-3 class classifiers (WF13, 11.4.276 structural round); RM rows are the round-2 reviewer's mutants (WF13 RM1-RM8) re-expressed on the round-3 code. Equivalent mutants (not in the table, UNCONFIRMED that no more exist): the interpreter inline-flag branch of reader_hit (an inline-code flag is always followed by an operand that is not an option, which returns the same result), the closing-keyword bookkeeping of pipe_hit (removed: the depth counter already keeps the download across a group), strip-line-comment.
 digest-relaxed	@sha256:[0-9a-f]{64}(?![0-9A-Za-z])	@sha256:[0-9a-f]+
 compose-check-removed	if not pinned(ref):  # MUT-ANCHOR compose-check	if False:  # MUT-ANCHOR compose-check
@@ -12,11 +13,11 @@ comment-strip-removed	elif ch == "#" and (i == 0 or s[i - 1].isspace()):	elif Fa
 continuation-join-removed	cont = line.rstrip().endswith("\\\\")	cont = False
 heredoc-skip-removed	if skip_heredocs:	if False:
 heredoc-skip-always	if skip_heredocs:	if True:
-variable-without-default-judged	if v.group(1) is None:	if False:
+variable-without-default-judged	ref.startswith("$") or ref.startswith("localhost/") or ref == "":	ref.startswith("localhost/") or ref == "":
 compose-dispatch-removed	if kind == "compose":  # MUT-ANCHOR compose-dispatch	if False:  # MUT-ANCHOR compose-dispatch
 markdown-exclusion-removed	if low.endswith((".md", ".txt", ".html", ".json", ".tsv", ".lock")):	if False:
 exit-status-always-zero	sys.exit(1 if uniq else 0)	sys.exit(0)
-localhost-compose-skip-removed	if ref.startswith("localhost/"):	if False:
+localhost-compose-skip-removed	or ref.startswith("localhost/") or ref == "":	or ref == "":
 dynamic-digest-skip-removed	if ref.endswith("@sha256:") and wreg[g.end():g.end() + 1] == "$":	if False:
 R1-from-case-sensitive	fm = re.match(r"^\\s*FROM\\s+(?:--\\S+\\s+)*(\\S+)(?:\\s+AS\\s+(\\S+))?", ln, re.I)	fm = re.match(r"^\\s*FROM\\s+(?:--\\S+\\s+)*(\\S+)(?:\\s+AS\\s+(\\S+))?", ln)
 R2-single-quote-not-removed	elif ch == "'":	elif False:
@@ -24,7 +25,7 @@ R2b-double-quote-not-removed	elif ch == '"':	elif False:
 R3-image-subcommand-dropped	if j < len(rest) and rest[j][0] in ("container", "image"):	if False:
 R4-inline-from-default-ignored	default = vm.group(2) if vm.group(2) is not None else args.get(vm.group(1))	default = args.get(vm.group(1))
 R7-dotbash-not-scanned	if low.endswith((".sh", ".bash")):	if low.endswith((".sh",)):
-R8-yaml-compose-not-scanned	if "compose" in low and low.endswith((".yml", ".yaml")):	if "compose" in low and low.endswith((".yml",)):
+R8-yaml-compose-not-scanned	    if low.endswith((".yml", ".yaml")):\n        return "compose?"	    if low.endswith((".yml",)):\n        return "compose?"
 R9-comment-quote-tracking-off	elif ch in "'\\"":	elif False:
 R10-recurse-ignored	cmd = ["git", "-C", root, "ls-files", "-z"] + (["--recurse-submodules"] if recurse else [])	cmd = ["git", "-C", root, "ls-files", "-z"]
 R11-exclude-dir-ignored	excl.add(argv[i + 1])	pass
@@ -35,7 +36,7 @@ N04-multi-arg-first-only	for tok in am.group(1).split():	for tok in am.group(1).
 N05-mount-from-not-judged	mf = re.search(r"(?:^|,)from=([^,\\s]+)", mt.group(1))	mf = None
 N06-add-from-not-judged	(?:ONBUILD\\s+)?(?:COPY|ADD)\\b.*?--from=(\\S+)	(?:ONBUILD\\s+)?(?:COPY)\\b.*?--from=(\\S+)
 N07-compose-next-line-value-ignored	if val == "":                       # the value is on a following line	if False:                       # the value is on a following line
-N11-bare-dollar-var-judged	if re.match(r"^\\$[A-Za-z_][A-Za-z0-9_]*$", ref):	if False:
+N11-bare-dollar-var-judged	ref.startswith("$")	ref.startswith("${")
 N17-quoted-substitution-not-recursed	if q and ("$(" in t or "`" in t):	if False:
 N21-crash-exit-code-1	sys.exit(3)  # MUT-ANCHOR crash-exit	sys.exit(1)  # MUT-ANCHOR crash-exit
 N22-crash-not-caught	except Exception as exc:	except KeyboardInterrupt as exc:
@@ -43,7 +44,7 @@ N23-bom-not-stripped	encoding="utf-8-sig"	encoding="utf-8"
 N24-registry-literal-judged-in-tests	for g in ([] if is_test else REGISTRY_RE.finditer(wreg)):  # MUT-ANCHOR registry-literal-rule	for g in REGISTRY_RE.finditer(wreg):  # MUT-ANCHOR registry-literal-rule
 N26-localhost-script-judged	if op.startswith("$") or op.startswith("localhost/") or not IMG_SHAPE.match(op):	if op.startswith("$") or not IMG_SHAPE.match(op):
 N28-unknown-option-value-taken-as-image	if after_unknown and looks_like_value(t):	if False:
-N29-global-option-value-not-skipped	j += 2 if ("=" not in rest[j][0] and rest[j][0] in GLOBAL_VALUE_OPTS) else 1	j += 1
+N29-global-option-value-not-skipped	        j = skip_option(rest, j, GLOBAL_VALUE_OPTS, GLOBAL_BOOL_OPTS)[0]	        j += 1
 N31-create-verb-dropped	ENGINE_VERBS = {"run", "pull", "create"}	ENGINE_VERBS = {"run", "pull"}
 N33-redirect-not-skipped	if re.match(r"^\\d*[<>]", t) and not q:	if False:
 N36-fd-dup-ampersand-splits	if cur and cur[-1][-1:] in ("<", ">"):	if False:
@@ -52,11 +53,11 @@ N47-sibling-scan-crosses-services	if ind(l) < col:\n                break	if Fal
 pipe-check-removed	    hit = pipe_hit(ln)\n	    hit = None\n
 pipe-substitution-removed	    m = SUBST_RE.search(ln)\n	    m = None\n
 pipe-sudo-handling-removed	"sudo": {"-u", "-g",	"sudo": {"-g",
-pipe-or-or-guard-removed	(sep == "|" and (s < 2 or ln[s - 2] != "|"))	(sep == "|")
-value-option-skip-removed	            elif t in table:\n	            elif False:\n
-R5-pipe-abs-shell-path-dropped	    base = os.path.basename(tokens[h][0])\n    if base in SHELLS:	    base = tokens[h][0]\n    if base in SHELLS:
+pipe-or-or-guard-removed	piped = re.search(r"(?<!\\|)\\|&?\\(*$", pn) is not None	piped = re.search(r"\\|&?\\(*$", pn) is not None
+value-option-skip-removed	        if t in vtab:\n            return i + 2, False\n	        if False:\n            return i + 2, False\n
+R5-pipe-abs-shell-path-dropped	    base = os.path.basename(tokens[h][0])\n    rest = tokens[h + 1:]	    base = tokens[h][0]\n    rest = tokens[h + 1:]
 R6-zsh-dash-ash-ksh-dropped	SHELLS = {"sh", "bash", "zsh", "dash", "ash", "ksh", "mksh", "csh", "tcsh", "fish", "rbash"}	SHELLS = {"sh", "bash"}
-N08-build-sibling-ignored	if sibling_value(lines, idx, col, "build") is not None:	if False:
+N08-build-sibling-ignored	sibling_value(lines, idx, col, "build") is not None, sibling_value	False, sibling_value
 N09-namespaced-image-with-build-skipped	or ("/" not in ref and pol is None):	or (pol is None):
 N10-build-key-any-depth	            if ind(l) == col:\n                m = rx.match(l)	            if ind(l) >= col:\n                m = rx.match(l)
 N13-wrapper-value-options-not-skipped	            vals = WRAP_VALUE_OPTS.get(base, ())	            vals = ()
@@ -71,45 +72,104 @@ N20c-arithmetic-nesting-ignored	            depth -= 1\n            if depth == 
 N25-docker-transport-not-stripped	work.replace("docker://", " ")	work.replace("docker://", "-")
 N25b-expansion-operator-not-spaced	lambda mo: mo.group(0) + " "	lambda mo: mo.group(0)
 N32-buildah-verbs-ignored	verbs = {"from", "pull"} if kind == "buildah" else ENGINE_VERBS	verbs = ENGINE_VERBS
-N40-python-stdin-interpreter-dropped	(?:python[0-9.]*|perl|ruby|node|nodejs|php|lua|deno|bun|Rscript)$	(?:perl|ruby)$
-N42-eval-substitution-dropped	|eval|python[0-9.]*|perl|ruby|node|nodejs|php)	|python[0-9.]*|perl|ruby|node|nodejs|php)
-N43-source-procsubst-dropped	|source)|(?<![\\w.])\\.)\\s+(?:<\\s*)?<\\(	|ZZZ)|(?<![\\w.])\\.)\\s+(?:<\\s*)?<\\(
-N44-dot-procsubst-dropped	|source)|(?<![\\w.])\\.)\\s+(?:<\\s*)?<\\(	|source)|(?<![\\w.])ZZZ)\\s+(?:<\\s*)?<\\(
-E9-here-string-procsubst-dropped	\\s+(?:<\\s*)?<\\(\\s*(?:curl	\\s+<\\(\\s*(?:curl
+N40-python-stdin-interpreter-dropped	    "python": ("cm", {"-W", "-X", "--check-hash-based-pycs"}, set()),\n	
+N42-eval-substitution-dropped	r"|eval|python[0-9.]*|perl|ruby|node(?:js)?|php|lua|deno|bun|Rscript)"	r"|python[0-9.]*|perl|ruby|node(?:js)?|php|lua|deno|bun|Rscript)"
+N43-source-procsubst-dropped	r"|source)(?![\\w-])	r"|ZZZ)(?![\\w-])
+N44-dot-procsubst-dropped	+ r"|(?<![\\w.])\\.\\s+(?:<\\s*)?<\\(\\s*" + DLX	+ r"|(?<![\\w.])ZZZ\\s+(?:<\\s*)?<\\(\\s*" + DLX
+E9-here-string-procsubst-dropped	(?![\\w-])\\s+(?:-\\S+\\s+)*(?:<\\s*)?<\\(\\s*" + DLX	(?![\\w-])\\s+(?:-\\S+\\s+)*<\\(\\s*" + DLX
 A1-engine-only-at-the-head	        if strict and k != h:\n            break	        if k != h:\n            break
 A2-non-exec-heads-judged	    if base in NON_EXEC_HEADS:	    if False:
 A3-engine-variable-not-recognised	    if base in ENGINES or ENGINE_VAR_RE.match(t):	    if base in ENGINES:
 A4-strict-bare-operand-kept	if not strict or any(c in op for c in "/:."):	if True:
 A5-strict-engine-anywhere	        if strict and k != h:\n            break	        if False:\n            break
-A6-pull-uses-run-table	PULL_VALUE_OPTS if rest[j][0] == "pull" else RUN_VALUE_OPTS	RUN_VALUE_OPTS
+A6-pull-uses-run-table	            return image_operand(rest[j + 1:], PULL_VALUE_OPTS, PULL_BOOL_OPTS)	            return image_operand(rest[j + 1:], RUN_VALUE_OPTS, RUN_BOOL_OPTS)
 A7-run-table-loses-add-host	"--add-host", "--annotation"	"--annotation"
 A8-run-table-gains-a-boolean	"--add-host", "--annotation"	"--add-host", "--rm", "--annotation"
 A9-pull-table-loses-policy	"--policy",	"--policy-zz",
 A10-global-table-loses-tlscacert	"--tlscacert",	"--tlscacert-zz",
-B1-expansion-default-not-resolved	    return m.group(1).strip("\\"'") if m else op	    return op
-B2-expansion-default-colon-only	EXP_DEFAULT_RE = re.compile(r"^\\$\\{[A-Za-z_][A-Za-z0-9_]*:?[-=](.*)\\}$", re.S)	EXP_DEFAULT_RE = re.compile(r"^\\$\\{[A-Za-z_][A-Za-z0-9_]*:?[=](.*)\\}$", re.S)
+B1-expansion-default-not-resolved	        op = m.group(1).strip("\\"'")	        return op
+B2-expansion-default-colon-only	EXP_DEFAULT_RE = re.compile(r"^\\$\\{[A-Za-z_][A-Za-z0-9_]*:?[-=+](.*)\\}$", re.S)	EXP_DEFAULT_RE = re.compile(r"^\\$\\{[A-Za-z_][A-Za-z0-9_]*:?[=](.*)\\}$", re.S)
 C1-build-policy-not-local	if pol in ("never", "build") or	if pol in ("never",) or
 C2-explicit-pull-policy-ignored	("/" not in ref and pol is None)	("/" not in ref)
-C3-pull-policy-not-read	            pol = sibling_value(lines, idx, col, "pull_policy")	            pol = None
+C3-pull-policy-not-read	pv.value if isinstance(pv, yaml.ScalarNode) else None)	None)
 C4-port-registry-is-single-component	("/" not in ref and pol is None)	("/" not in ref.split(":")[0] and pol is None)
-E1-script-operand-is-stdin	            return False                        # a script file operand: the program is the file, not stdin	            return True
-E2-groups-not-tracked	if word in ("for", "while", "until", "if", "case", "select", "{"):	if False:
-E4-download-only-at-head	if dl_start is None and any(not q and os.path.basename(t) in DL_WORDS for t, q in toks):	if dl_start is None and h is not None and word in DL_WORDS:
+E1-script-operand-is-stdin	        return False                            # a script file operand: the program is the file, not stdin	        return True
+E2-groups-not-tracked	kd += sum(1 for t, q in prefix if not q and t in OPENERS)	kd += 0
+E4-download-only-at-head	if dl_start is None and any(dl_token(t, q) for t, q in toks):	if dl_start is None and h is not None and os.path.basename(toks[h][0]) in DL_WORDS:
 E5-quoted-hint-not-recursed	        if depth < 3:\n            for t, q in toks:	        if False:\n            for t, q in toks:
-E6-stderr-pipe-dropped	(sep == "&" and s >= 2 and ln[s - 2] == "|")	False
+E6-stderr-pipe-dropped	piped = re.search(r"(?<!\\|)\\|&?\\(*$", pn) is not None	piped = re.search(r"(?<!\\|)\\|\\(*$", pn) is not None
 E7-not-piped-stage-is-reader	        if piped and dl_start is not None and reader_hit(toks):	        if dl_start is not None and reader_hit(toks):
-E8-pipeline-not-reset	        if not piped and d == 0:\n            dl_start = None	        if False:\n            dl_start = None
-F1-unreadable-file-skipped	% (rel, exc.strerror or exc))\n            sys.exit(3)	% (rel, exc.strerror or exc))\n            continue
+E8-pipeline-not-reset	        if not piped and depth_before == 0:\n            dl_start = None	        if False:\n            dl_start = None
+F1-unreadable-file-skipped	        except OSError as exc:              # an input that cannot be read cannot be judged: never "0 violations"\n            die_unreadable(rel, exc)	        except OSError as exc:              # an input that cannot be read cannot be judged: never "0 violations"\n            continue
 F2-unreadable-is-internal-error	        except OSError as exc:	        except KeyError as exc:
 G1-test-named-script-is-test	is_test = "tests" in parts[:-1]	is_test = "tests" in parts[:-1] or base.startswith(("test_", "mutate_"))
 G2-test-quoted-strings-judged	        work = blank_quoted(mask_data(ln)) if is_test else ln	        work = mask_data(ln) if is_test else ln
 G3-test-substitution-in-quotes-blanked	if c == "'" or ("$(" not in body and "`" not in body):	if True:
 G4-substitution-assignment-masked	 and not any(q and ("$(" in t or "`" in t) for t, q in tokens):	:
 RM1-host-gateway-value-dropped	 or re.match(r"^[A-Za-z0-9.-]+:host-gateway$", t) is not None)	)
-RM2-port-registry-not-qualified	("/" not in ref and pol is None)	("/" not in ref.split(":")[0] and pol is None)
-RM3-sudo-u-value-not-skipped	"sudo": {"-u", "-g",	"sudo": {"-g",
 RM4-dedup-removed	        if not uniq or uniq[-1] != v:	        if True:
 RM5-env-assignment-not-skipped	        if ASSIGN_RE.match(t):              # VAR=value	        if False:              # VAR=value
 RM6-hash-anywhere-is-comment	elif ch == "#" and (i == 0 or s[i - 1].isspace()):	elif ch == "#":
 RM7-trailing-and-or-not-continuation	CONT_TRAIL_RE = re.compile(r"(?:(?<!\\|)\\||\\|\\||&&)\\s*$")	CONT_TRAIL_RE = re.compile(r"(?:(?<!\\|)\\|)\\s*$")
 RM8-tee-not-data	DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep", "awk"}	DATA_CMDS = {"printf", "echo", "sed", "grep", "egrep", "fgrep", "awk"}
+N08-build-sibling-ignored-structural	"build" in sib, pv.value	False, pv.value
+C3-pull-policy-not-read-text	sibling_value(lines, idx, col, "pull_policy"))	None)
+F2-stat-failure-skipped	    except OSError as exc:\n        die_unreadable(rel, exc)\n	    except OSError as exc:\n        return None\n
+F3-walk-error-skipped	for dp, dns, fns in os.walk(top, onerror=onerr):	for dp, dns, fns in os.walk(top):
+G1-heredoc-delimiter-word-only	|\\\\?([^\\s;&|()<>'"\\\\]+))""")	|\\\\?(\\w+))""")
+G2-heredoc-quoted-delimiter-dropped	(?:'([^']*)'|"([^"]*)"|	(?:
+H1-structural-compose-disabled	if yaml is not None and not os.environ.get("CHECK_PINS_NO_YAML"):	if False:
+H2-yaml-parse-failure-skips-the-file	            docs = None                     # not YAML	            docs = []                       # not YAML
+H3-compose-name-gate-dropped	            if not re.search(r"^services\\s*:", text, re.M):\n                continue\n	            pass\n
+H4-any-yaml-is-compose	return "compose?" if "compose" not in low else "compose"	return "compose"
+H5-compose-seen-guard-dropped	    if id(node) in seen:\n        return\n    seen.add(id(node))\n	    seen.add(id(node))\n
+S-opener-for-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"select", "case", "if", "while", "until", "{"}
+S-opener-select-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "case", "if", "while", "until", "{"}
+S-opener-case-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "if", "while", "until", "{"}
+S-opener-if-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "case", "while", "until", "{"}
+S-opener-while-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "case", "if", "until", "{"}
+S-opener-until-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "case", "if", "while", "{"}
+S-opener-brace-removed	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "case", "if", "while", "until"}
+RV1-dead-wrapper-keywords-removed-from-openers	OPENERS = {"for", "select", "case", "if", "while", "until", "{"}	OPENERS = {"for", "select", "case"}
+S-closer-done-removed	CLOSERS = {"done", "esac", "fi", "}"}	CLOSERS = {"esac", "fi", "}"}
+S-closer-esac-removed	CLOSERS = {"done", "esac", "fi", "}"}	CLOSERS = {"done", "fi", "}"}
+S-closer-fi-removed	CLOSERS = {"done", "esac", "fi", "}"}	CLOSERS = {"done", "esac", "}"}
+S-closer-brace-removed	CLOSERS = {"done", "esac", "fi", "}"}	CLOSERS = {"done", "esac", "fi"}
+S-paren-close-not-counted	        pd = max(0, pd - pn.count(")"))	        pd = pd
+S-paren-open-not-counted	        pd += pn.count("(")	        pd += 0
+S-quoted-token-download-recursion-dropped	                if q and re.search(r"\\s", t) and re.search(r"\\b(?:curl|wget|fetch)\\b", t):	                if False:
+S-downloader-variable-not-a-download	(not q and os.path.basename(t) in DL_WORDS) or DL_VAR_RE.match(t) is not None	(not q and os.path.basename(t) in DL_WORDS)
+S-shell-s-flag-ignored	            if t[0] == "-" and "s" in letters:\n                sflag = True	            if t[0] == "-" and "s" in letters:\n                pass
+S-shell-dash-operand-ignored	        if t == "-":\n            return c, True, None	        if t == "-":\n            pass
+S-shell-long-value-option-not-skipped	                i += 2 if (t in SHELL_VALUE_OPTS and "=" not in t) else 1	                i += 1
+S-shell-short-value-option-not-skipped	            i += 2 if any(ch in "oO" for ch in letters) else 1	            i += 1
+S-shell-operand-is-not-a-script	    return not c and operand is None	    return not c
+S-interp-long-value-option-not-skipped	            i += 2 if (name in vopts and "=" not in t) else 1	            i += 1
+S-interp-short-value-option-not-skipped	                if o in vopts:\n                    i += 1 if j < len(t) - 1 else 2\n                    break	                if False:\n                    break
+S-interp-dash-is-not-stdin	        if t == "-":\n            return True\n        if t == "--":\n            return i + 1 >= n	        if t == "-":\n            return False\n        if t == "--":\n            return i + 1 >= n
+S-source-stdin-path-not-required	    if base in ("source", "."):\n        ops = [t for t, q in rest if not t.startswith("-")]\n        return bool(ops) and ops[0] in STDIN_PATHS	    if base in ("source", "."):\n        ops = [t for t, q in rest if not t.startswith("-")]\n        return bool(ops)
+S-source-dot-dropped	    if base in ("source", "."):	    if base in ("source",):
+RV2-interp-lua-deno-bun-Rscript-dropped	    "lua": ("e", {"-l"}, set()),\n    "deno": ("e", set(), {"--eval"}),\n    "bun": ("e", set(), {"--eval"}),\n    "Rscript": ("e", set(), set()),\n	
+RV2b-nodejs-alias-dropped	    if base == "nodejs":\n        return "node"\n	    if base == "nodejs":\n        return None\n
+RV3-shells-mksh-rbash-dropped	SHELLS = {"sh", "bash", "zsh", "dash", "ash", "ksh", "mksh", "csh", "tcsh", "fish", "rbash"}	SHELLS = {"sh", "bash", "zsh", "dash", "ash", "ksh", "csh", "tcsh", "fish"}
+RV4-double-dash-ends-operand-search	            return tokens[i + 1][0] if i + 1 < n else None	            return None
+RV5-compose-policy-quotes-kept	                    return m.group(1).strip("\\"'")	                    return m.group(1)
+RV6-engine-var-names-narrowed	(?:DOCKER|PODMAN|NERDCTL|CONTAINER_?ENGINE|CONTAINER_?RUNTIME|CTR_?ENGINE|OCI_?ENGINE|ENGINE)"	(?:DOCKER|PODMAN|CONTAINER_?ENGINE)"
+RV7-awk-not-a-data-or-nonexec-head	DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep", "awk"}	DATA_CMDS = {"printf", "echo", "sed", "tee", "grep", "egrep", "fgrep"}
+RV8-host-ip-value-heuristic-dropped	 or re.match(r"^[A-Za-z0-9.-]+:(?:\\d+\\.){3}\\d+$", t) is not None	
+RV9-doas-u-value-not-skipped	"doas": {"-u", "-C"}	"doas": {"-C"}
+RV10-operand-assign-default-not-resolved	*:?[-=+](.*)\\}$", re.S)	*:?[-+](.*)\\}$", re.S)
+RV11-copy-from-localhost-judged	 or src.startswith("$") or src.startswith("localhost/"):	 or src.startswith("$"):
+RV12-from-localhost-judged	if ref.lower() == "scratch" or ref.startswith("localhost/"):	if ref.lower() == "scratch":
+B3-expansion-plus-operator-dropped	*:?[-=+](.*)\\}$", re.S)	*:?[-=](.*)\\}$", re.S)
+A7-array-expansion-not-skipped	        if ARRAY_EXP_RE.match(t):\n            i += 1\n            after_unknown = False\n            continue	        if False:\n            i += 1\n            after_unknown = False\n            continue
+A8-cluster-value-letter-rest-not-attached	            return (i + 1 if j < len(t) - 1 else i + 2), False	            return i + 2, False
+A9-cluster-boolean-letters-not-known	        if o not in btab:\n            return i + 1, True	        if False:\n            return i + 1, True
+A10-attached-equals-value-not-recognised	    if "=" in t:\n        return i + 1, False\n    if t.startswith("--"):	    if t.startswith("--"):
+A11-long-boolean-is-unknown	        return i + 1, t not in btab	        return i + 1, True
+A12-long-value-option-not-skipped-in-cluster-parser	        if t in vtab:\n            return i + 2, False\n        return i + 1, t not in btab	        if False:\n            return i + 2, False\n        return i + 1, t not in btab
+A13-logging-helpers-are-commands	NON_EXEC_HEADS = DATA_CMDS | LOG_HELPERS | {	NON_EXEC_HEADS = DATA_CMDS | {
+R-nvcr-not-a-registry	|nvcr\\.io|registry\\.	|registry\\.
+R-regional-gcr-not-a-registry	(?:[a-z0-9-]+\\.)?gcr\\.io	gcr\\.io
+R-index-docker-io-not-a-registry	index\\.docker\\.io|registry-1\\.docker\\.io|docker\\.io	docker\\.io
+A14-grammar-dump-wrapper-option-missing	"nice": {"-n", "--adjustment"},	"nice": {"-n"},

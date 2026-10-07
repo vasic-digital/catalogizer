@@ -4,10 +4,11 @@
 #      infra-redis infra-ftp infra-smb infra-webdav; infra-minio is absent: no MinIO server image is obtainable from any official registry, T106 blocked item; plus the two T006 directories kcov and testutil);
 #   C2 each directory has a non-empty Containerfile, README.md and digests.lock;
 #   C3 the Containerfile passes scripts/containers/check_pins.sh (digest-pinned FROM, no pipe-to-shell; T105);
-#   C4 every download line (curl or wget in a RUN) is followed, in the same RUN, by a SHA-256 check (sha256sum -c or shasum -a 256 -c), and a
-#      RUN holds at least as many checks as downloads; an `ADD <url>` carries `--checksum=sha256:<64 hex>`;
-#   C5 digests.lock names every FROM digest and every SHA-256 literal the Containerfile checks (the lock and the file cannot drift);
-#   C7 no RUN swallows a failure (`|| true`, `|| :`): a step that may fail is handled explicitly or not run (WF10 p1 F6, the android licence swallow);
+#   C4 every download (curl, wget, fetch in a RUN, behind any wrapper, helper or sh -c string) is bound to the file it writes and followed, in the same
+#      RUN, by a SHA-256 check of THAT file (`echo "<hash>  <file>" | sha256sum -c -`); the shell grammar is the scanner's own (check_pins.sh is loaded, not
+#      re-implemented); an `ADD <url>` carries `--checksum=sha256:<64 hex>`;
+#   C5 digests.lock names every FROM digest and every SHA-256 literal (or ARG-held value) the Containerfile checks (the lock and the file cannot drift);
+#   C7 no RUN swallows a failure (`|| true`, `|| :`, `set +e`, `set +o errexit`): a step that may fail is handled explicitly or not run (WF10 p1 F6, the android licence swallow);
 #   C6 the directory has a matching images.lock.yaml entry (rust and android are the two images whose entry T143 and T144 write), the
 #      entry carries a `class` from {compile, interpreter, service, runtime, runtime-base} for the entries T106 writes, and when the
 #      entry's reference is one of the Containerfile's FROM references the two digests are equal.
@@ -56,10 +57,14 @@ for r in required:                                                   # C1
         v("C1-missing-directory", r, "required image directory is absent")
 
 def logical(text):
+    """Dockerfile logical lines: a comment line is removed WHEREVER it is (also inside a backslash continuation, where it does not end the
+    instruction), a blank line inside a continuation is ignored."""
     acc, cur = [], ""
     for raw in text.split("\n"):
         s = raw.rstrip()
-        if not cur and s.lstrip().startswith("#"):
+        if s.lstrip().startswith("#"):
+            continue
+        if cur and not s.strip():
             continue
         if s.endswith("\\"):
             cur += " " + s[:-1].strip()
@@ -68,98 +73,242 @@ def logical(text):
     if cur: acc.append(cur.strip())
     return acc
 
-import shlex
-SEPS = {"&&", "||", ";", "|", "&", "(", ")", "{", "}", ";;", "|&", ";&"}
-WRAPS = {"sudo", "env", "nohup", "time", "command", "exec", "then", "do", "else", "!", "xargs", "nice", "timeout"}
-def run_commands(body):
-    """Split the shell text of one RUN into simple commands: [(separator-before, [tokens...]), ...]. Raises ValueError on an unparseable text."""
-    lex = shlex.shlex(body, posix=True, punctuation_chars=True)
-    lex.whitespace_split = True
-    out, cur, sep = [], [], ""
-    for tok in lex:
-        if tok in SEPS:
-            if cur: out.append((sep, cur))
-            cur, sep = [], tok
-        else:
-            cur.append(tok)
-    if cur: out.append((sep, cur))
+import json, posixpath, shlex
+
+# ONE shell grammar: the tokenizer, the wrapper table and the command-word rules are the scanner's own (scripts/containers/check_pins.sh), loaded from
+# its source, never re-implemented here (round 3 had two grammars: a wrapper list in each; WF15 I2)
+def load_grammar(repo):
+    path = os.path.join(repo, "scripts", "containers", "check_pins.sh")
+    src = open(path).read()
+    body = src.split("<<'PY'\n", 1)[1].rsplit("\nPY", 1)[0]
+    ns = {"__name__": "check_pins_grammar"}
+    exec(compile(body[:body.index("\ntry:\n    main(sys.argv[1:])")], path, "exec"), ns)
+    return ns
+G = load_grammar(repo)
+split_commands, head_index = G["split_commands"], G["head_index"]
+EXEMPT = G["NON_EXEC_HEADS"] | G["PKG_HEADS"]
+DLRE = r"\b(?:curl|wget|fetch)\b"
+
+def flatten(body, depth=0):
+    """[(separator-run, [(token, was_quoted), ...]), ...]: every simple command of a shell text, in order; a quoted string handed to a command (sh -c
+    "...", su -c, ssh host "...") that names a download or a failure swallow is parsed too and its commands follow the command that carries it."""
+    st = body.strip()
+    if st.startswith("["):                                           # exec form: RUN ["curl", "-o", ...]
+        try:
+            arr = json.loads(st)
+            if isinstance(arr, list) and arr and all(isinstance(x, str) for x in arr):
+                return flatten_exec(arr, depth)
+        except ValueError:
+            pass
+    out, prev = [], 0
+    for s0, e0, toks in split_commands(body):
+        sep = re.sub(r"\s", "", body[prev:s0]); prev = e0
+        out.append((sep, toks))
+        h = head_index(toks)
+        if depth < 4 and h is not None and os.path.basename(toks[h][0]) not in EXEMPT:
+            for t, q in toks[h + 1:]:
+                if q and re.search(r"\s", t) and re.search(DLRE + r"|\|\||set\s+\+", t):
+                    inner = flatten(t, depth + 1)
+                    out += [(sep if k == 0 else sp, tk) for k, (sp, tk) in enumerate(inner)]
     return out
-def head_of(toks):
-    """(index of the command word, base name); lookups (`command -v X`) and assignments are not the command."""
-    i = 0
-    while i < len(toks):
-        t = toks[i]
-        if re.match(r"^[A-Za-z_]\w*=", t): i += 1; continue
-        b = os.path.basename(t)
-        if b in WRAPS:
-            if b == "command" and i + 1 < len(toks) and toks[i + 1] in ("-v", "-V"): return None, ""
-            i += 1
-            while i < len(toks) and toks[i].startswith("-") and toks[i] not in ("-",): i += 1
-            continue
-        return i, b
-    return None, ""
-def is_download(toks):
-    i, b = head_of(toks)
-    if i is None or b not in ("curl", "wget"): return False
-    return not set(toks[i + 1:]) <= {"--version", "-V", "--help", "-h"}
-def is_check(toks):
-    i, b = head_of(toks)
-    if i is None: return False
-    a = toks[i + 1:]
-    if b == "sha256sum": return any(x in ("-c", "--check") or (x.startswith("-") and not x.startswith("--") and "c" in x[1:]) for x in a)
-    if b == "shasum": return "256" in a and "-a" in a and "-c" in a
-    return False
-def swallows(cmds_after_oror):
-    """True when the right-hand side of an `||` only ever succeeds (true, :, echo, printf, exit 0): the failure of the left side is dropped."""
-    if not cmds_after_oror: return False
-    for toks in cmds_after_oror:
-        i, b = head_of(toks)
+def flatten_exec(arr, depth):
+    out = [("", [(x, bool(re.search(r"\s", x))) for x in arr])]
+    h = head_index(out[0][1])
+    if depth < 4 and h is not None and os.path.basename(out[0][1][h][0]) not in EXEMPT:
+        for t, q in out[0][1][h + 1:]:
+            if q and re.search(DLRE + r"|\|\||set\s+\+", t):
+                out += flatten(t, depth + 1)
+    return out
+
+def split_opts(args, vshort, vlong):
+    """(short letters, long names, {option: value}, operands) of the (text, quoted) args; a cluster's first value letter takes the rest of the cluster or the next word."""
+    letters, longs, vals, operands, i = set(), set(), {}, [], 0
+    while i < len(args):
+        t, q = args[i]
+        if q or not t.startswith("-") or t == "-":
+            operands.append(t); i += 1; continue
+        if t == "--":
+            operands += [x for x, _ in args[i + 1:]]; break
+        if t.startswith("--"):
+            n, eq, v = t.partition("=")
+            if n in vlong:
+                if not eq and i + 1 < len(args): v = args[i + 1][0]; i += 1
+                vals[n] = v
+            else: longs.add(n)
+            i += 1; continue
+        for j in range(1, len(t)):
+            if t[j] in vshort:
+                v = t[j + 1:]
+                if not v and i + 1 < len(args): v = args[i + 1][0]; i += 1
+                vals["-" + t[j]] = v; break
+            letters.add(t[j])
+        i += 1
+    return letters, longs, vals, operands
+
+def redirects(args):
+    """Targets of the stdout redirections (`> f`, `>> f`, `>f`, `1> f`) among the args, and the args without them."""
+    tg, rest, i = [], [], 0
+    while i < len(args):
+        t, q = args[i]
+        m = None if q else re.match(r"^(\d*)(>>?)(.*)$", t)
+        if m and not m.group(3).startswith("&"):
+            tgt = m.group(3) or (args[i + 1][0] if i + 1 < len(args) else "")
+            if m.group(1) in ("", "1") and tgt and tgt != "/dev/null": tg.append(tgt)
+            i += 1 if m.group(3) else 2; continue
+        if m: i += 1; continue
+        rest.append((t, q)); i += 1
+    return tg, rest
+def norm(p):
+    return p if re.search(r"[$`]", p) else posixpath.normpath(p)
+def url_base(u):
+    path = re.sub(r"[?#].*$", "", re.sub(r"^[A-Za-z][A-Za-z0-9+.-]*://[^/]*", "", u))
+    return posixpath.basename(path) or "index.html"
+CURL_VSHORT = set("AbcCdDeEFHKmoPQrTuUwxXyYz")
+def curl_targets(args):
+    """Files a curl command writes: -o/--output (+ --output-dir), -O/--remote-name (the URL's basename), a stdout redirect; [None] = stdout / not decidable."""
+    tg, rest = redirects(args)
+    letters, longs, vals, ops = split_opts(rest, CURL_VSHORT, {"--output-dir"})
+    outs = []
+    for k, (t, q) in enumerate(rest):                                # every -o / --output occurrence, in order
+        if q: continue
+        if t == "--output" and k + 1 < len(rest): outs.append(rest[k + 1][0])
+        elif t.startswith("--output="): outs.append(t.split("=", 1)[1])
+        elif t.startswith("-") and not t.startswith("--"):
+            for j in range(1, len(t)):                               # a cluster: letters up to the first value letter; `o` is the output option
+                if t[j] in CURL_VSHORT:
+                    if t[j] == "o":
+                        v = t[j + 1:] or (rest[k + 1][0] if k + 1 < len(rest) else "")
+                        if v: outs.append(v)
+                    break
+    d = vals.get("--output-dir")
+    if outs: return [norm(posixpath.join(d, o) if d and not o.startswith("/") else o) for o in outs]
+    if "O" in letters or "--remote-name" in longs or "--remote-name-all" in longs:
+        urls = [o for o in ops if "://" in o]
+        return [norm(url_base(u)) for u in urls] or [None]
+    return [norm(x) for x in tg] or [None]
+WGET_VSHORT = set("oaeitTwlBUQIXADRPOWY")
+def wget_targets(args):
+    """Files a wget command writes: -O/--output-document, else the URL's basename below -P/--directory-prefix; [None] = stdout / not decidable."""
+    tg, rest = redirects(args)
+    letters, longs, vals, ops = split_opts(rest, WGET_VSHORT, {"--output-document", "--directory-prefix"})
+    od = vals.get("-O", vals.get("--output-document"))
+    if od is not None: return [None] if od == "-" else [norm(od)]
+    pre = vals.get("-P", vals.get("--directory-prefix"))
+    urls = [o for o in ops if "://" in o]
+    if urls: return [norm(posixpath.join(pre, url_base(u)) if pre else url_base(u)) for u in urls]
+    return [norm(x) for x in tg] or [None]
+
+def dl_at(toks):
+    """Index of the downloader word when this simple command RUNS a download, else None. After the scanner's wrappers the command word is the
+    downloader; behind an unknown helper (chroot /r curl, flock f curl, eval curl) an unquoted downloader word after the command word counts too,
+    except behind a package manager or a command that only talks about commands (apt-get install curl, echo curl, which curl)."""
+    h = head_index(toks)
+    if h is None: return None
+    if any(os.path.basename(t) == "command" for t, q in toks[:h]) and any(t in ("-v", "-V") for t, q in toks[:h]): return None   # command -v curl
+    b = os.path.basename(toks[h][0])
+    if b in G["DL_WORDS"] or G["DL_VAR_RE"].match(toks[h][0]): k = h
+    elif b in EXEMPT or b in G["SHELLS"]: return None
+    else: k = next((i for i in range(h + 1, len(toks)) if not toks[i][1] and os.path.basename(toks[i][0]) in G["DL_WORDS"]), None)
+    if k is None: return None
+    a = [t for t, q in toks[k + 1:]]
+    return None if not a or set(a) <= {"--version", "-V", "--help", "-h"} else k          # a pure --version/--help call downloads nothing
+def targets_of(toks, k):
+    b = os.path.basename(toks[k][0])
+    args = toks[k + 1:]
+    if b == "wget": return wget_targets(args)
+    if b == "curl": return curl_targets(args)
+    return [None]                                                        # fetch, a downloader variable: the file cannot be named from the text
+HEX64 = re.compile(r"^[0-9A-Fa-f]{64}$")
+def check_pairs(toks, prev):
+    """(hash, file) pairs a SHA-256 check verifies when it can be bound to the data it reads: `echo|printf "<hash>  <file>" | sha256sum -c -` (the previous
+    stage of the same pipeline) or a here-string; [] = a SHA-256 check whose data names no file; None = not a SHA-256 check."""
+    h = head_index(toks)
+    if h is None: return None
+    b = os.path.basename(toks[h][0])
+    args = toks[h + 1:]
+    if b == "sha256sum":
+        letters, longs, vals, ops = split_opts(args, set(), set())
+        if "c" not in letters and "--check" not in longs: return None     # MUT-ANCHOR c4-sha256sum-check
+    elif b == "shasum":
+        letters, longs, vals, ops = split_opts(args, set("a"), {"--algorithm"})
+        if vals.get("-a", vals.get("--algorithm")) != "256": return None
+        if "c" not in letters and "--check" not in longs: return None
+    else:
+        return None
+    texts = [t for t, q in args]
+    if "<<<" in texts and texts.index("<<<") + 1 < len(texts): words = texts[texts.index("<<<") + 1].split()
+    elif prev is not None:
+        ph = head_index(prev)
+        if ph is None or os.path.basename(prev[ph][0]) not in ("echo", "printf"): return []
+        words = " ".join(t for t, q in prev[ph + 1:]).split()
+    else: return []
+    return [(w, words[i + 1].lstrip("*")) for i, w in enumerate(words[:-1]) if HEX64.match(w) or w.startswith("$")]
+
+def swallows(rhs):
+    """True when the right-hand side of an `||` only ever succeeds (true, :, echo, printf, sleep, exit 0): the failure of the left side is dropped."""
+    if not rhs: return False
+    for toks in rhs:
+        i = head_index(toks)
         if i is None: return False
-        a = toks[i + 1:]
-        if b in ("true", ":", "echo", "printf"): continue
+        b = os.path.basename(toks[i][0])
+        a = [t for t, q in toks[i + 1:]]
+        if b in ("true", ":", "echo", "printf", "sleep"): continue
         if b == "exit" and a == ["0"]: continue
         return False
     return True
-def run_violations(body):
-    """(download_without_check, swallowed_failure) of one RUN body. A download must be followed, LATER in the same RUN, by its own SHA-256
-    check (each check consumes one earlier download); a failure is swallowed by `|| <command that only succeeds>`, a `{ }`/`( )` group of
-    such commands, or `set +e`."""
-    pending, swallow = 0, False
-    cmds = run_commands(body)
-    for n, (sep, toks) in enumerate(cmds):
-        if is_download(toks): pending += 1
-        elif is_check(toks) and pending > 0: pending -= 1
-        i, b = head_of(toks)
-        if b == "set" and "+e" in toks[i + 1:]: swallow = True
-        if sep == "||":                                   # the right-hand side, extended by the `&&` commands chained to it (`|| echo x && exit 1` fails)
-            rhs, k = [toks], n + 1
-            while k < len(cmds) and cmds[k][0] == "&&": rhs.append(cmds[k][1]); k += 1
-            if swallows(rhs): swallow = True
-    return pending > 0, swallow or group_rhs_swallows(body)
-def group_rhs_swallows(body):
-    """Right-hand sides of `||` that are groups ({ a; b; } or ( a; b )): scanned on the token stream, because the group spans several commands."""
-    lex = shlex.shlex(body, posix=True, punctuation_chars=True); lex.whitespace_split = True
-    toks = list(lex)
-    res = False
-    for i, t in enumerate(toks):
-        if t == "||" and i + 1 < len(toks) and toks[i + 1] in ("{", "("):
-            close = "}" if toks[i + 1] == "{" else ")"
-            j, depth, grp = i + 2, 1, []
-            while j < len(toks) and depth:
-                if toks[j] in ("{", "("): depth += 1
-                elif toks[j] in ("}", ")"):
+SEPTOK = re.compile(r"\|\||&&|\|&|\||;;|;|&|\(|\)")
+def swallowed_failure(cmds):
+    """errexit switched off (`set +e`, `set +ex`, `set +o errexit`), or the right-hand side of an `||` (the commands chained to it with `&&`, a { } or ( ) group
+    of them) only ever succeeds."""
+    for sep, toks in cmds:
+        h = head_index(toks)
+        if h is not None and os.path.basename(toks[h][0]) == "set":
+            a = [t for t, q in toks[h + 1:]]
+            if any(re.fullmatch(r"\+[A-Za-z]*e[A-Za-z]*", x) for x in a) or any(x == "+o" and k + 1 < len(a) and a[k + 1] == "errexit" for k, x in enumerate(a)):
+                return True                                          # MUT-ANCHOR c7-set-plus-e
+    ev = []
+    for sep, toks in cmds:
+        ev += [("s", x) for x in SEPTOK.findall(sep)]
+        ev.append(("c", toks))
+    for i, (kind, val) in enumerate(ev):
+        if (kind, val) != ("s", "||"): continue
+        j, depth, rhs = i + 1, 0, []
+        while j < len(ev):
+            k2, v2 = ev[j]
+            if k2 == "s":
+                if v2 == "(": depth += 1
+                elif v2 == ")":
+                    if depth == 0: break
                     depth -= 1
-                    if not depth: break
-                grp.append(toks[j]); j += 1
-            sub, cur = [], []
-            for g in grp:
-                if g in SEPS:
-                    if cur: sub.append(cur)
-                    cur = []
-                else: cur.append(g)
-            if cur: sub.append(cur)
-            if swallows(sub): res = True
-    return res
+                elif depth == 0 and v2 in ("||", ";", ";;", "|", "|&", "&"): break
+            else:
+                if len(v2) == 1 and not v2[0][1] and v2[0][0] == "}":
+                    if depth == 0: break
+                    depth -= 1
+                else:
+                    if not v2[0][1] and v2[0][0] == "{": depth += 1
+                    rhs.append(v2)
+            j += 1
+        if swallows(rhs): return True                                # MUT-ANCHOR c7-rhs
+    return False
+def run_violations(body):
+    """(download_without_check, swallowed_failure) of one RUN body. Every download is bound to the FILE it writes (-o, -O, a redirect, wget -O/-P, the URL's
+    basename) and must be followed, LATER in the same RUN, by a SHA-256 check of THAT file (`echo "<hash>  <file>" | sha256sum -c -`); a download whose file cannot
+    be named (stdout) and a check whose data cannot be read from the text (a checksum FILE) bind nothing. Raises ValueError on a shell text with an unterminated quote."""
+    lex = shlex.shlex(body, posix=True, punctuation_chars=True); lex.whitespace_split = True
+    list(lex)
+    cmds = flatten(body)
+    pending, unbound = [], False
+    for n, (sep, toks) in enumerate(cmds):
+        d = dl_at(toks)
+        if d is not None:
+            for t in targets_of(toks, d):
+                if t is None: unbound = True
+                else: pending.append(t)
+        prs = check_pairs(toks, cmds[n - 1][1] if n and sep in ("|", "|&") else None)
+        for hsh, f in (prs or []):
+            if norm(f) in pending: pending.remove(norm(f))           # MUT-ANCHOR c4-consume
+    return unbound or len(pending) > 0, swallowed_failure(cmds)
 
 for d in sorted(x for x in os.listdir(tree) if os.path.isdir(os.path.join(tree, x))):
     p = os.path.join(tree, d)
@@ -180,30 +329,36 @@ for d in sorted(x for x in os.listdir(tree) if os.path.isdir(os.path.join(tree, 
     else:                                 # a crash (3), a usage error (2), a missing script (127) or an inconsistent verdict is never "clean"
         v("C3-check_pins", d, "check_pins exited %d with %d VIOLATION lines (not a clean verdict)" % (r.returncode, len(vl)))   # MUT-ANCHOR c3-else
     shas = []
+    args = {}
+    for ln in logical(text):                                         # ARG / ENV values (a SHA-256 held in a variable is still a SHA-256 the lock must name)
+        am = re.match(r"^(?:ARG|ENV)\s+(\w+)[= ]\s*(\S+)", ln, re.I)
+        if am: args[am.group(1)] = am.group(2).strip("\"'")
     for ln in logical(text):                                         # C4, C7
         if re.match(r"^RUN\b", ln, re.I):
             body = re.sub(r"^RUN\s+(?:--\S+\s+)*", "", ln, flags=re.I)
-            if re.search(r"\b(?:curl|wget)\b|\|\||set\s+\+e", body):
+            if re.search(DLRE + r"|\$\{?(?:CURL|WGET|FETCH|DOWNLOADER?)\b|\|\||set\s+\+", body):
                 try:
                     dl_bad, swallowed = run_violations(body)       # MUT-ANCHOR c4-check
                 except ValueError:                                 # unparseable shell text that names curl/wget: refused, not guessed
                     dl_bad, swallowed = bool(re.search(r"\b(?:curl|wget)\b", body)), False
                 if dl_bad: v("C4-download-without-sha256", d, ln[:140])     # MUT-ANCHOR c4-count
                 if swallowed: v("C7-swallowed-failure", d, ln[:140])        # C7  MUT-ANCHOR c7-swallow
-            if re.search(r"\b(?:curl|wget)\b", body): shas += re.findall(r"\b([0-9a-f]{64})\b", ln)
+            if re.search(DLRE, body):
+                shas += re.findall(r"\b([0-9a-f]{64})\b", ln)
+                shas += [args[m] for m in re.findall(r"\$\{?(\w+)\}?", body) if m in args and re.fullmatch(r"[0-9a-f]{64}", args[m])]
         if re.match(r"^ADD\b", ln, re.I) and re.search(r"\bhttps?://", ln):
             ck = re.search(r"--checksum=sha256:([0-9a-f]{64})\b", ln)    # MUT-ANCHOR c4-add
             if not ck: v("C4-download-without-sha256", d, ln[:140])
             else: shas.append(ck.group(1))
     froms = []
-    args = {}
+    fargs = {}
     for ln in logical(text):
         am = re.match(r"^ARG\s+(\w+)=(\S+)", ln, re.I)
-        if am: args[am.group(1)] = am.group(2)
+        if am: fargs[am.group(1)] = am.group(2)
         fm = re.match(r"^FROM\s+(?:--\S+\s+)*(\S+)", ln, re.I)
         if fm:
             ref = fm.group(1)
-            ref = re.sub(r"^\$\{?(\w+)\}?$", lambda mm: args.get(mm.group(1), ref), ref)
+            ref = re.sub(r"^\$\{?(\w+)\}?$", lambda mm: fargs.get(mm.group(1), ref), ref)
             if DIGEST.search(ref): froms.append(ref)
     if not froms and not any(re.match(r"^FROM\s+\$", ln, re.I) for ln in logical(text)):
         v("C2-from", d, "no FROM line")
@@ -430,6 +585,107 @@ mkfix rc1; gooddir rc1 go; printf 'ADD --checksum=sha256:%s https://x.invalid/f 
 fxcheck rc1; expect_rule "RC1 the ADD --checksum value must be named in digests.lock" C5-digests.lock-sha256
 mkfix rc2; gooddir rc2 go; printf 'RUN echo hi\n' >"$T/fx-rc2/tree/go/Containerfile"; addlock rc2 IMG-GO docker.io/library/debian "sha256:$D64" compile
 fxcheck rc2; expect_rule "RC2 a Containerfile with no FROM line" C2-from
+
+# ---------------------------------------------------------------- WF16 round 4 (11.4.276 round after the structural round): C4/C7 on ONE shell grammar (the scanner's), downloads bound to files
+# cf_batch <label> <flag|clean> <rule> <RUN body>...: every body becomes its own RUN of one Containerfile; flag = every RUN gets its own <rule> line,
+# clean = the directory produces no line at all
+cf_batch() {
+  local lab="$1" mode="$2" rule="$3" b miss=""; shift 3; CFN=$((CFN+1)); local n="r4b$CFN"
+  mkfix "$n"; gooddir "$n" go; addlock "$n" IMG-GO docker.io/library/debian "sha256:$D64" compile
+  for b in "$@"; do printf 'RUN %s\n' "$b" >>"$T/fx-$n/tree/go/Containerfile"; done
+  fxcheck "$n"
+  if [ "$mode" = clean ]; then check "$lab ($# RUN lines, clean)" "$OUT" ""
+  else
+    for b in "$@"; do printf '%s\n' "$OUT" | grep -F "$rule go: RUN ${b:0:40}" >/dev/null || miss="$miss [${b:0:70}]"; done
+    check "$lab ($# RUN lines, every one gets its own $rule line; missing: none)" "$miss" ""
+    check "$lab: exactly $# $rule lines" "$(printf '%s\n' "$OUT" | grep -c "^$rule go:")" "$#"
+  fi
+}
+UNCH="curl -fsSL -o /tmp/g https://example.invalid/g"
+CKG="echo \"$SH64  /tmp/g\" | sha256sum -c -"
+GRAMDUMP="$(bash "$REPO/scripts/containers/check_pins.sh" --dump-grammar 2>/dev/null)"
+# class S: every wrapper word, and every value option of every wrapper, in both option spellings, in front of the download
+WL=(); WC=()
+while IFS=$'\t' read -r kind w opt; do
+  case "$kind" in
+    wrapper) case "$w" in '!'|'{'|then|do|else|elif|if|while|until|command) ;; *) WL+=("$w $UNCH && chmod +x /tmp/g"); WC+=("$w $UNCH && $CKG");; esac;;
+    wrapopt) case "$opt" in --*) WL+=("$w $opt=7 $UNCH && chmod +x /tmp/g"); WC+=("$w $opt=7 $UNCH && $CKG");; esac
+             WL+=("$w $opt 7 $UNCH && chmod +x /tmp/g"); WC+=("$w $opt 7 $UNCH && $CKG");;
+  esac
+done <<<"$GRAMDUMP"
+check "R4-S the wrapper batch was generated from the scanner's own grammar tables (needle: at least 40 forms)" "$([ "${#WL[@]}" -ge 40 ] && echo yes || echo no)" "yes"
+cf_batch "R4-S C4 every wrapper word and wrapper value option in front of an unchecked download" flag "$C4B" "${WL[@]}"
+cf_batch "R4-S C4 control: the same wrapper forms with their own check" clean "$C4B" "${WC[@]}"
+cf_batch "R4-S C4 stacked wrappers, assignments, absolute paths, sh -c / bash -c / eval strings, helpers that run the next word" flag "$C4B" \
+  "sudo -u root env FOO=1 timeout -s KILL 60 nice -n 5 $UNCH" "FOO=1 $UNCH" "/usr/bin/$UNCH" "busybox wget -qO /tmp/g https://example.invalid/g" \
+  "sh -c \"$UNCH\"" "bash -c '$UNCH && chmod +x /tmp/g'" "eval $UNCH" "chroot /r $UNCH" "flock /tmp/l $UNCH" "su -c \"$UNCH\" root" "ssh host $UNCH" \
+  "timeout 60 wget -qO /tmp/g https://example.invalid/g" "sudo -u root wget -qO /tmp/g https://example.invalid/g" "retry 3 $UNCH" \
+  "if true; then $UNCH; fi" "for i in 1; do $UNCH; done" "{ $UNCH; }" "( $UNCH )" "while true; do $UNCH && break; done"
+cf_batch "R4-S C4 control: package names, lookups and quoted prose are not downloads" clean "$C4B" \
+  "apt-get install -y --no-install-recommends curl wget ca-certificates" "apk add --no-cache curl wget" "dnf install -y curl" "pip install curl" \
+  "command -v curl >/dev/null && command -v wget >/dev/null" "which curl wget; type curl" "echo \"curl wget\"" "printf 'curl wget\\n'" \
+  "test -x /usr/bin/curl" "[ -x /usr/bin/curl ]" "curl --version && wget --help" "dpkg -s curl" "sh -c 'echo ok' curl" "bash ./install.sh wget -qO /tmp/x https://x.invalid/x" "bash -c 'echo hi' wget -qO /tmp/x https://x.invalid/x"
+cf_batch "R4-S C4 the exec form of RUN (a JSON array) is a command, and its sh -c string is parsed" flag "$C4B" \
+  '["curl","-fsSL","-o","/tmp/g","https://x.invalid/g"]' '["wget","-qO","/tmp/g","https://x.invalid/g"]' '["sh","-c","curl -fsSL -o /tmp/g https://x.invalid/g && chmod +x /tmp/g"]'
+cf_batch "R4-S C4 control: an exec-form RUN whose sh -c string checks the download" clean "$C4B" \
+  "[\"sh\",\"-c\",\"curl -fsSL -o /tmp/g https://x.invalid/g && echo '$SH64  /tmp/g' | sha256sum -c -\"]" '["apt-get","install","-y","curl"]'
+# C4 binds a check to the FILE it verifies (I3): a check of another file, a repeated check, a stdout download, an undecidable check, a different algorithm
+cf_batch "R4-C4 a check of a DIFFERENT file does not check the download" flag "$C4B" \
+  "$UNCH && echo \"$SH64  /etc/hostname\" | sha256sum -c -" \
+  "curl -fsSL -o /tmp/a https://a.invalid/a && curl -fsSL -o /tmp/b https://b.invalid/b && echo \"$SH64  /tmp/a\" | sha256sum -c - && echo \"$SH64  /tmp/a\" | sha256sum -c -" \
+  "curl -fsSL -o /tmp/a https://a.invalid/a && echo \"$SH64  /tmp/b\" | sha256sum -c - && echo \"$SH64  /tmp/a\" && sha256sum /tmp/a" \
+  "curl -fsSL https://x.invalid/g > /tmp/h && $CKG" \
+  "curl -fsSL -O https://x.invalid/pkg.tgz && echo \"$SH64  other.tgz\" | sha256sum -c -" \
+  "wget -qO- https://x.invalid/g | tar x && $CKG" "curl -fsSL https://x.invalid/g | tar x && $CKG" "wget https://x.invalid/pkg.tgz && echo \"$SH64  /tmp/g\" | sha256sum -c -" \
+  "$UNCH && sha256sum -c /tmp/g.sha256" "$UNCH && sha256sum -c sums.txt" "$UNCH && sha256sum --check --strict sums.txt" \
+  "$UNCH && echo \"$SH64  /tmp/g\" | shasum -a 512 -c -" "$UNCH && echo \"$SH64  /tmp/g\" | sha512sum -c -" "$UNCH && echo \"$SH64  /tmp/g\" | shasum -a 256 -" \
+  "$UNCH && echo \"$SH64  /tmp/g\" | sha256sum" "$UNCH && echo \"$SH64  /tmp/g\" | md5sum -c -" \
+  "curl -fsSL -o /tmp/a https://a.invalid/a && curl -fsSL -o /tmp/b https://b.invalid/b && echo \"$SH64  /tmp/b\" | sha256sum -c -" \
+  "$UNCH && echo \"$SH64  /tmp/g\" && sha256sum -c -" "$UNCH && echo \"$SH64  /tmp/g\"; sha256sum -c -"
+cf_batch "R4-C4 control: every check form that names its downloaded file" clean "$C4B" \
+  "$UNCH && $CKG" "$UNCH && printf '%s  %s\\n' $SH64 /tmp/g | sha256sum -c -" "$UNCH && sha256sum -c <<< \"$SH64  /tmp/g\"" \
+  "$UNCH && echo \"$SH64  /tmp/g\" | sha256sum --check -" "$UNCH && echo \"$SH64  /tmp/g\" | sha256sum -bc -" "$UNCH && echo \"$SH64  /tmp/g\" | sha256sum -c --strict -" \
+  "$UNCH && echo \"$SH64  /tmp/g\" | shasum -a 256 -c -" "$UNCH && echo \"$SH64  /tmp/g\" | shasum -a256 -c -" "$UNCH && echo \"$SH64  /tmp/g\" | shasum --algorithm 256 --check -" \
+  "$UNCH && echo \"$SH64  /tmp/g\" | shasum --algorithm=256 -c -" "$UNCH && echo \"$SH64  /tmp/g\" | shasum -ca 256 -" "$UNCH && echo \"$SH64 */tmp/g\" | sha256sum -c -" \
+  "curl --output /tmp/g https://x.invalid/g && $CKG" "curl --output=/tmp/g https://x.invalid/g && $CKG" "curl -o/tmp/g https://x.invalid/g && $CKG" \
+  "curl -fsSLo /tmp/g https://x.invalid/g && $CKG" "curl -fsSLo/tmp/g https://x.invalid/g && $CKG" "curl -fsSL https://x.invalid/g -o /tmp/g && $CKG" \
+  "curl -fsSL --output-dir /tmp -o g https://x.invalid/g && $CKG" "curl -fsSL https://x.invalid/g > /tmp/g && $CKG" "curl -fsSL https://x.invalid/g >/tmp/g && $CKG" \
+  "curl -fsSL -O https://x.invalid/pkg.tgz && echo \"$SH64  pkg.tgz\" | sha256sum -c -" "curl -fsSL --remote-name https://x.invalid/pkg.tgz && echo \"$SH64  pkg.tgz\" | sha256sum -c -" \
+  "wget -qO /tmp/g https://x.invalid/g && $CKG" "wget -O /tmp/g https://x.invalid/g && $CKG" "wget -O/tmp/g https://x.invalid/g && $CKG" "wget --output-document=/tmp/g https://x.invalid/g && $CKG" \
+  "wget --output-document /tmp/g https://x.invalid/g && $CKG" "wget -P /tmp https://x.invalid/g && $CKG" "wget --directory-prefix=/tmp https://x.invalid/g && $CKG" \
+  "wget https://x.invalid/pkg.tgz && echo \"$SH64  pkg.tgz\" | sha256sum -c -" "curl -o \"\$F\" https://x.invalid/g && echo \"$SH64  \$F\" | sha256sum -c -" \
+  "cd /tmp && curl -fsSL -o g https://x.invalid/g && echo \"$SH64  g\" | sha256sum -c -" "curl -fsSL -o /tmp/./g https://x.invalid/g && $CKG" \
+  "sh -c \"curl -fsSL -o /tmp/g https://x.invalid/g && echo '$SH64  /tmp/g' | sha256sum -c -\"" "timeout 60 curl -fsSL -o /tmp/g https://x.invalid/g && $CKG" \
+  "$UNCH && chmod +x /tmp/g && $CKG" "curl -fsSL -o /tmp/a https://a.invalid/a && curl -fsSL -o /tmp/b https://b.invalid/b && echo \"$SH64  /tmp/a\" | sha256sum -c - && echo \"$SH64  /tmp/b\" | sha256sum -c -"
+# the Dockerfile grammar: a comment line INSIDE a backslash continuation is removed and does not end the instruction (I2)
+cf_case "R4-C4 a comment line inside a continuation does not hide the download that follows it" $'RUN apt-get update \\\n    # fetch the tool\n    && curl -fsSL -o /tmp/g https://x.invalid/g && chmod +x /tmp/g' "$C4B"
+cf_case "R4-C4 control: a comment line between the download and its check" "RUN curl -fsSL -o /tmp/g https://x.invalid/g \\
+    # verify the download
+    && echo \"$SH64  /tmp/g\" | sha256sum -c -" clean
+cf_case "R4-C4 control: a blank line between the download and its check does not end the instruction" $'RUN curl -fsSL -o /tmp/g https://x.invalid/g \\\n\n    && echo "'"$SH64"'  /tmp/g" | sha256sum -c -' clean
+cf_case "R4-C4 a blank line inside a continuation does not end the instruction" $'RUN curl -fsSL -o /tmp/g \\\n\n    https://x.invalid/g && chmod +x /tmp/g' "$C4B"
+# a digest held in an ARG: the check is bound to the lock like a literal one (m6)
+E64="$(printf 'e%.0s' $(seq 64))"
+mkfix argsha; gooddir argsha go; addlock argsha IMG-GO docker.io/library/debian "sha256:$D64" compile
+printf 'ARG GSHA=%s\nRUN curl -fsSL -o /tmp/h https://x.invalid/h && echo "${GSHA}  /tmp/h" | sha256sum -c -\n' "$E64" >>"$T/fx-argsha/tree/go/Containerfile"
+fxcheck argsha; expect_rule "R4-C5 a SHA-256 held in an ARG and used by the check must be named in digests.lock" C5-digests.lock-sha256
+printf 'sha %s\n' "$E64" >>"$T/fx-argsha/tree/go/digests.lock"
+fxcheck argsha; check "R4-C5 control: the ARG digest named in digests.lock" "$OUT" ""
+# RVC4: FROM ${BASE} resolved through its ARG default reaches the lock comparison
+mkfix fromarg; gooddir fromarg go; addlock fromarg IMG-GO docker.io/library/debian "sha256:$D64" compile
+printf 'ARG BASE=docker.io/library/debian@sha256:%s\nFROM ${BASE}\nRUN echo hi\n' "$D64B" >"$T/fx-fromarg/tree/go/Containerfile"
+fxcheck fromarg; expect_rule "R4-C5 FROM \${ARG} is resolved through the ARG default and its digest is looked up in digests.lock" C5-digests.lock-from
+# C7: the errexit-off spellings and more only-succeeds commands
+cf_batch "R4-C7 errexit switched off or a failure dropped by a command that only succeeds" flag "$C7B" \
+  "set +e; rm -f /tmp/x" "set +ex; rm -f /tmp/x" "set +o errexit; rm -f /tmp/x" "set +eu; rm -f /tmp/x" "rm -f /tmp/x || sleep 0" "rm -f /tmp/x || true" "rm -f /tmp/x || :" \
+  "sh -c 'rm -f /tmp/x || true'" "sudo sh -c 'rm -f /tmp/x || :'" "timeout 5 rm -f /tmp/x || true" "rm -f /tmp/x || exit 0" "rm -f /tmp/x || { echo x; exit 0; }"
+cf_batch "R4-C7 control: errexit kept, explicit handlers" clean "$C7B" \
+  "set -e; rm -f /tmp/x" "set -o errexit; rm -f /tmp/x" "set +x; rm -f /tmp/x" "set +o xtrace; rm -f /tmp/x" "set -eu; rm -f /tmp/x" "rm -f /tmp/x || exit 1" "rm -f /tmp/x || false" \
+  "sh -c 'rm -f /tmp/x || exit 1'" "rm -f /tmp/x || { echo fail >&2; exit 1; }"
+# an unparseable RUN that names a download is still refused
+cf_case "R4-C4 control: a RUN that names a download and has an unterminated quote is refused" "RUN curl -fsSL -o /tmp/g 'https://x.invalid/g" "$C4B"
+# RVC1-RVC3: sudo / bundled -bc / assignment prefix, each with its own distinguishing line
+cf_batch "R4-RVC1/RVC3 sudo and an assignment prefix are not the command word" flag "$C4B" "sudo $UNCH" "FOO=1 $UNCH" "FOO=1 BAR=2 sudo -u root $UNCH"
 
 # ---------------------------------------------------------------- paired mutations of this file
 if [ -z "${CF_TEST_MUTANT:-}" ] && [ -z "${CF_TEST_NO_MUTATIONS:-}" ]; then

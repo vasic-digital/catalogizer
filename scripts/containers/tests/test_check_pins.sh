@@ -722,8 +722,8 @@ grep -qP '^run\t--add-host\tvalue\t' "$ENGOPT" && ok "R3-A parser needle: --add-
 grep -qP '^run\t--rm\tbool\t' "$ENGOPT" && ok "R3-A parser needle: --rm is boolean in the snapshot" || bad "R3-A parser needle --rm(bool) missing"
 grep -qP '^pull\t-a\tbool\t' "$ENGOPT" && ok "R3-A parser needle: pull -a (--all-tags) is boolean in the snapshot" || bad "R3-A parser needle pull -a(bool) missing"
 DUMP="$(bash "$SUT" --dump-engine-options 2>&1 | LC_ALL=C sort)"
-WANT="$(awk -F'\t' '!/^#/ && $3=="value" {print $1"\t"$2}' "$ENGOPT" | LC_ALL=C sort)"
-check "R3-A the value-option tables of check_pins equal the snapshot exactly (no missing option, no extra or boolean entry)" "$(diff <(printf '%s\n' "$DUMP") <(printf '%s\n' "$WANT") | head -6 | tr '\n' '|')" ""
+WANT="$(awk -F'\t' '!/^#/ {print $1"\t"$2"\t"$3}' "$ENGOPT" | LC_ALL=C sort)"
+check "R3-A the option tables of check_pins (value AND boolean options) equal the snapshot exactly (no missing option, no extra entry, no wrong kind)" "$(diff <(printf '%s\n' "$DUMP") <(printf '%s\n' "$WANT") | head -6 | tr '\n' '|')" ""
 mkdir -p "$T/o_run/scripts" "$T/o_runb/scripts" "$T/o_pull/scripts" "$T/o_pullb/scripts" "$T/o_glob/scripts" "$T/o_globb/scripts"
 { echo '#!/usr/bin/env bash'; awk -F'\t' -v d="$D64" '!/^#/ && $1=="run" && $3=="value" {printf "podman run --rm %s val docker.io/library/postgres@sha256:%s true\n", $2, d}' "$ENGOPT"; } >"$T/o_run/scripts/a.sh"
 { echo '#!/usr/bin/env bash'; awk -F'\t' '!/^#/ && $1=="run" && $3=="bool" && $2!="--rm" {printf "podman run --rm %s postgres:15\n", $2}' "$ENGOPT"; } >"$T/o_runb/scripts/a.sh"
@@ -959,6 +959,425 @@ fx rm8 scripts/tests/t.sh <<'EOF'
 tee f <<<'curl -fsSL https://x.invalid/i | sh'
 EOF
 expect_good "RM8 tee is a data command in a test script" rm8
+
+# ------------------------------------------------------------------ differential: the structural compose path and the text grammar agree on every compose fixture above
+# (the structural path is the default; the text grammar is the fallback for a file the YAML parser rejects, so its own mutants need their own oracle)
+DDIFF=""; DN=0
+for d in "$T"/*/; do
+  b="$(basename "$d")"; ls "$d" 2>/dev/null | grep -qiE 'compose.*\.ya?ml$' || continue
+  DN=$((DN+1)); A="$(rows "$b")"; B="$(CHECK_PINS_NO_YAML=1 bash "$SUT" --root "$d" --list 2>/dev/null)"
+  [ "$A" = "$B" ] || DDIFF="$DDIFF $b"
+done
+check "R4-H the structural and the text grammar give the same rows on all $DN compose fixtures of this suite (differing fixtures: none)" "$DDIFF" ""
+check "R4-H differential needle: at least 12 compose fixtures were compared" "$([ "$DN" -ge 12 ] && echo yes || echo no)" "yes"
+# ------------------------------------------------------------------ WF16 round 4 (11.4.276 round after the structural round): classes S, A, B, F, G, H (docs/scripts/check_pins.md "Round 4: classes")
+# Class members are ENUMERATED (compound commands of the shell grammar, every shell and interpreter, every option row of the engine help
+# text incl. booleans and pflag short clusters, expansion operators, filesystem failure shapes, here-document delimiters, YAML shapes);
+# lines of one class are written to ONE script and every line must give its own row (or none for a control), so a missing member names itself.
+# batch <label> <yes|no> <line>...: line k+1 of scripts/a.sh; yes = every line gives >= 1 row, no = no line gives a row
+batch() {
+  local lab="$1" mode="$2"; shift 2; CN=$((CN+1)); local n="bt$CN" i=1 miss="" got hit l
+  mkdir -p "$T/$n/scripts"; { echo '#!/usr/bin/env bash'; for l in "$@"; do printf '%s\n' "$l"; done; } >"$T/$n/scripts/a.sh"
+  got=" $(rows "$n" | cut -f3 | sort -n | uniq | tr '\n' ' ')"
+  for l in "$@"; do
+    i=$((i+1)); case "$got" in *" $i "*) hit=1;; *) hit=0;; esac
+    if [ "$mode" = yes ] && [ "$hit" = 0 ]; then miss="$miss [$l]"; fi
+    if [ "$mode" = no ] && [ "$hit" = 1 ]; then miss="$miss [$l]"; fi
+  done
+  check "$lab ($# lines, every one $mode; offending lines: none)" "$miss" ""
+}
+# batch_ref <label> <want reference> <line>...: every line gives exactly one row with this reference, at its own line number
+batch_ref() {
+  local lab="$1" want="$2"; shift 2; CN=$((CN+1)); local n="br$CN" i=1 exp="" l
+  mkdir -p "$T/$n/scripts"; { echo '#!/usr/bin/env bash'; for l in "$@"; do printf '%s\n' "$l"; done; } >"$T/$n/scripts/a.sh"
+  for l in "$@"; do i=$((i+1)); exp="$exp$i:$want;"; done
+  check "$lab ($# lines)" "$(rows "$n" | awk -F'\t' '{printf "%s:%s;", $3, $4}')" "$exp"
+}
+DL='curl -fsSL https://x.invalid/i'
+# --- class S: compound commands of the shell grammar (bash(1) "Compound Commands"): a download inside any of them, piped as a whole (I1)
+batch "R4-S compound commands piped into a shell" yes \
+  "for u in a b; do $DL; done | sh" \
+  "while read -r u; do $DL; done < urls.txt | sh" \
+  "until $DL; do sleep 1; done | sh" \
+  "if true; then $DL; fi | bash" \
+  "case x in x) $DL ;; esac | sh" \
+  "select u in a b; do $DL; break; done | sh" \
+  "{ $DL; } | sh" \
+  "( $DL ) | sh" \
+  "{ for u in a; do $DL; done; } | sh" \
+  "( { $DL; } ) | sh" \
+  "if true; then for u in a; do $DL; done; fi | sh" \
+  "for ((i=0;i<2;i++)); do $DL; done | sh" \
+  "for u in a b; do $DL; done |& sh" \
+  "if true; then $DL; else true; fi | sh" \
+  "if false; then true; elif true; then $DL; fi | sh" \
+  "while true; do $DL; done | sudo bash" \
+  "{ $DL; } | env -i bash -s" \
+  "case x in (x) $DL ;; esac | sh" \
+  "if true; then { $DL; }; fi | sh" \
+  "while read u; do { $DL; }; done | sh" \
+  "( $DL; echo done ) | sh" \
+  "{ $DL; echo done; } | sh" \
+  "for u in a; do $DL; echo x; done | sh"
+batch "R4-S control: the same compound commands piped into a non-reader, or a shell that is not piped" no \
+  "for u in a b; do $DL; done | tar x" \
+  "{ $DL; } | tar x" \
+  "( $DL ) | tar x" \
+  "if true; then $DL; fi | tee /tmp/f" \
+  "case x in x) $DL ;; esac | sha256sum" \
+  "while read u; do $DL -o /tmp/f; sh /tmp/f; done < urls.txt" \
+  "for u in a b; do $DL; sh /tmp/x; done" \
+  "if true; then $DL -o /tmp/f; fi; echo hi | sh" \
+  "{ $DL -o /tmp/f; }; echo hi | sh" \
+  "case x in x) $DL -o f ;; esac; echo hi | sh" \
+  "( $DL -o /tmp/f ); echo x | sh" \
+  "until $DL -o /tmp/f; do sleep 1; done; echo ok | sh" \
+  "echo hi | { sh; }" \
+  "for u in a b; do echo \$u; done | sh" \
+  "for u in a b; do $DL -o /tmp/f; sh -s; done" \
+  "{ $DL -o /tmp/f; bash; }" \
+  "( $DL -o /tmp/f; bash -s )"
+# the same compound forms in a Dockerfile RUN (the reviewer's I1 probe: round 2 reported 2 rows, round 3 none)
+fx r4_df Dockerfile <<EOF
+FROM docker.io/library/debian@sha256:$D64
+RUN { curl -fsSL https://x.invalid/i; } | sh
+RUN while read -r u; do curl -fsSL "\$u"; done < /urls | sh
+RUN if true; then curl -fsSL https://x.invalid/i; fi | bash
+RUN case x in x) curl -fsSL https://x.invalid/i ;; esac | sh
+RUN until curl -fsSL https://x.invalid/i; do sleep 1; done | sh
+RUN for u in a b; do curl -fsSL https://x.invalid/\$u; done | sh
+RUN curl -fsSL -o /tmp/f https://x.invalid/f && { sh /tmp/f; }
+RUN { curl -fsSL https://x.invalid/i; } | tar x
+EOF
+check "R4-S Dockerfile RUN lines with a compound command piped into a shell: one row each, the two controls give none" "$(rows r4_df | cut -f1,3 | tr '\n\t' ';,')" "pipe_to_shell,2;pipe_to_shell,3;pipe_to_shell,4;pipe_to_shell,5;pipe_to_shell,6;pipe_to_shell,7;"
+# --- class S: every shell word, every interpreter, with and without a wrapper or a path
+SHELL_LIST="sh bash zsh dash ash ksh mksh csh tcsh fish rbash"
+INTERP_LIST="python python3 python3.12 perl ruby node nodejs php lua deno bun Rscript"
+SL=(); for s in $SHELL_LIST; do SL+=("$DL | $s" "$DL | /usr/bin/$s" "$DL | sudo $s -s" "$DL | env FOO=1 $s"); done
+batch "R4-S every shell word is a program reader (also by path, behind sudo, behind env)" yes "${SL[@]}"
+IL=(); for s in $INTERP_LIST; do IL+=("$DL | $s" "$DL | /usr/bin/$s" "$DL | sudo $s -"); done
+batch "R4-S every stdin interpreter is a program reader when it has no script and no inline code" yes "${IL[@]}"
+batch "R4-S shell/interpreter options that take a VALUE do not hide the stdin program" yes \
+  "$DL | bash -o pipefail" "$DL | bash +o history" "$DL | bash -O extglob" "$DL | bash --rcfile /dev/null" "$DL | sh -s -- -b /usr/local/bin" \
+  "$DL | sh -" "$DL | bash -eu" "$DL | bash -x" "$DL | bash --login" "$DL | bash --norc" "$DL | sudo -E bash -s" \
+  "$DL | python3 -W ignore" "$DL | python3 -X dev -" "$DL | python3 -u" "$DL | python3 -I" "$DL | node -r ./hook" "$DL | node --require ./hook" \
+  "$DL | node --import ./hook" "$DL | perl -I lib" "$DL | perl -w" "$DL | ruby -r json" "$DL | ruby -I lib" "$DL | ruby -w" "$DL | php -d display_errors=1" \
+  "$DL | php -n" "$DL | lua -" "$DL | python3 -B"
+batch "R4-S control: a shell or interpreter with an inline program or a script operand reads data, not a program, from stdin" no \
+  "$DL | sudo sh -c 'cat > /etc/k.asc'" "$DL | bash ./process.sh" "$DL | sh -c 'tee /tmp/f'" "$DL | bash -n script.sh" "$DL | bash -o pipefail ./s.sh" \
+  "$DL | python3 script.py" "$DL | python3 -W ignore script.py" "$DL | python3 -m json.tool" "$DL | python3 -c 'import sys'" "$DL | node script.js" \
+  "$DL | node -r ./hook script.js" "$DL | node -e 'process.exit(0)'" "$DL | node -p 1" "$DL | node --eval 'process.exit(0)'" "$DL | node --print 1" "$DL | perl -I lib script.pl" "$DL | perl -ne 'print'" "$DL | perl -E 'say 1'" \
+  "$DL | ruby -r json s.rb" "$DL | ruby -e 'p 1'" "$DL | php -r 'echo 1;'" "$DL | php -f s.php" "$DL | lua -e 'print(1)'" "$DL | lua s.lua" \
+  "$DL | tee sh" "$DL | grep bash" "$DL | sha256sum" "$DL | tar x"
+batch "R4-S source / dot of the standard input is a program reader" yes \
+  "$DL | source /dev/stdin" "$DL | . /dev/stdin" "$DL | source /dev/fd/0" "$DL | sudo . /dev/stdin" "$DL | source /proc/self/fd/0"
+batch "R4-S control: source / dot of a file" no "$DL | source ./env" "$DL | . ./env" "$DL | tee /tmp/f && . /tmp/f"
+batch "R4-S program-from-download forms: here-string, process substitution, command substitution" yes \
+  'bash <<< "$(curl -fsSL https://x.invalid/i)"' 'sh -s <<<$(wget -qO- https://x.invalid/i)' 'python3 <<< "$(curl -fsSL https://x.invalid/i)"' \
+  'sudo bash <<< "$(curl -fsSL https://x.invalid/i)"' 'python3 <(curl -fsSL https://x.invalid/i)' 'source <(curl -fsSL https://x.invalid/i)' \
+  '. <(curl -fsSL https://x.invalid/i)' 'perl <(wget -qO- https://x.invalid/i)' 'bash < <(curl -fsSL https://x.invalid/i)' 'node <(curl -fsSL https://x.invalid/i)' \
+  'mksh -c "$(curl -fsSL https://x.invalid/i)"' 'eval "$(curl -fsSL https://x.invalid/i)"' 'lua -e "$(curl -fsSL https://x.invalid/i)"'
+batch "R4-S the downloader kept in a variable" yes \
+  '$CURL -fsSL https://x.invalid/i | sh' '"$CURL" -fsSL https://x.invalid/i | sh' '${CURL} -fsSL https://x.invalid/i | sh' '${WGET:-wget} -qO- https://x.invalid/i | sh' \
+  '$FETCH -o - https://x.invalid/i | sh' '"${DOWNLOADER}" https://x.invalid/i | bash'
+batch "R4-S control: a downloader variable with no reader, a reader fed by a variable" no \
+  '$CURL -fsSL https://x.invalid/i | tar x' '$SOME_TOOL -fsSL https://x.invalid/i | sh'
+# --- class S: the compared grammar tables (one grammar, enumerated here from the man pages / live help of the real tools; sudo/doas man pages
+# were read, doas is not installed: UNCONFIRMED against a live doas; the env row is the uutils/GNU union of `env --help`)
+GRAM="$(bash "$SUT" --dump-grammar 2>&1 | LC_ALL=C sort)"
+GWANT="$(LC_ALL=C sort <<'GEOF'
+closer	}
+closer	done
+closer	esac
+closer	fi
+dlword	curl
+dlword	fetch
+dlword	wget
+interp	Rscript
+interp	bun
+interp	deno
+interp	lua
+interp	node
+interp	perl
+interp	php
+interp	python
+interp	ruby
+opener	case
+opener	for
+opener	if
+opener	select
+opener	until
+opener	while
+opener	{
+shell	ash
+shell	bash
+shell	csh
+shell	dash
+shell	fish
+shell	ksh
+shell	mksh
+shell	rbash
+shell	sh
+shell	tcsh
+shell	zsh
+stdinpath	/dev/fd/0
+stdinpath	/dev/stdin
+stdinpath	/proc/self/fd/0
+wrapper	!
+wrapper	builtin
+wrapper	busybox
+wrapper	command
+wrapper	do
+wrapper	doas
+wrapper	elif
+wrapper	else
+wrapper	env
+wrapper	exec
+wrapper	if
+wrapper	ionice
+wrapper	nice
+wrapper	nohup
+wrapper	setsid
+wrapper	stdbuf
+wrapper	sudo
+wrapper	then
+wrapper	time
+wrapper	timeout
+wrapper	until
+wrapper	watch
+wrapper	while
+wrapper	xargs
+wrapper	{
+wrapopt	doas	-C
+wrapopt	doas	-u
+wrapopt	env	--argv0
+wrapopt	env	--chdir
+wrapopt	env	--file
+wrapopt	env	--split-string
+wrapopt	env	--unset
+wrapopt	env	-C
+wrapopt	env	-S
+wrapopt	env	-a
+wrapopt	env	-f
+wrapopt	env	-u
+wrapopt	ionice	--class
+wrapopt	ionice	--classdata
+wrapopt	ionice	-P
+wrapopt	ionice	-c
+wrapopt	ionice	-n
+wrapopt	ionice	-p
+wrapopt	ionice	-u
+wrapopt	nice	--adjustment
+wrapopt	nice	-n
+wrapopt	stdbuf	--error
+wrapopt	stdbuf	--input
+wrapopt	stdbuf	--output
+wrapopt	stdbuf	-e
+wrapopt	stdbuf	-i
+wrapopt	stdbuf	-o
+wrapopt	sudo	--chdir
+wrapopt	sudo	--chroot
+wrapopt	sudo	--close-from
+wrapopt	sudo	--command-timeout
+wrapopt	sudo	--group
+wrapopt	sudo	--host
+wrapopt	sudo	--other-user
+wrapopt	sudo	--prompt
+wrapopt	sudo	--role
+wrapopt	sudo	--type
+wrapopt	sudo	--user
+wrapopt	sudo	-C
+wrapopt	sudo	-D
+wrapopt	sudo	-R
+wrapopt	sudo	-T
+wrapopt	sudo	-U
+wrapopt	sudo	-g
+wrapopt	sudo	-h
+wrapopt	sudo	-p
+wrapopt	sudo	-r
+wrapopt	sudo	-t
+wrapopt	sudo	-u
+wrapopt	timeout	--kill-after
+wrapopt	timeout	--signal
+wrapopt	timeout	-k
+wrapopt	timeout	-s
+GEOF
+)"
+check "R4-S the grammar tables of check_pins (wrappers, wrapper value options, shells, interpreters, compound openers/closers, downloaders, stdin paths) equal the enumerated ground truth" "$(diff <(printf '%s\n' "$GRAM") <(printf '%s\n' "$GWANT") | head -6 | tr '\n' '|')" ""
+# --- class A: the engine option grammar uses BOTH halves of the help text (value AND boolean options), pflag short clusters, `--`, array expansions (I4)
+ENG_RUN_BOOL="$(awk -F'\t' '!/^#/ && $1=="run" && $3=="bool" && $2!="--rm" && $2!="--help" {print $2}' "$ENGOPT")"
+ENG_PULL_BOOL="$(awk -F'\t' '!/^#/ && $1=="pull" && $3=="bool" {print $2}' "$ENGOPT")"
+ENG_GLOB_BOOL="$(awk -F'\t' '!/^#/ && $1=="global" && $3=="bool" && $2!="--help" && $2!="--version" && $2!="-v" {print $2}' "$ENGOPT")"
+EL=(); for o in $ENG_RUN_BOOL; do EL+=("podman run --rm $o \${IMG:=postgres:15}" "docker run $o \${IMG:-postgres:15} true"); done
+batch_ref "R4-A every run/create boolean option leaves an expansion operand visible (an expansion operand is not the value of an unknown option)" postgres:15 "${EL[@]}"
+EL=(); for o in $ENG_PULL_BOOL; do EL+=("podman pull $o \${IMG:=postgres:15}"); done
+batch_ref "R4-A every pull boolean option leaves an expansion operand visible" postgres:15 "${EL[@]}"
+EL=(); for o in $ENG_GLOB_BOOL; do EL+=("podman $o run --rm \${IMG:=postgres:15}"); done
+batch_ref "R4-A every global boolean option leaves an expansion operand visible" postgres:15 "${EL[@]}"
+EL=(); for o in $(awk -F'\t' '!/^#/ && $1=="run" && $3=="value" && $2 ~ /^--/ {print $2}' "$ENGOPT"); do EL+=("podman run --rm $o=v \${IMG:=postgres:15}"); done
+batch_ref "R4-A every long value option with an attached =value leaves the operand visible" postgres:15 "${EL[@]}"
+# short flags: bools and value letters come from the snapshot; podman parses a cluster left to right, the FIRST value flag takes the rest of
+# the cluster (attached) or the next word (ground truth: fix-r4-podman-ground-truth.txt, `podman run --pull=never -dp 127.0.0.1:3999:3999 <image>` names <image>)
+SB="$(awk -F'\t' '!/^#/ && $1=="run" && $3=="bool" && length($2)==2 && $2!="-q" {print substr($2,2)}' "$ENGOPT")"
+SV="$(awk -F'\t' '!/^#/ && $1=="run" && $3=="value" && length($2)==2 {print substr($2,2)}' "$ENGOPT")"
+sval() { case "$1" in p) echo 127.0.0.1:3999:3999;; v) echo /tmp:/x;; m) echo 512m;; e) echo A=b;; w) echo /src;; u) echo root;; l) echo k=v;; c) echo 5;; h) echo host;; a) echo stdout;; *) echo val;; esac; }
+EL=(); for b in $SB; do for c in $SB; do [ "$b" = "$c" ] || EL+=("podman run -$b$c postgres:15"); done; done
+for b in $SB; do for v in $SV; do V="$(sval "$v")"; EL+=("podman run -$b$v $V postgres:15" "docker run -$b$v$V postgres:15" "podman run -$b$v $V \${IMG:=postgres:15}" "docker run --rm -$b$v=$V postgres:15"); done; done
+EL+=("podman run -itd postgres:15" "docker run -dit postgres:15" "podman run -dti -p 80:80 postgres:15" "docker run -itw /src postgres:15 go test ./..." "docker run -dm 512m postgres:15" "docker run -dp 127.0.0.1:3000:3000 postgres:15" "docker run -dv /data:/data postgres:15")
+batch_ref "R4-A pflag short-flag clusters (boolean letters, then a value letter with an attached or a separate value)" postgres:15 "${EL[@]}"
+batch_ref "R4-A pull clusters" postgres:15 "podman pull -aq postgres:15" "podman pull -qa postgres:15" "docker pull -q postgres:15" "podman pull -q \${IMG:=postgres:15}"
+batch_ref "R4-A -- ends the options: the next word is the operand, even when it is shaped like an option value" postgres:15 \
+  "podman run --rm -- postgres:15 true" "podman run -- postgres:15" "podman run --rm -d -- postgres:15 sleep 1" "docker run -dp 80:80 -- postgres:15"
+batch_ref "R4-A an array or positional expansion before the image is an option list, not the image" postgres:15 \
+  'podman run --rm "${ARGS[@]}" postgres:15' 'docker run $@ postgres:15' 'docker run "$@" postgres:15' 'podman run --rm ${OPTS[*]} postgres:15'
+batch "R4-A control: prose handed unquoted to a logging helper names no image" no \
+  'warn podman pull failed for redis' 'die docker run returned error' 'error podman pull of redis failed' 'log docker pull redis:7 failed' 'info podman run exited'
+line_case "R4-A a quoted message handed to an UNKNOWN helper that does not start with the engine names no image" 'handle_event "retrying docker pull redis:7 now"' none
+line_case "R4-A control: the same words, starting with the engine, ARE a command line handed to the helper" 'handle_event "docker pull redis:7"' redis:7
+batch_ref "R4-A control: a helper that RUNS the command is still searched" postgres:16 'retry 3 podman pull postgres:16' 'log_run podman pull postgres:16' 'run_remote "$H" podman pull postgres:16'
+# --- class B: every parameter-expansion operator, nested
+line_case "R4-B \${V:+alt} as an operand"                 'podman run --rm ${IMG:+redis:7} true' redis:7
+line_case "R4-B \${V+alt} as an operand"                  'podman run --rm ${IMG+redis:7} true' redis:7
+line_case "R4-B nested default as an operand"             'podman run --rm ${A:-${B:-postgres:15}} true' postgres:15
+line_case "R4-B nested := inside :="                      'podman run --rm ${A:=${B:=redis:7}} true' redis:7
+line_case "R4-B nested default with a registry host"      'podman run --rm ${A:-${B:-docker.io/library/redis:7}} true' docker.io/library/redis:7
+line_case "R4-B control: a nested expansion whose innermost default is a variable" 'podman run --rm ${A:-${B:-$C}} true' none
+line_case "R4-B control: \${V:?message} names no image"   'podman run --rm ${IMG:?} true' none
+for h in k8s.gcr.io/pause:3.9 us.gcr.io/p/i:1 eu.gcr.io/p/i:1 nvcr.io/nvidia/cuda:12.4 index.docker.io/library/redis:7 registry-1.docker.io/library/redis:7 registry.k8s.io/pause:3.9; do
+  line_case "R4-B registry host $h as a literal"           "IMG=$h" "$h"
+done
+line_case "R4-B control: the same registry hosts pinned"  "IMG=nvcr.io/nvidia/cuda@sha256:$D64" none
+# --- class F: every filesystem failure shape reads as exit 3, never as "0 violations" (m1)
+mkdir -p "$T/unr2/sub"; printf 'FROM golang:1.21\n' >"$T/unr2/sub/Dockerfile"; chmod 000 "$T/unr2/sub"
+if [ -r "$T/unr2/sub" ]; then echo "SKIP: R4-F unreadable-directory checks (this user can read a mode-000 directory, e.g. root)"
+else
+  U2="$(bash "$SUT" --root "$T/unr2" 2>"$T/unr2.err")"; U2RC=$?
+  check "R4-F an unreadable directory (non-git root) exits 3" "$U2RC" "3"
+  check "R4-F ... and prints no 'N violations' summary" "$(printf '%s' "$U2" | grep -c 'violations in')" "0"
+  grep -q 'check_pins: cannot read' "$T/unr2.err" && ok "R4-F stderr names the failure" || bad "R4-F stderr: $(head -2 "$T/unr2.err")"
+  bash "$SUT" --root "$T/unr2" sub >/dev/null 2>&1; check "R4-F an unreadable directory given as a PATH argument exits 3" "$?" "3"
+  bash "$SUT" --root "$T/unr2" sub/Dockerfile >/dev/null 2>&1; check "R4-F a file below an unreadable directory given as a PATH argument exits 3" "$?" "3"
+  chmod 755 "$T/unr2/sub"; bash "$SUT" --root "$T/unr2" >/dev/null 2>&1; check "R4-F control: the same tree readable is flagged (exit 1)" "$?" "1"
+fi
+mkdir -p "$T/unr3/sub"; printf 'FROM golang:1.21\n' >"$T/unr3/sub/Dockerfile"; chmod 644 "$T/unr3/sub"
+if [ -r "$T/unr3/sub/Dockerfile" ]; then echo "SKIP: R4-F unsearchable-directory checks (this user can search a mode-644 directory, e.g. root)"
+else
+  bash "$SUT" --root "$T/unr3" >/dev/null 2>&1; check "R4-F an unsearchable (mode 644) directory exits 3 (non-git root)" "$?" "3"
+  chmod 755 "$T/unr3/sub"
+fi
+mkdir -p "$T/unr4/sub"; printf 'FROM golang:1.21\n' >"$T/unr4/sub/Dockerfile"; git -C "$T/unr4" init -q 2>/dev/null; git -C "$T/unr4" add -A 2>/dev/null; chmod 644 "$T/unr4/sub"
+if [ -r "$T/unr4/sub/Dockerfile" ] || ! git -C "$T/unr4" ls-files | grep -q Dockerfile; then echo "SKIP: R4-F git unsearchable-directory check (searchable as this user, or git unavailable)"
+else
+  bash "$SUT" --root "$T/unr4" >/dev/null 2>&1; check "R4-F a tracked file below an unsearchable directory exits 3 (git root)" "$?" "3"
+  chmod 755 "$T/unr4/sub"; bash "$SUT" --root "$T/unr4" >/dev/null 2>&1; check "R4-F control: the same tracked tree searchable is flagged" "$?" "1"
+fi
+# --- class G: here-document delimiter grammar (the delimiter word is any shell word, quoted or not)
+HG=0
+hd_case() { # <opener text> <terminator line>
+  HG=$((HG+1)); local n="hg$HG"; mkdir -p "$T/$n/scripts/tests"
+  { echo '#!/usr/bin/env bash'; printf 'cat >x <<%s\n' "$1"; echo 'podman run --rm docker.io/library/alpine:3.19 true'; printf '%s\n' "$2"; echo 'podman run --rm docker.io/library/alpine:3.20 true'; } >"$T/$n/scripts/tests/t.sh"
+  check "R4-G here-document <<$1 ends at its own delimiter (the body is data, the line after it is code)" "$(rows "$n" | cut -f3,4 | tr '\n\t' ';,')" "5,docker.io/library/alpine:3.20;"
+}
+hd_case 'EOF-X' 'EOF-X'
+hd_case '\EOF' 'EOF'
+hd_case '"END OF"' 'END OF'
+hd_case "'A.B'" 'A.B'
+hd_case 'E.O.F' 'E.O.F'
+hd_case '-"EOF-Y"' 'EOF-Y'
+hd_case '-EOF_Z' 'EOF_Z'
+# --- class H: compose structure (quoted key, flow mapping, a file not named compose, YAML the parser rejects)
+hcase() { # <label> <file> <want line|none> <content...> ; the content is read from stdin
+  CN=$((CN+1)); local n="hc$CN"; mkdir -p "$T/$n"; cat >"$T/$n/$2"
+  if [ "$3" = none ]; then check "$1 (no row)" "$(rows "$n" | cut -f1,3 | tr '\n\t' ';,')" ""; else check "$1" "$(rows "$n" | cut -f1,3 | tr '\n\t' ';,')" "compose_image_unpinned,$3;"; fi
+}
+hcase "R4-H a quoted key (JSON style)" docker-compose.yml 3 <<'EOF'
+services:
+  a:
+    "image": "postgres:15"
+EOF
+hcase "R4-H a flow mapping service" docker-compose.yml 2 <<'EOF'
+services:
+  a: {image: postgres:15}
+EOF
+hcase "R4-H a flow mapping with build and a registry-qualified image" docker-compose.yml 2 <<'EOF'
+services:
+  a: {build: ., image: ghcr.io/o/x:1}
+EOF
+hcase "R4-H a flow mapping with build and a local single-component tag is local" docker-compose.yml none <<'EOF'
+services:
+  a: {build: ., image: catalogizer-api:test}
+EOF
+hcase "R4-H a compose file with another name (top-level services:)" stack.yml 3 <<'EOF'
+services:
+  a:
+    image: redis:7
+EOF
+hcase "R4-H control: a YAML file that is no compose file is not scanned" workflow.yml none <<'EOF'
+jobs:
+  x:
+    container:
+      image: redis:7
+EOF
+hcase "R4-H a recursive YAML alias does not loop (the structural walk visits each node once)" docker-compose.yml 5 <<'EOF'
+x-loop: &loop
+  - *loop
+services:
+  a:
+    image: redis:7
+EOF
+hcase "R4-H the image value on the next line" docker-compose.yml 3 <<'EOF'
+services:
+  a:
+    image:
+      redis:7
+EOF
+hcase "R4-H a YAML 1.1 anchor and merge key: the anchored mapping is judged once" docker-compose.yml 2 <<'EOF'
+x-c: &c
+  image: redis:7
+services:
+  a:
+    <<: *c
+  b:
+    <<: *c
+EOF
+printf 'services:\n\ta:\n\t\timage: nginx\n' >"$T/hcx.yml"; mkdir -p "$T/hcx"; cp "$T/hcx.yml" "$T/hcx/docker-compose.yml"
+check "R4-H YAML the parser rejects (tab indentation) falls back to the text grammar and still flags the image" "$(rows hcx | cut -f1,3 | tr '\n\t' ';,')" "compose_image_unpinned,3;"
+check "R4-H CHECK_PINS_NO_YAML=1 forces the text grammar (same verdict on the tab file)" "$(CHECK_PINS_NO_YAML=1 bash "$SUT" --root "$T/hcx" --list 2>/dev/null | cut -f1,3 | tr '\n\t' ';,')" "compose_image_unpinned,3;"
+# the pull_policy matrix of class C must give the same verdicts under the text grammar (the structural path is the default)
+CN=$((CN+1)); nny="cy$CN"; mkdir -p "$T/$nny"
+for pol in never build always missing '"never"' "'build'"; do
+  printf 'services:\n  a:\n    build: .\n    image: someorg/tool:1.0\n    pull_policy: %s\n' "$pol" >"$T/$nny/docker-compose.yml"
+  case "$pol" in *never*|*build*) want="";; *) want="compose_image_unpinned,4;";; esac
+  check "R4-H pull_policy $pol: structural and text grammar agree" "$(rows "$nny" | cut -f1,3 | tr '\n\t' ';,')|$(CHECK_PINS_NO_YAML=1 bash "$SUT" --root "$T/$nny" --list 2>/dev/null | cut -f1,3 | tr '\n\t' ';,')" "$want|$want"
+done
+# --- registry/expansion/operand members written for the reviewer mutants of round 3 (RV1-RV12): one distinguishing input each
+ENGVARS='$DOCKER $PODMAN $NERDCTL $CONTAINER_ENGINE $CONTAINERENGINE $CONTAINER_RUNTIME $CTR_ENGINE $OCI_ENGINE $ENGINE ${DOCKER_BIN} ${PODMAN_CMD} ${CONTAINER_ENGINE:-podman}'
+EL=(); for e in $ENGVARS; do EL+=("$e run --rm postgres:15"); done
+batch_ref "R4-RV6 every recognised engine variable name is an engine word" postgres:15 "${EL[@]}"
+batch "R4-RV7 awk / grep / sed talk about commands: their words are data" no "awk '/x/' docker run notes.txt" "grep -n docker pull notes" "sed -n p docker run x"
+batch "R4-RV8 a host:ip value after an unknown option (long or short) is not the image" no "podman run --rm --frobnicate db:10.0.0.1 docker.io/library/postgres@sha256:$D64 true" "podman run --rm -Z db:10.0.0.1 docker.io/library/postgres@sha256:$D64 true"
+fx rv9 scripts/a.sh <<'EOF'
+#!/usr/bin/env bash
+curl -fsSL https://x.invalid/i | doas -u root sh
+EOF
+expect_bad "R4-RV9 doas -u root sh" rv9 pipe_to_shell 2
+fx rv11 Dockerfile <<EOF
+FROM docker.io/library/debian@sha256:$D64
+COPY --from=localhost/catalogizer-builder:dev /a /a
+EOF
+expect_good "R4-RV11 COPY --from=localhost/... is a locally built image" rv11
+fx rv12 Dockerfile <<'EOF'
+FROM localhost/catalogizer-base:dev
+EOF
+expect_good "R4-RV12 FROM localhost/... is a locally built image" rv12
+fx rv5 docker-compose.yml <<'EOF'
+services:
+  a:
+    build: .
+    image: catalogizer-api:test
+    pull_policy: "never"
+EOF
+expect_good "R4-RV5 a quoted pull_policy value is read without its quotes" rv5
 
 # ------------------------------------------------------------------ list format, determinism, usage
 run bad_latest

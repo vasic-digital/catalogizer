@@ -47,3 +47,22 @@ Builds ran rootless on this host (anton, owner decision) with `podman build` dir
 | `wf13fix-p1-engine-options-regen.txt` | the committed option snapshot equals a regeneration from the live podman 5.7.0 help (243 rows) |
 
 `pins-baseline.txt` (91 rows) and `pins-baseline-recursive.txt` are SUPERSEDED for the main repository by `wf13fix-p1-pins-after.tsv`: the first contained the false positives removed since, and its header cites `t105-notes.md`, a file that was never written (WF13 D3). They are left byte-identical because `SHA256SUMS` lists them.
+
+## Round 4 fixes, pins / Containerfiles (WF16, constitution 11.4.276: the round after the structural round; review WF15 round 3) - 2026-10-07
+
+`fix-r4-*` files named below belong to this change (other `fix-r4-*` files in this directory, `fix-r4-race-*`, `fix-r4-tic-*`, `fix-r4-red-tic.txt`, belong to the test-in-container fix); every one carries `# identity`, `# head`, `# sha256` of the files under test and `# run_at`; sums in `SHA256SUMS.fix-r4-pins`.
+
+| File | Content |
+|---|---|
+| `fix-r4-convergence-assessment.txt` | the 11.4.276(E) convergence assessment written FIRST: root causes, the classes S, A, B, F, G, H, C4, C7 with their enumerated members, the decided residuals |
+| `fix-r4-check-pins-red.txt` | the round-4 `test_check_pins.sh` against the COMMITTED round-3 scanner (sha256 100f3409...): 395 passed, 43 failed |
+| `fix-r4-check-pins-green-run1..3.txt`, `-full-run.txt`, `-mutation.txt`, `-container-run.txt` | GREEN x3 (438 checks, host), the full run (438 fixtures + 172 mutants all CAUGHT + 1 = 611 passed, 0 failed), the mutation record (172 rows), one run through `run_pinned IMG-KCOV` (437: no podman inside, the live-drift check is an honest SKIP) |
+| `fix-r4-containerfiles-red.txt` | the round-3 Containerfile checker (HEAD heredoc, its own wrapper list and count pairing) with the round-4 fixtures: 86 passed, 17 failed |
+| `fix-r4-containerfiles-green-run1..3.txt`, `-full-run.txt`, `-mutation.txt`, `-container-run.txt` | GREEN x3 (103 checks), the full run (62 mutants all CAUGHT, 165 passed, 0 failed), the record, one container run (103) |
+| `fix-r4-shell-ground-truth.sh` / `.txt` | real shells and tools: every wrapper form runs its command, a compound command is ONE pipeline stage, which shells/interpreters read their PROGRAM from stdin; control needle per block; result ALL-AS-MODELLED |
+| `fix-r4-podman-ground-truth.sh` / `.txt` | the live podman 5.7.0 names the image for every boolean/value/cluster/`--`/array form (`--pull=never`, an image that does not exist: nothing pulled, nothing created); `podman create` rejects `-d` (the option tables merge run and create) |
+| `fix-r4-mutation-negative-control.txt` | the mutation harness tells survival from capture: a comment-only edit SURVIVES, a no-op and a missing-anchor mutant are NOT-APPLIED, two real mutants are CAUGHT |
+| `fix-r4-pins-after.tsv`, `fix-r4-pins-diff.txt` | the live rows of the round-4 scanner (52) and the difference to the committed scanner (control needle: it returns the same 52 rows through the same instrument): 0 added, 0 removed |
+| `fix-r4-engine-options-regen.txt` | the committed option snapshot (unchanged) equals a regeneration from the live podman 5.7.0 help (243 rows) |
+
+Host measurements are the HEAD 350372a8 work tree with this change uncommitted; the full suites took about 105 minutes (check_pins) and 40 minutes (Containerfiles) under a loaded host.
