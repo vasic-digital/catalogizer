@@ -24,15 +24,49 @@
 # Exits     0 clean: every stage ran and NOTHING is owed; 10 a check failed; 11 push rejected/remote unreachable/remote moved; 12 integration blocked
 #           (diverged remotes, conflict, local changes); 13 scope refused or verification dirty; 14 a recorded deferral, held push or a gate that did not
 #           run (never a clean pass: SKIP_LONG, SWEEP_ABSENT, LOCAL_ONLY, CHECK_PENDING_RELEASE, CHECKS_DEFERRED = a `deferred` registry row,
-#           GATES_NOT_BUILT = a row of scripts/repo/owed_gates.tsv; each listed in report.json `deferred_gates` and in the commits' Deferred-Gates line);
-#           15 pointer drift without a pending move; 20 refusal or internal error (any helper exit outside its documented set, any signal included).
+#           GATES_NOT_BUILT = a row of scripts/repo/owed_gates.tsv or an absent long-gate list, CHECKS_NOT_JUDGED = a declared path no S3 check judged; each listed in
+#           report.json `deferred_gates`; the flags recorded at S0 (SKIP_LONG, SWEEP_ABSENT, LOCAL_ONLY, GATES_NOT_BUILT) are also in the Deferred-Gates line of EVERY commit
+#           of the run, an S1 merge commit included; the flags found at S3 (CHECKS_DEFERRED, CHECK_PENDING_RELEASE, CHECKS_NOT_JUDGED) are in the commits made at S5, and
+#           in report.json and deferrals.tsv, but not in an S1 merge commit that was made before S3 ran);
+#           15 pointer drift without a pending move; 20 refusal or internal error (any helper exit outside its documented set, a `set -u` error, and ANY catchable terminating
+#           signal: each ends the run with the report written and the status 20, the signal's own status in the detail; only SIGKILL leaves no report, the next run lists that run).
+# Environment  a run is steered by the owner's approvals only: the caller's exported GIT_* variables (except the commit identity), LONGOPS_*/ANTIMESS_*/AM_*/VERIFY_*/DISK_HEADROOM_*
+#           (except LONGOPS_ALLOW_TMPFS), XDG_CONFIG_HOME, BASH_ENV, ENV and CDPATH are dropped first (the scrub block, the same text in cpa-host); git settings come from the owner's
+#           HOME (~/.gitconfig). HOME, PATH, TMPDIR, CPA_HOST_STATE and SKIP_LONG are the owner's own process environment (the trust root lives under CPA_HOST_STATE).
 # Honest boundary (UNCONFIRMED / owed, see docs/scripts/commit-push-all.md): the gates of scripts/repo/owed_gates.tsv (secret and private-key folds, path
 #           gates, G-PIN accepted pins, verdict provenance, ratchet baselines, remote checks and exit 16, container S3) and --resume are NOT built here;
 #           a run that reaches their stage says so with exit 14 and GATES_NOT_BUILT, it never reads as exit 0.
 set -u
 LC_ALL=C
-# no inherited git state steers a git call of a run (WF11 review F11): a caller's GIT_CONFIG_PARAMETERS would override the no-hooks setting made below
-unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_PREFIX GIT_CONFIG_PARAMETERS
+# --- cpa env scrub begin ---
+# What a run executes and where it pushes is decided by the owner's approvals, never by the caller's environment (WF11 F1/F11, WF14 N1/N3). The CLASS is dropped, not
+# its known members: every exported GIT_* variable (config injection by GIT_CONFIG_COUNT/KEY_n/VALUE_n, GIT_CONFIG_PARAMETERS/GLOBAL/SYSTEM, directories, exec path, ssh
+# command) except the commit identity; the longops, anti-mess, verifier and disk families (locations, program names, clocks, test hooks) except the durability knob;
+# the XDG config directory and the shell start-up files. HOME, PATH, TMPDIR, CPA_HOST_STATE and SKIP_LONG are the owner's own process environment and the one documented
+# input (the trust root lives under CPA_HOST_STATE: it is the boundary, not a leak). This text is the same in scripts/repo/host_entry/cpa-host (matrix section 11).
+for _v in $(compgen -e); do
+  case "$_v" in
+    GIT_AUTHOR_NAME|GIT_AUTHOR_EMAIL|GIT_COMMITTER_NAME|GIT_COMMITTER_EMAIL|LONGOPS_ALLOW_TMPFS) ;;
+    GIT_*|LONGOPS_*|ANTIMESS_*|AM_*|VERIFY_*|DISK_HEADROOM_*|XDG_CONFIG_HOME|BASH_ENV|ENV|CDPATH|GLOBIGNORE) unset "$_v" ;;
+  esac
+done; unset _v
+# --- cpa env scrub end ---
+# --- cpa signals begin ---
+# Every catchable signal that terminates by default ends the process through its EXIT trap with the status 128+n (WF14 N2): bash otherwise runs the EXIT trap with the
+# status of the last completed command and re-raises the signal, so a report said `exit 0` and the process status left the documented set. The list is derived from
+# the kernel's own numbering, never enumerated; the signals that do not terminate (CHLD, CONT, STOP, TSTP, TTIN, TTOU, URG, WINCH) and KILL (untrappable) are left alone.
+cpa_signals() { # cpa_signals exit|swallow: exit = 128+n ends the run; swallow = a no-op handler (the report is being written; a handled trap is reset in a child, an ignored one would not be)
+  local n nm
+  for n in $(seq 1 64); do
+    nm="$(kill -l "$n" 2>/dev/null)" || continue; nm="${nm#SIG}"
+    case "$nm" in ''|KILL|STOP|CHLD|CONT|TSTP|TTIN|TTOU|URG|WINCH|EXIT|DEBUG|ERR|RETURN) continue ;; esac
+    if [ "$1" = swallow ]; then trap ':' "$n" 2>/dev/null; else trap "exit $((128+n))" "$n" 2>/dev/null; fi
+  done
+}
+# --- cpa signals end ---
+# until the run directory is reported by finish below, a status outside the documented set (a `set -u` error, a signal) is a refusal 20, never the shell's own status
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) printf "cpa: internal_error exit %s before the run was opened\n" "$_rc" >&2; exit 20 ;; esac' EXIT
+cpa_signals exit
 SELF="$(realpath -- "$0" 2>/dev/null)" || SELF="$0"
 D="$(dirname "$SELF")"; RD="$D/repo"; LO="$D/longops"
 
@@ -48,7 +82,7 @@ want="$(jq -r '.entries[]|select(.path=="scripts/commit-push-all.sh").sha256' "$
 [ -n "$want" ] && [ "$want" = "$(sha256sum "$SELF" | cut -d' ' -f1)" ] || selfrefuse not_via_host_entry "own sha256 differs from the snapshot entry"
 ents="$(jq -cS '.entries|sort_by(.path)' "$SNAP" 2>/dev/null)"; msha="$(printf '%s' "$ents" | sha256sum | cut -d' ' -f1)"
 [ "$msha" = "$(jq -r .manifest_sha256 "$SNAP" 2>/dev/null)" ] || selfrefuse snapshot_not_trusted "manifest_sha256 of the snapshot is not the sha256 of its entries"
-STATE="${CPA_HOST_STATE:-$HOME/.local/state/cpa-host}"; TRUSTF="$STATE/trust.json"
+STATE="${CPA_HOST_STATE:-${HOME:-}/.local/state/cpa-host}"; TRUSTF="$STATE/trust.json"
 pkey="$(git -C "$CPA_ROOT" rev-list --first-parent --max-parents=0 HEAD 2>/dev/null | head -1)"
 [ -s "$TRUSTF" ] || selfrefuse snapshot_not_trusted "trust file unreadable or empty"
 if jq -e --arg k "$pkey" --arg m "$msha" '.projects[$k].history|map(select(.op=="revoke")|.manifest_sha256)|index($m)!=null' "$TRUSTF" >/dev/null 2>&1; then selfrefuse snapshot_not_trusted revoked; fi
@@ -69,7 +103,7 @@ cd "$ROOT" || selfrefuse internal "cannot enter $ROOT"
 LOG="$CPA_RUN/log.txt"
 log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*" >> "$LOG" 2>/dev/null; }
 # no hook of .git/hooks/ or .git/modules/*/hooks/ runs in any git call of this script or of a helper (CENTRAL C4)
-_n="${GIT_CONFIG_COUNT:-0}"; export "GIT_CONFIG_KEY_$_n=core.hooksPath" "GIT_CONFIG_VALUE_$_n=$CPA_RUN/no-hooks"; export GIT_CONFIG_COUNT=$((_n+1))
+export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0="$CPA_RUN/no-hooks"      # the only env config of a run: the scrub above dropped the caller's
 export GIT_TERMINAL_PROMPT=0 LONGOPS_REPO="$ROOT" CPA_APPROVED_DIR="$CPA_RUN/released" CPA_RUN CPA_RUN_ID
 
 run_alive() { # run_alive <run dir>: the process named by <run dir>/run.pid ("pid start_ticks") is running (start time from /proc/<pid>/stat field 22, never a pgrep match)
@@ -88,7 +122,7 @@ defer() { # defer <flag> <reason> [stage]: one row in the run directory (record_
 # shellcheck disable=SC2329  # invoked through `trap finish EXIT`
 finish() { # S8: the report on every exit path, the lock released, the summary line
   local rc=$? files commits interrupted deferrals
-  trap - EXIT
+  trap - EXIT; cpa_signals swallow      # a second signal does not cut the report short (SIGKILL cannot be handled: the run is then listed interrupted by the next one)
   case "$rc" in 0|10|11|12|13|14|15|20) ;; *) FAILSTAGE="${FAILSTAGE:-${CUR:-S0}}"; FAILREASON="${FAILREASON:-internal_error}"; FAILDETAIL="${FAILDETAIL:-exit $rc}"; rc=20 ;; esac
   if [ "$LOCKED" = 1 ]; then if "$LO/release.sh" --purpose commit_push --run-id "$RUN_ID" >>"$LOG" 2>&1; then LOCK_REL=1; else log "release.sh failed"; fi; fi
   if [ -d "$CPA_RUN" ]; then
@@ -103,7 +137,7 @@ finish() { # S8: the report on every exit path, the lock released, the summary l
     jq -n --arg id "$RUN_ID" --arg dir ".audit/commit-push/$RUN_ID/" --argjson rc "$rc" --arg fs "$FAILSTAGE" --arg fr "$FAILREASON" --arg fd "$FAILDETAIL" \
       --arg repo "$REPO" --arg lo "$LOCAL_ONLY" --arg pf "$PATHS" --arg aw "$AWAIT" --arg rm "$RESOLVE" --arg cbi "$CBI" --arg deferred "${deferrals:-}" \
       --argjson held "$HELD" --argjson pend "$PENDING_CHECKS" --argjson lacq "$LOCK_ACQ" --argjson lrel "$LOCK_REL" --argjson live "${live:-[]}" --arg trust "$TRUSTF" --arg stages "$(for i in "${!STG_ID[@]}"; do printf '%s:%s\n' "${STG_ID[$i]}" "${STG_NAME[$i]}"; done)" \
-      --argjson commits "${commits:-[]}" --argjson interrupted "${interrupted:-[]}" --argjson files "$files" --arg nested "${NESTED[*]:-}" --arg held_lines "$(printf '%s\n' "${HELDLINES[@]:-}")" \
+      --argjson commits "${commits:-[]}" --argjson interrupted "${interrupted:-[]}" --argjson files "$files" --arg nested "${NESTED[*]:-}" --arg held_lines "$(printf '%s\n' "${HELDLINES[@]:-}")" --arg unj "$(cat "$CPA_RUN/unjudged.tsv" 2>/dev/null)" \
       '{schema:1,run_id:$id,run_dir:$dir,exit:$rc,
         failed_stage:(if $fs=="" then null else $fs end),reason:(if $fr=="" then null else $fr end),detail:(if $fd=="" then null else $fd end),
         mode:{repo:(if $repo=="" then null else $repo end),local_only:($lo!=""),paths_from:(if $pf=="" then null else "paths.txt" end),awaits_review:(if $aw=="" then null else $aw end),
@@ -111,14 +145,33 @@ finish() { # S8: the report on every exit path, the lock released, the summary l
         lock:{held:($lacq>0),released:($lrel>0)},trust_file:$trust,
         deferred_gates:($deferred|split(",")|map(select(length>0))),check_pending_release:($pend>0),held:($held>0),held_commits:($held_lines|split("\n")|map(select(length>0))),
         nested_unsettled:($nested|split(" ")|map(select(length>0))),
+        unjudged_paths:($unj|split("\n")|map(select(length>0)|split("\t")|{path:.[0],check:.[1],deferred:(.[2]=="yes")})),
         commits:$commits,stages:($stages|split("\n")|map(select(length>0)|split(":")|{id:.[0],name:.[1]})),
         interrupted_runs:$interrupted,live_runs:$live,files:$files}' > "$CPA_RUN/report.json.tmp" 2>>"$LOG" && mv -f "$CPA_RUN/report.json.tmp" "$CPA_RUN/report.json"
   fi
   printf 'cpa: exit=%s run=%s stage=%s reason=%s\n' "$rc" "$RUN_ID" "${FAILSTAGE:-${CUR:-}}" "${FAILREASON:-}" >&2
   exit "$rc"
 }
-trap finish EXIT
-trap 'exit 143' TERM; trap 'exit 130' INT
+trap finish EXIT       # the signal traps of cpa_signals (above) stay: each ends the run through finish with 128+n
+
+# the sweep judges THIS repository under the owner's git settings only (WF14 N3): its root is given here, never inherited (its owned set is the approved own_orgs.txt, as ours), and the run's own
+# env config (the no-hooks setting) is taken off it, because the sweep's planted control needle must see a blocking core.hooksPath to prove it can see one
+sweep_run() { # sweep_run <sweep.sh arguments>
+  env -u GIT_CONFIG_COUNT -u GIT_CONFIG_KEY_0 -u GIT_CONFIG_VALUE_0 ANTIMESS_ROOT="$ROOT" "$D/anti-mess/sweep.sh" "$@"
+}
+# the gates that are NOT built (scripts/repo/owed_gates.tsv of the approved copy): a run without them is a deferral, never a clean pass (WF11 review F3). Read at S0, so
+# an S1 merge commit carries the flag too (WF14 N5). An absent or unreadable list is itself owed; a row with another condition is 20.
+owed_gates() {
+  local f="$RD/owed_gates.tsv" g w n names=""
+  [ -r "$f" ] || { defer GATES_NOT_BUILT "owed_gates.tsv absent from the approved copy: the set of unbuilt gates cannot be read" S0; return 0; }
+  while IFS=$'\t' read -r g w n || [ -n "$g" ]; do
+    case "$g" in ''|'#'*) continue ;; esac
+    [[ "$g" =~ ^[A-Z][A-Z0-9_]*$ ]] || fail S0 20 owed_gates_invalid "gate name $(printf '%q' "$g")"
+    case "$w" in always) ;; declared_paths) [ -s "$CPA_RUN/paths.list" ] || continue ;; *) fail S0 20 owed_gates_invalid "$g: when=$(printf '%q' "$w")" ;; esac
+    names="${names:+$names,}$g"
+  done < "$f"
+  [ -z "$names" ] || defer GATES_NOT_BUILT "unbuilt gates, the run went on without them: $names" S0
+}
 
 # ---- S0 preflight ---------------------------------------------------------------------------------------------------------------------------
 stage S0 preflight
@@ -221,10 +274,12 @@ export DISK_HEADROOM_OUT_DIR="$CPA_RUN/disk/"
 case "$rrc" in 0) ;; 1) fail S0 20 evidence_writer_active "$(head -c 300 "$CPA_RUN/registry.out" | tr '\n\t' '  ')" ;; *) fail S0 20 registry_check_error "rc=$rrc" ;; esac
 [ -z "${SKIP_LONG:-}" ] || defer SKIP_LONG "$SKIP_LONG" S0     # recorded at S0, so an S1 merge commit carries it too
 if [ -x "$D/anti-mess/sweep.sh" ]; then
-  "$D/anti-mess/sweep.sh" --stage S0 --paths-from "$CPA_RUN/paths.txt" ${REPO:+--repo "$REPO"} >"$CPA_RUN/sweep-s0.out" 2>&1; src=$?
+  sweep_run --stage S0 --paths-from "$CPA_RUN/paths.txt" ${REPO:+--repo "$REPO"} >"$CPA_RUN/sweep-s0.out" 2>&1; src=$?
   case "$src" in 0) ;; 10) fail S0 20 sweep_finding "an undeclared change or another catalogued drift (see sweep-s0.out)" ;; *) fail S0 20 sweep_error "rc=$src" ;; esac
 else defer SWEEP_ABSENT "sweep not yet in the approved manifest (tasks.md T090, T093)" S0; fi
 [ -z "$LOCAL_ONLY" ] || defer LOCAL_ONLY "push owed: --local-only" S0
+owed_gates
+[ -n "${SKIP_LONG:-}" ] || [ -f "$RD/long_gates.txt" ] || defer GATES_NOT_BUILT "S4 long gates: scripts/repo/long_gates.txt is absent from the approved copy, no long gate was run" S0
 
 # the approved manifest as {"path":"sha256"} for the integration helpers' G-GATE routing
 jq -c '[.entries[]|{(.path):.sha256}]|add // {}' "$SNAP" > "$CPA_RUN/approved.json" 2>/dev/null || echo '{}' > "$CPA_RUN/approved.json"
@@ -327,21 +382,6 @@ done < <(gitlinks "$TARGET")
 "$RD/scope_check.sh" --root "$TARGET" --paths-from "$CPA_RUN/paths.list" >"$CPA_RUN/scope.out" 2>&1; rc=$?
 case "$rc" in 0) ;; 13) fail S2 13 scope_refused "$(head -c 300 "$CPA_RUN/scope.out" | tr '\n' ' ')" ;; 20) fail S2 20 scope_error "$(head -c 300 "$CPA_RUN/scope.out" | tr '\n' ' ')" ;; *) fail S2 20 internal_error "scope_check.sh exit $rc" ;; esac
 
-# the gates that are NOT built (scripts/repo/owed_gates.tsv of the approved copy): a run that reaches their stage without them is a deferral, never a clean pass
-# (WF11 review F3). An absent or unreadable list is itself owed; a row with another condition is 20.
-owed_gates() {
-  local f="$RD/owed_gates.tsv" g w n names=""
-  [ -r "$f" ] || { defer GATES_NOT_BUILT "owed_gates.tsv absent from the approved copy: the set of unbuilt gates cannot be read" S2; return 0; }
-  while IFS=$'\t' read -r g w n || [ -n "$g" ]; do
-    case "$g" in ''|'#'*) continue ;; esac
-    [[ "$g" =~ ^[A-Z][A-Z0-9_]*$ ]] || fail S2 20 owed_gates_invalid "gate name $(printf '%q' "$g")"
-    case "$w" in always) ;; declared_paths) [ -s "$CPA_RUN/paths.list" ] || continue ;; *) fail S2 20 owed_gates_invalid "$g: when=$(printf '%q' "$w")" ;; esac
-    names="${names:+$names,}$g"
-  done < "$f"
-  [ -z "$names" ] || defer GATES_NOT_BUILT "unbuilt gates, the run went on without them: $names" S2
-}
-owed_gates
-
 # ---- S3 cheap checks ---------------------------------------------------------------------------------------------------------------------------
 stage S3 validate_cheap
 vc=(--root "$TARGET" --files-from "$CPA_RUN/paths.list" --code-root "$D/.." --trusted-tables "$RD" --out "$CPA_RUN/validate")
@@ -358,6 +398,12 @@ case "$rc" in
   20) fail S3 20 check_error "$(head -c 300 "$CPA_RUN/validate.out" | tr '\n' ' ')" ;;
   *) fail S3 20 internal_error "validate_cheap.sh exit $rc" ;;
 esac
+# a declared path that no S3 check judged is reported by name, and it is a deferral when nothing at all judged it: a symlink of a non-evidence class, or a file the
+# language check that its suffix selects left out (a shell file that looks binary); a file only the generic text checks left out (an image) is reported, owes nothing (WF14 N4)
+: > "$CPA_RUN/unjudged.tsv"
+awk -F'\t' 'NF>=2 && $1=="symlink_not_judged" {print $2 "\tsymlink\tyes"} NF>=3 && $1=="not_judged" {print $3 "\t" $2 "\tyes"} NF>=3 && $1=="left_out" {print $3 "\t" $2 "\tno"}' "$CPA_RUN/validate.out" | sort -u > "$CPA_RUN/unjudged.tsv"
+nj="$(awk -F'\t' '$3=="yes" {print $1}' "$CPA_RUN/unjudged.tsv" | sort -u | paste -sd, -)"
+[ -z "$nj" ] || defer CHECKS_NOT_JUDGED "declared paths no check judged: $nj" S3
 # a registry row whose mode is `deferred` did not run either, and validate_cheap.sh still exits 0 for it: read from its stdout, never assumed (WF11 review F3)
 dc="$(awk -F'\t' '$1=="deferred" && NF>=2 {print $2}' "$CPA_RUN/validate.out" | sort -u | paste -sd, -)"
 [ -z "$dc" ] || defer CHECKS_DEFERRED "registry rows with mode deferred, not run: $dc" S3
@@ -372,7 +418,7 @@ elif [ -f "$RD/long_gates.txt" ]; then
     "$LO/require_verdicts.sh" "${lf[@]}" >"$CPA_RUN/long.out" 2>&1; rc=$?
     case "$rc" in 0) ;; 1) fail S4 10 long_gate_verdict_missing "$(head -c 300 "$CPA_RUN/long.out" | tr '\n' ' ')" ;; *) fail S4 20 internal_error "require_verdicts.sh exit $rc" ;; esac
   else log "S4: the approved long-gate list names no gate"; fi
-else defer GATES_NOT_BUILT "S4 long gates: scripts/repo/long_gates.txt is absent from the approved copy, no long gate was run" S4; fi
+else log "S4: no long-gate list in the approved copy (GATES_NOT_BUILT recorded at S0)"; fi
 
 # ---- S5 commit ---------------------------------------------------------------------------------------------------------------------------------
 stage S5 commit
@@ -494,7 +540,7 @@ if [ -s "$CPA_RUN/pins.unmatched" ]; then fail S7 15 pointer_drift "no pending p
 if [ "$vrc" = 15 ] && [ ! -s "$CPA_RUN/pins.tsv" ]; then fail S7 15 pointer_drift "verifier 15"; fi
 if [ "${#NESTED[@]}" -gt 0 ]; then fail S7 15 nested_unsettled "${NESTED[*]} (remediation per path: git submodule update --init -- <path> for a third-party path, docs/11 section 6 through ST-SUB for an owned one)"; fi
 if [ -x "$D/anti-mess/sweep.sh" ]; then
-  "$D/anti-mess/sweep.sh" --stage S7 ${REPO:+--repo "$REPO"} >"$CPA_RUN/sweep-s7.out" 2>&1; src=$?
+  sweep_run --stage S7 ${REPO:+--repo "$REPO"} >"$CPA_RUN/sweep-s7.out" 2>&1; src=$?
   case "$src" in 0) ;; *) fail S7 20 sweep_finding "after verify (rc=$src)" ;; esac
 fi
 

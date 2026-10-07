@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T01:00:00Z |
+| Last modified | 2026-10-07T04:29:27Z |
 | Status | draft by T042 (WP-04, slice 9); NOT performed: installing the entry point and approving the first manifest is the owner checkpoint T046a (constitution 11.4.66); no agent runs any step below |
 | Status summary | install steps and the state layout; the `--owner-trust` operations that create and change the trust file are NOT built in this revision |
 | Source | `scripts/repo/host_entry/cpa-host`, `docs/scripts/commit-push-all.md` |
 | Issues | `cpa-host --owner-trust approve|retire|revoke|reanchor` answers 20 `owner_op_unimplemented` until T046a builds them; until then the trust file can only be written by hand, which this procedure does NOT recommend |
-| Fixed | revision 2: the run-id grammar, an unexecutable approved core is 20 (never 126), a relative `--paths-from` is read from the directory cpa-host was started in (WF11 review F9, F10, F12) |
+| Fixed | revision 3 (WF14 review round 2): the caller's environment is dropped as a class, not by name (every exported `GIT_*` variable but the commit identity, the `LONGOPS_*`, `ANTIMESS_*`, `AM_*`, `VERIFY_*` and `DISK_HEADROOM_*` families, `XDG_CONFIG_HOME`, `BASH_ENV`, `ENV`, `CDPATH`), every catchable terminating signal and every shell error ends the host entry with 20, and `HOME` and `CPA_HOST_STATE` both unset is 20 `state_unresolved`; revision 2: the run-id grammar, an unexecutable approved core is 20 (never 126), a relative `--paths-from` is read from the directory cpa-host was started in (WF11 review F9, F10, F12) |
 
 This document is the target of every refusal that `cpa-host` and the copied `commit-push-all.sh` print (`see: scripts/repo/host_entry/INSTALL.md`).
 
@@ -29,6 +29,15 @@ This document is the target of every refusal that `cpa-host` and the copied `com
 3. `install -d -m 0700 "${CPA_HOST_STATE:-$HOME/.local/state/cpa-host}"` and `install -m 0755 scripts/repo/host_entry/cpa-host "${CPA_HOST_ENTRY:-$HOME/.local/bin/cpa-host}"`.
 4. Compare: `sha256sum "${CPA_HOST_ENTRY:-$HOME/.local/bin/cpa-host}" scripts/repo/host_entry/cpa-host` prints one hash twice. `cpa-host --show` prints the installed file's own sha256 and the project entry (read-only); a measurement of the installed file always uses `sha256sum` on the file, never the hash the file reports about itself.
 5. The first approval (the adoption) and every later one are made with `cpa-host --owner-trust approve <verdict> [--commit <sha>]` at a terminal (the confirmation is read from `/dev/tty`). NOT BUILT in this revision (T046a).
+
+## The environment of a run
+
+A run is steered by what the owner approved. `cpa-host` and the copied script drop the caller's exported `GIT_*` variables (the config injection `GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_n`/
+`GIT_CONFIG_VALUE_n`, `GIT_CONFIG_PARAMETERS`, `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`, the directories, `GIT_EXEC_PATH`, `GIT_SSH_COMMAND`, and so on) except `GIT_AUTHOR_NAME/EMAIL` and
+`GIT_COMMITTER_NAME/EMAIL`, the `LONGOPS_*`, `ANTIMESS_*`, `AM_*`, `VERIFY_*` and `DISK_HEADROOM_*` families except `LONGOPS_ALLOW_TMPFS`, `XDG_CONFIG_HOME`, `BASH_ENV`, `ENV` and
+`CDPATH`. The git settings of a run therefore come from the owner's `$HOME/.gitconfig` (a deploy key's `core.sshCommand`, a `url.<base>.insteadOf` belong there, not in the environment).
+`HOME`, `PATH`, `TMPDIR`, `CPA_HOST_STATE` and `SKIP_LONG` are the owner's own process environment: the trust root lives under `CPA_HOST_STATE`, so it is the boundary, not a leak.
+`BASH_ENV` and the like are read by the interpreter before the first line of `cpa-host`: the caller's file runs once in the entry process, never in the run or its helpers.
 
 ## Rules (the conductor rule, T042)
 

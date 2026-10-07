@@ -8,14 +8,18 @@
 # A mutant is CAUGHT only when the section exits non-zero AND prints at least one `FAIL` assertion line (a crash, a timeout or a runner fault is no catch),
 # and, when the mutant names an `expect` text (the 7th field of its entry), when a FAIL line contains it: the INTENDED assertion failed, not any one (WF11 F15).
 # A replacement entry (old, new, file) mutates that file of the copy instead of the mutant's own file (a property enforced in two scripts needs both).
-# Usage: bash scripts/repo/tests/run_wp04i_mutations.sh [--jobs N] [--only <id-regex>]      Exit 0 only when every non-equivalent mutant is caught
+# EVERY non-equivalent mutant must name the assertion that is meant to catch it (the `expect` field): an entry without one is INAPPLICABLE, so the run fails (WF14 N8:
+# 48 of 69 mutants once counted any FAIL line, and an unrelated failure in their section read as a catch). --keep DIR copies each mutant's output and status to DIR.
+# Usage: bash scripts/repo/tests/run_wp04i_mutations.sh [--jobs N] [--only <id-regex>] [--keep DIR]      Exit 0 only when every non-equivalent mutant is caught
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
-D0="$(pwd)"; JOBS=4; ONLY=""
-while [ $# -gt 0 ]; do case "$1" in --jobs) JOBS="$2"; shift 2 ;; --only) ONLY="$2"; shift 2 ;; *) echo "usage: $0 [--jobs N] [--only substr]" >&2; exit 2 ;; esac; done
-M="$(mktemp -d "${TMPDIR:-/tmp}/cpa_mut.XXXXXX")"; trap 'rm -rf "$M"' EXIT
+D0="$(pwd)"; JOBS=4; ONLY=""; KEEP=""
+while [ $# -gt 0 ]; do case "$1" in --jobs) JOBS="$2"; shift 2 ;; --only) ONLY="$2"; shift 2 ;; --keep) KEEP="$2"; shift 2 ;; *) echo "usage: $0 [--jobs N] [--only id-regex] [--keep DIR]" >&2; exit 2 ;; esac; done
+M="$(mktemp -d "${TMPDIR:-/tmp}/cpa_mut.XXXXXX")"
+trap '[ -z "$KEEP" ] || { mkdir -p "$KEEP" && cp "$M"/*.out "$M"/*.rc "$M"/mutants.json "$KEEP"/ 2>/dev/null; }; rm -rf "$M"' EXIT
 cp "$D0/scripts/repo/tests/test_commit_push_all.sh" "$M/matrix.sh"     # a snapshot: editing the live test during a run cannot corrupt it
-mkdir -p "$M/base"; for d in scripts/repo scripts/longops scripts/audit; do mkdir -p "$M/base/$d"; done
+mkdir -p "$M/base"; for d in scripts/repo scripts/longops scripts/audit scripts/anti-mess; do mkdir -p "$M/base/$d"; done
+cp "$D0"/scripts/anti-mess/sweep.sh "$D0"/scripts/anti-mess/catalogue.yaml "$M/base/scripts/anti-mess/"
 cp -a "$D0"/scripts/repo/. "$M/base/scripts/repo/" 2>/dev/null; rm -rf "$M/base/scripts/repo/tests"
 cp -a "$D0"/scripts/longops/*.sh "$M/base/scripts/longops/"; cp "$D0"/scripts/audit/org_of.py "$M/base/scripts/audit/"; cp "$D0/scripts/commit-push-all.sh" "$M/base/scripts/"
 python3 -I - "$D0/scripts/repo/tests" "$M" "$ONLY" <<'PY' || exit 2
@@ -27,6 +31,8 @@ for t in cm.MUTANTS:
     if only and not re.search(only, mid): continue
     dst = os.path.join(m, mid); shutil.copytree(os.path.join(m, 'base'), dst, symlinks=True)
     ok = True; texts = {}
+    if not equiv and not expect:
+        out.append({'id': mid, 'section': sect, 'desc': 'NO expect text: a catch must name the assertion that failed (WF14 N8): ' + desc, 'applied': False, 'equivalent': equiv, 'expect': expect}); continue
     for r in reps:
         old, new = r[0], r[1]; fp = os.path.join(dst, r[2] if len(r) > 2 else f)
         s = texts.get(fp)

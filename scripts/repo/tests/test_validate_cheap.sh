@@ -51,6 +51,10 @@ w big.txt "$(head -c 1030000 /dev/zero | tr '\0' a)\n"; lst big.txt; run; eq "la
 w alarm.txt "$(head -c 800000 /dev/zero | tr '\0' a)\n"; lst alarm.txt; run; eq "size_alarm above 75% of the bound: exit 0" "$RC" 0; has "size_alarm reported" "$(cat "$T/out")" "size_alarm"
 # binary files are never given to the text checks (listed as left out), but never refused for it
 printf 'a \0b \n' > "$R/bin.dat"; lst bin.dat; run; eq "binary file with trailing blanks: 0" "$RC" 0; has "left out by the filter" "$(cat "$T/out")" "left_out"
+# a binary-looking file that a language check selects by its suffix was NOT judged by it (`not_judged`, WF14 N4); the generic text checks leaving a binary file out are `left_out` only
+hasnot "a generic left_out is not a not_judged" "$(cat "$T/out")" "not_judged"
+printf 'if then\n\0\n' > "$R/bin.sh"; lst bin.sh; run; eq "binary-looking .sh: 0 (reported, never refused)" "$RC" 0
+has "shell_parse left it out" "$(cat "$T/out")" "left_out	shell_parse	bin.sh"; has "and says it was not judged" "$(cat "$T/out")" "not_judged	shell_parse	bin.sh"
 # no tracked or declared byte changes by any run
 b="$(tree_sum)"; lst tw.txt eof1.txt bad.sh; run; eq "bytes unchanged after a failing run" "$(tree_sum)" "$b"
 # ---- 2 class table application ------------------------------------------------------------------------------------------------

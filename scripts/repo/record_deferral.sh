@@ -3,7 +3,7 @@
 #
 # Purpose   S0/S4 of a CPA run (docs/16 section 12.2) record a deferred gate here; commit_recursive.sh later reads the
 #           run's flag set as the `Deferred-Gates:` trailer value (--list).
-# Usage     record_deferral.sh --run-dir <dir> --flag SKIP_LONG|SWEEP_ABSENT|LOCAL_ONLY|CHECK_PENDING_RELEASE|CHECKS_DEFERRED|GATES_NOT_BUILT --reason <text>
+# Usage     record_deferral.sh --run-dir <dir> --flag SKIP_LONG|SWEEP_ABSENT|LOCAL_ONLY|CHECK_PENDING_RELEASE|CHECKS_DEFERRED|GATES_NOT_BUILT|CHECKS_NOT_JUDGED --reason <text>
 #                              [--awaits-review <verdict path>] [--commit <sha>]
 #           record_deferral.sh --run-dir <dir> --list      prints the comma-joined flag set in closed-set order
 # Row       <dir>/deferrals.tsv: utc_time <TAB> flag <TAB> reason <TAB> awaits_review <TAB> commit  (header line first)
@@ -12,9 +12,10 @@
 # Never     touches git state, the network, or any path outside <dir>.
 set -u
 # The last three are the flags of a gate that did NOT run (WF11 review F3): CHECK_PENDING_RELEASE a registry row the approved copy lacks,
-# CHECKS_DEFERRED a registry row whose mode is `deferred`, GATES_NOT_BUILT a gate of scripts/repo/owed_gates.tsv (or an unreadable list). Appended at the
+# CHECKS_DEFERRED a registry row whose mode is `deferred`, GATES_NOT_BUILT a gate of scripts/repo/owed_gates.tsv (or an unreadable list), CHECKS_NOT_JUDGED a declared
+# path that no S3 check judged (a symlink of a non-evidence class, a file the check its suffix selects left out; WF14 N4). Appended at the
 # END of the closed set: the order of --list for the first three flags is unchanged.
-CLOSED="SKIP_LONG SWEEP_ABSENT LOCAL_ONLY CHECK_PENDING_RELEASE CHECKS_DEFERRED GATES_NOT_BUILT"
+CLOSED="SKIP_LONG SWEEP_ABSENT LOCAL_ONLY CHECK_PENDING_RELEASE CHECKS_DEFERRED GATES_NOT_BUILT CHECKS_NOT_JUDGED"
 die() { echo "record_deferral: $1: $2" >&2; exit 20; }
 RUN=""; FLAG=""; REASON=""; AWAIT=""; COMMIT=""; LIST=0; HAVE_REASON=0
 while [ $# -gt 0 ]; do

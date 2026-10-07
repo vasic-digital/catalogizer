@@ -1,0 +1,134 @@
+# WF14 round 3 mutation: run 1 = all mutants (94 at that time); run 2 = the N1 group re-run after two expect texts were corrected and N1h added
+== run 1
+== control: the unmutated copy through each section used
+control 1 exit       exit=0  ---- 36 ok, 0 failed
+control 10 host      exit=0  ---- 53 ok, 0 failed
+control 11 static    exit=0  ---- 66 ok, 0 failed
+control 12 hooks     exit=0  ---- 4 ok, 0 failed
+control 13 helpers   exit=0  ---- 15 ok, 0 failed
+control 14 contract  exit=0  ---- 93 ok, 0 failed
+control 15 env       exit=0  ---- 27 ok, 0 failed
+control 16 sig       exit=0  ---- 174 ok, 0 failed
+control 17 r2        exit=0  ---- 44 ok, 0 failed
+control 2 usage      exit=0  ---- 34 ok, 0 failed
+control 3 lock       exit=0  ---- 11 ok, 0 failed
+control 4 deferral   exit=0  ---- 28 ok, 0 failed
+control 5 scope      exit=0  ---- 10 ok, 0 failed
+control 6 held       exit=0  ---- 30 ok, 0 failed
+control 7 merge      exit=0  ---- 90 ok, 0 failed
+control 8 verifier   exit=0  ---- 8 ok, 0 failed
+control 9 repo       exit=0  ---- 18 ok, 0 failed
+== mutants (jobs=5)
+mutant                             section      result     first failing line (or the models-what)
+M01_no_scope_check                 5 scope      CAUGHT     FAIL 5.1 a .env file: 13 (got '0', want '13')
+M02_no_cheap_checks                1 exit       CAUGHT     FAIL 1.4 failing cheap check: 10 (got '0', want '10')
+M03_no_push                        1 exit       CAUGHT     FAIL 1.1 clean run: 0 (got '11', want '0')
+M04_verify_without_remote          8 verifier   CAUGHT     FAIL 8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (got '0', want '11')
+M05_failing_check_is_success       1 exit       CAUGHT     FAIL 1.4 failing cheap check: 10 (got '0', want '10')
+M06_scope_refusal_is_success       5 scope      CAUGHT     FAIL 5.1 a .env file: 13 (got '0', want '13')
+M07_lock_never_released            1 exit       CAUGHT     FAIL 1.2 second run after a clean run: 0 (got '20', want '0')
+M08_report_only_on_success         1 exit       CAUGHT     FAIL 1.4: report.json missing at /dev/shm/cpa_test.O38AoW/badcheck/w/.audit/commit-push/20261007T052516Z-14920
+M09_verdict_already_go_removed     6 held       CAUGHT     FAIL 6.4 a hold on a verdict that holds GO in HEAD: 20 (got '14', want '20')
+M10_held_paths_unheld              6 held       CAUGHT     FAIL 6.1 review_pending (no 'review_pending' in 'cpa: exit=14 run=20261007T052441Z-1407523-1a60f9a2 stage=S8 r
+M11_ignored_option                 2 usage      CAUGHT     FAIL 2.1 argument after the message: 20 (got '0', want '20')
+M12_merge_by_rebase                7 merge      CAUGHT     FAIL SHIM: a forbidden git call: verb: -C /dev/shm/cpa_test.Q2Ccnq/merge1/w rebase origin/main
+M13_local_only_pushes              4 deferral   CAUGHT     FAIL 4.2 no push call (got '2', want '0')
+M14_skip_long_not_recorded         4 deferral   CAUGHT     FAIL 4.1 SKIP_LONG: 14 (got '0', want '14')
+M15_sweep_absent_not_deferred      1 exit       CAUGHT     FAIL 1.3 no sweep: 14 (got '0', want '14')
+M16_no_self_test                   10 host      CAUGHT     FAIL 10.1 not_via_host_entry (no 'not_via_host_entry' in '/dev/shm/cpa_test.LnudAg/host/w/scripts/commit-push-
+M17_host_no_rehash                 10 host      CAUGHT     FAIL 10.12 a store blob changed by one byte: 20 (got '0', want '20')
+M18_host_run_id_reuse              10 host      CAUGHT     FAIL 10.10 run_id_in_use (no 'run_id_in_use' in 'mkdir: .audit/commit-push/fixed-id-1/no-hooks: File exists
+M19_host_no_adoption_check         10 host      CAUGHT     FAIL 10.6 an adoption commit off the first-parent chain: 20 (got '0', want '20')
+M20_selftest_ignores_revoke        10 host      CAUGHT     FAIL 10.14 a revoked manifest is refused by the self-test: 20 (got '0', want '20')
+M21_force_with_lease_token         11 static    CAUGHT     FAIL 11.1 commit-push-all.sh spells a forbidden git form: 41:PUSHFLAG="--force-with-lease"
+M22_no_lock                        3 lock       CAUGHT     FAIL 3.2 a second run while the lock is held: 20 (got '0', want '20')
+M23_pending_ignores_head           8 verifier   CAUGHT     FAIL 8.4 a pending row whose sha differs from the head: still 15 (got '0', want '15')
+M24_verifier_14_stays_14           8 verifier   CAUGHT     FAIL 8.1 a remote unreachable at S7 (verifier 14): 11, never 14 (got '14', want '11')
+M25_missing_report_is_clean        8 verifier   CAUGHT     FAIL 8.2 a verifier exit 0 whose report is missing: 20 (fail closed) (got '0', want '20')
+M26_no_remote_reachable_removed    1 exit       CAUGHT     FAIL 1.7 every remote unreachable: 20 (got '11', want '20')
+M27_deferral_write_ignored         4 deferral   CAUGHT     FAIL 4.4 a record_deferral.sh that fails to write its row: 20, never a 14 without its row (got '14', want '20'
+M28_helper_status_to_10            4 deferral   CAUGHT     FAIL 4.5 a stage helper exiting outside its set (commit_recursive 2): 20, never 10 (got '10', want '20')
+M29_held_without_local_only        6 held       CAUGHT     FAIL 6.1 the held commit carries LOCAL_ONLY (no 'Deferred-Gates: LOCAL_ONLY' in 'unheld and held
+M30_no_pending_pin_row             9 repo       CAUGHT     FAIL 9.1 a pending pin row is recorded (got '', want '60caff1b811764a86b065de46efa3870537612ce')
+M31_report_without_hashes          1 exit       CAUGHT     FAIL 1.4 files map missing
+M32_hooks_not_disabled             12 hooks     CAUGHT     FAIL 12.1 hooks ran: commit-msg post-commit pre-commit pre-push reference-transaction 
+M33_no_integration                 7 merge      CAUGHT     FAIL 7.1 diverged repository, no held commit, no conflict: 0 (got '11', want '0')
+M34_merge_conflict_is_success      7 merge      CAUGHT     FAIL 7.6 a merge with a conflict: 12 (got '11', want '12')
+M35_no_s1a_backup                  7 merge      CAUGHT     FAIL 7.11 no backup/s1a/backup.json
+M36_bundle_not_verified            7 merge      CAUGHT     FAIL 7.13 a bundle that git bundle verify rejects: 20 (got '0', want '20')
+M37_held_push_not_mapped           6 held       CAUGHT     FAIL 6.1 a held path: 14 (got '11', want '14')
+M38_pins_unmatched_ignored         8 verifier   CAUGHT     FAIL 8.3 pointer drift with no pending row: 15 (got '0', want '15')
+M39_path_in_submodule_removed      2 usage      equivalent equivalent: commit_recursive.sh refuses the same path with 20 path_in_submodule at S5 (second layer), so the matrix result is unchanged
+M40_resolution_dir_check_removed   7 merge      equivalent equivalent: integrate_merge.sh --resolution refuses the same directory with 20 resolution_dir_invalid (second layer)
+M41_awaits_review_ignored          6 held       CAUGHT     FAIL 6.8 --awaits-review holds every path without a verdict of its own: 14 (got '0', want '14')
+M42_long_gate_missing_ignored      4 deferral   CAUGHT     FAIL 4.7 a missing long-gate verdict: 10 (got '0', want '10')
+M43_live_holder_not_refused        7 merge      CAUGHT     FAIL 7.16 lock_held (no 'lock_held' in 'cpa: FAIL S0 20 merge_in_progress (MERGE_HEAD present: git merge --abo
+M44_ff_status_outside_set_is_success 13 helpers   CAUGHT     FAIL 13.4 integrate_ff_only exit 7 (outside its set): 20, never read as success (got '0', want '20')
+M45_verifier_blind_ignored         13 helpers   CAUGHT     FAIL 13.7 a verifier exit 20 with a readable report: 20 (blind verifier) (got '0', want '20')
+M46_s1a_unrecorded_guard_removed   7 merge      CAUGHT     FAIL 7.18 nothing committed (got '05af22afbb68e64a61f3c5c7d49d72c82adfd3d3', want '98997d156c0c9b8cf94c5e5b4a1
+M47_pending_check_is_zero          4 deferral   CAUGHT     FAIL 4.9 a registry row that the approved copy lacks is pending, never run: 14, not 10 (got '0', want '14')
+M48_host_empty_trust_file_accepted 10 host      CAUGHT     FAIL 10.20 trust_file_absent (no 'trust_file_absent' in '{"refusal":"project_not_trusted","reason":"trust_file
+RM1_signal_status_read_as_success  14 contract  CAUGHT     FAIL 14.20 a SIGTERM mid-run: 20, not 143 and never 0 (got '0', want '20')
+RM2_merge_status_outside_set_is_success 14 contract  CAUGHT     FAIL 14.8 integrate_merge exit 7 (outside its set): 20, never read as success (got '0', want '20')
+RM3_verifier_status_outside_set_is_success 14 contract  CAUGHT     FAIL 14.16 a verifier exit 7 with a readable report (outside its set): 20, never clean (got '0', want '20')
+RM4_validate_20_is_success         14 contract  CAUGHT     FAIL 14.12 validate_cheap 20: 20 check_error (got '0', want '20')
+RM5_own_sha256_not_checked         14 contract  CAUGHT     FAIL 14.21 a released copy changed by one byte: 20 (got '0', want '20')
+RM6_push_with_f                    1 exit       CAUGHT     FAIL SHIM: a forbidden git call: push option: -C /dev/shm/cpa_test.FlwjtU/clean/w push -qf -- mirror ef3010ac4
+RM7_acquire_status_outside_set_proceeds_unlocked 14 contract  CAUGHT     FAIL 14.17 acquire.sh exit 7 (outside its set): 20, the run does not proceed unlocked (got '0', want '20')
+RM8_merge_13_is_success            14 contract  CAUGHT     FAIL 14.7 integrate_merge 13: 13 secret_fold_refused (got '0', want '13')
+M49_owned_env_override             14 contract  CAUGHT     FAIL 14.23 CPA_OWNED_ORGS in the caller's environment widens nothing: 20 (got '0', want '20')
+M50_owed_gates_not_consulted       14 contract  CAUGHT     FAIL 14.1 unbuilt secret and private-key folds and a key-shaped file declared: 14, never 0 (got '0', want '14'
+M51_deferred_registry_rows_ignored 14 contract  CAUGHT     FAIL 14.5 deferred registry rows (go_vet, anti_bluff) in the approved registry: 14, never 0 (got '0', want '14
+M52_absent_owed_list_is_clean      14 contract  CAUGHT     FAIL 14.3 an approved copy without the owed-gate list: 14 (the unbuilt set cannot be read), never 0 (got '0', 
+M53_stale_claim_named_lock_held    14 contract  CAUGHT     FAIL 14.6 reason lock_stale_claim, not lock_held (got 'lock_held', want 'lock_stale_claim')
+M54_lock_held_constant             14 contract  CAUGHT     FAIL 14.24 a usage_error run never took the lock: lock.held false (got 'true', want 'false')
+M55_live_run_listed_interrupted    3 lock       CAUGHT     FAIL 3.2 the report does not list the LIVE holder as an interrupted run (F8) (unexpected '20261007T054849Z-716
+M56_phantom_pending_in_detail      4 deferral   CAUGHT     FAIL 4.1 the detail names no pending check that does not exist (F6) (unexpected 'check_pending_release' in 'SK
+M57_inherited_git_config_not_scrubbed 14 contract  CAUGHT     FAIL 14.31 inherited hooks ran: commit-msg post-commit pre-commit pre-push reference-transaction 
+M58_host_126                       14 contract  CAUGHT     FAIL 14.27 a core the manifest marks non-executable: 20, never the shell's 126 (got '126', want '20')
+M59_run_id_grammar_loose           14 contract  CAUGHT     FAIL 14.28 run_id_malformed (no 'run_id_malformed' in 'cpa: FAIL S0 20 lock_error (acquire.sh exit 2: longops:
+M60_paths_from_read_from_root      14 contract  CAUGHT     FAIL 14.32 a relative --paths-from is read from the directory cpa-host was started in (the decoy beside the ro
+M61_absent_long_gate_list_is_clean 14 contract  CAUGHT     FAIL 14.33 an approved copy without a long-gate list (no long gate was run): 14, never 0 (got '0', want '14')
+N1a_git_family_not_scrubbed        15 env       SURVIVED   N1: no GIT_* variable of the caller is dropped (the env-config pushurl and fsmonitor steer the run) (rc=1; intended assertion: 15.1 a run under a caller)
+N1b_xdg_not_scrubbed               15 env       SURVIVED   N1: the caller XDG_CONFIG_HOME config steers a push (rc=1; intended assertion: 15.4 the run pushed to a remote)
+N1c_bash_env_not_scrubbed          15 env       CAUGHT     FAIL 15.5 the caller file ran in the entry process only (the interpreter reads it before any line of cpa-host;
+N1d_verify_family_not_scrubbed     15 env       CAUGHT     FAIL 15.6 the caller program ran nowhere in the run (got '49', want '0')
+N1e_longops_family_not_scrubbed    15 env       CAUGHT     FAIL 15.7 nothing was written to the caller's directory (got '4', want '0')
+N1f_identity_not_kept              15 env       CAUGHT     FAIL 15.8 the commit carries it (got 't', want 'Owner')
+N1g_scrub_only_in_host             11 static    CAUGHT     FAIL 11.4 the host entry's and the copied script's scrub blocks are the same text (got '# --- cpa env scrub be
+N2a_signals_not_trapped            16 sig       CAUGHT     FAIL 16 SIGINT: the process status is 20, never 130 and never 0 (got '0', want '20')
+N2b_hup_not_trapped                16 sig       CAUGHT     FAIL 16 SIGHUP: the process status is 20, never 129 and never 0 (got '129', want '20')
+N2c_realtime_signals_not_trapped   16 sig       CAUGHT     FAIL 16 SIG40: the process status is 20, never 168 and never 0 (got '168', want '20')
+N2d_signal_during_report_not_swallowed 16 sig       CAUGHT     FAIL 16.3 a SIGTERM that arrives while the report is written: the run still ends 0 (the report is complete, th
+N2e_early_exit_trap_removed        16 sig       CAUGHT     FAIL 16.4 a SIGTERM during the self-test: 20, never 143 (got '143', want '20')
+N2f_host_exit_trap_removed         16 sig       CAUGHT     FAIL 16.5 a SIGHUP in the host entry: 20, never 129 (got '129', want '20')
+N3a_sweep_root_not_given           17 r2        CAUGHT     FAIL 17.11 control: the real sweep ran at S0 (its table is in sweep-s0.out) (no 'AM-G2' in 'sweep: not_a_repos
+N3b_sweep_keeps_run_env_config     17 r2        CAUGHT     FAIL 17.11 a run with the real sweep in the approved manifest: 0, never a sweep_error (got '20', want '0')
+N4a_not_judged_not_deferred        17 r2        CAUGHT     FAIL 17.7 a declared symlink no check judged: 14, never 0 (got '0', want '14')
+N4b_suffix_left_out_not_read       17 r2        CAUGHT     FAIL 17.8 a shell file left out of shell_parse: 14, never 0 (got '0', want '14')
+N4c_every_left_out_is_a_deferral   17 r2        CAUGHT     FAIL 17.9 an image no text check applies to is not a deferral (nothing is owed): 0 (got '14', want '0')
+N5a_owed_gates_read_after_s1       17 r2        CAUGHT     FAIL 17.6 the pushed S1 merge commit carries the owed-gate flag (recorded at S0, before S1) (no 'GATES_NOT_BUI
+N7a_host_state_unbound             17 r2        CAUGHT     FAIL 17.10 the refusal names the cause (no 'state_unresolved' in '/dev/shm/cpa_test.c2cbsW/pe/bin/cpa-host: li
+RN1_lock_released_claimed_on_failure 17 r2        CAUGHT     FAIL 17.1 a release.sh that fails: lock.released is false, the report never claims a release that did not happ
+RN2_run_id_boundary_65             17 r2        CAUGHT     FAIL 17.2 a 65-character run id: 20 at the host entry (got '0', want '20')
+RN3_owed_last_row_without_newline_dropped 17 r2        CAUGHT     FAIL 17.3 an owed row without a final newline is still owed: 14, never 0 (got '0', want '14')
+RN4_run_alive_ignores_start_time   17 r2        CAUGHT     FAIL 17.4 a run.pid whose process id is alive but whose start time differs (pid reuse) is listed interrupted (
+RN5_own_run_listed_live            17 r2        CAUGHT     FAIL 17.5 a run never lists itself as live (unexpected '20261007T060431Z-2715300-bb2ab996' in '["20261007T0604
+---- mutants: 94 total, 90 caught, 2 survived, 2 equivalent (second layer, not counted), 0 inapplicable
+rc=1
+== run 2 (--only ^N1)
+== control: the unmutated copy through each section used
+control 11 static    exit=0  ---- 66 ok, 0 failed
+control 15 env       exit=0  ---- 27 ok, 0 failed
+== mutants (jobs=4)
+mutant                             section      result     first failing line (or the models-what)
+N1a_git_family_not_scrubbed        15 env       CAUGHT     FAIL 15.3 a run under caller GIT_CONFIG_GLOBAL and GIT_CONFIG_SYSTEM files: 0 (got '11', want '0')
+N1h_caller_config_count_extended   15 env       CAUGHT     FAIL 15.1 a run under a caller's env-config pushurl: 0 (got '11', want '0')
+N1b_xdg_not_scrubbed               15 env       CAUGHT     FAIL 15.4 a run under a caller XDG_CONFIG_HOME: 0 (got '11', want '0')
+N1c_bash_env_not_scrubbed          15 env       CAUGHT     FAIL 15.5 the caller file ran in the entry process only (the interpreter reads it before any line of cpa-host;
+N1d_verify_family_not_scrubbed     15 env       CAUGHT     FAIL 15.6 the caller program ran nowhere in the run (got '49', want '0')
+N1e_longops_family_not_scrubbed    15 env       CAUGHT     FAIL 15.7 nothing was written to the caller's directory (got '4', want '0')
+N1f_identity_not_kept              15 env       CAUGHT     FAIL 15.8 the commit carries it (got 't', want 'Owner')
+N1g_scrub_only_in_host             11 static    CAUGHT     FAIL 11.4 the host entry's and the copied script's scrub blocks are the same text (got '# --- cpa env scrub be
+---- mutants: 8 total, 8 caught, 0 survived, 0 equivalent (second layer, not counted), 0 inapplicable
+rc=0

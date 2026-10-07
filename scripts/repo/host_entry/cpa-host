@@ -29,16 +29,44 @@
 #           CPA_RUN_ID and CPA_ADOPTION_COMMIT in the environment.
 # Refusals  printed as one JSON line on stderr, before any run directory exists (apart from approved_copy_invalid, which removes its own).
 # Exits     whatever the copied script gives (0, 10 to 15, 20); 20 for every refusal of this script, an approved core that cannot be executed included
-#           (approved_copy_invalid core_not_executable: never the shell's own 126).
+#           (approved_copy_invalid core_not_executable: never the shell's own 126), HOME and CPA_HOST_STATE both unset (state_unresolved), and any other status
+#           of this script before its exec (a `set -u` error, ANY catchable terminating signal): one JSON line internal_error / host_exit_<status>, never the shell's own.
+# Environment  the caller's exported GIT_* (but the commit identity), LONGOPS_*/ANTIMESS_*/AM_*/VERIFY_*/DISK_HEADROOM_* (but LONGOPS_ALLOW_TMPFS), XDG_CONFIG_HOME, BASH_ENV, ENV and
+#           CDPATH are dropped before any other line runs (the scrub block below, the same text as in commit-push-all.sh); see INSTALL.md "The environment of a run".
 # Never     writes into the repository's tracked tree, into the state directory or into the store; installs or edits itself; runs a git command
 #           that moves a ref; a force, a rebase, a reset.
 set -u
 LC_ALL=C
-# no inherited git state steers a git call of this script or of the run it starts (WF11 review F11)
-unset GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_NAMESPACE GIT_PREFIX GIT_CONFIG_PARAMETERS
+# --- cpa env scrub begin ---
+# What a run executes and where it pushes is decided by the owner's approvals, never by the caller's environment (WF11 F1/F11, WF14 N1/N3). The CLASS is dropped, not
+# its known members: every exported GIT_* variable (config injection by GIT_CONFIG_COUNT/KEY_n/VALUE_n, GIT_CONFIG_PARAMETERS/GLOBAL/SYSTEM, directories, exec path, ssh
+# command) except the commit identity; the longops, anti-mess, verifier and disk families (locations, program names, clocks, test hooks) except the durability knob;
+# the XDG config directory and the shell start-up files. HOME, PATH, TMPDIR, CPA_HOST_STATE and SKIP_LONG are the owner's own process environment and the one documented
+# input (the trust root lives under CPA_HOST_STATE: it is the boundary, not a leak). This text is the same in scripts/repo/host_entry/cpa-host (matrix section 11).
+for _v in $(compgen -e); do
+  case "$_v" in
+    GIT_AUTHOR_NAME|GIT_AUTHOR_EMAIL|GIT_COMMITTER_NAME|GIT_COMMITTER_EMAIL|LONGOPS_ALLOW_TMPFS) ;;
+    GIT_*|LONGOPS_*|ANTIMESS_*|AM_*|VERIFY_*|DISK_HEADROOM_*|XDG_CONFIG_HOME|BASH_ENV|ENV|CDPATH|GLOBIGNORE) unset "$_v" ;;
+  esac
+done; unset _v
+# --- cpa env scrub end ---
+# --- cpa signals begin ---
+# Every catchable signal that terminates by default ends the process through its EXIT trap with the status 128+n (WF14 N2): bash otherwise runs the EXIT trap with the
+# status of the last completed command and re-raises the signal, so a report said `exit 0` and the process status left the documented set. The list is derived from
+# the kernel's own numbering, never enumerated; the signals that do not terminate (CHLD, CONT, STOP, TSTP, TTIN, TTOU, URG, WINCH) and KILL (untrappable) are left alone.
+cpa_signals() { # cpa_signals exit|swallow: exit = 128+n ends the run; swallow = a no-op handler (the report is being written; a handled trap is reset in a child, an ignored one would not be)
+  local n nm
+  for n in $(seq 1 64); do
+    nm="$(kill -l "$n" 2>/dev/null)" || continue; nm="${nm#SIG}"
+    case "$nm" in ''|KILL|STOP|CHLD|CONT|TSTP|TTIN|TTOU|URG|WINCH|EXIT|DEBUG|ERR|RETURN) continue ;; esac
+    if [ "$1" = swallow ]; then trap ':' "$n" 2>/dev/null; else trap "exit $((128+n))" "$n" 2>/dev/null; fi
+  done
+}
+# --- cpa signals end ---
+# an exit status outside the documented set (0, 10 to 15, 20: a `set -u` error, a signal) is a refusal 20 of this script, never the shell's own status (WF14 N2/N7)
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) printf "{\"refusal\":\"internal_error\",\"reason\":\"host_exit_%s\"}\n" "$_rc" >&2; exit 20 ;; esac' EXIT
+cpa_signals exit
 CALLER_DIR="$PWD"
-STATE="${CPA_HOST_STATE:-$HOME/.local/state/cpa-host}"
-TRUST="$STATE/trust.json"
 SELF_REL="scripts/repo/host_entry/cpa-host"
 CORE_REL="scripts/commit-push-all.sh"
 
@@ -47,6 +75,9 @@ refuse() { # refuse <code word> <reason> [detail]: one JSON line on stderr, exit
     || printf '{"refusal":"%s","reason":"%s"}\n' "$1" "$2" >&2
   exit 20
 }
+# the state directory: CPA_HOST_STATE, else under HOME; neither is a refusal 20 (never the shell's `unbound variable` 1, WF14 N7)
+if [ -n "${CPA_HOST_STATE:-}" ]; then STATE="$CPA_HOST_STATE"; elif [ -n "${HOME:-}" ]; then STATE="$HOME/.local/state/cpa-host"; else refuse state_unresolved no_state_dir "neither CPA_HOST_STATE nor HOME is set"; fi
+TRUST="$STATE/trust.json"
 for t in git jq sha256sum realpath; do command -v "$t" >/dev/null 2>&1 || refuse tool_missing "$t" "INSTALL.md checks jq, sha256sum and realpath before the install"; done
 
 # ---- modes that need no project --------------------------------------------------------------------------------------------------------

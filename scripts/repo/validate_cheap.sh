@@ -35,7 +35,8 @@
 #         `legacy_row_not_dropped` (10): a declared legacy root report (exact-path row of class legacy-collection) whose content
 #         differs from HEAD while the tables in force keep its row.
 # Output  stdout, one tab-separated line per finding:  fail <check> <path> | deferred <check> | check_pending_release <check> |
-#         left_out <check> <path> | size_alarm <path> <size> <bound> | class_table_unreviewed <table> | legacy_row_not_dropped <path> |
+#         left_out <check> <path> | not_judged <check> <path> (the left_out of a check that the path's own suffix selects: a `.sh` file that looks binary was not
+#         parsed; the generic text checks leaving a binary file out are `left_out` only) | size_alarm <path> <size> <bound> | class_table_unreviewed <table> | legacy_row_not_dropped <path> |
 #         table_admits_unheld_path <path> <check> | symlink_not_judged <path> (a declared symlink of a non-evidence class: reported, never skipped silently)
 #         A declared symlink in class evidence or evidence-ledger, or a regular file whose HEAD entry is a symlink there, is `fail symlink <path>` (10):
 #         it is judged by its link type, never followed (WF3 review B-1).
@@ -266,13 +267,10 @@ def verdicts(path, tdirp):
     return cache[k]
 # ---- the checks ---------------------------------------------------------------------------------------------------------------------
 TEXTLESS = {'large_file'}
+SUFFIXES = {'shell_parse': ('.sh', '.bash'), 'check_yaml': ('.yaml', '.yml'), 'check_json': ('.json',), 'revision_header': ('.md',), 'no_false_positive_log': ('_test.go',)}
 def suffix_ok(name, p):
-    if name == 'shell_parse': return p.endswith(('.sh', '.bash'))
-    if name == 'check_yaml': return p.endswith(('.yaml', '.yml'))
-    if name == 'check_json': return p.endswith('.json')
-    if name == 'revision_header': return p.endswith('.md')
-    if name == 'no_false_positive_log': return p.endswith('_test.go')
-    return True
+    sfx = SUFFIXES.get(name)
+    return True if sfx is None else p.endswith(sfx)
 def is_binary(path):
     try:
         with open(os.path.join(root, path), 'rb') as f: return b'\0' in f.read(8192)
@@ -371,7 +369,10 @@ for path in declared:
         if ver is None: die('table_invalid', f'class {cls} has no verdict for {name}')
         res = 'skip'; detail = ''
         if ver != 'skip':
-            if name not in TEXTLESS and is_binary(path): emit('left_out', name, path); continue
+            if name not in TEXTLESS and is_binary(path):
+                emit('left_out', name, path)
+                if name in SUFFIXES: emit('not_judged', name, path)   # the language check this path's own suffix selects judged nothing (WF14 N4)
+                continue
             if rows[name]['argv']: script_files[name].append(path); res = 'script'
             else:
                 res, detail = run_builtin(name, path, int(ver) if ver.isdigit() else None)

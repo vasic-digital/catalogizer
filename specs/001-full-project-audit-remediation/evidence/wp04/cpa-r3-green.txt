@@ -1,0 +1,8 @@
+# WF14 round 3 GREEN: the whole matrix on this revision (final scripts), TMPDIR=/dev/shm
+---- 741 ok, 0 failed
+rc=0
+ok lines: 741
+9daf7b2ab10aea275fb0ef882c0b64a64e252acec3a4b3dc736aa8cb97eae070  scripts/commit-push-all.sh
+250ba86531b9f371e287f83a1e2fc2412566af2260eb7fac76c17c22f7605bd1  scripts/repo/host_entry/cpa-host
+c7891dacef9555977fcae39157242e013a54751bcc2195e7154a99562dc372e3  scripts/repo/tests/test_commit_push_all.sh
+ff4303ffd620d1b4586e3f607f76cb5661e50523ceb0b00643a65e27b1f73179  scripts/repo/tests/cpa_mutants.py
