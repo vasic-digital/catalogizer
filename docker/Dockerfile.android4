@@ -2,7 +2,7 @@
 # Ubuntu 22.04 with JDK 17 + Android SDK
 # JDK 17 is more stable with AGP 8.1.0 and avoids JDK image transform issues
 
-FROM ubuntu:22.04
+FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
 
 LABEL maintainer="Catalogizer Team"
 LABEL description="Android builder for Catalogizer project with JDK 17"
@@ -57,7 +57,8 @@ RUN mkdir -p "${ANDROID_HOME}/cmdline-tools" \
     && rm cmdline-tools.zip
 
 # Accept licenses and install required SDK components
-RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+# No `|| true`: the exit status of the pipeline is sdkmanager's, so a licence that cannot be accepted fails the build (owner decision 2026-10-07).
+RUN yes | sdkmanager --licenses >/dev/null
 
 # Install Android SDK components with retry
 RUN for i in 1 2 3; do \

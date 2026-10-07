@@ -1,0 +1,105 @@
+{
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1055,
+            "digest": "sha256:9db099105405c648166e6b94155eb32f8da12673cf1f455207f7385cc9a77283",
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1055,
+            "digest": "sha256:dad4007121e0f5af0bf67e847d314516411e22bdf6ba996c1aa533ea275df395",
+            "platform": {
+                "architecture": "arm64",
+                "os": "linux"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1055,
+            "digest": "sha256:414c6bf9e5e3398a7f064f0dae58455a365401156112d6cb27ab4f2417b548fc",
+            "platform": {
+                "architecture": "s390x",
+                "os": "linux"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1055,
+            "digest": "sha256:4c890948c692e450166db1de94b5c2dda31b28a3b734a2585867dd2c9f8dfda2",
+            "platform": {
+                "architecture": "ppc64le",
+                "os": "linux"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1111,
+            "digest": "sha256:0d50f35a2caf4331eb8d78882d8cb9cb95ab422702496ab84e0a3ac69fd2a246",
+            "platform": {
+                "architecture": "unknown",
+                "os": "unknown"
+            },
+            "annotations": {
+                "vnd.docker.reference.digest": "sha256:9db099105405c648166e6b94155eb32f8da12673cf1f455207f7385cc9a77283",
+                "vnd.docker.reference.type": "attestation-manifest"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1111,
+            "digest": "sha256:8ad517b02e4df0b2e05053d41efcf4c5122eb858b020aa41814cc2405fd47c35",
+            "platform": {
+                "architecture": "unknown",
+                "os": "unknown"
+            },
+            "annotations": {
+                "vnd.docker.reference.digest": "sha256:dad4007121e0f5af0bf67e847d314516411e22bdf6ba996c1aa533ea275df395",
+                "vnd.docker.reference.type": "attestation-manifest"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1111,
+            "digest": "sha256:7894b28ff1da1ffa217252fee220a9c0df268a58ab28db494473734518a67dd0",
+            "platform": {
+                "architecture": "unknown",
+                "os": "unknown"
+            },
+            "annotations": {
+                "vnd.docker.reference.digest": "sha256:414c6bf9e5e3398a7f064f0dae58455a365401156112d6cb27ab4f2417b548fc",
+                "vnd.docker.reference.type": "attestation-manifest"
+            }
+        },
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 1111,
+            "digest": "sha256:7c7f3890e854ab5b67d2cf3712e082505c07ccef2e97ba687afd286e8a1aa5f4",
+            "platform": {
+                "architecture": "unknown",
+                "os": "unknown"
+            },
+            "annotations": {
+                "vnd.docker.reference.digest": "sha256:4c890948c692e450166db1de94b5c2dda31b28a3b734a2585867dd2c9f8dfda2",
+                "vnd.docker.reference.type": "attestation-manifest"
+            }
+        }
+    ],
+    "annotations": {
+        "org.opencontainers.image.created": "2026-10-01T12:52:48Z",
+        "org.opencontainers.image.description": "A Fast Vulnerability Scanner for Containers",
+        "org.opencontainers.image.documentation": "https://trivy.dev/v0.75.0/",
+        "org.opencontainers.image.revision": "591e9799316a602e703f0b484f6c6d7b234ec8f3",
+        "org.opencontainers.image.source": "https://github.com/aquasecurity/trivy",
+        "org.opencontainers.image.title": "trivy",
+        "org.opencontainers.image.url": "https://www.aquasec.com/products/trivy/",
+        "org.opencontainers.image.vendor": "Aqua Security",
+        "org.opencontainers.image.version": "0.75.0"
+    }
+}

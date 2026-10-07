@@ -1,0 +1,3 @@
+VIOLATION from_unpinned docker/Dockerfile.android:5: docker.io/library/openjdk:21-jdk
+check_pins: 1 violations in 10 files scanned
+rc=1

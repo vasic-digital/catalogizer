@@ -1,0 +1,17 @@
+  ok   declaration file says 3.11
+  ok   3.10 is below 3.11 -> 1
+  ok   3.9 is below 3.11 -> 1
+  ok   3.11 meets the minimum -> 0
+  ok   3.12 meets the minimum -> 0
+  ok   4.0 meets the minimum (major compare) -> 0
+  ok   --min 3.12 rejects 3.11 -> 1
+  ok   unparseable output is refused (blind probe) -> 3
+  ok   interpreter that fails to run is refused -> 3
+  ok   missing interpreter is refused -> 3
+  ok   bad --min -> 2
+  ok   bad --min 3.11.2 -> 2
+  ok   unknown argument -> 2
+  ok   REAL python3 of this environment (3.11.2) meets the declared minimum
+  ok   MUTATION: inverted comparison now accepts 3.10 (so the 3.10->1 test above is load-bearing)
+PASS=15 FAIL=0
+rc=0

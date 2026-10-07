@@ -1,0 +1,23 @@
+# identity: android-base sibling-census (android2/3/4 base existence)
+# head: a002fc01 (working tree uncommitted)
+# sha256 docker/Dockerfile.android2: 96afe78aeda2b6d66a36d96962714814d51b62187d87024c6d34673b19892055
+# sha256 docker/Dockerfile.android3: 8a746a7bca2a860ebf58701bde5b51ce355d920c7e06cac5269f6aabb3d427c5
+# sha256 docker/Dockerfile.android4: a9cb940f60872d08f014562e5863478e17906a4ea07b41ab7dca28b03c77495c
+# run_at: 2026-10-07T18:00:03Z
+## all FROM lines
+docker/Dockerfile.android4:5:FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+docker/Dockerfile.android3:5:FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+docker/Dockerfile.android2:5:FROM docker.io/library/ubuntu:22.04@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc
+docker/Dockerfile.android:6:FROM docker.io/library/ubuntu:24.04@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
+## NEGATIVE control (known-missing base must FAIL)
+openjdk:21-jdk rc=125 (expect nonzero)
+## POSITIVE control + subjects (must resolve)
+docker.io/library/ubuntu@sha256:2edbbc5dc405e9612ba3584ce95480277e3eb374407b5505fe26f17df77c7dbc rc=0
+docker.io/library/ubuntu@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55 rc=0
+## check_pins on 2/3/4
+rc=0
+## baseline rows for android in pins-baseline.txt
+72:from_unpinned	docker/Dockerfile.android	5	docker.io/library/openjdk:21-jdk
+73:from_unpinned	docker/Dockerfile.android2	5	ubuntu:22.04
+74:from_unpinned	docker/Dockerfile.android3	5	ubuntu:22.04
+75:from_unpinned	docker/Dockerfile.android4	5	ubuntu:22.04

@@ -1,0 +1,9 @@
+# identity: android-base RED
+# head: 69ca319d (working tree uncommitted)
+# sha256 docker/Dockerfile.android: 0c3302f162575c804dea89ca233b6f29aefb22e38f0697f411b47a47d1d7c91a
+# run_at: 2026-10-07T17:56:58Z
+$ bash scripts/containers/check_pins.sh --list docker/Dockerfile.android docker/Dockerfile.android2 docker/Dockerfile.android3 docker/Dockerfile.android4
+from_unpinned	docker/Dockerfile.android	5	docker.io/library/openjdk:21-jdk
+rc=1
+$ podman manifest inspect docker.io/library/openjdk:21-jdk
+Error: reading image "docker://openjdk:21-jdk": reading manifest 21-jdk in docker.io/library/openjdk: manifest unknown

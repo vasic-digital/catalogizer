@@ -1,0 +1,21 @@
+  ok   swallow || true fires
+  ok   swallow across a backslash continuation fires
+  ok   swallow || : fires
+  ok   shell script swallow fires
+  FAIL compose command swallow fires :: rc=0 want=1 out=check_licence_swallow: OK 1 files scanned, no licence-acceptance swallow
+  ok   comment carrier and a clean RUN do not fire
+  ok   unrelated || true does not fire
+  ok   `|| echo true` is not a swallow of the word true... only || true / || :
+  ok   control needle: --list sees the fixture file
+  ok   empty root is refused (blind instrument), not clean
+  ok   missing root is a usage error
+  FAIL REAL TREE has a licence-acceptance swallow :: docker/Dockerfile.android:46: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+docker/Dockerfile.android2:54: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+docker/Dockerfile.android3:60: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+docker/Dockerfile.android4:60: RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+scripts/android/setup.sh:177:     yes | sdkmanager --licenses >/dev/null 2>&1 || true
+check_licence_swallow: FAIL 5 licence-acceptance step(s) swallow their failure (remove the `|| true`)
+  ok   control needle: real-tree scan sees docker/Dockerfile.android4
+  ok   MUTATION: swallow re-injected into a copy of the real Dockerfile.android fires
+PASS=12 FAIL=2
+rc=1

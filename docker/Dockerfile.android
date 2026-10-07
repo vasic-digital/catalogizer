@@ -1,8 +1,9 @@
 # Catalogizer Android Builder Image
-# Based on official Android Docker image with complete JDK toolchain
-# Provides JDK 21 + Android SDK 34 for building Android apps
+# Ubuntu 24.04 (digest-pinned, IMG-UBUNTU-BASE in build/containers/images.lock.yaml) with the packaged JDK 21 + Android SDK 34
+# The former base docker.io/library/openjdk:21-jdk no longer exists upstream (manifest unknown); owner decision 2026-10-07: move onto the
+# Ubuntu base with a packaged JDK 21, as build/containers/android/Containerfile does.
 
-FROM docker.io/library/openjdk:21-jdk
+FROM docker.io/library/ubuntu:24.04@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
 
 LABEL maintainer="Catalogizer Team"
 LABEL description="Android builder for Catalogizer project"
@@ -13,12 +14,14 @@ SHELL ["/bin/bash", "-c"]
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
+ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV ANDROID_HOME=/opt/android-sdk
 ENV ANDROID_SDK_ROOT=${ANDROID_HOME}
 ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
 
 # Install basic dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-21-jdk-headless \
     curl \
     wget \
     unzip \
@@ -43,7 +46,8 @@ RUN mkdir -p "${ANDROID_HOME}/cmdline-tools" \
     && rm cmdline-tools.zip
 
 # Accept licenses and install required SDK components
-RUN yes | sdkmanager --licenses >/dev/null 2>&1 || true
+# No `|| true`: the exit status of the pipeline is sdkmanager's, so a licence that cannot be accepted fails the build (owner decision 2026-10-07).
+RUN yes | sdkmanager --licenses >/dev/null
 
 # Install Android SDK components with retry logic
 RUN for i in 1 2 3; do \

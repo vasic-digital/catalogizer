@@ -174,7 +174,11 @@ install_android_sdk() {
     
     # Accept licenses
     log_info "Accepting Android SDK licenses..."
-    yes | sdkmanager --licenses >/dev/null 2>&1 || true
+    # No `|| true` (owner decision 2026-10-07): the pipeline status is sdkmanager's (no pipefail here), so a licence that cannot be accepted stops the setup.
+    if ! yes | sdkmanager --licenses >/dev/null; then
+        log_error "Could not accept the Android SDK licenses (sdkmanager --licenses failed)"
+        return 1
+    fi
     
     # Install SDK packages with retries
     log_info "Installing Android SDK packages..."

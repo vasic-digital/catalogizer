@@ -1,0 +1,16 @@
+  ok   swallow || true fires
+  ok   swallow across a backslash continuation fires
+  ok   swallow || : fires
+  ok   shell script swallow fires
+  ok   compose command swallow fires
+  ok   comment carrier and a clean RUN do not fire
+  ok   unrelated || true does not fire
+  ok   `|| echo true` is not a swallow of the word true... only || true / || :
+  ok   control needle: --list sees the fixture file
+  ok   empty root is refused (blind instrument), not clean
+  ok   missing root is a usage error
+  ok   REAL TREE has no licence-acceptance swallow (check_licence_swallow: OK 562 files scanned, no licence-acceptance swallow)
+  ok   control needle: real-tree scan sees docker/Dockerfile.android4
+  ok   MUTATION: swallow re-injected into a copy of the real Dockerfile.android fires
+PASS=14 FAIL=0
+rc=0
