@@ -1,0 +1,636 @@
+{
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  },
+  "hosts": [
+    {
+      "alias": "Synology1",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "unreachable_or_refused",
+          "works": false,
+          "reason": "ConnectionRefusedError: [Errno 111] Connection refused",
+          "listing_latency_ms": null,
+          "read_mib_per_s_median_total": null,
+          "read_mib_per_s_median_after_first_byte": null,
+          "shares_listed": 0,
+          "server": null,
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": null
+        },
+        "ftps": {
+          "status": "unreachable_or_refused",
+          "works": false,
+          "reason": "ConnectionRefusedError: [Errno 111] Connection refused",
+          "listing_latency_ms": null,
+          "read_mib_per_s_median_total": null,
+          "read_mib_per_s_median_after_first_byte": null,
+          "shares_listed": 0,
+          "server": null,
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": null
+        },
+        "sftp": {
+          "status": "session_failed",
+          "works": false,
+          "reason": "OSError: sftp channel closed",
+          "listing_latency_ms": null,
+          "read_mib_per_s_median_total": null,
+          "read_mib_per_s_median_after_first_byte": null,
+          "shares_listed": 0,
+          "server": null,
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": null,
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": null,
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology2",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1135.6,
+            "n": 38,
+            "p50_ms": 5.1,
+            "p95_ms": 63.6
+          },
+          "read_mib_per_s_median_total": 54.76,
+          "read_mib_per_s_median_after_first_byte": 86.69,
+          "shares_listed": 4,
+          "server": "220 Synology2 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1188.8,
+            "n": 38,
+            "p50_ms": 25.6,
+            "p95_ms": 49.2
+          },
+          "read_mib_per_s_median_total": 23.32,
+          "read_mib_per_s_median_after_first_byte": 73.49,
+          "shares_listed": 4,
+          "server": "220 Synology2 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "1155360b33b81421c22f2b2b80952d7507e1d44db63751cfb6b345dfde607807"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1294.8,
+            "n": 55,
+            "p50_ms": 8.7,
+            "p95_ms": 86.3
+          },
+          "read_mib_per_s_median_total": 10.74,
+          "read_mib_per_s_median_after_first_byte": 11.63,
+          "shares_listed": 4,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "ftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftp",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology3",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 167.3,
+            "n": 27,
+            "p50_ms": 6.1,
+            "p95_ms": 145.7
+          },
+          "read_mib_per_s_median_total": 77.6,
+          "read_mib_per_s_median_after_first_byte": 93.32,
+          "shares_listed": 1,
+          "server": "220 Synology3 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 220.8,
+            "n": 27,
+            "p50_ms": 28.7,
+            "p95_ms": 194.5
+          },
+          "read_mib_per_s_median_total": 25.34,
+          "read_mib_per_s_median_after_first_byte": 58.15,
+          "shares_listed": 1,
+          "server": "220 Synology3 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "31d3ede0b201fc75b410792879f32a55a19cffa37c57f8074602245d3680d03f"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 502.3,
+            "n": 26,
+            "p50_ms": 5.7,
+            "p95_ms": 51.2
+          },
+          "read_mib_per_s_median_total": 13.14,
+          "read_mib_per_s_median_after_first_byte": 13.94,
+          "shares_listed": 1,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "ftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftp",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology4",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 87.4,
+            "n": 31,
+            "p50_ms": 4.8,
+            "p95_ms": 16.5
+          },
+          "read_mib_per_s_median_total": 85.76,
+          "read_mib_per_s_median_after_first_byte": 107.08,
+          "shares_listed": 1,
+          "server": "220 Synology4 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 51.2,
+            "n": 31,
+            "p50_ms": 25.2,
+            "p95_ms": 31.5
+          },
+          "read_mib_per_s_median_total": 26.48,
+          "read_mib_per_s_median_after_first_byte": 65.52,
+          "shares_listed": 1,
+          "server": "220 Synology4 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "0e176d89a759e987e98c135b133e1e1255fa173438d42433461dc92e22589370"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 55.8,
+            "n": 31,
+            "p50_ms": 6.8,
+            "p95_ms": 34.4
+          },
+          "read_mib_per_s_median_total": 3.4,
+          "read_mib_per_s_median_after_first_byte": 13.21,
+          "shares_listed": 1,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "ftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftp",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology5",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1063.8,
+            "n": 62,
+            "p50_ms": 2.8,
+            "p95_ms": 47.0
+          },
+          "read_mib_per_s_median_total": 81.56,
+          "read_mib_per_s_median_after_first_byte": 97.86,
+          "shares_listed": 3,
+          "server": "220 Synology5 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1097.3,
+            "n": 62,
+            "p50_ms": 15.8,
+            "p95_ms": 70.6
+          },
+          "read_mib_per_s_median_total": 26.12,
+          "read_mib_per_s_median_after_first_byte": 46.24,
+          "shares_listed": 3,
+          "server": "220 Synology5 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "ba1b639f7aab00ba056a817679f3c0b442cf6c0fdc07bcf75812a4b6a96abf32"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 63.6,
+            "n": 56,
+            "p50_ms": 4.8,
+            "p95_ms": 44.3
+          },
+          "read_mib_per_s_median_total": 17.26,
+          "read_mib_per_s_median_after_first_byte": 18.13,
+          "shares_listed": 3,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "ftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftp",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology6",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1072.6,
+            "n": 25,
+            "p50_ms": 5.5,
+            "p95_ms": 1066.1
+          },
+          "read_mib_per_s_median_total": 1.8,
+          "read_mib_per_s_median_after_first_byte": 42.55,
+          "shares_listed": 3,
+          "server": "220 Synology6 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1101.7,
+            "n": 25,
+            "p50_ms": 19.6,
+            "p95_ms": 1096.5
+          },
+          "read_mib_per_s_median_total": 0.61,
+          "read_mib_per_s_median_after_first_byte": 47.1,
+          "shares_listed": 3,
+          "server": "220 Synology6 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "47ea8e98103c92d6879e5b5c140bec00e6c5ffb8bf6fa45ac8b9943afe4a1bf6"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 56.9,
+            "n": 62,
+            "p50_ms": 4.4,
+            "p95_ms": 38.0
+          },
+          "read_mib_per_s_median_total": 2.8,
+          "read_mib_per_s_median_after_first_byte": 17.32,
+          "shares_listed": 3,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "sftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftps",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    },
+    {
+      "alias": "Synology7",
+      "protocols": {
+        "nfs-rpc": {
+          "status": "no_exports_listed_all_mounts_refused",
+          "works": false,
+          "reason": "no_exports_listed_all_mounts_refused",
+          "versions": {
+            "v2": "ok",
+            "v3": "ok",
+            "v4": "mismatch"
+          },
+          "exports_listed": 0,
+          "mount_attempt_codes": [
+            "ACCES"
+          ],
+          "mountable_paths": 0,
+          "control_path_code": "ACCES"
+        },
+        "ftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1070.2,
+            "n": 33,
+            "p50_ms": 7.1,
+            "p95_ms": 25.4
+          },
+          "read_mib_per_s_median_total": 0.64,
+          "read_mib_per_s_median_after_first_byte": 59.95,
+          "shares_listed": 3,
+          "server": "220 Synology7 FTP server ready.",
+          "tls": null,
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "ftps": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 1115.7,
+            "n": 33,
+            "p50_ms": 17.7,
+            "p95_ms": 78.3
+          },
+          "read_mib_per_s_median_total": 0.33,
+          "read_mib_per_s_median_after_first_byte": 108.36,
+          "shares_listed": 3,
+          "server": "220 Synology7 FTP server ready.",
+          "tls": {
+            "negotiated": "TLSv1.3",
+            "accepts": {
+              "TLSv1.2": true,
+              "TLSv1.3": true
+            },
+            "self_signed": false,
+            "cert_sha256": "613c0244c36eefb8cafd08ee86cbd0573b2a79cfb8c15c383668942d797c5b72"
+          },
+          "host_key_types": [],
+          "mlsd": true
+        },
+        "sftp": {
+          "status": "ok",
+          "works": true,
+          "reason": null,
+          "listing_latency_ms": {
+            "max_ms": 70.9,
+            "n": 45,
+            "p50_ms": 6.8,
+            "p95_ms": 66.0
+          },
+          "read_mib_per_s_median_total": 13.21,
+          "read_mib_per_s_median_after_first_byte": 16.0,
+          "shares_listed": 3,
+          "server": "OpenSSH_8.2",
+          "tls": null,
+          "host_key_types": [
+            "ecdsa-sha2-nistp256",
+            "ssh-ed25519",
+            "ssh-rsa"
+          ],
+          "mlsd": null
+        }
+      },
+      "best_protocol_by_median_read_mib_per_s": "sftp",
+      "best_protocol_by_median_read_mib_per_s_after_first_byte": "ftps",
+      "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
+    }
+  ]
+}

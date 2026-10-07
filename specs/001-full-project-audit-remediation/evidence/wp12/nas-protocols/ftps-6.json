@@ -1,0 +1,243 @@
+{
+  "alias": "Synology6",
+  "auth_tls_ms": [
+    13.5,
+    14.1,
+    13.3
+  ],
+  "banner": "220 Synology6 FTP server ready.",
+  "connect_ms": [
+    4.0,
+    2.4,
+    2.9
+  ],
+  "content_recorded": false,
+  "feat": [
+    "AUTH",
+    "CCC",
+    "MDTM",
+    "MFMT",
+    "MLSD",
+    "MLST",
+    "PBSZ",
+    "PROT",
+    "REST",
+    "SIZE",
+    "TVFS",
+    "UTF8"
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 1101.7,
+    "n": 25,
+    "p50_ms": 19.6,
+    "p95_ms": 1096.5
+  },
+  "login": "ok",
+  "login_ms": [
+    44.4,
+    46.1,
+    46.0
+  ],
+  "measured_at": "2026-10-07T17:32:35Z",
+  "mlsd": {
+    "root_listing_ms": 14.5,
+    "supported": true
+  },
+  "names_recorded": false,
+  "opts_utf8_on": "200",
+  "protocol": "ftps",
+  "root_entries": 3,
+  "root_names_sha256": "7285307303023cd396f00bb58697ed6bb36acc47d3a859a56db69d8a0f5e154a",
+  "schema": "wp12-nas-protocol/1",
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 621,
+          "ext": "srt"
+        },
+        {
+          "count": 348,
+          "ext": "jpg"
+        },
+        {
+          "count": 345,
+          "ext": "txt"
+        },
+        {
+          "count": 342,
+          "ext": "m4a"
+        },
+        {
+          "count": 332,
+          "ext": "mp4"
+        },
+        {
+          "count": 25,
+          "ext": "mkv"
+        },
+        {
+          "count": 8,
+          "ext": "(none)"
+        },
+        {
+          "count": 3,
+          "ext": "opus"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 164.7,
+        "n": 22,
+        "p50_ms": 18.5,
+        "p95_ms": 73.0
+      },
+      "listing_requests": 22,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "0755": 225
+      },
+      "mode_histogram_files_top6": {
+        "0755": 2024
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 47.1,
+        "mib_per_s_total": 18.44,
+        "status": "ok",
+        "total_s": 0.054,
+        "ttfb_ms": 33.0
+      },
+      "sampled_dirs": 225,
+      "sampled_entries": 2249,
+      "sampled_files": 2024,
+      "share": "DATA20-2",
+      "status": "listed",
+      "top_level_entries": 7,
+      "top_level_names_sha256": "a0e34c8571e83ac5169b067f2b1a6d6006c261da6cb84a9c8e388f601a680ed7",
+      "truncated_by_bound": true
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 10,
+      "ext_histogram_top25": [
+        {
+          "count": 1,
+          "ext": "(none)"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 1101.7,
+        "n": 1,
+        "p50_ms": 1101.7,
+        "p95_ms": 1101.7
+      },
+      "listing_requests": 1,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {},
+      "mode_histogram_files_top6": {
+        "0755": 1
+      },
+      "read_sample": {
+        "bytes_read": 8196,
+        "content_stored": false,
+        "file_size_class": "lt_1MiB",
+        "mib_per_s_after_first_byte": 287.89,
+        "mib_per_s_total": 0.61,
+        "status": "ok",
+        "total_s": 0.013,
+        "ttfb_ms": 12.8
+      },
+      "sampled_dirs": 10,
+      "sampled_entries": 11,
+      "sampled_files": 1,
+      "share": "DATA20-3",
+      "status": "listed",
+      "top_level_entries": 11,
+      "top_level_names_sha256": "68c74887cdc339d128b318b65f7c069ab8d56d1ddd78feb82e61f8028df197df",
+      "truncated_by_bound": false
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 1096.5,
+        "n": 1,
+        "p50_ms": 1096.5,
+        "p95_ms": 1096.5
+      },
+      "listing_requests": 1,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {},
+      "mode_histogram_files_top6": {},
+      "read_sample": {
+        "status": "no_file_in_sample"
+      },
+      "sampled_dirs": 0,
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "share": "music",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated_by_bound": false
+    }
+  ],
+  "status": "ok",
+  "tls": {
+    "accepts": {
+      "TLSv1.2": true,
+      "TLSv1.3": true
+    },
+    "auth_reply": "234",
+    "cert_sha256": "47ea8e98103c92d6879e5b5c140bec00e6c5ffb8bf6fa45ac8b9943afe4a1bf6",
+    "cipher": "TLS_AES_256_GCM_SHA384",
+    "issuer_sha256": "43e5ae7faaed5e561fd76d39b2576afa3fe82ff5fc89fc1f6a5e95fc4676d6dc",
+    "negotiated_version": "TLSv1.3",
+    "not_after": "Apr 29 09:01:35 2027 GMT",
+    "not_before": "Apr 28 09:01:35 2026 GMT",
+    "self_signed": false,
+    "subject_sha256": "fb9f89d03c14f1f919329b7e9ff605b3a837606a671e48d003961ec006a7276f"
+  },
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "alias": "Synology3",
+  "connect_login_subsystem_ms": 453.9,
+  "content_recorded": false,
+  "host_keys": [
+    {
+      "fingerprint_sha256": "SHA256:93d0ooFgx1klfkBCIguVhfiNPpfjKH0xFsEX/nIcbLY",
+      "type": "ecdsa-sha2-nistp256"
+    },
+    {
+      "fingerprint_sha256": "SHA256:4s+lp2qSHmmODbdG94KBXluXnc6ChM3Ms2f4OGoPLPo",
+      "type": "ssh-ed25519"
+    },
+    {
+      "fingerprint_sha256": "SHA256:F9akltZr3MUvVx5LQuDW7W72GyYrK3UnOW3GAhvv4+o",
+      "type": "ssh-rsa"
+    }
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 502.3,
+    "n": 26,
+    "p50_ms": 5.7,
+    "p95_ms": 51.2
+  },
+  "measured_at": "2026-10-07T17:31:07Z",
+  "names_recorded": false,
+  "protocol": "sftp",
+  "root_entries": 1,
+  "root_mode_histogram_top6": {
+    "555": 1
+  },
+  "root_names_sha256": "43be15dc73c6499c53b3ed5e6038d190a7ad61a1b298097521e4a8f53b6fe290",
+  "schema": "wp12-nas-protocol/1",
+  "sftp_protocol_version": 3,
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 1611,
+          "ext": "srt"
+        },
+        {
+          "count": 821,
+          "ext": "jpg"
+        },
+        {
+          "count": 788,
+          "ext": "txt"
+        },
+        {
+          "count": 776,
+          "ext": "m4a"
+        },
+        {
+          "count": 563,
+          "ext": "mp4"
+        },
+        {
+          "count": 192,
+          "ext": "webm"
+        },
+        {
+          "count": 77,
+          "ext": "mkv"
+        },
+        {
+          "count": 42,
+          "ext": "opus"
+        },
+        {
+          "count": 13,
+          "ext": "(none)"
+        },
+        {
+          "count": 9,
+          "ext": "part"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 502.3,
+        "n": 25,
+        "p50_ms": 5.7,
+        "p95_ms": 48.2
+      },
+      "listing_requests": 25,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "755": 296
+      },
+      "mode_histogram_files_top6": {
+        "755": 4892
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 13.94,
+        "mib_per_s_total": 13.14,
+        "status": "ok",
+        "total_s": 0.076,
+        "ttfb_ms": 4.4
+      },
+      "sampled_dirs": 296,
+      "sampled_entries": 5188,
+      "sampled_files": 4892,
+      "share": "DATA12",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_names_sha256": "f0e2c2ee734ca5afa7634898185ac31f0d4c8b1f8040c542a3cbb4150cc679f6",
+      "truncated_by_bound": true
+    }
+  ],
+  "ssh": {
+    "auth_method": "password",
+    "cipher": "chacha20-poly1305@openssh.com",
+    "kex_algorithm": "curve25519-sha256",
+    "negotiated_host_key": {
+      "fingerprint_sha256": "SHA256:4s+lp2qSHmmODbdG94KBXluXnc6ChM3Ms2f4OGoPLPo",
+      "type": "ssh-ed25519"
+    },
+    "server_software": "OpenSSH_8.2"
+  },
+  "status": "ok",
+  "subsystem_sftp": "ok",
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

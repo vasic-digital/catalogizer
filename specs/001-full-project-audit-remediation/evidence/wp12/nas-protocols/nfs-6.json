@@ -1,0 +1,147 @@
+{
+  "alias": "Synology6",
+  "exports": [],
+  "measured_at": "2026-10-07T17:31:25Z",
+  "mount_attempts": [
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "(control)",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume1",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume2",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume1/DATA20-2",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume2/DATA20-2",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume3/DATA20-2",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume1/DATA20-3",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume2/DATA20-3",
+      "reply": "ok"
+    },
+    {
+      "mnt3_name": "ACCES",
+      "mnt3_status": 13,
+      "path": "/volume3/DATA20-3",
+      "reply": "ok"
+    }
+  ],
+  "mountable_paths": [],
+  "mountd": {
+    "export_call": "ok",
+    "rtt_ms": 1.1,
+    "tcp_port_registered": true,
+    "version": 3
+  },
+  "nfs_versions_tcp_2049": {
+    "v2": {
+      "null_call": "ok",
+      "rtt_ms": 2.7
+    },
+    "v3": {
+      "null_call": "ok",
+      "rtt_ms": 2.1
+    },
+    "v4": {
+      "null_call": "mismatch",
+      "rtt_ms": 7.4,
+      "server_supports_range": [
+        2,
+        3
+      ]
+    }
+  },
+  "portmap_ms": 5.5,
+  "portmap_registrations": [
+    "mountd v1 tcp:892",
+    "mountd v1 udp:892",
+    "mountd v2 tcp:892",
+    "mountd v2 udp:892",
+    "mountd v3 tcp:892",
+    "mountd v3 udp:892",
+    "nfs v2 tcp:2049",
+    "nfs v2 udp:2049",
+    "nfs v3 tcp:2049",
+    "nfs v3 udp:2049",
+    "nlockmgr v1 tcp:4045",
+    "nlockmgr v1 udp:4045",
+    "nlockmgr v3 tcp:4045",
+    "nlockmgr v3 udp:4045",
+    "nlockmgr v4 tcp:4045",
+    "nlockmgr v4 udp:4045",
+    "portmap v2 tcp:111",
+    "portmap v2 udp:111",
+    "portmap v3 tcp:111",
+    "portmap v3 udp:111",
+    "portmap v4 tcp:111",
+    "portmap v4 udp:111",
+    "status v1 tcp:662",
+    "status v1 udp:662"
+  ],
+  "protocol": "nfs-rpc",
+  "schema": "wp12-nas-protocol/1",
+  "status": "no_exports_listed_all_mounts_refused",
+  "writes_performed": 0,
+  "walk": "not_run: no export listed and no path proved mountable",
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

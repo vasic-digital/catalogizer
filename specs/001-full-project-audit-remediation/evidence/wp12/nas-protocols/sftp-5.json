@@ -1,0 +1,257 @@
+{
+  "alias": "Synology5",
+  "connect_login_subsystem_ms": 266.9,
+  "content_recorded": false,
+  "host_keys": [
+    {
+      "fingerprint_sha256": "SHA256:Uv5SiZOM2xNbJGaHyfVdIyjg3YixJiF06OhJBZOPVUg",
+      "type": "ecdsa-sha2-nistp256"
+    },
+    {
+      "fingerprint_sha256": "SHA256:uklm29YX4KeRBNVcQx4xe5dK1z6git76tac60hPDcSM",
+      "type": "ssh-ed25519"
+    },
+    {
+      "fingerprint_sha256": "SHA256:DOWlL2n7ZAwewWT5vDbb0g2IsbaVADHZMXbOvHoLjWE",
+      "type": "ssh-rsa"
+    }
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 63.6,
+    "n": 56,
+    "p50_ms": 4.8,
+    "p95_ms": 44.3
+  },
+  "measured_at": "2026-10-07T17:33:22Z",
+  "names_recorded": false,
+  "protocol": "sftp",
+  "root_entries": 3,
+  "root_mode_histogram_top6": {
+    "555": 3
+  },
+  "root_names_sha256": "136c0b9a3819b42c1d686be8b65340f5ed8eb7707140da8bf39311351746c3ee",
+  "schema": "wp12-nas-protocol/1",
+  "sftp_protocol_version": 3,
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 430,
+          "ext": "mp4"
+        },
+        {
+          "count": 328,
+          "ext": "srt"
+        },
+        {
+          "count": 171,
+          "ext": "jpg"
+        },
+        {
+          "count": 163,
+          "ext": "txt"
+        },
+        {
+          "count": 162,
+          "ext": "m4a"
+        },
+        {
+          "count": 16,
+          "ext": "mkv"
+        },
+        {
+          "count": 13,
+          "ext": "(none)"
+        },
+        {
+          "count": 3,
+          "ext": "ds_store"
+        },
+        {
+          "count": 1,
+          "ext": "opus"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 55.3,
+        "n": 30,
+        "p50_ms": 3.8,
+        "p95_ms": 44.7
+      },
+      "listing_requests": 30,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "755": 235,
+        "777": 1
+      },
+      "mode_histogram_files_top6": {
+        "755": 1287
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 26.68,
+        "mib_per_s_total": 24.83,
+        "status": "ok",
+        "total_s": 0.04,
+        "ttfb_ms": 2.8
+      },
+      "sampled_dirs": 236,
+      "sampled_entries": 1523,
+      "sampled_files": 1287,
+      "share": "DATA20",
+      "status": "listed",
+      "top_level_entries": 8,
+      "top_level_names_sha256": "42c4b2d006733263491209316d97dd8d3ca48d081ce157837bf284cdbb42ba61",
+      "truncated_by_bound": true
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 1458,
+          "ext": "torrent"
+        },
+        {
+          "count": 440,
+          "ext": "mp4"
+        },
+        {
+          "count": 7,
+          "ext": "(none)"
+        },
+        {
+          "count": 4,
+          "ext": "webm"
+        },
+        {
+          "count": 1,
+          "ext": "mkv"
+        },
+        {
+          "count": 1,
+          "ext": "log"
+        },
+        {
+          "count": 1,
+          "ext": "jpg"
+        },
+        {
+          "count": 1,
+          "ext": "txt"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 63.6,
+        "n": 24,
+        "p50_ms": 5.3,
+        "p95_ms": 42.6
+      },
+      "listing_requests": 24,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "755": 122
+      },
+      "mode_histogram_files_top6": {
+        "755": 1913
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 18.13,
+        "mib_per_s_total": 17.26,
+        "status": "ok",
+        "total_s": 0.058,
+        "ttfb_ms": 2.8
+      },
+      "sampled_dirs": 122,
+      "sampled_entries": 2035,
+      "sampled_files": 1913,
+      "share": "WORK20",
+      "status": "listed",
+      "top_level_entries": 6,
+      "top_level_names_sha256": "e8718d60ceeb0c8040eb34e30a79c3c2093e68230c412cd732c0759b6a01567a",
+      "truncated_by_bound": true
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 44.3,
+        "n": 1,
+        "p50_ms": 44.3,
+        "p95_ms": 44.3
+      },
+      "listing_requests": 1,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {},
+      "mode_histogram_files_top6": {},
+      "read_sample": {
+        "status": "no_file_in_sample"
+      },
+      "sampled_dirs": 0,
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "share": "music",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated_by_bound": false
+    }
+  ],
+  "ssh": {
+    "auth_method": "password",
+    "cipher": "chacha20-poly1305@openssh.com",
+    "kex_algorithm": "curve25519-sha256",
+    "negotiated_host_key": {
+      "fingerprint_sha256": "SHA256:uklm29YX4KeRBNVcQx4xe5dK1z6git76tac60hPDcSM",
+      "type": "ssh-ed25519"
+    },
+    "server_software": "OpenSSH_8.2"
+  },
+  "status": "ok",
+  "subsystem_sftp": "ok",
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

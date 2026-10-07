@@ -1,0 +1,157 @@
+{
+  "alias": "Synology3",
+  "banner": "220 Synology3 FTP server ready.",
+  "connect_ms": [
+    5.2
+  ],
+  "content_recorded": false,
+  "feat": [
+    "AUTH",
+    "CCC",
+    "MDTM",
+    "MFMT",
+    "MLSD",
+    "MLST",
+    "PBSZ",
+    "PROT",
+    "REST",
+    "SIZE",
+    "TVFS",
+    "UTF8"
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 167.3,
+    "n": 27,
+    "p50_ms": 6.1,
+    "p95_ms": 145.7
+  },
+  "login": "ok",
+  "login_ms": [
+    93.1
+  ],
+  "measured_at": "2026-10-07T17:30:02Z",
+  "mlsd": {
+    "root_listing_ms": 3.9,
+    "supported": true
+  },
+  "names_recorded": false,
+  "opts_utf8_on": "200",
+  "protocol": "ftp",
+  "root_entries": 1,
+  "root_names_sha256": "43be15dc73c6499c53b3ed5e6038d190a7ad61a1b298097521e4a8f53b6fe290",
+  "schema": "wp12-nas-protocol/1",
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 800,
+          "ext": "srt"
+        },
+        {
+          "count": 393,
+          "ext": "m4a"
+        },
+        {
+          "count": 387,
+          "ext": "mp4"
+        },
+        {
+          "count": 379,
+          "ext": "jpg"
+        },
+        {
+          "count": 329,
+          "ext": "txt"
+        },
+        {
+          "count": 81,
+          "ext": "mkv"
+        },
+        {
+          "count": 28,
+          "ext": "ts"
+        },
+        {
+          "count": 17,
+          "ext": "(none)"
+        },
+        {
+          "count": 12,
+          "ext": "opus"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 167.3,
+        "n": 26,
+        "p50_ms": 6.1,
+        "p95_ms": 145.7
+      },
+      "listing_requests": 26,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "0755": 194
+      },
+      "mode_histogram_files_top6": {
+        "0755": 2426
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 93.32,
+        "mib_per_s_total": 77.6,
+        "status": "ok",
+        "total_s": 0.013,
+        "ttfb_ms": 2.2
+      },
+      "sampled_dirs": 194,
+      "sampled_entries": 2620,
+      "sampled_files": 2426,
+      "share": "DATA12",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_names_sha256": "f0e2c2ee734ca5afa7634898185ac31f0d4c8b1f8040c542a3cbb4150cc679f6",
+      "truncated_by_bound": true
+    }
+  ],
+  "status": "ok",
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

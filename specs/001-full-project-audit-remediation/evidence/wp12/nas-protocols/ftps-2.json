@@ -1,0 +1,291 @@
+{
+  "alias": "Synology2",
+  "auth_tls_ms": [
+    26.7,
+    26.8,
+    25.6
+  ],
+  "banner": "220 Synology2 FTP server ready.",
+  "connect_ms": [
+    6.4,
+    3.8,
+    3.6
+  ],
+  "content_recorded": false,
+  "feat": [
+    "AUTH",
+    "CCC",
+    "MDTM",
+    "MFMT",
+    "MLSD",
+    "MLST",
+    "PBSZ",
+    "PROT",
+    "REST",
+    "SIZE",
+    "TVFS",
+    "UTF8"
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 1188.8,
+    "n": 38,
+    "p50_ms": 25.6,
+    "p95_ms": 49.2
+  },
+  "login": "ok",
+  "login_ms": [
+    105.4,
+    108.1,
+    106.0
+  ],
+  "measured_at": "2026-10-07T17:31:08Z",
+  "mlsd": {
+    "root_listing_ms": 28.4,
+    "supported": true
+  },
+  "names_recorded": false,
+  "opts_utf8_on": "200",
+  "protocol": "ftps",
+  "root_entries": 4,
+  "root_names_sha256": "3ac1f5bfb470c78e0839a8efac20c3936a9b1a408bf4e2093e7424ff2b69b0ea",
+  "schema": "wp12-nas-protocol/1",
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 70,
+          "ext": "mp4"
+        },
+        {
+          "count": 62,
+          "ext": "m4a"
+        },
+        {
+          "count": 62,
+          "ext": "jpg"
+        },
+        {
+          "count": 62,
+          "ext": "txt"
+        },
+        {
+          "count": 54,
+          "ext": "srt"
+        },
+        {
+          "count": 18,
+          "ext": "(none)"
+        },
+        {
+          "count": 2,
+          "ext": "avi"
+        },
+        {
+          "count": 1,
+          "ext": "zip"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 49.2,
+        "n": 30,
+        "p50_ms": 25.4,
+        "p95_ms": 41.8
+      },
+      "listing_requests": 30,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "0755": 280
+      },
+      "mode_histogram_files_top6": {
+        "0755": 331
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 84.31,
+        "mib_per_s_total": 23.32,
+        "status": "ok",
+        "total_s": 0.043,
+        "ttfb_ms": 31.0
+      },
+      "sampled_dirs": 280,
+      "sampled_entries": 611,
+      "sampled_files": 331,
+      "share": "Data",
+      "status": "listed",
+      "top_level_entries": 14,
+      "top_level_names_sha256": "a24da07ac71ca351260dd03ff708534ea2ba7c5cd08d6df373451a26aecaf29c",
+      "truncated_by_bound": true
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 4,
+      "ext_histogram_top25": [
+        {
+          "count": 1,
+          "ext": "iso"
+        }
+      ],
+      "list_errors": [
+        "error_perm:550"
+      ],
+      "listing_latency": {
+        "max_ms": 1185.4,
+        "n": 3,
+        "p50_ms": 25.8,
+        "p95_ms": 1185.4
+      },
+      "listing_requests": 4,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "0311": 1,
+        "0700": 1,
+        "0777": 1
+      },
+      "mode_histogram_files_top6": {
+        "0777": 1
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 73.49,
+        "mib_per_s_total": 26.13,
+        "status": "ok",
+        "total_s": 0.038,
+        "ttfb_ms": 24.7
+      },
+      "sampled_dirs": 7,
+      "sampled_entries": 8,
+      "sampled_files": 1,
+      "share": "usbshare1",
+      "status": "listed",
+      "top_level_entries": 7,
+      "top_level_names_sha256": "720456a4b67556baec83a025287d9e48bdae6db5de4f8a53407b100c918efe7a",
+      "truncated_by_bound": false
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 1188.8,
+        "n": 1,
+        "p50_ms": 1188.8,
+        "p95_ms": 1188.8
+      },
+      "listing_requests": 1,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {},
+      "mode_histogram_files_top6": {},
+      "read_sample": {
+        "status": "no_file_in_sample"
+      },
+      "sampled_dirs": 0,
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "share": "usbshare2-1",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated_by_bound": false
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 4,
+          "ext": "(none)"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 32.1,
+        "n": 3,
+        "p50_ms": 27.5,
+        "p95_ms": 32.1
+      },
+      "listing_requests": 3,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "0777": 2
+      },
+      "mode_histogram_files_top6": {
+        "0777": 4
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 57.25,
+        "mib_per_s_total": 21.7,
+        "status": "ok",
+        "total_s": 0.046,
+        "ttfb_ms": 28.6
+      },
+      "sampled_dirs": 2,
+      "sampled_entries": 6,
+      "sampled_files": 4,
+      "share": "usbshare2-2",
+      "status": "listed",
+      "top_level_entries": 5,
+      "top_level_names_sha256": "13a8931d6ea0aaaab1168485a0bf3eada66590a214473c35957279d95c010771",
+      "truncated_by_bound": false
+    }
+  ],
+  "status": "ok",
+  "tls": {
+    "accepts": {
+      "TLSv1.2": true,
+      "TLSv1.3": true
+    },
+    "auth_reply": "234",
+    "cert_sha256": "1155360b33b81421c22f2b2b80952d7507e1d44db63751cfb6b345dfde607807",
+    "cipher": "TLS_AES_256_GCM_SHA384",
+    "issuer_sha256": "43e5ae7faaed5e561fd76d39b2576afa3fe82ff5fc89fc1f6a5e95fc4676d6dc",
+    "negotiated_version": "TLSv1.3",
+    "not_after": "Jun 25 17:30:00 2027 GMT",
+    "not_before": "Jun 24 17:30:00 2026 GMT",
+    "self_signed": false,
+    "subject_sha256": "fb9f89d03c14f1f919329b7e9ff605b3a837606a671e48d003961ec006a7276f"
+  },
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

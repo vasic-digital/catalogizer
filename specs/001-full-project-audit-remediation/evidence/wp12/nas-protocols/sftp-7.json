@@ -1,0 +1,219 @@
+{
+  "alias": "Synology7",
+  "connect_login_subsystem_ms": 298.3,
+  "content_recorded": false,
+  "host_keys": [
+    {
+      "fingerprint_sha256": "SHA256:p0nkOCdyXfm3aXC7zymvU9FVcetS0LuQNUkLN9vJ5IQ",
+      "type": "ecdsa-sha2-nistp256"
+    },
+    {
+      "fingerprint_sha256": "SHA256:cWm61PUodKjIK3GiWdiF9WIg6KTIu1Bpcp7PX2bH4O4",
+      "type": "ssh-ed25519"
+    },
+    {
+      "fingerprint_sha256": "SHA256:3d3Gm/tYdfm9J8AhJl8AsX3TgSGEOx6UDhPkEdGOipY",
+      "type": "ssh-rsa"
+    }
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 70.9,
+    "n": 45,
+    "p50_ms": 6.8,
+    "p95_ms": 66.0
+  },
+  "measured_at": "2026-10-07T17:33:53Z",
+  "names_recorded": false,
+  "protocol": "sftp",
+  "root_entries": 3,
+  "root_mode_histogram_top6": {
+    "555": 3
+  },
+  "root_names_sha256": "ad9064340f1f39ef3e7df1469ecc8e7ba7d6ca34aa683d8c251848d684c1f4cc",
+  "schema": "wp12-nas-protocol/1",
+  "sftp_protocol_version": 3,
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 4,
+          "ext": "(none)"
+        },
+        {
+          "count": 4,
+          "ext": "webm"
+        },
+        {
+          "count": 1,
+          "ext": "ds_store"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 68.7,
+        "n": 30,
+        "p50_ms": 6.9,
+        "p95_ms": 18.3
+      },
+      "listing_requests": 30,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "555": 2,
+        "755": 156,
+        "777": 42
+      },
+      "mode_histogram_files_top6": {
+        "755": 5,
+        "777": 4
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 16.0,
+        "mib_per_s_total": 13.21,
+        "status": "ok",
+        "total_s": 0.076,
+        "ttfb_ms": 13.2
+      },
+      "sampled_dirs": 200,
+      "sampled_entries": 209,
+      "sampled_files": 9,
+      "share": "DATA22",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_names_sha256": "9f4973982d16c84bcf8a65b1f14b11864c9a7286068602c24c3b382456227cc8",
+      "truncated_by_bound": true
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 5,
+          "ext": "apk"
+        },
+        {
+          "count": 4,
+          "ext": "(none)"
+        },
+        {
+          "count": 4,
+          "ext": "iso"
+        },
+        {
+          "count": 2,
+          "ext": "zip"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 64.8,
+        "n": 13,
+        "p50_ms": 5.1,
+        "p95_ms": 32.9
+      },
+      "listing_requests": 13,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "755": 458
+      },
+      "mode_histogram_files_top6": {
+        "755": 15
+      },
+      "read_sample": {
+        "bytes_read": 1048576,
+        "content_stored": false,
+        "file_size_class": "ge_1MiB",
+        "mib_per_s_after_first_byte": 21.45,
+        "mib_per_s_total": 18.1,
+        "status": "ok",
+        "total_s": 0.055,
+        "ttfb_ms": 8.6
+      },
+      "sampled_dirs": 458,
+      "sampled_entries": 473,
+      "sampled_files": 15,
+      "share": "DATA22-2",
+      "status": "listed",
+      "top_level_entries": 2,
+      "top_level_names_sha256": "8a206fd2190438bdaafc1683fe66941371a4205bde3fb58baa8becbd7e514a9d",
+      "truncated_by_bound": false
+    },
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 66.0,
+        "n": 1,
+        "p50_ms": 66.0,
+        "p95_ms": 66.0
+      },
+      "listing_requests": 1,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {},
+      "mode_histogram_files_top6": {},
+      "read_sample": {
+        "status": "no_file_in_sample"
+      },
+      "sampled_dirs": 0,
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "share": "music",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated_by_bound": false
+    }
+  ],
+  "ssh": {
+    "auth_method": "password",
+    "cipher": "chacha20-poly1305@openssh.com",
+    "kex_algorithm": "curve25519-sha256",
+    "negotiated_host_key": {
+      "fingerprint_sha256": "SHA256:cWm61PUodKjIK3GiWdiF9WIg6KTIu1Bpcp7PX2bH4O4",
+      "type": "ssh-ed25519"
+    },
+    "server_software": "OpenSSH_8.2"
+  },
+  "status": "ok",
+  "subsystem_sftp": "ok",
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

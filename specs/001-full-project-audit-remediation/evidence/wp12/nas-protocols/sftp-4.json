@@ -1,0 +1,128 @@
+{
+  "alias": "Synology4",
+  "connect_login_subsystem_ms": 490.7,
+  "content_recorded": false,
+  "host_keys": [
+    {
+      "fingerprint_sha256": "SHA256:ekQDaGYfM9NHrr2P1ayVmRqU+sq5duknYm1nlQS3oWY",
+      "type": "ecdsa-sha2-nistp256"
+    },
+    {
+      "fingerprint_sha256": "SHA256:FAqp9Khxj38LeDGArQX4ah4ehOkLHUNUJGUyOcnRbpE",
+      "type": "ssh-ed25519"
+    },
+    {
+      "fingerprint_sha256": "SHA256:cQz6Vs/aHo2vzsZXiNmCq2xiqRdYBiKq8PE/1eKnKQE",
+      "type": "ssh-rsa"
+    }
+  ],
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 30,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "listing_latency_all": {
+    "max_ms": 55.8,
+    "n": 31,
+    "p50_ms": 6.8,
+    "p95_ms": 34.4
+  },
+  "measured_at": "2026-10-07T17:31:19Z",
+  "names_recorded": false,
+  "protocol": "sftp",
+  "root_entries": 1,
+  "root_mode_histogram_top6": {
+    "555": 1
+  },
+  "root_names_sha256": "2ebd50d7257e88ae359a9a5238549d047008de52bf1b0f9d2a6e44cdfb5e7fa5",
+  "schema": "wp12-nas-protocol/1",
+  "sftp_protocol_version": 3,
+  "shares": [
+    {
+      "entries_with_unmappable_names_not_descended": 0,
+      "ext_histogram_top25": [
+        {
+          "count": 18,
+          "ext": "(none)"
+        }
+      ],
+      "list_errors": [],
+      "listing_latency": {
+        "max_ms": 55.8,
+        "n": 30,
+        "p50_ms": 6.7,
+        "p95_ms": 34.4
+      },
+      "listing_requests": 30,
+      "max_depth": 3,
+      "mode_histogram_dirs_top6": {
+        "755": 179
+      },
+      "mode_histogram_files_top6": {
+        "755": 18
+      },
+      "read_sample": {
+        "bytes_read": 24580,
+        "content_stored": false,
+        "file_size_class": "lt_1MiB",
+        "mib_per_s_after_first_byte": 13.21,
+        "mib_per_s_total": 3.4,
+        "status": "ok",
+        "total_s": 0.007,
+        "ttfb_ms": 5.1
+      },
+      "sampled_dirs": 179,
+      "sampled_entries": 197,
+      "sampled_files": 18,
+      "share": "DATA18",
+      "status": "listed",
+      "top_level_entries": 13,
+      "top_level_names_sha256": "163e8f2916e56a3195e729f31ea17ace6e475bf6b4ab3c4a7aee579cb9e2142f",
+      "truncated_by_bound": true
+    }
+  ],
+  "ssh": {
+    "auth_method": "password",
+    "cipher": "chacha20-poly1305@openssh.com",
+    "kex_algorithm": "curve25519-sha256",
+    "negotiated_host_key": {
+      "fingerprint_sha256": "SHA256:FAqp9Khxj38LeDGArQX4ah4ehOkLHUNUJGUyOcnRbpE",
+      "type": "ssh-ed25519"
+    },
+    "server_software": "OpenSSH_8.2"
+  },
+  "status": "ok",
+  "subsystem_sftp": "ok",
+  "writes_performed": 0,
+  "identity": {
+    "schema_owner": "wp12-nas-protocols",
+    "head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "run_at": "2026-10-07T17:33:53Z",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_protocols.sh",
+        "sha256": "dabcebcbd66dee95c31d1f1a54638277b6cc32c92812e9673b7ed6d29b1dc86a"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto.py",
+        "sha256": "510b372cb8b1de8d08d9eff47d43d6fa330a5e4d8763736526ad353bdebcf7a5"
+      },
+      {
+        "file": "scripts/test-infra/client/nas_proto_nfs.sh",
+        "sha256": "324d1c32cd95e371c3e4d32785a45dff0e8d0d3fefadc01dcaf4f60ccca2fd68"
+      }
+    ],
+    "images": [
+      "IMG-GO",
+      "IMG-INFRA-CLIENT"
+    ],
+    "rootless": true,
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}
