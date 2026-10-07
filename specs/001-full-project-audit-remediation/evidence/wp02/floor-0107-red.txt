@@ -1,0 +1,12 @@
+FAIL below floor refused rc=1
+ok   floor-1 kB refused
+FAIL at floor rc=1
+FAIL above floor rc=1
+ok   cap == MemTotal*60/100 (18549 MiB)
+ok   heap = avail/2 below cap
+ok   heap clamped to 60% cap (synthetic avail>total fixture; real hosts never bind it)
+ok   cap follows MemTotal (64 GiB host)
+ok   live codegraph index refused
+FAIL carrier false positive rc=1
+ok   missing limits file -> rc 2
+passed=7 failed=4

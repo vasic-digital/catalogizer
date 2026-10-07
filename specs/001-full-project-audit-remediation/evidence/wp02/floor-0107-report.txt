@@ -1,0 +1,8 @@
+identity: worker Sonnet 5.5, 2026-10-07, T022 floor owner decision (MemAvailable 20 GiB, heap cap 60% of MemTotal)
+RED: floor-0107-red.txt (floor 32 GiB data: 4 of 11 assertions FAIL)
+GREEN x3: floor-0107-green-{1,2,3}.txt (11/11 each); mutation (floor check removed): floor-0107-mutation.txt (2 FAIL, caught)
+LIVE: floor-0107-live-preflight.txt - MemAvailable ~16 GiB < 20 GiB, so indexing NOT started (free -g: 30 total, 15 available; memory not clear)
+Original refusal capture: t022-blocked-preflight.txt (upstream, 32 GiB)
+UPSTREAM CHANGE NEEDED: codegraph_safe.sh preflight() line 322 hard-codes 32*1048576 kB and line 321 echoes min_mem_avail_kb; add an
+env/config knob (e.g. CG_SAFE_MIN_MEM_AVAIL_KB read from consumer data, default 32 GiB). CG_SAFE_TEST_MEMAVAIL_KB can only lower availability.
+Heap cap: upstream already computes MemTotal*60/100 (heap_cap_mb=18584 at capture); no change needed there.

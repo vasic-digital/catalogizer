@@ -1,0 +1,5 @@
+mem_avail_kb=16528628
+min_mem_avail_kb=20971520
+PREFLIGHT FAIL memory: MemAvailable 16528628 kB < 20 GiB
+heap_mb=8192
+heap_cap_mb=18584

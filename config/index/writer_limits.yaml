@@ -1,0 +1,12 @@
+# Revision: 1 | Created: 2026-10-07 | Status: active
+# Consumer DATA for the code-index writer host-resource limits (T022). Read by scripts/audit/index_writer_preflight.sh.
+# Owner decision 2026-10-07: this host has 30.2 GiB total RAM, so the upstream 32 GiB MemAvailable floor can never be met.
+# The floor is lowered to 20 GiB MemAvailable; indexer heap capped at 60 percent of MemTotal (rule 12.6); single-writer guard
+# stays; run only while no other agents or builds run.
+# NOTE: the upstream writer (submodules/constitution/scripts/codegraph/codegraph_safe.sh, lines 317-322) still hard-codes 32 GiB
+# and has no override knob; this file is honoured only by the consumer preflight until upstream reads it (see upstream request in
+# specs/001-full-project-audit-remediation/evidence/wp02/floor-0107-report.txt).
+min_mem_avail_gib: 20
+heap_cap_percent_of_total: 60
+heap_floor_mib: 8192
+single_writer: true
