@@ -1,0 +1,2 @@
+FAIL script absent: /home/milosvasic/Projects/catalogizer/scripts/build/tests/../lib/snapshot.py or /home/milosvasic/Projects/catalogizer/scripts/build/tests/../lib/treecache.py
+RESULT pass=0 fail=1 skip=0

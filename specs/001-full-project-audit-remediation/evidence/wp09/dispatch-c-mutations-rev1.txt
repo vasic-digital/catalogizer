@@ -1,0 +1,142 @@
+# revision-1 dispatcher mutants (mutate_dispatch.sh) re-run after round c (m_progress_flat, m_wallclock, m_polling retargeted to the registry path)
+# captured: 2026-10-06T23:49:19Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: bash scripts/build/tests/mutate_dispatch.sh <name>
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+=== m_argv_check (dispatch.sh, cases: s3)
+FAIL s3 a purpose key whose argv digest does not match the argv is refused
+RESULT pass=3 fail=1 skip=0
+KILLED m_argv_check
+=== m_bringback_verify (dispatch.sh, cases: s13)
+FAIL s13 (m) a bring-back whose digest differs from its completed event ends infra_failed, never completed
+FAIL s13 (m) the mismatching artifact was never kept; callback once
+FAIL s13 (m) status reads infra_failed with the detail
+RESULT pass=0 fail=3 skip=0
+KILLED m_bringback_verify
+=== m_build_once (dispatch.sh, cases: s7)
+FAIL s7 the same purpose gives the same build id (build once)
+RESULT pass=3 fail=1 skip=0
+KILLED m_build_once
+=== m_callback_registry (dispatch.sh, cases: s2)
+FAIL s2 a callback id outside the registry is refused (20)
+FAIL s2 reason callback_not_registered -- b-fd53d665140ab486d066d1f4
+FAIL s2 nothing submitted, no build directory left
+RESULT pass=1 fail=3 skip=0
+KILLED m_callback_registry
+=== m_cancel_remote (dispatch.sh, cases: s18)
+FAIL s18 the remote cancel was sent
+RESULT pass=2 fail=1 skip=0
+KILLED m_cancel_remote
+=== m_disk_gate (dispatch.sh, cases: s23)
+FAIL s23 the disk gate runs first: a submit with no headroom is refused (20) before anything is created
+FAIL s23 reason disk_below_headroom -- b-d3d41ce6b8c9a88a452cec65
+FAIL s23 no build directory, no pump left
+RESULT pass=0 fail=3 skip=0
+KILLED m_disk_gate
+=== m_emit_cancel_kill (emit.sh, cases: s9 s18)
+FAIL s9 (c) the remote build was cancelled and reaped
+FAIL s18 the remote cancel was sent
+RESULT pass=4 fail=2 skip=0
+KILLED m_emit_cancel_kill
+=== m_emit_resign_key (emit.sh, cases: s6)
+FAIL s6 (a) terminal kind completed
+FAIL s6 events consumed in order 1..4 (accepted, 2 heartbeats, completed)
+FAIL s6 status reports terminal completed, callback done
+RESULT pass=3 fail=3 skip=0
+KILLED m_emit_resign_key
+=== m_emit_run_idempotent (emit.sh, cases: s19)
+FAIL s19 (i/r0) the restarted pump resumed without resubmission: completed once, daemon started once
+RESULT pass=2 fail=1 skip=0
+KILLED m_emit_run_idempotent
+=== m_event_auth_before_bringback (dispatch.sh, cases: s14b)
+FAIL s14b (f) a forged completed event (wrong key) neither ends nor poisons the build: the genuine completion is consumed, kind completed
+FAIL s14b (f) the forged event was refused and no bring-back was attempted for it (artifacts match the genuine digest)
+RESULT pass=0 fail=2 skip=0
+KILLED m_event_auth_before_bringback
+=== m_failover_reachability (dispatch.sh, cases: s15)
+FAIL s15 (h) the unreachable and the non-rootless host are recorded with their reasons
+RESULT pass=5 fail=1 skip=0
+KILLED m_failover_reachability
+=== m_hosts_absent (dispatch.sh, cases: s5)
+FAIL s5 hosts.env absent: submit refused (20)
+FAIL s5 no build directory left
+RESULT pass=2 fail=2 skip=0
+KILLED m_hosts_absent
+=== m_liveness (dispatch.sh, cases: s9)
+FAIL s9 (c) heartbeats stop: blocked-unavailable build_liveness_lost
+FAIL s9 (c) never a pass; callback once
+RESULT pass=1 fail=2 skip=0
+KILLED m_liveness
+=== m_local_guard (dispatch.sh, cases: s4)
+FAIL s4 the local transport is refused without the declared exception (20)
+FAIL s4 reason -- b-a3302fc0a0c0706215a56daf
+RESULT pass=0 fail=2 skip=0
+KILLED m_local_guard
+=== m_polling (dispatch.sh, cases: s16)
+FAIL s16 (k) idle event stream: the pump and its blocking wait start no process in 3.5 s
+RESULT pass=2 fail=1 skip=0
+KILLED m_polling
+=== m_progress_flat (dispatch.sh, cases: s10)
+FAIL s10 (c) heartbeats arrive but progress is flat: build_progress_flat
+FAIL s10 (c) remote cancelled, callback once
+RESULT pass=1 fail=2 skip=0
+KILLED m_progress_flat
+=== m_purpose_regex (dispatch.sh, cases: s1)
+FAIL s1 a 63-hex digest is refused as malformed
+RESULT pass=3 fail=1 skip=0
+KILLED m_purpose_regex
+=== m_queue (dispatch.sh, cases: s17)
+FAIL s17 (l) the second submit is queued, never started, while one build runs
+FAIL s17 (l) status of the queued build reads queued
+FAIL s17 (l) both builds completed, effects once each, never more than 1 running at a time
+RESULT pass=1 fail=3 skip=0
+KILLED m_queue
+=== m_rootless_check (dispatch.sh, cases: s15)
+FAIL s15 (h) failover at submit time to the next qualified host, recorded
+FAIL s15 (h) the unreachable and the non-rootless host are recorded with their reasons
+FAIL s15 (h) none left: blocked-unavailable no_qualified_host, callback once, never a pass
+FAIL s15 (h) no local build ran (no remote directory, no daemon)
+RESULT pass=2 fail=4 skip=0
+KILLED m_rootless_check
+=== m_secret_lost (dispatch.sh, cases: s20)
+FAIL s20 the secret file lost: blocked-unavailable driver_secret_lost, callback once
+RESULT pass=1 fail=1 skip=0
+KILLED m_secret_lost
+=== m_snapshot_check (dispatch.sh, cases: s3)
+FAIL s3 a purpose key whose snapshot digest does not match the tree is refused
+FAIL s3 snapshot reason -- b-b8e92484114b589e8625c11c
+RESULT pass=2 fail=2 skip=0
+KILLED m_snapshot_check
+=== m_tail_stops_early (evwait.py, cases: s14b)
+FAIL s14b (f) a forged completed event (wrong key) neither ends nor poisons the build: the genuine completion is consumed, kind completed
+FAIL s14b (f) the forged event was refused and no bring-back was attempted for it (artifacts match the genuine digest)
+RESULT pass=0 fail=2 skip=0
+KILLED m_tail_stops_early
+=== m_wait_timeout_code (evwait.py, cases: s22)
+FAIL s22 wait on a build that never reaches a callback times out with exit 3 and says so
+RESULT pass=1 fail=1 skip=0
+KILLED m_wait_timeout_code
+=== m_wallclock (dispatch.sh, cases: s11)
+FAIL s11 (c) a build that advances past the wall-clock cap: build_wallclock_exceeded, with every sent_at skewed to 2001 (the cap is the emitter's monotonic time)
+RESULT pass=2 fail=1 skip=0
+KILLED m_wallclock
+TOTAL killed=24 survived=0

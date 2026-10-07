@@ -1,0 +1,18 @@
+cat: /tmp/tdc.ra2JsQ/c5/log/cb.runs: No such file or directory
+FAIL c5 a script callback runs once for a completed build, receiving the terminal kind (state done, effect applied)
+scripts/build/tests/test_dispatch_c.sh: line 157: /tmp/tdc.ra2JsQ/c5/log/cb.runs: No such file or directory
+FAIL c5 a callback found done is never re-run
+tail: cannot open '/tmp/tdc.ra2JsQ/c5/log/cb.runs' for reading: No such file or directory
+FAIL c5 (n2) a HUNG build runs its script callback once with its terminal kind
+FAIL c5 (n1) a cancel runs the callback once with kind cancelled, its script's exit 0 gives done
+cat: /tmp/tdc.ra2JsQ/c6/builds/b-3b9a32fcb0caf3ce0dfa17c6/terminal/script.reason: No such file or directory
+FAIL c6 (p) a callback that exits non-zero ends failed with its exit code and reason; the verdict of its build is unchanged
+scripts/build/tests/test_dispatch_c.sh: line 168: /tmp/tdc.ra2JsQ/c6/log/cb.runs: No such file or directory
+FAIL c6 (p) a failed callback is never retried silently (one run only)
+FAIL c6 (o) the callback is running (durable state running) while its script works
+FAIL c6 (o) a crash in the middle of a callback: the restarted runner re-runs a callback found running; its keyed effect is applied once
+cat: /tmp/tdc.ra2JsQ/c7/builds/b-c2d0f9ff966fc8b0205a0756/terminal/script.reason: No such file or directory
+FAIL c7 a callback id the approved table lacks is refused at callback time: script.state failed, reason callback_not_registered, the script never ran
+ok   c7 CPA_EXEC_SHA256 set: the runner writes runner_sha256 into the callback state; unset writes none
+FAIL c7 (x) the runner started with CPA_EXEC_SHA256 stamps it as runner_sha256
+RESULT pass=1 fail=10 skip=0

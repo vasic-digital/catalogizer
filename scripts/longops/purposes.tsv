@@ -1,0 +1,13 @@
+# purposes.tsv - T089a. Budgets of a dispatched build class, reviewed data (never a code edit). Columns, TAB separated:
+#   class        a shell glob over build:<component>:<lane-or-target> (the first matching row wins)
+#   no_progress_s  seconds the build may show no progress (progress_offset + stage flat) before the registry marks it hung; UNKNOWN until measured
+#   wall_clock_s   absolute cap on the build's own elapsed monotonic time (the build host's clock); UNKNOWN until measured
+#   basis          where the numbers come from: the measurement, or UNKNOWN until T115 measures it
+# A value UNKNOWN falls back to the dispatcher defaults (60 s no-progress, 3600 s cap); the submit record names the source (budget_source). Command-line options override a row.
+# Honest state: no lane has been measured yet (T115), so every row is UNKNOWN; a cap is never guessed into this file.
+build:*:unit	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures the unit lane
+build:*:integration	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures the integration lane
+build:*:e2e	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures the e2e lane
+build:*:image	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures the image lane
+build:*:lint	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures the lint lane
+build:*:*	UNKNOWN	UNKNOWN	UNKNOWN until T115 measures it

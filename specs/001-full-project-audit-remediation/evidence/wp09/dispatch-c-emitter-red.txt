@@ -1,0 +1,13 @@
+FAIL c34 (i2) the real emitter journal holds NO signature at rest (signed only when streamed, with the key the driver sends)
+ok   c34 (i2) the emitter daemon is dead while the build container keeps running (the stub build has not ended)
+FAIL c34 (i2) the restarted emitter re-signs from its journal with the key re-obtained from the driver and finishes the build: completed once, callback once
+ok   c34 (i2) nothing was resubmitted: the build started once, one accepted event in the journal
+ok   c34 (i2) the key is in no file on the build host (journal, pid files, log)
+FAIL c35 (i2) an emitter that cannot obtain the key refuses to send: exit 3, nothing on stdout
+FAIL c35 (i2) a malformed key is refused the same way
+ok   c35 (i2) with the key the journal is streamed re-signed: every line carries an HMAC
+FAIL c36 (T115) the completed event carries peak_rss_bytes, the build container's cgroup memory.peak read on the build host, and the core accepts it
+ok   c36 (T115) with no container cgroup readable the field is OMITTED (never a guess), the event still verifies and the build completes
+FAIL c37 a QUIET build (no log output at all) that burns CPU is not HUNG: progress is the log plus the container's CPU counter
+FAIL c37 control: the same quiet build with --progress log ends build_progress_flat
+RESULT pass=5 fail=7 skip=0

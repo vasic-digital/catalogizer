@@ -12,7 +12,14 @@
   evwait.py wait <build_dir> [<timeout_seconds>]
       Block until <build_dir>/terminal/callback.state is done or failed. Exit 0 done, 1 failed, 3 timeout (the only clock
       is the single blocking select timeout). Prints the terminal kind and callback state on stdout.
-Both watch with inotify (ctypes) and re-evaluate their condition in-process on every event: while idle no process starts.
+  evwait.py waitstate <file> <state,state,...> [<timeout_seconds>]
+      Block (inotify on the file's directory) until the first line of <file> is one of the listed states. Exit 0 and print the state; 3 timeout.
+  evwait.py serve <builds_root>
+      The event hub's event source: prints one line `event` per batch of changes the hub must reconcile; the inotify watches stay armed between lines
+      (an event that happens while the hub reconciles is queued, never lost): the builds root and each b-*/ directory (create/rename/delete of entries,
+      NOT plain modification, so heartbeats appended to a journal wake nobody), each terminal/ and group/<id>/ directory (any change), and a pidfd per
+      live pump proven by /proc (a pump that exits is an event). Ends when the root disappears.
+All of them watch with inotify (ctypes) and re-evaluate their condition in-process on every event: while idle no process starts.
 """
 import ctypes, ctypes.util, os, select, struct, sys, time
 
@@ -149,6 +156,151 @@ def cmd_waitfile(a):
     return 0
 
 
+def cmd_waitstate(a):
+    path, states = a[0], set(a[1].split(","))
+    timeout = float(a[2]) if len(a) > 2 else None
+    deadline = None if timeout is None else time.monotonic() + timeout
+    ifd = inotify()
+    watch(ifd, os.path.dirname(os.path.abspath(path)))
+    while True:
+        try:
+            with open(path, "rb") as f:
+                st = f.readline(64).decode().strip()
+        except OSError:
+            st = ""
+        if st in states:
+            print(st)
+            return 0
+        left = None if deadline is None else deadline - time.monotonic()
+        if left is not None and left <= 0:
+            print("timeout"); return 3
+        r, _, _ = select.select([ifd], [], [], left)
+        if r:
+            drain(ifd)
+
+
+IN_DELETE, IN_ISDIR = 0x200, 0x40000000
+MASK_ENTRIES = IN_CREATE | IN_MOVED_TO | IN_DELETE
+MASK_ALL = MASK | IN_DELETE
+
+
+def pump_of(bdir):
+    """(pid, alive) of the pump of an OPEN build directory (no terminal/, not queued), proven by /proc start time and cmdline; None otherwise."""
+    if os.path.isdir(os.path.join(bdir, "terminal")) or os.path.exists(os.path.join(bdir, "queued")):
+        return None
+    try:
+        pid, start = open(os.path.join(bdir, "pump.pid")).read().split()[:2]
+        pid = int(pid)
+    except (OSError, ValueError):
+        return None
+    if pid <= 1:
+        return None
+    try:
+        st = open("/proc/%d/stat" % pid).read().rsplit(")", 1)[1].split()
+        return pid, st[19] == start and b"_pump" in open("/proc/%d/cmdline" % pid, "rb").read()
+    except (OSError, IndexError):
+        return pid, False
+
+
+def cmd_serve(a):
+    """The event source of the hub: one line `event` on stdout per batch of changes the hub must reconcile; the watches stay armed between lines, so
+    an event that happens while the hub reconciles is queued, never lost. Watched: the builds root and each b-*/ directory (create/rename/delete of
+    entries, NOT plain modification: heartbeats appended to a journal wake nobody), each terminal/ and group/<id>/ directory (any change), and a pidfd
+    per live pump (proven by /proc): a pump that exits is an event. Idle cost: one blocking select."""
+    root = os.path.abspath(a[0])
+    ifd = inotify()
+    wd2path = {}
+
+    def add(path, mask):
+        wd = libc.inotify_add_watch(ifd, os.fsencode(path), mask)
+        if wd >= 0:
+            wd2path[wd] = path
+
+    def arm(path):
+        if not os.path.isdir(path):
+            return
+        base = os.path.basename(path)
+        parent = os.path.basename(os.path.dirname(path))
+        if path == root:
+            add(path, MASK_ENTRIES)
+            for n in sorted(os.listdir(path)):
+                if n.startswith("b-") or n == "group":
+                    arm(os.path.join(path, n))
+        elif base.startswith("b-") and os.path.dirname(path) == root:
+            add(path, MASK_ENTRIES)
+            arm(os.path.join(path, "terminal"))
+        elif base == "terminal":
+            add(path, MASK_ALL)
+        elif base == "group" and os.path.dirname(path) == root:
+            add(path, MASK_ENTRIES)
+            for g in sorted(os.listdir(path)):
+                arm(os.path.join(path, g))
+        elif parent == "group":
+            add(path, MASK_ALL)
+            arm(os.path.join(path, "terminal"))
+    arm(root)
+    pfds = {}                                   # pid -> pidfd
+    out = sys.stdout
+
+    def emit():
+        out.write("event\n")
+        out.flush()
+
+    def scan():
+        """register a pidfd per live pump; report a pump that is already gone (once)."""
+        gone = False
+        live = set()
+        try:
+            names = sorted(os.listdir(root))
+        except OSError:
+            return True
+        for n in names:
+            if not n.startswith("b-"):
+                continue
+            r = pump_of(os.path.join(root, n))
+            if r is None:
+                continue
+            pid, alive = r
+            if alive:
+                live.add(pid)
+                if pid not in pfds:
+                    try:
+                        pfds[pid] = os.pidfd_open(pid)
+                    except OSError:
+                        gone = True
+            else:
+                gone = True
+        for pid in [p for p in pfds if p not in live]:
+            os.close(pfds.pop(pid))
+        return gone
+    if scan():
+        emit()
+    emit()                                      # the first line is the hub's start-up reconcile
+    while True:
+        if not os.path.isdir(root):
+            return 0
+        r, _, _ = select.select([ifd] + list(pfds.values()), [], [])
+        dead = [p for p, f in pfds.items() if f in r]
+        for p in dead:
+            os.close(pfds.pop(p))
+        if ifd in r:
+            try:
+                buf = os.read(ifd, 65536)
+            except BlockingIOError:
+                buf = b""
+            pos = 0
+            while pos + 16 <= len(buf):
+                wd, mask, _c, ln = struct.unpack_from("iIII", buf, pos)
+                name = buf[pos + 16:pos + 16 + ln].split(b"\0", 1)[0].decode(errors="replace")
+                pos += 16 + ln
+                base = wd2path.get(wd)
+                if base and (mask & (IN_CREATE | IN_MOVED_TO)) and (mask & IN_ISDIR):
+                    arm(os.path.join(base, name))
+        gone = scan()
+        if dead or gone or ifd in r:
+            emit()
+
+
 if __name__ == "__main__":
     c = sys.argv[1] if len(sys.argv) > 1 else ""
     if c == "tail" and len(sys.argv) >= 4:
@@ -157,5 +309,9 @@ if __name__ == "__main__":
         sys.exit(cmd_waitfile(sys.argv[2:]))
     if c == "wait" and len(sys.argv) >= 3:
         sys.exit(cmd_wait(sys.argv[2:]))
+    if c == "waitstate" and len(sys.argv) >= 4:
+        sys.exit(cmd_waitstate(sys.argv[2:]))
+    if c == "serve" and len(sys.argv) >= 3:
+        sys.exit(cmd_serve(sys.argv[2:]))
     print("usage: evwait.py tail <file> <from_line> [pid needle] | wait <build_dir> [timeout]", file=sys.stderr)
     sys.exit(2)

@@ -1,0 +1,35 @@
+# round c REAL-container e2e 2/3 (IMG-GO via run_pinned.sh)
+# captured: 2026-10-06T23:49:18Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: bash scripts/build/tests/test_dispatch_c_e2e.sh
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+ok   r1 the callback is done and the build completed/succeeded
+ok   r1 (u) the binary prints the submodule's constant: the submodule tree was shipped into submodules/lib and the replace resolved in the container
+ok   r1 the closure of component svc is the root and submodules/lib, recorded
+ok   r1 (w) the second submit of the unchanged checkout sends no object (first sent 10) and completes
+ok   r1 the registry op of each build ended complete
+ok   r2 a quiet build (nothing printed) burning CPU past its 12 s no-progress budget (a 30 s burn; the budget leaves room for a slow container start on a loaded host) is NOT hung with --progress log+cpu: completed/succeeded
+ok   r2 (T115) the completed event carries a real peak_rss_bytes read from the container's cgroup (a positive integer: 8253440)
+r2 heartbeat progress: 0 108 1402 2793 4102 5401 6640 7850 9141 10488 11787 13076 14346 15610 16917 18188 19453 20738 22012 23290 24570 25870 27155 28429 29709 
+ok   r2 control: the SAME quiet build with --progress log ends build_progress_flat (the failure the option exists for)
+ok   r2 the HUNG build's container was reaped by its label
+RESULT pass=9 fail=0

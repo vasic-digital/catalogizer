@@ -1,0 +1,164 @@
+# round c GREEN 3/3: dispatcher round c cases (c1 to c41), run with two other full runs in parallel
+# captured: 2026-10-06T23:49:18Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: bash scripts/build/tests/test_dispatch_c.sh
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+ok   c1 (u) the snapshot digest of a git source is the manifest digest of snapshot.py (64 hex)
+ok   c1 an uncommitted edit changes the digest (one HEAD, two trees, two keys)
+ok   c1 (u) one dirty submodule edit changes the digest
+ok   c1 (u) a git source build completes and the callback ran once
+ok   c1 (u) the Go module of the root with a replace into submodules/ builds: the submodule's tree is shipped into its path
+ok   c1 (w) a build of the web component ships the root only: no submodule file arrives
+ok   c1 the shipped tree carries no .git entry and no ignored file
+ok   c2 (w) the first submit sends objects; a second submit of the unchanged checkout sends none
+ok   c2 (w) the transfer is recorded with its byte count in the submit record
+ok   c2 (w) one changed source file ships one blob and the trees above it (svc, root)
+ok   c2 (w) a changed evidence file changes no compile-class snapshot and ships nothing
+ok   c3 (u) an input needing an uninitialised submodule is refused at submit (20 submodule_uninitialised), no build directory left
+ok   c3 a git source submitted with no --component is refused (20 usage): the closure is the unit that ships
+ok   c3 (CPA) an undeclared dirty file inside the component's closure is refused at submit (20 undeclared_dirty_input)
+ok   c4 the tree sits in the content-addressed cache of the (local proof) build host
+ok   c4 (u) a received tree altered on the build host is refused: infra_failed, detail snapshot_mismatch, never blocked-unavailable
+ok   c4 (u) no build ran on the altered tree (daemon never started), callback once
+ok   c5 a script callback runs once for a completed build, receiving the terminal kind (state done, effect applied)
+ok   c5 a callback found done is never re-run
+ok   c5 a callback found done is left untouched: the runner prints nothing and does not even claim the runner slot again
+ok   c5 a script that exits 0 WITHOUT applying its keyed effect is not done: failed effect_not_applied
+ok   c5 (n2) a HUNG build runs its script callback once with its terminal kind
+ok   c5 (n1) a cancel runs the callback once with kind cancelled, its script's exit 0 gives done
+ok   c6 (p) a callback that exits non-zero ends failed with its exit code and reason; the verdict of its build is unchanged
+ok   c6 (p) a failed callback is never retried silently (one run only)
+ok   c6 (o) the callback is running (durable state running) while its script works
+ok   c6 (o) a crash in the middle of a callback: the restarted runner re-runs a callback found running; its keyed effect is applied once
+ok   c7 a callback id the approved table lacks is refused at callback time: script.state failed, reason callback_not_registered, the script never ran
+ok   c7 (x) a runner started without CPA_EXEC_SHA256 writes no runner_sha256
+ok   c7 (x) the runner started with CPA_EXEC_SHA256 stamps it as runner_sha256
+ok   c8 (r0) hub.pid names the live hub (pid, start time, cmdline event_hub.sh), written by the hub itself
+ok   c8 the sweep's hub record hub.json {pid,start_time} names the same hub
+ok   c8 (r) a second hub in the same checkout is refused: exit 20 hub_already_running, the holder named
+ok   c8 (r) the holder is named through the long-op registry (holder.sh of the build-hub purpose names the hub's pid)
+ok   c8 the hub stops on TERM and removes hub.pid and hub.json
+ok   c8 a killed hub leaves a stale record that names a dead process
+ok   c8 (r0) a new hub starts over the stale record and the dead holder's registry claim
+ok   c9 (r0) a pump killed while its build runs is restarted by the hub: no resubmission
+ok   c9 the build completes once, callback once, daemon started once
+ok   c10 (n) a callback found claimed after a crash is run by the hub from its durable state; the keyed effect is applied once
+ok   c10 (o) a callback found running (a crash in the middle) is re-run, the effect still applied once
+ok   c11 (x) a hub started with CPA_EXEC_SHA256 writes it as hub_sha256 into the terminal record and every consumed mark
+ok   c11 (x) a hub started without it writes no stamp
+ok   c12 (k) an idle hub (no open build) starts no process in 3 s: it waits on inotify and pidfd only
+ok   c12 (k) control: the instrument was attached (its file holds the hub's own start-up spawns)
+ok   c12 (k) control needle: the same instrument and window logic see the process starts of a sleep loop
+ok   c13 (r0) dispatch.sh submit starts the hub when none runs: hub.pid names a live hub
+ok   c13 a second submit starts no second hub
+ok   c14 (v) a member's own callback is record-only, the group has one callback registered once
+ok   c14 (v) one member finished: the group is not terminal
+ok   c14 (v) two members finishing in either order give ONE group callback, kind completed
+ok   c14 (v) the other finishing order gives the same single group callback
+ok   c14 (v) a group callback is the only keyed effect of the group
+ok   c14 (v) with a group callback that is NOT record-only, every member is still record-only and the group alone carries the group callback
+ok   c14 (v) each member's only keyed effect is its own record-only one, the group callback ran once for the group alone
+ok   c15 baseline: one group callback
+ok   c15 (v) a crash between two members' terminal states and the group's gives ONE group callback after the restart
+ok   c15 repeated sweeps never run the group callback again
+ok   c15 repeated sweeps leave the claimed terminal directory itself untouched (never removed and claimed again)
+ok   c16 (v) a member ending blocked-unavailable ends the group early once: the others are cancelled, the group kind is blocked-unavailable, ONE callback
+ok   c16 (v) the remaining members are recorded cancelled_by_group, and that never sets the group's kind
+ok   c16 (v) the triggering member's reason is recorded
+ok   c17 (v) one member test_failed while the others complete: one group callback carrying all three kinds, nothing cancelled, group kind test_failed
+ok   c17 (v) with --cancel-on-fail the same test_failed ends the group early: kind test_failed, the others cancelled_by_group
+ok   c17 (v) with --cancel-on-fail a build_failed member ends it with group kind build_failed
+ok   c17 (v) without --cancel-on-fail a build_failed member cancels nothing (the other member still runs)
+ok   c17 (v) and the group ends build_failed once every member is terminal
+ok   c18 (v) a GREEN x3 with one failing iteration still completes all its iterations (every member terminal, none cancelled)
+ok   c18 (v) the group kind is decided by precedence, not arrival: test_failed or build_failed of the FIRST such member in member order
+ok   c18 (v) the same members finishing in the other order give the same kind (member order, not arrival order)
+ok   c19 (v) a group with no seal is never terminal, however many members finished (the member itself is terminal)
+ok   c19 (v) a second submit of the group naming a different callback is refused (20 group_conflict): the group callback is registered once
+ok   c19 (v) the conflicting submit is refused BEFORE anything starts: no build directory, and not even the disk gate ran for it (its record is absent)
+ok   c19 (v) sealing closes the membership: a later submit is refused (20 group_sealed)
+ok   c19 (v) a group not sealed within its group budget is reported group_orphaned and made terminal cancelled, its members cancelled_by_group
+ok   c23 the build is registered BEFORE the remote start (the fake emitter saw its op in the registry when it started)
+ok   c23 the registry op carries the purpose key of T005b, the owner and the pump as its live owner
+ok   c23 the first heartbeat moved it to running and the purpose claim is held
+ok   c23 classify.sh judges the live advancing build advancing
+ok   c23 at the terminal state the op is complete and the claim is released
+ok   c23 a build that ends test_failed leaves a failed op (success is read from the verdict, never an exit code)
+ok   c24 the unit and integration lanes of one component at one commit start TWO builds and never attach
+ok   c24 a GREEN x3 submitted together starts three builds with three iteration ids and three registry records
+ok   c25 two different uncommitted edits on one HEAD give two snapshot digests (hence two purpose keys and two builds)
+ok   c25 an edit inside a submodule changes the digest
+ok   c25 an edit to a file that a Containerfile COPY reads changes the digest of that image build
+ok   c25 an untracked new source file left undeclared changes the digest of a TIC submit (I8)
+ok   c25 an identical resubmit of the same key attaches or reuses (build once), never a second build
+ok   c26 a submit whose FULL purpose key equals a running build's attaches to it (same id, one daemon)
+ok   c26 a submit carrying another iteration id never attaches to that iteration
+ok   c26 a repro-cold submit never attaches to the running primary build, whatever the other fields
+ok   c27 (c) heartbeats with a flat progress pair past the budget: HUNG by the registry (heartbeat.sh feeds it, classify.sh decides): blocked-unavailable build_progress_flat
+ok   c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+ok   c27 the remote container is cancelled (by label, through the emitter) and the callback ran once
+ok   c27 a build that goes silent is HUNG too (build_liveness_lost), the op reaped
+ok   c28 a build that ADVANCES but passes its purpose's wall-clock cap (scripts/longops/purposes.tsv) is HUNG: build_wallclock_exceeded, measured on the build host's own monotonic clock
+ok   c28 the submit record names where its budgets came from
+ok   c28 a class whose cap is UNKNOWN falls back to the dispatcher's defaults (60 s no-progress, 3600 s cap), recorded
+ok   c29 a driver stop (TERM on the pump) hands the build to the registry: op handoff, claim released, the remote build left running (never orphaned silently)
+ok   c29 a restarted driver re-adopts it through resume: a new op, running, owned by the new pump; nothing resubmitted
+ok   c29 the re-adopted op ends complete once
+ok   c30 a pump killed outright leaves its op running with a DEAD owner: classify.sh proves it from /proc (dead_owner)
+ok   c30 resume re-adopts: the dead-owner op is reaped (no signal sent) and a new op owns the build
+ok   c31 a purpose held by another long-op is refused at submit: 20 purpose_conflict, nothing started, no build directory
+ok   c32 the fixture ids are real, distinct build ids (a refused submit would make every pair check below vacuous)
+ok   c32 the pairing of a primary build with its repro-cold partner matches every field but variant and ignores the iteration
+ok   c32 a build of another lane has no partner
+ok   c32 the failed iteration is a real build id
+ok   c32 a repro-cold build pairs with the primary record whose artifact is the deliverable (the succeeded one, not the failed iteration)
+ok   c34 (i2) the real emitter journal holds NO signature at rest (signed only when streamed, with the key the driver sends)
+ok   c34 (i2) the emitter daemon is dead while the build container keeps running (the stub build has not ended)
+ok   c34 (i2) the restarted emitter re-signs from its journal with the key re-obtained from the driver and finishes the build: completed once, callback once
+ok   c34 (i2) nothing was resubmitted: the build started once, one accepted event in the journal
+ok   c34 (i2) the key is in no file on the build host (journal, pid files, log)
+ok   c34 (i2) control needle: the same scan finds a planted copy of the key
+ok   c35 (i2) an emitter that cannot obtain the key refuses to send: exit 3, nothing on stdout
+ok   c35 (i2) a malformed key is refused the same way
+ok   c35 (i2) with the key the journal is streamed re-signed: every line carries an HMAC
+ok   c36 (T115) the completed event carries peak_rss_bytes, the build container's cgroup memory.peak read on the build host, and the core accepts it
+ok   c36 (T115) with no container cgroup readable the field is OMITTED (never a guess), the event still verifies and the build completes
+ok   c37 a QUIET build (no log output at all) that burns CPU is not HUNG: progress is the log plus the container's CPU counter
+ok   c37 control: the same quiet build with --progress log ends build_progress_flat
+ok   c38 a host whose key matches the pinned fingerprint is qualified and the build runs
+ok   c38 ssh is invoked with StrictHostKeyChecking=yes and a known-hosts file holding exactly the pinned key (generated by the dispatcher)
+ok   c38 never trust on first use: no ssh call ever carries StrictHostKeyChecking=no or accept-new
+ok   c38 a host whose key does NOT match the pin is never connected to: blocked-unavailable no_qualified_host, attempt detail host_key_mismatch
+ok   c38 a host with no pinned fingerprint is not qualified (host_key_not_pinned): the dispatcher never learns a key by itself
+ok   c39 (q2) keyring.sh exists
+ok   c39 (q2) refill loads the keyring entry from the secret file; status reads present
+ok   c39 (q2) after a reboot or logout (a NEW, empty session keyring) the entry is absent and the refill from the file restores it
+ok   c39 (q2) the refilled entry holds exactly the file's secret
+ok   c39 (q2) with the file lost the refill REFUSES (20 driver_secret_lost) and creates nothing: the file, not the keyring, is the truth
+ok   c39 (q2) the hub refills the keyring itself when it starts
+ok   c20 (v) the group kind is decided by precedence across classes: a test_failed member beats a member that ended blocked-unavailable, whichever ended last
+ok   c20 (v) the same two members in the other member order give the same kind
+ok   c40 a callback row approved AFTER the hub started: the build ends, its script callback is refused at callback time (failed callback_not_registered) and never ran
+ok   c40 after a hub restart the same id runs (the new export lists it)
+ok   c41 (i) the hub restarts the pump, which re-attaches from the last acknowledged seq, verifies the resent events and consumes the completion ONCE; the build is not resubmitted
+ok   c41 (i) every consumed seq is unique and the journal holds one completed event
+RESULT pass=139 fail=0 skip=0

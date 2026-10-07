@@ -22,7 +22,7 @@ chk() { local what=$1; shift; if "$@"; then ok "$what"; else bad "$what"; fi; }
 want() { [ -z "${ONLY:-}" ] && return 0; case " $ONLY " in *" $1 "*) return 0;; esac; return 1; }
 OWED="(i) driver crash between completed and consumption with a real hub, (i2) emitter re-signing after restart, (j) kill before submit, (n0-n2/n/o/p) beyond the core's cases, (q2) keyring refill, (r) second hub refused, (u/u2) git snapshot and closure, (v) groups, (w) transfer budget, (x) hub identity: event_hub.sh and run_callback.sh are OWED"
 REAL_EMIT="$root/scripts/build/remote/emit.sh"
-tmproot=$(mktemp -d /tmp/tdsp.XXXXXX); trap 'cleanup' EXIT
+tmproot=$(mktemp -d "${TMPDIR:-/tmp}/tdsp.XXXXXX"); trap 'cleanup' EXIT
 cleanup() { kill_ours; if [ -n "${KEEP:-}" ]; then echo "kept $tmproot"; else rm -rf "$tmproot"; fi; }
 kill_ours() { # stop pumps and fake daemons of this run by exact pid, proven ours by start time and cmdline (never a pattern kill)
   local f p s; for f in "$tmproot"/*/builds/b-*/pump.pid "$tmproot"/*/builds/b-*/remote/daemon.pid "$tmproot"/*/fakehome/.cache/catalogizer/builds/*/daemon.pid; do

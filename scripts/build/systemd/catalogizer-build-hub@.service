@@ -1,0 +1,27 @@
+# catalogizer-build-hub@.service - T005b: the systemd --user unit that supervises the event hub of ONE driver checkout (instance name = the checkout id, the sha256 of the checkout's
+# absolute path, as in the driver secret's state directory). NOT installed and NOT enabled by any script of this repository (owed: the install step, `loginctl enable-linger`, and the
+# `cpa-host --exec-approved` ExecStart of CENTRAL C5/C10, which does not exist yet); this file is the reviewed template. UNCONFIRMED on a real systemd session: only the static check
+# `systemd-analyze --user verify` was run (see docs/scripts/event_hub.md).
+#
+# Install (by the owner, once per checkout):
+#   mkdir -p ~/.config/systemd/user ~/.config/catalogizer
+#   cp scripts/build/systemd/catalogizer-build-hub@.service ~/.config/systemd/user/
+#   printf 'CHECKOUT=%s\n' "$PWD" > ~/.config/catalogizer/build-hub-$(printf '%s' "$PWD" | sha256sum | cut -d' ' -f1).env
+#   systemctl --user enable --now "catalogizer-build-hub@$(printf '%s' "$PWD" | sha256sum | cut -d' ' -f1).service"
+# The unit reads its SSH identity from the key file that build/hosts.env names (BUILD_SSH_IDENTITY, a mode-0600 key outside the checkout), never from an agent socket that a
+# supervisor restart would lose: the hub and the pumps it restarts read build/hosts.env themselves; nothing here carries a secret.
+[Unit]
+Description=Catalogizer build event hub (checkout %i)
+Documentation=file://%h/.config/catalogizer/build-hub-%i.env
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/catalogizer/build-hub-%i.env
+ExecStart=/bin/bash ${CHECKOUT}/scripts/build/event_hub.sh run
+Restart=on-failure
+RestartSec=2
+# a hub that is stopped leaves the pumps (their own sessions) and the remote builds running: they are re-adopted by the next hub or dispatch.sh call
+KillMode=process
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,172 @@
+# T088/T089/T089a registry tests GREEN 3/3
+# captured: 2026-10-06T23:49:19Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: bash scripts/longops/tests/test_registry.sh
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 c0ddabf6034adb4e9ecadb4dfbb3e61e911650d52fae5668c2cf19e341bb5ab4  register.sh
+# sha256 77bf12d9bb9c619eb29186dc6cf1ee0941e3e8b6cecb6d17765a75251873526b  heartbeat.sh
+# sha256 d6973ed5fbaaf649f7a94f81cee2901df58e3fdfe0ba636a01c8b69c7e43d41a  lib.sh
+# sha256 35310fb0932f53a93bc2cb8334eb83ca3d33fed29865783af3a60695a1cce3a8  purposes.tsv
+# sha256 4da877cbdc4dda349ea9835719da6b08a000575cf2dcc9624c05738944f8a1ff  tests/test_registry.sh
+# sha256 a3ae7ecc2ed6523bea7ece1d7530da43dc2d95d21ea8ca4dfa83d62d2367a881  tests/mutate_registry.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+# identity: task=T088 utc=2026-10-06T23:12:18Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=e5f568f63411db0e5bd2f64c785f8b6cf047128e (scripts and tests are uncommitted: content hashes below identify them)
+# sha256 lib.sh=d6973ed5fbaaf649f7a94f81cee2901df58e3fdfe0ba636a01c8b69c7e43d41a
+# sha256 register.sh=c0ddabf6034adb4e9ecadb4dfbb3e61e911650d52fae5668c2cf19e341bb5ab4
+# sha256 acquire.sh=79fdd96c48854c76512443f0ea07fb8d01c84a8f9669f46a031cf98acdacffdf
+# sha256 release.sh=e5204f86f0ec18a0341c726dfd6fda7d8b49350a7b0b10d56dc3e1d43d746395
+# sha256 heartbeat.sh=77bf12d9bb9c619eb29186dc6cf1ee0941e3e8b6cecb6d17765a75251873526b
+# sha256 holder.sh=58d8f6121caf375bbc48b8294ebaf1ee55ae7bc0d03092f01e72f7843336fa98
+# sha256 classify.sh=31eb7c512335304e6512a71c2c1a79dab0cac5fd76af1f7c698996221e5005ae
+# sha256 reap.sh=09caca00d38b677b38af81989945dc378734ecfde361e099b6ccac156f59269a
+# sha256 check_no_build_writing_tracked.sh=0c2c1cffb8e714eadca6ef6d85853fdca75e961b3c737757d16dc82751189fd3
+# sha256 require_verdicts.sh=86334fb369890cd32318976d4f3c19721665bbe5dc6a82067454b364f8e2e6fc
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== register / claim ==
+ok   R1 register exits 0 and prints an op id
+ok   R1b record state is registered before any start
+ok   R1c record carries the declared write paths
+ok   R1d record carries the owner's /proc start time
+ok   R2 a duplicate purpose_key is refused (atomic mkdir claim, live holder)
+ok   R2b refusal names purpose_conflict and the holder
+ok   R2c the refused register wrote no op record
+ok   R3 a stale claim (dead holder) is refused, never taken over silently
+ok   R3b refusal names stale_claim
+ok   R4 reap.sh --purpose releases the stale claim
+ok   R4b the purpose can be registered after the reap
+ok   R5 no temp file is left behind (temp-then-rename)
+ok   R5b state on tmpfs is refused (not tmpfs, 11.4.232 A)
+ok   R6 a purpose with a slash is refused
+== heartbeat / hung ==
+ok   H1 heartbeat --sample-log exits 0
+ok   H1b first heartbeat moves registered -> running
+ok   H1c offset sampled from the log size
+ok   H2 advancing within budget
+ok   H3 a heartbeat on a flat offset is not progress
+ok   H4 flat progress offset past no_progress_s is HUNG
+ok   H5 a grown offset is advancing again
+ok   H6 an op-written heartbeat (no offset) counts as progress
+ok   H7 heartbeat_seq is monotone
+ok   H8 release exits 0
+ok   H9 a terminal op takes no heartbeat
+ok   H10 release removed the claim
+ok   H11 a reader looping over 60 record rewrites never reads a torn file
+== reap ==
+ok   P1 a live advancing op is never reaped
+ok   P1b the advancing process is still alive
+ok   P2 --dry-run on a hung op exits 0 and signals nothing
+ok   P2b dry-run left the process alive
+ok   P3 a hung op is reaped
+ok   P3b the hung process was terminated
+ok   P3c record state is reaped
+ok   P3d signal audit trail names the single pid
+ok   P3e claim released after the reap
+ok   P4 an unresolvable identity (cmdline differs) is refused
+ok   P4b the process with a different identity is untouched
+ok   P5 a recycled pid (start time differs) is dead_owner: reaped
+ok   P5b the recycled-pid process is NOT signalled
+ok   P5c no signal was recorded
+ok   P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each)
+ok   P6b no signal audit entry exists for any refused target
+ok   P7 an op naming pid 1 is never live: dead_owner
+ok   P7b reaping it sends nothing and succeeds as dead_owner
+ok   P7c no signal sent to pid 1
+ok   P8 hung op with a labelled container is reaped
+ok   P8b the container is resolved by label op_id=<id>
+ok   P8c the resolved container is stopped
+ok   P9 no script of the registry uses pgrep, pkill or killall
+== holder, suspend, adopt, expire ==
+ok   L1 acquire exits 0
+ok   L1b holder prints the run id
+ok   L1c holder prints the pid
+ok   L1d holder prints the process start time from /proc/<pid>/stat
+ok   L1e status live
+ok   L2 no lock gives none
+ok   L3 a dead holder gives none
+ok   L4 a pid that now belongs to another process (start time differs) gives none
+ok   L4b acquiring over a dead holder is a stale_claim refusal
+-- suspended-run --
+ok   S1 --suspend swaps process -> suspended-run
+ok   S1b a suspended-run holder with non-terminal builds is live
+ok   S1c kind is suspended-run and builds are listed
+ok   S1d the dead CPA process does not make the suspended run stale
+ok   S2 live while ANY member build is non-terminal
+ok   S3 all builds terminal, callback none, state suspended: none
+ok   S4 callback running keeps the holder live
+ok   S5 callback done + ready_to_resume in one swap
+ok   S5b ready_to_resume within resume_ttl is live
+ok   S5c one second before the ttl: live
+ok   S6 ready_to_resume past resume_ttl is reported expired by the read-only holder
+ok   S6b holder.sh released nothing
+ok   S7 acquire --expire releases the expired holder
+ok   S7b the claim is gone and the record names the expired run
+ok   S7c expire with no holder is a cas_mismatch
+ok   S8 --expire refuses a holder still inside resume_ttl
+-- a reader never sees none across the swaps --
+ok   S9 reader made 44 reads while 8 suspend/update/adopt rounds ran
+ok   S9b the reader never read none across suspend, callback done and adopt
+-- a reader whose snapshot went stale retries (deterministic) --
+ok   S13 a reader that read the holder before the hub moved it (callback running, build terminal) judges the CURRENT record: live, never none
+-- adopt racing expire: exactly one winner --
+ok   S10 over 6 trials adopt vs expire has exactly one winner each time
+ok   S11 adopt with no holder is a cas_mismatch
+ok   S11b a failed adopt creates no claim
+ok   S12 adopt of a run that is a live process holder (not suspended) is a cas_mismatch
+-- CENTRAL C2: commit_push needs CPA_APPROVED_DIR --
+ok   C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20
+ok   C1b the refusal names helper_not_approved
+ok   C2 --expire unset gives 20 helper_not_approved FIRST (before the --op-id usage check)
+ok   C2b it is helper_not_approved, not usage_error
+ok   C2c nothing was written
+ok   C3 with it set, a live process holder reads without any conf (ttl is read lazily)
+ok   C4 --expire outside a run without --op-id gives 20 usage_error
+ok   C4b it names usage_error
+ok   C4c nothing written
+ok   C5 a ready_to_resume holder with no commit_push.conf is refused (the lazy read fails loudly)
+ok   C6 resume_ttl from the approved conf: inside the window is live
+ok   C6b past the conf's ttl: expired
+ok   C7 --expire inside a run
+ok   C7b resume_expired goes into the calling run's own report directory, naming the expired run
+ok   C7c the expired run's directory is byte-unchanged
+== check_no_build_writing_tracked ==
+ok   K1 golden-true: no registered op, exit 0
+ok   K2 golden-true: a live build writing only an untracked, ignored path
+ok   K3 golden-false: a live build writing a TRACKED path is refused
+ok   K3b the refusal names the op
+ok   K4 the caller's own op can be excepted
+ok   K5 a terminal op blocks nothing
+ok   K6 any live op declaring a write path under $EV is refused (not only builds)
+ok   K6b names the op
+ok   K7 a write path under $AUD is refused
+ok   K8 a dead-owner row is not a writer (it never wedges the window)
+ok   K9 fixture control: the fixture repository really tracks tracked/a.txt
+== require_verdicts ==
+ok   V1 golden-true: fresh PASS with the right fingerprint
+ok   V2 golden-false: a missing verdict file is refused
+ok   V2b names missing
+ok   V3 a stale fingerprint is refused
+ok   V4 a verdict older than max-age is refused
+ok   V5 a FAIL verdict is refused
+ok   V6 an absent utc is stale, never fresh
+ok   V7 one missing file among several refuses the lot
+ok   V8 an unparsable verdict is refused
+== T089a: purpose-key grammar of a dispatched build, wall-clock cap ==
+ok   G1 golden-true: a well-formed build purpose key is registered
+ok   G1b golden-true: variant repro-cold with an iteration id is registered
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:abc:def:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:fast)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary:bad iter)
+ok   G2 golden-false: a malformed build purpose key is refused (build:app:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2 golden-false: a malformed build purpose key is refused (build::lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary)
+ok   G2b the refusal names purpose_key_malformed
+ok   G3 without --grammar build a purpose keeps the older rule (any safe name)
+ok   G3b an unknown --grammar is a usage error
+ok   W1 heartbeat records the build host's elapsed monotonic time
+ok   W2 under the cap and advancing: advancing
+ok   W3 an advancing but over-long build (elapsed > wall_clock_s) is hung
+ok   W3b the evidence names the wall-clock cap
+ok   W4 no cap recorded (wall_clock_s 0): never hung by elapsed time
+RESULT pass=133 fail=0

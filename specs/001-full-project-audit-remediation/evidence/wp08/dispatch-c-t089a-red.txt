@@ -1,0 +1,38 @@
+FAIL c23 the build is registered BEFORE the remote start (the fake emitter saw its op in the registry when it started)
+FAIL c23 the registry op carries the purpose key of T005b, the owner and the pump as its live owner
+FAIL c23 the first heartbeat moved it to running and the purpose claim is held
+FAIL c23 classify.sh judges the live advancing build advancing
+FAIL c23 at the terminal state the op is complete and the claim is released
+FAIL c23 a build that ends test_failed leaves a failed op (success is read from the verdict, never an exit code)
+ok   c24 the unit and integration lanes of one component at one commit start TWO builds and never attach
+FAIL c24 a GREEN x3 submitted together starts three builds with three iteration ids and three registry records
+ok   c25 two different uncommitted edits on one HEAD give two snapshot digests (hence two purpose keys and two builds)
+ok   c25 an edit inside a submodule changes the digest
+ok   c25 an edit to a file that a Containerfile COPY reads changes the digest of that image build
+ok   c25 an untracked new source file left undeclared changes the digest of a TIC submit (I8)
+ok   c25 an identical resubmit of the same key attaches or reuses (build once), never a second build
+ok   c26 a submit whose FULL purpose key equals a running build's attaches to it (same id, one daemon)
+ok   c26 a submit carrying another iteration id never attaches to that iteration
+ok   c26 a repro-cold submit never attaches to the running primary build, whatever the other fields
+ok   c27 (c) heartbeats with a flat progress pair past the budget: HUNG by the registry (heartbeat.sh feeds it, classify.sh decides): blocked-unavailable build_progress_flat
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+ok   c27 the remote container is cancelled (by label, through the emitter) and the callback ran once
+FAIL c27 a build that goes silent is HUNG too (build_liveness_lost), the op reaped
+FAIL c28 a build that ADVANCES but passes its purpose's wall-clock cap (scripts/longops/purposes.tsv) is HUNG: build_wallclock_exceeded, measured on the build host's own monotonic clock
+FAIL c28 the submit record names where its budgets came from
+FAIL c28 a class whose cap is UNKNOWN falls back to the dispatcher's defaults (60 s no-progress, 3600 s cap), recorded
+FAIL c29 a driver stop (TERM on the pump) hands the build to the registry: op handoff, claim released, the remote build left running (never orphaned silently)
+FAIL c29 a restarted driver re-adopts it through resume: a new op, running, owned by the new pump; nothing resubmitted
+FAIL c29 the re-adopted op ends complete once
+FAIL c30 a pump killed outright leaves its op running with a DEAD owner: classify.sh proves it from /proc (dead_owner)
+FAIL c30 resume re-adopts: the dead-owner op is reaped (no signal sent) and a new op owns the build
+FAIL c31 a purpose held by another long-op is refused at submit: 20 purpose_conflict, nothing started, no build directory
+usage: /home/milosvasic/Projects/catalogizer/scripts/build/tests/../dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+usage: /home/milosvasic/Projects/catalogizer/scripts/build/tests/../dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+FAIL c32 the pairing of a primary build with its repro-cold partner matches every field but variant and ignores the iteration
+usage: /home/milosvasic/Projects/catalogizer/scripts/build/tests/../dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+ok   c32 a build of another lane has no partner
+usage: /home/milosvasic/Projects/catalogizer/scripts/build/tests/../dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+FAIL c32 a repro-cold build pairs with the primary record whose artifact is the deliverable (the succeeded one, not the failed iteration)
+RESULT pass=12 fail=20 skip=0

@@ -50,5 +50,8 @@ M M15 check_no_build_writing_tracked.sh "write paths under \$EV/\$AUD no longer 
 M M16 require_verdicts.sh "fingerprint not compared" 'if [ -n "$fp" ] &&' 'if false &&'
 M M17 acquire.sh "adopt does not check it adopts a suspended-run of that run (no CAS)" '[ -n "$h" ] && [ "$(jq -r .run_id <<<"$h")" = "$run" ] && [ "$(jq -r .kind <<<"$h")" = suspended-run ] || { echo "cas_mismatch: no suspended-run holder for $run" >&2; return "$RC_CAS"; }' ':'
 M M18 lib.sh "stale-holder reader does not re-read the record (snapshot race)" '[ "$(cat "$hf" 2>/dev/null)" = "$s2" ] &&' 'true &&'
+M M19 register.sh "the build purpose-key grammar is not enforced (T089a)" 'build) [[ "$purpose" =~' 'build) true || [[ "$purpose" =~'
+M M20 lib.sh "the wall-clock cap is ignored: an advancing but over-long build never reads hung (T089a)" 'if [ "$wc" -gt 0 ] && [ "$el" -gt $((wc * 1000)) ]; then echo hung;' 'if false; then echo hung;'
+M M21 heartbeat.sh "the build host's elapsed time is not recorded (T089a)" '| (if $el!="" then .elapsed_ms=($el|tonumber) else . end)' ''
 echo "MUTATION RESULT caught=$caught survived=$surv total=$tot"
 [ "$surv" -eq 0 ]

@@ -1,0 +1,128 @@
+# T089a: paired mutations of the registry binding (named by the task: heartbeat ignored, flat progress read as advancing, repro-cold attached to the primary build, the lane dropped from the purpose key, the iteration id ignored by the attach rule) plus the registry-script mutants M19 to M21 and the full M01 to M21 run
+# captured: 2026-10-06T23:49:19Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: mutate_dispatch_c.sh m_reg_*; mutate_registry.sh --only Mxx
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# sha256 c0ddabf6034adb4e9ecadb4dfbb3e61e911650d52fae5668c2cf19e341bb5ab4  register.sh
+# sha256 77bf12d9bb9c619eb29186dc6cf1ee0941e3e8b6cecb6d17765a75251873526b  heartbeat.sh
+# sha256 d6973ed5fbaaf649f7a94f81cee2901df58e3fdfe0ba636a01c8b69c7e43d41a  lib.sh
+# sha256 35310fb0932f53a93bc2cb8334eb83ca3d33fed29865783af3a60695a1cce3a8  purposes.tsv
+# sha256 4da877cbdc4dda349ea9835719da6b08a000575cf2dcc9624c05738944f8a1ff  tests/test_registry.sh
+# sha256 a3ae7ecc2ed6523bea7ece1d7530da43dc2d95d21ea8ca4dfa83d62d2367a881  tests/mutate_registry.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+=== m_reg_before_start (dispatch.sh, c: c23)
+FAIL c23 the build is registered BEFORE the remote start (the fake emitter saw its op in the registry when it started)
+FAIL c23 the registry op carries the purpose key of T005b, the owner and the pump as its live owner
+FAIL c23 the first heartbeat moved it to running and the purpose claim is held
+FAIL c23 classify.sh judges the live advancing build advancing
+KILLED m_reg_before_start
+=== m_reg_conflict (dispatch.sh, c: c31)
+FAIL c31 a purpose held by another long-op is refused at submit: 20 purpose_conflict, nothing started, no build directory
+RESULT pass=0 fail=1 skip=0
+KILLED m_reg_conflict
+=== m_reg_dead_owner (dispatch.sh, c: c30)
+FAIL c30 resume re-adopts: the dead-owner op is reaped (no signal sent) and a new op owns the build
+RESULT pass=1 fail=1 skip=0
+KILLED m_reg_dead_owner
+=== m_reg_flat_as_advancing (dispatch.sh, c: c27)
+FAIL c27 (c) heartbeats with a flat progress pair past the budget: HUNG by the registry (heartbeat.sh feeds it, classify.sh decides): blocked-unavailable build_progress_flat
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+RESULT pass=2 fail=2 skip=0
+KILLED m_reg_flat_as_advancing
+=== m_reg_handoff (dispatch.sh, c: c29)
+FAIL c29 a driver stop (TERM on the pump) hands the build to the registry: op handoff, claim released, the remote build left running (never orphaned silently)
+FAIL c29 the re-adopted op ends complete once
+RESULT pass=1 fail=2 skip=0
+KILLED m_reg_handoff
+=== m_reg_heartbeat_ignored (dispatch.sh, c: c27)
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+RESULT pass=3 fail=1 skip=0
+KILLED m_reg_heartbeat_ignored
+=== m_reg_iteration_ignored (dispatch.sh, c: c24 c26)
+FAIL c24 a GREEN x3 submitted together starts three builds with three iteration ids and three registry records
+FAIL c26 a submit carrying another iteration id never attaches to that iteration
+RESULT pass=3 fail=2 skip=0
+KILLED m_reg_iteration_ignored
+=== m_reg_lane_dropped (dispatch.sh, c: c24)
+FAIL c24 the unit and integration lanes of one component at one commit start TWO builds and never attach
+RESULT pass=1 fail=1 skip=0
+KILLED m_reg_lane_dropped
+=== m_reg_release (dispatch.sh, c: c23)
+FAIL c23 at the terminal state the op is complete and the claim is released
+FAIL c23 a build that ends test_failed leaves a failed op (success is read from the verdict, never an exit code)
+RESULT pass=4 fail=2 skip=0
+KILLED m_reg_release
+=== m_reg_variant_attached (dispatch.sh, c: c26)
+FAIL c26 a repro-cold submit never attaches to the running primary build, whatever the other fields
+RESULT pass=2 fail=1 skip=0
+KILLED m_reg_variant_attached
+=== m_reg_wallclock (dispatch.sh, c: c28)
+FAIL c28 a build that ADVANCES but passes its purpose's wall-clock cap (scripts/longops/purposes.tsv) is HUNG: build_wallclock_exceeded, measured on the build host's own monotonic clock
+FAIL c28 a class whose cap is UNKNOWN falls back to the dispatcher's defaults (60 s no-progress, 3600 s cap), recorded
+RESULT pass=1 fail=2 skip=0
+KILLED m_reg_wallclock
+=== m_pair_variant (dispatch.sh, c: c32)
+FAIL c32 the pairing of a primary build with its repro-cold partner matches every field but variant and ignores the iteration
+FAIL c32 a build of another lane has no partner
+RESULT pass=3 fail=2 skip=0
+KILLED m_pair_variant
+CAUGHT   M01 drop the flock: every CAS runs unlocked (adopt vs expire gives two winners) :: FAIL S10 over 6 trials adopt vs expire has exactly one winner each time :: got [6] want [0]|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M02 check_no_build_writing_tracked made always-pass :: FAIL K3 golden-false: a live build writing a TRACKED path is refused :: rc=0 want 1|FAIL K3b []|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M03 require_verdicts accepts a missing verdict :: FAIL V2 golden-false: a missing verdict file is refused :: rc=0 want 1|FAIL V2b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M04 signal guards on pid and pgid removed (the real kill is replaced by a no-op IN THE SAME MUTANT: a guard-less kill of 0 or -1 would signal the whole session) :: FAIL P3b process still alive|FAIL P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each) :: got [0 0 0 0 0 ] want [7 7 7 7 7 ]|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M05 classification never reports hung (flat offset never detected) :: FAIL H4 flat progress offset past no_progress_s is HUNG :: got [advancing] want [hung]|FAIL P2 --dry-run on a hung op exits 0 and signals nothing :: rc=5 want 0|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M06 a live advancing op may be reaped :: FAIL P1 a live advancing op is never reaped :: rc=0 want 5|FAIL P3b process still alive|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M07 process identity ignores the /proc start time (a recycled pid reads live) :: FAIL P5 a recycled pid (start time differs) is dead_owner: reaped :: rc=5 want 0|FAIL L4 a pid that now belongs to another process (start time differs) gives none :: got [{"kind":"process","p|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M08 record write is not atomic (remove, pause, rename) :: FAIL H11 a reader looping over 60 record rewrites never reads a torn file :: got [713] want [0]|FAIL S9b the reader never read none across suspend, callback done and adopt :: got [33] want [0]|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M09 the purpose claim is not exclusive (no existing-claim check, mkdir -p) :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|FAIL R3b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M10 tmpfs state accepted :: FAIL R5b state on tmpfs is refused (not tmpfs, 11.4.232 A) :: rc=0 want 20|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M11 reap does not resolve the real identity from /proc :: FAIL P4 an unresolvable identity (cmdline differs) is refused :: rc=0 want 6|FAIL P4b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M12 --expire ignores the resume_ttl :: FAIL S8 --expire refuses a holder still inside resume_ttl :: rc=0 want 4|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M13 CPA_APPROVED_DIR check dropped for commit_push :: FAIL C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20 :: rc=0 want 20|FAIL C1b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M14 a dead process holder reads live :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|FAIL R3b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M15 write paths under $EV/$AUD no longer block :: FAIL K6 any live op declaring a write path under $EV is refused (not only builds) :: rc=0 want 1|FAIL K6b|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M16 fingerprint not compared :: FAIL V3 a stale fingerprint is refused :: rc=0 want 1|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M17 adopt does not check it adopts a suspended-run of that run (no CAS) :: FAIL S11 adopt with no holder is a cas_mismatch :: rc=1 want 4|FAIL S12 adopt of a run that is a live process holder (not suspended) is a cas_mismatch :: rc=0 want 4|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M18 stale-holder reader does not re-read the record (snapshot race) :: FAIL S9b the reader never read none across suspend, callback done and adopt :: got [1] want [0]|FAIL S13 a reader that read the holder before the hub moved it (callback running, build terminal) judges the C|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M19 the build purpose-key grammar is not enforced (T089a) :: FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:abc:def:primary) :: rc=0 want 2|FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M20 the wall-clock cap is ignored: an advancing but over-long build never reads hung (T089a) :: FAIL W3 an advancing but over-long build (elapsed > wall_clock_s) is hung :: got [advancing] want [hung]|FAIL W3b [20261006T234851Z-4116666-20586	advancing	last progress 0s ago, budget 600s]|
+MUTATION RESULT caught=1 survived=0 total=1
+CAUGHT   M21 the build host's elapsed time is not recorded (T089a) :: FAIL W1 heartbeat records the build host's elapsed monotonic time :: got [null] want [3000]|FAIL W3 an advancing but over-long build (elapsed > wall_clock_s) is hung :: got [advancing] want [hung]|
+MUTATION RESULT caught=1 survived=0 total=1

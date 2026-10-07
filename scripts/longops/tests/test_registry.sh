@@ -251,4 +251,28 @@ grep -q missing "$FXN/o" && ok "V2b names missing" || bad "V2b"
 "$S/require_verdicts.sh" --file "$FXN/good.json" --file "$FXN/none.json" >"$FXN/o"; assert_rc "V7 one missing file among several refuses the lot" $? 1
 echo '{bad' >"$FXN/bad.json"; "$S/require_verdicts.sh" --file "$FXN/bad.json" >"$FXN/o"; assert_rc "V8 an unparsable verdict is refused" $? 1
 
+echo "== T089a: purpose-key grammar of a dispatched build, wall-clock cap =="
+newfx g1; mkll; GP=$LL
+H64=$(printf '%064d' 1); A64=$(printf '%064d' 2)
+"$S/register.sh" --grammar build --purpose "build:catalog-api:unit:$H64:$A64:primary" --owner dispatch --pid "$GP" >"$FXN/o" 2>"$FXN/e"; assert_rc "G1 golden-true: a well-formed build purpose key is registered" $? 0
+mkll; GP2=$LL; "$S/register.sh" --grammar build --purpose "build:catalog-api:integration:$H64:$A64:repro-cold:it7" --owner dispatch --pid "$GP2" >/dev/null 2>&1; assert_rc "G1b golden-true: variant repro-cold with an iteration id is registered" $? 0
+for bad in "build:app:lane:abc:def:primary" "build:app:lane:${H64:1}:$A64:primary" "build:app:lane:$H64:$A64:fast" "build:app:lane:$H64:$A64:primary:bad iter" "build:app:$H64:$A64:primary" "build::lane:$H64:$A64:primary"; do
+  mkll; X=$LL; "$S/register.sh" --grammar build --purpose "$bad" --owner dispatch --pid "$X" >/dev/null 2>"$FXN/e"; rc=$?
+  assert_rc "G2 golden-false: a malformed build purpose key is refused ($bad)" $rc 2
+done
+grep -q purpose_key_malformed "$FXN/e" && ok "G2b the refusal names purpose_key_malformed" || bad "G2b [$(cat "$FXN/e")]"
+mkll; X=$LL; "$S/register.sh" --purpose "build:x" --owner t --pid "$X" >/dev/null 2>&1; assert_rc "G3 without --grammar build a purpose keeps the older rule (any safe name)" $? 0
+mkll; X=$LL; "$S/register.sh" --grammar nonsense --purpose "build:x" --owner t --pid "$X" >/dev/null 2>&1; assert_rc "G3b an unknown --grammar is a usage error" $? 2
+newfx w1; mkll; W=$LL; export LONGOPS_NOW=$(date +%s)
+id=$("$S/register.sh" --grammar build --purpose "build:app:lane:$H64:$A64:primary" --owner dispatch --pid "$W" --no-progress-s 600 --wall-s 5)
+"$S/heartbeat.sh" --op-id "$id" --progress-offset 10 --elapsed-ms 3000 >/dev/null
+assert_eq "W1 heartbeat records the build host's elapsed monotonic time" "$(jq -r .elapsed_ms "$LONGOPS_DIR/ops/$id.json")" 3000
+assert_eq "W2 under the cap and advancing: advancing" "$("$S/classify.sh" --op-id "$id" | cut -f2)" advancing
+"$S/heartbeat.sh" --op-id "$id" --progress-offset 20 --elapsed-ms 6000 >/dev/null
+r=$("$S/classify.sh" --op-id "$id"); assert_eq "W3 an advancing but over-long build (elapsed > wall_clock_s) is hung" "$(cut -f2 <<<"$r")" hung
+grep -q wall_clock <<<"$r" && ok "W3b the evidence names the wall-clock cap" || bad "W3b [$r]"
+mkll; W2=$LL; id2=$("$S/register.sh" --purpose "build:app:lane2:$H64:$A64:primary" --owner dispatch --pid "$W2" --no-progress-s 600)
+"$S/heartbeat.sh" --op-id "$id2" --progress-offset 5 --elapsed-ms 999999999 >/dev/null; assert_eq "W4 no cap recorded (wall_clock_s 0): never hung by elapsed time" "$("$S/classify.sh" --op-id "$id2" | cut -f2)" advancing
+unset LONGOPS_NOW
+
 finish

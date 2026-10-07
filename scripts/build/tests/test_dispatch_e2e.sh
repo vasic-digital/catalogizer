@@ -15,7 +15,7 @@ ok()  { pass=$((pass+1)); echo "ok   $1"; }
 bad() { fail=$((fail+1)); echo "FAIL $1${2:+ -- $2}"; }
 chk() { local w=$1; shift; if "$@"; then ok "$w"; else bad "$w"; fi; }
 for t in podman jq python3; do command -v "$t" >/dev/null 2>&1 || { echo "FAIL dependency missing: $t"; echo "RESULT pass=0 fail=1"; exit 1; }; done
-T=$(mktemp -d /tmp/tdspe.XXXXXX); trap 'rm -rf "$T"' EXIT
+T=$(mktemp -d "${TMPDIR:-/tmp}/tdspe.XXXXXX"); trap 'rm -rf "$T"' EXIT
 mkdir -p "$T/state" "$T/ok" "$T/bad" "$T/sleep"
 printf 'package main\nimport "fmt"\nfunc main() { fmt.Println("hello from a containerized build") }\n' > "$T/ok/main.go"
 printf 'module tiny\n\ngo 1.25\n' | tee "$T/ok/go.mod" "$T/bad/go.mod" "$T/sleep/go.mod" >/dev/null

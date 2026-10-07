@@ -1,0 +1,305 @@
+# round c paired mutations (mutate_dispatch_c.sh): each mutant is one textual change to a COPY; the guarding cases must FAIL
+# captured: 2026-10-06T23:49:19Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: bash scripts/build/tests/mutate_dispatch_c.sh <name> (4 in parallel)
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+=== m_emit_adopt (remote/emit.sh, c: c34)
+FAIL c34 (i2) the restarted emitter re-signs from its journal with the key re-obtained from the driver and finishes the build: completed once, callback once
+RESULT pass=5 fail=1 skip=0
+KILLED m_emit_adopt
+=== m_emit_cpu (remote/emit.sh, c: c37)
+FAIL c37 a QUIET build (no log output at all) that burns CPU is not HUNG: progress is the log plus the container's CPU counter
+RESULT pass=1 fail=1 skip=0
+KILLED m_emit_cpu
+=== m_emit_no_key_check (remote/emit.sh, c: c35)
+FAIL c35 (i2) a malformed key is refused the same way
+RESULT pass=2 fail=1 skip=0
+KILLED m_emit_no_key_check
+=== m_emit_peak (remote/emit.sh, c: c36)
+FAIL c36 (T115) the completed event carries peak_rss_bytes, the build container's cgroup memory.peak read on the build host, and the core accepts it
+RESULT pass=1 fail=1 skip=0
+KILLED m_emit_peak
+=== m_emit_signed_at_rest (remote/emit.sh, c: c34)
+FAIL c34 (i2) the real emitter journal holds NO signature at rest (signed only when streamed, with the key the driver sends)
+FAIL c34 (i2) the restarted emitter re-signs from its journal with the key re-obtained from the driver and finishes the build: completed once, callback once
+RESULT pass=4 fail=2 skip=0
+KILLED m_emit_signed_at_rest
+=== m_grp_all_terminal (dispatch.sh, c: c14)
+FAIL c14 (v) one member finished: the group is not terminal
+FAIL c14 (v) the other finishing order gives the same single group callback
+FAIL c14 (v) each member's only keyed effect is its own record-only one, the group callback ran once for the group alone
+RESULT pass=4 fail=3 skip=0
+KILLED m_grp_all_terminal
+=== m_grp_cbg_kind (dispatch.sh, c: c16)
+FAIL c16 (v) the remaining members are recorded cancelled_by_group, and that never sets the group's kind
+RESULT pass=2 fail=1 skip=0
+KILLED m_grp_cbg_kind
+=== m_grp_cof_always (dispatch.sh, c: c17 c18)
+FAIL c17 (v) one member test_failed while the others complete: one group callback carrying all three kinds, nothing cancelled, group kind test_failed
+FAIL c17 (v) without --cancel-on-fail a build_failed member cancels nothing (the other member still runs)
+FAIL c17 (v) and the group ends build_failed once every member is terminal
+FAIL c18 (v) a GREEN x3 with one failing iteration still completes all its iterations (every member terminal, none cancelled)
+KILLED m_grp_cof_always
+=== m_grp_cof_ignored (dispatch.sh, c: c17)
+FAIL c17 (v) with --cancel-on-fail the same test_failed ends the group early: kind test_failed, the others cancelled_by_group
+FAIL c17 (v) with --cancel-on-fail a build_failed member ends it with group kind build_failed
+RESULT pass=3 fail=2 skip=0
+KILLED m_grp_cof_ignored
+=== m_grp_conflict (dispatch.sh, c: c19)
+FAIL c19 (v) the conflicting submit is refused BEFORE anything starts: no build directory, and not even the disk gate ran for it (its record is absent)
+RESULT pass=4 fail=1 skip=0
+KILLED m_grp_conflict
+=== m_grp_member_cb (dispatch.sh, c: c14)
+FAIL c14 (v) with a group callback that is NOT record-only, every member is still record-only and the group alone carries the group callback
+FAIL c14 (v) each member's only keyed effect is its own record-only one, the group callback ran once for the group alone
+RESULT pass=5 fail=2 skip=0
+KILLED m_grp_member_cb
+=== m_grp_once (dispatch.sh, c: c15)
+FAIL c15 repeated sweeps leave the claimed terminal directory itself untouched (never removed and claimed again)
+RESULT pass=3 fail=1 skip=0
+KILLED m_grp_once
+=== m_grp_orphan (dispatch.sh, c: c19)
+FAIL c19 (v) a group not sealed within its group budget is reported group_orphaned and made terminal cancelled, its members cancelled_by_group
+RESULT pass=4 fail=1 skip=0
+KILLED m_grp_orphan
+=== m_grp_precedence (dispatch.sh, c: c20)
+FAIL c20 (v) the group kind is decided by precedence across classes: a test_failed member beats a member that ended blocked-unavailable, whichever ended last
+FAIL c20 (v) the same two members in the other member order give the same kind
+RESULT pass=0 fail=2 skip=0
+KILLED m_grp_precedence
+=== m_grp_unsealed (dispatch.sh, c: c19)
+FAIL c19 (v) a group with no seal is never terminal, however many members finished (the member itself is terminal)
+RESULT pass=4 fail=1 skip=0
+KILLED m_grp_unsealed
+=== m_hub_callback_resume (event_hub.sh, c: c10)
+FAIL c10 (n) a callback found claimed after a crash is run by the hub from its durable state; the keyed effect is applied once
+FAIL c10 (o) a callback found running (a crash in the middle) is re-run, the effect still applied once
+RESULT pass=0 fail=2 skip=0
+KILLED m_hub_callback_resume
+=== m_hub_ensure (dispatch.sh, c: c13)
+FAIL c13 (r0) dispatch.sh submit starts the hub when none runs: hub.pid names a live hub
+RESULT pass=1 fail=1 skip=0
+KILLED m_hub_ensure
+=== m_hub_live_table (event_hub.sh, c: c40)
+FAIL c40 a callback row approved AFTER the hub started: the build ends, its script callback is refused at callback time (failed callback_not_registered) and never ran
+FAIL c40 after a hub restart the same id runs (the new export lists it)
+RESULT pass=0 fail=2 skip=0
+KILLED m_hub_live_table
+=== m_hub_pidfile (event_hub.sh, c: c8)
+FAIL c8 (r0) hub.pid names the live hub (pid, start time, cmdline event_hub.sh), written by the hub itself
+FAIL c8 the sweep's hub record hub.json {pid,start_time} names the same hub
+FAIL c8 (r) the holder is named through the long-op registry (holder.sh of the build-hub purpose names the hub's pid)
+FAIL c8 the hub stops on TERM and removes hub.pid and hub.json
+KILLED m_hub_pidfile
+=== m_hub_poll (event_hub.sh, c: c12)
+FAIL c12 (k) an idle hub (no open build) starts no process in 3 s: it waits on inotify and pidfd only
+RESULT pass=2 fail=1 skip=0
+KILLED m_hub_poll
+=== m_hub_resume_pump (event_hub.sh, c: c9)
+FAIL c9 (r0) a pump killed while its build runs is restarted by the hub: no resubmission
+FAIL c9 the build completes once, callback once, daemon started once
+RESULT pass=0 fail=2 skip=0
+KILLED m_hub_resume_pump
+=== m_hub_single (event_hub.sh, c: c8)
+FAIL c8 (r) a second hub in the same checkout is refused: exit 20 hub_already_running, the holder named
+RESULT pass=6 fail=1 skip=0
+KILLED m_hub_single
+=== m_hub_stamp (event_hub.sh, c: c11)
+FAIL c11 (x) a hub started with CPA_EXEC_SHA256 writes it as hub_sha256 into the terminal record and every consumed mark
+RESULT pass=1 fail=1 skip=0
+KILLED m_hub_stamp
+=== m_keyring_file_truth (lib/keyring.sh, c: c39)
+FAIL c39 (q2) with the file lost the refill REFUSES (20 driver_secret_lost) and creates nothing: the file, not the keyring, is the truth
+FAIL c39 (q2) the hub refills the keyring itself when it starts
+RESULT pass=4 fail=2 skip=0
+KILLED m_keyring_file_truth
+=== m_pair_variant (dispatch.sh, c: c32)
+FAIL c32 the pairing of a primary build with its repro-cold partner matches every field but variant and ignores the iteration
+FAIL c32 a build of another lane has no partner
+RESULT pass=3 fail=2 skip=0
+KILLED m_pair_variant
+=== m_pin_anykey (dispatch.sh, c: c38)
+FAIL c38 a host whose key does NOT match the pin is never connected to: blocked-unavailable no_qualified_host, attempt detail host_key_mismatch
+RESULT pass=4 fail=1 skip=0
+KILLED m_pin_anykey
+=== m_pin_strict (dispatch.sh, c: c38)
+FAIL c38 ssh is invoked with StrictHostKeyChecking=yes and a known-hosts file holding exactly the pinned key (generated by the dispatcher)
+RESULT pass=4 fail=1 skip=0
+KILLED m_pin_strict
+=== m_pin_unpinned (dispatch.sh, c: c38)
+FAIL c38 a host with no pinned fingerprint is not qualified (host_key_not_pinned): the dispatcher never learns a key by itself
+RESULT pass=4 fail=1 skip=0
+KILLED m_pin_unpinned
+=== m_reg_before_start (dispatch.sh, c: c23)
+FAIL c23 the build is registered BEFORE the remote start (the fake emitter saw its op in the registry when it started)
+FAIL c23 the registry op carries the purpose key of T005b, the owner and the pump as its live owner
+FAIL c23 the first heartbeat moved it to running and the purpose claim is held
+FAIL c23 classify.sh judges the live advancing build advancing
+KILLED m_reg_before_start
+=== m_reg_conflict (dispatch.sh, c: c31)
+FAIL c31 a purpose held by another long-op is refused at submit: 20 purpose_conflict, nothing started, no build directory
+RESULT pass=0 fail=1 skip=0
+KILLED m_reg_conflict
+=== m_reg_dead_owner (dispatch.sh, c: c30)
+FAIL c30 resume re-adopts: the dead-owner op is reaped (no signal sent) and a new op owns the build
+RESULT pass=1 fail=1 skip=0
+KILLED m_reg_dead_owner
+=== m_reg_flat_as_advancing (dispatch.sh, c: c27)
+FAIL c27 (c) heartbeats with a flat progress pair past the budget: HUNG by the registry (heartbeat.sh feeds it, classify.sh decides): blocked-unavailable build_progress_flat
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+RESULT pass=2 fail=2 skip=0
+KILLED m_reg_flat_as_advancing
+=== m_reg_handoff (dispatch.sh, c: c29)
+FAIL c29 a driver stop (TERM on the pump) hands the build to the registry: op handoff, claim released, the remote build left running (never orphaned silently)
+FAIL c29 the re-adopted op ends complete once
+RESULT pass=1 fail=2 skip=0
+KILLED m_reg_handoff
+=== m_reg_heartbeat_ignored (dispatch.sh, c: c27)
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+RESULT pass=3 fail=1 skip=0
+KILLED m_reg_heartbeat_ignored
+=== m_reg_iteration_ignored (dispatch.sh, c: c24 c26)
+FAIL c24 a GREEN x3 submitted together starts three builds with three iteration ids and three registry records
+FAIL c26 a submit carrying another iteration id never attaches to that iteration
+RESULT pass=3 fail=2 skip=0
+KILLED m_reg_iteration_ignored
+=== m_reg_lane_dropped (dispatch.sh, c: c24)
+FAIL c24 the unit and integration lanes of one component at one commit start TWO builds and never attach
+RESULT pass=1 fail=1 skip=0
+KILLED m_reg_lane_dropped
+=== m_reg_release (dispatch.sh, c: c23)
+FAIL c23 at the terminal state the op is complete and the claim is released
+FAIL c23 a build that ends test_failed leaves a failed op (success is read from the verdict, never an exit code)
+RESULT pass=4 fail=2 skip=0
+KILLED m_reg_release
+=== m_reg_variant_attached (dispatch.sh, c: c26)
+FAIL c26 a repro-cold submit never attaches to the running primary build, whatever the other fields
+RESULT pass=2 fail=1 skip=0
+KILLED m_reg_variant_attached
+=== m_reg_wallclock (dispatch.sh, c: c28)
+FAIL c28 a build that ADVANCES but passes its purpose's wall-clock cap (scripts/longops/purposes.tsv) is HUNG: build_wallclock_exceeded, measured on the build host's own monotonic clock
+FAIL c28 a class whose cap is UNKNOWN falls back to the dispatcher's defaults (60 s no-progress, 3600 s cap), recorded
+RESULT pass=1 fail=2 skip=0
+KILLED m_reg_wallclock
+=== m_run_done_rerun (run_callback.sh, c: c5)
+FAIL c5 a callback found done is left untouched: the runner prints nothing and does not even claim the runner slot again
+RESULT pass=5 fail=1 skip=0
+KILLED m_run_done_rerun
+=== m_run_failed_retry (run_callback.sh, c: c6)
+FAIL c6 (p) a failed callback is never retried silently (one run only)
+RESULT pass=3 fail=1 skip=0
+KILLED m_run_failed_retry
+=== m_run_noeffect (run_callback.sh, c: c5)
+FAIL c5 a script that exits 0 WITHOUT applying its keyed effect is not done: failed effect_not_applied
+RESULT pass=5 fail=1 skip=0
+KILLED m_run_noeffect
+=== m_run_registry (run_callback.sh, c: c7)
+FAIL c7 a callback id the approved table lacks is refused at callback time: script.state failed, reason callback_not_registered, the script never ran
+RESULT pass=2 fail=1 skip=0
+KILLED m_run_registry
+=== m_run_stamp (run_callback.sh, c: c7)
+FAIL c7 (x) a runner started without CPA_EXEC_SHA256 writes no runner_sha256
+RESULT pass=2 fail=1 skip=0
+KILLED m_run_stamp
+=== m_ship_all_objects (dispatch.sh, c: c2)
+FAIL c2 (w) the first submit sends objects; a second submit of the unchanged checkout sends none
+FAIL c2 (w) the transfer is recorded with its byte count in the submit record
+FAIL c2 (w) one changed source file ships one blob and the trees above it (svc, root)
+RESULT pass=1 fail=3 skip=0
+KILLED m_ship_all_objects
+=== m_ship_mismatch_kind (dispatch.sh, c: c4)
+FAIL c4 (u) a received tree altered on the build host is refused: infra_failed, detail snapshot_mismatch, never blocked-unavailable
+RESULT pass=2 fail=1 skip=0
+KILLED m_ship_mismatch_kind
+=== m_ship_whole_checkout (dispatch.sh, c: c1)
+FAIL c1 (w) a build of the web component ships the root only: no submodule file arrives
+RESULT pass=6 fail=1 skip=0
+KILLED m_ship_whole_checkout
+=== m_snap_closure_incomplete (lib/snapshot.py, snap: p6)
+FAIL p6 (u2) a path an input references inside a gitlink OUTSIDE the shipped set is refused: exit 20 closure_incomplete
+RESULT pass=5 fail=1 skip=0
+KILLED m_snap_closure_incomplete
+=== m_snap_cpa_seed (lib/snapshot.py, snap: p8)
+FAIL p8 undeclared STAGED content never enters a CPA snapshot
+RESULT pass=4 fail=1 skip=0
+KILLED m_snap_cpa_seed
+=== m_snap_descendants (lib/snapshot.py, snap: p6)
+FAIL p6 a Go replace into submodules/lib brings that submodule (the nested one it holds too)
+FAIL p6 an npm file: dependency brings its submodule
+RESULT pass=4 fail=2 skip=0
+KILLED m_snap_descendants
+=== m_snap_exclude (lib/snapshot.py, snap: p7 p5)
+FAIL p5 the evidence and audit trees are excluded from the compile-class tar
+FAIL p7 a changed or new file under the evidence and audit trees changes no compile-class digest
+RESULT pass=6 fail=2 skip=0
+KILLED m_snap_exclude
+=== m_snap_lfs_filter (lib/snapshot.py, snap: p4)
+FAIL p4 the snapshot of a file under a filter=lfs pattern ran NO clean filter (marker absent)
+RESULT pass=2 fail=1 skip=0
+KILLED m_snap_lfs_filter
+=== m_snap_npm_file (lib/snapshot.py, snap: p6)
+FAIL p6 an npm file: dependency brings its submodule
+RESULT pass=5 fail=1 skip=0
+KILLED m_snap_npm_file
+=== m_snap_plan_root_only (lib/snapshot.py, snap: p9)
+FAIL p9 the materialised tree matches the manifest (remote recompute passes)
+FAIL p9 the materialised tree equals the driver's own tar of the same snapshot
+FAIL p9 verify of an untouched tree passes
+RESULT pass=6 fail=3 skip=0
+KILLED m_snap_plan_root_only
+=== m_snap_submodule_depth (lib/snapshot.py, snap: p2)
+FAIL p2 an edit inside a submodule's working tree changes the digest (the HEAD of the root is unchanged)
+FAIL p2 an untracked file in a NESTED submodule (depth 2) changes the digest
+FAIL p2 the manifest lists the root and every INITIALISED submodule at every depth, in path order, and not the deinitialised one
+RESULT pass=0 fail=3 skip=0
+KILLED m_snap_submodule_depth
+=== m_snap_undeclared (lib/snapshot.py, snap: p8)
+FAIL p8 an undeclared dirty file inside a compile-class check's input closure is refused: exit 20 undeclared_dirty_input
+RESULT pass=4 fail=1 skip=0
+KILLED m_snap_undeclared
+=== m_snap_uninit_refusal (lib/snapshot.py, snap: p6)
+FAIL p6 (u) an input needing an UNINITIALISED submodule is refused: exit 20 submodule_uninitialised
+RESULT pass=5 fail=1 skip=0
+KILLED m_snap_uninit_refusal
+=== m_snap_untracked (lib/snapshot.py, snap: p1)
+FAIL p1 an untracked non-ignored file changes the digest (TIC: nothing silently left out)
+RESULT pass=5 fail=1 skip=0
+KILLED m_snap_untracked
+=== m_tc_gitlink_manifest (lib/treecache.py, snap: p9)
+FAIL p9 the materialised tree matches the manifest (remote recompute passes)
+FAIL p9 the materialised tree equals the driver's own tar of the same snapshot
+FAIL p9 verify of an untouched tree passes
+RESULT pass=6 fail=3 skip=0
+KILLED m_tc_gitlink_manifest
+=== m_tc_object_verify (lib/treecache.py, snap: p9)
+FAIL p9 (u) an object altered in the cache is refused at materialisation (exit 20 snapshot_mismatch, the message names the object that does not hash to its id)
+RESULT pass=8 fail=1 skip=0
+KILLED m_tc_object_verify
+=== m_tc_recompute (lib/treecache.py, snap: p9)
+FAIL p9 (u) a tree altered on the build host is refused: exit 20 snapshot_mismatch
+RESULT pass=8 fail=1 skip=0
+KILLED m_tc_recompute
+=== m_tc_store_verify (lib/treecache.py, snap: p9)
+FAIL p9 an object whose bytes do not hash to its id is refused at store (exit 20 snapshot_mismatch) and nothing is stored
+RESULT pass=8 fail=1 skip=0
+KILLED m_tc_store_verify
+TOTAL killed=62 survived=0 invalid=0

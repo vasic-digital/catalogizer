@@ -1,0 +1,31 @@
+FAIL c1 (u) the snapshot digest of a git source is the manifest digest of snapshot.py (64 hex)
+ok   c1 an uncommitted edit changes the digest (one HEAD, two trees, two keys)
+ok   c1 (u) one dirty submodule edit changes the digest
+FAIL c1 (u) a git source build completes and the callback ran once
+grep: /tmp/tdc.PvB5c2/c1/log/srcls.: No such file or directory
+FAIL c1 (u) the Go module of the root with a replace into submodules/ builds: the submodule's tree is shipped into its path
+grep: /tmp/tdc.PvB5c2/c1/log/srcls.: No such file or directory
+FAIL c1 (w) a build of the web component ships the root only: no submodule file arrives
+grep: /tmp/tdc.PvB5c2/c1/log/srcls.: No such file or directory
+FAIL c1 the shipped tree carries no .git entry and no ignored file
+jq: error: Could not open file /tmp/tdc.PvB5c2/c2/builds//submit.json: No such file or directory
+jq: error: Could not open file /tmp/tdc.PvB5c2/c2/builds//submit.json: No such file or directory
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c2 (w) the first submit sends objects; a second submit of the unchanged checkout sends none
+jq: error: Could not open file /tmp/tdc.PvB5c2/c2/builds//submit.json: No such file or directory
+jq: error: Could not open file /tmp/tdc.PvB5c2/c2/builds//submit.json: No such file or directory
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c2 (w) the transfer is recorded with its byte count in the submit record
+jq: error: Could not open file /tmp/tdc.PvB5c2/c2/builds//submit.json: No such file or directory
+FAIL c2 (w) one changed source file ships one blob and the trees above it (svc, root)
+FAIL c2 (w) a changed evidence file changes no compile-class snapshot and ships nothing
+FAIL c3 (u) an input needing an uninitialised submodule is refused at submit (20 submodule_uninitialised), no build directory left
+FAIL c3 a git source submitted with no --component is refused (20 usage): the closure is the unit that ships
+FAIL c3 (CPA) an undeclared dirty file inside the component's closure is refused at submit (20 undeclared_dirty_input)
+ls: cannot access '/tmp/tdc.PvB5c2/c4/builds/.hostcache/trees': No such file or directory
+FAIL c4 the tree sits in the content-addressed cache of the (local proof) build host
+scripts/build/tests/test_dispatch_c.sh: line 132: /tmp/tdc.PvB5c2/c4/builds/.hostcache/trees//svc/main.go: No such file or directory
+FAIL c4 (u) a received tree altered on the build host is refused: infra_failed, detail snapshot_mismatch, never blocked-unavailable
+FAIL c4 (u) no build ran on the altered tree (daemon never started), callback once
+RESULT pass=2 fail=15 skip=0
+rm: cannot remove '/tmp/tdc.PvB5c2': Directory not empty

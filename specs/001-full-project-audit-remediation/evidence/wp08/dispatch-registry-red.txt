@@ -1,0 +1,10 @@
+FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:abc:def:primary) :: rc=0 want 2
+FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary) :: rc=0 want 2
+FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:fast) :: rc=0 want 2
+FAIL G2 golden-false: a malformed build purpose key is refused (build:app:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary) :: rc=0 want 2
+FAIL G2 golden-false: a malformed build purpose key is refused (build::lane:0000000000000000000000000000000000000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000002:primary) :: rc=0 want 2
+FAIL G2b []
+FAIL W1 heartbeat records the build host's elapsed monotonic time :: got [null] want [3000]
+FAIL W3 an advancing but over-long build (elapsed > wall_clock_s) is hung :: got [advancing] want [hung]
+FAIL W3b [20261006T181901Z-910763-28139	advancing	last progress 0s ago, budget 600s]
+RESULT pass=123 fail=9

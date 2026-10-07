@@ -143,6 +143,9 @@ lo_classify_op() {
   pid=$(jq -r '.pid // 0' <<<"$j"); pst=$(jq -r '.start_time // ""' <<<"$j")
   if ! lo_alive "$pid" "$pst"; then echo dead_owner; echo "pid=$pid start_time=$pst not running (resolved from /proc)"; return 0; fi
   now=$(lo_now); np=$(jq -r '.budget.no_progress_s // 0' <<<"$j"); lp=$(jq -r '.last_progress_epoch // 0' <<<"$j")
+  # an advancing but over-long op is hung too (T089a): its own elapsed monotonic time (heartbeat.sh --elapsed-ms) passed the wall-clock cap recorded at registration
+  local wc el; wc=$(jq -r '.budget.wall_clock_s // 0' <<<"$j"); el=$(jq -r '.elapsed_ms // 0' <<<"$j")
+  if [ "$wc" -gt 0 ] && [ "$el" -gt $((wc * 1000)) ]; then echo hung; echo "wall_clock: elapsed ${el}ms > wall_clock_s=${wc}"; return 0; fi
   if [ "$np" -gt 0 ] && [ $((now - lp)) -gt "$np" ]; then echo hung; echo "offset flat for $((now - lp))s > no_progress_s=$np (progress_offset=$(jq -r '.progress_offset' <<<"$j"))"; return 0; fi
   echo advancing; echo "last progress $((now - lp))s ago, budget ${np}s"
 }

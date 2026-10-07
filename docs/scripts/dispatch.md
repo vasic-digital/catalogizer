@@ -1,7 +1,7 @@
 # dispatch.sh, remote/emit.sh, lib/evwait.py: User Guide (T005b slice)
 
 **Revision:** 2
-**Last modified:** 2026-10-06T20:30:00Z
+**Last modified:** 2026-10-07T01:00:00Z
 **Status:** revision 2 (round c) is uncommitted work on top of the committed revision 1; independent review (constitution 11.4.142) owed for both. `$EV` is the evidence root, default `specs/001-full-project-audit-remediation/evidence`.
 
 Companion guide (Helix Constitution section 11.4.18) for `scripts/build/dispatch.sh`, `scripts/build/remote/emit.sh`, `scripts/build/lib/evwait.py` and
@@ -138,6 +138,11 @@ Round c: `test_snapshot.sh` (real git repositories: root, submodules, a nested o
 the real emitter with a stub of `run_pinned.sh` and a podman/cgroup shim, pinning, keyring), `test_dispatch_c_e2e.sh` (REAL containers: a Go module with a `replace` into a submodule built in IMG-GO from a shipped
 closure; a quiet build with the real cgroup CPU counter and a real `peak_rss_bytes`), `mutate_dispatch_c.sh` (paired mutations). The core's cases stay in `test_dispatch_events.sh`.
 Evidence: `$EV/wp09/dispatch-b-*` (revision 1), `$EV/wp09/dispatch-c-*` and `$EV/wp08/dispatch-registry-*` (round c).
+
+Running the suites on a loaded or tight host: the tests create their sandboxes under `${TMPDIR:-/tmp}`. The dispatcher's disk gate (`disk_headroom.sh`, `min_free_bytes` 12172240540) measures the filesystem of the builds root,
+so a `/tmp` that is a nearly full tmpfs refuses every submit with `disk_below_headroom` (a refused submit makes some checks pass vacuously and others fail for the wrong reason). Run them with `TMPDIR=/dev/shm` (or any
+filesystem with more than the headroom free). The case `c32` therefore asserts that its fixture ids are real, and `mutate_dispatch.sh` / `mutate_dispatch_c.sh` link `scripts/longops` into the mutant tree (without it the registry
+binding cannot run and a mutant is "killed" for the wrong reason). A mutant is only counted as killed when a guarding case printed a `FAIL` line; a kill that is only a hang or a crash is a weak kill and the case is made bounded.
 
 ## Owed (not claimed)
 - Start of the hub, the runner and the dispatcher through `cpa-host --exec-approved` and the approved callbacks table / `cpa_code.txt` adoption (CENTRAL C5, C10; T046/T047 do not exist): the hub is started by

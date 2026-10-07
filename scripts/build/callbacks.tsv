@@ -1,4 +1,4 @@
 # id	script	effect-key prefix	long-op purpose	no-progress budget (s)
-# Closed, reviewed callback registry (T005b). The slice runs the keyed-effect callback of event_core.sh (script column "-"); a script-running callback runner is OWED.
+# Closed, reviewed callback registry (T005b). Script column "-": the keyed-effect callback of event_core.sh. Any other value: a script path (relative to RUNCB_SCRIPT_ROOT, default the checkout) run by scripts/build/run_callback.sh with the terminal kind, never a shell line; see docs/scripts/run_callback.md.
 record-only	-	cb-record-only	build-callback	60
 tic-group-record	-	cb-tic-group-record	build-callback	60

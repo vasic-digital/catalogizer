@@ -1,0 +1,249 @@
+# round c RED: every case of the final test_dispatch_c.sh run one by one (ONLY=cN, 40 s each) against the PRE-change scripts (git archive HEAD of scripts/build and scripts/longops)
+# captured: 2026-10-06T23:49:19Z (host UTC), host anton, uid 1000; raw output of the run below, copied unmodified
+# command: for c in c1..c41: ONLY=$c BUILD_DIR=<HEAD tree>/scripts/build timeout 40 bash scripts/build/tests/test_dispatch_c.sh
+# git_head: 6d5ebb6489c02814870d59abce387924a5b4937b (the scripts and tests below are UNCOMMITTED: their content hashes identify them)
+# sha256 3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  dispatch.sh
+# sha256 df0fedc7f51c0ece5fb9cb669bee06ceb296817de0175f6e26a5d18031ead1c6  event_hub.sh
+# sha256 2ec10a8718458bec39d1f7b415a92d9e3b3af8ffed117325b4a89682d20e94cf  run_callback.sh
+# sha256 f1851b5a3a2afe0864f21cb1ad5e66c0ddebb0bd98f9119b2d8aab4cd84aa8d1  callbacks.tsv
+# sha256 0159765ca63975a2809e38348fc41cac3c07423e0e5f63c55dee9044c51298b9  remote/emit.sh
+# sha256 0c20831d8147c1ccb8177835b69304aed4e5a786cccd55bc2e97b7ff8f772917  lib/evwait.py
+# sha256 1936522babbeb732361e597d131301bb79d317dacd0b1bcbc900e12a317a8f71  lib/snapshot.py
+# sha256 6a551e7b798f149ccbe2a7acb264056d0212649cae44c4d82c849d64f323eb67  lib/treecache.py
+# sha256 217782899796ea6385956bb079a80bf2ae0a41c4c599605c19d36b279e2f4924  lib/keyring.sh
+# sha256 5ebb9630041bef3e268836427d3dfcdc63edde1f9329a3b74a249ec80dbdf49a  lib/longops_env.sh
+# sha256 782ab3d0a32c437ad8059dee69e411a1b0430d82c8110611ede9f45348f48caf  tests/test_snapshot.sh
+# sha256 7dca0741f776f89d6e62dcbbee9344520000c4b38fb30e811d096943e97f0e4d  tests/test_dispatch_c.sh
+# sha256 d1d60133ca9c38f2bfabb64b35c57d6d1b5b7611670269b1a513a2c50d442711  tests/test_dispatch_c_e2e.sh
+# sha256 f8f6b586ec6db00f7cbca105dc833c14c1a812467dd981fd2327d6536241b8da  tests/mutate_dispatch_c.sh
+# sha256 1f8924d5fc13acf810804b3e38dd44f3d160c2777045b965cbf687c9b661f68d  tests/mutate_dispatch.sh
+# sha256 5ad465e3903ccae3222d467d684833ba33db541f4fb929a093529cb388d3cb42  tests/test_dispatch.sh
+# sha256 84ce52b6c793f57336dca6c1ba3ac39839de92a1ea53968bb8ffb2f00bca074d  tests/test_dispatch_e2e.sh
+# tools: jq=jq-1.8.1 git=2.53.0 podman=5.7.0 python=3.14.4 bash=5.3.9
+# container image digest: the unit tests are host control-plane tests (P0-P1 host exception, as T003); the e2e runs use IMG-GO pinned by build/containers/images.lock.yaml through scripts/containers/run_pinned.sh
+#
+=== c1 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+python3: can't open file '/tmp/headtree/scripts/build/lib/snapshot.py': [Errno 2] No such file or directory
+FAIL c1 (u) the snapshot digest of a git source is the manifest digest of snapshot.py (64 hex)
+ok   c1 an uncommitted edit changes the digest (one HEAD, two trees, two keys)
+ok   c1 (u) one dirty submodule edit changes the digest
+FAIL c1 (u) a git source build completes and the callback ran once
+grep: /dev/shm/tdc.5tUPj4/c1/log/srcls.: No such file or directory
+FAIL c1 (u) the Go module of the root with a replace into submodules/ builds: the submodule's tree is shipped into its path
+grep: /dev/shm/tdc.5tUPj4/c1/log/srcls.: No such file or directory
+FAIL c1 (w) a build of the web component ships the root only: no submodule file arrives
+grep: /dev/shm/tdc.5tUPj4/c1/log/srcls.: No such file or directory
+FAIL c1 the shipped tree carries no .git entry and no ignored file
+RESULT pass=2 fail=5 skip=0
+case c1 rc=1
+=== c2 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+jq: error: Could not open file /dev/shm/tdc.Qo8A2g/c2/builds//submit.json: No such file or directory
+jq: error: Could not open file /dev/shm/tdc.Qo8A2g/c2/builds//submit.json: No such file or directory
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c2 (w) the first submit sends objects; a second submit of the unchanged checkout sends none
+jq: error: Could not open file /dev/shm/tdc.Qo8A2g/c2/builds//submit.json: No such file or directory
+jq: error: Could not open file /dev/shm/tdc.Qo8A2g/c2/builds//submit.json: No such file or directory
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c2 (w) the transfer is recorded with its byte count in the submit record
+jq: error: Could not open file /dev/shm/tdc.Qo8A2g/c2/builds//submit.json: No such file or directory
+FAIL c2 (w) one changed source file ships one blob and the trees above it (svc, root)
+FAIL c2 (w) a changed evidence file changes no compile-class snapshot and ships nothing
+RESULT pass=0 fail=4 skip=0
+case c2 rc=1
+=== c3 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c3 (u) an input needing an uninitialised submodule is refused at submit (20 submodule_uninitialised), no build directory left
+FAIL c3 a git source submitted with no --component is refused (20 usage): the closure is the unit that ships
+FAIL c3 (CPA) an undeclared dirty file inside the component's closure is refused at submit (20 undeclared_dirty_input)
+RESULT pass=0 fail=3 skip=0
+case c3 rc=1
+=== c4 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+ls: cannot access '/dev/shm/tdc.qil93b/c4/builds/.hostcache/trees': No such file or directory
+FAIL c4 the tree sits in the content-addressed cache of the (local proof) build host
+scripts/build/tests/test_dispatch_c.sh: line 138: /dev/shm/tdc.qil93b/c4/builds/.hostcache/trees//svc/main.go: No such file or directory
+FAIL c4 (u) a received tree altered on the build host is refused: infra_failed, detail snapshot_mismatch, never blocked-unavailable
+FAIL c4 (u) no build ran on the altered tree (daemon never started), callback once
+RESULT pass=0 fail=3 skip=0
+case c4 rc=1
+=== c5 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+cat: /dev/shm/tdc.CYTfDz/c5/log/cb.runs: No such file or directory
+FAIL c5 a script callback runs once for a completed build, receiving the terminal kind (state done, effect applied)
+scripts/build/tests/test_dispatch_c.sh: line 163: /dev/shm/tdc.CYTfDz/c5/log/cb.runs: No such file or directory
+FAIL c5 a callback found done is never re-run
+cat: /dev/shm/tdc.CYTfDz/c5/builds//terminal/script.runner: No such file or directory
+FAIL c5 a callback found done is left untouched: the runner prints nothing and does not even claim the runner slot again
+FAIL c5 a script that exits 0 WITHOUT applying its keyed effect is not done: failed effect_not_applied
+case c5 rc=124
+=== c6 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c6 rc=124
+=== c7 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c7 rc=124
+=== c8 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c8 event_hub.sh absent: /tmp/headtree/scripts/build/event_hub.sh
+scripts/build/tests/test_dispatch_c.sh: line 206: /dev/shm/tdc.q69h8y/c8/builds/hub.pid: No such file or directory
+scripts/build/tests/test_dispatch_c.sh: line 207: /proc/0/cmdline: No such file or directory
+FAIL c8 (r0) hub.pid names the live hub (pid, start time, cmdline event_hub.sh), written by the hub itself
+FAIL c8 the sweep's hub record hub.json {pid,start_time} names the same hub
+FAIL c8 (r) a second hub in the same checkout is refused: exit 20 hub_already_running, the holder named
+FAIL c8 (r) the holder is named through the long-op registry (holder.sh of the build-hub purpose names the hub's pid)
+ok   c8 the hub stops on TERM and removes hub.pid and hub.json
+cut: /dev/shm/tdc.q69h8y/c8/builds/hub.pid: No such file or directory
+ok   c8 a killed hub leaves a stale record that names a dead process
+cut: /dev/shm/tdc.q69h8y/c8/builds/hub.pid: No such file or directory
+FAIL c8 (r0) a new hub starts over the stale record and the dead holder's registry claim
+RESULT pass=2 fail=6 skip=0
+case c8 rc=1
+=== c9 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c9 rc=124
+=== c10 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c10 rc=124
+=== c11 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c11 rc=124
+=== c12 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c12 rc=124
+=== c13 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+cut: /dev/shm/tdc.UiQDSj/c13/builds/hub.pid: No such file or directory
+FAIL c13 (r0) dispatch.sh submit starts the hub when none runs: hub.pid names a live hub
+ok   c13 a second submit starts no second hub
+RESULT pass=1 fail=1 skip=0
+case c13 rc=1
+=== c14 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c14 rc=124
+=== c15 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+FAIL c15 baseline: one group callback
+case c15 rc=124
+=== c16 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c16 rc=124
+=== c17 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+FAIL c17 (v) one member test_failed while the others complete: one group callback carrying all three kinds, nothing cancelled, group kind test_failed
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c17 rc=124
+=== c18 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+FAIL c18 (v) a GREEN x3 with one failing iteration still completes all its iterations (every member terminal, none cancelled)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c18 rc=124
+=== c19 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c19 (v) a group with no seal is never terminal, however many members finished (the member itself is terminal)
+ls: cannot access '/dev/shm/tdc.TNlvgU/c19/builds': No such file or directory
+FAIL c19 (v) a second submit of the group naming a different callback is refused (20 group_conflict): the group callback is registered once
+ls: cannot access '/dev/shm/tdc.TNlvgU/c19/builds': No such file or directory
+FAIL c19 (v) the conflicting submit is refused BEFORE anything starts: no build directory, and not even the disk gate ran for it (its record is absent)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c19 rc=124
+=== c23 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c23 rc=124
+=== c24 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c24 rc=124
+=== c25 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+ok   c25 two different uncommitted edits on one HEAD give two snapshot digests (hence two purpose keys and two builds)
+ok   c25 an edit inside a submodule changes the digest
+ok   c25 an edit to a file that a Containerfile COPY reads changes the digest of that image build
+ok   c25 an untracked new source file left undeclared changes the digest of a TIC submit (I8)
+ok   c25 an identical resubmit of the same key attaches or reuses (build once), never a second build
+RESULT pass=5 fail=0 skip=0
+case c25 rc=0
+=== c26 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c26 rc=124
+=== c27 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c27 (c) heartbeats with a flat progress pair past the budget: HUNG by the registry (heartbeat.sh feeds it, classify.sh decides): blocked-unavailable build_progress_flat
+scripts/build/tests/test_dispatch_c.sh: line 24: test: : integer expected
+FAIL c27 the registry op ends reaped (never complete), verdict names the reason, and heartbeats reached the registry
+scripts/build/tests/test_dispatch_c.sh: line 394: /dev/shm/tdc.uDh5Q2/c27/log/cancel.: No such file or directory
+FAIL c27 the remote container is cancelled (by label, through the emitter) and the callback ran once
+case c27 rc=124
+=== c28 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+REFUSED reason=disk_below_headroom disk gate
+FAIL c28 a build that ADVANCES but passes its purpose's wall-clock cap (scripts/longops/purposes.tsv) is HUNG: build_wallclock_exceeded, measured on the build host's own monotonic clock
+jq: error: Could not open file /dev/shm/tdc.lDwB1r/c28/builds//submit.json: No such file or directory
+FAIL c28 the submit record names where its budgets came from
+case c28 rc=124
+=== c29 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c29 rc=124
+=== c30 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c30 rc=124
+=== c31 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c31 a purpose held by another long-op is refused at submit: 20 purpose_conflict, nothing started, no build directory
+RESULT pass=0 fail=1 skip=0
+case c31 rc=1
+=== c32 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c32 the fixture ids are real, distinct build ids (a refused submit would make every pair check below vacuous)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+ok   c32 the pairing of a primary build with its repro-cold partner matches every field but variant and ignores the iteration
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+ok   c32 a build of another lane has no partner
+FAIL c32 the failed iteration is a real build id
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+ok   c32 a repro-cold build pairs with the primary record whose artifact is the deliverable (the succeeded one, not the failed iteration)
+RESULT pass=3 fail=2 skip=0
+case c32 rc=1
+=== c34 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+jq: error: Could not open file /dev/shm/tdc.eEILDP/c34/builds//remote/journal.jsonl: No such file or directory
+ok   c34 (i2) the real emitter journal holds NO signature at rest (signed only when streamed, with the key the driver sends)
+scripts/build/tests/test_dispatch_c.sh: line 468: /dev/shm/tdc.eEILDP/c34/builds//remote/daemon.pid: No such file or directory
+FAIL c34 no daemon.pid (submit: REFUSED reason=disk_below_headroom disk gate)
+scripts/build/tests/test_dispatch_c.sh: line 469: /dev/shm/tdc.eEILDP/c34/log/runp.starts: No such file or directory
+FAIL c34 (i2) the emitter daemon is dead while the build container keeps running (the stub build has not ended)
+FAIL c34 (i2) the restarted emitter re-signs from its journal with the key re-obtained from the driver and finishes the build: completed once, callback once
+scripts/build/tests/test_dispatch_c.sh: line 472: /dev/shm/tdc.eEILDP/c34/log/runp.starts: No such file or directory
+jq: error: Could not open file /dev/shm/tdc.eEILDP/c34/builds//remote/journal.jsonl: No such file or directory
+FAIL c34 (i2) nothing was resubmitted: the build started once, one accepted event in the journal
+cat: /dev/shm/tdc.eEILDP/c34/state/build_hmac.key: No such file or directory
+jq: error: Could not open file /dev/shm/tdc.eEILDP/c34/builds//submit.json: No such file or directory
+REFUSED reason=secret_unusable key_absent
+ok   c34 (i2) the key is in no file on the build host (journal, pid files, log)
+scripts/build/tests/test_dispatch_c.sh: line 475: /dev/shm/tdc.eEILDP/c34/builds//remote/planted-needle: No such file or directory
+FAIL c34 (i2) control needle: the same scan finds a planted copy of the key
+RESULT pass=2 fail=5 skip=0
+case c34 rc=1
+=== c35 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c35 (i2) an emitter that cannot obtain the key refuses to send: exit 3, nothing on stdout
+FAIL c35 (i2) a malformed key is refused the same way
+jq: error: Could not open file /dev/shm/tdc.3MAAe1/c35/builds//submit.json: No such file or directory
+REFUSED reason=secret_unusable key_absent
+scripts/build/tests/test_dispatch_c.sh: line 488: /dev/shm/tdc.3MAAe1/c35/builds//remote/journal.jsonl: No such file or directory
+FAIL c35 (i2) with the key the journal is streamed re-signed: every line carries an HMAC
+RESULT pass=0 fail=3 skip=0
+case c35 rc=1
+=== c36 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c36 rc=124
+=== c37 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c37 a QUIET build (no log output at all) that burns CPU is not HUNG: progress is the log plus the container's CPU counter
+FAIL c37 control: the same quiet build with --progress log ends build_progress_flat
+RESULT pass=0 fail=2 skip=0
+case c37 rc=1
+=== c38 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+jq: error: Could not open file /dev/shm/tdc.soO6Vn/c38/builds//submit.json: No such file or directory
+FAIL c38 a host whose key matches the pinned fingerprint is qualified and the build runs
+grep: /dev/shm/tdc.soO6Vn/c38/log/ssh.args: No such file or directory
+cat: '/dev/shm/tdc.soO6Vn/c38/state/known_hosts/*': No such file or directory
+FAIL c38 ssh is invoked with StrictHostKeyChecking=yes and a known-hosts file holding exactly the pinned key (generated by the dispatcher)
+grep: /dev/shm/tdc.soO6Vn/c38/log/ssh.args: No such file or directory
+FAIL c38 never trust on first use: no ssh call ever carries StrictHostKeyChecking=no or accept-new
+jq: error: Could not open file /dev/shm/tdc.soO6Vn/c38b/builds//submit.json: No such file or directory
+FAIL c38 a host whose key does NOT match the pin is never connected to: blocked-unavailable no_qualified_host, attempt detail host_key_mismatch
+jq: error: Could not open file /dev/shm/tdc.soO6Vn/c38c/builds//submit.json: No such file or directory
+FAIL c38 a host with no pinned fingerprint is not qualified (host_key_not_pinned): the dispatcher never learns a key by itself
+RESULT pass=0 fail=5 skip=0
+case c38 rc=1
+=== c39 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c39 (q2) keyring.sh exists
+FAIL c39 (q2) refill loads the keyring entry from the secret file; status reads present
+FAIL c39 (q2) after a reboot or logout (a NEW, empty session keyring) the entry is absent and the refill from the file restores it
+FAIL c39 (q2) the refilled entry holds exactly the file's secret
+FAIL c39 (q2) with the file lost the refill REFUSES (20 driver_secret_lost) and creates nothing: the file, not the keyring, is the truth
+FAIL c39 (q2) the hub refills the keyring itself when it starts
+RESULT pass=0 fail=6 skip=0
+case c39 rc=1
+=== c20 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+usage: /tmp/headtree/scripts/build/dispatch.sh submit|status|wait|resume|cancel|snapshot|argv-digest ...
+case c20 rc=124
+=== c40 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+FAIL c40 a callback row approved AFTER the hub started: the build ends, its script callback is refused at callback time (failed callback_not_registered) and never ran
+case c40 rc=124
+=== c41 (BUILD_DIR=pre-change HEAD tree, per-case timeout 40s)
+case c41 rc=124

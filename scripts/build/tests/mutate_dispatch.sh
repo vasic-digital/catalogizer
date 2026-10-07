@@ -16,8 +16,8 @@ m_hosts_absent@@@dispatch.sh@@@s5@@@[ -r "$HOSTS_FILE" ] && [ -n "$(hosts_list)"
 m_disk_gate@@@dispatch.sh@@@s23@@@    || refuse "$(printf '%s' "$dh_err" | grep -o 'reason=[A-Za-z0-9_]*' | head -1 | cut -d= -f2 | sed 's/^$/disk_headroom_failed/')" "disk gate"@@@    || true
 m_build_once@@@dispatch.sh@@@s7@@@&& artifact_ok "$d"; then echo "$id"; echo "reused (build once)"@@@&& false; then echo "$id"; echo "reused (build once)"
 m_liveness@@@dispatch.sh@@@s9@@@terminate "$d" blocked-unavailable blocked build_liveness_lost >> "$d/pump.log" 2>&1; kill "$empid" 2>/dev/null; pump_end; exit 0@@@pump_end; exit 0
-m_progress_flat@@@dispatch.sh@@@s10@@@-gt $(( budget * 1000 ))@@@-gt 999999999999
-m_wallclock@@@dispatch.sh@@@s11@@@-gt $(( wall * 1000 ))@@@-gt 999999999999
+m_progress_flat@@@dispatch.sh@@@s10@@@        if [ "$(reg_class)" = hung ]; then<NL>          if [ "$el" -gt@@@        if false; then<NL>          if [ "$el" -gt
+m_wallclock@@@dispatch.sh@@@s11@@@if [ "$el" -gt $(( wall * 1000 )) ]; then why=build_wallclock_exceeded; else why=build_progress_flat; fi@@@why=build_progress_flat
 m_bringback_verify@@@dispatch.sh@@@s13@@@if [ "$got" != "$want" ]; then@@@if false; then
 m_event_auth_before_bringback@@@dispatch.sh@@@s14b@@@if [ "$evok" = ok ] && ! bring_back@@@if ! bring_back
 m_queue@@@dispatch.sh@@@s17@@@if [ "$(count_running "$d")" -ge "$JOBS" ]; then@@@if false; then
@@ -25,7 +25,7 @@ m_cancel_remote@@@dispatch.sh@@@s18@@@  cancel_remote "$d"<NL>  bash "$EC" cance
 m_secret_lost@@@dispatch.sh@@@s20@@@  if ! [[ $key =~ ^[0-9a-f]{64}$ ]]; then@@@  if false; then
 m_failover_reachability@@@dispatch.sh@@@s15@@@if ! rsh "$h" true >/dev/null 2>&1; then@@@if false; then
 m_rootless_check@@@dispatch.sh@@@s15@@@if [ "$out" != true ]; then@@@if false; then
-m_polling@@@dispatch.sh@@@s16@@@IFS= read -r -t "$budget" -u "$emfd" line; rc=$?@@@IFS= read -r -t 0.3 -u "$emfd" line; rc=$?; if [ $rc -gt 128 ]; then /bin/true; continue; fi
+m_polling@@@dispatch.sh@@@s16@@@IFS= read -r -t "$((budget + 1))" -u "$emfd" line; rc=$?@@@IFS= read -r -t 0.3 -u "$emfd" line; rc=$?; if [ $rc -gt 128 ]; then /bin/true; continue; fi
 m_emit_resign_key@@@emit.sh@@@s6@@@k = bytes.fromhex(sys.stdin.readline().strip())@@@k = bytes.fromhex(sys.stdin.readline().strip())[::-1]
 m_emit_cancel_kill@@@emit.sh@@@s9 s18@@@then kill -TERM "$p"; echo "cancel sent"@@@then echo "cancel sent"
 m_emit_run_idempotent@@@emit.sh@@@s19@@@if [ ! -s "$DIR/journal.jsonl" ] && [ ! -s "$DIR/daemon.pid" ]; then@@@if true; then
@@ -38,11 +38,11 @@ run_one() { # name
   local line f cases old new tmp rc out
   line=$(printf '%s\n' "$MUT" | awk -F'@@@' -v n="$1" '$1 == n')
   [ -n "$line" ] || { echo "no such mutant $1"; return 2; }
-  tmp=$(mktemp -d /tmp/mutdsp.XXXXXX)
+  tmp=$(mktemp -d "${TMPDIR:-/tmp}/mutdsp.XXXXXX")
   # private tree with the layout dispatch.sh derives its ROOT from; the shipped scripts are linked or copied, never edited
   mkdir -p "$tmp/scripts" "$tmp/mut"
   cp -r "$build" "$tmp/scripts/build"; rm -rf "$tmp/scripts/build/tests"
-  ln -s "$root/scripts/containers" "$tmp/scripts/containers"; ln -s "$root/build" "$tmp/build"
+  ln -s "$root/scripts/containers" "$tmp/scripts/containers"; ln -s "$root/scripts/longops" "$tmp/scripts/longops"; ln -s "$root/build" "$tmp/build"
   python3 - "$tmp" "$line" <<'PY' || { rm -rf "$tmp"; echo "mutant text not found exactly once"; return 2; }
 import sys
 tmp, line = sys.argv[1], sys.argv[2]
