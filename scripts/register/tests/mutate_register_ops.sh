@@ -13,11 +13,11 @@
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd); G=${1:?group}; OUT=${2:?out file}; R="$ROOT/scripts/register"; T="$R/tests"
 W=$(mktemp -d "${TMPDIR:-/tmp}/mutops.XXXXXX"); trap 'rm -rf "$W"' EXIT
 case "$G" in
- locked) SUT=locked.sh; TEST=test_locked.sh; ENVV=LOCKED; TESTS=("test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1" "test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1" "test_fix_r2.sh|REAL|" "test_replay.sh||");;
- backup) SUT=backup_db.sh; TEST=test_backup_db.sh; ENVV=BACKUP; TESTS=("test_fix_r1.sh|F7 F14 F8 M6|1" "test_fix_r2.sh|B|");;
+ locked) SUT=locked.sh; TEST=test_locked.sh; ENVV=LOCKED; TESTS=("test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1" "test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1" "test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1" "test_fix_r2.sh|REAL|" "test_fix_r4.sh|SWEEP REALSTAT REALSCOPE|" "test_replay.sh||");;
+ backup) SUT=backup_db.sh; TEST=test_backup_db.sh; ENVV=BACKUP; TESTS=("test_fix_r1.sh|F7 F14 F8 M6|1" "test_fix_r4.sh|BSIG|1" "test_fix_r2.sh|B|");;
  dump)   SUT=dump.sh; TEST=test_dump.sh; ENVV=DUMP; TESTS=("test_fix_r1.sh|F8 F10|1");;
  export) SUT=export.sh; TEST=test_export.sh; ENVV=EXPORT; TESTS=("test_fix_r1.sh|F8 F9 F12|1" "test_fix_r2.sh|RC|1");;
- replay) SUT=replay.sh; TEST=test_replay.sh; ENVV=REPLAY; TESTS=("test_fix_r1.sh|F1 F2 F8|1" "test_fix_r2.sh|N1S T5|1" "test_fix_r2.sh|N1E|");;
+ replay) SUT=replay.sh; TEST=test_replay.sh; ENVV=REPLAY; TESTS=("test_fix_r1.sh|F1 F2 F8|1" "test_fix_r2.sh|N1S T5|1" "test_fix_r4.sh|M6|1" "test_fix_r2.sh|N1E|");;
  *) echo "unknown group $G" >&2; exit 2;;
 esac
 declare -a M=()   # name|file|envvar|sed
@@ -52,17 +52,28 @@ case "$G" in
   add drain_removed locked.sh LOCKED 's/^drain_containers "\$OP_ID"   # MUT:drain$/:/'
   add container_status_ignored locked.sh LOCKED 's/^if \[ -n "\$CRC" \] \&\& \[ "\$CRC" != "\$RC" \]; then RC="\$CRC"; fi   # MUT:container-status$/:/'
   add fence_removed locked.sh LOCKED 's/^if \[ "\$MODE" != out \] \&\& \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
-  add fence_waits_for_live_owner locked.sh LOCKED 's/ then continue; fi   # the owner is a live locked\.sh: not an orphan$/ then :; fi/'
+  add marker_lock_ignored locked.sh LOCKED 's/ \|\| held=1   # MUT:marker-lock/ || held=0   # MUT:marker-lock/'
+  add MX2_fence_podman_failure_is_gone locked.sh LOCKED 's/^      ids="\$\(ctr_ids "\$op"\)" \|\| refuse writer_state_unverifiable .*$/      ids="$(ctr_ids "$op")" || ids=""/'
+  add MX3_fence_before_lock locked.sh LOCKED 's/^# ---------- lock ----------$/if [ "$MODE" != out ] \&\& [ -z "${LOCKED_LOCK_HELD:-}" ]; then fence_orphans; fi/;s/^if \[ "\$MODE" != out \] \&\& \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
+  add root_scope_removed locked.sh LOCKED 's/^    if \[ -n "\$src" \] \&\& \[ "\$\(realpath.*# MUT:root-scope.*$/    :/'
+  add marker_fd_not_taken locked.sh LOCKED 's/^  \{ exec 8<"\$PEND"; \} 2>\/dev\/null \&\& flock -n 8 \|\|.*# MUT:marker-fd$/  :/'
+  add status_unknown_ignored locked.sh LOCKED 's/^if \[ "\$EXSRC" = unknown \]; then echo .*# MUT:status-unknown$/:/'
+  add traps_reset_after_drain locked.sh LOCKED 's/^if \[ -n "\$CRC" \] \&\& \[ "\$CRC" != "\$RC" \]; then RC="\$CRC"; fi   # MUT:container-status$/trap - TERM INT HUP USR1 USR2 ALRM QUIT; if [ -n "$CRC" ] \&\& [ "$CRC" != "$RC" ]; then RC="$CRC"; fi/'
+  add shield_removed locked.sh LOCKED 's/^shield\(\) \{ .*$/shield() { "$@"; }/'
+  add died_event_ignored locked.sh LOCKED 's/^  if \[ "\$EV_OK" = 1 \] \&\& \[ "\$EV_N" = 1 \]; then CRC=.*$/  if false; then :/'
+  add event_retry_removed locked.sh LOCKED 's/^    \[ "\$1" = 1 \] \|\| return 0$/    return 0/'
+  add wait_status_unused locked.sh LOCKED 's/^  elif \[ -n "\$WCODE" \]; then CRC=.*$/  elif false; then :/'
+  add seen_filter_removed locked.sh LOCKED 's#^    if \[ -n "\$\{SEEN// /\}" \]; then case .*$#    :#'
   add wait_status_preset locked.sh LOCKED 's/^while :; do wait "\$RUNP_PID"; RC=\$\?; our_child "\$RUNP_PID" \|\| break; done   # MUT:wait-loop$/RC=0; while our_child "$RUNP_PID"; do wait "$RUNP_PID"; RC=$?; done/'
   add pipe_not_ignored locked.sh LOCKED "s/^trap '' PIPE .*\$/:/"
   add signals_only_term_int_hup locked.sh LOCKED 's/^for sg in TERM INT HUP USR1 USR2 ALRM QUIT; do (.*)   # MUT:signal-set$/for sg in TERM INT HUP; do \1/'
-  add killed_or_unverified_marker_removed locked.sh LOCKED 's/^case "\$DRAIN" in none\|waited\) /case "$DRAIN" in none|waited|killed|unverified) /'
+  add killed_or_unverified_marker_removed locked.sh LOCKED 's/case "\$DRAIN" in none\|waited\) /case "$DRAIN" in none|waited|killed|unverified) /'
   add container_wait_unbounded locked.sh LOCKED 's/^    if \[ "\$\(date \+%s\)" -ge "\$end" \] \&\& \[ "\$DRAIN" != killed \]; then$/    if false; then/'
   add reaper_no_kill_escalation locked.sh LOCKED 's/timeout -k 2 "\$REAPER_TIMEOUT"/timeout "$REAPER_TIMEOUT"/'
   add podman_failure_is_gone locked.sh LOCKED 's/^    if ! ids="\$\(ctr_ids "\$op"\)"; then$/    ids="$(ctr_ids "$op")" || ids=""; if false; then/'
-  add negative_control_comment locked.sh LOCKED 's/^# Exit: the command.s status;/# Exit (control): the command status;/';;
+  add negative_control_comment locked.sh LOCKED 's/^# Exit: the command.s status/# Exit (control): the command status/';;
  backup)
-  add cp_al_backup backup_db.sh BACKUP 's#^"\$LOCKED" --op-id "\$OP" -- sqlite3 .*\# MUT:backup-method$#"$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".output /out/source.dump.sql" ".dump" ".output stdout" ".shell sha256sum /src/$DBREL >/out/source.sha256" >"$OUT1/step1.out" 2>"$OUT1/step1.err"; rm -f "$BAKREL"; cp -al "$DBREL" "$BAKREL"#'
+  add cp_al_backup backup_db.sh BACKUP 's#^runchild "\$LOCKED" --op-id "\$OP" -- sqlite3 .*\# MUT:backup-method$#"$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".output /out/source.dump.sql" ".dump" ".output stdout" ".shell sha256sum /src/$DBREL >/out/source.sha256" >"$OUT1/step1.out" 2>"$OUT1/step1.err"; rm -f "$BAKREL"; cp -al "$DBREL" "$BAKREL"#'
   add failed_backup_kept backup_db.sh BACKUP 's/^fail\(\) \{ \[ "\$OWN" = 1 \] \&\& rm -f -- "\$BAKREL"   # MUT:fail-keeps-file$/fail() { :/'
   add integrity_unchecked backup_db.sh BACKUP 's/^\[ "\$INTEG" = ok \] \|\| fail .*$/:/'
   add restore_dump_unchecked backup_db.sh BACKUP 's/^cmp -s "\$OUT1\/source.dump.sql" .*fail "restore probe.*$/:/'
@@ -74,6 +85,9 @@ case "$G" in
   add integrity_gate_both_layers_removed backup_db.sh BACKUP 's/^  \[ "\$ic" = ok \] \|\| exit 0$/  :/;s/^\[ "\$INTEG" = ok \] \|\| fail .*$/:/'
   add die_keeps_backup_file backup_db.sh BACKUP 's/^die\(\) \{ \[ "\$OWN" = 1 \] \&\& rm -f -- "\$BAKREL"; /die() { /'
   add checkpoint_result_ignored backup_db.sh BACKUP 's/^case "\$CKP" in 0.*# MUT:checkpoint-result$/:/'
+  add signal_not_trapped backup_db.sh BACKUP 's/^for sg in TERM INT HUP; do trap "fwd \$sg" "\$sg"; done   # MUT:signal-trap$/:/'
+  add signal_keeps_file backup_db.sh BACKUP 's/^(sigdie\(\) \{) \[ "\$OWN" = 1 \] \&\& rm -f -- "\$BAKREL";/\1/'
+  add empty_checkpoint_message_generic backup_db.sh BACKUP 's/ ""\) fail "REFUSED reason=checkpoint_incomplete wal_checkpoint\(TRUNCATE\) returned an EMPTY[^"]*";;//'
   add negative_control_comment backup_db.sh BACKUP 's/^# Exit: 0 ok;/# Exit (control): 0 ok;/';;
  dump)
   add pragma_kept dump.sh DUMP 's/ \| grep -v "\^PRAGMA" > "\$out.tmp"   # MUT:pragma-filter/ > "$out.tmp"/'
@@ -112,7 +126,7 @@ case "$G" in
   add gate_unchecked replay.sh REPLAY 's/^if g.returncode != 0 or not any\(l.startswith\("GATE OK"\) for l in g.stdout.splitlines\(\)\): refuse/if False: refuse/'
   add failed_rows_replayed replay.sh REPLAY 's/^    if r\.get\("exit"\) != 0: refuse\("replay_failed_row_changed_register".*$/    pass/'
   add input_not_rebound replay.sh REPLAY 's/^        a = argv\[int\(k\)\]; argv\[int\(k\)\] = .*$/        pass/'
-  add regenerated_rows_replayed replay.sh REPLAY 's/^    if is_regenerate\(argv\): skipped\.append.*$/    pass/'
+  add regenerated_rows_replayed replay.sh REPLAY 's/^    if is_regenerate\(r\): skipped\.append.*$/    pass/'
   add db_arg_not_rewritten replay.sh REPLAY 's/a.replace\("\/src\/docs\/workable_items.db", "\/out\/replay.db"\)/a/'
   add base_row_any_mode replay.sh REPLAY 's/^    if is_reg\(r\) and r\.get\("db_sha_after"\) == SINCE and not r\.get\("wal_bytes_after"\): idx = i   # MUT:base-row/    if r.get("db_sha_after") == SINCE: idx = i   # MUT:base-row/'
   add ids_unknown_unchecked replay.sh REPLAY 's/^    if r\.get\("ids_snapshot", "ok"\) != "ok": refuse\(.*# MUT:ids-unknown$/    pass/'
@@ -121,11 +135,14 @@ case "$G" in
   add RMd_wal_rows_skipped replay.sh REPLAY 's/ and not r\.get\("wal_bytes_after"\) and not r\.get\("wal_bytes_before"\)\)$/)/'
   add NM5_replay_fallback_wal_ignored replay.sh REPLAY 's/ and not rows\[first\]\.get\("wal_bytes_before"\)//'
   add failed_changed_row_skipped replay.sh REPLAY 's/^    if r\.get\("exit"\) != 0: refuse\("replay_failed_row_changed_register".*$/    pass/'
-  add regenerate_marker_substring replay.sh REPLAY 's/return any\(isinstance\(a, str\) and a\.startswith\("# register-regenerate:"\) for a in argv\)/return "# register-regenerate:" in " ".join(argv)/'
+  add regenerate_marker_substring replay.sh REPLAY 's/argv\[2\]\.startswith\("# register-regenerate:"\)/"# register-regenerate:" in argv[2]/'
   add install_substring replay.sh REPLAY 's/any\(isinstance\(a, str\) and os\.path\.basename\(a\) == "export\.sh" for a in argv\)/"export.sh" in " ".join(argv)/'
   add failed_row_unchanged_refused replay.sh REPLAY 's/^    if not changed\(r\):$/    if False:/'
   add pending_ops_unchecked replay.sh REPLAY 's/^if os\.path\.isdir\(pend\) and os\.listdir\(pend\): refuse\(/if False: refuse(/'
   add locked_hook_outside_test_mode replay.sh REPLAY 's/^if \[ "\$\{LOCKED_TEST_MODE:-\}" = 1 \]; then ROOT=(.*); else ROOT="\$REAL_ROOT"; unset LOCKED BACKUP DUMP EXPORT; fi$/ROOT=\1/'
+  add regenerate_shape_loosened replay.sh REPLAY 's/^    return \(len\(argv\) == 3 and argv\[0\] == "bash" and argv\[1\] == "-c" and isinstance\(argv\[2\], str\) and argv\[2\]\.startswith\("# register-regenerate:"\)$/    return (any(isinstance(a, str) and a.startswith("# register-regenerate:") for a in argv)/'
+  add regenerate_minting_row_skipped replay.sh REPLAY 's/^            and not r\.get\("ids_minted"\)\)   # MUT:regenerate-shape$/            )   # MUT:regenerate-shape/'
+  add install_changed_row_skipped replay.sh REPLAY 's/^        if changed\(r\) or r\.get\("ids_minted"\): refuse\(.*# MUT:install-refusal$/        pass/'
   add negative_control_comment replay.sh REPLAY 's/^# Exit: 0 ok; 2 usage; 20 refused\./# Exit (control): 0 ok; 2 usage; 20 refused./';;
 esac
 if [ -n "${MUT_ONLY:-}" ]; then   # run only the mutants whose name matches the regex (the negative control always stays)

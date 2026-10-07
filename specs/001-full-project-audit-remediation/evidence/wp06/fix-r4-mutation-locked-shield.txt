@@ -1,0 +1,7 @@
+# identity: group=locked utc=2026-10-07T16:17:26Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d
+# runner_sha256=14855031ebf41fd107e89457e01a8754a4fc596ca17b471a76c28b8f615b16aa test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d followup_tests=test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1 test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1 test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 test_fix_r2.sh|REAL| test_fix_r4.sh|SWEEP REALSTAT REALSCOPE| test_replay.sh|| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+marker_lock_ignored	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-2 rc=0 dt=0s (a held marker lock must delay the next writer)
+shield_removed	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL SIG3-G sigign_int=0 exit=130 helpers=[480841 480845 480900 ] ids_snapshot="ok" interrupted="INT"
+negative_control_comment	NO	test_replay.sh: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=23 fail=0

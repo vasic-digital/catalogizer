@@ -62,7 +62,7 @@ import json,sys
 rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
 # SYNTHETIC row (the installer of T175a does not exist yet): a register row whose argv names export.sh --install
 rows.append({"time":"2026-10-06T00:00:00.000000Z","op_id":"synthetic-install","mode":"register","argv":["bash","scripts/register/export.sh","--install","b1"],"exit":0,
- "db_sha_before":"a"*64,"db_sha_after":"b"*64,"ids_minted":[],"input_args":{},"inputs":[],"wal_bytes_after":0,"stdin":None,"db":"docs/workable_items.db","ids_snapshot":"ok"})
+ "db_sha_before":"a"*64,"db_sha_after":"a"*64,"ids_minted":[],"input_args":{},"inputs":[],"wal_bytes_after":0,"stdin":None,"db":"docs/workable_items.db","ids_snapshot":"ok"})   # UNCHANGED (WF15 M6: an install row that changed the register is refused)
 open(sys.argv[2],"w").write("".join(json.dumps(r)+"\n" for r in rows))
 PY
 cp -a "$LOCAL/.audit/register/inputs/." "$T_SCR/jd2/inputs/" 2>/dev/null

@@ -1,0 +1,52 @@
+# identity: group=locked utc=2026-10-07T14:17:06Z host=anton uid=1000 git_head=c2141c785a658506e92a316ba88a06bec2d1fae6
+# runner_sha256=14855031ebf41fd107e89457e01a8754a4fc596ca17b471a76c28b8f615b16aa test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d followup_tests=test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1 test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1 test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 test_fix_r2.sh|REAL| test_fix_r4.sh|SWEEP REALSTAT REALSCOPE| test_replay.sh|| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+no_flock	yes	test_locked.sh: FAIL L12 intervals overlap: s 1791382638026097515 s 1791382638130283472 e 1791382639049178729 e 17913826391571
+grant_ignored	yes	test_locked.sh: FAIL L25 rc=0 [CAT-003]
+reap_direct	yes	test_locked.sh: FAIL L27 the reaper ran once, only through --exec-approved :: got [00] want [11]
+test_hooks_honoured	yes	test_locked.sh: FAIL L3 rc=0 []
+scratch_any_subcommand	yes	test_locked.sh: FAIL L33 rc=0 []
+scratch_path_unchecked	yes	test_locked.sh: FAIL L37 rc=1 [Error: unable to open database "/src/.audit/out/s.db": unable to open database file]
+import_sha_unchecked	yes	test_locked.sh: FAIL L35 rc=1 [Parse error near line 1: table zz already exists
+import_without_backup	yes	test_locked.sh: FAIL L43 a register import succeeds and calls the backup helper exactly once :: got [0 0] want [0 1]
+scratch_headroom_unset	yes	test_locked.sh: FAIL L49a [HR=UNSET ARGS=--rw .audit/scratch --op-id spy1 IMG-TESTUTIL -- sqlite3 /src/.audit/scratch/s5.db .r
+capture_src_only	yes	test_locked.sh: FAIL L15
+scratch_binds_docs	yes	test_locked.sh: FAIL L34 rc=1 v=[] [Error: unable to open database "/src/.audit/scratch/s.db": unable to open database file]
+out_run_binds_docs	yes	test_locked.sh: FAIL L20 docs written
+exit_status_lost	yes	test_locked.sh: FAIL L4 the wrapped command's exit status is passed through :: got [0] want [7]
+scratch_import_runs_backup	yes	test_locked.sh: FAIL L34 rc=20 v=[] [backup_db: REFUSED no source database docs/workable_items.db
+RMa_db_inputs_copied	yes	test_replay.sh: FAIL P5 the local file-input edit was replayed (CAT-001 title) :: got [scratch item] want [from-file]
+signal_not_forwarded	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F3-4 journal: {"argv": ["sh", "-c", "echo write"], "container_drain": "none", "container_exit_source": "c
+lock_claim_unchecked	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL LC-1 fd 9 is open on the lock file but NOBODY holds the lock: refused (an unlocked fd 9 proves nothing) :
+journal_precheck_removed	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F5-1 rc=21 wrote=yes [locked: JOURNAL_APPEND_FAILED IsADirectoryError: [Errno 21] Is a directory: '.audit
+pending_marker_removed	yes	test_locked.sh: FAIL L4 the wrapped command's exit status is passed through :: got [20] want [7]
+reaper_unbounded	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RP-1 rc=124 dt=40s []
+reaper_inherits_lock_fd	yes	test_fix_r1.sh [F3 F4 F5 F6 F13 F11]: FAIL F13-1 the register lock is free as soon as locked.sh exits (a child the reaper left behind does not hold 
+snapshot_status_ignored	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL T4-1 both snapshots answer with zero bytes and exit 0: ids_snapshot is failed (sqlite3 always prints a ro
+NM1_lock_claim_only_held_by_someone	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL LC-4 fd 9 open and locked on ANOTHER file while another process holds the register lock: refused (identit
+NM3_snapshot_zero_byte_accepted	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL T4-1 both snapshots answer with zero bytes and exit 0: ids_snapshot is failed (sqlite3 always prints a ro
+lock_claim_not_ours	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL LC-2 fd 9 open on the lock file (never locked) while ANOTHER process holds it: refused (N4: the proof mus
+drain_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-1 the register lock was never free while the container of the call whose client had already left wa
+container_status_ignored	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-2 locked.sh exit status = the container's real exit status (5), not the dead client's (141) :: got 
+fence_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL FENCE-1 overlap: s 1791384675300186608 ctr-dead1 w 1791384675419824059 fe1  rc=0 []
+marker_lock_ignored	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-2 rc=0 dt=1s (a held marker lock must delay the next writer)
+MX2_fence_podman_failure_is_gone	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-3 rc=0 [locked: WARNING cannot ask podman whether a container of f43 is still running; the write is no
+MX3_fence_before_lock	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-4 overlap: w 1791384971557912547 f44a s 1791384971565420533 ctr-f44a w 1791384971976613497 f44b s 1791
+root_scope_removed	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL SC-1 a container labelled with this op id whose /src is ANOTHER checkout is not drained: no wait (8s), co
+marker_fd_not_taken	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-5 overlap: w 1791385212739588871 f45b s 1791385212746079805 ctr-f45b e 1791385213757404080 ctr-f45b  r
+status_unknown_ignored	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL ST-2 neither the died event nor podman wait can be read: exit 22 (not the client's 141, not a guess), sou
+traps_reset_after_drain	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL SIG3-TERM exit=143 row_interrupted= rows= marker=kept
+shield_removed	NO	test_replay.sh: 
+died_event_ignored	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL ST-1 podman wait loses the container (--rm removed it): exit = the container's 5 from its died event, row
+event_retry_removed	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL ST-6 the events backend LAGS (nothing readable for 5 s after the container ended; observed on a busy host
+wait_status_unused	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL ST-7 the died event cannot be read but podman wait answered 5 while the container ended: exit 5, source=c
+seen_filter_removed	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL ST-5 the container seen by the drain is the one whose died event counts: ctr-st5 5 is taken, the foreign 
+wait_status_preset	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RACE-1 the exit status was lost in 12 of 12 calls (the reaped child's status was never read)
+pipe_not_ignored	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-13 head=[first-line] rc=141 row=
+signals_only_term_int_hup	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL SIG-USR1 free_while_alive=44 exit=138 interrupted= out=[]
+killed_or_unverified_marker_removed	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-11 no pending marker after a killed container
+container_wait_unbounded	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-10 dt=60s rc=5 killed=n row="waited"
+reaper_no_kill_escalation	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL RP-1 rc=124 dt=40s []
+podman_failure_is_gone	yes	test_fix_r2.sh [DRAIN SIG RACE FENCE LC RP T4]: FAIL DRAIN-12 rc=3 row="none" marker=n
+negative_control_comment	NO	test_replay.sh: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=23 fail=0

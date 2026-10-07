@@ -1,0 +1,72 @@
+# identity: task=FIX-R4 utc=2026-10-07T12:38:06Z host=anton uid=1000
+# git_head=c2141c785a658506e92a316ba88a06bec2d1fae6 tree_dirty_files=3969
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=a7e54fe4857a80e9df6b45ebb8a7569e6d33604cac15dc8a44f2ac5733c86e53 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut sha256 locked=5919d4090c75f293 backup=b261062c84374013 replay=c6410793149ec36b
+== SIG3 TERM INT HUP during the after-snapshot (traps stay installed to the end) ==
+ok   SIG3-TERM SIGTERM during the after-snapshot: the row IS written (interrupted=TERM), the marker is removed, exit 143 (the write had landed: db='late write')
+ok   SIG3-INT SIGINT during the after-snapshot: the row IS written (interrupted=INT), the marker is removed, exit 130 (the write had landed: db='late write')
+ok   SIG3-HUP SIGHUP during the after-snapshot: the row IS written (interrupted=HUP), the marker is removed, exit 129 (the write had landed: db='late write')
+ok   SIG3-G INT delivered to locked.sh AND its helper processes (a terminal Ctrl-C): the after-snapshot finishes, ids_snapshot=ok, row written (helpers: 792252 792253 792269 )
+ok   SIG3-C golden-FALSE: no signal -> exit 0, one row, no marker, no interrupted field
+== STATUS exit status from the died event (stub podman; the real-podman twin is REALSTAT) ==
+ok   ST-1 podman wait loses the container (--rm removed it): exit = the container's 5 from its died event, row exit=5 source=container_event client_exit=141
+ok   ST-2 neither the died event nor podman wait can be read: exit 22 (not the client's 141, not a guess), source=unknown, the pending marker is kept
+ok   ST-6 the events backend LAGS (nothing readable for 5 s after the container ended; observed on a busy host) and podman wait lost the container: the status is waited for, not given up: exit 5, source=container_event
+ok   ST-7 the died event cannot be read but podman wait answered 5 while the container ended: exit 5, source=container_wait, the marker is removed
+ok   ST-3 golden-FALSE: no container ever died under the label (RUNP failed before it): the client's own status 3 stands, source=client, marker removed
+ok   ST-8 the client died of a signal (143), no container was ever seen and no died event exists: its own status stands, flagged source=client_unverified, marker removed (nothing is running)
+ok   ST-4 two died events of unseen containers (another checkout, same op id) and a client that left with 141: ambiguous, exit 22, never one of the two guessed
+ok   ST-4b the same ambiguity with a client that ended 0 (it saw its container end 0): exit 0, source=client
+ok   ST-5 the container seen by the drain is the one whose died event counts: ctr-st5 5 is taken, the foreign ctr-foreign 9 is ignored
+== FENCE4 marker lock (client) + ps (container) ==
+ok   F4-1 golden-FALSE: a marker whose pid is a live carrier ('locked.sh' in its cmdline) with NO lock held and no container is not waited for (0s)
+ok   F4-2 the marker's flock is held by an orphaned client (no container exists yet): the new writer waited for its release (5s)
+ok   F4-3 podman unavailable with a pending marker: 20 writer_state_unverifiable, no writer call (a failed lookup is not 'no container')
+ok   F4-4 B started before A had a marker and A was SIGKILLed with its container running: B's write came after A's container ended (the fence runs under the lock)
+ok   F4-5a control needle: at the kill the container of A does not exist yet (the I1 window is really hit)
+ok   F4-5 SIGKILL of A in the client-alive / container-not-yet-created window: B's write came after A's container ended (rc 0)
+== SCOPE the /src mount source scopes the container lookup to this root ==
+ok   SC-1 a container labelled with this op id whose /src is ANOTHER checkout is not drained: no wait (0s), container_drain=none
+ok   SC-2 golden-FALSE: the same container with /src = THIS root IS drained (waited 7s)
+== BSIG backup_db.sh: an interrupted backup leaves no unverified file; the empty-checkpoint refusal says what happened ==
+ok   BS-hang1 SIGTERM while the backup is in progress (hang1): the unverified backup file is removed (was 1, left 0), no record, exit 143
+ok   BS-hang2 SIGTERM while the backup is in progress (hang2): the unverified backup file is removed (was 1, left 0), no record, exit 143
+ok   BS-empty an EMPTY checkpoint row is refused saying it was empty (not 'another connection holds the database'), no file left
+== M6 replay: marker-shaped and install-shaped rows that changed the register are never skipped with an OK verdict ==
+ok   M6-1 a bash -c row that starts with the marker but MINTED an id is a real write: replayed, its id kept (never dropped as 'regenerated')
+ok   M6-2 a failed row whose marker is a sqlite3 ARGUMENT (not the bash -c script) that minted an id is refused as a failed row that changed the register, not skipped as regenerated
+ok   M6-3 an export.sh --install row that CHANGED the register is refused (export.sh has no such option: the row cannot be a harmless install), nothing is written
+ok   M6-5 a marker that is an argv element of a program that is not bash -c (M6-5), and a bash -c script that only MENTIONS the marker after its first line (M6-6), are real writes: replayed, never skipped
+ok   M6-4 golden-FALSE: the real dump/export row shape (exactly bash -c <marker script>, no id minted, changed or failed) and an UNCHANGED export.sh --install row are still skipped and listed
+== SWEEP real podman: the first writer is SIGKILLed at 10 offsets after its marker exists; the second must never overlap it ==
+ok   SWEEP-1 offset=0s container-at-kill=0 B rc=0 final_title=B-1 :: ORDERED
+ok   SWEEP-2 offset=0.1s container-at-kill=0 B rc=0 final_title=B-2 :: ORDERED
+ok   SWEEP-3 offset=0.3s container-at-kill=0 B rc=0 final_title=B-3 :: ORDERED
+ok   SWEEP-4 offset=0.6s container-at-kill=0 B rc=0 final_title=B-4 :: ORDERED
+ok   SWEEP-5 offset=1.0s container-at-kill=0 B rc=0 final_title=B-5 :: ORDERED
+ok   SWEEP-6 offset=2.0s container-at-kill=0 B rc=0 final_title=B-6 :: ORDERED
+ok   SWEEP-7 offset=2.8s container-at-kill=1 B rc=0 final_title=B-7 :: ORDERED
+ok   SWEEP-8 offset=3.4s container-at-kill=1 B rc=0 final_title=B-8 :: ORDERED
+ok   SWEEP-9 offset=4.0s container-at-kill=1 B rc=0 final_title=B-9 :: ORDERED
+ok   SWEEP-10 offset=5.0s container-at-kill=1 B rc=0 final_title=B-10 :: ORDERED
+ok   SWEEP-needle the sweep landed 6 kill(s) BEFORE the container existed and 4 AFTER it (both windows of the writer's life were hit: the sweep is not blind)
+ok   SWEEP-total 0 overlaps in 10 kill offsets
+== REALSTAT real podman, locked.sh | head -n1: the container's own exit status 3 ==
+ok   REALSTAT-1 the write landed (title LATE-1) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-2 the write landed (title LATE-2) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-3 the write landed (title LATE-3) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-4 the write landed (title LATE-4) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-5 the write landed (title LATE-5) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-6 the write landed (title LATE-6) and locked.sh exit=3, row exit=3, source="container_event", client_exit=141
+ok   REALSTAT-total the container's status 3 was kept in 6 of 6 runs
+== REALSCOPE real podman: two roots, one op id ==
+ok   REALSCOPE-1 root Y ('true', same op id) did not drain root X's running container: 3s, container_drain=none, X's container still up (1) when Y ended
+ok   REALSCOPE-2 golden-FALSE: root X's own call ended normally with its own container (drain=none, exit 0)
+comm: file 1 is not in sorted order
+comm: input is not in sorted order
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=52 fail=0
+rc=0

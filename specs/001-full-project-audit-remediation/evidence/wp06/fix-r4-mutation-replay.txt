@@ -1,0 +1,28 @@
+# identity: group=replay utc=2026-10-07T13:16:37Z host=anton uid=1000 git_head=c2141c785a658506e92a316ba88a06bec2d1fae6
+# runner_sha256=14855031ebf41fd107e89457e01a8754a4fc596ca17b471a76c28b8f615b16aa test_sha256=e12aeb2e53b6f43f513e1d974270baa596e51d27d226587d75d9494d6d3a34a0 sut_sha256=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0 followup_tests=test_fix_r1.sh|F1 F2 F8|1 test_fix_r2.sh|N1S T5|1 test_fix_r4.sh|M6|1 test_fix_r2.sh|N1E| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh
+skip_mint_rows	yes	test_replay.sh: FAIL P3 the replayed database holds every reg_ids id of both sides (CAT-001..003) :: got [CAT-001,CAT-002] wan
+no_collision_refusal	yes	test_replay.sh: FAIL P12 rc=0 [replay: OK replayed=2 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.no_c
+since_unchecked	yes	test_replay.sh: FAIL P14 rc=20 [replay: REFUSED reason=replay_id_collision local id CAT-001 (row locked-20261007T131647-329200
+gate_unchecked	yes	test_replay.sh: FAIL P21 rc=0 [replay: OK replayed=3 skipped=4 ids_kept=CAT-003 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.gate
+failed_rows_replayed	yes	test_fix_r2.sh [N1S T5]: FAIL N1-1 a failed row that CHANGED the database (hash differs) is refused, never skipped (the local edit must
+input_not_rebound	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T132200-3552413-15486 exited 1: Err
+regenerated_rows_replayed	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T132416-3643660-14963 exited 1: mkd
+db_arg_not_rewritten	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_row_failed row locked-20261007T132530-3690921-15409 exited 3: Err
+base_row_any_mode	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-1 [rc=0 replay: OK replayed=0 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.base_row_
+ids_unknown_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F1-1 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.ids_unkno
+RMb_id_lost_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F1-5 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.RMb
+RMc_input_sha_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-8 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.RMc
+RMd_wal_rows_skipped	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-3 [rc=0 replay: OK replayed=1 skipped=1 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.RMd
+NM5_replay_fallback_wal_ignored	yes	test_fix_r2.sh [N1S T5]: FAIL T5-2 [replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.NM5_replay_fal
+failed_changed_row_skipped	yes	test_fix_r2.sh [N1S T5]: FAIL N1-1 a failed row that CHANGED the database (hash differs) is refused, never skipped (the local edit must
+regenerate_marker_substring	yes	test_fix_r4.sh [M6]: FAIL M6-5 a marker that is an argv element of a program that is not bash -c (M6-5), and a bash -c script that 
+install_substring	yes	test_fix_r2.sh [N1S T5]: FAIL N1-7 a register write whose SQL merely MENTIONS the regenerate marker or 'export.sh --install' is replaye
+failed_row_unchanged_refused	yes	test_replay.sh: FAIL P2 rc=20 [replay: REFUSED reason=replay_failed_row_changed_register row locked-20261007T133826-4087423-17
+pending_ops_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F2-6 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=CAT-002 gate=GATE OK out=/dev/shm/mutops.H5vzCt/s.pen
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F8-5 outside test mode replay.sh ignores the LOCKED/BACKUP/DUMP/EXPORT overrides (the foreign script was 
+regenerate_shape_loosened	yes	test_fix_r4.sh [M6]: FAIL M6-5 a marker that is an argv element of a program that is not bash -c (M6-5), and a bash -c script that 
+regenerate_minting_row_skipped	yes	test_fix_r4.sh [M6]: FAIL M6-1 a bash -c row that starts with the marker but MINTED an id is a real write: replayed, its id kept (n
+install_changed_row_skipped	yes	test_fix_r4.sh [M6]: FAIL M6-3 an export.sh --install row that CHANGED the register is refused (export.sh has no such option: the r
+negative_control_comment	NO	test_fix_r2.sh [N1E]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=3 fail=0

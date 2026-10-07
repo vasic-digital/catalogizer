@@ -47,7 +47,10 @@ echo "$(date +%s.%N) $*" >>"$STUB_DIR/podman.log"
 case "$1" in
   ps) op=""; for a in "$@"; do case "$a" in label=catalogizer.op_id=*) op="${a#label=catalogizer.op_id=}";; esac; done
       p=$(cat "$STUB_DIR/ctr.$op.pid" 2>/dev/null); if [ -n "$p" ] && kill -0 "$p" 2>/dev/null; then echo "ctr-$op"; fi; exit 0;;
-  wait) op="${2#ctr-}"; p=$(cat "$STUB_DIR/ctr.$op.pid" 2>/dev/null); while [ -n "$p" ] && kill -0 "$p" 2>/dev/null; do sleep 0.1; done; cat "$STUB_DIR/ctr.$op.rc" 2>/dev/null || echo 0; exit 0;;
+  wait) op="${*: -1}"; op="${op#ctr-}"; p=$(cat "$STUB_DIR/ctr.$op.pid" 2>/dev/null); while [ -n "$p" ] && kill -0 "$p" 2>/dev/null; do sleep 0.1; done; cat "$STUB_DIR/ctr.$op.rc" 2>/dev/null || echo 0; exit 0;;
+  inspect) id="${*: -1}"; op="${id#ctr-}"; cat "$STUB_DIR/ctr.$op.src" 2>/dev/null; exit 0;;
+  events) op=""; for a in "$@"; do case "$a" in label=catalogizer.op_id=*) op="${a#label=catalogizer.op_id=}";; esac; done   # WF15: the died event of an ended container (the exit status source since round 4)
+          p=$(cat "$STUB_DIR/ctr.$op.pid" 2>/dev/null); if [ -f "$STUB_DIR/ctr.$op.rc" ] && ! { [ -n "$p" ] && kill -0 "$p" 2>/dev/null; }; then echo "ctr-$op $(cat "$STUB_DIR/ctr.$op.rc")"; fi; exit 0;;
   rm) id="${*: -1}"; op="${id#ctr-}"; p=$(cat "$STUB_DIR/ctr.$op.pid" 2>/dev/null); if [ -n "$p" ] && [ "$p" -gt 1 ]; then kill -9 "$p" 2>/dev/null; fi; echo killed >"$STUB_DIR/ctr.$op.killed"; exit 0;;
 esac
 exit 0
@@ -143,9 +146,9 @@ E
 E
   chk N1-7 "$(rp mention 'CAT-001')" 'rc=0 replay: OK replayed=3 skipped=0 *' "a register write whose SQL merely MENTIONS the regenerate marker or 'export.sh --install' is replayed, not dropped (the skips key on the program, not on a substring)"
   mkj realskip <<'E'
-[row("W1","register",REG,None,a,["CAT-001"],M), row("REGEN","register",REG,a,b,[],["bash","-c","# register-regenerate:dump\nset -eo pipefail"]), row("INST","register",REG,b,c,[],["bash","/src/scripts/register/export.sh","--install"])]
+[row("W1","register",REG,None,a,["CAT-001"],M), row("REGEN","register",REG,a,b,[],["bash","-c","# register-regenerate:dump\nset -eo pipefail"]), row("INST","register",REG,b,b,[],["bash","/src/scripts/register/export.sh","--install"])]
 E
-  chk N1-8 "$(rp realskip 'CAT-001')" 'rc=0 replay: OK replayed=0 skipped=2 *' "golden-true: the real regeneration row (script starts with the marker) and the real export.sh --install row are still skipped"
+  chk N1-8 "$(rp realskip 'CAT-001')" 'rc=0 replay: OK replayed=0 skipped=2 *' "golden-true: the real regeneration row (exactly bash -c <script starting with the marker>) and an UNCHANGED export.sh --install row are still skipped (WF15 M6: a changed install row is refused, see test_fix_r4.sh M6-3)"
 fi
 
 if want N1E && e2e; then echo "== N1 end to end (real containers): a failed local write that committed =="
@@ -282,7 +285,7 @@ PY
   sreset; usemain; R=$(sroot fe4); mkdir -p "$R/.audit/register/pending"; bash -c 'exec -a locked.sh sleep 20' & OWN=$!; sleep 0.3
   printf '{"op_id":"live4","pid":%s}\n' "$OWN" >"$R/.audit/register/pending/live4"; fakectr live4 6 0
   t0=$(date +%s); STUB_CLIENT_RC=0 slk "$R" --op-id fe4 -- sh -c 'w' >/dev/null 2>&1; rc=$?; dt=$(( $(date +%s)-t0 ))
-  [ $rc -eq 0 ] && [ $dt -lt 5 ] && ok "FENCE-5 golden-FALSE: a marker whose owner is a LIVE locked.sh is not an orphan: no wait (${dt}s)" || bad "FENCE-5 rc=$rc dt=${dt}s"
+  [ $rc -eq 0 ] && [ $dt -ge 4 ] && ok "FENCE-5 (WF15 M2) a marker whose pid is a live process with 'locked.sh' in its cmdline is NOT an owner (no cmdline proxy): its running container is still waited for (${dt}s)" || bad "FENCE-5 rc=$rc dt=${dt}s"
   killpid "$OWN"; killpid "$(cat "$STUB_DIR/ctr.live4.pid" 2>/dev/null)"; wait 2>/dev/null
 fi
 

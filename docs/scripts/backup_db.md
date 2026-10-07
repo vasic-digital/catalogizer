@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T03:00:00Z |
-| Status | tracked; revision 3: WF13 review fix round (11.4.276 round 3, structural: defect classes C1-C6 of `scripts/register/tests/test_fix_r2.sh`); the independent re-review of this revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T08:00:00Z |
+| Status | tracked; revision 4: WF15 review fix round (11.4.276 round 4: `scripts/register/tests/test_fix_r4.sh`, `$EV/wp06/fix-r4-convergence-assessment.md`); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/backup_db.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -26,7 +26,7 @@ scripts/register/backup_db.sh --record <file>
 2. Read-only through the `immutable=1` URI (no `-shm`/`-wal` beside the backup): `PRAGMA integrity_check` must print `ok`, and a restore probe (the backup restored into a scratch database under `/out`) must dump to the same bytes as the source dump of step 1.
 3. The record `--record <file>`: `backup_path`, `utc`, both sha256 values, both row counts (INSERT rows of the canonical dumps), `integrity`, `restore_probe`, `image_digest`, the op ids.
 
-The result row of `PRAGMA wal_checkpoint(TRUNCATE)` must be `0|...` (WF13 N7, as `dump.sh` F10): a reader outside the lock blocks the TRUNCATE, and `source_sha256` (the main-file hash) would then name a state that lacks the WAL pages the backup holds, so the backup is refused `checkpoint_incomplete`. Every failure after the backup file was created (`die` as well as `fail`) removes that file (WF13 N6). Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>-<pid>-<ns>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
+The result row of `PRAGMA wal_checkpoint(TRUNCATE)` must be `0|...` (WF13 N7, as `dump.sh` F10): a reader outside the lock blocks the TRUNCATE, and `source_sha256` (the main-file hash) would then name a state that lacks the WAL pages the backup holds, so the backup is refused `checkpoint_incomplete`; an EMPTY result row (the statement printed nothing) is refused with that fact named, not as a busy checkpoint (WF15 M7). Every failure after the backup file was created (`die` as well as `fail`) removes that file (WF13 N6). TERM, INT and HUP (WF15 M5) are forwarded to the one `locked.sh` call that runs (the two wrapper calls run as children and are waited for, so the trap fires at once); after that call ends the backup file this run created is removed and the exit is 128+n: an unverified file named like a verified one never stays. Any failed check exits 1, removes the backup file and writes no record: a backup that fails a check is not a backup and the bulk step does not start. Backup files are `docs/workable_items.db.bak-<UTC>-<pid>-<ns>` (ignored through `docs/*.bak-*`, T004). T069, T071, T168, T184, T223, T224 and `locked.sh import-sql` (register imports only) take every register backup through it.
 
 ## Exit codes
 
@@ -38,4 +38,4 @@ The result row of `PRAGMA wal_checkpoint(TRUNCATE)` must be `0|...` (WF13 N7, as
 
 ## Honest limits
 
-`PRAGMA integrity_check` and the restore probe are each redundant with the other for every fault the harness can inject (a truncated file fails both); `no_checkpoint` and `record_without_rows_check` stay recorded as reviewed-equivalent. Revision 1 also listed `integrity_unchecked` as equivalent: that was wrong for two reasons (WF10 M6). The host-side line alone is redundant in effect (the in-container line skips the restore probe when the integrity result is not `ok`, so the host then fails on the missing restore dump) but the revision-2 run KILLS it, through the message of the M6 fixture (`restore probe produced no dump`); and the integrity check itself IS load-bearing for index-page damage that the canonical `.dump` cannot see: the two-layer mutant `integrity_gate_both_layers_removed` passes a corrupt backup and is killed by `test_fix_r1.sh` M6. Its entry was removed from `equivalent_ops_mutants.tsv`.
+`PRAGMA integrity_check` and the restore probe are each redundant with the other for every fault the harness can inject (a truncated file fails both); `record_without_rows_check` stays recorded as reviewed-equivalent; `no_checkpoint` was recorded equivalent in revisions 1-3 and is NOT any more: with the N7 refusal a missing checkpoint makes the call refuse (WF15 M7, its row was removed from `equivalent_ops_mutants.tsv`). Revision 1 also listed `integrity_unchecked` as equivalent: that was wrong for two reasons (WF10 M6). The host-side line alone is redundant in effect (the in-container line skips the restore probe when the integrity result is not `ok`, so the host then fails on the missing restore dump) but the revision-2 run KILLS it, through the message of the M6 fixture (`restore probe produced no dump`); and the integrity check itself IS load-bearing for index-page damage that the canonical `.dump` cannot see: the two-layer mutant `integrity_gate_both_layers_removed` passes a corrupt backup and is killed by `test_fix_r1.sh` M6. Its entry was removed from `equivalent_ops_mutants.tsv`.

@@ -18,8 +18,9 @@
 # Ids (WF10 F1): a planned register row whose ids_snapshot is not "ok" (unavailable under a pending -wal, or failed) is REFUSED replay_ids_unknown: its minted ids are not
 # known, so replaying it blind could give its item the next free id of the remote side (a renumbering). The tool never renumbers and never guesses.
 # Rows skipped and listed: a row that is not a register write (not_a_register_write: --out and scratch rows), the regeneration rows of dump.sh/export.sh (regenerated_by_replay:
-# a bash -c argument that STARTS with "# register-regenerate:"; step 3 regenerates them), `export.sh --install` rows (install_replay_owed_T175a: export.sh is a program argument; the
-# T175a installer does not exist yet; UNCONFIRMED), a row that left the database unchanged (no_database_change, or command_failed when it also failed: hash equal, no ids minted, no
+# exactly `bash -c <script>` whose script STARTS with "# register-regenerate:" and that minted no id; step 3 regenerates them; a marker elsewhere, or a minting row, is a real write (WF15 M6)),
+# `export.sh --install` rows that left the database unchanged (install_replay_owed_T175a: export.sh is a program argument and has no --install option, git history never had one; the
+# T175a installer does not exist yet; UNCONFIRMED), while such a row that CHANGED the register is REFUSED replay_install_row_changed_register, a row that left the database unchanged (no_database_change, or command_failed when it also failed: hash equal, no ids minted, no
 # -wal bytes). A row that exited non-zero but CHANGED the register (hash, minted ids or -wal bytes) is REFUSED replay_failed_row_changed_register (WF13 N1): skipping it would drop its
 # committed part with an OK verdict, replaying it would repeat the failure; the plan owner decides.
 # A local mint whose id the remote side holds for another item is REFUSED before anything is replayed (20 replay_id_collision, the id named): the plan
@@ -112,15 +113,19 @@ remote_ids = set(ids())
 skipped = []; plan = []
 def changed(r):  # did this row change (or may it have changed) the register database? hash, minted ids or bytes pending in the -wal file say so
     return not (r.get("db_sha_before") == r.get("db_sha_after") and not r.get("ids_minted") and not r.get("wal_bytes_after") and not r.get("wal_bytes_before"))
-def is_regenerate(argv):  # the dump.sh / export.sh script: a bash -c argument that STARTS with the marker (a SQL text that merely mentions it is a real write)
-    return any(isinstance(a, str) and a.startswith("# register-regenerate:") for a in argv)
-def is_install(argv):  # `export.sh --install`: export.sh is the PROGRAM argument, --install an argument
+def is_regenerate(r):  # the dump.sh / export.sh row: EXACTLY `bash -c <script>` whose script STARTS with the marker, and no id minted (WF15 M6: a marker anywhere else, or a row that minted ids, is a real write)
+    argv = r.get("argv", [])
+    return (len(argv) == 3 and argv[0] == "bash" and argv[1] == "-c" and isinstance(argv[2], str) and argv[2].startswith("# register-regenerate:")
+            and not r.get("ids_minted"))   # MUT:regenerate-shape
+def is_install(argv):  # `export.sh --install`: export.sh is the PROGRAM argument, --install an argument (export.sh has no such option and git history never had one: the row cannot be real, WF15 M6)
     return "--install" in argv and any(isinstance(a, str) and os.path.basename(a) == "export.sh" for a in argv)
 for r in todo:
     argv = r.get("argv", [])
     if r.get("mode") != "register": skipped.append({"op_id": r["op_id"], "reason": "not_a_register_write", "mode": r.get("mode")}); continue
-    if is_regenerate(argv): skipped.append({"op_id": r["op_id"], "reason": "regenerated_by_replay"}); continue
-    if is_install(argv): skipped.append({"op_id": r["op_id"], "reason": "install_replay_owed_T175a"}); continue
+    if is_regenerate(r): skipped.append({"op_id": r["op_id"], "reason": "regenerated_by_replay"}); continue
+    if is_install(argv):
+        if changed(r) or r.get("ids_minted"): refuse("replay_install_row_changed_register", "row %s names `export.sh --install` (an option export.sh does not have) but CHANGED the register (hash, minted ids or -wal bytes): it cannot be skipped with an OK verdict; the plan owner decides, nothing was written" % r["op_id"])   # MUT:install-refusal
+        skipped.append({"op_id": r["op_id"], "reason": "install_replay_owed_T175a"}); continue
     if False: continue   # MUT:skip-mints
     if not changed(r):
         skipped.append({"op_id": r["op_id"], "reason": "command_failed" if r.get("exit") != 0 else "no_database_change", **({"exit": r.get("exit")} if r.get("exit") != 0 else {})}); continue

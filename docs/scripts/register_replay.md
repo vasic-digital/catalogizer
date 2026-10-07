@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T03:00:00Z |
-| Status | tracked; revision 3: WF13 review fix round (11.4.276 round 3, structural: defect classes C1-C6 of `scripts/register/tests/test_fix_r2.sh`); the independent re-review of this revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T08:00:00Z |
+| Status | tracked; revision 4: WF15 review fix round (11.4.276 round 4: `scripts/register/tests/test_fix_r4.sh`, `$EV/wp06/fix-r4-convergence-assessment.md`); the independent re-review of this revision is owed (constitution 11.4.142) |
 | Source | `scripts/register/replay.sh` |
 
 > `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative).
@@ -28,9 +28,9 @@ Run in a scratch clone checked out at the remote tip: `--onto` must be `docs/wor
 2. Every journal row after the base row is replayed in order through `locked.sh --out <dir>` against the copy, the database argument `/src/docs/workable_items.db` rewritten to `/out/replay.db`, each recorded input re-bound to `/out/inputs/<sha256>`.
 3. `scripts/register/gate.sh` must print `GATE OK` on the copy; the copy must hold every `reg_ids` id of both sides; `dump.sh` and `export.sh` write `register.sql` and `export/` into `<dir>`; `replay-report.json` lists the rows replayed, the rows skipped and why, the ids and the sha256 of every output.
 
-Skipped and listed: `not_a_register_write` (`--out` and scratch rows), `regenerated_by_replay` (the dump and export rows: a `bash -c` argument that STARTS with `# register-regenerate:`; a SQL text that merely mentions the marker is a real write and is replayed), `install_replay_owed_T175a` (`export.sh --install` rows: `export.sh` is the program argument; the T175a installer does not exist yet, UNCONFIRMED), `no_database_change` (reads, backups) and `command_failed` (a failed row that changed NOTHING: hash equal, no ids minted, no `-wal` bytes). A failed or interrupted row that DID change the register (hash, minted ids or `-wal` bytes) is never skipped: it is refused (below).
+Skipped and listed: `not_a_register_write` (`--out` and scratch rows), `regenerated_by_replay` (the dump and export rows: EXACTLY `bash -c <script>` whose script STARTS with `# register-regenerate:` and that minted no id, WF15 M6; a marker anywhere else, a marker in the arguments of another program, or a row that minted ids is a real write and is replayed or refused like any other), `install_replay_owed_T175a` (`export.sh --install` rows that changed NOTHING: `export.sh` has no `--install` option and git history never had one, the T175a installer does not exist yet, UNCONFIRMED), `no_database_change` (reads, backups) and `command_failed` (a failed row that changed NOTHING: hash equal, no ids minted, no `-wal` bytes). A failed or interrupted row that DID change the register (hash, minted ids or `-wal` bytes) is never skipped: it is refused (below).
 
-Refused (20), `<dir>` removed: `replay_failed_row_changed_register` (WF13 N1: a row whose command exited non-zero but whose database changed, e.g. an UPDATE that committed before a later statement failed, or a writer interrupted after partial work; skipping it would lose its committed part and replaying it would repeat the failure; the plan owner decides, nothing is written), `replay_id_collision` (a local mint whose id the remote side holds for another item; the id is named, nothing is replayed, the plan owner decides, never a renumbering), `since_not_found`, `since_malformed`, `input_missing`, `out_dir_not_empty` (left untouched), `onto_not_register_database`, `replay_row_failed`, `replay_id_lost`, `replay_gate_failed`.
+Refused (20), `<dir>` removed: `replay_install_row_changed_register` (WF15 M6: an `export.sh --install` row that CHANGED the register cannot be skipped with an OK verdict), `replay_failed_row_changed_register` (WF13 N1: a row whose command exited non-zero but whose database changed, e.g. an UPDATE that committed before a later statement failed, or a writer interrupted after partial work; skipping it would lose its committed part and replaying it would repeat the failure; the plan owner decides, nothing is written), `replay_id_collision` (a local mint whose id the remote side holds for another item; the id is named, nothing is replayed, the plan owner decides, never a renumbering), `since_not_found`, `since_malformed`, `input_missing`, `out_dir_not_empty` (left untouched), `onto_not_register_database`, `replay_row_failed`, `replay_id_lost`, `replay_gate_failed`.
 
 ## Safety rules (revision 2)
 

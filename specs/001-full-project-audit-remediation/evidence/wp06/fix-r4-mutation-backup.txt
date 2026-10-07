@@ -1,0 +1,20 @@
+# identity: group=backup utc=2026-10-07T13:52:13Z host=anton uid=1000 git_head=c2141c785a658506e92a316ba88a06bec2d1fae6
+# runner_sha256=14855031ebf41fd107e89457e01a8754a4fc596ca17b471a76c28b8f615b16aa test_sha256=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 sut_sha256=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 followup_tests=test_fix_r1.sh|F7 F14 F8 M6|1 test_fix_r4.sh|BSIG|1 test_fix_r2.sh|B| fix_r1_sha256=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7
+# mutant<TAB>killed<TAB>first failing check of test_backup_db.sh
+cp_al_backup	yes	test_backup_db.sh: FAIL B11 after one more row in the source (checkpointed) the backup's sha256 is unchanged :: got [a645dc372d1a
+failed_backup_kept	yes	test_backup_db.sh: FAIL B15 left: workable_items.db
+integrity_unchecked	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL M6-1 rc=1 [backup_db: BACKUP FAILED: restore probe produced no dump]
+restore_dump_unchecked	yes	test_backup_db.sh: FAIL B18 rc=0 [backup_db: OK docs/workable_items.db.bak-20261007T135521Z-336799-444835824 sha256=53b32d0d12790
+no_checkpoint	yes	test_backup_db.sh: FAIL B2 rc=1 [backup_db: BACKUP FAILED: REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned
+record_without_rows_check	EQUIV	reviewed-equivalent (redundancy): byte-equal canonical dumps imply equal INSERT row counts
+backup_name_not_unique	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F7-1 rc=01 a=[docs/workable_items.db.bak-20261007T135746Z] b=[]
+source_hash_after_unlock	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F14-1 rc=0 rec=d0453b653f9b819e at-lock=0b9f8f0d0c53d7cf now=d0453b653f9b819e [backup_db: OK docs/workabl
+locked_hook_outside_test_mode	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign
+integrity_gate_both_layers_removed	yes	test_fix_r1.sh [F7 F14 F8 M6]: FAIL M6-1 rc=0 [backup_db: OK docs/workable_items.db.bak-20261007T140303Z-561571-134890711 sha256=2e2a922e04a9
+die_keeps_backup_file	yes	test_fix_r2.sh [B]: FAIL B-1 rc=1 left=1 [mkdir: Not a directory
+checkpoint_result_ignored	yes	test_fix_r4.sh [BSIG]: FAIL BS-empty rc=1 [backup_db: BACKUP FAILED: PRAGMA integrity_check on the backup printed [], not ok]
+signal_not_trapped	yes	test_fix_r4.sh [BSIG]: FAIL BS-hang1 (needle: backup file existed at the signal=1) left=1 rc=143 rec=n out=[]
+signal_keeps_file	yes	test_fix_r4.sh [BSIG]: FAIL BS-hang1 (needle: backup file existed at the signal=1) left=1 rc=143 rec=n out=[backup_db: interrupted by
+empty_checkpoint_message_generic	yes	test_fix_r4.sh [BSIG]: FAIL BS-empty rc=1 [backup_db: BACKUP FAILED: REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) re
+negative_control_comment	NO	test_fix_r2.sh [B]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=4 fail=0

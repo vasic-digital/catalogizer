@@ -22,7 +22,14 @@ SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REAL_ROOT="$(cd "$SELF_DIR/../.." && pwd)"
 if [ "${LOCKED_TEST_MODE:-}" = 1 ]; then LOCKED="${LOCKED:-$SELF_DIR/locked.sh}"; RUNP="${LOCKED_RUNP:-$REAL_ROOT/scripts/containers/run_pinned.sh}"   # MUT:hook-gate
 else unset LOCKED LOCKED_RUNP LOCKED_ROOT BACKUP_FAULT; LOCKED="$SELF_DIR/locked.sh"; RUNP="$REAL_ROOT/scripts/containers/run_pinned.sh"; fi
-OWN=0
+OWN=0; SIG=""; CHILD=""
+# Signals (WF15 M5): TERM INT HUP are remembered and forwarded to the ONE locked.sh call running (proven ours through /proc); this script then removes the backup file it created
+# (an unverified file named like a verified one must not stay) and exits 128+n. The two wrapper calls run as children and are `wait`ed for, so a trap fires at once.
+proc_ppid() { local st; st="$(cat "/proc/$1/stat" 2>/dev/null)" || return 1; st="${st##*) }"; set -- $st; printf '%s' "$2"; }
+fwd() { [ -n "$SIG" ] || SIG="$1"; case "$CHILD" in ''|*[!0-9]*) return 0;; esac; [ "$CHILD" -gt 1 ] && [ "$(proc_ppid "$CHILD")" = "$$" ] && kill -s "$1" "$CHILD" 2>/dev/null; return 0; }
+for sg in TERM INT HUP; do trap "fwd $sg" "$sg"; done   # MUT:signal-trap
+runchild() { [ -z "$SIG" ] || sigdie; "$@" & CHILD=$!; [ -z "$SIG" ] || fwd "$SIG"; while :; do wait "$CHILD"; rc=$?; case "$CHILD" in ''|*[!0-9]*) break;; esac; [ "$CHILD" -gt 1 ] && [ "$(proc_ppid "$CHILD")" = "$$" ] || break; done; CHILD=""; return "$rc"; }
+sigdie() { [ "$OWN" = 1 ] && rm -f -- "$BAKREL"; echo "backup_db: interrupted by SIG$SIG: the backup was not verified and was removed" >&2; exit $((128 + $(kill -l "$SIG"))); }   # MUT:signal-removes-file
 die() { [ "$OWN" = 1 ] && rm -f -- "$BAKREL"; echo "backup_db: $*" >&2; exit 1; }   # a failure after the O_EXCL pre-creation must not leave the 0-byte file (WF13 N6)
 REC=""
 while [ $# -gt 0 ]; do case "$1" in
@@ -42,19 +49,20 @@ OUT1=".audit/out/$OP"; mkdir -p "$OUT1" || die "cannot create $OUT1"
 fail() { [ "$OWN" = 1 ] && rm -f -- "$BAKREL"   # MUT:fail-keeps-file
   echo "backup_db: BACKUP FAILED: $*" >&2; exit 1; }
 # ---- 1. under the lock: checkpoint, online backup, canonical source dump (one sqlite3 script, one wrapper call) ----
-"$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".backup /src/$BAKREL" ".output /out/source.dump.sql" ".dump" ".output stdout" ".shell sha256sum /src/$DBREL >/out/source.sha256" >"$OUT1/step1.out" 2>"$OUT1/step1.err"   # MUT:backup-method
+runchild "$LOCKED" --op-id "$OP" -- sqlite3 "/src/$DBREL" "PRAGMA wal_checkpoint(TRUNCATE);" ".backup /src/$BAKREL" ".output /out/source.dump.sql" ".dump" ".output stdout" ".shell sha256sum /src/$DBREL >/out/source.sha256" >"$OUT1/step1.out" 2>"$OUT1/step1.err"   # MUT:backup-method
 rc=$?
+[ -z "$SIG" ] || sigdie
 [ $rc -eq 0 ] || fail "step 1 (checkpoint, backup, dump) exited $rc: $(head -c 300 "$OUT1/step1.err")"
 [ -s "$BAKREL" ] || fail "step 1 left no backup file"
 [ -s "$OUT1/source.dump.sql" ] || fail "step 1 wrote no source dump"
 CKP="$(head -1 "$OUT1/step1.out" 2>/dev/null)"   # the result row of PRAGMA wal_checkpoint(TRUNCATE): busy|log|checkpointed (WF13 N7, as dump.sh F10)
-case "$CKP" in 0\|*) ;; *) fail "REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned [$CKP]: another connection holds the database, so source_sha256 would name a state without the WAL pages the backup holds";; esac   # MUT:checkpoint-result
+case "$CKP" in 0\|*) ;; "") fail "REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned an EMPTY result row (the statement printed nothing: the wrapper or sqlite3 did not answer it), so the checkpoint is not proven";; *) fail "REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned [$CKP] (busy|log|checkpointed): another connection holds the database, so source_sha256 would name a state without the WAL pages the backup holds";; esac   # MUT:checkpoint-result
 SSHA="$(head -1 "$OUT1/source.sha256" 2>/dev/null | cut -d' ' -f1)"
 case "$SSHA" in *[!0-9a-f]*|"") fail "step 1 did not record the source sha256 under the lock";; esac; [ "${#SSHA}" -eq 64 ] || fail "step 1 recorded a malformed source sha256 [$SSHA]"
 if [ "${BACKUP_FAULT:-}" = truncate ]; then : >"$BAKREL"; head -c 200 /dev/urandom >"$BAKREL"; fi
 # ---- 2. read-only checks (immutable URI, no side files), restore probe into a scratch database under /out ----
 OUT2=".audit/out/$OPV"; mkdir -p "$OUT2"
-"$LOCKED" --op-id "$OPV" --out "$ROOT/$OUT2" -- sh -c '
+runchild "$LOCKED" --op-id "$OPV" --out "$ROOT/$OUT2" -- sh -c '
   set -e
   b="file:/src/'"$BAKREL"'?immutable=1"
   ic=$(sqlite3 -readonly "$b" "PRAGMA integrity_check" 2>&1 | head -1); echo "$ic" > /out/integrity.txt
@@ -62,6 +70,7 @@ OUT2=".audit/out/$OPV"; mkdir -p "$OUT2"
   sqlite3 -readonly "$b" ".backup /out/restored.db" && sqlite3 /out/restored.db ".output /out/restored.dump.sql" ".dump"
 ' >"$OUT2/step2.out" 2>"$OUT2/step2.err"
 rc=$?
+[ -z "$SIG" ] || sigdie
 [ $rc -eq 0 ] || fail "step 2 (integrity, restore probe) exited $rc: $(head -c 300 "$OUT2/step2.err")"
 INTEG="$(head -1 "$OUT2/integrity.txt" 2>/dev/null)"
 [ "$INTEG" = ok ] || fail "PRAGMA integrity_check on the backup printed [$INTEG], not ok"
@@ -82,5 +91,7 @@ json.dump({"backup_path": bak, "utc": utc, "source_sha256": ss, "backup_sha256":
            "integrity": ig, "restore_probe": "equal", "image_digest": dg, "op_ids": [op, opv], "method": "sqlite3 .backup (online backup), image sqlite3"},
           open(t, "w"), indent=1, sort_keys=True)
 PY
+[ -z "$SIG" ] || { rm -f -- "$TMP"; sigdie; }
 mv -f -- "$TMP" "$REC" || fail "cannot place the record"
+OWN=0   # the backup passed every check and its record is placed: a later signal must not remove a verified backup
 echo "backup_db: OK $BAKREL sha256=$BSHA rows=$BROWS integrity=ok restore_probe=equal"

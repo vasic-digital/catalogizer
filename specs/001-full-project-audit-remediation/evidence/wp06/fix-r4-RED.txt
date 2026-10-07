@@ -1,0 +1,119 @@
+# identity: task=FIX-R4 utc=2026-10-07T16:02:41Z host=anton uid=1000
+# git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d tree_dirty_files=4469
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=7a48105097de238902d36149d52cc4b1e59d15ec897bb0c51d152d953283738a backup_db=7e99bef33ea3396b3a53445232ed9b8ce6f4ac40c57dc1df524d9aeda6fea1e6 test=e9fb1a24af1d7c87367b17c541fc6bca0ced3f476cd9e16b15e5382d5f0baa3d clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=18a0647bac5c8235e024bc0d7a3f187a3a6e56b92bca4bfd92f0dce1571d546e
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut sha256 locked=7a48105097de2389 backup=7e99bef33ea3396b replay=18a0647bac5c8235
+== SIG3 TERM INT HUP during the after-snapshot (traps stay installed to the end) ==
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3TERM/.audit/register/journal.jsonl'
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3TERM/.audit/register/journal.jsonl'
+scripts/register/tests/test_fix_r4.sh: line 125: /dev/shm/regtest.nOf7gU/s3TERM/.audit/register/journal.jsonl: No such file or directory
+FAIL SIG3-TERM exit=143 row_interrupted= rows= marker=kept
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3INT/.audit/register/journal.jsonl'
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3INT/.audit/register/journal.jsonl'
+scripts/register/tests/test_fix_r4.sh: line 125: /dev/shm/regtest.nOf7gU/s3INT/.audit/register/journal.jsonl: No such file or directory
+FAIL SIG3-INT exit=130 row_interrupted= rows= marker=kept
+scripts/register/tests/test_fix_r4.sh: line 123: 3239701 Hangup                     SNAP2_SLEEP=5 "$T_SCR/sigstart.sh" "$R" --op-id "s3-$S" -- sh -c 'w' > "$T_SCR/s3.out" 2>&1
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3HUP/.audit/register/journal.jsonl'
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3HUP/.audit/register/journal.jsonl'
+scripts/register/tests/test_fix_r4.sh: line 125: /dev/shm/regtest.nOf7gU/s3HUP/.audit/register/journal.jsonl: No such file or directory
+FAIL SIG3-HUP exit=129 row_interrupted= rows= marker=kept
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3g/.audit/register/journal.jsonl'
+Traceback (most recent call last):
+  File "<string>", line 2, in <module>
+    rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+                                 ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/regtest.nOf7gU/s3g/.audit/register/journal.jsonl'
+FAIL SIG3-G sigign_int=0 exit=130 helpers=[3240709 3240710 3240741 ] ids_snapshot= interrupted=
+ok   SIG3-C golden-FALSE: no signal -> exit 0, one row, no marker, no interrupted field
+== STATUS exit status from the died event (stub podman; the real-podman twin is REALSTAT) ==
+FAIL ST-1 podman wait loses the container (--rm removed it): exit = the container's 5 from its died event, row exit=5 source=container_event client_exit=141 :: got [141/141/null/null] want [5/5/"container_event"/141]
+FAIL ST-2 neither the died event nor podman wait can be read: exit 22 (not the client's 141, not a guess), source=unknown, the pending marker is kept :: got [141/null/gone] want [22/"unknown"/kept]
+FAIL ST-6 the events backend LAGS (nothing readable for 5 s after the container ended; observed on a busy host) and podman wait lost the container: the status is waited for, not given up: exit 5, source=container_event :: got [141/null] want [5/"container_event"]
+FAIL ST-7 the died event cannot be read but podman wait answered 5 while the container ended: exit 5, source=container_wait, the marker is removed :: got [5/null/gone] want [5/"container_wait"/gone]
+FAIL ST-3 golden-FALSE: no container ever died under the label (RUNP failed before it): the client's own status 3 stands, source=client, marker removed :: got [3/null/gone] want [3/"client"/gone]
+FAIL ST-8 the client died of a signal (143), no container was ever seen and no died event exists: its own status stands, flagged source=client_unverified, marker removed (nothing is running) :: got [143/null/gone] want [143/"client_unverified"/gone]
+FAIL ST-4 two died events of unseen containers (another checkout, same op id) and a client that left with 141: ambiguous, exit 22, never one of the two guessed :: got [141/null] want [22/"unknown"]
+FAIL ST-4b the same ambiguity with a client that ended 0 (it saw its container end 0): exit 0, source=client :: got [0/null] want [0/"client"]
+FAIL ST-5 the container seen by the drain is the one whose died event counts: ctr-st5 5 is taken, the foreign ctr-foreign 9 is ignored :: got [5/null] want [5/"container_event"]
+== FENCE4 marker lock (client) + ps (container) ==
+ok   F4-1 golden-FALSE: a marker whose pid is a live carrier ('locked.sh' in its cmdline) with NO lock held and no container is not waited for (0s)
+FAIL F4-2 rc=0 dt=0s (a held marker lock must delay the next writer)
+ok   F4-3 podman unavailable with a pending marker: 20 writer_state_unverifiable, no writer call (a failed lookup is not 'no container')
+ok   F4-4 B started before A had a marker and A was SIGKILLed with its container running: B's write came after A's container ended (the fence runs under the lock)
+ok   F4-5a control needle: at the kill the container of A does not exist yet (the I1 window is really hit)
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+AssertionError: ([], [1791389001743535868])
+FAIL F4-5 overlap: w 1791389001743535868 f45b s 1791389001751266906 ctr-f45b e 1791389002766638735 ctr-f45b  rc=0
+== SCOPE the /src mount source scopes the container lookup to this root ==
+FAIL SC-1 a container labelled with this op id whose /src is ANOTHER checkout is not drained: no wait (7s), container_drain=none :: got [0/slow/"waited"] want [0/fast/"none"]
+ok   SC-2 golden-FALSE: the same container with /src = THIS root IS drained (waited 6s)
+== BSIG backup_db.sh: an interrupted backup leaves no unverified file; the empty-checkpoint refusal says what happened ==
+FAIL BS-hang1 (needle: backup file existed at the signal=1) left=1 rc=143 rec=n out=[]
+FAIL BS-hang2 (needle: backup file existed at the signal=1) left=1 rc=143 rec=n out=[]
+FAIL BS-empty rc=1 [backup_db: BACKUP FAILED: REFUSED reason=checkpoint_incomplete wal_checkpoint(TRUNCATE) returned []: another connection holds the database, so source_sha256 would name a state without the WAL pages the backup holds]
+== M6 replay: marker-shaped and install-shaped rows that changed the register are never skipped with an OK verdict ==
+FAIL M6-1 a bash -c row that starts with the marker but MINTED an id is a real write: replayed, its id kept (never dropped as 'regenerated') :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.nOf7gU/rh/out_hand]
+FAIL M6-2 a failed row whose marker is a sqlite3 ARGUMENT (not the bash -c script) that minted an id is refused as a failed row that changed the register, not skipped as regenerated :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.nOf7gU/rh/out_fregen]
+FAIL M6-3 an export.sh --install row that CHANGED the register is refused (export.sh has no such option: the row cannot be a harmless install), nothing is written :: [rc=0 replay: OK replayed=0 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.nOf7gU/rh/out_inst]
+FAIL M6-5 a marker that is an argv element of a program that is not bash -c (M6-5), and a bash -c script that only MENTIONS the marker after its first line (M6-6), are real writes: replayed, never skipped :: [rc=0 replay: OK replayed=1 skipped=1 ids_kept=- gate=GATE OK out=/dev/shm/regtest.nOf7gU/rh/out_shape]
+ok   M6-4 golden-FALSE: the real dump/export row shape (exactly bash -c <marker script>, no id minted, changed or failed) and an UNCHANGED export.sh --install row are still skipped and listed
+== SWEEP real podman: the first writer is SIGKILLed at 10 offsets after its marker exists; the second must never overlap it ==
+FAIL SWEEP-1 offset=0s container-at-kill=0 B rc=0 final_title=A-LATE-1 :: OVERLAP (B wrote while A's container ran)
+FAIL SWEEP-2 offset=0.1s container-at-kill=0 B rc=0 final_title=A-LATE-2 :: OVERLAP (B wrote while A's container ran)
+FAIL SWEEP-3 offset=0.3s container-at-kill=0 B rc=0 final_title=A-LATE-3 :: OVERLAP (B wrote while A's container ran)
+ok   SWEEP-4 offset=0.6s container-at-kill=0 B rc=0 final_title=B-4 :: ORDERED
+ok   SWEEP-5 offset=1.0s container-at-kill=0 B rc=0 final_title=B-5 :: ORDERED
+ok   SWEEP-6 offset=2.0s container-at-kill=0 B rc=0 final_title=B-6 :: ORDERED
+ok   SWEEP-7 offset=2.8s container-at-kill=1 B rc=0 final_title=B-7 :: ORDERED
+ok   SWEEP-8 offset=3.4s container-at-kill=1 B rc=0 final_title=B-8 :: ORDERED
+ok   SWEEP-9 offset=4.0s container-at-kill=1 B rc=0 final_title=B-9 :: ORDERED
+ok   SWEEP-10 offset=5.0s container-at-kill=1 B rc=0 final_title=B-10 :: ORDERED
+ok   SWEEP-needle the sweep landed 6 kill(s) BEFORE the container existed and 4 AFTER it (both windows of the writer's life were hit: the sweep is not blind)
+FAIL SWEEP-total 3 overlaps in 10 kill offsets
+== REALSTAT real podman, locked.sh | head -n1: the container's own exit status 3 ==
+FAIL REALSTAT-1 title=LATE-1 locked_rc=141 row exit=141 source=null client_exit=null (the container exited 3)
+FAIL REALSTAT-2 title=LATE-2 locked_rc=141 row exit=141 source=null client_exit=null (the container exited 3)
+FAIL REALSTAT-3 title=LATE-3 locked_rc=141 row exit=141 source=null client_exit=null (the container exited 3)
+FAIL REALSTAT-4 title=LATE-4 locked_rc=141 row exit=141 source=null client_exit=null (the container exited 3)
+FAIL REALSTAT-5 title=LATE-5 locked_rc=141 row exit=141 source=null client_exit=null (the container exited 3)
+ok   REALSTAT-6 the write landed (title LATE-6) and locked.sh exit=3, row exit=3, source=null, client_exit=141
+FAIL REALSTAT-total status lost in 5 of 6 runs
+== REALSCOPE real podman: two roots, one op id ==
+FAIL REALSCOPE-1 containers before=1 after=0 rc=0 dt=16s drain="waited" []
+ok   REALSCOPE-2 golden-FALSE: root X's own call ended normally with its own container (drain=none, exit 0)
+comm: file 1 is not in sorted order
+comm: input is not in sorted order
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=18 fail=34
+rc=1

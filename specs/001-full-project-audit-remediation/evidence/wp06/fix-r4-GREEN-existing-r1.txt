@@ -1,0 +1,99 @@
+# identity: task=FIX-R1 utc=2026-10-07T12:59:36Z host=anton uid=1000
+# git_head=c2141c785a658506e92a316ba88a06bec2d1fae6 tree_dirty_files=4121
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=8038d05a4d318bd75e9100cf78f707dde4360a3c1c36fff2a1668e70fd686bf7 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sut_dir=/home/milosvasic/Projects/catalogizer/scripts/register sha256 locked=5919d4090c75f293 backup=b261062c84374013 dump=bddb28c984f27291 export=cc92f631af184950 reconcile=b29d6044fe4f06ff replay=c6410793149ec36b
+== F3 signal handling of locked.sh ==
+ok   F3-0 fixture: exact locked.sh pid 2103966 proven ours via /proc, writer pid 2104040 running
+ok   F3-1 the register lock was never free while the killed call's writer was still running
+ok   F3-2 the writer is gone when locked.sh has exited
+ok   F3-3 locked.sh reports the interruption (exit 143 = 128+SIGTERM)
+ok   F3-4 the interrupted write has its journal row: op f3-a, interrupted=TERM, the writer's real exit 143
+ok   F3-5 the two writers did not overlap (first ended before the second started)
+ok   F3-6 no pending marker is left once the interrupted op is journaled
+ok   F3-7 the second caller completed normally
+== F4 id snapshot pipeline status ==
+ok   F4-1 control: both snapshots answer: ids_snapshot ok, CAT-003 minted
+ok   F4-2 the AFTER snapshot fails: ids_snapshot is failed (never ok with no mint)
+ok   F4-3 the BEFORE snapshot fails: ids_snapshot is failed (no false mint of every id)
+ok   F4-4 golden-FALSE: an empty table (both snapshots answer an empty row) is ok with no mint
+== F5 journal append failure ==
+ok   F5-1 an unwritable journal refuses the call before the writer runs (journal_unwritable)
+ok   F5-2 a journal append that fails after the write exits 21 with reason journal_append_failed
+ok   F5-3 the unjournaled write is detectable: its pending marker is left
+ok   F5-4 golden-true: a normal call exits 0, journals one row and leaves no pending marker
+== F6 LOCKED_LOCK_HELD ==
+ok   F6-0 control needle: another process holds the register lock
+ok   F6-1 LOCKED_LOCK_HELD=1 without a verified fd 9 is refused lock_claim_invalid (36 ms), no journal row
+ok   F6-2 outside test mode (real tree layout) the forged claim is refused too
+ok   F6-3 golden-true: a locked.sh nested under a lock-holding locked.sh (fd 9 inherited) is accepted and journaled
+== F13 reaper ==
+ok   F13-0 fixture: the grant stays held, locked.sh refuses commit_turn_held
+ok   F13-1 the register lock is free as soon as locked.sh exits (a child the reaper left behind does not hold it)
+ok   F13-2 a hanging reaper is bounded by LOCKED_REAPER_TIMEOUT (refused after 3s, not hung)
+== F8 LOCKED hook outside test mode, output verification ==
+ok   F8-1 outside test mode the LOCKED override is ignored by backup_db.sh, dump.sh and export.sh (the foreign wrapper was called 0 times)
+ok   F8-2 dump.sh does not report OK when the wrapper produced no dump (rc 1)
+ok   F8-2b a stale complete dump left by an earlier run is not accepted as this run's output (rc 1)
+ok   F8-3b stale outputs and manifest from an earlier run are not accepted (rc 1)
+ok   F8-3 export.sh does not succeed when the wrapper produced no export (rc 1)
+ok   F8-5 outside test mode replay.sh ignores the LOCKED/BACKUP/DUMP/EXPORT overrides (the foreign script was called 0 times)
+ok   F8-4 export.sh --check does not say OK when the wrapper printed no verdict (rc 1)
+== F1/F2 replay planning (stub tools) ==
+ok   F2-0 control: base W1, the local mint W2 is replayed
+ok   F2-1 a later scratch-mode row whose hash equals the base hash is not a base candidate: W2 is still replayed
+ok   F2-2 a later --out-mode row with the base hash is not a base candidate either
+ok   F2-3 a write left pending in the -wal file (main-file sha unchanged) is not the base: it is replayed with the rest (2 rows)
+ok   F2-7 golden-true: a recorded input whose content hashes to its name is re-bound and replayed
+ok   F2-8 a recorded input whose content no longer hashes to its name is refused input_missing
+ok   F2-4 journal rows out of seq order are refused journal_order_invalid
+ok   F2-5 a corrupt journal line is a named refusal journal_corrupt (no traceback)
+ok   F2-6 a pending marker (a write that never reached the journal) is refused replay_pending_ops
+ok   F1-1 a planned register row whose ids_snapshot is unavailable is refused replay_ids_unknown (never replayed blind)
+ok   F1-2 the refusal removed the output directory
+ok   F1-3 ids_snapshot=failed is refused too
+ok   F1-5 a replayed database that lacks a local mint's id is refused replay_id_lost
+ok   F1-4 golden-FALSE: an unchanged-database row with an unavailable snapshot is a no_database_change skip, not a refusal
+== F11 test isolation ==
+ok   F11-1 clib.sh routes the disk-headroom records into the scratch root (/dev/shm/regtest.pbpYrW/disk/)
+ok   F11-2 the disk-headroom record of a register call (locked-20261007T130000-2130303-7756) is in the scratch root
+ok   F11-3 and not in the real repository's evidence/disk
+ok   F11-4 export.sh --check works under the scratch root's .audit/out
+ok   F11-5 no export-check directory was created under the real repository's .audit/out during this run
+== F12 reconcile empty views ==
+ok   F12-0 reconcile succeeds on a register database with empty views
+ok   F12-1 every CSV of an empty view carries its header line (no 0-byte CSV)
+ok   F12-2 no 'Rows: -1'
+ok   F12-3 every empty view reads Rows: 0 (7 sections)
+ok   F12-4 an empty view still shows its Markdown table header
+ok   F12-5 the empty CSV header is the column list
+== F10 dump with a busy checkpoint ==
+ok   F10-1 a checkpoint that cannot complete (reader open) is refused checkpoint_incomplete (20), no dump written (minted CAT-002)
+ok   F10-2 golden-true: with no reader the dump is written and holds CAT-002
+== F9 export --check manifest ==
+ok   F9-0 golden-true: an untouched export checks OK
+ok   F9-1 CSV edited and manifest emptied: STALE
+ok   F9-2 CSV edited and its manifest line removed: STALE
+ok   F9-3 CSV deleted and its manifest line removed: STALE
+ok   F9-4 manifest missing: STALE
+ok   F9-5 CSV edited and its manifest line rewritten to match: STALE (the CSV is regenerated from the database and compared)
+ok   F9-7 only the manifest emptied (every output untouched): STALE, the missing names reported
+ok   F9-6 golden-true again after restoring the export
+== F7/F14 backup_db.sh ==
+ok   F7-1 two backups started together get two distinct backup files (docs/workable_items.db.bak-20261007T130127Z-2222838-080465588, docs/workable_items.db.bak-20261007T130127Z-2222839-084287372)
+ok   F7-2 each record's backup_sha256 equals its own file
+ok   F7-3 a failing backup started in the same second does not delete the good backup (fail() removes only its own file)
+ok   F14-1 source_sha256 is the hash of the source under the backup's lock, not of a later state (another writer changed it in between)
+== F1/F2 end to end (real containers, pending -wal) ==
+ok   E2E-0 fixture: a committed write is pending in the -wal file (4152 bytes)
+# E2E replay rc=20 (local mint printed CAT-003, remote mint CAT-003) :: replay: REFUSED reason=replay_ids_unknown row locked-20261007T130317-2374993-19989 changed the register but its id snapshot is 'unavailable': the ids it minted are unknown, so it is not replayed blind (never a renumbering); the plan owner decides, nothing was written :: items=[]
+ok   E2E-1 the replay of a mint recorded under a pending -wal is refused replay_ids_unknown, nothing renumbered
+ok   E2E-2 no output directory after the refusal
+== M6 backup integrity check (index root pages swapped in the backup between step 1 and step 2) ==
+ok   M6-1 index damage invisible to the canonical dump: the backup is refused (integrity_check), no record, no file
+ok   M6-2 golden-true: the same register without the damage backs up
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=75 fail=0
+rc=0
