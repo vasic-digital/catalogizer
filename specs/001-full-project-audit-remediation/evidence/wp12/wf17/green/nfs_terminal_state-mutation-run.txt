@@ -49,3 +49,4 @@
 FAIL: 19 fixture(s) violated: FAIL no verdict file was not refused nfs_client_verdict_missing (rc=1);FAIL unverified verdict did not yield blocked nfs_client_unverified citing the file sha256 (rc=1 state= reason=);FAIL ambiguous verdict did not yield blocked nfs_client_unverified citing the file sha256 (rc=1 state= reason=);FAIL VERIFIED + failing server step did not yield the bounded structural-impossibility record (rc=1 stat
 PASS: the check is only ever started through TIC tooling unit
 PASS: mutation skip_verdict_read CAUGHT (FAIL no verdict file was not refused nfs_client_verdict_missing (rc=1))
+PASS: mutation client_failure_as_structural CAUGHT (FAIL no verdict file was not refused nfs_client_verdict_missing (rc=1))

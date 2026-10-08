@@ -234,7 +234,7 @@ def test_range_bound_must_exist(tmp_path):
 
 @pytest.mark.parametrize("text,count", [
     ("see T001", 1), ("see (T001)", 1), ("see `T001`", 1), ("see T001.", 1), ("see T001a", 1), ("T001,T002", 2),
-    ("xT001", 0), ("T0011", 0), ("T001x", 0), ("t001", 0), ("T01", 0), ("1T001", 0), ("T001_", 0)])
+    ("xT001", 0), ("T0011", 0), ("T001x", 1), ("t001", 0), ("T01", 0), ("1T001", 0), ("T001_", 0)])
 def test_token_boundaries(tmp_path, text, count):
     """a token is T + 3 digits + optional lower-case letter with no letter or digit directly around it ('_' is not a letter)"""
     d = {"docs/p.md": ["probe " + text]}
