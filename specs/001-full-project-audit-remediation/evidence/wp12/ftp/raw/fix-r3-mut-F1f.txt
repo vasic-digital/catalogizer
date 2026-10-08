@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F1f: 1 = go test exit code
+--- FAIL: TestSlowDrippingReply_IsBoundedAsAWhole (3.03s)
+    fix_r2_net_test.go:1383: 
+        	Error Trace:	/out/mut/F1f/filesystem/pkg/ftp/fix_r2_net_test.go:1383
+        	Error:      	Should be true
+        	Test:       	TestSlowDrippingReply_IsBoundedAsAWhole
+        	Messages:   	a reply that drips on forever must hit IOTimeout as a whole (3.000795103s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.953s
+FAIL

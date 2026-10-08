@@ -1,0 +1,27 @@
+# fix-r3 fuzz: coverage-guided, 20 s each, -parallel 1 (no -race: the race-instrumented fuzz engine was OOM-killed by the container memory ceiling while the host was loaded by other workers, see fix-r3-fuzz-oom.txt), pinned rootless IMG-GO container
+go version go1.25.14 linux/amd64
+fuzz: elapsed: 0s, gathering baseline coverage: 0/39 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 39/39 completed, now fuzzing with 1 workers
+fuzz: elapsed: 3s, execs: 12646 (4214/sec), new interesting: 13 (total: 52)
+fuzz: elapsed: 6s, execs: 12646 (0/sec), new interesting: 13 (total: 52)
+fuzz: elapsed: 9s, execs: 32744 (6702/sec), new interesting: 17 (total: 56)
+fuzz: elapsed: 12s, execs: 32744 (0/sec), new interesting: 17 (total: 56)
+fuzz: elapsed: 15s, execs: 32744 (0/sec), new interesting: 17 (total: 56)
+fuzz: elapsed: 18s, execs: 32744 (0/sec), new interesting: 17 (total: 56)
+fuzz: elapsed: 21s, execs: 32744 (0/sec), new interesting: 17 (total: 56)
+fuzz: elapsed: 21s, execs: 32744 (0/sec), new interesting: 17 (total: 56)
+PASS
+ok  	digital.vasic.filesystem/pkg/fabric	21.063s
+fuzz_confined_rc=0
+fuzz: elapsed: 0s, gathering baseline coverage: 0/8 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 8/8 completed, now fuzzing with 1 workers
+fuzz: elapsed: 3s, execs: 20681 (6894/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 6s, execs: 43660 (7657/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 9s, execs: 66223 (7521/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 12s, execs: 90459 (8080/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 15s, execs: 113908 (7817/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 18s, execs: 137833 (7974/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 20s, execs: 152906 (7153/sec), new interesting: 0 (total: 8)
+PASS
+ok  	digital.vasic.filesystem/pkg/decorators	20.127s
+fuzz_readonly_rc=0

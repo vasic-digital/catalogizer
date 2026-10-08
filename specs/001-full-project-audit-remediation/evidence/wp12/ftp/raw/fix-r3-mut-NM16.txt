@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM16: 1 = go test exit code
+--- FAIL: TestR3_NM16_DiscoverCert_ClosesItsConnection (0.00s)
+    fix_r3_list_test.go:455: 
+        	Error Trace:	/out/mut/NM16/filesystem/pkg/ftp/fix_r3_list_test.go:455
+        	Error:      	Should be true
+        	Test:       	TestR3_NM16_DiscoverCert_ClosesItsConnection
+        	Messages:   	DiscoverCert left its control connection open
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.434s
+FAIL

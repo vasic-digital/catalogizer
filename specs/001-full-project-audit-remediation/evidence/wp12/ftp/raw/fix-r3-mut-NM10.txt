@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant NM10: 1 = go test exit code
+--- FAIL: TestWF24_N18_StartTLSInjectionRefused (0.00s)
+    wf24_adopted_test.go:866: CONTROL N18: connect err=EOF USER sent=0
+    wf24_adopted_test.go:867: 
+        	Error Trace:	/out/mut/NM10/filesystem/pkg/ftp/wf24_adopted_test.go:867
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: protocol violation"
+        	            	in chain: "EOF"
+        	Test:       	TestWF24_N18_StartTLSInjectionRefused
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	36.891s
+FAIL

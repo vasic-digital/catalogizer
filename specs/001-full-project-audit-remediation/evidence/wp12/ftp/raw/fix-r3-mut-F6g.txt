@@ -1,0 +1,16 @@
+# identity: WP-12 fix round 3 mutant F6g: 1 = go test exit code
+--- FAIL: TestMLST_WrongNumberOfEntries_IsAnError (0.02s)
+    fix_r2_list_test.go:580: 
+        	Error Trace:	/out/mut/F6g/filesystem/pkg/ftp/fix_r2_list_test.go:580
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: directory listing has lines that could not be parsed"
+        	            	in chain: "ftp: stat /data/a.txt: fabric: transient failure: ftp: protocol violation: the MLST reply describes another file than the one asked for"
+        	            		"fabric: transient failure: ftp: protocol violation: the MLST reply describes another file than the one asked for"
+        	            		"fabric: transient failure"
+        	            		"ftp: protocol violation: the MLST reply describes another file than the one asked for"
+        	            		"ftp: protocol violation"
+        	Test:       	TestMLST_WrongNumberOfEntries_IsAnError
+        	Messages:   	two entries for one path: not silently the first
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.526s
+FAIL

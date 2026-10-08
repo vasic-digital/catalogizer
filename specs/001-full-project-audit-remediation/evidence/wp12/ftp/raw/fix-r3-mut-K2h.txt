@@ -1,0 +1,43 @@
+# identity: WP-12 fix round 3 mutant K2h: 1 = go test exit code
+--- FAIL: TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3 (0.02s)
+    fix_r3_login_test.go:195: 
+        	Error Trace:	/out/mut/K2h/filesystem/pkg/ftp/fix_r3_login_test.go:195
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 4
+        	Test:       	TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+        	Messages:   	the password is re-sent once per borrow after an ambiguous attempt: lockout risk (D11 one layer up)
+    fix_r3_login_test.go:196: 
+        	Error Trace:	/out/mut/K2h/filesystem/pkg/ftp/fix_r3_login_test.go:196
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 4
+        	Test:       	TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+        	Messages:   	the later borrows do not even dial
+    fix_r3_login_test.go:202: 
+        	Error Trace:	/out/mut/K2h/filesystem/pkg/ftp/fix_r3_login_test.go:202
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: logins are suspended after a password attempt whose outcome is unknown"
+        	            	in chain: "fabric: connect root1: ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: the outcome of the password step is unknown"
+        	Test:       	TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+    fix_r3_login_test.go:202: 
+        	Error Trace:	/out/mut/K2h/filesystem/pkg/ftp/fix_r3_login_test.go:202
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: logins are suspended after a password attempt whose outcome is unknown"
+        	            	in chain: "fabric: connect root1: ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: the outcome of the password step is unknown"
+        	Test:       	TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+    fix_r3_login_test.go:202: 
+        	Error Trace:	/out/mut/K2h/filesystem/pkg/ftp/fix_r3_login_test.go:202
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: logins are suspended after a password attempt whose outcome is unknown"
+        	            	in chain: "fabric: connect root1: ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: connection failed after the password was sent (unexpected EOF); not retried, a retry would send it again: ftp: the outcome of the password step is unknown"
+        	            		"ftp: the outcome of the password step is unknown"
+        	Test:       	TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.460s
+FAIL

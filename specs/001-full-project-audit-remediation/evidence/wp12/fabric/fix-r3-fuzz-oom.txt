@@ -1,0 +1,16 @@
+# fix-r3 fuzz: coverage-guided, 20 s each, -race, pinned rootless IMG-GO container
+go version go1.25.14 linux/amd64
+fuzz: elapsed: 0s, gathering baseline coverage: 0/21 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 21/21 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 1618 (539/sec), new interesting: 11 (total: 32)
+signal: killed
+FAIL	digital.vasic.filesystem/pkg/fabric	4.967s
+fuzz_confined_rc=1
+fuzz: elapsed: 0s, gathering baseline coverage: 0/8 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 8/8 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 1724 (575/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 6s, execs: 3667 (648/sec), new interesting: 0 (total: 8)
+fuzz: elapsed: 9s, execs: 5586 (640/sec), new interesting: 0 (total: 8)
+signal: killed
+FAIL	digital.vasic.filesystem/pkg/decorators	11.300s
+fuzz_readonly_rc=1

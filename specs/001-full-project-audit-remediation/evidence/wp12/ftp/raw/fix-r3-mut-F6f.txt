@@ -1,0 +1,19 @@
+# identity: WP-12 fix round 3 mutant F6f: 1 = go test exit code
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6f/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=OS.unix=symlink;Modify=20200517103000; link
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6f/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=OS.unix=slink:/target;Modify=20200517103000; link2
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.005s
+FAIL

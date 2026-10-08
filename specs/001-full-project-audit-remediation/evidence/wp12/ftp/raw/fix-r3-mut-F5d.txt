@@ -1,0 +1,13 @@
+# identity: WP-12 fix round 3 mutant F5d: 1 = go test exit code
+--- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.03s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ (0.01s)
+        fix_r2_net_test.go:857: 
+            	Error Trace:	/out/mut/F5d/filesystem/pkg/ftp/fix_r2_net_test.go:857
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ
+            	Messages:   	a PBSZ refusal after a good login is a configuration failure: fabric: authentication failure: 536 "PBSZ not supported"
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	11.108s
+FAIL

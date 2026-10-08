@@ -1,0 +1,29 @@
+# fix-r3 image leg: the fixture image built from the committed-style tree (Containerfile copies every .go file), run rootless read-only capability-free, tests via a shared network namespace
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:47:21Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+image_ref=localhost/catalogizer-test-nfs3@sha256:07a15d5fd54520fc909ad271b772ab12d52761fa644d8eb2dd7b81d8864123ed
+--- server container
+user=65534:65534 readonly=true capdrop=[CAP_CHOWN CAP_DAC_OVERRIDE CAP_FOWNER CAP_FSETID CAP_KILL CAP_NET_BIND_SERVICE CAP_SETFCAP CAP_SETGID CAP_SETPCAP CAP_SETUID CAP_SYS_CHROOT] privileged=false image=localhost/catalogizer-test-nfs3@sha256:07a15d5fd54520fc909ad271b772ab12d52761fa644d8eb2dd7b81d8864123ed
+nfs3fixture listening on [::]:2049
+--- test container (run_pinned argv + --network container:nfs3fx-leg-2231626)
+go: downloading github.com/go-git/go-billy/v5 v5.6.0
+go: downloading github.com/willscott/go-nfs v0.0.4
+go: downloading github.com/willscott/go-nfs-client v0.0.0-20240104095149-b44639837b00
+go: downloading github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/hashicorp/golang-lru/v2 v2.0.7
+go: downloading golang.org/x/sys v0.24.0
+=== RUN   TestGoNFSFullCrawlMatchesServerManifest
+--- PASS: TestGoNFSFullCrawlMatchesServerManifest (0.17s)
+=== RUN   TestGoNFSReadRangeSeekAndLargeFile
+--- PASS: TestGoNFSReadRangeSeekAndLargeFile (0.09s)
+=== RUN   TestGoNFSAttributesAndErrors
+--- PASS: TestGoNFSAttributesAndErrors (0.01s)
+=== RUN   TestGoNFSAuthSysCredentialIsWellFormed
+    integration_test.go:192: NFS3_FIXTURE_AUTHSYS_ADDR / NFS3_FIXTURE_AUTHLOG not set: the AUTH_SYS fixture only runs with the in-container run_integration.sh (honest SKIP, not a pass)
+--- SKIP: TestGoNFSAuthSysCredentialIsWellFormed (0.00s)
+=== RUN   TestGoNFSWorkflowLeavesTheTreeUnchanged
+--- PASS: TestGoNFSWorkflowLeavesTheTreeUnchanged (0.16s)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	1.459s
+exit=0

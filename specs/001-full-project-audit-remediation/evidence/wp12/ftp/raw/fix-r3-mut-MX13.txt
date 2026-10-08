@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant MX13: 1 = go test exit code
+--- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.05s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features (0.01s)
+        fix_r2_net_test.go:876: 
+            	Error Trace:	/out/mut/MX13/filesystem/pkg/ftp/fix_r2_net_test.go:876
+            	Error:      	Should be true
+            	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features
+            	Messages:   	no FEAT, no MLST: degraded
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	11.219s
+FAIL

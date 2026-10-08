@@ -1,0 +1,113 @@
+[
+ {
+  "id": "Z00",
+  "desc": "NEGATIVE CONTROL: unmutated copy (must PASS)",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0
+ },
+ {
+  "id": "Z01",
+  "desc": "NEGATIVE CONTROL: comment-only edit (must SURVIVE; shows the harness reports survival)",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0
+ },
+ {
+  "id": "R03",
+  "desc": "ListDirectory keeps '.' and '..'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListingDropsImplausibleNames",
+   "TestRaw_ListingDropsDotEntries",
+   "TestWF24_N3_SlashEntryPointsAtItsOwnDirectory"
+  ],
+  "n_failing": 3
+ },
+ {
+  "id": "R09",
+  "desc": "factory ignores sftp.DefaultPinStore",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_FollowsAPinStoreInstalledAfterTheClientWasCreated",
+   "TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd",
+   "TestWF24_N5_PoolAuthLatchMissesTheSFTPWrongPasswordShape"
+  ],
+  "n_failing": 3
+ },
+ {
+  "id": "F01",
+  "desc": "factory accepts inline secrets other than 'password'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_RefusesEverySecretSpelling"
+  ],
+  "n_failing": 1
+ },
+ {
+  "id": "X04",
+  "desc": "S02 back: AuthError no longer answers errors.Is(err, fabric.ErrAuth)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestAuthContractWithFabric",
+   "TestWrongPasswordIsFabricAuthInBothShapes"
+  ],
+  "n_failing": 2
+ },
+ {
+  "id": "X19",
+  "desc": "S08 back: a server name '/' (or any name containing '/') is listed",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListingDropsImplausibleNames",
+   "TestWF24_N3_SlashEntryPointsAtItsOwnDirectory"
+  ],
+  "n_failing": 2
+ },
+ {
+  "id": "X20",
+  "desc": "S08: a NUL name is listed",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListingDropsImplausibleNames"
+  ],
+  "n_failing": 1
+ },
+ {
+  "id": "X24",
+  "desc": "S11: secret spellings are matched case-sensitively",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_RefusesEverySecretSpelling"
+  ],
+  "n_failing": 1
+ },
+ {
+  "id": "X25",
+  "desc": "S11: unknown keys are accepted",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_RefusesUnknownKeysAndAcceptsTheReadOnes"
+  ],
+  "n_failing": 1
+ },
+ {
+  "id": "X27",
+  "desc": "S14 back: the factory captures sftp.DefaultPinStore when the client is created",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_FollowsAPinStoreInstalledAfterTheClientWasCreated"
+  ],
+  "n_failing": 1
+ },
+ {
+  "id": "X29",
+  "desc": "S10: ErrDisconnected is a connection loss again (transient: Connect would retry it)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestClassification_TruthTable",
+   "TestDisconnectDuringConnectWins"
+  ],
+  "n_failing": 2
+ }
+]

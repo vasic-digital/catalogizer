@@ -1,0 +1,163 @@
+[
+ {
+  "id": "PC1",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassAuth",
+  "new": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassTransient",
+  "why": "POSITIVE CONTROL (reviewer PC1): marked auth errors retried; MUST be caught"
+ },
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL (reviewer NC1): no-op; MUST survive"
+ },
+ {
+  "id": "R01",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.GetFileInfo(ctx, path)",
+  "new": "return r.in.GetFileInfo(ctx, \"/\")",
+  "why": "ReadOnly.GetFileInfo forwards the wrong path"
+ },
+ {
+  "id": "R02",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.FileExists(ctx, path)",
+  "new": "return r.in.FileExists(ctx, \"/\")",
+  "why": "ReadOnly.FileExists forwards the wrong path"
+ },
+ {
+  "id": "R03",
+  "file": "pkg/fabric/layer.go",
+  "old": "return l.in.CopyFile(ctx, ps[0], ps[1])",
+  "new": "return l.in.CopyFile(ctx, ps[0], ps[0])",
+  "why": "every fabric layer forwards CopyFile with dst := src"
+ },
+ {
+  "id": "R04",
+  "file": "pkg/fabric/layer.go",
+  "old": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r.Close()",
+  "new": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r",
+  "why": "OpenSeekable leaks a stream returned with an error"
+ },
+ {
+  "id": "R05",
+  "file": "pkg/fabric/layer.go",
+  "old": "func (l *layer) IsConnected() bool",
+  "new": "func (l *layer) IsConnected() bool { return true }\nfunc (l *layer) isConnectedOrig() bool",
+  "why": "decorated clients always report connected (ADAPTED: gofmt realigned the one-line form)"
+ },
+ {
+  "id": "R06",
+  "file": "pkg/fabric/pool.go",
+  "old": "opts.HealthTimeout = 5 * time.Second",
+  "new": "opts.HealthTimeout = 0",
+  "why": "default health-probe timeout 0"
+ },
+ {
+  "id": "R07",
+  "file": "pkg/fabric/pool.go",
+  "old": "err = c.Connect(cctx)",
+  "new": "_ = cctx\n\terr = c.Connect(context.Background())",
+  "why": "new-connection Connect ignores the caller's context (ADAPTED: the call now goes through cctx)"
+ },
+ {
+  "id": "R08",
+  "file": "pkg/fabric/pool.go",
+  "old": "cand = p.idle[key][n-1] // most recently used first\n\t\t\tp.idle[key] = p.idle[key][:n-1]",
+  "new": "cand = p.idle[key][0]\n\t\t\tp.idle[key] = p.idle[key][1:]",
+  "why": "idle order MRU -> LRU"
+ },
+ {
+  "id": "R09",
+  "file": "pkg/fabric/pool.go",
+  "old": "now.Sub(e.created) >= p.opts.MaxLifetime {",
+  "new": "now.Sub(e.created) > p.opts.MaxLifetime {",
+  "why": "MaxLifetime boundary off by one tick on borrow"
+ },
+ {
+  "id": "R10",
+  "file": "pkg/fabric/pool.go",
+  "old": "keep := !closed && c.IsConnected() &&",
+  "new": "keep := !closed &&",
+  "why": "a disconnected client is re-pooled on return"
+ },
+ {
+  "id": "R11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tcase <-p.done:\n\t\t\treturn nil, ErrPoolClosed\n\t\t}\n\t} else {",
+  "new": "\t\t}\n\t} else {",
+  "why": "GetClientContext waiters are not woken by CloseAll"
+ },
+ {
+  "id": "R12",
+  "file": "pkg/fabric/errors.go",
+  "old": "for _, e := range []error{syscall.ECONNRESET, syscall.ECONNABORTED, syscall.EPIPE, syscall.ETIMEDOUT,\n\t\tsyscall.ECONNREFUSED, syscall.EHOSTUNREACH, syscall.ENETUNREACH, syscall.ENETDOWN} {",
+  "new": "for _, e := range []error{syscall.ECONNRESET, syscall.EPIPE} {",
+  "why": "six errnos no longer transient"
+ },
+ {
+  "id": "R13",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "new": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassPermanent",
+  "why": "FTP 4yz (425/426/450/451/452...) no longer transient (ADAPTED: the code list became the 4yz rule)"
+ },
+ {
+  "id": "R14",
+  "file": "pkg/fabric/errors.go",
+  "old": "var ftpAuthCodes = map[int]bool{530: true, 332: true, 532: true}",
+  "new": "var ftpAuthCodes = map[int]bool{530: true}",
+  "why": "FTP 332/532 no longer auth (ADAPTED: 534 moved out of the auth set by the fix)"
+ },
+ {
+  "id": "R15",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\"status_logon_failure\", \"logon failure\", \"authentication failed\", \"login incorrect\",\n\t\"unable to authenticate\", \"permission denied (publickey\", \"invalid credentials\",\n\t\"invalid username or password\", \"incorrect password\",\n\t\"access denied\", \"bad password\", \"wrong password\", \"not logged in\", \"status_access_denied\",\n",
+  "new": "\t\"status_logon_failure\", \"login incorrect\", \"unable to authenticate\",\n",
+  "why": "most auth text markers removed (ADAPTED: list gained two entries)"
+ },
+ {
+  "id": "R16",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() {",
+  "new": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() && false {",
+  "why": "DNS timeouts no longer transient (ADAPTED: the DNS branch keeps only IsTemporary because DNSError.Timeout is covered by the net.Error branch; the mutation removes that branch)"
+ },
+ {
+  "id": "R17",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) {",
+  "new": "if errors.Is(err, io.ErrUnexpectedEOF) {",
+  "why": "io.EOF no longer transient"
+ },
+ {
+  "id": "R18",
+  "file": "pkg/fabric/metered.go",
+  "old": "Protocol: inner.GetProtocol(),",
+  "new": "Protocol: \"\",",
+  "why": "Sample.Protocol never set"
+ },
+ {
+  "id": "R19",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if ctx.Err() != nil || classify(err) != ClassTransient {",
+  "new": "if classify(err) != ClassTransient {",
+  "why": "retry loop no longer checks the caller context before backing off"
+ },
+ {
+  "id": "R20",
+  "file": "pkg/fabric/pool.go",
+  "old": "ctx, cancel := context.WithTimeout(context.Background(), p.opts.HealthTimeout)\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "new": "ctx, cancel := context.WithCancel(context.Background())\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "why": "discard: Disconnect of a dead connection is unbounded"
+ },
+ {
+  "id": "M07f",
+  "file": "pkg/fabric/budget.go",
+  "old": "return func() { t.Stop(); release() }",
+  "new": "return func() { _ = t; release() }",
+  "why": "lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time (fixed: compiles)"
+ }
+]

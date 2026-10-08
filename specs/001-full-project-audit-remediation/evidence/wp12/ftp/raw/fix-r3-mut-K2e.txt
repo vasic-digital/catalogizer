@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant K2e: 1 = go test exit code
+--- FAIL: TestR3_K2_PASSRejectedWithANonCredentialCode_StartsTheBackoff (0.01s)
+    fix_r3_login_test.go:279: 
+        	Error Trace:	/out/mut/K2e/filesystem/pkg/ftp/fix_r3_login_test.go:279
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: logins are suspended after a password attempt whose outcome is unknown"
+        	            	in chain: "ftp: PASS rejected: 503 Bad sequence of commands (not retried: a retry would send the password again): ftp: the server rejected the password step with a reply that is not a credential verdict"
+        	            		"ftp: the server rejected the password step with a reply that is not a credential verdict"
+        	Test:       	TestR3_K2_PASSRejectedWithANonCredentialCode_StartsTheBackoff
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	20.275s
+FAIL

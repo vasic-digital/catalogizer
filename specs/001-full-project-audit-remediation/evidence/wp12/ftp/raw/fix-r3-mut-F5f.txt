@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant F5f: 1 = go test exit code
+--- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.04s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features (0.00s)
+        fix_r2_net_test.go:874: 
+            	Error Trace:	/out/mut/F5f/filesystem/pkg/ftp/fix_r2_net_test.go:874
+            	Error:      	Received unexpected error:
+            	            	ftp: FEAT refused by the server: 500 FEAT not understood: ftp: the server refused a connect-phase command
+            	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	11.490s
+FAIL

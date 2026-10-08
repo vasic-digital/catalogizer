@@ -1,0 +1,15 @@
+# identity: fix-r3 RED for S06 (review WF24): the NEW sftp_fixture_gate_test.sh against the PRE-FIX sftp_fixture.sh (copy of the committed script in a mini root with the same layout; pre-fix script sha256 051a63aa192f1bd3)
+# result: 4 of 11 checks FAIL: 'printed hash equals the independent hash' and 'checked-in module: printed pkg/sftp hash' (both now pin the hook's exit code 3; pre-fix it is 0), 'the stop hook is refused in run mode' (pre-fix: run mode exits 0 with no test run) and 'selftest stopped by the hook exits 3'
+ok   SFTP_FIXTURE_SRC without ALLOW is refused
+ok   with ALLOW the gate passes (next refusal is src_module_missing)
+ok   ALLOW must be exactly 1
+FAIL printed hash equals the independent hash (rc=0 printed=741d610181249a7e456778f462e71ff31807ebd8322196b588eb668a5bb3de08 expected=741d610181249a7e456778f462e71ff31807ebd8322196b588eb668a5bb3de08 out=sftp-fixture: tested tree sha256=741d610181249a7e456778f462e71ff31807ebd8322196b588eb668a5bb3de08 pkg/sftp sha256=a0a2bc1a1e148b8620594b408a31f8e5059af7c70fdfe7f50fa69c7447faf9aa source=/tmp/sftp-gate-test.SH40sv/src)
+ok   printed pkg/sftp hash equals the independent hash of the package directory
+ok   one changed byte changes the printed hash (and it still equals the independent one)
+FAIL checked-in module pkg/sftp hash (rc=0 printed=2b86de5e63aad9de7638b6f608011d8ce94318c6badad2ec3bae17e1df52bd61 expected=2b86de5e63aad9de7638b6f608011d8ce94318c6badad2ec3bae17e1df52bd61)
+info: printed whole-tree hash of the checked-in module equals the documented command
+FAIL the stop hook is refused in run mode (rc=0 out= err=sftp-fixture: tested tree sha256=643490f60f8232faca6fd31f969dc08d0bd05c0a570435e693333da749115d1b pkg/sftp sha256=a0a2bc1a1e148b8620594b408a31f8e5059af7c70fdfe7f50fa69c7447faf9aa source=/tmp/sftp-gate-test.SH40sv/src)
+ok   without the hook the run mode does not refuse for it
+FAIL selftest stopped by the hook exits 3 (rc=0)
+ok   no scratch directory left behind
+sftp_fixture_gate_test: 11 checks, 4 failed

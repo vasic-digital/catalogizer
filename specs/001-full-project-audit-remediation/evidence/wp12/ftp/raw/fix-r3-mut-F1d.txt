@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F1d: 1 = go test exit code
+--- FAIL: TestCancel_InterruptsBlockedControlCommand (6.02s)
+    fix_r2_net_test.go:411: 
+        	Error Trace:	/out/mut/F1d/filesystem/pkg/ftp/fix_r2_net_test.go:411
+        	Error:      	Should be true
+        	Test:       	TestCancel_InterruptsBlockedControlCommand
+        	Messages:   	cancel must interrupt a blocked reply read (3.002205046s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.384s
+FAIL

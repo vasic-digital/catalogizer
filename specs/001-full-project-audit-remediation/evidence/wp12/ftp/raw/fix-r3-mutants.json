@@ -1,0 +1,1332 @@
+[
+ {
+  "id": "N00",
+  "verdict": "SURVIVED",
+  "desc": "NEGATIVE CONTROL: unmutated copy (must PASS = reported SURVIVED)",
+  "target": "pkg/ftp",
+  "fails": [],
+  "n_fail": 0
+ },
+ {
+  "id": "N00b",
+  "verdict": "SURVIVED",
+  "desc": "NEGATIVE CONTROL: unmutated copy again (flake gauge under the same parallel load)",
+  "target": "pkg/ftp",
+  "fails": [],
+  "n_fail": 0
+ },
+ {
+  "id": "N00c",
+  "verdict": "SURVIVED",
+  "desc": "NEGATIVE CONTROL: unmutated copy once more (flake gauge)",
+  "target": "pkg/ftp",
+  "fails": [],
+  "n_fail": 0
+ },
+ {
+  "id": "N01",
+  "verdict": "SURVIVED",
+  "desc": "NEGATIVE CONTROL: behaviour-neutral edit, a comment (must SURVIVE)",
+  "target": "pkg/ftp",
+  "fails": [],
+  "n_fail": 0
+ },
+ {
+  "id": "PC16",
+  "verdict": "KILLED",
+  "desc": "reviewer POSITIVE CONTROL: NUL no longer refused by confine (an old test covers it: must be KILLED)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX01",
+  "verdict": "KILLED",
+  "desc": "reviewer: Disconnect never aborts the open stream",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX02",
+  "verdict": "KILLED",
+  "desc": "reviewer: no ctx watcher on streams",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestCancelBetweenReads_IsHonoured_D9"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX03",
+  "verdict": "KILLED",
+  "desc": "reviewer: base directory not canonicalised with PWD",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_EveryControlCommandIsBounded"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX04",
+  "verdict": "KILLED",
+  "desc": "reviewer: VerifyConnection pin re-check disabled",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX05",
+  "verdict": "KILLED",
+  "desc": "reviewer: TLS ServerName ignores the pin's name",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX06",
+  "verdict": "KILLED",
+  "desc": "reviewer: a network failure during login is classified AUTH",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX07",
+  "verdict": "KILLED",
+  "desc": "reviewer: stream Close swallows a failing final reply after a FULL read",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX08",
+  "verdict": "KILLED",
+  "desc": "reviewer: server entry names containing '/' or NUL are not filtered",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_RealisticMLSD_ParsedWithoutLoss_D7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX09",
+  "verdict": "KILLED",
+  "desc": "reviewer: no QUIT / close after a failed login",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestFailedLogin_SaysQuitAndClosesTheConnection_MX09"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX10",
+  "verdict": "KILLED",
+  "desc": "reviewer: IOTimeout not applied",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX11",
+  "verdict": "KILLED",
+  "desc": "reviewer: DiscoverCert without a deadline",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDiscoverCert_StalledBanner_HonoursTimeout_MX11"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX12",
+  "verdict": "KILLED",
+  "desc": "reviewer: Pin records ServerName = host",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX13",
+  "verdict": "KILLED",
+  "desc": "reviewer: Degraded() not set at connect",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_ConfigRefusals_AreNotAuthFailures_D12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX14",
+  "verdict": "KILLED",
+  "desc": "reviewer: FileInfo.Mode never set",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_RealisticMLSD_ParsedWithoutLoss_D7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX17",
+  "verdict": "KILLED",
+  "desc": "reviewer: default scan retry policy = 1 attempt",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDefaultRetryPolicy_IsThreeAttempts_MX17"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX18",
+  "verdict": "KILLED",
+  "desc": "reviewer: a lost connection is never closed",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLostConnection_IsClosed_NotLeaked_MX18"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX19",
+  "verdict": "KILLED",
+  "desc": "reviewer: Disconnect drops the connection without QUIT/close",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDisconnect_SaysQuitAndClosesTheConnection_MX19"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "MX28",
+  "verdict": "KILLED",
+  "desc": "reviewer: owner confirmation accepted when it is only a PREFIX of the fingerprint",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1a",
+  "verdict": "KILLED",
+  "desc": "control reply reads carry no deadline",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_RealisticMLSD_ParsedWithoutLoss_D7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1b",
+  "verdict": "KILLED",
+  "desc": "data reads carry no deadline",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1c",
+  "verdict": "KILLED",
+  "desc": "the connect-phase budget (DialTimeout) is not applied",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1d",
+  "verdict": "KILLED",
+  "desc": "ctx cancellation does not interrupt a command",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestCancel_InterruptsBlockedControlCommand"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1e",
+  "verdict": "KILLED",
+  "desc": "control writes carry no deadline",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_ControlWriteStall_IsBounded"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F1f",
+  "verdict": "KILLED",
+  "desc": "a control reply gets a fresh IOTimeout per read (a server dripping bytes is never timed out)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestSlowDrippingReply_IsBoundedAsAWhole"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2a",
+  "verdict": "KILLED",
+  "desc": "an unexpected positive reply is accepted",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestUnexpectedPositiveReply_DropsTheConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2b",
+  "verdict": "KILLED",
+  "desc": "a 421 does not make the connection unusable",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestReply421_MarksTheConnectionLost_RetryRecovers_D5"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2c",
+  "verdict": "KILLED",
+  "desc": "an early close is not checked for lock-step with NOOP",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2d",
+  "verdict": "KILLED",
+  "desc": "bytes nobody asked for are not detected before a command (the whole drain check, buffer AND kernel)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2e",
+  "verdict": "KILLED",
+  "desc": "a 4yz/5yz reply to an early-close NOOP is not checked (any NOOP answer is taken)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_EarlyClose_NOOPAnsweredWithAnotherPositiveCode_DropsTheConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F3a",
+  "verdict": "KILLED",
+  "desc": "a cancelled/aborted stream is still readable (abort checks removed from dconn.Read)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestCancelBetweenReads_IsHonoured_D9"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F4a",
+  "verdict": "KILLED",
+  "desc": "OpenSeekable returns a short transfer as complete",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F4b",
+  "verdict": "KILLED",
+  "desc": "OpenSeekable discards the final-reply error at EOF",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestSeekable_TruncatedTransfer_IsAnError_D8"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5a",
+  "verdict": "KILLED",
+  "desc": "no reply to PASS is retryable",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDeadline_EveryControlCommandIsBounded"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5b",
+  "verdict": "KILLED",
+  "desc": "421 at USER is an authentication failure",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5c",
+  "verdict": "KILLED",
+  "desc": "garbled names after a refused OPTS UTF8 ON are catalogued",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5d",
+  "verdict": "KILLED",
+  "desc": "a PBSZ refusal is an authentication failure",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_ConfigRefusals_AreNotAuthFailures_D12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5e",
+  "verdict": "KILLED",
+  "desc": "a PASS rejection with an unlisted code is an authentication failure",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_PASSReplies_ClassifiedByCode"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F5f",
+  "verdict": "KILLED",
+  "desc": "a failed FEAT is fatal (a server without FEAT cannot log in)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_ConfigRefusals_AreNotAuthFailures_D12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6a",
+  "verdict": "KILLED",
+  "desc": "MLSD type values are case-sensitive",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestParseMLEntry_Table_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6b",
+  "verdict": "KILLED",
+  "desc": "MLSD sizes are parsed with base prefixes (010 is octal)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestParseMLEntry_Table_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6c",
+  "verdict": "KILLED",
+  "desc": "MLSD facts end at the first space (a space in a fact value breaks the entry)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestParseMLEntry_Table_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6d",
+  "verdict": "KILLED",
+  "desc": "cdir/pdir entries are listed as children",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_RealisticMLSD_ParsedWithoutLoss_D7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6e",
+  "verdict": "KILLED",
+  "desc": "a listing line that cannot be parsed is silently dropped (a first line / a damaged entry too)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6f",
+  "verdict": "KILLED",
+  "desc": "symlinks are not recognised",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestParseMLEntry_Table_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F6g",
+  "verdict": "KILLED",
+  "desc": "MLST accepts several entries silently",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestMLST_WrongNumberOfEntries_IsAnError"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F7a",
+  "verdict": "KILLED",
+  "desc": "every 550 is reported as non-existence",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestClassify550"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F7b",
+  "verdict": "KILLED",
+  "desc": "permission text is not recognised (denied reads as absent)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestClassify550"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F7c",
+  "verdict": "KILLED",
+  "desc": "an ambiguous 550 is not settled by the parent listing",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestAmbiguous550_IsSettledByTheParentListing"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F8a",
+  "verdict": "KILLED",
+  "desc": "degraded stat of a top-level entry lists with no argument",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F8b",
+  "verdict": "KILLED",
+  "desc": "degraded stat of the root itself is a parent listing",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F10a",
+  "verdict": "KILLED",
+  "desc": "Credential's String has a pointer receiver again",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestSecret_NeverReachableThroughFmt_D13"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F11a",
+  "verdict": "KILLED",
+  "desc": "a timed-out Disconnect leaves the connection to whoever comes next",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDisconnectWithCancelledContext_StillClosesAnIdleConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F11b",
+  "verdict": "KILLED",
+  "desc": "a re-dial does not close the connection it replaces",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestReDial_ClosesTheConnectionItReplaces"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F12",
+  "verdict": "KILLED",
+  "desc": "a 0xFF byte in a path is sent raw",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestIACByteInAPath_IsDoubled_F12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F13a",
+  "verdict": "KILLED",
+  "desc": "the control reply size is not bounded",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestReplyAndListingSizeAreBounded_D16_D17"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F13b",
+  "verdict": "KILLED",
+  "desc": "the listing size is not bounded",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestReplyAndListingSizeAreBounded_D16_D17"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F14",
+  "verdict": "KILLED",
+  "desc": "Pin/DiscoverCert port 0 is dialled as port 0",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestPin_PortZero_MeansTheFTPDefaultPort_F14"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F15",
+  "verdict": "KILLED",
+  "desc": "a second server name for the same host is accepted by Pin",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_Pin_ConflictingName_IsRefusedBeforeRecord"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "F2f",
+  "verdict": "KILLED",
+  "desc": "a stream failure is waited for instead of dropping the connection",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestStreamTimeout_CloseDoesNotWaitForTheFinalReply"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W1",
+  "verdict": "KILLED",
+  "desc": "factory: the process-wide pin store is not passed",
+  "target": "pkg/factory",
+  "fails": [
+   "TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W2",
+  "verdict": "KILLED",
+  "desc": "factory: credential_ref is not passed",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W3",
+  "verdict": "KILLED",
+  "desc": "factory: tls_mode is not passed",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W4",
+  "verdict": "KILLED",
+  "desc": "factory: trusted_lan is always true",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W5",
+  "verdict": "KILLED",
+  "desc": "factory: allow_degraded_list is not passed",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_SettingsReachTheClient_Config"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W6",
+  "verdict": "KILLED",
+  "desc": "factory: an inline password is accepted again",
+  "target": "pkg/factory",
+  "fails": [
+   "TestWF24_R_F16_FactoryBuildsTheScanClient"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W7",
+  "verdict": "KILLED",
+  "desc": "factory: the port is not validated",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W8",
+  "verdict": "KILLED",
+  "desc": "factory: the scan client is replaced by the raw client",
+  "target": "pkg/factory",
+  "fails": [
+   "TestWF24_R_F16_FactoryBuildsTheScanClient"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W9",
+  "verdict": "KILLED",
+  "desc": "factory: a quoted boolean is accepted",
+  "target": "pkg/factory",
+  "fails": [
+   "TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM01",
+  "verdict": "KILLED",
+  "desc": "WF24: cmd() no longer refuses CR/LF/NUL (Config.Path reaches the wire unchecked)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestWF24_N12_PathInjection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM02",
+  "verdict": "KILLED",
+  "desc": "WF24: data-channel TLS does not verify the pinned certificate (the control channel still does)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestWF24_N5_DataChannelMITMRefused"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM03",
+  "verdict": "KILLED",
+  "desc": "WF24: a multi-line reply ends at ANY 'NNN ' line, not only at its own code",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM03_MultiLineReply_EndsAtItsOwnCode"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM04",
+  "verdict": "KILLED",
+  "desc": "WF24: a TLS data stream without close_notify is an error (truncation mapping removed)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM04_TLSDataConnection_CutInsideARecord_IsEOF"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM05",
+  "verdict": "KILLED",
+  "desc": "WF24: visibleName no longer hides '.' and '..'",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestList_RealisticMLSD_ParsedWithoutLoss_D7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM06",
+  "verdict": "KILLED",
+  "desc": "WF24: the factory drops disable_epsv",
+  "target": "pkg/factory",
+  "fails": [
+   "TestR3_NM06_FTPFactory_DisableEPSVReachesTheClient"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM07",
+  "verdict": "KILLED",
+  "desc": "WF24: an empty password from the resolver is accepted",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM07_EmptyResolvedPassword_IsRefusedBeforeAnyConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM08",
+  "verdict": "KILLED",
+  "desc": "WF24: FEAT keys are not upper-cased",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM08_LowerCaseFEATKeys_AreRecognised"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM09",
+  "verdict": "KILLED",
+  "desc": "WF24: PASS is sent even when USER already answered 230",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestWF24_N10_User230"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM10",
+  "verdict": "KILLED",
+  "desc": "WF24: startTLS no longer refuses bytes buffered before the handshake (STARTTLS injection guard)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestWF24_N18_StartTLSInjectionRefused"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM11",
+  "verdict": "KILLED",
+  "desc": "WF24: GetFileInfo keeps the server's MLST pathname as the entry name",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestMLST_OddFacts_Parsed_F6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM12",
+  "verdict": "KILLED",
+  "desc": "WF24: when the names are checked only 0x7f is caught, invalid UTF-8 passes",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6c_InvalidUTF8Name_AfterARefusedOPTS_IsRefused_NM12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM13",
+  "verdict": "KILLED",
+  "desc": "WF24: the seeker keeps the stream (and the session) after the announced size was read",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K3a_SeekerAtSize_ReportsTheNegativeFinalReply_G4"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM14",
+  "verdict": "KILLED",
+  "desc": "WF24: reply() is not interrupted by ctx",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestDiscoverCert_StalledBanner_HonoursTimeout_MX11"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM15",
+  "verdict": "KILLED",
+  "desc": "WF24: connect() never ends the connect phase (every later I/O capped at connect time + DialTimeout)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM15_OperationsAfterTheConnectBudget_StayOnTheSameConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM16",
+  "verdict": "KILLED",
+  "desc": "WF24: DiscoverCert leaks its connection (hardClose removed)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_NM16_DiscoverCert_ClosesItsConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "NM17",
+  "verdict": "KILLED",
+  "desc": "WF24: DefaultMaxListEntries 1<<20 -> 1<<10 (a 1025-entry directory fails by default)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K4a_ListingUnderTheBudget_IsFine_NM17"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1b",
+  "verdict": "KILLED",
+  "desc": "MLST reply of the wrong shape (no entry) does not drop the connection",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1b_StrayBeforeTheMLSTAnswer_PoisonsInsteadOfShifting"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1c",
+  "verdict": "KILLED",
+  "desc": "MLST with several entries does not drop the connection",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1cd_MLSTShapeAndPathname_AreChecked"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1d",
+  "verdict": "KILLED",
+  "desc": "the MLST pathname is not compared with the requested path",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1cd_MLSTShapeAndPathname_AreChecked"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1d2",
+  "verdict": "KILLED",
+  "desc": "mlstNameMatches is case-sensitive (a case-folding server is refused)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1d_MLSTPathname_LenientWhereServersDiffer"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1e",
+  "verdict": "KILLED",
+  "desc": "an unreadable SIZE reply does not drop the connection",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1e_UnreadableSIZE_DropsTheConnection"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1f",
+  "verdict": "SURVIVED",
+  "desc": "an unreadable PWD reply does not drop the connection",
+  "target": "pkg/ftp",
+  "fails": [],
+  "n_fail": 0
+ },
+ {
+  "id": "K1g",
+  "verdict": "KILLED",
+  "desc": "an unreadable EPSV reply falls back to PASV instead of dropping the connection",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1g_UnreadableEPSV_DropsTheConnection_NoPASVFallback"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1h",
+  "verdict": "KILLED",
+  "desc": "EPSV delimiters other than '|' are refused",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1g_EPSVDelimiters_AreTheRFCOnes"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1i",
+  "verdict": "KILLED",
+  "desc": "a reply behind the final reply of a complete transfer is not looked for",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1i2",
+  "verdict": "KILLED",
+  "desc": "a negative reply behind the final reply is not returned as the verdict",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1j",
+  "verdict": "KILLED",
+  "desc": "a lock-step violation is permanent again (never retried)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K1k",
+  "verdict": "KILLED",
+  "desc": "the drain check cannot see the kernel buffer (only the bufio buffer)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2a",
+  "verdict": "KILLED",
+  "desc": "the server's text sits in the LEAF of a 4yz phase error (Classify reads it)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2b",
+  "verdict": "KILLED",
+  "desc": "the server's text sits in the LEAF of a 5yz phase error",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2c",
+  "verdict": "KILLED",
+  "desc": "a USER-phase 530 is an authentication failure again",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2d",
+  "verdict": "KILLED",
+  "desc": "AUTH TLS refusal carries the server text in the leaf",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2e",
+  "verdict": "KILLED",
+  "desc": "a PASS rejected with a non-credential code starts no back-off",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_PASSRejectedWithANonCredentialCode_StartsTheBackoff"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2f",
+  "verdict": "KILLED",
+  "desc": "an unanswered PASS starts no back-off",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2g",
+  "verdict": "KILLED",
+  "desc": "a PASS interrupted by the context starts no back-off",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_PASSInterruptedByTheDeadline_IsAmbiguous"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2h",
+  "verdict": "KILLED",
+  "desc": "connect does not consult the login back-off",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2i",
+  "verdict": "KILLED",
+  "desc": "a good login does not end the back-off",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_SuccessfulLogin_EndsTheBackoff"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2j",
+  "verdict": "KILLED",
+  "desc": "the back-off ignores its TTL (a thousand hours)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_Backoff_ExpiresAfterItsTTL_AndCanBeDisabled"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2k",
+  "verdict": "KILLED",
+  "desc": "the default back-off (LoginBackoff 0) is zero",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K2l",
+  "verdict": "KILLED",
+  "desc": "ClearLoginBackoff does nothing",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K2_Backoff_CoversEveryClient_AndIsLiftedByClear"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K3a",
+  "verdict": "KILLED",
+  "desc": "the seeker at SIZE drops the stream through the early-close path (any final reply accepted)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K3a_SeekerAtSize_ReportsTheNegativeFinalReply_G4"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K3b",
+  "verdict": "KILLED",
+  "desc": "an early close waits a whole IOTimeout again",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K3c",
+  "verdict": "KILLED",
+  "desc": "the end-of-data wait of the seeker is a whole IOTimeout",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K4a",
+  "verdict": "KILLED",
+  "desc": "the listing has no byte budget",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K4a_ListingByteBudget_G7"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K4b",
+  "verdict": "KILLED",
+  "desc": "the control line bound is back to 4096 (a listed long name cannot be stat'ed)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K4b_LongName_ListedAndStatted_G8"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K4c",
+  "verdict": "KILLED",
+  "desc": "the connect budget starts after the dial",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K4c_DialTimeoutIsOneBudget_G12"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K5",
+  "verdict": "KILLED",
+  "desc": "connect publishes its connection even after a Disconnect ran",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K5b",
+  "verdict": "KILLED",
+  "desc": "Disconnect does not bump the generation",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6a",
+  "verdict": "KILLED",
+  "desc": "the entry in front of a fragment is kept (a truncated name is listed)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6b",
+  "verdict": "KILLED",
+  "desc": "a listing with too many fragments is accepted",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6a_Desynchronised_Listings_StillFailClosed"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6c",
+  "verdict": "KILLED",
+  "desc": "a name with CR/LF/NUL is listed",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6b_UnaddressableNames_AreSkippedAndCounted"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6d",
+  "verdict": "KILLED",
+  "desc": "a fragment ends the listing with an error again (the NAS defect)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6e",
+  "verdict": "KILLED",
+  "desc": "no warning is delivered for skipped entries",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6f",
+  "verdict": "KILLED",
+  "desc": "names are checked only after a refused OPTS (the utf8On flag is never set but also never checked)",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6g",
+  "verdict": "KILLED",
+  "desc": "the second pin's name wins again",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6d_TwoPinsWithDifferentNames_G10"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6h",
+  "verdict": "KILLED",
+  "desc": "MemPinStore.Record accepts a second name",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6d_TwoPinsWithDifferentNames_G10"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6i",
+  "verdict": "KILLED",
+  "desc": "FilePinStore.Record accepts a second name",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6d_TwoPinsWithDifferentNames_G10"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6j",
+  "verdict": "KILLED",
+  "desc": "the deferred store captures DefaultPinStore at init",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_K6e_DeferredDefaultPinStore_ReadsTheVariableAtCallTime"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "K6k",
+  "verdict": "KILLED",
+  "desc": "PublicConfig does not show disable_epsv",
+  "target": "pkg/ftp",
+  "fails": [
+   "TestR3_PublicConfig_ShowsDisableEPSV_NM06"
+  ],
+  "n_fail": 1
+ },
+ {
+  "id": "W10",
+  "verdict": "KILLED",
+  "desc": "factory: the pin store is captured at creation again",
+  "target": "pkg/factory",
+  "fails": [
+   "TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect"
+  ],
+  "n_fail": 1
+ }
+]

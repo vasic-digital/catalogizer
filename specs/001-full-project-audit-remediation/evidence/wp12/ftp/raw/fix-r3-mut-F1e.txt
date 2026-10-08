@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F1e: 1 = go test exit code
+--- FAIL: TestDeadline_ControlWriteStall_IsBounded (10.02s)
+    fix_r2_net_test.go:1422: 
+        	Error Trace:	/out/mut/F1e/filesystem/pkg/ftp/fix_r2_net_test.go:1422
+        	Error:      	Should be true
+        	Test:       	TestDeadline_ControlWriteStall_IsBounded
+        	Messages:   	a blocked control write must hit IOTimeout (blocked 10.008827838s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	24.403s
+FAIL

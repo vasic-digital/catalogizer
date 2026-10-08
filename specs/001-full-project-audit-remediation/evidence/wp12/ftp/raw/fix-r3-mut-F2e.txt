@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F2e: 1 = go test exit code
+--- FAIL: TestR3_EarlyClose_NOOPAnsweredWithAnotherPositiveCode_DropsTheConnection (0.02s)
+    fix_r3_lockstep_test.go:440: 
+        	Error Trace:	/out/mut/F2e/filesystem/pkg/ftp/fix_r3_lockstep_test.go:440
+        	Error:      	Should be false
+        	Test:       	TestR3_EarlyClose_NOOPAnsweredWithAnotherPositiveCode_DropsTheConnection
+        	Messages:   	226 is not the answer to NOOP: the channel is out of step and is dropped
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.503s
+FAIL

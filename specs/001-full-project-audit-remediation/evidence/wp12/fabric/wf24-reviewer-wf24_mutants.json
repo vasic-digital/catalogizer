@@ -1,0 +1,191 @@
+[
+ {
+  "id": "PC1",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassAuth",
+  "new": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassTransient",
+  "why": "POSITIVE CONTROL: marked auth errors classified transient; MUST be caught"
+ },
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL: no-op; MUST survive"
+ },
+ {
+  "id": "M01",
+  "file": "pkg/fabric/budget.go",
+  "old": "\t\tfor n := len(b.free); n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "new": "\t\tfor n := len(b.free); false && n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "why": "S1 class: wind-back does not cascade through free slots just below the cancelled tail"
+ },
+ {
+  "id": "M03",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif start.Before(now) {\n\t\tstart = now\n\t}",
+  "new": "\tif false && start.Before(now) {\n\t\tstart = now\n\t}",
+  "why": "a stale schedule front in the past is not clamped to now (idle time banked as a burst)"
+ },
+ {
+  "id": "M07",
+  "file": "pkg/fabric/budget.go",
+  "old": "return func() { t.Stop(); release() }",
+  "new": "return func() { release() }",
+  "why": "lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time"
+ },
+ {
+  "id": "M08",
+  "file": "pkg/fabric/budget.go",
+  "old": "return func() { t.Stop(); release() }",
+  "new": "return func() { t.Stop() }",
+  "why": "with a lease, a normal Close never releases the slot (leak)"
+ },
+ {
+  "id": "M11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "new": "\tif false && p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "why": "S2 requeue into a pool closed during the probe keeps the connection open forever"
+ },
+ {
+  "id": "M13",
+  "file": "pkg/fabric/pool.go",
+  "old": "af.fingerprint == fingerprint(cfg) && af.fingerprint != ([sha256.Size]byte{})",
+  "new": "af.fingerprint == fingerprint(cfg)",
+  "why": "S3: unmarshalable settings (zero fingerprint) share one cache entry, a settings change is not detected"
+ },
+ {
+  "id": "M19",
+  "file": "pkg/fabric/pool.go",
+  "old": "now.Sub(e.lastUsed) >= p.opts.IdleTimeout",
+  "new": "now.Sub(e.created) >= p.opts.IdleTimeout",
+  "why": "IdleTimeout measured from creation instead of last use"
+ },
+ {
+  "id": "M28",
+  "file": "pkg/fabric/metered.go",
+  "old": "\tif n > 0 {\n\t\tc.add(n)\n\t}",
+  "new": "\tif n > 0 {\n\t\t_ = c.add\n\t}",
+  "why": "Metered: WriteFile bytes consumed are not counted"
+ },
+ {
+  "id": "M29",
+  "file": "pkg/fabric/metered.go",
+  "old": "Duration: clk.Now().Sub(start)",
+  "new": "Duration: clk.Now().Sub(start) * 0",
+  "why": "Metered: Sample.Duration always 0"
+ },
+ {
+  "id": "M30",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if attempt >= policy.MaxAttempts {",
+  "new": "if attempt > policy.MaxAttempts {",
+  "why": "Retrying makes one attempt more than MaxAttempts"
+ },
+ {
+  "id": "M35",
+  "file": "pkg/fabric/op.go",
+  "old": "h = strings.ToLower(strings.TrimSuffix(h, \".\"))",
+  "new": "h = strings.ToLower(h)",
+  "why": "HostKey: FQDN trailing dot not trimmed ('nas.' and 'nas' get two budgets)"
+ },
+ {
+  "id": "M37",
+  "file": "pkg/fabric/op.go",
+  "old": "} else if strings.Count(h, \":\") == 1 {",
+  "new": "} else if strings.Count(h, \":\") >= 1 {",
+  "why": "HostKey: unbracketed IPv6 literal cut at the first colon"
+ },
+ {
+  "id": "M38",
+  "file": "pkg/fabric/errors.go",
+  "old": "case interface{ Unwrap() []error }:",
+  "new": "case interface {\n\t\t\tUnwrap() []error\n\t\t\tneverImplemented()\n\t\t}:",
+  "why": "classifier: errors.Join / multi-%w members are not walked (the joined text, with path wrappers, becomes the leaf)"
+ },
+ {
+  "id": "M39",
+  "file": "pkg/fabric/errors.go",
+  "old": "if e == nil || depth > 32 {",
+  "new": "if e == nil || depth > 0 {",
+  "why": "classifier: leaves below the root are never reached"
+ },
+ {
+  "id": "M40",
+  "file": "pkg/fabric/errors.go",
+  "old": "case te.Code >= 400 && te.Code < 500:",
+  "new": "case te.Code >= 400 && te.Code <= 500:",
+  "why": "FTP 500 (syntax error, permanent) classified transient"
+ },
+ {
+  "id": "M43",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.As(err, &dns) && dns.IsTemporary {",
+  "new": "if errors.As(err, &dns) && dns.IsTemporary && false {",
+  "why": "temporary DNS failure no longer transient"
+ },
+ {
+  "id": "M44",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\t\t\tval = redactMap(val)",
+  "new": "\t\t\t\t_ = redactMap",
+  "why": "RedactConfig: nested map neither redacted nor copied"
+ },
+ {
+  "id": "M45",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\t\t\tfv.Set(copySlice(fv))",
+  "new": "\t\t\t\t_ = copySlice",
+  "why": "RedactConfig: a struct's slice field aliases the live config"
+ },
+ {
+  "id": "M46",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\tcase reflect.Struct:\n\t\tcp := reflect.New(v.Type()).Elem()\n\t\tcp.Set(v)\n\t\tredactStruct(cp)\n\t\treturn cp.Interface()",
+  "new": "\tcase reflect.Struct:\n\t\treturn cfg",
+  "why": "RedactConfig: a config returned BY VALUE is not redacted"
+ },
+ {
+  "id": "M51",
+  "file": "pkg/decorators/readonly.go",
+  "old": "\trc, err := r.in.ReadFile(ctx, path)\n\tif err != nil || rc == nil {",
+  "new": "\trc, err := r.in.ReadFile(ctx, path)\n\tif err != nil {",
+  "why": "ReadOnly wraps a nil stream (panics on use)"
+ },
+ {
+  "id": "M54",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.ListDirectory(ctx, path)",
+  "new": "return r.in.ListDirectory(ctx, \"/\")",
+  "why": "ReadOnly.ListDirectory forwards the wrong path (R01/R02 member not in the prior set)"
+ },
+ {
+  "id": "M66",
+  "file": "pkg/fabric/budget.go",
+  "old": "ok && start.After(dl) {",
+  "new": "ok && start.Add(b.interval).After(dl) {",
+  "why": "S1 fail-fast over-eager: a caller whose deadline is after its slot is refused (11.4.201(1) false refusal)"
+ },
+ {
+  "id": "M69",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor i > 0 && b.free[i-1].After(start) {",
+  "new": "\tfor false && i > 0 && b.free[i-1].After(start) {",
+  "why": "S1: free list not kept ascending (a past slot can hide behind a future one and be reused)"
+ },
+ {
+  "id": "M70",
+  "file": "pkg/fabric/limited.go",
+  "old": "if st.op == OpDisconnect || st.op == OpTestConnection {",
+  "new": "if st.op == OpDisconnect || st.op == OpTestConnection || st.op == OpConnect {",
+  "why": "Limited: logins (Connect) no longer budgeted"
+ },
+ {
+  "id": "M73",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tcase 3:\n\t\treturn struct {\n\t\t\t*base\n\t\t\traMix\n\t\t\tskMix\n\t\t}{b, at, sek}",
+  "new": "\tcase 3:\n\t\treturn struct {\n\t\t\t*base\n\t\t\traMix\n\t\t}{b, at}",
+  "why": "guard.Wrap drops Seek for the ReaderAt+Seeker (no WriterTo) subset only"
+ }
+]

@@ -1,0 +1,33 @@
+# identity: WP-12 fix round 3 mutant K1h: 1 = go test exit code
+--- FAIL: TestR3_K1g_EPSVDelimiters_AreTheRFCOnes (0.00s)
+    fix_r3_lockstep_test.go:247: 
+        	Error Trace:	/out/mut/K1h/filesystem/pkg/ftp/fix_r3_lockstep_test.go:247
+        	Error:      	Not equal: 
+        	            	expected: true
+        	            	actual  : false
+        	Test:       	TestR3_K1g_EPSVDelimiters_AreTheRFCOnes
+        	Messages:   	229 Entering Extended Passive Mode (!!!2021!)
+    fix_r3_lockstep_test.go:249: 
+        	Error Trace:	/out/mut/K1h/filesystem/pkg/ftp/fix_r3_lockstep_test.go:249
+        	Error:      	Not equal: 
+        	            	expected: 2021
+        	            	actual  : 0
+        	Test:       	TestR3_K1g_EPSVDelimiters_AreTheRFCOnes
+        	Messages:   	229 Entering Extended Passive Mode (!!!2021!)
+    fix_r3_lockstep_test.go:247: 
+        	Error Trace:	/out/mut/K1h/filesystem/pkg/ftp/fix_r3_lockstep_test.go:247
+        	Error:      	Not equal: 
+        	            	expected: true
+        	            	actual  : false
+        	Test:       	TestR3_K1g_EPSVDelimiters_AreTheRFCOnes
+        	Messages:   	229 EPSV ok (###65535#)
+    fix_r3_lockstep_test.go:249: 
+        	Error Trace:	/out/mut/K1h/filesystem/pkg/ftp/fix_r3_lockstep_test.go:249
+        	Error:      	Not equal: 
+        	            	expected: 65535
+        	            	actual  : 0
+        	Test:       	TestR3_K1g_EPSVDelimiters_AreTheRFCOnes
+        	Messages:   	229 EPSV ok (###65535#)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.081s
+FAIL

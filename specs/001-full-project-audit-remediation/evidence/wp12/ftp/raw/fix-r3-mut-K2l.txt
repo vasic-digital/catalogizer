@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant K2l: 1 = go test exit code
+--- FAIL: TestR3_K2_Backoff_CoversEveryClient_AndIsLiftedByClear (0.01s)
+    fix_r3_login_test.go:222: 
+        	Error Trace:	/out/mut/K2l/filesystem/pkg/ftp/fix_r3_login_test.go:222
+        	Error:      	Received unexpected error:
+        	            	ftp: logins are suspended after a password attempt whose outcome is unknown: 127.0.0.1:38737 for another 2m0s (a retry would send the password again; ftp.ClearLoginBackoff lifts it)
+        	Test:       	TestR3_K2_Backoff_CoversEveryClient_AndIsLiftedByClear
+        	Messages:   	lifted by the operator
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	20.236s
+FAIL

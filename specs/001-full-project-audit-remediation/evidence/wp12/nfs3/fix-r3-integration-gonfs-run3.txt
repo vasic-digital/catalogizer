@@ -1,0 +1,23 @@
+# fix-r3 go-nfs integration run 3 (plain fixture + AUTH_SYS-verifying fixture with distinct uid/gid/gids)
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:38:48Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+=== RUN   TestGoNFSFullCrawlMatchesServerManifest
+--- PASS: TestGoNFSFullCrawlMatchesServerManifest (0.15s)
+=== RUN   TestGoNFSReadRangeSeekAndLargeFile
+--- PASS: TestGoNFSReadRangeSeekAndLargeFile (0.08s)
+=== RUN   TestGoNFSAttributesAndErrors
+--- PASS: TestGoNFSAttributesAndErrors (0.01s)
+=== RUN   TestGoNFSAuthSysCredentialIsWellFormed
+--- PASS: TestGoNFSAuthSysCredentialIsWellFormed (0.01s)
+=== RUN   TestGoNFSWorkflowLeavesTheTreeUnchanged
+--- PASS: TestGoNFSWorkflowLeavesTheTreeUnchanged (0.15s)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	1.423s
+--- AUTH_SYS tap log: 10 OK lines, 0 VIOLATION lines (first 6 lines follow)
+OK prog=100005 proc=1 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+OK prog=100003 proc=19 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+OK prog=100003 proc=1 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+OK prog=100003 proc=3 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+OK prog=100003 proc=3 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+OK prog=100003 proc=3 uid=1234 gid=2345 machine=catalogizer gids=4,24,3456
+exit=0

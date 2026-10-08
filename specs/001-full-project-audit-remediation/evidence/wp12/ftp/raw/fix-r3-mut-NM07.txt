@@ -1,0 +1,13 @@
+# identity: WP-12 fix round 3 mutant NM07: 1 = go test exit code
+--- FAIL: TestR3_NM07_EmptyResolvedPassword_IsRefusedBeforeAnyConnection (0.01s)
+    fix_r3_login_test.go:317: 
+        	Error Trace:	/out/mut/NM07/filesystem/pkg/ftp/fix_r3_login_test.go:317
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: credential could not be resolved"
+        	            	in chain: "fabric: authentication failure: ftp: login as \"u\" failed: 530 Login incorrect"
+        	            		"fabric: authentication failure"
+        	            		"ftp: login as \"u\" failed: 530 Login incorrect"
+        	Test:       	TestR3_NM07_EmptyResolvedPassword_IsRefusedBeforeAnyConnection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	21.086s
+FAIL

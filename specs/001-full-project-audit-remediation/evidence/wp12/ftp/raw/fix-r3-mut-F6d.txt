@@ -1,0 +1,15 @@
+# identity: WP-12 fix round 3 mutant F6d: 1 = go test exit code
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.02s)
+    fix_r2_list_test.go:171: 
+        	Error Trace:	/out/mut/F6d/filesystem/pkg/ftp/fix_r2_list_test.go:171
+        	Error:      	map[string]*client.FileInfo{" two leading spaces.txt":(*client.FileInfo)(0xc0000168c0), "UpperDir":(*client.FileInfo)(0xc0000166e0), "badoctal.txt":(*client.FileInfo)(0xc0000167d0), "data":(*client.FileInfo)(0xc0000165a0), "frac.txt":(*client.FileInfo)(0xc000016690), "link":(*client.FileInfo)(0xc000016730), "lower.txt":(*client.FileInfo)(0xc000016640), "nofacts.txt":(*client.FileInfo)(0xc000016870), "octal.txt":(*client.FileInfo)(0xc000016780), "plain.txt":(*client.FileInfo)(0xc0000165f0), "spaced.txt":(*client.FileInfo)(0xc000016820), "trailing dot.":(*client.FileInfo)(0xc000016910)} should not contain "data"
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	the cdir entry is the directory itself, not a child
+    fix_r2_list_test.go:174: 
+        	Error Trace:	/out/mut/F6d/filesystem/pkg/ftp/fix_r2_list_test.go:174
+        	Error:      	"[0xc0000165a0 0xc0000165f0 0xc000016640 0xc000016690 0xc0000166e0 0xc000016730 0xc000016780 0xc0000167d0 0xc000016820 0xc000016870 0xc0000168c0 0xc000016910]" should have 11 item(s), but has 12
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	a name with '/' or NUL is a hostile entry and is skipped (MX08); nothing else is lost
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.027s
+FAIL

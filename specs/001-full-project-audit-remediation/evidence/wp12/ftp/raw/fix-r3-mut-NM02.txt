@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM02: 1 = go test exit code
+--- FAIL: TestWF24_N5_DataChannelMITMRefused (0.02s)
+    wf24_adopted_test.go:759: N5: client err=<nil> entries=1; server-side handshake err=<nil> served=true
+    wf24_adopted_test.go:760: 
+        	Error Trace:	/out/mut/NM02/filesystem/pkg/ftp/wf24_adopted_test.go:760
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWF24_N5_DataChannelMITMRefused
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	31.847s
+FAIL

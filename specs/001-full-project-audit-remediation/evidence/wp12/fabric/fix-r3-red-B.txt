@@ -1,0 +1,14 @@
+# fix-r3 RED-B: pre-fix source (83c0ac1) + the round-3 test files (own tests fix_r3_*, markers_internal, guard/fix_r3, adopted reviewer files)
+# digital.vasic.filesystem/pkg/fabric [digital.vasic.filesystem/pkg/fabric.test]
+pkg/fabric/markers_internal_test.go:13:9: undefined: credentialMarkers
+pkg/fabric/markers_internal_test.go:13:40: undefined: genericAuthMarkers
+pkg/fabric/markers_internal_test.go:13:91: undefined: credentialMarkers
+pkg/fabric/markers_internal_test.go:13:114: undefined: genericAuthMarkers
+pkg/fabric/markers_internal_test.go:14:88: undefined: credentialMarkers
+pkg/fabric/markers_internal_test.go:14:112: undefined: genericAuthMarkers
+pkg/fabric/markers_internal_test.go:33:20: undefined: credentialMarkers
+pkg/fabric/markers_internal_test.go:39:20: undefined: genericAuthMarkers
+pkg/fabric/markers_internal_test.go:54:9: undefined: smbCredentialStatuses
+pkg/fabric/markers_internal_test.go:55:103: undefined: smbCredentialStatuses
+pkg/fabric/markers_internal_test.go:55:103: too many errors
+vet_rc=1

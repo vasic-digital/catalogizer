@@ -1,0 +1,3 @@
+# identity: stderr of GREEN run 2
+ftps-fixture: registered op_id=catalogizer-ftps-20261008032646-1099363
+ftps-fixture: sink-side check: served tree digest unchanged (371909d89820d0fd8e370d15f97bbdd9932d249a38c351984fc2b636500749b3)

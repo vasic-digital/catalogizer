@@ -1,0 +1,22 @@
+BASELINE rc=0 PASS
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL: no-op; MUST survive
+X22 CAUGHT rc=1 by=TestR3_Limited_ProbeCountsAgainstTheRate,TestR3_TryAcquire_GivesBackAFreedFutureSlot,TestR3_TryAcquire_RefusesWhenTheStartSlotIsNotDueAndReservesNothing -- N2: a refused TryAcquire keeps its reservation (pushes the schedule)
+X55 CAUGHT rc=1 by=TestR3_TransientFailuresDoNotSerialiseAnUnprovenAccount -- N3: after a transient pilot failure the waiters are serialised
+X56 SURVIVED rc=0 by= -- N3: an account is never proven: every login is gated
+X57 CAUGHT rc=1 by=TestR3_EvictLiftsTheRefusalOfTheAccount,TestR3_RejectedLoginIsSharedByTheRootsOfOneAccount -- N3: roots of one account look like different accounts
+X58 CAUGHT rc=1 by=TestK13_UnmarshalableSettingsChangeAllowsANewLogin,TestPool_RejectedLoginResets,TestR3_ChangedCredentialsAreANewAttempt,TestR3_EvictLiftsTheRefusalOfTheAccount,TestR3_RejectedLoginIsSharedByTheRootsOfOneAccount,TestR3_UnmarshalableSettingsH -- N3: credentials are not part of the account identity
+X59 CAUGHT rc=1 by=TestPool_RejectedLoginResets,TestR3_EvictLiftsTheRefusalOfTheAccount -- N3: Evict does not lift the account refusal
+X60 CAUGHT rc=1 by=TestR3_WaiterForThePilotHonoursItsContext -- N3: a waiter for the pilot ignores its context
+X61 CAUGHT rc=1 by=TestR3_CloseAllWakesTheWaitersOfAPilot -- N3: CloseAll does not wake the waiters of a pilot
+X62 SURVIVED rc=0 by= -- N3: Evict leaves a per-root denial in place
+X63 CAUGHT rc=1 by=TestR3_ChangedCredentialsAreANewAttempt -- N3: a changed password of a root does not lift its remembered denial (kept under the old account key)
+X69 CAUGHT rc=1 by=TestR3_ConfigsWithoutAccountSettingsAreSeparateAccounts -- N3: configs with no account settings are merged into one account
+X70 CAUGHT rc=1 by=TestPool_RejectedLoginIsNotRepeatedAcrossBorrows,TestPool_RejectedLoginResets,TestR3_ConcurrentBorrowersAfterRejectionMakeOneLogin,TestR3_ConfigsWithoutAccountSettingsAreSeparateAccounts,TestR3_EvictLiftsTheRefusalOfTheAccount,TestR3_PoolRe -- N3: a remembered rejection no longer refuses a new login
+V02 CAUGHT rc=1 by=TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict,TestW10_BudgetSpacingInvariantRandomised -- W10 INSTRUMENT CONTROL (reviewer V02): past freed slots are reused (spacing broken); the randomised property test W10 MUST catch it
+X64 CAUGHT rc=1 by=TestR3_HostKeyGrid -- N11: port 0 accepted
+X65 CAUGHT rc=1 by=TestR3_HostKeyGrid -- N11: text after the closing bracket accepted
+X66 CAUGHT rc=1 by=TestR3_HostKeyGrid -- N11: a bracketed name accepted
+X67 CAUGHT rc=1 by=TestR3_HostKeyGrid,TestW14_HostKeyMalformed -- N11: several colons accepted without being an IPv6 literal
+X68 CAUGHT rc=1 by=TestR3_HostKeyGrid -- N11: a bad port after one colon accepted
+SUMMARY {'CAUGHT': 16, 'SURVIVED': 3, 'INVALID': 0, 'NOT_APPLIED': 0}
+HARNESS_CONTROLS_OK=True

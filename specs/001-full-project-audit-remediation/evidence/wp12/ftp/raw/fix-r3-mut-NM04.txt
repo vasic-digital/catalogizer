@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant NM04: 1 = go test exit code
+--- FAIL: TestR3_NM04_TLSDataConnection_CutInsideARecord_IsEOF (0.02s)
+    fix_r3_list_test.go:406: 
+        	Error Trace:	/out/mut/NM04/filesystem/pkg/ftp/fix_r3_list_test.go:406
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: unexpected EOF
+        	Test:       	TestR3_NM04_TLSDataConnection_CutInsideARecord_IsEOF
+        	Messages:   	a truncation signal on the data channel must not fail a transfer whose control channel says 226
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.651s
+FAIL

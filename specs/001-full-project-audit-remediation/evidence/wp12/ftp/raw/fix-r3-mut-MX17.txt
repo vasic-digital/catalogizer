@@ -1,0 +1,17 @@
+# identity: WP-12 fix round 3 mutant MX17: 1 = go test exit code
+--- FAIL: TestDefaultRetryPolicy_IsThreeAttempts_MX17 (0.09s)
+    fix_r2_net_test.go:1157: 
+        	Error Trace:	/out/mut/MX17/filesystem/pkg/ftp/fix_r2_net_test.go:1157
+        	Error:      	Not equal: 
+        	            	expected: 3
+        	            	actual  : 1
+        	Test:       	TestDefaultRetryPolicy_IsThreeAttempts_MX17
+    fix_r2_net_test.go:1174: 
+        	Error Trace:	/out/mut/MX17/filesystem/pkg/ftp/fix_r2_net_test.go:1174
+        	Error:      	Received unexpected error:
+        	            	fabric: retries exhausted after 1 attempts (ListDirectory): ftp: list /data: unexpected EOF
+        	Test:       	TestDefaultRetryPolicy_IsThreeAttempts_MX17
+        	Messages:   	the default policy retries
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.337s
+FAIL

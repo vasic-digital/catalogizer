@@ -1,0 +1,13 @@
+# identity: WP-12 fix round 3 mutant W4: 1 = go test exit code
+--- FAIL: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+    ftp_factory_test.go:226: 
+        	Error Trace:	/out/mut/W4/filesystem/pkg/factory/ftp_factory_test.go:226
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)"
+        	            	in chain: "fabric: authentication failure: ftp: login as \"alice\" failed: 530 Login incorrect"
+        	            		"fabric: authentication failure"
+        	            		"ftp: login as \"alice\" failed: 530 Login incorrect"
+        	Test:       	TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.630s
+FAIL

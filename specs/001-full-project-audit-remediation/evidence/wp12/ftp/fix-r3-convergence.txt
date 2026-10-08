@@ -1,0 +1,68 @@
+# identity: WP-12 PA-04 fix round 3 (answer to the WF24 independent re-review of submodules/filesystem/pkg/ftp, verdict NO-GO) - CONVERGENCE ASSESSMENT
+# written: 2026-10-08, BEFORE the first fix (constitution 11.4.276(E)); author: Sonnet fixer (single fixer, one pass); nothing committed or pushed, nothing forced
+# review: scratchpad WF24-REVIEW-ftp.md (Opus xhigh) + its probes/mutants (wf24-ftp-evidence/); NAS leg finding: evidence/wp12/nas-clients/diag-ftp-6.json
+
+ROUND AND BUDGET
+  Item round count: round 1 = author, round 2 = WF21 fix (NO-GO), round 3 = this pass (re-review OWED). Budget R_max = 5 (11.4.276 default): 2 rounds left after
+  this one. The (E)(3) structural trigger is "two or more findings sharing a (C)-named class": it IS met (G1/G11 share a class, G2/G3 share a class), so this
+  pass is a STRUCTURAL round: the classes below are closed completely instead of fixing the measured instance.
+
+ROOT-CAUSE CLASSES (not a list of 12 + 5 instances)
+  K1  LOCK-STEP IS CHECKED ON ONE SHAPE ONLY (G1, G11, the static "late 226 masks a 451" member). The round-2 discipline matches reply CODES and looks at the
+      bufio buffer; it does not look at the kernel socket buffer, and a reply of the right code but the wrong SHAPE is reported as a listing problem
+      (ErrListingIncomplete) without dropping the connection, so a lag introduced by one stray persists. Members (inventory, every one closed or measured here):
+        K1.a  stray already in bufio                       closed in r2 (kept)
+        K1.b  late stray in the kernel buffer, same code    G1 measured  -> fix: zero-wait drain check before every command and after a complete transfer
+        K1.c  MLST reply with 0 entries / >1 entries        -> poison (ErrProtocol + markBroken)
+        K1.d  MLST entry whose pathname is another file's   -> poison (basename compare, case-insensitive)
+        K1.e  unreadable SIZE text after a 213              -> poison
+        K1.f  unreadable PWD text after a 257               -> poison
+        K1.g  unreadable EPSV text after a 229              -> poison (parser accepts any RFC 2428 delimiter first: no false refusal)
+        K1.h  unreadable PASV text after a 227              closed in r2 (already poisons)
+        K1.i  a second reply that follows a COMPLETE transfer's final reply -> poison + the transfer is reported as failed
+        K1.j  a violation that already dropped the connection is TRANSIENT for the retry layer (G11), so an idempotent read is retried on a fresh connection
+      Killer tests: the reviewer's N15 (and N14, inverted) plus one table test per member K1.c-K1.i.
+  K2  A SERVER-CONTROLLED TEXT DECIDES A CLIENT-SIDE CLASS (G2) AND AN AMBIGUOUS PASSWORD ATTEMPT IS NOT REMEMBERED ACROSS CLIENTS (G3).
+      fabric.Classify scans the Error() text of every LEAF error for auth markers before it honours ErrTransient, so a server wording ("Access denied: too many
+      connections") turns a phase-classified transient/permanent error into ClassAuth and the pool latches the root. pkg/fabric is out of scope for this pass, so
+      the fix is local and structural: server text is carried in a WRAPPER message, never in a leaf (the leaf is a sentinel without any marker).
+        K2.a  banner 4yz/5yz   K2.b AUTH TLS 5yz   K2.c USER 4yz/5yz and 530/532/332 (no password was sent: never ClassAuth)   K2.d FEAT/TYPE/OPTS/PBSZ/PROT 4yz/5yz
+        K2.e  CWD / PWD of the base directory      K2.f PWD / SIZE reply text in a leaf (now wraps ErrProtocol)
+      Ambiguous PASS (password written, no definite credential verdict): the outcome is remembered in a process-wide, TTL-bound login back-off keyed by
+      host:port + username, consulted in connect() BEFORE the dial, so every client of the process (pool borrows, raw re-Connect, the ctx-deadline branch) is
+      covered without touching pkg/fabric:
+        K2.g  unanswered PASS (connection lost)    K2.h PASS rejected with a non-credential code    K2.i PASS interrupted by ctx/deadline after the write
+      A definite credential verdict (530/430/534/535/332/532) stays ClassAuth (the pool latch is the guard there).
+  K3  A TRANSFER IS CLOSED THROUGH THE EARLY-CLOSE PATH WHERE ITS END IS KNOWN (G4) and an early close waits as long as a full IOTimeout (G5).
+        K3.a  seeker at off >= size  -> the stream is read to its EOF and finished as COMPLETE (226/250 required, negative reply returned)
+        K3.b  seeker Seek-drop       -> early close by intent (acceptable), its wait is bounded by earlyCloseWait (not the 60 s IOTimeout)
+        K3.c  G5 stall (36.64 s in 1 of 3 real-server runs): ROOT CAUSE UNCONFIRMED before forensics; the forensic run below decides.
+  K4  A LIMIT IS DEFINED IN ONE PLACE AND CONTRADICTED IN ANOTHER (G7, G8, G12).
+        K4.a  listing has line/entry caps but no byte cap -> MaxListBytes (default 256 MiB)
+        K4.b  control line cap (4096) < listing line cap (16 KiB) -> a listed name can be stat'ed (control reader 32 KiB)
+        K4.c  DialTimeout counted twice (dial, then a phase budget started after the dial) -> the phase budget starts BEFORE the dial
+  K5  CLIENT STATE IS PUBLISHED UNCONDITIONALLY BY A CONCURRENT OPERATION (G6): connect() overwrote stateDown. Members: re-dial in ensure (implicit), explicit
+      Connect racing a Disconnect. Fix: a generation counter bumped by Disconnect; connect() refuses to publish when it changed during the dial.
+  K6  A NAME ACCEPTED FROM THE SERVER IS NOT CHECKED AGAINST WHAT THE CLIENT CAN ADDRESS (G9, G10, and the real-NAS defect).
+        K6.a  NAS defect (Synology6 DATA20-3, one name with LF -> the MLSD line splits -> 189 entries lost): unparseable FRAGMENT lines are SKIPPED AND COUNTED
+              (typed ListingWarning + counters), the truncated entry in front of a fragment is dropped too, a listing whose FIRST line is unparseable (a
+              desynchronised data channel) or whose fragment count exceeds 10 percent (and 8) still fails closed with ErrListingIncomplete.
+        K6.b  a name with CR/LF/NUL cannot be addressed (confine refuses it): skipped and counted instead of listed as an unreadable phantom
+        K6.c  G9: names are validated whenever the session is not known to be UTF-8 (not only after a refused OPTS)
+        K6.d  G10: first non-empty pin name wins in newTLSConfig; Record (both stores) refuses a second, different name (ErrPinNameConflict)
+        K6.e  P3 DefaultPinStore: the factory captured the variable at creation; now a deferred proxy reads it at Lookup
+  K7  GUARDS WITHOUT A KILLING TEST (T4, T5): CR/LF refusal on the wire, data-channel pin, STARTTLS injection, and 11 more surviving mutants. Every reviewer
+      probe (N1-N18) and every surviving reviewer mutant (NM01-NM17) is adopted as a permanent test; NM15 needs an operation after the connect budget elapsed.
+  K8  DOCUMENTATION CLAIMS THAT WERE NOT MEASURED (P3, P4): six false claims corrected to the measured behaviour; stale "uncommitted" statuses fixed (the
+      source IS committed at 83c0ac1 / e9d6883d; this round's changes are uncommitted, stated as such).
+
+DEPENDENCIES OUTSIDE THIS PACKAGE (reported, not edited: scope)
+  * pkg/fabric: a typed class that Classify honours BEFORE its text heuristic, and a pool back-off for auth-ambiguous failures, would be the cleaner homes of K2.
+    This pass does not need them; it is reported so the fabric owner can remove the local workaround later.
+  * go.mod / go.sum: "go.mod still lists jlaffaye" is now false at the committed head (0 lines); nothing to do.
+
+PLAN OF WORK (one pass, order)
+  1. forensic run of the pre-fix integration leg (G5), 20 iterations of the seekable test with per-iteration timing
+  2. RED: adopt all WF24 probes + new killers as tests; run them against the COMMITTED code (stash-free: a pristine copy of the committed module) - they must fail
+  3. fix K1..K6, docs K8
+  4. GREEN x3 with -race (unit + real-server integration), mutation runs with negative control, SHA256 refresh

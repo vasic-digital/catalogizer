@@ -1,0 +1,19 @@
+# identity: WP-12 fix round 3 mutant F7a: 1 = go test exit code
+--- FAIL: TestClassify550 (0.00s)
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Failed to open file.
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Can't open file
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.004s
+FAIL

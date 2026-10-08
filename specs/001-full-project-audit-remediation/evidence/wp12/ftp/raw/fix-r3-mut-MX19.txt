@@ -1,0 +1,16 @@
+# identity: WP-12 fix round 3 mutant MX19: 1 = go test exit code
+--- FAIL: TestDisconnect_SaysQuitAndClosesTheConnection_MX19 (3.02s)
+    fix_r2_net_test.go:992: 
+        	Error Trace:	/out/mut/MX19/filesystem/pkg/ftp/fix_r2_net_test.go:992
+        	Error:      	Should be true
+        	Test:       	TestDisconnect_SaysQuitAndClosesTheConnection_MX19
+        	Messages:   	the server must see the connection closed
+    fix_r2_net_test.go:993: 
+        	Error Trace:	/out/mut/MX19/filesystem/pkg/ftp/fix_r2_net_test.go:993
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestDisconnect_SaysQuitAndClosesTheConnection_MX19
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	14.414s
+FAIL

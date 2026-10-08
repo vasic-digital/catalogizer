@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant K6j: 1 = go test exit code
+--- FAIL: TestR3_K6e_DeferredDefaultPinStore_ReadsTheVariableAtCallTime (0.00s)
+    fix_r3_list_test.go:340: 
+        	Error Trace:	/out/mut/K6j/filesystem/pkg/ftp/fix_r3_list_test.go:340
+        	Error:      	Should be in error chain:
+        	            	expected: *ftp.UnknownCertError
+        	            	in chain: "ftp: no certificate pin store configured" (*errors.errorString)
+        	Test:       	TestR3_K6e_DeferredDefaultPinStore_ReadsTheVariableAtCallTime
+        	Messages:   	now the installed (empty) store is consulted
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.753s
+FAIL

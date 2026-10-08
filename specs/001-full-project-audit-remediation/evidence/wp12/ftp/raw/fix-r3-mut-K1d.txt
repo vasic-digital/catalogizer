@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K1d: 1 = go test exit code
+--- FAIL: TestR3_K1cd_MLSTShapeAndPathname_AreChecked (0.16s)
+    --- FAIL: TestR3_K1cd_MLSTShapeAndPathname_AreChecked/another_file (0.02s)
+        fix_r3_lockstep_test.go:124: 
+            	Error Trace:	/out/mut/K1d/filesystem/pkg/ftp/fix_r3_lockstep_test.go:124
+            	Error:      	Expected error with "ftp: protocol violation" in chain but got nil.
+            	Test:       	TestR3_K1cd_MLSTShapeAndPathname_AreChecked/another_file
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.459s
+FAIL

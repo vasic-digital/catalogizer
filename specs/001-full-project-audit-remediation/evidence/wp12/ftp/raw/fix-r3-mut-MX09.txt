@@ -1,0 +1,15 @@
+# identity: WP-12 fix round 3 mutant MX09: 1 = go test exit code
+--- FAIL: TestFailedLogin_SaysQuitAndClosesTheConnection_MX09 (3.01s)
+    fix_r2_net_test.go:982: 
+        	Error Trace:	/out/mut/MX09/filesystem/pkg/ftp/fix_r2_net_test.go:982
+        	Error:      	Should be true
+        	Test:       	TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+        	Messages:   	the control connection of a failed login must be closed
+    fix_r2_net_test.go:983: 
+        	Error Trace:	/out/mut/MX09/filesystem/pkg/ftp/fix_r2_net_test.go:983
+        	Error:      	"0" is not greater than or equal to "1"
+        	Test:       	TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+        	Messages:   	and the client says goodbye
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	14.693s
+FAIL

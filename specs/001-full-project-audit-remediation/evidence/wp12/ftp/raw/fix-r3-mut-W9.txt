@@ -1,0 +1,20 @@
+# identity: WP-12 fix round 3 mutant W9: 1 = go test exit code
+--- FAIL: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+    ftp_factory_test.go:176: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:176
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: trusted_lan
+    ftp_factory_test.go:176: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:176
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: allow_degraded_list
+    ftp_factory_test.go:176: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:176
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: disable_epsv
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.619s
+FAIL

@@ -1,0 +1,15 @@
+# identity: WP-12 fix round 3 mutant K1b: 1 = go test exit code
+--- FAIL: TestR3_K1b_StrayBeforeTheMLSTAnswer_PoisonsInsteadOfShifting (0.02s)
+    fix_r3_lockstep_test.go:87: 
+        	Error Trace:	/out/mut/K1b/filesystem/pkg/ftp/fix_r3_lockstep_test.go:87
+        	Error:      	Should be false
+        	Test:       	TestR3_K1b_StrayBeforeTheMLSTAnswer_PoisonsInsteadOfShifting
+        	Messages:   	an answer of the wrong shape drops the connection
+    fix_r3_lockstep_test.go:89: 
+        	Error Trace:	/out/mut/K1b/filesystem/pkg/ftp/fix_r3_lockstep_test.go:89
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/sub/c.txt: fabric: transient failure: ftp: protocol violation: unsolicited data before MLST
+        	Test:       	TestR3_K1b_StrayBeforeTheMLSTAnswer_PoisonsInsteadOfShifting
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.147s
+FAIL

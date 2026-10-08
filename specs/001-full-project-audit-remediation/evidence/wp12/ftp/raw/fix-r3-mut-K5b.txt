@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K5b: 1 = go test exit code
+--- FAIL: TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6 (0.74s)
+    fix_r3_transfer_test.go:357: 
+        	Error Trace:	/out/mut/K5b/filesystem/pkg/ftp/fix_r3_transfer_test.go:357
+        	Error:      	Expected error with "ftp: not connected" in chain but got nil.
+        	Test:       	TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6
+        	Messages:   	the operation that was connecting when Disconnect ran does not get a live connection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	23.515s
+FAIL

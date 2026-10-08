@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant K6c: 1 = go test exit code
+--- FAIL: TestR3_K6b_UnaddressableNames_AreSkippedAndCounted (0.02s)
+    fix_r3_list_test.go:140: 
+        	Error Trace:	/out/mut/K6c/filesystem/pkg/ftp/fix_r3_list_test.go:140
+        	Error:      	"[0xc0004c7db0 0xc0004c7e00 0xc0004c7e50]" should have 2 item(s), but has 3
+        	Test:       	TestR3_K6b_UnaddressableNames_AreSkippedAndCounted
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.254s
+FAIL

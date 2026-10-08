@@ -1,0 +1,79 @@
+[
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL: no-op; MUST survive"
+ },
+ {
+  "id": "M01",
+  "file": "pkg/fabric/budget.go",
+  "old": "\t\tfor n := len(b.free); n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "new": "\t\tfor n := len(b.free); false && n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "why": "S1 class: wind-back does not cascade through free slots just below the cancelled tail"
+ },
+ {
+  "id": "M07f",
+  "file": "pkg/fabric/budget.go",
+  "old": "return func() { t.Stop(); release() }",
+  "new": "return func() { _ = t; release() }",
+  "why": "lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time (fixed: compiles)"
+ },
+ {
+  "id": "M08",
+  "file": "pkg/fabric/budget.go",
+  "old": "return func() { t.Stop(); release() }",
+  "new": "return func() { t.Stop() }",
+  "why": "with a lease, a normal Close never releases the slot (leak)"
+ },
+ {
+  "id": "M11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "new": "\tif false && p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "why": "S2 requeue into a pool closed during the probe keeps the connection open forever"
+ },
+ {
+  "id": "M13",
+  "file": "pkg/fabric/pool.go",
+  "old": "af.fingerprint == fingerprint(cfg) && af.fingerprint != ([sha256.Size]byte{})",
+  "new": "af.fingerprint == fingerprint(cfg)",
+  "why": "S3: unmarshalable settings (zero fingerprint) share one cache entry, a settings change is not detected"
+ },
+ {
+  "id": "M38",
+  "file": "pkg/fabric/errors.go",
+  "old": "case interface{ Unwrap() []error }:",
+  "new": "case interface {\n\t\t\tUnwrap() []error\n\t\t\tneverImplemented()\n\t\t}:",
+  "why": "classifier: errors.Join / multi-%w members are not walked (the joined text, with path wrappers, becomes the leaf)"
+ },
+ {
+  "id": "M40",
+  "file": "pkg/fabric/errors.go",
+  "old": "case te.Code >= 400 && te.Code < 500:",
+  "new": "case te.Code >= 400 && te.Code <= 500:",
+  "why": "FTP 500 (syntax error, permanent) classified transient"
+ },
+ {
+  "id": "M51",
+  "file": "pkg/decorators/readonly.go",
+  "old": "\trc, err := r.in.ReadFile(ctx, path)\n\tif err != nil || rc == nil {",
+  "new": "\trc, err := r.in.ReadFile(ctx, path)\n\tif err != nil {",
+  "why": "ReadOnly wraps a nil stream (panics on use)"
+ },
+ {
+  "id": "M66",
+  "file": "pkg/fabric/budget.go",
+  "old": "ok && start.After(dl) {",
+  "new": "ok && start.Add(b.interval).After(dl) {",
+  "why": "S1 fail-fast over-eager: a caller whose deadline is after its slot is refused (11.4.201(1) false refusal)"
+ },
+ {
+  "id": "M69",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor i > 0 && b.free[i-1].After(start) {",
+  "new": "\tfor false && i > 0 && b.free[i-1].After(start) {",
+  "why": "S1: free list not kept ascending (a past slot can hide behind a future one and be reused)"
+ }
+]

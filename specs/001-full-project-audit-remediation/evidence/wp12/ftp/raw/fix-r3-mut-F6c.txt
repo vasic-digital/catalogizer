@@ -1,0 +1,29 @@
+# identity: WP-12 fix round 3 mutant F6c: 1 = go test exit code
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:82: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:82
+        	Error:      	Not equal: 
+        	            	expected: "spaced.txt"
+        	            	actual  : "Users;Modify=20200517103000; spaced.txt"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-spaced.txt
+        	            	+Users;Modify=20200517103000; spaced.txt
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=3;UNIX.group=Domain Users;Modify=20200517103000; spaced.txt
+    fix_r2_list_test.go:85: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:85
+        	Error:      	Should be true
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=3;UNIX.group=Domain Users;Modify=20200517103000; spaced.txt: 0001-01-01 00:00:00 +0000 UTC
+    fix_r2_list_test.go:78: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:78
+        	Error:      	Expected error with "ftp: directory listing has lines that could not be parsed" in chain but got nil.
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=1;Modify=20200517103000 noseparator.txt
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.006s
+FAIL

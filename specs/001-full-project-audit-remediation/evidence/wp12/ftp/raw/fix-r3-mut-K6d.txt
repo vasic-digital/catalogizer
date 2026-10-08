@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant K6d: 1 = go test exit code
+--- FAIL: TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg (0.02s)
+    fix_r3_list_test.go:52: 
+        	Error Trace:	/out/mut/K6d/filesystem/pkg/ftp/fix_r3_list_test.go:52
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: ftp: directory listing has lines that could not be parsed: "SECRET-tail-of-the-split-name"
+        	Test:       	TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg
+        	Messages:   	one odd name must not cost the other 189 entries
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.126s
+FAIL

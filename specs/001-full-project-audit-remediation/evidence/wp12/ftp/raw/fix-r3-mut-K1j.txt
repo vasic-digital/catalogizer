@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant K1j: 1 = go test exit code
+--- FAIL: TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1 (0.43s)
+    fix_r3_lockstep_test.go:55: 
+        	Error Trace:	/out/mut/K1j/filesystem/pkg/ftp/fix_r3_lockstep_test.go:55
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1
+        	Messages:   	the connection is dropped: a retry runs on a fresh, in-step one (G11)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.858s
+FAIL

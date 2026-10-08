@@ -1,0 +1,25 @@
+# identity: WP-12 fix round 3 mutant MX12: 1 = go test exit code
+--- FAIL: TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12 (0.01s)
+    fix_r2_net_test.go:1095: 
+        	Error Trace:	/out/mut/MX12/filesystem/pkg/ftp/fix_r2_net_test.go:1095
+        	Error:      	Not equal: 
+        	            	expected: "nas.test"
+        	            	actual  : "127.0.0.1"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-nas.test
+        	            	+127.0.0.1
+        	Test:       	TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+        	Messages:   	Pin records the name the certificate is valid for, not the dialled address
+    fix_r2_net_test.go:1098: 
+        	Error Trace:	/out/mut/MX12/filesystem/pkg/ftp/fix_r2_net_test.go:1098
+        	Error:      	Received unexpected error:
+        	            	tls: failed to verify certificate: x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs
+        	Test:       	TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+        	Messages:   	SNI and verification use the pinned name
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.231s
+FAIL

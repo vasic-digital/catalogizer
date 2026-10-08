@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant MX07: 1 = go test exit code
+--- FAIL: TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4 (0.42s)
+    fix_r2_net_test.go:320: 
+        	Error Trace:	/out/mut/MX07/filesystem/pkg/ftp/fix_r2_net_test.go:320
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+        	Messages:   	a transfer whose final reply never came cannot be confirmed
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	3.486s
+FAIL

@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant NM03: 1 = go test exit code
+--- FAIL: TestR3_NM03_MultiLineReply_EndsAtItsOwnCode (0.02s)
+    fix_r3_list_test.go:375: 
+        	Error Trace:	/out/mut/NM03/filesystem/pkg/ftp/fix_r3_list_test.go:375
+        	Error:      	Received unexpected error:
+        	            	fabric: transient failure: ftp: protocol violation: unsolicited data before NOOP
+        	Test:       	TestR3_NM03_MultiLineReply_EndsAtItsOwnCode
+        	Messages:   	the next reply is not one line behind
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.537s
+FAIL

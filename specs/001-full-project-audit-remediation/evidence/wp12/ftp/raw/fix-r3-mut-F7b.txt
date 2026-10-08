@@ -1,0 +1,40 @@
+# identity: WP-12 fix round 3 mutant F7b: 1 = go test exit code
+--- FAIL: TestClassify550 (0.00s)
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Permission denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	/data/a.txt: Permission denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Access is denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Not found, permission denied for guest
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Operation not permitted
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.005s
+FAIL

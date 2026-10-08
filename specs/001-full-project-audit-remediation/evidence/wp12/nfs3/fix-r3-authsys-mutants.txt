@@ -1,0 +1,25 @@
+# fix-r3 AUTH_SYS oracle negative control (distinct uid/gid/gids; X04 swap and X05/X06 gids are new)
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:46:38Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+go: downloading github.com/go-git/go-billy/v5 v5.6.0
+go: downloading github.com/willscott/go-nfs v0.0.4
+go: downloading github.com/willscott/go-nfs-client v0.0.0-20240104095149-b44639837b00
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93
+go: downloading github.com/hashicorp/golang-lru/v2 v2.0.7
+go: downloading golang.org/x/sys v0.24.0
+NEGATIVE-CONTROL-unmutated rc=0 ok_lines=10 violation_lines=0 first_violation=[]
+NEGATIVE-CONTROL PASS
+X01 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION gids: xdr:DecodeUint: EOF while decoding 4 bytes - read: '[]']
+X01 KILLED    AUTH_SYS gids count off by one
+X02 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION gids: xdr:DecodeUint: unexpected EOF while decoding 4 bytes - read: '[0 13 128]']
+X02 KILLED    AUTH_SYS machine name longer than announced (padding lost)
+X03 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION prog 100005 proc 1: credential uid=2346 gid=1234 machine="catalogizer" gids=[4 24 3456], want 1234/2345/"catalogizer"/[4 24 3456]]
+X03 KILLED    AUTH_SYS uid field carries gid+1
+X04 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION prog 100005 proc 1: credential uid=2345 gid=1234 machine="catalogizer" gids=[4 24 3456], want 1234/2345/"catalogizer"/[4 24 3456]]
+X04 KILLED    AUTH_SYS uid and gid swapped (WF24 TN4: invisible while uid = gid)
+X05 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION prog 100005 proc 1: credential uid=1234 gid=2345 machine="catalogizer" gids=[5 25 3457], want 1234/2345/"catalogizer"/[4 24 3456]]
+X05 KILLED    AUTH_SYS supplementary gid values shifted by one (count unchanged)
+X06 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION prog 100005 proc 1: credential uid=1234 gid=2345 machine="catalogizer" gids=[3456 24 4], want 1234/2345/"catalogizer"/[4 24 3456]]
+X06 KILLED    AUTH_SYS supplementary gids sent in reverse order
+exit=0

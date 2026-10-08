@@ -1,0 +1,17 @@
+# identity: WP-12 fix round 3 mutant NM08: 1 = go test exit code
+--- FAIL: TestR3_NM08_LowerCaseFEATKeys_AreRecognised (0.01s)
+    fix_r3_list_test.go:428: 
+        	Error Trace:	/out/mut/NM08/filesystem/pkg/ftp/fix_r3_list_test.go:428
+        	Error:      	Should be false
+        	Test:       	TestR3_NM08_LowerCaseFEATKeys_AreRecognised
+        	Messages:   	a lower-case 'mlst' is MLST
+    fix_r3_list_test.go:429: 
+        	Error Trace:	/out/mut/NM08/filesystem/pkg/ftp/fix_r3_list_test.go:429
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestR3_NM08_LowerCaseFEATKeys_AreRecognised
+        	Messages:   	a lower-case 'utf8' is UTF8
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.640s
+FAIL

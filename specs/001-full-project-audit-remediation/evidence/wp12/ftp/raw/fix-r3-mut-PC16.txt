@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant PC16: 1 = go test exit code
+--- FAIL: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.02s)
+    ftps_test.go:695: 
+        	Error Trace:	/out/mut/PC16/filesystem/pkg/ftp/ftps_test.go:695
+        	Error:      	"[AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV EPSV]" should have 10 item(s), but has 12
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	an escape attempt sends nothing to the server
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	24.988s
+FAIL

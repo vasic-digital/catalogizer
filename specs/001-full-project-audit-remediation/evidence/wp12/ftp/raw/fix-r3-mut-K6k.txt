@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant K6k: 1 = go test exit code
+--- FAIL: TestR3_PublicConfig_ShowsDisableEPSV_NM06 (0.00s)
+    fix_r3_list_test.go:354: 
+        	Error Trace:	/out/mut/K6k/filesystem/pkg/ftp/fix_r3_list_test.go:354
+        	Error:      	Should be true
+        	Test:       	TestR3_PublicConfig_ShowsDisableEPSV_NM06
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.644s
+FAIL

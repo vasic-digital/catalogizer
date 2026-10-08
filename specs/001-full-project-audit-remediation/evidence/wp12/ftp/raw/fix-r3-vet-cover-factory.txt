@@ -1,0 +1,8 @@
+# identity: WP-12 PA-04 fix round 3: go vet (default and -tags integration), go build ./..., go test -race -cover of pkg/ftp and pkg/factory, pinned IMG-GO; gofmt -l pkg/ftp pkg/factory printed nothing
+vet=0
+vet-integration=0
+build=0
+ok  	digital.vasic.filesystem/pkg/ftp	44.917s	coverage: 93.3% of statements
+ok  	digital.vasic.filesystem/pkg/factory	1.724s	coverage: 100.0% of statements
+test=0
+rc=0

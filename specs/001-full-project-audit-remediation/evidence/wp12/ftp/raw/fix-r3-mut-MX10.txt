@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant MX10: 1 = go test exit code
+--- FAIL: TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3 (6.02s)
+    fix_r2_net_test.go:256: 
+        	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+        	Messages:   	a stalled MLSD data connection must hit IOTimeout (blocked 3.002047549s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	8.206s
+FAIL

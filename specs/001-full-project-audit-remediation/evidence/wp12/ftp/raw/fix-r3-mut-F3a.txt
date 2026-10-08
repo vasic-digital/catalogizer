@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F3a: 1 = go test exit code
+--- FAIL: TestCancelBetweenReads_IsHonoured_D9 (1.23s)
+    fix_r2_net_test.go:608: 
+        	Error Trace:	/out/mut/F3a/filesystem/pkg/ftp/fix_r2_net_test.go:608
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestCancelBetweenReads_IsHonoured_D9
+        	Messages:   	a cancelled context ends the stream
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	11.475s
+FAIL

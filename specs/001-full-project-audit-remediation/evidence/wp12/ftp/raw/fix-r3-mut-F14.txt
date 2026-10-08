@@ -1,0 +1,18 @@
+# identity: WP-12 fix round 3 mutant F14: 1 = go test exit code
+--- FAIL: TestPin_PortZero_MeansTheFTPDefaultPort_F14 (0.00s)
+    fix_r2_net_test.go:1117: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1117
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" should not contain "127.0.0.1:0"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+        	Messages:   	port 0 must dial 21 like Connect does
+    fix_r2_net_test.go:1118: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1118
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+    fix_r2_net_test.go:1121: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1121
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.181s
+FAIL

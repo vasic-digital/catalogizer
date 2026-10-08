@@ -1,0 +1,7 @@
+BASELINE rc=0 PASS
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL: no-op; MUST survive
+X55 CAUGHT rc=1 by=TestR3_TransientFailuresDoNotSerialiseAnUnprovenAccount -- N3: after a transient pilot failure the waiters are serialised
+X56 CAUGHT rc=1 by=TestR3_ProvenAccountLoginsRunConcurrently -- N3: an account is never proven: every login is gated
+X62 CAUGHT rc=1 by=TestR3_EvictLiftsAPerRootDenial -- N3: Evict leaves a per-root denial in place
+SUMMARY {'CAUGHT': 3, 'SURVIVED': 1, 'INVALID': 0, 'NOT_APPLIED': 0}
+HARNESS_CONTROLS_OK=True

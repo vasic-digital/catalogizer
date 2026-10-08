@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant K6f: 1 = go test exit code
+--- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c (0.02s)
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names (0.02s)
+        fix_r2_net_test.go:912: 
+            	Error Trace:	/out/mut/K6f/filesystem/pkg/ftp/fix_r2_net_test.go:912
+            	Error:      	Expected error with "ftp: the server refused OPTS UTF8 ON and sent a name that is not valid UTF-8, so non-ASCII names would be garbled" in chain but got nil.
+            	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names
+            	Messages:   	names garbled to 0x7f must never be catalogued
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	11.137s
+FAIL

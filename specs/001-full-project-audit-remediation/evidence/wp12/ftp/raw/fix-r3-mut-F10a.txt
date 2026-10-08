@@ -1,0 +1,25 @@
+# identity: WP-12 fix round 3 mutant F10a: 1 = go test exit code
+--- FAIL: TestSecret_NeverReachableThroughFmt_D13 (0.00s)
+    fix_r2_net_test.go:1198: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1198
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %v
+    fix_r2_net_test.go:1198: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1198
+        	Error:      	"{Password:S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %+v
+    fix_r2_net_test.go:1198: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1198
+        	Error:      	"ftp.Credential{Password:\"S3cr3t-WF21-XYZ\"}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %#v
+    fix_r2_net_test.go:1198: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1198
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %s
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.931s
+FAIL

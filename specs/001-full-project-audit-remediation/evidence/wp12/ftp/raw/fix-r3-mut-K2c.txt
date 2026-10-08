@@ -1,0 +1,19 @@
+# identity: WP-12 fix round 3 mutant K2c: 1 = go test exit code
+--- FAIL: TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2 (0.01s)
+    --- FAIL: TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/530_capacity (0.01s)
+        fix_r3_login_test.go:62: 
+            	Error Trace:	/out/mut/K2c/filesystem/pkg/ftp/fix_r3_login_test.go:62
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/530_capacity
+            	Messages:   	fabric: connect root1: fabric: authentication failure: ftp: login refused at USER: 530 Sorry, the maximum number of clients (3) from your host are already connected.
+        fix_r3_login_test.go:65: 
+            	Error Trace:	/out/mut/K2c/filesystem/pkg/ftp/fix_r3_login_test.go:65
+            	Error:      	Received unexpected error:
+            	            	fabric: not logging in to root1 again after a rejected login (Evict("root1") or change the settings to retry): fabric: authentication failure: ftp: login refused at USER: 530 Sorry, the maximum number of clients (3) from your host are already connected.
+            	Test:       	TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/530_capacity
+            	Messages:   	the root is not latched: the second borrow dials again
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.175s
+FAIL

@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant NM17: 1 = go test exit code
+--- FAIL: TestR3_K4a_ListingUnderTheBudget_IsFine_NM17 (0.00s)
+    fix_r3_transfer_test.go:233: 
+        	Error Trace:	/out/mut/NM17/filesystem/pkg/ftp/fix_r3_transfer_test.go:233
+        	Error:      	Not equal: 
+        	            	expected: 1048576
+        	            	actual  : 1024
+        	Test:       	TestR3_K4a_ListingUnderTheBudget_IsFine_NM17
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	22.467s
+FAIL

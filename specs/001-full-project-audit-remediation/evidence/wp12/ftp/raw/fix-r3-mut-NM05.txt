@@ -1,0 +1,14 @@
+# identity: WP-12 fix round 3 mutant NM05: 1 = go test exit code
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.02s)
+    fix_r2_list_test.go:173: 
+        	Error Trace:	/out/mut/NM05/filesystem/pkg/ftp/fix_r2_list_test.go:173
+        	Error:      	map[string]*client.FileInfo{" two leading spaces.txt":(*client.FileInfo)(0xc000016960), "..":(*client.FileInfo)(0xc000016a00), "UpperDir":(*client.FileInfo)(0xc000016780), "badoctal.txt":(*client.FileInfo)(0xc000016870), "frac.txt":(*client.FileInfo)(0xc000016730), "link":(*client.FileInfo)(0xc0000167d0), "lower.txt":(*client.FileInfo)(0xc0000166e0), "nofacts.txt":(*client.FileInfo)(0xc000016910), "octal.txt":(*client.FileInfo)(0xc000016820), "plain.txt":(*client.FileInfo)(0xc000016690), "spaced.txt":(*client.FileInfo)(0xc0000168c0), "trailing dot.":(*client.FileInfo)(0xc0000169b0)} should not contain ".."
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+    fix_r2_list_test.go:174: 
+        	Error Trace:	/out/mut/NM05/filesystem/pkg/ftp/fix_r2_list_test.go:174
+        	Error:      	"[0xc000016690 0xc0000166e0 0xc000016730 0xc000016780 0xc0000167d0 0xc000016820 0xc000016870 0xc0000168c0 0xc000016910 0xc000016960 0xc0000169b0 0xc000016a00]" should have 11 item(s), but has 12
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	a name with '/' or NUL is a hostile entry and is skipped (MX08); nothing else is lost
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.028s
+FAIL

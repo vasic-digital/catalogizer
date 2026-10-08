@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant NM06: 1 = go test exit code
+--- FAIL: TestR3_NM06_FTPFactory_DisableEPSVReachesTheClient (0.00s)
+    ftp_factory_r3_test.go:54: 
+        	Error Trace:	/out/mut/NM06/filesystem/pkg/factory/ftp_factory_r3_test.go:54
+        	Error:      	"&{Host:h Port:21 Username: CredentialRef: Path: TLSMode:explicit TrustedLAN:false AllowDegradedList:false DisableEPSV:false}" does not contain "DisableEPSV:true"
+        	Test:       	TestR3_NM06_FTPFactory_DisableEPSVReachesTheClient
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.619s
+FAIL

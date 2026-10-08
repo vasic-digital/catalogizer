@@ -1,0 +1,13 @@
+# identity: WP-12 fix round 3 mutant MX06: 1 = go test exit code
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (0.60s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (0.30s)
+        fix_r2_net_test.go:214: 
+            	Error Trace:	/out/mut/MX06/filesystem/pkg/ftp/fix_r2_net_test.go:214
+            	Error:      	Not equal: 
+            	            	expected: 1
+            	            	actual  : 2
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+            	Messages:   	a silent server is a transient failure: fabric: authentication failure: ftp: greeting: read tcp 127.0.0.1:54368->127.0.0.1:44789: i/o timeout
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	1.103s
+FAIL

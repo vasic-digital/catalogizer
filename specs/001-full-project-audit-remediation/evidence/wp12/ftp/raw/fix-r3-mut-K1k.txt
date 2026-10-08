@@ -1,0 +1,20 @@
+# identity: WP-12 fix round 3 mutant K1k: 1 = go test exit code
+--- FAIL: TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1 (0.41s)
+    fix_r3_lockstep_test.go:54: 
+        	Error Trace:	/out/mut/K1k/filesystem/pkg/ftp/fix_r3_lockstep_test.go:54
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: protocol violation"
+        	            	in chain: "ftp: stat /data/a.txt: ftp: directory listing has lines that could not be parsed: MLST reply has no entry"
+        	            		"ftp: directory listing has lines that could not be parsed: MLST reply has no entry"
+        	            		"ftp: directory listing has lines that could not be parsed"
+        	Test:       	TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1
+    fix_r3_lockstep_test.go:55: 
+        	Error Trace:	/out/mut/K1k/filesystem/pkg/ftp/fix_r3_lockstep_test.go:55
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1
+        	Messages:   	the connection is dropped: a retry runs on a fresh, in-step one (G11)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.994s
+FAIL

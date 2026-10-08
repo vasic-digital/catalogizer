@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K1i2: 1 = go test exit code
+--- FAIL: TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict (0.02s)
+    fix_r3_lockstep_test.go:280: 
+        	Error Trace:	/out/mut/K1i2/filesystem/pkg/ftp/fix_r3_lockstep_test.go:280
+        	Error:      	Should be true
+        	Test:       	TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict
+        	Messages:   	gap 0s: the real, negative verdict is returned: <nil>
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.149s
+FAIL

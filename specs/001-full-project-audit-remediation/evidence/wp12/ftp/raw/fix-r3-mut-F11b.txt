@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F11b: 1 = go test exit code
+--- FAIL: TestReDial_ClosesTheConnectionItReplaces (3.04s)
+    fix_r2_net_test.go:1464: 
+        	Error Trace:	/out/mut/F11b/filesystem/pkg/ftp/fix_r2_net_test.go:1464
+        	Error:      	Should be true
+        	Test:       	TestReDial_ClosesTheConnectionItReplaces
+        	Messages:   	exactly one connection stays open: the poisoned one was closed, not leaked
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	20.080s
+FAIL

@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F2f: 1 = go test exit code
+--- FAIL: TestStreamTimeout_CloseDoesNotWaitForTheFinalReply (2.02s)
+    fix_r2_net_test.go:396: 
+        	Error Trace:	/out/mut/F2f/filesystem/pkg/ftp/fix_r2_net_test.go:396
+        	Error:      	"1.000999626s" is not less than "500ms"
+        	Test:       	TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+        	Messages:   	Close must not wait another IOTimeout for a final reply on a connection that already failed
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	10.229s
+FAIL

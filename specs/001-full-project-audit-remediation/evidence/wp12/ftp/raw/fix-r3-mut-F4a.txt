@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F4a: 1 = go test exit code
+--- FAIL: TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF (0.02s)
+    fix_r2_net_test.go:720: 
+        	Error Trace:	/out/mut/F4a/filesystem/pkg/ftp/fix_r2_net_test.go:720
+        	Error:      	Expected error with "unexpected EOF" in chain but got nil.
+        	Test:       	TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+        	Messages:   	fewer bytes than SIZE announced is an error even when the server says 226
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	10.981s
+FAIL

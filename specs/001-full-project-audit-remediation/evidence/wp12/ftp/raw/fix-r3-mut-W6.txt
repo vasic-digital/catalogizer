@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant W6: 1 = go test exit code
+--- FAIL: TestWF24_R_F16_FactoryBuildsTheScanClient (0.00s)
+    ftp_factory_r3_test.go:30: CLOSED-F16 (factory part): type=*fabric.layerSeekable seekable=true mutation=CreateDirectory: filesystem: client is read-only config=&{Host:127.0.0.1 Port:1 Username: CredentialRef: Path: TLSMode:explicit TrustedLAN:false AllowDegradedList:false DisableEPSV:false} inline-password=<nil>
+    ftp_factory_r3_test.go:33: 
+        	Error Trace:	/out/mut/W6/filesystem/pkg/factory/ftp_factory_r3_test.go:33
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWF24_R_F16_FactoryBuildsTheScanClient
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.014s
+FAIL

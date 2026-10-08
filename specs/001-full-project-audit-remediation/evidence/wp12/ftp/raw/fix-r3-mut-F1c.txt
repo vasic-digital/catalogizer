@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant F1c: 1 = go test exit code
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (3.30s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (3.00s)
+        fix_r2_net_test.go:212: 
+            	Error Trace:	/out/mut/F1c/filesystem/pkg/ftp/fix_r2_net_test.go:212
+            	Error:      	Should be true
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+            	Messages:   	DialTimeout bounds the greeting
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	3.781s
+FAIL

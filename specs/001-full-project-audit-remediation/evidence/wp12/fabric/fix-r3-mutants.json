@@ -1,0 +1,807 @@
+[
+ {
+  "id": "PC1",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, ErrAuth) || isSMBCredentialFailure(err) {\n\t\treturn ClassAuth",
+  "new": "if errors.Is(err, ErrAuth) || isSMBCredentialFailure(err) {\n\t\treturn ClassTransient",
+  "why": "POSITIVE CONTROL (reviewer PC1; ADAPTED: the condition gained the SMB status check): marked auth errors retried; MUST be caught"
+ },
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL: no-op; MUST survive"
+ },
+ {
+  "id": "M01",
+  "file": "pkg/fabric/budget.go",
+  "old": "\t\tfor n := len(b.free); n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "new": "\t\tfor n := len(b.free); false && n > 0 && b.free[n-1].Add(b.interval).Equal(b.nextSlot); n = len(b.free) {",
+  "why": "S1 class: wind-back does not cascade through free slots just below the cancelled tail"
+ },
+ {
+  "id": "M03",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif start.Before(now) {\n\t\tstart = now\n\t}",
+  "new": "\tif false && start.Before(now) {\n\t\tstart = now\n\t}",
+  "why": "a stale schedule front in the past is not clamped to now (idle time banked as a burst)"
+ },
+ {
+  "id": "M07",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tl.done = true\n\tl.t.Stop()\n\tl.mu.Unlock()\n\tl.release()",
+  "new": "\tl.mu.Unlock()\n\tl.release()",
+  "why": "lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time (ADAPTED: the lease became a struct; M07 did not compile in the review, this is the M07f form)"
+ },
+ {
+  "id": "M08",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tl.t.Stop()\n\tl.mu.Unlock()\n\tl.release()\n}",
+  "new": "\tl.t.Stop()\n\tl.mu.Unlock()\n}",
+  "why": "with a lease, a normal Close never releases the slot (leak) (ADAPTED: lease struct)"
+ },
+ {
+  "id": "M11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "new": "\tif false && p.closed {\n\t\tp.mu.Unlock()\n\t\tp.discard(e)\n\t\treturn\n\t}\n\tp.idle[e.key] = append(p.idle[e.key], e)",
+  "why": "S2 requeue into a pool closed during the probe keeps the connection open forever"
+ },
+ {
+  "id": "M13",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tb, err := json.Marshal(view)\n\tif err != nil {\n\t\treturn \"\"\n\t}",
+  "new": "\tb, err := json.Marshal(view)\n\tif err != nil {\n\t\treturn \"unmarshalable\"\n\t}",
+  "why": "unmarshalable settings share ONE account key, a settings change is not detected (ADAPTED: accountKey replaced the fingerprint)"
+ },
+ {
+  "id": "M19",
+  "file": "pkg/fabric/pool.go",
+  "old": "now.Sub(e.lastUsed) >= p.opts.IdleTimeout",
+  "new": "now.Sub(e.created) >= p.opts.IdleTimeout",
+  "why": "IdleTimeout measured from creation instead of last use"
+ },
+ {
+  "id": "M28",
+  "file": "pkg/fabric/metered.go",
+  "old": "\tif n > 0 {\n\t\tc.add(n)\n\t}",
+  "new": "\tif n > 0 {\n\t\t_ = c.add\n\t}",
+  "why": "Metered: WriteFile bytes consumed are not counted"
+ },
+ {
+  "id": "M29",
+  "file": "pkg/fabric/metered.go",
+  "old": "Duration: clk.Now().Sub(start)",
+  "new": "Duration: clk.Now().Sub(start) * 0",
+  "why": "Metered: Sample.Duration always 0"
+ },
+ {
+  "id": "M30",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if attempt >= policy.MaxAttempts {",
+  "new": "if attempt > policy.MaxAttempts {",
+  "why": "Retrying makes one attempt more than MaxAttempts"
+ },
+ {
+  "id": "M35",
+  "file": "pkg/fabric/op.go",
+  "old": "h = strings.ToLower(strings.TrimSuffix(h, \".\"))",
+  "new": "h = strings.ToLower(h)",
+  "why": "HostKey: FQDN trailing dot not trimmed ('nas.' and 'nas' get two budgets)"
+ },
+ {
+  "id": "M37",
+  "file": "pkg/fabric/op.go",
+  "old": "\tcase strings.Count(h, \":\") == 1:",
+  "new": "\tcase strings.Count(h, \":\") >= 1:",
+  "why": "HostKey: unbracketed IPv6 literal cut at the first colon (ADAPTED: switch form)"
+ },
+ {
+  "id": "M38",
+  "file": "pkg/fabric/errors.go",
+  "old": "case interface{ Unwrap() []error }:",
+  "new": "case interface {\n\t\t\tUnwrap() []error\n\t\t\tneverImplemented()\n\t\t}:",
+  "why": "classifier: errors.Join / multi-%w members are not walked (the joined text, with path wrappers, becomes the leaf)"
+ },
+ {
+  "id": "M39",
+  "file": "pkg/fabric/errors.go",
+  "old": "if e == nil || depth > 32 {",
+  "new": "if e == nil || depth > 0 {",
+  "why": "classifier: leaves below the root are never reached"
+ },
+ {
+  "id": "M40",
+  "file": "pkg/fabric/errors.go",
+  "old": "case te.Code >= 400 && te.Code < 500:",
+  "new": "case te.Code >= 400 && te.Code <= 500:",
+  "why": "FTP 500 (syntax error, permanent) classified transient"
+ },
+ {
+  "id": "M43",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.As(err, &dns) && dns.IsTemporary {",
+  "new": "if errors.As(err, &dns) && dns.IsTemporary && false {",
+  "why": "temporary DNS failure no longer transient"
+ },
+ {
+  "id": "M44",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\t\tout.SetMapIndex(k, redact(it.Value(), depth+1))",
+  "new": "\t\t\tout.SetMapIndex(k, it.Value())",
+  "why": "RedactConfig: nested map values neither redacted nor copied (ADAPTED: recursive redact)"
+ },
+ {
+  "id": "M45",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\tcase reflect.Slice:\n\t\tif v.IsNil() {\n\t\t\treturn reflect.Zero(t)\n\t\t}\n",
+  "new": "\tcase reflect.Slice:\n\t\tif v.IsNil() {\n\t\t\treturn reflect.Zero(t)\n\t\t}\n\t\treturn v\n",
+  "why": "RedactConfig: a slice field aliases the live config (ADAPTED: recursive redact)"
+ },
+ {
+  "id": "M46",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\tcase reflect.Struct:\n\t\treturn redact(v, 0).Interface()",
+  "new": "\tcase reflect.Struct:\n\t\treturn cfg",
+  "why": "RedactConfig: a config returned BY VALUE is not redacted (ADAPTED)"
+ },
+ {
+  "id": "M51",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif IsNil(rc) {\n\t\t// A nil (or typed-nil) stream stays nil",
+  "new": "\tif false && IsNil(rc) {\n\t\t// A nil (or typed-nil) stream stays nil",
+  "why": "a nil stream is wrapped (panics on use); in the committed code the nil check lived in ReadOnly, it now lives in guard.Wrap (ADAPTED)"
+ },
+ {
+  "id": "M54",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.ListDirectory(ctx, path)",
+  "new": "return r.in.ListDirectory(ctx, \"/\")",
+  "why": "ReadOnly.ListDirectory forwards the wrong path (R01/R02 member not in the prior set)"
+ },
+ {
+  "id": "M66",
+  "file": "pkg/fabric/budget.go",
+  "old": "ok && start.After(dl) {",
+  "new": "ok && start.Add(b.interval).After(dl) {",
+  "why": "S1 fail-fast over-eager: a caller whose deadline is after its slot is refused (11.4.201(1) false refusal)"
+ },
+ {
+  "id": "M69",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor i > 0 && b.free[i-1].After(start) {",
+  "new": "\tfor false && i > 0 && b.free[i-1].After(start) {",
+  "why": "S1: free list not kept ascending (a past slot can hide behind a future one and be reused)"
+ },
+ {
+  "id": "M70",
+  "file": "pkg/fabric/limited.go",
+  "old": "\t\tif st.op == OpDisconnect {",
+  "new": "\t\tif st.op == OpDisconnect || st.op == OpConnect {",
+  "why": "Limited: logins (Connect) no longer budgeted (ADAPTED: the probe exemption is gone)"
+ },
+ {
+  "id": "M73",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tcase 3:\n\t\treturn struct {\n\t\t\t*base\n\t\t\traMix\n\t\t\tskMix\n\t\t}{b, at, sek}",
+  "new": "\tcase 3:\n\t\treturn struct {\n\t\t\t*base\n\t\t\traMix\n\t\t}{b, at}",
+  "why": "guard.Wrap drops Seek for the ReaderAt+Seeker (no WriterTo) subset only"
+ },
+ {
+  "id": "R01",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.GetFileInfo(ctx, path)",
+  "new": "return r.in.GetFileInfo(ctx, \"/\")",
+  "why": "ReadOnly.GetFileInfo forwards the wrong path"
+ },
+ {
+  "id": "R02",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.FileExists(ctx, path)",
+  "new": "return r.in.FileExists(ctx, \"/\")",
+  "why": "ReadOnly.FileExists forwards the wrong path"
+ },
+ {
+  "id": "R03",
+  "file": "pkg/fabric/layer.go",
+  "old": "return l.in.CopyFile(ctx, ps[0], ps[1])",
+  "new": "return l.in.CopyFile(ctx, ps[0], ps[0])",
+  "why": "every fabric layer forwards CopyFile with dst := src"
+ },
+ {
+  "id": "R04",
+  "file": "pkg/fabric/layer.go",
+  "old": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r.Close()",
+  "new": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r",
+  "why": "OpenSeekable leaks a stream returned with an error"
+ },
+ {
+  "id": "R05",
+  "file": "pkg/fabric/layer.go",
+  "old": "func (l *layer) IsConnected() bool",
+  "new": "func (l *layer) IsConnected() bool { return true }\nfunc (l *layer) isConnectedOrig() bool",
+  "why": "decorated clients always report connected (ADAPTED: gofmt realigned the one-line form)"
+ },
+ {
+  "id": "R06",
+  "file": "pkg/fabric/pool.go",
+  "old": "opts.HealthTimeout = 5 * time.Second",
+  "new": "opts.HealthTimeout = 0",
+  "why": "default health-probe timeout 0"
+ },
+ {
+  "id": "R07",
+  "file": "pkg/fabric/pool.go",
+  "old": "err = c.Connect(cctx)",
+  "new": "_ = cctx\n\terr = c.Connect(context.Background())",
+  "why": "new-connection Connect ignores the caller's context (ADAPTED: the call now goes through cctx)"
+ },
+ {
+  "id": "R08",
+  "file": "pkg/fabric/pool.go",
+  "old": "cand = p.idle[key][n-1] // most recently used first\n\t\t\tp.idle[key] = p.idle[key][:n-1]",
+  "new": "cand = p.idle[key][0]\n\t\t\tp.idle[key] = p.idle[key][1:]",
+  "why": "idle order MRU -> LRU"
+ },
+ {
+  "id": "R09",
+  "file": "pkg/fabric/pool.go",
+  "old": "now.Sub(e.created) >= p.opts.MaxLifetime {",
+  "new": "now.Sub(e.created) > p.opts.MaxLifetime {",
+  "why": "MaxLifetime boundary off by one tick on borrow"
+ },
+ {
+  "id": "R10",
+  "file": "pkg/fabric/pool.go",
+  "old": "keep := !closed && c.IsConnected() &&",
+  "new": "keep := !closed &&",
+  "why": "a disconnected client is re-pooled on return"
+ },
+ {
+  "id": "R11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tcase <-p.done:\n\t\t\treturn nil, ErrPoolClosed\n\t\t}\n\t} else {",
+  "new": "\t\t}\n\t} else {",
+  "why": "GetClientContext waiters are not woken by CloseAll"
+ },
+ {
+  "id": "R12",
+  "file": "pkg/fabric/errors.go",
+  "old": "for _, e := range []error{syscall.ECONNRESET, syscall.ECONNABORTED, syscall.EPIPE, syscall.ETIMEDOUT,\n\t\tsyscall.ECONNREFUSED, syscall.EHOSTUNREACH, syscall.ENETUNREACH, syscall.ENETDOWN} {",
+  "new": "for _, e := range []error{syscall.ECONNRESET, syscall.EPIPE} {",
+  "why": "six errnos no longer transient"
+ },
+ {
+  "id": "R13",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\t\tif credentialInReply(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "new": "\t\t\tif credentialInReply(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassPermanent",
+  "why": "FTP 4yz (425/426/450/451/452...) no longer transient (ADAPTED: the credential reply rule)"
+ },
+ {
+  "id": "R14",
+  "file": "pkg/fabric/errors.go",
+  "old": "var ftpAuthCodes = map[int]bool{530: true, 332: true, 532: true}",
+  "new": "var ftpAuthCodes = map[int]bool{530: true}",
+  "why": "FTP 332/532 no longer auth (ADAPTED: 534 moved out of the auth set by the fix)"
+ },
+ {
+  "id": "R15",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\"status_logon_failure\", \"logon failure\", \"authentication failed\", \"login incorrect\",\n\t\"unable to authenticate\", \"permission denied (publickey\", \"invalid credentials\",\n\t\"invalid username or password\", \"incorrect password\", \"bad password\", \"wrong password\",\n\t\"server returned status 401\", \"server returned status 407\",\n",
+  "new": "\t\"status_logon_failure\", \"login incorrect\", \"unable to authenticate\",\n",
+  "why": "most credential text markers removed (ADAPTED: the list was split into credential and generic markers)"
+ },
+ {
+  "id": "R16",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() {",
+  "new": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() && false {",
+  "why": "DNS timeouts no longer transient (ADAPTED: the DNS branch keeps only IsTemporary because DNSError.Timeout is covered by the net.Error branch; the mutation removes that branch)"
+ },
+ {
+  "id": "R17",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) {",
+  "new": "if errors.Is(err, io.ErrUnexpectedEOF) {",
+  "why": "io.EOF no longer transient"
+ },
+ {
+  "id": "R18",
+  "file": "pkg/fabric/metered.go",
+  "old": "Protocol: inner.GetProtocol(),",
+  "new": "Protocol: \"\",",
+  "why": "Sample.Protocol never set"
+ },
+ {
+  "id": "R19",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if ctx.Err() != nil || classify(err) != ClassTransient {",
+  "new": "if classify(err) != ClassTransient {",
+  "why": "retry loop no longer checks the caller context before backing off"
+ },
+ {
+  "id": "R20",
+  "file": "pkg/fabric/pool.go",
+  "old": "ctx, cancel := context.WithTimeout(context.Background(), p.opts.HealthTimeout)\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "new": "ctx, cancel := context.WithCancel(context.Background())\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "why": "discard: Disconnect of a dead connection is unbounded"
+ },
+ {
+  "id": "X01",
+  "file": "pkg/fabric/errors_smb.go",
+  "old": "\t0xC000006D: true, // STATUS_LOGON_FAILURE\n",
+  "new": "",
+  "why": "N1: STATUS_LOGON_FAILURE dropped from the credential table"
+ },
+ {
+  "id": "X02",
+  "file": "pkg/fabric/errors_smb.go",
+  "old": "\t0xC0000234: true, // STATUS_ACCOUNT_LOCKED_OUT\n",
+  "new": "",
+  "why": "N1: STATUS_ACCOUNT_LOCKED_OUT dropped (the worst case: a locked account keeps being tried)"
+ },
+ {
+  "id": "X03",
+  "file": "pkg/fabric/errors_smb.go",
+  "old": "\t0xC0000234: true, // STATUS_ACCOUNT_LOCKED_OUT\n",
+  "new": "\t0xC0000234: true, // STATUS_ACCOUNT_LOCKED_OUT\n\t0xC0000022: true,\n",
+  "why": "N1: a FILE-level status (ACCESS_DENIED) added to the credential table"
+ },
+ {
+  "id": "X04",
+  "file": "pkg/fabric/errors_smb.go",
+  "old": "return errors.As(err, &re) && smbCredentialStatuses[re.Code]",
+  "new": "return errors.As(err, &re) && smbCredentialStatuses[re.Code] && false",
+  "why": "N1: the SMB typed check never fires"
+ },
+ {
+  "id": "X05",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tif errors.Is(err, ErrAuth) || isSMBCredentialFailure(err) {\n\t\treturn ClassAuth",
+  "new": "\tif errors.Is(err, ErrAuth) {\n\t\treturn ClassAuth",
+  "why": "N1: Classify ignores the SMB typed check"
+ },
+ {
+  "id": "X06",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tvar af authFailer\n\tif errors.As(err, &af) && af.AuthFailure() {\n\t\treturn ClassAuth",
+  "new": "\tvar af authFailer\n\tif errors.As(err, &af) && af.AuthFailure() && false {\n\t\treturn ClassAuth",
+  "why": "N1: the AuthFailure() seam is ignored by Classify"
+ },
+ {
+  "id": "X07",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tvar af authFailer\n\tif errors.As(err, &af) && af.AuthFailure() {\n\t\treturn ClassAuth",
+  "new": "\tvar af authFailer\n\tif errors.As(err, &af) {\n\t\treturn ClassAuth",
+  "why": "N1: ANY error with an AuthFailure method is auth (the seam value is ignored)"
+ },
+ {
+  "id": "X08",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\"server returned status 401\", \"server returned status 407\",\n",
+  "new": "",
+  "why": "N1: WebDAV 401/407 text markers removed"
+ },
+ {
+  "id": "X09",
+  "file": "pkg/fabric/errors.go",
+  "old": "strings.Contains(low, \"server returned status 403\") && !strings.Contains(low, \" for file \")",
+  "new": "strings.Contains(low, \"server returned status 403\")",
+  "why": "N1: ClassifyLogin reads a file-level 403 as bad credentials"
+ },
+ {
+  "id": "X10",
+  "file": "pkg/fabric/errors.go",
+  "old": "!strings.Contains(low, \" for file \") {\n\t\t\treturn ClassAuth",
+  "new": "!strings.Contains(low, \" for file \") {\n\t\t\treturn ClassPermanent",
+  "why": "N1: ClassifyLogin never reads the login 403"
+ },
+ {
+  "id": "X11",
+  "file": "pkg/fabric/errors.go",
+  "old": "i >= 0 && !strings.ContainsAny(low[:i], \"/\\\\\")",
+  "new": "i >= 0",
+  "why": "N7: a credential marker inside a path in a 4yz reply is auth"
+ },
+ {
+  "id": "X12",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\t\tif credentialInReply(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "new": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "why": "N7: the 4yz rule uses EVERY marker, generic words included"
+ },
+ {
+  "id": "X13",
+  "file": "pkg/fabric/errors.go",
+  "old": "var genericAuthMarkers = []string{\"access denied\", \"not logged in\", \"status_access_denied\"}",
+  "new": "var genericAuthMarkers = []string{\"access denied\", \"not logged in\"}",
+  "why": "N7: a generic marker leaves the list (leaf text no longer reads it)"
+ },
+ {
+  "id": "X14",
+  "file": "pkg/fabric/errors.go",
+  "old": "\"status_logon_failure\", \"logon failure\", \"authentication failed\", \"login incorrect\",\n\t\"unable",
+  "new": "\"status_logon_failure\", \"logon failure\", \"authentication failed\",\n\t\"unable",
+  "why": "N7: \"login incorrect\" is no longer a credential marker"
+ },
+ {
+  "id": "X15",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tcase isCredentialFailure(loginErr):",
+  "new": "\t\t\tcase false:",
+  "why": "N3: a credential failure is no longer remembered per account"
+ },
+ {
+  "id": "X16",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tcase ClassifyLogin(loginErr) == ClassAuth:",
+  "new": "\t\t\tcase false:",
+  "why": "N3: a generic share/file denial is no longer remembered per root"
+ },
+ {
+  "id": "X17",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tcase isCredentialFailure(loginErr):",
+  "new": "\t\t\tcase loginErr != nil:",
+  "why": "N3: ANY login failure (transient too) is remembered per account"
+ },
+ {
+  "id": "X20",
+  "file": "pkg/fabric/limited.go",
+  "old": "\t\t\trelease, ok := budget.TryAcquire()\n\t\t\tif !ok {\n\t\t\t\treturn ErrProbeSkipped\n\t\t\t}\n\t\t\tdefer release()\n\t\t\treturn call(ctx, paths)",
+  "new": "\t\t\treturn call(ctx, paths)",
+  "why": "N2: the probe is exempt from the budget again"
+ },
+ {
+  "id": "X21",
+  "file": "pkg/fabric/limited.go",
+  "old": "\t\t\t\treturn ErrProbeSkipped",
+  "new": "\t\t\t\treturn nil",
+  "why": "N2: a skipped probe reports HEALTHY (a false health claim)"
+ },
+ {
+  "id": "X22",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif start.After(now) {\n\t\tb.giveBack(start, reused)\n\t\tb.mu.Unlock()\n\t\t<-b.sem\n\t\treturn nil, false",
+  "new": "\tif start.After(now) {\n\t\t_ = reused\n\t\tb.mu.Unlock()\n\t\t<-b.sem\n\t\treturn nil, false",
+  "why": "N2: a refused TryAcquire keeps its reservation (pushes the schedule)"
+ },
+ {
+  "id": "X23",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif start.After(now) {\n\t\tb.giveBack(start, reused)\n\t\tb.mu.Unlock()\n\t\t<-b.sem\n\t\treturn nil, false",
+  "new": "\tif false && start.After(now) {\n\t\tb.giveBack(start, reused)\n\t\tb.mu.Unlock()\n\t\t<-b.sem\n\t\treturn nil, false",
+  "why": "N2: TryAcquire ignores a start slot in the future (probes bypass the rate)"
+ },
+ {
+  "id": "X24",
+  "file": "pkg/fabric/pool.go",
+  "old": "\treturn err == nil || errors.Is(err, ErrProbeSkipped)",
+  "new": "\treturn err == nil",
+  "why": "N2: Pool reads a skipped probe as an unhealthy connection"
+ },
+ {
+  "id": "X25",
+  "file": "pkg/fabric/budget.go",
+  "old": "return nil, fmt.Errorf(\"%w: start slot %v is after the deadline: %w\", ErrBudgetBusy, start.Sub(now), context.DeadlineExceeded)",
+  "new": "return nil, fmt.Errorf(\"%w: start slot %v is after the deadline: %w\", errors.New(\"x\"), start.Sub(now), context.DeadlineExceeded)",
+  "why": "fail-fast error loses ErrBudgetBusy"
+ },
+ {
+  "id": "X26",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tselect {\n\tcase b.sem <- struct{}{}:\n\tdefault:\n\t\treturn nil, false\n\t}",
+  "new": "\tb.sem <- struct{}{}",
+  "why": "N2: TryAcquire waits for a concurrency slot (blocks a busy host)"
+ },
+ {
+  "id": "X27",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif b.nextSlot.Equal(start.Add(b.interval)) {",
+  "new": "\tif !reused && b.nextSlot.Equal(start.Add(b.interval)) {",
+  "why": "N8: a reused slot that became the tail is not wound back"
+ },
+ {
+  "id": "X28",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif !l.done {\n\t\tl.last = time.Now()\n\t}",
+  "new": "\tif false && !l.done {\n\t\tl.last = time.Now()\n\t}",
+  "why": "D2: reads do not reset the idle lease"
+ },
+ {
+  "id": "X29",
+  "file": "pkg/fabric/budget.go",
+  "old": "idle < l.d {",
+  "new": "idle < 0 {",
+  "why": "D2: the lease expires even though the stream was read meanwhile"
+ },
+ {
+  "id": "X30",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tl.b.leased++\n",
+  "new": "",
+  "why": "D2: LeaseExpired is never counted"
+ },
+ {
+  "id": "X31",
+  "file": "pkg/fabric/limited.go",
+  "old": "\t\tif touch != nil {\n\t\t\tst.onRead",
+  "new": "\t\tif false && touch != nil {\n\t\t\tst.onRead",
+  "why": "D2: Limited never hooks reads to the lease"
+ },
+ {
+  "id": "X32",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\thw := &hookWriter{w: w, h: m.h}\n\tn, err := m.rc.(io.WriterTo).WriteTo(hw)",
+  "new": "\thw := &hookWriter{w: w, h: m.h}\n\tn, err := m.rc.(io.WriterTo).WriteTo(w)",
+  "why": "D2: WriteTo reports once at the end, not while it copies"
+ },
+ {
+  "id": "X33",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "if rest := n - hw.n; rest > 0 {",
+  "new": "if rest := n; rest > 0 {",
+  "why": "D2: WriteTo bytes are counted twice"
+ },
+ {
+  "id": "X34",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif m.h.OnRead == nil {\n\t\treturn m.rc.(io.WriterTo).WriteTo(w)\n\t}\n",
+  "new": "",
+  "why": "D2: WriteTo wraps the destination even when nobody observes reads (loses the inner fast path)"
+ },
+ {
+  "id": "X35",
+  "file": "pkg/fabric/layer.go",
+  "old": "\t\tif guard.IsNil(r) {\n\t\t\t// (nil, nil) is a protocol client bug",
+  "new": "\t\tif false && guard.IsNil(r) {\n\t\t\t// (nil, nil) is a protocol client bug",
+  "why": "N4: ReadFile lets a nil stream through"
+ },
+ {
+  "id": "X36",
+  "file": "pkg/fabric/layer.go",
+  "old": "\t\tif guard.IsNil(r) {\n\t\t\trc = nil\n\t\t\treturn ErrNilStream",
+  "new": "\t\tif false && guard.IsNil(r) {\n\t\t\trc = nil\n\t\t\treturn ErrNilStream",
+  "why": "N4: OpenSeekable lets a nil stream through"
+ },
+ {
+  "id": "X37",
+  "file": "pkg/fabric/retrying.go",
+  "old": "\tif d < MinRetryDelay {\n\t\td = MinRetryDelay // the floor applies after cap and jitter: neither can reach a storm\n\t}\n",
+  "new": "",
+  "why": "N5: no retry delay floor"
+ },
+ {
+  "id": "X38",
+  "file": "pkg/fabric/retrying.go",
+  "old": "\tif d < MinRetryDelay {",
+  "new": "\tif d <= 0 {",
+  "why": "N5: the floor only repairs a zero delay"
+ },
+ {
+  "id": "X39",
+  "file": "pkg/fabric/confined.go",
+  "old": "\t\tif unicode.IsControl(r) {",
+  "new": "\t\tif unicode.IsControl(r) && r < 0x80 {",
+  "why": "N6: C1 controls reach the inner client"
+ },
+ {
+  "id": "X40",
+  "file": "pkg/fabric/confined.go",
+  "old": "\tif !utf8.ValidString(p) {",
+  "new": "\tif false && !utf8.ValidString(p) {",
+  "why": "N6: invalid UTF-8 reaches the inner client"
+ },
+ {
+  "id": "X41",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\"pass\": true, \"pwd\": true, \"pw\": true, \"cookie\": true, \"cookies\": true,",
+  "new": "\"cookie\": true, \"cookies\": true,",
+  "why": "N9: Pass/Pwd/PW are not secret names"
+ },
+ {
+  "id": "X42",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\"priv\": true, \"private\": true,",
+  "new": "\"private\": true,",
+  "why": "N9: PrivKey is not a secret name"
+ },
+ {
+  "id": "X43",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\tif depth > maxRedactDepth {",
+  "new": "\tif depth > 40 {",
+  "why": "N9: the depth bound is far too deep"
+ },
+ {
+  "id": "X44",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\t\tcp.Field(i).Set(redact(v.Field(i), depth+1))",
+  "new": "\t\t\tcp.Field(i).Set(v.Field(i))",
+  "why": "N9: nested struct fields are not redacted"
+ },
+ {
+  "id": "X45",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tcp.Elem().Set(redact(v.Elem(), depth+1))",
+  "new": "\t\tcp.Elem().Set(v.Elem())",
+  "why": "N9: a pointer field is copied shallowly (secrets and sharing below it)"
+ },
+ {
+  "id": "X46",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\t\tif isSensitiveKey(k) {\n\t\t\t\tcontinue\n\t\t\t}\n",
+  "new": "",
+  "why": "N9: secret map keys are kept"
+ },
+ {
+  "id": "X47",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\tcase reflect.Chan, reflect.Func, reflect.UnsafePointer:",
+  "new": "\tcase reflect.UnsafePointer:",
+  "why": "N9: live handles (chan, func) are shared"
+ },
+ {
+  "id": "X48",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tout := reflect.MakeSlice(t, v.Len(), v.Len())\n\t\tfor i := 0; i < v.Len(); i++ {\n\t\t\tout.Index(i).Set(redact(v.Index(i), depth+1))",
+  "new": "\t\tout := reflect.MakeSlice(t, v.Len(), v.Len())\n\t\tfor i := 0; i < v.Len(); i++ {\n\t\t\tout.Index(i).Set(v.Index(i))",
+  "why": "N9: slice elements are copied but not redacted"
+ },
+ {
+  "id": "X49",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tout := reflect.New(t).Elem()\n\t\tfor i := 0; i < v.Len(); i++ {\n\t\t\tout.Index(i).Set(redact(v.Index(i), depth+1))",
+  "new": "\t\tout := reflect.New(t).Elem()\n\t\tfor i := 0; i < v.Len(); i++ {\n\t\t\tout.Index(i).Set(v.Index(i))",
+  "why": "N9: array elements are not redacted"
+ },
+ {
+  "id": "X51",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif p.holds(c) {",
+  "new": "\tif false && p.holds(c) {",
+  "why": "N10: the duplicate client is connected again before the pool notices"
+ },
+ {
+  "id": "X52",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif _, dup := p.inUse[e.c]; dup {",
+  "new": "\tif _, dup := p.inUse[e.c]; dup && false {",
+  "why": "N10: register overwrites a borrowed client"
+ },
+ {
+  "id": "X53",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif err := p.register(e); err != nil {\n\t\tif !errors.Is(err, ErrDuplicateClient) {\n\t\t\tp.discard(e)\n\t\t}",
+  "new": "\tif err := p.register(e); err != nil {\n\t\tif true {\n\t\t\tp.discard(e)\n\t\t}",
+  "why": "N10: a refused duplicate is disconnected (kills the holder's connection)"
+ },
+ {
+  "id": "X54",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tif acct != \"\" && !skipGate && !p.proven[acct] {",
+  "new": "\t\t\tif false && acct != \"\" && !skipGate && !p.proven[acct] {",
+  "why": "N3: no single-flight of the first login"
+ },
+ {
+  "id": "X55",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\t\t\t\tskipGate = true // the pilot is over",
+  "new": "\t\t\t\t\t\tskipGate = false // the pilot is over",
+  "why": "N3: after a transient pilot failure the waiters are serialised"
+ },
+ {
+  "id": "X56",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\t\tp.proven[acct] = true",
+  "new": "\t\t\t\tp.proven[acct] = false",
+  "why": "N3: an account is never proven: every login is gated"
+ },
+ {
+  "id": "X57",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tif !rootSettingKeys[strings.ToLower(k)] {",
+  "new": "\t\tif !rootSettingKeys[strings.ToLower(k)] || true {",
+  "why": "N3: roots of one account look like different accounts"
+ },
+ {
+  "id": "X58",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tif !rootSettingKeys[strings.ToLower(k)] {\n\t\t\tview.Settings[k] = v\n\t\t}",
+  "new": "\t\tif !rootSettingKeys[strings.ToLower(k)] {\n\t\t\t_ = v\n\t\t}",
+  "why": "N3: credentials are not part of the account identity"
+ },
+ {
+  "id": "X59",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tdelete(p.authFail, \"a:\"+acct)\n\t\tdelete(p.proven, acct)",
+  "new": "\t\tdelete(p.proven, acct)",
+  "why": "N3: Evict does not lift the account refusal"
+ },
+ {
+  "id": "X60",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\t\t\tcase <-ctx.Done():\n\t\t\t\t\t\trelease()\n\t\t\t\t\t\treturn nil, ctx.Err()\n",
+  "new": "",
+  "why": "N3: a waiter for the pilot ignores its context"
+ },
+ {
+  "id": "X61",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\t\t\tcase <-p.done:\n\t\t\t\t\t\trelease()\n\t\t\t\t\t\treturn nil, ErrPoolClosed\n",
+  "new": "",
+  "why": "N3: CloseAll does not wake the waiters of a pilot"
+ },
+ {
+  "id": "X62",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tdelete(p.authFail, \"r:\"+id)\n",
+  "new": "",
+  "why": "N3: Evict leaves a per-root denial in place"
+ },
+ {
+  "id": "X63",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tdelete(p.authFail, \"a:\"+old) // the settings of this root changed: a new login is a new attempt\n\t\tdelete(p.authFail, \"r:\"+key)\n",
+  "new": "",
+  "why": "N3: a changed password of a root does not lift its remembered denial (kept under the old account key)"
+ },
+ {
+  "id": "X69",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif len(view.Settings) == 0 {\n\t\tview.Root = cfg.ID\n\t}",
+  "new": "\tif false {\n\t\tview.Root = cfg.ID\n\t}",
+  "why": "N3: configs with no account settings are merged into one account"
+ },
+ {
+  "id": "X70",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tif err := p.rejectedLoginLocked(key, acct); err != nil {",
+  "new": "\t\t\tif err := p.rejectedLoginLocked(key, acct); err != nil && false {",
+  "why": "N3: a remembered rejection no longer refuses a new login"
+ },
+ {
+  "id": "V02",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor len(b.free) > 0 && b.free[0].Before(now) {\n\t\tb.free = b.free[1:]\n\t}\n",
+  "new": "",
+  "why": "W10 INSTRUMENT CONTROL (reviewer V02): past freed slots are reused (spacing broken); the randomised property test W10 MUST catch it"
+ },
+ {
+  "id": "X64",
+  "file": "pkg/fabric/op.go",
+  "old": "\treturn n >= 1 && n <= 65535",
+  "new": "\treturn n <= 65535",
+  "why": "N11: port 0 accepted"
+ },
+ {
+  "id": "X65",
+  "file": "pkg/fabric/op.go",
+  "old": "\t\tif rest != \"\" && (rest[0] != ':' || !validPort(rest[1:])) {",
+  "new": "\t\tif rest != \"\" && false && (rest[0] != ':' || !validPort(rest[1:])) {",
+  "why": "N11: text after the closing bracket accepted"
+ },
+ {
+  "id": "X66",
+  "file": "pkg/fabric/op.go",
+  "old": "\t\tif _, err := netip.ParseAddr(h); err != nil {\n\t\t\treturn \"\", fmt.Errorf(\"fabric: %q: the bracketed part must be an IP literal\", hostport)",
+  "new": "\t\tif _, err := netip.ParseAddr(h); err != nil && false {\n\t\t\treturn \"\", fmt.Errorf(\"fabric: %q: the bracketed part must be an IP literal\", hostport)",
+  "why": "N11: a bracketed name accepted"
+ },
+ {
+  "id": "X67",
+  "file": "pkg/fabric/op.go",
+  "old": "\t\tif _, err := netip.ParseAddr(h); err != nil {\n\t\t\treturn \"\", fmt.Errorf(\"fabric: %q is not an IPv6 literal",
+  "new": "\t\tif _, err := netip.ParseAddr(h); err != nil && false {\n\t\t\treturn \"\", fmt.Errorf(\"fabric: %q is not an IPv6 literal",
+  "why": "N11: several colons accepted without being an IPv6 literal"
+ },
+ {
+  "id": "X68",
+  "file": "pkg/fabric/op.go",
+  "old": "\t\tif !validPort(h[i+1:]) {",
+  "new": "\t\tif false && !validPort(h[i+1:]) {",
+  "why": "N11: a bad port after one colon accepted"
+ }
+]

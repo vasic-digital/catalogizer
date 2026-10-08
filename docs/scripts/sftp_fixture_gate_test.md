@@ -21,10 +21,10 @@ bash scripts/test-infra/sftp_fixture_gate_test.sh        # exit 0 = every check 
 SFTP_FIXTURE_UNDER_TEST=/path/to/mutant.sh bash scripts/test-infra/sftp_fixture_gate_test.sh   # run the same checks against another copy of the script (mutation proof)
 ```
 
-It uses the script's own test hook `SFTP_FIXTURE_STOP_AFTER_HASH=1` (exit 0 right after the hash line, before registering an operation or starting a container) and a temporary source directory
+It uses the script's own test hook `SFTP_FIXTURE_STOP_AFTER_HASH=1` (selftest mode only; exit 3 right after the hash line, before registering an operation or starting a container; refused in `run` mode) and a temporary source directory
 under `$TMPDIR`, removed on exit. `SFTP_FIXTURE_UNDER_TEST` must live in `scripts/test-infra/` (the script derives the repository root from its own location).
 
-## Checks (8)
+## Checks (11)
 
 1. `SFTP_FIXTURE_SRC` without `SFTP_FIXTURE_ALLOW_SRC=1` is refused with `REFUSED reason=src_override_not_declared`.
 2. With `ALLOW=1` that gate passes (the next refusal is `src_module_missing` for a missing directory): the refusal in 1 is not a blanket refusal.
@@ -33,11 +33,14 @@ under `$TMPDIR`, removed on exit. `SFTP_FIXTURE_UNDER_TEST` must live in `script
 5. The printed `pkg/sftp` hash equals an independent computation over `pkg/sftp` of the source directory.
 6. One changed byte changes the printed hash (and it still equals the independent one).
 7. For the checked-in module (no override) the printed `pkg/sftp` hash equals the documented recomputation command. (The whole-module hash is printed as `info:` only: other work edits other packages of the module concurrently.)
-8. No scratch directory (`.audit/scratch/catalogizer-sftp-*`) is left behind.
+8. The stop hook is REFUSED in `run` mode (`REFUSED reason=stop_hook_only_in_selftest`, exit 1, nothing on stdout, no log file written): an inherited `SFTP_FIXTURE_STOP_AFTER_HASH` can never end a run with a success-looking exit (review WF24 S06).
+9. Control: without the hook the same `run` invocation does not refuse for that reason.
+10. `selftest` stopped by the hook exits with the distinct code 3 (checks 4 and 7 pin it too), never 0.
+11. No scratch directory (`.audit/scratch/catalogizer-sftp-*`) is left behind.
 
 ## Exits
 
-0 all checks passed; 1 at least one failed. Mutation proof (`fix-r2-gate-test-mutants.txt`): with the gate disabled, with the whole-tree hash computed over a different file set, and with the package hash computed over the wrong directory, the
+0 all checks passed; 1 at least one failed. Mutation proof (`fix-r2-gate-test-mutants.txt`, and for the hook checks `fix-r3-gate-test-mutants.txt`): with the gate disabled, with the whole-tree hash computed over a different file set, and with the package hash computed over the wrong directory, the
 test fails (2 failed checks each).
 
 ## Limits

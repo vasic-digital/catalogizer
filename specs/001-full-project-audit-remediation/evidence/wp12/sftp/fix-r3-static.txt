@@ -1,0 +1,18 @@
+# static checks, fix-r3, final tree (pkg/sftp sha256 d86f6c6bb0a3f97455252feabe83883c89c1726cc0eb36c5ef4174946ceec910), 2026-10-08T04:33:52Z
+# in IMG-GO (gofmt -l = files needing formatting; empty = none):
+gofmt-done
+vet-ok
+vet-integration-ok
+# on the host:
+bash -n scripts/test-infra/sftp_fixture.sh: ok
+bash -n scripts/test-infra/sftp_fixture_gate_test.sh: ok
+host gofmt -l (pkg/sftp pkg/factory):
+(empty above = formatted)
+python3 -I fix-r3-mutants.py check: checked 117 mutants, 0 mismatches
+adopted reviewer files byte-identical to WF24-sftp-evidence/tools:
+  wf24_probes_test.go same
+  wf24_classify_test.go same
+  wf24_discriminators_test.go same
+  wf24_discriminators2_test.go same
+  wf24_authlatch_test.go same
+  wf24_factory_keys_test.go same

@@ -1,0 +1,18 @@
+# identity: WP-12 fix round 3 mutant F6b: 1 = go test exit code
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:84: 
+        	Error Trace:	/out/mut/F6b/filesystem/pkg/ftp/fix_r2_list_test.go:84
+        	Error:      	Not equal: 
+        	            	expected: 10
+        	            	actual  : 8
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=010;Modify=20200517103000; octal.txt
+    fix_r2_list_test.go:81: 
+        	Error Trace:	/out/mut/F6b/filesystem/pkg/ftp/fix_r2_list_test.go:81
+        	Error:      	Received unexpected error:
+        	            	ftp: directory listing has lines that could not be parsed: unreadable size "08" for "zero8.txt"
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=08;Modify=20200517103000; zero8.txt
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.005s
+FAIL

@@ -1,0 +1,118 @@
+BASELINE rc=0 PASS
+PC1 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_Table,TestPool_RejectedLoginIsNotRepeatedAcrossBorrows,TestR3_AccountRefusalDoesNotCutOffIdleConnections,TestR3_ChangedCredentialsAreANewAttempt,TestR3_ClassifyEverySMBCredentialSta -- POSITIVE CONTROL (reviewer PC1; ADAPTED: the condition gained the SMB status check): marked auth errors retried; MUST be caught
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL: no-op; MUST survive
+M01 CAUGHT rc=1 by=TestK69_CascadeAcrossOutOfOrderFrees,TestW15_BudgetCascadeWindBack -- S1 class: wind-back does not cascade through free slots just below the cancelled tail
+M03 CAUGHT rc=1 by=TestBudgetConfig_TinyRateRejectedNotFailOpen,TestBudget_CancelledMiddleReservationIsReused,TestBudget_CancelledTailReservationIsGivenBack,TestBudget_CancelledTailThenIdleTimeIsNotLost,TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving,T -- a stale schedule front in the past is not clamped to now (idle time banked as a burst)
+M07 CAUGHT rc=1 by=TestW16_LeaseNormalCloseReleasesAndIsNotCountedAsExpired -- lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time (ADAPTED: the lease became a struct; M07 did not compile in the review, this is the M07f form)
+M08 CAUGHT rc=1 by=TestR3_Lease_ActivelyReadStreamKeepsItsSlot,TestW16_LeaseNormalCloseReleasesAndIsNotCountedAsExpired -- with a lease, a normal Close never releases the slot (leak) (ADAPTED: lease struct)
+M11 CAUGHT rc=1 by=TestK11_CloseDuringProbeDisconnectsTheProbedConnection -- S2 requeue into a pool closed during the probe keeps the connection open forever
+M13 CAUGHT rc=1 by=TestK13_UnmarshalableSettingsChangeAllowsANewLogin,TestR3_UnmarshalableSettingsHaveNoAccountMemoryAndNoGate -- unmarshalable settings share ONE account key, a settings change is not detected (ADAPTED: accountKey replaced the fingerprint)
+M19 CAUGHT rc=1 by=TestPool_ReturnSweepsExpiredIdleConnections -- IdleTimeout measured from creation instead of last use
+M28 CAUGHT rc=1 by=TestMetered_CountsCallsErrorsAndBytes -- Metered: WriteFile bytes consumed are not counted
+M29 CAUGHT rc=1 by=TestMetered_CountsCallsErrorsAndBytes -- Metered: Sample.Duration always 0
+M30 CAUGHT rc=1 by=TestR3_RetryDelayAboveTheFloorIsUntouched,TestR3_RetryDelayFloorAppliesToBaseMaxAndJitter,TestRetryPolicy_DelayClosedFormMatchesDefinition,TestRetrying_BackoffDoublesAndCaps,TestRetrying_ExhaustionWrapsLastError -- Retrying makes one attempt more than MaxAttempts
+M35 CAUGHT rc=1 by=TestHostKey,TestHostKey_RejectsNonHostsAndCanonicalisesIPs,TestR3_HostKeyGrid -- HostKey: FQDN trailing dot not trimmed ('nas.' and 'nas' get two budgets)
+M37 CAUGHT rc=1 by=TestHostKey,TestHostKey_RejectsNonHostsAndCanonicalisesIPs,TestR3_HostKeyGrid,TestRV10_HostKeyEquivalentSpellings -- HostKey: unbracketed IPv6 literal cut at the first colon (ADAPTED: switch form)
+M38 CAUGHT rc=1 by=TestK38_JoinedPathWrapperIsNotAuth -- classifier: errors.Join / multi-%w members are not walked (the joined text, with path wrappers, becomes the leaf)
+M39 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_EveryAuthMarkerInALeaf,TestClassify_Table,TestMarkersCredentialMarkersAtTheHeadOfA4yzReplyAreAuthGenericOnesAreNot,TestR3_ClassifyWebDAVStatusText,TestR3_LoginFailureShapesOfEveryCr -- classifier: leaves below the root are never reached
+M40 CAUGHT rc=1 by=TestK40_FTP500IsPermanent -- FTP 500 (syntax error, permanent) classified transient
+M43 CAUGHT rc=1 by=TestClassify_EveryTransientSignal,TestClassify_Table,TestR3_Lease_IdleStreamLosesItsSlotOnceAndStaysReadable -- temporary DNS failure no longer transient
+M44 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- RedactConfig: nested map values neither redacted nor copied (ADAPTED: recursive redact)
+M45 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- RedactConfig: a slice field aliases the live config (ADAPTED: recursive redact)
+M46 CAUGHT rc=1 by=TestR3_RedactConfigKeepsTopLevelContract,TestRedactConfig_StructPointerMapAndDetached -- RedactConfig: a config returned BY VALUE is not redacted (ADAPTED)
+M51 CAUGHT rc=1 by=TestK51_ReadOnlyNilStreamStaysNil,TestR3_ReadOnlyKeepsNilStreamsNil,TestR3_WrapOfANilStreamIsNil -- a nil stream is wrapped (panics on use); in the committed code the nil check lived in ReadOnly, it now lives in guard.Wrap (ADAPTED)
+M54 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.ListDirectory forwards the wrong path (R01/R02 member not in the prior set)
+M66 CAUGHT rc=1 by=TestK66_DeadlineAfterSlotIsServed -- S1 fail-fast over-eager: a caller whose deadline is after its slot is refused (11.4.201(1) false refusal)
+M69 CAUGHT rc=1 by=TestK69_CascadeAcrossOutOfOrderFrees -- S1: free list not kept ascending (a past slot can hide behind a future one and be reused)
+M70 CAUGHT rc=1 by=TestLimited_EveryOpTakesOneSlotExceptDisconnect,TestR3_RealWebDAVThroughPoolAndLimitedStaysWithinTheBudget -- Limited: logins (Connect) no longer budgeted (ADAPTED: the probe exemption is gone)
+M73 CAUGHT rc=1 by=TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths -- guard.Wrap drops Seek for the ReaderAt+Seeker (no WriterTo) subset only
+R01 CAUGHT rc=1 by=TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.GetFileInfo forwards the wrong path
+R02 CAUGHT rc=1 by=TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.FileExists forwards the wrong path
+R03 CAUGHT rc=1 by=TestLayers_CopyFileForwardsSourceAndDestination -- every fabric layer forwards CopyFile with dst := src
+R04 CAUGHT rc=1 by=TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError -- OpenSeekable leaks a stream returned with an error
+R05 CAUGHT rc=1 by=TestLayers_IsConnectedAndProtocolAreTheInnersAnswer,TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled -- decorated clients always report connected (ADAPTED: gofmt realigned the one-line form)
+R06 CAUGHT rc=1 by=TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle,TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext,TestRV03_PoolCancelledBorrowDestroysHealthyIdle -- default health-probe timeout 0
+R07 CAUGHT rc=1 by=TIMEOUT -- new-connection Connect ignores the caller's context (ADAPTED: the call now goes through cctx)
+R08 CAUGHT rc=1 by=TestPool_IdleOrderIsMostRecentlyUsedFirst,TestPool_IdleTimeoutRetiresOlderIdleConnections,TestRV18_IdleTimeoutNotEnforcedBelowMRU -- idle order MRU -> LRU
+R09 CAUGHT rc=1 by=TestPool_MaxLifetimeBoundaryIsInclusive -- MaxLifetime boundary off by one tick on borrow
+R10 CAUGHT rc=1 by=TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn,TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled -- a disconnected client is re-pooled on return
+R11 CAUGHT rc=1 by=TestPool_CloseAllWakesWaiterWithErrPoolClosed -- GetClientContext waiters are not woken by CloseAll
+R12 CAUGHT rc=1 by=TestClassify_EveryTransientSignal,TestW06_RetryNanosecondDelayIsAStorm -- six errnos no longer transient
+R13 CAUGHT rc=1 by=TestClassify_FTPCodeTable,TestClassify_Table,TestMarkersCredentialMarkersAtTheHeadOfA4yzReplyAreAuthGenericOnesAreNot,TestMarkersEveryMarkerInAPathNeverMakesA4yzReplyAuth,TestR3_FTP4yzPathEchoIsTransientAndCredentialTextIsAuth,TestRV08_Clas -- FTP 4yz (425/426/450/451/452...) no longer transient (ADAPTED: the credential reply rule)
+R14 CAUGHT rc=1 by=TestClassify_FTPCodeTable -- FTP 332/532 no longer auth (ADAPTED: 534 moved out of the auth set by the fix)
+R15 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_EveryAuthMarkerInALeaf,TestClassify_FTPCodeTable,TestClassify_Table,TestMarkersEveryMarkerInAPathNeverMakesA4yzReplyAuth,TestR3_ClassifyWebDAVStatusText,TestR3_FTP4yzPathEchoIsTrans -- most credential text markers removed (ADAPTED: the list was split into credential and generic markers)
+R16 CAUGHT rc=1 by=TestClassify_EveryTransientSignal,TestClassify_Table -- DNS timeouts no longer transient (ADAPTED: the DNS branch keeps only IsTemporary because DNSError.Timeout is covered by the net.Error branch; the mutation removes that branch)
+R17 CAUGHT rc=1 by=TestClassify_EveryTransientSignal -- io.EOF no longer transient
+R18 CAUGHT rc=1 by=TestMetered_SampleCarriesProtocolOpAndError -- Sample.Protocol never set
+R19 CAUGHT rc=1 by=TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff -- retry loop no longer checks the caller context before backing off
+R20 CAUGHT rc=1 by=TestPool_DiscardOfAHangingConnectionIsBounded -- discard: Disconnect of a dead connection is unbounded
+X01 CAUGHT rc=1 by=TestMarkersEverySMBCredentialStatusIsInTheTableAndNothingElse,TestR3_ClassifyEverySMBCredentialStatusThroughTheRealType,TestR3_LoginFailureShapesOfEveryCredentialedProtocol,TestW01_ClassifyRealSMBLogonFailure,TestW02_PoolRepeatsLoginsAfterR -- N1: STATUS_LOGON_FAILURE dropped from the credential table
+X02 CAUGHT rc=1 by=TestMarkersEverySMBCredentialStatusIsInTheTableAndNothingElse,TestR3_ClassifyEverySMBCredentialStatusThroughTheRealType,TestR3_MarkTransientPrecedence,TestW01_ClassifyRealSMBLogonFailure -- N1: STATUS_ACCOUNT_LOCKED_OUT dropped (the worst case: a locked account keeps being tried)
+X03 CAUGHT rc=1 by=TestMarkersEverySMBCredentialStatusIsInTheTableAndNothingElse,TestR3_ShareDenialIsRememberedPerRootNotPerAccount -- N1: a FILE-level status (ACCESS_DENIED) added to the credential table
+X04 CAUGHT rc=1 by=TestR3_ClassifyEverySMBCredentialStatusThroughTheRealType,TestR3_LoginFailureShapesOfEveryCredentialedProtocol,TestR3_MarkTransientPrecedence,TestW01_ClassifyRealSMBLogonFailure,TestW02_PoolRepeatsLoginsAfterRealSMBRejection -- N1: the SMB typed check never fires
+X05 CAUGHT rc=1 by=TestR3_ClassifyEverySMBCredentialStatusThroughTheRealType,TestR3_LoginFailureShapesOfEveryCredentialedProtocol,TestR3_MarkTransientPrecedence,TestW01_ClassifyRealSMBLogonFailure -- N1: Classify ignores the SMB typed check
+X06 CAUGHT rc=1 by=TestR3_ClassifyStructuralAuthFailureSeam -- N1: the AuthFailure() seam is ignored by Classify
+X07 CAUGHT rc=1 by=TestR3_ClassifyStructuralAuthFailureSeam -- N1: ANY error with an AuthFailure method is auth (the seam value is ignored)
+X08 CAUGHT rc=1 by=TestR3_ClassifyWebDAVStatusText,TestR3_LoginFailureShapesOfEveryCredentialedProtocol,TestR3_PoolRealWebDAVRefusalsAreRememberedOnce,TestW03_PoolRepeatsLoginsAfterRealWebDAV401 -- N1: WebDAV 401/407 text markers removed
+X09 CAUGHT rc=1 by=TestR3_ClassifyWebDAVStatusText -- N1: ClassifyLogin reads a file-level 403 as bad credentials
+X10 CAUGHT rc=1 by=TestR3_ClassifyWebDAVStatusText,TestR3_PoolRealWebDAVRefusalsAreRememberedOnce -- N1: ClassifyLogin never reads the login 403
+X11 CAUGHT rc=1 by=TestMarkersEveryMarkerInAPathNeverMakesA4yzReplyAuth,TestR3_FTP4yzPathEchoIsTransientAndCredentialTextIsAuth -- N7: a credential marker inside a path in a 4yz reply is auth
+X12 CAUGHT rc=1 by=TestMarkersCredentialMarkersAtTheHeadOfA4yzReplyAreAuthGenericOnesAreNot,TestMarkersEveryMarkerInAPathNeverMakesA4yzReplyAuth,TestR3_FTP4yzPathEchoIsTransientAndCredentialTextIsAuth,TestW08_ClassifyFTP4yzWithPathText -- N7: the 4yz rule uses EVERY marker, generic words included
+X13 CAUGHT rc=1 by=TestClassify_EveryAuthMarkerInALeaf,TestMarkersEveryMarkerInAPathNeverMakesA4yzReplyAuth -- N7: a generic marker leaves the list (leaf text no longer reads it)
+X14 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_EveryAuthMarkerInALeaf,TestClassify_FTPCodeTable,TestClassify_Table,TestR3_FTP4yzPathEchoIsTransientAndCredentialTextIsAuth,TestW17_MarkTransientOverStructuredReply -- N7: "login incorrect" is no longer a credential marker
+X15 CAUGHT rc=1 by=TestR3_EvictLiftsTheRefusalOfTheAccount,TestR3_RejectedLoginIsSharedByTheRootsOfOneAccount -- N3: a credential failure is no longer remembered per account
+X16 CAUGHT rc=1 by=TestR3_PoolRealWebDAVRefusalsAreRememberedOnce,TestR3_ShareDenialIsRememberedPerRootNotPerAccount -- N3: a generic share/file denial is no longer remembered per root
+X17 CAUGHT rc=1 by=TestPool_CancelledDuringConnectFreesTheSlot,TestPool_CreateAndConnectFailuresFreeTheSlot,TestPool_GetClientConnectIsBounded,TestPool_RejectedLoginResets,TestR3_PoolRealWebDAVRefusalsAreRememberedOnce,TestR3_ShareDenialIsRememberedPerRootNot -- N3: ANY login failure (transient too) is remembered per account
+X20 CAUGHT rc=1 by=TestLimited_EveryOpTakesOneSlotExceptDisconnect,TestR3_Limited_ProbeCountsAgainstTheRate,TestR3_Limited_ProbeIsSkippedNotRunWhenTheBudgetIsBusy,TestR3_Limited_ProbesNeverExceedMaxConcurrent,TestR3_RealWebDAVThroughPoolAndLimitedStaysWithinT -- N2: the probe is exempt from the budget again
+X21 CAUGHT rc=1 by=TestR3_Limited_ProbeCountsAgainstTheRate,TestR3_Limited_ProbeIsSkippedNotRunWhenTheBudgetIsBusy,TestR3_Limited_ProbesNeverExceedMaxConcurrent -- N2: a skipped probe reports HEALTHY (a false health claim)
+X22 INVALID(BUILD_FAILED) rc=1 by=pkg/fabric/budget.go:200:9: declared and not used: reused -- N2: a refused TryAcquire keeps its reservation (pushes the schedule)
+X23 CAUGHT rc=1 by=TestR3_Limited_ProbeCountsAgainstTheRate,TestR3_TryAcquire_GivesBackAFreedFutureSlot,TestR3_TryAcquire_RefusesWhenTheStartSlotIsNotDueAndReservesNothing -- N2: TryAcquire ignores a start slot in the future (probes bypass the rate)
+X24 CAUGHT rc=1 by=TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle,TestR3_SkippedProbeKeepsTheConnection,TestRV15_PoolHealthProbeThrottledByOwnBudget -- N2: Pool reads a skipped probe as an unhealthy connection
+X25 CAUGHT rc=1 by=TestR3_FailFastErrorIsErrBudgetBusyAndADeadline -- fail-fast error loses ErrBudgetBusy
+X26 CAUGHT rc=1 by=TestRV15_PoolHealthProbeThrottledByOwnBudget,TIMEOUT -- N2: TryAcquire waits for a concurrency slot (blocks a busy host)
+X27 CAUGHT rc=1 by=TestR3_ReusedTailIsWoundBackAndItsCascade,TestW09_BudgetReusedTailNotWoundBack -- N8: a reused slot that became the tail is not wound back
+X28 CAUGHT rc=1 by=TestR3_Lease_ActivelyReadStreamKeepsItsSlot,TestR3_Lease_WriteToCountsAsActivityWhileItCopies,TestW18_LeaseOnActiveStreamExceedsCapForItsLifetime -- D2: reads do not reset the idle lease
+X29 CAUGHT rc=1 by=TestR3_Lease_ActivelyReadStreamKeepsItsSlot,TestR3_Lease_WriteToCountsAsActivityWhileItCopies,TestW18_LeaseOnActiveStreamExceedsCapForItsLifetime -- D2: the lease expires even though the stream was read meanwhile
+X30 CAUGHT rc=1 by=TestLimited_StreamLeaseFreesALeakedSlot,TestR3_Lease_IdleStreamLosesItsSlotOnceAndStaysReadable -- D2: LeaseExpired is never counted
+X31 CAUGHT rc=1 by=TestR3_Lease_ActivelyReadStreamKeepsItsSlot,TestR3_Lease_WriteToCountsAsActivityWhileItCopies,TestW18_LeaseOnActiveStreamExceedsCapForItsLifetime -- D2: Limited never hooks reads to the lease
+X32 CAUGHT rc=1 by=TestR3_Lease_WriteToCountsAsActivityWhileItCopies,TestR3_WriteToReportsEveryWriteAndTheTotalOnce -- D2: WriteTo reports once at the end, not while it copies
+X33 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestMetered_CountsCallsErrorsAndBytes,TestR3_WriteToReportsEveryWriteAndTheTotalOnce,TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths -- D2: WriteTo bytes are counted twice
+X34 CAUGHT rc=1 by=TestR3_WriteToReportsEveryWriteAndTheTotalOnce -- D2: WriteTo wraps the destination even when nobody observes reads (loses the inner fast path)
+X35 CAUGHT rc=1 by=TestW05_LayerNilStreamNilError,TIMEOUT -- N4: ReadFile lets a nil stream through
+X36 CAUGHT rc=1 by=TestR3_EveryLayerRefusesANilStreamAndLeaksNothing -- N4: OpenSeekable lets a nil stream through
+X37 CAUGHT rc=1 by=TestR3_RetryDelayFloorAppliesToBaseMaxAndJitter,TestRetryPolicy_DelayClosedFormMatchesDefinition,TestW06_RetryNanosecondDelayIsAStorm -- N5: no retry delay floor
+X38 CAUGHT rc=1 by=TestR3_RetryDelayFloorAppliesToBaseMaxAndJitter,TestRetryPolicy_DelayClosedFormMatchesDefinition,TestW06_RetryNanosecondDelayIsAStorm -- N5: the floor only repairs a zero delay
+X39 CAUGHT rc=1 by=FuzzConfined,TestR3_ConfinedRefusesEveryControlRuneAndInvalidByte,TestW07_ConfinedC1Controls -- N6: C1 controls reach the inner client
+X40 CAUGHT rc=1 by=FuzzConfined,TestR3_ConfinedRefusesEveryControlRuneAndInvalidByte,TestW07_ConfinedC1Controls -- N6: invalid UTF-8 reaches the inner client
+X41 CAUGHT rc=1 by=TestR3_IsSensitiveNameWordsAndSubstrings,TestR3_RedactConfigKeepsTopLevelContract,TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestW12_RedactConfigNestedShapes -- N9: Pass/Pwd/PW are not secret names
+X42 CAUGHT rc=1 by=TestR3_IsSensitiveNameWordsAndSubstrings,TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestW12_RedactConfigNestedShapes -- N9: PrivKey is not a secret name
+X43 CAUGHT rc=1 by=TestR3_RedactConfigDepthBoundAndCycle -- N9: the depth bound is far too deep
+X44 CAUGHT rc=1 by=TestR3_RedactConfigDepthBoundAndCycle,TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- N9: nested struct fields are not redacted
+X45 CAUGHT rc=1 by=TestLayers_GetConfigIsRedactedAndDetached,TestR3_RedactConfigDepthBoundAndCycle,TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRV21_ReadOnlyGetConfigLeaksCredentials,TestReadOnly_GetConfigIsRedactedAndDetached,TestRedactConfig_S -- N9: a pointer field is copied shallowly (secrets and sharing below it)
+X46 CAUGHT rc=1 by=TestR3_RedactConfigKeepsTopLevelContract,TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- N9: secret map keys are kept
+X47 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked -- N9: live handles (chan, func) are shared
+X48 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestW12_RedactConfigNestedShapes -- N9: slice elements are copied but not redacted
+X49 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked -- N9: array elements are not redacted
+X51 CAUGHT rc=1 by=TestR3_DuplicateClientFromTheFactoryIsRefusedWithoutTouchingIt -- N10: the duplicate client is connected again before the pool notices
+X52 CAUGHT rc=1 by=TestR3_ConcurrentDuplicateIsRefusedAtRegistration -- N10: register overwrites a borrowed client
+X53 CAUGHT rc=1 by=TestR3_ConcurrentDuplicateIsRefusedAtRegistration -- N10: a refused duplicate is disconnected (kills the holder's connection)
+X54 CAUGHT rc=1 by=TestR3_CloseAllWakesTheWaitersOfAPilot,TestR3_ConcurrentBorrowersAfterRejectionMakeOneLogin,TestW04_ConcurrentBorrowsEachLogInAfterRejection -- N3: no single-flight of the first login
+X55 SURVIVED rc=0 by= -- N3: after a transient pilot failure the waiters are serialised
+X56 INVALID(BUILD_FAILED) rc=1 by= -- N3: an account is never proven: every login is gated
+X57 INVALID(BUILD_FAILED) rc=1 by=pkg/fabric/pool.go:11:2: "strings" imported and not used -- N3: roots of one account look like different accounts
+X58 INVALID(BUILD_FAILED) rc=1 by= -- N3: credentials are not part of the account identity
+X59 INVALID(BUILD_FAILED) rc=1 by= -- N3: Evict does not lift the account refusal
+X60 INVALID(BUILD_FAILED) rc=1 by= -- N3: a waiter for the pilot ignores its context
+X61 INVALID(BUILD_FAILED) rc=1 by= -- N3: CloseAll does not wake the waiters of a pilot
+X62 INVALID(BUILD_FAILED) rc=1 by= -- N3: Evict leaves a per-root denial in place
+X63 INVALID(BUILD_FAILED) rc=1 by= -- N3: a changed password of a root does not lift its remembered denial (kept under the old account key)
+X69 INVALID(BUILD_FAILED) rc=1 by= -- N3: configs with no account settings are merged into one account
+X70 INVALID(BUILD_FAILED) rc=1 by= -- N3: a remembered rejection no longer refuses a new login
+V02 INVALID(BUILD_FAILED) rc=1 by= -- W10 INSTRUMENT CONTROL (reviewer V02): past freed slots are reused (spacing broken); the randomised property test W10 MUST catch it
+X64 INVALID(BUILD_FAILED) rc=1 by= -- N11: port 0 accepted
+X65 INVALID(BUILD_FAILED) rc=1 by= -- N11: text after the closing bracket accepted
+X66 INVALID(BUILD_FAILED) rc=1 by= -- N11: a bracketed name accepted
+X67 INVALID(BUILD_FAILED) rc=1 by= -- N11: several colons accepted without being an IPv6 literal
+X68 INVALID(BUILD_FAILED) rc=1 by= -- N11: a bad port after one colon accepted
+SUMMARY {'CAUGHT': 96, 'SURVIVED': 2, 'INVALID': 17, 'NOT_APPLIED': 0}
+HARNESS_CONTROLS_OK=True

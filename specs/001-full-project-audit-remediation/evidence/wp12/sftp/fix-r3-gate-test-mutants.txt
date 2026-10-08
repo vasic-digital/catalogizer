@@ -1,0 +1,21 @@
+# identity: fix-r3 mutation proof for the fixture script gates (review WF24 S06): scripts/test-infra/sftp_fixture_gate_test.sh against mutated copies of the FIXED sftp_fixture.sh
+# each mutant is a copy of the script in a mini root with the same layout (scripts/test-infra/, docker-compose.test-infra.sftp.yml, submodules -> the checkout's submodules, scripts/longops); the gate test is run with SFTP_FIXTURE_UNDER_TEST
+Z00 NEGATIVE CONTROL: unmutated copy in the mini root (must PASS all checks) -> rc=0 sftp_fixture_gate_test: 11 checks, 0 failed
+M1 the run-mode refusal of the stop hook removed -> rc=1 sftp_fixture_gate_test: 11 checks, 1 failed
+      FAIL the stop hook is refused in run mode (rc=3 out= err=sftp-fixture: tested tree sha256=643490f60f8232faca6f
+M2 the stop hook exits 0 again -> rc=1 sftp_fixture_gate_test: 11 checks, 3 failed
+      FAIL printed hash equals the independent hash (rc=0 printed=741d610181249a7e456778f462e71ff31807ebd8322196b588
+      FAIL checked-in module pkg/sftp hash (rc=0 printed=d2ccd1884b504aa7c98d6ff374523d85cd5b5220df3a56c691293a27ec3
+      FAIL selftest stopped by the hook exits 3 (rc=0)
+M3 the stop hook is refused in selftest too (inverted mode test) -> rc=1 sftp_fixture_gate_test: 11 checks, 6 failed
+      FAIL printed hash equals the independent hash (rc=1 printed= expected=741d610181249a7e456778f462e71ff31807ebd8
+      FAIL printed pkg/sftp hash (printed= expected=a0a2bc1a1e148b8620594b408a31f8e5059af7c70fdfe7f50fa69c7447faf9aa
+      FAIL one changed byte changes the hash (h1= h2= e2=643490f60f8232faca6fd31f969dc08d0bd05c0a570435e693333da7491
+      FAIL checked-in module pkg/sftp hash (rc=1 printed= expected=d2ccd1884b504aa7c98d6ff374523d85cd5b5220df3a56c69
+      FAIL the stop hook is refused in run mode (rc=3 out= err=sftp-fixture: tested tree sha256=643490f60f8232faca6f
+      FAIL selftest stopped by the hook exits 3 (rc=1)
+M4 the refusal reason renamed (the gate test greps the reason) -> rc=1 sftp_fixture_gate_test: 11 checks, 1 failed
+      FAIL the stop hook is refused in run mode (rc=1 out= err=sftp-fixture: REFUSED reason=stop_hook_somewhere SFTP
+M5 (fix-r2 gate) the SFTP_FIXTURE_SRC declaration check removed -> rc=1 sftp_fixture_gate_test: 11 checks, 2 failed
+      FAIL SFTP_FIXTURE_SRC without ALLOW is refused (rc=1 out=sftp-fixture: tested tree sha256=741d610181249a7e4567
+      FAIL ALLOW must be exactly 1 (rc=1 out=sftp-fixture: tested tree sha256=741d610181249a7e456778f462e71ff31807eb

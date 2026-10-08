@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant W5: 1 = go test exit code
+--- FAIL: TestFTPFactory_SettingsReachTheClient_Config (0.00s)
+    ftp_factory_test.go:250: 
+        	Error Trace:	/out/mut/W5/filesystem/pkg/factory/ftp_factory_test.go:250
+        	Error:      	"&{Host:nas.local Port:2121 Username:bob CredentialRef: Path:/media TLSMode:none TrustedLAN:true AllowDegradedList:false DisableEPSV:false}" does not contain "AllowDegradedList:true"
+        	Test:       	TestFTPFactory_SettingsReachTheClient_Config
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.628s
+FAIL

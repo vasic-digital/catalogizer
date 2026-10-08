@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM12: 1 = go test exit code
+--- FAIL: TestR3_K6c_InvalidUTF8Name_AfterARefusedOPTS_IsRefused_NM12 (0.04s)
+    fix_r3_list_test.go:275: 
+        	Error Trace:	/out/mut/NM12/filesystem/pkg/ftp/fix_r3_list_test.go:275
+        	Error:      	Expected error with "ftp: the server refused OPTS UTF8 ON and sent a name that is not valid UTF-8, so non-ASCII names would be garbled" in chain but got nil.
+        	Test:       	TestR3_K6c_InvalidUTF8Name_AfterARefusedOPTS_IsRefused_NM12
+        	Messages:   	invalid UTF-8 without 0x7f: only the utf8.ValidString arm catches it
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.399s
+FAIL

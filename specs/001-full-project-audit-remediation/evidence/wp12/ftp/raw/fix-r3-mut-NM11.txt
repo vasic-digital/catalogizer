@@ -1,0 +1,18 @@
+# identity: WP-12 fix round 3 mutant NM11: 1 = go test exit code
+--- FAIL: TestMLST_OddFacts_Parsed_F6 (0.02s)
+    fix_r2_list_test.go:216: 
+        	Error Trace:	/out/mut/NM11/filesystem/pkg/ftp/fix_r2_list_test.go:216
+        	Error:      	Not equal: 
+        	            	expected: "sub"
+        	            	actual  : "/data/sub"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-sub
+        	            	+/data/sub
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.072s
+FAIL

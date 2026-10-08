@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K6b: 1 = go test exit code
+--- FAIL: TestR3_K6a_Desynchronised_Listings_StillFailClosed (0.06s)
+    --- FAIL: TestR3_K6a_Desynchronised_Listings_StillFailClosed/more_than_a_tenth_of_the_lines_are_fragments (0.02s)
+        fix_r3_list_test.go:112: 
+            	Error Trace:	/out/mut/K6b/filesystem/pkg/ftp/fix_r3_list_test.go:112
+            	Error:      	Expected error with "ftp: directory listing has lines that could not be parsed" in chain but got nil.
+            	Test:       	TestR3_K6a_Desynchronised_Listings_StillFailClosed/more_than_a_tenth_of_the_lines_are_fragments
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.073s
+FAIL

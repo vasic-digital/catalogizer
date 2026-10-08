@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant F2a: 1 = go test exit code
+--- FAIL: TestUnexpectedPositiveReply_DropsTheConnection (0.02s)
+    fix_r2_net_test.go:553: 
+        	Error Trace:	/out/mut/F2a/filesystem/pkg/ftp/fix_r2_net_test.go:553
+        	Error:      	Expected error with "ftp: protocol violation" in chain but got nil.
+        	Test:       	TestUnexpectedPositiveReply_DropsTheConnection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	10.164s
+FAIL

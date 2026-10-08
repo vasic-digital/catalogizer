@@ -1,0 +1,16 @@
+# fix-r3 compat: other packages that consume pkg/fabric / pkg/decorators, read-only snapshot of the shared tree (other workers edit pkg/ftp, pkg/sftp, pkg/nfs3, pkg/factory concurrently; NOTHING outside pkg/fabric, pkg/decorators was edited by this fixer)
+## go build ./pkg/...
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading github.com/kr/fs v0.1.0
+build_rc=0
+## go vet (consumers)
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+vet_rc=0
+## go test -race -count=1 ./pkg/ftp/ ./pkg/smb/ ./pkg/webdav/ ./pkg/local/
+ok  	digital.vasic.filesystem/pkg/ftp	43.646s
+ok  	digital.vasic.filesystem/pkg/smb	1.024s
+ok  	digital.vasic.filesystem/pkg/webdav	1.037s
+ok  	digital.vasic.filesystem/pkg/local	1.029s
+test_rc=?
+# note: 'test_rc=?' is an artefact of the script (PIPESTATUS does not exist in sh); the verdict is the four 'ok' lines above

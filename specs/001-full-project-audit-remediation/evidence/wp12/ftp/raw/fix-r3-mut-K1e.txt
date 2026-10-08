@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant K1e: 1 = go test exit code
+--- FAIL: TestR3_K1e_UnreadableSIZE_DropsTheConnection (0.02s)
+    fix_r3_lockstep_test.go:185: 
+        	Error Trace:	/out/mut/K1e/filesystem/pkg/ftp/fix_r3_lockstep_test.go:185
+        	Error:      	Should be false
+        	Test:       	TestR3_K1e_UnreadableSIZE_DropsTheConnection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.236s
+FAIL

@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant MX04: 1 = go test exit code
+--- FAIL: TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04 (0.02s)
+    fix_r2_net_test.go:1085: 
+        	Error Trace:	/out/mut/MX04/filesystem/pkg/ftp/fix_r2_net_test.go:1085
+        	Error:      	An error is expected but got nil.
+        	            	expected: *ftp.CertMismatchError
+        	Test:       	TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04
+        	Messages:   	the chain verifies against the pinned CA, but the leaf is not a pinned certificate: the pin check refuses it
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.195s
+FAIL

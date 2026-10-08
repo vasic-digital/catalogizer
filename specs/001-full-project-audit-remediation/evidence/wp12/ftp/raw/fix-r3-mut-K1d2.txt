@@ -1,0 +1,18 @@
+# identity: WP-12 fix round 3 mutant K1d2: 1 = go test exit code
+--- FAIL: TestR3_K1d_MLSTPathname_LenientWhereServersDiffer (0.02s)
+    fix_r3_lockstep_test.go:153: 
+        	Error Trace:	/out/mut/K1d2/filesystem/pkg/ftp/fix_r3_lockstep_test.go:153
+        	Error:      	Not equal: 
+        	            	expected: true
+        	            	actual  : false
+        	Test:       	TestR3_K1d_MLSTPathname_LenientWhereServersDiffer
+        	Messages:   	"/data/A.TXT" vs "/data/a.txt"
+    fix_r3_lockstep_test.go:167: 
+        	Error Trace:	/out/mut/K1d2/filesystem/pkg/ftp/fix_r3_lockstep_test.go:167
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: fabric: transient failure: ftp: protocol violation: the MLST reply describes another file than the one asked for
+        	Test:       	TestR3_K1d_MLSTPathname_LenientWhereServersDiffer
+        	Messages:   	same last component, other spelling of the directory part: accepted
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.283s
+FAIL

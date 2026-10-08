@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM14: 1 = go test exit code
+--- FAIL: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (3.30s)
+    fix_r2_net_test.go:426: 
+        	Error Trace:	/out/mut/NM14/filesystem/pkg/ftp/fix_r2_net_test.go:426
+        	Error:      	Should be true
+        	Test:       	TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+        	Messages:   	DiscoverCert must honour ctx
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.775s
+FAIL

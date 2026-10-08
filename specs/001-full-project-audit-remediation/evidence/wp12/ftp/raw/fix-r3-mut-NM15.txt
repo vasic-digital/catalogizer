@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM15: 1 = go test exit code
+--- FAIL: TestR3_NM15_OperationsAfterTheConnectBudget_StayOnTheSameConnection (0.47s)
+    fix_r3_transfer_test.go:320: 
+        	Error Trace:	/out/mut/NM15/filesystem/pkg/ftp/fix_r3_transfer_test.go:320
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: write tcp 127.0.0.1:35666->127.0.0.1:42411: i/o timeout
+        	Test:       	TestR3_NM15_OperationsAfterTheConnectBudget_StayOnTheSameConnection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	22.790s
+FAIL

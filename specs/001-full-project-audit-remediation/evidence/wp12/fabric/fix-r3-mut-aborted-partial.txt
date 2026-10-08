@@ -1,0 +1,25 @@
+BASELINE rc=0 PASS
+PC1 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_Table,TestPool_RejectedLoginIsNotRepeatedAcrossBorrows,TestR3_ChangedCredentialsAreANewAttempt,TestR3_ClassifyEverySMBCredentialStatusThroughTheRealType,TestR3_ConcurrentBorrowersAf -- POSITIVE CONTROL (reviewer PC1; ADAPTED: the condition gained the SMB status check): marked auth errors retried; MUST be caught
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL: no-op; MUST survive
+M01 CAUGHT rc=1 by=TestK69_CascadeAcrossOutOfOrderFrees,TestW15_BudgetCascadeWindBack -- S1 class: wind-back does not cascade through free slots just below the cancelled tail
+M03 CAUGHT rc=1 by=TestBudgetConfig_TinyRateRejectedNotFailOpen,TestBudget_CancelledMiddleReservationIsReused,TestBudget_CancelledTailReservationIsGivenBack,TestBudget_CancelledTailThenIdleTimeIsNotLost,TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving,T -- a stale schedule front in the past is not clamped to now (idle time banked as a burst)
+M07 CAUGHT rc=1 by=TestW16_LeaseNormalCloseReleasesAndIsNotCountedAsExpired -- lease timer not stopped on a normal Close: LeaseExpired counts streams closed in time (ADAPTED: the lease became a struct; M07 did not compile in the review, this is the M07f form)
+M08 CAUGHT rc=1 by=TestR3_Lease_ActivelyReadStreamKeepsItsSlot,TestW16_LeaseNormalCloseReleasesAndIsNotCountedAsExpired -- with a lease, a normal Close never releases the slot (leak) (ADAPTED: lease struct)
+M11 CAUGHT rc=1 by=TestK11_CloseDuringProbeDisconnectsTheProbedConnection -- S2 requeue into a pool closed during the probe keeps the connection open forever
+M13 CAUGHT rc=1 by=TestK13_UnmarshalableSettingsChangeAllowsANewLogin,TestR3_UnmarshalableSettingsHaveNoAccountMemoryAndNoGate -- unmarshalable settings share ONE account key, a settings change is not detected (ADAPTED: accountKey replaced the fingerprint)
+M19 CAUGHT rc=1 by=TestPool_ReturnSweepsExpiredIdleConnections -- IdleTimeout measured from creation instead of last use
+M28 CAUGHT rc=1 by=TestMetered_CountsCallsErrorsAndBytes -- Metered: WriteFile bytes consumed are not counted
+M29 CAUGHT rc=1 by=TestMetered_CountsCallsErrorsAndBytes -- Metered: Sample.Duration always 0
+M30 CAUGHT rc=1 by=TestR3_RetryDelayAboveTheFloorIsUntouched,TestR3_RetryDelayFloorAppliesToBaseMaxAndJitter,TestRetryPolicy_DelayClosedFormMatchesDefinition,TestRetrying_BackoffDoublesAndCaps,TestRetrying_ExhaustionWrapsLastError -- Retrying makes one attempt more than MaxAttempts
+M35 CAUGHT rc=1 by=TestHostKey,TestHostKey_RejectsNonHostsAndCanonicalisesIPs,TestR3_HostKeyGrid -- HostKey: FQDN trailing dot not trimmed ('nas.' and 'nas' get two budgets)
+M37 CAUGHT rc=1 by=TestHostKey,TestHostKey_RejectsNonHostsAndCanonicalisesIPs,TestR3_HostKeyGrid,TestRV10_HostKeyEquivalentSpellings -- HostKey: unbracketed IPv6 literal cut at the first colon (ADAPTED: switch form)
+M38 CAUGHT rc=1 by=TestK38_JoinedPathWrapperIsNotAuth -- classifier: errors.Join / multi-%w members are not walked (the joined text, with path wrappers, becomes the leaf)
+M39 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_EveryAuthMarkerInALeaf,TestClassify_Table,TestMarkersCredentialMarkersAtTheHeadOfA4yzReplyAreAuthGenericOnesAreNot,TestR3_ClassifyWebDAVStatusText,TestR3_LoginFailureShapesOfEveryCr -- classifier: leaves below the root are never reached
+M40 CAUGHT rc=1 by=TestK40_FTP500IsPermanent -- FTP 500 (syntax error, permanent) classified transient
+M43 CAUGHT rc=1 by=TestClassify_EveryTransientSignal,TestClassify_Table -- temporary DNS failure no longer transient
+M44 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- RedactConfig: nested map values neither redacted nor copied (ADAPTED: recursive redact)
+M45 CAUGHT rc=1 by=TestR3_RedactConfigNestedShapesAreDeepCopiedAndBlanked,TestRedactConfig_StructPointerMapAndDetached,TestW12_RedactConfigNestedShapes -- RedactConfig: a slice field aliases the live config (ADAPTED: recursive redact)
+M46 CAUGHT rc=1 by=TestR3_RedactConfigKeepsTopLevelContract,TestRedactConfig_StructPointerMapAndDetached -- RedactConfig: a config returned BY VALUE is not redacted (ADAPTED)
+M51 CAUGHT rc=1 by=TestK51_ReadOnlyNilStreamStaysNil,TestR3_ReadOnlyKeepsNilStreamsNil,TestR3_WrapOfANilStreamIsNil -- a nil stream is wrapped (panics on use); in the committed code the nil check lived in ReadOnly, it now lives in guard.Wrap (ADAPTED)
+M54 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.ListDirectory forwards the wrong path (R01/R02 member not in the prior set)
+M66 CAUGHT rc=1 by=TestK66_DeadlineAfterSlotIsServed -- S1 fail-fast over-eager: a caller whose deadline is after its slot is refused (11.4.201(1) false refusal)

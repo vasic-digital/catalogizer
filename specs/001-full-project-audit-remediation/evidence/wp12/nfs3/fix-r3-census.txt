@@ -1,0 +1,123 @@
+# fix-r3 class censuses (tools/fixr3_census.sh), each with a control needle; run_at 2026-10-08T03:48:41Z; submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree
+== head: 83c0ac1 + working tree
+== class A: sites that interpret NOENT/STALE/BADHANDLE (non-test)
+needle[A]: positive=1 (want >=1) negative=0 (want 0)
+submodules/filesystem/pkg/nfs3/client.go:967:		if err != nil && round < 2 && errors.As(err, &ne) && (ne.Status == NFS3ErrStale || ne.Status == NFS3ErrBadHandle) {
+submodules/filesystem/pkg/nfs3/client.go:1103:// vanishedErr reports an error that means "this entry no longer exists": a file deleted between
+submodules/filesystem/pkg/nfs3/client.go:1106:func vanishedErr(err error, leg attrLeg) bool {
+submodules/filesystem/pkg/nfs3/client.go:1113:		return ne.Status == NFS3ErrNoEnt
+submodules/filesystem/pkg/nfs3/client.go:1115:		return ne.Status == NFS3ErrNoEnt || ne.Status == NFS3ErrStale || ne.Status == NFS3ErrBadHandle
+submodules/filesystem/pkg/nfs3/client.go:1172:					if vanishedErr(err, legLookup) { // deleted while we were listing: it is not in the directory any more
+submodules/filesystem/pkg/nfs3/client.go:1183:					if vanishedErr(err, legGetattr) {
+submodules/filesystem/pkg/nfs3/proto.go:39:	NFS3ErrNoEnt       = 2
+submodules/filesystem/pkg/nfs3/proto.go:46:	NFS3ErrStale       = 70
+submodules/filesystem/pkg/nfs3/proto.go:47:	NFS3ErrBadHandle   = 10001
+submodules/filesystem/pkg/nfs3/proto.go:93:		return e.Status == NFS3ErrNoEnt
+submodules/filesystem/pkg/nfs3/proto.go:104:	case NFS3ErrNoEnt:
+submodules/filesystem/pkg/nfs3/proto.go:118:	case NFS3ErrStale:
+submodules/filesystem/pkg/nfs3/proto.go:120:	case NFS3ErrBadHandle:
+== class B: readers and writers of the handle cache (non-test)
+needle[B]: positive=3 (want >=1) negative=0 (want 0)
+submodules/filesystem/pkg/nfs3/client.go:219:	cache      map[string]cacheEntry // directory path -> handle
+submodules/filesystem/pkg/nfs3/client.go:229:// cacheEntry is one remembered directory handle and when it was learned. gen identifies the
+submodules/filesystem/pkg/nfs3/client.go:234:type cacheEntry struct {
+submodules/filesystem/pkg/nfs3/client.go:262:	c := &Client{cfg: cfg, cache: map[string]cacheEntry{}, now: time.Now, remountSem: make(chan struct{}, 1)}
+submodules/filesystem/pkg/nfs3/client.go:535:	c.cache = map[string]cacheEntry{"/": {h: root, at: c.now()}}
+submodules/filesystem/pkg/nfs3/client.go:832:	e, ok := c.cache[p]
+submodules/filesystem/pkg/nfs3/client.go:850:func (c *Client) validLocked(p string, e cacheEntry, now time.Time) bool {
+submodules/filesystem/pkg/nfs3/client.go:856:		pe, ok := c.cache[pp]
+submodules/filesystem/pkg/nfs3/client.go:878:	if len(c.cache) >= handleCacheMax {
+submodules/filesystem/pkg/nfs3/client.go:880:		keep := map[string]cacheEntry{"/": {h: c.root, at: c.now()}}
+submodules/filesystem/pkg/nfs3/client.go:882:			if e, ok := c.cache[a]; ok {
+submodules/filesystem/pkg/nfs3/client.go:886:		c.cache = keep
+submodules/filesystem/pkg/nfs3/client.go:888:	old, had := c.cache[p]
+submodules/filesystem/pkg/nfs3/client.go:894:	c.cache[p] = cacheEntry{h: h, at: c.now(), gen: gen, pgen: c.cache[path.Dir(p)].gen}
+submodules/filesystem/pkg/nfs3/client.go:899:	c.cache = map[string]cacheEntry{"/": {h: c.root, at: c.now()}}
+submodules/filesystem/pkg/nfs3/client.go:930:	c.cache = map[string]cacheEntry{"/": {h: root, at: c.now()}}
+== class C: blocking constructs (non-test)
+needle[C]: positive=4 (want >=1) negative=0 (want 0)
+  submodules/filesystem/pkg/nfs3/client.go:276:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:283:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:295:		return d.DialContext(ctx, "tcp", addr)
+  submodules/filesystem/pkg/nfs3/client.go:305:		return d.DialContext(ctx, "tcp", addr)
+  submodules/filesystem/pkg/nfs3/client.go:405:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:410:		c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:417:			c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:531:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:542:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:569:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:600:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:607:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:619:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:639:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:646:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:668:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:676:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:693:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:709:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:798:		case <-ctx.Done():
+  submodules/filesystem/pkg/nfs3/client.go:801:		case <-t.C:
+  submodules/filesystem/pkg/nfs3/client.go:830:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:873:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:898:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/client.go:908:	case c.remountSem <- struct{}{}:
+  submodules/filesystem/pkg/nfs3/client.go:909:	case <-ctx.Done():
+  submodules/filesystem/pkg/nfs3/client.go:912:	defer func() { <-c.remountSem }()
+  submodules/filesystem/pkg/nfs3/client.go:928:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/reader.go:33:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/reader.go:174:			f.ch <- chunkResult{err: err}
+  submodules/filesystem/pkg/nfs3/reader.go:178:		f.ch <- chunkResult{data: data, eof: eof, err: err}
+  submodules/filesystem/pkg/nfs3/reader.go:235:	r.mu.Lock()
+  submodules/filesystem/pkg/nfs3/reader.go:257:		case res = <-f.ch:
+  submodules/filesystem/pkg/nfs3/reader.go:258:		case <-r.ctx.Done():
+  submodules/filesystem/pkg/nfs3/reader.go:311:	r.mu.Lock()
+  submodules/filesystem/pkg/nfs3/reader.go:337:	r.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:210:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:227:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:236:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:251:		if _, err := io.ReadFull(r, hdr[:]); err != nil {
+  submodules/filesystem/pkg/nfs3/rpc.go:270:				if _, err := io.ReadFull(r, rec[start:start+chunk]); err != nil {
+  submodules/filesystem/pkg/nfs3/rpc.go:304:		c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:314:		ch <- rec // buffered 1
+  submodules/filesystem/pkg/nfs3/rpc.go:353:	c.mu.Lock()
+  submodules/filesystem/pkg/nfs3/rpc.go:368:	case c.wsem <- struct{}{}:
+  submodules/filesystem/pkg/nfs3/rpc.go:369:	case <-ctx.Done():
+  submodules/filesystem/pkg/nfs3/rpc.go:376:		<-c.wsem
+  submodules/filesystem/pkg/nfs3/rpc.go:386:	n, werr := c.nc.Write(msg)
+  submodules/filesystem/pkg/nfs3/rpc.go:394:			<-c.wsem
+  submodules/filesystem/pkg/nfs3/rpc.go:402:		<-c.wsem
+  submodules/filesystem/pkg/nfs3/rpc.go:408:	<-c.wsem
+  submodules/filesystem/pkg/nfs3/rpc.go:410:	var timer <-chan time.Time
+  submodules/filesystem/pkg/nfs3/rpc.go:417:	case rec, ok := <-ch:
+  submodules/filesystem/pkg/nfs3/rpc.go:422:	case <-ctx.Done():
+  submodules/filesystem/pkg/nfs3/rpc.go:425:	case <-timer:
+  submodules/filesystem/pkg/nfs3/rpc.go:444:		case <-done:
+  submodules/filesystem/pkg/nfs3/rpc.go:446:		case <-fin:
+  submodules/filesystem/pkg/nfs3/rpc.go:451:		<-exited
+  submodules/filesystem/pkg/nfs3/rpc.go:456:	c.mu.Lock()
+context.Background in non-test sources: 0
+remountMu uses: 0
+== class D: allow-list entries and rpcConn.call sites
+allowedCalls entries: 11
+call sites of rpcConn.call (non-test; the AST test TestWF24KillN17 pins the version argument of each): 2
+== class E: returns of connectOnce
+return statements in connectOnce: 12
+== class F: Config numeric fields
+  	PortmapPort, MountPort, NFSPort int
+  	UID, GID uint32
+  	GIDs     []uint32
+  	DialTimeout  time.Duration // default 10s
+  	CallTimeout  time.Duration // per RPC, default 30s
+  	MaxRetries   int           // extra attempts on transient errors; 0 means the default 2, negative means none (at most 1000)
+  	RetryBackoff time.Duration // first backoff, doubled per attempt (cap 5s); default 100ms
+  	JukeboxRetries int           // waits before giving up; 0 means the default 4, negative means none
+  	JukeboxBackoff time.Duration // first wait, doubled per attempt (cap 30s); default 2s
+  	HandleCacheTTL time.Duration
+  	MaxPipeline int    // concurrent READs per open file; default 8
+  	ReadSize    uint32 // bytes per READ; 0 = min(FSINFO rtpref, 1 MiB)
+  	DirCount    uint32 // READDIRPLUS dircount; default 32768
+  	DirMaxCount uint32 // READDIRPLUS maxcount; default 131072
+  	MaxEntries  int    // cap on entries per directory listing; default 5,000,000
+  	MaxRecord   int    // cap on one RPC record; default 8 MiB. ReadSize and DirMaxCount (plus 4 KiB) must fit in it
+== loops (11.4.276 C1 census carried over)
+for statements in non-test sources: 29

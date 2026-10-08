@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant F8b: 1 = go test exit code
+--- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10 (0.17s)
+    --- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash (0.07s)
+        fix_r2_list_test.go:339: 
+            	Error Trace:	/out/mut/F8b/filesystem/pkg/ftp/fix_r2_list_test.go:339
+            	Error:      	Received unexpected error:
+            	            	ftp: stat /: file does not exist: /
+            	Test:       	TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash
+            	Messages:   	the FTP root itself exists; there is no parent to find it in
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.501s
+FAIL

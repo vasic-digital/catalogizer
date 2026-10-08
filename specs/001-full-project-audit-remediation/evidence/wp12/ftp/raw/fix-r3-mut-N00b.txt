@@ -1,0 +1,2 @@
+# identity: WP-12 fix round 3 mutant N00b: 0 = go test exit code
+ok  	digital.vasic.filesystem/pkg/ftp	37.447s

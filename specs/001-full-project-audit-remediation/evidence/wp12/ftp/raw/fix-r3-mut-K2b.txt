@@ -1,0 +1,19 @@
+# identity: WP-12 fix round 3 mutant K2b: 1 = go test exit code
+--- FAIL: TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2 (0.13s)
+    --- FAIL: TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/550_login_incorrect_text (0.01s)
+        fix_r3_login_test.go:62: 
+            	Error Trace:	/out/mut/K2b/filesystem/pkg/ftp/fix_r3_login_test.go:62
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/550_login_incorrect_text
+            	Messages:   	fabric: connect root1: ftp: USER refused by the server: 550 login incorrect for this service
+        fix_r3_login_test.go:65: 
+            	Error Trace:	/out/mut/K2b/filesystem/pkg/ftp/fix_r3_login_test.go:65
+            	Error:      	Received unexpected error:
+            	            	fabric: not logging in to root1 again after a rejected login (Evict("root1") or change the settings to retry): ftp: USER refused by the server: 550 login incorrect for this service
+            	Test:       	TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2/550_login_incorrect_text
+            	Messages:   	the root is not latched: the second borrow dials again
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.181s
+FAIL

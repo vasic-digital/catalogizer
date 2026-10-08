@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K3c: 1 = go test exit code
+--- FAIL: TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded (5.32s)
+    fix_r3_transfer_test.go:113: 
+        	Error Trace:	/out/mut/K3c/filesystem/pkg/ftp/fix_r3_transfer_test.go:113
+        	Error:      	"5.306959994s" is not less than "2.5s"
+        	Test:       	TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded
+        	Messages:   	bounded by earlyCloseWait (twice), not by the 5 s IOTimeout: 5.306959994s
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	26.076s
+FAIL

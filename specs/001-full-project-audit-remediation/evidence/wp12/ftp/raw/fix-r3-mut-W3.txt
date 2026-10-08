@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant W3: 1 = go test exit code
+--- FAIL: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+    ftp_factory_test.go:226: 
+        	Error Trace:	/out/mut/W3/filesystem/pkg/factory/ftp_factory_test.go:226
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)"
+        	            	in chain: "ftp: AUTH TLS refused: 502 no: ftp: the server does not offer explicit TLS; clear text is never used as a fallback"
+        	            		"ftp: the server does not offer explicit TLS; clear text is never used as a fallback"
+        	Test:       	TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.626s
+FAIL

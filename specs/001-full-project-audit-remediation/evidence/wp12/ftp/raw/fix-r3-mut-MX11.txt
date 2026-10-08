@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant MX11: 1 = go test exit code
+--- FAIL: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (3.00s)
+    fix_r2_net_test.go:420: 
+        	Error Trace:	/out/mut/MX11/filesystem/pkg/ftp/fix_r2_net_test.go:420
+        	Error:      	Should be true
+        	Test:       	TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+        	Messages:   	DiscoverCert must honour its timeout (3.001824989s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.479s
+FAIL

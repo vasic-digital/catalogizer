@@ -1,0 +1,16 @@
+[
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL: no-op; MUST survive"
+ },
+ {
+  "id": "V02",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor len(b.free) > 0 && b.free[0].Before(now) {\n\t\tb.free = b.free[1:]\n\t}\n",
+  "new": "",
+  "why": "W10 INSTRUMENT CONTROL: past freed slots are reused (spacing broken); W10 MUST catch it"
+ }
+]

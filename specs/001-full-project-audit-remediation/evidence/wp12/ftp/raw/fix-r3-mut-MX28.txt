@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant MX28: 1 = go test exit code
+--- FAIL: TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28 (0.00s)
+    fix_r2_net_test.go:1108: 
+        	Error Trace:	/out/mut/MX28/filesystem/pkg/ftp/fix_r2_net_test.go:1108
+        	Error:      	Expected error with "ftp: the certificate presented by the server is not the one the owner confirmed" in chain but got nil.
+        	Test:       	TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28
+        	Messages:   	SHA256:08:62:E7:CF:C1:EA:9B:1C:61:2F:F8:6D:00:E2:4B:8D:9A:56:A2:B2:5C:7A:A0:E9:2B:17:AC:8C:85:69:22
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.215s
+FAIL

@@ -53,13 +53,14 @@ The whole-module hash also covers packages that other work edits while this one 
 
 `scripts/test-infra/sftp_fixture_gate_test.sh` starts no container. It checks that `SFTP_FIXTURE_SRC` without `SFTP_FIXTURE_ALLOW_SRC=1` is refused (`src_override_not_declared`), that `ALLOW`
 must be exactly `1`, that the printed tested-tree hashes (whole tree and `pkg/sftp`) equal an independent computation over the source directory and change when one byte changes, that the checked-in module's `pkg/sftp` hash
-equals the documented command, and that no scratch directory is left behind. It uses the script's test hook `SFTP_FIXTURE_STOP_AFTER_HASH=1` (exit 0 right after the hash line, before any
-container; companion guide `docs/scripts/sftp_fixture_gate_test.md`). Exit 0 = all checks passed.
+equals the documented command, and that no scratch directory is left behind. It uses the script's test hook `SFTP_FIXTURE_STOP_AFTER_HASH=1` (honoured in `selftest` mode ONLY: it ends the script right after the hash line, before any
+container, with the distinct exit code 3; in `run` mode it is REFUSED with `stop_hook_only_in_selftest` before anything is created, so an inherited variable can never turn a test run into a silent exit 0 -
+review WF24 S06; companion guide `docs/scripts/sftp_fixture_gate_test.md`). Exit 0 = all checks passed. The complete list of environment variables the script reads: `SFTP_FIXTURE_SRC`, `SFTP_FIXTURE_ALLOW_SRC`, `SFTP_FIXTURE_STOP_AFTER_HASH`.
 
 ## Exits and refusals
 
 The exit status is the `go test` status. `sftp-fixture: REFUSED reason=<code>` (exit 1): `tool_missing`, `compose_missing`, `scratch_uncreatable`, `keygen_failed`, `fingerprint_unreadable`,
-`view_copy_failed`, `src_override_not_declared`, `src_module_missing`, `tree_hash_failed`, `register_failed`, `compose_up_failed`, `sshd_not_ready`, `network_absent`, `run_pinned_failed`, `disk_headroom`. Exit 2: usage.
+`view_copy_failed`, `src_override_not_declared`, `src_module_missing`, `tree_hash_failed`, `register_failed`, `compose_up_failed`, `sshd_not_ready`, `network_absent`, `run_pinned_failed`, `disk_headroom`, `stop_hook_only_in_selftest`. Exit 2: usage. Exit 3: `selftest` stopped by the test hook (never a result of a test run).
 
 ## Limits
 

@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant W8: 1 = go test exit code
+--- FAIL: TestWF24_R_F16_FactoryBuildsTheScanClient (0.00s)
+    ftp_factory_r3_test.go:30: CLOSED-F16 (factory part): type=*ftp.Client seekable=true mutation=ftp: not connected config=&{Host:127.0.0.1 Port:1 Username: CredentialRef:x Path: TLSMode:explicit TrustedLAN:false AllowDegradedList:false DisableEPSV:false} inline-password=ftp: inline "password" is not accepted, use credential_ref
+    ftp_factory_r3_test.go:32: 
+        	Error Trace:	/out/mut/W8/filesystem/pkg/factory/ftp_factory_r3_test.go:32
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: not connected"
+        	Test:       	TestWF24_R_F16_FactoryBuildsTheScanClient
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.014s
+FAIL

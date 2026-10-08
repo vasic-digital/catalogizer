@@ -1,0 +1,15 @@
+# identity: WP-12 fix round 3 mutant F12: 1 = go test exit code
+--- FAIL: TestIACByteInAPath_IsDoubled_F12 (0.02s)
+    fix_r2_net_test.go:1221: 
+        	Error Trace:	/out/mut/F12/filesystem/pkg/ftp/fix_r2_net_test.go:1221
+        	Error:      	[]string{"AUTH TLS", "USER u", "PASS ***", "FEAT", "TYPE I", "OPTS UTF8 ON", "PBSZ 0", "PROT P", "CWD /data", "PWD", "MLST /data/x\xff\xf4y"} does not contain "MLST /data/x\xff\xff\xf4y"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	RFC 854: a 0xFF data byte is sent as 0xFF 0xFF, never as a Telnet command
+    fix_r2_net_test.go:1223: 
+        	Error Trace:	/out/mut/F12/filesystem/pkg/ftp/fix_r2_net_test.go:1223
+        	Error:      	"MLST /data/x\xff\xf4y" should not contain "\xff"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	no lone IAC reaches the server: "MLST /data/x\xff\xf4y"
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.995s
+FAIL

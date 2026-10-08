@@ -1,0 +1,17 @@
+# identity: WP-12 fix round 3 mutant K1c: 1 = go test exit code
+--- FAIL: TestR3_K1cd_MLSTShapeAndPathname_AreChecked (0.05s)
+    --- FAIL: TestR3_K1cd_MLSTShapeAndPathname_AreChecked/two_entries (0.02s)
+        fix_r3_lockstep_test.go:125: 
+            	Error Trace:	/out/mut/K1c/filesystem/pkg/ftp/fix_r3_lockstep_test.go:125
+            	Error:      	Should be false
+            	Test:       	TestR3_K1cd_MLSTShapeAndPathname_AreChecked/two_entries
+            	Messages:   	the reply may be somebody else's answer: the connection is dropped
+        fix_r3_lockstep_test.go:130: 
+            	Error Trace:	/out/mut/K1c/filesystem/pkg/ftp/fix_r3_lockstep_test.go:130
+            	Error:      	Not equal: 
+            	            	expected: 2
+            	            	actual  : 1
+            	Test:       	TestR3_K1cd_MLSTShapeAndPathname_AreChecked/two_entries
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.048s
+FAIL

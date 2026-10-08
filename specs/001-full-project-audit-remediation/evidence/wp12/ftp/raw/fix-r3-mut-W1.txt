@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant W1: 1 = go test exit code
+--- FAIL: TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect (0.00s)
+    ftp_factory_r3_test.go:47: 
+        	Error Trace:	/out/mut/W1/filesystem/pkg/factory/ftp_factory_r3_test.go:47
+        	Error:      	Should be false
+        	Test:       	TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect
+        	Messages:   	the store installed before Connect must be the one consulted: ftp: no certificate pin store configured
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.020s
+FAIL

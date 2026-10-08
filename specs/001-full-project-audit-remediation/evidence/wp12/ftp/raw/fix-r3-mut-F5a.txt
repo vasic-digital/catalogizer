@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant F5a: 1 = go test exit code
+--- FAIL: TestDeadline_EveryControlCommandIsBounded (2.52s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PASS (0.31s)
+        fix_r2_net_test.go:368: 
+            	Error Trace:	/out/mut/F5a/filesystem/pkg/ftp/fix_r2_net_test.go:368
+            	Error:      	Should not be: 1
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PASS
+            	Messages:   	no reply after PASS must not be retried: fabric: transient failure: ftp: connection failed after the password was sent (read tcp 127.0.0.1:56748->127.0.0.1:38305: i/o timeout)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	6.034s
+FAIL

@@ -1,0 +1,99 @@
+# fix-r3 RED on the COMMITTED code (submodules/filesystem 83c0ac1, from git archive) plus ONLY the adopted WF24 probes/killers and fixr3_test.go. Expected: the probes and the fixr3 tests that demonstrate a defect FAIL, the killers PASS (they kill mutants), the controls PASS
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:33:55Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+f61ba060d9fe6dc426e86e64b09fd6f1ddea0d13e28ffcc0d3e55818b6a485a9  pkg/nfs3/client.go
+77b53ff448961efe3588c2620613e81104dc49fd39b5942714fcb100945c721f  pkg/nfs3/doc.go
+190587d4e5084b06d14ba943a883239cba5f24192dfd4bd0a7f67b94d92efd2b  pkg/nfs3/proto.go
+358e5ca03084631af015f60f343d889f82043fff207ba6870e0574c4d31e6f22  pkg/nfs3/reader.go
+79ca78701756c3b3f54e45ce371489f4636f24647dd45816c138c9d6cfa67932  pkg/nfs3/rpc.go
+82b74df3bd7259b15261c374efdd76dd72ad59ffe917ddb9d8c66667de3d7ee8  pkg/nfs3/xdr.go
+vet-clean
+=== RUN   TestFixR3LookupLegBadHandleFailsTheListing
+    fixr3_test.go:58: BADHANDLE on the directory during the attribute fallback: want the NFS error, got 0 entries and err=<nil>
+--- FAIL: TestFixR3LookupLegBadHandleFailsTheListing (0.06s)
+=== RUN   TestFixR3EvictedParentDoesNotLeaveReachableChildren
+    fixr3_test.go:90: /deep/a/b is reachable although the entry of its ancestor /deep/a is gone
+    fixr3_test.go:90: /deep/a/b/c is reachable although the entry of its ancestor /deep/a is gone
+    fixr3_test.go:95: the new /deep/a is empty: /deep/a/b/c/leaf.txt must not resolve through the children of the replaced directory (err=<nil>)
+--- FAIL: TestFixR3EvictedParentDoesNotLeaveReachableChildren (0.05s)
+=== RUN   TestFixR3UnchangedExpiredParentKeepsItsChildren
+--- PASS: TestFixR3UnchangedExpiredParentKeepsItsChildren (0.04s)
+=== RUN   TestFixR3HandleWithoutRememberedParentIsNotCached
+    fixr3_test.go:137: /nope/child was cached although /nope is not
+--- FAIL: TestFixR3HandleWithoutRememberedParentIsNotCached (0.04s)
+=== RUN   TestFixR3FullCacheKeepsTheChainOfTheNewEntry
+    fixr3_test.go:166: /x was lost by the reset although it is on the chain of the new entry
+    fixr3_test.go:166: /x/y was lost by the reset although it is on the chain of the new entry
+--- FAIL: TestFixR3FullCacheKeepsTheChainOfTheNewEntry (0.07s)
+=== RUN   TestFixR3CancelledZeroByteWriteKeepsTheConnection
+    fixr3_test.go:207: one caller's cancellation (0 bytes written) failed the shared connection: nfs3: connection closed: write: write pipe: i/o timeout
+--- FAIL: TestFixR3CancelledZeroByteWriteKeepsTheConnection (0.00s)
+=== RUN   TestFixR3WriteTimeoutWithLiveContextFailsTheConnection
+--- PASS: TestFixR3WriteTimeoutWithLiveContextFailsTheConnection (0.15s)
+=== RUN   TestFixR3CancelledPartialWriteFailsTheConnection
+--- PASS: TestFixR3CancelledPartialWriteFailsTheConnection (0.00s)
+=== RUN   TestFixR3NoRecordIsAppendedToAHalfWrittenStream
+    fixr3_test.go:338: trial 1: 2 writes: a record was appended to a stream that a half write had already broken
+--- FAIL: TestFixR3NoRecordIsAppendedToAHalfWrittenStream (0.00s)
+=== RUN   TestFixR3SeekCancelsTheReadsInFlight
+    fixr3_test.go:382: READ 0 is still in flight after the Seek made it stale
+--- FAIL: TestFixR3SeekCancelsTheReadsInFlight (3.10s)
+=== RUN   TestFixR3MalformedOKMountReplyIsUnmounted
+    fixr3_test.go:433: instrument blind: timed out waiting for the UMNT of a malformed OK mount reply
+--- FAIL: TestFixR3MalformedOKMountReplyIsUnmounted (5.00s)
+=== RUN   TestFixR3ConnectFailingAfterMountLeavesTheClientDisconnected
+--- PASS: TestFixR3ConnectFailingAfterMountLeavesTheClientDisconnected (0.05s)
+=== RUN   TestFixR3PrivilegedRetryFailureKeepsTheOriginalRefusal
+    fixr3_test.go:497: the server's access refusal is lost: nfs3: portmapper GETPORT(100005 v3): nfs3: cannot bind a privileged (<1024) source port
+--- FAIL: TestFixR3PrivilegedRetryFailureKeepsTheOriginalRefusal (0.07s)
+=== RUN   TestFixR3ConfigLimitsAreBounded
+    fixr3_test.go:524: MaxPipeline above the limit: accepted
+    fixr3_test.go:524: MaxPipeline far above: accepted
+    fixr3_test.go:524: DirCount above DirMaxCount: accepted
+    fixr3_test.go:524: DirCount above the default Max: accepted
+--- FAIL: TestFixR3ConfigLimitsAreBounded (0.00s)
+=== RUN   TestFixR3FailedConnectUmntIsBoundedByCallTimeout
+    fixr3_test.go:558: instrument blind: timed out waiting for the UMNT
+--- FAIL: TestFixR3FailedConnectUmntIsBoundedByCallTimeout (5.00s)
+=== RUN   TestWF24KillN01N02GetattrLegVanishedEntry
+--- PASS: TestWF24KillN01N02GetattrLegVanishedEntry (0.05s)
+=== RUN   TestWF24KillN03HandleCacheBounded
+--- PASS: TestWF24KillN03HandleCacheBounded (0.05s)
+=== RUN   TestWF24KillN08RetryCountIsExact
+--- PASS: TestWF24KillN08RetryCountIsExact (0.01s)
+=== RUN   TestWF24KillN10MountPermIsAccessError
+--- PASS: TestWF24KillN10MountPermIsAccessError (0.04s)
+=== RUN   TestWF24KillN11PrivilegedFlagInAccessError
+--- PASS: TestWF24KillN11PrivilegedFlagInAccessError (0.05s)
+=== RUN   TestWF24KillN15PrivilegedDialSkipsBusyPort
+    review_wf24_killers_test.go:126: cannot bind reserved port 1023 here (needs privilege): listen tcp :1023: bind: permission denied
+--- SKIP: TestWF24KillN15PrivilegedDialSkipsBusyPort (0.00s)
+=== RUN   TestWF24KillN16NonDirectoryRootRefused
+--- PASS: TestWF24KillN16NonDirectoryRootRefused (0.04s)
+=== RUN   TestWF24KillN17CallSitesPinTheVersion
+--- PASS: TestWF24KillN17CallSitesPinTheVersion (0.04s)
+=== RUN   TestWF24ProbeW1StaleDirectoryDuringAttributeFallback
+    review_wf24_probes_test.go:54: PROBE W1: listing whose directory handle went stale after READDIRPLUS -> 0 entries [] err=<nil>; STALE LOOKUPs=2; VanishedEntries +2
+    review_wf24_probes_test.go:59: DEFECT W1: a directory whose handle went stale is reported as an EMPTY directory with no error (0 entries); the STALE is about the directory, not the entries
+--- FAIL: TestWF24ProbeW1StaleDirectoryDuringAttributeFallback (0.04s)
+=== RUN   TestWF24ProbeW2ExpiredParentKeepsChildrenOfTheOldTree
+    review_wf24_probes_test.go:95: PROBE W2: after mv+mkdir and parent expiry: GetFileInfo -> &{Name:leaf.txt Size:4 ModTime:2023-11-14 22:19:24.123456789 +0000 UTC IsDir:false Mode:-rw-r--r-- Path:/deep/a/b/c/leaf.txt} err=<nil>; LOOKUPs=3; /deep/a now cached as the NEW directory=true
+    review_wf24_probes_test.go:100: DEFECT W2: /deep/a was just resolved to a NEW, empty directory, yet /deep/a/b/c/leaf.txt still resolves through the children of the OLD (renamed) directory: the purge of remember() is skipped when the parent's old entry had expired
+--- FAIL: TestWF24ProbeW2ExpiredParentKeepsChildrenOfTheOldTree (0.05s)
+=== RUN   TestWF24ProbeW3FailedConnectUmntIgnoresCallerContext
+    review_wf24_probes_test.go:138: PROBE W3: Connect with a 200ms context -> err=context deadline exceeded after 2.202s; UMNT calls received=1
+    review_wf24_probes_test.go:146: DEFECT W3: the caller's 200ms context ended but Connect returned only after 2.202s (the cleanup UMNT waited the whole CallTimeout on a background context)
+--- FAIL: TestWF24ProbeW3FailedConnectUmntIgnoresCallerContext (2.20s)
+=== RUN   TestWF24ProbeW4AllowListIgnoresTheVersion
+    review_wf24_probes_test.go:180: PROBE W4: NFS v4 proc 1 (COMPOUND) -> err=context deadline exceeded; records that reached the server=1
+    review_wf24_probes_test.go:182: DEFECT W4: an NFSv4 COMPOUND call (version 4, procedure 1) passes the read-only allow-list and reaches the server (1 records)
+--- FAIL: TestWF24ProbeW4AllowListIgnoresTheVersion (0.30s)
+=== RUN   TestWF24ProbeW7OneCancelledCallerFailsTheSharedConnection
+    review_wf24_probes_test.go:250: PROBE W7 trial 7: connection failed by a cancelled caller: nfs3: connection closed: write: write tcp 127.0.0.1:54242->127.0.0.1:39015: i/o timeout; caller A failed with nfs3: connection closed: write: write tcp 127.0.0.1:54242->127.0.0.1:39015: i/o timeout; interrupted writes: 2 with 0 bytes, 0 partial
+    review_wf24_probes_test.go:255: PROBE W7: connections=8, cancelled calls=22207, connections failed by a cancellation=1 (of which every interrupted write had sent 0 bytes: 1), other callers failed=1
+    review_wf24_probes_test.go:260: DEFECT W7: a cancellation whose Write sent 0 bytes failed the shared connection (1 times); 1 other in-flight callers failed with it
+--- FAIL: TestWF24ProbeW7OneCancelledCallerFailsTheSharedConnection (1.09s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/nfs3	17.650s
+FAIL
+go test exit=1

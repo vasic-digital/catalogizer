@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant MX18: 1 = go test exit code
+--- FAIL: TestLostConnection_IsClosed_NotLeaked_MX18 (3.03s)
+    fix_r2_net_test.go:1007: 
+        	Error Trace:	/out/mut/MX18/filesystem/pkg/ftp/fix_r2_net_test.go:1007
+        	Error:      	Should be true
+        	Test:       	TestLostConnection_IsClosed_NotLeaked_MX18
+        	Messages:   	a connection the client gave up on must be closed, not left open on the server
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	14.435s
+FAIL

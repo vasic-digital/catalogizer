@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant F15: 1 = go test exit code
+--- FAIL: TestR3_Pin_ConflictingName_IsRefusedBeforeRecord (0.00s)
+    fix_r3_lockstep_test.go:464: 
+        	Error Trace:	/out/mut/F15/filesystem/pkg/ftp/fix_r3_lockstep_test.go:464
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestR3_Pin_ConflictingName_IsRefusedBeforeRecord
+        	Messages:   	the conflict is caught by Pin before the store is asked to record
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.628s
+FAIL

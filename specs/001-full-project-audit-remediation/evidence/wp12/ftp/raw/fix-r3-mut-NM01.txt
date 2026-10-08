@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant NM01: 1 = go test exit code
+--- FAIL: TestWF24_N12_PathInjection (0.02s)
+    wf24_adopted_test.go:843: CONTROL N12: connect err=ftp: PWD: fabric: transient failure: ftp: protocol violation: unsolicited data before PWD; DELE seen=1
+    wf24_adopted_test.go:845: 
+        	Error Trace:	/out/mut/NM01/filesystem/pkg/ftp/wf24_adopted_test.go:845
+        	Error:      	Should be zero, but was 1
+        	Test:       	TestWF24_N12_PathInjection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	37.129s
+FAIL

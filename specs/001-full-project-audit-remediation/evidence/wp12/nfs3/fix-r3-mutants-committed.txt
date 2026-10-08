@@ -1,0 +1,25 @@
+# fix-r3 mutants: the WF24 reviewer's 18 mutants VERBATIM on the committed code with the committed test files only (reproduces the reviewer's 9 killed / 9 survived)
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:34:17Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+mode=committed sources: 14e1a962ca45573d files=15
+NEGATIVE-CONTROL PASS (unmutated tree, whole suite)
+N01 SURVIVED  listing: GETATTR-leg vanished entry fails the listing (only the LOOKUP leg skips)  (9s)
+N02 SURVIVED  vanishedErr: only NOENT counts as vanished (STALE/BADHANDLE fail the listing)  (9s)
+N03 SURVIVED  handle cache size bound (8192) removed  (9s)
+N04 KILLED    READ of 0 bytes without EOF: re-issued forever instead of ErrNotProgressing  [--- FAIL: TestMalformedRepliesAreErrorsNotPanics (5.01s)] (11s)
+N05 KILLED    negative Seek position accepted  [--- FAIL: TestReadSeekAndRange (0.01s)] (1s)
+N06 KILLED    ReadRange MaxRangeBytes bound removed  [--- FAIL: TestReadSeekAndRange (0.04s)] (0s)
+N07 KILLED    a record shorter than xid+msg type is not refused  [--- FAIL: TestGarbageStreamClosesConnection (1.00s)] (6s)
+N08 SURVIVED  callNFS: one transport retry more than MaxRetries (off by one)  (9s)
+N09 KILLED    fattr accepts ftype3 8  [--- FAIL: TestFattrRoundTripAndBadType (0.00s)] (9s)
+N10 SURVIVED  MNT3ERR_PERM not an access error  (9s)
+N11 SURVIVED  AccessError.Privileged never set (hint ignores the reserved-port retry)  (9s)
+N12 KILLED    AUTH_NONE preferred when the export lists both AUTH_SYS and AUTH_NULL  [--- FAIL: TestAuthNullOnlyExportUsesAuthNone (0.01s)] (1s)
+N13 KILLED    the READ ceiling is lowered on the FIRST short reply (not only on a repeated length)  [--- FAIL: TestOneShortReplyCostsOnlyTheGap (0.23s)] (5s)
+N14 KILLED    a Connect that fails after FSINFO/GETATTR leaves the client marked connected  [--- FAIL: TestProbeP17NoGoroutineLeak (3.72s)] (12s)
+N15 SURVIVED  privileged dial gives up on the first busy port (EADDRINUSE)  (9s)
+N16 SURVIVED  an export whose root is not a directory is accepted  (9s)
+N17 SURVIVED  a new method sends NFS version 4 procedure 1 (COMPOUND, carries writes) through an allow-listed constant  (9s)
+N18 KILLED    a call timeout is not transient (no retry after ErrCallTimeout)  [--- FAIL: TestCallTimeoutIsBounded (0.15s)] (5s)
+SUMMARY mode=committed mutants=18 killed=9 survived=9 harness_errors_or_uncompilable=0
+exit=0

@@ -17,7 +17,10 @@
 #   5. tears the project down (compose down -v), checks nothing labelled for it remains, releases the operation, removes the scratch.
 # Every run prints (and, with --log, writes as the first lines of the log) the sha256 of the exact tree the container tested, and of its pkg/sftp subtree alone. SFTP_FIXTURE_SRC
 # (a copy of the module) is honoured only together with SFTP_FIXTURE_ALLOW_SRC=1.
-# Secrets are never printed. Exit: the go test exit code; 1 REFUSED/failed (`sftp-fixture: REFUSED reason=<code>` on stderr); 2 usage.
+# Secrets are never printed. Exit: the go test exit code; 1 REFUSED/failed (`sftp-fixture: REFUSED reason=<code>` on stderr); 2 usage;
+# 3 selftest stopped by the test hook SFTP_FIXTURE_STOP_AFTER_HASH=1 (see below: refused in `run` mode, so a run can never exit 0 without a test run).
+# The complete list of environment variables this script reads (review WF24 S06: a stray exported variable must not change what a run means):
+#   SFTP_FIXTURE_SRC + SFTP_FIXTURE_ALLOW_SRC=1   test another copy of the module (declared);   SFTP_FIXTURE_STOP_AFTER_HASH=1   selftest only (exit 3).
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
@@ -26,6 +29,10 @@ refuse() { echo "sftp-fixture: REFUSED reason=$1 ${2:-}" >&2; exit 1; }
 usage() { echo "sftp-fixture: usage: sftp_fixture.sh run [--log FILE] [--keep] -- <go test args> | selftest" >&2; exit 2; }
 
 MODE="${1:-}"; [ -n "$MODE" ] || usage; shift
+# the stop hook belongs to the gate test (selftest); in `run` mode it would end the script with a success-looking exit and no test run
+if [ "${SFTP_FIXTURE_STOP_AFTER_HASH:-}" = 1 ] && [ "$MODE" != selftest ]; then
+  refuse stop_hook_only_in_selftest "SFTP_FIXTURE_STOP_AFTER_HASH=1 is a test hook of the selftest mode; unset it (a run must execute go test)"
+fi
 LOG=""; KEEP=0
 case "$MODE" in
   run)
@@ -130,8 +137,9 @@ TREE_SHA="$(cd "$SD/view/filesystem" && find . -type f -print0 | LC_ALL=C sort -
 PKG_SHA="$(cd "$SD/view/filesystem/pkg/sftp" 2>/dev/null && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | awk '{print $1}')"
 [ "${#PKG_SHA}" = 64 ] || refuse tree_hash_failed "pkg/sftp: $PKG_SHA"
 echo "sftp-fixture: tested tree sha256=$TREE_SHA pkg/sftp sha256=$PKG_SHA source=$SRC_MODULE" >&2
-# test hook (sftp_fixture_gate_test.sh): stop here, before any container, after the hash line
-[ "${SFTP_FIXTURE_STOP_AFTER_HASH:-}" = 1 ] && exit 0
+# test hook (sftp_fixture_gate_test.sh, selftest mode only - refused above otherwise): stop here, before any container, after the hash
+# line, with the distinct exit code 3 so that nobody can mistake it for a passed run
+[ "${SFTP_FIXTURE_STOP_AFTER_HASH:-}" = 1 ] && exit 3
 
 ENVF="$SD/test.env"
 ( umask 077; cat >"$ENVF" <<E

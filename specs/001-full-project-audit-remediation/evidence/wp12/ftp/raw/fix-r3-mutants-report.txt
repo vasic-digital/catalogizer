@@ -1,0 +1,137 @@
+# identity: WP-12 PA-04 fix round 3, mutation report (fix-r3-mutate.py report); 134 mutants, container loop fix-r3-mutate-run.sh MUT_PAR=3, go test -count=1 -failfast (no -race)
+# K1f is an EQUIVALENT mutant: pwd() runs only inside connect(), whose failure path closes the connection anyway, so its markBroken is redundant by construction (kept as defence in depth)
+N00   SURVIVED                  0  NEGATIVE CONTROL: unmutated copy (must PASS = reported SURVIVED)  
+N00b  SURVIVED                  0  NEGATIVE CONTROL: unmutated copy again (flake gauge under the same parallel load  
+N00c  SURVIVED                  0  NEGATIVE CONTROL: unmutated copy once more (flake gauge)  
+N01   SURVIVED                  0  NEGATIVE CONTROL: behaviour-neutral edit, a comment (must SURVIVE)  
+PC16  KILLED                    1  reviewer POSITIVE CONTROL: NUL no longer refused by confine (an old test covers   TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+MX01  KILLED                    1  reviewer: Disconnect never aborts the open stream  TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+MX02  KILLED                    1  reviewer: no ctx watcher on streams  TestCancelBetweenReads_IsHonoured_D9
+MX03  KILLED                    1  reviewer: base directory not canonicalised with PWD  TestDeadline_EveryControlCommandIsBounded
+MX04  KILLED                    1  reviewer: VerifyConnection pin re-check disabled  TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04
+MX05  KILLED                    1  reviewer: TLS ServerName ignores the pin's name  TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+MX06  KILLED                    1  reviewer: a network failure during login is classified AUTH  TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1
+MX07  KILLED                    1  reviewer: stream Close swallows a failing final reply after a FULL read  TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+MX08  KILLED                    1  reviewer: server entry names containing '/' or NUL are not filtered  TestList_RealisticMLSD_ParsedWithoutLoss_D7
+MX09  KILLED                    1  reviewer: no QUIT / close after a failed login  TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+MX10  KILLED                    1  reviewer: IOTimeout not applied  TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+MX11  KILLED                    1  reviewer: DiscoverCert without a deadline  TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+MX12  KILLED                    1  reviewer: Pin records ServerName = host  TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+MX13  KILLED                    1  reviewer: Degraded() not set at connect  TestLogin_ConfigRefusals_AreNotAuthFailures_D12
+MX14  KILLED                    1  reviewer: FileInfo.Mode never set  TestList_RealisticMLSD_ParsedWithoutLoss_D7
+MX17  KILLED                    1  reviewer: default scan retry policy = 1 attempt  TestDefaultRetryPolicy_IsThreeAttempts_MX17
+MX18  KILLED                    1  reviewer: a lost connection is never closed  TestLostConnection_IsClosed_NotLeaked_MX18
+MX19  KILLED                    1  reviewer: Disconnect drops the connection without QUIT/close  TestDisconnect_SaysQuitAndClosesTheConnection_MX19
+MX28  KILLED                    1  reviewer: owner confirmation accepted when it is only a PREFIX of the fingerprin  TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28
+F1a   KILLED                    1  control reply reads carry no deadline  TestList_RealisticMLSD_ParsedWithoutLoss_D7
+F1b   KILLED                    1  data reads carry no deadline  TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+F1c   KILLED                    1  the connect-phase budget (DialTimeout) is not applied  TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1
+F1d   KILLED                    1  ctx cancellation does not interrupt a command  TestCancel_InterruptsBlockedControlCommand
+F1e   KILLED                    1  control writes carry no deadline  TestDeadline_ControlWriteStall_IsBounded
+F1f   KILLED                    1  a control reply gets a fresh IOTimeout per read (a server dripping bytes is neve  TestSlowDrippingReply_IsBoundedAsAWhole
+F2a   KILLED                    1  an unexpected positive reply is accepted  TestUnexpectedPositiveReply_DropsTheConnection
+F2b   KILLED                    1  a 421 does not make the connection unusable  TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+F2c   KILLED                    1  an early close is not checked for lock-step with NOOP  TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6
+F2d   KILLED                    1  bytes nobody asked for are not detected before a command (the whole drain check,  TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+F2e   KILLED                    1  a 4yz/5yz reply to an early-close NOOP is not checked (any NOOP answer is taken)  TestR3_EarlyClose_NOOPAnsweredWithAnotherPositiveCode_DropsTheConnection
+F3a   KILLED                    1  a cancelled/aborted stream is still readable (abort checks removed from dconn.Re  TestCancelBetweenReads_IsHonoured_D9
+F4a   KILLED                    1  OpenSeekable returns a short transfer as complete  TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+F4b   KILLED                    1  OpenSeekable discards the final-reply error at EOF  TestSeekable_TruncatedTransfer_IsAnError_D8
+F5a   KILLED                    1  no reply to PASS is retryable  TestDeadline_EveryControlCommandIsBounded
+F5b   KILLED                    1  421 at USER is an authentication failure  TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+F5c   KILLED                    1  garbled names after a refused OPTS UTF8 ON are catalogued  TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c
+F5d   KILLED                    1  a PBSZ refusal is an authentication failure  TestLogin_ConfigRefusals_AreNotAuthFailures_D12
+F5e   KILLED                    1  a PASS rejection with an unlisted code is an authentication failure  TestLogin_PASSReplies_ClassifiedByCode
+F5f   KILLED                    1  a failed FEAT is fatal (a server without FEAT cannot log in)  TestLogin_ConfigRefusals_AreNotAuthFailures_D12
+F6a   KILLED                    1  MLSD type values are case-sensitive  TestParseMLEntry_Table_F6
+F6b   KILLED                    1  MLSD sizes are parsed with base prefixes (010 is octal)  TestParseMLEntry_Table_F6
+F6c   KILLED                    1  MLSD facts end at the first space (a space in a fact value breaks the entry)  TestParseMLEntry_Table_F6
+F6d   KILLED                    1  cdir/pdir entries are listed as children  TestList_RealisticMLSD_ParsedWithoutLoss_D7
+F6e   KILLED                    1  a listing line that cannot be parsed is silently dropped (a first line / a damag  TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6
+F6f   KILLED                    1  symlinks are not recognised  TestParseMLEntry_Table_F6
+F6g   KILLED                    1  MLST accepts several entries silently  TestMLST_WrongNumberOfEntries_IsAnError
+F7a   KILLED                    1  every 550 is reported as non-existence  TestClassify550
+F7b   KILLED                    1  permission text is not recognised (denied reads as absent)  TestClassify550
+F7c   KILLED                    1  an ambiguous 550 is not settled by the parent listing  TestAmbiguous550_IsSettledByTheParentListing
+F8a   KILLED                    1  degraded stat of a top-level entry lists with no argument  TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10
+F8b   KILLED                    1  degraded stat of the root itself is a parent listing  TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10
+F10a  KILLED                    1  Credential's String has a pointer receiver again  TestSecret_NeverReachableThroughFmt_D13
+F11a  KILLED                    1  a timed-out Disconnect leaves the connection to whoever comes next  TestDisconnectWithCancelledContext_StillClosesAnIdleConnection
+F11b  KILLED                    1  a re-dial does not close the connection it replaces  TestReDial_ClosesTheConnectionItReplaces
+F12   KILLED                    1  a 0xFF byte in a path is sent raw  TestIACByteInAPath_IsDoubled_F12
+F13a  KILLED                    1  the control reply size is not bounded  TestReplyAndListingSizeAreBounded_D16_D17
+F13b  KILLED                    1  the listing size is not bounded  TestReplyAndListingSizeAreBounded_D16_D17
+F14   KILLED                    1  Pin/DiscoverCert port 0 is dialled as port 0  TestPin_PortZero_MeansTheFTPDefaultPort_F14
+F15   KILLED                    1  a second server name for the same host is accepted by Pin  TestR3_Pin_ConflictingName_IsRefusedBeforeRecord
+F2f   KILLED                    1  a stream failure is waited for instead of dropping the connection  TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+W1    KILLED                    1  factory: the process-wide pin store is not passed  TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect
+W2    KILLED                    1  factory: credential_ref is not passed  TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed
+W3    KILLED                    1  factory: tls_mode is not passed  TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+W4    KILLED                    1  factory: trusted_lan is always true  TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+W5    KILLED                    1  factory: allow_degraded_list is not passed  TestFTPFactory_SettingsReachTheClient_Config
+W6    KILLED                    1  factory: an inline password is accepted again  TestWF24_R_F16_FactoryBuildsTheScanClient
+W7    KILLED                    1  factory: the port is not validated  TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+W8    KILLED                    1  factory: the scan client is replaced by the raw client  TestWF24_R_F16_FactoryBuildsTheScanClient
+W9    KILLED                    1  factory: a quoted boolean is accepted  TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+NM01  KILLED                    1  WF24: cmd() no longer refuses CR/LF/NUL (Config.Path reaches the wire unchecked)  TestWF24_N12_PathInjection
+NM02  KILLED                    1  WF24: data-channel TLS does not verify the pinned certificate (the control chann  TestWF24_N5_DataChannelMITMRefused
+NM03  KILLED                    1  WF24: a multi-line reply ends at ANY 'NNN ' line, not only at its own code  TestR3_NM03_MultiLineReply_EndsAtItsOwnCode
+NM04  KILLED                    1  WF24: a TLS data stream without close_notify is an error (truncation mapping rem  TestR3_NM04_TLSDataConnection_CutInsideARecord_IsEOF
+NM05  KILLED                    1  WF24: visibleName no longer hides '.' and '..'  TestList_RealisticMLSD_ParsedWithoutLoss_D7
+NM06  KILLED                    1  WF24: the factory drops disable_epsv  TestR3_NM06_FTPFactory_DisableEPSVReachesTheClient
+NM07  KILLED                    1  WF24: an empty password from the resolver is accepted  TestR3_NM07_EmptyResolvedPassword_IsRefusedBeforeAnyConnection
+NM08  KILLED                    1  WF24: FEAT keys are not upper-cased  TestR3_NM08_LowerCaseFEATKeys_AreRecognised
+NM09  KILLED                    1  WF24: PASS is sent even when USER already answered 230  TestWF24_N10_User230
+NM10  KILLED                    1  WF24: startTLS no longer refuses bytes buffered before the handshake (STARTTLS i  TestWF24_N18_StartTLSInjectionRefused
+NM11  KILLED                    1  WF24: GetFileInfo keeps the server's MLST pathname as the entry name  TestMLST_OddFacts_Parsed_F6
+NM12  KILLED                    1  WF24: when the names are checked only 0x7f is caught, invalid UTF-8 passes  TestR3_K6c_InvalidUTF8Name_AfterARefusedOPTS_IsRefused_NM12
+NM13  KILLED                    1  WF24: the seeker keeps the stream (and the session) after the announced size was  TestR3_K3a_SeekerAtSize_ReportsTheNegativeFinalReply_G4
+NM14  KILLED                    1  WF24: reply() is not interrupted by ctx  TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+NM15  KILLED                    1  WF24: connect() never ends the connect phase (every later I/O capped at connect   TestR3_NM15_OperationsAfterTheConnectBudget_StayOnTheSameConnection
+NM16  KILLED                    1  WF24: DiscoverCert leaks its connection (hardClose removed)  TestR3_NM16_DiscoverCert_ClosesItsConnection
+NM17  KILLED                    1  WF24: DefaultMaxListEntries 1<<20 -> 1<<10 (a 1025-entry directory fails by defa  TestR3_K4a_ListingUnderTheBudget_IsFine_NM17
+K1b   KILLED                    1  MLST reply of the wrong shape (no entry) does not drop the connection  TestR3_K1b_StrayBeforeTheMLSTAnswer_PoisonsInsteadOfShifting
+K1c   KILLED                    1  MLST with several entries does not drop the connection  TestR3_K1cd_MLSTShapeAndPathname_AreChecked
+K1d   KILLED                    1  the MLST pathname is not compared with the requested path  TestR3_K1cd_MLSTShapeAndPathname_AreChecked
+K1d2  KILLED                    1  mlstNameMatches is case-sensitive (a case-folding server is refused)  TestR3_K1d_MLSTPathname_LenientWhereServersDiffer
+K1e   KILLED                    1  an unreadable SIZE reply does not drop the connection  TestR3_K1e_UnreadableSIZE_DropsTheConnection
+K1f   SURVIVED                  0  an unreadable PWD reply does not drop the connection  
+K1g   KILLED                    1  an unreadable EPSV reply falls back to PASV instead of dropping the connection  TestR3_K1g_UnreadableEPSV_DropsTheConnection_NoPASVFallback
+K1h   KILLED                    1  EPSV delimiters other than '|' are refused  TestR3_K1g_EPSVDelimiters_AreTheRFCOnes
+K1i   KILLED                    1  a reply behind the final reply of a complete transfer is not looked for  TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict
+K1i2  KILLED                    1  a negative reply behind the final reply is not returned as the verdict  TestR3_K1i_ReplyBehindTheFinalReply_NegativeOneIsTheVerdict
+K1j   KILLED                    1  a lock-step violation is permanent again (never retried)  TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1
+K1k   KILLED                    1  the drain check cannot see the kernel buffer (only the bufio buffer)  TestR3_K1b_LateSameCodeStray_IsCaughtBeforeTheNextCommand_G1
+K2a   KILLED                    1  the server's text sits in the LEAF of a 4yz phase error (Classify reads it)  TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2
+K2b   KILLED                    1  the server's text sits in the LEAF of a 5yz phase error  TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2
+K2c   KILLED                    1  a USER-phase 530 is an authentication failure again  TestR3_K2_UserPhaseRefusal_NeverLatchesThePoolRoot_G2
+K2d   KILLED                    1  AUTH TLS refusal carries the server text in the leaf  TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase
+K2e   KILLED                    1  a PASS rejected with a non-credential code starts no back-off  TestR3_K2_PASSRejectedWithANonCredentialCode_StartsTheBackoff
+K2f   KILLED                    1  an unanswered PASS starts no back-off  TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+K2g   KILLED                    1  a PASS interrupted by the context starts no back-off  TestR3_K2_PASSInterruptedByTheDeadline_IsAmbiguous
+K2h   KILLED                    1  connect does not consult the login back-off  TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+K2i   KILLED                    1  a good login does not end the back-off  TestR3_K2_SuccessfulLogin_EndsTheBackoff
+K2j   KILLED                    1  the back-off ignores its TTL (a thousand hours)  TestR3_K2_Backoff_ExpiresAfterItsTTL_AndCanBeDisabled
+K2k   KILLED                    1  the default back-off (LoginBackoff 0) is zero  TestR3_K2_UnansweredPASS_IsSentOnce_AcrossPoolBorrows_G3
+K2l   KILLED                    1  ClearLoginBackoff does nothing  TestR3_K2_Backoff_CoversEveryClient_AndIsLiftedByClear
+K3a   KILLED                    1  the seeker at SIZE drops the stream through the early-close path (any final repl  TestR3_K3a_SeekerAtSize_ReportsTheNegativeFinalReply_G4
+K3b   KILLED                    1  an early close waits a whole IOTimeout again  TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded
+K3c   KILLED                    1  the end-of-data wait of the seeker is a whole IOTimeout  TestR3_K3a_SeekerAtSize_ServerKeepsTheDataConnectionOpen_IsBounded
+K4a   KILLED                    1  the listing has no byte budget  TestR3_K4a_ListingByteBudget_G7
+K4b   KILLED                    1  the control line bound is back to 4096 (a listed long name cannot be stat'ed)  TestR3_K4b_LongName_ListedAndStatted_G8
+K4c   KILLED                    1  the connect budget starts after the dial  TestR3_K4c_DialTimeoutIsOneBudget_G12
+K5    KILLED                    1  connect publishes its connection even after a Disconnect ran  TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6
+K5b   KILLED                    1  Disconnect does not bump the generation  TestR3_K5_DisconnectDuringReDial_WinsOverTheNewConnection_G6
+K6a   KILLED                    1  the entry in front of a fragment is kept (a truncated name is listed)  TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg
+K6b   KILLED                    1  a listing with too many fragments is accepted  TestR3_K6a_Desynchronised_Listings_StillFailClosed
+K6c   KILLED                    1  a name with CR/LF/NUL is listed  TestR3_K6b_UnaddressableNames_AreSkippedAndCounted
+K6d   KILLED                    1  a fragment ends the listing with an error again (the NAS defect)  TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg
+K6e   KILLED                    1  no warning is delivered for skipped entries  TestR3_K6a_NameWithALineFeed_DoesNotFailTheDirectory_NASLeg
+K6f   KILLED                    1  names are checked only after a refused OPTS (the utf8On flag is never set but al  TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c
+K6g   KILLED                    1  the second pin's name wins again  TestR3_K6d_TwoPinsWithDifferentNames_G10
+K6h   KILLED                    1  MemPinStore.Record accepts a second name  TestR3_K6d_TwoPinsWithDifferentNames_G10
+K6i   KILLED                    1  FilePinStore.Record accepts a second name  TestR3_K6d_TwoPinsWithDifferentNames_G10
+K6j   KILLED                    1  the deferred store captures DefaultPinStore at init  TestR3_K6e_DeferredDefaultPinStore_ReadsTheVariableAtCallTime
+K6k   KILLED                    1  PublicConfig does not show disable_epsv  TestR3_PublicConfig_ShowsDisableEPSV_NM06
+W10   KILLED                    1  factory: the pin store is captured at creation again  TestWF24_N_PinStoreSetAfterCreation_IsUsedAtConnect
+Counter({'KILLED': 129, 'SURVIVED': 5})

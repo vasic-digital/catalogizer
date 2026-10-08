@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant F2c: 1 = go test exit code
+--- FAIL: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6 (0.04s)
+    --- FAIL: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true (0.02s)
+        fix_r2_net_test.go:465: 
+            	Error Trace:	/out/mut/F2c/filesystem/pkg/ftp/fix_r2_net_test.go:465
+            	Error:      	Received unexpected error:
+            	            	ftp: stat /data/sub/c.txt: fabric: transient failure: ftp: protocol violation: unsolicited data before MLST
+            	Test:       	TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	9.925s
+FAIL

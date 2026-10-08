@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant K4c: 1 = go test exit code
+--- FAIL: TestR3_K4c_DialTimeoutIsOneBudget_G12 (0.25s)
+    fix_r3_transfer_test.go:310: 
+        	Error Trace:	/out/mut/K4c/filesystem/pkg/ftp/fix_r3_transfer_test.go:310
+        	Error:      	Max difference between 2026-10-08 03:16:50.463166099 +0000 UTC m=+22.508317119 and 2026-10-08 03:16:50.713464901 +0000 UTC m=+22.758615911 allowed is 80ms, but difference was -250.298792ms
+        	Test:       	TestR3_K4c_DialTimeoutIsOneBudget_G12
+        	Messages:   	the phase budget ends DialTimeout after the START of the connect, not after the dial: 750.298792ms
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	22.263s
+FAIL

@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F2d: 1 = go test exit code
+--- FAIL: TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand (0.00s)
+    fix_r2_net_test.go:1449: 
+        	Error Trace:	/out/mut/F2d/filesystem/pkg/ftp/fix_r2_net_test.go:1449
+        	Error:      	Expected error with "ftp: protocol violation" in chain but got nil.
+        	Test:       	TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+        	Messages:   	the stray reply, which has the SAME code as a NOOP answer, must not be taken for the answer to the next command
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.417s
+FAIL

@@ -1,0 +1,14 @@
+# identity: fix-r3 GREEN for S06: scripts/test-infra/sftp_fixture_gate_test.sh against the FIXED sftp_fixture.sh
+ok   SFTP_FIXTURE_SRC without ALLOW is refused
+ok   with ALLOW the gate passes (next refusal is src_module_missing)
+ok   ALLOW must be exactly 1
+ok   printed hash equals the independent hash of the source tree
+ok   printed pkg/sftp hash equals the independent hash of the package directory
+ok   one changed byte changes the printed hash (and it still equals the independent one)
+ok   checked-in module: printed pkg/sftp hash equals the documented command
+info: printed whole-tree hash of the checked-in module equals the documented command
+ok   the stop hook is refused in run mode (exit 1, no stdout, no log)
+ok   without the hook the run mode does not refuse for it
+ok   selftest stopped by the hook exits 3
+ok   no scratch directory left behind
+sftp_fixture_gate_test: 11 checks, 0 failed

@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F4b: 1 = go test exit code
+--- FAIL: TestSeekable_TruncatedTransfer_IsAnError_D8 (0.02s)
+    fix_r2_net_test.go:695: 
+        	Error Trace:	/out/mut/F4b/filesystem/pkg/ftp/fix_r2_net_test.go:695
+        	Error:      	"ftp: /data/big.bin ended at byte 1000 of 100000: unexpected EOF" does not contain "451"
+        	Test:       	TestSeekable_TruncatedTransfer_IsAnError_D8
+        	Messages:   	the server's own reason for giving up is reported, not a generic short read: ftp: /data/big.bin ended at byte 1000 of 100000: unexpected EOF
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	10.961s
+FAIL

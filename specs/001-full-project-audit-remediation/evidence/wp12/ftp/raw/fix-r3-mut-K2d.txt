@@ -1,0 +1,17 @@
+# identity: WP-12 fix round 3 mutant K2d: 1 = go test exit code
+--- FAIL: TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase (0.00s)
+    --- FAIL: TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase/AUTH_5yz (0.00s)
+        fix_r3_login_test.go:114: 
+            	Error Trace:	/out/mut/K2d/filesystem/pkg/ftp/fix_r3_login_test.go:114
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase/AUTH_5yz
+            	Messages:   	the phase decides, not the server's words: ftp: AUTH TLS refused: 534 Access denied: you are not logged in, login incorrect, invalid credentials
+        fix_r3_login_test.go:115: 
+            	Error Trace:	/out/mut/K2d/filesystem/pkg/ftp/fix_r3_login_test.go:115
+            	Error:      	Should not be: 2
+            	Test:       	TestR3_K2_ServerTextNeverDecidesTheClass_EveryPhase/AUTH_5yz
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.233s
+FAIL

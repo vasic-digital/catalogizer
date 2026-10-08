@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant NM09: 1 = go test exit code
+--- FAIL: TestWF24_N10_User230 (0.01s)
+    wf24_adopted_test.go:832: CONTROL N10: connect err=fabric: authentication failure: ftp: login as "u" failed: 530 Login incorrect PASS sent=1
+    wf24_adopted_test.go:833: 
+        	Error Trace:	/out/mut/NM09/filesystem/pkg/ftp/wf24_adopted_test.go:833
+        	Error:      	Received unexpected error:
+        	            	fabric: authentication failure: ftp: login as "u" failed: 530 Login incorrect
+        	Test:       	TestWF24_N10_User230
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	37.104s
+FAIL

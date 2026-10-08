@@ -1,0 +1,12 @@
+# identity: WP-12 fix round 3 mutant W2: 1 = go test exit code
+--- FAIL: TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed (0.00s)
+    ftp_factory_test.go:188: 
+        	Error Trace:	/out/mut/W2/filesystem/pkg/factory/ftp_factory_test.go:188
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: no certificate pin store configured"
+        	            	in chain: "ftp: credential could not be resolved: no credential_ref configured"
+        	            		"ftp: credential could not be resolved"
+        	Test:       	TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.014s
+FAIL

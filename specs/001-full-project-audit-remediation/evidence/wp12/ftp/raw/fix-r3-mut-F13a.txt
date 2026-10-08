@@ -1,0 +1,10 @@
+# identity: WP-12 fix round 3 mutant F13a: 1 = go test exit code
+--- FAIL: TestReplyAndListingSizeAreBounded_D16_D17 (0.02s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/reply (0.02s)
+        fix_r2_net_test.go:1246: 
+            	Error Trace:	/out/mut/F13a/filesystem/pkg/ftp/fix_r2_net_test.go:1246
+            	Error:      	Expected error with "ftp: server reply exceeds the size limit" in chain but got nil.
+            	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/reply
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	12.991s
+FAIL

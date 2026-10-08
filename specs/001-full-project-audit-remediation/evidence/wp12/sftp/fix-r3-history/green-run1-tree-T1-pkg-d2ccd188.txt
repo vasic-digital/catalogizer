@@ -1,0 +1,421 @@
+# tested-tree-sha256: e811a37f1dd6b6600413122a2f4cece7bce6f4c14c31f0677ae273800a8ba671
+# tested-pkg-sftp-sha256: d2ccd1884b504aa7c98d6ff374523d85cd5b5220df3a56c691293a27ec3165e1
+# tested-tree-source: /home/milosvasic/Projects/catalogizer/submodules/filesystem
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+=== RUN   TestBackoffIsExponentialAndCapped
+--- PASS: TestBackoffIsExponentialAndCapped (5.01s)
+=== RUN   TestKbdAnswer
+--- PASS: TestKbdAnswer (0.00s)
+=== RUN   TestCheckWithinRefusesWhenTheResolvedRootIsUnknown
+--- PASS: TestCheckWithinRefusesWhenTheResolvedRootIsUnknown (0.02s)
+=== RUN   TestProtectTurnsAPanicIntoAFaultAndClosesTheConnection
+--- PASS: TestProtectTurnsAPanicIntoAFaultAndClosesTheConnection (0.02s)
+=== RUN   TestIsAuthFailure
+--- PASS: TestIsAuthFailure (0.00s)
+=== RUN   TestNewFileWithAnAlreadyEndedContext
+--- PASS: TestNewFileWithAnAlreadyEndedContext (0.46s)
+=== RUN   TestRunClassifiesIOEOFByTheStateOfTheConnection
+--- PASS: TestRunClassifiesIOEOFByTheStateOfTheConnection (0.01s)
+=== RUN   TestFileReadAndCopyVerifyTheConnectionBeforeReportingTheEnd
+--- PASS: TestFileReadAndCopyVerifyTheConnectionBeforeReportingTheEnd (0.04s)
+=== RUN   TestListingOnAConnectionThatEndedDuringItIsRefused
+--- PASS: TestListingOnAConnectionThatEndedDuringItIsRefused (0.03s)
+=== RUN   TestAliveProbesTheTransport
+--- PASS: TestAliveProbesTheTransport (0.02s)
+=== RUN   TestAliveTimesOutOnASilentPeer
+--- PASS: TestAliveTimesOutOnASilentPeer (0.32s)
+=== RUN   TestReadAndWriteToConsultTheConnectionBeforeReportingTheEnd
+--- PASS: TestReadAndWriteToConsultTheConnectionBeforeReportingTheEnd (0.04s)
+=== RUN   TestRaw_MalformedDataInPipelinedReadIsAnErrorNotAProcessCrash
+--- PASS: TestRaw_MalformedDataInPipelinedReadIsAnErrorNotAProcessCrash (0.01s)
+=== RUN   TestRaw_MalformedDataInSequentialReadIsAnError
+--- PASS: TestRaw_MalformedDataInSequentialReadIsAnError (0.02s)
+=== RUN   TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable
+--- PASS: TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable (0.02s)
+=== RUN   TestRaw_ListingDropsDotEntries
+--- PASS: TestRaw_ListingDropsDotEntries (0.02s)
+=== RUN   TestRaw_ListingLimit
+--- PASS: TestRaw_ListingLimit (0.06s)
+=== RUN   TestSeekEndHonoursContextOnHungServer
+--- PASS: TestSeekEndHonoursContextOnHungServer (0.41s)
+=== RUN   TestCloseIsBoundedOnAStalledServer
+--- PASS: TestCloseIsBoundedOnAStalledServer (0.31s)
+=== RUN   TestCancelOfOneStreamDoesNotKillTheSharedConnection
+--- PASS: TestCancelOfOneStreamDoesNotKillTheSharedConnection (0.84s)
+=== RUN   TestContextEndClosesTheRemoteFile
+--- PASS: TestContextEndClosesTheRemoteFile (0.02s)
+=== RUN   TestKeepaliveEndsACallOnAHalfOpenLink
+--- PASS: TestKeepaliveEndsACallOnAHalfOpenLink (0.41s)
+=== RUN   TestKeepaliveCanBeDisabled
+--- PASS: TestKeepaliveCanBeDisabled (1.51s)
+=== RUN   TestDialTimeoutBoundsTheHandshake
+--- PASS: TestDialTimeoutBoundsTheHandshake (0.40s)
+=== RUN   TestContextCancelEndsTheHandshake
+--- PASS: TestContextCancelEndsTheHandshake (0.30s)
+=== RUN   TestDiscoverAllHonoursContextAfterConnect
+--- PASS: TestDiscoverAllHonoursContextAfterConnect (0.30s)
+=== RUN   TestPipelinedReadKeepsSeveralRequestsInFlight
+--- PASS: TestPipelinedReadKeepsSeveralRequestsInFlight (0.08s)
+=== RUN   TestRangedReadIsPipelinedToo
+--- PASS: TestRangedReadIsPipelinedToo (0.26s)
+=== RUN   TestDisconnectReleasesTheConnection
+--- PASS: TestDisconnectReleasesTheConnection (0.01s)
+=== RUN   TestClientWipesWhatTheResolverHandedOver
+--- PASS: TestClientWipesWhatTheResolverHandedOver (3.28s)
+=== RUN   TestTestConnectionRefusesAFileAsRoot
+--- PASS: TestTestConnectionRefusesAFileAsRoot (0.01s)
+=== RUN   TestListDirectoryStopsAtTheContextOnASlowServer
+--- PASS: TestListDirectoryStopsAtTheContextOnASlowServer (0.50s)
+=== RUN   TestReadRangeNegativeOffsetIsRefusedUpFront
+--- PASS: TestReadRangeNegativeOffsetIsRefusedUpFront (0.00s)
+=== RUN   TestFileExistsReportsAnEscapeAsAnError
+--- PASS: TestFileExistsReportsAnEscapeAsAnError (0.02s)
+=== RUN   TestGetFileInfoRootIsNamedSlash
+--- PASS: TestGetFileInfoRootIsNamedSlash (0.02s)
+=== RUN   TestContainmentFailsClosedButReportsNotExist
+--- PASS: TestContainmentFailsClosedButReportsNotExist (0.01s)
+=== RUN   TestStatusEOFIsNotAConnectionLoss
+--- PASS: TestStatusEOFIsNotAConnectionLoss (0.00s)
+=== RUN   TestConcurrentCallsAfterLossAreRaceFreeAndSucceed
+--- PASS: TestConcurrentCallsAfterLossAreRaceFreeAndSucceed (0.03s)
+=== RUN   TestReadOnADeadConnectionIsNeverAnEOF
+--- PASS: TestReadOnADeadConnectionIsNeverAnEOF (0.08s)
+=== RUN   TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised
+--- PASS: TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised (0.02s)
+=== RUN   TestHostKeyRefusalIsReturnedAsTheTypedErrorItself
+--- PASS: TestHostKeyRefusalIsReturnedAsTheTypedErrorItself (0.02s)
+=== RUN   TestStuckRequestReturnsTheContextError
+--- PASS: TestStuckRequestReturnsTheContextError (0.31s)
+=== RUN   TestClassification_TruthTable
+--- PASS: TestClassification_TruthTable (0.00s)
+=== RUN   TestFile_CloseAndSeekOnADeadConnectionAreDeterministic
+--- PASS: TestFile_CloseAndSeekOnADeadConnectionAreDeterministic (0.42s)
+=== RUN   TestLivenessAccessors
+--- PASS: TestLivenessAccessors (0.00s)
+=== RUN   TestReadWindow
+--- PASS: TestReadWindow (0.00s)
+=== RUN   TestEndOfFileLivenessFollowsKeepAliveTimeout
+--- PASS: TestEndOfFileLivenessFollowsKeepAliveTimeout (3.83s)
+=== RUN   TestListingOverBudgetFailsOnlyThatListing
+--- PASS: TestListingOverBudgetFailsOnlyThatListing (0.01s)
+=== RUN   TestOversizeListingDoesNotDisturbAStream
+--- PASS: TestOversizeListingDoesNotDisturbAStream (0.14s)
+=== RUN   TestListingDropsImplausibleNames
+--- PASS: TestListingDropsImplausibleNames (0.01s)
+=== RUN   TestDisconnectDuringConnectWins
+--- PASS: TestDisconnectDuringConnectWins (0.73s)
+=== RUN   TestMaxPacketAboveWhatPkgSftpAcceptsIsRefusedUpFront
+--- PASS: TestMaxPacketAboveWhatPkgSftpAcceptsIsRefusedUpFront (0.01s)
+=== RUN   TestAuthContractWithFabric
+--- PASS: TestAuthContractWithFabric (0.00s)
+=== RUN   TestWrongPasswordIsFabricAuthInBothShapes
+--- PASS: TestWrongPasswordIsFabricAuthInBothShapes (0.03s)
+=== RUN   TestReadAheadSequentialReadsAreByteIdentical
+--- PASS: TestReadAheadSequentialReadsAreByteIdentical (0.44s)
+=== RUN   TestReadAheadAgainstAModel
+--- PASS: TestReadAheadAgainstAModel (0.82s)
+=== RUN   TestReadAheadOnADyingConnectionIsNotAnEOF
+--- PASS: TestReadAheadOnADyingConnectionIsNotAnEOF (0.04s)
+=== RUN   TestReadAheadEndOfFileConsultsTheConnection
+--- PASS: TestReadAheadEndOfFileConsultsTheConnection (0.02s)
+=== RUN   TestReadAheadSeekInsideAndOutsideTheBuffer
+--- PASS: TestReadAheadSeekInsideAndOutsideTheBuffer (0.03s)
+=== RUN   TestReadAheadThenWriteToLosesNothing
+--- PASS: TestReadAheadThenWriteToLosesNothing (0.06s)
+=== RUN   TestBoundedRangeNeverReadsBeyondItsEnd
+--- PASS: TestBoundedRangeNeverReadsBeyondItsEnd (0.05s)
+=== RUN   TestValidateFrame_Table
+--- PASS: TestValidateFrame_Table (0.00s)
+=== RUN   TestValidateFrame_NeverPanicsOnRandomInput
+--- PASS: TestValidateFrame_NeverPanicsOnRandomInput (0.17s)
+=== RUN   TestFrameReader_PassesValidFramesUnchangedEvenByteByByte
+--- PASS: TestFrameReader_PassesValidFramesUnchangedEvenByteByByte (0.00s)
+=== RUN   TestFrameReader_RejectsAndStaysRejected
+--- PASS: TestFrameReader_RejectsAndStaysRejected (0.00s)
+=== RUN   TestFrameReader_LengthAndEOFHandling
+--- PASS: TestFrameReader_LengthAndEOFHandling (0.00s)
+=== RUN   TestFrameReader_OverBudgetPageBecomesAStatusFailureNotAFault
+--- PASS: TestFrameReader_OverBudgetPageBecomesAStatusFailureNotAFault (0.00s)
+=== RUN   TestWireTracker_BudgetIsPerHandle
+--- PASS: TestWireTracker_BudgetIsPerHandle (0.00s)
+=== RUN   TestWireTracker_StreamParserSurvivesAnySplit
+--- PASS: TestWireTracker_StreamParserSurvivesAnySplit (0.00s)
+=== RUN   TestConn_ListingBudgetAccessorsFollowTheConfig
+--- PASS: TestConn_ListingBudgetAccessorsFollowTheConfig (0.00s)
+=== RUN   TestIntegrationSelftest
+selftest: connected to OpenSSH, host key pinned and verified
+--- PASS: TestIntegrationSelftest (1.44s)
+=== RUN   TestIntegration_ListingAndAttributes
+--- PASS: TestIntegration_ListingAndAttributes (1.33s)
+=== RUN   TestIntegration_ReadWholeAndRanged
+--- PASS: TestIntegration_ReadWholeAndRanged (1.32s)
+=== RUN   TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused
+--- PASS: TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused (0.29s)
+=== RUN   TestIntegration_AuthFailureNotRetried
+--- PASS: TestIntegration_AuthFailureNotRetried (0.31s)
+=== RUN   TestIntegration_KeyAuth
+--- PASS: TestIntegration_KeyAuth (1.28s)
+=== RUN   TestIntegration_WritesImpossible
+--- PASS: TestIntegration_WritesImpossible (1.39s)
+=== RUN   TestIntegration_FixtureVolumeIsReadOnlyServerSide
+--- PASS: TestIntegration_FixtureVolumeIsReadOnlyServerSide (1.31s)
+=== RUN   TestIntegration_PathConfinement
+--- PASS: TestIntegration_PathConfinement (1.38s)
+=== RUN   TestIntegration_ContextCancelMidRead
+--- PASS: TestIntegration_ContextCancelMidRead (1.22s)
+=== RUN   TestIntegration_TransientDialFailureRetriedThenGivesUp
+--- PASS: TestIntegration_TransientDialFailureRetriedThenGivesUp (0.06s)
+=== RUN   TestTrustedOwner
+--- PASS: TestTrustedOwner (0.00s)
+=== RUN   TestFilePinStore_RefusesAFileOthersCanWrite
+--- PASS: TestFilePinStore_RefusesAFileOthersCanWrite (0.00s)
+=== RUN   TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky
+--- PASS: TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky (0.00s)
+=== RUN   TestFilePinStore_RefusesANonRegularPinFile
+--- PASS: TestFilePinStore_RefusesANonRegularPinFile (0.00s)
+=== RUN   TestFilePinStore_RefusesASymlinkAsPinFile
+--- PASS: TestFilePinStore_RefusesASymlinkAsPinFile (0.00s)
+=== RUN   TestFilePinStore_ConcurrentWritersLoseNothing
+--- PASS: TestFilePinStore_ConcurrentWritersLoseNothing (0.32s)
+=== RUN   TestReview_P1_StatHonoursContextOnHungServer
+    review_probes_test.go:316: REVIEW-PROBE P1 returned_within_3s=true elapsed=1.301s err=sftp: stat hang: context deadline exceeded
+--- PASS: TestReview_P1_StatHonoursContextOnHungServer (1.31s)
+=== RUN   TestReview_P2_ConnectHonoursContextWhenInitUnanswered
+    review_probes_test.go:336: REVIEW-PROBE P2 returned_within_3s=true elapsed=300ms err=context deadline exceeded
+--- PASS: TestReview_P2_ConnectHonoursContextWhenInitUnanswered (0.30s)
+=== RUN   TestReview_P3_TestConnectionOnLostConnection
+    review_probes_test.go:361: REVIEW-PROBE P3 with_TestConnection=false first_op_err=true testconn_err=<nil> list_err=<nil> connected_after=true
+    review_probes_test.go:361: REVIEW-PROBE P3 with_TestConnection=true first_op_err=true testconn_err=<nil> list_err=<nil> connected_after=true
+--- PASS: TestReview_P3_TestConnectionOnLostConnection (0.05s)
+=== RUN   TestReview_P4_DisconnectDuringRedial
+    review_probes_test.go:391: REVIEW-PROBE P4 disconnect_err=<nil> list_err=sftp: list /: sftp: not connected connected_after_disconnect=false ssh_conn_held=false
+--- PASS: TestReview_P4_DisconnectDuringRedial (0.72s)
+=== RUN   TestReview_P5_BackslashNameReadsAnotherFile
+    review_probes_test.go:431: REVIEW-PROBE P5 listed_path="/x\\y" read_err=<nil> content="BACKSLASH-FILE"
+--- PASS: TestReview_P5_BackslashNameReadsAnotherFile (0.01s)
+=== RUN   TestReview_P6_EOFStatusTearsDownConnection
+    review_probes_test.go:462: REVIEW-PROBE P6 stat_err=sftp: stat eofme: sftp: server replied with status: EOF transient=false redials=0 open_stream_err=<nil> stream_bytes_after=4190208/4190208
+--- PASS: TestReview_P6_EOFStatusTearsDownConnection (0.13s)
+=== RUN   TestReview_P7_MalformedStatusPanics
+    review_probes_test.go:483: REVIEW-PROBE P7 panic=<nil> err=sftp: stat x: sftp: malformed reply from the server: packet type 101: short status code
+--- PASS: TestReview_P7_MalformedStatusPanics (0.01s)
+=== RUN   TestReview_P8_CancelUnblocksInFlightRead
+    review_probes_test.go:517: REVIEW-PROBE P8 returned_within_3s_of_cancel=true elapsed=1.001s err=context canceled
+--- PASS: TestReview_P8_CancelUnblocksInFlightRead (1.22s)
+=== RUN   TestReview_P9_KeyboardInteractiveOnlyServer
+    review_probes_test.go:530: REVIEW-PROBE P9 connect_err=<nil> is_AuthError=false
+--- PASS: TestReview_P9_KeyboardInteractiveOnlyServer (0.01s)
+=== RUN   TestReview_P10_ConcurrentRedialStorm
+    review_probes_test.go:578: REVIEW-PROBE P10 concurrent_ops=8 new_connections=1 failed_ops=0
+--- PASS: TestReview_P10_ConcurrentRedialStorm (0.02s)
+=== RUN   TestReview_P11_ListDirectoryHonoursContextOnHungServer
+    review_probes_test.go:602: REVIEW-PROBE P11 returned_within_3s=true elapsed=1.302s err=sftp: list hangdir: context deadline exceeded
+--- PASS: TestReview_P11_ListDirectoryHonoursContextOnHungServer (1.31s)
+=== RUN   TestReview_P12_ContainmentFailsOpenOnRealPathError
+    review_probes_test.go:629: REVIEW-PROBE P12 read_err=sftp: open evil: sftp: cannot verify that "/tmp/TestReview_P12_ContainmentFailsOpenOnRealPathError3973458876/001/evil" stays inside the root: sftp: "permission denied" (SSH_FX_FAILURE) content=""
+--- PASS: TestReview_P12_ContainmentFailsOpenOnRealPathError (0.01s)
+=== RUN   TestConfine_Table
+--- PASS: TestConfine_Table (0.00s)
+=== RUN   TestConfine_DefaultRootIsSlash
+--- PASS: TestConfine_DefaultRootIsSlash (0.00s)
+=== RUN   TestWithin
+--- PASS: TestWithin (0.00s)
+=== RUN   TestFingerprintFormat
+--- PASS: TestFingerprintFormat (0.00s)
+=== RUN   TestHostPortNormalisation
+--- PASS: TestHostPortNormalisation (0.00s)
+=== RUN   TestHostKeyCallback_UnknownMismatchMatch
+--- PASS: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+=== RUN   TestHostKeyAlgorithmsFollowPinnedType
+--- PASS: TestHostKeyAlgorithmsFollowPinnedType (0.00s)
+=== RUN   TestMemPinStore
+--- PASS: TestMemPinStore (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600
+--- PASS: TestFilePinStore_PersistsWith0600 (0.00s)
+=== RUN   TestFilePinStore_CorruptFileIsAnErrorNotNoPins
+--- PASS: TestFilePinStore_CorruptFileIsAnErrorNotNoPins (0.00s)
+=== RUN   TestCredential_Redaction
+--- PASS: TestCredential_Redaction (0.00s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestEnvCredentialResolver_NoCollisions
+--- PASS: TestEnvCredentialResolver_NoCollisions (0.00s)
+=== RUN   TestIsTransient_Table
+--- PASS: TestIsTransient_Table (0.00s)
+=== RUN   TestClassification_LossImpliesTransient
+--- PASS: TestClassification_LossImpliesTransient (0.00s)
+=== RUN   TestRetry_BoundedAndTransientOnly
+--- PASS: TestRetry_BoundedAndTransientOnly (0.01s)
+=== RUN   TestRetry_ContextCancelStopsBackoff
+--- PASS: TestRetry_ContextCancelStopsBackoff (0.05s)
+=== RUN   TestMutatorsAreImpossible_NoConnectionNeeded
+--- PASS: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+=== RUN   TestGetConfigHasNoSecret
+--- PASS: TestGetConfigHasNoSecret (0.00s)
+=== RUN   TestToInfo_NoFabricatedMtime
+--- PASS: TestToInfo_NoFabricatedMtime (0.00s)
+=== RUN   TestNotConnectedOperationsFail
+--- PASS: TestNotConnectedOperationsFail (0.00s)
+=== RUN   TestConnectRefusesWithoutPinStoreOrCredential
+--- PASS: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+=== RUN   TestServer_ListReadStat
+--- PASS: TestServer_ListReadStat (0.02s)
+=== RUN   TestServer_PipelinedCopyAndRange
+--- PASS: TestServer_PipelinedCopyAndRange (0.14s)
+=== RUN   TestServer_ContextCancelStopsRead
+--- PASS: TestServer_ContextCancelStopsRead (0.04s)
+=== RUN   TestServer_HostKey_UnknownRefused_ThenPinned
+--- PASS: TestServer_HostKey_UnknownRefused_ThenPinned (0.04s)
+=== RUN   TestServer_HostKey_ChangedKeyRefused
+--- PASS: TestServer_HostKey_ChangedKeyRefused (0.01s)
+=== RUN   TestServer_AuthFailureNotRetried_NoSecretInError
+--- PASS: TestServer_AuthFailureNotRetried_NoSecretInError (0.01s)
+=== RUN   TestServer_TransientConnectRetriedThenSucceeds
+--- PASS: TestServer_TransientConnectRetriedThenSucceeds (0.01s)
+=== RUN   TestServer_TransientRetryIsBounded
+--- PASS: TestServer_TransientRetryIsBounded (0.00s)
+=== RUN   TestServer_PathConfinement
+--- PASS: TestServer_PathConfinement (0.01s)
+=== RUN   TestServer_ListingReportsSymlinkAsLink
+--- PASS: TestServer_ListingReportsSymlinkAsLink (0.01s)
+=== RUN   TestServer_WritesImpossibleEvenWithWritablePermissions
+--- PASS: TestServer_WritesImpossibleEvenWithWritablePermissions (0.01s)
+=== RUN   TestServer_DisconnectedClientDoesNotSilentlyReconnect
+--- PASS: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.02s)
+=== RUN   TestServer_LostConnectionIsRedialled
+--- PASS: TestServer_LostConnectionIsRedialled (0.02s)
+=== RUN   TestServer_TestConnectionConnectsAndDisconnects
+--- PASS: TestServer_TestConnectionConnectsAndDisconnects (0.02s)
+=== RUN   TestServer_KeyAuth
+--- PASS: TestServer_KeyAuth (0.02s)
+=== RUN   TestServer_KeyWithPassphrase
+--- PASS: TestServer_KeyWithPassphrase (5.01s)
+=== RUN   TestServer_GarbageKeyIsRedacted
+--- PASS: TestServer_GarbageKeyIsRedacted (0.00s)
+=== RUN   TestDiscoverDoesNotAuthenticate
+--- PASS: TestDiscoverDoesNotAuthenticate (0.02s)
+=== RUN   TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds
+--- PASS: TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds (0.01s)
+=== RUN   TestPin_RefusesEmptyOwnerOrFingerprint
+--- PASS: TestPin_RefusesEmptyOwnerOrFingerprint (0.00s)
+=== RUN   TestWF24_N1a_ContextErrorsAreNotConnectionLoss
+    wf24_classify_test.go:12: WF24-PROBE N1a err="context deadline exceeded" isConnectionLoss=false IsTransient=false
+    wf24_classify_test.go:12: WF24-PROBE N1a err="context canceled" isConnectionLoss=false IsTransient=false
+    wf24_classify_test.go:12: WF24-PROBE N1a err="w: context deadline exceeded" isConnectionLoss=false IsTransient=false
+--- PASS: TestWF24_N1a_ContextErrorsAreNotConnectionLoss (0.00s)
+=== RUN   TestWF24D2_V07_NegativeGraceClosesAtOnce
+    wf24_discriminators2_test.go:28: elapsed=100.757904ms err=sftp: stat hang: context deadline exceeded
+--- PASS: TestWF24D2_V07_NegativeGraceClosesAtOnce (0.11s)
+=== RUN   TestWF24D2_V08_RangedWriteToReportsShortWrite
+    wf24_discriminators2_test.go:57: err=short write written=25000
+--- PASS: TestWF24D2_V08_RangedWriteToReportsShortWrite (0.02s)
+=== RUN   TestWF24D2_V09_CloseAfterDeathIsNil
+--- PASS: TestWF24D2_V09_CloseAfterDeathIsNil (0.01s)
+=== RUN   TestWF24D_V01_ConnectionOutlivesDialTimeout
+--- PASS: TestWF24D_V01_ConnectionOutlivesDialTimeout (1.62s)
+=== RUN   TestWF24D_V03_WaiterDoesNotInheritTheDialersContextError
+    wf24_discriminators_test.go:57: dialer_err=sftp: stat a.txt: context deadline exceeded waiter_err=<nil>
+--- PASS: TestWF24D_V03_WaiterDoesNotInheritTheDialersContextError (1.05s)
+=== RUN   TestWF24D_V04_TestConnectionRepairsALostClient
+--- PASS: TestWF24D_V04_TestConnectionRepairsALostClient (0.02s)
+=== RUN   TestWF24D_V06_GraceTimerIsDisarmedWhenTheCallReturns
+--- PASS: TestWF24D_V06_GraceTimerIsDisarmedWhenTheCallReturns (0.87s)
+=== RUN   TestWF24D_V18_ReConnectReleasesTheOldConnection
+--- PASS: TestWF24D_V18_ReConnectReleasesTheOldConnection (0.03s)
+=== RUN   TestWF24D_V27_NestedListingPath
+--- PASS: TestWF24D_V27_NestedListingPath (0.02s)
+=== RUN   TestWF24_N1_CancelledListingKillsSharedConnection
+    wf24_probes_test.go:164: WF24-PROBE N1 list_err=sftp: list d: context deadline exceeded list_elapsed=302ms (grace=1s, so the guard never fired) connected_after_cancel=true stream_err=<nil> stream_bytes_after=4190208/4190208 conns_before=1
+--- PASS: TestWF24_N1_CancelledListingKillsSharedConnection (0.46s)
+=== RUN   TestWF24_N2_ListingBudgetAccumulatesAcrossOverlappingListings
+    wf24_probes_test.go:274: WF24-PROBE N2 limit=150 control_sequential=[n=60 err=<nil> n=60 err=<nil> n=60 err=<nil>] with_one_overlapping_listing=[n=60 err=<nil> n=60 err=<nil> n=60 err=<nil>] hang_listing_err=(still in flight) connected_after=true
+--- PASS: TestWF24_N2_ListingBudgetAccumulatesAcrossOverlappingListings (0.83s)
+=== RUN   TestWF24_N3_SlashEntryPointsAtItsOwnDirectory
+    wf24_probes_test.go:340: WF24-PROBE N3 listing_of_/a=[{Name:"f" Path:"/a/f" IsDir:false}] entries_whose_Path_is_the_listed_dir=0 naive_walk_visits_of_/a(depth cap 6)=1
+--- PASS: TestWF24_N3_SlashEntryPointsAtItsOwnDirectory (0.01s)
+=== RUN   TestWF24_N4_EOFVerificationIgnoresConfiguredKeepAliveTimeout
+    wf24_probes_test.go:454: WF24-PROBE N4 global_reply_delay=0s copy_n=10 content_ok=true copy_err=<nil> elapsed=1ms connected_after=true global_requests_seen=1
+    wf24_probes_test.go:454: WF24-PROBE N4 global_reply_delay=4s copy_n=10 content_ok=true copy_err=<nil> elapsed=4.004s connected_after=true global_requests_seen=1
+--- PASS: TestWF24_N4_EOFVerificationIgnoresConfiguredKeepAliveTimeout (4.04s)
+=== RUN   TestWF24_N6_DisconnectDuringExplicitConnect
+    wf24_probes_test.go:479: WF24-PROBE N6 disconnect_err=<nil> connect_err=sftp: disconnected while connecting connected_after_disconnect=false
+--- PASS: TestWF24_N6_DisconnectDuringExplicitConnect (0.71s)
+=== RUN   TestWF24_N7_ServeContentOverOpenSeekableIsNotPipelined
+    wf24_probes_test.go:567: WF24-PROBE N7 ReadRange+io.Copy: peak_concurrent_READs=8 reads=19 elapsed=28ms | ServeContent(OpenSeekable): status=206 bytes_ok=true peak_concurrent_READs=8 reads=33 elapsed=107ms
+--- PASS: TestWF24_N7_ServeContentOverOpenSeekableIsNotPipelined (0.15s)
+=== RUN   TestWF24_N8_CloseAfterConnectionDeath
+    wf24_probes_test.go:593: WF24-PROBE N8 close_err_after_connection_death=<nil> (code comment: 'the handle died with its connection' -> nil)
+--- PASS: TestWF24_N8_CloseAfterConnectionDeath (0.01s)
+PASS
+ok  	digital.vasic.filesystem/pkg/sftp	55.377s
+=== RUN   TestDefaultFactory_SupportedProtocols
+--- PASS: TestDefaultFactory_SupportedProtocols (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SMB
+--- PASS: TestDefaultFactory_CreateClient_SMB (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_FTP
+--- PASS: TestDefaultFactory_CreateClient_FTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_NFS
+--- PASS: TestDefaultFactory_CreateClient_NFS (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_WebDAV
+--- PASS: TestDefaultFactory_CreateClient_WebDAV (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Local
+--- PASS: TestDefaultFactory_CreateClient_Local (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Unsupported
+--- PASS: TestDefaultFactory_CreateClient_Unsupported (0.00s)
+=== RUN   TestGetStringSetting
+--- PASS: TestGetStringSetting (0.00s)
+=== RUN   TestGetIntSetting
+--- PASS: TestGetIntSetting (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP
+--- PASS: TestDefaultFactory_CreateClient_SFTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword
+--- PASS: TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore
+--- PASS: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+--- PASS: TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting (0.00s)
+=== RUN   TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+--- PASS: TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot (0.00s)
+=== RUN   TestDefaultFactory_SFTP_PortIsValidated
+--- PASS: TestDefaultFactory_SFTP_PortIsValidated (0.00s)
+=== RUN   TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+--- PASS: TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd (0.02s)
+=== RUN   TestDefaultFactory_SFTP_RefusesEverySecretSpelling
+--- PASS: TestDefaultFactory_SFTP_RefusesEverySecretSpelling (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RefusesUnknownKeysAndAcceptsTheReadOnes
+--- PASS: TestDefaultFactory_SFTP_RefusesUnknownKeysAndAcceptsTheReadOnes (0.00s)
+=== RUN   TestDefaultFactory_SFTP_FollowsAPinStoreInstalledAfterTheClientWasCreated
+--- PASS: TestDefaultFactory_SFTP_FollowsAPinStoreInstalledAfterTheClientWasCreated (0.01s)
+=== RUN   TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer
+--- PASS: TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer (0.00s)
+=== RUN   TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+--- PASS: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+=== RUN   TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed
+--- PASS: TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed (0.00s)
+=== RUN   TestFTPFactory_UsesTheInstalledPinStore_UnknownThenPinned_EndToEnd
+--- PASS: TestFTPFactory_UsesTheInstalledPinStore_UnknownThenPinned_EndToEnd (0.03s)
+=== RUN   TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+--- PASS: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+=== RUN   TestFTPFactory_SettingsReachTheClient_Config
+--- PASS: TestFTPFactory_SettingsReachTheClient_Config (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_Linux
+--- PASS: TestDefaultFactory_CreateNFSClient_Linux (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_DefaultOptions
+--- PASS: TestDefaultFactory_CreateNFSClient_DefaultOptions (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_EmptyMountPoint
+--- PASS: TestDefaultFactory_CreateNFSClient_EmptyMountPoint (0.00s)
+=== RUN   TestWF24_N5_PoolAuthLatchMissesTheSFTPWrongPasswordShape
+    wf24_authlatch_test.go:110: WF24-PROBE N5 kbd_advertised=false first_err_is_sftp.AuthError=true classify(first_err)=auth leaf="ssh: unable to authenticate, attempted methods [none password], no supported methods remain" server_auth_attempts_after_1st=1 after_2nd=1 second_call_latched=true
+    wf24_authlatch_test.go:110: WF24-PROBE N5 kbd_advertised=true first_err_is_sftp.AuthError=true classify(first_err)=auth leaf="ssh: unexpected message type 51 (expected 60)" server_auth_attempts_after_1st=2 after_2nd=2 second_call_latched=true
+--- PASS: TestWF24_N5_PoolAuthLatchMissesTheSFTPWrongPasswordShape (0.02s)
+=== RUN   TestWF24_N10_InlineSecretSpellingsAccepted
+    wf24_factory_keys_test.go:19: WF24-PROBE N10 accepted_inline_secret_keys=[] (control: "password" must be refused)
+--- PASS: TestWF24_N10_InlineSecretSpellingsAccepted (0.00s)
+PASS
+ok  	digital.vasic.filesystem/pkg/factory	1.108s

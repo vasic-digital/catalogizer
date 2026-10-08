@@ -1,0 +1,20 @@
+# identity: WP-12 fix round 3 mutant W7: 1 = go test exit code
+--- FAIL: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+    ftp_factory_test.go:168: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:168
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port 0
+    ftp_factory_test.go:168: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:168
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port -1
+    ftp_factory_test.go:168: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:168
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port 65536
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.616s
+FAIL

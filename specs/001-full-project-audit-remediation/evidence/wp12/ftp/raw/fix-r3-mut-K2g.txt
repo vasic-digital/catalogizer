@@ -1,0 +1,9 @@
+# identity: WP-12 fix round 3 mutant K2g: 1 = go test exit code
+--- FAIL: TestR3_K2_PASSInterruptedByTheDeadline_IsAmbiguous (0.32s)
+    fix_r3_login_test.go:260: 
+        	Error Trace:	/out/mut/K2g/filesystem/pkg/ftp/fix_r3_login_test.go:260
+        	Error:      	Expected error with "ftp: logins are suspended after a password attempt whose outcome is unknown" in chain but got nil.
+        	Test:       	TestR3_K2_PASSInterruptedByTheDeadline_IsAmbiguous
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	20.289s
+FAIL

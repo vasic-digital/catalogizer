@@ -1,0 +1,5 @@
+# fix-r3 go vet (default and tag nfs3fixture) and gofmt
+# head: f72d8757 (main), submodules/filesystem 83c0ac1 + the uncommitted fix-r3 working tree (the conductor commits)
+# run_at: 2026-10-08T03:38:29Z; sources: sha256 of SOURCES.sha256 starts b4b69384d0fadf57
+vet-and-gofmt-clean
+exit=0

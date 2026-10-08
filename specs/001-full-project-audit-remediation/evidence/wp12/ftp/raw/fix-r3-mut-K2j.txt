@@ -1,0 +1,11 @@
+# identity: WP-12 fix round 3 mutant K2j: 1 = go test exit code
+--- FAIL: TestR3_K2_Backoff_ExpiresAfterItsTTL_AndCanBeDisabled (0.41s)
+    fix_r3_login_test.go:235: 
+        	Error Trace:	/out/mut/K2j/filesystem/pkg/ftp/fix_r3_login_test.go:235
+        	Error:      	Received unexpected error:
+        	            	ftp: logins are suspended after a password attempt whose outcome is unknown: 127.0.0.1:44027 for another 1000h0m0s (a retry would send the password again; ftp.ClearLoginBackoff lifts it)
+        	Test:       	TestR3_K2_Backoff_ExpiresAfterItsTTL_AndCanBeDisabled
+        	Messages:   	the back-off is bounded: not forever
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.964s
+FAIL
