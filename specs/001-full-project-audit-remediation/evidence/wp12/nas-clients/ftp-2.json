@@ -1,0 +1,365 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology2",
+  "protocol": "ftp",
+  "client_package": "pkg/ftp",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "works",
+  "reason": "connected, listed the root and sampled every share through the fabric chain",
+  "pin": {
+    "note": "clear-text FTP on the LAN is the task's explicit scope; the credential travels unencrypted",
+    "outcome": "not_applicable_cleartext_trusted_lan"
+  },
+  "negative_tests": [
+    {
+      "expected": "ftp.ErrClearTextRefused (before any network I/O)",
+      "fabric_class": "permanent",
+      "got": "*errors.errorString",
+      "message": "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)",
+      "name": "cleartext_without_trusted_lan_refused",
+      "ok": true
+    }
+  ],
+  "connect_ms": 133.3,
+  "root": {
+    "dirs": 4,
+    "entries": 4,
+    "names_sha256": "3ac1f5bfb470c78e0839a8efac20c3936a9b1a408bf4e2093e7424ff2b69b0ea"
+  },
+  "shares": [
+    {
+      "share": "Data",
+      "status": "listed",
+      "top_level_entries": 14,
+      "top_level_dirs": 13,
+      "top_level_files": 1,
+      "top_level_names_sha256": "a24da07ac71ca351260dd03ff708534ea2ba7c5cd08d6df373451a26aecaf29c",
+      "sampled_entries": 2000,
+      "sampled_files": 1433,
+      "sampled_dirs": 567,
+      "listing_requests": 49,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "ttf",
+          "count": 1080
+        },
+        {
+          "ext": "mp4",
+          "count": 88
+        },
+        {
+          "ext": "jpg",
+          "count": 62
+        },
+        {
+          "ext": "m4a",
+          "count": 62
+        },
+        {
+          "ext": "txt",
+          "count": 62
+        },
+        {
+          "ext": "srt",
+          "count": 54
+        },
+        {
+          "ext": "ds_store",
+          "count": 21
+        },
+        {
+          "ext": "avi",
+          "count": 2
+        },
+        {
+          "ext": "zip",
+          "count": 2
+        }
+      ],
+      "listing_latency": {
+        "n": 49,
+        "p50_ms": 3.08,
+        "p95_ms": 20.37,
+        "max_ms": 1125.71,
+        "mean_ms": 27.49
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 376248,
+        "sha256_of_bytes_read": "68d6b76292f27deaff842eef970e206ae65c49eb44d0dc8b65d7e8f6a9116a29",
+        "ttfb_ms": 1.9,
+        "total_s": 0.005,
+        "mib_per_s_total": 65.27,
+        "mib_per_s_after_first_byte": 99.84,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 11169,
+        "smb_status": "listed",
+        "smb_top_level_entries": 14,
+        "this_sampled_entries": 2000,
+        "this_top_level_entries": 14,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0000": 1433
+      }
+    },
+    {
+      "share": "usbshare1",
+      "status": "listed",
+      "top_level_entries": 7,
+      "top_level_dirs": 7,
+      "top_level_files": 0,
+      "top_level_names_sha256": "4d5fef42afee99a7fe5afe9d11b9827a44cbbf03edd451ce95f7b8701b694804",
+      "sampled_entries": 2000,
+      "sampled_files": 927,
+      "sampled_dirs": 1073,
+      "listing_requests": 51,
+      "list_errors": [
+        {
+          "ftp_reply_code": 550,
+          "depth": 1,
+          "type": "*textproto.Error",
+          "fabric_class": "permanent",
+          "message": "ftp: list <path>: 550 <q>"
+        }
+      ],
+      "list_error_count": 1,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "srt",
+          "count": 304
+        },
+        {
+          "ext": "jpg",
+          "count": 154
+        },
+        {
+          "ext": "m4a",
+          "count": 148
+        },
+        {
+          "ext": "txt",
+          "count": 148
+        },
+        {
+          "ext": "mkv",
+          "count": 95
+        },
+        {
+          "ext": "mp4",
+          "count": 75
+        },
+        {
+          "ext": "epub",
+          "count": 1
+        },
+        {
+          "ext": "iso",
+          "count": 1
+        },
+        {
+          "ext": "opus",
+          "count": 1
+        }
+      ],
+      "listing_latency": {
+        "n": 51,
+        "p50_ms": 2.35,
+        "p95_ms": 18.69,
+        "max_ms": 117.71,
+        "mean_ms": 7.65
+      },
+      "smb_crosscheck": {
+        "finding": "SECURITY: share is DENIED over SMB for this account but LISTABLE over this protocol",
+        "smb_nt_status": "NT_STATUS_ACCESS_DENIED",
+        "smb_status": "denied_or_error"
+      },
+      "read_skipped_reason": "share is DENIED over SMB for this account (security finding): bounded listing sample only, no file read",
+      "mode_histogram_files_top6": {
+        "0000": 927
+      }
+    },
+    {
+      "share": "usbshare2-1",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_dirs": 0,
+      "top_level_files": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "sampled_dirs": 0,
+      "listing_requests": 1,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": false,
+      "max_depth": 3,
+      "ext_histogram_top25": [],
+      "listing_latency": {
+        "n": 1,
+        "p50_ms": 1.99,
+        "p95_ms": 1.99,
+        "max_ms": 1.99,
+        "mean_ms": 1.99
+      },
+      "smb_crosscheck": {
+        "finding": "SECURITY: share is DENIED over SMB for this account but LISTABLE over this protocol",
+        "smb_nt_status": "NT_STATUS_ACCESS_DENIED",
+        "smb_status": "denied_or_error"
+      },
+      "read_skipped_reason": "share is DENIED over SMB for this account (security finding): bounded listing sample only, no file read"
+    },
+    {
+      "share": "usbshare2-2",
+      "status": "listed",
+      "top_level_entries": 5,
+      "top_level_dirs": 2,
+      "top_level_files": 3,
+      "top_level_names_sha256": "13a8931d6ea0aaaab1168485a0bf3eada66590a214473c35957279d95c010771",
+      "sampled_entries": 6,
+      "sampled_files": 4,
+      "sampled_dirs": 2,
+      "listing_requests": 3,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": false,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "ds_store",
+          "count": 2
+        },
+        {
+          "ext": "(long)",
+          "count": 1
+        },
+        {
+          "ext": "journal",
+          "count": 1
+        }
+      ],
+      "listing_latency": {
+        "n": 3,
+        "p50_ms": 2.46,
+        "p95_ms": 2.74,
+        "max_ms": 2.74,
+        "mean_ms": 2.42
+      },
+      "smb_crosscheck": {
+        "finding": "SECURITY: share is DENIED over SMB for this account but LISTABLE over this protocol",
+        "smb_nt_status": "NT_STATUS_ACCESS_DENIED",
+        "smb_status": "denied_or_error"
+      },
+      "read_skipped_reason": "share is DENIED over SMB for this account (security finding): bounded listing sample only, no file read",
+      "mode_histogram_files_top6": {
+        "0000": 4
+      }
+    }
+  ],
+  "listing_latency_all": {
+    "n": 105,
+    "p50_ms": 2.66,
+    "p95_ms": 18.69,
+    "max_ms": 1125.71,
+    "mean_ms": 16.66
+  },
+  "client_level_requests": 106,
+  "min_gap_between_client_requests_s": 0.998,
+  "host_budget": {
+    "Acquired": 112,
+    "Held": 0,
+    "InFlight": 0,
+    "LeaseExpired": 0,
+    "OldestHeld": 0,
+    "TotalRateWait": 109186778867,
+    "config": {
+      "max_concurrent": 1,
+      "max_req_per_sec": 1
+    }
+  },
+  "calls_reaching_the_protocol_client": {
+    "ListDirectory": 105,
+    "ReadFile": 1
+  },
+  "read_only_proof": {
+    "all_probes_refused_by_ReadOnly": true,
+    "note": "a hit below ReadOnly would have been refused by the harness tripwire, never sent to the NAS",
+    "probe_results": {
+      "CopyFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "CreateDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "WriteFile": "refused_by_ReadOnly(ErrReadOnly)"
+    },
+    "tripwire_hit_methods": [],
+    "tripwire_hits_below_ReadOnly": 0
+  },
+  "findings": [
+    "info: ftp client degraded (no MLSD) = false",
+    "SECURITY: share \"usbshare1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (2000 entries sampled)",
+    "SECURITY: share \"usbshare2-1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (0 entries sampled)",
+    "SECURITY: share \"usbshare2-2\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (6 entries sampled)"
+  ],
+  "measured_at": "2026-10-08T01:09:38Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

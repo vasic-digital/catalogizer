@@ -1,0 +1,155 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology3",
+  "protocol": "nfs",
+  "client_package": "pkg/nfs3",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "blocked",
+  "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure",
+  "listing_latency_all": {
+    "n": 0,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "max_ms": 0,
+    "mean_ms": 0
+  },
+  "client_level_requests": 0,
+  "min_gap_between_client_requests_s": 0,
+  "host_budget": null,
+  "calls_reaching_the_protocol_client": null,
+  "read_only_proof": null,
+  "findings": [
+    "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+  ],
+  "nfs": {
+    "export_paths": null,
+    "exports_call": "ok",
+    "exports_listed": 0,
+    "mount_attempts": [
+      {
+        "access_error": {
+          "layer": "mount",
+          "privileged_port_used": false,
+          "source_port": 52554
+        },
+        "export": "/volume1",
+        "message": "nfs3: access denied during mount: nfs3: mount \"/volume1\" refused: MNT3ERR_ACCES (status 13); this client connected from unprivileged source port 52554; the server may require a source port below 1024 (set TryPrivilegedPort and run with CAP_...",
+        "mount_status": 13,
+        "privileged_port_unavailable": false,
+        "result": "refused_or_failed",
+        "type": "*nfs3.AccessError"
+      },
+      {
+        "access_error": {
+          "layer": "mount",
+          "privileged_port_used": false,
+          "source_port": 52576
+        },
+        "export": "/volume2",
+        "message": "nfs3: access denied during mount: nfs3: mount \"/volume2\" refused: MNT3ERR_ACCES (status 13); this client connected from unprivileged source port 52576; the server may require a source port below 1024 (set TryPrivilegedPort and run with CAP_...",
+        "mount_status": 13,
+        "privileged_port_unavailable": false,
+        "result": "refused_or_failed",
+        "type": "*nfs3.AccessError"
+      },
+      {
+        "access_error": {
+          "layer": "mount",
+          "privileged_port_used": false,
+          "source_port": 52582
+        },
+        "export": "/volume1/DATA12",
+        "message": "nfs3: access denied during mount: nfs3: mount \"/volume1/DATA12\" refused: MNT3ERR_ACCES (status 13); this client connected from unprivileged source port 52582; the server may require a source port below 1024 (set TryPrivilegedPort and run wi...",
+        "mount_status": 13,
+        "privileged_port_unavailable": false,
+        "result": "refused_or_failed",
+        "type": "*nfs3.AccessError"
+      },
+      {
+        "access_error": {
+          "layer": "mount",
+          "privileged_port_used": false,
+          "source_port": 52592
+        },
+        "export": "/volume2/DATA12",
+        "message": "nfs3: access denied during mount: nfs3: mount \"/volume2/DATA12\" refused: MNT3ERR_ACCES (status 13); this client connected from unprivileged source port 52592; the server may require a source port below 1024 (set TryPrivilegedPort and run wi...",
+        "mount_status": 13,
+        "privileged_port_unavailable": false,
+        "result": "refused_or_failed",
+        "type": "*nfs3.AccessError"
+      },
+      {
+        "access_error": {
+          "layer": "mount",
+          "privileged_port_used": false,
+          "source_port": 58596
+        },
+        "export": "/ncl-nonexistent-control",
+        "message": "nfs3: access denied during mount: nfs3: mount \"/ncl-nonexistent-control\" refused: MNT3ERR_ACCES (status 13); this client connected from unprivileged source port 58596; the server may require a source port below 1024 (set TryPrivilegedPort a...",
+        "mount_status": 13,
+        "privileged_port_unavailable": false,
+        "result": "refused_or_failed",
+        "type": "*nfs3.AccessError"
+      }
+    ],
+    "mount_attempts_try_privileged_port": false,
+    "privileged_retry_attempt": {
+      "export": "/volume1",
+      "has_mount_status": false,
+      "is_access_error": false,
+      "message": "nfs3: portmapper GETPORT(100005 v3): nfs3: cannot bind a privileged (<1024) source port: dial tcp :1023-><host>:111: bind: permission denied",
+      "privileged_port_unavailable": true,
+      "try_privileged_port": true
+    }
+  },
+  "measured_at": "2026-10-08T01:13:42Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

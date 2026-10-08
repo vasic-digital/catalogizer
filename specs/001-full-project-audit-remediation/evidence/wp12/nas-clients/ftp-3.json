@@ -1,0 +1,208 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology3",
+  "protocol": "ftp",
+  "client_package": "pkg/ftp",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "works",
+  "reason": "connected, listed the root and sampled every share through the fabric chain",
+  "pin": {
+    "note": "clear-text FTP on the LAN is the task's explicit scope; the credential travels unencrypted",
+    "outcome": "not_applicable_cleartext_trusted_lan"
+  },
+  "negative_tests": [
+    {
+      "expected": "ftp.ErrClearTextRefused (before any network I/O)",
+      "fabric_class": "permanent",
+      "got": "*errors.errorString",
+      "message": "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)",
+      "name": "cleartext_without_trusted_lan_refused",
+      "ok": true
+    }
+  ],
+  "connect_ms": 118,
+  "root": {
+    "dirs": 1,
+    "entries": 1,
+    "names_sha256": "43be15dc73c6499c53b3ed5e6038d190a7ad61a1b298097521e4a8f53b6fe290"
+  },
+  "shares": [
+    {
+      "share": "DATA12",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_dirs": 11,
+      "top_level_files": 1,
+      "top_level_names_sha256": "f0e2c2ee734ca5afa7634898185ac31f0d4c8b1f8040c542a3cbb4150cc679f6",
+      "sampled_entries": 2000,
+      "sampled_files": 1806,
+      "sampled_dirs": 194,
+      "listing_requests": 26,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "srt",
+          "count": 595
+        },
+        {
+          "ext": "m4a",
+          "count": 291
+        },
+        {
+          "ext": "mp4",
+          "count": 284
+        },
+        {
+          "ext": "jpg",
+          "count": 273
+        },
+        {
+          "ext": "txt",
+          "count": 226
+        },
+        {
+          "ext": "mkv",
+          "count": 81
+        },
+        {
+          "ext": "ts",
+          "count": 28
+        },
+        {
+          "ext": "ds_store",
+          "count": 17
+        },
+        {
+          "ext": "opus",
+          "count": 11
+        }
+      ],
+      "listing_latency": {
+        "n": 26,
+        "p50_ms": 3.02,
+        "p95_ms": 141.2,
+        "max_ms": 162.17,
+        "mean_ms": 15.3
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 968346,
+        "sha256_of_bytes_read": "72e372192df7c8f5c6c2bc649b4e2429759eddd79d2e86576a967d40224d7e16",
+        "ttfb_ms": 838.1,
+        "total_s": 0.847,
+        "mib_per_s_total": 1.09,
+        "mib_per_s_after_first_byte": 106.81,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 5188,
+        "smb_status": "listed",
+        "smb_top_level_entries": 12,
+        "this_sampled_entries": 2000,
+        "this_top_level_entries": 12,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0000": 1806
+      }
+    }
+  ],
+  "listing_latency_all": {
+    "n": 27,
+    "p50_ms": 3.02,
+    "p95_ms": 141.2,
+    "max_ms": 162.17,
+    "mean_ms": 14.85
+  },
+  "client_level_requests": 28,
+  "min_gap_between_client_requests_s": 1,
+  "host_budget": {
+    "Acquired": 34,
+    "Held": 0,
+    "InFlight": 0,
+    "LeaseExpired": 0,
+    "OldestHeld": 0,
+    "TotalRateWait": 32462529723,
+    "config": {
+      "max_concurrent": 1,
+      "max_req_per_sec": 1
+    }
+  },
+  "calls_reaching_the_protocol_client": {
+    "ListDirectory": 27,
+    "ReadFile": 1
+  },
+  "read_only_proof": {
+    "all_probes_refused_by_ReadOnly": true,
+    "note": "a hit below ReadOnly would have been refused by the harness tripwire, never sent to the NAS",
+    "probe_results": {
+      "CopyFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "CreateDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "WriteFile": "refused_by_ReadOnly(ErrReadOnly)"
+    },
+    "tripwire_hit_methods": [],
+    "tripwire_hits_below_ReadOnly": 0
+  },
+  "findings": [
+    "info: ftp client degraded (no MLSD) = false"
+  ],
+  "measured_at": "2026-10-08T01:09:38Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

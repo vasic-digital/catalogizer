@@ -1,0 +1,340 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology7",
+  "protocol": "sftp",
+  "client_package": "pkg/sftp",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "works",
+  "reason": "connected, listed the root and sampled every share through the fabric chain",
+  "pin": {
+    "owner_confirmation": "SIMULATED by the recorded survey fingerprints (wp12 nas-protocols), not an out-of-band owner step",
+    "pinned": [
+      {
+        "fingerprint_sha256": "SHA256:p0nkOCdyXfm3aXC7zymvU9FVcetS0LuQNUkLN9vJ5IQ",
+        "key_type": "ecdsa-sha2-nistp256"
+      },
+      {
+        "fingerprint_sha256": "SHA256:cWm61PUodKjIK3GiWdiF9WIg6KTIu1Bpcp7PX2bH4O4",
+        "key_type": "ssh-ed25519"
+      },
+      {
+        "fingerprint_sha256": "SHA256:3d3Gm/tYdfm9J8AhJl8AsX3TgSGEOx6UDhPkEdGOipY",
+        "key_type": "ssh-rsa"
+      }
+    ],
+    "refused": null,
+    "source": "survey_recorded_host_key_fingerprints"
+  },
+  "negative_tests": [
+    {
+      "expected": "*sftp.UnknownHostKeyError (handshake aborted, no credential sent)",
+      "fabric_class": "permanent",
+      "got": "*sftp.UnknownHostKeyError",
+      "message": "sftp: host <host>:22 has no pinned key (server presented ecdsa-sha2-nistp256 SHA256:p0nkOCdyXfm3aXC7zymvU9FVcetS0LuQNUkLN9vJ5IQ); the owner must confirm and pin it first",
+      "name": "unpinned_host_key_refused",
+      "ok": true
+    },
+    {
+      "expected": "*sftp.HostKeyMismatchError (handshake aborted, no credential sent)",
+      "fabric_class": "permanent",
+      "got": "*sftp.HostKeyMismatchError",
+      "message": "sftp: host key for <host>:22 CHANGED: server presented ssh-ed25519 SHA256:cWm61PUodKjIK3GiWdiF9WIg6KTIu1Bpcp7PX2bH4O4, pinned SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "name": "changed_host_key_refused",
+      "ok": true
+    },
+    {
+      "expected": "sftp.ErrPinNotConfirmed (nothing recorded)",
+      "fabric_class": "permanent",
+      "got": "*fmt.wrapError",
+      "message": "sftp: host key pin not confirmed by the owner: owner confirmed SHA256:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB but the server presents SHA256:cWm61PUodKjIK3GiWdiF9WIg6KTIu1Bpcp7PX2bH4O4, SHA256:p0nkOCdyXfm3aXC7zymvU9FVcetS0LuQNUkLN9vJ5IQ...",
+      "name": "pin_with_wrong_confirmation_refused",
+      "ok": true
+    }
+  ],
+  "connect_ms": 267.1,
+  "root": {
+    "dirs": 3,
+    "entries": 3,
+    "names_sha256": "ad9064340f1f39ef3e7df1469ecc8e7ba7d6ca34aa683d8c251848d684c1f4cc"
+  },
+  "shares": [
+    {
+      "share": "DATA22",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_dirs": 11,
+      "top_level_files": 1,
+      "top_level_names_sha256": "9f4973982d16c84bcf8a65b1f14b11864c9a7286068602c24c3b382456227cc8",
+      "sampled_entries": 1355,
+      "sampled_files": 672,
+      "sampled_dirs": 683,
+      "listing_requests": 80,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "epub",
+          "count": 373
+        },
+        {
+          "ext": "fb2",
+          "count": 116
+        },
+        {
+          "ext": "mobi",
+          "count": 75
+        },
+        {
+          "ext": "pdf",
+          "count": 37
+        },
+        {
+          "ext": "webm",
+          "count": 27
+        },
+        {
+          "ext": "djvu",
+          "count": 13
+        },
+        {
+          "ext": "ds_store",
+          "count": 10
+        },
+        {
+          "ext": "mp4",
+          "count": 8
+        },
+        {
+          "ext": "txt",
+          "count": 6
+        },
+        {
+          "ext": "rtf",
+          "count": 3
+        },
+        {
+          "ext": "mkv",
+          "count": 2
+        },
+        {
+          "ext": "rar",
+          "count": 2
+        }
+      ],
+      "listing_latency": {
+        "n": 80,
+        "p50_ms": 3.28,
+        "p95_ms": 7.57,
+        "max_ms": 48.41,
+        "mean_ms": 4.29
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 1041873,
+        "sha256_of_bytes_read": "09cdbf1be4a0f4cb1e332370e97555483c8c08b5a6c3e6301eed24962656cf4d",
+        "ttfb_ms": 1000.2,
+        "total_s": 1.022,
+        "mib_per_s_total": 0.97,
+        "mib_per_s_after_first_byte": 45.85,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 1343,
+        "smb_status": "listed",
+        "smb_top_level_entries": 12,
+        "this_sampled_entries": 1355,
+        "this_top_level_entries": 12,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0755": 653,
+        "0777": 19
+      }
+    },
+    {
+      "share": "DATA22-2",
+      "status": "listed",
+      "top_level_entries": 2,
+      "top_level_dirs": 1,
+      "top_level_files": 1,
+      "top_level_names_sha256": "8a206fd2190438bdaafc1683fe66941371a4205bde3fb58baa8becbd7e514a9d",
+      "sampled_entries": 20,
+      "sampled_files": 8,
+      "sampled_dirs": 12,
+      "listing_requests": 5,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "apk",
+          "count": 5
+        },
+        {
+          "ext": "ds_store",
+          "count": 3
+        }
+      ],
+      "listing_latency": {
+        "n": 5,
+        "p50_ms": 2.38,
+        "p95_ms": 59.83,
+        "max_ms": 59.83,
+        "mean_ms": 13.86
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 578468,
+        "sha256_of_bytes_read": "ab8b6628d02721caf142fd8486bf07294ba0ca13c04f35997bac31e3f1f159e4",
+        "ttfb_ms": 1000.1,
+        "total_s": 1.012,
+        "mib_per_s_total": 0.55,
+        "mib_per_s_after_first_byte": 46.36,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 473,
+        "smb_status": "listed",
+        "smb_top_level_entries": 2,
+        "this_sampled_entries": 20,
+        "this_top_level_entries": 2,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0755": 8
+      }
+    },
+    {
+      "share": "music",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_dirs": 0,
+      "top_level_files": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "sampled_dirs": 0,
+      "listing_requests": 1,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": false,
+      "max_depth": 3,
+      "ext_histogram_top25": [],
+      "listing_latency": {
+        "n": 1,
+        "p50_ms": 49.49,
+        "p95_ms": 49.49,
+        "max_ms": 49.49,
+        "mean_ms": 49.49
+      },
+      "smb_crosscheck": {
+        "finding": "SECURITY: share is DENIED over SMB for this account but LISTABLE over this protocol",
+        "smb_nt_status": "NT_STATUS_ACCESS_DENIED",
+        "smb_status": "denied_or_error"
+      },
+      "read_skipped_reason": "share is DENIED over SMB for this account (security finding): bounded listing sample only, no file read"
+    }
+  ],
+  "listing_latency_all": {
+    "n": 87,
+    "p50_ms": 3.12,
+    "p95_ms": 9.32,
+    "max_ms": 59.83,
+    "mean_ms": 5.91
+  },
+  "client_level_requests": 89,
+  "min_gap_between_client_requests_s": 0.999,
+  "host_budget": {
+    "Acquired": 95,
+    "Held": 0,
+    "InFlight": 0,
+    "LeaseExpired": 0,
+    "OldestHeld": 0,
+    "TotalRateWait": 93120963195,
+    "config": {
+      "max_concurrent": 1,
+      "max_req_per_sec": 1
+    }
+  },
+  "calls_reaching_the_protocol_client": {
+    "ListDirectory": 87,
+    "ReadFile": 2
+  },
+  "read_only_proof": {
+    "all_probes_refused_by_ReadOnly": true,
+    "note": "a hit below ReadOnly would have been refused by the harness tripwire, never sent to the NAS",
+    "probe_results": {
+      "CopyFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "CreateDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "WriteFile": "refused_by_ReadOnly(ErrReadOnly)"
+    },
+    "tripwire_hit_methods": [],
+    "tripwire_hits_below_ReadOnly": 0
+  },
+  "findings": [
+    "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (0 entries sampled)"
+  ],
+  "measured_at": "2026-10-08T01:11:36Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

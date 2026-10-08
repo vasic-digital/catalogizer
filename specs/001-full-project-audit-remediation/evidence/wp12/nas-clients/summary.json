@@ -1,0 +1,930 @@
+{
+  "schema": "wp12-nas-clients-summary/1",
+  "diagnostics": [
+    {
+      "alias": "Synology6",
+      "error_message_redacted": "ftp: list <path>: ftp: directory listing has lines that could not be parsed: <q>",
+      "failing_dir_depth": 2,
+      "ftp_error_type": "*fmt.wrapError",
+      "names_recorded": false,
+      "schema": "wp12-nas-client-diag/1",
+      "sftp_entries_total": 190,
+      "sftp_entry_name_classes": {
+        "entries": 190,
+        "name_has_CR_or_LF": 1,
+        "name_has_control_char": 1
+      },
+      "share": "DATA20-3",
+      "unparsed_line_signature": {
+        "has_semicolon_space_separator": false,
+        "non_ascii_runes": 0,
+        "quoted_len": 8,
+        "semicolons": 0,
+        "starts_with_type_fact": false,
+        "valid_utf8": true
+      }
+    }
+  ],
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  },
+  "hosts": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "protocols": [
+    "ftps",
+    "ftp",
+    "sftp",
+    "nfs"
+  ],
+  "matrix": [
+    {
+      "host": "Synology1",
+      "ftps": {
+        "status": "refused",
+        "reason": "connection refused by the host (service not offered); no survey certificate fingerprint exists to pin"
+      },
+      "ftp": {
+        "status": "refused",
+        "reason": "connection refused by the host (service not offered)"
+      },
+      "sftp": {
+        "status": "refused",
+        "reason": "connection refused by the host (service not offered); no survey host key exists to pin"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology2",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology3",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology4",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology5",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (5 of 5 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology6",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (7 of 7 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    },
+    {
+      "host": "Synology7",
+      "ftps": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "ftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "sftp": {
+        "status": "works",
+        "reason": "connected, listed the root and sampled every share through the fabric chain"
+      },
+      "nfs": {
+        "status": "blocked",
+        "reason": "every MNT attempt refused (7 of 7 with the client's AccessError): the NFS export rules do not admit this machine's address; the owner must add an NFS permission rule. This is the server's decision, not a client failure"
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "connect_ms": 159.8,
+      "listing_requests": 105,
+      "listing_p50_ms": 7.9,
+      "listing_p95_ms": 30,
+      "read_mib_per_s_median_total": 26.85,
+      "read_mib_per_s_median_after_ttfb": 82.52,
+      "shares_sampled": 4,
+      "min_gap_between_client_requests_s": 0.998,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "connect_ms": 133.3,
+      "listing_requests": 105,
+      "listing_p50_ms": 2.66,
+      "listing_p95_ms": 18.69,
+      "read_mib_per_s_median_total": 65.27,
+      "read_mib_per_s_median_after_ttfb": 99.84,
+      "shares_sampled": 4,
+      "min_gap_between_client_requests_s": 0.998,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 2,
+      "protocol": "sftp",
+      "connect_ms": 448.8,
+      "listing_requests": 105,
+      "listing_p50_ms": 4.82,
+      "listing_p95_ms": 42.34,
+      "read_mib_per_s_median_total": 1.26,
+      "read_mib_per_s_median_after_ttfb": 31.31,
+      "shares_sampled": 4,
+      "min_gap_between_client_requests_s": 0.998,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 3,
+      "protocol": "ftps",
+      "connect_ms": 159.9,
+      "listing_requests": 27,
+      "listing_p50_ms": 7.54,
+      "listing_p95_ms": 175.47,
+      "read_mib_per_s_median_total": 1.12,
+      "read_mib_per_s_median_after_ttfb": 82.1,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 3,
+      "protocol": "ftp",
+      "connect_ms": 118,
+      "listing_requests": 27,
+      "listing_p50_ms": 3.02,
+      "listing_p95_ms": 141.2,
+      "read_mib_per_s_median_total": 1.09,
+      "read_mib_per_s_median_after_ttfb": 106.81,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 1,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 3,
+      "protocol": "sftp",
+      "connect_ms": 412.4,
+      "listing_requests": 27,
+      "listing_p50_ms": 4.3,
+      "listing_p95_ms": 100.4,
+      "read_mib_per_s_median_total": 1,
+      "read_mib_per_s_median_after_ttfb": 27.64,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 4,
+      "protocol": "ftps",
+      "connect_ms": 158,
+      "listing_requests": 49,
+      "listing_p50_ms": 7.75,
+      "listing_p95_ms": 12.41,
+      "read_mib_per_s_median_total": 0.02,
+      "read_mib_per_s_median_after_ttfb": 149.1,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 4,
+      "protocol": "ftp",
+      "connect_ms": 117.5,
+      "listing_requests": 49,
+      "listing_p50_ms": 2.85,
+      "listing_p95_ms": 6.58,
+      "read_mib_per_s_median_total": 0.02,
+      "read_mib_per_s_median_after_ttfb": 98.18,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 4,
+      "protocol": "sftp",
+      "connect_ms": 476.8,
+      "listing_requests": 49,
+      "listing_p50_ms": 4.18,
+      "listing_p95_ms": 20.71,
+      "read_mib_per_s_median_total": 0.02,
+      "read_mib_per_s_median_after_ttfb": 1708.55,
+      "shares_sampled": 1,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 5,
+      "protocol": "ftps",
+      "connect_ms": 73.5,
+      "listing_requests": 56,
+      "listing_p50_ms": 4.85,
+      "listing_p95_ms": 11.32,
+      "read_mib_per_s_median_total": 0.37,
+      "read_mib_per_s_median_after_ttfb": 103.42,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.995,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 5,
+      "protocol": "ftp",
+      "connect_ms": 61.2,
+      "listing_requests": 56,
+      "listing_p50_ms": 1.98,
+      "listing_p95_ms": 4.46,
+      "read_mib_per_s_median_total": 0.37,
+      "read_mib_per_s_median_after_ttfb": 102.96,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 5,
+      "protocol": "sftp",
+      "connect_ms": 230.8,
+      "listing_requests": 56,
+      "listing_p50_ms": 2.45,
+      "listing_p95_ms": 36.99,
+      "read_mib_per_s_median_total": 0.37,
+      "read_mib_per_s_median_after_ttfb": 55.21,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 6,
+      "protocol": "ftps",
+      "connect_ms": 74.2,
+      "listing_requests": 97,
+      "listing_p50_ms": 4.67,
+      "listing_p95_ms": 8.82,
+      "read_mib_per_s_median_total": 0.54,
+      "read_mib_per_s_median_after_ttfb": 98.78,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.998,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 6,
+      "protocol": "ftp",
+      "connect_ms": 62.3,
+      "listing_requests": 97,
+      "listing_p50_ms": 1.77,
+      "listing_p95_ms": 5.04,
+      "read_mib_per_s_median_total": 0.53,
+      "read_mib_per_s_median_after_ttfb": 98.19,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 6,
+      "protocol": "sftp",
+      "connect_ms": 272.8,
+      "listing_requests": 97,
+      "listing_p50_ms": 2.34,
+      "listing_p95_ms": 9.21,
+      "read_mib_per_s_median_total": 0.51,
+      "read_mib_per_s_median_after_ttfb": 52.83,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.997,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 7,
+      "protocol": "ftps",
+      "connect_ms": 75.2,
+      "listing_requests": 87,
+      "listing_p50_ms": 6.1,
+      "listing_p95_ms": 11.94,
+      "read_mib_per_s_median_total": 0.77,
+      "read_mib_per_s_median_after_ttfb": 111.98,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.998,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 7,
+      "protocol": "ftp",
+      "connect_ms": 63.2,
+      "listing_requests": 87,
+      "listing_p50_ms": 2.57,
+      "listing_p95_ms": 8.32,
+      "read_mib_per_s_median_total": 0.77,
+      "read_mib_per_s_median_after_ttfb": 106.92,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    },
+    {
+      "host": 7,
+      "protocol": "sftp",
+      "connect_ms": 267.1,
+      "listing_requests": 87,
+      "listing_p50_ms": 3.12,
+      "listing_p95_ms": 9.32,
+      "read_mib_per_s_median_total": 0.76,
+      "read_mib_per_s_median_after_ttfb": 46.11,
+      "shares_sampled": 3,
+      "min_gap_between_client_requests_s": 0.999,
+      "tripwire_hits": 0
+    }
+  ],
+  "cross_protocol_consistency": [
+    {
+      "host": 2,
+      "share": "Data",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 2,
+      "share": "usbshare1",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 2,
+      "share": "usbshare2-1",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 2,
+      "share": "usbshare2-2",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 3,
+      "share": "DATA12",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 4,
+      "share": "DATA18",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 5,
+      "share": "DATA20",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 5,
+      "share": "WORK20",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 5,
+      "share": "music",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 6,
+      "share": "DATA20-2",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 6,
+      "share": "DATA20-3",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 6,
+      "share": "music",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 7,
+      "share": "DATA22",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 7,
+      "share": "DATA22-2",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    },
+    {
+      "host": 7,
+      "share": "music",
+      "protocols": [
+        "ftp",
+        "ftps",
+        "sftp"
+      ],
+      "top_level_identical": true,
+      "read_sample_identical": true
+    }
+  ],
+  "defects_found_in_clients_or_harness": [
+    {
+      "host": 1,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "share": "usbshare1",
+      "defect": "listing errors inside the sample",
+      "errors": [
+        {
+          "ftp_reply_code": 550,
+          "depth": 1,
+          "type": "*textproto.Error",
+          "fabric_class": "permanent",
+          "message": "ftp: list <path>: 550 <q>"
+        }
+      ]
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "share": "usbshare1",
+      "defect": "listing errors inside the sample",
+      "errors": [
+        {
+          "ftp_reply_code": 550,
+          "depth": 1,
+          "type": "*textproto.Error",
+          "fabric_class": "permanent",
+          "message": "ftp: list <path>: 550 <q>"
+        }
+      ]
+    },
+    {
+      "host": 2,
+      "protocol": "sftp",
+      "share": "usbshare1",
+      "defect": "listing errors inside the sample",
+      "errors": [
+        {
+          "depth": 1,
+          "type": "*errors.errorString",
+          "fabric_class": "permanent",
+          "message": "sftp: list <path>: permission denied"
+        },
+        {
+          "depth": 1,
+          "type": "*errors.errorString",
+          "fabric_class": "permanent",
+          "message": "sftp: list <path>: permission denied"
+        }
+      ]
+    },
+    {
+      "host": 2,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 3,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 4,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 5,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 6,
+      "protocol": "ftps",
+      "share": "DATA20-3",
+      "defect": "listing errors inside the sample",
+      "errors": [
+        {
+          "depth": 2,
+          "type": "*fmt.wrapError",
+          "fabric_class": "permanent",
+          "message": "ftp: list <path>: ftp: directory listing has lines that could not be parsed: <q>"
+        }
+      ]
+    },
+    {
+      "host": 6,
+      "protocol": "ftp",
+      "share": "DATA20-3",
+      "defect": "listing errors inside the sample",
+      "errors": [
+        {
+          "depth": 2,
+          "type": "*fmt.wrapError",
+          "fabric_class": "permanent",
+          "message": "ftp: list <path>: ftp: directory listing has lines that could not be parsed: <q>"
+        }
+      ]
+    },
+    {
+      "host": 6,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 7,
+      "protocol": "nfs",
+      "finding": "DEFECT: nfs3.Client.Connect with TryPrivilegedPort returns only the error of the reserved-port retry (cannot bind a privileged source port) and DISCARDS the server's original refusal (AccessError / MNT3ERR_ACCES observed without TryPrivilegedPort): the operator is told about a local port problem instead of the export rule that actually refused"
+    },
+    {
+      "host": 6,
+      "share": "DATA20-3",
+      "defect": "the bounded sample (same deterministic walk, same bounds) differs between protocols: a listing failed or returned different entries on one",
+      "detail": {
+        "ftp": {
+          "entries": 379,
+          "files": 45,
+          "dirs": 334,
+          "listing_requests": 73,
+          "list_errors": 1
+        },
+        "ftps": {
+          "entries": 379,
+          "files": 45,
+          "dirs": 334,
+          "listing_requests": 73,
+          "list_errors": 1
+        },
+        "sftp": {
+          "entries": 569,
+          "files": 46,
+          "dirs": 523,
+          "listing_requests": 73,
+          "list_errors": 0
+        }
+      }
+    }
+  ],
+  "findings_and_security": [
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"usbshare1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (2000 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"usbshare2-1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (0 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"usbshare2-2\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (6 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"usbshare1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (2000 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"usbshare2-1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (0 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"usbshare2-2\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (6 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"usbshare1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (2000 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"usbshare2-1\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (0 entries sampled)"
+    },
+    {
+      "host": 2,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"usbshare2-2\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (6 entries sampled)"
+    },
+    {
+      "host": 3,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 3,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 4,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 4,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 5,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 5,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"WORK20\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (68 entries sampled)"
+    },
+    {
+      "host": 5,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (0 entries sampled)"
+    },
+    {
+      "host": 5,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 5,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"WORK20\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (68 entries sampled)"
+    },
+    {
+      "host": 5,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (0 entries sampled)"
+    },
+    {
+      "host": 5,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"WORK20\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (68 entries sampled)"
+    },
+    {
+      "host": 5,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (0 entries sampled)"
+    },
+    {
+      "host": 6,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 6,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (0 entries sampled)"
+    },
+    {
+      "host": 6,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 6,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (0 entries sampled)"
+    },
+    {
+      "host": 6,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (0 entries sampled)"
+    },
+    {
+      "host": 7,
+      "protocol": "ftps",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 7,
+      "protocol": "ftps",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (0 entries sampled)"
+    },
+    {
+      "host": 7,
+      "protocol": "ftp",
+      "finding": "info: ftp client degraded (no MLSD) = false"
+    },
+    {
+      "host": 7,
+      "protocol": "ftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftp (0 entries sampled)"
+    },
+    {
+      "host": 7,
+      "protocol": "sftp",
+      "finding": "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over sftp (0 entries sampled)"
+    }
+  ]
+}

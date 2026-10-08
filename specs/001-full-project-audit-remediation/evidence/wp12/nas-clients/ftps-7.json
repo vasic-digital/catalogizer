@@ -1,0 +1,336 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology7",
+  "protocol": "ftps",
+  "client_package": "pkg/ftp",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "works",
+  "reason": "connected, listed the root and sampled every share through the fabric chain",
+  "pin": {
+    "fingerprint_sha256": "61:3C:02:44:C3:6E:EF:B8:CA:FD:08:EE:86:CB:D0:57:3B:2A:79:CF:B8:C1:5C:38:36:68:94:2D:79:7C:5B:72",
+    "outcome": "pinned",
+    "owner_confirmation": "SIMULATED by the recorded survey fingerprint (wp12 nas-protocols), not an out-of-band owner step",
+    "server_name_kind": "certificate_dns_name",
+    "source": "survey_recorded_certificate_sha256"
+  },
+  "negative_tests": [
+    {
+      "expected": "*ftp.UnknownCertError (connection refused, no credential sent)",
+      "fabric_class": "permanent",
+      "got": "*ftp.UnknownCertError",
+      "message": "ftp: host <host> has no pinned certificate (server presented SHA256:61:3C:02:44:C3:6E:EF:B8:CA:FD:08:EE:86:CB:D0:57:3B:2A:79:CF:B8:C1:5C:38:36:68:94:2D:79:7C:5B:72); the owner must confirm and pin it first",
+      "name": "unpinned_certificate_refused",
+      "ok": true
+    },
+    {
+      "expected": "*ftp.CertMismatchError (connection refused, no credential sent)",
+      "fabric_class": "permanent",
+      "got": "*ftp.CertMismatchError",
+      "message": "ftp: certificate for <host> CHANGED: server presented SHA256:61:3C:02:44:C3:6E:EF:B8:CA:FD:08:EE:86:CB:D0:57:3B:2A:79:CF:B8:C1:5C:38:36:68:94:2D:79:7C:5B:72, pinned SHA256:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA:AA...",
+      "name": "changed_certificate_refused",
+      "ok": true
+    },
+    {
+      "expected": "ErrPinNotConfirmed (nothing recorded)",
+      "fabric_class": "permanent",
+      "got": "*fmt.wrapError",
+      "message": "ftp: the certificate presented by the server is not the one the owner confirmed: server presented SHA256:61:3C:02:44:C3:6E:EF:B8:CA:FD:08:EE:86:CB:D0:57:3B:2A:79:CF:B8:C1:5C:38:36:68:94:2D:79:7C:5B:72, owner confirmed ababababababababababab...",
+      "name": "pin_with_wrong_confirmation_refused",
+      "ok": true
+    },
+    {
+      "expected": "ftp.ErrClearTextRefused (before any network I/O)",
+      "fabric_class": "permanent",
+      "got": "*errors.errorString",
+      "message": "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)",
+      "name": "cleartext_without_trusted_lan_refused",
+      "ok": true
+    }
+  ],
+  "connect_ms": 75.2,
+  "root": {
+    "dirs": 3,
+    "entries": 3,
+    "names_sha256": "ad9064340f1f39ef3e7df1469ecc8e7ba7d6ca34aa683d8c251848d684c1f4cc"
+  },
+  "shares": [
+    {
+      "share": "DATA22",
+      "status": "listed",
+      "top_level_entries": 12,
+      "top_level_dirs": 11,
+      "top_level_files": 1,
+      "top_level_names_sha256": "9f4973982d16c84bcf8a65b1f14b11864c9a7286068602c24c3b382456227cc8",
+      "sampled_entries": 1355,
+      "sampled_files": 672,
+      "sampled_dirs": 683,
+      "listing_requests": 80,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "epub",
+          "count": 373
+        },
+        {
+          "ext": "fb2",
+          "count": 116
+        },
+        {
+          "ext": "mobi",
+          "count": 75
+        },
+        {
+          "ext": "pdf",
+          "count": 37
+        },
+        {
+          "ext": "webm",
+          "count": 27
+        },
+        {
+          "ext": "djvu",
+          "count": 13
+        },
+        {
+          "ext": "ds_store",
+          "count": 10
+        },
+        {
+          "ext": "mp4",
+          "count": 8
+        },
+        {
+          "ext": "txt",
+          "count": 6
+        },
+        {
+          "ext": "rtf",
+          "count": 3
+        },
+        {
+          "ext": "mkv",
+          "count": 2
+        },
+        {
+          "ext": "rar",
+          "count": 2
+        }
+      ],
+      "listing_latency": {
+        "n": 80,
+        "p50_ms": 6.47,
+        "p95_ms": 11.94,
+        "max_ms": 16.43,
+        "mean_ms": 6.96
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 1041873,
+        "sha256_of_bytes_read": "09cdbf1be4a0f4cb1e332370e97555483c8c08b5a6c3e6301eed24962656cf4d",
+        "ttfb_ms": 999.7,
+        "total_s": 1.008,
+        "mib_per_s_total": 0.99,
+        "mib_per_s_after_first_byte": 113.07,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 1343,
+        "smb_status": "listed",
+        "smb_top_level_entries": 12,
+        "this_sampled_entries": 1355,
+        "this_top_level_entries": 12,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0000": 672
+      }
+    },
+    {
+      "share": "DATA22-2",
+      "status": "listed",
+      "top_level_entries": 2,
+      "top_level_dirs": 1,
+      "top_level_files": 1,
+      "top_level_names_sha256": "8a206fd2190438bdaafc1683fe66941371a4205bde3fb58baa8becbd7e514a9d",
+      "sampled_entries": 20,
+      "sampled_files": 8,
+      "sampled_dirs": 12,
+      "listing_requests": 5,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": true,
+      "max_depth": 3,
+      "ext_histogram_top25": [
+        {
+          "ext": "apk",
+          "count": 5
+        },
+        {
+          "ext": "ds_store",
+          "count": 3
+        }
+      ],
+      "listing_latency": {
+        "n": 5,
+        "p50_ms": 4.66,
+        "p95_ms": 7.14,
+        "max_ms": 7.14,
+        "mean_ms": 5.06
+      },
+      "read_sample": {
+        "status": "ok",
+        "selection": "largest_file_of_at_most_1MiB",
+        "file_size_class": "64KiB_to_1MiB",
+        "bytes_read": 578468,
+        "sha256_of_bytes_read": "ab8b6628d02721caf142fd8486bf07294ba0ca13c04f35997bac31e3f1f159e4",
+        "ttfb_ms": 1000.2,
+        "total_s": 1.005,
+        "mib_per_s_total": 0.55,
+        "mib_per_s_after_first_byte": 110.9,
+        "content_stored": false
+      },
+      "smb_crosscheck": {
+        "note": "at least one side hit its sample bound: totals are not comparable",
+        "sampled_entries_comparable": false,
+        "smb_sampled_entries": 473,
+        "smb_status": "listed",
+        "smb_top_level_entries": 2,
+        "this_sampled_entries": 20,
+        "this_top_level_entries": 2,
+        "top_level_entries_match": true
+      },
+      "mode_histogram_files_top6": {
+        "0000": 8
+      }
+    },
+    {
+      "share": "music",
+      "status": "listed",
+      "top_level_entries": 0,
+      "top_level_dirs": 0,
+      "top_level_files": 0,
+      "top_level_names_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sampled_entries": 0,
+      "sampled_files": 0,
+      "sampled_dirs": 0,
+      "listing_requests": 1,
+      "list_errors": [],
+      "list_error_count": 0,
+      "truncated_by_bound": false,
+      "max_depth": 3,
+      "ext_histogram_top25": [],
+      "listing_latency": {
+        "n": 1,
+        "p50_ms": 4.16,
+        "p95_ms": 4.16,
+        "max_ms": 4.16,
+        "mean_ms": 4.16
+      },
+      "smb_crosscheck": {
+        "finding": "SECURITY: share is DENIED over SMB for this account but LISTABLE over this protocol",
+        "smb_nt_status": "NT_STATUS_ACCESS_DENIED",
+        "smb_status": "denied_or_error"
+      },
+      "read_skipped_reason": "share is DENIED over SMB for this account (security finding): bounded listing sample only, no file read"
+    }
+  ],
+  "listing_latency_all": {
+    "n": 87,
+    "p50_ms": 6.1,
+    "p95_ms": 11.94,
+    "max_ms": 16.43,
+    "mean_ms": 6.8
+  },
+  "client_level_requests": 89,
+  "min_gap_between_client_requests_s": 0.998,
+  "host_budget": {
+    "Acquired": 95,
+    "Held": 0,
+    "InFlight": 0,
+    "LeaseExpired": 0,
+    "OldestHeld": 0,
+    "TotalRateWait": 93268531540,
+    "config": {
+      "max_concurrent": 1,
+      "max_req_per_sec": 1
+    }
+  },
+  "calls_reaching_the_protocol_client": {
+    "ListDirectory": 87,
+    "ReadFile": 2
+  },
+  "read_only_proof": {
+    "all_probes_refused_by_ReadOnly": true,
+    "note": "a hit below ReadOnly would have been refused by the harness tripwire, never sent to the NAS",
+    "probe_results": {
+      "CopyFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "CreateDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "WriteFile": "refused_by_ReadOnly(ErrReadOnly)"
+    },
+    "tripwire_hit_methods": [],
+    "tripwire_hits_below_ReadOnly": 0
+  },
+  "findings": [
+    "info: ftp client degraded (no MLSD) = false",
+    "SECURITY: share \"music\" is denied over SMB (NT_STATUS_ACCESS_DENIED) but its content is listable over ftps (0 entries sampled)"
+  ],
+  "measured_at": "2026-10-08T01:07:38Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "Synology1",
+  "protocol": "sftp",
+  "client_package": "pkg/sftp",
+  "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",
+  "status": "refused",
+  "reason": "connection refused by the host (service not offered); no survey host key exists to pin",
+  "error": {
+    "type": "*net.OpError",
+    "fabric_class": "transient",
+    "message": "sftp: dial <host>:22: dial tcp <host>:22: connect: connection refused"
+  },
+  "negative_tests": [
+    {
+      "expected": "connection error (no SSH service)",
+      "fabric_class": "transient",
+      "got": "*fmt.wrapError",
+      "message": "sftp: dial <host>:22: dial tcp <host>:22: connect: connection refused",
+      "name": "service_absent_connect",
+      "ok": true
+    }
+  ],
+  "listing_latency_all": {
+    "n": 0,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "max_ms": 0,
+    "mean_ms": 0
+  },
+  "client_level_requests": 0,
+  "min_gap_between_client_requests_s": 0,
+  "host_budget": null,
+  "calls_reaching_the_protocol_client": null,
+  "read_only_proof": null,
+  "measured_at": "2026-10-08T01:11:36Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  },
+  "identity": {
+    "schema_owner": "wp12-nas-clients",
+    "head": "e9d6883d213528426b1d83fecb9ed86fb28651f1",
+    "run_at": "2026-10-08T01:13:52Z",
+    "filesystem_submodule_head": "83c0ac1f407f9e11044e97f4aa385ecfaf1cde21",
+    "filesystem_pkg_uncommitted_files": 0,
+    "image": "IMG-GO",
+    "image_digest": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+    "tools": [
+      {
+        "file": "scripts/test-infra/nas_clients_leg.sh",
+        "sha256": "a8159df76e3b18fdc128b0625471e033b9e55d982172a1a65c198f2d51a70089"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_clients_test.go",
+        "sha256": "f313d9787633ff48aa14e4f55eb29bc9d5d01668893002fc68e578a52b613044"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/nas_diag_test.go",
+        "sha256": "ac5edb327e7495aa97a4ee8b2e1cc0cf916ead769c9a8ca50494aa8956c47a57"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.mod",
+        "sha256": "425d75046a940401fc721ed79e64bb70ecb6d1ed6eca175076112ea9ba4ccad1"
+      },
+      {
+        "file": "scripts/test-infra/nas_clients/go.sum",
+        "sha256": "08a7b86f5fee217e716b307f2afaea4a842dd21c32267ba990dd92d8eb210125"
+      }
+    ],
+    "rootless": true,
+    "one_container_at_a_time": true,
+    "trust": "certificate/host-key pins come from the wp12 survey fingerprints: SIMULATED owner confirmation",
+    "writes_performed": 0,
+    "content_stored": false,
+    "names_recorded": false,
+    "host_addresses_recorded": false,
+    "credentials_recorded": false
+  }
+}
