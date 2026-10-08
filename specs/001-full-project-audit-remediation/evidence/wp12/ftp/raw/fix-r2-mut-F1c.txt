@@ -1,0 +1,26 @@
+# identity: WP-12 PA-04 fix round 2: mutant F1c - the connect-phase budget (DialTimeout) is not applied
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (6.60s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (3.00s)
+        fix_r2_net_test.go:212: 
+            	Error Trace:	/out/mut/F1c/filesystem/pkg/ftp/fix_r2_net_test.go:212
+            	Error:      	Should be true
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+            	Messages:   	DialTimeout bounds the greeting
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout (3.00s)
+        fix_r2_net_test.go:212: 
+            	Error Trace:	/out/mut/F1c/filesystem/pkg/ftp/fix_r2_net_test.go:212
+            	Error:      	Should be true
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+            	Messages:   	DialTimeout bounds the greeting
+--- FAIL: TestDeadline_TLSHandshakeUnanswered_D2 (3.00s)
+    fix_r2_net_test.go:244: 
+        	Error Trace:	/out/mut/F1c/filesystem/pkg/ftp/fix_r2_net_test.go:244
+        	Error:      	Should be true
+        	Test:       	TestDeadline_TLSHandshakeUnanswered_D2
+        	Messages:   	DialTimeout bounds the TLS handshake (blocked 3.002138915s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	24.101s
+FAIL

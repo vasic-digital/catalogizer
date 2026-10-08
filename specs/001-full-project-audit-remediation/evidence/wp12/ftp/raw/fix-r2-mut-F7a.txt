@@ -1,0 +1,33 @@
+# identity: WP-12 PA-04 fix round 2: mutant F7a - every 550 is reported as non-existence
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestClassify550 (0.00s)
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Failed to open file.
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Can't open file
+--- FAIL: TestAmbiguous550_IsSettledByTheParentListing (0.01s)
+    fix_r2_list_test.go:273: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:273
+        	Error:      	Should be true
+        	Test:       	TestAmbiguous550_IsSettledByTheParentListing
+        	Messages:   	present in the parent listing: it exists
+    fix_r2_list_test.go:275: 
+        	Error Trace:	/out/mut/F7a/filesystem/pkg/ftp/fix_r2_list_test.go:275
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: file does not exist: 550 "Failed to open file."
+        	Test:       	TestAmbiguous550_IsSettledByTheParentListing
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.001s
+FAIL

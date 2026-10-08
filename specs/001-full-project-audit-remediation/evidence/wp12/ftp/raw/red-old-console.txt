@@ -1,0 +1,21 @@
+# identity: WP-12 PA-04 RED: pre-change client (git HEAD ftp.go) under the new tests
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+{
+ "mode": "red-old",
+ "rc": 1,
+ "failing_tests": 0,
+ "names": [],
+ "undefined_symbols": 8,
+ "undefined": [
+  "CertPin",
+  "Credential",
+  "Fingerprint",
+  "MemPinStore",
+  "PinStore",
+  "PublicConfig",
+  "TLSExplicit",
+  "TLSNone"
+ ],
+ "build_failed": true
+}

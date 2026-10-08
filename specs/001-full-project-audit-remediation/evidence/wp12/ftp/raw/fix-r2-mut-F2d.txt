@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F2d - bytes nobody asked for are not detected before a command
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand (0.00s)
+    fix_r2_net_test.go:1459: 
+        	Error Trace:	/out/mut/F2d/filesystem/pkg/ftp/fix_r2_net_test.go:1459
+        	Error:      	Expected error with "ftp: protocol violation" in chain but got nil.
+        	Test:       	TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+        	Messages:   	the stray reply, which has the SAME code as a NOOP answer, must not be taken for the answer to the next command
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.042s
+FAIL

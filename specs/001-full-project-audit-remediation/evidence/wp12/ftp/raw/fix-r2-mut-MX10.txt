@@ -1,0 +1,121 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX10 - reviewer: IOTimeout not applied
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3 (6.01s)
+    fix_r2_net_test.go:256: 
+        	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+        	Messages:   	a stalled MLSD data connection must hit IOTimeout (blocked 3.001698984s)
+--- FAIL: TestDeadline_C3_RETRStall_IOTimeoutHonoured (23.01s)
+    fix_r2_net_test.go:288: 
+        	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:288
+        	Error:      	"20.006601538s" is not less than "3s"
+        	Test:       	TestDeadline_C3_RETRStall_IOTimeoutHonoured
+--- FAIL: TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4 (3.01s)
+    fix_r2_net_test.go:319: 
+        	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:319
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+        	Messages:   	Close waits at most IOTimeout for the final reply
+--- FAIL: TestDeadline_EveryControlCommandIsBounded (72.08s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/NOOP (6.01s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/NOOP
+            	Messages:   	NOOP: the reply never came and nothing gave up (3.001442513s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/MLST (6.01s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/MLST
+            	Messages:   	MLST: the reply never came and nothing gave up (3.000987961s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/SIZE (6.00s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/SIZE
+            	Messages:   	SIZE: the reply never came and nothing gave up (3.000452828s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/EPSV (6.01s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/EPSV
+            	Messages:   	EPSV: the reply never came and nothing gave up (3.000563388s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/MKD (6.01s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/MKD
+            	Messages:   	MKD: the reply never came and nothing gave up (3.001041971s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/DELE (6.01s)
+        fix_r2_net_test.go:351: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:351
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/DELE
+            	Messages:   	DELE: the reply never came and nothing gave up (3.000264038s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/USER (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/USER
+            	Messages:   	Connect hangs at USER (4.001175817s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PASS (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PASS
+            	Messages:   	Connect hangs at PASS (4.000330364s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/FEAT (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/FEAT
+            	Messages:   	Connect hangs at FEAT (4.001252217s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/TYPE (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/TYPE
+            	Messages:   	Connect hangs at TYPE (4.001713979s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/OPTS (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/OPTS
+            	Messages:   	Connect hangs at OPTS (4.002033421s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PBSZ (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PBSZ
+            	Messages:   	Connect hangs at PBSZ (4.0018044s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PROT (4.01s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PROT
+            	Messages:   	Connect hangs at PROT (4.003012034s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/CWD (4.01s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/CWD
+            	Messages:   	Connect hangs at CWD (4.003054384s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PWD (4.00s)
+        fix_r2_net_test.go:365: 
+            	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:365
+            	Error:      	Should be true
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PWD
+            	Messages:   	Connect hangs at PWD (4.002492682s)
+--- FAIL: TestSlowDrippingReply_IsBoundedAsAWhole (3.02s)
+    fix_r2_net_test.go:1393: 
+        	Error Trace:	/out/mut/MX10/filesystem/pkg/ftp/fix_r2_net_test.go:1393
+        	Error:      	Should be true
+        	Test:       	TestSlowDrippingReply_IsBoundedAsAWhole
+        	Messages:   	a reply that drips on forever must hit IOTimeout as a whole (3.00075354s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	140.175s
+FAIL

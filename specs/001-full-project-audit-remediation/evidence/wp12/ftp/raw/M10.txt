@@ -1,0 +1,118 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M10.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestConcurrentUse_OneControlConnection_NoInterleaving (20.03s)
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: dial tcp 127.0.0.1:37555: connect: connection refused
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: read tcp 127.0.0.1:52058->127.0.0.1:33515: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: read tcp 127.0.0.1:52058->127.0.0.1:33515: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: read tcp 127.0.0.1:52058->127.0.0.1:33515: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: use of closed network connection
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: short response: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00250 End"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: short response: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: short response: "a.txt"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: 229 "Entering Extended Passive Mode (|||39065|)"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: write tcp 127.0.0.1:53340->127.0.0.1:43653: write: connection reset by peer
+        	            	425 "cannot open data connection"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: short response: "e (|||33291|)"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: dial tcp 127.0.0.1:46451: connect: connection refused
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: retrieve /data/big.bin: short response: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00227 Entering Passive Mode (127,0,0,1,173,37)"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: short response: "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:515: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:515
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 16
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+        	Messages:   	one client = one control connection, however many goroutines
+--- FAIL: TestBusySession_WaitsAndHonoursContext (10.01s)
+    ftps_test.go:527: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:527
+        	Error:      	Target error should be in err chain:
+        	            	expected: "context deadline exceeded"
+        	            	in chain: "ftp: list /data: 229 \"Entering Extended Passive Mode (|||41637|)\""
+        	            		"229 \"Entering Extended Passive Mode (|||41637|)\""
+        	Test:       	TestBusySession_WaitsAndHonoursContext
+        	Messages:   	a second command waits for the session and gives up with its context
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	30.455s
+ok  	digital.vasic.filesystem/pkg/factory	0.008s
+FAIL

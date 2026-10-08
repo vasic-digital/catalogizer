@@ -1,0 +1,18 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6d - cdir/pdir entries are listed as children
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:171: 
+        	Error Trace:	/out/mut/F6d/filesystem/pkg/ftp/fix_r2_list_test.go:171
+        	Error:      	map[string]*client.FileInfo{" two leading spaces.txt":(*client.FileInfo)(0xc0000e2b90), "UpperDir":(*client.FileInfo)(0xc0000e29b0), "badoctal.txt":(*client.FileInfo)(0xc0000e2aa0), "data":(*client.FileInfo)(0xc0000e2870), "frac.txt":(*client.FileInfo)(0xc0000e2960), "link":(*client.FileInfo)(0xc0000e2a00), "lower.txt":(*client.FileInfo)(0xc0000e2910), "nofacts.txt":(*client.FileInfo)(0xc0000e2b40), "octal.txt":(*client.FileInfo)(0xc0000e2a50), "plain.txt":(*client.FileInfo)(0xc0000e28c0), "spaced.txt":(*client.FileInfo)(0xc0000e2af0), "trailing dot.":(*client.FileInfo)(0xc0000e2be0)} should not contain "data"
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	the cdir entry is the directory itself, not a child
+    fix_r2_list_test.go:174: 
+        	Error Trace:	/out/mut/F6d/filesystem/pkg/ftp/fix_r2_list_test.go:174
+        	Error:      	"[0xc0000e2870 0xc0000e28c0 0xc0000e2910 0xc0000e2960 0xc0000e29b0 0xc0000e2a00 0xc0000e2a50 0xc0000e2aa0 0xc0000e2af0 0xc0000e2b40 0xc0000e2b90 0xc0000e2be0]" should have 11 item(s), but has 12
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	a name with '/' or NUL is a hostile entry and is skipped (MX08); nothing else is lost
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.969s
+FAIL

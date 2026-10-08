@@ -1,0 +1,19 @@
+# fix-r2 AUTH_SYS oracle negative control
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:35:27Z; sources: 8b8cfe6ea7c6b51a
+go: downloading github.com/go-git/go-billy/v5 v5.6.0
+go: downloading github.com/willscott/go-nfs v0.0.4
+go: downloading github.com/willscott/go-nfs-client v0.0.0-20240104095149-b44639837b00
+go: downloading github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/hashicorp/golang-lru/v2 v2.0.7
+go: downloading golang.org/x/sys v0.24.0
+NEGATIVE-CONTROL-unmutated rc=0 ok_lines=10 violation_lines=0 first_violation=[]
+NEGATIVE-CONTROL PASS
+X01 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION gids: xdr:DecodeUint: EOF while decoding 4 bytes - read: '[]']
+X01 KILLED    AUTH_SYS gids count off by one
+X02 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION gids: xdr:DecodeUint: unexpected EOF while decoding 4 bytes - read: '[0 3 232]']
+X02 KILLED    AUTH_SYS machine name longer than announced (padding lost)
+X03 rc=1 ok_lines=0 violation_lines=1 first_violation=[VIOLATION prog 100005 proc 1: credential uid=1001 gid=1000 machine="catalogizer", want 1000/1000/"catalogizer"]
+X03 KILLED    AUTH_SYS uid field carries gid+1
+exit=0

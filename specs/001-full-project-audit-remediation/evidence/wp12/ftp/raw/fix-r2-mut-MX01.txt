@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX01 - reviewer: Disconnect never aborts the open stream
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01 (1.22s)
+    fix_r2_net_test.go:650: 
+        	Error Trace:	/out/mut/MX01/filesystem/pkg/ftp/fix_r2_net_test.go:650
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+        	Messages:   	Disconnect ends the stream
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.919s
+FAIL

@@ -1,0 +1,19 @@
+# identity: WP-12 PA-04 fix round 2: mutant F3a - a cancelled/aborted stream is still readable (abort checks removed from dconn.Read)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestCancelBetweenReads_IsHonoured_D9 (1.22s)
+    fix_r2_net_test.go:608: 
+        	Error Trace:	/out/mut/F3a/filesystem/pkg/ftp/fix_r2_net_test.go:608
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestCancelBetweenReads_IsHonoured_D9
+        	Messages:   	a cancelled context ends the stream
+--- FAIL: TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01 (1.22s)
+    fix_r2_net_test.go:650: 
+        	Error Trace:	/out/mut/F3a/filesystem/pkg/ftp/fix_r2_net_test.go:650
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+        	Messages:   	Disconnect ends the stream
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.997s
+FAIL

@@ -1,0 +1,326 @@
+# identity: WP-12 PA-02/PA-07 GREEN run 2: go vet + go test -race -count=1 -cover -v ./pkg/decorators/ ./pkg/fabric/
+# head: 69ca319d (main), working tree dirty, submodules/filesystem uncommitted
+# run_at: 2026-10-07T17:51:25Z
+# image: IMG-GO via scripts/containers/run_pinned.sh
+# sha256 submodules/filesystem/pkg/decorators/readonly.go 52cbcd409ee6a9b20afb50d2a5792fe9b75c43724b8a9706a7e53cfa2e873bdb
+# sha256 submodules/filesystem/pkg/decorators/readonly_test.go 8caa2fdacbfffcbbb291fb3085e0107288b208050406c298eeee1acad13d6119
+# sha256 submodules/filesystem/pkg/fabric/budget.go 09125a65027058810d47a34887da8af539f6700331ed819e4c05013fe1591dd0
+# sha256 submodules/filesystem/pkg/fabric/budget_test.go 5e50e5666a2849dd24de6f78ce4dbd42b99e7e62ef61f4f1d55cc3fcf5f79813
+# sha256 submodules/filesystem/pkg/fabric/chain_test.go df43348cecde24229df5de867dc5fffa39974f8732dc51f729d790a618f2f167
+# sha256 submodules/filesystem/pkg/fabric/clock.go b27d8681b4041585931230d20e2d91f22f02bdbba86e0d381ee58ae085ee5e82
+# sha256 submodules/filesystem/pkg/fabric/confined.go 85be9797b259f61b8ac41444f542c28adb9e4182ff6dae7d32298d6f67117921
+# sha256 submodules/filesystem/pkg/fabric/decorators_test.go c0badaa48d93980d372ab1f223a34c0afc987a83e2106b6bde98d81501ce2dbd
+# sha256 submodules/filesystem/pkg/fabric/errors.go 96d26705c08fad2780c92bdc7eca3843f655bd5225509a5fd97d66e7e2de4d6e
+# sha256 submodules/filesystem/pkg/fabric/helpers_test.go b4575b8c3d0d7fe5d295f57a798ea0b3f39fe70087fb900b6f96be53a6efeead
+# sha256 submodules/filesystem/pkg/fabric/layer.go ffe947365d7c8a9f3572f03e04e42be26e52be8346570dae7e62ee13e02a5b7c
+# sha256 submodules/filesystem/pkg/fabric/limited.go 611c44d92ebb254b467bb4ced8cce5cf1a2f67f36b0e35c11998958903fdb4f9
+# sha256 submodules/filesystem/pkg/fabric/metered.go a2df8214b9c4db12e500e4f0906e44a0f1a26bcb17ea6fba2720b5269152ae9c
+# sha256 submodules/filesystem/pkg/fabric/op.go c4dc02e78c52c48be511375ead11c2008e513ded7a7bf8ff483b6932bda94ebe
+# sha256 submodules/filesystem/pkg/fabric/op_test.go f11881bf105c986b265bc7fd551f4d1bd677712a82029e48935ddbf8680f123d
+# sha256 submodules/filesystem/pkg/fabric/pool.go 3a180bafef1bf1ea2ec618bc6b80504aa39f252e8c6c9722d34aa74f2b110d00
+# sha256 submodules/filesystem/pkg/fabric/pool_test.go c73b373c8f3360ee9841b37bd208648dd0cd1b752062a72d7a72b4ba2ee898fb
+# sha256 submodules/filesystem/pkg/fabric/retrying.go 507b41ba720ae4796739bd64fdee43aad2cffbb6d8a4bb7c68c506e0a490a42f
+=== RUN   TestReadOnly_ClassifiesEveryInterfaceMethod
+=== PAUSE TestReadOnly_ClassifiesEveryInterfaceMethod
+=== RUN   TestReadOnly_ClassifierSeesAnInjectedMutator
+=== PAUSE TestReadOnly_ClassifierSeesAnInjectedMutator
+=== RUN   TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+=== PAUSE TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+=== RUN   TestReadOnly_ReadsAndLifecycleAreForwarded
+=== PAUSE TestReadOnly_ReadsAndLifecycleAreForwarded
+=== RUN   TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+=== PAUSE TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+=== RUN   TestReadOnly_NilInnerPanicsAtConstruction
+=== PAUSE TestReadOnly_NilInnerPanicsAtConstruction
+=== RUN   TestReadOnly_RealLocalFilesystemUntouched
+=== PAUSE TestReadOnly_RealLocalFilesystemUntouched
+=== CONT  TestReadOnly_ClassifiesEveryInterfaceMethod
+--- PASS: TestReadOnly_ClassifiesEveryInterfaceMethod (0.00s)
+=== CONT  TestReadOnly_RealLocalFilesystemUntouched
+--- PASS: TestReadOnly_RealLocalFilesystemUntouched (0.00s)
+=== CONT  TestReadOnly_NilInnerPanicsAtConstruction
+--- PASS: TestReadOnly_NilInnerPanicsAtConstruction (0.00s)
+=== CONT  TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+--- PASS: TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt (0.00s)
+=== CONT  TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+=== CONT  TestReadOnly_ReadsAndLifecycleAreForwarded
+=== CONT  TestReadOnly_ClassifierSeesAnInjectedMutator
+--- PASS: TestReadOnly_ReadsAndLifecycleAreForwarded (0.00s)
+--- PASS: TestReadOnly_ClassifierSeesAnInjectedMutator (0.00s)
+--- PASS: TestReadOnly_EveryMutatorRefusesAndNeverCallsInner (0.00s)
+=== RUN   FuzzReadOnly_Mutators
+=== RUN   FuzzReadOnly_Mutators/seed#0
+=== RUN   FuzzReadOnly_Mutators/seed#1
+=== RUN   FuzzReadOnly_Mutators/seed#2
+=== RUN   FuzzReadOnly_Mutators/seed#3
+=== RUN   FuzzReadOnly_Mutators/seed#4
+=== RUN   FuzzReadOnly_Mutators/seed#5
+=== RUN   FuzzReadOnly_Mutators/seed#6
+=== RUN   FuzzReadOnly_Mutators/seed#7
+--- PASS: FuzzReadOnly_Mutators (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#0 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#1 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#2 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#3 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#4 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#5 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#6 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#7 (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	digital.vasic.filesystem/pkg/decorators	1.027s	coverage: 100.0% of statements
+=== RUN   TestBudgetConfig_Rejected
+=== PAUSE TestBudgetConfig_Rejected
+=== RUN   TestBudget_StartsAreSpacedAtTheConfiguredRate
+=== PAUSE TestBudget_StartsAreSpacedAtTheConfiguredRate
+=== RUN   TestBudget_IdleTimeDoesNotBankBurst
+=== PAUSE TestBudget_IdleTimeDoesNotBankBurst
+=== RUN   TestBudget_ConcurrencyCapHoldsUnderLoad
+=== PAUSE TestBudget_ConcurrencyCapHoldsUnderLoad
+=== RUN   TestBudget_ContextEndsWhileWaitingForSlot
+=== PAUSE TestBudget_ContextEndsWhileWaitingForSlot
+=== RUN   TestBudget_ReleaseIsIdempotent
+=== PAUSE TestBudget_ReleaseIsIdempotent
+=== RUN   TestBudget_RateWaitInterruptedByContextReleasesSlot
+=== PAUSE TestBudget_RateWaitInterruptedByContextReleasesSlot
+=== RUN   TestBudgets_OneBudgetPerHostAcrossProtocols
+=== PAUSE TestBudgets_OneBudgetPerHostAcrossProtocols
+=== RUN   TestBudget_ConfigAndExtremeRate
+=== PAUSE TestBudget_ConfigAndExtremeRate
+=== RUN   TestChain_RealLocalFilesystem
+=== PAUSE TestChain_RealLocalFilesystem
+=== RUN   TestLimited_EveryOpTakesOneSlotExceptDisconnect
+=== PAUSE TestLimited_EveryOpTakesOneSlotExceptDisconnect
+=== RUN   TestLimited_FailedCallReleasesItsSlot
+=== PAUSE TestLimited_FailedCallReleasesItsSlot
+=== RUN   TestLimited_StreamHoldsSlotUntilClose
+=== PAUSE TestLimited_StreamHoldsSlotUntilClose
+=== RUN   TestLimited_DisconnectIsNeverThrottled
+=== PAUSE TestLimited_DisconnectIsNeverThrottled
+=== RUN   TestLimited_SharedBudgetCapsTwoProtocolsTogether
+=== PAUSE TestLimited_SharedBudgetCapsTwoProtocolsTogether
+=== RUN   TestLimited_NilBudgetPanics
+=== PAUSE TestLimited_NilBudgetPanics
+=== RUN   TestClassify_Table
+=== PAUSE TestClassify_Table
+=== RUN   TestRetrying_PolicyValidation
+=== PAUSE TestRetrying_PolicyValidation
+=== RUN   TestRetrying_ReadsRetryTransientThenSucceed
+=== PAUSE TestRetrying_ReadsRetryTransientThenSucceed
+=== RUN   TestRetrying_NeverRetriesAuthFailure
+=== PAUSE TestRetrying_NeverRetriesAuthFailure
+=== RUN   TestRetrying_NeverRetriesMutationsOrDisconnect
+=== PAUSE TestRetrying_NeverRetriesMutationsOrDisconnect
+=== RUN   TestRetrying_PermanentAndUnknownAreNotRetried
+=== PAUSE TestRetrying_PermanentAndUnknownAreNotRetried
+=== RUN   TestRetrying_ExhaustionWrapsLastError
+=== PAUSE TestRetrying_ExhaustionWrapsLastError
+=== RUN   TestRetrying_BackoffDoublesAndCaps
+=== PAUSE TestRetrying_BackoffDoublesAndCaps
+=== RUN   TestRetrying_JitterAndCustomClassifier
+=== PAUSE TestRetrying_JitterAndCustomClassifier
+=== RUN   TestRetrying_CallerContextStopsRetries
+=== PAUSE TestRetrying_CallerContextStopsRetries
+=== RUN   TestRetrying_SleepInterruptedByContext
+=== PAUSE TestRetrying_SleepInterruptedByContext
+=== RUN   TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+=== PAUSE TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+=== RUN   TestConfined_RootValidation
+=== PAUSE TestConfined_RootValidation
+=== RUN   TestConfined_EscapesNeverReachInner
+=== PAUSE TestConfined_EscapesNeverReachInner
+=== RUN   TestConfined_CopyChecksBothPathsBeforeTouchingEither
+=== PAUSE TestConfined_CopyChecksBothPathsBeforeTouchingEither
+=== RUN   TestConfined_InsidePathsAreCleanedAndForwarded
+=== PAUSE TestConfined_InsidePathsAreCleanedAndForwarded
+=== RUN   TestConfined_RootSlashAllowsAnyAbsolutePath
+=== PAUSE TestConfined_RootSlashAllowsAnyAbsolutePath
+=== RUN   TestConfined_ConnectionOpsPassThrough
+=== PAUSE TestConfined_ConnectionOpsPassThrough
+=== RUN   TestMetered_CountsCallsErrorsAndBytes
+=== PAUSE TestMetered_CountsCallsErrorsAndBytes
+=== RUN   TestMetered_EveryOpProducesExactlyOneSample
+=== PAUSE TestMetered_EveryOpProducesExactlyOneSample
+=== RUN   TestMetered_NilSinkPanics
+=== PAUSE TestMetered_NilSinkPanics
+=== RUN   TestDecorators_SeekableOnlyWhenInnerIs
+=== PAUSE TestDecorators_SeekableOnlyWhenInnerIs
+=== RUN   TestDecorators_NilInnerPanics
+=== PAUSE TestDecorators_NilInnerPanics
+=== RUN   TestChain_FirstDecoratorIsOutermost
+=== PAUSE TestChain_FirstDecoratorIsOutermost
+=== RUN   TestLayer_ClosesStreamReturnedAlongsideAnError
+=== PAUSE TestLayer_ClosesStreamReturnedAlongsideAnError
+=== RUN   TestRetrying_HugeBackoffDoesNotOverflow
+=== PAUSE TestRetrying_HugeBackoffDoesNotOverflow
+=== RUN   TestOpTable_CoversEveryClientMethod
+--- PASS: TestOpTable_CoversEveryClientMethod (0.00s)
+=== RUN   TestOpTable_InstrumentDetectsInjectedMethod
+--- PASS: TestOpTable_InstrumentDetectsInjectedMethod (0.00s)
+=== RUN   TestOpTable_Classification
+--- PASS: TestOpTable_Classification (0.00s)
+=== RUN   TestHostKey
+--- PASS: TestHostKey (0.00s)
+=== RUN   TestPool_ConfigValidation
+=== PAUSE TestPool_ConfigValidation
+=== RUN   TestPool_KeyRequired
+=== PAUSE TestPool_KeyRequired
+=== RUN   TestPool_ReusesConnectionAndSeparatesRoots
+=== PAUSE TestPool_ReusesConnectionAndSeparatesRoots
+=== RUN   TestPool_UnhealthyIdleConnectionIsReplaced
+=== PAUSE TestPool_UnhealthyIdleConnectionIsReplaced
+=== RUN   TestPool_DisconnectedIdleConnectionIsReplaced
+=== PAUSE TestPool_DisconnectedIdleConnectionIsReplaced
+=== RUN   TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== PAUSE TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== RUN   TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+=== PAUSE TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+=== RUN   TestPool_ExhaustionAndBlockingBorrow
+=== PAUSE TestPool_ExhaustionAndBlockingBorrow
+=== RUN   TestPool_ReturnValidation
+=== PAUSE TestPool_ReturnValidation
+=== RUN   TestPool_CreateAndConnectFailuresFreeTheSlot
+=== PAUSE TestPool_CreateAndConnectFailuresFreeTheSlot
+=== RUN   TestPool_CloseAll
+=== PAUSE TestPool_CloseAll
+=== RUN   TestPool_EvictDisconnectsIdle
+=== PAUSE TestPool_EvictDisconnectsIdle
+=== RUN   TestPool_RaceManyBorrowers
+=== PAUSE TestPool_RaceManyBorrowers
+=== CONT  TestBudget_IdleTimeDoesNotBankBurst
+--- PASS: TestBudget_IdleTimeDoesNotBankBurst (0.00s)
+=== CONT  TestPool_EvictDisconnectsIdle
+=== CONT  TestRetrying_SleepInterruptedByContext
+--- PASS: TestPool_EvictDisconnectsIdle (0.00s)
+=== CONT  TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+=== CONT  TestRetrying_JitterAndCustomClassifier
+=== CONT  TestRetrying_BackoffDoublesAndCaps
+=== CONT  TestRetrying_CallerContextStopsRetries
+=== CONT  TestRetrying_ExhaustionWrapsLastError
+--- PASS: TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt (0.00s)
+--- PASS: TestRetrying_JitterAndCustomClassifier (0.00s)
+=== CONT  TestRetrying_NeverRetriesMutationsOrDisconnect
+--- PASS: TestRetrying_ExhaustionWrapsLastError (0.00s)
+=== CONT  TestRetrying_PermanentAndUnknownAreNotRetried
+--- PASS: TestRetrying_PermanentAndUnknownAreNotRetried (0.00s)
+=== CONT  TestRetrying_NeverRetriesAuthFailure
+--- PASS: TestRetrying_NeverRetriesMutationsOrDisconnect (0.00s)
+--- PASS: TestRetrying_CallerContextStopsRetries (0.00s)
+=== CONT  TestRetrying_ReadsRetryTransientThenSucceed
+--- PASS: TestRetrying_BackoffDoublesAndCaps (0.00s)
+--- PASS: TestRetrying_ReadsRetryTransientThenSucceed (0.00s)
+=== CONT  TestClassify_Table
+=== CONT  TestLimited_NilBudgetPanics
+--- PASS: TestRetrying_NeverRetriesAuthFailure (0.00s)
+--- PASS: TestLimited_NilBudgetPanics (0.00s)
+=== CONT  TestLimited_SharedBudgetCapsTwoProtocolsTogether
+--- PASS: TestClassify_Table (0.00s)
+=== CONT  TestLimited_DisconnectIsNeverThrottled
+--- PASS: TestLimited_DisconnectIsNeverThrottled (0.00s)
+=== CONT  TestRetrying_PolicyValidation
+--- PASS: TestRetrying_PolicyValidation (0.00s)
+=== CONT  TestLimited_StreamHoldsSlotUntilClose
+--- PASS: TestLimited_StreamHoldsSlotUntilClose (0.02s)
+=== CONT  TestLimited_FailedCallReleasesItsSlot
+=== CONT  TestChain_RealLocalFilesystem
+--- PASS: TestLimited_FailedCallReleasesItsSlot (0.00s)
+--- PASS: TestChain_RealLocalFilesystem (0.00s)
+=== CONT  TestBudget_ConfigAndExtremeRate
+--- PASS: TestBudget_ConfigAndExtremeRate (0.00s)
+=== CONT  TestLimited_EveryOpTakesOneSlotExceptDisconnect
+--- PASS: TestLimited_EveryOpTakesOneSlotExceptDisconnect (0.00s)
+=== CONT  TestBudget_RateWaitInterruptedByContextReleasesSlot
+=== CONT  TestBudget_ReleaseIsIdempotent
+--- PASS: TestRetrying_SleepInterruptedByContext (0.03s)
+--- PASS: TestLimited_SharedBudgetCapsTwoProtocolsTogether (0.03s)
+=== CONT  TestBudgets_OneBudgetPerHostAcrossProtocols
+--- PASS: TestBudgets_OneBudgetPerHostAcrossProtocols (0.00s)
+=== CONT  TestBudget_ConcurrencyCapHoldsUnderLoad
+--- PASS: TestBudget_ConcurrencyCapHoldsUnderLoad (0.02s)
+=== CONT  TestBudget_ContextEndsWhileWaitingForSlot
+=== CONT  TestBudget_StartsAreSpacedAtTheConfiguredRate
+--- PASS: TestBudget_ReleaseIsIdempotent (0.02s)
+--- PASS: TestBudget_StartsAreSpacedAtTheConfiguredRate (0.00s)
+=== CONT  TestBudgetConfig_Rejected
+--- PASS: TestBudgetConfig_Rejected (0.00s)
+=== CONT  TestLayer_ClosesStreamReturnedAlongsideAnError
+=== CONT  TestPool_RaceManyBorrowers
+--- PASS: TestLayer_ClosesStreamReturnedAlongsideAnError (0.00s)
+=== CONT  TestPool_CreateAndConnectFailuresFreeTheSlot
+--- PASS: TestBudget_RateWaitInterruptedByContextReleasesSlot (0.03s)
+=== CONT  TestPool_ReturnValidation
+--- PASS: TestPool_CreateAndConnectFailuresFreeTheSlot (0.00s)
+=== CONT  TestPool_CloseAll
+--- PASS: TestPool_ReturnValidation (0.00s)
+--- PASS: TestBudget_ContextEndsWhileWaitingForSlot (0.02s)
+=== CONT  TestPool_ExhaustionAndBlockingBorrow
+--- PASS: TestPool_RaceManyBorrowers (0.03s)
+=== CONT  TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+--- PASS: TestPool_LifetimeExpiredClientIsNotPooledOnReturn (0.00s)
+=== CONT  TestPool_DisconnectedIdleConnectionIsReplaced
+--- PASS: TestPool_DisconnectedIdleConnectionIsReplaced (0.00s)
+=== CONT  TestPool_UnhealthyIdleConnectionIsReplaced
+=== CONT  TestPool_ReusesConnectionAndSeparatesRoots
+--- PASS: TestPool_ReusesConnectionAndSeparatesRoots (0.00s)
+=== CONT  TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== CONT  TestPool_ConfigValidation
+--- PASS: TestPool_MaxLifetimeAndIdleTimeoutRetire (0.00s)
+--- PASS: TestPool_UnhealthyIdleConnectionIsReplaced (0.00s)
+=== CONT  TestPool_KeyRequired
+--- PASS: TestPool_ConfigValidation (0.00s)
+--- PASS: TestPool_KeyRequired (0.00s)
+=== CONT  TestDecorators_NilInnerPanics
+=== CONT  TestRetrying_HugeBackoffDoesNotOverflow
+--- PASS: TestDecorators_NilInnerPanics (0.00s)
+--- PASS: TestRetrying_HugeBackoffDoesNotOverflow (0.00s)
+=== CONT  TestChain_FirstDecoratorIsOutermost
+--- PASS: TestChain_FirstDecoratorIsOutermost (0.00s)
+=== CONT  TestDecorators_SeekableOnlyWhenInnerIs
+--- PASS: TestDecorators_SeekableOnlyWhenInnerIs (0.00s)
+=== CONT  TestMetered_NilSinkPanics
+--- PASS: TestMetered_NilSinkPanics (0.00s)
+=== CONT  TestMetered_EveryOpProducesExactlyOneSample
+--- PASS: TestMetered_EveryOpProducesExactlyOneSample (0.00s)
+=== CONT  TestMetered_CountsCallsErrorsAndBytes
+--- PASS: TestMetered_CountsCallsErrorsAndBytes (0.00s)
+=== CONT  TestConfined_InsidePathsAreCleanedAndForwarded
+--- PASS: TestConfined_InsidePathsAreCleanedAndForwarded (0.00s)
+=== CONT  TestConfined_ConnectionOpsPassThrough
+--- PASS: TestPool_CloseAll (0.03s)
+=== CONT  TestConfined_RootSlashAllowsAnyAbsolutePath
+--- PASS: TestConfined_ConnectionOpsPassThrough (0.00s)
+=== CONT  TestConfined_RootValidation
+--- PASS: TestConfined_RootSlashAllowsAnyAbsolutePath (0.00s)
+=== CONT  TestConfined_CopyChecksBothPathsBeforeTouchingEither
+--- PASS: TestConfined_RootValidation (0.00s)
+=== CONT  TestConfined_EscapesNeverReachInner
+--- PASS: TestConfined_CopyChecksBothPathsBeforeTouchingEither (0.00s)
+--- PASS: TestConfined_EscapesNeverReachInner (0.00s)
+--- PASS: TestPool_ExhaustionAndBlockingBorrow (0.05s)
+=== RUN   FuzzConfined
+=== RUN   FuzzConfined/seed#0
+=== RUN   FuzzConfined/seed#1
+=== RUN   FuzzConfined/seed#2
+=== RUN   FuzzConfined/seed#3
+=== RUN   FuzzConfined/seed#4
+=== RUN   FuzzConfined/seed#5
+=== RUN   FuzzConfined/seed#6
+=== RUN   FuzzConfined/seed#7
+=== RUN   FuzzConfined/seed#8
+=== RUN   FuzzConfined/seed#9
+=== RUN   FuzzConfined/seed#10
+--- PASS: FuzzConfined (0.00s)
+    --- PASS: FuzzConfined/seed#0 (0.00s)
+    --- PASS: FuzzConfined/seed#1 (0.00s)
+    --- PASS: FuzzConfined/seed#2 (0.00s)
+    --- PASS: FuzzConfined/seed#3 (0.00s)
+    --- PASS: FuzzConfined/seed#4 (0.00s)
+    --- PASS: FuzzConfined/seed#5 (0.00s)
+    --- PASS: FuzzConfined/seed#6 (0.00s)
+    --- PASS: FuzzConfined/seed#7 (0.00s)
+    --- PASS: FuzzConfined/seed#8 (0.00s)
+    --- PASS: FuzzConfined/seed#9 (0.00s)
+    --- PASS: FuzzConfined/seed#10 (0.00s)
+PASS
+coverage: 97.1% of statements
+ok  	digital.vasic.filesystem/pkg/fabric	1.165s	coverage: 97.1% of statements

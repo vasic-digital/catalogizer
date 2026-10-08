@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant W6 - factory: an inline password is accepted again
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+    ftp_factory_test.go:159: 
+        	Error Trace:	/out/mut/W6/filesystem/pkg/factory/ftp_factory_test.go:159
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	password
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.016s
+FAIL

@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F2f - a stream failure is waited for instead of dropping the connection
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestStreamTimeout_CloseDoesNotWaitForTheFinalReply (2.01s)
+    fix_r2_net_test.go:396: 
+        	Error Trace:	/out/mut/F2f/filesystem/pkg/ftp/fix_r2_net_test.go:396
+        	Error:      	"1.00108172s" is not less than "500ms"
+        	Test:       	TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+        	Messages:   	Close must not wait another IOTimeout for a final reply on a connection that already failed
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	17.034s
+FAIL

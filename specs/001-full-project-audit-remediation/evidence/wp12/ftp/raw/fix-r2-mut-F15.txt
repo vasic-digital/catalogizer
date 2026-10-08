@@ -1,0 +1,12 @@
+# identity: WP-12 PA-04 fix round 2: mutant F15 - a second server name for the same host is accepted by Pin
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestPin_SecondServerNameForTheSameHost_IsRefused_F15 (0.00s)
+    fix_r2_net_test.go:1141: 
+        	Error Trace:	/out/mut/F15/filesystem/pkg/ftp/fix_r2_net_test.go:1141
+        	Error:      	Expected error with "ftp: the host already has a pin for a certificate with a different server name; remove that pin first" in chain but got nil.
+        	Test:       	TestPin_SecondServerNameForTheSameHost_IsRefused_F15
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.977s
+FAIL

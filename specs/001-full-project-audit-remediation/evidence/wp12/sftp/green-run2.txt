@@ -1,0 +1,160 @@
+# identity: WP-12 PA-05 SFTP client, GREEN run 2 (unit + integration against OpenSSH, -race)
+# head: 4c8b07b7 (main), working tree dirty; submodule filesystem changes UNCOMMITTED
+# run_at: 2026-10-07T18:16:35Z host: anton
+# cmd: scripts/test-infra/sftp_fixture.sh run -- -race -v ./pkg/sftp/ ./pkg/factory/
+# sha256 submodules/filesystem/pkg/sftp/sftp.go 079d9bac08651c34c1482449bf5b6374f8566c74c68b6fb368dfdd1573f7840f
+# sha256 submodules/filesystem/pkg/sftp/hostkey.go 506706daa2dec1da1cec6d79c95d93f90617bb58b1ff0d5121dad4e7dd4d218f
+# sha256 submodules/filesystem/pkg/sftp/credential.go 770ce74bd7784c8b79c923e636c463cba749705c7088e0c8b5ffc3ce90073878
+# sha256 submodules/filesystem/pkg/sftp/sftp_test.go decd6ece2b8b3e6ed19674376e97474b9a2422db8f5ae51ae86f9d5834807aaa
+# sha256 submodules/filesystem/pkg/sftp/integration_test.go 7c103ffb34a53e102c1eecde0b6aa831d40fc6b82c5a90a9d6693986b5fac5b3
+# sha256 submodules/filesystem/pkg/sftp/testserver_test.go 02b6d3732143e43bd4b9f7e6d23773f5641afbf4d15c6a0c949b15a9b3c29bc9
+# sha256 submodules/filesystem/pkg/factory/factory.go fa259e4a8990f1eebe48f473b281071f33818f198e135db143a308d9cc9edb20
+# sha256 submodules/filesystem/go.mod 5eb2f9012c66df5deeb6c5fdf24229168d84dbbfd30d2bf27baa41661c905d81
+# sha256 docker-compose.test-infra.sftp.yml 7918a960a899d8f94da60389657fc2eb8ac83549991e008e9640748d2ab2ee75
+# sha256 scripts/test-infra/sftp_fixture.sh f4d0e701ce0a7f589ffed7ca8314e547552923d6f910a8a7c8a5586416ae3cb0
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+=== RUN   TestIntegrationSelftest
+selftest: connected to OpenSSH, host key pinned and verified
+--- PASS: TestIntegrationSelftest (1.54s)
+=== RUN   TestIntegration_ListingAndAttributes
+--- PASS: TestIntegration_ListingAndAttributes (1.53s)
+=== RUN   TestIntegration_ReadWholeAndRanged
+--- PASS: TestIntegration_ReadWholeAndRanged (1.52s)
+=== RUN   TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused
+--- PASS: TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused (0.35s)
+=== RUN   TestIntegration_AuthFailureNotRetried
+--- PASS: TestIntegration_AuthFailureNotRetried (0.44s)
+=== RUN   TestIntegration_KeyAuth
+--- PASS: TestIntegration_KeyAuth (1.46s)
+=== RUN   TestIntegration_WritesImpossible
+--- PASS: TestIntegration_WritesImpossible (1.70s)
+=== RUN   TestIntegration_FixtureVolumeIsReadOnlyServerSide
+--- PASS: TestIntegration_FixtureVolumeIsReadOnlyServerSide (1.63s)
+=== RUN   TestIntegration_PathConfinement
+--- PASS: TestIntegration_PathConfinement (1.50s)
+=== RUN   TestIntegration_ContextCancelMidRead
+--- PASS: TestIntegration_ContextCancelMidRead (1.47s)
+=== RUN   TestIntegration_TransientDialFailureRetriedThenGivesUp
+--- PASS: TestIntegration_TransientDialFailureRetriedThenGivesUp (0.06s)
+=== RUN   TestConfine_Table
+--- PASS: TestConfine_Table (0.00s)
+=== RUN   TestConfine_DefaultRootIsSlash
+--- PASS: TestConfine_DefaultRootIsSlash (0.00s)
+=== RUN   TestWithin
+--- PASS: TestWithin (0.00s)
+=== RUN   TestFingerprintFormat
+--- PASS: TestFingerprintFormat (0.00s)
+=== RUN   TestHostPortNormalisation
+--- PASS: TestHostPortNormalisation (0.00s)
+=== RUN   TestHostKeyCallback_UnknownMismatchMatch
+--- PASS: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+=== RUN   TestHostKeyAlgorithmsFollowPinnedType
+--- PASS: TestHostKeyAlgorithmsFollowPinnedType (0.00s)
+=== RUN   TestMemPinStore
+--- PASS: TestMemPinStore (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600
+--- PASS: TestFilePinStore_PersistsWith0600 (0.00s)
+=== RUN   TestFilePinStore_CorruptFileIsAnErrorNotNoPins
+--- PASS: TestFilePinStore_CorruptFileIsAnErrorNotNoPins (0.00s)
+=== RUN   TestCredential_Redaction
+--- PASS: TestCredential_Redaction (0.00s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestIsTransient_Table
+--- PASS: TestIsTransient_Table (0.00s)
+=== RUN   TestRetry_BoundedAndTransientOnly
+--- PASS: TestRetry_BoundedAndTransientOnly (0.01s)
+=== RUN   TestRetry_ContextCancelStopsBackoff
+--- PASS: TestRetry_ContextCancelStopsBackoff (0.05s)
+=== RUN   TestMutatorsAreImpossible_NoConnectionNeeded
+--- PASS: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+=== RUN   TestGetConfigHasNoSecret
+--- PASS: TestGetConfigHasNoSecret (0.00s)
+=== RUN   TestToInfo_NoFabricatedMtime
+--- PASS: TestToInfo_NoFabricatedMtime (0.00s)
+=== RUN   TestNotConnectedOperationsFail
+--- PASS: TestNotConnectedOperationsFail (0.00s)
+=== RUN   TestConnectRefusesWithoutPinStoreOrCredential
+--- PASS: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+=== RUN   TestServer_ListReadStat
+--- PASS: TestServer_ListReadStat (0.02s)
+=== RUN   TestServer_PipelinedCopyAndRange
+--- PASS: TestServer_PipelinedCopyAndRange (0.17s)
+=== RUN   TestServer_ContextCancelStopsRead
+--- PASS: TestServer_ContextCancelStopsRead (0.04s)
+=== RUN   TestServer_HostKey_UnknownRefused_ThenPinned
+--- PASS: TestServer_HostKey_UnknownRefused_ThenPinned (0.05s)
+=== RUN   TestServer_HostKey_ChangedKeyRefused
+--- PASS: TestServer_HostKey_ChangedKeyRefused (0.01s)
+=== RUN   TestServer_AuthFailureNotRetried_NoSecretInError
+--- PASS: TestServer_AuthFailureNotRetried_NoSecretInError (0.01s)
+=== RUN   TestServer_TransientConnectRetriedThenSucceeds
+--- PASS: TestServer_TransientConnectRetriedThenSucceeds (0.02s)
+=== RUN   TestServer_TransientRetryIsBounded
+--- PASS: TestServer_TransientRetryIsBounded (0.01s)
+=== RUN   TestServer_PathConfinement
+--- PASS: TestServer_PathConfinement (0.02s)
+=== RUN   TestServer_ListingReportsSymlinkAsLink
+--- PASS: TestServer_ListingReportsSymlinkAsLink (0.01s)
+=== RUN   TestServer_WritesImpossibleEvenWithWritablePermissions
+--- PASS: TestServer_WritesImpossibleEvenWithWritablePermissions (0.01s)
+=== RUN   TestServer_DisconnectedClientDoesNotSilentlyReconnect
+--- PASS: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.03s)
+=== RUN   TestServer_LostConnectionIsRedialled
+--- PASS: TestServer_LostConnectionIsRedialled (0.03s)
+=== RUN   TestServer_TestConnectionConnectsAndDisconnects
+--- PASS: TestServer_TestConnectionConnectsAndDisconnects (0.03s)
+=== RUN   TestServer_KeyAuth
+--- PASS: TestServer_KeyAuth (0.03s)
+=== RUN   TestServer_KeyWithPassphrase
+--- PASS: TestServer_KeyWithPassphrase (5.70s)
+=== RUN   TestServer_GarbageKeyIsRedacted
+--- PASS: TestServer_GarbageKeyIsRedacted (0.00s)
+=== RUN   TestDiscoverDoesNotAuthenticate
+--- PASS: TestDiscoverDoesNotAuthenticate (0.02s)
+=== RUN   TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds
+--- PASS: TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds (0.01s)
+=== RUN   TestPin_RefusesEmptyOwnerOrFingerprint
+--- PASS: TestPin_RefusesEmptyOwnerOrFingerprint (0.00s)
+PASS
+ok  	digital.vasic.filesystem/pkg/sftp	20.518s
+=== RUN   TestDefaultFactory_SupportedProtocols
+--- PASS: TestDefaultFactory_SupportedProtocols (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SMB
+--- PASS: TestDefaultFactory_CreateClient_SMB (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_FTP
+--- PASS: TestDefaultFactory_CreateClient_FTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_NFS
+--- PASS: TestDefaultFactory_CreateClient_NFS (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_WebDAV
+--- PASS: TestDefaultFactory_CreateClient_WebDAV (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Local
+--- PASS: TestDefaultFactory_CreateClient_Local (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Unsupported
+--- PASS: TestDefaultFactory_CreateClient_Unsupported (0.00s)
+=== RUN   TestGetStringSetting
+--- PASS: TestGetStringSetting (0.00s)
+=== RUN   TestGetIntSetting
+--- PASS: TestGetIntSetting (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP
+--- PASS: TestDefaultFactory_CreateClient_SFTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword
+--- PASS: TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore
+--- PASS: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_Linux
+--- PASS: TestDefaultFactory_CreateNFSClient_Linux (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_DefaultOptions
+--- PASS: TestDefaultFactory_CreateNFSClient_DefaultOptions (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_EmptyMountPoint
+--- PASS: TestDefaultFactory_CreateNFSClient_EmptyMountPoint (0.00s)
+PASS
+ok  	digital.vasic.filesystem/pkg/factory	1.024s
+# exit: 0

@@ -1,0 +1,20 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M05.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestClearText_RefusedByDefault_NoConnectionAttempted (20.01s)
+    ftps_test.go:239: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:239
+        	Error:      	Expected error with "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)" in chain but got nil.
+        	Test:       	TestClearText_RefusedByDefault_NoConnectionAttempted
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	20.748s
+ok  	digital.vasic.filesystem/pkg/factory	0.008s
+FAIL

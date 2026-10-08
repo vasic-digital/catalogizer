@@ -1,0 +1,15 @@
+# fix-r2 FuzzReadRecord 20s
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:28:07Z; sources: 8b8cfe6ea7c6b51a
+fuzz: elapsed: 0s, gathering baseline coverage: 0/15 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 15/15 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 56290 (18758/sec), new interesting: 1 (total: 16)
+fuzz: elapsed: 6s, execs: 118312 (20676/sec), new interesting: 3 (total: 18)
+fuzz: elapsed: 9s, execs: 183149 (21607/sec), new interesting: 3 (total: 18)
+fuzz: elapsed: 12s, execs: 246623 (21137/sec), new interesting: 3 (total: 18)
+fuzz: elapsed: 15s, execs: 306619 (20014/sec), new interesting: 3 (total: 18)
+fuzz: elapsed: 18s, execs: 365851 (19752/sec), new interesting: 3 (total: 18)
+fuzz: elapsed: 20s, execs: 405350 (18971/sec), new interesting: 3 (total: 18)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	20.094s
+exit=0

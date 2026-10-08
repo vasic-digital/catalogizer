@@ -1,0 +1,12 @@
+# identity: WP-12 PA-04 fix round 2: mutant W5 - factory: allow_degraded_list is not passed
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_SettingsReachTheClient_Config (0.00s)
+    ftp_factory_test.go:247: 
+        	Error Trace:	/out/mut/W5/filesystem/pkg/factory/ftp_factory_test.go:247
+        	Error:      	"&{Host:nas.local Port:2121 Username:bob CredentialRef: Path:/media TLSMode:none TrustedLAN:true AllowDegradedList:false}" does not contain "AllowDegradedList:true"
+        	Test:       	TestFTPFactory_SettingsReachTheClient_Config
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.017s
+FAIL

@@ -1,0 +1,36 @@
+# identity: WP-12 PA-04 RED: new code with the PA-04 behaviours stubbed back to the old client
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+{
+ "mode": "red-skeleton",
+ "rc": 1,
+ "failing_tests": 23,
+ "names": [
+  "TestAuthFailure_IsClassifiedAuth_AndNeverRetried",
+  "TestBusySession_WaitsAndHonoursContext",
+  "TestClearText_RefusedByDefault_NoConnectionAttempted",
+  "TestConcurrentUse_OneControlConnection_NoInterleaving",
+  "TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand",
+  "TestCredential_NeverInConfigStringErrorsOrLogs",
+  "TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText",
+  "TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT",
+  "TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed",
+  "TestFTPS_TLS11ServerIsRefused",
+  "TestGetFileInfo_UsesMLST_ServerMtime_NotNow",
+  "TestList_MLSD_ExactMtimes_NoDotEntries",
+  "TestList_NoMLST_Refused_ByDefault",
+  "TestList_NoModifyFact_MtimeIsZero_NotNow",
+  "TestOpenSeekable_SeekResumesWithREST",
+  "TestPin_ChangedCertificate_Refused_NoCredentialSent",
+  "TestPin_RequiresMatchingOwnerConfirmation",
+  "TestPin_UnknownCertificate_Refused_NoCredentialSent",
+  "TestRawClient_Mutations_WriteCopyMkdirDelete",
+  "TestReadFileFrom_SendsREST_AndReturnsTheTail",
+  "TestScanClient_IsReadOnly_MutationsNeverReachTheServer",
+  "TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache",
+  "TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent"
+ ],
+ "undefined_symbols": 0,
+ "undefined": [],
+ "build_failed": false
+}

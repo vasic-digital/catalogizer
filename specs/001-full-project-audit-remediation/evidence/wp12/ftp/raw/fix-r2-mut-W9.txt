@@ -1,0 +1,23 @@
+# identity: WP-12 PA-04 fix round 2: mutant W9 - factory: a quoted boolean is accepted
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+    ftp_factory_test.go:173: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:173
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: trusted_lan
+    ftp_factory_test.go:173: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:173
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: allow_degraded_list
+    ftp_factory_test.go:173: 
+        	Error Trace:	/out/mut/W9/filesystem/pkg/factory/ftp_factory_test.go:173
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	a quoted boolean must not silently read as true: disable_epsv
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.017s
+FAIL

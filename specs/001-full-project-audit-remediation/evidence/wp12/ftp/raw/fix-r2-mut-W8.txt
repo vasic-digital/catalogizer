@@ -1,0 +1,26 @@
+# identity: WP-12 PA-04 fix round 2: mutant W8 - factory: the scan client is replaced by the raw client
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer (0.00s)
+    ftp_factory_test.go:149: 
+        	Error Trace:	/out/mut/W8/filesystem/pkg/factory/ftp_factory_test.go:149
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: not connected"
+        	Test:       	TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer
+    ftp_factory_test.go:150: 
+        	Error Trace:	/out/mut/W8/filesystem/pkg/factory/ftp_factory_test.go:150
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: not connected"
+        	Test:       	TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer
+    ftp_factory_test.go:151: 
+        	Error Trace:	/out/mut/W8/filesystem/pkg/factory/ftp_factory_test.go:151
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: not connected"
+        	Test:       	TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.018s
+FAIL

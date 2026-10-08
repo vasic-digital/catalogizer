@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F13b - the listing size is not bounded
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestReplyAndListingSizeAreBounded_D16_D17 (0.02s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/listing (0.01s)
+        fix_r2_net_test.go:1301: 
+            	Error Trace:	/out/mut/F13b/filesystem/pkg/ftp/fix_r2_net_test.go:1301
+            	Error:      	Expected error with "ftp: directory listing exceeds the entry limit" in chain but got nil.
+            	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/listing
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.888s
+FAIL

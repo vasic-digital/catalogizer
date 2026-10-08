@@ -1,0 +1,46 @@
+# identity: WP-12 PA-02/PA-07 mutation run FINAL (39 entries: 38 mutants + 1 negative control NC1); supersedes mutations-run1.txt
+# head: 69ca319d (main), working tree dirty, submodules/filesystem uncommitted
+# run_at: 2026-10-07T17:53:01Z
+# image: IMG-GO via run_pinned.sh; harness mutate.py (go test -race -timeout 90s), mutants in mutants.json
+BASELINE rc=0 PASS
+D1 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestChain_RealLocalFilesystem,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- WriteFile allowed
+D2 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- DeleteFile allowed
+D3 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- CopyFile allowed
+D4 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- CreateDirectory allowed
+D5 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- DeleteDirectory allowed
+D6 CAUGHT rc=1 by=FuzzReadOnly_Mutators,TestChain_RealLocalFilesystem,TestReadOnly_EveryMutatorRefusesAndNeverCallsInner,TestReadOnly_RealLocalFilesystemUntouched -- error no longer matches errors.Is
+D7 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestReadOnly_ReadsAndLifecycleAreForwarded,TestReadOnly_RealLocalFilesystemUntouched -- reads broken
+D8 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt -- seekable lost
+D9 CAUGHT rc=1 by=TestReadOnly_NilInnerPanicsAtConstruction -- nil inner accepted
+D10 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestReadOnly_ReadsAndLifecycleAreForwarded,TestReadOnly_RealLocalFilesystemUntouched -- Connect not forwarded
+F1 CAUGHT rc=1 by=TestBudget_IdleTimeDoesNotBankBurst,TestBudget_RateWaitInterruptedByContextReleasesSlot,TestBudget_StartsAreSpacedAtTheConfiguredRate -- no rate spacing
+F2 CAUGHT rc=1 by=TestBudget_IdleTimeDoesNotBankBurst,TestBudget_RateWaitInterruptedByContextReleasesSlot,TestBudget_StartsAreSpacedAtTheConfiguredRate -- bank idle time / wrong slot
+F3 CAUGHT rc=1 by=TestBudget_ConcurrencyCapHoldsUnderLoad,TestBudget_ContextEndsWhileWaitingForSlot,TestBudget_ReleaseIsIdempotent,TestLimited_SharedBudgetCapsTwoProtocolsTogethe -- cap off by one
+F4 CAUGHT rc=1 by=TestBudget_ReleaseIsIdempotent -- release not idempotent
+F5 CAUGHT rc=1 by=TestBudgetConfig_Rejected -- zero concurrency accepted
+F6 CAUGHT rc=1 by=TestBudgets_OneBudgetPerHostAcrossProtocols,TestHostKey,TestLimited_SharedBudgetCapsTwoProtocolsTogether -- host key case sensitive
+F7 CAUGHT rc=1 by=TestBudgets_OneBudgetPerHostAcrossProtocols -- conflicting config accepted
+F8 CAUGHT rc=1 by=TestLimited_DisconnectIsNeverThrottled,TestLimited_EveryOpTakesOneSlotExceptDisconnect -- Disconnect throttled
+F9 CAUGHT rc=1 by=TestLimited_StreamHoldsSlotUntilClose -- stream slot released at open
+F10 CAUGHT rc=1 by=TestRetrying_NeverRetriesAuthFailure -- auth failure retried
+F11 CAUGHT rc=1 by=TestRetrying_NeverRetriesMutationsOrDisconnect -- mutations retried
+F12 CAUGHT rc=1 by=TestRetrying_BackoffDoublesAndCaps,TestRetrying_ExhaustionWrapsLastError -- one extra attempt
+F13 CAUGHT rc=1 by=TestClassify_Table -- FTP 530 not auth
+F14 CAUGHT rc=1 by=TestClassify_Table,TestRetrying_PermanentAndUnknownAreNotRetried -- unknown errors retried
+F15 CAUGHT rc=1 by=FuzzConfined,TestConfined_EscapesNeverReachInner -- sibling prefix passes (/data/media2)
+F16 CAUGHT rc=1 by=TestConfined_EscapesNeverReachInner,TestConfined_InsidePathsAreCleanedAndForwarded -- backslash traversal
+F17 CAUGHT rc=1 by=FuzzConfined,TestChain_RealLocalFilesystem,TestConfined_InsidePathsAreCleanedAndForwarded,TestConfined_RootSlashAllowsAnyAbsolutePath -- inner gets the uncleaned path
+F18 CAUGHT rc=1 by=TestConfined_EscapesNeverReachInner -- NUL accepted
+F19 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestMetered_CountsCallsErrorsAndBytes,TestMetered_EveryOpProducesExactlyOneSample -- stream never reported
+F20 CAUGHT rc=1 by=TestMetered_CountsCallsErrorsAndBytes -- write bytes not counted
+F21 CAUGHT rc=1 by=TestPool_DisconnectedIdleConnectionIsReplaced,TestPool_MaxLifetimeAndIdleTimeoutRetire,TestPool_UnhealthyIdleConnectionIsReplaced -- no health check / expiry on borrow
+F22 CAUGHT rc=1 by=TestPool_ExhaustionAndBlockingBorrow,TestPool_RaceManyBorrowers -- pool cap off by one
+F23 CAUGHT rc=1 by=TestPool_DisconnectedIdleConnectionIsReplaced -- disconnected idle client reused
+F24 CAUGHT rc=1 by=TestDecorators_SeekableOnlyWhenInnerIs,TestMetered_CountsCallsErrorsAndBytes,TestMetered_EveryOpProducesExactlyOneSample -- decorators drop OpenSeekable
+F25 CAUGHT rc=1 by=TestOpTable_Classification -- DeleteFile classified read-only
+F26 CAUGHT rc=1 by=TestOpTable_Classification -- WriteFile retryable
+F27 CAUGHT rc=1 by=TestPool_MaxLifetimeAndIdleTimeoutRetire -- MaxLifetime ignored
+F28 CAUGHT rc=1 by=TestRetrying_HugeBackoffDoesNotOverflow -- backoff overflow
+NC1 SURVIVED(expected) rc=0 -- NEGATIVE CONTROL: no-op, must SURVIVE
+SUMMARY mutants=38 caught=38 negative_controls_survived=1 bad=0
+# exit=0

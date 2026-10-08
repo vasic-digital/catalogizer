@@ -1,0 +1,265 @@
+[
+ {
+  "id": "M01",
+  "desc": "explicit TLS is not requested (no AUTH TLS, clear text control + data)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText",
+   "TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT",
+   "TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed",
+   "TestFTPS_TLS11ServerIsRefused",
+   "TestPin_ChangedCertificate_Refused_NoCredentialSent",
+   "TestPin_UnknownCertificate_Refused_NoCredentialSent"
+  ],
+  "seconds": 126
+ },
+ {
+  "id": "M02",
+  "desc": "TLS minimum version lowered to 1.0",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestFTPS_TLS11ServerIsRefused",
+   "TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache"
+  ],
+  "seconds": 66
+ },
+ {
+  "id": "M03",
+  "desc": "any certificate is accepted (verification off, pin check off)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestPin_ChangedCertificate_Refused_NoCredentialSent",
+   "TestPin_UnknownCertificate_Refused_NoCredentialSent",
+   "TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache"
+  ],
+  "seconds": 87
+ },
+ {
+  "id": "M04",
+  "desc": "a changed certificate is reported as a generic TLS error instead of CertMismatchError",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged",
+   "TestPin_ChangedCertificate_Refused_NoCredentialSent"
+  ],
+  "seconds": 46
+ },
+ {
+  "id": "M05",
+  "desc": "clear-text FTP is no longer refused without trusted_lan",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestClearText_RefusedByDefault_NoConnectionAttempted"
+  ],
+  "seconds": 65
+ },
+ {
+  "id": "M06",
+  "desc": "an absent modification time is fabricated as now",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestGetFileInfo_UsesMLST_ServerMtime_NotNow",
+   "TestList_MLSD_ExactMtimes_NoDotEntries",
+   "TestList_NoModifyFact_MtimeIsZero_NotNow"
+  ],
+  "seconds": 46
+ },
+ {
+  "id": "M07",
+  "desc": "a server without MLSD is listed with LIST silently (no ErrNoMLSD)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestList_NoMLST_Refused_ByDefault"
+  ],
+  "seconds": 44
+ },
+ {
+  "id": "M08",
+  "desc": "the degraded flag is never reported",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime"
+  ],
+  "seconds": 41
+ },
+ {
+  "id": "M09",
+  "desc": "an authentication failure is classified as transient (would be retried)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestAuthFailure_IsClassifiedAuth_AndNeverRetried"
+  ],
+  "seconds": 46
+ },
+ {
+  "id": "M10",
+  "desc": "the session lock is not exclusive (control connection shared by concurrent commands)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestBusySession_WaitsAndHonoursContext",
+   "TestConcurrentUse_OneControlConnection_NoInterleaving"
+  ],
+  "seconds": 77
+ },
+ {
+  "id": "M11",
+  "desc": "path confinement clamps ../ at the root instead of refusing",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand",
+   "TestRawClient_Mutations_WriteCopyMkdirDelete"
+  ],
+  "seconds": 44
+ },
+ {
+  "id": "M12",
+  "desc": "control characters in a path are no longer refused",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand"
+  ],
+  "seconds": 43
+ },
+ {
+  "id": "M13",
+  "desc": "the scan client is not wrapped in the ReadOnly decorator",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestScanClient_IsReadOnly_MutationsNeverReachTheServer"
+  ],
+  "seconds": 43
+ },
+ {
+  "id": "M14",
+  "desc": "Config.String leaks the inline password",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestCredential_NeverInConfigStringErrorsOrLogs"
+  ],
+  "seconds": 42
+ },
+ {
+  "id": "M15",
+  "desc": "REST offset dropped (resume always restarts at 0)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestOpenSeekable_SeekResumesWithREST",
+   "TestReadFileFrom_SendsREST_AndReturnsTheTail"
+  ],
+  "seconds": 44
+ },
+ {
+  "id": "M16",
+  "desc": "a broken connection is not marked lost (no re-dial, retry hits the dead connection)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestLostConnection_IsRedialled_ByRetrying"
+  ],
+  "seconds": 41
+ },
+ {
+  "id": "M17",
+  "desc": "a closed stream does not release the session",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestConcurrentUse_OneControlConnection_NoInterleaving",
+   "TestOpenSeekable_SeekResumesWithREST",
+   "TestReadFile_Content_AndSessionReleasedOnClose"
+  ],
+  "seconds": 210
+ },
+ {
+  "id": "M18",
+  "desc": "a missing file is an error instead of FileExists=false",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestFileExists_NotFound_IsFalseNotError"
+  ],
+  "seconds": 46
+ },
+ {
+  "id": "M19",
+  "desc": "Pin records whatever the server presents, ignoring the owner confirmation",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestPin_RequiresMatchingOwnerConfirmation"
+  ],
+  "seconds": 44
+ },
+ {
+  "id": "M20",
+  "desc": "the pin file is written world-readable",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile"
+  ],
+  "seconds": 46
+ },
+ {
+  "id": "M21",
+  "desc": "OPTS UTF8 ON is disabled",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT",
+   "TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent"
+  ],
+  "seconds": 47
+ },
+ {
+  "id": "M22",
+  "desc": "the data connections do not share the TLS session cache (no resumption)",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed",
+   "TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache"
+  ],
+  "seconds": 44
+ },
+ {
+  "id": "M23",
+  "desc": "GetFileInfo ignores MLST and returns a size-only answer with a fabricated time",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestConcurrentUse_OneControlConnection_NoInterleaving",
+   "TestFileExists_NotFound_IsFalseNotError",
+   "TestGetFileInfo_UsesMLST_ServerMtime_NotNow",
+   "TestList_NoModifyFact_MtimeIsZero_NotNow",
+   "TestOpenSeekable_SeekResumesWithREST",
+   "TestReadFile_Content_AndSessionReleasedOnClose"
+  ],
+  "seconds": 42
+ },
+ {
+  "id": "M24",
+  "desc": "an unresolved credential_ref falls through to an empty password login",
+  "kind": "unit",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestCredential_MissingRef_NoNetwork"
+  ],
+  "seconds": 43
+ }
+]

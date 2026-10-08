@@ -1,0 +1,29 @@
+# identity: WP-12 PA-04 fix round 2: mutant F5a - no reply to PASS is retryable
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_EveryControlCommandIsBounded (4.58s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PASS (0.30s)
+        fix_r2_net_test.go:368: 
+            	Error Trace:	/out/mut/F5a/filesystem/pkg/ftp/fix_r2_net_test.go:368
+            	Error:      	Should not be: 1
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PASS
+            	Messages:   	no reply after PASS must not be retried: fabric: transient failure: ftp: connection failed after the password was sent (read tcp 127.0.0.1:60478->127.0.0.1:46235: i/o timeout)
+--- FAIL: TestLogin_NoReplyAfterPASS_IsNeverRetried_D11 (0.02s)
+    fix_r2_net_test.go:807: 
+        	Error Trace:	/out/mut/F5a/filesystem/pkg/ftp/fix_r2_net_test.go:807
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 4
+        	Test:       	TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+        	Messages:   	the password is sent once: a retry after an unanswered PASS risks a lockout
+    fix_r2_net_test.go:808: 
+        	Error Trace:	/out/mut/F5a/filesystem/pkg/ftp/fix_r2_net_test.go:808
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+        	Messages:   	fabric: retries exhausted after 4 attempts (Connect): fabric: transient failure: ftp: connection failed after the password was sent (unexpected EOF)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.908s
+FAIL

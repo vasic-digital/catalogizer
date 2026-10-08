@@ -1,0 +1,43 @@
+# identity: WP-12 PA-04 fix round 2 (WF21 NO-GO answer): REAL pure-ftpd control-channel traffic (plaintext view above TLS) for a download closed early and for a complete download, TLS and clear text; produced by the throwaway probe fix-r2-realserver-wire.probe.go.txt through ftps_fixture.sh
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree; no git write, no NAS contact, no credential printed
+# run_at: 2026-10-08 (UTC+2); author: Sonnet fixer; independent re-review (11.4.142): OWED
+=== RUN   TestZZDebug_RawTraffic
+    zz_debug_integration_test.go:50: == tls: RETR, read 10, close data
+    zz_debug_integration_test.go:29:   -> "EPSV\r\n"
+    zz_debug_integration_test.go:24:   <- "229 Extended Passive mode OK (|||30000|)\r\n"
+    zz_debug_integration_test.go:29:   -> "RETR /sub/b.bin\r\n"
+    zz_debug_integration_test.go:24:   <- "150-Accepted data connection\r\n"
+    zz_debug_integration_test.go:24:   <- "150 1024.0 kbytes to download\r\n"
+    zz_debug_integration_test.go:24:   <- "150 0.001 seconds (measured here), 533.08 Mbytes per second\r\n"
+    zz_debug_integration_test.go:57: reply: 150 ["0.001 seconds (measured here), 533.08 Mbytes per second"] <nil>
+    zz_debug_integration_test.go:29:   -> "NOOP\r\n"
+    zz_debug_integration_test.go:24:   <- "200 Zzz...\r\n"
+    zz_debug_integration_test.go:59: noop: 200 ["Zzz..."] <nil>
+    zz_debug_integration_test.go:60: == tls: full RETR of a.txt
+    zz_debug_integration_test.go:29:   -> "EPSV\r\n"
+    zz_debug_integration_test.go:24:   <- "229 Extended Passive mode OK (|||30008|)\r\n"
+    zz_debug_integration_test.go:29:   -> "RETR /a.txt\r\n"
+    zz_debug_integration_test.go:24:   <- "150 Accepted data connection\r\n"
+    zz_debug_integration_test.go:24:   <- "226-File successfully transferred\r\n"
+    zz_debug_integration_test.go:24:   <- "226 0.000 seconds (measured here), 22.30 Kbytes per second\r\n"
+    zz_debug_integration_test.go:66: reply: 226 ["File successfully transferred" "0.000 seconds (measured here), 22.30 Kbytes per second"] <nil>
+    zz_debug_integration_test.go:29:   -> "QUIT\r\n"
+    zz_debug_integration_test.go:50: == clear: RETR, read 10, close data
+    zz_debug_integration_test.go:29:   -> "EPSV\r\n"
+    zz_debug_integration_test.go:24:   <- "229 Extended Passive mode OK (|||30009|)\r\n"
+    zz_debug_integration_test.go:29:   -> "RETR /sub/b.bin\r\n"
+    zz_debug_integration_test.go:24:   <- "150-Accepted data connection\r\n150 1024.0 kbytes to download\r\n226-File successfully transferred\r\n226 0.001 seconds (measured here), 1228.56 Mbytes per second\r\n"
+    zz_debug_integration_test.go:57: reply: 226 ["File successfully transferred" "0.001 seconds (measured here), 1228.56 Mbytes per second"] <nil>
+    zz_debug_integration_test.go:29:   -> "NOOP\r\n"
+    zz_debug_integration_test.go:24:   <- "200 Zzz...\r\n"
+    zz_debug_integration_test.go:59: noop: 200 ["Zzz..."] <nil>
+    zz_debug_integration_test.go:60: == clear: full RETR of a.txt
+    zz_debug_integration_test.go:29:   -> "EPSV\r\n"
+    zz_debug_integration_test.go:24:   <- "229 Extended Passive mode OK (|||30007|)\r\n"
+    zz_debug_integration_test.go:29:   -> "RETR /a.txt\r\n"
+    zz_debug_integration_test.go:24:   <- "150 Accepted data connection\r\n226-File successfully transferred\r\n226 0.000 seconds (measured here), 243.81 Kbytes per second\r\n"
+    zz_debug_integration_test.go:66: reply: 226 ["File successfully transferred" "0.000 seconds (measured here), 243.81 Kbytes per second"] <nil>
+    zz_debug_integration_test.go:29:   -> "QUIT\r\n"
+--- PASS: TestZZDebug_RawTraffic (4.58s)
+PASS
+ok  	digital.vasic.filesystem/pkg/ftp	4.582s

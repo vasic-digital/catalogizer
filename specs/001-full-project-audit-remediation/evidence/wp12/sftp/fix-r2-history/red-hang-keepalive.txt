@@ -1,0 +1,604 @@
+=== RUN   TestRaw_ListingDropsDotEntries
+--- PASS: TestRaw_ListingDropsDotEntries (0.01s)
+=== RUN   TestRaw_ListingLimit
+    fix_r2_test.go:221: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:221
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestRaw_ListingLimit
+        	Messages:   	300 entries against a limit of 150 (got 300)
+--- FAIL: TestRaw_ListingLimit (0.01s)
+=== RUN   TestSeekEndHonoursContextOnHungServer
+    fix_r2_test.go:256: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestSeekEndHonoursContextOnHungServer
+        	Messages:   	Seek(SeekEnd) stayed blocked on a server that does not answer STAT
+    fix_r2_test.go:257: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:257
+        	Error:      	Expected error with "context deadline exceeded" in chain but got nil.
+        	Test:       	TestSeekEndHonoursContextOnHungServer
+--- FAIL: TestSeekEndHonoursContextOnHungServer (3.02s)
+=== RUN   TestCloseIsBoundedOnAStalledServer
+    fix_r2_test.go:298: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:298
+        	Error:      	Should be true
+        	Test:       	TestCloseIsBoundedOnAStalledServer
+        	Messages:   	Close stayed blocked > 3s on a server that never answers CLOSE (took 3.001901745s)
+    fix_r2_test.go:299: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:299
+        	Error:      	Should be false
+        	Test:       	TestCloseIsBoundedOnAStalledServer
+        	Messages:   	the bounded close ended the connection that could not finish it
+--- FAIL: TestCloseIsBoundedOnAStalledServer (3.01s)
+=== RUN   TestCancelOfOneStreamDoesNotKillTheSharedConnection
+--- PASS: TestCancelOfOneStreamDoesNotKillTheSharedConnection (0.78s)
+=== RUN   TestContextEndClosesTheRemoteFile
+--- PASS: TestContextEndClosesTheRemoteFile (0.01s)
+=== RUN   TestKeepaliveEndsACallOnAHalfOpenLink
+    fix_r2_test.go:453: a call on a half-open link stayed blocked > 10s although the keepalive is 100ms/300ms
+panic: test timed out after 15m0s
+	running tests:
+		TestKeepaliveEndsACallOnAHalfOpenLink (14m53s)
+
+goroutine 236 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/local/go/src/testing/testing.go:2682 +0x359
+created by time.goFunc
+	/usr/local/go/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive, 14 minutes]:
+testing.(*T).Run(0xc000080c40, {0x7c43d5?, 0x0?}, 0x7d6560)
+	/usr/local/go/src/testing/testing.go:2005 +0x485
+testing.runTests.func1(0xc000080c40)
+	/usr/local/go/src/testing/testing.go:2477 +0x3e
+testing.tRunner(0xc000080c40, 0xc0000edc70)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+testing.runTests(0xc0000a4378, {0xa943c0, 0x56, 0x56}, {0xa9b2e0?, 0xb203a5a56a5c0db4?, 0xa9a000?})
+	/usr/local/go/src/testing/testing.go:2475 +0x4b4
+testing.(*M).Run(0xc000096a00)
+	/usr/local/go/src/testing/testing.go:2337 +0x63a
+main.main()
+	_testmain.go:215 +0x9b
+
+goroutine 181 [sync.WaitGroup.Wait, 14 minutes]:
+sync.runtime_SemacquireWaitGroup(0x0?, 0x0?)
+	/usr/local/go/src/runtime/sema.go:114 +0x2e
+sync.(*WaitGroup).Wait(0xc000180670)
+	/usr/local/go/src/sync/waitgroup.go:206 +0x85
+github.com/pkg/sftp.(*clientConn).Close(0xc000041808?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:87 +0x68
+digital.vasic.filesystem/pkg/sftp.(*Client).closeLocked(0xc0000a05a0)
+	/src/filesystem/pkg/sftp/sftp.go:316 +0x2d
+digital.vasic.filesystem/pkg/sftp.(*Client).Disconnect(0xc0000a05a0, {0xc000080fc0?, 0xc000080fc0?})
+	/src/filesystem/pkg/sftp/sftp.go:342 +0x85
+runtime.Goexit()
+	/usr/local/go/src/runtime/panic.go:615 +0x5e
+testing.(*common).FailNow(0xc0025061c0)
+	/usr/local/go/src/testing/testing.go:1013 +0x4a
+testing.(*common).Fatal(0xc0025061c0, {0xc0000eff38?, 0x0?, 0x0?})
+	/usr/local/go/src/testing/testing.go:1212 +0x4f
+digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink(0xc0025061c0)
+	/src/filesystem/pkg/sftp/fix_r2_test.go:453 +0x2c5
+testing.tRunner(0xc0025061c0, 0x7d6560)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+
+goroutine 207 [select, 14 minutes]:
+github.com/pkg/sftp.(*packetManager).controller(0xc0002a10a0)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:153 +0xcd
+created by github.com/pkg/sftp.newPktMgr in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:39 +0x1b6
+
+goroutine 191 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.(*Client).handleGlobalRequests(...)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:169
+created by golang.org/x/crypto/ssh.NewClient in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:59 +0xca
+
+goroutine 227 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 193 [sync.Cond.Wait, 14 minutes]:
+sync.runtime_notifyListWait(0xc00026f010, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x410f37?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*mux).Wait(0xc00027d900)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:111 +0x7c
+golang.org/x/crypto/ssh.NewClient.func1()
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:62 +0x24
+created by golang.org/x/crypto/ssh.NewClient in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:61 +0x156
+
+goroutine 182 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899de00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00027d000?, 0x900000036?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc00027d000)
+	/usr/local/go/src/internal/poll/fd_unix.go:613 +0x28c
+net.(*netFD).accept(0xc00027d000)
+	/usr/local/go/src/net/fd_unix.go:161 +0x29
+net.(*TCPListener).accept(0xc00026e880)
+	/usr/local/go/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0xc00026e880)
+	/usr/local/go/src/net/tcpsock.go:380 +0x30
+digital.vasic.filesystem/pkg/sftp.startServerIn.func3()
+	/src/filesystem/pkg/sftp/testserver_test.go:98 +0x9c
+created by digital.vasic.filesystem/pkg/sftp.startServerIn in goroutine 181
+	/src/filesystem/pkg/sftp/testserver_test.go:95 +0x429
+
+goroutine 206 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.(*Session).wait(0xc00035f7d0?, 0xc0025363f0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:423 +0x65
+golang.org/x/crypto/ssh.newSession.func1()
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:596 +0x25
+created by golang.org/x/crypto/ssh.newSession in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:595 +0xea
+
+goroutine 190 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc0000e49c0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc00027d900)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc00027d900)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 229 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 209 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 203 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899da00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00029cb00?, 0xc0024d0000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc00029cb00, {0xc0024d0000, 0x8000, 0x8000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc00029cb00, {0xc0024d0000?, 0xc000038f58?, 0x47efe9?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc00003e080, {0xc0024d0000?, 0x1?, 0x100000000648c3c?})
+	/usr/local/go/src/net/net.go:196 +0x45
+digital.vasic.filesystem/pkg/sftp.(*holeProxy).pipe(0xc00026e900, {0x8409d8, 0xc00003e078}, {0x8409d8, 0xc00003e080})
+	/src/filesystem/pkg/sftp/fix_r2_test.go:409 +0x66
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1 in goroutine 183
+	/src/filesystem/pkg/sftp/fix_r2_test.go:392 +0x2e8
+
+goroutine 204 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899e200, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00027d100?, 0xc000069000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc00027d100, {0xc000069000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc00027d100, {0xc000069000?, 0xc00008eb00?, 0x50?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc0000941a8, {0xc000069000?, 0xc002538c00?, 0xc0000142a0?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc0000a7860, {0xc0002567e0, 0x4, 0x100?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x83c1c0, 0xc0000a7860}, {0xc0002567e0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc0002567d0, 0x736bc0?, {0x83c1c0, 0xc0000a7860})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc0000fed80, 0x7415a0?, 0x1)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc0000fed80)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc0000e49c0, 0x0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc0000e49c0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:170 +0x20c
+
+goroutine 226 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 192 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.(*Client).handleChannelOpens(0xc0002569b0, 0xc0025362a0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:178 +0x47
+created by golang.org/x/crypto/ssh.NewClient in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:60 +0x118
+
+goroutine 208 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 205 [select, 14 minutes]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc0000e49c0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 181
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:171 +0x248
+
+goroutine 189 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.DiscardRequests(...)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/connection.go:87
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 185
+	/src/filesystem/pkg/sftp/testserver_test.go:136 +0x105
+
+goroutine 230 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 228 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 211 [sync.Cond.Wait, 14 minutes]:
+sync.runtime_notifyListWait(0xc00026f0d0, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x4197f4?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc002434d20, {0xc002548000, 0x2000, 0x2000})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0000a3380, {0xc002548000?, 0x0?, 0x0?}, 0x0?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:374 +0x35
+golang.org/x/crypto/ssh.(*extChannel).Read(0xa8c860?, {0xc002548000?, 0x0?, 0x0?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:525 +0x25
+io.discard.ReadFrom({}, {0x7993ca1c3840, 0xc0023ec8a0})
+	/usr/local/go/src/io/io.go:666 +0x6d
+io.copyBuffer({0x83bf40, 0xaba9c0}, {0x7993ca1c3840, 0xc0023ec8a0}, {0x0, 0x0, 0x0})
+	/usr/local/go/src/io/io.go:415 +0x151
+io.Copy(...)
+	/usr/local/go/src/io/io.go:388
+github.com/pkg/sftp.newClientPipe.func1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:267 +0x2c
+created by github.com/pkg/sftp.newClientPipe in goroutine 181
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:261 +0x29b
+
+goroutine 231 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0002a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 232 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00033a870, {0x83eca0, 0xc0000e0b90}, 0xc0024a1110)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 202 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899dc00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00029ca80?, 0xc00252c000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc00029ca80, {0xc00252c000, 0x8000, 0x8000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc00029ca80, {0xc00252c000?, 0xc00035c758?, 0x47efe9?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc00003e078, {0xc00252c000?, 0xc00035c7c0?, 0xf?})
+	/usr/local/go/src/net/net.go:196 +0x45
+digital.vasic.filesystem/pkg/sftp.(*holeProxy).pipe(0xc00026e900, {0x8409d8, 0xc00003e080}, {0x8409d8, 0xc00003e078})
+	/src/filesystem/pkg/sftp/fix_r2_test.go:409 +0x66
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1 in goroutine 183
+	/src/filesystem/pkg/sftp/fix_r2_test.go:391 +0x268
+
+goroutine 183 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899e000, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00027d080?, 0x0?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc00027d080)
+	/usr/local/go/src/internal/poll/fd_unix.go:613 +0x28c
+net.(*netFD).accept(0xc00027d080)
+	/usr/local/go/src/net/fd_unix.go:161 +0x29
+net.(*TCPListener).accept(0xc00026e8c0)
+	/usr/local/go/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0xc00026e8c0)
+	/usr/local/go/src/net/tcpsock.go:380 +0x30
+digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1()
+	/src/filesystem/pkg/sftp/fix_r2_test.go:379 +0x59
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy in goroutine 181
+	/src/filesystem/pkg/sftp/fix_r2_test.go:377 +0x156
+
+goroutine 233 [chan receive, 14 minutes]:
+github.com/pkg/sftp.(*packetManager).workerChan.func1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:127 +0x5d
+created by github.com/pkg/sftp.(*packetManager).workerChan in goroutine 210
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:126 +0xff
+
+goroutine 235 [select, 14 minutes]:
+github.com/pkg/sftp.(*clientConn).sendPacket(0xc000180640, {0x83ebf8, 0xaba9c0}, 0x0, {0x83dbd8, 0xc0022ff560})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:162 +0x115
+github.com/pkg/sftp.(*Client).RealPath(0xc000180640, {0xc0000e3f40, 0x3d})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:936 +0xa8
+digital.vasic.filesystem/pkg/sftp.(*Client).checkWithin(0x68eade?, 0xc000180640, {0xc0000e3f40, 0x3d})
+	/src/filesystem/pkg/sftp/sftp.go:533 +0x12c
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.func1(0xc000180640)
+	/src/filesystem/pkg/sftp/sftp.go:698 +0x53
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.(*Client).with.func2()
+	/src/filesystem/pkg/sftp/sftp.go:456 +0x105
+digital.vasic.filesystem/pkg/sftp.(*Client).retry(0xc0000a05a0, {0x83ebf8, 0xaba9c0}, 0xc000362f58)
+	/src/filesystem/pkg/sftp/sftp.go:387 +0xa5
+digital.vasic.filesystem/pkg/sftp.(*Client).with(...)
+	/src/filesystem/pkg/sftp/sftp.go:442
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo(0xc0000a05a0, {0x83ebf8, 0xaba9c0}, {0x7b5acd, 0x5})
+	/src/filesystem/pkg/sftp/sftp.go:697 +0x105
+digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink.func2()
+	/src/filesystem/pkg/sftp/fix_r2_test.go:447 +0x45
+created by digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink in goroutine 181
+	/src/filesystem/pkg/sftp/fix_r2_test.go:447 +0x211
+
+goroutine 234 [sync.Cond.Wait, 14 minutes]:
+sync.runtime_notifyListWait(0xc00026f090, 0x4)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x0?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc002434ce0, {0xc000259b48, 0x4, 0x4})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0000a3380, {0xc000259b48?, 0x1?, 0x193c3756b60?}, 0xc3722d00?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0xc000041808?, {0xc000259b48?, 0xc000369d60?, 0x47a959?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x83c8c0, 0xc000180640}, {0xc000259b48, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x83c8c0, 0xc000180640}, 0x0, 0x0?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*clientConn).recv(0xc000180640)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:96 +0xc5
+github.com/pkg/sftp.newClientPipe.func2()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:287 +0x4e
+created by github.com/pkg/sftp.newClientPipe in goroutine 181
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:284 +0x445
+
+goroutine 186 [IO wait, 14 minutes]:
+internal/poll.runtime_pollWait(0x7993c899d800, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00027d300?, 0xc002534000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc00027d300, {0xc002534000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc00027d300, {0xc002534000?, 0xc0024a1340?, 0x70?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc0000941b0, {0xc002534000?, 0xc002538600?, 0xc000014210?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc000016120, {0xc0002566f0, 0x4, 0x70?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x83c1c0, 0xc000016120}, {0xc0002566f0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc0002566e0, 0x736bc0?, {0x83c1c0, 0xc000016120})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc0002a2480, 0x7415a0?, 0x1)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc0002a2480)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc0002a6340, 0x0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc0002a6340)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 185
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:179 +0x125
+
+goroutine 187 [select, 14 minutes]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc0002a6340)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 185
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:180 +0x165
+
+goroutine 185 [chan receive, 14 minutes]:
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve(0xc00027d100?, {0x8409d8?, 0xc0000941b0?}, 0xc00035efd0?)
+	/src/filesystem/pkg/sftp/testserver_test.go:137 +0x137
+digital.vasic.filesystem/pkg/sftp.startServerIn.func3.1()
+	/src/filesystem/pkg/sftp/testserver_test.go:113 +0x58
+created by digital.vasic.filesystem/pkg/sftp.startServerIn.func3 in goroutine 182
+	/src/filesystem/pkg/sftp/testserver_test.go:111 +0x2a5
+
+goroutine 188 [chan receive, 14 minutes]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc0002a6340)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc00027d800)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc00027d800)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 185
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 210 [sync.Cond.Wait, 14 minutes]:
+sync.runtime_notifyListWait(0xc00026f1d0, 0x4)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x47d17f?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc002434d60, {0xc000259b2c, 0x4, 0x4})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0000a3450, {0xc000259b2c?, 0x41973b?, 0x1c00008ea00?}, 0xc897d648?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0x7993c897d148?, {0xc000259b2c?, 0xc00004ab68?, 0x47a959?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x83c8c0, 0xc0023cf890}, {0xc000259b2c, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x83c8c0, 0xc0023cf890}, 0x0, 0x45145f?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*RequestServer).serveLoop(0xc00033a870, 0xc0002a1180)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:155 +0xbe
+github.com/pkg/sftp.(*RequestServer).Serve(0xc00033a870)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:200 +0x115
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve.func1()
+	/src/filesystem/pkg/sftp/testserver_test.go:153 +0x208
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 185
+	/src/filesystem/pkg/sftp/testserver_test.go:146 +0x21a
+FAIL	digital.vasic.filesystem/pkg/sftp	900.019s
+=== RUN   TestDefaultFactory_SupportedProtocols
+--- PASS: TestDefaultFactory_SupportedProtocols (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SMB
+--- PASS: TestDefaultFactory_CreateClient_SMB (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_FTP
+--- PASS: TestDefaultFactory_CreateClient_FTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_NFS
+--- PASS: TestDefaultFactory_CreateClient_NFS (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_WebDAV
+--- PASS: TestDefaultFactory_CreateClient_WebDAV (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Local
+--- PASS: TestDefaultFactory_CreateClient_Local (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Unsupported
+--- PASS: TestDefaultFactory_CreateClient_Unsupported (0.00s)
+=== RUN   TestGetStringSetting
+--- PASS: TestGetStringSetting (0.00s)
+=== RUN   TestGetIntSetting
+--- PASS: TestGetIntSetting (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP
+--- PASS: TestDefaultFactory_CreateClient_SFTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword
+--- PASS: TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore
+--- PASS: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+    factory_test.go:243: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:243
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+        	Messages:   	passphrase
+--- FAIL: TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting (0.00s)
+=== RUN   TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+    factory_test.go:250: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:250
+        	Error:      	Not equal: 
+        	            	expected: "/volume1/x"
+        	            	actual  : "/"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/volume1/x
+        	            	+/
+        	Test:       	TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+    factory_test.go:251: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:251
+        	Error:      	Not equal: 
+        	            	expected: "/volume1/x"
+        	            	actual  : "/"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/volume1/x
+        	            	+/
+        	Test:       	TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+--- FAIL: TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot (0.00s)
+=== RUN   TestDefaultFactory_SFTP_PortIsValidated
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port "2222"
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 0
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port -1
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 65536
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 70000
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 22.5
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port true
+    factory_test.go:261: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:261
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port <nil>
+--- FAIL: TestDefaultFactory_SFTP_PortIsValidated (0.00s)
+=== RUN   TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+    factory_test.go:349: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:349
+        	Error:      	Received unexpected error:
+        	            	sftp: credential_ref could not be resolved: "fxref" (set SFTP_CRED_FXREF_PASSWORD or SFTP_CRED_FXREF_PRIVATE_KEY)
+        	Test:       	TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+--- FAIL: TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_Linux
+--- PASS: TestDefaultFactory_CreateNFSClient_Linux (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_DefaultOptions
+--- PASS: TestDefaultFactory_CreateNFSClient_DefaultOptions (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_EmptyMountPoint
+--- PASS: TestDefaultFactory_CreateNFSClient_EmptyMountPoint (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.013s
+FAIL
+rc=1

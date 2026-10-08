@@ -1,0 +1,162 @@
+# identity: WP-12 PA-04 GREEN: unit + integration (real pure-ftpd) tests, -race -count=1 -v, through scripts/test-infra/ftps_fixture.sh
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+=== RUN   TestNewFTPClient
+--- PASS: TestNewFTPClient (0.00s)
+=== RUN   TestFTPClient_GetProtocol
+--- PASS: TestFTPClient_GetProtocol (0.00s)
+=== RUN   TestFTPClient_GetConfig
+--- PASS: TestFTPClient_GetConfig (0.00s)
+=== RUN   TestFTPClient_IsConnected_NotConnected
+--- PASS: TestFTPClient_IsConnected_NotConnected (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithBasePath
+--- PASS: TestFTPClient_ResolvePath_WithBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithoutBasePath
+--- PASS: TestFTPClient_ResolvePath_WithoutBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_RootPath
+--- PASS: TestFTPClient_ResolvePath_RootPath (0.00s)
+=== RUN   TestFTPClient_TestConnection_NotConnected
+--- PASS: TestFTPClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestFTPClient_ReadFile_NotConnected
+--- PASS: TestFTPClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_WriteFile_NotConnected
+--- PASS: TestFTPClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_GetFileInfo_NotConnected
+--- PASS: TestFTPClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestFTPClient_ListDirectory_NotConnected
+--- PASS: TestFTPClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_FileExists_NotConnected
+--- PASS: TestFTPClient_FileExists_NotConnected (0.00s)
+=== RUN   TestFTPClient_CreateDirectory_NotConnected
+--- PASS: TestFTPClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteDirectory_NotConnected
+--- PASS: TestFTPClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteFile_NotConnected
+--- PASS: TestFTPClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_CopyFile_NotConnected
+--- PASS: TestFTPClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_Disconnect_NilClient
+--- PASS: TestFTPClient_Disconnect_NilClient (0.00s)
+=== RUN   TestFTPClient_Disconnect_NeverDialled
+--- PASS: TestFTPClient_Disconnect_NeverDialled (0.00s)
+=== RUN   TestFTPClient_Connect_InvalidServer
+--- PASS: TestFTPClient_Connect_InvalidServer (0.00s)
+=== RUN   TestFTPConfig_Fields
+--- PASS: TestFTPConfig_Fields (0.00s)
+=== RUN   TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+--- PASS: TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT (0.03s)
+=== RUN   TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+--- PASS: TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed (0.05s)
+=== RUN   TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache
+--- PASS: TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache (0.00s)
+=== RUN   TestFTPS_TLS11ServerIsRefused
+--- PASS: TestFTPS_TLS11ServerIsRefused (0.02s)
+=== RUN   TestPin_UnknownCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_UnknownCertificate_Refused_NoCredentialSent (0.01s)
+=== RUN   TestPin_ChangedCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_ChangedCertificate_Refused_NoCredentialSent (0.03s)
+=== RUN   TestPin_RequiresMatchingOwnerConfirmation
+--- PASS: TestPin_RequiresMatchingOwnerConfirmation (0.01s)
+=== RUN   TestPin_ConfirmationAcceptsEveryFingerprintSpelling
+--- PASS: TestPin_ConfirmationAcceptsEveryFingerprintSpelling (0.04s)
+=== RUN   TestPin_NoPinStore_Refused
+--- PASS: TestPin_NoPinStore_Refused (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile
+--- PASS: TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile (0.02s)
+=== RUN   TestPinStore_RemoveAndIdempotentRecord
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/mem
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/file
+--- PASS: TestPinStore_RemoveAndIdempotentRecord (0.00s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/mem (0.00s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/file (0.00s)
+=== RUN   TestClearText_RefusedByDefault_NoConnectionAttempted
+--- PASS: TestClearText_RefusedByDefault_NoConnectionAttempted (0.00s)
+=== RUN   TestClearText_AllowedOnTrustedLAN
+--- PASS: TestClearText_AllowedOnTrustedLAN (0.01s)
+=== RUN   TestTLSMode_Unknown_Refused
+--- PASS: TestTLSMode_Unknown_Refused (0.00s)
+=== RUN   TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText
+--- PASS: TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText (0.01s)
+=== RUN   TestList_MLSD_ExactMtimes_NoDotEntries
+--- PASS: TestList_MLSD_ExactMtimes_NoDotEntries (0.04s)
+=== RUN   TestList_NoModifyFact_MtimeIsZero_NotNow
+--- PASS: TestList_NoModifyFact_MtimeIsZero_NotNow (0.03s)
+=== RUN   TestList_NoMLST_Refused_ByDefault
+--- PASS: TestList_NoMLST_Refused_ByDefault (0.02s)
+=== RUN   TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime
+--- PASS: TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime (0.05s)
+=== RUN   TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+--- PASS: TestGetFileInfo_UsesMLST_ServerMtime_NotNow (0.03s)
+=== RUN   TestFileExists_NotFound_IsFalseNotError
+--- PASS: TestFileExists_NotFound_IsFalseNotError (0.03s)
+=== RUN   TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent
+--- PASS: TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent (0.06s)
+=== RUN   TestReadFile_Content_AndSessionReleasedOnClose
+--- PASS: TestReadFile_Content_AndSessionReleasedOnClose (0.06s)
+=== RUN   TestReadFileFrom_SendsREST_AndReturnsTheTail
+--- PASS: TestReadFileFrom_SendsREST_AndReturnsTheTail (0.03s)
+=== RUN   TestOpenSeekable_SeekResumesWithREST
+--- PASS: TestOpenSeekable_SeekResumesWithREST (0.06s)
+=== RUN   TestConcurrentUse_OneControlConnection_NoInterleaving
+--- PASS: TestConcurrentUse_OneControlConnection_NoInterleaving (0.35s)
+=== RUN   TestBusySession_WaitsAndHonoursContext
+--- PASS: TestBusySession_WaitsAndHonoursContext (0.19s)
+=== RUN   TestCancelledContext_SendsNothing
+--- PASS: TestCancelledContext_SendsNothing (0.03s)
+=== RUN   TestDisconnect_AbortsOpenStream_AndNeverRedials
+--- PASS: TestDisconnect_AbortsOpenStream_AndNeverRedials (0.03s)
+=== RUN   TestLostConnection_IsRedialled_ByRetrying
+--- PASS: TestLostConnection_IsRedialled_ByRetrying (0.05s)
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535
+--- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried (0.09s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535 (0.02s)
+=== RUN   TestAuthFailure_ThroughPool_IsNotRetried
+--- PASS: TestAuthFailure_ThroughPool_IsNotRetried (0.02s)
+=== RUN   TestCredential_NeverInConfigStringErrorsOrLogs
+--- PASS: TestCredential_NeverInConfigStringErrorsOrLogs (0.05s)
+=== RUN   TestCredential_MissingRef_NoNetwork
+--- PASS: TestCredential_MissingRef_NoNetwork (0.01s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised
+--- PASS: TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised (0.02s)
+=== RUN   TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+--- PASS: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.03s)
+=== RUN   TestScanClient_IsReadOnly_MutationsNeverReachTheServer
+--- PASS: TestScanClient_IsReadOnly_MutationsNeverReachTheServer (0.03s)
+=== RUN   TestWorkerPool_OneControlConnectionPerWorker
+--- PASS: TestWorkerPool_OneControlConnectionPerWorker (0.11s)
+=== RUN   TestScanClient_HostBudgetBoundsConcurrentReads
+--- PASS: TestScanClient_HostBudgetBoundsConcurrentReads (0.17s)
+=== RUN   TestRawClient_Mutations_WriteCopyMkdirDelete
+--- PASS: TestRawClient_Mutations_WriteCopyMkdirDelete (0.05s)
+=== RUN   TestDiscoverCert_Errors
+--- PASS: TestDiscoverCert_Errors (0.00s)
+=== RUN   TestServerNameFor
+--- PASS: TestServerNameFor (0.00s)
+=== RUN   TestErrorTexts_AndHostPort
+--- PASS: TestErrorTexts_AndHostPort (0.00s)
+=== RUN   TestFilePinStore_RemoveAndMissingFile
+--- PASS: TestFilePinStore_RemoveAndMissingFile (0.00s)
+=== RUN   TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged
+--- PASS: TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged (0.00s)
+=== RUN   TestIntegrationSelftest
+--- PASS: TestIntegrationSelftest (0.02s)
+=== RUN   TestIntegration_ExplicitFTPS_ListStatReadResume
+--- PASS: TestIntegration_ExplicitFTPS_ListStatReadResume (2.43s)
+=== RUN   TestIntegration_Refusals
+--- PASS: TestIntegration_Refusals (8.83s)
+=== RUN   TestIntegration_ScanPath_ReadOnly_WorkerPool
+--- PASS: TestIntegration_ScanPath_ReadOnly_WorkerPool (7.25s)
+PASS
+ok  	digital.vasic.filesystem/pkg/ftp	21.479s

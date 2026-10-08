@@ -1,0 +1,236 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (MI1.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+=== RUN   TestIntegrationSelftest
+--- PASS: TestIntegrationSelftest (0.01s)
+=== RUN   TestIntegration_ExplicitFTPS_ListStatReadResume
+--- PASS: TestIntegration_ExplicitFTPS_ListStatReadResume (2.41s)
+=== RUN   TestIntegration_Refusals
+--- PASS: TestIntegration_Refusals (9.17s)
+=== RUN   TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Could not delete /a.txt: No such file or directory\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Could not delete /a.txt: No such file or directory\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't create directory: File exists\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't create directory: File exists\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+--- FAIL: TestIntegration_ScanPath_ReadOnly_WorkerPool (7.02s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.626s
+FAIL
+
+ftps-fixture: registered op_id=catalogizer-ftps-20261007195008-3689073
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+=== RUN   TestIntegrationSelftest
+--- PASS: TestIntegrationSelftest (0.01s)
+=== RUN   TestIntegration_ExplicitFTPS_ListStatReadResume
+--- PASS: TestIntegration_ExplicitFTPS_ListStatReadResume (2.41s)
+=== RUN   TestIntegration_Refusals
+--- PASS: TestIntegration_Refusals (9.17s)
+=== RUN   TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Could not delete /a.txt: No such file or directory\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:223: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:223
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Could not delete /a.txt: No such file or directory\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't create directory: File exists\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:224: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:224
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Expected error with "filesystem: client is read-only" in chain but got nil.
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:225: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:225
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't create directory: File exists\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:226: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:226
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "550 \"Can't remove directory: Directory not empty\""
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+    integration_test.go:227: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:227
+        	            				/usr/local/go/src/runtime/asm_amd64.s:1693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "filesystem: client is read-only"
+        	            	in chain: "ftp: retrieve /a.txt: file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist: 550 \"Can't open /a.txt: No such file or directory\""
+        	            		"file does not exist"
+        	Test:       	TestIntegration_ScanPath_ReadOnly_WorkerPool
+--- FAIL: TestIntegration_ScanPath_ReadOnly_WorkerPool (7.02s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.626s
+FAIL
+ftps-fixture: SINK-SIDE FAIL: the served data tree changed during the run (before 4f372f1bdbf932bc0530f102e70802e4508c1daf949fbba5f347c1ca36aa07ea after a033fc7234b17001cadb70057c6bda03a5deb45dab210ffc5094f8d2a9662140)

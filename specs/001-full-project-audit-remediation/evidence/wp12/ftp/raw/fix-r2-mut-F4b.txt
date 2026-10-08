@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F4b - OpenSeekable discards the final-reply error at EOF
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestSeekable_TruncatedTransfer_IsAnError_D8 (0.01s)
+    fix_r2_net_test.go:695: 
+        	Error Trace:	/out/mut/F4b/filesystem/pkg/ftp/fix_r2_net_test.go:695
+        	Error:      	"ftp: /data/big.bin ended at byte 1000 of 100000: unexpected EOF" does not contain "451"
+        	Test:       	TestSeekable_TruncatedTransfer_IsAnError_D8
+        	Messages:   	the server's own reason for giving up is reported, not a generic short read: ftp: /data/big.bin ended at byte 1000 of 100000: unexpected EOF
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.967s
+FAIL

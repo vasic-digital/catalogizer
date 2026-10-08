@@ -1,0 +1,119 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M11.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.01s)
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/etc/passwd: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"../etc/passwd"
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: list /data/etc/passwd: file does not exist: 550 \"not a directory\""
+        	            		"file does not exist: 550 \"not a directory\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"../etc/passwd"
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: stat /data/etc/passwd: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"../etc/passwd"
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/x: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a/../../x"
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: list /data/x: file does not exist: 550 \"not a directory\""
+        	            		"file does not exist: 550 \"not a directory\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a/../../x"
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: stat /data/x: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a/../../x"
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	".."
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	".."
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	".."
+    ftps_test.go:695: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:695
+        	Error:      	"[AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV RETR /data/etc/passwd EPSV MLSD /data/etc/passwd MLST /data/etc/passwd EPSV RETR /data/x EPSV MLSD /data/x MLST /data/x EPSV RETR /data EPSV MLSD /data MLST /data]" should have 10 item(s), but has 25
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	an escape attempt sends nothing to the server
+--- FAIL: TestRawClient_Mutations_WriteCopyMkdirDelete (0.01s)
+    ftps_test.go:818: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:818
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestRawClient_Mutations_WriteCopyMkdirDelete
+    ftps_test.go:819: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:819
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestRawClient_Mutations_WriteCopyMkdirDelete
+    ftps_test.go:820: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:820
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestRawClient_Mutations_WriteCopyMkdirDelete
+    ftps_test.go:821: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:821
+        	Error:      	Expected error with "ftp: path escapes the configured root or contains control characters" in chain but got nil.
+        	Test:       	TestRawClient_Mutations_WriteCopyMkdirDelete
+    ftps_test.go:822: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:822
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/x: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestRawClient_Mutations_WriteCopyMkdirDelete
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.572s
+ok  	digital.vasic.filesystem/pkg/factory	0.007s
+FAIL

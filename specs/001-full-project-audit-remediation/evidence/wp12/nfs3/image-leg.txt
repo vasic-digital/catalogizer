@@ -1,0 +1,27 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of image-leg.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+image_ref=localhost/catalogizer-test-nfs3@sha256:6b460bcafe905c8e004c55a1cda3db29f691e3ad86666bfdae17f59485100c6d
+--- server container
+user=65534:65534 readonly=true capdrop=[CAP_CHOWN CAP_DAC_OVERRIDE CAP_FOWNER CAP_FSETID CAP_KILL CAP_NET_BIND_SERVICE CAP_SETFCAP CAP_SETGID CAP_SETPCAP CAP_SETUID CAP_SYS_CHROOT] privileged=false image=localhost/catalogizer-test-nfs3@sha256:6b460bcafe905c8e004c55a1cda3db29f691e3ad86666bfdae17f59485100c6d
+nfs3fixture listening on [::]:2049
+--- test container (run_pinned argv + --network container:nfs3fx-leg-473464)
+go: downloading github.com/go-git/go-billy/v5 v5.6.0
+go: downloading github.com/willscott/go-nfs v0.0.4
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/hashicorp/golang-lru/v2 v2.0.7
+go: downloading github.com/rasky/go-xdr v0.0.0-20170124162913-1a41d1a06c93
+go: downloading github.com/willscott/go-nfs-client v0.0.0-20240104095149-b44639837b00
+go: downloading golang.org/x/sys v0.24.0
+=== RUN   TestGoNFSFullCrawlMatchesServerManifest
+--- PASS: TestGoNFSFullCrawlMatchesServerManifest (0.22s)
+=== RUN   TestGoNFSReadRangeSeekAndLargeFile
+--- PASS: TestGoNFSReadRangeSeekAndLargeFile (0.16s)
+=== RUN   TestGoNFSAttributesAndErrors
+--- PASS: TestGoNFSAttributesAndErrors (0.01s)
+=== RUN   TestGoNFSServerStaysUnchanged
+--- PASS: TestGoNFSServerStaysUnchanged (0.02s)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	1.429s
+exit=0

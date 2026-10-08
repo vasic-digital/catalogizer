@@ -1,0 +1,19 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX02 - reviewer: no ctx watcher on streams
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestCancelBetweenReads_IsHonoured_D9 (1.22s)
+    fix_r2_net_test.go:608: 
+        	Error Trace:	/out/mut/MX02/filesystem/pkg/ftp/fix_r2_net_test.go:608
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestCancelBetweenReads_IsHonoured_D9
+        	Messages:   	a cancelled context ends the stream
+--- FAIL: TestC9_CancelDuringBlockedRead_IsHonoured_MX02 (23.02s)
+    fix_r2_net_test.go:626: 
+        	Error Trace:	/out/mut/MX02/filesystem/pkg/ftp/fix_r2_net_test.go:626
+        	Error:      	"20.011455256s" is not less than "2s"
+        	Test:       	TestC9_CancelDuringBlockedRead_IsHonoured_MX02
+        	Messages:   	the watcher must break a blocked Read (IOTimeout is 20 s here)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	39.860s
+FAIL

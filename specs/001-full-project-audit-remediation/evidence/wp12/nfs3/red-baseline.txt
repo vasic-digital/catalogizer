@@ -1,0 +1,46 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of red-baseline.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+go test exit code: 1
+FAIL tests: 39
+PASS tests: 15
+--- FAIL: TestAccessAndReadOnly
+--- FAIL: TestAuthErrorOnNFSPortIsAccessError
+--- FAIL: TestAuthNullOnlyExportUsesAuthNone
+--- FAIL: TestBadCookieRestartsListing
+--- FAIL: TestCallTimeoutIsBounded
+--- FAIL: TestCloseUnblocksReader
+--- FAIL: TestConcurrentUse
+--- FAIL: TestConnectErrors
+--- FAIL: TestConnectUsesPortmapperAndMounts
+--- FAIL: TestContextCancellationAndDeadline
+--- FAIL: TestDecodeReaddirplusEntries
+--- FAIL: TestExports
+--- FAIL: TestFattrRoundTripAndBadType
+--- FAIL: TestGarbageStreamClosesConnection
+--- FAIL: TestGetFileInfo
+--- FAIL: TestListDirectory
+--- FAIL: TestListDirectoryByteBudgetPaging
+--- FAIL: TestListDirectoryPagingWithCookieVerifier
+--- FAIL: TestListWithoutAttributesFallsBackToLookup
+--- FAIL: TestListingNotProgressing
+--- FAIL: TestMalformedRepliesAreErrorsNotPanics
+--- FAIL: TestNoRetryWhenDisabledOrPermanent
+--- FAIL: TestParseReply
+--- FAIL: TestPathConfinement
+--- FAIL: TestPrivilegedRetryReportsUnavailable
+--- FAIL: TestPrivilegedRetrySucceedsWhenAllowed
+--- FAIL: TestReadChunkFollowsFSInfoButIsCapped
+--- FAIL: TestReadFileLargeAndSmall
+--- FAIL: TestReadPipelinesOutOfOrderReplies
+--- FAIL: TestReadRecordFragments
+--- FAIL: TestReadRecordLimits
+--- FAIL: TestReadSeekAndRange
+--- FAIL: TestReadShortReadsAreResumed
+--- FAIL: TestReservedPortRefusalIsPrecise
+--- FAIL: TestRetryJukeboxBounded
+--- FAIL: TestRetryReconnectsAfterDroppedConnection
+--- FAIL: TestServerCloseFailsPendingCalls
+--- FAIL: TestStaleCachedParentIsDropped
+--- FAIL: TestWrongXIDReplyIsIgnored

@@ -1,0 +1,121 @@
+# fix-r2 RED: the independent reviewer's adopted probes (review_probes_test.go, P1-P17) and killers (review_killers_test.go, A01-A18) run on the PRE-FIX package
+# pre-fix package = the uncommitted working tree that WF19 reviewed (client.go sha256 95157dfa1973bc38a9542800fb0edd21702bef6463bc00435c378fd86c9d4642, the first line of the review's SOURCES.sha256; every pre-fix file was re-verified OK by the review)
+# run_at: 2026-10-07 (UTC), IMG-GO via scripts/containers/run_pinned.sh, hermetic copy (pkg/client + pkg/nfs3 with a minimal go.mod), go test -count=1 -v
+# RED-SHIM (stated): the pre-fix fake server got the xid log (4 lines, test code) and Config got the field declaration "AsRoot bool" with no behaviour, only so that the adopted P12/P14 compile on the pre-fix code
+# READING: probes assert the CORRECT behaviour, so a FAIL = the defect exists. Killers kill mutants, not the pre-fix code: they PASS on the pre-fix package (they were written to pass on it) and the mutation run shows them failing on their mutant (fix-r2-mutants.txt)
+--- PASS: TestNewValidates (0.00s)
+--- PASS: TestConnectUsesPortmapperAndMounts (0.01s)
+--- PASS: TestConnectErrors (0.01s)
+--- PASS: TestExports (0.01s)
+--- PASS: TestGetFileInfo (0.01s)
+--- PASS: TestPathConfinement (0.01s)
+--- PASS: TestListDirectory (0.01s)
+--- PASS: TestListDirectoryPagingWithCookieVerifier (0.01s)
+--- PASS: TestListDirectoryByteBudgetPaging (0.01s)
+--- PASS: TestBadCookieRestartsListing (0.01s)
+--- PASS: TestListWithoutAttributesFallsBackToLookup (0.01s)
+--- PASS: TestListingNotProgressing (0.01s)
+--- PASS: TestReadFileLargeAndSmall (0.03s)
+--- PASS: TestReadShortReadsAreResumed (0.72s)
+--- PASS: TestReadSeekAndRange (0.01s)
+--- PASS: TestReadPipelinesOutOfOrderReplies (0.26s)
+--- PASS: TestAccessAndReadOnly (0.01s)
+--- PASS: TestNoWriteProcedureCompiledIn (0.00s)
+--- PASS: TestConcurrentUse (0.08s)
+--- PASS: TestAuthNullOnlyExportUsesAuthNone (0.01s)
+--- PASS: TestReadChunkFollowsFSInfoButIsCapped (0.03s)
+--- PASS: TestRetryReconnectsAfterDroppedConnection (0.03s)
+--- PASS: TestRetryJukeboxBounded (0.02s)
+--- PASS: TestNoRetryWhenDisabledOrPermanent (0.01s)
+--- PASS: TestCallTimeoutIsBounded (0.31s)
+--- PASS: TestContextCancellationAndDeadline (0.21s)
+--- PASS: TestCloseUnblocksReader (0.06s)
+--- PASS: TestStaleCachedParentIsDropped (0.01s)
+--- PASS: TestReservedPortRefusalIsPrecise (0.01s)
+--- PASS: TestPrivilegedRetrySucceedsWhenAllowed (0.01s)
+--- PASS: TestPrivilegedRetryDoesNotFireForOtherErrors (0.00s)
+--- PASS: TestPrivilegedRetryReportsUnavailable (0.00s)
+--- PASS: TestRealPrivilegedBind (0.00s)
+--- PASS: TestAuthErrorOnNFSPortIsAccessError (0.01s)
+--- PASS: TestMalformedRepliesAreErrorsNotPanics (0.01s)
+--- PASS: TestWrongXIDReplyIsIgnored (0.01s)
+--- PASS: TestGarbageStreamClosesConnection (0.00s)
+--- PASS: TestServerCloseFailsPendingCalls (0.00s)
+--- PASS: TestKillA01PageEndingWithDotDot (0.01s)
+--- PASS: TestKillA02EmptyFlavorList (0.01s)
+--- PASS: TestKillA03SystemErrRetried (0.00s)
+--- PASS: TestKillA05ServerCallIgnored (0.00s)
+--- PASS: TestKillA06VerifierLimit (0.00s)
+--- PASS: TestKillA07PathThroughFileNotCached (0.01s)
+--- PASS: TestKillA08PersistentStaleParent (0.01s)
+--- PASS: TestKillA09TimeoutRetriedOnNewConnection (0.20s)
+--- PASS: TestKillA10ReadSizeCapped (0.03s)
+--- PASS: TestKillA11OnlyAllowListedProcsReachTheWire (0.01s)
+--- PASS: TestKillA12SlashNameRefusedWithAttrs (0.01s)
+--- PASS: TestKillA13CancelledCallForgotten (0.05s)
+--- PASS: TestKillA14PermIsAccessError (0.01s)
+--- PASS: TestKillA15MaxEntries (0.01s)
+--- PASS: TestKillA16BadHandleRecovered (0.01s)
+--- PASS: TestKillA17FlavorLimit (0.00s)
+--- PASS: TestKillA18SeekClearsError (0.01s)
+    review_probes_test.go:86: PROBE P1 dots only: err=context deadline exceeded after 3.003s; READDIRPLUS calls=58972
+    review_probes_test.go:86: PROBE P1 same real entry: err=context deadline exceeded after 3s; READDIRPLUS calls=59156
+--- FAIL: TestProbeP1ListingNonAdvancingCookie (6.02s)
+    review_probes_test.go:102: PROBE P2: MaxRetries=-1 Connect err=<nil>
+    review_probes_test.go:102: PROBE P2: MaxRetries=-2 Connect err=context deadline exceeded
+    review_probes_test.go:102: PROBE P2: MaxRetries=-5 Connect err=context deadline exceeded
+--- FAIL: TestProbeP2NegativeMaxRetries (0.01s)
+    review_probes_test.go:133: PROBE P3: second Connect err=nfs3: portmapper GETPORT(100005 v3): nfs3: cannot bind a privileged (<1024) source port; plain dials=0 privileged dials=1
+--- FAIL: TestProbeP3PrivilegedModeSticksAfterFailure (0.01s)
+    review_probes_test.go:157: PROBE P4: ReadRange(n=100) returned 100 bytes; server got 4 READ calls and sent 3146160 reply bytes (31462x)
+--- FAIL: TestProbeP4ReadRangeReadAmplification (0.52s)
+    review_probes_test.go:178: PROBE P5: 3145741 bytes in 1.058s; 24711 READ calls for 3146 useful replies (7.9x)
+--- FAIL: TestProbeP5ShortReadAmplification (1.37s)
+    review_probes_test.go:199: PROBE P6: list /deep/a -> 0 entries (<nil>); GetFileInfo /deep/a/b/c/leaf.txt -> &{Name:leaf.txt Size:4 ModTime:2023-11-14 22:19:24.123456789 +0000 UTC IsDir:false Mode:-rw-r--r-- Path:/deep/a/b/c/leaf.txt} <nil>; list /deep/a/b -> 0 entries (nfs3: LOOKUP: NFS3ERR_NOENT (status 2))
+--- FAIL: TestProbeP6CacheSurvivesRename (0.01s)
+    review_probes_test.go:237: PROBE P7: list err=<nil> entries=1 path="/docs/a\x00b"; GetFileInfo(path) err=nfs3: invalid path: NUL byte
+--- FAIL: TestProbeP7NulNameListed (0.01s)
+    review_probes_test.go:261: PROBE P8: listing with one entry removed mid-listing -> [], err=nfs3: LOOKUP: NFS3ERR_NOENT (status 2)
+--- FAIL: TestProbeP8VanishedEntryFailsListing (0.01s)
+    review_probes_test.go:277: PROBE P9: layer=nfs SourcePort=0 msg="nfs3: access denied during nfs: nfs3: RPC call denied: authentication error 1; the export may restrict clients by address or UID, or require a reserved source port (an export option usually called 'secure'/'insecure')"
+--- FAIL: TestProbeP9NFSLayerAccessErrorPort (0.00s)
+    review_probes_test.go:290: PROBE P10: Connect err=nfs3: export does not accept AUTH_SYS: server offers flavors [390003]; MNT=1 UMNT=0
+--- FAIL: TestProbeP10NoUmntAfterFailedConnect (0.01s)
+    review_probes_test.go:321: PROBE P11: FileInfo.Size=-1 (<nil>); ReadFile open err=<nil> read 0 bytes, err=<nil>
+--- FAIL: TestProbeP11HugeSizeSilentEmptyRead (0.01s)
+    review_probes_test.go:341: PROBE P12: conn1 last xid=804387051; conn2 after 2 calls xid=804387051
+--- FAIL: TestProbeP12XidRestartsPerConnection (0.01s)
+    review_probes_test.go:368: PROBE P13: empty flavor list -> flavor 1
+--- PASS: TestProbeP13EmptyFlavorList (0.01s)
+    review_probes_test.go:379: PROBE P14: default AUTH_SYS uid=0 gid=0 machine="catalogizer"
+--- FAIL: TestProbeP14DefaultIdentityIsRoot (0.00s)
+    review_probes_test.go:397: PROBE P15: isAccess(NFS3ERR_PERM)=true
+--- PASS: TestProbeP15PermIsAccess (0.00s)
+    review_probes_test.go:427: PROBE P16: first Read err=nfs3: READ: NFS3ERR_IO (status 5); Seek(0,SeekCurrent)=0; ReadAll -> "" err=<nil>
+--- FAIL: TestProbeP16SeekSamePosAfterErrorSilentEOF (0.01s)
+    review_probes_test.go:451: PROBE P4b: ReadRange(n=100) of a 16 MiB file -> 100 bytes (<nil>); 8 READ calls; 8389440 reply bytes (83894x)
+--- FAIL: TestProbeP4bReadRangeLargeFile (1.03s)
+    review_probes_test.go:486: PROBE P17 positive control: package goroutines while connected: 1 (must be >= 1)
+    review_probes_test.go:497: PROBE P17: package goroutines alive 3 s after Disconnect: 0
+--- PASS: TestProbeP17NoGoroutineLeak (0.71s)
+--- PASS: TestXDROpaquePadding (0.00s)
+--- PASS: TestXDRLimitsAndStrictness (0.00s)
+--- PASS: TestFattrRoundTripAndBadType (0.00s)
+--- PASS: TestAttrFileMode (0.00s)
+--- PASS: TestBuildCallGolden (0.00s)
+--- PASS: TestAuthSysClampsGidsAndMachine (0.00s)
+--- PASS: TestReadRecordFragments (0.00s)
+--- PASS: TestReadRecordLimits (0.00s)
+--- PASS: TestParseReply (0.00s)
+--- PASS: TestDecodeGetport (0.00s)
+--- PASS: TestDecodeMnt (0.00s)
+--- PASS: TestDecodeExports (0.00s)
+--- PASS: TestDecodeReadChecks (0.00s)
+--- PASS: TestDecodeReaddirplusEntries (0.00s)
+--- PASS: FuzzDecoders (0.00s)
+--- PASS: FuzzReadRecord (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/nfs3	12.058s
+FAIL
+exit=1
+SUMMARY probes failing on the pre-fix code: 15 of 18 probe tests (P1..P17 plus P4b); killers passing on it: 17 of 17

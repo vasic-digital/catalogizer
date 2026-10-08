@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX08 - reviewer: server entry names containing '/' or NUL are not filtered
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:174: 
+        	Error Trace:	/out/mut/MX08/filesystem/pkg/ftp/fix_r2_list_test.go:174
+        	Error:      	"[0xc000186320 0xc000186370 0xc0001863c0 0xc000186410 0xc000186460 0xc0001864b0 0xc000186500 0xc000186550 0xc0001865a0 0xc0001865f0 0xc000186640 0xc000186690 0xc0001866e0]" should have 11 item(s), but has 13
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	a name with '/' or NUL is a hostile entry and is skipped (MX08); nothing else is lost
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.840s
+FAIL

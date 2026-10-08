@@ -1,0 +1,28 @@
+# identity: WP-12 PA-04 fix round 2: mutant F10a - Credential's String has a pointer receiver again
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestSecret_NeverReachableThroughFmt_D13 (0.00s)
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{Password:S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %+v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"ftp.Credential{Password:\"S3cr3t-WF21-XYZ\"}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %#v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/mut/F10a/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %s
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.117s
+FAIL

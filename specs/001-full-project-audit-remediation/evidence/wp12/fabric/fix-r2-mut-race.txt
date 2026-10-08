@@ -1,0 +1,5 @@
+BASELINE rc=0 PASS
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL (reviewer NC1): no-op; MUST survive
+N17 CAUGHT rc=1 by=TestPool_CloseAll,TestPool_RaceManyBorrowers -- S8: unborrow without holding the lock across the lookup/delete (race)
+SUMMARY {'CAUGHT': 1, 'SURVIVED': 1, 'INVALID': 0, 'NOT_APPLIED': 0}
+HARNESS_CONTROLS_OK=True

@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F1e - control writes carry no deadline
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_ControlWriteStall_IsBounded (10.03s)
+    fix_r2_net_test.go:1432: 
+        	Error Trace:	/out/mut/F1e/filesystem/pkg/ftp/fix_r2_net_test.go:1432
+        	Error:      	Should be true
+        	Test:       	TestDeadline_ControlWriteStall_IsBounded
+        	Messages:   	a blocked control write must hit IOTimeout (blocked 10.011473937s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	23.552s
+FAIL

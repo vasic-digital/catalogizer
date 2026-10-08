@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX11 - reviewer: DiscoverCert without a deadline
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (3.00s)
+    fix_r2_net_test.go:420: 
+        	Error Trace:	/out/mut/MX11/filesystem/pkg/ftp/fix_r2_net_test.go:420
+        	Error:      	Should be true
+        	Test:       	TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+        	Messages:   	DiscoverCert must honour its timeout (3.001419713s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.392s
+FAIL

@@ -1,0 +1,23 @@
+# identity: WP-12 PA-04 fix round 2: mutant W7 - factory: the port is not validated
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+    ftp_factory_test.go:165: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:165
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port 0
+    ftp_factory_test.go:165: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:165
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port -1
+    ftp_factory_test.go:165: 
+        	Error Trace:	/out/mut/W7/filesystem/pkg/factory/ftp_factory_test.go:165
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes
+        	Messages:   	port 65536
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.017s
+FAIL

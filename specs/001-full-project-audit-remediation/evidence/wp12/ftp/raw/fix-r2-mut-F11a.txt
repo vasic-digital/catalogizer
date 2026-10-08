@@ -1,0 +1,12 @@
+# identity: WP-12 PA-04 fix round 2: mutant F11a - a timed-out Disconnect leaves the connection to whoever comes next
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDisconnectWithCancelledContext_StillClosesAnIdleConnection (3.01s)
+    fix_r2_net_test.go:1042: 
+        	Error Trace:	/out/mut/F11a/filesystem/pkg/ftp/fix_r2_net_test.go:1042
+        	Error:      	Should be true
+        	Test:       	TestDisconnectWithCancelledContext_StillClosesAnIdleConnection
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.019s
+FAIL

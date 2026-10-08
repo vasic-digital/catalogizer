@@ -1,0 +1,62 @@
+# identity: WP-12 PA-04 fix round 2 (answer to the WF21 independent review of submodules/filesystem/pkg/ftp, verdict NO-GO) - CONVERGENCE ASSESSMENT
+# written: 2026-10-08, BEFORE the first fix (constitution 11.4.276(E)); author: Sonnet fixer (single fixer, one pass); nothing committed or pushed, nothing forced
+# review: scratchpad WF21-REVIEW-ftp.md (Opus xhigh, 2026-10-07) + its probes/mutants (wf21-ftp-evidence/)
+
+ROUND AND BUDGET
+  This is review round 2 of the item: round 1 = the author's own change (reviewed, NO-GO), round 2 = this fix (re-review OWED, 11.4.142).
+  Declared budget R_max = 5 (the 11.4.276 default); 3 rounds are unspent. The structural trigger of (E)(3) is not reached; this pass nevertheless
+  applies the structural remedy up front because the review's findings share a class (below).
+
+WHY THE FIRST ATTEMPT FAILED - ROOT-CAUSE CLASSES (not a list of 16 instances)
+  C1  WRONG-MODEL GROUND TRUTH (11.4.276 cause 1). The author's design rested on a model of github.com/jlaffaye/ftp v0.2.4 that the library does not
+      have: "DialTimeout bounds the connect and the handshake", "the library hides nothing", "a protocol reply error means the connection is fine",
+      "one Login error type". The reviewer read the library SOURCE (ftp.go:168,179,625-635,743-768,955-963, parse.go:36-82, Login 364-416) and the
+      real composition path showed: nothing is bounded except the TCP connect; the final reply of a transfer is read inside Response.Close and
+      reported to nobody; unparseable listing lines vanish; every Login failure is one error. => F1, F2, F4(part), F5, F6, F13 are ONE class.
+      Ground-truth probe done in this pass: the library source re-read at the same lines (module zip sha256 5b5dba00..47be3) AND the real pure-ftpd
+      traffic captured on the wire (raw/fix-r2-realserver-wire.txt), which refuted two assumptions of mine (see "Surprises").
+  C2  INSTANCE-AT-A-TIME / MISSING CLASS ENUMERATION (cause 2). Deadlines were added to ONE data read (stream.Read) and nowhere else. The class is
+      "every blocking I/O of the client". Members enumerated with a control needle: TCP connect, banner, AUTH TLS reply, TLS handshake, USER, PASS,
+      FEAT, TYPE, OPTS, PBSZ, PROT, CWD, PWD, NOOP, MLST, SIZE, EPSV/PASV, REST, RETR/MLSD/LIST command replies, MLSD/LIST/RETR data reads, the final
+      reply of a transfer, QUIT, control writes, data writes, DiscoverCert, Disconnect abort, ctx cancellation of each of these. All are now routed
+      through ONE choke point (proto.deadlineFrom / proto.interrupt) instead of being fixed one by one.
+      The same enumeration was done for "what can leave the control channel out of step": unexpected positive reply, 421, extra reply after an early
+      close, bytes buffered before a command, oversized reply, cancelled command, I/O error. One choke point (proto.markBroken, judge, cmd).
+      And for "classification by call site": USER/PASS/FEAT/TYPE/OPTS/PBSZ/PROT/CWD/PWD/banner/AUTH TLS/handshake: one table (docs/FTP_CLIENT.md).
+  C3  SILENT PARTIAL RESULTS (a bluff class: present-and-wrong data). Listing lines dropped or misread (F6), OpenSeekable truncation (F4), 550 as
+      non-existence (F7), degraded stat of the wrong directory (F8), stale replies read as answers (F2). Members were enumerated from the reviewer's
+      probes D6/D7/D8/D10/D18 plus the RFC 3659 grammar (every fact form) and the RFC 959 reply grammar; the remedy for the class is "an error, never
+      a partial/wrong answer": ErrListingIncomplete, io.ErrUnexpectedEOF, ErrPermission vs ErrNotExist vs the reply itself, lock-step checking.
+  C4  TESTS THAT NEVER EXERCISE THE REAL PATH (causes 3, T1-T3). The fake could not stall, change directory, send an extra reply, say 421 or 550
+      "permission denied"; 17 of 18 reviewer mutants survived. Remedy: the fake models all of these (hooks + cwd); every reviewer probe (D1-D23,
+      C1-C23) and every reviewer mutant (MX01-MX28, PC16) is a permanent test or has a killing test; a harness runs 70+ mutants incl. two negative
+      controls; the real-server leg asserts more (one login attempt, early close in step, seekable whole-file hash, cancel recovery, disconnect).
+  C5  NOT WIRED (F16): factory built the raw client. Remedy: factory wiring + end-to-end wire tests (a socket peer sees what the client sends).
+  Singletons (own classes of one): F10 secret through fmt (value receiver + pointer-held config), F11 timed-out Disconnect leak (close-when-idle +
+  re-dial closes the replaced connection), F12 IAC, F14 port 0, F15 server-name conflict.
+
+THREAT BOUNDARY (fixed before this review loop's next round; not narrowed to reach GO)
+  In scope: a malicious or broken PINNED server (stalls, oversized/forged/stray/duplicate replies, partial or garbled listings, 421, wrong sizes, a
+  data channel that stalls/lies/truncates); a MITM on a trusted_lan CLEAR-TEXT root (replies and listings are untrusted data); a hostile path or
+  name (control characters, ".." escape, IAC, "/" and NUL in names); credential leakage through fmt/errors/logs; account lockout through retried
+  PASS; leaking connections/goroutines; callers' ctx / Disconnect not being honoured.
+  Out of scope (stated, not claimed): correctness of the Synology FTP service's own behaviour (UNCONFIRMED, no NAS contact); confidentiality on a
+  trusted_lan clear-text root (it is clear text by the owner's decision); Windows FTP servers that accept "\" as a separator (documented limit);
+  certificate-authority trust (the pin is the only anchor by design); denial of service by a server that answers correctly but slowly within
+  IOTimeout per reply and per read (bounded by ctx and the entry cap only).
+
+SURPRISES THAT CHANGED THE DESIGN (ground truth beats the model)
+  S1  Rewrite instead of patch: the library offers no hook for any of C1; the plaintext of the control channel (needed to classify login phases)
+      is not observable above TLS without owning the protocol layer. pkg/ftp now speaks the protocol (proto.go, mlsx.go); the library is no
+      longer imported.
+  S2  Real pure-ftpd answers "OPTS UTF8 ON" with "504 Unknown command" although it lists UTF8 in FEAT. My first design (fail the connect on a
+      refusal, to avoid garbled names) broke EVERY real-server test; the design is now: connect, and refuse only a listing that really contains
+      a garbled name (invalid UTF-8 or 0x7f). Found by the real-server leg, not by the fake.
+  S3  Real pure-ftpd answers an early-closed TLS download with ONE reply "150 <statistics>" (not 226/426). My first design expected 226/426 after
+      an early close and dropped the connection (30 s IOTimeout wait, then a re-dial per seek). The lock-step check (NOOP) is the guard now, the
+      first reply may be anything below 400.
+  S4  The fake itself listed "/" as a child of itself (a nameless entry the library silently dropped for months): the new parser surfaced it.
+
+STOP CONDITION
+  GO requires the independent re-review (11.4.142, Opus xhigh or the sanctioned Sonnet fallback with the recorded unavailability fact) to find no
+  source-defect in a fresh pass; this author does not declare GO. Remaining owed items are listed in README.md "UNCONFIRMED / not done".

@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant PC16 - reviewer POSITIVE CONTROL: NUL no longer refused by confine (an old test covers it: must be KILLED)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.00s)
+    ftps_test.go:695: 
+        	Error Trace:	/out/mut/PC16/filesystem/pkg/ftp/ftps_test.go:695
+        	Error:      	"[AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV EPSV]" should have 10 item(s), but has 12
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	an escape attempt sends nothing to the server
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.980s
+FAIL

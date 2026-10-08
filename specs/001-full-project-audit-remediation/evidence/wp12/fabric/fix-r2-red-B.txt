@@ -1,0 +1,3 @@
+# RED B: pre-fix source + the round-2 test files. They need the new API (package guard, fabric.MaxRetryAttempts, WithStreamLease, PoolOptions.ConnectTimeout, BudgetStats.Held...), so on the pre-fix source this is a BUILD failure (disclosed as such; the behavioural RED is RED A and the mutation run).
+go: finding module for package digital.vasic.filesystem/pkg/decorators/guard
+pkg/fabric/fix_classes_test.go:25:2: cannot find module providing package digital.vasic.filesystem/pkg/decorators/guard: unrecognized import path "digital.vasic.filesystem/pkg/decorators/guard": https fetch: Get "https://digital.vasic.filesystem/pkg/decorators/guard?go-get=1": dial tcp: lookup digital.vasic.filesystem on 169.254.1.1:53: no such host

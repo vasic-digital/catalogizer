@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6g - MLST accepts several entries / no entry silently
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestMLST_WrongNumberOfEntries_IsAnError (0.00s)
+    fix_r2_list_test.go:580: 
+        	Error Trace:	/out/mut/F6g/filesystem/pkg/ftp/fix_r2_list_test.go:580
+        	Error:      	Expected error with "ftp: directory listing has lines that could not be parsed" in chain but got nil.
+        	Test:       	TestMLST_WrongNumberOfEntries_IsAnError
+        	Messages:   	two entries for one path: not silently the first
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.964s
+FAIL

@@ -1,0 +1,22 @@
+# identity: WP-12 PA-04 recheck of the sibling packages after a hang observed in a first run (not part of PA-04)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+ok  	digital.vasic.filesystem/pkg/fabric	3.684s
+ok  	digital.vasic.filesystem/pkg/fabric	3.668s
+ok  	digital.vasic.filesystem/pkg/fabric	3.641s
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading github.com/kr/fs v0.1.0
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+ok  	digital.vasic.filesystem/pkg/factory	0.011s
+ok  	digital.vasic.filesystem/pkg/fabric	3.663s
+ok  	digital.vasic.filesystem/pkg/decorators	0.020s
+ok  	digital.vasic.filesystem/pkg/client	0.030s
+ok  	digital.vasic.filesystem/pkg/sftp	16.564s
+--- FAIL: TestOneShortReplyCostsOnlyTheGap (0.28s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/nfs3	8.879s
+FAIL

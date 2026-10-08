@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F13a - the control reply size is not bounded
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestReplyAndListingSizeAreBounded_D16_D17 (0.03s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/reply (0.01s)
+        fix_r2_net_test.go:1256: 
+            	Error Trace:	/out/mut/F13a/filesystem/pkg/ftp/fix_r2_net_test.go:1256
+            	Error:      	Expected error with "ftp: server reply exceeds the size limit" in chain but got nil.
+            	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/reply
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.005s
+FAIL

@@ -1,0 +1,35 @@
+# identity: WP-12 PA-04 fix round 2 (WF21 NO-GO answer): go vet (default + tag integration), gofmt -l, go build ./..., go test -cover pkg/ftp pkg/factory, go test -race -v pkg/factory (PASS counts per test)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree; no git write, no NAS contact, no credential printed
+# run_at: 2026-10-08 (UTC+2); author: Sonnet fixer; independent re-review (11.4.142): OWED
+VET-OK
+GOFMT-DONE
+BUILD-OK
+ok  	digital.vasic.filesystem/pkg/ftp	16.058s	coverage: 90.8% of statements
+ok  	digital.vasic.filesystem/pkg/factory	0.026s	coverage: 100.0% of statements
+      1 ok  	digital.vasic.filesystem/pkg/factory	1.073s
+      1 PASS
+      1 --- PASS: TestGetStringSetting (0.00s)
+      1 --- PASS: TestGetIntSetting (0.00s)
+      1 --- PASS: TestFTPFactory_UsesTheInstalledPinStore_UnknownThenPinned_EndToEnd (0.03s)
+      1 --- PASS: TestFTPFactory_SettingsReachTheClient_Config (0.00s)
+      1 --- PASS: TestFTPFactory_ReturnsTheReadOnlyScanClient_NoMutationCanReachTheServer (0.00s)
+      1 --- PASS: TestFTPFactory_RejectsEverySecretLikeSetting_AndBadTypes (0.00s)
+      1 --- PASS: TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed (0.00s)
+      1 --- PASS: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+      1 --- PASS: TestDefaultFactory_SupportedProtocols (0.00s)
+      1 --- PASS: TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd (0.02s)
+      1 --- PASS: TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting (0.00s)
+      1 --- PASS: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+      1 --- PASS: TestDefaultFactory_SFTP_PortIsValidated (0.00s)
+      1 --- PASS: TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateNFSClient_Linux (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateNFSClient_EmptyMountPoint (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateNFSClient_DefaultOptions (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_WebDAV (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_Unsupported (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_SMB (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_SFTP (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_NFS (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_Local (0.00s)
+      1 --- PASS: TestDefaultFactory_CreateClient_FTP (0.00s)

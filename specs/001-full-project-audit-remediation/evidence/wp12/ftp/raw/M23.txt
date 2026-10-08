@@ -1,0 +1,96 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M23.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestList_NoModifyFact_MtimeIsZero_NotNow (0.01s)
+    ftps_test.go:313: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:313
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+--- FAIL: TestGetFileInfo_UsesMLST_ServerMtime_NotNow (0.01s)
+    ftps_test.go:355: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:355
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/sub/c.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+--- FAIL: TestFileExists_NotFound_IsFalseNotError (0.00s)
+    ftps_test.go:372: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:372
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestFileExists_NotFound_IsFalseNotError
+--- FAIL: TestReadFile_Content_AndSessionReleasedOnClose (0.01s)
+    ftps_test.go:413: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:413
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestReadFile_Content_AndSessionReleasedOnClose
+--- FAIL: TestOpenSeekable_SeekResumesWithREST (0.01s)
+    ftps_test.go:462: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:462
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestOpenSeekable_SeekResumesWithREST
+--- FAIL: TestConcurrentUse_OneControlConnection_NoInterleaving (0.05s)
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+    ftps_test.go:513: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:513
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: ftp: server offers no MLST/MLSD, so modification times would be unknown; set allow_degraded_list to list with LIST
+        	Test:       	TestConcurrentUse_OneControlConnection_NoInterleaving
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.579s
+ok  	digital.vasic.filesystem/pkg/factory	0.006s
+FAIL

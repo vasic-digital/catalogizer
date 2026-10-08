@@ -1,0 +1,57 @@
+# identity: WP-12 PA-04 fix round 2: mutant F7b - permission text is not recognised (denied reads as absent)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestClassify550 (0.00s)
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 1
+        	Test:       	TestClassify550
+        	Messages:   	Not found, permission denied for guest
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Permission denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	/data/a.txt: Permission denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Access is denied
+    fix_r2_list_test.go:135: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestClassify550
+        	Messages:   	Operation not permitted
+--- FAIL: TestPermission550_IsNotNonExistence_D18 (0.01s)
+    fix_r2_list_test.go:244: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:244
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestPermission550_IsNotNonExistence_D18
+        	Messages:   	an existing file we may not read is not 'absent'
+--- FAIL: TestListing550_Mapping (0.00s)
+    fix_r2_list_test.go:310: 
+        	Error Trace:	/out/mut/F7b/filesystem/pkg/ftp/fix_r2_list_test.go:310
+        	Error:      	Target error should be in err chain:
+        	            	expected: "permission denied"
+        	            	in chain: "ftp: list /data: 550 \"Permission denied\""
+        	            		"550 \"Permission denied\""
+        	Test:       	TestListing550_Mapping
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.923s
+FAIL

@@ -1,0 +1,20 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX13 - reviewer: Degraded() not set at connect
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.01s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features (0.00s)
+        fix_r2_net_test.go:886: 
+            	Error Trace:	/out/mut/MX13/filesystem/pkg/ftp/fix_r2_net_test.go:886
+            	Error:      	Should be true
+            	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features
+            	Messages:   	no FEAT, no MLST: degraded
+--- FAIL: TestDegraded_IsKnownRightAfterConnect_MX13 (0.01s)
+    fix_r2_net_test.go:1159: 
+        	Error Trace:	/out/mut/MX13/filesystem/pkg/ftp/fix_r2_net_test.go:1159
+        	Error:      	Should be true
+        	Test:       	TestDegraded_IsKnownRightAfterConnect_MX13
+        	Messages:   	known at connect, before any listing
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.864s
+FAIL

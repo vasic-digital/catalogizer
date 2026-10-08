@@ -1,0 +1,1141 @@
+# identity: WP-12 PA-05 fix-r2 RED (constitution 11.4.115 / 11.4.224): the reviewer's probes P1..P12, the tests for every finding and the tests that kill the reviewer's surviving mutants, run against the PRE-FIX client
+# pre-fix tree: sha256 of the six sources in fix-r2-pre-sha.txt (equal to the review header: sftp.go 079d9bac, hostkey.go 506706da, credential.go 770ce74b, sftp_test.go decd6ece, integration_test.go 7c103ffb, testserver_test.go 02b6d373)
+# how: a copy of the pre-fix module (+ pre-fix pkg/factory) with ONLY these additions: the FINAL black-box test files, the old-field variants of the test helpers (helpers_test.go), and a skeleton that declares the symbols which exist only after the fix
+#      (sentinel errors, the new Config fields, packet-type constants; no behaviour). White-box tests (frame_test.go, fix_r2_internal_test.go, pinstore_internal_test.go) cannot compile there: for them the RED is "the symbol does not exist".
+#      run in the pinned IMG-GO container: go test -count=1 -v -timeout 900s ./pkg/sftp/ ./pkg/factory/
+# part 1: the main run (5 tests that crash or hang the pre-fix test binary are skipped and run alone in part 2)
+# result part 1: 71 PASS (tests that also hold on the pre-fix client: the unchanged round-1 suite and the tests that only pin a new mechanism, e.g. the pipelining gauge and the mutant killers), 32 distinct tests FAIL:
+#   TestClassification_LossImpliesTransient
+#   TestCloseIsBoundedOnAStalledServer
+#   TestConfine_Table
+#   TestContainmentFailsClosedButReportsNotExist
+#   TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+#   TestDefaultFactory_SFTP_PortIsValidated
+#   TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+#   TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+#   TestDiscoverAllHonoursContextAfterConnect
+#   TestEnvCredentialResolver
+#   TestEnvCredentialResolver_NoCollisions
+#   TestFilePinStore_ConcurrentWritersLoseNothing
+#   TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky
+#   TestFilePinStore_RefusesAFileOthersCanWrite
+#   TestFilePinStore_RefusesANonRegularPinFile
+#   TestFilePinStore_RefusesASymlinkAsPinFile
+#   TestRaw_ListingLimit
+#   TestReview_P10_ConcurrentRedialStorm
+#   TestReview_P11_ListDirectoryHonoursContextOnHungServer
+#   TestReview_P12_ContainmentFailsOpenOnRealPathError
+#   TestReview_P1_StatHonoursContextOnHungServer
+#   TestReview_P2_ConnectHonoursContextWhenInitUnanswered
+#   TestReview_P3_TestConnectionOnLostConnection
+#   TestReview_P4_DisconnectDuringRedial
+#   TestReview_P5_BackslashNameReadsAnotherFile
+#   TestReview_P6_EOFStatusTearsDownConnection
+#   TestReview_P7_MalformedStatusPanics
+#   TestReview_P8_CancelUnblocksInFlightRead
+#   TestReview_P9_KeyboardInteractiveOnlyServer
+#   TestSeekEndHonoursContextOnHungServer
+#   TestStatusEOFIsNotAConnectionLoss
+#   TestStuckRequestReturnsTheContextError
+# part 2 (one process per test; the pre-fix binary does not survive them):
+#   TestKeepaliveCanBeDisabled: Disconnect hung on a half-open link (it closed the sftp session, which waits for the dead connection, before the ssh connection)
+#   TestKeepaliveEndsACallOnAHalfOpenLink: panic: test timed out after 1m0s  | a call on a half-open link stayed blocked > 10s although the keepalive is 100ms/300ms
+#   TestRaw_MalformedDataInPipelinedReadIsAnErrorNotAProcessCrash: panic: runtime error: slice bounds out of range [:1048576] with capacity 32768
+#   TestRaw_MalformedDataInSequentialReadIsAnError: panic: runtime error: slice bounds out of range [:1048576] with capacity 10 [recovered, repanicked]
+#   TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable: panic: runtime error: index out of range [3] with length 0 [recovered, repanicked]
+# NOTE on TestKeepaliveEndsACallOnAHalfOpenLink: it first FAILS at 10 s ("a call on a half-open link stayed blocked") and then the test binary hangs until the 60 s timeout, because the pre-fix
+#   Disconnect (via the test's defer) closes the sftp session BEFORE the ssh connection and pkg/sftp's Close waits for the dead connection forever - the same unbounded-call class (SFTP-01), found while writing the RED.
+# The reviewer's own run of the same probes on the same pre-fix code: 12 probes, 12 FAIL (probe-run.txt of the review). Here: P1..P12 all FAIL (see the list above).
+# ======================================================================== part 1 raw output ========================================================================
+=== RUN   TestRaw_ListingDropsDotEntries
+--- PASS: TestRaw_ListingDropsDotEntries (0.00s)
+=== RUN   TestRaw_ListingLimit
+    fix_r2_test.go:221: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:221
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestRaw_ListingLimit
+        	Messages:   	300 entries against a limit of 150 (got 300)
+--- FAIL: TestRaw_ListingLimit (0.00s)
+=== RUN   TestSeekEndHonoursContextOnHungServer
+    fix_r2_test.go:256: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestSeekEndHonoursContextOnHungServer
+        	Messages:   	Seek(SeekEnd) stayed blocked on a server that does not answer STAT
+    fix_r2_test.go:257: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:257
+        	Error:      	Expected error with "context deadline exceeded" in chain but got nil.
+        	Test:       	TestSeekEndHonoursContextOnHungServer
+--- FAIL: TestSeekEndHonoursContextOnHungServer (3.00s)
+=== RUN   TestCloseIsBoundedOnAStalledServer
+    fix_r2_test.go:298: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:298
+        	Error:      	Should be true
+        	Test:       	TestCloseIsBoundedOnAStalledServer
+        	Messages:   	Close stayed blocked > 3s on a server that never answers CLOSE (took 3.001543089s)
+    fix_r2_test.go:299: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:299
+        	Error:      	Should be false
+        	Test:       	TestCloseIsBoundedOnAStalledServer
+        	Messages:   	the bounded close ended the connection that could not finish it
+--- FAIL: TestCloseIsBoundedOnAStalledServer (3.01s)
+=== RUN   TestCancelOfOneStreamDoesNotKillTheSharedConnection
+--- PASS: TestCancelOfOneStreamDoesNotKillTheSharedConnection (0.71s)
+=== RUN   TestContextEndClosesTheRemoteFile
+--- PASS: TestContextEndClosesTheRemoteFile (0.01s)
+=== RUN   TestDialTimeoutBoundsTheHandshake
+--- PASS: TestDialTimeoutBoundsTheHandshake (0.40s)
+=== RUN   TestContextCancelEndsTheHandshake
+--- PASS: TestContextCancelEndsTheHandshake (0.30s)
+=== RUN   TestDiscoverAllHonoursContextAfterConnect
+    fix_r2_test.go:569: DiscoverAll ignored its context while the server was silent
+--- FAIL: TestDiscoverAllHonoursContextAfterConnect (4.00s)
+=== RUN   TestPipelinedReadKeepsSeveralRequestsInFlight
+--- PASS: TestPipelinedReadKeepsSeveralRequestsInFlight (0.07s)
+=== RUN   TestRangedReadIsPipelinedToo
+--- PASS: TestRangedReadIsPipelinedToo (0.29s)
+=== RUN   TestDisconnectReleasesTheConnection
+--- PASS: TestDisconnectReleasesTheConnection (0.00s)
+=== RUN   TestClientWipesWhatTheResolverHandedOver
+--- PASS: TestClientWipesWhatTheResolverHandedOver (0.25s)
+=== RUN   TestTestConnectionRefusesAFileAsRoot
+--- PASS: TestTestConnectionRefusesAFileAsRoot (0.00s)
+=== RUN   TestListDirectoryStopsAtTheContextOnASlowServer
+--- PASS: TestListDirectoryStopsAtTheContextOnASlowServer (0.49s)
+=== RUN   TestReadRangeNegativeOffsetIsRefusedUpFront
+--- PASS: TestReadRangeNegativeOffsetIsRefusedUpFront (0.00s)
+=== RUN   TestFileExistsReportsAnEscapeAsAnError
+--- PASS: TestFileExistsReportsAnEscapeAsAnError (0.00s)
+=== RUN   TestGetFileInfoRootIsNamedSlash
+--- PASS: TestGetFileInfoRootIsNamedSlash (0.00s)
+=== RUN   TestContainmentFailsClosedButReportsNotExist
+    fix_r2_test.go:841: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:841
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestContainmentFailsClosedButReportsNotExist
+        	Messages:   	RealPath failed for this path: the call is refused
+--- FAIL: TestContainmentFailsClosedButReportsNotExist (0.00s)
+=== RUN   TestStatusEOFIsNotAConnectionLoss
+    fix_r2_test.go:853: 
+        	Error Trace:	/src/filesystem/pkg/sftp/fix_r2_test.go:853
+        	Error:      	Should be false
+        	Test:       	TestStatusEOFIsNotAConnectionLoss
+--- FAIL: TestStatusEOFIsNotAConnectionLoss (0.00s)
+=== RUN   TestConcurrentCallsAfterLossAreRaceFreeAndSucceed
+--- PASS: TestConcurrentCallsAfterLossAreRaceFreeAndSucceed (0.03s)
+=== RUN   TestReadOnADeadConnectionIsNeverAnEOF
+--- PASS: TestReadOnADeadConnectionIsNeverAnEOF (1.62s)
+=== RUN   TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised
+--- PASS: TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised (0.00s)
+=== RUN   TestHostKeyRefusalIsReturnedAsTheTypedErrorItself
+--- PASS: TestHostKeyRefusalIsReturnedAsTheTypedErrorItself (0.00s)
+=== RUN   TestStuckRequestReturnsTheContextError
+    fix_r2_test.go:976: GetFileInfo stayed blocked
+--- FAIL: TestStuckRequestReturnsTheContextError (5.01s)
+=== RUN   TestFilePinStore_RefusesAFileOthersCanWrite
+    pinstore_test.go:30: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:30
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw----: Lookup
+    pinstore_test.go:31: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:31
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw----: Record
+    pinstore_test.go:32: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:32
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw----: Remove
+    pinstore_test.go:30: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:30
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw-rw-: Lookup
+    pinstore_test.go:31: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:31
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw-rw-: Record
+    pinstore_test.go:32: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:32
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-rw-rw-: Remove
+    pinstore_test.go:30: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:30
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw--w----: Lookup
+    pinstore_test.go:31: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:31
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw--w----: Record
+    pinstore_test.go:32: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:32
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw--w----: Remove
+    pinstore_test.go:30: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:30
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-----w-: Lookup
+    pinstore_test.go:31: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:31
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-----w-: Record
+    pinstore_test.go:32: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:32
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesAFileOthersCanWrite
+        	Messages:   	mode -rw-----w-: Remove
+--- FAIL: TestFilePinStore_RefusesAFileOthersCanWrite (0.00s)
+=== RUN   TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky
+    pinstore_test.go:49: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:49
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky
+    pinstore_test.go:50: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:50
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky
+--- FAIL: TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky (0.00s)
+=== RUN   TestFilePinStore_RefusesANonRegularPinFile
+    pinstore_test.go:64: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:64
+        	Error:      	Target error should be in err chain:
+        	            	expected: "shim: pin store insecure"
+        	            	in chain: "sftp: read pin store: read /tmp/TestFilePinStore_RefusesANonRegularPinFile1177120145/001/pins.json: is a directory"
+        	            		"read /tmp/TestFilePinStore_RefusesANonRegularPinFile1177120145/001/pins.json: is a directory"
+        	            		"is a directory"
+        	Test:       	TestFilePinStore_RefusesANonRegularPinFile
+    pinstore_test.go:65: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:65
+        	Error:      	Target error should be in err chain:
+        	            	expected: "shim: pin store insecure"
+        	            	in chain: "sftp: read pin store: read /tmp/TestFilePinStore_RefusesANonRegularPinFile1177120145/001/pins.json: is a directory"
+        	            		"read /tmp/TestFilePinStore_RefusesANonRegularPinFile1177120145/001/pins.json: is a directory"
+        	            		"is a directory"
+        	Test:       	TestFilePinStore_RefusesANonRegularPinFile
+--- FAIL: TestFilePinStore_RefusesANonRegularPinFile (0.00s)
+=== RUN   TestFilePinStore_RefusesASymlinkAsPinFile
+    pinstore_test.go:75: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:75
+        	Error:      	Expected error with "shim: pin store insecure" in chain but got nil.
+        	Test:       	TestFilePinStore_RefusesASymlinkAsPinFile
+--- FAIL: TestFilePinStore_RefusesASymlinkAsPinFile (0.00s)
+=== RUN   TestFilePinStore_ConcurrentWritersLoseNothing
+    pinstore_test.go:98: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:98
+        	Error:      	"[{ SHA256:0-0  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-4  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-22  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-23  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-24  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-25  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-26  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-27  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-28  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-29  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-30  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-31  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-32  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-33  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-34  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-35  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-36  0001-01-01 00:00:00 +0000 UTC} { SHA256:0-37  0001-01-01 00:00:00 +0000 UTC}]" should have 40 item(s), but has 18
+        	Test:       	TestFilePinStore_ConcurrentWritersLoseNothing
+        	Messages:   	writer 0 lost updates
+    pinstore_test.go:98: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:98
+        	Error:      	"[{ SHA256:1-4  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-5  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-6  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-7  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-8  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-9  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-10  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-11  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-12  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-13  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-14  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-15  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-16  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-17  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-18  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-19  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-20  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-21  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-22  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-23  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-24  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-25  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-26  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-27  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-28  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-29  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-30  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-31  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-32  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-33  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-34  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-35  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-36  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-37  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-38  0001-01-01 00:00:00 +0000 UTC} { SHA256:1-39  0001-01-01 00:00:00 +0000 UTC}]" should have 40 item(s), but has 36
+        	Test:       	TestFilePinStore_ConcurrentWritersLoseNothing
+        	Messages:   	writer 1 lost updates
+    pinstore_test.go:98: 
+        	Error Trace:	/src/filesystem/pkg/sftp/pinstore_test.go:98
+        	Error:      	"[{ SHA256:2-1  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-2  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-3  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-4  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-6  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-7  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-8  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-9  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-10  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-11  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-12  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-13  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-14  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-15  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-16  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-17  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-18  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-19  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-20  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-21  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-22  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-23  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-24  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-25  0001-01-01 00:00:00 +0000 UTC} { SHA256:2-26  0001-01-01 00:00:00 +0000 UTC}]" should have 40 item(s), but has 25
+        	Test:       	TestFilePinStore_ConcurrentWritersLoseNothing
+        	Messages:   	writer 2 lost updates
+--- FAIL: TestFilePinStore_ConcurrentWritersLoseNothing (0.02s)
+=== RUN   TestReview_P1_StatHonoursContextOnHungServer
+    review_probes_test.go:316: REVIEW-PROBE P1 returned_within_3s=false elapsed=3.002s err=<nil>
+    review_probes_test.go:318: DEFECT P1: GetFileInfo with a 300ms context stayed blocked > 3s on a server that does not answer STAT
+--- FAIL: TestReview_P1_StatHonoursContextOnHungServer (3.00s)
+=== RUN   TestReview_P2_ConnectHonoursContextWhenInitUnanswered
+    review_probes_test.go:336: REVIEW-PROBE P2 returned_within_3s=false elapsed=3.002s err=sftp: open sftp subsystem on 127.0.0.1:33993: error receiving version packet from server: server unexpectedly closed connection: unexpected EOF
+    review_probes_test.go:338: DEFECT P2: Connect with a 300ms context stayed blocked > 3s (server completed ssh auth but never answered SSH_FXP_INIT)
+--- FAIL: TestReview_P2_ConnectHonoursContextWhenInitUnanswered (3.00s)
+=== RUN   TestReview_P3_TestConnectionOnLostConnection
+    review_probes_test.go:361: REVIEW-PROBE P3 with_TestConnection=false first_op_err=true testconn_err=<nil> list_err=<nil> connected_after=true
+    review_probes_test.go:361: REVIEW-PROBE P3 with_TestConnection=true first_op_err=true testconn_err=<nil> list_err=sftp: list /: sftp: not connected connected_after=false
+    review_probes_test.go:366: DEFECT P3: after a health check (TestConnection) on a lost connection the caller's client is permanently disconnected: sftp: list /: sftp: not connected
+--- FAIL: TestReview_P3_TestConnectionOnLostConnection (0.01s)
+=== RUN   TestReview_P4_DisconnectDuringRedial
+    review_probes_test.go:391: REVIEW-PROBE P4 disconnect_err=<nil> list_err=<nil> connected_after_disconnect=true ssh_conn_held=true
+    review_probes_test.go:393: DEFECT P4: Disconnect during an implicit re-dial is undone: the client is connected again and holds a live ssh connection
+--- FAIL: TestReview_P4_DisconnectDuringRedial (0.71s)
+=== RUN   TestReview_P5_BackslashNameReadsAnotherFile
+    review_probes_test.go:431: REVIEW-PROBE P5 listed_path="/x\\y" read_err=<nil> content="OTHER-FILE"
+    review_probes_test.go:433: DEFECT P5: reading the path the listing returned for "x\\y" yields "OTHER-FILE" (err <nil>), not the file's own content
+--- FAIL: TestReview_P5_BackslashNameReadsAnotherFile (0.00s)
+=== RUN   TestReview_P6_EOFStatusTearsDownConnection
+    review_probes_test.go:462: REVIEW-PROBE P6 stat_err=sftp: stat eofme: EOF transient=true redials=3 open_stream_err=connection lost stream_bytes_after=0/4190208
+    review_probes_test.go:464: DEFECT P6: a single SSH_FX_EOF status reply caused 3 re-dials and broke an unrelated open stream (connection lost)
+--- FAIL: TestReview_P6_EOFStatusTearsDownConnection (0.02s)
+=== RUN   TestReview_P7_MalformedStatusPanics
+    review_probes_test.go:483: REVIEW-PROBE P7 panic=runtime error: index out of range [3] with length 0 err=<nil>
+    review_probes_test.go:485: DEFECT P7: a 4-byte SSH_FXP_STATUS reply panicked the calling goroutine: runtime error: index out of range [3] with length 0
+--- FAIL: TestReview_P7_MalformedStatusPanics (0.00s)
+=== RUN   TestReview_P8_CancelUnblocksInFlightRead
+    review_probes_test.go:517: REVIEW-PROBE P8 returned_within_3s_of_cancel=false elapsed=3.002s err=EOF
+    review_probes_test.go:519: DEFECT P8: cancelling the context did not end a Read blocked on the server (file Close waits for the Read's lock)
+--- FAIL: TestReview_P8_CancelUnblocksInFlightRead (3.21s)
+=== RUN   TestReview_P9_KeyboardInteractiveOnlyServer
+    review_probes_test.go:530: REVIEW-PROBE P9 connect_err=sftp: authentication failed for user "alice" on 127.0.0.1:42741: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none], no supported methods remain is_AuthError=true
+    review_probes_test.go:532: GAP P9: correct password refused by a keyboard-interactive-only server: sftp: authentication failed for user "alice" on 127.0.0.1:42741: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none], no supported methods remain
+--- FAIL: TestReview_P9_KeyboardInteractiveOnlyServer (0.00s)
+=== RUN   TestReview_P10_ConcurrentRedialStorm
+    review_probes_test.go:578: REVIEW-PROBE P10 concurrent_ops=8 new_connections=8 failed_ops=0
+    review_probes_test.go:580: DEFECT P10: one connection loss under 8 concurrent operations opened 8 new ssh connections (no single-flight re-dial)
+--- FAIL: TestReview_P10_ConcurrentRedialStorm (0.01s)
+=== RUN   TestReview_P11_ListDirectoryHonoursContextOnHungServer
+    review_probes_test.go:602: REVIEW-PROBE P11 returned_within_3s=false elapsed=3.002s err=sftp: list hangdir: context deadline exceeded
+    review_probes_test.go:604: DEFECT P11: ListDirectory with a 300ms context stayed blocked > 3s on a server that does not answer READDIR
+--- FAIL: TestReview_P11_ListDirectoryHonoursContextOnHungServer (3.00s)
+=== RUN   TestReview_P12_ContainmentFailsOpenOnRealPathError
+    review_probes_test.go:629: REVIEW-PROBE P12 read_err=<nil> content="OUTSIDE-SECRET"
+    review_probes_test.go:631: DEFECT P12: when RealPath fails the containment check is skipped and a symlink to outside the root is read: "OUTSIDE-SECRET"
+--- FAIL: TestReview_P12_ContainmentFailsOpenOnRealPathError (0.00s)
+=== RUN   TestConfine_Table
+    sftp_test.go:60: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:60
+        	Error:      	Not equal: 
+        	            	expected: "/a\\b"
+        	            	actual  : "/a/b"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/a\b
+        	            	+/a/b
+        	Test:       	TestConfine_Table
+        	Messages:   	a\b
+    sftp_test.go:61: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:61
+        	Error:      	Not equal: 
+        	            	expected: "/srv/data/a\\b"
+        	            	actual  : "/srv/data/a/b"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/srv/data/a\b
+        	            	+/srv/data/a/b
+        	Test:       	TestConfine_Table
+        	Messages:   	a\b
+--- FAIL: TestConfine_Table (0.00s)
+=== RUN   TestConfine_DefaultRootIsSlash
+--- PASS: TestConfine_DefaultRootIsSlash (0.00s)
+=== RUN   TestWithin
+--- PASS: TestWithin (0.00s)
+=== RUN   TestFingerprintFormat
+--- PASS: TestFingerprintFormat (0.00s)
+=== RUN   TestHostPortNormalisation
+--- PASS: TestHostPortNormalisation (0.00s)
+=== RUN   TestHostKeyCallback_UnknownMismatchMatch
+--- PASS: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+=== RUN   TestHostKeyAlgorithmsFollowPinnedType
+--- PASS: TestHostKeyAlgorithmsFollowPinnedType (0.00s)
+=== RUN   TestMemPinStore
+--- PASS: TestMemPinStore (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600
+--- PASS: TestFilePinStore_PersistsWith0600 (0.00s)
+=== RUN   TestFilePinStore_CorruptFileIsAnErrorNotNoPins
+--- PASS: TestFilePinStore_CorruptFileIsAnErrorNotNoPins (0.00s)
+=== RUN   TestCredential_Redaction
+--- PASS: TestCredential_Redaction (0.00s)
+=== RUN   TestEnvCredentialResolver
+    sftp_test.go:200: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:200
+        	Error:      	"sftp: credential_ref could not be resolved: \"missing\" (set SFTP_CRED_MISSING_PASSWORD or SFTP_CRED_MISSING_PRIVATE_KEY)" does not contain "SFTP_CRED_missing_PASSWORD"
+        	Test:       	TestEnvCredentialResolver
+        	Messages:   	names the variable
+--- FAIL: TestEnvCredentialResolver (0.00s)
+=== RUN   TestEnvCredentialResolver_NoCollisions
+    sftp_test.go:213: ref "nas-1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	nas-1
+    sftp_test.go:213: ref "nas.1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	nas.1
+    sftp_test.go:213: ref "NAS.1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	NAS.1
+    sftp_test.go:213: ref "NAS 1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	NAS 1
+    sftp_test.go:213: ref "nas/1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	nas/1
+    sftp_test.go:213: ref "nas_1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	nas_1
+    sftp_test.go:213: ref "Nas_1" read the variables of NAS_1: password "secret-of-NAS_1"
+    sftp_test.go:215: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:215
+        	Error:      	Expected error with "sftp: credential_ref could not be resolved" in chain but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+        	Messages:   	Nas_1
+    sftp_test.go:222: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:222
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestEnvCredentialResolver_NoCollisions
+--- FAIL: TestEnvCredentialResolver_NoCollisions (0.00s)
+=== RUN   TestIsTransient_Table
+--- PASS: TestIsTransient_Table (0.00s)
+=== RUN   TestClassification_LossImpliesTransient
+    sftp_test.go:274: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:274
+        	Error:      	Should be true
+        	Test:       	TestClassification_LossImpliesTransient
+        	Messages:   	connection loss lookup :  must be transient
+    sftp_test.go:277: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:277
+        	Error:      	Should be false
+        	Test:       	TestClassification_LossImpliesTransient
+        	Messages:   	a STATUS EOF reply is not a lost connection
+    sftp_test.go:279: 
+        	Error Trace:	/src/filesystem/pkg/sftp/sftp_test.go:279
+        	Error:      	Should be false
+        	Test:       	TestClassification_LossImpliesTransient
+--- FAIL: TestClassification_LossImpliesTransient (0.00s)
+=== RUN   TestRetry_BoundedAndTransientOnly
+--- PASS: TestRetry_BoundedAndTransientOnly (0.01s)
+=== RUN   TestRetry_ContextCancelStopsBackoff
+--- PASS: TestRetry_ContextCancelStopsBackoff (0.05s)
+=== RUN   TestMutatorsAreImpossible_NoConnectionNeeded
+--- PASS: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+=== RUN   TestGetConfigHasNoSecret
+--- PASS: TestGetConfigHasNoSecret (0.00s)
+=== RUN   TestToInfo_NoFabricatedMtime
+--- PASS: TestToInfo_NoFabricatedMtime (0.00s)
+=== RUN   TestNotConnectedOperationsFail
+--- PASS: TestNotConnectedOperationsFail (0.00s)
+=== RUN   TestConnectRefusesWithoutPinStoreOrCredential
+--- PASS: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+=== RUN   TestServer_ListReadStat
+--- PASS: TestServer_ListReadStat (0.00s)
+=== RUN   TestServer_PipelinedCopyAndRange
+--- PASS: TestServer_PipelinedCopyAndRange (0.04s)
+=== RUN   TestServer_ContextCancelStopsRead
+--- PASS: TestServer_ContextCancelStopsRead (0.01s)
+=== RUN   TestServer_HostKey_UnknownRefused_ThenPinned
+--- PASS: TestServer_HostKey_UnknownRefused_ThenPinned (0.01s)
+=== RUN   TestServer_HostKey_ChangedKeyRefused
+--- PASS: TestServer_HostKey_ChangedKeyRefused (0.00s)
+=== RUN   TestServer_AuthFailureNotRetried_NoSecretInError
+--- PASS: TestServer_AuthFailureNotRetried_NoSecretInError (0.00s)
+=== RUN   TestServer_TransientConnectRetriedThenSucceeds
+--- PASS: TestServer_TransientConnectRetriedThenSucceeds (0.01s)
+=== RUN   TestServer_TransientRetryIsBounded
+--- PASS: TestServer_TransientRetryIsBounded (0.00s)
+=== RUN   TestServer_PathConfinement
+--- PASS: TestServer_PathConfinement (0.00s)
+=== RUN   TestServer_ListingReportsSymlinkAsLink
+--- PASS: TestServer_ListingReportsSymlinkAsLink (0.00s)
+=== RUN   TestServer_WritesImpossibleEvenWithWritablePermissions
+--- PASS: TestServer_WritesImpossibleEvenWithWritablePermissions (0.00s)
+=== RUN   TestServer_DisconnectedClientDoesNotSilentlyReconnect
+--- PASS: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.00s)
+=== RUN   TestServer_LostConnectionIsRedialled
+--- PASS: TestServer_LostConnectionIsRedialled (0.01s)
+=== RUN   TestServer_TestConnectionConnectsAndDisconnects
+--- PASS: TestServer_TestConnectionConnectsAndDisconnects (0.00s)
+=== RUN   TestServer_KeyAuth
+--- PASS: TestServer_KeyAuth (0.00s)
+=== RUN   TestServer_KeyWithPassphrase
+--- PASS: TestServer_KeyWithPassphrase (0.34s)
+=== RUN   TestServer_GarbageKeyIsRedacted
+--- PASS: TestServer_GarbageKeyIsRedacted (0.00s)
+=== RUN   TestDiscoverDoesNotAuthenticate
+--- PASS: TestDiscoverDoesNotAuthenticate (0.00s)
+=== RUN   TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds
+--- PASS: TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds (0.00s)
+=== RUN   TestPin_RefusesEmptyOwnerOrFingerprint
+--- PASS: TestPin_RefusesEmptyOwnerOrFingerprint (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	32.756s
+=== RUN   TestDefaultFactory_SupportedProtocols
+--- PASS: TestDefaultFactory_SupportedProtocols (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SMB
+--- PASS: TestDefaultFactory_CreateClient_SMB (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_FTP
+--- PASS: TestDefaultFactory_CreateClient_FTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_NFS
+--- PASS: TestDefaultFactory_CreateClient_NFS (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_WebDAV
+--- PASS: TestDefaultFactory_CreateClient_WebDAV (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Local
+--- PASS: TestDefaultFactory_CreateClient_Local (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_Unsupported
+--- PASS: TestDefaultFactory_CreateClient_Unsupported (0.00s)
+=== RUN   TestGetStringSetting
+--- PASS: TestGetStringSetting (0.00s)
+=== RUN   TestGetIntSetting
+--- PASS: TestGetIntSetting (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP
+--- PASS: TestDefaultFactory_CreateClient_SFTP (0.00s)
+=== RUN   TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword
+--- PASS: TestDefaultFactory_CreateClient_SFTP_RejectsInlinePassword (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore
+--- PASS: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+=== RUN   TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+    factory_test.go:245: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:245
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting
+        	Messages:   	passphrase
+--- FAIL: TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting (0.00s)
+=== RUN   TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+    factory_test.go:252: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:252
+        	Error:      	Not equal: 
+        	            	expected: "/volume1/x"
+        	            	actual  : "/"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/volume1/x
+        	            	+/
+        	Test:       	TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+    factory_test.go:253: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:253
+        	Error:      	Not equal: 
+        	            	expected: "/volume1/x"
+        	            	actual  : "/"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-/volume1/x
+        	            	+/
+        	Test:       	TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot
+--- FAIL: TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot (0.00s)
+=== RUN   TestDefaultFactory_SFTP_PortIsValidated
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port "2222"
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 0
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port -1
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 65536
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 70000
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port 22.5
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port true
+    factory_test.go:263: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:263
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDefaultFactory_SFTP_PortIsValidated
+        	Messages:   	port <nil>
+--- FAIL: TestDefaultFactory_SFTP_PortIsValidated (0.00s)
+=== RUN   TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+    factory_test.go:351: 
+        	Error Trace:	/src/filesystem/pkg/factory/factory_test.go:351
+        	Error:      	Received unexpected error:
+        	            	sftp: credential_ref could not be resolved: "fxref" (set SFTP_CRED_FXREF_PASSWORD or SFTP_CRED_FXREF_PRIVATE_KEY)
+        	Test:       	TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd
+--- FAIL: TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_Linux
+--- PASS: TestDefaultFactory_CreateNFSClient_Linux (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_DefaultOptions
+--- PASS: TestDefaultFactory_CreateNFSClient_DefaultOptions (0.00s)
+=== RUN   TestDefaultFactory_CreateNFSClient_EmptyMountPoint
+--- PASS: TestDefaultFactory_CreateNFSClient_EmptyMountPoint (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.009s
+FAIL
+rc=1
+
+# ======================================================================== part 2 raw output ========================================================================
+
+# ---- TestKeepaliveCanBeDisabled
+=== RUN   TestKeepaliveCanBeDisabled
+    fix_r2_test.go:481: Disconnect hung on a half-open link (it closed the sftp session, which waits for the dead connection, before the ssh connection)
+--- FAIL: TestKeepaliveCanBeDisabled (4.51s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	4.515s
+FAIL
+rc=1
+
+# ---- TestKeepaliveEndsACallOnAHalfOpenLink
+=== RUN   TestKeepaliveEndsACallOnAHalfOpenLink
+    fix_r2_test.go:453: a call on a half-open link stayed blocked > 10s although the keepalive is 100ms/300ms
+panic: test timed out after 1m0s
+	running tests:
+		TestKeepaliveEndsACallOnAHalfOpenLink (1m0s)
+
+goroutine 40 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/local/go/src/testing/testing.go:2682 +0x359
+created by time.goFunc
+	/usr/local/go/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc000082c40, {0x7c5639?, 0x0?}, 0x7d7978)
+	/usr/local/go/src/testing/testing.go:2005 +0x485
+testing.runTests.func1(0xc000082c40)
+	/usr/local/go/src/testing/testing.go:2477 +0x3e
+testing.tRunner(0xc000082c40, 0xc0000edc70)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+testing.runTests(0xc0000a6378, {0xa96c60, 0x59, 0x59}, {0xa9d360?, 0xec6f2d1201cc312f?, 0xa9c080?})
+	/usr/local/go/src/testing/testing.go:2475 +0x4b4
+testing.(*M).Run(0xc000098960)
+	/usr/local/go/src/testing/testing.go:2337 +0x63a
+main.main()
+	_testmain.go:221 +0x9b
+
+goroutine 21 [sync.WaitGroup.Wait]:
+sync.runtime_SemacquireWaitGroup(0x0?, 0x0?)
+	/usr/local/go/src/runtime/sema.go:114 +0x2e
+sync.(*WaitGroup).Wait(0xc000194170)
+	/usr/local/go/src/sync/waitgroup.go:206 +0x85
+github.com/pkg/sftp.(*clientConn).Close(0xa9d360?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:87 +0x68
+digital.vasic.filesystem/pkg/sftp.(*Client).closeLocked(0xc0000a22d0)
+	/src/filesystem/pkg/sftp/sftp.go:316 +0x2d
+digital.vasic.filesystem/pkg/sftp.(*Client).Disconnect(0xc0000a22d0, {0xc000082fc0?, 0xc000082fc0?})
+	/src/filesystem/pkg/sftp/sftp.go:342 +0x85
+runtime.Goexit()
+	/usr/local/go/src/runtime/panic.go:615 +0x5e
+testing.(*common).FailNow(0xc000082e00)
+	/usr/local/go/src/testing/testing.go:1013 +0x4a
+testing.(*common).Fatal(0xc000082e00, {0xc0000eff38?, 0x0?, 0x0?})
+	/usr/local/go/src/testing/testing.go:1212 +0x4f
+digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink(0xc000082e00)
+	/src/filesystem/pkg/sftp/fix_r2_test.go:453 +0x2c5
+testing.tRunner(0xc000082e00, 0x7d7978)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+
+goroutine 22 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197a00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc0000e6400?, 0x900000036?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc0000e6400)
+	/usr/local/go/src/internal/poll/fd_unix.go:613 +0x28c
+net.(*netFD).accept(0xc0000e6400)
+	/usr/local/go/src/net/fd_unix.go:161 +0x29
+net.(*TCPListener).accept(0xc0000a8d40)
+	/usr/local/go/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0xc0000a8d40)
+	/usr/local/go/src/net/tcpsock.go:380 +0x30
+digital.vasic.filesystem/pkg/sftp.startServerIn.func3()
+	/src/filesystem/pkg/sftp/testserver_test.go:98 +0x9c
+created by digital.vasic.filesystem/pkg/sftp.startServerIn in goroutine 21
+	/src/filesystem/pkg/sftp/testserver_test.go:95 +0x429
+
+goroutine 23 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197800, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc0000e6480?, 0x0?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc0000e6480)
+	/usr/local/go/src/internal/poll/fd_unix.go:613 +0x28c
+net.(*netFD).accept(0xc0000e6480)
+	/usr/local/go/src/net/fd_unix.go:161 +0x29
+net.(*TCPListener).accept(0xc0000a8d80)
+	/usr/local/go/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0xc0000a8d80)
+	/usr/local/go/src/net/tcpsock.go:380 +0x30
+digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1()
+	/src/filesystem/pkg/sftp/fix_r2_test.go:379 +0x59
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy in goroutine 21
+	/src/filesystem/pkg/sftp/fix_r2_test.go:377 +0x156
+
+goroutine 25 [chan receive]:
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve(0xc0000e6500?, {0x8421b8?, 0xc000096138?}, 0xc0000387d0?)
+	/src/filesystem/pkg/sftp/testserver_test.go:137 +0x137
+digital.vasic.filesystem/pkg/sftp.startServerIn.func3.1()
+	/src/filesystem/pkg/sftp/testserver_test.go:113 +0x58
+created by digital.vasic.filesystem/pkg/sftp.startServerIn.func3 in goroutine 22
+	/src/filesystem/pkg/sftp/testserver_test.go:111 +0x2a5
+
+goroutine 5 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197400, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000072000?, 0xc000180000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc000072000, {0xc000180000, 0x8000, 0x8000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc000072000, {0xc000180000?, 0xc000037f58?, 0x47efe9?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc00003e008, {0xc000180000?, 0x0?, 0xf?})
+	/usr/local/go/src/net/net.go:196 +0x45
+digital.vasic.filesystem/pkg/sftp.(*holeProxy).pipe(0xc0000a8dc0, {0x8421b8, 0xc00003e010}, {0x8421b8, 0xc00003e008})
+	/src/filesystem/pkg/sftp/fix_r2_test.go:409 +0x66
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1 in goroutine 23
+	/src/filesystem/pkg/sftp/fix_r2_test.go:391 +0x268
+
+goroutine 6 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197200, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000072080?, 0xc000078000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc000072080, {0xc000078000, 0x8000, 0x8000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc000072080, {0xc000078000?, 0xc00003c758?, 0x47efe9?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc00003e010, {0xc000078000?, 0x0?, 0x0?})
+	/usr/local/go/src/net/net.go:196 +0x45
+digital.vasic.filesystem/pkg/sftp.(*holeProxy).pipe(0xc0000a8dc0, {0x8421b8, 0xc00003e008}, {0x8421b8, 0xc00003e010})
+	/src/filesystem/pkg/sftp/fix_r2_test.go:409 +0x66
+created by digital.vasic.filesystem/pkg/sftp.startHoleProxy.func1 in goroutine 23
+	/src/filesystem/pkg/sftp/fix_r2_test.go:392 +0x2e8
+
+goroutine 26 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197600, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc0000e6500?, 0xc000142000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc0000e6500, {0xc000142000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc0000e6500, {0xc000142000?, 0xc000090800?, 0x50?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc000096130, {0xc000142000?, 0xc000146f00?, 0xc000094f90?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc000080480, {0xc0000e0560, 0x4, 0x100?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x83d9a0, 0xc000080480}, {0xc0000e0560, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc0000e0550, 0x737be0?, {0x83d9a0, 0xc000080480})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc0000fe5a0, 0x7425c0?, 0x1)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc0000fe5a0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc0000e4b60, 0x0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc0000e4b60)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:170 +0x20c
+
+goroutine 7 [IO wait]:
+internal/poll.runtime_pollWait(0x76b459197000, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc0000e6700?, 0xc000188000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc0000e6700, {0xc000188000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc0000e6700, {0xc000188000?, 0xc00001e3f0?, 0x70?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc000096138, {0xc000188000?, 0xc000146900?, 0xc000094f00?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc0000160c0, {0xc0000e0470, 0x4, 0x70?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x83d9a0, 0xc0000160c0}, {0xc0000e0470, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc0000e0460, 0x737be0?, {0x83d9a0, 0xc0000160c0})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc00018c000, 0x7425c0?, 0x1)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc00018c000)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc000190000, 0x0)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc000190000)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 25
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:179 +0x125
+
+goroutine 27 [select]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc0000e4b60)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:171 +0x248
+
+goroutine 8 [select]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc000190000)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 25
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:180 +0x165
+
+goroutine 9 [chan receive]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc000190000)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc000072300)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc000072300)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 25
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 10 [chan receive]:
+golang.org/x/crypto/ssh.DiscardRequests(...)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/connection.go:87
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 25
+	/src/filesystem/pkg/sftp/testserver_test.go:136 +0x105
+
+goroutine 11 [chan receive]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc0000e4b60)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc000072400)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc000072400)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 12 [chan receive]:
+golang.org/x/crypto/ssh.(*Client).handleGlobalRequests(...)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:169
+created by golang.org/x/crypto/ssh.NewClient in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:59 +0xca
+
+goroutine 13 [chan receive]:
+golang.org/x/crypto/ssh.(*Client).handleChannelOpens(0xc0001a2140, 0xc00018a310)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:178 +0x47
+created by golang.org/x/crypto/ssh.NewClient in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:60 +0x118
+
+goroutine 14 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc000068110, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x0?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*mux).Wait(0xc000072400)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/mux.go:111 +0x7c
+golang.org/x/crypto/ssh.NewClient.func1()
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:62 +0x24
+created by golang.org/x/crypto/ssh.NewClient in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/client.go:61 +0x156
+
+goroutine 15 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc0000682d0, 0x4)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x47d17f?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00005c1a0, {0xc0000143ac, 0x4, 0x4})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0001b00d0, {0xc0000143ac?, 0x41973b?, 0x1000043223b?}, 0xa147ec50?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0x76b4a147f0b0?, {0xc0000143ac?, 0xc00004bb68?, 0x47a959?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x83e0a0, 0xc00009fd70}, {0xc0000143ac, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x83e0a0, 0xc00009fd70}, 0x0, 0x45145f?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*RequestServer).serveLoop(0xc00010a480, 0xc000116690)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:155 +0xbe
+github.com/pkg/sftp.(*RequestServer).Serve(0xc00010a480)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:200 +0x115
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve.func1()
+	/src/filesystem/pkg/sftp/testserver_test.go:153 +0x208
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 25
+	/src/filesystem/pkg/sftp/testserver_test.go:146 +0x21a
+
+goroutine 28 [chan receive]:
+golang.org/x/crypto/ssh.(*Session).wait(0x0?, 0xc00018a460)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:423 +0x65
+golang.org/x/crypto/ssh.newSession.func1()
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:596 +0x25
+created by golang.org/x/crypto/ssh.newSession in goroutine 21
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/session.go:595 +0xea
+
+goroutine 29 [select]:
+github.com/pkg/sftp.(*packetManager).controller(0xc0001165b0)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:153 +0xcd
+created by github.com/pkg/sftp.newPktMgr in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:39 +0x1b6
+
+goroutine 30 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 31 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 32 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 33 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 34 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 35 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 36 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 37 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc000116620)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 38 [chan receive]:
+github.com/pkg/sftp.(*RequestServer).packetWorker(0xc00010a480, {0x840480, 0xc0000e05f0}, 0xc0000848c0)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:223 +0xfd
+github.com/pkg/sftp.(*RequestServer).Serve.func2.1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:193 +0x5c
+created by github.com/pkg/sftp.(*RequestServer).Serve.func2 in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/request-server.go:191 +0xc5
+
+goroutine 16 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc0000681d0, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x4197f4?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00005c160, {0xc0001b2000, 0x2000, 0x2000})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0001b0000, {0xc0001b2000?, 0x0?, 0x0?}, 0x0?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:374 +0x35
+golang.org/x/crypto/ssh.(*extChannel).Read(0xa8e8a0?, {0xc0001b2000?, 0x0?, 0x0?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:525 +0x25
+io.discard.ReadFrom({}, {0x76b45919b240, 0xc0000a0890})
+	/usr/local/go/src/io/io.go:666 +0x6d
+io.copyBuffer({0x83d720, 0xabca40}, {0x76b45919b240, 0xc0000a0890}, {0x0, 0x0, 0x0})
+	/usr/local/go/src/io/io.go:415 +0x151
+io.Copy(...)
+	/usr/local/go/src/io/io.go:388
+github.com/pkg/sftp.newClientPipe.func1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:267 +0x2c
+created by github.com/pkg/sftp.newClientPipe in goroutine 21
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:261 +0x29b
+
+goroutine 39 [chan receive]:
+github.com/pkg/sftp.(*packetManager).workerChan.func1()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:127 +0x5d
+created by github.com/pkg/sftp.(*packetManager).workerChan in goroutine 15
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet-manager.go:126 +0xff
+
+goroutine 50 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc000068190, 0x4)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x0?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00005c120, {0xc0000143c8, 0x4, 0x4})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc0001b0000, {0xc0000143c8?, 0xc0001b0180?, 0x10000000002?}, 0xa147ed90?)
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0xa9d360?, {0xc0000143c8?, 0xc0001bad60?, 0x47a959?})
+	/out/gomod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x83e0a0, 0xc000194140}, {0xc0000143c8, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x83e0a0, 0xc000194140}, 0x0, 0x7425c0?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*clientConn).recv(0xc000194140)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:96 +0xc5
+github.com/pkg/sftp.newClientPipe.func2()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:287 +0x4e
+created by github.com/pkg/sftp.newClientPipe in goroutine 21
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:284 +0x445
+
+goroutine 51 [select]:
+github.com/pkg/sftp.(*clientConn).sendPacket(0xc000194140, {0x8403d8, 0xabca40}, 0x0, {0x83f3b8, 0xc000012468})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/conn.go:162 +0x115
+github.com/pkg/sftp.(*Client).RealPath(0xc000194140, {0xc000196a00, 0x3d})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:936 +0xa8
+digital.vasic.filesystem/pkg/sftp.(*Client).checkWithin(0x68ecbe?, 0xc000194140, {0xc000196a00, 0x3d})
+	/src/filesystem/pkg/sftp/sftp.go:533 +0x12c
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.func1(0xc000194140)
+	/src/filesystem/pkg/sftp/sftp.go:698 +0x53
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.(*Client).with.func2()
+	/src/filesystem/pkg/sftp/sftp.go:456 +0x105
+digital.vasic.filesystem/pkg/sftp.(*Client).retry(0xc0000a22d0, {0x8403d8, 0xabca40}, 0xc0001bcf58)
+	/src/filesystem/pkg/sftp/sftp.go:387 +0xa5
+digital.vasic.filesystem/pkg/sftp.(*Client).with(...)
+	/src/filesystem/pkg/sftp/sftp.go:442
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo(0xc0000a22d0, {0x8403d8, 0xabca40}, {0x7b6ced, 0x5})
+	/src/filesystem/pkg/sftp/sftp.go:697 +0x105
+digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink.func2()
+	/src/filesystem/pkg/sftp/fix_r2_test.go:447 +0x45
+created by digital.vasic.filesystem/pkg/sftp.TestKeepaliveEndsACallOnAHalfOpenLink in goroutine 21
+	/src/filesystem/pkg/sftp/fix_r2_test.go:447 +0x211
+FAIL	digital.vasic.filesystem/pkg/sftp	60.058s
+FAIL
+rc=1
+
+# ---- TestRaw_MalformedDataInPipelinedReadIsAnErrorNotAProcessCrash
+=== RUN   TestRaw_MalformedDataInPipelinedReadIsAnErrorNotAProcessCrash
+panic: runtime error: slice bounds out of range [:1048576] with capacity 32768
+
+goroutine 38 [running]:
+github.com/pkg/sftp.(*File).WriteTo.func3()
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:1531 +0x637
+created by github.com/pkg/sftp.(*File).WriteTo in goroutine 23
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:1508 +0x4a5
+FAIL	digital.vasic.filesystem/pkg/sftp	0.011s
+FAIL
+rc=1
+
+# ---- TestRaw_MalformedDataInSequentialReadIsAnError
+=== RUN   TestRaw_MalformedDataInSequentialReadIsAnError
+--- FAIL: TestRaw_MalformedDataInSequentialReadIsAnError (0.00s)
+panic: runtime error: slice bounds out of range [:1048576] with capacity 10 [recovered, repanicked]
+
+goroutine 21 [running]:
+testing.tRunner.func1.2({0x7964e0, 0xc0000d6438})
+	/usr/local/go/src/testing/testing.go:1872 +0x232
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:1875 +0x35b
+panic({0x7964e0?, 0xc0000d6438?})
+	/usr/local/go/src/runtime/panic.go:783 +0x132
+github.com/pkg/sftp.(*File).readChunkAt(0xc0000e05a0, 0x0, {0xc000084850, 0x64, 0x64}, 0x0)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:1156 +0x34a
+github.com/pkg/sftp.(*File).readAt(0xc000082e00?, {0xc000084850?, 0x51448c?, 0x75b5e0?}, 0xc0000efdf8?)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:1206 +0x22a
+github.com/pkg/sftp.(*File).Read(0xc0000e05a0, {0xc000084850, 0x64, 0x64})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:1125 +0xa5
+digital.vasic.filesystem/pkg/sftp.(*file).Read(0xc00009fa10, {0xc000084850, 0x64, 0x64})
+	/src/filesystem/pkg/sftp/sftp.go:577 +0x59
+digital.vasic.filesystem/pkg/sftp.TestRaw_MalformedDataInSequentialReadIsAnError(0xc000082e00)
+	/src/filesystem/pkg/sftp/fix_r2_test.go:131 +0x1e2
+testing.tRunner(0xc000082e00, 0x7d79d0)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+FAIL	digital.vasic.filesystem/pkg/sftp	0.011s
+FAIL
+rc=1
+
+# ---- TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable
+=== RUN   TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable
+--- FAIL: TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable (0.00s)
+panic: runtime error: index out of range [3] with length 0 [recovered, repanicked]
+
+goroutine 21 [running]:
+testing.tRunner.func1.2({0x7964e0, 0xc0000d6468})
+	/usr/local/go/src/testing/testing.go:1872 +0x232
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:1875 +0x35b
+panic({0x7964e0?, 0xc0000d6468?})
+	/usr/local/go/src/runtime/panic.go:783 +0x132
+github.com/pkg/sftp.unmarshalUint32(...)
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:133
+github.com/pkg/sftp.unmarshalStatus(0x98dc0?, {0xc000095231?, 0xabca40?, 0x0?})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/packet.go:261 +0x14f
+github.com/pkg/sftp.(*Client).stat(0xc000098dc0, {0xc0000951e0, 0x2})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:731 +0x186
+github.com/pkg/sftp.(*Client).Stat(0x782f2f2f?, {0xc0000951e0, 0x2})
+	/out/gomod/github.com/pkg/sftp@v1.13.11/client.go:460 +0x25
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.func1(0xc000098dc0)
+	/src/filesystem/pkg/sftp/sftp.go:701 +0x70
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo.(*Client).with.func2()
+	/src/filesystem/pkg/sftp/sftp.go:456 +0x105
+digital.vasic.filesystem/pkg/sftp.(*Client).retry(0xc0000a22d0, {0x8403d8, 0xabca40}, 0xc0000efe38)
+	/src/filesystem/pkg/sftp/sftp.go:387 +0xa5
+digital.vasic.filesystem/pkg/sftp.(*Client).with(...)
+	/src/filesystem/pkg/sftp/sftp.go:442
+digital.vasic.filesystem/pkg/sftp.(*Client).GetFileInfo(0xc0000a22d0, {0x8403d8, 0xabca40}, {0x7b66f8, 0x1})
+	/src/filesystem/pkg/sftp/sftp.go:697 +0x105
+digital.vasic.filesystem/pkg/sftp.TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable(0xc000082e00)
+	/src/filesystem/pkg/sftp/fix_r2_test.go:144 +0x17b
+testing.tRunner(0xc000082e00, 0x7d79d8)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+FAIL	digital.vasic.filesystem/pkg/sftp	0.013s
+FAIL
+rc=1

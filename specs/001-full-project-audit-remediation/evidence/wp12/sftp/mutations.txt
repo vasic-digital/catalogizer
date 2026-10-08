@@ -1,0 +1,43 @@
+# identity: WP-12 PA-05 mutation run (self-written mutants by the implementing worker; reviewer-authored mutants are OWED, 11.4.194(6)(d))
+# harness: mutate_sftp.py (python3 -I mutate_sftp.py mutants|negcontrol <dir>); each case = ONE exact text replacement on a COPY of the module (the checked-in tree is never changed),
+#   unit suite ./pkg/sftp/ ./pkg/factory/ in the pinned IMG-GO container; KILLED = suite fails with >= 1 '--- FAIL'; M12 is run through the OpenSSH fixture (integration).
+# run_at: 2026-10-07
+
+M01 KILLED   unit         2 failing  auth failure surfaces as a transient error (would be retried)
+      failing: TestServer_AuthFailureNotRetried_NoSecretInError, TestServer_KeyAuth
+M02 KILLED   unit         2 failing  trust on first use: an unpinned host key is accepted
+      failing: TestHostKeyCallback_UnknownMismatchMatch, TestServer_HostKey_UnknownRefused_ThenPinned
+M03 KILLED   unit         2 failing  a CHANGED host key is accepted
+      failing: TestHostKeyCallback_UnknownMismatchMatch, TestServer_HostKey_ChangedKeyRefused
+M04 KILLED   unit         2 failing  path confinement clamps ../ at the root instead of refusing
+      failing: TestConfine_Table, TestServer_PathConfinement
+M05 KILLED   unit         2 failing  WriteFile is no longer refused
+      failing: TestMutatorsAreImpossible_NoConnectionNeeded, TestServer_WritesImpossibleEvenWithWritablePermissions
+M06 KILLED   unit         1 failing  an absent mtime is fabricated as now
+      failing: TestToInfo_NoFabricatedMtime
+M07 KILLED   unit         2 failing  retry budget off by one (one extra attempt)
+      failing: TestRetry_BoundedAndTransientOnly, TestServer_TransientRetryIsBounded
+M08 KILLED   unit         1 failing  server-side symlink containment check disabled
+      failing: TestServer_PathConfinement
+M09 KILLED   unit         1 failing  Credential.String leaks the password
+      failing: TestCredential_Redaction
+M10 KILLED   unit         1 failing  Pin records whatever the server presents, ignoring the owner's fingerprint
+      failing: TestServer_HostKey_UnknownRefused_ThenPinned
+M11 KILLED   unit         1 failing  a disconnected client reconnects implicitly
+      failing: TestServer_DisconnectedClientDoesNotSilentlyReconnect
+M12 KILLED   integration  9 failing  pinned key type no longer restricts the offered host key algorithms (integration-only)
+      failing: TestIntegrationSelftest, TestIntegration_AuthFailureNotRetried, TestIntegration_ContextCancelMidRead, TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused, TestIntegration_KeyAuth, TestIntegration_ListingAndAttributes, TestIntegration_PathConfinement, TestIntegration_ReadWholeAndRanged, TestIntegration_WritesImpossible
+M13 KILLED   unit         1 failing  containment prefix test accepts a sibling directory with the same prefix
+      failing: TestWithin
+M14 KILLED   unit         1 failing  FileExists reports a missing file as an error
+      failing: TestServer_ListReadStat
+
+TOTAL 14 mutants, 14 KILLED, 0 SURVIVED, 0 INVALID
+
+# NEGATIVE CONTROLS (the same harness, no behavioural mutation)
+N01 SURVIVED  NEGATIVE CONTROL: unmutated copy, same harness (must PASS)
+N02 SURVIVED  NEGATIVE CONTROL: behaviour-neutral edit (a comment) (must SURVIVE; shows the harness reports survival)
+  (SURVIVED here means: the suite PASSED; N01 proves the harness does not fail an unmutated copy, N02 proves it reports a surviving mutant instead of always reporting KILLED)
+
+# M12 through the UNIT suite only (MUT_ONLY=M12 MUT_FORCE_UNIT=1): SURVIVED
+  => the unit suite (in-process server holding ONE ed25519 key) cannot see this defect; only the OpenSSH integration run (server holding ed25519 AND rsa host keys) kills it.

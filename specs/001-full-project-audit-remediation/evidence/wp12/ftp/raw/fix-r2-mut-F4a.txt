@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F4a - OpenSeekable returns a short transfer as complete
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF (0.01s)
+    fix_r2_net_test.go:720: 
+        	Error Trace:	/out/mut/F4a/filesystem/pkg/ftp/fix_r2_net_test.go:720
+        	Error:      	Expected error with "unexpected EOF" in chain but got nil.
+        	Test:       	TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+        	Messages:   	fewer bytes than SIZE announced is an error even when the server says 226
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.955s
+FAIL

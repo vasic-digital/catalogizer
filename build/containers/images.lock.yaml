@@ -383,3 +383,14 @@ images:
   signature_status: UNKNOWN
   size_bytes: 84653752
   class: interpreter
+- id: IMG-INFRA-SFTP
+  reference: docker.io/atmoz/sftp
+  tag_intent: latest
+  digest: sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475
+  platform_digest: sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475
+  resolved_at: '2026-10-07T17:26:43Z'
+  resolved_on: anton
+  purpose: test infrastructure SFTP (OpenSSH, WP-12 PA-05)
+  signature_status: UNKNOWN
+  size_bytes: 171983326
+  class: service

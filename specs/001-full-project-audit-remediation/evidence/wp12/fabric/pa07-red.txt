@@ -1,0 +1,8 @@
+# identity: WP-12 PA-07 fabric RED (implementation files absent; tests only)
+# head: 65e5f339 (main), working tree dirty, submodules/filesystem uncommitted
+# run_at: 2026-10-07T17:35:11Z
+# image: IMG-GO via scripts/containers/run_pinned.sh
+# note: the implementation was drafted before the tests; RED here = the tests run against the absent implementation
+digital.vasic.filesystem/pkg/fabric: no non-test Go files in /src/submodules/filesystem/pkg/fabric
+FAIL	digital.vasic.filesystem/pkg/fabric [build failed]
+FAIL

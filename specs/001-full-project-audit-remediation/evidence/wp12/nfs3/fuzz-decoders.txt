@@ -1,0 +1,30 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of fuzz-decoders.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+fuzz: elapsed: 0s, gathering baseline coverage: 0/7 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 7/7 completed, now fuzzing with 3 workers
+fuzz: elapsed: 3s, execs: 62415 (20801/sec), new interesting: 32 (total: 39)
+fuzz: elapsed: 6s, execs: 136966 (24855/sec), new interesting: 49 (total: 56)
+fuzz: elapsed: 9s, execs: 197275 (19982/sec), new interesting: 62 (total: 69)
+fuzz: elapsed: 12s, execs: 269707 (24291/sec), new interesting: 71 (total: 78)
+fuzz: elapsed: 15s, execs: 326295 (18859/sec), new interesting: 75 (total: 82)
+fuzz: elapsed: 18s, execs: 393046 (22104/sec), new interesting: 76 (total: 83)
+fuzz: elapsed: 21s, execs: 455448 (20815/sec), new interesting: 77 (total: 84)
+fuzz: elapsed: 24s, execs: 517106 (20558/sec), new interesting: 77 (total: 84)
+fuzz: elapsed: 27s, execs: 574233 (19155/sec), new interesting: 80 (total: 87)
+fuzz: elapsed: 30s, execs: 640485 (21956/sec), new interesting: 80 (total: 87)
+fuzz: elapsed: 33s, execs: 696138 (18551/sec), new interesting: 81 (total: 88)
+fuzz: elapsed: 36s, execs: 757917 (20593/sec), new interesting: 81 (total: 88)
+fuzz: elapsed: 39s, execs: 815068 (19051/sec), new interesting: 82 (total: 89)
+fuzz: elapsed: 42s, execs: 876797 (20572/sec), new interesting: 82 (total: 89)
+fuzz: elapsed: 45s, execs: 950020 (24556/sec), new interesting: 82 (total: 89)
+fuzz: elapsed: 48s, execs: 1007860 (19168/sec), new interesting: 82 (total: 89)
+fuzz: elapsed: 51s, execs: 1067423 (19853/sec), new interesting: 83 (total: 90)
+fuzz: elapsed: 54s, execs: 1138302 (23763/sec), new interesting: 83 (total: 90)
+fuzz: elapsed: 57s, execs: 1206741 (22814/sec), new interesting: 83 (total: 90)
+fuzz: elapsed: 1m0s, execs: 1259753 (17570/sec), new interesting: 83 (total: 90)
+fuzz: elapsed: 1m1s, execs: 1259753 (0/sec), new interesting: 83 (total: 90)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	60.797s
+exit=0

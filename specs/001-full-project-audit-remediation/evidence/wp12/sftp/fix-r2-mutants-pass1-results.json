@@ -1,0 +1,720 @@
+[
+ {
+  "id": "Z00",
+  "desc": "NEGATIVE CONTROL: unmutated copy (must PASS)",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 22
+ },
+ {
+  "id": "Z01",
+  "desc": "NEGATIVE CONTROL: comment-only edit (must SURVIVE; shows the harness reports survival)",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 21
+ },
+ {
+  "id": "R01",
+  "desc": "pipelining off",
+  "verdict": "KILLED",
+  "failing": [
+   "TestPipelinedReadKeepsSeveralRequestsInFlight",
+   "TestRangedReadIsPipelinedToo"
+  ],
+  "n_failing": 2,
+  "seconds": 27
+ },
+ {
+  "id": "R02",
+  "desc": "file.WriteTo removed",
+  "verdict": "INVALID",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 3
+ },
+ {
+  "id": "R03",
+  "desc": "ListDirectory keeps '.' and '..'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestRaw_ListingDropsDotEntries"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "R04",
+  "desc": "context end no longer closes the open file",
+  "verdict": "KILLED",
+  "failing": [
+   "TestContextEndClosesTheRemoteFile"
+  ],
+  "n_failing": 1,
+  "seconds": 24
+ },
+ {
+  "id": "R05",
+  "desc": "handshake not cancellable by ctx",
+  "verdict": "KILLED",
+  "failing": [
+   "TestContextCancelEndsTheHandshake",
+   "TestReview_P2_ConnectHonoursContextWhenInitUnanswered"
+  ],
+  "n_failing": 2,
+  "seconds": 28
+ },
+ {
+  "id": "R06",
+  "desc": "handshake deadline removed",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDialTimeoutBoundsTheHandshake"
+  ],
+  "n_failing": 1,
+  "seconds": 28
+ },
+ {
+  "id": "R07",
+  "desc": "Disconnect closes nothing",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDisconnectReleasesTheConnection",
+   "TestKeepaliveCanBeDisabled"
+  ],
+  "n_failing": 2,
+  "seconds": 28
+ },
+ {
+  "id": "R08",
+  "desc": "client never wipes the resolved credential",
+  "verdict": "KILLED",
+  "failing": [
+   "TestClientWipesWhatTheResolverHandedOver"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "R09",
+  "desc": "factory ignores sftp.DefaultPinStore",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "R10",
+  "desc": "TestConnection accepts a root that is not a directory",
+  "verdict": "KILLED",
+  "failing": [
+   "TestTestConnectionRefusesAFileAsRoot"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "R11",
+  "desc": "ListDirectory ignores ctx (ReadDir)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListDirectoryStopsAtTheContextOnASlowServer"
+  ],
+  "n_failing": 1,
+  "seconds": 26
+ },
+ {
+  "id": "R12",
+  "desc": "every net.Error is a connection loss / transient",
+  "verdict": "KILLED",
+  "failing": [
+   "TestClassification_LossImpliesTransient",
+   "TestIsTransient_Table"
+  ],
+  "n_failing": 2,
+  "seconds": 21
+ },
+ {
+  "id": "R13",
+  "desc": "ReadRange negative-offset guard removed",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReadRangeNegativeOffsetIsRefusedUpFront"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "R14",
+  "desc": "SANITY: a lost connection is never marked lost",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListingOnAConnectionThatEndedDuringItIsRefused",
+   "TestReview_P3_TestConnectionOnLostConnection",
+   "TestServer_LostConnectionIsRedialled"
+  ],
+  "n_failing": 3,
+  "seconds": 21
+ },
+ {
+  "id": "R15",
+  "desc": "dial drops the captured typed host key refusal (reviewer: EQUIVALENT, x/crypto wraps with %w)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestHostKeyRefusalIsReturnedAsTheTypedErrorItself"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "R16",
+  "desc": "FileExists reports a path escape as 'does not exist'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestFileExistsReportsAnEscapeAsAnError"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "R17",
+  "desc": "confine rewrites backslashes again (SFTP-07 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestConfine_Table",
+   "TestReview_P5_BackslashNameReadsAnotherFile"
+  ],
+  "n_failing": 2,
+  "seconds": 21
+ },
+ {
+  "id": "R18",
+  "desc": "backoff constant instead of exponential",
+  "verdict": "KILLED",
+  "failing": [
+   "TestBackoffIsExponentialAndCapped"
+  ],
+  "n_failing": 1,
+  "seconds": 19
+ },
+ {
+  "id": "R19",
+  "desc": "GetFileInfo('/') no longer named '/'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestGetFileInfoRootIsNamedSlash"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "R20",
+  "desc": "containment fails OPEN again (SFTP-06 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestContainmentFailsClosedButReportsNotExist",
+   "TestReview_P12_ContainmentFailsOpenOnRealPathError"
+  ],
+  "n_failing": 2,
+  "seconds": 21
+ },
+ {
+  "id": "R21",
+  "desc": "io.EOF classified as connection loss again (SFTP-05 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestClassification_LossImpliesTransient",
+   "TestReview_P6_EOFStatusTearsDownConnection",
+   "TestRunClassifiesIOEOFByTheStateOfTheConnection",
+   "TestStatusEOFIsNotAConnectionLoss"
+  ],
+  "n_failing": 4,
+  "seconds": 21
+ },
+ {
+  "id": "M01",
+  "desc": "auth failure becomes transient",
+  "verdict": "KILLED",
+  "failing": [
+   "TestServer_AuthFailureNotRetried_NoSecretInError",
+   "TestServer_KeyAuth",
+   "TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised"
+  ],
+  "n_failing": 3,
+  "seconds": 32
+ },
+ {
+  "id": "M02",
+  "desc": "unpinned host key accepted (TOFU)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestHostKeyCallback_UnknownMismatchMatch",
+   "TestHostKeyRefusalIsReturnedAsTheTypedErrorItself",
+   "TestServer_HostKey_UnknownRefused_ThenPinned"
+  ],
+  "n_failing": 3,
+  "seconds": 22
+ },
+ {
+  "id": "M03",
+  "desc": "a CHANGED host key accepted",
+  "verdict": "KILLED",
+  "failing": [
+   "TestHostKeyCallback_UnknownMismatchMatch",
+   "TestHostKeyRefusalIsReturnedAsTheTypedErrorItself",
+   "TestServer_HostKey_ChangedKeyRefused"
+  ],
+  "n_failing": 3,
+  "seconds": 22
+ },
+ {
+  "id": "M04",
+  "desc": "'..' clamps at the root instead of refusing",
+  "verdict": "KILLED",
+  "failing": [
+   "TestConfine_Table",
+   "TestFileExistsReportsAnEscapeAsAnError",
+   "TestServer_PathConfinement"
+  ],
+  "n_failing": 3,
+  "seconds": 21
+ },
+ {
+  "id": "M05",
+  "desc": "WriteFile no longer refused",
+  "verdict": "KILLED",
+  "failing": [
+   "TestMutatorsAreImpossible_NoConnectionNeeded",
+   "TestServer_WritesImpossibleEvenWithWritablePermissions"
+  ],
+  "n_failing": 2,
+  "seconds": 22
+ },
+ {
+  "id": "M06",
+  "desc": "an absent mtime is fabricated as now",
+  "verdict": "KILLED",
+  "failing": [
+   "TestToInfo_NoFabricatedMtime"
+  ],
+  "n_failing": 1,
+  "seconds": 21
+ },
+ {
+  "id": "M07",
+  "desc": "retry budget off by one",
+  "verdict": "KILLED",
+  "failing": [
+   "TestBackoffIsExponentialAndCapped",
+   "TestRetry_BoundedAndTransientOnly",
+   "TestServer_TransientRetryIsBounded"
+  ],
+  "n_failing": 3,
+  "seconds": 27
+ },
+ {
+  "id": "M08",
+  "desc": "server-side containment check disabled",
+  "verdict": "KILLED",
+  "failing": [
+   "TestCheckWithinRefusesWhenTheResolvedRootIsUnknown",
+   "TestContainmentFailsClosedButReportsNotExist",
+   "TestReview_P12_ContainmentFailsOpenOnRealPathError",
+   "TestServer_PathConfinement"
+  ],
+  "n_failing": 4,
+  "seconds": 21
+ },
+ {
+  "id": "M09",
+  "desc": "Credential.String leaks the password",
+  "verdict": "KILLED",
+  "failing": [
+   "TestCredential_Redaction"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "M10",
+  "desc": "Pin records whatever the server presents",
+  "verdict": "KILLED",
+  "failing": [
+   "TestServer_HostKey_UnknownRefused_ThenPinned"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "M11",
+  "desc": "Disconnect leaves the client re-dialable",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReview_P4_DisconnectDuringRedial",
+   "TestServer_DisconnectedClientDoesNotSilentlyReconnect"
+  ],
+  "n_failing": 2,
+  "seconds": 23
+ },
+ {
+  "id": "M13",
+  "desc": "containment prefix accepts a sibling with the same prefix",
+  "verdict": "KILLED",
+  "failing": [
+   "TestWithin"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "M14",
+  "desc": "FileExists reports a missing file as an error",
+  "verdict": "KILLED",
+  "failing": [
+   "TestContainmentFailsClosedButReportsNotExist",
+   "TestFileExistsReportsAnEscapeAsAnError",
+   "TestServer_ListReadStat"
+  ],
+  "n_failing": 3,
+  "seconds": 23
+ },
+ {
+  "id": "N01",
+  "desc": "cancellation guard never closes the connection",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReview_P11_ListDirectoryHonoursContextOnHungServer",
+   "TestReview_P1_StatHonoursContextOnHungServer",
+   "TestReview_P8_CancelUnblocksInFlightRead",
+   "TestSeekEndHonoursContextOnHungServer"
+  ],
+  "n_failing": 4,
+  "seconds": 30
+ },
+ {
+  "id": "N02",
+  "desc": "no cancel grace: a cancel closes the shared connection at once",
+  "verdict": "KILLED",
+  "failing": [
+   "TestCancelOfOneStreamDoesNotKillTheSharedConnection"
+  ],
+  "n_failing": 1,
+  "seconds": 18
+ },
+ {
+  "id": "N04",
+  "desc": "no single-flight re-dial (SFTP-04 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReview_P10_ConcurrentRedialStorm"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "N05",
+  "desc": "TestConnection disconnects the caller's client (SFTP-02 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReview_P3_TestConnectionOnLostConnection",
+   "TestServer_ListReadStat"
+  ],
+  "n_failing": 2,
+  "seconds": 23
+ },
+ {
+  "id": "N06",
+  "desc": "reply validator off (SFTP-08 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "(panic: the test binary crashed)"
+  ],
+  "n_failing": 1,
+  "seconds": 12
+ },
+ {
+  "id": "N07",
+  "desc": "reply validator accepts an over-long frame",
+  "verdict": "ERROR",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 20
+ },
+ {
+  "id": "N08",
+  "desc": "no recover boundary",
+  "verdict": "KILLED",
+  "failing": [
+   "TestProtectTurnsAPanicIntoAFaultAndClosesTheConnection"
+  ],
+  "n_failing": 1,
+  "seconds": 12
+ },
+ {
+  "id": "N09",
+  "desc": "alive() always says alive",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 23
+ },
+ {
+  "id": "N10",
+  "desc": "keepalive never runs",
+  "verdict": "KILLED",
+  "failing": [
+   "TestKeepaliveEndsACallOnAHalfOpenLink"
+  ],
+  "n_failing": 1,
+  "seconds": 32
+ },
+ {
+  "id": "N11",
+  "desc": "listing limit not enforced",
+  "verdict": "KILLED",
+  "failing": [
+   "TestConn_ListingBudget",
+   "TestRaw_ListingLimit"
+  ],
+  "n_failing": 2,
+  "seconds": 23
+ },
+ {
+  "id": "N12",
+  "desc": "ranged reads use a one-packet window (no pipelining)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestRangedReadIsPipelinedToo"
+  ],
+  "n_failing": 1,
+  "seconds": 27
+ },
+ {
+  "id": "N13",
+  "desc": "implicit re-dial installs over a Disconnect (SFTP-03 back)",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 22
+ },
+ {
+  "id": "N14",
+  "desc": "bounded Close timer never fires",
+  "verdict": "KILLED",
+  "failing": [
+   "TestCloseIsBoundedOnAStalledServer"
+  ],
+  "n_failing": 1,
+  "seconds": 26
+ },
+ {
+  "id": "N15",
+  "desc": "a STATUS EOF is reported as the bare io.EOF (transient, SFTP-05 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestRunClassifiesIOEOFByTheStateOfTheConnection"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "N16",
+  "desc": "a read that ends on a dead connection is an EOF",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 22
+ },
+ {
+  "id": "N17",
+  "desc": "a copy that ends on a dead connection is a clean end",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 25
+ },
+ {
+  "id": "N18",
+  "desc": "malformed-reply fault not returned (a generic lost-connection error instead)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestRaw_ListingLimit",
+   "TestRaw_MalformedReplyIsNotRetriedAndLeavesTheClientRecoverable"
+  ],
+  "n_failing": 2,
+  "seconds": 23
+ },
+ {
+  "id": "N19",
+  "desc": "context error not mapped after a guard close",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 23
+ },
+ {
+  "id": "N20",
+  "desc": "server-side containment root not resolved at dial",
+  "verdict": "INVALID",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 4
+ },
+ {
+  "id": "L01",
+  "desc": "a listing on a connection that ended during it is accepted",
+  "verdict": "KILLED",
+  "failing": [
+   "TestListingOnAConnectionThatEndedDuringItIsRefused"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "Q01",
+  "desc": "newFile publishes its stop function without the lock (nil-func panic / data race when the context has already ended; found while fixing, run with -race)",
+  "verdict": "KILLED",
+  "failing": [
+   "(panic: the test binary crashed)"
+  ],
+  "n_failing": 1,
+  "seconds": 12
+ },
+ {
+  "id": "P01",
+  "desc": "pin file writable by others is read",
+  "verdict": "KILLED",
+  "failing": [
+   "TestFilePinStore_RefusesAFileOthersCanWrite"
+  ],
+  "n_failing": 1,
+  "seconds": 24
+ },
+ {
+  "id": "P02",
+  "desc": "pin directory writable by others accepted",
+  "verdict": "KILLED",
+  "failing": [
+   "TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky"
+  ],
+  "n_failing": 1,
+  "seconds": 24
+ },
+ {
+  "id": "P03",
+  "desc": "no cross-process lock on the pin file",
+  "verdict": "KILLED",
+  "failing": [
+   "TestFilePinStore_ConcurrentWritersLoseNothing"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "P04",
+  "desc": "a symlink accepted as pin file",
+  "verdict": "SURVIVED",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 23
+ },
+ {
+  "id": "P05",
+  "desc": "foreign owner accepted",
+  "verdict": "INVALID",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 3
+ },
+ {
+  "id": "E01",
+  "desc": "env credential refs not validated (SFTP-16 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestEnvCredentialResolver_NoCollisions"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "E02",
+  "desc": "env credential names fold case",
+  "verdict": "KILLED",
+  "failing": [
+   "TestEnvCredentialResolver",
+   "TestEnvCredentialResolver_NoCollisions"
+  ],
+  "n_failing": 2,
+  "seconds": 23
+ },
+ {
+  "id": "F01",
+  "desc": "factory accepts inline secrets other than 'password'",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ },
+ {
+  "id": "F02",
+  "desc": "factory: an empty path wins over root",
+  "verdict": "INVALID",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 20
+ },
+ {
+  "id": "F03",
+  "desc": "factory: port not validated",
+  "verdict": "INVALID",
+  "failing": [],
+  "n_failing": 0,
+  "seconds": 22
+ },
+ {
+  "id": "D01",
+  "desc": "Discover ignores ctx after the TCP connect",
+  "verdict": "KILLED",
+  "failing": [
+   "TestDiscoverAllHonoursContextAfterConnect"
+  ],
+  "n_failing": 1,
+  "seconds": 25
+ },
+ {
+  "id": "K01",
+  "desc": "no keyboard-interactive login (SFTP-12 back)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestReview_P9_KeyboardInteractiveOnlyServer"
+  ],
+  "n_failing": 1,
+  "seconds": 22
+ },
+ {
+  "id": "K02",
+  "desc": "keyboard-interactive failure not recognised as an auth failure",
+  "verdict": "KILLED",
+  "failing": [
+   "TestIsAuthFailure",
+   "TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInteractiveIsAdvertised"
+  ],
+  "n_failing": 2,
+  "seconds": 22
+ },
+ {
+  "id": "K03",
+  "desc": "keyboard-interactive answers echoed prompts with the password",
+  "verdict": "KILLED",
+  "failing": [
+   "TestKbdAnswer"
+  ],
+  "n_failing": 1,
+  "seconds": 23
+ }
+]

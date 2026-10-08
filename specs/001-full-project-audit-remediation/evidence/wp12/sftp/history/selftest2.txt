@@ -1,0 +1,17 @@
+sftp-fixture: registered op_id=catalogizer-sftp-20261007175138-3598566
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/stretchr/testify v1.11.1
+go: downloading github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+go: downloading github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
+go: downloading github.com/kr/fs v0.1.0
+go: downloading gopkg.in/yaml.v3 v3.0.1
+=== RUN   TestIntegrationSelftest
+selftest: connected to OpenSSH, host key pinned and verified
+--- PASS: TestIntegrationSelftest (1.83s)
+PASS
+ok  	digital.vasic.filesystem/pkg/sftp	1.834s
+
+real	0m50.244s
+user	0m4.641s
+sys	0m3.263s

@@ -1,0 +1,35 @@
+# identity: WP-12 PA-04 fix round 2: mutant W2 - factory: credential_ref is not passed
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed (0.00s)
+    ftp_factory_test.go:185: 
+        	Error Trace:	/out/mut/W2/filesystem/pkg/factory/ftp_factory_test.go:185
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: no certificate pin store configured"
+        	            	in chain: "ftp: credential could not be resolved: no credential_ref configured"
+        	            		"ftp: credential could not be resolved"
+        	Test:       	TestFTPFactory_NoPinStoreInstalled_RefusesToConnect_FailClosed
+--- FAIL: TestFTPFactory_UsesTheInstalledPinStore_UnknownThenPinned_EndToEnd (0.00s)
+    ftp_factory_test.go:198: 
+        	Error Trace:	/out/mut/W2/filesystem/pkg/factory/ftp_factory_test.go:198
+        	Error:      	Should be in error chain:
+        	            	expected: *ftp.UnknownCertError
+        	            	in chain: "ftp: credential could not be resolved: no credential_ref configured" (*fmt.wrapError)
+        	            		"ftp: credential could not be resolved" (*errors.errorString)
+        	Test:       	TestFTPFactory_UsesTheInstalledPinStore_UnknownThenPinned_EndToEnd
+        	Messages:   	an empty installed store reaches the client: the certificate is refused as unknown, with its fingerprint
+--- FAIL: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+    ftp_factory_test.go:230: 
+        	Error Trace:	/out/mut/W2/filesystem/pkg/factory/ftp_factory_test.go:230
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 0
+        	Test:       	TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+    ftp_factory_test.go:231: 
+        	Error Trace:	/out/mut/W2/filesystem/pkg/factory/ftp_factory_test.go:231
+        	Error:      	[]string(nil) does not contain "USER alice"
+        	Test:       	TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.022s
+FAIL

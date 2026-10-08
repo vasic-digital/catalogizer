@@ -1,0 +1,5 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of vet.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+vet-and-gofmt-clean

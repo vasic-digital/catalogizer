@@ -1,0 +1,8 @@
+# identity: WP-12 PA-04 fix round 2 (WF21 NO-GO answer): what was shimmed in the pre-fix copy so that the final tests compile there
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree; no git write, no NAS contact, no credential printed
+# run_at: 2026-10-08 (UTC+2); author: Sonnet fixer; independent re-review (11.4.142): OWED
+sentinel errors added by a _test.go shim (the pre-fix code never returns them, so every ErrorIs on them fails there): ErrProtocol, ErrReplyTooLarge, ErrListingTooLarge, ErrListingIncomplete, ErrAborted, ErrUTF8Refused, ErrPinNameConflict
+pre-fix Config gains the two fields MaxReplyBytes and MaxListEntries (ignored by the pre-fix code, which has no such bounds)
+pre-fix scanFactory takes a *Config (the new tests construct it that way): this makes the pre-fix factory print a pointer under %+v, so the fmt-leak test is RED on the Credential VALUE part only
+removed from the pre-fix copy (functions/fields that do not exist there): TestParseMLEntry_Table_F6, TestParseListLine_UnixDosAndGarbage, TestClassify550, TestPASVAndEPSV_ReplyParsing, TestReadReplyEdge_Cases, TestReDial_ClosesTheConnectionItReplaces
+full recipe: fix-r2-red-prefix.mkred.py.txt (run as python3 mkred.py; base tree = /dev/shm/wf21mut/src/N00/filesystem, the reviewer's unmutated copy of the reviewed working tree)

@@ -1,0 +1,51 @@
+sftp-fixture: registered op_id=catalogizer-sftp-20261007175028-3510048
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/stretchr/testify v1.11.1
+go: downloading github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+go: downloading github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
+go: downloading github.com/kr/fs v0.1.0
+go: downloading gopkg.in/yaml.v3 v3.0.1
+=== RUN   TestIntegrationSelftest
+    integration_test.go:85: 
+        	Error Trace:	/src/filesystem/pkg/sftp/integration_test.go:85
+        	Error:      	Not equal: 
+        	            	expected: "SHA256:1F1Mm28XqlfvkshTkRXhd7aRjt/m0IqTKTNGU0ELlwg"
+        	            	actual  : "SHA256:WLf/H4YwpCfiTrqW78TSVf0ZDslPqidXZw8A29GVixo"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-SHA256:1F1Mm28XqlfvkshTkRXhd7aRjt/m0IqTKTNGU0ELlwg
+        	            	+SHA256:WLf/H4YwpCfiTrqW78TSVf0ZDslPqidXZw8A29GVixo
+        	Test:       	TestIntegrationSelftest
+        	Messages:   	the key the server presents is the one generated outside the container
+    integration_test.go:86: 
+        	Error Trace:	/src/filesystem/pkg/sftp/integration_test.go:86
+        	Error:      	Not equal: 
+        	            	expected: "ssh-ed25519"
+        	            	actual  : "ssh-rsa"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-ssh-ed25519
+        	            	+ssh-rsa
+        	Test:       	TestIntegrationSelftest
+    integration_test.go:87: 
+        	Error Trace:	/src/filesystem/pkg/sftp/integration_test.go:59
+        	            				/src/filesystem/pkg/sftp/integration_test.go:75
+        	            				/src/filesystem/pkg/sftp/integration_test.go:87
+        	Error:      	Received unexpected error:
+        	            	sftp: host key pin not confirmed by the owner: owner confirmed SHA256:1F1Mm28XqlfvkshTkRXhd7aRjt/m0IqTKTNGU0ELlwg but the server presents SHA256:WLf/H4YwpCfiTrqW78TSVf0ZDslPqidXZw8A29GVixo
+        	Test:       	TestIntegrationSelftest
+--- FAIL: TestIntegrationSelftest (0.10s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	0.104s
+FAIL
+
+real	0m47.150s
+user	0m4.502s
+sys	0m3.224s

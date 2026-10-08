@@ -1,0 +1,72 @@
+# identity: WP-12 PA-04 gofmt, go vet, go build, coverage, regression of sibling packages
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+challenges/runner/main.go
+pkg/local/local_edge_test.go
+gofmt-done
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+vet-ok
+build-ok
+ok  	digital.vasic.filesystem/pkg/ftp	0.674s	coverage: 88.3% of statements
+digital.vasic.filesystem/pkg/ftp/ftp.go:630:	Read			82.4%
+digital.vasic.filesystem/pkg/ftp/ftp.go:656:	Seek			84.6%
+digital.vasic.filesystem/pkg/ftp/ftp.go:679:	Close			40.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:691:	clampSize		66.7%
+digital.vasic.filesystem/pkg/ftp/ftp.go:698:	toInfo			85.7%
+digital.vasic.filesystem/pkg/ftp/ftp.go:718:	ListDirectory		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:751:	GetFileInfo		92.9%
+digital.vasic.filesystem/pkg/ftp/ftp.go:792:	FileExists		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:807:	WriteFile		88.9%
+digital.vasic.filesystem/pkg/ftp/ftp.go:824:	CreateDirectory		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:833:	DeleteDirectory		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:842:	DeleteFile		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:851:	CopyFile		76.5%
+digital.vasic.filesystem/pkg/ftp/ftp.go:877:	GetProtocol		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:880:	GetConfig		100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:892:	String			100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:897:	String			100.0%
+digital.vasic.filesystem/pkg/ftp/ftp.go:902:	GoString		100.0%
+digital.vasic.filesystem/pkg/ftp/scan.go:20:	retry			100.0%
+digital.vasic.filesystem/pkg/ftp/scan.go:29:	NewScanClient		100.0%
+digital.vasic.filesystem/pkg/ftp/scan.go:42:	CreateClient		100.0%
+digital.vasic.filesystem/pkg/ftp/scan.go:47:	SupportedProtocols	100.0%
+digital.vasic.filesystem/pkg/ftp/scan.go:51:	NewWorkerPool		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:54:	Error			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:66:	Error			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:78:	Fingerprint		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:88:	NormalizeFingerprint	100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:96:	HostPort		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:110:	NewMemPinStore		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:113:	Lookup			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:120:	Record			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:133:	Remove			80.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:157:	NewFilePinStore		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:159:	load			81.8%
+digital.vasic.filesystem/pkg/ftp/tls.go:178:	save			60.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:208:	Lookup			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:219:	Record			100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:236:	Remove			92.3%
+digital.vasic.filesystem/pkg/ftp/tls.go:259:	newTLSConfig		88.2%
+digital.vasic.filesystem/pkg/ftp/tls.go:293:	pinFingerprints		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:302:	mapTLSError		92.3%
+digital.vasic.filesystem/pkg/ftp/tls.go:331:	DiscoverCert		78.6%
+digital.vasic.filesystem/pkg/ftp/tls.go:382:	serverNameFor		100.0%
+digital.vasic.filesystem/pkg/ftp/tls.go:394:	Pin			81.2%
+total:						(statements)		88.3%
+testing.tRunner(0xc000388700, 0x969a50)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+FAIL	digital.vasic.filesystem/pkg/fabric	600.121s
+ok  	digital.vasic.filesystem/pkg/decorators	0.020s
+ok  	digital.vasic.filesystem/pkg/client	0.011s
+ok  	digital.vasic.filesystem/pkg/sftp	16.785s
+ok  	digital.vasic.filesystem/pkg/nfs3	9.152s
+FAIL

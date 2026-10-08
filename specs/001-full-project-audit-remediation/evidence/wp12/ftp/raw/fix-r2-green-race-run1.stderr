@@ -1,0 +1,422 @@
+# identity: WP-12 PA-04 fix round 2 (WF21 NO-GO answer): launcher stderr of GREEN run 1 (sink-side digest line at the end)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree; no git write, no NAS contact, no credential printed
+# run_at: 2026-10-08 (UTC+2); author: Sonnet fixer; independent re-review (11.4.142): OWED
+ftps-fixture: registered op_id=catalogizer-ftps-20261007235313-3767400
+=== RUN   TestParseMLEntry_Table_F6
+--- PASS: TestParseMLEntry_Table_F6 (0.00s)
+=== RUN   TestParseListLine_UnixDosAndGarbage
+--- PASS: TestParseListLine_UnixDosAndGarbage (0.00s)
+=== RUN   TestClassify550
+--- PASS: TestClassify550 (0.00s)
+=== RUN   TestList_RealisticMLSD_ParsedWithoutLoss_D7
+--- PASS: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.03s)
+=== RUN   TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6
+--- PASS: TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6 (0.03s)
+=== RUN   TestMLST_OddFacts_Parsed_F6
+--- PASS: TestMLST_OddFacts_Parsed_F6 (0.02s)
+=== RUN   TestPermission550_IsNotNonExistence_D18
+--- PASS: TestPermission550_IsNotNonExistence_D18 (0.02s)
+=== RUN   TestAmbiguous550_IsSettledByTheParentListing
+--- PASS: TestAmbiguous550_IsSettledByTheParentListing (0.05s)
+=== RUN   TestListing550_Mapping
+--- PASS: TestListing550_Mapping (0.02s)
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_with_Path
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/no_Path_login_dir_is_not_the_ftp_root
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/missing_root
+--- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10 (0.10s)
+    --- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_with_Path (0.03s)
+    --- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash (0.02s)
+    --- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/no_Path_login_dir_is_not_the_ftp_root (0.03s)
+    --- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/missing_root (0.02s)
+=== RUN   TestDegradedList_ParsesLISTLines
+--- PASS: TestDegradedList_ParsesLISTLines (0.03s)
+=== RUN   TestSeekable_OpenAndReadWholeFile_NoSpuriousErrors
+--- PASS: TestSeekable_OpenAndReadWholeFile_NoSpuriousErrors (0.08s)
+=== RUN   TestWriteFile_ZeroByteUploadOverTLS_AndFailureModes
+--- PASS: TestWriteFile_ZeroByteUploadOverTLS_AndFailureModes (0.05s)
+=== RUN   TestEPSVRefused_FallsBackToPASV_AndStaysInStep
+--- PASS: TestEPSVRefused_FallsBackToPASV_AndStaysInStep (0.03s)
+=== RUN   TestDisableEPSV_UsesPASVOnly
+--- PASS: TestDisableEPSV_UsesPASVOnly (0.03s)
+=== RUN   TestPASVAndEPSV_ReplyParsing
+--- PASS: TestPASVAndEPSV_ReplyParsing (0.03s)
+=== RUN   TestPWDParsing_QuotedNames
+--- PASS: TestPWDParsing_QuotedNames (0.02s)
+=== RUN   TestReadReplyEdge_Cases
+=== RUN   TestReadReplyEdge_Cases/bare_lf
+=== RUN   TestReadReplyEdge_Cases/multiline
+=== RUN   TestReadReplyEdge_Cases/inner_code_line_is_text
+=== RUN   TestReadReplyEdge_Cases/code_only
+=== RUN   TestReadReplyEdge_Cases/garbage
+=== RUN   TestReadReplyEdge_Cases/short
+=== RUN   TestReadReplyEdge_Cases/truncated
+=== RUN   TestReadReplyEdge_Cases/single
+--- PASS: TestReadReplyEdge_Cases (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/bare_lf (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/multiline (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/inner_code_line_is_text (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/code_only (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/garbage (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/short (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/truncated (0.00s)
+    --- PASS: TestReadReplyEdge_Cases/single (0.00s)
+=== RUN   TestMLST_WrongNumberOfEntries_IsAnError
+--- PASS: TestMLST_WrongNumberOfEntries_IsAnError (0.02s)
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/ctx
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/ctx
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+--- PASS: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (1.21s)
+    --- PASS: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/ctx (0.30s)
+    --- PASS: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (0.30s)
+    --- PASS: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/ctx (0.30s)
+    --- PASS: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout (0.30s)
+=== RUN   TestDeadline_C1_ServerClosesAtOnce_ConnectReturnsFast
+--- PASS: TestDeadline_C1_ServerClosesAtOnce_ConnectReturnsFast (0.00s)
+=== RUN   TestDeadline_TLSHandshakeUnanswered_D2
+--- PASS: TestDeadline_TLSHandshakeUnanswered_D2 (0.40s)
+=== RUN   TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+--- PASS: TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3 (0.65s)
+=== RUN   TestDeadline_C3_RETRStall_IOTimeoutHonoured
+--- PASS: TestDeadline_C3_RETRStall_IOTimeoutHonoured (0.32s)
+=== RUN   TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+--- PASS: TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4 (0.43s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded
+=== RUN   TestDeadline_EveryControlCommandIsBounded/NOOP
+=== RUN   TestDeadline_EveryControlCommandIsBounded/MLST
+=== RUN   TestDeadline_EveryControlCommandIsBounded/SIZE
+=== RUN   TestDeadline_EveryControlCommandIsBounded/EPSV
+=== RUN   TestDeadline_EveryControlCommandIsBounded/MKD
+=== RUN   TestDeadline_EveryControlCommandIsBounded/DELE
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/USER
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PASS
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/FEAT
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/TYPE
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/OPTS
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PBSZ
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PROT
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/CWD
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PWD
+=== RUN   TestDeadline_EveryControlCommandIsBounded/control_unstalled_verb_works
+--- PASS: TestDeadline_EveryControlCommandIsBounded (4.87s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/NOOP (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/MLST (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/SIZE (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/EPSV (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/MKD (0.33s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/DELE (0.33s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/USER (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/PASS (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/FEAT (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/TYPE (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/OPTS (0.33s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/PBSZ (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/PROT (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/CWD (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/connect/PWD (0.32s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/control_unstalled_verb_works (0.02s)
+=== RUN   TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+--- PASS: TestStreamTimeout_CloseDoesNotWaitForTheFinalReply (1.02s)
+=== RUN   TestCancel_InterruptsBlockedControlCommand
+--- PASS: TestCancel_InterruptsBlockedControlCommand (0.22s)
+=== RUN   TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+--- PASS: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (0.45s)
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=false
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true
+--- PASS: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6 (0.06s)
+    --- PASS: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=false (0.03s)
+    --- PASS: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true (0.04s)
+=== RUN   TestEarlyClose_PureFTPdStyleSingle150Reply_KeepsTheConnection
+--- PASS: TestEarlyClose_PureFTPdStyleSingle150Reply_KeepsTheConnection (0.02s)
+=== RUN   TestDesync_UnsolicitedReplyIsNeverTakenForAnAnswer
+--- PASS: TestDesync_UnsolicitedReplyIsNeverTakenForAnAnswer (0.13s)
+=== RUN   TestUnexpectedPositiveReply_DropsTheConnection
+--- PASS: TestUnexpectedPositiveReply_DropsTheConnection (0.02s)
+=== RUN   TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+--- PASS: TestReply421_MarksTheConnectionLost_RetryRecovers_D5 (0.09s)
+=== RUN   TestCancelBetweenReads_IsHonoured_D9
+--- PASS: TestCancelBetweenReads_IsHonoured_D9 (0.23s)
+=== RUN   TestC9_CancelDuringBlockedRead_IsHonoured_MX02
+--- PASS: TestC9_CancelDuringBlockedRead_IsHonoured_MX02 (0.22s)
+=== RUN   TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+--- PASS: TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01 (0.24s)
+=== RUN   TestSeekable_TruncatedTransfer_IsAnError_D8
+--- PASS: TestSeekable_TruncatedTransfer_IsAnError_D8 (0.04s)
+=== RUN   TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+--- PASS: TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF (0.03s)
+=== RUN   TestReadFile_FullReadWith451_ClosesWithTheError_MX07
+--- PASS: TestReadFile_FullReadWith451_ClosesWithTheError_MX07 (0.03s)
+=== RUN   TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+--- PASS: TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23 (0.05s)
+=== RUN   TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+--- PASS: TestLogin_NoReplyAfterPASS_IsNeverRetried_D11 (0.02s)
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/421
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/500
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/530
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/430
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/534
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/535
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/503
+--- PASS: TestLogin_PASSReplies_ClassifiedByCode (0.12s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/421 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/500 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/530 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/430 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/534 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/535 (0.02s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/503 (0.02s)
+=== RUN   TestLogin_USER530_IsAuth
+--- PASS: TestLogin_USER530_IsAuth (0.02s)
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PROT
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/TYPE
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/tls_version_is_not_auth
+--- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.10s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PROT (0.02s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ (0.03s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/TYPE (0.03s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features (0.00s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/tls_version_is_not_auth (0.02s)
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/pure_ftpd_style_504_with_valid_utf8_names_is_fine
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/accepted_switch_never_checks_names
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/202_already_utf8_is_accepted
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/4yz_is_transient
+--- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c (0.13s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names (0.03s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names (0.00s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/pure_ftpd_style_504_with_valid_utf8_names_is_fine (0.03s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/accepted_switch_never_checks_names (0.03s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/202_already_utf8_is_accepted (0.02s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/4yz_is_transient (0.02s)
+=== RUN   TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06
+--- PASS: TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06 (0.03s)
+=== RUN   TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+--- PASS: TestFailedLogin_SaysQuitAndClosesTheConnection_MX09 (0.02s)
+=== RUN   TestDisconnect_SaysQuitAndClosesTheConnection_MX19
+--- PASS: TestDisconnect_SaysQuitAndClosesTheConnection_MX19 (0.03s)
+=== RUN   TestLostConnection_IsClosed_NotLeaked_MX18
+--- PASS: TestLostConnection_IsClosed_NotLeaked_MX18 (0.03s)
+=== RUN   TestDisconnectTimeout_DoesNotLeakTheControlConnection_D19
+--- PASS: TestDisconnectTimeout_DoesNotLeakTheControlConnection_D19 (0.63s)
+=== RUN   TestDisconnectWithCancelledContext_StillClosesAnIdleConnection
+--- PASS: TestDisconnectWithCancelledContext_StillClosesAnIdleConnection (0.03s)
+=== RUN   TestConnectAfterTimedOutDisconnect_DoesNotOverwriteALiveConnection
+--- PASS: TestConnectAfterTimedOutDisconnect_DoesNotOverwriteALiveConnection (0.13s)
+=== RUN   TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04
+--- PASS: TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04 (0.01s)
+=== RUN   TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+--- PASS: TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12 (0.02s)
+=== RUN   TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28
+--- PASS: TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28 (0.02s)
+=== RUN   TestPin_PortZero_MeansTheFTPDefaultPort_F14
+--- PASS: TestPin_PortZero_MeansTheFTPDefaultPort_F14 (0.00s)
+=== RUN   TestPin_SecondServerNameForTheSameHost_IsRefused_F15
+--- PASS: TestPin_SecondServerNameForTheSameHost_IsRefused_F15 (0.02s)
+=== RUN   TestDegraded_IsKnownRightAfterConnect_MX13
+--- PASS: TestDegraded_IsKnownRightAfterConnect_MX13 (0.04s)
+=== RUN   TestDefaultRetryPolicy_IsThreeAttempts_MX17
+--- PASS: TestDefaultRetryPolicy_IsThreeAttempts_MX17 (0.70s)
+=== RUN   TestBaseDirectory_IsCanonicalisedWithPWD_MX03
+--- PASS: TestBaseDirectory_IsCanonicalisedWithPWD_MX03 (0.02s)
+=== RUN   TestSecret_NeverReachableThroughFmt_D13
+--- PASS: TestSecret_NeverReachableThroughFmt_D13 (0.00s)
+=== RUN   TestIACByteInAPath_IsDoubled_F12
+--- PASS: TestIACByteInAPath_IsDoubled_F12 (0.02s)
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/reply
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/reply_under_the_bound_is_fine
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/listing
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/long_line
+--- PASS: TestReplyAndListingSizeAreBounded_D16_D17 (0.14s)
+    --- PASS: TestReplyAndListingSizeAreBounded_D16_D17/reply (0.02s)
+    --- PASS: TestReplyAndListingSizeAreBounded_D16_D17/reply_under_the_bound_is_fine (0.02s)
+    --- PASS: TestReplyAndListingSizeAreBounded_D16_D17/listing (0.06s)
+    --- PASS: TestReplyAndListingSizeAreBounded_D16_D17/long_line (0.04s)
+=== RUN   TestGoroutinesReturnToBaseline_C20
+--- PASS: TestGoroutinesReturnToBaseline_C20 (0.89s)
+=== RUN   TestSlowDrippingReply_IsBoundedAsAWhole
+--- PASS: TestSlowDrippingReply_IsBoundedAsAWhole (0.53s)
+=== RUN   TestDeadline_ControlWriteStall_IsBounded
+--- PASS: TestDeadline_ControlWriteStall_IsBounded (3.12s)
+=== RUN   TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+--- PASS: TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand (0.04s)
+=== RUN   TestReDial_ClosesTheConnectionItReplaces
+--- PASS: TestReDial_ClosesTheConnectionItReplaces (0.04s)
+=== RUN   TestNewFTPClient
+--- PASS: TestNewFTPClient (0.00s)
+=== RUN   TestFTPClient_GetProtocol
+--- PASS: TestFTPClient_GetProtocol (0.00s)
+=== RUN   TestFTPClient_GetConfig
+--- PASS: TestFTPClient_GetConfig (0.00s)
+=== RUN   TestFTPClient_IsConnected_NotConnected
+--- PASS: TestFTPClient_IsConnected_NotConnected (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithBasePath
+--- PASS: TestFTPClient_ResolvePath_WithBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithoutBasePath
+--- PASS: TestFTPClient_ResolvePath_WithoutBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_RootPath
+--- PASS: TestFTPClient_ResolvePath_RootPath (0.00s)
+=== RUN   TestFTPClient_TestConnection_NotConnected
+--- PASS: TestFTPClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestFTPClient_ReadFile_NotConnected
+--- PASS: TestFTPClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_WriteFile_NotConnected
+--- PASS: TestFTPClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_GetFileInfo_NotConnected
+--- PASS: TestFTPClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestFTPClient_ListDirectory_NotConnected
+--- PASS: TestFTPClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_FileExists_NotConnected
+--- PASS: TestFTPClient_FileExists_NotConnected (0.00s)
+=== RUN   TestFTPClient_CreateDirectory_NotConnected
+--- PASS: TestFTPClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteDirectory_NotConnected
+--- PASS: TestFTPClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteFile_NotConnected
+--- PASS: TestFTPClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_CopyFile_NotConnected
+--- PASS: TestFTPClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_Disconnect_NilClient
+--- PASS: TestFTPClient_Disconnect_NilClient (0.00s)
+=== RUN   TestFTPClient_Disconnect_NeverDialled
+--- PASS: TestFTPClient_Disconnect_NeverDialled (0.00s)
+=== RUN   TestFTPClient_Connect_InvalidServer
+--- PASS: TestFTPClient_Connect_InvalidServer (0.00s)
+=== RUN   TestFTPConfig_Fields
+--- PASS: TestFTPConfig_Fields (0.00s)
+=== RUN   TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+--- PASS: TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT (0.02s)
+=== RUN   TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+--- PASS: TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed (0.05s)
+=== RUN   TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache
+--- PASS: TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache (0.00s)
+=== RUN   TestFTPS_TLS11ServerIsRefused
+--- PASS: TestFTPS_TLS11ServerIsRefused (0.02s)
+=== RUN   TestPin_UnknownCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_UnknownCertificate_Refused_NoCredentialSent (0.01s)
+=== RUN   TestPin_ChangedCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_ChangedCertificate_Refused_NoCredentialSent (0.02s)
+=== RUN   TestPin_RequiresMatchingOwnerConfirmation
+--- PASS: TestPin_RequiresMatchingOwnerConfirmation (0.01s)
+=== RUN   TestPin_ConfirmationAcceptsEveryFingerprintSpelling
+--- PASS: TestPin_ConfirmationAcceptsEveryFingerprintSpelling (0.03s)
+=== RUN   TestPin_NoPinStore_Refused
+--- PASS: TestPin_NoPinStore_Refused (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile
+--- PASS: TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile (0.02s)
+=== RUN   TestPinStore_RemoveAndIdempotentRecord
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/mem
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/file
+--- PASS: TestPinStore_RemoveAndIdempotentRecord (0.00s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/mem (0.00s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/file (0.00s)
+=== RUN   TestClearText_RefusedByDefault_NoConnectionAttempted
+--- PASS: TestClearText_RefusedByDefault_NoConnectionAttempted (0.00s)
+=== RUN   TestClearText_AllowedOnTrustedLAN
+--- PASS: TestClearText_AllowedOnTrustedLAN (0.00s)
+=== RUN   TestTLSMode_Unknown_Refused
+--- PASS: TestTLSMode_Unknown_Refused (0.00s)
+=== RUN   TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText
+--- PASS: TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText (0.01s)
+=== RUN   TestList_MLSD_ExactMtimes_NoDotEntries
+--- PASS: TestList_MLSD_ExactMtimes_NoDotEntries (0.03s)
+=== RUN   TestList_NoModifyFact_MtimeIsZero_NotNow
+--- PASS: TestList_NoModifyFact_MtimeIsZero_NotNow (0.03s)
+=== RUN   TestList_NoMLST_Refused_ByDefault
+--- PASS: TestList_NoMLST_Refused_ByDefault (0.02s)
+=== RUN   TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime
+--- PASS: TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime (0.04s)
+=== RUN   TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+--- PASS: TestGetFileInfo_UsesMLST_ServerMtime_NotNow (0.02s)
+=== RUN   TestFileExists_NotFound_IsFalseNotError
+--- PASS: TestFileExists_NotFound_IsFalseNotError (0.02s)
+=== RUN   TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent
+--- PASS: TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent (0.04s)
+=== RUN   TestReadFile_Content_AndSessionReleasedOnClose
+--- PASS: TestReadFile_Content_AndSessionReleasedOnClose (0.03s)
+=== RUN   TestReadFileFrom_SendsREST_AndReturnsTheTail
+--- PASS: TestReadFileFrom_SendsREST_AndReturnsTheTail (0.03s)
+=== RUN   TestOpenSeekable_SeekResumesWithREST
+--- PASS: TestOpenSeekable_SeekResumesWithREST (0.05s)
+=== RUN   TestConcurrentUse_OneControlConnection_NoInterleaving
+--- PASS: TestConcurrentUse_OneControlConnection_NoInterleaving (0.27s)
+=== RUN   TestBusySession_WaitsAndHonoursContext
+--- PASS: TestBusySession_WaitsAndHonoursContext (0.18s)
+=== RUN   TestCancelledContext_SendsNothing
+--- PASS: TestCancelledContext_SendsNothing (0.02s)
+=== RUN   TestDisconnect_AbortsOpenStream_AndNeverRedials
+--- PASS: TestDisconnect_AbortsOpenStream_AndNeverRedials (0.02s)
+=== RUN   TestLostConnection_IsRedialled_ByRetrying
+--- PASS: TestLostConnection_IsRedialled_ByRetrying (0.05s)
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535
+--- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried (0.08s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534 (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535 (0.02s)
+=== RUN   TestAuthFailure_ThroughPool_IsNotRetried
+--- PASS: TestAuthFailure_ThroughPool_IsNotRetried (0.02s)
+=== RUN   TestCredential_NeverInConfigStringErrorsOrLogs
+--- PASS: TestCredential_NeverInConfigStringErrorsOrLogs (0.03s)
+=== RUN   TestCredential_MissingRef_NoNetwork
+--- PASS: TestCredential_MissingRef_NoNetwork (0.01s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised
+--- PASS: TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised (0.02s)
+=== RUN   TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+--- PASS: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.02s)
+=== RUN   TestScanClient_IsReadOnly_MutationsNeverReachTheServer
+--- PASS: TestScanClient_IsReadOnly_MutationsNeverReachTheServer (0.03s)
+=== RUN   TestWorkerPool_OneControlConnectionPerWorker
+--- PASS: TestWorkerPool_OneControlConnectionPerWorker (0.09s)
+=== RUN   TestScanClient_HostBudgetBoundsConcurrentReads
+--- PASS: TestScanClient_HostBudgetBoundsConcurrentReads (0.18s)
+=== RUN   TestRawClient_Mutations_WriteCopyMkdirDelete
+--- PASS: TestRawClient_Mutations_WriteCopyMkdirDelete (0.06s)
+=== RUN   TestDiscoverCert_Errors
+--- PASS: TestDiscoverCert_Errors (0.01s)
+=== RUN   TestServerNameFor
+--- PASS: TestServerNameFor (0.00s)
+=== RUN   TestErrorTexts_AndHostPort
+--- PASS: TestErrorTexts_AndHostPort (0.00s)
+=== RUN   TestFilePinStore_RemoveAndMissingFile
+--- PASS: TestFilePinStore_RemoveAndMissingFile (0.00s)
+=== RUN   TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged
+--- PASS: TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged (0.00s)
+=== RUN   TestIntegrationSelftest
+--- PASS: TestIntegrationSelftest (0.02s)
+=== RUN   TestIntegration_ExplicitFTPS_ListStatReadResume
+--- PASS: TestIntegration_ExplicitFTPS_ListStatReadResume (2.51s)
+=== RUN   TestIntegration_WrongPassword_IsExactlyOneAttempt
+--- PASS: TestIntegration_WrongPassword_IsExactlyOneAttempt (5.18s)
+=== RUN   TestIntegration_EarlyClose_KeepsTheControlChannelInStep
+    integration_test.go:221: real server after an early close: control connection kept=true (false means the server answered with more than one reply and the client re-dialled)
+--- PASS: TestIntegration_EarlyClose_KeepsTheControlChannelInStep (2.35s)
+=== RUN   TestIntegration_Seekable_WholeFileAndSeeks_NoTruncation
+--- PASS: TestIntegration_Seekable_WholeFileAndSeeks_NoTruncation (36.64s)
+=== RUN   TestIntegration_CancelledContext_EndsATransferPromptly_AndTheClientRecovers
+--- PASS: TestIntegration_CancelledContext_EndsATransferPromptly_AndTheClientRecovers (4.39s)
+=== RUN   TestIntegration_Disconnect_ClosesAndReconnectWorks
+--- PASS: TestIntegration_Disconnect_ClosesAndReconnectWorks (4.32s)
+=== RUN   TestIntegration_Refusals
+--- PASS: TestIntegration_Refusals (9.47s)
+=== RUN   TestIntegration_ScanPath_ReadOnly_WorkerPool
+--- PASS: TestIntegration_ScanPath_ReadOnly_WorkerPool (7.17s)
+PASS
+ok  	digital.vasic.filesystem/pkg/ftp	92.926s
+ftps-fixture: sink-side check: served tree digest unchanged (23ea967aad21479c80f3555e5cb74ddd42aa9b93475de4ccb7a94890326fb48a)

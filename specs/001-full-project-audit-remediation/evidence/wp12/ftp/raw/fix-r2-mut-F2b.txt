@@ -1,0 +1,19 @@
+# identity: WP-12 PA-04 fix round 2: mutant F2b - a 421 does not make the connection unusable
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestReply421_MarksTheConnectionLost_RetryRecovers_D5 (0.02s)
+    fix_r2_net_test.go:575: 
+        	Error Trace:	/out/mut/F2b/filesystem/pkg/ftp/fix_r2_net_test.go:575
+        	Error:      	Should be false
+        	Test:       	TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+        	Messages:   	421 means the server is closing: the connection is unusable
+    fix_r2_net_test.go:586: 
+        	Error Trace:	/out/mut/F2b/filesystem/pkg/ftp/fix_r2_net_test.go:586
+        	Error:      	Received unexpected error:
+        	            	fabric: retries exhausted after 2 attempts (ListDirectory): ftp: list /data: unexpected EOF
+        	Test:       	TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+        	Messages:   	a 421 costs one attempt, not the whole budget
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.049s
+FAIL

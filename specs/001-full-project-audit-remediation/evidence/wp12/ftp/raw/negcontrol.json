@@ -1,0 +1,18 @@
+[
+ {
+  "id": "N01",
+  "desc": "NEGATIVE CONTROL: unmutated copy, same harness (must PASS)",
+  "kind": "unit",
+  "verdict": "SURVIVED",
+  "failing_tests": [],
+  "seconds": 44
+ },
+ {
+  "id": "N02",
+  "desc": "NEGATIVE CONTROL: behaviour-neutral edit (a comment) (must SURVIVE; shows the harness reports survival)",
+  "kind": "unit",
+  "verdict": "SURVIVED",
+  "failing_tests": [],
+  "seconds": 45
+ }
+]

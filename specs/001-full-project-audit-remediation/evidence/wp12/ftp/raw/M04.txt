@@ -1,0 +1,28 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M04.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/kr/fs v0.1.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestPin_ChangedCertificate_Refused_NoCredentialSent (0.01s)
+    ftps_test.go:158: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:158
+        	Error:      	Should be in error chain:
+        	            	expected: *ftp.CertMismatchError
+        	            	in chain: "tls: failed to verify certificate: x509: certificate signed by unknown authority (possibly because of \"x509: invalid signature: parent certificate cannot sign this kind of certificate\" while trying to verify candidate authority certificate \"fake-ftp\")" (*tls.CertificateVerificationError)
+        	            		"x509: certificate signed by unknown authority (possibly because of \"x509: invalid signature: parent certificate cannot sign this kind of certificate\" while trying to verify candidate authority certificate \"fake-ftp\")" (x509.UnknownAuthorityError)
+        	Test:       	TestPin_ChangedCertificate_Refused_NoCredentialSent
+--- FAIL: TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged (0.00s)
+    ftps_test.go:892: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:892
+        	Error:      	Should be true
+        	Test:       	TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.680s
+ok  	digital.vasic.filesystem/pkg/factory	0.011s
+FAIL

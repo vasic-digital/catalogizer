@@ -1,0 +1,13 @@
+# static checks, 2026-10-07T22:42:22Z
+# in IMG-GO (gofmt -l = list of files needing formatting; empty means none):
+gofmt-done
+vet-ok
+vet-integration-ok
+ok  	digital.vasic.filesystem/pkg/sftp	28.142s
+ok  	digital.vasic.filesystem/pkg/factory	1.062s
+rc=0
+# on the host:
+bash -n scripts/test-infra/sftp_fixture.sh: ok
+bash -n scripts/test-infra/sftp_fixture_gate_test.sh: ok
+host gofmt -l (sftp, factory.go, factory_test.go): done (empty list above = formatted)
+checked 72 mutants, 0 mismatches

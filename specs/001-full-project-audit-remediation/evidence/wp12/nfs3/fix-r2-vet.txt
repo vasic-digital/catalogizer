@@ -1,0 +1,5 @@
+# fix-r2 go vet (default and tag nfs3fixture) and gofmt
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:27:28Z; sources: 8b8cfe6ea7c6b51a
+vet-and-gofmt-clean
+exit=0

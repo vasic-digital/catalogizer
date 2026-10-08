@@ -1,0 +1,41 @@
+# identity: WP-12 PA-02/PA-07 decorators RED (pass-through stub)
+# head: 65e5f339 (main), working tree dirty, submodules/filesystem uncommitted
+# run_at: 2026-10-07T17:28:01Z
+# image: IMG-GO via scripts/containers/run_pinned.sh
+--- FAIL: TestReadOnly_EveryMutatorRefusesAndNeverCallsInner (0.00s)
+    readonly_test.go:228: seekable=false CopyFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=false CreateDirectory: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=false DeleteDirectory: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=false DeleteFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=false WriteFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:235: seekable=false inner was called: map[CopyFile:1 CreateDirectory:1 DeleteDirectory:1 DeleteFile:1 WriteFile:1]
+    readonly_test.go:228: seekable=true CopyFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=true CreateDirectory: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=true DeleteDirectory: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=true DeleteFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:228: seekable=true WriteFile: err=<nil>, want ErrReadOnly
+    readonly_test.go:235: seekable=true inner was called: map[CopyFile:1 CreateDirectory:1 DeleteDirectory:1 DeleteFile:1 WriteFile:1]
+--- FAIL: TestReadOnly_NilInnerPanicsAtConstruction (0.00s)
+    readonly_test.go:299: expected panic for nil inner
+--- FAIL: TestReadOnly_RealLocalFilesystemUntouched (0.00s)
+    readonly_test.go:319: WriteFile: <nil>
+--- FAIL: FuzzReadOnly_Mutators (0.00s)
+    --- FAIL: FuzzReadOnly_Mutators/seed#0 (0.00s)
+        readonly_test.go:372: CopyFile(""): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#1 (0.00s)
+        readonly_test.go:372: CopyFile("/"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#2 (0.00s)
+        readonly_test.go:372: CopyFile("a"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#3 (0.00s)
+        readonly_test.go:372: CopyFile("../../etc/passwd"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#4 (0.00s)
+        readonly_test.go:372: CopyFile("a\x00b"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#5 (0.00s)
+        readonly_test.go:372: CopyFile("\\\\host\\share"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#6 (0.00s)
+        readonly_test.go:372: CopyFile("é/日本"): err=<nil> consumed=0
+    --- FAIL: FuzzReadOnly_Mutators/seed#7 (0.00s)
+        readonly_test.go:372: CopyFile("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+FAIL
+FAIL	digital.vasic.filesystem/pkg/decorators	0.023s
+FAIL

@@ -1,0 +1,14 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX04 - reviewer: VerifyConnection pin re-check disabled
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04 (0.00s)
+    fix_r2_net_test.go:1095: 
+        	Error Trace:	/out/mut/MX04/filesystem/pkg/ftp/fix_r2_net_test.go:1095
+        	Error:      	An error is expected but got nil.
+        	            	expected: *ftp.CertMismatchError
+        	Test:       	TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04
+        	Messages:   	the chain verifies against the pinned CA, but the leaf is not a pinned certificate: the pin check refuses it
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.984s
+FAIL

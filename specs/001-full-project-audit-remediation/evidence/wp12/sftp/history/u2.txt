@@ -1,0 +1,429 @@
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/stretchr/testify v1.11.1
+go: downloading github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+go: downloading github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
+go: downloading github.com/kr/fs v0.1.0
+go: downloading gopkg.in/yaml.v3 v3.0.1
+=== RUN   TestConfine_Table
+--- PASS: TestConfine_Table (0.00s)
+=== RUN   TestConfine_DefaultRootIsSlash
+--- PASS: TestConfine_DefaultRootIsSlash (0.00s)
+=== RUN   TestWithin
+--- PASS: TestWithin (0.00s)
+=== RUN   TestFingerprintFormat
+--- PASS: TestFingerprintFormat (0.00s)
+=== RUN   TestHostPortNormalisation
+--- PASS: TestHostPortNormalisation (0.00s)
+=== RUN   TestHostKeyCallback_UnknownMismatchMatch
+--- PASS: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+=== RUN   TestHostKeyAlgorithmsFollowPinnedType
+--- PASS: TestHostKeyAlgorithmsFollowPinnedType (0.00s)
+=== RUN   TestMemPinStore
+--- PASS: TestMemPinStore (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600
+--- PASS: TestFilePinStore_PersistsWith0600 (0.00s)
+=== RUN   TestFilePinStore_CorruptFileIsAnErrorNotNoPins
+--- PASS: TestFilePinStore_CorruptFileIsAnErrorNotNoPins (0.00s)
+=== RUN   TestCredential_Redaction
+--- PASS: TestCredential_Redaction (0.00s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestIsTransient_Table
+--- PASS: TestIsTransient_Table (0.00s)
+=== RUN   TestRetry_BoundedAndTransientOnly
+--- PASS: TestRetry_BoundedAndTransientOnly (0.01s)
+=== RUN   TestRetry_ContextCancelStopsBackoff
+--- PASS: TestRetry_ContextCancelStopsBackoff (0.05s)
+=== RUN   TestMutatorsAreImpossible_NoConnectionNeeded
+--- PASS: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+=== RUN   TestGetConfigHasNoSecret
+--- PASS: TestGetConfigHasNoSecret (0.00s)
+=== RUN   TestToInfo_NoFabricatedMtime
+--- PASS: TestToInfo_NoFabricatedMtime (0.00s)
+=== RUN   TestNotConnectedOperationsFail
+--- PASS: TestNotConnectedOperationsFail (0.00s)
+=== RUN   TestConnectRefusesWithoutPinStoreOrCredential
+--- PASS: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+=== RUN   TestServer_ListReadStat
+--- PASS: TestServer_ListReadStat (0.01s)
+=== RUN   TestServer_PipelinedCopyAndRange
+--- PASS: TestServer_PipelinedCopyAndRange (0.05s)
+=== RUN   TestServer_ContextCancelStopsRead
+--- PASS: TestServer_ContextCancelStopsRead (0.01s)
+=== RUN   TestServer_HostKey_UnknownRefused_ThenPinned
+--- PASS: TestServer_HostKey_UnknownRefused_ThenPinned (0.01s)
+=== RUN   TestServer_HostKey_ChangedKeyRefused
+--- PASS: TestServer_HostKey_ChangedKeyRefused (0.00s)
+=== RUN   TestServer_AuthFailureNotRetried_NoSecretInError
+--- PASS: TestServer_AuthFailureNotRetried_NoSecretInError (0.00s)
+=== RUN   TestServer_TransientConnectRetriedThenSucceeds
+--- PASS: TestServer_TransientConnectRetriedThenSucceeds (0.01s)
+=== RUN   TestServer_TransientRetryIsBounded
+--- PASS: TestServer_TransientRetryIsBounded (0.00s)
+=== RUN   TestServer_PathConfinement
+    sftp_test.go:580: 
+        	Error Trace:	/src/submodules/filesystem/pkg/sftp/sftp_test.go:580
+        	Error:      	Expected error with "sftp: path escapes the configured root" in chain but got nil.
+        	Test:       	TestServer_PathConfinement
+    sftp_test.go:582: 
+        	Error Trace:	/src/submodules/filesystem/pkg/sftp/sftp_test.go:582
+        	Error:      	Expected error with "sftp: path escapes the configured root" in chain but got nil.
+        	Test:       	TestServer_PathConfinement
+--- FAIL: TestServer_PathConfinement (0.00s)
+=== RUN   TestServer_ListingReportsSymlinkAsLink
+--- PASS: TestServer_ListingReportsSymlinkAsLink (0.00s)
+=== RUN   TestServer_WritesImpossibleEvenWithWritablePermissions
+--- PASS: TestServer_WritesImpossibleEvenWithWritablePermissions (0.00s)
+=== RUN   TestServer_DisconnectedClientDoesNotSilentlyReconnect
+--- PASS: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.01s)
+=== RUN   TestServer_LostConnectionIsRedialled
+--- PASS: TestServer_LostConnectionIsRedialled (0.01s)
+=== RUN   TestServer_TestConnectionConnectsAndDisconnects
+--- PASS: TestServer_TestConnectionConnectsAndDisconnects (0.00s)
+=== RUN   TestServer_KeyAuth
+--- PASS: TestServer_KeyAuth (0.01s)
+=== RUN   TestServer_KeyWithPassphrase
+panic: test timed out after 45s
+	running tests:
+		TestServer_KeyWithPassphrase (45s)
+
+goroutine 566 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/local/go/src/testing/testing.go:2682 +0x359
+created by time.goFunc
+	/usr/local/go/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc000102c40, {0x7a1b89?, 0x0?}, 0x7b74f0)
+	/usr/local/go/src/testing/testing.go:2005 +0x485
+testing.runTests.func1(0xc000102c40)
+	/usr/local/go/src/testing/testing.go:2477 +0x3e
+testing.tRunner(0xc000102c40, 0xc00016dc70)
+	/usr/local/go/src/testing/testing.go:1934 +0xea
+testing.runTests(0xc000126378, {0xa616a0, 0x26, 0x26}, {0xa69740?, 0x95fce62e780d71ea?, 0xa68460?})
+	/usr/local/go/src/testing/testing.go:2475 +0x4b4
+testing.(*M).Run(0xc000118960)
+	/usr/local/go/src/testing/testing.go:2337 +0x63a
+main.main()
+	_testmain.go:119 +0x9b
+
+goroutine 532 [sync.WaitGroup.Wait]:
+sync.runtime_SemacquireWaitGroup(0xc00016be50?, 0xbc?)
+	/usr/local/go/src/runtime/sema.go:114 +0x2e
+sync.(*WaitGroup).Wait(0xc0000d5a30)
+	/usr/local/go/src/sync/waitgroup.go:206 +0x85
+digital.vasic.filesystem/pkg/sftp.startServerIn.func4()
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:110 +0x37
+testing.(*common).Cleanup.func1()
+	/usr/local/go/src/testing/testing.go:1308 +0x109
+testing.(*common).runCleanup(0xc0002bfc00, 0x8?)
+	/usr/local/go/src/testing/testing.go:1572 +0xea
+testing.tRunner.func2()
+	/usr/local/go/src/testing/testing.go:1928 +0x25
+testing.tRunner(0xc0002bfc00, 0x7b74f0)
+	/usr/local/go/src/testing/testing.go:1940 +0x114
+created by testing.(*T).Run in goroutine 1
+	/usr/local/go/src/testing/testing.go:1997 +0x465
+
+goroutine 510 [IO wait]:
+internal/poll.runtime_pollWait(0x722a0602ea00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000369980?, 0xc0003b2000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc000369980, {0xc0003b2000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc000369980, {0xc0003b2000?, 0xc000210fc0?, 0x60?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc000090438, {0xc0003b2000?, 0xc0004c4c00?, 0xc00025f410?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc0003b00c0, {0xc000392ce0, 0x4, 0xe0?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x81a260, 0xc0003b00c0}, {0xc000392ce0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc000392cd0, 0x71d240?, {0x81a260, 0xc0003b00c0})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc0003a67e0, 0x727a80?, 0x1)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc0003a67e0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc000077860, 0x0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc000077860)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 509
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:179 +0x125
+
+goroutine 548 [select]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc0001f51e0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:171 +0x248
+
+goroutine 534 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc000480010, 0x1)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x24?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00040a7e0, {0xc00025f4f0, 0x4, 0x4})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc00009be10, {0xc00025f4f0?, 0x419a1b?, 0x1c0003699a0?}, 0x5812cc0?)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0xc000043008?, {0xc00025f4f0?, 0xc00004dc50?, 0x47ac39?})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x81a980, 0xc00040ed80}, {0xc00025f4f0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x81a980, 0xc00040ed80}, 0x0, 0x4de38?)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*Server).Serve(0xc00040c9a0)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:396 +0x11b
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve.func1()
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:138 +0x169
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 509
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:131 +0x21a
+
+goroutine 549 [chan receive]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc000077860)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc00048f580)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc00048f580)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 509
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 540 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 541 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 542 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 539 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 509 [chan receive]:
+digital.vasic.filesystem/pkg/sftp.(*testServer).serve(0xc00033b260?, {0x81e958?, 0xc000090438?}, 0x10000c00003efd0?)
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:122 +0x137
+digital.vasic.filesystem/pkg/sftp.startServerIn.func3.1()
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:106 +0x58
+created by digital.vasic.filesystem/pkg/sftp.startServerIn.func3 in goroutine 533
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:104 +0x148
+
+goroutine 547 [IO wait]:
+internal/poll.runtime_pollWait(0x722a0602ee00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc00048f100?, 0xc0004b5000?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc00048f100, {0xc0004b5000, 0x1000, 0x1000})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x279
+net.(*netFD).Read(0xc00048f100, {0xc0004b5000?, 0xc00008d500?, 0xa0?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x25
+net.(*conn).Read(0xc0001c6318, {0xc0004b5000?, 0xc00047e000?, 0xc000408840?})
+	/usr/local/go/src/net/net.go:196 +0x45
+bufio.(*Reader).Read(0xc0004d6000, {0xc00042a4c0, 0x4, 0x100?})
+	/usr/local/go/src/bufio/bufio.go:245 +0x197
+io.ReadAtLeast({0x81a260, 0xc0004d6000}, {0xc00042a4c0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+golang.org/x/crypto/ssh.(*gcmCipher).readCipherPacket(0xc00042a4b0, 0x71d240?, {0x81a260, 0xc0004d6000})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/cipher.go:375 +0x56
+golang.org/x/crypto/ssh.(*connectionState).readPacket(0xc0002637a0, 0x727a80?, 0x1)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/transport.go:141 +0x42
+golang.org/x/crypto/ssh.(*transport).readPacket(0xc0002637a0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/transport.go:124 +0x2b
+golang.org/x/crypto/ssh.(*handshakeTransport).readOnePacket(0xc0001f51e0, 0x0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:422 +0x34
+golang.org/x/crypto/ssh.(*handshakeTransport).readLoop(0xc0001f51e0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:238 +0x39
+created by golang.org/x/crypto/ssh.newClientTransport in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:170 +0x20c
+
+goroutine 551 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc000397150, 0x2)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0xc0001028c0?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00037f660, {0xc0003532c0, 0x4, 0x4})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc000345860, {0xc0003532c0?, 0x6?, 0x10000000000?}, 0x580b158?)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:376 +0x8e
+golang.org/x/crypto/ssh.(*channel).Read(0xc000043808?, {0xc0003532c0?, 0xc000314d60?, 0x47ac39?})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:575 +0x25
+io.ReadAtLeast({0x81a980, 0xc0003a4500}, {0xc0003532c0, 0x4, 0x4}, 0x4)
+	/usr/local/go/src/io/io.go:335 +0x8e
+io.ReadFull(...)
+	/usr/local/go/src/io/io.go:354
+github.com/pkg/sftp.recvPacket({0x81a980, 0xc0003a4500}, 0x0, 0x6c8a0?)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet.go:321 +0xa5
+github.com/pkg/sftp.(*conn).recvPacket(...)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/conn.go:26
+github.com/pkg/sftp.(*clientConn).recv(0xc0003a4500)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/conn.go:96 +0xc5
+github.com/pkg/sftp.newClientPipe.func2()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/client.go:287 +0x4e
+created by github.com/pkg/sftp.newClientPipe in goroutine 532
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/client.go:284 +0x445
+
+goroutine 543 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 563 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc0003970d0, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0x64d5e7?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*mux).Wait(0xc000369f00)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:111 +0x7c
+golang.org/x/crypto/ssh.NewClient.func1()
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:62 +0x24
+created by golang.org/x/crypto/ssh.NewClient in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:61 +0x156
+
+goroutine 562 [chan receive]:
+golang.org/x/crypto/ssh.(*Client).handleChannelOpens(0xc000398e10, 0xc00039d420)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:178 +0x47
+created by golang.org/x/crypto/ssh.NewClient in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:60 +0x118
+
+goroutine 564 [chan receive]:
+golang.org/x/crypto/ssh.(*Session).wait(0xc00029dfd0?, 0xc00039d570)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/session.go:423 +0x65
+golang.org/x/crypto/ssh.newSession.func1()
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/session.go:596 +0x25
+created by golang.org/x/crypto/ssh.newSession in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/session.go:595 +0xea
+
+goroutine 536 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 565 [sync.Cond.Wait]:
+sync.runtime_notifyListWait(0xc000397190, 0x0)
+	/usr/local/go/src/runtime/sema.go:606 +0x159
+sync.(*Cond).Wait(0xa69740?)
+	/usr/local/go/src/sync/cond.go:71 +0x73
+golang.org/x/crypto/ssh.(*buffer).Read(0xc00037f6a0, {0xc0001e4000, 0x2000, 0x2000})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/buffer.go:94 +0x1e5
+golang.org/x/crypto/ssh.(*channel).ReadExtended(0xc000345860, {0xc0001e4000?, 0x71c280?, 0xc00040c308?}, 0x12180?)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:374 +0x35
+golang.org/x/crypto/ssh.(*extChannel).Read(0xa5b180?, {0xc0001e4000?, 0xc0002bea80?, 0x627e88?})
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/channel.go:525 +0x25
+io.discard.ReadFrom({}, {0x722a069c51c8, 0xc000337450})
+	/usr/local/go/src/io/io.go:666 +0x6d
+io.copyBuffer({0x819fe0, 0xa88e20}, {0x722a069c51c8, 0xc000337450}, {0x0, 0x0, 0x0})
+	/usr/local/go/src/io/io.go:415 +0x151
+io.Copy(...)
+	/usr/local/go/src/io/io.go:388
+github.com/pkg/sftp.newClientPipe.func1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/client.go:267 +0x2c
+created by github.com/pkg/sftp.newClientPipe in goroutine 532
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/client.go:261 +0x29b
+
+goroutine 535 [select]:
+github.com/pkg/sftp.(*packetManager).controller(0xc00040c930)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet-manager.go:153 +0xcd
+created by github.com/pkg/sftp.newPktMgr in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet-manager.go:39 +0x1b6
+
+goroutine 513 [chan receive]:
+golang.org/x/crypto/ssh.(*Client).handleGlobalRequests(...)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:169
+created by golang.org/x/crypto/ssh.NewClient in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/client.go:59 +0xca
+
+goroutine 537 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 512 [chan receive]:
+golang.org/x/crypto/ssh.(*handshakeTransport).readPacket(0xc0001f51e0)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:228 +0x33
+golang.org/x/crypto/ssh.(*mux).onePacket(0xc000369f00)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:237 +0x24
+golang.org/x/crypto/ssh.(*mux).loop(0xc000369f00)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:212 +0x25
+created by golang.org/x/crypto/ssh.newMux in goroutine 532
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/mux.go:129 +0x16b
+
+goroutine 538 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc00040ca10)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 511 [select]:
+golang.org/x/crypto/ssh.(*handshakeTransport).kexLoop(0xc000077860)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:313 +0x51a
+created by golang.org/x/crypto/ssh.newServerTransport in goroutine 509
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/handshake.go:180 +0x165
+
+goroutine 550 [chan receive]:
+golang.org/x/crypto/ssh.DiscardRequests(...)
+	/tmp/go/pkg/mod/golang.org/x/crypto@v0.54.0/ssh/connection.go:87
+created by digital.vasic.filesystem/pkg/sftp.(*testServer).serve in goroutine 509
+	/src/submodules/filesystem/pkg/sftp/testserver_test.go:121 +0x105
+
+goroutine 544 [chan receive]:
+github.com/pkg/sftp.(*Server).sftpServerWorker(0xc00040c9a0, 0xc0002d5490)
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:191 +0x4c
+github.com/pkg/sftp.(*Server).Serve.func2.1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:384 +0x50
+created by github.com/pkg/sftp.(*Server).Serve.func2 in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/server.go:382 +0x93
+
+goroutine 545 [chan receive]:
+github.com/pkg/sftp.(*packetManager).workerChan.func1()
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet-manager.go:127 +0x5d
+created by github.com/pkg/sftp.(*packetManager).workerChan in goroutine 534
+	/tmp/go/pkg/mod/github.com/pkg/sftp@v1.13.11/packet-manager.go:126 +0xff
+FAIL	digital.vasic.filesystem/pkg/sftp	45.055s
+FAIL

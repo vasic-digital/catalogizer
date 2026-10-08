@@ -1,0 +1,18 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX09 - reviewer: no QUIT / close after a failed login
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFailedLogin_SaysQuitAndClosesTheConnection_MX09 (3.01s)
+    fix_r2_net_test.go:992: 
+        	Error Trace:	/out/mut/MX09/filesystem/pkg/ftp/fix_r2_net_test.go:992
+        	Error:      	Should be true
+        	Test:       	TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+        	Messages:   	the control connection of a failed login must be closed
+    fix_r2_net_test.go:993: 
+        	Error Trace:	/out/mut/MX09/filesystem/pkg/ftp/fix_r2_net_test.go:993
+        	Error:      	"0" is not greater than or equal to "1"
+        	Test:       	TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+        	Messages:   	and the client says goodbye
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.841s
+FAIL

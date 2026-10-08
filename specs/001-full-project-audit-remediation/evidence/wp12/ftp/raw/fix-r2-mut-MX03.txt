@@ -1,0 +1,24 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX03 - reviewer: base directory not canonicalised with PWD
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_EveryControlCommandIsBounded (4.28s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PWD (0.00s)
+        fix_r2_net_test.go:366: 
+            	Error Trace:	/out/mut/MX03/filesystem/pkg/ftp/fix_r2_net_test.go:366
+            	Error:      	An error is expected but got nil.
+            	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PWD
+--- FAIL: TestBaseDirectory_IsCanonicalisedWithPWD_MX03 (0.00s)
+    fix_r2_net_test.go:1194: 
+        	Error Trace:	/out/mut/MX03/filesystem/pkg/ftp/fix_r2_net_test.go:1194
+        	Error:      	[]string{"AUTH TLS", "USER u", "PASS ***", "FEAT", "TYPE I", "OPTS UTF8 ON", "PBSZ 0", "PROT P", "CWD /data/sub/..", "MLST /data/sub/../a.txt"} does not contain "MLST /data/a.txt"
+        	Test:       	TestBaseDirectory_IsCanonicalisedWithPWD_MX03
+        	Messages:   	paths are built on the server's own answer to PWD, not on the configured spelling
+    fix_r2_net_test.go:1197: 
+        	Error Trace:	/out/mut/MX03/filesystem/pkg/ftp/fix_r2_net_test.go:1197
+        	Error:      	"MLST /data/sub/../a.txt" should not contain "/.."
+        	Test:       	TestBaseDirectory_IsCanonicalisedWithPWD_MX03
+        	Messages:   	MLST /data/sub/../a.txt
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.660s
+FAIL

@@ -1,0 +1,22 @@
+# identity: WP-12 PA-04 fix round 2: mutant W4 - factory: trusted_lan is always true
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/factory, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet (0.00s)
+    ftp_factory_test.go:223: 
+        	Error Trace:	/out/mut/W4/filesystem/pkg/factory/ftp_factory_test.go:223
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)"
+        	            	in chain: "fabric: authentication failure: ftp: login refused at USER: 530 user rejected"
+        	            		"fabric: authentication failure"
+        	            		"ftp: login refused at USER: 530 user rejected"
+        	Test:       	TestFTPFactory_ClearText_NeedsTrustedLAN_AndIsHonouredWhenSet
+--- FAIL: TestFTPFactory_SettingsReachTheClient_Config (0.00s)
+    ftp_factory_test.go:254: 
+        	Error Trace:	/out/mut/W4/filesystem/pkg/factory/ftp_factory_test.go:254
+        	Error:      	"&{Host:nas.local Port:21 Username: CredentialRef: Path: TLSMode:explicit TrustedLAN:true AllowDegradedList:false}" does not contain "TrustedLAN:false"
+        	Test:       	TestFTPFactory_SettingsReachTheClient_Config
+        	Messages:   	defaults: explicit TLS, no trusted LAN, no degraded listing
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.017s
+FAIL

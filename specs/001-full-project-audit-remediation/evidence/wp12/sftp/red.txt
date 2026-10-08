@@ -1,0 +1,44 @@
+# identity: WP-12 PA-05 RED (behaviour stubbed skeleton) 
+# head: 4c8b07b7 (main), working tree dirty
+# run_at: 2026-10-07 (python3 -I mutate_sftp.py red)
+# honesty: the implementation was written BEFORE the tests (a process deviation from 11.4.224(A)). The RED below is the test suite run against a copy of the package whose behaviour is
+#   replaced by stubs (dial/Pin/DiscoverAll/confine/IsTransient/retry/mutators/mtime/hostKeyCallback/Credential.String; list in mutate_sftp.py RED), the package still compiles.
+#   32 distinct tests fail; the failing names are listed in out/red-summary.json. Tests that exercise only unstubbed helpers pass in RED by construction.
+--- FAIL: TestConfine_Table (0.00s)
+--- FAIL: TestConfine_DefaultRootIsSlash (0.00s)
+--- FAIL: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+--- FAIL: TestCredential_Redaction (0.00s)
+--- FAIL: TestIsTransient_Table (0.00s)
+--- FAIL: TestRetry_BoundedAndTransientOnly (0.00s)
+--- FAIL: TestRetry_ContextCancelStopsBackoff (0.05s)
+--- FAIL: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+--- FAIL: TestToInfo_NoFabricatedMtime (0.00s)
+--- FAIL: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+--- FAIL: TestServer_ListReadStat (0.00s)
+--- FAIL: TestServer_PipelinedCopyAndRange (0.01s)
+--- FAIL: TestServer_ContextCancelStopsRead (0.02s)
+--- FAIL: TestServer_HostKey_UnknownRefused_ThenPinned (0.00s)
+--- FAIL: TestServer_HostKey_ChangedKeyRefused (0.00s)
+--- FAIL: TestServer_AuthFailureNotRetried_NoSecretInError (0.00s)
+--- FAIL: TestServer_TransientConnectRetriedThenSucceeds (0.00s)
+--- FAIL: TestServer_TransientRetryIsBounded (0.00s)
+--- FAIL: TestServer_PathConfinement (0.00s)
+--- FAIL: TestServer_ListingReportsSymlinkAsLink (0.00s)
+--- FAIL: TestServer_WritesImpossibleEvenWithWritablePermissions (0.00s)
+--- FAIL: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.00s)
+--- FAIL: TestServer_LostConnectionIsRedialled (0.00s)
+--- FAIL: TestServer_TestConnectionConnectsAndDisconnects (0.00s)
+--- FAIL: TestServer_KeyAuth (0.00s)
+--- FAIL: TestServer_KeyWithPassphrase (0.16s)
+--- FAIL: TestServer_GarbageKeyIsRedacted (0.00s)
+--- FAIL: TestDiscoverDoesNotAuthenticate (0.00s)
+--- FAIL: TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds (0.00s)
+--- FAIL: TestPin_RefusesEmptyOwnerOrFingerprint (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	0.271s
+--- FAIL: TestDefaultFactory_CreateClient_SFTP (0.00s)
+--- FAIL: TestDefaultFactory_SFTP_RefusesToConnectWithoutPinStore (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/factory	0.007s
+FAIL
+# exit: 1

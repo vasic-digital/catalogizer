@@ -1,0 +1,28 @@
+# identity: WP-12 PA-04 mutation run (24 unit mutants)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+M01 KILLED 6 failing
+M02 KILLED 2 failing
+M03 KILLED 3 failing
+M04 KILLED 2 failing
+M05 KILLED 1 failing
+M06 KILLED 3 failing
+M07 KILLED 1 failing
+M08 KILLED 1 failing
+M09 KILLED 1 failing
+M10 KILLED 2 failing
+M11 KILLED 2 failing
+M12 KILLED 1 failing
+M13 KILLED 1 failing
+M14 KILLED 1 failing
+M15 KILLED 2 failing
+M16 KILLED 1 failing
+M17 KILLED 3 failing
+M18 KILLED 1 failing
+M19 KILLED 1 failing
+M20 KILLED 1 failing
+M21 KILLED 2 failing
+M22 KILLED 2 failing
+M23 KILLED 6 failing
+M24 KILLED 1 failing
+TOTAL 24 KILLED 24 SURVIVED [] INVALID []

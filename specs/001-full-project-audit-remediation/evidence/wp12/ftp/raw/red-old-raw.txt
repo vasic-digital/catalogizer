@@ -1,0 +1,26 @@
+# identity: WP-12 PA-04 RED: pre-change client (git HEAD ftp.go) under the new tests
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+# digital.vasic.filesystem/pkg/ftp [digital.vasic.filesystem/pkg/ftp.test]
+pkg/ftp/ftps_test.go:35:63: undefined: Credential
+pkg/ftp/ftps_test.go:50:43: undefined: MemPinStore
+pkg/ftp/ftps_test.go:59:31: undefined: PinStore
+pkg/ftp/ftps_test.go:900:29: undefined: CertPin
+pkg/ftp/fakeserver_test.go:96:9: undefined: Fingerprint
+pkg/ftp/ftp_test.go:44:29: undefined: PublicConfig
+pkg/ftp/ftp_test.go:50:18: undefined: TLSExplicit
+pkg/ftp/ftp_test.go:166:3: unknown field TLSMode in struct literal of type Config
+pkg/ftp/ftp_test.go:166:13: undefined: TLSNone
+pkg/ftp/ftp_test.go:166:22: unknown field TrustedLAN in struct literal of type Config
+pkg/ftp/ftp_test.go:166:22: too many errors
+FAIL	digital.vasic.filesystem/pkg/ftp [build failed]
+ok  	digital.vasic.filesystem/pkg/factory	0.008s
+FAIL

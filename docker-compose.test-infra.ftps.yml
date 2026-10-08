@@ -1,0 +1,57 @@
+# =============================================================================
+# FTP / explicit FTPS test fixture for submodules/filesystem/pkg/ftp (WP-12 PA-04)
+# =============================================================================
+#
+# One pure-ftpd server (the image of IMG-INFRA-FTP, the same digest as docker-compose.test-infra.yml) that accepts BOTH clear-text FTP and
+# explicit FTPS (AUTH TLS; pure-ftpd --tls=1), with a certificate GENERATED PER RUN by the launcher. Start and stop ONLY through
+#
+#   scripts/test-infra/ftps_fixture.sh run -- <go test arguments>
+#
+# which generates the per-run user/password and the certificate (mode 0600, under .audit/scratch), registers a long operation, starts this file,
+# runs the integration tests in the pinned IMG-GO container on the same network, checks that the served tree was NOT modified (sink-side
+# evidence that the read-only scan path never wrote), and tears everything down.
+#
+# Rules (the same as docker-compose.test-infra.yml, docs/16 D-06, D-07):
+#   - the image is pinned by its index digest; no credential and no certificate is a literal (the user/password are ${FTPS_*} variables
+#     generated per run by the launcher, the certificate+key is a mounted file generated per run);
+#   - every service carries the labels project=catalogizer, op_id / catalogizer.op_id (the registered operation of the run);
+#   - rootless: no privileged mode, no kernel mount, no published host port (the test container joins this project's network). The one added
+#     capability is AUDIT_WRITE (pure-ftpd exits 252 without it under this host's podman defaults, see docker-compose.test-infra.yml).
+#   - passive range 30000-30009 is reachable on the project network; the clients use EPSV, which needs no advertised address.
+# =============================================================================
+
+x-podman:
+  in_pod: false
+
+x-labels: &labels
+  project: catalogizer
+  op_id: "${FTPS_OP_ID:?FTPS_OP_ID is set by scripts/test-infra/ftps_fixture.sh}"
+  catalogizer.op_id: "${FTPS_OP_ID:?FTPS_OP_ID is set by scripts/test-infra/ftps_fixture.sh}"
+  catalogizer.test_project: "${FTPS_PROJECT:?FTPS_PROJECT is set by scripts/test-infra/ftps_fixture.sh}"
+
+services:
+  ftp:
+    image: docker.io/stilliard/pure-ftpd@sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a
+    pull_policy: never
+    labels: *labels
+    cap_add:
+      - AUDIT_WRITE
+    environment:
+      FTP_USER_NAME: "${FTPS_USER:?}"
+      FTP_USER_PASS: "${FTPS_PASSWORD:?}"
+      FTP_USER_HOME: /home/ftpusers/ftpdata
+      FTP_PASSIVE_PORTS: "30000:30009"
+      FTP_MAX_CLIENTS: "10"
+      FTP_MAX_CONNECTIONS: "5"
+      # 1 = TLS accepted but not required, so one server serves the clear-text and the explicit-FTPS tests
+      ADDED_FLAGS: "--tls=1"
+    volumes:
+      - "${FTPS_DIR:?}/data:/home/ftpusers/ftpdata"
+      - "${FTPS_DIR:?}/pure-ftpd.pem:/etc/ssl/private/pure-ftpd.pem:ro"
+    networks: [test-network]
+    mem_limit: 256m
+    cpus: 0.25
+
+networks:
+  test-network:
+    driver: bridge

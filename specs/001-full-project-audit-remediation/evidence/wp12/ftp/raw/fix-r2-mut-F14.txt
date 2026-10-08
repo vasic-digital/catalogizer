@@ -1,0 +1,21 @@
+# identity: WP-12 PA-04 fix round 2: mutant F14 - Pin/DiscoverCert port 0 is dialled as port 0
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestPin_PortZero_MeansTheFTPDefaultPort_F14 (0.00s)
+    fix_r2_net_test.go:1127: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1127
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" should not contain "127.0.0.1:0"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+        	Messages:   	port 0 must dial 21 like Connect does
+    fix_r2_net_test.go:1128: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1128
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+    fix_r2_net_test.go:1131: 
+        	Error Trace:	/out/mut/F14/filesystem/pkg/ftp/fix_r2_net_test.go:1131
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.042s
+FAIL

@@ -1,0 +1,30 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M21.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/kr/fs v0.1.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT (0.01s)
+    ftps_test.go:90: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:90
+        	Error:      	Should be true
+        	Test:       	TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+        	Messages:   	OPTS UTF8 ON right after login: [AUTH TLS USER u PASS *** FEAT TYPE I PBSZ 0 PROT P CWD /data PWD]
+    ftps_test.go:91: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:91
+        	Error:      	[]string{"AUTH TLS", "USER u", "PASS ***", "FEAT", "TYPE I", "PBSZ 0", "PROT P", "CWD /data", "PWD"} does not contain "OPTS UTF8 ON"
+        	Test:       	TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+--- FAIL: TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent (0.03s)
+    ftps_test.go:391: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:391
+        	Error:      	[]string{"a.txt", "big.bin", "sub", "\x7f\x7f\x7f_\x7f\x7f.txt"} does not contain "Čšž_日本.txt"
+        	Test:       	TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.724s
+ok  	digital.vasic.filesystem/pkg/factory	0.008s
+FAIL

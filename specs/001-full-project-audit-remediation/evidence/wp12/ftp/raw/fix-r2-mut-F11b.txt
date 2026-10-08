@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F11b - a re-dial does not close the connection it replaces
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestReDial_ClosesTheConnectionItReplaces (3.01s)
+    fix_r2_net_test.go:1474: 
+        	Error Trace:	/out/mut/F11b/filesystem/pkg/ftp/fix_r2_net_test.go:1474
+        	Error:      	Should be true
+        	Test:       	TestReDial_ClosesTheConnectionItReplaces
+        	Messages:   	exactly one connection stays open: the poisoned one was closed, not leaked
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	19.071s
+FAIL

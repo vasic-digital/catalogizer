@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6e - a listing line that cannot be parsed is silently dropped
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6 (0.01s)
+    fix_r2_list_test.go:192: 
+        	Error Trace:	/out/mut/F6e/filesystem/pkg/ftp/fix_r2_list_test.go:192
+        	Error:      	Expected error with "ftp: directory listing has lines that could not be parsed" in chain but got nil.
+        	Test:       	TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6
+        	Messages:   	a partial listing is never returned as complete
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.052s
+FAIL

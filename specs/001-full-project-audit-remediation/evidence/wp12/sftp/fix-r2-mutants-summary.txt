@@ -1,0 +1,85 @@
+# fix-r2 mutation run: python3 -I fix-r2-mutants.py run <dir>   (unit suite of ./pkg/sftp/ [+ ./pkg/factory/ for the factory mutants] in the pinned IMG-GO container, one mutant per copy)
+# FINAL pass: 70 mutants + 2 negative controls. Z00 = unmutated copy: PASSES (SURVIVED = the suite is green). Z01 = comment-only edit: SURVIVES (the harness can report survival).
+# Result of the final pass: 69 KILLED, 1 SURVIVED (Q01), 0 INVALID/ERROR.
+# Q01 needs the race detector AND a scheduling window. It was killed in pass 1 (by chance), SURVIVED the final pass and 3 reruns of the 1000-iteration test, and after the test was changed to let the AfterFunc goroutine run first (time.Sleep) the final tree kills it 3 times out of 3 (last lines).
+# PASS 1 (an earlier full pass, on an earlier tree; fix-r2-mutants-pass1-results.json): 57 KILLED, 8 SURVIVED (Z00 Z01 N09 N13 N16 N17 N19 P04), 6 INVALID/ERROR (R02 N07 N20 P05 F02 F03). What changed because of it:
+#   N09 N16 N17 -> new deterministic tests (keepalive probe against a blind connection object, probe hook for the end-of-file wiring); N19 -> TestStuckRequestReturnsTheContextError; P04 -> TestFilePinStore_RefusesANonRegularPinFile (the symlink case was masked by the mode check);
+#   N13 -> equivalent: the `stateDown` case of acquire was redundant with `state != stateLost`; the code was simplified to one case and the mutant re-pointed; the `downs` counter (N03) was likewise redundant and was removed;
+#   R02 N07 N20 P05 F02 F03 -> the MUTANTS did not compile or was classified wrongly (an out-of-memory kill is now a kill); mutants fixed, not tests. N07 showed what an unbounded frame length costs: the test binary was OOM-killed trying to allocate ~4 GiB.
+#
+# id    pass1     final     failing tests (up to 3)                                             description
+Z00   SURVIVED  SURVIVED                                                                         NEGATIVE CONTROL: unmutated copy (must PASS)
+Z01   SURVIVED  SURVIVED                                                                         NEGATIVE CONTROL: comment-only edit (must SURVIVE; shows the harness reports survival)
+R01   KILLED    KILLED    TestPipelinedReadKeepsSeveralRequestsInFlight, TestRangedReadIsPipelin pipelining off
+R02   INVALID   KILLED    TestFileReadAndCopyVerifyTheConnectionBeforeReportingTheEnd, TestReadA file.WriteTo removed
+R03   KILLED    KILLED    TestRaw_ListingDropsDotEntries                                         ListDirectory keeps '.' and '..'
+R04   KILLED    KILLED    TestContextEndClosesTheRemoteFile                                      context end no longer closes the open file
+R05   KILLED    KILLED    TestContextCancelEndsTheHandshake, TestReview_P2_ConnectHonoursContext handshake not cancellable by ctx
+R06   KILLED    KILLED    TestDialTimeoutBoundsTheHandshake                                      handshake deadline removed
+R07   KILLED    KILLED    TestDisconnectReleasesTheConnection, TestKeepaliveCanBeDisabled        Disconnect closes nothing
+R08   KILLED    KILLED    TestClientWipesWhatTheResolverHandedOver                               client never wipes the resolved credential
+R09   KILLED    KILLED    TestDefaultFactory_SFTP_UsesTheInstalledPinStoreEndToEnd               factory ignores sftp.DefaultPinStore
+R10   KILLED    KILLED    TestTestConnectionRefusesAFileAsRoot                                   TestConnection accepts a root that is not a directory
+R11   KILLED    KILLED    TestListDirectoryStopsAtTheContextOnASlowServer                        ListDirectory ignores ctx (ReadDir)
+R12   KILLED    KILLED    TestClassification_LossImpliesTransient, TestIsTransient_Table         every net.Error is a connection loss / transient
+R13   KILLED    KILLED    TestReadRangeNegativeOffsetIsRefusedUpFront                            ReadRange negative-offset guard removed
+R14   KILLED    KILLED    TestListingOnAConnectionThatEndedDuringItIsRefused, TestReview_P3_Test SANITY: a lost connection is never marked lost
+R15   KILLED    KILLED    TestHostKeyRefusalIsReturnedAsTheTypedErrorItself                      dial drops the captured typed host key refusal (reviewer: EQUIVALENT, x/crypto wraps with %w)
+R16   KILLED    KILLED    TestFileExistsReportsAnEscapeAsAnError                                 FileExists reports a path escape as 'does not exist'
+R17   KILLED    KILLED    TestConfine_Table, TestReview_P5_BackslashNameReadsAnotherFile         confine rewrites backslashes again (SFTP-07 back)
+R18   KILLED    KILLED    TestBackoffIsExponentialAndCapped                                      backoff constant instead of exponential
+R19   KILLED    KILLED    TestGetFileInfoRootIsNamedSlash                                        GetFileInfo('/') no longer named '/'
+R20   KILLED    KILLED    TestContainmentFailsClosedButReportsNotExist, TestReview_P12_Containme containment fails OPEN again (SFTP-06 back)
+R21   KILLED    KILLED    TestClassification_LossImpliesTransient, TestReview_P6_EOFStatusTearsD io.EOF classified as connection loss again (SFTP-05 back)
+M01   KILLED    KILLED    TestServer_AuthFailureNotRetried_NoSecretInError, TestServer_KeyAuth,  auth failure becomes transient
+M02   KILLED    KILLED    TestHostKeyCallback_UnknownMismatchMatch, TestHostKeyRefusalIsReturned unpinned host key accepted (TOFU)
+M03   KILLED    KILLED    TestHostKeyCallback_UnknownMismatchMatch, TestHostKeyRefusalIsReturned a CHANGED host key accepted
+M04   KILLED    KILLED    TestConfine_Table, TestFileExistsReportsAnEscapeAsAnError, TestServer_ '..' clamps at the root instead of refusing
+M05   KILLED    KILLED    TestMutatorsAreImpossible_NoConnectionNeeded, TestServer_WritesImpossi WriteFile no longer refused
+M06   KILLED    KILLED    TestToInfo_NoFabricatedMtime                                           an absent mtime is fabricated as now
+M07   KILLED    KILLED    TestBackoffIsExponentialAndCapped, TestRetry_BoundedAndTransientOnly,  retry budget off by one
+M08   KILLED    KILLED    TestCheckWithinRefusesWhenTheResolvedRootIsUnknown, TestContainmentFai server-side containment check disabled
+M09   KILLED    KILLED    TestCredential_Redaction                                               Credential.String leaks the password
+M10   KILLED    KILLED    TestServer_HostKey_UnknownRefused_ThenPinned                           Pin records whatever the server presents
+M11   KILLED    KILLED    TestReview_P4_DisconnectDuringRedial, TestServer_DisconnectedClientDoe Disconnect leaves the client re-dialable
+M13   KILLED    KILLED    TestWithin                                                             containment prefix accepts a sibling with the same prefix
+M14   KILLED    KILLED    TestContainmentFailsClosedButReportsNotExist, TestFileExistsReportsAnE FileExists reports a missing file as an error
+N01   KILLED    KILLED    TestSeekEndHonoursContextOnHungServer, timeout: the run did not comple cancellation guard never closes the connection
+N02   KILLED    KILLED    TestCancelOfOneStreamDoesNotKillTheSharedConnection                    no cancel grace: a cancel closes the shared connection at once
+N04   KILLED    KILLED    TestReview_P10_ConcurrentRedialStorm                                   no single-flight re-dial (SFTP-04 back)
+N05   KILLED    KILLED    TestReview_P3_TestConnectionOnLostConnection, TestServer_ListReadStat  TestConnection disconnects the caller's client (SFTP-02 back)
+N06   KILLED    KILLED    panic: the test binary crashed                                         reply validator off (SFTP-08 back)
+N07   ERROR     KILLED    TestFrameReader_LengthAndEOFHandling                                   reply validator accepts an over-long frame
+N08   KILLED    KILLED    TestProtectTurnsAPanicIntoAFaultAndClosesTheConnection                 no recover boundary
+N09   SURVIVED  KILLED    TestAliveProbesTheTransport, TestConcurrentCallsAfterLossAreRaceFreeAn alive() always says alive
+N21   -         KILLED    TestAliveTimesOutOnASilentPeer                                         alive() treats a silent peer (timeout) as alive
+N10   KILLED    KILLED    TestKeepaliveEndsACallOnAHalfOpenLink                                  keepalive never runs
+N11   KILLED    KILLED    TestConn_ListingBudget, TestRaw_ListingLimit                           listing limit not enforced
+N12   KILLED    KILLED    TestRangedReadIsPipelinedToo                                           ranged reads use a one-packet window (no pipelining)
+N13   SURVIVED  KILLED    TestReview_P4_DisconnectDuringRedial                                   implicit re-dial installs over a Disconnect (SFTP-03 back)
+N14   KILLED    KILLED    TestCloseIsBoundedOnAStalledServer                                     bounded Close timer never fires
+N15   KILLED    KILLED    TestRunClassifiesIOEOFByTheStateOfTheConnection                        a STATUS EOF is reported as the bare io.EOF (transient, SFTP-05 back)
+N16   SURVIVED  KILLED    TestReadAndWriteToConsultTheConnectionBeforeReportingTheEnd            a read that ends on a dead connection is an EOF
+N17   SURVIVED  KILLED    TestReadAndWriteToConsultTheConnectionBeforeReportingTheEnd            a copy that ends on a dead connection is a clean end
+N18   KILLED    KILLED    TestRaw_ListingLimit, TestRaw_MalformedReplyIsNotRetriedAndLeavesTheCl malformed-reply fault not returned (a generic lost-connection error instead)
+N19   SURVIVED  KILLED    TestStuckRequestReturnsTheContextError                                 context error not mapped after a guard close
+N20   INVALID   KILLED    TestContainmentFailsClosedButReportsNotExist, TestReview_P12_Containme server-side containment root not resolved at dial
+L01   KILLED    KILLED    TestListingOnAConnectionThatEndedDuringItIsRefused                     a listing on a connection that ended during it is accepted
+Q01   KILLED    SURVIVED                                                                         newFile publishes its stop function without the lock (nil-func panic / data race when the context ha
+P01   KILLED    KILLED    TestFilePinStore_RefusesAFileOthersCanWrite                            pin file writable by others is read
+P02   KILLED    KILLED    TestFilePinStore_RefusesADirectoryOthersCanWriteUnlessSticky           pin directory writable by others accepted
+P03   KILLED    KILLED    TestFilePinStore_ConcurrentWritersLoseNothing                          no cross-process lock on the pin file
+P04   SURVIVED  KILLED    TestFilePinStore_RefusesANonRegularPinFile                             a non-regular pin file (symlink, directory) accepted
+P05   INVALID   KILLED    TestTrustedOwner                                                       foreign owner accepted
+E01   KILLED    KILLED    TestEnvCredentialResolver_NoCollisions                                 env credential refs not validated (SFTP-16 back)
+E02   KILLED    KILLED    TestEnvCredentialResolver, TestEnvCredentialResolver_NoCollisions      env credential names fold case
+F01   KILLED    KILLED    TestDefaultFactory_SFTP_RejectsEverySecretLikeSetting                  factory accepts inline secrets other than 'password'
+F02   INVALID   KILLED    TestDefaultFactory_SFTP_EmptyPathDoesNotWidenTheRoot                   factory: an empty path wins over root
+F03   INVALID   KILLED    TestDefaultFactory_SFTP_PortIsValidated                                factory: port not validated
+D01   KILLED    KILLED    TestDiscoverAllHonoursContextAfterConnect                              Discover ignores ctx after the TCP connect
+K01   KILLED    KILLED    TestReview_P9_KeyboardInteractiveOnlyServer                            no keyboard-interactive login (SFTP-12 back)
+K02   KILLED    KILLED    TestIsAuthFailure, TestWrongPasswordIsAnAuthErrorEvenWhenKeyboardInter keyboard-interactive failure not recognised as an auth failure
+K03   KILLED    KILLED    TestKbdAnswer                                                          keyboard-interactive answers echoed prompts with the password
+#
+# Q01 reruns on the FINAL tree: KILLED, KILLED, KILLED (logs fix-r2-mutants-q01-final-reruns.json)
+# R15 (the reviewer: EQUIVALENT) is killed by TestHostKeyRefusalIsReturnedAsTheTypedErrorItself, which asserts the refusal is returned as the typed error itself, unwrapped.

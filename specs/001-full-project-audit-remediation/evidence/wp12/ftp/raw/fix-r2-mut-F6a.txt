@@ -1,0 +1,59 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6a - MLSD type values are case-sensitive
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=Dir;Modify=20200517103000; UpperDir
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	TYPE=DIR;Modify=20200517103000; U2
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=OS.unix=symlink;Modify=20200517103000; link
+    fix_r2_list_test.go:83: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:83
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=OS.unix=slink:/target;Modify=20200517103000; link2
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:175: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:175
+        	Error:      	Should be true
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+    fix_r2_list_test.go:176: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:176
+        	Error:      	Not equal: 
+        	            	expected: 0x80000000
+        	            	actual  : 0x80000
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+    fix_r2_list_test.go:178: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:178
+        	Error:      	Not equal: 
+        	            	expected: 0x8000000
+        	            	actual  : 0x80000
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	MX14: symlinks carry ModeSymlink
+--- FAIL: TestMLST_OddFacts_Parsed_F6 (0.00s)
+    fix_r2_list_test.go:215: 
+        	Error Trace:	/out/mut/F6a/filesystem/pkg/ftp/fix_r2_list_test.go:215
+        	Error:      	Should be true
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	16.029s
+FAIL

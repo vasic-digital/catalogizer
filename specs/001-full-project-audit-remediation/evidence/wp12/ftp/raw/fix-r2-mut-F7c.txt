@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant F7c - an ambiguous 550 is not settled by the parent listing
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestAmbiguous550_IsSettledByTheParentListing (0.00s)
+    fix_r2_list_test.go:272: 
+        	Error Trace:	/out/mut/F7c/filesystem/pkg/ftp/fix_r2_list_test.go:272
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: 550 "Failed to open file."
+        	Test:       	TestAmbiguous550_IsSettledByTheParentListing
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.960s
+FAIL

@@ -1,0 +1,26 @@
+# identity: WP-12 PA-04 fix round 2: mutant F1a - control reply reads carry no deadline
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (6.61s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (3.00s)
+        fix_r2_net_test.go:212: 
+            	Error Trace:	/out/mut/F1a/filesystem/pkg/ftp/fix_r2_net_test.go:212
+            	Error:      	Should be true
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+            	Messages:   	DialTimeout bounds the greeting
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout (3.00s)
+        fix_r2_net_test.go:212: 
+            	Error Trace:	/out/mut/F1a/filesystem/pkg/ftp/fix_r2_net_test.go:212
+            	Error:      	Should be true
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+            	Messages:   	DialTimeout bounds the greeting
+--- FAIL: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (3.00s)
+    fix_r2_net_test.go:420: 
+        	Error Trace:	/out/mut/F1a/filesystem/pkg/ftp/fix_r2_net_test.go:420
+        	Error:      	Should be true
+        	Test:       	TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+        	Messages:   	DiscoverCert must honour its timeout (3.001657384s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	24.038s
+FAIL

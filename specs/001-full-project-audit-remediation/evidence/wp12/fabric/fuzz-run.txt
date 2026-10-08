@@ -1,0 +1,38 @@
+# identity: WP-12 PA-02/PA-07 FUZZ: FuzzReadOnly_Mutators 20s then FuzzConfined 20s (coverage-guided, in addition to seed corpus)
+# head: 69ca319d (main), working tree dirty, submodules/filesystem uncommitted
+# run_at: 2026-10-07T17:51:35Z
+# image: IMG-GO via scripts/containers/run_pinned.sh
+# sha256 submodules/filesystem/pkg/decorators/readonly.go 52cbcd409ee6a9b20afb50d2a5792fe9b75c43724b8a9706a7e53cfa2e873bdb
+# sha256 submodules/filesystem/pkg/decorators/readonly_test.go 8caa2fdacbfffcbbb291fb3085e0107288b208050406c298eeee1acad13d6119
+# sha256 submodules/filesystem/pkg/fabric/budget.go 09125a65027058810d47a34887da8af539f6700331ed819e4c05013fe1591dd0
+# sha256 submodules/filesystem/pkg/fabric/budget_test.go 5e50e5666a2849dd24de6f78ce4dbd42b99e7e62ef61f4f1d55cc3fcf5f79813
+# sha256 submodules/filesystem/pkg/fabric/chain_test.go df43348cecde24229df5de867dc5fffa39974f8732dc51f729d790a618f2f167
+# sha256 submodules/filesystem/pkg/fabric/clock.go b27d8681b4041585931230d20e2d91f22f02bdbba86e0d381ee58ae085ee5e82
+# sha256 submodules/filesystem/pkg/fabric/confined.go 85be9797b259f61b8ac41444f542c28adb9e4182ff6dae7d32298d6f67117921
+# sha256 submodules/filesystem/pkg/fabric/decorators_test.go c0badaa48d93980d372ab1f223a34c0afc987a83e2106b6bde98d81501ce2dbd
+# sha256 submodules/filesystem/pkg/fabric/errors.go 96d26705c08fad2780c92bdc7eca3843f655bd5225509a5fd97d66e7e2de4d6e
+# sha256 submodules/filesystem/pkg/fabric/helpers_test.go b4575b8c3d0d7fe5d295f57a798ea0b3f39fe70087fb900b6f96be53a6efeead
+# sha256 submodules/filesystem/pkg/fabric/layer.go ffe947365d7c8a9f3572f03e04e42be26e52be8346570dae7e62ee13e02a5b7c
+# sha256 submodules/filesystem/pkg/fabric/limited.go 611c44d92ebb254b467bb4ced8cce5cf1a2f67f36b0e35c11998958903fdb4f9
+# sha256 submodules/filesystem/pkg/fabric/metered.go a2df8214b9c4db12e500e4f0906e44a0f1a26bcb17ea6fba2720b5269152ae9c
+# sha256 submodules/filesystem/pkg/fabric/op.go c4dc02e78c52c48be511375ead11c2008e513ded7a7bf8ff483b6932bda94ebe
+# sha256 submodules/filesystem/pkg/fabric/op_test.go f11881bf105c986b265bc7fd551f4d1bd677712a82029e48935ddbf8680f123d
+# sha256 submodules/filesystem/pkg/fabric/pool.go 3a180bafef1bf1ea2ec618bc6b80504aa39f252e8c6c9722d34aa74f2b110d00
+# sha256 submodules/filesystem/pkg/fabric/pool_test.go c73b373c8f3360ee9841b37bd208648dd0cd1b752062a72d7a72b4ba2ee898fb
+# sha256 submodules/filesystem/pkg/fabric/retrying.go 507b41ba720ae4796739bd64fdee43aad2cffbb6d8a4bb7c68c506e0a490a42f
+fuzz: elapsed: 9s, execs: 19478 (2325/sec), new interesting: 3 (total: 11)
+fuzz: elapsed: 12s, execs: 26527 (2350/sec), new interesting: 3 (total: 11)
+fuzz: elapsed: 15s, execs: 33425 (2299/sec), new interesting: 3 (total: 11)
+fuzz: elapsed: 18s, execs: 40475 (2350/sec), new interesting: 3 (total: 11)
+fuzz: elapsed: 21s, execs: 45318 (1615/sec), new interesting: 3 (total: 11)
+fuzz: elapsed: 21s, execs: 45318 (0/sec), new interesting: 3 (total: 11)
+PASS
+ok  	digital.vasic.filesystem/pkg/decorators	22.160s
+fuzz: elapsed: 9s, execs: 14772 (895/sec), new interesting: 37 (total: 48)
+fuzz: elapsed: 12s, execs: 16707 (647/sec), new interesting: 40 (total: 51)
+fuzz: elapsed: 15s, execs: 18956 (750/sec), new interesting: 44 (total: 55)
+fuzz: elapsed: 18s, execs: 20909 (651/sec), new interesting: 47 (total: 58)
+fuzz: elapsed: 21s, execs: 22204 (432/sec), new interesting: 48 (total: 59)
+fuzz: elapsed: 22s, execs: 22204 (0/sec), new interesting: 48 (total: 59)
+PASS
+ok  	digital.vasic.filesystem/pkg/fabric	23.110s

@@ -1,0 +1,21 @@
+# identity: WP-12 PA-04 fix round 2: mutant F5b - 421 at USER is an authentication failure
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23 (0.01s)
+    fix_r2_net_test.go:766: 
+        	Error Trace:	/out/mut/F5b/filesystem/pkg/ftp/fix_r2_net_test.go:766
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+        	Messages:   	421 at USER is RFC 959 'service closing, try again': fabric: authentication failure: ftp: login refused at USER: 421 Timeout - closing control connection
+    fix_r2_net_test.go:791: 
+        	Error Trace:	/out/mut/F5b/filesystem/pkg/ftp/fix_r2_net_test.go:791
+        	Error:      	Received unexpected error:
+        	            	fabric: connect root1: fabric: authentication failure: ftp: login refused at USER: 421 Too many connections (5) from this IP
+        	Test:       	TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+        	Messages:   	the transient 421 is retried and the borrow succeeds
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.948s
+FAIL

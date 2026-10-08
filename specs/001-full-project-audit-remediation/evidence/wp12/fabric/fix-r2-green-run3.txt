@@ -1,0 +1,601 @@
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+=== RUN   TestReadOnly_ReadMethodsForwardThePathTheyWereGiven
+=== PAUSE TestReadOnly_ReadMethodsForwardThePathTheyWereGiven
+=== RUN   TestReadOnly_GetConfigIsRedactedAndDetached
+=== PAUSE TestReadOnly_GetConfigIsRedactedAndDetached
+=== RUN   TestReadOnly_StreamsExposeOnlyReadingCapabilities
+=== PAUSE TestReadOnly_StreamsExposeOnlyReadingCapabilities
+=== RUN   TestReadOnly_ClassifiesEveryInterfaceMethod
+=== PAUSE TestReadOnly_ClassifiesEveryInterfaceMethod
+=== RUN   TestReadOnly_ClassifierSeesAnInjectedMutator
+=== PAUSE TestReadOnly_ClassifierSeesAnInjectedMutator
+=== RUN   TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+=== PAUSE TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+=== RUN   TestReadOnly_ReadsAndLifecycleAreForwarded
+=== PAUSE TestReadOnly_ReadsAndLifecycleAreForwarded
+=== RUN   TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+=== PAUSE TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+=== RUN   TestReadOnly_NilInnerPanicsAtConstruction
+=== PAUSE TestReadOnly_NilInnerPanicsAtConstruction
+=== RUN   TestReadOnly_RealLocalFilesystemUntouched
+=== PAUSE TestReadOnly_RealLocalFilesystemUntouched
+=== RUN   TestRV20_ReadOnlyTypedNilAccepted
+--- PASS: TestRV20_ReadOnlyTypedNilAccepted (0.00s)
+=== RUN   TestRV21_ReadOnlyGetConfigLeaksCredentials
+--- PASS: TestRV21_ReadOnlyGetConfigLeaksCredentials (0.00s)
+=== RUN   TestRV22_ReadOnlyStreamHandleCanChmod
+    review_probes_test.go:74: stream is struct { *guard.base; guard.raMix; guard.skMix; guard.wtMix }, not the inner *os.File: the metadata mutators are unreachable
+--- PASS: TestRV22_ReadOnlyStreamHandleCanChmod (0.00s)
+=== CONT  TestReadOnly_StreamsExposeOnlyReadingCapabilities
+--- PASS: TestReadOnly_StreamsExposeOnlyReadingCapabilities (0.00s)
+=== CONT  TestReadOnly_RealLocalFilesystemUntouched
+=== CONT  TestReadOnly_ClassifierSeesAnInjectedMutator
+--- PASS: TestReadOnly_ClassifierSeesAnInjectedMutator (0.00s)
+=== CONT  TestReadOnly_NilInnerPanicsAtConstruction
+--- PASS: TestReadOnly_NilInnerPanicsAtConstruction (0.00s)
+=== CONT  TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt
+--- PASS: TestReadOnly_SeekablePassthroughOnlyWhenInnerHasIt (0.00s)
+=== CONT  TestReadOnly_EveryMutatorRefusesAndNeverCallsInner
+--- PASS: TestReadOnly_EveryMutatorRefusesAndNeverCallsInner (0.00s)
+=== CONT  TestReadOnly_ReadsAndLifecycleAreForwarded
+--- PASS: TestReadOnly_RealLocalFilesystemUntouched (0.00s)
+=== CONT  TestReadOnly_ClassifiesEveryInterfaceMethod
+--- PASS: TestReadOnly_ClassifiesEveryInterfaceMethod (0.00s)
+=== CONT  TestReadOnly_GetConfigIsRedactedAndDetached
+--- PASS: TestReadOnly_GetConfigIsRedactedAndDetached (0.00s)
+--- PASS: TestReadOnly_ReadsAndLifecycleAreForwarded (0.00s)
+=== CONT  TestReadOnly_ReadMethodsForwardThePathTheyWereGiven
+--- PASS: TestReadOnly_ReadMethodsForwardThePathTheyWereGiven (0.00s)
+=== RUN   FuzzReadOnly_Mutators
+=== RUN   FuzzReadOnly_Mutators/seed#0
+=== RUN   FuzzReadOnly_Mutators/seed#1
+=== RUN   FuzzReadOnly_Mutators/seed#2
+=== RUN   FuzzReadOnly_Mutators/seed#3
+=== RUN   FuzzReadOnly_Mutators/seed#4
+=== RUN   FuzzReadOnly_Mutators/seed#5
+=== RUN   FuzzReadOnly_Mutators/seed#6
+=== RUN   FuzzReadOnly_Mutators/seed#7
+--- PASS: FuzzReadOnly_Mutators (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#0 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#1 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#2 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#3 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#4 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#5 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#6 (0.00s)
+    --- PASS: FuzzReadOnly_Mutators/seed#7 (0.00s)
+PASS
+coverage: 100.0% of statements
+ok  	digital.vasic.filesystem/pkg/decorators	1.037s	coverage: 100.0% of statements
+=== RUN   TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths
+=== PAUSE TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths
+=== RUN   TestWrapSeekable_StaysSeekable
+=== PAUSE TestWrapSeekable_StaysSeekable
+=== RUN   TestWrap_HidesMetadataMutatorsOfTheConcreteHandle
+=== PAUSE TestWrap_HidesMetadataMutatorsOfTheConcreteHandle
+=== RUN   TestRedactConfig_StructPointerMapAndDetached
+=== PAUSE TestRedactConfig_StructPointerMapAndDetached
+=== RUN   TestRedactConfig_PassThroughShapes
+=== PAUSE TestRedactConfig_PassThroughShapes
+=== CONT  TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths
+--- PASS: TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths (0.00s)
+=== CONT  TestRedactConfig_PassThroughShapes
+--- PASS: TestRedactConfig_PassThroughShapes (0.00s)
+=== CONT  TestRedactConfig_StructPointerMapAndDetached
+--- PASS: TestRedactConfig_StructPointerMapAndDetached (0.00s)
+=== CONT  TestWrap_HidesMetadataMutatorsOfTheConcreteHandle
+--- PASS: TestWrap_HidesMetadataMutatorsOfTheConcreteHandle (0.00s)
+=== CONT  TestWrapSeekable_StaysSeekable
+--- PASS: TestWrapSeekable_StaysSeekable (0.00s)
+PASS
+coverage: 91.6% of statements
+ok  	digital.vasic.filesystem/pkg/decorators/guard	1.030s	coverage: 91.6% of statements
+=== RUN   TestBudget_CancelledTailReservationIsGivenBack
+=== PAUSE TestBudget_CancelledTailReservationIsGivenBack
+=== RUN   TestBudget_CancelledMiddleReservationIsReused
+=== PAUSE TestBudget_CancelledMiddleReservationIsReused
+=== RUN   TestBudget_CancelledTailThenIdleTimeIsNotLost
+=== PAUSE TestBudget_CancelledTailThenIdleTimeIsNotLost
+=== RUN   TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict
+=== PAUSE TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict
+=== RUN   TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving
+=== PAUSE TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving
+=== RUN   TestBudget_CancelledWhileWaitingForConcurrencySlotReservesNothing
+=== PAUSE TestBudget_CancelledWhileWaitingForConcurrencySlotReservesNothing
+=== RUN   TestBudget_ManyCancelledWaitersDoNotLivelock
+--- PASS: TestBudget_ManyCancelledWaitersDoNotLivelock (0.64s)
+=== RUN   TestBudgetConfig_TinyRateRejectedNotFailOpen
+=== PAUSE TestBudgetConfig_TinyRateRejectedNotFailOpen
+=== RUN   TestBudget_StatsExposeHeldSlotsAndReservations
+=== PAUSE TestBudget_StatsExposeHeldSlotsAndReservations
+=== RUN   TestLimited_StreamLeaseFreesALeakedSlot
+=== PAUSE TestLimited_StreamLeaseFreesALeakedSlot
+=== RUN   TestLimited_NoLeaseByDefaultLeakedStreamHoldsSlot
+=== PAUSE TestLimited_NoLeaseByDefaultLeakedStreamHoldsSlot
+=== RUN   TestBudgetConfig_Rejected
+=== PAUSE TestBudgetConfig_Rejected
+=== RUN   TestBudget_StartsAreSpacedAtTheConfiguredRate
+=== PAUSE TestBudget_StartsAreSpacedAtTheConfiguredRate
+=== RUN   TestBudget_IdleTimeDoesNotBankBurst
+=== PAUSE TestBudget_IdleTimeDoesNotBankBurst
+=== RUN   TestBudget_ConcurrencyCapHoldsUnderLoad
+=== PAUSE TestBudget_ConcurrencyCapHoldsUnderLoad
+=== RUN   TestBudget_ContextEndsWhileWaitingForSlot
+=== PAUSE TestBudget_ContextEndsWhileWaitingForSlot
+=== RUN   TestBudget_ReleaseIsIdempotent
+=== PAUSE TestBudget_ReleaseIsIdempotent
+=== RUN   TestBudget_RateWaitInterruptedByContextReleasesSlot
+=== PAUSE TestBudget_RateWaitInterruptedByContextReleasesSlot
+=== RUN   TestBudgets_OneBudgetPerHostAcrossProtocols
+=== PAUSE TestBudgets_OneBudgetPerHostAcrossProtocols
+=== RUN   TestBudget_ConfigAndExtremeRate
+=== PAUSE TestBudget_ConfigAndExtremeRate
+=== RUN   TestChain_RealLocalFilesystem
+=== PAUSE TestChain_RealLocalFilesystem
+=== RUN   TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection
+=== PAUSE TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection
+=== RUN   TestLimited_FailedCallReleasesItsSlot
+=== PAUSE TestLimited_FailedCallReleasesItsSlot
+=== RUN   TestLimited_StreamHoldsSlotUntilClose
+=== PAUSE TestLimited_StreamHoldsSlotUntilClose
+=== RUN   TestLimited_DisconnectIsNeverThrottled
+=== PAUSE TestLimited_DisconnectIsNeverThrottled
+=== RUN   TestLimited_SharedBudgetCapsTwoProtocolsTogether
+=== PAUSE TestLimited_SharedBudgetCapsTwoProtocolsTogether
+=== RUN   TestLimited_NilBudgetPanics
+=== PAUSE TestLimited_NilBudgetPanics
+=== RUN   TestClassify_Table
+=== PAUSE TestClassify_Table
+=== RUN   TestRetrying_PolicyValidation
+=== PAUSE TestRetrying_PolicyValidation
+=== RUN   TestRetrying_ReadsRetryTransientThenSucceed
+=== PAUSE TestRetrying_ReadsRetryTransientThenSucceed
+=== RUN   TestRetrying_NeverRetriesAuthFailure
+=== PAUSE TestRetrying_NeverRetriesAuthFailure
+=== RUN   TestRetrying_NeverRetriesMutationsOrDisconnect
+=== PAUSE TestRetrying_NeverRetriesMutationsOrDisconnect
+=== RUN   TestRetrying_PermanentAndUnknownAreNotRetried
+=== PAUSE TestRetrying_PermanentAndUnknownAreNotRetried
+=== RUN   TestRetrying_ExhaustionWrapsLastError
+=== PAUSE TestRetrying_ExhaustionWrapsLastError
+=== RUN   TestRetrying_BackoffDoublesAndCaps
+=== PAUSE TestRetrying_BackoffDoublesAndCaps
+=== RUN   TestRetrying_JitterAndCustomClassifier
+=== PAUSE TestRetrying_JitterAndCustomClassifier
+=== RUN   TestRetrying_CallerContextStopsRetries
+=== PAUSE TestRetrying_CallerContextStopsRetries
+=== RUN   TestRetrying_SleepInterruptedByContext
+=== PAUSE TestRetrying_SleepInterruptedByContext
+=== RUN   TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+=== PAUSE TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+=== RUN   TestConfined_RootValidation
+=== PAUSE TestConfined_RootValidation
+=== RUN   TestConfined_EscapesNeverReachInner
+=== PAUSE TestConfined_EscapesNeverReachInner
+=== RUN   TestConfined_CopyChecksBothPathsBeforeTouchingEither
+=== PAUSE TestConfined_CopyChecksBothPathsBeforeTouchingEither
+=== RUN   TestConfined_InsidePathsAreCleanedAndForwarded
+=== PAUSE TestConfined_InsidePathsAreCleanedAndForwarded
+=== RUN   TestConfined_RootSlashAllowsAnyAbsolutePath
+=== PAUSE TestConfined_RootSlashAllowsAnyAbsolutePath
+=== RUN   TestConfined_ConnectionOpsPassThrough
+=== PAUSE TestConfined_ConnectionOpsPassThrough
+=== RUN   TestMetered_CountsCallsErrorsAndBytes
+=== PAUSE TestMetered_CountsCallsErrorsAndBytes
+=== RUN   TestMetered_EveryOpProducesExactlyOneSample
+=== PAUSE TestMetered_EveryOpProducesExactlyOneSample
+=== RUN   TestMetered_NilSinkPanics
+=== PAUSE TestMetered_NilSinkPanics
+=== RUN   TestDecorators_SeekableOnlyWhenInnerIs
+=== PAUSE TestDecorators_SeekableOnlyWhenInnerIs
+=== RUN   TestDecorators_NilInnerPanics
+=== PAUSE TestDecorators_NilInnerPanics
+=== RUN   TestChain_FirstDecoratorIsOutermost
+=== PAUSE TestChain_FirstDecoratorIsOutermost
+=== RUN   TestLayer_ClosesStreamReturnedAlongsideAnError
+=== PAUSE TestLayer_ClosesStreamReturnedAlongsideAnError
+=== RUN   TestRetrying_HugeBackoffDoesNotOverflow
+=== PAUSE TestRetrying_HugeBackoffDoesNotOverflow
+=== RUN   TestClassify_FTPCodeTable
+=== PAUSE TestClassify_FTPCodeTable
+=== RUN   TestClassify_PathTextIsNeverAuthEvidence
+=== PAUSE TestClassify_PathTextIsNeverAuthEvidence
+=== RUN   TestClassify_EveryAuthMarkerInALeaf
+=== PAUSE TestClassify_EveryAuthMarkerInALeaf
+=== RUN   TestClassify_AuthBeatsTransientForEverySource
+=== PAUSE TestClassify_AuthBeatsTransientForEverySource
+=== RUN   TestClassify_EveryTransientSignal
+=== PAUSE TestClassify_EveryTransientSignal
+=== RUN   TestHostKey_RejectsNonHostsAndCanonicalisesIPs
+=== PAUSE TestHostKey_RejectsNonHostsAndCanonicalisesIPs
+=== RUN   TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot
+=== PAUSE TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot
+=== RUN   TestTypedNilInnerPanicsAtConstructionEverywhere
+=== PAUSE TestTypedNilInnerPanicsAtConstructionEverywhere
+=== RUN   TestRetryPolicy_BoundedAndNeverBackToBack
+=== PAUSE TestRetryPolicy_BoundedAndNeverBackToBack
+=== RUN   TestRetryPolicy_DelayClosedFormMatchesDefinition
+=== PAUSE TestRetryPolicy_DelayClosedFormMatchesDefinition
+=== RUN   TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff
+=== PAUSE TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff
+=== RUN   TestLayers_CopyFileForwardsSourceAndDestination
+=== PAUSE TestLayers_CopyFileForwardsSourceAndDestination
+=== RUN   TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError
+=== PAUSE TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError
+=== RUN   TestLayers_IsConnectedAndProtocolAreTheInnersAnswer
+=== PAUSE TestLayers_IsConnectedAndProtocolAreTheInnersAnswer
+=== RUN   TestMetered_SampleCarriesProtocolOpAndError
+=== PAUSE TestMetered_SampleCarriesProtocolOpAndError
+=== RUN   TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath
+=== PAUSE TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath
+=== RUN   TestLimited_ReadAtStreamHoldsSlotUntilClose
+=== PAUSE TestLimited_ReadAtStreamHoldsSlotUntilClose
+=== RUN   TestLayers_GetConfigIsRedactedAndDetached
+=== PAUSE TestLayers_GetConfigIsRedactedAndDetached
+=== RUN   TestOpTable_CoversEveryClientMethod
+--- PASS: TestOpTable_CoversEveryClientMethod (0.00s)
+=== RUN   TestOpTable_InstrumentDetectsInjectedMethod
+--- PASS: TestOpTable_InstrumentDetectsInjectedMethod (0.00s)
+=== RUN   TestOpTable_Classification
+--- PASS: TestOpTable_Classification (0.00s)
+=== RUN   TestHostKey
+--- PASS: TestHostKey (0.00s)
+=== RUN   TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle
+=== PAUSE TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle
+=== RUN   TestPool_PreCancelledContextNeverTouchesIdle
+=== PAUSE TestPool_PreCancelledContextNeverTouchesIdle
+=== RUN   TestPool_CancelledDuringConnectFreesTheSlot
+=== PAUSE TestPool_CancelledDuringConnectFreesTheSlot
+=== RUN   TestPool_UnhealthyWithLiveContextIsStillReplaced
+=== PAUSE TestPool_UnhealthyWithLiveContextIsStillReplaced
+=== RUN   TestPool_RejectedLoginIsNotRepeatedAcrossBorrows
+=== PAUSE TestPool_RejectedLoginIsNotRepeatedAcrossBorrows
+=== RUN   TestPool_RejectedLoginResets
+=== PAUSE TestPool_RejectedLoginResets
+=== RUN   TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle
+=== PAUSE TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle
+=== RUN   TestPool_GetClientConnectIsBounded
+=== PAUSE TestPool_GetClientConnectIsBounded
+=== RUN   TestPool_ReturnClientNilAndComparableWrapperOK
+=== PAUSE TestPool_ReturnClientNilAndComparableWrapperOK
+=== RUN   TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled
+=== PAUSE TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled
+=== RUN   TestPool_IdleOrderIsMostRecentlyUsedFirst
+=== PAUSE TestPool_IdleOrderIsMostRecentlyUsedFirst
+=== RUN   TestPool_MaxLifetimeBoundaryIsInclusive
+=== PAUSE TestPool_MaxLifetimeBoundaryIsInclusive
+=== RUN   TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn
+=== PAUSE TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn
+=== RUN   TestPool_CloseAllWakesWaiterWithErrPoolClosed
+=== PAUSE TestPool_CloseAllWakesWaiterWithErrPoolClosed
+=== RUN   TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext
+=== PAUSE TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext
+=== RUN   TestPool_DiscardOfAHangingConnectionIsBounded
+=== PAUSE TestPool_DiscardOfAHangingConnectionIsBounded
+=== RUN   TestPool_IdleTimeoutRetiresOlderIdleConnections
+=== PAUSE TestPool_IdleTimeoutRetiresOlderIdleConnections
+=== RUN   TestPool_ContextEndedWhileWaitingNeverCreatesAClient
+=== PAUSE TestPool_ContextEndedWhileWaitingNeverCreatesAClient
+=== RUN   TestPool_BorrowSweepsExpiredIdleConnectionsOfOtherRoots
+=== PAUSE TestPool_BorrowSweepsExpiredIdleConnectionsOfOtherRoots
+=== RUN   TestPool_ReturnSweepsExpiredIdleConnections
+=== PAUSE TestPool_ReturnSweepsExpiredIdleConnections
+=== RUN   TestPool_ConfigValidation
+=== PAUSE TestPool_ConfigValidation
+=== RUN   TestPool_KeyRequired
+=== PAUSE TestPool_KeyRequired
+=== RUN   TestPool_ReusesConnectionAndSeparatesRoots
+=== PAUSE TestPool_ReusesConnectionAndSeparatesRoots
+=== RUN   TestPool_UnhealthyIdleConnectionIsReplaced
+=== PAUSE TestPool_UnhealthyIdleConnectionIsReplaced
+=== RUN   TestPool_DisconnectedIdleConnectionIsReplaced
+=== PAUSE TestPool_DisconnectedIdleConnectionIsReplaced
+=== RUN   TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== PAUSE TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== RUN   TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+=== PAUSE TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+=== RUN   TestPool_ExhaustionAndBlockingBorrow
+=== PAUSE TestPool_ExhaustionAndBlockingBorrow
+=== RUN   TestPool_ReturnValidation
+=== PAUSE TestPool_ReturnValidation
+=== RUN   TestPool_CreateAndConnectFailuresFreeTheSlot
+=== PAUSE TestPool_CreateAndConnectFailuresFreeTheSlot
+=== RUN   TestPool_CloseAll
+=== PAUSE TestPool_CloseAll
+=== RUN   TestPool_EvictDisconnectsIdle
+=== PAUSE TestPool_EvictDisconnectsIdle
+=== RUN   TestPool_RaceManyBorrowers
+=== PAUSE TestPool_RaceManyBorrowers
+=== RUN   TestRV01_BudgetCancelledReservationsDrift
+    review_probes_test.go:63: burst: successful starts=17 cancelled=28644 reservations(Stats.Acquired)=18 TotalRateWait=477.129231ms
+    review_probes_test.go:69: fresh caller after the burst: err=<nil> waited=49.213226ms
+--- PASS: TestRV01_BudgetCancelledReservationsDrift (0.85s)
+=== RUN   TestRV01b_BudgetLivelockWithServeableCallers
+    review_probes_test.go:118: successful starts per 400ms window (nominal 8 each at 20/s): [7 6 7 7] total=29 reservations=34
+--- PASS: TestRV01b_BudgetLivelockWithServeableCallers (1.65s)
+=== RUN   TestRV02_BudgetTinyRateFailsOpen
+--- PASS: TestRV02_BudgetTinyRateFailsOpen (0.00s)
+=== RUN   TestRV03_PoolCancelledBorrowDestroysHealthyIdle
+    review_probes_test.go:228: cancelled borrow: err=context deadline exceeded idle=3 disconnects=0 connects=3
+--- PASS: TestRV03_PoolCancelledBorrowDestroysHealthyIdle (0.07s)
+=== RUN   TestRV05_PoolAuthFailureNoCircuitBreaker
+    review_probes_test.go:254: 50 borrows after a bad password produced 1 login attempts
+--- PASS: TestRV05_PoolAuthFailureNoCircuitBreaker (0.00s)
+=== RUN   TestRV04_PoolForeignUnhashableReturnWedges
+    review_probes_test.go:281: ReturnClient(foreign unhashable): err=fabric: client was not borrowed from this pool (or was already returned) panic=<nil>
+--- PASS: TestRV04_PoolForeignUnhashableReturnWedges (0.00s)
+=== RUN   TestRV04b_PoolUnhashableClientPanicsOnBorrow
+    review_probes_test.go:313: GetClient(unhashable): err=fabric: client dynamic type is not comparable panic=<nil>
+--- PASS: TestRV04b_PoolUnhashableClientPanicsOnBorrow (0.00s)
+=== RUN   TestRV06_ConfinedPassesCRLF
+--- PASS: TestRV06_ConfinedPassesCRLF (0.00s)
+=== RUN   TestRV07_StreamsHideReaderAtAndSeeker
+    review_probes_test.go:358: raw local: OpenSeekable ReaderAt=true ReadFile ReadSeeker=true; Limited: OpenSeekable ReaderAt=true ReadFile ReadSeeker=true
+--- PASS: TestRV07_StreamsHideReaderAtAndSeeker (0.00s)
+=== RUN   TestRV08_ClassifyMarkerFromPathText
+--- PASS: TestRV08_ClassifyMarkerFromPathText (0.00s)
+=== RUN   TestRV09_HostKeyURLCollapsesToScheme
+    review_probes_test.go:390: HostKey(smb://nas-a.example)="",fabric: "smb://nas-a.example" is not a host or host:port (URL, path, userinfo or control character) HostKey(smb://nas-b.example)="",fabric: "smb://nas-b.example" is not a host or host:port (URL, path, userinfo or control character)
+--- PASS: TestRV09_HostKeyURLCollapsesToScheme (0.00s)
+=== RUN   TestRV10_HostKeyEquivalentSpellings
+--- PASS: TestRV10_HostKeyEquivalentSpellings (0.00s)
+=== RUN   TestRV11_TypedNilInnerAccepted
+--- PASS: TestRV11_TypedNilInnerAccepted (0.00s)
+=== RUN   TestRV12_RetryZeroDelayStorm
+--- PASS: TestRV12_RetryZeroDelayStorm (0.00s)
+=== RUN   TestRV14_LeakedStreamsStarveSharedHost
+    review_probes_test.go:446: MEASURED: after two unclosed streams (one per protocol) a third op on the host: fabric: host budget for ListDirectory: context deadline exceeded (InFlight=2)
+--- PASS: TestRV14_LeakedStreamsStarveSharedHost (0.05s)
+=== RUN   TestRV15_PoolHealthProbeThrottledByOwnBudget
+    review_probes_test.go:503: GetClient returned after 98.661µs: <nil>
+    review_probes_test.go:515: after the stream closed: connections created=1, first connection disconnects=0
+--- PASS: TestRV15_PoolHealthProbeThrottledByOwnBudget (0.00s)
+=== RUN   TestRV16_ClassifyTransientCodeBeatsAuthText
+--- PASS: TestRV16_ClassifyTransientCodeBeatsAuthText (0.00s)
+=== RUN   TestRV18_IdleTimeoutNotEnforcedBelowMRU
+    review_probes_test.go:545: after 10 min of single-worker use: idle=1, first connection disconnects=1 (IdleTimeout=1m)
+--- PASS: TestRV18_IdleTimeoutNotEnforcedBelowMRU (0.00s)
+=== CONT  TestBudget_CancelledMiddleReservationIsReused
+=== CONT  TestRetrying_HugeBackoffDoesNotOverflow
+--- PASS: TestRetrying_HugeBackoffDoesNotOverflow (0.00s)
+=== CONT  TestClassify_FTPCodeTable
+--- PASS: TestClassify_FTPCodeTable (0.00s)
+=== CONT  TestLayer_ClosesStreamReturnedAlongsideAnError
+=== CONT  TestChain_FirstDecoratorIsOutermost
+--- PASS: TestLayer_ClosesStreamReturnedAlongsideAnError (0.00s)
+--- PASS: TestChain_FirstDecoratorIsOutermost (0.00s)
+--- PASS: TestBudget_CancelledMiddleReservationIsReused (0.00s)
+=== CONT  TestDecorators_NilInnerPanics
+=== CONT  TestDecorators_SeekableOnlyWhenInnerIs
+--- PASS: TestDecorators_NilInnerPanics (0.00s)
+=== CONT  TestMetered_NilSinkPanics
+--- PASS: TestMetered_NilSinkPanics (0.00s)
+--- PASS: TestDecorators_SeekableOnlyWhenInnerIs (0.00s)
+=== CONT  TestMetered_EveryOpProducesExactlyOneSample
+=== CONT  TestConfined_ConnectionOpsPassThrough
+--- PASS: TestConfined_ConnectionOpsPassThrough (0.00s)
+=== CONT  TestMetered_CountsCallsErrorsAndBytes
+--- PASS: TestMetered_CountsCallsErrorsAndBytes (0.00s)
+=== CONT  TestConfined_InsidePathsAreCleanedAndForwarded
+--- PASS: TestMetered_EveryOpProducesExactlyOneSample (0.00s)
+=== CONT  TestConfined_CopyChecksBothPathsBeforeTouchingEither
+--- PASS: TestConfined_CopyChecksBothPathsBeforeTouchingEither (0.00s)
+=== CONT  TestConfined_EscapesNeverReachInner
+--- PASS: TestConfined_InsidePathsAreCleanedAndForwarded (0.00s)
+=== CONT  TestConfined_RootSlashAllowsAnyAbsolutePath
+--- PASS: TestConfined_RootSlashAllowsAnyAbsolutePath (0.00s)
+=== CONT  TestConfined_RootValidation
+--- PASS: TestConfined_RootValidation (0.00s)
+=== CONT  TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt
+--- PASS: TestRetrying_RetryTakesAFreshBudgetSlotPerAttempt (0.00s)
+=== CONT  TestRetrying_CallerContextStopsRetries
+--- PASS: TestRetrying_CallerContextStopsRetries (0.00s)
+=== CONT  TestRetrying_SleepInterruptedByContext
+--- PASS: TestConfined_EscapesNeverReachInner (0.01s)
+=== CONT  TestLimited_StreamHoldsSlotUntilClose
+--- PASS: TestLimited_StreamHoldsSlotUntilClose (0.02s)
+=== CONT  TestRetrying_BackoffDoublesAndCaps
+--- PASS: TestRetrying_BackoffDoublesAndCaps (0.00s)
+=== CONT  TestRetrying_ExhaustionWrapsLastError
+--- PASS: TestRetrying_ExhaustionWrapsLastError (0.00s)
+=== CONT  TestRetrying_JitterAndCustomClassifier
+--- PASS: TestRetrying_JitterAndCustomClassifier (0.00s)
+=== CONT  TestRetrying_NeverRetriesMutationsOrDisconnect
+--- PASS: TestRetrying_NeverRetriesMutationsOrDisconnect (0.00s)
+=== CONT  TestRetrying_PermanentAndUnknownAreNotRetried
+--- PASS: TestRetrying_PermanentAndUnknownAreNotRetried (0.00s)
+=== CONT  TestRetrying_NeverRetriesAuthFailure
+--- PASS: TestRetrying_NeverRetriesAuthFailure (0.00s)
+=== CONT  TestRetrying_PolicyValidation
+--- PASS: TestRetrying_PolicyValidation (0.00s)
+=== CONT  TestClassify_Table
+--- PASS: TestClassify_Table (0.00s)
+=== CONT  TestRetrying_ReadsRetryTransientThenSucceed
+=== CONT  TestLimited_SharedBudgetCapsTwoProtocolsTogether
+--- PASS: TestRetrying_ReadsRetryTransientThenSucceed (0.00s)
+--- PASS: TestRetrying_SleepInterruptedByContext (0.03s)
+=== CONT  TestLimited_NilBudgetPanics
+--- PASS: TestLimited_NilBudgetPanics (0.00s)
+=== CONT  TestLimited_FailedCallReleasesItsSlot
+--- PASS: TestLimited_FailedCallReleasesItsSlot (0.00s)
+=== CONT  TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection
+=== CONT  TestLimited_DisconnectIsNeverThrottled
+=== CONT  TestBudget_ConfigAndExtremeRate
+=== CONT  TestChain_RealLocalFilesystem
+--- PASS: TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection (0.00s)
+--- PASS: TestLimited_DisconnectIsNeverThrottled (0.00s)
+--- PASS: TestBudget_ConfigAndExtremeRate (0.00s)
+=== CONT  TestBudgets_OneBudgetPerHostAcrossProtocols
+--- PASS: TestBudgets_OneBudgetPerHostAcrossProtocols (0.00s)
+=== CONT  TestBudget_RateWaitInterruptedByContextReleasesSlot
+--- PASS: TestBudget_RateWaitInterruptedByContextReleasesSlot (0.00s)
+=== CONT  TestBudget_ContextEndsWhileWaitingForSlot
+--- PASS: TestChain_RealLocalFilesystem (0.00s)
+--- PASS: TestLimited_SharedBudgetCapsTwoProtocolsTogether (0.03s)
+=== CONT  TestBudget_ReleaseIsIdempotent
+--- PASS: TestBudget_ContextEndsWhileWaitingForSlot (0.02s)
+=== CONT  TestBudget_ConcurrencyCapHoldsUnderLoad
+=== CONT  TestBudget_StartsAreSpacedAtTheConfiguredRate
+--- PASS: TestBudget_ConcurrencyCapHoldsUnderLoad (0.02s)
+--- PASS: TestBudget_StartsAreSpacedAtTheConfiguredRate (0.00s)
+=== CONT  TestBudgetConfig_Rejected
+=== CONT  TestLimited_NoLeaseByDefaultLeakedStreamHoldsSlot
+--- PASS: TestBudgetConfig_Rejected (0.00s)
+--- PASS: TestBudget_ReleaseIsIdempotent (0.02s)
+=== CONT  TestLimited_StreamLeaseFreesALeakedSlot
+--- PASS: TestLimited_NoLeaseByDefaultLeakedStreamHoldsSlot (0.06s)
+=== CONT  TestBudget_StatsExposeHeldSlotsAndReservations
+=== CONT  TestBudgetConfig_TinyRateRejectedNotFailOpen
+=== CONT  TestBudget_IdleTimeDoesNotBankBurst
+=== CONT  TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving
+--- PASS: TestBudget_StatsExposeHeldSlotsAndReservations (0.00s)
+--- PASS: TestBudgetConfig_TinyRateRejectedNotFailOpen (0.00s)
+--- PASS: TestBudget_IdleTimeDoesNotBankBurst (0.00s)
+--- PASS: TestLimited_StreamLeaseFreesALeakedSlot (0.07s)
+=== CONT  TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict
+=== CONT  TestBudget_CancelledTailThenIdleTimeIsNotLost
+--- PASS: TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict (0.00s)
+--- PASS: TestBudget_CancelledTailThenIdleTimeIsNotLost (0.00s)
+=== CONT  TestBudget_CancelledWhileWaitingForConcurrencySlotReservesNothing
+--- PASS: TestBudget_CancelledWhileWaitingForConcurrencySlotReservesNothing (0.02s)
+=== CONT  TestBudget_CancelledTailReservationIsGivenBack
+=== CONT  TestPool_ReturnClientNilAndComparableWrapperOK
+--- PASS: TestPool_ReturnClientNilAndComparableWrapperOK (0.00s)
+=== CONT  TestPool_RaceManyBorrowers
+--- PASS: TestBudget_CancelledTailReservationIsGivenBack (0.00s)
+--- PASS: TestPool_RaceManyBorrowers (0.03s)
+=== CONT  TestPool_EvictDisconnectsIdle
+--- PASS: TestPool_EvictDisconnectsIdle (0.00s)
+=== CONT  TestPool_CloseAll
+--- PASS: TestPool_CloseAll (0.03s)
+=== CONT  TestPool_CreateAndConnectFailuresFreeTheSlot
+--- PASS: TestPool_CreateAndConnectFailuresFreeTheSlot (0.00s)
+=== CONT  TestPool_ReturnValidation
+--- PASS: TestPool_ReturnValidation (0.00s)
+=== CONT  TestPool_ExhaustionAndBlockingBorrow
+--- PASS: TestPool_ExhaustionAndBlockingBorrow (0.05s)
+=== CONT  TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle
+=== CONT  TestPool_LifetimeExpiredClientIsNotPooledOnReturn
+=== CONT  TestPool_MaxLifetimeAndIdleTimeoutRetire
+=== CONT  TestPool_UnhealthyIdleConnectionIsReplaced
+=== CONT  TestPool_ReusesConnectionAndSeparatesRoots
+=== CONT  TestPool_KeyRequired
+=== CONT  TestPool_DisconnectedIdleConnectionIsReplaced
+=== CONT  TestPool_ReturnSweepsExpiredIdleConnections
+--- PASS: TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle (0.00s)
+--- PASS: TestPool_LifetimeExpiredClientIsNotPooledOnReturn (0.00s)
+=== CONT  TestPool_BorrowSweepsExpiredIdleConnectionsOfOtherRoots
+--- PASS: TestPool_MaxLifetimeAndIdleTimeoutRetire (0.00s)
+=== CONT  TestPool_ContextEndedWhileWaitingNeverCreatesAClient
+--- PASS: TestPool_UnhealthyIdleConnectionIsReplaced (0.00s)
+--- PASS: TestPool_ReusesConnectionAndSeparatesRoots (0.00s)
+--- PASS: TestPool_KeyRequired (0.00s)
+--- PASS: TestPool_DisconnectedIdleConnectionIsReplaced (0.00s)
+--- PASS: TestPool_ReturnSweepsExpiredIdleConnections (0.00s)
+--- PASS: TestPool_BorrowSweepsExpiredIdleConnectionsOfOtherRoots (0.00s)
+--- PASS: TestPool_ContextEndedWhileWaitingNeverCreatesAClient (0.01s)
+=== CONT  TestPool_ConfigValidation
+--- PASS: TestPool_ConfigValidation (0.00s)
+=== CONT  TestPool_IdleTimeoutRetiresOlderIdleConnections
+--- PASS: TestPool_IdleTimeoutRetiresOlderIdleConnections (0.00s)
+=== CONT  TestPool_DiscardOfAHangingConnectionIsBounded
+--- PASS: TestPool_DiscardOfAHangingConnectionIsBounded (0.03s)
+=== CONT  TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext
+--- PASS: TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving (0.20s)
+=== CONT  TestPool_CloseAllWakesWaiterWithErrPoolClosed
+--- PASS: TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext (0.03s)
+=== CONT  TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn
+--- PASS: TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn (0.00s)
+=== CONT  TestPool_IdleOrderIsMostRecentlyUsedFirst
+--- PASS: TestPool_IdleOrderIsMostRecentlyUsedFirst (0.00s)
+=== CONT  TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled
+--- PASS: TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled (0.00s)
+=== CONT  TestLayers_IsConnectedAndProtocolAreTheInnersAnswer
+--- PASS: TestLayers_IsConnectedAndProtocolAreTheInnersAnswer (0.00s)
+=== CONT  TestPool_MaxLifetimeBoundaryIsInclusive
+--- PASS: TestPool_MaxLifetimeBoundaryIsInclusive (0.00s)
+=== CONT  TestPool_GetClientConnectIsBounded
+--- PASS: TestPool_CloseAllWakesWaiterWithErrPoolClosed (0.03s)
+=== CONT  TestPool_RejectedLoginIsNotRepeatedAcrossBorrows
+--- PASS: TestPool_RejectedLoginIsNotRepeatedAcrossBorrows (0.00s)
+=== CONT  TestPool_UnhealthyWithLiveContextIsStillReplaced
+--- PASS: TestPool_UnhealthyWithLiveContextIsStillReplaced (0.01s)
+=== CONT  TestPool_RejectedLoginResets
+--- PASS: TestPool_RejectedLoginResets (0.00s)
+=== CONT  TestPool_PreCancelledContextNeverTouchesIdle
+--- PASS: TestPool_PreCancelledContextNeverTouchesIdle (0.00s)
+=== CONT  TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle
+--- PASS: TestPool_GetClientConnectIsBounded (0.04s)
+=== CONT  TestLayers_GetConfigIsRedactedAndDetached
+--- PASS: TestLayers_GetConfigIsRedactedAndDetached (0.00s)
+=== CONT  TestPool_CancelledDuringConnectFreesTheSlot
+=== CONT  TestLimited_ReadAtStreamHoldsSlotUntilClose
+--- PASS: TestPool_CancelledDuringConnectFreesTheSlot (0.01s)
+--- PASS: TestLimited_ReadAtStreamHoldsSlotUntilClose (0.00s)
+=== CONT  TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath
+--- PASS: TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath (0.00s)
+=== CONT  TestMetered_SampleCarriesProtocolOpAndError
+--- PASS: TestMetered_SampleCarriesProtocolOpAndError (0.00s)
+=== CONT  TestRetryPolicy_DelayClosedFormMatchesDefinition
+--- PASS: TestRetryPolicy_DelayClosedFormMatchesDefinition (0.03s)
+=== CONT  TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError
+--- PASS: TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError (0.00s)
+=== CONT  TestClassify_PathTextIsNeverAuthEvidence
+--- PASS: TestClassify_PathTextIsNeverAuthEvidence (0.00s)
+=== CONT  TestLayers_CopyFileForwardsSourceAndDestination
+--- PASS: TestLayers_CopyFileForwardsSourceAndDestination (0.00s)
+=== CONT  TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff
+=== CONT  TestRetryPolicy_BoundedAndNeverBackToBack
+--- PASS: TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff (0.00s)
+--- PASS: TestRetryPolicy_BoundedAndNeverBackToBack (0.00s)
+=== CONT  TestClassify_EveryTransientSignal
+=== CONT  TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot
+--- PASS: TestClassify_EveryTransientSignal (0.00s)
+--- PASS: TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot (0.00s)
+=== CONT  TestHostKey_RejectsNonHostsAndCanonicalisesIPs
+=== CONT  TestClassify_EveryAuthMarkerInALeaf
+--- PASS: TestHostKey_RejectsNonHostsAndCanonicalisesIPs (0.00s)
+--- PASS: TestClassify_EveryAuthMarkerInALeaf (0.00s)
+=== CONT  TestTypedNilInnerPanicsAtConstructionEverywhere
+--- PASS: TestTypedNilInnerPanicsAtConstructionEverywhere (0.00s)
+=== CONT  TestClassify_AuthBeatsTransientForEverySource
+--- PASS: TestClassify_AuthBeatsTransientForEverySource (0.00s)
+--- PASS: TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle (0.09s)
+=== RUN   FuzzConfined
+=== RUN   FuzzConfined/seed#0
+=== RUN   FuzzConfined/seed#1
+=== RUN   FuzzConfined/seed#2
+=== RUN   FuzzConfined/seed#3
+=== RUN   FuzzConfined/seed#4
+=== RUN   FuzzConfined/seed#5
+=== RUN   FuzzConfined/seed#6
+=== RUN   FuzzConfined/seed#7
+=== RUN   FuzzConfined/seed#8
+=== RUN   FuzzConfined/seed#9
+=== RUN   FuzzConfined/seed#10
+=== RUN   FuzzConfined/seed#11
+=== RUN   FuzzConfined/seed#12
+=== RUN   FuzzConfined/seed#13
+=== RUN   FuzzConfined/seed#14
+--- PASS: FuzzConfined (0.01s)
+    --- PASS: FuzzConfined/seed#0 (0.00s)
+    --- PASS: FuzzConfined/seed#1 (0.00s)
+    --- PASS: FuzzConfined/seed#2 (0.00s)
+    --- PASS: FuzzConfined/seed#3 (0.00s)
+    --- PASS: FuzzConfined/seed#4 (0.00s)
+    --- PASS: FuzzConfined/seed#5 (0.00s)
+    --- PASS: FuzzConfined/seed#6 (0.00s)
+    --- PASS: FuzzConfined/seed#7 (0.00s)
+    --- PASS: FuzzConfined/seed#8 (0.00s)
+    --- PASS: FuzzConfined/seed#9 (0.00s)
+    --- PASS: FuzzConfined/seed#10 (0.00s)
+    --- PASS: FuzzConfined/seed#11 (0.00s)
+    --- PASS: FuzzConfined/seed#12 (0.00s)
+    --- PASS: FuzzConfined/seed#13 (0.00s)
+    --- PASS: FuzzConfined/seed#14 (0.00s)
+PASS
+coverage: 97.1% of statements
+ok  	digital.vasic.filesystem/pkg/fabric	4.827s	coverage: 97.1% of statements
+test rc=0

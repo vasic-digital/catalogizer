@@ -1,0 +1,25 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX07 - reviewer: stream Close swallows a failing final reply after a FULL read
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4 (0.41s)
+    fix_r2_net_test.go:320: 
+        	Error Trace:	/out/mut/MX07/filesystem/pkg/ftp/fix_r2_net_test.go:320
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+        	Messages:   	a transfer whose final reply never came cannot be confirmed
+--- FAIL: TestSeekable_TruncatedTransfer_IsAnError_D8 (0.01s)
+    fix_r2_net_test.go:686: 
+        	Error Trace:	/out/mut/MX07/filesystem/pkg/ftp/fix_r2_net_test.go:686
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestSeekable_TruncatedTransfer_IsAnError_D8
+        	Messages:   	C8/MX07: the 451 after a COMPLETE read is visible at Close
+--- FAIL: TestReadFile_FullReadWith451_ClosesWithTheError_MX07 (0.01s)
+    fix_r2_net_test.go:746: 
+        	Error Trace:	/out/mut/MX07/filesystem/pkg/ftp/fix_r2_net_test.go:746
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestReadFile_FullReadWith451_ClosesWithTheError_MX07
+        	Messages:   	all bytes arrived but the server reports a failure: not a clean transfer
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.872s
+FAIL

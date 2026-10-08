@@ -1,0 +1,13 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX28 - reviewer: owner confirmation accepted when it is only a PREFIX of the fingerprint
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28 (0.00s)
+    fix_r2_net_test.go:1118: 
+        	Error Trace:	/out/mut/MX28/filesystem/pkg/ftp/fix_r2_net_test.go:1118
+        	Error:      	Expected error with "ftp: the certificate presented by the server is not the one the owner confirmed" in chain but got nil.
+        	Test:       	TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28
+        	Messages:   	SHA256:03:4B:EF:20:70:FC:BD:65:00:7A:62:9D:8C:0D:E6:8E:B4:B2:A8:9C:5D:70:BA:3C:9F:8C:DD:8E:B0:86:D8
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.790s
+FAIL

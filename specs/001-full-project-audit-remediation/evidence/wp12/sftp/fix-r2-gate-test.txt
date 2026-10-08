@@ -1,0 +1,12 @@
+# sftp_fixture_gate_test.sh against the real sftp_fixture.sh, 2026-10-07T21:17:51Z
+ok   SFTP_FIXTURE_SRC without ALLOW is refused
+ok   with ALLOW the gate passes (next refusal is src_module_missing)
+ok   ALLOW must be exactly 1
+ok   printed hash equals the independent hash of the source tree
+ok   printed pkg/sftp hash equals the independent hash of the package directory
+ok   one changed byte changes the printed hash (and it still equals the independent one)
+ok   checked-in module: printed pkg/sftp hash equals the documented command
+info: printed whole-tree hash of the checked-in module equals the documented command
+ok   no scratch directory left behind
+sftp_fixture_gate_test: 8 checks, 0 failed
+rc=0

@@ -1,0 +1,96 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M12.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.01s)
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/a\r\nDELE b: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\r\nDELE b"
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: list /data/a\r\nDELE b: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\r\nDELE b"
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: stat /data/a\r\nDELE b: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\r\nDELE b"
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/x\x00y: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"x\x00y"
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: list /data/x\x00y: file does not exist: 550 \"not a directory\""
+        	            		"file does not exist: 550 \"not a directory\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"x\x00y"
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: stat /data/x\x00y: file does not exist: 550 \"not found\""
+        	            		"file does not exist: 550 \"not found\""
+        	            		"file does not exist"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"x\x00y"
+    ftps_test.go:689: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:689
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: retrieve /data/a\nb: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\nb"
+    ftps_test.go:691: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:691
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: list /data/a\nb: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\nb"
+    ftps_test.go:693: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:693
+        	Error:      	Target error should be in err chain:
+        	            	expected: "ftp: path escapes the configured root or contains control characters"
+        	            	in chain: "ftp: stat /data/a\nb: command contains CR or LF"
+        	            		"command contains CR or LF"
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	"a\nb"
+    ftps_test.go:695: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:695
+        	Error:      	"[AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV QUIT AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV QUIT AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD QUIT AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV RETR /data/x\x00y EPSV MLSD /data/x\x00y MLST /data/x\x00y EPSV QUIT AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD EPSV QUIT AUTH TLS USER u PASS *** FEAT TYPE I OPTS UTF8 ON PBSZ 0 PROT P CWD /data PWD]" should have 10 item(s), but has 74
+        	Test:       	TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+        	Messages:   	an escape attempt sends nothing to the server
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.536s
+ok  	digital.vasic.filesystem/pkg/factory	0.006s
+FAIL

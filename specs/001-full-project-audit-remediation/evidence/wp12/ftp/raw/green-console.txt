@@ -1,0 +1,6 @@
+# identity: WP-12 PA-04 harness output
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+run1 rc=0
+run2 rc=0
+run3 rc=0

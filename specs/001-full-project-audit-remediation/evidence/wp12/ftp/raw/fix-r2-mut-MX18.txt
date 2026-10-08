@@ -1,0 +1,19 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX18 - reviewer: a lost connection is never closed
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestLostConnection_IsClosed_NotLeaked_MX18 (3.01s)
+    fix_r2_net_test.go:1017: 
+        	Error Trace:	/out/mut/MX18/filesystem/pkg/ftp/fix_r2_net_test.go:1017
+        	Error:      	Should be true
+        	Test:       	TestLostConnection_IsClosed_NotLeaked_MX18
+        	Messages:   	a connection the client gave up on must be closed, not left open on the server
+--- FAIL: TestGoroutinesReturnToBaseline_C20 (0.70s)
+    fix_r2_net_test.go:1360: 
+        	Error Trace:	/out/mut/MX18/filesystem/pkg/ftp/fix_r2_net_test.go:1360
+        	Error:      	"7" is not less than or equal to "5"
+        	Test:       	TestGoroutinesReturnToBaseline_C20
+        	Messages:   	goroutines base=3 after=7
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	18.907s
+FAIL

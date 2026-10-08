@@ -1,0 +1,23 @@
+# fix-r2 go-nfs integration run 2 (plain fixture + AUTH_SYS-verifying fixture)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:28:40Z; sources: 8b8cfe6ea7c6b51a
+=== RUN   TestGoNFSFullCrawlMatchesServerManifest
+--- PASS: TestGoNFSFullCrawlMatchesServerManifest (0.19s)
+=== RUN   TestGoNFSReadRangeSeekAndLargeFile
+--- PASS: TestGoNFSReadRangeSeekAndLargeFile (0.13s)
+=== RUN   TestGoNFSAttributesAndErrors
+--- PASS: TestGoNFSAttributesAndErrors (0.01s)
+=== RUN   TestGoNFSAuthSysCredentialIsWellFormed
+--- PASS: TestGoNFSAuthSysCredentialIsWellFormed (0.01s)
+=== RUN   TestGoNFSWorkflowLeavesTheTreeUnchanged
+--- PASS: TestGoNFSWorkflowLeavesTheTreeUnchanged (0.18s)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	1.549s
+--- AUTH_SYS tap log: 10 OK lines, 0 VIOLATION lines (first 6 lines follow)
+OK prog=100005 proc=1 uid=1000 gid=1000 machine=catalogizer gids=3
+OK prog=100003 proc=19 uid=1000 gid=1000 machine=catalogizer gids=3
+OK prog=100003 proc=1 uid=1000 gid=1000 machine=catalogizer gids=3
+OK prog=100003 proc=3 uid=1000 gid=1000 machine=catalogizer gids=3
+OK prog=100003 proc=3 uid=1000 gid=1000 machine=catalogizer gids=3
+OK prog=100003 proc=3 uid=1000 gid=1000 machine=catalogizer gids=3
+exit=0

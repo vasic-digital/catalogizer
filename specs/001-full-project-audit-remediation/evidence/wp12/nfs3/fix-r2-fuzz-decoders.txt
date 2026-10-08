@@ -1,0 +1,19 @@
+# fix-r2 FuzzDecoders 30s
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:27:31Z; sources: 8b8cfe6ea7c6b51a
+fuzz: elapsed: 0s, gathering baseline coverage: 0/84 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 84/84 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 59467 (19816/sec), new interesting: 2 (total: 86)
+fuzz: elapsed: 6s, execs: 124208 (21585/sec), new interesting: 4 (total: 88)
+fuzz: elapsed: 9s, execs: 186825 (20869/sec), new interesting: 5 (total: 89)
+fuzz: elapsed: 12s, execs: 233631 (15606/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 15s, execs: 322847 (29738/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 18s, execs: 370931 (16025/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 21s, execs: 449379 (26154/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 24s, execs: 495878 (15494/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 27s, execs: 582273 (28809/sec), new interesting: 7 (total: 91)
+fuzz: elapsed: 30s, execs: 653400 (23700/sec), new interesting: 8 (total: 92)
+fuzz: elapsed: 30s, execs: 653400 (0/sec), new interesting: 8 (total: 92)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	30.112s
+exit=0

@@ -1,0 +1,22 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (MI2-integration.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+=== RUN   TestIntegrationSelftest
+--- PASS: TestIntegrationSelftest (0.01s)
+=== RUN   TestIntegration_ExplicitFTPS_ListStatReadResume
+--- PASS: TestIntegration_ExplicitFTPS_ListStatReadResume (1.93s)
+=== RUN   TestIntegration_Refusals
+    integration_test.go:163: 
+        	Error Trace:	/src/filesystem/pkg/ftp/integration_test.go:163
+        	Error:      	An error is expected but got nil.
+        	            	expected: *ftp.UnknownCertError
+        	Test:       	TestIntegration_Refusals
+--- FAIL: TestIntegration_Refusals (1.99s)
+=== RUN   TestIntegration_ScanPath_ReadOnly_WorkerPool
+--- PASS: TestIntegration_ScanPath_ReadOnly_WorkerPool (5.82s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	9.752s
+FAIL

@@ -1,0 +1,8 @@
+--- FAIL: TestReview_P3_TestConnectionOnLostConnection (0.01s)
+    review_probes_test.go:353: REVIEW-PROBE P3 with_TestConnection=false first_op_err=true testconn_err=<nil> list_err=sftp: list /: sftp: cannot verify that "/tmp/TestReview_P3_TestConnectionOnLostConnection3048059118/001" stays inside the root: connection lost connected_after=false
+    review_probes_test.go:355: control failed: a lost connection should be re-dialled: sftp: list /: sftp: cannot verify that "/tmp/TestReview_P3_TestConnectionOnLostConnection3048059118/001" stays inside the root: connection lost
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	28.316s
+ok  	digital.vasic.filesystem/pkg/factory	1.053s
+FAIL
+rc=1

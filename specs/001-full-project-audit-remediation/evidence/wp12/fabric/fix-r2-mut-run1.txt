@@ -1,0 +1,73 @@
+BASELINE rc=0 PASS
+PC1 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_Table,TestPool_RejectedLoginIsNotRepeatedAcrossBorrows,TestPool_RejectedLoginResets,TestRV05_PoolAuthFailureNoCircuitBreaker,TestRetrying_NeverRetriesAuthFailure -- POSITIVE CONTROL (reviewer PC1): marked auth errors retried; MUST be caught
+NC1 SURVIVED rc=0 by= -- NEGATIVE CONTROL (reviewer NC1): no-op; MUST survive
+R01 CAUGHT rc=1 by=TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.GetFileInfo forwards the wrong path
+R02 CAUGHT rc=1 by=TestReadOnly_ReadMethodsForwardThePathTheyWereGiven -- ReadOnly.FileExists forwards the wrong path
+R03 CAUGHT rc=1 by=TestLayers_CopyFileForwardsSourceAndDestination -- every fabric layer forwards CopyFile with dst := src
+R04 CAUGHT rc=1 by=TestLayer_OpenSeekableClosesStreamReturnedAlongsideAnError -- OpenSeekable leaks a stream returned with an error
+R05 CAUGHT rc=1 by=TestLayers_IsConnectedAndProtocolAreTheInnersAnswer,TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled -- decorated clients always report connected (ADAPTED: gofmt realigned the one-line form)
+R06 CAUGHT rc=1 by=TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle,TestPool_DefaultHealthTimeoutIsPositiveAndConnectHonoursContext,TestRV03_PoolCancelledBorrowDestroysHealthyIdle -- default health-probe timeout 0
+R07 INVALID(BUILD_FAILED) rc=1 by=pkg/fabric/pool.go:286:2: declared and not used: cctx -- new-connection Connect ignores the caller's context (ADAPTED: the call now goes through cctx)
+R08 CAUGHT rc=1 by=TestPool_IdleOrderIsMostRecentlyUsedFirst,TestPool_IdleTimeoutRetiresOlderIdleConnections,TestRV18_IdleTimeoutNotEnforcedBelowMRU -- idle order MRU -> LRU
+R09 CAUGHT rc=1 by=TestPool_MaxLifetimeBoundaryIsInclusive -- MaxLifetime boundary off by one tick on borrow
+R10 CAUGHT rc=1 by=TestPool_DisconnectedWhileBorrowedIsRetiredOnReturn,TestPool_ReturnOfDisconnectedDecoratedClientIsNotPooled -- a disconnected client is re-pooled on return
+R11 CAUGHT rc=1 by=TestPool_CloseAllWakesWaiterWithErrPoolClosed -- GetClientContext waiters are not woken by CloseAll
+R12 CAUGHT rc=1 by=TestClassify_EveryTransientSignal -- six errnos no longer transient
+R13 CAUGHT rc=1 by=TestClassify_FTPCodeTable,TestClassify_Table,TestRV08_ClassifyMarkerFromPathText -- FTP 4yz (425/426/450/451/452...) no longer transient (ADAPTED: the code list became the 4yz rule)
+R14 CAUGHT rc=1 by=TestClassify_FTPCodeTable -- FTP 332/532 no longer auth (ADAPTED: 534 moved out of the auth set by the fix)
+R15 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_EveryAuthMarkerInALeaf,TestClassify_FTPCodeTable,TestClassify_Table,TestRV16_ClassifyTransientCodeBeatsAuthText -- most auth text markers removed (ADAPTED: list gained two entries)
+R16 SURVIVED rc=0 by= -- DNS timeouts no longer transient
+R17 CAUGHT rc=1 by=TestClassify_EveryTransientSignal -- io.EOF no longer transient
+R18 CAUGHT rc=1 by=TestMetered_SampleCarriesProtocolOpAndError -- Sample.Protocol never set
+R19 CAUGHT rc=1 by=TestRetrying_CancelledContextReturnsTheFailureWithoutBackoff -- retry loop no longer checks the caller context before backing off
+R20 CAUGHT rc=1 by=TestPool_DiscardOfAHangingConnectionIsBounded -- discard: Disconnect of a dead connection is unbounded
+N01 CAUGHT rc=1 by=TestBudget_CancelledMiddleReservationIsReused,TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving,TestBudget_ManyCancelledWaitersDoNotLivelock,TestRV01_BudgetCancelledReservationsDrift,TestRV01b_BudgetLivelockWithServeableCallers,TIMEOUT -- S1: a cancelled start slot is never given back (the original defect)
+N02 CAUGHT rc=1 by=TestBudget_PastFreedSlotIsNotReusedSoSpacingStaysStrict -- S1: past freed slots are reused (spacing no longer strict)
+N03 CAUGHT rc=1 by=TestBudget_DeadlineBeforeSlotFailsFastWithoutReserving -- S1: no fail-fast on a deadline before the slot
+N04 SURVIVED rc=0 by= -- S1: tail reservation goes to the free list instead of winding the front back
+N05 CAUGHT rc=1 by=TestBudgetConfig_TinyRateRejectedNotFailOpen,TestRV02_BudgetTinyRateFailsOpen -- S12: tiny rate no longer rejected
+N06 CAUGHT rc=1 by=TestBudget_StatsExposeHeldSlotsAndReservations -- S15: released slots stay in the held set
+N07 CAUGHT rc=1 by=TestLimited_StreamLeaseFreesALeakedSlot -- S15: the stream lease is never armed
+N08 CAUGHT rc=1 by=TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection,TestPool_BusyBudgetDoesNotBlockBorrowNorDiscardHealthyIdle,TestRV15_PoolHealthProbeThrottledByOwnBudget -- S4: the health probe takes a budget slot again
+N09 CAUGHT rc=1 by=TestPool_CancelledBorrowDuringProbeKeepsHealthyIdle,TestRV03_PoolCancelledBorrowDestroysHealthyIdle -- S2: a caller giving up during the probe discards the connection
+N10 CAUGHT rc=1 by=TestPool_PreCancelledContextNeverTouchesIdle -- S2: pre-cancelled context reaches the pool
+N11 SURVIVED rc=0 by= -- S2: a new client is created for a context that ended while waiting
+N12 CAUGHT rc=1 by=TestPool_RejectedLoginIsNotRepeatedAcrossBorrows,TestPool_RejectedLoginResets,TestRV05_PoolAuthFailureNoCircuitBreaker -- S3: a rejected login is not remembered
+N13 CAUGHT rc=1 by=TestPool_RejectedLoginResets -- S3: a changed config does not reset the remembered rejection
+N14 CAUGHT rc=1 by=TestPool_RejectedLoginResets -- S3: Evict does not forget a remembered rejection
+N15 CAUGHT rc=1 by=TIMEOUT -- S4: connect not bounded by ConnectTimeout
+N16 CAUGHT rc=1 by=TestRV04_PoolForeignUnhashableReturnWedges,TestRV04b_PoolUnhashableClientPanicsOnBorrow -- S8: static-type comparability (the proxy)
+N17 SURVIVED rc=0 by= -- S8: unborrow without holding the lock across the lookup/delete (race)
+N18 SURVIVED rc=0 by= -- P2: borrow no longer sweeps expired idle connections
+N19 SURVIVED rc=0 by= -- P2: return no longer sweeps expired idle connections
+N20 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestRV07_StreamsHideReaderAtAndSeeker,TestReadOnly_StreamsExposeOnlyReadingCapabilities,TestWrapSeekable_StaysSeekable,TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPat -- S5: ReaderAt is dropped from wrapped streams
+N21 CAUGHT rc=1 by=TestRV07_StreamsHideReaderAtAndSeeker,TestReadOnly_StreamsExposeOnlyReadingCapabilities,TestWrapSeekable_StaysSeekable -- S5: Seeker is dropped from wrapped streams
+N22 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths -- S5: WriterTo is dropped from wrapped streams
+N23 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths -- S5: ReadAt bytes are not metered
+N24 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestMetered_CountsCallsErrorsAndBytes,TestWrap_ExposesExactlyTheInnerCapabilitiesAndMetersAllReadPaths -- S5: WriteTo bytes are not metered
+N25 CAUGHT rc=1 by=TestLayers_GetConfigIsRedactedAndDetached -- S6: fabric layers hand out the live config
+N26 CAUGHT rc=1 by=TestRV21_ReadOnlyGetConfigLeaksCredentials,TestReadOnly_GetConfigIsRedactedAndDetached -- S6: ReadOnly hands out the live config
+N27 CAUGHT rc=1 by=TestLayers_GetConfigIsRedactedAndDetached,TestRV21_ReadOnlyGetConfigLeaksCredentials,TestReadOnly_GetConfigIsRedactedAndDetached,TestRedactConfig_StructPointerMapAndDetached -- S6: struct secret fields are not blanked
+N28 CAUGHT rc=1 by=TestRedactConfig_StructPointerMapAndDetached -- S6: secret map keys are kept
+N29 CAUGHT rc=1 by=TestLayers_GetConfigIsRedactedAndDetached,TestRV21_ReadOnlyGetConfigLeaksCredentials,TestReadOnly_GetConfigIsRedactedAndDetached,TestRedactConfig_StructPointerMapAndDetached -- S6: redaction in place (blanks / aliases the live config)
+N30 CAUGHT rc=1 by=TestRV22_ReadOnlyStreamHandleCanChmod,TestReadOnly_StreamsExposeOnlyReadingCapabilities -- S7: ReadOnly.ReadFile returns the raw inner handle
+N31 CAUGHT rc=1 by=TestReadOnly_StreamsExposeOnlyReadingCapabilities -- S7: ReadOnly.OpenSeekable returns the raw inner handle
+N32 CAUGHT rc=1 by=TestClassify_FTPCodeTable,TestClassify_Table -- S9: RFC 2228 policy replies classified as credential failures
+N33 CAUGHT rc=1 by=TestClassify_PathTextIsNeverAuthEvidence,TestClassify_Table,TestRV08_ClassifyMarkerFromPathText -- S9: markers matched on the whole (path-bearing) message
+N34 CAUGHT rc=1 by=TestClassify_AuthBeatsTransientForEverySource,TestClassify_FTPCodeTable,TestClassify_Table,TestRV16_ClassifyTransientCodeBeatsAuthText -- S9: a 4yz lockout reply is retried (auth text ignored)
+N35 CAUGHT rc=1 by=TestClassify_FTPCodeTable,TestRV08_ClassifyMarkerFromPathText -- S9: a 5yz file-level reply text is read as bad credentials
+N36 INVALID(BUILD_FAILED) rc=1 by=pkg/fabric/op.go:141:5: declared and not used: a -- S10: IP literals not canonicalised
+N37 CAUGHT rc=1 by=TestHostKey_RejectsNonHostsAndCanonicalisesIPs -- S10: URLs / paths / userinfo accepted as hosts
+N38 CAUGHT rc=1 by=FuzzConfined,TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot,TestRV06_ConfinedPassesCRLF -- S11: only NUL refused (the original)
+N39 CAUGHT rc=1 by=FuzzConfined,TestConfined_EveryControlCharacterIsRefusedInPathsAndRoot -- S11: DEL accepted
+N40 CAUGHT rc=1 by=TestRV11_TypedNilInnerAccepted,TestRV20_ReadOnlyTypedNilAccepted,TestTypedNilInnerPanicsAtConstructionEverywhere -- S13: typed nil not detected
+N41 CAUGHT rc=1 by=TestRV20_ReadOnlyTypedNilAccepted,TestTypedNilInnerPanicsAtConstructionEverywhere -- S13: ReadOnly accepts a typed nil
+N42 CAUGHT rc=1 by=TestRV11_TypedNilInnerAccepted,TestTypedNilInnerPanicsAtConstructionEverywhere -- S13: fabric layers accept a typed nil
+N43 CAUGHT rc=1 by=TestRetryPolicy_BoundedAndNeverBackToBack -- S14: zero BaseDelay accepted
+N44 CAUGHT rc=1 by=TestRetryPolicy_BoundedAndNeverBackToBack -- S14: MaxAttempts unbounded
+N45 INVALID(BUILD_FAILED) rc=1 by=pkg/fabric/retrying.go:7:2: "math" imported and not used -- S14: closed-form delay overflows instead of saturating
+N46 CAUGHT rc=1 by=TestRetryPolicy_DelayClosedFormMatchesDefinition,TestRetrying_BackoffDoublesAndCaps,TestRetrying_HugeBackoffDoesNotOverflow -- S14: MaxDelay cap dropped
+N47 CAUGHT rc=1 by=TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestLimited_EveryOpTakesOneSlotExceptDisconnectAndTestConnection,TestLimited_ReadAtStreamHoldsSlotUntilClose,TestLimited_StreamHoldsSlotUntilClose,TestMetered_CountsCallsErrorsAndBy -- S5: close hooks (slot release / metering) never run
+N48 CAUGHT rc=1 by=TestChain_RealLocalFilesystem,TestLayers_PreserveStreamCapabilitiesAndMeterEveryReadPath,TestMetered_CountsCallsErrorsAndBytes -- S5: stream reads never metered
+SUMMARY {'CAUGHT': 60, 'SURVIVED': 7, 'INVALID': 3, 'NOT_APPLIED': 0}
+HARNESS_CONTROLS_OK=True

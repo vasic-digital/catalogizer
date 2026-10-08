@@ -1,0 +1,58 @@
+# =============================================================================
+# SFTP test fixture for the read-only SFTP client (WP-12 PA-05; submodules/filesystem/pkg/sftp)
+# =============================================================================
+#
+# One OpenSSH (internal-sftp, chrooted) server with a READ-ONLY data volume and one test user. Start and stop ONLY through
+#
+#   scripts/test-infra/sftp_fixture.sh run -- <go test arguments>
+#
+# which generates the per-run credentials and host key (mode 0600, under .audit/scratch), registers a long operation,
+# starts this file, runs the integration tests in the pinned IMG-GO container on the same network, and tears everything down.
+#
+# Rules (the same as docker-compose.test-infra.yml, docs/16 D-06, D-07):
+#   - the image is pinned by its index digest (entry IMG-INFRA-SFTP of build/containers/images.lock.yaml);
+#   - no credential is a literal and none is in argv or in the environment of the server: the user list is a mounted file
+#     (/etc/sftp/users.conf, mode 0600) generated per run;
+#   - the data volume is mounted `:ro`: the server side cannot be written either, independent of the client's own read-only design;
+#   - the host key is MOUNTED (generated per run), so the test can compare the fingerprint it pins against a value computed
+#     OUTSIDE the container (the owner confirmation step);
+#   - every service carries the labels project=catalogizer, op_id / catalogizer.op_id (the registered operation of the run);
+#   - rootless: no privileged mode, no kernel mount, no published host port (the test container joins this project's network).
+#     The server needs CHOWN, SETUID, SETGID, SYS_CHROOT, DAC_OVERRIDE and AUDIT_WRITE: sshd drops privileges and chroots
+#     (capabilities of the container's own user namespace; they grant nothing on the host).
+# =============================================================================
+
+x-podman:
+  in_pod: false
+
+x-labels: &labels
+  project: catalogizer
+  op_id: "${SFTP_OP_ID:?SFTP_OP_ID is set by scripts/test-infra/sftp_fixture.sh}"
+  catalogizer.op_id: "${SFTP_OP_ID:?SFTP_OP_ID is set by scripts/test-infra/sftp_fixture.sh}"
+  catalogizer.test_project: "${SFTP_PROJECT:?SFTP_PROJECT is set by scripts/test-infra/sftp_fixture.sh}"
+
+services:
+  sftp:
+    image: docker.io/atmoz/sftp@sha256:0960390462a4441dbb63698d7c185b76a41ffcee7b78ff4adf275f3e66f9c475
+    pull_policy: never
+    labels: *labels
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - SYS_CHROOT
+      - DAC_OVERRIDE
+      - AUDIT_WRITE
+    volumes:
+      - "${SFTP_DIR:?}/users.conf:/etc/sftp/users.conf:ro"
+      - "${SFTP_DIR:?}/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key:ro"
+      - "${SFTP_DIR:?}/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key:ro"
+      - "${SFTP_DIR:?}/client_key.pub:/home/${SFTP_USER:?}/.ssh/keys/client_key.pub:ro"
+      - "${SFTP_DIR:?}/data:/home/${SFTP_USER:?}/data:ro"
+    networks: [test-network]
+    mem_limit: 256m
+    cpus: 0.25
+
+networks:
+  test-network:
+    driver: bridge

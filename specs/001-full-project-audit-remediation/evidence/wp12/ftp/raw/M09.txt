@@ -1,0 +1,56 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M09.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestAuthFailure_IsClassifiedAuth_AndNeverRetried (0.07s)
+    --- FAIL: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530 (0.01s)
+        ftps_test.go:595: 
+            	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:595
+            	Error:      	Target error should be in err chain:
+            	            	expected: "fabric: authentication failure"
+            	            	in chain: "fabric: transient failure: ftp: login to 127.0.0.1 as \"u\" failed: 530 \"Login incorrect\""
+            	            		"fabric: transient failure"
+            	            		"ftp: login to 127.0.0.1 as \"u\" failed: 530 \"Login incorrect\""
+            	            		"530 \"Login incorrect\""
+            	Test:       	TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530
+    --- FAIL: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430 (0.02s)
+        ftps_test.go:595: 
+            	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:595
+            	Error:      	Target error should be in err chain:
+            	            	expected: "fabric: authentication failure"
+            	            	in chain: "fabric: transient failure: ftp: login to 127.0.0.1 as \"u\" failed: 430 \"Login incorrect\""
+            	            		"fabric: transient failure"
+            	            		"ftp: login to 127.0.0.1 as \"u\" failed: 430 \"Login incorrect\""
+            	            		"430 \"Login incorrect\""
+            	Test:       	TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430
+    --- FAIL: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534 (0.01s)
+        ftps_test.go:595: 
+            	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:595
+            	Error:      	Target error should be in err chain:
+            	            	expected: "fabric: authentication failure"
+            	            	in chain: "fabric: transient failure: ftp: login to 127.0.0.1 as \"u\" failed: 534 \"Login incorrect\""
+            	            		"fabric: transient failure"
+            	            		"ftp: login to 127.0.0.1 as \"u\" failed: 534 \"Login incorrect\""
+            	            		"534 \"Login incorrect\""
+            	Test:       	TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534
+    --- FAIL: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535 (0.04s)
+        ftps_test.go:595: 
+            	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:595
+            	Error:      	Target error should be in err chain:
+            	            	expected: "fabric: authentication failure"
+            	            	in chain: "fabric: transient failure: ftp: login to 127.0.0.1 as \"u\" failed: 535 \"Login incorrect\""
+            	            		"fabric: transient failure"
+            	            		"ftp: login to 127.0.0.1 as \"u\" failed: 535 \"Login incorrect\""
+            	            		"535 \"Login incorrect\""
+            	Test:       	TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.904s
+ok  	digital.vasic.filesystem/pkg/factory	0.009s
+FAIL

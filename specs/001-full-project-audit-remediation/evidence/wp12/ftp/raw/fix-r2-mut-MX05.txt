@@ -1,0 +1,14 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX05 - reviewer: TLS ServerName ignores the pin's name
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12 (0.00s)
+    fix_r2_net_test.go:1108: 
+        	Error Trace:	/out/mut/MX05/filesystem/pkg/ftp/fix_r2_net_test.go:1108
+        	Error:      	Received unexpected error:
+        	            	tls: failed to verify certificate: x509: cannot validate certificate for 127.0.0.1 because it doesn't contain any IP SANs
+        	Test:       	TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+        	Messages:   	SNI and verification use the pinned name
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.906s
+FAIL

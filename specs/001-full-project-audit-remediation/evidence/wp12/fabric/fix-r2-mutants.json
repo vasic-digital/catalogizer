@@ -1,0 +1,499 @@
+[
+ {
+  "id": "PC1",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassAuth",
+  "new": "if errors.Is(err, ErrAuth) {\n\t\treturn ClassTransient",
+  "why": "POSITIVE CONTROL (reviewer PC1): marked auth errors retried; MUST be caught"
+ },
+ {
+  "id": "NC1",
+  "file": "pkg/fabric/clock.go",
+  "old": "func SystemClock() Clock",
+  "new": "func SystemClock() Clock",
+  "why": "NEGATIVE CONTROL (reviewer NC1): no-op; MUST survive"
+ },
+ {
+  "id": "R01",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.GetFileInfo(ctx, path)",
+  "new": "return r.in.GetFileInfo(ctx, \"/\")",
+  "why": "ReadOnly.GetFileInfo forwards the wrong path"
+ },
+ {
+  "id": "R02",
+  "file": "pkg/decorators/readonly.go",
+  "old": "return r.in.FileExists(ctx, path)",
+  "new": "return r.in.FileExists(ctx, \"/\")",
+  "why": "ReadOnly.FileExists forwards the wrong path"
+ },
+ {
+  "id": "R03",
+  "file": "pkg/fabric/layer.go",
+  "old": "return l.in.CopyFile(ctx, ps[0], ps[1])",
+  "new": "return l.in.CopyFile(ctx, ps[0], ps[0])",
+  "why": "every fabric layer forwards CopyFile with dst := src"
+ },
+ {
+  "id": "R04",
+  "file": "pkg/fabric/layer.go",
+  "old": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r.Close()",
+  "new": "r, e := l.seek.OpenSeekable(ctx, ps[0])\n\t\tif e != nil {\n\t\t\tif r != nil {\n\t\t\t\t_ = r",
+  "why": "OpenSeekable leaks a stream returned with an error"
+ },
+ {
+  "id": "R05",
+  "file": "pkg/fabric/layer.go",
+  "old": "func (l *layer) IsConnected() bool",
+  "new": "func (l *layer) IsConnected() bool { return true }\nfunc (l *layer) isConnectedOrig() bool",
+  "why": "decorated clients always report connected (ADAPTED: gofmt realigned the one-line form)"
+ },
+ {
+  "id": "R06",
+  "file": "pkg/fabric/pool.go",
+  "old": "opts.HealthTimeout = 5 * time.Second",
+  "new": "opts.HealthTimeout = 0",
+  "why": "default health-probe timeout 0"
+ },
+ {
+  "id": "R07",
+  "file": "pkg/fabric/pool.go",
+  "old": "err = c.Connect(cctx)",
+  "new": "_ = cctx\n\terr = c.Connect(context.Background())",
+  "why": "new-connection Connect ignores the caller's context (ADAPTED: the call now goes through cctx)"
+ },
+ {
+  "id": "R08",
+  "file": "pkg/fabric/pool.go",
+  "old": "cand = p.idle[key][n-1] // most recently used first\n\t\t\tp.idle[key] = p.idle[key][:n-1]",
+  "new": "cand = p.idle[key][0]\n\t\t\tp.idle[key] = p.idle[key][1:]",
+  "why": "idle order MRU -> LRU"
+ },
+ {
+  "id": "R09",
+  "file": "pkg/fabric/pool.go",
+  "old": "now.Sub(e.created) >= p.opts.MaxLifetime {",
+  "new": "now.Sub(e.created) > p.opts.MaxLifetime {",
+  "why": "MaxLifetime boundary off by one tick on borrow"
+ },
+ {
+  "id": "R10",
+  "file": "pkg/fabric/pool.go",
+  "old": "keep := !closed && c.IsConnected() &&",
+  "new": "keep := !closed &&",
+  "why": "a disconnected client is re-pooled on return"
+ },
+ {
+  "id": "R11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tcase <-p.done:\n\t\t\treturn nil, ErrPoolClosed\n\t\t}\n\t} else {",
+  "new": "\t\t}\n\t} else {",
+  "why": "GetClientContext waiters are not woken by CloseAll"
+ },
+ {
+  "id": "R12",
+  "file": "pkg/fabric/errors.go",
+  "old": "for _, e := range []error{syscall.ECONNRESET, syscall.ECONNABORTED, syscall.EPIPE, syscall.ETIMEDOUT,\n\t\tsyscall.ECONNREFUSED, syscall.EHOSTUNREACH, syscall.ENETUNREACH, syscall.ENETDOWN} {",
+  "new": "for _, e := range []error{syscall.ECONNRESET, syscall.EPIPE} {",
+  "why": "six errnos no longer transient"
+ },
+ {
+  "id": "R13",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "new": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassPermanent",
+  "why": "FTP 4yz (425/426/450/451/452...) no longer transient (ADAPTED: the code list became the 4yz rule)"
+ },
+ {
+  "id": "R14",
+  "file": "pkg/fabric/errors.go",
+  "old": "var ftpAuthCodes = map[int]bool{530: true, 332: true, 532: true}",
+  "new": "var ftpAuthCodes = map[int]bool{530: true}",
+  "why": "FTP 332/532 no longer auth (ADAPTED: 534 moved out of the auth set by the fix)"
+ },
+ {
+  "id": "R15",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\"status_logon_failure\", \"logon failure\", \"authentication failed\", \"login incorrect\",\n\t\"unable to authenticate\", \"permission denied (publickey\", \"invalid credentials\",\n\t\"invalid username or password\", \"incorrect password\",\n\t\"access denied\", \"bad password\", \"wrong password\", \"not logged in\", \"status_access_denied\",\n",
+  "new": "\t\"status_logon_failure\", \"login incorrect\", \"unable to authenticate\",\n",
+  "why": "most auth text markers removed (ADAPTED: list gained two entries)"
+ },
+ {
+  "id": "R16",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() {",
+  "new": "\tvar ne net.Error\n\tif errors.As(err, &ne) && ne.Timeout() && false {",
+  "why": "DNS timeouts no longer transient (ADAPTED: the DNS branch keeps only IsTemporary because DNSError.Timeout is covered by the net.Error branch; the mutation removes that branch)"
+ },
+ {
+  "id": "R17",
+  "file": "pkg/fabric/errors.go",
+  "old": "if errors.Is(err, io.ErrUnexpectedEOF) || errors.Is(err, io.EOF) {",
+  "new": "if errors.Is(err, io.ErrUnexpectedEOF) {",
+  "why": "io.EOF no longer transient"
+ },
+ {
+  "id": "R18",
+  "file": "pkg/fabric/metered.go",
+  "old": "Protocol: inner.GetProtocol(),",
+  "new": "Protocol: \"\",",
+  "why": "Sample.Protocol never set"
+ },
+ {
+  "id": "R19",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if ctx.Err() != nil || classify(err) != ClassTransient {",
+  "new": "if classify(err) != ClassTransient {",
+  "why": "retry loop no longer checks the caller context before backing off"
+ },
+ {
+  "id": "R20",
+  "file": "pkg/fabric/pool.go",
+  "old": "ctx, cancel := context.WithTimeout(context.Background(), p.opts.HealthTimeout)\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "new": "ctx, cancel := context.WithCancel(context.Background())\n\tdefer cancel()\n\t_ = e.c.Disconnect(ctx)",
+  "why": "discard: Disconnect of a dead connection is unbounded"
+ },
+ {
+  "id": "N01",
+  "file": "pkg/fabric/budget.go",
+  "old": "func (b *HostBudget) giveBack(start time.Time, reused bool) {",
+  "new": "func (b *HostBudget) giveBack(start time.Time, reused bool) {\n\tif true {\n\t\treturn\n\t}",
+  "why": "S1: a cancelled start slot is never given back (the original defect)"
+ },
+ {
+  "id": "N02",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tfor len(b.free) > 0 && b.free[0].Before(now) {\n\t\tb.free = b.free[1:]\n\t}\n",
+  "new": "",
+  "why": "S1: past freed slots are reused (spacing no longer strict)"
+ },
+ {
+  "id": "N03",
+  "file": "pkg/fabric/budget.go",
+  "old": "ok && start.After(dl) {",
+  "new": "ok && false && start.After(dl) {",
+  "why": "S1: no fail-fast on a deadline before the slot"
+ },
+ {
+  "id": "N04",
+  "file": "pkg/fabric/budget.go",
+  "old": "if !reused && b.nextSlot.Equal(start.Add(b.interval)) {",
+  "new": "if false {",
+  "why": "S1: a cancelled tail reservation is never wound back (goes through the free list only, so idle time after it is lost)"
+ },
+ {
+  "id": "N05",
+  "file": "pkg/fabric/budget.go",
+  "old": "if float64(time.Second)/c.MaxReqPerSec >= float64(math.MaxInt64) {",
+  "new": "if false {",
+  "why": "S12: tiny rate no longer rejected"
+ },
+ {
+  "id": "N06",
+  "file": "pkg/fabric/budget.go",
+  "old": "\t\t\tdelete(b.held, id)\n",
+  "new": "",
+  "why": "S15: released slots stay in the held set"
+ },
+ {
+  "id": "N07",
+  "file": "pkg/fabric/budget.go",
+  "old": "\tif b.lease <= 0 {\n\t\treturn release\n\t}",
+  "new": "\tif true {\n\t\treturn release\n\t}",
+  "why": "S15: the stream lease is never armed"
+ },
+ {
+  "id": "N08",
+  "file": "pkg/fabric/limited.go",
+  "old": "if st.op == OpDisconnect || st.op == OpTestConnection {",
+  "new": "if st.op == OpDisconnect {",
+  "why": "S4: the health probe takes a budget slot again"
+ },
+ {
+  "id": "N09",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\t\tif err := ctx.Err(); err != nil {\n\t\t\t\t// The caller's context ended during the probe",
+  "new": "\t\t\tif err := ctx.Err(); err != nil && false {\n\t\t\t\t// The caller's context ended during the probe",
+  "why": "S2: a caller giving up during the probe discards the connection"
+ },
+ {
+  "id": "N10",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t// A caller whose context is already done never reaches the pool: the token\n\t// select below would pick the ready token about half the time.\n\tif err := ctx.Err(); err != nil {\n\t\treturn nil, err\n\t}\n",
+  "new": "",
+  "why": "S2: pre-cancelled context reaches the pool"
+ },
+ {
+  "id": "N11",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tif err := ctx.Err(); err != nil {\n\t\trelease()\n\t\treturn nil, err\n\t}\n\tc, err := p.factory.CreateClient(cfg)",
+  "new": "\tc, err := p.factory.CreateClient(cfg)",
+  "why": "S2: a new client is created for a context that ended while waiting"
+ },
+ {
+  "id": "N12",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t\tif Classify(err) == ClassAuth {",
+  "new": "\t\tif false {",
+  "why": "S3: a rejected login is not remembered"
+ },
+ {
+  "id": "N13",
+  "file": "pkg/fabric/pool.go",
+  "old": "if af.fingerprint == fingerprint(cfg) && af.fingerprint != ([sha256.Size]byte{}) {",
+  "new": "if true {",
+  "why": "S3: a changed config does not reset the remembered rejection"
+ },
+ {
+  "id": "N14",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tdelete(p.authFail, id)\n",
+  "new": "",
+  "why": "S3: Evict does not forget a remembered rejection"
+ },
+ {
+  "id": "N15",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tcctx, cancel := context.WithTimeout(ctx, p.opts.ConnectTimeout)\n\terr = c.Connect(cctx)\n\tcancel()",
+  "new": "\terr = c.Connect(ctx)",
+  "why": "S4: connect not bounded by ConnectTimeout"
+ },
+ {
+  "id": "N16",
+  "file": "pkg/fabric/pool.go",
+  "old": "return c != nil && reflect.ValueOf(c).Comparable()",
+  "new": "return c != nil && reflect.TypeOf(c).Comparable()",
+  "why": "S8: static-type comparability (the proxy)"
+ },
+ {
+  "id": "N17",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tp.mu.Lock()\n\tdefer p.mu.Unlock()\n\te, ok := p.inUse[c]",
+  "new": "\tp.mu.Lock()\n\te, ok := p.inUse[c]\n\tp.mu.Unlock()",
+  "why": "S8: unborrow without holding the lock across the lookup/delete (race)"
+ },
+ {
+  "id": "N18",
+  "file": "pkg/fabric/pool.go",
+  "old": "\tp.sweep()\n\n\tif wait {",
+  "new": "\n\tif wait {",
+  "why": "P2: borrow no longer sweeps expired idle connections"
+ },
+ {
+  "id": "N19",
+  "file": "pkg/fabric/pool.go",
+  "old": "\t<-tok\n\tp.sweep()\n\treturn nil",
+  "new": "\t<-tok\n\treturn nil",
+  "why": "P2: return no longer sweeps expired idle connections"
+ },
+ {
+  "id": "N20",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif ra {\n\t\tm |= 1\n\t}",
+  "new": "\tif ra && false {\n\t\tm |= 1\n\t}",
+  "why": "S5: ReaderAt is dropped from wrapped streams"
+ },
+ {
+  "id": "N21",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif sk {\n\t\tm |= 2\n\t}",
+  "new": "\tif sk && false {\n\t\tm |= 2\n\t}",
+  "why": "S5: Seeker is dropped from wrapped streams"
+ },
+ {
+  "id": "N22",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif wt {\n\t\tm |= 4\n\t}",
+  "new": "\tif wt && false {\n\t\tm |= 4\n\t}",
+  "why": "S5: WriterTo is dropped from wrapped streams"
+ },
+ {
+  "id": "N23",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tn, err := m.rc.(io.ReaderAt).ReadAt(p, off)\n\tm.h.read(n)",
+  "new": "\tn, err := m.rc.(io.ReaderAt).ReadAt(p, off)",
+  "why": "S5: ReadAt bytes are not metered"
+ },
+ {
+  "id": "N24",
+  "file": "pkg/decorators/guard/stream.go",
+  "old": "\tif n > 0 {\n\t\tm.h.read(int(n))\n\t}",
+  "new": "\t_ = n",
+  "why": "S5: WriteTo bytes are not metered"
+ },
+ {
+  "id": "N25",
+  "file": "pkg/fabric/layer.go",
+  "old": "func (l *layer) GetConfig() interface{} { return guard.RedactConfig(l.in.GetConfig()) }",
+  "new": "func (l *layer) GetConfig() interface{} { return l.in.GetConfig() }",
+  "why": "S6: fabric layers hand out the live config"
+ },
+ {
+  "id": "N26",
+  "file": "pkg/decorators/readonly.go",
+  "old": "func (r *readOnly) GetConfig() interface{} { return guard.RedactConfig(r.in.GetConfig()) }",
+  "new": "func (r *readOnly) GetConfig() interface{} { return r.in.GetConfig() }",
+  "why": "S6: ReadOnly hands out the live config"
+ },
+ {
+  "id": "N27",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tif IsSensitiveName(f.Name) {\n\t\t\tfv.Set(reflect.Zero(fv.Type()))\n\t\t\tcontinue\n\t\t}",
+  "new": "\t\tif false {\n\t\t\tfv.Set(reflect.Zero(fv.Type()))\n\t\t\tcontinue\n\t\t}",
+  "why": "S6: struct secret fields are not blanked"
+ },
+ {
+  "id": "N28",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tif k.Kind() == reflect.String && IsSensitiveName(k.String()) {\n\t\t\tcontinue\n\t\t}",
+  "new": "",
+  "why": "S6: secret map keys are kept"
+ },
+ {
+  "id": "N29",
+  "file": "pkg/decorators/guard/config.go",
+  "old": "\t\tcp := reflect.New(v.Elem().Type())\n\t\tcp.Elem().Set(v.Elem())\n\t\tredactStruct(cp.Elem())\n\t\treturn cp.Interface()",
+  "new": "\t\tredactStruct(v.Elem())\n\t\treturn cfg",
+  "why": "S6: redaction in place (blanks / aliases the live config)"
+ },
+ {
+  "id": "N30",
+  "file": "pkg/decorators/readonly.go",
+  "old": "\treturn guard.Wrap(rc, guard.Hooks{}), nil",
+  "new": "\treturn rc, nil",
+  "why": "S7: ReadOnly.ReadFile returns the raw inner handle"
+ },
+ {
+  "id": "N31",
+  "file": "pkg/decorators/readonly.go",
+  "old": "\treturn guard.WrapSeekable(rc, guard.Hooks{}), nil",
+  "new": "\treturn rc, nil",
+  "why": "S7: ReadOnly.OpenSeekable returns the raw inner handle"
+ },
+ {
+  "id": "N32",
+  "file": "pkg/fabric/errors.go",
+  "old": "var ftpAuthCodes = map[int]bool{530: true, 332: true, 532: true}",
+  "new": "var ftpAuthCodes = map[int]bool{530: true, 332: true, 532: true, 534: true, 535: true}",
+  "why": "S9: RFC 2228 policy replies classified as credential failures"
+ },
+ {
+  "id": "N33",
+  "file": "pkg/fabric/errors.go",
+  "old": "\tfor _, leaf := range leafErrors(err) {\n\t\tif hasAuthMarker(leaf.Error()) {",
+  "new": "\tfor _, leaf := range []error{err} {\n\t\tif hasAuthMarker(leaf.Error()) {",
+  "why": "S9: markers matched on the whole (path-bearing) message"
+ },
+ {
+  "id": "N34",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassTransient",
+  "new": "\t\t\treturn ClassTransient",
+  "why": "S9: a 4yz lockout reply is retried (auth text ignored)"
+ },
+ {
+  "id": "N35",
+  "file": "pkg/fabric/errors.go",
+  "old": "\t\tdefault:\n\t\t\treturn ClassPermanent\n\t\t}\n\t}\n\tfor _, leaf",
+  "new": "\t\tdefault:\n\t\t\tif hasAuthMarker(te.Msg) {\n\t\t\t\treturn ClassAuth\n\t\t\t}\n\t\t\treturn ClassPermanent\n\t\t}\n\t}\n\tfor _, leaf",
+  "why": "S9: a 5yz file-level reply text is read as bad credentials"
+ },
+ {
+  "id": "N36",
+  "file": "pkg/fabric/op.go",
+  "old": "h = a.Unmap().String()",
+  "new": "h = a.String()",
+  "why": "S10: IPv4-mapped IPv6 not unmapped"
+ },
+ {
+  "id": "N36b",
+  "file": "pkg/fabric/op.go",
+  "old": "h = a.Unmap().String()",
+  "new": "_ = a",
+  "why": "S10: IP literals not canonicalised at all"
+ },
+ {
+  "id": "N37",
+  "file": "pkg/fabric/op.go",
+  "old": "r == '/' || r == '\\\\' || r == '@' || r == '?' || r == '#'",
+  "new": "false",
+  "why": "S10: URLs / paths / userinfo accepted as hosts"
+ },
+ {
+  "id": "N38",
+  "file": "pkg/fabric/confined.go",
+  "old": "\t\tif r < 0x20 || r == 0x7f {",
+  "new": "\t\tif r == 0 {",
+  "why": "S11: only NUL refused (the original)"
+ },
+ {
+  "id": "N39",
+  "file": "pkg/fabric/confined.go",
+  "old": "\t\tif r < 0x20 || r == 0x7f {",
+  "new": "\t\tif r < 0x20 {",
+  "why": "S11: DEL accepted"
+ },
+ {
+  "id": "N40",
+  "file": "pkg/decorators/guard/nil.go",
+  "old": "\t\treturn rv.IsNil()",
+  "new": "\t\treturn false",
+  "why": "S13: typed nil not detected"
+ },
+ {
+  "id": "N41",
+  "file": "pkg/decorators/readonly.go",
+  "old": "if guard.IsNil(inner) {",
+  "new": "if inner == nil {",
+  "why": "S13: ReadOnly accepts a typed nil"
+ },
+ {
+  "id": "N42",
+  "file": "pkg/fabric/layer.go",
+  "old": "if guard.IsNil(inner) {",
+  "new": "if inner == nil {",
+  "why": "S13: fabric layers accept a typed nil"
+ },
+ {
+  "id": "N43",
+  "file": "pkg/fabric/retrying.go",
+  "old": "\tif p.MaxAttempts > 1 && p.BaseDelay == 0 {",
+  "new": "\tif false {",
+  "why": "S14: zero BaseDelay accepted"
+ },
+ {
+  "id": "N44",
+  "file": "pkg/fabric/retrying.go",
+  "old": "if p.MaxAttempts < 1 || p.MaxAttempts > MaxRetryAttempts {",
+  "new": "if p.MaxAttempts < 1 {",
+  "why": "S14: MaxAttempts unbounded"
+ },
+ {
+  "id": "N45",
+  "file": "pkg/fabric/retrying.go",
+  "old": "\t\tif shift >= 63 || d > time.Duration(math.MaxInt64>>uint(shift)) {\n\t\t\td = math.MaxInt64\n\t\t} else {\n\t\t\td <<= uint(shift)\n\t\t}",
+  "new": "\t\t_ = math.MaxInt64\n\t\td <<= uint(shift)",
+  "why": "S14: closed-form delay overflows instead of saturating"
+ },
+ {
+  "id": "N46",
+  "file": "pkg/fabric/retrying.go",
+  "old": "\tif p.MaxDelay > 0 && d > p.MaxDelay {",
+  "new": "\tif false {",
+  "why": "S14: MaxDelay cap dropped"
+ },
+ {
+  "id": "N47",
+  "file": "pkg/fabric/layer.go",
+  "old": "\t\tOnClose: st.runClose,",
+  "new": "\t\tOnClose: func() {},",
+  "why": "S5: close hooks (slot release / metering) never run"
+ },
+ {
+  "id": "N48",
+  "file": "pkg/fabric/metered.go",
+  "old": "\t\tst.onRead = append(st.onRead, add)\n",
+  "new": "",
+  "why": "S5: stream reads never metered"
+ }
+]

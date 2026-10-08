@@ -1,0 +1,27 @@
+# fuzz, 20 s each, -race
+fuzz: elapsed: 0s, gathering baseline coverage: 0/45 completed
+fuzz: elapsed: 1s, gathering baseline coverage: 45/45 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 933 (306/sec), new interesting: 2 (total: 47)
+fuzz: elapsed: 6s, execs: 3187 (763/sec), new interesting: 6 (total: 51)
+fuzz: elapsed: 9s, execs: 4263 (359/sec), new interesting: 8 (total: 53)
+fuzz: elapsed: 12s, execs: 4263 (0/sec), new interesting: 8 (total: 53)
+fuzz: elapsed: 15s, execs: 4263 (0/sec), new interesting: 8 (total: 53)
+fuzz: elapsed: 18s, execs: 4263 (0/sec), new interesting: 8 (total: 53)
+fuzz: elapsed: 21s, execs: 4263 (0/sec), new interesting: 8 (total: 53)
+fuzz: elapsed: 22s, execs: 4263 (0/sec), new interesting: 8 (total: 53)
+PASS
+ok  	digital.vasic.filesystem/pkg/fabric	23.156s
+fuzz FuzzConfined rc=0
+fuzz: elapsed: 0s, gathering baseline coverage: 0/10 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 10/10 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 1392 (464/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 6s, execs: 3059 (556/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 9s, execs: 4709 (550/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 12s, execs: 6276 (522/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 15s, execs: 7793 (506/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 18s, execs: 9465 (558/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 21s, execs: 10589 (375/sec), new interesting: 1 (total: 11)
+fuzz: elapsed: 21s, execs: 10589 (0/sec), new interesting: 1 (total: 11)
+PASS
+ok  	digital.vasic.filesystem/pkg/decorators	22.117s
+fuzz FuzzReadOnly_Mutators rc=0

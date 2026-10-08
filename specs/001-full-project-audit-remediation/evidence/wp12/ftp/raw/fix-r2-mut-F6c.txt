@@ -1,0 +1,43 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6c - MLSD facts end at the first space (a space in a fact value breaks the entry)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:82: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:82
+        	Error:      	Not equal: 
+        	            	expected: "spaced.txt"
+        	            	actual  : "Users;Modify=20200517103000; spaced.txt"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-spaced.txt
+        	            	+Users;Modify=20200517103000; spaced.txt
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=3;UNIX.group=Domain Users;Modify=20200517103000; spaced.txt
+    fix_r2_list_test.go:85: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:85
+        	Error:      	Should be true
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=3;UNIX.group=Domain Users;Modify=20200517103000; spaced.txt: 0001-01-01 00:00:00 +0000 UTC
+    fix_r2_list_test.go:78: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:78
+        	Error:      	Expected error with "ftp: directory listing has lines that could not be parsed" in chain but got nil.
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=1;Modify=20200517103000 noseparator.txt
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:169: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:169
+        	Error:      	map[string]*client.FileInfo{" two leading spaces.txt":(*client.FileInfo)(0xc0000babe0), "UpperDir":(*client.FileInfo)(0xc0000baa00), "Users;Modify=20200517103000; spaced.txt":(*client.FileInfo)(0xc0000bab40), "badoctal.txt":(*client.FileInfo)(0xc0000baaf0), "frac.txt":(*client.FileInfo)(0xc0000ba9b0), "link":(*client.FileInfo)(0xc0000baa50), "lower.txt":(*client.FileInfo)(0xc0000ba960), "nofacts.txt":(*client.FileInfo)(0xc0000bab90), "octal.txt":(*client.FileInfo)(0xc0000baaa0), "plain.txt":(*client.FileInfo)(0xc0000ba910), "trailing dot.":(*client.FileInfo)(0xc0000bac30)} does not contain "spaced.txt"
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+--- FAIL: TestMLST_OddFacts_Parsed_F6 (0.00s)
+    fix_r2_list_test.go:217: 
+        	Error Trace:	/out/mut/F6c/filesystem/pkg/ftp/fix_r2_list_test.go:217
+        	Error:      	Should be true
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+        	Messages:   	0001-01-01 00:00:00 +0000 UTC
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.963s
+FAIL

@@ -1,0 +1,61 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M06.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/kr/fs v0.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestList_MLSD_ExactMtimes_NoDotEntries (0.01s)
+    ftps_test.go:289: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:289
+        	Error:      	Should be true
+        	Test:       	TestList_MLSD_ExactMtimes_NoDotEntries
+        	Messages:   	mtime comes from the Modify fact: 2026-10-07 19:33:41.261688169 +0000 UTC m=+0.073264025
+    ftps_test.go:293: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:293
+        	Error:      	Should be true
+        	Test:       	TestList_MLSD_ExactMtimes_NoDotEntries
+--- FAIL: TestList_NoModifyFact_MtimeIsZero_NotNow (0.02s)
+    ftps_test.go:310: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:310
+        	Error:      	Should be true
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+        	Messages:   	a.txt: an mtime the server did not send must be the zero time, got 2026-10-07 19:33:41.279005491 +0000 UTC m=+0.090581347
+    ftps_test.go:310: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:310
+        	Error:      	Should be true
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+        	Messages:   	big.bin: an mtime the server did not send must be the zero time, got 2026-10-07 19:33:41.279006061 +0000 UTC m=+0.090581917
+    ftps_test.go:310: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:310
+        	Error:      	Should be true
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+        	Messages:   	sub: an mtime the server did not send must be the zero time, got 2026-10-07 19:33:41.279006661 +0000 UTC m=+0.090582507
+    ftps_test.go:310: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:310
+        	Error:      	Should be true
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+        	Messages:   	Čšž_日本.txt: an mtime the server did not send must be the zero time, got 2026-10-07 19:33:41.279007061 +0000 UTC m=+0.090582907
+    ftps_test.go:314: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:314
+        	Error:      	Should be true
+        	Test:       	TestList_NoModifyFact_MtimeIsZero_NotNow
+--- FAIL: TestGetFileInfo_UsesMLST_ServerMtime_NotNow (0.01s)
+    ftps_test.go:356: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:356
+        	Error:      	Should be true
+        	Test:       	TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+        	Messages:   	got 2026-10-07 19:33:41.298836283 +0000 UTC m=+0.110412129
+    ftps_test.go:357: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:357
+        	Error:      	Should be true
+        	Test:       	TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+        	Messages:   	must not be time.Now()
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	0.722s
+ok  	digital.vasic.filesystem/pkg/factory	0.017s
+FAIL

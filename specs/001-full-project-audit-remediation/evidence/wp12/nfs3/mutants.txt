@@ -1,0 +1,29 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of mutants.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+NEGATIVE-CONTROL PASS (unmutated tree green)
+M01 KILLED    XDR variable-length data is not padded to a multiple of four  [--- FAIL: TestExports (0.01s)]
+M02 KILLED    bool decoder accepts any non-zero value  [--- FAIL: TestMalformedRepliesAreErrorsNotPanics (0.01s)]
+M03 KILLED    reply xid is not checked against the call  [--- FAIL: TestParseReply (0.00s)]
+M04 KILLED    an unmatched xid kills the connection instead of being dropped  [--- FAIL: TestReadSeekAndRange (0.01s)]
+M05 KILLED    last-fragment bit ignored in record marking  [--- FAIL: TestReadRecordFragments (0.00s)]
+M06 KILLED    AUTH_SYS gid list not clamped to 16  [--- FAIL: TestAuthSysClampsGidsAndMachine (0.00s)]
+M07 KILLED    READ count/data length consistency not checked  [--- FAIL: TestDecodeReadChecks (0.00s)]
+M08 KILLED    fattr3 size and used decoded in swapped order  [--- FAIL: TestFattrRoundTripAndBadType (0.00s)]
+M09 KILLED    nfstime3 seconds and nanoseconds swapped  [--- FAIL: TestGetFileInfo (0.01s)]
+M10 KILLED    READDIRPLUS cookie verifier not carried to the next page  [--- FAIL: TestListDirectoryPagingWithCookieVerifier (0.01s)]
+M11 KILLED    connection loss is not classified as transient (no retry)  [--- FAIL: TestRetryReconnectsAfterDroppedConnection (0.01s)]
+M12 KILLED    retry bound off by one (MaxRetries+1 retries)  [--- FAIL: TestRetryJukeboxBounded (0.03s)]
+M13 KILLED    privileged-port retry fires on any error, not only access errors  [--- FAIL: TestPrivilegedRetryDoesNotFireForOtherErrors (0.01s)]
+M14 KILLED    WriteFile sends nothing but reports success  [--- FAIL: TestAccessAndReadOnly (0.01s)]
+M15 KILLED    path confinement: .. segments accepted  [--- FAIL: TestPathConfinement (0.01s)]
+M16 KILLED    listing leaks the . and .. entries  [--- FAIL: TestListDirectory (0.01s)]
+M17 KILLED    AUTH_NULL-only exports are refused instead of using AUTH_NONE  [--- FAIL: TestAuthNullOnlyExportUsesAuthNone (0.01s)]
+M18 KILLED    access error loses the source-port hint (reports nothing precise)  [--- FAIL: TestReservedPortRefusalIsPrecise (0.01s)]
+M19 KILLED    short READ replies are not resumed (later prefetches keep wrong offsets)  [--- FAIL: TestReadShortReadsAreResumed (0.85s)]
+M20 KILLED    Seek from the end ignores the file size  [--- FAIL: TestReadSeekAndRange (0.01s)]
+M21 KILLED    read-ahead window forced to one outstanding READ (no pipelining)  [--- FAIL: TestReadPipelinesOutOfOrderReplies (1.13s)]
+M22 KILLED    READ chunk size not capped by the 1 MiB ceiling  [--- FAIL: TestReadChunkFollowsFSInfoButIsCapped (0.03s)]
+SUMMARY mutants=22 killed=22 survived_or_error=0
+exit=0

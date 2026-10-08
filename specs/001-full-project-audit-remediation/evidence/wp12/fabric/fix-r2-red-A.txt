@@ -1,0 +1,79 @@
+# RED A: pre-fix source (sha256 of the 5 main files below equals SOURCES.sha256 of the review) + reviewer probes RV* verbatim
+09125a65027058810d47a34887da8af539f6700331ed819e4c05013fe1591dd0  pkg/fabric/budget.go
+3a180bafef1bf1ea2ec618bc6b80504aa39f252e8c6c9722d34aa74f2b110d00  pkg/fabric/pool.go
+96d26705c08fad2780c92bdc7eca3843f655bd5225509a5fd97d66e7e2de4d6e  pkg/fabric/errors.go
+ffe947365d7c8a9f3572f03e04e42be26e52be8346570dae7e62ee13e02a5b7c  pkg/fabric/layer.go
+52cbcd409ee6a9b20afb50d2a5792fe9b75c43724b8a9706a7e53cfa2e873bdb  pkg/decorators/readonly.go
+611c44d92ebb254b467bb4ced8cce5cf1a2f67f36b0e35c11998958903fdb4f9  pkg/fabric/limited.go
+507b41ba720ae4796739bd64fdee43aad2cffbb6d8a4bb7c68c506e0a490a42f  pkg/fabric/retrying.go
+c4dc02e78c52c48be511375ead11c2008e513ded7a7bf8ff483b6932bda94ebe  pkg/fabric/op.go
+85be9797b259f61b8ac41444f542c28adb9e4182ff6dae7d32298d6f67117921  pkg/fabric/confined.go
+    zz_review_test.go:27: DEFECT (claim): typed-nil inner accepted at construction
+--- FAIL: TestRV20_ReadOnlyTypedNilAccepted (0.00s)
+    zz_review_test.go:38: DEFECT: ReadOnly(smb).GetConfig() exposes the password (len 25) - smb.NewSMBClient(got) is a read-write client
+    zz_review_test.go:42: DEFECT: ReadOnly(smb).GetConfig() returns the live inner config pointer: the holder of the read-only handle re-targeted the inner client's share
+    zz_review_test.go:48: DEFECT: ReadOnly(webdav).GetConfig() exposes the password (len 25)
+--- FAIL: TestRV21_ReadOnlyGetConfigLeaksCredentials (0.00s)
+    zz_review_test.go:74: Chmod via the read-only handle: err=<nil> mode now -rw-------
+    zz_review_test.go:76: DEFECT (read-only claim): a ReadOnly client's ReadFile result changed the file mode on disk (*os.File exposes Chmod)
+--- FAIL: TestRV22_ReadOnlyStreamHandleCanChmod (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/decorators	0.024s
+    zz_review_test.go:59: burst: successful starts=1 cancelled=215 reservations(Stats.Acquired)=165 TotalRateWait=10m4.810493087s
+    zz_review_test.go:65: fresh caller after the burst: err=context deadline exceeded waited=1.002111333s
+    zz_review_test.go:67: DEFECT: a fresh caller with a 1s budget is starved after a burst of cancelled waiters (host saw only 1 starts): context deadline exceeded
+--- FAIL: TestRV01_BudgetCancelledReservationsDrift (1.84s)
+    zz_review_test.go:114: successful starts per 400ms window (nominal 8 each at 20/s): [2 0 0 0] total=2 reservations=106
+    zz_review_test.go:116: DEFECT: livelock - 2 starts in 1.6s at a 20/s budget with callers willing to wait 80ms (> 50ms spacing)
+--- FAIL: TestRV01b_BudgetLivelockWithServeableCallers (1.67s)
+    zz_review_test.go:136: DEFECT: rate 1e-11/s (one start per ~3000 years) allowed an immediate second start: limiter fails open (TotalRateWait=0s)
+--- FAIL: TestRV02_BudgetTinyRateFailsOpen (0.00s)
+    zz_review_test.go:218: cancelled borrow: err=fabric: connect a: context deadline exceeded idle=0 disconnects=3 connects=4
+    zz_review_test.go:220: DEFECT: a caller-cancelled borrow disconnected 3 healthy idle connections (idle now 0)
+--- FAIL: TestRV03_PoolCancelledBorrowDestroysHealthyIdle (0.07s)
+    zz_review_test.go:244: 50 borrows after a bad password produced 50 login attempts
+    zz_review_test.go:246: DEFECT: 50 login attempts for 50 borrows after an authentication failure (account lockout risk)
+--- FAIL: TestRV05_PoolAuthFailureNoCircuitBreaker (0.00s)
+    zz_review_test.go:271: ReturnClient(foreign unhashable): err=<nil> panic=hash of unhashable type: fabric_test.mapFk
+    zz_review_test.go:277: DEFECT: pool deadlocked after ReturnClient of a foreign client panicked with the mutex held (panic: hash of unhashable type: fabric_test.mapFk)
+--- FAIL: TestRV04_PoolForeignUnhashableReturnWedges (2.00s)
+    zz_review_test.go:303: GetClient(unhashable): err=<nil> panic=runtime error: hash of unhashable type fabric_test.mapFk
+    zz_review_test.go:305: DEFECT: GetClient panicked for a client type the comparability guard accepted: runtime error: hash of unhashable type fabric_test.mapFk
+--- FAIL: TestRV04b_PoolUnhashableClientPanicsOnBorrow (0.00s)
+    zz_review_test.go:316: DEFECT (defence in depth): control characters reached the inner client: "/data/a\r\nDELE /data/b" err=<nil> inner saw ["/data/a\r\nDELE /data/b"]
+    zz_review_test.go:316: DEFECT (defence in depth): control characters reached the inner client: "/data/a\nx" err=<nil> inner saw ["/data/a\nx"]
+    zz_review_test.go:316: DEFECT (defence in depth): control characters reached the inner client: "/data/a\x1b[2J" err=<nil> inner saw ["/data/a\x1b[2J"]
+--- FAIL: TestRV06_ConfinedPassesCRLF (0.00s)
+    zz_review_test.go:348: raw local: OpenSeekable ReaderAt=true ReadFile ReadSeeker=true; Limited: OpenSeekable ReaderAt=false ReadFile ReadSeeker=false
+    zz_review_test.go:350: DEFECT: Limited(OpenSeekable) dropped io.ReaderAt (catalog-api comic_pages_handler Strategy 1 needs it)
+    zz_review_test.go:353: DEFECT: Limited(ReadFile) dropped io.ReadSeeker (catalog-api stream_handler second-chance Range path needs it)
+--- FAIL: TestRV07_StreamsHideReaderAtAndSeeker (0.00s)
+    zz_review_test.go:371: DEFECT: reset on a file named 'Access Denied': Classify=auth, want transient
+    zz_review_test.go:371: DEFECT: not-found on a file named 'not logged in': Classify=auth, want permanent
+    zz_review_test.go:371: DEFECT: FTP 550 Access denied (file level, RFC 959 permanent): Classify=auth, want permanent
+    zz_review_test.go:371: DEFECT: FTP 452 (RFC 959 4yz transient): Classify=permanent, want transient
+--- FAIL: TestRV08_ClassifyMarkerFromPathText (0.00s)
+    zz_review_test.go:380: HostKey(smb://nas-a.example)="smb",<nil> HostKey(smb://nas-b.example)="smb",<nil>
+    zz_review_test.go:382: DEFECT: two different hosts share budget key "smb"
+--- FAIL: TestRV09_HostKeyURLCollapsesToScheme (0.00s)
+    zz_review_test.go:393: OBSERVATION: "::1" -> "::1" and "0:0:0:0:0:0:0:1" -> "0:0:0:0:0:0:0:1" do not share a budget
+    zz_review_test.go:393: OBSERVATION: "192.168.1.5" -> "192.168.1.5" and "::ffff:192.168.1.5" -> "::ffff:192.168.1.5" do not share a budget
+    zz_review_test.go:393: OBSERVATION: "[::1]:22" -> "::1" and "[0::1]:445" -> "0::1" do not share a budget
+--- PASS: TestRV10_HostKeyEquivalentSpellings (0.00s)
+    zz_review_test.go:407: DEFECT (claim): typed-nil inner accepted at construction; it panics on first use instead
+--- FAIL: TestRV11_TypedNilInnerAccepted (0.00s)
+    zz_review_test.go:424: MEASURED: MaxAttempts=1000 BaseDelay=0 accepted; 1000 attempts in 11.011892ms against a refusing host
+--- PASS: TestRV12_RetryZeroDelayStorm (0.02s)
+    zz_review_test.go:440: MEASURED: after two unclosed streams (one per protocol) a third op on the host: fabric: host budget for ListDirectory: context deadline exceeded (InFlight=2)
+--- PASS: TestRV14_LeakedStreamsStarveSharedHost (0.05s)
+    zz_review_test.go:490: DEFECT: GetClient ("without waiting") still blocked after 1s on a busy host budget; healthy idle connection disconnected 1 time(s)
+    zz_review_test.go:495: after the stream closed: connections created=2, first connection disconnects=1
+--- FAIL: TestRV15_PoolHealthProbeThrottledByOwnBudget (1.00s)
+    zz_review_test.go:503: DEFECT (claim 'auth first'): 421 "Login authentication failed, too many attempts" classified transient
+--- FAIL: TestRV16_ClassifyTransientCodeBeatsAuthText (0.00s)
+    zz_review_test.go:525: after 10 min of single-worker use: idle=2, first connection disconnects=0 (IdleTimeout=1m)
+    zz_review_test.go:527: OBSERVATION/doc: a connection idle for ~10x IdleTimeout was never retired
+--- FAIL: TestRV18_IdleTimeoutNotEnforcedBelowMRU (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/fabric	6.686s
+FAIL

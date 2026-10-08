@@ -1,0 +1,61 @@
+# identity: WP-12 PA-04 per-case output of the mutation harness (M01.txt)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree (own-org submodule: nothing committed)
+# run_at: 2026-10-07T20:10Z; author: Sonnet worker; independent review (11.4.142): OWED
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/kr/fs v0.1.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+--- FAIL: TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT (0.00s)
+    ftps_test.go:88: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:88
+        	Error:      	Should be true
+        	Test:       	TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+        	Messages:   	AUTH TLS must precede the first credential: [USER u PASS *** FEAT TYPE I OPTS UTF8 ON CWD /data PWD]
+--- FAIL: TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed (0.01s)
+    ftps_test.go:109: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:109
+        	Error:      	Not equal: 
+        	            	expected: 3
+        	            	actual  : 0
+        	Test:       	TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+        	Messages:   	every data connection must be TLS (PROT P)
+    ftps_test.go:110: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:110
+        	Error:      	Should be zero, but was 3
+        	Test:       	TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+        	Messages:   	no clear-text data connection
+    ftps_test.go:111: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:111
+        	Error:      	"0" is not greater than or equal to "1"
+        	Test:       	TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+        	Messages:   	the TLS session cache must resume the control session on data connections
+--- FAIL: TestFTPS_TLS11ServerIsRefused (20.01s)
+    ftps_test.go:135: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:135
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestFTPS_TLS11ServerIsRefused
+--- FAIL: TestPin_UnknownCertificate_Refused_NoCredentialSent (20.02s)
+    ftps_test.go:145: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:145
+        	Error:      	An error is expected but got nil.
+        	            	expected: *ftp.UnknownCertError
+        	Test:       	TestPin_UnknownCertificate_Refused_NoCredentialSent
+--- FAIL: TestPin_ChangedCertificate_Refused_NoCredentialSent (20.01s)
+    ftps_test.go:158: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:158
+        	Error:      	An error is expected but got nil.
+        	            	expected: *ftp.CertMismatchError
+        	Test:       	TestPin_ChangedCertificate_Refused_NoCredentialSent
+--- FAIL: TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText (20.01s)
+    ftps_test.go:273: 
+        	Error Trace:	/src/filesystem/pkg/ftp/ftps_test.go:273
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	80.535s
+ok  	digital.vasic.filesystem/pkg/factory	0.009s
+FAIL

@@ -1,0 +1,28 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX14 - reviewer: FileInfo.Mode never set
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:176: 
+        	Error Trace:	/out/mut/MX14/filesystem/pkg/ftp/fix_r2_list_test.go:176
+        	Error:      	Not equal: 
+        	            	expected: 0x80000000
+        	            	actual  : 0x0
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+    fix_r2_list_test.go:178: 
+        	Error Trace:	/out/mut/MX14/filesystem/pkg/ftp/fix_r2_list_test.go:178
+        	Error:      	Not equal: 
+        	            	expected: 0x8000000
+        	            	actual  : 0x0
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+        	Messages:   	MX14: symlinks carry ModeSymlink
+--- FAIL: TestDegradedList_ParsesLISTLines (0.01s)
+    fix_r2_list_test.go:396: 
+        	Error Trace:	/out/mut/MX14/filesystem/pkg/ftp/fix_r2_list_test.go:396
+        	Error:      	Not equal: 
+        	            	expected: 0x8000000
+        	            	actual  : 0x0
+        	Test:       	TestDegradedList_ParsesLISTLines
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.806s
+FAIL

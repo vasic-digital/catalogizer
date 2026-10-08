@@ -1,0 +1,18 @@
+# identity: WP-12 PA-04 fix round 2: mutant F1b - data reads carry no deadline
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3 (6.01s)
+    fix_r2_net_test.go:256: 
+        	Error Trace:	/out/mut/F1b/filesystem/pkg/ftp/fix_r2_net_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+        	Messages:   	a stalled MLSD data connection must hit IOTimeout (blocked 3.002172425s)
+--- FAIL: TestDeadline_C3_RETRStall_IOTimeoutHonoured (23.01s)
+    fix_r2_net_test.go:288: 
+        	Error Trace:	/out/mut/F1b/filesystem/pkg/ftp/fix_r2_net_test.go:288
+        	Error:      	"20.008010813s" is not less than "3s"
+        	Test:       	TestDeadline_C3_RETRStall_IOTimeoutHonoured
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	63.104s
+FAIL

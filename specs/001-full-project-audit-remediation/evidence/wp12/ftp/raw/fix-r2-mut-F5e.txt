@@ -1,0 +1,32 @@
+# identity: WP-12 PA-04 fix round 2: mutant F5e - a PASS rejection with an unlisted code is an authentication failure
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestLogin_PASSReplies_ClassifiedByCode (0.02s)
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/503 (0.00s)
+        fix_r2_net_test.go:833: 
+            	Error Trace:	/out/mut/F5e/filesystem/pkg/ftp/fix_r2_net_test.go:833
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestLogin_PASSReplies_ClassifiedByCode/503
+            	Messages:   	fabric: authentication failure: ftp: PASS rejected: 503 Bad sequence of commands
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/421 (0.00s)
+        fix_r2_net_test.go:833: 
+            	Error Trace:	/out/mut/F5e/filesystem/pkg/ftp/fix_r2_net_test.go:833
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestLogin_PASSReplies_ClassifiedByCode/421
+            	Messages:   	fabric: authentication failure: ftp: PASS rejected: 421 Bad sequence of commands
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/500 (0.00s)
+        fix_r2_net_test.go:833: 
+            	Error Trace:	/out/mut/F5e/filesystem/pkg/ftp/fix_r2_net_test.go:833
+            	Error:      	Not equal: 
+            	            	expected: 0
+            	            	actual  : 2
+            	Test:       	TestLogin_PASSReplies_ClassifiedByCode/500
+            	Messages:   	fabric: authentication failure: ftp: PASS rejected: 500 Bad sequence of commands
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.994s
+FAIL

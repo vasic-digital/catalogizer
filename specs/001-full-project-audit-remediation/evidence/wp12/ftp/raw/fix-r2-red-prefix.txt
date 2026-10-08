@@ -1,0 +1,818 @@
+# identity: WP-12 PA-04 fix round 2 (WF21 NO-GO answer): RED: the PRE-FIX pkg/ftp (the reviewer's N00 copy of ftp.go/tls.go/cred.go/scan.go) under the FINAL tests; 6 unit tests of new functions and 1 internal-field test removed (no pre-fix counterpart), 7 sentinel errors + 2 Config fields shimmed (see fix-r2-red-prefix.shim.txt); go test -count=1 -v, NO -race, timeout 800s
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 plus an UNCOMMITTED working tree; no git write, no NAS contact, no credential printed
+# run_at: 2026-10-08 (UTC+2); author: Sonnet fixer; independent re-review (11.4.142): OWED
+=== RUN   TestList_RealisticMLSD_ParsedWithoutLoss_D7
+    fix_r2_list_test.go:67: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:67
+        	Error:      	map[string]*client.FileInfo{" two leading spaces.txt":(*client.FileInfo)(0xc0000aaf50), "UpperDir":(*client.FileInfo)(0xc0000aae10), "Users;Modify=20200517103000; spaced.txt":(*client.FileInfo)(0xc0000aaf00), "data":(*client.FileInfo)(0xc0000aacd0), "frac.txt":(*client.FileInfo)(0xc0000aadc0), "link":(*client.FileInfo)(0xc0000aae60), "lower.txt":(*client.FileInfo)(0xc0000aad70), "octal.txt":(*client.FileInfo)(0xc0000aaeb0), "plain.txt":(*client.FileInfo)(0xc0000aad20), "trailing dot.":(*client.FileInfo)(0xc0000aafa0)} does not contain "badoctal.txt"
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+=== RUN   TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6
+    fix_r2_list_test.go:90: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:90
+        	Error:      	Expected error with "shim: ErrListingIncomplete" in chain but got nil.
+        	Test:       	TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6
+        	Messages:   	a partial listing is never returned as complete
+--- FAIL: TestList_UnparseableLine_FailsTheListing_ButKeepsTheConnectionInStep_F6 (0.01s)
+=== RUN   TestMLST_OddFacts_Parsed_F6
+    fix_r2_list_test.go:113: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:113
+        	Error:      	Should be true
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+    fix_r2_list_test.go:115: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:115
+        	Error:      	Should be true
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+        	Messages:   	0001-01-01 00:00:00 +0000 UTC
+    fix_r2_list_test.go:126: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:126
+        	Error:      	Target error should be in err chain:
+        	            	expected: "shim: ErrListingIncomplete"
+        	            	in chain: "ftp: stat /data/a.txt: strconv.ParseUint: parsing \"1x\": invalid syntax"
+        	            		"strconv.ParseUint: parsing \"1x\": invalid syntax"
+        	            		"invalid syntax"
+        	Test:       	TestMLST_OddFacts_Parsed_F6
+--- FAIL: TestMLST_OddFacts_Parsed_F6 (0.01s)
+=== RUN   TestPermission550_IsNotNonExistence_D18
+    fix_r2_list_test.go:142: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:142
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestPermission550_IsNotNonExistence_D18
+        	Messages:   	an existing file we may not read is not 'absent'
+--- FAIL: TestPermission550_IsNotNonExistence_D18 (0.01s)
+=== RUN   TestAmbiguous550_IsSettledByTheParentListing
+    fix_r2_list_test.go:171: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:171
+        	Error:      	Should be true
+        	Test:       	TestAmbiguous550_IsSettledByTheParentListing
+        	Messages:   	present in the parent listing: it exists
+    fix_r2_list_test.go:173: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:173
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/a.txt: file does not exist: 550 "Failed to open file."
+        	Test:       	TestAmbiguous550_IsSettledByTheParentListing
+--- FAIL: TestAmbiguous550_IsSettledByTheParentListing (0.01s)
+=== RUN   TestListing550_Mapping
+    fix_r2_list_test.go:208: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:208
+        	Error:      	Target error should be in err chain:
+        	            	expected: "permission denied"
+        	            	in chain: "ftp: list /data: file does not exist: 550 \"Permission denied\""
+        	            		"file does not exist: 550 \"Permission denied\""
+        	            		"file does not exist"
+        	Test:       	TestListing550_Mapping
+--- FAIL: TestListing550_Mapping (0.01s)
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_with_Path
+    fix_r2_list_test.go:223: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:223
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data: file does not exist: /data
+        	Test:       	TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_with_Path
+        	Messages:   	the scan root itself must exist
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash
+    fix_r2_list_test.go:237: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:237
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /: file does not exist: /
+        	Test:       	TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash
+        	Messages:   	the FTP root itself exists; there is no parent to find it in
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/no_Path_login_dir_is_not_the_ftp_root
+    fix_r2_list_test.go:256: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:256
+        	Error:      	Expected error with "file does not exist" in chain but got nil.
+        	Test:       	TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/no_Path_login_dir_is_not_the_ftp_root
+        	Messages:   	/a.txt does not exist; /data/a.txt is a different file
+=== RUN   TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/missing_root
+--- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10 (0.04s)
+    --- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_with_Path (0.01s)
+    --- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/root_is_slash (0.01s)
+    --- FAIL: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/no_Path_login_dir_is_not_the_ftp_root (0.01s)
+    --- PASS: TestDegradedStat_RootAndTopLevel_NeverUsesTheLoginDirectory_D10/missing_root (0.01s)
+=== RUN   TestDegradedList_ParsesLISTLines
+    fix_r2_list_test.go:313: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:313
+        	Error:      	Expected error with "shim: ErrListingIncomplete" in chain but got nil.
+        	Test:       	TestDegradedList_ParsesLISTLines
+--- FAIL: TestDegradedList_ParsesLISTLines (0.01s)
+=== RUN   TestSeekable_OpenAndReadWholeFile_NoSpuriousErrors
+--- PASS: TestSeekable_OpenAndReadWholeFile_NoSpuriousErrors (0.02s)
+=== RUN   TestWriteFile_ZeroByteUploadOverTLS_AndFailureModes
+    fix_r2_list_test.go:352: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:352
+        	Error:      	Should be false
+        	Test:       	TestWriteFile_ZeroByteUploadOverTLS_AndFailureModes
+--- FAIL: TestWriteFile_ZeroByteUploadOverTLS_AndFailureModes (0.01s)
+=== RUN   TestEPSVRefused_FallsBackToPASV_AndStaysInStep
+--- PASS: TestEPSVRefused_FallsBackToPASV_AndStaysInStep (0.01s)
+=== RUN   TestDisableEPSV_UsesPASVOnly
+--- PASS: TestDisableEPSV_UsesPASVOnly (0.01s)
+=== RUN   TestPWDParsing_QuotedNames
+    fix_r2_list_test.go:396: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_list_test.go:396
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /we""ird/a.txt: file does not exist: 550 "not found"
+        	Test:       	TestPWDParsing_QuotedNames
+        	Messages:   	a doubled quote in the PWD reply is one quote in the name (RFC 959)
+--- FAIL: TestPWDParsing_QuotedNames (0.01s)
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/ctx
+    fix_r2_net_test.go:202: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:202
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/ctx
+        	Messages:   	Connect must give up when ctx ends (still blocked after 3.002141624s)
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+    fix_r2_net_test.go:212: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:212
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+        	Messages:   	DialTimeout bounds the greeting
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/ctx
+    fix_r2_net_test.go:202: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:202
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/ctx
+        	Messages:   	Connect must give up when ctx ends (still blocked after 3.001626704s)
+=== RUN   TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+    fix_r2_net_test.go:212: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:212
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+        	Messages:   	DialTimeout bounds the greeting
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (12.01s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/ctx (3.00s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (3.00s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/ctx (3.00s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout (3.00s)
+=== RUN   TestDeadline_C1_ServerClosesAtOnce_ConnectReturnsFast
+--- PASS: TestDeadline_C1_ServerClosesAtOnce_ConnectReturnsFast (0.00s)
+=== RUN   TestDeadline_TLSHandshakeUnanswered_D2
+    fix_r2_net_test.go:244: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:244
+        	Error:      	Should be true
+        	Test:       	TestDeadline_TLSHandshakeUnanswered_D2
+        	Messages:   	DialTimeout bounds the TLS handshake (blocked 3.002007363s)
+--- FAIL: TestDeadline_TLSHandshakeUnanswered_D2 (3.00s)
+=== RUN   TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+    fix_r2_net_test.go:256: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:256
+        	Error:      	Should be true
+        	Test:       	TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3
+        	Messages:   	a stalled MLSD data connection must hit IOTimeout (blocked 3.000146738s)
+--- FAIL: TestDeadline_MLSDStall_ListDirectoryHonoursIOTimeoutAndCtx_D3 (6.01s)
+=== RUN   TestDeadline_C3_RETRStall_IOTimeoutHonoured
+--- PASS: TestDeadline_C3_RETRStall_IOTimeoutHonoured (0.31s)
+=== RUN   TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+    fix_r2_net_test.go:319: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:319
+        	Error:      	Should be true
+        	Test:       	TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4
+        	Messages:   	Close waits at most IOTimeout for the final reply
+--- FAIL: TestDeadline_NoFinalReply_CloseIsBounded_DisconnectStillWorks_D4 (6.01s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded
+=== RUN   TestDeadline_EveryControlCommandIsBounded/NOOP
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/NOOP
+        	Messages:   	NOOP: the reply never came and nothing gave up (3.001829404s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/MLST
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/MLST
+        	Messages:   	MLST: the reply never came and nothing gave up (3.002006715s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/SIZE
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/SIZE
+        	Messages:   	SIZE: the reply never came and nothing gave up (3.001617754s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/EPSV
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/EPSV
+        	Messages:   	EPSV: the reply never came and nothing gave up (3.00046179s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/MKD
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/MKD
+        	Messages:   	MKD: the reply never came and nothing gave up (3.001108612s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/DELE
+    fix_r2_net_test.go:351: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:351
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/DELE
+        	Messages:   	DELE: the reply never came and nothing gave up (3.000988772s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/USER
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/USER
+        	Messages:   	Connect hangs at USER (4.002049715s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PASS
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PASS
+        	Messages:   	Connect hangs at PASS (4.001228481s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/FEAT
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/FEAT
+        	Messages:   	Connect hangs at FEAT (4.003213728s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/TYPE
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/TYPE
+        	Messages:   	Connect hangs at TYPE (4.001470743s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/OPTS
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/OPTS
+        	Messages:   	Connect hangs at OPTS (4.001133301s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PBSZ
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PBSZ
+        	Messages:   	Connect hangs at PBSZ (4.002978996s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PROT
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PROT
+        	Messages:   	Connect hangs at PROT (4.002473255s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/CWD
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/CWD
+        	Messages:   	Connect hangs at CWD (4.003330399s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/connect/PWD
+    fix_r2_net_test.go:365: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:365
+        	Error:      	Should be true
+        	Test:       	TestDeadline_EveryControlCommandIsBounded/connect/PWD
+        	Messages:   	Connect hangs at PWD (4.003009127s)
+=== RUN   TestDeadline_EveryControlCommandIsBounded/control_unstalled_verb_works
+--- FAIL: TestDeadline_EveryControlCommandIsBounded (72.11s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/NOOP (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/MLST (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/SIZE (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/EPSV (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/MKD (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/DELE (6.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/USER (4.00s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PASS (4.00s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/FEAT (4.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/TYPE (4.00s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/OPTS (4.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PBSZ (4.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PROT (4.00s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/CWD (4.01s)
+    --- FAIL: TestDeadline_EveryControlCommandIsBounded/connect/PWD (4.01s)
+    --- PASS: TestDeadline_EveryControlCommandIsBounded/control_unstalled_verb_works (0.01s)
+=== RUN   TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+    fix_r2_net_test.go:394: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:394
+        	Error:      	Should be true
+        	Test:       	TestStreamTimeout_CloseDoesNotWaitForTheFinalReply
+        	Messages:   	Close hangs waiting for a final reply that never comes
+--- FAIL: TestStreamTimeout_CloseDoesNotWaitForTheFinalReply (7.02s)
+=== RUN   TestCancel_InterruptsBlockedControlCommand
+    fix_r2_net_test.go:411: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:411
+        	Error:      	Should be true
+        	Test:       	TestCancel_InterruptsBlockedControlCommand
+        	Messages:   	cancel must interrupt a blocked reply read (3.001882725s)
+--- FAIL: TestCancel_InterruptsBlockedControlCommand (6.01s)
+=== RUN   TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+    fix_r2_net_test.go:426: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:426
+        	Error:      	Should be true
+        	Test:       	TestDiscoverCert_StalledBanner_HonoursTimeout_MX11
+        	Messages:   	DiscoverCert must honour ctx
+--- FAIL: TestDiscoverCert_StalledBanner_HonoursTimeout_MX11 (3.30s)
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=false
+=== RUN   TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true
+    fix_r2_net_test.go:465: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:465
+        	Error:      	Received unexpected error:
+        	            	ftp: stat /data/sub/c.txt: 226 "Transfer complete."
+        	Test:       	TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true
+--- FAIL: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6 (0.01s)
+    --- PASS: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=false (0.01s)
+    --- FAIL: TestDesync_ExtraReplyAfterEarlyClose_NeverAnswersAnotherCommand_D6/extra226=true (0.01s)
+=== RUN   TestEarlyClose_PureFTPdStyleSingle150Reply_KeepsTheConnection
+--- PASS: TestEarlyClose_PureFTPdStyleSingle150Reply_KeepsTheConnection (0.01s)
+=== RUN   TestDesync_UnsolicitedReplyIsNeverTakenForAnAnswer
+--- PASS: TestDesync_UnsolicitedReplyIsNeverTakenForAnAnswer (0.10s)
+=== RUN   TestUnexpectedPositiveReply_DropsTheConnection
+    fix_r2_net_test.go:553: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:553
+        	Error:      	Target error should be in err chain:
+        	            	expected: "shim: ErrProtocol (pre-fix code has no such error)"
+        	            	in chain: "226 \"transfer complete\""
+        	Test:       	TestUnexpectedPositiveReply_DropsTheConnection
+--- FAIL: TestUnexpectedPositiveReply_DropsTheConnection (0.01s)
+=== RUN   TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+    fix_r2_net_test.go:575: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:575
+        	Error:      	Should be false
+        	Test:       	TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+        	Messages:   	421 means the server is closing: the connection is unusable
+    fix_r2_net_test.go:586: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:586
+        	Error:      	Received unexpected error:
+        	            	fabric: retries exhausted after 2 attempts (ListDirectory): ftp: list /data: write tcp 127.0.0.1:37952->127.0.0.1:36711: write: broken pipe
+        	Test:       	TestReply421_MarksTheConnectionLost_RetryRecovers_D5
+        	Messages:   	a 421 costs one attempt, not the whole budget
+--- FAIL: TestReply421_MarksTheConnectionLost_RetryRecovers_D5 (0.02s)
+=== RUN   TestCancelBetweenReads_IsHonoured_D9
+    fix_r2_net_test.go:608: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:608
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestCancelBetweenReads_IsHonoured_D9
+        	Messages:   	a cancelled context ends the stream
+--- FAIL: TestCancelBetweenReads_IsHonoured_D9 (1.22s)
+=== RUN   TestC9_CancelDuringBlockedRead_IsHonoured_MX02
+    fix_r2_net_test.go:629: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:629
+        	Error:      	Should be true
+        	Test:       	TestC9_CancelDuringBlockedRead_IsHonoured_MX02
+        	Messages:   	Close of a cancelled stream must not wait for a final reply that never comes (IOTimeout is 20 s here; waited 2.001028972s)
+--- FAIL: TestC9_CancelDuringBlockedRead_IsHonoured_MX02 (5.21s)
+=== RUN   TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+    fix_r2_net_test.go:650: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:650
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01
+        	Messages:   	Disconnect ends the stream
+--- FAIL: TestDisconnectBetweenReads_AbortsTheStream_D9b_MX01 (1.22s)
+=== RUN   TestSeekable_TruncatedTransfer_IsAnError_D8
+    fix_r2_net_test.go:693: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:693
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestSeekable_TruncatedTransfer_IsAnError_D8
+        	Messages:   	OpenSeekable must not hand out 1000 bytes of a 100000-byte file as complete
+--- FAIL: TestSeekable_TruncatedTransfer_IsAnError_D8 (0.01s)
+=== RUN   TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+    fix_r2_net_test.go:720: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:720
+        	Error:      	Expected error with "unexpected EOF" in chain but got nil.
+        	Test:       	TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF
+        	Messages:   	fewer bytes than SIZE announced is an error even when the server says 226
+--- FAIL: TestSeekable_ServerEndsEarlyWithA226_IsUnexpectedEOF (0.01s)
+=== RUN   TestReadFile_FullReadWith451_ClosesWithTheError_MX07
+--- PASS: TestReadFile_FullReadWith451_ClosesWithTheError_MX07 (0.01s)
+=== RUN   TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+    fix_r2_net_test.go:766: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:766
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+        	Messages:   	421 at USER is RFC 959 'service closing, try again': fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: Timeout - closing control connection
+    fix_r2_net_test.go:791: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:791
+        	Error:      	Received unexpected error:
+        	            	fabric: connect root1: fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: Too many connections (5) from this IP
+        	Test:       	TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23
+        	Messages:   	the transient 421 is retried and the borrow succeeds
+--- FAIL: TestLogin_USER421_IsTransient_NotAuth_PoolDoesNotLatch_D23 (0.01s)
+=== RUN   TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+    fix_r2_net_test.go:807: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:807
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 4
+        	Test:       	TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+        	Messages:   	the password is sent once: a retry after an unanswered PASS risks a lockout
+    fix_r2_net_test.go:808: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:808
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 1
+        	Test:       	TestLogin_NoReplyAfterPASS_IsNeverRetried_D11
+        	Messages:   	fabric: retries exhausted after 4 attempts (Connect): EOF
+--- FAIL: TestLogin_NoReplyAfterPASS_IsNeverRetried_D11 (0.02s)
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/530
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/430
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/534
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/535
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/503
+    fix_r2_net_test.go:833: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:833
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_PASSReplies_ClassifiedByCode/503
+        	Messages:   	fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 503 "Bad sequence of commands"
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/421
+    fix_r2_net_test.go:833: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:833
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_PASSReplies_ClassifiedByCode/421
+        	Messages:   	fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 421 "Bad sequence of commands"
+=== RUN   TestLogin_PASSReplies_ClassifiedByCode/500
+    fix_r2_net_test.go:833: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:833
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_PASSReplies_ClassifiedByCode/500
+        	Messages:   	fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 500 "Bad sequence of commands"
+--- FAIL: TestLogin_PASSReplies_ClassifiedByCode (0.03s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/530 (0.00s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/430 (0.00s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/534 (0.00s)
+    --- PASS: TestLogin_PASSReplies_ClassifiedByCode/535 (0.00s)
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/503 (0.00s)
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/421 (0.00s)
+    --- FAIL: TestLogin_PASSReplies_ClassifiedByCode/500 (0.00s)
+=== RUN   TestLogin_USER530_IsAuth
+--- PASS: TestLogin_USER530_IsAuth (0.00s)
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PROT
+    fix_r2_net_test.go:867: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:867
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PROT
+        	Messages:   	a PROT refusal after a good login is a configuration failure: fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 536 "PROT not supported"
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ
+    fix_r2_net_test.go:867: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:867
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ
+        	Messages:   	a PBSZ refusal after a good login is a configuration failure: fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 536 "PBSZ not supported"
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/TYPE
+    fix_r2_net_test.go:867: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:867
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 2
+        	Test:       	TestLogin_ConfigRefusals_AreNotAuthFailures_D12/TYPE
+        	Messages:   	a TYPE refusal after a good login is a configuration failure: fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: 536 "TYPE not supported"
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features
+=== RUN   TestLogin_ConfigRefusals_AreNotAuthFailures_D12/tls_version_is_not_auth
+--- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12 (0.03s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PROT (0.01s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/PBSZ (0.00s)
+    --- FAIL: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/TYPE (0.01s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/FEAT_refused_means_no_features (0.00s)
+    --- PASS: TestLogin_ConfigRefusals_AreNotAuthFailures_D12/tls_version_is_not_auth (0.01s)
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names
+    fix_r2_net_test.go:922: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:922
+        	Error:      	Expected error with "shim: ErrUTF8Refused" in chain but got nil.
+        	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names
+        	Messages:   	names garbled to 0x7f must never be catalogued
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names
+    fix_r2_net_test.go:934: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:934
+        	Error:      	Received unexpected error:
+        	            	fabric: authentication failure: ftp: login to 127.0.0.1 as "u" failed: OPTS not understood
+        	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names
+        	Messages:   	clear text: also not an authentication failure
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/pure_ftpd_style_504_with_valid_utf8_names_is_fine
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/accepted_switch_never_checks_names
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/202_already_utf8_is_accepted
+=== RUN   TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/4yz_is_transient
+    fix_r2_net_test.go:972: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:972
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/4yz_is_transient
+--- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c (0.05s)
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names (0.01s)
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names (0.00s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/pure_ftpd_style_504_with_valid_utf8_names_is_fine (0.01s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/accepted_switch_never_checks_names (0.01s)
+    --- PASS: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/202_already_utf8_is_accepted (0.01s)
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/4yz_is_transient (0.01s)
+=== RUN   TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06
+--- PASS: TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06 (0.01s)
+=== RUN   TestFailedLogin_SaysQuitAndClosesTheConnection_MX09
+--- PASS: TestFailedLogin_SaysQuitAndClosesTheConnection_MX09 (0.00s)
+=== RUN   TestDisconnect_SaysQuitAndClosesTheConnection_MX19
+--- PASS: TestDisconnect_SaysQuitAndClosesTheConnection_MX19 (0.01s)
+=== RUN   TestLostConnection_IsClosed_NotLeaked_MX18
+    fix_r2_net_test.go:1017: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1017
+        	Error:      	Should be true
+        	Test:       	TestLostConnection_IsClosed_NotLeaked_MX18
+        	Messages:   	a connection the client gave up on must be closed, not left open on the server
+--- FAIL: TestLostConnection_IsClosed_NotLeaked_MX18 (3.01s)
+=== RUN   TestDisconnectTimeout_DoesNotLeakTheControlConnection_D19
+    fix_r2_net_test.go:1031: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1031
+        	Error:      	Should be true
+        	Test:       	TestDisconnectTimeout_DoesNotLeakTheControlConnection_D19
+        	Messages:   	once the holder lets go the connection is closed without a second Disconnect
+--- FAIL: TestDisconnectTimeout_DoesNotLeakTheControlConnection_D19 (3.21s)
+=== RUN   TestDisconnectWithCancelledContext_StillClosesAnIdleConnection
+    fix_r2_net_test.go:1042: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1042
+        	Error:      	Should be true
+        	Test:       	TestDisconnectWithCancelledContext_StillClosesAnIdleConnection
+--- FAIL: TestDisconnectWithCancelledContext_StillClosesAnIdleConnection (3.01s)
+=== RUN   TestConnectAfterTimedOutDisconnect_DoesNotOverwriteALiveConnection
+    fix_r2_net_test.go:1059: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1059
+        	Error:      	Should be true
+        	Test:       	TestConnectAfterTimedOutDisconnect_DoesNotOverwriteALiveConnection
+        	Messages:   	exactly one connection is open: the old one was closed, the new one is live
+--- FAIL: TestConnectAfterTimedOutDisconnect_DoesNotOverwriteALiveConnection (3.11s)
+=== RUN   TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04
+--- PASS: TestTLS_CASignedLeaf_IsRefused_WhenOnlyTheCAIsPinned_MX04 (0.00s)
+=== RUN   TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12
+--- PASS: TestTLS_PinnedServerName_IsUsedForVerification_MX05_MX12 (0.00s)
+=== RUN   TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28
+--- PASS: TestPin_ConfirmationThatIsOnlyAPrefix_IsRefused_MX28 (0.01s)
+=== RUN   TestPin_PortZero_MeansTheFTPDefaultPort_F14
+    fix_r2_net_test.go:1127: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1127
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" should not contain "127.0.0.1:0"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+        	Messages:   	port 0 must dial 21 like Connect does
+    fix_r2_net_test.go:1128: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1128
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+    fix_r2_net_test.go:1131: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1131
+        	Error:      	"dial tcp 127.0.0.1:0: connect: connection refused" does not contain "127.0.0.1:21"
+        	Test:       	TestPin_PortZero_MeansTheFTPDefaultPort_F14
+--- FAIL: TestPin_PortZero_MeansTheFTPDefaultPort_F14 (0.00s)
+=== RUN   TestPin_SecondServerNameForTheSameHost_IsRefused_F15
+    fix_r2_net_test.go:1141: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1141
+        	Error:      	Expected error with "shim: ErrPinNameConflict" in chain but got nil.
+        	Test:       	TestPin_SecondServerNameForTheSameHost_IsRefused_F15
+--- FAIL: TestPin_SecondServerNameForTheSameHost_IsRefused_F15 (0.00s)
+=== RUN   TestDegraded_IsKnownRightAfterConnect_MX13
+--- PASS: TestDegraded_IsKnownRightAfterConnect_MX13 (0.01s)
+=== RUN   TestDefaultRetryPolicy_IsThreeAttempts_MX17
+--- PASS: TestDefaultRetryPolicy_IsThreeAttempts_MX17 (0.63s)
+=== RUN   TestBaseDirectory_IsCanonicalisedWithPWD_MX03
+--- PASS: TestBaseDirectory_IsCanonicalisedWithPWD_MX03 (0.00s)
+=== RUN   TestSecret_NeverReachableThroughFmt_D13
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{Password:S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %+v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"ftp.Credential{Password:\"S3cr3t-WF21-XYZ\"}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %#v
+    fix_r2_net_test.go:1208: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1208
+        	Error:      	"{S3cr3t-WF21-XYZ}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	Credential value %s
+    fix_r2_net_test.go:1213: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1213
+        	Error:      	"{%!s(*ftp.Config=&{h 0 u S3cr3t-WF21-XYZ   <nil>  false <nil> false 0 0 false 0 0}) {%!s(*fabric.RetryPolicy=<nil>) %!s(*fabric.HostBudget=<nil>)}}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	scanFactory %s
+    fix_r2_net_test.go:1214: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1214
+        	Error:      	"&{%!s(*ftp.Config=&{h 0 u S3cr3t-WF21-XYZ   <nil>  false <nil> false 0 0 false 0 0}) {%!s(*fabric.RetryPolicy=<nil>) %!s(*fabric.HostBudget=<nil>)}}" should not contain "S3cr3t-WF21-XYZ"
+        	Test:       	TestSecret_NeverReachableThroughFmt_D13
+        	Messages:   	&scanFactory %s
+--- FAIL: TestSecret_NeverReachableThroughFmt_D13 (0.00s)
+=== RUN   TestIACByteInAPath_IsDoubled_F12
+    fix_r2_net_test.go:1231: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1231
+        	Error:      	[]string{"AUTH TLS", "USER u", "PASS ***", "FEAT", "TYPE I", "OPTS UTF8 ON", "PBSZ 0", "PROT P", "CWD /data", "PWD", "MLST /data/x\xff\xf4y"} does not contain "MLST /data/x\xff\xff\xf4y"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	RFC 854: a 0xFF data byte is sent as 0xFF 0xFF, never as a Telnet command
+    fix_r2_net_test.go:1233: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1233
+        	Error:      	"MLST /data/x\xff\xf4y" should not contain "\xff"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	no lone IAC reaches the server: "MLST /data/x\xff\xf4y"
+--- FAIL: TestIACByteInAPath_IsDoubled_F12 (0.01s)
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/reply
+    fix_r2_net_test.go:1256: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1256
+        	Error:      	Expected error with "shim: ErrReplyTooLarge" in chain but got nil.
+        	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/reply
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/reply_under_the_bound_is_fine
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/listing
+    fix_r2_net_test.go:1301: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1301
+        	Error:      	Expected error with "shim: ErrListingTooLarge" in chain but got nil.
+        	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/listing
+=== RUN   TestReplyAndListingSizeAreBounded_D16_D17/long_line
+    fix_r2_net_test.go:1325: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1325
+        	Error:      	Target error should be in err chain:
+        	            	expected: "shim: ErrListingIncomplete"
+        	            	in chain: "ftp: list /data: bufio.Scanner: token too long\nEOF"
+        	            		"bufio.Scanner: token too long\nEOF"
+        	            		"bufio.Scanner: token too long"
+        	            		"EOF"
+        	            		"EOF"
+        	Test:       	TestReplyAndListingSizeAreBounded_D16_D17/long_line
+--- FAIL: TestReplyAndListingSizeAreBounded_D16_D17 (20.03s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/reply (0.01s)
+    --- PASS: TestReplyAndListingSizeAreBounded_D16_D17/reply_under_the_bound_is_fine (0.01s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/listing (0.01s)
+    --- FAIL: TestReplyAndListingSizeAreBounded_D16_D17/long_line (20.01s)
+=== RUN   TestGoroutinesReturnToBaseline_C20
+--- PASS: TestGoroutinesReturnToBaseline_C20 (0.70s)
+=== RUN   TestSlowDrippingReply_IsBoundedAsAWhole
+    fix_r2_net_test.go:1393: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1393
+        	Error:      	Should be true
+        	Test:       	TestSlowDrippingReply_IsBoundedAsAWhole
+        	Messages:   	a reply that drips on forever must hit IOTimeout as a whole (3.000980151s)
+--- FAIL: TestSlowDrippingReply_IsBoundedAsAWhole (4.02s)
+=== RUN   TestDeadline_ControlWriteStall_IsBounded
+    fix_r2_net_test.go:1432: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1432
+        	Error:      	Should be true
+        	Test:       	TestDeadline_ControlWriteStall_IsBounded
+        	Messages:   	a blocked control write must hit IOTimeout (blocked 10.000518986s)
+--- FAIL: TestDeadline_ControlWriteStall_IsBounded (10.01s)
+=== RUN   TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+    fix_r2_net_test.go:1459: 
+        	Error Trace:	/out/red/filesystem/pkg/ftp/fix_r2_net_test.go:1459
+        	Error:      	Expected error with "shim: ErrProtocol (pre-fix code has no such error)" in chain but got nil.
+        	Test:       	TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand
+        	Messages:   	the stray reply, which has the SAME code as a NOOP answer, must not be taken for the answer to the next command
+--- FAIL: TestDesync_StrayReplyDeliveredWithTheAnswer_IsCaughtBeforeTheNextCommand (0.02s)
+=== RUN   TestNewFTPClient
+--- PASS: TestNewFTPClient (0.00s)
+=== RUN   TestFTPClient_GetProtocol
+--- PASS: TestFTPClient_GetProtocol (0.00s)
+=== RUN   TestFTPClient_GetConfig
+--- PASS: TestFTPClient_GetConfig (0.00s)
+=== RUN   TestFTPClient_IsConnected_NotConnected
+--- PASS: TestFTPClient_IsConnected_NotConnected (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithBasePath
+--- PASS: TestFTPClient_ResolvePath_WithBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithoutBasePath
+--- PASS: TestFTPClient_ResolvePath_WithoutBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_RootPath
+--- PASS: TestFTPClient_ResolvePath_RootPath (0.00s)
+=== RUN   TestFTPClient_TestConnection_NotConnected
+--- PASS: TestFTPClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestFTPClient_ReadFile_NotConnected
+--- PASS: TestFTPClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_WriteFile_NotConnected
+--- PASS: TestFTPClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_GetFileInfo_NotConnected
+--- PASS: TestFTPClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestFTPClient_ListDirectory_NotConnected
+--- PASS: TestFTPClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_FileExists_NotConnected
+--- PASS: TestFTPClient_FileExists_NotConnected (0.00s)
+=== RUN   TestFTPClient_CreateDirectory_NotConnected
+--- PASS: TestFTPClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteDirectory_NotConnected
+--- PASS: TestFTPClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteFile_NotConnected
+--- PASS: TestFTPClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_CopyFile_NotConnected
+--- PASS: TestFTPClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_Disconnect_NilClient
+--- PASS: TestFTPClient_Disconnect_NilClient (0.00s)
+=== RUN   TestFTPClient_Disconnect_NeverDialled
+--- PASS: TestFTPClient_Disconnect_NeverDialled (0.00s)
+=== RUN   TestFTPClient_Connect_InvalidServer
+--- PASS: TestFTPClient_Connect_InvalidServer (0.00s)
+=== RUN   TestFTPConfig_Fields
+--- PASS: TestFTPConfig_Fields (0.00s)
+=== RUN   TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT
+--- PASS: TestFTPS_CommandOrder_AuthTLS_Login_UTF8_PBSZ_PROT (0.01s)
+=== RUN   TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed
+--- PASS: TestFTPS_DataChannelIsEncrypted_AndSessionIsResumed (0.01s)
+=== RUN   TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache
+--- PASS: TestTLSConfig_MinVersion12_NoInsecureSkipVerify_SessionCache (0.00s)
+=== RUN   TestFTPS_TLS11ServerIsRefused
+--- PASS: TestFTPS_TLS11ServerIsRefused (0.00s)
+=== RUN   TestPin_UnknownCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_UnknownCertificate_Refused_NoCredentialSent (0.00s)
+=== RUN   TestPin_ChangedCertificate_Refused_NoCredentialSent
+--- PASS: TestPin_ChangedCertificate_Refused_NoCredentialSent (0.00s)
+=== RUN   TestPin_RequiresMatchingOwnerConfirmation
+--- PASS: TestPin_RequiresMatchingOwnerConfirmation (0.00s)
+=== RUN   TestPin_ConfirmationAcceptsEveryFingerprintSpelling
+--- PASS: TestPin_ConfirmationAcceptsEveryFingerprintSpelling (0.01s)
+=== RUN   TestPin_NoPinStore_Refused
+--- PASS: TestPin_NoPinStore_Refused (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile
+--- PASS: TestFilePinStore_PersistsWith0600_AndRefusesCorruptFile (0.01s)
+=== RUN   TestPinStore_RemoveAndIdempotentRecord
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/file
+=== RUN   TestPinStore_RemoveAndIdempotentRecord/mem
+--- PASS: TestPinStore_RemoveAndIdempotentRecord (0.02s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/file (0.02s)
+    --- PASS: TestPinStore_RemoveAndIdempotentRecord/mem (0.00s)
+=== RUN   TestClearText_RefusedByDefault_NoConnectionAttempted
+--- PASS: TestClearText_RefusedByDefault_NoConnectionAttempted (0.00s)
+=== RUN   TestClearText_AllowedOnTrustedLAN
+--- PASS: TestClearText_AllowedOnTrustedLAN (0.00s)
+=== RUN   TestTLSMode_Unknown_Refused
+--- PASS: TestTLSMode_Unknown_Refused (0.00s)
+=== RUN   TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText
+--- PASS: TestExplicitTLS_ServerWithoutAuthTLS_NeverFallsBackToClearText (0.00s)
+=== RUN   TestList_MLSD_ExactMtimes_NoDotEntries
+--- PASS: TestList_MLSD_ExactMtimes_NoDotEntries (0.01s)
+=== RUN   TestList_NoModifyFact_MtimeIsZero_NotNow
+--- PASS: TestList_NoModifyFact_MtimeIsZero_NotNow (0.01s)
+=== RUN   TestList_NoMLST_Refused_ByDefault
+--- PASS: TestList_NoMLST_Refused_ByDefault (0.01s)
+=== RUN   TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime
+--- PASS: TestList_NoMLST_DegradedMode_Flagged_NoFabricatedMtime (0.01s)
+=== RUN   TestGetFileInfo_UsesMLST_ServerMtime_NotNow
+--- PASS: TestGetFileInfo_UsesMLST_ServerMtime_NotNow (0.01s)
+=== RUN   TestFileExists_NotFound_IsFalseNotError
+--- PASS: TestFileExists_NotFound_IsFalseNotError (0.01s)
+=== RUN   TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent
+--- PASS: TestUTF8_NamesSurviveBecauseOptsUTF8OnIsSent (0.01s)
+=== RUN   TestReadFile_Content_AndSessionReleasedOnClose
+--- PASS: TestReadFile_Content_AndSessionReleasedOnClose (0.01s)
+=== RUN   TestReadFileFrom_SendsREST_AndReturnsTheTail
+--- PASS: TestReadFileFrom_SendsREST_AndReturnsTheTail (0.01s)
+=== RUN   TestOpenSeekable_SeekResumesWithREST
+--- PASS: TestOpenSeekable_SeekResumesWithREST (0.01s)
+=== RUN   TestConcurrentUse_OneControlConnection_NoInterleaving
+--- PASS: TestConcurrentUse_OneControlConnection_NoInterleaving (0.06s)
+=== RUN   TestBusySession_WaitsAndHonoursContext
+--- PASS: TestBusySession_WaitsAndHonoursContext (0.16s)
+=== RUN   TestCancelledContext_SendsNothing
+--- PASS: TestCancelledContext_SendsNothing (0.01s)
+=== RUN   TestDisconnect_AbortsOpenStream_AndNeverRedials
+--- PASS: TestDisconnect_AbortsOpenStream_AndNeverRedials (0.01s)
+=== RUN   TestLostConnection_IsRedialled_ByRetrying
+--- PASS: TestLostConnection_IsRedialled_ByRetrying (0.01s)
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534
+=== RUN   TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535
+--- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried (0.02s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/530 (0.01s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/430 (0.01s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/534 (0.01s)
+    --- PASS: TestAuthFailure_IsClassifiedAuth_AndNeverRetried/535 (0.00s)
+=== RUN   TestAuthFailure_ThroughPool_IsNotRetried
+--- PASS: TestAuthFailure_ThroughPool_IsNotRetried (0.00s)
+=== RUN   TestCredential_NeverInConfigStringErrorsOrLogs
+--- PASS: TestCredential_NeverInConfigStringErrorsOrLogs (0.01s)
+=== RUN   TestCredential_MissingRef_NoNetwork
+--- PASS: TestCredential_MissingRef_NoNetwork (0.00s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised
+--- PASS: TestInlinePassword_Deprecated_StillWorks_ButNotJSONSerialised (0.01s)
+=== RUN   TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand
+--- PASS: TestConfine_RefusesEscapeAndControlCharacters_BeforeAnyCommand (0.01s)
+=== RUN   TestScanClient_IsReadOnly_MutationsNeverReachTheServer
+--- PASS: TestScanClient_IsReadOnly_MutationsNeverReachTheServer (0.01s)
+=== RUN   TestWorkerPool_OneControlConnectionPerWorker
+--- PASS: TestWorkerPool_OneControlConnectionPerWorker (0.02s)
+=== RUN   TestScanClient_HostBudgetBoundsConcurrentReads
+--- PASS: TestScanClient_HostBudgetBoundsConcurrentReads (0.16s)
+=== RUN   TestRawClient_Mutations_WriteCopyMkdirDelete
+--- PASS: TestRawClient_Mutations_WriteCopyMkdirDelete (0.01s)
+=== RUN   TestDiscoverCert_Errors
+--- PASS: TestDiscoverCert_Errors (0.00s)
+=== RUN   TestServerNameFor
+--- PASS: TestServerNameFor (0.00s)
+=== RUN   TestErrorTexts_AndHostPort
+--- PASS: TestErrorTexts_AndHostPort (0.00s)
+=== RUN   TestFilePinStore_RemoveAndMissingFile
+--- PASS: TestFilePinStore_RemoveAndMissingFile (0.00s)
+=== RUN   TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged
+--- PASS: TestMapTLSError_ExpiredPinnedCertificate_IsNotReportedAsChanged (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	172.389s
+FAIL
+exit=1

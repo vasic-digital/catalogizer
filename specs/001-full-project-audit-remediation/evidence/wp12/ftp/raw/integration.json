@@ -1,0 +1,23 @@
+[
+ {
+  "id": "MI1",
+  "desc": "INTEGRATION: the scan client is not read-only; the real server must see the deletes (assertion AND sink-side digest)",
+  "kind": "integration",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestIntegration_ScanPath_ReadOnly_WorkerPool",
+   "<sink-side digest changed>"
+  ],
+  "seconds": 78
+ },
+ {
+  "id": "MI2",
+  "desc": "INTEGRATION: explicit TLS not requested against the real server",
+  "kind": "integration",
+  "verdict": "KILLED",
+  "failing_tests": [
+   "TestIntegration_Refusals"
+  ],
+  "seconds": 64
+ }
+]

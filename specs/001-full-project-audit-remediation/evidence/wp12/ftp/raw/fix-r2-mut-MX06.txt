@@ -1,0 +1,31 @@
+# identity: WP-12 PA-04 fix round 2: mutant MX06 - reviewer: a network failure during login is classified AUTH
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1 (1.20s)
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout (0.30s)
+        fix_r2_net_test.go:214: 
+            	Error Trace:	/out/mut/MX06/filesystem/pkg/ftp/fix_r2_net_test.go:214
+            	Error:      	Not equal: 
+            	            	expected: 1
+            	            	actual  : 2
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/none/DialTimeout
+            	Messages:   	a silent server is a transient failure: fabric: authentication failure: ftp: greeting: read tcp 127.0.0.1:58294->127.0.0.1:39891: i/o timeout
+    --- FAIL: TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout (0.30s)
+        fix_r2_net_test.go:214: 
+            	Error Trace:	/out/mut/MX06/filesystem/pkg/ftp/fix_r2_net_test.go:214
+            	Error:      	Not equal: 
+            	            	expected: 1
+            	            	actual  : 2
+            	Test:       	TestDeadline_NoBanner_ConnectHonoursCtxAndDialTimeout_D1/explicit/DialTimeout
+            	Messages:   	a silent server is a transient failure: fabric: authentication failure: ftp: greeting: read tcp 127.0.0.1:44208->127.0.0.1:37171: i/o timeout
+--- FAIL: TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06 (0.00s)
+    fix_r2_net_test.go:982: 
+        	Error Trace:	/out/mut/MX06/filesystem/pkg/ftp/fix_r2_net_test.go:982
+        	Error:      	Received unexpected error:
+        	            	fabric: authentication failure: ftp: USER: unexpected EOF
+        	Test:       	TestLogin_NetworkFailureBeforePASS_StaysRetryable_MX06
+        	Messages:   	a connection lost before any credential was sent is retried
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.875s
+FAIL

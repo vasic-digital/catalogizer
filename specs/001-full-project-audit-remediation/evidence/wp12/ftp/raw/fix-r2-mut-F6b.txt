@@ -1,0 +1,27 @@
+# identity: WP-12 PA-04 fix round 2: mutant F6b - MLSD sizes are parsed with base prefixes (010 is octal)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestParseMLEntry_Table_F6 (0.00s)
+    fix_r2_list_test.go:84: 
+        	Error Trace:	/out/mut/F6b/filesystem/pkg/ftp/fix_r2_list_test.go:84
+        	Error:      	Not equal: 
+        	            	expected: 10
+        	            	actual  : 8
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=010;Modify=20200517103000; octal.txt
+    fix_r2_list_test.go:81: 
+        	Error Trace:	/out/mut/F6b/filesystem/pkg/ftp/fix_r2_list_test.go:81
+        	Error:      	Received unexpected error:
+        	            	ftp: directory listing has lines that could not be parsed: unreadable size "08" for "zero8.txt"
+        	Test:       	TestParseMLEntry_Table_F6
+        	Messages:   	Type=file;Size=08;Modify=20200517103000; zero8.txt
+--- FAIL: TestList_RealisticMLSD_ParsedWithoutLoss_D7 (0.01s)
+    fix_r2_list_test.go:163: 
+        	Error Trace:	/out/mut/F6b/filesystem/pkg/ftp/fix_r2_list_test.go:163
+        	Error:      	Received unexpected error:
+        	            	ftp: list /data: ftp: directory listing has lines that could not be parsed: unreadable size "08" for "badoctal.txt"
+        	Test:       	TestList_RealisticMLSD_ParsedWithoutLoss_D7
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.989s
+FAIL

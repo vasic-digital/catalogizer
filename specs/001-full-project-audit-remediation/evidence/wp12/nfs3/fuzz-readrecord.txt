@@ -1,0 +1,20 @@
+# identity: WP-12 PA-06 pkg/nfs3 evidence, captured output of fuzz-readrecord.txt (driver: tools/run_evidence.sh or tools/image_leg.sh)
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree (own-org submodule, uncommitted by instruction)
+# run_at: 2026-10-07 (UTC, see the === timestamps of the driver); worker: Sonnet; independent review (11.4.142): OWED
+# sources: sha256 of SOURCES.sha256 starts 95c2e2ab907b68e3
+fuzz: elapsed: 0s, gathering baseline coverage: 0/3 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 3/3 completed, now fuzzing with 3 workers
+fuzz: elapsed: 3s, execs: 59762 (19857/sec), new interesting: 14 (total: 17)
+fuzz: elapsed: 6s, execs: 122980 (21089/sec), new interesting: 15 (total: 18)
+fuzz: elapsed: 9s, execs: 188627 (21935/sec), new interesting: 16 (total: 19)
+fuzz: elapsed: 12s, execs: 250183 (20517/sec), new interesting: 16 (total: 19)
+fuzz: elapsed: 15s, execs: 314411 (21352/sec), new interesting: 16 (total: 19)
+fuzz: elapsed: 18s, execs: 380854 (22142/sec), new interesting: 16 (total: 19)
+fuzz: elapsed: 21s, execs: 441815 (20335/sec), new interesting: 18 (total: 21)
+fuzz: elapsed: 24s, execs: 509622 (22652/sec), new interesting: 18 (total: 21)
+fuzz: elapsed: 27s, execs: 577827 (22737/sec), new interesting: 18 (total: 21)
+fuzz: elapsed: 30s, execs: 645016 (22396/sec), new interesting: 18 (total: 21)
+fuzz: elapsed: 30s, execs: 645016 (0/sec), new interesting: 18 (total: 21)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	30.110s
+exit=0

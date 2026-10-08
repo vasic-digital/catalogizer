@@ -1,0 +1,27 @@
+# round-2 compatibility check of the other packages of the submodule with the new fabric API. NOTHING in pkg/ftp, pkg/factory, pkg/sftp or pkg/nfs3 was edited (the FTP worker owns pkg/ftp and edits it concurrently).
+# go build ./... rc=0 and go vet ./pkg/ftp ./pkg/factory ./pkg/sftp ./pkg/nfs3 rc=0 (from the first compat run, same fabric tree)
+go build ./... rc=0
+go vet ftp factory sftp nfs3 rc=0
+
+# pkg/ftp tests on ONE snapshot of the FTP worker's tree, run twice:
+# A: with the round-2 fabric + decorators
+ok  	digital.vasic.filesystem/pkg/ftp	11.368s
+#    passing top-level tests: 128
+# B: with the PRE-FIX fabric + decorators (same ftp files)
+ok  	digital.vasic.filesystem/pkg/ftp	11.356s
+#    passing top-level tests: 128
+# snapshot of pkg/ftp (sha256, first lines):
+8cd46168468fa1a179abcb2c08be1da4044bbc34a15ebe80c2c2c89c8ba68a21  pkg/ftp/cred.go
+bebb69109c44ed2ad384b0d825a659ed93e6757560737587424a67ba78686180  pkg/ftp/fakeserver_test.go
+bdcd14f9698e48ae4d35d4149350a771aabae07c8a6eef0666c8ac9b1fb34ecc  pkg/ftp/fix_r2_list_test.go
+533e916b6c50eb3d390c8efaf3c48fd9d357c8cb9445a6cefd00834c8a0e601d  pkg/ftp/fix_r2_net_test.go
+258527bec96d538841562252f86b7ba23d98a8befa36fad55ff84a9f048dc0c4  pkg/ftp/ftp.go
+bd531ef3d38acf9a8e0bfc9b303e7a96d9e3c9be4907c1ebf90ac542c67c5ab7  pkg/ftp/ftp_test.go
+6a10e337a1decfa16a8326519e02828c03c1d93468d83d30456ca306d9d5c6a1  pkg/ftp/ftps_test.go
+ada88bd88860ea54bb4aa32683c68f2f8eeef09b2233c4f4c32d85a42b263e90  pkg/ftp/integration_test.go
+9ab9407619d3bd2b27b0f0377cee8d1a0a01d09dcf4eebdefc812407099dbc91  pkg/ftp/mlsx.go
+9113bb87e50f6bf3c306cd493797a2ca071543b0b5b22244640f881c565250db  pkg/ftp/proto.go
+dd53a37aaa8053f3c8aef0e9a5829e0a77e8dc9ac2151512eab3b6f0004b495a  pkg/ftp/scan.go
+e30c0675a8b0148723fbecfc8a3aa543fbcea983cf06d65be31afe44c465e390  pkg/ftp/tls.go
+
+# NOTE: an earlier run against a different, moving snapshot of pkg/ftp showed 3 failing ftp tests and a 150 s timeout; with the pre-fix fabric on the SAME snapshot they pass, with the round-2 fabric on one consistent snapshot they also pass (A above), so those failures came from the worker's files changing between runs, not from this change. Re-run when the worker commits.

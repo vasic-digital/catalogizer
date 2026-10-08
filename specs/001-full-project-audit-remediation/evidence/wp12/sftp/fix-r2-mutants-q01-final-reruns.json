@@ -1,0 +1,32 @@
+[
+ {
+  "id": "Q01",
+  "desc": "newFile publishes its stop function without the lock (nil-func panic / data race when the context has already ended; found while fixing, run with -race)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestNewFileWithAnAlreadyEndedContext"
+  ],
+  "n_failing": 1,
+  "seconds": 35
+ },
+ {
+  "id": "Q01",
+  "desc": "newFile publishes its stop function without the lock (nil-func panic / data race when the context has already ended; found while fixing, run with -race)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestNewFileWithAnAlreadyEndedContext"
+  ],
+  "n_failing": 1,
+  "seconds": 33
+ },
+ {
+  "id": "Q01",
+  "desc": "newFile publishes its stop function without the lock (nil-func panic / data race when the context has already ended; found while fixing, run with -race)",
+  "verdict": "KILLED",
+  "failing": [
+   "TestNewFileWithAnAlreadyEndedContext"
+  ],
+  "n_failing": 1,
+  "seconds": 33
+ }
+]

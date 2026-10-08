@@ -1,0 +1,122 @@
+go: downloading github.com/pkg/sftp v1.13.11
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/stretchr/testify v1.11.1
+go: downloading github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
+go: downloading github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
+go: downloading github.com/kr/fs v0.1.0
+go: downloading gopkg.in/yaml.v3 v3.0.1
+=== RUN   TestIntegrationSelftest
+selftest: connected to OpenSSH, host key pinned and verified
+--- PASS: TestIntegrationSelftest (1.81s)
+=== RUN   TestIntegration_ListingAndAttributes
+--- PASS: TestIntegration_ListingAndAttributes (1.61s)
+=== RUN   TestIntegration_ReadWholeAndRanged
+--- PASS: TestIntegration_ReadWholeAndRanged (1.69s)
+=== RUN   TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused
+--- PASS: TestIntegration_HostKey_UnknownRefusedUntilPinned_ChangedRefused (0.39s)
+=== RUN   TestIntegration_AuthFailureNotRetried
+--- PASS: TestIntegration_AuthFailureNotRetried (0.45s)
+=== RUN   TestIntegration_KeyAuth
+--- PASS: TestIntegration_KeyAuth (1.49s)
+=== RUN   TestIntegration_WritesImpossible
+--- PASS: TestIntegration_WritesImpossible (1.60s)
+=== RUN   TestIntegration_FixtureVolumeIsReadOnlyServerSide
+    integration_test.go:243: 
+        	Error Trace:	/src/filesystem/pkg/sftp/integration_test.go:243
+        	Error:      	Received unexpected error:
+        	            	ssh: handshake failed: sftp: host key for sftp:22 CHANGED: server presented ssh-rsa SHA256:PUdnRq2hFeRK+2xjtFANQolqvIWZPtID2JggCUKVPQg, pinned SHA256:k8qa1yLsGRnnLsz0Ik/G8fNTl2WXzqqvA/pMLvUbfDY
+        	Test:       	TestIntegration_FixtureVolumeIsReadOnlyServerSide
+--- FAIL: TestIntegration_FixtureVolumeIsReadOnlyServerSide (0.27s)
+=== RUN   TestIntegration_PathConfinement
+    integration_test.go:270: 
+        	Error Trace:	/src/filesystem/pkg/sftp/integration_test.go:270
+        	Error:      	Expected error with "sftp: path escapes the configured root" in chain but got nil.
+        	Test:       	TestIntegration_PathConfinement
+--- FAIL: TestIntegration_PathConfinement (1.63s)
+=== RUN   TestIntegration_ContextCancelMidRead
+--- PASS: TestIntegration_ContextCancelMidRead (1.63s)
+=== RUN   TestIntegration_TransientDialFailureRetriedThenGivesUp
+--- PASS: TestIntegration_TransientDialFailureRetriedThenGivesUp (0.06s)
+=== RUN   TestConfine_Table
+--- PASS: TestConfine_Table (0.00s)
+=== RUN   TestConfine_DefaultRootIsSlash
+--- PASS: TestConfine_DefaultRootIsSlash (0.00s)
+=== RUN   TestWithin
+--- PASS: TestWithin (0.00s)
+=== RUN   TestFingerprintFormat
+--- PASS: TestFingerprintFormat (0.00s)
+=== RUN   TestHostPortNormalisation
+--- PASS: TestHostPortNormalisation (0.00s)
+=== RUN   TestHostKeyCallback_UnknownMismatchMatch
+--- PASS: TestHostKeyCallback_UnknownMismatchMatch (0.00s)
+=== RUN   TestHostKeyAlgorithmsFollowPinnedType
+--- PASS: TestHostKeyAlgorithmsFollowPinnedType (0.00s)
+=== RUN   TestMemPinStore
+--- PASS: TestMemPinStore (0.00s)
+=== RUN   TestFilePinStore_PersistsWith0600
+--- PASS: TestFilePinStore_PersistsWith0600 (0.00s)
+=== RUN   TestFilePinStore_CorruptFileIsAnErrorNotNoPins
+--- PASS: TestFilePinStore_CorruptFileIsAnErrorNotNoPins (0.00s)
+=== RUN   TestCredential_Redaction
+--- PASS: TestCredential_Redaction (0.00s)
+=== RUN   TestEnvCredentialResolver
+--- PASS: TestEnvCredentialResolver (0.00s)
+=== RUN   TestIsTransient_Table
+--- PASS: TestIsTransient_Table (0.00s)
+=== RUN   TestRetry_BoundedAndTransientOnly
+--- PASS: TestRetry_BoundedAndTransientOnly (0.01s)
+=== RUN   TestRetry_ContextCancelStopsBackoff
+--- PASS: TestRetry_ContextCancelStopsBackoff (0.05s)
+=== RUN   TestMutatorsAreImpossible_NoConnectionNeeded
+--- PASS: TestMutatorsAreImpossible_NoConnectionNeeded (0.00s)
+=== RUN   TestGetConfigHasNoSecret
+--- PASS: TestGetConfigHasNoSecret (0.00s)
+=== RUN   TestToInfo_NoFabricatedMtime
+--- PASS: TestToInfo_NoFabricatedMtime (0.00s)
+=== RUN   TestNotConnectedOperationsFail
+--- PASS: TestNotConnectedOperationsFail (0.00s)
+=== RUN   TestConnectRefusesWithoutPinStoreOrCredential
+--- PASS: TestConnectRefusesWithoutPinStoreOrCredential (0.00s)
+=== RUN   TestServer_ListReadStat
+--- PASS: TestServer_ListReadStat (0.03s)
+=== RUN   TestServer_PipelinedCopyAndRange
+--- PASS: TestServer_PipelinedCopyAndRange (0.20s)
+=== RUN   TestServer_ContextCancelStopsRead
+--- PASS: TestServer_ContextCancelStopsRead (0.05s)
+=== RUN   TestServer_HostKey_UnknownRefused_ThenPinned
+--- PASS: TestServer_HostKey_UnknownRefused_ThenPinned (0.05s)
+=== RUN   TestServer_HostKey_ChangedKeyRefused
+--- PASS: TestServer_HostKey_ChangedKeyRefused (0.01s)
+=== RUN   TestServer_AuthFailureNotRetried_NoSecretInError
+--- PASS: TestServer_AuthFailureNotRetried_NoSecretInError (0.01s)
+=== RUN   TestServer_TransientConnectRetriedThenSucceeds
+--- PASS: TestServer_TransientConnectRetriedThenSucceeds (0.02s)
+=== RUN   TestServer_TransientRetryIsBounded
+--- PASS: TestServer_TransientRetryIsBounded (0.01s)
+=== RUN   TestServer_PathConfinement
+--- PASS: TestServer_PathConfinement (0.02s)
+=== RUN   TestServer_ListingReportsSymlinkAsLink
+--- PASS: TestServer_ListingReportsSymlinkAsLink (0.01s)
+=== RUN   TestServer_WritesImpossibleEvenWithWritablePermissions
+--- PASS: TestServer_WritesImpossibleEvenWithWritablePermissions (0.01s)
+=== RUN   TestServer_DisconnectedClientDoesNotSilentlyReconnect
+--- PASS: TestServer_DisconnectedClientDoesNotSilentlyReconnect (0.03s)
+=== RUN   TestServer_LostConnectionIsRedialled
+--- PASS: TestServer_LostConnectionIsRedialled (0.03s)
+=== RUN   TestServer_TestConnectionConnectsAndDisconnects
+--- PASS: TestServer_TestConnectionConnectsAndDisconnects (0.03s)
+=== RUN   TestServer_KeyAuth
+--- PASS: TestServer_KeyAuth (0.03s)
+=== RUN   TestServer_KeyWithPassphrase
+--- PASS: TestServer_KeyWithPassphrase (6.62s)
+=== RUN   TestServer_GarbageKeyIsRedacted
+--- PASS: TestServer_GarbageKeyIsRedacted (0.00s)
+=== RUN   TestDiscoverDoesNotAuthenticate
+--- PASS: TestDiscoverDoesNotAuthenticate (0.01s)
+=== RUN   TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds
+--- PASS: TestDiscoverAll_ReturnsEveryKeyFamilyTheServerHolds (0.01s)
+=== RUN   TestPin_RefusesEmptyOwnerOrFingerprint
+--- PASS: TestPin_RefusesEmptyOwnerOrFingerprint (0.00s)
+FAIL
+FAIL	digital.vasic.filesystem/pkg/sftp	19.958s
+FAIL

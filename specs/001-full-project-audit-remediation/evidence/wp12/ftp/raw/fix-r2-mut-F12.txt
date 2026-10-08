@@ -1,0 +1,18 @@
+# identity: WP-12 PA-04 fix round 2: mutant F12 - a 0xFF byte in a path is sent raw
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestIACByteInAPath_IsDoubled_F12 (0.00s)
+    fix_r2_net_test.go:1231: 
+        	Error Trace:	/out/mut/F12/filesystem/pkg/ftp/fix_r2_net_test.go:1231
+        	Error:      	[]string{"AUTH TLS", "USER u", "PASS ***", "FEAT", "TYPE I", "OPTS UTF8 ON", "PBSZ 0", "PROT P", "CWD /data", "PWD", "MLST /data/x\xff\xf4y"} does not contain "MLST /data/x\xff\xff\xf4y"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	RFC 854: a 0xFF data byte is sent as 0xFF 0xFF, never as a Telnet command
+    fix_r2_net_test.go:1233: 
+        	Error Trace:	/out/mut/F12/filesystem/pkg/ftp/fix_r2_net_test.go:1233
+        	Error:      	"MLST /data/x\xff\xf4y" should not contain "\xff"
+        	Test:       	TestIACByteInAPath_IsDoubled_F12
+        	Messages:   	no lone IAC reaches the server: "MLST /data/x\xff\xf4y"
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.918s
+FAIL

@@ -1,0 +1,51 @@
+import os, re, shutil, subprocess
+BASE="/dev/shm/wf21mut/src/N00/filesystem"
+NEW="/home/milosvasic/Projects/catalogizer/submodules/filesystem"
+OUT="/dev/shm/fixr2/out/red/filesystem"
+shutil.rmtree("/dev/shm/fixr2/out/red", ignore_errors=True)
+os.makedirs(OUT)
+subprocess.run("tar --exclude=.git -C %s -cf - . | tar -C %s -xf -"%(BASE,OUT),shell=True,check=True)
+# the pre-fix production files are N00's; overlay the NEW tests
+for f in ["fakeserver_test.go","ftps_test.go","ftp_test.go","fix_r2_net_test.go","fix_r2_list_test.go"]:
+    shutil.copy(os.path.join(NEW,"pkg/ftp",f), os.path.join(OUT,"pkg/ftp",f))
+# drop the tests of functions that do not exist in the pre-fix code (they cannot compile there: no pre-fix counterpart)
+p=os.path.join(OUT,"pkg/ftp/fix_r2_list_test.go")
+s=open(p).read()
+for name in ["TestParseMLEntry_Table_F6","TestParseListLine_UnixDosAndGarbage","TestClassify550","TestPASVAndEPSV_ReplyParsing","TestReadReplyEdge_Cases"]:
+    m=re.search(r"\nfunc %s\(t \*testing\.T\) \{.*?\n\}\n"%name, s, re.S)
+    assert m, name
+    s=s[:m.start()]+s[m.end():]
+i=s.index("func netPipe"); s=s[:i]
+s=s.replace('\t"bufio"\n','').replace('\t"net"\n','').replace('\t"context"\n','')
+open(p,"w").write(s)
+# tests that reach into internals that do not exist before the fix (no pre-fix counterpart)
+p=os.path.join(OUT,"pkg/ftp/fix_r2_net_test.go")
+n=open(p).read()
+m=re.search(r"\nfunc TestReDial_ClosesTheConnectionItReplaces\(t \*testing.T\) \{.*?\n\}\n", n, re.S)
+assert m
+n=n[:m.start()]+n[m.end():]
+open(p,"w").write(n)
+# shim: symbols that exist only after the fix (the pre-fix code never returns them)
+open(os.path.join(OUT,"pkg/ftp/red_shim_test.go"),"w").write('''package ftp
+
+import "errors"
+
+var (
+	ErrProtocol          = errors.New("shim: ErrProtocol (pre-fix code has no such error)")
+	ErrReplyTooLarge     = errors.New("shim: ErrReplyTooLarge")
+	ErrListingTooLarge   = errors.New("shim: ErrListingTooLarge")
+	ErrListingIncomplete = errors.New("shim: ErrListingIncomplete")
+	ErrAborted           = errors.New("shim: ErrAborted")
+	ErrUTF8Refused       = errors.New("shim: ErrUTF8Refused")
+	ErrPinNameConflict   = errors.New("shim: ErrPinNameConflict")
+)
+''')
+# pre-fix Config gets the two new (ignored) fields; scanFactory takes a config pointer (as the new tests construct it)
+p=os.path.join(OUT,"pkg/ftp/ftp.go"); s=open(p).read()
+s=s.replace("	DisableEPSV bool `json:\"disable_epsv\"`","	DisableEPSV bool `json:\"disable_epsv\"`\n	MaxReplyBytes int `json:\"-\"`\n	MaxListEntries int `json:\"-\"`",1)
+open(p,"w").write(s)
+p=os.path.join(OUT,"pkg/ftp/scan.go"); s=open(p).read()
+s=s.replace("	cfg  Config\n","	cfg  *Config\n").replace("cfg := f.cfg // a copy","cfg := *f.cfg // a copy").replace("scanFactory{cfg: *cfg,","scanFactory{cfg: cfg,")
+open(p,"w").write(s)
+# pre-fix Pin / DiscoverCert / Credential already exist; nothing else to patch
+print("ok")

@@ -1,0 +1,331 @@
+# fix-r2 GREEN run 1: go test -race -count=1 -v ./pkg/nfs3/ in IMG-GO
+# head: 4c8b07b7 (main), submodules/filesystem 66b6bc1 + uncommitted working tree
+# run_at: 2026-10-07T20:26:01Z; sources: 8b8cfe6ea7c6b51a
+=== RUN   TestNewValidates
+--- PASS: TestNewValidates (0.00s)
+=== RUN   TestConnectUsesPortmapperAndMounts
+--- PASS: TestConnectUsesPortmapperAndMounts (0.07s)
+=== RUN   TestConnectErrors
+--- PASS: TestConnectErrors (0.07s)
+=== RUN   TestExports
+--- PASS: TestExports (0.06s)
+=== RUN   TestGetFileInfo
+--- PASS: TestGetFileInfo (0.06s)
+=== RUN   TestPathConfinement
+--- PASS: TestPathConfinement (0.05s)
+=== RUN   TestListDirectory
+--- PASS: TestListDirectory (0.06s)
+=== RUN   TestListDirectoryPagingWithCookieVerifier
+--- PASS: TestListDirectoryPagingWithCookieVerifier (0.08s)
+=== RUN   TestListDirectoryByteBudgetPaging
+--- PASS: TestListDirectoryByteBudgetPaging (0.07s)
+=== RUN   TestBadCookieRestartsListing
+--- PASS: TestBadCookieRestartsListing (0.07s)
+=== RUN   TestListWithoutAttributesFallsBackToLookup
+--- PASS: TestListWithoutAttributesFallsBackToLookup (0.05s)
+=== RUN   TestListingNotProgressing
+--- PASS: TestListingNotProgressing (0.07s)
+=== RUN   TestReadFileLargeAndSmall
+--- PASS: TestReadFileLargeAndSmall (0.19s)
+=== RUN   TestReadShortReadsAreResumed
+--- PASS: TestReadShortReadsAreResumed (0.56s)
+=== RUN   TestReadSeekAndRange
+--- PASS: TestReadSeekAndRange (0.09s)
+=== RUN   TestReadPipelinesOutOfOrderReplies
+--- PASS: TestReadPipelinesOutOfOrderReplies (0.43s)
+=== RUN   TestAccessAndReadOnly
+--- PASS: TestAccessAndReadOnly (0.05s)
+=== RUN   TestNoWriteProcedureCompiledIn
+--- PASS: TestNoWriteProcedureCompiledIn (0.04s)
+=== RUN   TestConcurrentUse
+--- PASS: TestConcurrentUse (0.59s)
+=== RUN   TestAuthNullOnlyExportUsesAuthNone
+--- PASS: TestAuthNullOnlyExportUsesAuthNone (0.07s)
+=== RUN   TestReadChunkFollowsFSInfoButIsCapped
+--- PASS: TestReadChunkFollowsFSInfoButIsCapped (0.20s)
+=== RUN   TestListingHostilePagesTerminate
+=== RUN   TestListingHostilePagesTerminate/cookie_cycle_5,6,5
+=== RUN   TestListingHostilePagesTerminate/dots_only_with_ever_advancing_cookies
+=== RUN   TestListingHostilePagesTerminate/empty_page
+=== RUN   TestListingHostilePagesTerminate/advancing_cookies,_endless_real_entries
+--- PASS: TestListingHostilePagesTerminate (0.26s)
+    --- PASS: TestListingHostilePagesTerminate/cookie_cycle_5,6,5 (0.06s)
+    --- PASS: TestListingHostilePagesTerminate/dots_only_with_ever_advancing_cookies (0.07s)
+    --- PASS: TestListingHostilePagesTerminate/empty_page (0.07s)
+    --- PASS: TestListingHostilePagesTerminate/advancing_cookies,_endless_real_entries (0.06s)
+=== RUN   TestReadAheadStartsSmallAndRampsUp
+--- PASS: TestReadAheadStartsSmallAndRampsUp (1.13s)
+=== RUN   TestReadRangeNeverReadsPastTheRange
+--- PASS: TestReadRangeNeverReadsPastTheRange (0.72s)
+=== RUN   TestShortReadsAreAvoidedWhenFSInfoSaysSo
+--- PASS: TestShortReadsAreAvoidedWhenFSInfoSaysSo (0.24s)
+=== RUN   TestShortReadKeepsTheWindowAndShrinksTheChunk
+--- PASS: TestShortReadKeepsTheWindowAndShrinksTheChunk (0.21s)
+=== RUN   TestErrorOnLaterChunkThenSeekReadsTheRest
+--- PASS: TestErrorOnLaterChunkThenSeekReadsTheRest (0.24s)
+=== RUN   TestConfigLimitsAreValidated
+--- PASS: TestConfigLimitsAreValidated (0.00s)
+=== RUN   TestSmallMaxRecordStillReadsAndLists
+--- PASS: TestSmallMaxRecordStillReadsAndLists (0.20s)
+=== RUN   TestNegativeMaxRetriesCallBudgetIsPositive
+--- PASS: TestNegativeMaxRetriesCallBudgetIsPositive (0.00s)
+=== RUN   TestFattrSizeAtTheSignedLimit
+--- PASS: TestFattrSizeAtTheSignedLimit (0.00s)
+=== RUN   TestHandleCacheExpires
+--- PASS: TestHandleCacheExpires (0.06s)
+=== RUN   TestHandleCacheDisabledWalksEveryTime
+--- PASS: TestHandleCacheDisabledWalksEveryTime (0.05s)
+=== RUN   TestReplacedDirectoryDropsItsCachedDescendants
+--- PASS: TestReplacedDirectoryDropsItsCachedDescendants (0.06s)
+=== RUN   TestStaleRootHandleIsRemounted
+--- PASS: TestStaleRootHandleIsRemounted (0.06s)
+=== RUN   TestRemountFailureReturnsTheOriginalStaleError
+--- PASS: TestRemountFailureReturnsTheOriginalStaleError (0.05s)
+=== RUN   TestJukeboxDefaultsAreSecondsScale
+--- PASS: TestJukeboxDefaultsAreSecondsScale (0.00s)
+=== RUN   TestJukeboxWaitsOnItsOwnSchedule
+--- PASS: TestJukeboxWaitsOnItsOwnSchedule (0.40s)
+=== RUN   TestVanishedEntryIsCounted
+--- PASS: TestVanishedEntryIsCounted (0.05s)
+=== RUN   TestFailedConnectAfterMountSendsUmnt
+=== RUN   TestFailedConnectAfterMountSendsUmnt/FSINFO_refused_(RPC_auth_error)
+=== RUN   TestFailedConnectAfterMountSendsUmnt/FSINFO_garbage
+--- PASS: TestFailedConnectAfterMountSendsUmnt (0.10s)
+    --- PASS: TestFailedConnectAfterMountSendsUmnt/FSINFO_refused_(RPC_auth_error) (0.05s)
+    --- PASS: TestFailedConnectAfterMountSendsUmnt/FSINFO_garbage (0.05s)
+=== RUN   TestPrivilegedRetryUnmountsTheFailedFirstAttempt
+--- PASS: TestPrivilegedRetryUnmountsTheFailedFirstAttempt (0.06s)
+=== RUN   TestNFSLayerAccessErrorNamesTheRealPort
+--- PASS: TestNFSLayerAccessErrorNamesTheRealPort (0.06s)
+=== RUN   TestBlockedWriteHonoursTheContext
+--- PASS: TestBlockedWriteHonoursTheContext (1.72s)
+=== RUN   TestWaitingForTheWriteSlotHonoursTheContext
+--- PASS: TestWaitingForTheWriteSlotHonoursTheContext (0.45s)
+=== RUN   TestRuntimeAllowListRefusesWritesBeforeAnyByteIsSent
+--- PASS: TestRuntimeAllowListRefusesWritesBeforeAnyByteIsSent (0.36s)
+=== RUN   TestXidsAreUniqueAcrossManyReconnects
+--- PASS: TestXidsAreUniqueAcrossManyReconnects (0.05s)
+=== RUN   TestKillA08bStaleParentNeedsNoRemount
+--- PASS: TestKillA08bStaleParentNeedsNoRemount (0.05s)
+=== RUN   TestKillA10bReadSizeCappedAgainstALargeRTMax
+--- PASS: TestKillA10bReadSizeCappedAgainstALargeRTMax (1.90s)
+=== RUN   TestListingStopsAtTheFirstNonAdvancingPage
+--- PASS: TestListingStopsAtTheFirstNonAdvancingPage (0.05s)
+=== RUN   TestListingOfOnlyVanishingEntriesTerminates
+--- PASS: TestListingOfOnlyVanishingEntriesTerminates (0.06s)
+=== RUN   TestShortReplyShrinksLaterRequests
+--- PASS: TestShortReplyShrinksLaterRequests (0.16s)
+=== RUN   TestFailedReadDropsReadAhead
+--- PASS: TestFailedReadDropsReadAhead (0.06s)
+=== RUN   TestSeekToTheSamePositionWithAPendingErrorResets
+--- PASS: TestSeekToTheSamePositionWithAPendingErrorResets (0.06s)
+=== RUN   TestPrivilegedModeDoesNotLeakIntoLaterCalls
+--- PASS: TestPrivilegedModeDoesNotLeakIntoLaterCalls (0.06s)
+=== RUN   TestOneShortReplyCostsOnlyTheGap
+--- PASS: TestOneShortReplyCostsOnlyTheGap (0.57s)
+=== RUN   TestDialFailureIsRetried
+--- PASS: TestDialFailureIsRetried (0.06s)
+=== RUN   TestRetryReconnectsAfterDroppedConnection
+--- PASS: TestRetryReconnectsAfterDroppedConnection (0.20s)
+=== RUN   TestRetryJukeboxBounded
+--- PASS: TestRetryJukeboxBounded (0.07s)
+=== RUN   TestNoRetryWhenDisabledOrPermanent
+--- PASS: TestNoRetryWhenDisabledOrPermanent (0.07s)
+=== RUN   TestCallTimeoutIsBounded
+--- PASS: TestCallTimeoutIsBounded (0.36s)
+=== RUN   TestContextCancellationAndDeadline
+--- PASS: TestContextCancellationAndDeadline (0.26s)
+=== RUN   TestCloseUnblocksReader
+--- PASS: TestCloseUnblocksReader (0.10s)
+=== RUN   TestStaleCachedParentIsDropped
+--- PASS: TestStaleCachedParentIsDropped (0.05s)
+=== RUN   TestReservedPortRefusalIsPrecise
+--- PASS: TestReservedPortRefusalIsPrecise (0.06s)
+=== RUN   TestPrivilegedRetrySucceedsWhenAllowed
+--- PASS: TestPrivilegedRetrySucceedsWhenAllowed (0.05s)
+=== RUN   TestPrivilegedRetryDoesNotFireForOtherErrors
+--- PASS: TestPrivilegedRetryDoesNotFireForOtherErrors (0.06s)
+=== RUN   TestPrivilegedRetryReportsUnavailable
+--- PASS: TestPrivilegedRetryReportsUnavailable (0.05s)
+=== RUN   TestRealPrivilegedBind
+    resilience_test.go:284: cannot bind a reserved port here (expected unprivileged): nfs3: cannot bind a privileged (<1024) source port: dial tcp :1023->127.0.0.1:39539: bind: permission denied
+--- PASS: TestRealPrivilegedBind (0.04s)
+=== RUN   TestAuthErrorOnNFSPortIsAccessError
+--- PASS: TestAuthErrorOnNFSPortIsAccessError (0.05s)
+=== RUN   TestMalformedRepliesAreErrorsNotPanics
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/truncated_GETATTR
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/empty_LOOKUP
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/bad_bool_in_LOOKUP
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/huge_name_in_READDIRPLUS
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/name_with_slash
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/name_with_NUL
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/READ_count_mismatch
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/READ_oversize
+=== RUN   TestMalformedRepliesAreErrorsNotPanics/READ_zero_bytes_no_EOF
+--- PASS: TestMalformedRepliesAreErrorsNotPanics (0.06s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/truncated_GETATTR (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/empty_LOOKUP (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/bad_bool_in_LOOKUP (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/huge_name_in_READDIRPLUS (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/name_with_slash (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/name_with_NUL (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/READ_count_mismatch (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/READ_oversize (0.00s)
+    --- PASS: TestMalformedRepliesAreErrorsNotPanics/READ_zero_bytes_no_EOF (0.00s)
+=== RUN   TestWrongXIDReplyIsIgnored
+--- PASS: TestWrongXIDReplyIsIgnored (0.05s)
+=== RUN   TestGarbageStreamClosesConnection
+--- PASS: TestGarbageStreamClosesConnection (0.00s)
+=== RUN   TestServerCloseFailsPendingCalls
+--- PASS: TestServerCloseFailsPendingCalls (0.00s)
+=== RUN   TestKillA01PageEndingWithDotDot
+--- PASS: TestKillA01PageEndingWithDotDot (0.05s)
+=== RUN   TestKillA02EmptyFlavorList
+--- PASS: TestKillA02EmptyFlavorList (0.05s)
+=== RUN   TestKillA03SystemErrRetried
+--- PASS: TestKillA03SystemErrRetried (0.00s)
+=== RUN   TestKillA05ServerCallIgnored
+--- PASS: TestKillA05ServerCallIgnored (0.00s)
+=== RUN   TestKillA06VerifierLimit
+--- PASS: TestKillA06VerifierLimit (0.00s)
+=== RUN   TestKillA07PathThroughFileNotCached
+--- PASS: TestKillA07PathThroughFileNotCached (0.05s)
+=== RUN   TestKillA08PersistentStaleParent
+--- PASS: TestKillA08PersistentStaleParent (0.05s)
+=== RUN   TestKillA09TimeoutRetriedOnNewConnection
+--- PASS: TestKillA09TimeoutRetriedOnNewConnection (0.20s)
+=== RUN   TestKillA10ReadSizeCapped
+--- PASS: TestKillA10ReadSizeCapped (0.17s)
+=== RUN   TestKillA11OnlyAllowListedProcsReachTheWire
+--- PASS: TestKillA11OnlyAllowListedProcsReachTheWire (0.04s)
+=== RUN   TestKillA12SlashNameRefusedWithAttrs
+--- PASS: TestKillA12SlashNameRefusedWithAttrs (0.05s)
+=== RUN   TestKillA13CancelledCallForgotten
+--- PASS: TestKillA13CancelledCallForgotten (0.05s)
+=== RUN   TestKillA14PermIsAccessError
+--- PASS: TestKillA14PermIsAccessError (0.06s)
+=== RUN   TestKillA15MaxEntries
+--- PASS: TestKillA15MaxEntries (0.06s)
+=== RUN   TestKillA16BadHandleRecovered
+--- PASS: TestKillA16BadHandleRecovered (0.05s)
+=== RUN   TestKillA17FlavorLimit
+--- PASS: TestKillA17FlavorLimit (0.00s)
+=== RUN   TestKillA18SeekClearsError
+--- PASS: TestKillA18SeekClearsError (0.06s)
+=== RUN   TestProbeP1ListingNonAdvancingCookie
+=== RUN   TestProbeP1ListingNonAdvancingCookie/dots_only
+    review_probes_test.go:87: PROBE P1 dots only: err=nfs3: server reply does not make progress: READDIRPLUS of "/docs" asked for cookie 2 a second time after 1ms; READDIRPLUS calls=2
+=== RUN   TestProbeP1ListingNonAdvancingCookie/same_real_entry
+    review_probes_test.go:87: PROBE P1 same real entry: err=nfs3: server reply does not make progress: READDIRPLUS of "/docs" asked for cookie 1 a second time after 1ms; READDIRPLUS calls=2
+--- PASS: TestProbeP1ListingNonAdvancingCookie (0.13s)
+    --- PASS: TestProbeP1ListingNonAdvancingCookie/dots_only (0.06s)
+    --- PASS: TestProbeP1ListingNonAdvancingCookie/same_real_entry (0.07s)
+=== RUN   TestProbeP2NegativeMaxRetries
+    review_probes_test.go:103: PROBE P2: MaxRetries=-1 Connect err=<nil>
+    review_probes_test.go:103: PROBE P2: MaxRetries=-2 Connect err=<nil>
+    review_probes_test.go:103: PROBE P2: MaxRetries=-5 Connect err=<nil>
+--- PASS: TestProbeP2NegativeMaxRetries (0.07s)
+=== RUN   TestProbeP3PrivilegedModeSticksAfterFailure
+    review_probes_test.go:137: PROBE P3: second Connect err=<nil>; plain dials=4 privileged dials=0
+--- PASS: TestProbeP3PrivilegedModeSticksAfterFailure (0.06s)
+=== RUN   TestProbeP4ReadRangeReadAmplification
+    review_probes_test.go:161: PROBE P4: ReadRange(n=100) returned 100 bytes; server got 1 READ calls and sent 204 reply bytes (2x)
+--- PASS: TestProbeP4ReadRangeReadAmplification (0.56s)
+=== RUN   TestProbeP5ShortReadAmplification
+    review_probes_test.go:182: PROBE P5: 3145741 bytes in 346ms; 3147 READ calls for 3146 useful replies (1.0x)
+--- PASS: TestProbeP5ShortReadAmplification (0.70s)
+=== RUN   TestProbeP6CacheSurvivesRename
+    review_probes_test.go:203: PROBE P6: list /deep/a -> 0 entries (<nil>); GetFileInfo /deep/a/b/c/leaf.txt -> <nil> nfs3: LOOKUP: NFS3ERR_NOENT (status 2); list /deep/a/b -> 0 entries (nfs3: LOOKUP: NFS3ERR_NOENT (status 2))
+--- PASS: TestProbeP6CacheSurvivesRename (0.06s)
+=== RUN   TestProbeP7NulNameListed
+    review_probes_test.go:241: PROBE P7: list err=nfs3: malformed XDR data: server returned entry name "a\x00b" entries=0 path=""; GetFileInfo(path) err=<nil>
+--- PASS: TestProbeP7NulNameListed (0.05s)
+=== RUN   TestProbeP8VanishedEntryFailsListing
+    review_probes_test.go:265: PROBE P8: listing with one entry removed mid-listing -> [a.txt], err=<nil>
+--- PASS: TestProbeP8VanishedEntryFailsListing (0.05s)
+=== RUN   TestProbeP9NFSLayerAccessErrorPort
+    review_probes_test.go:281: PROBE P9: layer=nfs SourcePort=55310 msg="nfs3: access denied during nfs: nfs3: RPC call denied: authentication error 1; this client connected from unprivileged source port 55310; the server may require a source port below 1024 (set TryPrivilegedPort and run with CAP_NET_BIND_SERVICE or root), or restrict clients by address/UID"
+--- PASS: TestProbeP9NFSLayerAccessErrorPort (0.06s)
+=== RUN   TestProbeP10NoUmntAfterFailedConnect
+    review_probes_test.go:294: PROBE P10: Connect err=nfs3: export does not accept AUTH_SYS: server offers flavors [390003]; MNT=1 UMNT=1
+--- PASS: TestProbeP10NoUmntAfterFailedConnect (0.05s)
+=== RUN   TestProbeP11HugeSizeSilentEmptyRead
+    review_probes_test.go:325: PROBE P11: FileInfo.Size=-999 (nfs3: malformed XDR data: file size 18446744073709551615 exceeds the signed 64-bit range); ReadFile open err=nfs3: malformed XDR data: file size 18446744073709551615 exceeds the signed 64-bit range read 0 bytes, err=<nil>
+--- PASS: TestProbeP11HugeSizeSilentEmptyRead (0.06s)
+=== RUN   TestProbeP12XidRestartsPerConnection
+    review_probes_test.go:345: PROBE P12: conn1 last xid=3445038197; conn2 after 2 calls xid=3445038199
+--- PASS: TestProbeP12XidRestartsPerConnection (0.06s)
+=== RUN   TestProbeP13EmptyFlavorList
+    review_probes_test.go:372: PROBE P13: empty flavor list -> flavor 1
+--- PASS: TestProbeP13EmptyFlavorList (0.05s)
+=== RUN   TestProbeP14DefaultIdentityIsRoot
+    review_probes_test.go:383: PROBE P14: default AUTH_SYS uid=65534 gid=65534 machine="catalogizer"
+--- PASS: TestProbeP14DefaultIdentityIsRoot (0.00s)
+=== RUN   TestProbeP15PermIsAccess
+    review_probes_test.go:401: PROBE P15: isAccess(NFS3ERR_PERM)=true
+--- PASS: TestProbeP15PermIsAccess (0.00s)
+=== RUN   TestProbeP16SeekSamePosAfterErrorSilentEOF
+    review_probes_test.go:431: PROBE P16: first Read err=nfs3: READ: NFS3ERR_IO (status 5); Seek(0,SeekCurrent)=0; ReadAll -> "alpha\n" err=<nil>
+--- PASS: TestProbeP16SeekSamePosAfterErrorSilentEOF (0.05s)
+=== RUN   TestProbeP4bReadRangeLargeFile
+    review_probes_test.go:455: PROBE P4b: ReadRange(n=100) of a 16 MiB file -> 100 bytes (<nil>); 1 READ calls; 204 reply bytes (2x)
+--- PASS: TestProbeP4bReadRangeLargeFile (1.07s)
+=== RUN   TestProbeP17NoGoroutineLeak
+    review_probes_test.go:490: PROBE P17 positive control: package goroutines while connected: 1 (must be >= 1)
+    review_probes_test.go:501: PROBE P17: package goroutines alive 3 s after Disconnect: 0
+--- PASS: TestProbeP17NoGoroutineLeak (0.81s)
+=== RUN   TestXDROpaquePadding
+--- PASS: TestXDROpaquePadding (0.00s)
+=== RUN   TestXDRLimitsAndStrictness
+--- PASS: TestXDRLimitsAndStrictness (0.00s)
+=== RUN   TestFattrRoundTripAndBadType
+--- PASS: TestFattrRoundTripAndBadType (0.00s)
+=== RUN   TestAttrFileMode
+--- PASS: TestAttrFileMode (0.00s)
+=== RUN   TestBuildCallGolden
+--- PASS: TestBuildCallGolden (0.00s)
+=== RUN   TestAuthSysClampsGidsAndMachine
+--- PASS: TestAuthSysClampsGidsAndMachine (0.00s)
+=== RUN   TestReadRecordFragments
+--- PASS: TestReadRecordFragments (0.00s)
+=== RUN   TestReadRecordLimits
+--- PASS: TestReadRecordLimits (0.02s)
+=== RUN   TestParseReply
+--- PASS: TestParseReply (0.00s)
+=== RUN   TestDecodeGetport
+--- PASS: TestDecodeGetport (0.00s)
+=== RUN   TestDecodeMnt
+--- PASS: TestDecodeMnt (0.00s)
+=== RUN   TestDecodeExports
+--- PASS: TestDecodeExports (0.00s)
+=== RUN   TestDecodeReadChecks
+--- PASS: TestDecodeReadChecks (0.00s)
+=== RUN   TestDecodeReaddirplusEntries
+--- PASS: TestDecodeReaddirplusEntries (0.00s)
+=== RUN   FuzzDecoders
+=== RUN   FuzzDecoders/seed#0
+=== RUN   FuzzDecoders/seed#1
+=== RUN   FuzzDecoders/seed#2
+=== RUN   FuzzDecoders/seed#3
+=== RUN   FuzzDecoders/seed#4
+=== RUN   FuzzDecoders/seed#5
+=== RUN   FuzzDecoders/seed#6
+--- PASS: FuzzDecoders (0.00s)
+    --- PASS: FuzzDecoders/seed#0 (0.00s)
+    --- PASS: FuzzDecoders/seed#1 (0.00s)
+    --- PASS: FuzzDecoders/seed#2 (0.00s)
+    --- PASS: FuzzDecoders/seed#3 (0.00s)
+    --- PASS: FuzzDecoders/seed#4 (0.00s)
+    --- PASS: FuzzDecoders/seed#5 (0.00s)
+    --- PASS: FuzzDecoders/seed#6 (0.00s)
+=== RUN   FuzzReadRecord
+=== RUN   FuzzReadRecord/seed#0
+=== RUN   FuzzReadRecord/seed#1
+=== RUN   FuzzReadRecord/seed#2
+--- PASS: FuzzReadRecord (0.00s)
+    --- PASS: FuzzReadRecord/seed#0 (0.00s)
+    --- PASS: FuzzReadRecord/seed#1 (0.00s)
+    --- PASS: FuzzReadRecord/seed#2 (0.00s)
+PASS
+ok  	digital.vasic.filesystem/pkg/nfs3	19.956s
+exit=0

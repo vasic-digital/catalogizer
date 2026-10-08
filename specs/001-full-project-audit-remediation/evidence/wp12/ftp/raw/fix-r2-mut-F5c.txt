@@ -1,0 +1,19 @@
+# identity: WP-12 PA-04 fix round 2: mutant F5c - garbled names after a refused OPTS UTF8 ON are catalogued
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: KILLED ; exit code of go test: 1
+# run_at: 2026-10-08 (UTC+2)
+--- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c (0.02s)
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names (0.00s)
+        fix_r2_net_test.go:922: 
+            	Error Trace:	/out/mut/F5c/filesystem/pkg/ftp/fix_r2_net_test.go:922
+            	Error:      	Expected error with "ftp: the server refused OPTS UTF8 ON and sent a name that is not valid UTF-8, so non-ASCII names would be garbled" in chain but got nil.
+            	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/tls_garbled_names
+            	Messages:   	names garbled to 0x7f must never be catalogued
+    --- FAIL: TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names (0.00s)
+        fix_r2_net_test.go:937: 
+            	Error Trace:	/out/mut/F5c/filesystem/pkg/ftp/fix_r2_net_test.go:937
+            	Error:      	Expected error with "ftp: the server refused OPTS UTF8 ON and sent a name that is not valid UTF-8, so non-ASCII names would be garbled" in chain but got nil.
+            	Test:       	TestLogin_OPTSUTF8Refused_ConnectsButNeverCataloguesGarbledNames_D12c/clear_garbled_names
+FAIL
+FAIL	digital.vasic.filesystem/pkg/ftp	15.893s
+FAIL

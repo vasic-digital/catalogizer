@@ -1,0 +1,5 @@
+# identity: WP-12 PA-04 fix round 2: mutant N01 - NEGATIVE CONTROL: behaviour-neutral edit, a comment (must SURVIVE)
+# harness: fix-r2-mutate.py gen + fix-r2-mutate-run.sh (inside the pinned IMG-GO container), target package pkg/ftp, go test -count=1 -timeout 170s (no -race), final tests
+# verdict: SURVIVED ; exit code of go test: 0
+# run_at: 2026-10-08 (UTC+2)
+ok  	digital.vasic.filesystem/pkg/ftp	15.872s
