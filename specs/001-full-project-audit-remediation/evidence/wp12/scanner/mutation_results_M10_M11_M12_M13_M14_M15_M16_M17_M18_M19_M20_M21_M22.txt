@@ -1,0 +1,13 @@
+M10-entries-unsorted	BUILD-BROKEN(not counted) rc=1	
+M11-nfs-export-key-reverted	KILLED rc=1	TestSettingsContract_ScannerSettingsReachTheClient, TestSettingsFromRoot_AlwaysValidatesForBuiltins, TestStorageRootToSettings_NFS
+M12-unknown-keys-accepted	KILLED rc=1	TestFactory_CreateClientRejectsUnknownKey, TestRegisterProtocol_Lifecycle, TestValidateSettings_RejectsEveryUnknownKeyNotJustTheFirst, TestValidateSettings_RejectsUnknownKeyWithHint
+M13-ftp-path-not-forwarded	KILLED rc=1	TestSettingsContract_ScannerSettingsReachTheClient
+M14-propfind-self-not-skipped	KILLED rc=1	TestParsePropfind_ApacheModDav, TestParsePropfind_IgnoresPropertiesOfFailedPropstats, TestParsePropfind_NegativeAndGarbageLengthBecomeZero, TestParsePropfind_PrefixesAndAbsoluteHrefs
+M15-failed-propstat-trusted	SURVIVED rc=0	
+M16-cancel-reported-as-failed	KILLED rc=1	TestScanJob_CancelledContextEndsCancelledNotCompleted
+M17-all-records-failing-still-completes	KILLED rc=1	TestGenericScanner_AllRecordsFailingFailsTheScan
+M18-per-dir-bound-removed	KILLED rc=1	TestGenericScanner_BoundsFailInsteadOfTruncating
+M19-factory-skips-validation	KILLED rc=1	TestFactory_CreateClientRejectsUnknownKey, TestRegisterProtocol_Lifecycle
+M20-registered-protocol-not-resolved-on-demand	SURVIVED rc=0	
+M21-hostile-names-followed	KILLED rc=1	TestGenericScanner_HostileEntryNamesAreNotFollowed
+M22-skip-dirs-ignored	KILLED rc=1	TestGenericScanner_SkipsSynologyMetadataDirectories

@@ -1,0 +1,8 @@
+always_available CAUGHT
+nfs_leg_hard_coded CAUGHT
+value_leaked CAUGHT
+be_b1_value_in_available_note CAUGHT
+be3_blocked_leg_drops_derived_from CAUGHT
+bare_not_needed_accepted CAUGHT
+free_text_reason_copied CAUGHT
+be0_identity SURVIVED-AS-REQUIRED

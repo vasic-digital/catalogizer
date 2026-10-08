@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "wf24-mutprior-1453",
+  "at": "2026-10-08T00:53:33Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 56924442624,
+      "free_after": 56091806300,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 56924442624,
+      "free_after": 56091806300,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

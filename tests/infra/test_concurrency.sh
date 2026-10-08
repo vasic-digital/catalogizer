@@ -13,12 +13,13 @@ export TI_ROOT="$TI_REPO"; TI_DOWN="$TI_REPO/$SD/down.sh"
 for f in up.sh down.sh probe.sh run_client.sh; do need_script "$SD/$f" || { ti_summary; exit 1; }; done
 UP="$TI_REPO/$SD/up.sh"; DOWN="$TI_REPO/$SD/down.sh"; PROBE="$TI_REPO/$SD/probe.sh"; RCL="$TI_REPO/$SD/run_client.sh"
 A=$(ti_new_id); B=$(ti_new_id); [ "$A" != "$B" ] || B="${B}b"; TI_IDS+=("$A" "$B"); PA=$(ti_project "$A"); PB=$(ti_project "$B")
-claim() { [ -d "$TI_REPO/.audit/longops/claims/$1" ] && echo held || echo free; }   # only for the ABSENCE of a claim; a held lease is ti_lease_state (a live keeper of the start), WF12 F5
+claim() { [ -d "$(ti_regdir)/claims/$1" ] && echo held || echo free; }   # only for the ABSENCE of a claim; a held lease is ti_lease_state (a live keeper of the start), WF12 F5
 count() { podman ps -a -q --filter "label=catalogizer.test_project=$1" | wc -l; }
 
 T0=$(date +%s)
 bash "$UP" --build-id "$A" >"$TI_SCRATCH/upA.txt" 2>&1 & pa=$!
 bash "$UP" --build-id "$B" >"$TI_SCRATCH/upB.txt" 2>&1 & pb=$!
+TI_BG_PIDS+=("$pa" "$pb")   # the cleanup trap waits for background starts before it tears the ids down (WF17 TI-C7)
 wait $pa; ra=$?; wait $pb; rb=$?
 T1=$(date +%s)
 check "stack A starts (all five services) while B starts (exit 0)" "$ra" 0
@@ -94,7 +95,7 @@ bash "$DOWN" --build-id "$B" --op-id "$OPB" >/dev/null 2>&1
 if [ "${CONC_NO_MUTATIONS:-0}" != 1 ] && [ "${CONC_TEST_MUTANT:-0}" != 1 ]; then
   MUTLOG="${CONC_MUTATION_RECORD:-$TI_SCRATCH/mutations.txt}"; : >"$MUTLOG"
   mutate() { local name=$1 file=$2 old=$3 new=$4 d="$TI_REPO/.audit/scratch/ti-mut-conc-$1"
-    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$SD"/*.sh "$d/"; cp -r "$TI_REPO/$SD/client" "$d/client"
+    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$SD"/*.sh "$TI_REPO/$SD"/*.py "$d/"; cp -r "$TI_REPO/$SD/client" "$d/client"
     python3 -I - "$d/$file" "$old" "$new" <<'PY'
 import sys
 s = open(sys.argv[1]).read()
@@ -105,10 +106,10 @@ PY
   run_mut() { local name=$1 out rc i op d=".audit/scratch/ti-mut-conc-$1"
     : >"$TI_SCRATCH/ids-$1.log"
     out=$(TI_IDS_LOG="$TI_SCRATCH/ids-$1.log" TI_SUT_DIR="$d" CONC_TEST_MUTANT=1 CONC_NO_MUTATIONS=1 TI_FAILFAST=1 QUIET=1 bash "${BASH_SOURCE[0]}" 2>&1); rc=$?
-    local i; for i in $(cat "$TI_SCRATCH/ids-$1.log"); do TI_DOWN="$TI_REPO/scripts/test-infra/down.sh" ti_down "$i" >/dev/null 2>&1; done
+    local i; for i in $(cat "$TI_SCRATCH/ids-$1.log"); do TI_DOWN="$TI_REPO/scripts/test-infra/down.sh" ti_down "$i" >/dev/null 2>&1 || ti_scrap "$i"; done
     # a mutant that keyed the lease on a constant purpose leaves that claim and its operation records behind; a dead holder is reaped through the registry's own tool (proven staleness, no signal), or the anti-mess sweep of every stream reports drift
     local f o; sleep 3; for i in $(cat "$TI_SCRATCH/ids-$1.log"); do   # (the keepers leave within a second of their file going)
-      for f in "$TI_REPO"/.audit/longops/ops/catalogizer-test-"$i"-up-*.json; do [ -e "$f" ] || continue
+      for f in "$(ti_regdir)"/ops/catalogizer-test-"$i"-up-*.json; do [ -e "$f" ] || continue
         o="$(jq -r 'select(.state|IN("complete","failed","reaped","handoff","blocked-escape")|not)|.op_id' "$f" 2>/dev/null)"; [ -z "$o" ] || bash "$TI_REPO/scripts/longops/reap.sh" --op-id "$o" >/dev/null 2>&1
       done
     done

@@ -283,84 +283,12 @@ func (h *ComicPagesHandler) getStorageRootForFile(ctx context.Context, fileID in
 }
 
 // comicStorageRootSettings converts a StorageRoot into the settings map the
-// filesystem ClientFactory expects, per protocol. It mirrors the mapping in
-// StreamHandler (internal/handlers) — SMB credentials are resolved via
-// services.ResolveSMBIdentity (env-var identities; §11.4.10 — the password is
+// filesystem ClientFactory expects. PA-01: one shared mapping,
+// filesystem.SettingsFromRoot; SMB credentials are resolved via
+// services.ResolveSMBIdentity (env-var identities; §11.4.10 - the password is
 // never logged here).
 func comicStorageRootSettings(root *root_models.StorageRoot) map[string]interface{} {
-	settings := make(map[string]interface{})
-
-	switch root.Protocol {
-	case "local":
-		if root.Path != nil {
-			settings["base_path"] = *root.Path
-		}
-
-	case "smb":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Port != nil {
-			settings["port"] = *root.Port
-		}
-		if root.Path != nil {
-			settings["share"] = *root.Path
-		}
-		user, pass, dom := services.ResolveSMBIdentity(root)
-		if user != "" {
-			settings["username"] = user
-		}
-		if pass != "" {
-			settings["password"] = pass
-		}
-		if dom != "" {
-			settings["domain"] = dom
-		}
-		if root.Domain != nil {
-			settings["domain"] = *root.Domain
-		}
-
-	case "ftp":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Port != nil {
-			settings["port"] = *root.Port
-		}
-		if root.Username != nil {
-			settings["username"] = *root.Username
-		}
-		if root.Password != nil {
-			settings["password"] = *root.Password
-		}
-
-	case "nfs":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Path != nil {
-			settings["export_path"] = *root.Path
-		}
-		if root.MountPoint != nil {
-			settings["mount_point"] = *root.MountPoint
-		}
-		if root.Options != nil {
-			settings["options"] = *root.Options
-		}
-
-	case "webdav":
-		if root.URL != nil {
-			settings["url"] = *root.URL
-		}
-		if root.Username != nil {
-			settings["username"] = *root.Username
-		}
-		if root.Password != nil {
-			settings["password"] = *root.Password
-		}
-	}
-
-	return settings
+	return filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
 }
 
 // comicPageEntries returns the image entries of a .cbz, filtered to

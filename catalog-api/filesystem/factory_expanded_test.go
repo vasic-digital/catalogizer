@@ -282,17 +282,15 @@ func TestSupportedProtocols_AllCreateable(t *testing.T) {
 
 	for _, proto := range factory.SupportedProtocols() {
 		t.Run(proto, func(t *testing.T) {
-			config := &StorageConfig{
-				Protocol: proto,
-				Settings: map[string]interface{}{
-					"host":        "localhost",
-					"url":         "http://localhost/webdav",
-					"base_path":   "/tmp",
-					"path":        "/tmp",
-					"mount_point": "/tmp/test-nfs-mount",
-					"options":     "vers=3",
-				},
+			// PA-01: each protocol gets exactly the keys it consumes; a kitchen-sink map is now (rightly) rejected.
+			perProtocol := map[string]map[string]interface{}{
+				"smb":    {"host": "localhost"},
+				"ftp":    {"host": "localhost", "path": "/tmp"},
+				"nfs":    {"host": "localhost", "path": "/tmp", "mount_point": "/tmp/test-nfs-mount", "options": "vers=3"},
+				"webdav": {"url": "http://localhost/webdav", "path": "/tmp"},
+				"local":  {"base_path": "/tmp"},
 			}
+			config := &StorageConfig{Protocol: proto, Settings: perProtocol[proto]}
 
 			client, err := factory.CreateClient(config)
 			require.NoError(t, err,

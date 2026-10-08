@@ -1,0 +1,24 @@
+# pattern	note   (WF17-cpa REPO-2: the keys a repository's OWN .git/config (and a submodule's) may hold when a CPA run works in it; read from the approved copy, S0 gate repo_config_gate in lib_safe.sh)
+# Every other key refuses the run (20 repo_config_not_approved): a key that names a program (core.fsmonitor, core.sshCommand, core.askPass, credential.helper, filter.*, diff.*, merge.*, gpg.*, commit.gpgSign,
+# include.path, includeIf.*) or that rewrites a URL (url.*.insteadOf, url.*.pushInsteadOf) or that changes the bytes a commit holds (core.autocrlf, core.eol, core.attributesFile) decides what the run
+# executes or where it pushes, and a same-uid writer of the repository could set it. A remote.*.pushurl is allowed because the project's own multi-upstream push (constitution 2.1) is built on it;
+# it is judged by repo_owned: EVERY url and push url must name an own organisation.
+core.repositoryformatversion	format version
+core.filemode	file mode bits
+core.bare	bare flag
+core.logallrefupdates	reflog policy
+core.ignorecase	case folding
+core.precomposeunicode	unicode folding
+core.symlinks	symlink support
+core.worktree	work tree of a separate git dir
+remote.*.url	a remote url (judged by repo_owned)
+remote.*.fetch	a fetch refspec
+remote.*.pushurl	a push url (judged by repo_owned; the multi-upstream push of 2.1)
+branch.*.remote	branch tracking
+branch.*.merge	branch tracking
+branch.*.vscode-merge-base	editor tracking note
+submodule.active	submodule activation
+submodule.*.url	submodule url
+submodule.*.active	submodule activation
+user.name	commit identity
+user.email	commit identity

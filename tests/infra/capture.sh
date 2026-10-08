@@ -2,6 +2,7 @@
 # capture.sh - run one command and store its output with an identity header (head, run_at, sha256 of the files under test, command, exit code).
 # Usage: capture.sh <out-file> <title> <file-under-test,file2,...> -- <command word>...
 set -u
+[ $# -ge 5 ] && [ "$4" = -- ] || { echo "usage: capture.sh <out-file> <title> <file-under-test,file2,...> -- <command word>..." >&2; exit 2; }
 out=$1; title=$2; files=$3; shift 4
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 trap - EXIT; rm -rf -- "${TI_SCRATCH:?}"   # the sourced lib made a scratch dir and an EXIT trap; this wrapper needs neither

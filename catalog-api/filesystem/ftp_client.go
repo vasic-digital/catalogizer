@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"path/filepath"
+	pathpkg "path"
+	"strings"
 	"time"
 
 	"github.com/jlaffaye/ftp"
@@ -25,6 +26,10 @@ type FTPClient struct {
 	config    *FTPConfig
 	client    *ftp.ServerConn
 	connected bool
+	// base is the ABSOLUTE base directory every path is resolved against. Connect does CWD <config.Path>; if the path was relative
+	// ("movies") the server resolved it against the login directory, so prefixing the relative text again would address
+	// <login>/movies/movies (WF22 R18). base is what the server says the working directory is after the CWD.
+	base string
 }
 
 // NewFTPClient creates a new FTP client
@@ -59,6 +64,16 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 		}
 	}
 
+	c.base = ""
+	if c.config.Path != "" {
+		if cwd, err := client.CurrentDir(); err == nil && strings.HasPrefix(cwd, "/") {
+			c.base = pathpkg.Clean(cwd)
+		} else {
+			// The server does not answer PWD (or answers something unusable): an absolute configured path is used as it is; a relative one is
+			// taken as relative to "/" (the login directory of a chrooted account).
+			c.base = pathpkg.Clean("/" + c.config.Path)
+		}
+	}
 	c.client = client
 	c.connected = true
 	return nil
@@ -90,12 +105,15 @@ func (c *FTPClient) TestConnection(ctx context.Context) error {
 	return err
 }
 
-// resolvePath resolves a relative path within the FTP base directory
-func (c *FTPClient) resolvePath(path string) string {
-	if c.config.Path != "" {
-		return c.config.Path + "/" + path
+// resolvePath resolves a path within the FTP base directory (always as a slash path, whatever the host OS).
+func (c *FTPClient) resolvePath(p string) string {
+	if c.base != "" {
+		return pathpkg.Join(c.base, p)
 	}
-	return path
+	if c.config.Path != "" { // not connected through Connect (unit use): the configured path, made absolute
+		return pathpkg.Join("/", c.config.Path, p)
+	}
+	return p
 }
 
 // ReadFile reads a file from the FTP server
@@ -119,7 +137,7 @@ func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 	fullPath := c.resolvePath(path)
 
 	// Ensure the directory exists
-	dir := filepath.Dir(fullPath)
+	dir := pathpkg.Dir(fullPath)
 	if dir != "." && dir != "/" {
 		err := c.client.MakeDir(dir)
 		if err != nil {
@@ -156,7 +174,7 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	isDir := err == nil
 
 	return &FileInfo{
-		Name:    filepath.Base(path),
+		Name:    pathpkg.Base(path),
 		Size:    size,
 		ModTime: modTime,
 		IsDir:   isDir,
@@ -179,6 +197,10 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 
 	var files []*FileInfo
 	for _, entry := range entries {
+		// An MLSD server (RFC 3659) lists the directory itself ("." cdir) and its parent (".." pdir); they are not children (WF22 R16).
+		if entry.Name == "." || entry.Name == ".." {
+			continue
+		}
 		// Safe conversion: Check for overflow before converting uint64 to int64
 		var size int64
 		if entry.Size > uint64(1<<63-1) {
@@ -212,8 +234,8 @@ func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
 	_, err := c.client.FileSize(fullPath)
 	if err != nil {
 		// Try to list the file's directory to see if it exists
-		dir := filepath.Dir(fullPath)
-		name := filepath.Base(fullPath)
+		dir := pathpkg.Dir(fullPath)
+		name := pathpkg.Base(fullPath)
 		entries, err := c.client.List(dir)
 		if err != nil {
 			return false, fmt.Errorf("failed to check FTP file existence %s: %w", fullPath, err)
@@ -285,7 +307,7 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	defer resp.Close()
 
 	// Ensure destination directory exists
-	dstDir := filepath.Dir(dstFullPath)
+	dstDir := pathpkg.Dir(dstFullPath)
 	if dstDir != "." && dstDir != "/" {
 		c.client.MakeDir(dstDir) // Ignore error if directory exists
 	}

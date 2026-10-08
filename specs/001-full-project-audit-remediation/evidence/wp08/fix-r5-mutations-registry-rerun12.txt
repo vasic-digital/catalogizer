@@ -1,0 +1,17 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | registry mutants re-validated after the containment shim fix (first caught at H1b in run 1)
+# utc 2026-10-08T01:16:34Z | host anton | git head f72d8757 (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/longops/tests/mutate_registry.sh --only M39,M44,X1,X2,X3,C01,C04,C06,C07,C11,C12,NM-H1
+SURVIVED M39 class 2: an unreadable op record is read as no writer
+SURVIVED M44 RM11 (round-2 reviewer, verbatim): a holder whose pid is not a number is judged by lo_alive instead of being unreadable
+CAUGHT   X1 WF17: reap --purpose treats only an ADVANCING op as live (a HUNG op whose owner lives no longer protects its claim) [test_registry_r5.sh] :: FAIL X1 a HUNG op whose owner lives keeps its claim even when the holder record is dead: reap --purpose refuse|
+CAUGHT   X2 WF17: a rebind rewrites the purpose holder even when the claim belongs to ANOTHER run [test_registry_r5.sh] :: FAIL X2 rebinding a --no-claim op while ANOTHER run holds the purpose leaves that holder untouched :: got [310|
+CAUGHT   X3 WF17: the pre-signal start-time re-check (R2-9) is dropped [test_registry_r5.sh] :: FAIL X3 the owner dies (its pid may be recycled) between the classification and the signal: the start-time re-|
+CAUGHT   C01 R2-4 reap: a BARE container_label value (not k=v, not the op id) adds no candidate labels [test_registry_r5.sh] :: FAIL C01 a BARE container_label (neither k=v nor the op id) is resolved as catalogizer.op_id=<label>: the cont|
+CAUGHT   C04 R2-3 guard (ported) ignores the purpose: a live op of ANOTHER purpose blocks the release of a stale claim (false-positive refusal) [test_registry_r5.sh] :: FAIL C04 a live op of ANOTHER purpose does not block the release of a stale claim (0) :: rc=5 want 0|
+CAUGHT   C06 reap --op-id --dry-run of a dead_owner op (ported text) really writes reaped and releases the claim [test_registry_r5.sh] :: FAIL C06 reap --op-id --dry-run of a dead-owner op writes nothing and releases nothing :: got [0:adfa192b2ab91|
+CAUGHT   C07 reap --purpose --dry-run really releases the claim [test_registry_r5.sh] :: FAIL C07 reap --purpose --dry-run releases nothing (the claim is kept) :: got [0:] want [0:claim]|
+CAUGHT   C11 classify: blocked-escape is no longer terminal (a reap/sweep may rewrite a terminal record) [test_registry_r5.sh] :: FAIL C11 a blocked-escape record is TERMINAL :: got [unreadable] want [terminal]|
+CAUGHT   C12 reap: a REFUSED (unsafe) signal is treated as delivered: waits and records reap_survived instead of exit 7 [test_registry_r5.sh] :: FAIL C12 a hung op owned by a KERNEL THREAD (pid 10, process group 0) is refused as an unsafe signal target (7|
+SURVIVED NM-H1 H: the C locale is not forced (LC_ALL no longer set by the library)
+MUTATION RESULT caught=9 survived=3 timeout=0 equivalent=0 total=12
+# exit status 1

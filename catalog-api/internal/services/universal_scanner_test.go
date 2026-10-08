@@ -57,7 +57,8 @@ func TestNFSScanner_GetScanStrategy(t *testing.T) {
 	strategy := scanner.GetScanStrategy()
 	assert.True(t, strategy.UseRecursiveListing)
 	assert.True(t, strategy.ParallelDirectories)
-	assert.True(t, strategy.ChecksumCalculation)
+	// PA-03: the scanner does not compute checksums, so it no longer claims to (the stub declared true while doing nothing).
+	assert.False(t, strategy.ChecksumCalculation)
 	assert.True(t, strategy.MetadataExtraction)
 	assert.False(t, strategy.RealTimeChangeDetection)
 	assert.Equal(t, 800, strategy.BatchSize)
@@ -95,17 +96,17 @@ func TestScanners_SupportsIncrementalScan(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:     "FTP does not support incremental",
+			name:     "FTP does not claim incremental without a token store (WF22 R6)",
 			scanner:  NewFTPScanner(mockLogger),
 			expected: false,
 		},
 		{
-			name:     "NFS supports incremental",
+			name:     "NFS does not claim incremental without a token store (WF22 R6; the stub claimed true while doing nothing)",
 			scanner:  NewNFSScanner(mockLogger),
-			expected: true,
+			expected: false,
 		},
 		{
-			name:     "WebDAV does not support incremental",
+			name:     "WebDAV does not claim incremental without a token store (WF22 R6)",
 			scanner:  NewWebDAVScanner(mockLogger),
 			expected: false,
 		},

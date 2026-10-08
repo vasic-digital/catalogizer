@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040 helper: check_revision_headers.sh - section 11.4.44 revision header check on Markdown files.
 #
 # Usage   check_revision_headers.sh [--root <repo>] [--files-from <list>] [--measure] [<path> ...]

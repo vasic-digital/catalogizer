@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T041 helper: record_deferral.sh - writes one deferral row into a CPA run directory (never into the tracked tree).
 #
 # Purpose   S0/S4 of a CPA run (docs/16 section 12.2) record a deferred gate here; commit_recursive.sh later reads the
@@ -48,7 +48,7 @@ fi
 ok=0; for f in $CLOSED; do [ "$FLAG" = "$f" ] && ok=1; done
 [ "$ok" = 1 ] || die flag_not_in_closed_set "'$FLAG' (closed set: $CLOSED)"
 [ "$HAVE_REASON" = 1 ] && [ -n "$REASON" ] || die reason_required "a deferral row needs a reason"
-case "$REASON$AWAIT$COMMIT" in *$'\t'*|*$'\n'*) die field_invalid "tab or newline in a field" ;; esac
+case "$REASON$AWAIT$COMMIT" in *[[:cntrl:]]*) die field_invalid "a control character in a field (tab, newline, CR, ESC ...)" ;; esac     # lib_safe safe_line's rule: the row is a TSV line and is later shown in a terminal (ENC-1)
 if [ -n "$COMMIT" ] && [ -z "$AWAIT" ]; then die awaits_review_required "a held commit names the verdict it waits for"; fi
 if [ ! -f "$F" ]; then printf 'utc_time\tflag\treason\tawaits_review\tcommit\n' > "$F" || die write_failed "$F"; fi
 row="$(date -u +%Y-%m-%dT%H:%M:%SZ)	$FLAG	$REASON	$AWAIT	$COMMIT"

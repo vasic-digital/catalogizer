@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040 helper: integrate_ff_only.sh - CPA stage S1 (docs/16 section 12.2): fetch objects for every owned repository and
 # fast-forward ONLY the main repository; never a submodule at any depth; never a push, a rebase, a reset or a force.
 #
@@ -75,7 +75,7 @@ for f in "$CSF" "$GATES" "$APPROVED" "$RUNDIR"; do [ -z "$f" ] || safe_dir_arg "
 [ -n "$ROOT" ] || ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || finish 20 refused not_a_repository
 ROOT="$(cd "$ROOT" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)" || finish 20 refused not_a_repository
 g() { GIT_LITERAL_PATHSPECS=1 git -C "$ROOT" "$@"; }
-cur="$(g symbolic-ref --short -q HEAD)" || finish 20 refused wrong_branch
+cur="$(g symbolic-ref -q HEAD)" || finish 20 refused wrong_branch; cur="${cur#refs/heads/}"
 [ -n "$BRANCH" ] || BRANCH="$cur"; [ "$cur" = "$BRANCH" ] || finish 20 refused wrong_branch
 LOCAL="$(g rev-parse HEAD)"
 tm() { timeout "$TMO" "$@"; }
@@ -209,12 +209,12 @@ if [ -z "$bad" ] && [ -n "$OWNED" ]; then
   for p in $SUBS; do
     d="$ROOT/$p"; own=0
     rl="$(git -C "$d" remote 2>/dev/null)" || finish 20 refused git_listing_failed
-    for r in $rl; do u="$(git -C "$d" remote get-url "$r" 2>/dev/null)"; org="$(python3 "$ORGOF" "$u" 2>/dev/null | head -1)"
+    for r in $rl; do u="$(git -C "$d" remote get-url "$r" 2>/dev/null)"; org="$(python3 -I "$ORGOF" "$u" 2>/dev/null | head -1)"
       [ -n "$org" ] || continue
       case ",$OWNEDL," in *",$org,"*) own=1 ;; esac; done
     [ "$own" = 1 ] || continue
     # the branch the run pushes (refs/heads/<run branch>), whatever is checked out; the checked-out branch only when the run branch is absent (m2)
-    sb="$BRANCH"; git -C "$d" rev-parse -q --verify "refs/heads/$BRANCH" >/dev/null 2>&1 || { sb="$(git -C "$d" symbolic-ref --short -q HEAD)" || continue; }
+    sb="$BRANCH"; git -C "$d" rev-parse -q --verify "refs/heads/$BRANCH" >/dev/null 2>&1 || { sb="$(git -C "$d" symbolic-ref -q HEAD)" || continue; sb="${sb#refs/heads/}"; }
     bad="$(unrec "$d" "$sb")"; [ -n "$bad" ] && break
   done
 fi

@@ -9,12 +9,15 @@
 #   - down.sh is OWNER-CHECKED (WF12 F6): a live holder is torn down only by the caller that names its operation, any other caller is REFUSED (exit 5, reason not_lease_owner) and nothing
 #     is touched; a holder PROVEN dead (its keeper gone) is reaped by any caller and its operation becomes `reaped`;
 #   - down.sh releases the lease (the project can be started again) and is idempotent;
-#   - a cached corpus whose files no longer match its recorded digest is refused (WF12 F15); a published port taken between the choice and the bind is retried with fresh ports (WF12 F16).
+#   - a cached corpus whose files no longer match its recorded digest is refused (WF12 F15); a published port taken between the choice and the bind is retried with fresh ports (WF12 F16);
+#   - WF17 round 5: a STALE operation id of the same project is refused (U1); a pod that holds a foreign container is left alone (U2); a container labelled only `catalogizer.test_project` and a network
+#     named like the project's but unlabelled are foreign (UD2/UD3: `foreign_owner`, never removed); the refusal never prints the owner's operation id; a failed start is recorded `failed`, a normal
+#     teardown `complete`; a restart after `--keep-state` with data owned by container sub-uids succeeds and serves the corpus (TI-C4).
 # Paired mutations: a copy of the scripts with ONE load-bearing line changed; the same test is re-run against each copy and must FAIL (the reviewer mutant RM4 is adopted verbatim).
 # Usage:  test_up_down.sh                       tests, then mutations
 #         UPDOWN_NO_MUTATIONS=1 test_up_down.sh  tests only
 # Env:    TI_SUT_DIR  repo-relative directory of the scripts under test (default scripts/test-infra; RED is captured against an export of git HEAD)
-#         UPDOWN_ONLY  core | cache | retry : run one section only (the mutation runs use it)
+#         UPDOWN_ONLY  core | cache | retry | keep : run one section only (the mutation runs use it)
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 SD="${TI_SUT_DIR:-scripts/test-infra}"
 UP="$TI_REPO/$SD/up.sh"; DOWN="$TI_REPO/$SD/down.sh"; PROBE="$TI_REPO/$SD/probe.sh"
@@ -25,7 +28,7 @@ need_script "$SD/up.sh" || { ti_summary; exit 1; }
 need_script "$SD/down.sh" || { ti_summary; exit 1; }
 LOCKIMG=$(python3 -I -c "import yaml;d=yaml.safe_load(open('$TI_REPO/build/containers/images.lock.yaml'));print([i for i in d['images'] if i['id']=='IMG-INFRA-REDIS'][0]['reference']+'@'+[i for i in d['images'] if i['id']=='IMG-INFRA-REDIS'][0]['digest'])")
 count() { podman ps -a -q --filter "label=catalogizer.test_project=$1" | wc -l; }
-claim() { [ -d "$TI_REPO/.audit/longops/claims/$1" ] && echo held || echo free; }   # only for the ABSENCE of a claim: presence is never read as a lease (ti_lease_state)
+claim() { [ -d "$(ti_regdir)/claims/$1" ] && echo held || echo free; }   # only for the ABSENCE of a claim: presence is never read as a lease (ti_lease_state)
 podp() { podman pod exists "$1" 2>/dev/null && echo present || echo gone; }
 opid_of() { printf '%s\n' "$1" | sed -n 's/^op_id=//p'; }
 OUTD="$TI_REPO/.audit/out"
@@ -33,7 +36,8 @@ OUTD="$TI_REPO/.audit/out"
 TAG="${UPDOWN_TAG:-zz$RANDOM}"; export UPDOWN_TAG="$TAG"
 
 if want core; then
-A=$(ti_new_id); B=$(ti_new_id); [ "$A" != "$B" ] || B="${B}b"
+A="${TAG}a"; B="${TAG}b"   # ids carry this run's tag: the over-broad mutants below are confined to containers whose NAME carries it, so a mutant run never touches another stream's stack on this shared host
+[ -z "${TI_IDS_LOG:-}" ] || printf '%s\n%s\n' "$A" "$B" >>"$TI_IDS_LOG"
 PA=$(ti_project "$A"); PB=$(ti_project "$B")
 TI_IDS+=("$A" "$B")
 
@@ -70,6 +74,9 @@ case "$(grep -h '^TI_PORT_REDIS' "$(ti_envfile "$A")" "$(ti_envfile "$B")" | sor
 out=$(bash "$DOWN" --build-id "$A" 2>&1); rc=$?
 check "down A by a caller naming no operation is REFUSED (exit 5)" "$rc" 5
 case "$out" in *reason=not_lease_owner*) ok "the refusal names reason=not_lease_owner";; *) bad "the refusal does not name not_lease_owner ($out)";; esac
+case "$out" in *"$OPA"*) bad "the refusal prints the live owner's operation id (the token that unlocks teardown)";; *) ok "the refusal does not print the owner's operation id";; esac
+check "positive control: the owner's operation id IS in its 0600 file <state>/op_id" "$(head -1 "$(ti_state "$A")/op_id" 2>/dev/null)" "$OPA"
+check "the op_id file is mode 600" "$(stat -c %a "$(ti_state "$A")/op_id" 2>/dev/null)" 600
 check "the refused down touched nothing: A's container runs and its lease is intact" "$(count "$PA")$(ti_lease_state "$A" "$OPA")" 1ok
 out=$(bash "$DOWN" --build-id "$A" --op-id "$OPB" 2>&1); rc=$?
 check "down A by the OWNER OF B (a live holder of another project) is REFUSED (exit 5)" "$rc" 5
@@ -102,7 +109,7 @@ check "down A left B's pod and the foreign pod alone" "$(podp "pod_$PB")$(podp "
 check "down A removed A's -client and -seed output directories" "$([ -e "$OUTD/$PA-client" ] && echo kept || echo gone)$([ -e "$OUTD/$PA-seed" ] && echo kept || echo gone)" gonegone
 check "down A left B's, the foreign project's, A's -logs and the adjacent -client2 directory alone" "$([ -e "$OUTD/$PB-client" ] && echo kept)$([ -e "$FD" ] && echo kept)$([ -e "$OUTD/$PA-logs" ] && echo kept)$([ -e "$OUTD/$PA-client2" ] && echo kept)" keptkeptkeptkept
 [ ! -e "$(ti_envfile "$A")" ] && ok "down A removed A's credentials file" || bad "A's credentials file survived"
-check "the operation of A's start is terminal (complete)" "$(jq -r .state "$TI_REPO/.audit/longops/ops/$OPA.json" 2>/dev/null)" complete
+check "the operation of A's start is terminal (complete)" "$(jq -r .state "$(ti_regdir)/ops/$OPA.json" 2>/dev/null)" complete
 out=$(bash "$DOWN" --build-id "$A" 2>&1); check "down A again is a no-op (idempotent, exit 0)" "$?" 0
 bash "$DOWN" --build-id 'Bad_Id!' >/dev/null 2>&1; check "down with an invalid build id exits 2" "$?" 2
 
@@ -110,26 +117,53 @@ out=$(bash "$UP" --build-id "$A" --services redis 2>&1); rc=$?
 check "A can be started again after its lease was released (exit 0)" "$rc" 0
 OPA2=$(opid_of "$out")
 check "the restarted A holds a fresh lease of its own operation" "$(ti_lease_state "$A" "$OPA2")" ok
+# U1: a STALE operation id (the one of the previous start of the SAME project) is not the owner's: refused (exit 5), the live stack untouched
+out=$(bash "$DOWN" --build-id "$A" --op-id "$OPA" 2>&1); rc=$?
+check "down A by the STALE operation id of its previous start is REFUSED (exit 5)" "$rc" 5
+check "the stale-id down touched nothing: the container runs and the lease names the restarted start" "$(count "$PA")$(ti_lease_state "$A" "$OPA2")" 1ok
+# U2: a pod `pod_<project>` that holds a foreign (unlabelled) container is left alone, and the stderr names it
+podman pod create --name "pod_$PA" --infra=false --share= >/dev/null 2>&1; TI_FOREIGN_PODS+=("pod_$PA")
+fpc=$(podman create --pull=never --pod "pod_$PA" --name "$PA-podded" --entrypoint sleep "$LOCKIMG" 600 2>/dev/null); TI_FOREIGN+=("$fpc")
+check "fixture: the pod of A holds a foreign container" "$(podman ps -a -q --filter "pod=pod_$PA" | wc -l)" 1
 # a holder that dies is PROVEN stale: the keeper leaves when its file goes (no signal is sent), then ANY caller may reap it and its operation becomes `reaped`
 rm -f "$(ti_state "$A")/lease.keep.$OPA2"
 for _ in $(seq 1 30); do [ "$(ti_lease_state "$A" "$OPA2")" = dead ] && break; sleep 1; done
 check "the holder of the restarted A is dead (its keeper file was removed)" "$(ti_lease_state "$A" "$OPA2")" dead
 out=$(bash "$DOWN" --build-id "$A" 2>&1); rc=$?
 check "down A by a caller naming no operation succeeds when the holder is PROVEN dead (exit 0)" "$rc" 0
+case "$out" in *"pod_$PA still holds 1 container"*) ok "the pod that holds a foreign container is named and left alone";; *) bad "down did not name the pod that holds a foreign container ($(printf '%s' "$out" | tail -2 | tr '\n' ' ' | cut -c1-200))";; esac
+check "U2: the pod of A and the foreign container inside it survive the teardown" "$(podp "pod_$PA")$(podman inspect --format '{{.State.Status}}' "$fpc" 2>/dev/null | grep -c .)" present1
+podman rm -f "$fpc" >/dev/null 2>&1; podman pod rm -f "pod_$PA" >/dev/null 2>&1
 check "the dead holder's lease is released" "$(claim "$PA")" free
-check "the dead holder's operation is recorded reaped" "$(jq -r .state "$TI_REPO/.audit/longops/ops/$OPA2.json" 2>/dev/null)" reaped
+check "the dead holder's operation is recorded reaped" "$(jq -r .state "$(ti_regdir)/ops/$OPA2.json" 2>/dev/null)" reaped
 check "the stale project's containers are gone" "$(count "$PA")" 0
-# a start that fails AFTER it took the lease releases ITS OWN lease (WF12 F17): the old state of an earlier start (kept with --keep-state) must not be mistaken for the new owner's
+# a start over a resource that is NOT this checkout's (UD2: a container labelled only catalogizer.test_project=<P>, no project/root label) is REFUSED foreign_owner (exit 3) and TOUCHES NOTHING (WF17 TI-B1/TI-B6);
+# the refused start releases only ITS OWN lease: no claim, its operation is recorded `failed` (TI-A5), the old state of an earlier start (kept with --keep-state) is not mistaken for the new owner's (WF12 F17)
 out=$(bash "$UP" --build-id "$A" --services redis 2>&1); OPA3=$(opid_of "$out")
 bash "$DOWN" --build-id "$A" --op-id "$OPA3" --keep-state >/dev/null 2>&1
 check "fixture: the kept state still names the OLD operation" "$(ti_val "$A" TI_OP_ID)" "$OPA3"
-fx=$(podman run -d --pull=never --name "$PA-prior" --label project=catalogizer --label "catalogizer.test_project=$PA" --entrypoint sleep "$LOCKIMG" 600 2>/dev/null); TI_FOREIGN+=("$fx")
+check "a --keep-state teardown leaves the sweep-proof marker" "$([ -e "$(ti_state "$A")/.keep-state" ] && echo marker || echo none)" marker
+fx=$(podman run -d --pull=never --name "$PA-prior" --label "catalogizer.test_project=$PA" --entrypoint sleep "$LOCKIMG" 600 2>/dev/null); TI_FOREIGN+=("$fx")
 out=$(bash "$UP" --build-id "$A" --services redis 2>&1); rc=$?
-check "a start over pre-existing containers of the project fails (exit 1)" "$rc" 1
-case "$out" in *"already exist"*) ok "the failure names the pre-existing containers";; *) bad "unexpected failure text: $(printf '%s' "$out" | tail -2 | tr '\n' ' ' | cut -c1-200)";; esac
-check "the failed start released ITS OWN lease (no claim left)" "$(claim "$PA")" free
-nonterm=$(for f in "$TI_REPO"/.audit/longops/ops/"$PA"-up-*.json; do [ -e "$f" ] || continue; jq -r 'select(.state|IN("complete","failed","reaped","handoff","blocked-escape")|not)|.op_id' "$f"; done | grep -c .)
+check "a start over a container labelled only catalogizer.test_project is REFUSED foreign_owner (exit 3)" "$rc" 3
+case "$out" in *reason=foreign_owner*"$fx"*|*reason=foreign_owner*"${fx:0:12}"*) ok "the refusal names reason=foreign_owner and the container";; *) bad "unexpected refusal text: $(printf '%s' "$out" | tail -2 | tr '\n' ' ' | cut -c1-200)";; esac
+check "the refused start did NOT touch the foreign container" "$(podman inspect --format '{{.State.Running}}' "$fx" 2>/dev/null)" true
+check "the refused start released ITS OWN lease (no claim left)" "$(claim "$PA")" free
+nonterm=$(for f in "$(ti_regdir)"/ops/"$PA"-up-*.json; do [ -e "$f" ] || continue; jq -r 'select(.state|IN("complete","failed","reaped","handoff","blocked-escape")|not)|.op_id' "$f"; done | grep -c .)
 check "no operation of the project is left non-terminal" "$nonterm" 0
+lastop=$(ls -t "$(ti_regdir)"/ops/"$PA"-up-*.json | head -1)
+check "TI-A5: the refused start's operation is recorded failed (never complete)" "$(jq -r .state "$lastop" 2>/dev/null)" failed
+out=$(bash "$DOWN" --build-id "$A" 2>&1); rc=$?
+check "down over a resource that is not this checkout's is REFUSED foreign_owner (exit 5)" "$rc" 5
+check "the refused down left the foreign container running" "$(podman inspect --format '{{.State.Running}}' "$fx" 2>/dev/null)" true
+podman rm -f "$fx" >/dev/null 2>&1
+bash "$DOWN" --build-id "$A" >/dev/null 2>&1   # the kept state of the earlier start (no claim, no container): removed
+# UD3: a network named like the project's but carrying none of its labels is left alone and named
+UN=$(ti_new_id); PUN=$(ti_project "$UN"); TI_IDS+=("$UN"); podman network create "${PUN}_test-network" >/dev/null 2>&1; TI_FOREIGN_NETS+=("${PUN}_test-network")
+out=$(bash "$DOWN" --build-id "$UN" 2>&1); rc=$?
+check "down of a project whose same-named network is unlabelled exits 0" "$rc" 0
+case "$out" in *"${PUN}_test-network is not labelled"*"left alone"*) ok "the unlabelled network is named and left alone";; *) bad "down did not name the unlabelled network ($(printf '%s' "$out" | tail -2 | tr '\n' ' ' | cut -c1-200))";; esac
+check "UD3: the unlabelled network survives" "$(podman network exists "${PUN}_test-network" 2>/dev/null && echo present || echo gone)" present
 ti_down "$B" >/dev/null 2>&1
 check "down B removed B's containers" "$(count "$PB")" 0
 check "all leases released at the end" "$(claim "$PA")$(claim "$PB")" freefree
@@ -186,6 +220,24 @@ check "the final redis port is not the occupied one" "$([ "$(ti_val "$RID" TI_PO
 check "the start left exactly one container (the failed attempt was removed)" "$(count "$PR")" 1
 bash "$d/down.sh" --build-id "$RID" --op-id "$(ti_val "$RID" TI_OP_ID)" >/dev/null 2>&1
 rm -f "$LK"; sleep 1; rm -rf -- "${d:?}"
+TI_DOWN="$DOWN"   # the copy of down.sh was removed with $d: every later ti_down (the keep section, the EXIT cleanup) must use the real one, else it returns 127 silently and leaks the stack
+fi
+
+# ---------------- restart after --keep-state with container-owned data (WF17 TI-C4) ----------------
+if want keep; then
+KID=$(ti_new_id); PKP=$(ti_project "$KID"); TI_IDS+=("$KID")
+out=$(bash "$UP" --build-id "$KID" --services smb 2>&1); rc=$?; check "keep: up with smb exits 0" "$rc" 0
+KOP=$(opid_of "$out")
+if bash "$TI_REPO/$SD/roundtrip.sh" --build-id "$KID" --protocol smb >"$TI_SCRATCH/k1.txt" 2>&1; then ok "keep: the first smb round trip passes (the upload leaves data owned by the container user)"; else bad "keep: first smb round trip failed: $(tail -2 "$TI_SCRATCH/k1.txt" | tr '\n' ' ')"; fi
+bash "$DOWN" --build-id "$KID" --op-id "$KOP" --keep-state >/dev/null 2>&1
+subown=$(find "$(ti_state "$KID")/data" ! -user "$(id -un)" 2>/dev/null | head -1)
+[ -n "$subown" ] && ok "keep: the kept data holds a file owned by a container sub-uid (control: the restart below needs podman unshare)" || echo "NOTE keep: no sub-uid-owned file was left (the control for the mutant is weaker on this host)"
+out=$(bash "$UP" --build-id "$KID" --services smb 2>&1); rc=$?
+check "keep: up over kept state with sub-uid-owned data exits 0 (TI-C4)" "$rc" 0
+if [ "$rc" = 0 ]; then
+  if bash "$TI_REPO/$SD/roundtrip.sh" --build-id "$KID" --protocol smb >"$TI_SCRATCH/k2.txt" 2>&1; then ok "keep: the corpus file of the restarted project is served and compared with the manifest"; else bad "keep: round trip after the restart failed: $(tail -2 "$TI_SCRATCH/k2.txt" | tr '\n' ' ')"; fi
+fi
+ti_down "$KID" >/dev/null 2>&1
 fi
 
 # ---------------- paired mutations ----------------
@@ -203,37 +255,55 @@ for i in range(0, len(a), 2):
 open(p, "w").write(s)
 PY
   }
-  run_mut() { # run_mut <name> <section>
-    local name=$1 sec=${2:-core} out rc d=".audit/scratch/ti-mut-$1"
+  run_mut() { # run_mut <name> <section> [survive]: a CAUGHT mutant makes the section fail; an IDENTITY mutant (survive) must keep it green
+    local name=$1 sec=${2:-core} want=${3:-caught} out rc d=".audit/scratch/ti-mut-$1"
     : >"$TI_SCRATCH/ids-$1.log"
-    out=$(TI_IDS_LOG="$TI_SCRATCH/ids-$1.log" TI_SUT_DIR="$d" UPDOWN_TEST_MUTANT=1 UPDOWN_NO_MUTATIONS=1 UPDOWN_ONLY="$sec" TI_FAILFAST=1 QUIET=1 bash "${BASH_SOURCE[0]}" 2>&1); rc=$?
+    out=$(TI_IDS_LOG="$TI_SCRATCH/ids-$1.log" TI_SUT_DIR="$d" UPDOWN_TEST_MUTANT=1 UPDOWN_NO_MUTATIONS=1 UPDOWN_ONLY="$sec" UPDOWN_TAG="$TAG" TI_FAILFAST=1 QUIET=1 bash "${BASH_SOURCE[0]}" 2>&1); rc=$?
     # whatever the mutant left behind is removed by the REAL down.sh, as the owner of each start (a mutant down.sh may not clean its own project)
-    local i; for i in $(cat "$TI_SCRATCH/ids-$1.log"); do TI_DOWN="$TI_REPO/scripts/test-infra/down.sh" ti_down "$i" >/dev/null 2>&1; done
-    if [ "$rc" -ne 0 ]; then ok "mutation $name CAUGHT ($(printf '%s\n' "$out" | grep -m1 '^FAIL' | cut -c1-110))"; echo "$name CAUGHT" >>"$MUTLOG"; else bad "mutation $name SURVIVED"; echo "$name SURVIVED" >>"$MUTLOG"; fi
+    # the projects A and B carry this run's TAG and are the SAME for every mutant child: a mutant that left one of them behind would fail the NEXT child for the wrong reason (and an identity mutant would FAIL), so both are torn down after every child
+    local i; for i in $(cat "$TI_SCRATCH/ids-$1.log") "$A" "$B"; do TI_DOWN="$TI_REPO/scripts/test-infra/down.sh" ti_down "$i" >/dev/null 2>&1 || ti_scrap "$i"; done
+    if [ "$want" = survive ]; then
+      if [ "$rc" -eq 0 ]; then ok "identity mutant $name SURVIVED (as required: the oracle does not fail on an equivalent source)"; echo "$name SURVIVED-AS-REQUIRED" >>"$MUTLOG"; else bad "identity mutant $name FAILED the suite ($(printf '%s\n' "$out" | grep -m1 '^FAIL' | cut -c1-110))"; echo "$name FAILED-BUT-IDENTITY" >>"$MUTLOG"; fi
+    elif [ "$rc" -ne 0 ]; then ok "mutation $name CAUGHT ($(printf '%s\n' "$out" | grep -m1 '^FAIL' | cut -c1-110))"; echo "$name CAUGHT" >>"$MUTLOG"; else bad "mutation $name SURVIVED"; echo "$name SURVIVED" >>"$MUTLOG"; fi
     rm -rf -- "${TI_REPO:?}/${d:?}"
   }
   M() { local name=$1 sec=$2 file=$3; shift 3; mutate "$name" "$file" "$@" && run_mut "$name" "$sec" || bad "mutation $name: anchor missing"; }
-  M down_by_name core lib.sh 'for c in $(podman ps -a -q --filter "label=catalogizer.test_project=$P" --filter "label=project=catalogizer" 2>/dev/null); do' 'for c in $(podman ps -a -q --filter "name=$P" 2>/dev/null); do' \
-         '    [ "$lab" = "$P" ] || { echo "test-infra: skipping $c: label '"'"'$lab'"'"' is not $P" >&2; continue; }' '    true'
-  M down_all_catalogizer core lib.sh '--filter "label=catalogizer.test_project=$P" --filter "label=project=catalogizer" 2>/dev/null); do' '--filter "label=project=catalogizer" 2>/dev/null); do' \
-         '    [ "$lab" = "$P" ] || { echo "test-infra: skipping $c: label '"'"'$lab'"'"' is not $P" >&2; continue; }' '    true'
-  M no_lease core up.sh 'ti_lo register --purpose "$P" --owner test-infra-up --op-id "$OPID" --pid "$KPID" --container-label "$P" >/dev/null 2>"$S/lease.err.$OPID"; RC=$?' 'RC=0'
-  M no_release core down.sh 'elif [ -n "$HOLDER" ]; then ti_lo release --op-id "$HOLDER" --state complete --verdict down >/dev/null 2>&1 || ti_lo release --purpose "$P" --run-id "$HOLDER" >/dev/null 2>&1 || true' 'elif [ -n "$HOLDER" ]; then true'
+  MI() { local name=$1 sec=$2 file=$3; shift 3; mutate "$name" "$file" "$@" && run_mut "$name" "$sec" survive || bad "identity mutant $name: anchor missing"; }
+  # the ownership predicate of lib.sh ti_scan has THREE independent label layers (project, checkout root, operation of this registry); the mutants that model "removes what its name or one label says" relax all three
+  SCAN_RELAX=('if [ "$pj" != catalogizer ] || [ "$tp" != "$P" ]; then' 'if false; then' 'elif [ "$tr" != "$root" ]; then' 'elif false; then' 'elif [ -z "$op" ] || [ ! -e "$TI_LD_CACHE/ops/$op.json" ]; then' 'elif false; then')
+  M down_by_name core lib.sh 'ids="$(podman ps -a -q --filter "label=catalogizer.test_project=$P" 2>/dev/null)" || { TI_UNKNOWN="podman ps"; return 3; }' 'ids="$(podman ps -a -q --filter "name=$P" --filter "name='"$TAG"'" 2>/dev/null)" || { TI_UNKNOWN="podman ps"; return 3; }' "${SCAN_RELAX[@]}"
+  M down_all_catalogizer core lib.sh 'ids="$(podman ps -a -q --filter "label=catalogizer.test_project=$P" 2>/dev/null)" || { TI_UNKNOWN="podman ps"; return 3; }' 'ids="$(podman ps -a -q --filter "label=project=catalogizer" --filter "name='"$TAG"'" 2>/dev/null)" || { TI_UNKNOWN="podman ps"; return 3; }' "${SCAN_RELAX[@]}"
+  M ud2_selector_relaxed core lib.sh "${SCAN_RELAX[@]}"
+  M ud3_unlabelled_network_removed core lib.sh 'if [ "$tp" = "$P|$root" ]; then TI_OWN_N=1;' 'if true; then TI_OWN_N=1;'
+  M no_lease core up.sh 'ti_lo register --purpose "$P" --owner test-infra-up --op-id "$OPID" --pid "$KPID" --container-label "$P" --no-progress-s "$BUDGET" >/dev/null 2>"$S/lease.err.$OPID"; RC=$?' 'RC=0'
+  M no_release core down.sh 'elif [ -n "$HOLDER" ]; then ti_lo release --op-id "$HOLDER" --state "$OUTCOME" --verdict "$REASON" >/dev/null 2>&1 || ti_lo release --purpose "$P" --run-id "$HOLDER" >/dev/null 2>&1 || true' 'elif [ -n "$HOLDER" ]; then true'
   # RM4 of the WF12 review, verbatim: the keeper file is no longer per attempt, so a refused second owner deletes the LIVE holder's keeper file
   M rm4_shared_keeper_file core up.sh 'KEEP="$S/lease.keep.$OPID"' 'KEEP="$S/lease.keep"'
   M down_no_owner_check core down.sh 'if [ -d "$LD/claims/$P" ]; then
   HOLDER=' 'if false; then
   HOLDER='
   M down_reaps_live_holder core down.sh '  elif DRY="$(ti_lo reap --purpose "$P" --dry-run 2>&1)" && printf '"'"'%s'"'"' "$DRY" | grep -q '"'"'would release stale claim'"'"'; then STALE=1' '  elif true; then STALE=1'
-  M down_no_pod_removal core lib.sh '  if podman pod exists "$pod" 2>/dev/null; then' '  if false; then'
-  # the two over-broad-glob mutants (pods by prefix, directories by pattern) are restricted to this test's own tag, so a mutant run never deletes anything of another stream
-  M down_pod_by_glob core lib.sh '  pod="$(ti_pod "$P")"' '  for pp in $(podman pod ls --format '"'"'{{.Name}}'"'"' | grep "^pod_catalogizer-test-.*'"$TAG"'"); do podman pod rm "$pp" >/dev/null 2>&1; done; pod="$(ti_pod "$P")"'
+  # U1 of the WF17 review, verbatim in effect: any operation id of the SAME project is accepted as the owner's
+  M u1_any_op_of_the_project core down.sh '  if [ -n "$CALLER_OP" ] && [ "$CALLER_OP" = "$HOLDER" ]; then :' '  if [ -n "$CALLER_OP" ] && [[ "$CALLER_OP" == "$P"-up-* ]]; then :'
+  M down_no_pod_removal core lib.sh '  if [ "$TI_POD_CNT" = 0 ]; then if podman pod rm "$pod" >/dev/null 2>&1; then TI_NP=1;' '  if false; then if podman pod rm "$pod" >/dev/null 2>&1; then TI_NP=1;'
+  # U2 of the WF17 review: the pod of the project is removed with -f even when it holds containers
+  M u2_pod_removed_with_containers core lib.sh '  if [ "$TI_POD_CNT" = 0 ]; then if podman pod rm "$pod" >/dev/null 2>&1; then TI_NP=1;' '  if [ "$TI_POD_CNT" -ge 0 ]; then if podman pod rm -f "$pod" >/dev/null 2>&1; then TI_NP=1;'
+  # the two over-broad-glob mutants (pods by prefix, directories by pattern) are restricted to this test's own tag, so a mutant run never deletes anything of another stream on this shared host
+  M down_pod_by_glob core lib.sh '  pod="$(ti_pod "$P")"
+  if [ "$TI_POD_CNT" = 0 ]' '  for pp in $(podman pod ls --format '"'"'{{.Name}}'"'"' | grep "^pod_catalogizer-test-.*'"$TAG"'"); do podman pod rm -f "$pp" >/dev/null 2>&1; done; pod="$(ti_pod "$P")"
+  if [ "$TI_POD_CNT" = 0 ]'
   M down_out_dirs_glob core lib.sh '  for d in "$TI_ROOT/.audit/out/$P-client" "$TI_ROOT/.audit/out/$P-seed"; do' '  for d in "$TI_ROOT"/.audit/out/catalogizer-test-*"'"$TAG"'"*-client "$TI_ROOT/.audit/out/$P-seed"; do'
   M down_keeps_out_dirs core down.sh 'ti_rm_out_dirs "$P" || rc=1' 'true'
-  M in_pod_back core up.sh 'podman-compose --in-pod false -p "$P"' 'podman-compose -p "$P"'
-  M fail_down_without_op core up.sh 'bash "$HERE/down.sh" --build-id "$BID" --op-id "$OPID" --keep-logs' 'bash "$HERE/down.sh" --build-id "$BID" --keep-logs'
+  # in_pod: the compose file itself says `x-podman: in_pod: false` since WF17, so dropping the flag alone is an EQUIVALENT mutant; the mutant removes BOTH (the flag and the file's x-podman block) and a pod must come back
+  M in_pod_back core up.sh 'CF=(-f "$TI_COMPOSE_FILE")' 'sed "/^x-podman:/,/^$/d" "$TI_COMPOSE_FILE" >"$S/compose-nopod.yml"; CF=(-f "$S/compose-nopod.yml")' 'ti_compose --in-pod false -p "$P"' 'ti_compose -p "$P"'
+  M fail_down_without_op core up.sh 'bash "$HERE/down.sh" --build-id "$BID" --op-id "$OPID" --keep-logs --outcome failed --reason "$1"' 'bash "$HERE/down.sh" --build-id "$BID" --keep-logs --outcome failed --reason "$1"'
+  M foreign_start_records_complete core up.sh 'ti_lo release --op-id "$OPID" --state failed --verdict foreign_owner' 'ti_lo release --op-id "$OPID" --state complete --verdict foreign_owner'
   M cache_trusted cache up.sh '[ "$CDIGEST" = "$(cut -d'"'"' '"'"' -f1 "$SEEDOUT/corpus.sha256")" ] || fail_down' 'true || fail_down'
   M no_port_retry retry up.sh '&& [ "$attempt" -lt 3 ]; then' '&& false; then'
+  M keep_restart_plain_rm keep up.sh 'podman unshare rm -rf -- "${S:?}/data" 2>/dev/null || rm -rf -- "${S:?}/data" 2>/dev/null' 'rm -rf -- "${S:?}/data" 2>/dev/null'
+  MI ud0_identity core down.sh 'rc=0
+ti_rm_resources "$P"; rr=$?' 'rc=0; :
+ti_rm_resources "$P"; rr=$?'
   [ -z "${UPDOWN_EV:-}" ] || cp "$MUTLOG" "$UPDOWN_EV/updown-mutations.txt"
 fi
 ti_summary

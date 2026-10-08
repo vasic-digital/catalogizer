@@ -1,0 +1,15 @@
+# fix-r2 mutation run; copy of the tree under .audit/scratch/wf22fix/mut; catalog-api files of the shared tree changed during the run: 0 [] (996 files fingerprinted before and after; changes under submodules/filesystem by other workers during the run: 0)
+M00-negative-control-no-change	CONTROL-OK		97s
+M01-scanner-body-empty-again	KILLED	TestRealDB_FTP_JobWritesTheCorpusOnceAndRescanKeepsIds, TestRealDB_WebDAV_JobWritesTheCorpusOnceAndRescanKeepsIds, TestRealEmptyDirectoryCompletesOnlyWithAllowEmpty, TestRealFTP_EmptyDirectoryRootFails	65s
+N01-catalog-path-keeps-leading-slash	KILLED	TestRealDB_FTP_JobWritesTheCorpusOnceAndRescanKeepsIds, TestRealDB_WebDAV_JobWritesTheCorpusOnceAndRescanKeepsIds	88s
+N02-db-seam-bypasses-catalog-path	KILLED	TestRealDB_FTP_JobWritesTheCorpusOnceAndRescanKeepsIds, TestRealDB_WebDAV_JobWritesTheCorpusOnceAndRescanKeepsIds	88s
+N12-root-allow-empty-ignored	KILLED	TestRealEmptyDirectoryCompletesOnlyWithAllowEmpty	94s
+N13-dot-entries-counted-as-errors	SURVIVED		94s
+N18-depth-probe-disabled	SURVIVED		95s
+N20-rescan-inserts-instead-of-updating	KILLED	TestRealDB_FTP_JobWritesTheCorpusOnceAndRescanKeepsIds, TestRealDB_WebDAV_JobWritesTheCorpusOnceAndRescanKeepsIds	95s
+N23-reason-not-scrubbed	SURVIVED		94s
+W01-url-path-replaced-by-root-path	KILLED	TestRealWebDAV_URLPathAndRootPathAreJoined	94s
+W03-listing-error-names-the-credential	SURVIVED		95s
+T01-ftp-base-not-used	SURVIVED		94s
+# mutants=11 killed=6 survived=5 other=0 control=CONTROL-OK
+# SURVIVED: N13-dot-entries-counted-as-errors, N18-depth-probe-disabled, N23-reason-not-scrubbed, W03-listing-error-names-the-credential, T01-ftp-base-not-used

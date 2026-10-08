@@ -1,0 +1,116 @@
+# identity: task=T188 utc=2026-10-07T19:25:43Z host=anton uid=1000
+# git_head=4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 tree_dirty_files=4950
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=6d6963e1cd4a5a744509db8e7efcdd0b906554ee749741c07e0948e055b1cce4 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 sync_trackers=6417d55167a646a5e621237694295b1644096fc1bc97a0e8b361729f474d440f config=f13deca614ce395a9290255a6baf49feb1e8e6b20e3851ad678b2bb5ca4eb10c
+== T190: the repository's own consumer config ==
+ok   C1 the repository config loads: the six candidates (GitHub issues, GitFlic, GitLab, GitVerse, Crashlytics, Sonar) are each not_configured, trackers: []
+ok   C2 the config shape: db docs/workable_items.db, id_prefix CAT, trackers [] and no value of any kind after a credential-looking key
+== fixture A: three items, six trackers in every state ==
+== dry run: no side effect ==
+ok   D1 dry run exits 0
+ok   D2 dry run: database byte-identical
+ok   D3 dry run: no wrapper call, no journal row
+ok   D4 dry run: no adapter call, no batch directory, no lock file
+ok   D5 the plan names alpha credentials_absent and the item it would mint
+ok   D6 --json of a dry run carries the identity block and no wrapper call
+ok   D7 dry run with the token SET: the plan selects the 3 items but no adapter runs, no database write, no .audit/sync directory
+== missing env: SKIPPED credentials_absent, NAMES only ==
+ok   E1 run 1 (token empty counts as unset) exits 0: SKIPPED rows are honest results
+ok   E2 alpha: 8 items (3 + 5 minted), every latest row SKIPPED credentials_absent
+ok   E3 alpha: missing_env_names holds the NAME only, as a JSON array
+ok   E4 beta: tracker_client_absent (CLI missing); eps: tracker_client_absent (empty command)
+ok   E5 gamma and cand1: not_configured; delta: disabled_by_operator
+ok   E6 no adapter ran
+ok   E7 6 trackers x 8 items = 48 rows and no item with a NONE last_status in v_stale_tracker_sync
+ok   E8 the CHECK shapes hold: no SYNCED row, every SKIPPED row has its reason
+== minting: one item per tracker and reason, once (11.4.214) ==
+ok   M1 five items minted through reg_ids: alpha/credentials_absent, beta+eps/tracker_client_absent, gamma+cand1/not_configured (delta, an operator decision, mints none)
+ok   M2 each minted id is a Task item with a reg_item_ext row
+ok   M3 the --json evidence lists the five minted items and the NAME of the missing variable
+ok   M4 the v_stale_tracker_sync summary: 48 pairs, every one SKIPPED (none NONE)
+== idempotent re-run ==
+ok   R1 an unchanged re-run: database byte-identical, no wrapper call, no minted twin
+ok   R2 the repeated SKIPPED results are counted unchanged_skipped, not rewritten
+== token set: the adapter runs, the value never leaves the environment ==
+ok   A1 run 3 (token set, adapter ok) exits 0
+ok   A2 alpha: all 8 items SYNCED with exit_code 0, a remote_ref and an evidence row
+ok   A3 every recorded evidence row names a file whose sha256 matches
+ok   A4 the adapter ran once per item, for alpha only
+ok   A5 the adapter env holds the declared names (required_env, env_passthrough) and NOT an undeclared secret
+ok   A6 the token value is in no adapter argv and not in the stdin JSON
+ok   A7 the stdin JSON is {db, tracker, atm_id, title, body, status, type, severity, evidence_dir}
+ok   A8 alpha SYNCED on top of its older SKIPPED rows: the latest status is SYNCED for all 8 (v_stale_tracker_sync)
+== re-run after SYNCED: no push ==
+ok   A9 a re-run with unchanged item revisions: adapter log, database and journal unchanged
+== a changed item revision pushes that item only ==
+ok   A10 exactly one new adapter call, for CAT-002
+ok   A11 CAT-002 now has two SYNCED rows with two distinct item_revision values
+== FAILED: bounded attempts, then re-selected ==
+ok   F1 an item that ends FAILED makes the driver exit 1
+ok   F2 CAT-003 attempted exactly --max-attempts (3) times
+ok   F3 the latest CAT-003 row is FAILED with exit_code 3 (the adapter's)
+ok   F4 the failure is itself tracked: one item for alpha/failed
+ok   F5 once the adapter works, the FAILED item is selected again and SYNCED; nothing else is pushed twice
+ok   F6 the minted alpha/failed item was minted once and itself synced
+== a changed tracker state is recorded again (reason and NAMES are compared) ==
+ok   G1 first run: zeta credentials_absent [Z1], eta not_configured, 4 items (2 + 2 minted) x 2 trackers = 8 rows
+ok   G2 after the config changed: every item has a NEW latest row with the new NAMES for zeta (Z1 and Z2) and the new reason for eta (tracker_client_absent); the reg_trackers row follows the config
+ok   G3 the new reason is tracked once: eta/tracker_client_absent minted one item; the old eta/not_configured item is kept (never deleted or reused)
+ok   G4 an id that was minted for theta/not_configured but never got its item (an interrupted mint) is completed, not minted twice: one reg_ids row, one item, one reg_item_ext row
+== single writer: the journal is the whole story ==
+ok   W1 the journal chain is unbroken: every row's db_sha_before is the previous row's db_sha_after, the last db_sha_after is the database on disk, and every driver row recorded its SQL batch as an input
+ok   W2 61 sync-log rows were written by 11 journaled batches, never row by row
+ok   W3 with a no-op wrapper the database is byte-identical: the driver process itself never writes it (a copy that opens the database for writing fails here)
+ok   W4 every write is a wrapper call of the form locked.sh --op-id <id> -- sqlite3 -bail /src/<db> '.read <batch>'
+ok   W5 a failed register write: exit 4, the unwritten rows (with their remote_ref) are kept in unwritten.jsonl, the run stops
+ok   W6 both pushed items' references survive in the recovery file (no remote issue becomes unreachable from the register)
+== concurrent driver ==
+ok   X1 a second driver while one holds the lock is REFUSED sync_already_running (20)
+== adapter contract violations are never recorded SYNCED ==
+ok   V-garbage adapter output 'garbage' is recorded FAILED (exit 1), never SYNCED
+ok   V-noref adapter output 'noref' is recorded FAILED (exit 1), never SYNCED
+ok   V-exit1 adapter output 'exit1' is recorded FAILED (exit 1), never SYNCED
+ok   V-outside adapter output 'outside' is recorded FAILED (exit 1), never SYNCED
+ok   V-noevidence adapter output 'noevidence' is recorded FAILED (exit 1), never SYNCED
+ok   V-badskip adapter output 'badskip' is recorded FAILED (exit 1), never SYNCED
+ok   V-badnames adapter output 'badnames' is recorded FAILED (exit 1), never SYNCED
+ok   V-hang adapter output 'hang' is recorded FAILED (exit 1), never SYNCED
+ok   V1 no SYNCED row exists after eight contract violations
+ok   V2 the exit codes: unusable output 70, missing reference or evidence 65, the process exit code beats the adapter's own claim (exit1: 1), an adapter SKIPPED outside its closed reasons 70, invalid variable names 70, a hung adapter 124 (timeout)
+ok   V3 an adapter that reports SKIPPED credentials_absent with the NAME it lacks is recorded as such (not FAILED), the NAME kept
+ok   U1 an unreachable tracker is an honest SKIPPED result: exit 0
+ok   U2 2 attempts per item for the first 2 items, then the circuit breaker: 4 adapter calls for 7 items
+ok   U3 all 7 items (the 6 present and the one minted for alpha/unreachable) end SKIPPED unreachable
+ok   U4 five items (4 present + the minted one) were skipped by the breaker without a call
+ok   U5 the unreachable tracker is tracked: one item alpha/unreachable
+== refusals and exit codes ==
+ok   Z1 a missing config file is REFUSED config_missing
+ok   Z2 unparseable YAML is REFUSED config_malformed
+ok   Z3 a mistyped tracker key (requird_env would silently disable the credentials check) is REFUSED
+ok   Z4 a wrong schema_version is REFUSED
+ok   Z5 trackers: null (not a list) is REFUSED
+ok   Z6 a command that carries a secret value is REFUSED config_secret_in_command
+ok   Z7 an id_prefix the reg_ids DDL does not generate is REFUSED
+ok   Z8 an unknown command placeholder is REFUSED
+ok   Z9 a --config path with .. is REFUSED path_invalid
+ok   Z10 --db outside docs/ is REFUSED path_invalid
+ok   Z11 a database that does not exist exits 3
+ok   Z12 a file that is not SQLite exits 3, nothing written
+ok   Z13 a SQLite file that is not a register (no reg_meta) exits 3
+ok   Z14 an unknown argument exits 2
+ok   Z15 --tracker with an unknown name exits 2
+ok   Z16 --max-attempts 0 exits 2
+ok   Z17 a missing option value exits 2
+ok   Z18 outside LOCKED_TEST_MODE the LOCKED and LOCKED_ROOT hooks are ignored (a config that exists only in the scratch root is not found: the real root is used)
+ok   Z19 trackers: [] and no candidates: the honest report is '0 trackers configured; 0 pushes; nothing claimed as synced'
+== the register's own CHECKs (docs/04 10.3) ==
+ok   K1 a SYNCED row without an evidence record is rejected by the DDL CHECK; so are SYNCED with a non-zero exit_code or no reference, SKIPPED without a reason, FAILED with exit 0, and a reason outside the closed set
+== leak scan: no credential value in any output, row, journal or batch file ==
+ok   L1 neither canary value (the declared token, an undeclared secret) appears in stdout, stderr, the database dump, the journal, the batch files or the --json evidence
+comm: file 2 is not in sorted order
+comm: input is not in sorted order
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=89 fail=0

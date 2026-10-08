@@ -1,0 +1,48 @@
+# identity: WF17 r5 RED concurrency (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:00:21Z
+# sha256 tests/infra/test_concurrency.sh c1bb4ebd66323ea1c5a8ca3db22dc096d39375ca18901dc54f75d3cd9d45010c
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_concurrency.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: stack A starts (all five services) while B starts (exit 0)
+PASS: stack B starts (all five services) while A starts (exit 0)
+PASS: A runs 5 containers
+PASS: B runs 5 containers
+PASS: distinct compose projects
+PASS: twelve host ports across the two stacks
+PASS: all host ports distinct
+PASS: no host port below 1024
+PASS: two distinct networks exist
+PASS: distinct data directories
+PASS: distinct credentials
+PASS: no container belongs to both projects
+PASS: both leases are live keepers of their own start (holder identity and liveness)
+PASS: a second owner of A is refused (exit 3) while both run
+PASS: a second owner of B is refused (exit 3) while both run
+PASS: the refused second owners left both live holders alive
+PASS: the refused second owners changed nothing (still 5 + 5 containers)
+PASS: A answers all five probes while B is up
+PASS: B answers all five probes while A is up
+PASS: marker put on A
+PASS: marker present on A
+PASS: marker absent from B (webdav and postgres)
+PASS: host side: the marker file is in A's data directory
+PASS: host side: the marker file is NOT in B's data directory
+PASS: down A by a caller naming no operation is REFUSED while A's holder lives (exit 5)
+PASS: the refused down changed nothing (5 + 5 containers)
+PASS: down A by B's owner is REFUSED (exit 5)
+PASS: down A by its owner exits 0
+PASS: after down A: B still has 5 containers
+PASS: after down A: B still answers all probes
+PASS: after down A: A's lease is free and B's is still a live keeper
+SUMMARY pass=35 fail=0 blocked=0
+# exit: 0

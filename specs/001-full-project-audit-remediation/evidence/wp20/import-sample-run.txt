@@ -1,0 +1,61 @@
+# sample run of the importer on the WP-20 fixture snapshot (wp20_fixture.py build+tickets: 86 enumerated entries, 5 of kind issue_file), IMG-TESTUTIL via run_pinned.sh, scratch DB only
+# sut=.audit/scratch/t168imp/sut (byte copy of scripts/register/{import.sh,import_tickets.py,category_map.yaml}) sha256: a3587fdf21bab756 817f3b680499ed06 eac7cc08b974680a 
+enumerate_sources: ok entries=86 sql_sha256=af7d75c03962b5f38679cb80dd6e40e8852b82941d72a44035379d99c63351e9
+--- first run
+import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 3, "duplicates_linked": 0, "entries_selected": 5, "entry_changed_after_import": 0, "items_added": 5, "minted": 5, "processed": 5, "queued": 2, "resumed": 0, "severity_defaulted": 1, "type_defaulted": 3}
+exit=0
+--- second run (must write nothing)
+2be286b251d750a0
+import: ok {"already_mapped": 5, "category_unmapped": 0, "closed_legacy": 0, "duplicates_linked": 0, "entries_selected": 5, "entry_changed_after_import": 0, "items_added": 0, "minted": 0, "processed": 0, "queued": 0, "resumed": 0, "severity_defaulted": 0, "type_defaulted": 0}
+exit=0
+2be286b251d750a0
+--- result
+atm_id|type|status|severity|custody_basis|reverify_required|legacy_status|category|desc_bytes
+CAT-001|Bug|Fixed (→ Fixed.md)|high|legacy_import|1|fixed|shortcoming|327
+CAT-002|Bug|Queued|high|machine_evidence|0|open|shortcoming|326
+CAT-003|Task|Completed (→ Fixed.md)|high|legacy_import|1|fixed|shortcoming|2048
+CAT-004|Task|Queued|low|machine_evidence|0|wontfix|shortcoming|360
+CAT-005|Task|Completed (→ Fixed.md)|medium|legacy_import|1|resolved|shortcoming|373
+unmapped (all kinds, other classes belong to later tasks):|81
+unmapped issue_file:|0
+reverify queue:|3
+component_id not null:|0
+ok
+validate: OK — 5 items, all invariants satisfied
+--- category TSV
+locator	legacy_id	raw_category	proposed_category
+docs/issues/HELIX-001-a.md	HELIX-001	functional	bug
+docs/issues/HELIX-001-b.md	HELIX-001	functional	bug
+docs/issues/HELIX-950-long.md	HELIX-950		
+docs/issues/HELIX-951-short.md	HELIX-951		
+issues/ANR-2026-04-08-X.md	ANR-2026-04-08-001		
+--- report
+{
+ "dry_run": false,
+ "engine_validate": {
+  "rc": 0,
+  "text": "validate: OK \u2014 5 items, all invariants satisfied"
+ },
+ "foreign_key_check_rows": 0,
+ "integrity_check": "ok",
+ "kinds": [
+  "issue_file"
+ ],
+ "schema": "import-run/1",
+ "stats": {
+  "already_mapped": 0,
+  "category_unmapped": 0,
+  "closed_legacy": 3,
+  "duplicates_linked": 0,
+  "entries_selected": 5,
+  "entry_changed_after_import": 0,
+  "items_added": 5,
+  "minted": 5,
+  "processed": 5,
+  "queued": 2,
+  "resumed": 0,
+  "severity_defaulted": 1,
+  "type_defaulted": 3
+ },
+ "unmapped_selected_kinds": 0
+}

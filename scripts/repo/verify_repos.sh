@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # verify_repos.sh - the single recursive, read-only repository verifier (T032; promoted from the spec 001 POC verify_repo.sh).
 #
 # Purpose  For the main repository and EVERY submodule at EVERY depth report: working-tree dirtiness (R1, including an
@@ -134,7 +134,7 @@ worker() {
   [ "$(cd "$top" 2>/dev/null && pwd -P)" = "$(cd "$abs" 2>/dev/null && pwd -P)" ] || { fail "git resolves this path to another repository ($top)"; return 1; }
   head="$($GIT -C "$abs" rev-parse HEAD 2>/dev/null)" || { fail "git rev-parse HEAD failed"; return 1; }
   [ -n "$head" ] || { fail "empty HEAD"; return 1; }
-  branch="$($GIT -C "$abs" symbolic-ref --short -q HEAD 2>/dev/null)"; rc=$?
+  branch="$($GIT -C "$abs" symbolic-ref -q HEAD 2>/dev/null)"; rc=$?; branch="${branch#refs/heads/}"
   case "$rc" in 0) ;; 1) branch="" ;; *) fail "git symbolic-ref failed (rc=$rc)"; return 1 ;; esac
   $GIT -C "$abs" "${STATUS_ARGS[@]}" > "${outdir:?}/${idx:?}.status" 2>"${outdir:?}/${idx:?}.status.err" \
     || { fail "git status failed: $(head -c 160 "${outdir:?}/${idx:?}.status.err" | tr '\n' ' ')"; return 1; }
@@ -207,7 +207,7 @@ worker() {
   done
   nrem="${#urls[@]}"
   if [ "$nrem" -gt 0 ]; then
-    mapfile -t orgs < <(python3 "$ORGPY" "${urls[@]}" 2>/dev/null)
+    mapfile -t orgs < <(python3 -I "$ORGPY" "${urls[@]}" 2>/dev/null)
     [ "${#orgs[@]}" = "$nrem" ] || { fail "organisation parser returned ${#orgs[@]} answers for $nrem remotes"; return 1; }
     for i in "${!orgs[@]}"; do
       org="${orgs[$i]}"

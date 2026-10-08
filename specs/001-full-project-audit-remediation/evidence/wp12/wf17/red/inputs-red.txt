@@ -1,0 +1,25 @@
+# identity: WF17 r5 RED inputs (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:00:04Z
+# sha256 tests/infra/test_inputs.sh 13f749187cce2f28177e6602aac865415b3ffec5e05725ecf4b4587f218c9c80
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_inputs.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/gen_env.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/roundtrip.sh
+PASS: script present: scripts/test-infra/blocked_external.sh
+PASS: script present: scripts/test-infra/nfs_attempt.sh
+PASS: script present: scripts/test-infra/nfs_build.sh
+PASS: script present: scripts/test-infra/nfs_terminal_state.sh
+PASS: script present: scripts/test-infra/nfs_fallback_state.sh
+PASS: script present: scripts/test-infra/nas_readonly_leg.sh
+FAIL: script absent: scripts/test-infra/dotenv_get.py
+# exit: 1

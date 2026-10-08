@@ -6,7 +6,10 @@
 #   1. ms_scan <pristine-dir> <mutant-dir>   BEFORE a mutant runs: every regular file of the mutant tree is compared with its pristine twin; a line that carries a
 #      signal or host-power token (kill, pkill, killall, killpg, os.kill, command/builtin/exec kill, /bin/kill, xargs kill, systemctl, loginctl, reboot, poweroff,
 #      shutdown, halt, suspend, hibernate) and is NOT byte-identical to a pristine line aborts the run (exit 1, the offending line is printed). A mutant may remove or
-#      replace a kill line by something without a token (mutant M04 does), it can never add or edit one.
+#      replace a kill line by something without a token (mutant M04 does); it can add or edit none, with ONE honest exception (round 5, CONS-11): a BYTE-IDENTICAL COPY of a pristine signal
+#      line is admitted ANYWHERE in the tree, so layer 1 does not bind a pristine line to its function (mutant C03 moved the `podman stop` line into another step and ran; it is safe only
+#      because layer 2 refuses that call). Round 5 adds a second scan class: a NEW (non-pristine) line that carries a `/bin` or `/sbin` path fragment, or a word split by an empty quote
+#      pair (`"$b/k""ill"`), is refused too, because it can spell a signal binary without writing its name (WF17 F7).
 #   2. ms_run <cmd...>   the mutant runs with BASH_ENV=<shim>: the shim (a) disables the `kill` BUILTIN (so `builtin kill` fails and `command kill` finds only PATH),
 #      (b) defines `kill` as a guard function that refuses any target that is not a bare integer > 1 whose process group is also > 1 (pid 0, 1, -1, -pgid, junk,
 #      job specs and kernel threads are all refused, one line BLOCKED is logged), (c) defines pkill/killall as refusals, and PATH begins with stub `kill`, `pkill`,
@@ -15,8 +18,9 @@
 # Honest limits (11.4.6; WF14 R2-D1 corrected the earlier "structurally impossible" claim): this is CONTAINMENT IN LAYERS, not a kernel boundary. Layer 1 is textual: it catches the
 # shell and interpreter spellings listed above, including python os.kill/os.killpg/psutil, a glob-built absolute path (/usr/bin/k?ll) and any line that names or redefines the
 # containment itself (ms_*, MS_*, BASH_ENV, enable, unset -f); it does NOT catch a command name computed at run time inside an interpreter (getattr(os, "ki"+"ll")) nor a language that is not
-# listed. Layer 2 is a shell function, a set of PATH stubs (kill, pkill, killall, skill and, since WF14, podman) and read-only function definitions: it covers every shell form and
-# the stub binaries, and NOTHING that does not pass through bash (a python process never sees the shim; an absolute /usr/bin/podman is caught by layer 1 only). A STRUCTURAL boundary
+# listed. Layer 2 is a shell function, a set of PATH stubs (kill, pkill, killall, skill and, since WF14, podman) and read-only function definitions: it covers the shell forms that resolve a
+# command NAME (function, PATH stub), NOT every shell form: an absolute path to a binary bypasses PATH and is caught by layer 1 only, and NOTHING that does not pass through bash is covered (a
+# python process never sees the shim). The scan of a computed path or a quote-split word is a heuristic over NEW lines, not a proof (round 5 honest limit). A STRUCTURAL boundary
 # would be a rootless container with a private PID namespace (11.4.161/11.4.173; `unshare --user --pid` is refused on this host): until it exists, no mutant that this scan cannot read is safe,
 # and the mutants of the two runners are reviewed (11.4.142) before they are added.
 
@@ -24,6 +28,10 @@
 MS_TOKEN_RE='(^|[^A-Za-z0-9_-])(kill|killall|pkill|skill|killpg|tgkill|sigqueue|pidfd_send_signal|send_signal|terminate|psutil|os\.kill|signal\.|xargs[[:space:]]+kill|/bin/kill|/usr/bin/kill|systemctl|loginctl|reboot|poweroff|shutdown|halt|suspend|hibernate|enable|BASH_ENV|MS_[A-Z_]+|ms_[a-z_]+|unset[[:space:]]+-f|(/usr)?/s?bin/podman|podman"?[[:space:]]+(stop|kill|rm|rmi|restart|pause|unpause|prune|system|volume|network|pod|container|exec|run|create|start)|PODMAN"?[[:space:]]+(stop|kill|rm|rmi|restart|pause|unpause|prune|system|volume|network|pod|container|exec|run|create|start))([^A-Za-z0-9_-]|$)'
 # MS_GLOB_RE: an absolute path into a bin directory that contains a glob character: it can name a kill binary without spelling it (WF14 RB7: /usr/bin/k?ll).
 MS_GLOB_RE='/(usr/)?s?bin/[^[:space:]]*[?*[]'
+
+# MS_PATH_RE: a NEW line naming a bin directory, MS_SPLIT_RE: a NEW line with a word split by an empty quote pair (`"$b/k""ill"`, `k''ill`). Either can build a signal binary name at run time (WF17 F7).
+MS_PATH_RE='(^|[^A-Za-z0-9_])/(usr/)?(local/)?s?bin([/"'"'"'[:space:]]|$)'
+MS_SPLIT_RE='[A-Za-z0-9_/.$}-](""|'"''"')[A-Za-z0-9_/.$"-]'
 
 # ms_scan <pristine-dir> <mutant-dir>: 0 safe; 1 a new/edited signal line (printed) in a regular file of the mutant tree.
 ms_scan() {
@@ -33,9 +41,9 @@ ms_scan() {
     rel=${f#"$mu"/}
     while IFS= read -r line || [ -n "$line" ]; do
       case "${line#"${line%%[![:space:]]*}"}" in '#'*) continue ;; esac     # a comment line cannot execute
-      [[ "$line" =~ $MS_TOKEN_RE ]] || [[ "$line" =~ $MS_GLOB_RE ]] || continue
+      [[ "$line" =~ $MS_TOKEN_RE ]] || [[ "$line" =~ $MS_GLOB_RE ]] || [[ "$line" =~ $MS_PATH_RE ]] || [[ "$line" =~ $MS_SPLIT_RE ]] || continue
       if [ -f "$pr/$rel" ] && grep -qxF -- "$line" "$pr/$rel"; then continue; fi
-      echo "SAFETY: $rel carries a signal/host-power line that is not byte-identical to the pristine tree: $line"; bad=1
+      echo "SAFETY: $rel carries a signal/host-power/computed-path line that is not byte-identical to the pristine tree: $line"; bad=1
     done <"$f"
   done < <(find "$mu" -type f -print0 2>/dev/null)
   return $bad
@@ -69,7 +77,7 @@ ms_kill_guard() {
     fi
     first=0; tgt=$((tgt+1)); t=$a
     [[ "$t" =~ ^[0-9]{1,15}$ ]] && [ "$t" -gt 1 ] || { ms_blocked "kill $* (target '$t' is not an integer > 1)"; return 1; }
-    pg=$(sed 's/^.*) //' "/proc/$t/stat" 2>/dev/null | cut -d' ' -f3)
+    pg=$({ IFS= read -r -d '' pst; } 2>/dev/null <"/proc/$t/stat"; pst=${pst##*) }; set -- $pst; echo "${3:-}")   # pure bash: a line-oriented sed was fooled by a comm that holds a newline (round 5)
     [[ "$pg" =~ ^[0-9]+$ ]] && [ "$pg" -gt 1 ] || { ms_blocked "kill $* (process group of $t is '$pg')"; return 1; }
   done
   [ "$tgt" -gt 0 ] || { ms_blocked "kill $* (no target)"; return 1; }

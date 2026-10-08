@@ -1,0 +1,42 @@
+CONTROL PASS
+CAUGHT tracked-item-ignored: FAIL: first-party w/o item: rc 0: |
+CAUGHT justification-ignored: FAIL: unjustified entry: rc 0: |FAIL: a one-character justification accepted|
+CAUGHT unlisted-ignored: FAIL: unlisted exclusion: exit 0|FAIL: unlisted exclusion: stderr: |
+CAUGHT class-unchecked: FAIL: unknown class accepted|
+CAUGHT overbroad-ignored: FAIL: over-broad pattern accepted|FAIL: K5.7: the pattern '**/' accepted (rc 0): |
+CAUGHT overbroad-literal-only: FAIL: K5.7: the pattern '**/' accepted (rc 0): |FAIL: K5.7: the pattern '*/' accepted (rc 0): |
+CAUGHT duplicate-ignored: FAIL: duplicate path accepted|
+CAUGHT exit-masked: FAIL: unlisted exclusion: exit 0|FAIL: unjustified entry: rc 0: check_exclusions: FAIL: entry 1 (gen/schemas/**): unjustified: a justification |
+CAUGHT item-unverifiable-passes: FAIL: I5: unverifiable item accepted (rc 3): check_exclusions: FAIL: input could not be processed: TypeError: |
+CAUGHT item-missing-passes: FAIL: K1.4: fabricated item beside a lane accepted (rc 0): |FAIL: I5: fabricated item accepted (rc 1): check_exclusions: FAIL: entry 1 (gen/schemas/**): class generated-c|
+CAUGHT measured-by-unchecked: FAIL: I5: bogus measured_by accepted (rc 3): check_exclusions: FAIL: input could not be processed: KeyError: (|
+CAUGHT fraction-entry-off: FAIL: I5: **/*.go accepted or wrong reason (rc 1): check_exclusions: FAIL: entry 1 (**/*.go): class generated-|FAIL: K5.5: brace entry (rc 1): check_exclusions: FAIL: entry 1 (src/{components,pages,services}/**): class ge|
+CAUGHT fraction-union-off: FAIL: I5: union message missing: check_exclusions: FAIL: entry 1 (**/*.go): over-broad: it names 7 of the root|FAIL: I5: union not refused (rc 1): check_exclusions: FAIL: entry 3 (src/*.go): over-broad: it names 7 of the |
+CAUGHT fraction-over-all-files: FAIL: K5.4: all-kotlin entry (rc 1): check_exclusions: FAIL: entry 1 (app/src/main/**): class generated-code i|FAIL: I6 golden-false: json entry refused (rc 1): check_exclusions: FAIL: listed but not applied: the fence li|
+CAUGHT class-evidence-off: FAIL: I5: class evidence missing: check_exclusions: FAIL: entry 1 (**/*.go): over-broad: it names 7 of the roo|FAIL: I5: false class accepted (rc 1): check_exclusions: FAIL: entry 1 (src/**): over-broad: it names 6 of the|
+CAUGHT applied-unreadable-passes: FAIL: I6: unreadable config accepted (rc 1)|FAIL: K5.3: variable coverage (rc 1): check_exclusions: FAIL: not_every_rule_ran: content_checked=True applied|
+CAUGHT listed-not-applied-off: FAIL: I6: listed-not-applied missed (rc 0): |
+CAUGHT hand-list-stale-off: FAIL: I6: stale hand list accepted (rc 0): |
+CAUGHT CM14_fence_kind_dropped: FAIL: round-5 golden-good: a fence over a real root, tools row and repo PASSes (exit 0) (got '1' want '0')|FAIL: round-5 golden-good: both rule flags are true and the verdict is PASS (got 'FAIL:true:false' want 'PASS:|
+CAUGHT tool-identity-unchecked: FAIL: K5.2: identity mismatch (rc 0): |
+CAUGHT measured-by-same-lane-accepted: FAIL: K1.4: same lane accepted (rc 0): |
+CAUGHT measured-by-image-unchecked: FAIL: K1.4: unbuilt image accepted (rc 0): |FAIL: K1.4: installer-wizard (rc 1): check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '|
+CAUGHT implicit-scope-ignored: FAIL: K5.1: implicit scope (rc 0): |
+CAUGHT scope-comparison-dropped: FAIL: K5.6: scope (rc 0): |FAIL: K5.6: measured list (rc 0): |
+CAUGHT toplevel-handler-dropped: FAIL: golden-good (schema only): exit 0 (got '1' want '0')|FAIL: golden-good (schema only): the verdict file says SCHEMA_ONLY and that no content or applied rule ran (go|
+CAUGHT root-binding-dropped: FAIL: K2.1: foreign root (rc 0): |FAIL: K2.1: --root "" accepted|
+CAUGHT tools-row-missing-skipped: FAIL: K2.2: missing row (rc 1): check_exclusions: FAIL: not_every_rule_ran: content_checked=True applied_check|
+CAUGHT root-empty-passes: FAIL: K2.1: empty root (rc 1): check_exclusions: FAIL: root_not_application: --root /dev/shm/chkexcl-test.X2Gx|
+CAUGHT RM_F_question_crosses_slash: FAIL: K5.5 (RM-F): ? does not cross a slash (got 'qmark True True' want 'qmark False True')|
+CAUGHT CM10_jest_negations_dropped: FAIL: CM10: unlisted negation (rc 0): |
+CAUGHT CM11_marker_unanchored: FAIL: CM11: unanchored header accepted (rc 0)|
+CAUGHT CM12_others_enumerated: FAIL: K2.3: untracked scratch files (another writer's notes) do not change the verdict or the count (got '35' |FAIL: K2.3: GIT_DIR exported (as git does for a hook) gives the same tracked enumeration, not a walk that coun|
+CAUGHT walk_fallback_restored: FAIL: K2.4: dangling gitfile (rc 0): |
+CAUGHT CM13_vendored_by_name: FAIL: CM13: unprovenanced vendor accepted (rc 0): |
+CAUGHT CM15_jacoco_measurable_reduced: FAIL: K5.5: **/*.class (rc 1): check_exclusions: FAIL: entry 4 (**/*.class): class non-shipping-fixtures-and-g|
+CAUGHT kotlin-test-by-name: FAIL: K3.5: ConnectionSpeedTest.kt accepted (rc 0): |
+CAUGHT go-import-search-dropped: FAIL: K3.5: imported fixture accepted (rc 0): |
+CAUGHT config-parse-regex-spread: FAIL: K5.3: spread (rc 1): check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/hidden|FAIL: K5.3: template (rc 0): |
+CAUGHT duplicate-yaml-key-accepted: FAIL: K11.2: duplicate key (rc 0): |FAIL: K11.2: duplicate tools key (rc 1): check_exclusions: FAIL: entry 1 (gen/schemas/**): class generated-cod|
+CAUGHT extglob-accepted: FAIL: K5.5: an extglob and a brace range are REFUSED (unevaluable), never a quiet no-match (got 'extglob False|FAIL: K5.5: extglob entry (rc 0): |
+CAUGHT brace-not-expanded: FAIL: K5.5: a brace set is evaluated in the tool's dialect (src/{components,pages}/** names src/pages/a/b.ts a|FAIL: K5.5: an extglob and a brace range are REFUSED (unevaluable), never a quiet no-match (got 'extglob ERR|r|

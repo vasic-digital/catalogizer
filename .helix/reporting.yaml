@@ -1,0 +1,33 @@
+# .helix/reporting.yaml - T190 (docs/04 section 10.4): CONSUMER-OWNED config of the register's external tracker sync.
+# Read by scripts/register/sync_trackers.sh (T189) and by the constitution engine report_item.sh (shared keys). DATA only:
+# variable NAMES, never values (11.4.10). Revision 2, 2026-10-08 (WF23 fix round 2: first-sync gate keys, register-level evidence_dir, mapping-only env_passthrough).
+#
+# trackers stays [] until the owner names the trackers (ODG-10); then each entry is, per docs/04 10.4 and the shared contract:
+#   - name: <lowercase word>            command: <adapter command, placeholders {db} {id}; empty or absent = no client yet>
+#     required_env: [NAME, ...]         (presence is tested by NAME only; an unset or empty one is SKIPPED credentials_absent)
+#     env_passthrough: {NAME: "{db}"}   (extra environment for the adapter: a MAPPING NAME -> template that MUST contain {db} or {id}, the shared contract with
+#                                        report_item.sh; a literal value could be a credential and is REFUSED config_secret_in_env)
+#     enabled: true|false               (false = SKIPPED disabled_by_operator; reg_trackers.enabled follows it)
+#     public: true|false                (default true = fail closed: an item of a confidential category is withheld from a public tracker)
+# The adapter command is checked against a positive grammar: a flag or key that names a credential (token, secret, password, api-key, auth, pat, ...) with a value, a
+# short flag with a bare value, an Authorization/Bearer header, a user:password@ URL or a credential-shaped token is REFUSED config_secret_in_command. The command text is
+# never written to the register (reg_trackers.command_ref holds the executable and a hash). A duplicate YAML key is REFUSED.
+# first_sync_approvers: names allowed to approve the FIRST push of a tracker (docs/04 10.3: dry run reviewed by the owner, then a pilot of at most
+# first_sync_pilot_max items, then the rest). Empty until the owner names the trackers and approvers (ODG-10): with an empty roster no first push can happen.
+# candidate_trackers lists the trackers the owner has not decided on yet: each is recorded SKIPPED(not_configured) so none is silently absent (T191).
+schema_version: 1
+db: docs/workable_items.db
+id_prefix: CAT
+default_severity: Medium
+evidence_dir: specs/001-full-project-audit-remediation/evidence/register
+first_sync_approvers: []
+first_sync_pilot_max: 5
+confidential_categories: [danger_zone]
+trackers: []
+candidate_trackers:
+  - {name: github_issues, kind: github}
+  - {name: gitflic, kind: gitflic}
+  - {name: gitlab, kind: gitlab}
+  - {name: gitverse, kind: gitverse}
+  - {name: crashlytics, kind: crashlytics}
+  - {name: sonar, kind: sonarqube}

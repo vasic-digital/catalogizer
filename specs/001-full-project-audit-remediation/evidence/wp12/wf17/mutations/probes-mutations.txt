@@ -1,0 +1,10 @@
+postgres_tcp_only CAUGHT
+redis_accepts_any CAUGHT
+ftp_always_pass CAUGHT
+smb_always_pass CAUGHT
+webdav_always_pass CAUGHT
+runner_check_removed CAUGHT
+class_check_removed CAUGHT
+ps1_host_curl_in_probe CAUGHT
+ps2_container_exec_in_roundtrip CAUGHT
+ps3_host_nfs_cat_in_up CAUGHT

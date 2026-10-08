@@ -1,0 +1,4 @@
+container_build_no_env_file CAUGHT
+setup_bare_compose CAUGHT
+go_test_retired_default CAUGHT
+go_test_identity SURVIVED-AS-REQUIRED

@@ -223,10 +223,14 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_UnsupportedProtocolReje
 // didn't over-restrict.
 func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAccepted() {
 	for _, proto := range []string{"local", "smb", "ftp", "nfs", "webdav"} {
-		body, _ := json.Marshal(map[string]interface{}{
+		req0 := map[string]interface{}{
 			"name":     "Root_" + proto,
 			"protocol": proto,
-		})
+		}
+		if proto == "webdav" {
+			req0["url"] = "http://nas.example/dav" // WF22 H2: a webdav root is addressed by its url; one without can never be scanned and is refused at creation
+		}
+		body, _ := json.Marshal(req0)
 		req := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()

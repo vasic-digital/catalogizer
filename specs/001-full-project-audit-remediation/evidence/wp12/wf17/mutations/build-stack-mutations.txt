@@ -1,0 +1,7 @@
+trap_does_not_run_down CAUGHT
+project_flag_dropped CAUGHT
+build_op_not_registered CAUGHT
+build_compose_without_op_label CAUGHT
+build_redis_without_requirepass CAUGHT
+env_scrub_removed CAUGHT
+identity_noop SURVIVED-AS-REQUIRED

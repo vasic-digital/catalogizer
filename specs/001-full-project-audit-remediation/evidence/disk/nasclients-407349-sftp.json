@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "nasclients-407349-sftp",
+  "at": "2026-10-08T01:02:11Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 56872079360,
+      "free_after": 56039443036,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 56872083456,
+      "free_after": 56039447132,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

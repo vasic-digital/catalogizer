@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T05:00:00Z |
-| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T16:40:16Z |
+| Status | WF17 fix round 5 applied in the working tree (not committed); the independent review of that round is owed (constitution 11.4.142 / 11.4.209); evidence: `specs/001-full-project-audit-remediation/evidence/wp12/wf17/` |
 | Source | `scripts/test-infra/gen_env.sh`; tests `tests/infra/test_compose_files.sh` |
 
 ## Purpose
@@ -38,3 +38,7 @@ Passwords are 24 to 28 characters of `[A-Za-z0-9]` from `/dev/urandom`; two runs
 ## WF12 review fixes (revision 2)
 
 - F12: the header said "five distinct free TCP ports"; six are chosen (postgres, redis, ftp, smb, webdav, nfs). The draw is still bind(0)+close; the lifecycle script retries a start whose port was taken in between (up.sh, F16).
+
+## WF17 fix round 5 (revision 3)
+
+- Inputs: every valued option needs a value; `--env-out` / `--ports-out` are made absolute against the caller's cwd; an `--env-out` inside this checkout must be git-ignored (the credential file never lands in a tracked path) and may not equal `--ports-out` (that used to destroy the env file: the second write overwrote it with mode 644 and zero credential lines); the state path may not hold characters the env file or the volume syntax cannot carry; the op id is a longops safe name. The output now includes `env=` and `ports=` lines (callers read them instead of rebuilding paths), the env file carries `TI_ROOT_HASH` and its mode 0600 is verified after writing. Withdrawn: the documented direct use of this script with a bare compose call (TI-C6).

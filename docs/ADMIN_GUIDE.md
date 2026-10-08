@@ -350,8 +350,7 @@ The SMB client includes:
     "port": 21,
     "username": "archive_user",
     "password": "archive_password",
-    "passive_mode": true,
-    "tls": false
+    "path": "/archive"
   }
 }
 ```
@@ -367,8 +366,9 @@ The SMB client includes:
   "max_depth": 10,
   "settings": {
     "host": "nfs-server.local",
-    "export_path": "/exports/media",
-    "nfs_version": 4
+    "path": "/exports/media",
+    "mount_point": "/mnt/nfs-storage",
+    "options": "vers=4"
   }
 }
 ```

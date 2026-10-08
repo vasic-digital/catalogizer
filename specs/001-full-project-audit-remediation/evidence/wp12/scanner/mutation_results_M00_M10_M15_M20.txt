@@ -1,0 +1,4 @@
+M10-entries-unsorted	KILLED rc=1	TestGenericScanner_BreadthFirstFindsEverythingInOrder, TestGenericScanner_MaxDepthBoundsListingNotRecording
+M15-failed-propstat-trusted	KILLED rc=1	TestParsePropfind_IgnoresPropertiesOfFailedPropstats
+M20-registered-protocol-not-resolved-on-demand	KILLED rc=1	TestScanJob_RegisteredPluggableProtocolIsScannedGenerically
+M00-negative-control-no-change	SURVIVED rc=0	

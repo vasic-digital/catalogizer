@@ -1,0 +1,21 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | full containment mutation run (CTRL0, MS01-MS11, C13-C15)
+# utc 2026-10-08T01:56:17Z | host anton | git head f72d8757 (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/longops/tests/mutate_safety.sh
+CONTROL-OK CTRL0 negative control: an unmutated copy of mutation_safety.sh placed like a mutant (the suite PASSED on the unmutated copy)
+CAUGHT   MS01 RM8 (round-2 reviewer): any line containing a # is a comment, so a kill line with a trailing comment is admitted :: FAIL S31 WF14 RM8 a kill line with a TRAILING comment is code, not a comment: aborted :: rc=0 want 1|
+CAUGHT   MS02 a glob-built absolute path (/usr/bin/k?ll) is not recognised :: FAIL S29 WF14 RB7 a glob-built absolute path [$chroot/usr/bin/k?ll -9 -1] is aborted :: rc=0 want 1|
+CAUGHT   MS03 the left boundary excludes a dot again: os.killpg( and .kill( are invisible :: FAIL S26 WF14 RB5 python os.killpg(1, 9) (the 11.4.263 incident itself) is aborted :: rc=0 want 1|
+CAUGHT   MS04 the shim functions are not read-only: a mutant can redefine the guard :: FAIL L5-ro the containment function 'kill' is READ-ONLY (the listing of declare -F carries -fr for it) :: got |
+CAUGHT   MS05 the PATH stub of podman is missing: podman inside the containment is the host binary :: FAIL L5-id the INNER containment resolves 'podman' to its own stub :: got [/dev/shm/longops-test.girXb4/shim-o|
+CAUGHT   MS06 a podman stop written with the PODMAN variable is not a side-effect token :: FAIL S32 WF14 R2-T2 a new podman side effect ["$PODMAN" stop -t 5 "$(podman ps -q | head -1)"] is aborted :: r|
+CAUGHT   MS07 psutil is not a signal token :: FAIL S28b WF14 RB5 an interpreter signal API [import psutil as p] is aborted :: rc=0 want 1|
+CAUGHT   MS08 an ms_* function name is not a containment-tampering token :: FAIL S30 WF14 RB8 a mutant that redefines or disables the containment [ms_blocked() { return 0; }] is aborted |
+CAUGHT   MS09 a NEW line naming a bin directory (a computed path) is not refused :: FAIL S36c a /usr/bin mention in a TRAILING comment on an edited line is refused conservatively (to the scan a |
+CAUGHT   MS10 a NEW line with a word split by an empty quote pair is not refused :: FAIL S35 WF17 F7 the computed-path line b=/usr/bin; "$b/k""ill" is aborted (golden-bad) :: rc=0 want 1|
+CAUGHT   C13 the PATH stub for kill is not created (command kill / env kill reach the host /usr/bin/kill) :: FAIL L5-id the INNER containment resolves 'kill' to its own stub :: got [/dev/shm/longops-test.girXb4/shim-out|
+CAUGHT   C14 the podman shim function is not read-only (a mutant can redefine podman inside the containment) :: FAIL L5-ro the containment function 'podman' is READ-ONLY (the listing of declare -F carries -fr for it) :: go|
+CAUGHT   C15 the PATH stub for pkill is not created (command pkill reaches the host /usr/bin/pkill) :: FAIL L5-id the INNER containment resolves 'pkill' to its own stub :: got [/dev/shm/longops-test.girXb4/shim-ou|
+CAUGHT   MS11 the stub of skill is not created :: FAIL L5-id the INNER containment resolves 'skill' to its own stub :: got [/dev/shm/longops-test.girXb4/shim-ou|
+CAUGHT   MS12 the shim reads the process group with a line-oriented sed again (a comm holding a newline makes a live process look group-less and the kill is refused: found by the negative control) :: FAIL L8b a live process whose comm holds a NEWLINE is allowed through to the recorder (not refused as 'process|
+MUTATION RESULT caught=15 survived=0 timeout=0 total=16
+# exit status 0

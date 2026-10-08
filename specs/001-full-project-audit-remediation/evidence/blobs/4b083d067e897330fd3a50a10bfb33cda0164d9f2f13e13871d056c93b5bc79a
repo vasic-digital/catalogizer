@@ -1,0 +1,100 @@
+# identity: task=T179 utc=2026-10-08T03:47:13Z host=8abda0598c53 uid=1000
+# git_head=f72d8757fe614adfa38a4f70276853527d06d7e8 tree_dirty_files=7108
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=277406dae76fc2bccaee4e5cdd0e310daef06fd2e11d93b3bd0f15e4c54ae00a apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=2683acff6d8a1f36d15c2f8cc68c8f42ed5bb83aaab3487d5a838391c6728761
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== completion gate: the reverify queue ==
+ok   R0 fixture: v_reverify_queue holds exactly one row
+FAIL R1 rc=1 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|FAIL reference gate registry holds no view_not_done row|GATE FAILED]
+FAIL R1b the exit status is 4 (NOT DONE), distinct from gate failure 1 and partial 3 :: got [1] want [4]
+ok   R1c a NOT DONE run never prints GATE OK or COMPLETION OK
+FAIL R1d [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL R2 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL R3 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+ok   R4 the completion run does not modify the DB under test
+== completion gate: empty queue and the plain register gate ==
+FAIL C1 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL C1b [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL C2 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+ok   C3 WITHOUT --completion the register gate still prints GATE OK with a populated reverify queue (step 2 unchanged, rc 0)
+ok   C4 --completion without --db exits 2 with the usage message
+ok   C5 --completion on an absent DB exits 1 naming the absence
+FAIL C6 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL C7 rc=1
+== completion gate: the register gate result is not hidden, the count is not suppressed ==
+FAIL F1 rc=1 [FAIL schema object of the reference missing in the database under test: triggerreg_ids_no_deletereg_ids
+FAIL schema differs from /src/specs/001-full-project-audit-remediation/evidence/wp21/mutant_ext_row_removed.sql (1 differing definition lines; first: > trigger|reg_ids_no_delete|reg_ids)
+FAIL v_gate_missing_objects: reg_ids_no_delete
+INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL F2 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL F3 rc=1 [FAIL seed differs from /src/specs/001-full-project-audit-remediation/evidence/wp21/mutant_ext_row_removed.sql (1 differing lines; first: < G|v_x; DROP TABLE reg_meta|view_not_done)
+FAIL v_gate_missing_objects: v_x; DROP TABLE reg_meta
+INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+ok   F3b the injected DROP did not run (reg_meta exists)
+FAIL F4 rc=1 [FAIL unexpected schema object in the database under test, not in the reference: tablev_reverify_queuev_reverify_queue
+FAIL schema object of the reference missing in the database under test: viewv_reverify_queuev_reverify_queue
+FAIL schema differs from /src/specs/001-full-project-audit-remediation/evidence/wp21/mutant_ext_row_removed.sql (2 differing definition lines; first: < table|v_reverify_queue|v_reverify_queue)
+INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL F5 rc=1 [FAIL schema differs from /src/specs/001-full-project-audit-remediation/evidence/wp21/mutant_ext_row_removed.sql (2 differing definition lines; first: < view|v_reverify_queue|v_reverify_queue)
+INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+ok   F6 the evidence re-hash runs in completion mode (absent cited file: rc 1)
+== completion gate: PASS-PARTIAL ==
+FAIL P1 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=1
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL P2 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=1
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+FAIL P3 rc=1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=1
+FAIL reference gate registry holds no view_not_done row
+GATE FAILED]
+== completion gate: the reference list is data (mutated reference) ==
+FAIL setup: ext variant e1 identical to the source
+ok   E2 a second view_not_done view is read from the reference: only the populated view is reported (views=1)
+FAIL E3 rc=4 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+NOT DONE v_ids_without_item rows=2
+INFO not_done checked=1
+COMPLETION NOT DONE views=1 rows=2]
+FAIL setup: ext variant e4 identical to the source
+RESULT pass=9 fail=21

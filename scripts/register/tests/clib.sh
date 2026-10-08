@@ -17,15 +17,25 @@ if [ -z "${RUNP_LOCK:-}" ]; then for _i in 1 2 3 4 5 6 7 8 9 10; do cp "$ROOT/bu
 DISK_HEADROOM_OUT_DIR="$T_SCR/disk/"; mkdir -p "$DISK_HEADROOM_OUT_DIR"; export DISK_HEADROOM_OUT_DIR
 RT_MARK="$T_SCR/.rt_start"; : >"$RT_MARK"; sleep 0.01
 RT_REAL_DISK="$ROOT/specs/001-full-project-audit-remediation/evidence/disk"
+rt_common() { LC_ALL=C comm --check-order -12 <(printf '%s\n' "$1" | grep -v '^$' | LC_ALL=C sort -u) <(printf '%s\n' "$2" | grep -v '^$' | LC_ALL=C sort -u); }   # names present in BOTH lists, one collation for sort and comm
 rt_guard() {
   [ -d "$RT_REAL_DISK" ] || return 0
   local ids new leaked
   ids=$(find "$T_SCR" -path '*/.audit/register/journal.jsonl' -print0 2>/dev/null | xargs -0 -r cat 2>/dev/null | python3 -I -c 'import json,sys
 for l in sys.stdin:
     try: print(json.loads(l)["op_id"])
-    except Exception: pass' | sort -u)
-  new=$(find "$RT_REAL_DISK" -maxdepth 1 -newer "$RT_MARK" -name '*.json' -printf '%f\n' 2>/dev/null | sed 's/\.json$//' | sort -u)
-  leaked=$(comm -12 <(printf '%s\n' "$ids" | grep -v '^$') <(printf '%s\n' "$new" | grep -v '^$') | head -5 | tr '\n' ' ')   # empty sets give an empty list (a blank line must not read as a leak)
+    except Exception: pass' | LC_ALL=C sort -u)
+  new=$(find "$RT_REAL_DISK" -maxdepth 1 -newer "$RT_MARK" -name '*.json' -printf '%f\n' 2>/dev/null | sed 's/\.json$//' | LC_ALL=C sort -u)
+  # WF23 E7: sort and comm MUST use the same collation (LC_ALL=C): under a locale `sort -u` output can be refused by comm ("not in sorted order") and common lines are then
+  # silently missed. --check-order makes an unsorted input an error, and a failing comm is a failed check, never an empty list.
+  # control needle (11.4.273): the SAME comparison, run over planted lists that mimic real op ids (mixed case, hyphens, digits), must find exactly the planted common names
+  local plant_a plant_b plant_n plant_found
+  plant_a=$(for i in $(seq 1 30); do printf 'sync-20261008T01%02d00-%d-log-%d\nlocked-Op_%d-x\n' "$i" "$((i*7))" "$i" "$i"; done); plant_b=$(printf '%s\n' "$plant_a" | sed -n '1~3p'; printf 'zz-other-1\n'); plant_n=$(printf '%s\n' "$plant_a" | sed -n '1~3p' | wc -l)
+  plant_found=$(rt_common "$plant_a" "$plant_b" | grep -c .)
+  if [ "$plant_found" -ne "$plant_n" ]; then bad "RT control: the comparison found $plant_found of $plant_n planted common names: it cannot see a leak"; return; fi
+  leaked=$(rt_common "$ids" "$new" 2>"$T_SCR/rt_comm.err"); local crc=$?
+  if [ "$crc" -ne 0 ]; then bad "RT the isolation comparison itself failed (comm exit $crc: $(head -c 200 "$T_SCR/rt_comm.err")): the check proves nothing"; return; fi
+  leaked=$(printf '%s\n' "$leaked" | head -5 | tr '\n' ' ' | sed 's/ *$//')   # empty sets give an empty list (a blank line must not read as a leak)
   if [ -z "$leaked" ]; then ok "RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)"; else bad "RT this suite wrote disk-headroom records into the real repository: $leaked"; fi
 }
 finish() { rt_guard; echo "RESULT pass=$PASS fail=$FAIL"; [ "$FAIL" -eq 0 ]; }

@@ -4,6 +4,9 @@
 # clone, two fresh bare remotes under $T/<case>/fx/ and its own test trust state ($CPA_HOST_STATE under $T). No real remote, no hosted URL,
 # no network, no credential; the owner's real $CPA_HOST_STATE and $CPA_HOST_ENTRY are never read or written.
 # A `git` shim on PATH logs every call; the test fails when a call carries --force, --force-with-lease, a +refspec, --no-verify, rebase or reset.
+# The run's environment is an ALLOWLIST (WF17-cpa): the harness controls (GITSHIM_*, SWEEP_*) therefore travel in FILES, not in variables: a per-run shim directory holds a copy of the shim and its
+# ctl.env, and the sweep shim reads $ANTIMESS_ROOT/.audit/sweep.ctl. A variable of those families given to `run` (as a prefix, an export or in XENV) is written to the file and ALSO offered to
+# the run's environment, where the allowlist must drop it (the proof that the controls do not need the environment).
 # Usage: bash scripts/repo/tests/test_commit_push_all.sh   Env: H=<script under test>, CPA_ONLY=<substring of a section name> to run one section
 # Output: `ok`/`FAIL` lines and a summary; exit 0 only when no case failed AND the script under test exists.
 set -u
@@ -11,7 +14,7 @@ cd "$(git rev-parse --show-toplevel)" || exit 2
 D0="$(pwd)"; SRC="${CPA_SRC:-$D0}"   # SRC: where the scripts under test are read from (a mutated copy under the mutation runner)
 H="${H:-$SRC/scripts/commit-push-all.sh}"; case "$H" in /*) ;; *) H="$D0/$H" ;; esac
 . "$D0/scripts/repo/tests/lib_wp04b.sh"
-REALGIT="$(command -v git)"; T="$(mktemp -d "${TMPDIR:-/tmp}/cpa_test.XXXXXX")"; [ -n "${CPA_KEEP:-}" ] || trap 'rm -rf "$T"' EXIT; [ -z "${CPA_KEEP:-}" ] || echo "NOTE: CPA_KEEP set, scratch tree kept: $T"
+REALGIT="$(command -v git)"; T="$(mktemp -d "${TMPDIR:-/tmp}/cpa_test.XXXXXX")"; [ -n "${CPA_KEEP:-}" ] || trap 'chmod -R u+w "$T" 2>/dev/null; rm -rf "$T"' EXIT; [ -z "${CPA_KEEP:-}" ] || echo "NOTE: CPA_KEEP set, scratch tree kept: $T"
 [ -x "$H" ] || echo "NOTE: $H is absent or not executable (RED state: every case must FAIL)"
 EVR=specs/001-full-project-audit-remediation/evidence; SCHEMA=specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json
 export LONGOPS_ALLOW_TMPFS=1
@@ -20,12 +23,15 @@ export LONGOPS_ALLOW_TMPFS=1
 mkdir -p "$T/shim"; cat > "$T/shim/git" <<SHIM
 #!/bin/bash
 real="$REALGIT"
+[ -f "\$(dirname "\$0")/ctl.env" ] && . "\$(dirname "\$0")/ctl.env"
 printf '%s\n' "\$*" >> "\${GITSHIM_LOG:-/dev/null}"
 args="\$*"
 pushed=0; [ -f "\${GITSHIM_LOG:-/nonexistent}" ] && grep -qE '(^| )push( |\$)' "\$GITSHIM_LOG" && pushed=1
 if [ -n "\${GITSHIM_FAIL_ON:-}" ] && [[ "\$args" =~ \$GITSHIM_FAIL_ON ]]; then echo "shim: refused \$args" >&2; exit 128; fi
 if [ -n "\${GITSHIM_FAIL_AFTER_PUSH:-}" ] && [ "\$pushed" = 1 ] && [[ "\$args" =~ \$GITSHIM_FAIL_AFTER_PUSH ]]; then echo "shim: refused after push \$args" >&2; exit 128; fi
 if [ -n "\${GITSHIM_HOOK_AFTER_COMMIT:-}" ] && [[ "\$args" =~ ls-remote ]] && grep -qE '(^| )commit( |\$)' "\$GITSHIM_LOG" 2>/dev/null && [ ! -e "\$GITSHIM_HOOK_AFTER_COMMIT.done" ]; then : > "\$GITSHIM_HOOK_AFTER_COMMIT.done"; "\$GITSHIM_HOOK_AFTER_COMMIT" >/dev/null 2>&1; fi
+if [ -n "\${GITSHIM_SLEEP_ON:-}" ] && [[ "\$args" =~ \$GITSHIM_SLEEP_ON ]]; then sleep "\${GITSHIM_SLEEP_S:-2}"; fi
+if [ -n "\${GITSHIM_HOOK_ON:-}" ] && [[ "\$args" =~ \$GITSHIM_HOOK_ON ]] && [ ! -e "\$GITSHIM_HOOK.ran" ]; then : > "\$GITSHIM_HOOK.ran"; "\$GITSHIM_HOOK" >/dev/null 2>&1; fi
 if [ -n "\${GITSHIM_SIGNAL_ON:-}" ] && [[ "\$args" =~ \$GITSHIM_SIGNAL_ON ]] && [ ! -e "\$GITSHIM_SIGNALED" ]; then
   q=\$\$; t=""; while [ -n "\$q" ] && [ "\$q" -gt 1 ]; do   # the OUTERMOST ancestor that matches: a command substitution's subshell has the same command line
     if tr '\0' ' ' < "/proc/\$q/cmdline" 2>/dev/null | grep -q -- "\$GITSHIM_SIGNAL_TARGET"; then t="\$q"; fi
@@ -47,7 +53,7 @@ chmod 755 "$T/shim/git"
 mkdir -p "$T/fx"; git init -q --bare -b main "$T/fx/sub.git"
 S="$T/seed"; mkrepo "$S"
 mkdir -p "$S/scripts/repo/host_entry" "$S/scripts/audit" "$S/scripts/longops" "$S/scripts/anti-mess" "$S/$(dirname "$SCHEMA")" "$S/$EVR/reviews" "$S/src"
-for f in "$SRC"/scripts/repo/*.sh "$SRC"/scripts/repo/*.tsv "$SRC"/scripts/repo/fixture_roots.txt; do cp "$f" "$S/scripts/repo/"; done
+for f in "$SRC"/scripts/repo/*.sh "$SRC"/scripts/repo/*.tsv "$SRC"/scripts/repo/*.py "$SRC"/scripts/repo/fixture_roots.txt; do cp "$f" "$S/scripts/repo/"; done
 cp "$SRC"/scripts/audit/org_of.py "$S/scripts/audit/"; cp "$SRC"/scripts/longops/*.sh "$S/scripts/longops/"
 cp "$SRC/scripts/commit-push-all.sh" "$S/scripts/" 2>/dev/null; cp "$SRC/scripts/repo/host_entry/cpa-host" "$S/scripts/repo/host_entry/" 2>/dev/null
 printf 'fx\n' > "$S/scripts/audit/own_orgs.txt"
@@ -63,8 +69,9 @@ printf '# the fixture names no long gate (an explicit empty list: S4 runs nothin
 printf '/.audit/\n' > "$S/.gitignore"
 printf 'L1\nL2\nL3\nL4\nL5\n' > "$S/src/conf.txt"; printf 'M1\nM2\nM3\nM4\nM5\nM6\nM7\nM8\n' > "$S/src/z.txt"; echo base > "$S/README.txt"
 cat > "$S/scripts/anti-mess/sweep.sh" <<'SW'
-#!/usr/bin/env bash
-# sweep shim of the test harness: logs its argv, exits SWEEP_RC (default 0)
+#!/bin/bash -p
+# sweep shim of the test harness: logs its argv, exits SWEEP_RC (default 0); both come from $ANTIMESS_ROOT/.audit/sweep.ctl (the run's environment is an allowlist)
+[ -f "${ANTIMESS_ROOT:-/nonexistent}/.audit/sweep.ctl" ] && . "$ANTIMESS_ROOT/.audit/sweep.ctl"
 printf '%s\n' "$*" >> "${SWEEP_LOG:-/dev/null}"; exit "${SWEEP_RC:-0}"
 SW
 chmod 755 "$S/scripts/anti-mess/sweep.sh"
@@ -72,7 +79,7 @@ commit_all "$S" seed
 # the submodule: a bare repository under fx/ (org `fx` is owned), seeded with one commit
 rm -rf "$T/subseed"; mkrepo "$T/subseed"; echo sub > "$T/subseed/s.txt"; commit_all "$T/subseed" "sub init"; git -C "$T/subseed" push -q "$T/fx/sub.git" main
 git -C "$S" submodule add -q "$T/fx/sub.git" mods/sub 2>/dev/null
-# a third-party submodule (organisation `ext` is not owned): a --repo run of it is refused, no run ever pushes it
+# a third-party submodule (organisation `ext` is not owned): a --repo run of it is refused, and no run pushes it as long as ANY url of ANY of its remotes names a third party (18.15)
 mkdir -p "$T/ext"; git init -q --bare -b main "$T/ext/t.git"; rm -rf "$T/extseed"; mkrepo "$T/extseed"; echo t > "$T/extseed/t.txt"; commit_all "$T/extseed" "ext init"; git -C "$T/extseed" push -q "$T/ext/t.git" main
 git -C "$S" submodule add -q "$T/ext/t.git" mods/ext 2>/dev/null; git -C "$S" commit -qm "add submodules" 2>/dev/null
 git init -q --bare -b main "$T/seed.git" && git -C "$S" push -q "$T/seed.git" main
@@ -80,7 +87,7 @@ git init -q --bare -b main "$T/seed.git" && git -C "$S" push -q "$T/seed.git" ma
 # ---- per-case construction ---------------------------------------------------------------------------------------------------------------
 sha() { sha256sum "$1" | cut -d' ' -f1; }
 mk() { # mk <case> [PRE=function applied to the clone before the trust state is built] [OMIT=<tracked path left out of the approved manifest>]
-  local n="$1"; C="$T/$n"; rm -rf "$C"; mkdir -p "$C/fx" "$C/state/blobs" "$C/bin"; chmod 700 "$C/state"
+  local n="$1"; C="$T/$n"; chmod -R u+w "$C" 2>/dev/null; rm -rf "$C"; mkdir -p "$C/fx" "$C/state/blobs" "$C/bin"; chmod 700 "$C/state"
   rm -rf "$T/fx/sub.git"; git clone -q --bare "$T/subseed" "$T/fx/sub.git" 2>/dev/null
   git clone -q --bare "$T/seed.git" "$C/fx/a.git"; git clone -q --bare "$T/seed.git" "$C/fx/b.git"
   git clone -q "$C/fx/a.git" "$C/w" 2>/dev/null; W="$C/w"
@@ -92,6 +99,7 @@ mk() { # mk <case> [PRE=function applied to the clone before the trust state is 
   : > "$C/git.log"; : > "$C/sweep.log"; PREV=""; SEEDHEAD="$(git -C "$W" rev-parse HEAD)"
   # the run's git settings come from the owner's HOME only (the run drops every caller GIT_CONFIG_* and XDG_CONFIG_HOME, WF14 round 3): the fixture HOME holds what the
   # harness used to export as GIT_CONFIG_COUNT (file-protocol submodules, a container user that does not own the bind-mounted tree)
+  shimdir "$C/shimr"
   mkdir -p "$C/home"; printf '[protocol "file"]\n\tallow = always\n[safe]\n\tdirectory = *\n' > "$C/home/.gitconfig"
 }
 moved() { [ "$(git -C "$W" rev-parse HEAD)" != "$SEEDHEAD" ] && ok "$1: HEAD moved (the commit was made)" || bad "$1: HEAD did not move"; }
@@ -111,9 +119,35 @@ trust_build() { # a test-state trust file built directly (the owner `approve` op
     '{schema:"cpa-host-trust/1",projects:{($k):{adoption_commit:$a,manifest:$e,history:[{op:"approve",verdict:"fixture",time:"2026-10-06T00:00:00Z",manifest:$e,manifest_sha256:$ms}]}}}' > "$C/state/trust.json"
   TRUSTKEY="$key"; TRUSTMS="$ms"
 }
-ENVV() { echo "HOME=$C/home" "CPA_HOST_STATE=$C/state" "CPA_HOST_ENTRY=$C/bin/cpa-host" "PATH=$T/shim:$PATH" "GITSHIM_LOG=$C/git.log" "SWEEP_LOG=$C/sweep.log"; }
-run() { # run <cpa-host args...>   (cwd $W or $CWD); sets RC, RUN (run id), RD (run dir), REP (report path), OUT (stdout+stderr)
-  : > "$C/git.log"; ( cd "${CWD:-$W}" && env $(ENVV) ${XENV:-} "$C/bin/cpa-host" "$@" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+shimdir() { # shimdir <dir> [NAME=VALUE ...]: a directory with a copy of the git shim and its control file ctl.env (read by the shim from beside itself)
+  local d="$1" kv; shift; mkdir -p "$d"; cp "$T/shim/git" "$d/git"; chmod 755 "$d/git"
+  { printf 'GITSHIM_LOG=%q\n' "$C/git.log"; for kv in "$@"; do printf '%s=%q\n' "${kv%%=*}" "${kv#*=}"; done; } > "$d/ctl.env"
+}
+# a harness that runs in the background (or under nohup) hands every child SIGINT, SIGQUIT and SIGHUP IGNORED, and an ignored signal cannot be trapped: the run is therefore started through a
+# python that resets EVERY catchable disposition to the default before it execs (a false FAIL of section 16 under nohup, TEST-5, and a blind INT case, are both closed this way)
+PYBIN="$(command -v python3)"
+SIGDFL=("$PYBIN" -I -c 'import os, signal, sys
+for n in range(1, 65):
+    if n in (signal.SIGKILL, signal.SIGSTOP): continue
+    try: signal.signal(n, signal.SIG_DFL)
+    except (OSError, ValueError): pass
+os.execvp(sys.argv[1], sys.argv[1:])')
+envr() { "${SIGDFL[@]}" env "$@"; }
+ENVV() { echo "HOME=$C/home" "CPA_HOST_STATE=$C/state" "CPA_HOST_ENTRY=$C/bin/cpa-host" "PATH=${SHIMD:-$C/shimr}:$PATH"; }
+ctl_collect() { # ctl_collect: the harness controls offered to this run (ambient exports, a prefix, XENV) as NAME=VALUE lines on stdout
+  local n kv; for n in $(compgen -e); do case "$n" in GITSHIM_*|SWEEP_*) printf '%s=%s\n' "$n" "${!n}" ;; esac; done
+  for kv in ${XENV:-}; do case "$kv" in GITSHIM_*|SWEEP_*) printf '%s\n' "$kv" ;; esac; done
+}
+ctl_apply() { # ctl_apply: write the shim control file of the default run shim dir and the sweep control file of the clone from ctl_collect
+  local kvs=() kv; while IFS= read -r kv; do [ -z "$kv" ] || kvs+=("$kv"); done < <(ctl_collect)
+  shimdir "$C/shimr" "${kvs[@]+"${kvs[@]}"}"
+  mkdir -p "$W/.audit"; { printf 'SWEEP_LOG=%q\n' "$C/sweep.log"; for kv in "${kvs[@]+"${kvs[@]}"}"; do case "$kv" in SWEEP_*) printf '%s=%q\n' "${kv%%=*}" "${kv#*=}" ;; esac; done; } > "$W/.audit/sweep.ctl"
+}
+run() { runenv -- "$@"; }
+runenv() { # runenv [NAME=VALUE | -u NAME ...] -- <cpa-host args...>: run with extra environment words (each one argument, so a value may hold spaces); the rest as for `run`
+  local -a ev=() uf=(); while [ $# -gt 0 ] && [ "$1" != -- ]; do if [ "$1" = -u ]; then uf+=(-u "$2"); shift 2; else ev+=("$1"); shift; fi; done; [ $# -eq 0 ] || shift
+  local -a base=(); local w n u i; for w in $(ENVV) ${XENV:-}; do n="${w%%=*}"; u=0; for ((i=1; i<${#uf[@]}; i+=2)); do [ "${uf[$i]}" = "$n" ] && u=1; done; [ "$u" = 1 ] || base+=("$w"); done
+  : > "$C/git.log"; ctl_apply; ( cd "${CWD:-$W}" && envr "${uf[@]+"${uf[@]}"}" "${base[@]}" "${ev[@]+"${ev[@]}"}" "$C/bin/cpa-host" "$@" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
   OUT="$(cat "$C/out.txt" "$C/err.txt")"; RUN="$(printf '%s\n' "$OUT" | sed -n 's/.*cpa: exit=[0-9]* run=\([^ ]*\).*/\1/p' | tail -1)"
   RD="$W/.audit/commit-push/$RUN"; REP="$RD/report.json"; shimcheck
 }
@@ -176,6 +210,7 @@ eq "1.1 report exit" "$(jq -r .exit "$REP" 2>/dev/null)" 0
 [ -s "$C/sweep.log" ] && ok "1.1 the sweep shim was called" || bad "1.1 the sweep shim was never called"
 h1="$(head_)"; run; eq "1.2 second run after a clean run: 0" "$RC" 0; eq "1.2 commits nothing" "$(head_)" "$h1"; tracked_clean && ok "1.2 clean" || bad "1.2 dirty"
 RUN1="$RUN"; run; [ "$RUN" != "$RUN1" ] && ok "1.2 run ids differ" || bad "1.2 equal run ids"
+eq "1.2 a FINISHED run is never listed as interrupted (the run before it ended with its report)" "$(jq -c .interrupted_runs "$REP" 2>/dev/null)" "[]"
 case "$RUN" in [0-9]*T[0-9]*Z-[0-9]*-*) ok "1.2 run id holds UTC time, pid and a suffix" ;; *) bad "1.2 run id shape: $RUN" ;; esac
 
 OMIT=scripts/anti-mess/sweep.sh mk nosweep
@@ -248,14 +283,17 @@ mk interrupted
 mkdir -p "$W/.audit/commit-push/20260101T000000Z-1-dead"; echo partial > "$W/.audit/commit-push/20260101T000000Z-1-dead/log.txt"; b="$(cd "$W/.audit/commit-push/20260101T000000Z-1-dead" && find . -type f | sort | xargs sha256sum | sha256sum)"
 run; eq "2.16 clean run beside a run directory without a report: 0" "$RC" 0
 has "2.16 the report lists the interrupted run" "$(jq -c .interrupted_runs "$REP" 2>/dev/null)" "20260101T000000Z-1-dead"
-eq "2.16 the interrupted run's directory is byte-unchanged" "$(cd "$W/.audit/commit-push/20260101T000000Z-1-dead" && find . -type f | sort | xargs sha256sum | sha256sum)" "$b"
+# the dead run (no run.pid, older than this run) is CLOSED by this one: its own files are byte-unchanged, interrupted.json and a report.json (closed_by) are ADDED, nothing is deleted
+eq "2.16 the interrupted run's own file is byte-unchanged" "$(sha256sum < "$W/.audit/commit-push/20260101T000000Z-1-dead/log.txt")" "$(printf 'partial\n' | sha256sum)"
+eq "2.16 the dead run was closed: interrupted.json names this run" "$(jq -r .closed_by "$W/.audit/commit-push/20260101T000000Z-1-dead/interrupted.json" 2>/dev/null)" "$RUN"
+eq "2.16 and its report says why" "$(jq -r .reason "$W/.audit/commit-push/20260101T000000Z-1-dead/report.json" 2>/dev/null)" no_report_process_gone
 fi
 
 # ======== 3 the lock =========================================================================================================================
 if sect "3 lock"; then
 mk lock
 echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; export GITSHIM_LOG="$C/git.log" GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
-: > "$C/git.log"; ( cd "$W" && env $(ENVV) GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" --paths-from "$C/p.txt" "l" ) >"$C/hold.out" 2>"$C/hold.err" &
+: > "$C/git.log"; shimdir "$C/shimh" GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" --paths-from "$C/p.txt" "l" ) >"$C/hold.out" 2>"$C/hold.err" &
 HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
 [ -e "$C/paused" ] && ok "3.1 the first run is paused between S6 and S7" || bad "3.1 no pause reached"
 HRUND="$(ls -1d "$W/.audit/commit-push/"*/ | head -1)"
@@ -346,12 +384,12 @@ echo v > "$W/src/v.txt"; paths 'src/v.txt\n'; run --paths-from "$C/p.txt" "other
 mkdir -p "$W/$EVR/reviews"; GOJ NO-GO "[\"$HRUN1\"]" 1 > "$W/$EVR/reviews/WP-X.json"; paths "$V\n"; run --paths-from "$C/p.txt" "nogo"
 eq "6.3 a NO-GO verdict keeps the hold: 14" "$RC" 14; has "6.3 review_pending" "$OUT" review_pending
 # verdict_already_go: a hold on a verdict that holds GO in HEAD is refused before any commit
-GOJ GO '["x"]' 0 > "$W/$EVR/reviews/WP-Y.json"; paths "$EVR/reviews/WP-Y.json\n"; run --paths-from "$C/p.txt" "a GO file for another item"
+GOJ GO '["20261001T000000Z-1-aaaa"]' 0 > "$W/$EVR/reviews/WP-Y.json"; paths "$EVR/reviews/WP-Y.json\n"; run --paths-from "$C/p.txt" "a GO file for another item"
 echo w > "$W/src/w.txt"; paths "src/w.txt\t$EVR/reviews/WP-Y.json\n"; h0="$(head_)"; run --paths-from "$C/p.txt" "hold on a GO file"
 eq "6.4 a hold on a verdict that holds GO in HEAD: 20" "$RC" 20; has "6.4 verdict_already_go" "$OUT" verdict_already_go; eq "6.4 nothing committed" "$(head_)" "$h0"; rm -f "$W/src/w.txt"
-GOJ GO '["z"]' 0 > "$W/$EVR/reviews/WP-Y.json"; paths "$EVR/reviews/WP-Y.json\n"; run --paths-from "$C/p.txt" "edit a GO file"
+GOJ GO '["20261001T000000Z-3-cccc"]' 0 > "$W/$EVR/reviews/WP-Y.json"; paths "$EVR/reviews/WP-Y.json\n"; run --paths-from "$C/p.txt" "edit a GO file"
 eq "6.4 a change to a verdict file that holds GO in HEAD: 20" "$RC" 20; has "6.4 verdict_already_go" "$OUT" verdict_already_go; git -C "$W" checkout -q -- "$EVR/reviews/WP-Y.json"
-echo w2 > "$W/src/w2.txt"; GOJ GO '["w"]' 0 > "$W/$EVR/reviews/WP-N.json"; paths "src/w2.txt\t$EVR/reviews/WP-N.json\n$EVR/reviews/WP-N.json\n"; run --paths-from "$C/p.txt" "hold with the GO in the same change set"
+echo w2 > "$W/src/w2.txt"; GOJ GO '["20261001T000000Z-4-dddd"]' 0 > "$W/$EVR/reviews/WP-N.json"; paths "src/w2.txt\t$EVR/reviews/WP-N.json\n$EVR/reviews/WP-N.json\n"; run --paths-from "$C/p.txt" "hold with the GO in the same change set"
 eq "6.4 a hold together with that verdict declared GO in the same change set: 20" "$RC" 20; has "6.4 verdict_already_go" "$OUT" verdict_already_go; rm -f "$W/src/w2.txt" "$W/$EVR/reviews/WP-N.json"
 # release: a GO committed in HEAD naming the held run releases the whole range
 GOJ GO "[\"$HRUN1\"]" 0 > "$W/$EVR/reviews/WP-X.json"; paths "$V\n"; run --paths-from "$C/p.txt" "GO for the held run"
@@ -364,7 +402,7 @@ eq "6.8 --awaits-review holds every path without a verdict of its own: 14" "$RC"
 # a GO whose covers_runs lacks the held run keeps the hold
 mk held2
 V2="$EVR/reviews/WP-Z.json"; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V2\n"; run --paths-from "$C/p.txt" "held"; eq "6.6 setup: held commit: 14" "$RC" 14; tipbefore="$(tipof a)"
-mkdir -p "$W/$EVR/reviews"; GOJ GO '["some-other-run"]' 0 > "$W/$EVR/reviews/WP-Z.json"; paths "$V2\n"; run --paths-from "$C/p.txt" "go for another run"
+mkdir -p "$W/$EVR/reviews"; GOJ GO '["20261001T000000Z-2-bbbb"]' 0 > "$W/$EVR/reviews/WP-Z.json"; paths "$V2\n"; run --paths-from "$C/p.txt" "go for another run"
 eq "6.6 a GO whose covers_runs lacks the held run keeps the hold: 14" "$RC" 14; has "6.6 review_pending" "$OUT" review_pending; eq "6.6 nothing past the held commit reached origin" "$(tipof a)" "$tipbefore"
 # a NO-GO verdict file in HEAD whose schema is invalid keeps the hold too (an uncommitted GO releases nothing: the verdict is read from the committed HEAD)
 mk held3
@@ -464,7 +502,7 @@ eq "7.13 a bundle that git bundle verify rejects: 20" "$RC" 20; has "7.13 backup
 mk livemerge
 echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; run --local-only --paths-from "$C/p.txt" "local"; foreign src/f.txt 'f\n'
 : > "$C/git.log"; export GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
-( cd "$W" && env $(ENVV) GITSHIM_PAUSE_ON='(^| )commit( |$)' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" ) >"$C/hold.out" 2>"$C/hold.err" &
+shimdir "$C/shimh" GITSHIM_PAUSE_ON='(^| )commit( |$)' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" ) >"$C/hold.out" 2>"$C/hold.err" &
 HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
 [ -e "$W/.git/MERGE_HEAD" ] && ok "7.16 the holder is paused with MERGE_HEAD in place" || bad "7.16 no MERGE_HEAD while paused"
 run; eq "7.16 a second run while a live holder pauses between the merge and its commit: 20" "$RC" 20; has "7.16 lock_held" "$OUT" lock_held; hasnot "7.16 no git merge --abort remediation" "$OUT" "merge --abort"
@@ -534,7 +572,7 @@ run --repo mods/ext; eq "9.4 --repo of a third-party repository: 20" "$RC" 20; h
 mk repoheld
 VR="$EVR/reviews/WP-S.json"; echo hh > "$W/mods/sub/hh.txt"; paths "mods/sub/hh.txt\t$VR\n"; before="$(git -C "$T/fx/sub.git" rev-parse main)"; run --repo mods/sub --paths-from "$C/p.txt" "held in the submodule"
 eq "9.5 a held --repo commit: 14" "$RC" 14; has "9.5 review_pending" "$OUT" review_pending; HRS="$RUN"; eq "9.5 the submodule's remote does not hold it" "$(git -C "$T/fx/sub.git" rev-parse main)" "$before"
-mkdir -p "$W/$EVR/reviews"; GOJ GO '["some-other-run"]' 0 > "$W/$EVR/reviews/WP-S.json"; paths "$VR\n"; run --paths-from "$C/p.txt" "a GO that does not cover the held run"
+mkdir -p "$W/$EVR/reviews"; GOJ GO '["20261001T000000Z-2-bbbb"]' 0 > "$W/$EVR/reviews/WP-S.json"; paths "$VR\n"; run --paths-from "$C/p.txt" "a GO that does not cover the held run"
 eq "9.6 a GO without the held run in covers_runs: the --repo commit stays held, 14" "$RC" 14; eq "9.6 still not on the submodule's remote" "$(git -C "$T/fx/sub.git" rev-parse main)" "$before"
 mk repoheld2
 echo hh > "$W/mods/sub/hh.txt"; paths "mods/sub/hh.txt\t$VR\n"; run --repo mods/sub --paths-from "$C/p.txt" "held in the submodule"; HRS="$RUN"
@@ -547,7 +585,7 @@ fi
 if sect "10 host entry"; then
 mk host
 # started directly, not through cpa-host: the copied script's self-test refuses
-( cd "$W" && env $(ENVV) "$W/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+( cd "$W" && envr $(ENVV) "$W/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
 eq "10.1 the tracked script started directly: 20" "$RC" 20; has "10.1 not_via_host_entry" "$(cat "$C/err.txt")" not_via_host_entry; ls "$W/.audit/commit-push" >/dev/null 2>&1 && bad "10.1 wrote a run directory" || ok "10.1 wrote nothing"
 run; eq "10.2 through cpa-host: 0 (control)" "$RC" 0
 # a subdirectory and a submodule resolve to the main root
@@ -574,7 +612,7 @@ run; eq "10.12 a store blob changed by one byte: 20" "$RC" 20; has "10.12 approv
 mk host5
 run; RD5="$RD"; snap="$RD5/released/trust-snapshot.json"; chmod u+w "$snap"; jq '.entries|=map(if .path=="scripts/repo/lib_safe.sh" then .sha256="'"$(printf x | sha256sum | cut -d' ' -f1)"'" else . end) | .manifest_sha256=("0"*64)' "$snap" > "$C/snap.new"
 ents="$(jq -cS '.entries|sort_by(.path)' "$C/snap.new")"; jq --arg m "$(printf '%s' "$ents" | sha256sum | cut -d' ' -f1)" '.manifest_sha256=$m' "$C/snap.new" > "$snap"
-( cd "$W" && env $(ENVV) CPA_ROOT="$W" CPA_RUN_ID="$(basename "$RD5")" "$RD5/released/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+( cd "$W" && envr $(ENVV) CPA_ROOT="$W" CPA_RUN_ID="$(basename "$RD5")" "$RD5/released/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
 eq "10.13 a snapshot whose manifest no approval recorded: 20" "$RC" 20; has "10.13 snapshot_not_trusted" "$(cat "$C/err.txt")" snapshot_not_trusted
 # a revoked manifest
 mk host6
@@ -606,6 +644,7 @@ mk hmap3; ffshim 20 pin_not_on_remote; run; eq "13.3 integrate_ff_only 20: 20" "
 mk hmap4; ffshim 7 x; run; eq "13.4 integrate_ff_only exit 7 (outside its set): 20, never read as success" "$RC" 20; has "13.4 internal_error" "$OUT" internal_error
 mk hmap5; hshim scripts/repo/push_recursive.sh 'echo "REFUSED	.	unrecorded_local_commit	abc"; exit 20'; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; run --paths-from "$C/p.txt" "a"
 eq "13.5 push_recursive 20: 20" "$RC" 20; has "13.5 reason" "$OUT" unrecorded_local_commit
+eq "13.5 the REPORT states the reason the helper's REFUSED line stated (it was null: the grep list did not hold it)" "$(jq -r .reason "$REP" 2>/dev/null)" unrecorded_local_commit
 mk hmap6; hshim scripts/repo/push_recursive.sh 'exit 7'; run; eq "13.6 push_recursive exit 7 (outside its set): 20" "$RC" 20
 mk hmap7; hshim scripts/repo/verify_repos.sh 'j=""; while [ $# -gt 0 ]; do [ "$1" = --json ] && j="$2"; shift; done; echo "{\"summary\":{\"pin_drift\":0,\"ahead\":0,\"dirty\":0},\"repos\":[]}" > "$j"; exit 20'; run
 eq "13.7 a verifier exit 20 with a readable report: 20 (blind verifier)" "$RC" 20; has "13.7 verifier_blind" "$OUT" verifier_blind
@@ -663,14 +702,16 @@ eq "14.33 an approved copy without a long-gate list (no long gate was run): 14, 
 
 # ---- C6 a stale lock is named as one, with its remediation (F2) ----
 mk stale; echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; export GITSHIM_LOG="$C/git.log" GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
-: > "$C/git.log"; ( cd "$W" && env $(ENVV) GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" --paths-from "$C/p.txt" "l" ) >"$C/hold.out" 2>"$C/hold.err" &
+: > "$C/git.log"; shimdir "$C/shimh" GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" --paths-from "$C/p.txt" "l" ) >"$C/hold.out" 2>"$C/hold.err" &
 HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
 [ -e "$C/paused" ] && ok "14.6 the first run is paused between S6 and S7" || bad "14.6 no pause reached"
 hpid="$(jq -r .pid "$W/.audit/longops/claims/commit_push/holder.json" 2>/dev/null)"
 if [[ "$hpid" =~ ^[0-9]+$ ]] && [ "$hpid" -gt 1 ] && tr '\0' ' ' < "/proc/$hpid/cmdline" 2>/dev/null | grep -q 'commit-push-all.sh'; then kill -KILL "$hpid"; ok "14.6 the holder (a process of our released commit-push-all.sh) was killed"; else bad "14.6 the holder pid '$hpid' is not our released script"; fi
 : > "$C/go"; wait $HP 2>/dev/null; unset GITSHIM_LOG GITSHIM_PAUSED GITSHIM_PAUSE_UNTIL
-run; eq "14.6 a dead holder's claim: 20" "$RC" 20; eq "14.6 reason lock_stale_claim, not lock_held" "$(jq -r .reason "$REP" 2>/dev/null)" lock_stale_claim
-has "14.6 the message carries the real cause" "$OUT" "stale_claim"; has "14.6 and the reap remediation" "$OUT" "reap.sh --purpose commit_push"
+dead6="$(basename "$(ls -1d "$W/.audit/commit-push/"*/ | head -1)")"
+run; eq "14.6 a dead holder's claim is reaped by S0 itself (reap.sh --purpose commit_push proves the holder dead) and the run proceeds: 0" "$RC" 0
+has "14.6 reap.out records the released stale claim" "$(cat "$RD/reap.out" 2>/dev/null)" "released stale claim commit_push"
+eq "14.6 the reaped holder's own run is closed by this one (its process is gone, no report)" "$(jq -r .closed_by "$W/.audit/commit-push/$dead6/report.json" 2>/dev/null)" "$RUN"
 
 # ---- C2 every helper status outside its documented set is 20 (F5) ----
 mshim() { hshim scripts/repo/integrate_ff_only.sh 'j=""; while [ $# -gt 0 ]; do [ "$1" = --json ] && j="$2"; shift; done; echo "{\"reason\":\"remotes_diverged\"}" > "$j"; exit 12'; hshim scripts/repo/integrate_merge.sh "echo '$2'; exit $1"; }
@@ -692,7 +733,7 @@ mk aq4; hshim scripts/longops/acquire.sh 'echo "stale_claim: commit_push holder 
 
 # ---- C2 a signal mid-run: the catch-all of S8 is 20, never the signal's status read as success (F5) ----
 mk term; echo t > "$W/src/t.txt"; paths 'src/t.txt\n'; export GITSHIM_LOG="$C/git.log" GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"
-: > "$C/git.log"; ( cd "$W" && env $(ENVV) GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go" "$C/bin/cpa-host" --run-id term-1 --paths-from "$C/p.txt" "t" ) >"$C/hold.out" 2>"$C/hold.err" &
+: > "$C/git.log"; shimdir "$C/shimh" GITSHIM_PAUSE_AFTER_PUSH='ls-remote|fetch' GITSHIM_PAUSED="$C/paused" GITSHIM_PAUSE_UNTIL="$C/go"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" --run-id term-1 --paths-from "$C/p.txt" "t" ) >"$C/hold.out" 2>"$C/hold.err" &
 HP=$!; n=0; while [ ! -e "$C/paused" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done
 tpid="$(jq -r .pid "$W/.audit/longops/claims/commit_push/holder.json" 2>/dev/null)"
 if [[ "$tpid" =~ ^[0-9]+$ ]] && [ "$tpid" -gt 1 ] && tr '\0' ' ' < "/proc/$tpid/cmdline" 2>/dev/null | grep -q 'commit-push-all.sh'; then kill -TERM "$tpid"; ok "14.20 SIGTERM sent to our released commit-push-all.sh"; else bad "14.20 the run pid '$tpid' is not our released script"; fi
@@ -702,7 +743,7 @@ TR="$W/.audit/commit-push/term-1/report.json"; eq "14.20 the report exit" "$(jq 
 
 # ---- C8/self-test: a released copy changed by one byte beside the genuine snapshot is refused (F5, the own-sha256 check) ----
 mk tamper; run; RDT="$RD"; chmod u+w "$RDT/released/scripts/commit-push-all.sh"; echo '# tampered' >> "$RDT/released/scripts/commit-push-all.sh"
-( cd "$W" && env $(ENVV) CPA_ROOT="$W" CPA_RUN_ID="$(basename "$RDT")" "$RDT/released/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+( cd "$W" && envr $(ENVV) CPA_ROOT="$W" CPA_RUN_ID="$(basename "$RDT")" "$RDT/released/scripts/commit-push-all.sh" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
 eq "14.21 a released copy changed by one byte: 20" "$RC" 20; has "14.21 own sha256 differs from the snapshot entry" "$(cat "$C/err.txt")" "own sha256 differs from the snapshot entry"
 
 # ---- C5 no caller-environment variable widens the owned set (F1) ----
@@ -789,7 +830,7 @@ eq "15.5 control needle: BASH_ENV runs a caller file in a plain non-interactive 
 rm -f "$C/be.marker"; echo b > "$W/src/b.txt"; paths 'src/b.txt\n'
 XENV="BASH_ENV=$C/be.sh" run --paths-from "$C/p.txt" "b"; unset XENV
 eq "15.5 a run under a caller BASH_ENV: 0" "$RC" 0
-eq "15.5 the caller file ran in the entry process only (the interpreter reads it before any line of cpa-host; the run and its helpers never do)" "$(fmark be.marker)" 1
+eq "15.5 the caller file ran NOWHERE: #!/bin/bash -p ignores BASH_ENV in the entry process, the run and every helper (INSTALL.md 40 is true now)" "$(fmark be.marker)" 0
 # -- PV: a caller-chosen program location read by a helper (VERIFY_GIT is the verifier's git binary) ----
 mk pv; printf '#!/bin/sh\necho ran >> "%s"\nexec git "$@"\n' "$C/vg.marker" > "$C/vg.sh"; chmod 755 "$C/vg.sh"
 VERIFY_GIT="$C/vg.sh" "$SRC/scripts/repo/verify_repos.sh" --root "$W" --no-remote --quiet --json "$C/vg.json" >/dev/null 2>&1
@@ -810,7 +851,7 @@ fi
 # detail), never the status of the last completed command, and its process status stays inside the documented set.
 if sect "16 sig"; then
 # control needle: bash alone runs the EXIT trap with the status of the last completed command and re-raises the signal (the defect this section guards)
-cn="$(bash -c 'trap "echo trapped-rc=\$?" EXIT; kill -HUP $$' 2>&1; echo "status=$?")"
+cn="$("${SIGDFL[@]}" bash -c 'trap "echo trapped-rc=\$?" EXIT; kill -HUP $$' 2>&1; echo "status=$?")"
 has "16.0 control needle: an untrapped SIGHUP runs the EXIT trap with status 0 (the old report said exit 0)" "$cn" "trapped-rc=0"; has "16.0 and the process status is 129" "$cn" "status=129"
 mk sg
 hshim scripts/repo/validate_cheap.sh 'read -r s < "$CPA_ROOT/.audit/sig.txt"; p=$PPID
@@ -826,26 +867,33 @@ sigrun() { # sigrun <name or number> <expected process status>: one run hit by t
   eq "16 SIG$s: no push call" "$(pushes)" 0
 }
 sigrun WINCH 0
-if [ "$(bash -c 'kill -INT $$; echo survived' 2>/dev/null)" = survived ]; then ok "16.1 SIGINT is ignored in this harness context (a background job): its trap is the same line as TERM's, tested by 14.20"; else sigrun INT 130; fi
+sigrun INT 130      # the run starts through envr, which resets every disposition: SIGINT is testable in a background harness too (it was a bare ok there)
 for pair in HUP:129 QUIT:131 ILL:132 TRAP:133 ABRT:134 BUS:135 FPE:136 USR1:138 SEGV:139 USR2:140 PIPE:141 ALRM:142 TERM:143 STKFLT:144 XCPU:152 XFSZ:153 VTALRM:154 PROF:155 IO:157 PWR:158 SYS:159; do
   sigrun "${pair%%:*}" "${pair##*:}"
 done
-sigrun 40 168
+for rt in 34:162 40:168 50:178 64:192; do sigrun "${rt%%:*}" "${rt##*:}"; done      # the real-time range (a mutant that traps only one number of it is killed)
 printf "WINCH\n" > "$W/.audit/sig.txt"; run; eq "16.2 after the signalled runs a plain run is 0 (no lock left behind)" "$RC" 0
-# a second signal while the report is being written (S8) does not cut it short: release.sh runs inside the exit handler
-mk sg3; hshim scripts/longops/release.sh 'p=$PPID; if [[ "$p" =~ ^[0-9]+$ ]] && [ "$p" -gt 1 ] && tr "\0" " " < "/proc/$p/cmdline" 2>/dev/null | grep -q "released/scripts/commit-push-all.sh"; then kill -TERM "$p"; fi; exit 0'
-run; eq "16.3 a SIGTERM that arrives while the report is written: the run still ends 0 (the report is complete, the signal swallowed)" "$RC" 0
-eq "16.3 the report exists and says exit 0" "$(jq -r .exit "$REP" 2>/dev/null)" 0; eq "16.3 the lock was released" "$(jq -r .lock.released "$REP" 2>/dev/null)" true
-# a signal before the run is opened (the self-test phase of the copied script): 20 with a stated cause, never the signal's status
-mk sg4; : > "$C/git.log"; rm -f "$C/signaled"
-( cd "$W" && env $(ENVV) GITSHIM_SIGNAL_ON='rev-list --first-parent --max-parents=0' GITSHIM_SIGNAL=TERM GITSHIM_SIGNAL_TARGET='released/scripts/commit-push-all.sh' GITSHIM_SIGNALED="$C/signaled" "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
-[ -e "$C/signaled" ] && ok "16.4 control: the signal reached our released commit-push-all.sh" || bad "16.4 control: no signal was sent (the probe is blind)"
-eq "16.4 a SIGTERM during the self-test: 20, never 143" "$RC" 20; has "16.4 the refusal states the status" "$(cat "$C/err.txt")" "internal_error exit 143"
-# a signal in the host entry before it execs: 20 as one JSON line, never 143
-mk sg5; rm -f "$C/signaled"
-( cd "$W" && env $(ENVV) GITSHIM_SIGNAL_ON='rev-parse --show-toplevel' GITSHIM_SIGNAL=HUP GITSHIM_SIGNAL_TARGET='bin/cpa-host' GITSHIM_SIGNALED="$C/signaled" "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
-[ -e "$C/signaled" ] && ok "16.5 control: the signal reached the host entry" || bad "16.5 control: no signal was sent (the probe is blind)"
-eq "16.5 a SIGHUP in the host entry: 20, never 129" "$RC" 20; has "16.5 one refusal line with the status" "$(cat "$C/err.txt")" "host_exit_129"
+# a second signal while the report is being written (S8) does not cut it short: release.sh runs inside the exit handler; every catchable terminating signal is tried
+for s3 in TERM HUP INT QUIT; do
+  mk sg3; hshim scripts/longops/release.sh 'p=$PPID; if [[ "$p" =~ ^[0-9]+$ ]] && [ "$p" -gt 1 ] && tr "\0" " " < "/proc/$p/cmdline" 2>/dev/null | grep -q "released/scripts/commit-push-all.sh"; then kill -'"$s3"' "$p"; fi; exit 0'
+  run; eq "16.3 a SIG$s3 that arrives while the report is written: the run still ends 0 (the report is complete, the signal ignored)" "$RC" 0
+  eq "16.3 SIG$s3: the report exists and says exit 0" "$(jq -r .exit "$REP" 2>/dev/null)" 0; eq "16.3 SIG$s3: the lock was released" "$(jq -r .lock.released "$REP" 2>/dev/null)" true
+done
+# a signal before the run is opened (the self-test phase of the copied script): 20 with a stated cause, never the signal's status; HUP, QUIT, TERM and USR1 are tried
+for pair in HUP:129 QUIT:131 TERM:143 USR1:138; do
+  sg="${pair%%:*}"; sn="${pair##*:}"; mk sg4; : > "$C/git.log"; rm -f "$C/signaled"
+  shimdir "$C/shimh" GITSHIM_SIGNAL_ON='rev-list --first-parent --max-parents=0' GITSHIM_SIGNAL=$sg GITSHIM_SIGNAL_TARGET='released/scripts/commit-push-all.sh' GITSHIM_SIGNALED="$C/signaled"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+  [ -e "$C/signaled" ] && ok "16.4 control: the SIG$sg reached our released commit-push-all.sh" || bad "16.4 control: no signal was sent (the probe is blind)"
+  eq "16.4 a SIG$sg during the self-test: 20, never $sn" "$RC" 20; has "16.4 SIG$sg: the refusal states the status" "$(cat "$C/err.txt")" "internal_error exit $sn"
+  d4="$(ls -1d "$W"/.audit/commit-push/*/ 2>/dev/null | head -1)"; eq "16.4 SIG$sg: the run directory holds a report (reason internal_error)" "$(jq -r .reason "${d4}report.json" 2>/dev/null)" internal_error
+done
+# a signal in the host entry before it execs: 20 as one JSON line, never the signal's status
+for pair in HUP:129 QUIT:131 TERM:143 USR1:138; do
+  sg="${pair%%:*}"; sn="${pair##*:}"; mk sg5; rm -f "$C/signaled"
+  shimdir "$C/shimh" GITSHIM_SIGNAL_ON='rev-parse --show-toplevel' GITSHIM_SIGNAL=$sg GITSHIM_SIGNAL_TARGET='bin/cpa-host' GITSHIM_SIGNALED="$C/signaled"; ( cd "$W" && SHIMD="$C/shimh" && envr $(ENVV) "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?
+  [ -e "$C/signaled" ] && ok "16.5 control: the SIG$sg reached the host entry" || bad "16.5 control: no signal was sent (the probe is blind)"
+  eq "16.5 a SIG$sg in the host entry: 20, never $sn" "$RC" 20; has "16.5 one refusal line with the status" "$(cat "$C/err.txt")" "host_exit_$sn"
+done
 fi
 
 # ======== 17 round-2 review probes adopted verbatim (WF14 N4, N5, N7, N9, N10, N3) =======================================================
@@ -854,6 +902,8 @@ realowed() { cp "$SRC/scripts/repo/owed_gates.tsv" "$W/scripts/repo/owed_gates.t
 # -- N10: the new code of round 1 had no killing assertion (RN1, RN2, RN4, RN5) ----
 mk pk1; hshim scripts/longops/release.sh 'echo release-refused >&2; exit 1'; run
 eq "17.1 a release.sh that fails: lock.released is false, the report never claims a release that did not happen" "$(jq -r .lock.released "$REP" 2>/dev/null)" false
+eq "17.1 and the run is 20 lock_release_failed, never a 0 that left the claim behind" "$RC:$(jq -r .reason "$REP" 2>/dev/null)" "20:lock_release_failed"
+run; eq "17.1 the next run reaps the leaked claim itself (S0, reap.sh proves the holder dead): the run proceeds, no lock_stale_claim" "$(jq -r '.reason // "none"' "$REP" 2>/dev/null)" lock_release_failed
 mk pk2; l65="$(printf 'a%.0s' $(seq 1 65))"; run --run-id "$l65"
 eq "17.2 a 65-character run id: 20 at the host entry" "$RC" 20; has "17.2 run_id_malformed" "$OUT" run_id_malformed; eq "17.2 no run directory" "$(ls "$W/.audit/commit-push" 2>/dev/null | wc -l | tr -d ' ')" 0
 l64="$(printf 'a%.0s' $(seq 1 64))"; run --run-id "$l64"; eq "17.2 a 64-character run id (the boundary) is accepted: 0" "$RC" 0
@@ -889,13 +939,13 @@ has "17.7 the report names the path" "$(jq -c .unjudged_paths "$REP" 2>/dev/null
 mk pd2; printf 'if then\n\0\n' > "$W/src/b.sh"; paths 'src/b.sh\n'; bash -n "$W/src/b.sh" 2>/dev/null && bad "17.8 control: b.sh parses" || ok "17.8 control: src/b.sh fails bash -n"
 run --paths-from "$C/p.txt" "binary sh"; has "17.8 control: validate_cheap left shell_parse out" "$(cat "$RD/validate.out" 2>/dev/null)" "left_out	shell_parse"
 eq "17.8 a shell file left out of shell_parse: 14, never 0" "$RC" 14; has "17.8 CHECKS_NOT_JUDGED" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" CHECKS_NOT_JUDGED; has "17.8 the report names the path and the check" "$(jq -c .unjudged_paths "$REP" 2>/dev/null)" "shell_parse"
-mk pd3; printf '\x89PNG\r\n\x1a\n\0\0\0' > "$W/src/i.png"; paths 'src/i.png\n'; run --paths-from "$C/p.txt" "image"
+mk pd3; printf 'trailing_whitespace\tbuiltin:trailing_whitespace\tIMG-TESTUTIL\tplain\t-\tfiles\tws\n' >> "$W/scripts/repo/validate_checks.tsv"; git -C "$W" add -A; git -C "$W" commit -qm "ws row"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; printf '\x89PNG\r\n\x1a\n\0\0\0' > "$W/src/i.png"; paths 'src/i.png\n'; run --paths-from "$C/p.txt" "image"
 has "17.9 control: the text checks left the image out" "$(cat "$RD/validate.out" 2>/dev/null)" left_out; eq "17.9 an image no text check applies to is not a deferral (nothing is owed): 0" "$RC" 0
 hasnot "17.9 and not flagged" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" CHECKS_NOT_JUDGED; has "17.9 yet the report still names the path no check judged" "$(jq -c .unjudged_paths "$REP" 2>/dev/null)" "src/i.png"
 # -- N7: the host entry's exit set is closed when HOME and CPA_HOST_STATE are unset ----
-mk pe; ( cd "$W" && env -u HOME -u CPA_HOST_STATE PATH="$T/shim:$PATH" "$C/bin/cpa-host" ) >"$C/o" 2>"$C/e"; prc=$?
+mk pe; ( cd "$W" && envr -u HOME -u CPA_HOST_STATE PATH="$C/shimr:$PATH" "$C/bin/cpa-host" ) >"$C/o" 2>"$C/e"; prc=$?
 eq "17.10 HOME and CPA_HOST_STATE unset: 20, never a shell error's 1" "$prc" 20; has "17.10 the refusal names the cause" "$(cat "$C/e")" state_unresolved
-( cd "$W" && env -u HOME PATH="$T/shim:$PATH" CPA_HOST_STATE="$C/state" GITSHIM_LOG="$C/git.log" SWEEP_LOG="$C/sweep.log" "$C/bin/cpa-host" ) >"$C/o" 2>"$C/e"; prc=$?
+ctl_apply; ( cd "$W" && envr -u HOME PATH="$C/shimr:$PATH" CPA_HOST_STATE="$C/state" "$C/bin/cpa-host" ) >"$C/o" 2>"$C/e"; prc=$?
 eq "17.10 HOME unset with CPA_HOST_STATE set: 0 (the state directory is all the run needs)" "$prc" 0
 # -- N3: CPA with the REAL scripts/anti-mess/sweep.sh in the approved copy ----
 realsweep() { rm -f "$W/scripts/anti-mess/sweep.sh"; cp "$SRC/scripts/anti-mess/sweep.sh" "$SRC/scripts/anti-mess/catalogue.yaml" "$W/scripts/anti-mess/"; chmod 755 "$W/scripts/anti-mess/sweep.sh"; }
@@ -906,6 +956,295 @@ eq "17.11 no SWEEP_ABSENT: the sweep ran" "$(jq -c .deferred_gates "$REP" 2>/dev
 echo s2 > "$W/src/s2.txt"; paths 'src/s2.txt\n'; XENV="ANTIMESS_ROOT=$C ANTIMESS_OWNED_ORGS=ext" run --paths-from "$C/p.txt" "s2"; unset XENV
 eq "17.12 the caller's ANTIMESS_ROOT and ANTIMESS_OWNED_ORGS do not aim the gate elsewhere: 0" "$RC" 0
 has "17.12 the sweep judged the run's own repository" "$(cat "$RD/sweep-s0.out" 2>/dev/null)" "AM-G2"
+fi
+
+# ======== 18 round 4 of the 11.4.276 budget (WF17-cpa consolidation, fix-r5): every probe of the fix list, adopted ===============================
+# Each case drives the REAL artefact through cpa-host (nothing re-implements the guarded logic). A hostile input is first proven to DO something outside a run (a control needle,
+# 11.4.201(7)(b)), then given to a run; the oracle is the OUTCOME: the exit status, the tips of origin and mirror, the third-party remote, and a marker count of 0.
+cnt() { if [ -s "$1" ]; then wc -l < "$1" | tr -d ' '; else echo 0; fi; }
+needle() { local n; n="$(cnt "$2")"; [ "$n" -ge "$3" ] && ok "$1 (control needle: the hostile input acts outside a run, x$n)" || bad "$1 (control needle: the hostile input did nothing outside a run, x$n: the probe below is blind)"; }
+chg() { echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; }
+realsweep18() { rm -f "$W/scripts/anti-mess/sweep.sh"; cp "$SRC/scripts/anti-mess/sweep.sh" "$SRC/scripts/anti-mess/catalogue.yaml" "$W/scripts/anti-mess/"; chmod 755 "$W/scripts/anti-mess/sweep.sh"; }
+unshim() { # unshim <path>: the genuine file of the scripts under test back into the clone (committed, pushed, the trust state rebuilt)
+  cp "$SRC/$1" "$W/$1"; chmod --reference="$SRC/$1" "$W/$1"; git -C "$W" add -A; git -C "$W" commit -qm "genuine $1"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; }
+okrun() { eq "$1: 0" "$RC" 0; moved "$1"; eq "$1: origin holds HEAD" "$(tipof a)" "$(head_)"; }
+sigwait() { local n=0; while [ ! -e "$1" ] && [ $n -lt 150 ]; do sleep 0.2; n=$((n+1)); done; [ -e "$1" ]; }
+if sect "18 env"; then
+
+# ---- ENV: the caller's process environment (ENV-1 .. ENV-12) --------------------------------------------------------------------------------------
+mk e1; chg; M="$C/fn.marker"; : > "$M"
+fnw=("BASH_FUNC_git%%=() { echo x >> $M; command git \"\$@\"; }" "BASH_FUNC_unset%%=() { echo x >> $M; }" "BASH_FUNC_exit%%=() { echo x >> $M; builtin exit \"\$@\"; }" "BASH_FUNC_[%%=() { echo x >> $M; builtin [ \"\$@\"; }")
+env "${fnw[@]}" bash -c 'git --version >/dev/null; unset ZZ; [ 1 = 1 ]; exit 0'; needle "18.1 exported functions replace git, unset, exit and [" "$M" 4
+: > "$M"; runenv "${fnw[@]}" -- --paths-from "$C/p.txt" "a"; okrun "18.1 a run under exported functions named git, unset, exit and ["; eq "18.1 no imported function ran in the entry process, the run or a helper" "$(cnt "$M")" 0
+mk e2; chg; M="$C/xt.marker"; : > "$M"
+[ "$(env SHELLOPTS=noexec bash -c 'echo ran' 2>&1 | wc -c | tr -d ' ')" = 0 ] && ok "18.2 control needle: SHELLOPTS=noexec makes a bash run nothing" || bad "18.2 control needle: SHELLOPTS=noexec did nothing here"
+runenv SHELLOPTS=noexec -- --paths-from "$C/p.txt" "a"; okrun "18.2 a run under SHELLOPTS=noexec (it used to be exit 0 with nothing run)"
+mk e2b; chg; M="$C/xt.marker"; : > "$M"; ps4="+\$(echo x >> $M)"
+env SHELLOPTS=xtrace PS4="$ps4" bash -c 'true' 2>/dev/null; needle "18.2b SHELLOPTS=xtrace with a PS4 command substitution" "$M" 1
+: > "$M"; runenv SHELLOPTS=xtrace "PS4=$ps4" -- --paths-from "$C/p.txt" "a"; okrun "18.2b a run under xtrace + PS4"; eq "18.2b the PS4 command ran nowhere" "$(cnt "$M")" 0
+mk e2c; chg; echo base > "$C/ncl"; ( set -C; echo x > "$C/ncl" ) 2>/dev/null && bad "18.2c control needle: noclobber did not refuse" || ok "18.2c control needle: SHELLOPTS=noclobber refuses an overwrite"
+runenv SHELLOPTS=noclobber -- --paths-from "$C/p.txt" "a"; okrun "18.2c a run under SHELLOPTS=noclobber (it used to give lock_error)"
+mk e2d; chg; runenv SHELLOPTS=noglob -- --paths-from "$C/p.txt" "a"; okrun "18.2d a run under SHELLOPTS=noglob (it used to list interrupted=[\"*\"])"; eq "18.2d interrupted_runs is empty" "$(jq -c .interrupted_runs "$REP" 2>/dev/null)" "[]"
+# BASHOPTS=nocasematch: a branch named MAIN passes `case main|master` only when the option reaches the script
+mk e3; git -C "$W" checkout -q -b MAIN 2>/dev/null; chg
+[ "$(env BASHOPTS=nocasematch bash -c 'case MAIN in main) echo y ;; esac')" = y ] && ok "18.3 control needle: BASHOPTS=nocasematch makes case match MAIN against main" || bad "18.3 control needle: nocasematch did not act"
+runenv BASHOPTS=nocasematch -- --paths-from "$C/p.txt" "a"; eq "18.3 the branch MAIN is refused under BASHOPTS=nocasematch: 20" "$RC" 20; has "18.3 wrong_branch" "$OUT" wrong_branch
+# TMOUT: a read that times out lost the S1a listing (the 9.2 backup omitted the dirty file)
+mk e5; sed -i 's/^L2$/DIRTY/' "$W/src/conf.txt"; echo a > "$W/src/a.txt"; paths 'src/a.txt\nsrc/conf.txt\n'
+[ "$( (sleep 2; echo a) | env TMOUT=1 bash -c 'read x; echo "got=$x"')" = "got=" ] && ok "18.5 control needle: TMOUT=1 makes a read time out" || bad "18.5 control needle: TMOUT did not time the read out"
+XENV="GITSHIM_SLEEP_ON=status.--porcelain" runenv TMOUT=1 -- --commit-before-integrate --paths-from "$C/p.txt" "a"; XENV=""
+okrun "18.5 --commit-before-integrate under TMOUT=1 with a slow git status"; has "18.5 the S1a backup lists the dirty file (the listing was read in full)" "$(cat "$RD/backup/s1a/worktree.sha256" 2>/dev/null)" "src/conf.txt"
+# PYTHONPATH: a sitecustomize runs in every python3 without -I (the run released a commit held on a NO-GO verdict to origin)
+mk e6; chg; M="$C/py.marker"; mkdir -p "$C/pp"; printf 'open(%s,"a").write("x\\n")\n' "'$M'" > "$C/pp/sitecustomize.py"; : > "$M"
+PYTHONPATH="$C/pp" python3 -c pass; needle "18.6 PYTHONPATH sitecustomize" "$M" 1; : > "$M"
+runenv "PYTHONPATH=$C/pp" -- --paths-from "$C/p.txt" "a"; okrun "18.6 a run under PYTHONPATH"; eq "18.6 no python of the run imported the caller's sitecustomize" "$(cnt "$M")" 0
+mk e6b; M="$C/py.marker"; mkdir -p "$C/pp"; printf 'open(%s,"a").write("x\\n")\n' "'$M'" > "$C/pp/sitecustomize.py"; : > "$M"; VB="$EVR/reviews/WP-P.json"
+mkdir -p "$W/$EVR/reviews"; GOJ NO-GO '["x"]' 1 > "$W/$EVR/reviews/WP-P.json"; paths "$VB\n"; run --paths-from "$C/p.txt" "a NO-GO verdict"; eq "18.6b setup: the NO-GO verdict is committed" "$RC" 0
+echo h > "$W/src/h.txt"; paths "src/h.txt\t$VB\n"; : > "$M"; runenv "PYTHONPATH=$C/pp" -- --paths-from "$C/p.txt" "held on the NO-GO verdict"
+eq "18.6b a commit held on a NO-GO verdict stays held under PYTHONPATH: 14" "$RC" 14; has "18.6b review_pending" "$OUT" review_pending; eq "18.6b release_state's python ran no caller module" "$(cnt "$M")" 0
+# LD_PRELOAD: a caller library ran in every process of the run
+mk e7; chg; M="$C/ld.marker"; : > "$M"
+printf '#include <stdio.h>\n__attribute__((constructor)) static void f(void){char b[64]="";FILE*c=fopen("/proc/self/comm","r");if(c){if(!fgets(b,64,c))b[0]=0;fclose(c);}FILE*h=fopen("%s","a");if(h){fputs(b,h);fputs("\\n",h);fclose(h);}}\n' "$M" > "$C/ld.c"
+if cc -shared -fPIC -o "$C/ld.so" "$C/ld.c" 2>/dev/null; then
+  env LD_PRELOAD="$C/ld.so" /bin/true; needle "18.7 LD_PRELOAD library" "$M" 1; : > "$M"
+  runenv "LD_PRELOAD=$C/ld.so" -- --paths-from "$C/p.txt" "a"; okrun "18.7 a run under LD_PRELOAD"; eq "18.7 the caller library was loaded only by the launching entry (cpa-host, a bash script) and env, which start before the entry scrubs the environment, and by no process after it (no git, jq, python, sha256sum, helper)" "$(sort -u "$M" | grep -v '^$' | tr "\n" " ")" "cpa-host env "
+else echo "SKIP 18.7 no C compiler: LD_PRELOAD cannot be probed (the allowlist drops it by the same mechanism as PYTHONPATH, 18.6)"; fi
+# a relative CPA_HOST_STATE / HOME / TMPDIR, and empty or relative PATH elements
+mk e8; chg; mkdir -p "$W/.audit/st"; cp "$C/state/trust.json" "$W/.audit/st/trust.json"; cp -a "$C/state/blobs" "$W/.audit/st/"
+runenv CPA_HOST_STATE=.audit/st -- --paths-from "$C/p.txt" "a"; eq "18.8 a relative CPA_HOST_STATE is refused: 20" "$RC" 20; has "18.8 env_value_unsafe" "$OUT" env_value_unsafe; eq "18.8 nothing was committed" "$(head_)" "$SEEDHEAD"
+runenv HOME=rel -- --paths-from "$C/p.txt" "a"; eq "18.8b a relative HOME is refused: 20" "$RC" 20; has "18.8b env_value_unsafe" "$OUT" env_value_unsafe
+mk e9; chg; M="$C/bash.marker"; printf '#!/bin/sh\necho x >> %s\nexec /bin/bash "$@"\n' "$M" > "$W/bash"; chmod 755 "$W/bash"; printf '#!/bin/sh\necho x >> %s\nexec /usr/bin/od "$@"\n' "$M" > "$W/od"; chmod 755 "$W/od"
+( cd "$W" && PATH=":$PATH" bash -c 'bash -c true' ) 2>/dev/null; needle "18.9 an empty PATH element runs a work-tree file named bash" "$M" 1; : > "$M"
+runenv "PATH=:$C/shimr:$PATH" -- --paths-from "$C/p.txt" "a"; eq "18.9 an empty PATH element is refused: 20" "$RC" 20; has "18.9 env_value_unsafe" "$OUT" env_value_unsafe; eq "18.9 the work-tree bash and od ran nowhere" "$(cnt "$M")" 0
+runenv "PATH=$C/shimr:$PATH:" -- --paths-from "$C/p.txt" "a"; eq "18.9d a TRAILING empty PATH element is refused too (word splitting drops it, only the textual check sees it): 20" "$RC" 20; has "18.9d env_value_unsafe" "$OUT" env_value_unsafe
+runenv "PATH=$C/shimr:$PATH:rel/bin" -- --paths-from "$C/p.txt" "a"; eq "18.9b a relative PATH element is refused: 20" "$RC" 20
+mkdir -p "$W/tools"; printf '#!/bin/sh\necho x >> %s\nexec /usr/bin/git "$@"\n' "$M" > "$W/tools/git"; chmod 755 "$W/tools/git"
+runenv "PATH=$W/tools:$C/shimr:$PATH" -- --paths-from "$C/p.txt" "a"; eq "18.9c a PATH element inside the repository is refused before git runs: 20" "$RC" 20; eq "18.9c the work-tree git ran nowhere" "$(cnt "$M")" 0
+# the class oracle (replaces the text inventory of 11.5): the environ of the released core AND of a helper holds NAMES from the allowlist only
+mk e10; cp "$W/scripts/repo/scope_check.sh" "$W/scripts/repo/scope_check_orig.sh"
+hshim scripts/repo/scope_check.sh 'cp /proc/$PPID/environ "$CPA_ROOT/.audit/env-core.txt"; cp /proc/$$/environ "$CPA_ROOT/.audit/env-helper.txt"; exec "$(dirname "$0")/scope_check_orig.sh" "$@"'
+chg; ALLOW=" _ HOME PATH TMPDIR CPA_HOST_STATE SKIP_LONG SSH_AUTH_SOCK GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL LONGOPS_ALLOW_TMPFS LC_ALL PWD SHLVL CPA_ROOT CPA_RUN_ID CPA_ADOPTION_COMMIT CPA_APPROVED_DIR CPA_RUN LONGOPS_REPO DISK_HEADROOM_OUT_DIR GIT_TERMINAL_PROMPT GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0 GIT_CONFIG_KEY_1 GIT_CONFIG_VALUE_1 GIT_CONFIG_KEY_2 GIT_CONFIG_VALUE_2 GIT_CONFIG_KEY_3 GIT_CONFIG_VALUE_3 GIT_CONFIG_KEY_4 GIT_CONFIG_VALUE_4 GIT_CONFIG_KEY_5 GIT_CONFIG_VALUE_5 GIT_CONFIG_KEY_6 GIT_CONFIG_VALUE_6 "
+[ "$(env FOO=1 bash -c 'tr "\0" "\n" < /proc/$$/environ' | grep -c '^FOO=')" = 1 ] && ok "18.10 control needle: the environ dump sees a name that is there" || bad "18.10 control needle: the environ dump is blind"
+runenv FOO=1 BAR=2 PYTHONPATH=/x LD_LIBRARY_PATH=/x LD_DEBUG=x PYTHONHOME=/x BASH_XTRACEFD=9 GLOBIGNORE=x GIT_DIR=/x GIT_INDEX_FILE=/x GIT_EXEC_PATH=/x GIT_SSH_COMMAND=x ENV=/x CDPATH=/x TMOUT=5 LANG=de_DE LC_MESSAGES=de http_proxy=x EMAIL=x SSH_ASKPASS=x DISPLAY=x XDG_CONFIG_HOME=/x -- --paths-from "$C/p.txt" "a"
+okrun "18.10 a run under a caller environment that holds a name of every family"
+un=""; for f in env-core env-helper; do [ -s "$W/.audit/$f.txt" ] || { un="$un MISSING:$f"; continue; }; for n in $(tr '\0' '\n' < "$W/.audit/$f.txt" | sed 's/=.*//'); do case "$ALLOW" in *" $n "*) ;; *) un="$un $f:$n" ;; esac; done; done
+eq "18.10 every NAME in the environ of the released core and of a helper is allowlisted (unaccounted:${un:- none})" "${un:- none}" " none"
+eq "18.10 LC_ALL is C in the helper" "$(tr '\0' '\n' < "$W/.audit/env-helper.txt" | grep '^LC_ALL=')" "LC_ALL=C"
+# the commit identity and the other kept names are not dropped; GIT_INDEX_FILE/GIT_DIR/GIT_WORK_TREE of the caller do not steer the commit
+mk e11; chg; GIT_INDEX_FILE="$C/evil.index" git -C "$W" read-tree HEAD; eb="$(echo evil | git -C "$W" hash-object -w --stdin)"; GIT_INDEX_FILE="$C/evil.index" git -C "$W" update-index --add --cacheinfo "100644,$eb,evil.txt"
+runenv "GIT_INDEX_FILE=$C/evil.index" "GIT_DIR=$W/.git" "GIT_WORK_TREE=$W" -- --paths-from "$C/p.txt" "a"; okrun "18.11 a run under GIT_INDEX_FILE, GIT_DIR and GIT_WORK_TREE"; eq "18.11 the commit holds exactly the declared file" "$(git -C "$W" show --name-only --format= HEAD)" "src/a.txt"
+mk e12; chg; runenv HOME= -u CPA_HOST_STATE -- --paths-from "$C/p.txt" "a"; eq "18.12 HOME empty and CPA_HOST_STATE unset: 20" "$RC" 20; has "18.12 state_unresolved" "$OUT" state_unresolved
+
+fi
+if sect "18 repo"; then
+# ---- REPO: repository and work-tree state (REPO-1 .. REPO-4) --------------------------------------------------------------------------------------
+mk r1; M="$C/json.marker"; printf 'open(%s,"a").write("x\\n")\nraise SystemExit(0)\n' "'$M'" > "$W/json.py"; echo json.py >> "$W/.git/info/exclude"; : > "$M"
+( cd "$W" && python3 -c 'import json' ) 2>/dev/null; needle "18.13 a work-tree json.py replaces the stdlib module for a python started in the root" "$M" 1; : > "$M"
+printf 'if then\n' > "$W/src/bad.sh"; paths 'src/bad.sh\n'; h0="$(head_)"; run --paths-from "$C/p.txt" "bad"
+eq "18.13 the failing src/bad.sh is still refused under a work-tree json.py: 10" "$RC" 10; eq "18.13 nothing committed" "$(head_)" "$h0"; eq "18.13 the work-tree module ran nowhere" "$(cnt "$M")" 0
+mk r2; M="$C/fsm.marker"; printf '#!/bin/sh\necho x >> %s\nexit 1\n' "$M" > "$C/fsm.sh"; chmod 755 "$C/fsm.sh"; git -C "$W" config core.fsmonitor "$C/fsm.sh"; : > "$M"; git -C "$W" status >/dev/null 2>&1
+needle "18.14 a core.fsmonitor program in .git/config" "$M" 1; : > "$M"; chg; run --paths-from "$C/p.txt" "a"
+eq "18.14 a program named by the repository's own config is refused: 20" "$RC" 20; has "18.14 repo_config_not_approved" "$OUT" repo_config_not_approved; eq "18.14 it ran nowhere in the run" "$(cnt "$M")" 0; eq "18.14 nothing committed" "$(head_)" "$SEEDHEAD"
+for kv in "credential.helper=/bin/true" "core.sshCommand=/bin/true" "core.askPass=/bin/true" "include.path=/dev/null" "commit.gpgSign=true" "url.$C/fx/.pushInsteadOf=$C/evil/" "filter.x.clean=cat" "core.attributesFile=/dev/null"; do
+  mk r2b; git -C "$W" config "${kv%%=*}" "${kv#*=}"; chg; run --paths-from "$C/p.txt" "a"; eq "18.14b the config key ${kv%%=*} is refused: 20" "$RC" 20; has "18.14b repo_config_not_approved" "$OUT" repo_config_not_approved
+done
+mk r2c; chg; printf '*.txt filter=lf\n' > "$W/.git/info/attributes"; run --paths-from "$C/p.txt" "a"; eq "18.14c a non-empty .git/info/attributes is refused: 20" "$RC" 20
+mk r2d; printf '*.txt working-tree-encoding=UTF-16LE\n' > "$W/.gitattributes"; git -C "$W" add .gitattributes; git -C "$W" commit -qm attr; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; chg; run --paths-from "$C/p.txt" "a"
+eq "18.14d a .gitattributes that names working-tree-encoding is refused (the judged bytes would not be the committed bytes): 20" "$RC" 20
+# ownership from EVERY url
+mk r3; git init -q --bare -b main "$T/fx/decoy.git"; git -C "$W/mods/ext" remote add decoy "$T/fx/decoy.git"
+git -C "$W/mods/ext" checkout -q -B main 2>/dev/null; git -C "$W/mods/ext" config user.email t@t; git -C "$W/mods/ext" config user.name t; echo x > "$W/mods/ext/x.txt"; printf 'mods/ext/x.txt\n' > "$C/p.txt"; e0="$(git -C "$T/ext/t.git" rev-parse main)"
+
+run --repo mods/ext --paths-from "$C/p.txt" "third party with an owned decoy remote"; eq "18.15 a third-party submodule with ONE extra owned remote is still not owned: 20" "$RC" 20; has "18.15 repo_not_owned" "$OUT" repo_not_owned
+eq "18.15 the third-party remote did not move" "$(git -C "$T/ext/t.git" rev-parse main)" "$e0"; rm -rf "$T/fx/decoy.git"
+mk r3b; mkdir -p "$T/ev"; git init -q --bare -b main "$T/ev/evil.git"; git -C "$W" config remote.origin.pushurl "$T/ev/evil.git"; chg; run --paths-from "$C/p.txt" "a"
+eq "18.15b a push url that names a third party is refused before anything is committed: 20" "$RC" 20; has "18.15b repo_not_owned" "$OUT" repo_not_owned; eq "18.15b the unapproved repository holds nothing" "$(git -C "$T/ev/evil.git" rev-parse -q --verify main 2>/dev/null || echo none)" none; eq "18.15b nothing committed" "$(head_)" "$SEEDHEAD"
+mk r3c; git -C "$W" config --add remote.origin.pushurl "$C/fx/a.git"; git -C "$W" config --add remote.origin.pushurl "$C/fx/b.git"; chg; run --paths-from "$C/p.txt" "a"; okrun "18.15c several owned push urls (the project's multi-upstream push) are allowed"
+# the APPROVED registry decides the run set
+mk r4; sed -i '/^shell_parse\t/d' "$W/scripts/repo/validate_checks.tsv"; printf 'if then\n' > "$W/src/bad.sh"; paths 'src/bad.sh\n'; h0="$(head_)"; run --paths-from "$C/p.txt" "bad"
+eq "18.16 a registry row deleted in the work tree does not switch its check off: 10" "$RC" 10; eq "18.16 nothing committed" "$(head_)" "$h0"; has "18.16 the removed row is reported pending, with the reason" "$(cat "$RD/validate.out" 2>/dev/null)" "check_pending_release	shell_parse	removed_in_worktree"
+
+fi
+if sect "18 toctou"; then
+# ---- TOCTOU: judged bytes are committed bytes (TOCTOU-1 .. TOCTOU-6) ----------------------------------------------------------------------------
+tocase() { # tocase <case> <hook body, @W@ = the work tree>: the hook rewrites the declared file after S3 judged it, when S5 runs `git add -A -- :(literal)...`
+  mk "$1"; printf 'echo ok\n' > "$W/src/ok.sh"; paths 'src/ok.sh\n'; printf '#!/bin/bash\n%s\n' "${2//@W@/$W}" > "$C/hook.sh"; chmod 755 "$C/hook.sh"; h0="$(head_)"
+  XENV="GITSHIM_HOOK_ON=add.-A.--.:.literal. GITSHIM_HOOK=$C/hook.sh" run --paths-from "$C/p.txt" "ok"; XENV=""
+}
+tocase t1 "printf 'if then\\n' > '@W@/src/ok.sh'"
+[ "$RC" != 0 ] && ok "18.17 a valid file turned into 'if then' between S3 and S5 does not exit 0" || bad "18.17 exit $RC: the unjudged bytes were committed and pushed"
+has "18.17 the reason is changed_since_validation" "$OUT" changed_since_validation; eq "18.17 nothing was pushed" "$(pushes)" 0; hasnot "18.17 origin does not hold the bad bytes" "$(git -C "$C/fx/a.git" show main:src/ok.sh 2>&1)" "if then"
+tocase t2 "printf '<<<<<<< x\\nb\\n=======\\nc\\n>>>>>>> y\\n' > '@W@/src/ok.sh'"
+[ "$RC" != 0 ] && ok "18.18 conflict markers written after S3 do not exit 0" || bad "18.18 exit $RC"; has "18.18 changed_since_validation" "$OUT" changed_since_validation; hasnot "18.18 origin holds no markers" "$(git -C "$C/fx/a.git" show main:src/ok.sh 2>&1)" "<<<<<<<"
+tocase t3 "rm -f '@W@/src/ok.sh' && ln -s ../README.txt '@W@/src/ok.sh'"
+[ "$RC" != 0 ] && ok "18.19 a file swapped for a symlink after S3 does not exit 0" || bad "18.19 exit $RC"; has "18.19 changed_since_validation" "$OUT" changed_since_validation
+tocase t4 "$REALGIT -C '@W@' checkout -q -b side"
+eq "18.20 a branch switched between S0 and S5: 20" "$RC" 20; has "18.20 branch_moved, not remote_unproven" "$OUT" branch_moved; eq "18.20 the branch side holds no commit of the run" "$(git -C "$W" rev-parse side)" "$(git -C "$W" rev-parse main)"
+# the released copy is read-only and re-hashed at each invocation
+mk t5; chg; printf '#!/bin/bash\nchmod u+w "$CPA_ROOT/.audit/commit-push/$CPA_RUN_ID/released/scripts/repo/validate_cheap.sh"; printf "exit 0\\n" > "$CPA_ROOT/.audit/commit-push/$CPA_RUN_ID/released/scripts/repo/validate_cheap.sh"\n' > "$C/hook.sh"; chmod 755 "$C/hook.sh"
+XENV="GITSHIM_HOOK_ON=check-ignore GITSHIM_HOOK=$C/hook.sh" run --paths-from "$C/p.txt" "a"; XENV=""; eq "18.21 a helper of the released copy replaced after the start: 20" "$RC" 20; has "18.21 approved_copy_changed" "$OUT" approved_copy_changed; has "18.21 the FAIL line reached the operator, not only the helper's output file" "$OUT" "cpa: FAIL S3 20 approved_copy_changed"; eq "18.21 nothing pushed" "$(pushes)" 0
+mk t6; run; rd6="$RD/released"; eq "18.22 a released file is 0444/0555 and a released directory 0555" "$(stat -c %a "$rd6/scripts/repo/lib_safe.sh" "$rd6/scripts/commit-push-all.sh" "$rd6/scripts/repo" | tr '\n' ' ')" "444 555 555 "
+
+fi
+if sect "18 sig"; then
+# ---- SIG: signal windows (SIG-1 .. SIG-6) ------------------------------------------------------------------------------------------------------
+# SIG-1/2: a TERM 0.1 s after the exec (the old start-up spent 70-270 ms with no handler installed) is a 20 with a report, for the copied script and for the host entry
+mk s1; for i in 1 2 3; do
+  ( cd "$W" && envr $(ENVV) "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt" & HP=$!
+  c=""; n=0; while [ -z "$c" ] && [ $n -lt 4000 ]; do c="$(pgrep -f "$W/.audit/commit-push/[^ ]*/released/scripts/commit-push-all[.]sh" | head -1)"; [ -n "$c" ] || sleep 0.005; n=$((n+1)); done
+  if [ -n "$c" ] && [ "$c" -gt 1 ]; then kill -TERM "$c" 2>/dev/null; fi; wait $HP; hrc=$?
+  eq "18.23 TERM the instant the copied script is running, iteration $i: 20" "$hrc" 20; eq "18.23 every run directory holds a report" "$(for d in "$W"/.audit/commit-push/*/; do [ -f "$d/report.json" ] || echo missing; done | wc -l | tr -d ' ')" 0
+done
+mk s2
+for dl in 0.05 0.1; do
+  ( cd "$W" && envr $(ENVV) "$C/bin/cpa-host" ) >"$C/out.txt" 2>"$C/err.txt" & HP=$!; sleep "$dl"; hp="$(pgrep -f "$C/bin/cp[a]-host" | head -1)"; [ -z "$hp" ] || kill -TERM "$hp" 2>/dev/null; wait $HP; hrc=$?
+  eq "18.24 TERM $dl s after the start of the host entry: 20" "$hrc" 20
+  eq "18.24 and no run directory is left without a report ($dl s)" "$(for d in "$W"/.audit/commit-push/*/; do [ -d "$d" ] || continue; [ -f "$d/report.json" ] || echo missing; done | wc -l | tr -d ' ')" 0
+done
+# SIG-3/4: signals that arrive WHILE the report is written do not cut it: a first signal at S3, then a salvo from release.sh (inside finish), then a GROUP signal
+mk s3; hshim scripts/repo/validate_cheap.sh 'kill -TERM $PPID; sleep 1; exit 0'
+hshim scripts/longops/release.sh 'p=$PPID; for s in HUP INT QUIT TERM USR1 USR2 ALRM; do kill -$s "$p" 2>/dev/null; done; exec "$(dirname "$0")/release_real.sh" "$@"'
+cp "$SRC/scripts/longops/release.sh" "$W/scripts/longops/release_real.sh"; git -C "$W" add -A; git -C "$W" commit -qm real; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; chg
+run --paths-from "$C/p.txt" "a"; eq "18.25 a TERM at S3 and then HUP INT QUIT TERM USR1 USR2 ALRM during finish: 20, the salvo did not cut the exit path" "$RC" 20; eq "18.25 the report is complete" "$(jq -r .exit "$REP" 2>/dev/null)" 20; eq "18.25 the lock was released" "$(jq -r .lock.released "$REP" 2>/dev/null)" true
+mk s4; hshim scripts/longops/release.sh 'p=$PPID; g="$(awk "{print \$5}" /proc/$p/stat)"; if [[ "$g" =~ ^[0-9]+$ ]] && [ "$g" -gt 1 ] && [ "$g" = "$p" ]; then kill -TERM -- "-$g"; sleep 0.3; fi; exec "$(dirname "$0")/release_real.sh" "$@"'
+cp "$SRC/scripts/longops/release.sh" "$W/scripts/longops/release_real.sh"; git -C "$W" add -A; git -C "$W" commit -qm real; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; chg
+: > "$C/git.log"; ctl_apply; ( cd "$W" && envr $(ENVV) setsid -w "$C/bin/cpa-host" --paths-from "$C/p.txt" "a" ) >"$C/out.txt" 2>"$C/err.txt"; RC=$?; OUT="$(cat "$C/out.txt" "$C/err.txt")"; RUN="$(printf '%s\n' "$OUT" | sed -n 's/.*cpa: exit=[0-9]* run=\([^ ]*\).*/\1/p' | tail -1)"; REP="$W/.audit/commit-push/$RUN/report.json"
+eq "18.26 a TERM sent to the whole process GROUP while the report is written: the run still ends 0 with the lock released" "$RC:$(jq -r .lock.released "$REP" 2>/dev/null)" "0:true"
+# SIG-5: latency: TERM while a helper sleeps 25 s ends the run at once (it used to wait the 25 s)
+mk s5; hshim scripts/repo/validate_cheap.sh 'echo $PPID > "$CPA_ROOT/.audit/s5.ppid"; trap "echo TERM > \"$CPA_ROOT/.audit/s5.term\"; exit 143" TERM; sleep 25 & wait'; chg; rm -f "$W/.audit/s5.ppid"
+( cd "$W" && envr $(ENVV) "$C/bin/cpa-host" --paths-from "$C/p.txt" "a" ) >"$C/out.txt" 2>"$C/err.txt" & HP=$!; sigwait "$W/.audit/s5.ppid"; t0=$SECONDS; kill -TERM "$(cat "$W/.audit/s5.ppid")"; wait $HP; hrc=$?; dt=$((SECONDS-t0))
+eq "18.27 TERM while a helper sleeps: 20" "$hrc" 20; [ "$dt" -lt 12 ] && ok "18.27 the run ended within ${dt}s of the signal (the helper was not waited out)" || bad "18.27 the run ended ${dt}s after the signal"; [ -e "$W/.audit/s5.term" ] && ok "18.27 the helper received the forwarded TERM" || bad "18.27 the helper never received TERM"
+# SIG-6: a documented residual: signal 33 cannot be caught; the NEXT run closes the run
+mk s6; hshim scripts/repo/validate_cheap.sh 'kill -33 $PPID; sleep 1; exit 0'; chg; run --paths-from "$C/p.txt" "a"; eq "18.28 signal 33 (reserved by glibc, untrappable by bash): status 161, no report" "$RC" 161
+unshim scripts/repo/validate_cheap.sh; run; eq "18.28 and the next run closes it and proceeds: 0" "$RC" 0
+
+fi
+if sect "18 res"; then
+# ---- RES: a run ends and leaves state that blocks the next run ----------------------------------------------------------------------------------
+PRE=realsweep18 mk x1
+chg; hshim scripts/repo/validate_cheap.sh 'echo $PPID > "$CPA_ROOT/.audit/x1.ppid"; echo $$ > "$CPA_ROOT/.audit/x1.shim"; sleep 60'
+( cd "$W" && envr $(ENVV) "$C/bin/cpa-host" --paths-from "$C/p.txt" "a" ) >"$C/out.txt" 2>"$C/err.txt" & HP=$!; sigwait "$W/.audit/x1.ppid"
+kp="$(cat "$W/.audit/x1.ppid")"; sp="$(cat "$W/.audit/x1.shim")"; kill -KILL "$kp"; kill -KILL "$sp" 2>/dev/null; wait $HP 2>/dev/null; dead1="$(basename "$(ls -1d "$W/.audit/commit-push/"*/ | head -1)")"
+[ -f "$W/.audit/commit-push/$dead1/report.json" ] && bad "18.29 setup: a SIGKILLed run has a report" || ok "18.29 setup: the SIGKILLed run left a directory without a report"
+unshim scripts/repo/validate_cheap.sh; run
+eq "18.29 the next run, under the REAL sweep, closes the dead run and proceeds: 0 (it used to be 20 sweep_finding at S0)" "$RC" 0; eq "18.29 the dead run is closed by this one" "$(jq -r .closed_by "$W/.audit/commit-push/$dead1/interrupted.json" 2>/dev/null)" "$RUN"
+has "18.29 and listed in interrupted_runs" "$(jq -c .interrupted_runs "$REP" 2>/dev/null)" "$dead1"; hasnot "18.29 no claim is left behind" "$(ls "$W/.audit/longops/claims" 2>/dev/null)" commit_push
+# a refusal AFTER the run directory exists writes its report: the copied script's self-test, a missing tool
+mk x2; mkdir -p "$C/nopy"; for f in /usr/bin/*; do case "${f##*/}" in python3*|python) continue ;; esac; ln -s "$f" "$C/nopy/${f##*/}" 2>/dev/null; done
+runenv "PATH=$C/nopy" -- ; eq "18.30 a missing python3 (tool_missing at the self-test): 20" "$RC" 20; d2="$(ls -1d "$W"/.audit/commit-push/*/ | head -1)"; eq "18.30 the run directory holds a report (reason tool_missing)" "$(jq -r .reason "$d2/report.json" 2>/dev/null)" tool_missing
+runenv -- ; eq "18.30 and the next run proceeds: 0" "$RC" 0
+# TERM during acquire.sh: the claim is released by the compare-and-swap in finish, never leaked
+mk x3; cp "$W/scripts/longops/acquire.sh" "$W/scripts/longops/acquire_real.sh"
+hshim scripts/longops/acquire.sh 'd="$(dirname "$0")"; "$d/acquire_real.sh" "$@"; r=$?; kill -TERM $PPID; sleep 0.5; exit $r'
+run; eq "18.31 a TERM that arrives while acquire.sh returns: 20" "$RC" 20; [ -e "$W/.audit/longops/claims/commit_push" ] && bad "18.31 the claim was leaked" || ok "18.31 the claim was released by finish"
+unshim scripts/longops/acquire.sh; run; eq "18.31 the next run is not blocked: 0" "$RC" 0
+# a commit made but not recorded (TERM during git commit)
+mk x4; chg; XENV="GITSHIM_SIGNAL_ON=commit.-q.-F GITSHIM_SIGNAL=TERM GITSHIM_SIGNAL_TARGET=commit_recursive.sh GITSHIM_SIGNALED=$C/sig4" run --paths-from "$C/p.txt" "a"; XENV=""
+[ -e "$C/sig4" ] && ok "18.32 control: the TERM reached commit_recursive.sh at git commit" || bad "18.32 control: no signal was sent"; eq "18.32 the run ended 20" "$RC" 20
+eq "18.32 the commit made is recorded in commits.tsv (the TERM was held until the row was written)" "$(wc -l < "$RD/commits.tsv" 2>/dev/null | tr -d ' ')" 1
+run; eq "18.32 the next run pushes it: 0, never unrecorded_local_commit" "$RC" 0; eq "18.32 origin holds HEAD" "$(tipof a)" "$(head_)"
+# report before release; a report that cannot be written is 20
+mk x5; hshim scripts/longops/release.sh 'if [ -s "$CPA_RUN/report.json" ]; then echo yes > "$CPA_ROOT/.audit/rel-saw-report"; else echo no > "$CPA_ROOT/.audit/rel-saw-report"; fi; exec "$(dirname "$0")/release_real.sh" "$@"'
+cp "$SRC/scripts/longops/release.sh" "$W/scripts/longops/release_real.sh"; git -C "$W" add -A; git -C "$W" commit -qm real; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; run
+eq "18.33 report.json exists when the lock is released (a successor never starts before it)" "$(cat "$W/.audit/rel-saw-report" 2>/dev/null)" yes
+mk x6; hshim scripts/longops/release.sh 'rm -f "$CPA_RUN/report.json"; mkdir "$CPA_RUN/report.json"; exit 0'; run
+eq "18.34 a report.json that cannot be written: 20 report_write_failed, never a 0 without a report" "$RC" 20; has "18.34 the message" "$OUT" report_write_failed
+
+fi
+if sect "18 report"; then
+# ---- MODEL / REPORT --------------------------------------------------------------------------------------------------------------------------------
+mk p1; V1="$EVR/reviews/WP-A.json"; V2="$EVR/reviews/WP-B.json"; echo a > "$W/src/a.txt"; echo b > "$W/src/b.txt"; paths "src/a.txt\t$V1\nsrc/b.txt\t$V2\n"; run --paths-from "$C/p.txt" "two verdicts"
+eq "18.35 two held verdicts: 14" "$RC" 14; eq "18.35 deferrals.tsv holds one LOCAL_ONLY row per verdict" "$(awk -F'\t' '$2=="LOCAL_ONLY"{print $4}' "$RD/deferrals.tsv" | sort | tr '\n' ' ')" "$V1 $V2 "
+mk p2; hshim scripts/repo/validate_cheap.sh 'printf "x\n" > "$CPA_RUN/odd  name.txt"; printf "y\n" > "$CPA_RUN/back\\slash.txt"; exec "$(dirname "$0")/validate_cheap_orig.sh" "$@"'
+cp "$SRC/scripts/repo/validate_cheap.sh" "$W/scripts/repo/validate_cheap_orig.sh"; git -C "$W" add -A; git -C "$W" commit -qm orig; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; chg; run --paths-from "$C/p.txt" "a"
+eq "18.36 the files map keeps a double space and a backslash in a name exactly" "$(jq -c '.files|keys|map(select(test("odd  name|back")))' "$REP" 2>/dev/null)" '["back\\slash.txt","odd  name.txt"]'
+eq "18.36 and its hashes are plain sha256" "$(jq -r '.files["back\\slash.txt"]' "$REP" 2>/dev/null)" "$(printf 'y\n' | sha256sum | cut -d' ' -f1)"
+mk p3; printf 'if then\n\0\n' > "$W/src/b.sh"; paths 'src/b.sh\n'; run --paths-from "$C/p.txt" "binary sh"
+eq "18.37 unjudged_paths holds ONE row per (path, check) and a path is deferred when any row is" "$(jq -c '[.unjudged_paths[]|select(.check=="shell_parse")]' "$REP" 2>/dev/null)" '[{"path":"src/b.sh","check":"shell_parse","deferred":true}]'
+mk p4; rm -f "$W/src/conf.txt"; paths 'src/conf.txt\n'; run --paths-from "$C/p.txt" "delete"; eq "18.38 a declared deletion is committed: 0" "$RC" 0
+eq "18.38 and reported as a path no check judged, owing nothing" "$(jq -c .unjudged_paths "$REP" 2>/dev/null)" '[{"path":"src/conf.txt","check":"deletion","deferred":false}]'
+mk p5; printf 'src/\xff.txt\n' > "$C/p.txt"; run --paths-from "$C/p.txt" "bad name"; eq "18.39 a non-UTF-8 declared path: 20 unsafe_path, no traceback" "$RC" 20; has "18.39 the reason" "$OUT" "not UTF-8"; hasnot "18.39 no python traceback" "$OUT" Traceback
+mk p6; git -C "$W" remote remove origin; git -C "$W" remote remove mirror; chg; run --paths-from "$C/p.txt" "a"; eq "18.40 a repository with no remote: 20 at S0, never an S6 refusal naming the seed commits" "$RC" 20; has "18.40 no_remote_reachable" "$OUT" no_remote_reachable; eq "18.40 nothing committed" "$(head_)" "$SEEDHEAD"
+mk p7; hshim scripts/repo/push_recursive.sh 'echo "REASON	force_refused"; echo "REFUSED	.	force_refused	x"; exit 20'; chg; run --paths-from "$C/p.txt" "a"
+eq "18.41 the report states the reason the helper stated" "$(jq -r .reason "$REP" 2>/dev/null)" force_refused
+mk p8; hshim scripts/repo/integrate_merge.sh 'echo "REASON	commit_failed"; exit 20'; hshim scripts/repo/integrate_ff_only.sh 'j=""; while [ $# -gt 0 ]; do [ "$1" = --json ] && j="$2"; shift; done; printf "{\"reason\":\"remotes_diverged\"}\n" > "$j"; exit 12'; run
+eq "18.42 an integrate_merge refusal outside the old word list keeps its stated reason" "$(jq -r .reason "$REP" 2>/dev/null)" commit_failed
+
+fi
+if sect "18 misc"; then
+# ---- SKIP / LIST / NAME / INPUT / MSG / VERDICT / BOUNDS / STALE / ENC ------------------------------------------------------------------------
+mk k1; printf '<<<<<<< a\nx\n=======\ny\n>>>>>>> b\n' > "$W/src/$(printf '\xc2\xa0')"; printf 'src/\xc2\xa0\n' > "$C/p.txt"; run --paths-from "$C/p.txt" "nbsp"; eq "18.43 a file named U+00A0 with conflict markers is judged: 10" "$RC" 10
+mk k1b; printf '<<<<<<< a\nx\n' > "$W/src/ "; printf 'src/ \n' > "$C/p.txt"; run --paths-from "$C/p.txt" "space"; [ "$RC" != 0 ] && ok "18.43b a file named ' ' with markers does not exit 0 ($RC)" || bad "18.43b exit 0"; hasnot "18.43b origin holds no markers" "$(git -C "$C/fx/a.git" ls-tree -r main --name-only | grep -c 'src/ $')" "1"
+mk k2; printf 'package m\n<<<<<<< a\nx\n=======\ny\n>>>>>>> b\n\0\n' > "$W/src/m.go"; paths 'src/m.go\n'; run --paths-from "$C/p.txt" "nul"; eq "18.44 a .go file with markers AND a NUL byte: 10 (one NUL no longer turns the scan off)" "$RC" 10
+mk k3; printf '#!/bin/bash\nif then\n' > "$W/src/tool"; chmod 755 "$W/src/tool"; paths 'src/tool\n'; run --paths-from "$C/p.txt" "nosuffix"; eq "18.45 a shell script with no suffix is parsed by its shebang: 10" "$RC" 10
+mk k4; printf 'if then\n' > "$W/src/x.bash"; paths 'src/x.bash\n'; run --paths-from "$C/p.txt" "bash"; eq "18.46 a failing .bash file: 10" "$RC" 10
+mk k4b; printf 'if then\n' > "$W/src/X.SH"; paths 'src/X.SH\n'; run --paths-from "$C/p.txt" "upper"; eq "18.46b a failing .SH file (suffixes compare case-insensitively): 10" "$RC" 10
+mk k4c; printf 'check_json\tbuiltin:check_json\tIMG-TESTUTIL\tplain\t-\tfiles\tjson\n' >> "$W/scripts/repo/validate_checks.tsv"; git -C "$W" add -A; git -C "$W" commit -qm "json row"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; printf '{"a":1}\n\0' > "$W/src/d.json"; paths 'src/d.json\n'; run --paths-from "$C/p.txt" "binary json"; eq "18.46c a binary-looking .json owes CHECKS_NOT_JUDGED: 14" "$RC" 14; has "18.46c named" "$(jq -c .unjudged_paths "$REP" 2>/dev/null)" check_json
+mk k4d; printf 'check_json\tbuiltin:check_json\tIMG-TESTUTIL\tplain\t-\tfiles\tjson\n' >> "$W/scripts/repo/validate_checks.tsv"; printf 'src/d2.json binary\n' > "$W/.gitattributes"; git -C "$W" add -A; git -C "$W" commit -qm "json row and attribute"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; printf '{"a":1}\n\0' > "$W/src/d2.json"; paths 'src/d2.json\n'; run --paths-from "$C/p.txt" "attribute binary json"; eq "18.46d a .json that the repository attributes mark binary owes CHECKS_NOT_JUDGED: 14" "$RC" 14; has "18.46d named" "$(jq -c .unjudged_paths "$REP" 2>/dev/null)" check_json
+mk k5; mkdir -p "$W/nested" && git init -q "$W/nested"; ln -s nowhere "$W/src/dangling"; chg
+run --commit-before-integrate --paths-from "$C/p.txt" "a"; hasnot "18.47 --commit-before-integrate with an untracked nested repository and a dangling symlink is no backup_failed (it used to be)" "$OUT" backup_failed
+has "18.47 the nested repository and the link are recorded in the backup" "$(cat "$RD/backup/s1a/nested.tsv" 2>/dev/null)" "nested_repo	nested"; has "18.47b and the dangling link" "$(cat "$RD/backup/s1a/nested.tsv" 2>/dev/null)" "symlink	src/dangling	nowhere"
+mk k5b; git -C "$W" mv src/z.txt src/z2.txt; chg; run --commit-before-integrate --paths-from "$C/p.txt" "a"
+has "18.47c a staged rename: the new path is backed up" "$(cat "$RD/backup/s1a/worktree.sha256" 2>/dev/null)" "src/z2.txt"; hasnot "18.47c and no garbled old path" "$(cat "$RD/backup/s1a/worktree.sha256" 2>/dev/null)" "_name"
+mk k5c; echo old > "$W/aaaREADME.txt"; git -C "$W" add -A; git -C "$W" commit -qm "odd name"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; git -C "$W" mv aaaREADME.txt b.txt; chg; run --commit-before-integrate --paths-from "$C/p.txt" "a"
+has "18.47d a staged rename whose old path: the new path is backed up" "$(cat "$RD/backup/s1a/worktree.sha256" 2>/dev/null)" "b.txt"; hasnot "18.47d a staged rename whose old path minus three characters names an UNCHANGED file: that file is no part of the backup" "$(cat "$RD/backup/s1a/worktree.sha256" 2>/dev/null)" "README.txt"
+mk k6; chg; XENV="GITSHIM_FAIL_ON=ls-files.-s.-z$" run --paths-from "$C/p.txt" "a"; XENV=""; eq "18.48 a gitlink listing that fails is 20 git_listing_failed, never 'no submodules'" "$RC" 20; has "18.48 the reason" "$OUT" git_listing_failed
+mk k6b; chg; XENV="GITSHIM_FAIL_ON=rev-list.refs/heads/main" run --commit-before-integrate --paths-from "$C/p.txt" "a"; XENV=""; eq "18.48b a failing outgoing-commit listing at S1a is 20, never an empty range" "$RC" 20; has "18.48b git_listing_failed" "$OUT" git_listing_failed
+mk n1; git -C "$W" mv mods/sub "mods/my sub" 2>/dev/null; git -C "$W" commit -qm rename; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; echo r > "$W/mods/my sub/r.txt"; printf 'mods/my sub/r.txt\n' > "$C/p.txt"
+run --repo "mods/my sub" --paths-from "$C/p.txt" "sub with a space"; eq "18.49 --repo of a submodule whose path holds a space: 0 (it used to be repo_not_found)" "$RC" 0
+mk n2; git -C "$W" tag main 2>/dev/null; chg; run --paths-from "$C/p.txt" "a"; okrun "18.50 a tag named like the branch does not break it (it used to be wrong_branch)"
+mk i1; paths 'src/a.txt\n'; run --awaits-review "$EVR/reviews/WP-Z.json"; eq "18.51 --awaits-review without --paths-from: 20" "$RC" 20; run "message only"; eq "18.51b a message without --paths-from: 20" "$RC" 20
+mk i2; chg; run --repo mods/sub --repo mods/ext --paths-from "$C/p.txt" "a"; eq "18.52 the same option twice: 20 usage_error" "$RC" 20; has "18.52 given twice" "$OUT" "given twice"
+run --run-id a1 --run-id a2 --paths-from "$C/p.txt" "a"; eq "18.52b cpa-host --run-id twice: 20" "$RC" 20
+run --paths-from "$C/p.txt" -- "--run-id"; okrun "18.53 a message equal to --run-id after -- is a message"
+mk i3; printf 'src/a.txt\t\n' > "$C/p.txt"; echo a > "$W/src/a.txt"; run --paths-from "$C/p.txt" "a"; eq "18.54 a paths line with a TAB and an empty verdict: 20" "$RC" 20
+mk i4; chg; mkdir -p "$W/.audit/merge-resolution/x"; run --resolve-merge "$W/.audit/merge-resolution/x" --paths-from "$C/p.txt" "a"; eq "18.55 --resolve-merge when no merge ran: 20" "$RC" 20
+mk m1; chg; run --paths-from "$C/p.txt" $'a\n\nAwaits-Review: specs/x.json'; eq "18.56 a message line that reads like a trailer: 20" "$RC" 20; has "18.56 usage_error" "$OUT" message_impersonates_trailer
+run --paths-from "$C/p.txt" $'b\n\nDeferred-Gates: x'; eq "18.56b a Deferred-Gates line: 20" "$RC" 20
+mk m3; foreign src/f1.txt 'f\n'; F1="$FOREIGN"; foreign src/f2.txt 'g\n'; git -C "$C/f" commit -q --allow-empty -m "$(printf 'body\n\nForeign-Commit: %s\n\nmore' "$F1")"; git -C "$C/f" push -q "$C/fx/a.git" main; git -C "$C/f" push -q "$C/fx/b.git" main
+chg; run --paths-from "$C/p.txt" "own change"; okrun "18.57 an own change after foreign commits"; has "18.57 the first commit names the foreign commit although a body line of another commit spells it" "$(msg)" "Foreign-Commit: $F1"
+mk v2; mkdir -p "$W/$EVR/reviews"; VX="$EVR/reviews/WP-S.json"; printf '{"schema":"review-verdict/1","verdict":"GO","covers_runs":[],"model":"opus","effort":"xhigh","blocking_findings":3}\n' > "$W/$EVR/reviews/WP-S.json"; paths "$VX\n"; run --paths-from "$C/p.txt" "a schema-invalid GO"
+echo h > "$W/src/h.txt"; paths "src/h.txt\t$VX\n"; run --paths-from "$C/p.txt" "hold on it"; eq "18.58 a hold on a verdict that says GO but is schema-invalid is a legal hold: 14, not verdict_already_go" "$RC" 14
+mk v5; mkdir -p "$C/nojs"; cat > "$C/nojs/python3" <<'NOJS'
+#!/bin/sh
+# a python3 without the jsonschema module for verdict_go.py only (every other python of the run is the genuine one)
+case "$2" in
+  */verdict_go.py) shift; exec /usr/bin/python3 -I -c 'import sys, runpy; sys.modules["jsonschema"] = None; s = sys.argv[1]; sys.argv = sys.argv[1:]; runpy.run_path(s, run_name="__main__")' "$@" ;;
+  *) exec /usr/bin/python3 "$@" ;;
+esac
+NOJS
+chmod 755 "$C/nojs/python3"
+mkdir -p "$W/$EVR/reviews"; VF="$EVR/reviews/WP-F.json"; echo h > "$W/src/h.txt"; paths "src/h.txt\t$VF\n"; run --paths-from "$C/p.txt" "held"; HRF="$RUN"
+printf '{"schema":"review-verdict/1","verdict":"GO","covers_runs":[{"repository":".","commit":"0000000000000000000000000000000000000000","cpa_run":"%s"}],"model":"opus","effort":"xhigh","blocking_findings":false}\n' "$HRF" > "$W/$EVR/reviews/WP-F.json"; paths "$VF\n"
+runenv "PATH=$C/nojs:$C/shimr:$PATH" -- --paths-from "$C/p.txt" "a verdict with blocking_findings false"; hasnot "18.59 with no jsonschema the hold is NEVER released on a reduced check (origin lacks the held commit)" "$(git -C "$C/fx/a.git" log --format=%s main | head -3 | tr '\n' ' ')" "held"
+mk b3; ( cd "$W" && envr $(ENVV) timeout 10 "$C/bin/cpa-host" --paths-from /dev/zero "m" ) >"$C/out.txt" 2>"$C/err.txt"; eq "18.60 --paths-from /dev/zero is refused at once: 20" "$?" 20
+mk st1; mkdir -p "$W/.audit"; A1="$(git -C "$W/mods/sub" rev-parse HEAD)"; git -C "$W/mods/sub" commit -q --allow-empty -m two; B1="$(git -C "$W/mods/sub" rev-parse HEAD)"; git -C "$W/mods/sub" push -q origin main; git -C "$W" add mods/sub; git -C "$W" commit -qm pin; git -C "$W" push -q origin main; git -C "$W" push -q mirror main
+git -C "$W/mods/sub" checkout -q "$A1"; printf 'mods/sub\t%s\tsomerun\n' "$A1" > "$W/.audit/pending_pins.tsv"; trust_build "$C"; run
+eq "18.61 a pending pin row BEHIND the pin the parent records is stale: 15 pointer_drift, never 0" "$RC" 15; eq "18.61 the stale row was dropped" "$(awk -F'\t' '$1=="mods/sub"' "$W/.audit/pending_pins.tsv" | wc -l | tr -d ' ')" 0
+mk en1; chg; SKIP_LONG=$'a\rb' run --paths-from "$C/p.txt" "a"; eq "18.62 a control character in SKIP_LONG is refused: 20" "$RC" 20
+mk f1; mkfifo "$W/src/fifo"; paths 'src/fifo\n'; run --paths-from "$C/p.txt" "a fifo"
+has "18.67 a declared FIFO is reported not_judged non_regular, never read as a deletion" "$(cat "$RD/validate.out" 2>/dev/null)" "not_judged	non_regular	src/fifo"; eq "18.67 and nothing is committed or pushed for it: 20" "$RC" 20
+# a shell-level failure (status 127: a command not found, an unreadable file) after the run opened is a 20 with the status in the detail (a shim of lib_safe.sh makes a function the main shell calls directly at S0 end the shell with 127)
+mk w14; printf '\nsafe_declpath() { exit 127; }\n' >> "$W/scripts/repo/lib_safe.sh"; git -C "$W" add -A; git -C "$W" commit -qm "lib shim"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"; chg
+run --paths-from "$C/p.txt" "a"; eq "18.63 a shell-level 127 after the run opened: 20, never the shell's 127" "$RC" 20; eq "18.63 the report says internal_error with the status" "$(jq -r '.reason + ":" + .detail' "$REP" 2>/dev/null)" "internal_error:exit 127"
+# a run directory whose state cannot be read is a 20, never "not live" (the predicate is read in a command substitution, where a set -u error ends only the substitution)
+mk w14b; mkdir -p "$W/.audit/commit-push/20260101T000000Z-1-other"; echo '{}' > "$W/.audit/commit-push/20260101T000000Z-1-other/report.json"
+printf '\ncpa_rundir_state() { : "${CPA_TEST_UNSET_VARIABLE}"; echo finished; }\n' >> "$W/scripts/repo/lib_safe.sh"; git -C "$W" add -A; git -C "$W" commit -qm "lib shim"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main; trust_build "$C"
+run; eq "18.63b a run state that cannot be read: 20" "$RC" 20; eq "18.63b the report says internal_error" "$(jq -r .reason "$REP" 2>/dev/null)" internal_error; has "18.63b and names the run directory whose state was unreadable" "$(jq -r .detail "$REP" 2>/dev/null)" "could not be read"
+# CHECKS_NOT_JUDGED is recorded although a registry row is pending (validate_cheap gives 14, not 0)
+mk w15; printf 'extra\tscripts/repo/check_no_ci.sh --root /nonexistent\tIMG-TESTUTIL\tplain\t-\tchangeset\tnot in the approved copy\n' >> "$W/scripts/repo/validate_checks.tsv"; git -C "$W" add -A; git -C "$W" commit -qm "registry row"; git -C "$W" push -q origin main; git -C "$W" push -q mirror main
+ln -s ../README.txt "$W/src/link"; paths 'src/link\n'; run --paths-from "$C/p.txt" "symlink and a pending row"
+eq "18.64 a declared symlink and a pending registry row: 14" "$RC" 14; has "18.64 CHECKS_NOT_JUDGED is recorded although validate_cheap gave 14" "$(jq -c .deferred_gates "$REP" 2>/dev/null)" CHECKS_NOT_JUDGED
+# the sweep judges the MAIN repository, also in a --repo run
+mk w16; hshim scripts/anti-mess/sweep.sh 'echo "$ANTIMESS_ROOT" >> "'"$C"'/sweep.roots"; exit 0'; : > "$C/sweep.roots"; echo r > "$W/mods/sub/r.txt"; printf 'mods/sub/r.txt\n' > "$C/p.txt"; run --repo mods/sub --paths-from "$C/p.txt" "sub work"
+eq "18.65 a --repo run: the sweep is rooted at the MAIN repository at S0 and at S7 (CM15: not at the submodule)" "$(sort -u "$C/sweep.roots" | tr '\n' ' ')" "$(cd "$W" && pwd -P) "
+# the gate lists are read at S0: a merge commit made at S1 carries GATES_NOT_BUILT for an absent long-gate list
+OMIT=scripts/repo/long_gates.txt mk w17; echo l > "$W/src/l.txt"; paths 'src/l.txt\n'; run --local-only --paths-from "$C/p.txt" "local"; foreign src/f.txt 'f\n'; run
+eq "18.66 control: the run made a merge commit" "$(git -C "$W" rev-list --parents -n1 HEAD | wc -w | tr -d ' ')" 3; has "18.66 the S1 merge commit carries GATES_NOT_BUILT (an absent long-gate list, recorded at S0)" "$(msg)" GATES_NOT_BUILT
+# REPORT-4: a held remainder explains verifier 11 only when NOTHING is unproven; a remote that cannot be read after the push is 11 remote_unproven, never review_pending
+mk h68; V="$EVR/reviews/WP-X.json"; echo u > "$W/src/u.txt"; echo h > "$W/src/h.txt"; paths "src/u.txt\nsrc/h.txt\t$V\n"
+XENV="GITSHIM_FAIL_AFTER_PUSH=ls-remote" run --paths-from "$C/p.txt" "unheld and held, remotes unreadable after the push"; XENV=""
+eq "18.68 a held run whose remotes cannot be read after the push: 11, not 14 (REPORT-4)" "$RC" 11; has "18.68 remote_unproven" "$OUT" remote_unproven
 fi
 
 # ======== 11 static properties ================================================================================================================
@@ -948,18 +1287,20 @@ eq "11.4 the host entry's and the copied script's scrub blocks are the same text
 sb() { sed -n '/^# --- cpa signals begin ---$/,/^# --- cpa signals end ---$/p' "$1"; }
 [ -n "$(sb "$H")" ] && ok "11.4 control needle: the copied script holds a signals block" || bad "11.4 the copied script holds no signals block"
 eq "11.4 the host entry's and the copied script's signal blocks are the same text" "$(sb "$SRC/scripts/repo/host_entry/cpa-host")" "$(sb "$H")"
-# 11.5 the inventory of every environment variable the run's scripts read: each is a family the scrub drops, a documented input, or assigned by the script itself
-inv=""; for f in "$H" "$SRC"/scripts/repo/host_entry/cpa-host "$SRC"/scripts/repo/*.sh "$SRC"/scripts/longops/*.sh "$SRC"/scripts/anti-mess/sweep.sh; do
-  [ -f "$f" ] || continue
-  for n in $(grep -oE '\$\{[A-Z][A-Z0-9_]*:[-?=+]' "$f" | sed 's/^\${//;s/:.$//' | sort -u); do grep -qE "(^|[^A-Za-z0-9_])$n=" "$f" 2>/dev/null && continue; inv="$inv $n"; done
-done; inv="$(printf '%s\n' $inv | sort -u | tr '\n' ' ')"
-has "11.5 control needle: the inventory sees a helper's program-location variable" "$inv" VERIFY_GIT; has "11.5 and the sweep's root" "$inv" ANTIMESS_ROOT
-un=""; for n in $inv; do
-  case "$n" in TMPDIR|SKIP_LONG|HOME|CPA_APPROVED_DIR|CPA_RUN_ID|CPA_RUN|CPA_HOST_STATE|CPA_ROOT|CPA_ADOPTION_COMMIT|LONGOPS_ALLOW_TMPFS) continue ;; esac
-  case "$n" in GIT_*|LONGOPS_*|ANTIMESS_*|AM_*|VERIFY_*|DISK_HEADROOM_*) fam="${n%%_*}"; [ "$fam" = DISK ] && fam=DISK_HEADROOM; grep -qF "${fam}_*" <<< "$hb" && continue ;; esac
-  un="$un $n"
+# 11.5 the environment is an ALLOWLIST (WF17-cpa): the class is closed by the shape of the block, by the interpreter and by the environ oracle of matrix 18.10, not by a text inventory of ${NAME:-} reads
+# (which was blind to every variable that bash, the loader, python and git read for themselves)
+has "11.5 control needle: the block holds the allowlist" "$hb" "CPA_ENV_ALLOW="
+hasnot "11.5 the allowlist names no family wildcard" "$(printf '%s' "$hb" | grep '^CPA_ENV_ALLOW=')" "*"
+sh=""; for f in "$H" "$SRC"/scripts/repo/host_entry/cpa-host "$SRC"/scripts/repo/*.sh; do [ "$(head -1 "$f")" = '#!/bin/bash -p' ] || sh="$sh $(basename "$f")"; done
+eq "11.5 every script of a run starts with #!/bin/bash -p (imported functions, SHELLOPTS, BASHOPTS, BASH_ENV and ENV are ignored by bash itself; an absolute interpreter cannot be replaced through PATH; unaccounted:${sh:- none})" "${sh:- none}" " none"
+for f in "$H" "$SRC"/scripts/repo/host_entry/cpa-host; do
+  first="$(sed -n '/^set -u$/,$p' "$f" | grep -v '^#' | grep -v '^$' | sed -n 2p)"
+  case "$first" in 'CPA_SIGS=(); while read'*) ok "11.5 $(basename "$f"): the signal block is the first statement after set -u (no start-up interval without a handler)" ;; *) bad "11.5 $(basename "$f"): the first statement after set -u is '${first:0:60}'" ;; esac
 done
-eq "11.5 every environment variable the run reads is dropped by the scrub, a documented input, or set by the script itself (unaccounted:${un:- none})" "${un:- none}" " none"
+py=""; for f in "$H" "$SRC"/scripts/repo/host_entry/cpa-host "$SRC"/scripts/repo/*.sh; do
+  hit="$(grep -nE 'python3( |$)' "$f" | grep -vE '^[0-9]+:[[:space:]]*#|command -v python3|python3 -I|INTERPRETERS|bash, python3|python3 needs|python3, sha256sum|python3 required|word python3' | head -2)"; [ -z "$hit" ] || py="$py $(basename "$f"):${hit%%:*}"
+done
+eq "11.5 every python3 of a run is isolated (-I: no PYTHON* variable, no working-directory module; unaccounted:${py:- none})" "${py:- none}" " none"
 # 11.6 the inventory of the row kinds validate_cheap.sh prints: each is decided by its exit status, informational by design, or read by name in the script (WF14 N4: a row that
 # means "not judged" must never be a kind that only the helper's header knows)
 vk="$(grep -oE "emit\('[a-z_]+'" "$SRC/scripts/repo/validate_cheap.sh" | sed "s/emit('//;s/'//" | sort -u | tr '\n' ' ')"

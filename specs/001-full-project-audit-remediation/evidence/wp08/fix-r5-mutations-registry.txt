@@ -1,0 +1,126 @@
+# identity: catalogizer / 001 / WP-08 round 5 | utc 2026-10-08T03:50:46Z | host anton | git head f72d8757 (working tree, uncommitted)
+# COMPOSITION (stated, 11.4.6). The registry mutation evidence of round 5 is composed of FOUR parts, in this order; no part is hand-edited:
+#  (1) the FULL run `bash scripts/longops/tests/mutate_registry.sh`, 2026-10-07 18:37-20:46 CEST, on the final scripts/longops (no longops script changed afterwards): 106 mutants, 103 caught, 2 survived (NM-F4a, NM-G3), X5 equivalent.
+#  (2) the rerun `--only NM-F4a,NM-G3` after test_registry_r5.sh gained F4 and a tighter G3: both CAUGHT.
+#  (3) the NEGATIVE CONTROL CTRL0 (added to the runner after (1)) FAILED on its first run (see fix-r5-control-registry history in the README): the containment shim false-refused a live process whose comm holds a newline, so 12 mutants of (1)
+#      had been caught at the first test of that kind (H1b) without their own killer: M39 M44 X1 X2 X3 C01 C04 C06 C07 C11 C12 NM-H1. After the shim fix they were re-run on the final tree: `fix-r5-mutations-registry-rerun12.txt`
+#      = 9 CAUGHT by their own killers (X1 X2 X3 C01 C04 C06 C07 C11 C12) and 3 SURVIVED (M39, M44, NM-H1), which are therefore EQUIVALENT-by-redundancy / unproven (reasons recorded in the runner).
+#  (4) for the two redundant guards the observable mutants were added and run: M39b (the live gate guard) CAUGHT, M44c (both pid guards removed) CAUGHT (lines below).
+# FINAL TALLY of mutate_registry.sh --check (109 entries): 1 control (CTRL0, passes), 4 EQUIVALENT with recorded reasons (X5 reviewer's reason, M39 and M44 redundant by construction, NM-H1 unproven equivalence), 104 mutants, all CAUGHT.
+# ---- (1) full run
+CAUGHT   M01 drop the flock: every CAS runs unlocked (adopt vs expire gives two winners) [test_registry.sh] :: FAIL S10 over 6 trials adopt vs expire has exactly one winner each time :: got [6] want [0]|
+CAUGHT   M02 check_no_build_writing_tracked made always-pass [test_registry.sh] :: FAIL K3 golden-false: a live build writing a TRACKED path is refused :: rc=0 want 1|
+CAUGHT   M03 require_verdicts accepts a missing verdict [test_registry.sh] :: FAIL V2 golden-false: a missing verdict file is refused :: rc=0 want 1|
+CAUGHT   M04 signal guards on pid and pgid removed (the real kill is replaced by a no-op IN THE SAME MUTANT: a guard-less kill of 0 or -1 would signal the whole session) [test_registry.sh] :: FAIL P3 a hung op is reaped :: rc=8 want 0|
+CAUGHT   M05 classification never reports hung (flat offset never detected) [test_registry.sh] :: FAIL H4 flat progress offset past no_progress_s is HUNG :: got [advancing] want [hung]|
+CAUGHT   M06 a live advancing op may be reaped [test_registry.sh] :: FAIL P1 a live advancing op is never reaped :: rc=0 want 5|
+CAUGHT   M07 process identity ignores the /proc start time (a recycled pid reads live) [test_registry.sh] :: FAIL P5 a recycled pid (start time differs) is dead_owner: reaped :: rc=5 want 0|
+CAUGHT   M08 record write is not atomic (remove, pause, rename) [test_registry.sh] :: FAIL H11 a reader looping over 60 record rewrites never reads a torn file :: got [443] want [0]|
+CAUGHT   M09 the purpose claim is not exclusive (no existing-claim check, mkdir -p) [test_registry.sh] :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|
+CAUGHT   M10 tmpfs state accepted [test_registry.sh] :: FAIL R5b state on tmpfs is refused (not tmpfs, 11.4.232 A) :: rc=0 want 20|
+CAUGHT   M11 reap does not resolve the real identity from /proc [test_registry.sh] :: FAIL P4 an unresolvable identity (cmdline differs) is refused :: rc=0 want 6|
+CAUGHT   M12 --expire ignores the resume_ttl [test_registry.sh] :: FAIL S8 --expire refuses a holder still inside resume_ttl :: rc=0 want 4|
+CAUGHT   M13 CPA_APPROVED_DIR check dropped for commit_push [test_registry.sh] :: FAIL C1 holder.sh commit_push with CPA_APPROVED_DIR unset gives 20 :: rc=0 want 20|
+CAUGHT   M14 a dead process holder reads live [test_registry.sh] :: FAIL R3 a stale claim (dead holder) is refused, never taken over silently :: rc=3 want 4|
+CAUGHT   M15 write paths under $EV/$AUD no longer block (ported: the gate now compares canonical $EVR/$AUDR) [test_registry.sh] :: FAIL K6 any live op declaring a write path under $EV is refused (not only builds) :: rc=0 want 1|
+CAUGHT   M16 fingerprint not compared (ported: the check is keyed on have_fp) [test_registry.sh] :: FAIL V3 a stale fingerprint is refused :: rc=0 want 1|
+CAUGHT   M17 adopt does not check it adopts a suspended-run of that run (no CAS) (ported to the _hget holder variable) [test_registry.sh] :: FAIL S12 adopt of a run that is a live process holder (not suspended) is a cas_mismatch :: rc=0 want 4|
+CAUGHT   M18 stale-holder reader does not re-read the record (snapshot race) (ported: the re-read is s3) [test_registry.sh] :: FAIL S13 a reader that read the holder before the hub moved it (callback running, build terminal) judges the C|
+CAUGHT   M19 the build purpose-key grammar is not enforced (T089a) [test_registry.sh] :: FAIL G2 golden-false: a malformed build purpose key is refused (build:app:lane:abc:def:primary) :: rc=0 want 2|
+CAUGHT   M20 the wall-clock cap is ignored: an advancing but over-long build never reads hung (T089a) [test_registry.sh] :: FAIL W3 an advancing but over-long build (elapsed > wall_clock_s) is hung :: got [advancing] want [hung]|
+CAUGHT   M21 the build host's elapsed time is not recorded (T089a) [test_registry.sh] :: FAIL W1 heartbeat records the build host's elapsed monotonic time :: got [null] want [3000]|
+CAUGHT   M22 RM1: the pgid guard of lo_signal is dropped (pid guard kept) [test_registry.sh] :: FAIL M1 RM1 a pid > 1 whose process GROUP is <= 1 (kernel thread 10, pgrp 0) is refused by lo_signal and lo_ki|
+CAUGHT   M23 RM2: the zombie check of lo_alive is dropped [test_registry.sh] :: FAIL M2 RM2 an op whose owner is a ZOMBIE (hand-written record: register refuses it) is dead_owner, not alive |
+CAUGHT   M24 RM3: lo_safe_name accepts a slash after the first character [test_registry.sh] :: FAIL M3 RM3 an unsafe purpose key is refused (2): a/b :: rc=1 want 2|
+CAUGHT   M25 RM4: lo_claim swallows the conf-unreadable refusal [test_registry.sh] :: FAIL X6 RM4 acquiring over a ready_to_resume holder whose conf is unreadable is 20, never a stale_claim takeov|
+CAUGHT   M26 F1 (ported): a process that survived TERM is still recorded reaped [test_registry.sh] :: FAIL W1 F1 a process that IGNORES TERM is not reaped: exit 8 (survived), never 0 :: rc=5 want 8|
+CAUGHT   M27 F2: the reap decision uses a snapshot taken before the lock (decision outside the lock) [test_registry.sh] :: FAIL W2 F2 a heartbeat that lands before the reap takes the lock is SEEN: the op is advancing, refused (5) :: |
+CAUGHT   M28 F2: reap --purpose judges a holder snapshot taken before the lock [test_registry.sh] :: FAIL W3 F2 reap --purpose re-reads the holder UNDER the lock: a live holder that took the purpose in the windo|
+CAUGHT   M29 F3: an unreadable holder record is read as dead [test_registry.sh] :: FAIL X3 holder.sh on a truncated holder record is 20, never none :: rc=0 want 20|
+CAUGHT   M30 F5: lo_wjson writes empty or invalid JSON (no input check, no -e, no size check) [test_registry.sh] :: FAIL V6 F5 lo_wjson refuses empty and invalid JSON (1), writes valid JSON (0), and a refused write leaves the |
+CAUGHT   M31 F6: a heartbeat may rebind the op to pid 1, 0 or a dead pid [test_registry.sh] :: FAIL V1 F5/F6 heartbeat --pid abc is refused (2) :: rc=1 want 2|
+CAUGHT   M32 F6: register accepts pid 0, 1 and a pid that does not exist [test_registry.sh] :: FAIL V3 F6 register --pid '1' is refused (2) :: rc=0 want 2|
+CAUGHT   M33 F7: register records a 0 no-progress budget (never hung) [test_registry.sh] :: FAIL D1 register with no budget records the declared default (3600), not 0 :: got [0] want [3600]|
+CAUGHT   M34 F7: a record with no no-progress budget is never hung [test_registry.sh] :: FAIL D3 a legacy record with budget 0 is judged by the default too :: got [advancing] want [hung]|
+CAUGHT   M35 F11: a terminal record can be rewritten [test_registry.sh] :: FAIL T2 F11 a second release into another state is refused (4 already_terminal) :: rc=0 want 4|
+CAUGHT   M36 class 2 (ported): a record that fails the shape is classified dead_owner [test_registry.sh] :: FAIL P7 a record naming pid 1 (hand-written: register refuses it, W16) is UNREADABLE (the record shape wants a|
+CAUGHT   M37 F2 member: the op record is created with an overwriting rename (not exclusive) [test_registry_r5.sh] :: FAIL G3 nothing flushes ops/ after the link [NOT-ops claims ]|
+CAUGHT   M38 class 3 (ported): lo_uint accepts any number of digits and leading zeros [test_registry.sh] :: FAIL V1 F5/F6 heartbeat --elapsed-ms 99999999999999999999 is refused (2) :: rc=0 want 2|
+CAUGHT   M39 class 2: an unreadable op record is read as no writer [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   M40 class 2: an unreadable holder is reported none [test_registry.sh] :: FAIL X3 holder.sh on a truncated holder record is 20, never none :: rc=0 want 20|
+CAUGHT   M41 F14: classify --op-id of an unknown op succeeds with empty output [test_registry.sh] :: FAIL X9 F14 classify --op-id of an op that does not exist is 4 (unknown_op), not an empty success :: rc=0 want|
+CAUGHT   M42 label: reap does not look at the label the launcher sets (catalogizer.op_id) [test_registry.sh] :: FAIL P8b [ps --filter label=op_id=20261007T172103Z-1290185-23390 --format {{.ID}}|
+CAUGHT   M43 RM5 (ported): the last_progress_epoch is not validated by the record shape: a valid-JSON record with a text epoch reads as readable [test_registry.sh] :: FAIL N11 a valid-JSON record with ONE bad field (.last_progress_epoch="abc") is unreadable, never dead, advanc|
+CAUGHT   M44 RM11 (round-2 reviewer, verbatim): a holder whose pid is not a number is judged by lo_alive instead of being unreadable [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   M45 WF14 R2-1 (ported): the grace wait runs INSIDE the purpose lock (an owner whose exit path takes the lock cannot finish: the dispatch pump shape) [test_registry.sh] :: FAIL N1b the owner's handoff answers OUR reap intent: the record ends reaped, verdict reaped_hung:owner_handof|
+CAUGHT   M46 WF14 R2-3: a rebind does not move the claim holder with the op owner [test_registry.sh] :: FAIL N3 R2-3 the rebind moved the claim holder to the new owner (pid, start time, cmdline) :: got [1939341	192|
+CAUGHT   M47 WF14 R2-3: reap --purpose ignores a live op of the purpose [test_registry.sh] :: FAIL N4 R2-3 reap --purpose of a DEAD holder refuses (5) while a non-terminal op of that purpose has a live ow|
+CAUGHT   M48 WF14 R2-5: lo_pid_ok accepts a zombie [test_registry.sh] :: FAIL M2c WF14 R2-5 register --pid <zombie> is refused (2): a zombie is no owner :: rc=0 want 2|
+CAUGHT   M49 WF14 R2-5: lo_pid_ok accepts a kernel thread (process group 0) [test_registry.sh] :: FAIL N5b heartbeat --pid <kernel thread 10, pgrp 0> is refused (2) :: rc=0 want 2|
+CAUGHT   M50 WF14 R2-6: the default budget is not validated (0 or junk brings back never-hung) [test_registry.sh] :: FAIL N6 R2-6 LONGOPS_DEFAULT_NO_PROGRESS_S='0' is refused (2) at load, never 'never hung' :: rc=0 want 2|
+CAUGHT   M51 WF14 R2-10: release reports a claim that belongs to another run as a failed CAS after the record was written [test_registry.sh] :: FAIL N8 R2-2/R2-10 resolving a HANDOFF op whose purpose was re-claimed by its successor succeeds (0), never a |
+CAUGHT   M52 WF14 R2-10 (ported): reap of a --no-claim op fails the CAS after the record was written [test_registry.sh] :: FAIL N7 R2-10 reaping a --no-claim op whose purpose is claimed by ANOTHER op succeeds (0): the record is writt|
+CAUGHT   M53 WF14 R2-4: the record's own container_label is not used to find the container [test_registry.sh] :: FAIL N9b [ps --filter label=op_id=bld7 --format {{.ID}}|
+CAUGHT   M54 WF14 class D (ported): a record whose pid is not a number > 1 passes the shape (pid 1 is classified by lo_alive as dead_owner, not unreadable) [test_registry.sh] :: FAIL P7 a record naming pid 1 (hand-written: register refuses it, W16) is UNREADABLE (the record shape wants a|
+CAUGHT   M55 WF14: lo_unclaim_own releases a claim that belongs to another run [test_registry.sh] :: FAIL N7b state reaped, the claim is still opA's :: got [reaped:] want [reaped:opA]|
+CAUGHT   M56 WF14: the lock wait budget is ignored (fixed 15 s) [test_registry.sh] :: FAIL N14 a held purpose lock makes a script exit 70 after LONGOPS_LOCK_WAIT_S :: rc=0 want 70|
+CAUGHT   M57 WF14 class D (ported): a process holder whose start_time cannot identify a process passes the holder shape [test_registry.sh] :: FAIL N13 a process holder with a start_time that cannot identify a process (.start_time=null) is refused (20),|
+CAUGHT   M58 WF14 class D (ported): a suspended-run holder with a mistyped builds passes the holder shape [test_registry.sh] :: FAIL N13d a suspended-run holder with ONE mistyped field (.builds="abc") is refused (20), never none (dead) ::|
+CAUGHT   X1 WF17: reap --purpose treats only an ADVANCING op as live (a HUNG op whose owner lives no longer protects its claim) [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   X2 WF17: a rebind rewrites the purpose holder even when the claim belongs to ANOTHER run [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   X3 WF17: the pre-signal start-time re-check (R2-9) is dropped [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   X4 WF17: the DEFAULT reap grace is 0 s (an owner whose exit path takes ~10 s, the runner wrapper, is falsely reported reap_survived) [test_registry_r5.sh] :: FAIL D4 an owner whose exit path takes 3 s is reaped with the DEFAULT grace (0, not reap_survived 8) :: rc=8 w|
+EQUIVALENT X5 WF17: the unlocked wait ignores an op the owner already released (waits for the process only) :: WF17 (verbatim reason): step B re-derives the state from the record, so waiting for the process only is a timing-only difference; the final record and exit are identical
+CAUGHT   C01 R2-4 reap: a BARE container_label value (not k=v, not the op id) adds no candidate labels [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   C02 R2-8 reap (ported): the container listing runs with no timeout (a wedged podman wedges reap) [orig: cid=$(timeout 30 "$PODMAN" ps --filter] [test_registry_r5.sh] :: FAIL F1l rc=124 after 30 s|
+CAUGHT   C03 R2-8 reap (ported): the container STOP moves back UNDER the purpose lock (the unlocked stop is removed and a stop is added before the signal in step A) [test_registry.sh] :: FAIL W4b the loser made no claim at all (the record is created FIRST, so the loser stops at the exclusive reco|
+CAUGHT   C04 R2-3 guard (ported) ignores the purpose: a live op of ANOTHER purpose blocks the release of a stale claim (false-positive refusal) [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   C05 R2-3 rebind (ported): a FAILED holder write is ignored and the op write still lands (op and holder diverge, exit 0) [test_registry_r5.sh] :: FAIL F2e a holder write that fails on a rebind exits 1 :: rc=0 want 1|
+CAUGHT   C06 reap --op-id --dry-run of a dead_owner op (ported text) really writes reaped and releases the claim [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   C07 reap --purpose --dry-run really releases the claim [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   C11 classify: blocked-escape is no longer terminal (a reap/sweep may rewrite a terminal record) [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   C12 reap: a REFUSED (unsafe) signal is treated as delivered: waits and records reap_survived instead of exit 7 [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   NM-A1 A: lo_classify_op judges any JSON object (the record shape is not applied) [test_registry.sh] :: FAIL P7 a record naming pid 1 (hand-written: register refuses it, W16) is UNREADABLE (the record shape wants a|
+CAUGHT   NM-A2 A: the start_time owner sub-predicate is dropped from LO_OP_SHAPE [test_registry_r5.sh] :: FAIL A1.11 classify of [.start_time=false] is unreadable :: got [dead_owner] want [unreadable]|
+CAUGHT   NM-A3 A: one state (blocked-escape) is dropped from the closed state set of LO_OP_SHAPE [test_registry_r5.sh] :: FAIL C11 a blocked-escape record is TERMINAL :: got [unreadable] want [terminal]|
+CAUGHT   NM-A4 A: _live_op_of_purpose skips an unreadable record instead of refusing (purpose filter before the shape check) [test_registry_r5.sh] :: FAIL A1.1 reap --purpose of [del(.pid)] with a DEAD holder refuses (20): an unjudgeable record of the registry|
+CAUGHT   NM-A5 A: a suspended-run holder with an absent/null builds is read as an empty array (builds back to // []) [test_registry_r5.sh] :: FAIL A5 a suspended-run holder with [del(.builds)] is unreadable (20): a run with LIVE builds is not released |
+CAUGHT   NM-A6 A: a holder file that exists but cannot be read (empty, mode 000, a directory) is read as ABSENT [test_registry_r5.sh] :: FAIL A4 holder.sh on a holder that is empty refuses (20), never none :: rc=0 want 20|
+CAUGHT   NM-A7 A: lo_uint accepts a leading zero (bash reads 08 as an invalid octal and 010 as 8) [test_registry_r5.sh] :: FAIL A7 register --no-progress-s 08 is a usage error (2) :: rc=0 want 2|
+CAUGHT   NM-A9a A: a verdict utc is passed raw to date -d ('', now and next year read as a time) [test_registry_r5.sh] :: FAIL A9 verdict with utc [absent] is refused at a day-sized --max-age-s (1) :: rc=0 want 1|
+CAUGHT   NM-A9b A: an explicitly empty --fingerprint means no check [test_registry_r5.sh] :: FAIL A9c an explicit empty --fingerprint is a usage error (2), never 'no check' :: rc=1 want 2|
+CAUGHT   NM-A9c A: a verdict dated in the future never expires [test_registry_r5.sh] :: FAIL A9 verdict with utc [plusday] is refused at a day-sized --max-age-s (1) :: rc=0 want 1|
+CAUGHT   NM-A12 A: run_id is no longer required of an op record [test_registry_r5.sh] :: FAIL A1.37 classify of [del(.run_id)] is unreadable :: got [advancing] want [unreadable]|
+CAUGHT   NM-C5 C: --expect is ignored (a dead-owner action may reap a hung op: TERM to a live owner) [test_registry_r5.sh] :: FAIL C2b [refused: 20261007T183906Z-2486766-15278 is live and advancing (last progress 0s ago, budget 600s)]|
+CAUGHT   NM-D3a D: the reap intent is not written before the signal [test_registry_r5.sh] :: FAIL D2.3 the record ends reaped with verdict reaped_hung:owner_handoff (the pump's handoff trap answered OUR |
+CAUGHT   NM-D3b D: step B no longer converts an owner handoff that answers the reap intent into reaped [test_registry_r5.sh] :: FAIL D2.3 the record ends reaped with verdict reaped_hung:owner_handoff (the pump's handoff trap answered OUR |
+CAUGHT   NM-D4 D: budget.stop_grace_s is ignored by the reap wait [test_registry_r5.sh] :: FAIL D4c an owner that declared stop_grace_s 18 and needs 19 s is waited for (grace = max(15, 18 + 10)): exit |
+CAUGHT   NM-D5a D: the boot id of an op record is not compared (a record of another boot judged by a pid that now belongs to another process) [test_registry_r5.sh] :: FAIL D6 a record of ANOTHER boot whose pid and start ticks match a live process is dead_owner (a pid is only m|
+CAUGHT   NM-D5b D: the boot id of a process holder is not compared [test_registry_r5.sh] :: FAIL D6b a process holder of another boot reads none :: got [{"kind":"process","purpose":"d6:y","run_id":"2026|
+CAUGHT   NM-D5c D: liveness is judged on the wall clock (LONGOPS_MONO ignored) [test_registry_r5.sh] :: FAIL D5 a wall clock stepped 2 h forward while the monotonic clock moved 5 s: the op is still advancing (no NT|
+CAUGHT   NM-D5d D: a heartbeat does not move last_progress_mono (the judged clock) [test_registry.sh] :: FAIL H5 a grown offset is advancing again :: got [hung] want [advancing]|
+CAUGHT   NM-E3 E: the tracked-path rule applies to build:* ops only again [test_registry_r5.sh] :: FAIL D3 a live op declaring a tracked path blocks the commit window (1) :: rc=0 want 1|
+CAUGHT   NM-E3b E/D3: a dead-owner row is not a writer again (it blocks until reaped) [test_registry_r5.sh] :: FAIL D3b the SAME op with a dead owner still blocks until it is reaped (1): owner gone is not workload gone ::|
+CAUGHT   NM-F1 F: the container list after the stop is ignored (CSURV forced 0) [test_registry_r5.sh] :: FAIL F1 a dead owner whose container will not stop (podman stop exits 125, still listed) is NOT reaped: exit 9|
+CAUGHT   NM-F2 F: a dead_owner op skips the container resolution and stop [test_registry_r5.sh] :: FAIL F1e|
+CAUGHT   NM-F3 F: only ONE container per label is listed (head -1) [test_registry_r5.sh] :: FAIL F1h a dead owner with THREE containers of its op id is reaped (0) :: rc=9 want 0|
+SURVIVED NM-F4a F: the own-run holder is not judged before a dead_owner reap
+CAUGHT   NM-F4b F: the holder is written BEFORE the op again (a failed holder write leaves the op unchanged) [test_registry_r5.sh] :: FAIL F2f the OP was written first: it names the new owner :: got [2729838] want [2729840]|
+CAUGHT   NM-G1a G: no rollback trap across the record -> claim window of register.sh [test_registry_r5.sh] :: FAIL G1 a TERM in the window of register.sh leaves no claim without an op record :: got [noclaim:registered] w|
+CAUGHT   NM-G1b G: release.sh does not hold a TERM until record and unclaim are done [test_registry_r5.sh] :: FAIL G1f a TERM during release.sh: the record is terminal AND the claim is gone (exit 143 after the transition|
+CAUGHT   NM-G2 G: reap --purpose does not reap the dead-owner ops of the purpose first [test_registry_r5.sh] :: FAIL G2d no dead_owner row is left behind (the old hub op is reaped with its claim) :: got [hub-aaaa-1:dead_ow|
+SURVIVED NM-G3 G: directory entries are not flushed (lo_fsync_dir is a no-op)
+CAUGHT   NM-H1 H: the C locale is not forced (LC_ALL no longer set by the library) [test_registry_r5.sh] :: FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [adv|
+CAUGHT   NM-J1 J: every terminal record is classified individually again (a jq per record) [test_registry_r5.sh] :: FAIL J1b the listing spawned 1021 jq/python3 processes|
+CAUGHT   NM-K1 K: --purpose lost its lo_need guard (a last-token --purpose spins forever) [test_registry_r5.sh] :: FAIL K1 every value-taking flag of every script given as the LAST token is a usage error (48 checked), never a|
+CAUGHT   NM-K1b K: lo_need is a no-op for every script [test_registry_r5.sh] :: FAIL K1 every value-taking flag of every script given as the LAST token is a usage error (48 checked), never a|
+MUTATION RESULT caught=103 survived=2 timeout=0 equivalent=1 total=106
+# ---- (2) survivors of (1) rerun after the tests were strengthened
+CAUGHT   NM-F4a F: the own-run holder is not judged before a dead_owner reap [test_registry_r5.sh] :: FAIL F4 a holder of the op's own run that turned live between step A and the terminal write is refused (5 holder_live)
+CAUGHT   NM-G3 G: directory entries are not flushed (lo_fsync_dir is a no-op) [test_registry_r5.sh] :: FAIL G3 nothing flushes ops/ after the link [NOT-ops NOT-claims ]
+MUTATION RESULT caught=2 survived=0 timeout=0 equivalent=0 total=2
+# ---- (3) see fix-r5-mutations-registry-rerun12.txt (identity header inside)
+# ---- (4) the observable mutants of the two redundant guards
+CAUGHT   M39b class 2 (the live guard): a record that fails the shape (kind=bad) is read as no writer [test_registry.sh] :: FAIL X7e check_no_build_writing_tracked BLOCKS on an unreadable record (1), never reads it as no writer :: rc=|
+CAUGHT   M44c RM11 (both guards, ported): neither the holder shape nor the lo_uint line requires a process holder's pid to be a number: a holder whose pid is not a number is judged dead by lo_alive instead of being unreadable (M44 and its shape twin are each redundant; removing BOTH is the observable mutant) [test_registry.sh] :: FAIL N12 a holder record with ONE bad field (.pid="abc") is refused (20), never none :: rc=0 want 20|
+MUTATION RESULT caught=1 survived=0 timeout=0 equivalent=0 total=1

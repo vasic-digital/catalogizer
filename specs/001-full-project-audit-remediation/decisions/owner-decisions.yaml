@@ -1,10 +1,10 @@
 # owner-decisions.yaml (tasks.md T012, WP-01) - see docs/21 section 8
 schema: owner-decisions/1
-revision: 4
+revision: 5
 created: '2026-10-05'
 source: docs/21 sections 8.1 to 8.6 (carried as written, no default invented); tasks.md T012
 note: Owner answers of 2026-10-04 are recorded verbatim later by T012a; entries here dated 2026-10-05
-  are relayed by the conductor and are not verbatim; each relayed entry names its progress.yml source_keys and its text is the progress.yml value plus the relay suffix. Relayed entries carry amends null (the documents an answer amends are recorded by T012a). No credential value anywhere.
+  are relayed by the conductor and are not verbatim; each relayed entry names its progress.yml source_keys and its text is the progress.yml value plus the relay suffix. Relayed entries carry amends null (the documents an answer amends are recorded by T012a). Revision 5 (2026-10-07) adds the 2026-10-07 relayed answers (owner_answers entries OA-2026-10-07-n, id-less OAU-2026-10-07-n, each marked relayed 2026-10-07) and the `answer_refs` field on the decision rows they name; `status` of every row is unchanged (a status move is the importer's act, T072). No credential value anywhere.
 groups:
 - id: ODG-01
   topic: 'Credentials for real-service tests: metadata provider keys, admin test account, NAS share accounts,
@@ -89,6 +89,8 @@ groups:
   - OD-27
   default: 'No'
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-5
 - id: ODG-06
   topic: 'Desktop hosts and signing: macOS and Windows hosts, signing certificates, notarisation, updater'
   options: supply; or record blocked platforms
@@ -152,6 +154,8 @@ groups:
   default: 'No'
   default_detail: (input, cannot be defaulted; the build location is decided by C1)
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-7
 - id: ODG-08
   topic: NFS real target
   options: user-space NFS container if feasible; owner NFS host; structural-impossibility record
@@ -167,6 +171,8 @@ groups:
   - OD-05
   default: 'No'
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-3
 - id: ODG-09
   topic: 'Legacy-closed items (1,495 closed-class plus 282 `wontfix`): accept as terminal with re-verify
     flag, or re-prove every one; handling of items that cannot be re-proven'
@@ -211,6 +217,8 @@ groups:
   default: Partial
   default_detail: (OD-11 of OD-11, -15, -18)
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-7
 - id: ODG-12
   topic: Constitution `post_update_hook.sh` variant
   options: A (full, may write user-level Claude config, naming the alias); B (project-only)
@@ -321,6 +329,8 @@ groups:
   default: 'No'
   default_detail: (answered by the owner on 2026-10-04, tasks.md T012a, T072)
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-1
 - id: ODG-17
   topic: Coverage targets and dates per application; SC-005 sample size; register category mapping
   options: owner sets after baselines
@@ -339,6 +349,8 @@ groups:
   - OD-22
   default: 'No'
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-6
 - id: ODG-18
   topic: Escape-ratchet baseline and timing of the first manual-QA cycle
   options: first manual-QA cycle seeds it; other rule
@@ -427,6 +439,8 @@ groups:
   default: 'No'
   default_detail: (no `research.md` counterpart)
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-4
 - id: ODG-41
   topic: 'SC-010 against a moving upstream: how the final strict verification (WP-73, tasks.md T582) and
     the closing state check (WP-74R, T595b) treat commits that other actors push to an own-organisation
@@ -727,6 +741,8 @@ groups:
   default_detail: '(No in `research.md`: OD-50 to OD-53 not on the default list; the recommendation reads
     "adopt proposed defaults")'
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-8
 - id: ODG-33
   topic: 'Documentation: binary twin size threshold (150 MB proposed), HelixQA link repoint targets, which
     SQL path each deployment uses, OpenDesign token file location'
@@ -851,6 +867,8 @@ research_ods:
   default: 'No'
   closest_group: ODG-22
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-2
 - id: OD-45
   topic: '`google-services.json` for builds without Firebase values'
   blocks:
@@ -859,6 +877,8 @@ research_ods:
   default: 'No'
   closest_group: ODG-01
   status: Operator-blocked
+  answer_refs:
+  - OA-2026-10-07-2
 - id: OD-49
   topic: web state management (Zustand and dead aliases)
   blocks:
@@ -1709,6 +1729,105 @@ owner_answers:
   - OD-76
   note: null
   amends: null
+- id: OA-2026-10-07-1
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-16_signing_key_custody_policy_grade
+  text: signing key in the owner's keyring, passphrase entered only by the owner, strength recorded as policy (custody confirmed as policy-grade) (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-16
+  note: 'UNCONFIRMED: whether this satisfies the C2-custody requirement (tasks.md T012a slot C2-custody and T446: the signing key is held only on the build host, out of the producing stream''s reach); the slot C2-custody stays empty. The strength is recorded as policy, not mechanism, because the agents run as uid 1000 on this single-uid host.'
+  amends: null
+- id: OA-2026-10-07-2
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.Firebase_login_owner
+  text: the owner will run firebase login himself (project catalogizer-7a3f1) (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - OD-43
+  - OD-45
+  note: 'OPEN: the owner has not yet run the Firebase CLI login (owner action, once); nothing is enabled or created in the project catalogizer-7a3f1 before the owner confirms it explicitly (carried from the 2026-10-05 batch4 answer).'
+  amends: null
+- id: OA-2026-10-07-3
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-08_nfs_owner_enables_one_synology
+  text: the owner enables NFS on one Synology and tells the host and export; until then T134a is re-scoped to protocol level and the kernel-mount confirmation is tracked separately (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-08
+  note: 'OPEN: the owner has not yet named the Synology host and export; real NFS host proof stays UNMET until he does. UNCONFIRMED: no tasks.md task carries the separate tracking of the kernel-mount confirmation yet; the re-scope of T134a is stated by the owner answer and is not edited into tasks.md by this intake.'
+  amends: null
+- id: OA-2026-10-07-4
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-40_licence_policy
+  text: 'standard SPDX policy: allow Apache-2.0, MIT, BSD, ISC, MPL-2.0 and Unlicense; deny GPL, AGPL, SSPL and BUSL; own repositories without a licence get Apache-2.0 (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-40
+  note: 'UNCONFIRMED: whether this one policy applies to every distribution context (shipped artifact, server image, development or QA tool only); the docs/21 working default allows copyleft only in tools that are never distributed, so applying the deny-list to tools would be stricter than that default. UNCONFIRMED: ''BSD'' names no SPDX identifier (BSD-2-Clause, BSD-3-Clause); the allow-list is recorded as relayed.'
+  amends: null
+- id: OA-2026-10-07-5
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-05_emulators_broader_labelled_emulated
+  text: emulator acceptance scope is broader, including emulated hardware, with such results labelled emulated (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-05
+  note: 'Completes in meaning the part the 2026-10-05 note left OPEN (broader than hardware-independent behaviour). UNCONFIRMED: which claims an ''emulated'' label may support; device-class claims stay UNMET until devices are supplied (ODG-04, unchanged).'
+  amends: null
+- id: OA-2026-10-07-6
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-17_sc005_severity_stratified
+  text: 'severity-stratified sample for SC-005: all critical and high findings plus 30 per other class, seeded (relayed by the conductor, not a verbatim owner quotation).'
+  answers:
+  - ODG-17
+  note: 'OPEN: the seed value and the register category mapping are not stated; legacy coverage targets still wait for the WP-23 baselines. UNCONFIRMED: whether ''other class'' means a finding class or a severity class of the register.'
+  amends: null
+- id: OA-2026-10-07-7
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.HC-0_confirmations
+  text: owner confirmed the CAT register-prefix exception, the build host being this machine, and policy-grade custody (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - HC-0
+  - ODG-07
+  - ODG-11
+  note: 'ODG-07 host identity is answered (2026-10-05 and again 2026-10-07: this machine is the build and measurement host); the 11.4.173 remote-distribution deviation stays an owner decision. For ODG-11: this project''s CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending; the upstream change itself is neither approved nor filed. The custody confirmation is carried by OA-2026-10-07-1. UNCONFIRMED: the verbatim 2026-10-05 launcher-trust answer is not in the repository, so HC-0 is not complete (see evidence/hc/HC-0.json remaining).'
+  amends: null
+- id: OA-2026-10-07-8
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.ODG-32_library_tiers
+  text: library size tiers of 100k, 1M and 5M files (relayed by the conductor, not a verbatim owner quotation).
+  answers:
+  - ODG-32
+  note: 'The 2026-10-05 answer adopted the proposed defaults pending A/A data and asked the owner for library sizes; these are the sizes. UNCONFIRMED: whether the tiers count files per library (read that way).'
+  amends: null
 - slot: ODG-42
   text: ''
   date: ''
@@ -1888,4 +2007,84 @@ owner_answers_without_decision_id:
     by the host-safety rules; NAS content is third-party data: never copied into the repository or evidence
     beyond file names/counts needed as proof (relayed by the conductor, not a verbatim owner quotation).'
   note: null
+  amends: null
+- id: OAU-2026-10-07-1
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.root_free_host_actions
+  text: do everything at user level, no su, sudo or root; the build-host marker and the cpa-host entry point live at user level under the home directory (owner-approved deviation from /etc/catalogizer/build-host) (relayed by the conductor, not a verbatim owner quotation).
+  note: 'Owner-approved deviation from the planned /etc/catalogizer/build-host marker. UNCONFIRMED: the exact user-level path; whether T046a (cpa-host install, record HC-0-host-entry.json) is satisfied by a user-level entry point. Nothing is installed or changed on the host by this intake.'
+  amends: null
+- id: OAU-2026-10-07-2
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.evidence_chain_continuum_defaults
+  text: adopt the continuum engine defaults for hash construction, record schema, exit codes and anchor format (relayed by the conductor, not a verbatim owner quotation).
+  note: 'Closes in meaning the OPEN of OAU-2026-10-05-4 (the four continuum points: hash construction, record schema, exit codes, anchor format). UNCONFIRMED: which concrete values the engine defaults are at the pinned constitution commit (not read here); the python chain of docs/06 stays interim until a container build exists.'
+  amends: null
+- id: OAU-2026-10-07-3
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.MinIO_s3_alternative
+  text: use a compatible S3 alternative (for example Garage or SeaweedFS), pin it by digest, record it as an owner-approved deviation (relayed by the conductor, not a verbatim owner quotation).
+  note: 'Owner-approved deviation from MinIO in the IMG-INFRA row of docs/21. UNCONFIRMED: which alternative (Garage or SeaweedFS), its digest and its S3 API compatibility with the tests; none was selected or probed here.'
+  amends: null
+- id: OAU-2026-10-07-4
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.T022_index_refresh_host_idle
+  text: run the index refresh when the host is idle (at least 32 GiB MemAvailable) (relayed by the conductor, not a verbatim owner quotation).
+  note: 'UNCONFIRMED: the floor cannot be met on this host as measured: evidence/host-probe.json mem_total is 32478769152 bytes (about 30.2 GiB), below 32 GiB, so MemAvailable of 32 GiB is unreachable here; the owner is asked whether the floor is a different number or whether swap counts (see OAU-2026-10-05-2).'
+  amends: null
+- id: OAU-2026-10-07-5
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.go_base_image_bookworm
+  text: 'Go base image: bookworm (relayed by the conductor, not a verbatim owner quotation).'
+  note: docs/21 IC-23 already names the 1.25-bookworm family; this confirms the family. Digest pinning stays as planned.
+  amends: null
+- id: OAU-2026-10-07-6
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.android_dockerfiles_licence_swallow
+  text: remove the || true licence swallow from the Android Dockerfiles now (relayed by the conductor, not a verbatim owner quotation).
+  note: 'Not done by this intake. UNCONFIRMED: which Android Dockerfiles carry the swallow (not searched here).'
+  amends: null
+- id: OAU-2026-10-07-7
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.python_trivy_pins
+  text: declare Python 3.11 or newer; pin trivy by digest (relayed by the conductor, not a verbatim owner quotation).
+  note: 'Not done by this intake. UNCONFIRMED: where the Python 3.11 floor is declared (toolchain file or project metadata) and the trivy digest to pin (docs/21 R-33 concerns the trivy exposure).'
+  amends: null
+- id: OAU-2026-10-07-8
+  date: '2026-10-07'
+  relayed_by: conductor
+  verbatim: false
+  relay_marker: relayed 2026-10-07
+  source_keys:
+  - owner_answers_2026-10-07_relayed.review_process_one_wave
+  text: 'review process: discover everything in ONE review wave (three lenses plus a consolidator), then ONE class-complete fix round; at most 6 agents; the owner wants efficiency (relayed by the conductor, not a verbatim owner quotation).'
+  note: 'Process direction, consistent with the 2026-10-05 ODG-19 and ODG-34 answers. UNCONFIRMED: whether the one-wave rule changes the iterate-to-GO rule of constitution 11.4.134 for a finding the single fix round does not close.'
   amends: null

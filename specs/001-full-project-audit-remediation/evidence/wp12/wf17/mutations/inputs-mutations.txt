@@ -1,0 +1,13 @@
+optval_gone_from_down CAUGHT
+env_scrub_gone CAUGHT
+runp_scrub_gone CAUGHT
+abs_gone_from_roundtrip CAUGHT
+compose_hook_ungated CAUGHT
+locale_not_pinned CAUGHT
+numeric_guard_widened CAUGHT
+newline_guard_gone CAUGHT
+git_ignore_guard_gone CAUGHT
+empty_value_allowed CAUGHT
+evidence_write_unchecked CAUGHT
+blocked_external_own_reader CAUGHT
+identity_noop_in_gen_env SURVIVED-AS-REQUIRED

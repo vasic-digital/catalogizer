@@ -1,0 +1,6 @@
+# identity: catalogizer / 001 / WP-08 round 5 | HISTORY | utc 2026-10-07 (before the shim fix) | host anton | the NEGATIVE CONTROL of the registry mutation pipeline FAILED here: an UNMUTATED copy of scripts/longops, run under the containment of mutation_safety.sh at that time (line-oriented sed over /proc/<pid>/stat), failed test_registry_r5.sh at H1b.
+# Reproduction by /dev/shm/r5out/ctrl_dbg.sh (the pipeline of mutate_registry.sh replicated by hand, fail-fast): rc=1. The pipeline itself reported: "CONTROL-BROKEN CTRL0 ... (suite rc 0/1): the pipeline fails an UNMUTATED tree, every CAUGHT is void".
+# Last lines of the contained run (the first FAIL is the instrument false-refusing a live process whose comm holds a newline; the shim logged BLOCKED ... process group is a multi-line value):
+ok   H1 register of a live process whose comm is b"ab\ncd\0" works (0)
+FAIL H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner :: got [dead_owner] want [advancing]
+RESULT pass=402 fail=1 (fail-fast: a mutant run stops at its first failure)

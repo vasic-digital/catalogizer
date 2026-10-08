@@ -93,6 +93,28 @@ func NewEventBusBridge(bus *eventbus.EventBus, wsHandler *root_handlers.WebSocke
 					}
 				},
 			},
+			eventbus.EventScanCancelled: {
+				wsType: "notification",
+				build: func(evt *eventbus.Event) map[string]interface{} {
+					payload, _ := evt.Payload.(map[string]interface{})
+					msg := "Scan cancelled"
+					if payload != nil {
+						if sr, ok := payload["storage_root"].(string); ok {
+							msg = "Scan cancelled: " + sr
+						}
+						if reason, ok := payload["reason"].(string); ok && reason != "" {
+							msg += ": " + reason
+						}
+					}
+					return map[string]interface{}{
+						"type": "notification",
+						"payload": map[string]interface{}{
+							"level":   "warning",
+							"message": msg,
+						},
+					}
+				},
+			},
 			eventbus.EventScanStarted: {
 				wsType: "scan_started",
 				build: func(evt *eventbus.Event) map[string]interface{} {
@@ -165,6 +187,7 @@ func (b *EventBusBridge) Start() {
 	sub := b.bus.SubscribeMultiple(
 		eventbus.EventScanCompleted,
 		eventbus.EventScanFailed,
+		eventbus.EventScanCancelled,
 		eventbus.EventScanStarted,
 		eventbus.EventFileCreated,
 		eventbus.EventFileModified,

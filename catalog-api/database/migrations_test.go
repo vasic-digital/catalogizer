@@ -271,10 +271,11 @@ func TestMigrationSequence_AllVersionsApplied(t *testing.T) {
 	err := db.RunMigrations(ctx)
 	require.NoError(t, err)
 
-	// Verify all 20 migrations were recorded
+	// Verify all 21 migrations were recorded
 	// (v17 adds image_quality_assessments; v18 adds media_items.is_favorite + updated_at;
-	//  v19 adds share_identity_bindings; v20 adds external_metadata unique index).
-	const latestVersion = 20
+	//  v19 adds share_identity_bindings; v20 adds external_metadata unique index;
+	//  v21 adds storage_roots.allow_empty).
+	const latestVersion = 21
 	var count int
 	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations").Scan(&count)
 	assert.NoError(t, err)

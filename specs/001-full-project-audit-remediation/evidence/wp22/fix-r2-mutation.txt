@@ -1,0 +1,3 @@
+# identity: group=sync utc=2026-10-08T08:15:35Z host=anton uid=1000 git_head=ab5a9e3924e48e5682de11704aca57b6ace2f649
+# runner_sha256=186708d4742fde13857280f869a6609444dc62993de0896da97995a02891cba2 test_sha256=97a9cea4e4419aba41b0da9951bd86130fa8c929fb378c4dbfd28da09734fee9 r2_test_sha256=5b27a203c515aea94d83d092d6938fdc09705c55ec4785eb14b38a10f2d1d8ec sut_sha256=501c239da92eee5f21c327b673efc903d60aaf210d3f36fe8a49074ec19617e0
+# mutant<TAB>verdict (yes = killed at an intended check, MISATTR, ENV, NO, EQUIV)<TAB>first failing check (fail-fast)<TAB>suite that decided<TAB>intended checks

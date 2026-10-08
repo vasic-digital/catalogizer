@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "ftpmut-m20",
+  "at": "2026-10-07T19:46:29Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 76893024256,
+      "free_after": 76060387932,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 76893016064,
+      "free_after": 76060379740,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

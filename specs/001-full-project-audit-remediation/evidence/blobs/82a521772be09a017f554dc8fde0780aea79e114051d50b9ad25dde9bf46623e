@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/src/scripts/register/tests/test_frontmatter_yaml.py", line 214, in <module>
+    if a[:1] == ["--selftest"]: sys.exit(selftest())
+                                         ^^^^^^^^^^
+  File "/src/scripts/register/tests/test_frontmatter_yaml.py", line 189, in selftest
+    ca = re.search(r"recount status:\s+(.*)", a).group(1); cb = re.search(r"recount status:\s+(.*)", b).group(1)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'group'

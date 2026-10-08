@@ -40,7 +40,7 @@ fixtures() { # fixtures <repo-relative sut dir> <client dir or ''>; prints one F
   # negative control: a wrong credential makes each authenticated probe FAIL
   local cdir="${cd_:-scripts/test-infra/client}" pv
   # WF12 F8: the FAIL must carry the protocol's own authentication-refusal signal (an unreachable host or a crashed server also "fails" and must not pass as a refusal)
-  for pv in "postgres TI_POSTGRES_PASSWORD password.authentication.failed" "redis TI_REDIS_PASSWORD WRONGPASS" "ftp TI_FTP_PASSWORD 530" "smb TI_SMB_PASSWORD NT_STATUS_LOGON_FAILURE" "webdav TI_WEBDAV_PASSWORD HTTP.401"; do
+  for pv in "postgres TI_POSTGRES_PASSWORD password.authentication.failed" "redis TI_REDIS_PASSWORD WRONGPASS" "ftp TI_FTP_PASSWORD Login.failed:.530.Login" "smb TI_SMB_PASSWORD NT_STATUS_LOGON_FAILURE" "webdav TI_WEBDAV_PASSWORD HTTP.401"; do
     set -- $pv
     o=$(bash "$rcl" --build-id "$ID" -- env "$2=wrong-credential-1" bash "/src/$cdir/probe_$1.sh" 2>&1); rc=$?
     if [ "$rc" -ne 0 ] && printf '%s' "$o" | grep '^FAIL' | grep -qE "$3"; then :; else echo "FAIL $1 probe did not fail with its refusal signal '$3' on a wrong credential (rc=$rc: $(printf '%s' "$o" | grep '^FAIL' | head -1 | cut -c1-120))"; n=$((n+1)); fi
@@ -51,7 +51,7 @@ fixtures() { # fixtures <repo-relative sut dir> <client dir or ''>; prints one F
   return "$n"
 }
 # the carrier: a container on the project network that accepts TCP connections on 5432 and says nothing; labelled so down.sh removes it
-CAR=$(podman run -d --pull=never --name "$P-carrier" --network "$(ti_network "$ID")" --network-alias ti-carrier --label project=catalogizer --label "catalogizer.test_project=$P" --label "op_id=$(ti_val "$ID" TI_OP_ID)" --entrypoint python3 "$TESTUTIL" -c 'import socket,time
+CAR=$(podman run -d --pull=never --name "$P-carrier" --network "$(ti_network "$ID")" --network-alias ti-carrier --label project=catalogizer --label "catalogizer.test_project=$P" --label "catalogizer.test_root=$(ti_test_root)" --label "op_id=$(ti_val "$ID" TI_OP_ID)" --label "catalogizer.op_id=$(ti_val "$ID" TI_OP_ID)" --entrypoint python3 "$TESTUTIL" -c 'import socket,time
 s=socket.socket(); s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); s.bind(("0.0.0.0",5432)); s.listen(8)
 c=[]
 while True:
@@ -67,13 +67,27 @@ for pair in "postgres:SELECT 1 answered 1" "redis:PING answered PONG" "ftp:passi
 done
 if printf '%s\n' "$PO" | grep -q '^PROBE minio BLOCKED reason=image_unavailable'; then blocked "minio probe BLOCKED (image not obtainable, evidence/wp12/minio-blocked.txt)"; else bad "minio is not reported BLOCKED"; fi
 if printf '%s\n' "$PO" | grep -q '^PROBES pass=5 fail=0 blocked=1$'; then ok "summary line: pass=5 fail=0 blocked=1 (blocked is not counted as a pass)"; else bad "summary line wrong: $(printf '%s\n' "$PO" | tail -1)"; fi
-# no `exec` into a service container, no host client: static scan of the scripts under test (control needle on a scratch copy)
-scanx() { grep -rEn '(podman|docker)( compose)? +exec( |$)|compose +exec' "$1" 2>/dev/null; }
-if [ -z "$(scanx "$TI_REPO/$SD")" ]; then ok "no script of $SD execs into a container"; else bad "an exec into a container exists: $(scanx "$TI_REPO/$SD" | head -2)"; fi
-mkdir -p "$TI_SCRATCH/needle" && echo 'podman exec -it somecontainer psql' >"$TI_SCRATCH/needle/x.sh"
-if [ -n "$(scanx "$TI_SCRATCH/needle")" ]; then ok "control needle: the exec scan sees a planted podman exec"; else bad "control needle: the exec scan is blind"; fi
-hostc=$(grep -rEn '(^|[;&| ]|\$\()(psql|redis-cli|lftp|smbclient|mc|nfs-ls) ' "$TI_REPO/$SD" --include=*.sh 2>/dev/null | grep -v '/client/' | grep -v -e 'nfs_terminal_state.sh' -e 'nfs_fallback_state.sh' | grep -v '^[^:]*:[0-9]*:\s*#' | head -3)
-if [ -z "$hostc" ]; then ok "no protocol client is invoked outside the IMG-INFRA-CLIENT scripts (scripts/test-infra/client)"; else bad "a host client call exists: $hostc"; fi
+# no `exec` into a service container, no host client: static scans of the scripts under test, each form with a control needle (WF17 TI-G9). The regexes read the forms a reviewer found missing:
+# `podman container exec`, `podman --remote exec`, `docker exec`, `docker compose exec`, and a host curl / nfs-cat / nfs-cp / smbget / pg_isready / mc call, the client binary list being the packages of
+# build/containers/infra-client/Containerfile (the test asserts that the Containerfile still names every package this list is derived from).
+EXECRX='(podman|docker)( +--?[a-z-]+(=[^ ]+)?)*( +container)? +exec( |$)|compose( +[^ ]+)* +exec( |$)'
+CLIENTBIN='psql|pg_isready|redis-cli|lftp|smbclient|smbget|mc|curl|nfs-ls|nfs-cp|nfs-cat|nfs-io'
+# the scanned set is the AREA's own entry points that probe, round-trip, start or tear down (probe.sh roundtrip.sh run_client.sh up.sh down.sh nfs_attempt.sh nas_readonly_leg.sh blocked_external.sh and the client probe_*/roundtrip_* scripts); a fixture script
+# another work package adds to the directory (a server fixture that legitimately execs into its own container) is not a probe and is not judged here
+INCL=(--include=probe.sh --include=roundtrip.sh --include=run_client.sh --include=up.sh --include=down.sh --include=nfs_attempt.sh --include=nas_readonly_leg.sh --include=blocked_external.sh --include='probe_*.sh' --include='roundtrip_*.sh')
+scanx() { grep -rEn "$EXECRX" "$1" "${INCL[@]}" 2>/dev/null | grep -v '^[^:]*:[0-9]*:[[:space:]]*#'; }
+scanh() { grep -rEn "(^|[;&|(]|\\$\\()[[:space:]]*($CLIENTBIN) " "$1" "${INCL[@]}" 2>/dev/null | grep -v '/client/' | grep -v -e 'nfs_terminal_state.sh' -e 'nfs_fallback_state.sh' | grep -v '^[^:]*:[0-9]*:[[:space:]]*#'; }
+static_findings() { { scanx "$1"; scanh "$1"; } | head -3; }
+for pkg in curl postgresql-client redis-tools lftp smbclient libnfs-utils 'minio/mc'; do grep -q "$pkg" "$TI_REPO/build/containers/infra-client/Containerfile" && ok "the client binary list is derived from a package the Containerfile still installs: $pkg" || bad "the Containerfile no longer names $pkg: the host-client scan list is stale"; done
+if [ -z "$(static_findings "$TI_REPO/$SD")" ]; then ok "no script of $SD execs into a container or invokes a protocol client on the host"; else bad "a forbidden call exists: $(static_findings "$TI_REPO/$SD" | head -2)"; fi
+mkdir -p "$TI_SCRATCH/needle"
+for nd in 'podman exec -it somecontainer psql' 'podman container exec somecontainer psql -c x' 'podman --remote exec somecontainer sh' 'docker exec x y' 'docker compose -f f.yml exec svc sh' 'podman-compose exec svc sh' \
+          'curl -s http://127.0.0.1:1/' 'x=$(curl -s http://127.0.0.1:1/)' 'nfs-cat nfs://x/y' 'nfs-cp nfs://x/y /tmp/y' 'smbget smb://x/y' 'pg_isready -h x' 'mc ls x' 'psql -h x' 'redis-cli -h x' 'lftp x' 'smbclient //x/y'; do
+  printf '%s\n' "$nd" >"$TI_SCRATCH/needle/probe.sh"
+  if [ -n "$(static_findings "$TI_SCRATCH/needle")" ]; then ok "control needle: the static scan sees a planted '$nd'"; else bad "control needle: the static scan is BLIND to '$nd'"; fi
+done
+printf '# podman exec is forbidden here\necho "a curl-like word: curlew"\n' >"$TI_SCRATCH/needle/probe.sh"
+[ -z "$(static_findings "$TI_SCRATCH/needle")" ] && ok "control: a comment and a word that merely starts with 'curl' are NOT findings (no false positive)" || bad "control: the static scan flags a comment / 'curlew'"
 
 FX=$(fixtures "$SD" ""); n=$?
 if [ "$n" -eq 0 ]; then ok "fixtures: host probe refused, service-class image refused, carrier FAILs, wrong credentials FAIL (5 protocols)"; else bad "fixtures: $n violated: $(printf '%s' "$FX" | tr '\n' ';' | cut -c1-300)"; fi
@@ -83,7 +97,7 @@ if [ "${PROBES_NO_MUTATIONS:-0}" != 1 ] && [ "${PROBES_TEST_MUTANT:-0}" != 1 ]; 
   MUTLOG="${PROBES_MUTATION_RECORD:-$TI_SCRATCH/mutations.txt}"; : >"$MUTLOG"
   mut() { # mut <name> <file under dir> <old> <new>   builds .audit/scratch/ti-mut-<name>/ (scripts + client) with one change; runs the fixtures against it
     local name=$1 file=$2 old=$3 new=$4 d="$TI_REPO/.audit/scratch/ti-mut-$1" res n
-    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$SD"/*.sh "$d/"; cp -r "$TI_REPO/$SD/client" "$d/client"
+    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$SD"/*.sh "$TI_REPO/$SD"/*.py "$d/"; cp -r "$TI_REPO/$SD/client" "$d/client"
     python3 -I - "$d/$file" "$old" "$new" <<'PY' || { bad "mutation $name: anchor missing"; rm -rf -- "${d:?}"; return; }
 import sys
 s = open(sys.argv[1]).read()
@@ -102,6 +116,22 @@ PY
   mut runner_check_removed probe.sh '[ "${TI_PROBE_RUNNER:-container}" = container ] || ti_refuse probe_runner_not_container "TI_PROBE_RUNNER=${TI_PROBE_RUNNER} (a probe never runs on the host or in a service-class image)"' 'true'
   mut class_check_removed run_client.sh '[ "$CLASS" = interpreter ] || ti_refuse client_image_not_interpreter_class "$IMG has class '"'"'$CLASS'"'"'; a probe never runs in a service-class image"
 [ "$IMG" = IMG-INFRA-CLIENT ] || ti_refuse not_the_infra_client "every probe client runs in IMG-INFRA-CLIENT, got $IMG (class '"'"'$CLASS'"'"')"' 'true'
+  # PS1, PS2, PS3 of the WF17 proof lens: a planted forbidden call in a copy of the scripts; the STATIC scan of that copy must report it
+  smut() { # smut <name> <file> <anchor> <planted line>
+    local name=$1 file=$2 anchor=$3 line=$4 d="$TI_REPO/.audit/scratch/ti-smut-$1"
+    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$SD"/*.sh "$d/"; cp -r "$TI_REPO/$SD/client" "$d/client"
+    python3 -I - "$d/$file" "$anchor" "$line" <<'PY' || { bad "mutation $name: anchor missing"; rm -rf -- "${d:?}"; return; }
+import sys
+s = open(sys.argv[1]).read()
+if s.count(sys.argv[2]) != 1: print("anchor count %d" % s.count(sys.argv[2])); sys.exit(1)
+open(sys.argv[1], "w").write(s.replace(sys.argv[2], sys.argv[2] + "\n" + sys.argv[3]))
+PY
+    if [ -n "$(static_findings "$d")" ]; then ok "mutation $name CAUGHT ($(static_findings "$d" | head -1 | cut -c1-110))"; echo "$name CAUGHT" >>"$MUTLOG"; else bad "mutation $name SURVIVED"; echo "$name SURVIVED" >>"$MUTLOG"; fi
+    rm -rf -- "${d:?}"
+  }
+  smut ps1_host_curl_in_probe probe.sh 'HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' 'curl -s "http://127.0.0.1:${TI_PORT_WEBDAV:-1}/" >/dev/null'
+  smut ps2_container_exec_in_roundtrip roundtrip.sh 'HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' 'podman container exec "$P-postgres" psql -c "select 1"'
+  smut ps3_host_nfs_cat_in_up up.sh 'HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"' 'nfs-cat nfs://127.0.0.1/export/x >/dev/null'
   [ -z "${PROBES_EV:-}" ] || cp "$MUTLOG" "$PROBES_EV/probes-mutations.txt"
 fi
 ti_summary

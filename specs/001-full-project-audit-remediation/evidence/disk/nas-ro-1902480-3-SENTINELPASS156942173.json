@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "nas-ro-1902480-3-SENTINELPASS156942173",
+  "at": "2026-10-07T14:30:35Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 94439391232,
+      "free_after": 94169792332,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 94439415808,
+      "free_after": 94169816908,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

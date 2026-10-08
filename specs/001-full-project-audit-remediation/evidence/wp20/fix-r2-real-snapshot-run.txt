@@ -1,0 +1,28 @@
+# fix-r2: real-snapshot test on the git archive HEAD scratch snapshot, host-side, 2026-10-08T04:01:52Z
+ok   enumerator exits 0 on the real snapshot
+ok   lead scan exits 0 on the real snapshot
+ok   scratch register DB
+ok   import of source_entries.sql applies cleanly
+ok   import of lead_scan.sql applies cleanly
+ok   control: grep sees a TODO, a checkbox, an id, an inflected word and does NOT see 'depending' as a word
+ok   S-03: no row has a NULL status, every status is one of the file's own legend words ({'Not Started': 269})
+ok   S-03: one row per table row (independent grep count 269)
+ok   S-21: every numbered item (18, independent count 18) has a status, none NULL (0)
+ok   ids: the entries equal the independent grep census of the snapshot (60 distinct ids)
+ok   ids: one entry per distinct id (no id in two sources)
+ok   S-01: one entry per docs/issues/*.md file of the listing (1778)
+FACT (OD-17): strict YAML refuses 399 of 1778 front-matter blocks
+ok   S-01: the strict-YAML refusal count equals the recorded fact
+ok   A3: docs/COMPREHENSIVE_PACKAGE_SUMMARY.md has 37 checkbox entries (independent grep 37)
+ok   A3: docs/README_IMPLEMENTATION_PACKAGE.md has 8 checkbox entries (independent grep 8)
+ok   A3: docs/MASTER_AUDIT_AND_IMPLEMENTATION_PLAN.md has 20 checkbox entries (independent grep 20)
+ok   A3: docs/DISABLED_FEATURES_AUDIT.md has 4 checkbox entries (independent grep 4)
+FACT: 82 Markdown files hold 3757 checkbox lines no checkbox source enumerates (listed in enumeration-stats.json, doc03 3.1 rule 2)
+ok   S-23: the files with marker rows equal grep -Iw's file set (83 files; 0 over 2 MiB skipped by design); differences grep-only=[] entries-only=[]
+ok   C1: the lead rows equal the independent grep -i word-boundary set over the population (6786 lines); grep-only=[] rows-only=[]
+ok   C5: emitted_rows equals the rows in the imported database (6786)
+ok   C2: every duplicate row names the structured entry that covers it ({'lead': 4056, 'duplicate of structured source': 2718, 'NON-PROBLEM:marker text in document or pattern': 12})
+ok   C2: every covered_by target exists as a row of the imported structured source (0 distinct targets missing)
+ok   A2: one external row per freeze-json remote (8) and per named service (4)
+ok   11.4.10: no remote userinfo (8 with credentials in the freeze json) appears in the sql
+RESULT: fail=0

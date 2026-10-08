@@ -1,0 +1,14 @@
+# identity: WF17 r5 RED sweep_leaks (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:02:48Z
+# sha256 tests/infra/test_sweep_leaks.sh 85d5a0905c7e370cc88132ff3ae06ff9081551744f5d422d40a4887aa99a9513
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_sweep_leaks.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: --dry-run announces the victim and removes nothing
+FAIL: 12 violation(s): FAIL expected line missing: ^REMOVED state catalogizer-test-zzsw9800stv proof=;FAIL expected line missing: ^REMOVED state catalogizer-test-zzsw9800std proof=.*op_owner_proven_dead;FAIL expected line missing: ^KEPT state catalogizer-test-zzsw9800stk failed=kept_by_request;FAIL expected line missing: ^KEPT state catalogizer-test-zzsw9800stc failed=lease_claim_exists;FAIL expected line missing: ^KEPT state catalogizer-test-zzsw9800stn failed=no_op_record;FAIL expected line missing: ^KEPT state cata
+# exit: 1

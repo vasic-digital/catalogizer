@@ -1,0 +1,80 @@
+{
+ "calibration_pass": true,
+ "control_needle": {
+  "original": "CAT-001",
+  "verdict": "SAME_DEFECT",
+  "want_item": "CAT-001"
+ },
+ "decision": "match_basis stays import_1to1 for the bulk import; T172 may use SAME_DEFECT verdicts as duplicate_of links only for re-reports of the same text and must treat UNDECIDED as mint-with-link",
+ "engine_sha256": "d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da",
+ "false_merges": 0,
+ "fixture_sha256": "fd6ba5b10c84cba51beb977fb45a3f89e60d99b69c6738201c665a487adb2101",
+ "golden": {
+  "G1": {
+   "original": "CAT-005",
+   "verdict": "SAME_DEFECT",
+   "want_item": "CAT-005"
+  },
+  "G2": {
+   "original": "CAT-005",
+   "verdict": "SAME_DEFECT",
+   "want_item": "CAT-005"
+  },
+  "G3": {
+   "original": "CAT-001",
+   "verdict": "SAME_DEFECT",
+   "want_item": "CAT-001"
+  }
+ },
+ "leave_one_out": [
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT"
+ ],
+ "leave_one_out_expected": [
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT"
+ ],
+ "limits": [
+  "measured on the eight HELIX-001-* tickets only (one id, eight different problems): the whole 1,778-ticket corpus is NOT measured",
+  "a re-titled duplicate with a re-worded text scores below the merge threshold (UNDECIDED, mint-with-link), so the matcher merges re-reports of the same text, not paraphrases",
+  "two tickets that share most of a sentence (insecure-password-input and the password-strength ticket) are UNDECIDED, never merged",
+  "intake-match --apply cannot mint on a register database (identity trigger): the verdict is used dry-run, the mint is reg_ids + add --id"
+ ],
+ "primary_negative_control": {
+  "original": null,
+  "verdict": "DISTINCT"
+ },
+ "repetitions": 3,
+ "schema": "intake-match-calibration/1",
+ "scope_controls": {
+  "S1": {
+   "original": null,
+   "verdict": "DISTINCT"
+  },
+  "S2": {
+   "original": null,
+   "verdict": "DISTINCT"
+  }
+ },
+ "stable_across_repetitions": true,
+ "strict_distinct_count": 6,
+ "task": "T169",
+ "thresholds": {
+  "candidate_percent": 20,
+  "same_defect_percent": 50,
+  "source": "intake_match.go constants, derived by their author on two fixtures; this record is the corpus-shaped check"
+ },
+ "undecided_count": 2
+}

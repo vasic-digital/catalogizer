@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "syno-nfs-probe2",
+  "at": "2026-10-06T18:07:24Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 100020957184,
+      "free_after": 99751358284,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 100020330496,
+      "free_after": 99750731596,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

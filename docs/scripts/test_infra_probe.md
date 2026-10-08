@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T128), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T16:40:16Z |
+| Status | WF17 fix round 5 applied in the working tree (not committed); the independent review of that round is owed (constitution 11.4.142 / 11.4.209); evidence: `specs/001-full-project-audit-remediation/evidence/wp12/wf17/` |
 | Source | `scripts/test-infra/probe.sh`, `scripts/test-infra/client/probe_*.sh`; tests `tests/infra/test_probes.sh` |
 
 ## Purpose
@@ -27,3 +27,7 @@ Output: `PROBE <proto> PASS|FAIL|BLOCKED <detail>` per protocol, then `PROBES pa
 ## Exits
 
 0 no probe failed and at least one passed; 1 a probe failed; 3 every requested probe is BLOCKED; 2 usage.
+
+## WF17 fix round 5 (revision 3)
+
+- Valued options (`--build-id`, `--services`) are validated by `ti_optval`; a trailing option without a value is a usage error (exit 2), not an endless loop. The probe client directory hook (`TI_PROBE_CLIENT_DIR`) is honoured only under `TI_TEST_MODE=1`. The static scans of `tests/infra/test_probes.sh` now cover `podman container exec`, `podman --remote exec`, `docker exec`, `docker compose exec` and a host call of any client binary the IMG-INFRA-CLIENT Containerfile installs (each with a control needle and the reviewer mutants PS1-PS3).

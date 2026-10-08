@@ -1,0 +1,21 @@
+# NOTE: RED = scripts/register/import.sh (T168) does not exist; legs (c) and step 0 are independent of it and pass. In-container run (TIC tooling unit).
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/RED-t163-import.txt (copied verbatim below this line)
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+# identity: task=T163 utc=2026-10-07T16:20:15Z host=9d65b1584212 uid=1000
+# git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d tree_dirty_files=4485
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=784173e6c5839e8a2f8c183761fdc7cbf9f57f03c7c3b0bb32eaab9191df82f0 test=83d517f1f140d4be4037615bc33d9b0f28f8f04faad5a92d0ce99a32f1eacac7
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+# engine probe: validate rc=0 (--version unsupported by the binary (UNCONFIRMED vs the T163 text); probe=validate)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+# TIC_IMAGE_DIGEST unset: image digest check UNCONFIRMED (host-side run)
+ok   (c) legacy_import row written BEFORE add is accepted
+ok   (c) legacy_import row written AFTER add is refused
+FAIL (a)(b)(d) importer absent: /src/scripts/register/import.sh (RED: T168 not implemented)
+RESULT: pass=3 fail=1

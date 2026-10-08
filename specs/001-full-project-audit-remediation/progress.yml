@@ -1,11 +1,11 @@
-# Execution state for /speckit-superspec-execute (spec 001). Updated 2026-10-05.
+# Execution state for /speckit-superspec-execute (spec 001). Updated 2026-10-07.
 # The relayed owner answers below are the binding source of decisions/owner-decisions.yaml (tests: scripts/governance/tests/test_decision_intake.sh); commit this file together with that intake, the test and $EV/wp01/ (see $EV/wp01/README.md; $EV = specs/001-full-project-audit-remediation/evidence).
 feature: 001-full-project-audit-remediation
 phase: P0
 phase_status: in_progress
 hc0:
-  recorded: false            # T014 not yet written; entry criterion now answerable
-  entry_incomplete: host_identity_missing -> answered_pending_record
+  recorded: false            # 2026-10-07: HC-0.json is written (evidence/hc/HC-0.json, host identity answered) but T014 criteria are not all met; see its `remaining` list
+  host_identity: answered_2026-10-05_confirmed_2026-10-07   # entry_incomplete host_identity_missing no longer applies
   owner_answers_2026-10-05:
     ODG-07_build_host: "current host (hostname anton, 16 CPU, ~31 GiB RAM, podman 5.7.0 rootless)"
     ODG-07_measure_host: "current host (same machine as build host)"
@@ -18,7 +18,7 @@ risks_recorded:
   - "Build and SC-011 measurement share one host (31 GiB RAM): measurements only while no build runs; 12.6 60% memory ceiling (~19 GiB) binds container builds."
   - "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-11, 2026-10-05), a deviation until an upstream constitution change is approved (this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending; the contract patterns, tasks.md T190 and T564 plan against two gates, CM-ATM-TICKET-IDS-COMPLETE and the [PROTECTED-SPEC: ATM-NNN] tag, that expect that prefix; the exception conflicts with 11.4.54 and 11.4.248, which have no escape hatch, and with the CLAUDE.md precedence rule, and it stays OPEN until the owner confirms it at HC-0 and the upstream change is accepted). OPEN owner item: the owner is asked to acknowledge the deviation at HC-0 and to approve the upstream change as a separate request."
 tasks:
-  done: []   # nothing ticked: every area is implemented on the host but awaits a clean independent review (review round 3 fixes in progress)
+  done: [T019]   # reconciled 2026-10-07 (evidence/reconcile/REPORT.md): only T019 meets tick rule; every other implemented area awaits a clean independent review
   in_progress: [T001, T004, T005a, T005b, T011, T012, T013, T015, T016, T017, T018, T023, T030, T031, T032, T033, T034, T035, T036, T040, T040a, T040b, T041, T048a, T049, T050, T060, T061, T062, T063, T086, T087, T094a]
   blocked_on_containers_or_cpa_host: [T003, T005c, T005d, T006, T006a, T007, T008, T022, T051, T053, T057, T064, T066, T067, T068, T069, T074, T075, T076, T077]
   next_exempt_before_hc0: [T014, T011a]
@@ -104,3 +104,20 @@ owner_answers_2026-10-06_autonomy_and_synology:   # relayed by conductor from th
   synology_hosts: "Synology 192.168.1.25 (DATA8 MASS1-5 MASS6-9 music); Synology2 .40 (Data usbshare1 usbshare2-1 usbshare2-2); Synology3 .127 (DATA12); Synology4 .128 (DATA18); Synology5 .129 (DATA20 music WORK20); Synology6 .130 (DATA20-2 DATA20-3 music); Synology7 .131 (DATA22 DATA22-2 music)"
   synology_credentials: "read-only account; stored ONLY in the gitignored mode-0600 file .env (variables SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_HOST_n, SYNOLOGY_IP_n); never committed, never printed (ODG-01, constitution 11.4.10)"
   synology_use_rules: "READ-ONLY use only: no writes, no deletes, no share-config changes on these hosts; scans bounded by the host-safety rules; NAS content is third-party data: never copied into the repository or evidence beyond file names/counts needed as proof"
+owner_answers_2026-10-07_relayed:   # relayed 2026-10-07 by the conductor from AskUserQuestion; meaning kept, not verbatim quotes
+  root_free_host_actions: "do everything at user level, no su, sudo or root; the build-host marker and the cpa-host entry point live at user level under the home directory (owner-approved deviation from /etc/catalogizer/build-host)"
+  evidence_chain_continuum_defaults: "adopt the continuum engine defaults for hash construction, record schema, exit codes and anchor format"
+  ODG-16_signing_key_custody_policy_grade: "signing key in the owner's keyring, passphrase entered only by the owner, strength recorded as policy (custody confirmed as policy-grade)"
+  Firebase_login_owner: "the owner will run firebase login himself (project catalogizer-7a3f1)"
+  ODG-08_nfs_owner_enables_one_synology: "the owner enables NFS on one Synology and tells the host and export; until then T134a is re-scoped to protocol level and the kernel-mount confirmation is tracked separately"
+  MinIO_s3_alternative: "use a compatible S3 alternative (for example Garage or SeaweedFS), pin it by digest, record it as an owner-approved deviation"
+  ODG-40_licence_policy: "standard SPDX policy: allow Apache-2.0, MIT, BSD, ISC, MPL-2.0 and Unlicense; deny GPL, AGPL, SSPL and BUSL; own repositories without a licence get Apache-2.0"
+  T022_index_refresh_host_idle: "run the index refresh when the host is idle (at least 32 GiB MemAvailable)"
+  ODG-05_emulators_broader_labelled_emulated: "emulator acceptance scope is broader, including emulated hardware, with such results labelled emulated"
+  ODG-17_sc005_severity_stratified: "severity-stratified sample for SC-005: all critical and high findings plus 30 per other class, seeded"
+  go_base_image_bookworm: "Go base image: bookworm"
+  HC-0_confirmations: "owner confirmed the CAT register-prefix exception, the build host being this machine, and policy-grade custody"
+  android_dockerfiles_licence_swallow: "remove the || true licence swallow from the Android Dockerfiles now"
+  python_trivy_pins: "declare Python 3.11 or newer; pin trivy by digest"
+  ODG-32_library_tiers: "library size tiers of 100k, 1M and 5M files"
+  review_process_one_wave: "review process: discover everything in ONE review wave (three lenses plus a consolidator), then ONE class-complete fix round; at most 6 agents; the owner wants efficiency"

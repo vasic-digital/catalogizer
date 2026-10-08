@@ -40,7 +40,7 @@ sc4run; eq "the evidence directory itself replaced by a symlink (a symlink path 
 # ======================================================================================================================
 VCH="$R4/validate_cheap.sh"; EVR=specs/001-full-project-audit-remediation/evidence
 vc4fresh() { rm -rf "$T/vr" "$T/code"; mkrepo "$T/vr"; mkdir -p "$T/vr/src" "$T/vr/$EVR" "$T/vr/docs"; echo ok > "$T/vr/src/keep.txt"; echo '{"n":1}' > "$T/vr/$EVR/ledger.jsonl"; echo r > "$T/vr/$EVR/y.txt"; commit_all "$T/vr" init
-  mkdir -p "$T/code/scripts/repo" "$T/code/scripts/hooks"; cp "$R4"/*.sh "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/code/scripts/repo/"
+  mkdir -p "$T/code/scripts/repo" "$T/code/scripts/hooks"; cp "$R4"/*.sh "$R4"/*.py "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/code/scripts/repo/"
   printf '#!/usr/bin/env bash\n[ -e ./LANDMINE ] && { echo landmine; exit 1; }\nexit 0\n' > "$T/code/scripts/detect-landmines.sh"; chmod 644 "$T/code/scripts/detect-landmines.sh"
   cp "$D0/scripts/hooks/no-false-positive-log.sh" "$T/code/scripts/hooks/"; }
 vc4run() { ( cd "$T/vr" && "$VCH" --root "$T/vr" --code-root "$T/code" --registry "${REGF:-$T/code/scripts/repo/validate_checks.tsv}" --adopt-working-tables ${VHELD:+--held-from "$VHELD"} --files-from "$T/cs.lst" "$@" ) >"$T/out" 2>"$T/err"; RC=$?; }
@@ -115,7 +115,7 @@ eq "golden-false: a hand commit with a known-tip remote unreachable still refuse
 # ======================================================================================================================
 # I-2  validate_cheap: the helper's class tables come from a trusted source, never from its own working tree when run in place
 # ======================================================================================================================
-codeg() { rm -rf "$T/codeg"; mkrepo "$T/codeg"; mkdir -p "$T/codeg/scripts/repo"; cp "$R4"/*.sh "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/codeg/scripts/repo/"; git -C "$T/codeg" add -A; git -C "$T/codeg" commit -qm tables; }
+codeg() { rm -rf "$T/codeg"; mkrepo "$T/codeg"; mkdir -p "$T/codeg/scripts/repo"; cp "$R4"/*.sh "$R4"/*.py "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/codeg/scripts/repo/"; git -C "$T/codeg" add -A; git -C "$T/codeg" commit -qm tables; }
 vc5run() { ( cd "$T/vr" && "$1" --root "$T/vr" --code-root "$T/code" --registry "$T/code/scripts/repo/validate_checks.tsv" --files-from "$T/cs.lst" "${@:2}" ) >"$T/out" 2>"$T/err"; RC=$?; }
 vc4fresh; printf 'a \n' > "$T/vr/x.txt"; printf 'x.txt\n' > "$T/cs.lst"
 codeg; vc5run "$T/codeg/scripts/repo/validate_cheap.sh"; eq "in place, tables committed and unmodified: judged with them: 10" "$RC" 10; has "trailing whitespace reported" "$(cat "$T/out")" trailing_whitespace
@@ -124,9 +124,9 @@ vc5run "$T/codeg/scripts/repo/validate_cheap.sh"; eq "in place with an uncommitt
 mkdir -p "$T/approved"; ( cd "$T/codeg" && for t in check_classes.tsv check_exemptions.tsv fixture_roots.txt; do git show "HEAD:scripts/repo/$t" > "$T/approved/$t"; done )
 vc5run "$T/codeg/scripts/repo/validate_cheap.sh" --trusted-tables "$T/approved"; eq "an approved table copy decides, the edited working tree decides nothing: 10" "$RC" 10; has "whitespace failure kept" "$(cat "$T/out")" trailing_whitespace
 vc5run "$T/codeg/scripts/repo/validate_cheap.sh" --adopt-working-tables; eq "the explicit owner-approved adoption form uses the working-tree tables: 0" "$RC" 0
-rm -rf "$T/codeg2"; mkrepo "$T/codeg2"; mkdir -p "$T/codeg2/scripts/repo"; cp "$R4"/*.sh "$T/codeg2/scripts/repo/"; cp "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/codeg2/scripts/repo/"; git -C "$T/codeg2" add scripts/repo/*.sh; git -C "$T/codeg2" commit -qm code
+rm -rf "$T/codeg2"; mkrepo "$T/codeg2"; mkdir -p "$T/codeg2/scripts/repo"; cp "$R4"/*.sh "$R4"/*.py "$T/codeg2/scripts/repo/"; cp "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/codeg2/scripts/repo/"; git -C "$T/codeg2" add scripts/repo/*.sh; git -C "$T/codeg2" commit -qm code
 vc5run "$T/codeg2/scripts/repo/validate_cheap.sh"; eq "in place with the tables untracked: 20" "$RC" 20; has "class_table_unreviewed named" "$(cat "$T/err")" class_table_unreviewed
-rm -rf "$T/snap"; mkdir -p "$T/snap"; cp "$R4"/*.sh "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/snap/"; vc5run "$T/snap/validate_cheap.sh"
+rm -rf "$T/snap"; mkdir -p "$T/snap"; cp "$R4"/*.sh "$R4"/*.py "$R4"/*.tsv "$R4"/fixture_roots.txt "$T/snap/"; vc5run "$T/snap/validate_cheap.sh"
 eq "golden-true: a released snapshot that is no repository is trusted as it is: 10" "$RC" 10; has "whitespace reported" "$(cat "$T/out")" trailing_whitespace
 # a HEAD that holds its own tables is still the only table source (no trusted-table lookup needed)
 vc4fresh; mkdir -p "$T/vr/scripts/repo"; cp "$R4/check_classes.tsv" "$R4/check_exemptions.tsv" "$R4/fixture_roots.txt" "$T/vr/scripts/repo/"; commit_all "$T/vr" tables; printf 'a \n' > "$T/vr/x.txt"

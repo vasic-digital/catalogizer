@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # cpa-host - the host entry point of the commit-push script (docs/16 section 12.2.8; tasks.md T042, CENTRAL C3, C5; constitution 11.4.234).
 #
 # Purpose   A CPA run starts only here. This small fixed script is installed by the OWNER outside every repository ($CPA_HOST_ENTRY, default
@@ -27,45 +27,60 @@
 #           and the run directory is removed again), released/trust-snapshot.json (cpa-host-snapshot/1: entries and manifest_sha256, the sha256 of
 #           the canonical bytes of the entries sorted by path). (v) exec released/scripts/commit-push-all.sh with the same arguments, CPA_ROOT,
 #           CPA_RUN_ID and CPA_ADOPTION_COMMIT in the environment.
-# Refusals  printed as one JSON line on stderr, before any run directory exists (apart from approved_copy_invalid, which removes its own).
+# Refusals  printed as one JSON line on stderr. A refusal before the run directory is born leaves no run directory. The run directory is BORN with its run.pid
+#           (mkdir of a private name, run.pid written, rename(2) onto the run id: rename fails onto a non-empty directory, so of two runs given one id only one
+#           proceeds, and no run directory is ever visible without run.pid). Every exit after that moment (a signal, a `set -u` error) writes a minimal report.json
+#           (failed_stage host) into the directory it owns, so no later run is blocked by a reportless one; approved_copy_invalid removes its own partial directory.
 # Exits     whatever the copied script gives (0, 10 to 15, 20); 20 for every refusal of this script, an approved core that cannot be executed included
 #           (approved_copy_invalid core_not_executable: never the shell's own 126), HOME and CPA_HOST_STATE both unset (state_unresolved), and any other status
 #           of this script before its exec (a `set -u` error, ANY catchable terminating signal): one JSON line internal_error / host_exit_<status>, never the shell's own.
-# Environment  the caller's exported GIT_* (but the commit identity), LONGOPS_*/ANTIMESS_*/AM_*/VERIFY_*/DISK_HEADROOM_* (but LONGOPS_ALLOW_TMPFS), XDG_CONFIG_HOME, BASH_ENV, ENV and
-#           CDPATH are dropped before any other line runs (the scrub block below, the same text as in commit-push-all.sh); see INSTALL.md "The environment of a run".
+# Environment  an ALLOWLIST, not a denylist: the interpreter is `#!/bin/bash -p` (imported functions, SHELLOPTS, BASHOPTS, BASH_ENV and ENV are ignored by bash itself, and an absolute
+#           interpreter path cannot be replaced through PATH); the first statements install the signal handlers, then any exported name outside the allowlist (HOME PATH TMPDIR CPA_HOST_STATE
+#           SKIP_LONG SSH_AUTH_SOCK the commit identity LONGOPS_ALLOW_TMPFS LC_ALL PWD SHLVL and the three CPA_* values of a run) makes the script re-exec itself ONCE through
+#           `env -i` with exactly the allowed names (a caller forging the internal marker with a dirty environment is refused 20 env_not_clean); HOME, CPA_HOST_STATE and TMPDIR must be
+#           absolute, every PATH element absolute and outside the project root (20 env_value_unsafe). The block is the same text as in commit-push-all.sh; see INSTALL.md "The environment of a run".
+# Released copy  after the copy loop the whole released/ tree is made read-only (files 0444/0555, directories 0555); the core re-hashes every helper against the snapshot at each
+#           invocation. A same-uid writer can still chmod and race: the achieved independence tier is `instance`, never `capability` (11.4.240(F)).
 # Never     writes into the repository's tracked tree, into the state directory or into the store; installs or edits itself; runs a git command
 #           that moves a ref; a force, a rebase, a reset.
 set -u
-LC_ALL=C
-# --- cpa env scrub begin ---
-# What a run executes and where it pushes is decided by the owner's approvals, never by the caller's environment (WF11 F1/F11, WF14 N1/N3). The CLASS is dropped, not
-# its known members: every exported GIT_* variable (config injection by GIT_CONFIG_COUNT/KEY_n/VALUE_n, GIT_CONFIG_PARAMETERS/GLOBAL/SYSTEM, directories, exec path, ssh
-# command) except the commit identity; the longops, anti-mess, verifier and disk families (locations, program names, clocks, test hooks) except the durability knob;
-# the XDG config directory and the shell start-up files. HOME, PATH, TMPDIR, CPA_HOST_STATE and SKIP_LONG are the owner's own process environment and the one documented
-# input (the trust root lives under CPA_HOST_STATE: it is the boundary, not a leak). This text is the same in scripts/repo/host_entry/cpa-host (matrix section 11).
-for _v in $(compgen -e); do
-  case "$_v" in
-    GIT_AUTHOR_NAME|GIT_AUTHOR_EMAIL|GIT_COMMITTER_NAME|GIT_COMMITTER_EMAIL|LONGOPS_ALLOW_TMPFS) ;;
-    GIT_*|LONGOPS_*|ANTIMESS_*|AM_*|VERIFY_*|DISK_HEADROOM_*|XDG_CONFIG_HOME|BASH_ENV|ENV|CDPATH|GLOBIGNORE) unset "$_v" ;;
-  esac
-done; unset _v
-# --- cpa env scrub end ---
 # --- cpa signals begin ---
-# Every catchable signal that terminates by default ends the process through its EXIT trap with the status 128+n (WF14 N2): bash otherwise runs the EXIT trap with the
-# status of the last completed command and re-raises the signal, so a report said `exit 0` and the process status left the documented set. The list is derived from
-# the kernel's own numbering, never enumerated; the signals that do not terminate (CHLD, CONT, STOP, TSTP, TTIN, TTOU, URG, WINCH) and KILL (untrappable) are left alone.
-cpa_signals() { # cpa_signals exit|swallow: exit = 128+n ends the run; swallow = a no-op handler (the report is being written; a handled trap is reset in a child, an ignored one would not be)
-  local n nm
-  for n in $(seq 1 64); do
-    nm="$(kill -l "$n" 2>/dev/null)" || continue; nm="${nm#SIG}"
-    case "$nm" in ''|KILL|STOP|CHLD|CONT|TSTP|TTIN|TTOU|URG|WINCH|EXIT|DEBUG|ERR|RETURN) continue ;; esac
-    if [ "$1" = swallow ]; then trap ':' "$n" 2>/dev/null; else trap "exit $((128+n))" "$n" 2>/dev/null; fi
-  done
-}
+# Every catchable signal that terminates by default ends the process through its EXIT trap with the status 128+n (WF14 N2). This block is the FIRST statement after `set -u`
+# (WF17-cpa SIG-1/SIG-2: no interval of the start-up is left without a handler): ONE `kill -l` table read, no fork per number. Each handler FIRST ignores every one of the numbers (a second
+# signal can never cut the exit path short, SIG-3), then exits 128+n. The signals that do not terminate (CHLD, CONT, STOP, TSTP, TTIN, TTOU, URG, WINCH) are left alone; KILL and STOP cannot be
+# caught and glibc reserves 32 and 33 (bash cannot trap them: status 160/161, no report; the next run closes that run directory).
+CPA_SIGS=(); while read -r n nm; do case "$nm" in KILL|STOP|CHLD|CONT|TSTP|TTIN|TTOU|URG|WINCH) continue ;; esac; CPA_SIGS+=("$n"); done \
+  < <(n=0; for x in $(kill -l); do case "$x" in *')') n="${x%)}" ;; SIG*) echo "$n ${x#SIG}" ;; esac; done)
+for n in "${CPA_SIGS[@]}"; do trap "trap '' ${CPA_SIGS[*]}; exit $((128+n))" "$n" 2>/dev/null; done
+cpa_signals_ignore() { trap '' "${CPA_SIGS[@]}" 2>/dev/null; }
 # --- cpa signals end ---
-# an exit status outside the documented set (0, 10 to 15, 20: a `set -u` error, a signal) is a refusal 20 of this script, never the shell's own status (WF14 N2/N7)
-trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) printf "{\"refusal\":\"internal_error\",\"reason\":\"host_exit_%s\"}\n" "$_rc" >&2; exit 20 ;; esac' EXIT
-cpa_signals exit
+# --- cpa env scrub begin ---
+# What a run executes and where it pushes is decided by the owner's approvals, never by the caller's environment (WF11 F1/F11, WF14 N1/N3, WF17-cpa ENV). An ALLOWLIST replaces the denylist of
+# names: the denylist ran as a script line, after bash had already imported functions, SHELLOPTS and BASHOPTS, and it did not name TMOUT, PYTHONPATH or LD_PRELOAD. PWD and SHLVL are exported by
+# bash itself even under `env -i`, so they are listed (bash recomputes them; they carry no caller choice). Any other exported name: the script re-execs itself ONCE through `env -i` with exactly
+# the allowed names; the internal first argument marks the re-executed process, and a caller who passes it with a dirty environment is REFUSED, never passed. This text is the same in
+# scripts/commit-push-all.sh (matrix section 11).
+CPA_ENV_ALLOW=" HOME PATH TMPDIR CPA_HOST_STATE SKIP_LONG SSH_AUTH_SOCK GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL LONGOPS_ALLOW_TMPFS LC_ALL PWD SHLVL CPA_ROOT CPA_RUN_ID CPA_ADOPTION_COMMIT "
+_clean=1; _bad=""; for _v in $(compgen -e); do case "$CPA_ENV_ALLOW" in *" $_v "*) ;; *) _clean=0; _bad="$_v" ;; esac; done
+if [ "$_clean" = 0 ]; then
+  [ "${1:-}" != --cpa-env-cleaned ] || { printf '{"refusal":"env_not_clean","reason":"%s"}\n' "$_bad" >&2; exit 20; }
+  _e=(); for _v in $CPA_ENV_ALLOW; do case "$_v" in PWD|SHLVL) continue ;; esac; [ -n "${!_v+x}" ] && _e+=("$_v=${!_v}"); done
+  exec /usr/bin/env -i "${_e[@]}" LC_ALL=C /bin/bash -p -- "$0" --cpa-env-cleaned "$@"
+fi
+[ "${1:-}" != --cpa-env-cleaned ] || shift
+export LC_ALL=C
+unset _clean _bad _v _e
+# --- cpa env scrub end ---
+# an exit status outside the documented set (0, 10 to 15, 20: a `set -u` error, a signal) is a refusal 20 of this script, never the shell's own status (WF14 N2/N7); the run directory, once born, gets its report (RES-1)
+host_report() { # host_report <reason> <detail>: a minimal report.json in the run directory THIS process owns (its run.pid names $$) and that has none yet
+  local rp rs; [ -n "${RUN:-}" ] && [ -d "$RUN" ] && [ ! -e "$RUN/report.json" ] || return 0
+  { read -r rp rs < "$RUN/run.pid"; } 2>/dev/null; [ "${rp:-}" = "$$" ] || return 0
+  jq -nc --arg id "${rid:-}" --arg dir "$RUN/" --arg r "$1" --arg d "$2" \
+    '{schema:1,run_id:$id,run_dir:$dir,exit:20,failed_stage:"host",reason:$r,detail:$d,mode:{},lock:{held:false,released:false},deferred_gates:[],check_pending_release:false,held:false,held_commits:[],nested_unsettled:[],unjudged_paths:[],commits:[],stages:[{id:"S0",name:"host"}],interrupted_runs:[],live_runs:[],files:{}}' \
+    > "$RUN/report.json.tmp" 2>/dev/null && mv -f "$RUN/report.json.tmp" "$RUN/report.json" 2>/dev/null \
+    || printf '{"schema":1,"run_id":"%s","exit":20,"failed_stage":"host","reason":"%s"}\n' "${rid:-}" "$1" > "$RUN/report.json" 2>/dev/null
+}
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) host_report internal_error "host_exit_$_rc"; printf "{\"refusal\":\"internal_error\",\"reason\":\"host_exit_%s\"}\n" "$_rc" >&2; exit 20 ;; esac' EXIT
 CALLER_DIR="$PWD"
 SELF_REL="scripts/repo/host_entry/cpa-host"
 CORE_REL="scripts/commit-push-all.sh"
@@ -73,8 +88,24 @@ CORE_REL="scripts/commit-push-all.sh"
 refuse() { # refuse <code word> <reason> [detail]: one JSON line on stderr, exit 20
   jq -nc --arg r "$1" --arg w "$2" --arg d "${3:-}" '{refusal:$r,reason:$w,detail:$d,see:"scripts/repo/host_entry/INSTALL.md"}' >&2 2>/dev/null \
     || printf '{"refusal":"%s","reason":"%s"}\n' "$1" "$2" >&2
+  host_report "$1" "$2${3:+: $3}"
   exit 20
 }
+# the values of the owner's own inputs (WF17-cpa ENV-8/ENV-9): absolute, or the run is refused before any directory is entered. HOME and CPA_HOST_STATE may be EMPTY (state_unresolved below).
+for _n in HOME CPA_HOST_STATE TMPDIR; do
+  _v="${!_n-}"; [ -z "$_v" ] || case "$_v" in /*) ;; *) refuse env_value_unsafe "$_n" "must be an absolute path" ;; esac
+done
+case ":$PATH:" in *::*) refuse env_value_unsafe PATH "an empty PATH element means the working directory" ;; esac
+_ifs="$IFS"; IFS=:; for _e in $PATH; do case "$_e" in /*) ;; *) IFS="$_ifs"; refuse env_value_unsafe PATH "a relative PATH element" "$_e" ;; esac; done; IFS="$_ifs"; unset _n _v _e _ifs
+# no PATH element lies inside a repository the caller stands in (WF17-cpa ENV-9): checked in bash only, textually, BEFORE any external command runs (git would otherwise be the first program a
+# work-tree file could replace); the same rule is applied again with realpath once the project root is known
+_a="$PWD"
+while :; do
+  if [ -e "$_a/.git" ]; then
+    _ifs="$IFS"; IFS=:; for _e in $PATH; do case "$_e/" in "$_a"/*) IFS="$_ifs"; printf '{"refusal":"env_value_unsafe","reason":"PATH","detail":"an element lies inside the repository %s"}\n' "$_a" >&2; exit 20 ;; esac; done; IFS="$_ifs"
+  fi
+  [ -n "$_a" ] || break; _a="${_a%/*}"
+done; unset _a _e _ifs
 # the state directory: CPA_HOST_STATE, else under HOME; neither is a refusal 20 (never the shell's `unbound variable` 1, WF14 N7)
 if [ -n "${CPA_HOST_STATE:-}" ]; then STATE="$CPA_HOST_STATE"; elif [ -n "${HOME:-}" ]; then STATE="$HOME/.local/state/cpa-host"; else refuse state_unresolved no_state_dir "neither CPA_HOST_STATE nor HOME is set"; fi
 TRUST="$STATE/trust.json"
@@ -94,6 +125,8 @@ while [ -n "$cur" ]; do
 done
 [ -n "$root" ] || refuse project_not_trusted no_project_root "no repository of the chain from the working directory holds $SELF_REL"
 cd "$root" || refuse project_not_trusted no_project_root "cannot enter $root"
+# no PATH element lies inside the project root: a work-tree file named like a tool would run in place of it (WF17-cpa ENV-9)
+_ifs="$IFS"; IFS=:; for _e in $PATH; do _r="$(realpath -m -- "$_e" 2>/dev/null)" || _r="$_e"; case "$_r/" in "$root"/*) IFS="$_ifs"; refuse env_value_unsafe PATH "an element lies inside the project root" "$_e" ;; esac; done; IFS="$_ifs"; unset _e _r _ifs
 
 # ---- (ii) the trust entry ---------------------------------------------------------------------------------------------------------------
 key="$(git rev-list --first-parent --max-parents=0 HEAD 2>/dev/null | head -1)"
@@ -114,7 +147,8 @@ fi
 rid=""; args=(); resume=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --run-id) [ $# -ge 2 ] || refuse usage_error run_id_missing "--run-id needs a value"; rid="$2"; shift 2 ;;
+    --run-id) [ $# -ge 2 ] || refuse usage_error run_id_missing "--run-id needs a value"; [ -z "$rid" ] || refuse usage_error run_id_twice "--run-id given twice"; rid="$2"; shift 2 ;;
+    --) args+=("$@"); break ;;                       # the options end here: a message equal to --run-id or --paths-from is a message (INPUT-6)
     --resume) [ $# -ge 2 ] || refuse usage_error resume_missing "--resume needs a run id"; resume="$2"; shift 2 ;;
     --paths-from) [ $# -ge 2 ] || { args+=("$1"); shift; continue; }   # a missing value is the copied script's usage_error
       case "$2" in /*) args+=("$1" "$2") ;; *) args+=("$1" "$CALLER_DIR/$2") ;; esac; shift 2 ;;
@@ -131,8 +165,12 @@ fi
 
 # ---- (iv) the run directory and the approved copies --------------------------------------------------------------------------------------
 mkdir -p .audit/commit-push 2>/dev/null || refuse run_dir_unwritable ".audit/commit-push"
-RUN=".audit/commit-push/$rid"
-mkdir "$RUN" 2>/dev/null || refuse run_id_invalid run_id_in_use "$rid"
+RUN_FINAL=".audit/commit-push/$rid"
+# the run directory is BORN with its run.pid (RES-1 a): a private name, the pid and start ticks written, then rename(2) onto the run id (it fails onto a non-empty directory)
+mkdir ".audit/commit-push/.new.$$" 2>/dev/null || refuse run_dir_unwritable "$RUN_FINAL"
+printf '%s %s\n' "$$" "$(sed -e 's/^.*) //' "/proc/$$/stat" 2>/dev/null | awk '{print $20}')" > ".audit/commit-push/.new.$$/run.pid" 2>/dev/null || { rm -rf ".audit/commit-push/.new.$$"; refuse run_dir_unwritable "run.pid"; }
+mv -T -- ".audit/commit-push/.new.$$" "$RUN_FINAL" 2>/dev/null || { rm -rf ".audit/commit-push/.new.$$"; refuse run_id_invalid run_id_in_use "$rid"; }
+RUN="$RUN_FINAL"
 mkdir "$RUN/no-hooks" "$RUN/released" || { rm -rf "$RUN"; refuse run_dir_unwritable "$RUN"; }
 n="$(jq '.manifest|length' <<< "$entry")"; i=0
 while [ "$i" -lt "$n" ]; do
@@ -153,11 +191,13 @@ jq -nc --argjson e "$entries" --arg m "$msha" '{schema:"cpa-host-snapshot/1",ent
   || { rm -rf "$RUN"; refuse run_dir_unwritable "snapshot"; }
 
 # ---- (v) execute the copied script --------------------------------------------------------------------------------------------------------
-# the process id and start time of the run (the exec keeps the pid): a later run tells a LIVE concurrent run from an interrupted one by them
-printf '%s %s\n' "$$" "$(sed -e 's/^.*) //' "/proc/$$/stat" 2>/dev/null | awk '{print $20}')" > "$RUN/run.pid" 2>/dev/null || true
+# run.pid was written when the directory was born (the exec keeps the pid): a later run tells a LIVE concurrent run from an interrupted one by it.
+# The released copy is made read-only (TOCTOU-6): files 0444 / 0555, directories 0555; the core re-hashes each helper against the snapshot before it runs it.
+chmod -R a-w "$RUN/released" 2>/dev/null || { chmod -R u+w "$RUN" 2>/dev/null; rm -rf "$RUN"; refuse approved_copy_invalid chmod_failed "$RUN/released"; }
+unset OLDPWD       # bash exports it after the `cd` above; it is no input of the run and the core must find an allowlisted environment (no second re-exec)
 export CPA_ROOT="$root" CPA_RUN_ID="$rid" CPA_ADOPTION_COMMIT="$adopt" CPA_HOST_STATE="$STATE"
 # an approved core that cannot be executed (the manifest marks it non-executable, or the directory sits on a noexec mount) is a refusal of ours, never the shell's 126
-[ -x "$root/$RUN/released/$CORE_REL" ] || { rm -rf "$RUN"; refuse approved_copy_invalid core_not_executable "$CORE_REL is not executable in the approved copy"; }
+[ -x "$root/$RUN/released/$CORE_REL" ] || { chmod -R u+w "$RUN" 2>/dev/null; rm -rf "$RUN"; refuse approved_copy_invalid core_not_executable "$CORE_REL is not executable in the approved copy"; }
 shopt -s execfail
 exec "$root/$RUN/released/$CORE_REL" "${args[@]+"${args[@]}"}"
-rm -rf "$RUN"; refuse approved_copy_invalid exec_failed "$CORE_REL"
+chmod -R u+w "$RUN" 2>/dev/null; rm -rf "$RUN"; refuse approved_copy_invalid exec_failed "$CORE_REL"

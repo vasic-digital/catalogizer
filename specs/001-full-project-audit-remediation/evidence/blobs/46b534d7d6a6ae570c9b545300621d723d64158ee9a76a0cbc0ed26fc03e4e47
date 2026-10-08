@@ -1,0 +1,2 @@
+FAIL importer present :: importer absent: /src/.audit/scratch/t168imp/sut0/import.sh
+RESULT: pass=0 fail=1

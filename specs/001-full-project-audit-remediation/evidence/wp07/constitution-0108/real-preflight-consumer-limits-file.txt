@@ -1,0 +1,11 @@
+$ CG_SAFE_LIMITS_FILE=<repo>/config/index/writer_limits.yaml codegraph_safe.sh --project <scratch> preflight
+PREFLIGHT FAIL disk: free 10751508480 < required 64424509440
+mem_avail_kb=6366840
+min_mem_avail_kb=20971520
+min_mem_avail_source=/home/milosvasic/Projects/catalogizer/config/index/writer_limits.yaml min_mem_avail_gib
+PREFLIGHT FAIL memory: MemAvailable 6366840 kB < 20 GiB (floor: /home/milosvasic/Projects/catalogizer/config/index/writer_limits.yaml min_mem_avail_gib)
+$ default (no knob)
+PREFLIGHT FAIL disk: free 10751508480 < required 64424509440
+min_mem_avail_kb=33554432
+min_mem_avail_source=default
+PREFLIGHT FAIL memory: MemAvailable 6594464 kB < 32 GiB (floor: default)

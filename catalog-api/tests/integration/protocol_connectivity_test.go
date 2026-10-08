@@ -4,8 +4,10 @@ import (
 	"catalogizer/filesystem"
 	"catalogizer/internal/services"
 	"context"
+	"net"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -21,33 +23,80 @@ func getEnvOrDefault(key, defaultVal string) string {
 	return defaultVal
 }
 
+// The test infrastructure is a PER-RUN stack (scripts/test-infra/up.sh, docker-compose.test-infra.yml): random loopback host ports and generated credentials, no fixed port and no
+// literal credential (WF12 F1; WF17 TI-I1: this file still carried the pre-T129 contract, localhost:8081 and test/test123). up.sh writes them to a mode 0600 env file; point this
+// package at it with CATALOGIZER_TEST_INFRA_ENV. An explicit *_TEST_SERVER (host or host:port) and *_TEST_USER / *_TEST_PASS still override a single value. Nothing configured: the test
+// SKIPS and says how to start the stack (never a PASS against a default that nobody serves).
+const infraEnvVar = "CATALOGIZER_TEST_INFRA_ENV"
+
+// perRunEnv parses the per-run env file (KEY=VALUE lines; data, never evaluated); an unset variable or an unreadable file yields an empty map.
+func perRunEnv() map[string]string {
+	out := map[string]string{}
+	path := os.Getenv(infraEnvVar)
+	if path == "" {
+		return out
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return out
+	}
+	for _, line := range strings.Split(string(raw), "\n") {
+		if k, v, ok := strings.Cut(line, "="); ok && strings.HasPrefix(k, "TI_") {
+			out[k] = v
+		}
+	}
+	return out
+}
+
+// infraValue returns the explicit override, else the key of the per-run env file, else "".
+func infraValue(override, key string) string {
+	if v := os.Getenv(override); v != "" {
+		return v
+	}
+	return perRunEnv()[key]
+}
+
+// serviceTarget resolves host and port of a service: an explicit override (host, defaultPort assumed, or host:port), else 127.0.0.1 and the port of the per-run env file; ok is false when neither names one.
+func serviceTarget(serverVar, portKey string, defaultPort int) (host string, port int, ok bool) {
+	if v := os.Getenv(serverVar); v != "" {
+		if h, p, err := net.SplitHostPort(v); err == nil {
+			if n, perr := strconv.Atoi(p); perr == nil {
+				return h, n, true
+			}
+		}
+		return v, defaultPort, true
+	}
+	if p := perRunEnv()[portKey]; p != "" {
+		if n, err := strconv.Atoi(p); err == nil {
+			return "127.0.0.1", n, true
+		}
+	}
+	return "", 0, false
+}
+
+// skipIfNotConfigured skips the test when the service is neither named by an override nor by the per-run env file.
+func skipIfNotConfigured(t *testing.T, serverVar, portKey, serviceName string) {
+	t.Helper()
+	if _, _, ok := serviceTarget(serverVar, portKey, 0); !ok {
+		t.Skipf("Skipping test: %s is not configured (start the stack: scripts/test-infra/up.sh --build-id <id>, then set %s to the env file it names, or set %s) (SKIP-OK: #topology-no-container)", serviceName, infraEnvVar, serverVar)
+	}
+}
+
 func skipIfNoContainer(t *testing.T, envVar, serviceName string) {
 	if os.Getenv(envVar) == "" {
 		t.Skipf("Skipping test: %s not set (start %s container first) (SKIP-OK: #topology-no-container)", envVar, serviceName)
 	}
 }
 
-func parseInt(s string, defaultVal int) int {
-	if s == "" {
-		return defaultVal
-	}
-	val, err := strconv.Atoi(s)
-	if err != nil {
-		return defaultVal
-	}
-	return val
-}
-
 func TestSMBProtocolConnectivity(t *testing.T) {
-	skipIfNoContainer(t, "SMB_TEST_SERVER", "SMB")
+	skipIfNotConfigured(t, "SMB_TEST_SERVER", "TI_PORT_SMB", "SMB")
 
 	ctx := context.Background()
 
-	host := getEnvOrDefault("SMB_TEST_SERVER", "localhost")
-	port := parseInt(getEnvOrDefault("SMB_TEST_PORT", "445"), 445)
-	username := getEnvOrDefault("SMB_TEST_USER", "test")
-	password := getEnvOrDefault("SMB_TEST_PASS", "test123")
-	share := getEnvOrDefault("SMB_TEST_SHARE", "media")
+	host, port, _ := serviceTarget("SMB_TEST_SERVER", "TI_PORT_SMB", 445)
+	username := infraValue("SMB_TEST_USER", "TI_SMB_USER")
+	password := infraValue("SMB_TEST_PASS", "TI_SMB_PASSWORD")
+	share := getEnvOrDefault("SMB_TEST_SHARE", "testshare") // docker-compose.test-infra.yml declares the share `testshare`
 
 	t.Run("SMB Client Creation", func(t *testing.T) {
 		config := &filesystem.SmbConfig{
@@ -113,14 +162,13 @@ func TestSMBProtocolConnectivity(t *testing.T) {
 }
 
 func TestFTPProtocolConnectivity(t *testing.T) {
-	skipIfNoContainer(t, "FTP_TEST_SERVER", "FTP")
+	skipIfNotConfigured(t, "FTP_TEST_SERVER", "TI_PORT_FTP", "FTP")
 
 	ctx := context.Background()
 
-	host := getEnvOrDefault("FTP_TEST_SERVER", "localhost")
-	port := parseInt(getEnvOrDefault("FTP_TEST_PORT", "21"), 21)
-	username := getEnvOrDefault("FTP_TEST_USER", "test")
-	password := getEnvOrDefault("FTP_TEST_PASS", "test123")
+	host, port, _ := serviceTarget("FTP_TEST_SERVER", "TI_PORT_FTP", 21)
+	username := infraValue("FTP_TEST_USER", "TI_FTP_USER")
+	password := infraValue("FTP_TEST_PASS", "TI_FTP_PASSWORD")
 
 	t.Run("FTP Client Creation", func(t *testing.T) {
 		config := &filesystem.FTPConfig{
@@ -156,13 +204,19 @@ func TestFTPProtocolConnectivity(t *testing.T) {
 }
 
 func TestWebDAVProtocolConnectivity(t *testing.T) {
-	skipIfNoContainer(t, "WEBDAV_TEST_URL", "WebDAV")
+	if os.Getenv("WEBDAV_TEST_URL") == "" {
+		skipIfNotConfigured(t, "WEBDAV_TEST_SERVER", "TI_PORT_WEBDAV", "WebDAV")
+	}
 
 	ctx := context.Background()
 
-	url := getEnvOrDefault("WEBDAV_TEST_URL", "http://localhost:8081")
-	username := getEnvOrDefault("WEBDAV_TEST_USER", "test")
-	password := getEnvOrDefault("WEBDAV_TEST_PASS", "test123")
+	url := os.Getenv("WEBDAV_TEST_URL")
+	if url == "" {
+		h, p, _ := serviceTarget("WEBDAV_TEST_SERVER", "TI_PORT_WEBDAV", 80)
+		url = "http://" + net.JoinHostPort(h, strconv.Itoa(p))
+	}
+	username := infraValue("WEBDAV_TEST_USER", "TI_WEBDAV_USER")
+	password := infraValue("WEBDAV_TEST_PASS", "TI_WEBDAV_PASSWORD")
 
 	t.Run("WebDAV Client Creation", func(t *testing.T) {
 		config := &filesystem.WebDAVConfig{
@@ -200,8 +254,8 @@ func TestWebDAVProtocolConnectivity(t *testing.T) {
 func TestNFSProtocolConnectivity(t *testing.T) {
 	skipIfNoContainer(t, "NFS_TEST_SERVER", "NFS")
 
-	host := getEnvOrDefault("NFS_TEST_SERVER", "localhost")
-	exportPath := getEnvOrDefault("NFS_TEST_EXPORT", "/export/media")
+	host := os.Getenv("NFS_TEST_SERVER") // the user-space NFS server publishes no host port: only an explicit server names one
+	exportPath := getEnvOrDefault("NFS_TEST_EXPORT", "/export")
 	mountPoint := getEnvOrDefault("NFS_TEST_MOUNT", "/mnt/nfs-test")
 
 	t.Run("NFS Client Creation", func(t *testing.T) {

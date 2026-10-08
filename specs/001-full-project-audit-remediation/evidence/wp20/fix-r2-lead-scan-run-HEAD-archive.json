@@ -1,0 +1,30 @@
+{
+ "command": [
+  "/usr/bin/python3",
+  "/home/milosvasic/Projects/catalogizer/scripts/register/lead_scan.py",
+  "--freeze-json",
+  "/dev/shm/wf23fix/freeze.json",
+  "--out",
+  "/dev/shm/wf23fix/final/lead"
+ ],
+ "dispositions": {
+  "NON-PROBLEM:marker text in document or pattern": 12,
+  "duplicate of structured source": 2718,
+  "lead": 4056
+ },
+ "emitted_rows": 6786,
+ "extra_roots": [],
+ "frozen_head": "4c8b07b7",
+ "hc2_path": "/dev/shm/wf23fix/ev_none/hc/HC-2.json",
+ "lead_scan_entry_rows": 6786,
+ "lead_scan_entry_rows_basis": "counted in the imported database before and after",
+ "needles": [
+  "docs/LANDMINES.md:L45"
+ ],
+ "population_files": 2717,
+ "rows_after": 6786,
+ "rows_before": 0,
+ "source_locator": "lead-scan:tracked Markdown outside every gitlink",
+ "sql_sha256": "89c8369d076ddb00b0a191038aa065325a169dbb14ee1083823c5542efdb963b",
+ "symlink_population_files_skipped": []
+}

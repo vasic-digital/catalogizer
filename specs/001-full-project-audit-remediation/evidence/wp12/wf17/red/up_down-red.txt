@@ -1,0 +1,35 @@
+# identity: WF17 r5 RED up_down (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:00:05Z
+# sha256 tests/infra/test_up_down.sh ecf6225a8cc1cb12eea12715c33602d4178e0bd28fe025711b967335025b0132
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_up_down.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up A exits 0
+PASS: up A prints its project
+PASS: up A prints the operation it registered (catalogizer-test-zz9648a-up-20261007T220005-1541364)
+PASS: up A: one container labelled with the project
+PASS: up A: the lease is held by a LIVE keeper of this very start (run id, pid > 1, /proc entry, keeper command line)
+PASS: up A: no podman pod was created for the project (WF12 F2: label-scoped teardown cannot see a pod)
+PASS: A answers its redis probe
+PASS: a second owner of the SAME project is refused (exit 3)
+PASS: the refusal names reason=lease_held
+PASS: the refused second up changed nothing (still one container)
+PASS: the refused second owner left the LIVE holder alive and the lease intact (WF12 F5, reviewer mutant RM4)
+PASS: a THIRD up is still refused as lease_held (exit 3), not lease_stale (exit 4)
+PASS: the third refusal names reason=lease_held
+PASS: a DIFFERENT project is admitted while A is up (exit 0)
+PASS: up B: one container labelled with B
+PASS: both leases are live keepers of their own start, each its own
+PASS: A's holder is not B's (distinct operations)
+PASS: A and B use distinct redis ports
+PASS: down A by a caller naming no operation is REFUSED (exit 5)
+PASS: the refusal names reason=not_lease_owner
+FAIL: the refusal prints the live owner's operation id (the token that unlocks teardown)
+# exit: 1

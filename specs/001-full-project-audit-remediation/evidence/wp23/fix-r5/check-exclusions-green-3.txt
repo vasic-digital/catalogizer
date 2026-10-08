@@ -1,0 +1,163 @@
+# fix-r5 evidence (WP-23 round 5): GREEN run 3
+# command: bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 50e2bb892608b2fc03b773fccb9867572272ebd7e73fd977630807a54703144c  scripts/coverage/check_exclusions.sh
+# sha256 119441c7f61cce7af30e27bad4fea12b8c8564289e11357e1028e2904bb1efd6  scripts/coverage/check_exclusions.py
+# sha256 447071726d27737f737d62da31df25a9f412132dc54ee02133c3b1d11bf8bced  scripts/coverage/fence_lib.py
+# sha256 79b0ef57a669ae0088907db97dc26a884a853fad185757889f0d8fba687116cd  coverage/exclusions/tools.yaml
+# sha256 b851ab064be833081ed76a2d488360f2dc4088cacc413997883aac7ddd108633  scripts/coverage/tests/test_check_exclusions.sh
+# source output: final/excl-green-3.txt
+
+PASS: golden-good (schema only): exit 0
+PASS: golden-good (schema only): the verdict file says SCHEMA_ONLY and that no content or applied rule ran
+PASS: golden-good: the verdict names the application
+PASS: golden-good: the verdict carries the sha256 of the checked file
+PASS: golden-good: the first-party entry is reported as an honest gap
+PASS: unlisted exclusion: exit 1
+PASS: unlisted exclusion: stderr names the pattern
+PASS: unlisted exclusion: the verdict file says FAIL
+PASS: golden-false: every used pattern is listed: exit 0
+PASS: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0
+PASS: unjustified entry: exit 1 naming it
+PASS: a one-character justification is not a justification: exit 1
+PASS: first-party entry without a tracked item: exit 1 naming it
+PASS: a tracked item that is not an item id is refused
+PASS: an unknown class is refused naming it
+PASS: an over-broad pattern (**) is refused
+PASS: an absolute path is refused
+PASS: a path with .. is refused
+PASS: a duplicate path is refused
+PASS: a wrong schema is refused
+PASS: an application that differs from the file stem is refused
+PASS: an unreadable file is a refusal, never a pass
+PASS: no argument is a usage error
+PASS: an explicit empty list passes (schema only)
+PASS: a file without the exclusions key is refused
+PASS: round-5 golden-good: a fence over a real root, tools row and repo PASSes (exit 0)
+PASS: round-5 golden-good: both rule flags are true and the verdict is PASS
+PASS: K12.5: the verdict records the enumeration (walk, outside a work tree), the file count and the digests of its decisive inputs
+PASS: K12.5: and the tools row itself
+PASS: K12.5: a different decisive input (the items file given or not) changes the recorded digests
+PASS: K2.1: a misspelled --root is refused (root_missing), the old gate PASSed with content_checked true
+PASS: K2.1: an existing EMPTY root is refused (root_empty)
+PASS: K2.1: another application's root is refused (root_not_application: the tools row binds demo to app)
+PASS: K2.1: --root "" is refused (exit 1)
+PASS: K2.2: no --root is a usage refusal (exit 2 root_required), not a skipped rule plus PASS
+PASS: K2.2: the refusal names root_required
+PASS: K2.2: an application with NO tools row FAILs (tool_record_missing), the old gate PASSed with applied_checked=false
+PASS: K2.2: a missing tools FILE FAILs
+PASS: K11.1: a scalar tools row is a named FAIL (tool_record_malformed), not an AttributeError without a verdict
+PASS: K2.2: a fence outside coverage/exclusions/ with an explicit --repo is judged the same (exit 0)
+PASS: K2.2 control: with the row present the rule runs and finds the unlisted exclusion
+PASS: K2.3: 4 vendored of 10 tracked files (+2 provenance files): PASS
+PASS: K2.3: the enumeration is recorded as git-tracked
+PASS: K2.3: untracked scratch files (another writer's notes) do not change the verdict or the count
+PASS: K2.3: GIT_DIR exported (as git does for a hook) gives the same tracked enumeration, not a walk that counts ignored build output
+PASS: CM12: 10 vendored of 16 tracked measurable files (ignored build/ files and untracked notes not counted): over-broad
+PASS: K2.4: a root whose .git is a dangling gitfile is refused (enumeration_failed), never walked
+PASS: K1.4: measured_by naming the lane the figure itself comes from is refused (measured_by_unproven)
+PASS: K1.4: a lane whose image is NOT in the image lock (IMG-RUST not built) does not measure anything: refused
+PASS: K1.4 golden-false: a DIFFERENT lane with a wrapper and a built image measures the files: PASS
+PASS: K1.4: a lane whose wrapper script is missing is refused
+PASS: I5: measured_by naming a lane no row of the lanes table measures is refused
+PASS: K1.4: a fabricated tracked item next to a VALID lane is refused (both route fields are verified)
+PASS: K1.4 control: a real item plus a valid different lane PASSes
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches its files
+PASS: --root: an entry that matches none is reported stale
+PASS: I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)
+PASS: I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it
+PASS: I5: **/*.go labelled generated-code (7 of 7 measurable files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist
+PASS: I5: and the UNION rule names the same excess separately
+PASS: I5: and the class claim is refuted by the content (no anchored marker, not a generator output directory)
+PASS: I5: ?*/** (a glob outside the old denylist) is refused (exit 1)
+PASS: I5: a class that is false of the matched files is refused naming the count
+PASS: I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 7 measurable files, provenance LICENSE + UPSTREAM)
+PASS: I5 golden-false: a generator-output directory (tsconfig outDir) labelled generated-code passes
+PASS: I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes
+scripts/coverage/tests/test_check_exclusions.sh: line 226: Code: command not found
+PASS: I5 golden-false (K3.5 e): a Go file with the anchored  header passes as generated-code
+PASS: I5: the same label on a hand-written file (no marker) is refused
+PASS: I5: entries that each name under half but together name more than half are refused (the union is what voids the figure)
+PASS: m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test sources) passes
+PASS: m10: a main-source file named TestHelper.kt that the glob also names is refused by the class evidence (naming the file)
+PASS: K3.5: ConnectionSpeedTest.kt in a MAIN source set is not a test whatever its name (the name rule accepted it)
+PASS: K3.5: a hand-written file whose comment says auto-generated is NOT generated-code (anchored marker only)
+PASS: K3.5: a first-party script under a directory NAMED build is not generated-code
+PASS: K3.5: a Go fixture package that production code imports is refused by the import search
+PASS: K3.5 golden-false: the same Go fixture package that nothing imports passes
+scripts/coverage/tests/test_check_exclusions.sh: line 255: //: Is a directory
+scripts/coverage/tests/test_check_exclusions.sh: line 255: DO: command not found
+PASS: CM11: a header  WITHOUT  is not the anchored marker (refused)
+PASS: CM13: third_party/** with no provenance record is refused (the directory name is not provenance)
+PASS: CM13 golden-false: the same directory with a LICENSE and an UPSTREAM url file passes
+PASS: K5.4: an entry naming every .kt file of the main source set (10 of 10 measurable, 10 of 21 files) is over-broad
+PASS: K5.4 control: a 1-of-10 entry is not over-broad (refused only for its false class)
+PASS: K5.5: a brace set is evaluated in the tool's dialect (src/{components,pages}/** names src/pages/a/b.ts and not src/other/a.ts)
+PASS: K5.5: a character class is evaluated
+PASS: K5.5 (RM-F): ? does not cross a slash
+PASS: K5.5: * does not cross a slash
+PASS: K5.5: a bare directory name names its subtree in the FENCE and only itself for the tool
+PASS: K5.5: an extglob and a brace range are REFUSED (unevaluable), never a quiet no-match
+PASS: K5.5: src/{components,pages,services}/** is evaluated (15 of 21 measurable files: over-broad; the old gate matched 0 and PASSed as stale)
+PASS: K5.5: an extglob entry is refused as pattern_unevaluable
+PASS: K5.7: the pattern '**/' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '*/' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern './*' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern './**/*' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '**/*/' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '**/**/*' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '***' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '**/*/**' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern './**/**' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '?*' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7: the pattern '**/?*' is refused with NO root to fall back on (semantic over-broad test, not a literal list)
+PASS: K5.7 golden-false: src/** is not over-broad (schema-only exit 0)
+PASS: I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)
+PASS: I6 golden-false: the fence lists everything the tool config applies: exit 0
+PASS: I6 golden-false: the verdict records that the applied list was checked
+PASS: I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)
+PASS: I6 golden-false: a listed entry naming only files the tool cannot instrument (json) is not a scope claim: exit 0
+PASS: I6: a hand-kept used list that differs from the tool config extraction is stale and refused
+PASS: I6 golden-false: a hand list equal to the extraction passes
+PASS: I6: an unreadable tool config is UNVERIFIABLE (exit 1), never an empty used list
+PASS: K5.2: the tools record says jest but the test script runs vitest: tool_identity_mismatch (the committed api-client PASS was a verdict about the wrong tool)
+PASS: K5.2 control: the corrected row (vitest) is judged against the vitest config (exit 0)
+PASS: K5.1: vitest 4 with a coverage block that sets no include measures only the files its tests load: implicit_scope_unlisted
+PASS: K5.1 control: coverage.include set explicitly: the implicit-scope finding is gone (exit 0)
+PASS: K5.3: coverage: <variable> is UNVERIFIABLE (the old regex PASSed it as 'no coverage block')
+PASS: K5.3: a QUOTED 'coverage' key is read (the old regex missed it and PASSed)
+PASS: K5.3: exclude: <constant> is UNVERIFIABLE
+PASS: K5.3: a spread of the tool's defaults is UNVERIFIABLE (the old regex dropped it)
+PASS: K5.3: a template literal with a substitution is UNVERIFIABLE
+PASS: K5.3: test.exclude (which files vitest RUNS) is not read as a coverage exclude (exit 0)
+PASS: K5.3: a commented-out list entry is not an exclusion (the old regex read it: a FAIL-bluff)
+PASS: K5.3: a function-style config is UNVERIFIABLE (needs the tool's resolved config)
+PASS: K5.3: jest coveragePathIgnorePatterns that name tracked files the fence does not list are an unlisted exclusion
+PASS: CM10: a jest NEGATION ('!src/hidden/**') is an applied exclusion and its entry is judged (refused for its false class)
+PASS: CM10: and the jest negation not in the fence is an UNLISTED exclusion
+PASS: K5.3 jacoco golden-good: the four fileFilter patterns, each listed: PASS (build-output class patterns that name no tracked source are stale notes)
+PASS: K5.3: an extra Gradle exclude("**/ui/**") on the class tree (17 of 25 main files) is an unlisted exclusion
+PASS: K5.5: **/*.class (every compiled class) is evaluated against the SOURCES it names and refused as over-broad (the old gate PASSed it as stale)
+PASS: K5.6: 4 in-scope scripts, 1 measured, none named by the fence: unmeasured_first_party names the other 3
+PASS: K5.6 golden-false: the harness's real target list covers the scope: PASS
+PASS: K5.6: a --measured list that is a subset of the scope is judged by ITS content (2 unmeasured), not by the row's default
+PASS: K5.6 golden-false: two first-party entries (a tracked item) naming c.sh and d.sh plus the measured a.sh and b.sh cover the whole scope: PASS
+PASS: CM14 / K14.6: the REAL catalog-api fence over the REAL root PASSes (kind fence recognised)
+PASS: K14.6: the real website fence PASSes
+PASS: K14.6: the real android fence PASSes
+PASS: K14.6: the real androidtv fence PASSes
+PASS: K5.1: the real catalog-web fence FAILs (vitest applies its default scope and default exclude; the committed PASS was false)
+PASS: K5.2: the real api-client fence FAILs (the tools record said jest, the test script runs vitest; the committed PASS was false)
+PASS: K14.6: the real desktop fence FAILs (committed: unlisted exclusions)
+PASS: K1.4: the real installer-wizard fence FAILs on its src-tauri/** entry: measured_by installer-wizard/rust runs on IMG-RUST, which is not in the image lock
+PASS: K5.6: the real build-scripts fence FAILs: ~317 first-party scripts are in scope and unmeasured (the committed PASS measured 4)
+PASS: K11.1: an option with no value is a usage error (exit 2)
+PASS: K11.1: --repo with no value is a usage error (exit 2)
+PASS: K11.1: an input the gate cannot process is exit 3 with a message, never a traceback
+PASS: K11.2: a duplicate YAML key in a fence is refused (it silently dropped an entry)
+PASS: K11.2: a duplicate key in the tools record is refused
+Summary: PASS=146 FAIL=0 SKIP=0
+done rc=0

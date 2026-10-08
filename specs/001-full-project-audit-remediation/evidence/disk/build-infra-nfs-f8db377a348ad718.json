@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "build-infra-nfs-f8db377a348ad718",
+  "at": "2026-10-06T18:57:06Z",
+  "need_bytes": 600000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 99261100032,
+      "free_after": 98661100032,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 99261095936,
+      "free_after": 98661095936,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

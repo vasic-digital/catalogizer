@@ -1,0 +1,183 @@
+# fix-r5 evidence (WP-23 round 5): GREEN run 3
+# command: bash scripts/coverage/tests/test_track_coverage.sh --no-mutations
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 264cbc08b850c8a4be69688360d2aa4eba21a9989d1dca38da1dbdc3b090bf1a  scripts/coverage/track-coverage.sh
+# sha256 a759ae12b44eaa6c490e31ada28d6ebcd4ff93ee16ca077e1b1bb2bad66d21dd  scripts/coverage/gocov_merge.py
+# sha256 447071726d27737f737d62da31df25a9f412132dc54ee02133c3b1d11bf8bced  scripts/coverage/fence_lib.py
+# sha256 119441c7f61cce7af30e27bad4fea12b8c8564289e11357e1028e2904bb1efd6  scripts/coverage/check_exclusions.py
+# sha256 3aca48c1902cdb8be0a342e18622cdcc730ed7756079a45ad304472975ebc47f  scripts/coverage/tests/test_track_coverage.sh
+# source output: final/track-green-3.txt
+
+PASS: submit: exit 0
+PASS: submit: ONE build group per run, two members (one per package)
+PASS: submit: every member names the same group
+PASS: submit: the compile half is go test -c -cover -covermode=atomic -coverpkg=./... -o /out/<lane>/<pkg>.test
+PASS: K6.3: the compile half runs INSIDE the module (cd /src/catalog-api): the repository root has no go.mod
+PASS: submit: the group is sealed after the last member
+PASS: submit: it does not wait (it returns after sealing)
+PASS: submit: it reads no result
+PASS: K9.1: the state record is sealed, complete and carries a nonce
+PASS: collect: exit 0 on the golden case
+PASS: collect: it never waits (results come from the callback records)
+PASS: K6.2 collect: one status read per member (the REAL dispatch.sh status)
+PASS: K8.3: the run half executed the COPY in the run directory
+PASS: collect: the profile is written by -test.coverprofile from the package directory
+PASS: collect: the merged profile exists
+PASS: collect: merged profile header
+PASS: collect: merged blocks (7: six distinct plus the header line)
+PASS: collect: the block both binaries instrument is counted once with the SUMMED count
+PASS: collect: statements total (hand count 15)
+PASS: collect: statements covered (hand count 12)
+PASS: collect: percent
+PASS: collect: result status
+PASS: collect: per-package results are kept
+PASS: collect: the result is written through the recorder
+PASS: collect: the baseline record has the schema coverage-baseline/1
+PASS: collect: the baseline names the instrument
+PASS: K12.4: the baseline names the snapshot that was measured (the submit's), and no commit for a non-git source
+PASS: GREEN x3: three replays give the identical percent
+PASS: K6.1: with the REAL evrec the collector exits 0 (it ended with 'the recorder did not record the result' for every GREEN run: five refusals)
+PASS: K6.1: the ledger holds one entry: item CAT-123, BASELINE, pass, evidence class runtime, target class go_binary
+PASS: K6.1: the entry's target fingerprint is the sha256 of result.json
+PASS: K6.1 control: the argv the old collector passed (item T201, GREEN, class runtime, a ref that does not resolve) is refused by the real evrec (exit 69): the leg can fail
+PASS: K6.1: --item is mandatory (usage error 2)
+PASS: K6.1: --item T201 (a task id, not a register item) is refused (usage error 2)
+PASS: K6.2: the REAL dispatch.sh status carries no artifact_dir or artifact_name (the old collector read both and ended with binary_missing)
+PASS: K6.2: it reports the terminal as kind / exit_class / reason
+PASS: K6.2: scripts/build/verify_artifact.sh does not exist (so the collector must not call it: it verifies against the completed event's digest)
+PASS: K6.2: the artifact is found at <builds root>/<build id>/artifacts/<lane>/<pkg>.test (exit 0)
+PASS: build_failed: exit non-zero (1)
+PASS: build_failed: stderr names the package and the reason (beta (unit): build_failed)
+PASS: build_failed: the result record says failed
+PASS: build_failed: no baseline was recorded
+PASS: infra_failed: exit non-zero (1)
+PASS: infra_failed: stderr names the package and the reason (beta (unit): infra_failed (snapshot_mismatch))
+PASS: infra_failed: the result record says failed
+PASS: infra_failed: no baseline was recorded
+PASS: binary_missing: exit non-zero (1)
+PASS: binary_missing: stderr names the package and the reason (beta (unit): binary_missing)
+PASS: binary_missing: the result record says failed
+PASS: binary_missing: no baseline was recorded
+PASS: verify_refused: exit non-zero (1)
+PASS: verify_refused: stderr names the package and the reason (beta (unit): verify_refused)
+PASS: verify_refused: the result record says failed
+PASS: verify_refused: no baseline was recorded
+PASS: package_failed: exit non-zero (1)
+PASS: package_failed: stderr names the package and the reason (beta (unit): package_failed)
+PASS: package_failed: the result record says failed
+PASS: package_failed: no baseline was recorded
+PASS: package_panicked: exit non-zero (1)
+PASS: package_panicked: stderr names the package and the reason (beta (unit): package_panicked)
+PASS: package_panicked: the result record says failed
+PASS: package_panicked: no baseline was recorded
+PASS: panic_with_exit_zero: exit non-zero (1)
+PASS: panic_with_exit_zero: stderr names the package and the reason (beta (unit): package_panicked)
+PASS: panic_with_exit_zero: the result record says failed
+PASS: panic_with_exit_zero: no baseline was recorded
+PASS: profile_empty: exit non-zero (1)
+PASS: profile_empty: stderr names the package and the reason (beta (unit): profile_empty)
+PASS: profile_empty: the result record says failed
+PASS: profile_empty: no baseline was recorded
+PASS: callback_record_missing: exit non-zero (1)
+PASS: callback_record_missing: stderr names the package and the reason (beta (unit): callback_record_missing)
+PASS: callback_record_missing: the result record says failed
+PASS: callback_record_missing: no baseline was recorded
+PASS: cancelled: exit non-zero (1)
+PASS: cancelled: stderr names the package and the reason (beta (unit): cancelled)
+PASS: cancelled: the result record says failed
+PASS: cancelled: no baseline was recorded
+PASS: timed_out_with_succeeded_class: exit non-zero (1)
+PASS: timed_out_with_succeeded_class: stderr names the package and the reason (beta (unit): timed_out)
+PASS: timed_out_with_succeeded_class: the result record says failed
+PASS: timed_out_with_succeeded_class: no baseline was recorded
+PASS: not_terminal: exit non-zero (1)
+PASS: not_terminal: stderr names the package and the reason (beta (unit): not_terminal (state=)
+PASS: not_terminal: the result record says failed
+PASS: not_terminal: no baseline was recorded
+PASS: one failing package: only the failing package is named
+PASS: one failing package: the healthy package alpha still ran
+PASS: K8.3: an unreadable artifact is copy_failed for that package (the copy status is checked)
+PASS: K8.4: collect into a --out that already holds a run is refused (out_not_empty)
+PASS: K8.4: and the first run's result is untouched
+PASS: CM20: atomic + count profiles: the merge failure is an error and the run fails
+PASS: CM20: result.json says failed and no baseline was written
+PASS: K9.1: a failed member submission fails the submit (member_submit_failed)
+PASS: K9.1: the state is NOT sealed
+PASS: K9.1: members.tsv holds alpha only
+PASS: K9.1: collect over the unsealed state is refused (group_not_sealed), not recorded as a baseline over alpha alone
+PASS: K9.1: no baseline
+PASS: K9.1: a state that expects 3 members and holds 2 is refused (state_incomplete)
+PASS: K9.1: a missing state.json is refused (state_incomplete)
+PASS: K9.1: a submit interrupted by INT exits 130
+PASS: K9.1: and leaves sealed=false interrupted=true
+PASS: K9.1: and collect refuses it
+PASS: K9.1: a second submit into the same --state is refused (state_not_empty)
+PASS: K6.4: a dispatcher call that reads an OPEN stdin does not hang the submit (exit 0, not the timeout's 124)
+PASS: K9.2: a member the loop dropped (no trailing newline) is refused as member_unaccounted, never collected as a subset
+PASS: status: a collection with a failed package never calls the recorder and writes no baseline
+PASS: gaps: result.json carries the uncompiled build tags from gaps.json
+PASS: gaps: and the baseline carries them (a reader of the baseline sees what the figure does not cover)
+PASS: summary: a figure that cannot be computed (module_unknown) fails the collection and names the summary step
+PASS: recorder: the collector's entry has the test_fingerprint of (python + gocov_merge.py), the control with the source declared
+PASS: recorder control: the same entry WITHOUT the declared source has another test_fingerprint (the leg can fail)
+PASS: K6.4: with a dispatcher call that reads stdin all 4 packages are still submitted (was 1 of 4 with exit 0)
+PASS: K9.1: expected_members equals the packages x lane memberships (4)
+PASS: K6.3 c: submit with a RELATIVE --state exits 0 (the state is made absolute)
+PASS: K6.3 c: and the state landed in <cwd>/rel-state
+PASS: K6.3 c: collect with a RELATIVE --out and --state exits 0 (the runner refuses a relative --out: out_dir_not_absolute)
+PASS: K6.3 b: collect started from an unrelated directory works
+PASS: K12.4: the baseline's source_commit is the commit of the SOURCE tree
+PASS: K12.4: and it is not the commit of the repository the collector lives in
+PASS: K12.4: a source that changed since submit is refused (snapshot_skew): binaries from one tree must not run against another
+PASS: K6.3 d: submit with two lanes exits 0
+PASS: K6.3 d: lane membership: unit holds alpha and e2e, integration holds tagged and tests/integration/x (4 members, no package twice)
+PASS: K6.3 d: the package whose test files carry //go:build integration is compiled with -tags integration
+PASS: K6.3 d: a package gated by directory only gets no -tags integration
+PASS: K6.3 d: the build tags no lane compiles are listed as a gap (e2e_binary yes; integration, linux no)
+PASS: K6.3 d: and the packages with no test are listed (nolib)
+PASS: I10: submit with absolute go-list directories exits 0
+PASS: I10: the compile target is ./alpha, never ./src/catalog-api/alpha
+PASS: I10: members.tsv records the checkout-relative directory (the run half's cd /src/<dir>)
+PASS: I10: an absolute directory outside /src is refused (package_dir_outside_source)
+PASS: I10: that refusal submitted no build
+PASS: I6: exit 0 with a fenced file in the profile
+PASS: I6: statements exclude the fenced file's 7 (hand count 15, was 22 before the fence was applied)
+PASS: I6: the percent is the unfenced 80.00
+PASS: I6: the record names the excluded file
+PASS: I6: the record counts the excluded statements
+PASS: I6: the baseline record carries the exclusion
+PASS: K8.1: the baseline records the sha256 of the fence that was APPLIED (not its path)
+PASS: K8.1: and it is the sha256 of the snapshot taken into the run directory
+PASS: K2.6: an application with no fence file collects (exit 0) and says fence: none
+PASS: K2.6: and the baseline's exclusion_list is none, with no path that does not exist
+PASS: I6: a fence the gate refuses fails the collection (exit 1) and says why
+PASS: I6: and result.json says failed (no baseline over an unchecked scope)
+PASS: K11.5: merge p1 --out F p2 sums BOTH profiles (a[2:o] dropped p1): block 1 counted 3, block 2 counted 5
+PASS: CM21: atomic + count profiles: merge exits 1 'mode count differs from atomic'
+PASS: CM22: one block with 3 and with 5 statements: merge exits 1 'has two statement counts'
+PASS: K11.1: merge --out with no value is a usage error (2)
+PASS: K2.5: --exclusions with no module is REFUSED (3 module_unknown); the old code applied nothing and printed a figure
+PASS: K2.5: go.mod form 'module catalogizer': the module is read and the fence applied (excluded statements 5, figure 0)
+PASS: K2.5: go.mod form 'module "catalogizer"': the module is read and the fence applied (excluded statements 5, figure 0)
+PASS: K2.5: go.mod form 'module catalogizer // the api': the module is read and the fence applied (excluded statements 5, figure 0)
+PASS: K2.5: go.mod form 'module catalogizer\r': the module is read and the fence applied (excluded statements 5, figure 0)
+PASS: K2.6: --exclusions naming a fence that does not exist is REFUSED (3 fence_missing), not a FileNotFoundError and a 0-byte summary
+scripts/coverage/tests/test_track_coverage.sh: line 372: path: command not found
+PASS: K2.6: a fence entry without  is REFUSED (3 fence_malformed), not a KeyError
+PASS: K2.5: a fence entry that names tracked Go files but no block of the profile is RECORDED (it excludes nothing from this figure)
+PASS: K8.4: a result.json whose nonce is not this run's is never turned into a baseline (3 result_not_this_run)
+PASS: K12.4: a baseline that names neither a commit nor a snapshot is refused (3 provenance_missing)
+PASS: K12.4 control: a commit alone is enough (exit 0)
+PASS: K8.4: a failed result is never turned into a baseline (3 result_not_ok)
+SKIP: K6.3 a: the real lane did not run here (track-coverage: REFUSED reason=package_list_failed go list through TIC failed: ID      STATUS         NEEDLE    DETAIL AM-P1   drift          seen      7 drift )
+PASS: collect without a submitted group is refused (rc 1)
+PASS: no mode is a usage error
+PASS: an unknown mode is a usage error
+PASS: K11.1: an option with no value is a usage error (2), not an unbound variable (1)
+PASS: submit with an unreadable package list is refused
+PASS: TC_DISPATCH and the other hooks are refused outside test mode
+PASS: TC_FENCE_DIR alone is refused outside test mode (a caller cannot point the figure at a fence of its choosing)
+Summary: PASS=167 FAIL=0 SKIP=1
+done rc=0

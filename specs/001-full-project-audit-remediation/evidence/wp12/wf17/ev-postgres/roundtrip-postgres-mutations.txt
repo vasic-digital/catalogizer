@@ -1,0 +1,4 @@
+step_removed CAUGHT
+rm6_negative_leg_unreachable CAUGHT
+negative_dup_not_a_duplicate CAUGHT
+failfast_exits_zero CAUGHT

@@ -1,0 +1,37 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	skips the mandatory freeze-snapshot entry check
+M02	KILLED	1	drops the legacy_import path: closed-class tickets get machine_evidence
+M03	KILLED	1	closed-class set loses 'closed'
+M04	KILLED	1	treats wontfix as closed (FR-008: wontfix is not a permitted closure)
+M05	KILLED	1	description cap raised to 4096 bytes
+M06	KILLED	1	cut on a byte offset, not a character boundary (replacement characters)
+M07	KILLED	1	primary map row without severity_governs
+M08	KILLED	1	IC-01 S2 mapped to medium instead of high
+M09	KILLED	1	resume key ignored: every run mints a new id
+M10	KILLED	1	entry sha256 comparison removed (a changed entry is imported)
+M11	KILLED	1	duplicate-locator rule off (a second listing mints a second item)
+M12	KILLED	1	concurrency lock removed
+M13	KILLED	1	a locked database is not classified (exit 1 db_error instead of 21 db_locked)
+M14	KILLED	1	a full disk is not classified
+M15	KILLED	1	backup record check skipped
+M16	KILLED	1	backup staleness (database changed after the backup) not checked
+M17	KILLED	1	writes a component into component_id (the register holds no components)
+M18	KILLED	1	APPLIES the proposed category to reg_item_ext.category
+M19	KILLED	1	engine type mapping ignored: every item is a Task
+M20	KILLED	1	closes a Bug with the Task vocabulary
+M21	KILLED	1	an unmapped severity defaults to high
+M22	KILLED	1	legacy_status not stored
+M23	KILLED	1	entries processed in reverse order (legacy order lost)
+M24	KILLED	1	register DDL presence not checked
+M25	KILLED	1	progress log never says done
+M26	KILLED	1	reads the ticket from the working directory, not the frozen snapshot
+M27	KILLED	1	dry run writes
+M28	KILLED	1	unsafe locators (..) accepted
+M29	KILLED	1	crash hook honoured outside IMPORT_TEST_MODE
+M30	KILLED	1	extension row written after the item exists (legacy order inverted) - skips the ext write before add
+M31	KILLED	1	the Sources block drops the sha256 line
+M32	KILLED	1	an engine failure is swallowed (add error ignored)
+M33	KILLED	1	the final validate/integrity gate is skipped
+M34	KILLED	1	the free-space precondition is skipped
+# mutation run: 34 killed, 1 survived (C00 expected), expectations MET

@@ -1,0 +1,87 @@
+# identity: task=T162 utc=2026-10-08T03:40:05Z host=e42bd1c95be9 uid=1000
+# git_head=f72d8757fe614adfa38a4f70276853527d06d7e8 tree_dirty_files=7024
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# enumerator=/src/.audit/scratch/wp20-r2/sut/enumerate_sources.py sha256=e95ece939e0517d3e3de8931090a09a6affeae4b653aebe55379485ccd4c0fff
+ok   baseline enumeration exits 0
+ok   baseline class S-01 reads 2 entries
+ok   baseline class S-02 reads 1 entries
+ok   baseline class S-03 reads 5 entries
+ok   baseline class S-04 reads 2 entries
+ok   baseline class S-05 reads 1 entries
+ok   baseline class S-06 reads 1 entries
+ok   baseline class S-07 reads 2 entries
+ok   baseline class S-08 reads 2 entries
+ok   baseline class S-09 reads 3 entries
+ok   baseline class S-10 reads 2 entries
+ok   baseline class S-11 reads 2 entries
+ok   baseline class S-12 reads 2 entries
+ok   baseline class S-13 reads 1 entries
+ok   baseline class S-14 reads 4 entries
+ok   baseline class S-15 reads 3 entries
+ok   baseline class S-16 reads 7 entries
+ok   baseline class S-17 reads 3 entries
+ok   baseline class S-18 reads 3 entries
+ok   baseline class S-19 reads 3 entries
+ok   baseline class S-20 reads 4 entries
+ok   baseline class S-21 reads 6 entries
+ok   baseline class S-22 reads 1 entries
+ok   baseline class S-23 reads 1 entries
+ok   baseline class S-24 reads 1 entries
+ok   baseline class S-25 reads 4 entries
+FAIL source-class-kinds.json maps all 25 classes plus XID and EXT :: got [25 []] want [27 []]
+FAIL baseline class XID reads [Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'XID']
+FAIL baseline class EXT reads [Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'EXT']
+FAIL sql sha256 sibling (the one locked.sh import-sql reads) equals the .sql.sha256 file :: got [] want [a8c59ce1e14dbd3490aef00db34aceca32d549a3c56b5d05587eacc2193fa670]
+ok   sql sha256 file is the bare hash of the sql
+ok   two runs over the same snapshot give a byte-identical sql
+ok   enumerator run leaves the scratch DB bytes unchanged
+ok   sql import applies cleanly
+ok   import creates exactly total_entries rows
+ok   import changes the DB bytes
+ok   second import prints no error (INSERT OR IGNORE, never a UNIQUE failure)
+ok   second import adds no row
+ok   second import changes no entry
+ok   scanned_entry_count equals the rows of every source
+ok   planted S-01: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-02: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-03: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-04: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-05: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-06: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-07: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-08: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-09: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-10: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-11: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-12: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-13: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-14: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-15: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-16: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-17: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-18: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-19: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-20: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-21: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-22: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-23: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-24: class +1, total +1, other classes unchanged, DB +1 row
+ok   planted S-25: class +1, total +1, other classes unchanged, DB +1 row
+ok   3-way plant: enumerator exits 0
+ok   3-way plant: exactly 3 new reg_source_entries rows
+ok   3-way plant: the new locators (planted DB minus baseline DB, by natural key) are the checkbox line, the ticket file and the bank case
+ok   planted entries removed from the planted copy: the sql equals the baseline byte for byte
+ok   decoy tree: enumerator exits 0
+ok   decoy carriers add no row (total unchanged)
+ok   decoy carriers appear in no locator
+ok   moved snapshot: refused with exit 20
+ok   moved snapshot: stderr names freeze_snapshot_moved and the file
+ok   moved snapshot: no source_entries.sql written
+RESULT: pass=71 fail=4

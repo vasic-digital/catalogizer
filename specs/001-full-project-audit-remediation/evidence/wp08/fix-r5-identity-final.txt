@@ -1,0 +1,29 @@
+# identity (FINAL tree): catalogizer / 001 / WP-08 round 5 | utc 2026-10-08T03:51:06Z | host anton | git head f72d8757 (working tree, uncommitted) | fixed-tree sha256 ca8fc70d5f1db5cb8e6cf3aa27c7abf4174dbd70e725e1670d511998f6d55735
+# command: sha256sum <SET>
+# SET: scripts/longops/*.sh scripts/longops/tests/*.sh scripts/anti-mess/sweep.sh scripts/anti-mess/catalogue.yaml scripts/anti-mess/tests/*.sh scripts/build/dispatch.sh scripts/repo/verify_repos.sh scripts/repo/check_no_ci.sh
+18bf0886ee76a9826575ef326cf5a139a70c1dd29dc7253cc77b6d2a200a0d88  scripts/longops/acquire.sh
+dd7efc97154bcddae312c861116cee7fda57b80dcaa33be2431989b74abd8391  scripts/longops/check_no_build_writing_tracked.sh
+bf386b612a687c1bf3d13cc68e7b007d1b26bc2b4c063940d11fb455efe81a7f  scripts/longops/classify.sh
+5696ab3d37c8e44b1928f70a8d8de97e42e87d96db6c6a5d7860e30cf2c2a20e  scripts/longops/heartbeat.sh
+b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8  scripts/longops/holder.sh
+1421c74043f4d2c22cc5a72501603e36becd7347b93c993fa97482724dedaab2  scripts/longops/lib.sh
+17b412576b9b0789e4ce551ce7a1e76441fc6770d59c0cb031e0434399ed4a1c  scripts/longops/reap.sh
+1e0e427e19b4f3b998e31e54899925138d4bbe112c7cdb9a384731c53b87b7f7  scripts/longops/register.sh
+813038db5c1503e8e907dd21499083ad9a0c1bceacc0d5d1407142c988cd4200  scripts/longops/release.sh
+5c19d819464fa5b6832eb6119e6c3bbc64bc8839d6a52ff1fd9323518b4779c1  scripts/longops/require_verdicts.sh
+6ae3e382496d2622ace5232c024f3cf486a5a4860aa4558af53a8e9eb809fae9  scripts/longops/tests/lib.sh
+aecbf638c5d4f0d8620f25466667ad6458dfacdde0a8f4bba5ae0d1e39a66ae3  scripts/longops/tests/mutate_registry.sh
+1925100f6de1b98dd997e43419838dafc5adf21b6ca193161d361c335dd808b3  scripts/longops/tests/mutate_safety.sh
+ec63c9735e464066879584d54b5b7965103bed7e0b8d8b1a2e85dd0f7a933601  scripts/longops/tests/mutation_safety.sh
+0a1a0290d5675271b5ddc29bdb79476da8b3b687d9ad82d6ad86b0862e94c09e  scripts/longops/tests/test_mutation_safety.sh
+fb400df1eca9174806d4336d8235a466078276c4f94f1f3df0e666dcb166ae6c  scripts/longops/tests/test_registry_r5.sh
+2b7629f11522ed400b918cc1620057774762e8f38f1cc7d256c40c75c6902ecc  scripts/longops/tests/test_registry.sh
+e7e9ebdaab47c75e0a126c400850a9d0566960d6bd83885d2f5b9e114078fc42  scripts/anti-mess/sweep.sh
+e84afb5a49ed0c722349cdf16f457fbcab460f4b2bdbe717df4c0620c15399c8  scripts/anti-mess/catalogue.yaml
+e69400b3dfdbe8c0762ab90039de0653e7762ee07f7c73eac0579628760a002a  scripts/anti-mess/tests/mutate_sweep.sh
+cf4d6fe9437f547f108bc7be3e154e7d5fe83c69ca12a46080c915e8f6d8a49d  scripts/anti-mess/tests/sweep_lib.sh
+d9e740563cb09dd8306bb3a93e547a2873c5154d5848a72fb8db00dc41e8be62  scripts/anti-mess/tests/test_sweep_r5.sh
+f63d280a3fd020dc4b49232affe01d6d27c506a6b0120a6ac6dad99d8fa6a208  scripts/anti-mess/tests/test_sweep.sh
+3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d  scripts/build/dispatch.sh
+74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314  scripts/repo/verify_repos.sh
+0933b7ea49e24a4ef019cf6eb288fd602b3dcf137a1260b336720caf9ddb14ad  scripts/repo/check_no_ci.sh

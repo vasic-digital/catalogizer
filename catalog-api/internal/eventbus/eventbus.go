@@ -70,6 +70,7 @@ const (
 	EventScanStarted    EventType = "scan.started"
 	EventScanCompleted  EventType = "scan.completed"
 	EventScanFailed     EventType = "scan.failed"
+	EventScanCancelled  EventType = "scan.cancelled"
 	EventFileCreated    EventType = "file.created"
 	EventFileModified   EventType = "file.modified"
 	EventFileDeleted    EventType = "file.deleted"

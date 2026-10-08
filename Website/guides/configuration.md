@@ -162,8 +162,9 @@ Storage sources are configured through the web interface or API. Each protocol r
 | `port` | No | Port (default: 21) |
 | `username` | Yes | Authentication username |
 | `password` | Yes | Authentication password |
-| `tls` | No | Enable FTPS (`true` or `false`) |
-| `path` | No | Base directory path |
+| `path` | No | Base directory path (absolute, or relative to the login directory) |
+
+> Plain FTP only. FTPS (FTP over TLS) is not available yet: the settings contract rejects a `tls` key instead of ignoring it. Any key a protocol does not use is rejected with the name of the key (never its value).
 
 ```json
 {
@@ -172,7 +173,6 @@ Storage sources are configured through the web interface or API. Each protocol r
   "port": 21,
   "username": "user",
   "password": "pass",
-  "tls": true,
   "path": "/media"
 }
 ```
@@ -182,13 +182,16 @@ Storage sources are configured through the web interface or API. Each protocol r
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `host` | Yes | Server hostname or IP address |
-| `export_path` | Yes | NFS export path |
+| `path` | Yes | NFS export path (the retired spelling `export_path` is rejected with a hint) |
+| `mount_point` | No | Local directory the export is mounted on |
+| `options` | No | Mount options, for example `vers=3,ro` (default `vers=3`) |
 
 ```json
 {
   "protocol": "nfs",
   "host": "nas.local",
-  "export_path": "/volume1/media"
+  "path": "/volume1/media",
+  "mount_point": "/mnt/nas-media"
 }
 ```
 
@@ -199,6 +202,7 @@ Storage sources are configured through the web interface or API. Each protocol r
 | `url` | Yes | Full WebDAV URL |
 | `username` | Yes | Authentication username |
 | `password` | Yes | Authentication password |
+| `path` | No | Root collection UNDER the URL's own path (url `https://host/dav/alice` with path `/Movies` addresses `/dav/alice/Movies`) |
 
 ```json
 {
@@ -208,6 +212,13 @@ Storage sources are configured through the web interface or API. Each protocol r
   "password": "pass"
 }
 ```
+
+### Every storage root
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `max_depth` | No | Deepest directory level a scan lists (default 10, hard cap 64). A tree deeper than the bound makes the scan FAIL with `limit_exceeded`; it is never truncated silently |
+| `allow_empty` | No | `true` when the share is expected to be empty. By default a scan that finds nothing FAILS (`empty_root`), because an empty answer is also what an unreachable or mis-addressed source looks like |
 
 ---
 

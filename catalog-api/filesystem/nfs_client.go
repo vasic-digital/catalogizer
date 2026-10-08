@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	pathpkg "path"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -206,7 +207,7 @@ func (c *NFSClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 			ModTime: info.ModTime(),
 			IsDir:   entry.IsDir(),
 			Mode:    info.Mode(),
-			Path:    filepath.Join(path, entry.Name()),
+			Path:    pathpkg.Join(path, entry.Name()), // the REMOTE path of the entry: a slash path (WF22 X1); the mount-point arithmetic above stays filepath
 		})
 	}
 

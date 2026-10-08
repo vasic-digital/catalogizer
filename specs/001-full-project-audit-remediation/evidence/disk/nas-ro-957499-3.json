@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "nas-ro-957499-3",
+  "at": "2026-10-07T19:15:17Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 78869860352,
+      "free_after": 78600261452,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 78869458944,
+      "free_after": 78599860044,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

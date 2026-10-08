@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/src/scripts/register/tests/test_lead_scan.py", line 80, in <module>
+    open(os.path.join(o0, "lead_scan.sql.sha256")).read() == open(os.path.join(o0, "lead_scan.sha256")).read() and len(open(os.path.join(o0, "lead_scan.sha256")).read()) == 65)
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpzb2boiup/o0/lead_scan.sha256'

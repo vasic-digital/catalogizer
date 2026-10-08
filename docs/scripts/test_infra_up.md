@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T05:00:00Z |
-| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T16:40:16Z |
+| Status | WF17 fix round 5 applied in the working tree (not committed); the independent review of that round is owed (constitution 11.4.142 / 11.4.209); evidence: `specs/001-full-project-audit-remediation/evidence/wp12/wf17/` |
 | Source | `scripts/test-infra/up.sh`; tests `tests/infra/test_up_down.sh`, `tests/infra/test_concurrency.sh` |
 
 ## Purpose
@@ -41,3 +41,10 @@ exit 4 `lease_stale` (never taken over silently: `scripts/longops/reap.sh --purp
 - The corpus cache key now includes the digest of the image that builds the corpus, and the cache is RE-VERIFIED on every start (its digest recomputed from the files; a mismatch is refused, the printed `corpus_sha256` is the recomputed one) (F15). `TI_CORPUS_CACHE_DIR` relocates the cache (a test hook).
 - A failed start tears down as ITS OWN owner (`down.sh --op-id <this start>`), so an earlier start's kept state cannot be mistaken for it (F17).
 - TIC retries default to 400 (about 33 minutes at 5 s), not 90.
+
+## WF17 fix round 5 (revision 3)
+
+- Lifecycle contract: the registered operation carries an explicit no-progress budget (`TI_OP_BUDGET_S`, default 3600 s); its keeper (`ti-lease-keeper`) heartbeats ONLY while a container labelled with the operation is running, so a live stack is never `hung` and a dead one is not kept alive by its own keeper. Every container carries `catalogizer.op_id`, `catalogizer.test_project` and `catalogizer.test_root` (the first 16 hex of the sha256 of this checkout's real path); the compose files declare `x-podman: {in_pod: false}` so the project never gets a pod even when the file is used without `--in-pod`.
+- Ownership: resources of the project that are not this checkout's (another root, a partial label set, an operation that is not in THIS registry) are REFUSED, exit 3 `foreign_owner`, and left alone; owned leftovers of an earlier run give `project_not_clean`; a non-terminal operation of the project whose owner is proven dead is closed `reaped` before registering. One per-user project lock serialises start and teardown.
+- Teardown: an EXIT trap tears down what this start created on any failure and on INT, TERM and HUP (`ti_exit_on_signals` converts the three signals to a normal exit: a non-interactive bash killed by SIGHUP otherwise runs NO EXIT trap, measured). The operation id is persisted in `<state>/op_id` (mode 0600) and printed as `test-infra: registered op_id=<id>`. The corpus cache is installed with one `mv -T` (the loser of a race removes its temporary tree instead of nesting it). Before `exit 0` the lease is verified (claim, holder pid, live keeper).
+- Inputs: valued options need a value (a trailing `--build-id` no longer spins); `--timeout` is a positive integer without a leading zero; the environment is scrubbed for compose (`ti_compose`: the caller's `TI_*` / `COMPOSE_*` never beat the env file); test hooks (`TI_COMPOSE_FILE`, `TI_CORPUS_CACHE_DIR`, `TI_TEST_SLEEP_*`, ...) are honoured only with `TI_TEST_MODE=1`.

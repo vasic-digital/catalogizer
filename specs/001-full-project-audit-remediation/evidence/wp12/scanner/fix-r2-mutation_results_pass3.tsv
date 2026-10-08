@@ -1,0 +1,5 @@
+# fix-r2 mutation run; copy of the tree under .audit/scratch/wf22fix/mut; catalog-api files of the shared tree changed during the run: 0 [] (1025 files fingerprinted before and after; changes under submodules/filesystem by other workers during the run: 0)
+M00-negative-control-no-change	CONTROL-OK		20s
+E09-foreign-hrefs-accepted	KILLED	TestWebDAVClient_ListDirectory_Success	4s
+H06-roots-listing-returns-raw-url	KILLED	TestWF22_UserPath_WebDAVListingFailureReasonHasNoCredential	17s
+# mutants=2 killed=2 survived=0 other=0 control=CONTROL-OK

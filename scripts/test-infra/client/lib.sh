@@ -11,7 +11,7 @@ pass() { echo "PASS $*"; exit 0; }
 secret_file() { local f; f="$(mktemp /tmp/ti-secret.XXXXXX)"; chmod 600 "$f"; printf '%s\n' "$@" >"$f"; echo "$f"; }
 # round trips: `step <name> <command...>` runs one command, prints `STEP <name> ok` or `STEP <name> FAIL <detail>` and counts; `finish <proto>` prints the verdict
 STEPS=0; BAD=0
-step() { local n=$1; shift; local o; STEPS=$((STEPS+1)); if o="$("$@" 2>&1)"; then echo "STEP $n ok"; else BAD=$((BAD+1)); echo "STEP $n FAIL ${o:0:160}"; [ "${TI_RT_FAILFAST:-0}" != 1 ] || { echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 1; }; fi; }
+step() { local n=$1; shift; local o d; STEPS=$((STEPS+1)); if o="$("$@" 2>&1)"; then echo "STEP $n ok"; else BAD=$((BAD+1)); d="$(printf '%s\n' "$o" | grep -v gencache_init | tr '\n' ' ')"; echo "STEP $n FAIL ${d:0:160}"; [ "${TI_RT_FAILFAST:-0}" != 1 ] || { echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 1; }; fi; }   # the harmless smbclient gencache_init warning never fills the 160-character detail that should show the real status
 expect_eq() { [ "$1" = "$2" ] || { echo "got '${1:0:80}' want '${2:0:80}'"; return 1; }; }
 nonce() { cat /proc/sys/kernel/random/uuid; }
 # the manifest sha256 of a corpus file: manifest_sha <relative path>

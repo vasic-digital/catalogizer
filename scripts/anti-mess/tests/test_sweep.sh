@@ -4,34 +4,9 @@
 # itself runs against the REAL podman on the real state (T091). RED before scripts/anti-mess exists, GREEN after. Env SWEEP lets
 # mutate_sweep.sh substitute a mutated copy of the whole tree (scripts/anti-mess + scripts/longops + scripts/repo).
 . "$(dirname "$0")/../../longops/tests/lib.sh"
-SW=${SWEEP:-$TROOT/scripts/anti-mess/sweep.sh}
+. "$(dirname "$0")/sweep_lib.sh"   # SW, mkrepo, cmt, swfx, sw, st, cls, infocls, needle, ALL, tree_hash (shared with test_sweep_r5.sh)
 ident_header T090
 echo "# sha256 sweep.sh=$(sha256sum "$SW" 2>/dev/null | cut -c1-64) catalogue.yaml=$(sha256sum "$(dirname "$SW")/catalogue.yaml" 2>/dev/null | cut -c1-64)"
-export LC_ALL=C GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always
-mkrepo() { git init -q "$1" 2>/dev/null; git -C "$1" config user.email t@t; git -C "$1" config user.name t; git -C "$1" config commit.gpgsign false; }
-cmt() { git -C "$1" add -A && git -C "$1" -c core.hooksPath=/dev/null commit -qm "${2:-c}" 2>/dev/null; }
-swfx() {  # swfx <name>: a clean fixture repository with an ignored .audit, an empty exception list, a fake podman
-  newfx "$1"; R=$FXN/root; rm -rf "$R"; mkrepo "$R"; echo 1 >"$R/a.txt"; printf '/.audit/\n' >"$R/.gitignore"; cmt "$R" init; mkdir -p "$R/.audit"
-  printf '# path\tkind\tfile\twt\tblob\treason\n' >"$FXN/exc.tsv"
-  cat >"$FXN/podman" <<'PE'
-#!/usr/bin/env bash
-echo "$*" >>"${PODLOG:-/dev/null}"
-case "$1" in ps) cat "${PODJSON:-/dev/null}" 2>/dev/null || echo '[]' ;; *) ;; esac
-exit 0
-PE
-  chmod +x "$FXN/podman"; echo '[]' >"$FXN/pods.json"
-  export LONGOPS_REPO=$R LONGOPS_DIR=$R/.audit/longops LONGOPS_AUDIT=$R/.audit LONGOPS_PODMAN=$FXN/podman PODJSON=$FXN/pods.json PODLOG=$FXN/podlog
-  export ANTIMESS_ROOT=$R ANTIMESS_OWNED_ORGS=fixorg AM_EXC=$FXN/exc.tsv ANTIMESS_LOCK_MIN_AGE=60 ANTIMESS_ORPHAN_AGE_S=300
-  J=$FXN/out.json
-  mkdir -p "$FXN/ap/scripts/repo"; printf 'resume_ttl=60\n' >"$FXN/ap/scripts/repo/commit_push.conf"; export CPA_APPROVED_DIR=$FXN/ap   # the approved copy of the CPA run the sweep serves
-}
-sw() { bash "$SW" --json "$J" "$@" >"$FXN/sw.out" 2>"$FXN/sw.err"; SWRC=$?; }
-st() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.status' "$J" 2>/dev/null; }
-cls() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.findings[]|select(.severity=="drift")|.class' "$J" 2>/dev/null | sort | tr '\n' ' ' | sed 's/ $//'; }
-infocls() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.findings[]|select(.severity=="info")|.class' "$J" 2>/dev/null | sort | tr '\n' ' ' | sed 's/ $//'; }
-needle() { jq -r --arg i "$1" '.invariants[]|select(.id==$i)|.control_needle' "$J" 2>/dev/null; }
-ALL=AM-R1,AM-R2,AM-R5,AM-G2,AM-P1,AM-P2,AM-P3,AM-P4,INV-9
-tree_hash() { ( cd "$1" && find . -path ./.git -prune -o -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -c1-64; git -C "$1" status --porcelain | sha256sum | cut -c1-64 ); }
 
 echo "== clean state, control needles =="
 swfx c1; before=$(tree_hash "$R"); sw --only "$ALL"
@@ -49,7 +24,7 @@ bash "$SW" --stage bogus >/dev/null 2>&1; assert_rc "C4 an unknown stage is a us
 echo "== AM-P1 registry vs reality: hung, dead owner, orphan container =="
 swfx p1; mkll; P=$LL; mkll; Q=$LL
 id=$("$S/register.sh" --purpose go-test:x --owner t --pid "$P" --no-progress-s 5 --log "$FXN/l.log"); printf 'abc' >"$FXN/l.log"
-LONGOPS_NOW=$(( $(date +%s) - 100 )) "$S/heartbeat.sh" --op-id "$id" --sample-log
+LONGOPS_MONO=$(monoago 100) "$S/heartbeat.sh" --op-id "$id" --sample-log
 id2=$("$S/register.sh" --purpose go-test:y --owner t --pid "$Q" --no-progress-s 5000)
 sw --only AM-P1; assert_rc "P1 a hung op (live owner, flat offset past budget) is drift (10)" $SWRC 10
 assert_eq "P1b exactly the hung op is reported" "$(cls AM-P1)" hung_op
@@ -70,10 +45,10 @@ export LONGOPS_PODMAN=$FXN/does-not-exist; sw --only AM-P1; assert_eq "P8 F8 an 
 jq -r '.invariants[]|select(.id=="AM-P1")|.findings[]|select(.severity=="unread")|.class' "$J" | grep -qx containers_unread && ok "P8c the finding is containers_unread" || bad "P8c"; export LONGOPS_PODMAN=$FXN/podman
 
 echo "== AM-P2 duplicate owner =="
-swfx p2; mkll; A=$LL; "$S/register.sh" --purpose dup:k --owner a --pid "$A" >/dev/null
-jq -nc '{op_id:"manual-dup",purpose_key:"dup:k",run_id:"manual-dup",pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}' >"$LONGOPS_DIR/ops/manual-dup.json"
+swfx p2; mkll; A=$LL; FIRST=$("$S/register.sh" --purpose dup:k --owner a --pid "$A")
+mkop manual-dup dup:k running 999999 0
 sw --only AM-P2; assert_rc "D1 two non-terminal ops with one purpose_key: drift" $SWRC 10; assert_eq "D1b class" "$(cls AM-P2)" duplicate_owner
-jq -c '.attached_to="x"' "$LONGOPS_DIR/ops/manual-dup.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/manual-dup.json"; sw --only AM-P2; assert_eq "D2 golden-false: the second op is attached to the first" "$(st AM-P2)" clean
+jq -c --arg a "$FIRST" '.attached_to=$a' "$LONGOPS_DIR/ops/manual-dup.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/manual-dup.json"; sw --only AM-P2; assert_eq "D2 golden-false: the second op is attached to the first (an op that EXISTS, same purpose, non-terminal)" "$(st AM-P2)" clean
 
 echo "== the heartbeat check is load-bearing (mutation inside the sweep tests) =="
 swfx m1; mkdir -p "$FXN/mt/scripts/anti-mess"; cp "$TROOT/scripts/anti-mess/catalogue.yaml" "$FXN/mt/scripts/anti-mess/"; for d in repo longops; do cp -r "$TROOT/scripts/$d" "$FXN/mt/scripts/$d"; done
@@ -81,7 +56,7 @@ python3 - "$FXN/mt/scripts/longops/lib.sh" <<'PY'
 import sys; p=sys.argv[1]; s=open(p).read(); s=s.replace('[ "$np" -gt 0 ] && [ $((now - lp)) -gt "$np" ]','false',1); open(p,'w').write(s)
 PY
 cp "$SW" "$FXN/mt/scripts/anti-mess/sweep.sh"
-mkll; P=$LL; id=$("$S/register.sh" --purpose hb:x --owner t --pid "$P" --no-progress-s 5); LONGOPS_NOW=$(( $(date +%s) - 100 )) "$S/heartbeat.sh" --op-id "$id" --progress-offset 1
+mkll; P=$LL; id=$("$S/register.sh" --purpose hb:x --owner t --pid "$P" --no-progress-s 5); LONGOPS_MONO=$(monoago 100) "$S/heartbeat.sh" --op-id "$id" --progress-offset 1
 bash "$FXN/mt/scripts/anti-mess/sweep.sh" --only AM-P1 --json "$FXN/mt.json" >"$FXN/mt.out" 2>&1; rc=$?
 [ $rc -eq 20 ] && [ "$(jq -r '.invariants[]|select(.id=="AM-P1")|.status' "$FXN/mt.json")" = blind ] && ok "H1 with the heartbeat check disabled the sweep fails its own control needle (blind, exit 20), never prints clean" || bad "H1 rc=$rc [$(cat "$FXN/mt.out")]"
 
@@ -208,8 +183,8 @@ ANTIMESS_ROOT=$FXN/clone sw --only AM-R5 --reconcile; [ -e "$FXN/clone/vendor/sm
 
 echo "== WF11 class 2: a corrupt op record, an unreadable source: reported unread, never clean, and never hiding the rest (F4, F8) =="
 swfx n1; mkll; P=$LL; mkll; Q=$LL
-id=$("$S/register.sh" --purpose n1:hung --owner t --pid "$P" --no-progress-s 5 --log "$FXN/l.log"); printf 'abc' >"$FXN/l.log"; LONGOPS_NOW=$(( $(date +%s) - 100 )) "$S/heartbeat.sh" --op-id "$id" --sample-log
-"$S/register.sh" --purpose n1:dup --owner a --pid "$Q" >/dev/null; jq -nc '{op_id:"manual-dup",purpose_key:"n1:dup",run_id:"manual-dup",pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}' >"$LONGOPS_DIR/ops/manual-dup.json"
+id=$("$S/register.sh" --purpose n1:hung --owner t --pid "$P" --no-progress-s 5 --log "$FXN/l.log"); printf 'abc' >"$FXN/l.log"; LONGOPS_MONO=$(monoago 100) "$S/heartbeat.sh" --op-id "$id" --sample-log
+"$S/register.sh" --purpose n1:dup --owner a --pid "$Q" >/dev/null; mkop manual-dup n1:dup running 999999 0
 sw --only AM-P1,AM-P2; assert_rc "N0 control: without the corrupt record the hung op and the duplicate owner are reported (10)" $SWRC 10
 assert_eq "N0b control: AM-P1 hung_op (+ the hand-written pid-0 row), AM-P2 duplicate_owner" "$(cls AM-P1)/$(cls AM-P2)" "hung_op registry_row_dead_owner/duplicate_owner"
 printf '{"op_id":"trunc",' >"$LONGOPS_DIR/ops/00corrupt.json"
@@ -241,7 +216,7 @@ swfx q2; mkll; B=$LL; id=$("$S/register.sh" --purpose q2:live --owner t --pid "$
 sw --only AM-P4; assert_eq "Q4 golden-false: a live holder with its op is clean" "$(st AM-P4)" clean
 mkll; C=$LL; idh=$("$S/register.sh" --purpose q2:ho --owner t --pid "$C" --no-progress-s 5000); "$S/release.sh" --op-id "$idh" --state handoff --verdict driver_stop >/dev/null
 sw --only AM-P4; assert_eq "Q5 an op in the re-adoptable handoff state that nothing supersedes is drift handoff_unadopted" "$(cls AM-P4)" handoff_unadopted
-jq -c '.superseded_by="newop"' "$LONGOPS_DIR/ops/$idh.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$idh.json"; sw --only AM-P4; assert_eq "Q5b golden-false: a superseded handoff is clean" "$(st AM-P4)" clean
+mkop newop q2:ho complete 999999 0; jq -c '.superseded_by="newop"' "$LONGOPS_DIR/ops/$idh.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$idh.json"; sw --only AM-P4; assert_eq "Q5b golden-false: a handoff superseded by an op that EXISTS (same purpose) is clean" "$(st AM-P4)" clean
 jq -c 'del(.superseded_by)' "$LONGOPS_DIR/ops/$idh.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$idh.json"; "$S/release.sh" --op-id "$idh" --state complete --verdict adopted >/dev/null; sw --only AM-P4; assert_eq "Q5c golden-false: once the handoff is resolved into a terminal state it is clean" "$(st AM-P4)" clean
 swfx q3; rm -f "$FXN/ap/scripts/repo/commit_push.conf"; mkll; D=$LL
 "$S/acquire.sh" --purpose commit_push --run-id cpq --pid "$D" >/dev/null; mkdir -p "$FXN/bld/b1"; "$S/acquire.sh" --suspend cpq --builds b1 >/dev/null; "$S/acquire.sh" --update cpq --callback-state done --state ready_to_resume >/dev/null; mkdir -p "$FXN/bld/b1/terminal"
@@ -252,8 +227,8 @@ swfx r1x; mkll; A=$LL; idh=$("$S/register.sh" --purpose r1x:h --owner t --pid "$
 printf '[{"Id":"handoffhandoffhand","Labels":{"catalogizer.op_id":"%s","project":"catalogizer"},"Created":100}]' "$idh" >"$PODJSON"
 sw --only AM-P1 --reconcile; assert_eq "H1 a container of a HANDOFF op is informational only" "$(cls AM-P1):$(infocls AM-P1)" ":container_of_handoff_op"
 assert_eq "H1b and --reconcile did not stop it" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
-swfx r2x; mkdir -p "$LONGOPS_DIR/ops"; jq -nc '{op_id:"ghost-op",purpose_key:"r2x:p",run_id:"ghost-op",pid:0,start_time:"",state:"complete",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}' >"$LONGOPS_DIR/ops/ghost-op.json"; printf '[{"Id":"racerackeracerackera","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"
-printf '#!/bin/bash\njq -nc --arg id ghost-op --arg p r2x:p '"'"'{op_id:$id,purpose_key:$p,run_id:$id,pid:0,start_time:"",state:"running",last_progress_epoch:0,progress_offset:0,budget:{no_progress_s:0}}'"'"' >"%s/ops/ghost-op.json"\n' "$LONGOPS_DIR" >"$FXN/hook.sh"
+swfx r2x; mkop ghost-op r2x:p complete 999999 0; printf '[{"Id":"racerackeracerackera","Labels":{"catalogizer.op_id":"ghost-op","project":"catalogizer"},"Created":100}]' >"$PODJSON"
+printf '#!/bin/bash\njq -c '"'"'.state="running"'"'"' "%s/ops/ghost-op.json" >"%s/hk.json" && cp "%s/hk.json" "%s/ops/ghost-op.json"\n' "$LONGOPS_DIR" "$FXN" "$FXN" "$LONGOPS_DIR" >"$FXN/hook.sh"
 ANTIMESS_TEST_MODE=1 ANTIMESS_TEST_BEFORE_ACTION=$FXN/hook.sh sw --only AM-P1 --reconcile
 assert_eq "H2 a container of a TERMINAL op whose record turned live between detection and action is NOT stopped (WF14: the re-verified action is the terminal-op stop; the orphan stop is gone)" "$(grep -c 'stop' "$PODLOG" 2>/dev/null)" 0
 assert_eq "H2b the report records why" "$(jq -r '.invariants[]|select(.id=="AM-P1")|.reconciled[]|select(.action|startswith("stopcontainer"))|.result' "$J" | head -1)" skipped_precondition_changed_live

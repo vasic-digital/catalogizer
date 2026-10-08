@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "ftpdev-fab",
+  "at": "2026-10-07T20:08:06Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 75918340096,
+      "free_after": 75085703772,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 75918393344,
+      "free_after": 75085757020,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

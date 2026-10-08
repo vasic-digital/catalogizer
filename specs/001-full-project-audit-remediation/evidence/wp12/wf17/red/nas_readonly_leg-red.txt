@@ -1,0 +1,29 @@
+# identity: WF17 r5 RED nas_readonly_leg (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:02:59Z
+# sha256 tests/infra/test_nas_readonly_leg.sh 400e1215c3f8861e580cdb4f721054648e92fa63dfdc07f2fff9d91c10c0f5e6
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_nas_readonly_leg.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: script present: scripts/test-infra/nas_readonly_leg.sh
+PASS: script present: scripts/test-infra/client/nas_smb_ro.sh
+PASS: A: every smbclient -c command of the client starts with ls or get
+PASS: A: the client has 2 smbclient -c commands (the scan is not blind)
+PASS: A: control needle: a planted del is found by the same scan
+PASS: A: the host script runs no smbclient itself (it only starts the read-only client script)
+PASS: B: absent env file exits 0 (SKIP, not FAIL)
+PASS: B: the output is SKIP nas_readonly reason=env_absent
+PASS: B: nothing was created for the skipped run
+PASS: B: an env file without the credentials exits 0 (SKIP)
+PASS: B: the SKIP names the missing variables (names only)
+PASS: C: sentinel credentials never appear in argv, container environment, output or files; the auth file is deleted; the unreachable host FAILs
+PASS: C2: control needle: strace -v -e execve sees a sentinel placed in an exec environment
+PASS: C2: control needle: a sentinel in the argv of an external command (/usr/bin/printf) is in the trace
+PASS: C2: no execve of the leg's whole process tree carries a credential value in argv or environment
+PASS: C2: the trace reaches the container stage (29 podman execs): the check covers the credential hand-off
+FAIL: C3: the auth file never appeared
+# exit: 1

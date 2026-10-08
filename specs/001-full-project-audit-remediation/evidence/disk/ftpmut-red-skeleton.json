@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "ftpmut-red-skeleton",
+  "at": "2026-10-07T19:22:15Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 78412546048,
+      "free_after": 77579909724,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 78412816384,
+      "free_after": 77580180060,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

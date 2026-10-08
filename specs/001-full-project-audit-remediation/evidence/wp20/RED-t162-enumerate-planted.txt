@@ -1,0 +1,10 @@
+# NOTE: RED captured by moving scripts/register/enumerate_sources.py out of the tree for this run (the enumerator had been drafted before the test was run; the hidden-implementation run is the honest RED, restored afterwards). Host-side run.
+# identity: task=T162 utc=2026-10-07T15:35:43Z host=anton uid=1000
+# git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d tree_dirty_files=4409
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=784173e6c5839e8a2f8c183761fdc7cbf9f57f03c7c3b0bb32eaab9191df82f0 test=38d5da451db1a56c8993ab5ca4ee2b9aae45594fe39f41addcccb68c423e0922
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+# enumerator=/home/milosvasic/Projects/catalogizer/scripts/register/enumerate_sources.py sha256=
+FAIL enumerator absent: /home/milosvasic/Projects/catalogizer/scripts/register/enumerate_sources.py (RED: T165 not implemented)
+RESULT: pass=0 fail=1

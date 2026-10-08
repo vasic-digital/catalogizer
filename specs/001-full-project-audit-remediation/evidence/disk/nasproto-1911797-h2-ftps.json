@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "nasproto-1911797-h2-ftps",
+  "at": "2026-10-07T17:30:21Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 84384706560,
+      "free_after": 83552070236,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 84384702464,
+      "free_after": 83552066140,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

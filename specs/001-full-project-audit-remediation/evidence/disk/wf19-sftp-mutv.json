@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "wf19-sftp-mutv",
+  "at": "2026-10-07T19:26:31Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 78384713728,
+      "free_after": 77552077404,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 78384676864,
+      "free_after": 77552040540,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

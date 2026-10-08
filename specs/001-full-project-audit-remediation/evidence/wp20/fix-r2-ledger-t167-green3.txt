@@ -1,0 +1,45 @@
+# ledger seq=20 item=AUD-T167 polarity=GREEN iteration=3 exit_status=0 verdict=pass
+# target_ref=.audit/scratch/wp20-r2/sut target_fingerprint=577a5c9f407dc7b8ccb455702c0a08771be37574f2728293d52fb52362912d62 test_fingerprint=9db86ee5d379cc0c1f99fbc5d1869cf098ea7838ebef59033a07894c09d021bf
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "LEAD_SCAN=/src/.audit/scratch/wp20-r2/sut/lead_scan.py", "python3", "scripts/register/tests/test_lead_scan.py"]
+ok   baseline scan exits 0
+ok   control needle found with its word and its disposition (lead: no structured entry covers that line)
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)
+ok   the sql, its .sql.sha256 (T165 name) and its .sha256 (the sibling locked.sh import-sql reads) are written and equal
+ok   C1 every vocabulary word and inflection is a lead with its canonical word; every look-alike is not a lead
+ok   a planted lead line in a main-repository .md yields a lead row with its canonical word
+ok   the same line in a submodule .md yields no row
+ok   emitted_rows is exactly one higher for the planted copy
+ok   C2 a lead line that a structured entry sits on is a duplicate and covered_by names that entry
+ok   C2 a lead line of the same structured file that NO structured entry covers is a lead (not a duplicate)
+ok   C2 a lead line inside a ticket file is a duplicate of the whole-file entry
+ok   C2 a continuation line inside an S-21 item block is covered by the item; a line after the section is a lead
+ok   C6 a marker word as the argument of grep / git grep / sed is NON-PROBLEM
+ok   C6 a marker word in a fence WITHOUT a command is a lead
+ok   C6 a search command line that also holds another lead word (workaround) is a lead, not suppressed
+ok   C6 a bare `- TODO: ...` line (no search command) is a lead (LM03: the command is required)
+ok   C6 a command word AFTER the marker word does not suppress
+ok   C4 no HC-2 record: no widening (the submodule line is not scanned)
+ok   C4 HC-2 extra root naming the gitlink (read from $EV/hc/HC-2.json, no option) brings the submodule line into scope
+ok   C4 there is no --hc2 option: usage, exit 2
+ok   C4 an extra root that is no gitlink path is refused lead_scan_extra_root_invalid naming it
+ok   C4 a malformed HC-2 record (not JSON) is refused hc2_malformed, nothing written
+ok   C4 a malformed HC-2 record (a JSON list) is refused hc2_malformed, nothing written
+ok   C4 a malformed HC-2 record (a string value) is refused hc2_malformed, nothing written
+ok   C4 a malformed HC-2 record (a non-string element) is refused hc2_malformed, nothing written
+ok   C5 the run record holds the exact command line (interpreter, absolute script path, arguments)
+ok   C5 scratch register DB
+ok   C5 import 1 of lead_scan.sql applies cleanly
+ok   C5 import 1: lead_scan_entry_rows counted in the DB = 3 (emitted 3)
+ok   C5 import 2 of lead_scan.sql applies cleanly
+ok   C5 import 2: lead_scan_entry_rows counted in the DB = 0 (emitted 3)
+ok   C5 finalize on an unreadable database is refused finalize_failed (exit 20), never a recorded 0
+ok   B2 lead scan: a re-import after a line changed is refused (stale_entries_changed_at_same_locator), ALL-OR-NOTHING: the old row is kept and the new line of the same file was not imported
+ok   C7 a symlinked population file is skipped AND recorded in the run record
+ok   a population holding docs/LANDMINES.md without the declared needle line is refused lead_scan_needle_missing
+ok   a needle line that a structured entry covers (disposition duplicate, expected lead) is refused lead_scan_blind
+ok   snapshot changed after its manifest: freeze_snapshot_moved, no /out file
+ok   a NUL path appended to the listing: freeze_listing_moved, no /out file
+ok   (test setup) the copy differs from the tool by exactly the dropped vocabulary word
+ok   a tool whose vocabulary lost a word is refused lead_scan_blind by its own control before the real scan (nothing written)
+ok   the built-in vocabulary control set passes (instrument sees every word and nothing else)
+RESULT: fail=0

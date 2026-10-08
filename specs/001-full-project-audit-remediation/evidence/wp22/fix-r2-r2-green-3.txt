@@ -1,0 +1,146 @@
+# identity: task=WF23-fix-r2 utc=2026-10-08T06:28:04Z host=anton uid=1000
+# git_head=f72d8757fe614adfa38a4f70276853527d06d7e8 tree_dirty_files=7669
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=971b022f4dfa9e1f09a336d6e7f089cf0abb61820aeb38d0c87cd319f5bd23df clib=47061e47ac8703333782ae870710c324539e3f274ae3c0651519d5878dc5e070
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 sync_trackers=501c239da92eee5f21c327b673efc903d60aaf210d3f36fe8a49074ec19617e0 config=0058e69af06e1e799e90bad766144c12912b1d62259841cedec557fea1dd629a
+== secret handling and configuration classes (A1-A4, C5, F6, F7) ==
+ok   S01 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --token=<v>
+ok   S02 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --access-token=<v>
+ok   S03 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --private-token=<v>
+ok   S04 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --api-key=<v>
+ok   S05 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --api_key=<v>
+ok   S06 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --password=<v>
+ok   S07 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --secret=<v>
+ok   S08 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --pat=<v>
+ok   S09 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --auth=user:<v>
+ok   S10 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --header=PRIVATE-TOKEN:<v>
+ok   S11 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --token <v>
+ok   S12 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --api-key <v>
+ok   S13 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh -t <v>
+ok   S14 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: curl -H 'Authorization: Bearer <v>' https://api.example
+ok   S15 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh https://user:<v>@gitlab.example/api
+ok   S16 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: env GITHUB_TOKEN=<v> bash x.sh
+ok   S17 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --client_secret=<v>
+ok   S18 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh --Token=<v>
+ok   S19 a credential-bearing command is REFUSED config_secret_in_command and the value is not echoed: bash x.sh ghp_aaaaaaaaaaaaaaaaaaaaaaaa
+ok   S51 control: a plain adapter command is ACCEPTED: bash x.sh --repo owner/name --id {id}
+ok   S52 control: a plain adapter command is ACCEPTED: python3 -m adapter --id {id}
+ok   S53 control: a plain adapter command is ACCEPTED: bash x.sh --token-file=/etc/x/token
+ok   S54 control: a plain adapter command is ACCEPTED: bash x.sh --token=$R2_NAME_ONLY
+ok   S55 control: a plain adapter command is ACCEPTED: bash x.sh --token $R2_NAME_ONLY
+ok   S56 control: a plain adapter command is ACCEPTED: bash x.sh issue create --label bug
+ok   S60 an env_passthrough LITERAL value is REFUSED config_secret_in_env and not echoed
+ok   S61 any env_passthrough template without {db} or {id} is a literal: REFUSED
+ok   S62 control: templates that use {db} and {id} are accepted
+ok   S63 the list form of env_passthrough is REFUSED (report_item.sh calls .items() on it: one file must serve both tools)
+ok   S7-dup1 a duplicate YAML key is REFUSED config_malformed (the last one would silently win)
+ok   S7-dup2 a duplicate YAML key is REFUSED config_malformed (the last one would silently win)
+ok   S7-control the same config without the duplicate key checks the credential (credentials_absent R2_DUP_TOKEN)
+ok   S8 a whitespace-only credential counts as ABSENT (A4); a lower-case variable name is accepted (F7c); only the missing NAMES are listed, not the set one (R2_OK_A)
+ok   S8-control with all three set the adapter state is reached
+ok   S9 missing client is tracker_client_absent: /usr/bin/env python3 <root>/missing_r2.py
+ok   S9 missing client is tracker_client_absent: bash <root>/missing_r2.sh
+ok   S9 missing client is tracker_client_absent: python3 <root>/missing_r2.py
+ok   S9 missing client is tracker_client_absent: env R2_X=1 bash <root>/missing_r2.sh
+ok   S9 missing client is tracker_client_absent: /usr/bin/env R2_X=1 no-such-cli-r2
+ok   S9-control an existing client reaches the adapter state: bash <root>/ok_r2.sh
+ok   S9-control an existing client reaches the adapter state: env R2_X=1 bash <root>/ok_r2.sh
+ok   S9-control an existing client reaches the adapter state: /usr/bin/env bash <root>/ok_r2.sh
+ok   S10 --json outside .audit/ and the evidence directory is REFUSED path_invalid and replaces nothing
+ok   S10-control --json under .audit/ is written
+== durability of remote effects: write-ahead journal, crash, undecodable output, wrapper exit 21/22, references (B1, B3, B4, B5) ==
+ok   WA1 an adapter that prints one non-UTF-8 byte does not crash the driver (exit 0) and every push is recorded: 3 SYNCED rows, 3 adapter calls
+ok   WA2 a re-run pushes nothing again (no duplicate remote issue, no duplicate row): still 3 adapter calls and 3 SYNCED rows
+ok   WB1 a failed register write: exit 4, the three pushes happened (3 calls), no row is recorded, the wal holds the results
+ok   WB2 the NEXT run reconciles the wal first: 3 SYNCED rows with their references are written, nothing is pushed again (still 3 calls)
+ok   WB3 the recovery is reported ('recovered 3 row(s)')
+ok   WB4pre the fixture step took effect
+ok   WB4 the changed item is an UPDATE: the adapter is handed the recovered remote_ref (p#CAT-001#1), not nothing
+ok   WC1 control: the driver is killed (SIGKILL) by the adapter of CAT-002 after its push: exit 137, 2 calls, no row recorded
+ok   WC2 after the crash: CAT-001 (pushed, never recorded) is recovered SYNCED, CAT-002 (outcome unknown) is FAILED 75 and HELD, CAT-003 is pushed; 3 calls in total (nothing pushed twice); exit 7
+ok   WC3 the held item is reported (held_indeterminate=1)
+ok   WC4 --retry-indeterminate releases the held item: pushed (4 calls), SYNCED, exit 0
+ok   WD1 locked.sh exit 21 (the write ran, its journal row did not): the rows are read back, found, NOT reported as unrecorded; exit 0, 3 SYNCED rows
+ok   WD2 locked.sh exit 22 with nothing written: the read-back finds no row, the rows are reported NOT recorded, exit 4, 0 rows
+ok   WE1 an integer remote_ref (a GitHub issue number) is SYNCED with the text '42'; a reference with a space is FAILED 65 and kept sanitized; the third item is SYNCED; exit 1
+ok   WF1 SIGTERM while the third push is in flight: exit 6, the two finished pushes are flushed to the register (2 SYNCED rows), the in-flight adapter group is gone
+ok   WF2 the interruption is reported (signal 15)
+ok   WF3 the next run holds the interrupted item (FAILED 75, exit 7) and pushes nothing again (still 3 calls)
+ok   WG1 write-ahead means ahead: when the journal cannot be written NOTHING is pushed (exit 5, 0 adapter calls, 0 rows)
+ok   WH1 a write-ahead journal is replayed only into the register it was written for: a run on docs/other.db does not recover the crashed run's rows (0 rows with exit 75 there); the run on the original database does (CAT-002 FAILED 75, CAT-001 SYNCED)
+== the adapter runs in its own process group (B2) ==
+ok   PA0 control: a background child that nothing kills DOES write its late line (the observation below can see a late push)
+ok   PA1 a hanging adapter with a background child: FAILED 124 for both items, exit 1, NOT retried (2 calls although --max-attempts 3: the first push may have landed), and the background child was killed with its group (no late.log)
+ok   PA3 every os.killpg call of the driver sits behind the pgid <= 1 guard (11.4.263); control: the same check FAILS on a copy with the guard removed
+ok   PA2 an adapter that returned SYNCED and left a child holding its output is SYNCED (not FAILED 124 and retried), and the stray child is killed (no late.log)
+== circuit breaker: unreachable versus rejecting (C1) and consecutive failures (X02) ==
+ok   BA1 a tracker that ANSWERS every call (HTTP 422) is not unreachable: exit 1, 2 FAILED rows, NO SKIPPED unreachable row, no unreachable item minted, the failed item minted
+ok   BA2 the items the breaker did not attempt are counted breaker_open
+ok   BB1 non-consecutive failures (fail, ok, fail) do not trip a breaker of 2: all four items (3 + the minted failed item) were attempted, the two good ones and the minted one SYNCED
+== reg_trackers.enabled, retirement, v_stale_tracker_sync (C2) and a foreign missing_env_names value (F7d) ==
+ok   EA1 reg_trackers.enabled follows the config: the disabled tracker is 0, the others 1
+ok   EA2 a subset run (--tracker) cannot tell that a tracker left the config: nothing is retired
+ok   EA3 a full run retires the tracker the config no longer names (enabled=0) and v_stale_tracker_sync no longer lists it; the output says so
+ok   EA4 the disabled tracker is not listed either; the live one is (5 items: 3 + the two minted, all SKIPPED)
+ok   EB1pre the fixture step took effect
+ok   EB1 a missing_env_names value that is not JSON (written by another tool) does not crash the selection: exit 0
+== a SYNCED receipt belongs to this run, this item and this reference (C3, X03) ==
+ok   RA-evany a receipt that is evany is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-stale a receipt that is stale is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-emptyrec a receipt that is emptyrec is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-norefrec a receipt that is norefrec is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-otheritem a receipt that is otheritem is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-wrongitem a receipt that is wrongitem is never SYNCED: CAT-001 FAILED 65, exit 1
+ok   RA-ok control: a receipt written during the call, under this run's evidence directory, naming the item and the reference is SYNCED
+== first-sync gate: dry run, owner approval of the plan hash, pilot (D1) ==
+ok   GA1 a never-synced tracker with no approval: REFUSED first_sync_gate (20), no adapter call, the database untouched, no wal, no tracker row
+ok   GA2 a dry run prints the plan hash of the first sync and writes nothing
+ok   GA3 refused: --approved-by owner --approve-first-sync <other> --limit 2
+ok   GA3 refused: --approved-by mallory --approve-first-sync <plan> --limit 2
+ok   GA3 refused: --approve-first-sync <plan> --limit 2
+ok   GA3 refused: --approved-by owner --approve-first-sync <plan>
+ok   GA3 refused: --approved-by owner --approve-first-sync <plan> --limit 3
+ok   GA4 an approval of an OLD plan is refused once the item set changed (a fourth item appeared after the dry run)
+ok   GA5 the approved pilot (--limit 2) runs: exit 0, exactly 2 pushes, 2 SYNCED rows
+ok   GA6 after the pilot the gate no longer applies: a plain run pushes the rest (4 SYNCED rows)
+ok   GA7 a config with no first_sync_approvers cannot approve anything: REFUSED even with a matching hash
+== confidentiality filter and secret scan on the outbound payload (D2) ==
+ok   OApre the fixture steps took effect (category row, secret in the body)
+ok   OA1 public tracker: CAT-001 SYNCED, the danger_zone item CAT-002 FAILED 78 (withheld), the item with a secret in its body CAT-003 FAILED 77; private tracker: CAT-002 SYNCED, CAT-003 FAILED 77; exit 0 (withholding is policy, not a failure)
+ok   OA2 the adapter never saw the withheld items: no CAT-003 call at all, CAT-002 only for the private tracker; and it DID see CAT-001 on both trackers (the run happened, so the zeros are not vacuous)
+ok   OA3 the secret found in a body is not in any driver output, any reg_* table, the driver's batch files, wal and journal rows, or the adapter log (controls: the same scans find it in the items table and in the journal row of the fixture step that planted it)
+ok   OA4 withheld items are not re-recorded on an unchanged re-run: no new row, exit 0
+ok   OA5 once the tracker is declared public: false, the previously withheld danger_zone item is pushed to it; the secret body stays withheld
+== what a re-push needs: revision fields, the latest reference, references not expanded, the command not persisted, drift (X05 X06 X08 X09 X15 X16 A1 D3) ==
+ok   VA1 first push of three items: exit 0, 3 calls
+ok   VA2 an adapter remote_state that disagrees with the register status is reported as drift (D3)
+ok   VB1 a changed DESCRIPTION is pushed (an update of CAT-001 only): exit 0, 4 calls
+ok   VB2 a changed STATUS is pushed: 5 calls
+ok   VB3 a changed SEVERITY is pushed: 6 calls
+ok   VB4 every re-push is an UPDATE that carries the LATEST reference: the references handed in are none, then the 1st, 2nd and 3rd returned
+ok   VC1 a $NAME reference in the command reaches the adapter argv as the literal text; the value of the variable (set in the driver environment) does not
+ok   VD1 the command text is in no reg_ table, batch file, journal row or journal input; reg_trackers.command_ref is 'bash#sha256:<16 hex>' (control: the scan finds the hash form in the batch files)
+== a tracker's rows are recorded before the next tracker starts (X17) ==
+ok   XA1 when tracker q starts, the three SYNCED rows of tracker p are already in the register (it read 3 each time)
+== bounded exponential backoff (X01) ==
+ok   XB1 three attempts of one item are spaced by 1 s and 2 s of backoff: first-to-last call gap 3.5 s (rc 1)
+== 11.4.214: a recurrence on a CLOSED minted item is not silent (C4, X10) ==
+ok   OWa control: before any closure the run exits 0 and reports no owed reopen
+ok   OWb the fixture step took effect: the minted item is terminal
+ok   OWc the tracker is skipped again while its item is Fixed: the run exits 7, prints OWED reopen of the item, lists it in the --json evidence, and mints no twin
+== the read-only open (X11), a failed mint (F7g, F7h) ==
+scripts/register/tests/test_sync_fix_r2.sh: line 525: 1812982 Killed                     python3 -I - "$T_SCR/M_wal/$DB" <<'PY'
+import sqlite3,sys,os,signal
+c=sqlite3.connect(sys.argv[1]); c.execute("PRAGMA journal_mode=WAL"); c.execute("PRAGMA wal_autocheckpoint=0")
+c.execute("INSERT INTO reg_trackers(tracker_id,kind) VALUES ('zz_wal','k')"); c.commit()
+os.kill(os.getpid(), signal.SIGKILL)   # die with a committed, uncheckpointed WAL
+PY
+
+ok   XC0 control: with a non-empty WAL, a read-write open and close DOES change the database file (the wal was 8272 bytes), so the check below can see a writing open
+ok   XC1 the driver opens the register read-only: after a dry run and a real read the database FILE is byte-identical (a read-write open would checkpoint the WAL into it)
+ok   XD1 a failed mint prints the reason the wrapper gave (F7g), not only its exit status
+ok   XD2 a failed mint for one tracker does not stop the sync of the others (F7h): tracker p's three items are SYNCED, exit 4
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=118 fail=0

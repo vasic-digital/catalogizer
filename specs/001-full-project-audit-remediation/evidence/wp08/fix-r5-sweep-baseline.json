@@ -1,0 +1,360 @@
+{
+  "schema": "anti-mess-sweep/1",
+  "generated_utc": "2026-10-08T00:30:42Z",
+  "stage": "cadence",
+  "root": "/home/milosvasic/Projects/catalogizer",
+  "catalogue": "/home/milosvasic/Projects/catalogizer/scripts/anti-mess/catalogue.yaml",
+  "reconcile": false,
+  "paths_from": "",
+  "repo": "",
+  "invariants": [
+    {
+      "id": "AM-R1",
+      "aliases": [
+        "INV-2"
+      ],
+      "plane": "repository",
+      "status": "drift",
+      "detected": {
+        "status": "drift",
+        "findings": [
+          {
+            "severity": "drift",
+            "class": "dirty_repository",
+            "subject": ".",
+            "evidence": "tracked=157 untracked=9235 (not excepted by scripts/repo/exceptions.tsv)",
+            "action": ""
+          },
+          {
+            "severity": "drift",
+            "class": "dirty_repository",
+            "subject": "submodules/filesystem",
+            "evidence": "tracked=6 untracked=77 (not excepted by scripts/repo/exceptions.tsv)",
+            "action": ""
+          }
+        ]
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [
+        {
+          "severity": "drift",
+          "class": "dirty_repository",
+          "subject": ".",
+          "evidence": "tracked=157 untracked=9235 (not excepted by scripts/repo/exceptions.tsv)",
+          "action": ""
+        },
+        {
+          "severity": "drift",
+          "class": "dirty_repository",
+          "subject": "submodules/filesystem",
+          "evidence": "tracked=6 untracked=77 (not excepted by scripts/repo/exceptions.tsv)",
+          "action": ""
+        }
+      ],
+      "reconciled": []
+    },
+    {
+      "id": "AM-R2",
+      "aliases": [
+        "INV-1"
+      ],
+      "plane": "repository",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-R3",
+      "aliases": [],
+      "plane": "repository",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "needs the network (git ls-remote on ~98 repositories); owned by scripts/repo/verify_repos.sh without --no-remote, not re-implemented here (docs/12 17.3 AM-R3); the sweep starts no remote contact",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-R4",
+      "aliases": [
+        "INV-5"
+      ],
+      "plane": "repository",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "needs the network and the object store decision of verify_repos.sh --fetch; not re-implemented here",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-R5",
+      "aliases": [],
+      "plane": "repository",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-G1",
+      "aliases": [],
+      "plane": "governance",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "the pinned-hash location of the Spec Kit layer and the mirror set are owned by WP-G1 (T081a); no detector without that source of truth (11.4.6: no guessed path)",
+      "reconcile_class": "refuse",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-G2",
+      "aliases": [],
+      "plane": "governance",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-S1",
+      "aliases": [],
+      "plane": "tracking",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "the drift gates of document 04 (scripts/register/gate.sh over the real register DB, fingerprints of the derived documents) are WP-06 deliverables not yet wired to a sweep entry; owed",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-P1",
+      "aliases": [
+        "INV-3"
+      ],
+      "plane": "runtime",
+      "status": "drift",
+      "detected": {
+        "status": "drift",
+        "findings": [
+          {
+            "severity": "drift",
+            "class": "orphan_container",
+            "subject": "e277a488609d",
+            "evidence": "op_id=catalogizer-test-build-1007224759-4107999-build-20261007T224759-4107999 has no row in THIS checkout's registry; age 6157s > 300s; reported only: absence from one registry is not proof of staleness (another checkout, track or scratch copy may own it, 11.4.232 E), stop it by hand once its owner is known",
+            "action": ""
+          },
+          {
+            "severity": "drift",
+            "class": "orphan_container",
+            "subject": "16d8b8be9a86",
+            "evidence": "op_id=catalogizer-test-build-1007224759-4107999-build-20261007T224759-4107999 has no row in THIS checkout's registry; age 6157s > 300s; reported only: absence from one registry is not proof of staleness (another checkout, track or scratch copy may own it, 11.4.232 E), stop it by hand once its owner is known",
+            "action": ""
+          },
+          {
+            "severity": "info",
+            "class": "orphan_container_young",
+            "subject": "996c240cc0c1",
+            "evidence": "op_id=runp-20261008T003024Z-2250435 has no registry row yet; age 11s <= 300s",
+            "action": ""
+          }
+        ]
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [
+        {
+          "severity": "drift",
+          "class": "orphan_container",
+          "subject": "e277a488609d",
+          "evidence": "op_id=catalogizer-test-build-1007224759-4107999-build-20261007T224759-4107999 has no row in THIS checkout's registry; age 6157s > 300s; reported only: absence from one registry is not proof of staleness (another checkout, track or scratch copy may own it, 11.4.232 E), stop it by hand once its owner is known",
+          "action": ""
+        },
+        {
+          "severity": "drift",
+          "class": "orphan_container",
+          "subject": "16d8b8be9a86",
+          "evidence": "op_id=catalogizer-test-build-1007224759-4107999-build-20261007T224759-4107999 has no row in THIS checkout's registry; age 6157s > 300s; reported only: absence from one registry is not proof of staleness (another checkout, track or scratch copy may own it, 11.4.232 E), stop it by hand once its owner is known",
+          "action": ""
+        },
+        {
+          "severity": "info",
+          "class": "orphan_container_young",
+          "subject": "996c240cc0c1",
+          "evidence": "op_id=runp-20261008T003024Z-2250435 has no registry row yet; age 11s <= 300s",
+          "action": ""
+        }
+      ],
+      "reconciled": []
+    },
+    {
+      "id": "AM-P2",
+      "aliases": [
+        "INV-4"
+      ],
+      "plane": "runtime",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-P3",
+      "aliases": [],
+      "plane": "runtime",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "AM-P4",
+      "aliases": [],
+      "plane": "runtime",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "INV-6",
+      "aliases": [],
+      "plane": "runtime",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "the volume label scheme and byte budget belong to the container wrappers (WP-02 T006); no budget exists yet to compare against",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "INV-7",
+      "aliases": [],
+      "plane": "runtime",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "scripts/containers/check_pins.sh exists (last changed in 178ee136) but no detector of this sweep invokes it yet: wiring it as a det_ function is owed (T006 follow-up)",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "INV-8",
+      "aliases": [],
+      "plane": "runtime",
+      "status": "not_evaluated",
+      "detected": {
+        "status": "not_evaluated",
+        "findings": []
+      },
+      "control_needle": "not_applicable",
+      "reason": "scripts/build/dispatch.sh exists and registers builds as long ops, but no detector reads its build records for image@sha256 and a container id yet; owed (T005b follow-up)",
+      "reconcile_class": "operator-gated",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    },
+    {
+      "id": "INV-9",
+      "aliases": [],
+      "plane": "repository",
+      "status": "clean",
+      "detected": {
+        "status": "clean",
+        "findings": []
+      },
+      "control_needle": "seen",
+      "reason": "",
+      "reconcile_class": "auto-safe",
+      "stderr": "",
+      "findings": [],
+      "reconciled": []
+    }
+  ],
+  "summary": {
+    "drift": 2,
+    "clean": 7,
+    "not_evaluated": 7,
+    "unread": 0,
+    "blind": 0,
+    "skipped_stage": 0
+  }
+}

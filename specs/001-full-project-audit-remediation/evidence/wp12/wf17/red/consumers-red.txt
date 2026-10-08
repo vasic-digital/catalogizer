@@ -1,0 +1,38 @@
+# identity: WF17 r5 RED consumers (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:02:33Z
+# sha256 tests/infra/test_consumers.sh 58b87bb580c466daab44fdf50ef3ed388bf761ef1d483c5d250bacf9ab1504d7
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_consumers.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: control: docker-compose.build.yml without the per-run env is refused (rc != 0)
+PASS: control: docker-compose.test-infra.yml without the per-run env is refused (rc != 0)
+PASS: container-build.sh --validate-only exits 0 (the compose file renders with the generated per-run env)
+PASS: container-build.sh reports 'Compose file is valid'
+PASS: container-build.sh left no per-run state directory behind
+PASS: container-build.sh --validate-only stopped before the signing keys (no key generation ran)
+PASS: setup-test-env.sh exits 0 and starts the stack through up.sh
+PASS: setup-test-env.sh printed the op_id of the start (catalogizer-test-t4105599104-up-20261007T220239-1740088)
+PASS: the redis container of the project runs
+PASS: the lease of the start is a live keeper
+PASS: setup-test-env.sh shows the random redis port
+PASS: setup-test-env.sh output carries no fixed port and no literal credential
+PASS: G3 control: digit sequences inside an op id and random ports are NOT the retired contract
+PASS: G3 control: a real fixed port line IS the retired contract
+PASS: G3 control: the literal credential word IS the retired contract
+PASS: setup-test-env.sh reports a failed start as a FAILURE (exit != 0), not as 'not available'
+PASS: infra_helper.go: no fixed host port (2121, 1445, 8081, 2049) and no literal testuser/testpass
+PASS: infra_helper.go: no instruction to run the compose file bare
+PASS: infra_helper.go reads the per-run env file (CATALOGIZER_TEST_INFRA_ENV)
+PASS: no tracked live file instructs a bare run of docker-compose.test-infra.yml / docker-compose.build.yml
+PASS: control needle: the scan pattern sees a planted stale instruction
+PASS: every non-test caller of down.sh passes --op-id (nfs_attempt.sh, up.sh, setup-test-env.sh)
+PASS: control needle: the caller scan sees a planted down.sh call without --op-id
+PASS: control: message text that merely names down.sh is NOT an invocation (no false positive)
+PASS: the caller scan sees 4 down.sh invocations (not blind)
+FAIL: retired-contract reference(s): catalog-api/tests/integration/protocol_connectivity_test.go:47:	port := parseInt(getEnvOrDefault("SMB_TEST_PORT", "445"), 445);catalog-api/tests/integration/protocol_connectivity_test.go:48:	username := getEnvOrDefault("SMB_TEST_USER", "test");catalog-api/tests/integration/protocol_connectivity_test.go:49:	password := getEnvOrDefault("SMB_TEST_PASS", "test123");catalog-api/tests/integration/protocol_connectivity_test.go:121:	port := parseInt(getEnvOrDefault("FTP_TEST_PORT", "21"), 21);
+# exit: 1

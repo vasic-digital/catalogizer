@@ -1,0 +1,24 @@
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/RED-t164-strict-yaml-real-docs-issues.txt (copied verbatim below this line)
+# freeze json has no `listing`: snapshot directory walked instead (UNCONFIRMED vs T161 listing)
+files=1778 parser=strict-yaml parse_errors=399
+recount status:    {'closed': 299, 'fixed': 492, 'open': 1, 'resolved': 704, 'wontfix': 282}
+parser  status:    {'None': 399, 'fixed': 442, 'open': 1, 'resolved': 679, 'wontfix': 257}
+recount category:  {'UX': 141, 'accessibility': 165, 'brand': 21, 'content': 104, 'functional': 544, 'functionality': 2, 'performance': 9, 'ux': 542, 'visual': 250}
+enhancement suggestion files: recount=225 parser=225
+EXPECT (plan time, doc03): files=1778 {'open': 1, 'fixed': 492, 'resolved': 704, 'closed': 299, 'wontfix': 282} enhancement=225
+DIFFERENCES from the plan-time numbers (itemised, informational, never a failure on their own): none
+FAIL parse error docs/issues/HELIX-122-lack-of-clear-buttons-for-user-action.md: ScannerError
+FAIL parse error docs/issues/HELIX-122-missing-labels-or-aria-attributes-for-interactive-elements.md: ScannerError
+FAIL parse error docs/issues/HELIX-122-missing-search-functionality.md: ScannerError
+FAIL parse error docs/issues/HELIX-122-unclear-label-for-icons.md: ScannerError
+FAIL parse error docs/issues/HELIX-123-ambiguous-button-label-discover.md: ScannerError
+FAIL parse error docs/issues/HELIX-123-inconsistent-branding-on-icons.md: ScannerError
+FAIL parse error docs/issues/HELIX-123-insufficient-error-recovery-options.md: ScannerError
+FAIL parse error docs/issues/HELIX-123-unclear-field-label.md: ScannerError
+FAIL parse error docs/issues/HELIX-124-inconsistent-spacing-and-alignment-in-the-ui.md: ScannerError
+FAIL parse error docs/issues/HELIX-124-lack-of-clear-call-to-action-cta-on-buttons.md: ScannerError
+FAIL ... 399 parse errors in total
+FAIL parser status counts differ from the independent recount
+RESULT: FAIL
+rc=1

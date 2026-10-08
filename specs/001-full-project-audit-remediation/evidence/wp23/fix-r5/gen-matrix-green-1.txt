@@ -1,0 +1,99 @@
+# fix-r5 evidence (WP-23 round 5): GREEN run 1
+# command: bash tools/evidence/matrix/tests/test_gen_matrix.sh --no-mutations
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 01521afb2a285279a83c3763d8eff8f4c7bb42366034ae50e6d7864a9ff6f291  tools/evidence/matrix/gen_matrix.py
+# sha256 9dac3726b07c8cee3a11cf94b52f05fb51be0b1549f8d453493efb9ce5545c40  tools/evidence/matrix/derive_applicability.py
+# sha256 58043fe0fa0e245c5adb685c0b78d217ad53fd3494eddc90a81e2b1496b55c71  tools/evidence/matrix/tests/test_gen_matrix.sh
+# source output: final/gen-green-1.txt
+
+PASS: golden-good: exit 0
+PASS: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a)
+PASS: golden-good: two components x 15 types = 30 cells
+PASS: golden-good: no cell is '?'
+PASS: golden-good: the md ends with one newline
+PASS: golden-good: the md has no trailing whitespace
+PASS: golden-good: the md carries the 11.4.44 revision header
+PASS: golden-good: two runs are byte-identical (md)
+PASS: golden-good: two runs are byte-identical (json)
+PASS: one '?' cell: the generator exits non-zero (got 3)
+PASS: one '?' cell: the refusal says the cell could not be classified
+PASS: one '?' cell: stderr names the component and the type
+PASS: one '?' cell: no matrix file was written
+PASS: a reordered types list is refused (3): the map cannot redefine the fifteen types
+PASS: a non-n/a cell without a reason is refused (3)
+PASS: an n/a cell without a reason is refused (rc 3)
+PASS: a component missing a type is refused naming it (rc 3)
+PASS: an unknown state is refused (rc 3)
+PASS: a wrong schema is refused (rc 3)
+PASS: a missing input is refused (rc 3)
+PASS: a hand-edited count is overwritten on regeneration
+PASS: a hand edit of the md does not survive regeneration
+PASS: the doc05 4.4 table has 11 columns x 15 rows = 165 cells (P=14 ~=26 A=84 n/a=32 ?=9)
+PASS: the doc05 4.4 table as written (it still holds 9 '?' cells) is refused by the generator
+PASS: the refusal lists the '?' cells
+PASS: doc05 4.4 with '?' resolved to A: declared counts equal the document tally
+PASS: K10 fixture: the real recorder wrote RED + 3 GREEN + MUTATION (5 chained entries)
+PASS: K10 fixture: the verdict deriver says PASS for the item (the ledger is the real one)
+PASS: gate golden-false: a complete REAL ledger passes (exit 0)
+PASS: gate golden-false: the cell is present in the json
+PASS: gate: a cell whose item has no ledger entry is absent and the gate fails naming it (rc 1)
+PASS: gate RM-A: a ledger with a deleted line is refused (3 ledger_chain_invalid), never judged
+PASS: gate RM-A: two reordered lines are refused (rc 3)
+PASS: gate: two GREEN entries (not three) leave the cell partial: the derived verdict is not PASS (rc 1)
+PASS: gate: no caught MUTATION entry is not present (rc 1)
+PASS: gate: a MUTATION entry whose result is survived is not a caught mutation (rc 1)
+PASS: RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails
+PASS: RM1: both cells are named with their class gap
+PASS: RM1: e2e and ui are partial, unit present, in the json
+PASS: RM1 golden-false: runtime for e2e, user_visible for ui and a STRONGER class for unit pass the gate
+PASS: RM2: a cutting REOPEN removes present: the gate fails
+PASS: RM2: the cell is partial in the json
+PASS: RM3: a blocked latest entry still fails the gate (blocked is not present)
+PASS: RM3: the cell status is blocked in the json
+PASS: RM3: the gate output says blocked
+PASS: candidate: GREEN entries for exactly this fingerprint pass (golden-false)
+PASS: candidate: a record for another build is not evidence for this one (rc 1)
+PASS: candidate: the refusal names the candidate rule
+PASS: gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass
+PASS: gate B1: the refusal names the missing ledger
+PASS: gate B1: a refused gate wrote no matrix
+PASS: gate B1 control: the same map without --gate and without a ledger still renders (exit 0)
+PASS: K11.1: --gate without --repo or --map-unbound is refused (2): the map is not tied to the repository
+PASS: K11.1: a one-component map that is not what the repository derives is refused with --repo (3 map_not_bound)
+PASS: gate: a --cell-items key naming no component of the map is refused (3 cell_items_unmatched)
+PASS: gate: a --cell-items value that is no register item id is refused (3 cell_items_invalid)
+PASS: gate: a map with no applicable cell is refused (3 gate_vacuous)
+PASS: K11.2: a timestamp with a space is refused (2): it would corrupt the 11.4.44 header
+PASS: K11.3: a duplicate YAML key is refused (3), never silently the last one
+PASS: K11.1: an unparsable map is exit 3 (never exit 1, which means the gate failed)
+PASS: K11.1: a --cell-items file that is not a JSON object is exit 3
+PASS: inputs: the json records the sha256 of the applicability map and the ledger and map_bound=false
+PASS: mint: first run exits 0
+PASS: mint: one absent and one partial cell yield exactly two items
+PASS: mint: the calls name the cells and carry the idempotency key (alpha unit absent, alpha integration partial)
+PASS: mint: a second run mints none (11.4.214)
+PASS: mint: the ledger links both cells to their item, state minted
+PASS: mint K11.4: two runs with DIFFERENT --out mint 2 items in total (the default ledger is next to the map)
+PASS: mint K11.4: the ledger is beside the map, not under --out
+PASS: mint: three CONCURRENT runs mint 2 items in total (lock held for the whole run)
+PASS: mint: a failing mint command fails the run (4) and reports its stderr
+PASS: mint: the ledger holds one minted and one PENDING row after the crash
+PASS: mint: the retry calls the register ONCE more, for the pending cell, with the same key
+PASS: mint: both cells are minted after the retry
+PASS: mint: an output that is not a register item id ('ATM-FX1') is refused (4)
+PASS: mint: an output that is not a register item id ('CAT-901 extra') is refused (4)
+PASS: mint: the same item id for two cells is refused (4): two cells cannot share one item
+PASS: mint: a malformed mint ledger refuses (4) and mints nothing (a duplicate item would break 11.4.214)
+PASS: mint: no mint command is an honest recorded skip (mint_cmd_absent), never a fabricated item
+PASS: mint: no ledger was written when nothing was minted
+PASS: mint: a component id beginning with '-' is refused (3): it would reach the mint command as an option
+PASS: T196 applicability.yaml: accepted (no '?' cell, every cell has a reason)
+PASS: T196 applicability.yaml: cells = components x 15 and the per-state counts add up
+PASS: m3: Created is carried forward (not overwritten by the second run)
+PASS: m3: Last modified is the second run
+PASS: m3: Revision stays 1 while the body is unchanged
+PASS: m3: Revision rises to 2 when the body changed
+Summary: PASS=87 FAIL=0 SKIP=0
+done rc=0

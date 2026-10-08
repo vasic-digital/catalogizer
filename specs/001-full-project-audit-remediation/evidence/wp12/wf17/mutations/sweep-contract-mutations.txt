@@ -1,0 +1,7 @@
+drop_the_heartbeat CAUGHT
+beat_without_liveness CAUGHT
+client_label_added_not_replaced CAUGHT
+dead_op_not_closed_before_register CAUGHT
+claimless_dead_op_recorded_complete CAUGHT
+failed_start_recorded_complete CAUGHT
+identity_whitespace SURVIVED-AS-REQUIRED

@@ -14,8 +14,9 @@ assert s.count(a) == 1
 open(sys.argv[2], "w").write(s.replace(a, ""))
 PY
 N=$(ti_new_id); TI_IDS+=("$N"); PN=$(ti_project "$N")
-out=$(TI_COMPOSE_FILE="$TI_SCRATCH/nocap.yml" bash "$UP" --build-id "$N" --services ftp --timeout 40 2>&1); rc=$?
-check "WITHOUT AUDIT_WRITE the ftp service never becomes ready (up exits 1)" "$rc" 1
+nout=$(TI_COMPOSE_FILE="$TI_SCRATCH/nocap.yml" bash "$UP" --build-id "$N" --services ftp --timeout 40 2>&1); nrc=$?
+check "WITHOUT AUDIT_WRITE the ftp service never becomes ready (up exits 1)" "$nrc" 1
+out=$nout
 case "$out" in *"services not ready"*|*"podman-compose up failed"*) ok "the failure is the readiness / start failure ($(printf '%s' "$out" | tail -1 | cut -c1-120))";; *) bad "unexpected failure text: $(printf '%s' "$out" | tail -2 | tr '\n' ' ' | cut -c1-200)";; esac
 LOGS=$(ls "$TI_REPO"/.audit/out/$PN-logs/log-*.txt 2>/dev/null | head -1)
 check "the failed start left no container and no lease" "$(podman ps -a -q --filter "label=catalogizer.test_project=$PN" | wc -l)$([ -d "$TI_REPO/.audit/longops/claims/$PN" ] && echo held || echo free)" 0free
@@ -25,8 +26,8 @@ check "WITH AUDIT_WRITE (the committed compose file) the ftp service starts and 
 if [ -n "${FTPCAP_EV:-}" ]; then
   mkdir -p "$FTPCAP_EV"
   { echo "# WF12 F13: control pair for cap_add AUDIT_WRITE on the ftp service (tests/infra/test_ftp_capability.sh)"
-    echo "without_capability_up_exit=1 (asserted above); last line of up.sh: $(printf '%s' "$out" | tail -1 | cut -c1-0)"
-    echo "with_capability_up_exit=$rc"
+    echo "without_capability_up_exit=$nrc (measured); last line of that run's up.sh output: $(printf '%s' "$nout" | tail -1 | cut -c1-200)"
+    echo "with_capability_up_exit=$rc (measured); last line of that run's up.sh output: $(printf '%s' "$out" | tail -1 | cut -c1-200)"
     [ -z "$LOGS" ] || { echo "--- kept log of the capability-less start (first 12 lines) ---"; head -12 "$LOGS"; rm -rf -- "$(dirname "$LOGS")"; }
   } >"$FTPCAP_EV/ftp-capability.txt"
 fi

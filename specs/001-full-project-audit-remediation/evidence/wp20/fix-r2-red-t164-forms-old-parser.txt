@@ -1,0 +1,12 @@
+# RED of T164's form check against the PRE-FIX tolerant reader (the verbatim pre-fix enumerate_sources.py, hash in fix-r2-prefix-scripts.sha256); host-side
+FAIL form key space colon: got {'id': 'H-1', 'severity': 'high'} want {'id': 'H-1', 'status': 'fixed', 'severity': 'high'}
+FAIL form trailing comment: got {'id': 'H-2', 'status': 'fixed # closed by run 5'} want {'id': 'H-2', 'status': 'fixed'}
+FAIL form folded block scalar: got {'id': 'H-3', 'severity': '> high and more', 'status': 'open'} want {'id': 'H-3', 'severity': 'high and more', 'status': 'open'}
+FAIL form literal block scalar: got {'id': 'H-4', 'resolution': '| line one line two', 'status': 'closed'} want {'id': 'H-4', 'resolution': 'line one\nline two', 'status': 'closed'}
+ok   form double quoted: got {'id': 'H-5', 'status': 'fixed'} want {'id': 'H-5', 'status': 'fixed'}
+FAIL form single quoted with escaped quote: got {'id': 'H-6', 'title': "it''s"} want {'id': 'H-6', 'title': "it's"}
+ok   form colon inside a value (YAML refuses this): got {'id': 'H-7', 'resolution': 'a: b, with a colon', 'status': 'fixed'} want {'id': 'H-7', 'resolution': 'a: b, with a colon', 'status': 'fixed'}
+ok   form continuation line: got {'id': 'H-8', 'resolution': 'first second', 'status': 'fixed'} want {'id': 'H-8', 'resolution': 'first second', 'status': 'fixed'}
+ok   form CRLF: got {'id': 'H-9', 'status': 'fixed'} want {'id': 'H-9', 'status': 'fixed'}
+ok   form hash inside a quoted value: got {'id': 'H-10', 'status': 'fixed # not a comment'} want {'id': 'H-10', 'status': 'fixed # not a comment'}
+pre-fix reader fails 5 of 10 forms

@@ -23,6 +23,7 @@ import (
 
 	"catalogizer/database"
 	"catalogizer/filesystem"
+	"catalogizer/models"
 
 	"digital.vasic.storage/pkg/object"
 
@@ -1215,8 +1216,7 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 	// Find media items with no local cover art that have a primary video file
 	query := `
 		SELECT mi.id, f.path || '/' || f.name AS full_path,
-		       sr.protocol, sr.path AS root_path, sr.host, sr.port,
-		       sr.username, sr.password, sr.domain
+		       ` + models.StorageRootConnColumnsFor("sr") + `
 		FROM media_items mi
 		JOIN media_types mt ON mi.media_type_id = mt.id
 		JOIN media_files mf ON mi.id = mf.media_item_id
@@ -1244,7 +1244,7 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 	var tasks []thumbnailTask
 	for rows.Next() {
 		var t thumbnailTask
-		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.rootPath, &t.host, &t.port, &t.username, &t.password, &t.domain); err == nil {
+		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.rootPath, &t.host, &t.port, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options); err == nil {
 			tasks = append(tasks, t)
 		}
 	}
@@ -1300,25 +1300,35 @@ type thumbnailTask struct {
 	username    sql.NullString
 	password    sql.NullString
 	domain      sql.NullString
+	url         sql.NullString
+	mountPoint  sql.NullString
+	options     sql.NullString
+}
+
+// storageRoot rebuilds the connection fields of the task's storage root, the input of the single settings mapping.
+func (t thumbnailTask) storageRoot() *models.StorageRoot {
+	str := func(n sql.NullString) *string {
+		if !n.Valid {
+			return nil
+		}
+		v := n.String
+		return &v
+	}
+	root := &models.StorageRoot{Protocol: t.protocol, Host: str(t.host), Path: str(t.rootPath), Username: str(t.username), Password: str(t.password),
+		Domain: str(t.domain), URL: str(t.url), MountPoint: str(t.mountPoint), Options: str(t.options)}
+	if t.port.Valid {
+		p := int(t.port.Int64)
+		root.Port = &p
+	}
+	return root
 }
 
 // copyRemoteFileToTemp copies a remote file (SMB, FTP, etc.) to a temporary
 // local path so ffmpeg can process it.
 func (s *CoverArtService) copyRemoteFileToTemp(ctx context.Context, t thumbnailTask) (string, error) {
-	settings := map[string]interface{}{
-		"host":     t.host.String,
-		"port":     445,
-		"share":    t.rootPath.String,
-		"username": t.username.String,
-		"password": t.password.String,
-		"domain":   "WORKGROUP",
-	}
-	if t.port.Valid {
-		settings["port"] = int(t.port.Int64)
-	}
-	if t.domain.Valid && t.domain.String != "" {
-		settings["domain"] = t.domain.String
-	}
+	// The same single mapping every other CreateClient caller uses (filesystem.SettingsFromRoot). The hand-built SMB-shaped map this replaced
+	// carried share/domain/username/password for EVERY protocol, which the strict factory refuses for ftp, nfs and webdav (WF22 R1).
+	settings := filesystem.SettingsFromRoot(t.storageRoot(), nil)
 
 	config := &filesystem.StorageConfig{
 		Protocol: t.protocol,

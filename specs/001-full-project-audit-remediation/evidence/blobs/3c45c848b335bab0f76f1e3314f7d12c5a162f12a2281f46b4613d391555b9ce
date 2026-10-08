@@ -1,0 +1,3 @@
+Error: in prepare, near ";": syntax error
+  DELETE FROM reg_source_map WHERE entry_id=;
+                              error here ---^

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040a reader: fixture_roots.sh - reads scripts/repo/fixture_roots.txt, the deliberate-violation fixture roots.
 #
 # File    rows `root<TAB>exempt checks (comma list, closed check set)<TAB>reason<TAB>adding task`; `#` lines are comments.
@@ -48,4 +48,4 @@ for ln in sys.stdin:
     if p and not exempt(p): print(p)
 PY
 )"
-exec python3 -c "$PYSRC" "$D" "$@"
+exec python3 -I -c "$PYSRC" "$D" "$@"

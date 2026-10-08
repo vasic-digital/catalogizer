@@ -15,7 +15,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib.sh"
 BID=""; SVC="all"
 while [ $# -gt 0 ]; do
-  case "$1" in --build-id) BID=${2:-}; shift 2;; --services) SVC=${2:-}; shift 2;; *) ti_die "unknown argument '$1'" 2;; esac
+  case "$1" in --build-id) ti_optval "$1" $# "${2:-}"; BID=$2; shift 2;; --services) ti_optval "$1" $# "${2:-}"; SVC=$2; shift 2;; *) ti_die "unknown argument '$1'" 2;; esac
 done
 ti_valid_id "$BID" || ti_die "--build-id must match ^[a-z0-9][a-z0-9-]{0,30}\$" 2
 [ "${TI_PROBE_RUNNER:-container}" = container ] || ti_refuse probe_runner_not_container "TI_PROBE_RUNNER=${TI_PROBE_RUNNER} (a probe never runs on the host or in a service-class image)"

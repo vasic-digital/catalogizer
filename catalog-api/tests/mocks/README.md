@@ -4,22 +4,16 @@
 
 These mock servers should ONLY be used for unit tests.
 
-For integration tests, use the real containerized services defined in `docker-compose.test.yml`:
+For integration tests, use the real containerized services of the per-run test infrastructure (`docker-compose.test-infra.yml`, started by `scripts/test-infra/up.sh`; see `docs/testing/real-service-stack.md`):
 
 ```bash
-# Start real test services
-podman-compose -f docker-compose.test.yml up -d
-
 # Set environment variables for integration tests
-export SMB_TEST_SERVER=localhost
-export SMB_TEST_PORT=445
-export FTP_TEST_SERVER=localhost
-export FTP_TEST_PORT=21
-export WEBDAV_TEST_URL=http://localhost:8081
-export NFS_TEST_SERVER=localhost
+scripts/test-infra/up.sh --build-id <id>                       # real services, random loopback ports, generated credentials
+export CATALOGIZER_TEST_INFRA_ENV="$PWD/.audit/test-infra/catalogizer-test-<id>/env"
+# an explicit *_TEST_SERVER (host or host:port) and *_TEST_USER / *_TEST_PASS still override a single value; NFS has no host port: NFS_TEST_SERVER names it
 ```
 
-The integration tests in `tests/integration/protocol_connectivity_test.go` use these environment variables to connect to real services.
+The integration tests in `tests/integration/protocol_connectivity_test.go` read the ports and credentials from that per-run env file (no fixed port, no literal credential) and SKIP when nothing is configured.
 
 ## Mock Files (Unit Tests Only)
 

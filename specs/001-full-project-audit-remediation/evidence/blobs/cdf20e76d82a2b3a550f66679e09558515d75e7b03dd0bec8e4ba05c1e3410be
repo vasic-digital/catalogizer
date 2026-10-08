@@ -1,0 +1,42 @@
+# identity: task=T179 utc=2026-10-08T03:47:00Z host=1bd8ab7f689e uid=1000
+# git_head=f72d8757fe614adfa38a4f70276853527d06d7e8 tree_dirty_files=7106
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=2683acff6d8a1f36d15c2f8cc68c8f42ed5bb83aaab3487d5a838391c6728761
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== completion gate: the reverify queue ==
+ok   R0 fixture: v_reverify_queue holds exactly one row
+ok   R1 one reverify_required=1 row prints exactly 'NOT DONE v_reverify_queue rows=1' and exits non-zero (rc 4)
+ok   R1b the exit status is 4 (NOT DONE), distinct from gate failure 1 and partial 3
+ok   R1c a NOT DONE run never prints GATE OK or COMPLETION OK
+ok   R1d the run ends with a one-line total 'COMPLETION NOT DONE views=1 rows=1'
+ok   R2 two rows print rows=2 (the count is the view's row count)
+ok   R3 five rows print rows=5 and the total counts rows
+ok   R4 the completion run does not modify the DB under test
+== completion gate: empty queue and the plain register gate ==
+ok   C1 a clean register with an empty queue prints COMPLETION OK (rc 0)
+ok   C1b the run reports how many view_not_done views it checked (checked=1: the count is evidence the loop ran)
+ok   C2 a freshly applied empty register completes
+ok   C3 WITHOUT --completion the register gate still prints GATE OK with a populated reverify queue (step 2 unchanged, rc 0)
+ok   C4 --completion without --db exits 2 with the usage message
+ok   C5 --completion on an absent DB exits 1 naming the absence
+ok   C6 --completion given twice is the same as once
+ok   C7 argument order does not matter (--completion before --db)
+== completion gate: the register gate result is not hidden, the count is not suppressed ==
+ok   F1 a register gate failure plus a queued row: rc 1, the FAIL line AND the NOT DONE line both printed, GATE FAILED
+ok   F2 the view_not_done row deleted from the DB's registry: the queue is STILL counted (list read from the trusted reference), seed drift FAILs (rc 1)
+ok   F3 an injected view_not_done registry name fails closed (invalid registry name)
+ok   F3b the injected DROP did not run (reg_meta exists)
+ok   F4 a view_not_done name that is a TABLE in the DB fails closed (not a view), never COMPLETION OK
+ok   F5 a view_not_done view that errors on count is a FAIL 'not counted' (never zero rows, never a bogus rows= value; rc 1, no COMPLETION OK)
+ok   F6 the evidence re-hash runs in completion mode (absent cited file: rc 1)
+== completion gate: PASS-PARTIAL ==
+ok   P1 an empty queue with URL-skipped evidence is PASS-PARTIAL (rc 3), never COMPLETION OK
+ok   P2 --allow-url-evidence: rc 0 but still a PARTIAL line, never a bare COMPLETION OK
+ok   P3 NOT DONE (4) takes priority over PASS-PARTIAL (3)
+== completion gate: the reference list is data (mutated reference) ==
+ok   E1 a reference registry with no view_not_done row fails closed (nothing is checked, nothing completes)
+ok   E2 a second view_not_done view is read from the reference: only the populated view is reported (views=1)
+ok   E3 both views populated: one line per view in name order, total views=2 rows=3
+ok   E4 a malformed view_not_done name in the reference registry is refused (invalid view name)
+RESULT pass=30 fail=0

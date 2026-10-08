@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "catalogizer-test-fx5smoke-client-1043016-17323",
+  "at": "2026-10-07T15:20:08Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 91778211840,
+      "free_after": 91508612940,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 91778117632,
+      "free_after": 91508518732,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

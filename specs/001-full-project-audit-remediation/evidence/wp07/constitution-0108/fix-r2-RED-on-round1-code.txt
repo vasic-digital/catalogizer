@@ -1,0 +1,27 @@
+RESULT U47 FAIL no knob: output is the pre-knob output (floor 32 GiB, exact FAIL line, NO source line, NO floor suffix, exit 6)
+  detail[U47]: rc=6 n=2 out=mem_avail_kb=32505856 min_mem_avail_kb=33554432 min_mem_avail_source=default PREFLIGHT FAIL memory: MemAvailable 32505856 kB < 32 GiB (floor: default) 
+RESULT U48 PASS golden-TRUE: MemAvailable == default floor (32 GiB) PASSes with heap <= half of available; redirected copy still reads the real meminfo (control)
+RESULT U49 PASS limits file min_mem_avail_gib: 20 lowers the floor: 19 GiB refused with exact line, 20 GiB PASS (equality) with heap 10240 <= half
+RESULT U50 PASS env RAISES the floor (24 GiB over a 20 GiB file; 40 GiB over the default); env == base accepted
+RESULT U51 FAIL env may NEVER lower the floor (below a file value or below the default): refused loudly, nothing runs
+  detail[U51]:  [file20 env=16777216 rc=0] [file20 env=19922944 rc=0] [file20 env=20971519 rc=0] [file20 env=1 rc=6] [file20 env=0 rc=6] [nofile env=20971520 rc=0] [nofile env=32505856 rc=0] [nofile env=08388608 rc=0]
+RESULT U52 FAIL non-decimal / empty / signed / float / hex / over-long values (env kB and file GiB, incl. 2^44+5 overflow) are REFUSED, no shell noise, no writer side effects
+  detail[U52]:  [env='' rc=6] [env=' 20' rc=6] [env='abc' rc=6] [env='-5' rc=6] [env='+5' rc=6] [env='1e3' rc=6] [env='0x10' rc=6] [env='20 GiB' rc=6] [env='1234567890123' rc=6] [env='99999999999999999999' rc=6] [env='20.5' rc=6] [file='' rc=0] [file='abc' rc=6] [file='-5' rc=6] [file='12345' rc=6] [file='20 x' rc=0] [file=''20'' rc=6] [file='20.5' rc=6] [file='0x14' rc=6] [file='1e3' rc=6] [file='99999999999999999999' rc=6] [file='17592186044421' rc=0]
+RESULT U53 FAIL leading zeros are DECIMAL (010=10, 020=20, 0020=20, 09 refused cleanly, env 033554432==32 GiB, env 08388608 refused) - no octal, no arithmetic error, no writer fall-through
+  detail[U53]: r=111111 out=free_bytes=999999999999 db_bytes=0 min_free_bytes=64424509440 mem_avail_kb=67108864 min_mem_avail_kb=08388608 min_mem_avail_source=env CG_SAFE_MIN_MEM_AVAIL_KB thread_limit=123699 threads_used=3772 mi
+RESULT U54 FAIL lower bound = 16 GiB (2 x heap floor): floors 16/20/32 PASS with heap_mb <= MemAvailable/2; 15/8/4/1/0 refused; floor 4 + 5 GiB never PASSes; 9999 GiB handled
+  detail[U54]:  [floor=15 rc=0] [floor=8 rc=0] [floor=4 rc=0] [S3 floor4/avail5 passed]
+RESULT U55 FAIL duplicate min_mem_avail_gib keys (different or identical values) are REFUSED (no first-wins / last-wins ambiguity)
+  detail[U55]: r=11
+RESULT U56 FAIL limits-file classes REFUSED loudly: directory, /dev/null, missing, FIFO (no hang), empty, >64 KiB, indented, nested, empty value, set-but-empty env, unreadable
+  detail[U56]:  [directory rc=0] [devnull rc=0] [missing rc=6] [empty-file rc=0] [oversize rc=0] [indented rc=0] [nested rc=0] [empty-value rc=0] [empty-value-comment rc=0] [env-empty rc=0] [fifo rc=124]
+RESULT U57 FAIL accepted forms: CRLF + trailing comment, symlink to a regular file; a commented-out key is NOT honoured; a file without the key leaves the default (no source line)
+  detail[U57]:  [commented-out honoured] [nokey rc=6]
+RESULT U58 FAIL untrusted env / path / file values are sanitised before echo: no forged 'PREFLIGHT PASS' / 'heap_mb=' line, no ESC byte
+  detail[U58]:  [env-injection] [path-injection]
+RESULT U59 FAIL convention file <project>/config/index/writer_limits.yaml is discovered without any env; an explicit CG_SAFE_LIMITS_FILE overrides it; a non-regular convention path is refused
+  detail[U59]: r=101
+RESULT U60 PASS REAL live writer (lock holder with codegraph identity): init refused with exit 3 both with the default floor and with the lowered floor; control without a writer is neither 3 nor 6
+RESULT U61 FAIL preflight op on bad file values creates no flock/index_runs, prints no bulk-path die line (S2)
+  detail[U61]:  [08] [09] [0] [abc] [] [17592186044421]
+SUMMARY cases=15 failed=11

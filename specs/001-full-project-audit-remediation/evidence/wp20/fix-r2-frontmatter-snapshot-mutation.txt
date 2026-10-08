@@ -1,0 +1,4 @@
+# fix-r2: T164 paired mutation (a test copy that skips the snapshot re-hash must FAIL); run 2026-10-08T04:00:03Z, host-side, scripts/register/tests/mutate_frontmatter_yaml.sh
+CONTROL unmutated selftest: rc=0 SELFTEST: PASS
+MUTANT skip_snapshot_check: KILLED (saw /FAIL moved snapshot/)
+MUTANTS: 0 survived

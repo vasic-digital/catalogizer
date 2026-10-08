@@ -1,0 +1,10 @@
+# identity: catalogizer / 001 / WP-08 round 5 | HISTORY | the eight survivors of the first sweep run re-run after the section-N tests and the fixes above: all caught
+CAUGHT   S18 F4 (ported to _unread_op_record): a corrupt op record is reported as info, not unread [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S39 WF14 class D (ported): a record with no op_id or purpose_key is accepted as readable [test_sweep_r5.sh] :: FAIL N1 a running record valid in every respect but the missing field 'op_id' is unread, never judged :: got [|
+CAUGHT   S40 WF14 (ported): a handoff op is adopted by ANY op of the purpose, also an earlier one [test_sweep_r5.sh] :: FAIL N2 a successor-id op that started EARLIER than the handoff is not its adopter: handoff_unadopted :: got [|
+CAUGHT   NM-A11 A: an unreadable record does not stop the un-adopted-handoff report (anybad not set) [test_sweep_r5.sh] :: FAIL N3b with an UNREADABLE op record present the same claim is not asserted orphaned (the op may be the unrea|
+CAUGHT   NM-C3 C: stopcontainer accepts an unsafe container id [test_sweep_r5.sh] :: FAIL N5 stopcontainer with an unsafe container id (--all) is refused before any podman call :: got [skipped_pr|
+CAUGHT   NM-C4 C: the findings stream does not escape a backslash (a name can forge an escape) [test_sweep_r5.sh] :: FAIL N6 a stale lock named with a literal backslash-t is removed as itself (the stream escapes the backslash) |
+CAUGHT   NM-E1 E: one label belonging to more than one lineage resolves instead of being unreadable [test_sweep_r5.sh] :: FAIL N4 a container whose label belongs to two lineages is unread and is NOT stopped by --reconcile :: got [dr|
+CAUGHT   NM-I1 I: initsub accepts a path with .. components [test_sweep_r5.sh] :: FAIL N5b initsub with a .. component is refused :: got [skipped_already_initialised] want [refused_unsafe_path|
+MUTATION RESULT caught=8 survived=0 timeout=0 equivalent=0 total=8

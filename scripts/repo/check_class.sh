@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040b loader: check_class.sh - resolves a path to its check class and says which checks apply (plan owner's rule (V)).
 #
 # Usage   check_class.sh [--exemptions F] [--classes F] [--fixture-roots F] [--checks-registry F] <path>
@@ -17,7 +17,7 @@
 # Exits   0; 20 on a refusal or an unreadable/invalid table (first stderr word names the reason).
 set -u
 D="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 - "$D" "$@" <<'PY'
+exec python3 -I - "$D" "$@" <<'PY'
 import sys, re, os
 D = sys.argv[1]; a = sys.argv[2:]
 ex = os.path.join(D, 'check_exemptions.tsv'); cl = os.path.join(D, 'check_classes.tsv'); fr = os.path.join(D, 'fixture_roots.txt')

@@ -1,0 +1,8 @@
+cat: /tmp/regtest.RxifZL/out0/source_entries.sha256: No such file or directory
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'XID'
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+KeyError: 'XID'
+scripts/register/tests/test_enumerate_planted.sh: line 71: -  : syntax error: operand expected (error token is "-  ")

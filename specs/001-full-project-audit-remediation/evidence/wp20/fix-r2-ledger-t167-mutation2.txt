@@ -1,0 +1,7 @@
+# ledger seq=33 item=AUD-T167 polarity=MUTATION iteration=2 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/wp20-r2/mut/LM05 target_fingerprint=20aeba0e7303b99256c6f1d969681aa919fb56c41e76dfa4e4b003e25b72b968 test_fingerprint=9db86ee5d379cc0c1f99fbc5d1869cf098ea7838ebef59033a07894c09d021bf
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "LEAD_SCAN=/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", "python3", "scripts/register/tests/test_lead_scan.py"]
+FAIL baseline scan exits 0 :: lead_scan: REFUSED reason=lead_scan_blind control needle docs/LANDMINES.md:L4: expected a row with word 'missing' and disposition 'lead', got 'missing'/'duplicate of structured source'
+
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, None)
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

@@ -7,8 +7,8 @@
 #   --build-id ID   the project catalogizer-test-<id> whose network the client joins and whose per-run env file (credentials, 0600) is handed over
 #   --out DIR       output directory mounted at /out (default <repo>/.audit/out/<project>-client); must satisfy run_pinned's sanctioned roots
 #   --image ID      the image id (default IMG-INFRA-CLIENT; the option exists so the refusal of another image is testable)
-# The container gets the env file through `--env-file` (never argv), the label op_id of the project's registered long operation (so the anti-mess
-# sweep matches the container to its operation), a scratch VIEW read-only at /src (only the directories the command names: client scripts live in scripts/test-infra/client/; never `.env`) and the seeded
+# The container gets the env file through `--env-file` (never argv), the label catalogizer.op_id of the project's registered long operation (REPLACING the one run_pinned set: the anti-mess sweep reads
+# catalogizer.op_id first and must match the container to the stack's operation, WF17 TI-A4), the checkout label catalogizer.test_root, a scratch VIEW read-only at /src (only the directories the command names: client scripts live in scripts/test-infra/client/; never `.env`) and the seeded
 # corpus manifest at /manifest.sha256 (read-only) when it exists.
 # Exit: the client's exit code; 1 REFUSED (`test-infra: REFUSED reason=<code>`); 2 usage.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,12 +16,14 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BID=""; OUT=""; IMG="IMG-INFRA-CLIENT"
 while [ $# -gt 0 ]; do
   case "$1" in
-    --build-id) BID=${2:-}; shift 2;; --out) OUT=${2:-}; shift 2;; --image) IMG=${2:-}; shift 2;;
+    --build-id) ti_optval "$1" $# "${2:-}"; BID=$2; shift 2;; --out) ti_optval "$1" $# "${2:-}"; OUT=$2; shift 2;; --image) ti_optval "$1" $# "${2:-}"; IMG=$2; shift 2;;
     --) shift; break;; *) ti_die "unknown argument '$1'" 2;;
   esac
 done
 ti_valid_id "$BID" || ti_die "--build-id must match ^[a-z0-9][a-z0-9-]{0,30}\$" 2
 [ $# -ge 1 ] || ti_die "command missing after --" 2
+for a in "$@"; do case "$a" in *$'\n'*) ti_refuse argv_word_has_newline "a command word holds a newline: run_pinned prints the argv one element per line, so it would split into several words";; esac; done
+[ -z "$OUT" ] || OUT="$(ti_abs "$OUT")"
 ti_need python3 podman
 CLASS="$(python3 -I - "$TI_LOCK" "$IMG" <<'PY'
 import sys, yaml
@@ -46,27 +48,31 @@ VDIRS=()
 for a in "$@"; do
   case "$a" in
     /src/*) rel="${a#/src/}"; dir="$(dirname "$rel")"
-      case "$dir/" in scripts/test-infra/*|.audit/scratch/*) ;; *) ti_refuse client_path_not_in_view "$a is outside the directories a client may see (scripts/test-infra/, .audit/scratch/)";; esac
-      case "$rel" in *..*) ti_refuse client_path_not_in_view "$a contains '..'";; esac
+      case "$rel" in */.env*|*.env|.env*) ti_refuse client_path_not_in_view "$a names an env file: a client never sees one";; esac
+      ti_path_in_view "$rel" || ti_refuse client_path_not_in_view "$a is outside the directories a client may see (scripts/test-infra/, .audit/scratch/), holds an empty, '.' or '..' path component, or crosses a symlink"
       [ -f "$TI_ROOT/$rel" ] || ti_refuse client_script_missing "$a"
       VDIRS+=("$dir");;
   esac
 done
 mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"
+ti_exit_on_signals
 trap 'case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac' EXIT
 ti_view_dir "$VIEW" "${VDIRS[@]}" || ti_refuse client_view_failed "cannot build the view of ${VDIRS[*]:-nothing}"
 ARGV=()
-while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$VIEW" && RUNP_PRINT_ARGV=1 bash "$TI_ROOT/scripts/containers/run_pinned.sh" --out "$OUT" --op-id "$P-client-$$-$RANDOM" "$IMG" -- "$@")
+while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$VIEW" && TI_RUNP_PRINT=1 ti_runpinned --out "$OUT" --op-id "$P-client-$$-$RANDOM" "$IMG" -- "$@")
 [ "${#ARGV[@]}" -gt 5 ] && [ "${ARGV[0]}" = podman ] || ti_refuse run_pinned_failed "run_pinned.sh printed no podman argv (see its message above)"
-# insert the project's network, env file, op label and the manifest mount before the `--` that precedes the image
-NEW=(); done_ins=0
+# insert the project's network, env file, checkout label and the manifest mount before the `--` that precedes the image, and REPLACE the op label run_pinned set (`catalogizer.op_id=<client op>`) by the
+# stack's operation: the sweep reads that label first, and a second label would leave the client attributed to an operation that is not registered (WF17 TI-A4)
+ROOTH="$(ti_root_hash)"; NEW=(); done_ins=0; nrep=0; prev=""
 for a in "${ARGV[@]}"; do
+  if [ "$prev" = --label ] && [[ "$a" == catalogizer.op_id=* ]]; then a="catalogizer.op_id=$OPID"; nrep=$((nrep+1)); fi
   if [ "$done_ins" = 0 ] && [ "$a" = "--" ]; then
-    NEW+=(--network "$NET" --env-file "$ENVF" --label "op_id=$OPID" --label "catalogizer.test_project=$P")
+    NEW+=(--network "$NET" --env-file "$ENVF" --label "catalogizer.test_project=$P" --label "catalogizer.test_root=$ROOTH")
     [ ! -r "$S/manifest.sha256" ] || NEW+=(-v "$S/manifest.sha256:/manifest.sha256:ro")
     done_ins=1
   fi
-  NEW+=("$a")
+  NEW+=("$a"); prev="$a"
 done
+[ "$nrep" = 1 ] || ti_refuse argv_malformed "the composed argv holds $nrep catalogizer.op_id labels, expected exactly one"
 [ "$done_ins" = 1 ] || ti_refuse argv_malformed "no -- separator before the image in the composed argv"
-"${NEW[@]}"; exit $?   # not exec: the EXIT trap removes the view
+"${NEW[@]}" 9>&-; exit $?   # not exec: the EXIT trap removes the view

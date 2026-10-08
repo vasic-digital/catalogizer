@@ -1,0 +1,50 @@
+# identity: group=sync utc=2026-10-07T19:52:39Z host=anton uid=1000 git_head=4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# runner_sha256=0c9b594d67c15d78befee699ccdb096d5d3b39fb1839e716cd218f365da96def test_sha256=6d6963e1cd4a5a744509db8e7efcdd0b906554ee749741c07e0948e055b1cce4 sut_sha256=6417d55167a646a5e621237694295b1644096fc1bc97a0e8b361729f474d440f
+# mutant<TAB>killed<TAB>first failing check of test_sync_driver.sh (fail-fast)
+hook_gate	yes	FAIL Z18 [sync_trackers: REFUSED reason=config_malformed .helix/bad4.yaml: trackers must be a list (use [] for none)]
+empty_env_counts_as_set	yes	FAIL E2 alpha: 8 items (3 + 5 minted), every latest row SKIPPED credentials_absent :: got [7/0] want [8/8]
+creds_check_removed	yes	FAIL D5 [sync_trackers: tracker=alpha state=adapter selected=3 synced=0 skipped=0 failed=0 unchanged=0 unchanged_skipped=0 breaker_skipped=0
+client_check_removed	yes	FAIL E1 rc=1 [Traceback (most recent call last):
+disabled_ignored	yes	FAIL E5 gamma and cand1: not_configured; delta: disabled_by_operator :: got [cand1:not_configured,gamma:not_configured] want [cand1:not_configured,del
+not_configured_runs	yes	FAIL C1 rc=0 [sync_trackers: tracker=github_issues state=tracker_client_absent selected=3 synced=0 skipped=tracker_client_absent=3 failed=0 unchanged=
+unchanged_resync	yes	FAIL A9 a re-run with unchanged item revisions: adapter log, database and journal unchanged :: got [16/d65913b87f0af6ee6db5260c57abfa8e30be007327aced3
+revision_ignored	yes	FAIL A10 exactly one new adapter call, for CAT-002 :: got [8/CAT-008] want [9/CAT-002]
+failed_not_reselected	yes	FAIL F5 once the adapter works, the FAILED item is selected again and SYNCED; nothing else is pushed twice :: got [FAILED/2] want [SYNCED/0]
+attempts_unbounded_to_one	yes	FAIL F2 CAT-003 attempted exactly --max-attempts (3) times :: got [1] want [3]
+breaker_removed	yes	FAIL U2 2 attempts per item for the first 2 items, then the circuit breaker: 4 adapter calls for 7 items :: got [14] want [4]
+unreachable_not_counted_by_breaker	yes	FAIL U2 2 attempts per item for the first 2 items, then the circuit breaker: 4 adapter calls for 7 items :: got [14] want [4]
+evidence_containment_removed	yes	FAIL V-outside adapter output 'outside' is recorded FAILED (exit 0), never SYNCED :: got [SYNCED/] want [FAILED/exit1]
+exit_code_not_trusted	yes	FAIL V-exit1 adapter output 'exit1' is recorded FAILED (exit 0), never SYNCED :: got [SYNCED/] want [FAILED/exit1]
+synced_without_reference	yes	FAIL V-noref adapter output 'noref' is recorded FAILED (exit 4), never SYNCED :: got [FAILED/] want [FAILED/exit1]
+db_opened_for_writing	yes	FAIL D2 dry run: database byte-identical :: got [ffb675eed194cb52a542c7baff73e94becc12ca61b005dbcca9d5dd19c784d9f] want [727b9ee43fc985fc228775f2733d3
+wrapper_not_called	yes	FAIL E2 alpha: 8 items (3 + 5 minted), every latest row SKIPPED credentials_absent :: got [] want [8/8]
+full_environment_to_adapter	yes	FAIL A5 env names [CAT-001 argv=[CAT-001] envnames=_,ACME_API_KEY,ADDRESS_THE_FACTORY,AI_AGENT,ANDROID_HOME,ANDROID_SDK_ROOT,BETA_API_KEY,CLAUDE_BIN,C
+mint_dedup_removed	yes	FAIL M3
+driver_lock_removed	yes	FAIL X1 rc=0 [sync_trackers: tracker=alpha state=adapter selected=3 synced=3 skipped=0 failed=0 unchanged=0 unchanged_skipped=0 breaker_skipped=0
+unwritten_rows_not_kept	yes	FAIL W5 rc=4 [sync_trackers: register write failed (locked.sh exit 1); 2 row(s) NOT recorded, listed in .audit/sync/sync-20261007T203648-3106669/unwri
+write_failure_ignored	yes	FAIL W5 rc=0 [sync_trackers: tracker=alpha state=adapter selected=2 synced=2 skipped=0 failed=0 unchanged=0 unchanged_skipped=0 breaker_skipped=0
+dry_run_upserts_trackers	yes	FAIL D2 dry run: database byte-identical :: got [57520da8234c99af7fecff62b12a7ad99d2108c0119646ad51bb741a2f5b5d17] want [430621fde849f5bc096b74208a7bd
+dry_run_calls_adapter	yes	FAIL D7 dry run with the token SET: the plan selects the 3 items but no adapter runs, no database write, no .audit/sync directory :: got [288/c338f3fb
+unknown_tracker_key_allowed	yes	FAIL V-noevidence adapter output 'noevidence' is recorded FAILED (exit 4), never SYNCED :: got [FAILED/] want [FAILED/exit1]
+secret_in_command_allowed	yes	FAIL V-exit1 adapter output 'exit1' is recorded FAILED (exit 4), never SYNCED :: got [FAILED/] want [FAILED/exit1]
+id_prefix_unchecked	yes	FAIL V-exit1 adapter output 'exit1' is recorded FAILED (exit 4), never SYNCED :: got [FAILED/] want [FAILED/exit1]
+skipped_duplicate_rewritten	yes	FAIL R1 an unchanged re-run: database byte-identical, no wrapper call, no minted twin :: got [b43c1b60f0c0e8483659eb5e69b5e5eca8183eea16a6c4cc8b4b90dc
+skip_reason_not_compared	yes	FAIL G2 after the config changed: every item has a NEW latest row with the new NAMES for zeta (Z1 and Z2) and the new reason for eta (tracker_client_a
+skip_names_not_compared	yes	FAIL G2 after the config changed: every item has a NEW latest row with the new NAMES for zeta (Z1 and Z2) and the new reason for eta (tracker_client_a
+limit_ignored	yes	FAIL G1 rc=4 [sync_trackers: minting the item for eta/not_configured failed (locked.sh exit 1)
+evidence_hash_of_path	yes	FAIL E1 rc=4 [sync_trackers: register write failed (locked.sh exit 1); 8 row(s) NOT recorded, listed in .audit/sync/sync-20261007T205727-562047/unwrit
+missing_names_dropped	yes	FAIL E1 rc=4 [sync_trackers: register write failed (locked.sh exit 1); 8 row(s) NOT recorded, listed in .audit/sync/sync-20261007T205729-564763/unwrit
+schema_version_unchecked	yes	FAIL Z4 a wrong schema_version is REFUSED (rc=0) [sync_trackers: 0 trackers configured; 0 pushes; nothing claimed as synced
+trackers_type_unchecked	yes	FAIL Z5 trackers: null (not a list) is REFUSED (rc=1) [Traceback (most recent call last):
+placeholder_unchecked	yes	FAIL Z8 an unknown command placeholder is REFUSED (rc=0) [sync_trackers: tracker=alpha state=tracker_client_absent selected=2 synced=0 skipped=tracker
+dotdot_path_allowed	yes	FAIL Z9 a --config path with .. is REFUSED path_invalid (rc=20) [sync_trackers: REFUSED reason=config_missing ../x.yaml]
+db_missing_exit_code	yes	FAIL setup A
+failed_exit_zero	yes	FAIL F1 rc=0 [sync_trackers: tracker=alpha state=adapter selected=2 synced=0 skipped=0 failed=2 unchanged=7 unchanged_skipped=0 breaker_skipped=0
+write_failed_exit_zero	yes	FAIL W5 rc=0 [sync_trackers: register write failed (locked.sh exit 1); 2 row(s) NOT recorded, listed in .audit/sync/sync-20261007T212052-2469530/unwri
+minted_items_not_synced_same_run	yes	FAIL U3 all 7 items (the 6 present and the one minted for alpha/unreachable) end SKIPPED unreachable :: got [6/unreachable/unreachable] want [7/unreac
+trackers_always_upserted	yes	FAIL R1 an unchanged re-run: database byte-identical, no wrapper call, no minted twin :: got [e2b13244bd3d3b33347ab856838b75dfdb4e8164bcd92c4dd413f520
+process_exit_ignored_for_unreachable_bad_reason	yes	FAIL V-badskip adapter output 'badskip' is recorded FAILED (exit 0), never SYNCED :: got [SKIPPED/] want [FAILED/exit1]
+adapter_timeout_ignored	yes	FAIL V2 the exit codes: unusable output 70, missing reference or evidence 65, the process exit code beats the adapter's own claim (exit1: 1), an adapt
+missing_names_unvalidated	yes	FAIL V-badnames adapter output 'badnames' is recorded FAILED (exit 0), never SYNCED :: got [SKIPPED/] want [FAILED/exit1]
+negative_control_comment	NO	
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=89 fail=0

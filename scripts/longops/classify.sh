@@ -11,14 +11,20 @@
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 only=""; have_only=0
-while [ $# -gt 0 ]; do case "$1" in --op-id) [ $# -ge 2 ] || lo_die usage_error "--op-id needs a value"; only=$2; have_only=1; shift 2 ;; *) lo_die usage_error "unknown argument $(printf '%q' "$1")" ;; esac; done
-if [ "$have_only" = 1 ]; then lo_safe_name "$only" || lo_die usage_error "unsafe op id"; [ -e "$(lo_op_file "$only")" ] || lo_die unknown_op "$only" "$RC_CAS"; fi
-for f in "$LD"/ops/*.json; do
-  [ -e "$f" ] || continue
-  if [ "$have_only" = 1 ] && [ "$f" != "$(lo_op_file "$only")" ]; then continue; fi
-  j=$(cat "$f") || { printf '%s\tunreadable\tcannot read the record\n' "$f"; continue; }
+while [ $# -gt 0 ]; do case "$1" in --op-id) lo_need "$@"; only=$2; have_only=1; shift 2 ;; *) lo_die usage_error "unknown argument $(printf '%q' "$1")" ;; esac; done
+if [ "$have_only" = 1 ]; then
+  lo_safe_name "$only" || lo_die usage_error "unsafe op id"; [ -e "$(lo_op_file "$only")" ] || lo_die unknown_op "$only" "$RC_CAS"
+  f=$(lo_op_file "$only")
+  j=$(cat "$f" 2>/dev/null) || { printf '%s\tunreadable\tcannot read the record\n' "$f"; exit 0; }
   r=$(lo_classify_op "$j"); c=$(sed -n 1p <<<"$r")
   if [ "$c" = unreadable ]; then id=$f; else id=$(jq -r .op_id <<<"$j"); fi
   printf '%s\t%s\t%s\n' "$id" "$c" "$(sed -n 2p <<<"$r")"
-done
+  exit 0
+fi
+while IFS=$'\t' read -r kind f state oid pk j; do
+  if [ "$kind" = bad ]; then printf '%s\tunreadable\tthe record fails the record shape (empty, unparsable, mistyped or an unknown state)\n' "$f"; continue; fi
+  case "$state" in registered|running) ;; *) printf '%s\tterminal\t\n' "$oid"; continue ;; esac   # a terminal record needs no /proc and no further jq: the snapshot already validated it
+  r=$(lo_classify_op "$j"); c=$(sed -n 1p <<<"$r")
+  printf '%s\t%s\t%s\n' "$oid" "$c" "$(sed -n 2p <<<"$r")"
+done < <(lo_ops_snapshot)
 exit 0

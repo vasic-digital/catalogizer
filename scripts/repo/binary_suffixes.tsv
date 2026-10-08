@@ -1,0 +1,59 @@
+# suffix	note   (WF17-cpa SKIP-2: the file types that are BINARY for the text checks of validate_cheap.sh when they hold a NUL byte; read from the approved copy)
+# A file with a NUL byte in its first 8 KiB whose suffix is NOT listed here (and that has no `binary` / `-text` git attribute) is NOT clean: the text checks it cannot take are reported
+# `not_judged` and the run owes CHECKS_NOT_JUDGED (exit 14). The conflict-marker scan reads every regular file whatever its content.
+.png	image
+.jpg	image
+.jpeg	image
+.gif	image
+.webp	image
+.ico	image
+.bmp	image
+.tif	image
+.tiff	image
+.psd	image
+.pdf	document
+.zip	archive
+.gz	archive
+.tgz	archive
+.bz2	archive
+.xz	archive
+.zst	archive
+.7z	archive
+.tar	archive
+.jar	archive
+.aar	archive
+.apk	archive
+.aab	archive
+.class	bytecode
+.pyc	bytecode
+.so	binary
+.o	binary
+.a	binary
+.bin	binary
+.exe	binary
+.dll	binary
+.dylib	binary
+.wasm	binary
+.db	database
+.sqlite	database
+.woff	font
+.woff2	font
+.ttf	font
+.otf	font
+.eot	font
+.mp3	audio
+.wav	audio
+.flac	audio
+.ogg	audio
+.mp4	video
+.mov	video
+.webm	video
+.mkv	video
+.keystore	key store
+.jks	key store
+.p12	key store
+.der	certificate
+.docx	document
+.xlsx	document
+.pptx	document
+.odt	document

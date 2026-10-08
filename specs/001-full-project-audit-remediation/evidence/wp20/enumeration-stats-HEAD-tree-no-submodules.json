@@ -1,0 +1,206 @@
+{
+ "classes": {
+  "S-01": {
+   "entries": 1778,
+   "files": 1778,
+   "sources": [
+    "docs/issues/*.md"
+   ]
+  },
+  "S-02": {
+   "entries": 1,
+   "files": 1,
+   "sources": [
+    "issues/*.md"
+   ]
+  },
+  "S-03": {
+   "entries": 269,
+   "files": 1,
+   "sources": [
+    "TASK_TRACKER.md"
+   ]
+  },
+  "S-04": {
+   "entries": 299,
+   "files": 1,
+   "sources": [
+    "MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-05": {
+   "entries": 845,
+   "files": 1,
+   "sources": [
+    "docs/MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-06": {
+   "entries": 141,
+   "files": 1,
+   "sources": [
+    "COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md"
+   ]
+  },
+  "S-07": {
+   "entries": 96,
+   "files": 1,
+   "sources": [
+    "COMPREHENSIVE_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-08": {
+   "entries": 90,
+   "files": 1,
+   "sources": [
+    "docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md"
+   ]
+  },
+  "S-09": {
+   "entries": 9,
+   "files": 3,
+   "sources": [
+    "UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-10": {
+   "entries": 54,
+   "files": 1,
+   "sources": [
+    "docs/OPEN_POINTS_CLOSURE.md"
+   ]
+  },
+  "S-11": {
+   "entries": 63,
+   "files": 1,
+   "sources": [
+    "docs/LANDMINES.md"
+   ]
+  },
+  "S-12": {
+   "entries": 264,
+   "files": 32,
+   "sources": [
+    "/*.md (other root status reports)"
+   ]
+  },
+  "S-13": {
+   "entries": 37,
+   "files": 37,
+   "sources": [
+    "docs/status/*.md"
+   ]
+  },
+  "S-14": {
+   "entries": 26,
+   "files": 18,
+   "sources": [
+    "docs/audits/*.md",
+    "docs/*AUDIT*.md"
+   ]
+  },
+  "S-15": {
+   "entries": 74,
+   "files": 62,
+   "sources": [
+    "docs/qa/**+docs/reports/qa-sessions/**"
+   ]
+  },
+  "S-16": {
+   "entries": 970,
+   "files": 66,
+   "sources": [
+    "docs/security/**"
+   ]
+  },
+  "S-17": {
+   "entries": 1285,
+   "files": 16,
+   "sources": [
+    "challenges/helixqa-banks/*.yaml"
+   ]
+  },
+  "S-18": {
+   "entries": 508,
+   "files": 1,
+   "sources": [
+    "challenges/data/challenges_bank.json"
+   ]
+  },
+  "S-19": {
+   "empty_source": [
+    "submodules/helix_qa/banks/**"
+   ],
+   "entries": 0,
+   "files": 0,
+   "sources": [
+    "submodules/helix_qa/banks/**"
+   ]
+  },
+  "S-20": {
+   "empty_source": [
+    "submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md"
+   ],
+   "entries": 0,
+   "files": 0,
+   "sources": [
+    "submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md"
+   ]
+  },
+  "S-21": {
+   "entries": 18,
+   "files": 1,
+   "sources": [
+    ".specify/memory/constitution.md"
+   ]
+  },
+  "S-22": {
+   "entries": 17,
+   "files": 17,
+   "sources": [
+    "module CLAUDE.md and AGENTS.md (outside submodules)"
+   ]
+  },
+  "S-23": {
+   "entries": 2799,
+   "files": 7866,
+   "skipped": {
+    "binary": 0,
+    "symlink": 1,
+    "too_large": 1
+   },
+   "sources": [
+    "marker and skipped-test scan of every text file of the snapshot"
+   ]
+  },
+  "S-24": {
+   "entries": 6,
+   "files": 6,
+   "sources": [
+    ".implementation/**"
+   ]
+  },
+  "S-25": {
+   "entries": 39,
+   "files": 3,
+   "sources": [
+    "S-25:SECURITY_KEY_ROTATION_REQUIRED.md",
+    "S-25:SECURITY_AUDIT_REPORT.md",
+    "docs/security/firebase-api-key-exposure-20260629.md"
+   ]
+  }
+ },
+ "freeze_head": "scratch",
+ "frozen_at_basis": "freeze_json",
+ "root_files_not_sources": [
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONSTITUTION.md",
+  "GEMINI.md",
+  "GETTING_STARTED.md",
+  "MEMORY.md",
+  "QUICK_REFERENCE.md",
+  "README.md"
+ ],
+ "total_entries": 9688
+}

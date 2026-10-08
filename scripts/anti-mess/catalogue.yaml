@@ -12,6 +12,8 @@
 #   stages      where the sweep evaluates it: S0 (commit-push preflight), S7 (commit-push verify_clean), cadence (standing run)
 #   reconcile   auto-safe (sweep --reconcile may repair it) | operator-gated (reported, never changed) | refuse (the gated transition is refused)
 #   needle      yes when the detector has a control needle + golden-false-with-carrier run on every sweep (11.4.201 7b)
+#   actions     the reconcile actions an invariant may EMIT (11.4.276 round 5, class C): a finding row of invariant X carrying an action that is not listed for X is refused
+#               (refused_action_not_of_invariant), so one invariant's row can never drive another invariant's sink. Only invariants with reconcile: auto-safe list actions; the others list none.
 #   not_evaluated_reason  required when detector is none: what is missing, so the gap is tracked and never silent
 schema: anti-mess-catalogue/1
 invariants:
@@ -31,6 +33,7 @@ invariants:
     stages: [cadence]
     reconcile: auto-safe
     needle: yes
+    actions: [rmlock]
   - id: AM-R3
     aliases: []
     plane: repository
@@ -57,6 +60,7 @@ invariants:
     stages: [cadence]
     reconcile: auto-safe
     needle: yes
+    actions: [initsub]
   - id: AM-G1
     aliases: []
     plane: governance
@@ -91,6 +95,7 @@ invariants:
     stages: [S0, S7, cadence]
     reconcile: auto-safe
     needle: yes
+    actions: [reapop, stopcontainer]
   - id: AM-P2
     aliases: [INV-4]
     plane: runtime
@@ -107,6 +112,7 @@ invariants:
     stages: [cadence]
     reconcile: auto-safe
     needle: yes
+    actions: ["rmdir:build_tmp"]
   - id: AM-P4
     aliases: []
     plane: runtime
@@ -150,3 +156,4 @@ invariants:
     stages: [S0, S7, cadence]
     reconcile: auto-safe
     needle: yes
+    actions: ["rmdir:finished_run"]

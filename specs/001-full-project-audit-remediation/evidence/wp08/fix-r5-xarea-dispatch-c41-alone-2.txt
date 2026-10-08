@@ -1,0 +1,3 @@
+ok   c41 (i) the hub restarts the pump, which re-attaches from the last acknowledged seq, verifies the resent events and consumes the completion ONCE; the build is not resubmitted
+ok   c41 (i) every consumed seq is unique and the journal holds one completed event
+RESULT pass=2 fail=0 skip=0

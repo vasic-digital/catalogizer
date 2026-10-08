@@ -1,0 +1,10 @@
+FAIL baseline scan exits 0 :: Traceback (most recent call last):
+  File "/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", line 288, in <module>
+    sys.exit(run(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^
+  File "/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", line 261, in run
+    disp, cov = DUPLICATE, "covered_by=%s :: %s" % covered
+                           ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+TypeError: not enough arg
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, None)
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

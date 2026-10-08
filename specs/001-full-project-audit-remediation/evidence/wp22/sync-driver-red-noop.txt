@@ -1,0 +1,10 @@
+# identity: task=T188 utc=2026-10-07T19:51:55Z host=anton uid=1000
+# git_head=4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 tree_dirty_files=5088
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=6d6963e1cd4a5a744509db8e7efcdd0b906554ee749741c07e0948e055b1cce4 clib=2289135ac5b2dce834b72f5dfd203a71a13095d4c7d01856c0a6fe32d6c3bc51
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=c6410793149ec36bfc994f90af67368ae19814c2a549055c1eefd2ed3a073ea0
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 sync_trackers=bdc131693f4fa75b20deb2a92c89f01b0c8e0017cb3fef6b134b43a9809f3f52 config=f13deca614ce395a9290255a6baf49feb1e8e6b20e3851ad678b2bb5ca4eb10c
+== T190: the repository's own consumer config ==
+FAIL C1 rc=0 []
+RESULT pass=0 fail=1 (fail-fast, mutation runs)

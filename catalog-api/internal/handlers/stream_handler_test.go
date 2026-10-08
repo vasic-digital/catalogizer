@@ -705,7 +705,7 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 		}
 		settings := storageRootToSettings(root)
 		assert.Equal(t, "nfs.example.com", settings["host"])
-		assert.Equal(t, "/export/media", settings["export_path"])
+		assert.Equal(t, "/export/media", settings["path"])
 		assert.Equal(t, "/mnt/nfs", settings["mount_point"])
 		assert.Equal(t, "vers=3", settings["options"])
 	})

@@ -1,0 +1,113 @@
+{
+ "schema": "intake-match-fixture/1",
+ "provenance": "the eight docs/issues/HELIX-001-*.md tickets (HEAD ab5a9e39 live tree, read-only): `id: HELIX-001` is used by eight DIFFERENT problems (doc04 sections 8, 9.2). title = the first heading, text = the first paragraph of the body cut at 400 characters; sha256 = the file bytes at that time. All eight share ONE scope here (the worst case for a false merge: the exact-scope gate of the matcher always passes).",
+ "scope": "androidtv-001-loginform.png",
+ "tickets": [
+  {
+   "file": "docs/issues/HELIX-001-api-unreachable-entities-stats.md",
+   "sha256": "4bd7ac8e332616031591e2e1b9bde80d97e075881ce36ad061c4284d507e0fc8",
+   "title": "API unreachable: entities/stats",
+   "text": "GET http://localhost:3000/api/v1/entities/stats failed: Get \"http://localhost:3000/api/v1/entities/stats\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+  },
+  {
+   "file": "docs/issues/HELIX-001-excessive-white-space-on-login-page.md",
+   "sha256": "69ea308ae0ef507b1e47d03d72a655ada79c526b5421723894cdf22bde6af97e",
+   "title": "Excessive white space on login page",
+   "text": "There is a large amount of empty space around text fields and buttons, which makes it look disorganized."
+  },
+  {
+   "file": "docs/issues/HELIX-001-insecure-password-input.md",
+   "sha256": "aa6a4ee1c735c1309dfb266becb156fb745905c239aa85e11003d1766fd71d4d",
+   "title": "Insecure Password Input",
+   "text": "The password input field does not display a password visibility toggle button, which is a common UX pattern that allows users to view their password in plain text. This can lead to user frustration and potential security issues if the user enters an incorrect password multiple times."
+  },
+  {
+   "file": "docs/issues/HELIX-001-misplaced-elements-in-sign-up-form.md",
+   "sha256": "c00b6fad92397543f882462333f22a0bd70cc37119361f56028f06813940bfe5",
+   "title": "Misplaced elements in sign-up form",
+   "text": "The 'Sign up' button is positioned lower than the other buttons, which creates a visual disruption and might cause confusion for users. This could be due to inconsistent design choices or incorrect styling."
+  },
+  {
+   "file": "docs/issues/HELIX-001-missing-placeholder-image.md",
+   "sha256": "e02dd458caec176ff65a828407dfbf33df08960c346627455466e2ed1677eb3a",
+   "title": "Missing Placeholder Image",
+   "text": "The image placeholder is blank and does not provide a clear indication of what should be there, which can confuse users. This is an important visual cue for understanding the functionality of the page."
+  },
+  {
+   "file": "docs/issues/HELIX-001-password-input-field-does-not-display-password-strength-indicator.md",
+   "sha256": "1c5aaee495c9c5f5c9582637859786a461bba3871f0ff202ee9c0e74ccc39b4d",
+   "title": "Password Input Field Does Not Display Password Strength Indicator",
+   "text": "The password input field does not display a password strength indicator, which can make it difficult for users to determine if their password is strong enough."
+  },
+  {
+   "file": "docs/issues/HELIX-001-unclear-form-field-labels.md",
+   "sha256": "cf0568979674bbb14b8f03de966231f2e644ba8a7f765e7b060b74098fd2196b",
+   "title": "Unclear Form Field Labels",
+   "text": "The form fields for username and password do not have clear labels. This can cause confusion for users who may not understand what information is being requested."
+  },
+  {
+   "file": "docs/issues/HELIX-001-unclear-purpose-of-toggle-options.md",
+   "sha256": "9fbeca264a16169a1cd3b2e8687ab5147a29eb652dee1d08a4c9ccf4434c4775",
+   "title": "Unclear purpose of toggle options",
+   "text": "The purpose of the toggle options (Recommended, Subscriptions, and Trending) is not clear. It is not apparent what enabling or disabling these options will do for the user."
+  }
+ ],
+ "golden": [
+  {
+   "id": "G1",
+   "about": "HELIX-001-missing-placeholder-image re-reported by a later QA run: same title, same text, one added sentence",
+   "ticket": 4,
+   "title_from": "ticket",
+   "description_suffix": " Seen again in the next QA run.",
+   "expect": "SAME_DEFECT"
+  },
+  {
+   "id": "G2",
+   "about": "the same defect re-titled by another reporter (title reworded, text unchanged)",
+   "ticket": 4,
+   "title": "Missing placeholder image on the home screen",
+   "description_suffix": "",
+   "expect": "SAME_DEFECT"
+  },
+  {
+   "id": "G3",
+   "about": "HELIX-001-api-unreachable-entities-stats re-reported: same title, same text, one added sentence",
+   "ticket": 0,
+   "title_from": "ticket",
+   "description_suffix": " Reproduced on a second run.",
+   "expect": "SAME_DEFECT"
+  }
+ ],
+ "scope_controls": [
+  {
+   "id": "S1",
+   "about": "golden G3 but a different scope: the exact-scope gate must keep it DISTINCT (a scope is part of the key, 11.4.186)",
+   "ticket": 0,
+   "scope": "other.png",
+   "expect": "DISTINCT"
+  },
+  {
+   "id": "S2",
+   "about": "golden G3 with an empty scope: an absent scope is not a wildcard",
+   "ticket": 0,
+   "scope": "",
+   "expect": "DISTINCT"
+  }
+ ],
+ "leave_one_out_expected": [
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT",
+  "UNDECIDED",
+  "DISTINCT",
+  "DISTINCT"
+ ],
+ "leave_one_out_note": "for each ticket k the register holds the other seven and the report is ticket k itself (a genuinely distinct sibling that is NOT in the register). SAME_DEFECT is a false merge and fails the test. The expected vector is what the pinned engine binary measured on 2026-10-08; tickets 3 (insecure-password-input) and 6 (password-input-field-does-not-display-password-strength-indicator) score between the candidate floor (20) and the merge threshold (50) against each other: UNDECIDED = mint WITH a candidate link, never a merge (11.4.214 clause 3). A different vector means the matcher or its thresholds changed: recalibrate on purpose.",
+ "primary_negative_control": {
+  "register_ticket": 2,
+  "report_ticket": 3,
+  "expect": "DISTINCT"
+ }
+}

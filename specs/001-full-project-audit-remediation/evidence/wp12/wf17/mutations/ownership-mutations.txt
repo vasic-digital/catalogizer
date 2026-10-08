@@ -1,0 +1,11 @@
+layer_project_label_dropped CAUGHT
+layer_root_label_dropped CAUGHT
+layer_registry_op_dropped CAUGHT
+release_before_cleanup_no_lock CAUGHT
+down_ignores_start_in_progress CAUGHT
+up_unverified_and_down_unguarded CAUGHT
+podman_status_dropped CAUGHT
+sweep_live_ignores_podman_failure CAUGHT
+registry_path_hard_coded CAUGHT
+unreadable_holder_not_named CAUGHT
+identity_noop_in_down SURVIVED-AS-REQUIRED

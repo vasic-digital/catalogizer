@@ -1,0 +1,12 @@
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/GREEN-t164-selftest-run3.txt (copied verbatim below this line)
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (1 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ok   tolerant parser loads every fixture ticket and matches the recount
+ok   RED: strict yaml.safe_load fails on a colon inside a value
+ok   needle: a file added to the live tree after the freeze is absent from the recount
+ok   moved snapshot: freeze_snapshot_moved naming the file, no count printed
+SELFTEST: PASS

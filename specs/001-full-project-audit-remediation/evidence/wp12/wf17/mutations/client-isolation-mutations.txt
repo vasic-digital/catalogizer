@@ -1,0 +1,9 @@
+client_sees_repository CAUGHT
+view_copies_repo_root_files CAUGHT
+allow_list_removed CAUGHT
+is1_traversal_layers_removed CAUGHT
+is2_symlink_layer_removed CAUGHT
+is5_extra_state_mount CAUGHT
+env_files_served CAUGHT
+view_recurses CAUGHT
+n1_identity FAILED-BUT-IDENTITY

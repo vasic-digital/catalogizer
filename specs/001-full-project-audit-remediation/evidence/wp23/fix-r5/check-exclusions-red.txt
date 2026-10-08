@@ -1,0 +1,172 @@
+# fix-r5 evidence (WP-23 round 5): RED on HEAD code
+# command: bash scripts/coverage/tests/test_check_exclusions.sh --no-mutations
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 50e2bb892608b2fc03b773fccb9867572272ebd7e73fd977630807a54703144c  scripts/coverage/check_exclusions.sh
+# sha256 119441c7f61cce7af30e27bad4fea12b8c8564289e11357e1028e2904bb1efd6  scripts/coverage/check_exclusions.py
+# sha256 447071726d27737f737d62da31df25a9f412132dc54ee02133c3b1d11bf8bced  scripts/coverage/fence_lib.py
+# sha256 79b0ef57a669ae0088907db97dc26a884a853fad185757889f0d8fba687116cd  coverage/exclusions/tools.yaml
+# sha256 b851ab064be833081ed76a2d488360f2dc4088cacc413997883aac7ddd108633  scripts/coverage/tests/test_check_exclusions.sh
+# HEAD copy: the SUT files as `git show HEAD:<path>` (scratch copy in /dev/shm/r5/head), run with the CURRENT test file; GATE=<HEAD copy>/scripts/coverage/check_exclusions.sh
+# source output: final/excl-red.txt
+
+FAIL: golden-good (schema only): exit 0 (got '2' want '0')
+FAIL: golden-good (schema only): the verdict file says SCHEMA_ONLY and that no content or applied rule ran (got '' want 'SCHEMA_ONLY:false:false')
+FAIL: golden-good: the verdict names the application (got '' want 'demo')
+FAIL: golden-good: the verdict carries the sha256 of the checked file (got '' want '2785a5d5cbd18f7bdb89cd785d9f96b5717470415258b6aa86dc98b3bddf39d9')
+FAIL: golden-good: the first-party entry is reported as an honest gap (got '' want '1')
+FAIL: unlisted exclusion: exit 2
+FAIL: unlisted exclusion: stderr: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+jq: error: Could not open file /dev/shm/chkexcl-test.O2FbE6/v2.json: No such file or directory
+FAIL: unlisted exclusion: the verdict file says FAIL (got '' want 'FAIL')
+FAIL: golden-false: every used pattern is listed: exit 0 (got '2' want '0')
+FAIL: a used pattern that names a listed directory in another spelling (dir/, dir) is listed: exit 0 (got '2' want '0')
+FAIL: unjustified entry: rc 2: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: a one-character justification accepted
+FAIL: first-party w/o item: rc 2: check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: a bogus tracked item accepted
+FAIL: unknown class accepted
+FAIL: over-broad pattern accepted
+FAIL: absolute path accepted
+FAIL: .. accepted
+FAIL: duplicate path accepted
+FAIL: wrong schema accepted
+FAIL: application mismatch accepted
+FAIL: an unreadable file is a refusal, never a pass (got '2' want '1')
+PASS: no argument is a usage error
+FAIL: an explicit empty list passes (schema only) (got '2' want '0')
+FAIL: a file without the exclusions key is refused (got '2' want '1')
+PASS: round-5 golden-good: a fence over a real root, tools row and repo PASSes (exit 0)
+PASS: round-5 golden-good: both rule flags are true and the verdict is PASS
+FAIL: K12.5: the verdict records the enumeration (walk, outside a work tree), the file count and the digests of its decisive inputs (got ':null:0:0' want 'walk:14:64:64')
+FAIL: K12.5: and the tools row itself (got 'null' want '"fence"')
+PASS: K12.5: a different decisive input (the items file given or not) changes the recorded digests
+FAIL: K2.1: missing root (rc 0): 
+FAIL: K2.1: empty root (rc 0): 
+FAIL: K2.1: foreign root (rc 0): 
+FAIL: K2.1: --root "" accepted
+FAIL: K2.2: no --root is a usage refusal (exit 2 root_required), not a skipped rule plus PASS (got '0' want '2')
+FAIL: K2.2: refusal text: 
+FAIL: K2.2: missing row (rc 0): 
+FAIL: K2.2: missing tools file (rc 0): 
+FAIL: K11.1: scalar row (rc 1): Traceback (most recent call last):
+  File "/dev/shm/r5/head/scripts/coverage/check_exclusions.py", line 236, in <module>
+    main(sys.argv[1:])
+    ~~~~^^^^^^^^^^^^^^
+  File "/dev/shm/r5/head/scripts/coverage/check_exclusions.py", line 181, in main
+    kind = rec_t.get("kind")
+           ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+PASS: K2.2: a fence outside coverage/exclusions/ with an explicit --repo is judged the same (exit 0)
+PASS: K2.2 control: with the row present the rule runs and finds the unlisted exclusion
+PASS: K2.3: 4 vendored of 10 tracked files (+2 provenance files): PASS
+FAIL: K2.3: the enumeration is recorded as git-tracked (got 'null' want 'git-tracked')
+PASS: K2.3: untracked scratch files (another writer's notes) do not change the verdict or the count
+FAIL: K2.3: GIT_DIR exported (as git does for a hook) gives the same tracked enumeration, not a walk that counts ignored build output (got ':null' want 'git-tracked:null')
+PASS: CM12: 10 vendored of 16 tracked measurable files (ignored build/ files and untracked notes not counted): over-broad
+FAIL: K2.4: dangling gitfile (rc 0): 
+FAIL: K1.4: same lane accepted (rc 0): 
+FAIL: K1.4: unbuilt image accepted (rc 0): 
+PASS: K1.4 golden-false: a DIFFERENT lane with a wrapper and a built image measures the files: PASS
+FAIL: K1.4: missing wrapper accepted (rc 0): 
+PASS: I5: measured_by naming a lane no row of the lanes table measures is refused
+FAIL: K1.4: fabricated item beside a lane accepted (rc 0): 
+PASS: K1.4 control: a real item plus a valid different lane PASSes
+PASS: --root: still exit 0 (a stale entry is a note)
+PASS: --root: the vendor entry matches its files
+PASS: --root: an entry that matches none is reported stale
+PASS: I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)
+PASS: I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it
+PASS: I5: **/*.go labelled generated-code (7 of 7 measurable files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist
+PASS: I5: and the UNION rule names the same excess separately
+PASS: I5: and the class claim is refuted by the content (no anchored marker, not a generator output directory)
+PASS: I5: ?*/** (a glob outside the old denylist) is refused (exit 1)
+PASS: I5: a class that is false of the matched files is refused naming the count
+PASS: I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 7 measurable files, provenance LICENSE + UPSTREAM)
+PASS: I5 golden-false: a generator-output directory (tsconfig outDir) labelled generated-code passes
+PASS: I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes
+scripts/coverage/tests/test_check_exclusions.sh: line 226: Code: command not found
+PASS: I5 golden-false (K3.5 e): a Go file with the anchored  header passes as generated-code
+PASS: I5: the same label on a hand-written file (no marker) is refused
+PASS: I5: entries that each name under half but together name more than half are refused (the union is what voids the figure)
+PASS: m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test sources) passes
+PASS: m10: a main-source file named TestHelper.kt that the glob also names is refused by the class evidence (naming the file)
+FAIL: K3.5: ConnectionSpeedTest.kt accepted (rc 0): 
+FAIL: K3.5: eventbus.go accepted (rc 0): 
+FAIL: K3.5: scripts/build accepted (rc 0): 
+FAIL: K3.5: imported fixture accepted (rc 0): 
+PASS: K3.5 golden-false: the same Go fixture package that nothing imports passes
+FAIL: CM11: unanchored header accepted (rc 0)
+FAIL: CM13: unprovenanced vendor accepted (rc 0): 
+PASS: CM13 golden-false: the same directory with a LICENSE and an UPSTREAM url file passes
+FAIL: K5.4: all-kotlin entry (rc 1): check_exclusions: FAIL: entry 1 (app/src/main/**): class generated-code is not true of 10 of 10 matched file(s), e.g. app/src/main/java/M1.kt (no generated-code marker in the first 4 KiB and not in a generated directory); app/src/main/java/M10.kt (no generated-code marker in the first 4 KiB and not in a generated directory); app/src/main/java/M2.kt (no generated-code marker in the first 4 KiB and not in a generated directory)
+PASS: K5.4 control: a 1-of-10 entry is not over-broad (refused only for its false class)
+FAIL: K5.5: a brace set is evaluated in the tool's dialect (src/{components,pages}/** names src/pages/a/b.ts and not src/other/a.ts) (got 'Traceback (most recent call last):' want 'brace True False')
+FAIL: K5.5: a character class is evaluated (got '  File "<stdin>", line 5, in m' want 'class True False')
+FAIL: K5.5 (RM-F): ? does not cross a slash (got 'TypeError: matches() takes 2 positional arguments but 3 were given' want 'qmark False True')
+FAIL: K5.5: * does not cross a slash (got '' want 'star False True')
+FAIL: K5.5: a bare directory name names its subtree in the FENCE and only itself for the tool (got 'During handling of the above exception, another exception occurred:' want 'dirprefix-fence True tool False')
+FAIL: K5.5: an extglob and a brace range are REFUSED (unevaluable), never a quiet no-match (got '|Traceback (most recent call last):|' want 'extglob ERR|range ERR|')
+FAIL: K5.5: brace entry (rc 0): 
+FAIL: K5.5: extglob entry (rc 0): 
+FAIL: K5.7: the pattern '**/' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '*/' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern './*' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern './**/*' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '**/*/' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '**/**/*' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '***' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '**/*/**' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern './**/**' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '?*' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7: the pattern '**/?*' accepted (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.7 golden-false: src/** is not over-broad (schema-only exit 0) (got '2' want '0')
+PASS: I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)
+PASS: I6 golden-false: the fence lists everything the tool config applies: exit 0
+PASS: I6 golden-false: the verdict records that the applied list was checked
+PASS: I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)
+PASS: I6 golden-false: a listed entry naming only files the tool cannot instrument (json) is not a scope claim: exit 0
+PASS: I6: a hand-kept used list that differs from the tool config extraction is stale and refused
+PASS: I6 golden-false: a hand list equal to the extraction passes
+PASS: I6: an unreadable tool config is UNVERIFIABLE (exit 1), never an empty used list
+FAIL: K5.2: identity mismatch (rc 0): 
+PASS: K5.2 control: the corrected row (vitest) is judged against the vitest config (exit 0)
+FAIL: K5.1: implicit scope (rc 0): 
+PASS: K5.1 control: coverage.include set explicitly: the implicit-scope finding is gone (exit 0)
+FAIL: K5.3: variable coverage (rc 0): 
+FAIL: K5.3: quoted key (rc 0): 
+FAIL: K5.3: constant exclude (rc 0): 
+FAIL: K5.3: spread (rc 1): check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/hidden/**' but the checked-in list does not carry it
+FAIL: K5.3: template (rc 0): 
+PASS: K5.3: test.exclude (which files vitest RUNS) is not read as a coverage exclude (exit 0)
+FAIL: K5.3: a commented-out list entry is not an exclusion (the old regex read it: a FAIL-bluff) (got '1' want '0')
+FAIL: K5.3: function config (rc 0): 
+FAIL: K5.3: jest ignore patterns (rc 0): 
+PASS: CM10: a jest NEGATION ('!src/hidden/**') is an applied exclusion and its entry is judged (refused for its false class)
+PASS: CM10: and the jest negation not in the fence is an UNLISTED exclusion
+PASS: K5.3 jacoco golden-good: the four fileFilter patterns, each listed: PASS (build-output class patterns that name no tracked source are stale notes)
+FAIL: K5.3: gradle extra exclude (rc 0): 
+FAIL: K5.5: **/*.class (rc 0): 
+FAIL: K5.6: scope (rc 0): 
+FAIL: K5.6 golden-false: the harness's real target list covers the scope: PASS (got '2' want '0')
+FAIL: K5.6: measured list (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K5.6 golden-false: two first-party entries (a tracked item) naming c.sh and d.sh plus the measured a.sh and b.sh cover the whole scope: PASS (got '2' want '0')
+PASS: CM14 / K14.6: the REAL catalog-api fence over the REAL root PASSes (kind fence recognised)
+PASS: K14.6: the real website fence PASSes
+PASS: K14.6: the real android fence PASSes
+PASS: K14.6: the real androidtv fence PASSes
+FAIL: K5.1: catalog-web (rc 0): 
+PASS: K5.2: the real api-client fence FAILs (the tools record said jest, the test script runs vitest; the committed PASS was false)
+PASS: K14.6: the real desktop fence FAILs (committed: unlisted exclusions)
+FAIL: K1.4: installer-wizard (rc 1): check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes '**/*.d.ts' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'src/main.tsx' but the checked-in list does not carry it
+check_exclusions: FAIL: unlisted exclusion: the measuring tool excludes 'vite.config.ts' but the checked-in list does not carry it
+FAIL: K5.6: build-scripts (rc 0): 
+PASS: K11.1: an option with no value is a usage error (exit 2)
+PASS: K11.1: --repo with no value is a usage error (exit 2)
+FAIL: K11.1: weird tools row (rc 1): check_exclusions: FAIL: applied exclusions unverifiable: cannot read /dev/shm/chkexcl-test.O2FbE6/fr/app/vitest.config.ts: [Errno 2] No such file or directory: '/dev/shm/chkexcl-test.O2FbE6/fr/app/vitest.config.ts'
+FAIL: K11.2: duplicate key (rc 2): check_exclusions: usage: check_exclusions.sh FILE [--application NAME] [--used FILE] [--root DIR] [--json OUT]
+FAIL: K11.2: duplicate tools key (rc 1): check_exclusions: FAIL: listed but not applied: the fence lists 'gen/schemas/**' but the tool (the tool applies no exclusion) does not exclude it, and would still measure 1 file(s) it names (e.g. gen/schemas/s.json)
+Summary: PASS=55 FAIL=91 SKIP=0
+done rc=1

@@ -1,0 +1,191 @@
+# fix-r5 evidence (WP-23 round 5): MUTATION run (paired mutants with a sandbox control)
+# command: bash scripts/coverage/tests/test_bash_coverage.sh
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 a51dc6fbaa841cbdde2690b0d2af2b8dfbff97f0f43cea8a5dbf83f0d7bbbec8  scripts/bash-coverage.sh
+# sha256 efeda0d16341ff413cd12cc632c1cf0a2049f027b82df268179ab50ad3c65870  scripts/coverage/bashcov.py
+# sha256 447071726d27737f737d62da31df25a9f412132dc54ee02133c3b1d11bf8bced  scripts/coverage/fence_lib.py
+# sha256 119441c7f61cce7af30e27bad4fea12b8c8564289e11357e1028e2904bb1efd6  scripts/coverage/check_exclusions.py
+# sha256 50e2bb892608b2fc03b773fccb9867572272ebd7e73fd977630807a54703144c  scripts/coverage/check_exclusions.sh
+# sha256 79b0ef57a669ae0088907db97dc26a884a853fad185757889f0d8fba687116cd  coverage/exclusions/tools.yaml
+# sha256 c8b0ee9a93e1635eed46e141bb5ccec84e50665316362884030bcd1b3695df5a  scripts/coverage/tests/test_bash_coverage.sh
+# source output: M2-bash.txt
+
+PASS: fixture 1: exit 0
+PASS: fixture 1: schema
+PASS: fixture 1: executable lines (hand count 10)
+PASS: fixture 1: executed lines (hand count 7)
+PASS: fixture 1: percent
+PASS: fixture 1: the uncovered lines are 10 11 15
+PASS: fixture 1: the never-called function is REPORTED
+PASS: fixture 1: the called function is not reported uncovered
+PASS: fixture 1: no traced line was classified non-executable (the classifier agrees with the tracer)
+PASS: fixture 1: totals equal the single target
+PASS: fixture 1: the PS4 in the record carries ${#BASH_SOURCE}
+PASS: fixture 1: the PS4 in the record carries ${BASH_SOURCE}
+PASS: fixture 1: the PS4 in the record carries ${LINENO}
+PASS: fixture 1: the PS4 in the record carries ${PWD}
+PASS: fixture 1: the PS4 in the record carries sha256sum
+PASS: fixture 1: the PS4 in the record carries $$
+PASS: fixture 1: the record carries the sha256 of the target and of the trace
+PASS: fixture 1: a clean run has status ok (no classifier disagreement)
+PASS: fixture 1: the honest limit (line, not branch) is written into the record
+PASS: fixture 1: the set +x limit is written into the record
+PASS: fixture 1: the trap and the multi-line substitution limits are written into the record
+PASS: K12.6: trace.txt exists in the output directory
+PASS: K12.6: command.stdout.txt exists in the output directory
+PASS: K12.6: bash-coverage.json exists in the output directory
+PASS: K12.6: run1/trace.txt is NOT ignored by the project's .gitignore (git check-ignore exit 1)
+PASS: K12.6: run1/command.stdout.txt is NOT ignored by the project's .gitignore (git check-ignore exit 1)
+PASS: K12.6: run1/bash-coverage.json is NOT ignored by the project's .gitignore (git check-ignore exit 1)
+PASS: K12.6: run1/command.err is NOT ignored by the project's .gitignore (git check-ignore exit 1)
+PASS: K12.6 control: the old name trace.log IS ignored (so the check can fail)
+PASS: fixture 1 with the branch taken: executed 8 (line 15 now executes)
+PASS: fixture 2: executable (hand count 6)
+PASS: fixture 2: executed (hand count 5)
+PASS: fixture 2: percent
+PASS: fixture 2: the uncovered line is the case arm 6
+PASS: fixture 2: no traced line outside the classifier's executable set
+PASS: driver with a fence: exit 0
+PASS: driver: child processes are traced (totals 12 executed of 16 executable)
+PASS: driver: the excluded file is not in the targets
+PASS: driver: the excluded file is listed with its class
+PASS: driver: the totals percent is 75.00
+PASS: K8.1: the applied fence is the SNAPSHOT in the run directory and its sha256 is in the record
+PASS: K8.1: the record's fence sha256 is the sha256 of the original fence file
+PASS: driver without a fence: all three count (14 executed of 19 executable)
+PASS: a fence the gate refuses is refused by the harness (exit 3 exclusions_gate_failed)
+PASS: a refused fence writes no coverage record
+PASS: I5: a fence whose class is false of the file it excludes is refused by the harness (exit 3, content-checked through --root)
+PASS: K8.1: a fence rewritten during the run does not change the applied scope: u.sh stays a target (both counted: 7 of 20 = 35.00)
+PASS: K8.1: nothing is excluded
+PASS: a failing command: the harness exits with the command's status
+PASS: a failing command: the record says command_failed with the status
+PASS: an empty trace is refused as trace_empty (exit 3), never reported as 0 percent
+PASS: a target the command never ran is reported 0.00 (the trace is not empty)
+PASS: a missing target is refused (exit 3 target_missing)
+PASS: I3: two targets sharing a base name are accepted (exit 0)
+PASS: I3: only the run one earns its lines (b/x.sh 70.00)
+PASS: I3: the sibling with the same base name that never ran stays 0.00 (control: the collision no longer shares credit)
+PASS: I3 probe: running a DIFFERENT x.sh does not credit the target a/x.sh (0.00, was 30.00 on the basename rule)
+PASS: I3 probe: the foreign same-basename file is NAMED in the record
+PASS: I3 probe: no traced line is credited to the non-target
+PASS: I3 probe: a RELATIVE path that resolves to a different file is not credited
+PASS: I3 golden-false: a RELATIVE path that resolves to the target is credited (70.00)
+PASS: I3: a copy that keeps the target's relative layout (.../a/x.sh) is credited (70.00)
+PASS: I3: the copy path is recorded as a copy
+PASS: I3: a root-level target is not credited by any same-basename file elsewhere (0.00)
+PASS: I3: two --target arguments naming ONE file are refused (3 duplicate_target)
+scripts/coverage/tests/test_bash_coverage.sh: line 175: cd: sub: No such file or directory
+PASS: K3.1: a never-run x.sh is NOT credited by the x.sh a child ran after  (0.00, was 100.00)
+PASS: K3.1 golden-false: the x.sh it really ran (sub/x.sh) is credited (70.00)
+PASS: K3.1 (RM-C): the harness started in sub/ runs sub/x.sh; the root target x.sh is not credited (0.00)
+PASS: K4.4: a path with :12: in a directory name is credited (70.00, was 0.00 with exit 0)
+PASS: K4.4: a path that contains the delimiter byte itself is credited (length-prefixed, 70.00)
+PASS: K3.2: an unrelated file with the same path suffix and DIFFERENT content earns nothing (0.00, was 70.00)
+PASS: K3.2: and it is listed as copy_unverified
+PASS: K3.2: an IDENTICAL copy that the command deletes before it returns is credited (70.00)
+PASS: K3.2: and recorded as a copy
+PASS: K3.3: lib_trap.sh executable (hand count 4: 1 3 4 7)
+PASS: K3.3: executed 3 4 7 = 75.00 (a USR1 trap and an ERR trap did not credit line 1; was 100.00)
+PASS: K3.3: the uncovered line is 1
+PASS: K3.3: no classifier disagreement (the line-1 trap records are listed as ignored, not as disagreement)
+PASS: K3.4: the target spelled 'vendor/v.sh' is excluded by the fence (one target left)
+PASS: K3.4: the target spelled './vendor/v.sh' is excluded by the fence (one target left)
+PASS: K3.4: the target spelled 'lib/../vendor/v.sh' is excluded by the fence (one target left)
+PASS: K3.4: a target outside --src-root is refused (3 target_outside_src)
+PASS: K4.1: cov_multiline.sh executable (hand count 5: 2 4 7 8 9)
+PASS: K4.1: executed 4 = 80.00 (a fully run multi-line word is covered, was 42.86 for the unaliased lines)
+PASS: K4.1: the only uncovered line is 9 (the never-run 2-line assignment counts ONCE)
+PASS: K4.1: no classifier disagreement
+PASS: K4.1: arrays opened by local / declare / readonly / typeset count ONE line each (executable 6)
+PASS: K4.1: all six are executed, no element line is uncovered
+PASS: K4.1: version.sh driven through init_versions, _json_write, _json_read: exit 0 and status ok
+PASS: K4.1: none of version.sh 46-51 / 74-82 / 90-107 is reported uncovered or counted on its own (the committed record counted 33 of them)
+PASS: K4.2: an arithmetic << is not a here-document: executable 4 (3 4 5 7), executed 1 = 25.00 (was 66.67)
+PASS: K4.2: <<END-DATA is a here-document delimited by END-DATA, <<WORD in a comment is not one, two here-documents on one line both end: executable 4, 100.00
+PASS: K4.3: done < <(echo a; echo b) is executable: executable 5, executed 5, no disagreement
+PASS: CM19: bare case labels a) and b) are not lines: executable 5 (2 3 5 8 11), executed 4 = 80.00, uncovered 8
+PASS: I4: a RELATIVE --out with a child that cd's: exit 0
+PASS: I4: the child's lines are traced (70.00, was 0.00 with exit 0)
+PASS: I4: a RELATIVE --exclusions file is resolved before any cd (the fence still applies)
+PASS: i1: pipeline fixture executable lines (hand count 8: 3 4 5 6 7 8 9 10)
+PASS: i1: pipeline fixture executed (8)
+PASS: i1: no traced line is classified non-executable (the classifier agrees with the tracer)
+PASS: i1: a multi-line array assignment counts ONE executable line (fixture hand count 2: lines 3 and 7)
+PASS: i1: both are executed (the assignment is traced at its closing line 6 by bash 5.3, folded onto the group's counted line 3)
+PASS: i1: no classifier disagreement on the array fixture (status ok)
+PASS: i1 synthetic (bash 5.3 style, the continuation traced at its first line 10): all 8 executed, none foreign
+PASS: i1 synthetic (bash 5.2 style, the continuation traced at its LAST line 11): the same 8 executed, none foreign
+PASS: i1 synthetic: the status is ok for both styles
+PASS: i1 synthetic control: with the continuation line never traced the command is NOT executed (7 of 8)
+PASS: i1 synthetic: a multi-line array reported at its OPENING line is folded onto its counted line: 2 of 2
+PASS: i1 synthetic: the same array reported at its CLOSING line (bash 5.3 style) is folded onto its counted line: 2 of 2
+PASS: K4.1 synthetic: an assignment traced at its LAST line (3) and a word traced at its first line (4): both folded, 4 of 5
+PASS: i1: an argument continuation (line 11) is not counted
+PASS: K4.5 (RM-A): a traced structural line (8, a closing brace) makes the report exit 3
+PASS: K4.5: the record says classifier_disagreement and carries NO percent
+PASS: K4.5: the refusal is on stderr
+PASS: K4.5 control: the same synthetic trace without the stray line reports 70.00 and exits 0
+PASS: K4.5: a record at line 40 of a 17-line file is listed in trace_out_of_range and does not refuse
+PASS: K6.5: an --out path with $( ) is refused (3 out_unsafe_path) and no code ran
+PASS: K6.6: the default --out is created under $PWD/.audit/out/ (one record)
+PASS: K7.1: a background child still running when the command returns is refused (3 trace_writers_outlived_command)
+PASS: K7.1: the record carries status trace_writers_outlived_command and no figure
+PASS: K7.1: the survivor was reaped: the trace does not grow after the run
+PASS: K7.1 control: the same command without a background child is ok (exit 0)
+PASS: K7.3: INT reaches the harness while the command absorbs it: the harness exits 130 (was 0)
+PASS: K7.3: the record says interrupted and carries no figure
+PASS: K7.2: TERM to the harness: it exits 143 and the record says interrupted
+PASS: K7.2: and it returns within 3 s of the signal: the TERM was forwarded to the command's process group (the command would otherwise run its 5 s)
+PASS: K7.2: no orphan of the TERMed run keeps writing to the trace (the group was signalled and reaped)
+PASS: K7.2 / K8.5: a second run into the same --out is refused (3 out_not_empty): the orphan of the first can never be credited to the second
+PASS: K8.2: a target rewritten during the run is refused (3 target_changed_during_run)
+PASS: K8.2 control: an unchanged target is measured (70.00)
+PASS: no -- command is a usage error
+PASS: no target is a usage error
+PASS: m9: the command is handed BASH_ENV and COV_TRACE_FILE inside its own --out directory
+PASS: m9 control: the same probe run without the harness sees neither variable (so the leg above can fail)
+PASS: determinism: two runs give identical executed lines
+SKIP: kcov cross-check: kcov is not installed on this host (it is in IMG-KCOV: run through TIC build-scripts unit)
+PASS: mutation sandbox control: an UNMUTATED copy of the harness passes this body (so a CAUGHT below is the mutation)
+PASS: mutation no-xtrace-fd caught (94 failing legs)
+PASS: mutation structural-counted caught (35 failing legs)
+PASS: mutation exclusions-ignored caught (7 failing legs)
+PASS: mutation command-rc-swallowed caught (1 failing legs)
+PASS: mutation empty-trace-accepted caught (1 failing legs)
+PASS: mutation fence-root-dropped caught (14 failing legs)
+PASS: mutation fence-gate-skipped caught (3 failing legs)
+PASS: mutation fence-snapshot-ignored caught (4 failing legs)
+PASS: mutation duplicate-target-unchecked caught (1 failing legs)
+PASS: mutation RM_basename_credit caught (11 failing legs)
+PASS: mutation copy-suffix-dropped caught (5 failing legs)
+PASS: mutation root-level-copy-credit caught (1 failing legs)
+PASS: mutation copy-hash-ignored caught (2 failing legs)
+PASS: mutation RM_C_resolve_against_src caught (3 failing legs)
+PASS: mutation resolve-against-harness-cwd caught (2 failing legs)
+PASS: mutation relative-out-kept caught (2 failing legs)
+PASS: mutation target-norm-dropped caught (112 failing legs)
+PASS: mutation target-hash-ignored caught (1 failing legs)
+PASS: mutation line1-trap-credited caught (2 failing legs)
+PASS: mutation unsafe-out-accepted caught (1 failing legs)
+PASS: mutation out-not-empty-accepted caught (1 failing legs)
+PASS: mutation survivors-ignored caught (2 failing legs)
+PASS: mutation late-writers-ignored caught (2 failing legs)
+PASS: mutation interrupted-ignored caught (3 failing legs)
+PASS: mutation group-forwarding-dropped caught (1 failing legs)
+PASS: mutation group-fold-dropped caught (8 failing legs)
+PASS: mutation pipe-continuation-dropped caught (5 failing legs)
+PASS: mutation array-context-dropped caught (7 failing legs)
+PASS: mutation arith-heredoc-detected caught (33 failing legs)
+PASS: mutation heredoc-delimiter-first-identifier caught (1 failing legs)
+PASS: mutation procsub-done-structural caught (1 failing legs)
+PASS: mutation CM19_case_label_counted caught (1 failing legs)
+PASS: mutation RM_A_status_never_disagreement caught (1 failing legs)
+PASS: mutation disagreement-exits-zero caught (2 failing legs)
+PASS: mutation function-report-dropped caught (1 failing legs)
+PASS: mutation length-prefix-dropped caught (1 failing legs)
+PASS: mutation out-of-range-credited caught (1 failing legs)
+Summary: PASS=173 FAIL=0 SKIP=1
+done rc=0

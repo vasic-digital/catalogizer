@@ -1,0 +1,15 @@
+RESULT U47 PASS no knob: floor stays the 32 GiB default (echo 33554432, 31 GiB refused with '< 32 GiB')
+RESULT U48 FAIL env knob 20 GiB: echo follows (20971520) and 19 GiB is refused with '< 20 GiB'
+  detail[U48]: v=33554432 rc=6 out=free_bytes=11178688512 db_bytes=0 min_free_bytes=64424509440 PREFLIGHT FAIL disk: free 11178688512 < required 64424509440 mem_avail_kb=6218812 min_mem_avail_kb=33554432 PREFLIGHT FAIL memory: Mem
+RESULT U49 FAIL limits-file key min_mem_avail_gib: 20 -> floor 20 GiB (echo 20971520, 19 GiB refused)
+  detail[U49]: v=33554432 rc=6 out=free_bytes=11178627072 db_bytes=0 min_free_bytes=64424509440 PREFLIGHT FAIL disk: free 11178627072 < required 64424509440 mem_avail_kb=6213512 min_mem_avail_kb=33554432 PREFLIGHT FAIL memory: Mem
+RESULT U50 FAIL env knob wins over the limits file (24 GiB env vs 20 GiB file -> 25165824)
+  detail[U50]: v=33554432 out=free_bytes=11178590208 db_bytes=0 min_free_bytes=64424509440 PREFLIGHT FAIL disk: free 11178590208 < required 64424509440 mem_avail_kb=6199600 min_mem_avail_kb=33554432 PREFLIGHT FAIL memory: MemAvail
+RESULT U51 FAIL absurd/non-numeric floors (<4 GiB, 0, text, negative, file 2 GiB) are REFUSED with 'PREFLIGHT FAIL memory-floor'
+  detail[U51]:  [val='1048576' rc=6] [val='4194303' rc=6] [val='0' rc=6] [val='abc' rc=6] [val='' rc=6] [val='20 GiB' rc=6] [val='-5' rc=6] [file=2GiB rc=6]
+RESULT U52 FAIL 4 GiB lower bound accepted (echo 4194304); 3 GiB measured is refused against it
+  detail[U52]: v=33554432 out=free_bytes=11178348544 db_bytes=0 min_free_bytes=64424509440 PREFLIGHT FAIL disk: free 11178348544 < required 64424509440 mem_avail_kb=3145728 min_mem_avail_kb=33554432 PREFLIGHT FAIL memory: MemAvail
+RESULT U53 FAIL missing limits file refused (fail closed); file without the key -> 32 GiB default
+  detail[U53]: r1=1 r2=0 v=33554432
+RESULT U54 PASS live writer still refused with the lowered floor (same exit as without the knob, no bulk call)
+SUMMARY cases=8 failed=6

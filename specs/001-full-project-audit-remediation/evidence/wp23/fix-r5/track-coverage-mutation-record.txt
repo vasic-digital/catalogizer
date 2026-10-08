@@ -1,0 +1,44 @@
+CONTROL PASS
+CAUGHT run-half-status-dropped: FAIL: package_failed: stderr lacks 'beta (unit): package_failed': track-coverage: FAIL: beta (unit): profile_e|
+CAUGHT verify-skipped: FAIL: verify_refused: stderr lacks 'beta (unit): verify_refused': track-coverage: FAIL: beta (unit): package_f|
+CAUGHT foreground-wait: FAIL: collect: it waited in the foreground|
+CAUGHT panic-unchecked: FAIL: package_panicked: stderr lacks 'beta (unit): package_panicked': track-coverage: FAIL: beta (unit): packa|FAIL: panic_with_exit_zero: stderr lacks 'beta (unit): package_panicked': track-coverage: FAIL: beta (unit): p|
+CAUGHT empty-profile-ok: FAIL: profile_empty: exit 0 (a failing package was swallowed)|FAIL: profile_empty: stderr lacks 'beta (unit): profile_empty': |
+CAUGHT infra-detail-dropped: FAIL: infra_failed: stderr lacks 'beta (unit): infra_failed (snapshot_mismatch)': track-coverage: FAIL: beta (|
+CAUGHT dir-abs-unhandled: FAIL: I10: compile target wrong: dispatch submit --purpose build:catalog-api:unit:0000000000000000000000000000|FAIL: I10: members.tsv records the checkout-relative directory (the run half's cd /src/<dir>) (got '/src/catal|
+CAUGHT fence-not-applied: FAIL: summary: failure not reported (rc 0): |FAIL: I6: statements exclude the fenced file's 7 (hand count 15, was 22 before the fence was applied) (got '22|
+CAUGHT fence-gate-skipped: FAIL: I6: refused fence was accepted (rc 0): |FAIL: I6: result status is not failed after a refused fence|
+CAUGHT CM20_merge_failure_ignored: FAIL: CM20: merge failure swallowed (rc 0): |FAIL: CM20: status ok, baseline present|
+CAUGHT CM23_kind_not_checked: FAIL: timed_out_with_succeeded_class: exit 0 (a failing package was swallowed)|FAIL: timed_out_with_succeeded_class: stderr lacks 'beta (unit): timed_out': |
+CAUGHT recorder-argv-restored: FAIL: K6.1: with the REAL evrec the collector exits 0 (it ended with 'the recorder did not record the result' |FAIL: K6.1: the ledger holds one entry: item CAT-123, BASELINE, pass, evidence class runtime, target class go_|
+CAUGHT drop-test-source: FAIL: recorder: the collector's entry has the test_fingerprint of (python + gocov_merge.py), the control with |FAIL: recorder control: the same entry WITHOUT the declared source has another test_fingerprint (the leg can f|
+CAUGHT artifact-fields-read-again: FAIL: collect: exit 0 on the golden case (got '1' want '0')|FAIL: K8.3: no copy under the run directory|
+CAUGHT cd-app-dropped: FAIL: K6.3: no cd into the module: dispatch submit --purpose build:catalog-api:unit:00000000000000000000000000|
+CAUGHT lane-membership-dropped: FAIL: K6.3 d: lane membership: unit holds alpha and e2e, integration holds tagged and tests/integration/x (4 m|
+CAUGHT stdin-guard-dropped: FAIL: K6.4: a dispatcher call that reads an OPEN stdin does not hang the submit (exit 0, not the timeout's 124|
+CAUGHT read-fd-dropped: FAIL: submit: ONE build group per run, two members (one per package) (got '0' want '2')|FAIL: submit: every member names the same group (got '0' want '2')|
+CAUGHT seal-gate-dropped: FAIL: submit: the group was not sealed|FAIL: K9.1: the state is NOT sealed (got 'true' want 'false')|
+CAUGHT sealed-check-dropped: FAIL: K9.1: unsealed state collected (rc 1): track-coverage: REFUSED reason=state_incomplete the state expects|FAIL: K9.1: interrupted state collected (rc 1)|
+CAUGHT state-complete-dropped: FAIL: K9.1: incomplete state collected (rc 0): |
+CAUGHT out-not-empty-dropped: FAIL: K8.4: reused --out accepted (rc 0): |
+CAUGHT snapshot-skew-dropped: FAIL: K12.4: skewed snapshot collected (rc 0): |
+CAUGHT state-not-empty-dropped: FAIL: K9.1: state reused (rc 0): |
+CAUGHT not-terminal-dropped: FAIL: not_terminal: stderr lacks 'beta (unit): not_terminal (state=': track-coverage: FAIL: alpha (unit):  ()|
+CAUGHT copy-status-dropped: FAIL: K8.3: unreadable artifact (rc 1): chmod: cannot access '/dev/shm/trackcov-test.jfDmvl/cp/out/run/unit/be|
+CAUGHT reconcile-dropped: FAIL: K9.2: dropped member not detected (rc 0): |
+CAUGHT summary-status-dropped: FAIL: summary: failure not reported (rc 0): |
+CAUGHT status-before-result: FAIL: status: failed collection reached the recorder (rc 1): recorder run CAT-123 BASELINE 1 go_binary /dev/sh|
+CAUGHT interrupted-state-dropped: FAIL: K9.1: and leaves sealed=false interrupted=true (got 'false:false' want 'false:true')|
+CAUGHT abspath-dropped: FAIL: K6.3 c: no relative state at /dev/shm/trackcov-test.xLbRId/rl/rel-state|FAIL: K6.3 c: collect with a RELATIVE --out and --state exits 0 (the runner refuses a relative --out: out_dir_|
+CAUGHT item-not-validated: FAIL: K6.1: bad item accepted: |
+CAUGHT gaps-dropped: FAIL: gaps: result.json carries the uncompiled build tags from gaps.json (got 'null' want '{"e2e_binary":3}')|FAIL: gaps: and the baseline carries them (a reader of the baseline sees what the figure does not cover) (got |
+CAUGHT m-G_merge_argv_first_profile_dropped: FAIL: K11.5: merge p1 --out F p2 sums BOTH profiles (a[2:o] dropped p1): block 1 counted 3, block 2 counted 5 |
+CAUGHT CM21_mode_mix_merged: FAIL: CM20: merge failure swallowed (rc 0): |FAIL: CM20: status ok, baseline present|
+CAUGHT CM22_statement_mismatch_merged: FAIL: CM22: statement mismatch merged (rc 0): |
+CAUGHT module-unknown-applied-silently: FAIL: summary: failure not reported (rc 0): |FAIL: K2.5: no module (rc 0): |
+CAUGHT fence-missing-crash: FAIL: K2.6: missing fence (rc 3): x|
+CAUGHT fence-malformed-accepted: FAIL: K2.6: no-path entry (rc 3): gocov_merge: input could not be processed: KeyError: 'path'|
+CAUGHT nonce-not-checked: FAIL: K8.4: foreign result accepted (rc 0): |
+CAUGHT provenance-not-checked: FAIL: K12.4: empty provenance accepted (rc 0)|
+CAUGHT result-status-not-checked: FAIL: K8.4: failed result accepted (rc 0)|
+CAUGHT go-mod-comment-not-parsed: FAIL: K2.5: go.mod form 'module catalogizer // the api': the module is read and the fence applied (excluded st|

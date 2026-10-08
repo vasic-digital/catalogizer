@@ -73,7 +73,7 @@ mk ha; app ha "python3 -c 'import psutil; psutil.Process(1).kill()'"; ms_scan "$
 for spec in 'import psutil as p' 'p.send_signal(9)' 'psutil.Process(1).terminate()'; do
   mk hi; app hi "$spec"; ms_scan "$PR" "$FX/m-hi" >/dev/null 2>&1; assert_rc "S28b WF14 RB5 an interpreter signal API [$spec] is aborted" $? 1
 done
-for spec in '/usr/bin/k?ll -9 -1' '/bin/k*ll -9 -1' '/usr/bin/[k]ill -9 -1' '/usr/sbin/sh*utdown'; do
+for spec in '/usr/bin/k?ll -9 -1' '/bin/k*ll -9 -1' '/usr/bin/[k]ill -9 -1' '/usr/sbin/sh*utdown' '$chroot/usr/bin/k?ll -9 -1'; do   # the last one has an alphanumeric before the slash: only the glob scan (no left boundary) sees it
   n=$((n+1)); mk hb; app hb "$spec"; ms_scan "$PR" "$FX/m-hb" >/dev/null 2>&1; assert_rc "S29 WF14 RB7 a glob-built absolute path [$spec] is aborted" $? 1
 done
 for spec in 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; }' 'unset -f kill' 'enable kill' 'BASH_ENV=/dev/null bash -c x' 'MS_REAL_KILL=/bin/true' 'ms_blocked() { return 0; }'; do
@@ -86,6 +86,16 @@ for spec in '"$PODMAN" stop -t 5 "$(podman ps -q | head -1)"' 'podman rm -f x' '
 done
 mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0
 mk hh lib.sh 'flock -w 15' 'flock -w 2'; ms_scan "$PR" "$FX/m-hh" >/dev/null 2>&1; assert_rc "S34 golden-true: an ordinary edit still runs after the token set grew" $? 0
+# round 5 (WF17 F7, CONS LO-T3 b): a computed absolute path or a quote-split word is refused when it is a NEW line; a pristine line, an ordinary edit and an empty-quote argument are not
+mk hj; app hj 'b=/usr/bin; "$b/k""ill" -0 2'; ms_scan "$PR" "$FX/m-hj" >/dev/null 2>&1; assert_rc "S35 WF17 F7 the computed-path line b=/usr/bin; \"\$b/k\"\"ill\" is aborted (golden-bad)" $? 1
+mk hk; app hk 'p=/sbin; "${p}/sh""utdown" -h now'; ms_scan "$PR" "$FX/m-hk" >/dev/null 2>&1; assert_rc "S35b a quote-split /sbin command is aborted" $? 1
+mk hl; app hl 'c=k""ill; $c -0 2'; ms_scan "$PR" "$FX/m-hl" >/dev/null 2>&1; assert_rc "S35c a quote-split word with no path is aborted" $? 1
+mk hm; app hm "c=k''ill; \$c -0 2"; ms_scan "$PR" "$FX/m-hm" >/dev/null 2>&1; assert_rc "S35d a single-quote split word is aborted" $? 1
+mk hn; app hn "printf '%s' ''; x=''; y=\"\"; echo done"; ms_scan "$PR" "$FX/m-hn" >/dev/null 2>&1; assert_rc "S36 golden-true: empty-quote ARGUMENTS (not inside a word) are allowed" $? 0
+mk ho; app ho 'cd /tmp && ls'; ms_scan "$PR" "$FX/m-ho" >/dev/null 2>&1; assert_rc "S36b golden-true: a path that is not a bin directory is allowed" $? 0
+mk hr lib.sh 'exit "${3:-$RC_USAGE}"; }' 'exit "${3:-$RC_USAGE}"; } # was /usr/bin/true'; ms_scan "$PR" "$FX/m-hr" >/dev/null 2>&1; assert_rc "S36c a /usr/bin mention in a TRAILING comment on an edited line is refused conservatively (to the scan a trailing comment is code)" $? 1
+# CONS-11: a byte-identical copy of a pristine signal line is admitted anywhere (stated, not hidden): the test records the limit so the doc claim cannot drift
+mk hs; app hs '  kill -s "$sig" -- "$pid" 2>/dev/null'; ms_scan "$PR" "$FX/m-hs" >/dev/null 2>&1; assert_rc "S37 CONS-11 stated limit: a byte-identical COPY of a pristine kill line is admitted by layer 1 (layer 2 is what contains it)" $? 0
 echo "== layer 2: the BASH_ENV shim and the PATH stubs, with a RECORDER instead of the real kill (signal 0 only) =="
 ms_prepare "$FX/shim" || { bad "L0 containment cannot be built on this host"; finish; }
 cat >"$FX/rec-kill" <<EOF
@@ -109,11 +119,22 @@ if [ -n "$kt" ]; then ms_run bash -c "kill -0 $kt" >/dev/null 2>&1; assert_rc "L
 else ok "L3b skipped: no kernel thread (pgrp 0) on this host (UNCONFIRMED here, 11.4.3)"; fi
 assert_eq "L4 NOTHING of the above reached the kill binary (recorder empty)" "$(wc -l <"$FX/rec.log")" 0
 assert_eq "L4b every refusal was logged as BLOCKED" "$(grep -c BLOCKED "$MS_LOG")" "$nb"
-ms_run bash -c 'command kill -0 1' >/dev/null 2>&1; assert_rc "L5 command kill finds only the PATH stub and is refused" $? 1
-ms_run bash -c 'env kill -0 1' >/dev/null 2>&1; assert_rc "L5b env kill is refused by the stub" $? 1
-ms_run bash -c 'pkill -0 -x nosuchprocess' >/dev/null 2>&1; assert_rc "L5c pkill is refused" $? 1
-ms_run bash -c 'killall -0 nosuchprocess' >/dev/null 2>&1; assert_rc "L5d killall is refused" $? 1
-ms_run bash -c 'command pkill -0 -x nosuchprocess' >/dev/null 2>&1; assert_rc "L5e command pkill is refused by the stub" $? 1
+# round 5 (CONS-5 / LO-T3 a): rc 1 alone is satisfied by the HOST kill (EPERM on pid 1) and by pkill (no match), so each refusal is paired with (i) the identity of the resolved command (the INNER stub, never the
+# outer containment's stub that sits later on PATH nor the host binary) and (ii) exactly ONE new line in the INNER log. A mutant of the library that does not create a stub is then visible here.
+for n in kill pkill killall skill podman; do assert_eq "L5-id the INNER containment resolves '$n' to its own stub" "$(ms_run bash -c "type -P $n")" "$MS_BIN/$n"; done
+for n in kill pkill killall podman ms_blocked ms_kill_guard; do assert_eq "L5-ro the containment function '$n' is READ-ONLY (the listing of declare -F carries -fr for it)" "$(ms_run bash -c 'declare -F' | grep -cx "declare -fr $n")" 1; done
+refused() {  # refused <label> <command> <expected inner-log words>: rc 1 AND exactly one new inner log line containing the words, recorder untouched
+  local l0 l1; l0=$(wc -l <"$MS_LOG"); ms_run bash -c "$2" >/dev/null 2>&1; local rc=$?; l1=$(wc -l <"$MS_LOG")
+  assert_rc "$1 rc" $rc 1; assert_eq "$1 exactly ONE new line in the INNER log" "$((l1-l0))" 1
+  tail -1 "$MS_LOG" | grep -q -- "$3" && ok "$1 the log line names the refused call" || bad "$1 [$(tail -1 "$MS_LOG")]"
+}
+refused "L5 command kill finds only the PATH stub" 'command kill -0 1' 'BLOCKED stub kill'
+refused "L5b env kill is refused by the stub" 'env kill -0 1' 'BLOCKED stub kill'
+refused "L5c pkill is refused" 'pkill -0 -x nosuchprocess' 'pkill'
+refused "L5d killall is refused" 'killall -0 nosuchprocess' 'killall'
+refused "L5e command pkill is refused by the stub" 'command pkill -0 -x nosuchprocess' 'BLOCKED stub pkill'
+refused "L5g command killall is refused by the stub" 'command killall -0 nosuchprocess' 'BLOCKED stub killall'
+refused "L5h skill is refused by the stub" 'skill -0 -u nobody' 'BLOCKED stub skill'
 assert_eq "L5f the recorder is still empty" "$(wc -l <"$FX/rec.log")" 0
 
 echo "== WF14 layer 2: podman is contained, the shim cannot be redefined from inside a mutant =="
@@ -121,14 +142,25 @@ echo "== WF14 layer 2: podman is contained, the shim cannot be redefined from in
 assert_eq "L6 WF14 R2-T2 inside the containment 'podman' resolves to the PATH stub, never the host binary" "$(ms_run bash -c 'type -P podman')" "$MS_BIN/podman"
 ms_run bash -c 'podman stop wf14-no-such-container' >/dev/null 2>&1; assert_rc "L6b podman stop is refused by the stub (1)" $? 1
 ms_run bash -c 'command podman rm -f wf14-no-such-container' >/dev/null 2>&1; assert_rc "L6c command podman rm is refused too (1)" $? 1
+ms_run bash -c 'env podman stop wf14-no-such-container' >/dev/null 2>&1; assert_rc "L6c2 env podman stop reaches the PATH stub and is refused (1)" $? 1
 assert_eq "L6d CONTROL NEEDLE: a read-only podman ps goes through the stub and lists nothing (0, empty)" "$(ms_run bash -c 'podman ps --format {{.ID}}; echo rc=$?')" "rc=0"
-grep -c 'BLOCKED.*podman' "$MS_LOG" | grep -qx 2 && ok "L6e both refused calls were logged" || bad "L6e [$(cat "$MS_LOG")]"
+grep -c 'BLOCKED.*podman' "$MS_LOG" | grep -qx 3 && ok "L6e all three refused calls were logged" || bad "L6e [$(cat "$MS_LOG")]"
 : >"$FX/rec.log"; : >"$MS_LOG"
 ms_run bash -c 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; } 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7 WF14 RB8 redefining the guard function from inside the containment fails (readonly): kill -0 -1 is still refused" $? 1
 ms_run bash -c 'unset -f kill 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7b unset -f kill fails (readonly): kill -0 -1 is still refused" $? 1
 ms_run bash -c 'kill() { "$MS_REAL_KILL" "$@"; } 2>/dev/null; kill -0 -1' >/dev/null 2>&1; assert_rc "L7c redefining kill itself fails (readonly): refused" $? 1
 assert_eq "L7d CONTROL: the recorder is still empty; the shim logged the refusals" "$(wc -l <"$FX/rec.log"):$(grep -c BLOCKED "$MS_LOG" | awk '$1>=3{print "ok"}')" "0:ok"
 ms_run bash -c "kill -0 $P" >/dev/null 2>&1; assert_rc "L7e CONTROL NEEDLE: a legitimate target still reaches the recorder after the readonly hardening" $? 0
+# round 5 (found by the NEGATIVE CONTROL of mutate_registry.sh: CTRL0 failed an unmutated tree): the shim read the process group with a line-oriented sed over /proc/<pid>/stat, so a live process whose comm holds a NEWLINE
+# was refused as "process group is ''" (a false-positive refusal of the instrument itself, 11.4.201 (1)): every contained run of a test that signals such a process failed for the wrong reason
+: >"$FX/rec.log"; : >"$MS_LOG"
+python3 -I -c 'import ctypes,time; ctypes.CDLL(None).prctl(15, b"ab\ncd", 0, 0, 0); print("ready", flush=True); time.sleep(600)' >"$FX/nl.ready" 2>/dev/null & NLP=$!; KILLME+=("$NLP")
+for _ in $(seq 1 40); do [ -s "$FX/nl.ready" ] && break; sleep 0.1; done
+[ "$(wc -l </proc/$NLP/comm)" -ge 2 ] && ok "L8 the comm of the test process really holds a newline (precondition of L8b)" || bad "L8 the comm holds no newline [$(cat /proc/$NLP/comm)]"
+ms_run bash -c "kill -0 $NLP" >/dev/null 2>&1; assert_rc "L8b a live process whose comm holds a NEWLINE is allowed through to the recorder (not refused as 'process group is empty')" $? 0
+grep -qx -- "-0 $NLP" "$FX/rec.log" && ok "L8c the recorder saw that call" || bad "L8c [$(cat "$FX/rec.log")] [$(cat "$MS_LOG")]"
+KILLME+=("$NLP")   # cleaned at exit with the real kill (MS_REAL_KILL is the recorder until then, so a contained `kill` here would not end it and `wait` would hang)
+: >"$FX/rec.log"; : >"$MS_LOG"
 : >"$FX/rec.log"; : >"$MS_LOG"
 
 echo "== layer 2 on HYPOTHETICAL BAD MUTANTS that layer 1 would also stop: run anyway, with signal 0, to prove the shim alone holds =="

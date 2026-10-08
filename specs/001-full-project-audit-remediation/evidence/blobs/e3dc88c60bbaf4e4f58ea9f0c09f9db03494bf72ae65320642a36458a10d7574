@@ -1,0 +1,21 @@
+# identity: task=T163 utc=2026-10-08T09:07:55Z host=3f6b59ba1616 uid=1000
+# git_head=ab5a9e3924e48e5682de11704aca57b6ace2f649 tree_dirty_files=7718
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# engine probe: validate rc=0 (--version unsupported by the binary (UNCONFIRMED vs the T163 text); probe=validate)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+# TIC_IMAGE_DIGEST unset: image digest check UNCONFIRMED (host-side run)
+ok   (c) legacy_import row written BEFORE add is accepted
+ok   (c) legacy_import row written AFTER add is refused
+FAIL importer first run exits 0 :: got [1] want [0]
+FAIL importer second run exits 0 :: got [1] want [0]
+ok   (a) idempotency: second run changes no row count and no hash
+# unmapped after import (S-01 tickets are mapped, other classes may remain): 86
+FAIL every issue_file entry is mapped to an item :: got [0] want [5]
+FAIL (b) could not delete the map row in the scratch DB
+FAIL (b) completeness: before=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86] after=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86] victim=
+FAIL (d) long ticket has an item :: 
+FAIL (d) short ticket has an item :: 
+RESULT: pass=4 fail=6

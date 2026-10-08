@@ -1,0 +1,16 @@
+# NOTE: this is mutation run 2 (after run 1 exposed two test gaps: the second import's output was not checked, and the determinism mutant was itself deterministic; both fixed). cross_mark_dropped was NOT APPLIED here (the source holds the literal characters, the sed matched nothing); the fixed mutant is killed in enumerate-mutation-cross.txt. Run 1 is in enumerate-mutation-run1.txt.
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/enumerate-mutation.txt (copied verbatim below this line)
+CONTROL unmutated: rc=0 RESULT: pass=72 fail=0
+MUTANT skip_entry_check: KILLED (3 failing checks; saw /moved snapshot/)
+MUTANT drop_s11_source: KILLED (2 failing checks; saw /planted S-11|baseline class S-11/)
+MUTANT drop_s25_source: KILLED (1 failing checks; saw /planted S-25|baseline class S-25/)
+MUTANT checkbox_no_x: KILLED (1 failing checks; saw /planted S-10/)
+MUTANT insert_not_ignore: KILLED (1 failing checks; saw /sql import|second import/)
+MUTANT marker_no_wordb: KILLED (2 failing checks; saw /decoy/)
+MUTANT skip_xit_carrier: KILLED (2 failing checks; saw /decoy/)
+MUTANT cross_mark_dropped: NOT APPLIED (sed matched nothing) - counted as survivor
+MUTANT ticket_glob_deep: KILLED (2 failing checks; saw /decoy/)
+MUTANT nondeterministic: KILLED (2 failing checks; saw /byte-identical sql/)
+MUTANTS: 10 run, 1 survived
+exit=1

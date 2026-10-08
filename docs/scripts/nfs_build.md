@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
+| Last modified | 2026-10-07T16:40:48Z |
 | Status | new in the working tree (T134), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
 | Source | `scripts/test-infra/nfs_build.sh`, `scripts/test-infra/nfs/`; tests `tests/infra/test_roundtrip_nfs.sh` |
 
@@ -22,3 +22,7 @@ scripts/test-infra/nfs_build.sh [--need <bytes>]      # prints image=, image_id=
 
 `image_ref` is what `up.sh --services nfs` stores as `TI_NFS_IMAGE` for `docker-compose.test-infra.nfs.yml`. Owed: a lock entry `IMG-INFRA-NFS` (class service) and the `test_containerfiles.sh` image map
 entry, by a reviewed change of the WP-11 files (this task did not edit them).
+
+## WF17 fix round 5 (revision 2)
+
+- `--need` is validated as a strict integer (`ti_uint`); a trailing option without a value is a usage error (exit 2) instead of an endless loop. Nothing else changed.

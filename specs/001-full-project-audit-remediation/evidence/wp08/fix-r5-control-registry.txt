@@ -1,0 +1,6 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | negative control: an UNMUTATED copy through the registry mutation pipeline
+# utc 2026-10-08T01:08:19Z | host anton | git head e9d6883d (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/longops/tests/mutate_registry.sh --only CTRL0
+CONTROL-OK CTRL0 negative control: an unmutated copy of lib.sh placed like a mutant (both suites PASSED on the unmutated copy: a CAUGHT elsewhere is a real kill)
+MUTATION RESULT caught=0 survived=0 timeout=0 equivalent=0 total=1
+# exit status 0

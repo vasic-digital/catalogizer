@@ -1,0 +1,17 @@
+# identity: WF17 r5 RED ftp_capability (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:06:01Z
+# sha256 tests/infra/test_ftp_capability.sh 63c51bb5ad2436399cc1c3710c4316667bd9b1be9c3e0a7ac70f9dde490e3355
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_ftp_capability.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: WITHOUT AUDIT_WRITE the ftp service never becomes ready (up exits 1)
+PASS: the failure is the readiness / start failure (test-infra: up failed: services not ready within 40s: PROBE ftp FAIL rc=1 ftp login or passive listing failed: open: ftp)
+PASS: the failed start left no container and no lease
+PASS: WITH AUDIT_WRITE (the committed compose file) the ftp service starts and answers its probe (up exits 0)
+SUMMARY pass=4 fail=0 blocked=0
+# exit: 0

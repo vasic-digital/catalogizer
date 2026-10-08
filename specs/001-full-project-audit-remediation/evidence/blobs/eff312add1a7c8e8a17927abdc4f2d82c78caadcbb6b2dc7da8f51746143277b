@@ -1,0 +1,57 @@
+ok   baseline enumeration exits 0
+FAIL S-01 ticket a: legacy id, heading, status fixed, severity high :: ('HELIX-001', 'Ticket 1', 'high', 'fixed')
+FAIL S-01 ticket b: status open :: ('HELIX-001', 'Ticket 1', 'high', 'open')
+ok   S-01 strict-yaml measurement: both fixture tickets hold a colon in a value, so a strict YAML reader refuses them (a measured fact, OD-17)
+ok   S-03 glyph and word statuses: 0.1 Not Started, 0.2 Complete, 0.3 In Progress, 0.4 Blocked (glyph), 0.5 Blocked (word)
+ok   S-21 item statuses: block words, preface fallback for items without a word of their own
+ok   S-21 sub-items: the bullet of item 2 and the two bold status-marker segments of item 5
+ok   S-25 provider rows: legacy id is the variable NAME, title is the provider name only (no table line, no url)
+ok   S-16 vulnerability rows come from the latest gosec file only
+ok   S-16 the failed snyk scan is a scan-failed row
+ok   A3 checkbox lines of the three docs/ files doc03 counts become entries (2 + 1 + 2)
+ok   A3 checkbox lines no checkbox source enumerates are LISTED, not ignored (procedural checklist howto.md: 3 lines)
+ok   A1 prose-only ids outside S-14/S-15 get an XID entry each (DEFER-001, FINDING-7, FIX-OC2-001)
+ok   A1 ids inside the S-14 and S-15 files keep their class (CATAPI-DEFECT-001 in S-14, FIX-QA-2026-04-21-001 in S-15)
+ok   A1 the id entry locator is the first occurrence and the title is its line
+ok   A1 carriers (specs/, scripts/register/tests/, submodules/) are not scanned for ids; an id in two files is ONE entry
+ok   A1 the census residue is stated: id-like tokens no family matches are listed in the stats, not dropped
+ok   A2 one row per freeze-json remote (origin, github), not queried
+ok   A2 one row per named service; marker_found / marker_absent says what the snapshot holds
+ok   11.4.10: no remote credential (userinfo, token) appears anywhere in the sql, the stats or the kinds file
+ok   A2 the external rows use the kind external_ticket
+ok   E4 source_entries.sha256 (locked.sh sibling) and source_entries.sql.sha256 (T165 name) are the same one bare lowercase hash line of the sql
+ok   E4 contract: the committed locked.sh import-sql derives its sibling as <stem>.sha256 and takes ONE argument (re-read each run, so a change of locked.sh is noticed)
+ok   A5/B1 probe tree enumerates (rc 0; no duplicate_entry_locator from two skip hits on one line)
+ok   A5 every non-binary file is scanned whatever its extension (10 probe files + c.go), the binary file is not
+ok   A5 the binary file is counted under skipped.binary
+ok   EM02/B1 skipped tests of every language become rows; two hits on one line are numbered #1, #2 across the regexes of the tag
+ok   A6 bank case with an id is #has-id, the sibling without an id is #@1 with no legacy id and its own name as title
+ok   A7 tolerant reader, key space colon
+ok   A7 tolerant reader, trailing comment
+ok   A7 tolerant reader, folded block scalar
+ok   A7 tolerant reader, literal block scalar
+ok   A7 tolerant reader, double quoted
+ok   A7 tolerant reader, single quoted with escaped quote
+ok   A7 tolerant reader, colon inside a value (YAML refuses this)
+ok   A7 tolerant reader, continuation line
+ok   A7 tolerant reader, CRLF
+ok   A7 tolerant reader, hash inside a quoted value
+ok   D1/EM11 an unterminated block is reported as an error, the reader does not invent a mapping
+ok   D1 strict reader (yaml.safe_load) refuses the colon-in-value form: ScannerError
+ok   D1 strict reader accepts `key : value`
+ok   EM11 a ticket whose front matter is malformed is still an entry (nothing dropped) and is listed under frontmatter_problems
+FAIL A7 the enumerator reads `status : fixed # note` as fixed and the folded severity as high :: ('HELIX-778', 'Form ticket', 'high', 'fixed')
+ok   EM08 checkbox bullets - * + and a nested one are all recognised, with their checked state
+ok   EM10 a CRLF line has the title of its LF form (the CR is not part of the entry)
+ok   EM10 the entry sha256 is the sha256 of the line without its CR
+ok   EM09 bank ids c1, c1, c1~2 give two entries with one locator: refused duplicate_entry_locator (exit 20), nothing written
+ok   B3 --check-script is not an option any more: usage, exit 2, nothing written
+ok   B4 without PyYAML: refused pyyaml_missing (exit 20), nothing written
+ok   A2 a freeze json with no `remotes` list is refused freeze_remotes_missing (exit 20), nothing written
+ok   A2 `remotes: []` is a stated fact: accepted, no remote row, the four service rows remain
+ok   B2 scratch register DB (apply_ext.sh)
+ok   B2 first import applies cleanly
+ok   B2 a second import of the same sql applies cleanly and changes nothing (idempotent)
+ok   B2 re-import after the line changed: REFUSED (exit != 0, the message names stale_entries_changed_at_same_locator)
+ok   B2 the refused import is ALL-OR-NOTHING: the old entry (alpha) and the old count remain, the NEW line of the same file (gamma) was not imported, no new row
+RESULT: fail=3

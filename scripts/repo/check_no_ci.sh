@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040 helper: check_no_ci.sh - the single home of the section 11.4.156 condition (no CI pipeline definition anchored at a
 # repository root). Anti-mess invariant AM-G2 (T090) calls this helper instead of re-implementing the condition.
 #

@@ -1,0 +1,25 @@
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/GREEN-t167-run3.txt (copied verbatim below this line)
+ID      STATUS         NEEDLE    DETAIL
+AM-P1   clean          seen      no drift (0 informational)
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+SUMMARY drift=0 clean=3 not_evaluated=0 unread=0 blind=0 skipped_stage=0
+ok   baseline scan exits 0
+ok   control needle docs/LANDMINES.md found
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)
+ok   RED/needle: a planted lead line in a main-repository .md yields a row
+ok   needle: the same line in a submodule .md yields no row
+ok   lead_scan_entry_rows is one higher for the planted copy
+ok   HC-2 extra root naming the gitlink brings the submodule line into scope
+ok   extra_roots applied are recorded
+ok   an extra root that is no gitlink path is refused lead_scan_extra_root_invalid naming it
+ok   a marker inside a shell grep pattern is NON-PROBLEM with the reason
+ok   a lead line in an already-structured source is marked duplicate
+ok   snapshot changed after its manifest: freeze_snapshot_moved, no /out file
+ok   a NUL path appended to the listing: freeze_listing_moved, no /out file
+ok   a population holding LANDMINES.md without a lead line is refused lead_scan_blind
+ok   import 1 of lead_scan.sql applies cleanly
+ok   import 2 of lead_scan.sql applies cleanly
+ok   two imports give one row per lead line
+RESULT: fail=0

@@ -1,0 +1,14 @@
+== HEAD 1634b03 (control)
+  CLAUDE.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  AGENTS.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  QWEN.md    missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  GEMINI.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  divergent anchors (blocks differ across the mirrors that carry exactly one): 1 162
+  fully lockstep (one block in all four, identical): 78 of 243
+== NEW
+  CLAUDE.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  AGENTS.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  QWEN.md    missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  GEMINI.md  missing=164 duplicated=0  missing_ids=1,2,3,4,5,6,7,8,9,10,11,12... dup_ids=
+  divergent anchors (blocks differ across the mirrors that carry exactly one): 1 162
+  fully lockstep (one block in all four, identical): 78 of 243

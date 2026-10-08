@@ -674,7 +674,7 @@ steps:
   - name: integration-tests
     commands:
       - scripts/test-infra/up.sh --build-id ci   # waits until every service answers its protocol
-      - sleep 0
+      - export CATALOGIZER_TEST_INFRA_ENV="$PWD/.audit/test-infra/catalogizer-test-ci/env"   # without it every integration test SKIPS (no fixed port, no literal credential)
       - cd catalog-api
       - go test -v ./tests/integration/... -tags=integration
       - scripts/test-infra/down.sh --build-id ci --op-id "$(sed -n 's/^TI_OP_ID=//p' .audit/test-infra/catalogizer-test-ci/env)"
@@ -866,64 +866,17 @@ chmod +x /run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/local-ci.sh
 
 ### Day 11-14: Test Infrastructure Setup
 
-#### Task 5.1: Create Test Environment Provisioning
+#### Task 5.1: Test Environment Provisioning (delivered; use the tracked script)
+
+`scripts/setup-test-env.sh` is a TRACKED script of the repository (WF17 TI-I1): it starts the real PostgreSQL / Redis / FTP / SMB / WebDAV stack (`nfs` on request) through
+`scripts/test-infra/up.sh`, one compose project per run, with per-run credentials and random loopback ports, a per-project lease, and a bounded wait until every service answers its
+PROTOCOL. Run it; do not recreate it. An earlier revision of this plan embedded a heredoc here that overwrote the script with a copy checking the retired fixed ports 1445 / 2121 / 8081 /
+2049 (always "not ready") - that heredoc is gone. Usage and the contract: `docs/testing/real-service-stack.md`, `docs/scripts/setup_test_env.md`.
 
 ```bash
-cat > /run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/setup-test-env.sh << 'EOFSCRIPT'
-#!/bin/bash
-
-# Setup test environment with all required infrastructure
-
-set -e
-
-echo "=== Setting up Test Environment ==="
-
-# Start test infrastructure
-scripts/test-infra/up.sh --build-id setup
-
-# Wait for services to be ready
-echo "Waiting for test services to be ready..."
-sleep 15
-
-# Verify services
-echo ""
-echo "Checking service availability:"
-
-# Check SMB
-if timeout 5 bash -c "</dev/tcp/localhost/1445" 2>/dev/null; then
-    echo "  ✓ SMB server: localhost:1445"
-else
-    echo "  ✗ SMB server: localhost:1445 (not ready)"
-fi
-
-# Check FTP
-if timeout 5 bash -c "</dev/tcp/localhost/2121" 2>/dev/null; then
-    echo "  ✓ FTP server: localhost:2121"
-else
-    echo "  ✗ FTP server: localhost:2121 (not ready)"
-fi
-
-# Check WebDAV
-if curl -s http://localhost:8081 > /dev/null 2>&1; then
-    echo "  ✓ WebDAV server: localhost:8081"
-else
-    echo "  ✗ WebDAV server: localhost:8081 (not ready)"
-fi
-
-# Check NFS
-if timeout 5 bash -c "</dev/tcp/localhost/2049" 2>/dev/null; then
-    echo "  ✓ NFS server: localhost:2049"
-else
-    echo "  ✗ NFS server: localhost:2049 (not ready)"
-fi
-
-echo ""
-echo "Test environment setup complete!"
-echo ""
-echo "To stop test environment:"
-echo "  scripts/test-infra/down.sh --build-id setup --op-id <op_id up.sh printed>"
-EOFSCRIPT
-chmod +x /run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/setup-test-env.sh
+scripts/setup-test-env.sh --build-id setup          # prints op_id=<id> and the TI_PORT_* lines
+export CATALOGIZER_TEST_INFRA_ENV="$PWD/.audit/test-infra/catalogizer-test-setup/env"   # the integration tests read the ports and credentials from this 0600 file
+scripts/test-infra/down.sh --build-id setup --op-id <the op_id up.sh printed>
 ```
 
 #### Task 5.2: Create Test Data Fixtures

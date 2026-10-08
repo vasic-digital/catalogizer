@@ -90,6 +90,7 @@ func runTestMigrations(db *sql.DB) error {
 			url TEXT,
 			enabled BOOLEAN DEFAULT 1,
 			max_depth INTEGER DEFAULT 10,
+			allow_empty BOOLEAN NOT NULL DEFAULT 0,
 			enable_duplicate_detection BOOLEAN DEFAULT 1,
 			enable_metadata_extraction BOOLEAN DEFAULT 1,
 			include_patterns TEXT,

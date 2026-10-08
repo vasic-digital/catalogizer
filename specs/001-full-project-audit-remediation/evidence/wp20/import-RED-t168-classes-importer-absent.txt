@@ -1,0 +1,5 @@
+# ledger seq=43 item=AUD-T168 polarity=RED iteration=3 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/t168imp/sut0 target_fingerprint=fbad453acc4e5dc500bf89750ed2978500a690a91353ef4f187ceed36eae1948 test_fingerprint=f286e6da66868019a87606c5a4c8cae69e24add6edacde54e5f6ab02e9683126
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "IMPORT_SH=/src/.audit/scratch/t168imp/sut0/import.sh", "python3", "-I", "scripts/register/tests/test_import_classes.py"]
+FAIL importer present :: importer absent: /src/.audit/scratch/t168imp/sut0/import.sh
+RESULT: pass=0 fail=1

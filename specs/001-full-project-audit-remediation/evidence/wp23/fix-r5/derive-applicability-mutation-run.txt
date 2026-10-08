@@ -1,0 +1,79 @@
+# fix-r5 evidence (WP-23 round 5): MUTATION run (paired mutants with a sandbox control)
+# command: bash tools/evidence/matrix/tests/test_derive_applicability.sh
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 9dac3726b07c8cee3a11cf94b52f05fb51be0b1549f8d453493efb9ce5545c40  tools/evidence/matrix/derive_applicability.py
+# sha256 5faa06aebfe733bb1091ce342da78f381ed3f31f1facf8e3832cdf9006b258d0  tools/evidence/matrix/tests/test_derive_applicability.sh
+# source output: final/derive-mutation.txt
+
+PASS: golden: the deriver exits 0 on a populated fixture
+PASS: golden: two runs over the same tree are byte-identical
+PASS: golden: 30 modules + 2 governance modules + 9 applications + A13 = 42 components
+PASS: m1: the header records the enumeration mode and a files_fingerprint (provenance of what was counted)
+PASS: m1: the fingerprint is a real digest (not empty, not constant zeros)
+PASS: m1: the fingerprint changes when a counted file is added
+PASS: m1: the fingerprint changes when a file is only RENAMED (same file count)
+PASS: m1 control: restoring the name restores the fingerprint (it is a function of the counted files)
+PASS: I1: an empty submodule directory is refused (exit 3)
+PASS: I1: the refusal names submodule_uninitialised and the module
+PASS: I1: a refused derivation writes no applicability file
+PASS: I1: a MISSING directory is refused too, every empty module is named (2 listed)
+PASS: I1 control: the same fixture populated again derives (exit 0)
+PASS: I2: pkg/defaults/defaults_test.go does not make chaos partial (fault is not defaults): the cell stays A
+PASS: I2: pkg/e2ee/* is not e2e (e2ee is encryption): the e2e cell stays A
+PASS: I2: loader_test.go does not make stress partial (load is not loader)
+PASS: I2: perfetto_test.go does not make performance partial (perf is not perfetto)
+PASS: I2: injector_test.go does not make security partial (inject is not injector)
+PASS: I2 golden-false: tests/e2e/flow_test.go IS e2e: the cell becomes ~ (1 file)
+PASS: I2: the e2e reason counts exactly the 1 real file (not the e2ee ones)
+PASS: I2 golden-false: pkg/stress/stress_test.go IS a stress marker: the cell becomes ~
+PASS: I2: a build tag that merely CONTAINS integration (disintegration) does not make the integration cell partial
+PASS: I2 golden-false: the build tag integration makes the cell partial
+PASS: I2: prerender( is not a render( call: the ui cell stays A
+PASS: I2 golden-false: a real render( call makes the ui cell partial
+PASS: I2: scripts/build, scripts/coverage and scripts/other tests are counted (3); node_modules and tools/opensource are not
+PASS: I11: without a build test the unit cell keeps docs/05's reading (A)
+PASS: I11: tests/test_build_system.sh that sources Build/lib makes the unit cell ~
+PASS: I11: the reason names the 2 libraries and the 2 test functions it counted
+PASS: m2: 3 banks + MANIFEST.yaml count as 3 banks
+PASS: m11: Website with no hosting config: DDoS n/a
+PASS: m11: a Website/nginx.conf flips the DDoS cell to A (there is now server config of ours)
+PASS: m11: the reason names the file found
+PASS: RM5: 9 Go test files: unit is ~
+PASS: RM5: 10 Go test files: unit is P
+PASS: RM5: no Go test file: unit is A
+PASS: K12.3: a counted file edited in place (same path, same size) moves the files_fingerprint
+PASS: K11.4: the fixture work tree derives (exit 0)
+PASS: K11.4: a fixture inside a work tree is enumerated from the tracked list
+PASS: K11.4: an UNTRACKED test file in a work tree changes nothing (same bytes)
+PASS: K11.4 control: the same file once tracked moves the fingerprint (the leg can fail)
+PASS: K11.4: a caller's GIT_DIR / GIT_WORK_TREE does not redirect the enumeration (clean GIT_* environment)
+PASS: K11.4: a dangling gitfile (a submodule whose git dir is gone) is refused (3 git_unreadable), never walked as a populated tree
+PASS: K12.1: .gitmodules is read by git (a  without spaces still names its module): 42 components
+PASS: K11.4: a relative --out is relative to the current directory (not to the repository)
+PASS: K11.4: the write is a temp file + rename: an --out that is a symlink is REPLACED, the file it pointed at is not written through
+PASS: K11.4: the atomic write leaves no temp file behind
+PASS: real repository: derives (exit 0)
+PASS: real repository: two runs are byte-identical
+PASS: real repository: counted from git-tracked files
+PASS: mutation sandbox control: an UNMUTATED copy passes this body
+PASS: mutation tag_token_off caught (1 failing legs)
+PASS: mutation render_call_off caught (1 failing legs)
+PASS: mutation RM5_unit_threshold caught (2 failing legs)
+PASS: mutation empty_submodule_guard caught (4 failing legs)
+PASS: mutation token_markers_off caught (7 failing legs)
+PASS: mutation vendored_only caught (1 failing legs)
+PASS: mutation manifest_counted caught (1 failing legs)
+PASS: mutation website_frozen caught (2 failing legs)
+PASS: mutation build_reread_off caught (2 failing legs)
+PASS: mutation fingerprint_const caught (5 failing legs)
+PASS: mutation dangling_gitfile caught (1 failing legs)
+PASS: mutation fingerprint_content caught (1 failing legs)
+PASS: mutation tracked_only_off caught (6 failing legs)
+PASS: mutation git_env_leak caught (1 failing legs)
+PASS: mutation gitmodules_by_git caught (1 failing legs)
+PASS: mutation out_cwd_relative caught (2 failing legs)
+PASS: mutation atomic_write caught (1 failing legs)
+Summary: PASS=68 FAIL=0 SKIP=0
+done rc=0

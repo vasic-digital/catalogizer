@@ -11,7 +11,7 @@ T="$(mktemp -d "${TMPDIR:-/tmp}/vc_test.XXXXXX")"; trap 'rm -rf "$T"' EXIT
 [ -x "$H" ] || echo "NOTE: $H is absent or not executable (RED state: every case must FAIL)"
 # code root: the helper scripts and the registry as a consumer sees them (the commands of the registry are relative to it)
 CODE="$T/code"; mkdir -p "$CODE/scripts/repo" "$CODE/scripts/hooks"
-cp "$D0"/scripts/repo/*.sh "$D0"/scripts/repo/validate_checks.tsv "$CODE/scripts/repo/" 2>/dev/null
+cp "$D0"/scripts/repo/*.sh "$D0"/scripts/repo/*.py "$D0"/scripts/repo/validate_checks.tsv "$D0"/scripts/repo/binary_suffixes.tsv "$CODE/scripts/repo/" 2>/dev/null
 printf '#!/usr/bin/env bash\n[ -e ./LANDMINE ] && { echo landmine; exit 1; }\nexit 0\n' > "$CODE/scripts/detect-landmines.sh"; chmod +x "$CODE/scripts/detect-landmines.sh"
 cp "$D0/scripts/hooks/no-false-positive-log.sh" "$CODE/scripts/hooks/"
 REG="$CODE/scripts/repo/validate_checks.tsv"
@@ -50,7 +50,7 @@ one "revision_header bad (new md file)" nohdr.md '# T\n\nbody\n' 10 "revision_he
 w big.txt "$(head -c 1030000 /dev/zero | tr '\0' a)\n"; lst big.txt; run; eq "large_file above the bound: exit" "$RC" 10; has "large_file named" "$(cat "$T/out")" "large_file"
 w alarm.txt "$(head -c 800000 /dev/zero | tr '\0' a)\n"; lst alarm.txt; run; eq "size_alarm above 75% of the bound: exit 0" "$RC" 0; has "size_alarm reported" "$(cat "$T/out")" "size_alarm"
 # binary files are never given to the text checks (listed as left out), but never refused for it
-printf 'a \0b \n' > "$R/bin.dat"; lst bin.dat; run; eq "binary file with trailing blanks: 0" "$RC" 0; has "left out by the filter" "$(cat "$T/out")" "left_out"
+printf 'a \0b \n' > "$R/bin.png"; lst bin.png; run; eq "binary file with trailing blanks: 0" "$RC" 0; has "left out by the filter" "$(cat "$T/out")" "left_out"
 # a binary-looking file that a language check selects by its suffix was NOT judged by it (`not_judged`, WF14 N4); the generic text checks leaving a binary file out are `left_out` only
 hasnot "a generic left_out is not a not_judged" "$(cat "$T/out")" "not_judged"
 printf 'if then\n\0\n' > "$R/bin.sh"; lst bin.sh; run; eq "binary-looking .sh: 0 (reported, never refused)" "$RC" 0
@@ -85,7 +85,7 @@ w mc.txt '<<<<<<< x\n=======\n>>>>>>> y\n'; lst clean.txt mc.txt
 APPR="$T/approved.tsv" REGF="$T/reg_changed.tsv" run; eq "a failing check and a pending row in one run: 10 (never 14)" "$RC" 10
 has "both named: the refusal" "$(cat "$T/out")" "merge_conflict"; has "both named: the pending row" "$(cat "$T/out")" "check_pending_release	shell_parse"
 w bad.sh 'if then\n'; lst clean.txt bad.sh
-APPR="$T/approved.tsv" REGF="$T/reg_changed.tsv" run; eq "the pending row is not run (shell error in a declared file): 14" "$RC" 14
+APPR="$T/approved.tsv" REGF="$T/reg_changed.tsv" run; eq "the APPROVED row decides the run set (REPO-4): a work-tree row that differs is pending, the approved shell_parse still runs and finds the shell error: 10" "$RC" 10; has "the approved shell_parse found it" "$(cat "$T/out")" "fail	shell_parse	bad.sh"; has "and the differing row is still named pending" "$(cat "$T/out")" "check_pending_release	shell_parse"
 APPR="$T/approved.tsv" run; eq "no row differs: the check runs and fails: 10" "$RC" 10
 grep -v '^go_vet' "$REG" > "$T/approved_nogovet.tsv"; lst clean.txt
 APPR="$T/approved_nogovet.tsv" run; eq "a row the approved copy lacks is pending: 14" "$RC" 14; has "named" "$(cat "$T/out")" "check_pending_release	go_vet"
@@ -130,4 +130,13 @@ lst src/keep.txt; ( cd "$R" && "$H" --root "-x" --code-root "$CODE" --files-from
 mkdir -p "$T/cwd"; mkrepo "$T/cwd/-x"; ( cd "$T/cwd" && "$H" --root -x --code-root "$CODE" --files-from "$T/cs.lst" ) >/dev/null 2>&1; eq "an existing repository named -x is refused as an option-like value: 20" "$?" 20
 ( cd "$R" && "$H" --root "$R" --code-root "$CODE" ) >/dev/null 2>&1; eq "no --files-from: 20" "$?" 20
 run --bogus; eq "unknown option: 20" "$RC" 20
+# ---- 8 WF17-cpa: the ONE verdict predicate, the memory bound, the conflict scan of a file with a NUL byte -------------------------------------------------------------------
+fresh; GOF='{"schema":"review-verdict/1","verdict":"GO","covers_runs":[],"model":"m","effort":"?","blocking_findings":false}\n'; w "$VERD" "$GOF"; commit_all "$R" gof; addrow; w gen/x.txt 'a \n'; lst "$TBL" gen/x.txt; run
+eq "a verdict GO whose blocking_findings is the boolean false is no review form (False == 0 in python): 10" "$RC" 10; has "unreviewed" "$(cat "$T/out")" "class_table_unreviewed"
+fresh; w src/m.go 'package m\n<<<<<<< a\nx\n=======\ny\n>>>>>>> b\n\0\n'; lst src/m.go; run; eq "a .go file with conflict markers AND a NUL byte: 10 (one NUL does not turn the marker scan off)" "$RC" 10; has "merge_conflict is named" "$(cat "$T/out")" "fail	merge_conflict	src/m.go"
+fresh; w src/n.dat 'text\0more\n'; lst src/n.dat; run; has "a NUL file of an unlisted suffix is not_judged for the text checks it cannot take" "$(cat "$T/out")" "not_judged	end_of_file	src/n.dat"
+fresh; mkdir -p "$R/src"; yes 'abcdefghij' | head -c 67108864 > "$R/src/big.txt"; lst src/big.txt
+( cd "$R" && /usr/bin/time -f %M -o "$T/rss" "$H" --root "$R" --adopt-working-tables --code-root "$CODE" --registry "$REG" --files-from "$T/cs.lst" ) >"$T/out" 2>&1; RC=$?
+eq "a 64 MiB file over its byte bound is refused without being read again by the text checks: 10" "$RC" 10; has "large_file is the finding" "$(cat "$T/out")" "fail	large_file	src/big.txt"
+[ "$(tail -n1 "$T/rss" 2>/dev/null || echo 999999)" -lt 60000 ] && ok "peak memory $(tail -n1 "$T/rss") kB for a 64 MiB file (it was 150644 kB: the whole file once per text check)" || bad "peak memory $(tail -n1 "$T/rss" 2>/dev/null) kB for a 64 MiB file"
 fin

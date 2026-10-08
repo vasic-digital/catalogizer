@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "catalogizer-test-wp12nas-client-908689-9363",
+  "at": "2026-10-07T17:15:37Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 84894769152,
+      "free_after": 84625170252,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 84894765056,
+      "free_after": 84625166156,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

@@ -1,0 +1,151 @@
+# identity: task=T163 utc=2026-10-08T08:59:40Z host=ceacbce10e19 uid=1000
+# git_head=ab5a9e3924e48e5682de11704aca57b6ace2f649 tree_dirty_files=7695
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# engine probe: validate rc=0 (--version unsupported by the binary (UNCONFIRMED vs the T163 text); probe=validate)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+# TIC_IMAGE_DIGEST unset: image digest check UNCONFIRMED (host-side run)
+ok   (c) legacy_import row written BEFORE add is accepted
+ok   (c) legacy_import row written AFTER add is refused
+ok   importer first run exits 0
+ok   importer second run exits 0
+ok   (a) idempotency: second run changes no row count and no hash
+# unmapped after import (S-01 tickets are mapped, other classes may remain): 81
+ok   every issue_file entry is mapped to an item
+ok   (b) completeness: v_unmapped_entries grew by exactly entry 38
+ok   (d) long ticket has an item
+ok   (d) long description is <= 2048 bytes, Sources block included (2048 bytes)
+ok   (d) cut on a UTF-8 character boundary: the stored bytes decode strictly and hold no U+FFFD replacement character
+ok   (d) the stored text is a PREFIX of the ticket body (814 of 1500 characters kept)
+ok   (d) marked as cut
+ok   (d) Sources block names the source file and its sha256
+ok   (d) short ticket has an item
+ok   (d) short ticket keeps its whole text
+ok   (d) short ticket Sources block names file and sha256
+RESULT: pass=8 fail=0
+== leg_freeze
+ok   F1 control: the unmodified snapshot imports (exit 0)
+ok   F1 freeze json missing: exit 20 reason freeze_missing, nothing written
+ok   F1 freeze json not JSON: exit 20 reason freeze_invalid, nothing written
+ok   F1 freeze json without snapshot key: exit 20 reason freeze_invalid, nothing written
+ok   F1 snapshot dir missing: exit 20 reason freeze_missing, nothing written
+ok   F1 manifest file missing: exit 20 reason freeze_missing, nothing written
+ok   F1 manifest malformed: exit 20 reason freeze_manifest_invalid, nothing written
+ok   F1 manifest sha tampered (bad checksum): exit 20 reason freeze_snapshot_moved, nothing written
+ok   F1 ticket changed after the manifest was written: exit 20 reason freeze_snapshot_moved, nothing written
+ok   F1 file added after the manifest was written: exit 20 reason freeze_snapshot_moved, nothing written
+ok   F1 file removed after the manifest was written: exit 20 reason freeze_snapshot_moved, nothing written
+== leg_entry
+ok   F2 changed entry at the same locator (snapshot consistent): exit 20 entry_changed naming it, nothing written
+ok   F2 missing ticket file (entry in the register, file gone from a consistent snapshot): exit 20 ticket_missing, nothing written
+ok   F2 non-UTF-8 ticket: exit 20 ticket_not_utf8 naming it, nothing written
+ok   F2 unsafe locator (..): exit 20 locator_unsafe, nothing written
+ok   F2 absolute locator: exit 20 locator_unsafe, nothing written
+ok   F2 non-canonical locator (docs/issues/../issues/x.md, inside the snapshot): exit 20 locator_unsafe, nothing written
+ok   F2 locator that is a symlink leaving the snapshot: refused, nothing written
+== leg_duplicate
+ok   F3 import with a duplicate locator exits 0
+ok   F3 the duplicate mints no second item (7 tickets -> 7 items, 8 entries mapped)
+ok   F3 the second listing is relation duplicate_of onto the head's item, severity_governs 0
+ok   F3 a second run changes nothing (state identical)
+ok   F3 a duplicate listed after the head was imported is linked to the head's item (no new item, no new id)
+== leg_resume
+ok   F4 crash at after_mint of the closed-class entry (#1): the run dies (137) with the work in progress
+ok   F4 re-run after the after_mint crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_mint of the queued entry (#3): the run dies (137) with the work in progress
+ok   F4 re-run after the after_mint crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_ext of the closed-class entry (#1): the run dies (137) with the work in progress
+ok   F4 re-run after the after_ext crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_ext of the queued entry (#3): the run dies (137) with the work in progress
+ok   F4 re-run after the after_ext crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_add of the closed-class entry (#1): the run dies (137) with the work in progress
+ok   F4 re-run after the after_add crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_add of the queued entry (#3): the run dies (137) with the work in progress
+ok   F4 re-run after the after_add crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_close of the closed-class entry (#1): the run dies (137) with the work in progress
+ok   F4 re-run after the after_close crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at after_close of the queued entry (#3): the run dies (137) with the work in progress
+ok   F4 re-run after the after_close crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at before_map of the closed-class entry (#1): the run dies (137) with the work in progress
+ok   F4 re-run after the before_map crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 crash at before_map of the queued entry (#3): the run dies (137) with the work in progress
+ok   F4 re-run after the before_map crash exits 0 and the state equals a clean run (no duplicate id, no orphan)
+ok   F4 and a further run is a no-op
+ok   F4 minted_by names the register-import actor and the entry (resume key)
+== leg_concurrent
+ok   F5 a second importer while the database lock is held: exit 20 import_already_running, nothing written
+ok   F5 after the holder is gone the import completes (state equals a clean run)
+ok   F5 parallel pair 0: exit codes in {0,20,21} with at least one 0 or a clean completion, final state equals a clean run, ids unique
+ok   F5 parallel pair 1: exit codes in {0,20,21} with at least one 0 or a clean completion, final state equals a clean run, ids unique
+ok   F5 parallel pair 2: exit codes in {0,20,21} with at least one 0 or a clean completion, final state equals a clean run, ids unique
+ok   F5 parallel pair 3: exit codes in {0,20,21} with at least one 0 or a clean completion, final state equals a clean run, ids unique
+ok   F5 parallel pair 4: exit codes in {0,20,21} with at least one 0 or a clean completion, final state equals a clean run, ids unique
+== leg_unmapped
+ok   F6 control needle: the snapshot holds entries of other kinds (14 entries, 7 tickets)
+ok   F6 every ticket is mapped; the other kinds stay unmapped (v_unmapped_entries = 7)
+ok   F6 the run report names the selected-kind unmapped count 0
+ok   F6 an unsupported kind is refused (kind_unsupported), nothing written
+ok   F6 a supported kind mixed with an unsupported one is refused as a whole
+== leg_locked
+ok   F7 an exclusive writer holds the database: exit 21 db_locked within the busy timeout, nothing written
+ok   F7 after the writer is gone the re-run completes (state equals a clean run)
+ok   F7 control needle: the importer reached the pause after its 2nd entry (2 entries mapped)
+ok   F7 a writer arriving mid-run stops the importer: exit 21 db_locked, the finished entries are kept
+ok   F7 mid-run lock: the re-run completes and equals a clean run
+== leg_disk
+ok   F8 free-space precondition (not met): exit 20 disk_headroom, nothing written
+ok   F8 the free-space override is a test hook: refused outside IMPORT_TEST_MODE=1
+ok   F8 disk full (file size limit at the database size): exit 21 (disk_full or io_error), not a success
+ok   F8 the database is intact after the failed run (integrity_check ok, foreign_key_check empty)
+ok   F8 after the limit is lifted the re-run completes and equals a clean run
+== leg_backup
+ok   F9 the register name without a backup record: exit 20 backup_record_required, nothing written
+ok   F9 an unreadable record: exit 20 backup_record_invalid
+ok   F9 a record whose sha256 is not the database's: exit 20 backup_stale, nothing written
+ok   F9 a record naming a backup file that does not exist: exit 20 backup_record_invalid
+ok   F9 a record that reports a failed integrity check: exit 20 backup_record_invalid
+ok   F9 control: a valid record for the unchanged database lets the import run
+== leg_content
+ok   F10 import exits 0
+ok   F10 resolved + S2 + functional -> Bug, Fixed, severity high (IC-01 S2), legacy_import, reverify 1
+FAIL F10 closed + critical + ux (no type mapped) -> Task defaulted, Completed, legacy_import, reverify 1 :: ('CAT-002', 'Task', 'Queued', 'critical', 'machine_evidence', 0, 'closed', 'shortcoming', None, "IC-01 identity: raw 'critical' of docs/issues/HELIX-100-b.md", 'source', 'docs/issues/HELIX-100-b.md')
+ok   F10 wontfix -> Queued, machine_evidence, reverify 0, legacy_status wontfix (FR-008: not a permitted closure)
+ok   F10 the open ticket -> Queued; unmapped severity 'bogus' defaults to medium and says so
+ok   F10 a ticket without front matter imports Queued with a NULL legacy_status
+ok   F10 the ANR file (RESOLVED, no severity) is closed-class: Completed, legacy_import
+ok   F10 cosmetic + functional + fixed -> Bug, Fixed (cosmetic kept)
+ok   F10 every item has defect_layer source (the lowest floor; it can only be raised) and the same interim category (the mapping is NOT applied)
+ok   F10 component_id is NULL for every imported item and PRAGMA foreign_key_check prints nothing (T168 acceptance)
+ok   F10 exactly one severity_governs=1 row per item (doc04 9.4)
+ok   F10 legacy order preserved: CAT ids ascend with the entry order
+ok   F10 every id is minted with mint_basis import; views are clean (v_legacy_import_unbacked, v_ids_without_item, v_custody_violations, v_items_without_mint)
+FAIL F10 closed-class items sit in v_reverify_queue; the queued ones do not :: 3
+ok   F10 the description names the raw category and the PROPOSED category as not applied
+ok   F10 the category TSV lists every ticket with raw and proposed category
+ok   F10 the progress log ends with done
+ok   F10 --dry-run exits 0 and writes nothing
+ok   F10 missing arguments: exit 2
+ok   F10 a database that does not exist: exit 20 db_missing
+ok   F10 an engine path that is not an executable file: exit 20 engine_missing
+ok   F10 a database without the register DDL: exit 20 register_ddl_absent
+ok   F10 the crash hook is refused outside IMPORT_TEST_MODE=1
+ok   F10 the text comes from the frozen snapshot, never the live tree (a decoy in the working directory is not read)
+ok   F10 an empty-body ticket imported: the description is the Sources block alone (it carries the engine's description floor)
+ok   F10 the engine's own validate accepts the imported register
+ok   F10 no description exceeds 2048 bytes (max 2047)
+== leg_cut
+ok   CUT import of 12 long multi-byte tickets exits 0
+ok   CUT all 12 stored descriptions: <= 2048 bytes, strict UTF-8, no U+FFFD, a proper prefix of the body, marked as cut
+ok   CUT a register that the engine's validate refuses (a planted invalid item) ends the import with exit 1 validate_failed
+RESULT: pass=110 fail=2

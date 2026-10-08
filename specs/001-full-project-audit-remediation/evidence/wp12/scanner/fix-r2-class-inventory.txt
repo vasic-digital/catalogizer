@@ -1,0 +1,62 @@
+# WF22 fix round 2 - class inventories (11.4.276(C)); every census carries a positive and a negative control needle (11.4.273)
+# generated 2026-10-08T00:41:11Z in /home/milosvasic/Projects/catalogizer/catalog-api; superproject HEAD e9d6883d
+
+## A. production callers of CreateClient
+$ grep -rn "\.CreateClient(" --include=*.go . | grep -v _test.go
+handlers/comic_pages_handler.go:197:	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
+internal/handlers/stream_handler.go:88:	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
+handlers/pdf_pages_handler.go:131:	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
+internal/services/universal_scanner.go:340:	client, err := s.clientFactory.CreateClient(&filesystem.StorageConfig{
+internal/services/cover_art_service.go:1338:	client, err := s.fsFactory.CreateClient(config)
+count: 5 (the AST gate TestWF22_R1_Gate_... enumerates the same set from the parse tree)
+positive control: 'func (f \*DefaultClientFactory) CreateClient' (the definition) -> 1 hit (expect 1)
+negative control: 'ZzNoSuchMethod(' -> 0 hits (expect 0)
+every caller's file calls SettingsFromRoot (directly or through comicStorageRootSettings / storageRootToSettings):
+  handlers/comic_pages_handler.go -> SettingsFromRoot in file: 2, helper calls: 3
+  internal/handlers/stream_handler.go -> SettingsFromRoot in file: 2, helper calls: 3
+  internal/services/cover_art_service.go -> SettingsFromRoot in file: 2, helper calls: 0
+  internal/services/universal_scanner.go -> SettingsFromRoot in file: 2, helper calls: 3
+  handlers/pdf_pages_handler.go -> SettingsFromRoot in file: 0, helper calls: 2
+
+## B. non-test files importing path/filepath in the filesystem package and the scanners
+filesystem/nfs_client.go
+internal/services/universal_scanner.go
+handlers/comic_pages_handler.go
+internal/handlers/stream_handler.go
+filesystem/local_client.go
+internal/services/cover_art_service.go
+handlers/pdf_pages_handler.go
+filesystem/nfs_client_darwin.go
+positive control (local client imports it): 1
+negative control (ftp/webdav clients): ftp=0 webdav=0 propfind=0 (expect 0)
+audited as safe: nfs_client*.go (local mount arithmetic; the REMOTE FileInfo.Path uses path), local_client.go (a local file system), cover_art_service.go (local cache paths and the local protocol), stream/comic/pdf handlers (Ext / Base of a file or archive entry name)
+filepath.<fn> uses in the scanner files:
+internal/services/universal_scanner.go:917:	ext := strings.TrimPrefix(filepath.Ext(name), ".")
+
+## C. fmt.Errorf sites in webdav_client.go that print a URL (all must go through redactURL)
+sites naming fullURL/srcURL/dstURL in an Errorf: 18
+of which wrapped in redactURL(...): 18
+unwrapped (expect none):
+negative control: the same census on the pre-fix snapshot finds 16 unwrapped sites (expect > 0)
+
+## D. queries that SELECT a storage root's password (= build a root to connect with)
+     12 internal/services/catalog.go
+     10 repository/stats_repository.go
+      9 repository/file_repository.go
+      4 handlers/scan_handler.go
+      3 internal/services/universal_scanner.go
+      3 internal/media/realtime/enhanced_watcher.go
+      3 database/migrations_sqlite.go
+      2 internal/services/universal_rename_tracker.go
+      2 internal/services/rename_tracker.go
+      2 handlers/admin_handler.go
+      1 main.go
+      1 internal/services/cover_art_service.go
+      1 internal/services/binding_ingester.go
+      1 internal/services/aggregation_service.go
+      1 internal/media/analyzer/analyzer.go
+      1 internal/handlers/stream_handler.go
+      1 handlers/pdf_pages_handler.go
+      1 handlers/comic_pages_handler.go
+      1 database/migrations_postgres.go
+the per-query check is TestWF22_H1_Gate_EveryStorageRootLoaderSelectsTheConnectionColumns (positive control inside: it must find >= 5 loaders)

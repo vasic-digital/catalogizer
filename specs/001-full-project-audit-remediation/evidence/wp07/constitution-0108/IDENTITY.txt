@@ -1,0 +1,11 @@
+Evidence for wp07 constitution 2026-10-08, ROUND 2 (fix-r2-*) - UNCOMMITTED, awaiting re-review (Opus-xhigh) by the conductor
+generated: 2026-10-08T11:07:04Z
+agent: Sonnet worker (claude-sonnet-5-5); dispatch path exposes no effort parameter
+submodule: submodules/constitution  base HEAD: 1634b0353a1feaa9f1cb08a5d8c37eba3d5ff079  (origin/main at fetch time: 1634b0353a1feaa9f1cb08a5d8c37eba3d5ff079)
+parent repo HEAD: b171ec797f4e2dee499a9629b2d4f53a9ef70ea3
+current patch: fix-r2-constitution-0108.patch (applies cleanly to a clean git-archive of base HEAD; the 10 resulting files are byte-identical to the working tree)
+round-1 files (no prefix) are SUPERSEDED by the fix-r2-* files: round-1 patch kept as round1-constitution-0108.patch.superseded; round-1 claims corrected in round 2:
+  - the 32 baseline failures of test_unit_safe.sh on this host are NOT only the 32 GiB memory floor: with memory simulated high 31 still fail on the DISK floor (60 GiB free required; this host has ~11 GB free); with memory AND disk simulated the HEAD suite fails 1 (U17, an artefact of the df stub defeating the tripwire test, identical on base and new). See fix-r2-full-suite-*.
+  - "~47 engine files" was wrong; measured 2026-10-08: atm_id occurs in 67 Go files (20 non-test), 68 with AtmID/atmID, 70 files of any type.
+  - the engine is NOT enforcing a key grammar at mint/validate time (measured by the independent review, exp6.log); rule text corrected.
+owner approval, stated truthfully: relayed interactive owner decision of 2026-10-08 (memory file project_owner_decisions_2026_10_07.md) that the agent commits to the constitution repo ff-only for (a) the codegraph_safe.sh min-mem knob and (b) the per-project id prefix; decision ledger ODG-11 still says the constitution wording needs separate approval, so the WORDING is pending the independent review and owner sight. Nothing committed or pushed.

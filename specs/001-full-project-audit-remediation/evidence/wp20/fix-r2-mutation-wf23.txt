@@ -1,0 +1,89 @@
+# fix-r2: mutate_wf23.py full run (63 mutants + 2 controls), host-side, TMPDIR=/dev/shm, 2026-10-08T04:02:31Z. Section 1 = suites absolute, lead, fm, planted; section 2 = snap; section 3 = gate (GM01-GM05, WP-21 gate.sh against the unchanged test_reverify_gate.sh)
+## section 1
+CONTROL absolute unmutated: rc=0 (2s) RESULT: fail=0
+CONTROL lead unmutated: rc=0 (3s) RESULT: fail=0
+CONTROL fm unmutated: rc=0 (2s) SELFTEST: PASS
+CONTROL planted unmutated: rc=0 (49s) RESULT: pass=76 fail=0
+MUTANT EM01_markers_go_only: KILLED by absolute: FAIL A5 every non-binary file is scanned whatever its extension (10 probe files + c.go), the binary file is no
+MUTANT EM02_skip_regexes_never_applied: KILLED by absolute: FAIL EM02/B1 skipped tests of every language become rows; two hits on one line are numbered #1, #2 across the 
+MUTANT EM03_finding_id_family_dropped: KILLED by absolute: FAIL A1 prose-only ids outside S-14/S-15 get an XID entry each (DEFER-001, FINDING-7, FIX-OC2-001) :: ['CATAPI
+MUTANT EM04_security_oldest_scan: KILLED by absolute: FAIL S-16 vulnerability rows come from the latest gosec file only :: ['0:G101:a.go:3']
+MUTANT EM05_conflict_item_status_none: KILLED by absolute: FAIL S-21 item statuses: block words, preface fallback for items without a word of their own :: {'2': None, '3
+MUTANT EM06_issue_status_severity_swapped: KILLED by absolute: FAIL S-01 ticket a: legacy id, heading, status fixed, severity high :: ('HELIX-001', 'Ticket 1', 'high', 'fixe
+MUTANT EM07_provider_title_is_whole_line: KILLED by absolute: FAIL S-25 provider rows: legacy id is the variable NAME, title is the provider name only (no table line, no ur
+MUTANT EM08_checkbox_dash_bullet_only: KILLED by absolute: FAIL EM08 checkbox bullets - * + and a nested one are all recognised, with their checked state :: {'MASTER_EXE
+MUTANT EM09_duplicate_locator_silently_dropped: KILLED by absolute: FAIL EM09 bank ids c1, c1, c1~2 give two entries with one locator: refused duplicate_entry_locator (exit 20), 
+MUTANT EM10_crlf_not_stripped: KILLED by absolute: FAIL EM10 the entry sha256 is the sha256 of the line without its CR :: ['80d140c8eea03703f3f2ff5ab5cdc952b972f
+MUTANT EM11_bad_frontmatter_ticket_dropped: KILLED by absolute: FAIL EM11 a ticket whose front matter is malformed is still an entry (nothing dropped) and is listed under fro
+MUTANT LM01_vocab_known_issue_dropped: KILLED by lead: FAIL baseline scan exits 0 :: lead_scan: REFUSED reason=lead_scan_blind vocabulary control failed: positive 'a
+MUTANT LM02_needle_check_removed: KILLED by lead: FAIL a needle line that a structured entry covers (disposition duplicate, expected lead) is refused lead_scan_
+MUTANT LM03_marker_rule_needs_no_command: KILLED by lead: FAIL C6 a marker word in a fence WITHOUT a command is a lead :: NON-PROBLEM:marker text in document or pattern
+MUTANT LM04_entry_rows_constant_offset: KILLED by lead: FAIL emitted_rows is exactly one higher for the planted copy :: (8, 7, 3)
+MUTANT LM05_duplicate_for_any_covered_file: KILLED by lead: FAIL baseline scan exits 0 :: Traceback (most recent call last):
+MUTANT LM06_vocab_deprecated_disabled_dropped: KILLED by lead: FAIL baseline scan exits 0 :: lead_scan: REFUSED reason=lead_scan_blind vocabulary control failed: positive 'a
+MUTANT FM01_status_comparison_dropped: KILLED by fm: FAIL a status the grep recount cannot see (`status : fixed`) is a count mismatch, never silently passed :: mis
+MUTANT FM02_tolerant_is_the_doc04_naive_split: KILLED by fm: FAIL tolerant reader loads every fixture ticket, matches the recount (status, category, enhancement), handles 
+MUTANT FM03_enhancement_comparison_dropped: KILLED by fm: FAIL RED: a reader that loses the ticket body fails the enhancement-suggestion comparison :: mised, informatio
+MUTANT FM04_multi_status_check_dropped: KILLED by fm: FAIL a ticket with two status: lines is reported (files with != 1 status: line) :: sed: recount 0 vs plan 299'
+MUTANT N01_stale_gate_never_trips: KILLED by absolute: FAIL B2 re-import after the line changed: REFUSED (exit != 0, the message names stale_entries_changed_at_same_
+MUTANT N02_bail_dropped: KILLED by absolute: FAIL B2 the refused import is ALL-OR-NOTHING: the old entry (alpha) and the old count remain, the NEW line of 
+MUTANT N03_locked_sibling_not_written: KILLED by absolute: Traceback (most recent call last):
+MUTANT N05_pyyaml_check_removed: KILLED by absolute: FAIL B4 without PyYAML: refused pyyaml_missing (exit 20), nothing written :: (1, 'Traceback (most recent call 
+MUTANT N06_remotes_not_required: KILLED by absolute: FAIL A2 a freeze json with no `remotes` list is refused freeze_remotes_missing (exit 20), nothing written :: (
+MUTANT N07_remote_credentials_kept: KILLED by absolute: FAIL 11.4.10: no remote credential (userinfo, token) appears anywhere in the sql, the stats or the kinds file 
+MUTANT N08_carriers_scanned: KILLED by absolute: FAIL A1 carriers (specs/, scripts/register/tests/, submodules/) are not scanned for ids; an id in two files is
+MUTANT N09_task_glyph_legend_ignored: KILLED by absolute: FAIL S-03 glyph and word statuses: 0.1 Not Started, 0.2 Complete, 0.3 In Progress, 0.4 Blocked (glyph), 0.5 Bl
+MUTANT N10_conflict_preface_ignored: KILLED by absolute: FAIL S-21 item statuses: block words, preface fallback for items without a word of their own :: {'2': 'OPEN', 
+MUTANT N11_conflict_marker_segments_off: KILLED by absolute: FAIL S-21 sub-items: the bullet of item 2 and the two bold status-marker segments of item 5 :: {'2.1': None}
+MUTANT N12_checkbox_exclusion_unlisted: KILLED by absolute: FAIL A3 checkbox lines no checkbox source enumerates are LISTED, not ignored (procedural checklist howto.md: 3
+MUTANT N13_ids_all_attributed_to_xid: KILLED by absolute: FAIL A1 ids inside the S-14 and S-15 files keep their class (CATAPI-DEFECT-001 in S-14, FIX-QA-2026-04-21-001 
+MUTANT N14_skip_hits_not_numbered: KILLED by absolute: FAIL A5/B1 probe tree enumerates (rc 0; no duplicate_entry_locator from two skip hits on one line) :: enumerat
+MUTANT N15_service_always_found: KILLED by absolute: FAIL A2 one row per named service; marker_found / marker_absent says what the snapshot holds :: {'remote:githu
+MUTANT N16_idless_case_dropped: KILLED by absolute: FAIL A6 bank case with an id is #has-id, the sibling without an id is #@1 with no legacy id and its own name a
+MUTANT N18_strict_measurement_off: KILLED by absolute: FAIL S-01 strict-yaml measurement: both fixture tickets hold a colon in a value, so a strict YAML reader refus
+MUTANT N19_block_scalars_not_read: KILLED by absolute: FAIL A7 tolerant reader, folded block scalar :: ({'id': 'H-3', 'severity': '> high and more', 'status': 'open'
+MUTANT N20_trailing_comment_kept: KILLED by absolute: FAIL A7 tolerant reader, trailing comment :: ({'id': 'H-2', 'status': 'fixed # closed by run 5'}, [])
+MUTANT N21_key_space_colon_unread: KILLED by absolute: FAIL A7 tolerant reader, key space colon :: ({'id': 'H-1', 'severity': 'high'}, [])
+MUTANT N22_quotes_kept: KILLED by absolute: FAIL A7 tolerant reader, double quoted :: ({'id': 'H-5', 'status': '"fixed"'}, [])
+MUTANT N23_continuation_lines_dropped: KILLED by absolute: FAIL A7 tolerant reader, continuation line :: ({'id': 'H-8', 'resolution': 'first', 'status': 'fixed'}, [])
+MUTANT N24_remotes_ignored: KILLED by absolute: FAIL A2 one row per freeze-json remote (origin, github), not queried :: {'service:firebase-crashlytics': (None
+MUTANT N25_entry_check_skipped: KILLED by planted: FAIL moved snapshot: refused with exit 20 :: got [0] want [20]
+MUTANT N26_nondeterministic_order: KILLED by planted: FAIL two runs over the same snapshot give a byte-identical sql :: got [71f320aa90c0553c23c870a9e4ef02d9d417f9e
+MUTANT M07_hc2_malformed_read_as_empty: KILLED by lead: FAIL C4 a malformed HC-2 record (not JSON) is refused hc2_malformed, nothing written :: (0, 'lead_scan: ok pop
+MUTANT M07b_hc2_non_object_unchecked: KILLED by lead: FAIL C4 a malformed HC-2 record (a JSON list) is refused hc2_malformed, nothing written :: (1, 'Traceback (mos
+MUTANT M07c_hc2_roots_unchecked: KILLED by lead: FAIL C4 a malformed HC-2 record (a string value) is refused hc2_malformed, nothing written :: (20, 'lead_scan:
+MUTANT M08_fence_rule_any_fenced_line: KILLED by lead: FAIL C6 a marker word in a fence WITHOUT a command is a lead :: NON-PROBLEM:marker text in document or pattern
+MUTANT M09_finalize_ignores_before: KILLED by lead: FAIL C5 import 2: lead_scan_entry_rows counted in the DB = 3 (emitted 3) :: ('', {'command': ['/usr/bin/python
+MUTANT M10_symlink_population_unrecorded: KILLED by lead: FAIL C7 a symlinked population file is skipped AND recorded in the run record :: (0, 'lead_scan: ok population
+MUTANT M11_vocab_control_removed: KILLED by lead: FAIL a tool whose vocabulary lost a word is refused lead_scan_blind by its own control before the real scan (n
+MUTANT M12_extra_root_unchecked: KILLED by lead: FAIL C4 an extra root that is no gitlink path is refused lead_scan_extra_root_invalid naming it :: (0, 'lead_s
+MUTANT M13_population_widens_all: KILLED by lead: FAIL the same line in a submodule .md yields no row :: {'docs/LANDMINES.md:L4': ('missing', 'lead', None, '- *
+MUTANT M14_snapshot_check_skipped: KILLED by lead: FAIL snapshot changed after its manifest: freeze_snapshot_moved, no /out file :: (0, 'lead_scan: ok population
+MUTANT M15_listing_check_skipped: KILLED by lead: FAIL a NUL path appended to the listing: freeze_listing_moved, no /out file :: (1, 'Traceback (most recent cal
+MUTANT M16_covering_block_unbounded: KILLED by lead: FAIL C2 a continuation line inside an S-21 item block is covered by the item; a line after the section is a le
+MUTANT F4_special_file_allowed: KILLED by snap: FAIL F4 a FIFO in the tree is refused freeze_special_file instead of blocking forever (TIMED OUT) :: 
+MUTANT F4b_symlink_followed: KILLED by snap: FAIL a symlink is hashed over its readlink string (no newline), never followed - also a dangling one and one t
+MUTANT F3_malformed_manifest_traceback: KILLED by snap: FAIL F3 a malformed manifest (not JSON) is refused freeze_manifest_invalid (exit 20), no traceback :: (1, 'Tra
+MUTANT F3b_reason_not_passed_through: KILLED by snap: FAIL the enumerator reports freeze_manifest_invalid (not freeze_snapshot_moved) for a malformed manifest, noth
+MUTANT CTRL_comment_only: SURVIVED as the control requires (the harness cannot kill everything)
+MUTANT CTRL_deliberately_wrong: KILLED by absolute: FAIL baseline enumeration exits 0 :: deliberately wrong mutant
+MUTANTS: 63 run, 62 killed, 1 equivalent-as-expected, 0 unexpected survivors
+## section 2 (--suite snap)
+CONTROL snap unmutated: rc=0 (0s) RESULT: fail=0
+MUTANT F4_special_file_allowed: KILLED by snap: FAIL F4 a FIFO in the tree is refused freeze_special_file instead of blocking forever (TIMED OUT) :: 
+MUTANT F4b_symlink_followed: KILLED by snap: FAIL a symlink is hashed over its readlink string (no newline), never followed - also a dangling one and one t
+MUTANT F3_malformed_manifest_traceback: KILLED by snap: FAIL F3 a malformed manifest (not JSON) is refused freeze_manifest_invalid (exit 20), no traceback :: (1, 'Tra
+MUTANT F3b_reason_not_passed_through: KILLED by snap: FAIL the enumerator reports freeze_manifest_invalid (not freeze_snapshot_moved) for a malformed manifest, noth
+MUTANTS: 4 run, 4 killed, 0 equivalent-as-expected, 0 unexpected survivors
+## section 3 (--suite gate)
+CONTROL gate unmutated: rc=0 (13s) RESULT pass=30 fail=0
+MUTANT GM01_numeric_guard_unanchored: SURVIVED (equivalent: SURVIVES until request R7 is done: tests/test_reverify_gate.sh (WP-21, outside this pass's edit scope) never feeds the gate an error text that holds a digit (review finding D6))
+MUTANT GM02_views_order_desc: KILLED by gate: FAIL E3 rc=4 [INFO view_empty checked=11
+MUTANT GM03_rows_counted_in_reference: KILLED by gate: FAIL R1 rc=0 [INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|INFO not_done checked=1|CO
+MUTANT GM04_url_partial_ignored_in_completion: KILLED by gate: FAIL P1 rc=0 [INFO view_empty checked=11
+MUTANT GM05_db_registry_crosscheck_dropped: SURVIVED (equivalent: equivalent by exit code: the seed diff FAILs the same rows (review: informational))
+MUTANTS: 5 run, 3 killed, 2 equivalent-as-expected, 0 unexpected survivors
+## section 4 (--suite lead --only LM05_duplicate_for_any_covered_file): LM05 re-derived after section 1 ran (the first form crashed instead of mis-labelling); this is the form in the current mutate_wf23.py
+CONTROL lead unmutated: rc=0 (3s) RESULT: fail=0
+MUTANT LM05_duplicate_for_any_covered_file: KILLED by lead: FAIL baseline scan exits 0 :: lead_scan: REFUSED reason=lead_scan_blind control needle docs/LANDMINES.md:L4: e
+MUTANTS: 1 run, 1 killed, 0 equivalent-as-expected, 0 unexpected survivors

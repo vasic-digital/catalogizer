@@ -1,0 +1,16 @@
+RESULT U47 PASS no knob: output is the pre-knob output (floor 32 GiB, exact FAIL line, NO source line, NO floor suffix, exit 6)
+RESULT U48 PASS golden-TRUE: MemAvailable == default floor (32 GiB) PASSes with heap <= half of available; redirected copy still reads the real meminfo (control)
+RESULT U49 PASS limits file min_mem_avail_gib: 20 lowers the floor: 19 GiB refused with exact line, 20 GiB PASS (equality) with heap 10240 <= half
+RESULT U50 PASS env RAISES the floor (24 GiB over a 20 GiB file; 40 GiB over the default); env == base accepted
+RESULT U51 PASS env may NEVER lower the floor (below a file value or below the default): refused loudly, nothing runs
+RESULT U52 PASS non-decimal / empty / signed / float / hex / over-long values (env kB and file GiB, incl. 2^44+5 overflow) are REFUSED, no shell noise, no writer side effects
+RESULT U53 PASS leading zeros are DECIMAL (010=10, 020=20, 0020=20, 09 refused cleanly, env 033554432==32 GiB, env 08388608 refused) - no octal, no arithmetic error, no writer fall-through
+RESULT U54 PASS lower bound = 16 GiB (2 x heap floor): floors 16/20/32 PASS with heap_mb <= MemAvailable/2; 15/8/4/1/0 refused; floor 4 + 5 GiB never PASSes; 9999 GiB handled
+RESULT U55 PASS duplicate min_mem_avail_gib keys (different or identical values) are REFUSED (no first-wins / last-wins ambiguity)
+RESULT U56 PASS limits-file classes REFUSED loudly: directory, /dev/null, missing, FIFO (no hang), empty, >64 KiB, indented, nested, empty value, set-but-empty env, unreadable
+RESULT U57 PASS accepted forms: CRLF + trailing comment, symlink to a regular file; a commented-out key is NOT honoured; a file without the key leaves the default (no source line)
+RESULT U58 PASS untrusted env / path / file values are sanitised before echo: no forged 'PREFLIGHT PASS' / 'heap_mb=' line, no ESC byte
+RESULT U59 PASS convention file <project>/config/index/writer_limits.yaml is discovered without any env; an explicit CG_SAFE_LIMITS_FILE overrides it; a non-regular convention path is refused
+RESULT U60 PASS REAL live writer (lock holder with codegraph identity): init refused with exit 3 both with the default floor and with the lowered floor; control without a writer is neither 3 nor 6
+RESULT U61 PASS preflight op on bad file values creates no flock/index_runs, prints no bulk-path die line (S2)
+SUMMARY cases=15 failed=0

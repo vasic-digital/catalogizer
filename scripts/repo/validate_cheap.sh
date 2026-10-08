@@ -1,15 +1,20 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040/T040b helper: validate_cheap.sh - CPA stage S3 (docs/16 section 12.2), the cheap checks of a declared change set.
 #
 # Usage   validate_cheap.sh --root <repo> --files-from <list> [--code-root <dir>] [--registry <tsv>] [--approved-registry <tsv>]
 #                           [--run-declared <check>]... [--held-from <tsv>] [--out <dir>] [--trusted-tables <dir> | --adopt-working-tables]
-#   --root              repository whose work tree is judged (never written)
+#                           [--content-root <dir>] [--verdict-root <repo>]
+#   --root              repository whose work tree is judged (never written); git queries (HEAD blobs, the index, attributes) always go here
+#   --content-root      where the BYTES of the declared files are read (default: the root's work tree). CPA gives the tree of the blobs it will COMMIT (judged index, WF17-cpa TOCTOU-1): a
+#                       file's content, size, link type and binary-ness are read there, never from the work tree that a concurrent writer may have changed since
+#   --verdict-root      repository whose committed HEAD holds the review verdicts that the table rule reads (default: the root); CPA gives the main repository, also for a --repo run (VERDICT-4)
 #   --files-from        the declared change set, one path per line, relative to the root (a deleted path is allowed)
 #   --code-root         where the commands of the registry live (default: the root); each command path is relative to it
 #   --registry          check registry (default <code-root>/scripts/repo/validate_checks.tsv); columns in its header
-#   --approved-registry the approved copy of the registry (CENTRAL C1); a row that differs from it, or that it lacks, is NOT run and is
-#                       reported `check_pending_release` (a missing key runs only when named by --run-declared, i.e. when this run's
-#                       change set declares the row held on a G-GATE verdict); without the option every row is approved
+#   --approved-registry the approved copy of the registry (CENTRAL C1): the APPROVED rows DECIDE which checks run, each with its APPROVED command (WF17-cpa REPO-4: a row deleted or edited in
+#                       the work tree can no longer switch a check off). A work-tree row that differs from the approved one, is absent from it, or an approved row that the work tree lacks, is
+#                       reported `check_pending_release <name> <added|changed|removed_in_worktree>` (exit 14 when nothing else fails); an ADDED row runs only when named by --run-declared, i.e.
+#                       when this run's change set declares the row held on a G-GATE verdict); without the option every row is approved
 #   --held-from         rows `path<TAB>verdict path`: the declared paths held on that review verdict (held-table rule below)
 #   --out               directory that receives report.tsv (the only thing written)
 #   --trusted-tables    directory that holds the approved copy of the three class tables (the source of the helper's own tables, see HEAD tables)
@@ -34,10 +39,11 @@
 #         would pass is refused 20 `table_admits_unheld_path`; otherwise HEAD tables and `class_table_unreviewed` (10) for the change.
 #         `legacy_row_not_dropped` (10): a declared legacy root report (exact-path row of class legacy-collection) whose content
 #         differs from HEAD while the tables in force keep its row.
-# Output  stdout, one tab-separated line per finding:  fail <check> <path> | deferred <check> | check_pending_release <check> |
+# Output  stdout, one tab-separated line per finding:  fail <check> <path> | deferred <check> | check_pending_release <check> [<why>] |
 #         left_out <check> <path> | not_judged <check> <path> (the left_out of a check that the path's own suffix selects: a `.sh` file that looks binary was not
 #         parsed; the generic text checks leaving a binary file out are `left_out` only) | size_alarm <path> <size> <bound> | class_table_unreviewed <table> | legacy_row_not_dropped <path> |
-#         table_admits_unheld_path <path> <check> | symlink_not_judged <path> (a declared symlink of a non-evidence class: reported, never skipped silently)
+#         table_admits_unheld_path <path> <check> | symlink_not_judged <path> (a declared symlink of a non-evidence class: reported, never skipped silently) | not_judged deletion <path> (a declared path with no
+#         bytes, nothing to judge) | not_judged non_regular <path> (a FIFO, a socket, a device: never opened) | left_out merge_conflict is never emitted: the conflict-marker scan reads every regular file, a NUL byte included (SKIP-2)
 #         A declared symlink in class evidence or evidence-ledger, or a regular file whose HEAD entry is a symlink there, is `fail symlink <path>` (10):
 #         it is judged by its link type, never followed (WF3 review B-1).
 # Exits   0 all ran checks pass; 10 a check failed or a table rule refused; 14 only pending rows (deferral class 14); 20 refusal
@@ -47,7 +53,7 @@
 # Never   writes any file of the work tree; every path operand follows validation (safe_relpath) and `HEAD:` or a fixed prefix.
 set -u
 D="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec python3 - "$D" "$@" <<'PY'
+exec python3 -I - "$D" "$@" <<'PY'
 import sys, os, re, subprocess, tempfile, json, shutil, atexit
 os.environ['GIT_LITERAL_PATHSPECS'] = '1'
 D = sys.argv[1]; a = sys.argv[2:]
@@ -57,6 +63,7 @@ INTERPRETERS = ('bash', 'python3')
 out = []; refusals = []
 def emit(*f): out.append('\t'.join(str(x) for x in f))
 def die(reason, msg=''):
+    sys.stdout.write(f"REASON\t{reason}\n"); sys.stdout.flush()
     sys.stderr.write(f"validate_cheap: {reason}: {msg}\n"); sys.exit(20)
 def safe_rel(p):
     return bool(p) and not re.search(r'[\x00-\x1f\x7f]', p) and not p.startswith(('/', '-')) and '\\' not in p \
@@ -64,12 +71,12 @@ def safe_rel(p):
 def safe_decl(p):   # a declared path is a LITERAL path (lib_safe.sh safe_declpath): no `.`, `./` prefix, `/./`, trailing `/`, glob characters, leading `:`
     return safe_rel(p) and p != '.' and not p.startswith(('./', ':')) and '/./' not in p and not p.endswith(('/.', '/')) and not any(c in p for c in '*?[')
 def safe_dir(p): return bool(p) and not re.search(r'[\x00-\x1f\x7f]', p) and not p.startswith('-')
-root = code = reg = approved = held_from = outdir = lst = trusted = None; declared_rows = []; adopt = False
+root = code = reg = approved = held_from = outdir = lst = trusted = cr = vroot = None; declared_rows = []; adopt = False
 i = 0
 while i < len(a):
     k = a[i]
     if k == '--adopt-working-tables': adopt = True; i += 1; continue
-    if k in ('--root', '--files-from', '--code-root', '--registry', '--approved-registry', '--run-declared', '--held-from', '--out', '--trusted-tables'):
+    if k in ('--root', '--files-from', '--code-root', '--registry', '--approved-registry', '--run-declared', '--held-from', '--out', '--trusted-tables', '--content-root', '--verdict-root'):
         if i + 1 >= len(a): die('usage', f'{k} needs a value')
         v = a[i + 1]; i += 2
         if k == '--run-declared': declared_rows.append(v)
@@ -77,6 +84,12 @@ while i < len(a):
         elif k == '--root':
             if not safe_dir(v): die('unsafe_root', repr(v))
             root = v
+        elif k == '--content-root':
+            if not safe_dir(v): die('unsafe_root', repr(v))
+            cr = v
+        elif k == '--verdict-root':
+            if not safe_dir(v): die('unsafe_root', repr(v))
+            vroot = v
         elif k == '--code-root':
             if not safe_dir(v): die('unsafe_root', repr(v))
             code = v
@@ -92,12 +105,19 @@ if root is None or lst is None: die('usage', '--root and --files-from are requir
 try: top = subprocess.run(['git', '-C', root, 'rev-parse', '--show-toplevel'], capture_output=True, text=True, check=True).stdout.strip()
 except Exception: die('not_a_repository', repr(root))
 root = top; code = os.path.abspath(code) if code else root
+if vroot is not None:
+    try: vroot = subprocess.run(['git', '-C', vroot, 'rev-parse', '--show-toplevel'], capture_output=True, text=True, check=True).stdout.strip()
+    except Exception: die('not_a_repository', repr(vroot))
+else: vroot = root
+cr = os.path.abspath(cr) if cr else root      # the bytes of the declared files are read here
 reg = reg or os.path.join(code, TREL, 'validate_checks.tsv')
-try: declared = [l.rstrip('\n') for l in open(lst) if l.strip()]
+# every non-empty line verbatim, exactly as the launcher reads them (WF17-cpa SKIP-1): a stripping parser dropped a name made only of whitespace that the launcher then committed unjudged
+try: declared = [l[:-1] if l.endswith('\n') else l for l in open(lst, encoding='utf-8', newline='') if l.rstrip('\n')]
 except OSError: die('list_unreadable', repr(lst))
+except UnicodeDecodeError: die('unsafe_path_encoding', repr(lst))
 for p in declared:
     if not safe_decl(p): die('unsafe_path', repr(p))
-    fp = os.path.join(root, p)
+    fp = os.path.join(root, p)       # the REAL work tree decides whether a declared path is a directory (a gitlink is the one allowed); the bytes are read from the content root
     if os.path.isdir(fp) and not os.path.islink(fp):   # a directory is no declared path; a gitlink (a pin move) is the one directory allowed
         # only a gitlink (a pin move) may be declared as a directory: the index entry whose path EQUALS p decides, never the first entry below it (m1)
         ents = subprocess.run(['git', '-C', root, 'ls-files', '-s', '-z', '--', p], capture_output=True).stdout.split(b'\0')
@@ -107,33 +127,41 @@ for r in declared_rows:
 def git_blob(path):  # content of HEAD:path or None
     r = subprocess.run(['git', '-C', root, 'cat-file', 'blob', 'HEAD:' + path], capture_output=True)
     return r.stdout if r.returncode == 0 else None
+def git_blob_v(path):  # content of HEAD:path in the verdict root, or None
+    r = subprocess.run(['git', '-C', vroot, 'cat-file', 'blob', 'HEAD:' + path], capture_output=True)
+    return r.stdout if r.returncode == 0 else None
 def read_tsv(f):
     try: lines = open(f, encoding='utf-8').read().split('\n')
     except OSError: die('registry_unreadable', repr(f))
     return [l for l in lines if l.strip() and not l.startswith('#')]
 # ---- registry ------------------------------------------------------------------------------------------------------------------
-rows = {}
-for l in read_tsv(reg):
-    c = l.split('\t')
-    if c[0] == 'check': continue
-    if len(c) < 6: die('registry_invalid', f'row with fewer than 6 columns: {l[:60]!r}')
-    name, cmd, image, mode, baseline, scope = c[:6]
-    if not re.fullmatch(r'[a-z][a-z0-9_]*', name): die('registry_invalid', f'check name {name!r}')
-    if mode not in ('plain', 'ratchet', 'deferred'): die('registry_invalid', f'{name}: mode {mode!r}')
-    if scope not in ('files', 'changeset'): die('registry_invalid', f'{name}: scope {scope!r}')
-    rows[name] = {'line': l.rstrip(), 'cmd': cmd, 'mode': mode, 'scope': scope}
-appr = None
-if approved is not None:
-    appr = {}
-    for l in read_tsv(approved):
+def parse_rows(f):
+    out_ = {}
+    for l in read_tsv(f):
         c = l.split('\t')
-        if c[0] != 'check': appr[c[0]] = l.rstrip()
-running = []; pending = []
-for name, r in rows.items():
-    if appr is None: running.append(name); continue
-    if name in appr: (running if appr[name] == r['line'] else pending).append(name)
-    else: (running if name in declared_rows else pending).append(name)
-for name in pending: emit('check_pending_release', name)
+        if c[0] == 'check': continue
+        if len(c) < 6: die('registry_invalid', f'row with fewer than 6 columns: {l[:60]!r}')
+        name, cmd, image, mode, baseline, scope = c[:6]
+        if not re.fullmatch(r'[a-z][a-z0-9_]*', name): die('registry_invalid', f'check name {name!r}')
+        if mode not in ('plain', 'ratchet', 'deferred'): die('registry_invalid', f'{name}: mode {mode!r}')
+        if scope not in ('files', 'changeset'): die('registry_invalid', f'{name}: scope {scope!r}')
+        out_[name] = {'line': l.rstrip(), 'cmd': cmd, 'mode': mode, 'scope': scope}
+    return out_
+wrows = parse_rows(reg)          # the work tree's registry (validated: a malformed row is refused whatever the approved copy says)
+rows = {}; pending_info = []
+if approved is None: rows = dict(wrows)
+else:
+    arows = parse_rows(approved)
+    for name, ar in arows.items():                 # every APPROVED row runs with its APPROVED command
+        rows[name] = ar
+        if name not in wrows: pending_info.append((name, 'removed_in_worktree'))
+        elif wrows[name]['line'] != ar['line']: pending_info.append((name, 'changed'))
+    for name, wr in wrows.items():
+        if name not in arows:
+            if name in declared_rows: rows[name] = wr     # a row the change set declares held on a G-GATE verdict runs
+            else: pending_info.append((name, 'added'))
+running = list(rows.keys()); pending = [n for n, _w in pending_info]
+for name, why in pending_info: emit('check_pending_release', name, why)
 for name in running:
     r = rows[name]
     if r['mode'] == 'ratchet': die('ratchet_not_implemented', f'{name}: ratchet baselines are not built in this slice (T040 owed)')
@@ -186,13 +214,15 @@ if held_from:
         if c[0] in held and held[c[0]] != c[1]: die('held_row_duplicate', f'{c[0]!r} is held on two different verdicts')
         if c[0] not in declared: die('held_row_unmatched', f'{c[0]!r} is a held row but not a declared path')
         held[c[0]] = c[1]
-def verdict_go(vp):
-    if vp in declared and os.path.isfile(os.path.join(root, vp)): data = open(os.path.join(root, vp), 'rb').read()
-    else: data = git_blob(vp)
+import importlib.util
+_vs = importlib.util.spec_from_file_location('verdict_go', os.path.join(D, 'verdict_go.py')); _vm = importlib.util.module_from_spec(_vs); _vs.loader.exec_module(_vm)
+def verdict_go(vp):      # the ONE predicate of verdict_go.py: GO and blocking_findings an integer 0 (a boolean false is not 0; VERDICT-1)
+    if vroot == root and vp in declared and os.path.isfile(os.path.join(cr, vp)): data = open(os.path.join(cr, vp), 'rb').read()
+    else: data = git_blob_v(vp)
     if data is None: return False
     try: j = json.loads(data)
     except Exception: return False
-    return j.get('verdict') == 'GO' and j.get('blocking_findings') == 0
+    return _vm.go(j)
 tstatus = {}   # table -> ('go'|'held'|'unreviewed', verdict path)
 for t in changed:
     m = None
@@ -268,36 +298,73 @@ def verdicts(path, tdirp):
 # ---- the checks ---------------------------------------------------------------------------------------------------------------------
 TEXTLESS = {'large_file'}
 SUFFIXES = {'shell_parse': ('.sh', '.bash'), 'check_yaml': ('.yaml', '.yml'), 'check_json': ('.json',), 'revision_header': ('.md',), 'no_false_positive_log': ('_test.go',)}
-def suffix_ok(name, p):
+SHEBANG = re.compile(rb'#![ \t]*(?:/usr/bin/env[ \t]+)?(?:/usr/bin/|/bin/)?(?:ba)?sh(?:[ \t]|$)')
+def suffix_ok(name, p):      # a suffix selects a language check case-insensitively; a shell script with no suffix is selected by its shebang (SKIP-3)
     sfx = SUFFIXES.get(name)
-    return True if sfx is None else p.endswith(sfx)
-def is_binary(path):
+    if sfx is None: return True
+    if p.lower().endswith(sfx): return True
+    if name == 'shell_parse':
+        try:
+            with open(os.path.join(cr, p), 'rb') as f: first = f.readline(256)
+        except OSError: return False
+        return bool(SHEBANG.match(first))
+    return False
+BINSUF = set()
+try:
+    for _l in open(os.path.join(trusted if trusted is not None else D, 'binary_suffixes.tsv'), encoding='utf-8'):
+        _l = _l.rstrip('\n')
+        if _l and not _l.startswith('#'): BINSUF.add(_l.split('\t')[0].lower())
+except OSError: pass
+def has_nul(path):
     try:
-        with open(os.path.join(root, path), 'rb') as f: return b'\0' in f.read(8192)
-    except OSError: return True
+        with open(os.path.join(cr, path), 'rb') as f: return b'\0' in f.read(8192)
+    except OSError: die('file_unreadable', repr(path))      # an unreadable file is never "binary" (it would be left out silently)
+def is_binary(path):
+    """A NUL byte in the first 8 KiB AND (a suffix of the approved binary list, or a binary/-text attribute): only then is the file binary for the TEXT checks (SKIP-2).
+    A text-looking file with a NUL stays judged as far as possible (the conflict scan) and is reported not_judged for the checks it cannot take."""
+    if not has_nul(path): return False
+    if path.lower().endswith(tuple(BINSUF)) if BINSUF else False: return True
+    r = subprocess.run(['git', '-C', root, 'check-attr', '-z', 'text', 'binary', '--', path], capture_output=True)
+    f_ = r.stdout.split(b'\0') if r.returncode == 0 else []
+    for i_ in range(0, len(f_) - 2, 3):
+        if (f_[i_ + 1], f_[i_ + 2]) in ((b'text', b'unset'), (b'binary', b'set')): return True
+    return False
 def run_builtin(name, path, bound=None):
-    f = os.path.join(root, path)
+    f = os.path.join(cr, path)
     if name == 'large_file':
         sz = os.path.getsize(f)
         if sz > bound: return 'fail', f'{sz} B > {bound} B'
         if sz > bound * 0.75: emit('size_alarm', path, sz, bound)
         return 'pass', ''
-    data = open(f, 'rb').read()
     if name == 'shell_parse':
-        r = subprocess.run(['bash', '-n', '--', f], capture_output=True, text=True)
+        # a script with a shebang that names sh (not bash) is parsed as POSIX sh would: bash -n --posix
+        try:
+            with open(f, 'rb') as fh: first = fh.readline(256)
+        except OSError: die('file_unreadable', repr(path))
+        posix = bool(re.match(rb'#![ \t]*(?:/usr/bin/env[ \t]+)?(?:/usr/bin/|/bin/)?sh(?:[ \t]|$)', first)) and not path.lower().endswith(('.bash',))
+        r = subprocess.run(['bash', '-n'] + (['--posix'] if posix else []) + ['--', f], capture_output=True, text=True)
         return ('pass', '') if r.returncode == 0 else ('fail', r.stderr.strip()[:200])
+    # the line-oriented text checks STREAM the file (peak memory is a line, not the file; BOUNDS-1)
     if name == 'merge_conflict':
-        for n, ln in enumerate(data.split(b'\n'), 1):
-            if ln.startswith((b'<<<<<<< ', b'>>>>>>> ', b'======= ')) or ln.rstrip(b'\r') == b'=======':
-                return 'fail', f'line {n}'
+        with open(f, 'rb') as fh:
+            for n, ln in enumerate(fh, 1):
+                ln = ln.rstrip(b'\n')
+                if ln.startswith((b'<<<<<<< ', b'>>>>>>> ', b'======= ')) or ln.rstrip(b'\r') == b'=======': return 'fail', f'line {n}'
         return 'pass', ''
     if name == 'trailing_whitespace':
-        for n, ln in enumerate(data.split(b'\n'), 1):
-            if ln.rstrip(b'\r') != ln.rstrip(b'\r').rstrip(b' \t'): return 'fail', f'line {n}'
+        with open(f, 'rb') as fh:
+            for n, ln in enumerate(fh, 1):
+                ln = ln.rstrip(b'\n')
+                if ln.rstrip(b'\r') != ln.rstrip(b'\r').rstrip(b' \t'): return 'fail', f'line {n}'
         return 'pass', ''
     if name == 'end_of_file':
-        if data and (not data.endswith(b'\n') or data.endswith(b'\n\n')): return 'fail', 'final newline'
+        sz = os.path.getsize(f)
+        if sz == 0: return 'pass', ''
+        with open(f, 'rb') as fh:
+            fh.seek(max(0, sz - 2)); tail = fh.read(2)
+        if not tail.endswith(b'\n') or tail == b'\n\n' or (len(tail) == 2 and tail.endswith(b'\n\n')): return 'fail', 'final newline'
         return 'pass', ''
+    data = open(f, 'rb').read()
     if name == 'check_yaml':
         try:
             import yaml; yaml.safe_load(data)
@@ -319,13 +386,14 @@ def run_script(name, files):
     r = rows[name]; argv = []
     tmpl = r['argv']
     lf = None
+    sroot = cr if r['scope'] == 'files' else root      # a files-scope script reads the declared files: the JUDGED tree; a changeset script reads the repository
     for t in tmpl[1:]:
-        if t == '{root}': argv.append(root)
+        if t == '{root}': argv.append(sroot)
         elif t == '{files}':
             lf = os.path.join(work, f'{name}.lst'); open(lf, 'w').write(''.join(x + '\n' for x in files)); argv.append(lf)
         elif t == '{paths}': argv.extend(files)
         else: argv.append(t)
-    try: p = subprocess.run(([r['interp']] if r.get('interp') else []) + [os.path.join(code, tmpl[0])] + argv, cwd=root, capture_output=True, text=True, timeout=120)
+    try: p = subprocess.run(([r['interp']] if r.get('interp') else []) + [os.path.join(code, tmpl[0])] + argv, cwd=sroot, capture_output=True, text=True, timeout=120)
     except subprocess.TimeoutExpired: die('check_timeout', name)
     if p.returncode == 20: die('check_refused', f'{name}: {p.stderr.strip()[:200]}')
     return p.returncode, (p.stdout + p.stderr).strip()
@@ -340,14 +408,19 @@ def head_is_link(path):
     r = subprocess.run(['git', '-C', root, 'ls-tree', 'HEAD', '--', path], capture_output=True, text=True)
     return r.returncode == 0 and r.stdout.split(' ')[0] == '120000'
 for path in declared:
-    fp = os.path.join(root, path)
-    if not os.path.lexists(fp): continue   # a deletion: not judged
+    fp = os.path.join(cr, path)
+    if not os.path.lexists(fp):            # no bytes in the judged tree: a deletion, a path git did not index (a FIFO, a socket), or a gitlink (no content); stated, never silently skipped (REPORT-8)
+        if not any(e.startswith(b'160000 ') and e.partition(b'\t')[2] == path.encode() for e in subprocess.run(['git', '-C', root, 'ls-files', '-s', '-z', '--', path], capture_output=True).stdout.split(b'\0') if e):
+            emit('not_judged', 'non_regular' if os.path.lexists(os.path.join(root, path)) else 'deletion', path)
+        continue
     if os.path.islink(fp):                 # judged by its link type, never followed and never skipped silently (WF3 review B-1)
         lcls, _lv = verdicts(path, tableset(path))
         if lcls in EVIDENCE_CLASSES: emit('fail', 'symlink', path, f'a declared symlink in class {lcls} is judged by its link type'); failed = True
         else: emit('symlink_not_judged', path)
         continue
-    if not os.path.isfile(fp): continue
+    if not os.path.isfile(fp):
+        if not os.path.isdir(fp): emit('not_judged', 'non_regular', path)     # a FIFO, a socket, a device: never opened (a read would block)
+        continue
     td = tableset(path); cls, v = verdicts(path, td)
     if cls in EVIDENCE_CLASSES and head_is_link(path):
         emit('fail', 'symlink', path, f'type change: HEAD holds a symlink in class {cls}, the work tree a regular file'); failed = True; continue
@@ -357,31 +430,41 @@ for path in declared:
             c = l.split('\t')
             if c[0] == path and c[1] == 'legacy-collection' and not re.search(r'[*?\[]', path):
                 head = git_blob(path)
-                if head is not None and head != open(os.path.join(root, path), 'rb').read():
+                if head is not None and head != open(os.path.join(cr, path), 'rb').read():
                     emit('legacy_row_not_dropped', path); failed = True
     held_here = held.get(path)
     alt = None
     if anyheld and td == tableset(path, allow_held=False) and any(s[0] == 'held' for s in tstatus.values()) and held_here is None:
         alt = verdicts(path, combo(tuple('wt' if t in tstatus and tstatus[t][0] in ('go', 'held') else 'head' for t in TABLES)))
-    for name in files_checks:
+    binary = None
+    # large_file first: a file over its bound is not read again by the other checks (BOUNDS-1)
+    order = [n for n in files_checks if n == 'large_file'] + [n for n in files_checks if n != 'large_file']
+    skip_rest = False
+    for name in order:
         if not suffix_ok(name, path): continue
+        if skip_rest: continue
         ver = v.get(name)
         if ver is None: die('table_invalid', f'class {cls} has no verdict for {name}')
         res = 'skip'; detail = ''
         if ver != 'skip':
-            if name not in TEXTLESS and is_binary(path):
-                emit('left_out', name, path)
-                if name in SUFFIXES: emit('not_judged', name, path)   # the language check this path's own suffix selects judged nothing (WF14 N4)
-                continue
+            if name not in TEXTLESS and name != 'merge_conflict':      # the conflict-marker scan reads EVERY regular file, a NUL byte included (SKIP-2)
+                if binary is None: binary = is_binary(path)
+                if binary:
+                    emit('left_out', name, path)
+                    if name in SUFFIXES or name == 'shell_parse': emit('not_judged', name, path)   # the language check this path's own suffix selects judged nothing (WF14 N4)
+                    continue
+                if has_nul(path):       # a NUL byte in a file that is no known binary type: the text checks cannot take it, and it is NOT clean
+                    emit('left_out', name, path); emit('not_judged', name, path); continue
             if rows[name]['argv']: script_files[name].append(path); res = 'script'
             else:
                 res, detail = run_builtin(name, path, int(ver) if ver.isdigit() else None)
         if res == 'fail':
             if alt is not None:
                 av = alt[1].get(name); admits = av == 'skip'
-                if av and av.isdigit() and name == 'large_file' and os.path.getsize(os.path.join(root, path)) <= int(av): admits = True
+                if av and av.isdigit() and name == 'large_file' and os.path.getsize(os.path.join(cr, path)) <= int(av): admits = True
                 if admits: unheld_findings.append((path, name)); continue
             emit('fail', name, path, detail); failed = True
+            if name == 'large_file': skip_rest = True
 # script rows run once over their filtered files
 for name, fl in script_files.items():
     if not fl: continue

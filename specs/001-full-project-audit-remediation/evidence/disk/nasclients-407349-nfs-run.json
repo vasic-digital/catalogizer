@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "nasclients-407349-nfs-run",
+  "at": "2026-10-08T01:04:19Z",
+  "need_bytes": 1500000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 56854417408,
+      "free_after": 55354417408,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 56854413312,
+      "free_after": 55354413312,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

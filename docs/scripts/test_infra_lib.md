@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T05:00:00Z |
-| Status | committed in 6d5ebb64; revised after the WF12 independent review (NO-GO); a fresh independent review of the revision is owed (constitution 11.4.142) |
+| Last modified | 2026-10-07T16:40:16Z |
+| Status | WF17 fix round 5 applied in the working tree (not committed); the independent review of that round is owed (constitution 11.4.142 / 11.4.209); evidence: `specs/001-full-project-audit-remediation/evidence/wp12/wf17/` |
 | Source | `scripts/test-infra/lib.sh`, `scripts/test-infra/client/lib.sh`, `scripts/test-infra/client/marker.sh`; tests `tests/infra/lib.sh`, `tests/infra/capture.sh` |
 
 ## `scripts/test-infra/lib.sh` (sourced)
@@ -28,3 +28,10 @@
 - `scripts/test-infra/lib.sh` gained `ti_pod`, `ti_rm_resources`, `ti_rm_out_dirs`, `ti_valid_project` (teardown incl. pod and output directories) and `ti_view_dir` (the client view of F3; refuses `.`, `..`, absolute paths, `.env`, `.git`, `.audit/test-infra`, `.audit/out`).
 - `scripts/test-infra/client/isolation_probe.sh` reports what a client container can see (existence and readability only, never content).
 - `tests/infra/lib.sh` gained `ti_down` (tears down as the owner), `ti_lease_state` (holder identity AND liveness of a lease, never "the claim directory exists"), the fixtures arrays `TI_FOREIGN_PODS` / `TI_FOREIGN_DIRS`, and `TI_FAILFAST=1` (mutant runs end at the first violated check).
+
+## WF17 fix round 5 (revision 3)
+
+- New in `lib.sh`: the input layer (`LC_ALL=C`; `ti_optval`, `ti_uint`/`ti_uint0`, `ti_abs`, `ti_safe_token`/`ti_safe_word`/`ti_safe_path`), the environment scrub for compose and for `run_pinned` (`ti_envscrub`, `ti_compose`, `ti_runpinned`), the registry-path derivation from `scripts/longops/lib.sh` (`ti_ld_init`), the per-user project lock (`ti_lock`/`ti_unlock`, fd 9 closed in every child by the `podman` wrapper), the ownership scan (`ti_scan`, `ti_rm_resources`: exits 0, 1, 3 unknown, 5 foreign), the keeper helpers (`ti_keeper_start`, `ti_holder_ok`, `ti_live_keeper_in`), the client view helpers (`ti_path_in_view`, `ti_view_dir`) and `ti_exit_on_signals` (INT/TERM/HUP become a normal exit so an entry point's EXIT trap runs).
+- The comment about the pod now says what was measured: podman-compose 1.5.0 defaults `in_pod` to true; the compose files set `x-podman: {in_pod: false}` and the scripts pass `--in-pod false`.
+- Test hooks (`TI_COMPOSE_FILE`, `TI_CORPUS_CACHE_DIR`, `TI_LOCK`, `TI_SCRIPT_DIR`, `TI_PROBE_CLIENT_DIR`, `TI_RT_CLIENT_DIR`, `TI_TEST_SLEEP_*`) are ignored unless `TI_TEST_MODE=1`.
+- Build ids are 1..31 lowercase letters, digits and dashes (ASCII only; `LC_ALL=C` makes the class byte-wise).

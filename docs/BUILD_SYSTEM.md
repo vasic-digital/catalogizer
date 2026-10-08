@@ -215,12 +215,12 @@ For reproducible builds inside the builder container:
 # Validate the compose file with a fresh per-run env, without building
 ./scripts/container-build.sh --validate-only
 
-# Running the compose file directly needs that env file (without it podman-compose refuses to render):
-bash scripts/test-infra/gen_env.sh --build-id mybuild
-BUILD_VERSION=1.0.0 BUILD_NUMBER=3 BUILD_COMPONENTS="catalog-api catalog-web" \
-  podman-compose --env-file .audit/test-infra/catalogizer-test-mybuild/env \
-  -f docker-compose.build.yml up --build --abort-on-container-exit
 ```
+
+Running `docker-compose.build.yml` by hand is NOT supported (WF17 TI-C6). The documented recipe (`gen_env.sh` plus a bare `podman-compose up`) leaked a mode 0600 credential file and pinned the project "live" in the
+long-operation registry forever, because nothing tore the stack down or closed its operation. `scripts/container-build.sh` is the one entry point: it registers the build as a long operation, runs compose as
+`-p <project> --in-pod false` under a scrubbed environment, and on ANY exit path (compose failure, INT, TERM, HUP) removes exactly that project's containers, network and volumes, closes the operation and deletes the
+per-run credential file (`tests/infra/test_build_stack.sh`).
 
 ### Container Environment Variables
 

@@ -1,0 +1,4 @@
+first_duplicate_wins CAUGHT
+escapes_not_decoded CAUGHT
+inline_comment_kept CAUGHT
+identity_noop SURVIVED-AS-REQUIRED

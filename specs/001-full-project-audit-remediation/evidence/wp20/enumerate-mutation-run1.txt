@@ -1,0 +1,13 @@
+# identity: wp=WP-20 task=T162/T165 mutation run 1 (transcribed verbatim from the harness output of that run)
+CONTROL unmutated: rc=0 RESULT: pass=71 fail=0
+MUTANT skip_entry_check: KILLED (3 failing checks; saw /moved snapshot/)
+MUTANT drop_s11_source: KILLED (2 failing checks; saw /planted S-11|baseline class S-11/)
+MUTANT drop_s25_source: KILLED (1 failing checks; saw /planted S-25|baseline class S-25/)
+MUTANT checkbox_no_x: KILLED (1 failing checks; saw /planted S-10/)
+MUTANT insert_not_ignore: SURVIVED rc=0
+MUTANT marker_no_wordb: KILLED (2 failing checks; saw /decoy/)
+MUTANT skip_xit_carrier: KILLED (2 failing checks; saw /decoy/)
+MUTANT cross_mark_dropped: NOT APPLIED (sed matched nothing) - counted as survivor
+MUTANT ticket_glob_deep: KILLED (2 failing checks; saw /decoy/)
+MUTANT nondeterministic: SURVIVED rc=0
+MUTANTS: 10 run, 3 survived

@@ -1,0 +1,11 @@
+workdir /dev/shm/const0108/red/cg_safe_tests/memfloor_mut.BLi44r
+RESULT GOLD PASS unmutated tooling: U47-U54 all GREEN (golden-false)
+RESULT MF1 PASS mutant KILLED (env knob ignored (floor stays default)): named case(s) U48,U50,U52 turn RED
+RESULT MF2 PASS mutant KILLED (limits-file GiB converted with the wrong factor): named case(s) U49 turn RED
+RESULT MF3 PASS mutant KILLED (lower-bound sanity check removed (absurd floor accepted)): named case(s) U51 turn RED
+RESULT MF4 PASS mutant KILLED (unreadable limits file silently falls back to default (fail-open)): named case(s) U53 turn RED
+RESULT MF5 PASS mutant KILLED (echoed floor stuck at 32 GiB while the check uses the effective value): named case(s) U48,U49,U50,U52 turn RED
+RESULT MF6 PASS mutant KILLED (memory floor no longer enforced at all): named case(s) U47,U48,U49,U52 turn RED
+RESULT MF7 PASS mutant KILLED (limits file never consulted): named case(s) U49,U53 turn RED
+RESULT MF8 PASS mutant KILLED (set-but-empty env value silently treated as unset (fail-open)): named case(s) U51 turn RED
+SUMMARY cases=9 failed=0

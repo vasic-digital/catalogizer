@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "ftpdev-vet",
+  "at": "2026-10-07T19:56:45Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 75934171136,
+      "free_after": 75101534812,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 75934167040,
+      "free_after": 75101530716,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

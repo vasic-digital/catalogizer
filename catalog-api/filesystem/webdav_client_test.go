@@ -443,17 +443,17 @@ func TestWebDAVClient_resolveURL(t *testing.T) {
 		{
 			name:     "simple path",
 			path:     "/file.txt",
-			expected: "http://example.com/base/file.txt",
+			expected: "http://example.com/webdav/base/file.txt", // WF22 F5: Path is joined UNDER the URL path (the old expectation encoded the replacement bug)
 		},
 		{
 			name:     "nested path",
 			path:     "/folder/subfolder/file.txt",
-			expected: "http://example.com/base/folder/subfolder/file.txt",
+			expected: "http://example.com/webdav/base/folder/subfolder/file.txt",
 		},
 		{
 			name:     "path with traversal attempt",
 			path:     "/../../../etc/passwd",
-			expected: "http://example.com/base/etc/passwd",
+			expected: "http://example.com/webdav/base/etc/passwd", // ".." segments cannot climb out of the base
 		},
 	}
 

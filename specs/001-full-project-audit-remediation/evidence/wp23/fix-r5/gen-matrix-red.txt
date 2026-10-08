@@ -1,0 +1,148 @@
+# fix-r5 evidence (WP-23 round 5): RED on HEAD code
+# command: bash tools/evidence/matrix/tests/test_gen_matrix.sh --no-mutations
+# env: TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=<repo> LONGOPS_ALLOW_TMPFS=1 (host run, not the container lane)
+# date_utc_assembled: 2026-10-07T18:57:03Z
+# git_head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (the working tree carries uncommitted changes; the sha256 lines identify the exact bytes that ran)
+# sha256 01521afb2a285279a83c3763d8eff8f4c7bb42366034ae50e6d7864a9ff6f291  tools/evidence/matrix/gen_matrix.py
+# sha256 9dac3726b07c8cee3a11cf94b52f05fb51be0b1549f8d453493efb9ce5545c40  tools/evidence/matrix/derive_applicability.py
+# sha256 58043fe0fa0e245c5adb685c0b78d217ad53fd3494eddc90a81e2b1496b55c71  tools/evidence/matrix/tests/test_gen_matrix.sh
+# HEAD copy: the SUT files as `git show HEAD:<path>` (scratch copy in /dev/shm/r5/head), run with the CURRENT test file; GEN=<HEAD copy>/gen_matrix.py
+# source output: final/gen-red.txt
+
+PASS: golden-good: exit 0
+PASS: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a)
+PASS: golden-good: two components x 15 types = 30 cells
+PASS: golden-good: no cell is '?'
+PASS: golden-good: the md ends with one newline
+PASS: golden-good: the md has no trailing whitespace
+PASS: golden-good: the md carries the 11.4.44 revision header
+PASS: golden-good: two runs are byte-identical (md)
+PASS: golden-good: two runs are byte-identical (json)
+PASS: one '?' cell: the generator exits non-zero (got 3)
+PASS: one '?' cell: the refusal says the cell could not be classified
+PASS: one '?' cell: stderr names the component and the type
+PASS: one '?' cell: no matrix file was written
+PASS: a reordered types list is refused (3): the map cannot redefine the fifteen types
+PASS: a non-n/a cell without a reason is refused (3)
+PASS: an n/a cell without a reason is refused (rc 3)
+PASS: a component missing a type is refused naming it (rc 3)
+PASS: an unknown state is refused (rc 3)
+PASS: a wrong schema is refused (rc 3)
+PASS: a missing input is refused (rc 3)
+PASS: a hand-edited count is overwritten on regeneration
+PASS: a hand edit of the md does not survive regeneration
+PASS: the doc05 4.4 table has 11 columns x 15 rows = 165 cells (P=14 ~=26 A=84 n/a=32 ?=9)
+PASS: the doc05 4.4 table as written (it still holds 9 '?' cells) is refused by the generator
+PASS: the refusal lists the '?' cells
+PASS: doc05 4.4 with '?' resolved to A: declared counts equal the document tally
+PASS: K10 fixture: the real recorder wrote RED + 3 GREEN + MUTATION (5 chained entries)
+PASS: K10 fixture: the verdict deriver says PASS for the item (the ledger is the real one)
+FAIL: gate golden-false: a complete REAL ledger passes (exit 0) (got '2' want '0')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;d=json.load(open(sys.argv[1]));print(','.join(sorted(c['status'] for c in d['cells'] if c['declared']!='n/a')))
+                                ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/genmatrix-test.3nxBM2/g1/coverage-matrix.json'
+FAIL: gate golden-false: the cell is present in the json (got '' want 'present')
+FAIL: gate did not fail on the absent item (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: gate accepted a forged ledger (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: gate accepted a reordered ledger (rc 2)
+FAIL: gate accepted two GREEN entries (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: gate accepted a record without a caught mutation (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: gate accepted a survived mutation (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]] / recorded seq=4 item=CAT-001 pol=GREEN it=3 exit=0 verdict=pass
+recorded seq=5 item=CAT-001 pol=MUTATION it=1 exit=0 verdict=pass
+FAIL: RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails (got '2' want '1')
+FAIL: RM1: class gap not named: gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;d=json.load(open(sys.argv[1]));print(','.join(sorted(c['status'] for c in d['cells'] if c['declared']!='n/a')))
+                                ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/genmatrix-test.3nxBM2/c1/coverage-matrix.json'
+FAIL: RM1: e2e and ui are partial, unit present, in the json (got '' want 'partial,partial,present')
+FAIL: RM1 golden-false: runtime for e2e, user_visible for ui and a STRONGER class for unit pass the gate (got '2' want '0')
+FAIL: RM2: a cutting REOPEN removes present: the gate fails (got '2' want '1')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;d=json.load(open(sys.argv[1]));print(','.join(sorted(c['status'] for c in d['cells'] if c['declared']!='n/a')))
+                                ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/genmatrix-test.3nxBM2/r1/coverage-matrix.json'
+FAIL: RM2: the cell is partial in the json (got '' want 'partial')
+FAIL: RM3: a blocked latest entry still fails the gate (blocked is not present) (got '2' want '1')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;d=json.load(open(sys.argv[1]));print(','.join(sorted(c['status'] for c in d['cells'] if c['declared']!='n/a')))
+                                ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/genmatrix-test.3nxBM2/b1/coverage-matrix.json'
+FAIL: RM3: the cell status is blocked in the json (got '' want 'blocked')
+FAIL: RM3: blocked reason missing: gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]] / recorded seq=1 item=CAT-001 pol=RED it=1 exit=1 verdict=fail
+2
+FAIL: candidate: GREEN entries for exactly this fingerprint pass (golden-false) (got '2' want '0')
+FAIL: candidate: a record for another build is not evidence for this one (rc 1) (got '2' want '1')
+FAIL: candidate: reason missing: gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+PASS: gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass
+FAIL: gate B1: refusal text missing: gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+PASS: gate B1: a refused gate wrote no matrix
+PASS: gate B1 control: the same map without --gate and without a ledger still renders (exit 0)
+FAIL: K11.1: unbound gate accepted (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: K11.1: unbound map accepted with --repo (rc 2): gen_matrix: usage: gen_matrix.py --applicability FILE --out DIR [--ledger FILE] [--timestamp UTC] [--gate] [--mint [--mint-cmd CMD] [--mint-ledger FILE]]
+FAIL: gate: stray cell-items key accepted (rc 2)
+FAIL: gate: invalid item id accepted (rc 2)
+FAIL: gate: vacuous map accepted (rc 2)
+FAIL: K11.2: a timestamp with a space is refused (2): it would corrupt the 11.4.44 header (got '0' want '2')
+FAIL: K11.3: duplicate key accepted (rc 0): 
+PASS: K11.1: an unparsable map is exit 3 (never exit 1, which means the gate failed)
+FAIL: K11.1: bad cell-items gave rc 2
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;i=json.load(open(sys.argv[1]))['inputs'];print(len(i['applicability_sha256']),len(i['ledger_sha256']),i['map_bound'])
+                                ~~~~^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/dev/shm/genmatrix-test.3nxBM2/g1/coverage-matrix.json'
+FAIL: inputs: the json records the sha256 of the applicability map and the ledger and map_bound=false (got '' want '64 64 False')
+PASS: mint: first run exits 0
+PASS: mint: one absent and one partial cell yield exactly two items
+FAIL: mint calls wrong: alpha unit A 
+alpha integration ~ 
+PASS: mint: a second run mints none (11.4.214)
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+  File "<stdin>", line 3, in <genexpr>
+KeyError: 'state'
+FAIL: mint ledger malformed
+FAIL: mint K11.4: two runs with DIFFERENT --out mint 2 items in total (the default ledger is next to the map) (got '4' want '2')
+FAIL: mint K11.4: ledger location wrong
+FAIL: mint: three CONCURRENT runs mint 2 items in total (lock held for the whole run) (got '6' want '2')
+PASS: mint: a failing mint command fails the run (4) and reports its stderr
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;print(sorted(v['state'] for v in json.load(open(sys.argv[1]))['items'].values()))
+                          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 1, in <genexpr>
+    import json,sys;print(sorted(v['state'] for v in json.load(open(sys.argv[1]))['items'].values()))
+                                 ~^^^^^^^^^
+KeyError: 'state'
+FAIL: mint: the ledger holds one minted and one PENDING row after the crash (got '' want '['minted', 'pending']')
+FAIL: mint: the retry calls the register ONCE more, for the pending cell, with the same key (got 'alpha integration ~ |' want 'alpha integration ~ mint:alpha|integration|')
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;print(sorted(v['state'] for v in json.load(open(sys.argv[1]))['items'].values()))
+                          ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 1, in <genexpr>
+    import json,sys;print(sorted(v['state'] for v in json.load(open(sys.argv[1]))['items'].values()))
+                                 ~^^^^^^^^^
+KeyError: 'state'
+FAIL: mint: both cells are minted after the retry (got '' want '['minted', 'minted']')
+FAIL: mint: 'ATM-FX1' accepted (rc 0): 
+FAIL: mint: 'CAT-901 extra' accepted (rc 0): 
+FAIL: mint: duplicate id accepted (rc 0): 
+PASS: mint: a malformed mint ledger refuses (4) and mints nothing (a duplicate item would break 11.4.214)
+PASS: mint: no mint command is an honest recorded skip (mint_cmd_absent), never a fabricated item
+PASS: mint: no ledger was written when nothing was minted
+FAIL: dash id accepted (rc 0)
+PASS: T196 applicability.yaml: accepted (no '?' cell, every cell has a reason)
+PASS: T196 applicability.yaml: cells = components x 15 and the per-state counts add up
+PASS: m3: Created is carried forward (not overwritten by the second run)
+PASS: m3: Last modified is the second run
+PASS: m3: Revision stays 1 while the body is unchanged
+PASS: m3: Revision rises to 2 when the body changed
+Summary: PASS=45 FAIL=42 SKIP=0
+done rc=1

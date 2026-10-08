@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # test_check_exclusions.sh - T200 (RED first). Oracle for scripts/coverage/check_exclusions.sh (docs/05 7.3, constitution 11.4.224 E): a coverage exclusion is
 # legal only through a CHECKED-IN list, every entry justified from the closed class set {generated-code, vendored-third-party,
-# non-shipping-fixtures-and-golden-assets}; a first-party exclusion additionally needs a tracked item. Legs: golden-good passes; an unlisted exclusion (a pattern the
-# measuring tool uses that is not in the list), an unjustified entry, a first-party entry without a tracked item, an unknown class, an over-broad pattern
-# and a schema/application mismatch each FAIL; the verdict is written to a JSON file. The paired mutations (G-GATE) are copies of the gate with ONE
-# check removed; each must make this body FAIL. The mutation is also run against every real exclusion file by mutate_exclusions.sh.
+# non-shipping-fixtures-and-golden-assets}; a first-party exclusion additionally needs a tracked item or a lane that really measures it. Legs: golden-good passes; an unlisted
+# exclusion (a pattern the measuring tool uses that is not in the list), an unjustified entry, a first-party entry without a tracked item, an unknown class, an over-broad pattern
+# and a schema/application mismatch each FAIL; the verdict is written to a JSON file. WP-23 round 5 adds the legs of the input classes the round-2 review found: a vacuous or
+# foreign root, a missing tools record, untracked files, a glob dialect the fence cannot evaluate, config forms the old regex misread, tool identity, carrier class evidence,
+# lane semantics, the declared scope of a fence application, and the exit-code contract. The paired mutations are copies of the SUT with ONE guard removed; each must make this
+# body FAIL. The same body also runs the REAL gate over the REAL committed fences (the committed verdicts are asserted).
 # Usage: test_check_exclusions.sh [--no-mutations]    Env: GATE (the gate under test), MUTATION_RECORD
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,11 +39,11 @@ exclusions:
 Y
 }
 printf 'ATM-1234\n' >"$T/items.txt"
-runraw() { bash "$GATE" "$@" >"$T/out" 2>"$T/err"; RC=$?; }
+runraw() { local a=("$@"); case " $* " in *" --root "*) ;; *) a+=(--schema-only);; esac; bash "$GATE" "${a[@]}" >"$T/out" 2>"$T/err"; RC=$?; }
 run() { runraw "$@" --items-file "$T/items.txt"; }   # a first-party item is verified against a register export; the golden fixture's ATM-1234 is in it
 good; run "$T/app/demo.yaml" --json "$T/verdict.json"
-check "golden-good: exit 0" "$RC" 0
-check "golden-good: the verdict file says PASS" "$(jq -r .verdict "$T/verdict.json" 2>/dev/null)" PASS
+check "golden-good (schema only): exit 0" "$RC" 0
+check "golden-good (schema only): the verdict file says SCHEMA_ONLY and that no content or applied rule ran" "$(jq -r '.verdict + ":" + (.content_checked|tostring) + ":" + (.applied_checked|tostring)' "$T/verdict.json" 2>/dev/null)" "SCHEMA_ONLY:false:false"
 check "golden-good: the verdict names the application" "$(jq -r .application "$T/verdict.json" 2>/dev/null)" demo
 check "golden-good: the verdict carries the sha256 of the checked file" "$(jq -r .sha256 "$T/verdict.json" 2>/dev/null)" "$(sha256sum <"$T/app/demo.yaml" | cut -d' ' -f1)"
 check "golden-good: the first-party entry is reported as an honest gap" "$(jq -r '.first_party_entries | length' "$T/verdict.json" 2>/dev/null)" 1
@@ -84,95 +86,343 @@ good; sed -i 's/^schema: coverage-exclusions\/1/schema: coverage-exclusions\/7/'
 good; sed -i 's/^application: demo/application: other/' "$T/app/demo.yaml"; run "$T/app/demo.yaml"
 [ "$RC" = 1 ] && grep -qi 'application' "$T/err" && ok "an application that differs from the file stem is refused" || bad "application mismatch accepted"
 run "$T/app/missing.yaml"; check "an unreadable file is a refusal, never a pass" "$RC" 1
-run; check "no argument is a usage error" "$RC" 2
+runraw; check "no argument is a usage error" "$RC" 2
 # an empty exclusion list is a valid, honest statement (no exclusions); a missing key is not
-printf 'schema: coverage-exclusions/1\napplication: empty\nexclusions: []\n' >"$T/app/empty.yaml"; run "$T/app/empty.yaml"; check "an explicit empty list passes" "$RC" 0
+printf 'schema: coverage-exclusions/1\napplication: empty\nexclusions: []\n' >"$T/app/empty.yaml"; run "$T/app/empty.yaml"; check "an explicit empty list passes (schema only)" "$RC" 0
 printf 'schema: coverage-exclusions/1\napplication: nokey\n' >"$T/app/nokey.yaml"; run "$T/app/nokey.yaml"; check "a file without the exclusions key is refused" "$RC" 1
+
+# ================= the fixture repository of the round-5 legs =================
+# FR is a repository (not a git work tree: the walk is the enumeration there, and the verdict says so) with the tools record, a lanes table, an image lock and one application root.
+FR="$T/fr"
+mkfr() { rm -rf "$FR"; mkdir -p "$FR/coverage/exclusions" "$FR/scripts/containers" "$FR/build/containers" "$FR/app/src" "$FR/app/vendor" "$FR/app/gen/schemas" "$FR/app/testdata"
+  printf 'schema: coverage-tools/1\napps:\n  demo: {kind: fence, root: app, measurable: [".go", ".sh", ".kt", ".ts"]}\n' >"$FR/coverage/exclusions/tools.yaml"
+  printf 'demo\trust\trun_rust\ndemo\tunit\trun_go\n' >"$FR/scripts/containers/lanes.tsv"
+  printf 'RUNNER_IMAGES="IMG-RUST"\n' >"$FR/scripts/containers/run_rust.sh"; printf 'RUNNER_IMAGES="IMG-GO"\n' >"$FR/scripts/containers/run_go.sh"
+  printf 'schema: 1\nimages:\n- id: IMG-GO\n  tag_intent: x\n' >"$FR/build/containers/images.lock.yaml"
+  for f in 1 2 3 4 5 6 7 8 9 10; do printf 'package x\n' >"$FR/app/src/f$f.go"; done
+  echo '{}' >"$FR/app/gen/schemas/s.json"; echo l >"$FR/app/vendor/l.go"; echo t >"$FR/app/testdata/t.json"; }
+mkfr
+mkfence() { printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n%s' "$1" >"$FR/coverage/exclusions/demo.yaml"; }
+ent() { printf '  - path: "%s"\n    class: %s\n    justification: "a justification that is long enough to pass the length rule"\n' "$1" "$2"; }
+gate() { bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "${ROOT:-$FR/app}" --repo "$FR" --items-file "$T/items.txt" "$@" >"$T/out" 2>"$T/err"; RC=$?; }
+mkfence "$(ent 'gen/schemas/**' generated-code)"
+printf 'package x\n' >/dev/null
+# K12.4-style generator provenance for the golden-good: gen/ is declared as output by a tsconfig outDir
+printf '{"compilerOptions":{"outDir":"./gen"}}\n' >"$FR/app/tsconfig.json"
+gate --json "$T/v-good.json"
+check "round-5 golden-good: a fence over a real root, tools row and repo PASSes (exit 0)" "$RC" 0
+check "round-5 golden-good: both rule flags are true and the verdict is PASS" "$(jq -r '.verdict + ":" + (.content_checked|tostring) + ":" + (.applied_checked|tostring)' "$T/v-good.json")" "PASS:true:true"
+check "K12.5: the verdict records the enumeration (walk, outside a work tree), the file count and the digests of its decisive inputs" "$(jq -r '.inputs.enumeration + ":" + (.inputs.file_count|tostring) + ":" + ((.inputs.tools_sha256|length)|tostring) + ":" + ((.inputs.files_fingerprint|length)|tostring)' "$T/v-good.json")" "walk:14:64:64"
+check "K12.5: and the tools row itself" "$(jq -c '.inputs.tools_row.kind' "$T/v-good.json")" '"fence"'
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "$FR/app" --repo "$FR" --json "$T/v-good2.json" >/dev/null 2>&1
+check "K12.5: a different decisive input (the items file given or not) changes the recorded digests" "$(jq -r '.inputs.items_sha256' "$T/v-good2.json")" null
+# -- K2.1: a vacuous or foreign root is refused, never judged
+ROOT="$FR/nonexistent" gate; [ "$RC" = 1 ] && grep -q 'root_missing' "$T/err" && ok "K2.1: a misspelled --root is refused (root_missing), the old gate PASSed with content_checked true" || bad "K2.1: missing root (rc $RC): $(cat "$T/err")"
+mkdir -p "$FR/empty"; ROOT="$FR/empty" gate; [ "$RC" = 1 ] && grep -q 'root_empty' "$T/err" && ok "K2.1: an existing EMPTY root is refused (root_empty)" || bad "K2.1: empty root (rc $RC): $(cat "$T/err")"
+mkdir -p "$FR/other" && echo x >"$FR/other/a.go"; ROOT="$FR/other" gate; [ "$RC" = 1 ] && grep -q 'root_not_application' "$T/err" && ok "K2.1: another application's root is refused (root_not_application: the tools row binds demo to app)" || bad "K2.1: foreign root (rc $RC): $(cat "$T/err")"
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "" --repo "$FR" >"$T/out" 2>"$T/err"; RC=$?; [ "$RC" != 0 ] && ok "K2.1: --root \"\" is refused (exit $RC)" || bad "K2.1: --root \"\" accepted"
+mkfence "$(ent 'gen/schemas/**' generated-code)"
+# -- K2.2: rule 6 never skips silently
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --repo "$FR" >"$T/out" 2>"$T/err"; RC=$?; check "K2.2: no --root is a usage refusal (exit 2 root_required), not a skipped rule plus PASS" "$RC" 2
+grep -q 'root_required' "$T/err" && ok "K2.2: the refusal names root_required" || bad "K2.2: refusal text: $(cat "$T/err")"
+printf 'schema: coverage-tools/1\napps:\n  other: {kind: none, root: app}\n' >"$FR/tools-norow.yaml"; gate --tools "$FR/tools-norow.yaml"
+[ "$RC" = 1 ] && grep -q 'tool_record_missing' "$T/err" && ok "K2.2: an application with NO tools row FAILs (tool_record_missing), the old gate PASSed with applied_checked=false" || bad "K2.2: missing row (rc $RC): $(cat "$T/err")"
+gate --tools "$FR/does-not-exist.yaml"; [ "$RC" = 1 ] && grep -q 'tool_record_missing' "$T/err" && ok "K2.2: a missing tools FILE FAILs" || bad "K2.2: missing tools file (rc $RC): $(cat "$T/err")"
+printf 'schema: coverage-tools/1\napps:\n  demo: scalar\n' >"$FR/tools-scalar.yaml"; gate --tools "$FR/tools-scalar.yaml"
+[ "$RC" = 1 ] && grep -q 'tool_record_malformed' "$T/err" && ok "K11.1: a scalar tools row is a named FAIL (tool_record_malformed), not an AttributeError without a verdict" || bad "K11.1: scalar row (rc $RC): $(cat "$T/err")"
+# the fence moved outside coverage/exclusions/: the repository is explicit, so rule 6 still runs (it was inferred from the fence's location and silently skipped)
+mkdir -p "$T/elsewhere"; cp "$FR/coverage/exclusions/demo.yaml" "$T/elsewhere/demo.yaml"
+bash "$GATE" "$T/elsewhere/demo.yaml" --root "$FR/app" --repo "$FR" >"$T/out" 2>"$T/err"; check "K2.2: a fence outside coverage/exclusions/ with an explicit --repo is judged the same (exit 0)" "$?" 0
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, root: app, config: app/vitest.config.ts, script: test}\n' >"$FR/tools-vt.yaml"
+printf '{"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"^1.6.0"}}\n' >"$FR/app/package.json"
+printf "export default { test: { coverage: { exclude: [ 'gen/**', 'src/hidden/**' ], all: true } } }\n" >"$FR/app/vitest.config.ts"; mkdir -p "$FR/app/src/hidden"; echo h >"$FR/app/src/hidden/h.ts"
+gate --tools "$FR/tools-vt.yaml"
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/hidden/\*\*'" "$T/err" && ok "K2.2 control: with the row present the rule runs and finds the unlisted exclusion" || bad "K2.2 control: rc $RC: $(cat "$T/err")"
+# -- K2.3: tracked files only, no silent walk
+GR="$T/gitroot"; rm -rf "$GR"; mkdir -p "$GR/coverage/exclusions" "$GR/app/vendor" "$GR/app/src" "$GR/app/build" "$GR/scripts/containers"
+( cd "$GR" && git init -q . && git config user.email t@t && git config user.name t )
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: fence, root: app, measurable: [".go"]}\n' >"$GR/coverage/exclusions/tools.yaml"
+for f in 1 2 3 4; do echo v >"$GR/app/vendor/v$f.go"; done; for f in 1 2 3 4 5 6; do echo s >"$GR/app/src/s$f.go"; done
+printf 'build/\n' >"$GR/.gitignore"; ( cd "$GR" && git add -A && git commit -q -m init )
+for f in $(seq 1 20); do echo b >"$GR/app/build/b$f.go"; done
+cat >"$GR/coverage/exclusions/demo.yaml" <<'Y'
+schema: coverage-exclusions/1
+application: demo
+exclusions:
+  - path: "vendor/**"
+    class: vendored-third-party
+    justification: "a justification that is long enough to pass the length rule"
+Y
+mkdir -p "$GR/app/vendor"; printf 'MIT License\n' >"$GR/app/vendor/LICENSE"; printf 'https://example.org/upstream\n' >"$GR/app/vendor/UPSTREAM"; ( cd "$GR" && git add -A && git commit -q -m prov )
+ggate() { bash "$GATE" "$GR/coverage/exclusions/demo.yaml" --root "$GR/app" --repo "$GR" "$@" >"$T/out" 2>"$T/err"; RC=$?; }
+ggate --json "$T/v-git.json"
+check "K2.3: 4 vendored of 10 tracked files (+2 provenance files): PASS" "$RC" 0
+check "K2.3: the enumeration is recorded as git-tracked" "$(jq -r .inputs.enumeration "$T/v-git.json")" "git-tracked"
+mkdir -p "$GR/app/notes"; for f in 1 2 3; do echo n >"$GR/app/notes/n$f.go"; done
+ggate --json "$T/v-git2.json"
+check "K2.3: untracked scratch files (another writer's notes) do not change the verdict or the count" "$(jq -r .inputs.file_count "$T/v-git2.json")" "$(jq -r .inputs.file_count "$T/v-git.json")"
+GIT_DIR="$GR/.git" ggate --json "$T/v-git3.json"
+check "K2.3: GIT_DIR exported (as git does for a hook) gives the same tracked enumeration, not a walk that counts ignored build output" "$(jq -r '.inputs.enumeration + ":" + (.inputs.file_count|tostring)' "$T/v-git3.json")" "git-tracked:$(jq -r .inputs.file_count "$T/v-git.json")"
+# CM12 (adopted): 6 of 10 tracked files vendored plus 20 IGNORED files: tracked fraction fails
+for f in 5 6 7 8 9 10; do echo v >"$GR/app/vendor/v$f.go"; done; ( cd "$GR" && git add -A && git commit -q -m more )
+ggate; [ "$RC" = 1 ] && grep -q 'more than half' "$T/err" && ok "CM12: 10 vendored of 16 tracked measurable files (ignored build/ files and untracked notes not counted): over-broad" || bad "CM12: rc $RC: $(cat "$T/err")"
+echo gitdir: /nonexistent >"$T/dangling.git"; mkdir -p "$T/dang/app"; echo x >"$T/dang/app/a.go"; cp "$T/dangling.git" "$T/dang/app/.git"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: fence, root: app, measurable: [".go"]}\n' >"$T/dang/tools.yaml"; mkdir -p "$T/dang/coverage/exclusions"; cp "$T/dang/tools.yaml" "$T/dang/coverage/exclusions/tools.yaml"
+printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions: []\n' >"$T/dang/coverage/exclusions/demo.yaml"
+bash "$GATE" "$T/dang/coverage/exclusions/demo.yaml" --root "$T/dang/app" --repo "$T/dang" >"$T/out" 2>"$T/err"; RC=$?
+[ "$RC" = 1 ] && grep -q 'enumeration_failed' "$T/err" && ok "K2.4: a root whose .git is a dangling gitfile is refused (enumeration_failed), never walked" || bad "K2.4: dangling gitfile (rc $RC): $(cat "$T/err")"
+# -- K1.4: first-party routes are verified, all of them
+mkfr
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    measured_by: {app: demo, lane: unit}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+mkdir -p "$FR/app/legacy"; echo p >"$FR/app/legacy/old.go"
+gate; [ "$RC" = 1 ] && grep -q 'measured_by_unproven' "$T/err" && grep -q 'very lane the figure comes from' "$T/err" && ok "K1.4: measured_by naming the lane the figure itself comes from is refused (measured_by_unproven)" || bad "K1.4: same lane accepted (rc $RC): $(cat "$T/err")"
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+gate; [ "$RC" = 1 ] && grep -q 'IMG-RUST, which is not in the image lock' "$T/err" && ok "K1.4: a lane whose image is NOT in the image lock (IMG-RUST not built) does not measure anything: refused" || bad "K1.4: unbuilt image accepted (rc $RC): $(cat "$T/err")"
+printf -- '- id: IMG-RUST\n  tag_intent: y\n' >>"$FR/build/containers/images.lock.yaml"
+gate; check "K1.4 golden-false: a DIFFERENT lane with a wrapper and a built image measures the files: PASS" "$RC" 0
+rm "$FR/scripts/containers/run_rust.sh"; gate; [ "$RC" = 1 ] && grep -q 'wrapper run_rust of demo/rust does not exist' "$T/err" && ok "K1.4: a lane whose wrapper script is missing is refused" || bad "K1.4: missing wrapper accepted (rc $RC): $(cat "$T/err")"
+printf 'RUNNER_IMAGES="IMG-RUST"\n' >"$FR/scripts/containers/run_rust.sh"
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    measured_by: {app: demo, lane: nothing}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+gate; [ "$RC" = 1 ] && grep -q 'measured_by demo/nothing is not a row' "$T/err" && ok "I5: measured_by naming a lane no row of the lanes table measures is refused" || bad "I5: bogus measured_by accepted (rc $RC): $(cat "$T/err")"
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    tracked_item: ZZZ-999999\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+gate; [ "$RC" = 1 ] && grep -q 'ZZZ-999999 does not exist' "$T/err" && ok "K1.4: a fabricated tracked item next to a VALID lane is refused (both route fields are verified)" || bad "K1.4: fabricated item beside a lane accepted (rc $RC): $(cat "$T/err")"
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    tracked_item: ATM-1234\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+gate; check "K1.4 control: a real item plus a valid different lane PASSes" "$RC" 0
+
+# ================= the original round-1 legs, on the fixture repository =================
 # with --root: an entry that matches no file is reported stale (a note, not a failure); one that matches is counted
-mkdir -p "$T/root/vendor" "$T/root/gen/schemas" "$T/root/src"; echo x >"$T/root/vendor/a.go"; echo y >"$T/root/gen/schemas/b.json"
-for f in 1 2 3 4 5 6; do echo "$f" >"$T/root/src/f$f.go"; done   # the shipped code the fence must leave in the figure (the matched-fraction rule needs a real majority)
-good; run "$T/app/demo.yaml" --root "$T/root" --json "$T/v3.json"
+mkfr; mkdir -p "$FR/app/gen/schemas"; printf '{"compilerOptions":{"outDir":"./gen"}}\n' >"$FR/app/tsconfig.json"
+printf 'MIT\n' >"$FR/app/vendor/LICENSE"; printf 'https://example.org/up\n' >"$FR/app/vendor/UPSTREAM"
+mkfence "$(ent 'gen/schemas/**' generated-code; ent 'vendor/**' vendored-third-party; ent 'testdata/**' non-shipping-fixtures-and-golden-assets)"
+gate --json "$T/v3.json"
 check "--root: still exit 0 (a stale entry is a note)" "$RC" 0
-check "--root: the vendor entry matches one file" "$(jq -r '.entries[] | select(.path=="vendor/**") | .matched_files' "$T/v3.json")" 1
-check "--root: the testdata entry matches none and is reported stale" "$(jq -r '.entries[] | select(.path=="testdata/**") | .stale' "$T/v3.json")" true
+check "--root: the vendor entry matches its files" "$(jq -r '.entries[] | select(.path=="vendor/**") | .matched_files' "$T/v3.json")" 3
+mkfence "$(ent 'gen/schemas/**' generated-code; ent 'vendor/**' vendored-third-party; ent 'nothing/**' non-shipping-fixtures-and-golden-assets)"
+gate --json "$T/v3b.json"
+check "--root: an entry that matches none is reported stale" "$(jq -r '.entries[] | select(.path=="nothing/**") | .stale' "$T/v3b.json")" true
 
 # ================= review round 1 (WF11 I5, I6): the real conditions, not proxies =================
-# -- first-party items must be VERIFIABLE (a well-formed id nobody can check is not a pass)
-good; runraw "$T/app/demo.yaml"
+mkfr
+good; cp "$T/app/demo.yaml" "$FR/coverage/exclusions/demo.yaml"
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "$FR/app" --repo "$FR" >"$T/out" 2>"$T/err"; RC=$?
 [ "$RC" = 1 ] && grep -q 'tracked_item_unverifiable' "$T/err" && ok "I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)" || bad "I5: unverifiable item accepted (rc $RC): $(cat "$T/err")"
-good; sed -i 's/tracked_item: ATM-1234/tracked_item: ZZZ-999999/' "$T/app/demo.yaml"; run "$T/app/demo.yaml"
+good; sed -i 's/tracked_item: ATM-1234/tracked_item: ZZZ-999999/' "$T/app/demo.yaml"; cp "$T/app/demo.yaml" "$FR/coverage/exclusions/demo.yaml"; gate
 [ "$RC" = 1 ] && grep -q 'ZZZ-999999 does not exist' "$T/err" && ok "I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it" || bad "I5: fabricated item accepted (rc $RC): $(cat "$T/err")"
-printf 'schema: x\n' >/dev/null
-mkdir -p "$T/lanes"; printf 'demo\trust\trun_rust\n' >"$T/lanes/lanes.tsv"
-good; python3 -I - "$T/app/demo.yaml" <<'PY'
-import sys
-s=open(sys.argv[1]).read().replace("    tracked_item: ATM-1234\n","    measured_by: {app: demo, lane: rust}\n"); open(sys.argv[1],"w").write(s)
-PY
-runraw "$T/app/demo.yaml" --lanes "$T/lanes/lanes.tsv"; check "I5 golden-false: a first-party entry measured_by a lane that exists in the lanes table passes (no item needed)" "$RC" 0
-sed -i 's/lane: rust}/lane: nothing}/' "$T/app/demo.yaml"; runraw "$T/app/demo.yaml" --lanes "$T/lanes/lanes.tsv"
-[ "$RC" = 1 ] && grep -q 'measured_by demo/nothing is not a row' "$T/err" && ok "I5: measured_by naming a lane no row measures is refused" || bad "I5: bogus measured_by accepted (rc $RC)"
-# -- the content half of 11.4.224 E, with --root: matched fraction and class evidence
-R5="$T/r5"; rm -rf "$R5"; mkdir -p "$R5/src" "$R5/vendor/lib" "$R5/gen/schemas" "$R5/tests/fixtures"
+# the content half of 11.4.224 E, with --root: matched fraction and class evidence
+R5="$FR/app"; rm -rf "$R5"; mkdir -p "$R5/src" "$R5/vendor/lib" "$R5/gen/schemas" "$R5/tests/fixtures"
 for f in a b c d e f; do printf 'package x\n' >"$R5/src/$f.go"; done; echo '{}' >"$R5/gen/schemas/s.json"; echo l >"$R5/vendor/lib/l.go"; echo f >"$R5/tests/fixtures/f.json"
-mkfence() { printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "%s"\n    class: %s\n    justification: "a justification that is long enough to pass the length rule"\n' "$1" "$2" >"$T/app/demo.yaml"; }
-mkfence '**/*.go' generated-code; run "$T/app/demo.yaml" --root "$R5"
-[ "$RC" = 1 ] && grep -q 'over-broad: it names 7 of the root' "$T/err" && ok "I5: **/*.go labelled generated-code (7 of 11 files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist" || bad "I5: **/*.go accepted or wrong reason (rc $RC): $(cat "$T/err")"
+printf '{"compilerOptions":{"outDir":"./gen"}}\n' >"$R5/tsconfig.json"; printf 'MIT\n' >"$R5/vendor/LICENSE"; printf 'https://example.org/up\n' >"$R5/vendor/UPSTREAM"
+mkfence "$(ent '**/*.go' generated-code)"; gate
+[ "$RC" = 1 ] && grep -q 'over-broad: it names 7 of the root' "$T/err" && ok "I5: **/*.go labelled generated-code (7 of 7 measurable files) is refused as over-broad by the ENTRY's matched fraction, not by a literal denylist" || bad "I5: **/*.go accepted or wrong reason (rc $RC): $(cat "$T/err")"
 grep -q 'the exclusions together name 7 of the root' "$T/err" && ok "I5: and the UNION rule names the same excess separately" || bad "I5: union message missing: $(cat "$T/err")"
-grep -q 'class generated-code is not true' "$T/err" && ok "I5: and the class claim is refuted by the content (no generated marker, not a generated directory)" || bad "I5: class evidence missing: $(cat "$T/err")"
-mkfence '?*/**' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5: ?*/** (a glob outside the old denylist) is refused (exit 1)" "$RC" 1
-mkfence 'src/**' vendored-third-party; run "$T/app/demo.yaml" --root "$R5"
+grep -q 'class generated-code is not true' "$T/err" && ok "I5: and the class claim is refuted by the content (no anchored marker, not a generator output directory)" || bad "I5: class evidence missing: $(cat "$T/err")"
+mkfence "$(ent '?*/**' generated-code)"; gate; check "I5: ?*/** (a glob outside the old denylist) is refused (exit 1)" "$RC" 1
+mkfence "$(ent 'src/**' vendored-third-party)"; gate
 [ "$RC" = 1 ] && grep -q 'class vendored-third-party is not true of 6 of 6' "$T/err" && ok "I5: a class that is false of the matched files is refused naming the count" || bad "I5: false class accepted (rc $RC): $(cat "$T/err")"
-mkfence 'vendor/**' vendored-third-party; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 10 files, true class)" "$RC" 0
-mkfence 'gen/schemas/**' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: a generated directory labelled generated-code passes" "$RC" 0
-mkfence 'tests/fixtures/**' non-shipping-fixtures-and-golden-assets; run "$T/app/demo.yaml" --root "$R5"; check "I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes" "$RC" 0
-printf '// Code generated by protoc-gen-go. DO NOT EDIT.\npackage x\n' >"$R5/src/zz_pb.go"; mkfence 'src/zz_pb.go' generated-code; run "$T/app/demo.yaml" --root "$R5"
-check "I5 golden-false: a file with a generated marker in its header passes as generated-code" "$RC" 0
-mkfence 'src/a.go' generated-code; run "$T/app/demo.yaml" --root "$R5"; check "I5: the same label on a hand-written file (no marker) is refused" "$RC" 1
+mkfence "$(ent 'vendor/**' vendored-third-party)"; gate; check "I5 golden-false: vendor/** labelled vendored-third-party passes (1 of 7 measurable files, provenance LICENSE + UPSTREAM)" "$RC" 0
+mkfence "$(ent 'gen/schemas/**' generated-code)"; gate; check "I5 golden-false: a generator-output directory (tsconfig outDir) labelled generated-code passes" "$RC" 0
+mkfence "$(ent 'tests/fixtures/**' non-shipping-fixtures-and-golden-assets)"; gate; check "I5 golden-false: a fixtures directory labelled non-shipping-fixtures passes" "$RC" 0
+printf '// Code generated by protoc-gen-go. DO NOT EDIT.\npackage x\n' >"$R5/src/zz_pb.go"; mkfence "$(ent 'src/zz_pb.go' generated-code)"; gate
+check "I5 golden-false (K3.5 e): a Go file with the anchored `Code generated ... DO NOT EDIT.` header passes as generated-code" "$RC" 0
+mkfence "$(ent 'src/a.go' generated-code)"; gate; check "I5: the same label on a hand-written file (no marker) is refused" "$RC" 1
 # two entries that are each under half but together name more than half
-printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "vendor/**"\n    class: vendored-third-party\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "src/*.go"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "tests/**"\n    class: non-shipping-fixtures-and-golden-assets\n    justification: "a justification that is long enough to pass the length rule"\n' >"$T/app/demo.yaml"
-runraw "$T/app/demo.yaml" --root "$R5" --lanes "$T/lanes/lanes.tsv"
+mkdir -p "$R5/more"; for f in 1 2 3 4 5; do printf 'package x\n' >"$R5/more/m$f.go"; done
+mkfence "$(ent 'vendor/**' vendored-third-party; printf '  - path: "more/*.go"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n'; ent 'src/*.go' non-shipping-fixtures-and-golden-assets)"
+printf -- '- id: IMG-RUST\n  tag_intent: y\n' >>"$FR/build/containers/images.lock.yaml"; printf 'RUNNER_IMAGES="IMG-RUST"\n' >"$FR/scripts/containers/run_rust.sh"
+gate
 [ "$RC" = 1 ] && grep -q 'the exclusions together name' "$T/err" && ok "I5: entries that each name under half but together name more than half are refused (the union is what voids the figure)" || bad "I5: union not refused (rc $RC): $(cat "$T/err")"
-# -- m10: a glob broader than its justification is caught by the class evidence over the real files: `**/*Test*.*` also names TestHelper.kt in main sources
-RA="$T/rA"; rm -rf "$RA"; mkdir -p "$RA/app/src/main/java" "$RA/app/src/test/java" "$RA/app/src/androidTest/java"
+# m10: a glob broader than its justification is caught by the class evidence over the real files
+RA="$FR/app"; rm -rf "$RA"; mkdir -p "$RA/app/src/main/java" "$RA/app/src/test/java" "$RA/app/src/androidTest/java"
 for i in 1 2 3 4; do echo "$i" >"$RA/app/src/main/java/Main$i.kt"; done; echo x >"$RA/app/src/test/java/FooTest.kt"; echo x >"$RA/app/src/androidTest/java/BarTests.kt"
-mkfence '**/*Test*.*' non-shipping-fixtures-and-golden-assets; run "$T/app/demo.yaml" --root "$RA"; check "m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test files) passes" "$RC" 0
-echo x >"$RA/app/src/main/java/TestHelper.kt"; run "$T/app/demo.yaml" --root "$RA"
+mkfence "$(ent '**/*Test*.*' non-shipping-fixtures-and-golden-assets)"; gate; check "m10 golden-false: **/*Test*.* naming only FooTest.kt and BarTests.kt (test sources) passes" "$RC" 0
+echo x >"$RA/app/src/main/java/TestHelper.kt"; gate
 [ "$RC" = 1 ] && grep -q 'TestHelper.kt' "$T/err" && ok "m10: a main-source file named TestHelper.kt that the glob also names is refused by the class evidence (naming the file)" || bad "m10: TestHelper.kt accepted (rc $RC): $(cat "$T/err")"
+rm "$RA/app/src/main/java/TestHelper.kt"; echo x >"$RA/app/src/main/java/ConnectionSpeedTest.kt"; echo x >"$RA/app/src/main/java/ManifestParser.kt"
+mkfence "$(ent '**/*Test*.*' non-shipping-fixtures-and-golden-assets)"; gate
+[ "$RC" = 1 ] && grep -q 'ConnectionSpeedTest.kt' "$T/err" && ok "K3.5: ConnectionSpeedTest.kt in a MAIN source set is not a test whatever its name (the name rule accepted it)" || bad "K3.5: ConnectionSpeedTest.kt accepted (rc $RC): $(cat "$T/err")"
+rm "$RA/app/src/main/java/ConnectionSpeedTest.kt" "$RA/app/src/main/java/ManifestParser.kt"
+# -- K3.5: carrier class evidence
+RB="$FR/app"; rm -rf "$RB"; mkdir -p "$RB/internal/eventbus" "$RB/internal/tests" "$RB/cmd" "$RB/scripts/build" "$RB/src"
+for f in 1 2 3 4 5 6 7 8; do printf 'package src\n' >"$RB/src/p$f.go"; done
+printf '// the id is an auto-generated number\npackage eventbus\n' >"$RB/internal/eventbus/eventbus.go"; printf 'module example.org/m\n' >"$RB/go.mod"
+printf 'package tests\nfunc Helper() {}\n' >"$RB/internal/tests/helper.go"; printf 'package main\nimport _ "example.org/m/internal/tests"\nfunc main() {}\n' >"$RB/cmd/main.go"
+printf '#!/usr/bin/env bash\necho x\n' >"$RB/scripts/build/dispatch.sh"
+mkfence "$(ent 'internal/eventbus/eventbus.go' generated-code)"; gate; [ "$RC" = 1 ] && grep -q 'eventbus.go' "$T/err" && ok "K3.5: a hand-written file whose comment says auto-generated is NOT generated-code (anchored marker only)" || bad "K3.5: eventbus.go accepted (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'scripts/build/dispatch.sh' generated-code)"; gate; [ "$RC" = 1 ] && grep -q 'dispatch.sh' "$T/err" && ok "K3.5: a first-party script under a directory NAMED build is not generated-code" || bad "K3.5: scripts/build accepted (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'internal/tests/helper.go' non-shipping-fixtures-and-golden-assets)"; gate; [ "$RC" = 1 ] && grep -q 'imported by non-test source cmd/main.go' "$T/err" && ok "K3.5: a Go fixture package that production code imports is refused by the import search" || bad "K3.5: imported fixture accepted (rc $RC): $(cat "$T/err")"
+rm "$RB/cmd/main.go"; gate; check "K3.5 golden-false: the same Go fixture package that nothing imports passes" "$RC" 0
+printf '// Code generated by mockgen.\npackage m\n' >"$RB/src/m.go"; mkfence "$(ent 'src/m.go' generated-code)"; gate
+[ "$RC" = 1 ] && ok "CM11: a header `// Code generated by mockgen.` WITHOUT `DO NOT EDIT.` is not the anchored marker (refused)" || bad "CM11: unanchored header accepted (rc $RC)"
+mkdir -p "$RB/third_party"; for f in 1 2; do echo t >"$RB/third_party/t$f.go"; done
+mkfence "$(ent 'third_party/**' vendored-third-party)"; gate; [ "$RC" = 1 ] && grep -q 'no provenance record' "$T/err" && ok "CM13: third_party/** with no provenance record is refused (the directory name is not provenance)" || bad "CM13: unprovenanced vendor accepted (rc $RC): $(cat "$T/err")"
+printf 'BSD\n' >"$RB/third_party/LICENSE"; printf 'upstream: https://example.org/lib\n' >"$RB/third_party/UPSTREAM"; gate
+check "CM13 golden-false: the same directory with a LICENSE and an UPSTREAM url file passes" "$RC" 0
+# -- K5.4: the fraction is taken over the MEASURABLE files, not all files
+RC4="$FR/app"; rm -rf "$RC4"; mkdir -p "$RC4/app/src/main/java" "$RC4/app/src/test/java" "$RC4/app/res"; for i in 1 2 3 4 5 6 7 8 9 10; do echo "$i" >"$RC4/app/src/main/java/M$i.kt"; echo x >"$RC4/app/res/r$i.xml"; done
+echo t >"$RC4/app/src/test/java/MTest.kt"
+mkfence "$(ent 'app/src/main/**' generated-code)"; gate; [ "$RC" = 1 ] && grep -q 'more than half' "$T/err" && ok "K5.4: an entry naming every .kt file of the main source set (10 of 10 measurable, 10 of 21 files) is over-broad" || bad "K5.4: all-kotlin entry (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'app/src/main/java/M1.kt' generated-code)"; gate; [ "$RC" = 1 ] && grep -q 'class generated-code is not true' "$T/err" && ok "K5.4 control: a 1-of-10 entry is not over-broad (refused only for its false class)" || bad "K5.4 control: rc $RC: $(cat "$T/err")"
 
+# ================= K5.5 / K5.7: the glob dialect =================
+python3 -I - "$GATE" <<'PY' >"$T/dialect.txt" 2>&1
+import sys,os
+sys.path.insert(0,os.path.dirname(os.path.abspath(sys.argv[1])))
+import fence_lib as f
+def m(p,r,mode="fence"):
+    try: return f.matches(p,r,mode)
+    except f.FenceError as e: return "ERR"
+print("brace", m("src/{components,pages}/**","src/pages/a/b.ts"), m("src/{components,pages}/**","src/other/a.ts"))
+print("class", m("src/[ab].ts","src/a.ts"), m("src/[ab].ts","src/c.ts"))
+print("qmark", m("src?a.go","src/a.go"), m("src?a.go","srcxa.go"))
+print("star", m("src/*.go","src/a/b.go"), m("src/*.go","src/a.go"))
+print("dirprefix-fence", m("foo","foo/bar"), "tool", m("foo","foo/bar","tool"))
+print("extglob", m("src/+(a|b).ts","src/a.ts"))
+print("range", m("f{1..3}.ts","f2.ts"))
+PY
+check "K5.5: a brace set is evaluated in the tool's dialect (src/{components,pages}/** names src/pages/a/b.ts and not src/other/a.ts)" "$(sed -n 1p "$T/dialect.txt")" "brace True False"
+check "K5.5: a character class is evaluated" "$(sed -n 2p "$T/dialect.txt")" "class True False"
+check "K5.5 (RM-F): ? does not cross a slash" "$(sed -n 3p "$T/dialect.txt")" "qmark False True"
+check "K5.5: * does not cross a slash" "$(sed -n 4p "$T/dialect.txt")" "star False True"
+check "K5.5: a bare directory name names its subtree in the FENCE and only itself for the tool" "$(sed -n 5p "$T/dialect.txt")" "dirprefix-fence True tool False"
+check "K5.5: an extglob and a brace range are REFUSED (unevaluable), never a quiet no-match" "$(sed -n 6,7p "$T/dialect.txt" | tr '\n' '|')" "extglob ERR|range ERR|"
+mkfr; rm -f "$FR"/app/src/f*.go; mkdir -p "$FR/app/src/components" "$FR/app/src/pages" "$FR/app/src/services"; for d in components pages services; do for i in 1 2 3 4 5; do echo "$i" >"$FR/app/src/$d/x$i.ts"; done; done; for i in 1 2 3 4 5 6; do echo "$i" >"$FR/app/src/o$i.ts"; done
+mkfence "$(ent 'src/{components,pages,services}/**' generated-code)"; gate
+[ "$RC" = 1 ] && grep -q 'over-broad' "$T/err" && ok "K5.5: src/{components,pages,services}/** is evaluated (15 of 21 measurable files: over-broad; the old gate matched 0 and PASSed as stale)" || bad "K5.5: brace entry (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'src/+(components|pages)/**' generated-code)"; gate
+[ "$RC" = 1 ] && grep -q 'pattern_unevaluable' "$T/err" && ok "K5.5: an extglob entry is refused as pattern_unevaluable" || bad "K5.5: extglob entry (rc $RC): $(cat "$T/err")"
+for pat in '**/' '*/' './*' './**/*' '**/*/' '**/**/*' '***' '**/*/**' './**/**' '?*' '**/?*'; do
+  mkfence "$(ent "$pat" generated-code)"; cp "$FR/coverage/exclusions/demo.yaml" "$T/app/demo.yaml"; run "$T/app/demo.yaml"
+  [ "$RC" = 1 ] && grep -qE 'over-broad|pattern_unevaluable' "$T/err" && ok "K5.7: the pattern '$pat' is refused with NO root to fall back on (semantic over-broad test, not a literal list)" || bad "K5.7: the pattern '$pat' accepted (rc $RC): $(cat "$T/err")"
+done
+mkfence "$(ent 'src/**' generated-code)"; cp "$FR/coverage/exclusions/demo.yaml" "$T/app/demo.yaml"; run "$T/app/demo.yaml"; check "K5.7 golden-false: src/** is not over-broad (schema-only exit 0)" "$RC" 0
 # -- I6: the patterns the tool APPLIES come from the tool's own config
-RP="$T/repo6"; rm -rf "$RP"; mkdir -p "$RP/coverage/exclusions" "$RP/demo/src" "$RP/demo/gen" "$RP/demo/fixtures" "$RP/scripts/containers"
-printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, config: demo/vitest.config.ts}\n' >"$RP/coverage/exclusions/tools.yaml"
-printf "export default { test: { coverage: { exclude: [ 'gen/**', 'src/main.tsx' ], all: true } } }\n" >"$RP/demo/vitest.config.ts"
-echo 'x' >"$RP/demo/src/main.tsx"; echo 'y' >"$RP/demo/src/app.ts"; echo 'g' >"$RP/demo/gen/x.ts"; echo '{}' >"$RP/demo/fixtures/a.json"; echo 'z' >"$RP/demo/src/legacy.ts"
-for i in 1 2 3 4 5 6 7 8; do echo "$i" >"$RP/demo/src/f$i.ts"; done
-fence6() { printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n%s' "$1" >"$RP/coverage/exclusions/demo.yaml"; }
-ENT_GEN='  - path: "gen/**"\n    class: generated-code\n    justification: "a justification that is long enough to pass the length rule"\n'
+mkfr; printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, root: app, config: app/vitest.config.ts, script: test}\n' >"$FR/coverage/exclusions/tools.yaml"
+printf '{"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"^1.6.0"}}\n' >"$FR/app/package.json"
+mkdir -p "$FR/app/legacy" "$FR/app/fixtures"; rm -f "$FR"/app/src/f*.go
+echo 'x' >"$FR/app/src/main.tsx"; echo 'y' >"$FR/app/src/app.ts"; echo 'g' >"$FR/app/gen/x.ts"; echo '{}' >"$FR/app/fixtures/a.json"; echo 'z' >"$FR/app/src/legacy.ts"
+for i in 1 2 3 4 5 6 7 8; do echo "$i" >"$FR/app/src/f$i.ts"; done
+printf '{"compilerOptions":{"outDir":"./gen"}}\n' >"$FR/app/tsconfig.json"
+printf "export default { test: { coverage: { exclude: [ 'gen/**', 'src/main.tsx' ], all: true } } }\n" >"$FR/app/vitest.config.ts"
 ENT_MAIN='  - path: "src/main.tsx"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "the entry point is excluded by the tool config; measured by the rust lane here"\n'
-printf 'demo\trust\trun_rust\n' >"$RP/scripts/containers/lanes.tsv"
-fence6 "$(printf "$ENT_GEN")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
-[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/main.tsx'" "$T/err" && ok "I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)" || bad "I6: unlisted-from-config not found (rc $RC): $(cat "$T/err")"
-fence6 "$(printf "$ENT_GEN$ENT_MAIN")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"; check "I6 golden-false: the fence lists everything the tool config applies: exit 0" "$RC" 0
-check "I6 golden-false: the verdict records that the applied list was checked" "$(runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --json "$T/v6.json"; jq -r .applied_checked "$T/v6.json")" true
 ENT_LEG='  - path: "src/legacy.ts"\n    class: first-party\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n'
-fence6 "$(printf "$ENT_GEN$ENT_MAIN$ENT_LEG")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
-[ "$RC" = 1 ] && grep -q "listed but not applied: the fence lists 'src/legacy.ts'" "$T/err" && ok "I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)" || bad "I6: listed-not-applied missed (rc $RC): $(cat "$T/err")"
 ENT_JSON='  - path: "fixtures/**"\n    class: non-shipping-fixtures-and-golden-assets\n    justification: "a justification that is long enough to pass the length rule"\n'
-fence6 "$(printf "$ENT_GEN$ENT_MAIN$ENT_JSON")"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+printf -- '- id: IMG-RUST\n  tag_intent: y\n' >>"$FR/build/containers/images.lock.yaml"
+mkfence "$(ent 'gen/**' generated-code)"; gate
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/main.tsx'" "$T/err" && ok "I6: a pattern the tool config applies (src/main.tsx) that the fence does not list is UNLISTED (extracted from the config, no hand list involved)" || bad "I6: unlisted-from-config not found (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'gen/**' generated-code; printf "$ENT_MAIN")"; gate --json "$T/v6.json"; check "I6 golden-false: the fence lists everything the tool config applies: exit 0" "$RC" 0
+check "I6 golden-false: the verdict records that the applied list was checked" "$(jq -r .applied_checked "$T/v6.json")" true
+mkfence "$(ent 'gen/**' generated-code; printf "$ENT_MAIN$ENT_LEG")"; gate
+[ "$RC" = 1 ] && grep -q "listed but not applied: the fence lists 'src/legacy.ts'" "$T/err" && ok "I6: a fence entry the tool does NOT apply, naming code the tool would still measure, is LISTED-BUT-NOT-APPLIED (exit 1)" || bad "I6: listed-not-applied missed (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'gen/**' generated-code; printf "$ENT_MAIN"; printf "$ENT_JSON")"; gate
 [ "$RC" = 0 ] && ok "I6 golden-false: a listed entry naming only files the tool cannot instrument (json) is not a scope claim: exit 0" || bad "I6 golden-false: json entry refused (rc $RC): $(cat "$T/err")"
-fence6 "$(printf "$ENT_GEN$ENT_MAIN")"; printf 'gen/**\n' >"$RP/used.txt"
-runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --used "$RP/used.txt"
+mkfence "$(ent 'gen/**' generated-code; printf "$ENT_MAIN")"; printf 'gen/**\n' >"$FR/used.txt"; gate --used "$FR/used.txt"
 [ "$RC" = 1 ] && grep -q 'hand-kept used list' "$T/err" && ok "I6: a hand-kept used list that differs from the tool config extraction is stale and refused" || bad "I6: stale hand list accepted (rc $RC): $(cat "$T/err")"
-printf 'gen/**\nsrc/main.tsx\n' >"$RP/used.txt"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo" --used "$RP/used.txt"; check "I6 golden-false: a hand list equal to the extraction passes" "$RC" 0
-rm "$RP/demo/vitest.config.ts"; runraw "$RP/coverage/exclusions/demo.yaml" --root "$RP/demo"
+printf 'gen/**\nsrc/main.tsx\n' >"$FR/used.txt"; gate --used "$FR/used.txt"; check "I6 golden-false: a hand list equal to the extraction passes" "$RC" 0
+rm "$FR/app/vitest.config.ts"; gate
 [ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "I6: an unreadable tool config is UNVERIFIABLE (exit 1), never an empty used list" || bad "I6: unreadable config accepted (rc $RC)"
 
+# -- K5.2: tool identity
+mkfr; printf '{"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"^1.6.0","jest":"^29.0.0"}}\n' >"$FR/app/package.json"
+printf "module.exports = { collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'] };\n" >"$FR/app/jest.config.js"; printf "export default { test: { coverage: { all: true, exclude: ['src/**/*.d.ts'] } } }\n" >"$FR/app/vitest.config.ts"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: jest, root: app, config: app/jest.config.js, script: test}\n' >"$FR/tools-jest.yaml"
+mkfence "$(ent 'src/**/*.d.ts' generated-code)"; gate --tools "$FR/tools-jest.yaml"
+[ "$RC" = 1 ] && grep -q 'tool_identity_mismatch' "$T/err" && ok "K5.2: the tools record says jest but the test script runs vitest: tool_identity_mismatch (the committed api-client PASS was a verdict about the wrong tool)" || bad "K5.2: identity mismatch (rc $RC): $(cat "$T/err")"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, root: app, config: app/vitest.config.ts, script: test}\n' >"$FR/tools-vt2.yaml"; gate --tools "$FR/tools-vt2.yaml"
+check "K5.2 control: the corrected row (vitest) is judged against the vitest config (exit 0)" "$RC" 0
+# -- K5.1 / K5.3: the config forms
+vcfg() { printf '%s\n' "$1" >"$FR/app/vitest.config.ts"; }
+vrun() { mkfence "$(ent 'src/**/*.d.ts' generated-code)"; gate --tools "$FR/tools-vt2.yaml"; }
+printf '{"scripts":{"test":"vitest run"},"devDependencies":{"vitest":"^4.0.18"}}\n' >"$FR/app/package.json"
+vcfg "export default { test: { coverage: { exclude: ['src/**/*.d.ts'] } } }"; vrun
+[ "$RC" = 1 ] && grep -q 'implicit_scope_unlisted' "$T/err" && ok "K5.1: vitest 4 with a coverage block that sets no include measures only the files its tests load: implicit_scope_unlisted" || bad "K5.1: implicit scope (rc $RC): $(cat "$T/err")"
+vcfg "export default { test: { coverage: { include: ['src/**'], exclude: ['src/**/*.d.ts'] } } }"; vrun; check "K5.1 control: coverage.include set explicitly: the implicit-scope finding is gone (exit 0)" "$RC" 0
+vcfg "const cov = { exclude: ['src/x.ts'] }
+export default { test: { coverage: cov } }"; vrun
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.3: coverage: <variable> is UNVERIFIABLE (the old regex PASSed it as 'no coverage block')" || bad "K5.3: variable coverage (rc $RC): $(cat "$T/err")"
+vcfg "export default { test: { 'coverage': { include: ['src/**'], exclude: ['src/**/*.d.ts', 'src/hidden/**'] } } }"; mkdir -p "$FR/app/src/hidden"; echo h >"$FR/app/src/hidden/h.ts"; vrun
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/hidden/\*\*'" "$T/err" && ok "K5.3: a QUOTED 'coverage' key is read (the old regex missed it and PASSed)" || bad "K5.3: quoted key (rc $RC): $(cat "$T/err")"
+vcfg "const EX = ['src/hidden/**']
+export default { test: { coverage: { include: ['src/**'], exclude: EX } } }"; vrun
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.3: exclude: <constant> is UNVERIFIABLE" || bad "K5.3: constant exclude (rc $RC): $(cat "$T/err")"
+vcfg "export default { test: { coverage: { include: ['src/**'], exclude: [...coverageConfigDefaults.exclude, 'src/hidden/**'] } } }"; vrun
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.3: a spread of the tool's defaults is UNVERIFIABLE (the old regex dropped it)" || bad "K5.3: spread (rc $RC): $(cat "$T/err")"
+vcfg 'const d = "hidden"
+export default { test: { coverage: { include: ["src/**"], exclude: [`src/${d}/**`] } } }'; vrun
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.3: a template literal with a substitution is UNVERIFIABLE" || bad "K5.3: template (rc $RC): $(cat "$T/err")"
+vcfg "export default { test: { exclude: ['src/hidden/**'], coverage: { include: ['src/**'], exclude: ['src/**/*.d.ts'] } } }"; vrun
+check "K5.3: test.exclude (which files vitest RUNS) is not read as a coverage exclude (exit 0)" "$RC" 0
+vcfg "export default { test: { coverage: { include: ['src/**'], // exclude: ['src/hidden/**'],
+  exclude: ['src/**/*.d.ts'] } } }"; vrun
+check "K5.3: a commented-out list entry is not an exclusion (the old regex read it: a FAIL-bluff)" "$RC" 0
+vcfg "export default defineConfig(({ mode }) => ({ test: { coverage: { exclude: [] } } }))"; vrun
+[ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.3: a function-style config is UNVERIFIABLE (needs the tool's resolved config)" || bad "K5.3: function config (rc $RC): $(cat "$T/err")"
+# jest coveragePathIgnorePatterns (regex) name FILES: the fence must list them
+printf '{"scripts":{"test":"jest"},"devDependencies":{"jest":"^29.0.0"}}\n' >"$FR/app/package.json"
+printf "module.exports = { collectCoverageFrom: ['src/**/*.ts'], coveragePathIgnorePatterns: ['/hidden/'] };\n" >"$FR/app/jest.config.js"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: jest, root: app, config: app/jest.config.js, script: test}\n' >"$FR/tools-jest.yaml"
+mkfence "$(ent 'src/**/*.d.ts' generated-code)"; gate --tools "$FR/tools-jest.yaml"
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes '/hidden/ (regex" "$T/err" && ok "K5.3: jest coveragePathIgnorePatterns that name tracked files the fence does not list are an unlisted exclusion" || bad "K5.3: jest ignore patterns (rc $RC): $(cat "$T/err")"
+printf "module.exports = { collectCoverageFrom: ['src/**/*.ts', '!src/hidden/**'] };\n" >"$FR/app/jest.config.js"; mkfence "$(ent 'src/hidden/**' generated-code)"; gate --tools "$FR/tools-jest.yaml"
+[ "$RC" = 1 ] && grep -q 'class generated-code is not true' "$T/err" && ok "CM10: a jest NEGATION ('!src/hidden/**') is an applied exclusion and its entry is judged (refused for its false class)" || bad "CM10: negation (rc $RC): $(cat "$T/err")"
+mkfence "$(ent 'src/other/**' generated-code)"; gate --tools "$FR/tools-jest.yaml"
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes 'src/hidden/\*\*'" "$T/err" && ok "CM10: and the jest negation not in the fence is an UNLISTED exclusion" || bad "CM10: unlisted negation (rc $RC): $(cat "$T/err")"
+# jacoco: the fileFilter list, extra exclude( calls, the .class dialect
+mkfr; mkdir -p "$FR/app/app/src/main/java/com/x" "$FR/app/app/src/test/java"; for i in 1 2 3 4 5 6 7 8; do echo "$i" >"$FR/app/app/src/main/java/com/x/M$i.kt"; done
+mkdir -p "$FR/app/app/src/main/java/com/x/ui"; for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17; do echo "$i" >"$FR/app/app/src/main/java/com/x/ui/U$i.kt"; done
+cat >"$FR/app/app/build.gradle.kts" <<'G'
+tasks.register<JacocoReport>("jacocoTestReport") {
+    val fileFilter = listOf("**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/*Test*.*")
+    val debugTree = fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) { exclude(fileFilter) }
+}
+G
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: jacoco, root: app, config: app/app/build.gradle.kts}\n' >"$FR/tools-jc.yaml"
+mkfence "$(ent '**/R.class' generated-code; ent '**/R$*.class' generated-code; ent '**/BuildConfig.*' generated-code; ent '**/*Test*.*' non-shipping-fixtures-and-golden-assets)"; gate --tools "$FR/tools-jc.yaml"
+check "K5.3 jacoco golden-good: the four fileFilter patterns, each listed: PASS (build-output class patterns that name no tracked source are stale notes)" "$RC" 0
+sed -i 's#{ exclude(fileFilter) }#{ exclude(fileFilter); exclude("**/ui/**") }#' "$FR/app/app/build.gradle.kts"; gate --tools "$FR/tools-jc.yaml"
+[ "$RC" = 1 ] && grep -q "unlisted exclusion: the measuring tool excludes '\*\*/ui/\*\*'" "$T/err" && ok "K5.3: an extra Gradle exclude(\"**/ui/**\") on the class tree (17 of 25 main files) is an unlisted exclusion" || bad "K5.3: gradle extra exclude (rc $RC): $(cat "$T/err")"
+sed -i 's#; exclude("\*\*/ui/\*\*")##' "$FR/app/app/build.gradle.kts"
+sed -i 's#"\*\*/\*Test\*\.\*")#"**/*.class")#' "$FR/app/app/build.gradle.kts"; mkfence "$(ent '**/R.class' generated-code; ent '**/R$*.class' generated-code; ent '**/BuildConfig.*' generated-code; ent '**/*.class' non-shipping-fixtures-and-golden-assets)"
+gate --tools "$FR/tools-jc.yaml"
+[ "$RC" = 1 ] && grep -q 'over-broad' "$T/err" && ok "K5.5: **/*.class (every compiled class) is evaluated against the SOURCES it names and refused as over-broad (the old gate PASSed it as stale)" || bad "K5.5: **/*.class (rc $RC): $(cat "$T/err")"
+# -- K5.6: the declared scope of a fence application
+mkfr
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: fence, root: app, measurable: [".sh"], scope: ["**/*.sh"], measured: ["scripts/a.sh"]}\n' >"$FR/coverage/exclusions/tools.yaml"
+mkdir -p "$FR/app/scripts"; for f in a b c d; do printf '#!/usr/bin/env bash\necho %s\n' $f >"$FR/app/scripts/$f.sh"; done
+mkfence ""; printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions: []\n' >"$FR/coverage/exclusions/demo.yaml"
+gate; [ "$RC" = 1 ] && grep -q 'unmeasured_first_party: 3 first-party file' "$T/err" && ok "K5.6: 4 in-scope scripts, 1 measured, none named by the fence: unmeasured_first_party names the other 3" || bad "K5.6: scope (rc $RC): $(cat "$T/err")"
+printf 'scripts/a.sh\nscripts/b.sh\nscripts/c.sh\nscripts/d.sh\n' >"$T/measured-all.txt"; gate --measured "$T/measured-all.txt"; check "K5.6 golden-false: the harness's real target list covers the scope: PASS" "$RC" 0
+printf 'scripts/a.sh\nscripts/b.sh\n' >"$T/measured-two.txt"; gate --measured "$T/measured-two.txt"; [ "$RC" = 1 ] && grep -q 'unmeasured_first_party: 2' "$T/err" && ok "K5.6: a --measured list that is a subset of the scope is judged by ITS content (2 unmeasured), not by the row's default" || bad "K5.6: measured list (rc $RC): $(cat "$T/err")"
+printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "scripts/c.sh"\n    class: first-party\n    tracked_item: ATM-1234\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "scripts/d.sh"\n    class: first-party\n    tracked_item: ATM-1234\n    justification: "a justification that is long enough to pass the length rule"\n' >"$FR/coverage/exclusions/demo.yaml"
+gate --measured "$T/measured-two.txt"; check "K5.6 golden-false: two first-party entries (a tracked item) naming c.sh and d.sh plus the measured a.sh and b.sh cover the whole scope: PASS" "$RC" 0
+# -- the real committed fences with --root and --repo: the committed verdicts (K14.6, CM14)
+real() { bash "$GATE" "$REPO/coverage/exclusions/$1.yaml" --root "$REPO/$2" --repo "$REPO" >"$T/out" 2>"$T/err"; RC=$?; }
+real catalog-api catalog-api; check "CM14 / K14.6: the REAL catalog-api fence over the REAL root PASSes (kind fence recognised)" "$RC" 0
+real website Website; check "K14.6: the real website fence PASSes" "$RC" 0
+real catalogizer-android catalogizer-android; check "K14.6: the real android fence PASSes" "$RC" 0
+real catalogizer-androidtv catalogizer-androidtv; check "K14.6: the real androidtv fence PASSes" "$RC" 0
+real catalog-web catalog-web; [ "$RC" = 1 ] && grep -q 'applied exclusions unverifiable' "$T/err" && ok "K5.1: the real catalog-web fence FAILs (vitest applies its default scope and default exclude; the committed PASS was false)" || bad "K5.1: catalog-web (rc $RC): $(head -3 "$T/err")"
+real catalogizer-api-client catalogizer-api-client; [ "$RC" = 1 ] && ok "K5.2: the real api-client fence FAILs (the tools record said jest, the test script runs vitest; the committed PASS was false)" || bad "K5.2: api-client (rc $RC)"
+real catalogizer-desktop catalogizer-desktop; check "K14.6: the real desktop fence FAILs (committed: unlisted exclusions)" "$RC" 1
+real installer-wizard installer-wizard; [ "$RC" = 1 ] && grep -q 'measured_by_unproven' "$T/err" && ok "K1.4: the real installer-wizard fence FAILs on its src-tauri/** entry: measured_by installer-wizard/rust runs on IMG-RUST, which is not in the image lock" || bad "K1.4: installer-wizard (rc $RC): $(head -3 "$T/err")"
+real build-scripts .; [ "$RC" = 1 ] && grep -q 'unmeasured_first_party' "$T/err" && ok "K5.6: the real build-scripts fence FAILs: ~317 first-party scripts are in scope and unmeasured (the committed PASS measured 4)" || bad "K5.6: build-scripts (rc $RC): $(head -3 "$T/err")"
+# ================= K11: exit-code contract and strict YAML =================
+mkfr; mkfence "$(ent 'gen/schemas/**' generated-code)"
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root >"$T/out" 2>"$T/err"; RC=$?; [ "$RC" = 2 ] && ok "K11.1: an option with no value is a usage error (exit 2)" || bad "K11.1: --root with no value (rc $RC)"
+bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "$FR/app" --repo >"$T/out" 2>"$T/err"; RC=$?; [ "$RC" = 2 ] && ok "K11.1: --repo with no value is a usage error (exit 2)" || bad "K11.1: --repo with no value (rc $RC)"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: vitest, root: app, config: app/vitest.config.ts, script: [a, b]}\n' >"$FR/tools-weird.yaml"
+gate --tools "$FR/tools-weird.yaml"; [ "$RC" = 3 ] && grep -q 'input could not be processed' "$T/err" && ok "K11.1: an input the gate cannot process is exit 3 with a message, never a traceback" || bad "K11.1: weird tools row (rc $RC): $(cat "$T/err" | head -3)"
+printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions: []\nexclusions: []\n' >"$FR/coverage/exclusions/dup.yaml"
+bash "$GATE" "$FR/coverage/exclusions/dup.yaml" --application demo --schema-only >"$T/out" 2>"$T/err"; RC=$?; [ "$RC" = 1 ] && grep -qi 'duplicate key' "$T/err" && ok "K11.2: a duplicate YAML key in a fence is refused (it silently dropped an entry)" || bad "K11.2: duplicate key (rc $RC): $(cat "$T/err")"
+printf 'schema: coverage-tools/1\napps:\n  demo: {kind: none, root: app}\n  demo: {kind: none, root: app}\n' >"$FR/tools-dup.yaml"; gate --tools "$FR/tools-dup.yaml"
+[ "$RC" = 1 ] && grep -qi 'duplicate key' "$T/err" && ok "K11.2: a duplicate key in the tools record is refused" || bad "K11.2: duplicate tools key (rc $RC): $(cat "$T/err")"
 
 if [ "${1:-}" != --no-mutations ] && [ -z "${GATE_MUTANT:-}" ]; then
   REC="${MUTATION_RECORD:-$T/mutations.txt}"; : >"$REC"
-  PY="$(cd "$(dirname "$GATE")" && pwd)/check_exclusions.py"
-  mut() { # mut NAME OLD NEW
-    local name="$1" old="$2" new="$3" d="$T/mut-$1"; rm -rf "$d"; mkdir -p "$d"; cp "$(dirname "$GATE")/check_exclusions.sh" "$d/"; cp "$PY" "$(dirname "$PY")/fence_lib.py" "$d/"
-    python3 -I - "$d/check_exclusions.py" "$old" "$new" <<'PY' || { bad "mutation $name: anchor not unique"; return; }
+  GD="$(cd "$(dirname "$GATE")" && pwd)"
+  copy_sut() { local d="$1"; rm -rf "$d"; mkdir -p "$d"; cp "$GD"/check_exclusions.sh "$GD"/check_exclusions.py "$GD"/fence_lib.py "$d/"; }
+  mut() { # mut NAME FILE OLD NEW
+    local name="$1" f="$2" old="$3" new="$4" d="$T/mut-$1"; copy_sut "$d"
+    python3 -I - "$d/$f" "$old" "$new" <<'PY' || { bad "mutation $name: anchor not unique"; return; }
 import sys
 s=open(sys.argv[1]).read()
 if s.count(sys.argv[2])!=1: sys.exit(1)
@@ -182,26 +432,57 @@ PY
     else ok "mutation $name caught ($(grep -c '^FAIL:' "$T/mut-$name.out") failing legs)"; echo "CAUGHT $name: $(grep '^FAIL:' "$T/mut-$name.out" | head -2 | cut -c1-110 | tr '\n' '|')" >>"$REC"; fi
   }
   # SANDBOX CONTROL (review round 1): an UNMUTATED copy in the same sandbox must pass this body, or every CAUGHT below could be a broken sandbox (a missing import)
-  d="$T/mut-ctl"; rm -rf "$d"; mkdir -p "$d"; cp "$(dirname "$GATE")/check_exclusions.sh" "$PY" "$(dirname "$PY")/fence_lib.py" "$d/"
+  d="$T/mut-ctl"; copy_sut "$d"
   if GATE="$d/check_exclusions.sh" GATE_MUTANT=1 bash "${BASH_SOURCE[0]}" --no-mutations >"$T/mut-ctl.out" 2>&1; then ok "mutation sandbox control: an UNMUTATED copy passes this body"; echo "CONTROL PASS" >>"$REC"
   else bad "mutation sandbox control FAILED ($(grep -c '^FAIL:' "$T/mut-ctl.out") failing legs): every CAUGHT below is suspect"; echo "CONTROL FAIL" >>"$REC"; fi
-  mut tracked-item-ignored 'if not item_ok and not mby_ok:' 'if False:'
-  mut justification-ignored 'if len(just) < MIN_JUST:' 'if False:'
-  mut unlisted-ignored 'if used_unlisted:' 'if False:'
-  mut class-unchecked 'if cls not in CLASSES:' 'if False:'
-  mut overbroad-ignored 'if overbroad(p):' 'if False:'
-  mut duplicate-ignored 'if p in seen:' 'if False:'
-  mut exit-masked 'sys.exit(1 if problems else 0)' 'sys.exit(0)'
+  mut tracked-item-ignored check_exclusions.py 'if not item_ok and not mby_ok:' 'if False:'
+  mut justification-ignored check_exclusions.py 'if len(just) < MIN_JUST:' 'if False:'
+  mut unlisted-ignored check_exclusions.py 'if used_unlisted:   # MUT:unlisted' 'if False:   # MUT:unlisted'
+  mut class-unchecked check_exclusions.py 'if cls not in CLASSES:' 'if False:'
+  mut overbroad-ignored check_exclusions.py 'if bad_pat is None and overbroad(p):' 'if False:'
+  mut overbroad-literal-only check_exclusions.py 'return all(fence_lib.matches(p, s) for s in SYNTH_ALL) or all(fence_lib.matches(p, s) for s in SYNTH_NESTED)   # MUT:broad_semantic' 'return False'
+  mut duplicate-ignored check_exclusions.py 'if p in seen:' 'if False:'
+  mut exit-masked check_exclusions.py 'sys.exit(1 if vtext == "FAIL" else 0)' 'sys.exit(0)'
   # review round 1: the real conditions
-  mut item-unverifiable-passes 'if known_items is None:   # MUT:item_unverifiable' 'if False:   # MUT:item_unverifiable'
-  mut item-missing-passes 'elif item not in known_items:   # MUT:item_missing' 'elif False:   # MUT:item_missing'
-  mut measured-by-unchecked 'elif (mby["app"], mby["lane"]) not in lane_rows:   # MUT:measured_by' 'elif False:   # MUT:measured_by'
-  mut fraction-entry-off 'if root_files and len(matched) * 2 > len(root_files):   # MUT:fraction_entry' 'if False:'
-  mut fraction-union-off 'if len(union) * 2 > len(root_files):   # MUT:fraction_union' 'if False:'
-  mut class-evidence-off 'if cls in CLASSES and cls != "first-party" and matched:   # MUT:class_evidence' 'if False:'
-  mut applied-unreadable-passes 'problems.append("applied exclusions unverifiable: %s" % applied_note)   # MUT:applied_unreadable' 'pass'
-  mut listed-not-applied-off 'if still:   # MUT:listed_not_applied' 'if False:'
-  mut hand-list-stale-off 'if applied is not None and sorted(set(norm(x) for x in hand)) != sorted(set(norm(x) for x in applied)):   # MUT:hand_stale' 'if False:'
+  mut item-unverifiable-passes check_exclusions.py 'if known_items is None:   # MUT:item_unverifiable' 'if False:   # MUT:item_unverifiable'
+  mut item-missing-passes check_exclusions.py 'elif item not in known_items:   # MUT:item_missing' 'elif False:   # MUT:item_missing'
+  mut measured-by-unchecked check_exclusions.py 'elif (mby["app"], mby["lane"]) not in lane_rows:   # MUT:measured_by' 'elif False:   # MUT:measured_by'
+  mut fraction-entry-off check_exclusions.py 'if files_m and len(matched_m) * 2 > len(files_m):   # MUT:fraction_entry' 'if False:'
+  mut fraction-union-off check_exclusions.py 'if len(union_m) * 2 > len(files_m_all):   # MUT:fraction_union' 'if False:'
+  mut fraction-over-all-files check_exclusions.py 'is_meas = (lambda r: not fence_lib.is_test_source(r)) if measurable is None else (lambda r: r.endswith(measurable) and not fence_lib.is_test_source(r))' 'is_meas = lambda r: True'
+  mut class-evidence-off check_exclusions.py 'if cls in CLASSES and cls != "first-party" and matched and ctx is not None:   # MUT:class_evidence' 'if False:'
+  mut applied-unreadable-passes check_exclusions.py 'problems.append("applied exclusions unverifiable: %s" % res["unverifiable"])   # MUT:applied_unreadable' 'pass'
+  mut listed-not-applied-off check_exclusions.py 'if still:   # MUT:listed_not_applied' 'if False:'
+  mut hand-list-stale-off check_exclusions.py 'if applied is not None and sorted(set(norm(x) for x in hand)) != sorted(set(norm(x) for x in applied)):   # MUT:hand_stale' 'if False:'
+  # round 5
+  mut CM14_fence_kind_dropped check_exclusions.py 'if kind == "fence":' 'if False:'
+  mut tool-identity-unchecked check_exclusions.py 'elif who != kind:' 'elif False:'
+  mut measured-by-same-lane-accepted check_exclusions.py 'elif (mby["app"], mby["lane"]) == (application, fig_lane):   # MUT:measured_by_same_lane' 'elif False:'
+  mut measured-by-image-unchecked check_exclusions.py 'if missing:   # MUT:measured_by_image' 'if False:'
+  mut implicit-scope-ignored check_exclusions.py 'if implicit_scope:' 'if False:'
+  mut scope-comparison-dropped check_exclusions.py 'if unmeasured:   # MUT:scope_compare' 'if False:'
+  mut toplevel-handler-dropped check_exclusions.py 'except Exception as e:   # MUT:toplevel_handler' 'except KeyboardInterrupt as e:'
+  mut root-binding-dropped check_exclusions.py 'elif os.path.realpath(os.path.join(repo, rr)) != os.path.realpath(root_abs):' 'elif False:'
+  mut tools-row-missing-skipped check_exclusions.py 'problems.append("tool_record_missing: %s has no row for application %r (write `kind: none` with a note when no coverage tool measures it)" % (tools_path, application))' 'pass'
+  mut root-empty-passes check_exclusions.py 'if not files:' 'if False:'
+  mut RM_F_question_crosses_slash fence_lib.py '            out.append("[^/]")' '            out.append(".")'
+  mut CM10_jest_negations_dropped fence_lib.py 'res["patterns"] = [a[1:] for a in arr if a.startswith("!")]' 'res["patterns"] = []'
+  mut CM11_marker_unanchored fence_lib.py 'GO_GENERATED = re.compile(rb"(?m)^// Code generated .* DO NOT EDIT\.$")' 'GO_GENERATED = re.compile(rb"(?m)^// Code generated .*$")'
+  mut CM12_others_enumerated fence_lib.py 'p = _git(root, ["ls-files", "-z", "--cached", "--", "."])' 'p = _git(root, ["ls-files", "-z", "--cached", "--others", "--", "."])'
+  mut walk_fallback_restored fence_lib.py 'raise FenceError("enumeration_failed: %s has a .git entry but git cannot read it (a dangling gitfile or a broken repository): refusing to walk" % root)' 'pass'
+  mut CM13_vendored_by_name fence_lib.py 'why = vendored_provenance(ctx, rel)' 'why = "name" if any(p_ in ("vendor", "node_modules", "third_party") for p_ in rel.split("/")) else None'
+  mut CM15_jacoco_measurable_reduced fence_lib.py '"jacoco": (".kt", ".java")}' '"jacoco": (".class",)}'
+  mut kotlin-test-by-name fence_lib.py 'return (True, "") if in_set else (False, "a Kotlin/Java file outside src/test, src/androidTest and src/testFixtures is not a test source, whatever its name")' 'return (True, "") if (in_set or name.endswith(("Test.kt", "Tests.kt"))) else (False, "x")'
+  mut go-import-search-dropped fence_lib.py 'return (True, "") if not imp else (False, "imported by non-test source %s" % ", ".join(imp[:3]))
+            if name.endswith((".ts"' 'return (True, "")
+            if name.endswith((".ts"'
+  mut config-parse-regex-spread fence_lib.py 'raise FenceError("applied_exclusions_unverifiable: %s holds a non-literal element %r" % (what, e))' 'continue'
+  mut duplicate-yaml-key-accepted fence_lib.py '            if k in seen:
+                raise yaml.YAMLError("duplicate key %r" % k)' '            if False:
+                raise yaml.YAMLError("duplicate key %r" % k)'
+  mut extglob-accepted fence_lib.py '    if _EXTGLOB.search(p):
+        raise FenceError("extglob syntax in %r is not supported" % pattern)' '    pass'
+  mut brace-not-expanded fence_lib.py 'alts = [_one_re(x, mode) for x in expand_braces(p)]' 'alts = [_one_re(p, mode)]'
 fi
 echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"
 [ "$FAILS" = 0 ]

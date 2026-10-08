@@ -11,22 +11,24 @@
 #         acquire.sh --expire <purpose> [--op-id <id>]                    release a holder in ready_to_resume past resume_ttl (compare-and-swap only;
 #                                                                         with --adopt this pair is the whole cancel of a suspended run, CENTRAL C2)
 # Every numeric option and enumerated state is validated BEFORE any write; --pid is an integer > 1 naming a process that exists now (WF11 F5/F6).
+# Every mode reads the holder through ONE reader (A-S3): a holder that is absent is a cas_mismatch (4); a holder that EXISTS but is empty, unreadable, a directory or fails the holder shape is `holder_unreadable`
+#         (20), never a cas_mismatch, never expired (LO-A5, LO-A6).
 # Locking every transition is a compare-and-swap on the expected prior holder (run id and state) under ONE flock on <purpose>.lock;
 #         the holder record is replaced by temp-then-rename, so a reader never sees `none` across a suspend, update or adopt.
 #         An --adopt racing --expire has exactly one winner: the loser sees the other's result as a cas_mismatch (4).
 # --expire record: `resume_expired.json` naming the expired run goes into $CPA_RUN when CPA_RUN_ID and CPA_RUN are set (the calling run's report),
 #         otherwise under .audit/out/<op_id>/ (--op-id required, else 20 usage_error), never into the expired run's directory, never under .audit/commit-push/.
 # CENTRAL C2   purpose commit_push: CPA_APPROVED_DIR unset gives 20 helper_not_approved FIRST, before the --op-id usage check (--expire).
-# Exits   0; 2 usage; 3 purpose_conflict; 4 cas_mismatch / stale / not expired; 20 refusal (helper_not_approved, usage_error under --expire).
+# Exits   0; 1 a registry write failed; 2 usage; 3 purpose_conflict; 4 cas_mismatch / stale / not expired; 20 refusal (helper_not_approved, usage_error under --expire, holder_unreadable); 70 lock wait.
 set -u
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 mode=claim; purpose=""; run=""; pid=$PPID; builds=""; ttl=""; cbs=""; nst=""; opid=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    --purpose) purpose=${2:-}; shift 2 ;; --run-id) run=${2:-}; shift 2 ;; --pid) pid=${2:-}; shift 2 ;; --builds) builds=${2:-}; shift 2 ;;
-    --resume-ttl) ttl=${2:-}; shift 2 ;; --callback-state) cbs=${2:-}; shift 2 ;; --state) nst=${2:-}; shift 2 ;; --op-id) opid=${2:-}; shift 2 ;;
-    --suspend) mode=suspend; run=${2:-}; shift 2 ;; --adopt) mode=adopt; run=${2:-}; shift 2 ;; --update) mode=update; run=${2:-}; shift 2 ;;
-    --expire) mode=expire; purpose=${2:-}; shift 2 ;;
+    --purpose) lo_need "$@"; purpose=$2; shift 2 ;; --run-id) lo_need "$@"; run=$2; shift 2 ;; --pid) lo_need "$@"; pid=$2; shift 2 ;; --builds) lo_need "$@"; builds=$2; shift 2 ;;
+    --resume-ttl) lo_need "$@"; ttl=$2; shift 2 ;; --callback-state) lo_need "$@"; cbs=$2; shift 2 ;; --state) lo_need "$@"; nst=$2; shift 2 ;; --op-id) lo_need "$@"; opid=$2; shift 2 ;;
+    --suspend) lo_need "$@"; mode=suspend; run=$2; shift 2 ;; --adopt) lo_need "$@"; mode=adopt; run=$2; shift 2 ;; --update) lo_need "$@"; mode=update; run=$2; shift 2 ;;
+    --expire) lo_need "$@"; mode=expire; purpose=$2; shift 2 ;;
     *) lo_die usage_error "unknown argument $(printf '%q' "$1")" ;;
   esac
 done
@@ -40,11 +42,18 @@ case "$nst" in ""|suspended|ready_to_resume) ;; *) lo_die usage_error "--state i
 [ "$mode" = claim ] || [ "$mode" = expire ] || lo_require_approved "$purpose"
 if [ "$mode" != expire ]; then [ -n "$run" ] || lo_die usage_error "a run id is required"; [[ "$run" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$ ]] || lo_die usage_error "unsafe run id"; fi
 lo_init
-_holder() { cat "$(lo_holder_file "$purpose")" 2>/dev/null; }
+# _hget: sets H to the holder text of the purpose. 4 (cas_mismatch) when there is NO holder; 20 (holder_unreadable) when the file exists but cannot be read or fails LO_HOLDER_SHAPE.
+_hget() {
+  H=$(_lo_read_holder "$purpose"); local rr=$?
+  case $rr in
+    1) echo "cas_mismatch: no holder for $purpose" >&2; return "$RC_CAS" ;;
+    2) echo "holder_unreadable: the holder record of $purpose exists but cannot be read" >&2; return "$RC_REFUSE" ;;
+  esac
+  jq -e "$LO_HOLDER_SHAPE" >/dev/null 2>&1 <<<"$H" || { echo "holder_unreadable: the holder record of $purpose fails the holder shape (docs/scripts/longops.md FIELDS)" >&2; return "$RC_REFUSE"; }
+}
 _expect() {  # _expect <state>: the holder must be this run in this state, else cas_mismatch
-  local h; h=$(_holder) || true
-  [ -n "$h" ] || { echo "cas_mismatch: no holder for $purpose" >&2; return "$RC_CAS"; }
-  [ "$(jq -r .run_id <<<"$h")" = "$run" ] && [ "$(jq -r .state <<<"$h")" = "$1" ] || { echo "cas_mismatch: holder is $(jq -c '{run_id,state,kind}' <<<"$h"), expected run=$run state=$1" >&2; return "$RC_CAS"; }
+  _hget || return $?
+  [ "$(jq -r .run_id <<<"$H")" = "$run" ] && [ "$(jq -r .state <<<"$H")" = "$1" ] || { echo "cas_mismatch: holder is $(jq -c '{run_id,state,kind}' <<<"$H"), expected run=$run state=$1" >&2; return "$RC_CAS"; }
 }
 _swap() { lo_wjson "$(lo_holder_file "$purpose")" "$1"; }
 case "$mode" in
@@ -52,29 +61,32 @@ case "$mode" in
   suspend)
     [ -n "$builds" ] || lo_die usage_error "--suspend needs --builds"
     _s() { _expect running || return $?; lo_cs_pause
-      _swap "$(jq -c --arg b "$builds" --arg t "$ttl" --argjson now "$(lo_now)" '.kind="suspended-run"|.state="suspended"|.builds=($b|split(",")|map(select(length>0)))|.callback_state="none"|.suspended_at=$now|(if $t!="" then .resume_ttl=($t|tonumber) else . end)' <<<"$(_holder)")"; }
+      _swap "$(jq -c --arg b "$builds" --arg t "$ttl" --argjson now "$(lo_now)" '.kind="suspended-run"|.state="suspended"|.builds=($b|split(",")|map(select(length>0)))|.callback_state="none"|.suspended_at=$now|(if $t!="" then .resume_ttl=($t|tonumber) else . end)' <<<"$H")"; }
     lo_with_lock "$purpose" _s ;;
   update)
-    _u() { local h; h=$(_holder) || true; [ -n "$h" ] && [ "$(jq -r .run_id <<<"$h")" = "$run" ] || { echo "cas_mismatch: holder run differs from $run" >&2; return "$RC_CAS"; }
-      [ "$(jq -r .kind <<<"$h")" = suspended-run ] || { echo "cas_mismatch: holder is not a suspended-run" >&2; return "$RC_CAS"; }
+    _u() { _hget || return $?
+      [ "$(jq -r .run_id <<<"$H")" = "$run" ] || { echo "cas_mismatch: holder run differs from $run" >&2; return "$RC_CAS"; }
+      [ "$(jq -r .kind <<<"$H")" = suspended-run ] || { echo "cas_mismatch: holder is not a suspended-run" >&2; return "$RC_CAS"; }
       lo_cs_pause
-      _swap "$(jq -c --arg c "$cbs" --arg s "$nst" --argjson now "$(lo_now)" '(if $c!="" then .callback_state=$c else . end)|(if $s!="" then .state=$s else . end)|(if $s=="ready_to_resume" then .ready_at=$now else . end)' <<<"$h")"; }
+      _swap "$(jq -c --arg c "$cbs" --arg s "$nst" --argjson now "$(lo_now)" '(if $c!="" then .callback_state=$c else . end)|(if $s!="" then .state=$s else . end)|(if $s=="ready_to_resume" then .ready_at=$now else . end)' <<<"$H")"; }
     lo_with_lock "$purpose" _u ;;
   adopt)
-    _a() { local h; h=$(_holder) || true; [ -n "$h" ] && [ "$(jq -r .run_id <<<"$h")" = "$run" ] && [ "$(jq -r .kind <<<"$h")" = suspended-run ] || { echo "cas_mismatch: no suspended-run holder for $run" >&2; return "$RC_CAS"; }
+    _a() { _hget || return $?
+      [ "$(jq -r .run_id <<<"$H")" = "$run" ] && [ "$(jq -r .kind <<<"$H")" = suspended-run ] || { echo "cas_mismatch: no suspended-run holder for $run" >&2; return "$RC_CAS"; }
       lo_cs_pause
       _swap "$(lo_holder_json "$purpose" "$run" "$pid")"; }
     lo_with_lock "$purpose" _a ;;
   expire)
     if [ -z "${CPA_RUN_ID:-}" ] || [ -z "${CPA_RUN:-}" ]; then [ -n "$opid" ] && lo_safe_name "$opid" || lo_die usage_error "--expire outside a CPA run needs --op-id" "$RC_REFUSE"; fi
-    _e() { local h rdy ttl2; h=$(_holder) || true; [ -n "$h" ] || { echo "cas_mismatch: no holder for $purpose" >&2; return "$RC_CAS"; }
-      [ "$(jq -r .state <<<"$h")" = ready_to_resume ] || { echo "not_expired: holder state is $(jq -r .state <<<"$h")" >&2; return "$RC_CAS"; }
-      rdy=$(jq -r '.ready_at // 0' <<<"$h"); ttl2=$(lo_resume_ttl "$purpose" "$h") || return "$RC_REFUSE"
+    _e() { local rdy ttl2; _hget || return $?
+      [ "$(jq -r .state <<<"$H")" = ready_to_resume ] || { echo "not_expired: holder state is $(jq -r .state <<<"$H")" >&2; return "$RC_CAS"; }
+      rdy=$(jq -r '.ready_at' <<<"$H"); lo_uint "$rdy" || { echo "holder_unreadable: ready_at of the holder is not a number" >&2; return "$RC_REFUSE"; }
+      ttl2=$(lo_resume_ttl "$purpose" "$H") || return "$RC_REFUSE"
       [ "$(lo_now)" -ge $((rdy + ttl2)) ] || { echo "not_expired: ready_to_resume window has $((rdy + ttl2 - $(lo_now)))s left" >&2; return "$RC_CAS"; }
       lo_cs_pause
-      rm -rf -- "$LD/claims/$purpose"
+      rm -rf -- "$LD/claims/$purpose"; lo_fsync_dir "$LD/claims"
       local d; if [ -n "${CPA_RUN_ID:-}" ] && [ -n "${CPA_RUN:-}" ]; then d=$CPA_RUN; else d=$AUDIT_DIR/out/$opid; fi
-      mkdir -p "$d" && lo_wjson "$d/resume_expired.json" "$(jq -c --arg p "$purpose" --argjson ttl "$ttl2" --argjson now "$(lo_now)" '{record:"resume_expired",purpose:$p,expired_run:.run_id,ready_at:.ready_at,resume_ttl:$ttl,expired_at:$now}' <<<"$h")"; }
+      mkdir -p "$d" && lo_wjson "$d/resume_expired.json" "$(jq -c --arg p "$purpose" --argjson ttl "$ttl2" --argjson now "$(lo_now)" '{record:"resume_expired",purpose:$p,expired_run:.run_id,ready_at:.ready_at,resume_ttl:$ttl,expired_at:$now}' <<<"$H")"; }
     lo_with_lock "$purpose" _e ;;
 esac
 rc=$?; [ $rc -eq 0 ] && lo_event "$mode" --arg purpose "$purpose" --arg run "${run:-}"

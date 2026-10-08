@@ -1754,6 +1754,10 @@ Create a new storage root configuration.
 }
 ```
 
+Further fields: `url` (required for `webdav`), `mount_point` and `options` (NFS), `allow_empty` (default `false`: a scan that finds nothing fails with `empty_root`), `max_depth`. `port` must be 1-65535.
+The accepted protocols are the ones the client factory builds (`local`, `smb`, `ftp`, `nfs`, `webdav` and every protocol registered at start-up); the 400 answer lists them.
+`GET /api/v1/storage/roots` returns the `url` with its password redacted; `GET /api/v1/scans[/:job_id]` returns `reason`.
+
 **Response:** 201 Created
 
 ---

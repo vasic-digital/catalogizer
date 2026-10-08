@@ -1,0 +1,11 @@
+# NOTE: RED captured with scripts/register/enumerate_sources.py (the parser under test) moved out of the tree for this run, restored afterwards. Host-side run.
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/RED-t164-enumerator-absent.txt (copied verbatim below this line)
+FAIL tolerant parser loads every fixture ticket and matches the recount :: # check_freeze_listing.sh absent (T161): listing check UNCONFIRMED
+
+ok   RED: strict yaml.safe_load fails on a colon inside a value
+FAIL needle: a file added to the live tree after the freeze is absent from the recount :: # check_freeze_listing.sh absent (T161): listing check UNCONFIRMED
+
+ok   moved snapshot: freeze_snapshot_moved naming the file, no count printed
+SELFTEST: FAIL
+rc=1

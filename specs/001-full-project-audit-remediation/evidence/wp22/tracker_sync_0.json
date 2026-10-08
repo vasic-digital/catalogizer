@@ -1,0 +1,323 @@
+{
+ "db": {
+  "path": "docs/workable_items.db",
+  "sha256_after": "e2faccfbf8006cbfce7d75c455a3d19384747e2c7f0c1a641e66986c5d0c9750",
+  "sha256_before": "4de06949d914592a501dd4fe55e6502ca829748c33fcf8bccd9a78639634187c"
+ },
+ "dry_run": false,
+ "exit": 0,
+ "identity": {
+  "config": ".helix/reporting.yaml",
+  "config_sha256": "f13deca614ce395a9290255a6baf49feb1e8e6b20e3851ad678b2bb5ca4eb10c",
+  "driver_sha256": "6417d55167a646a5e621237694295b1644096fc1bc97a0e8b361729f474d440f",
+  "git_head": null,
+  "host": "anton",
+  "locked_sha256": "5919d4090c75f29369a8c684c420d59295ffcce1ab5de3ce9f4f4ee2aee1a10d",
+  "repository_git_head": "4c8b07b7c7f1aa412855ac825b07c6eeb90d4662",
+  "run_id": "sync-20261007T215543-1150745",
+  "task": "T189/T191",
+  "uid": 1000,
+  "utc": "2026-10-07T21:57:34Z"
+ },
+ "locked_calls": [
+  {
+   "exit": 0,
+   "label": "trackers",
+   "op_id": "sync-20261007T215543-1150745-trackers-1"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-2"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-3"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-4"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-5"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-6"
+  },
+  {
+   "exit": 0,
+   "label": "mint",
+   "op_id": "sync-20261007T215543-1150745-mint-7"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-8"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-9"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-10"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-11"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-12"
+  },
+  {
+   "exit": 0,
+   "label": "log",
+   "op_id": "sync-20261007T215543-1150745-log-13"
+  }
+ ],
+ "minted": [
+  {
+   "action": "minted",
+   "atm_id": "CAT-004",
+   "reason": "not_configured",
+   "tracker": "crashlytics"
+  },
+  {
+   "action": "minted",
+   "atm_id": "CAT-005",
+   "reason": "not_configured",
+   "tracker": "gitflic"
+  },
+  {
+   "action": "minted",
+   "atm_id": "CAT-006",
+   "reason": "not_configured",
+   "tracker": "github_issues"
+  },
+  {
+   "action": "minted",
+   "atm_id": "CAT-007",
+   "reason": "not_configured",
+   "tracker": "gitlab"
+  },
+  {
+   "action": "minted",
+   "atm_id": "CAT-008",
+   "reason": "not_configured",
+   "tracker": "gitverse"
+  },
+  {
+   "action": "minted",
+   "atm_id": "CAT-009",
+   "reason": "not_configured",
+   "tracker": "sonar"
+  }
+ ],
+ "options": {
+  "backoff_base": 1.0,
+  "breaker": 3,
+  "limit": null,
+  "max_attempts": 3,
+  "trackers": []
+ },
+ "owed_reopen": [],
+ "schema": "sync-trackers/1",
+ "scratch_register": {
+  "items": 9,
+  "minted_by": [
+   "sync_trackers:crashlytics:not_configured",
+   "sync_trackers:gitflic:not_configured",
+   "sync_trackers:github_issues:not_configured",
+   "sync_trackers:gitlab:not_configured",
+   "sync_trackers:gitverse:not_configured",
+   "sync_trackers:sonar:not_configured"
+  ],
+  "note": "docs/workable_items.db does not exist yet (T069); this run used a scratch register with 3 scratch items, built by clib.sh (real engine, real DDL, real locked.sh)",
+  "sync_log_by_tracker_status_reason": [
+   [
+    "crashlytics",
+    "SKIPPED",
+    "not_configured",
+    9
+   ],
+   [
+    "gitflic",
+    "SKIPPED",
+    "not_configured",
+    9
+   ],
+   [
+    "github_issues",
+    "SKIPPED",
+    "not_configured",
+    9
+   ],
+   [
+    "gitlab",
+    "SKIPPED",
+    "not_configured",
+    9
+   ],
+   [
+    "gitverse",
+    "SKIPPED",
+    "not_configured",
+    9
+   ],
+   [
+    "sonar",
+    "SKIPPED",
+    "not_configured",
+    9
+   ]
+  ]
+ },
+ "trackers": {
+  "crashlytics": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "crashlytics",
+   "missing_env_names": [],
+   "state": "not_configured"
+  },
+  "gitflic": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "gitflic",
+   "missing_env_names": [],
+   "state": "not_configured"
+  },
+  "github_issues": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "github",
+   "missing_env_names": [],
+   "state": "not_configured"
+  },
+  "gitlab": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "gitlab",
+   "missing_env_names": [],
+   "state": "not_configured"
+  },
+  "gitverse": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "gitverse",
+   "missing_env_names": [],
+   "state": "not_configured"
+  },
+  "sonar": {
+   "candidate": true,
+   "counts": {
+    "breaker_skipped": 0,
+    "failed": 0,
+    "selected": 9,
+    "skipped": {
+     "not_configured": 9
+    },
+    "synced": 0,
+    "unchanged": 0,
+    "unchanged_skipped": 0
+   },
+   "kind": "sonarqube",
+   "missing_env_names": [],
+   "state": "not_configured"
+  }
+ },
+ "unwritten_rows": 0,
+ "v_stale_tracker_sync": [
+  [
+   "crashlytics",
+   "SKIPPED",
+   9
+  ],
+  [
+   "gitflic",
+   "SKIPPED",
+   9
+  ],
+  [
+   "github_issues",
+   "SKIPPED",
+   9
+  ],
+  [
+   "gitlab",
+   "SKIPPED",
+   9
+  ],
+  [
+   "gitverse",
+   "SKIPPED",
+   9
+  ],
+  [
+   "sonar",
+   "SKIPPED",
+   9
+  ]
+ ]
+}

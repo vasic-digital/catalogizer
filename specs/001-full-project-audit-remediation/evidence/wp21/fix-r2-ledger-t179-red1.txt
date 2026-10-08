@@ -1,0 +1,45 @@
+# ledger seq=25 item=AUD-T179 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/wp21-r2/gate.sh target_fingerprint=784173e6c5839e8a2f8c183761fdc7cbf9f57f03c7c3b0bb32eaab9191df82f0 test_fingerprint=8e373250bdc0881e001b54b3bdbad2990990eff629dfe345f0fe0ccbdd92f022
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "GATE=/src/.audit/scratch/wp21-r2/gate.sh", "bash", "scripts/register/tests/test_reverify_gate.sh"]
+# identity: task=T179 utc=2026-10-08T03:45:50Z host=c534acdbe8cc uid=1000
+# git_head=f72d8757fe614adfa38a4f70276853527d06d7e8 tree_dirty_files=7090
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=784173e6c5839e8a2f8c183761fdc7cbf9f57f03c7c3b0bb32eaab9191df82f0 test=2683acff6d8a1f36d15c2f8cc68c8f42ed5bb83aaab3487d5a838391c6728761
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== completion gate: the reverify queue ==
+ok   R0 fixture: v_reverify_queue holds exactly one row
+FAIL R1 rc=2 [gate: unknown argument --completion]
+FAIL R1b the exit status is 4 (NOT DONE), distinct from gate failure 1 and partial 3 :: got [2] want [4]
+ok   R1c a NOT DONE run never prints GATE OK or COMPLETION OK
+FAIL R1d [gate: unknown argument --completion]
+FAIL R2 rc=2 [gate: unknown argument --completion]
+FAIL R3 rc=2 [gate: unknown argument --completion]
+ok   R4 the completion run does not modify the DB under test
+== completion gate: empty queue and the plain register gate ==
+FAIL C1 rc=2 [gate: unknown argument --completion]
+FAIL C1b [gate: unknown argument --completion]
+FAIL C2 rc=2 [gate: unknown argument --completion]
+ok   C3 WITHOUT --completion the register gate still prints GATE OK with a populated reverify queue (step 2 unchanged, rc 0)
+FAIL C4 rc=2 [gate: unknown argument --completion]
+FAIL C5 rc=2 [gate: unknown argument --completion]
+FAIL C6 rc=2 [gate: unknown argument --completion]
+FAIL C7 rc=2
+== completion gate: the register gate result is not hidden, the count is not suppressed ==
+FAIL F1 rc=2 [gate: unknown argument --completion]
+FAIL F2 rc=2 [gate: unknown argument --completion]
+FAIL F3 rc=2 [gate: unknown argument --completion]
+ok   F3b the injected DROP did not run (reg_meta exists)
+FAIL F4 rc=2 [gate: unknown argument --completion]
+FAIL F5 rc=2 [gate: unknown argument --completion]
+FAIL F6 rc=2 [gate: unknown argument --completion]
+== completion gate: PASS-PARTIAL ==
+FAIL P1 rc=2 [gate: unknown argument --completion]
+FAIL P2 rc=2 [gate: unknown argument --completion]
+FAIL P3 rc=2 [gate: unknown argument --completion]
+== completion gate: the reference list is data (mutated reference) ==
+FAIL E1 rc=2 [gate: unknown argument --completion]
+FAIL E2 rc=2 [gate: unknown argument --completion]
+FAIL E3 rc=2 [gate: unknown argument --completion]
+FAIL E4 rc=2 [gate: unknown argument --completion]
+RESULT pass=5 fail=25

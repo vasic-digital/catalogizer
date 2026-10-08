@@ -1,0 +1,125 @@
+# identity: WF17 r5 GREEN+MUTATIONS ownership
+# head: f72d8757fe614adfa38a4f70276853527d06d7e8
+# run_at: 2026-10-08T04:32:51Z
+# sha256 scripts/test-infra/lib.sh 80773bcf7524a013c7599ac2b63ec0eaf381a3c1b52d44a6811c15309b7efc55
+# sha256 scripts/test-infra/up.sh cceea150435b742da632f0b6c16efe95bf798538455537d82270a55e4b000ebd
+# sha256 scripts/test-infra/down.sh e63658ed9225f876d12ea6603c9df08e7f4407eb57b069140a426b44b1f1233b
+# sha256 scripts/test-infra/probe.sh d6526d3df9973a0858e602808075c26ef795a7fe9b32fa55ed4c06570083101a
+# sha256 scripts/test-infra/roundtrip.sh 4c7adffd4777c5a06748d2c6455452fd897a4545c406b6bf732e394cb052ea79
+# sha256 scripts/test-infra/run_client.sh cc255eb2203a5a821cfe87d5e537187ad6f6369ff468a565df86fd51aa783c5a
+# sha256 scripts/test-infra/sweep_leaks.sh 366fb3c5f1b3e1e331c56bba8a8dedb80cfa4e82069e426941e07fac613735ee
+# sha256 scripts/test-infra/gen_env.sh cca9e043f44473fcc0ec38272a40958ece887ce71098e3a8f03fd910cf6185d2
+# sha256 scripts/test-infra/seed_corpus.sh 376032fcbd8ce82c5382d4a91f2df2adb91fe0d38e03cb3b81f268a5a61bf1cb
+# sha256 scripts/test-infra/nfs_attempt.sh 8efff1b1eb0abe82ab63e4f0459011c465307448b8857578a15a37d6f736f19e
+# sha256 scripts/test-infra/nfs_build.sh 76a6d75ae154e99ff7fbd7156425b9bf164959bb5efd5b696d8687fb8888a06c
+# sha256 scripts/test-infra/nfs_terminal_state.sh 97ee1dbef9050cb164bf3ffedcdc89cc9f40d3684836776f4e7a78feb323c232
+# sha256 scripts/test-infra/nfs_fallback_state.sh b554c4b29624ac4495d9406bedc8caa6e420379495ce47fd7cd058b5831fdb23
+# sha256 scripts/test-infra/blocked_external.sh d53e46ff0b25dfbf59023a5b408833e00649b3cc8a66e44c123820871cb7e2f4
+# sha256 scripts/test-infra/nas_readonly_leg.sh 004d308a4601fe91deb8cdc1f63204160d45fd18e303b569b46e3fb59e676a19
+# sha256 scripts/test-infra/dotenv_get.py 5d04636ea654617d05995c73d4965cf03e25fa9586e087bd511af336041ca856
+# sha256 scripts/test-infra/client/lib.sh 02e16d66b8df2ea9e5824541ada954b01c0e7a6685ad64cd4c3c2271beefd589
+# sha256 scripts/test-infra/client/isolation_probe.sh cc8c4ba3e0ba9933ec59df4c30468b0b95b70b323847cfd215df4401b206de3b
+# sha256 scripts/test-infra/client/marker.sh 5605aa7b1f22be0339547a66499fa170ea9fa3905094ea09246ecc1ea33217b8
+# sha256 scripts/test-infra/client/nas_smb_ro.sh 38269ab98a0a2c6e2cab3b53493f6452e9bc24660a2948317d56113a9d3eac32
+# sha256 scripts/test-infra/client/probe_ftp.sh c411005b735da1e79d027a57d387ec14b99bbafb182bae0a601eae5e314b1045
+# sha256 scripts/test-infra/client/probe_nfs.sh 1a4908bcb36d6fd58fe374b1dad190b5a552270562bbead4c7c13f6e7a331f0f
+# sha256 scripts/test-infra/client/probe_postgres.sh 98ade67132e06073d8f8280da0564d995a6870e0189000952a3b57ceb7f92d25
+# sha256 scripts/test-infra/client/probe_redis.sh bb35804ddeb6d4d9e235b01beddbfa62b20daaa90a6f40bea66ff1613d440e48
+# sha256 scripts/test-infra/client/probe_smb.sh 0adbc6e756070bd6472685faeebe0228dc659be84ba42168c5b8adc9c6880f98
+# sha256 scripts/test-infra/client/probe_webdav.sh 81cbab150ff5201ff0d6cfadece123e8a0647ae07edc69b81c12ab52b3e8e571
+# sha256 scripts/test-infra/client/roundtrip_ftp.sh 60767b8c03e46b2447792b0e0f6a420c70d0b810a73372960c2bc8e4fba4b818
+# sha256 scripts/test-infra/client/roundtrip_nfs.sh aaa2e599f5ffbbb5ca4f068517eb014e058b15f8e4a20ef6bcdffe148e03217b
+# sha256 scripts/test-infra/client/roundtrip_postgres.sh 6240cd451496b0ea7117162e8fdc43a0fbed28a6ddf5a529a66d86c664441515
+# sha256 scripts/test-infra/client/roundtrip_redis.sh 602187be7dc048e812c5689deaf6f8368446a41463e4c6017350c9e8e8dae6f5
+# sha256 scripts/test-infra/client/roundtrip_smb.sh 0d28eb8e6f1de0b376097442a99a392bcccb36af327cdb79b5151fa0c10a5efa
+# sha256 scripts/test-infra/client/roundtrip_webdav.sh 6d488bd4d8ba2d81e1939e16db9680aa715d63b024095e9cb1d132c11df99354
+# sha256 docker-compose.test-infra.yml 1a9408ccf42af040da253bac8cde86d09e9799d3685cc5ac00b5a88a703377e8
+# sha256 docker-compose.test-infra.nfs.yml 6fa085c4550315bf39a76bf26711c44ed3bf70a3aa2c533be18c97de898f97b3
+# sha256 docker-compose.build.yml 811efeeafb63be5f31b0c780eea186d3c7cf677f3d6b9516016cbc783e053f14
+# sha256 scripts/container-build.sh b5fcc7d7eaf807c1debbedc22ae234a0b3b0fca071bb9c1e8ec20dc1109034bc
+# sha256 scripts/setup-test-env.sh 6cef772ffeeb887590ba591fb8762dcf746eecc7b764291a7b08a9ff813561d3
+# sha256 tests/infra/lib.sh 158e4247c8d600185354814c5d7fecaa9c3f74a4d6bb7e21005417b0aab24227
+# sha256 tests/infra/mutlib.sh b65636c47897a85021dcf2e9938f5da3b46717bacee3de6a54d3dbc0c28db396
+# sha256 tests/infra/capture.sh 0ce6facabb1d1430d65e36a6bc839fcde34169652aa5cf84d79492d37b385412
+# sha256 tests/infra/test_ownership.sh 4c609f01cfbd47342a8d9ef91fd06e5674124d89199760b489da610d814ae8c8
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh cb118e197186e11dd55eb5bbb3fcc8ab4c6bd5afa0ee2ec9fd42471c0474f6cd
+# command: bash tests/infra/test_ownership.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: script present: scripts/test-infra/sweep_leaks.sh
+PASS: checkout B: up exits 0
+PASS: checkout B holds a live lease of its own registry
+PASS: B's container carries B's root hash, not A's
+PASS: A: down of B's project, naming no operation, is REFUSED foreign_owner (exit 5)
+PASS: the refusal names reason=foreign_owner
+PASS: A's refused down touched nothing: B's container still runs
+PASS: A's refused down left B's lease intact
+PASS: A: up of the SAME project id is REFUSED foreign_owner (exit 3), not a teardown of B (TI-B1 b)
+PASS: A's refused up left B's container running and B's lease intact
+PASS: A's refused up recorded its own operation failed and released its own claim
+PASS: control: B's own down WITHOUT its operation id is refused not_lease_owner (exit 5): the instrument sees refusals
+PASS: control: the refusal names not_lease_owner
+PASS: B's own down by its owner exits 0
+PASS: default ids carry a per-checkout part (setup-test-env.sh / nfs_attempt.sh): no fixed-second id
+PASS: layer no_project_label: down refuses the foreign container (exit 5)
+PASS: layer no_project_label: reason=foreign_owner
+PASS: layer no_project_label: the foreign container is untouched (still running)
+PASS: layer other_root: down refuses the foreign container (exit 5)
+PASS: layer other_root: reason=foreign_owner
+PASS: layer other_root: the foreign container is untouched (still running)
+PASS: layer op_not_in_registry: down refuses the foreign container (exit 5)
+PASS: layer op_not_in_registry: reason=foreign_owner
+PASS: layer op_not_in_registry: the foreign container is untouched (still running)
+PASS: control: a container with ALL layers right IS removed by the same down (exit 0): the layer fixtures above are refusals, not blindness
+PASS: partial labels: up is REFUSED foreign_owner (exit 3), never an endless exit 1
+PASS: partial labels: the refusal names the container
+PASS: partial labels: the fixture is untouched
+PASS: the first down exits 0
+PASS: down window: the second start WAITED for the teardown (project lock) and started cleanly (exit 0)
+PASS: down window: the second owner's lease is a live keeper of its own start
+PASS: down window: the second owner's env file survived the first teardown
+PASS: down window: the second owner's container runs
+PASS: down during a start, naming no operation, is REFUSED (exit 5: start_in_progress or not_lease_owner)
+PASS: the start finished exit 0 although a down ran during it
+PASS: the start holds a LIVE lease of its own (holder identity and liveness)
+PASS: its container runs
+PASS: podman unknown: the owner's down is NOT a success while podman cannot list containers (exit 1)
+PASS: podman unknown: the lease is still held
+PASS: podman unknown: the state directory (credentials) is still there
+PASS: podman unknown: the container still runs
+PASS: podman unknown: the sweep KEEPs a leaked-looking directory (failed=podman_query_failed)
+PASS: podman unknown: the leaked-looking directory is still there
+PASS: control: with podman answering, the same sweep removes that directory (the fixture is a real leak)
+PASS: with podman answering the owner's down exits 0
+PASS: relocated registry (AUDIT): up exits 0
+PASS: relocated registry (AUDIT): the claim is at the relocated path
+PASS: relocated registry (AUDIT): a no-operation-id down is refused (exit 5)
+PASS: relocated registry (AUDIT): the refused down touched nothing (claim and container)
+PASS: relocated registry (AUDIT): the owner's down exits 0
+PASS: relocated registry (AUDIT): the owner's down released the claim at the RELOCATED path
+PASS: relocated registry (AUDIT): the operation is complete at the relocated path
+PASS: relocated registry (REPO): up exits 0
+PASS: relocated registry (REPO): the claim is at the relocated path
+PASS: relocated registry (REPO): a no-operation-id down is refused (exit 5)
+PASS: relocated registry (REPO): the refused down touched nothing (claim and container)
+PASS: relocated registry (REPO): the owner's down exits 0
+PASS: relocated registry (REPO): the owner's down released the claim at the RELOCATED path
+PASS: relocated registry (REPO): the operation is complete at the relocated path
+PASS: unreadable holder record: the true owner's down is refused (exit 5)
+PASS: unreadable holder record: the reason is holder_record_unreadable (not not_lease_owner)
+PASS: restored record: the owner's down exits 0
+PASS: mutation layer_project_label_dropped CAUGHT (FAIL: layer no_project_label: down refuses the foreign container (exit 5) (got '0' want '5'))
+PASS: mutation layer_root_label_dropped CAUGHT (FAIL: layer other_root: down refuses the foreign container (exit 5) (got '0' want '5'))
+PASS: mutation layer_registry_op_dropped CAUGHT (FAIL: layer op_not_in_registry: down refuses the foreign container (exit 5) (got '0' want '5'))
+PASS: mutation release_before_cleanup_no_lock CAUGHT (FAIL: down window: the second owner's env file survived the first teardown (got 'destroyed' want 'present'))
+PASS: mutation down_ignores_start_in_progress CAUGHT (FAIL: down during a start, naming no operation, is REFUSED (exit 5: start_in_progress or not_lease_owner) (got '0' want )
+PASS: mutation up_unverified_and_down_unguarded CAUGHT (FAIL: down during a start, naming no operation, is REFUSED (exit 5: start_in_progress or not_lease_owner) (got '0' want )
+PASS: mutation podman_status_dropped CAUGHT (FAIL: podman unknown: the lease is still held (got 'free' want 'ok'))
+PASS: mutation sweep_live_ignores_podman_failure CAUGHT (FAIL: podman unknown: the sweep did not keep the directory for the right reason: REMOVED dir catalogizer-test-zzsw29027-)
+PASS: mutation registry_path_hard_coded CAUGHT (FAIL: relocated registry (AUDIT): the owner's down exits 0 (got '5' want '0'))
+PASS: mutation unreadable_holder_not_named CAUGHT (FAIL: unreadable holder record: wrong reason: test-infra: REFUSED reason=not_lease_owner catalogizer-test-t4347429162 is)
+PASS: identity mutant identity_noop_in_down SURVIVED (as required)
+SUMMARY pass=75 fail=0 blocked=0
+# exit: 0

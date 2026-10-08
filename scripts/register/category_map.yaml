@@ -1,0 +1,30 @@
+# category_map.yaml - T168 (WP-20): the PROPOSED mapping of a legacy ticket's raw `category` to the register's problem categories and to
+# an engine item type (docs/04 section 9.2, decision D-6). STATUS: PROPOSED, NOT APPLIED. The final values are BLOCKED-ON ODG-17 (OD-16, no
+# research.md default); T223 applies this file once the owner has approved it at HC-2 (T222). The importer (scripts/register/import.sh)
+# only RECORDS, for every item, the raw category and the value proposed here; it never writes the proposed value into reg_item_ext.category.
+# Every entry below is quoted from docs/04 section 9.2 ("UX/visual/accessibility/content/brand -> shortcoming, functional/functionality ->
+# bug, performance -> weak_spot"; "default Bug for functional, Task for content/brand/documentation"); nothing here is invented. A raw value
+# that is not listed is reported as unmapped, never guessed.
+schema: category-map/1
+status: PROPOSED
+# the one value the importer writes into reg_item_ext.category for every imported item until T223 runs (the column is NOT NULL and
+# CHECK-closed, so a placeholder is unavoidable). A constant, so no reader can mistake it for a mapped value: it is NOT the mapping.
+interim_category: shortcoming
+# raw category (lower-cased by the importer) -> proposed register category
+categories:
+  ux: shortcoming
+  visual: shortcoming
+  accessibility: shortcoming
+  content: shortcoming
+  brand: shortcoming
+  functional: bug
+  functionality: bug
+  performance: weak_spot
+# raw category (lower-cased) -> engine item type; a raw value not listed here imports as Task and the Sources block says it was defaulted.
+# `Feature` is never assigned by the importer (docs/04 section 9.2: only when the text says so, never guessed): a reviewer reclassifies.
+types:
+  functional: Bug
+  functionality: Bug
+  content: Task
+  brand: Task
+  documentation: Task

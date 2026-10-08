@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T20:00:00Z |
-| Status | new in the working tree (T134), not yet committed; independent review owed (constitution 11.4.142); its row in `docs/scripts/README.md` is owed (that file is being edited by another agent) |
+| Last modified | 2026-10-07T16:40:16Z |
+| Status | WF17 fix round 5 applied in the working tree (not committed); the independent review of that round is owed (constitution 11.4.142 / 11.4.209); evidence: `specs/001-full-project-audit-remediation/evidence/wp12/wf17/` |
 | Source | `scripts/test-infra/nfs_terminal_state.sh`; tests `tests/infra/test_nfs_terminal_state.sh` |
 
 ## Purpose
@@ -27,3 +27,7 @@ scripts/test-in-container.sh tooling unit -- bash /src/scripts/test-infra/nfs_te
 
 Refusals (exit 1): `nfs_client_verdict_missing`, `nfs_client_verdict_unreadable`, `attempt_record_missing`, `attempt_record_malformed`, `client_side_failure_is_an_image_defect` (a failing CLIENT step is a defect of
 IMG-INFRA-CLIENT fixed by a reviewed change, never a terminal state), `client_version_transcript_missing`, `attempt_inconclusive`.
+
+## WF17 fix round 5 (revision 3)
+
+- The record is validated, not trusted: schema `nfs-attempt-observed/1`, integer `iteration` and boolean `ok` per round trip, iterations exactly 1..n, and (for a pass) every cited record must resolve in `<attempt dir>/ledger-nfs/ledger.jsonl` to an entry with that `seq`, verdict `pass`, polarity GREEN and evidence class runtime (`record_not_in_ledger` otherwise). The client-version transcript must hold a line `^nfs-ls .*<digits>.<digits>`. The emitted record names the real repository-relative path of every input it read. Adversarial fixtures are in `tests/infra/test_nfs_terminal_state.sh`.

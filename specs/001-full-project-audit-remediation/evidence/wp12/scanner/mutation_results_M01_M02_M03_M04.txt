@@ -1,0 +1,4 @@
+M01-scanner-body-empty-again (the original stub)	KILLED rc=1	TestGenericScanner_AllRecordsFailingFailsTheScan, TestGenericScanner_AlreadyCancelledContextListsNothing, TestGenericScanner_AuthFailureIsNeverRetried, TestGenericScanner_BenignDirectoryErrorsAreSkippedAndCounted
+M02-empty-root-accepted	KILLED rc=1	TestGenericScanner_EmptyRootFailsUnlessAllowed, TestScanJob_EmptyRootEndsFailedWithReason
+M03-unreadable-root-swallowed	KILLED rc=1	TestGenericScanner_AuthFailureIsNeverRetried, TestGenericScanner_NonexistentRootFails, TestGenericScanner_UnreadableRootFailsWithKind, TestScanJob_UnreachableRootEndsFailedWithReason
+M04-readonly-decorator-removed	BUILD-BROKEN(not counted) rc=1	

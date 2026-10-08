@@ -1,0 +1,32 @@
+# final verdict per mutant (the LAST run of each; superseded runs stay in the raw mutation_results_*.txt files)
+# M04 and M10 were first BUILD-BROKEN (an unused import), re-made as compiling mutants; M15 and M20 SURVIVED their first run, which exposed two weak tests; the tests were strengthened and the mutants re-run (KILLED); R5 SURVIVED on the real stack until the empty-directory real test was added
+M00-negative-control-no-change	SURVIVED rc=0	
+M01-scanner-body-empty-again (the original stub)	KILLED rc=1	TestGenericScanner_AllRecordsFailingFailsTheScan, TestGenericScanner_AlreadyCancelledContextListsNothing, TestGenericScanner_AuthFailureIsNeverRetried, TestGenericScanner_BenignDirectoryErrorsAreSkippedAndCounted
+M02-empty-root-accepted	KILLED rc=1	TestGenericScanner_EmptyRootFailsUnlessAllowed, TestScanJob_EmptyRootEndsFailedWithReason
+M03-unreadable-root-swallowed	KILLED rc=1	TestGenericScanner_AuthFailureIsNeverRetried, TestGenericScanner_NonexistentRootFails, TestGenericScanner_UnreadableRootFailsWithKind, TestScanJob_UnreachableRootEndsFailedWithReason
+M04-readonly-decorator-removed	KILLED rc=1	TestGenericScanner_ReadOnlyEvenIfAScannerBugTriedToWrite
+M05-host-budget-not-applied	KILLED rc=1	TestGenericScanner_HostBudgetCapsConcurrentListings, TestGenericScanner_HostBudgetIsSharedAcrossScansOfOneHost
+M06-every-list-error-benign	KILLED rc=1	TestGenericScanner_TransportErrorBelowRootFailsTheScan, TestGenericScanner_UnclassifiedErrorIsNotBenign, TestIsBenignListError
+M07-depth-off-by-one	KILLED rc=1	TestGenericScanner_HardDepthCapBeatsJobMaxDepth, TestGenericScanner_MaxDepthBoundsListingNotRecording
+M08-token-ignores-size	KILLED rc=1	TestChangeToken_EqualityAndSensitivity, TestGenericScanner_IncrementalSkipsUnchangedAndFindsChanges
+M09-incremental-skips-everything-known	KILLED rc=1	TestGenericScanner_IncrementalSkipsUnchangedAndFindsChanges
+M10-entries-unsorted	KILLED rc=1	TestGenericScanner_BreadthFirstFindsEverythingInOrder, TestGenericScanner_MaxDepthBoundsListingNotRecording
+M11-nfs-export-key-reverted	KILLED rc=1	TestSettingsContract_ScannerSettingsReachTheClient, TestSettingsFromRoot_AlwaysValidatesForBuiltins, TestStorageRootToSettings_NFS
+M12-unknown-keys-accepted	KILLED rc=1	TestFactory_CreateClientRejectsUnknownKey, TestRegisterProtocol_Lifecycle, TestValidateSettings_RejectsEveryUnknownKeyNotJustTheFirst, TestValidateSettings_RejectsUnknownKeyWithHint
+M13-ftp-path-not-forwarded	KILLED rc=1	TestSettingsContract_ScannerSettingsReachTheClient
+M14-propfind-self-not-skipped	KILLED rc=1	TestParsePropfind_ApacheModDav, TestParsePropfind_IgnoresPropertiesOfFailedPropstats, TestParsePropfind_NegativeAndGarbageLengthBecomeZero, TestParsePropfind_PrefixesAndAbsoluteHrefs
+M15-failed-propstat-trusted	KILLED rc=1	TestParsePropfind_IgnoresPropertiesOfFailedPropstats
+M16-cancel-reported-as-failed	KILLED rc=1	TestScanJob_CancelledContextEndsCancelledNotCompleted
+M17-all-records-failing-still-completes	KILLED rc=1	TestGenericScanner_AllRecordsFailingFailsTheScan
+M18-per-dir-bound-removed	KILLED rc=1	TestGenericScanner_BoundsFailInsteadOfTruncating
+M19-factory-skips-validation	KILLED rc=1	TestFactory_CreateClientRejectsUnknownKey, TestRegisterProtocol_Lifecycle
+M20-registered-protocol-not-resolved-on-demand	KILLED rc=1	TestScanJob_RegisteredPluggableProtocolIsScannedGenerically
+M21-hostile-names-followed	KILLED rc=1	TestGenericScanner_HostileEntryNamesAreNotFollowed
+M22-skip-dirs-ignored	KILLED rc=1	TestGenericScanner_SkipsSynologyMetadataDirectories
+R1-scanner-body-empty-again	KILLED	TestRealFTP_JobEndsCompletedWithTheCorpus, TestRealFTP_JobOnMissingRootEndsFailed, TestRealFTP_MissingRootFails, TestRealFTP_RootPathIsForwarded, TestRealFTP_ScanFindsExactlyTheCorpus, TestRealWebDAV_JobEndsCompletedWithTheCorpus, TestRealWebDAV_JobOnMissingRootEndsFailed, TestRealWebDAV_MissingRootFails, TestRealWebDAV_RootPathIsForwarded, TestRealWebDAV_ScanFindsExactlyTheCorpus
+R2-webdav-collection-slash-removed	KILLED	TestRealWebDAV_JobEndsCompletedWithTheCorpus, TestRealWebDAV_RootPathIsForwarded, TestRealWebDAV_ScanFindsExactlyTheCorpus
+R3-ftp-root-path-not-forwarded	KILLED	TestRealFTP_RootPathIsForwarded
+R4-webdav-path-not-forwarded	KILLED	TestRealWebDAV_RootPathIsForwarded
+R5-empty-root-accepted	KILLED	TestRealFTP_EmptyDirectoryRootFails, TestRealWebDAV_EmptyDirectoryRootFails
+R6-root-failure-swallowed	KILLED	TestRealFTP_JobOnMissingRootEndsFailed, TestRealFTP_MissingRootFails, TestRealWebDAV_JobOnMissingRootEndsFailed, TestRealWebDAV_MissingRootFails
+# killed=28 of 28 mutants; negative control M00 verdict: SURVIVED rc=0

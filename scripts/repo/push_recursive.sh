@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T041 helper: push_recursive.sh - CPA stage S6 push: per repository and remote the longest releasable prefix, never a force.
 #
 # Usage   push_recursive.sh --main-root <repo> --branch <b> --run-dir <dir> [--audit-dir <dir>] [--repo <path> ...] [--recursive]
@@ -12,6 +12,8 @@
 #                submodule at every depth, found from the gitlinks (never from .gitmodules), deepest first; default: the main repository
 #   --schema     review-verdict schema path relative to the main root (default specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json)
 #   --timeout    seconds each `git ls-remote` and each `git push` may take (default 60); a call that exceeds it is an unreachable remote / a failed push
+#   --owned-orgs comma-separated own organisations: when given, a repository is pushed only when EVERY url and push url of EVERY remote names one of them (lib_safe repo_owned; WF17-cpa REPO-3a),
+#                else `REFUSED <repo> repo_not_owned`, exit 20, nothing pushed for it
 # Per repository   outgoing U = `git rev-list --topo-order --reverse <branch> --not <every live remote tip held locally>`:
 #   - a commit of U that is not a CPA commit (trailer `CPA-Run: <id>` AND a row with its sha in `<audit>/<id>/commits.tsv`; a missing,
 #     copied or forged trailer proves nothing) withholds every push of the repository: exit 20 `unrecorded_local_commit` naming it
@@ -56,11 +58,11 @@
 #         tests use local bare remotes only.
 set -u
 D="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$D/lib_safe.sh"
-die() { echo "push_recursive: $1: $2" >&2; exit 20; }
+die() { printf 'REASON\t%s\n' "$1"; echo "push_recursive: $1: $2" >&2; exit 20; }
 for a in "$@"; do
   case "$a" in --force|--force=*|--force-with-lease|--force-with-lease=*|-f|+*|--mirror|--delete|-d|--prune|--all|--tags) die force_refused "$(printf '%q' "$a")" ;; esac
 done
-MAIN=""; BR=""; RUND=""; AUD=""; REPOS=(); REC=0; TMO=60; SCHEMA="specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json"
+MAIN=""; BR=""; RUND=""; AUD=""; REPOS=(); REC=0; TMO=60; OWNED=""; SCHEMA="specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json"
 while [ $# -gt 0 ]; do
   case "$1" in
     --main-root) [ $# -ge 2 ] || die usage "--main-root needs a value"; MAIN="$2"; shift 2 ;;
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
     --recursive) REC=1; shift ;;
     --schema) [ $# -ge 2 ] || die usage "--schema needs a value"; SCHEMA="$2"; shift 2 ;;
     --timeout) [ $# -ge 2 ] || die usage "--timeout needs a value"; TMO="$2"; shift 2 ;;
+    --owned-orgs) [ $# -ge 2 ] || die usage "--owned-orgs needs a value"; OWNED="$2"; shift 2 ;;
     *) die usage "unknown argument $(printf '%q' "$1")" ;;
   esac
 done
@@ -123,25 +126,14 @@ bump() { # bump <code>: precedence 20 > 11 > 14 > 0
 }
 # release state of a verdict path for a run id: prints ok or a reason
 release_state() { # release_state <verdict path> <run id>
-  local vp="$1" rid="$2"
+  local vp="$1" rid="$2" st
   safe_relpath "$vp" || { echo unsafe_path; return; }
   git -C "$MAIN" cat-file -e "HEAD:$vp" 2>/dev/null || { echo absent; return; }
   git -C "$MAIN" cat-file -e "HEAD:$SCHEMA" 2>/dev/null || { echo schema_absent; return; }
   git -C "$MAIN" cat-file blob "HEAD:$vp" > "$W/verdict.json" 2>/dev/null; git -C "$MAIN" cat-file blob "HEAD:$SCHEMA" > "$W/schema.json" 2>/dev/null
-  python3 - "$W/schema.json" "$W/verdict.json" "$rid" <<'PY'
-import json, sys
-try:
-    schema = json.load(open(sys.argv[1])); v = json.load(open(sys.argv[2]))
-except Exception: print('invalid'); sys.exit()
-try:
-    import jsonschema; jsonschema.validate(v, schema)
-except ImportError:
-    for k in schema.get('required', []):
-        if k not in v: print('invalid'); sys.exit()
-except Exception: print('invalid'); sys.exit()
-if v.get('verdict') != 'GO' or v.get('blocking_findings') != 0: print('not_go'); sys.exit()
-print('ok' if any(isinstance(e, dict) and e.get('cpa_run') == sys.argv[3] for e in (v.get('covers_runs') or [])) else 'not_covered')
-PY
+  # the ONE verdict predicate (verdict_go.py): schema-valid, GO, blocking_findings an integer 0, the run listed; without jsonschema it is a refusal, never a reduced check (VERDICT-5)
+  st="$(python3 -I "$D/verdict_go.py" --schema "$W/schema.json" --verdict "$W/verdict.json" --run-id "$rid" 2>"$W/vg.err")" || die tool_absent "verdict_go.py: $(head -c 200 "$W/vg.err")"
+  echo "$st"
 }
 # pin_held <submodule dir> <sha>: 0 when EVERY remote of the submodule advertises <sha> or a descendant of it on a branch or tag tip (a fresh clone of the parent
 # then fetches it), else 1 with the reason in PINWHY. The advertisement is read live (`git ls-remote`), so a commit the deeper push of THIS run published counts.
@@ -180,11 +172,13 @@ gl_load() {
   git -C "$1" ls-tree -r -z "$2" >"$lf" 2>/dev/null || { rm -f "$lf"; return 1; }
   while IFS= read -r -d '' e; do case "$e" in 160000\ commit\ *) rest="${e#160000 commit }"; _gl["${rest#*$'\t'}"]="${rest%%$'\t'*}" ;; esac; done < "$lf"; rm -f "$lf"; return 0
 }
-trailer() { git -C "$1" log -1 --format=%B "$2" 2>/dev/null | awk -v k="$3" 'index($0,k": ")==1 {v=substr($0,length(k)+3)} END{print v}'; }
+trailer() { # trailer <dir> <sha> <key>: the value of the LAST `key: value` line of the FINAL trailer block of the message only (a body line that reads like a trailer is not one; MSG-1)
+  git -C "$1" log -1 --format=%B "$2" 2>/dev/null | git interpret-trailers --parse 2>/dev/null | awk -v k="$3" 'index($0,k": ")==1 {v=substr($0,length(k)+3)} END{print v}'; }
 for key in "${LIST[@]}"; do
   if [ "$key" = . ]; then dir="$MAIN"; else dir="$MAIN/$key"; fi
   is_root "$dir" || { printf 'REFUSED\t%s\tnot_a_repository\t-\n' "$key"; bump 20; continue; }
   g() { git -C "$dir" "$@"; }
+  if [ -n "$OWNED" ] && ! repo_owned "$dir" "$OWNED"; then printf 'REFUSED\t%s\trepo_not_owned\tevery url and push url of every remote must name an own organisation\n' "$key"; bump 20; continue; fi
   # remotes and their URLs, validated before any use
   REM=(); bad=0
   # the remote list is read first, so its status is not lost (a failing `git remote` is no "no remotes"; WF6 W6-12)

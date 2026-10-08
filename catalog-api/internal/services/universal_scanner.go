@@ -7,8 +7,10 @@ import (
 	"catalogizer/internal/eventbus"
 	"catalogizer/models"
 	"context"
+	"errors"
 	"fmt"
 	"mime"
+	pathpkg "path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -64,7 +66,10 @@ type ScanStatus struct {
 	FilesDeleted    int64
 	ErrorCount      int64
 	Status          string // running, completed, failed, cancelled
-	mu              sync.RWMutex
+	// Reason is the machine-readable reason of a failed or cancelled scan (empty otherwise). PA-03: a scan that did not complete says why.
+	Reason  string
+	secrets []string // literal secrets of the storage root, scrubbed from Reason (never exported, never copied into a snapshot)
+	mu      sync.RWMutex
 }
 
 // ProtocolScanner defines protocol-specific scanning behavior
@@ -118,9 +123,14 @@ func NewUniversalScanner(db *database.DB, logger *zap.Logger, renameTracker *Uni
 	// Register protocol scanners
 	scanner.RegisterProtocolScanner("local", NewLocalScanner(db, logger))
 	scanner.RegisterProtocolScanner("smb", NewSMBScanner(db, logger))
-	scanner.RegisterProtocolScanner("ftp", NewFTPScanner(logger))
-	scanner.RegisterProtocolScanner("nfs", NewNFSScanner(logger))
-	scanner.RegisterProtocolScanner("webdav", NewWebDAVScanner(logger))
+	scanner.RegisterProtocolScanner("ftp", NewFTPScanner(logger).WithDB(db))
+	scanner.RegisterProtocolScanner("nfs", NewNFSScanner(logger).WithDB(db))
+	scanner.RegisterProtocolScanner("webdav", NewWebDAVScanner(logger).WithDB(db))
+	// Pluggable protocols (sftp, ftps, nfs3, ...) registered before the scanner exists get the generic scanner too; later ones are
+	// resolved on demand in processScanJob.
+	for _, proto := range filesystem.RegisteredProtocols() {
+		scanner.RegisterProtocolScanner(proto, NewGenericProtocolScanner(proto, db, logger))
+	}
 
 	return scanner
 }
@@ -142,11 +152,14 @@ func (s *UniversalScanner) publishScanEvent(job ScanJob, status *ScanStatus, sca
 	}
 
 	eventType := eventbus.EventScanCompleted
+	snapshot := status.GetSnapshot()
 	if scanErr != nil {
 		eventType = eventbus.EventScanFailed
+		if snapshot.Status == "cancelled" {
+			eventType = eventbus.EventScanCancelled
+		}
 	}
 
-	snapshot := status.GetSnapshot()
 	payload := map[string]interface{}{
 		"job_id":          job.ID,
 		"storage_root":    job.StorageRoot.Name,
@@ -160,7 +173,9 @@ func (s *UniversalScanner) publishScanEvent(job ScanJob, status *ScanStatus, sca
 		"error_count":     snapshot.ErrorCount,
 	}
 	if scanErr != nil {
-		payload["error"] = scanErr.Error()
+		// The scrubbed reason, never scanErr.Error(): a client error can embed a URL with credentials (WF22 R9).
+		payload["error"] = snapshot.Reason
+		payload["reason"] = snapshot.Reason
 	}
 
 	evt := eventbus.NewEvent(eventType, "universal-scanner", payload)
@@ -228,22 +243,30 @@ func (s *UniversalScanner) scanWorker(workerID int) {
 
 // processScanJob processes a single scan job
 func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
-	// Panic recovery: log the panic, update status to failed, increment error_count, and publish event
+	// Panic recovery: log the panic, move the VISIBLE status to failed (with a reason), increment error_count, and publish the event. The
+	// active status entry is the one clients poll; leaving it "running" for the 60 s retention window would hide the failure (WF22 P0).
 	defer func() {
 		if r := recover(); r != nil {
 			s.logger.Error("Panic recovered in processScanJob",
 				zap.String("job_id", job.ID),
 				zap.String("storage_root", job.StorageRoot.Name),
 				zap.Any("panic", r))
-			status := &ScanStatus{
-				JobID:           job.ID,
-				StorageRootName: job.StorageRoot.Name,
-				Protocol:        job.StorageRoot.Protocol,
-				StartTime:       time.Now(),
-				Status:          "failed",
-				ErrorCount:      1,
+			panicErr := fmt.Errorf("panic: %v", r)
+			s.activeScansMu.RLock()
+			status := s.activeScans[job.ID]
+			s.activeScansMu.RUnlock()
+			if status == nil {
+				status = &ScanStatus{
+					JobID:           job.ID,
+					StorageRootName: job.StorageRoot.Name,
+					Protocol:        job.StorageRoot.Protocol,
+					StartTime:       time.Now(),
+					secrets:         secretsOf(job.StorageRoot),
+				}
 			}
-			s.publishScanEvent(job, status, fmt.Errorf("panic: %v", r))
+			status.incrementCounters(0, 0, 0, 0, 1)
+			status.fail(panicErr)
+			s.publishScanEvent(job, status, panicErr)
 		}
 	}()
 
@@ -269,6 +292,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		Protocol:        job.StorageRoot.Protocol,
 		StartTime:       time.Now(),
 		Status:          "running",
+		secrets:         secretsOf(job.StorageRoot),
 	}
 
 	// Track active scan
@@ -296,12 +320,18 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 	s.protocolScannersMu.RLock()
 	protocolScanner, exists := s.protocolScanners[job.StorageRoot.Protocol]
 	s.protocolScannersMu.RUnlock()
+	if !exists && filesystem.IsRegisteredProtocol(job.StorageRoot.Protocol) {
+		// A protocol registered after this scanner was created: the generic scanner handles it.
+		protocolScanner = NewGenericProtocolScanner(job.StorageRoot.Protocol, s.db, s.logger)
+		s.RegisterProtocolScanner(job.StorageRoot.Protocol, protocolScanner)
+		exists = true
+	}
 	if !exists {
 		s.logger.Error("No scanner for protocol",
 			zap.String("protocol", job.StorageRoot.Protocol),
 			zap.String("job_id", job.ID))
-		status.updateStatus("failed")
 		scanErr := fmt.Errorf("no scanner for protocol %s", job.StorageRoot.Protocol)
+		status.fail(scanErr)
 		s.publishScanEvent(job, status, scanErr)
 		return
 	}
@@ -318,7 +348,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 			zap.String("protocol", job.StorageRoot.Protocol),
 			zap.String("job_id", job.ID),
 			zap.Error(err))
-		status.updateStatus("failed")
+		status.fail(err)
 		s.publishScanEvent(job, status, err)
 		return
 	}
@@ -331,7 +361,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 			zap.String("storage_root", job.StorageRoot.Name),
 			zap.Error(err))
 		status.incrementCounters(0, 0, 0, 0, 1)
-		status.updateStatus("failed")
+		status.fail(err)
 		s.publishScanEvent(job, status, err)
 		return
 	}
@@ -342,7 +372,12 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		s.logger.Error("Scan failed",
 			zap.String("job_id", job.ID),
 			zap.Error(err))
-		status.updateStatus("failed")
+		// Only an operator CANCELLATION is "cancelled"; a deadline is a failure (the scan did not finish), reported with kind "timeout" (WF22 R7).
+		if job.Context != nil && job.Context.Err() != nil && errors.Is(err, job.Context.Err()) && !errors.Is(job.Context.Err(), context.DeadlineExceeded) {
+			status.cancel(err)
+		} else {
+			status.fail(err)
+		}
 		s.publishScanEvent(job, status, err)
 		return
 	}
@@ -392,85 +427,10 @@ func (s *UniversalScanner) GetAllActiveScanStatuses() map[string]*ScanStatus {
 	return statuses
 }
 
-// storageRootToSettings converts StorageRoot to filesystem settings
+// storageRootToSettings converts StorageRoot to filesystem settings. PA-01: it delegates to filesystem.SettingsFromRoot, the single
+// settings-key vocabulary shared with the client factory, the stream handler and the comic-pages handler.
 func (s *UniversalScanner) storageRootToSettings(root *models.StorageRoot) map[string]interface{} {
-	settings := make(map[string]interface{})
-
-	switch root.Protocol {
-	case "local":
-		if root.Path != nil {
-			settings["base_path"] = *root.Path
-		}
-
-	case "smb":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Port != nil {
-			settings["port"] = *root.Port
-		}
-		if root.Path != nil {
-			settings["share"] = *root.Path
-		}
-		// Resolve credentials: direct fields first, then identity_index from options.
-		// The probe-and-ingest pipeline stores {"identity_index": N} in options and
-		// leaves username/password NULL — the scanner must resolve the identity from
-		// CATALOGIZER_IDENTITY_N_* env vars (§11.4.6 no-guessing, §11.4.10 no secret log).
-		user, pass, dom := ResolveSMBIdentity(root)
-		if user != "" {
-			settings["username"] = user
-		}
-		if pass != "" {
-			settings["password"] = pass
-		}
-		if dom != "" {
-			settings["domain"] = dom
-		}
-		if root.Domain != nil {
-			settings["domain"] = *root.Domain
-		}
-
-	case "ftp":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Port != nil {
-			settings["port"] = *root.Port
-		}
-		if root.Username != nil {
-			settings["username"] = *root.Username
-		}
-		if root.Password != nil {
-			settings["password"] = *root.Password
-		}
-
-	case "nfs":
-		if root.Host != nil {
-			settings["host"] = *root.Host
-		}
-		if root.Path != nil {
-			settings["export_path"] = *root.Path
-		}
-		if root.MountPoint != nil {
-			settings["mount_point"] = *root.MountPoint
-		}
-		if root.Options != nil {
-			settings["options"] = *root.Options
-		}
-
-	case "webdav":
-		if root.URL != nil {
-			settings["url"] = *root.URL
-		}
-		if root.Username != nil {
-			settings["username"] = *root.Username
-		}
-		if root.Password != nil {
-			settings["password"] = *root.Password
-		}
-	}
-
-	return settings
+	return filesystem.SettingsFromRoot(root, ResolveSMBIdentity)
 }
 
 // updateStatus safely updates the scan status.
@@ -480,6 +440,35 @@ func (s *ScanStatus) updateStatus(newStatus string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.Status = newStatus
+}
+
+// fail marks the scan failed and records why. The reason is scrubbed of credentials (scrubSecrets) before it is stored.
+func (s *ScanStatus) fail(err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.Status = "failed"
+	if err != nil {
+		s.Reason = scrubSecrets(err.Error(), s.secrets)
+	}
+}
+
+// cancel marks the scan cancelled and records why.
+func (s *ScanStatus) cancel(err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.Status = "cancelled"
+	if err != nil {
+		s.Reason = scrubSecrets(err.Error(), s.secrets)
+	}
+}
+
+// setNote records a remark on a scan that did not fail (for example the sub-directories it had to skip). It never overwrites a failure reason.
+func (s *ScanStatus) setNote(msg string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.Reason == "" {
+		s.Reason = scrubSecrets(msg, s.secrets)
+	}
 }
 
 // updateCurrentPath safely updates the current path being scanned
@@ -516,6 +505,7 @@ func (s *ScanStatus) GetSnapshot() ScanStatus {
 		FilesDeleted:    s.FilesDeleted,
 		ErrorCount:      s.ErrorCount,
 		Status:          s.Status,
+		Reason:          s.Reason,
 	}
 }
 
@@ -561,7 +551,7 @@ func (s *LocalScanner) scanDirectory(ctx context.Context, client filesystem.File
 		default:
 		}
 
-		fullPath := filepath.Join(path, file.Name)
+		fullPath := pathpkg.Join(path, file.Name) // a catalog path is a slash path whatever the host OS (WF22 X1)
 
 		// Process file/directory
 		if err := s.processFileInfo(ctx, client, fullPath, file, job, status); err != nil {
@@ -652,7 +642,7 @@ func (s *SMBScanner) scanDirectory(ctx context.Context, client filesystem.FileSy
 			default:
 			}
 
-			fullPath := filepath.Join(path, file.Name)
+			fullPath := pathpkg.Join(path, file.Name) // a remote path is a slash path whatever the host OS (PA-01 filepath->path)
 
 			if err := insertFileRecord(ctx, s.db, fullPath, file, job, status, s.logger); err != nil {
 				s.logger.Error("Failed to insert file record",
@@ -930,7 +920,7 @@ func insertFileRecord(ctx context.Context, db *database.DB, path string, file *f
 
 	// Resolve parent directory ID (if path has a parent)
 	var parentID *int64
-	parentPath := filepath.Dir(path)
+	parentPath := pathpkg.Dir(path) // a remote path is a slash path whatever the host OS
 	if parentPath != "." && parentPath != "/" && parentPath != "" {
 		logger.Warn("Calling ensureDirectoryPathExists for file", zap.String("path", path), zap.String("parentPath", parentPath))
 		pid, err := ensureDirectoryPathExists(ctx, db, storageRootID, parentPath, logger)
@@ -968,12 +958,27 @@ func insertFileRecord(ctx context.Context, db *database.DB, path string, file *f
 		_, _ = tx.ExecContext(ctx, "PRAGMA foreign_keys = OFF")
 
 		logger.Warn("SQLite file insertion", zap.String("path", path), zap.Bool("isDir", isDir), zap.Any("parentID", parentID), zap.Int64("storageRootID", storageRootID))
-		_, err = tx.ExecContext(ctx,
-			`INSERT OR REPLACE INTO files (storage_root_id, path, name, extension, mime_type, file_type, size, is_directory, modified_at, last_scan_at, parent_id)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`,
-			storageRootID, path, name, ext, mimeType, fileType, file.Size,
-			isDir, modifiedAt, parentID,
+		// UPDATE-then-INSERT, not INSERT OR REPLACE: REPLACE deletes the old row and inserts a new one, so every rescan renumbered files.id while
+		// media_files / media_items point at it (the foreign-key check is off here). The row keeps its id, created_at and hashes (WF22 R17b).
+		// Not "INSERT .. ON CONFLICT DO UPDATE" either: the SQLite bundled with go-sqlcipher is older than 3.24 and rejects the syntax. Both
+		// statements run in one transaction, which holds SQLite's write lock from the UPDATE on, so no other writer can slip a row in between.
+		res, uerr := tx.ExecContext(ctx,
+			`UPDATE files SET name = ?, extension = ?, mime_type = ?, file_type = ?, size = ?, is_directory = ?, modified_at = ?,
+			   last_scan_at = CURRENT_TIMESTAMP, parent_id = COALESCE(?, parent_id), deleted = 0, deleted_at = NULL
+			 WHERE storage_root_id = ? AND path = ?`,
+			name, ext, mimeType, fileType, file.Size, isDir, modifiedAt, parentID, storageRootID, path,
 		)
+		err = uerr
+		if err == nil {
+			if n, _ := res.RowsAffected(); n == 0 {
+				_, err = tx.ExecContext(ctx,
+					`INSERT INTO files (storage_root_id, path, name, extension, mime_type, file_type, size, is_directory, modified_at, last_scan_at, parent_id)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`,
+					storageRootID, path, name, ext, mimeType, fileType, file.Size,
+					isDir, modifiedAt, parentID,
+				)
+			}
+		}
 		if err != nil {
 			return fmt.Errorf("insert file %s: %w", path, err)
 		}
@@ -1031,100 +1036,4 @@ func classifyFileType(ext string) string {
 	}
 }
 
-// Similar implementations for FTP, NFS, and WebDAV scanners...
-
-type FTPScanner struct {
-	logger *zap.Logger
-}
-
-func NewFTPScanner(logger *zap.Logger) *FTPScanner {
-	return &FTPScanner{logger: logger}
-}
-
-func (s *FTPScanner) ScanPath(ctx context.Context, client filesystem.FileSystemClient, job ScanJob, status *ScanStatus) error {
-	// FTP-specific scanning logic
-	return nil
-}
-
-func (s *FTPScanner) GetScanStrategy() ScanStrategy {
-	return ScanStrategy{
-		UseRecursiveListing:     false,
-		BatchSize:               100,
-		ParallelDirectories:     false,
-		ChecksumCalculation:     false,
-		MetadataExtraction:      false,
-		RealTimeChangeDetection: false,
-	}
-}
-
-func (s *FTPScanner) SupportsIncrementalScan() bool {
-	return false
-}
-
-func (s *FTPScanner) GetOptimalBatchSize() int {
-	return 100
-}
-
-type NFSScanner struct {
-	logger *zap.Logger
-}
-
-func NewNFSScanner(logger *zap.Logger) *NFSScanner {
-	return &NFSScanner{logger: logger}
-}
-
-func (s *NFSScanner) ScanPath(ctx context.Context, client filesystem.FileSystemClient, job ScanJob, status *ScanStatus) error {
-	// NFS-specific scanning logic
-	return nil
-}
-
-func (s *NFSScanner) GetScanStrategy() ScanStrategy {
-	return ScanStrategy{
-		UseRecursiveListing:     true,
-		BatchSize:               800,
-		ParallelDirectories:     true,
-		ChecksumCalculation:     true,
-		MetadataExtraction:      true,
-		RealTimeChangeDetection: false,
-	}
-}
-
-func (s *NFSScanner) SupportsIncrementalScan() bool {
-	return true
-}
-
-func (s *NFSScanner) GetOptimalBatchSize() int {
-	return 800
-}
-
-type WebDAVScanner struct {
-	logger *zap.Logger
-}
-
-func NewWebDAVScanner(logger *zap.Logger) *WebDAVScanner {
-	return &WebDAVScanner{logger: logger}
-}
-
-func (s *WebDAVScanner) ScanPath(ctx context.Context, client filesystem.FileSystemClient, job ScanJob, status *ScanStatus) error {
-	// WebDAV-specific scanning logic
-	return nil
-}
-
-func (s *WebDAVScanner) GetScanStrategy() ScanStrategy {
-	return ScanStrategy{
-		UseRecursiveListing:     false,
-		BatchSize:               200,
-		ParallelDirectories:     false,
-		ChecksumCalculation:     false,
-		MetadataExtraction:      true,
-		RealTimeChangeDetection: false,
-	}
-}
-
-func (s *WebDAVScanner) SupportsIncrementalScan() bool {
-	return false
-}
-
-func (s *WebDAVScanner) GetOptimalBatchSize() int {
-	return 200
-}
+// FTP, NFS and WebDAV (and every registered protocol) are scanned by GenericScanner (generic_scanner.go, PA-03).

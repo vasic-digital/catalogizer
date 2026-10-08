@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "wf24-baseline-3006365",
+  "at": "2026-10-08T00:39:17Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 57762377728,
+      "free_after": 56929741404,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 57762353152,
+      "free_after": 56929716828,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

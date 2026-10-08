@@ -1,0 +1,36 @@
+workdir /dev/shm/const0108b/tmp/cg_safe_tests/memfloor_mut.OLqMDp
+RESULT GOLD PASS unmutated tooling: U47-U61 all GREEN (golden-false)
+RESULT MF1 PASS mutant KILLED (env knob ignored): named case(s) U50,U51,U52 turn RED
+RESULT MF2 PASS mutant KILLED (limits-file GiB converted with the wrong factor): named case(s) U49,U53 turn RED
+RESULT MF3 PASS mutant KILLED (lower-bound check removed): named case(s) U54 turn RED
+RESULT MF4 PASS mutant KILLED (lower bound back to 4 GiB (S3 heap invariant lost)): named case(s) U54 turn RED
+RESULT MF5 PASS mutant KILLED (regular-file check weakened to exists (dir/devnull/FIFO)): named case(s) U56 turn RED
+RESULT MF6 PASS mutant KILLED (echoed floor stuck at the default): named case(s) U49,U50 turn RED
+RESULT MF7 PASS mutant KILLED (memory floor not enforced): named case(s) U47,U49,U50 turn RED
+RESULT MF8 PASS mutant KILLED (limits file never consulted): named case(s) U49,U55,U56 turn RED
+RESULT R01 PASS mutant KILLED (refusal printed but not enforced (ok=1 dropped)): named case(s) U52 turn RED
+RESULT R02 PASS mutant KILLED (memory FAIL printed but not enforced (ok=1 dropped)): named case(s) U47,U49 turn RED
+RESULT R03 PASS mutant KILLED (equality boundary: mem == floor refused): named case(s) U48,U49 turn RED
+RESULT R04 PASS mutant KILLED (memory check ALWAYS fails (golden-TRUE absent)): named case(s) U48,U49 turn RED
+RESULT R05 PASS mutant KILLED (duplicate keys no longer refused): named case(s) U55 turn RED
+RESULT R06 PASS mutant KILLED (key anchor ^ dropped (a commented-out key is honoured)): named case(s) U57 turn RED
+RESULT R07 PASS mutant KILLED (precedence: env ignored whenever a limits file is named): named case(s) U50 turn RED
+RESULT R08 PASS mutant KILLED (lower bound 2 GiB): named case(s) U54 turn RED
+RESULT R09 PASS mutant KILLED (existing-but-unreadable file no longer refused as such): named case(s) U56 turn RED
+RESULT R10 PASS mutant KILLED (below-bound value silently clamped to default instead of refused): named case(s) U54 turn RED
+RESULT R11 PASS mutant KILLED (FAIL-message GiB conversion wrong): named case(s) U50 turn RED
+RESULT R12 PASS mutant KILLED (empty value accepted by the digit check): named case(s) U52 turn RED
+RESULT R13 PASS mutant KILLED (env value scaled x10): named case(s) U50 turn RED
+RESULT R14 PASS mutant KILLED (default floor halved to 16 GiB): named case(s) U47 turn RED
+RESULT R15 PASS mutant KILLED (digit class widened ("20 x" reaches arithmetic)): named case(s) U52 turn RED
+RESULT R16 PASS mutant KILLED (sanitiser removed (echo injection, S8)): named case(s) U58 turn RED
+RESULT R17 PASS mutant KILLED (env may lower the floor (S9)): named case(s) U51 turn RED
+RESULT R18 PASS mutant KILLED (GiB digit cap removed (overflow wraps to a low floor, S4)): named case(s) U52 turn RED
+RESULT R19 PASS mutant KILLED (size cap removed (S7)): named case(s) U56 turn RED
+RESULT R20 PASS mutant KILLED (empty limits file accepted (S6)): named case(s) U56 turn RED
+RESULT R21 PASS mutant KILLED (indented/nested key accepted (S6)): named case(s) U56 turn RED
+RESULT R22 PASS mutant KILLED (convention-path discovery dropped (S9)): named case(s) U59 turn RED
+RESULT R23 PASS mutant KILLED (octal parsing reintroduced (S1/S2)): named case(s) U53,U61 turn RED
+RESULT R24 PASS mutant KILLED (heap floor halved: derived lower bound shrinks, S3 invariant case catches it): named case(s) U54 turn RED
+RESULT R25 PASS negative control (NEGATIVE CONTROL (identity edit): every case stays green): all cases stay GREEN
+SUMMARY cases=34 failed=0

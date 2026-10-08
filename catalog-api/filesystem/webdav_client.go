@@ -2,11 +2,12 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"path/filepath"
+	pathpkg "path"
 	"strconv"
 	"strings"
 	"time"
@@ -28,14 +29,35 @@ type WebDAVClient struct {
 	connected bool
 }
 
-// NewWebDAVClient creates a new WebDAV client
+// MaxPropfindBytes bounds the size of one PROPFIND answer. An answer above it is an ERROR (the listing would be incomplete), never a truncation.
+// A variable so tests can lower it.
+var MaxPropfindBytes int64 = 64 << 20
+
+// redactURL renders raw for an error message WITHOUT its credentials: a URL userinfo password becomes "xxxxx" (url.URL.Redacted). An
+// unparsable value is not echoed at all (it may be a credential-bearing string that failed to parse).
+func redactURL(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return "<unparsable url>"
+	}
+	return u.Redacted()
+}
+
+// NewWebDAVClient creates a new WebDAV client. config.Path is the root collection UNDER the URL's own path (WF22 F5): url
+// https://nas/remote.php/dav/files/alice with path /Movies addresses .../alice/Movies, it does not replace the URL's path.
 func NewWebDAVClient(config *WebDAVConfig) (*WebDAVClient, error) {
 	baseURL, err := url.Parse(config.URL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid WebDAV URL %q: %w", config.URL, err)
+		// url.Error would echo the whole URL, userinfo included, into an error that ends up in the scan "reason" (WF22 R9).
+		var ue *url.Error
+		if errors.As(err, &ue) {
+			return nil, fmt.Errorf("invalid WebDAV URL: %v", ue.Err)
+		}
+		return nil, fmt.Errorf("invalid WebDAV URL")
 	}
 	if config.Path != "" && config.Path != "/" {
-		baseURL.Path = config.Path
+		baseURL.Path = pathpkg.Join("/", baseURL.Path, config.Path)
+		baseURL.RawPath = ""
 	}
 
 	return &WebDAVClient{
@@ -92,17 +114,13 @@ func (c *WebDAVClient) TestConnection(ctx context.Context) error {
 	return c.Connect(ctx) // Re-test connection
 }
 
-// resolveURL resolves a relative path to a full WebDAV URL
-func (c *WebDAVClient) resolveURL(path string) string {
-	// Clean the path and prevent directory traversal
-	cleanPath := filepath.Clean(path)
-	if strings.Contains(cleanPath, "..") {
-		// Prevent directory traversal attacks
-		cleanPath = strings.ReplaceAll(cleanPath, "..", "")
-	}
-
+// resolveURL resolves a relative path to a full WebDAV URL. The path is a slash path whatever the host OS and is cleaned as if rooted, so a
+// ".." SEGMENT cannot climb out of the base; a name that merely CONTAINS ".." ("Wait.. Live", "...And Justice for All") is kept as it is (WF22 R11).
+func (c *WebDAVClient) resolveURL(p string) string {
+	cleanPath := pathpkg.Clean("/" + p)
 	u := *c.baseURL
-	u.Path = filepath.Join(u.Path, cleanPath)
+	u.Path = pathpkg.Join(u.Path, cleanPath)
+	u.RawPath = ""
 	return u.String()
 }
 
@@ -124,12 +142,12 @@ func (c *WebDAVClient) ReadFile(ctx context.Context, path string) (io.ReadCloser
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve WebDAV file %s: %w", fullURL, err)
+		return nil, fmt.Errorf("failed to retrieve WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, fullURL)
+		return nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	return resp.Body, nil
@@ -153,12 +171,12 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to upload WebDAV file %s: %w", fullURL, err)
+		return fmt.Errorf("failed to upload WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, fullURL)
+		return fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	return nil
@@ -182,12 +200,12 @@ func (c *WebDAVClient) GetFileInfo(ctx context.Context, path string) (*FileInfo,
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get WebDAV file info %s: %w", fullURL, err)
+		return nil, fmt.Errorf("failed to get WebDAV file info %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, fullURL)
+		return nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	// Parse content length
@@ -198,8 +216,8 @@ func (c *WebDAVClient) GetFileInfo(ctx context.Context, path string) (*FileInfo,
 		}
 	}
 
-	// Parse last modified
-	modTime := time.Now()
+	// Parse last modified; a missing or unparsable value is the zero time, never "now" (a made-up time would look like a change on every scan)
+	var modTime time.Time
 	if lm := resp.Header.Get("Last-Modified"); lm != "" {
 		if t, err := time.Parse(time.RFC1123, lm); err == nil {
 			modTime = t
@@ -210,7 +228,7 @@ func (c *WebDAVClient) GetFileInfo(ctx context.Context, path string) (*FileInfo,
 	isDir := strings.HasSuffix(path, "/") || resp.Header.Get("Content-Type") == "httpd/unix-directory"
 
 	return &FileInfo{
-		Name:    filepath.Base(path),
+		Name:    pathpkg.Base(path),
 		Size:    size,
 		ModTime: modTime,
 		IsDir:   isDir,
@@ -226,6 +244,11 @@ func (c *WebDAVClient) ListDirectory(ctx context.Context, path string) ([]*FileI
 	}
 
 	fullURL := c.resolveURL(path)
+	// A collection URL without a trailing slash makes servers answer 301 to the slash form, and the Go client then replays the PROPFIND as a GET
+	// (status 200 with an HTML page). Ask for the slash form directly.
+	if !strings.HasSuffix(fullURL, "/") {
+		fullURL += "/"
+	}
 	req, err := http.NewRequestWithContext(ctx, "PROPFIND", fullURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create PROPFIND request: %w", err)
@@ -254,112 +277,25 @@ func (c *WebDAVClient) ListDirectory(ctx context.Context, path string) ([]*FileI
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list WebDAV directory %s: %w", fullURL, err)
+		return nil, fmt.Errorf("failed to list WebDAV directory %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusMultiStatus {
-		return nil, fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, fullURL)
+		return nil, fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, redactURL(fullURL))
 	}
 
-	// Parse XML response
-	bodyBytes, err := io.ReadAll(resp.Body)
+	// PA-03: a namespace-aware, streaming parse (webdav_propfind.go; the former string splitting found nothing in an Apache answer). The read is
+	// bounded by MaxPropfindBytes and by the entry limit the scanner put in ctx: an oversized answer is an error, never a silent truncation.
+	limit, _ := ListLimit(ctx)
+	entries, err := parsePropfindStream(&boundedReader{r: resp.Body, max: MaxPropfindBytes}, fullURL, limit)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read WebDAV response: %w", err)
+		if errors.Is(err, errPropfindTooLarge) {
+			return nil, fmt.Errorf("WebDAV directory %s: %w (bound %d bytes)", redactURL(fullURL), err, MaxPropfindBytes)
+		}
+		return nil, fmt.Errorf("failed to read WebDAV response for %s: %w", redactURL(fullURL), err)
 	}
-
-	// Simple XML parsing for WebDAV multistatus response
-	var files []*FileInfo
-
-	// Parse the XML to extract file information
-	// This is a simplified parser - in production you might want to use a proper XML decoder
-	responseStr := string(bodyBytes)
-
-	// Find all <D:response> elements
-	responses := strings.Split(responseStr, "<D:response>")
-
-	for i := 1; i < len(responses); i++ { // Skip first element as it's before the first response
-		response := responses[i]
-
-		// Find the end of this response
-		endIndex := strings.Index(response, "</D:response>")
-		if endIndex == -1 {
-			continue
-		}
-		response = response[:endIndex]
-
-		// Extract href
-		hrefStart := strings.Index(response, "<D:href>")
-		hrefEnd := strings.Index(response, "</D:href>")
-		if hrefStart == -1 || hrefEnd == -1 {
-			continue
-		}
-		href := response[hrefStart+8 : hrefEnd]
-
-		// Skip the directory itself (usually the first response)
-		if href == fullURL || href == strings.TrimSuffix(fullURL, "/") {
-			continue
-		}
-
-		// Extract display name
-		displayName := filepath.Base(href)
-		nameStart := strings.Index(response, "<D:displayname>")
-		nameEnd := strings.Index(response, "</D:displayname>")
-		if nameStart != -1 && nameEnd != -1 {
-			displayName = response[nameStart+16 : nameEnd]
-		}
-
-		// Extract content length
-		var size int64 = 0
-		sizeStart := strings.Index(response, "<D:getcontentlength>")
-		sizeEnd := strings.Index(response, "</D:getcontentlength>")
-		if sizeStart != -1 && sizeEnd != -1 {
-			sizeStr := response[sizeStart+20 : sizeEnd]
-			if s, err := strconv.ParseInt(sizeStr, 10, 64); err == nil {
-				size = s
-			}
-		}
-
-		// Extract last modified date
-		modTime := time.Now()
-		modStart := strings.Index(response, "<D:getlastmodified>")
-		modEnd := strings.Index(response, "</D:getlastmodified>")
-		if modStart != -1 && modEnd != -1 {
-			modStr := response[modStart+20 : modEnd]
-			// Try RFC1123 format first
-			if t, err := time.Parse(time.RFC1123, modStr); err == nil {
-				modTime = t
-			} else if t, err := time.Parse("Mon, 2 Jan 2006 15:04:05 MST", modStr); err == nil {
-				modTime = t
-			}
-		}
-
-		// Check if it's a directory
-		isDir := false
-		if strings.Contains(response, "<D:resourcetype><D:collection/></D:resourcetype>") ||
-			strings.Contains(response, "<D:resourcetype><D:directory/></D:resourcetype>") {
-			isDir = true
-		}
-
-		// Create relative path from full URL
-		relPath := strings.TrimPrefix(href, fullURL)
-		if relPath == "" {
-			relPath = displayName
-		} else {
-			relPath = strings.TrimPrefix(relPath, "/")
-		}
-
-		files = append(files, &FileInfo{
-			Name:    displayName,
-			Size:    size,
-			ModTime: modTime,
-			IsDir:   isDir,
-			Mode:    0644, // Default mode
-			Path:    relPath,
-		})
-	}
-
-	return files, nil
+	return entries, nil
 }
 
 // FileExists checks if a file exists
@@ -380,7 +316,7 @@ func (c *WebDAVClient) FileExists(ctx context.Context, path string) (bool, error
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("failed to check WebDAV file existence %s: %w", fullURL, err)
+		return false, fmt.Errorf("failed to check WebDAV file existence %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
@@ -405,12 +341,12 @@ func (c *WebDAVClient) CreateDirectory(ctx context.Context, path string) error {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to create WebDAV directory %s: %w", fullURL, err)
+		return fmt.Errorf("failed to create WebDAV directory %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, fullURL)
+		return fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	return nil
@@ -434,12 +370,12 @@ func (c *WebDAVClient) DeleteDirectory(ctx context.Context, path string) error {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to delete WebDAV directory %s: %w", fullURL, err)
+		return fmt.Errorf("failed to delete WebDAV directory %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, fullURL)
+		return fmt.Errorf("WebDAV server returned status %d for directory %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	return nil
@@ -463,12 +399,12 @@ func (c *WebDAVClient) DeleteFile(ctx context.Context, path string) error {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to delete WebDAV file %s: %w", fullURL, err)
+		return fmt.Errorf("failed to delete WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, fullURL)
+		return fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
 
 	return nil
@@ -496,7 +432,7 @@ func (c *WebDAVClient) CopyFile(ctx context.Context, srcPath, dstPath string) er
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to copy WebDAV file from %s to %s: %w", srcURL, dstURL, err)
+		return fmt.Errorf("failed to copy WebDAV file from %s to %s: %w", redactURL(srcURL), redactURL(dstURL), err)
 	}
 	defer resp.Body.Close()
 

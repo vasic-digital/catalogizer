@@ -185,8 +185,10 @@ pre-commit --version
 # Check security gates
 ./scripts/security-gates.sh
 
-# Track coverage
-./scripts/track-coverage.sh
+# Track Go coverage (split lanes; two steps: submit the compile group, then collect the figure and record it)
+# ./scripts/coverage/track-coverage.sh submit --app catalog-api --src . --packages PKGLIST --state DIR
+# ./scripts/coverage/track-coverage.sh collect --state DIR --out OUT --item CAT-nnn
+# (contract: docs/scripts/track-coverage.md; ./scripts/track-coverage.sh is the older per-suite report script and measures none of this)
 
 # Run pre-commit on all files
 pre-commit run --all-files

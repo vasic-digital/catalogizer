@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"catalogizer/database"
+	"catalogizer/filesystem"
 	"catalogizer/internal/services"
 	"catalogizer/models"
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -44,18 +46,26 @@ type createStorageRootRequest struct {
 	Password *string `json:"password"`
 	Domain   *string `json:"domain"`
 	MaxDepth int     `json:"max_depth"`
+	// URL is the address of a WebDAV root (https://host/dav); MountPoint and Options are the NFS local mount point and mount options
+	// (for the other protocols Options is a JSON object with the tls / pin / credential-reference keys). WF22 H2: without these fields an
+	// sftp / webdav / nfs root could not be created through the API, so no scan of one could ever be queued.
+	URL        *string `json:"url"`
+	MountPoint *string `json:"mount_point"`
+	Options    *string `json:"options"`
+	// AllowEmpty marks a root that is expected to be empty: its scan may complete with 0 files instead of failing (default false).
+	AllowEmpty bool `json:"allow_empty"`
 }
 
-// supportedStorageProtocols enumerates the protocols a CreateStorageRoot
-// request may declare. Closes CATAPI-DEFECT-004 (the handler used to
-// accept arbitrary strings — gopher, foo, anything — and create
-// undriveable storage roots).
-var supportedStorageProtocols = map[string]struct{}{
-	"local":  {},
-	"smb":    {},
-	"ftp":    {},
-	"nfs":    {},
-	"webdav": {},
+// supportedStorageProtocol reports whether a CreateStorageRoot request may declare protocol. The set IS the set the client factory builds
+// (filesystem.DefaultClientFactory.SupportedProtocols: the built-ins plus every protocol registered through filesystem.RegisterProtocol), so
+// a protocol the scanner advertises is creatable and one it cannot drive is refused (CATAPI-DEFECT-004 closed against a single source, WF22 H2).
+func supportedStorageProtocol(protocol string) bool {
+	for _, p := range filesystem.NewDefaultClientFactory().SupportedProtocols() {
+		if p == protocol {
+			return true
+		}
+	}
+	return false
 }
 
 // CreateStorageRoot handles POST /api/v1/storage/roots.
@@ -64,7 +74,7 @@ var supportedStorageProtocols = map[string]struct{}{
 // idempotent upsert semantics the caller should use PUT
 // /api/v1/storage/roots/{id} instead.
 //
-// Validates Protocol against supportedStorageProtocols
+// Validates Protocol against supportedStorageProtocol
 // (CATAPI-DEFECT-004). Unknown protocols return 400 with an
 // explanatory message and the list of accepted values.
 func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
@@ -75,12 +85,28 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	}
 
 	// CATAPI-DEFECT-004: enforce protocol allowlist.
-	if _, ok := supportedStorageProtocols[req.Protocol]; !ok {
+	if !supportedStorageProtocol(req.Protocol) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":    "unsupported protocol",
 			"protocol": req.Protocol,
-			"accepted": []string{"local", "smb", "ftp", "nfs", "webdav"},
+			"accepted": filesystem.NewDefaultClientFactory().SupportedProtocols(),
 		})
+		return
+	}
+
+	// The root must be addressable by the settings contract: a WebDAV root without a url, or a port outside 1-65535, could never be scanned.
+	candidate := &models.StorageRoot{Protocol: req.Protocol, Host: req.Host, Port: req.Port, Path: req.Path, Username: req.Username, Password: req.Password,
+		Domain: req.Domain, URL: req.URL, MountPoint: req.MountPoint, Options: req.Options}
+	if req.Port != nil && (*req.Port < 1 || *req.Port > 65535) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "port must be 1-65535"})
+		return
+	}
+	if req.Protocol == "webdav" && (req.URL == nil || *req.URL == "") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "a webdav storage root needs a url"})
+		return
+	}
+	if err := filesystem.ValidateSettings(req.Protocol, filesystem.SettingsFromRoot(candidate, nil)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -106,10 +132,10 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	}
 
 	newID, insertErr := h.db.InsertReturningID(c.Request.Context(),
-		`INSERT INTO storage_roots (name, protocol, host, port, path, username, password, domain, enabled, max_depth)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO storage_roots (name, protocol, host, port, path, username, password, domain, url, mount_point, options, allow_empty, enabled, max_depth)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		req.Name, req.Protocol, req.Host, req.Port, req.Path,
-		req.Username, req.Password, req.Domain, true, req.MaxDepth,
+		req.Username, req.Password, req.Domain, req.URL, req.MountPoint, req.Options, req.AllowEmpty, true, req.MaxDepth,
 	)
 	if insertErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to create storage root: %v", insertErr)})
@@ -128,7 +154,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 // Returns all storage roots from the database.
 func (h *ScanHandler) GetStorageRoots(c *gin.Context) {
 	rows, err := h.db.QueryContext(c.Request.Context(),
-		`SELECT id, name, protocol, host, port, path, username, domain, enabled, max_depth,
+		`SELECT id, name, protocol, host, port, path, username, domain, url, mount_point, allow_empty, enabled, max_depth,
 		        created_at, updated_at, last_scan_at
 		 FROM storage_roots ORDER BY id`)
 	if err != nil {
@@ -143,15 +169,24 @@ func (h *ScanHandler) GetStorageRoots(c *gin.Context) {
 			id                   int64
 			name, protocol       string
 			host, path, username *string
-			domain               *string
+			domain, rawURL       *string
+			mountPoint           *string
 			port                 *int
-			enabled              bool
+			allowEmpty, enabled  bool
 			maxDepth             int
 			createdAt, updatedAt time.Time
 			lastScanAt           *time.Time
 		)
-		if err := rows.Scan(&id, &name, &protocol, &host, &port, &path, &username, &domain, &enabled, &maxDepth, &createdAt, &updatedAt, &lastScanAt); err != nil {
+		if err := rows.Scan(&id, &name, &protocol, &host, &port, &path, &username, &domain, &rawURL, &mountPoint, &allowEmpty, &enabled, &maxDepth, &createdAt, &updatedAt, &lastScanAt); err != nil {
 			continue
+		}
+		// The url of a WebDAV root may carry credentials in its userinfo: it is never returned with them.
+		var shownURL *string
+		if rawURL != nil {
+			if u, perr := url.Parse(*rawURL); perr == nil {
+				r := u.Redacted()
+				shownURL = &r
+			}
 		}
 		roots = append(roots, gin.H{
 			"id":           id,
@@ -162,6 +197,9 @@ func (h *ScanHandler) GetStorageRoots(c *gin.Context) {
 			"path":         path,
 			"username":     username,
 			"domain":       domain,
+			"url":          shownURL,
+			"mount_point":  mountPoint,
+			"allow_empty":  allowEmpty,
 			"enabled":      enabled,
 			"max_depth":    maxDepth,
 			"created_at":   createdAt,
@@ -290,19 +328,17 @@ func (h *ScanHandler) GetScanStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, scanStatusToJSON(jobID, &snapshot))
 }
 
-// loadStorageRoot reads a StorageRoot from the database by ID.
+// loadStorageRoot reads a StorageRoot from the database by ID. It selects every column the settings contract consumes
+// (models.StorageRootConnColumns): the url of a WebDAV root and the mount point of an NFS one included - the former column list left them out, so a
+// WebDAV or NFS scan queued through the API reached the client factory without its address (WF22 H1).
 func (h *ScanHandler) loadStorageRoot(ctx context.Context, id int64) (*models.StorageRoot, error) {
 	row := h.db.QueryRowContext(ctx,
-		`SELECT id, name, protocol, host, port, path, username, password, domain, options, enabled, max_depth
+		`SELECT id, name, enabled, max_depth, allow_empty, `+models.StorageRootConnColumns+`
 		 FROM storage_roots WHERE id = ?`, id)
 
 	var root models.StorageRoot
-	if err := row.Scan(
-		&root.ID, &root.Name, &root.Protocol,
-		&root.Host, &root.Port, &root.Path,
-		&root.Username, &root.Password, &root.Domain,
-		&root.Options, &root.Enabled, &root.MaxDepth,
-	); err != nil {
+	dest := append([]interface{}{&root.ID, &root.Name, &root.Enabled, &root.MaxDepth, &root.AllowEmpty}, root.ConnScanTargets()...)
+	if err := row.Scan(dest...); err != nil {
 		return nil, err
 	}
 	return &root, nil
@@ -324,5 +360,6 @@ func scanStatusToJSON(jobID string, s *services.ScanStatus) gin.H {
 		"files_updated":   s.FilesUpdated,
 		"files_deleted":   s.FilesDeleted,
 		"error_count":     s.ErrorCount,
+		"reason":          s.Reason,
 	}
 }

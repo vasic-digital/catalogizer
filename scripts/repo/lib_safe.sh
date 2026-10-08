@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # lib_safe.sh - argument validators shared by the WP-04 CPA helpers (check_no_ci, check_revision_headers, scope_check,
 # validate_cheap, commit_recursive, push_recursive). Sourced, never run.
 #
@@ -15,6 +15,7 @@
 #         `/`, the glob characters `* ? [`, a leading `:` pathspec magic). Callers also run git with GIT_LITERAL_PATHSPECS=1, so a value that
 #         slips past this layer is still never a pattern. safe_relpath alone is NOT enough for a declared path (WF2 review B1).
 LC_ALL=C
+_LS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 _no_ctl() { case "$1" in *[[:cntrl:]]*) return 1 ;; esac; return 0; }
 
@@ -64,3 +65,68 @@ safe_branch() { [ -n "$1" ] && case "$1" in -*) return 1 ;; esac; _no_ctl "$1" &
 safe_line() { _no_ctl "$1"; }
 # safe_dir_arg <d>: a directory operand given on a command line (repository, root, run dir): not option-like, no control character.
 safe_dir_arg() { [ -n "$1" ] && _no_ctl "$1" && case "$1" in -*) return 1 ;; esac; return 0; }
+
+# cpa_rundir_state <run dir>: the ONE predicate for the state of a CPA run directory (WF17-cpa MODEL-1: the launcher, its S0 close and the report listings use this and no other model of
+# "is that run alive"). Prints `finished` (report.json exists), `closed` (interrupted.json exists: a successor proved the run dead and recorded it), `live` (run.pid names a pid whose
+# /proc start ticks equal the recorded value; never a pgrep or cmdline match, never the pid embedded in the run id) or `interrupted`.
+cpa_rundir_state() {
+  local d="$1" pid st cur
+  [ -f "$d/report.json" ] && { echo finished; return 0; }
+  [ -f "$d/interrupted.json" ] && { echo closed; return 0; }
+  { read -r pid st < "$d/run.pid"; } 2>/dev/null
+  if [[ "${pid:-}" =~ ^[0-9]+$ ]] && [ "$pid" -gt 1 ] && [ -n "${st:-}" ]; then
+    cur="$(sed -e 's/^.*) //' "/proc/$pid/stat" 2>/dev/null | awk '{print $20}')"
+    if [ -n "$cur" ] && [ "$cur" = "$st" ]; then echo live; return 0; fi
+  fi
+  echo interrupted
+}
+# repo_owned <repo dir> <comma-separated own organisations>: the repository has at least one remote AND EVERY URL of every remote (`git remote get-url --all` and
+# `--push --all`) names an organisation of the own list (WF17-cpa REPO-3a). One extra remote or one extra push URL that names a third party makes the repository NOT owned: owned
+# means "everything this repository can push to is ours", never "some remote is ours". The organisation comes from scripts/audit/org_of.py, the one shared parser.
+repo_owned() {
+  local d="$1" own r u urlv org n=0 rl
+  own=",$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]'),"
+  [ -n "$2" ] || return 1
+  rl="$(git -C "$d" remote 2>/dev/null)" || return 1
+  [ -n "$rl" ] || return 1
+  for r in $rl; do
+    safe_remote "$r" || return 1
+    for u in "" "--push"; do
+      while IFS= read -r urlv; do
+        [ -n "$urlv" ] || continue; n=$((n+1))
+        org="$(python3 -I "$_LS_DIR/../audit/org_of.py" "$urlv" 2>/dev/null | head -1 | tr '[:upper:]' '[:lower:]')"
+        [ -n "$org" ] || return 1
+        case "$own" in *",$org,"*) ;; *) return 1 ;; esac
+      done < <(git -C "$d" remote get-url ${u:+$u} --all "$r" 2>/dev/null)
+    done
+  done
+  [ "$n" -gt 0 ]
+}
+# repo_config_gate <repo dir> <allow table>: an S0 gate on the repository's OWN configuration (WF17-cpa REPO-2): every key of `git config --local --list` must match a row of the
+# approved table (column 1, a glob), `include.path`/`includeIf.*` are never in it, `.git/info/attributes` and `config.worktree` must be absent or empty, and no .gitattributes of the
+# work tree may name filter=, diff=, merge= or working-tree-encoding= (a clean filter, a diff driver or a re-encoding decides which BYTES a commit holds: judged bytes would not be committed
+# bytes). Prints the first offence and returns 1.
+repo_config_gate() {
+  local d="$1" tbl="$2" k pat ok gd f
+  [ -r "$tbl" ] || { echo "allow table unreadable"; return 1; }
+  while IFS= read -r -d '' k; do
+    ok=0
+    while IFS=$'\t' read -r pat _; do
+      case "$pat" in ''|'#'*) continue ;; esac
+      # shellcheck disable=SC2254  # the row IS a glob
+      case "$k" in $pat) ok=1; break ;; esac
+    done < "$tbl"
+    [ "$ok" = 1 ] || { echo "$d: config key $k is not in the approved table"; return 1; }
+  done < <(git -C "$d" config --local --list --name-only -z 2>/dev/null)
+  gd="$(git -C "$d" rev-parse --absolute-git-dir 2>/dev/null)" || { echo "$d: git dir unreadable"; return 1; }
+  for f in "$gd/info/attributes" "$gd/config.worktree"; do
+    if [ -e "$f" ] || [ -L "$f" ]; then
+      [ -f "$f" ] && [ ! -s "$f" ] || { echo "$d: $(basename "$f") is not empty"; return 1; }
+    fi
+  done
+  while IFS= read -r -d '' f; do
+    case "${f##*/}" in .gitattributes) ;; *) continue ;; esac
+    if grep -qE '(^|[[:space:]])(filter|diff|merge|working-tree-encoding)=' "$d/$f" 2>/dev/null; then echo "$d: $f names filter=, diff=, merge= or working-tree-encoding="; return 1; fi
+  done < <(git -C "$d" ls-files -z --cached --others --exclude-standard -- '*.gitattributes' 2>/dev/null)
+  return 0
+}

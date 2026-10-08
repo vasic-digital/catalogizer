@@ -19,7 +19,7 @@ mkll; B=$LL
 "$S/register.sh" --purpose go-test:catalog-api --owner other --pid "$B" >"$FXN/o" 2>"$FXN/e"; rc=$?
 assert_rc "R2 a duplicate purpose_key is refused (atomic mkdir claim, live holder)" $rc 3
 grep -q purpose_conflict "$FXN/e" && ok "R2b refusal names purpose_conflict and the holder" || bad "R2b [$(cat "$FXN/e")]"
-n=$(ls "$LONGOPS_DIR/ops" | grep -c json); assert_eq "R2c the refused register wrote no op record" "$n" 1
+n=$(ls "$LONGOPS_DIR/ops" | grep -c json); assert_eq "R2c the refused register left exactly ONE more record, FAILED with the refusal as its verdict (11.4.276 G1: the record is written first, a lost claim fails it)" "$n:$(for f in "$LONGOPS_DIR"/ops/*.json; do jq -r '.state+"/"+.verdict' "$f"; done | sort | tr '\n' ' ')" "2:failed/claim_refused:3 registered/ "
 newfx r3; mkll; D=$LL
 "$S/register.sh" --purpose p3 --owner t --pid "$D" >/dev/null; kill "$D"; wait "$D" 2>/dev/null
 "$S/register.sh" --purpose p3 --owner t --pid "$$" >/dev/null 2>"$FXN/e"; rc=$?
@@ -81,6 +81,7 @@ assert_rc "P4 an unresolvable identity (cmdline differs) is refused" $rc 6
 kill -0 "$P" 2>/dev/null && ok "P4b the process with a different identity is untouched" || bad "P4b"
 # dead owner: no signal at all; recycled pid
 newfx p3; mkll; P=$LL; id=$("$S/register.sh" --purpose p3 --owner t --pid "$P"); jq -c '.start_time="1"' "$LONGOPS_DIR/ops/$id.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$id.json"
+jq -c '.start_time="1"' "$LONGOPS_DIR/claims/p3/holder.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/claims/p3/holder.json"   # the recycled pid is recycled for the op AND for its claim holder (LO-F2: a LIVE own-run holder refuses the reap)
 "$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P5 a recycled pid (start time differs) is dead_owner: reaped" $? 0
 kill -0 "$P" 2>/dev/null && ok "P5b the recycled-pid process is NOT signalled" || bad "P5b it was killed"
 [ ! -s "$LONGOPS_DIR/signals.log" ] && ok "P5c no signal was recorded" || bad "P5c"
@@ -89,22 +90,16 @@ kill -0 "$P" 2>/dev/null && ok "P5b the recycled-pid process is NOT signalled" |
 assert_eq "P6 lo_signal refuses pid 1, 0, -1, junk and empty (rc 7 each)" "$(cat "$FXN/o")" "7 7 7 7 7 "
 [ ! -e "$FXN/sig/signals.log" ] && ok "P6b no signal audit entry exists for any refused target" || bad "P6b"
 newfx p4; mkll; id=$("$S/register.sh" --purpose p4 --owner t --pid "$LL" --no-progress-s 1); jq -c '.pid=1|.start_time="4"|.cmdline="init"' "$LONGOPS_DIR/ops/$id.json" >"$FXN/t" && mv "$FXN/t" "$LONGOPS_DIR/ops/$id.json"; export LONGOPS_NOW=9999
-r=$("$S/classify.sh" --op-id "$id" | cut -f2); assert_eq "P7 a record naming pid 1 (hand-written: register refuses it, W16) is never live: dead_owner" "$r" dead_owner
-"$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P7b reaping it sends nothing and succeeds as dead_owner" $? 0
+r=$("$S/classify.sh" --op-id "$id" | cut -f2); assert_eq "P7 a record naming pid 1 (hand-written: register refuses it, W16) is UNREADABLE (the record shape wants a pid > 1), never live and never dead_owner" "$r" unreadable
+"$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P7b reaping it is refused (20) and sends nothing" $? 20
 [ ! -s "$LONGOPS_DIR/signals.log" ] && ok "P7c no signal sent to pid 1" || bad "P7c"
 # container label resolution (a unit-level stand-in for podman; the sweep runs against the real one)
-newfx p5; mkll; P=$LL; export LONGOPS_NOW=4000
-cat >"$FXN/podman" <<'PE'
-#!/usr/bin/env bash
-echo "$*" >>"$PODLOG"
-[ "$1" = ps ] && case "$*" in *label=catalogizer.op_id=*) echo cid1234 ;; esac   # only the label scripts/containers/run_pinned.sh really sets resolves the container
-exit 0
-PE
-chmod +x "$FXN/podman"; export LONGOPS_PODMAN=$FXN/podman PODLOG=$FXN/podlog
-id=$("$S/register.sh" --purpose p5 --owner t --pid "$P" --no-progress-s 5); export LONGOPS_NOW=4100
+newfx p5; fpod; mkll; P=$LL; export LONGOPS_NOW=4000
+id=$("$S/register.sh" --purpose p5 --owner t --pid "$P" --no-progress-s 5); fcont cid1234 "catalogizer.op_id=$id"; export LONGOPS_NOW=4100
 "$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "P8 hung op with a labelled container is reaped" $? 0
-grep -q "ps --filter label=op_id=$id" "$FXN/podlog" && grep -q "ps --filter label=catalogizer.op_id=$id" "$FXN/podlog" && ok "P8b the container is resolved by label op_id=<id> AND catalogizer.op_id=<id> (the one run_pinned.sh sets)" || bad "P8b [$(cat "$FXN/podlog" 2>/dev/null)]"
-grep -q 'stop -t 5 cid1234' "$FXN/podlog" && ok "P8c the resolved container is stopped" || bad "P8c"
+grep -q "ps --filter label=op_id=$id" "$PODDIR/calls" && grep -q "ps --filter label=catalogizer.op_id=$id" "$PODDIR/calls" && ok "P8b the container is resolved by label op_id=<id> AND catalogizer.op_id=<id> (the one run_pinned.sh sets)" || bad "P8b [$(cat "$PODDIR/calls" 2>/dev/null)]"
+grep -q 'stop -t 5 cid1234' "$PODDIR/calls" && ok "P8c the resolved container is stopped" || bad "P8c"
+assert_eq "P8d it is gone from the runtime's list before the op is recorded reaped" "$(ls "$PODDIR" | grep -c '^c-'):$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" "0:reaped"
 export LONGOPS_PODMAN=$FXN/podman-null
 bare=$(grep -h -E '^[^#]*\b(pgrep|pkill|killall)\b' "$S"/*.sh | wc -l); assert_eq "P9 no script of the registry uses pgrep, pkill or killall" "$bare" 0
 unset LONGOPS_NOW
@@ -231,7 +226,8 @@ mkll; B=$LL; id3=$("$S/register.sh" --purpose go-test:x --owner stream-b --pid "
 grep -q "$id3" "$FXN/o" && ok "K6b names the op" || bad "K6b"
 "$S/release.sh" --op-id "$id3" --state complete; mkll; C=$LL
 id4=$("$S/register.sh" --purpose scan:y --owner t --pid "$C" --write-path specs/001-full-project-audit-remediation/audit/findings/FND-0001.json); "$S/check_no_build_writing_tracked.sh" >"$FXN/o"; assert_rc "K7 a write path under \$AUD is refused" $? 1
-kill "$C"; wait "$C" 2>/dev/null; "$S/check_no_build_writing_tracked.sh" >"$FXN/o"; assert_rc "K8 a dead-owner row is not a writer (it never wedges the window)" $? 0
+kill "$C"; wait "$C" 2>/dev/null; "$S/check_no_build_writing_tracked.sh" >"$FXN/o"; assert_rc "K8 a dead-owner row STILL blocks the window until it is reaped (owner gone is not workload gone, 11.4.276 LO-D3)" $? 1
+"$S/reap.sh" --op-id "$id4" >/dev/null 2>&1; "$S/check_no_build_writing_tracked.sh" >"$FXN/o"; assert_rc "K8b once the dead-owner row is reaped it blocks nothing" $? 0
 git -C "$LONGOPS_REPO" ls-files | grep -q . && ok "K9 fixture control: the fixture repository really tracks tracked/a.txt" || bad "K9"
 
 echo "== require_verdicts =="
@@ -279,7 +275,7 @@ echo "== WF11 class 1: every decision is made UNDER the lock and re-derived ther
 newfx w1; export LONGOPS_NOW=2000
 bash -c 'trap "" TERM; while :; do sleep 1; done' >/dev/null 2>&1 & TP=$!; KILL9ME+=("$TP"); sleep 0.4
 id=$("$S/register.sh" --purpose ta:x --owner t --pid "$TP" --no-progress-s 10); "$S/heartbeat.sh" --op-id "$id" --progress-offset 5; export LONGOPS_NOW=2100
-"$S/reap.sh" --op-id "$id" >"$FXN/o" 2>"$FXN/e"; rc=$?
+LONGOPS_REAP_GRACE_S=2 "$S/reap.sh" --op-id "$id" >"$FXN/o" 2>"$FXN/e"; rc=$?
 assert_rc "W1 F1 a process that IGNORES TERM is not reaped: exit 8 (survived), never 0" $rc 8
 kill -0 "$TP" 2>/dev/null && ok "W1b control: the process really ignores TERM and is still alive" || bad "W1b it died"
 assert_eq "W1c the record keeps its state (never reaped while the process lives)" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" running
@@ -297,7 +293,7 @@ kill -0 "$P" 2>/dev/null && ok "W2b the advancing process was never signalled" |
 [ ! -s "$LONGOPS_DIR/signals.log" ] && ok "W2c no signal was recorded" || bad "W2c"
 assert_eq "W2d the record is still running" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" running
 newfx w3; mkll; A=$LL; "$S/register.sh" --purpose tp:x --owner t --pid "$A" >/dev/null; kill "$A"; wait "$A" 2>/dev/null
-LONGOPS_TEST_SLEEP_BEFORE_LOCK=1.5 "$S/reap.sh" --purpose tp:x >"$FXN/o" 2>"$FXN/e" & RP=$!
+LONGOPS_TEST_SLEEP_BEFORE_LOCK=8 "$S/reap.sh" --purpose tp:x >"$FXN/o" 2>"$FXN/e" & RP=$!
 sleep 0.4; "$S/reap.sh" --purpose tp:x >/dev/null 2>&1; mkll; B=$LL; "$S/acquire.sh" --purpose tp:x --run-id newrun --pid "$B" >/dev/null 2>&1   # a holder with NO op record: only the holder re-read under the lock can refuse (an op-backed holder is also refused by the live-op guard, WF14)
 wait "$RP"; rc=$?
 assert_rc "W3 F2 reap --purpose re-reads the holder UNDER the lock: a live holder that took the purpose in the window is refused (5)" $rc 5
@@ -307,8 +303,8 @@ newfx w4; mkll; A=$LL; mkll; B=$LL; export LONGOPS_TEST_SLEEP_IN_CS=1
 "$S/register.sh" --purpose px:1 --owner a --op-id same-id --pid "$A" >"$FXN/oa" 2>"$FXN/ea" & W1=$!; sleep 0.3
 unset LONGOPS_TEST_SLEEP_IN_CS; "$S/register.sh" --purpose py:1 --owner b --op-id same-id --pid "$B" >"$FXN/ob" 2>"$FXN/eb"; rb=$?; wait "$W1"; ra=$?
 assert_eq "W4 F2 two registrations of ONE op id under different purposes: exactly one wins (record created exclusively)" "$(( (ra == 0) + (rb == 0) ))" 1
-assert_eq "W4b the loser's claim was rolled back (one claim, the winner's)" "$(ls "$LONGOPS_DIR/claims" | tr '\n' ' ')" "py:1 "
-assert_eq "W4c the record belongs to the winner" "$(jq -r .purpose_key "$LONGOPS_DIR/ops/same-id.json")" py:1
+assert_eq "W4b the loser made no claim at all (the record is created FIRST, so the loser stops at the exclusive record write: one claim, the winner's)" "$(ls "$LONGOPS_DIR/claims" | tr '\n' ' ')" "px:1 "
+assert_eq "W4c the record belongs to the winner (the first to create it)" "$(jq -r .purpose_key "$LONGOPS_DIR/ops/same-id.json")" px:1
 
 echo "== WF11 class 2: refusal / unreadable input is a distinct status, never clean, stale or advancing =="
 newfx w5; mkll; A=$LL; unset CPA_APPROVED_DIR
@@ -432,7 +428,7 @@ bash "$FXN/owner.sh" >/dev/null 2>&1 & CP=$!; KILLME+=("$CP"); sleep 0.4
 id=$("$S/register.sh" --purpose co:x --owner t --op-id coop --pid "$CP" --no-progress-s 10); "$S/heartbeat.sh" --op-id "$id" --progress-offset 5; export LONGOPS_NOW=2100
 "$S/reap.sh" --op-id "$id" >"$FXN/o" 2>"$FXN/e"; rc=$?
 assert_rc "N1 R2-1 a COOPERATING owner (TERM trap releases the op itself, the dispatch pump shape) is reaped without a false survival: exit 0, not 8" $rc 0
-assert_eq "N1b the owner's own release stands: state handoff" "$(jq -r .state "$LONGOPS_DIR/ops/$id.json")" handoff
+assert_eq "N1b the owner's handoff answers OUR reap intent: the record ends reaped, verdict reaped_hung:owner_handoff, the owner's own verdict kept (a build judged HUNG is not re-adoptable, 11.4.276 LO-D2)" "$(jq -r '.state+"/"+.verdict+"/"+.owner_verdict' "$LONGOPS_DIR/ops/$id.json")" "reaped/reaped_hung:owner_handoff/driver_stop"
 assert_eq "N1c no reap_survived marker was written for a cooperating owner" "$(jq -r '.reap_survived_utc // "none"' "$LONGOPS_DIR/ops/$id.json")" none
 assert_eq "N1d the owner released the claim itself" "$([ -d "$LONGOPS_DIR/claims/co:x" ] && echo present || echo gone)" gone
 grep -q "TERM pid=$CP" "$LONGOPS_DIR/signals.log" && ok "N1e CONTROL: the owner really was signalled (the audit trail names it)" || bad "N1e"
@@ -461,8 +457,9 @@ id=$("$S/register.sh" --purpose rg:x --owner t --pid "$A" --no-progress-s 600); 
 "$S/reap.sh" --purpose rg:x >"$FXN/o" 2>"$FXN/e"; rc=$?; assert_rc "N4 R2-3 reap --purpose of a DEAD holder refuses (5) while a non-terminal op of that purpose has a live owner" $rc 5
 grep -q "$id" "$FXN/e" && ok "N4b the refusal names the op" || bad "N4b [$(cat "$FXN/e")]"
 assert_eq "N4c the claim is intact" "$([ -d "$LONGOPS_DIR/claims/rg:x" ] && echo present || echo gone)" present
-printf '{"op_id":"unr","purpose_key":"rg:x","state":"running","pid":"abc"}' >"$LONGOPS_DIR/ops/unr.json"; kill "$B"; wait "$B" 2>/dev/null
-"$S/reap.sh" --purpose rg:x >/dev/null 2>&1; assert_rc "N4d a valid-JSON op record of that purpose that cannot be judged (pid 'abc') also refuses (20): never read as dead" $? 20
+printf '{"op_id":"unr","purpose_key":"rg:x","state":"running","pid":"abc"}' >"$LONGOPS_DIR/ops/unr.json"
+"$S/reap.sh" --purpose rg:x >/dev/null 2>&1; assert_rc "N4d a valid-JSON op record that cannot be judged (pid 'abc') refuses (20) BEFORE any purpose filter or live-op verdict: never read as dead, never 'another purpose's'" $? 20
+kill "$B"; wait "$B" 2>/dev/null
 unset LONGOPS_NOW
 # R2-5: pid validation: a zombie and a kernel thread are no owner
 newfx n5; mkll; A=$LL; id=$("$S/register.sh" --purpose zk:x --owner t --pid "$A" --no-progress-s 30); h0=$(sha256sum "$LONGOPS_DIR/ops/$id.json" | cut -c1-64)
@@ -488,17 +485,10 @@ newfx n8; mkll; A=$LL; mkll; B=$LL
 assert_rc "N8 R2-2/R2-10 resolving a HANDOFF op whose purpose was re-claimed by its successor succeeds (0), never a post-write failure (4)" $rc 0
 assert_eq "N8b the handoff op is complete, the successor keeps its claim" "$(jq -r .state "$LONGOPS_DIR/ops/hoA.json"):$(jq -r .run_id "$LONGOPS_DIR/claims/ho:x/holder.json")" complete:hoA-a2
 # R2-4: the container of a dispatched build is found by the label the record carries (dispatch.sh sets catalogizer.op_id=dispatch-<build id>, the op id is <build id>)
-newfx n9; mkll; P=$LL; export LONGOPS_NOW=4000
-cat >"$FXN/podman" <<'PE'
-#!/usr/bin/env bash
-echo "$*" >>"$PODLOG"
-[ "$1" = ps ] && case "$*" in *label=catalogizer.op_id=dispatch-bld7*) echo cidD7 ;; esac
-exit 0
-PE
-chmod +x "$FXN/podman"; export LONGOPS_PODMAN=$FXN/podman PODLOG=$FXN/podlog
-id=$("$S/register.sh" --purpose dp:x --owner dispatch --op-id bld7 --pid "$P" --no-progress-s 5 --container-label "catalogizer.op_id=dispatch-bld7"); export LONGOPS_NOW=4100
+newfx n9; fpod; mkll; P=$LL; export LONGOPS_NOW=4000
+id=$("$S/register.sh" --purpose dp:x --owner dispatch --op-id bld7 --pid "$P" --no-progress-s 5 --container-label "catalogizer.op_id=dispatch-bld7"); fcont cidD7 "catalogizer.op_id=dispatch-bld7"; export LONGOPS_NOW=4100
 "$S/reap.sh" --op-id "$id" >/dev/null 2>&1; assert_rc "N9 R2-4 a hung dispatched build is reaped (0)" $? 0
-grep -q 'stop -t 5 cidD7' "$FXN/podlog" && ok "N9b its container is resolved by the record's own container_label and stopped" || bad "N9b [$(cat "$FXN/podlog" 2>/dev/null)]"
+grep -q 'stop -t 5 cidD7' "$PODDIR/calls" && ok "N9b its container is resolved by the record's own container_label and stopped" || bad "N9b [$(cat "$PODDIR/calls" 2>/dev/null)]"
 export LONGOPS_PODMAN=$FXN/podman-null; unset LONGOPS_NOW
 # the default fixture never reaches the real podman (R2-T2)
 newfx n10; assert_eq "N10 R2-T2 the default LONGOPS_PODMAN of every fixture is the null stub, never /usr/bin/podman" "$LONGOPS_PODMAN" "$FXN/podman-null"

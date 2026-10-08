@@ -55,9 +55,9 @@ for i in $(seq 1 "$RUNS"); do
   o=$(TI_RT_CLIENT_DIR="$CDIR" bash "$RT" --build-id "$ID" --protocol "$PROTO" --record "$LEDGER" --iteration "$i" 2>&1); rc=$?
   check "recorded run $i exits 0" "$rc" 0
   case "$o" in *"exit=0 verdict=pass"*) ok "run $i: recorded as ev/1 with exit 0 and verdict pass";; *) bad "run $i: not recorded as a pass ($(printf '%s' "$o" | tail -2 | tr '\n' ' ' | cut -c1-160))";; esac
-  # the step-by-step output of the same round trip (the recorder stores the streams as blobs; this plain run is the readable evidence)
+  # WF17 TI-H4: this is a SECOND, plain (unrecorded) run with its own nonce, named `plain-run<i>` so it is never mistaken for ledger record <i> (whose streams are the ledger blobs)
   po=$(TI_RT_CLIENT_DIR="$CDIR" bash "$RT" --build-id "$ID" --protocol "$PROTO" 2>&1); prc=$?
-  printf '%s\n' "$po" >"$EVD/roundtrip-$PROTO-run$i.txt"
+  printf '%s\n' "$po" >"$EVD/roundtrip-$PROTO-plain-run$i.txt"
   case "$po" in *"PASS roundtrip $PROTO steps=$STEPS"*) ok "run $i: PASS roundtrip $PROTO steps=$STEPS (plain run, rc=$prc)";; *) bad "run $i: no PASS line ($(printf '%s' "$po" | tail -2 | tr '\n' ' ' | cut -c1-160))";; esac
 done
 python3 -I - "$LEDGER/ledger.jsonl" "$RUNS" <<'PY' && ok "ledger: $RUNS ev/1 records, GREEN, exit 0, verdict pass, evidence class runtime, oracle specified" || bad "ledger records are wrong"
@@ -104,6 +104,24 @@ PY
               mut not_listed_on_failed_listing roundtrip_ftp.sh "o=\"\$(run 'cls -1' 2>&1)\" || { echo \"the listing failed" "o=\"\$(run 'cls -1 nothing-here' 2>&1)\" || { echo \"the listing failed";;
     smb)      mut rm6_negative_leg_unreachable roundtrip_smb.sh 'timeout 30 smbclient "//$H/testshare" -A "$f"' 'timeout 30 smbclient "//$H-unreachable/testshare" -A "$f"';;
     nfs)      mut rm6_negative_leg_unreachable roundtrip_nfs.sh 'nfs-ls "nfs://$IP/no-such-export"' 'nfs-ls "nfs://$IP-unreachable/no-such-export"';;
+  esac
+  # WF17 TI-G2 pinned mutants: the failure must be reported by the STEP the defect belongs to, not merely somewhere in the run
+  pin() { # pin <name> <file> <old> <new> <step that must FAIL>
+    local name=$1 file=$2 old=$3 new=$4 step=$5 d="$TI_REPO/.audit/scratch/ti-rtpin-$PROTO-$1" o
+    rm -rf -- "${d:?}"; mkdir -p "$d"; cp "$TI_REPO/$CDIR"/*.sh "$d/"
+    python3 -I - "$d/$file" "$old" "$new" <<'PY' || { bad "mutation $name: anchor missing"; rm -rf -- "${d:?}"; return; }
+import sys
+s = open(sys.argv[1]).read()
+if s.count(sys.argv[2]) != 1: print("anchor count %d for %r" % (s.count(sys.argv[2]), sys.argv[2])); sys.exit(1)
+open(sys.argv[1], "w").write(s.replace(sys.argv[2], sys.argv[3]))
+PY
+    o=$(TI_RT_CLIENT_DIR=".audit/scratch/ti-rtpin-$PROTO-$name" bash "$RT" --build-id "$ID" --protocol "$PROTO" 2>&1)
+    if printf '%s\n' "$o" | grep -q "^STEP $step FAIL"; then ok "mutation $name CAUGHT at step $step"; echo "$name CAUGHT" >>"$MUTLOG"; else bad "mutation $name SURVIVED: step $step did not fail ($(printf '%s' "$o" | grep -c '^STEP .* ok$') ok steps)"; echo "$name SURVIVED" >>"$MUTLOG"; fi
+    rm -rf -- "${d:?}"
+  }
+  case "$PROTO" in
+    smb) pin rt1_upload_goes_to_another_name roundtrip_smb.sh 'step upload sm "put /tmp/up.bin up-$N.bin"' 'step upload sm "put /tmp/up.bin other-$N.bin"' list_shows_upload;;
+    ftp) pin ftp_refusal_text_500_with_530_bytes roundtrip_ftp.sh 'o="$(lftp -f "$f" 2>&1)"' 'o="$(echo "cls: Fatal error: 500 cannot transfer 530 bytes"; false)"' wrong_password_refused;;
   esac
   mut failfast_exits_zero lib.sh 'echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 1; }' 'echo "FAIL roundtrip failfast steps=$STEPS failed=$BAD"; exit 0; }'
 fi

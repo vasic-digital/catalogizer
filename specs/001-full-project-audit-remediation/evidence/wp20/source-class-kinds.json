@@ -1,0 +1,213 @@
+{
+ "classes": {
+  "EXT": {
+   "kind": "external_ticket",
+   "rule": "rule_remotes",
+   "sources": [
+    "external:git remotes recorded in the freeze json",
+    "external:named services (firebase-crashlytics, sonarqube, snyk, trivy)"
+   ]
+  },
+  "S-01": {
+   "kind": "issue_file",
+   "rule": "rule_issue_file",
+   "sources": [
+    "docs/issues/*.md"
+   ]
+  },
+  "S-02": {
+   "kind": "issue_file",
+   "rule": "rule_anr",
+   "sources": [
+    "issues/*.md"
+   ]
+  },
+  "S-03": {
+   "kind": "md_tracker",
+   "rule": "rule_task_rows",
+   "sources": [
+    "TASK_TRACKER.md"
+   ]
+  },
+  "S-04": {
+   "kind": "md_tracker",
+   "rule": "rule",
+   "sources": [
+    "MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-05": {
+   "kind": "md_tracker",
+   "rule": "rule",
+   "sources": [
+    "docs/MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-06": {
+   "kind": "md_tracker",
+   "rule": "rule",
+   "sources": [
+    "COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md"
+   ]
+  },
+  "S-07": {
+   "kind": "md_tracker",
+   "rule": "rule",
+   "sources": [
+    "COMPREHENSIVE_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-08": {
+   "kind": "report_doc",
+   "rule": "rule",
+   "sources": [
+    "docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md"
+   ]
+  },
+  "S-09": {
+   "kind": "report_doc",
+   "rule": "rule",
+   "sources": [
+    "UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-10": {
+   "kind": "md_tracker",
+   "rule": "rule",
+   "sources": [
+    "docs/OPEN_POINTS_CLOSURE.md"
+   ]
+  },
+  "S-11": {
+   "kind": "report_doc",
+   "rule": "rule_landmines",
+   "sources": [
+    "docs/LANDMINES.md"
+   ]
+  },
+  "S-12": {
+   "kind": "report_doc",
+   "rule": "rule",
+   "sources": [
+    "/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md"
+   ]
+  },
+  "S-13": {
+   "kind": "report_doc",
+   "rule": "rule",
+   "sources": [
+    "docs/status/*.md"
+   ]
+  },
+  "S-14": {
+   "kind": "report_doc",
+   "rule": "rule",
+   "sources": [
+    "docs/audits/*.md",
+    "docs/*AUDIT*.md",
+    "legacy-ids:defect ids first seen in the S-14 files"
+   ]
+  },
+  "S-15": {
+   "kind": "qa_results",
+   "rule": "rule",
+   "sources": [
+    "docs/qa/**+docs/reports/qa-sessions/**",
+    "legacy-ids:defect ids first seen in the S-15 files"
+   ]
+  },
+  "S-16": {
+   "kind": "report_doc",
+   "rule": "rule_security",
+   "sources": [
+    "docs/security/**"
+   ]
+  },
+  "S-17": {
+   "kind": "qa_bank",
+   "rule": "rule_bank",
+   "sources": [
+    "challenges/helixqa-banks/*.yaml"
+   ]
+  },
+  "S-18": {
+   "kind": "qa_bank",
+   "rule": "rule_bank",
+   "sources": [
+    "challenges/data/challenges_bank.json"
+   ]
+  },
+  "S-19": {
+   "kind": "qa_bank",
+   "rule": "rule_bank",
+   "sources": [
+    "submodules/helix_qa/banks/**"
+   ]
+  },
+  "S-20": {
+   "kind": "report_doc",
+   "rule": "rule_bluff_and_anchors",
+   "sources": [
+    "submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md"
+   ]
+  },
+  "S-21": {
+   "kind": "constitution_conflict",
+   "rule": "rule_conflicts",
+   "sources": [
+    ".specify/memory/constitution.md"
+   ]
+  },
+  "S-22": {
+   "kind": "report_doc",
+   "rule": "rule_files_only",
+   "sources": [
+    "module CLAUDE.md and AGENTS.md (outside submodules)"
+   ]
+  },
+  "S-23": {
+   "kind": "code_marker",
+   "rule": "rule_markers",
+   "sources": [
+    "marker and skipped-test scan of every text file of the snapshot"
+   ]
+  },
+  "S-24": {
+   "kind": "report_doc",
+   "rule": "rule_files_only",
+   "sources": [
+    ".implementation/**"
+   ]
+  },
+  "S-25": {
+   "kind": "report_doc",
+   "rule": "rule_providers",
+   "sources": [
+    "S-25:SECURITY_KEY_ROTATION_REQUIRED.md",
+    "S-25:SECURITY_AUDIT_REPORT.md",
+    "docs/security/firebase-api-key-exposure-20260629.md"
+   ]
+  },
+  "XID": {
+   "kind": "report_doc",
+   "rule": "rule_ids_XID",
+   "sources": [
+    "legacy-ids:defect ids referenced only outside the S-14 and S-15 files"
+   ]
+  }
+ },
+ "classes_missing": [],
+ "closed_kind_set": [
+  "issue_file",
+  "md_tracker",
+  "report_doc",
+  "qa_bank",
+  "qa_results",
+  "workable_items_db",
+  "external_ticket",
+  "constitution_conflict",
+  "code_marker"
+ ],
+ "parser": "enumerate_sources.py@2",
+ "schema": "source-class-kinds/1"
+}

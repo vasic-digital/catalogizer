@@ -1,0 +1,60 @@
+{
+  "schema": "hc0-record/1",
+  "identity": {
+    "generated_at": "2026-10-07T17:24:22Z",
+    "git_head": "65e5f3391acadf08bbae583e2f371fbb068b9d5d",
+    "host": "anton",
+    "tool": "T014 HC-0 record, written by a Sonnet worker for the conductor; checked by scripts/governance/tests/test_decision_intake.sh",
+    "tree_state": "working tree uncommitted; HEAD alone does not identify it, the sha256 of the inputs below do",
+    "input_sha256": {
+      "scripts/governance/tests/test_decision_intake.sh": "ecbb6f44ed5c2e95582e0ca0ae6d183b33df20d9cf5ebeb1584506a86f6ea6a8",
+      "specs/001-full-project-audit-remediation/decisions/owner-decisions.yaml": "dd9559a9d09588d5d1d8e9a97efa418a8f999e6101796a78d8e4385805a0630d",
+      "specs/001-full-project-audit-remediation/decisions/owner-request-list.md": "f6acac77ea7f9a46b93b9554246a5a47a38fdf8ece3b39733398d3d63dba57fd",
+      "specs/001-full-project-audit-remediation/progress.yml": "82ee45e19c1094951041ea93d27cd4c9f9466b89b1982a552869dca1f04c209f"
+    }
+  },
+  "date": "2026-10-07",
+  "delivered": [
+    "decisions/owner-decisions.yaml revision 5 (43 groups + 15 open ODs, owner_answers incl. 2026-10-07 entries OA-2026-10-07-1..8 and OAU-2026-10-07-1..8, answer_refs on the decision rows)",
+    "decisions/owner-request-list.md revision 8 (draft; section 10 answers of 2026-10-07, short-list item 18)",
+    "progress.yml block owner_answers_2026-10-07_relayed (16 relayed answer keys)"
+  ],
+  "owner_answers": {
+    "relayed_not_verbatim": true,
+    "sources": [
+      "progress.yml hc0.owner_answers_2026-10-05",
+      "progress.yml owner_answers_2026-10-07_relayed.HC-0_confirmations"
+    ],
+    "ODG-07_build_host": "current host (hostname anton), answered 2026-10-05 and confirmed 2026-10-07 (relayed)",
+    "ODG-07_measure_host": "current host, same machine as build host (relayed 2026-10-05)",
+    "confirm_C1": "confirmed (relayed 2026-10-05)",
+    "confirm_C2": "confirmed (relayed 2026-10-05)",
+    "confirm_FR017": "confirmed (relayed 2026-10-05)",
+    "CAT_prefix_exception": "confirmed (relayed 2026-10-07); this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending",
+    "custody": "policy-grade (relayed 2026-10-07); UNCONFIRMED whether it satisfies the C2-custody slot, which stays empty",
+    "host_entry_point": "user-level, no su/sudo/root, under the home directory (relayed 2026-10-07); the record HC-0-host-entry.json joins this one at T046a and is not written yet"
+  },
+  "host_identity_answered": true,
+  "acceptance_statement": {
+    "text": "accepted (accept_plan_start_phase_0, relayed by the conductor 2026-10-05)",
+    "verbatim": false
+  },
+  "launcher_trust_answer": {
+    "status": "UNCONFIRMED: the owner's answer of 2026-10-05 to the launcher-trust question is not in the repository (no progress.yml key, no intake entry); the 2026-10-07 relayed answer on user-level host actions is carried instead and is not that answer",
+    "verbatim": false,
+    "text": null,
+    "related_relayed_answer": "owner_answers_2026-10-07_relayed.root_free_host_actions"
+  },
+  "open_questions": [
+    "launcher trust (T014): the verbatim 2026-10-05 answer",
+    "ODG-02/ODG-03: acceptance of the residual risk of the credentials left in history",
+    "T022: the 32 GiB MemAvailable floor exceeds this host's total RAM (evidence/host-probe.json mem_total 32478769152 bytes)",
+    "ODG-08: NFS host and export not named yet",
+    "OD-43/OD-45: Firebase CLI login not run yet"
+  ],
+  "remaining": [
+    "T014: the owner's answer of 2026-10-05 to the launcher-trust question, recorded verbatim (only relayed answers exist)",
+    "T014 depends on T013: the request list is a working-tree draft, not committed or delivered as a committed document"
+  ],
+  "note": "recorded is true only when remaining is empty (progress.yml hc0.recorded mirrors that; checked by the decision-intake test). entry_incomplete host_identity_missing is lifted: the ODG-07 host identity is answered."
+}

@@ -1,0 +1,5 @@
+MemAvailable=67108864 kB, no knob: BYTE-IDENTICAL old(HEAD) vs new incl. rc (204 bytes; live-varying threads_used line excluded from both)
+MemAvailable=33554432 kB, no knob: BYTE-IDENTICAL old(HEAD) vs new incl. rc (204 bytes; live-varying threads_used line excluded from both)
+MemAvailable=33554431 kB, no knob: BYTE-IDENTICAL old(HEAD) vs new incl. rc (246 bytes; live-varying threads_used line excluded from both)
+MemAvailable=20971520 kB, no knob: BYTE-IDENTICAL old(HEAD) vs new incl. rc (246 bytes; live-varying threads_used line excluded from both)
+MemAvailable=8000000 kB, no knob: BYTE-IDENTICAL old(HEAD) vs new incl. rc (243 bytes; live-varying threads_used line excluded from both)

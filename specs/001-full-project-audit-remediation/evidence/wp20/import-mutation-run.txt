@@ -1,0 +1,113 @@
+# T168 importer mutation run (ledger-recorded, rootless IMG-TESTUTIL via run_pinned.sh; mutate_import.sh --ledger)
+# expectations: N00 (unmutated) passes, C00 (comment only) survives, every M01..M34 is killed by test_import.sh or test_import_classes.py
+# first run without the ledger found M06, M28, M33 surviving; test_import_classes.py then gained the CUT leg (multi-byte cut offsets, planted invalid register) and the non-canonical-locator leg, and those three were killed
+# an earlier --ledger attempt (ledger seq 54 only, the N00 control) was aborted by evrec refusing 'worker' as mutation author; the runner then treated a refusal as a kill: fixed (a kill needs a recorded verdict=fail line), the run below is the repeat
+
+N00 seq=55 polarity=GREEN verdict=pass outcome=PASSED target_fp=8d031918082f
+    (unmutated tree)
+    first failing line: RESULT: pass=8 fail=0
+C00 seq=56 polarity=MUTATION verdict=pass outcome=SURVIVED target_fp=7bc6937c8e39
+    C00: CONTROL: a comment-only change must SURVIVE
+    first failing line: RESULT: pass=8 fail=0
+M01 seq=57 polarity=MUTATION verdict=fail outcome=KILLED target_fp=1812cbbcde54
+    M01: skips the mandatory freeze-snapshot entry check
+    first failing line: FAIL F1 manifest malformed: exit 20 reason freeze_manifest_invalid, nothing written :: rc=0 reason=None counts=(7, 7, 7, 7, 11) out=import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 
+M02 seq=58 polarity=MUTATION verdict=fail outcome=KILLED target_fp=f5148329752f
+    M02: drops the legacy_import path: closed-class tickets get machine_evidence
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M03 seq=59 polarity=MUTATION verdict=fail outcome=KILLED target_fp=a125d416c6f5
+    M03: closed-class set loses 'closed'
+    first failing line: FAIL F10 closed + critical + ux (no type mapped) -> Task defaulted, Completed, legacy_import, reverify 1 :: ('CAT-002', 'Task', 'Queued', 'critical', 'machine_evidence', 0, 'closed', 'shortcoming', None, "IC-01 identity: raw 'crit
+M04 seq=60 polarity=MUTATION verdict=fail outcome=KILLED target_fp=a9de4d26ee40
+    M04: treats wontfix as closed (FR-008: wontfix is not a permitted closure)
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M05 seq=61 polarity=MUTATION verdict=fail outcome=KILLED target_fp=919ea9f014b7
+    M05: description cap raised to 4096 bytes
+    first failing line: FAIL (d) long description is <= 2048 bytes, Sources block included (3325 bytes) :: 3325
+M06 seq=62 polarity=MUTATION verdict=fail outcome=KILLED target_fp=63fbbf88588f
+    M06: cut on a byte offset, not a character boundary (replacement characters)
+    first failing line: FAIL CUT all 12 stored descriptions: <= 2048 bytes, strict UTF-8, no U+FFFD, a proper prefix of the body, marked as cut :: [('docs/issues/HELIX-20e2.md', 2048, True, False, 806, 900), ('docs/issues/HELIX-20e4.md', 2046, True, Fals
+M07 seq=63 polarity=MUTATION verdict=fail outcome=KILLED target_fp=5e84fb444cea
+    M07: primary map row without severity_governs
+    first failing line: FAIL F10 exactly one severity_governs=1 row per item (doc04 9.4)
+M08 seq=64 polarity=MUTATION verdict=fail outcome=KILLED target_fp=7990bd934a85
+    M08: IC-01 S2 mapped to medium instead of high
+    first failing line: FAIL F10 resolved + S2 + functional -> Bug, Fixed, severity high (IC-01 S2), legacy_import, reverify 1 :: ('CAT-001', 'Bug', 'Fixed (→ Fixed.md)', 'medium', 'legacy_import', 1, 'resolved', 'shortcoming', None, "IC-01 S2: raw 'S2' 
+M09 seq=65 polarity=MUTATION verdict=fail outcome=KILLED target_fp=72dfc855f772
+    M09: resume key ignored: every run mints a new id
+    first failing line: FAIL F4 re-run after the after_mint crash exits 0 and the state equals a clean run (no duplicate id, no orphan) :: rc=0 mid_unmapped=11 ids=8 out=import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplic
+M10 seq=66 polarity=MUTATION verdict=fail outcome=KILLED target_fp=5fac0e2e2c88
+    M10: entry sha256 comparison removed (a changed entry is imported)
+    first failing line: FAIL F2 changed entry at the same locator (snapshot consistent): exit 20 entry_changed naming it, nothing written :: rc=0 import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entrie
+M11 seq=67 polarity=MUTATION verdict=fail outcome=KILLED target_fp=dfd36fac36f6
+    M11: duplicate-locator rule off (a second listing mints a second item)
+    first failing line: FAIL F3 the duplicate mints no second item (7 tickets -> 7 items, 8 entries mapped) :: (8, 8)
+M12 seq=68 polarity=MUTATION verdict=fail outcome=KILLED target_fp=218e9320481a
+    M12: concurrency lock removed
+    first failing line: FAIL F5 a second importer while the database lock is held: exit 20 import_already_running, nothing written :: rc=0 import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entries_selec
+M13 seq=69 polarity=MUTATION verdict=fail outcome=KILLED target_fp=b7328e35ccad
+    M13: a locked database is not classified (exit 1 db_error instead of 21 db_locked)
+    first failing line: FAIL F7 an exclusive writer holds the database: exit 21 db_locked within the busy timeout, nothing written :: rc=1 dt=0.5 import: REFUSED reason=db_error entry 1 (docs/issues/HELIX-100-a.md): database is locked
+M14 seq=70 polarity=MUTATION verdict=fail outcome=KILLED target_fp=af66f868cc4b
+    M14: a full disk is not classified
+    first failing line: FAIL F8 disk full (file size limit at the database size): exit 21 (disk_full or io_error), not a success :: rc=1 import: REFUSED reason=engine_failed add CAT-003: add: commit: disk I/O error: file too large
+M15 seq=71 polarity=MUTATION verdict=fail outcome=KILLED target_fp=0a3b3d9284ab
+    M15: backup record check skipped
+    first failing line: FAIL F9 the register name without a backup record: exit 20 backup_record_required, nothing written :: import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entries_selected": 7, "ent
+M16 seq=72 polarity=MUTATION verdict=fail outcome=KILLED target_fp=34bc1ecd753c
+    M16: backup staleness (database changed after the backup) not checked
+    first failing line: FAIL F9 a record whose sha256 is not the database's: exit 20 backup_stale, nothing written :: import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entries_selected": 7, "entry_chang
+M17 seq=73 polarity=MUTATION verdict=fail outcome=KILLED target_fp=494fe9579c5b
+    M17: writes a component into component_id (the register holds no components)
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M18 seq=74 polarity=MUTATION verdict=fail outcome=KILLED target_fp=1947ccd9dfb5
+    M18: APPLIES the proposed category to reg_item_ext.category
+    first failing line: FAIL F10 every item has defect_layer source (the lowest floor; it can only be raised) and the same interim category (the mapping is NOT applied) :: {'shortcoming', 'weak_spot', 'bug'}
+M19 seq=75 polarity=MUTATION verdict=fail outcome=KILLED target_fp=62a05e4a3d9c
+    M19: engine type mapping ignored: every item is a Task
+    first failing line: FAIL F10 resolved + S2 + functional -> Bug, Fixed, severity high (IC-01 S2), legacy_import, reverify 1 :: ('CAT-001', 'Task', 'Completed (→ Fixed.md)', 'high', 'legacy_import', 1, 'resolved', 'shortcoming', None, "IC-01 S2: raw 'S
+M20 seq=76 polarity=MUTATION verdict=fail outcome=KILLED target_fp=985ea06b7869
+    M20: closes a Bug with the Task vocabulary
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M21 seq=77 polarity=MUTATION verdict=fail outcome=KILLED target_fp=e233406f9566
+    M21: an unmapped severity defaults to high
+    first failing line: FAIL F10 the open ticket -> Queued; unmapped severity 'bogus' defaults to medium and says so :: ('CAT-004', 'Task', 'Queued', 'high', 'machine_evidence', 0, 'open', 'shortcoming', None, "unmapped raw value; defaulted medium [DEFAU
+M22 seq=78 polarity=MUTATION verdict=fail outcome=KILLED target_fp=88cc3798c773
+    M22: legacy_status not stored
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M23 seq=79 polarity=MUTATION verdict=fail outcome=KILLED target_fp=e89b3ab2e805
+    M23: entries processed in reverse order (legacy order lost)
+    first failing line: FAIL F10 legacy order preserved: CAT ids ascend with the entry order
+M24 seq=80 polarity=MUTATION verdict=fail outcome=KILLED target_fp=af391fb1425d
+    M24: register DDL presence not checked
+    first failing line: FAIL F10 a database without the register DDL: exit 20 register_ddl_absent :: import: REFUSED reason=db_error no such table: reg_source_entries
+M25 seq=81 polarity=MUTATION verdict=fail outcome=KILLED target_fp=c21c023536df
+    M25: progress log never says done
+    first failing line: FAIL F10 the progress log ends with done :: x
+M26 seq=82 polarity=MUTATION verdict=fail outcome=KILLED target_fp=3bf41e70f8e3
+    M26: reads the ticket from the working directory, not the frozen snapshot
+    first failing line: FAIL importer first run exits 0 :: got [20] want [0]
+M27 seq=83 polarity=MUTATION verdict=fail outcome=KILLED target_fp=8dfb89704d20
+    M27: dry run writes
+    first failing line: FAIL F10 --dry-run exits 0 and writes nothing :: import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entries_selected": 7, "entry_changed_after_import": 0, "items_added": 7, "minte
+M28 seq=84 polarity=MUTATION verdict=fail outcome=KILLED target_fp=d9772b9d2ae1
+    M28: unsafe locators (..) accepted
+    first failing line: FAIL F2 non-canonical locator (docs/issues/../issues/x.md, inside the snapshot): exit 20 locator_unsafe, nothing written :: rc=20 import: REFUSED reason=entry_changed entry_changed: 1 (docs/issues/../issues/HELIX-101-wontfix.md (r
+M29 seq=85 polarity=MUTATION verdict=fail outcome=KILLED target_fp=ffcf99470224
+    M29: crash hook honoured outside IMPORT_TEST_MODE
+    first failing line: FAIL F10 the crash hook is refused outside IMPORT_TEST_MODE=1 :: import: FAULT after_ext at entry #1 (test hook)
+M30 seq=86 polarity=MUTATION verdict=fail outcome=KILLED target_fp=2a98f981e8d8
+    M30: extension row written after the item exists (legacy order inverted) - skips the ext write before add
+    first failing line: FAIL importer first run exits 0 :: got [1] want [0]
+M31 seq=87 polarity=MUTATION verdict=fail outcome=KILLED target_fp=03c855b0e11f
+    M31: the Sources block drops the sha256 line
+    first failing line: FAIL (d) Sources block names the source file and its sha256 :: f5908033967002780c9c5f0c808e0a2ba0d32d2437b760c2086ae8381e72d3e4
+M32 seq=88 polarity=MUTATION verdict=fail outcome=KILLED target_fp=5e3033b4dcd4
+    M32: an engine failure is swallowed (add error ignored)
+    first failing line: FAIL F8 disk full (file size limit at the database size): exit 21 (disk_full or io_error), not a success :: rc=1 Traceback (most recent call last):
+M33 seq=89 polarity=MUTATION verdict=fail outcome=KILLED target_fp=78fa8e3f4ae1
+    M33: the final validate/integrity gate is skipped
+    first failing line: FAIL CUT a register that the engine's validate refuses (a planted invalid item) ends the import with exit 1 validate_failed :: rc=0 import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 
+M34 seq=90 polarity=MUTATION verdict=fail outcome=KILLED target_fp=55c6c4c7991f
+    M34: the free-space precondition is skipped
+    first failing line: FAIL F8 free-space precondition (not met): exit 20 disk_headroom, nothing written :: import: ok {"already_mapped": 0, "category_unmapped": 0, "closed_legacy": 4, "duplicates_linked": 0, "entries_selected": 7, "entry_changed_after_

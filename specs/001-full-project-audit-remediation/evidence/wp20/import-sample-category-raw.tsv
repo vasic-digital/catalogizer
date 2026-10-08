@@ -1,0 +1,6 @@
+locator	legacy_id	raw_category	proposed_category
+docs/issues/HELIX-001-a.md	HELIX-001	functional	bug
+docs/issues/HELIX-001-b.md	HELIX-001	functional	bug
+docs/issues/HELIX-950-long.md	HELIX-950		
+docs/issues/HELIX-951-short.md	HELIX-951		
+issues/ANR-2026-04-08-X.md	ANR-2026-04-08-001		

@@ -1,0 +1,54 @@
+# identity: WF17 r5 RED probes (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:04:07Z
+# sha256 tests/infra/test_probes.sh ff5f8bb11116559f146ea8457327290a078fb8c0ea629614b9453d78d5fcbfb5
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_probes.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: script present: scripts/test-infra/probe.sh
+PASS: script present: scripts/test-infra/run_client.sh
+PASS: script present: scripts/test-infra/up.sh
+PASS: script present: scripts/test-infra/down.sh
+PASS: up exits 0 (postgres, redis, ftp, smb, webdav)
+PASS: carrier fixture started (accepts TCP on 5432, speaks nothing)
+PASS: control: a TCP-only check WOULD pass on the carrier (the open-port trap is real)
+PASS: probe.sh (all) exits 0
+PASS: probe postgres PASS with its protocol answer (SELECT 1 answered 1)
+PASS: probe redis PASS with its protocol answer (PING answered PONG)
+PASS: probe ftp PASS with its protocol answer (passive transfer (sha256 equals the corpus manifest))
+PASS: probe smb PASS with its protocol answer (testshare)
+PASS: probe webdav PASS with its protocol answer (PROPFIND answered 207)
+BLOCKED: minio probe BLOCKED (image not obtainable, evidence/wp12/minio-blocked.txt)
+PASS: summary line: pass=5 fail=0 blocked=1 (blocked is not counted as a pass)
+PASS: the client binary list is derived from a package the Containerfile still installs: curl
+PASS: the client binary list is derived from a package the Containerfile still installs: postgresql-client
+PASS: the client binary list is derived from a package the Containerfile still installs: redis-tools
+PASS: the client binary list is derived from a package the Containerfile still installs: lftp
+PASS: the client binary list is derived from a package the Containerfile still installs: smbclient
+PASS: the client binary list is derived from a package the Containerfile still installs: libnfs-utils
+PASS: the client binary list is derived from a package the Containerfile still installs: minio/mc
+PASS: no script of scripts/test-infra execs into a container or invokes a protocol client on the host
+PASS: control needle: the static scan sees a planted 'podman exec -it somecontainer psql'
+PASS: control needle: the static scan sees a planted 'podman container exec somecontainer psql -c x'
+PASS: control needle: the static scan sees a planted 'podman --remote exec somecontainer sh'
+PASS: control needle: the static scan sees a planted 'docker exec x y'
+PASS: control needle: the static scan sees a planted 'docker compose -f f.yml exec svc sh'
+PASS: control needle: the static scan sees a planted 'podman-compose exec svc sh'
+PASS: control needle: the static scan sees a planted 'curl -s http://127.0.0.1:1/'
+PASS: control needle: the static scan sees a planted 'x=$(curl -s http://127.0.0.1:1/)'
+PASS: control needle: the static scan sees a planted 'nfs-cat nfs://x/y'
+PASS: control needle: the static scan sees a planted 'nfs-cp nfs://x/y /tmp/y'
+PASS: control needle: the static scan sees a planted 'smbget smb://x/y'
+PASS: control needle: the static scan sees a planted 'pg_isready -h x'
+PASS: control needle: the static scan sees a planted 'mc ls x'
+PASS: control needle: the static scan sees a planted 'psql -h x'
+PASS: control needle: the static scan sees a planted 'redis-cli -h x'
+PASS: control needle: the static scan sees a planted 'lftp x'
+PASS: control needle: the static scan sees a planted 'smbclient //x/y'
+PASS: control: a comment and a word that merely starts with 'curl' are NOT findings (no false positive)
+FAIL: fixtures: 1 violated: FAIL ftp probe did not fail with its refusal signal 'Login.failed:.530.Login' on a wrong credential (rc=1: FAIL ftp login or passive listing failed: Fatal error: max-retries exceeded)
+# exit: 1

@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "catalogizer-sftp-20261007175234-3667571-run",
+  "at": "2026-10-07T17:52:44Z",
+  "need_bytes": 1500000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 83455578112,
+      "free_after": 81955578112,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 83455430656,
+      "free_after": 81955430656,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

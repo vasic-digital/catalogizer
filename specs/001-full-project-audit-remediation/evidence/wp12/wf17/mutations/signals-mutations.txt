@@ -1,0 +1,5 @@
+no_exit_trap CAUGHT
+trap_armed_after_compose_up CAUGHT
+early_trap_does_not_release_claim CAUGHT
+signals_not_converted_to_exit CAUGHT
+identity_noop_in_up FAILED-BUT-IDENTITY

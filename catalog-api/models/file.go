@@ -60,6 +60,7 @@ type StorageRoot struct {
 	URL                      *string    `json:"url,omitempty" db:"url"`                 // WebDAV specific
 	Enabled                  bool       `json:"enabled" db:"enabled"`
 	MaxDepth                 int        `json:"max_depth" db:"max_depth"`
+	AllowEmpty               bool       `json:"allow_empty" db:"allow_empty"` // an empty share is expected: its scan may complete with 0 files (default false, WF22 R3)
 	EnableDuplicateDetection bool       `json:"enable_duplicate_detection" db:"enable_duplicate_detection"`
 	EnableMetadataExtraction bool       `json:"enable_metadata_extraction" db:"enable_metadata_extraction"`
 	IncludePatterns          *string    `json:"include_patterns" db:"include_patterns"`
@@ -67,6 +68,22 @@ type StorageRoot struct {
 	CreatedAt                time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`
 	LastScanAt               *time.Time `json:"last_scan_at" db:"last_scan_at"`
+}
+
+// StorageRootConnColumns lists, in the order of ConnScanTargets, the storage_roots columns the settings contract
+// (filesystem.SettingsFromRoot) consumes. EVERY query that builds a StorageRoot to hand to a client factory selects exactly these, so no caller can
+// forget the url of a WebDAV root or the mount point of an NFS one (WF22 H1/R1: two callers did).
+const StorageRootConnColumns = "protocol, host, port, path, username, password, domain, url, mount_point, options"
+
+// StorageRootConnColumnsFor is StorageRootConnColumns with every column qualified by the table alias (for joins).
+func StorageRootConnColumnsFor(alias string) string {
+	return alias + ".protocol, " + alias + ".host, " + alias + ".port, " + alias + ".path, " + alias + ".username, " + alias + ".password, " +
+		alias + ".domain, " + alias + ".url, " + alias + ".mount_point, " + alias + ".options"
+}
+
+// ConnScanTargets returns the Scan destinations for StorageRootConnColumns.
+func (r *StorageRoot) ConnScanTargets() []interface{} {
+	return []interface{}{&r.Protocol, &r.Host, &r.Port, &r.Path, &r.Username, &r.Password, &r.Domain, &r.URL, &r.MountPoint, &r.Options}
 }
 
 // FileMetadata represents file metadata

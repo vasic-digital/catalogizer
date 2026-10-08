@@ -14,6 +14,10 @@ func NewDefaultClientFactory() *DefaultClientFactory {
 
 // CreateClient creates a filesystem client based on the storage configuration
 func (f *DefaultClientFactory) CreateClient(config *StorageConfig) (FileSystemClient, error) {
+	// PA-01: a key the protocol does not consume is an error, never a silently ignored value.
+	if err := ValidateSettings(config.Protocol, config.Settings); err != nil {
+		return nil, err
+	}
 	switch config.Protocol {
 	case "smb":
 		smbConfig := &SmbConfig{
@@ -65,13 +69,20 @@ func (f *DefaultClientFactory) CreateClient(config *StorageConfig) (FileSystemCl
 		return NewLocalClient(localConfig), nil
 
 	default:
-		return nil, fmt.Errorf("unsupported protocol: %s", config.Protocol)
+		// Pluggable protocols (sftp, ftps, nfs3, ...) registered through RegisterProtocol.
+		registryMu.RLock()
+		spec, ok := registered[config.Protocol]
+		registryMu.RUnlock()
+		if !ok {
+			return nil, fmt.Errorf("unsupported protocol: %s", config.Protocol)
+		}
+		return spec.New(config.Settings)
 	}
 }
 
 // SupportedProtocols returns the list of supported protocols
 func (f *DefaultClientFactory) SupportedProtocols() []string {
-	return []string{"smb", "ftp", "nfs", "webdav", "local"}
+	return append(append([]string{}, builtinOrder...), RegisteredProtocols()...)
 }
 
 // Helper functions to extract settings
@@ -86,11 +97,9 @@ func getStringSetting(settings map[string]interface{}, key, defaultValue string)
 
 func getIntSetting(settings map[string]interface{}, key string, defaultValue int) int {
 	if val, ok := settings[key]; ok {
-		if num, ok := val.(int); ok {
-			return num
-		}
-		if floatNum, ok := val.(float64); ok {
-			return int(floatNum)
+		// ValidateSettings already refused a non-integer or out-of-range value; a caller outside the factory gets the default instead of garbage.
+		if n, ok := wholeNumber(val); ok {
+			return int(n)
 		}
 	}
 	return defaultValue

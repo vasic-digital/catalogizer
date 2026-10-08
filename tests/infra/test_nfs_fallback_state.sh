@@ -17,6 +17,11 @@ echo '{"schema":"nfs-attempt/1","state":"pass","reason":"","proves_kernel_mount_
 echo '{"schema":"nfs-attempt/1","state":"structural_impossibility","reason":"rootless_cannot_provide_kernel_nfs"}' >"$FX/struct.json"
 echo '{"schema":"nfs-attempt/1","state":"blocked","reason":"nfs_client_unverified"}' >"$FX/blocked.json"
 echo '{"schema":"nfs-attempt/1"}' >"$FX/nostate.json"
+# WF17 TI-E3 / WF17 reviewer E1: records that are NOT what nfs_terminal_state.sh writes are refused attempt_record_malformed, never read leniently
+echo '{"schema":"nfs-attempt/1","state":"pass","reason":"","proves_kernel_mount_path":"true"}' >"$FX/e1-string-true.json"       # the string "true" is not true
+echo '{"schema":"something-else/9","state":"pass","reason":"","proves_kernel_mount_path":true}' >"$FX/e1-foreign-schema.json"
+echo '{"schema":"nfs-attempt/1","state":"pass","reason":"made-up-reason"}' >"$FX/e1-bad-reason.json"
+echo '{"schema":"nfs-attempt/1","state":"blocked","reason":"rootless_cannot_provide_kernel_nfs"}' >"$FX/e1-reason-state-mismatch.json"
 st() { local sut=$1; shift; rm -f "$OUTD/rec.json"; ti_tic --out "$OUTD" tooling unit -- bash "/src/$sut" "$@" --out /out/rec.json >"$TI_SCRATCH/st.out" 2>"$TI_SCRATCH/st.err"; RC=$?; }
 field() { jq -r "$1" "$OUTD/rec.json" 2>/dev/null; }
 battery() {
@@ -38,6 +43,12 @@ battery() {
   if [ "$RC" -ne 0 ] && grep -q 'reason=fallback_not_owed' "$TI_SCRATCH/st.err"; then :; else echo "FAIL blocked was written although the attempt proves the kernel path (rc=$RC)"; n=$((n+1)); fi
   st "$sut" --attempt-json "$FXC/absent.json" --state not_needed
   if [ "$RC" -ne 0 ] && grep -q 'reason=attempt_record_missing' "$TI_SCRATCH/st.err"; then :; else echo "FAIL an absent attempt record was not refused (rc=$RC)"; n=$((n+1)); fi
+  for f in e1-string-true e1-foreign-schema e1-bad-reason e1-reason-state-mismatch; do
+    st "$sut" --attempt-json "$FXC/$f.json" --state not_needed
+    if [ "$RC" -ne 0 ] && grep -q 'reason=attempt_record_malformed' "$TI_SCRATCH/st.err" && [ ! -e "$OUTD/rec.json" ]; then :; else echo "FAIL $f was not refused attempt_record_malformed (rc=$RC state=$(field .state))"; n=$((n+1)); fi
+  done
+  st "$sut" --attempt-json "$FXC/pass.json" --state blocked
+  [ "$(field .attempt_record.file)" = ".audit/scratch/nfsfb-fx.$$/pass.json" ] || { echo "FAIL the record's attempt_record.file is '$(field .attempt_record.file)', not the REAL input path"; n=$((n+1)); }
   st "$sut" --attempt-json "$FXC/nostate.json" --state not_needed
   if [ "$RC" -ne 0 ] && grep -q 'reason=attempt_record_malformed' "$TI_SCRATCH/st.err"; then :; else echo "FAIL a record without a state field was not refused (rc=$RC)"; n=$((n+1)); fi
   return "$n"
@@ -60,6 +71,8 @@ PY
   mut not_needed_on_protocol_pass '    [ "$KERNEL" = true ] || refuse nfs_pass_does_not_cover_kernel_mount' '    true || refuse nfs_pass_does_not_cover_kernel_mount'
   mut blocked_when_kernel_proven '  blocked) { [ "$STATE" != pass ] || [ "$KERNEL" != true ]; } || refuse fallback_not_owed "the T134 record proves the kernel mount path"' '  blocked) true'
   mut unconfirmed_not_recorded '"listed_in":"T159","unconfirmed":"the application kernel NFS mount path (syscall.Mount): the T134 pass is a user-space protocol round trip only"}' '"listed_in":"T159"}'
+  mut schema_and_closed_set_check_dropped 'jq -e '"'"'.schema == "nfs-attempt/1" and ((.state == "pass" and .reason == "")' 'jq -e '"'"'true or ((.state == "pass" and .reason == "")'
+  mut provenance_hard_coded 'attempt_record:{file:$afile, state:$st, sha256:$sha}' 'attempt_record:{file:"wp10/nfs-attempt.json", state:$st, sha256:$sha}'
   [ -z "${NFSFB_EV:-}" ] || cp "$MUTLOG" "$NFSFB_EV/nfs-fallback-mutation.txt"
 fi
 ti_summary

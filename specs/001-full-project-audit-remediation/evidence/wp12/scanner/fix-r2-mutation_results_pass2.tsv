@@ -1,0 +1,74 @@
+# fix-r2 mutation run; copy of the tree under .audit/scratch/wf22fix/mut; catalog-api files of the shared tree changed during the run: 0 [] (1019 files fingerprinted before and after; changes under submodules/filesystem by other workers during the run: 25)
+M00-negative-control-no-change	CONTROL-OK		261s
+A23-production-nas-budget-unbounded	KILLED	TestWF22_A22_A23_ProductionDefaultsOfTheHostGuard	40s
+A27-tokens-shared-across-roots	KILLED	TestWF22_A27_TokensAreIsolatedPerStorageRoot	280s
+A29-sort-reversed	KILLED	TestGenericScanner_BreadthFirstFindsEverythingInOrder	14s
+B03-any-ctx-error-is-cancelled	KILLED	TestWF22_B03_CancelledIsOnlyACancellationOfTheJobContext	160s
+B03r-any-failure-after-cancel-is-cancelled	KILLED	TestWF22_B03_CancelledIsOnlyACancellationOfTheJobContext	41s
+B05r-smb-join-concat	KILLED	TestWF22_R17_SMBAndGenericScannerAgreeOnTheCatalogConvention	70s
+B06-ftp-scanner-not-wired-to-db	KILLED	TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents, TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents/ftp	39s
+B07-webdav-scanner-not-wired-to-db	KILLED	TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents, TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents/webdav	99s
+B08-nfs-scanner-not-wired-to-db	KILLED	TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents, TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents/nfs	219s
+N01-catalog-path-keeps-leading-slash	KILLED	TestWF22_CatalogPathConvention	128s
+N02-db-seam-bypasses-catalog-path	KILLED	TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents, TestWF22_R17_EveryRemoteProtocolWritesTheSameTreeWithoutDuplicatesOrPhantomParents/ftp	219s
+N03-list-limit-not-passed-to-the-client	KILLED	TestReviewProbe_R4_EntryBoundCheckedAfterWholeLevelListed	880s
+N04-fetch-limit-ignores-remaining-budget	KILLED	TestReviewProbe_R4_EntryBoundCheckedAfterWholeLevelListed	44s
+N05-uncounted-entries-fail-a-fitting-tree	KILLED	TestWF22_R4_UncountedEntriesDoNotFailATreeThatFitsTheBudget	41s
+N07-skipped-ratio-never-fails	KILLED	TestWF22_R12_MostOfTheTreeUnreadableIsAFailureNamingTheDirectories	38s
+N07b-skipped-ratio-boundary	KILLED	TestWF22_R12_MostOfTheTreeUnreadableIsAFailureNamingTheDirectories	37s
+N08-skipped-dirs-not-reported	KILLED	TestGenericScanner_BenignDirectoryErrorsAreSkippedAndCounted, TestGenericScanner_BenignDirectoryErrorsAreSkippedAndCounted/os-permission	12s
+N09-deadline-reported-as-cancelled	KILLED	TestWF22_R7_DeadlineIsATimeoutFailureNotACancellation	38s
+N10-incremental-claimed-without-token-store	KILLED	TestPluggableScannerStrategyFollowsWorkers	13s
+N11-token-etag-not-quoted	KILLED	TestChangeToken_UsesClientExtras	13s
+N12-root-allow-empty-ignored	KILLED	TestReviewProbe_R3_LegitEmptyShareJobFails	38s
+N14-depth-probe-counts-skipped-dirs	KILLED	TestGenericScanner_MaxDepthWithEmptyDirectoriesBelowTheBoundCompletes	12s
+N15-cancel-waits-for-the-client	KILLED	TestReviewProbe_R13_CancelLatencyBoundByClient	40s
+N16-snapshot-dir-not-skipped-by-default	KILLED	TestWF22_A20_S1_MetadataDirectoriesAreSkippedAtEveryDepth	37s
+N17-skipped-ratio-default-unbounded	KILLED	TestWF22_R12_MostOfTheTreeUnreadableIsAFailureNamingTheDirectories	340s
+N18-depth-probe-disabled	KILLED	TestGenericScanner_MaxDepthFailsWhenTheBoundHidesContent	1575s
+N19-context-error-not-classified-at-root	KILLED	TestWF22_R7_DeadlineIsATimeoutFailureNotACancellation	38s
+N20-rescan-inserts-instead-of-updating	KILLED	TestWF22_R17b_RescanKeepsIdsAndUpdatesTheRows	38s
+N21-update-does-not-revive-deleted-rows	KILLED	TestWF22_R17b_RescanKeepsIdsAndUpdatesTheRows	250s
+N22-panic-leaves-status-running	KILLED	TestWF22_P0_PanicLeavesAVisibleFailedStatus	131s
+N23-reason-not-scrubbed	KILLED	TestWF22_R9_ReasonAndEventNeverCarryACredential	72s
+N24-event-carries-raw-error	KILLED	TestWF22_R9_ReasonAndEventNeverCarryACredential	162s
+N25-cancelled-published-as-failed	KILLED	TestWF22_R7_CancelledPublishesItsOwnEventWithTheReason	314s
+N27-cover-art-hand-built-smb-map	KILLED	TestWF22_R1_Gate_EveryCreateClientCallerUsesTheSingleSettingsMapping	40s
+N28-cover-art-task-drops-url	KILLED	TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping	222s
+C02-smb-empty-domain-overrides	KILLED	TestWF22_C02_F4_SMBDomainColumn	12s
+C05-registered-options-keys-ignored	KILLED	TestSettingsFromRoot_RegisteredProtocolUsesItsSchemaOnly	72s
+C07-fractional-int-accepted	KILLED	TestValidateSettings_IntegerSpellings	72s
+C07b-int-range-unchecked	KILLED	TestWF22_F1_PortAndIntegerRanges	12s
+C07c-int64-range-unchecked	KILLED	TestWF22_F1_WholeNumberBranches	13s
+C15-factory-skips-validation	KILLED	TestFactory_CreateClientRejectsUnknownKey	12s
+D01-supported-omits-registered	KILLED	TestRegisterProtocol_Lifecycle	19s
+D02-only-plain-int-ports-read	KILLED	TestGetIntSetting, TestGetIntSetting/key_exists_with_float64_value_(JSON_numbers)	4s
+E01-href-not-unescaped	KILLED	TestParsePropfind_ApacheModDav	4s
+E02-propstat-without-status-rejected	KILLED	TestWebDAVClient_ListDirectory_Success	4s
+E03-unparsable-mtime-is-now	KILLED	TestWF22_E03_UnparsableOrMissingTimeIsTheZeroTime	4s
+E05-directory-resourcetype-ignored	KILLED	TestWebDAVClient_ListDirectory_DirectoryResourceType	4s
+E07-name-from-presentation-string	KILLED	TestWebDAVClient_ListDirectory_NoDisplayName	13s
+E09-foreign-hrefs-accepted	ERROR(build/setup failure marker)		3s
+E10-entry-limit-ignored	KILLED	TestWF22_R4_ListLimitStopsDecodingEarly	4s
+E11-empty-body-accepted	KILLED	TestParsePropfind_EmptyAndMalformed	4s
+E12-too-large-answer-truncated-silently	KILLED	TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation	5s
+W01-url-path-replaced-by-root-path	KILLED	TestWebDAVClient_resolveURL, TestWebDAVClient_resolveURL/simple_path	11s
+W02-dotdot-inside-names-stripped	KILLED	TestWF22_R11_DotDotInANameIsKeptDotDotSegmentIsClamped	12s
+W03-listing-error-names-the-credential	KILLED	TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential	17s
+W04-status-error-names-the-credential	KILLED	TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential	15s
+W05-invalid-url-error-echoes-the-url	KILLED	TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential	5s
+W06-propfind-answer-unbounded	KILLED	TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation	4s
+W08-copy-error-names-the-credential	KILLED	TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential	4s
+T01-ftp-base-not-used	KILLED	TestWF22_R18_FTPResolvePath	11s
+T02-ftp-dot-entries-listed	KILLED	TestWF22_R16_FTPClientDropsDotEntries	38s
+H01-reason-not-in-api-json	KILLED	TestWF22_UserPath_WebDAVListingFailureReasonHasNoCredential	17s
+H02-allowlist-is-a-fixed-list	KILLED	TestWF22_H2_RegisteredProtocolIsCreatableAndScannableThroughTheAPI	16s
+H03-webdav-without-url-accepted	KILLED	TestWF22_H2_CreateStorageRootRefusesWhatCouldNeverBeScanned	19s
+H04-port-range-unchecked	KILLED	TestWF22_H2_CreateStorageRootRefusesWhatCouldNeverBeScanned	16s
+H05-create-drops-allow-empty	KILLED	TestWF22_R3_AllowEmptyIsAPerRootSettingThatDefaultsToFalse	16s
+H06-roots-listing-returns-raw-url	ERROR(build/setup failure marker)		4s
+H07-loader-skips-allow-empty-target	KILLED	TestWF22_R3_AllowEmptyIsAPerRootSettingThatDefaultsToFalse	16s
+H08-conn-targets-swap-username-password	KILLED	TestWF22_UserPath_WebDAVRootCreatedAndScannedThroughTheAPI	51s
+H09-conn-columns-lose-url-and-mount-point	KILLED	TestWF22_StorageRootConnColumns, TestWF22_UserPath_WebDAVRootCreatedAndScannedThroughTheAPI	49s
+V01-migration-21-not-registered	KILLED	TestMigrationSequence_AllVersionsApplied	5s
+# mutants=71 killed=69 survived=0 other=2 control=CONTROL-OK

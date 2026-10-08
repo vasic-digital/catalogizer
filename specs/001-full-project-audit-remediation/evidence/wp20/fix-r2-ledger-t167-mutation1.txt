@@ -1,0 +1,13 @@
+# ledger seq=24 item=AUD-T167 polarity=MUTATION iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/wp20-r2/mut/LM05 target_fingerprint=f556119c6f15eb359876154a8636f91bb20862a84fc2a80d50ccf90bc40d9be9 test_fingerprint=9db86ee5d379cc0c1f99fbc5d1869cf098ea7838ebef59033a07894c09d021bf
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "LEAD_SCAN=/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", "python3", "scripts/register/tests/test_lead_scan.py"]
+FAIL baseline scan exits 0 :: Traceback (most recent call last):
+  File "/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", line 288, in <module>
+    sys.exit(run(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^
+  File "/src/.audit/scratch/wp20-r2/mut/LM05/lead_scan.py", line 261, in run
+    disp, cov = DUPLICATE, "covered_by=%s :: %s" % covered
+                           ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+TypeError: not enough arg
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, None)
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

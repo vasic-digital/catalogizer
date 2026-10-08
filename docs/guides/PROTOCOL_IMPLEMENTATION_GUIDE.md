@@ -102,10 +102,9 @@ type FTPConfig struct {
     Port     int    `json:"port"`      // Default: 21
     Username string `json:"username"`  // FTP username
     Password string `json:"password"`  // FTP password
-    TLS      bool   `json:"tls"`       // Enable FTPS
-    Timeout  int    `json:"timeout"`   // Connection timeout (seconds)
-    BasePath string `json:"base_path"` // Base directory on server
+    Path     string `json:"path"`      // Base directory on server (settings key "path")
 }
+// Settings the factory does not consume (tls, passive_mode, timeout, base_path, ...) are rejected, not ignored. FTPS is not implemented yet.
 ```
 
 ### Example Usage
@@ -160,13 +159,12 @@ Content-Type: application/json
 {
   "name": "FTP Server",
   "protocol": "ftp",
-  "base_path": "/media",
-  "credentials": {
+  "settings": {
     "host": "ftp.example.com",
     "port": 21,
     "username": "ftpuser",
     "password": "ftppass",
-    "tls": false
+    "path": "/media"
   }
 }
 ```
@@ -231,11 +229,9 @@ Network File System (NFS) client for accessing Unix/Linux network shares.
 ```go
 type NFSConfig struct {
     Host       string `json:"host"`        // NFS server hostname
-    ExportPath string `json:"export_path"` // Exported directory path
+    Path       string `json:"path"`        // Exported directory path (settings key "path"; "export_path" is rejected with a hint)
     MountPoint string `json:"mount_point"` // Local mount point
-    Version    int    `json:"version"`     // NFS version: 3 or 4
-    ReadOnly   bool   `json:"read_only"`   // Mount as read-only
-    Options    string `json:"options"`     // Additional mount options
+    Options    string `json:"options"`     // Mount options, e.g. "vers=3,ro" (version and read-only are mount options, not keys)
 }
 ```
 
@@ -376,9 +372,7 @@ type WebDAVConfig struct {
     URL      string `json:"url"`       // WebDAV server URL
     Username string `json:"username"`  // Username
     Password string `json:"password"`  // Password
-    TLS      bool   `json:"tls"`       // Use HTTPS
-    BasePath string `json:"base_path"` // Base directory
-    Timeout  int    `json:"timeout"`   // Request timeout (seconds)
+    Path     string `json:"path"`      // Root collection under the URL's own path (settings key "path")
 }
 ```
 

@@ -1,0 +1,16 @@
+# identity: WF17 r5 RED compose_files (new tests, pre-fix producers at git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662)
+# head: 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662
+# run_at: 2026-10-07T22:02:47Z
+# sha256 tests/infra/test_compose_files.sh 2e3b11f69ea974b5f20935272bcb2c72680e4f0d402f9108ae99048f7dfbcc5b
+# sha256 tests/infra/lib.sh 88a9f70d669481e3a50a5d99e145e9343c732db82edefdfc777095e61d4bb32c
+# sha256 tests/infra/mutlib.sh d26187a4947fa097b3d625c86bd942d33a36c608e5182a916cce264a53bad140
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh 8204bad85a7c5ac15d6c91aa2148820f16d521a301423eae076131a41437238f
+# command: env bash -c echo '# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)'; exec bash tests/infra/test_compose_files.sh
+# red-target: producers under scripts/ and the compose files are the PRE-FIX files of git HEAD 4c8b07b7c7f1aa412855ac825b07c6eeb90d4662 (their hashes are deliberately not bound)
+PASS: parses: docker-compose.test-infra.yml
+PASS: parses: docker-compose.test-infra.nfs.yml
+PASS: parses: docker-compose.build.yml
+FAIL: compose_scan infra: 9 finding(s): in_pod_not_disabled_in_file docker-compose.test-infra.yml (each compose file carries x-podman.in_pod: false itself: podman-compose 1.5.0 defaults it to true);not_allowlisted infra.ftp.labels (len=137 sha8=2aa41c0a);not_allowlisted infra.minio.labels (len=137 sha8=2aa41c0a);not_allowlisted infra.postgres.labels (len=137 sha8=2aa41c0a);
+# exit: 1

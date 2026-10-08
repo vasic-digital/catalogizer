@@ -3,14 +3,22 @@
 # the tool applies that the fence does not list is an UNLISTED exclusion, a fence entry the tool does not apply is LISTED-BUT-NOT-APPLIED (a figure would claim a scope it did
 # not have), both FAIL. kind: vitest | jest | jacoco | fence | none (`fence`: the collector of this repository applies the fence file itself: gocov_merge.py --exclusions
 # for Go, bash-coverage.sh --exclusions for bash; their tests prove it). config: repository-relative path of the tool's own config.
+# Round 5 of WP-23 (WF17 K2, K5): EVERY field the gate reads is explicit and a missing row is a FAIL (tool_record_missing), never a skipped rule.
+#   root         the application root (repository-relative) the gate is bound to: --root must be this directory (root_not_application otherwise)
+#   script       the package.json script that RUNS the measuring tool: the gate checks that it runs the tool `kind` names (tool_identity_mismatch: api-client declared jest while
+#                its test script is `vitest run`)
+#   figure_lane  the lane the application's own figure comes from (default unit): a first-party entry cannot be `measured_by` that very lane
+#   measurable   (kind fence) the file extensions the collector can instrument: the denominator of the "more than half" rules
+#   scope        (kind fence) globs naming the first-party files the application's figure CLAIMS to cover; every in-scope file must be measured or named by a fence entry
+#   measured     (kind fence) globs the collector's default targets cover; bash-coverage.sh passes its real --target list instead
 schema: coverage-tools/1
 apps:
-  catalog-api:           {kind: fence, note: "scripts/coverage/gocov_merge.py applies --exclusions to the merged profile (go test -coverpkg takes no exclude list)"}
-  build-scripts:         {kind: fence, note: "scripts/bash-coverage.sh applies --exclusions (bashcov.py is_excluded)"}
-  catalog-web:           {kind: vitest, config: catalog-web/vite.config.ts}
-  catalogizer-desktop:   {kind: vitest, config: catalogizer-desktop/vitest.config.ts}
-  installer-wizard:      {kind: vitest, config: installer-wizard/vitest.config.ts}
-  catalogizer-api-client: {kind: jest, config: catalogizer-api-client/jest.config.js}
-  catalogizer-android:   {kind: jacoco, config: catalogizer-android/app/build.gradle.kts}
-  catalogizer-androidtv: {kind: jacoco, config: catalogizer-androidtv/app/build.gradle.kts}
-  website:               {kind: none, note: "no coverage tool is configured for the VitePress site"}
+  catalog-api:           {kind: fence, root: catalog-api, measurable: [".go"], note: "scripts/coverage/gocov_merge.py applies --exclusions to the merged profile (go test -coverpkg takes no exclude list)"}
+  build-scripts:         {kind: fence, root: ".", measurable: [".sh"], scope: ["**/*.sh"], measured: ["Build/lib/*.sh"], note: "scripts/bash-coverage.sh applies --exclusions (bashcov.py is_excluded); scope = docs/05 7.1 and 7.4 A9/A13: all bash scripts of the repository"}
+  catalog-web:           {kind: vitest, root: catalog-web, config: catalog-web/vite.config.ts, script: "test:coverage"}
+  catalogizer-desktop:   {kind: vitest, root: catalogizer-desktop, config: catalogizer-desktop/vitest.config.ts, script: "test:coverage"}
+  installer-wizard:      {kind: vitest, root: installer-wizard, config: installer-wizard/vitest.config.ts, script: "test:coverage"}
+  catalogizer-api-client: {kind: vitest, root: catalogizer-api-client, config: catalogizer-api-client/vitest.config.ts, script: test}
+  catalogizer-android:   {kind: jacoco, root: catalogizer-android, config: catalogizer-android/app/build.gradle.kts}
+  catalogizer-androidtv: {kind: jacoco, root: catalogizer-androidtv, config: catalogizer-androidtv/app/build.gradle.kts}
+  website:               {kind: none, root: Website, note: "no coverage tool is configured for the VitePress site"}

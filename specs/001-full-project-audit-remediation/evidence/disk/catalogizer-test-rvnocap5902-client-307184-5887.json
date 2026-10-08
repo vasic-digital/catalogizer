@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "catalogizer-test-rvnocap5902-client-307184-5887",
+  "at": "2026-10-07T01:18:55Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 95977742336,
+      "free_after": 95708143436,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 95977713664,
+      "free_after": 95708114764,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

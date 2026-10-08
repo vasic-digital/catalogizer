@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "catalogizer-test-t4397184136-client-1452574-21553",
+  "at": "2026-10-08T06:11:33Z",
+  "need_bytes": 269598900,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 51352563712,
+      "free_after": 51082964812,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 51352592384,
+      "free_after": 51082993484,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

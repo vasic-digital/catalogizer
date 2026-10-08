@@ -143,7 +143,7 @@ func TestStorageRootToSettings_NFS(t *testing.T) {
 	}
 	settings := scanner.storageRootToSettings(root)
 	assert.Equal(t, "nfs.local", settings["host"])
-	assert.Equal(t, "/exports/media", settings["export_path"])
+	assert.Equal(t, "/exports/media", settings["path"])
 	assert.Equal(t, "/mnt/nfs", settings["mount_point"])
 	assert.Equal(t, "rw,sync", settings["options"])
 }

@@ -1,0 +1,225 @@
+# Fix round 5 (11.4.276 round 4 of the item) RED: the matrix of this revision (24 sections) against the scripts of HEAD f72d8757, which are the scripts of the reviewed revision 4b460797 (CPA, host entry and helpers byte-identical: sha256 of scripts/commit-push-all.sh below)
+# CPA_SRC = git archive of HEAD (scripts/repo, scripts/commit-push-all.sh) + the working-tree scripts/longops, scripts/anti-mess and scripts/audit/org_of.py (other areas, not touched by this round); one run per section, TMPDIR=/dev/shm
+# the failing cases are the defects; sections 9 repo mode passed on HEAD, as stated in the guide (its cases protect behaviour that did not regress)
+# red-18_misc was run twice: the first run hit "Disk quota exceeded" on the shared /dev/shm while other agents wrote (kept in the scratch dir, not evidence); the run below is the repeat
+# head: f72d8757fe614adfa38a4f70276853527d06d7e8 (working tree: the scripts below are uncommitted at this time); date_utc: 2026-10-08T04:42:09Z
+# sha256 e39e994901a8ea6036d0434893a77930aaecb229b87e2f323645eb068fe34538  scripts/commit-push-all.sh
+# sha256 a4306fa8904ecbc5e586fb73d402d976d8c84310dddf82b3e05c2b5376af37a5  scripts/repo/host_entry/cpa-host
+# sha256 a8b8572b5836e9a0c3581dd3688a3972b8b344bd80b3df2f10619963c748632d  scripts/repo/host_entry/INSTALL.md
+# sha256 6f72c2ee67b8a06c4065d60287d95a27d6403bd56f995953f8ffe62789e142b9  scripts/repo/lib_safe.sh
+# sha256 3fc7c2593c3da4b9c2b0282041213ac3c75b5de40400b66ae3eeb123d8ffa824  scripts/repo/validate_cheap.sh
+# sha256 7df653425fd9eec6c5dcb3bfb6b4b6e01bb8f38efeade6939a9a198d70bb1baa  scripts/repo/push_recursive.sh
+# sha256 716be8c6c229f5be1d836f4d617fbb6a6f961b9c58860e9d28a3c03727ef031f  scripts/repo/commit_recursive.sh
+# sha256 d3806306a7b811796aab70b8d98cbf2740ee03614394e44e5d5a61d97345a4f1  scripts/repo/scope_check.sh
+# sha256 658d0fed7f5a64a446697e03c7fd65cec7305c35be844ebf47626bf852ed8bc2  scripts/repo/integrate_merge.sh
+# sha256 45ab16c7d5c0e7fd9f0adafaa2e2c7393c08f92611be33d76b63fb03b26c3652  scripts/repo/integrate_ff_only.sh
+# sha256 6d716cc698610e49cc80c08c8074db12214d672ca5ecf266d2584a10f52bc9e9  scripts/repo/record_deferral.sh
+# sha256 74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314  scripts/repo/verify_repos.sh
+# sha256 188c23cbd1ff99eafbd1ddda13c666df7a24777cc47c0354f65a596cee850d12  scripts/repo/check_class.sh
+# sha256 0933b7ea49e24a4ef019cf6eb288fd602b3dcf137a1260b336720caf9ddb14ad  scripts/repo/check_no_ci.sh
+# sha256 89f3595f44843b4247a0c8c807e03e94e6c4595093bf143e1378ac2943b81923  scripts/repo/check_revision_headers.sh
+# sha256 099414f0dbaf261b063e4ac26dd4e17bb7b01ad5f45f41ccc2899e958fe563a0  scripts/repo/fixture_roots.sh
+# sha256 247cf1e77e703f00d756e148cc023a1e8df15eb840f9aef394f97ce4fb91d6ee  scripts/repo/verdict_go.py
+# sha256 73831039fe5c833f0fe240e2167f314ac611d92b341a30ef861b00a834860ac0  scripts/repo/repo_config_allow.tsv
+# sha256 f38d167d58140d487bff8fb69d1dd54703ba8140b9253ee4161c128182a60932  scripts/repo/binary_suffixes.tsv
+# sha256 c422737262fc564f4fbf23a483e77bb6395d237ae14e44cefe0f832ed75c227c  scripts/repo/tests/test_commit_push_all.sh
+# sha256 9d9e048fe068d0cd12f4255dd4c29971f2c31ecf9a5e7f9363ebaaf1824d0fc1  scripts/repo/tests/cpa_mutants.py
+# sha256 fa1020760f7c11ddc3132babf6f0859faa9c582e60023452646c1578ae924bc2  scripts/repo/tests/test_validate_cheap.sh
+# sha256 4ff143b4b512c43a6f5c293b63bafe5c86e74923116aaa9c920c59483bc2b2e2  scripts/repo/tests/test_wp04d.sh
+# sha256 6797e1ca0c7fbaeee53741615b0c917c40a3e18a8e626a8cb4c33d0721109155  docs/scripts/commit-push-all.md
+== section 18_env
+FAIL 18.1 no imported function ran in the entry process, the run or a helper (got '2991', want '0')
+FAIL 18.2 a run under SHELLOPTS=noexec (it used to be exit 0 with nothing run): HEAD did not move
+FAIL 18.2b the PS4 command ran nowhere (got '10521', want '0')
+FAIL 18.2c a run under SHELLOPTS=noclobber (it used to give lock_error): 0 (got '20', want '0')
+FAIL 18.2c a run under SHELLOPTS=noclobber (it used to give lock_error): HEAD did not move
+FAIL 18.2d a run under SHELLOPTS=noglob (it used to list interrupted=["*"]): 0 (got '20', want '0')
+FAIL 18.2d interrupted_runs is empty (got '["*"]', want '[]')
+FAIL 18.3 wrong_branch (no 'wrong_branch' in 'cpa: FAIL S1 20 unrecorded_local_commit (see integrate-S1.json)
+FAIL 18.5 the S1a backup lists the dirty file (the listing was read in full) (no 'src/conf.txt' in '')
+FAIL 18.6 no python of the run imported the caller's sitecustomize (got '8', want '0')
+FAIL 18.6b release_state's python ran no caller module (got '9', want '0')
+FAIL 18.7 the caller library was loaded only by the launching entry (cpa-host, a bash script) and env, which start before the entry scrubs the environment, and by no process after it (no git, jq, python, sha256sum, helper) (got 'acquire.sh awk basename bash cat check_class.sh check_no_build_ check_n
+FAIL 18.8 a relative CPA_HOST_STATE is refused: 20 (got '0', want '20')
+FAIL 18.8 env_value_unsafe (no 'env_value_unsafe' in 'cpa: exit=0 run=20261008T035454Z-2544257-af7d6eb5 stage=S8 reason=')
+FAIL 18.8 nothing was committed (got 'c49117ccfe8f51589615e5be37ca7959428f6781', want 'cd17d8b11c7aceebb9661e681fc0fe989fa3574e')
+FAIL 18.8b env_value_unsafe (no 'env_value_unsafe' in 'cpa: FAIL S5 20 commit_failed (commit_recursive.sh exit 20: commit_recursive: commit_failed: On branch main Your branch is up to date with 'origin/main'.  nothing to commit, working tree clean )
+FAIL 18.9 an empty PATH element is refused: 20 (got '13', want '20')
+FAIL 18.9 env_value_unsafe (no 'env_value_unsafe' in 'cpa: FAIL S7 13 verification_not_clean (verifier exit 13; classes in verify.json)
+FAIL 18.9 the work-tree bash and od ran nowhere (got '23', want '0')
+FAIL 18.9d env_value_unsafe (no 'env_value_unsafe' in 'cpa: FAIL S5 20 commit_failed (commit_recursive.sh exit 20: commit_recursive: commit_failed: On branch main Your branch is up to date with 'origin/main'.  Untracked files:   (use "git add <file>..." t')
+FAIL 18.9c the work-tree git ran nowhere (got '113', want '0')
+FAIL 18.10 a run under a caller environment that holds a name of every family: 0 (got '20', want '0')
+FAIL 18.10 every NAME in the environ of the released core and of a helper is allowlisted (unaccounted: env-core:SHELL env-core:LSCOLORS env-core:COREPACK_ENABLE_AUTO_PIN env-core:COLORTERM env-core:ADDRESS_THE_FACTORY env-core:CLAUDE_CODE_CHILD_SESSION env-core:LESS env-core:NVM_INC env-core:TERM_PR
+FAIL 18.10 LC_ALL is C in the helper (got '', want 'LC_ALL=C')
+---- 46 ok, 24 failed
+rc=1
+== section 18_repo
+FAIL 18.13 the failing src/bad.sh is still refused under a work-tree json.py: 10 (got '13', want '10')
+FAIL 18.13 nothing committed (got 'df074f438a1eb2fcb9272896f43aa41e3b21e40a', want 'e908222b3265b9fe55379100503239eda89a06a9')
+FAIL 18.13 the work-tree module ran nowhere (got '1', want '0')
+FAIL 18.14 a program named by the repository's own config is refused: 20 (got '0', want '20')
+FAIL 18.14 repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035613Z-2571528-de3b86b2 stage=S8 reason=')
+FAIL 18.14 it ran nowhere in the run (got '34', want '0')
+FAIL 18.14 nothing committed (got 'fcd092a04aa142888796cbc9e4d716367cf8d186', want 'e908222b3265b9fe55379100503239eda89a06a9')
+FAIL 18.14b the config key credential.helper is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035625Z-2575561-8719b02e stage=S8 reason=')
+FAIL 18.14b the config key core.sshCommand is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035635Z-2580257-6ef5b27b stage=S8 reason=')
+FAIL 18.14b the config key core.askPass is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035646Z-2585170-bc9085e4 stage=S8 reason=')
+FAIL 18.14b the config key include.path is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035656Z-2590320-4eb1deff stage=S8 reason=')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: FAIL S5 20 commit_failed (commit_recursive.sh exit 20: rror: gpg failed to sign the data: gpg: directory '/dev/shm/cpa_test.2em5Mk/r2b/home/.gnupg' created gpg: keybox '/dev/shm/cpa_test.2em5Mk/r')
+FAIL 18.14b the config key url./dev/shm/cpa_test.2em5Mk/r2/fx/.pushInsteadOf is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035714Z-2598760-8db2d28e stage=S8 reason=')
+FAIL 18.14b the config key filter.x.clean is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035725Z-2603342-c2c7eb1c stage=S8 reason=')
+FAIL 18.14b the config key core.attributesFile is refused: 20 (got '0', want '20')
+FAIL 18.14b repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T035735Z-2608376-66f235ba stage=S8 reason=')
+FAIL 18.14c a non-empty .git/info/attributes is refused: 20 (got '0', want '20')
+FAIL 18.14d a .gitattributes that names working-tree-encoding is refused (the judged bytes would not be the committed bytes): 20 (got '13', want '20')
+FAIL 18.15 a third-party submodule with ONE extra owned remote is still not owned: 20 (got '0', want '20')
+FAIL 18.15 repo_not_owned (no 'repo_not_owned' in 'cpa: exit=0 run=20261008T035807Z-2623518-23273087 stage=S8 reason=')
+FAIL 18.15 the third-party remote did not move (got 'b92317cd4bfb694dd979c423e61dc9c412a64abe', want '5c22eb1b3e5db7c4d687a2b312c72f6dc4778958')
+FAIL 18.15b a push url that names a third party is refused before anything is committed: 20 (got '11', want '20')
+FAIL 18.15b repo_not_owned (no 'repo_not_owned' in 'cpa: FAIL S7 11 commits_not_on_a_remote (after S6; see verify.json)
+FAIL 18.15b the unapproved repository holds nothing (got '5e784a48c70c39fd1f672d0df2fa09007ed9a09b', want 'none')
+FAIL 18.15b nothing committed (got '5e784a48c70c39fd1f672d0df2fa09007ed9a09b', want 'e908222b3265b9fe55379100503239eda89a06a9')
+FAIL 18.16 a registry row deleted in the work tree does not switch its check off: 10 (got '13', want '10')
+FAIL 18.16 nothing committed (got '152d74391804d273a03a12312d0b71007c2ba5b0', want 'e908222b3265b9fe55379100503239eda89a06a9')
+FAIL 18.16 the removed row is reported pending, with the reason (no 'check_pending_release	shell_parse	removed_in_worktree' in '')
+FAIL 18.35 deferrals.tsv holds one LOCAL_ONLY row per verdict (got 'specs/001-full-project-audit-remediation/evidence/reviews/WP-A.json ', want 'specs/001-full-project-audit-remediation/evidence/reviews/WP-A.json specs/001-full-project-audit-remediation/evidence/reviews/WP-B.json ')
+FAIL 18.36 the files map keeps a double space and a backslash in a name exactly (got '["back\\\\slash.txt"]', want '["back\\slash.txt","odd  name.txt"]')
+FAIL 18.36 and its hashes are plain sha256 (got 'null', want '3bb2abb69ebb27fbfe63c7639624c6ec5e331b841a5bc8c3ebc10b9285e90877')
+FAIL 18.37 unjudged_paths holds ONE row per (path, check) and a path is deferred when any row is (got '[{"path":"src/b.sh","check":"shell_parse","deferred":false},{"path":"src/b.sh","check":"shell_parse","deferred":true}]', want '[{"path":"src/b.sh","check":"shell_parse","deferred":true}]')
+FAIL 18.38 and reported as a path no check judged, owing nothing (got '[]', want '[{"path":"src/conf.txt","check":"deletion","deferred":false}]')
+FAIL 18.39 the reason (no 'not UTF-8' in 'cpa: FAIL S3 20 internal_error (validate_cheap.sh exit 1)
+FAIL 18.40 no_remote_reachable (no 'no_remote_reachable' in 'REFUSED . unrecorded_local_commit ddc80606c5d6627c9249821f63870e4104d54df1
+FAIL 18.40 nothing committed (got '3431244a313bd1cf214a71459e42e438a645fde7', want 'e908222b3265b9fe55379100503239eda89a06a9')
+FAIL 18.41 the report states the reason the helper stated (got 'null', want 'force_refused')
+FAIL 18.42 an integrate_merge refusal outside the old word list keeps its stated reason (got 'merge_refused', want 'commit_failed')
+---- 11 ok, 44 failed
+rc=1
+== section 18_toctou
+FAIL 18.17 exit 0: the unjudged bytes were committed and pushed
+FAIL 18.17 the reason is changed_since_validation (no 'changed_since_validation' in 'cpa: exit=0 run=20261008T040001Z-2678297-8a5a4b5d stage=S8 reason=')
+FAIL 18.17 nothing was pushed (got '2', want '0')
+FAIL 18.17 origin does not hold the bad bytes (unexpected 'if then' in 'if then')
+FAIL 18.18 exit 0
+FAIL 18.18 changed_since_validation (no 'changed_since_validation' in 'cpa: exit=0 run=20261008T040011Z-2683102-1919dcd8 stage=S8 reason=')
+FAIL 18.18 origin holds no markers (unexpected '<<<<<<<' in '<<<<<<< x
+FAIL 18.19 exit 0
+FAIL 18.19 changed_since_validation (no 'changed_since_validation' in 'cpa: exit=0 run=20261008T040022Z-2688059-28c7a4b5 stage=S8 reason=')
+FAIL 18.20 a branch switched between S0 and S5: 20 (got '11', want '20')
+FAIL 18.20 branch_moved, not remote_unproven (no 'branch_moved' in 'NOPUSH . mirror already_holds_tip
+FAIL 18.20 the branch side holds no commit of the run (got 'b8acaa596e1a8ee3e643d318f03d9b0231a31a22', want 'c7ea63ebdc71d93194140218bed7cb79755e20cc')
+FAIL 18.21 a helper of the released copy replaced after the start: 20 (got '0', want '20')
+FAIL 18.21 approved_copy_changed (no 'approved_copy_changed' in 'cpa: exit=0 run=20261008T040042Z-2700127-a01cfe59 stage=S8 reason=')
+FAIL 18.21 the FAIL line reached the operator, not only the helper's output file (no 'cpa: FAIL S3 20 approved_copy_changed' in 'cpa: exit=0 run=20261008T040042Z-2700127-a01cfe59 stage=S8 reason=')
+FAIL 18.21 nothing pushed (got '2', want '0')
+FAIL 18.22 a released file is 0444/0555 and a released directory 0555 (got '644 755 775 ', want '444 555 555 ')
+---- 0 ok, 17 failed
+rc=1
+== section 18_sig
+FAIL 18.23 every run directory holds a report (got '1', want '0')
+FAIL 18.23 every run directory holds a report (got '2', want '0')
+FAIL 18.23 every run directory holds a report (got '3', want '0')
+FAIL 18.26 a TERM sent to the whole process GROUP while the report is written: the run still ends 0 with the lock released (got '0:false', want '0:true')
+FAIL 18.27 the run ended 25s after the signal
+FAIL 18.27 the helper never received TERM
+FAIL 18.28 and the next run closes it and proceeds: 0 (got '20', want '0')
+---- 12 ok, 7 failed
+rc=1
+== section 18_res
+FAIL 18.29 the next run, under the REAL sweep, closes the dead run and proceeds: 0 (it used to be 20 sweep_finding at S0) (got '20', want '0')
+FAIL 18.29 the dead run is closed by this one (got '', want '20261008T040236Z-2742483-c1fc709a')
+FAIL 18.29 no claim is left behind (unexpected 'commit_push' in 'commit_push')
+FAIL 18.30 the run directory holds a report (reason tool_missing) (got '', want 'tool_missing')
+FAIL 18.31 the claim was leaked
+FAIL 18.31 the next run is not blocked: 0 (got '20', want '0')
+FAIL 18.32 the commit made is recorded in commits.tsv (the TERM was held until the row was written) (got '', want '1')
+FAIL 18.32 the next run pushes it: 0, never unrecorded_local_commit (got '20', want '0')
+FAIL 18.32 origin holds HEAD (got '889d9fa05c65550782330286e97518ae86d18866', want '969ddd201d173aabccc5f73f685d35290ab43480')
+FAIL 18.33 report.json exists when the lock is released (a successor never starts before it) (got 'no', want 'yes')
+FAIL 18.34 a report.json that cannot be written: 20 report_write_failed, never a 0 without a report (got '0', want '20')
+FAIL 18.34 the message (no 'report_write_failed' in 'NOPUSH . mirror already_holds_tip
+---- 7 ok, 12 failed
+rc=1
+== section 18_report
+FAIL 18.35 deferrals.tsv holds one LOCAL_ONLY row per verdict (got 'specs/001-full-project-audit-remediation/evidence/reviews/WP-A.json ', want 'specs/001-full-project-audit-remediation/evidence/reviews/WP-A.json specs/001-full-project-audit-remediation/evidence/reviews/WP-B.json ')
+FAIL 18.36 the files map keeps a double space and a backslash in a name exactly (got '["back\\\\slash.txt"]', want '["back\\slash.txt","odd  name.txt"]')
+FAIL 18.36 and its hashes are plain sha256 (got 'null', want '3bb2abb69ebb27fbfe63c7639624c6ec5e331b841a5bc8c3ebc10b9285e90877')
+FAIL 18.37 unjudged_paths holds ONE row per (path, check) and a path is deferred when any row is (got '[{"path":"src/b.sh","check":"shell_parse","deferred":false},{"path":"src/b.sh","check":"shell_parse","deferred":true}]', want '[{"path":"src/b.sh","check":"shell_parse","deferred":true}]')
+FAIL 18.38 and reported as a path no check judged, owing nothing (got '[]', want '[{"path":"src/conf.txt","check":"deletion","deferred":false}]')
+FAIL 18.39 the reason (no 'not UTF-8' in 'cpa: FAIL S3 20 internal_error (validate_cheap.sh exit 1)
+FAIL 18.40 no_remote_reachable (no 'no_remote_reachable' in 'REFUSED . unrecorded_local_commit 3a0ab9dc421a82fb9f85fb180c87e1902e0c3e75
+FAIL 18.40 nothing committed (got '452fae39404b0373402e55d5ef1f9dd24e858be9', want 'c8d7e2b08d13fd21775737f4943f189caf786f7e')
+FAIL 18.41 the report states the reason the helper stated (got 'null', want 'force_refused')
+FAIL 18.42 an integrate_merge refusal outside the old word list keeps its stated reason (got 'merge_refused', want 'commit_failed')
+---- 5 ok, 10 failed
+rc=1
+== section 18_misc
+FAIL 18.44 a .go file with markers AND a NUL byte: 10 (one NUL no longer turns the scan off) (got '0', want '10')
+FAIL 18.45 a shell script with no suffix is parsed by its shebang: 10 (got '0', want '10')
+FAIL 18.46b a failing .SH file (suffixes compare case-insensitively): 10 (got '0', want '10')
+FAIL 18.47 --commit-before-integrate with an untracked nested repository and a dangling symlink is no backup_failed (it used to be) (unexpected 'backup_failed' in 'cp: -r not specified; omitting directory '/dev/shm/cpa_test.ed2Kat/k5/w/nested/'
+FAIL 18.47 the nested repository and the link are recorded in the backup (no 'nested_repo	nested' in '')
+FAIL 18.47b and the dangling link (no 'symlink	src/dangling	nowhere' in '')
+FAIL 18.47d a staged rename whose old path minus three characters names an UNCHANGED file: that file is no part of the backup (unexpected 'README.txt' in '01d09d19c2139a46aebfb577780d123d7396e97201bc7ead210a2ebff8239dee  b.txt
+FAIL 18.48b a failing outgoing-commit listing at S1a is 20, never an empty range (got '0', want '20')
+FAIL 18.48b git_listing_failed (no 'git_listing_failed' in 'cpa: exit=0 run=20261008T042411Z-3306208-43c10300 stage=S8 reason=')
+FAIL 18.49 --repo of a submodule whose path holds a space: 0 (it used to be repo_not_found) (got '20', want '0')
+FAIL 18.50 a tag named like the branch does not break it (it used to be wrong_branch): 0 (got '20', want '0')
+FAIL 18.50 a tag named like the branch does not break it (it used to be wrong_branch): HEAD did not move
+FAIL 18.51 --awaits-review without --paths-from: 20 (got '0', want '20')
+FAIL 18.51b a message without --paths-from: 20 (got '0', want '20')
+FAIL 18.52 given twice (no 'given twice' in 'cpa: FAIL S0 20 repo_not_owned (mods/ext: a --repo run targets an own-organisation repository only)
+FAIL 18.52b cpa-host --run-id twice: 20 (got '0', want '20')
+FAIL 18.53 a message equal to --run-id after -- is a message: 0 (got '20', want '0')
+FAIL 18.54 a paths line with a TAB and an empty verdict: 20 (got '0', want '20')
+FAIL 18.55 --resolve-merge when no merge ran: 20 (got '0', want '20')
+FAIL 18.56 a message line that reads like a trailer: 20 (got '14', want '20')
+FAIL 18.56 usage_error (no 'message_impersonates_trailer' in 'HELD . 9de468ec9bdc984b0e05396c953a7ae735a01231 specs/x.json absent
+FAIL 18.57 the first commit names the foreign commit although a body line of another commit spells it (no 'Foreign-Commit: 54a4e22d877cb84b3b1852694b9554cb72224234' in 'own change
+FAIL 18.58 a hold on a verdict that says GO but is schema-invalid is a legal hold: 14, not verdict_already_go (got '20', want '14')
+FAIL 18.60 --paths-from /dev/zero is refused at once: 20 (got '124', want '20')
+FAIL 18.61 a pending pin row BEHIND the pin the parent records is stale: 15 pointer_drift, never 0 (got '0', want '15')
+FAIL 18.61 the stale row was dropped (got '1', want '0')
+FAIL 18.62 a control character in SKIP_LONG is refused: 20 (got '14', want '20')
+FAIL 18.67 a declared FIFO is reported not_judged non_regular, never read as a deletion (no 'not_judged	non_regular	src/fifo' in '')
+FAIL 18.63b a run state that cannot be read: 20 (got '0', want '20')
+FAIL 18.63b the report says internal_error (got 'null', want 'internal_error')
+FAIL 18.63b and names the run directory whose state was unreadable (no 'could not be read' in 'null')
+---- 32 ok, 31 failed
+rc=1
+== section 16_sig
+FAIL 16.4 SIGHUP: the run directory holds a report (reason internal_error) (got '', want 'internal_error')
+FAIL 16.4 SIGQUIT: the run directory holds a report (reason internal_error) (got '', want 'internal_error')
+FAIL 16.4 SIGTERM: the run directory holds a report (reason internal_error) (got '', want 'internal_error')
+FAIL 16.4 SIGUSR1: the run directory holds a report (reason internal_error) (got '', want 'internal_error')
+---- 222 ok, 4 failed
+rc=1
+== section 17_r2
+FAIL 17.1 and the run is 20 lock_release_failed, never a 0 that left the claim behind (got '0:null', want '20:lock_release_failed')
+FAIL 17.1 the next run reaps the leaked claim itself (S0, reap.sh proves the holder dead): the run proceeds, no lock_stale_claim (got 'lock_stale_claim', want 'lock_release_failed')
+---- 44 ok, 2 failed
+rc=1
+== section 9_repo_mode
+---- 18 ok, 0 failed
+rc=0
+== section 14_contract
+FAIL 14.6 a dead holder's claim is reaped by S0 itself (reap.sh --purpose commit_push proves the holder dead) and the run proceeds: 0 (got '20', want '0')
+FAIL 14.6 reap.out records the released stale claim (no 'released stale claim commit_push' in '')
+FAIL 14.6 the reaped holder's own run is closed by this one (its process is gone, no report) (got '', want '20261008T041856Z-3145979-1b99e58e')
+---- 89 ok, 3 failed
+rc=1
+== section 11_static
+FAIL 11.5 control needle: the block holds the allowlist (no 'CPA_ENV_ALLOW=' in '# --- cpa env scrub begin ---
+FAIL 11.5 every script of a run starts with #!/bin/bash -p (imported functions, SHELLOPTS, BASHOPTS, BASH_ENV and ENV are ignored by bash itself; an absolute interpreter cannot be replaced through PATH; unaccounted: commit-push-all.sh cpa-host check_class.sh check_no_ci.sh check_revision_headers.sh 
+FAIL 11.5 commit-push-all.sh: the first statement after set -u is 'LC_ALL=C'
+FAIL 11.5 cpa-host: the first statement after set -u is 'LC_ALL=C'
+FAIL 11.5 every python3 of a run is isolated (-I: no PYTHON* variable, no working-directory module; unaccounted: check_class.sh:20 fixture_roots.sh:51 integrate_ff_only.sh:212 push_recursive.sh:131 validate_cheap.sh:50 verify_repos.sh:210) (got ' check_class.sh:20 fixture_roots.sh:51 integrate_ff_on
+---- 64 ok, 5 failed
+rc=1
+== total over the 12 sections: 550 ok, 159 failed

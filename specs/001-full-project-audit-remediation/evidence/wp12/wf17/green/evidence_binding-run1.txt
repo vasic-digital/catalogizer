@@ -1,0 +1,72 @@
+# identity: WF17 r5 GREEN evidence_binding run 1
+# head: f72d8757fe614adfa38a4f70276853527d06d7e8
+# run_at: 2026-10-08T02:02:33Z
+# sha256 scripts/test-infra/lib.sh 80773bcf7524a013c7599ac2b63ec0eaf381a3c1b52d44a6811c15309b7efc55
+# sha256 scripts/test-infra/up.sh cceea150435b742da632f0b6c16efe95bf798538455537d82270a55e4b000ebd
+# sha256 scripts/test-infra/down.sh e63658ed9225f876d12ea6603c9df08e7f4407eb57b069140a426b44b1f1233b
+# sha256 scripts/test-infra/probe.sh d6526d3df9973a0858e602808075c26ef795a7fe9b32fa55ed4c06570083101a
+# sha256 scripts/test-infra/roundtrip.sh 4c7adffd4777c5a06748d2c6455452fd897a4545c406b6bf732e394cb052ea79
+# sha256 scripts/test-infra/run_client.sh cc255eb2203a5a821cfe87d5e537187ad6f6369ff468a565df86fd51aa783c5a
+# sha256 scripts/test-infra/sweep_leaks.sh 366fb3c5f1b3e1e331c56bba8a8dedb80cfa4e82069e426941e07fac613735ee
+# sha256 scripts/test-infra/gen_env.sh cca9e043f44473fcc0ec38272a40958ece887ce71098e3a8f03fd910cf6185d2
+# sha256 scripts/test-infra/seed_corpus.sh 376032fcbd8ce82c5382d4a91f2df2adb91fe0d38e03cb3b81f268a5a61bf1cb
+# sha256 scripts/test-infra/nfs_attempt.sh 8efff1b1eb0abe82ab63e4f0459011c465307448b8857578a15a37d6f736f19e
+# sha256 scripts/test-infra/nfs_build.sh 76a6d75ae154e99ff7fbd7156425b9bf164959bb5efd5b696d8687fb8888a06c
+# sha256 scripts/test-infra/nfs_terminal_state.sh 97ee1dbef9050cb164bf3ffedcdc89cc9f40d3684836776f4e7a78feb323c232
+# sha256 scripts/test-infra/nfs_fallback_state.sh b554c4b29624ac4495d9406bedc8caa6e420379495ce47fd7cd058b5831fdb23
+# sha256 scripts/test-infra/blocked_external.sh d53e46ff0b25dfbf59023a5b408833e00649b3cc8a66e44c123820871cb7e2f4
+# sha256 scripts/test-infra/nas_readonly_leg.sh 004d308a4601fe91deb8cdc1f63204160d45fd18e303b569b46e3fb59e676a19
+# sha256 scripts/test-infra/dotenv_get.py 5d04636ea654617d05995c73d4965cf03e25fa9586e087bd511af336041ca856
+# sha256 scripts/test-infra/client/lib.sh 02e16d66b8df2ea9e5824541ada954b01c0e7a6685ad64cd4c3c2271beefd589
+# sha256 scripts/test-infra/client/isolation_probe.sh cc8c4ba3e0ba9933ec59df4c30468b0b95b70b323847cfd215df4401b206de3b
+# sha256 scripts/test-infra/client/marker.sh 5605aa7b1f22be0339547a66499fa170ea9fa3905094ea09246ecc1ea33217b8
+# sha256 scripts/test-infra/client/nas_smb_ro.sh 38269ab98a0a2c6e2cab3b53493f6452e9bc24660a2948317d56113a9d3eac32
+# sha256 scripts/test-infra/client/probe_ftp.sh c411005b735da1e79d027a57d387ec14b99bbafb182bae0a601eae5e314b1045
+# sha256 scripts/test-infra/client/probe_nfs.sh 1a4908bcb36d6fd58fe374b1dad190b5a552270562bbead4c7c13f6e7a331f0f
+# sha256 scripts/test-infra/client/probe_postgres.sh 98ade67132e06073d8f8280da0564d995a6870e0189000952a3b57ceb7f92d25
+# sha256 scripts/test-infra/client/probe_redis.sh bb35804ddeb6d4d9e235b01beddbfa62b20daaa90a6f40bea66ff1613d440e48
+# sha256 scripts/test-infra/client/probe_smb.sh 0adbc6e756070bd6472685faeebe0228dc659be84ba42168c5b8adc9c6880f98
+# sha256 scripts/test-infra/client/probe_webdav.sh 81cbab150ff5201ff0d6cfadece123e8a0647ae07edc69b81c12ab52b3e8e571
+# sha256 scripts/test-infra/client/roundtrip_ftp.sh 60767b8c03e46b2447792b0e0f6a420c70d0b810a73372960c2bc8e4fba4b818
+# sha256 scripts/test-infra/client/roundtrip_nfs.sh aaa2e599f5ffbbb5ca4f068517eb014e058b15f8e4a20ef6bcdffe148e03217b
+# sha256 scripts/test-infra/client/roundtrip_postgres.sh 6240cd451496b0ea7117162e8fdc43a0fbed28a6ddf5a529a66d86c664441515
+# sha256 scripts/test-infra/client/roundtrip_redis.sh 602187be7dc048e812c5689deaf6f8368446a41463e4c6017350c9e8e8dae6f5
+# sha256 scripts/test-infra/client/roundtrip_smb.sh 0d28eb8e6f1de0b376097442a99a392bcccb36af327cdb79b5151fa0c10a5efa
+# sha256 scripts/test-infra/client/roundtrip_webdav.sh 6d488bd4d8ba2d81e1939e16db9680aa715d63b024095e9cb1d132c11df99354
+# sha256 docker-compose.test-infra.yml 1a9408ccf42af040da253bac8cde86d09e9799d3685cc5ac00b5a88a703377e8
+# sha256 docker-compose.test-infra.nfs.yml 6fa085c4550315bf39a76bf26711c44ed3bf70a3aa2c533be18c97de898f97b3
+# sha256 docker-compose.build.yml 811efeeafb63be5f31b0c780eea186d3c7cf677f3d6b9516016cbc783e053f14
+# sha256 scripts/container-build.sh b5fcc7d7eaf807c1debbedc22ae234a0b3b0fca071bb9c1e8ec20dc1109034bc
+# sha256 scripts/setup-test-env.sh 6cef772ffeeb887590ba591fb8762dcf746eecc7b764291a7b08a9ff813561d3
+# sha256 tests/infra/lib.sh 158e4247c8d600185354814c5d7fecaa9c3f74a4d6bb7e21005417b0aab24227
+# sha256 tests/infra/mutlib.sh b65636c47897a85021dcf2e9938f5da3b46717bacee3de6a54d3dbc0c28db396
+# sha256 tests/infra/capture.sh 0ce6facabb1d1430d65e36a6bc839fcde34169652aa5cf84d79492d37b385412
+# sha256 tests/infra/test_evidence_binding.sh 515f1b65d9b4710c84bee5ef496938327bc473858277b4d7d795de014b523573
+# sha256 tests/infra/compose_scan.py f150bab2ff799e055bc852c30bc3adeb5aed1e4bcb54f63cb45b437ddb145f6d
+# sha256 tests/infra/compose_mutants.py 80c8ff495645478cdd579dc7e16e42825e01b0d802c1ff5d59662a8be9371135
+# sha256 tests/infra/check_evidence_binding.sh cb118e197186e11dd55eb5bbb3fcc8ab4c6bd5afa0ee2ec9fd42471c0474f6cd
+# command: bash tests/infra/test_evidence_binding.sh
+PASS: script present: /home/milosvasic/Projects/catalogizer/tests/infra/check_evidence_binding.sh
+PASS: B1: a bound fixture is accepted (exit 0)
+PASS: B1: the checker saw 3 headers and 1 manifest (it is not blind)
+PASS: B2: an edited header hash is refused (exit 1)
+PASS: B2: the finding names the file and line
+PASS: B3: the file under test changed after the capture: refused (exit 1)
+PASS: B4: a manifest naming an untracked file is refused (exit 1)
+PASS: B4: the finding says it is not tracked
+PASS: B5: a tracked file missing from the manifest is refused (exit 1)
+PASS: B5: the finding names the unlisted file
+PASS: B6: an edited manifest hash is refused (exit 1)
+PASS: B7: a header claiming ABSENT for a file that exists is refused (exit 1)
+PASS: B8: worktree mode sees the uncommitted change to the file under test and refuses (exit 1)
+PASS: B8: head mode judges the COMMITTED state only and accepts it (exit 0): what a clean checkout holds
+PASS: B8: worktree mode accepts the consistent uncommitted tree (exit 0)
+PASS: B11 control: the stale header is refused without the flag (exit 1)
+PASS: B11: --manifests-only accepts the stale header (exit 0)
+PASS: B11: --manifests-only still refuses an unlisted tracked file (exit 1)
+PASS: B9: no directory is a usage error (exit 2)
+PASS: B9: a bad --against value is a usage error (exit 2)
+PASS: B9: a directory that is not a git repository exits 3
+SKIP: B10: no committed wf17 evidence at HEAD yet (or EB_SKIP_REPO=1)
+SUMMARY pass=21 fail=0 blocked=0
+# exit: 0

@@ -1,0 +1,170 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | GREEN test_sweep_r5.sh run 3
+# utc 2026-10-08T01:05:52Z | host anton | git head e9d6883d (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/anti-mess/tests/test_sweep_r5.sh
+# identity: task=WP08-R5-sweep utc=2026-10-08T01:05:52Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=e9d6883d213528426b1d83fecb9ed86fb28651f1 (scripts and tests may be uncommitted: the content hashes below identify them)
+# sha256 lib.sh=1421c74043f4d2c22cc5a72501603e36becd7347b93c993fa97482724dedaab2
+# sha256 register.sh=1e0e427e19b4f3b998e31e54899925138d4bbe112c7cdb9a384731c53b87b7f7
+# sha256 acquire.sh=18bf0886ee76a9826575ef326cf5a139a70c1dd29dc7253cc77b6d2a200a0d88
+# sha256 release.sh=813038db5c1503e8e907dd21499083ad9a0c1bceacc0d5d1407142c988cd4200
+# sha256 heartbeat.sh=5696ab3d37c8e44b1928f70a8d8de97e42e87d96db6c6a5d7860e30cf2c2a20e
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=bf386b612a687c1bf3d13cc68e7b007d1b26bc2b4c063940d11fb455efe81a7f
+# sha256 reap.sh=17b412576b9b0789e4ce551ce7a1e76441fc6770d59c0cb031e0434399ed4a1c
+# sha256 check_no_build_writing_tracked.sh=dd7efc97154bcddae312c861116cee7fda57b80dcaa33be2431989b74abd8391
+# sha256 require_verdicts.sh=5c19d819464fa5b6832eb6119e6c3bbc64bc8839d6a52ff1fd9323518b4779c1
+# sha256 scripts/longops/tests/lib.sh=6ae3e382496d2622ace5232c024f3cf486a5a4860aa4558af53a8e9eb809fae9
+# sha256 scripts/longops/tests/mutate_registry.sh=22f432f07f497b7f76e76c00439003b24b3686404df6478b67d7862bb3c48b5b
+# sha256 scripts/longops/tests/mutate_safety.sh=1925100f6de1b98dd997e43419838dafc5adf21b6ca193161d361c335dd808b3
+# sha256 scripts/longops/tests/mutation_safety.sh=ec63c9735e464066879584d54b5b7965103bed7e0b8d8b1a2e85dd0f7a933601
+# sha256 scripts/longops/tests/test_mutation_safety.sh=0a1a0290d5675271b5ddc29bdb79476da8b3b687d9ad82d6ad86b0862e94c09e
+# sha256 scripts/longops/tests/test_registry.sh=2b7629f11522ed400b918cc1620057774762e8f38f1cc7d256c40c75c6902ecc
+# sha256 scripts/longops/tests/test_registry_r5.sh=fb400df1eca9174806d4336d8235a466078276c4f94f1f3df0e666dcb166ae6c
+# sha256 scripts/anti-mess/tests/mutate_sweep.sh=e69400b3dfdbe8c0762ab90039de0653e7762ee07f7c73eac0579628760a002a
+# sha256 scripts/anti-mess/tests/sweep_lib.sh=cf4d6fe9437f547f108bc7be3e154e7d5fe83c69ca12a46080c915e8f6d8a49d
+# sha256 scripts/anti-mess/tests/test_sweep.sh=f63d280a3fd020dc4b49232affe01d6d27c506a6b0120a6ac6dad99d8fa6a208
+# sha256 scripts/anti-mess/tests/test_sweep_r5.sh=d9e740563cb09dd8306bb3a93e547a2873c5154d5848a72fb8db00dc41e8be62
+# sha256 scripts/anti-mess/sweep.sh=e7e9ebdaab47c75e0a126c400850a9d0566960d6bd83885d2f5b9e114078fc42
+# sha256 scripts/anti-mess/catalogue.yaml=e84afb5a49ed0c722349cdf16f457fbcab460f4b2bdbe717df4c0620c15399c8
+# sha256 scripts/build/dispatch.sh=3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d
+# sha256 scripts/repo/verify_repos.sh=74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314
+# sha256 scripts/repo/check_no_ci.sh=0933b7ea49e24a4ef019cf6eb288fd602b3dcf137a1260b336720caf9ddb14ad
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+# sha256 sweep.sh=e7e9ebdaab47c75e0a126c400850a9d0566960d6bd83885d2f5b9e114078fc42 catalogue.yaml=e84afb5a49ed0c722349cdf16f457fbcab460f4b2bdbe717df4c0620c15399c8
+== class B: the driver cannot print clean without having evaluated ==
+ok   B1 a lock that vanishes between find and stat must not abandon the driver: ONE row per catalogued invariant (16)
+ok   B1b the seeded dead-owner drift is still reported (exit 10, never 0)
+ok   B1c the vanished lock is skipped, AM-R2 clean (released meanwhile)
+ok   B2 a report.json that vanishes before stat (INV-9) preserves completeness: both rows present, no arithmetic abort
+ok   B3 a detector that exits, one with an unbound variable and one with a broken arithmetic expansion are BLIND (exit 20), never clean
+ok   B3b every other invariant still has its row and ran
+ok   B3c the reason says the detector ended abnormally
+ok   B5 a run that did not produce ONE result row per selected invariant exits 20 driver_incomplete, never 0
+-- two passes: the final status and the exit code come from the state AFTER the reconcile --
+ok   B4 pass 1 reaps the dead-owner op; pass 2 sees its container as the container of a TERMINAL op and stops it: the container is gone
+ok   B4b the FINAL state is clean and the exit is 0 (it was computed after the reconcile)
+ok   B4c the report keeps what pass 1 detected
+ok   B4d two reconcile actions ran (reapop, stopcontainer), neither repeated
+== class C: reconcile bound to its invariant, canonical sinks, parse-safe stream ==
+ok   C1 an op_id carrying TAB + LF + an rmlock action forges no row: the file outside any .git is intact
+ok   C1b the hostile record is reported unread (it fails the record shape), no action ran
+ok   C1c a forged rmdir:finished_run with a climbing path removes nothing outside commit-push
+-- every sink on canonical paths, bound to its invariant (test detectors, ANTIMESS_TEST_MODE=1) --
+ok   C2 rmlock of a file that is not a *.lock under the git dir is refused
+ok   C2b rmlock of a SYMLINK named *.lock inside .git (pointing outside) is refused
+ok   C2c golden-false: a real stale index-style lock is removed
+ok   C2d the victim and the symlink target are intact
+ok   C2e rmdir:finished_run with a climbing path is refused
+ok   C2f rmdir:finished_run on a SYMLINK run dir pointing outside is refused
+ok   C2g golden-false: a real finished run directory (canonical parent commit-push) is removed
+ok   C2h the outside directory with its report.json is intact
+ok   C2i rmdir:build_tmp on a symlink named *.tmp-<pid>-<start> is refused
+ok   C2j rmdir:build_tmp outside the builds dir is refused
+ok   C2k golden-false: a real dead-owner build temp dir is removed
+ok   C3 an rmlock action emitted by an invariant whose catalogue entry does not list rmlock is refused (not run)
+ok   C3b the lock of the foreign row is intact
+ok   C3c an action of its own invariant still runs (reapop of an unknown op is 'refused' by reap.sh, not by the binding)
+ok   C6 a git lock whose NAME holds LF and TAB forges no row (the stream is escaped): no finding of the forged class, the odd name is reported unread
+-- LO-C2: the action re-verifies the class that was DETECTED, not 'reap.sh would reap' --
+ok   C4 a dead-owner row rebound to a live pid before the action is NOT signalled: the owner lives
+ok   C4b no signal was ever recorded
+ok   C4c the report says the action was refused
+ok   C4d the record was not reaped
+ok   C5 --reconcile does NOT reap a HUNG op (live owner): reported with NO action, the owner lives, nothing signalled, the op not reaped
+== class A on the sweep consumers: a bad field is unread, never clean, never reaped ==
+ok   A1s.1 [del(.pid)]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.1 [del(.pid)]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.2 [.pid=null]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.2 [.pid=null]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.3 [.pid=1]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.3 [.pid=1]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.4 [.start_time=""]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.4 [.start_time=""]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.5 [.last_progress_epoch="08"]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.5 [.last_progress_epoch="08"]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.6 [.budget.no_progress_s="x"]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.6 [.budget.no_progress_s="x"]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.7 [.state="bogus"]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.7 [.state="bogus"]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.8 [del(.run_id)]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.8 [del(.run_id)]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.9 [.container_label=7]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.9 [.container_label=7]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.10 [.attached_to=0]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.10 [.attached_to=0]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.11 [.superseded_by=[]]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.11 [.superseded_by=[]]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A1s.12 [del(.boot_id)]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean
+ok   A1s.12 [del(.boot_id)]: the record was NOT reaped by --reconcile (byte-identical)
+ok   A3 attached_to/superseded_by naming a LIVE op of the same purpose is excused (clean)
+ok   A3b attached_to naming no op hides nothing: duplicate_owner
+ok   A3c a mistyped attached_to/superseded_by (zero) is unread, not a hidden duplicate
+ok   A3c a mistyped attached_to/superseded_by (empty) is unread, not a hidden duplicate
+ok   A3 attached_to/superseded_by naming a LIVE op of the same purpose is excused (clean)
+-- INV-9: commits.tsv that cannot be read as <repo> TAB <sha> rows is never 'no held commit' (LO-A10) --
+ok   A6 a SPACE-delimited commits.tsv (no sha column) keeps the run directory
+ok   A6b an UNREADABLE commits.tsv keeps the run directory
+ok   A6c golden-false: a TAB-delimited file whose sha is on the remote tip is removable (removed)
+-- AM-P4: a claim removed while it is being judged is not a drift of age 'now' (LO-A11) --
+ok   A7 a claim directory released during the read yields no claim_without_holder drift
+== class E: label -> lineage (the REAL reg_adopt records), the writers of every op, adoption ==
+ok   E0 control needle: the extraction holds the real reg_adopt
+ok   E1 [1 restart(s), final attempt LIVE] the container of the running build is not reported and not stopped
+ok   E1 [1 restart(s), final attempt COMPLETE] the container of the finished build is reported and stopped once
+ok   E1 [1 restart(s), final attempt HANDOFF] the container is informational, never stopped
+ok   E1 [2 restart(s), final attempt LIVE] the container of the running build is not reported and not stopped
+ok   E1 [2 restart(s), final attempt COMPLETE] the container of the finished build is reported and stopped once
+ok   E1 [2 restart(s), final attempt HANDOFF] the container is informational, never stopped
+ok   E1 [10 restart(s), final attempt LIVE] the container of the running build is not reported and not stopped
+ok   E1 [10 restart(s), final attempt COMPLETE] the container of the finished build is reported and stopped once
+ok   E1 [10 restart(s), final attempt HANDOFF] the container is informational, never stopped
+ok   Y1 a record container_label written as op_id=<value> matches the container labelled <value>: clean
+ok   C10 a BARE container_label equal to the container's label value matches: clean
+ok   C09 a wedged container runtime is bounded by LONGOPS_PODMAN_TIMEOUT_S: the sweep returns 11 (containers_unread), never hangs
+ok   C09b it returned in 3 s
+-- LO-E3: a container that carries BOTH label keys with different values (the real test-infra client) --
+ok   E3 the container whose op_id label names a LIVE op is clean (400 s old, the other label names an unregistered op)
+ok   E3b control: when BOTH labels name no op the container IS an orphan
+-- LO-E4: a handoff is adopted by its next attempt, not by any later op of the purpose --
+ok   E4 a SAME-SECOND successor (-a2, started_utc equal) adopts; an unrelated later op and an earlier op do not
+ok   E4b the two un-adopted handoffs are h2 and h3
+ok   E4c a handoff with started_utc '' is unread, not 'adopted by an earlier op'
+-- AM-P4: a live claim that no op accounts for, and the claim of a terminal op --
+ok   G4 claim_without_op and claim_of_terminal_op are drift; the acquire.sh purpose commit_push (no op record) is not
+== class A (merge.json): the INV-9 merge record is judged by its fields, never by a default ==
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":"."}] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":".","pid":"abc","start_time":"1"}] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":".","pid":0,"start_time":"1"}] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":".","pid":012,"start_time":"1"}] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":".","pid":999997}] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9 a merge.json with absent/mistyped/non-canonical pid or start_time [not json] is UNREAD, never 'the merge process is gone' (no interrupted_merge)
+ok   A9b control: a well-formed record of a gone process is still interrupted_merge
+== class H / I: process identity under a symlinked root; git semantics ==
+ok   H2 a live git process whose cwd is the PHYSICAL root is seen when the swept root is a SYMLINK: the lock is not stale
+ok   H2b --reconcile left the lock a live git holds
+ok   I1 a staged rename whose NEW path is declared but whose SOURCE is not is drift (the source is deleted)
+ok   I1b golden-false: both paths declared
+ok   I2 core.hooksPath=~/hk holding a blocking pre-commit (git expands the tilde and runs it) is drift
+ok   I2b control: that hook really blocks a commit
+ok   I2c a blocking reference-transaction hook (aborts every ref update) is drift
+ok   I2d golden-false: only a post-commit hook (never aborts) is clean
+== class J: the all-time registry (1017 records) must not make the pre-start gate take minutes ==
+ok   J1 the runner pre-start gate (AM-P1,AM-P2,AM-P3) finishes over 1017 terminal records with its three rows (exit 10: the three containers of terminal ops are reported)
+ok   J1b it took 2.8 s
+ok   J1c it spawned 56 jq/python3 processes (bound: 120; O(1 + live + containers), not O(records))
+== round 5 survivors of the first mutation run: each field, each guard, tested ALONE (a record that is wrong in exactly one way) ==
+ok   N1 a running record valid in every respect but the missing field 'op_id' is unread, never judged
+ok   N1 a running record valid in every respect but the missing field 'purpose_key' is unread, never judged
+ok   N1 a running record valid in every respect but the missing field 'run_id' is unread, never judged
+ok   N1 a running record valid in every respect but the missing field 'container_label' is unread, never judged
+ok   N1b a TERMINAL record with only op_id missing is unread too (the shape applies to every state)
+ok   N2 a successor-id op that started EARLIER than the handoff is not its adopter: handoff_unadopted
+ok   N3 control: a live holder of a non-acquire purpose whose run names no op is claim_without_op
+ok   N3b with an UNREADABLE op record present the same claim is not asserted orphaned (the op may be the unreadable record): unread, no claim_without_op
+ok   N4 a container whose label belongs to two lineages is unread and is NOT stopped by --reconcile
+ok   N5 stopcontainer with an unsafe container id (--all) is refused before any podman call
+ok   N5b initsub with a .. component is refused
+ok   N5c initsub with a leading dash is refused
+ok   N6 a stale lock named with a literal backslash-t is removed as itself (the stream escapes the backslash)
+RESULT pass=119 fail=0
+# exit status 0

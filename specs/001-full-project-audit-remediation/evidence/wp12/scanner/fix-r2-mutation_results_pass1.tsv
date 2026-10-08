@@ -1,0 +1,119 @@
+# fix-r2 mutation run; copy of the tree under .audit/scratch/wf22fix/mut; catalog-api files of the shared tree changed during the run: 0 [] (996 files fingerprinted before and after; changes under submodules/filesystem by other workers during the run: 43)
+M00-negative-control-no-change	CONTROL-OK		48s
+M01-scanner-body-empty-again	KILLED	TestScanJob_PopulatedRootCompletesWithFiles	13s
+M02-empty-root-accepted	KILLED	TestScanJob_EmptyRootEndsFailedWithReason	12s
+M03-unreadable-root-swallowed	KILLED	TestScanJob_UnreachableRootEndsFailedWithReason	14s
+M04-readonly-decorator-removed	KILLED	TestGenericScanner_ReadOnlyEvenIfAScannerBugTriedToWrite	15s
+M05-host-budget-not-applied	KILLED	TestGenericScanner_HostBudgetCapsConcurrentListings	16s
+M06-every-list-error-benign	KILLED	TestGenericScanner_TransportErrorBelowRootFailsTheScan, TestGenericScanner_TransportErrorBelowRootFailsTheScan/auth	14s
+M07-depth-off-by-one	KILLED	TestGenericScanner_MaxDepthFailsWhenTheBoundHidesContent	15s
+M08-token-ignores-size	KILLED	TestChangeToken_EqualityAndSensitivity	15s
+M09-incremental-skips-everything-known	KILLED	TestGenericScanner_IncrementalSkipsUnchangedAndFindsChanges	16s
+M10-entries-unsorted	KILLED	TestGenericScanner_BreadthFirstFindsEverythingInOrder	14s
+M16-cancel-reported-as-failed	KILLED	TestScanJob_CancelledContextEndsCancelledNotCompleted	14s
+M17-record-failures-never-fail-the-scan	KILLED	TestGenericScanner_AllRecordsFailingFailsTheScan	14s
+M18-per-dir-bound-removed	KILLED	TestGenericScanner_BoundsFailInsteadOfTruncating, TestGenericScanner_BoundsFailInsteadOfTruncating/entries_per_directory	13s
+M20-registered-protocol-not-resolved-on-demand	KILLED	TestScanJob_RegisteredPluggableProtocolIsScannedGenerically	14s
+M21-hostile-names-followed	KILLED	TestGenericScanner_HostileEntryNamesAreNotFollowed	14s
+M22-skip-dirs-ignored	KILLED	TestGenericScanner_SkipsSynologyMetadataDirectories	15s
+A01-default-depth-1	KILLED	TestWF22_A01_DefaultDepthIsTen	41s
+A03-total-bound-off-by-one	KILLED	TestWF22_A03_TotalBoundIsExact	38s
+A04-perdir-bound-ge	KILLED	TestWF22_A04_PerDirectoryBoundIsExact	38s
+A05-nul-name-accepted	KILLED	TestGenericScanner_HostileEntryNamesAreNotFollowed	14s
+A05b-control-chars-accepted	KILLED	TestGenericScanner_HostileEntryNamesAreNotFollowed	14s
+A05c-name-length-unbounded	KILLED	TestWF22_ValidEntryName	37s
+A06-dotdot-name-accepted	KILLED	TestWF22_ValidEntryName	38s
+A07-token-stored-for-failed-record	KILLED	TestGenericScanner_FailedRecordIsNotRememberedAsDone	15s
+A08-token-ignores-kind	KILLED	TestChangeToken_EqualityAndSensitivity	14s
+A09-token-ignores-etag	KILLED	TestChangeToken_UsesClientExtras	14s
+A10-token-ignores-client-extras	KILLED	TestChangeToken_UsesClientExtras	15s
+A11-full-scan-skips-unchanged	KILLED	TestGenericScanner_IncrementalSkipsUnchangedAndFindsChanges	14s
+A13-no-per-entry-cancel-check	KILLED	TestWF22_A13_CancelBetweenEntriesOfOneDirectory	39s
+A14-no-wave-cancel-check	KILLED	TestWF22_A14_CancelBeforeTheNextDirectoryIsListed	38s
+A15-benign-errors-is-branch-removed	KILLED	TestWF22_A15_A16_BenignClassificationUsesTypesNotJustText	38s
+A16-benign-textproto-branch-removed	KILLED	TestIsBenignListError	14s
+A18-workers-unbounded	KILLED	TestWF22_A18_WorkersBoundTheListingsInFlight	37s
+A20-skip-dirs-only-at-root	KILLED	TestWF22_A20_S1_MetadataDirectoriesAreSkippedAtEveryDepth	38s
+A22-production-retry-disabled	KILLED	TestWF22_A22_A23_ProductionDefaultsOfTheHostGuard	38s
+A23-production-nas-budget-unbounded	ERROR(no go_rc line)		0s
+A27-tokens-shared-across-roots	ERROR(no go_rc line)		0s
+A29-sort-reversed	ERROR(no go_rc line)		0s
+B03-any-ctx-error-is-cancelled	ERROR(no go_rc line)		0s
+B03r-any-failure-after-cancel-is-cancelled	ERROR(no go_rc line)		0s
+B05r-smb-join-concat	ERROR(no go_rc line)		0s
+B06-ftp-scanner-not-wired-to-db	ERROR(no go_rc line)		0s
+B07-webdav-scanner-not-wired-to-db	ERROR(no go_rc line)		0s
+B08-nfs-scanner-not-wired-to-db	ERROR(no go_rc line)		0s
+N01-catalog-path-keeps-leading-slash	ERROR(no go_rc line)		0s
+N02-db-seam-bypasses-catalog-path	ERROR(no go_rc line)		0s
+N03-list-limit-not-passed-to-the-client	ERROR(no go_rc line)		0s
+N04-fetch-limit-ignores-remaining-budget	ERROR(no go_rc line)		0s
+N05-uncounted-entries-fail-a-fitting-tree	ERROR(no go_rc line)		0s
+N07-skipped-ratio-never-fails	ERROR(no go_rc line)		0s
+N07b-skipped-ratio-boundary	ERROR(no go_rc line)		0s
+N08-skipped-dirs-not-reported	ERROR(no go_rc line)		0s
+N09-deadline-reported-as-cancelled	ERROR(no go_rc line)		0s
+N10-incremental-claimed-without-token-store	ERROR(no go_rc line)		0s
+N11-token-etag-not-quoted	ERROR(no go_rc line)		0s
+N12-root-allow-empty-ignored	ERROR(no go_rc line)		0s
+N13-dot-entries-counted-as-errors	KILLED	TestGenericScanner_HostileEntryNamesAreNotFollowed	15s
+N14-depth-probe-counts-skipped-dirs	ERROR(no go_rc line)		0s
+N15-cancel-waits-for-the-client	ERROR(no go_rc line)		0s
+N16-snapshot-dir-not-skipped-by-default	ERROR(no go_rc line)		0s
+N17-skipped-ratio-default-unbounded	ERROR(no go_rc line)		0s
+N18-depth-probe-disabled	ERROR(no go_rc line)		0s
+N19-context-error-not-classified-at-root	ERROR(no go_rc line)		0s
+N20-rescan-inserts-instead-of-updating	ERROR(no go_rc line)		0s
+N21-update-does-not-revive-deleted-rows	ERROR(no go_rc line)		0s
+N22-panic-leaves-status-running	ERROR(no go_rc line)		0s
+N23-reason-not-scrubbed	ERROR(no go_rc line)		0s
+N24-event-carries-raw-error	ERROR(no go_rc line)		0s
+N25-cancelled-published-as-failed	ERROR(no go_rc line)		0s
+N26-secrets-of-root-not-collected	KILLED	TestWF22_R9_ReasonAndEventNeverCarryACredential	38s
+N27-cover-art-hand-built-smb-map	ERROR(no go_rc line)		0s
+N28-cover-art-task-drops-url	ERROR(no go_rc line)		0s
+C02-smb-empty-domain-overrides	ERROR(no go_rc line)		0s
+C05-registered-options-keys-ignored	ERROR(no go_rc line)		0s
+C07-fractional-int-accepted	ERROR(no go_rc line)		0s
+C07b-int-range-unchecked	ERROR(no go_rc line)		0s
+C07c-int64-range-unchecked	ERROR(no go_rc line)		0s
+C08-port-range-unchecked	KILLED	TestWF22_F1_PortAndIntegerRanges	12s
+C09-hint-for-key-outside-schema	KILLED	TestWF22_C09_LegacyHintOnlyWhenTheHintedKeyBelongsToTheProtocol	4s
+C10-stored-port-zero-forwarded	KILLED	TestWF22_StoredPortZeroMeansUnset	12s
+C11-nfs-export-key-reverted	KILLED	TestSettingsFromRoot_AlwaysValidatesForBuiltins	11s
+C12-protocol-name-unvalidated	KILLED	TestRegisterProtocol_Refusals	4s
+C13-unknown-keys-accepted	KILLED	TestValidateSettings_RejectsUnknownKeyWithHint	11s
+C14-ftp-path-not-forwarded	KILLED	TestSettingsContract_ScannerSettingsReachTheClient, TestSettingsContract_ScannerSettingsReachTheClient/ftp	23s
+C15-factory-skips-validation	ERROR(no go_rc line)		0s
+D01-supported-omits-registered	ERROR(no go_rc line)		0s
+D02-only-plain-int-ports-read	ERROR(no go_rc line)		0s
+E01-href-not-unescaped	ERROR(no go_rc line)		0s
+E02-propstat-without-status-rejected	ERROR(no go_rc line)		0s
+E03-unparsable-mtime-is-now	ERROR(no go_rc line)		0s
+E05-directory-resourcetype-ignored	ERROR(no go_rc line)		0s
+E07-name-from-presentation-string	ERROR(no go_rc line)		0s
+E09-foreign-hrefs-accepted	ERROR(no go_rc line)		0s
+E10-entry-limit-ignored	ERROR(no go_rc line)		0s
+E11-empty-body-accepted	ERROR(no go_rc line)		0s
+E12-too-large-answer-truncated-silently	ERROR(no go_rc line)		0s
+W01-url-path-replaced-by-root-path	ERROR(no go_rc line)		0s
+W02-dotdot-inside-names-stripped	ERROR(no go_rc line)		0s
+W03-listing-error-names-the-credential	ERROR(no go_rc line)		0s
+W04-status-error-names-the-credential	ERROR(no go_rc line)		0s
+W05-invalid-url-error-echoes-the-url	ERROR(no go_rc line)		0s
+W06-propfind-answer-unbounded	ERROR(no go_rc line)		0s
+W07-list-limit-not-read	KILLED	TestWF22_R4_ListLimitStopsDecodingEarly	13s
+W08-copy-error-names-the-credential	ERROR(no go_rc line)		0s
+T01-ftp-base-not-used	ERROR(no go_rc line)		0s
+T02-ftp-dot-entries-listed	ERROR(no go_rc line)		0s
+H01-reason-not-in-api-json	ERROR(no go_rc line)		0s
+H02-allowlist-is-a-fixed-list	ERROR(no go_rc line)		0s
+H03-webdav-without-url-accepted	ERROR(no go_rc line)		0s
+H04-port-range-unchecked	ERROR(no go_rc line)		0s
+H05-create-drops-allow-empty	ERROR(no go_rc line)		0s
+H06-roots-listing-returns-raw-url	ERROR(no go_rc line)		0s
+H07-loader-skips-allow-empty-target	ERROR(no go_rc line)		0s
+H08-conn-targets-swap-username-password	ERROR(no go_rc line)		0s
+H09-conn-columns-lose-url-and-mount-point	ERROR(no go_rc line)		0s
+V01-migration-21-not-registered	ERROR(no go_rc line)		0s
+# mutants=116 killed=45 survived=0 other=71 control=CONTROL-OK

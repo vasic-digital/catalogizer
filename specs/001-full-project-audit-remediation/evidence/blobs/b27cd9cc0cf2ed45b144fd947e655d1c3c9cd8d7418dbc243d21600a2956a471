@@ -1,0 +1,27 @@
+# identity: task=T163 utc=2026-10-08T08:22:32Z host=b922fff13d8f uid=1000
+# git_head=ab5a9e3924e48e5682de11704aca57b6ace2f649 tree_dirty_files=7628
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# engine probe: validate rc=0 (--version unsupported by the binary (UNCONFIRMED vs the T163 text); probe=validate)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+# TIC_IMAGE_DIGEST unset: image digest check UNCONFIRMED (host-side run)
+ok   (c) legacy_import row written BEFORE add is accepted
+ok   (c) legacy_import row written AFTER add is refused
+ok   importer first run exits 0
+ok   importer second run exits 0
+ok   (a) idempotency: second run changes no row count and no hash
+# unmapped after import (S-01 tickets are mapped, other classes may remain): 81
+ok   every issue_file entry is mapped to an item
+ok   (b) completeness: v_unmapped_entries grew by exactly entry 38
+ok   (d) long ticket has an item
+ok   (d) long description is <= 2048 bytes, Sources block included (2048 bytes)
+ok   (d) cut on a UTF-8 character boundary: the stored bytes decode strictly and hold no U+FFFD replacement character
+ok   (d) the stored text is a PREFIX of the ticket body (814 of 1500 characters kept)
+ok   (d) marked as cut
+ok   (d) Sources block names the source file and its sha256
+ok   (d) short ticket has an item
+ok   (d) short ticket keeps its whole text
+ok   (d) short ticket Sources block names file and sha256
+RESULT: pass=8 fail=0

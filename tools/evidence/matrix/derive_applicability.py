@@ -2,7 +2,7 @@
 """derive_applicability.py - T196 (TS-00). Re-derives specs/001-full-project-audit-remediation/matrix/applicability.yaml from direct reads of the
 repository, so that no cell is invented: every cell carries a state and a reason that names the measurement it came from.
 
-Usage: derive_applicability.py [--repo DIR] [--out FILE]      (default: write the tracked applicability.yaml; `-` writes to stdout)
+Usage: derive_applicability.py [--repo DIR] [--out FILE]      (default: write the tracked applicability.yaml of --repo; `-` writes to stdout; a relative --out is relative to the current directory)
 
 Sources, in order of authority:
   1. applications A1..A9 (and their per-type n/a reasons): the `4.4` table of docs/05 (`specs/.../docs/05-test-strategy-and-coverage-matrix.md`),
@@ -101,17 +101,30 @@ def build_reread(repo, cells):
     return out
 
 
+def _git(root, *args):
+    """git -C root ARGS with every GIT_* variable removed (a caller's GIT_DIR / GIT_INDEX_FILE must not redirect the enumeration to another repository)."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    return subprocess.run(["git", "-C", root] + list(args), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+
+
 def _tracked(root, sub=""):
-    """Tracked files of `root` (relative to root), or None when root is not a git work tree."""
-    if not os.path.exists(os.path.join(root, ".git")):
-        return None
+    """Tracked files of `root` (relative to root), or None when root is not inside any git work tree. INSIDE a work tree the list is the tracked list and never a walk
+    (an untracked scratch file or build output must not change a figure); a `.git` that exists but git cannot read (a dangling gitfile of a submodule) is REFUSED
+    (exit 3 git_unreadable): it would otherwise be walked and read as a populated tree."""
     try:
-        p = subprocess.run(["git", "-C", root, "ls-files", "-z"] + (["--", sub] if sub else []), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        p = _git(root, "rev-parse", "--is-inside-work-tree")
     except OSError:
         return None
-    if p.returncode != 0:
-        return None
-    return [n for n in p.stdout.decode("utf-8", "replace").split("\0") if n]
+    if p.returncode == 0 and p.stdout.strip() == b"true":
+        q = _git(root, "ls-files", "-z", *(["--", sub] if sub else []))
+        if q.returncode != 0:
+            sys.stderr.write("derive_applicability: REFUSED reason=git_unreadable git ls-files failed in %s: %s\n" % (root, q.stderr.decode("utf-8", "replace").strip()[:200]))
+            sys.exit(3)
+        return [n for n in q.stdout.decode("utf-8", "replace").split("\0") if n]
+    if os.path.lexists(os.path.join(root, ".git")):   # MUT:dangling_gitfile
+        sys.stderr.write("derive_applicability: REFUSED reason=git_unreadable %s has a .git that git cannot read (a dangling gitfile: run `git submodule update --init`)\n" % root)
+        sys.exit(3)
+    return None
 
 
 def _vendored(rel):
@@ -133,7 +146,15 @@ def walk(root, sub=""):
                 rels.append(os.path.relpath(os.path.join(dp, f), root).replace(os.sep, "/"))
         rels.sort(); mode = "walk"
     label = os.path.relpath(os.path.join(root, sub) if sub else root, _REPO[0] or root).replace(os.sep, "/")
-    _FPR[label] = (mode, len(rels), hashlib.sha256("\n".join(rels).encode("utf-8")).hexdigest())
+    dig = hashlib.sha256()
+    for r in sorted(set(rels)):   # path AND content: a counted file edited in place (same path) moves the fingerprint   # MUT:fingerprint_content
+        try:
+            with open(os.path.join(root, r), "rb") as fh:
+                c = hashlib.sha256(fh.read()).hexdigest()
+        except OSError:
+            c = "unreadable"
+        dig.update(r.encode("utf-8") + b"\0" + c.encode() + b"\n")
+    _FPR[label] = (mode, len(set(rels)), dig.hexdigest())
     for r in rels:
         yield os.path.join(root, r)
 
@@ -341,8 +362,14 @@ def build_components(repo):
                                                     "A5": "catalogizer-android/", "A6": "catalogizer-androidtv/", "A7": "catalogizer-api-client/",
                                                     "A8": "Website/", "A9": "Build/"}[cid], cells))
     # submodules
-    gm = read(os.path.join(repo, ".gitmodules"))
-    paths = re.findall(r"path = (\S+)", gm)
+    gmp = os.path.join(repo, ".gitmodules")
+    try:
+        cp = _git(repo, "config", "-f", gmp, "--get-regexp", r"^submodule\..*\.path$")
+        paths = [l.split(None, 1)[1].strip() for l in cp.stdout.decode("utf-8", "replace").splitlines() if " " in l] if cp.returncode == 0 else []
+    except OSError:
+        paths = []
+    if not paths:   # git unavailable or an unparsable file: the old line reader, never an empty module list read as "no modules"
+        paths = re.findall(r"path = (\S+)", read(gmp))
     a10 = ["assets", "auth", "cache", "concurrency", "config", "database", "discovery", "entities", "event_bus", "filesystem", "lazy", "media", "memory",
            "middleware", "observability", "rate_limiter", "recovery", "security", "storage", "streaming", "watcher"]
     a11 = ["auth_context_react", "catalogizer_api_client_ts", "collection_manager_react", "dashboard_analytics_react", "media_browser_react",
@@ -468,20 +495,29 @@ def render(repo):
 
 def main(argv):
     repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    out = os.path.join("specs", "001-full-project-audit-remediation", "matrix", "applicability.yaml")
+    out = None
     i = 0
     while i < len(argv):
-        if argv[i] == "--repo": repo = os.path.abspath(argv[i + 1]); i += 2
-        elif argv[i] == "--out": out = argv[i + 1]; i += 2
+        if argv[i] == "--repo" and i + 1 < len(argv): repo = os.path.abspath(argv[i + 1]); i += 2
+        elif argv[i] == "--out" and i + 1 < len(argv): out = argv[i + 1]; i += 2
         else: sys.exit("usage: derive_applicability.py [--repo DIR] [--out FILE|-]")
+    if out is None:
+        out = os.path.join(repo, "specs", "001-full-project-audit-remediation", "matrix", "applicability.yaml")
     text = render(repo)
     if out == "-":
         sys.stdout.write(text)
     else:
-        path = out if os.path.isabs(out) else os.path.join(repo, out)
+        path = os.path.abspath(out)   # K11.4: a relative --out is relative to where the caller is (the default is the tracked file of the repository, made absolute below)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(text)
+        tmp = path + ".tmp.%d" % os.getpid()
+        try:
+            with open(tmp, "w", encoding="utf-8") as fh:
+                fh.write(text)
+                fh.flush(); os.fsync(fh.fileno())
+            os.replace(tmp, path)   # MUT:atomic_write
+        finally:
+            if os.path.exists(tmp):
+                os.unlink(tmp)
         print("derive_applicability: wrote %s (%d bytes)" % (path, len(text)))
 
 

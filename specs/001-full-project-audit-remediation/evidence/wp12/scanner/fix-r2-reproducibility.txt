@@ -1,0 +1,136 @@
+# WF22 fix round 2 - what catalog-api depends on that is not committed (review finding P1) - regenerated 2026-10-08T00:40:32Z
+# superproject HEAD: e9d6883d   submodule pointer in HEAD: 83c0ac1f407f9e11044e97f4aa385ecfaf1cde21   submodule HEAD: 83c0ac1f407f9e11044e97f4aa385ecfaf1cde21   submodule dirty files: 0
+
+## 0. what changed while this fix round ran (measured)
+At the start of the round the superproject HEAD was 4c8b07b7 and the filesystem submodule had 23 modified / untracked files, among them the whole of pkg/fabric and pkg/decorators
+(0 tracked files): against the COMMITTED submodule 'go build ./...' of catalog-api could not work (review P1). During the round another worker committed the submodule (83c0ac1)
+and the conductor bumped the pointer (superproject commit e9d6883d). Section 1-3 below are the state NOW; the appendix keeps the state at the freeze of the first evidence.
+
+## 1. packages catalog-api imports from the filesystem submodule, and whether the submodule tracks them NOW
+      2 "digital.vasic.filesystem/pkg/client"
+      2 "digital.vasic.filesystem/pkg/decorators"
+      4 "digital.vasic.filesystem/pkg/fabric"
+git ls-files submodules/filesystem/pkg/fabric -> 20 tracked files, 0 status lines
+git ls-files submodules/filesystem/pkg/decorators -> 8 tracked files, 0 status lines
+git ls-files submodules/filesystem/pkg/client -> 3 tracked files, 0 status lines
+
+## 2. catalog-api files that import those packages
+catalog-api/internal/services/wf22_fix_r2_test.go
+catalog-api/internal/services/wf22_review_probe_test.go
+catalog-api/internal/services/generic_scanner_test.go
+catalog-api/internal/services/generic_scanner.go
+
+## 3. what is STILL uncommitted on the catalog-api side and depends on the committed submodule
+go.mod / go.sum of catalog-api:  M catalog-api/go.mod  M catalog-api/go.sum 
+requirement lines that moved against HEAD (they follow the committed submodule go.mod):
+-	github.com/jlaffaye/ftp v0.2.0
++	github.com/jlaffaye/ftp v0.2.4
+-	github.com/stretchr/testify v1.11.1
++	github.com/stretchr/testify v1.12.1
+-	golang.org/x/crypto v0.52.0
++	golang.org/x/crypto v0.54.0
+-	golang.org/x/net v0.55.0
++	golang.org/x/net v0.56.0
+-	golang.org/x/sync v0.21.0
+-	golang.org/x/text v0.38.0
++	golang.org/x/sync v0.22.0
++	golang.org/x/text v0.40.0
+-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+-	github.com/hashicorp/errwrap v1.0.0 // indirect
+-	github.com/hashicorp/go-multierror v1.1.1 // indirect
+-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+-	go.yaml.in/yaml/v3 v3.0.4 // indirect
++	go.yaml.in/yaml/v3 v3.0.5 // indirect
+-	golang.org/x/sys v0.45.0 // indirect
++	golang.org/x/sys v0.47.0 // indirect
+build against the committed submodule (its working tree is clean, so it IS the commit): see fix-r2-vet_all.log (go vet ./... in the default read-only module mode: a go.mod / go.sum that needed an update would have failed it)
+ORDER for the conductor: catalog-api (code, tests, go.mod, go.sum, migration v21) can be committed now; the submodule is already committed and the pointer bumped. A clean checkout of the superproject at e9d6883d + this change builds.
+UNCONFIRMED: a clone of the superproject from the remotes (the submodule commit 83c0ac1 must be pushed to the submodule's remotes: not checked here, no network push was done).
+
+## 4. submodule go.mod: the lines that differ between the submodule commit before (66b6bc1) and after (83c0ac1) the round
+-	github.com/jlaffaye/ftp v0.2.0
+-	github.com/stretchr/testify v1.11.1
++	github.com/pkg/sftp v1.13.11
++	github.com/stretchr/testify v1.12.1
++	golang.org/x/crypto v0.54.0
+-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+-	github.com/hashicorp/errwrap v1.0.0 // indirect
+-	github.com/hashicorp/go-multierror v1.1.1 // indirect
+-	github.com/kr/pretty v0.3.1 // indirect
+-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+-	github.com/rogpeppe/go-internal v1.14.1 // indirect
+-	golang.org/x/crypto v0.49.0 // indirect
+-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+-	gopkg.in/yaml.v3 v3.0.1 // indirect
++	github.com/kr/fs v0.1.0 // indirect
++	go.yaml.in/yaml/v3 v3.0.5 // indirect
++	golang.org/x/sys v0.47.0 // indirect
+
+## 5. were the first evidence logs produced against the committed submodule?
+the first fix-r2 logs (freeze 1) ran against a submodule working tree whose 83 fingerprinted files: 80 identical to commit 83c0ac1, 3 different: go.mod, go.sum, pkg/ftp/fix_r2_net_test.go
+=> those logs are superseded by the final logs of the second freeze (fix-r2-*), produced with the submodule clean at its commit
+
+## APPENDIX: the report as generated at the first freeze (submodule not yet committed)
+# WF22 fix round 2 - what catalog-api depends on that is not committed (review finding P1) - generated 2026-10-07T22:53:24Z
+# superproject HEAD: 4c8b07b7   submodule pointer in HEAD: 66b6bc1cd9385d8548535f8970ad9fd7049b4b1b   submodule HEAD: 66b6bc1cd9385d8548535f8970ad9fd7049b4b1b
+
+## 1. packages catalog-api imports from the filesystem submodule, and whether the submodule tracks them
+$ grep -rhn "digital.vasic.filesystem/" catalog-api --include=*.go | sed ... | sort | uniq -c
+      2 "digital.vasic.filesystem/pkg/client"
+      2 "digital.vasic.filesystem/pkg/decorators"
+      4 "digital.vasic.filesystem/pkg/fabric"
+git ls-files submodules/filesystem/pkg/fabric -> 0 tracked files, 1 status lines (untracked: other workers) 
+git ls-files submodules/filesystem/pkg/decorators -> 0 tracked files, 1 status lines (untracked: other workers) 
+git ls-files submodules/filesystem/pkg/client -> 3 tracked files, 0 status lines (control: a committed package) 
+
+## 2. catalog-api files that import the UNTRACKED packages
+catalog-api/internal/services/generic_scanner_test.go
+catalog-api/internal/services/generic_scanner.go
+catalog-api/internal/services/wf22_fix_r2_test.go
+catalog-api/internal/services/wf22_review_probe_test.go
+
+## 3. submodule go.mod: committed vs working tree (these are the lines catalog-api/go.mod had to follow)
+-	github.com/jlaffaye/ftp v0.2.0
+-	github.com/stretchr/testify v1.11.1
++	github.com/jlaffaye/ftp v0.2.4
++	github.com/pkg/sftp v1.13.11
++	github.com/stretchr/testify v1.12.1
++	golang.org/x/crypto v0.54.0
+-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+-	github.com/hashicorp/errwrap v1.0.0 // indirect
+-	github.com/hashicorp/go-multierror v1.1.1 // indirect
+-	github.com/kr/pretty v0.3.1 // indirect
+-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+-	github.com/rogpeppe/go-internal v1.14.1 // indirect
+-	golang.org/x/crypto v0.49.0 // indirect
+-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+-	gopkg.in/yaml.v3 v3.0.1 // indirect
++	github.com/kr/fs v0.1.0 // indirect
++	go.yaml.in/yaml/v3 v3.0.5 // indirect
++	golang.org/x/sys v0.47.0 // indirect
+
+## 4. catalog-api/go.mod changes against HEAD (module requirement lines)
+-	github.com/jlaffaye/ftp v0.2.0
++	github.com/jlaffaye/ftp v0.2.4
+-	github.com/stretchr/testify v1.11.1
++	github.com/stretchr/testify v1.12.1
+-	golang.org/x/crypto v0.52.0
++	golang.org/x/crypto v0.54.0
+-	golang.org/x/net v0.55.0
++	golang.org/x/net v0.56.0
+-	golang.org/x/sync v0.21.0
+-	golang.org/x/text v0.38.0
++	golang.org/x/sync v0.22.0
++	golang.org/x/text v0.40.0
+-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+-	github.com/hashicorp/errwrap v1.0.0 // indirect
+-	github.com/hashicorp/go-multierror v1.1.1 // indirect
+-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+-	go.yaml.in/yaml/v3 v3.0.4 // indirect
++	go.yaml.in/yaml/v3 v3.0.5 // indirect
+-	golang.org/x/sys v0.45.0 // indirect
++	golang.org/x/sys v0.47.0 // indirect
+
+## 5. submodule files modified/untracked in its working tree (count by status)
+     17 ??
+      6  M

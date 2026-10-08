@@ -1,0 +1,6 @@
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/enumerate-mutation-cross.txt (copied verbatim below this line)
+CONTROL unmutated: rc=0 RESULT: pass=72 fail=0
+MUTANT cross_mark_dropped: KILLED (3 failing checks; saw /planted S-0[789]|planted S-07/)
+MUTANTS: 1 run, 0 survived
+exit=0

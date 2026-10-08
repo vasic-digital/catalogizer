@@ -1,0 +1,32 @@
+CONTROL PASS
+CAUGHT qcheck: FAIL: one '?' cell: the refusal does not name the '?' rule: gen_matrix: the applicability map is invalid (1 pr|
+CAUGHT noreason: FAIL: n/a without reason accepted (rc 0): |
+CAUGHT missingtype: FAIL: missing type accepted (rc 3)|
+CAUGHT types_check: FAIL: reordered types accepted (rc 0): |
+CAUGHT reason_needed: FAIL: reasonless cell accepted (rc 0): |
+CAUGHT strict_yaml: FAIL: K11.3: duplicate key accepted (rc 0): |
+CAUGHT toplevel_handler: FAIL: golden-good: exit 0 (got '1' want '0')|FAIL: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a) (got '' want '4 9 11 6')|
+CAUGHT timestamp_check: FAIL: K11.2: a timestamp with a space is refused (2): it would corrupt the 11.4.44 header (got '0' want '2')|
+CAUGHT overwrite: FAIL: a hand-edited count is overwritten on regeneration (got '999 9 11 6' want '4 9 11 6')|FAIL: a hand edit of the md survived regeneration|
+CAUGHT chain_walk: FAIL: gate accepted a forged ledger (rc 1): gen_matrix: NOTE --map-unbound: the map was not re-derived from a |FAIL: gate accepted a reordered ledger (rc 0)|
+CAUGHT RM1_class_check: FAIL: RM1: source evidence for e2e and runtime evidence for ui are below the required class: the gate fails (g|FAIL: RM1: class gap not named: gen_matrix: NOTE --map-unbound: the map was not re-derived from a repository; |
+CAUGHT RM2_verdict_check: FAIL: gate accepted two GREEN entries (rc 0): gen_matrix: NOTE --map-unbound: the map was not re-derived from |
+CAUGHT RM3_blocked_branch: FAIL: RM3: the cell status is blocked in the json (got 'partial' want 'blocked')|FAIL: RM3: blocked reason missing: gen_matrix: NOTE --map-unbound: the map was not re-derived from a repositor|
+CAUGHT RM4_gate_exit: FAIL: gate did not fail on the absent item (rc 0): gen_matrix: NOTE --map-unbound: the map was not re-derived |FAIL: gate accepted two GREEN entries (rc 0): gen_matrix: NOTE --map-unbound: the map was not re-derived from |
+CAUGHT mutation_caught: FAIL: gate accepted a survived mutation (rc 0): gen_matrix: NOTE --map-unbound: the map was not re-derived fro|
+CAUGHT candidate_check: FAIL: candidate: a record for another build is not evidence for this one (rc 1) (got '0' want '1')|FAIL: candidate: reason missing: gen_matrix: NOTE --map-unbound: the map was not re-derived from a repository;|
+CAUGHT gate_needs_ledger: FAIL: gate B1: --gate WITHOUT --ledger is a usage refusal (exit 2), never a vacuous pass (got '0' want '2')|FAIL: gate B1: refusal text missing: gen_matrix: NOTE --map-unbound: the map was not re-derived from a reposit|
+CAUGHT gate_needs_binding: FAIL: K11.1: unbound gate accepted (rc 0): gen_matrix: NOTE --map-unbound: the map was not re-derived from a r|
+CAUGHT gate_unmatched: FAIL: gate: stray cell-items key accepted (rc 1)|
+CAUGHT gate_vacuous: FAIL: gate: vacuous map accepted (rc 0)|
+CAUGHT map_binding: FAIL: K11.1: unbound map accepted with --repo (rc 0): |
+CAUGHT mint_lock: FAIL: golden-good: exit 0 (got '1' want '0')|FAIL: golden-good: the declared counts equal the hand tally of the rows (P ~ A n/a) (got '' want '4 9 11 6')|
+CAUGHT mint_always: FAIL: mint: a second run mints none (11.4.214) (got '3' want '2')|FAIL: mint ledger malformed|
+CAUGHT mint_intent: FAIL: mint: the ledger holds one minted and one PENDING row after the crash (got '['minted']' want '['minted',|
+CAUGHT mint_fail: FAIL: mint: failing command gave rc 4: gen_matrix: the mint command printed no item id for alpha|integration|
+CAUGHT mint_shape: FAIL: mint: 'ATM-FX1' accepted (rc 4): gen_matrix: the mint command returned the item ATM-FX1 for alpha|integr|FAIL: mint: 'CAT-901 extra' accepted (rc 4): gen_matrix: the mint command returned the item CAT-901 extra for |
+CAUGHT mint_distinct: FAIL: mint: duplicate id accepted (rc 0): |
+CAUGHT mint_corrupt: FAIL: mint: malformed ledger gave rc 0, calls 2|
+CAUGHT mint_key: FAIL: mint calls wrong: alpha unit A mint|FAIL: mint: the retry calls the register ONCE more, for the pending cell, with the same key (got 'alpha integr|
+CAUGHT header_created: FAIL: m3: Created is carried forward (not overwritten by the second run) (got '2026-10-07T00:00:00Z' want '202|
+CAUGHT header_revision: FAIL: m3: Revision rises to 2 when the body changed (got '1' want '2')|

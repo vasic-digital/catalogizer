@@ -1,0 +1,9 @@
+RESULT U47 PASS no knob: floor stays the 32 GiB default (echo 33554432, 31 GiB refused with '< 32 GiB')
+RESULT U48 PASS env knob 20 GiB: echo follows (20971520) and 19 GiB is refused with '< 20 GiB'
+RESULT U49 PASS limits-file key min_mem_avail_gib: 20 -> floor 20 GiB (echo 20971520, 19 GiB refused)
+RESULT U50 PASS env knob wins over the limits file (24 GiB env vs 20 GiB file -> 25165824)
+RESULT U51 PASS absurd/non-numeric floors (<4 GiB, 0, text, negative, file 2 GiB) are REFUSED with 'PREFLIGHT FAIL memory-floor'
+RESULT U52 PASS 4 GiB lower bound accepted (echo 4194304); 3 GiB measured is refused against it
+RESULT U53 PASS missing limits file refused (fail closed); file without the key -> 32 GiB default
+RESULT U54 PASS live writer still refused with the lowered floor (same exit as without the knob, no bulk call)
+SUMMARY cases=8 failed=0

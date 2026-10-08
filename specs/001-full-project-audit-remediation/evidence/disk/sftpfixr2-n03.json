@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "sftpfixr2-n03",
+  "at": "2026-10-07T20:57:44Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 74041131008,
+      "free_after": 73208494684,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 74041122816,
+      "free_after": 73208486492,
+      "readable": true
+    }
+  ],
+  "verdict": "pass",
+  "reason": null
+}

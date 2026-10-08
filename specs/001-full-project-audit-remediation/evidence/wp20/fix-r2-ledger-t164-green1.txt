@@ -1,0 +1,16 @@
+# ledger seq=15 item=AUD-T164 polarity=GREEN iteration=1 exit_status=0 verdict=pass
+# target_ref=.audit/scratch/wp20-r2/sut target_fingerprint=577a5c9f407dc7b8ccb455702c0a08771be37574f2728293d52fb52362912d62 test_fingerprint=6e3a867926a31c1448b057196521c9f1b92946359eee17aed35c38affe057e1f
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "ENUMERATE_SOURCES=/src/.audit/scratch/wp20-r2/sut/enumerate_sources.py", "python3", "scripts/register/tests/test_frontmatter_yaml.py", "--selftest"]
+ok   tolerant reader loads every fixture ticket, matches the recount (status, category, enhancement), handles every form, strict count 2 (the two colon-in-value tickets)
+ok   RED: strict yaml.safe_load fails on a colon inside a value (parse error AND the colon-in-value form)
+ok   RED: the doc04 naive splitter fails the form checks (trailing comment, block scalars, quotes, continuation lines)
+ok   the strict-refusal count is asserted: a wrong expectation (3) FAILs
+ok   needle: a ticket planted in the snapshot adds exactly one wontfix to the recount and to the parser
+ok   needle: a ticket in the snapshot but absent from the frozen listing is not counted (files=4)
+ok   RED: a reader that loses the ticket body fails the enhancement-suggestion comparison
+ok   RED: a reader that loses the category fails the category comparison
+ok   tolerant reader on the same tree passes (the doubles fail for their own defect only)
+ok   a ticket with two status: lines is reported (files with != 1 status: line)
+ok   moved snapshot: freeze_snapshot_moved naming the file, no count printed
+ok   a status the grep recount cannot see (`status : fixed`) is a count mismatch, never silently passed
+SELFTEST: PASS

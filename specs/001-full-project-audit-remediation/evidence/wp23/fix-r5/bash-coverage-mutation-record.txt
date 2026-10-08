@@ -1,0 +1,38 @@
+CONTROL PASS
+CAUGHT no-xtrace-fd: FAIL: fixture 1: exit 0 (got '3' want '0')|FAIL: fixture 1: schema (got '' want 'bash-coverage/1')|
+CAUGHT structural-counted: FAIL: fixture 1: executable lines (hand count 10) (got '13' want '10')|FAIL: fixture 1: percent (got '53.85' want '70.00')|
+CAUGHT exclusions-ignored: FAIL: driver: child processes are traced (totals 12 executed of 16 executable) (got '14/19' want '12/16')|FAIL: driver: the excluded file is not in the targets (got 'cov_fixture.sh cov_fixture2.sh vendor/cov_excluded|
+CAUGHT command-rc-swallowed: FAIL: a failing command: the harness exits with the command's status (got '0' want '7')|
+CAUGHT empty-trace-accepted: FAIL: empty trace not refused (0): |
+CAUGHT fence-root-dropped: FAIL: driver with a fence: exit 0 (got '3' want '0')|FAIL: driver: child processes are traced (totals 12 executed of 16 executable) (got '/' want '12/16')|
+CAUGHT fence-gate-skipped: FAIL: bad fence accepted or wrong exit (0): |FAIL: a record was written for a refused fence|
+CAUGHT fence-snapshot-ignored: FAIL: K8.1: the applied fence is the SNAPSHOT in the run directory and its sha256 is in the record (got 'false|FAIL: K8.1: a fence rewritten during the run does not change the applied scope: u.sh stays a target (both coun|
+CAUGHT duplicate-target-unchecked: FAIL: duplicate target not refused (0): |
+CAUGHT RM_basename_credit: FAIL: I3: the sibling with the same base name that never ran stays 0.00 (control: the collision no longer shar|FAIL: I3 probe: running a DIFFERENT x.sh does not credit the target a/x.sh (0.00, was 30.00 on the basename ru|
+CAUGHT copy-suffix-dropped: FAIL: I3: a copy that keeps the target's relative layout (.../a/x.sh) is credited (70.00) (got '0.00' want '70|FAIL: I3: the copy path is recorded as a copy (got '0' want '1')|
+CAUGHT root-level-copy-credit: FAIL: I3: a root-level target is not credited by any same-basename file elsewhere (0.00) (got '70.00' want '0.|
+CAUGHT copy-hash-ignored: FAIL: K3.2: an unrelated file with the same path suffix and DIFFERENT content earns nothing (0.00, was 70.00) |FAIL: K3.2: and it is listed as copy_unverified (got '0' want '1')|
+CAUGHT RM_C_resolve_against_src: FAIL: K3.1: a never-run x.sh is NOT credited by the x.sh a child ran after  (0.00, was 100.00) (got '70.00' wa|FAIL: K3.1 golden-false: the x.sh it really ran (sub/x.sh) is credited (70.00) (got '0.00' want '70.00')|
+CAUGHT resolve-against-harness-cwd: FAIL: K3.1: a never-run x.sh is NOT credited by the x.sh a child ran after  (0.00, was 100.00) (got '70.00' wa|FAIL: K3.1 golden-false: the x.sh it really ran (sub/x.sh) is credited (70.00) (got '0.00' want '70.00')|
+CAUGHT relative-out-kept: FAIL: I4: the child's lines are traced (70.00, was 0.00 with exit 0) (got '0.00' want '70.00')|FAIL: I4: a RELATIVE --exclusions file is resolved before any cd (the fence still applies) (got 'false' want '|
+CAUGHT target-norm-dropped: FAIL: fixture 1: exit 0 (got '1' want '0')|FAIL: fixture 1: schema (got '' want 'bash-coverage/1')|
+CAUGHT target-hash-ignored: FAIL: K8.2: rc=0: |
+CAUGHT line1-trap-credited: FAIL: K3.3: executed 3 4 7 = 75.00 (a USR1 trap and an ERR trap did not credit line 1; was 100.00) (got '100.0|FAIL: K3.3: the uncovered line is 1 (got '' want '1')|
+CAUGHT unsafe-out-accepted: FAIL: K6.5: rc=3 EXPANDED=yes: bash-coverage: REFUSED reason=trace_empty the trace holds no line: the command |
+CAUGHT out-not-empty-accepted: FAIL: K7.2: reused --out not refused (0): |
+CAUGHT survivors-ignored: FAIL: K7.1: rc=0: |FAIL: K7.1: the record carries status trace_writers_outlived_command and no figure (got 'ok:43.75' want 'trace|
+CAUGHT late-writers-ignored: FAIL: K7.1: rc=0: |FAIL: K7.1: the record carries status trace_writers_outlived_command and no figure (got 'ok:43.75' want 'trace|
+CAUGHT interrupted-ignored: FAIL: K7.3: INT reaches the harness while the command absorbs it: the harness exits 130 (was 0) (got '0' want |FAIL: K7.3: the record says interrupted and carries no figure (got 'ok:43.75' want 'interrupted:null')|
+CAUGHT group-forwarding-dropped: FAIL: K7.2: the harness took 6 s after TERM: the signal was not forwarded to the group|
+CAUGHT group-fold-dropped: FAIL: K4.1: executed 4 = 80.00 (a fully run multi-line word is covered, was 42.86 for the unaliased lines) (go|FAIL: K4.1: the only uncovered line is 9 (the never-run 2-line assignment counts ONCE) (got '2 9' want '9')|
+CAUGHT pipe-continuation-dropped: FAIL: i1: pipeline fixture executable lines (hand count 8: 3 4 5 6 7 8 9 10) (got '4' want '8')|FAIL: i1: pipeline fixture executed (8) (got '4' want '8')|
+CAUGHT array-context-dropped: FAIL: K4.1: arrays opened by local / declare / readonly / typeset count ONE line each (executable 6) (got '11'|FAIL: K4.1: all six are executed, no element line is uncovered (got '6 5' want '6 0')|
+CAUGHT arith-heredoc-detected: FAIL: fixture 1: exit 0 (got '3' want '0')|FAIL: fixture 1: executable lines (hand count 10) (got '4' want '10')|
+CAUGHT heredoc-delimiter-first-identifier: FAIL: K4.2: <<END-DATA is a here-document delimited by END-DATA, <<WORD in a comment is not one, two here-docu|
+CAUGHT procsub-done-structural: FAIL: K4.3: done < <(echo a; echo b) is executable: executable 5, executed 5, no disagreement (got '4/4/classi|
+CAUGHT CM19_case_label_counted: FAIL: CM19: bare case labels a) and b) are not lines: executable 5 (2 3 5 8 11), executed 4 = 80.00, uncovered|
+CAUGHT RM_A_status_never_disagreement: FAIL: K4.5: the record says classifier_disagreement and carries NO percent (got 'ok:null' want 'classifier_dis|
+CAUGHT disagreement-exits-zero: FAIL: K4.5 (RM-A): a traced structural line (8, a closing brace) makes the report exit 3 (got '0' want '3')|FAIL: K4.5: no refusal text: |
+CAUGHT function-report-dropped: FAIL: fixture 1: the never-called function is REPORTED (got '' want 'uncovered_fn')|
+CAUGHT length-prefix-dropped: FAIL: K4.4: a path that contains the delimiter byte itself is credited (length-prefixed, 70.00) (got '' want '|
+CAUGHT out-of-range-credited: FAIL: K4.5: a record at line 40 of a 17-line file is listed in trace_out_of_range and does not refuse (got '3 |

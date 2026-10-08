@@ -1,0 +1,101 @@
+# Fix round 5 lint: shellcheck (version: 0.11.0, the host binary; NOT the pinned IMG-SHELLCHECK image: that run is owed, UNCONFIRMED) with -x -S warning over the scripts of this round
+# head: f72d8757fe614adfa38a4f70276853527d06d7e8 (working tree: the scripts below are uncommitted at this time); date_utc: 2026-10-08T04:42:09Z
+# sha256 e39e994901a8ea6036d0434893a77930aaecb229b87e2f323645eb068fe34538  scripts/commit-push-all.sh
+# sha256 a4306fa8904ecbc5e586fb73d402d976d8c84310dddf82b3e05c2b5376af37a5  scripts/repo/host_entry/cpa-host
+# sha256 a8b8572b5836e9a0c3581dd3688a3972b8b344bd80b3df2f10619963c748632d  scripts/repo/host_entry/INSTALL.md
+# sha256 6f72c2ee67b8a06c4065d60287d95a27d6403bd56f995953f8ffe62789e142b9  scripts/repo/lib_safe.sh
+# sha256 3fc7c2593c3da4b9c2b0282041213ac3c75b5de40400b66ae3eeb123d8ffa824  scripts/repo/validate_cheap.sh
+# sha256 7df653425fd9eec6c5dcb3bfb6b4b6e01bb8f38efeade6939a9a198d70bb1baa  scripts/repo/push_recursive.sh
+# sha256 716be8c6c229f5be1d836f4d617fbb6a6f961b9c58860e9d28a3c03727ef031f  scripts/repo/commit_recursive.sh
+# sha256 d3806306a7b811796aab70b8d98cbf2740ee03614394e44e5d5a61d97345a4f1  scripts/repo/scope_check.sh
+# sha256 658d0fed7f5a64a446697e03c7fd65cec7305c35be844ebf47626bf852ed8bc2  scripts/repo/integrate_merge.sh
+# sha256 45ab16c7d5c0e7fd9f0adafaa2e2c7393c08f92611be33d76b63fb03b26c3652  scripts/repo/integrate_ff_only.sh
+# sha256 6d716cc698610e49cc80c08c8074db12214d672ca5ecf266d2584a10f52bc9e9  scripts/repo/record_deferral.sh
+# sha256 74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314  scripts/repo/verify_repos.sh
+# sha256 188c23cbd1ff99eafbd1ddda13c666df7a24777cc47c0354f65a596cee850d12  scripts/repo/check_class.sh
+# sha256 0933b7ea49e24a4ef019cf6eb288fd602b3dcf137a1260b336720caf9ddb14ad  scripts/repo/check_no_ci.sh
+# sha256 89f3595f44843b4247a0c8c807e03e94e6c4595093bf143e1378ac2943b81923  scripts/repo/check_revision_headers.sh
+# sha256 099414f0dbaf261b063e4ac26dd4e17bb7b01ad5f45f41ccc2899e958fe563a0  scripts/repo/fixture_roots.sh
+# sha256 247cf1e77e703f00d756e148cc023a1e8df15eb840f9aef394f97ce4fb91d6ee  scripts/repo/verdict_go.py
+# sha256 73831039fe5c833f0fe240e2167f314ac611d92b341a30ef861b00a834860ac0  scripts/repo/repo_config_allow.tsv
+# sha256 f38d167d58140d487bff8fb69d1dd54703ba8140b9253ee4161c128182a60932  scripts/repo/binary_suffixes.tsv
+# sha256 c422737262fc564f4fbf23a483e77bb6395d237ae14e44cefe0f832ed75c227c  scripts/repo/tests/test_commit_push_all.sh
+# sha256 9d9e048fe068d0cd12f4255dd4c29971f2c31ecf9a5e7f9363ebaaf1824d0fc1  scripts/repo/tests/cpa_mutants.py
+# sha256 fa1020760f7c11ddc3132babf6f0859faa9c582e60023452646c1578ae924bc2  scripts/repo/tests/test_validate_cheap.sh
+# sha256 4ff143b4b512c43a6f5c293b63bafe5c86e74923116aaa9c920c59483bc2b2e2  scripts/repo/tests/test_wp04d.sh
+# sha256 6797e1ca0c7fbaeee53741615b0c917c40a3e18a8e626a8cb4c33d0721109155  docs/scripts/commit-push-all.md
+# every finding below is a decided one: SC2064 (the trap text is expanded NOW on purpose: the signal numbers), SC2034 (read targets that skip a record), SC1007 (an empty git config value on purpose), SC2154 (the EXIT trap reads the status it just set)
+
+In scripts/commit-push-all.sh line 52:
+for n in "${CPA_SIGS[@]}"; do trap "trap '' ${CPA_SIGS[*]}; exit $((128+n))" "$n" 2>/dev/null; done
+                                            ^------------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+                                                                 ^--------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+
+
+In scripts/commit-push-all.sh line 77:
+  { read -r rp rs < "$rd/run.pid"; } 2>/dev/null; [ "${rp:-}" = "$$" ] || return 0
+               ^-- SC2034 (warning): rs appears unused. Verify use (or export if used externally).
+
+
+In scripts/commit-push-all.sh line 83:
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) printf "cpa: internal_error exit %s before the run was opened\n" "$_rc" >&2; core_report self_test internal_error "exit $_rc"; exit 20 ;; esac' EXIT
+     ^-- SC2154 (warning): _rc is referenced but not assigned.
+
+
+In scripts/commit-push-all.sh line 136:
+export GIT_CONFIG_KEY_4=credential.helper GIT_CONFIG_VALUE_4= GIT_CONFIG_KEY_5=core.askPass GIT_CONFIG_VALUE_5= GIT_CONFIG_KEY_6=protocol.ext.allow GIT_CONFIG_VALUE_6=never
+                                                             ^-- SC1007 (warning): Remove space after = if trying to assign a value (for empty string, use var='' ... ).
+                                                                                                               ^-- SC1007 (warning): Remove space after = if trying to assign a value (for empty string, use var='' ... ).
+
+
+In scripts/commit-push-all.sh line 421:
+  local st="$1" cs="$2" rc reason ffreason ff=() mf=() from to c cl
+                                                                 ^-- SC2034 (warning): cl appears unused. Verify use (or export if used externally).
+
+
+In scripts/commit-push-all.sh line 496:
+    case "$xy" in R*|C*|?R|?C) IFS= read -r -d '' ol ;; esac        # a rename or copy record is followed by a bare record holding the OLD path (LIST-11)
+                                                  ^-- SC2034 (warning): ol appears unused. Verify use (or export if used externally).
+
+
+In scripts/repo/host_entry/cpa-host line 54:
+for n in "${CPA_SIGS[@]}"; do trap "trap '' ${CPA_SIGS[*]}; exit $((128+n))" "$n" 2>/dev/null; done
+                                            ^------------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+                                                                 ^--------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+
+
+In scripts/repo/host_entry/cpa-host line 77:
+  { read -r rp rs < "$RUN/run.pid"; } 2>/dev/null; [ "${rp:-}" = "$$" ] || return 0
+               ^-- SC2034 (warning): rs appears unused. Verify use (or export if used externally).
+
+
+In scripts/repo/host_entry/cpa-host line 83:
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) host_report internal_error "host_exit_$_rc"; printf "{\"refusal\":\"internal_error\",\"reason\":\"host_exit_%s\"}\n" "$_rc" >&2; exit 20 ;; esac' EXIT
+     ^-- SC2154 (warning): _rc is referenced but not assigned.
+
+
+In scripts/repo/lib_safe.sh line 27:
+  case "$p" in /*|-*|*\\*|..|../*|*/..|*/../*|./..|*//*) return 1 ;; esac
+                                  ^--^ SC2221 (warning): This pattern always overrides a later one on line 27.
+                                              ^--^ SC2222 (warning): This pattern never matches because of a previous pattern on line 27.
+
+
+In scripts/repo/commit_recursive.sh line 124:
+  local mf deferred first=0 s tr="" lp=() x
+                              ^-- SC2034 (warning): tr appears unused. Verify use (or export if used externally).
+
+
+In scripts/repo/integrate_ff_only.sh line 58:
+    --main-only) MAIN_ONLY=1; shift ;; --report-behind-submodules) REPORT_SUB=1; shift ;;
+                 ^-------^ SC2034 (warning): MAIN_ONLY appears unused. Verify use (or export if used externally).
+
+
+In scripts/repo/integrate_ff_only.sh line 123:
+    if lr="$(tm git -C "$d" ls-remote --heads -- "$r" 2>&1)" && tm git -C "$d" fetch -q --no-tags --no-recurse-submodules --no-write-fetch-head --refmap= -- "$r" $(printf '%s\n' "$lr" | heads_tips) >/dev/null 2>&1; then
+                                                                                                                                                                  ^-- SC2046 (warning): Quote this to prevent word splitting.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1007 -- Remove space after = if trying to...
+  https://www.shellcheck.net/wiki/SC2034 -- MAIN_ONLY appears unused. Verify ...
+  https://www.shellcheck.net/wiki/SC2046 -- Quote this to prevent word splitt...
+shellcheck exit=1

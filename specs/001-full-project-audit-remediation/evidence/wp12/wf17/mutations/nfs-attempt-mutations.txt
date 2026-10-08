@@ -1,0 +1,3 @@
+stale_observed_kept_and_written_only_if_absent CAUGHT
+pointer_fabricated_again CAUGHT
+identity_noop FAILED-BUT-IDENTITY

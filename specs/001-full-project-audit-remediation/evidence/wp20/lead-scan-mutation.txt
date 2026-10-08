@@ -1,0 +1,11 @@
+# identity: wp=WP-20 tasks=T162,T163,T164,T165,T167 utc=2026-10-07T16:21:25Z host=anton uid=1000 git_head=65e5f3391acadf08bbae583e2f371fbb068b9d5d (worktree dirty, files unstaged; scripts hashed in SHA256SUMS-scripts.txt)
+# source=/dev/shm/w20/ev/lead-scan-mutation.txt (copied verbatim below this line)
+CONTROL unmutated: rc=0 RESULT: fail=0
+MUTANT scan_every_md: KILLED (1 failing checks; saw /needle: the same line in a submodule/)
+MUTANT ignore_extra_roots: KILLED (1 failing checks; saw /HC-2 extra root naming/)
+MUTANT skip_snapshot_check: KILLED (1 failing checks; saw /snapshot changed after its manifest/)
+MUTANT skip_listing_check: KILLED (1 failing checks; saw /NUL path appended/)
+MUTANT pattern_rule_off: KILLED (1 failing checks; saw /shell grep pattern/)
+MUTANT structured_off: KILLED (1 failing checks; saw /already-structured/)
+MUTANT blind_check_off: KILLED (1 failing checks; saw /lead_scan_blind/)
+MUTANTS: 0 survived

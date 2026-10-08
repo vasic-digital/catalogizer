@@ -1,0 +1,19 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | class inventories K A J H
+# utc 2026-10-08T01:08:19Z | host anton | git head e9d6883d (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command: bash specs/001-full-project-audit-remediation/evidence/wp08/fix-r5-inventory.sh $PWD /dev/shm/r5head
+NEEDLE tree class K: 15 member(s)
+FIXED  tree class K: 0 member(s)
+NEEDLE tree class A: 10 member(s)
+FIXED  tree class A: 6 REVIEWED non-member(s) (default compared with a non-empty value / read after the shape check):
+    reviewed: scripts/longops/heartbeat.sh:49:      if [ "$(jq -r '.run_id // ""' <<<"$h" 2>/dev/null)" = "$(jq -r .run_id <<<"$j")" ]; then
+    reviewed: scripts/longops/lib.sh:376:  cur=$(jq -r '.run_id // ""' "$(lo_holder_file "$p")" 2>/dev/null)
+    reviewed: scripts/longops/lib.sh:385:  cur=$(jq -r '.run_id // ""' "$(lo_holder_file "$p")" 2>/dev/null)
+    reviewed: scripts/longops/reap.sh:121:    live|expired) [ "$(jq -r '.run_id // ""' "$(lo_holder_file "$purpose")" 2>/dev/null)" != "$run" ] || { echo "refused: holder_live: the purpose holder of $purpose is this op's own run $run and it is $hs: its worker still runs under the claim" >&2; return "$RC_LIVE"; } ;;
+    reviewed: scripts/longops/reap.sh:204:    case "$(jq -r '.state // ""' "$f" 2>/dev/null)" in complete|failed|reaped|handoff|blocked-escape) break ;; esac
+    reviewed: scripts/anti-mess/sweep.sh:381:        hrun=$(jq -r '.run_id // ""' "$(lo_holder_file "$p")" 2>/dev/null)
+FIXED  tree class A: 0 member(s)
+NEEDLE tree class J: 7 member(s)
+FIXED  tree class J: 0 member(s)
+FIXED  tree class H: 0 member(s) (lib.sh exports LC_ALL=C)
+NEEDLE tree class H: 1 member (the pre-fix library does not force the locale)
+# exit status 0

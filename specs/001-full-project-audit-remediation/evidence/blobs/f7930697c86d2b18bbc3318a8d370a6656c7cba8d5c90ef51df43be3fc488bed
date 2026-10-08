@@ -1,0 +1,3 @@
+ok   baseline scan exits 0
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, ('missing', 'duplicate of structured source', None, '- **Fix:** add the missing test; do not skip with `t.Skip()`'))
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

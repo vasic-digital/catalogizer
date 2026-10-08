@@ -1,0 +1,2418 @@
+{
+ "checkbox_lines_not_enumerated": {
+  "files": 82,
+  "lines": 3757,
+  "list": [
+   [
+    ".specify/extensions/superspec/templates/checklist-template.md",
+    29
+   ],
+   [
+    ".specify/extensions/superspec/templates/constitution-template.md",
+    12
+   ],
+   [
+    ".specify/extensions/superspec/templates/plan-template.md",
+    7
+   ],
+   [
+    ".specify/extensions/superspec/templates/tasks-template.md",
+    23
+   ],
+   [
+    ".specify/memory/constitution.md",
+    21
+   ],
+   [
+    ".specify/templates/checklist-template.md",
+    6
+   ],
+   [
+    ".specify/templates/tasks-template.md",
+    34
+   ],
+   [
+    "GETTING_STARTED.md",
+    16
+   ],
+   [
+    "MEMORY.md",
+    4
+   ],
+   [
+    "catalog-api/CONVERSION_IMPLEMENTATION_STATUS.md",
+    7
+   ],
+   [
+    "docs/CONTRIBUTING.md",
+    56
+   ],
+   [
+    "docs/DEPLOYMENT_GUIDE.md",
+    19
+   ],
+   [
+    "docs/INSTALLATION_GUIDE.md",
+    10
+   ],
+   [
+    "docs/SECURITY_INCIDENT_RESPONSE.md",
+    21
+   ],
+   [
+    "docs/TESTING_GUIDE.md",
+    14
+   ],
+   [
+    "docs/VLC_INTEGRATION.md",
+    6
+   ],
+   [
+    "docs/architecture/OPTIMIZATION_GUIDE.md",
+    36
+   ],
+   [
+    "docs/courses/slides/MODULE_1_SLIDES.md",
+    6
+   ],
+   [
+    "docs/deployment/PRE_DEPLOYMENT_CHECKLIST.md",
+    107
+   ],
+   [
+    "docs/deployment/PRODUCTION_DEPLOYMENT_CHECKLIST.md",
+    185
+   ],
+   [
+    "docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md",
+    45
+   ],
+   [
+    "docs/guides/CONFIGURATION_REFERENCE.md",
+    14
+   ],
+   [
+    "docs/guides/PERFORMANCE_TUNING.md",
+    14
+   ],
+   [
+    "docs/guides/QUICK_START_TOMORROW.md",
+    12
+   ],
+   [
+    "docs/nexus/helixqa-production-readiness-plan.md",
+    8
+   ],
+   [
+    "docs/phases/PHASE_0_FOUNDATION.md",
+    15
+   ],
+   [
+    "docs/phases/PHASE_2_DEAD_CODE.md",
+    64
+   ],
+   [
+    "docs/plans/2026-04-17-helix-nexus-open-clawed-integration-plan.md",
+    10
+   ],
+   [
+    "docs/plans/archive/2026-03-07-comprehensive-remediation-design.md",
+    9
+   ],
+   [
+    "docs/plans/archive/2026-03-24-service-discovery-design.md",
+    34
+   ],
+   [
+    "docs/plans/archive/2026-04-11-phase-1-concurrency-hardening.md",
+    36
+   ],
+   [
+    "docs/plans/archive/COMPREHENSIVE_COMPLETION_PLAN_2026-03-04.md",
+    19
+   ],
+   [
+    "docs/reports/2026-04-21-verification-plan.md",
+    7
+   ],
+   [
+    "docs/reports/COMPREHENSIVE_AUDIT_REPORT_2026-02-27.md",
+    25
+   ],
+   [
+    "docs/reports/IMPLEMENTATION_SESSION_2026-02-27.md",
+    24
+   ],
+   [
+    "docs/research/Catalogizer_Ultimate_Master_Plan.md",
+    77
+   ],
+   [
+    "docs/security/INCIDENT_RESPONSE.md",
+    17
+   ],
+   [
+    "docs/security/PENTEST_REPORT.md",
+    8
+   ],
+   [
+    "docs/security/SECURITY_REMEDIATION_SUMMARY.md",
+    7
+   ],
+   [
+    "docs/status/COMPLETING_FINAL_TASKS.md",
+    10
+   ],
+   [
+    "docs/status/COMPREHENSIVE_MASTER_IMPLEMENTATION_PLAN.md",
+    23
+   ],
+   [
+    "docs/status/COMPREHENSIVE_STATUS_AND_IMPLEMENTATION_PLAN.md",
+    110
+   ],
+   [
+    "docs/status/FINAL_POLISH_REPORT.md",
+    13
+   ],
+   [
+    "docs/status/FINAL_VALIDATION_REPORT.md",
+    45
+   ],
+   [
+    "docs/status/IMPLEMENTATION_TASK_TRACKER.md",
+    183
+   ],
+   [
+    "docs/status/IMPLEMENTATION_TRACKING.md",
+    130
+   ],
+   [
+    "docs/status/PRODUCTION_READINESS_REPORT.md",
+    23
+   ],
+   [
+    "docs/status/PROJECT_COMPLETION_CERTIFICATE.md",
+    51
+   ],
+   [
+    "docs/status/PROJECT_COMPLETION_SUMMARY.md",
+    50
+   ],
+   [
+    "docs/status/PROJECT_DASHBOARD.md",
+    41
+   ],
+   [
+    "docs/status/SESSION_7_EXECUTION_SUMMARY.md",
+    11
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-helixqa-autonomous-robot-phase1.md",
+    57
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-helixqa-autonomous-robot-phase2.md",
+    48
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-helixqa-autonomous-robot-phase3.md",
+    36
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-helixqa-autonomous-robot-phase4.md",
+    29
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-project-completion-plan.md",
+    150
+   ],
+   [
+    "docs/superpowers/plans/2026-03-26-splash-screens-plan.md",
+    52
+   ],
+   [
+    "docs/superpowers/plans/2026-03-27-phase1-security-scanning.md",
+    62
+   ],
+   [
+    "docs/superpowers/plans/2026-03-31-phase-specific-vision-strategies.md",
+    35
+   ],
+   [
+    "docs/superpowers/plans/2026-04-04-android-tv-home-channels.md",
+    70
+   ],
+   [
+    "docs/superpowers/plans/2026-04-11-playback-auth-search-aggregation.md",
+    58
+   ],
+   [
+    "docs/superpowers/plans/2026-04-11-playback-history-tracking.md",
+    50
+   ],
+   [
+    "docs/superpowers/plans/2026-04-14-distributed-build-system.md",
+    41
+   ],
+   [
+    "docs/superpowers/plans/2026-04-14-system-rebuild-full-qa-5-iterations-plan.md",
+    67
+   ],
+   [
+    "docs/superpowers/specs/2026-03-27-project-completion-full-plan-design.md",
+    75
+   ],
+   [
+    "docs/superpowers/specs/2026-04-03-comprehensive-completion-design.md",
+    95
+   ],
+   [
+    "docs/superpowers/specs/2026-04-04-full-qa-campaign-v2.3.0-design.md",
+    8
+   ],
+   [
+    "docs/testing/ANDROID_TESTING_GUIDE.md",
+    20
+   ],
+   [
+    "docs/testing/E2E_TEST_PLAN.md",
+    165
+   ],
+   [
+    "docs/testing/PERFORMANCE_TESTING_GUIDE.md",
+    16
+   ],
+   [
+    "docs/testing/TEST_IMPLEMENTATION_SUMMARY.md",
+    11
+   ],
+   [
+    "docs/testing/TEST_VALIDATION_SUMMARY.md",
+    13
+   ],
+   [
+    "docs/video-course/MODULE18_MONITORING_SCRIPT.md",
+    8
+   ],
+   [
+    "docs/vlc-integration/VLC_DESKTOP_INTEGRATION_PLAN.md",
+    23
+   ],
+   [
+    "docs/vlc-integration/VLC_INTEGRATION_PLAN.md",
+    21
+   ],
+   [
+    "specs/001-full-project-audit-remediation/checklists/requirements.md",
+    16
+   ],
+   [
+    "specs/001-full-project-audit-remediation/docs/02-audit-methodology-and-index-strategy.md",
+    45
+   ],
+   [
+    "specs/001-full-project-audit-remediation/docs/08-web-client-audit-plan.md",
+    13
+   ],
+   [
+    "specs/001-full-project-audit-remediation/docs/11-submodules-audit-and-update-runbook.md",
+    10
+   ],
+   [
+    "specs/001-full-project-audit-remediation/plan.md",
+    15
+   ],
+   [
+    "specs/001-full-project-audit-remediation/tasks.md",
+    685
+   ],
+   [
+    "templates/BUG_RETROSPECTIVE.md",
+    9
+   ]
+  ]
+ },
+ "classes": {
+  "EXT": {
+   "entries": 12,
+   "files": 0,
+   "remotes_recorded": 8,
+   "sources": [
+    "external:git remotes recorded in the freeze json",
+    "external:named services (firebase-crashlytics, sonarqube, snyk, trivy)"
+   ]
+  },
+  "S-01": {
+   "entries": 1778,
+   "files": 1778,
+   "frontmatter_strict_yaml_invalid": [
+    [
+     "docs/issues/HELIX-122-lack-of-clear-buttons-for-user-action.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-122-missing-labels-or-aria-attributes-for-interactive-elements.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-122-missing-search-functionality.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-122-unclear-label-for-icons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-123-ambiguous-button-label-discover.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-123-inconsistent-branding-on-icons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-123-insufficient-error-recovery-options.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-123-unclear-field-label.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-124-inconsistent-spacing-and-alignment-in-the-ui.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-124-lack-of-clear-call-to-action-cta-on-buttons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-124-no-input-validation-or-error-handling-visible.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-124-unclear-button-functionality.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-125-inconsistent-text-alignment-in-server-url-section.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-125-inconsistent-visual-design.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-125-lack-of-clear-navigation.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-125-poor-text-legibility.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-126-formatting-inconsistency-in-button-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-126-incorrect-input-validation-for-password-field.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-126-no-clear-call-to-action.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-126-no-option-to-recover-forgotten-password.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-127-inconsistent-typography-in-sign-in-form.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-127-lack-of-branding-or-logo-on-login-screen.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-127-lack-of-clear-input-fields-for-sensitive-information.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-127-no-feedback-on-search-results.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-128-inadequate-feedback-on-loading-status.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-128-inconsistent-input-field-styling.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-128-insufficient-contrast-for-readability.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-128-unclear-call-to-action-label-on-sign-in-form.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-129-incorrect-data-validation-for-catalog-number-input-field.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-129-lack-of-clear-instruction.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-129-missing-error-handling-for-sign-in-form.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-129-missing-password-visibility-toggle.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-130-lack-of-feedback-for-successful-sign-in.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-130-lack-of-progress-indicator.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-130-misaligned-and-inconsistent-text-alignment.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-130-no-feedback-for-server-connection-status.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-131-inadequate-visual-feedback-for-successful-form-submission.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-131-inefficient-use-of-space.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-131-low-contrast-for-placeholder-text-in-input-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-131-unclear-error-message.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-132-button-placement-and-labeling.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-132-incomplete-ui-elements.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-132-missing-labels-or-aria-attributes-for-input-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-132-no-option-to-retry.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-133-confusing-form-layout.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-133-insufficient-contrast-for-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-133-lack-of-user-feedback.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-133-placeholder-text-in-input-fields-is-not-descriptive.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-134-button-labeling.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-134-inconsistent-alignment-of-content.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-134-inconsistent-field-label-alignment.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-134-no-forgot-password-or-account-recovery-option.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-135-form-inputs-lack-clear-placeholder-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-135-indeterminate-progress-indicator.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-135-no-option-to-create-a-new-account.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-135-typographic-contrast-for-error-messages.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-136-incomplete-form-layout.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-136-inconsistent-text-alignment-in-server-connection-section.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-136-lack-of-clear-filtering-options.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-136-visual-inconsistency-in-buttons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-137-inconsistent-button-labels.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-137-inconsistent-font-size.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-137-inconsistent-ui-theme.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-137-no-default-focus-on-the-first-input-field.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-138-color-contrast-issues.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-138-lack-of-branding-or-logo-in-the-login-screen.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-138-lack-of-clear-call-to-action-cta.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-138-no-results-found-message-is-unclear.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-139-button-with-overlapping-icons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-139-inconsistent-input-field-styling.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-139-insufficient-space-between-elements.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-139-search-bar-has-no-placeholder-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-140-aesthetically-pleasing-color-palette.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-140-insufficient-margin-around-input-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-140-keyboard-layout-is-not-optimized-for-search.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-140-missing-password-visibility-toggle.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-141-good-use-of-imagery.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-141-inconsistent-iconography-and-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-141-lack-of-clear-search-results.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-141-no-feedback-for-server-connection-status.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-142-low-contrast-for-placeholder-text-in-input-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-142-password-field-masking-username-input.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-142-poor-use-of-space-in-buttons.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-142-unclear-search-query.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-144-ambiguous-button-labels-for-server-actions.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-144-button-overlap.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-144-incorrect-field-labels.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-144-unclear-input-field-labeling.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-145-button-shadow-overlaps-text.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-145-lack-of-branding.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-145-lack-of-visible-keyboard-focus-indicator.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-145-no-input-validation-or-error-handling-visible.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-146-button-overlaps-other-elements-on-screen.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-146-incomplete-or-missing-help-text-for-form-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-146-inconsistent-spacing-between-ui-elements.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-146-incorrect-password-entry-prevention-feature.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-147-inconsistent-and-non-intuitive-password-reset-link.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-147-inefficient-use-of-space-in-input-fields.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-147-no-option-to-remember-user-credentials.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-147-too-many-buttons-in-a-row.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-508-test-case-failed-manual-server-url-entry-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-508-test-case-failed-tv-cold-start-launch-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-509-test-case-failed-tv-channel-refresh-after-content-change-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-509-test-case-failed-tv-splash-screen-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-510-test-case-failed-tv-focus-management-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-510-test-case-failed-tv-home-initial-focus-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-511-test-case-failed-tv-login-page-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-511-test-case-failed-tv-top-bar-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-512-test-case-failed-tv-continue-watching-row-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-512-test-case-failed-tv-login-d-pad-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-513-test-case-failed-tv-login-success-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-513-test-case-failed-tv-search-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-514-test-case-failed-tv-login-error-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-514-test-case-failed-tv-voice-search-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-515-test-case-failed-tv-home-screen-loads-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-515-test-case-failed-tv-search-results-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-516-test-case-failed-tv-media-carousel-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-516-test-case-failed-tv-search-no-results-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-517-test-case-failed-tv-category-rows-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-517-test-case-failed-tv-detail-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-518-test-case-failed-tv-detail-play-action-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-518-test-case-failed-tv-focus-management-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-519-test-case-failed-tv-detail-related-items-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-519-test-case-failed-tv-top-bar-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-520-test-case-failed-tv-continue-watching-row-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-520-test-case-failed-tv-player-starts-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-521-test-case-failed-tv-player-d-pad-controls-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-521-test-case-failed-tv-search-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-522-test-case-failed-tv-player-progress-tracking-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-522-test-case-failed-tv-voice-search-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-523-test-case-failed-tv-player-resume-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-523-test-case-failed-tv-search-results-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-524-test-case-failed-tv-player-back-button-exit-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-524-test-case-failed-tv-search-no-results-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-525-test-case-failed-tv-detail-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-525-test-case-failed-tv-settings-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-526-test-case-failed-tv-detail-poster-and-backdrop-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-526-test-case-failed-tv-settings-d-pad-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-527-test-case-failed-tv-detail-play-action-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-527-test-case-failed-tv-settings-server-configuration-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-528-test-case-failed-tv-detail-metadata-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-528-test-case-failed-tv-settings-theme-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-529-test-case-failed-tv-d-pad-full-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-529-test-case-failed-tv-detail-related-items-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-530-test-case-failed-tv-focus-always-visible-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-530-test-case-failed-tv-player-starts-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-531-test-case-failed-tv-back-key-behavior-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-531-test-case-failed-tv-player-d-pad-controls-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-532-test-case-failed-tv-home-key-returns-to-launcher-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-532-test-case-failed-tv-player-progress-tracking-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-533-test-case-failed-tv-focus-restore-after-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-533-test-case-failed-tv-player-resume-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-534-test-case-failed-tv-player-back-button-exit-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-534-test-case-failed-user-flow-launch-tv-app-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-535-test-case-failed-tv-settings-screen-opens-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-535-test-case-failed-user-flow-login-on-tv-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-536-test-case-failed-tv-settings-d-pad-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-536-test-case-failed-user-flow-navigate-home-rows-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-537-test-case-failed-tv-settings-server-configuration-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-537-test-case-failed-user-flow-browse-hero-carousel-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-538-test-case-failed-tv-settings-theme-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-538-test-case-failed-user-flow-select-item-and-view-detail-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-539-test-case-failed-tv-d-pad-full-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-539-test-case-failed-user-flow-play-media-and-return-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-540-test-case-failed-d-pad-stress-rapid-direction-changes-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-540-test-case-failed-tv-focus-always-visible-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-541-test-case-failed-d-pad-stress-hold-direction-key-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-541-test-case-failed-tv-back-key-behavior-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-542-test-case-failed-d-pad-stress-diagonal-presses-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-542-test-case-failed-tv-home-key-returns-to-launcher-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-543-test-case-failed-focus-chain-home-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-543-test-case-failed-tv-focus-restore-after-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-544-test-case-failed-focus-chain-detail-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-544-test-case-failed-user-flow-launch-tv-app-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-545-test-case-failed-focus-chain-search-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-545-test-case-failed-user-flow-login-on-tv-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-546-test-case-failed-focus-chain-settings-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-546-test-case-failed-user-flow-navigate-home-rows-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-547-test-case-failed-remote-play-pause-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-547-test-case-failed-user-flow-browse-hero-carousel-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-548-test-case-failed-remote-stop-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-548-test-case-failed-user-flow-select-item-and-view-detail-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-549-test-case-failed-remote-back-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-549-test-case-failed-user-flow-play-media-and-return-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-550-test-case-failed-d-pad-stress-rapid-direction-changes-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-550-test-case-failed-remote-home-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-551-test-case-failed-d-pad-stress-hold-direction-key-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-551-test-case-failed-remote-menu-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-552-test-case-failed-d-pad-stress-diagonal-presses-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-552-test-case-failed-voice-search-speak-query-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-553-test-case-failed-focus-chain-home-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-553-test-case-failed-idle-resume-after-screensaver-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-554-test-case-failed-focus-chain-detail-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-554-test-case-failed-server-url-field-on-login-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-555-test-case-failed-auto-discovery-on-launch-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-555-test-case-failed-focus-chain-search-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-556-test-case-failed-focus-chain-settings-screen-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-556-test-case-failed-server-url-persists-across-restarts-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-557-test-case-failed-default-url-is-catalogizer-dev-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-557-test-case-failed-remote-play-pause-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-558-test-case-failed-remote-stop-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-558-test-case-failed-switch-server-at-runtime-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-559-test-case-failed-remote-back-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-559-test-case-failed-tv-default-channel-on-home-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-560-test-case-failed-remote-home-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-560-test-case-failed-tv-movies-category-channel-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-561-test-case-failed-remote-menu-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-561-test-case-failed-tv-channel-click-opens-detail-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-562-test-case-failed-tv-channel-click-plays-immediately-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-562-test-case-failed-voice-search-speak-query-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-563-test-case-failed-tv-watch-next-row-populated-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-563-test-case-failed-voice-search-results-display-correctly-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-564-test-case-failed-10-foot-ui-text-readable-at-distance-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-564-test-case-failed-tv-watch-next-resume-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-565-test-case-failed-10-foot-ui-buttons-large-enough-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-565-test-case-failed-tv-watch-next-auto-episode-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-566-test-case-failed-10-foot-ui-contrast-sufficient-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-566-test-case-failed-tv-channel-cleanup-on-logout-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-567-test-case-failed-idle-app-handles-screensaver-activation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-567-test-case-failed-tv-channel-tap-behavior-settings-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-568-test-case-failed-idle-resume-after-screensaver-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-568-test-case-failed-tv-channel-deep-link-without-auth-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-569-test-case-failed-server-url-field-on-login-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-569-test-case-failed-tv-channel-d-pad-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-570-test-case-failed-discover-button-present-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-570-test-case-failed-tv-player-video-start-verification-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-571-test-case-failed-auto-discovery-on-launch-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-571-test-case-failed-tv-player-d-pad-seek-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-572-test-case-failed-manual-server-url-entry-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-572-test-case-failed-tv-player-play-pause-toggle-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-573-test-case-failed-server-url-persists-across-restarts-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-573-test-case-failed-tv-player-speed-control-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-574-test-case-failed-discovered-server-picker-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-574-test-case-failed-tv-channel-direct-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-575-test-case-failed-default-url-is-catalogizer-dev-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-575-test-case-failed-tv-cold-start-launch-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-576-test-case-failed-switch-server-at-runtime-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-576-test-case-failed-tv-login-full-executable-flow-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-577-test-case-failed-tv-default-channel-on-home-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-577-test-case-failed-tv-home-navigation-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-578-test-case-failed-tv-media-playback-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-578-test-case-failed-tv-movies-category-channel-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-579-test-case-failed-force-stop-app-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-579-test-case-failed-tv-channel-click-opens-detail-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-580-test-case-failed-cold-start-full-launch-sequence-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-580-test-case-failed-tv-channel-click-plays-immediately-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-581-test-case-failed-login-full-credential-entry-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-581-test-case-failed-tv-watch-next-row-populated-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-582-test-case-failed-navigate-home-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-582-test-case-failed-tv-watch-next-resume-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-583-test-case-failed-background-and-resume-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-583-test-case-failed-tv-watch-next-auto-episode-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-584-test-case-failed-login-invalid-credentials-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-584-test-case-failed-tv-channel-cleanup-on-logout-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-585-test-case-failed-playback-session-lifecycle-start-progress-end-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-585-test-case-failed-tv-channel-tap-behavior-settings-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-586-test-case-failed-playback-dumpsys-media-session-visible-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-586-test-case-failed-tv-channel-deep-link-without-auth-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-587-test-case-failed-cold-start-on-low-ram-device-2gb-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-587-test-case-failed-tv-channel-d-pad-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-588-test-case-failed-launch-with-ethernet-disconnected-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-588-test-case-failed-tv-channel-refresh-after-content-change-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-589-test-case-failed-launch-after-system-ota-update-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-589-test-case-failed-tv-player-video-start-verification-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-590-test-case-failed-hdmi-cec-power-on-launch-conflict-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-590-test-case-failed-tv-player-d-pad-seek-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-591-test-case-failed-screensaver-interruption-during-idle-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-591-test-case-failed-tv-player-play-pause-toggle-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-592-test-case-failed-memory-pressure-kill-and-restore-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-592-test-case-failed-tv-player-speed-control-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-593-test-case-failed-tv-channel-direct-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-593-test-case-failed-very-rapid-d-pad-input-20-per-second-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-594-test-case-failed-d-pad-navigation-during-loading-transition-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-594-test-case-failed-tv-cold-start-launch-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-595-test-case-failed-focus-lost-after-dialog-dismissal-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-595-test-case-failed-tv-login-full-executable-flow-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-596-test-case-failed-focus-trapped-on-invisible-element-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-596-test-case-failed-tv-home-navigation-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-597-test-case-failed-focus-wrap-around-at-list-boundaries-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-597-test-case-failed-tv-media-playback-executable-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-598-test-case-failed-d-pad-input-during-row-scroll-animation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-598-test-case-failed-force-stop-app-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-599-test-case-failed-cold-start-full-launch-sequence-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-599-test-case-failed-long-press-d-pad-center-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-600-test-case-failed-login-full-credential-entry-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-600-test-case-failed-simultaneous-multiple-button-press-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-601-test-case-failed-login-with-on-screen-keyboard-lag-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-601-test-case-failed-navigate-home-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-602-test-case-failed-background-and-resume-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-602-test-case-failed-login-with-external-usb-bluetooth-keyboard-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-603-test-case-failed-login-invalid-credentials-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-603-test-case-failed-server-url-with-trailing-spaces-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-604-test-case-failed-playback-session-lifecycle-start-progress-end-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-604-test-case-failed-server-url-with-protocol-mismatch-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-605-test-case-failed-playback-dumpsys-media-session-visible-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-605-test-case-failed-session-expires-during-active-media-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-606-test-case-failed-launch-with-ethernet-disconnected-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-606-test-case-failed-re-login-after-server-side-password-change-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-607-test-case-failed-login-with-self-signed-server-certificate-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-607-test-case-failed-memory-pressure-kill-and-restore-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-608-test-case-failed-play-4k-content-on-1080p-device-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-608-test-case-failed-very-rapid-d-pad-input-20-per-second-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-609-test-case-failed-d-pad-navigation-during-loading-transition-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-609-test-case-failed-play-unsupported-codec-hevc-on-old-device-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-610-test-case-failed-focus-lost-after-dialog-dismissal-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-610-test-case-failed-streaming-quality-downgrade-on-bandwidth-drop-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-611-test-case-failed-audio-delay-with-external-sound-bar-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-611-test-case-failed-focus-wrap-around-at-list-boundaries-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-612-test-case-failed-d-pad-input-during-row-scroll-animation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-612-test-case-failed-subtitle-rendering-with-large-system-font-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-613-test-case-failed-long-press-d-pad-center-button-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-613-test-case-failed-media-info-for-corrupted-or-incomplete-file-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-614-test-case-failed-resume-playback-at-invalid-position-after-crash-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-614-test-case-failed-simultaneous-multiple-button-press-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-615-test-case-failed-login-with-on-screen-keyboard-lag-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-615-test-case-failed-pause-playback-for-over-30-minutes-then-resume-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-616-test-case-failed-login-with-external-usb-bluetooth-keyboard-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-616-test-case-failed-remote-control-disconnects-during-operation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-617-test-case-failed-ir-remote-interference-from-other-devices-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-617-test-case-failed-server-url-with-trailing-spaces-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-618-test-case-failed-bluetooth-remote-low-battery-behavior-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-618-test-case-failed-media-info-for-corrupted-or-incomplete-file-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-619-test-case-failed-media-remote-keys-on-non-media-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-619-test-case-failed-pause-playback-for-over-30-minutes-then-resume-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-620-test-case-failed-channel-up-down-on-non-live-content-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-620-test-case-failed-media-remote-keys-on-non-media-screen-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-621-test-case-failed-channel-up-down-on-non-live-content-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-621-test-case-failed-voice-search-failure-graceful-handling-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-622-test-case-failed-home-button-during-playback-saves-state-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-623-test-case-failed-recent-apps-button-handling-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-624-test-case-failed-hdr-content-metadata-handling-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-624-test-case-failed-subtitle-overlap-with-player-ui-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-625-test-case-failed-cold-start-on-low-ram-device-2gb-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-625-test-case-failed-display-refresh-rate-switching-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-626-test-case-failed-frame-drops-during-row-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-626-test-case-failed-launch-after-system-ota-update-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-627-test-case-failed-4-3-content-on-16-9-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-627-test-case-failed-hdmi-cec-power-on-launch-conflict-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-628-test-case-failed-launch-from-tv-input-switching-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-628-test-case-failed-letterbox-and-pillarbox-rendering-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-629-test-case-failed-overscan-safe-area-compliance-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-629-test-case-failed-screensaver-interruption-during-idle-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-630-test-case-failed-memory-pressure-kill-and-restore-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-630-test-case-failed-subtitle-overlap-with-player-ui-elements-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-631-test-case-failed-launch-with-display-overscan-active-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-631-test-case-failed-ui-theme-contrast-with-bright-video-content-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-632-test-case-failed-focus-lost-after-dialog-dismissal-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-632-test-case-failed-loading-spinner-performance-on-slow-gpu-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-633-test-case-failed-favorites-sync-across-platforms-step-4.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-633-test-case-failed-focus-trapped-on-invisible-element-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-634-test-case-failed-focus-wrap-around-at-list-boundaries-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-634-test-case-failed-login-from-all-client-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-635-test-case-failed-favorites-sync-across-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-635-test-case-failed-login-with-on-screen-keyboard-lag-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-636-test-case-failed-login-with-external-usb-bluetooth-keyboard-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-636-test-case-failed-playback-progress-syncs-across-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-637-test-case-failed-browse-same-entity-on-all-clients-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-637-test-case-failed-login-timeout-on-slow-tv-network-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-638-test-case-failed-multiple-concurrent-client-sessions-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-638-test-case-failed-server-url-with-protocol-mismatch-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-639-test-case-failed-service-discovery-across-network-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-639-test-case-failed-session-expires-during-active-media-playback-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-640-test-case-failed-re-login-after-server-side-password-change-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-641-test-case-failed-login-with-self-signed-server-certificate-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-642-test-case-failed-play-4k-content-on-1080p-device-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-643-test-case-failed-play-unsupported-codec-hevc-on-old-device-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-644-test-case-failed-streaming-quality-downgrade-on-bandwidth-drop-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-645-test-case-failed-audio-delay-with-external-sound-bar-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-646-test-case-failed-subtitle-rendering-with-large-system-font-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-647-test-case-failed-media-info-for-corrupted-or-incomplete-file-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-648-test-case-failed-resume-playback-at-invalid-position-after-crash-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-649-test-case-failed-remote-control-disconnects-during-operation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-650-test-case-failed-ir-remote-interference-from-other-devices-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-651-test-case-failed-bluetooth-remote-low-battery-behavior-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-652-test-case-failed-voice-search-failure-graceful-handling-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-653-test-case-failed-10-foot-ui-small-text-verification-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-654-test-case-failed-hdr-content-metadata-handling-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-655-test-case-failed-display-refresh-rate-switching-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-656-test-case-failed-frame-drops-during-row-navigation-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-657-test-case-failed-4-3-content-on-16-9-display-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-658-test-case-failed-letterbox-and-pillarbox-rendering-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-659-test-case-failed-overscan-safe-area-compliance-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-660-test-case-failed-ui-theme-contrast-with-bright-video-content-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-661-test-case-failed-loading-spinner-performance-on-slow-gpu-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-662-test-case-failed-focus-indicator-visibility-on-all-backgrounds-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-663-test-case-failed-favorites-sync-across-platforms-step-4.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-664-test-case-failed-login-from-all-client-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-665-test-case-failed-favorites-sync-across-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-666-test-case-failed-playback-progress-syncs-across-platforms-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-667-test-case-failed-browse-same-entity-on-all-clients-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-668-test-case-failed-multiple-concurrent-client-sessions-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-669-test-case-failed-service-discovery-across-network-step-1.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-670-test-case-failed-tv-channel-click-opens-detail-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-671-test-case-failed-tv-watch-next-row-populated-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-672-test-case-failed-tv-watch-next-resume-playback-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-673-test-case-failed-tv-channel-cleanup-on-logout-step-3.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-674-test-case-failed-tv-channel-tap-behavior-settings-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-675-test-case-failed-tv-channel-d-pad-navigation-step-2.md",
+     "ScannerError"
+    ],
+    [
+     "docs/issues/HELIX-676-test-case-failed-tv-channel-refresh-after-content-change-step-4.md",
+     "ScannerError"
+    ]
+   ],
+   "frontmatter_strict_yaml_invalid_count": 399,
+   "sources": [
+    "docs/issues/*.md"
+   ]
+  },
+  "S-02": {
+   "entries": 1,
+   "files": 1,
+   "sources": [
+    "issues/*.md"
+   ]
+  },
+  "S-03": {
+   "entries": 269,
+   "files": 1,
+   "sources": [
+    "TASK_TRACKER.md"
+   ]
+  },
+  "S-04": {
+   "entries": 299,
+   "files": 1,
+   "sources": [
+    "MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-05": {
+   "entries": 845,
+   "files": 1,
+   "sources": [
+    "docs/MASTER_EXECUTION_CHECKLIST.md"
+   ]
+  },
+  "S-06": {
+   "entries": 141,
+   "files": 1,
+   "sources": [
+    "COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md"
+   ]
+  },
+  "S-07": {
+   "entries": 96,
+   "files": 1,
+   "sources": [
+    "COMPREHENSIVE_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-08": {
+   "entries": 90,
+   "files": 1,
+   "sources": [
+    "docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md"
+   ]
+  },
+  "S-09": {
+   "entries": 9,
+   "files": 3,
+   "sources": [
+    "UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md"
+   ]
+  },
+  "S-10": {
+   "entries": 54,
+   "files": 1,
+   "sources": [
+    "docs/OPEN_POINTS_CLOSURE.md"
+   ]
+  },
+  "S-11": {
+   "entries": 63,
+   "files": 1,
+   "sources": [
+    "docs/LANDMINES.md"
+   ]
+  },
+  "S-12": {
+   "entries": 311,
+   "files": 34,
+   "sources": [
+    "/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md"
+   ]
+  },
+  "S-13": {
+   "entries": 37,
+   "files": 37,
+   "sources": [
+    "docs/status/*.md"
+   ]
+  },
+  "S-14": {
+   "entries": 54,
+   "files": 18,
+   "legacy_ids": {
+    "CATAPI-DEFECT-001": {
+     "files": 1,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L26"
+    },
+    "CATAPI-DEFECT-002": {
+     "files": 1,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L27"
+    },
+    "CATAPI-DEFECT-003": {
+     "files": 1,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L28"
+    },
+    "CATAPI-DEFECT-004": {
+     "files": 3,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L29"
+    },
+    "CATAPI-DEFECT-005": {
+     "files": 4,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L30"
+    },
+    "CATAPI-DEFECT-006": {
+     "files": 1,
+     "first": "docs/audits/CATALOG_API_DEFECTS_2026-04-29.md:L31"
+    },
+    "DEFER-QA-2026-04-22-001": {
+     "files": 4,
+     "first": "docs/BACKEND_HARDENING_AUDIT.md:L36"
+    },
+    "FIX-012": {
+     "files": 1,
+     "first": "docs/AI_STACK_AUDIT.md:L102"
+    },
+    "FIX-013": {
+     "files": 1,
+     "first": "docs/AI_STACK_AUDIT.md:L106"
+    },
+    "FIX-015": {
+     "files": 2,
+     "first": "docs/AI_STACK_AUDIT.md:L105"
+    },
+    "FIX-017": {
+     "files": 1,
+     "first": "docs/AI_STACK_AUDIT.md:L100"
+    },
+    "FIX-QA-2026-04-21-019": {
+     "files": 5,
+     "first": "docs/ANDROID_TV_AUDIT.md:L51"
+    }
+   },
+   "sources": [
+    "docs/audits/*.md",
+    "docs/*AUDIT*.md",
+    "legacy-ids:defect ids first seen in the S-14 files"
+   ]
+  },
+  "S-15": {
+   "entries": 76,
+   "files": 62,
+   "legacy_ids": {
+    "FINDING-1": {
+     "files": 2,
+     "first": "docs/qa/findings_20260626/discovered_findings.html:L3"
+    },
+    "FINDING-2": {
+     "files": 2,
+     "first": "docs/qa/findings_20260626/discovered_findings.html:L4"
+    },
+    "FIX-011": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T-v2/tickets/FIX-QA-2026-04-21-019-foreground-drift.md:L44"
+    },
+    "FIX-018": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T-v2/tickets/FIX-QA-2026-04-21-019-foreground-drift.md:L41"
+    },
+    "FIX-019": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T-v2/FINAL-REPORT.md:L50"
+    },
+    "FIX-QA-2026-04-20-001": {
+     "files": 7,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L34"
+    },
+    "FIX-QA-2026-04-21-011": {
+     "files": 2,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L35"
+    },
+    "FIX-QA-2026-04-21-012": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L36"
+    },
+    "FIX-QA-2026-04-21-013": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L37"
+    },
+    "FIX-QA-2026-04-21-014": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L38"
+    },
+    "FIX-QA-2026-04-21-015": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L39"
+    },
+    "FIX-QA-2026-04-21-016": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/FINAL-REPORT.md:L40"
+    },
+    "FIX-QA-2026-04-21-017": {
+     "files": 1,
+     "first": "docs/reports/qa-sessions/2026-04-21-T/tickets/FIX-QA-2026-04-21-COVERS.md:L58"
+    },
+    "FIX-QA-2026-04-22-002": {
+     "files": 2,
+     "first": "docs/reports/qa-sessions/2026-04-21-T-v2/tickets/run5-triage/TRIAGE.md:L131"
+    }
+   },
+   "sources": [
+    "docs/qa/**+docs/reports/qa-sessions/**",
+    "legacy-ids:defect ids first seen in the S-15 files"
+   ]
+  },
+  "S-16": {
+   "entries": 970,
+   "files": 66,
+   "sources": [
+    "docs/security/**"
+   ]
+  },
+  "S-17": {
+   "entries": 1285,
+   "files": 16,
+   "sources": [
+    "challenges/helixqa-banks/*.yaml"
+   ]
+  },
+  "S-18": {
+   "entries": 508,
+   "files": 1,
+   "sources": [
+    "challenges/data/challenges_bank.json"
+   ]
+  },
+  "S-19": {
+   "entries": 5289,
+   "files": 215,
+   "sources": [
+    "submodules/helix_qa/banks/**"
+   ]
+  },
+  "S-20": {
+   "entries": 36,
+   "files": 2,
+   "sources": [
+    "submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md"
+   ]
+  },
+  "S-21": {
+   "entries": 27,
+   "files": 1,
+   "sources": [
+    ".specify/memory/constitution.md"
+   ]
+  },
+  "S-22": {
+   "entries": 16,
+   "files": 16,
+   "sources": [
+    "module CLAUDE.md and AGENTS.md (outside submodules)"
+   ]
+  },
+  "S-23": {
+   "entries": 2913,
+   "files": 8166,
+   "skipped": {
+    "binary": 128,
+    "scanned_files": 8033,
+    "symlink": 3,
+    "too_large": 2,
+    "unreadable": 0
+   },
+   "sources": [
+    "marker and skipped-test scan of every text file of the snapshot"
+   ]
+  },
+  "S-24": {
+   "entries": 6,
+   "files": 6,
+   "sources": [
+    ".implementation/**"
+   ]
+  },
+  "S-25": {
+   "entries": 39,
+   "files": 3,
+   "sources": [
+    "S-25:SECURITY_KEY_ROTATION_REQUIRED.md",
+    "S-25:SECURITY_AUDIT_REPORT.md",
+    "docs/security/firebase-api-key-exposure-20260629.md"
+   ]
+  },
+  "XID": {
+   "entries": 34,
+   "files": 0,
+   "id_like_unmatched": {
+    "BUG-XXX": 1,
+    "FINDING-LAYER": 1,
+    "FIX-DEFECT-IN-TEST": 1,
+    "FIX-QA-2026-04-20": 1,
+    "FIX-QA-2026-04-21-COVERS": 5,
+    "FIX-QA-YYYY-MM-DD-NNN": 1
+   },
+   "id_scan_excluded_prefixes": [
+    "specs/",
+    ".audit/",
+    "submodules/",
+    "scripts/register/tests/"
+   ],
+   "id_scan_skipped_files": {
+    "binary": 116,
+    "symlink": 2,
+    "too_large": 2
+   },
+   "legacy_ids": {
+    "BUG-001": {
+     "files": 2,
+     "first": "docs/phases/PHASE_1_PROGRESS_REPORT.md:L18"
+    },
+    "BUG-002": {
+     "files": 2,
+     "first": "docs/phases/PHASE_1_PROGRESS_REPORT.md:L44"
+    },
+    "DEFER-001": {
+     "files": 3,
+     "first": "catalog-api/handlers/challenge.go:L88"
+    },
+    "DEFER-002": {
+     "files": 2,
+     "first": "docs/reports/2026-04-21-session-closure-analysis.md:L82"
+    },
+    "DEFER-QA-2026-04-21-001": {
+     "files": 5,
+     "first": "catalog-api/handlers/challenge.go:L79"
+    },
+    "DEFER-QA-2026-04-21-002": {
+     "files": 3,
+     "first": "catalog-api/internal/modules/registry.go:L171"
+    },
+    "DEFER-QA-2026-04-22-002": {
+     "files": 1,
+     "first": "docs/CYCLE_CLOSURE_2026-04-22.md:L48"
+    },
+    "FINDING-3": {
+     "files": 2,
+     "first": "catalog-api/internal/services/scanner_aggregation_e2e_test.go:L69"
+    },
+    "FIX-BROWSER-001": {
+     "files": 1,
+     "first": "docs/nexus/remaining-work.md:L105"
+    },
+    "FIX-BROWSER-002": {
+     "files": 1,
+     "first": "docs/nexus/remaining-work.md:L106"
+    },
+    "FIX-CATAPI-2026-04-29-MEDIA": {
+     "files": 1,
+     "first": "catalog-api/database/migrations_postgres.go:L692"
+    },
+    "FIX-CONCURRENCY-2026-06-29": {
+     "files": 4,
+     "first": "catalog-api/database/migrations/020_external_metadata_unique_index.sqlite.up.sql:L3"
+    },
+    "FIX-OBS-001": {
+     "files": 1,
+     "first": "docs/nexus/remaining-work.md:L88"
+    },
+    "FIX-OBS-002": {
+     "files": 1,
+     "first": "docs/nexus/remaining-work.md:L91"
+    },
+    "FIX-OC2-001": {
+     "files": 1,
+     "first": "docs/OPEN_POINTS_CLOSURE.md:L3"
+    },
+    "FIX-OC3-001": {
+     "files": 1,
+     "first": "docs/OPEN_POINTS_CLOSURE.md:L3"
+    },
+    "FIX-OC3-011": {
+     "files": 1,
+     "first": "docs/OPEN_POINTS_CLOSURE.md:L493"
+    },
+    "FIX-OC4-016": {
+     "files": 1,
+     "first": "docs/reports/2026-04-21-verification-plan.md:L58"
+    },
+    "FIX-QA-2026-04-20-002": {
+     "files": 2,
+     "first": "docs/reports/2026-04-21-session-closure-analysis.md:L23"
+    },
+    "FIX-QA-2026-04-21-001": {
+     "files": 8,
+     "first": "catalog-api/database/migrations_v18_idempotency_test.go:L3"
+    },
+    "FIX-QA-2026-04-21-002": {
+     "files": 4,
+     "first": "catalog-api/tests/integration/session_fixes_e2e_test.go:L13"
+    },
+    "FIX-QA-2026-04-21-003": {
+     "files": 4,
+     "first": "catalog-api/main.go:L1389"
+    },
+    "FIX-QA-2026-04-21-004": {
+     "files": 6,
+     "first": "catalog-api/database/migrations_v18_media_favorite.go:L18"
+    },
+    "FIX-QA-2026-04-21-005": {
+     "files": 4,
+     "first": "catalog-api/handlers/challenge.go:L79"
+    },
+    "FIX-QA-2026-04-21-006": {
+     "files": 3,
+     "first": "catalog-api/tests/integration/session_fixes_e2e_test.go:L16"
+    },
+    "FIX-QA-2026-04-21-007": {
+     "files": 2,
+     "first": "docs/reports/2026-04-21-session-closure-analysis.md:L83"
+    },
+    "FIX-QA-2026-04-21-008": {
+     "files": 4,
+     "first": "catalog-api/handlers/challenge.go:L116"
+    },
+    "FIX-QA-2026-04-21-009": {
+     "files": 4,
+     "first": "catalog-api/middleware/input_validation.go:L100"
+    },
+    "FIX-QA-2026-04-21-010": {
+     "files": 1,
+     "first": "catalog-api/utils/validation.go:L149"
+    },
+    "FIX-QA-2026-04-22-003": {
+     "files": 1,
+     "first": "docs/CYCLE_CLOSURE_2026-04-22.md:L50"
+    },
+    "HQA-0001": {
+     "files": 1,
+     "first": "docs/VIDEO_COURSE_SCRIPTS.md:L1066"
+    },
+    "HQA-0002": {
+     "files": 1,
+     "first": "docs/VIDEO_COURSE_SCRIPTS.md:L1276"
+    },
+    "HQA-DOCS-001": {
+     "files": 1,
+     "first": "docs/OPEN_POINTS_CLOSURE.md:L3"
+    },
+    "HQA-PHASE1-GOCORE-001": {
+     "files": 1,
+     "first": "docs/OPEN_POINTS_CLOSURE.md:L509"
+    }
+   },
+   "sources": [
+    "legacy-ids:defect ids referenced only outside the S-14 and S-15 files"
+   ]
+  }
+ },
+ "freeze_head": "4c8b07b7",
+ "frozen_at_basis": "freeze_json",
+ "root_files_not_sources": [
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CONSTITUTION.md",
+  "GEMINI.md",
+  "GETTING_STARTED.md",
+  "MEMORY.md",
+  "QUICK_REFERENCE.md",
+  "README.md"
+ ],
+ "total_entries": 15258
+}

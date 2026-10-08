@@ -7,7 +7,8 @@
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib.sh"
 NEED=600000000
-while [ $# -gt 0 ]; do case "$1" in --need) NEED=${2:-}; shift 2;; *) ti_die "unknown argument '$1'" 2;; esac; done
+while [ $# -gt 0 ]; do case "$1" in --need) ti_optval "$1" $# "${2:-}"; NEED=$2; shift 2;; *) ti_die "unknown argument '$1'" 2;; esac; done
+ti_uint "$NEED" 15 --need
 ti_need podman sha256sum
 CTX="$HERE/nfs"
 HASH="$(cat "$CTX/Containerfile" "$CTX/exports" "$CTX/entrypoint.sh" | sha256sum | cut -c1-16)"

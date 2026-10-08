@@ -1,0 +1,71 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | full sweep mutation run (CTRL0, S01-S40 ported, Y1-Y3, C08-C10, NM-*)
+# utc 2026-10-08T01:59:21Z | host anton | git head f72d8757 (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/anti-mess/tests/mutate_sweep.sh
+CAUGHT   S01 the heartbeat check is disabled in AM-P1 (a hung op is never reported) [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S02 INV-9 (ported): the finished-run removal skips the remote check (a held commit no remote holds) [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S03 AM-R1 at S0 treats every path as declared [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S04 AM-R1 ignores the reviewed exceptions.tsv [test_sweep.sh] :: FAIL R5 the same repository WITH its reviewed exceptions.tsv row passes (control needle R4) :: got [drift] wan|
+CAUGHT   S05 a catalogued invariant with no detector is reported clean [test_sweep.sh] :: FAIL C2 AM-R3 is not_evaluated, never clean :: got [clean] want [not_evaluated]|
+CAUGHT   S06 AM-R2 ignores whether a process holds the lock open [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S07 INV-9 reconcile removes an interrupted run (the finished-run re-verification is bypassed too) [test_sweep.sh] :: FAIL I1b removed|
+CAUGHT   S08 a pending pin move is reported as drift [test_sweep.sh] :: FAIL R6 a pointer drift equal to a row of .audit/pending_pins.tsv is a pending pin move, never dirt :: got [dr|
+CAUGHT   S09 a blocking core.hooksPath is not refused at S0 [test_sweep.sh] :: FAIL G3 at S0 a blocking core.hooksPath is REFUSED with 20 :: rc=10 want 20|
+CAUGHT   S10 INV-9: a live merge holder is reported as interrupted [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S11 INV-9: a suspended run with a live holder is reported interrupted [test_sweep.sh] :: FAIL I7 a run awaiting_remote_checks with a live suspended-run holder is suspended, never interrupted, never r|
+CAUGHT   S12 AM-P3: the temp dir of a live process is reaped [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S13 AM-P1: the orphan-container age budget is ignored [test_sweep.sh] :: FAIL P5 golden-false carrier: a container younger than the budget is informational only :: got [drift] want [c|
+CAUGHT   S14 AM-P2 (ported): an attached op still counts as a duplicate owner [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S15 a failing control needle no longer makes the detector blind [test_sweep.sh] :: FAIL H1 rc=0 [ID      STATUS         NEEDLE    DETAIL|
+CAUGHT   S16 AM-R2 ignores the minimum lock age [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S17 RMS1 (ported): the rmlock reconcile no longer re-verifies its precondition [test_sweep.sh] :: FAIL H4 RMS1 a lock that became young (touched) between detection and action is NOT removed :: got [removed] w|
+CAUGHT   S18 F4 (ported to _unread_op_record): a corrupt op record is reported as info, not unread [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S19 F8: an unreadable podman is informational (AM-P1 clean) [test_sweep.sh] :: FAIL P8 F8 an unreadable container runtime makes AM-P1 unread, NEVER clean :: got [clean] want [unread]|
+CAUGHT   S20 F9: a stale claim is informational [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S21 F9: an un-adopted handoff is informational [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S22 F10: the container of a handoff op is stopped by --reconcile [test_sweep.sh] :: FAIL H1 a container of a HANDOFF op is informational only :: got [container_of_terminal_op:] want [:container_|
+CAUGHT   S23 F10: stopcontainer does not re-verify [test_sweep.sh] :: FAIL H2 a container of a TERMINAL op whose record turned live between detection and action is NOT stopped (WF1|
+CAUGHT   S24 F12: an unknown --only id is accepted [test_sweep.sh] :: FAIL O1 --only 'NOPE' is refused (20), never an empty clean sweep :: rc=0 want 20|
+CAUGHT   S25 label (ported): the catalogizer.op_id label of the launcher is ignored [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S26 F10 (ported): the finished-run removal does not re-check the held commits [test_sweep.sh] :: FAIL H6 removed|
+CAUGHT   S27 F10: initsub does not re-verify [test_sweep.sh] :: FAIL H5 initsub re-verifies: a submodule initialised between detection and action is skipped_already_initialis|
+CAUGHT   S28 F8: a sweep with only unread sources exits 0 [test_sweep.sh] :: FAIL P8b the sweep exits 11 (a source was not read), not 0 :: rc=0 want 11|
+CAUGHT   S29 F4 (ported): AM-P2 never reports a corrupt op record [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S30 AM-P4: a claim with no holder record is never reported [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S31 AM-P4: an unreadable claim is never reported [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S32 AM-P4: a holder that cannot be judged is informational [test_sweep.sh] :: FAIL Q6 a holder that cannot be judged (ready_to_resume, no conf) is unread, never clean :: got [clean] want [|
+CAUGHT   S33 RM6 (ported, round-2 reviewer): a valid-JSON record with no state passes the record shape: it is skipped silently instead of reported unreadable [test_sweep_r5.sh] :: FAIL A1s.7 [.state="bogus"]: AM-P1, AM-P2 and AM-P4 are all unread (exit 11), none clean :: got [clean clean 0|
+CAUGHT   S34 RM9 (ported, round-2 reviewer): an unreadable lineage class is treated as terminal (its container is stopped) [test_sweep.sh] :: FAIL BF5 RM9 the container of an op whose record cannot be read is NEVER stopped (unreadable is not terminal) |
+CAUGHT   S35 WF14 R2-11: an orphan container (no row in THIS registry) is stopped by --reconcile again [test_sweep.sh] :: FAIL X3 WF14 R2-11 an orphan labelled container is NOT stopped by --reconcile (absence from this registry is n|
+CAUGHT   S36 WF14 R2-4 (ported): a container is matched to its op by the op id only (the record container_label is ignored) [test_sweep_r5.sh] :: FAIL E1 [1 restart(s), final attempt LIVE] the container of the running build is not reported and not stopped |
+CAUGHT   S37 WF14 R2-2 (ported): a handoff op re-adopted by the next attempt of its build is still reported un-adopted [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   S38 WF14 R2-7: INV-9 asserts a missing live holder it could not read [test_sweep.sh] :: FAIL HU1 WF14 R2-7 a truncated commit_push holder makes INV-9 UNREAD for that run, never drift suspended_run_w|
+CAUGHT   S39 WF14 class D (ported): a record with no op_id or purpose_key is accepted as readable [test_sweep_r5.sh] :: FAIL N1 a running record valid in every respect but the missing field 'op_id' is unread, never judged :: got [|
+CAUGHT   S40 WF14 (ported): a handoff op is adopted by ANY op of the purpose, also an earlier one [test_sweep_r5.sh] :: FAIL N2 a successor-id op that started EARLIER than the handoff is not its adopter: handoff_unadopted :: got [|
+CONTROL-OK CTRL0 negative control: an unmutated copy of sweep.sh placed like a mutant (both suites PASSED on the unmutated copy: a CAUGHT elsewhere is a real kill)
+CAUGHT   Y1 WF17 (ported to lo_lineage_build): a record container_label of the form op_id=<value> is no longer matched [test_sweep_r5.sh] :: FAIL Y1 a record container_label written as op_id=<value> matches the container labelled <value>: clean :: got|
+CAUGHT   Y2 WF17: a handoff op is adopted only by an op that started STRICTLY later (a same-second successor is not counted) [test_sweep_r5.sh] :: FAIL E4 a SAME-SECOND successor (-a2, started_utc equal) adopts; an unrelated later op and an earlier op do no|
+CAUGHT   Y3 WF17 (ported): when several attempts exist, the LEXICALLY greatest op id decides instead of the numerically latest attempt (-a10 sorts before -a2) [test_sweep_r5.sh] :: FAIL E1 [10 restart(s), final attempt COMPLETE] the container of the finished build is reported and stopped on|
+CAUGHT   C08 AM-P1 --reconcile auto-REAPS a HUNG op (TERM to a live owner) instead of reporting it [test_sweep_r5.sh] :: FAIL C5 --reconcile does NOT reap a HUNG op (live owner): reported with NO action, the owner lives, nothing si|
+CAUGHT   C09 AM-P1: podman ps runs with no timeout (a wedged runtime wedges the sweep) [test_sweep_r5.sh] :: FAIL C09 a wedged container runtime is bounded by LONGOPS_PODMAN_TIMEOUT_S: the sweep returns 11 (containers_u|
+CAUGHT   C10 R2-4 (ported): a BARE container_label value equal to the container label is no longer matched [test_sweep_r5.sh] :: FAIL C10 a BARE container_label equal to the container's label value matches: clean :: got [drift] want [clean|
+CAUGHT   NM-A8 A: attached_to / superseded_by naming NO op still excuses a duplicate owner [test_sweep.sh] :: FAIL C1 clean state exits 0 :: rc=20 want 0|
+CAUGHT   NM-A9 A: a merge.json that fails the record shape is judged anyway (an absent pid read as a gone process: interrupted_merge) [test_sweep_r5.sh] :: FAIL A9 a merge.json with absent/mistyped/non-canonical pid or start_time [{"repo":"."}] is UNREAD, never 'the|
+CAUGHT   NM-A11 A: an unreadable record does not stop the un-adopted-handoff report (anybad not set) [test_sweep_r5.sh] :: FAIL N3b with an UNREADABLE op record present the same claim is not asserted orphaned (the op may be the unrea|
+CAUGHT   NM-B1 B: a detector that ended abnormally (no end sentinel) is read as completed [test_sweep_r5.sh] :: FAIL B3 a detector that exits, one with an unbound variable and one with a broken arithmetic expansion are BLI|
+CAUGHT   NM-B2 B: the one-row-per-selected-invariant completeness check is dropped (a half-abandoned driver exits 0) [test_sweep_r5.sh] :: FAIL B5 a run that did not produce ONE result row per selected invariant exits 20 driver_incomplete, never 0 :|
+CAUGHT   NM-B3 B: the final status and exit come from the DETECTION pass (no re-derivation after a reconcile) [test_sweep_r5.sh] :: FAIL B4 pass 1 reaps the dead-owner op; pass 2 sees its container as the container of a TERMINAL op and stops |
+CAUGHT   NM-B3b B: a reconcile action may be repeated in one run [test_sweep.sh] :: FAIL N3d a container (catalogizer.op_id) of a TERMINAL op is reported and stopped by --reconcile :: got [conta|
+CAUGHT   NM-C1 C: an action is run for an invariant whose catalogue entry does not list it [test_sweep_r5.sh] :: FAIL C3 an rmlock action emitted by an invariant whose catalogue entry does not list rmlock is refused (not ru|
+CAUGHT   NM-C2 C: the dead-owner reap is not bound to the class the sweep detected (--expect dropped) [test_sweep_r5.sh] :: FAIL C4 a dead-owner row rebound to a live pid before the action is NOT signalled: the owner lives :: got [DEA|
+CAUGHT   NM-C3 C: stopcontainer accepts an unsafe container id [test_sweep_r5.sh] :: FAIL N5 stopcontainer with an unsafe container id (--all) is refused before any podman call :: got [skipped_pr|
+CAUGHT   NM-C4 C: the findings stream does not escape a backslash (a name can forge an escape) [test_sweep_r5.sh] :: FAIL N6 a stale lock named with a literal backslash-t is removed as itself (the stream escapes the backslash) |
+CAUGHT   NM-C5 C: the findings stream does not escape LF (a name can start a forged row) [test_sweep_r5.sh] :: FAIL C6 a git lock whose NAME holds LF and TAB forges no row (the stream is escaped): no finding of the forged|
+CAUGHT   NM-E1 E: one label belonging to more than one lineage resolves instead of being unreadable [test_sweep_r5.sh] :: FAIL N4 a container whose label belongs to two lineages is unread and is NOT stopped by --reconcile :: got [dr|
+CAUGHT   NM-E2 E: an unreadable record of ops/ no longer makes every label unreadable [test_sweep.sh] :: FAIL BF5 RM9 the container of an op whose record cannot be read is NEVER stopped (unreadable is not terminal) |
+CAUGHT   NM-E4 E: a handoff lineage is classed terminal (its container is stopped) [test_sweep_r5.sh] :: FAIL E1 [1 restart(s), final attempt HANDOFF] the container is informational, never stopped :: got [container_|
+CAUGHT   NM-H2 H: a git lock whose name holds a control character is judged and given an action [test_sweep_r5.sh] :: FAIL C6 a git lock whose NAME holds LF and TAB forges no row (the stream is escaped): no finding of the forged|
+CAUGHT   NM-I1 I: initsub accepts a path with .. components [test_sweep_r5.sh] :: FAIL N5b initsub with a .. component is refused :: got [skipped_already_initialised] want [refused_unsafe_path|
+CAUGHT   NM-I2 I: the build_tmp removal is not contained in the builds directory [test_sweep_r5.sh] :: FAIL C2j rmdir:build_tmp outside the builds dir is refused :: got [refused_not_a_build_tmp] want [refused_outs|
+CAUGHT   NM-I3 I: a symlink is followed by the rmdir action [test_sweep_r5.sh] :: FAIL C2f rmdir:finished_run on a SYMLINK run dir pointing outside is refused :: got [refused_outside_commit_pu|
+MUTATION RESULT caught=65 survived=0 timeout=0 equivalent=0 total=66
+# exit status 0

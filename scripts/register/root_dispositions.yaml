@@ -1,0 +1,129 @@
+# root_dispositions.yaml - T174 (WP-20): the decision table of the root-item inventory (scripts/register/root_inventory.py).
+# One rule decides one or more ROOT entries; the first rule that matches an entry wins; an entry NO rule matches is written with `disposition: null` and the
+# inventory check FAILS (docs/21 WP-20 acceptance: no row without a disposition). The table holds DECISIONS, not facts about the tree: the facts (which root
+# entries exist at the frozen commit, what is tracked, what is untracked) come only from the freeze listing and freeze.json, never from this file and
+# never from the live tree.
+#
+# Closed disposition set (tasks.md T174): problem_source (needs `source_class`), component (needs `component`, an application or module id),
+# documentation (the documentation class is assigned by WP-37, T282: the row records `doc_class: null` and `doc_class_by`), excluded (needs `reason`).
+# `also_source_classes` / `excluded_files` / `note` are annotations, never a second disposition.
+#
+# Provenance of the decisions (§11.4.223 markers):
+#   [DOC01-3.8]   taken as written from docs/01 section 3.8 (and the T174 text); no judgement added
+#   [TASK-T174]   named by the T174 text itself (the root entries this feature adds, each excluded with a reason naming the task that owns the entry)
+#   [DEFAULT - adjustable]  proposed by the W2 register worker from docs/01 section 3 and the frozen listing; NOT an owner decision (`proposed: true` on the row);
+#                 the owner/reviewer adjusts it, nothing is moved or removed by it (§11.4.122, §11.4.124)
+# Nothing in this file moves, removes or edits a root entry.
+schema: root-dispositions/1
+rules:
+  # ---- governance and entry files (docs/03 T165: 8 of the 49 tracked root Markdown files) [DOC01-3.8 / T165]
+  - id: R-GOV
+    names: [AGENTS.md, CLAUDE.md, CONSTITUTION.md, GEMINI.md, GETTING_STARTED.md, MEMORY.md, QUICK_REFERENCE.md, README.md]
+    disposition: documentation
+    doc_class_by: "WP-37 T282"
+    note: "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)"
+  # ---- root Markdown files that are named Stage 0 sources (docs/03 section 4: 9 of the 49) [T165]
+  - {id: R-S03, names: [TASK_TRACKER.md], disposition: problem_source, source_class: "S-03"}
+  - {id: R-S04, names: [MASTER_EXECUTION_CHECKLIST.md], disposition: problem_source, source_class: "S-04"}
+  - {id: R-S06, names: [COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md], disposition: problem_source, source_class: "S-06"}
+  - {id: R-S07, names: [COMPREHENSIVE_UNFINISHED_WORK_REPORT.md], disposition: problem_source, source_class: "S-07"}
+  - {id: R-S09, names: [UNFINISHED_WORK_ANALYSIS.md, UNFINISHED_WORK_AND_ISSUES.md, FINAL_UNFINISHED_WORK_REPORT.md], disposition: problem_source, source_class: "S-09"}
+  - {id: R-S25, names: [SECURITY_KEY_ROTATION_REQUIRED.md, SECURITY_AUDIT_REPORT.md], disposition: problem_source, source_class: "S-25"}
+  # ---- every other tracked root Markdown file is an "other root status report" (32 at HEAD ab5a9e39) [T165]
+  - {id: R-S12, regex: '^[^/]+\.md$', disposition: problem_source, source_class: "S-12"}
+  # ---- sources of candidate issues that are directories or files [DOC01-3.8]
+  - {id: R-S02, names: [issues], disposition: problem_source, source_class: "S-02", note: "the ANR ticket directory (docs/03 5.2)"}
+  - id: R-S24
+    names: [.implementation]
+    disposition: problem_source
+    source_class: "S-24"
+    note: "docs/01 3.8: two ticket-validation reports and four empty progress markers; the markers are imported as evidence-free claims, never as facts"
+  - {id: R-S21, names: [.specify], disposition: problem_source, source_class: "S-21", note: "holds .specify/memory/constitution.md (Known Conflicts, docs/03 5.17); the rest of the directory is Spec Kit tooling", proposed: true}
+  - id: R-PRECOMMIT
+    names: [.pre-commit-config.yaml]
+    disposition: problem_source
+    source_class: "docs/15 B29 (no S-class): a hook set whose configured checks never run"
+    note: "mapped to the commit-push stages by docs/16 section 16.1; docs/01 3.8"
+  - id: R-SUBANALYSIS
+    names: [submodule-analysis.txt]
+    disposition: problem_source
+    source_class: "docs/01 3.8 (no S-class): a source of stale historical state (41 submodules; .gitmodules now declares 44)"
+    note: "WP-37 disposition candidate; the owner decides keep, regenerate or retire (11.4.122, 11.4.124)"
+  # ---- documentation [DOC01-3.8]
+  - id: R-GITHUB
+    names: [.github]
+    disposition: documentation
+    doc_class_by: "WP-37 T282"
+    note: "docs/01 3.8: FUNDING.yml and workflows/README.md, NO workflow file; the no-CI check (11.4.156) is listed with this inventory"
+  - {id: R-TEMPLATES, names: [templates], disposition: documentation, doc_class_by: "WP-37 T282", note: "docs/01 3.8: process templates; LLM_JUDGE_PREMERGE.md stays informational"}
+  - {id: R-LICENSE, names: [LICENSE], disposition: documentation, doc_class_by: "WP-37 T282", note: "docs/01 3.8: the Apache License 2.0 text; input to the licence workstream of docs/15 10.5"}
+  - id: R-DOCS
+    names: [docs]
+    disposition: documentation
+    doc_class_by: "WP-37 T282"
+    also_source_classes: ["S-01", "S-05", "S-08", "S-10", "S-11", "S-13", "S-14", "S-15", "S-16"]
+    note: "the documentation tree; several of its files are also Stage 0 sources, listed here as annotations"
+    proposed: true
+  - {id: R-SPECS, names: [specs], disposition: documentation, doc_class_by: "WP-37 T282", note: "feature specifications and the plan documents of this feature", proposed: true}
+  # ---- the root entries this feature adds, each excluded with a reason naming the task that owns and reviews it [TASK-T174]
+  - {id: R-X-CODEGRAPH, names: [codegraph.json], disposition: excluded, reason: "index configuration created by WP-02 (T019, T026); its own task owns and reviews it"}
+  - {id: R-X-LUMEN, names: [.lumenignore], disposition: excluded, reason: "index configuration created by WP-02 (T019, T026); its own task owns and reviews it"}
+  - {id: R-X-MCP, names: [.mcp.json], disposition: excluded, reason: "index/MCP configuration created by WP-02 (T019, T026); its own task owns and reviews it"}
+  - {id: R-X-SECRETS, names: [.secrets.baseline], disposition: excluded, reason: "the commit-push secret baseline (T040a owns and reviews it)"}
+  - {id: R-X-HELIX, names: [.helix], disposition: excluded, reason: "the tracker-sync configuration (T190 owns and reviews it), present only when tracked at the frozen commit"}
+  - {id: R-X-AUDIT, names: [.audit], disposition: excluded, reason: "ignored local run state of CPA, RUNP and the long-op registry, never tracked; the tasks that write it own and review it (T004)"}
+  # ---- local agent and index state [DOC01-3.8]
+  - {id: R-X-CLAUDE, names: [.claude], disposition: excluded, reason: "local agent skills and state; not a product source (docs/01 3.8)"}
+  - {id: R-X-REMEMBER, names: [.remember], disposition: excluded, reason: "local agent memory files, ignored by its own .gitignore; never committed (docs/01 3.8)"}
+  - {id: R-X-CODEGRAPHDIR, names: [.codegraph], disposition: excluded, reason: "the local CodeGraph index; only .codegraph/.gitignore is tracked (docs/01 3.8); index scope and health are WP-02"}
+  # ---- tracked runtime artifacts: the SUBJECT of a seed (doc01 O-16 family 'Tracked artifacts'), neither a source nor a component [DEFAULT - adjustable]
+  - id: R-X-PIDS
+    names: [frontend.pid, server2.pid, server3.pid]
+    disposition: excluded
+    reason: "tracked runtime artifact (docs/01 O-16; seed family 'Tracked artifacts' with doc07 C17 and doc12 QF-16): the subject of a seed, not a source or a component"
+    proposed: true
+  # ---- applications and shared components (docs/01 sections 3.1-3.7) [DOC01-3]
+  - {id: R-C-API, names: [catalog-api], disposition: component, component: "catalog-api"}
+  - {id: R-C-WEB, names: [catalog-web], disposition: component, component: "catalog-web"}
+  - {id: R-C-DESKTOP, names: [catalogizer-desktop], disposition: component, component: "catalogizer-desktop"}
+  - {id: R-C-INSTALLER, names: [installer-wizard], disposition: component, component: "installer-wizard"}
+  - {id: R-C-ANDROID, names: [catalogizer-android], disposition: component, component: "catalogizer-android"}
+  - {id: R-C-ANDROIDTV, names: [catalogizer-androidtv], disposition: component, component: "catalogizer-androidtv"}
+  - {id: R-C-APICLIENT, names: [catalogizer-api-client], disposition: component, component: "catalogizer-api-client"}
+  - {id: R-C-WEBSITE, names: [Website], disposition: component, component: "website"}
+  - {id: R-C-BUILDFW, names: [Build], disposition: component, component: "build-framework", note: "docs/01 3.7: generic containerized build framework, tracked as ordinary files (not a submodule)"}
+  - {id: R-C-OCU, names: [OCU-CUDA-Sidecar], disposition: component, component: "ocu-cuda-sidecar", note: "docs/01 3.7: relationship to the main system UNCONFIRMED"}
+  - {id: R-C-EXAMPLES, names: [examples], disposition: component, component: "examples-helixcode-qa-integration", note: "docs/01 3.7: a separate Go module; whether anything builds it is UNCONFIRMED"}
+  - {id: R-C-QAAI, names: [qa-ai-system], disposition: component, component: "qa-ai-system", note: "docs/01 3.7: older Python QA orchestrator"}
+  - {id: R-C-CHALLENGES, names: [challenges], disposition: component, component: "challenges", also_source_classes: ["S-17", "S-18"], note: "docs/01 3.7: repository-level HelixQA banks (also Stage 0 sources) and shell challenges"}
+  - {id: R-C-TESTS, names: [tests], disposition: component, component: "root-tests", note: "docs/01 3.7: root integration helpers and k6 load tests"}
+  - {id: R-C-SUBMODULES, names: [submodules], disposition: component, component: "submodules", also_source_classes: ["S-19", "S-20"], note: "docs/01 section 4: 44 declared submodules plus the vendored llms_verifier tree; each is audited by WP-34"}
+  - {id: R-C-UPSTREAMS, names: [Upstreams], disposition: component, component: "upstreams-scripts", note: "docs/01 3.7: six shell scripts that configure remotes"}
+  - {id: R-C-DATABASE, names: [database], disposition: component, component: "database-schema", note: "docs/01 3.7: one file schema_v3_multiuser.sql, not loaded by Go code"}
+  - {id: R-C-CONFIG, names: [config], disposition: component, component: "config", note: "docs/01 3.7 row (config files); the two files this feature adds are named in excluded_files", excluded_files: [{path: "config/index/scope.yaml", reason: "index scope data created by T019 (WP-02); its own task owns it"}, {path: "config/index/lumen_scope.json", reason: "semantic index scope data created by T019 (WP-02); its own task owns it"}]}
+  - {id: R-C-MONITORING, names: [monitoring], disposition: component, component: "monitoring", note: "docs/01 3.7: Prometheus, Alertmanager, Grafana, OpenTelemetry configuration"}
+  - {id: R-C-DOCKER, names: [docker], disposition: component, component: "docker-build-assets", note: "docs/01 3.7: Dockerfile.builder and Dockerfile.android*"}
+  - {id: R-C-DEPLOY, names: [deploy, deployment], disposition: component, component: "deployment", note: "docs/01 3.7: deploy notes, infra compose files and deployment scripts"}
+  - {id: R-C-VERSIONS, names: [versions.json], disposition: component, component: "build-framework", note: "docs/01 3.7: build-framework state (global 2.3.0, dated 2026-04-28)"}
+  - {id: R-C-DEVOVERRIDE, names: [docker-compose.dev.override.yml], disposition: component, component: "compose", note: "docs/01 3.8 row: host-port overrides; part of O-06; docs/16 section 16.1"}
+  - {id: R-C-COMPOSE, regex: '^docker-compose[^/]*\.ya?ml$', disposition: component, component: "compose", note: "docs/01 section 11.2 compose table; docker-compose.dev.override.yml is also named in docs/01 3.8 (environment names are part of O-06)"}
+  # ---- build, coverage, tooling and repository configuration [DEFAULT - adjustable]
+  - {id: R-C-BUILD, names: [build, build-scripts], disposition: component, component: "build-and-container-assets", proposed: true}
+  - {id: R-C-COVERAGE, names: [coverage], disposition: component, component: "coverage-exclusions", proposed: true}
+  - {id: R-C-SCRIPTS, names: [scripts], disposition: component, component: "scripts", proposed: true, note: "also the S-23 marker scan population"}
+  - {id: R-C-TOOLS, names: [tools], disposition: component, component: "evidence-tools", proposed: true}
+  - {id: R-C-COMMIT, names: [commit], disposition: component, component: "repo-tooling", proposed: true, note: "a root shell script that sources env.properties"}
+  - id: R-C-ROOTCFG
+    names: [config.json, env.properties, gradle.properties, .env.distributed, .env.example, .env.roundrobin, .env.security, .env.spread]
+    disposition: component
+    component: "root-config"
+    proposed: true
+    note: "tracked environment and property files (docs/01 observations on tracked .env* files); values are never read by this inventory (11.4.10)"
+  - id: R-C-SECCFG
+    names: [.gosec.json, .semgrep.yml, .snyk.json, .trivyignore, .trivy-secrets.yaml, .trivy.yaml, .nancy-ignore, .gitleaksignore, dependency-check-suppressions.xml,
+            sonar-project.properties, sonarqube, firebase.json, .firebaserc]
+    disposition: component
+    component: "security-and-service-config"
+    proposed: true
+    note: "scanner configuration and the marker files of the named external services (doc03 5.20 sources EXT)"
+  - {id: R-C-REPOCFG, names: [.gitattributes, .gitignore, .gitmodules, .devignore], disposition: component, component: "repository-config", proposed: true}

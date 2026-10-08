@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash -p
 # T040 helper: scope_check.sh - CPA stage S2 (docs/16 section 12.2) scope check of a declared change set.
 #
-# Usage   scope_check.sh --root <repo> --paths-from <list> [--ev <relative evidence dir>] [--exceptions <tsv>]
+# Usage   scope_check.sh --root <repo> --paths-from <list> [--ev <relative evidence dir>] [--exceptions <tsv>] [--content-root <dir>]
+#           --content-root  where the BYTES of a declared store or blob are read (default: the root); CPA gives the tree of the blobs it will commit
 #           --paths-from  the declared change set, one path per line, relative to the main root
 #           --ev          evidence directory relative to the root (default specs/001-full-project-audit-remediation/evidence)
 #           --exceptions  reviewed exceptions (default <root>/scripts/repo/exceptions.tsv when it exists; none otherwise);
@@ -37,13 +38,14 @@ D="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$D/lib_safe.sh"
 # NOT exported globally: `git check-ignore` reads a .gitignore match through the pathspec machinery and would stop matching under
 # GIT_LITERAL_PATHSPECS=1 (build_output would pass); the declared paths are already validated literal, and the one pathspec call
 # that takes a declared path other than check-ignore (the gitlink test) sets the variable inline.
-die() { echo "scope_check: $1: $2" >&2; exit 20; }
+die() { printf 'REASON\t%s\n' "$1"; echo "scope_check: $1: $2" >&2; exit 20; }
 trap 'exit 143' TERM; trap 'exit 130' INT
-ROOT=""; LIST=""; EV="specs/001-full-project-audit-remediation/evidence"; EXC=""; HAVE_EXC=0
+ROOT=""; CR=""; LIST=""; EV="specs/001-full-project-audit-remediation/evidence"; EXC=""; HAVE_EXC=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --root) [ $# -ge 2 ] || die usage "--root needs a value"; safe_dir_arg "$2" || die unsafe_root "$(printf '%q' "$2")"; ROOT="$2"; shift 2 ;;
     --paths-from) [ $# -ge 2 ] || die usage "--paths-from needs a value"; LIST="$2"; shift 2 ;;
+    --content-root) [ $# -ge 2 ] || die usage "--content-root needs a value"; safe_dir_arg "$2" || die unsafe_root "$(printf '%q' "$2")"; CR="$2"; shift 2 ;;
     --ev) [ $# -ge 2 ] || die usage "--ev needs a value"; safe_declpath "${2%/}" || die unsafe_path "--ev $(printf '%q' "$2")"; EV="${2%/}"; shift 2 ;;
     --exceptions) [ $# -ge 2 ] || die usage "--exceptions needs a value"; EXC="$2"; HAVE_EXC=1; shift 2 ;;
     *) die usage "unknown argument $(printf '%q' "$1")" ;;
@@ -54,6 +56,8 @@ done
 [ -r "$LIST" ] || die list_unreadable "$(printf '%q' "$LIST")"
 [ -d "$ROOT" ] || die not_a_repository "$(printf '%q' "$ROOT")"
 ROOT="$(cd "$ROOT" && git rev-parse --show-toplevel 2>/dev/null)" || die not_a_repository "root"
+# the BYTES of a declared store or blob are read from the content root when one is given (the tree of the blobs the run will commit; WF17-cpa TOCTOU-4); git queries and the work-tree link test stay on the root
+[ -z "$CR" ] || [ -d "$CR" ] || die usage "--content-root is no directory"; [ -n "$CR" ] || CR="$ROOT"
 if [ "$HAVE_EXC" = 0 ]; then EXC="$ROOT/scripts/repo/exceptions.tsv"; [ -f "$EXC" ] || EXC=/dev/null; fi
 [ -r "$EXC" ] || die exceptions_unreadable "$(printf '%q' "$EXC")"
 PATHS=()
@@ -108,10 +112,10 @@ for p in "${PATHS[@]+"${PATHS[@]}"}"; do
       head_mode "$p"
       if has_link "$p" || [ "$HM" = 120000 ]; then refuse "$p" append_only; continue 2; fi
       if [ -n "$HM" ]; then
-        if [ ! -f "$ROOT/$p" ]; then refuse "$p" append_only; continue 2; fi
+        if [ ! -f "$CR/$p" ]; then refuse "$p" append_only; continue 2; fi
         git -C "$ROOT" cat-file blob "HEAD:$p" > "$W/head.blob" 2>/dev/null || { refuse "$p" append_only; continue 2; }
         sz="$(stat -c %s "$W/head.blob")"
-        if [ "$(stat -c %s "$ROOT/$p")" -lt "$sz" ] || ! cmp -s -n "$sz" "$W/head.blob" "$ROOT/$p"; then refuse "$p" append_only; continue 2; fi
+        if [ "$(stat -c %s "$CR/$p")" -lt "$sz" ] || ! cmp -s -n "$sz" "$W/head.blob" "$CR/$p"; then refuse "$p" append_only; continue 2; fi
       fi
     done
   fi
@@ -119,8 +123,8 @@ for p in "${PATHS[@]+"${PATHS[@]}"}"; do
   if [ "${p%/*}" = "$EV/blobs" ]; then
     head_mode "$p"
     if has_link "$p" || [ "$HM" = 120000 ]; then refuse "$p" blob_name; continue; fi
-    if [ -f "$ROOT/$p" ]; then
-      h="$(sha256sum -- "$ROOT/$p" | cut -d' ' -f1)"
+    if [ -f "$CR/$p" ]; then
+      h="$(sha256sum -- "$CR/$p" | cut -d' ' -f1)"
       [[ "$base" =~ ^[0-9a-f]{64}$ ]] && [ "$base" = "$h" ] || { refuse "$p" blob_name; continue; }
     fi
   fi

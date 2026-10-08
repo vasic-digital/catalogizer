@@ -1,0 +1,25 @@
+# identity: catalogizer / 001 / WP-08 round 5 | utc 2026-10-08T00:30:42Z | host anton uid 1000 | git head 4c8b07b7 (working tree, uncommitted: content hashes identify the files)
+# command: bash scripts/anti-mess/sweep.sh --stage cadence --json specs/001-full-project-audit-remediation/evidence/wp08/fix-r5-sweep-baseline.json (READ-ONLY, no --reconcile; real podman; exit 10 = drift reported, 11 = a source unread)
+# sha256 sweep.sh=e7e9ebdaab47c75e0a126c400850a9d0566960d6bd83885d2f5b9e114078fc42 catalogue.yaml=e84afb5a49ed0c722349cdf16f457fbcab460f4b2bdbe717df4c0620c15399c8 longops-lib.sh=1421c74043f4d2c22cc5a72501603e36becd7347b93c993fa97482724dedaab2
+# sha256 fix-r5-sweep-baseline.json=a724c9cf33fa5c54e09f66893097d516de4b54926def61efb823d8b7b5f368a8
+# exit status 10
+# stderr:
+# stdout:
+ID      STATUS         NEEDLE    DETAIL
+AM-R1   drift          seen      2 drift finding(s): dirty_repository .; dirty_repository submodules/filesystem
+AM-R2   clean          seen      no drift (0 informational)
+AM-R3   not_evaluated  not_applicable needs the network (git ls-remote on ~98 repositories); owned by scripts/repo/verify_repos.sh without --no-remote, not re-implemented here (docs/12 17.
+AM-R4   not_evaluated  not_applicable needs the network and the object store decision of verify_repos.sh --fetch; not re-implemented here
+AM-R5   clean          seen      no drift (0 informational)
+AM-G1   not_evaluated  not_applicable the pinned-hash location of the Spec Kit layer and the mirror set are owned by WP-G1 (T081a); no detector without that source of truth (11.4.6: no gue
+AM-G2   clean          seen      no drift (0 informational)
+AM-S1   not_evaluated  not_applicable the drift gates of document 04 (scripts/register/gate.sh over the real register DB, fingerprints of the derived documents) are WP-06 deliverables not 
+AM-P1   drift          seen      2 drift finding(s): orphan_container e277a488609d; orphan_container 16d8b8be9a86
+AM-P2   clean          seen      no drift (0 informational)
+AM-P3   clean          seen      no drift (0 informational)
+AM-P4   clean          seen      no drift (0 informational)
+INV-6   not_evaluated  not_applicable the volume label scheme and byte budget belong to the container wrappers (WP-02 T006); no budget exists yet to compare against
+INV-7   not_evaluated  not_applicable scripts/containers/check_pins.sh exists (last changed in 178ee136) but no detector of this sweep invokes it yet: wiring it as a det_ function is owed 
+INV-8   not_evaluated  not_applicable scripts/build/dispatch.sh exists and registers builds as long ops, but no detector reads its build records for image@sha256 and a container id yet; ow
+INV-9   clean          seen      no drift (0 informational)
+SUMMARY drift=2 clean=7 not_evaluated=7 unread=0 blind=0 skipped_stage=0

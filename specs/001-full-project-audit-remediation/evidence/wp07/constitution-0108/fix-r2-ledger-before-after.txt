@@ -1,0 +1,6 @@
+gh: CM-GATE-LEDGER-RATCHET	IMPLEMENTED	/dev/shm/const0108b/gh/scripts/gates/cm_gate_ledger_ratchet.sh
+gh: LEDGER: unimplemented=394 baseline=402 fails=0
+gh: ✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+gn: CM-GATE-LEDGER-RATCHET	IMPLEMENTED	/dev/shm/const0108b/gn/scripts/gates/cm_gate_ledger_ratchet.sh
+gn: LEDGER: unimplemented=394 baseline=402 fails=0
+gn: ✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name

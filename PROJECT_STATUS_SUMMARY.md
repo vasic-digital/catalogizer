@@ -138,7 +138,7 @@ cat services/favorites_service.go | head -100
 ```bash
 # Run all the scripts created
 ./scripts/local-ci.sh
-./scripts/track-coverage.sh
+./scripts/track-coverage.sh   # the older per-suite report script; the measured Go figure is scripts/coverage/track-coverage.sh (docs/scripts/track-coverage.md)
 ./scripts/security-scan-full.sh
 ```
 
@@ -169,7 +169,7 @@ cat docs/phases/PHASE_1_TEST_COVERAGE.md
 ### Scripts
 - `/run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/quick-start-phase0.sh`
 - `/run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/local-ci.sh`
-- `/run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/track-coverage.sh`
+- `/run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/track-coverage.sh` (older per-suite report script; the measured Go figure is `scripts/coverage/track-coverage.sh`, see docs/scripts/track-coverage.md)
 - `/run/media/milosvasic/DATA4TB/Projects/Catalogizer/scripts/*.sh`
 
 ### Enhanced Tests

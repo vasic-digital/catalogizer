@@ -1,0 +1,14 @@
+# ledger seq=5 item=AUD-T165 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/wp20-r2/sut target_fingerprint=a8010cf89c636c67f264a7e541aef653207b7dfbe7635de349bb6a4149bd74af test_fingerprint=e103a5640c3cce3532a21ed62a21d4dac61de3e05204c9ac84405d866d83de11
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "ENUMERATE_SOURCES=/src/.audit/scratch/wp20-r2/sut/enumerate_sources.py", "python3", "scripts/register/tests/test_enumerate_absolute.py"]
+ok   baseline enumeration exits 0
+ok   S-01 ticket a: legacy id, heading, status fixed, severity high
+ok   S-01 ticket b: status open
+FAIL S-01 strict-yaml measurement: both fixture tickets hold a colon in a value, so a strict YAML reader refuses them (a measured fact, OD-17) :: None
+FAIL S-03 glyph and word statuses: 0.1 Not Started, 0.2 Complete, 0.3 In Progress, 0.4 Blocked (glyph), 0.5 Blocked (word) :: {'0.1': None, '0.2': None, '0.3': None, '0.4': None, '0.5': 'Blocked'}
+FAIL S-21 item statuses: block words, preface fallback for items without a word of their own :: {'2': 'OPEN', '3': None, '4': None, '5': None, '1': 'DECIDED'}
+FAIL S-21 sub-items: the bullet of item 2 and the two bold status-marker segments of item 5 :: {'2.1': None}
+ok   S-25 provider rows: legacy id is the variable NAME, title is the provider name only (no table line, no url)
+ok   S-16 vulnerability rows come from the latest gosec file only
+ok   S-16 the failed snyk scan is a scan-failed row
+FAIL A3 checkbox lines of the three docs/ files doc03 counts become entries (2 + 1 + 2) :: {}

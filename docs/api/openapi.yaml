@@ -299,6 +299,15 @@ components:
           type: boolean
         max_depth:
           type: integer
+        url:
+          type: string
+          description: WebDAV address; any password in its userinfo is returned redacted (xxxxx)
+        mount_point:
+          type: string
+          description: NFS local mount point
+        allow_empty:
+          type: boolean
+          description: the share is expected to be empty; by default a scan that finds nothing FAILS (empty_root)
         created_at:
           type: string
           format: date-time
@@ -332,6 +341,19 @@ components:
           type: string
         domain:
           type: string
+        url:
+          type: string
+          description: required for webdav
+        mount_point:
+          type: string
+          description: NFS local mount point
+        options:
+          type: string
+          description: NFS mount options (for other protocols a JSON object with credential_ref, tls_mode, host_key_fingerprint, cert_sha256)
+        allow_empty:
+          type: boolean
+          default: false
+          description: the share is expected to be empty; its scan may complete with 0 files
         max_depth:
           type: integer
           default: 10
@@ -382,6 +404,9 @@ components:
           type: integer
         error_count:
           type: integer
+        reason:
+          type: string
+          description: why a scan failed or was cancelled (kind and text, never a credential), or a note on a scan that completed with skipped directories; empty otherwise
 
     MediaEntity:
       type: object

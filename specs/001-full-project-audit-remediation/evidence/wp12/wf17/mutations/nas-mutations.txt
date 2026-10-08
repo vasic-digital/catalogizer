@@ -1,0 +1,6 @@
+write_verb_in_client CAUGHT
+password_in_argv CAUGHT
+auth_file_left CAUGHT
+NL1_external_printf_credential CAUGHT
+C3_auth_file_back_under_audit CAUGHT
+NL3_identity SURVIVED

@@ -1,0 +1,488 @@
+# identity: catalogizer / 001 / WP-08 round 5 (constitution 11.4.276, R_max 5, STRUCTURAL) | GREEN test_registry_r5.sh run 2
+# utc 2026-10-08T00:52:58Z | host anton | git head e9d6883d (working tree, uncommitted) | fixed-tree sha256 05aa537e3ddef48a79321c7a29e5e2c1d9f45e1457f30fe4a227c1a8fabd8456
+# command:  bash scripts/longops/tests/test_registry_r5.sh
+# identity: task=WP08-R5-registry utc=2026-10-08T00:52:58Z host=anton uid=1000 scripts=/home/milosvasic/Projects/catalogizer/scripts/longops
+# git_head=e9d6883d213528426b1d83fecb9ed86fb28651f1 (scripts and tests may be uncommitted: the content hashes below identify them)
+# sha256 lib.sh=1421c74043f4d2c22cc5a72501603e36becd7347b93c993fa97482724dedaab2
+# sha256 register.sh=1e0e427e19b4f3b998e31e54899925138d4bbe112c7cdb9a384731c53b87b7f7
+# sha256 acquire.sh=18bf0886ee76a9826575ef326cf5a139a70c1dd29dc7253cc77b6d2a200a0d88
+# sha256 release.sh=813038db5c1503e8e907dd21499083ad9a0c1bceacc0d5d1407142c988cd4200
+# sha256 heartbeat.sh=5696ab3d37c8e44b1928f70a8d8de97e42e87d96db6c6a5d7860e30cf2c2a20e
+# sha256 holder.sh=b496ed0a264d1202be3d7f19a6ab4bdca3d1556df5f79e005989bf46deb02fc8
+# sha256 classify.sh=bf386b612a687c1bf3d13cc68e7b007d1b26bc2b4c063940d11fb455efe81a7f
+# sha256 reap.sh=17b412576b9b0789e4ce551ce7a1e76441fc6770d59c0cb031e0434399ed4a1c
+# sha256 check_no_build_writing_tracked.sh=dd7efc97154bcddae312c861116cee7fda57b80dcaa33be2431989b74abd8391
+# sha256 require_verdicts.sh=5c19d819464fa5b6832eb6119e6c3bbc64bc8839d6a52ff1fd9323518b4779c1
+# sha256 scripts/longops/tests/lib.sh=6ae3e382496d2622ace5232c024f3cf486a5a4860aa4558af53a8e9eb809fae9
+# sha256 scripts/longops/tests/mutate_registry.sh=22f432f07f497b7f76e76c00439003b24b3686404df6478b67d7862bb3c48b5b
+# sha256 scripts/longops/tests/mutate_safety.sh=1925100f6de1b98dd997e43419838dafc5adf21b6ca193161d361c335dd808b3
+# sha256 scripts/longops/tests/mutation_safety.sh=ec63c9735e464066879584d54b5b7965103bed7e0b8d8b1a2e85dd0f7a933601
+# sha256 scripts/longops/tests/test_mutation_safety.sh=0a1a0290d5675271b5ddc29bdb79476da8b3b687d9ad82d6ad86b0862e94c09e
+# sha256 scripts/longops/tests/test_registry_r5.sh=fb400df1eca9174806d4336d8235a466078276c4f94f1f3df0e666dcb166ae6c
+# sha256 scripts/longops/tests/test_registry.sh=2b7629f11522ed400b918cc1620057774762e8f38f1cc7d256c40c75c6902ecc
+# sha256 scripts/anti-mess/tests/mutate_sweep.sh=e69400b3dfdbe8c0762ab90039de0653e7762ee07f7c73eac0579628760a002a
+# sha256 scripts/anti-mess/tests/sweep_lib.sh=cf4d6fe9437f547f108bc7be3e154e7d5fe83c69ca12a46080c915e8f6d8a49d
+# sha256 scripts/anti-mess/tests/test_sweep_r5.sh=d9e740563cb09dd8306bb3a93e547a2873c5154d5848a72fb8db00dc41e8be62
+# sha256 scripts/anti-mess/tests/test_sweep.sh=f63d280a3fd020dc4b49232affe01d6d27c506a6b0120a6ac6dad99d8fa6a208
+# sha256 scripts/anti-mess/sweep.sh=e7e9ebdaab47c75e0a126c400850a9d0566960d6bd83885d2f5b9e114078fc42
+# sha256 scripts/anti-mess/catalogue.yaml=e84afb5a49ed0c722349cdf16f457fbcab460f4b2bdbe717df4c0620c15399c8
+# sha256 scripts/build/dispatch.sh=3fbbe66be0d72511adb29edc72434d72c68912e6056f8eb34df432c454cc393d
+# sha256 scripts/repo/verify_repos.sh=74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314
+# sha256 scripts/repo/check_no_ci.sh=0933b7ea49e24a4ef019cf6eb288fd602b3dcf137a1260b336720caf9ddb14ad
+# jq=jq-1.8.1 flock=flock from util-linux 2.41.3 container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== class A: ONE record shape; every consumer refuses a record with one bad field (T-A1 matrix, T-A2) ==
+ok   A1.1 classify of [del(.pid)] is unreadable
+ok   A1.1 reap --op-id of [del(.pid)] refuses (20)
+ok   A1.1 check_no_build_writing_tracked of [del(.pid)] blocks (1)
+ok   A1.1 [del(.pid)]: owner alive, no signal, record and claim untouched
+ok   A1.1 reap --purpose of [del(.pid)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.1 the claim survived
+ok   A1.2 classify of [.pid=null] is unreadable
+ok   A1.2 reap --op-id of [.pid=null] refuses (20)
+ok   A1.2 check_no_build_writing_tracked of [.pid=null] blocks (1)
+ok   A1.2 [.pid=null]: owner alive, no signal, record and claim untouched
+ok   A1.2 reap --purpose of [.pid=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.2 the claim survived
+ok   A1.3 classify of [.pid=false] is unreadable
+ok   A1.3 reap --op-id of [.pid=false] refuses (20)
+ok   A1.3 check_no_build_writing_tracked of [.pid=false] blocks (1)
+ok   A1.3 [.pid=false]: owner alive, no signal, record and claim untouched
+ok   A1.3 reap --purpose of [.pid=false] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.3 the claim survived
+ok   A1.4 classify of [.pid=0] is unreadable
+ok   A1.4 reap --op-id of [.pid=0] refuses (20)
+ok   A1.4 check_no_build_writing_tracked of [.pid=0] blocks (1)
+ok   A1.4 [.pid=0]: owner alive, no signal, record and claim untouched
+ok   A1.4 reap --purpose of [.pid=0] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.4 the claim survived
+ok   A1.5 classify of [.pid=1] is unreadable
+ok   A1.5 reap --op-id of [.pid=1] refuses (20)
+ok   A1.5 check_no_build_writing_tracked of [.pid=1] blocks (1)
+ok   A1.5 [.pid=1]: owner alive, no signal, record and claim untouched
+ok   A1.5 reap --purpose of [.pid=1] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.5 the claim survived
+ok   A1.6 classify of [.pid="abc"] is unreadable
+ok   A1.6 reap --op-id of [.pid="abc"] refuses (20)
+ok   A1.6 check_no_build_writing_tracked of [.pid="abc"] blocks (1)
+ok   A1.6 [.pid="abc"]: owner alive, no signal, record and claim untouched
+ok   A1.6 reap --purpose of [.pid="abc"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.6 the claim survived
+ok   A1.7 classify of [.pid=[1]] is unreadable
+ok   A1.7 reap --op-id of [.pid=[1]] refuses (20)
+ok   A1.7 check_no_build_writing_tracked of [.pid=[1]] blocks (1)
+ok   A1.7 [.pid=[1]]: owner alive, no signal, record and claim untouched
+ok   A1.7 reap --purpose of [.pid=[1]] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.7 the claim survived
+ok   A1.8 classify of [.pid="08"] is unreadable
+ok   A1.8 reap --op-id of [.pid="08"] refuses (20)
+ok   A1.8 check_no_build_writing_tracked of [.pid="08"] blocks (1)
+ok   A1.8 [.pid="08"]: owner alive, no signal, record and claim untouched
+ok   A1.8 reap --purpose of [.pid="08"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.8 the claim survived
+ok   A1.9 classify of [del(.start_time)] is unreadable
+ok   A1.9 reap --op-id of [del(.start_time)] refuses (20)
+ok   A1.9 check_no_build_writing_tracked of [del(.start_time)] blocks (1)
+ok   A1.9 [del(.start_time)]: owner alive, no signal, record and claim untouched
+ok   A1.9 reap --purpose of [del(.start_time)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.9 the claim survived
+ok   A1.10 classify of [.start_time=null] is unreadable
+ok   A1.10 reap --op-id of [.start_time=null] refuses (20)
+ok   A1.10 check_no_build_writing_tracked of [.start_time=null] blocks (1)
+ok   A1.10 [.start_time=null]: owner alive, no signal, record and claim untouched
+ok   A1.10 reap --purpose of [.start_time=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.10 the claim survived
+ok   A1.11 classify of [.start_time=false] is unreadable
+ok   A1.11 reap --op-id of [.start_time=false] refuses (20)
+ok   A1.11 check_no_build_writing_tracked of [.start_time=false] blocks (1)
+ok   A1.11 [.start_time=false]: owner alive, no signal, record and claim untouched
+ok   A1.11 reap --purpose of [.start_time=false] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.11 the claim survived
+ok   A1.12 classify of [.start_time=""] is unreadable
+ok   A1.12 reap --op-id of [.start_time=""] refuses (20)
+ok   A1.12 check_no_build_writing_tracked of [.start_time=""] blocks (1)
+ok   A1.12 [.start_time=""]: owner alive, no signal, record and claim untouched
+ok   A1.12 reap --purpose of [.start_time=""] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.12 the claim survived
+ok   A1.13 classify of [.start_time=7] is unreadable
+ok   A1.13 reap --op-id of [.start_time=7] refuses (20)
+ok   A1.13 check_no_build_writing_tracked of [.start_time=7] blocks (1)
+ok   A1.13 [.start_time=7]: owner alive, no signal, record and claim untouched
+ok   A1.13 reap --purpose of [.start_time=7] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.13 the claim survived
+ok   A1.14 classify of [.start_time="08"] is unreadable
+ok   A1.14 reap --op-id of [.start_time="08"] refuses (20)
+ok   A1.14 check_no_build_writing_tracked of [.start_time="08"] blocks (1)
+ok   A1.14 [.start_time="08"]: owner alive, no signal, record and claim untouched
+ok   A1.14 reap --purpose of [.start_time="08"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.14 the claim survived
+ok   A1.15 classify of [.start_time={"a":1}] is unreadable
+ok   A1.15 reap --op-id of [.start_time={"a":1}] refuses (20)
+ok   A1.15 check_no_build_writing_tracked of [.start_time={"a":1}] blocks (1)
+ok   A1.15 [.start_time={"a":1}]: owner alive, no signal, record and claim untouched
+ok   A1.15 reap --purpose of [.start_time={"a":1}] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.15 the claim survived
+ok   A1.16 classify of [del(.last_progress_epoch)] is unreadable
+ok   A1.16 reap --op-id of [del(.last_progress_epoch)] refuses (20)
+ok   A1.16 check_no_build_writing_tracked of [del(.last_progress_epoch)] blocks (1)
+ok   A1.16 [del(.last_progress_epoch)]: owner alive, no signal, record and claim untouched
+ok   A1.16 reap --purpose of [del(.last_progress_epoch)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.16 the claim survived
+ok   A1.17 classify of [.last_progress_epoch=null] is unreadable
+ok   A1.17 reap --op-id of [.last_progress_epoch=null] refuses (20)
+ok   A1.17 check_no_build_writing_tracked of [.last_progress_epoch=null] blocks (1)
+ok   A1.17 [.last_progress_epoch=null]: owner alive, no signal, record and claim untouched
+ok   A1.17 reap --purpose of [.last_progress_epoch=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.17 the claim survived
+ok   A1.18 classify of [.last_progress_epoch="08"] is unreadable
+ok   A1.18 reap --op-id of [.last_progress_epoch="08"] refuses (20)
+ok   A1.18 check_no_build_writing_tracked of [.last_progress_epoch="08"] blocks (1)
+ok   A1.18 [.last_progress_epoch="08"]: owner alive, no signal, record and claim untouched
+ok   A1.18 reap --purpose of [.last_progress_epoch="08"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.18 the claim survived
+ok   A1.19 classify of [.last_progress_epoch=false] is unreadable
+ok   A1.19 reap --op-id of [.last_progress_epoch=false] refuses (20)
+ok   A1.19 check_no_build_writing_tracked of [.last_progress_epoch=false] blocks (1)
+ok   A1.19 [.last_progress_epoch=false]: owner alive, no signal, record and claim untouched
+ok   A1.19 reap --purpose of [.last_progress_epoch=false] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.19 the claim survived
+ok   A1.20 classify of [del(.last_progress_mono)] is unreadable
+ok   A1.20 reap --op-id of [del(.last_progress_mono)] refuses (20)
+ok   A1.20 check_no_build_writing_tracked of [del(.last_progress_mono)] blocks (1)
+ok   A1.20 [del(.last_progress_mono)]: owner alive, no signal, record and claim untouched
+ok   A1.20 reap --purpose of [del(.last_progress_mono)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.20 the claim survived
+ok   A1.21 classify of [.last_progress_mono="x"] is unreadable
+ok   A1.21 reap --op-id of [.last_progress_mono="x"] refuses (20)
+ok   A1.21 check_no_build_writing_tracked of [.last_progress_mono="x"] blocks (1)
+ok   A1.21 [.last_progress_mono="x"]: owner alive, no signal, record and claim untouched
+ok   A1.21 reap --purpose of [.last_progress_mono="x"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.21 the claim survived
+ok   A1.22 classify of [del(.boot_id)] is unreadable
+ok   A1.22 reap --op-id of [del(.boot_id)] refuses (20)
+ok   A1.22 check_no_build_writing_tracked of [del(.boot_id)] blocks (1)
+ok   A1.22 [del(.boot_id)]: owner alive, no signal, record and claim untouched
+ok   A1.22 reap --purpose of [del(.boot_id)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.22 the claim survived
+ok   A1.23 classify of [.boot_id=""] is unreadable
+ok   A1.23 reap --op-id of [.boot_id=""] refuses (20)
+ok   A1.23 check_no_build_writing_tracked of [.boot_id=""] blocks (1)
+ok   A1.23 [.boot_id=""]: owner alive, no signal, record and claim untouched
+ok   A1.23 reap --purpose of [.boot_id=""] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.23 the claim survived
+ok   A1.24 classify of [.boot_id=7] is unreadable
+ok   A1.24 reap --op-id of [.boot_id=7] refuses (20)
+ok   A1.24 check_no_build_writing_tracked of [.boot_id=7] blocks (1)
+ok   A1.24 [.boot_id=7]: owner alive, no signal, record and claim untouched
+ok   A1.24 reap --purpose of [.boot_id=7] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.24 the claim survived
+ok   A1.25 classify of [.budget.no_progress_s="010"] is unreadable
+ok   A1.25 reap --op-id of [.budget.no_progress_s="010"] refuses (20)
+ok   A1.25 check_no_build_writing_tracked of [.budget.no_progress_s="010"] blocks (1)
+ok   A1.25 [.budget.no_progress_s="010"]: owner alive, no signal, record and claim untouched
+ok   A1.25 reap --purpose of [.budget.no_progress_s="010"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.25 the claim survived
+ok   A1.26 classify of [.budget.wall_clock_s="x"] is unreadable
+ok   A1.26 reap --op-id of [.budget.wall_clock_s="x"] refuses (20)
+ok   A1.26 check_no_build_writing_tracked of [.budget.wall_clock_s="x"] blocks (1)
+ok   A1.26 [.budget.wall_clock_s="x"]: owner alive, no signal, record and claim untouched
+ok   A1.26 reap --purpose of [.budget.wall_clock_s="x"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.26 the claim survived
+ok   A1.27 classify of [del(.budget)] is unreadable
+ok   A1.27 reap --op-id of [del(.budget)] refuses (20)
+ok   A1.27 check_no_build_writing_tracked of [del(.budget)] blocks (1)
+ok   A1.27 [del(.budget)]: owner alive, no signal, record and claim untouched
+ok   A1.27 reap --purpose of [del(.budget)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.27 the claim survived
+ok   A1.28 classify of [.budget=null] is unreadable
+ok   A1.28 reap --op-id of [.budget=null] refuses (20)
+ok   A1.28 check_no_build_writing_tracked of [.budget=null] blocks (1)
+ok   A1.28 [.budget=null]: owner alive, no signal, record and claim untouched
+ok   A1.28 reap --purpose of [.budget=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.28 the claim survived
+ok   A1.29 classify of [.elapsed_ms=null] is unreadable
+ok   A1.29 reap --op-id of [.elapsed_ms=null] refuses (20)
+ok   A1.29 check_no_build_writing_tracked of [.elapsed_ms=null] blocks (1)
+ok   A1.29 [.elapsed_ms=null]: owner alive, no signal, record and claim untouched
+ok   A1.29 reap --purpose of [.elapsed_ms=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.29 the claim survived
+ok   A1.30 classify of [.elapsed_ms="1"] is unreadable
+ok   A1.30 reap --op-id of [.elapsed_ms="1"] refuses (20)
+ok   A1.30 check_no_build_writing_tracked of [.elapsed_ms="1"] blocks (1)
+ok   A1.30 [.elapsed_ms="1"]: owner alive, no signal, record and claim untouched
+ok   A1.30 reap --purpose of [.elapsed_ms="1"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.30 the claim survived
+ok   A1.31 classify of [.progress_offset=null] is unreadable
+ok   A1.31 reap --op-id of [.progress_offset=null] refuses (20)
+ok   A1.31 check_no_build_writing_tracked of [.progress_offset=null] blocks (1)
+ok   A1.31 [.progress_offset=null]: owner alive, no signal, record and claim untouched
+ok   A1.31 reap --purpose of [.progress_offset=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.31 the claim survived
+ok   A1.32 classify of [.progress_offset="3"] is unreadable
+ok   A1.32 reap --op-id of [.progress_offset="3"] refuses (20)
+ok   A1.32 check_no_build_writing_tracked of [.progress_offset="3"] blocks (1)
+ok   A1.32 [.progress_offset="3"]: owner alive, no signal, record and claim untouched
+ok   A1.32 reap --purpose of [.progress_offset="3"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.32 the claim survived
+ok   A1.33 classify of [.state="bogus"] is unreadable
+ok   A1.33 reap --op-id of [.state="bogus"] refuses (20)
+ok   A1.33 check_no_build_writing_tracked of [.state="bogus"] blocks (1)
+ok   A1.33 [.state="bogus"]: owner alive, no signal, record and claim untouched
+ok   A1.33 reap --purpose of [.state="bogus"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.33 the claim survived
+ok   A1.34 classify of [.state="Complete"] is unreadable
+ok   A1.34 reap --op-id of [.state="Complete"] refuses (20)
+ok   A1.34 check_no_build_writing_tracked of [.state="Complete"] blocks (1)
+ok   A1.34 [.state="Complete"]: owner alive, no signal, record and claim untouched
+ok   A1.34 reap --purpose of [.state="Complete"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.34 the claim survived
+ok   A1.35 classify of [.state=null] is unreadable
+ok   A1.35 reap --op-id of [.state=null] refuses (20)
+ok   A1.35 check_no_build_writing_tracked of [.state=null] blocks (1)
+ok   A1.35 [.state=null]: owner alive, no signal, record and claim untouched
+ok   A1.35 reap --purpose of [.state=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.35 the claim survived
+ok   A1.36 classify of [del(.state)] is unreadable
+ok   A1.36 reap --op-id of [del(.state)] refuses (20)
+ok   A1.36 check_no_build_writing_tracked of [del(.state)] blocks (1)
+ok   A1.36 [del(.state)]: owner alive, no signal, record and claim untouched
+ok   A1.36 reap --purpose of [del(.state)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.36 the claim survived
+ok   A1.37 classify of [del(.run_id)] is unreadable
+ok   A1.37 reap --op-id of [del(.run_id)] refuses (20)
+ok   A1.37 check_no_build_writing_tracked of [del(.run_id)] blocks (1)
+ok   A1.37 [del(.run_id)]: owner alive, no signal, record and claim untouched
+ok   A1.37 reap --purpose of [del(.run_id)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.37 the claim survived
+ok   A1.38 classify of [.run_id=""] is unreadable
+ok   A1.38 reap --op-id of [.run_id=""] refuses (20)
+ok   A1.38 check_no_build_writing_tracked of [.run_id=""] blocks (1)
+ok   A1.38 [.run_id=""]: owner alive, no signal, record and claim untouched
+ok   A1.38 reap --purpose of [.run_id=""] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.38 the claim survived
+ok   A1.39 classify of [.run_id=7] is unreadable
+ok   A1.39 reap --op-id of [.run_id=7] refuses (20)
+ok   A1.39 check_no_build_writing_tracked of [.run_id=7] blocks (1)
+ok   A1.39 [.run_id=7]: owner alive, no signal, record and claim untouched
+ok   A1.39 reap --purpose of [.run_id=7] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.39 the claim survived
+ok   A1.40 classify of [.container_label=7] is unreadable
+ok   A1.40 reap --op-id of [.container_label=7] refuses (20)
+ok   A1.40 check_no_build_writing_tracked of [.container_label=7] blocks (1)
+ok   A1.40 [.container_label=7]: owner alive, no signal, record and claim untouched
+ok   A1.40 reap --purpose of [.container_label=7] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.40 the claim survived
+ok   A1.41 classify of [.container_label="a\tb"] is unreadable
+ok   A1.41 reap --op-id of [.container_label="a\tb"] refuses (20)
+ok   A1.41 check_no_build_writing_tracked of [.container_label="a\tb"] blocks (1)
+ok   A1.41 [.container_label="a\tb"]: owner alive, no signal, record and claim untouched
+ok   A1.41 reap --purpose of [.container_label="a\tb"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.41 the claim survived
+ok   A1.42 classify of [.write_paths="tracked/a.txt"] is unreadable
+ok   A1.42 reap --op-id of [.write_paths="tracked/a.txt"] refuses (20)
+ok   A1.42 check_no_build_writing_tracked of [.write_paths="tracked/a.txt"] blocks (1)
+ok   A1.42 [.write_paths="tracked/a.txt"]: owner alive, no signal, record and claim untouched
+ok   A1.42 reap --purpose of [.write_paths="tracked/a.txt"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.42 the claim survived
+ok   A1.43 classify of [del(.write_paths)] is unreadable
+ok   A1.43 reap --op-id of [del(.write_paths)] refuses (20)
+ok   A1.43 check_no_build_writing_tracked of [del(.write_paths)] blocks (1)
+ok   A1.43 [del(.write_paths)]: owner alive, no signal, record and claim untouched
+ok   A1.43 reap --purpose of [del(.write_paths)] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.43 the claim survived
+ok   A1.44 classify of [.started_utc="yesterday"] is unreadable
+ok   A1.44 reap --op-id of [.started_utc="yesterday"] refuses (20)
+ok   A1.44 check_no_build_writing_tracked of [.started_utc="yesterday"] blocks (1)
+ok   A1.44 [.started_utc="yesterday"]: owner alive, no signal, record and claim untouched
+ok   A1.44 reap --purpose of [.started_utc="yesterday"] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.44 the claim survived
+ok   A1.45 classify of [.attached_to=0] is unreadable
+ok   A1.45 reap --op-id of [.attached_to=0] refuses (20)
+ok   A1.45 check_no_build_writing_tracked of [.attached_to=0] blocks (1)
+ok   A1.45 [.attached_to=0]: owner alive, no signal, record and claim untouched
+ok   A1.45 reap --purpose of [.attached_to=0] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.45 the claim survived
+ok   A1.46 classify of [.superseded_by=[]] is unreadable
+ok   A1.46 reap --op-id of [.superseded_by=[]] refuses (20)
+ok   A1.46 check_no_build_writing_tracked of [.superseded_by=[]] blocks (1)
+ok   A1.46 [.superseded_by=[]]: owner alive, no signal, record and claim untouched
+ok   A1.46 reap --purpose of [.superseded_by=[]] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.46 the claim survived
+ok   A1.47 classify of [.cmdline=null] is unreadable
+ok   A1.47 reap --op-id of [.cmdline=null] refuses (20)
+ok   A1.47 check_no_build_writing_tracked of [.cmdline=null] blocks (1)
+ok   A1.47 [.cmdline=null]: owner alive, no signal, record and claim untouched
+ok   A1.47 reap --purpose of [.cmdline=null] with a DEAD holder refuses (20): an unjudgeable record of the registry is never 'no live op'
+ok   A1.47 the claim survived
+ok   A1.0 control: the unmodified record is advancing
+ok   A1.0b control: reaping the advancing op is refused (5)
+ok   A1.0c control: no tracked path declared: exit 0
+ok   A1.0d control: a dead holder with its dead-owner op is released (0)
+ok   A2 state 'bogus' with a dead pid classifies unreadable
+ok   A2b reap --op-id of state 'bogus' (dead pid) refuses (20)
+ok   A2c the record is byte-identical (a corrupt record is never rewritten as reaped)
+ok   A2 state 'Complete' with a dead pid classifies unreadable
+ok   A2b reap --op-id of state 'Complete' (dead pid) refuses (20)
+ok   A2c the record is byte-identical (a corrupt record is never rewritten as reaped)
+ok   A2 state 'RUNNING' with a dead pid classifies unreadable
+ok   A2b reap --op-id of state 'RUNNING' (dead pid) refuses (20)
+ok   A2c the record is byte-identical (a corrupt record is never rewritten as reaped)
+-- leading zeros and canonical integers (LO-A7) --
+ok   A7 register --no-progress-s 08 is a usage error (2)
+ok   A7b register --wall-s 010 is a usage error (2)
+ok   A7c neither left a record or a claim
+ok   A7d heartbeat --progress-offset 010 is a usage error (2)
+ok   A7e heartbeat --elapsed-ms 007 is a usage error (2)
+ok   A7f LONGOPS_NOW=0123 is refused at load (2)
+ok   A7g LONGOPS_REAP_GRACE_S=08 is a usage error (2)
+ok   A7h lo_uint accepts 0, 7 and 15 digits, refuses a leading zero, an empty value, a sign, a fraction, junk and 16 digits
+-- holder files: absent is not unreadable (LO-A5, LO-A6) --
+ok   A4 holder.sh on a holder that is empty refuses (20), never none
+ok   A4b reap --purpose on a holder that is empty refuses (20), the claim of a LIVE holder is not released
+ok   A4c a second acquire over a holder that is empty refuses (20), not stale_claim (4)
+ok   A4d the claim survives (empty)
+ok   A4 holder.sh on a holder that is mode000 refuses (20), never none
+ok   A4b reap --purpose on a holder that is mode000 refuses (20), the claim of a LIVE holder is not released
+ok   A4c a second acquire over a holder that is mode000 refuses (20), not stale_claim (4)
+ok   A4d the claim survives (mode000)
+ok   A4 holder.sh on a holder that is directory refuses (20), never none
+ok   A4b reap --purpose on a holder that is directory refuses (20), the claim of a LIVE holder is not released
+ok   A4c a second acquire over a holder that is directory refuses (20), not stale_claim (4)
+ok   A4d the claim survives (directory)
+ok   A5 a suspended-run holder with [del(.builds)] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [.builds=null] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [.builds=false] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [.builds=[1]] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [.state="bogus"] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [del(.state)] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5 a suspended-run holder with [.callback_state="bogus"] is unreadable (20): a run with LIVE builds is not released as stale
+ok   A5b reap --purpose does not release it (20)
+ok   A5c --expire on a ready_to_resume holder with NO ready_at refuses (20), it is never 'expired at epoch 0'
+ok   A5d the claim of the run survives --expire
+-- require_verdicts: a verdict without a fresh machine utc never passes (LO-A9) --
+ok   A9 verdict with utc [absent] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [empty] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [null] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [now] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [nextyear] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [plusday] is refused at a day-sized --max-age-s (1)
+ok   A9 verdict with utc [number] is refused at a day-sized --max-age-s (1)
+ok   A9b control: a verdict one hour old at --max-age-s 86400 passes (0)
+ok   A9c an explicit empty --fingerprint is a usage error (2), never 'no check'
+ok   A9d an explicit empty --max-age-s is a usage error (2)
+== class D: boot id, monotonic clock, reap intent, stop grace (the producers' real behaviour) ==
+ok   D6 a record of ANOTHER boot whose pid and start ticks match a live process is dead_owner (a pid is only meaningful inside one boot)
+ok   D6b a process holder of another boot reads none
+ok   D5 a wall clock stepped 2 h forward while the monotonic clock moved 5 s: the op is still advancing (no NTP step makes every op hung)
+ok   D5b control: 700 s of MONOTONIC time without progress is hung
+-- LO-D2: a hung build is reaped through the REAL pump trap and ends reaped, never re-adoptable --
+ok   D2.0 control needle: the extraction holds the real reg_adopt, reg_handoff and the pump's TERM trap line
+ok   D2.1 the real reg_adopt registered the build
+ok   D2.2 reap of the HUNG pump exits 0
+ok   D2.3 the record ends reaped with verdict reaped_hung:owner_handoff (the pump's handoff trap answered OUR reap)
+ok   D2.4 the owner's own verdict is kept
+ok   D2.5 the message states the state it found (handoff converted to reaped)
+ok   D2.6 the build is terminal: a resumed driver re-adopts nothing
+-- LO-D4: the reap grace covers the owner's own stop grace --
+ok   D4 an owner whose exit path takes 3 s is reaped with the DEFAULT grace (0, not reap_survived 8)
+ok   D4b register --stop-grace-s records budget.stop_grace_s
+ok   D4c an owner that declared stop_grace_s 18 and needs 19 s is waited for (grace = max(15, 18 + 10)): exit 0
+ok   D4d it ended reaped
+-- LO-D3 (registry side): a dead-owner op keeps its resources until it is REAPED --
+ok   D3 a live op declaring a tracked path blocks the commit window (1)
+ok   D3b the SAME op with a dead owner still blocks until it is reaped (1): owner gone is not workload gone
+ok   D3c the refusal names the op
+ok   D3d once it is reaped the window is open (0)
+-- LO-C2: --expect binds the action to the class the caller judged --
+ok   C2 a dead-owner reap of an op that is ADVANCING is refused (5 class_changed)
+ok   C2b the refusal names class_changed
+ok   C2c nothing was signalled, the owner lives
+ok   C2d a HUNG op (live owner) reaped with --expect dead_owner is refused (5): no TERM from an 'auto-safe, no signal' action
+ok   C2e no signal was recorded, the owner lives
+ok   C2f an unknown --expect class is a usage error (2)
+== class F: owner gone is not workload gone ==
+ok   F1 a dead owner whose container will not stop (podman stop exits 125, still listed) is NOT reaped: exit 9 container_survived
+ok   F1b the record is not reaped (the only change allowed is the survival marker)
+ok   F1c the claim is kept
+ok   F1d a second owner of the purpose is refused (3 live holder or 4 stale), never registered
+ok   F1e podman stop WAS attempted
+ok   F1f once the container can be stopped the dead-owner op is reaped (0)
+ok   F1g it is reaped and the container is gone
+ok   F1h a dead owner with THREE containers of its op id is reaped (0)
+ok   F1i all three containers were stopped (not only the first)
+ok   F1j an unreadable container runtime (podman ps fails) refuses the reap (20): the workload is not proven gone
+ok   F1k the record and the claim are kept
+ok   F1l a wedged podman is bounded by LONGOPS_PODMAN_TIMEOUT_S: reap returns 20 in 2 s
+-- LO-F2: the own-run holder is judged; the op is written before the holder --
+ok   F2 an op whose owner is dead but whose own-run HOLDER is live is refused (5 holder_live)
+ok   F2b the claim is kept and the worker lives
+ok   F2c the refusal names holder_live
+ok   F2d a second owner is refused (3)
+ok   F2e a holder write that fails on a rebind exits 1
+ok   F2f the OP was written first: it names the new owner
+ok   F2g the stale holder beside the LIVE op is not released (5)
+-- LO-F4: the own-run holder is judged AGAIN when the terminal write happens (step B), not only in step A --
+ok   F4 a holder of the op's own run that turned live between step A and the terminal write is refused (5 holder_live)
+ok   F4b the claim is kept
+ok   F4c the op was not written reaped (still registered)
+== class G: transitions with several writes ==
+ok   G1 a TERM in the window of register.sh leaves no claim without an op record
+ok   G1b the record says why (interrupted)
+ok   G1c the same purpose can be registered at once afterwards (0)
+ok   G1d a TERM AFTER the claim rolls back OUR claim and fails the record
+ok   G1e a refused registration (purpose held, 3) leaves a FAILED record naming the refusal, and the holder's claim untouched
+-- release.sh: record and unclaim are one transition (a TERM to its pid is held until both are done) --
+ok   G1f a TERM during release.sh: the record is terminal AND the claim is gone (exit 143 after the transition)
+-- LO-G2: the hub sequence (a crash, a stale claim, reap --purpose, register again) leaves no dead-owner row --
+ok   G2 hub2 register meets the stale claim (4)
+ok   G2b reap --purpose releases it (0)
+ok   G2c hub2 registers (0)
+ok   G2d no dead_owner row is left behind (the old hub op is reaped with its claim)
+ok   G2e hub-aaaa-1 ended reaped
+-- LO-G3: directory entries are flushed AFTER the link / mkdir that created them --
+ok   G3 the op record's directory entry (ops/) is flushed after the link (fsync of the directory, or sync/syncfs)
+ok   G3b the claim's directory entry (claims/) is flushed after the mkdir
+== class H: process identity ==
+ok   H1 register of a live process whose comm is b"ab\ncd\0" works (0)
+ok   H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner
+ok   H1c reap --op-id refuses a live advancing owner (5), the claim stays
+ok   H1 register of a live process whose comm is b"ab\xffcd\0" works (0)
+ok   H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner
+ok   H1c reap --op-id refuses a live advancing owner (5), the claim stays
+ok   H1 register of a live process whose comm is b"a) b c\0" works (0)
+ok   H1b under LANG=en_US.UTF-8 the live owner reads advancing, never dead_owner
+ok   H1c reap --op-id refuses a live advancing owner (5), the claim stays
+== class J: the registry grows by about 1000 records a day; a gate must not rescan it record by record ==
+ok   J1 classify.sh over 1017 terminal + 2 live records: 1019 rows
+ok   J1b the listing spawned 4 jq/python3 processes (O(1 + live))
+ok   J1c and took 0.6 s
+ok   J1d reap --purpose (the purpose lock is held for its decisions) took 1.5 s, rc 0
+ok   J1e it spawned 23 jq/python3 processes
+== class K: a value-taking flag given as the LAST token must not hang the parser ==
+ok   K1.0 control needle: the generated table holds 48 (script, flag) pairs
+ok   K1 every value-taking flag of every script given as the LAST token is a usage error (48 checked), never a hang (124)
+== killers of the round-3 reviewer mutants (WF17 X1-X4, C01-C07, C11, C12), run on the real scripts ==
+ok   X1 a HUNG op whose owner lives keeps its claim even when the holder record is dead: reap --purpose refuses (5)
+ok   X1b the claim is intact
+ok   C04 a live op of ANOTHER purpose does not block the release of a stale claim (0)
+ok   C04b the stale claim was released
+ok   X2 rebinding a --no-claim op while ANOTHER run holds the purpose leaves that holder untouched
+ok   X3 the owner dies (its pid may be recycled) between the classification and the signal: the start-time re-check refuses (6)
+scripts/longops/tests/test_registry_r5.sh: line 380: 106048 Killed                     sleep 600 > /dev/null 2>&1
+ok   X3b the record is untouched (no reap intent, no state change) and nothing was signalled
+ok   C01 a BARE container_label (neither k=v nor the op id) is resolved as catalogizer.op_id=<label>: the container is stopped before the reap (0, none left)
+ok   C03 a heartbeat during a SLOW container stop is recorded (0)
+ok   C03b it did not wait for the container stop: the purpose lock is not held across podman (0.2 s)
+ok   C06 reap --op-id --dry-run of a dead-owner op writes nothing and releases nothing
+ok   C06b it says what it would do
+ok   C07 reap --purpose --dry-run releases nothing (the claim is kept)
+ok   C11 a blocked-escape record is TERMINAL
+ok   C11b reap of it is 'nothing to reap' (0) and the record is byte-identical
+ok   C12 a hung op owned by a KERNEL THREAD (pid 10, process group 0) is refused as an unsafe signal target (7) and nothing is signalled
+RESULT pass=433 fail=0
+# exit status 0

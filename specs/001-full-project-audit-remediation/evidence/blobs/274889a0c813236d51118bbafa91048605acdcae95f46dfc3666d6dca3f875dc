@@ -1,0 +1,21 @@
+# identity: task=T169 utc=2026-10-08T08:27:04Z host=3c0305cd1abc uid=1000
+# git_head=ab5a9e3924e48e5682de11704aca57b6ace2f649 tree_dirty_files=7632
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+ok   (a0) intake-match without --config exits 1 and writes no decision
+ok   (G) golden G1: HELIX-001-missing-placeholder-image re-reported by a later QA run: same title, same text, one added sentence
+ok   (G) golden G2: the same defect re-titled by another reporter (title reworded, text unchanged)
+ok   (G) golden G3: HELIX-001-api-unreachable-entities-stats re-reported: same title, same text, one added sentence
+ok   (S) scope control S1: golden G3 but a different scope: the exact-scope gate must keep it DISTINCT (a scope is part of the key, 11.4.186)
+ok   (S) scope control S2: golden G3 with an empty scope: an absent scope is not a wildcard
+ok   (N) control needle: an identical report of a registered ticket is SEEN (SAME_DEFECT with that item)
+ok   (N) primary negative control: ticket 3 vs register holding ticket 2 stays DISTINCT
+ok   (N) leave-one-out over the eight same-id tickets never yields SAME_DEFECT (no false merge)
+ok   (N) leave-one-out equals the pinned verdict vector (matcher calibration unchanged)
+ok   (R) the three repetitions on freshly built databases give identical result vectors
+ok   (P) intake-match --apply on a register DB is refused by the identity trigger and writes no item (finding: mint goes through reg_ids + add --id)
+# calibration record: /out/intake-match-calibration.json (pass=True, false_merges=0, strict_distinct=6, undecided=2)
+RESULT: pass=2 fail=0

@@ -343,6 +343,11 @@ else:
                 else: yield from blocks(v, path + [str(k)])
         return iter(())
     list(blocks(prog, []))
+    # 2026-10-07 split (T012a): blocks dated on or after CUT are checked by the stage "owner answers of 2026-10-07" below; this legacy stage
+    # keeps its exact 2026-10-05/06 semantics (one entry per decision id, notes = comment + fixed flag), so a later answer never makes it ambiguous.
+    CUT = "2026-10-07"
+    src_new = {k: v for k, v in src.items() if v[1] >= CUT}
+    src = {k: v for k, v in src.items() if v[1] < CUT}
     # review WF3 I5: an answer block that does not match owner_answers_<date> would be invisible to this stage while the PASS line
     # still claims fidelity. Closed allow-list of the top-level keys of progress.yml; every other key must be a dated answer block,
     # and no key anywhere may look like an answer block (contains 'answer') unless it is one.
@@ -367,9 +372,9 @@ else:
     answered = sorted({d for l in ids_of.values() for d in l})
     if len([x for x in answered if x.startswith("ODG-")]) < 40 or len([x for x in answered if x.startswith("OD-")]) < 14:
         fail("progress.yml parse control: only %d ODG and %d OD ids extracted (instrument blind)" % (len([x for x in answered if x.startswith("ODG-")]), len([x for x in answered if x.startswith("OD-")])))
-    entries = [e for e in (oa or []) if isinstance(e, dict) and "slot" not in e]
+    entries = [e for e in (oa or []) if isinstance(e, dict) and "slot" not in e and str(e.get("date")) < CUT]
     unk = data.get("owner_answers_without_decision_id")
-    unk = unk if isinstance(unk, list) else []
+    unk = [e for e in (unk if isinstance(unk, list) else []) if str(e.get("date")) < CUT]
     SUF = " (relayed by the conductor, not a verbatim owner quotation)."
     def trailing_comment(s):
         """YAML-aware: the text after the first '#' that is outside a quoted scalar and preceded by whitespace (review D2)."""
@@ -502,6 +507,115 @@ else:
     elif not answered: fail("owner_answers coverage covered 0 ids (nothing to assert)")
     else: ok("owner_answers carry progress.yml faithfully: %d answered ids + %d id-less answers over %d source keys; text = progress.yml value + relay suffix, dates from block names, every note = progress.yml comment + a fixed review-flag text, no invented or unsourced entry" % (len(answered), len(unk), len(src)))
 
+
+# ---- owner answers of 2026-10-07 (T012a, T014): relayed answers carried faithfully, HC-0 record consistent with progress.yml ----
+if os.path.isfile(pp):
+    bad = []
+    CUT7 = "2026-10-07"
+    ALIAS7 = {"HC-0_confirmations": ["HC-0", "ODG-07", "ODG-11"], "Firebase_login_owner": ["OD-43", "OD-45"]}
+    # independent expectation, written here: the decision ids the 2026-10-07 owner answers touch (owner memory file project_owner_decisions_2026_10_07)
+    WANT7 = {"ODG-05", "ODG-07", "ODG-08", "ODG-11", "ODG-16", "ODG-17", "ODG-32", "ODG-40", "OD-43", "OD-45", "HC-0"}
+    def keyids7(key):
+        if key in ALIAS7: return list(ALIAS7[key])
+        m = re.match(r"(ODG?)-(\d+)((?:_\d+)*)(?:_|$)", key)
+        if not m: return []
+        return ["%s-%s" % (m.group(1), m.group(2))] + ["%s-%s" % (m.group(1), x) for x in re.findall(r"_(\d+)", m.group(3))]
+    ids7 = {sk: keyids7(k) for sk, (v, d, k) in src_new.items()}
+    got7 = {x for l in ids7.values() for x in l}
+    if len(src_new) < 12: bad.append("2026-10-07 control: only %d answer keys parsed from progress.yml (instrument blind or answers missing)" % len(src_new))
+    if got7 != WANT7: bad.append("2026-10-07 answered decision ids %s != expected %s" % (sorted(got7), sorted(WANT7)))
+    for sk, (v, d, k) in src_new.items():
+        if not str(v).strip(): bad.append("%s: empty answer value" % sk)
+    e7 = [e for e in (oa or []) if isinstance(e, dict) and "slot" not in e and str(e.get("date")) >= CUT7]
+    u7 = [e for e in (data.get("owner_answers_without_decision_id") or []) if isinstance(e, dict) and str(e.get("date")) >= CUT7]
+    ref7 = {}
+    for e in e7 + u7:
+        label = str(e.get("id"))
+        sks = e.get("source_keys")
+        if not isinstance(sks, list) or len(sks) != 1: bad.append("%s: source_keys must list exactly one progress.yml key" % label); continue
+        sk = sks[0]
+        if sk not in src_new: bad.append("%s: source key %s is not a 2026-10-07 progress.yml answer" % (label, sk)); continue
+        ref7.setdefault(sk, []).append(label)
+        v, d, k = src_new[sk]
+        if str(e.get("date")) != d: bad.append("%s: date %s != block date %s" % (label, e.get("date"), d))
+        if norm(e.get("text")) != norm(v + " (relayed by the conductor, not a verbatim owner quotation)."): bad.append("%s: text != progress.yml value plus the relay suffix (meaning drift)" % label)
+        if e.get("relayed_by") != "conductor" or e.get("verbatim") is not False: bad.append("%s: relayed entry must have relayed_by conductor and verbatim false" % label)
+        if e.get("relay_marker") != "relayed 2026-10-07": bad.append("%s: relay_marker must be 'relayed 2026-10-07'" % label)
+        if "amends" not in e or e.get("amends") is not None: bad.append("%s: amends must be null (no document is amended by this intake)" % label)
+        if "note" not in e: bad.append("%s: note key missing" % label)
+        if e in e7:
+            if sorted(str(a) for a in (e.get("answers") or [])) != sorted(ids7[sk]): bad.append("%s: answers %s != ids derived from the key %s" % (label, e.get("answers"), ids7[sk]))
+        elif ids7[sk]: bad.append("%s: id-less list but the key answers %s" % (label, ids7[sk]))
+        note = str(e.get("note") or "")
+        for tok in ("OPEN", "UNCONFIRMED"):
+            if tok in v and tok not in note: bad.append("%s: the answer carries %s but the note does not" % (label, tok))
+    for sk in src_new:
+        if len(ref7.get(sk, [])) != 1: bad.append("%s: carried by %d entries (need exactly 1)" % (sk, len(ref7.get(sk, []))))
+    # decision rows point at their 2026-10-07 entries (two-way); status stays as the intake had it (changing it is T072's act)
+    rows7 = {**by_g, **by_r}
+    for dec in sorted(WANT7 - {"HC-0"}):
+        want_refs = sorted(str(e.get("id")) for e in e7 if dec in [str(a) for a in (e.get("answers") or [])])
+        row = rows7.get(dec) or {}
+        if sorted(str(x) for x in (row.get("answer_refs") or [])) != want_refs: bad.append("%s: answer_refs %s != the 2026-10-07 entries naming it %s" % (dec, row.get("answer_refs"), want_refs))
+    for rid, row in rows7.items():
+        if rid not in WANT7 and row.get("answer_refs"): bad.append("%s: answer_refs set but no 2026-10-07 answer names it" % rid)
+    try:
+        if int(data.get("revision") or 0) < 5: bad.append("owner-decisions.yaml revision must be 5 or more (got %r)" % data.get("revision"))
+    except Exception: bad.append("owner-decisions.yaml revision is not an integer: %r" % data.get("revision"))
+    # the reserved slots: the 2026-10-07 round fills none of them (only a verbatim owner text may)
+    for s_ in (e for e in (oa or []) if isinstance(e, dict) and "slot" in e):
+        if str(s_.get("text") or "").strip(): bad.append("reserved slot %s is filled: only a verbatim owner text may fill it" % s_.get("slot"))
+    # owner request list carries the answers
+    rlp = os.path.join(os.environ["FEAT"], "decisions", "owner-request-list.md")
+    rlt = open(rlp, encoding="utf-8").read() if os.path.isfile(rlp) else ""
+    i7 = rlt.find("## 10. Answers of 2026-10-07")
+    if i7 < 0: bad.append("owner-request-list.md lacks the section '## 10. Answers of 2026-10-07'")
+    else:
+        sec = rlt[i7:]
+        if "relayed 2026-10-07" not in sec: bad.append("owner-request-list.md section 10 lacks the marker 'relayed 2026-10-07'")
+        for dec in sorted(WANT7):
+            if dec not in sec: bad.append("owner-request-list.md section 10 does not mention %s" % dec)
+    # HC-0 evidence record (T014) consistent with progress.yml, sealed by SHA256SUMS
+    import json, hashlib
+    hcd = os.path.join(os.environ["FEAT"], "evidence", "hc")
+    hcp = os.path.join(hcd, "HC-0.json")
+    if not os.path.isfile(hcp): bad.append("$EV/hc/HC-0.json absent")
+    else:
+        try: hc = json.load(open(hcp, encoding="utf-8"))
+        except Exception as ex: hc = None; bad.append("HC-0.json is not valid JSON: %s" % ex)
+        if isinstance(hc, dict):
+            idh = hc.get("identity") or {}
+            for f_ in ("generated_at", "git_head", "host", "tool"):
+                if not str(idh.get(f_) or "").strip(): bad.append("HC-0.json identity.%s missing" % f_)
+            if not re.fullmatch(r"[0-9a-f]{40}", str(idh.get("git_head") or "")): bad.append("HC-0.json identity.git_head is not a 40-hex commit id")
+            for f_ in ("date", "delivered", "owner_answers", "launcher_trust_answer", "remaining"):
+                if f_ not in hc: bad.append("HC-0.json lacks field %s" % f_)
+            if not hc.get("delivered"): bad.append("HC-0.json delivered is empty")
+            if "acceptance_statement" not in hc and "open_questions" not in hc: bad.append("HC-0.json has neither acceptance_statement nor open_questions")
+            if "entry_incomplete" in hc: bad.append("HC-0.json still carries entry_incomplete although the host identity is answered (2026-10-05 and 2026-10-07)")
+            if hc.get("host_identity_answered") is not True: bad.append("HC-0.json host_identity_answered must be true (ODG-07 answered)")
+            rem = hc.get("remaining")
+            if not isinstance(rem, list): bad.append("HC-0.json remaining must be a list")
+            else:
+                pr = (prog.get("hc0") or {}).get("recorded")
+                if pr is not (len(rem) == 0): bad.append("progress.yml hc0.recorded (%r) disagrees with HC-0.json remaining (%d entries): recorded may be true only when nothing remains" % (pr, len(rem)))
+            lt = hc.get("launcher_trust_answer") or {}
+            if lt.get("verbatim") is True and not str(lt.get("text") or "").strip(): bad.append("HC-0.json launcher_trust_answer claims verbatim without text")
+            if lt.get("verbatim") is not True and "UNCONFIRMED" not in str(lt.get("status") or ""): bad.append("HC-0.json launcher_trust_answer is not verbatim and not marked UNCONFIRMED")
+    sp = os.path.join(hcd, "SHA256SUMS")
+    if not os.path.isfile(sp): bad.append("$EV/hc/SHA256SUMS absent")
+    else:
+        sums = open(sp, encoding="utf-8").read()
+        nsum = 0
+        for ln in sums.splitlines():
+            m_ = re.fullmatch(r"([0-9a-f]{64})  (\S+)", ln)
+            if not m_: bad.append("SHA256SUMS: malformed line %r" % ln[:60]); continue
+            fp = os.path.join(hcd, m_.group(2)); nsum += 1
+            if not os.path.isfile(fp): bad.append("SHA256SUMS: %s absent" % m_.group(2)); continue
+            if hashlib.sha256(open(fp, "rb").read()).hexdigest() != m_.group(1): bad.append("SHA256SUMS: %s does not verify" % m_.group(2))
+        if nsum == 0 or "  HC-0.json" not in sums: bad.append("SHA256SUMS lists no HC-0.json (instrument blind)")
+    if bad: [fail(b) for b in bad]
+    else: ok("owner answers of 2026-10-07: %d relayed keys carried by %d entries, answer_refs two-way for %d ids, request list section 10, HC-0.json sealed and consistent with progress.yml" % (len(src_new), len(e7) + len(u7), len(WANT7) - 1))
 
 # ---- round 4 (review WF3 I2, I3): ONE precedence statement for the ODG-11 deviation; the answered-but-owed items are tracked ----
 FEATD = os.environ["FEAT"]

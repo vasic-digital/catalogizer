@@ -1,0 +1,5 @@
+PROPAGATION-FAMILY pass=86 fail=0 failed: none
+--- cm_gate_ledger_ratchet.sh
+BLIND: impl-dir /dev/shm/const0108/tree/scripts is not inside a git repository — tracked-ness is unresolvable there, so this tool refuses rather than counting untracked working-tree files as implementations (§11.4.227(A) phantom advance) or counti
+CM-GATE-LEDGER-RATCHET: BLIND — gate_ledger.sh generate failed (see stderr above)
+ratchet rc=2

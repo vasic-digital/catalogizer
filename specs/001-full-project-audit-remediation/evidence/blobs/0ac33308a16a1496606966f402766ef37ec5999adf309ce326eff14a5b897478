@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/src/scripts/register/tests/test_enumerate_absolute.py", line 103, in <module>
+    ex = st["checkbox_lines_not_enumerated"]
+         ~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'checkbox_lines_not_enumerated'

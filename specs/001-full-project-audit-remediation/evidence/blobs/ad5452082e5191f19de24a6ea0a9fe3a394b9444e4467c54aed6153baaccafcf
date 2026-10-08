@@ -1,0 +1,4 @@
+FAIL baseline scan exits 0 :: lead_scan: REFUSED reason=lead_scan_blind control needle docs/LANDMINES.md:L4: expected a row with word 'missing' and disposition 'lead', got 'missing'/'duplicate of structured source'
+
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, None)
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

@@ -1,0 +1,5 @@
+header_comparison_removed CAUGHT
+tracked_only_rule_removed CAUGHT
+completeness_rule_removed CAUGHT
+manifest_hash_check_removed CAUGHT
+identity_noop SURVIVED-AS-REQUIRED

@@ -1,0 +1,39 @@
+WF17 fix round 5 (constitution 11.4.276: round 4 of the test-infra area = the STRUCTURAL round demanded by the round-3 assessment) - convergence assessment, written BEFORE any fix
+================================================================================================================================================================================
+Input: FIXLIST-testinfra.md (NO-GO, 60 findings: 3 HIGH, 19 MEDIUM, 38 LOW; 36 source-defect, 13 test-instrumentation, 11 process-doc), commit c2141c78 + HEAD 65e5f339.
+Fixer: Sonnet (dispatch path cannot set effort; recorded per 11.4.231 F.2). I wrote none of the reviewed code in this round.
+Round budget: WF12 = round 1, WF17 = round 2, the three CONS lenses = round 3, this fix + its review = round 4; R_max = 5 (no declaration), round 5 is the last before operator escalation.
+
+Why rounds 1-3 did not converge (root cause, not the instance)
+  Class A REG       The stack's long-op record and container labels were modelled as "one op, registered once, labels copied per compose file". Ground truth (longops/lib.sh,
+                    heartbeat.sh, sweep.sh _P1_JQ, runner_lib.sh rl_sweep_gate): an op is `hung` once its no-progress budget (default 3600 s) passes without a heartbeat, a
+                    container is attributed by `catalogizer.op_id` FIRST, and ANY drift refuses every container launch of the user. The previous fix registered and never beat,
+                    and copied label sets by hand into three places (two compose files and run_client.sh) with no oracle running the REAL sweep.
+  Class B OWN       Ownership was modelled as "the registry of THIS checkout says so", while containers and networks are per user. A second checkout, a default-id collision,
+                    a failing podman query (read as "nothing there") and a lease released before the cleanup all pass that model.
+  Class C TEARDOWN  Lifecycle scripts were modelled as straight-line; bash runs an EXIT trap on INT/TERM/HUP (cbshape captures), only a script WITHOUT a trap leaks, and
+                    podman-compose 1.5.0 defaults `in_pod` to True (podman_compose.py:2081), so `-p` absent and `--in-pod false` absent are real defects.
+  Class D INPUT     Every parser had `--x) V=${2:-}; shift 2`: with one argument left `shift 2` fails without shifting, an infinite loop (13 parsers). The caller's env beats
+                    the --env-file in podman-compose (podman_compose.py:2220-2221, shell wins). Locale-dependent regex, `$((08))`, relative paths resolved against another cwd.
+  Class E RECORDS   Terminal-state producers read a record they did not write in this run (a tracked file); consumers counted `ok == true` only.
+  Class G ORACLES   Gates were authored against the author's fixture shape; reviewer mutants all SURVIVED (31 compose-scanner shapes, IS1/IS2/IS5, U1/U2, UD2/UD3, SW1-SW4, ...).
+  Class H BINDING   Evidence headers hashed the file under test but not its closure, manifests came from `find`, captures ran against a parent file.
+
+Mechanisms REPLACED (not layered)
+  - one input layer in scripts/test-infra/lib.sh (LC_ALL=C, ti_optval, strict numbers, ti_abs, ti_safe_token, env scrub through ti_compose/ti_runpinned, hooks gated by TI_TEST_MODE=1);
+  - one stack-operation contract (ti_op_budget, a liveness-gated keeper that heartbeats only while a labelled container runs, one label set, truthful terminal states) used by
+    up.sh and the NEW build-stack lifecycle of container-build.sh;
+  - one ownership predicate (ti_scan: project + test_project + test_root + op in THIS registry; anything else refuses `foreign_owner`), one per-user project lock whose fd is
+    closed in every child, release LAST in down.sh, podman query failure = unknown = refuse;
+  - one EXIT-trap teardown in every entry point, op id persisted at registration;
+  - compose scanner rewritten to read the RENDERED compose (real podman-compose config in an empty env, sentinel env file), allow-list not deny-list.
+
+Ground truth re-derived before the first edit (each fixture below runs on the real producer)
+  longops: registry = LONGOPS_DIR | LONGOPS_AUDIT/longops | LONGOPS_REPO/.audit/longops (lib.sh:22-24); default budget 3600 (lib.sh:29); heartbeat first call registered->running.
+  podman-compose 1.5.0: shell env beats --env-file; in_pod defaults True; dry-run still creates the network.
+  bash: EXIT trap runs on INT/TERM/HUP; an exec-opened fd is inherited by every child (so every child spawn closes fd 9: `9>&-`).
+  smbclient: `ls <absent>` prints NT_STATUS_NO_SUCH_FILE listing \<name> on STDOUT (name included) rc 1.
+  kernel /proc: no hidepid, cmdline mode 444 (F9 is a documented, owner-decision limit).
+
+Round-3 assessment per 11.4.276(E): classes A, B, C, D, G each have 2+ members of non-MINOR severity => STRUCTURAL round (this one). Fixer is a fresh instance; every class is
+enumerated below over the WHOLE scope at HEAD (including the two files added by 65e5f339: client/nas_survey.sh and nas_scan/zz_nas_scan_test.go).

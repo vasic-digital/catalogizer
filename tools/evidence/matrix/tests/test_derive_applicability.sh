@@ -134,6 +134,29 @@ printf 'package x\nfunc TestA(t *testing.T){}\n' >"$S/a10_test.go"
 derive "$R" "$T/p2.yaml"; check "RM5: 10 Go test files: unit is P" "$(cellf "$T/p2.yaml" 'A10:auth' unit state)" "P"
 rm -f "$S"/a*_test.go; derive "$R" "$T/p3.yaml"; check "RM5: no Go test file: unit is A" "$(cellf "$T/p3.yaml" 'A10:auth' unit state)" "A"
 
+# -- round 5 (WP-23): content-aware fingerprint, tracked-only enumeration inside a work tree, unreadable .git refused, relative --out, atomic write, .gitmodules read by git
+fpx() { sed -n 's/^# enumeration: [^;]*; files_fingerprint: \([0-9a-f]*\) .*/\1/p' "$1"; }
+mkrepo "$R"; derive "$R" "$T/c1.yaml"; printf 'placeholdeX\n' >"$R/submodules/auth/README.md"; derive "$R" "$T/c2.yaml"
+[ -n "$(fpx "$T/c1.yaml")" ] && [ "$(fpx "$T/c1.yaml")" != "$(fpx "$T/c2.yaml")" ] && ok "K12.3: a counted file edited in place (same path, same size) moves the files_fingerprint" || bad "K12.3: fingerprint unchanged after an in-place edit ($(fpx "$T/c1.yaml"))"
+gitfix() { mkrepo "$R"; ( cd "$R" && git init -q . && git add -A && git -c user.email=t@t -c user.name=t commit -q -m fixture ) >/dev/null 2>&1; }
+gitfix; derive "$R" "$T/t1.yaml"; check "K11.4: the fixture work tree derives (exit 0)" "$RC" 0
+grep -q '^# enumeration: git-tracked;' "$T/t1.yaml" && ok "K11.4: a fixture inside a work tree is enumerated from the tracked list" || bad "K11.4: enumeration: $(sed -n 5p "$T/t1.yaml")"
+printf 'package x\nfunc TestUntracked(t *testing.T){}\n' >"$R/submodules/auth/zz_untracked_test.go"; derive "$R" "$T/t2.yaml"
+check "K11.4: an UNTRACKED test file in a work tree changes nothing (same bytes)" "$(sha256sum <"$T/t2.yaml" | cut -d' ' -f1)" "$(sha256sum <"$T/t1.yaml" | cut -d' ' -f1)"
+( cd "$R" && git add submodules/auth/zz_untracked_test.go ) >/dev/null 2>&1; derive "$R" "$T/t3.yaml"
+[ "$(fpx "$T/t3.yaml")" != "$(fpx "$T/t1.yaml")" ] && ok "K11.4 control: the same file once tracked moves the fingerprint (the leg can fail)" || bad "K11.4 control: tracking the file changed nothing"
+( cd "$R" && git rm -q --cached submodules/auth/zz_untracked_test.go; rm -f submodules/auth/zz_untracked_test.go ) >/dev/null 2>&1
+GIT_DIR=/nonexistent GIT_WORK_TREE=/nonexistent python3 -I "$DERIVE" --repo "$R" --out "$T/t4.yaml" >/dev/null 2>"$T/t4.err"; rc=$?
+{ [ "$rc" = 0 ] && [ "$(sha256sum <"$T/t4.yaml" | cut -d' ' -f1)" = "$(sha256sum <"$T/t1.yaml" | cut -d' ' -f1)" ]; } && ok "K11.4: a caller's GIT_DIR / GIT_WORK_TREE does not redirect the enumeration (clean GIT_* environment)" || bad "K11.4: GIT_* leaked into the enumeration (rc $rc): $(head -c 200 "$T/t4.err")"
+mkrepo "$R"; printf 'gitdir: /nonexistent/modules/auth\n' >"$R/submodules/auth/.git"; derive "$R" "$T/d1.yaml"
+{ [ "$RC" = 3 ] && grep -q 'git_unreadable' "$T/stderr"; } && ok "K11.4: a dangling gitfile (a submodule whose git dir is gone) is refused (3 git_unreadable), never walked as a populated tree" || bad "K11.4: dangling gitfile gave rc $RC: $(head -c 200 "$T/stderr")"
+mkrepo "$R"; sed -i 's#path = submodules/auth$#path=submodules/auth#' "$R/.gitmodules"; derive "$R" "$T/g1.yaml"
+{ [ "$RC" = 0 ] && check "K12.1: .gitmodules is read by git (a `path=` without spaces still names its module): 42 components" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/g1.yaml'))['components']))")" 42; } || bad "K12.1: path=submodules/auth (no spaces) was not read (rc $RC): $(head -c 200 "$T/stderr")"
+mkdir -p "$T/cwd"; mkrepo "$R"; ( cd "$T/cwd" && python3 -I "$DERIVE" --repo "$R" --out rel.yaml >/dev/null 2>&1 ); [ -s "$T/cwd/rel.yaml" ] && [ ! -e "$R/rel.yaml" ] && ok "K11.4: a relative --out is relative to the current directory (not to the repository)" || bad "K11.4: relative --out landed in the wrong place"
+echo untouched >"$T/victim.txt"; ln -s "$T/victim.txt" "$T/cwd/link.yaml"; ( cd "$T/cwd" && python3 -I "$DERIVE" --repo "$R" --out link.yaml >/dev/null 2>&1 )
+{ [ "$(cat "$T/victim.txt")" = untouched ] && [ ! -L "$T/cwd/link.yaml" ] && [ -s "$T/cwd/link.yaml" ]; } && ok "K11.4: the write is a temp file + rename: an --out that is a symlink is REPLACED, the file it pointed at is not written through" || bad "K11.4: --out symlink was written through ($(cat "$T/victim.txt" | head -c 60))"
+check "K11.4: the atomic write leaves no temp file behind" "$(ls "$T/cwd" | grep -c 'tmp')" 0
+
 # -- the REAL repository: the derivation is deterministic and the committed file is what the tracked tree derives (a drift is a finding)
 REPO="$(cd "$HERE/../../../.." && pwd)"
 if [ -d "$REPO/submodules/auth" ] && [ -n "$(ls -A "$REPO/submodules/auth" 2>/dev/null)" ]; then
@@ -170,6 +193,13 @@ PY
   mut website_frozen 'if hits:' 'if False:'
   mut build_reread_off 'if libs:' 'if False:'
   mut fingerprint_const 'hashlib.sha256("\n".join("%s %s %d %s" % ((k,) + v) for k, v in sorted(_FPR.items())).encode()).hexdigest()[:32]' '"0" * 32'
+  mut dangling_gitfile 'if os.path.lexists(os.path.join(root, ".git")):   # MUT:dangling_gitfile' 'if False:'
+  mut fingerprint_content 'c = hashlib.sha256(fh.read()).hexdigest()' 'c = "x"'
+  mut tracked_only_off 'if p.returncode == 0 and p.stdout.strip() == b"true":' 'if False:'
+  mut git_env_leak 'env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}' 'env = dict(os.environ)'
+  mut gitmodules_by_git 'if cp.returncode == 0 else []' 'if False else []'
+  mut out_cwd_relative 'path = os.path.abspath(out)' 'path = out if os.path.isabs(out) else os.path.join(repo, out)'
+  mut atomic_write 'os.replace(tmp, path)   # MUT:atomic_write' 'open(path, "w").write(text)   # MUT:atomic_write'
 fi
 echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"
 [ "$FAILS" = 0 ]

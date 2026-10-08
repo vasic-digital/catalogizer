@@ -1,0 +1,6 @@
+# ledger seq=8 item=AUD-T167 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/wp20-r2/sut target_fingerprint=a8010cf89c636c67f264a7e541aef653207b7dfbe7635de349bb6a4149bd74af test_fingerprint=9db86ee5d379cc0c1f99fbc5d1869cf098ea7838ebef59033a07894c09d021bf
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "LEAD_SCAN=/src/.audit/scratch/wp20-r2/sut/lead_scan.py", "python3", "scripts/register/tests/test_lead_scan.py"]
+ok   baseline scan exits 0
+FAIL control needle found with its word and its disposition (lead: no structured entry covers that line) :: (None, ('missing', 'duplicate of structured source', None, '- **Fix:** add the missing test; do not skip with `t.Skip()`'))
+ok   population excludes the gitlink Markdown (submodules/sub1/README.md not scanned)

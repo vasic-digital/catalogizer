@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 2 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T00:58:05Z |
+| Last modified | 2026-10-07T16:57:44Z |
 | Status | new in the working tree (T195-T197), not yet committed; independent review owed (constitution 11.4.142, T208); its row in `docs/scripts/README.md` is owed; review round 1 (WF11, 2026-10-06 UTC): fixes B1, I1, I2, I7, I11, m1, m2, m3, m11 applied; independent re-review owed (constitution 11.4.142) |
 | Source | `tools/evidence/matrix/gen_matrix.py`, `tools/evidence/matrix/derive_applicability.py`; tests `tools/evidence/matrix/tests/test_gen_matrix.sh`; data `specs/001-full-project-audit-remediation/matrix/applicability.yaml` |
 
@@ -38,3 +38,13 @@ With `--ledger` a cell is `present` only with a PASS record of three identical r
 - **I11**: the A9 build `unit` cell is re-read from `tests/test_build_system.sh` (it sources the Build/lib libraries from a temp copy of `Build/`): `~`, not docs/05's `A`. `integration` and `full_automation` stay `A` with the re-read named.
 - Measured effect on the committed map: 2 of 810 cells change state (A9 unit `A` to `~`; A10:assets chaos `~` to `A`); the totals P 46, ~ 137, A 414, n/a 213 are unchanged.
 - **Tests**: `test_gen_matrix.sh` now has legs for the verdict, class and blocked rules and the gate inputs (the reviewer's RM1-RM4 mutations are adopted verbatim); the new `test_derive_applicability.sh` runs the deriver over synthetic repositories (determinism, empty submodule, token markers, A9, banks, Website, the unit `P` threshold = the reviewer's RM5) with a sandbox control for its mutations.
+
+## Review round 5 (WP-23 fix round, 2026-10-07 UTC): the gate judges the REAL ledger
+- **Ledger**: the evidence ledger as `tools/evidence/evrec` writes it. Its chain is walked first (`evcore.chain_walk`); a deleted, reordered, forged or truncated line refuses the whole ledger (exit 3 `ledger_chain_invalid`). The status of a cell is DERIVED by `evverdict.derive` (RED failed, three identical GREENs, the cycle after the last cutting REOPEN), plus a caught MUTATION entry and an evidence class at or above the type's need (`source < artifact < runtime < user_visible`). The earlier home-made ledger shape (`runs`, `identical_runs`, `mutation_caught`) is gone.
+- **`--cell-items FILE`**: JSON `{"<component>|<type>": "<register item id>"}`. A key naming no component/type is `cell_items_unmatched`, a value that is not a register item id is `cell_items_invalid` (both exit 3).
+- **Gate**: `--gate` requires `--ledger` and `--cell-items` (exit 2 without: no evidence blocks like a FAIL) and either `--repo DIR` (the map is re-derived from that repository and must equal it cell for cell: `map_not_bound`, exit 3) or an explicit `--map-unbound` (printed and recorded as `map_bound: false`). A map with no applicable cell is `gate_vacuous` (exit 3). `--candidate-fingerprint SHA` makes the GREEN entries answer for that build only.
+- **Inputs recorded**: the json carries the sha256 of the map, the ledger and the cell-items file, `map_bound` and the candidate fingerprint.
+- **Exit codes**: 0 ok; 1 the gate failed; 2 usage; 3 an input cannot be processed (a top-level handler turns any unexpected exception into 3: exit 1 always means the gate failed); 4 a mint failed. The YAML loader refuses duplicate and non-string keys; `--timestamp` must be `YYYY-MM-DDTHH:MM:SSZ`.
+- **Minting**: `CMD <component> <type> <A|~> <idempotency-key>` (`mint:<component>|<type>`) must print a register item id (`CAT-nnn`, `FND-nnnn`, `RUN-n`, `AUD-x`); the same id for two cells and any output that is not an id are refused (exit 4). The mint ledger (default `mint-ledger.json` NEXT TO THE MAP, never under `--out`) is locked exclusively for the whole run; an intent row (`pending`) is written before the register is called and retried with the same key; a `minted` cell is never minted again. A malformed ledger refuses the run (exit 4).
+- **Tests**: `test_gen_matrix.sh` builds its ledgers with the real recorder (hermetic scratch ledger, RED + 3 GREEN + a caught MUTATION per item). Mutants run in a symlink farm of `tools/evidence` so their imports are the real modules, with a sandbox control.
+- **Not done in this round**: regenerating `matrix/applicability.yaml` and the committed matrix from the commit's tree (needs the `derive_applicability.py` rewrite below).
