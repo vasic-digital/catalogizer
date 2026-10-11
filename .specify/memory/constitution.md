@@ -40,7 +40,7 @@ Where a digest here or in the appendix is shorter than canon, canon governs. Rea
 on it: `grep -n '§11\.4\.<N> —' constitution/Constitution.md`.
 
 **Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `constitution` at commit
-`1d0485f552880639865e2b95921b2ea742f4ed38`; `Constitution.md` sha256
+`1c89813a86c313ddf3064bdc4e9bb192d171b211`; `Constitution.md` sha256
 `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`, identical to the hash
 recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
 

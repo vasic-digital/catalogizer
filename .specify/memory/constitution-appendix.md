@@ -7,7 +7,7 @@
 | Last modified | 2026-10-06T19:37:16Z |
 | Status | active, BINDING |
 | Binds | Part of the Catalogizer Constitution (`.specify/memory/constitution.md`) |
-| Canon pin | `constitution` at `1d0485f552880639865e2b95921b2ea742f4ed38`; `Constitution.md` sha256 `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e` |
+| Canon pin | `constitution` at `1c89813a86c313ddf3064bdc4e9bb192d171b211`; `Constitution.md` sha256 `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e` |
 | Generated from | `constitution/groups/*.md` and `constitution_index.yaml` (283 anchors; the index lags the canon at the current pin and lacks §11.4.276, so this appendix carries 284 digests, and the digests of §11.4.276 and of the 2026-10-04 and 2026-10-05 amendments are hand-written from `Constitution.md`) plus the project and module `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `CONSTITUTION.md` files |
 
 ## How this appendix binds
