@@ -1,0 +1,111 @@
+{
+  "wp": "WP-09",
+  "tasks": ["T010", "T005"],
+  "verdict": "NO-GO",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (constitution 11.4.231(F.2)); xhigh is NOT claimed.",
+  "reviewer_role": "independent reviewer, not the producer of the reviewed files",
+  "date": "2026-10-08",
+  "reviewed_files": [
+    {"path": "scripts/containers/run_pinned.sh", "sha256_prefix": "98e825682b75"},
+    {"path": "scripts/containers/tests/test_run_pinned.sh", "sha256_prefix": "b984e5e3abda"},
+    {"path": "scripts/containers/disk_headroom.sh", "sha256_prefix": "b5d59685a3f7"},
+    {"path": "scripts/containers/disk_headroom.conf", "sha256_prefix": "2d3c3abc7b80"},
+    {"path": "scripts/containers/probe_host.sh", "sha256_prefix": "7e323ed41f2d"},
+    {"path": "build/containers/images.lock.yaml", "sha256_prefix": "fbf906867cd6"}
+  ],
+  "covers_runs": {
+    "method": "git archive of HEAD (9be72f0b lineage, run_pinned.sh 98e82568) extracted to the session scratchpad; no tracked file edited, no podman build/pull/run",
+    "test_run_pinned_tests_only": "381 passed, 0 failed (RUNP_TEST_NO_MUTATIONS=1)",
+    "test_run_pinned_full": "382 passed, 0 failed, 32 in-suite mutations caught, 0 survived, rc=0",
+    "test_probe_host": "122 passed, 0 failed",
+    "test_disk_headroom": "375 passed, 0 failed",
+    "print_mode_tracked_lock": "all 35 lock ids compose in print mode against the real host (headroom pass, 26387767296 bytes free); IMG-SHELLCHECK refuses 'true' with entrypoint_word_mismatch as designed",
+    "gitignore_T005_check": "git check-ignore over 18 paths: build/containers/images.lock.yaml and build/containers/profile.json TRACKABLE; nested build/, tools/, coverage/, .env, *.db still IGNORED (both states observed = control needle for the instrument)"
+  },
+  "findings": [
+    {
+      "id": "R-1",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "--out accepts the whole evidence tree (including evidence/reviews/ and SHA256SUMS) as a writable container mount",
+      "detail": "run_pinned.sh:169 sanctions specs/001-full-project-audit-remediation/evidence as an output root with no depth limit. Measured: `--out $PWD/specs/001-full-project-audit-remediation/evidence IMG-GO -- true` composes `<repo>/specs/.../evidence:/out:rw`, rc 0. A container (the producer) can then rewrite review verdicts, SHA256SUMS and other WPs' evidence: the producer reaches the verifier's store (constitution 11.4.240 / 11.4.249). Restrict to a per-op subdirectory (e.g. evidence/<wp>/smoke-out) or refuse evidence/ itself, evidence/reviews and any existing file set."
+    },
+    {
+      "id": "R-2",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "disk_headroom test overrides are honoured without any test-mode gate, so an exported variable lifts the 12.9 floor through RUNP",
+      "detail": "run_pinned.sh gates its own hooks behind RUNP_TEST_MODE (round 6 F2: 'a hook replaces the real reading and could otherwise lift a ceiling'), but passes DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT and EV straight through to disk_headroom.sh, which honours them unconditionally (documented as 'test overrides' in docs/scripts/disk_headroom.md:39). Measured without RUNP_TEST_MODE: `--need 20000000000` with the tracked conf -> REFUSED disk_below_headroom rc 1 (control); same call with exported DISK_HEADROOM_CONF=<file with min_free_bytes=0> -> rc 0. Same class as the open owner decision F-E (host_checklist CHK_*)."
+    },
+    {
+      "id": "R-3",
+      "severity": "important",
+      "finding_layer": "test-instrumentation",
+      "title": "the argv oracle asserts presence only: privilege-escalating additions to the composed argv survive the suite",
+      "detail": "test_run_pinned.sh checks that required flags are present (argv_has, grep -qxF) and counts writable binds, but has no allow-list / golden of the whole argv. Reviewer mutants (not in the author's MUT set) on a scratch copy, tests-only mode: x1 add `--privileged` after `--rm` -> 381/0 SURVIVED; x3 `--cap-drop=ALL --cap-add=ALL` -> 381/0 SURVIVED; x7 add `--security-opt label=disable` -> 381/0 SURVIVED. Add an exact-argv golden (or a closed allow-list of option tokens) in print mode and in the shim log."
+    },
+    {
+      "id": "R-4",
+      "severity": "important",
+      "finding_layer": "process-doc",
+      "title": "smoke records (T008) and the only real-podman run-mode evidence predate the current launcher",
+      "detail": "smoke-r4-run3.txt (2026-10-06T05:45:02Z) records sut_sha256 12a5f201...; the reviewed run_pinned.sh is 98e82568 (rounds 5-7 changed path resolution, the lock reader and the hook gate). round7-notes.md states the real run mode was not exercised. T010 reviews 'the smoke records' of the shipped launcher: they must be re-run on 98e82568 (or its successor) before GO (11.4.226 evidence class at closure, 11.4.108 runtime layer)."
+    },
+    {
+      "id": "R-5",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "title": "--need and --op-id given twice are silently overwritten",
+      "detail": "--rw and --out refuse a second occurrence and disk_headroom.sh refuses a second --need, but run_pinned.sh keeps the LAST --need/--op-id. Measured: `--need 1000000000000000 --need 1` -> rc 0 (the large need, which alone refuses, is discarded); `--op-id a --op-id b` -> label catalogizer.op_id=b."
+    },
+    {
+      "id": "R-6",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "title": "probe_host.sh reports cgroup_version 1 'present' for any existing directory without cgroup.controllers",
+      "detail": "probe_host.sh:58 infers v1 from `[ -d $CGROOT ]`. Measured: PROBE_CGROUP_ROOT=<empty dir> -> {status:present,value:1}. An unmounted or non-cgroup directory is not evidence of v1 (11.4.201: assert the real condition). Use the filesystem type (stat -fc %T: cgroup2fs / tmpfs+cgroup subdirs) and record error otherwise. Real host reads 2 correctly (cgroup2fs)."
+    },
+    {
+      "id": "R-7",
+      "severity": "minor",
+      "finding_layer": "process-doc",
+      "title": "disk_headroom.conf threshold still PROVISIONAL although the WP-09 images now exist",
+      "detail": "The conf says T006 re-derives min_free_bytes once the WP-09 images exist; the lock (resolved 2026-10-05T20:01Z onward) carries their size_bytes (largest WP-09 image IMG-GO 832636324), but the conf still uses the 6086120270-byte stand-in from other projects and build_scratch_peak_bytes = 0 unmeasured. Either re-derive with dates or record why the stand-in stays."
+    },
+    {
+      "id": "R-8",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "title": "an unset HOME aborts with a shell 'unbound variable' message instead of a REFUSED reason",
+      "detail": "Measured: with HOME unset, rc 1 and `run_pinned.sh: line 130: HOME: unbound variable`. Fails closed, but violates the documented refusal contract (`run_pinned: REFUSED reason=<code>`); give it a reason (e.g. state_dir_unresolvable)."
+    },
+    {
+      "id": "R-9",
+      "severity": "minor",
+      "finding_layer": "process-doc",
+      "title": "open owner decisions and owed items carried by round 7 are still unresolved",
+      "detail": "F-G (run_pinned accepts a one-component reference that host_checklist calls lock_malformed), F-E (CHK_* overrides ungated), the round-7 independent review, the stale '(round 4)' title of evidence/wp09/README.md (F-H). The verdicts of T005 (WP-09-gitignore.json) and T010 (WP-09.json with reviewed_files + provenance for T094a) named by tasks.md do not exist yet; this file is a review record only, not the T010 G-GATE verdict."
+    },
+    {
+      "id": "R-10",
+      "severity": "info",
+      "finding_layer": "process-doc",
+      "title": "T005 gitignore leg: no defect found in what was checked",
+      "detail": "The tracked deliverables are no longer ignored and nested build/, tools/, coverage/, .env, *.db remain ignored (18 paths, both states observed). UNCONFIRMED: whether specs/.../evidence/coverage/ being ignored is intended (not covered by the T004 text)."
+    }
+  ],
+  "mutations_attempted": [
+    {"id": "x1", "file": "run_pinned.sh", "change": "add --privileged to the composed argv", "result": "SURVIVED (381 passed, 0 failed)"},
+    {"id": "x2", "file": "run_pinned.sh", "change": "add -v /:/host:rw after the source mount", "result": "KILLED (2 failing checks: writable-bind count)"},
+    {"id": "x3", "file": "run_pinned.sh", "change": "--cap-drop=ALL --cap-add=ALL", "result": "SURVIVED (381 passed, 0 failed)"},
+    {"id": "x4", "file": "run_pinned.sh", "change": "add docs to the sanctioned --out roots", "result": "KILLED (6 failing checks)"},
+    {"id": "x5", "file": "run_pinned.sh", "change": "overlaps() reduced to equality only", "result": "KILLED (15 failing checks)"},
+    {"id": "x6", "file": "run_pinned.sh", "change": "remove the --rw vs state-dir overlap check (line 149)", "result": "SURVIVED - equivalent mutant: any overlap of $PWD/<rw> with the state directory implies an overlap of the checkout with it, already refused at line 134 (state under the rw path is under the checkout; state an ancestor of the rw path is an ancestor of or inside the checkout)"},
+    {"id": "x7", "file": "run_pinned.sh", "change": "add --security-opt label=disable", "result": "SURVIVED (381 passed, 0 failed)"},
+    {"id": "e1", "file": "probe_host.sh", "change": "(behavioural probe, not a source mutation) empty directory as cgroup root", "result": "reported cgroup_version present 1 (R-6)"},
+    {"id": "e2", "file": "disk_headroom.sh via run_pinned.sh", "change": "(behavioural probe) exported DISK_HEADROOM_CONF min_free_bytes=0 without RUNP_TEST_MODE", "result": "floor lifted, rc 0 where the control refuses (R-2)"}
+  ],
+  "go_conditions": "R-1, R-2 (source-defect, important) fixed with RED->GREEN and paired mutations; R-3 closed by an argv golden that kills x1/x3/x7; R-4 smoke re-run on the reviewed launcher digest; minors fixed or recorded with an owner decision."
+}

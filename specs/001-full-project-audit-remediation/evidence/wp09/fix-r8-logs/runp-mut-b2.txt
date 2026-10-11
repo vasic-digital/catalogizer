@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:24Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-out-unresolvable: caught (1 failing checks; first: FAIL:   reason: realpath: /tmp/runp-test.mnqTEN/loopa/x: Too many levels of symbolic links|)
+MUTATION x-home-unset: caught (4 failing checks; first: FAIL: R-8: HOME unset (no XDG_STATE_HOME) is refused, exit 1 (got '0' want '1')|FAIL:   R-8 reason: |)
+MUTATION x-scrub-conf: caught (2 failing checks; first: FAIL: R-2: DISK_HEADROOM_CONF is forwarded to disk_headroom.sh|FAIL:   R-2 reason: run_pinned: disk headroom precondition failed: disk_headroom: REFUSED |)

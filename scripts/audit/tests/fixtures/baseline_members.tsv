@@ -1,0 +1,84 @@
+# Hand-written member table for P3 (WP-02 fix round 8, review R3-3/R3-7). One row per path: <path><TAB><FAIL|PASS><TAB><why>.
+# FAIL = indexing this path must make P3 FAIL (a forbidden class or a constitution baseline class). PASS = near-miss / root-only-by-design control.
+# It is written by hand and shares NO code with scripts/audit/index_health.sh (the tool's baseline_probe is not reused: review R3-7).
+# Every unanchored class has members at depth 0 (x), 1 (a/x) and 2 (a/b/x); a root-anchored class (out dist target prebuilts rockdev RKTools) FAILs at depth 0 only.
+.env	FAIL	env_file depth0
+a/.env	FAIL	env_file depth1
+a/b/.env.local	FAIL	env_file depth2
+prod.env	FAIL	env_file *.env depth0
+a/prod.env	FAIL	env_file *.env depth1
+a/b/prod.env	FAIL	env_file *.env depth2
+.env.example	PASS	exempt name depth0
+a/.env.example	PASS	exempt name depth1
+a/b/.env.sample	PASS	exempt name depth2
+a/environment.c	PASS	near miss
+secrets/db.yaml	FAIL	secrets_dir depth0
+a/secrets/db.yaml	FAIL	secrets_dir depth1
+a/b/secrets/db.yaml	FAIL	secrets_dir depth2
+secretsauce/x.py	PASS	near miss: a directory merely containing the word is not a secrets dir
+a/secretsauce/x.py	PASS	near miss depth1
+api_Secret.py	FAIL	secret_basename depth0
+a/api_Secret.py	FAIL	secret_basename depth1
+a/b/my-secret.txt	FAIL	secret_basename depth2
+a/secure.py	PASS	near miss
+release.jks	FAIL	keystore depth0
+a/release.keystore	FAIL	keystore depth1
+a/b/store.p12	FAIL	keystore depth2
+x.pfx	FAIL	keystore depth0
+a/x.pk8	FAIL	signing key depth1
+a/b/server.pem	FAIL	signing key depth2
+localhost.key	FAIL	signing key depth0
+a/b/localhost.key	FAIL	signing key depth2
+a/keys.c	PASS	near miss
+qa-results/r.py	FAIL	qa_corpus depth0
+a/qa-results/r.py	FAIL	qa_corpus depth1
+a/b/recordings/v.mp4	FAIL	qa_corpus depth2
+recordings/v.mp4	FAIL	qa_corpus depth0
+a/qa_resultsx/r.py	PASS	near miss
+.venv/x.py	FAIL	cache depth0
+a/.venv/x.py	FAIL	cache depth1
+a/b/__pycache__/x.pyc	FAIL	cache depth2
+node_modules/x.js	FAIL	cache depth0
+a/node_modules/x.js	FAIL	cache depth1
+a/b/.gradle/x	FAIL	cache depth2
+ccache/x	FAIL	cache depth0
+a/.ccache/x	FAIL	cache depth1
+logs/x.log	FAIL	cache depth0
+a/logs/x.log	FAIL	cache depth1
+a/b/logs/x.log	FAIL	cache depth2
+.pytest_cache/x	FAIL	cache depth0
+a/b/.mypy_cache/x	FAIL	cache depth2
+a/pycache.py	PASS	near miss
+a/logger/x.go	PASS	near miss
+google-services.json	FAIL	credentials depth0
+a/google-services.json	FAIL	credentials depth1
+a/b/credentials.json	FAIL	credentials depth2
+credentials.json	FAIL	credentials depth0
+service-account-x.json	FAIL	service account depth0
+a/service-account-x.json	FAIL	service account depth1
+a/b/prod-service-account.json	FAIL	constitution segglob *service-account*.json depth2
+a/service_account.json	FAIL	constitution segglob *service_account*.json depth1
+gcp_service_account_key.json	FAIL	constitution segglob *service_account*.json depth0
+credentials.go	PASS	near miss
+a/google-services-readme.md	PASS	near miss
+out/x.bin	FAIL	build_output root-anchored
+a/out/x.bin	PASS	root-anchored only
+dist/x.js	FAIL	build_output root-anchored
+a/dist/x.js	PASS	root-anchored only
+target/x.o	FAIL	build_output root-anchored
+a/target/x.o	PASS	root-anchored only
+.compressed/q.bin	FAIL	compressed depth0
+a/.compressed/q.bin	FAIL	compressed depth1
+a/b/.compressed/z.bin	FAIL	compressed depth2
+prebuilts/x.so	FAIL	constitution topdir prebuilts
+a/prebuilts/x.so	PASS	topdir is the FIRST component only
+rockdev/a.img	FAIL	constitution topdir rockdev
+a/rockdev/a.img	PASS	topdir only
+RKTools/t.exe	FAIL	constitution topdir RKTools
+a/RKTools/t.exe	PASS	topdir only
+a/b.go	PASS	plain source
+catalog-api/main.go	PASS	plain source
+a/old.pem/notes.txt	FAIL	constitution segglob *.pem matches ANY path component, not only the file name
+out	PASS	a root FILE named like a topdir is not that directory
+a/qa-results	PASS	a FILE named like a dir: dir matchers look at directory components only
+rktools/t.exe	FAIL	constitution topdir RKTools judged case-insensitively (review N4)

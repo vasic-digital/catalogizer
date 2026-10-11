@@ -13,11 +13,11 @@
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd); G=${1:?group}; OUT=${2:?out file}; R="$ROOT/scripts/register"; T="$R/tests"
 W=$(mktemp -d "${TMPDIR:-/tmp}/mutops.XXXXXX"); trap 'rm -rf "$W"' EXIT
 case "$G" in
- locked) SUT=locked.sh; TEST=test_locked.sh; ENVV=LOCKED; TESTS=("test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1" "test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1" "test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1" "test_fix_r2.sh|REAL|" "test_fix_r4.sh|SWEEP REALSTAT REALSCOPE|" "test_replay.sh||");;
+ locked) SUT=locked.sh; TEST=test_locked.sh; ENVV=LOCKED; TESTS=("test_fix_wp06_r2.sh|R11|1" "test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1" "test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1" "test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1" "test_fix_r2.sh|REAL|" "test_fix_r4.sh|SWEEP REALSTAT REALSCOPE|" "test_replay.sh||");;
  backup) SUT=backup_db.sh; TEST=test_backup_db.sh; ENVV=BACKUP; TESTS=("test_fix_r1.sh|F7 F14 F8 M6|1" "test_fix_r4.sh|BSIG|1" "test_fix_r2.sh|B|");;
  dump)   SUT=dump.sh; TEST=test_dump.sh; ENVV=DUMP; TESTS=("test_fix_r1.sh|F8 F10|1");;
  export) SUT=export.sh; TEST=test_export.sh; ENVV=EXPORT; TESTS=("test_fix_r1.sh|F8 F9 F12|1" "test_fix_r2.sh|RC|1");;
- replay) SUT=replay.sh; TEST=test_replay.sh; ENVV=REPLAY; TESTS=("test_fix_r1.sh|F1 F2 F8|1" "test_fix_r2.sh|N1S T5|1" "test_fix_r4.sh|M6|1" "test_fix_r2.sh|N1E|");;
+ replay) SUT=replay.sh; TEST=test_replay.sh; ENVV=REPLAY; TESTS=("test_fix_r1.sh|F1 F2 F8|1" "test_fix_r2.sh|N1S T5|1" "test_fix_r4.sh|M6|1" "test_fix_r2.sh|N1E|" "test_fix_wp06_r2.sh|R02 R10|1" "test_fix_wp06_r3.sh|R201 R206 R207|1");;
  *) echo "unknown group $G" >&2; exit 2;;
 esac
 declare -a M=()   # name|file|envvar|sed
@@ -51,10 +51,11 @@ case "$G" in
   add lock_claim_not_ours locked.sh LOCKED 's/^  flock -n 9   # .*$/  :/'
   add drain_removed locked.sh LOCKED 's/^drain_containers "\$OP_ID"   # MUT:drain$/:/'
   add container_status_ignored locked.sh LOCKED 's/^if \[ -n "\$CRC" \] \&\& \[ "\$CRC" != "\$RC" \]; then RC="\$CRC"; fi   # MUT:container-status$/:/'
-  add fence_removed locked.sh LOCKED 's/^if \[ "\$MODE" != out \] \&\& \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
+  add fence_removed locked.sh LOCKED 's/^if \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
+  add R11_fence_skipped_for_out_runs locked.sh LOCKED 's/^if \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/if [ "$MODE" != out ] \&\& [ "$NESTED" = 0 ]; then fence_orphans; fi   # MUT:fence/'
   add marker_lock_ignored locked.sh LOCKED 's/ \|\| held=1   # MUT:marker-lock/ || held=0   # MUT:marker-lock/'
   add MX2_fence_podman_failure_is_gone locked.sh LOCKED 's/^      ids="\$\(ctr_ids "\$op"\)" \|\| refuse writer_state_unverifiable .*$/      ids="$(ctr_ids "$op")" || ids=""/'
-  add MX3_fence_before_lock locked.sh LOCKED 's/^# ---------- lock ----------$/if [ "$MODE" != out ] \&\& [ -z "${LOCKED_LOCK_HELD:-}" ]; then fence_orphans; fi/;s/^if \[ "\$MODE" != out \] \&\& \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
+  add MX3_fence_before_lock locked.sh LOCKED 's/^# ---------- lock ----------$/if [ -z "${LOCKED_LOCK_HELD:-}" ]; then fence_orphans; fi/;s/^if \[ "\$NESTED" = 0 \]; then fence_orphans; fi   # MUT:fence$/:/'
   add root_scope_removed locked.sh LOCKED 's/^    if \[ -n "\$src" \] \&\& \[ "\$\(realpath.*# MUT:root-scope.*$/    :/'
   add marker_fd_not_taken locked.sh LOCKED 's/^  \{ exec 8<"\$PEND"; \} 2>\/dev\/null \&\& flock -n 8 \|\|.*# MUT:marker-fd$/  :/'
   add status_unknown_ignored locked.sh LOCKED 's/^if \[ "\$EXSRC" = unknown \]; then echo .*# MUT:status-unknown$/:/'
@@ -129,7 +130,7 @@ case "$G" in
   add regenerated_rows_replayed replay.sh REPLAY 's/^    if is_regenerate\(r\): skipped\.append.*$/    pass/'
   add db_arg_not_rewritten replay.sh REPLAY 's/a.replace\("\/src\/docs\/workable_items.db", "\/out\/replay.db"\)/a/'
   add base_row_any_mode replay.sh REPLAY 's/^    if is_reg\(r\) and r\.get\("db_sha_after"\) == SINCE and not r\.get\("wal_bytes_after"\): idx = i   # MUT:base-row/    if r.get("db_sha_after") == SINCE: idx = i   # MUT:base-row/'
-  add ids_unknown_unchecked replay.sh REPLAY 's/^    if r\.get\("ids_snapshot", "ok"\) != "ok": refuse\(.*# MUT:ids-unknown$/    pass/'
+  add ids_unknown_unchecked replay.sh REPLAY 's/^    if r\["ids_snapshot"\] != "ok": refuse\(.*# MUT:ids-unknown$/    pass/'
   add RMb_id_lost_unchecked replay.sh REPLAY 's/^if missing: refuse\(/if False: refuse(/'
   add RMc_input_sha_unchecked replay.sh REPLAY 's/ or sha_file\(src\) != h:/:/'
   add RMd_wal_rows_skipped replay.sh REPLAY 's/ and not r\.get\("wal_bytes_after"\) and not r\.get\("wal_bytes_before"\)\)$/)/'
@@ -143,6 +144,27 @@ case "$G" in
   add regenerate_shape_loosened replay.sh REPLAY 's/^    return \(len\(argv\) == 3 and argv\[0\] == "bash" and argv\[1\] == "-c" and isinstance\(argv\[2\], str\) and argv\[2\]\.startswith\("# register-regenerate:"\)$/    return (any(isinstance(a, str) and a.startswith("# register-regenerate:") for a in argv)/'
   add regenerate_minting_row_skipped replay.sh REPLAY 's/^            and not r\.get\("ids_minted"\)\)   # MUT:regenerate-shape$/            )   # MUT:regenerate-shape/'
   add install_changed_row_skipped replay.sh REPLAY 's/^        if changed\(r\) or r\.get\("ids_minted"\): refuse\(.*# MUT:install-refusal$/        pass/'
+  add R02_row_validation_removed replay.sh REPLAY 's/^    if pr: refuse\("journal_row_incomplete".*$/    pass/'
+  for f in seq op_id mode argv db db_sha_before db_sha_after ids_minted ids_snapshot wal_bytes_before wal_bytes_after exit; do
+    add "R02_field_${f}_not_required" replay.sh REPLAY "/^    for k in \\(\"seq\", \"op_id\"/s/\"$f\", //"
+  done
+  add R02_field_input_args_not_required replay.sh REPLAY '/^    for k in \("seq", "op_id"/s/, "input_args"\)/)/'
+  add R02_wal_bytes_type_unchecked replay.sh REPLAY 's/^        if not isint\(r\[k\]\) or r\[k\] < 0: return /        if False: return /'
+  add R02_ids_snapshot_enum_unchecked replay.sh REPLAY 's/^    if r\["ids_snapshot"\] not in \("ok", "failed", "unavailable"\): return /    if False: return /'
+  add R02_hash_shape_unchecked replay.sh REPLAY 's/^        if r\[k\] is not None and not \(isinstance\(r\[k\], str\) and HEX64\.fullmatch\(r\[k\]\)\): return /        if False: return /'
+  add R02_ids_minted_type_unchecked replay.sh REPLAY 's/^    if not isinstance\(r\["ids_minted"\], list\) or not all\(isinstance\(a, str\) for a in r\["ids_minted"\]\): return /    if False: return /'
+  add R02_exit_type_unchecked replay.sh REPLAY 's/^    if not isint\(r\["exit"\]\): return /    if False: return /'
+  add R02_mode_enum_unchecked replay.sh REPLAY 's/^    if r\["mode"\] not in \("register", "out", "scratch"\): return /    if False: return /'
+  add R02_seq_type_unchecked replay.sh REPLAY 's/^    if not isint\(r\["seq"\]\) or r\["seq"\] < 1: return /    if False: return /'
+  add R10_created_always replay.sh REPLAY 's/^try: os\.makedirs\(OUT\); created = True   # MUT:created.*$/os.makedirs(OUT, exist_ok=True); created = True/;/^except FileExistsError: before = /d'
+  add R10_own_outputs_not_removed replay.sh REPLAY 's/^    elif started and os\.path\.isdir\(OUT\):$/    elif False:/'
+  add R10_foreign_files_removed replay.sh REPLAY 's/^    elif started and os\.path\.isdir\(OUT\):$/    elif started and os.path.isdir(OUT) and not shutil.rmtree(OUT, ignore_errors=True):/'
+  add R201_started_set_early_deletes_foreign replay.sh REPLAY 's/^started = False .*$/started = True/'
+  add R201_before_ignored replay.sh REPLAY 's/^            if n in before: continue$/            pass/'
+  add R201_refuse_deletes_before_first_write replay.sh REPLAY 's/^    elif started and os\.path\.isdir\(OUT\):$/    elif os.path.isdir(OUT):/'
+  add R207_input_args_key_unchecked replay.sh REPLAY 's/^        if not \(isinstance\(k, str\) and k\.isascii\(\).*$/        pass/'
+  add R207_input_args_value_unchecked replay.sh REPLAY 's/^        if not \(isinstance\(h, str\) and HEX64\.fullmatch\(h\)\): return .*$/        pass/'
+  add R206_seq_boundary_zero_allowed replay.sh REPLAY 's/r\["seq"\] < 1: return/r["seq"] < 0: return/'
   add negative_control_comment replay.sh REPLAY 's/^# Exit: 0 ok; 2 usage; 20 refused\./# Exit (control): 0 ok; 2 usage; 20 refused./';;
 esac
 if [ -n "${MUT_ONLY:-}" ]; then   # run only the mutants whose name matches the regex (the negative control always stays)

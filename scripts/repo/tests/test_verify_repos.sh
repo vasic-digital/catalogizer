@@ -19,6 +19,8 @@ set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 VR="${VR:-scripts/repo/verify_repos.sh}"; case "$VR" in /*) ;; *) VR="$(pwd)/$VR" ;; esac
 T="$(mktemp -d "${TMPDIR:-/tmp}/vr_test.XXXXXX")"; trap 'rm -rf "$T"' EXIT
+# round 11: the verifier rebuilds its environment from an allow-list; the names the git/jq shims of this suite read are passed on explicitly (never BASH*/GIT_*)
+export VERIFY_PASS_ENV=FAILCMD,MBCOUNT,TL_PARENT,JQFAIL,JQFAIL_MODE
 G="git -c user.email=t@t -c user.name=t -c protocol.file.allow=always"
 PASSN=0; FAILN=0; ALLRC=""
 ok()  { PASSN=$((PASSN+1)); echo "ok   $1"; }

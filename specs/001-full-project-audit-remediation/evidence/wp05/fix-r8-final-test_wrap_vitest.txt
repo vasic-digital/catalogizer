@@ -1,0 +1,13 @@
+ok   recorded pass: 1 test
+ok   recorded seeded failure is reported through the parser
+ok   hidden failure behind a TRUNCATED report is still found
+ok   no test files found (stderr text, exit 1) is an error, not a failure
+ok   a report whose header says success but whose assertion failed: the assertion wins
+ok   a header that counts failures the assertions do not show fails (hidden failure)
+ok   a report with zero tests is an error
+ok   an empty report is an error
+ok   no --run-token is refused (run_token_missing)
+ok   a malformed --run-token is refused (run_token_malformed)
+ok   the wrapper does not print the run token
+blocked-unavailable: live seeded-failure leg (IMG-NODE with the catalog-web vitest toolchain exists after WP-11; the parser legs above are recorded real reports)
+checks=11 failures=0

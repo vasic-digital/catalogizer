@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:22Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-argv-label-disable: caught (5 failing checks; first: FAIL: R-3: golden argv, default run (exact, whole argv) (got '11,12d10|< --security-opt|< |FAIL: R-3: golden argv, --rw docs --network=none --out (exact) (got '11,12d10|< --security|)
+MUTATION x-out-tmp-equal: caught (3 failing checks; first: FAIL: R-1: checkout outside /tmp: --out equal to /tmp itself is refused, exit 1 (got '0' w|FAIL:   R-1 /tmp reason: |)
+MUTATION x-scrub-host-entry: caught (1 failing checks; first: FAIL: R-2: CPA_HOST_ENTRY is forwarded to disk_headroom.sh|)

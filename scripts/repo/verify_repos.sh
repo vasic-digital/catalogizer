@@ -38,7 +38,7 @@
 #          on stderr; the contract has no field for both classifications, see audit/owed-contract-items.md),
 #          the organisation of a remote URL comes from scripts/audit/org_of.py (shared with derive_scope.sh),
 #          exceptions scripts/repo/exceptions.tsv: path, kind, file, wt_sha256, blob_sha256, reason (see below).
-#          Env VERIFY_GIT = git binary or shim.
+#          Env VERIFY_GIT = git binary or shim; VERIFY_PASS_ENV = comma-separated extra variable names a test shim needs (BASH*, ENV, SHELLOPTS, CDPATH, GLOBIGNORE, PS4, IFS and GIT_* are never passed).
 # Exceptions  One row excepts ONE modified tracked file of ONE repository: kind "dirty", the repository path, the file path
 #          inside it, the sha256 of the working-tree file, the sha256 of its committed blob (HEAD), a non-empty reason. A
 #          repository is excepted only when EVERY change it shows is a ` M` (unstaged modification) of a file named by a row
@@ -66,19 +66,63 @@
 #          FIRST of several values and the repository's own is first). NOT switched off, and stated rather than claimed: a remote
 #          helper chosen by remote.<name>.vcs or by a `<helper>::` URL (such a URL is unclassifiable and never sent to git here), and
 #          an ssh program named by the environment (GIT_SSH, not core.sshCommand: GIT_SSH_COMMAND set by the verifier wins over it).
+#          Isolation (WP-03 round 11; the measured table is evidence/wp03/fix-r6-ground-truth.md, re-run with fix-r6-probe.sh): ONE mechanism, below.
+#            Environment: rebuilt from an allow-list, see the ISOLATION block under this header (BASH_ENV, ENV, SHELLOPTS, exported functions, every GIT_* variable and every
+#            other caller variable reach no child, in a direct run, an interpreter run and every worker). An interpreter run (`bash verify_repos.sh`) still has BASH_ENV sourced
+#            ONCE by bash itself before the first script line: no script line can prevent that.
+#            Ancestry (P01-P10): `--no-replace-objects` on every git command (refs/replace/*), GIT_GRAFT_FILE=<absent> (info/grafts: --no-replace-objects does NOT switch grafts off
+#            in git 2.53), `-c core.commitGraph=false` on every git command: a commit-graph file is NOT validated against the objects, and a forged INTERIOR commit (generation v1 and
+#            v2) DOES fool `git merge-base --is-ancestor` as well as `git log` and `git rev-list`; only a forged TIP is parsed from the object. fetch.writeCommitGraph=false is forced
+#            (--fetch writes no commit-graph). A shallow file removes ancestry only (a failing class stays failing), alternates add genuinely held objects.
+#            Local ignore rules (P20-P28): untracked files hidden by .git/info/exclude or by a REPOSITORY-level core.excludesFile are counted as untracked and NAMED on stderr (first 10);
+#            repository level = the scope `git config --show-scope --get core.excludesFile` reports for the effective value: local or worktree, however it was reached (a direct line,
+#            include.path, includeIf, config.worktree); a global value (also one reached through an include inside the global config) or the XDG default ignore file is the user's own and
+#            is NOT dirt (git reports it clean). Worker dispatch is `bash -p -c`.
+#            Stated boundary (P30): repository config that makes git itself blind, e.g. core.fileMode=false hiding a chmod, is not overridden (forcing it true would read every checkout
+#            on a filesystem without an exec bit as dirty); the verifier follows git there.
+#          NOT switched off: objects/info/alternates (the repository's own object store).
 #          The claim "no git command runs a hook" of earlier revisions was true for hooks only; the other surfaces were open until round 6.
 # Side effects  --fetch writes objects into the object store only (no ref, no FETCH_HEAD, no submodule write, no gc/maintenance, no repository hook);
 #          a temp dir (removed on exit). Needs git, jq, python3, sha256sum and a POSIX awk (mawk is enough: no `{n}` interval
 #          expression and no NUL inside an awk printf format is used); it does not use the `column` command.
+# ISOLATION (WP-03 round 11, constitution 11.4.276: ONE explicit mechanism, derived from the measured table evidence/wp03/fix-r6-ground-truth.md).
+# The environment of this process, and so of every child (git, a VERIFY_GIT shim, bash -c, xargs, jq), is REBUILT from an allow-list; nothing else is
+# inherited: BASH_ENV, ENV, SHELLOPTS, BASHOPTS, an exported function (BASH_FUNC_x%%), every GIT_* variable (GIT_DIR, GIT_INDEX_FILE, GIT_CONFIG_*,
+# GIT_CONFIG_PARAMETERS, GIT_ALTERNATE_OBJECT_DIRECTORIES, ...) and any other caller variable. A caller whose environment is not already exactly that
+# set causes ONE re-exec under `/bin/bash -p` through `env -i`; this covers the direct run (the recommended path), `bash verify_repos.sh` and the worker.
+# Honest limit: a plain `bash verify_repos.sh` is sourced for BASH_ENV once by bash itself before the first script line (probe P45); no script line can prevent that.
+# Allow-list: PATH HOME LANG LANGUAGE LC_* TZ TMPDIR TERM USER LOGNAME SSH_AUTH_SOCK SSH_AGENT_PID XDG_CONFIG_HOME GIT_EXEC_PATH GIT_SSH GIT_CONFIG_GLOBAL
+# GIT_CONFIG_SYSTEM GIT_CONFIG_NOSYSTEM (the host owner's own git configuration and tool locations: a decision, global config is trusted as before), the
+# variables the bash startup and this script itself pass to the workers (PWD OLDPWD SHLVL _ ROOT DO_FETCH NO_REMOTE TMO OWNED_ORGS EXC_FILE GIT SSH_CMD
+# GIT_OPTIONAL_LOCKS GIT_GRAFT_FILE VERIFY_*), plus the names a caller lists in VERIFY_PASS_ENV (comma separated; for test shims) except the families
+# BASH*, ENV, SHELLOPTS, CDPATH, GLOBIGNORE, PS4, IFS and GIT_* which can never be listed.
+_vr_keep() {
+  case "$1" in
+    PATH|HOME|LANG|LANGUAGE|LC_*|TZ|TMPDIR|TERM|USER|LOGNAME|SSH_AUTH_SOCK|SSH_AGENT_PID|XDG_CONFIG_HOME|GIT_EXEC_PATH|GIT_SSH|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM|GIT_CONFIG_NOSYSTEM) return 0 ;;
+    PWD|OLDPWD|SHLVL|_|ROOT|DO_FETCH|NO_REMOTE|TMO|OWNED_ORGS|EXC_FILE|GIT|SSH_CMD|GIT_OPTIONAL_LOCKS|GIT_GRAFT_FILE|VERIFY_*) return 0 ;;
+  esac
+  case "$1" in BASH*|ENV|SHELLOPTS|CDPATH|GLOBIGNORE|PS4|IFS|GIT_*) return 1 ;; esac
+  case ",${VERIFY_PASS_ENV-}," in *",$1,"*) return 0 ;; esac
+  return 1
+}
+_vr_envbin=/usr/bin/env; [ -x "$_vr_envbin" ] || _vr_envbin="env"
+_vr_env_clean() {   # what `env` shows a child (exported functions included): 0 = every name is on the allow-list; blind (no PATH seen) = 1
+  local e seen=0
+  while IFS= read -r -d '' e; do e="${e%%=*}"; [ "$e" = PATH ] && seen=1; _vr_keep "$e" || return 1; done < <("$_vr_envbin" -0)
+  [ "$seen" = 1 ]
+}
+if ! _vr_env_clean || case "$-" in *p*) false ;; *) true ;; esac; then
+  [ "${VERIFY_ISOLATED-}" = 1 ] && { echo "verify_repos: cannot build a clean environment (the re-exec did not clean it); no verdict is possible" >&2; exit 20; }
+  _vr_kept=()
+  while IFS= read -r _vr_n; do if _vr_keep "$_vr_n" && [ "$_vr_n" != VERIFY_ISOLATED ]; then _vr_kept+=("$_vr_n=${!_vr_n}"); fi; done < <(compgen -e)
+  exec "$_vr_envbin" -i "${_vr_kept[@]}" VERIFY_ISOLATED=1 /bin/bash -p "${BASH_SOURCE[0]}" "$@"
+fi
 set -u
 export GIT_OPTIONAL_LOCKS=0
-# The path is part of the instrument (11.4.201(7)(c)): a repository-selecting variable inherited from the caller (a git hook exports
-# GIT_DIR, GIT_INDEX_FILE, GIT_WORK_TREE ... into everything it runs) would make every `git -C <dir>` act on ANOTHER repository. Scrubbed
-# FIRST, before any git call, argument parsing, worker dispatch or the control needle; workers inherit the scrubbed environment.
-for _v in $(command git rev-parse --local-env-vars 2>/dev/null) GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY \
-          GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_COMMON_DIR GIT_NAMESPACE GIT_PREFIX GIT_CONFIG GIT_CONFIG_PARAMETERS GIT_CONFIG_COUNT \
-          GIT_CEILING_DIRECTORIES $(compgen -e | grep -E '^GIT_CONFIG_(KEY|VALUE)_[0-9]+$'); do unset "$_v"; done
-unset _v
+# Ancestry resolution (probe P01-P10): refs/replace/* (switched off by --no-replace-objects on every git command, see $GIT below), .git/info/grafts
+# (--no-replace-objects does NOT switch it off in git 2.53; only GIT_GRAFT_FILE pointing at an absent file does) and a commit-graph file (forged interior
+# commits fool `merge-base --is-ancestor`; core.commitGraph=false on every git command) rewrite what `git merge-base --is-ancestor` answers.
+export GIT_GRAFT_FILE=/nonexistent/verify_repos_no_grafts
 SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 HERE="$(dirname "$SELF")"
 ORGPY="$HERE/../audit/org_of.py"
@@ -86,7 +130,7 @@ GIT="${VERIFY_GIT:-git}"
 # No repository hook ever runs in the verifier (R1, round 5): git runs the reference-transaction hook even for the empty transaction of a
 # fetch that writes no ref, and a hook is code of the repository under examination. Every git command below goes through $GIT. Round 6
 # (N6-4) widens this to the other repository-configured programs, see "Repository-configured code" in the header.
-GIT="$GIT -c core.hooksPath=/dev/null -c core.fsmonitor=false -c credential.helper= -c core.askPass= -c core.gitProxy= -c protocol.ext.allow=never -c core.alternateRefsCommand=true"
+GIT="$GIT -c core.hooksPath=/dev/null -c core.fsmonitor=false -c credential.helper= -c core.askPass= -c core.gitProxy= -c protocol.ext.allow=never -c core.alternateRefsCommand=true -c fetch.writeCommitGraph=false -c core.commitGraph=false --no-replace-objects"
 ROOT="$(pwd)"; JSON_OUT=""; DO_FETCH=0; NO_REMOTE=0; STRICT=0; JOBS=6; TMO=25; QUIET=0; SELFTEST=0
 OWNED_ORGS=""; EXC_FILE="$HERE/exceptions.tsv"
 die20() { echo "verify_repos: $*" >&2; exit 20; }
@@ -144,6 +188,38 @@ worker() {
     case "$xy" in "??") untracked=$((untracked+1)) ;; *) tracked=$((tracked+1)); cands+=("$xy ${ent:3}") ;; esac
     case "$xy" in R*|C*|?R|?C) IFS= read -r -d '' ent || true ;; esac   # a rename or copy carries the old path as one more field
   done < "${outdir:?}/${idx:?}.status"
+  # Local ignore rules (WP-03 review R2, N1): .git/info/exclude and a REPOSITORY-level core.excludesFile hide untracked work from `git status` exactly as
+  # status.showUntrackedFiles=no does, and unlike a COMMITTED .gitignore they are unpushed, so they cannot be part of what a fresh clone sees. The set of
+  # untracked files under the per-directory .gitignore files only (A) is compared with the same set under those plus the LOCAL rule files (D); a file in A and
+  # not in D is hidden by a local rule and counts as untracked (dirty), also when the user's GLOBAL excludes file hides it too. A file hidden ONLY by the user's
+  # global excludes file (core.excludesFile outside the repository config, or the XDG default ignore file) is in both A-minus-global and D, so it is clean, as git
+  # itself reports (reversible decision, owner may overturn: guide "Decisions"). Same index-reading flags (GITQ) as every other call.
+  local -A untr_seen=(); local hid=0 ulf hidnames="" lx locx xsc
+  while IFS= read -r -d '' ent; do case "${ent:0:2}" in "??") untr_seen["${ent:3}"]=1 ;; esac
+    case "${ent:0:2}" in R*|C*|?R|?C) IFS= read -r -d '' ent || true ;; esac
+  done < "${outdir:?}/${idx:?}.status"
+  $GIT "${GITQ[@]}" -C "$abs" ls-files -z --others --exclude-per-directory=.gitignore > "${outdir:?}/${idx:?}.others" 2>"${outdir:?}/${idx:?}.others.err" \
+    || { fail "git ls-files --others failed: $(head -c 160 "${outdir:?}/${idx:?}.others.err" | tr '\n' ' ')"; return 1; }
+  local -a lxa=()
+  lx="$($GIT -C "$abs" rev-parse --git-path info/exclude 2>/dev/null)" && [ -n "$lx" ] && { case "$lx" in /*) ;; *) lx="$abs/$lx" ;; esac; [ -f "$lx" ] && lxa+=(--exclude-from="$lx"); }
+  # repository-level = the scope git reports for the EFFECTIVE (last) value: local or worktree, however it was reached (a direct line, include.path, includeIf,
+  # config.worktree: probes P21-P24; `config --local` would miss the last three, P22). Scope global (also via an include inside the global file) and an
+  # unset value (the XDG default ignore file) are the user's own and stay clean (P25, P26).
+  xsc="$($GIT -C "$abs" config --show-scope --type=path --get core.excludesFile 2>/dev/null)"; rc=$?
+  case "$rc" in 0) case "${xsc%%$'\t'*}" in local|worktree) locx="${xsc#*$'\t'}" ;; *) locx="" ;; esac ;; 1) locx="" ;; *) fail "git config --show-scope core.excludesFile failed (rc=$rc)"; return 1 ;; esac
+  [ -n "$locx" ] && { case "$locx" in /*) ;; *) locx="$abs/$locx" ;; esac; [ -f "$locx" ] && lxa+=(--exclude-from="$locx"); }
+  if [ "${#lxa[@]}" -gt 0 ]; then
+    $GIT "${GITQ[@]}" -C "$abs" ls-files -z --others --exclude-per-directory=.gitignore "${lxa[@]}" > "${outdir:?}/${idx:?}.others_l" 2>"${outdir:?}/${idx:?}.others_l.err" \
+      || { fail "git ls-files --others (local rules) failed: $(head -c 160 "${outdir:?}/${idx:?}.others_l.err" | tr '\n' ' ')"; return 1; }
+  else cp -- "${outdir:?}/${idx:?}.others" "${outdir:?}/${idx:?}.others_l" || { fail "cannot copy the untracked list"; return 1; }; fi
+  local -A shown_l=()
+  while IFS= read -r -d '' ulf; do shown_l["$ulf"]=1; done < "${outdir:?}/${idx:?}.others_l"
+  while IFS= read -r -d '' ulf; do
+    [ -n "${untr_seen[$ulf]+x}" ] && continue
+    [ -n "${shown_l[$ulf]+x}" ] && continue   # not hidden by a local rule: hidden (if at all) by the user's global rules only, which git calls clean
+    hid=$((hid+1)); untracked=$((untracked+1)); [ "$hid" -le 10 ] && hidnames="$hidnames $(printf '%q' "$ulf")"
+  done < "${outdir:?}/${idx:?}.others"
+  [ "$hid" -gt 0 ] && echo "verify_repos: note: $rel: $hid untracked file(s) hidden only by local ignore rules (.git/info/exclude or a repository core.excludesFile); counted as untracked:$hidnames$([ "$hid" -gt 10 ] && echo ' ...')" >&2
   # a repository-level status.showUntrackedFiles=no is overridden by the explicit --untracked-files=all above; it is only noted
   local suf; suf="$($GIT -C "$abs" config --get status.showUntrackedFiles 2>/dev/null)" || suf=""
   case "$suf" in no|NO|No|false) echo "verify_repos: note: $rel: status.showUntrackedFiles=$suf is configured; overridden (--untracked-files=all is passed explicitly)" >&2 ;; esac
@@ -420,7 +496,7 @@ mkdir -p "$WORK/out"
 NLIST="$(wc -l < "$LIST")"
 # bash printf, not awk: mawk ends a printf format at the first \0 and so truncates every record (container root cause RC1)
 { n=0; while IFS=$'\t' read -r lp lpin; do n=$((n+1)); [ "$lpin" = " " ] && lpin="="; printf '%06d\0%s\0%s\0' "$n" "$lp" "$lpin"; done < "$LIST"; } | \
-  xargs -0 -n 3 -P "$JOBS" bash -c '[ "$3" = "=" ] && p=" " || p="$3"; "'"$SELF"'" --worker "$ROOT" "$DO_FETCH" "$NO_REMOTE" "$TMO" "$OWNED_ORGS" "$EXC_FILE" "$1" "$2" "$p" "'"$WORK/out"'"' _
+  xargs -0 -n 3 -P "$JOBS" bash -p -c '[ "$3" = "=" ] && p=" " || p="$3"; "'"$SELF"'" --worker "$ROOT" "$DO_FETCH" "$NO_REMOTE" "$TMO" "$OWNED_ORGS" "$EXC_FILE" "$1" "$2" "$p" "'"$WORK/out"'"' _
 # rows must equal listed repositories: every listed one has a result and none has an error (a lost repository is never "clean")
 nbad=0; nres=0
 for i in $(seq 1 "$NLIST"); do

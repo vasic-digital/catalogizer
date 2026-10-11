@@ -1,0 +1,31 @@
+V1-skip-prev-link-check            CAUGHT                     verify: wrong prev_hash with a valid own hash (link only) exits 1
+V2-skip-entry-hash-check           CAUGHT                     verify: edited content (stale entry_hash) exits 1 (rc=0 want 1); rerecord accepted a tampered side (rc=0); I5: construction 'noprefix' differs from docs/06 s7: refused as a
+V3-skip-seq-contiguity             CAUGHT                     verify: consistent chain with non-contiguous seq exits 1 (rc=0 wa
+V7-unreadable-ledger-passes        CAUGHT                     verify: absent ledger is unverifiable, exit 3 (rc=1 want 3)
+V8-torn-line-accepted              CAUGHT                     verify: torn final line exits 1 (rc=0 want 1)
+R1-duration-zero                   CAUGHT                     duration self-test out of range (0 ms)
+R2-argv-joined-string              CAUGHT                     verify: original 4-entry ledger exits 0; verify: delete w/o repair exit 3 (want 1); verify: original restored exits 0
+R3-no-schema-validation-at-all     CAUGHT                     RED without oracle accepted (rc=0); I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_i; I11: RED without oracle (schema refusal) before the run (rc=0 wan
+R4-check-record-accepts-all        CAUGHT                     check-record refuses record missing started_at (rc=0); check-record refuses record missing cwd (rc=0); check-record refuses record missing argv (rc=0)
+R5-no-ledger-lock                  CAUGHT                     live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock; I1: live holder with unreadable /proc cmdline is not reaped (lock
+R6-reap-live-holder                CAUGHT                     live lock holder: append refused, not stolen (rc=0); ledger changed under a live lock; I1: live holder with unreadable /proc cmdline is not reaped (lock
+R7-never-reap                      CAUGHT                     stale ledger lock with dead holder is reaped, append succeeds; I1: live pid with a different recorded cmdline (pid reuse) is rea; stale: live pid with a different recorded cmdline (pid reuse) IS 
+R8-write-in-place-not-temp-rename  CAUGHT                     ledger changed by a killed write
+R9-no-redaction                    CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R10-redacted-flag-dropped          CAUGHT                     I7: stream-only redacted flags: [null,null]; N2: JSON login body {"username":..,"password":..} on stdout (secr; N2: JSON token {"access_token":"<jwt>"} on stdout (secret survive
+R11-argv-not-redacted              CAUGHT                     secret leaked via argv or stderr; I7: prefix-overlapping secrets leaked (longer value's suffix visi; I7: partially overlapping secrets leaked a fragment
+R12-reconcile-always-ok            CAUGHT                     reconcile: runner count 4 != 3 entries refused (rc=0); reconcile: runner count mismatch names count_mismatch (rc=0 want ; N4: reconcile --run run4 --runner-count 5 is a mismatch (the fore
+R13-never-raise-owed               CAUGHT                     verify silent above 75% of bound; X11: flake ledger not measured: verify: ledger=/tmp/tmp.V64MQz1I1
+R14-always-raise-owed              CAUGHT                     verify names ledger_raise_owed below 75%
+R15-exit-status-unmapped           CAUGHT                     exit-status mapping got [0:pass 3:fail ]; X7: 126 mapping: 
+R16-signal-not-128-plus            CAUGHT                     exit-status mapping got [0:pass 3:fail 127:error 1:fail ]
+R17-test-fingerprint-dropped       CAUGHT                     T051a: no ledger written by the wrapper run; T051a: no stdout blob; T051a golden-good: exit 3 
+R18-target-fp-invented             CAUGHT                     unresolvable RED target accepted (rc=0); I8: BASELINE on an unresolvable target is refused (target_unreada; I8: BASELINE wrote an entry
+R19-target-fp-not-file-bytes       CAUGHT                     T051a golden-good: exit 1 {"item": "CAT-001", "cycle_after_seq": ; T051a negative control: exit 1 {"item": "CAT-001", "cycle_after_s; target_fingerprint is not the target's sha256
+R20-append-onto-corrupt-tail       CAUGHT                     append extended a corrupt ledger (rc=0); X6: a self-consistent last entry with seq 7 on line 1 refuses the
+R21-stream-digest-no-blob          CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; concurrent appenders: chain still verifies
+R22-usage-accepted                 CAUGHT                     evrec with an unknown subcommand exits 64 (rc=0 want 64); usage: unknown subcommand names usage_error (rc=0 want 64, reason
+RR1-keep-local-seq                 CAUGHT                     rerecord: seq values wrong; rerecord: output accepted by verify; I6: seq map content: [{"digest":"1da7b43d18842b066ef46c10bba21550
+RR2-drop-remote-prefix-bytes       CAUGHT                     rerecord: remote prefix differs; rerecord: seq values wrong; rerecord: output accepted by verify
+RR3-no-common-prefix-check         CAUGHT                     rerecord refuses sides without a common prefix (rc=0); X13: rerecord of sides with no common prefix names no_common_pref
+mutants=30 caught=30 equivalent=0 not_caught=0

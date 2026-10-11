@@ -1,0 +1,15 @@
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.html is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/lcov.info is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.xml is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/index.html is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.out is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/cover.profile is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.json is excluded from the index
+FAIL F6 generated report submodules/doc_processor/pkg/coverage/report.txt is excluded from the index
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker.go is NOT excluded (instrument sees)
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker_test.go is NOT excluded (instrument sees)
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker_stress_test.go is NOT excluded (instrument sees)
+ok   F6 control: the negation block still re-includes the package directory
+ok   F6 control: a report outside the package is not this rule's business (no over-broad exclude)
+ok   F6 git: tracker.go is not ignored (negation effective)
+SUMMARY rc=1

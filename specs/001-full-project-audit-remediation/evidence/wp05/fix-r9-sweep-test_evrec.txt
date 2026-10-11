@@ -1,0 +1,68 @@
+ok   verify: original 4-entry ledger exits 0
+ok   verify: entry 2 deleted without repair exits 1
+ok   verify: original restored exits 0
+ok   ledger has 4 entries
+ok   produced entries validate against ev/1 schema
+ok   duration self-test (323 ms)
+ok   check-record refuses record missing started_at
+ok   check-record refuses record missing cwd
+ok   check-record refuses record missing argv
+ok   check-record refuses record missing exit_status
+ok   check-record refuses record missing duration_ms
+ok   check-record refuses argv as a string
+ok   concurrent appenders: seq 1..30, no gap, no duplicate
+ok   concurrent appenders: chain still verifies
+ok   stale ledger lock with dead holder is reaped, append succeeds
+ok   live lock holder: append refused, not stolen
+ok   live holder process untouched
+ok   ledger unchanged after refused append
+test_evrec.sh: line 92: 2626185 Killed                     EVREC_FAULT=kill_before_rename "$EVREC" run CAT-001 PROBE 2 shell_script x -- true > /dev/null 2>&1
+ok   killed write leaves previous ledger intact
+ok   ledger still verifies after killed write
+ok   planted secret absent from blobs and ledger
+ok   entry records redacted: true
+ok   reconcile: runner count 3 == 3 entries
+ok   reconcile: runner count 4 != 3 entries refused
+ok   verify names ledger_raise_owed at >75% of bound
+ok   verify silent below 75% of bound
+ok   rerecord: remote side byte for byte first
+ok   rerecord: local entries re-sequenced 4,5
+ok   rerecord: local entries keep other fields
+ok   rerecord: output accepted by verify
+ok   rerecord: ledger-seq-map.json written
+ok   rerecord mutation (kept local seq) rejected by verify
+ok   rerecord refuses a side verify rejects
+ok   rerecord: nothing written on refusal
+ok   rerecord refuses sides without a common prefix
+ok   append-only: remote then local suffix, no chain fields
+ok   remap-refs rewrites every ledger#<seq>
+ok   remap-refs refuses a reference the map does not cover
+ok   grant held, no run id: refused commit_turn_held
+ok   stores byte-unchanged after refusal
+ok   different run id: refused
+ok   matching run id: append succeeds, stub never called
+ok   matching run id never calls the stub
+ok   no grant file: append succeeds
+ok   unreadable grant (mode 000): commit_turn_held
+ok   non-JSON grant: commit_turn_held
+ok   dead-holder grant reaped, append then succeeds
+ok   exactly one --reap call made
+ok   reap went through --exec-approved (host log)
+ok   mutation (direct working-tree run) leaves host log empty, caught
+ok   live holder, year-old started_at: still refused
+ok   stub called exactly once
+ok   stores unchanged (live old grant)
+ok   host entry refusing: refusal stands, no append
+ok   hermetic: no call reached the host entry outside the commit-turn fixtures
+ok   T051a: evrec token prints a 128-bit hex token
+ok   T051a: two tokens differ
+ok   T051a: the recorded argv holds --run-token and the token (not redacted)
+ok   T051a: the test's post-state line carries the token in the stored stdout blob (not redacted)
+ok   T051a golden-good: token written and read back, state-delta GREEN derives PASS (token_ok true)
+ok   T051a golden-bad: post-state carries the token of an EARLIER run, derives FAIL (token_ok false)
+ok   T051a: a token-carrying entry applies the rule without --state-delta (a producer cannot opt out by omitting the flag)
+ok   T051a negative control: a read-only test changes no state and needs no token (PASS)
+ok   T051a: GREEN entries that share one token derive FAIL (token_ok false, the notes say shared)
+ok   T051a: verify reports run_token_reused (exit 1) for two entries sharing one token
+ok   T051a: two entries with distinct tokens verify (exit 0)
+checks=66 failures=0

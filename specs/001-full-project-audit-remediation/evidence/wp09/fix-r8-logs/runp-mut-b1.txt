@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:22Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-rp-trailing: caught (6 failing checks; first: FAIL: R7 F-B: a symlinked checkout whose resolved path ENDS in a newline is refused, exit |FAIL:   reason: |)
+MUTATION x-dup-opid: caught (1 failing checks; first: FAIL: R-5: --op-id given twice is a usage error, exit 2 (got '0' want '2')|)
+MUTATION x-out-root-equal: caught (4 failing checks; first: FAIL: R-1: --out '.audit/out' is refused, exit 1 (got '0' want '1')|FAIL:   R-1 '.audit/out' reason: |)

@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-08 |
-| Last modified | 2026-10-08T12:00:00Z |
+| Last modified | 2026-10-08T15:30:00Z |
 | Status | tracked script (T001), guide written by T009; independent review owed (constitution 11.4.142) |
 | Source | `scripts/containers/disk_headroom.sh`; threshold data `scripts/containers/disk_headroom.conf`; test `scripts/containers/tests/test_disk_headroom.sh` |
 | Evidence | `specs/001-full-project-audit-remediation/evidence/disk/` (one record per call); `evidence/wp09/` |
@@ -36,7 +36,14 @@ derivation; the value is PROVISIONAL until T115 re-derives it with a measured sc
 | `EV` | evidence root; default record path `$EV/disk/<op_id>.json` |
 | `DISK_HEADROOM_CMD_TIMEOUT` (default 30) | seconds bound for `podman info` and `df`; positive integer (0 would mean no timeout and is refused) |
 | `DISK_HEADROOM_REAPER_TIMEOUT` (default 60) | seconds bound for the reaper call of the commit-turn freeze |
-| `DISK_HEADROOM_CONF`, `DISK_HEADROOM_REPO_ROOT`, `CPA_HOST_ENTRY` | test overrides |
+| `DISK_HEADROOM_TEST_MODE` | exactly `1` declares a test run; the only switch for the four overrides below (review fix round 8, R-2) |
+| `DISK_HEADROOM_CONF`, `DISK_HEADROOM_REPO_ROOT` (a root other than the gate's own), `CPA_HOST_ENTRY` | test overrides: outside test mode they are REFUSED, rc 2, `reason=test_override_outside_test_mode` |
+| `EV` | outside test mode ignored (the record goes to the gate's own evidence directory) |
+
+Classification of every environment read (enforced by `env_suite` in `tests/test_disk_headroom.sh`; a new unclassified variable fails the suite):
+gated = the four overrides above; gate = `DISK_HEADROOM_TEST_MODE`; documented-safe = `DISK_HEADROOM_OUT_DIR` (CPA input; moves the record and
+skips the commit-turn freeze, never lifts the floor); validated-safe = the two timeouts; contract-safe = `EVREC_TURN_RUN_ID`, `TMPDIR` (private
+`mktemp -d`), `HOME` (default host-entry path). `run_pinned.sh` scrubs the five gate/override variables from the environment it gives this gate.
 
 ## Exit codes
 
@@ -44,7 +51,7 @@ derivation; the value is PROVISIONAL until T115 re-derives it with a measured sc
 |---|---|
 | 0 | both filesystems keep the headroom after the need; record written |
 | 1 | refused: `disk_below_headroom`, `disk_free_unreadable`, `commit_turn_held` |
-| 2 | usage or configuration error: `usage`, `op_id_too_long`, `config_percentage_refused`, `config_missing_min_free_bytes`, `config_not_integer`, `config_duplicate_key`, `config_cmd_timeout`, `config_reaper_timeout`, `dependency_missing` |
+| 2 | usage or configuration error: `test_override_outside_test_mode`, `usage`, `op_id_too_long`, `config_percentage_refused`, `config_missing_min_free_bytes`, `config_not_integer`, `config_duplicate_key`, `config_cmd_timeout`, `config_reaper_timeout`, `dependency_missing` |
 | 128+n | stopped by SIGTERM/SIGINT/SIGHUP; nothing written, temp output removed |
 
 ## Side effects

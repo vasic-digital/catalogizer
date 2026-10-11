@@ -12,7 +12,7 @@ import collections, json, os, re, sqlite3, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REG = os.path.dirname(HERE); ROOT = os.path.dirname(os.path.dirname(REG))
 FAILS = 0
-os.environ.setdefault("WI", os.path.join(ROOT, "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+os.environ.setdefault("WI", os.path.join(ROOT, "constitution/scripts/workable-items/bin/workable-items-linux"))
 
 
 def check(label, cond, info=""):

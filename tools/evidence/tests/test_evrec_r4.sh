@@ -5,7 +5,7 @@
 # time so that no credential-shaped literal is committed (review minor 11).
 set -u
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../../.." && pwd)
-EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/verify
+EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/tests/verify_chain_only.sh
 S=$(mktemp -d); trap 'kill $(jobs -p) 2>/dev/null; rm -rf "${S:?}"' EXIT
 fails=0; n=0
 . "$here/hermetic.sh"; hermetic_init "$S"

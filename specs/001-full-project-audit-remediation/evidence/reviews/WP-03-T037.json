@@ -1,0 +1,90 @@
+{
+  "wp": "WP-03",
+  "tasks": ["T030","T031","T032","T033","T034","T035","T036","T037"],
+  "verdict": "NO-GO",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter; effort is unrecorded (11.4.231(F.2)). Provisional under T011a.",
+  "reviewer_independence": "instance (reviewer is not the author; same model family)",
+  "date": "2026-10-08",
+  "repo_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+  "reviewed_files": [
+    {"path":"scripts/repo/verify_repos.sh","sha256":"74be4819b54a6a6dbe5b6a4ee5b6b0613f5ab729d2a0ed7965b4cf0ebeeba314"},
+    {"path":"scripts/repo/exceptions.tsv","sha256":"ef91de043ef6843d0433b7b3882bc14bf8793fbbaf5afc402392f8036344ba08"},
+    {"path":"scripts/repo/tests/test_verify_repos.sh","sha256":"86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e"},
+    {"path":"scripts/repo/tests/test_verify_repos_r6.sh","sha256":"d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412"},
+    {"path":"scripts/repo/tests/test_verify_repos_r7.sh","sha256":"e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89"},
+    {"path":"scripts/repo/tests/test_verify_schema.sh","sha256":"b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d"},
+    {"path":"scripts/audit/org_of.py","sha256":"59779ca77ee4053d37c29aa2dff6165b9ae46204d61d984c8a04b8f9cd9d192d"},
+    {"path":"docs/scripts/verify_repos.md","sha256":"935dfd0bd77c8bee3a9b1113c192331e3da99f685b1e55483e394403ddfd6205"},
+    {"path":"specs/001-full-project-audit-remediation/contracts/repo-verification-report.schema.json","sha256":"deafc57603558c821746813f2329f2f508d9a32f04159d965f19a68989c852f4"}
+  ],
+  "covers_runs": {
+    "baseline_unmutated": "test_verify_repos.sh against a byte-identical scratch copy of verify_repos.sh (sha 74be4819...): SUMMARY pass=404 fail=0, 2m45s, host git 2.53.0 (one run, not x3; no container leg run by the reviewer)",
+    "note": "No GREEN record in evidence/wp03 or evidence/wp04 runs the T031 matrix against the current verifier sha 74be4819; the newest wp03 green records bind verifier e2eb22a9 (round 7). The 2026-10-08 Auto-commit 58cb30b8 changed the shebang to #!/bin/bash -p, symbolic-ref parsing and python3 -I without a WP-03 evidence record."
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "finding_layer": "source-defect",
+      "severity": "IMPORTANT",
+      "title": "Replace refs and info/grafts make a DIVERGED repository read LOCAL-BEHIND: plain run exits 0 (false clean)",
+      "detail": "classify() decides ancestry with `git merge-base --is-ancestor`, which honours refs/replace/* and .git/info/grafts of the repository under examination. Reproduced in scratch: owned repo with local c3 and remote c2 both children of c1, objects fetched: verifier exit 12 DIVERGED. After `git replace <c2> <fake commit with parent c3>`: exit 0, remote class LOCAL-BEHIND. Same result with `.git/info/grafts` line '<c2> <c3>' (git 2.53.0, no warning). Under --strict the row becomes `behind` (12), so the diverged work is still misreported. The verifier's own scrub (line 78, `git rev-parse --local-env-vars`) unsets GIT_NO_REPLACE_OBJECTS and GIT_GRAFT_FILE, so a caller cannot protect the run either. Same class as the round-6 N6-4 'repository-configured code' surface (repository data that changes the verdict); the header does not list it as switched off or as an honest boundary.",
+      "control_needle": "Same fixture without the replace ref / graft: exit 12 DIVERGED (the instrument sees divergence); with the candidate fix the replaced/grafted fixtures return 12.",
+      "candidate_fix": "After the env scrub: `export GIT_NO_REPLACE_OBJECTS=1 GIT_GRAFT_FILE=/nonexistent` (scratch-tested: replace -> 12, grafts -> 12), plus RED fixtures for both and a paired mutation; consider also the shallow-file member of the class (a shallow repository fails closed to DIVERGED, not a false pass, so it is a lower-risk member).",
+      "evidence": "reviewer scratch run, not committed (scratchpad wp03rev/x)"
+    },
+    {
+      "id": "R2",
+      "finding_layer": "source-defect",
+      "severity": "MINOR",
+      "title": "Repository-local ignore rules (.git/info/exclude, a repository core.excludesFile) hide untracked local work",
+      "detail": "Reproduced: `echo '*' >> .git/info/exclude` plus a new untracked file -> exit 0, dirty false, dirty_untracked 0. The verifier explicitly overrides status.showUntrackedFiles=no because it hides untracked work, but the equivalent uncommitted hiders (info/exclude, repository or global core.excludesFile) are neither overridden nor stated as an honest boundary. Committed .gitignore semantics are legitimate; only the local, unpushed rules are the gap. Owner decision: override core.excludesFile and report ignored files matched only by local rules, or document the boundary.",
+      "evidence": "reviewer scratch run"
+    },
+    {
+      "id": "R3",
+      "finding_layer": "source-defect",
+      "severity": "MINOR",
+      "title": "#!/bin/bash -p is bypassed for the worker dispatch: the xargs `bash -c` intermediary sources a caller BASH_ENV",
+      "detail": "Reproduced: BASH_ENV=<file that appends a line> verify_repos.sh ... -> exit 0 and the caller file ran once (one repository). Line 423 runs `bash -c` without -p. The CPA allowlist (env -i) keeps BASH_ENV out of CPA runs, so impact is limited to standalone runs, but the 2026-10-08 hardening claim 'ignored by the entry process, the run and every helper' does not hold for this helper standalone. Fix: `bash -p -c`, plus a test.",
+      "evidence": "reviewer scratch run"
+    },
+    {
+      "id": "R4",
+      "finding_layer": "test-instrumentation",
+      "severity": "MINOR",
+      "title": "No fixture covers a conflicted submodule (pin 'U'): reviewer mutant MUT-R6 survives",
+      "detail": "Dropping `$r.pin == \"U\"` from $pindrift survives all three suites (404/41/22 pass). Built a real conflict fixture: exit stays 13 (parent dirty dominates) but under --strict the submodule row loses `pin` and the pin_state/problems contract changes silently. Add a conflict fixture asserting problems contains `pin` under --strict.",
+      "evidence": "reviewer scratch run"
+    },
+    {
+      "id": "R5",
+      "finding_layer": "test-instrumentation",
+      "severity": "MINOR",
+      "title": "core.untrackedCache=false override is untested (MUT-R4 survives)",
+      "detail": "Removing `-c core.untrackedCache=false` from GITQ survives all suites. UNCONFIRMED whether it is an equivalent mutant (a stale untracked cache is filesystem-mtime dependent); either add a fixture with a primed stale cache or record it as equivalent with the reason.",
+      "evidence": "reviewer scratch run"
+    },
+    {
+      "id": "R6",
+      "finding_layer": "process-doc",
+      "severity": "MINOR",
+      "title": "WP-03 evidence is not bound to the current verifier",
+      "detail": "evidence/wp03/mutation.txt (the T034 record) was taken against an early verifier (exit lines at 225/226, 58 assertions); the newest wp03 GREEN records bind verifier sha e2eb22a9; the current sha 74be4819 (Auto-commit 58cb30b8, 2026-10-08: bash -p shebang, symbolic-ref parsing, python3 -I) has no T031/T033 GREEN x3 or T034 mutation record. The reviewer's single host run (404/0) does not replace the T032 GREEN x3 + container leg.",
+      "evidence": "sha256 comparison in this review"
+    }
+  ],
+  "mutations_attempted": [
+    {"id":"MUT-R2","change":"exceptions awk: drop the `$2==\"dirty\"` kind check","result":"CAUGHT","detail":"test_verify_repos 403/1"},
+    {"id":"MUT-R3","change":"exit map: test strict-behind (12) before pin (15)","result":"CAUGHT","detail":"test_verify_repos 402/2"},
+    {"id":"MUT-R4","change":"GITQ: drop -c core.untrackedCache=false","result":"SURVIVED","detail":"404/0, 41/0, 22/0 (finding R5)"},
+    {"id":"MUT-R5","change":"attached-pin path: drop UNKNOWN-DIFFERENT from the cls_p case","result":"CAUGHT","detail":"test_verify_repos 402/2"},
+    {"id":"MUT-R6","change":"$pindrift: drop pin == \"U\" (conflict)","result":"SURVIVED","detail":"404/0, 41/0, 22/0; real conflict fixture shows strict problems lose `pin` (finding R4)"},
+    {"id":"PROBE-R1","change":"not a code mutation: repository-side replace ref / graft against the unmodified verifier","result":"FALSE PASS","detail":"exit 0 instead of 12 (finding R1)"}
+  ],
+  "verified_claims": [
+    "Exit precedence in source matches T031/T032: 13 > 12 > 11 > strict 15 > strict behind 12 > 14 (lines 493-498); MUT-R3 shows the 15-before-behind order is tested.",
+    "Unmodified matrix 404/0 against the current verifier content."
+  ]
+}

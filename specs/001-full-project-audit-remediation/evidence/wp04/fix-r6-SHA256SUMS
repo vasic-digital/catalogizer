@@ -1,0 +1,16 @@
+9b84d4dd3a02d45a48495cd7691d9172654283ac3d3d30402effe6aaf6824284  fix-r6-convergence.md
+c66e6e4e79ad0fe2d3af6420b16c48009567c53a2feb849b36bd300596e2646a  fix-r6-green.txt
+fc349c17a2469bbd52ee388771a8839ba391b382d8db8b0dbd06c3a296697241  fix-r6-kcov.txt
+4df1783b298b514580dff30180bd2e45e80910f4e36293642969c26abb73e9c6  fix-r6-mutation.txt
+f64232ae11fa97f7cedc5e652ca9e1eda7c9a07b7043abcfb69d0ca96ad54abc  fix-r6-red.txt
+00100b12aa71987cbd2f67d87f26ef727b24533acb23ab514d05237f2b217d67  fix-r6-regression.txt
+824ed0e3b91010ada0935bc974f02d79d7d7d820f9dd207ba91cb9a90d7fac33  fix-r6-shellcheck.txt
+f2252ae77faf3b0ee961493a1696e1e24d9085a55bf18ef6071f245741c51864  ../../../../scripts/commit-push-all.sh
+bec52a095f12a165083dcbe1e60c5344750fcc04bb5a97f39400b50c102bb9d6  ../../../../scripts/repo/lib_safe.sh
+138fa3fbaa5b48b0e7aa506c5aebe849968c1f990cafdc9d61fedfd5ed649b2d  ../../../../scripts/repo/push_recursive.sh
+4079ff16a21cd9144a356ee6dc4a9686bdd042fc1c948cf2dbd66f1666c4ac6e  ../../../../scripts/repo/integrate_merge.sh
+590444e83630d9e984db23a6bd7d12077d0966bd81a00eeb84d4667843261e20  ../../../../scripts/repo/commit_recursive.sh
+1330a18ff6b3e51f836c5b56a6077347e3724d485fa0c006c6c2b5c5f66a77e9  ../../../../scripts/repo/tests/test_wp04j.sh
+bfd4332f29a3b7a55de550783f99e642296b9883295ec4a406f97041a253c51f  ../../../../scripts/repo/tests/run_wp04j_mutations.sh
+ea32f5f525a2bd28364153fad54cb6403e89c895ba5244d68f2821c087e68f32  ../../../../scripts/repo/tests/test_commit_push_all.sh
+f5f96a78aa5f775b1264b2a578b5a96164a14fd22c70b77fb10a089f130977bc  ../../../../specs/001-full-project-audit-remediation/contracts/review-verdict.schema.json

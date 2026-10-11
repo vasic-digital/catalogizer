@@ -1,0 +1,12 @@
+ok   authored pass: 3 tests, 2 passed, 1 skipped
+ok   authored seeded failure across two result files
+ok   a suite header that says failures=0 over a failing testcase: the testcase wins
+ok   a truncated XML report still shows the failure
+ok   a suite with zero tests is an error
+ok   a directory without result files is an error
+ok   a single file report path works
+ok   no --run-token is refused (run_token_missing)
+ok   a malformed --run-token is refused (run_token_malformed)
+ok   the wrapper does not print the run token
+blocked-unavailable: live seeded-failure leg (IMG-ANDROID absent until WP-14; run on the remote host)
+checks=10 failures=0

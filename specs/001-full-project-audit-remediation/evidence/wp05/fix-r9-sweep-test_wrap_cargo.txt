@@ -1,0 +1,13 @@
+ok   authored pass: 3 tests, 2 passed, 1 ignored
+ok   authored seeded failure
+ok   hidden failure behind a lost summary is still found
+ok   a FAILED line before a later ok summary is still a failure
+ok   a compile error is an error, not a test failure
+ok   running 0 tests is an error
+ok   exit 101 with no FAILED line and no summary is a failure
+ok   an empty report is an error
+ok   no --run-token is refused (run_token_missing)
+ok   a malformed --run-token is refused (run_token_malformed)
+ok   the wrapper does not print the run token
+blocked-unavailable: live seeded-failure leg (IMG-RUST absent until WP-14; run on the remote host)
+checks=11 failures=0

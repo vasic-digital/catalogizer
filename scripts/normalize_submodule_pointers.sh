@@ -77,7 +77,7 @@ normalize() {
 log "Repo root: ${REPO_ROOT}"
 [ "${DRY_RUN}" = "1" ] && warn "DRY_RUN=1 (default) — preview only." || warn "DRY_RUN=0 — files WILL be rewritten."
 
-for p in $(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}' | grep '^submodules/' | grep -v '^submodules/constitution$' | sort); do
+for p in $(git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | awk '{print $2}' | grep '^submodules/' | grep -v '^constitution$' | sort); do
   normalize "${p}/CLAUDE.md" CLAUDE "${CLAUDE_BLOCK}"
   normalize "${p}/AGENTS.md" AGENTS "${AGENTS_BLOCK}"
 done

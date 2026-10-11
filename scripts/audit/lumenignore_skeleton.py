@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""lumenignore_skeleton.py - build a directory skeleton of the TRACKED tree for gen_lumenignore.py (WP-02, review WP-02-T028-r2 N3).
+
+Purpose: gen_lumenignore.py lists the real children of every ancestor of every allowed root with os.listdir, so its output depended on whatever
+  untracked directories happened to exist on the host (a stray test directory, a local scratch folder) and a fresh clone rendered a different
+  .lumenignore than the committed one. This tool writes, into an empty directory, one entry for every path `git ls-files -s` lists (a gitlink,
+  mode 160000, becomes a directory; everything else an empty file) down to the depth gen_lumenignore.py can read, plus a FIXED list of host-local
+  directory names that are always denied whether or not they exist on this host (.git, .claude, .remember). Render with
+  `gen_lumenignore.py --repo <skeleton> --scope lumen_scope.json`: the output is a function of tracked inputs only.
+Usage:   lumenignore_skeleton.py --repo DIR --scope lumen_scope.json --out EMPTYDIR [--host-local NAME]...
+Reads:   `git -C DIR ls-files -z -s --recurse-submodules` (the tracked tree; a submodule that is not checked out stays a gitlink directory), the allow
+         list of the scope JSON. Own submodules nested in a checked-out submodule (constitution/submodules/...) are listed through the recursion.
+Writes:  only inside --out (must be absent or empty). Never touches DIR. Deterministic: the same index and scope give the same tree.
+Limit:   an allowed root that lies INSIDE a gitlink that is not checked out cannot be rendered (its children are unknown): exit 3,
+         never a silently wrong render. Untracked-but-wanted directories are not denied unless they are in .gitignore or the fixed list (documented).
+Exit:    0 ok; 2 usage; 3 fail closed (git failed, unreadable scope, --out not empty, allowed root inside a gitlink, empty allow, a .gitmodules path that is
+         not a gitlink of the listing, an allowed root absent from the listing: an export or a lost submodule never renders silently, round 10 R3-8).
+"""
+import argparse
+import json
+import os
+import subprocess
+import sys
+
+HOST_LOCAL = (".git", ".claude", ".remember")
+
+
+def fail(code, msg):
+    print("lumenignore_skeleton: " + msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--repo", required=True)
+    ap.add_argument("--scope", required=True)
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--host-local", action="append", default=None)
+    try:
+        a = ap.parse_args()
+    except SystemExit as e:
+        sys.exit(2 if e.code else 0)
+    try:
+        scope = json.load(open(a.scope, encoding="utf-8"))
+        allow = sorted({x.strip("/") for x in scope.get("allow", []) if x.strip("/")})
+    except (OSError, ValueError, AttributeError) as e:
+        fail(3, "unreadable scope %s: %s" % (a.scope, e))
+    if not allow:
+        fail(3, "scope.allow is empty")
+    depth = max(len(x.split("/")) for x in allow)
+    r = subprocess.run(["git", "-C", a.repo, "ls-files", "-z", "-s", "--recurse-submodules"], capture_output=True)
+    if r.returncode != 0:
+        fail(3, "git ls-files failed in %s: %s" % (a.repo, r.stderr.decode("utf-8", "replace").strip()[:200]))
+    entries = []
+    for rec in r.stdout.split(b"\0"):
+        if not rec:
+            continue
+        meta, _, path = rec.partition(b"\t")
+        mode = meta.split(b" ")[0]
+        entries.append((path.decode("utf-8", "surrogateescape"), mode == b"160000"))
+    gitlinks = {p for p, g in entries if g}
+    # fail closed on an export (review WP-02-T028-r3 R3-8): a `git archive` copy re-initialised with `git init` keeps .gitmodules but lost every gitlink, and an
+    # allowed root can be absent too; the render would silently differ from the committed .lumenignore by exactly those entries
+    listed = [p for p, _ in entries]
+    gm = subprocess.run(["git", "-C", a.repo, "config", "-f", ".gitmodules", "--get-regexp", r"^submodule\..*\.path$"], capture_output=True)
+    if gm.returncode == 0:
+        for line in gm.stdout.decode("utf-8", "replace").splitlines():
+            gpath = line.split(None, 1)[1].strip() if len(line.split(None, 1)) == 2 else ""
+            if gpath and gpath not in gitlinks and not any(p.startswith(gpath + "/") for p in listed):  # MUT:skeleton-gitmodules
+                fail(3, ".gitmodules path %r is neither a gitlink nor a directory with tracked files in the listing: this copy lost a submodule (an export?), the render would silently differ" % gpath)
+    for x in allow:
+        if not any(p == x or p.startswith(x + "/") for p in listed):  # MUT:skeleton-allowed-root
+            fail(3, "allowed root %r is absent from the tracked listing: the render would silently differ" % x)
+    for x in allow:
+        hit = sorted(g for g in gitlinks if x.startswith(g + "/"))
+        if hit:
+            fail(3, "allowed root %r lies inside the submodule %r: its children are not tracked in this repository" % (x, hit[0]))
+    if os.path.exists(a.out) and (not os.path.isdir(a.out) or os.listdir(a.out)):
+        fail(3, "--out %s exists and is not an empty directory" % a.out)
+    os.makedirs(a.out, exist_ok=True)
+    made = set()
+
+    def mkdir(rel):
+        if rel not in made:
+            os.makedirs(os.path.join(a.out, rel), exist_ok=True)
+            made.add(rel)
+
+    for name in (a.host_local if a.host_local is not None else HOST_LOCAL):
+        mkdir(name)
+    for path, is_link in entries:
+        parts = path.split("/")
+        # children of a directory at depth d sit at depth d+1; gen_lumenignore.py reads children of ancestors of allowed roots only
+        for i in range(1, min(len(parts) - 1, depth) + 1):
+            mkdir("/".join(parts[:i]))
+        if len(parts) <= depth:
+            if is_link:
+                mkdir(path)
+            else:
+                full = os.path.join(a.out, path)
+                if not os.path.isdir(full):
+                    open(full, "w").close()
+
+
+if __name__ == "__main__":
+    main()

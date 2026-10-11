@@ -252,8 +252,8 @@ if want s22; then mk s22
 fi
 if want s23; then mk s23
   printf 'min_free_bytes=900000000000000000\n' > "$T/headroom.conf"
-  out=$(DISK_HEADROOM_CONF="$T/headroom.conf" sub 1 2>&1); rc=$?
-  out2=$(DISK_HEADROOM_CONF="$T/headroom.conf" bash "$DSP" submit --purpose "$(pk 1)" --callback record-only --image IMG-GO --src "$T/src" -- fake-build x 2>&1); rc=$?
+  out=$(DISK_HEADROOM_TEST_MODE=1 DISK_HEADROOM_CONF="$T/headroom.conf" sub 1 2>&1); rc=$?
+  out2=$(DISK_HEADROOM_TEST_MODE=1 DISK_HEADROOM_CONF="$T/headroom.conf" bash "$DSP" submit --purpose "$(pk 1)" --callback record-only --image IMG-GO --src "$T/src" -- fake-build x 2>&1); rc=$?
   chk "s23 the disk gate runs first: a submit with no headroom is refused (20) before anything is created" test "$rc" = 20
   case $out2 in *disk_below_headroom*) ok "s23 reason disk_below_headroom (passed through)";; *) bad "s23 reason disk_below_headroom" "$out2";; esac
   chk "s23 no build directory, no pump left" test -z "$(ls "$T/builds" 2>/dev/null | grep '^b-')"

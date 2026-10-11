@@ -1,0 +1,13 @@
+# fix round 6 R-03: kcov of the matrix in IMG-KCOV (digest sha256:34e6c26730c284da43a8384e9c5fa9a1af90dc7f9ea355f2f472f5fd230ab164, present locally, no pull or build) -- STATUS: BLOCKED, run interrupted, NO coverage figure claimed
+# command: RUNP_CPUS=4 scripts/containers/run_pinned.sh --rw .audit/scratch --out <dir> --network=none IMG-KCOV -- python3 -I .audit/scratch/ns.py kcov --include-pattern=/released/scripts/commit-push-all.sh,/bin/cpa-host /out/cov scripts/repo/tests/test_commit_push_all.sh
+# FINDING 1 (not fixed here, out of this round's scope, evidence): in a container the test process is in process group 1, so scripts/longops lib.sh lo_pid_ok (process group > 1, added in fix round 5) refuses the lock: every clean run exits 20 lock_error 'acquire.sh exit 2 ... --pid must be an integer > 1 naming a process that exists now'. The PRE-fix scripts fail identically (checked with CPA_SRC=<pre-fix copy>), so this is not caused by this round. Workaround used: the run starts in a new session (fork + setsid, .audit/scratch/ns.py); with it section '1 exit codes' gives 37 ok, 0 failed in the image.
+# RESULT: the kcov run reached 616 ok, 0 FAIL (sections 1 to 7) and was then killed by the session's usage-limit cutoff before the matrix and the coverage merge finished (no 'rc=' line). Not re-run: the full matrix under kcov took more than an hour under host load 26. R-03 therefore stays OPEN: re-run the command above with a session wrapper, then merge the per-copy coverage as in cpa-kcov.txt.
+## head of the log
+ok   1.1 clean run: 0 (=0)
+ok   1.1: report.json exists
+ok   1.1: HEAD moved (the commit was made)
+## last lines
+ok   16 SIGSYS: the report detail names the status (=exit 159)
+ok   16 SIGSYS: the failed stage is S3 (=S3)
+ok   16 SIGSYS:rc=255
+## ok count 616, FAIL count 0

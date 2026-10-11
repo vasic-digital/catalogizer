@@ -1,0 +1,13 @@
+baseline (unmutated) rc=0
+CAUGHT   s01-lumenignore-cmp-dropped.sdc (2 failing check(s): FAIL D4 want rc=1 lumenignore_fresh=1, got rc=0 0)
+CAUGHT   s02-exit-ignores-diff.sdc (4 failing check(s): FAIL D4 want rc=1 lumenignore_fresh=1, got rc=0 1)
+CAUGHT   s03-absent-tool-passes.sdc (1 failing check(s): FAIL D7 want rc=3 127, got rc=1 127)
+CAUGHT   s04-regen-noop.sdc (1 failing check(s): FAIL D8 regen: rc=1)
+CAUGHT   s05-empty-fresh-ok.sdc (1 failing check(s): FAIL D10 want rc=1 lumenignore_fresh=1, got rc=0 0)
+CAUGHT   j01-sibling-default-off.stj (3 failing check(s): FAIL F4 sibling allow roots: rc=0 )
+CAUGHT   j02-roots-not-merged.stj (6 failing check(s): FAIL F4 sibling allow roots: rc=0 )
+CAUGHT   j03-malformed-roots-not-refused.stj (1 failing check(s): FAIL F4 malformed allow-roots: want rc=3, got rc=1)
+CAUGHT   n01-html-exclude-dropped.neg (2 failing check(s): FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.html is )
+CAUGHT   n02-info-exclude-dropped.neg (1 failing check(s): FAIL F6 generated report submodules/doc_processor/pkg/coverage/lcov.info is excl)
+CAUGHT   n03-xml-exclude-dropped.neg (1 failing check(s): FAIL F6 generated report submodules/doc_processor/pkg/coverage/coverage.xml is e)
+MUTATIONS total=11 survived=0

@@ -179,7 +179,7 @@ if want F8; then echo "== F8 LOCKED hook outside test mode, output verification 
   out=$( LOCKED="$NOOP"; tool "$R" "$EXPORT" --db docs/s.db --out-dir docs/register 2>&1); rc=$?
   [ $rc -ne 0 ] && ! printf '%s' "$out" | grep -q '^export: OK' && ok "F8-3 export.sh does not succeed when the wrapper produced no export (rc $rc)" || bad "F8-3 rc=$rc [$out]"
   # replay.sh: outside test mode none of its LOCKED/BACKUP/DUMP/EXPORT overrides may be called (a valid journal takes it as far as the backup step)
-  mkdir -p "$T_SCR/f8j"; python3 -I -c 'import json;a="a"*64;print(json.dumps({"op_id":"W1","mode":"register","db":"docs/workable_items.db","db_sha_before":None,"db_sha_after":a,"ids_minted":[],"argv":["true"],"exit":0,"input_args":{},"inputs":[],"wal_bytes_after":0,"ids_snapshot":"ok"}))' >"$T_SCR/f8j/journal.jsonl"
+  mkdir -p "$T_SCR/f8j"; python3 -I -c 'import json;a="a"*64;print(json.dumps({"op_id":"W1","mode":"register","db":"docs/workable_items.db","db_sha_before":None,"db_sha_after":a,"ids_minted":[],"argv":["true"],"exit":0,"input_args":{},"inputs":[],"wal_bytes_after":0,"wal_bytes_before":0,"seq":1,"ids_snapshot":"ok"}))' >"$T_SCR/f8j/journal.jsonl"
   : >"$FL"; env LOCKED="$FOREIGN" BACKUP="$FOREIGN" DUMP="$FOREIGN" EXPORT="$FOREIGN" bash "$FT/scripts/register/replay.sh" --onto docs/workable_items.db --since "$(printf 'a%.0s' $(seq 64))" --out "$T_SCR/f8out" --journal "$T_SCR/f8j/journal.jsonl" >"$T_SCR/f8.replay.out" 2>&1
   assert_eq "F8-5 outside test mode replay.sh ignores the LOCKED/BACKUP/DUMP/EXPORT overrides (the foreign script was called 0 times)" "$(wc -l <"$FL")" 0
   out=$( LOCKED="$NOOP"; tool "$R" "$EXPORT" --check --db docs/s.db --out-dir docs/register 2>&1); rc=$?
@@ -204,9 +204,10 @@ S
     mkdir -p "$H/j/$1"; python3 -I -c '
 import json,sys
 a,b,c=sys.argv[2:5]
+SEQ=[0]
 def row(op,mode,db,bs,as_,minted,argv,ex=0,snap="ok",wal=0,seq=None):
-    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"ids_snapshot":snap}
-    if seq is not None: r["seq"]=seq
+    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"wal_bytes_before":0,"ids_snapshot":snap}
+    SEQ[0]+=1; r["seq"]=seq if seq is not None else SEQ[0]   # T068 R-02: replay refuses a row without seq / wal_bytes_before
     return r
 REG="docs/workable_items.db"; M=["sqlite3","/src/"+REG,"MINT"]
 rows=eval(sys.stdin.read())

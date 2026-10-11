@@ -15,7 +15,7 @@ sys.path.insert(0, HERE)
 import wp20_fixture as F
 LS = os.environ.get("LEAD_SCAN", os.path.join(REG, "lead_scan.py"))
 APPLY = os.path.join(REG, "apply_ext.sh")
-os.environ.setdefault("WI", os.path.join(os.path.dirname(os.path.dirname(REG)), "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+os.environ.setdefault("WI", os.path.join(os.path.dirname(os.path.dirname(REG)), "constitution/scripts/workable-items/bin/workable-items-linux"))
 FAILS = 0
 NEEDLE_LINE = "- **Fix:** add the missing test; do not skip with `t.Skip()`"      # the declared corpus needle of lead_scan.NEEDLES
 SCHEMA = ("CREATE TABLE reg_sources(source_id INTEGER PRIMARY KEY, kind TEXT, locator TEXT UNIQUE, parser TEXT, content_sha256 TEXT, last_scanned_at TEXT, scanned_entry_count INT);"

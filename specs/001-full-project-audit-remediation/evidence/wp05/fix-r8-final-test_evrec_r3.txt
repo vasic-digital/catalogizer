@@ -1,0 +1,142 @@
+ok   I1: live holder with unreadable /proc cmdline is not reaped (lock_held)
+ok   I1: that holder process untouched
+ok   I1: no ledger written under the unreadable-cmdline holder
+ok   I1: 3 writers x 6 appends with unreadable /proc: 18 entries, no duplicate seq
+ok   I1: that ledger verifies
+ok   I1: live pid with a different recorded cmdline (pid reuse) is reaped, append succeeds
+ok   I1: unreadable holder identity {"pid":"x","cmdline":"y"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":1,"cmdline":"init"} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity {"pid":4242,"cmdline":7} is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity not json at all is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I1: unreadable holder identity ["list"] is never reaped (lock_held)
+ok   I1: its lock file is still there
+ok   I2: grant appearing DURING the command: refused after the run (76, commit_turn_held, where=post_command)
+ok   I2: the command did run once before the grant appeared (stated in the refusal, not hidden)
+ok   I2: no ledger and no blob written under the foreign grant
+ok   I2: recorder reached the stall point after the command
+ok   I2: grant appearing before the lock: refused inside the lock (where=in_lock)
+ok   I2: nothing written after the in-lock refusal
+ok   I2: the reaper was never called (post-command and in-lock checks do not reap)
+ok   C8: a held grant and a refusing host entry: refused before the command runs (commit_turn_held, where=pre_run)
+ok   C8: the command was not run under the held grant
+ok   I3: verify with a positional file is refused (usage_error)
+ok   I3: verify --bogus is refused (usage_error)
+ok   I3: verify --ledger without a value is refused (usage_error)
+ok   I3: verify --ledger twice is refused (usage_error)
+ok   I3: verify --ledger names the file it read and fails the tampered one although EV_LEDGER is pristine
+ok   I3: verify names the default ledger it read
+ok   I4: forged stdout blob: refused (blob_mismatch, exit 1)
+ok   I4: blob restored verifies
+ok   I4: every blob deleted: UNVERIFIED (blob_missing, exit 3), not OK
+ok   I4: re-chained entry without argv is refused by verify (schema_invalid)
+ok   I4: re-chained entry with exit_status 0 and verdict fail is refused (schema_invalid)
+ok   I4: EV_SCHEMA={} does not weaken verify
+ok   I4: under PYTHONOPTIMIZE=1 the refusal is the same (no assert-based checks)
+ok   I4: evrec ignores EV_SCHEMA={} (RED without oracle still record_invalid)
+ok   I8: a BASELINE entry with the unresolved-fingerprint sentinel is refused by verify (unresolved_fingerprint)
+ok   X12: a re-chained entry without the schema key is an undecodable entry (chain_failure)
+ok   I4: duplicate key in a line is refused (non_canonical_line)
+ok   I4: a hash-valid line that is not byte-canonical (spaced separators) is refused (non_canonical_line)
+ok   I4: anchor present and not compared: UNVERIFIED exit 3
+ok   I4: a non-integer EV_LEDGER_BOUND is a usage error, not a traceback or a chain failure
+ok   I5: golden-good: a ledger hashed independently with jq|sha256sum (non-ASCII cwd, exit_status 3) verifies
+ok   I5: construction 'noprefix' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'noprefix' named as bad hash at line 1
+ok   I5: construction 'ascii' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'ascii' named as bad hash at line 1
+ok   I5: construction 'skipexit' differs from docs/06 s7: refused as a bad hash
+ok   I5: 'skipexit' named as bad hash at line 1
+ok   I5: flipping exit_status alone (hash not recomputed) is a bad hash
+ok   I6: evrec run lists a blob above the bound as owed_relocation (bytes and bound named)
+ok   I6: verify lists the same large blob
+ok   I6: a small blob is not listed
+ok   I6: a non-integer EV_BLOB_BOUND is refused (usage_error) before the command runs
+ok   I6: the command was not run and nothing was written
+ok   I6: nothing is listed as owed in the default environment (no leaked EV_BLOB_BOUND)
+ok   I6: the default blob bound is the check_classes.tsv 'evidence large_file' value (1024000); an empty EV_BLOB_BOUND counts as unset
+ok   I6: rerecord --out <shared ledger dir> is refused (out_is_shared_store)
+ok   I6: the shared ledger is byte-unchanged after the refused --out run
+ok   I6: rerecord --out <shared dir> --name <other file> is refused too (the directory is the shared store)
+ok   I6: no stray output file in the shared directory
+ok   I6: rerecord --out <elsewhere> succeeds
+ok   I6: the shared ledger is byte-unchanged after a legitimate rerecord (store_not_rerecorded shape)
+ok   I6: rerecord --out writing over one of its own input files is refused (out_is_shared_store)
+ok   I6: rerecord takes the lock of the output ledger (a live holder: lock_held)
+ok   I6: seq map content is exactly [{old,new,digest=new entry_hash}]
+ok   I6: seq map of a diverged rerecord maps old 2,3 to new 3,4 with the new entry hashes
+ok   I7: a secret that is a prefix of another leaves no fragment of either
+ok   I7: partially overlapping secrets leave no fragment
+ok   I7: a named secret printed only on stdout or only on stderr is absent from blobs and ledger
+ok   I7: redacted: true is set for a stdout-only and for a stderr-only hit (argv carries no secret)
+ok   I7: Bearer token redacted by the default pattern scan (no variable named)
+ok   I7: entry records redacted: true for a default-pattern hit
+ok   I7: AWS key id, password= value and URL userinfo password redacted
+ok   I7: a GitHub token is redacted
+ok   I7: a secret in the working directory name is redacted from the ledger
+ok   I7: a PEM private key block is redacted
+ok   I7: a secret in target_ref is redacted from the ledger and redacted: true is set
+ok   I7: a clean entry carries no redacted flag (no false positive)
+ok   I8: BASELINE on an unresolvable target is refused (target_unreadable)
+ok   I8: BASELINE wrote nothing
+ok   I8: PREFLIGHT on an unresolvable target is refused (target_unreadable)
+ok   I8: PREFLIGHT wrote nothing
+ok   I8: NEEDLE on an unresolvable target is refused (target_unreadable)
+ok   I8: NEEDLE wrote nothing
+ok   I8: ANALYZER_FIXTURE on an unresolvable target is refused (target_unreadable)
+ok   I8: ANALYZER_FIXTURE wrote nothing
+ok   I8: a PROBE on an unresolved target carries the all-zero sentinel, not a digest of the ref
+ok   I9: RED with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: GREEN with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: MUTATION with bash -c and no declared test source is refused (interpreter_without_test_sources)
+ok   I9: declared sources make the test_fingerprint differ for different test bytes and agree for the same ones
+ok   I9: nothing written for the undeclared interpreter RED
+ok   I9: a script executed directly is its own test bytes: no source declaration needed
+ok   I9: PROBE with an interpreter and no sources is allowed (no verdict claim)
+ok   I9: EV_TEST_SOURCES counts as a declaration
+ok   I10: --oracle without --oracle-independent is refused (oracle_independence_undeclared) before the command runs
+ok   I10: the command did not run and nothing was written
+ok   I10: --oracle-independent without --oracle is refused (usage_error)
+ok   I10: the declared oracle is recorded as given
+ok   I11: RED without oracle (schema refusal) before the run
+ok   I11: RED without oracle (schema refusal) before the run: command not run, nothing stored
+ok   I11: invalid --mutation-json before the run
+ok   I11: invalid --mutation-json before the run: command not run, nothing stored
+ok   I11: non-UTF-8 argv byte before the run
+ok   I11: non-UTF-8 argv byte before the run: command not run, nothing stored
+ok   I11: missing --test-source file before the run
+ok   I11: missing --test-source file before the run: command not run, nothing stored
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11)
+ok   I11: a flag standing where REF belongs is refused, not taken as the target (minor 11): command not run, nothing stored
+ok   I11: unknown flag before the run
+ok   I11: unknown flag before the run: command not run, nothing stored
+ok   I11: --pre-release without --test-state-go (schema) before the run
+ok   I11: --pre-release without --test-state-go (schema) before the run: command not run, nothing stored
+ok   I11: non-UTF-8 cwd is refused before the run (usage_error)
+ok   I11: non-UTF-8 cwd: command not run
+ok   I11: schema_unavailable is refused before the command runs (67)
+ok   I11: schema_unavailable: command not run
+ok   I11: GREEN that fails is refused after the run (record_invalid) and leaves no blob
+ok   I11: no orphan blob after the post-run refusal
+ok   X19: golden-good check-record accepts a valid unchained record ('record valid')
+ok   minor5: check-record asserts the date-time format (record_invalid)
+ok   X16: check-record refusal is the named record_invalid
+ok   X20: --pre-release, --test-state-go, --closes-item, --mutation-json, --container-image-digest, --precondition-provenance, --evidence-class all land in the entry
+ok   X7: a non-executable command is exit 126, verdict error (not fail)
+ok   X8: directory fingerprint equals the independently computed sha256 over sorted 'relpath NUL filehash' lines
+ok   X8: changing a file's content changes the directory fingerprint
+ok   X11: the flake ledger is measured against the bound and named by ledger_raise_owed
+ok   X6: a self-consistent last entry with seq 7 on line 1 refuses the append (ledger_inconsistent)
+ok   X13: rerecord of sides with no common prefix names no_common_prefix
+ok   rerecord of a side verify rejects names side_unverifiable
+ok   X14: remap-refs with an uncovered reference names map_incomplete
+ok   X14: nothing was rewritten on the map_incomplete refusal
+ok   X15: a live lock holder yields the named lock_held (75)
+ok   usage: evrec run with a non-numeric ITER names usage_error
+ok   usage: unknown subcommand names usage_error
+ok   reconcile: runner count mismatch names count_mismatch
+ok   hermetic: no call reached the host entry
+checks=140 failures=0

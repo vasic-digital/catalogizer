@@ -1,0 +1,3 @@
+# identity: group=replay utc=2026-10-08T18:32:26Z host=anton uid=1000 git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c
+# runner_sha256=479ebecac2488ff5d300a78d8d6a9fd0c5e70f343579d03c0ff757fa10838a72 test_sha256=4917cd9b2cebf8eb8295de1d90b52687c22531cd10ed1f9860c23260e2790265 sut_sha256=e7fa377d374aae5a207ddf593f6be66eb4751dd9a313e148f52f6688f3663bd1 followup_tests=test_fix_r1.sh|F1 F2 F8|1 test_fix_r2.sh|N1S T5|1 test_fix_r4.sh|M6|1 test_fix_r2.sh|N1E| test_fix_wp06_r2.sh|R02 R10|1 test_fix_wp06_r3.sh|R201 R206 R207|1 fix_r1_sha256=41b29ffeaf41737cd7299101175c5fcdb5bfa76a245e4478622e819a4aa35984
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh

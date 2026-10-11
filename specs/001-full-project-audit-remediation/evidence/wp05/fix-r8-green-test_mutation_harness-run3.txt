@@ -1,0 +1,7 @@
+ok   R6: the run starts with the baseline control and test_anchors.sh is green on the UNMUTATED scratch tree
+ok   R6: A17, A18 and A18b are re-run on the complete tree and are CAUGHT (3 of 3, exit 0)
+ok   R6: each catch cites the no-force-push scan FAIL line of a suite that is green without the mutation
+ok   R6 control needle: baseline() on a tree WITHOUT the guide reports the no-force-push FAIL line (the control can see the damage)
+ok   R6: a harness run on the damaged tree stops with exit 2 BASELINE NOT GREEN and issues no CAUGHT verdict
+ok   R6: the three edits apply to the current sources (--check)
+checks=6 failures=0

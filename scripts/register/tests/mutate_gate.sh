@@ -8,7 +8,7 @@ ROOT=$(cd "$(dirname "$0")/../../.." && pwd); OUT=${1:?out file}
 G="$ROOT/scripts/register/gate.sh"; T="$ROOT/scripts/register/tests/test_gate.sh"; W=$(mktemp -d); trap 'rm -rf "$W"' EXIT
 mk() { sed -E "$2" "$G" > "$W/$1.sh"; cmp -s "$G" "$W/$1.sh" && { echo "mutant $1 is identical to gate.sh (marker missing)" >&2; exit 3; }
   bash -n "$W/$1.sh" 2>/dev/null || { echo "mutant $1 does not parse (it would be killed for the wrong reason)" >&2; exit 3; }; }
-for st in engine_validate integrity fk missing_objects view_empty reference_diff engine_version evidence_rehash; do mk "skip_$st" "s/^step_$st( .*)?\$/:/"; done
+for st in engine_validate integrity fk missing_objects view_empty reference_diff engine_version evidence_rehash prefix_agreement; do mk "skip_$st" "s/^step_$st( .*)?\$/:/"; done
 mk guard_regex       '/# GUARD_REGEX$/d'
 mk guard_isview      '/# GUARD_ISVIEW$/d'
 mk guard_dbrow_regex '/# GUARD_DBROW_REGEX$/d'
@@ -57,6 +57,14 @@ mk output_not_flattened         "s/^flat\\(\\) \\{ printf '%s' \"\\\$\\*\" \\| t
 mk missing_objects_not_sanitised 's/fail "v_gate_missing_objects: \$\(sane "\$m"\)"/fail "v_gate_missing_objects: $m"/'
 # the two spoofing defences are individually redundant (sane() on each database-sourced name AND flat() on every message); both removed, the attack works
 mk output_both_defences_removed "s/^flat\\(\\) \\{ printf '%s' \"\\\$\\*\" \\| tr .\\\\r\\\\n. '  '; \\}/flat() { printf '%s' \"\\\$*\"; }/;s/fail \"v_gate_missing_objects: \\\$\\(sane \"\\\$m\"\\)\"/fail \"v_gate_missing_objects: \\\$m\"/"
+# T068 round: R-05 (reviewer mutant MY3), R-06 (MY2) and the R-04 prefix comparison
+mk rehash_receipt_file_skipped   's/^    n=\$\(\(n\+1\)\)$/    [ "$kind" = tracker_receipt ] \&\& continue; n=$((n+1))/'          # R-05: a tracker_receipt that cites a FILE is not re-hashed
+mk cross_check_substring         's/grep -qx -- "\$row"/grep -q -- "$row"/'                                                     # R-06: the registry cross-check matches a substring of a reference name
+mk prefix_yaml_not_compared      's/printf .%s\\n. \$y \$d \$all \| sort -u/printf "%s\\n" $d $all | sort -u/'                                    # R-04: the reporting.yaml value is read but never compared
+mk prefix_ddl_not_compared       's/printf .%s\\n. \$y \$d \$all \| sort -u/printf "%s\\n" $y $all | sort -u/'                                      # R-04: the DDL literal is read but never compared
+mk prefix_importers_not_compared 's/printf .%s\\n. \$y \$d \$all \| sort -u/printf "%s\\n" $y $d | sort -u/'                                        # R-04: the importers' --prefix is read but never compared
+mk prefix_yaml_must_exist_removed '/^  if \[ ! -f "\$yaml" \]; then fail /d'                                                    # R-04: an absent reporting.yaml no longer fails closed on its own
+mk prefix_importer_blind_to_odd_literals 's/grep -o .\"--prefix\", \"\[\^\"\]\*\". /grep -o "\\"--prefix\\", \\"[A-Z][A-Z][A-Z]\\"" /'   # R2-02: the pre-fix blind extraction (only 3-capital literals are seen)
 [ -z "${MUT_KEEP:-}" ] || { mkdir -p "$MUT_KEEP" && cp "$W"/*.sh "$MUT_KEEP"/; }
 [ -z "${MUT_DRY:-}" ] || { echo "generated $(ls "$W"/*.sh | wc -l) mutants, all differ from gate.sh"; exit 0; }
 { echo "# identity: task=T063 utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) host=$(hostname -s) uid=$(id -u) git_head=$(git -C "$ROOT" rev-parse HEAD 2>/dev/null)"
@@ -65,6 +73,8 @@ mk output_both_defences_removed "s/^flat\\(\\) \\{ printf '%s' \"\\\$\\*\" \\| t
 JOBS=${MUT_JOBS:-4}; running=0
 for f in "$W"/*.sh; do b=$(basename "$f" .sh)
   ( mkdir -p "$W/s.$b"; r=$(REG_SCRATCH="$W/s.$b" GATE="$f" bash "$T" 2>&1); rc=$?
+    # follow-up: the T068 fix-round fixtures (R-01/R-03/R-04/R-05/R-06) run against every mutant the main test did not kill
+    [ $rc -eq 0 ] && { r=$(REG_SCRATCH="$W/s.$b" GATE="$f" ONLY="R01 R03 R04 R05 R06" bash "$ROOT/scripts/register/tests/test_fix_wp06_r2.sh" 2>&1); rc=$?; }
     [ $rc -ne 0 ] && k=yes || k=NO
     printf '%s\t%s\t%s\n' "$b" "$k" "$(printf '%s' "$r" | grep -m1 '^FAIL' | cut -c1-110)" > "$W/$b.res" ) &
   running=$((running+1)); [ "$running" -ge "$JOBS" ] && { wait -n; running=$((running-1)); }

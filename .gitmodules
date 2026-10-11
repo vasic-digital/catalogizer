@@ -121,12 +121,12 @@
 [submodule "submodules/training_collector"]
 	path = submodules/training_collector
 	url = git@github.com:vasic-digital/TrainingCollector.git
-[submodule "submodules/constitution"]
-	path = submodules/constitution
-	url = git@github.com:HelixDevelopment/HelixConstitution.git
 [submodule "submodules/helix_memory"]
 	path = submodules/helix_memory
 	url = git@github.com:HelixDevelopment/HelixMemory.git
 [submodule "submodules/superspec"]
 	path = submodules/superspec
 	url = git@github.com:WangX0111/superspec.git
+[submodule "constitution"]
+	path = constitution
+	url = git@github.com:HelixDevelopment/HelixConstitution.git

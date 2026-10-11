@@ -1,0 +1,12 @@
+FAIL D1 real inputs: rc=1 scope_render_check: SCOPE_RENDER {"config_filename": "codegraph.json", "drift": [], "exclude_patterns": 83, "gitmodules_files": 4, "include_patterns": 0, "negations": 6, "order_lint_unprobed": 0, "own_org_roots": 50, "third_party_roots": 44}
+ok   D2 report names scope_render_check with rc 0
+ok   D2 report names scope_to_lumen_json_check with rc 0
+FAIL D2 lumenignore_fresh: want rc 0, got 1
+FAIL D3 fresh render differs from .lumenignore
+ok   D4 stale .lumenignore -> rc=1, only lumenignore_fresh differs
+ok   D5 drifted lumen_scope.json -> rc=1, scope_to_lumen_json_check=1
+ok   D6 a failing scope_render --check -> rc=1 with its rc recorded
+ok   D7 absent gen_lumenignore.py -> rc=3, check rc 127 (not a pass)
+FAIL D8 regen: rc=0
+ok   D9 no --out -> usage rc=2
+SUMMARY pass=7 fail=4

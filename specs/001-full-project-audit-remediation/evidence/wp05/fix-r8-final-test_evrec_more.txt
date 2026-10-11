@@ -1,0 +1,25 @@
+ok   verify: pristine 4-entry ledger exits 0
+ok   verify: edited content (stale entry_hash) exits 1
+ok   verify: wrong prev_hash with a valid own hash (link only) exits 1
+ok   verify: two entries reordered exits 1
+ok   verify: consistent chain with non-contiguous seq exits 1
+ok   verify: torn final line exits 1
+ok   verify: empty ledger is unverifiable, exit 3
+ok   verify: absent ledger is unverifiable, exit 3
+ok   verify states that the anchor was not compared (T055)
+ok   append refused on an inconsistent last entry, ledger unchanged
+ok   exit-status mapping: 0 pass, 3 fail, 127 error, SIGKILL 137 error
+ok   argv recorded as a list
+ok   argv kept verbatim (-c and the quoted script survive)
+ok   blob for stdout_sha256 exists under its digest
+ok   blob for stderr_sha256 exists under its digest
+ok   RED without oracle/evidence_class refused, nothing written
+ok   RED on a target that does not resolve is refused (no invented fingerprint)
+ok   RED entry with oracle, evidence class and test_fingerprint is accepted and valid
+ok   target_fingerprint is read from the target at run time (sha256 of its bytes)
+ok   secret absent from argv, stderr blob and ledger
+ok   rerecord refuses a tampered remote side that shares a prefix, nothing written
+ok   evrec with an unknown subcommand exits 64
+ok   evrec run with a missing -- exits 64
+ok   hermetic: no call reached the host entry
+checks=24 failures=0

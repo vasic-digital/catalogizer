@@ -1,0 +1,180 @@
+{
+  "wp": "WP-02",
+  "tasks": [
+    "T028"
+  ],
+  "round": 2,
+  "verdict": "NO-GO",
+  "verdict_scope": "WP-02 fix round fix-r6 (uncommitted working tree on top of 20f74abf) answering WP-02-T028.json F1-F9. Not a final T028 verdict.",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (11.4.231(F.2)); xhigh not claimed. Reviewer did not author any WP-02 file and is not the first reviewer.",
+  "reviewed_head": "20f74abf",
+  "reviewed_state": "working tree (fix-r6 uncommitted): scripts/audit/index_health.sh, scope_to_lumen_json.py, scope_drift_check.sh (untracked), config/index/scope.yaml, lumen_scope.json, codegraph.json, .lumenignore, tests, evidence/wp02/fix-r6-*",
+  "covers_runs": [
+    "f04c555d",
+    "4c8b07b7",
+    "20f74abf+fix-r6-working-tree"
+  ],
+  "prior_findings": {
+    "F1": "PARTIAL - gate now reads scope.yaml forbidden_classes; own repro: localhost.key, dhparams.pem, prod.env, secrets/db.yaml, .pk8/.p12/.pfx/.keystore/.env/.env.local -> P3 FAIL, .env.example and a/b.go -> PASS. But see N1 (forbidden_classes narrower than baseline_excludes in the same file).",
+    "F2": "FIXED - own re-run in a scratch tree: M1, M2, M3, M8 each killed by test_index_health_extra (fail=1..3); M6 (now a DATA mutation) killed (12/13, 78/105).",
+    "F3": "PARTIAL - verdict INCOMPLETE exit 3 on any SKIP is correct per 11.4.135 and T025 rev 37 and is not a 11.4.201(1) false refusal (it asserts no defect, it reports unproven). But --live-proofs makes the INCOMPLETE->PASS step self-asserted, see N2.",
+    "F4": "FIXED - scratch copy of committed scope.yaml + lumen_allow_roots.yaml + submodules.tsv (both equal to HEAD): --check rc=0 with the sibling; without it rc=1 (33 extra), --allow-roots FILE rc=0, missing file rc=3.",
+    "F5": "PARTIAL - scope_drift_check.sh + P-LumenIgnore added, and .lumenignore equals a render on THIS host, but the render is host-dependent, see N3.",
+    "F6": "FIXED - checked under the real runner (scope_enumerate.js enumerate, runner v1.6.0, scratch repo with the working-tree .gitignore + codegraph.json): post-fix only tracker.go is enumerated from pkg/coverage; control with HEAD codegraph.json enumerates coverage.xml (instrument sees). .html/.info were never enumerated by the runner (unsupported extensions).",
+    "F7": "OPEN (process) - fix-forward recorded in T020/T028 rev 37; T022 and T026 still open.",
+    "F8": "PARTIAL - task text amended (decision recorded) and --captured-not-before added, but it is optional: a capture dated 2000-01-01 passes P7 without it (own repro, full PASS rc=0).",
+    "F9": "FIXED - SKIP-with-reason lines and unborn-HEAD identity added (SKIP still exits 0; see N8)."
+  },
+  "findings": [
+    {
+      "id": "N1",
+      "title": "forbidden_classes is still narrower than the scope's own baseline_excludes (two class sources in one file disagree)",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "scope.yaml baseline_excludes.secrets also excludes **/service-account*.json, **/google-services.json, **/credentials*.json; caches excludes **/.venv/, **/.pytest_cache/, **/.mypy_cache/, **/.ruff_cache/, **/.cache/, **/logs/. None is a forbidden_class. Own repro (scratch gate, real scope.yaml): a/google-services.json, a/credentials.json, a/service-account-x.json, a/.venv/x.py, a/.pytest_cache/x, a/logs/x.log each give P3=PASS (false-null), control a/localhost.key P3=FAIL. 11.4.275(B) one class source; 11.4.273(f) set coverage.",
+      "required_fix": "Derive forbidden_classes mechanically from baseline_excludes (or add a test that every baseline secret/cache pattern has a matching class with positive+negative fixtures, failing when one is missing)."
+    },
+    {
+      "id": "N2",
+      "title": "--live-proofs accepts self-asserted evidence hashes not bound to any file; INCOMPLETE turns into PASS with no evidence",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "Own repro: live.json with P4/P5/P6 verdict PASS, cmd 'echo trust me', evidence_sha256 = 64 zeros, plus --lumen-status (Captured 2000-01-01), --lumen-files, a matching lumenignore pair and a hand-written all-rc-0 drift report -> verdict PASS, complete=true, rc=0. The gate never reads an evidence file, so the hash proves nothing (11.4.115(F) machine-written verdicts, 11.4.262). The T025 per-unit fallback (grep plus reads) is entered the same way and is recorded identically to a live-index PASS (no evidence-class field, 11.4.226). Same for --drift-report (hand-written JSON accepted, no HEAD/repo binding).",
+      "required_fix": "Require an evidence path per live proof, hash the file in the gate and compare; add a closed kind field {live, fallback} recorded in the output (fallback never reported as a live PASS); bind the drift report to the HEAD/scope sha it judged."
+    },
+    {
+      "id": "N3",
+      "title": "Rendered .lumenignore depends on untracked host-local directories, so the drift gate is host-dependent",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "defect_layer": "artifact",
+      "detail": "gen_lumenignore.py enumerates top-level entries with os.listdir. Rendering the working-tree lumen_scope.json against a skeleton of git ls-files --recurse-submodules drops 6 lines the committed .lumenignore holds: /.claude/, /.git/, /.remember/, /catalogizer-test-zzsw10647std/, /prev3/, /reports/ (the last three are untracked, empty or local dirs; catalogizer-test-* looks like a test temp dir). A fresh clone (no .claude/.remember/prev3/...) therefore gets lumenignore_fresh rc=1 -> P-ScopeDrift FAIL (11.4.201(1) false refusal), and any stray test dir on the host flips it (11.4.50). The committed artifact also embeds a host-local temp dir name.",
+      "required_fix": "Render from the tracked tree (git ls-files / ls-tree, plus a fixed list of known host-local dirs), or exclude untracked entries in scope_drift_check; re-render and add a clean-skeleton determinism test."
+    },
+    {
+      "id": "N4",
+      "title": "Case behaviour of the class regexes is not pinned against the indexers' matchers",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "defect_layer": "runtime",
+      "detail": "secret_basename is (?i) while the scope exclude *secret* is a gitignore pattern; under git check-ignore semantics docs/security/SECRETS_MANAGEMENT.md (tracked) is NOT excluded yet the gate FAILs it, and a/server.PEM, a/Release.JKS, a/.ENV are excluded by neither (P3 PASS). The runner's matcher is the node 'ignore' lib for codegraph.json patterns but .gitignore rules pass through git; which case rule wins on the real index is UNCONFIRMED. 11.4.276(B) ground-truth probe.",
+      "required_fix": "Probe the runner and Lumen matchers on mixed-case fixtures and make the class regexes match the measured behaviour; add case fixtures."
+    },
+    {
+      "id": "N5",
+      "title": "Reviewer mutation R5 survives: the .env.example exemption can be widened unnoticed",
+      "severity": "minor",
+      "finding_layer": "test-instrumentation",
+      "defect_layer": "source",
+      "detail": "Mutant: replace basename in ('.env.example','.env.sample') by p.endswith(('.example','.sample')). Suites stay 13/13 and 105/105, while a/secrets/db.yaml.example changes P3 FAIL -> PASS (own run).",
+      "required_fix": "Add a fixture: a forbidden-class path ending .example/.sample (other than .env.example) must FAIL P3."
+    },
+    {
+      "id": "N6",
+      "title": "RED evidence for index_health is red for the wrong reason",
+      "severity": "minor",
+      "finding_layer": "process-doc",
+      "defect_layer": "source",
+      "detail": "fix-r6-red-index-health.txt: nearly every case fails with rc=2 (usage: the old tool rejects the new required --scope), not with the defect observed; the RED does not show F1/F2/F3 cases failing on behaviour. Mutation runs (m32-m45) partly compensate. 11.4.115/11.4.199.",
+      "required_fix": "Record a RED run where the old tool gets the new inputs it accepts (or a shim), so each new case fails on the defect, not on argv."
+    },
+    {
+      "id": "N7",
+      "title": "P7 capture age is optional",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "Without --captured-not-before any Captured time passes (2000-01-01 reached PASS in the N2 repro). T025 does not require the flag.",
+      "required_fix": "Make --captured-not-before (or a max age) required when --lumen-status is given, or record the decision in T021/T025."
+    },
+    {
+      "id": "N8",
+      "title": "F6 test models the matcher instead of using the runner; SKIP exits 0",
+      "severity": "minor",
+      "finding_layer": "test-instrumentation",
+      "defect_layer": "source",
+      "detail": "test_scope_negation_reports.sh judges with scope_render.gitignore_to_regex; the real-runner check above agrees today, but the test would not see runner drift. Its SKIP and the new SKIP legs in test_scope_to_lumen_json.sh exit 0, indistinguishable from a pass by rc.",
+      "required_fix": "Add a scope_enumerate.js leg when the runner is present; give SKIP a distinct exit code."
+    },
+    {
+      "id": "N9",
+      "title": "scope_to_lumen_json --out silently drops the 33 allow roots when the sibling file is absent",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "Own repro: without lumen_allow_roots.yaml next to scope.yaml, --check reports 33 extras (rc=1), so --check is safe, but --out writes a 50-root allow list with rc=0, the exact F4 hazard (main app denied from Lumen) for a naive re-render.",
+      "required_fix": "Fail (or warn loudly) in --out when lumen_allow_roots is neither in scope.yaml nor in a sibling/--allow-roots file."
+    }
+  ],
+  "mutations_attempted": [
+    {
+      "id": "R1-keystore-class-narrowed",
+      "target": "config/index/scope.yaml keystore regex",
+      "change": "drop pk8|pem|key (self-test positive release.jks still passes)",
+      "result": "KILLED (extra 102/105)"
+    },
+    {
+      "id": "R2-live-verdict-forced-PASS",
+      "target": "index_health.sh load_live",
+      "change": "live proof row verdict forced to PASS",
+      "result": "KILLED (extra 104/105)"
+    },
+    {
+      "id": "R3-env-suffix-dropped",
+      "target": "config/index/scope.yaml env_file regex",
+      "change": "drop the \\.env$ alternative (prod.env)",
+      "result": "KILLED (extra 104/105); behaviour confirmed: a/prod.env P3 PASS under mutant"
+    },
+    {
+      "id": "R4-drift-missing-check-ignored",
+      "target": "index_health.sh p_drift",
+      "change": "missing required checks ignored",
+      "result": "KILLED (extra 104/105)"
+    },
+    {
+      "id": "R5-example-exemption-widened",
+      "target": "index_health.sh p3",
+      "change": "exempt any path ending .example/.sample",
+      "result": "SURVIVED (13/13, 105/105); a/secrets/db.yaml.example FAIL->PASS"
+    },
+    {
+      "id": "M1-reindex (prior)",
+      "result": "KILLED (104/105)"
+    },
+    {
+      "id": "M2-pendingchanges (prior)",
+      "result": "KILLED (102/105)"
+    },
+    {
+      "id": "M3-captured (prior)",
+      "result": "KILLED (104/105)"
+    },
+    {
+      "id": "M6-secret-ext (prior, now DATA)",
+      "result": "KILLED (12/13, 78/105)"
+    },
+    {
+      "id": "M8-ownorg-boundary (prior)",
+      "result": "KILLED (104/105)"
+    }
+  ],
+  "controls": [
+    "scratch tree baseline 13/13 and 105/105 before each mutant, restored after each",
+    "forbidden-class repro control a/b.go P3 PASS",
+    "F6 runner control: HEAD codegraph.json enumerates coverage.xml",
+    "lumenignore skeleton render rc=0 (renderer sees)"
+  ],
+  "scratch_only": "All mutations and repros ran under the session scratchpad; no tracked file edited, no index writer, no build, no podman.",
+  "blocks_final_T028_GO": [
+    "N1, N2, N3 fixed and re-reviewed",
+    "T022 refresh (BLOCKED-ON-MEMORY) and a real index_health run (T025) with candidate-fingerprinted evidence",
+    "T023 golden sets and T024 lumen_verify results",
+    "T026 .mcp.json entry and both preflight transcripts",
+    "T020 G-DATA verdict; covers_runs naming f04c555d and 4c8b07b7 (F7)",
+    "the fix-r6 changes committed only after GO (11.4.142)"
+  ]
+}

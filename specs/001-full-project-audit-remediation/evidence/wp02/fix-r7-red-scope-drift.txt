@@ -1,0 +1,35 @@
+FAIL D1 real inputs: rc=1 scope_render_check: SCOPE_RENDER {"config_filename": "codegraph.json", "drift": [], "exclude_patterns": 90, "gitmodules_files": 4, "include_patterns": 0, "negations": 6, "order_lint_unprobed": 0, "own_org_roots": 50, "third_party_roots": 44}
+FAIL D2 scope_render_check: want rc 0, got MISSING
+FAIL D2 scope_to_lumen_json_check: want rc 0, got MISSING
+FAIL D2 lumenignore_fresh: want rc 0, got MISSING
+FAIL D3 fresh render differs from .lumenignore
+FAIL D4 want rc=1 lumenignore_fresh=1, got rc=1 MISSING
+FAIL D5 want rc=1, got rc=1 check=MISSING
+FAIL D6 want rc=1 render=7, got rc=1 render=MISSING
+FAIL D7 want rc=3 127, got rc=3 MISSING
+FAIL D8 regen: rc=0
+FAIL D10 want rc=1 lumenignore_fresh=1, got rc=1 MISSING
+ok   D9 no --out -> usage rc=2
+ok   D11a scratch repo: --regen renders the tracked tree (rc=0, /b/ and /docs/ denied, allowed /a/ not)
+FAIL D11b stray dirs changed the render: rc=0 6a7,8 > /prev3/ > /zz_stray_test_dir/ 
+FAIL D11c check with stray dirs: rc=1
+ok   D11d fixed host-local entry /.git/ is always denied (stable, tracked-independent)
+FAIL D11d /.claude/ missing from the render
+FAIL D11d /.remember/ missing from the render
+ok   D11e control: a newly TRACKED top-level directory appears in the render
+FAIL D12 report shape/binding: [
+  {
+    "check": "scope_render_check",
+    "rc": 0
+  },
+  {
+    "check": "scope_to_lumen_json_check",
+    "rc": 0
+  },
+  {
+    "check": "lumenignore_fresh",
+    "rc": 1
+  }
+]
+FAIL D13 clone render differs: rc=1 33a34 > /.claude/ 35a37,39 > /.helix/ 
+SUMMARY pass=4 fail=17 skip=0

@@ -25,6 +25,9 @@
 # committed part with an OK verdict, replaying it would repeat the failure; the plan owner decides.
 # A local mint whose id the remote side holds for another item is REFUSED before anything is replayed (20 replay_id_collision, the id named): the plan
 # owner decides, the tool never renumbers. A --since that matches no row is refused (20 since_not_found). Any refusal removes <dir>.
+# Journal schema (T068 R-02): EVERY row must carry seq, op_id, mode, argv, db, db_sha_before, db_sha_after, ids_minted, ids_snapshot, wal_bytes_before, wal_bytes_after, exit and
+# input_args with the types locked.sh writes, else 20 journal_row_incomplete naming the field; an absent field is never read as its safe value (ids_snapshot "ok", wal 0, hashes equal).
+# Output directory (T068 R-10): a directory this run did not create is never removed on a refusal; only the files this run itself wrote into it are.
 # Exit: 0 ok; 2 usage; 20 refused. Test hooks (LOCKED_TEST_MODE=1): LOCKED_ROOT, LOCKED_RUNP, LOCKED, BACKUP, DUMP, EXPORT.
 set -u
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,10 +49,21 @@ exec python3 -I - <<'PY'
 import hashlib, json, os, re, shutil, subprocess, sys
 E = os.environ; ROOT = E["REPLAY_ROOT"]; OUT = E["REPLAY_OUT"]; SINCE = E["REPLAY_SINCE"]
 LOCKED, BACKUP, DUMP, EXPORT = E["REPLAY_LOCKED"], E["REPLAY_BACKUP"], E["REPLAY_DUMP"], E["REPLAY_EXPORT"]
-WI = "/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux"
-created = False
+WI = "/src/constitution/scripts/workable-items/bin/workable-items-linux"
+created = False   # True only when THIS run created the output directory (R-10): a directory that already existed is never removed
+started = False   # True once this run may have written into the output directory (set right before the first write)
+before = set()    # the entries the output directory held when this run started (it is empty: a non-empty one is refused before any write)
+# the names this run itself writes into the output directory. A pre-existing directory is only ever cleaned of entries that (a) were not there when the run started AND
+# (b) carry one of these names: R2-01 - nothing is removed before the run's first write, and a file of the operator is never removed
+OWN_OUTPUTS = ("backup.json", "replay.db", "replay.db-wal", "replay.db-shm", "replay.db-journal", "inputs", "export", "register.sql", "replay-report.json")
 def refuse(reason, detail=""):
     if created: shutil.rmtree(OUT, ignore_errors=True)
+    elif started and os.path.isdir(OUT):
+        for n in OWN_OUTPUTS:
+            if n in before: continue
+            p_ = os.path.join(OUT, n)
+            if os.path.isdir(p_) and not os.path.islink(p_): shutil.rmtree(p_, ignore_errors=True)
+            elif os.path.lexists(p_): os.remove(p_)
     print("replay: REFUSED reason=%s %s" % (reason, detail), file=sys.stderr); sys.exit(20)
 def sh(cmd, check=True):
     p = subprocess.run(cmd, capture_output=True, text=True, stdin=subprocess.DEVNULL)
@@ -75,13 +89,40 @@ for ln, l in enumerate(open(jr), 1):
     rows.append(r)
 pend = os.path.join(os.path.dirname(os.path.abspath(jr)), "pending")
 if os.path.isdir(pend) and os.listdir(pend): refuse("replay_pending_ops", "%s holds %s: a register write started but its journal row was never written" % (pend, " ".join(sorted(os.listdir(pend))[:5])))
+# R-02: a journal row is validated against the schema scripts/register/locked.sh writes BEFORE anything else reads it. An absent field is never read as its safe
+# value (ids_snapshot "ok", wal_bytes_after 0, hashes equal, seq in order): a row that dropped one is refused journal_row_incomplete, naming the field. A field that is
+# present with the value null is a recorded fact (locked.sh writes null for a database file that did not exist) and passes where null is a valid value.
+HEX64 = re.compile(r"[0-9a-f]{64}")
+def isint(v): return isinstance(v, int) and not isinstance(v, bool)
+def row_problem(r):
+    for k in ("seq", "op_id", "mode", "argv", "db", "db_sha_before", "db_sha_after", "ids_minted", "ids_snapshot", "wal_bytes_before", "wal_bytes_after", "exit", "input_args"):
+        if k not in r: return "field %s is absent" % k
+    if not isint(r["seq"]) or r["seq"] < 1: return "seq %r is not a positive integer" % (r["seq"],)
+    if not isinstance(r["op_id"], str) or not r["op_id"]: return "op_id %r is not a non-empty string" % (r["op_id"],)
+    if r["mode"] not in ("register", "out", "scratch"): return "mode %r is not register, out or scratch" % (r["mode"],)
+    if not isinstance(r["argv"], list) or not all(isinstance(a, str) for a in r["argv"]): return "argv is not a list of strings"
+    if not isinstance(r["db"], str) or not r["db"]: return "db %r is not a non-empty string" % (r["db"],)
+    for k in ("db_sha_before", "db_sha_after"):
+        if r[k] is not None and not (isinstance(r[k], str) and HEX64.fullmatch(r[k])): return "%s %r is neither null nor 64 lowercase hex digits" % (k, r[k])
+    if not isinstance(r["ids_minted"], list) or not all(isinstance(a, str) for a in r["ids_minted"]): return "ids_minted is not a list of strings"
+    if r["ids_snapshot"] not in ("ok", "failed", "unavailable"): return "ids_snapshot %r is not ok, failed or unavailable" % (r["ids_snapshot"],)
+    for k in ("wal_bytes_before", "wal_bytes_after"):
+        if not isint(r[k]) or r[k] < 0: return "%s %r is not a non-negative integer" % (k, r[k])
+    if not isint(r["exit"]): return "exit %r is not an integer" % (r["exit"],)
+    if not isinstance(r["input_args"], dict): return "input_args is not an object"
+    for k, h in r["input_args"].items():   # R2-07: replay indexes argv with the key and opens inputs/<value>: both must be what locked.sh writes
+        if not (isinstance(k, str) and k.isascii() and k.isdigit() and int(k) < len(r["argv"])): return "input_args key %r is not a decimal index into argv" % (k,)
+        if not (isinstance(h, str) and HEX64.fullmatch(h)): return "input_args value for key %s is not 64 lowercase hex digits" % (k,)
+    return None
+for r in rows:
+    pr = row_problem(r)
+    if pr: refuse("journal_row_incomplete", "row %s of %s: %s; the journal is not in the schema locked.sh writes, so no field is read as a default and nothing was written" % (r.get("op_id", "?"), jr, pr))
 last = None
 for r in rows:
-    if "seq" in r:
-        if not isinstance(r["seq"], int) or (last is not None and r["seq"] <= last): refuse("journal_order_invalid", "row %s has seq %r after seq %r" % (r.get("op_id"), r["seq"], last))
-        last = r["seq"]
+    if last is not None and r["seq"] <= last: refuse("journal_order_invalid", "row %s has seq %r after seq %r" % (r.get("op_id"), r["seq"], last))
+    last = r["seq"]
 REGDB = "docs/workable_items.db"
-def is_reg(r): return r.get("mode") == "register" and r.get("db", REGDB) == REGDB
+def is_reg(r): return r["mode"] == "register" and r["db"] == REGDB
 # the rows to consider: those after the base row (a register row on the register database whose state is the file hash with an EMPTY -wal)
 idx = None
 for i, r in enumerate(rows):
@@ -92,7 +133,9 @@ if idx is None:
     else: refuse("since_not_found", "no journal row has db_sha_after equal to %s" % SINCE)
 todo = rows[idx + 1:]
 if os.path.exists(OUT) and os.listdir(OUT): refuse("out_dir_not_empty", OUT)
-os.makedirs(OUT, exist_ok=True); created = True
+started = True   # MUT:started
+try: os.makedirs(OUT); created = True   # MUT:created  # R-10: only a directory this run made is its to remove
+except FileExistsError: before = set(os.listdir(OUT))   # empty (checked above); recorded so only entries that appear afterwards can be this run's
 # 1. the remote side's database, by the verified online backup
 rec = os.path.join(OUT, "backup.json")
 env = dict(os.environ)
@@ -130,7 +173,7 @@ for r in todo:
     if not changed(r):
         skipped.append({"op_id": r["op_id"], "reason": "command_failed" if r.get("exit") != 0 else "no_database_change", **({"exit": r.get("exit")} if r.get("exit") != 0 else {})}); continue
     if r.get("exit") != 0: refuse("replay_failed_row_changed_register", "row %s exited %s but CHANGED the register (hash, minted ids or -wal bytes): its committed part would be lost if it were skipped and cannot be replayed as it failed; the plan owner decides, nothing was written" % (r["op_id"], r.get("exit")))   # MUT:failed-row
-    if r.get("ids_snapshot", "ok") != "ok": refuse("replay_ids_unknown", "row %s changed the register but its id snapshot is %r: the ids it minted are unknown, so it is not replayed blind (never a renumbering); the plan owner decides, nothing was written" % (r["op_id"], r.get("ids_snapshot")))   # MUT:ids-unknown
+    if r["ids_snapshot"] != "ok": refuse("replay_ids_unknown", "row %s changed the register but its id snapshot is %r: the ids it minted are unknown, so it is not replayed blind (never a renumbering); the plan owner decides, nothing was written" % (r["op_id"], r.get("ids_snapshot")))   # MUT:ids-unknown
     plan.append(r)
 local_ids = []
 for r in plan:

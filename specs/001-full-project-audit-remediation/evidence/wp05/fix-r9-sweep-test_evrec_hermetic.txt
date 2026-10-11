@@ -1,0 +1,7 @@
+ok   hermetic: test_evrec.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=66 failures=0)
+ok   hermetic: test_evrec_more.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=24 failures=0)
+FAIL hermetic: test_evrec_r3.sh rc=1: FAIL I11: schema_unavailable is refused before the command runs (67) (rc=1 want 67, reason=schema_unavailable; got: Traceback (most recent call last):   File "/tmp/tmp.gNYw8hkGzK/noschema/tools/evidence/evrec", line 7, in <module>     sys.exit(evcore.evrec_main(sys.argv[1:])))|
+ok   hermetic: test_evrec_golden.sh passes from a checkout holding a live foreign grant and with a hostile environment (checks=73 failures=0)
+ok   hermetic: the stand-in for ~/.local/bin/cpa-host was called 0 times
+ok   hermetic: nothing was written to the hostile caller-supplied store paths
+checks=6 failures=1

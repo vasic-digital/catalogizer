@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 |
+| Revision | 5 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-07T19:00:00Z |
+| Last modified | 2026-10-08T14:30:00Z |
 | Status | draft by T042 (WP-04, slice 9); NOT performed: installing the entry point and approving the first manifest is the owner checkpoint T046a (constitution 11.4.66); no agent runs any step below |
 | Status summary | install steps and the state layout; the `--owner-trust` operations that create and change the trust file are NOT built in this revision |
 | Source | `scripts/repo/host_entry/cpa-host`, `docs/scripts/commit-push-all.md` |
 | Issues | `cpa-host --owner-trust approve|retire|revoke|reanchor` answers 20 `owner_op_unimplemented` until T046a builds them; until then the trust file can only be written by hand, which this procedure does NOT recommend |
-| Fixed | revision 4 (the consolidated review of revision 3, round 4 of the 11.4.276 budget): the environment is an ALLOWLIST behind `#!/bin/bash -p` (an imported function, `SHELLOPTS`, `BASHOPTS`, `BASH_ENV`, `TMOUT`, `PYTHONPATH`, `LD_PRELOAD` and every other name are dropped; `HOME`, `CPA_HOST_STATE`, `TMPDIR` and every `PATH` element must be absolute), `BASH_ENV` runs NOWHERE (revision 3 said it ran once in the entry process), the released copy is read-only, a run directory is born with its `run.pid`; revision 3 (WF14 review round 2): the caller's environment is dropped as a class, not by name (every exported `GIT_*` variable but the commit identity, the `LONGOPS_*`, `ANTIMESS_*`, `AM_*`, `VERIFY_*` and `DISK_HEADROOM_*` families, `XDG_CONFIG_HOME`, `BASH_ENV`, `ENV`, `CDPATH`), every catchable terminating signal and every shell error ends the host entry with 20, and `HOME` and `CPA_HOST_STATE` both unset is 20 `state_unresolved`; revision 2: the run-id grammar, an unexecutable approved core is 20 (never 126), a relative `--paths-from` is read from the directory cpa-host was started in (WF11 review F9, F10, F12) |
+| Fixed | revision 5 (review WP-04-T046, R-05): a run whose approved `scripts/audit/own_orgs.txt` is absent, unreadable or names no organisation is refused at S0 (20 `own_orgs_unverifiable`); it used to push the main repository to every url of every remote with no ownership check; revision 4 (the consolidated review of revision 3, round 4 of the 11.4.276 budget): the environment is an ALLOWLIST behind `#!/bin/bash -p` (an imported function, `SHELLOPTS`, `BASHOPTS`, `BASH_ENV`, `TMOUT`, `PYTHONPATH`, `LD_PRELOAD` and every other name are dropped; `HOME`, `CPA_HOST_STATE`, `TMPDIR` and every `PATH` element must be absolute), `BASH_ENV` runs NOWHERE (revision 3 said it ran once in the entry process), the released copy is read-only, a run directory is born with its `run.pid`; revision 3 (WF14 review round 2): the caller's environment is dropped as a class, not by name (every exported `GIT_*` variable but the commit identity, the `LONGOPS_*`, `ANTIMESS_*`, `AM_*`, `VERIFY_*` and `DISK_HEADROOM_*` families, `XDG_CONFIG_HOME`, `BASH_ENV`, `ENV`, `CDPATH`), every catchable terminating signal and every shell error ends the host entry with 20, and `HOME` and `CPA_HOST_STATE` both unset is 20 `state_unresolved`; revision 2: the run-id grammar, an unexecutable approved core is 20 (never 126), a relative `--paths-from` is read from the directory cpa-host was started in (WF11 review F9, F10, F12) |
 
 This document is the target of every refusal that `cpa-host` and the copied `commit-push-all.sh` print (`see: scripts/repo/host_entry/INSTALL.md`).
 
@@ -40,7 +40,7 @@ from the repository's own configuration, which must hold only the keys of the ap
 `HOME`, `CPA_HOST_STATE` and `TMPDIR` must be ABSOLUTE and every `PATH` element absolute and outside the repository you stand in (20 `env_value_unsafe`). `SSH_AUTH_SOCK` is passed because the SSH pushes of 2.1 need the owner's agent. `HOME`, `PATH`, `TMPDIR`, `CPA_HOST_STATE`, `SKIP_LONG` and
 `SSH_AUTH_SOCK` are the owner's own process environment: the trust root lives under `CPA_HOST_STATE`, so it is the boundary, not a leak. `BASH_ENV` and the like run NOWHERE.
 
-Ownership: a repository may be pushed only when EVERY url and push url of EVERY remote names an organisation of `scripts/audit/own_orgs.txt` (the main repository included). The real checkout has push URLs under `milos85vasic`: add that organisation to `own_orgs.txt`
+Ownership: a repository may be pushed only when EVERY url and push url of EVERY remote names an organisation of `scripts/audit/own_orgs.txt` (the main repository included). The real checkout has push URLs under `milos85vasic`: add that organisation to `own_orgs.txt` An absent, unreadable or empty `own_orgs.txt` is refused (20 `own_orgs_unverifiable`): a push whose ownership precondition cannot be verified fails closed.
 (or remove those push URLs) before the first real run, else S0 refuses with 20 `repo_not_owned` (UNCONFIRMED against a live run; the audit area owns that file).
 
 The released copy of a run (`.audit/commit-push/<run id>/released/`) is READ-ONLY (files 0444/0555, directories 0555): remove an old run directory with `chmod -R u+w .audit/commit-push/<run id> && rm -rf .audit/commit-push/<run id>`.

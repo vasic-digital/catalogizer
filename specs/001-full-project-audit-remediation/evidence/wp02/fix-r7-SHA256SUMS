@@ -1,0 +1,10 @@
+5c74a4602deb14777c068e9c7ed33ebe68696e91fab22c396a3fb2bf09ef1c9c  fix-r7-final-green-1.txt
+ba58bddaabb933c58c5679ffdd385028beebb05fccbedffc68fe220a66267479  fix-r7-final-green-2.txt
+fcf8fc29474cfa5bc651c33c75651be058d41d4bd7259c821f304166b3054ae7  fix-r7-final-green-3.txt
+099494c199ce77f6f0f735661a3afce02286c51c7d4d298a7bbb9b475750ffaf  fix-r7-mutation-index-health.txt
+0e10331fc3e8262f8016ef8ba3b94fdca646eecc7b9f577d44b2771b78a0135e  fix-r7-mutation-wp02.txt
+1846a74556de431bacdac33aa9881f2d9ee26b5cb01cde8f7cd448cff5b7eb12  fix-r7-notes.md
+65484243612778b1c420c69b43478cebfbf5dbec398790224219147bb78a68e2  fix-r7-red-index-health.txt
+ea369d6e7b5c86e8423b0df0cf446d58640cb20eb38b10ef4da7bee3ef832cc0  fix-r7-red-scope-drift.txt
+45328cf0656e567532a00ac0e839b00ce6010b74990ae7a35ab7ffd40ccc33f3  fix-r7-red-scope-to-lumen.txt
+26a7b8792fbc5a8c135b29946b38205096c2b1f6868d3f9cee00969b031bafc0  fix-r7-shellcheck.txt

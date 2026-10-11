@@ -1,8 +1,10 @@
 -- register_ext.sql : Catalogizer problem-register extension layer, v5 (v1 + review fixes 2026-10-03,
 --                    second review round 2026-10-03: §14.8, third review round 2026-10-03: §14.9,
 --                    fourth review round 2026-10-03: §14.10; v5 = WF2 review fix round 3, 2026-10-05:
---                    I-1 v_reopen_unlogged, I-2 v_deleted_items, I-4 findings custody; the docs/04 section 5
---                    revision owed for v5 is recorded in evidence/wp06/README.md)
+--                    I-1 v_reopen_unlogged, I-2 v_deleted_items, I-4 findings custody; v6 = WP-06 T068 review fix
+--                    round 2026-10-08: R-01 reg_ids_mint_monotone + v_ids_malformed, R-03 uq_reg_ids_import_marker +
+--                    v_import_mint_orphans; the docs/04 section 5 revision owed for v5 and v6 is recorded in
+--                    evidence/wp06/README.md and fix-r3-t068-owed-docs04-section5-v6.diff)
 -- Applies ON TOP of the constitution workable-items engine schema (meta.schema_version = 7).
 -- PRAGMA foreign_keys is per connection and OFF by default in the sqlite3 shell: this line binds only
 -- the connection that applies this file. Every writer MUST open with foreign keys ON (the engine does:
@@ -13,8 +15,8 @@ CREATE TABLE IF NOT EXISTS reg_meta (
   key TEXT PRIMARY KEY, value TEXT NOT NULL,
   last_modified TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')));
 INSERT OR IGNORE INTO reg_meta(key,value) VALUES ('engine_schema_required','7');
--- ext_schema_version is bumped on re-apply (v4 -> v5): an OR IGNORE would leave a stale version beside new objects
-INSERT INTO reg_meta(key,value) VALUES ('ext_schema_version','5')
+-- ext_schema_version is bumped on re-apply (v4 -> v5 -> v6): an OR IGNORE would leave a stale version beside new objects
+INSERT INTO reg_meta(key,value) VALUES ('ext_schema_version','6')
   ON CONFLICT(key) DO UPDATE SET value=excluded.value, last_modified=strftime('%Y-%m-%dT%H:%M:%SZ','now');
 
 -- identity anchor: one row per CAT id, monotone, never reused (spec FR-001, §11.4.54)
@@ -34,6 +36,19 @@ BEGIN SELECT RAISE(ABORT,'reg_ids is append-only (§11.4.54)'); END;
 CREATE TRIGGER IF NOT EXISTS reg_ids_no_replace BEFORE INSERT ON reg_ids
 WHEN EXISTS (SELECT 1 FROM reg_ids WHERE seq=NEW.seq)
 BEGIN SELECT RAISE(ABORT,'reg_ids is append-only: key exists (INSERT OR REPLACE refused)'); END;
+-- R-01 (T068): the mint is monotone, gapless and inside the engine heading grammar [A-Z]{3}-[0-9A-Za-z]+. seq is writable: an explicit seq (9, 0, -3), an
+-- out-of-order gap fill and a raised sqlite_sequence all produced ids such as CAT-000 or CAT--03, or skipped numbers. SQLite shows an auto-assigned key as -1
+-- inside a BEFORE INSERT trigger (undefined by its documentation), so the check runs AFTER the insert on the key the row really got: it must be >= 1 and equal
+-- the row count, i.e. exactly the next number of a gapless 1..N register (an explicit seq equal to that number is the same row the engine would have assigned).
+-- A restored dump loads its rows before this trigger exists (sqlite .dump emits triggers last), so a restore is not blocked.
+CREATE TRIGGER IF NOT EXISTS reg_ids_mint_monotone AFTER INSERT ON reg_ids
+-- the NEW.seq < 1 leg is reviewed-redundant (the row count is >= 1 after the insert, so count = seq already forces seq >= 1); kept as a stated invariant.
+-- The max leg is NOT redundant: in a gapped legacy register an explicit seq equal to the count passes the count leg only (test R205-1).
+WHEN NEW.seq < 1 OR NEW.seq <> (SELECT count(*) FROM reg_ids) OR NEW.seq <> (SELECT max(seq) FROM reg_ids)
+BEGIN SELECT RAISE(ABORT,'reg_ids: seq must be the next gapless number (explicit seq, gap, out-of-order or non-positive mint refused, 11.4.54)'); END;
+-- R-03 (T068): a retried import mint (a write whose status was unknown, then repeated) must not mint a second id for the same marker. Database-level
+-- uniqueness (11.4.253), scoped to import-basis rows; the importers' check-then-insert on minted_by stays as the fast path.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_reg_ids_import_marker ON reg_ids(minted_by) WHERE mint_basis='import';
 
 CREATE TABLE IF NOT EXISTS reg_components (
   component_id TEXT PRIMARY KEY CHECK (component_id = lower(component_id) AND component_id NOT GLOB '*[^a-z0-9_-]*'),
@@ -628,6 +643,17 @@ CREATE VIEW IF NOT EXISTS v_reopen_unlogged AS         -- the engine recorded a 
   HAVING count(*) > (SELECT count(*) FROM reg_status_log s WHERE s.atm_id=h.atm_id AND s.to_status='Reopened');
 CREATE VIEW IF NOT EXISTS v_ids_without_item AS        -- minted id never inserted (reported, never recycled)
   SELECT atm_id FROM reg_ids WHERE atm_id NOT IN (SELECT atm_id FROM items);
+CREATE VIEW IF NOT EXISTS v_ids_malformed AS           -- R-01: a mint the monotone trigger would refuse, found in the data itself (a dropped
+  SELECT seq, atm_id, 'bad_id_form' AS why FROM reg_ids   -- trigger, a raw write with it off, a restored forgery): non-positive seq or an id outside
+  WHERE seq < 1 OR atm_id NOT GLOB '[A-Z][A-Z][A-Z]-[0-9][0-9][0-9]*' OR substr(atm_id,5) GLOB '*[^0-9]*'   -- the engine grammar [A-Z]{3}-[0-9A-Za-z]+ (digits only here)
+  UNION ALL SELECT max(seq), NULL, 'gap' FROM reg_ids HAVING count(*) <> max(seq)   -- a number was skipped or reused: not 1..N
+  UNION ALL SELECT s.seq, NULL, 'sequence_raised' FROM sqlite_sequence s            -- R2-04: sqlite_sequence above max(seq): every later mint would be refused
+  WHERE s.name='reg_ids' AND s.seq <> (SELECT IFNULL(max(seq),0) FROM reg_ids);
+CREATE VIEW IF NOT EXISTS v_import_mint_orphans AS     -- R-03: an import mint that did not complete or was repeated; a retry must resume the
+  SELECT i.atm_id, i.minted_by, 'no_item_no_mapping' AS why FROM reg_ids i      -- marker's id, never leave a second one behind
+  WHERE i.mint_basis='import' AND i.atm_id NOT IN (SELECT atm_id FROM items) AND i.atm_id NOT IN (SELECT atm_id FROM reg_source_map)
+  UNION ALL SELECT i.atm_id, i.minted_by, 'duplicate_marker' FROM reg_ids i
+  WHERE i.mint_basis='import' AND EXISTS (SELECT 1 FROM reg_ids j WHERE j.mint_basis='import' AND j.minted_by=i.minted_by AND j.seq < i.seq);
 CREATE VIEW IF NOT EXISTS v_illegal_logged_edges AS   -- logged status changes that are not edges of the graph
   SELECT l.log_id, l.atm_id, l.from_status, l.to_status FROM reg_status_log l   -- (a raw DELETE + INSERT, §14.9 I3)
   WHERE l.from_status IS NOT NULL
@@ -696,7 +722,8 @@ INSERT OR IGNORE INTO reg_gate_checks VALUES
  ('reg_source_entries_no_replace','trigger_present'),('reg_source_map_no_delete','trigger_present'),
  ('v_replayed_evidence','view_empty'),('v_legacy_exempt','view_report'),
  ('reg_findings_no_delete','trigger_present'),('reg_findings_observation_no_update','trigger_present'),
- ('v_deleted_items','view_empty'),('v_reopen_unlogged','view_empty');
+ ('v_deleted_items','view_empty'),('v_reopen_unlogged','view_empty'),
+ ('reg_ids_mint_monotone','trigger_present'),('v_ids_malformed','view_empty'),('v_import_mint_orphans','view_empty');
 CREATE VIEW IF NOT EXISTS v_gate_missing_objects AS    -- a registered check whose object is absent (dropped trigger/view)
   SELECT g.name, g.kind FROM reg_gate_checks g
   WHERE NOT EXISTS (SELECT 1 FROM sqlite_master m WHERE m.name=g.name

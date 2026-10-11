@@ -1,0 +1,1 @@
+baseline green: the core suites run on the unmutated tree with 0 FAIL lines

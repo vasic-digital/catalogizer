@@ -1,0 +1,99 @@
+32
+ok   N1 the scope declares 32 baseline patterns (instrument sees the pattern set)
+FAIL N1 baseline build_outputs pattern [/out/] -> probe [out/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline build_outputs pattern [/dist/] -> probe [dist/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline build_outputs pattern [/target/] -> probe [target/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline build_outputs pattern [.compressed/] -> probe [a/.compressed/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N1 baseline caches pattern [**/ccache/] -> probe [a/ccache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.ccache/] -> probe [a/.ccache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.gradle/] -> probe [a/.gradle/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/__pycache__/] -> probe [a/__pycache__/probe.py] indexed -> P3 FAIL
+FAIL N1 baseline caches pattern [**/.pytest_cache/] -> probe [a/.pytest_cache/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline caches pattern [**/.mypy_cache/] -> probe [a/.mypy_cache/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline caches pattern [**/.ruff_cache/] -> probe [a/.ruff_cache/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N1 baseline caches pattern [**/node_modules/] -> probe [a/node_modules/probe.py] indexed -> P3 FAIL
+FAIL N1 baseline caches pattern [**/.cache/] -> probe [a/.cache/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline caches pattern [**/.venv/] -> probe [a/.venv/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline caches pattern [**/logs/] -> probe [a/logs/probe.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N1 baseline qa_corpora pattern [**/qa-results/] -> probe [a/qa-results/probe.py] indexed -> P3 FAIL
+ok   N1 baseline qa_corpora pattern [**/recordings/] -> probe [a/recordings/probe.py] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [.env] -> probe [a/.env] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [.env.*] -> probe [a/.env.probe] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.env] -> probe [a/probe.env] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*secret*] -> probe [a/probesecretprobe] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [**/secrets/] -> probe [a/secrets/probe.py] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.jks] -> probe [a/probe.jks] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.keystore] -> probe [a/probe.keystore] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.p12] -> probe [a/probe.p12] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pfx] -> probe [a/probe.pfx] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pk8] -> probe [a/probe.pk8] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pem] -> probe [a/probe.pem] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.key] -> probe [a/probe.key] indexed -> P3 FAIL
+FAIL N1 baseline secrets pattern [**/service-account*.json] -> probe [a/service-accountprobe.json] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline secrets pattern [**/google-services.json] -> probe [a/google-services.json] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 baseline secrets pattern [**/credentials*.json] -> probe [a/credentialsprobe.json] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/google-services.json -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/credentials.json -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/service-account-x.json -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.venv/x.py -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.pytest_cache/x -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/logs/x.log -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.mypy_cache/x -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.ruff_cache/y -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.cache/z -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N1 review fixture a/.compressed/q.bin -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N1 control (false-positive guard): near-miss a/b.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/logger/x.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/.venv-notes.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/google-services-readme.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/credentials.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/outline.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/dist.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/cachefile.go -> P3 PASS
+FAIL N1 baseline pattern *.zzvault with no class -> P3 FAIL forbidden_classes_unusable (subset check): want rc=1 P3=FAIL baseline_pattern_uncovered, got rc=3 P3=PASS reason=[]
+FAIL N1 scope with the credentials/service-account class removed -> P3 FAIL (a secret pattern lost its class): want rc=1 P3=FAIL forbidden_classes_unusable, got rc=3 P3=PASS reason=[]
+ok   N1 golden-false: a scope with sound classes and no baseline_excludes key is not refused -> P3 PASS
+FAIL N1 malformed baseline_excludes (not a mapping) -> P3 FAIL baseline_excludes_malformed: want rc=1 P3=FAIL baseline_excludes_malformed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/server.PEM -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/Release.JKS -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/.ENV -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/x.KEY -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/Google-Services.JSON -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+FAIL N4 case variant a/SECRETS/q.txt -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N4 case variant docs/security/SECRETS_MANAGEMENT.md -> P3 FAIL
+FAIL N4 case variant a/App.P12 -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=3 P3=PASS reason=[]
+ok   N4 measured: the runner's ignore library (codegraph.json exclude) excludes every case variant, i.e. is case-insensitive
+ok   N4 control needle: the library does distinguish the modes (default true, ignorecase:false false)
+ok   N5 a/secrets/db.yaml.example -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/.env.example.bak -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/.env.sample.bak -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/secrets/token.sample -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 control: .env.example stays exempt -> P3 PASS
+ok   N5 control: .env.sample stays exempt -> P3 PASS
+FAIL N7 want rc=2, got rc=3
+FAIL N7 year-2000 capture without bound: rc=3 (want usage 2)
+ok   N7 control: with the bound a year-2000 capture -> P7 FAIL
+ok   N7 control: a fresh capture with the bound -> P7 PASS
+FAIL N2 golden-false: rc=1 verdict=FAIL skipped=[] reasons=///drift_report_unusable
+FAIL N2 row kind not recorded
+FAIL N2 evidence_sha256 = 64 zeros (resolves to no file hash) -> P4 FAIL: want rc=1 P4=FAIL evidence_hash_mismatch, got rc=1 P4=PASS reason=[]
+FAIL N2 cmd 'echo trust me' (outside the closed allow-list) -> P4 FAIL: want rc=1 P4=FAIL live_proof_cmd_not_allowed, got rc=1 P4=PASS reason=[]
+FAIL N2 captured_at year 2000 (before --captured-not-before) -> P4 FAIL: want rc=1 P4=FAIL live_proof_stale, got rc=1 P4=PASS reason=[]
+FAIL N2 captured_at unparseable -> P4 FAIL: want rc=1 P4=FAIL captured_at_unparseable, got rc=1 P4=PASS reason=[]
+FAIL N2 evidence_path names no file -> P4 FAIL: want rc=1 P4=FAIL evidence_file_unreadable, got rc=1 P4=PASS reason=[]
+FAIL N2 a real file with the right hash that does not contain the command -> P4 FAIL: want rc=1 P4=FAIL evidence_does_not_record_cmd, got rc=1 P4=PASS reason=[]
+FAIL N2 empty evidence file -> P4 FAIL: want rc=1 P4=FAIL evidence_empty, got rc=1 P4=PASS reason=[]
+FAIL N2 entry without captured_at -> P4 FAIL malformed: want rc=1 P4=FAIL live_proof_entry_malformed, got rc=1 P4=PASS reason=[]
+FAIL N2 kind outside {live, fallback} -> P4 FAIL malformed: want rc=1 P4=FAIL live_proof_entry_malformed, got rc=1 P4=PASS reason=[]
+FAIL N2 P6 whose allowed cmd differs from the one its evidence records -> P6 FAIL: want rc=1 P6=FAIL evidence_does_not_record_cmd, got rc=1 P6=PASS reason=[]
+FAIL N2 P6 with a program allowed for P5 only (git) -> P6 FAIL live_proof_cmd_not_allowed: want rc=1 P6=FAIL live_proof_cmd_not_allowed, got rc=1 P6=PASS reason=[]
+FAIL N2 a grep command entered as kind=live -> P4 FAIL live_proof_cmd_not_allowed (grep is fallback-only): want rc=1 P4=FAIL live_proof_cmd_not_allowed, got rc=1 P4=PASS reason=[]
+FAIL N2 fallback: rc=1 P4=PASS verdict=FAIL
+FAIL N2 fallback reason: []
+FAIL N2 hand-written all-rc-0 list (no schema, no scope binding) -> P-ScopeDrift FAIL: want rc=1 P-ScopeDrift=FAIL drift_report_unusable, got rc=0 P-ScopeDrift=PASS reason=[]
+FAIL N2 drift report for a different scope (scope_sha256 mismatch) -> P-ScopeDrift FAIL: want rc=1 P-ScopeDrift=FAIL drift_report_not_for_this_scope, got rc=1 P-ScopeDrift=FAIL reason=[drift_report_unusable]
+FAIL N2 drift report for a different .lumenignore (lumenignore_sha256 mismatch) -> P-ScopeDrift FAIL: want rc=1 P-ScopeDrift=FAIL drift_report_not_for_this_lumenignore, got rc=1 P-ScopeDrift=FAIL reason=[drift_report_unusable]
+FAIL N2 control: a bound report with a failing check -> P-ScopeDrift FAIL drift:: want rc=1 P-ScopeDrift=FAIL drift:scope_to_lumen_json_check, got rc=1 P-ScopeDrift=FAIL reason=[drift_report_unusable]
+ok   N2 drift report without the head it judged -> P-ScopeDrift FAIL
+FAIL N2 control: the bound report passes again: want rc=0 P-ScopeDrift=PASS , got rc=1 P-ScopeDrift=FAIL reason=[drift_report_unusable]
+SUMMARY pass=41 fail=56 skip=0

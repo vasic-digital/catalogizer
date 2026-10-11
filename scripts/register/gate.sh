@@ -6,7 +6,8 @@
 #   v_gate_missing_objects empty | every reg_gate_checks view_empty view returns 0 rows |
 #   schema and seed equal a fresh reference built from register_ext.sql, over EVERY schema object (an added
 #   trigger, view, index or table of any name is an unexpected object, WF2 I-1) | engine schema_version equals
-#   reg_meta.engine_schema_required (m-4) | every cited reg_evidence file re-hashes to its recorded sha256 (I-3).
+#   reg_meta.engine_schema_required (m-4) | every cited reg_evidence file re-hashes to its recorded sha256 (I-3) |
+#   the id prefix agrees across .helix/reporting.yaml, the DDL literal and both importers (R-04, step_prefix_agreement).
 # The DB under test is never modified: every read goes through a read-only copy made with the SQLite online
 # backup taken from a read-only connection (a WAL register keeps its -wal untouched, m-2); the engine's own
 # `validate` may migrate, so it runs on the copy too. Prints `GATE OK` only when every step passed.
@@ -28,7 +29,7 @@
 set -u
 export LC_ALL=C   # sort and comm must agree on the collation
 ROOT=${REG_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
-WI=${WI:-$ROOT/submodules/constitution/scripts/workable-items/bin/workable-items-linux}
+WI=${WI:-$ROOT/constitution/scripts/workable-items/bin/workable-items-linux}
 SQLITE3=${SQLITE3:-sqlite3}
 DB=""; EXT=${REG_EXT_SQL:-$ROOT/scripts/register/register_ext.sql}; ALLOW_URL=0; COMPLETION=0
 while [ $# -gt 0 ]; do case "$1" in
@@ -183,6 +184,30 @@ step_not_done() {
   done < <(q "SELECT name FROM reg_gate_checks WHERE kind='view_not_done'")
 }
 
+# R-04 (T068): the register id prefix is declared in four places that nothing connected: .helix/reporting.yaml `id_prefix` (the declared DATA, constitution
+# 2026-10-08 extension of 11.4.54), the generated-column literal of the DDL ('CAT-' || printf), and the `--prefix` argument of both importers. The four
+# values must be one and the same 3-letter key. A missing source, a source with no literal prefix, or a source holding two different values is a FAIL, never
+# agreement (a check that finds nothing is blind, 11.4.201(6)). The column name atm_id is NOT part of this check and is kept: the rename to ticket_id is
+# owed ENGINE work (schema migration plus compatibility view), a local rename would diverge from the engine's own items.atm_id.
+step_prefix_agreement() {
+  local y d f v all="" n=0 ok=1 yaml="$ROOT/.helix/reporting.yaml"
+  if [ ! -f "$yaml" ]; then fail "prefix_agreement: $yaml is absent (the declared id_prefix cannot be read)"; return; fi
+  y=$(sed -n "s/^id_prefix:[[:space:]]*[\"']\{0,1\}\([A-Z][A-Z][A-Z]\)[\"']\{0,1\}[[:space:]]*\(#.*\)\{0,1\}\$/\1/p" "$yaml")
+  [ "$(printf '%s\n' "$y" | grep -c .)" = 1 ] || { fail "prefix_agreement: $yaml holds $(printf '%s\n' "$y" | grep -c .) readable id_prefix lines of 3 capital letters, expected exactly 1"; ok=0; }
+  d=$(sed -n "s/^[[:space:]]*atm_id[[:space:]].*GENERATED ALWAYS AS ('\([A-Z][A-Z][A-Z]\)-' || printf.*/\1/p" "$EXT" | sort -u)
+  [ "$(printf '%s\n' "$d" | grep -c .)" = 1 ] || { fail "prefix_agreement: the DDL $EXT holds $(printf '%s\n' "$d" | grep -c .) atm_id generated-column literals of the form ('XXX-' || printf, expected exactly 1"; ok=0; }
+  for f in import_plan.py import_tickets.py; do
+    if [ ! -f "$ROOT/scripts/register/$f" ]; then fail "prefix_agreement: $ROOT/scripts/register/$f is absent"; ok=0; continue; fi
+    # R2-02: EVERY "--prefix", "<literal>" of any shape is extracted (a malformed or second literal must not be invisible), then exactly one value is required
+    v=$(grep -o '"--prefix", "[^"]*"' "$ROOT/scripts/register/$f" | sed 's/.*, "\(.*\)"/\1/' | sort -u)
+    [ "$(printf '%s\n' "$v" | wc -l)" = 1 ] && printf '%s' "$v" | grep -Eq '^[A-Z]{3}$' || { fail "prefix_agreement: scripts/register/$f holds literal --prefix value(s) [$(sane "$(printf '%s' "$v" | tr '\n' ' ')")] , expected exactly one value of 3 capital letters (the engine heading grammar)"; ok=0; continue; }
+    all="$all $v"; n=$((n+1))
+  done
+  [ "$ok" = 1 ] || return
+  [ "$(printf '%s\n' $y $d $all | sort -u | grep -c .)" = 1 ] || { fail "prefix_agreement: id prefix differs between the sources: reporting.yaml=$(sane "$y") DDL=$(sane "$d") importers=$(sane "$all")"; return; }
+  echo "INFO prefix_agreement prefix=$y sources=$((2+n))"
+}
+
 URL_SKIPPED=0
 step_reference_diff   # first: builds the trusted reference and compares schema + seed before any query uses DB contents
 step_engine_version   # before the engine's validate: validate migrates the copy, which would hide a stale schema_version
@@ -192,6 +217,7 @@ step_fk
 step_missing_objects
 step_view_empty
 step_evidence_rehash
+step_prefix_agreement
 [ $COMPLETION = 1 ] && step_not_done
 if [ $rc != 0 ]; then echo "GATE FAILED"; exit 1; fi
 if [ $COMPLETION = 1 ] && [ "$ND_VIEWS" -gt 0 ]; then echo "COMPLETION NOT DONE views=$ND_VIEWS rows=$ND_ROWS"; exit 4; fi   # GUARD_ND_EXIT

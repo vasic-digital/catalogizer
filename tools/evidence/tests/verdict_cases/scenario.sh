@@ -66,3 +66,6 @@ case $case in
                       dep broken2.sh; run1 RED; iters=(1 2 3); green fixed2.sh ;;      # GREEN on that same artifact
   green_old_fp)       dep broken2.sh; run1 REOPEN; run1 RED; iters=(1 2 3); green fixed.sh ;;  # GREEN on the cycle-1 artifact
 esac
+# review R5: the deriver compares the anchors, so every ledger the recorder can write is anchored (the end-of-session anchor, docs/06 s8). A ledger that
+# holds an entry the strict recorder refused (the forged cases, derived with --chain-only) does not verify, is not anchored, and needs no anchor there.
+"$EVREC" end-session >/dev/null 2>&1 || true

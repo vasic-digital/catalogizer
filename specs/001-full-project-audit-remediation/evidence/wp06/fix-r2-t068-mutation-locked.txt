@@ -1,0 +1,9 @@
+# identity: group=locked utc=2026-10-08T13:53:37Z host=anton uid=1000 git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c
+# runner_sha256=7f56ba8b86adfdf7e1b19736b7903b0e82d10424fe5441c7785e734cc5643ea6 test_sha256=b36d920943dac91579ae2c19d5f689dcdd3e659635b2b3f553faa9ada7f4a055 sut_sha256=b8208d57985b6e9ad7d3b68652734839ba3126bd62440cfa4c17d85eac9087b1 followup_tests=test_fix_wp06_r2.sh|R11|1 test_fix_r2.sh|DRAIN SIG RACE FENCE LC RP T4|1 test_fix_r4.sh|SIG3 STATUS FENCE4 SCOPE|1 test_fix_r1.sh|F3 F4 F5 F6 F13 F11|1 test_fix_r2.sh|REAL| test_fix_r4.sh|SWEEP REALSTAT REALSCOPE| test_replay.sh|| fix_r1_sha256=41b29ffeaf41737cd7299101175c5fcdb5bfa76a245e4478622e819a4aa35984
+# mutant<TAB>killed<TAB>first failing check of test_locked.sh
+fence_removed	yes	test_fix_wp06_r2.sh [R11]: FAIL R11-1 rc=0 [locked: WARNING cannot ask podman whether a container of r11a is still running; the write is 
+R11_fence_skipped_for_out_runs	yes	test_fix_wp06_r2.sh [R11]: FAIL R11-1 rc=0 [locked: WARNING cannot ask podman whether a container of r11a is still running; the write is 
+MX2_fence_podman_failure_is_gone	yes	test_fix_wp06_r2.sh [R11]: FAIL R11-1 rc=0 [locked: WARNING cannot ask podman whether a container of r11a is still running; the write is 
+MX3_fence_before_lock	yes	test_fix_r4.sh [SIG3 STATUS FENCE4 SCOPE]: FAIL F4-4 overlap: w 1791468164064576627 f44a s 1791468164096053600 ctr-f44a w 1791468164795006720 f44b s 1791
+negative_control_comment	NO	test_replay.sh: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=23 fail=0

@@ -1,0 +1,30 @@
+# identity: group=replay utc=2026-10-08T14:42:41Z host=anton uid=1000 git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c
+# runner_sha256=7f56ba8b86adfdf7e1b19736b7903b0e82d10424fe5441c7785e734cc5643ea6 test_sha256=4917cd9b2cebf8eb8295de1d90b52687c22531cd10ed1f9860c23260e2790265 sut_sha256=9b6e7ec0f1e8ed863fadd8753a0a8d8391cb46253c394038b4a5158d244c6831 followup_tests=test_fix_r1.sh|F1 F2 F8|1 test_fix_r2.sh|N1S T5|1 test_fix_r4.sh|M6|1 test_fix_r2.sh|N1E| test_fix_wp06_r2.sh|R02 R10|1 fix_r1_sha256=41b29ffeaf41737cd7299101175c5fcdb5bfa76a245e4478622e819a4aa35984
+# mutant<TAB>killed<TAB>first failing check of test_replay.sh
+ids_unknown_unchecked	yes	test_fix_r1.sh [F1 F2 F8]: FAIL F1-1 [rc=0 replay: OK replayed=1 skipped=0 ids_kept=- gate=GATE OK out=/tmp/mutops.VpCxWa/s.ids_unknown_u
+R02_row_validation_removed	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-seq rc=1 [Traceback (most recent call last):
+R02_field_seq_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-seq rc=1 [Traceback (most recent call last):
+R02_field_op_id_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-op_id rc=1 [Traceback (most recent call last):
+R02_field_mode_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-mode rc=1 [Traceback (most recent call last):
+R02_field_argv_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-argv rc=1 [Traceback (most recent call last):
+R02_field_db_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-db rc=1 [Traceback (most recent call last):
+R02_field_db_sha_before_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-db_sha_before rc=1 [Traceback (most recent call last):
+R02_field_db_sha_after_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-db_sha_after rc=1 [Traceback (most recent call last):
+R02_field_ids_minted_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-ids_minted rc=1 [Traceback (most recent call last):
+R02_field_ids_snapshot_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-ids_snapshot rc=1 [Traceback (most recent call last):
+R02_field_wal_bytes_before_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-wal_bytes_before rc=1 [Traceback (most recent call last):
+R02_field_wal_bytes_after_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-wal_bytes_after rc=1 [Traceback (most recent call last):
+R02_field_exit_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-exit rc=1 [Traceback (most recent call last):
+R02_field_input_args_not_required	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-input_args rc=1 [Traceback (most recent call last):
+R02_wal_bytes_type_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v1-wal_bytes_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_ids_snapshot_enum_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v5-ids_snapshot rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_hash_shape_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v9-db_sha_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_ids_minted_type_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v4-ids_minted rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_exit_type_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v6-exit rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_mode_enum_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v8-mode rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+R02_seq_type_unchecked	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R02-v7-seq rc=1 [Traceback (most recent call last):
+R10_created_always	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R10-1 rc=20 dir=DELETED [replay: REFUSED reason=backup_failed stub backup failure ]
+R10_own_outputs_not_removed	yes	test_fix_wp06_r2.sh [R02 R10]: FAIL R10-4 rc=20 [replay: REFUSED reason=backup_failed ] ls=backup.json 
+R10_foreign_files_removed	yes	test_replay.sh: FAIL P17 [replay: REFUSED reason=out_dir_not_empty /tmp/mutops.VpCxWa/s.R10_foreign_files_removed/regtest.Cd6P
+negative_control_comment	NO	test_fix_wp06_r2.sh [R02 R10]: 
+GOLDEN_GOOD_CONTROL	pass	RESULT pass=32 fail=0

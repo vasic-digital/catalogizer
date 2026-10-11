@@ -175,7 +175,7 @@ def catalogue_lines(index, has_following_heading):
         if not members:
             continue
         lines += ["### %s (%d anchors)" % (group_title(g["name"]), len(members)), "",
-                  "Canon: `submodules/constitution/groups/%s.md`" % g["name"], ""]
+                  "Canon: `constitution/groups/%s.md`" % g["name"], ""]
         lines += ["- **§%s** — %s" % (a["id"], clean_title(a["title"])) for a in members]
         lines.append("")
     if not has_following_heading and lines[-1] == "":
@@ -184,7 +184,7 @@ def catalogue_lines(index, has_following_heading):
 
 
 def pinned_paragraph(commit, canon_sha, index_sha, lag_ids):
-    head = ["**Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `submodules/constitution` at commit",
+    head = ["**Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `constitution` at commit",
             "`%s`; `Constitution.md` sha256" % commit]
     if index_sha == canon_sha:
         return head + ["`%s`, identical to the hash" % canon_sha,
@@ -197,7 +197,7 @@ def pinned_paragraph(commit, canon_sha, index_sha, lag_ids):
 
 
 def pin_row(commit, canon_sha, index_sha):
-    row = "| Canon pin | `submodules/constitution` at `%s`; `Constitution.md` sha256 `%s`" % (commit, canon_sha)
+    row = "| Canon pin | `constitution` at `%s`; `Constitution.md` sha256 `%s`" % (commit, canon_sha)
     if index_sha != canon_sha:
         row += "; `constitution_index.yaml` records sha256 `%s` (the index lags this pin)" % index_sha
     return row + " |"

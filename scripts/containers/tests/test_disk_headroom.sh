@@ -22,6 +22,8 @@ trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$T"' EXIT
 # Round 7 (WF7 F7-8): every run of the gate under test that does not get its own TMPDIR (a gate killed with SIGKILL cannot remove its private
 # mktemp -d directory) now leaves its junk inside $T, which the trap above removes, not in the caller's TMPDIR. Which suite leaves it is UNCONFIRMED.
 mkdir -p "$T/tmproot" && export TMPDIR="$T/tmproot"
+# round 8 (R-2): the gate honours its test overrides (DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT, EV, CPA_HOST_ENTRY) only under this declared test mode; env_suite unsets it
+export DISK_HEADROOM_TEST_MODE=1
 MUT_RECORD="${DISK_HEADROOM_MUTATION_RECORD:-$T/disk-headroom-mutation.txt}"
 SHIMS="$T/shims"; mkdir -p "$SHIMS"
 cat >"$SHIMS/podman" <<'SH'
@@ -594,7 +596,7 @@ dep_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
       if [ "$t" = podman ] || [ "$t" = df ]; then ln -s "$SHIMS/$t" "$B/$t"; else ln -s "$(command -v "$t")" "$B/$t"; fi
     done
     RC=0
-    env -i PATH="$B" HOME="$HOME" SHIM_GRAPHROOT="$GRAPH" SHIM_DF_GRAPH=5000 SHIM_DF_REPO=5000 DISK_HEADROOM_REPO_ROOT="$R" EV="$R/ev" DISK_HEADROOM_CONF="$T/conf" \
+    env -i PATH="$B" HOME="$HOME" DISK_HEADROOM_TEST_MODE=1 SHIM_GRAPHROOT="$GRAPH" SHIM_DF_GRAPH=5000 SHIM_DF_REPO=5000 DISK_HEADROOM_REPO_ROOT="$R" EV="$R/ev" DISK_HEADROOM_CONF="$T/conf" \
       "$TOUTB" 20 "$BASHB" "$S" --need 1 --op-id dep >"$R/o.txt" 2>"$R/e.txt" || RC=$?
     check "[$label] M5 '$tool' missing: refused rc 2 with reason=dependency_missing naming it" "$RC/$(grep -c "reason=dependency_missing $tool" "$R/e.txt")" "2/1"
     check "[$label] M5 '$tool' missing: nothing written" "$([ -e "$R/ev/disk/dep.json" ] && echo yes || echo no)" "no"
@@ -879,6 +881,71 @@ WRAP
   TS_FAILS=$((FAILS-before))
 }
 
+# =================== review fix round 8 (WP-09-T010 R-2): test overrides are gated; every environment read is classified ===================
+# Safe/unsafe classification of EVERY default-expansion environment read of the gate (a new unclassified variable FAILs the suite):
+#   gated   : DISK_HEADROOM_CONF DISK_HEADROOM_REPO_ROOT CPA_HOST_ENTRY (refused, rc 2, outside DISK_HEADROOM_TEST_MODE=1) and EV (ignored there)
+#   gate    : DISK_HEADROOM_TEST_MODE (exactly "1")
+#   documented-safe: DISK_HEADROOM_OUT_DIR (moves the record and skips the commit-turn freeze for CPA; never lifts the floor)
+#   validated-safe : DISK_HEADROOM_REAPER_TIMEOUT DISK_HEADROOM_CMD_TIMEOUT (positive base-10 integers, else rc 2)
+#   contract-safe  : EVREC_TURN_RUN_ID (names the run that may hold the commit-turn grant), TMPDIR (private mktemp -d), HOME (default host entry path only)
+DH_ENV_CLASS="DISK_HEADROOM_CONF:gated DISK_HEADROOM_REPO_ROOT:gated CPA_HOST_ENTRY:gated EV:gated DISK_HEADROOM_TEST_MODE:gate DISK_HEADROOM_OUT_DIR:documented-safe DISK_HEADROOM_REAPER_TIMEOUT:validated-safe DISK_HEADROOM_CMD_TIMEOUT:validated-safe EVREC_TURN_RUN_ID:contract-safe TMPDIR:contract-safe HOME:contract-safe GRUN:internal"
+env_suite() { # $1 = script under test; $2 = label; sets TS_FAILS
+  local S="$1" label="$2" before=$FAILS R="$T/envs-$2" found v un="" C rc
+  rm -rf "${R:?}"; mkdir -p "$R/scripts/containers" "$R/ev2" "$R/ev3"
+  cp "$S" "$R/scripts/containers/disk_headroom.sh"; mkconf "$R/scripts/containers/disk_headroom.conf" 1000; mkconf "$R/zero.conf" 0
+  printf '#!/usr/bin/env bash\nexit 0\n' >"$R/stub-host"; chmod +x "$R/stub-host"
+  local G="$R/scripts/containers/disk_headroom.sh" EVD="$R/specs/001-full-project-audit-remediation/evidence"
+  dh_env() { # dh_env <op> <df> <need> [VAR=val...]: the gate in a clean environment (no test-mode variables unless given); sets RC ERR
+    local op=$1 df=$2 need=$3; shift 3; RC=0
+    env -u DISK_HEADROOM_CONF -u DISK_HEADROOM_REPO_ROOT -u EV -u CPA_HOST_ENTRY -u DISK_HEADROOM_TEST_MODE -u DISK_HEADROOM_OUT_DIR -u EVREC_TURN_RUN_ID \
+      PATH="$SHIMS:$PATH" SHIM_GRAPHROOT="$GRAPH" SHIM_DF_GRAPH="$df" SHIM_DF_REPO="$df" "$@" timeout 20 bash "$G" --need "$need" --op-id "$op" >"$R/o.txt" 2>"$R/e.txt" || RC=$?
+    ERR="$(cat "$R/e.txt")"
+  }
+  found="$(grep -oE '\$\{[A-Z][A-Z0-9_]*(:-|-|:\+|\+)' "$S" | sed -E 's/^\$\{//; s/(:-|-|:\+|\+)$//' | sort -u | tr '\n' ' ')"
+  for v in $found; do case " $DH_ENV_CLASS " in *" $v:"*) ;; *) un="$un $v";; esac; done
+  check "[$label] R-2 every default-expansion environment read is classified" "$un" ""
+  dh_env c1 5000 600; check "[$label] R-2 control: a clean environment passes" "$RC/$([ -s "$EVD/disk/c1.json" ] && echo rec || echo none)" "0/rec"
+  dh_env c2 1500 600; check "[$label] R-2 control: floor 1000 refuses 900 left (disk_below_headroom), rc 1" "$RC/$(echo "$ERR" | grep -c 'reason=disk_below_headroom')" "1/1"
+  # DISK_HEADROOM_CONF
+  dh_env k1 1500 600 DISK_HEADROOM_CONF="$R/zero.conf"
+  check "[$label] R-2 DISK_HEADROOM_CONF outside test mode: refused rc 2 test_override_outside_test_mode, nothing written" "$RC/$(echo "$ERR" | grep -c 'reason=test_override_outside_test_mode')/$([ -e "$EVD/disk/k1.json" ] && echo rec || echo none)" "2/1/none"
+  dh_env k2 1500 600 DISK_HEADROOM_CONF="$R/zero.conf" DISK_HEADROOM_TEST_MODE=1
+  check "[$label] R-2 DISK_HEADROOM_CONF with DISK_HEADROOM_TEST_MODE=1 is honoured (floor 0 passes), rc 0" "$RC" 0
+  for tm in yes 0 true 11 ""; do
+    dh_env k3 1500 600 DISK_HEADROOM_CONF="$R/zero.conf" DISK_HEADROOM_TEST_MODE="$tm"
+    check "[$label] R-2 DISK_HEADROOM_TEST_MODE='$tm' is not the switch (only exactly 1): conf override refused, rc 2" "$RC" 2
+  done
+  # DISK_HEADROOM_REPO_ROOT
+  mkdir -p "$R/other"
+  dh_env r1 5000 1 DISK_HEADROOM_REPO_ROOT="$R/other"
+  check "[$label] R-2 DISK_HEADROOM_REPO_ROOT naming another root outside test mode: refused rc 2, nothing written" "$RC/$(echo "$ERR" | grep -c 'reason=test_override_outside_test_mode')/$([ -e "$EVD/disk/r1.json" ] && echo rec || echo none)" "2/1/none"
+  dh_env r2 5000 1 DISK_HEADROOM_REPO_ROOT="$R/scripts/containers/../.."
+  check "[$label] R-2 control: DISK_HEADROOM_REPO_ROOT equal to the gate's own root (existing callers) is not refused, rc 0" "$RC" 0
+  dh_env r3 5000 1 DISK_HEADROOM_REPO_ROOT="$R/other" DISK_HEADROOM_TEST_MODE=1 DISK_HEADROOM_OUT_DIR="$R/ev3"
+  check "[$label] R-2 DISK_HEADROOM_REPO_ROOT with test mode is honoured: the repository filesystem path is the override" "$RC/$(jq -r '.filesystems[]|select(.role=="repository").path' "$R/ev3/r3.json" 2>/dev/null)" "0/$R/other"
+  dh_env r4 5000 1 DISK_HEADROOM_REPO_ROOT="$R/does-not-exist"
+  check "[$label] R-2 DISK_HEADROOM_REPO_ROOT naming a missing directory outside test mode: refused rc 2" "$RC" 2
+  # CPA_HOST_ENTRY
+  dh_env h1 5000 1 CPA_HOST_ENTRY="$R/stub-host"
+  check "[$label] R-2 CPA_HOST_ENTRY outside test mode: refused rc 2 test_override_outside_test_mode" "$RC/$(echo "$ERR" | grep -c 'reason=test_override_outside_test_mode')" "2/1"
+  dh_env h2 5000 1 CPA_HOST_ENTRY="$R/stub-host" DISK_HEADROOM_TEST_MODE=1
+  check "[$label] R-2 CPA_HOST_ENTRY with test mode is accepted, rc 0" "$RC" 0
+  # EV: not honoured outside test mode (the record goes to the gate's own evidence directory), honoured inside
+  dh_env e1 5000 1 EV="$R/ev2"
+  check "[$label] R-2 EV outside test mode is ignored: record under the gate's own evidence dir, none under EV" "$RC/$([ -s "$EVD/disk/e1.json" ] && echo own || echo no)/$([ -e "$R/ev2/disk/e1.json" ] && echo ev || echo none)" "0/own/none"
+  dh_env e2 5000 1 EV="$R/ev2" DISK_HEADROOM_TEST_MODE=1
+  check "[$label] R-2 EV with test mode is honoured: record under EV" "$RC/$([ -s "$R/ev2/disk/e2.json" ] && echo ev || echo no)" "0/ev"
+  # the documented-safe and validated-safe classes
+  dh_env o1 1500 600 DISK_HEADROOM_OUT_DIR="$R/ev3"
+  check "[$label] R-2 DISK_HEADROOM_OUT_DIR (documented-safe) moves the record but does not lift the floor: rc 1 disk_below_headroom" "$RC/$(echo "$ERR" | grep -c 'reason=disk_below_headroom')/$([ -s "$R/ev3/o1.json" ] && echo rec || echo none)" "1/1/rec"
+  for tv in 0 abc -1 "1 2"; do
+    dh_env t1 5000 1 DISK_HEADROOM_CMD_TIMEOUT="$tv"; check "[$label] R-2 DISK_HEADROOM_CMD_TIMEOUT='$tv' (validated-safe) is refused, rc 2" "$RC" 2
+    dh_env t2 5000 1 DISK_HEADROOM_REAPER_TIMEOUT="$tv"; check "[$label] R-2 DISK_HEADROOM_REAPER_TIMEOUT='$tv' (validated-safe) is refused, rc 2" "$RC" 2
+  done
+  TS_FAILS=$((FAILS-before))
+}
+
+if [ "${DH_ONLY_ENV:-0}" = 1 ]; then QUIET=0 env_suite "$SUT" real; echo "disk_headroom env tests: $PASSES passed, $FAILS failed"; [ "$FAILS" -eq 0 ]; exit $?; fi
 if [ "${DH_ONLY_R4:-0}" = 1 ]; then   # fast loop for the round-4 fixtures: only the suites above plus the own-ness units
   QUIET=0 freeze_suite "$SUT" real; QUIET=0 conf_suite "$SUT" real; QUIET=0 privtmp_suite "$SUT" real; QUIET=0 own_suite "$SUT" real
   echo "disk_headroom r4 tests: $PASSES passed, $FAILS failed"; [ "$FAILS" -eq 0 ]; exit $?
@@ -916,6 +983,8 @@ QUIET=0 conf_suite "$SUT" real
 REAL_CONF_FAILS=$TS_FAILS
 QUIET=0 privtmp_suite "$SUT" real
 REAL_PTM_FAILS=$TS_FAILS
+QUIET=0 env_suite "$SUT" real
+REAL_ENV_FAILS=$TS_FAILS
 
 # F7: a hung host entry point must not hang the gate; the reaper call is bounded and counts as failing
 RR="$T/reaper-hang"; mkdir -p "$RR/.audit"
@@ -1003,6 +1072,13 @@ mutate grant-enoent-as-none       '/# MUT:enoent$/c\  [ -e "$GRANT" ] || return 
 mutate freeze-outdir-set-semantics '/# MUT:outdir-decision$/c\OUT_DIR_IN_USE=0; [ -n "${DISK_HEADROOM_OUT_DIR+x}" ] \&\& OUT_DIR_IN_USE=1' freeze_suite
 mutate bounded-predictable-name   '/# MUT:outname$/c\  OUT_N=$((OUT_N + 1)); OUT_F="${TMPDIR:-/tmp}/disk_headroom.out.$$.$OUT_N"' privtmp_suite
 mutate conf-whitespace-merged     '/# MUT:conf-trim$/c\RAW="$(printf '"'"'%s\\n'"'"' "$KEYLINES" | cut -d= -f2- | tr -d '"'"'[:space:]'"'"')"' conf_suite
+# round 8 (R-2): each gated override, the exact-1 switch, and the false-positive guard (an override equal to the gate's own root)
+mutate ov-gate-loose              '/# MUT:ov-gate$/c\TESTMODE=0; [ -n "${DISK_HEADROOM_TEST_MODE:-}" ] \&\& TESTMODE=1' env_suite
+mutate ov-conf-dropped            '/# MUT:ov-conf$/c\  :' env_suite
+mutate ov-root-dropped            '/# MUT:ov-root$/c\  :' env_suite
+mutate ov-root-always-refused     '/# MUT:ov-root$/c\  [ -z "${DISK_HEADROOM_REPO_ROOT:-}" ] || override_refused DISK_HEADROOM_REPO_ROOT' env_suite
+mutate ov-host-dropped            '/# MUT:ov-host$/c\  :' env_suite
+mutate ov-ev-dropped              '/# MUT:ov-ev$/c\  :' env_suite
 check "real script: bound suite has zero failures" "$REAL_BOUND_FAILS" "0"
 check "real script: dependency-preflight suite has zero failures" "$REAL_DEP_FAILS" "0"
 check "real script: record-write signal suite has zero failures" "$REAL_WSIG_FAILS" "0"
@@ -1019,6 +1095,7 @@ check "real script: core suite has zero failures" "$REAL_CORE_FAILS" "0"
 check "real script: freeze/grant-reachability suite has zero failures" "$REAL_FREEZE_FAILS" "0"
 check "real script: config-value suite has zero failures" "$REAL_CONF_FAILS" "0"
 check "real script: private-tmp suite has zero failures" "$REAL_PTM_FAILS" "0"
+check "real script: environment-classification suite has zero failures" "$REAL_ENV_FAILS" "0"
 
 echo "disk_headroom tests: $PASSES passed, $FAILS failed"
 [ "$FAILS" -eq 0 ]

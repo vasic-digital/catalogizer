@@ -41,7 +41,7 @@ while [ $# -gt 0 ]; do case "$1" in
   --out-mode) [ $# -ge 2 ] || usage; OUTMODE="$2"; shift 2;;
   --db-file) [ $# -ge 2 ] || usage; DBFILE="$2"; shift 2;;
   *) usage;; esac; done
-WIIN=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux
+WIIN=/src/constitution/scripts/workable-items/bin/workable-items-linux
 if [ -n "$OUTMODE" ]; then
   case "$OUTMODE" in /*) ;; *) usage;; esac
   case "$DBFILE" in ""|*[!A-Za-z0-9_.-]*|-*|.*) refuse path_invalid "--db-file must be a plain file name";; esac
@@ -107,7 +107,7 @@ case "$dv" in *"in sync"*) ;; *) echo "export: engine diff is not in sync: no ex
 for n in @MDS@; do h=$(sha256sum "$d/$n.md" | cut -d' ' -f1); echo "$h $n.md" >> "$d/.manifest.tmp"; done
 for n in @CSVS@; do h=$(sha256sum "$d/$n.csv" | cut -d' ' -f1); echo "$h $n.csv" >> "$d/.manifest.tmp"; done
 mv -f "$d/.manifest.tmp" "$d/export-manifest.sha256"
-ev=$(tr -d '\n' < /src/submodules/constitution/scripts/workable-items/bin/.source.sha256)
+ev=$(tr -d '\n' < /src/constitution/scripts/workable-items/bin/.source.sha256)
 S="BEGIN; INSERT INTO reg_export_runs(db_fingerprint,engine_version,container_image_digest,started_at,verdict) VALUES ('$fp','$ev','@DIGEST@',strftime('%Y-%m-%dT%H:%M:%SZ','now'),'OK');"
 Z=0000000000000000000000000000000000000000000000000000000000000000
 for n in @MDS@; do

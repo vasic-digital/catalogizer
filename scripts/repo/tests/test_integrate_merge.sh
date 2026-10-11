@@ -45,6 +45,7 @@ run; eq "second run: nothing to merge: 0" "$RC" 0; has "reported" "$(cat "$T/out
 fresh; ANC="$(head_)"; mkdir -p "$A/20261005T000000Z-7-zzzz"; loc l.txt 'l\n'
 rc_ c1 a.txt 'a\n' "foreign commit"; FA="$(git -C "$T/c1" rev-parse HEAD)"
 rc_ c1 b.txt 'b\n' "cpa commit
+
 CPA-Run: 20261005T000000Z-7-zzzz"; CB="$(git -C "$T/c1" rev-parse HEAD)"; printf '.\t%s\t20261005T000000Z-7-zzzz\n' "$CB" > "$A/20261005T000000Z-7-zzzz/commits.tsv"
 run --anchor "$ANC"; eq "merge with anchor: 0" "$RC" 0; has "foreign commit named" "$(body)" "Foreign-Commit: $FA"; hasnot "CPA commit not named" "$(body)" "Foreign-Commit: $CB"
 fresh; loc l.txt 'l\n'; rc_ c1 a.txt 'a\n'; run; hasnot "without an anchor no foreign commit is named" "$(body)" "Foreign-Commit"
@@ -59,6 +60,7 @@ run --path-gates "$T/gates.tsv" --approved "$T/approved.json"; hasnot "G-GATE co
 fresh; loc l.txt 'l\n'; rc_ c1 scripts/repo/check_classes.tsv 't1\n' "foreign table change"
 run; has "admission table changed by a non-CPA commit: held" "$(body)" "Awaits-Review"
 fresh; loc l.txt 'l\n'; mkdir -p "$A/20261005T000000Z-7-zzzz"; rc_ c1 scripts/repo/check_classes.tsv 't1\n' "cpa table change
+
 CPA-Run: 20261005T000000Z-7-zzzz"; printf '.\t%s\t20261005T000000Z-7-zzzz\n' "$(git -C "$T/c1" rev-parse HEAD)" > "$A/20261005T000000Z-7-zzzz/commits.tsv"
 run; hasnot "admission table changed by a recorded CPA commit: not held" "$(body)" "Awaits-Review"
 # adoption: a descendant tip whose first-parent chain lacks the adoption commit is a target; without the option it is not

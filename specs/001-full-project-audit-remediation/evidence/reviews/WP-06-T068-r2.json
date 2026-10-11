@@ -1,0 +1,250 @@
+{
+ "wp": "WP-06",
+ "tasks": [
+  "T059",
+  "T060",
+  "T061",
+  "T062",
+  "T063",
+  "T064",
+  "T064a",
+  "T065",
+  "T066",
+  "T067",
+  "T067a",
+  "T068"
+ ],
+ "review_task": "T068 G-DATA (ST-REV) re-review round 2 (fix round for R-01..R-11)",
+ "verdict": "NO-GO",
+ "model": "opus",
+ "effort": "?",
+ "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (11.4.231(F.2)); effort is not settable or verifiable on this path, recorded as '?', never claimed as xhigh.",
+ "reviewer_independence": "independent re-reviewer agent; not the author of any WP-06 file and not the round-1 reviewer",
+ "date": "2026-10-08",
+ "git_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c (working tree: fix round uncommitted)",
+ "prior_review": "evidence/reviews/WP-06-T068.json",
+ "prior_findings_status": {
+  "R-01": "CLOSED for every mint path probed (explicit 9/0/-3/-1, gap fill, out-of-order multi-row, OR IGNORE, OR FAIL multi-row, OR REPLACE, raised sqlite_sequence, text '5', real 5.0, INSERT..SELECT, lowered/deleted sqlite_sequence, dump/restore). Residual: R2-04 (raised sqlite_sequence invisible to the gate), R2-05 (max(seq) leg untested).",
+  "R-02": "CLOSED: every one of the 13 fields absent, and wrong-typed values, refused journal_row_incomplete (author suite R02-* re-run by me 75/0; reviewer seq-bound mutant survives, R2-06). input_args inner shape not validated (R2-07).",
+  "R-03": "CLOSED: partial unique index refuses a retried import marker; orphan view fails the gate; v5->v6 migration of a DB that already holds a duplicate marker is refused and rolled back (data intact).",
+  "R-04": "PARTLY: step_prefix_agreement works for the 4 sources; equivalence claim for one gate mutant is false and exposes a blind spot (R2-02).",
+  "R-05": "CLOSED (reviewer variant of MY3 killed by R05-1/R05-2; survives test_gate alone, mutate_gate runs both).",
+  "R-06": "CLOSED (not re-mutated by me; author run 53/56 killed + 3 equivalents).",
+  "R-07": "CLOSED: evidence/wp06/engine.md exists (draft, UNREVIEWED status in its own header).",
+  "R-08": "OPEN by honest disposition: reg_test_runs rows blocked by FK (justified), image digest blocked on T007/T008 (justified), 16 MiB margin UNCONFIRMED (honest), docs/04 sync is an owed diff not applied.",
+  "R-09": "OPEN: OWED-WP06-15 exists only as a README line; WP-06-T068.json (and this file) are untracked and not ignored.",
+  "R-10": "REGRESSED: the fix introduces data loss in a pre-existing non-empty --out directory (R2-01).",
+  "R-11": "CLOSED (fence now runs for --out; R11-1..3 pass)."
+ },
+ "findings": [
+  {
+   "id": "R2-01",
+   "finding_layer": "source-defect",
+   "defect_layer": "runtime",
+   "severity": "high",
+   "blocking": true,
+   "title": "R-10 fix regression: replay.sh deletes the operator's export/, inputs/, register.sql (any OWN_OUTPUTS name) from a pre-existing NON-EMPTY --out directory on every refusal raised before makedirs, including out_dir_not_empty itself",
+   "evidence": "Scratch root with stub BACKUP; --out dir pre-populated with export/report.csv, inputs/, register.sql, notes.txt. Fixed replay.sh: 'REFUSED reason=out_dir_not_empty' rc=20, afterwards only notes.txt remains (export/, inputs/, register.sql deleted). Same with an early journal_row_incomplete refusal (register.sql deleted). HEAD replay.sh on the same input: rc=20, every file kept. Cause: refuse() now deletes OWN_OUTPUTS whenever created is False and OUT is a dir, but every refusal before os.makedirs (since_malformed, journal_*, replay_pending_ops, since_not_found, out_dir_not_empty) runs with created False in a directory this run wrote nothing into. The refusal text even says 'nothing was written'. Tests R10-1..4 only use a pre-existing EMPTY directory.",
+   "violates": "constitution 9 / 9.2 (zero-risk data safety), 11.4.252 (fail closed on a destructive side effect), 11.4.276(C) class-exhaustive closure (R-10 class 'remove what this run did not create')",
+   "fix": "Track the names this run actually created (a set filled at each write), not a static name list; delete only those; no deletion at all before the run's first write. RED tests: non-empty pre-existing dir with a colliding name under out_dir_not_empty and under an early refusal."
+  },
+  {
+   "id": "R2-02",
+   "finding_layer": "source-defect",
+   "defect_layer": "source",
+   "severity": "medium",
+   "blocking": false,
+   "title": "equivalent_gate_mutants.tsv row prefix_importer_literal_loosened is NOT equivalent: the original gate ignores a non-3-letter --prefix literal in an importer",
+   "evidence": "Scratch REG_ROOT copy; appended ALT = [\"add\", \"--prefix\", \"CATS\"] to import_tickets.py. Original gate.sh: 'INFO prefix_agreement prefix=CAT sources=4' + GATE OK. The 'equivalent' mutant ([A-Z]*): 'FAIL prefix_agreement: ... holds 2 distinct literal --prefix values' GATE FAILED. The mutant is stricter, so the row is a wrong equivalence claim and the original check is blind to a second, malformed prefix literal (the claimed 'every widened value still differs ... same FAIL' assumes the original would FAIL; it PASSes).",
+   "violates": "11.4.201(7) (instrument sees only the 3-letter class), 11.4.194(6)(d) (equivalence asserted without the counter-input)",
+   "fix": "Extract every --prefix literal of any shape ([^\"]*) and require exactly one value that is a 3-letter key; remove the equivalence row; add a fixture with a second literal."
+  },
+  {
+   "id": "R2-03",
+   "finding_layer": "test-instrumentation",
+   "defect_layer": "source",
+   "severity": "medium",
+   "blocking": false,
+   "title": "test_fix_wp06_r2.sh R04-0 fails for EVERY REG_EXT_SQL mutant (fixture copies the unmutated DDL into its REG_ROOT), so the suite kills DDL mutants by artifact, not behaviour",
+   "evidence": "Reviewer DDL mutants MA (trigger without the max(seq) leg) and MG (v_import_mint_orphans duplicate direction j.seq>i.seq) each report 'fail=1', and the only failing assertion is R04-0 'schema differs from .../pfx-ok/.../register_ext.sql'. Behaviourally both survive the whole new suite. Not used by the author's DDL runner (behaviour+gate), but the suite cannot serve as a DDL mutation oracle.",
+   "violates": "11.4.201(1) (a check that fails for the wrong reason), 11.4.115(F)",
+   "fix": "mkpfx should copy $REG_EXT_SQL (the DDL under test), not $REG_DIR/register_ext.sql."
+  },
+  {
+   "id": "R2-04",
+   "finding_layer": "source-defect",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "A raised sqlite_sequence passes the gate while every future mint is refused (latent DoS invisible to v_ids_malformed)",
+   "evidence": "Clean 3-item v6 DB, UPDATE sqlite_sequence SET seq=100: gate.sh GATE OK; next INSERT INTO reg_ids refused 'seq must be the next gapless number'. Fail-closed (no wrong id), but the gate reports a register that can no longer mint as healthy.",
+   "violates": "11.4.201(6)/(2) (gate condition narrower than the invariant)",
+   "fix": "Add a v_ids_malformed leg: sqlite_sequence.seq for reg_ids <> max(seq) (or IFNULL 0 when empty)."
+  },
+  {
+   "id": "R2-05",
+   "finding_layer": "test-instrumentation",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "Reviewer mutant MA (drop 'OR NEW.seq <> max(seq)' from reg_ids_mint_monotone) survives behaviourally; it is not equivalent",
+   "evidence": "Legacy gapped register (1,2,3,9): original trigger refuses explicit seq 5; mutant accepts it (ids CAT-001,002,003,005,009). The DDL runner mutates only the whole trigger (m004 killed by T1m); no sub-clause mutant or fixture covers the max leg. The NEW.seq<1 leg is redundant (count>=1 after insert) and should be recorded as such.",
+   "violates": "11.4.194(6)(d), 11.4.224(C)",
+   "fix": "Fixture: gapped legacy DB + explicit seq == count must be refused; record the seq<1 leg as reviewed-redundant."
+  },
+  {
+   "id": "R2-06",
+   "finding_layer": "test-instrumentation",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "Reviewer mutant 'seq < 1' -> 'seq < 0' in replay.sh row_problem survives R02/R10 (32/0)",
+   "evidence": "A journal row with seq 0 (locked.sh never writes it) is accepted; no boundary fixture for seq 0 or negative.",
+   "violates": "11.4.224(C)",
+   "fix": "Add R02-v seq=0 and seq=-1 fixtures."
+  },
+  {
+   "id": "R2-07",
+   "finding_layer": "source-defect",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "input_args is validated only as an object: a non-integer key or a non-string value crashes replay.sh with a Python traceback after the output dir was created (no refusal, no cleanup)",
+   "evidence": "Code read (replay.sh lines ~178-185: int(k), argv[int(k)], os.path.join(indir, h)); UNCONFIRMED at runtime (reaching it needs a working backup+ids path).",
+   "violates": "R-02 class (a field present with the wrong inner shape), 11.4.201(4)",
+   "fix": "Validate keys as decimal indexes < len(argv) and values as 64-hex in row_problem."
+  },
+  {
+   "id": "R2-08",
+   "finding_layer": "process-doc",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "register_ext.sql v6 header cites 'owed-docs04-sync-v6.diff', which does not exist; the file is fix-r2-t068-owed-docs04-section5-v6.diff",
+   "evidence": "ls evidence/wp06 | grep owed-docs: fix-r2-t068-owed-docs04-section5-v6.diff, owed-docs04-section5-v5.diff, owed-docs04-sync.diff.",
+   "fix": "Correct the citation."
+  },
+  {
+   "id": "R2-09",
+   "finding_layer": "process-doc",
+   "defect_layer": "source",
+   "severity": "low",
+   "blocking": false,
+   "title": "Prefix grammar differs: sync_trackers.sh accepts id_prefix of 2-5 capitals, gate.sh step_prefix_agreement accepts exactly 3",
+   "evidence": "sync_trackers.sh:222 [A-Z]{2,5}; gate.sh step_prefix_agreement [A-Z][A-Z][A-Z]. Gate is the stricter (fails closed) side; documented nowhere.",
+   "fix": "State one grammar (engine heading grammar is 3) in both, or record the difference."
+  },
+  {
+   "id": "R2-10",
+   "finding_layer": "process-doc",
+   "defect_layer": "source",
+   "severity": "medium",
+   "blocking": true,
+   "title": "R-08 and R-09 remain open (honestly dispositioned, not closed): G-DATA GO still depends on them",
+   "evidence": "README 'R-08 disposition': reg_test_runs MUTATION rows blocked by FK until T069 (justified), image digest blocked on T007/T008 (justified), 16 MiB margin UNCONFIRMED, docs/04 v6 diff not applied (owner). R-09: OWED-WP06-15 is a README sentence only, not a register/tracker item; evidence/reviews/WP-06-T068.json is untracked and not ignored (git ls-files empty, check-ignore rc=1). The blocked-unavailable justifications are sound; the gap is tracking, not honesty.",
+   "violates": "11.4.215, 11.4.197",
+   "fix": "Track the review records (orchestrator commit) and register OWED-WP06-15 as a tracked item."
+  }
+ ],
+ "not_findings_checked": [
+  "DDL v5->v6 migration on populated scratch DBs: clean DB applies (ext 5->6), INSERT-row diff shows only the 3 new reg_gate_checks rows and the ext_schema_version value; reg_ids/items unchanged; GATE OK.",
+  "v5 DB with a legacy gap: applies, gate FAILs v_ids_malformed rows=1 (detected, no data change).",
+  "v5 DB with a duplicate import marker: apply rc=5 'UNIQUE constraint failed: reg_ids.minted_by', rolled back, ext stays 5, data hash unchanged (fail closed, 9.2 preserved; recovery path not documented).",
+  "No false-positive refusal on legitimate mint paths: engine-assigned single, multi-row VALUES, INSERT..SELECT, explicit seq == next, text '5', lowered or deleted sqlite_sequence row all accepted with gapless ids; importers (minted_by marker, auto seq) and sync_trackers (reporting_directive, auto seq) use auto seq only.",
+  "Dump/restore: .dump emits triggers/indexes after the INSERTs; author R01-8 passes in my run.",
+  "Gate equivalent prefix_yaml_must_exist_removed: confirmed equivalent by reasoning (absent file -> 0 lines -> same FAIL).",
+  "DDL '5 equivalent' rows are the pre-existing reviewed rows (no new DDL equivalence claimed); README states behaviour-only leaves W1..W3 to test_gate (confirmed in the behaviour-only tsv).",
+  "R-11: fence runs for --out; R11-1 refusal and R11-2/3 golden-FALSE pass."
+ ],
+ "mutations_attempted": [
+  {
+   "id": "MA",
+   "target": "register_ext.sql",
+   "change": "reg_ids_mint_monotone: drop 'OR NEW.seq <> (SELECT max(seq) FROM reg_ids)'",
+   "in_author_set": false,
+   "result": "SURVIVES behaviourally (test_fix_wp06_r2 fail=1 only via R04-0 artifact); non-equivalent: accepts CAT-005 into a gapped register"
+  },
+  {
+   "id": "MB",
+   "target": "register_ext.sql",
+   "change": "uq_reg_ids_import_marker WHERE mint_basis='import' -> 'importx'",
+   "in_author_set": false,
+   "result": "KILLED: R03-2, R03-4"
+  },
+  {
+   "id": "MF",
+   "target": "gate.sh",
+   "change": "step_prefix_agreement final set drops the importer values ($y $d only)",
+   "in_author_set": false,
+   "result": "KILLED: R04-2, R04-3"
+  },
+  {
+   "id": "MG",
+   "target": "register_ext.sql",
+   "change": "v_import_mint_orphans duplicate leg j.seq < i.seq -> j.seq > i.seq",
+   "in_author_set": false,
+   "result": "SURVIVES behaviourally (only R04-0 artifact); equivalent for gating (flags the other row of the pair)"
+  },
+  {
+   "id": "MH",
+   "target": "register_ext.sql",
+   "change": "v_ids_malformed: drop the 'gap' UNION leg",
+   "in_author_set": false,
+   "result": "KILLED: R01-G2"
+  },
+  {
+   "id": "MY3b",
+   "target": "gate.sh",
+   "change": "step_evidence_rehash: tracker_receipt rows counted then skipped",
+   "in_author_set": false,
+   "result": "KILLED by test_fix_wp06_r2 R05-1/R05-2; survives test_gate.sh alone (126/0)"
+  },
+  {
+   "id": "RV1",
+   "target": "replay.sh",
+   "change": "row_problem seq < 1 -> seq < 0",
+   "in_author_set": false,
+   "result": "SURVIVES R02+R10 (32/0)"
+  },
+  {
+   "id": "EQ-1",
+   "target": "gate.sh",
+   "change": "author equivalence row prefix_importer_literal_loosened ([A-Z]* in the importer grep)",
+   "in_author_set": true,
+   "result": "NOT EQUIVALENT: differs on an importer with a second literal \"CATS\" (original GATE OK, mutant GATE FAILED)"
+  }
+ ],
+ "covers_runs": [
+  {
+   "suite": "scripts/register/tests/test_fix_wp06_r2.sh",
+   "result": "pass=75 fail=0 (reviewer run, host sqlite3 3.50.6 Android SDK copy, ~62 s)",
+   "image_digest": "UNCONFIRMED (host run)"
+  },
+  {
+   "suite": "scripts/register/tests/test_gate.sh with mutant MY3b",
+   "result": "pass=126 fail=0 (mutant survives this suite alone)"
+  },
+  {
+   "suite": "own scratch repros (R-01, R-02, R-10, migration, prefix)",
+   "result": "see findings/not_findings_checked; scratch only, docs/workable_items.db never created"
+  },
+  {
+   "suite": "test_locked, test_replay container legs, full mutate_gate/run_mutations",
+   "result": "NOT RUN by this reviewer; author transcripts only (fix-r2-t068-*)"
+  }
+ ],
+ "blocks_T068_GO": [
+  "R2-01 (data loss regression, blocking)",
+  "R2-10 (R-08 items + R-09 tracking)",
+  "R2-02/R2-03 should be closed in the same round (wrong equivalence claim; artifact-killing fixture)"
+ ],
+ "blocks_T069": [
+  "T068 GO itself",
+  "reg_test_runs MUTATION rows need the T069 import ids (R-08)",
+  "image digest evidence needs T007/T008 (RUNP IMG-TESTUTIL)",
+  "docs/04 section 5 v6 diff applied by its owner",
+  "OWED-WP06-14 SIGKILL residual (real containers)"
+ ],
+ "scratch": "scratchpad/r2 (session scratch, /tmp/claude-1000/.../d7bdfeb7.../scratchpad/r2)",
+ "convergence_note": "Round 2 of T068 review. R2-01 is a new member of the R-10 class introduced by its own fix (a static name list stood in for 'what this run wrote'); per 11.4.276(E) the next round should replace the mechanism, not add names. Remaining findings are low/medium."
+}

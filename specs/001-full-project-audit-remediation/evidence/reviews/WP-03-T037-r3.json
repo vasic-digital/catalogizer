@@ -1,0 +1,237 @@
+{
+ "schema": "review-verdict/1",
+ "wp": "WP-03",
+ "tasks": "T030-T037",
+ "verdict": "NO-GO",
+ "blocking_findings": 6,
+ "model": "opus",
+ "effort": "?",
+ "effort_note": "Agent-tool dispatch exposes no effort control (constitution 11.4.231(F.2)); recorded as '?'.",
+ "reviewer": "independent re-reviewer, round 3 (agent instance; not the author, not the round-1 or round-2 reviewer)",
+ "date": "2026-10-08",
+ "repo_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+ "prior_review": [
+  "specs/001-full-project-audit-remediation/evidence/reviews/WP-03-T037.json",
+  "specs/001-full-project-audit-remediation/evidence/reviews/WP-03-T037-r2.json"
+ ],
+ "reviewed_files": [
+  {
+   "path": "scripts/repo/verify_repos.sh",
+   "sha256": "4e3b321f38973eb4de18a75d7c004bd1911bf72b1569e856bb20268deff63e7a"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_repos.sh",
+   "sha256": "86048eb3c1a1536a430eb41d34f3e6ebef46b3e63d9045e9f6701c794eb16e7e"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_repos_r6.sh",
+   "sha256": "d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_repos_r7.sh",
+   "sha256": "e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_repos_r8.sh",
+   "sha256": "4fae2d118b66e9394b618e07f5648c04a40e3cb1e5c5a6829e2b125ffa55c546"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_repos_r9.sh",
+   "sha256": "90ddd50de1948748951c73e65d813debc37a8eefa4e29f23a014f659a326d340"
+  },
+  {
+   "path": "scripts/repo/tests/test_verify_schema.sh",
+   "sha256": "b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d"
+  },
+  {
+   "path": "docs/scripts/verify_repos.md",
+   "sha256": "24c935194c2abc310472e78c51394bb976cd4f85d02e8c85a5c036dd24ee34c5"
+  },
+  {
+   "path": "specs/001-full-project-audit-remediation/evidence/wp03/fix-r5-mutate.sh",
+   "sha256": "7fe6509c311a1dd9d3f29488e4776d31ca36466bfce35d237486ff654928542e"
+  },
+  {
+   "path": "specs/001-full-project-audit-remediation/evidence/wp03/fix-r5-mutation.txt",
+   "sha256": "f61a5f73addbc7fa25b4aa14c3615fb23fd125c0dc8b999485c22670e78d86f1"
+  }
+ ],
+ "covers_runs": [],
+ "covers_runs_note": "Change is uncommitted (HEAD 20f74abf); no CPA run exists. Reviewer runs from a git-archive copy of HEAD (scripts, spec audit/poc/contracts) overlaid with the byte-identical working-tree scripts/repo, scripts/audit and contracts (verifier sha 4e3b321f), host git 2.53.0, bash 5.3.9, no podman. Unmodified suites once: test_verify_repos 404/0, r6 41/0, r7 22/0, r8 38/0, r9 21/0, schema 14/0 (a first attempt with an incomplete copy lacking audit/ and poc/ failed 403/1 and 12/2 for missing fixtures only; rerun after completing the copy). Plus own scratch fixtures and 4 reviewer mutants x 6 suites.",
+ "prior_findings_reverified": [
+  {
+   "id": "R1",
+   "status": "FIXED",
+   "evidence": "replace ref on diverged repo: plain git is-ancestor fooled (0), verifier 12 plain/--strict/--fetch/caller GIT_NO_REPLACE_OBJECTS=''/repo core.useReplaceRefs=true; info/grafts: git fooled, verifier 12, also with caller GIT_GRAFT_FILE pointing at it."
+  },
+  {
+   "id": "R2",
+   "status": "FIXED for info/exclude (main, submodule .git/modules, linked worktree) and a direct local core.excludesFile; NOT class-complete, see P2"
+  },
+  {
+   "id": "R3",
+   "status": "FIXED for the xargs dispatch (bash -p -c)",
+   "evidence": "see P3 for the remaining direct-exec export"
+  },
+  {
+   "id": "R4",
+   "status": "FIXED",
+   "evidence": "own gitlink merge conflict: submodule status U000..; plain rc=13 pin_state conflict; --strict problems [ahead,pin]"
+  },
+  {
+   "id": "R5",
+   "status": "ACCEPTED earlier as equivalent-in-practice; not re-litigated"
+  },
+  {
+   "id": "R6",
+   "status": "FIXED on host",
+   "evidence": "fix-r5-green x3 carry verifier=4e3b321f, fail=0; fix-r5-SHA256SUMS verifies OK"
+  },
+  {
+   "id": "N1",
+   "status": "FIXED as decided (global-only clean, files named on stderr)",
+   "evidence": "global *.swp rc=0; info/exclude u rc=13 and stderr names u; see P2 for the include/worktree gap"
+  },
+  {
+   "id": "N2",
+   "status": "SOURCE FIXED, DOC STILL FALSE",
+   "evidence": "see P1, P4"
+  },
+  {
+   "id": "N3",
+   "status": "FIXED for the interpreter path only",
+   "evidence": "`bash verify_repos.sh`: canary 1 (startup), children 0; see P3"
+  },
+  {
+   "id": "N4",
+   "status": "FIXED",
+   "evidence": "own rename '?? u2' + hidden u2: dirty_untracked 1, MX3 scratch mutant 0; r9 catches MX3 (fix-r5-mutation.txt)"
+  },
+  {
+   "id": "N5",
+   "status": "FIXED for the runner (mktemp copies, tracked-tree hash equal before/after); container leg still missing (P6)"
+  }
+ ],
+ "findings": [
+  {
+   "id": "P1",
+   "blocking": true,
+   "finding_layer": "process-doc",
+   "evidence_layer": "runtime",
+   "defect_layer": "runtime",
+   "severity": "IMPORTANT",
+   "summary": "The guide and the verifier header state a refuted git fact: a forged commit-graph 'fools git log and git rev-list but not merge-base --is-ancestor'. It DOES fool merge-base --is-ancestor when an INTERIOR commit is forged.",
+   "detail": "Reviewer fixture (git 2.53.0, generationVersion 1 and 2): local c1<-c3, remote c1<-c2a<-c2; commit-graph written, c2a's CDAT parent patched to c3 (topo level 3, GDA2 offset raised, checksum recomputed). Plain `git merge-base --is-ancestor c3 c2` rc=0 (fooled), with -c core.commitGraph=false rc=1. Current verifier exits 12 (DIVERGED, correct). A scratch copy of the verifier with only ` -c core.commitGraph=false` removed exits 0 (false clean) on the same repo, so the class was a real PASS-bluff before round 10, not 'no false pass shown'. The r2 reviewer and the guide only forged the TIP commit, which git parses from the object (command-line arguments), so the tip variant is not fooled. Wrong statements: verify_repos.sh header lines 73-74; docs/scripts/verify_repos.md line 160 ('fools git log and git rev-list but not git merge-base --is-ancestor') and line 170 ('was not fooled ... so no false pass was shown'). The source fix itself is correct and stays.",
+   "evidence": "reviewer scratch forge.py + D2 fixture (scratchpad r3), not committed"
+  },
+  {
+   "id": "P2",
+   "blocking": true,
+   "finding_layer": "source-defect",
+   "evidence_layer": "runtime",
+   "defect_layer": "runtime",
+   "severity": "MINOR",
+   "summary": "R2/N1 not class-complete: a repository-level core.excludesFile set through include.path, includeIf or config.worktree is treated as 'global' and hides untracked work: exit 0 (false clean).",
+   "detail": "Line 178 reads `git config --local --get core.excludesFile`; --local reads .git/config only and does not follow includes (git default for a named file) nor config.worktree. Fixtures: (a) .git/config include.path=inc.cfg with core.excludesFile=.git/myexcl listing u, untracked u: `git config --show-scope` says local, verifier rc=0 dirty_untracked=0; (b) extensions.worktreeConfig + `git config --worktree core.excludesFile`: scope worktree, rc=0; (c) includeIf.gitdir: rc=0. A direct `git config core.excludesFile` (no include) is caught (rc=13, named). Candidate fix: decide 'local' by `git config --show-scope --get core.excludesFile` (scopes local, worktree, command), add the three fixtures. The header/guide claim 'a REPOSITORY-level core.excludesFile' is covered is inaccurate until then.",
+   "evidence": "reviewer scratch fixtures E2/E3/E4"
+  },
+  {
+   "id": "P3",
+   "blocking": true,
+   "finding_layer": "source-defect",
+   "evidence_layer": "runtime",
+   "defect_layer": "runtime",
+   "severity": "MINOR",
+   "summary": "Direct execution (the path the guide recommends) still exports a caller BASH_ENV/ENV to every child: a bash-script git shim/wrapper sourced it 21 times in one run; only the interpreter path (`bash verify_repos.sh`) unsets it.",
+   "detail": "Line 83 unsets BASH_ENV/ENV only inside the re-exec branch. Measured with a recording `#!/bin/bash` (no -p) VERIFY_GIT shim on a 1-repo --no-remote run: direct exec canary=21, shim calls seeing BASH_ENV=21; `bash -p verify_repos.sh` also 21; `bash verify_repos.sh` canary=1 (bash startup, unavoidable), children 0. The verifier's own -p processes do not source it (bash -p -c probe: 0; exported functions and SHELLOPTS/PS4 also blocked by -p, measured). Doc line 172 ('so no child sees the caller's BASH_ENV ... execute the file directly') is therefore wrong for the direct path. Fix: `unset BASH_ENV ENV` unconditionally right after line 83; r9 N3 tests only the interpreter path and uses a `#!/bin/bash -p` shim that cannot source it, add a direct-exec case with a non-p shim.",
+   "evidence": "reviewer scratch benv.sh + shim (scratchpad r3)"
+  },
+  {
+   "id": "P4",
+   "blocking": true,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "severity": "MINOR",
+   "summary": "N2 is guarded only by an argument-vector shim check (core.commitGraph=false present); no behavioural forged-graph fixture exists, so the guard would stay green if git ignored the flag or the verdict path changed command.",
+   "detail": "Add the P1 interior-forge fixture as a golden case (verifier must exit 12; control: plain git is-ancestor rc=0 proves the fixture live). Also r8 line 56-57 sets CGLIVE but never reads it (shellcheck SC2034): the 'VACUOUS' SKIP branch does not gate the following assertion.",
+   "evidence": "r9 lines 44-48; r8 lines 56-57"
+  },
+  {
+   "id": "P5",
+   "blocking": true,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "severity": "MINOR",
+   "summary": "T032 'shellcheck clean' (-S warning) is not met for the current sha: SC2034 `lxf` unused (verify_repos.sh line 170) and SC2034 `CGLIVE` (test_verify_repos_r8.sh line 56).",
+   "detail": "Host shellcheck 0.11.0 (same version as the pinned IMG-SHELLCHECK, but not the pinned image) -S warning rc=1. No behavioural effect; the last recorded clean run is round4-shellcheck.txt for sha 9111298d.",
+   "evidence": "reviewer host run, scratchpad r3/shellcheck.txt"
+  },
+  {
+   "id": "P6",
+   "blocking": true,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "severity": "MINOR",
+   "summary": "Acceptance residuals that block a final GO: no container leg for sha 4e3b321f (T031/T033 name RUNP IMG-KCOV / IMG-TESTUTIL; last container run is round 7); T034 mutation.txt (no_dirty_check / no_divergence_check against T031) is for an old ~225-line verifier, fix-r5-mutation.txt runs its mutants only against r8/r9; no WP-03.json final verdict with reviewed_files; owner decisions (a)/(b) of exit-code-decisions.md and N1/O-1/O-2 still unaccepted.",
+   "detail": "Exit-code precedence checked against T031/T032: code order 13 > 12(div) > 11 > strict 15 > strict behind(12) > 14 matches the header, exit-code-decisions.md and the main suite's pairwise section (reviewer mutant MZ2 proves it guarded). Exit set {0,11..15,20} only. Not a defect of the code; these are open evidence/acceptance items.",
+   "evidence": "evidence/wp03 listing; mutation.txt line 'T031 against mutant no_dirty_check' on a 225-line file"
+  }
+ ],
+ "mutations": [
+  {
+   "authored_by": "reviewer",
+   "operator": "MZ1: drop the rename/copy second-field skip in the MAIN status count loop (line 162; distinct from MX3 at line 172)",
+   "location": "scripts/repo/verify_repos.sh:162",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "MZ2: swap exit precedence of strict pin (15) and strict behind (12)",
+   "location": "scripts/repo/verify_repos.sh:540-541",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "MZ3: attached-submodule pin always cleared (attpin=\"\"), so pin reachability is never checked",
+   "location": "scripts/repo/verify_repos.sh:287",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "MZ4: re-exec keeps BASH_ENV/ENV (drop `unset BASH_ENV ENV;`)",
+   "location": "scripts/repo/verify_repos.sh:83",
+   "result": "caught"
+  }
+ ],
+ "mutations_attempted": [
+  {
+   "id": "MZ1",
+   "result": "CAUGHT",
+   "detail": "r9 20/1 (N4 hidden count 2, want 1); main 404/0, r6/r7/r8/schema green: guarded by one assertion only"
+  },
+  {
+   "id": "MZ2",
+   "result": "CAUGHT",
+   "detail": "main 402/2 (pair p+b, I2g); others green"
+  },
+  {
+   "id": "MZ3",
+   "result": "CAUGHT",
+   "detail": "main 397/7, r6 36/5, r7 15/7"
+  },
+  {
+   "id": "MZ4",
+   "result": "CAUGHT",
+   "detail": "r9 20/1 only (N3 children see BASH_ENV 28); main 404/0. Note P3: the same leak exists unmutated on the direct path, which no suite exercises"
+  },
+  {
+   "id": "PROBE-CG-INTERIOR",
+   "result": "FALSE PASS ON PRE-FIX FORM",
+   "detail": "scratch verifier without -c core.commitGraph=false exits 0 on the interior-forged DIVERGED repo; current sha exits 12 (P1)"
+  }
+ ],
+ "scenario_space": "Ancestry: replace ref (plain/strict/fetch/caller env/core.useReplaceRefs=true), info/grafts (+caller GIT_GRAFT_FILE), forged commit-graph tip and interior x generation v1/v2. Untracked: info/exclude (main, submodule, linked worktree), local core.excludesFile direct/relative/include.path/includeIf/config.worktree, global and XDG. Env: BASH_ENV/ENV direct, bash, bash -p; exported function; SHELLOPTS+PS4. Pins: conflict U plain/strict. Rename field: N4 fixture + MX3. Exit precedence vs T031/T032 and exit-code-decisions.md. shellcheck -S warning (host)."
+}

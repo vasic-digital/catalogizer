@@ -1,0 +1,29 @@
+# Live-proof policy of scripts/audit/index_health.sh (--live-policy), schema live-policy/1. WP-02 fix round 8/10, design
+# specs/001-full-project-audit-remediation/evidence/wp02/fix-r8-design.md sections 2, 3. DATA, not code (11.4.35): the gate reads it, hash-records it
+# in `inputs`, and refuses evidence whose producing program is not an ABSOLUTE path literally matching one of these entries (a `*` is ONE path segment;
+# $HOME and $REPO are expanded; a basename is never enough). Widening a list is a reviewed change of this file, never a flag.
+schema: live-policy/1
+max_age_hours: 72          # evidence older than this is stale whatever --captured-not-before says; --captured-not-before may not be older either
+clock_skew_seconds: 300    # a captured_at later than now + skew is refused (a future date proves nothing)
+programs:
+  P4:                      # golden questions (CodeGraph queries or the Lumen golden verifier)
+    - "$HOME/.codegraph/versions/*/bin/codegraph"
+    - "$HOME/.local/bin/codegraph"
+    - "$REPO/constitution/scripts/lumen/lumen_verify.sh"
+  P5:                      # freshness: index lastIndexed against git log
+    - "$HOME/.codegraph/versions/*/bin/codegraph"
+    - "$HOME/.local/bin/codegraph"
+    - "/usr/bin/git"
+  P6:                      # embed call
+    - "$REPO/constitution/scripts/lumen/lumen_verify.sh"
+    - "$HOME/.local/bin/lumen"
+    - "/usr/bin/curl"      # docs/02 section 4.1 P6: curl localhost:11434/api/embeddings (model ordis/jina-embeddings-v2-base-code)
+fallback_programs:         # a per-unit fallback (grep plus reads) is recorded, never a live PASS (11.4.226)
+  - "/usr/bin/grep"
+  - "/usr/bin/git"
+  - "/usr/bin/cat"
+  - "/usr/bin/sed"
+thresholds:
+  p4_min_queries: 4        # G-CG-1..4 of the T023 golden set plus the unanswerable control row
+  p4_min_recall: 1.0       # every answerable golden question answered correctly
+  p6_expected_dims: 768    # UNCONFIRMED: dimension of ordis/jina-embeddings-v2-base-code (docs/02 P6 says UNKNOWN, read it from the model card); T024 must confirm before this value gates

@@ -3,7 +3,7 @@
 #
 # Purpose   Assert (1) a fixture scope gives a golden JSON byte-for-byte (sorted, no timestamp), (2) an empty allow-list is
 #           refused, (3) a class present in scope.yaml but missing from the JSON FAILs the --check mode, (4) the JSON is
-#           accepted by submodules/constitution/scripts/lumen/gen_lumenignore.py and yields a deterministic .lumenignore.
+#           accepted by constitution/scripts/lumen/gen_lumenignore.py and yields a deterministic .lumenignore.
 # Usage     RUNP IMG-TESTUTIL -- bash scripts/audit/tests/test_scope_to_lumen_json.sh   (python3 + PyYAML + jq)
 #           Env: STJ=<script under test> (default scripts/audit/scope_to_lumen_json.py)
 # Review fixes (WF-REVIEW I7, m6): --check is an exact re-derive-and-compare (allow, deny, root_files, classes, dropped_negations);
@@ -18,11 +18,12 @@
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 STJ="${STJ:-scripts/audit/scope_to_lumen_json.py}"
-GL=submodules/constitution/scripts/lumen/gen_lumenignore.py
+GL=constitution/scripts/lumen/gen_lumenignore.py
 T="$(mktemp -d "${TMPDIR:-/tmp}/stj_test.XXXXXX")"; trap 'rm -rf "$T"' EXIT
-PASSN=0; FAILN=0
+PASSN=0; FAILN=0; SKIPN=0
 ok()  { PASSN=$((PASSN+1)); echo "ok   $1"; }
 bad() { FAILN=$((FAILN+1)); echo "FAIL $1"; }
+skp() { SKIPN=$((SKIPN+1)); echo "SKIP $1 (reason recorded; not a pass)"; }
 cat > "$T/scope.yaml" <<'Y'
 schema_version: 1
 baseline_excludes:
@@ -129,10 +130,12 @@ python3 "$STJ" --scope "$T/scope_bad2.yaml" --submodules-tsv "$T/subs.tsv" --che
 { [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/o10.err"; } && ok "a non-mapping baseline_excludes is rc=3 (also under --check)" || bad "non-mapping baseline_excludes: want rc=3, got rc=$rc"
 # the JSON is a valid gen_lumenignore.py input and the output is deterministic
 mkdir -p "$T/repo/catalog-api" "$T/repo/catalog-web" "$T/repo/submodules/own_a" "$T/repo/submodules/third_b" "$T/repo/docs"
+if [ -f "$GL" ]; then
 python3 "$GL" --repo "$T/repo" --scope "$T/golden.json" --out "$T/l1" >/dev/null 2>&1; rc1=$?
 python3 "$GL" --repo "$T/repo" --scope "$T/golden.json" --out "$T/l2" >/dev/null 2>&1
 { [ "$rc1" -eq 0 ] && cmp -s "$T/l1" "$T/l2" && grep -qx '/docs/' "$T/l1" && grep -qx '/submodules/third_b/' "$T/l1"; } \
   && ok "gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically" || bad "gen_lumenignore.py leg: rc=$rc1"
+else skp "gen_lumenignore.py leg: $GL absent in this checkout (constitution submodule not present)"; fi
 # ---- N-I5: third-party code can not enter the semantic index through scope.yaml; unknown or malformed TSV rows fail closed ------
 refuse() {  # refuse <label> <scope> <tsv> [--check file]: exit 3, no traceback, nothing written (derive) / a named reason on stderr
   local lab="$1" sc="$2" tv="$3"; shift 3; rm -f "$T/r.json"
@@ -245,6 +248,47 @@ python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$
 { [ "$rc" -eq 1 ] && grep -q caches "$T/r.err"; } && ok "M-8 a misplaced (reordered) classes list is a difference (rc=1): the comparison is exact, not set-wise" || bad "M-8 reordered classes list: want rc=1, got rc=$rc"
 python3 "$STJ" --scope "$T/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/golden.json" >/dev/null 2>&1; rc=$?
 [ "$rc" -eq 0 ] && ok "M-8 golden-false: the unmodified golden still passes the exact check (rc=0)" || bad "M-8 golden-false: --check rc=$rc"
-echo "IDENTITY test=$(sha256sum "${BASH_SOURCE[0]}" | cut -c1-64) script=$(sha256sum "$STJ" 2>/dev/null | cut -c1-64) head=$(git rev-parse HEAD) host=$(hostname) python=$(python3 -V 2>&1 | cut -d" " -f2) utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-echo "SUMMARY pass=$PASSN fail=$FAILN"
-[ "$FAILN" -eq 0 ]
+# ---- round 8 (WP-02-T028 review F4/F9, 11.4.224 RED first) -------------------------------------------------------------------
+# F4: the allow roots live in a DATA file next to scope.yaml (scope_render.py fails closed on an unknown top-level scope key), and the tool reads it itself
+mkdir -p "$T/sib"; cp "$T/scope_noallow.yaml" "$T/sib/scope.yaml"
+printf 'lumen_allow_roots:\n  - catalog-api\n  - catalog-web\n' > "$T/sib/lumen_allow_roots.yaml"
+python3 "$STJ" --scope "$T/sib/scope.yaml" --submodules-tsv "$T/subs.tsv" --out "$T/sib.out.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 0 ] && cmp -s "$T/sib.out.json" "$T/golden.json"; } && ok "F4 the sibling lumen_allow_roots.yaml is read by default: derivation equals the golden (rc=0)" || bad "F4 sibling allow roots: rc=$rc $(head -c 160 "$T/r.err")"
+python3 "$STJ" --scope "$T/sib/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/golden.json" >/dev/null 2>"$T/r.err"; rc=$?
+[ "$rc" -eq 0 ] && ok "F4 --check against the golden passes from committed inputs only (no scratch merge)" || bad "F4 --check with sibling roots: rc=$rc $(head -c 160 "$T/r.err")"
+cp "$T/sib/lumen_allow_roots.yaml" "$T/ar.yaml"; mkdir -p "$T/sib2"; cp "$T/scope_noallow.yaml" "$T/sib2/scope.yaml"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/ar.yaml" --out "$T/ar.out.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 0 ] && cmp -s "$T/ar.out.json" "$T/golden.json"; } && ok "F4 --allow-roots FILE gives the golden without a sibling file" || bad "F4 --allow-roots: rc=$rc $(head -c 160 "$T/r.err")"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/ar.yaml" --check "$T/golden.json" >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 0 ] && ok "F4 --check with --allow-roots passes" || bad "F4 --check --allow-roots: rc=$rc"
+printf 'lumen_allow_roots:\n  - catalog-api\n' > "$T/ar_less.yaml"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/ar_less.yaml" --check "$T/golden.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 1 ] && grep -q "catalog-web" "$T/r.err"; } && ok "F4 control: fewer allow roots than the committed JSON holds -> --check rc=1 naming the root" || bad "F4 control fewer roots: want rc=1 naming catalog-web, got rc=$rc"
+printf 'lumen_allow_roots:\n  - catalog-api\n  - submodules/third_b\n' > "$T/ar_leak.yaml"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/ar_leak.yaml" --out "$T/r.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 allow-roots FILE naming a third_party row is refused (rc=3)" || bad "F4 leak via allow-roots file: want rc=3, got rc=$rc"
+printf 'lumen_allow_roots: not-a-list\n' > "$T/ar_bad.yaml"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/ar_bad.yaml" --out "$T/r.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 malformed allow-roots FILE is rc=3, no traceback" || bad "F4 malformed allow-roots: want rc=3, got rc=$rc"
+python3 "$STJ" --scope "$T/sib2/scope.yaml" --submodules-tsv "$T/subs.tsv" --allow-roots "$T/no/such.yaml" --out "$T/r.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 absent --allow-roots FILE is rc=3 (fail closed, not an empty allow)" || bad "F4 absent allow-roots file: want rc=3, got rc=$rc"
+# the REAL committed inputs re-derive the committed JSON (33 of its 83 allow roots come from lumen_allow_roots.yaml); SKIP-with-reason when the inputs are absent
+if [ -f config/index/scope.yaml ] && [ -f config/index/lumen_scope.json ] && [ -f specs/001-full-project-audit-remediation/audit/submodules.tsv ]; then
+  python3 "$STJ" --scope config/index/scope.yaml --submodules-tsv specs/001-full-project-audit-remediation/audit/submodules.tsv --check config/index/lumen_scope.json >/dev/null 2>"$T/r.err"; rc=$?
+  [ "$rc" -eq 0 ] && ok "F4 the committed lumen_scope.json is re-derived from committed inputs by the tool alone (rc=0, no scratch merge)" || bad "F4 committed lumen_scope.json: rc=$rc $(head -c 200 "$T/r.err")"
+else skp "F4 real-input re-derivation: committed config/index inputs absent in this checkout"; fi
+echo "IDENTITY test=$(sha256sum "${BASH_SOURCE[0]}" | cut -c1-64) script=$(sha256sum "$STJ" 2>/dev/null | cut -c1-64) head=$(git rev-parse --verify -q HEAD 2>/dev/null || echo unborn) host=$(hostname) python=$(python3 -V 2>&1 | cut -d" " -f2) utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+# ---- round 9 (review WP-02-T028-r2 N9): --out never silently derives a 50-root allow list when the allow-roots DATA file is missing
+mkdir -p "$T/nosib"; cp "$T/scope_noallow.yaml" "$T/nosib/scope.yaml"; rm -f "$T/nosib.out.json"
+python3 "$STJ" --scope "$T/nosib/scope.yaml" --submodules-tsv "$T/subs.tsv" --out "$T/nosib.out.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 3 ] && [ ! -e "$T/nosib.out.json" ] && grep -qi "allow" "$T/r.err" && ! grep -q Traceback "$T/r.err"; } && ok "N9 --out with no lumen_allow_roots source (scope key, sibling file, --allow-roots) -> rc=3, nothing written, names the allow roots" || bad "N9 --out without allow roots: want rc=3 and no file, got rc=$rc exists=$([ -e "$T/nosib.out.json" ] && echo yes || echo no) $(head -c 160 "$T/r.err")"
+python3 "$STJ" --scope "$T/nosib/scope.yaml" --submodules-tsv "$T/subs.tsv" --no-allow-roots --out "$T/nosib2.out.json" >/dev/null 2>"$T/r.err"; rc=$?
+{ [ "$rc" -eq 0 ] && jq -e '.allow == ["submodules/own_a"]' "$T/nosib2.out.json" >/dev/null 2>&1; } && ok "N9 control: the explicit --no-allow-roots opt-out derives from the TSV own rows only (rc=0)" || bad "N9 opt-out: rc=$rc $(head -c 160 "$T/r.err")"
+python3 "$STJ" --scope "$T/nosib/scope.yaml" --submodules-tsv "$T/subs.tsv" --check "$T/golden.json" >/dev/null 2>&1; rc=$?
+[ "$rc" -eq 1 ] && ok "N9 control: --check without allow roots stays a difference (rc=1), not a new failure mode" || bad "N9 --check without roots: want rc=1, got rc=$rc"
+python3 "$STJ" --scope "$T/sib/scope.yaml" --submodules-tsv "$T/subs.tsv" --out "$T/sib9.out.json" >/dev/null 2>&1; rc=$?
+{ [ "$rc" -eq 0 ] && cmp -s "$T/sib9.out.json" "$T/golden.json"; } && ok "N9 control: with the sibling allow-roots file --out is unchanged (rc=0, golden)" || bad "N9 sibling control: rc=$rc"
+echo "SUMMARY pass=$PASSN fail=$FAILN skip=$SKIPN"
+[ "$FAILN" -eq 0 ] || exit 1
+[ "$SKIPN" -eq 0 ] || exit 77
+exit 0

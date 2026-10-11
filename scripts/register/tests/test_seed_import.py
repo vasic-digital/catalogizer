@@ -40,7 +40,7 @@ import wp20_fixture as W   # noqa: E402
 
 IMP = os.environ.get("IMPORT_PLAN", os.path.join(REG, "import_plan.sh"))
 ENUM = os.environ.get("ENUMERATE_SOURCES", os.path.join(os.path.dirname(IMP), "enumerate_sources.py"))
-WI = os.environ.get("WI", os.path.join(ROOT, "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+WI = os.environ.get("WI", os.path.join(ROOT, "constitution/scripts/workable-items/bin/workable-items-linux"))
 PLAN_SRC = "plan-document seeds (docs/21 section 9.1)"
 FAILS = PASSES = 0
 

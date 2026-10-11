@@ -1,0 +1,6 @@
+RR4-no-side-verify                 CAUGHT                     rerecord accepted a tampered side (rc=0); rerecord of a side verify rejects names side_unverifiable (rc=68 ; timeout in test_evrec_r7.sh
+RR5-seqmap-not-written             CAUGHT                     rerecord: no seq map; I6: seq map content: ; I6: diverged seq map  want [{"digest":"6248390e822f146307c4c69e68
+RR6-append-only-drops-local        CAUGHT                     append-only rerecord; N1: output content wrong; timeout in test_evrec_r7.sh
+RR7-local-fields-rewritten         CAUGHT                     rerecord: local fields changed; timeout in test_evrec_r7.sh; timeout in test_evrec_golden.sh
+RM1-remap-noop                     CAUGHT                     remap-refs result: see ledger#4 and ledger#5; m2: symlink replaced or target not updated; timeout in test_evrec_r7.sh
+RM2-remap-accepts-uncovered        CAUGHT                     remap-refs refuses a reference the map does not cover (rc=0); X14: remap-refs with an uncovered reference names map_incomplete ; X14: file changed on refusal

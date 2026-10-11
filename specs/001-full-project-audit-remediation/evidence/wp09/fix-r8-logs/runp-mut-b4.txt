@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:23Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-argv-capadd: caught (5 failing checks; first: FAIL: R-3: golden argv, default run (exact, whole argv) (got '9d8|< --cap-add=ALL|' want '|FAIL: R-3: golden argv, --rw docs --network=none --out (exact) (got '9d8|< --cap-add=ALL|'|)
+MUTATION x-out-tmp-any: caught (13 failing checks; first: FAIL: R-1: --out outside the declared roots '/etc' is refused, exit 1 (got '0' want '1')|FAIL: R-1: --out outside the declared roots '/usr/lib' is refused, exit 1 (got '0' want '1|)
+MUTATION x-scrub-ev: caught (1 failing checks; first: FAIL: R-2: EV is forwarded to disk_headroom.sh|)

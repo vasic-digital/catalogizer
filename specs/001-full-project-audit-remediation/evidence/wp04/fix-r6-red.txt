@@ -1,0 +1,265 @@
+# fix round 6 RED: the new tests against the PRE-fix scripts (copy of scripts/ at reviewed head 20f74abf, sha256 in the first lines)
+e39e994901a8ea6036d0434893a77930aaecb229b87e2f323645eb068fe34538  scripts/commit-push-all.sh
+6f72c2ee67b8a06c4065d60287d95a27d6403bd56f995953f8ffe62789e142b9  scripts/repo/lib_safe.sh
+7df653425fd9eec6c5dcb3bfb6b4b6e01bb8f38efeade6939a9a198d70bb1baa  scripts/repo/push_recursive.sh
+658d0fed7f5a64a446697e03c7fd65cec7305c35be844ebf47626bf852ed8bc2  scripts/repo/integrate_merge.sh
+716be8c6c229f5be1d836f4d617fbb6a6f961b9c58860e9d28a3c03727ef031f  scripts/repo/commit_recursive.sh
+## helper tests: HS=<pre-fix scripts/repo> bash scripts/repo/tests/test_wp04j.sh
+IDENTITY test=dbedac4b37efcb8ce1529501810d9a9035ff0992f7d9d2894c2a4ba40a47fc75 lib_safe=6f72c2ee67b8a06c4065d60287d95a27d6403bd56f995953f8ffe62789e142b9 push_recursive=7df653425fd9eec6c5dcb3bfb6b4b6e01bb8f38efeade6939a9a198d70bb1baa integrate_merge=658d0fed7f5a64a446697e03c7fd65cec7305c35be844ebf47626bf852ed8bc2 commit_recursive=716be8c6c229f5be1d836f4d617fbb6a6f961b9c58860e9d28a3c03727ef031f
+FAIL R-01 lib_safe.sh has the shared parser cpa_trailer (got 'no', want 'yes')
+FAIL R-01 lib_safe.sh has the shared message check cpa_msg_check (got 'no', want 'yes')
+FAIL R-01 lib_safe.sh has the shared Foreign-Commit lookup cpa_foreign_listed (got 'no', want 'yes')
+FAIL R-01 lib_safe.sh has the shared hold reader cpa_hold_state (got 'no', want 'yes')
+ok   R-01 cpa_runid [plain block] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [plain block] (got '127:', want '0:v.json')
+ok   R-01 cpa_runid [divider line in the body] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [divider line in the body] (got '127:', want '0:v.json')
+ok   R-01 cpa_runid [divider with text after it] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [divider with text after it] (got '127:', want '0:v.json')
+ok   R-01 cpa_runid [whitespace-only blank lines] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [whitespace-only blank lines] (got '127:', want '0:v.json')
+ok   R-01 cpa_runid [trailing blank lines] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [trailing blank lines] (got '127:', want '0:v.json')
+ok   R-01 cpa_runid [leading blank lines] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [leading blank lines] (got '127:', want '0:')
+ok   R-01 cpa_runid [block only] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [block only] (got '127:', want '0:')
+ok   R-01 cpa_runid [attribution lines after the trailers] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [attribution lines after the trailers] (got '127:', want '0:')
+ok   R-01 cpa_runid [CRLF line endings] (=-)
+FAIL R-01 cpa_trailer Awaits-Review [CRLF line endings] (got '127:', want '3:')
+FAIL R-01 cpa_runid [CR inside a trailer value] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [CR inside a trailer value] (got '127:', want '3:')
+FAIL R-01 cpa_runid [control character in the block] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [control character in the block] (got '127:', want '3:')
+FAIL R-01 cpa_runid [folded trailer] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [folded trailer] (got '127:', want '3:')
+FAIL R-01 cpa_runid [tab-folded trailer] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [tab-folded trailer] (got '127:', want '3:')
+FAIL R-01 cpa_runid [duplicate Awaits-Review] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [duplicate Awaits-Review] (got '127:', want '3:')
+FAIL R-01 cpa_runid [duplicate CPA-Run] (got '20261005T000000Z-2-bbbb', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [duplicate CPA-Run] (got '127:', want '3:')
+FAIL R-01 cpa_runid [duplicate Deferred-Gates] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [duplicate Deferred-Gates] (got '127:', want '3:')
+FAIL R-01 cpa_runid [divider line inside the block] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [divider line inside the block] (got '127:', want '3:')
+FAIL R-01 cpa_runid [CPA-Run in an earlier paragraph, hold alone in the last] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [CPA-Run in an earlier paragraph, hold alone in the last] (got '127:', want '1:')
+FAIL R-01 cpa_runid [Awaits-Review before the block] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [Awaits-Review before the block] (got '127:', want '3:')
+FAIL R-01 cpa_runid [indented reserved key before the block] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [indented reserved key before the block] (got '127:', want '3:')
+FAIL R-01 cpa_runid [lower-case reserved key before the block] (got '20261005T000000Z-1-aaaa', want '-')
+FAIL R-01 cpa_trailer Awaits-Review [lower-case reserved key before the block] (got '127:', want '3:')
+ok   R-01 cpa_runid [lower-case key as the block opener] (=-)
+FAIL R-01 cpa_trailer Awaits-Review [lower-case key as the block opener] (got '127:', want '1:')
+ok   R-01 cpa_runid [no trailer at all] (=-)
+FAIL R-01 cpa_trailer Awaits-Review [no trailer at all] (got '127:', want '1:')
+ok   R-01 cpa_runid [two Foreign-Commit lines] (=20261005T000000Z-1-aaaa)
+FAIL R-01 cpa_trailer Awaits-Review [two Foreign-Commit lines] (got '127:', want '0:')
+scripts/repo/tests/test_wp04j.sh: line 74: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed finds the first Foreign-Commit line (got '127', want '0')
+scripts/repo/tests/test_wp04j.sh: line 75: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed finds the second Foreign-Commit line (got '127', want '0')
+scripts/repo/tests/test_wp04j.sh: line 76: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed: an unnamed sha is not listed (1) (got '127', want '1')
+scripts/repo/tests/test_wp04j.sh: line 78: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed reads a Foreign-Commit line behind a divider in the body (got '127', want '0')
+scripts/repo/tests/test_wp04j.sh: line 80: cpa_foreign_listed: command not found
+FAIL R-01 a Foreign-Commit line in a message with no CPA block is no listing (1) (got '127', want '1')
+scripts/repo/tests/test_wp04j.sh: line 81: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed: a failing git is status 2, never 'not listed' (got '127', want '2')
+scripts/repo/tests/test_wp04j.sh: line 82: cpa_foreign_listed: command not found
+FAIL R-01 cpa_foreign_listed in a directory that is no repository: 2 (got '127', want '2')
+FAIL R-01 cpa_hold_state: a hand commit with an Awaits-Review line is held (got '/127', want '?/0')
+FAIL R-01 cpa_hold_state: a hand commit without one is not held (got '/127', want '/0')
+FAIL R-01 cpa_hold_state: a malformed block cannot be judged (3) (got '127', want '3')
+FAIL R-01 cpa_hold_state: a hold behind a divider is read (got '/127', want 'ev/reviews/V.json/0')
+FAIL R-01 cpa_msg_check refuses [divider line] (got '127', want '1')
+FAIL R-01 [divider line] names no reason
+scripts/repo/tests/test_wp04j.sh: line 95: printf: --: invalid option
+printf: usage: printf [-v var] format [arguments]
+FAIL R-01 cpa_msg_check refuses [divider as the only line] (got '127', want '1')
+FAIL R-01 [divider as the only line] names no reason
+FAIL R-01 cpa_msg_check refuses [longer divider] (got '127', want '1')
+FAIL R-01 [longer divider] names no reason
+FAIL R-01 cpa_msg_check refuses [divider with text] (got '127', want '1')
+FAIL R-01 [divider with text] names no reason
+FAIL R-01 cpa_msg_check refuses [CR] (got '127', want '1')
+FAIL R-01 [CR] names no reason
+FAIL R-01 cpa_msg_check refuses [control character] (got '127', want '1')
+FAIL R-01 [control character] names no reason
+FAIL R-01 cpa_msg_check refuses [CPA-Run line] (got '127', want '1')
+FAIL R-01 [CPA-Run line] names no reason
+FAIL R-01 cpa_msg_check refuses [lower-case cpa-run line] (got '127', want '1')
+FAIL R-01 [lower-case cpa-run line] names no reason
+FAIL R-01 cpa_msg_check refuses [indented Awaits-Review] (got '127', want '1')
+FAIL R-01 [indented Awaits-Review] names no reason
+FAIL R-01 cpa_msg_check refuses [Deferred-Gates with a space before the colon] (got '127', want '1')
+FAIL R-01 [Deferred-Gates with a space before the colon] names no reason
+FAIL R-01 cpa_msg_check refuses [Foreign-Commit without a space] (got '127', want '1')
+FAIL R-01 [Foreign-Commit without a space] names no reason
+FAIL R-01 cpa_msg_check accepts [three dashes inside a line] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [blank-line runs] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [whitespace-only lines] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [two dashes and a space] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [two dashes] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [a non-reserved Key: value line] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [a tab inside a line] (got '127', want '0')
+FAIL R-01 cpa_msg_check accepts [a reserved word inside a sentence] (got '127', want '0')
+ok   control: a held commit, plain message: 14 (=14)
+ok   control: the remote holds the unheld prefix (=96d5a76a6d4080436d0fd46f14a5fd32cce881b4)
+ok   control: HELD
+FAIL R-01 push [divider line in the body (the review's needle)]: exit (got '0', want '14')
+FAIL R-01 push [divider line in the body (the review's needle)]: r1 holds only what may be public (got '8fca4e7ffe8fef577de8bb12c88823d02c4f3bb4', want '952069181e4006d9901dbf2aad6a628a1fb11e72')
+FAIL R-01 push [divider line in the body (the review's needle)]: r2 holds only what may be public (got '8fca4e7ffe8fef577de8bb12c88823d02c4f3bb4', want '952069181e4006d9901dbf2aad6a628a1fb11e72')
+FAIL R-01 push [divider line in the body (the review's needle)]: reported (HELD) (no 'HELD' in 'PUSHED	.	r1	8fca4e7ffe8fef577de8bb12c88823d02c4f3bb4
+PUSHED	.	r2	8fca4e7ffe8fef577de8bb12c88823d02c4f3bb4')
+FAIL R-01 push [divider line with a diff header]: exit (got '0', want '14')
+FAIL R-01 push [divider line with a diff header]: r1 holds only what may be public (got '3217a69627003423a0f04e3ad0f6f99a9139ab94', want '24e7467d6673bc25cb323175f5cab0c055305dd7')
+FAIL R-01 push [divider line with a diff header]: r2 holds only what may be public (got '3217a69627003423a0f04e3ad0f6f99a9139ab94', want '24e7467d6673bc25cb323175f5cab0c055305dd7')
+FAIL R-01 push [divider line with a diff header]: reported (HELD) (no 'HELD' in 'PUSHED	.	r1	3217a69627003423a0f04e3ad0f6f99a9139ab94
+PUSHED	.	r2	3217a69627003423a0f04e3ad0f6f99a9139ab94')
+ok   R-01 push [whitespace-only blank lines]: exit (=14)
+ok   R-01 push [whitespace-only blank lines]: r1 holds only what may be public (=ae14ffa00ad566d028f6336798e5300020b6c321)
+ok   R-01 push [whitespace-only blank lines]: r2 holds only what may be public (=ae14ffa00ad566d028f6336798e5300020b6c321)
+ok   R-01 push [whitespace-only blank lines]: reported (HELD)
+ok   R-01 push [trailing blank lines]: exit (=14)
+ok   R-01 push [trailing blank lines]: r1 holds only what may be public (=af07d475e3ef7060fd583e7a5df0bc984bf6b9b5)
+ok   R-01 push [trailing blank lines]: r2 holds only what may be public (=af07d475e3ef7060fd583e7a5df0bc984bf6b9b5)
+ok   R-01 push [trailing blank lines]: reported (HELD)
+ok   R-01 push [CRLF message]: exit (=20)
+ok   R-01 push [CRLF message]: r1 holds only what may be public (=ba136d46311197e7b7c8a7145f33a87b129a7a04)
+ok   R-01 push [CRLF message]: r2 holds only what may be public (=ba136d46311197e7b7c8a7145f33a87b129a7a04)
+ok   R-01 push [CRLF message]: reported (unrecorded_local_commit)
+FAIL R-01 push [folded Awaits-Review]: exit (got '14', want '20')
+FAIL R-01 push [folded Awaits-Review]: r1 holds only what may be public (got 'd278b5daf11e7a00e0a8f6c9ef5bae06f8bd94ae', want 'ba136d46311197e7b7c8a7145f33a87b129a7a04')
+FAIL R-01 push [folded Awaits-Review]: r2 holds only what may be public (got 'd278b5daf11e7a00e0a8f6c9ef5bae06f8bd94ae', want 'ba136d46311197e7b7c8a7145f33a87b129a7a04')
+FAIL R-01 push [folded Awaits-Review]: reported (unrecorded_local_commit) (no 'unrecorded_local_commit' in 'HELD	.	495f31923b724fd82dea2547ef21f8b9c24c645c	specs/ev/reviews/V_nogo.json x	absent
+PUSHED	.	r1	d278b5daf11e7a00e0a8f6c9ef5bae06f8bd94ae
+PUSHED	.	r2	d278b5daf11e7a00e0a8f6c9ef5bae06f8bd94ae')
+FAIL R-01 push [duplicate Awaits-Review]: exit (got '14', want '20')
+FAIL R-01 push [duplicate Awaits-Review]: r1 holds only what may be public (got '9ceeec94c08e4d48124b78ac814251d723a3a9c1', want '3b04a5d52dfd67f914166db635ff18c2cff8ce64')
+FAIL R-01 push [duplicate Awaits-Review]: r2 holds only what may be public (got '9ceeec94c08e4d48124b78ac814251d723a3a9c1', want '3b04a5d52dfd67f914166db635ff18c2cff8ce64')
+FAIL R-01 push [duplicate Awaits-Review]: reported (unrecorded_local_commit) (no 'unrecorded_local_commit' in 'HELD	.	2fdafeff0d72a52bf5a54e09a39b2a2224c9efbb	specs/ev/reviews/other.json	absent
+PUSHED	.	r1	9ceeec94c08e4d48124b78ac814251d723a3a9c1
+PUSHED	.	r2	9ceeec94c08e4d48124b78ac814251d723a3a9c1')
+ok   R-01 push [duplicate CPA-Run]: exit (=20)
+ok   R-01 push [duplicate CPA-Run]: r1 holds only what may be public (=bcfbd5909c25a1d8dc53ae7f2d08a901c9c314c1)
+ok   R-01 push [duplicate CPA-Run]: r2 holds only what may be public (=bcfbd5909c25a1d8dc53ae7f2d08a901c9c314c1)
+ok   R-01 push [duplicate CPA-Run]: reported (unrecorded_local_commit)
+FAIL R-01 push [hold in the last paragraph, CPA-Run in an earlier one]: exit (got '14', want '20')
+FAIL R-01 push [hold in the last paragraph, CPA-Run in an earlier one]: r1 holds only what may be public (got '4fab6116821ec063303ca7a19474a8cc8b49520f', want 'bcfbd5909c25a1d8dc53ae7f2d08a901c9c314c1')
+FAIL R-01 push [hold in the last paragraph, CPA-Run in an earlier one]: r2 holds only what may be public (got '4fab6116821ec063303ca7a19474a8cc8b49520f', want 'bcfbd5909c25a1d8dc53ae7f2d08a901c9c314c1')
+FAIL R-01 push [hold in the last paragraph, CPA-Run in an earlier one]: reported (unrecorded_local_commit) (no 'unrecorded_local_commit' in 'HELD	.	e0b6723d5b91f9e11122034e758cffe774aabbd4	specs/ev/reviews/V_nogo.json	not_go
+PUSHED	.	r1	4fab6116821ec063303ca7a19474a8cc8b49520f
+PUSHED	.	r2	4fab6116821ec063303ca7a19474a8cc8b49520f')
+FAIL R-01 push [Awaits-Review before the block, CPA-Run alone in the last paragraph]: exit (got '0', want '20')
+FAIL R-01 push [Awaits-Review before the block, CPA-Run alone in the last paragraph]: r1 holds only what may be public (got 'b381736173824d8e483414287ae8917dce839073', want '91c4e3786f7b1934f1ffe5380e40cf46d32f5c0e')
+FAIL R-01 push [Awaits-Review before the block, CPA-Run alone in the last paragraph]: r2 holds only what may be public (got 'b381736173824d8e483414287ae8917dce839073', want '91c4e3786f7b1934f1ffe5380e40cf46d32f5c0e')
+FAIL R-01 push [Awaits-Review before the block, CPA-Run alone in the last paragraph]: reported (unrecorded_local_commit) (no 'unrecorded_local_commit' in 'PUSHED	.	r1	b381736173824d8e483414287ae8917dce839073
+PUSHED	.	r2	b381736173824d8e483414287ae8917dce839073')
+FAIL R-01 push [divider line inside the block]: exit (got '0', want '20')
+FAIL R-01 push [divider line inside the block]: r1 holds only what may be public (got '93213eb956e05b2b24e3445484d414a36ba0b776', want 'f6981d1c027dcc8087392fdffb64ed573bc9f80a')
+FAIL R-01 push [divider line inside the block]: r2 holds only what may be public (got '93213eb956e05b2b24e3445484d414a36ba0b776', want 'f6981d1c027dcc8087392fdffb64ed573bc9f80a')
+FAIL R-01 push [divider line inside the block]: reported (unrecorded_local_commit) (no 'unrecorded_local_commit' in 'PUSHED	.	r1	93213eb956e05b2b24e3445484d414a36ba0b776
+PUSHED	.	r2	93213eb956e05b2b24e3445484d414a36ba0b776')
+FAIL R-01 a block that the hold reader cannot read although the predicate read it: 20 (got '14', want '20')
+FAIL R-01 named malformed_trailers (no 'malformed_trailers' in 'HELD	.	46f48ed6d8861c51d36ce50f873802dad5a60905	b	absent
+PUSHED	.	r1	1844253ec04ae11681210b2c9dbbc1ad0ee388ff
+PUSHED	.	r2	1844253ec04ae11681210b2c9dbbc1ad0ee388ff')
+FAIL R-01 nothing was pushed on malformed_trailers (got '1844253ec04ae11681210b2c9dbbc1ad0ee388ff', want '1bb4bfa70ed29a3c82d9dfcdb5a4cd020b8cff30')
+ok   R-02 held merge after ONE unheld commit: 14 (=14)
+ok   R-02 nothing of the range reached r1 (=238977150976fee47058dc8cf496eaaace9afd43)
+ok   R-02 nothing of the range reached r2 (=238977150976fee47058dc8cf496eaaace9afd43)
+ok   R-02 held merge after THREE unheld commits: 14 (=14)
+ok   R-02 nothing of the range reached r1 (3) (=212f7707706342ebdc9aa3515b20cd9fce55a627)
+ok   R-02 nothing of the range reached r2 (3) (=212f7707706342ebdc9aa3515b20cd9fce55a627)
+ok   R-02 the merge is reported HELD
+ok   R-02 golden-false: an UNHELD merge in the range is pushed with everything: 0 (=0)
+ok   R-02 golden-false: r1 holds the tip (=2cac1525c2f9e243ba482281e12e3d77dfc3edbf)
+ok   R-02 golden-false: a held NON-merge commit after an unheld one: the prefix is pushed (=31ae509ed048da3dd1af828d603d36c2e4c17c33)
+ok   R-01 merge with a local held commit behind a divider: 0 (=0)
+ok   R-01 the merge awaits its review
+ok   R-01 reported local_held_commit
+FAIL R-01 merge with a local commit whose block is malformed: 20 (got '0', want '20')
+FAIL R-01 named malformed_trailers (no 'malformed_trailers' in '')
+FAIL R-01 HEAD unchanged after the refusal (got '279831835fd4b07f369b17a7f1a845a29ad71a05', want '8ef6658636656f5c094c788d4eb7da2ee2ca7680')
+ok   R-01 no MERGE_HEAD left (=1)
+ok   R-01 merge with an anchor: 0 (=0)
+ok   R-01 a Foreign-Commit line behind a divider is found: not named again
+ok   R-01 golden-false: an unnamed foreign commit is named
+ok   R-06 the resolution run reaches the trial merge and stops at the missing secret fold: 20 (=20)
+ok   R-06 stopped at secret_fold_unavailable
+ok   R-06 the trial merge ran (=1)
+FAIL R-06 the 9.2 backup existed before the trial merge (got 'no_backup_yet', want 'backup_first')
+FAIL R-06 the backup holds the local range (got '1', want '0')
+ok   R-06 golden-false: HEAD unchanged, no MERGE_HEAD (=1)
+ok   R-06 control: a clean config passes the gate (=0)
+FAIL R-06 a failing config listing is a refusal, not 'no keys': 1 (got '0', want '1')
+FAIL R-06 the refusal names the listing (no 'listing' in '')
+ok   R-06 golden-false: an unapproved key still refuses (=1)
+FAIL R-01 commit_recursive refuses a message with a divider line: 20 (got '0', want '20')
+FAIL R-01 reason unsafe_message (no 'unsafe_message' in '')
+FAIL R-01 no commit was made (got '2', want '1')
+FAIL R-01 commit_recursive refuses a CR in the message: 20 (got '0', want '20')
+FAIL R-01 commit_recursive refuses a reserved key in any case: 20 (got '0', want '20')
+FAIL R-01 commit_recursive refuses a divider as the attribution: 20 (got '0', want '20')
+FAIL R-01 commit_recursive refuses a reserved trailer as the attribution: 20 (got '0', want '20')
+ok   R-01 commit_recursive accepts blank-line variants: 0 (=0)
+ok   R-01 the written commit is read by the shared parser: run id (=20261005T000000Z-1-aaaa)
+scripts/repo/tests/test_wp04j.sh: line 273: cpa_trailer: command not found
+FAIL R-01 the written commit is read by the shared parser: hold (got '', want 'specs/ev/reviews/V.json')
+FAIL R-07 finding_layer source-defect + evidence_layer validates (got '1', want '0')
+FAIL R-07 finding_layer test-instrumentation + evidence_layer validates (got '1', want '0')
+FAIL R-07 finding_layer process-doc + evidence_layer validates (got '1', want '0')
+ok   R-07 golden: the contract's own finding_layer source still validates (=0)
+ok   R-07 golden: the contract's own finding_layer artifact still validates (=0)
+ok   R-07 golden: the contract's own finding_layer runtime still validates (=0)
+ok   R-07 golden-false: an unknown finding_layer is refused (=1)
+ok   R-07 golden-false: an unknown evidence_layer is refused (=1)
+FAIL R-07 the real verdict specs/001-full-project-audit-remediation/evidence/reviews/WP-04-T046.json validates against the schema (got '1', want '0')
+---- 61 ok, 131 failed
+## matrix section 19 r6: CPA_SRC=<pre-fix tree> CPA_ONLY='19 r6' bash scripts/repo/tests/test_commit_push_all.sh
+ok   19.0 control, plain message: a held path gives 14 (=14)
+ok   19.0 review_pending
+ok   19.0 origin does not hold the held commit (=f71c608d5f74bf2a63acbffe94707f9e09c88822)
+ok   19.0 the mirror does not hold it either (=f71c608d5f74bf2a63acbffe94707f9e09c88822)
+FAIL 19.1 (R-01) a message line that starts with --- is refused at S0: 20 (got '14', want '20')
+FAIL 19.1 usage_error (no 'usage_error' in 'cpa: exit=14 run=20261008T131534Z-3031261-0d5d2c8f stage=S8 reason=deferral_recorded')
+FAIL 19.1 names the divider (no 'message_has_patch_divider' in 'cpa: exit=14 run=20261008T131534Z-3031261-0d5d2c8f stage=S8 reason=deferral_recorded')
+FAIL 19.1 nothing was committed (got '259f80c63eb1141643d06db5b6a0d90f6a6e475a', want 'f71c608d5f74bf2a63acbffe94707f9e09c88822')
+FAIL 19.1 origin untouched (got '259f80c63eb1141643d06db5b6a0d90f6a6e475a', want 'f71c608d5f74bf2a63acbffe94707f9e09c88822')
+FAIL 19.1 mirror untouched (got '259f80c63eb1141643d06db5b6a0d90f6a6e475a', want 'f71c608d5f74bf2a63acbffe94707f9e09c88822')
+FAIL 19.2 (R-01) a CR in the message is refused at S0: 20 (got '14', want '20')
+FAIL 19.2 control_character (no 'control_character' in 'HELD . 1d322ff263b50b1df89f0c7c64f476593349416b specs/001-full-project-audit-remediation/evidence/reviews/WP-R6.json absent
+NOPUSH . mirror already_holds_tip
+NOPUSH . origin already_holds_tip
+cpa: exi')
+FAIL 19.2 nothing was committed (got '1d322ff263b50b1df89f0c7c64f476593349416b', want 'f71c608d5f74bf2a63acbffe94707f9e09c88822')
+FAIL 19.3 (R-01) a reserved trailer key in any case is refused at S0: 20 (got '14', want '20')
+FAIL 19.3 message_impersonates_trailer (no 'message_impersonates_trailer' in 'HELD . ade4ce0c05217614bef4b880b807b0cc26911d06 specs/001-full-project-audit-remediation/evidence/reviews/WP-R6.json absent
+NOPUSH . mirror already_holds_tip
+NOPUSH . origin already_holds_tip
+cpa: exi')
+ok   19.4 (R-01) blank-line variants and whitespace-only lines are accepted: the held path gives 14 (=14)
+ok   19.4 the held commit carries the hold in its trailer block
+ok   19.4 origin does not hold the held commit (=f71c608d5f74bf2a63acbffe94707f9e09c88822)
+ok   19.4 cpa_runid reads the run id of the written commit (=20261008T131605Z-3077522-4406326f)
+scripts/repo/tests/test_commit_push_all.sh: line 1270: cpa_trailer: command not found
+FAIL 19.4 cpa_trailer reads its hold (got '', want 'specs/001-full-project-audit-remediation/evidence/reviews/WP-R6.json')
+ok   19.5 (R-05) no approved own_orgs.txt: 20 (=20)
+FAIL 19.5 own_orgs_unverifiable (no 'own_orgs_unverifiable' in 'cpa: FAIL S7 20 verifier_report_unreadable (verifier exit 20; a missing or unreadable report is never read as clean)
+cpa: exit=20 run=20261008T131614Z-3088935-22a3e77d stage=S7 reason=verifier_report_')
+FAIL 19.5 nothing was committed (got '88dd43cccb75393429f8b65b6ecdaf24b1464064', want '5bbab69c2fefdd52d57b50152e3441ef05543eae')
+FAIL 19.5 origin untouched (got '88dd43cccb75393429f8b65b6ecdaf24b1464064', want '5bbab69c2fefdd52d57b50152e3441ef05543eae')
+FAIL 19.6 (R-05) an own_orgs.txt that names no organisation: 20 (got '0', want '20')
+FAIL 19.6 own_orgs_unverifiable (no 'own_orgs_unverifiable' in 'cpa: exit=0 run=20261008T131622Z-3099698-e06734b8 stage=S8 reason=')
+FAIL 19.6 nothing was committed (got '324a84ea54f29d97287c263a1d3e528c2bc28cb8', want 'cbe0448c78674e4538a946df3d069de788bcc4d6')
+ok   19.7 golden-false: with the approved list the same run is 0 (=0)
+FAIL 19.8 (R-06) a failing config listing: 20 (got '0', want '20')
+FAIL 19.8 repo_config_not_approved (no 'repo_config_not_approved' in 'cpa: exit=0 run=20261008T131640Z-3123396-6e35edea stage=S8 reason=')
+FAIL 19.8 names the listing (no 'listing failed' in 'cpa: exit=0 run=20261008T131640Z-3123396-6e35edea stage=S8 reason=')
+FAIL 19.8 nothing was committed (got 'f6808e72e7bc045afc880eb6216c6ca82d192941', want 'f71c608d5f74bf2a63acbffe94707f9e09c88822')
+---- 10 ok, 22 failed

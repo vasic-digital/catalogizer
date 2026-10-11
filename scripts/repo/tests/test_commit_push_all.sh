@@ -1247,6 +1247,40 @@ XENV="GITSHIM_FAIL_AFTER_PUSH=ls-remote" run --paths-from "$C/p.txt" "unheld and
 eq "18.68 a held run whose remotes cannot be read after the push: 11, not 14 (REPORT-4)" "$RC" 11; has "18.68 remote_unproven" "$OUT" remote_unproven
 fi
 
+# ======== 19 review WP-04-T046 (WF-R6): R-01 the message shapes that desync two parsers, R-05 the approved owner list, R-06 the config listing ================================
+# R-01: the review's R1 needle ('held work' + a `---` line + notes) made the hold invisible to push_recursive while the CPA-commit predicate still accepted the commit: CPA reported the deferral (14)
+# and the unreviewed commit was already public. Every shape below is driven through the REAL launcher; the oracle is the exit status, the tip of origin and mirror, and the commit message.
+if sect "19 r6"; then
+V19="$EVR/reviews/WP-R6.json"
+mk r6a; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V19\n"; run --paths-from "$C/p.txt" $'held work\n\nnotes'
+eq "19.0 control, plain message: a held path gives 14" "$RC" 14; has "19.0 review_pending" "$OUT" review_pending
+eq "19.0 origin does not hold the held commit" "$(tipof a)" "$SEEDHEAD"; eq "19.0 the mirror does not hold it either" "$(tipof b)" "$SEEDHEAD"
+mk r6b; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V19\n"; run --paths-from "$C/p.txt" $'held work\n---\nnotes'
+eq "19.1 (R-01) a message line that starts with --- is refused at S0: 20" "$RC" 20; has "19.1 usage_error" "$OUT" usage_error; has "19.1 names the divider" "$OUT" message_has_patch_divider
+eq "19.1 nothing was committed" "$(head_)" "$SEEDHEAD"; eq "19.1 origin untouched" "$(tipof a)" "$SEEDHEAD"; eq "19.1 mirror untouched" "$(tipof b)" "$SEEDHEAD"
+mk r6c; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V19\n"; run --paths-from "$C/p.txt" $'held work\r\nnotes'
+eq "19.2 (R-01) a CR in the message is refused at S0: 20" "$RC" 20; has "19.2 control_character" "$OUT" control_character; eq "19.2 nothing was committed" "$(head_)" "$SEEDHEAD"
+mk r6d; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V19\n"; run --paths-from "$C/p.txt" $'held work\nawaits-review: elsewhere.json'
+eq "19.3 (R-01) a reserved trailer key in any case is refused at S0: 20" "$RC" 20; has "19.3 message_impersonates_trailer" "$OUT" message_impersonates_trailer
+mk r6e; echo h > "$W/src/h.txt"; paths "src/h.txt\t$V19\n"; run --paths-from "$C/p.txt" $'held work\n \t\nmore\n\n\nand more\n'
+eq "19.4 (R-01) blank-line variants and whitespace-only lines are accepted: the held path gives 14" "$RC" 14
+has "19.4 the held commit carries the hold in its trailer block" "$(msg)" "Awaits-Review: $V19"; eq "19.4 origin does not hold the held commit" "$(tipof a)" "$SEEDHEAD"
+# the same commit read by the shared parser: the run id the report names is the one the launcher's predicate and push_recursive read
+. "$SRC/scripts/repo/lib_safe.sh" 2>/dev/null
+eq "19.4 cpa_runid reads the run id of the written commit" "$(cpa_runid "$W" HEAD)" "$RUN"; eq "19.4 cpa_trailer reads its hold" "$(cpa_trailer "$W" HEAD Awaits-Review)" "$V19"
+# R-05: a missing or empty approved owner list fails closed (it used to push the main repository to every url of every remote with no ownership check)
+rmorgs() { git -C "$W" rm -q scripts/audit/own_orgs.txt; }
+emptyorgs() { printf '# no organisation named\n' > "$W/scripts/audit/own_orgs.txt"; }
+PRE=rmorgs mk r6f; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; run --paths-from "$C/p.txt" "a change"
+eq "19.5 (R-05) no approved own_orgs.txt: 20" "$RC" 20; has "19.5 own_orgs_unverifiable" "$OUT" own_orgs_unverifiable; eq "19.5 nothing was committed" "$(head_)" "$SEEDHEAD"; eq "19.5 origin untouched" "$(tipof a)" "$SEEDHEAD"
+PRE=emptyorgs mk r6g; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; run --paths-from "$C/p.txt" "a change"
+eq "19.6 (R-05) an own_orgs.txt that names no organisation: 20" "$RC" 20; has "19.6 own_orgs_unverifiable" "$OUT" own_orgs_unverifiable; eq "19.6 nothing was committed" "$(head_)" "$SEEDHEAD"
+mk r6h; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; run --paths-from "$C/p.txt" "a change"; eq "19.7 golden-false: with the approved list the same run is 0" "$RC" 0
+# R-06: a failing `git config --local --list` is a refusal, never "no keys" (the gate passed on a listing it could not read)
+mk r6i; echo a > "$W/src/a.txt"; paths 'src/a.txt\n'; GITSHIM_FAIL_ON='config --local --list' run --paths-from "$C/p.txt" "a change"
+eq "19.8 (R-06) a failing config listing: 20" "$RC" 20; has "19.8 repo_config_not_approved" "$OUT" repo_config_not_approved; has "19.8 names the listing" "$OUT" "listing failed"; eq "19.8 nothing was committed" "$(head_)" "$SEEDHEAD"
+fi
+
 # ======== 11 static properties ================================================================================================================
 fscan() { # fscan <file>: the non-comment source lines that spell a forbidden git form (the refusal guards of the helpers, which carry `force_refused`, are not spellings of the form)
   grep -nE -- '--force|force-with-lease|--no-verify|--mirror|--delete|update-ref|--amend|(^|[^A-Za-z_-])rebase( |"|$)|git[^|;]* reset( |")|git[^|;]*[[:space:]](push|fetch)([[:space:]][^|;]*)?[[:space:]]-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|git[^|;]*[[:space:]]checkout[[:space:]][^|;]*-[a-zA-Z]*B|git[^|;]*[[:space:]]branch[[:space:]][^|;]*-[a-zA-Z]*[fFD]([[:space:]]|$)|git[^|;]*[[:space:]](push|fetch)[[:space:]][^|;]*[[:space:]"'"'"'=]\+[A-Za-z$\{]|[[:space:]]\+refs/|[[:space:]]\+HEAD|git[^|;]*[[:space:]]push[[:space:]][^|;]*[[:space:]]:[A-Za-z$"]' "$1" | grep -vE '^[0-9]+:[[:space:]]*#' | grep -v 'force_refused'

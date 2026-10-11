@@ -168,7 +168,7 @@
     },
     "findings": {
       "type": "array",
-      "description": "Optional list of the review's findings (contracts revision 11). finding_layer is the defect layer of the finding in the closed evidence-class order of constitution 11.4.226 (source < artifact < runtime), required per finding because the custody chain of tasks.md T322 and T457 reads it.",
+      "description": "Optional list of the review's findings (contracts revision 11). finding_layer is the defect layer of the finding in the closed evidence-class order of constitution 11.4.226 (source < artifact < runtime), required per finding because the custody chain of tasks.md T322 and T457 reads it. Contracts revision 19 (WF-R6 R-07, review WP-04-T046): finding_layer takes EITHER the evidence-class values of constitution 11.4.226 (source, artifact, runtime) OR the finding-layer values of constitution 11.4.235(D) (source-defect, test-instrumentation, process-doc), because the review instructions and 11.4.235(D) use the second set in the field of that name; a finding that uses the 11.4.235(D) set names the evidence-class sense in the optional evidence_layer (source, artifact, runtime). A consumer that needs the evidence class (the custody chain of tasks.md T322 and T457) reads evidence_layer when finding_layer is one of the 11.4.235(D) values and finding_layer otherwise.",
       "items": {
         "type": "object",
         "additionalProperties": true,
@@ -189,7 +189,10 @@
             "enum": [
               "source",
               "artifact",
-              "runtime"
+              "runtime",
+              "source-defect",
+              "test-instrumentation",
+              "process-doc"
             ]
           },
           "summary": {
@@ -198,6 +201,14 @@
           "item": {
             "type": "string",
             "description": "register item id the finding is linked to, where one exists"
+          },
+          "evidence_layer": {
+            "enum": [
+              "source",
+              "artifact",
+              "runtime"
+            ],
+            "description": "the defect layer of the finding in the closed evidence-class order of constitution 11.4.226 (source < artifact < runtime); required in effect when finding_layer is one of the 11.4.235(D) values (contracts revision 19)"
           }
         }
       }

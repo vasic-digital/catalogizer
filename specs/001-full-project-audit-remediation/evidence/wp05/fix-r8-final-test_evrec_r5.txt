@@ -1,0 +1,58 @@
+ok   F1: redact_bytes on a run of 100000 dashes returns in under 15 s (0.3 s)
+ok   F1: redact_bytes on a run of 100000 x "a-" returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on a run of 100000 x "_." returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'token' repeated to 100000 bytes returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'password' repeated to 100000 bytes returns in under 15 s (0.1 s)
+ok   F1: redact_bytes on a double quote then 'token' repeated returns in under 15 s (0.1 s)
+ok   F1: redact_bytes on a single quote then 'secret' repeated returns in under 15 s (0.1 s)
+ok   F1: redact_bytes on -token repeated to 100000 bytes returns in under 15 s (0.1 s)
+ok   F1: redact_bytes on a long run of dashes then a flag name returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on '--' then 100000 letters returns in under 15 s (0.2 s)
+ok   F1: redact_bytes on 'api-key' repeated to 100000 bytes returns in under 15 s (0.1 s)
+ok   F1: redact_bytes on 'access_key.' repeated to 100000 bytes returns in under 15 s (0.1 s)
+ok   F1: redact_argv on a 100000-byte credential-flag-shaped element returns in under 15 s (0.2 s)
+ok   F1: still redacted: kv after a long dash run
+ok   F1: still redacted: kv name prefix
+ok   F1: still redacted: kv name with a 100-char tail
+ok   F1: still redacted: kv after a long letter run
+ok   F1: still redacted: json double quote
+ok   F1: still redacted: flag pair after dashes
+ok   F1: still redacted: flag pair prefix flag
+ok   F1: evrec run of a command printing 100000 dashes finishes (rc=65, not a timeout)
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID set and empty is refused (commit_turn_held, 76)
+ok   F2: nothing recorded under the empty run_id grant
+ok   F2: grant {run_id:''} with EVREC_TURN_RUN_ID unset is refused too
+ok   F2: a real grant with EVREC_TURN_RUN_ID set and empty is refused (empty is unset)
+ok   F2: the holder (EVREC_TURN_RUN_ID equal to the grant run_id) still records
+ok   F2: a whitespace-only run_id is refused
+ok   F2: the only host-entry calls were the reaper's (--exec-approved ... --reap)
+ok   F3: an unlisted launcher with --bank=FILE: RED and GREEN over different test files get different test_fingerprints
+ok   F3: the --opt=FILE fingerprint is sha256(sha256(argv0)\nsha256(the file after '=')\n)
+ok   F3: an unlisted launcher with a DIRECTORY operand: different directory contents give different test_fingerprints
+ok   F3: the same directory contents give the same test_fingerprint (deterministic)
+ok   F3: a directory operand over EVREC_OPERAND_DIR_MAX files on a RED is refused (operand_directory_too_large, never silently skipped)
+ok   F3: the same oversized directory operand on a PROBE is not refused
+ok   F3: RED through a renamed symlink to bash with -c is refused (interpreter_without_test_sources)
+ok   F3: RED through a renamed symlink to python3 with -c is refused
+ok   F3: the same through PATH lookup of a renamed symlink is refused
+ok   F3: with a declared test source the renamed-symlink interpreter records
+ok   F3: a PROBE through a renamed-symlink interpreter needs no source
+ok   F5: EV_LEDGER with anchors.jsonl beside it (EV_ANCHOR unset) is UNVERIFIED 3 anchor_not_compared
+ok   F5: the same ledger without an anchors.jsonl beside it verifies 0
+ok   F5: an explicit EV_ANCHOR still wins over the file beside the ledger
+ok   F6: fixture: one tokened entry reconciles with --runner-count 1
+ok   F6: with that run-index row duplicated, --runner-count 2 is a count_mismatch
+ok   F6: with that run-index row duplicated, --runner-count 1 still passes
+ok   F6: run-index rows whose seq is not an integer are ignored, not a crash (count still 1)
+ok   F7: --out <parent of EV> --name <basename of EV> (an existing directory) is refused cleanly
+ok   F7: no <name>.tmp.<pid> or <name>.lock.guard was left in the parent directory
+ok   F7: the evidence directory tree is unchanged
+ok   F7: --name that is an existing directory inside --out is refused (out_is_directory)
+ok   F7: nothing else was created in --out
+ok   F7: the seq-map path being an existing directory is refused too
+ok   F7: atomic_write onto a directory raises OSError and removes its tmp file
+ok   F7: an unwritable --out is a named refusal (out_unwritable), not a traceback
+ok   F7: a plain --name into a fresh --out still works
+ok   hermetic: no call reached the host entry
+checks=57 failures=0

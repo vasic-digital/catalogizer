@@ -276,6 +276,7 @@ sql "$D/e8.db" "$EVR VALUES ('$E1','log','source','$D/co:lon/f.txt','$(printf 'f
 must_fail "E8 a real file path that contains a colon is re-hashed, not skipped as URL-shaped (WF3 W5)" "$D/e8.db" 'FAIL evidence 1: sha256 mismatch'
 RELDIR="$ROOT/specs/001-full-project-audit-remediation/evidence/wp06"; mkdir -p "$D/rel"; printf 'rel\n' > "$D/rel/f.txt"
 good_db "$D/e7.db"; sql "$D/e7.db" "$EVR VALUES ('$E1','log','source','rel/f.txt','$(sha256sum "$D/rel/f.txt" | cut -d' ' -f1)',4,'dev','2026-10-05T00:00:00Z')" >/dev/null
+mkdir -p "$D/.helix" "$D/scripts/register"; cp "$ROOT/.helix/reporting.yaml" "$D/.helix/"; cp "$REG_DIR/import_plan.py" "$REG_DIR/import_tickets.py" "$D/scripts/register/"   # the prefix sources the gate compares (T068 R-04)
 out=$(WI="$WI" REG_ROOT="$D" bash "$GATE" --db "$D/e7.db" --ext "${REG_EXT_SQL:-$REG_DIR/register_ext.sql}" 2>&1); printf '%s' "$out" | grep -q '^GATE OK' && ok "E7 a relative evidence path resolves under the tree root (control)" || bad "E7 [$out]"
 # m-3: a registry name carrying a newline cannot print a line of its own that reads GATE OK
 good_db "$D/s1.db"; sql "$D/s1.db" "INSERT INTO reg_gate_checks VALUES ('zz'||char(10)||'GATE OK','view_empty')" >/dev/null

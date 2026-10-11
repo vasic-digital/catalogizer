@@ -12,7 +12,7 @@
 Resume the in-flight **Helix Constitution submodule onboarding + owned-submodule
 reorganization** program for Catalogizer at
 `/Volumes/T7/Projects/catalogizer` (parent `main` @
-`fbca0f96c1134beb3aeb2a3ca0eb7a6ed3e33182`, `submodules/constitution` @
+`fbca0f96c1134beb3aeb2a3ca0eb7a6ed3e33182`, `constitution` @
 `2849155`): the constitution is onboarded, committed and pushed to all 6
 upstreams, and the inheritance gate is authored but uncommitted — the next step
 is to dry-run then execute `scripts/reorg_submodules.sh`, rebuild-verify, then
@@ -27,7 +27,7 @@ force-push).
 
 A single major in-progress program with terminal goal:
 
-- **(A)** onboard shared Helix Constitution as `submodules/constitution`;
+- **(A)** onboard shared Helix Constitution as `constitution`;
 - **(B)** relocate ALL owned submodules under `submodules/<snake_case>`;
 - **(C)** wire inheritance + gate;
 - **(D)** rebuild-verify everything;
@@ -44,13 +44,13 @@ A single major in-progress program with terminal goal:
 | Parent path | `/Volumes/T7/Projects/catalogizer` |
 | Parent branch | `main` |
 | Parent HEAD | `fbca0f96c1134beb3aeb2a3ca0eb7a6ed3e33182` |
-| `submodules/constitution` | pinned `main`, HEAD `2849155cbce506e9ca60ccc681b9bc71d7432c40` (short `2849155`) |
+| `constitution` | pinned `main`, HEAD `2849155cbce506e9ca60ccc681b9bc71d7432c40` (short `2849155`) |
 | Backups | `/Volumes/T7/Projects/.catalogizer-backups/` |
 
 ### Done (real, captured)
 
 - `.env` / `.env.example`: `HELIX_RELEASE_PREFIX=catalogizer` (§11.4.151).
-- `submodules/constitution` added, pinned to main; 6 upstreams wired via
+- `constitution` added, pinned to main; 6 upstreams wired via
   `install_upstreams.sh`.
 - Constitution edits (`helix_translate`→`myproject`; `find_constitution.sh`
   layout-aware; exports synced; meta-test PASS) — **COMMITTED + PUSHED to all 6

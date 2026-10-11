@@ -1,0 +1,133 @@
+FAIL X1 positive needle missing while tracked set is complete -> P2 FAIL: want rc=1 P2=FAIL positive_needle_missing, got rc=2 P2=MISSING reason=[]
+FAIL X2 absent pendingChanges -> P1 FAIL required_field_absent: want rc=1 P1=FAIL required_field_absent, got rc=2 P1=MISSING reason=[]
+FAIL X3 Chunks 0 -> P7 FAIL: want rc=1 P7=FAIL chunks_zero, got rc=2 P7=MISSING reason=[]
+FAIL X4 Files != Indexed -> P7 FAIL: want rc=1 P7=FAIL files_ne_indexed, got rc=2 P7=MISSING reason=[]
+FAIL X5 no Captured line -> P7 FAIL: want rc=1 P7=FAIL status_field_absent, got rc=2 P7=MISSING reason=[]
+FAIL X6 .env.distributed indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL X7 .env.example allowed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL X8 file under a third-party root -> P3 FAIL: want rc=1 P3=FAIL third_party_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL X9 own-org root with no indexed file -> P3 FAIL: want rc=1 P3=FAIL own_org_root_without_indexed_file, got rc=2 P3=MISSING reason=[]
+FAIL X10 tracked file not indexed -> P2 FAIL: want rc=1 P2=FAIL tracked_files_not_indexed, got rc=2 P2=MISSING reason=[]
+FAIL X11 executable --lumen-bin without a status capture -> P-Lumen FAIL (probe refused): want rc=1 P-Lumen=FAIL probe_not_run, got rc=2 P-Lumen=MISSING reason=[]
+FAIL X12 no --lumen-files -> P8 SKIP: want rc=3 P8=SKIP no_lumen_files, got rc=2 P8=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL X12b complete flag
+ok   X13a option-like value -> rc 2
+ok   X13b unknown option -> rc 2
+ok   X13c duplicate option -> rc 2
+ok   X13d negative tolerance -> rc 2
+FAIL X14 unreadable status file -> P1 FAIL: want rc=1 P1=FAIL status_file_unreadable, got rc=2 P1=MISSING reason=[]
+cp: cannot stat '/tmp/ih_x.UdEkTL/o.json': No such file or directory
+FAIL X15 output differs between runs
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL X16 want b8a990bee2c8304cf6ffb1c46fa3a99c295ba27ece5c6434cae8656335a61980 got 
+FAIL R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a ] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ / a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a / / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a / . / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a / . . / b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 non-canonical third-party root line [ a \ 0 0 1] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL R4 control: a canonical root with ONE trailing slash that holds an indexed file -> P3 FAIL third_party_files_indexed: want rc=1 P3=FAIL third_party_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL R4 control: blank lines in the roots file are ignored -> P3 PASS: want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind: want rc=1 P2=FAIL tracked_list_empty_blind, got rc=2 P2=MISSING reason=[]
+FAIL M5-3 index.state indexing (everything else clean) -> P1 FAIL index.state_not_complete: want rc=1 P1=FAIL index.state_not_complete, got rc=2 P1=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 342 200 213] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 177] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 302 240] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ 342 200 213 a] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 encoding-class third-party root [ a 342 200 250 b] -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 golden-false: a non-ASCII root in NFC that holds an indexed file is a normal hit -> P3 FAIL third_party_files_indexed: want rc=1 P3=FAIL third_party_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS: want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS: want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=2 P3=MISSING reason=[]
+FAIL M-6a control: the exact root third -> P3 FAIL third_party_files_indexed: want rc=1 P3=FAIL third_party_files_indexed, got rc=2 P3=MISSING reason=[]
+ok   M-6a control: an exact root is no case mismatch
+FAIL M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS: want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch: want rc=1 P3=FAIL third_party_root_case_mismatch, got rc=2 P3=MISSING reason=[]
+FAIL M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical): want rc=1 P3=FAIL third_party_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL M-6b golden-false: the same NFD root while only the NFC path is indexed stays refused -> P3 FAIL third_party_root_not_canonical: want rc=1 P3=FAIL third_party_root_not_canonical, got rc=2 P3=MISSING reason=[]
+ok   F1 scope.yaml declares 6 forbidden classes (instrument sees the class list)
+FAIL F1 class env_file positive [a/.env.local] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class env_file not named
+FAIL F1 class env_file negative [a/environment.c] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 class secrets_dir positive [x/secrets/a.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class secrets_dir not named
+FAIL F1 class secrets_dir negative [x/secretsauce/a.py] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 class secret_basename positive [a/api_Secret.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class secret_basename not named
+FAIL F1 class secret_basename negative [a/secure.py] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 class keystore positive [a/release.jks] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class keystore not named
+FAIL F1 class keystore negative [a/keys.c] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 class qa_corpus positive [d/qa-results/r.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class qa_corpus not named
+FAIL F1 class qa_corpus negative [d/qa_resultsx/r.py] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 class cache_dir positive [a/__pycache__/x.py] indexed -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F1 class cache_dir not named
+FAIL F1 class cache_dir negative [a/pycache.py] indexed -> P3 PASS (false-positive guard): want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/localhost.key -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/dhparams.pem -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/prod.env -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/secrets/db.yaml -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/release.jks -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/store.p12 -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/x.pfx -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/y.keystore -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 review fixture a/z.pk8 -> P3 FAIL: want rc=1 P3=FAIL forbidden_class_files_indexed, got rc=2 P3=MISSING reason=[]
+FAIL F1 scope without forbidden_classes -> P3 FAIL (blind): want rc=1 P3=FAIL forbidden_classes_unusable, got rc=2 P3=MISSING reason=[]
+FAIL F1 class failing its own positive/negative self-test -> P3 FAIL: want rc=1 P3=FAIL forbidden_classes_unusable, got rc=2 P3=MISSING reason=[]
+FAIL F1 unreadable scope -> P3 FAIL: want rc=1 P3=FAIL forbidden_classes_unusable, got rc=2 P3=MISSING reason=[]
+FAIL F2 reindexRecommended true -> P1 FAIL: want rc=1 P1=FAIL reindexRecommended_not_false, got rc=2 P1=MISSING reason=[]
+FAIL F2 pendingChanges.added nonzero -> P1 FAIL: want rc=1 P1=FAIL pendingChanges.added_nonzero, got rc=2 P1=MISSING reason=[]
+FAIL F2 pendingChanges.modified nonzero -> P1 FAIL: want rc=1 P1=FAIL pendingChanges.modified_nonzero, got rc=2 P1=MISSING reason=[]
+FAIL F2 pendingChanges.removed nonzero -> P1 FAIL: want rc=1 P1=FAIL pendingChanges.removed_nonzero, got rc=2 P1=MISSING reason=[]
+FAIL F2 unparseable Captured time -> P7 FAIL: want rc=1 P7=FAIL captured_time_unparseable, got rc=2 P7=MISSING reason=[]
+FAIL F2 own-org root a/b with only a sibling a/bc/x.go indexed -> P3 FAIL (prefix boundary): want rc=1 P3=FAIL own_org_root_without_indexed_file, got rc=2 P3=MISSING reason=[]
+FAIL F2 control: own-org root a/b with a/b/x.go indexed -> P3 PASS: want rc=3 P3=PASS , got rc=2 P3=MISSING reason=[]
+FAIL F8 capture older than --captured-not-before -> P7 FAIL: want rc=1 P7=FAIL captured_before_required_time, got rc=2 P7=MISSING reason=[]
+FAIL F8 control: capture equal to --captured-not-before -> P7 PASS: want rc=3 P7=PASS , got rc=2 P7=MISSING reason=[]
+ok   F8 --captured-not-before without a zone -> usage rc=2
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F3 want INCOMPLETE rc=3, got rc=2 
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F3 blocked_unavailable missing
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+jq: error: Could not open file /tmp/ih_x.UdEkTL/o.json: No such file or directory
+FAIL F3 full run: rc=2 verdict= skipped=
+FAIL F3 live proof P4 FAIL -> FAIL: want rc=1 P4=FAIL , got rc=2 P4=MISSING reason=[]
+FAIL F3 malformed live proof entry -> P4 FAIL: want rc=1 P4=FAIL live_proof_entry_malformed, got rc=2 P4=MISSING reason=[]
+FAIL F4 drift report with a failing scope_to_lumen_json_check -> P-ScopeDrift FAIL: want rc=1 P-ScopeDrift=FAIL drift:scope_to_lumen_json_check, got rc=2 P-ScopeDrift=MISSING reason=[]
+FAIL F4 drift report missing required checks -> P-ScopeDrift FAIL: want rc=1 P-ScopeDrift=FAIL missing_check, got rc=2 P-ScopeDrift=MISSING reason=[]
+FAIL F5 stale .lumenignore vs fresh render -> P-LumenIgnore FAIL: want rc=1 P-LumenIgnore=FAIL lumenignore_stale_vs_scope, got rc=2 P-LumenIgnore=MISSING reason=[]
+FAIL F5 empty fresh render is blind -> P-LumenIgnore FAIL: want rc=1 P-LumenIgnore=FAIL fresh_render_empty_blind, got rc=2 P-LumenIgnore=MISSING reason=[]
+FAIL F5 control: identical pair -> P-LumenIgnore PASS: want rc=0 P-LumenIgnore=PASS , got rc=2 P-LumenIgnore=MISSING reason=[]
+SUMMARY pass=7 fail=98
+FAIL all-good fixture: want rc=3 verdict=INCOMPLETE skipped=P-LumenIgnore,P-ScopeDrift,P4,P5,P6, got rc=2 verdict=MISSING failing=[?] skipped=[?]
+FAIL schema: want index-health/1, got MISSING
+FAIL P2 row must record needle_pos and needle_neg
+FAIL pendingRefs>0: want rc=1 verdict=FAIL P1=FAIL, got rc=2 verdict=MISSING P1=MISSING
+FAIL required field index.pendingRefs absent: want rc=1 verdict=FAIL P1=FAIL, got rc=2 verdict=MISSING P1=MISSING
+FAIL worktreeMismatch non-null: want rc=1 verdict=FAIL P1=FAIL, got rc=2 verdict=MISSING P1=MISSING
+FAIL negative needle zz/does_not_exist.go found: want rc=1 verdict=FAIL P2=FAIL, got rc=2 verdict=MISSING P2=MISSING
+FAIL positive needle missing from the index: want rc=1 verdict=FAIL P2=FAIL, got rc=2 verdict=MISSING P2=MISSING
+FAIL Lumen status Stale: yes: want rc=1 verdict=FAIL P7=FAIL, got rc=2 verdict=MISSING P7=MISSING
+FAIL no Lumen status file and no probe: want rc=1 verdict=FAIL P-Lumen=FAIL, got rc=2 verdict=MISSING P-Lumen=MISSING
+FAIL --lumen-bin path does not exist: want rc=1 verdict=FAIL P-Lumen=FAIL, got rc=2 verdict=MISSING P-Lumen=MISSING
+FAIL scope parity outside tolerance: want rc=1 verdict=FAIL P8=FAIL, got rc=2 verdict=MISSING P8=MISSING
+ok   missing --out is a usage error (rc=2)
+SUMMARY pass=1 fail=12

@@ -1,0 +1,27 @@
+ok   case good derives PASS (- false)
+ok   case blind_red derives FAIL (red_ok,fingerprints_differ false)
+ok   case exit127 derives FAIL (red_ok false)
+ok   case exit126 derives FAIL (red_ok false)
+ok   case signal derives FAIL (red_ok false)
+ok   case other_argv derives FAIL (same_test false)
+ok   case other_target derives FAIL (same_test false)
+ok   case dash_argv derives FAIL (same_test false)
+ok   case typo_red derives FAIL (same_test false)
+ok   case green_dup_iter derives FAIL (green_ok false)
+ok   case green_first derives FAIL (red_before_green false)
+ok   case reopen_no_new derives FAIL (red_ok,green_ok false)
+ok   case second_cycle derives PASS (- false)
+ok   case launder derives FAIL (green_ok,red_before_green false)
+ok   case reopen_pass derives FAIL (red_before_green false)
+ok   case reopen_after_fail derives FAIL (red_before_green false)
+ok   case green_on_reopen_fp derives FAIL (fingerprints_new false)
+ok   case green_old_fp derives FAIL (fingerprints_new false)
+ok   expected.tsv holds the 18 scenario cases
+ok   strict mode refuses a forged RED that passed (exit 3 schema_invalid)
+ok   a ledger with a deleted entry is unverifiable (exit 3 chain_failure), no verdict
+ok   an item with no entries derives FAIL
+ok   no argument is a usage error (64)
+ok   an unknown flag is a usage error (64)
+ok   an absent ledger is unverifiable (3)
+ok   deterministic: two derivations are byte-identical
+checks=26 failures=0

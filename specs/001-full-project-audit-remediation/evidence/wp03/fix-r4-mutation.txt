@@ -1,0 +1,30 @@
+verifier sha256 3364a63c2d9399e0641461a2ad546b6fbe2d2631688aaec618a2f7c55aa9ed95
+=== mutant M1_no_replace_off: rc=0 SUMMARY pass=33 fail=5
+FAIL R1 a replace ref that makes the remote tip look like a descendant: still DIVERGED, exit 12 (got '0', want '12')
+FAIL R1 the diverged problem is listed under --strict (got 'null', want 'number')
+FAIL R1 a caller-set GIT_NO_REPLACE_OBJECTS=0 cannot re-enable replace refs: exit 12 (got '0', want '12')
+FAIL R1 a caller-set GIT_REPLACE_REF_BASE changes nothing: exit 12 (got '0', want '12')
+FAIL R1 the replace ref under --fetch: exit 12 (got '0', want '12')
+=== mutant M2_no_graft_off: rc=0 SUMMARY pass=37 fail=1
+FAIL R1 an info/grafts line that rewrites the remote tip's parent: still DIVERGED, exit 12 (got '0', want '12')
+=== mutant M3_commitgraph_write: rc=0 SUMMARY pass=37 fail=1
+FAIL R1 --fetch wrote a commit-graph into the repository under examination
+=== mutant M4_hidden_not_counted: rc=0 SUMMARY pass=33 fail=5
+FAIL R2 .git/info/exclude '*' and a new untracked file: exit 13 (got '0', want '13')
+FAIL R2 the row counts the hidden file as untracked (got '0', want '1')
+FAIL R2 a global core.excludesFile hiding the file: exit 13 (got '0', want '13')
+FAIL R2 a repository core.excludesFile hiding the file: exit 13 (got '0', want '13')
+FAIL R2 one file hidden by a local rule plus one visible untracked file: both counted (got '1', want '2')
+=== mutant M5_exclude_standard: rc=0 SUMMARY pass=33 fail=5
+FAIL R2 .git/info/exclude '*' and a new untracked file: exit 13 (got '0', want '13')
+FAIL R2 the row counts the hidden file as untracked (got '0', want '1')
+FAIL R2 a global core.excludesFile hiding the file: exit 13 (got '0', want '13')
+FAIL R2 a repository core.excludesFile hiding the file: exit 13 (got '0', want '13')
+FAIL R2 one file hidden by a local rule plus one visible untracked file: both counted (got '1', want '2')
+=== mutant M6_bash_no_p: rc=0 SUMMARY pass=37 fail=1
+FAIL R3 the caller's BASH_ENV file ran inside the verifier (worker dispatch)
+=== mutant M7_pin_U_dropped: rc=0 SUMMARY pass=37 fail=1
+FAIL R4 --strict lists pin among the submodule row's problems (got 'null', want 'number')
+=== mutant M8_untracked_cache_override: rc=0 SUMMARY pass=38 fail=0
+=== mutant M9_replace_ref_base_unscrub: rc=0 SUMMARY pass=38 fail=0
+=== mutant M0_control_unmutated: rc=0 SUMMARY pass=38 fail=0

@@ -1,5 +1,12 @@
 # Index scope notes (T019, WP-02), 2026-10-06
 
+| Field | Value |
+|---|---|
+| Revision | 2 |
+| Created | 2026-10-06 |
+| Last modified | 2026-10-08 (OWED-T019-1 marked resolved; F6 exclude and F5 .lumenignore regeneration noted in the fix-r6 evidence) |
+| Status | working note, uncommitted |
+
 Constitution pin read: `a71b176` (the T015 notes were written at `10b7a06`; `git diff --stat 10b7a06 a71b176 -- scripts/codegraph scripts/lumen` is empty, so the T015 grammar notes still hold).
 
 ## Authored DATA and rendered outputs (uncommitted; T029 commits after the T020 and WP-02 reviews)
@@ -13,7 +20,7 @@ Constitution pin read: `a71b176` (the T015 notes were written at `10b7a06`; `git
 
 Accepted count 5269 = the engine's own enumeration (`codegraph_scope_guard.py --dry-run-dir ... --print-count`, installed runner discovery, read only): 50 own-org submodule roots non-empty, 44 checked-out third-party roots with zero files, scope guard PASS, violations []. UNCONFIRMED: the count moves with other agents' untracked files (the engine enumerates the git view); the 2 percent tolerance covers small drift only.
 
-## OWED-T019-1 (tool conflict, not fixed here)
+## OWED-T019-1 (tool conflict) - RESOLVED 2026-10-08 (review WP-02-T028 F4): `scope_to_lumen_json.py` now reads `config/index/lumen_allow_roots.yaml` itself (sibling default or `--allow-roots FILE`); `--check` passes from committed inputs. The recipe below is historical.
 
 `scripts/audit/scope_to_lumen_json.py` documents the optional key `lumen_allow_roots` in scope.yaml, but `scope_render.py` fails closed (exit 3, "unknown top-level scope key(s)") on that key. Without allow roots the derived allow list holds only the 50 own-org submodule roots, so the main repository's own directories (catalog-api, catalog-web, ...) would be denied. Workaround used: the roots are DATA in `config/index/lumen_allow_roots.yaml`, merged into a scratch copy for the derivation:
 

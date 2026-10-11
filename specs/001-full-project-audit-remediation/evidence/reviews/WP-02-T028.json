@@ -1,0 +1,101 @@
+{
+  "wp": "WP-02",
+  "tasks": ["T028", "T020"],
+  "verdict": "NO-GO",
+  "sub_verdicts": {
+    "T020_gitignore_re_review": "GO-with-finding F6 (minor; git effect nil, CodeGraph-scope effect only)",
+    "T028_wp02_review": "NO-GO"
+  },
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (constitution 11.4.231(F.2)); xhigh is NOT claimed. Reviewer is independent of the author (did not write any WP-02 file).",
+  "reviewed_head": "20f74abf",
+  "commits_in_scope": ["f04c555d", "4c8b07b7"],
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "P3 secret detector is narrower than the scope's own forbidden classes (false-null)",
+      "detail": "index_health.sh SECRET regex covers only ^.env(.|$), .jks/.keystore/.p12/.pfx and 'secret' in a basename. config/index/scope.yaml forbidden_classes also forbid *.pem, *.key, *.pk8, *.env (e.g. prod.env), and secrets/ directories. Probe (fixture, scratch): a/localhost.key, a/dhparams.pem, a/prod.env, a/secrets/db.yaml each give P3=PASS; control a/release.jks gives P3=FAIL (instrument sees). Real files of these classes exist in the tree (git ls-files --recurse-submodules: helix_qa/tools/opensource/.../localhost.key, dhparams.pem, example.env, ...-creds.env). The current codegraph files capture holds 0 of them (control needle catalog-api/main.go present), so no live leak, but the gate cannot detect one. Fix: derive P3's classes from scope.yaml forbidden_classes (one class source) with their positive/negative fixtures."
+    },
+    {
+      "id": "F2",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "Reviewer-authored mutations survive both index_health test suites",
+      "detail": "Five mutations not in mutate_index_health.sh survive test_index_health.sh (13/13) AND test_index_health_extra.sh (54/54): M1 drop the reindexRecommended check; M2 drop pendingChanges.{added,modified,removed} nonzero check; M3 drop captured_time_unparseable; M6 drop .jks/.keystore/.p12/.pfx from SECRET; M8 own-org root prefix boundary removed (startswith(r) instead of r+'/'). M2 is load-bearing: it is the exact reason P1 FAILs on the real run (pendingChanges.added/modified_nonzero), yet no test proves it. Per 11.4.194(6)(d)/11.4.235(D) the gate is not proven-correct until each has a RED case. M7 (accept state 'indexing') was caught (M5-3)."
+    },
+    {
+      "id": "F3",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "Gate exits 0 (verdict PASS) while proofs are SKIP; P4/P5/P6 are SKIP unconditionally",
+      "detail": "verdict is PASS whenever no proof FAILs; P4, P5, P6 are hard-coded SKIP and P8 SKIPs without --lumen-files, so the best reachable result is rc=0 with complete=false. A caller reading the exit code (11.4.135 'absence of a verdict blocks as FAIL', 11.4.236) gets a green for an unproven index. T025 acceptance 'P1 to P8 PASS' is therefore structurally unreachable. Fix: a distinct exit code (or verdict INCOMPLETE) when any SKIP exists, plus a tracked plan for where P4/P5/P6 are proven; or amend T021/T025 text with an owner decision."
+    },
+    {
+      "id": "F4",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "title": "Committed lumen_scope.json cannot be re-derived by its own tool from committed inputs",
+      "detail": "scope_to_lumen_json.py --scope config/index/scope.yaml --submodules-tsv audit/submodules.tsv --check config/index/lumen_scope.json exits 1 with 33 'allow entry not derived (extra)' (catalog-api, catalog-web, docs, ...). Re-derivation with --out gives allow 50 vs committed 83 (deny/classes/dropped_negations equal). It passes (rc=0) only with the out-of-tool recipe in audit/index-scope-notes.md that merges config/index/lumen_allow_roots.yaml into a scratch YAML (F-INDEX-009, OWED-T019-1). A derivation that needs a hand-run python one-liner is not 'ONLY through the tool' (T019) and is a 11.4.274 extraction gap; a naive re-run would deny the whole main application from Lumen. Fix: add --allow-roots FILE (or read lumen_allow_roots.yaml) to scope_to_lumen_json.py with a test, and make --check part of the gate."
+    },
+    {
+      "id": "F5",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "title": ".lumenignore already stale versus the tree; no freshness check exists",
+      "detail": "gen_lumenignore.py over the committed lumen_scope.json now emits 5 deny lines the committed .lumenignore lacks: /.helix/ (tracked .helix/reporting.yaml added 58cb30b8 today, not ignored), /coverage/, /reports/, /prev3/, /catalogizer-test-zzsw10647std/. The allow-list generator enumerates top-level dirs present at render time, so a new top-level dir is neither allowed nor denied until re-render, and nothing in WP-02 detects that. Fix: a --check mode (render to temp, cmp) wired into index_health or the pre-commit stage."
+    },
+    {
+      "id": "F6",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "title": "T020: scope negation re-includes build-output paths for CodeGraph",
+      "detail": "Diff 26755ca5..f04c555d of .gitignore is only the delimited helix-codegraph-scope block (as required). git check-ignore (scratch repos, old vs new .gitignore): submodules/doc_processor/pkg/coverage/{coverage.html,lcov.info,coverage.xml,index.html} were ignored by root rule 'coverage/' (line 139) and are no longer; coverage.out stays ignored; .env, *.key, google-services.json, layout/build/x.bin stay ignored under every negated tree (controls). Git effect is nil (paths lie inside a submodule, whose own .gitignore ignores coverage.out/coverage.html), but CodeGraph reads the root .gitignore, so generated coverage reports in that tree would enter the index. Fix: negate only the source files (e.g. /submodules/doc_processor/pkg/coverage/*.go) or add a re-exclusion of report extensions after the negation."
+    },
+    {
+      "id": "F7",
+      "severity": "important",
+      "finding_layer": "process-doc",
+      "title": "T019 outputs committed before the T020/T028 GO; T022, T026 still blocked",
+      "detail": "f04c555d committed scope.yaml, lumen_scope.json, lumen_allow_roots.yaml, codegraph.json, .lumenignore and .gitignore although T019/T029 say the commit waits for the T020 and T028 GO (11.4.142 review-before-commit). Fix-forward only: the eventual GO verdicts' covers_runs must name f04c555d and 4c8b07b7. WP-02 cannot reach GO while T022 (refresh, BLOCKED-ON-MEMORY) and T026 (.mcp.json absent; candidate preflight fail=3) are open: the .mcp.json entry and both preflight transcripts that T028 must review do not exist, and the real index-health verdict is FAIL (P1, P2 62 missing, P3 50 third-party + 3 secret-class hits, P7 Stale: yes) on the pre-scope index."
+    },
+    {
+      "id": "F8",
+      "severity": "minor",
+      "finding_layer": "process-doc",
+      "title": "T016/T021 text promises a lumen search probe that the gate deliberately refuses",
+      "detail": "index_health.sh fails P-Lumen on --lumen-bin with reason probe_not_run_read_only_gate_needs_status_capture because a lumen search writes the index (EnsureFresh). The reasoning is sound, but tasks.md T016/T021 still describe the probe path as a way to derive P-Lumen; amend the task text (or record the decision) so the contract and the code agree. Also P7 checks only that Captured: parses, never its age or a HEAD fingerprint, so an old 'Stale: no' capture passes P7."
+    },
+    {
+      "id": "F9",
+      "severity": "minor",
+      "finding_layer": "test-instrumentation",
+      "title": "test_scope_to_lumen_json.sh depends on the real repository layout",
+      "detail": "In a scratch git repo without submodules/constitution and with no commit, the gen_lumenignore leg fails (rc=2) and the IDENTITY line prints a git error; in the real repository it is 60/60. Fine for its purpose, but the test should SKIP-with-reason rather than FAIL when the generator is absent, and handle an unborn HEAD."
+    }
+  ],
+  "mutations_attempted": [
+    {"id": "M1-reindex", "target": "scripts/audit/index_health.sh P1", "change": "reindexRecommended check -> if False", "result": "SURVIVED (13/13, 54/54)"},
+    {"id": "M2-pendingchanges", "target": "scripts/audit/index_health.sh P1", "change": "pendingChanges nonzero -> no-op", "result": "SURVIVED (13/13, 54/54)"},
+    {"id": "M3-captured", "target": "scripts/audit/index_health.sh P7", "change": "captured_time_unparseable -> pass", "result": "SURVIVED (13/13, 54/54)"},
+    {"id": "M6-secret-ext", "target": "scripts/audit/index_health.sh P3", "change": "drop (jks|keystore|p12|pfx) alternative", "result": "SURVIVED (13/13, 54/54)"},
+    {"id": "M7-state", "target": "scripts/audit/index_health.sh P1", "change": "accept state 'indexing' as complete", "result": "KILLED (extra 53/54, M5-3)"},
+    {"id": "M8-ownorg-eq", "target": "scripts/audit/index_health.sh P3", "change": "own-org root match without '/' boundary", "result": "SURVIVED (13/13, 54/54)"}
+  ],
+  "runs_observed": {
+    "test_index_health.sh": "13/13 (scratch copy)",
+    "test_index_health_extra.sh": "54/54 (scratch copy)",
+    "test_derive_scope.sh": "9/9 (scratch copy)",
+    "test_scope_to_lumen_json.sh": "60/60 real repo (read-only temp); 59/60 scratch (F9)",
+    "test_planned_paths_tracked.sh (T020 x3)": "3 runs, each TOTAL planned=107 control=187 failures=0, MUTATIONS 58 caught=56 documented-equivalent=2, ANCHOR-MUTATIONS 31/31",
+    "scope_render.py --check": "rc=0, drift=[]",
+    "scope_to_lumen_json.py --check (committed inputs)": "rc=1 (F4); with the documented merge recipe rc=0",
+    "index-health run1 vs run2": "byte-identical (cmp)"
+  },
+  "covers_runs": [],
+  "covers_runs_note": "NO-GO: covers no commit. A later GO must list f04c555d and 4c8b07b7 (already committed WP-02 paths).",
+  "not_done": "No index writer, build or podman run; tests were run on the host (not in IMG-TESTUTIL) from a scratch copy, except the read-only T004 test and test_scope_to_lumen_json.sh which ran in the real tree writing only temp dirs.",
+  "date": "2026-10-08"
+}

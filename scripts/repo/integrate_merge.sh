@@ -140,6 +140,41 @@ for t in "${TARGETS[@]}"; do
   hit="$(sort -u "$W/diff.names" | comm -12 - "$dirty")"
   [ -z "$hit" ] || { echo "ff_blocked_by_local_changes: $(printf '%s' "$hit" | tr '\n' ' ')"; exit 12; }
 done
+# ---- backup (section 9.2) and the merge record ---------------------------------------------------------------------------------------------
+# write_backup: the 9.2 backup of the local range and of every uncommitted file. It runs BEFORE anything touches the working tree: the normal merge calls it below, and the --resolution form calls it
+# before its trial merge (`git merge --no-ff --no-commit` + `merge --abort` rewrite the index and the tracked files; WF-R6 R-06). Idempotent.
+write_backup() {
+  [ -z "${BACKUP_DONE:-}" ] || return 0
+  kf="${KEY//\//__}"; [ "$kf" = . ] && kf=main
+  BK="$RUND/backup"
+  mkdir -p "$BK/worktree" 2>/dev/null || die backup_failed "cannot create $(printf '%q' "$BK")"
+  first="${TARGETS[0]}"
+  if [ -n "$(g rev-list -n1 "refs/heads/$BR" "^$first" 2>/dev/null)" ]; then
+    g bundle create "$BK/$kf.bundle" "refs/heads/$BR" "^$first" >/dev/null 2>&1 || die backup_failed "git bundle create"
+    g bundle verify "$BK/$kf.bundle" >/dev/null 2>&1 || die backup_failed "git bundle verify"
+  else : > "$BK/$kf.bundle.empty" || die backup_failed "empty marker"; fi
+  : > "$BK/worktree.sha256" || die backup_failed "worktree.sha256"; : > "$BK/nested.tsv" || die backup_failed "nested.tsv"
+  # the status listing is written to a file and its status read (a failing listing is no empty backup); a rename or copy record is followed by a bare record holding the OLD path; an
+  # untracked nested repository is recorded, not copied (cp -p cannot copy a directory); a symlink (a dangling one included) is copied as a link (WF17-cpa LIST-1, -9, -10, -11)
+  g status --porcelain=v1 -z -uall --ignore-submodules=all > "$W/st.z" 2>/dev/null || die git_listing_failed "git status for the 9.2 backup"
+  while IFS= read -r -d '' e; do
+    xy="${e:0:2}"; f="${e:3}"
+    case "$xy" in R*|C*|?R|?C) IFS= read -r -d '' _old ;; esac
+    safe_relpath "${f%/}" || die backup_failed "unsafe uncommitted path $(printf '%q' "$f")"
+    if [ -d "$ROOT/$f" ] && [ ! -L "$ROOT/$f" ]; then
+      [ -e "$ROOT/${f%/}/.git" ] || die backup_failed "a directory entry that is no repository: $(printf '%q' "$f")"
+      printf 'nested_repo\t%s\t%s\t%s\n' "${f%/}" "$(git -C "$ROOT/${f%/}" rev-parse HEAD 2>/dev/null || echo none)" "$(git -C "$ROOT/${f%/}" status --porcelain=v1 -z 2>/dev/null | sha256sum | cut -d' ' -f1)" >> "$BK/nested.tsv"; continue
+    fi
+    if [ -L "$ROOT/$f" ]; then
+      mkdir -p "$BK/worktree/$(dirname "$f")" && cp -P -p -- "$ROOT/$f" "$BK/worktree/$f" || die backup_failed "link copy of $(printf '%q' "$f")"
+      printf 'symlink\t%s\t%s\n' "$f" "$(readlink -- "$ROOT/$f")" >> "$BK/nested.tsv"; continue
+    fi
+    [ -f "$ROOT/$f" ] || continue
+    mkdir -p "$BK/worktree/$(dirname "$f")" && cp -p -- "$ROOT/$f" "$BK/worktree/$f" || die backup_failed "copy of $(printf '%q' "$f")"
+    ( cd "$BK/worktree" && sha256sum -- "$f" ) >> "$BK/worktree.sha256" || die backup_failed "sha256 of $(printf '%q' "$f")"
+  done < "$W/st.z"
+  BACKUP_DONE=1
+}
 # ---- resolution record (validated before anything is moved) -------------------------------------------------------------------------------
 if [ -n "$RES" ]; then
   safe_dir_arg "$RES" || die resolution_dir_invalid "$(printf '%q' "$RES")"
@@ -153,7 +188,8 @@ if [ -n "$RES" ]; then
   model="$(jq -r '.model // empty' "$rd/resolution.json")"; effort="$(jq -r '.effort // empty' "$rd/resolution.json")"
   case "$(printf '%s' "$model" | tr '[:upper:]' '[:lower:]')" in opus|claude-opus*) ;; *) die merge_resolver_not_pinned "model $(printf '%q' "$model")" ;; esac
   [ "$effort" = xhigh ] || die merge_resolver_not_pinned "effort $(printf '%q' "$effort")"
-  # the conflict set of the merge now
+  # the conflict set of the merge now; the trial merge rewrites the index and the tracked files, so the 9.2 backup exists first (WF-R6 R-06)
+  write_backup
   g merge --no-ff --no-commit "$rtip" >/dev/null 2>&1; mrc=$?
   cset="$(g diff --name-only --diff-filter=U 2>/dev/null | sort -u | tr '\n' ' ')"
   [ ! -e "$(g rev-parse --path-format=absolute --git-path MERGE_HEAD)" ] || g merge --abort >/dev/null 2>&1
@@ -178,35 +214,7 @@ if [ -n "$RES" ]; then
   done
   die secret_fold_unavailable "the S2 secret fold (T040a) is not built; no resolved file is written"
 fi
-# ---- backup (section 9.2) and the merge record ---------------------------------------------------------------------------------------------
-kf="${KEY//\//__}"; [ "$kf" = . ] && kf=main
-BK="$RUND/backup"
-mkdir -p "$BK/worktree" 2>/dev/null || die backup_failed "cannot create $(printf '%q' "$BK")"
-first="${TARGETS[0]}"
-if [ -n "$(g rev-list -n1 "refs/heads/$BR" "^$first" 2>/dev/null)" ]; then
-  g bundle create "$BK/$kf.bundle" "refs/heads/$BR" "^$first" >/dev/null 2>&1 || die backup_failed "git bundle create"
-  g bundle verify "$BK/$kf.bundle" >/dev/null 2>&1 || die backup_failed "git bundle verify"
-else : > "$BK/$kf.bundle.empty" || die backup_failed "empty marker"; fi
-: > "$BK/worktree.sha256" || die backup_failed "worktree.sha256"; : > "$BK/nested.tsv" || die backup_failed "nested.tsv"
-# the status listing is written to a file and its status read (a failing listing is no empty backup); a rename or copy record is followed by a bare record holding the OLD path; an
-# untracked nested repository is recorded, not copied (cp -p cannot copy a directory); a symlink (a dangling one included) is copied as a link (WF17-cpa LIST-1, -9, -10, -11)
-g status --porcelain=v1 -z -uall --ignore-submodules=all > "$W/st.z" 2>/dev/null || die git_listing_failed "git status for the 9.2 backup"
-while IFS= read -r -d '' e; do
-  xy="${e:0:2}"; f="${e:3}"
-  case "$xy" in R*|C*|?R|?C) IFS= read -r -d '' _old ;; esac
-  safe_relpath "${f%/}" || die backup_failed "unsafe uncommitted path $(printf '%q' "$f")"
-  if [ -d "$ROOT/$f" ] && [ ! -L "$ROOT/$f" ]; then
-    [ -e "$ROOT/${f%/}/.git" ] || die backup_failed "a directory entry that is no repository: $(printf '%q' "$f")"
-    printf 'nested_repo\t%s\t%s\t%s\n' "${f%/}" "$(git -C "$ROOT/${f%/}" rev-parse HEAD 2>/dev/null || echo none)" "$(git -C "$ROOT/${f%/}" status --porcelain=v1 -z 2>/dev/null | sha256sum | cut -d' ' -f1)" >> "$BK/nested.tsv"; continue
-  fi
-  if [ -L "$ROOT/$f" ]; then
-    mkdir -p "$BK/worktree/$(dirname "$f")" && cp -P -p -- "$ROOT/$f" "$BK/worktree/$f" || die backup_failed "link copy of $(printf '%q' "$f")"
-    printf 'symlink\t%s\t%s\n' "$f" "$(readlink -- "$ROOT/$f")" >> "$BK/nested.tsv"; continue
-  fi
-  [ -f "$ROOT/$f" ] || continue
-  mkdir -p "$BK/worktree/$(dirname "$f")" && cp -p -- "$ROOT/$f" "$BK/worktree/$f" || die backup_failed "copy of $(printf '%q' "$f")"
-  ( cd "$BK/worktree" && sha256sum -- "$f" ) >> "$BK/worktree.sha256" || die backup_failed "sha256 of $(printf '%q' "$f")"
-done < "$W/st.z"
+write_backup
 pst=""; [ -r "/proc/$RPID/stat" ] && pst="$(awk '{print $22}' "/proc/$RPID/stat" 2>/dev/null)"
 # ---- merge each target in turn ---------------------------------------------------------------------------------------------------------------
 is_cpa() { # is_cpa <sha>: the one shared predicate (lib_safe.sh cpa_runid + cpa_row; WF3 review m3, X3)
@@ -242,7 +250,10 @@ for i in "${!TARGETS[@]}"; do
   # held?
   held=""
   while IFS= read -r c; do
-    [ -n "$c" ] || continue; vp="$(g log -1 --format=%B "$c" | awk 'index($0,"Awaits-Review: ")==1 {v=substr($0,16)} END{print v}')"; [ -z "$vp" ] || held="${held:+$held,}local_held_commit"
+    [ -n "$c" ] || continue
+    # the ONE trailer parser (lib_safe.sh cpa_hold_state): a block that cannot be read is a refusal, never "not held" (WF-R6 R-01)
+    vp="$(cpa_hold_state "$ROOT" "$c")" || { g merge --abort >/dev/null 2>&1; die malformed_trailers "$c: its trailer block cannot be read"; }
+    [ -z "$vp" ] || held="${held:+$held,}local_held_commit"
   done < <(for tt in "${ALLTIPS[@]+"${ALLTIPS[@]}"}"; do g rev-list HEAD "^$tt" 2>/dev/null; done | sort -u)
   adopt_ok "$t" || held="${held:+$held,}adoption"
   if [ -n "$GATES" ] && [ -f "$GATES" ]; then
@@ -264,7 +275,9 @@ for i in "${!TARGETS[@]}"; do
     if [ -n "$ANCHOR" ] && g cat-file -e "$ANCHOR^{commit}" 2>/dev/null; then
       for c in $(g rev-list --reverse "HEAD..$t" "^$ANCHOR" 2>/dev/null); do
         is_cpa "$c" && continue
-        g log --format='%(trailers:key=Foreign-Commit,valueonly,separator=%x0A)' HEAD 2>/dev/null | grep -qxF -- "$c" && continue
+        cpa_foreign_listed "$ROOT" HEAD "$c"; frc=$?   # the ONE trailer parser (a `---` line in an earlier message hid its Foreign-Commit lines from git %(trailers); WF-R6 R-01)
+        [ "$frc" -le 1 ] || { g merge --abort >/dev/null 2>&1; die git_listing_failed "Foreign-Commit lines of HEAD"; }
+        [ "$frc" = 0 ] && continue
         printf 'Foreign-Commit: %s\n' "$c"
       done
     fi
@@ -272,7 +285,10 @@ for i in "${!TARGETS[@]}"; do
   } > "$mf"
   # the merge commit and its commits.tsv row are ONE window: a signal that arrives in it is held (a flag) and acted on after the row is written, never between the two (RES-3)
   GOT=""; trap 'GOT=143' TERM; trap 'GOT=130' INT; trap 'GOT=129' HUP
-  g commit -q -F "$mf" >/dev/null 2>"$W/commit.err" || { trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; g merge --abort >/dev/null 2>&1; die commit_failed "$(head -c 300 "$W/commit.err")"; }
+  g commit -q --cleanup=verbatim -F "$mf" >/dev/null 2>"$W/commit.err" || { trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; g merge --abort >/dev/null 2>&1; die commit_failed "$(head -c 300 "$W/commit.err")"; }
+  # the stored message must be the composed one (WP-04-T046-r2 F-01: commit.cleanup / core.commentChar / hooks); otherwise no row is written and the merge commit stays unrecorded, so nothing of it is pushed
+  exp_aw=""; [ -z "$held" ] || exp_aw="$EV/reviews/CPA-merge-$RID.json"
+  if ! vwhy="$(cpa_commit_verify "$ROOT" "$mf" "$RID" "$exp_aw")"; then trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; die commit_message_altered "$vwhy (the merge commit exists and is not recorded)"; fi
   sha="$(g rev-parse HEAD)"
   printf '%s\t%s\t%s\n' "$KEY" "$sha" "$RID" >> "$RUND/commits.tsv" || { trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; die commits_tsv_write_failed "commits.tsv"; }
   trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP

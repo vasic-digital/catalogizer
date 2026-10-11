@@ -8,7 +8,9 @@ when at least one `expect` fragment appears on a FAIL line of a test file (a mut
 count); an edit that does not apply (OLD absent) or whose Python does not compile is INVALID, never "caught". Survivors are reported, never
 hidden. The mutants that T056 names are tagged T056 in their id.
 
-Usage: run_mutations_wp05b.py [--check] [-j N] [--list] [ID-SUBSTRING ...]
+Usage: run_mutations_wp05b.py [--check] [-j N] [--list] [--baseline [TEST.sh ...]] [ID-SUBSTRING ...]
+
+A run starts with the unmutated-baseline control (baseline()): if any suite FAILs without a mutation, the run stops with exit 2.
 """
 import concurrent.futures
 import os
@@ -30,17 +32,15 @@ def m(i, edits, expect, tests):
 
 EV, PA, VD, AN, CORE, LIB, CEN = "tools/evidence/evcore.py", "tools/evidence/evparse.py", "tools/evidence/evverdict.py", "tools/evidence/evanchor.py", \
     "tools/evidence/evcore.py", "tools/evidence/lib/ab_pass_with_evidence.sh", "tools/evidence/census_ab_pass.py"
-TA, TV, TE, T2 = "test_anchors.sh", "test_verdict.sh", "test_evrec.sh", "test_ts02.sh"
+TA, TV, TE, T2, TR, T9 = "test_anchors.sh", "test_verdict.sh", "test_evrec.sh", "test_ts02.sh", "test_anchors_r8.sh", "test_anchors_r9.sh"
 
 # ---- anchors (T055 / T056: "remove the anchor comparison, the tamper test must fail")
-m("T056-A1-anchor-comparison-removed-in-verify", [(CORE, "        arows, newest = evanchor.verify_anchors(a, entries)", "        arows, newest = None, None")],
+m("T056-A1-anchor-comparison-removed-in-verify", [(CORE, "        rows, newest = evanchor.verify_anchors(a, entries)", "        rows, newest = None, None")],
   ["delete-and-recompute is caught", "truncated tail is caught", "caught by the anchor"], [TA])
 m("T056-A2-head-not-compared", [(AN, '        if entries[c - 1]["entry_hash"] != r["head"]:', "        if False:")],
   ["delete-and-recompute is caught", "recomputed", "caught by the anchor", "rewritten history contradicts"], [TA])
 m("T056-A3-count-not-compared", [(AN, "        if c > n:", "        if False:")], ["truncated tail is caught"], [TA])
 m("A4-only-newest-row-compared", [(AN, "    for r in reversed(rows):", "    for r in rows[-1:]:")], ["old anchor row"], [TA])
-m("A5-mechanism-without-probe-accepted", [(AN, '        if r["strength"] == "mechanism" and not (isinstance(r.get("probe"), dict)', '        if False and not (isinstance(r.get("probe"), dict)')],
-  ["hand-written mechanism row"], [TA])
 m("A6-anchor-writer-skips-chain-check", [(AN, "        entries, head = evcore.chain_walk(led)  ", "        entries, head = (lambda p: (None, None))(led)  ")],
   ["refuses to anchor a ledger whose chain fails", "anchor row"], [TA])
 m("A7-retired-scratch-flag-accepted", [(AN, '        else:\n            raise Refuse("usage_error", 64, usage)', '        elif a == "--probe-scratch-ok":\n            i += 1\n        else:\n            raise Refuse("usage_error", 64, usage)')],
@@ -49,10 +49,9 @@ m("A8-network-remote-probed", [(AN, '        if re.match(r"^[A-Za-z][A-Za-z0-9+.
   ["probe(url)"], [TA])
 m("A9-rerecord-keeps-local-anchors", [(AN, "    replaced = [r for r in local_rows if r[\"count\"] > cp]", "    replaced = []")],
   ["ONE anchor over the re-chained head", "wrong anchors", "verify accepts the output"], [TA])
-m("A10-mechanism-claim-without-evidence-written", [(AN, '    if want == "mechanism" and strength != "mechanism":', "    if False:")], ["mechanism claimed without evidence"], [TA])
-m("A11-allow-remote-gives-mechanism", [(AN, '    strength = "mechanism" if (probe and probe["rewrite_rejected"] is True and want != "policy") else "policy"', '    strength = "mechanism" if probe else "policy"')],
-  ["probe(allow)"], [TA])
-m("A13-explicit-strength-policy-ignored", [(AN, 'probe["rewrite_rejected"] is True and want != "policy")', 'probe["rewrite_rejected"] is True)')], ["policy requested"], [TA])
+m("A10-mechanism-claim-not-refused", [(AN, '    if want == "mechanism":', "    if False:")], ["mechanism claimed without evidence", "R3: mechanism claim"], [TA, TR])
+m("A11-denying-remote-gives-mechanism", [(AN, '    strength = "policy"  ', '    strength = "mechanism" if (probe and probe["rewrite_rejected"] is True) else "policy"  ')],
+  ["probe(deny)", "R3: strength="], [TA, TR])
 m("A12-existing-anchor-history-not-checked-when-adding", [(AN, "            verify_anchors(apath, entries)  ", "            None  ")], ["re-anchored a forged chain"], [TA])
 
 # ---- 11.4.113: the probe reads configuration and pushes nothing
@@ -63,12 +62,36 @@ m("A15-executable-hook-counts-as-proof", [(AN, '        rec["rewrite_rejected"] 
 m("A16-global-config-ignored", [(AN, '    env["GIT_TERMINAL_PROMPT"] = "0"\n', '    env["GIT_TERMINAL_PROMPT"] = "0"\n    env["GIT_CONFIG_GLOBAL"] = "/dev/null"\n')],
   ["probe(global)"], [TA])
 _PU, _FO = "pu" + "sh", "-" + "-for" + "ce"          # pieces: this runner must not itself contain a push, a forced push or a plus-ref (11.4.113 scan in test_anchors.sh)
-_DEAD = '    if False:\n        _git(["%s", %s, remote, "HEAD:refs/heads/x"], remote, {})\n    remote = os.path.abspath(remote)\n    env = dict(os.environ)'
-_ANCH = '    remote = os.path.abspath(remote)\n    env = dict(os.environ)'
+_DEAD = '    if False:\n        _git(["%s", %s, remote, "HEAD:refs/heads/x"], remote, {})\n    env = dict(os.environ)\n    env["GIT_TERMINAL_PROMPT"] = "0"'
+_ANCH = '    env = dict(os.environ)\n    env["GIT_TERMINAL_PROMPT"] = "0"'
 m("A17-forced-push-readded", [(AN, _ANCH, _DEAD % (_PU, '"%s"' % _FO))], ["no-force-push scan"], [TA])           # dead code: never executed, the scan is textual
 m("A18-plus-ref-push-readded", [(AN, _ANCH, _DEAD % (_PU, '"+" + "HEAD"'))], ["no-force-push scan"], [TA])
 m("A18b-plain-push-built-in-code", [(AN, _ANCH, _DEAD % (_PU, '"origin"'))], ["no-force-push scan"], [TA])
-m("A19-mechanism-row-without-probe-kind-accepted", [(AN, ' and r["probe"].get("probe_kind") == "config"', '')], ["retired push probe"], [TA])
+
+# ---- fix round 8 (independent review WP-05: R1 to R5 and the five reviewer mutants REV-1, REV-3 to REV-6 that survived the first suites)
+m("R8-A20-REV1-anchor-rows-may-go-backward", [(AN, '        if r["count"] < prev:', "        if False:")], ["REV-1:"], [TR])
+m("R8-A21-REV3-rerecord-drops-anchor-at-common-prefix", [(AN, '    kept = [r for r in local_rows if rmax < r["count"] <= cp]', '    kept = [r for r in local_rows if rmax < r["count"] < cp]')], ["REV-3:"], [TR])
+m("R8-A22-REV5-anchor-writer-takes-no-lock", [(AN, "    lock.acquire()\n    try:\n        entries, head = evcore.chain_walk(led)", "    try:\n        entries, head = evcore.chain_walk(led)")], ["REV-5:"], [TR])
+m("R8-A23-REV6-count-zero-row-accepted", [(AN, 'and r["count"] >= 1 and', 'and r["count"] >= 0 and')], ["REV-6:"], [TR])
+m("R8-D12-REV4-same-test-ignores-cwd", [(VD, 'for k in ("cwd", "target_class", "target_ref", "test_fingerprint"))\n                      and all(', 'for k in ("target_class", "target_ref", "test_fingerprint"))\n                      and all(')], ["REV-4:"], [TR])
+m("R8-A24-R1-verify-absent-anchor-passes", [(CORE, "    if newest is None and not chain_only:", "    if False:")], ["R1:", "NO anchor to compare is UNVERIFIED"], [TR, TA])
+m("R8-A25-R1-chain-only-switches-off-a-present-anchor", [(CORE, "    if os.path.exists(a) and (os.path.isdir(a) or os.path.getsize(a) > 0):\n        import evanchor", "    if not chain_only and os.path.exists(a) and (os.path.isdir(a) or os.path.getsize(a) > 0):\n        import evanchor")],
+  ["R1: --chain-only does NOT switch off", "R5: --chain-only on a forged"], [TR])
+m("R8-A26-R4-verify-trusts-a-mechanism-row", [(AN, '        if r["strength"] == "mechanism":', "        if False:")], ["R4:"], [TR])
+m("R8-A27-R2-end-session-is-a-noop", [(CORE, "    return cmd_anchor([])\n\n\ndef cmd_anchor(args):", "    return 0\n\n\ndef cmd_anchor(args):")], ["R2:"], [TR])
+m("R8-A28-R2-anchor-after-ignored", [(CORE, '    if opts.get("anchor_after"):', "    if False:")], ["R2: run --anchor-after", "R2: second --anchor-after"], [TR])
+m("R8-D13-R5-deriver-skips-the-anchor-gate", [(VD, "        arows, newest = evcore.anchor_gate(led, default, entries, chain_only)", "        arows, newest = None, None")], ["R5:"], [TR])
+m("R8-D14-R5-deriver-chain-only-is-default", [(VD, "evcore.anchor_gate(led, default, entries, chain_only)", "evcore.anchor_gate(led, default, entries, True)")], ["R5: unanchored ledger"], [TR])
+m("R8-A29-R3-probe-claims-no-reconfigure-risk", [(AN, 'rec["producer_can_reconfigure"] = bool(os.access(remote, os.W_OK) or os.access(os.path.join(remote, "config"), os.W_OK))', 'rec["producer_can_reconfigure"] = False')], ["R3: probe record lacks the honest facts"], [TR])
+
+# ---- fix round 9 (independent re-review WP-05-r2: F1 blocking RR2-4, F2, F3, F5)
+m("R9-RR2-4-anchor-after-swallows-the-refusal", [(CORE, '            raise Refuse(e.reason, e.code, "%s (the entry above WAS recorded; the anchor was NOT written)" % e.detail)', "            return 0")], ["F1/RR2-4"], [T9])
+m("R9-F2-chain-only-pass-stays-pass", [(VD, '    if newest is None and out["verdict"] == "PASS":', "    if False:")], ["F2: exit"], [T9])
+m("R9-F2-chain-only-unverified-exit-0", [(VD, '(4 if out["verdict"] == "CHAIN-ONLY-UNVERIFIED" else 1)', '(0 if out["verdict"] == "CHAIN-ONLY-UNVERIFIED" else 1)')], ["F2: exit"], [T9])
+m("R9-F3-run-skips-the-anchor-precheck", [(CORE, "        evanchor.precheck(ledger_path(), ap)", "        pass")], ["F3: run onto", "F3 truncation", "F3: an unreadable"], [T9])
+m("R9-F3-precheck-compares-no-head", [(AN, "    if h != r[\"head\"]:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but entry %d", "    if False:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but entry %d")], ["F3 head"], [T9])
+m("R9-F3-precheck-compares-no-count", [(AN, "    if c > n:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but the ledger has only", "    if False:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but the ledger has only")], ["F3 truncation"], [T9])
+m("R9-F3-precheck-blocks-a-lagging-anchor", [(AN, "    if c > n:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but the ledger has only", "    if c != n:\n        raise Refuse(\"anchor_disagrees\", 2, \"anchored count=%d head=%s but the ledger has only")], ["F3 control: lagging anchor blocked"], [T9])
 
 # ---- verdict deriver (T054 / T056: "make the deriver accept a GREEN without a prior RED")
 m("T056-D1-green-without-prior-red", [(VD, '    o["red_before_green"] = len(red) >= 1 and len(grn) >= 1 and max(e["seq"] for e in red) < min(e["seq"] for e in grn)',
@@ -166,6 +189,32 @@ def build_tree(dst):
     os.makedirs(os.path.join(dst, "scripts/repo"))
     shutil.copy(os.path.join(ROOT, "scripts/repo/check_classes.tsv"), os.path.join(dst, "scripts/repo"))
     shutil.copytree(os.path.join(ROOT, "scripts/testing"), os.path.join(dst, "scripts/testing"))
+    shutil.copy(os.path.join(ROOT, F, "contracts/review-verdict.schema.json"), os.path.join(dst, F, "contracts"))   # test_anchors_r8.sh validates the WP-05 verdict file against it
+    os.makedirs(os.path.join(dst, F, "evidence/reviews"))
+    shutil.copy(os.path.join(ROOT, F, "evidence/reviews/WP-05.json"), os.path.join(dst, F, "evidence/reviews"))
+    os.makedirs(os.path.join(dst, "docs/scripts"))      # test_anchors.sh scans the guide for a forced push (11.4.113); without it the UNMUTATED suite FAILs (review R6)
+    shutil.copy(os.path.join(ROOT, "docs/scripts/evidence-recorder.md"), os.path.join(dst, "docs/scripts"))
+
+
+def baseline(tests, prep=None):
+    """The unmutated-baseline control (11.4.201(6); review WP-05 R6): the named test files run on an UNMUTATED scratch tree built exactly as the mutants'
+    trees are, and every FAIL line is returned. A mutant 'caught' on a suite that already FAILs without any mutation is a false match (the scratch tree
+    lacked the guide, so test_anchors.sh FAILed 'no-force-push scan found usage' and three mutants were recorded CAUGHT on that line alone).
+    `prep(tree)` lets a test damage the tree to prove the control sees it."""
+    tree = tempfile.mkdtemp(prefix="mutbase.")
+    try:
+        build_tree(tree)
+        if prep:
+            prep(tree)
+        fails = []
+        for t in tests:
+            p = subprocess.run(["bash", os.path.join(tree, "tools/evidence/tests", t)], cwd=tree, capture_output=True, text=True, timeout=1500)
+            fails += ["%s: %s" % (t, l) for l in (p.stdout + p.stderr).splitlines() if l.startswith("FAIL")]
+            if p.returncode != 0 and not any(f.startswith(t + ":") for f in fails):
+                fails.append("%s: exit %d with no FAIL line" % (t, p.returncode))
+        return fails
+    finally:
+        shutil.rmtree(tree, ignore_errors=True)
 
 
 def run_one(mut):
@@ -205,7 +254,14 @@ def main(argv):
     j = 4
     if "-j" in argv:
         j = int(argv[argv.index("-j") + 1])
-    sel = [a for a in argv if not a.startswith("-") and not a.isdigit()]
+    if "--baseline" in argv:                               # --baseline TEST ... : only the control, on the named test files (default: every file the mutants run)
+        names = [a for a in argv if a.endswith(".sh")] or sorted({t for mu in M for t in mu[3]})
+        bf = baseline(names)
+        print("baseline: %d test file(s), %d FAIL line(s) on the UNMUTATED tree" % (len(names), len(bf)))
+        for f in bf:
+            print("  " + f[:200])
+        return 1 if bf else 0
+    sel = [a for a in argv if not a.startswith("-") and not a.isdigit() and not a.endswith(".sh")]
     todo = [mu for mu in M if not sel or any(s in mu[0] for s in sel)]
     if check:
         bad = 0
@@ -218,6 +274,14 @@ def main(argv):
             finally:
                 shutil.rmtree(tree, ignore_errors=True)
         return 1 if bad else 0
+    needed = sorted({t for mu in todo for t in mu[3]})
+    bf = baseline(needed) if needed else []                 # precondition: the suites are green WITHOUT a mutation, else a CAUGHT proves nothing
+    if bf:
+        print("BASELINE NOT GREEN: %d FAIL line(s) on the unmutated tree; no mutant verdict is meaningful (11.4.201(6))" % len(bf))
+        for f in bf[:20]:
+            print("  " + f[:200])
+        return 2
+    print("baseline green: %s run on the unmutated tree with 0 FAIL lines" % ", ".join(needed), flush=True)
     res = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=j) as ex:
         for r in ex.map(run_one, todo):

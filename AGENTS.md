@@ -1,8 +1,8 @@
 # AGENTS.md — Catalogizer
 
-> ## INHERITED FROM submodules/constitution/AGENTS.md
-> Base agent rules live in `submodules/constitution/AGENTS.md` — READ IT
-> FIRST. The base file (and `submodules/constitution/Constitution.md`) is
+> ## INHERITED FROM constitution/AGENTS.md
+> Base agent rules live in `constitution/AGENTS.md` — READ IT
+> FIRST. The base file (and `constitution/Constitution.md`) is
 > authoritative for any topic not covered here. Project-specific rules
 > below extend them; they never weaken them.
 

@@ -42,11 +42,15 @@ DB="$D/t1.db"; fresh "$DB"; A=$(mint "$DB"); B=$(mint "$DB")
 tg reg_ids_no_update;  expect_reject "$DB" "T1a UPDATE reg_ids refused" "reg_ids is append-only \(§11.4.54\)" "UPDATE reg_ids SET minted_by='z' WHERE atm_id='$B'"
 tg reg_ids_no_delete;  expect_reject "$DB" "T1b DELETE reg_ids refused (unreferenced id)" "reg_ids is append-only \(§11.4.54\)" "DELETE FROM reg_ids WHERE atm_id='$B'"
 tg reg_ids_no_replace; expect_reject "$DB" "T1c INSERT OR REPLACE reg_ids refused" "key exists" "INSERT OR REPLACE INTO reg_ids(seq,minted_by,mint_basis) VALUES (1,'x','manual')"
+tg reg_ids_mint_monotone; expect_reject "$DB" "T1m explicit seq 99 (a gap) refused (T068 R-01)" "next gapless number" "INSERT INTO reg_ids(seq,minted_by,mint_basis) VALUES (99,'x','manual')"
+expect_reject "$DB" "T1n explicit seq 0 (CAT-000) refused" "next gapless number" "INSERT INTO reg_ids(seq,minted_by,mint_basis) VALUES (0,'x','manual')"
+expect_reject "$DB" "T1o explicit seq -3 (CAT--03) refused" "next gapless number" "INSERT INTO reg_ids(seq,minted_by,mint_basis) VALUES (-3,'x','manual')"
 assert_eq "T1d the refused calls left the ids as minted" "$(sql "$DB" "select group_concat(atm_id||':'||minted_by) from (select * from reg_ids order by seq)")" "CAT-001:tester,CAT-002:tester"
+expect_ok "$DB" "T1p control: an engine-assigned mint is accepted" "INSERT INTO reg_ids(minted_by,mint_basis) VALUES ('ctl','manual')"
 
 echo "== T2. reg_item_ext custody =="
 DB="$D/t2.db"; fresh "$DB"; A=$(mint "$DB"); B=$(mint "$DB"); I1=$(mint "$DB")
-sql "$DB" "INSERT INTO reg_ids(minted_by,mint_basis) VALUES ('t','import'),('t','import')" >/dev/null
+sql "$DB" "INSERT INTO reg_ids(minted_by,mint_basis) VALUES ('t1','import'),('t2','import')" >/dev/null
 IMP1=CAT-004; IMP2=CAT-005
 expect_ok "$DB" "T2.0 control: ext rows for A (artifact) and B (reverify 1) accepted" "INSERT INTO reg_item_ext(atm_id,category,defect_layer,severity) VALUES ('$A','bug','artifact','low'); INSERT INTO reg_item_ext(atm_id,category,defect_layer,severity,reverify_required) VALUES ('$B','bug','source','low',1)"
 tg reg_item_ext_no_delete;  expect_reject "$DB" "T2a DELETE reg_item_ext refused" "never deleted" "DELETE FROM reg_item_ext WHERE atm_id='$A'"

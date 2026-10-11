@@ -1,0 +1,3 @@
+baseline green: test_anchors_r8.sh run on the unmutated tree with 0 FAIL lines
+R8-A29-R3-probe-claims-no-reconfigure-risk              CAUGHT             FAIL R3: probe record lacks the honest facts: {"at":"2026-10-08T14:07:57Z","count":4,"head":"0eb73783102f08cf22d927c45047b99b78f1bea2cfe5d0f
+mutants=1 caught=1 reported_unspecified=0 not_caught_or_invalid=0

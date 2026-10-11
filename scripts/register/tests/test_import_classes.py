@@ -25,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REG = os.path.dirname(HERE)
 ROOT = os.path.dirname(os.path.dirname(REG))
 IMP = os.environ.get("IMPORT_SH", os.path.join(REG, "import.sh"))
-WI = os.environ.get("WI", os.path.join(ROOT, "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+WI = os.environ.get("WI", os.path.join(ROOT, "constitution/scripts/workable-items/bin/workable-items-linux"))
 ENUM = os.environ.get("ENUMERATE_SOURCES", os.path.join(REG, "enumerate_sources.py"))
 SCR = tempfile.mkdtemp(prefix="impcls.", dir=os.environ.get("TMPDIR") or None)
 PASS = FAIL = 0

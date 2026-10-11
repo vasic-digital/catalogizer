@@ -172,8 +172,9 @@ gl_load() {
   git -C "$1" ls-tree -r -z "$2" >"$lf" 2>/dev/null || { rm -f "$lf"; return 1; }
   while IFS= read -r -d '' e; do case "$e" in 160000\ commit\ *) rest="${e#160000 commit }"; _gl["${rest#*$'\t'}"]="${rest%%$'\t'*}" ;; esac; done < "$lf"; rm -f "$lf"; return 0
 }
-trailer() { # trailer <dir> <sha> <key>: the value of the LAST `key: value` line of the FINAL trailer block of the message only (a body line that reads like a trailer is not one; MSG-1)
-  git -C "$1" log -1 --format=%B "$2" 2>/dev/null | git interpret-trailers --parse 2>/dev/null | awk -v k="$3" 'index($0,k": ")==1 {v=substr($0,length(k)+3)} END{print v}'; }
+trailer() { # trailer <dir> <sha> <key>: the value of the LAST `key: value` line of the commit's trailer block (the ONE parser of lib_safe.sh cpa_trailer; no second model of the message: a `---` line, a folded or doubled trailer, a CR can no more
+  # hide a trailer from this reader than from the CPA-commit predicate; WF-R6 R-01). Status 0 read, anything else is the caller's refusal (20 malformed_trailers).
+  cpa_trailer "$@"; }
 for key in "${LIST[@]}"; do
   if [ "$key" = . ]; then dir="$MAIN"; else dir="$MAIN/$key"; fi
   is_root "$dir" || { printf 'REFUSED\t%s\tnot_a_repository\t-\n' "$key"; bump 20; continue; }
@@ -240,9 +241,12 @@ for key in "${LIST[@]}"; do
   # holds
   cut=-1; mergeblock=0; idx=0; held_any=0
   for c in "${U[@]+"${U[@]}"}"; do
-    vp="$(trailer "$dir" "$c" Awaits-Review)"
+    # a commit of U already passed the CPA predicate (a safe CPA-Run id and a commits.tsv row), so its trailer block exists; a block that cannot be read NOW (malformed, git failure) or does not
+    # hold the CPA-Run line the predicate found is a refusal, never "unheld" (fail closed; WF-R6 R-01)
+    vp="$(trailer "$dir" "$c" Awaits-Review)"; trc=$?; rid="$(trailer "$dir" "$c" CPA-Run)" || trc=1
+    if [ "$trc" != 0 ] || [ -z "$rid" ]; then printf 'REFUSED\t%s\tmalformed_trailers\t%s\n' "$key" "$c"; bump 20; unset TIP UNR MOVED; continue 2; fi
     if [ -n "$vp" ]; then
-      rid="$(trailer "$dir" "$c" CPA-Run)"; st="$(release_state "$vp" "$rid")"
+      st="$(release_state "$vp" "$rid")"
       if [ "$st" != ok ]; then
         printf 'HELD\t%s\t%s\t%s\t%s\n' "$key" "$c" "$vp" "$st"; held_any=1
         [ "$cut" -ge 0 ] || cut="$idx"
@@ -254,10 +258,11 @@ for key in "${LIST[@]}"; do
   done
   target=""
   if [ "${#U[@]}" -eq 0 ]; then target="$LT"
+  # an unreleased MERGE commit anywhere in U (mergeblock, also behind unheld commits: cut > 0) or a hold at the very first commit withholds EVERYTHING of U; this branch is the ONLY place
+  # that decides it (a second, identical assignment after the chain was dead code that hid a mutation of this condition from the suite; WF-R6 R-02)
   elif [ "$mergeblock" = 1 ] || [ "$cut" = 0 ]; then target="$(g rev-parse -q --verify "${U[0]}^" 2>/dev/null || true)"
   elif [ "$cut" -gt 0 ]; then target="${U[$((cut-1))]}"
   else target="${U[$((${#U[@]}-1))]}"; fi
-  [ "$mergeblock" = 1 ] && [ "$cut" -gt 0 ] && target="$(g rev-parse -q --verify "${U[0]}^" 2>/dev/null || true)"
   declare -A TGL=(); declare -A BGL=()
   if [ -n "$target" ] && ! gl_load "$dir" "$target" TGL; then
     printf 'REFUSED\t%s\tgit_listing_failed\tgitlinks of the push target\n' "$key"; bump 20; unset TIP UNR MOVED TGL BGL; continue

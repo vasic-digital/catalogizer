@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:23Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-argv-privileged: caught (5 failing checks; first: FAIL: R-3: golden argv, default run (exact, whole argv) (got '9d8|< --privileged|' want 's|FAIL: R-3: golden argv, --rw docs --network=none --out (exact) (got '9d8|< --privileged|' |)
+MUTATION x-home-empty: caught (2 failing checks; first: FAIL: R-8: empty HOME is refused, exit 1 (got '0' want '1')|FAIL:   R-8 empty reason: |)
+MUTATION x-scrub-repo-root: caught (1 failing checks; first: FAIL: R-2: DISK_HEADROOM_REPO_ROOT is forwarded to disk_headroom.sh|)

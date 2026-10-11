@@ -257,9 +257,10 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "minLength": 1
+        "minLength": 1,
+        "pattern": "^(?!.*\\.\\.)[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9][A-Za-z0-9._-]*)*\\.json$"
       },
-      "description": "Revision 6 (contracts revision 19). The GOs that the test state approved for a `pre_release` run (tasks.md T042 CENTRAL C8 (ii): every committed GO the run needs that the owner had not approved, in the order of their introductions, then LAST the fixture `G-GATE` GO of the CENTRAL C3 (a) form), one string per GO naming its verdict file. Allowed only with `pre_release: true`. tasks.md T042 CENTRAL C8 (ii) and T048a name the field `test_state_gos` (each such GO 'named in the run's `ev/1` entry'); the name and the one-string-per-verdict-file form, chosen by the contracts revision 19 author, stay UNCONFIRMED until T048a lands."
+      "description": "Revision 6 (contracts revision 19). The GOs that the test state approved for a `pre_release` run (tasks.md T042 CENTRAL C8 (ii): every committed GO the run needs that the owner had not approved, in the order of their introductions, then LAST the fixture `G-GATE` GO of the CENTRAL C3 (a) form), one string per GO naming its verdict file. Allowed only with `pre_release: true`. tasks.md T042 CENTRAL C8 (ii) and T048a name the field `test_state_gos` (each such GO 'named in the run's `ev/1` entry'); T048a has landed (tools/evidence/evcore.py writes the field from `--test-state-go`; tools/evidence/tests/test_evidence_record_schema.sh pins it), so the name and the one-string-per-verdict-file form are the ones the recorder writes. Revision 30 of the contracts README (independent review WP-05 R8): each string is a repository-relative path of a verdict file, the form of the files under `$EV/reviews`: it ends in `.json`, has no leading slash, no `..` and only the characters A-Z a-z 0-9 . _ - and `/`, so a traversal entry or an absolute path no longer validates."
     }
   },
   "allOf": [

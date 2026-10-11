@@ -1,0 +1,64 @@
+# identity: task=WP06-T068-R3 utc=2026-10-08T18:23:32Z host=anton uid=1000
+# git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c tree_dirty_files=348
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=421258ed0e88b76ac3499a94d4f72242cb44a2b33d49581294d1c971c6d4aadb apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=104a7b96616ec0dfd4b7d904d3959ab633a22de5c7bac3995528e324f4ab103a test=9888bed829d9ccaf5912652ebcc0e7a9765d66cc64622d6a7c5ff931518d9405
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== R2-01: replay.sh removes nothing it did not create: every refusal path against a NON-EMPTY pre-existing --out ==
+FAIL R201-1 rc=20 [replay: REFUSED reason=since_malformed --since must be 64 lowercase hex digits] kept=NO
+FAIL R201-2 rc=20 [replay: REFUSED reason=onto_not_register_database --onto must be docs/workable_items.db of this checkout] kept=NO
+FAIL R201-3 rc=20 [replay: REFUSED reason=journal_missing /tmp/regtest.1UH5po/nojournal.jsonl] kept=NO
+FAIL R201-4 rc=20 [replay: REFUSED reason=journal_corrupt line 1 of /tmp/regtest.1UH5po/corrupt.jsonl is not JSON] kept=NO
+FAIL R201-5 rc=20 [replay: REFUSED reason=replay_pending_ops /tmp/regtest.1UH5po/rp-r201/.audit/register/pending holds op1: a register write started but its journal row was never ] kept=NO
+FAIL R201-6 rc=20 [replay: REFUSED reason=journal_row_incomplete row base of /tmp/regtest.1UH5po/inc.jsonl: field wal_bytes_after is absent; the journal is not in the schema locke] kept=NO
+FAIL R201-7 rc=20 [replay: REFUSED reason=journal_order_invalid row next has seq 2 after seq 2] kept=NO
+FAIL R201-8 rc=20 [replay: REFUSED reason=since_not_found no journal row has db_sha_after equal to eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee] kept=NO
+FAIL R201-9 rc=20 [replay: REFUSED reason=out_dir_not_empty /tmp/regtest.1UH5po/r201u] kept=NO
+ok   R201-10 a usage error (exit 2) touches nothing
+ok   R201-11 golden-FALSE: an empty pre-existing directory survives a refusal after the run started and holds nothing of the run
+== R2-02 / R2-09: every --prefix literal of an importer is checked; one prefix grammar (the engine's 3 capitals) ==
+ok   R202-0 control: the unmodified tree passes
+FAIL R202-1 [CATS] [INFO view_empty checked=13
+INFO evidence_rehash files=0 url_skipped=0
+INFO prefix_agreement prefix=CAT sources=4
+GATE OK]
+FAIL R202-1 [cat] [INFO view_empty checked=13
+INFO evidence_rehash files=0 url_skipped=0
+INFO prefix_agreement prefix=CAT sources=4
+GATE OK]
+FAIL R202-1 [C] [INFO view_empty checked=13
+INFO evidence_rehash files=0 url_skipped=0
+INFO prefix_agreement prefix=CAT sources=4
+GATE OK]
+FAIL R202-1 [] [INFO view_empty checked=13
+INFO evidence_rehash files=0 url_skipped=0
+INFO prefix_agreement prefix=CAT sources=4
+GATE OK]
+ok   R202-2 golden-FALSE: a second literal with the SAME value CAT is not a disagreement
+FAIL R202-3 CATS [sync_trackers: REFUSED reason=config_id_prefix_unsupported reg_ids generates ids with another prefix than 'CATS-' (docs/04 DDL); the config id_prefix must match]
+FAIL R202-3 CA [sync_trackers: REFUSED reason=config_id_prefix_unsupported reg_ids generates ids with another prefix than 'CA-' (docs/04 DDL); the config id_prefix must match]
+ok   R202-4 golden-FALSE: id_prefix CAT passes the config check
+== R2-03: the R04 fixture follows the DDL under test (a mutant DDL is not failed by artifact) ==
+ok   R203-1 the fixture root holds the DDL under test byte for byte
+== R2-04: a raised sqlite_sequence is reported by the gate ==
+FAIL R204-1 sqlite_sequence 100 above max(seq) 1 fails the gate naming v_ids_malformed :: rc=0 out=[INFO view_empty checked=13|INFO evidence_rehash files=0 url_skipped=0|INFO prefix_agreement prefix=CAT sources=4|GATE OK] wanted /FAIL v_ids_malformed rows=/
+ok   R204-2 golden-FALSE: sqlite_sequence equal to max(seq) passes
+ok   R204-3 golden-FALSE: an empty register (no sqlite_sequence row) passes
+== R2-05: the trigger's max leg; the duplicate direction of v_import_mint_orphans ==
+ok   R205-1 in a gapped legacy register (1,2,3,9) an explicit seq equal to the row count (5) is refused by the max leg
+ok   R205-2 with both duplicates having items, exactly the LATER id (CAT-003) is flagged duplicate_marker
+== R2-06: seq boundary ==
+ok   R206-1 refused journal_row_incomplete
+ok   R206-2 refused journal_row_incomplete
+ok   R206-3 golden-FALSE accepted by the shape check
+== R2-07: input_args shape ==
+FAIL R207-1 rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R207-2 rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R207-3 rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R207-4 rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R207-5 rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+ok   R207-6 golden-FALSE accepted by the shape check
+== R2-08: every evidence file the DDL header cites exists ==
+FAIL R208-1 cited but absent: owed-docs04-sync-v6.diff
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=15 fail=22

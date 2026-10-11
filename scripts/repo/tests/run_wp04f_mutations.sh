@@ -92,14 +92,16 @@ def copy_tree():
             if os.path.isfile(s): shutil.copy2(s, dst)
     return d
 def run_test(d, f):
+    skipped = False
     for test, var in T[f]:
         env = dict(os.environ)
         # test_wp04d.sh points at a repo directory (R4=<copy>/scripts/repo), the others at the single file under test
         env[var] = os.path.join(d, 'scripts/repo') if var == 'R4' else os.path.join(d, f)
         r = sh(['bash', os.path.join(root, test)], cwd=root, env=env)
         fails = [l for l in r.stdout.splitlines() if l.startswith('FAIL')]
-        if r.returncode != 0: return r.returncode, fails
-    return 0, []
+        if r.returncode == 77: skipped = True   # a test that skipped a leg: keep running the others, report 77 at the end (never a kill, round 10 R3-5)
+        elif r.returncode != 0: return r.returncode, fails
+    return (77, []) if skipped else (0, [])
 # control runs, one per covered file
 for f in T:
     if only and only != 'control' and not any(m[1] == f and m[0].startswith(only) for m in M): continue
@@ -118,7 +120,8 @@ for mid, f, pairs in M:
     else:
         open(p, 'w').write(s)
         rc, fails = run_test(d, f)
-        if rc != 0: line = 'CAUGHT   %s  -> %d failing case(s), e.g. %s' % (mid, len(fails), fails[0][:110] if fails else 'exit %d' % rc)
+        if rc == 77: line = 'SKIPPED-NOT-KILLED %s  -> the covering test exited 77 (a skipped leg is not a kill)' % mid; bad += 1
+        elif rc != 0: line = 'CAUGHT   %s  -> %d failing case(s), e.g. %s' % (mid, len(fails), fails[0][:110] if fails else 'exit %d' % rc)
         elif mid.startswith('EQ-'): line = 'EQUIVALENT %s  -> survived as documented (the guard it removes has a second layer)' % mid
         else: line = 'SURVIVED %s  -> test passed against the mutated copy' % mid; bad += 1
         rep.append(line); print(line, flush=True)

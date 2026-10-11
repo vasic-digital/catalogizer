@@ -8,7 +8,7 @@
 # restored into a scratch tree is caught (the paired mutation, run by capture_wp05b.sh into ts02-mutation.txt).
 set -u
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../../.." && pwd)
-CENSUS=$root/tools/evidence/census_ab_pass.py; LIB=$root/tools/evidence/lib/ab_pass_with_evidence.sh; EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/verify
+CENSUS=$root/tools/evidence/census_ab_pass.py; LIB=$root/tools/evidence/lib/ab_pass_with_evidence.sh; EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/tests/verify_chain_only.sh
 FA=scripts/testing/full_automation
 S=$(mktemp -d); trap 'rm -rf "$S"' EXIT; fails=0; n=0
 . "$here/hermetic.sh"; hermetic_init "$S"

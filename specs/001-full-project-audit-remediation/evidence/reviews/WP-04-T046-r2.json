@@ -1,0 +1,159 @@
+{
+ "schema": "review-verdict/1",
+ "wp": "WP-04",
+ "tasks": [
+  "T038",
+  "T039",
+  "T040",
+  "T040a",
+  "T040b",
+  "T041",
+  "T042",
+  "T042a",
+  "T043",
+  "T044",
+  "T045",
+  "T045a",
+  "T046"
+ ],
+ "gate": "G-GATE",
+ "verdict": "NO-GO",
+ "model": "opus",
+ "effort": "?",
+ "effort_note": "The Agent tool cannot set or report effort (constitution 11.4.231(F.2)); recorded as '?', not claimed as xhigh.",
+ "reviewer": "independent re-reviewer (Agent-tool subagent), neither the author nor the first reviewer",
+ "date": "2026-10-08",
+ "review_round": 2,
+ "prior_review": "evidence/reviews/WP-04-T046.json",
+ "reviewed_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+ "reviewed_bytes_note": "working tree (uncommitted fix round 6); evidence/wp04/fix-r6-SHA256SUMS checked with sha256sum -c from evidence/wp04: 16 of 16 OK",
+ "blocking_findings": 1,
+ "covers_runs": [],
+ "covers_runs_note": "No CPA run committed the reviewed bytes (they are uncommitted). The CPA files on main came in through non-CPA commits, listed in covers_non_cpa_commits (field proposed in fix-r6-convergence.md R-04; not in the schema, additionalProperties allows it).",
+ "covers_non_cpa_commits": [
+  {
+   "repository": ".",
+   "commit": "58cb30b8",
+   "note": "Auto-commit carrying fix-round-5 bytes of commit-push-all.sh and helpers; no CPA-Run trailer, no prior review"
+  },
+  {
+   "repository": ".",
+   "commit": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+   "note": "Auto-commit; does not touch commit-push-all.sh or lib_safe.sh (git log -- those paths)"
+  }
+ ],
+ "finding_layer_note": "finding_layer uses the 11.4.235(D) set; evidence_layer carries the 11.4.226 defect layer (contracts rev 19).",
+ "verified": [
+  "R-01 needle: a held commit whose message has a '---' line is HELD/refused (test_wp04j end-to-end cases, 192 ok / 0 failed on a scratch copy); my own 15-shape probe (lower-case/near-miss keys, unicode lookalikes, NBSP, fullwidth colon, 0x1e, '---' at end of block, two CPA blocks, empty value, trailing space in id, hold in third paragraph): cpa_trailer, cpa_runid and cpa_hold_state agree on every shape; cpa_foreign_listed disagrees only on 0x1e (finding F-04)",
+  "R-02: the removed line was dead code (read: mergeblock=1 is set only inside the loop over U, so U is non-empty and the preceding elif already assigned the same target); mB equivalent, as claimed",
+  "R-05: S0 now refuses own_orgs_unverifiable (commit-push-all.sh:294); the later '[ -z \"$OWNED\" ] ||' guard at :318 is now unreachable but harmless",
+  "R-06: repo_config_gate reads the listing status before use",
+  "R-07: schema rev 19: all 10 verdict files under evidence/reviews were validated against HEAD and working-tree schema: no file valid before is invalid now (0 regressions); 5 still invalid as before",
+  "11.4.263: scripts/longops/lib.sh lo_signal and lo_kill_child send only 'kill -s SIG -- <pid>' with pid > 1 and pgid > 1, never a group; respected",
+  "scratch-copy suites: test_wp04j 192/0, test_push_recursive 153/0, test_commit_recursive 58/0, test_integrate_merge 130/0, test_wp04h 75/0, full matrix test_commit_push_all: PARTIAL (UNCONFIRMED for the full set): 196 ok / 0 failed of 1076 when this verdict was written; the run (~5 cases/min) was still going, log /tmp/claude-1000/-home-milosvasic-Projects-catalogizer/d7bdfeb7-d4d8-4f26-a5da-f8223bf6ce83/scratchpad/r2/matrix.log"
+ ],
+ "findings": [
+  {
+   "id": "F-01",
+   "severity": "BLOCKING",
+   "blocking": true,
+   "finding_layer": "source-defect",
+   "evidence_layer": "runtime",
+   "summary": "A held commit is pushed without its GO when git's commit cleanup rewrites the message the writer composed. commit_recursive.sh (and integrate_merge.sh) run 'git commit -F' without --cleanup=verbatim and never read the committed message back. With the owner's global config commit.cleanup=strip and core.commentChar=A (global config is trusted by design, verify_repos.sh:94; the CPA env belt pins 7 keys, not these), the Awaits-Review line is stripped as a comment, commit_recursive still prints 'COMMIT ... ev/reviews/v.json' rc=0 and writes the commits.tsv row, and push_recursive prints 'PUSHED . origin 66c301ab...' to a local bare remote. commentChar=D strips Deferred-Gates the same way (a deferred gate silently disappears). Same class as R-01 (the bytes the readers parse are not the bytes the writer intended): one parser is not enough while a transformer sits between writer and object.",
+   "repro": "scratch only: GIT_CONFIG_GLOBAL=<file with commit.cleanup=strip, core.commentChar=A>; commit_recursive.sh --held-from <g.txt -> ev/reviews/v.json>; push_recursive.sh --main-root . --branch main --run-dir <aud>/<rid> -> PUSHED of the held commit",
+   "fix_hint": "pass --cleanup=verbatim to every CPA 'git commit -F', AND after each commit read it back with cpa_trailer/cpa_hold_state and refuse (no row written) unless CPA-Run == run id, Awaits-Review == the intended verdict, Deferred-Gates == the intended list; add the needle as a test case. Checked: --cleanup=verbatim keeps the line under the same config."
+  },
+  {
+   "id": "F-02",
+   "severity": "IMPORTANT",
+   "blocking": false,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "summary": "G-GATE owner re-approval is still owed: the working tree changes commit-push-all.sh (cpa_msg_check at S0, own_orgs fail-closed) on top of the 58cb30b8 bytes that were never approved or reviewed before landing (R-04). Not resolvable by a reviewer; blocks release of the G-GATE item, independent of F-01."
+  },
+  {
+   "id": "F-03",
+   "severity": "IMPORTANT",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "summary": "R-03 still open: no kcov run of the matrix in IMG-KCOV for these bytes (fix-r6-kcov.txt BLOCKED). Cause found by the fixer and confirmed by reading: scripts/longops/lib.sh lo_pid_ok requires pgid > 1, so a lock holder whose process group is 1 (a container's PID 1 session) is refused -> lock_error. This is a 11.4.201(1) false refusal: 11.4.263 forbids SIGNALLING pgid <= 1, and lo_signal/lo_kill_child already guard the signal itself and only ever signal a single pid; refusing to REGISTER such a pid buys no safety. Fix in longops (registration may accept pgid 1; the signal guard stays). Owed T044 evidence; not on its own a GO blocker for the hold logic, but T044 acceptance is unmet."
+  },
+  {
+   "id": "F-04",
+   "severity": "MINOR",
+   "blocking": false,
+   "finding_layer": "source-defect",
+   "evidence_layer": "source",
+   "summary": "The 'one parser' has one byte-level exception: cpa_foreign_listed maps 0x1e to '?' before parsing, so a block holding 0x1e is malformed (status 3) for cpa_trailer but parses as status 0 for cpa_foreign_listed and its Foreign-Commit lines count (probe: foreign=0 vs trl=3). Also cpa_foreign_listed counts Foreign-Commit lines of ANY reachable commit, CPA or not. Impact bounded (Foreign-Commit is audit data; the malformed commit itself is not a CPA commit). Fix: treat a message containing 0x1e as malformed in cpa_foreign_listed too, or split without rewriting bytes."
+  },
+  {
+   "id": "F-05",
+   "severity": "MINOR",
+   "blocking": false,
+   "finding_layer": "source-defect",
+   "evidence_layer": "source",
+   "summary": "Asymmetric near-miss handling: a reserved key BEFORE the block is matched case-insensitively with blanks allowed (MALFORMED), but INSIDE the block 'awaits-review: v', 'Awaits-Review : v', 'Awaits-Review:v' and 'Awaits-Review:<NBSP>v' are silently ignored as attribution text (not held, status 0), while git interpret-trailers reads them as holds; mixed-case duplicates are not detected. Not reachable through the writer today, but it is exactly the fail-open the F-01 class needs. Fix: inside the block, a line whose case-folded key, blanks stripped, is reserved but is not the exact spelling is MALFORMED."
+  },
+  {
+   "id": "F-06",
+   "severity": "MINOR",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "summary": "Reviewer mutation N3 (cpa_foreign_listed counts malformed blocks: 'PST == 0' -> 'PST != 1') SURVIVED test_wp04j (192/0): no case covers Foreign-Commit dedupe against a malformed earlier message."
+  },
+  {
+   "id": "F-07",
+   "severity": "MINOR",
+   "blocking": false,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "summary": "Schema gap for 58cb30b8-class commits stays open (covers_runs needs a cpa_run). This verdict lists them in covers_non_cpa_commits; the plan owner must decide whether the schema gets the field. Not a GO blocker by itself, but S6 cannot release anything whose bytes landed outside CPA until it is decided."
+  }
+ ],
+ "unresolved_items_decision": {
+  "R-03_kcov": "open, F-03; T044 acceptance unmet, owed before G-GATE close",
+  "58cb30b8_covers_runs_schema": "open, F-07; owner decision",
+  "owner_reapproval_commit_push_all": "open, F-02; blocks G-GATE close",
+  "blocks_GO": [
+   "F-01 (blocking source defect)",
+   "F-02 owner re-approval (gate condition, not a code finding)",
+   "F-03 T044 acceptance (gate condition)"
+  ]
+ },
+ "mutations_attempted": [
+  {
+   "id": "N1",
+   "file": "scripts/repo/lib_safe.sh",
+   "change": "cpa_hold_state status-1 branch: drop the Awaits-Review grep fallback ('1) return 0')",
+   "suite": "test_wp04j.sh HS=scratch copy",
+   "result": "CAUGHT",
+   "detail": "191 ok / 1 failed: 'a hand commit with an Awaits-Review line is held'"
+  },
+  {
+   "id": "N2",
+   "file": "scripts/repo/lib_safe.sh",
+   "change": "cpa_msg_check: delete the reserved-key impersonation rule",
+   "suite": "test_wp04j.sh",
+   "result": "CAUGHT",
+   "detail": "180 ok / 12 failed"
+  },
+  {
+   "id": "N3",
+   "file": "scripts/repo/lib_safe.sh",
+   "change": "cpa_foreign_listed: 'if (PST == 0)' -> 'if (PST != 1)' (malformed blocks count)",
+   "suite": "test_wp04j.sh",
+   "result": "SURVIVED",
+   "detail": "192 ok / 0 failed (F-06)"
+  },
+  {
+   "id": "S-F01",
+   "file": "(environment, no code change)",
+   "change": "global commit.cleanup=strip + core.commentChar=A",
+   "suite": "commit_recursive.sh + push_recursive.sh direct, scratch repo and local bare",
+   "result": "DEFECT",
+   "detail": "held commit PUSHED (F-01)"
+  }
+ ]
+}

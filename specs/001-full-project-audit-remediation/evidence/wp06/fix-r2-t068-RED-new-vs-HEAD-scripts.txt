@@ -1,0 +1,106 @@
+# identity: task=WP06-T068-R2 utc=2026-10-08T13:19:12Z host=anton uid=1000
+# git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c tree_dirty_files=0
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/tmp/claude-1000/redtree/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=701171a4788f5c03e1f6b2e4e93b27b73548fd517418e906e755270c13463fc3 apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=65e0124b7923e3c379e33ca140cc9f496e8954d2cfdaf0fcb7550c17cbb2687f test=82adcfca79057a25cf6037a6662164c1233d0e3335b2c8e64b5fd9e207f036bb
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== R-01: reg_ids accepts only the id the engine would mint next; malformed / gapped ids fail the gate ==
+ok   R01-0 control: three engine-assigned mints give CAT-001..003
+FAIL R01-1 explicit seq 9 (a gap after CAT-003) refused :: rc=0 out=[] wanted /reg_ids/
+FAIL R01-2 explicit seq 0 (CAT-000) refused :: rc=0 out=[] wanted /reg_ids/
+FAIL R01-3 explicit seq -3 (CAT--03, outside the engine heading grammar) refused :: rc=0 out=[] wanted /reg_ids/
+ok   R01-4 explicit seq 2 (below the maximum, out of order) refused
+FAIL R01-4b explicit seq -1 (the value SQLite shows an auto-assigned key as inside a BEFORE trigger) refused :: rc=0 out=[] wanted /reg_ids/
+ok   R01-4c INSERT OR REPLACE with an explicit seq refused
+FAIL R01-5 none of the refused inserts left a row (still CAT-001..003) :: got [CAT--03,CAT--01,CAT-000,CAT-001,CAT-002,CAT-003,CAT-009] want [CAT-001,CAT-002,CAT-003]
+FAIL R01-6 control: the next engine-assigned mint is accepted :: Error: stepping, reg_ids is append-only: key exists (INSERT OR REPLACE refused) (19)
+FAIL R01-6b ... and is CAT-004 :: got [CAT-009] want [CAT-004]
+ok   R01-7 a mint after sqlite_sequence was raised (would be CAT-101, a gap) refused
+FAIL R01-8 a dump of a clean register restores (explicit seq loads before the triggers) and holds CAT-001..004 :: got [CAT--03,CAT--01,CAT-000,CAT-001,CAT-002,CAT-003,CAT-009] want [CAT-001,CAT-002,CAT-003,CAT-004]
+FAIL R01-G1 rows CAT--03, CAT-000, CAT-005, CAT-009 (out of order, gaps, malformed) fail the gate naming v_ids_malformed :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL v_ids_malformed rows=/
+FAIL R01-G2 a gap made through sqlite_sequence (CAT-001 then CAT-101) fails the gate naming v_ids_malformed :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL v_ids_malformed rows=/
+FAIL R01-G3 the monotone trigger dropped (not restored) fails the gate: missing object / schema differs :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL .*(reg_ids_mint_monotone|v_gate_missing_objects|unexpected schema object|schema object of the reference missing)/
+ok   R01-G4 golden-FALSE: a clean one-item register passes
+ok   R01-C1 raw items insert of CAT-000 without a mint refused (trg_items_require_mint)
+ok   R01-C2 the engine add with a grammar-bad, never-minted id CAT--03 is refused
+== R-03: a retried import mint cannot create a second id; orphan import ids fail the gate ==
+ok   R03-1 control: the first import mint for a marker is accepted
+FAIL R03-2 the same marker minted again (a retry after an unknown-status write) refused by the database :: rc=0 out=[] wanted /UNIQUE|uq_reg_ids_import_marker|import marker/
+ok   R03-3 control: the same minted_by text is allowed for a non-import basis (the guard is scoped to import)
+FAIL R03-4 only the legitimate rows exist (2) :: got [3] want [2]
+FAIL R03-G1 an import-minted id with no item and no source mapping (an orphan) fails the gate naming v_import_mint_orphans :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL v_import_mint_orphans rows=/
+FAIL R03-G2 two ids for one import marker (the index dropped, a retry duplicated the mint) fail the gate :: rc=0 out=[INFO view_empty checked=11|INFO evidence_rehash files=0 url_skipped=0|GATE OK] wanted /FAIL v_import_mint_orphans rows=|FAIL .*uq_reg_ids_import_marker|schema object of the reference missing/
+ok   R03-G3 golden-FALSE: a manual mint with an item passes
+ok   R03-G4 golden-FALSE: an import-minted id that has its item passes
+== R-04: the CAT prefix must agree across .helix/reporting.yaml, the DDL and the import scripts ==
+FAIL R04-0 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-1 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-2 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-3 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-4 [FAIL schema differs from /tmp/regtest.IxOKt9/f/pfx-ddl/scripts/register/register_ext.sql (2 differing definition lines; first: < table|reg_ids|reg_ids)
+INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE FAILED]
+FAIL R04-5 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-6 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+FAIL R04-7 [INFO view_empty checked=11
+INFO evidence_rehash files=0 url_skipped=0
+GATE OK]
+ok   R04-8 the engine column atm_id is still the key of items and reg_ids (no local rename)
+== R-05: a tracker_receipt that cites a FILE is re-hashed ==
+ok   R05-0 control: a tracker_receipt file that re-hashes passes and is counted
+ok   R05-1 a changed tracker_receipt file fails the gate (sha256 mismatch)
+ok   R05-2 an absent tracker_receipt file fails the gate
+== R-06: the registry cross-check of step_view_empty has an isolated fixture ==
+ok   R06-1 a forged registry row that is only a SUBSTRING of a reference view name is reported by the cross-check (exact-line match)
+== R-02: replay.sh refuses a journal row with a missing field (journal_row_incomplete) instead of reading it as its safe value ==
+ok   R02-0 control: a complete journal passes validation and reaches the backup step (stub failure)
+FAIL R02-seq rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-op_id rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-mode rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-argv rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-db rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-db_sha_before rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-db_sha_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-ids_minted rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-ids_snapshot rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-wal_bytes_before rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-wal_bytes_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-exit rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-input_args rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-base rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v1-wal_bytes_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v2-wal_bytes_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v3-wal_bytes_before rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v4-ids_minted rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v5-ids_snapshot rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v6-exit rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v7-seq rc=20 [replay: REFUSED reason=journal_order_invalid row next has seq '2' after seq 1]
+FAIL R02-v8-mode rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v9-db_sha_after rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v10-db_sha_before rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R02-v11-argv rc=20 [replay: REFUSED reason=backup_failed stub backup failure ]
+ok   R02-null golden-FALSE: a field that is present with the value null is a recorded fact, not an absent field
+== R-10: replay.sh never deletes an output directory (or a file in it) it did not create ==
+FAIL R10-1 rc=20 dir=DELETED [replay: REFUSED reason=backup_failed stub backup failure ]
+FAIL R10-2 the foreign file was deleted
+ok   R10-3 golden-FALSE: a directory the run created itself is removed on refusal (nothing left behind)
+FAIL R10-4 rc=20 [replay: REFUSED reason=backup_failed ] ls=ls: cannot access '/tmp/regtest.IxOKt9/r10own': No such file or directory 
+== R-11: locked.sh --out runs fence an orphan writer too ==
+FAIL R11-1 rc=0 [locked: WARNING cannot ask podman whether a container of r11a is still running; the write is not proven finished (container_drain=unverified)
+locked: the pending marker  is kept: the write of r11a is not proven finished (container_drain=unverified)] runp=--out /tmp/regtest.IxOKt9/r11o --op-id r11a IMG-TESTUTIL -- sh -c w |
+ok   R11-2 golden-FALSE: an --out run with NO pending marker is not delayed or refused (rc 0)
+ok   R11-3 golden-FALSE: an --out run with a pending marker whose client is gone and whose container does not exist proceeds (the fence proved the writer finished)
+RESULT pass=21 fail=52

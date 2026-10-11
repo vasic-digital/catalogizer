@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "image_id": "IMG-GO",
+  "reference": "docker.io/library/golang@sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437",
+  "inspect_digest_and_id": "sha256:3b4a11519ad929d1e1d261a12cff056f0c85b735253d7d861346b9c6f8b36437 e3c6b02e53225e75dff3e6a3b4c0bf9567fe16564fb20a5f63d4e39361ee32e3",
+  "toolchain": {
+    "schema": 1,
+    "image_id": "IMG-GO",
+    "uid": 1000,
+    "glibc": "2.36",
+    "cache_write_probe": "ok",
+    "ro_mount_write_probe": "failed",
+    "ro_mount_write_expected": "failed",
+    "tools": {
+      "bash": {
+        "status": "present",
+        "version": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu) Copyright (C) 2022 Free Software Foundation, Inc. "
+      },
+      "git": {
+        "status": "present",
+        "version": "git version 2.39.5 "
+      },
+      "sqlite3": {
+        "status": "absent"
+      },
+      "python3": {
+        "status": "present",
+        "version": "Python 3.11.2 "
+      },
+      "jq": {
+        "status": "absent"
+      },
+      "go": {
+        "status": "present",
+        "version": "go version go1.25.14 linux/amd64 "
+      },
+      "gofmt": {
+        "status": "present",
+        "version": "usage: gofmt [flags] [path ...]   -cpuprofile string "
+      },
+      "kcov": {
+        "status": "absent"
+      },
+      "script": {
+        "status": "present",
+        "version": "script from util-linux 2.38.1 "
+      },
+      "realpath": {
+        "status": "present",
+        "version": "realpath (GNU coreutils) 9.1 Copyright (C) 2022 Free Software Foundation, Inc. "
+      },
+      "detect-secrets": {
+        "status": "absent"
+      },
+      "check-yaml": {
+        "status": "absent"
+      },
+      "detect-private-key": {
+        "status": "absent"
+      },
+      "definitely-not-a-tool": {
+        "status": "absent"
+      },
+      "errored-needle": {
+        "status": "error",
+        "exit": 3,
+        "output": "needle-output "
+      }
+    },
+    "python_imports": {
+      "pytest_yaml_jsonschema": "error",
+      "cpa_tools_identify": "absent"
+    }
+  }
+}

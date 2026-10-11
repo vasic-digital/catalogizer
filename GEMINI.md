@@ -1,8 +1,8 @@
 # GEMINI.md - Catalogizer
 
-> ## INHERITED FROM submodules/constitution/GEMINI.md
-> Base agent rules live in `submodules/constitution/GEMINI.md` — READ IT
-> FIRST. The base file (and `submodules/constitution/Constitution.md`) is
+> ## INHERITED FROM constitution/GEMINI.md
+> Base agent rules live in `constitution/GEMINI.md` — READ IT
+> FIRST. The base file (and `constitution/Constitution.md`) is
 > authoritative for any topic not covered here. Project-specific rules
 > below extend them; they never weaken them.
 

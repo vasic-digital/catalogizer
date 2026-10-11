@@ -7,7 +7,7 @@
 #   Prove that scripts/verify_constitution_inheritance.sh is NOT a bluff gate,
 #   per Constitution §1.1 (false-positive immunity is an invariant). It does so
 #   by invoking the constitution-side helper
-#   `submodules/constitution/meta_test_inheritance.sh` with THIS project's gate
+#   `constitution/meta_test_inheritance.sh` with THIS project's gate
 #   as the argument. That helper:
 #     1. snapshots Constitution.md,
 #     2. mutates it (strips the §11.4 anchor line the gate's INV2 asserts),
@@ -31,7 +31,7 @@
 #
 # Side-effects:
 #   - The constitution-side helper temporarily mutates + restores
-#     submodules/constitution/Constitution.md (snapshot/restore via a tmp file
+#     constitution/Constitution.md (snapshot/restore via a tmp file
 #     and an EXIT trap). This wrapper performs NO direct mutation itself.
 #
 # Dependencies:
@@ -42,7 +42,7 @@
 #   - Constitution §1.1 (paired mutation / false-positive immunity).
 #   - Constitution §11.4 (anti-bluff covenant).
 #   - Constitution §11.4.18 (this in-source doc block).
-#   - submodules/constitution/meta_test_inheritance.sh (the helper).
+#   - constitution/meta_test_inheritance.sh (the helper).
 #   - scripts/verify_constitution_inheritance.sh (the gate under test).
 # =============================================================================
 
@@ -51,7 +51,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
 
-HELPER="${PROJECT_ROOT}/submodules/constitution/meta_test_inheritance.sh"
+HELPER="${PROJECT_ROOT}/constitution/meta_test_inheritance.sh"
 GATE="${PROJECT_ROOT}/scripts/verify_constitution_inheritance.sh"
 
 if [[ ! -f "${HELPER}" ]]; then
@@ -65,7 +65,7 @@ if [[ ! -f "${GATE}" ]]; then
 fi
 
 # Run the helper FROM the project root so the gate resolves PROJECT_ROOT and
-# the relative `submodules/constitution/...` paths identically to a normal run.
+# the relative `constitution/...` paths identically to a normal run.
 cd "${PROJECT_ROOT}"
 
 echo "=== Paired §1.1 meta-test: proving the inheritance gate has teeth ==="

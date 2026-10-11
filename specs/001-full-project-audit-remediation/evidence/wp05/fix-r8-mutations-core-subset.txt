@@ -1,0 +1,9 @@
+baseline green: the core suites run on the unmutated tree with 0 FAIL lines
+V4-verify-never-walks              CAUGHT                     verify: delete w/o repair exit 0 (want 1); rerecord mutation (kept local seq) rejected by verify (rc=0); T051a: verify on a reused token: exit 0 verify: ledger=/tmp/tmp.s
+V5-verify-always-fails             CAUGHT                     verify: original 4-entry ledger exits 0; verify: original restored exits 0; concurrent appenders: chain still verifies
+V6-empty-ledger-passes             CAUGHT                     verify: empty ledger is unverifiable, exit 3 (rc=1 want 3)
+V9-anchor-note-dropped             CAUGHT                     verify silent about the missing anchor check
+N-I3a-verify-ignores-unknown-args  CAUGHT                     I3: verify with a positional file is refused (usage_error) (rc=0 ; I3: verify --bogus is refused (usage_error) (rc=0 want 64, reason; I3: verify --ledger without a value is refused (usage_error) (rc=
+N2-argv-pair-not-redacted          CAUGHT                     N2: argv pair: ["bash","-c",":","--password","Pw0rdSpaced9"]; N2: argv credential flags leaked: ["bash","-c",":","--token","Pw0; R6-2: NOT redacted: argv bare flag with a 128-char name, value in
+m1-ledger-anchor-from-default      CAUGHT                     m1: verify --ledger with anchors.jsonl beside the ledger is UNVER
+mutants=7 caught=7 equivalent=0 not_caught=0

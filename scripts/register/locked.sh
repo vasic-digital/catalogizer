@@ -46,6 +46,7 @@
 # Id snapshots (WF10 F4): ids_snapshot is "ok" only when BOTH snapshots answered; "failed" when a snapshot call failed or answered nothing; "unavailable" for
 # a pending -wal file or an --out run. replay.sh refuses a planned register row whose snapshot is not "ok" (replay_ids_unknown).
 # Journal row fields added: seq (strictly increasing under the lock), wal_bytes_before, interrupted (only when a signal arrived).
+# Orphan-writer fence (T068 R-11): runs for --out runs too (a read of the register's bytes must not overlap a SIGKILLed predecessor's container that is still writing).
 # Exit: the command's status (the container's own, from its died event); 2 usage; 20 refusal (REFUSED reason=<code>, also writer_still_running / writer_state_unverifiable from the fence); 21 journal append failed; 22 the container's exit status could not be read (container_exit_source=unknown); other statuses of RUNP are passed through.
 # Test hooks (refused unless LOCKED_TEST_MODE=1): LOCKED_ROOT (scratch repository root), LOCKED_RUNP, LOCKED_BACKUP, LOCKED_REAPER_TIMEOUT, LOCKED_PODMAN, LOCKED_CONTAINER_WAIT, LOCKED_EVENT_WAIT (seconds to wait for the died event).
 set -u
@@ -229,7 +230,10 @@ sys.exit(3) if not isinstance(r,str) or not r else print(r)' "$g" 2>/dev/null)" 
   fi
 fi
 # a SIGKILLed predecessor leaves a pending marker and possibly a running container: wait for it (after the commit-turn freeze, which makes no podman call)
-if [ "$MODE" != out ] && [ "$NESTED" = 0 ]; then fence_orphans; fi   # MUT:fence
+# R-11 (T068): the fence runs for --out runs too. An --out run writes only into <dir>, but replay.sh, export.sh and dump.sh read the register's own bytes (the copy
+# of the register database made by backup_db.sh, the -wal) through it, and a SIGKILLed predecessor's container may still be writing them; a read of a database a
+# writer is still changing is the half-written state the fence exists to keep out. The cost is one directory listing when no pending marker exists.
+if [ "$NESTED" = 0 ]; then fence_orphans; fi   # MUT:fence
 # ---------- database snapshots ----------
 dbsha() { [ -f "$1" ] && sha256sum -- "$1" | cut -d' ' -f1 || echo null; }
 snap_ids() {  # ids of reg_ids, read-only through the immutable URI inside the image; "" = an empty table; ?wal = pending -wal; ?fail = the call failed or answered nothing

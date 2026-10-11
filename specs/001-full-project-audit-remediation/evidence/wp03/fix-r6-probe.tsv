@@ -1,0 +1,44 @@
+P01	refs/replace/<c2> -> fake child of c3: is-ancestor c3 c2 (true: 1)	rc=0	rc=1	YES	isolated = --no-replace-objects
+P02	same, only GIT_NO_REPLACE_OBJECTS=1 in env	rc=0	rc=1	YES	env var works too
+P03	repo core.useReplaceRefs=true with GIT_NO_REPLACE_OBJECTS=1	n/a	rc=1	no	env wins over repo config
+P04	repo core.useReplaceRefs=true with --no-replace-objects	n/a	rc=1	no	option wins over repo config
+P05	info/grafts '<c2> <c3>' (git 2.53)	rc=0	rc=0	YES	--no-replace-objects does NOT disable grafts in 2.53 (see P06)
+P06	same with GIT_GRAFT_FILE=/nonexistent	n/a	rc=1	no	GIT_GRAFT_FILE=<absent> is REQUIRED (the only switch)
+P07.1	forged commit-graph (generation v1): INTERIOR commit c2a's parent -> c3; is-ancestor c3 c2 (true: 1)	rc=0	rc=1	YES	isolated = -c core.commitGraph=false
+P08.1	same forge: git log --format=%P -1 c2a (true: c1)	f26886a	0a5e981	YES	log/rev-list read the forged graph too
+P07.2	forged commit-graph (generation v2): INTERIOR commit c2a's parent -> c3; is-ancestor c3 c2 (true: 1)	rc=0	rc=1	YES	isolated = -c core.commitGraph=false
+P08.2	same forge: git log --format=%P -1 c2a (true: c1)	f26886a	0a5e981	YES	log/rev-list read the forged graph too
+P09	forged commit-graph, TIP commit c2 parent -> c3	rc=1	rc=1	see value	r2 reviewer's variant
+P10	repo core.commitGraph=true + forged graph, command-line -c core.commitGraph=false	rc=0	rc=1	YES	command line wins over repo config
+P11	env GIT_COMMIT_GRAPH-like switch	n/a	none exists	no	core.commitGraph is config only
+P12	fetch with repo fetch.writeCommitGraph=true: commit-graph files written (1=written)	1	0	writes	-c fetch.writeCommitGraph=false stops it (read-only claim)
+P12b	fetch with repo fetch.writeCommitGraph=true AND -c core.commitGraph=false (files written)	n/a	0	no	core.commitGraph=false alone stops the write; -c fetch.writeCommitGraph=false is a redundant belt (mutant MR4 is EQUIVALENT)
+P13	shallow file cutting c2a's parents: is-ancestor c1 c2 (true: 0)	rc=1	n/a	no (fails closed)	shallow only REMOVES ancestry: ahead/behind turn into diverged, never into clean
+P14	shallow cutting c2 itself: is-ancestor c3 c3's own history unaffected; is-ancestor c1 c2	rc=1	n/a	no (fails closed)	same
+P15	objects only in an alternate store: cat-file -e c2 in a repo that lacks them locally	rc=0	n/a	no	alternates add genuinely held objects (content-addressed); ancestry answered from them is true
+P20	info/exclude hides untracked u: status lines (true 1)	0	per-dir only: see verifier	YES	needs the A-vs-D comparison
+P21	repo core.excludesFile (direct) hides u	0	scope=local	YES	scope local
+P22	include.path in .git/config sets core.excludesFile: status lines; --local --get / --show-scope	0	local-get='' scope=local	YES	--local does NOT follow include (empty); --show-scope reports local
+P23	includeIf gitdir: sets core.excludesFile	0	local-get='' scope=local	YES	same
+P24	config.worktree sets core.excludesFile	0	local-get='' scope=worktree	YES	scope worktree
+P25	GLOBAL core.excludesFile hides u (GIT_CONFIG_GLOBAL)	0	scope=global	no (git calls it clean)	scope global: decision N1 = clean
+P26	XDG default ignore file (core.excludesFile unset)	0	excludesFile=''	no	not a config value: no scope; clean per N1
+P27	global file hides u, repo core.excludesFile overrides with another path (precedence)	1	scope=local	no	last value wins: local replaces global entirely
+P28	GIT_CONFIG_COUNT/KEY/VALUE sets core.excludesFile (caller env, scope command)	0	scope=command	YES	dropped by the env isolation
+P30	core.fileMode=false hides a chmod +x (status lines; true 1)	0	-c core.fileMode=true: 1	YES	not switched off by the verifier (documented boundary)
+P31	core.autocrlf=true, LF blob, CRLF worktree file (status lines)	1	-c core.autocrlf=false: 1	no (measured)	NOT reproduced: git 2.53 reports M in both modes for a LF blob and a CRLF worktree file; no hiding observed
+P40	BASH_ENV set; child = '#!/bin/bash' script (a VERIFY_GIT shim): canary lines	1	0	YES	isolated = env -i / allow-list
+P41	BASH_ENV; child = '#!/bin/bash -p' script	0	n/a	no	-p ignores BASH_ENV
+P42	BASH_ENV; child = '#!/bin/sh' script (sh is /usr/bin/dash)	0	n/a	no	sh (dash/bash-as-sh) does not read BASH_ENV
+P43	BASH_ENV; child = bash -c	1	0	YES	bash -p -c is safe
+P44	ENV (not BASH_ENV) set, child = non-interactive bash script	0	n/a	no	ENV is for interactive/posix-mode shells
+P45	BASH_ENV; the script's OWN startup when run as 'bash script' (interpreter path)	1	0	YES	unavoidable for plain bash; -p / direct exec of a '#!/bin/bash -p' file does not source
+P46	BASH_ENV; real git running a shell alias (!sh) and a core.fsmonitor-less status	0	n/a	no	git runs /bin/sh
+P47	exported function 'git' (BASH_FUNC_git%%) reaches a non-p bash child	function	file	YES	env -i drops BASH_FUNC_*
+P47b	exported function reaches the children of a '#!/bin/bash -p' script (count of BASH_FUNC_ in its child env)	1	n/a	YES	bash -p does NOT stop an exported function reaching its children (it only declines to import it): the detector must read the real child environment (env -0), compgen -e would miss it
+P48	SHELLOPTS=xtrace exported to a '#!/bin/bash' child: stderr lines	1	0	YES	dropped by env -i
+P49	dirty-environment detector: 'env -0' lists what a child sees, exported function included (count of BASH_FUNC_ names)	1	0	detector	env -0 (GNU coreutils) is the instrument; compgen -e would miss BASH_FUNC_x%%
+P50	GIT_DIR=<other repo>/.git : git -C e1 status lines (true 0)	0	env -i: 0	YES	repo selected by env
+P51	GIT_INDEX_FILE=/nonexistent	2	env -i: 0	YES	all repository-local env dropped by env -i
+P52	GIT_CONFIG_PARAMETERS='core.excludesfile=x'	command	env -i: local	YES	scope command
+P53	GIT_EXTERNAL_DIFF / GIT_PAGER / GIT_TRACE do not change status/ancestry answers	n/a	n/a	no	not state-changing; dropped by isolation anyway

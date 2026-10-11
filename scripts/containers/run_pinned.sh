@@ -7,9 +7,10 @@
 #               resolution), at most once; the bind source $PWD/V must be a real directory path (no symlink component), else
 #               rw_source_not_canonical. Without --rw no writable source path is mounted.
 #   --out DIR   output directory mounted at /out:rw (default $PWD/.audit/out/<op_id>/, created here, never tmpfs). Must be an absolute
-#               path; the RESOLVED path is what is bound. A path inside (or above) the source tree is accepted only under the sanctioned
-#               output roots .audit/out, .audit/scratch and specs/001-full-project-audit-remediation/evidence (never an unlisted source
-#               path such as docs, which would reopen the --rw allow-list): else out_dir_in_source / out_dir_not_absolute.
+#               path; the RESOLVED path is what is bound. A closed set (round 8, R-1): inside or above the source tree only STRICTLY BELOW
+#               .audit/out, .audit/scratch or specs/001-full-project-audit-remediation/evidence/wpNN*/.../smoke-out (never the evidence tree itself,
+#               its reviews/ verdict tree, SHA256SUMS or another WP's files): else out_dir_in_source; disjoint from the tree only strictly below
+#               /tmp or /var/tmp (TMPDIR counts only in a declared test run): else out_dir_not_sanctioned; relative: out_dir_not_absolute.
 #   --network=none   no network inside the container (local offline scans)
 #   --need N    bytes the run needs for the disk-headroom precondition (default: size_bytes of the lock entry, else 0)
 # Environment:
@@ -33,7 +34,10 @@
 #               (test_hook_outside_test_mode): a hook replaces the real reading and could otherwise lift a ceiling (round 6, F2).
 #   RUNP_MEMINFO        meminfo file (test hook, needs RUNP_TEST_MODE=1; default /proc/meminfo). An unparsable file is meminfo_unreadable.
 #   RUNP_ULIMIT_U       replaces `ulimit -u` (test hook, needs RUNP_TEST_MODE=1). Zero, unparsable or negative: pids_budget_unavailable.
-#   DISK_HEADROOM_OUT_DIR is inherited by scripts/containers/disk_headroom.sh (CPA sets it to $CPA_RUN/disk/)
+#   DISK_HEADROOM_OUT_DIR is inherited by scripts/containers/disk_headroom.sh (CPA sets it to $CPA_RUN/disk/). The gate's test overrides
+#   (DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT, EV, CPA_HOST_ENTRY, DISK_HEADROOM_TEST_MODE) are SCRUBBED from its environment (round 8, R-2): an
+#   exported variable can never lift the 12.9 floor through this launcher. --need and --op-id, like --rw and --out, may be given once (R-5).
+#   An unset or empty HOME (with no XDG_STATE_HOME) is state_dir_unresolvable (R-8).
 # Limits (docs/16 section 8, "jobs = 1 until measured"): memory = min(0.60 * MemTotal, MemAvailable - max(4 GiB, 0.15 * MemTotal)),
 #   memory-swap = memory (no swap), cpus = min(2, 0.60*nproc), pids-limit = min(2048, min(8192, ulimit -u / 2)), until build/containers/profile.json holds a measured envelope.
 # Refusals exit 1 with `run_pinned: REFUSED reason=<code>`; usage errors exit 2. The reason of a disk-headroom refusal is passed through.
@@ -53,15 +57,15 @@ usage()  { echo "run_pinned: usage: $1" >&2; echo "run_pinned: run_pinned.sh [--
 rp() { local _v=$1 _x; shift; _x="$(realpath "$@" && printf x)" || return 1; printf -v "$_v" '%s' "${_x%?x}"; }
 valid_int() { case "$1" in ''|*[!0-9]*) return 1;; 0) return 0;; 0*) return 1;; esac; [ "${#1}" -le 18 ]; }
 
-RW=""; OUT=""; NET=""; NEED=""; OP_ID=""; IMG=""; SEEN_RW=0; SEEN_OUT=0
+RW=""; OUT=""; NET=""; NEED=""; OP_ID=""; IMG=""; SEEN_RW=0; SEEN_OUT=0; SEEN_NEED=0; SEEN_OPID=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --) shift; break;;
     --rw)  [ $# -ge 2 ] || usage "--rw requires a value"; [ "$SEEN_RW" = 0 ] || refuse rw_given_twice; SEEN_RW=1; RW="$2"; shift 2;;
     --out) [ $# -ge 2 ] || usage "--out requires a value"; [ "$SEEN_OUT" = 0 ] || usage "--out given twice"; SEEN_OUT=1; OUT="$2"; shift 2;;
     --network=none) NET="none"; shift;;
-    --need) [ $# -ge 2 ] || usage "--need requires a value"; NEED="$2"; shift 2;;
-    --op-id) [ $# -ge 2 ] || usage "--op-id requires a value"; OP_ID="$2"; shift 2;;
+    --need) [ $# -ge 2 ] || usage "--need requires a value"; [ "$SEEN_NEED" = 0 ] || usage "--need given twice"; SEEN_NEED=1; NEED="$2"; shift 2;;
+    --op-id) [ $# -ge 2 ] || usage "--op-id requires a value"; [ "$SEEN_OPID" = 0 ] || usage "--op-id given twice"; SEEN_OPID=1; OP_ID="$2"; shift 2;;
     -*) usage "unknown option '$1'";;
     *) [ -z "$IMG" ] || usage "unexpected argument '$1' before --"; IMG="$1"; shift;;
   esac
@@ -127,7 +131,10 @@ if [ -z "$NEED" ]; then if [ -n "$SIZE" ]; then valid_int "$SIZE" || refuse lock
 rp PWD_REAL -- "$PWD" || refuse source_path_malformed "the checkout path $(printf '%q' "$PWD") cannot be resolved"
 case "$PWD$PWD_REAL" in *:*) refuse source_path_malformed "the checkout path ($PWD, resolved $PWD_REAL) contains ':' and cannot be a podman bind source";; esac   # MUT:pwd-colon
 case "$PWD$PWD_REAL" in *$'\n'*) refuse source_path_malformed "the checkout path contains a newline: refused by policy so the one-element-per-line argv (the print-mode oracle) stays unambiguous (podman itself would bind it)";; esac   # MUT:pwd-newline
-STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/catalogizer"
+# the secret store: $XDG_STATE_HOME, else $HOME/.local/state; with neither it cannot be located, which is a named refusal (round 8, R-8), never an unbound-variable abort
+if [ -n "${XDG_STATE_HOME:-}" ]; then STATE_DIR="$XDG_STATE_HOME/catalogizer"
+elif [ -n "${HOME:-}" ]; then STATE_DIR="$HOME/.local/state/catalogizer"
+else refuse state_dir_unresolvable "HOME and XDG_STATE_HOME are both unset or empty: the secret-store directory cannot be located"; fi
 rp STATE_REAL -m -- "$STATE_DIR" || refuse state_dir_unresolvable "$(printf '%q' "$STATE_DIR")"
 # overlap(a, b): true when a equals b or one lies under the other (the secret store must never be inside a mount, nor contain one)
 overlaps() { local a="${1%/}" b="${2%/}"; [ "$a" = "$b" ] && return 0; case "$a/" in "$b"/*) return 0;; esac; case "$b/" in "$a"/*) return 0;; esac; return 1; }
@@ -163,13 +170,26 @@ case "$_o" in *:*|*$'\n'*) refuse out_dir_malformed "the resolved out directory 
 # the bound path is the resolved one; the secret store must be outside it
 OUT="$_o"
 if overlaps "$_o" "$STATE_REAL"; then refuse secret_state_in_mount "--out $OUT overlaps the state directory $STATE_REAL"; fi   # MUT:secret
-# --out inside or above the source tree would make source paths writable behind the --rw allow-list: only the sanctioned output roots
+# --out is a closed set (round 8, R-1). Inside or above the source tree: only STRICTLY BELOW .audit/out, .audit/scratch, or <evidence>/wpNN*/.../smoke-out
+# (the review/verdict tree <evidence>/reviews, SHA256SUMS and every other evidence file are never reachable). Disjoint from the tree: only strictly below /tmp or
+# /var/tmp (and TMPDIR in a declared test run, RUNP_TEST_MODE=1; an ambient TMPDIR can never widen the set). Judged on the RESOLVED path.
+EVROOT="specs/001-full-project-audit-remediation/evidence"
 if overlaps "$_o" "$PWD_REAL"; then
   _ok=0
-  for _root in .audit/out .audit/scratch specs/001-full-project-audit-remediation/evidence; do
-    case "$_o/" in "$PWD_REAL/$_root"/*) _ok=1;; esac
+  case "$_o/" in "$PWD_REAL/.audit/out/"?*|"$PWD_REAL/.audit/scratch/"?*) _ok=1;; esac   # MUT:out-allowlist
+  case "$_o" in "$PWD_REAL/$EVROOT/wp"[0-9]*/*/smoke-out/?*|"$PWD_REAL/$EVROOT/wp"[0-9]*/smoke-out/?*)
+    _rel="${_o#"$PWD_REAL/$EVROOT/"}"
+    case "/$_rel/" in */reviews/*|*/verdicts/*|*/../*) ;; *) _ok=1;; esac;;
+  esac
+  [ "$_ok" = 1 ] || refuse out_dir_in_source "--out $_o is inside or above the source tree $PWD_REAL and not strictly below a sanctioned output root (.audit/out, .audit/scratch, <evidence>/wpNN*/.../smoke-out)"
+else
+  _ok=0; _tmps="/tmp /var/tmp"; [ "${RUNP_TEST_MODE:-}" != 1 ] || _tmps="$_tmps ${TMPDIR:-}"
+  for _t in $_tmps; do
+    [ -n "$_t" ] || continue
+    rp _tr -m -- "$_t" || continue
+    case "$_o/" in "${_tr%/}/"?*) _ok=1;; esac
   done
-  [ "$_ok" = 1 ] || refuse out_dir_in_source "--out $_o is inside or above the source tree $PWD_REAL and not under a sanctioned output root"   # MUT:out-allowlist
+  [ "$_ok" = 1 ] || refuse out_dir_not_sanctioned "--out $_o is outside the source tree and not strictly below /tmp or /var/tmp"   # MUT:out-outside
 fi
 
 # ---- limits ----
@@ -221,7 +241,7 @@ else CUSER="$(id -u):$(id -g)"; fi
 
 # ---- disk headroom precondition (T001); its stdout goes to stderr so print mode stays one element per line ----
 [ -x "$HEADROOM" ] || refuse headroom_script_missing "$HEADROOM"
-HR_ERR="$(bash "$HEADROOM" --need "$NEED" --op-id "$OP_ID" 2>&1 >/dev/null)"; HR_RC=$?   # MUT:headroom
+HR_ERR="$(env -u DISK_HEADROOM_CONF -u DISK_HEADROOM_REPO_ROOT -u EV -u CPA_HOST_ENTRY -u DISK_HEADROOM_TEST_MODE bash "$HEADROOM" --need "$NEED" --op-id "$OP_ID" 2>&1 >/dev/null)"; HR_RC=$?   # MUT:headroom
 if [ "$HR_RC" -ne 0 ]; then
   _r="$(printf '%s' "$HR_ERR" | grep -o 'reason=[A-Za-z0-9_]*' | head -1 | cut -d= -f2)"
   echo "run_pinned: disk headroom precondition failed: $HR_ERR" >&2

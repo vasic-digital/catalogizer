@@ -1,0 +1,57 @@
+ok   anchor: evrec anchor exits 0
+ok   anchor row: schema ev-anchor/1, head = ledger head, count 4, UTC time, strength policy
+ok   verify: ledger and anchor agree (exit 0)
+ok   tamper: delete entry 2 without repair exits 1 (chain)
+ok   tamper: delete-and-recompute that keeps the old seq values is caught by the chain's contiguity check alone (exit 1, the documented bonus)
+ok   tamper: delete-and-recompute (the careful forger renumbers) with NO anchor to compare is UNVERIFIED, exit 3 anchor_absent (review R1: never exit 0)
+ok   tamper: delete-and-recompute is caught by the anchor (exit 2)
+ok   tamper: deleting a different entry (3) and recomputing is caught by the anchor too (exit 2)
+ok   tamper: truncated tail with NO anchor to compare is UNVERIFIED, exit 3 anchor_absent (review R1: never exit 0)
+ok   tamper: truncated tail is caught by the anchor (exit 2)
+ok   tamper: two reordered entries with the chain recomputed but the seq values kept: caught by the chain (exit 1)
+ok   tamper: two reordered entries, chain recomputed AND renumbered, caught by the anchor (exit 2)
+ok   tamper: an edited entry, chain recomputed, caught by the anchor (exit 2)
+ok   original restored exits 0
+ok   anchor unreadable (a directory in its place) is UNVERIFIED, exit 3 anchor_unreadable
+ok   anchor unreadable (mode 000) is UNVERIFIED, exit 3 anchor_unreadable
+ok   a malformed anchor row is UNVERIFIED, exit 3 anchor_not_compared
+ok   an anchor that is not JSON is UNVERIFIED, exit 3
+ok   lagging anchor (ledger grew by 2 after it): exit 0, valid growth
+ok   a fresh anchor over the grown ledger agrees
+ok   after growth, delete-and-recompute is still caught against the NEWEST anchor (exit 2)
+ok   an old anchor row that the rewritten history contradicts is caught although the newest row agrees (exit 2)
+ok   two anchor rows with the same count and different heads are inconsistent (exit 2)
+ok   anchor: refuses to anchor a ledger whose chain fails (reason=chain_failure, nothing written)
+ok   anchor: a forged chain is not re-anchored (exit 2 anchor_disagrees, the anchor file is byte-unchanged)
+ok   anchor: refuses an absent ledger (reason=UNVERIFIED)
+ok   anchor: --strength mechanism without a probe is refused (strength_unproven)
+ok   anchor: nothing written for the refused claim
+ok   verify: a hand-written mechanism row with no probe evidence is UNVERIFIED (exit 3, strength_unproven)
+ok   probe: both receive.denyNonFastForwards and receive.denyDeletes true is recorded as evidence (probe_kind=config) but the strength stays policy (review R3: a same-uid remote is producer-reconfigurable and the anchor is not stored in it)
+ok   probe: the exact config values read and their origin (show-origin) are recorded in the row
+ok   probe: read-only: git was called only to read config, and no push of any kind was made (call log checked)
+ok   probe: nothing was pushed to the bare repository (no refs)
+ok   verify: the probed row verifies as policy (exit 0)
+ok   probe: an explicit --strength policy is honoured even when the config denies a rewrite (the evidence is still recorded)
+ok   probe(onlynff): a remote whose config does not set BOTH denies stays policy (rewrite_rejected=false recorded, no push)
+ok   probe(onlydel): a remote whose config does not set BOTH denies stays policy (rewrite_rejected=false recorded, no push)
+ok   probe(allow): a remote whose config does not set BOTH denies stays policy (rewrite_rejected=false recorded, no push)
+ok   probe: --strength mechanism over a half-configured remote is refused (strength_unproven, nothing written)
+ok   probe: an executable pre-receive hook is recorded as evidence only, never as proof (policy, hooks.pre-receive=executable)
+ok   probe: the global config of the bare repository's environment is considered and its origin recorded (show-origin)
+ok   probe: a non-bare repository is not a server-side remote: policy, result=not_a_bare_repository
+ok   probe: a network remote is never probed (probe_remote_not_local)
+ok   probe: an unreachable remote downgrades to policy (nothing was shown to reject a rewrite)
+ok   probe: the retired --probe-scratch-ok flag is a usage error (no scratch rewrite exists any more)
+ok   verify: a mechanism row whose probe is not probe_kind=config (the retired push probe) is UNVERIFIED strength_unproven
+
+ok   no-force-push scan: evanchor.py, test_anchors.sh, run_mutations_wp05b.py and the guide contain no forced, lease-guarded, plus-ref or built push (11.4.113)
+ok   rerecord anchor leg: exits 0
+ok   rerecord anchor leg: the remote anchors are kept verbatim, the local anchors after the prefix are replaced by ONE anchor over the re-chained head
+ok   rerecord anchor leg: verify accepts the output ledger against the output anchors (exit 0)
+ok   remap-refs ignores the anchor entry of the seq map and still remaps ledger entries
+ok   rerecord without the anchor options writes no anchors (the T049 behaviour is unchanged)
+ok   rerecord: a local anchors file that does not verify against its ledger is refused, nothing written
+ok   rerecord: --onto-anchors without --local-anchors is a usage error (64, they go together)
+ok   hermetic: no call reached the host entry
+checks=55 failures=0

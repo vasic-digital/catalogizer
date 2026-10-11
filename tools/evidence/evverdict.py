@@ -4,9 +4,11 @@
 
 The verdict of an item is DERIVED by program from the ledger, never typed by an author (DR-E4, 11.4.240, 11.4.249). The ledger is
 walked first: a ledger whose chain, canonical form or ev/1 schema fails is UNVERIFIED (exit 3, named reason), no verdict is derived
-from it. `--chain-only` walks the chain without the per-entry ev/1 schema check; the golden-bad fixtures of docs/06 s13.4 that the
-strict recorder REFUSES to write (a RED that passed, a GREEN that failed, a REOPEN that passed) are derived that way, and a
-production caller never passes it.
+from it. The anchors are compared next with the SAME function `verify` uses (evcore.anchor_gate; independent review WP-05 R1, R5): an anchor that
+disagrees with the chain, an unreadable or malformed anchor, a `mechanism` row, and an ABSENT or empty anchors file are all UNVERIFIED (exit 3) and
+no verdict is derived. `--chain-only` walks the chain without the per-entry ev/1 schema check and accepts an ABSENT anchors file (the output then says
+`"anchor": "not compared ..."`); a PRESENT anchor is still compared in full. The golden-bad fixtures of docs/06 s13.4 that the strict recorder REFUSES to
+write (a RED that passed, a GREEN that failed, a REOPEN that passed) are derived that way, and a production caller never passes it.
 
 The rules are the ones of the proof of concept (docs/06 s13, revision 5), ported to ev/1 entries:
   red_ok            at least one RED, every RED a genuine test failure (exit 1..125, verdict fail; 126/127/signal are not)
@@ -25,7 +27,7 @@ The rules are the ones of the proof of concept (docs/06 s13, revision 5), ported
                     a token in its argv, the token must appear as a whole token in ITS OWN captured stdout (the test wrote it into the
                     state it changed and read it back), and no other entry of the item may carry the same token. A post-state that
                     carries the token of an earlier run is the stale-state bluff and fails here.
-Exit status: 0 PASS, 1 FAIL, 3 UNVERIFIED (the ledger cannot be trusted or read), 64 usage.
+Exit status: 0 PASS, 1 FAIL, 4 CHAIN-ONLY-UNVERIFIED (`--chain-only` derived PASS but NO anchor was compared: `derived_verdict` says PASS, `verdict` never does), 3 UNVERIFIED (the ledger cannot be trusted or read, or no anchor agrees with it), 64 usage.
 Stated limits (11.4.6): a MUTATION entry is not part of this derivation (the register seam of docs/06 s17 step 5 checks the closing
 mutation); the oracle strength and the evidence class are not judged here (the reviewer's table, docs/06 s18); the token rule proves
 the token was in the captured stdout of its own entry, not that the state was changed correctly.
@@ -204,9 +206,14 @@ def main(argv):
     bdir = blobs or os.environ.get("EV_BLOBS") or (evcore.blobs_path() if default else os.path.join(os.path.dirname(os.path.abspath(led)), "blobs"))
     try:
         entries, _ = evcore.chain_walk(led, deep=not chain_only)
+        arows, newest = evcore.anchor_gate(led, default, entries, chain_only)
     except evcore.Refuse as r:
         sys.stderr.write("verdict: refused reason=%s %s (no verdict is derived from a ledger that does not verify)\n" % (r.reason, r.detail))
         return 3
     out = derive(entries, item, state_delta, bdir)
+    if newest is None and out["verdict"] == "PASS":      # re-review WP-05-r2 F2: a PASS derived with no anchor compared is not a verified PASS
+        out["derived_verdict"], out["verdict"] = "PASS", "CHAIN-ONLY-UNVERIFIED"
+    out["anchor"] = ("agrees: %d row(s), newest count=%d head=%s strength=%s" % (len(arows), newest["count"], newest["head"][:12], newest["strength"])
+                     if newest is not None else "not compared (--chain-only, no anchor present): the ledger is NOT verified against an anchor")
     print(json.dumps(out))
-    return 0 if out["verdict"] == "PASS" else 1
+    return 0 if out["verdict"] == "PASS" else (4 if out["verdict"] == "CHAIN-ONLY-UNVERIFIED" else 1)

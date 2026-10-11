@@ -101,9 +101,10 @@ S
   mkj() { mkdir -p "$H/j/$1"; python3 -I -c '
 import json,sys
 a,b,c=sys.argv[2:5]
+SEQ=[0]
 def row(op,mode,db,bs,as_,minted,argv,ex=0,snap="ok",wal=0,seq=None,**kw):
-    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"ids_snapshot":snap}
-    if seq is not None: r["seq"]=seq
+    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"wal_bytes_before":0,"ids_snapshot":snap}
+    SEQ[0]+=1; r["seq"]=seq if seq is not None else SEQ[0]   # T068 R-02: replay refuses a row without seq / wal_bytes_before
     r.update(kw); return r
 REG="docs/workable_items.db"; M=["sqlite3","/src/"+REG,"MINT"]
 rows=eval(sys.stdin.read())
@@ -385,7 +386,7 @@ S
   t5() { python3 -I -c '
 import json,sys
 a,b,w=sys.argv[2:5]
-r={"op_id":"FIRST","mode":"register","db":"docs/workable_items.db","db_sha_before":a,"db_sha_after":b,"ids_minted":[],"argv":["sqlite3","/src/docs/workable_items.db","X"],"exit":0,"input_args":{},"inputs":[],"wal_bytes_after":0,"wal_bytes_before":int(w),"ids_snapshot":"ok"}
+r={"op_id":"FIRST","mode":"register","db":"docs/workable_items.db","db_sha_before":a,"db_sha_after":b,"ids_minted":[],"argv":["sqlite3","/src/docs/workable_items.db","X"],"exit":0,"input_args":{},"inputs":[],"wal_bytes_after":0,"wal_bytes_before":int(w),"seq":1,"ids_snapshot":"ok"}
 open(sys.argv[1],"w").write(json.dumps(r)+"\n")' "$H2/j/journal.jsonl" "$A" "$B" "$1"
     rm -rf "$H2/out"; env LOCKED_TEST_MODE=1 LOCKED_ROOT="$H2/root" LOCKED="$H2/stubs/locked.sh" BACKUP="$H2/stubs/backup.sh" DUMP="$H2/stubs/noop.sh" EXPORT="$H2/stubs/noop.sh" bash "$REPLAY" --onto docs/workable_items.db --since "$A" --out "$H2/out" --journal "$H2/j/journal.jsonl" 2>&1 | cut -c1-300; }
   r=$(t5 0); case "$r" in "replay: OK replayed=1 "*) ok "T5-1 control: the first register row has db_sha_before = --since and an empty -wal before it: it is the fallback base's successor and is replayed";; *) bad "T5-1 [$r]";; esac

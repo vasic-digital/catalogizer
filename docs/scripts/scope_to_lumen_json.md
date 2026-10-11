@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 7 |
+| Revision | 9 |
 | Created | 2026-10-05 |
-| Last modified | 2026-10-06T18:00:00Z (round 8: M-7, M-8); earlier: 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 round 6 (N6-6); earlier 2026-10-05 (WF2-REVIEW round 3: N-I5, m-g); round 4 2026-10-06: m-3, m-5, m-8) |
+| Last modified | 2026-10-08 (round 9, review WP-02-T028-r2 N9: `--out` refuses without allow roots, `--no-allow-roots`; independent review owed); earlier: 2026-10-08 (review WP-02-T028 F4: `--allow-roots FILE` and the sibling `lumen_allow_roots.yaml`; independent review owed); earlier: 2026-10-06T18:00:00Z (round 8: M-7, M-8); earlier: 2026-10-06T16:00:00Z (round 7 docs sync); earlier: 2026-10-06 round 6 (N6-6); earlier 2026-10-05 (WF2-REVIEW round 3: N-I5, m-g); round 4 2026-10-06: m-3, m-5, m-8) |
 | Status | tracked since commit 26755ca5; round 7 documentation sync (status and counts re-measured by the WF7 review; independent review of this revision owed, constitution 11.4.142); indexed by `docs/scripts/README.md`; origin: work product of T018 (WP-02) and its review fixes (SM1-SM12) |
 | Source | `scripts/audit/scope_to_lumen_json.py` (input `scope.yaml`, TSV from `scripts/audit/derive_scope.sh`) |
 
@@ -84,3 +84,11 @@ Writes `--out` only on success. `--check` writes nothing. Needs python3 and PyYA
 - **M-8 `--check` is exact for `classes` lists.** A duplicated or reordered pattern inside a `classes` list (same members, different list) is a difference: exit 1, `class <name> has duplicate or misplaced entries (have N, derived M)`, as the list keys already did (round 4, m-8). It stays exit 1 (a difference found), not 3: exit 3 is reserved for a `--check` file that is malformed (non-list, non-string element). UNCONFIRMED against the review text, which asks for "rc 3"; the docstring never promised 3 for a duplicate.
 - Tests: `test_scope_to_lumen_json.sh` 60 checks (55 before round 8, 5 RED against the round-7 script).
 
+
+## Allow roots (review WP-02-T028 F4, 2026-10-08)
+
+`--allow-roots FILE` names a YAML file with the key `lumen_allow_roots` (a list of strings). Without the option the file `lumen_allow_roots.yaml` next to `scope.yaml` is read when it exists (in this repository `config/index/lumen_allow_roots.yaml`, 33 first-party roots). Its roots are united with an optional `lumen_allow_roots` key of `scope.yaml`. A named file that is absent or malformed is exit 3; a root inside a third-party row is exit 3 as before. `--check` therefore re-derives the committed `config/index/lumen_scope.json` (83 allow roots, 50 own-org plus 33) from committed inputs alone; the scratch-merge recipe of `audit/index-scope-notes.md` OWED-T019-1 is obsolete. Test: `test_scope_to_lumen_json.sh` (69 checks, the F4 block).
+
+## Round 9 (review WP-02-T028-r2 N9; revision 9)
+
+`--out` now exits 3 (nothing written) when no allow-roots source exists: `lumen_allow_roots` is neither in `scope.yaml`, nor in a `lumen_allow_roots.yaml` next to it, nor given with `--allow-roots FILE`. Before, a naive re-render in a directory without the sibling file wrote a list lacking the 33 main-repository roots with exit 0 (the F4 hazard: the main application denied from Lumen). `--no-allow-roots` is the explicit opt-out (derive from the TSV own rows alone). `--check` is unchanged: without roots it reports the missing entries (exit 1), which was already safe. Tests: `test_scope_to_lumen_json.sh` (73 checks; the skip leg now exits 77), mutants j04..j06.

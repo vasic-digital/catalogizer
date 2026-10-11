@@ -155,6 +155,7 @@ mkitem() { # mkitem ITEM CLASS [greens=3] [mutation=yes] : RED (target bad) , GR
   echo ok >"$EVW/cwd/target.txt"
   for i in $(seq 1 "$g"); do evr "$item" GREEN "$i" go_binary target.txt $OR --evidence-class "$cls" -- bash t.sh; done
   if [ "$mu" = yes ]; then echo bad >"$EVW/cwd/target.txt"; evr "$item" MUTATION 1 go_binary target.txt $OR --evidence-class "$cls" --mutation-json '{"operator":"x","location":"y","author":"reviewer","result":"caught"}' -- bash t.sh; echo ok >"$EVW/cwd/target.txt"; fi
+  ( cd "$EVW/cwd" && "$EVT/evrec" end-session ) >>"$EVW/evrec.log" 2>&1     # the end-of-session anchor (docs/06 s8): the matrix judges only from an ANCHORED ledger (WP-05 review R1, R5)
 }
 cellitems() { printf '%s\n' "$1" >"$EVW/ci.json"; }
 rungate() { # rungate NAME MAP [extra gen args] : GR = exit status, stderr in $T/NAME.err
@@ -182,6 +183,13 @@ L=open(sys.argv[1]).read().split("\n"); L[1],L[2]=L[2],L[1]; open(sys.argv[1],"w
 PY
 rungate g3b "$T/g.yaml"
 [ "$GR" = 3 ] && ok "gate RM-A: two reordered lines are refused (rc 3)" || bad "gate accepted a reordered ledger (rc $GR)"
+# WP-05 review R1/R5 (class: every reader that judges from the ledger compares the anchors): no anchor, or an anchor the chain contradicts, refuses the whole ledger
+evsetup noanchor; mkitem CAT-001 source; rm -f "$EV_ANCHOR"; cellitems '{"alpha|unit":"CAT-001"}'
+rungate g3c "$T/g.yaml"
+[ "$GR" = 3 ] && grep -q 'anchor_absent' "$T/g3c.err" && ok "gate R1: a chain-valid ledger with NO anchor is refused (3 anchor_absent), never judged" || bad "gate judged an unanchored ledger (rc $GR): $(cat "$T/g3c.err")"
+evsetup recomp; mkitem CAT-001 source; cellitems '{"alpha|unit":"CAT-001"}'; python3 -I "$REPO/tools/evidence/tests/forge.py" set "$EV_LEDGER" 3 duration_ms 999
+rungate g3d "$T/g.yaml"
+[ "$GR" = 3 ] && grep -q 'anchor_disagrees' "$T/g3d.err" && ok "gate R5: an edited-and-recomputed ledger that an anchor contradicts is refused (3 anchor_disagrees), never judged" || bad "gate judged a ledger its anchor contradicts (rc $GR): $(cat "$T/g3d.err")"
 # two GREENs are not three: the DERIVED verdict is not PASS
 evsetup two; mkitem CAT-001 source 2; cellitems '{"alpha|unit":"CAT-001"}'
 rungate g4 "$T/g.yaml"
@@ -224,6 +232,7 @@ for k in ("stdout_sha256", "stderr_sha256", "stdout_digest", "stderr_digest", "m
     pass
 print(evcore.append_entry(body)["seq"])
 PY
+( cd "$EVW/cwd" && "$EVT/evrec" end-session ) >>"$EVW/evrec.log" 2>&1     # the end-of-session anchor over the ledger including the blocked entry
 rungate b1 "$T/g.yaml"
 check "RM3: a blocked latest entry still fails the gate (blocked is not present)" "$GR" 1
 check "RM3: the cell status is blocked in the json" "$(cellstatus "$T/b1")" blocked

@@ -41,7 +41,7 @@ m("V7-unreadable-ledger-passes", [('raise Refuse("UNVERIFIED", 3, "ledger unread
   ["absent ledger is unverifiable"])
 m("V8-torn-line-accepted", [('raise Refuse("chain_failure", 1, "truncated final line (no newline)")', 'pass')],
   ["torn final line"])
-m("V9-anchor-note-dropped", [('print("note: no anchor compared (T055); chain-only verification")', 'pass')],
+m("V9-anchor-note-dropped", [('verify but NO anchor was compared; "', 'verify; "')],
   ["silent about the missing anchor"])
 m("R1-duration-zero", [('dur = (time.monotonic_ns() - t0) // 1_000_000', 'dur = 0')], ["duration self-test"])
 m("R2-argv-joined-string", [('"argv": r_argv,', '"argv": " ".join(r_argv),')],
@@ -171,7 +171,7 @@ m("N-I2b-blobs-stored-before-the-in-lock-check",
    ('        commit_turn_check(allow_reap=False, where="in_lock")        # re-read inside the lock; the reaper already ran once',
     '        for data in blobs:\n            store_blob(data)\n        commit_turn_check(allow_reap=False, where="in_lock")')], ["after the in-lock refusal"])
 m("N-I2c-stall-hook-never-fires", [('    if os.environ.get("EVREC_FAULT") == "stall_before_lock":\n        _stall_for_test(ledger_path())', '    pass')], ["stall point never reached"])
-m("N-I3a-verify-ignores-unknown-args", [('        else:\n            raise Refuse("usage_error", 64, "verify [--ledger FILE] [--blobs DIR]; refused argument %r" % a)', '        else:\n            pass')], ["I3:"])
+m("N-I3a-verify-ignores-unknown-args", [('        else:\n            raise Refuse("usage_error", 64, "verify [--chain-only] [--ledger FILE] [--blobs DIR]; refused argument %r" % a)', '        else:\n            pass')], ["I3:"])
 m("N-I3b-verify-does-not-name-the-file", [('    print("verify: ledger=%s blobs=%s" % (led, bdir))', '    pass')], ["names the file it read", "default ledger"])
 m("N-I3c-ledger-option-ignored", [('    led = led or ledger_path()', '    led = ledger_path()')], ["--ledger tampered"])
 m("N-I4a-blobs-never-checked", [('    check_blobs(entries, bdir)', '    pass')], ["I4: forged", "I4: every blob deleted"])
@@ -260,7 +260,7 @@ m("N2-no-flag-pair-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?
 m("N2-no-authorization-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("authorization", re.compile(', '    ("authorization", _NEVER or re.compile(')], ["N2: Authorization"])
 m("N2-no-cookie-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("cookie", re.compile(', '    ("cookie", _NEVER or re.compile(')], ["N2: Cookie"])
 m("N2-no-jwt-pattern", [('SECRET_PATTERNS = [', '_NEVER = re.compile(rb"(?!x)x")\nSECRET_PATTERNS = ['), ('    ("jwt", re.compile(', '    ("jwt", _NEVER or re.compile(')], ["N2: a bare three-part JWT"])
-m("N2-argv-pair-not-redacted", [('        prev_cred = _is_cred_flag(a)', '        prev_cred = False')], ["N2: argv pair"])
+m("N2-argv-pair-not-redacted", [('        prev_cred, prev = _is_cred_flag(a), a', '        prev_cred, prev = False, a')], ["N2: argv pair"])
 m("N2-argv-flag-regex-too-narrow", [('_CRED_WORD = re.compile(r"(?i)password|passwd|secret|token|api[_-]?key|access[_-]?key")', '_CRED_WORD = re.compile(r"(?i)password")')], ["N2: argv credential flags"])
 m("N2-redact-everything", [('    ("kv_secret", re.compile(', '    ("everything", re.compile(rb"(?s)(.+)"), 1),\n    ("kv_secret", re.compile(')], ["benign text was altered"])
 m("N3-launcher-run_pinned-not-listed", [('"run_pinned", "run_pinned.sh", ', '')], ["run_pinned.sh without a declared test source"])
@@ -276,7 +276,7 @@ m("N4-unscoped-on-tokened-allowed", [('        if os.path.exists(rp) and os.path
 m("N4-token-not-validated", [('    if RUN_TOKEN_RX.fullmatch(t) is None:', '    if False:')], ["token that is not a plain token", "EVREC_RUN_TOKEN that is not"])
 m("N4-env-token-ignored-by-reconcile", [('    t = explicit if explicit is not None else os.environ.get("EVREC_RUN_TOKEN")', '    t = explicit')], ["token may come from EVREC_RUN_TOKEN"])
 m("N4-reconcile-accepts-unknown-option", [('        else:\n            raise Refuse("usage_error", 64, usage)\n        i += 2', '        else:\n            pass\n        i += 2')], ["unknown option"])
-m("m1-ledger-anchor-from-default", [('    a = anchor_path() if default or os.environ.get("EV_ANCHOR") else os.path.join(os.path.dirname(os.path.abspath(led)), "anchors.jsonl")', '    a = anchor_path()')], ["m1:"])
+m("m1-ledger-anchor-from-default", [('    return anchor_path() if default or os.environ.get("EV_ANCHOR") else os.path.join(os.path.dirname(os.path.abspath(led)), "anchors.jsonl")', '    return anchor_path()')], ["m1:"])
 m("m2-remap-drops-mode", [('mode=stat.S_IMODE(os.stat(real).st_mode)', 'mode=None')], ["m2: mode is"])
 m("m2-remap-replaces-symlink", [('        real = os.path.realpath(fp)                       # write through a symlink, keep the link (review m2)', '        real = fp')], ["m2: symlink replaced"])
 m("m4-deleted-cwd-traceback", [('    except OSError:\n        raise Refuse("usage_error", 64, "the current working directory no longer exists; the command was not run")', '    except ZeroDivisionError:\n        raise')], ["m4:"])
@@ -406,7 +406,7 @@ def run_one(mut, scratch_base, check_only=False):
             if imp.returncode != 0:
                 return mid, "INVALID", "mutated source compiles but cannot be imported: %s" % (imp.stderr.strip().splitlines() or ["?"])[-1][:120], []
         if check_only:
-            return mid, "CAUGHT", "", []
+            return mid, "APPLIES", "", []         # the edit applies and compiles; NO suite was run, so this is not a kill result (re-review WP-05-r2 F5)
         fails = []
         for t in (tests or CORE):
             try:
@@ -426,13 +426,28 @@ def run_one(mut, scratch_base, check_only=False):
 def main():
     a = sys.argv[1:]
     jobs, check = 3, False
-    while a[:1] in (["-j"], ["--check"]):
+    skip_base = base_only = False
+    while a[:1] in (["-j"], ["--check"], ["--skip-baseline"], ["--baseline-only"]):
         if a[0] == "-j":
             jobs, a = int(a[1]), a[2:]
+        elif a[0] == "--skip-baseline":                   # chunked runs: the baseline control ran once (--baseline-only) and is cited, not repeated per chunk
+            skip_base, a = True, a[1:]
+        elif a[0] == "--baseline-only":
+            base_only, a = True, a[1:]
         else:
             check, a = True, a[1:]
     sel = [x for x in M if not a or x[0] in a]
     base = os.environ.get("TMPDIR") or "/tmp"
+    if not check and not skip_base:                        # the unmutated-baseline control (11.4.201(6); review WP-05 R6): green WITHOUT a mutation, or no verdict means anything
+        _id, _st, _note, bfails = run_one(("BASELINE", [], ["-"], None), base)
+        if _st == "INVALID" or bfails:
+            print("BASELINE NOT GREEN: %d FAIL line(s) on the unmutated tree; no mutant verdict is meaningful" % len(bfails))
+            for f in bfails[:20]:
+                print("  " + f[:200])
+            return 2
+        print("baseline green: the core suites run on the unmutated tree with 0 FAIL lines", flush=True)
+    if base_only:
+        return 0
     res = []
     with concurrent.futures.ThreadPoolExecutor(jobs) as ex:
         for r in ex.map(lambda x: run_one(x, base, check), sel):
@@ -443,6 +458,10 @@ def main():
     for r in equiv:
         print("EQUIVALENT %-30s %s" % (r[0], EQUIVALENT[r[0]]))
     bad = [r for r in res if r[1] != "CAUGHT" and r not in equiv]
+    if check:                                              # --check ran no suite: report applicability only
+        inv = [r for r in res if r[1] == "INVALID"]
+        print("mutants=%d applies=%d invalid=%d (--check runs no suite: this is not a kill result)" % (len(res), len(res) - len(inv), len(inv)))
+        return 0 if not inv else 1
     print("mutants=%d caught=%d equivalent=%d not_caught=%d" % (len(res), len(res) - len(bad) - len(equiv), len(equiv), len(bad)))
     return 0 if not bad else 1
 

@@ -1,0 +1,90 @@
+# identity: task=WP06-T068-R2 utc=2026-10-08T14:39:50Z host=anton uid=1000
+# git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c tree_dirty_files=240
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=421258ed0e88b76ac3499a94d4f72242cb44a2b33d49581294d1c971c6d4aadb apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=104a7b96616ec0dfd4b7d904d3959ab633a22de5c7bac3995528e324f4ab103a test=eb8df8631d03e1a3983ec045332fd1d0bbd2f0faa36a80f87e64aedbc156d46a
+# container_image_digest=UNCONFIRMED (RUNP/IMG-TESTUTIL absent: host-side run, T007/T008 pending)
+== R-01: reg_ids accepts only the id the engine would mint next; malformed / gapped ids fail the gate ==
+ok   R01-0 control: three engine-assigned mints give CAT-001..003
+ok   R01-1 explicit seq 9 (a gap after CAT-003) refused
+ok   R01-2 explicit seq 0 (CAT-000) refused
+ok   R01-3 explicit seq -3 (CAT--03, outside the engine heading grammar) refused
+ok   R01-4 explicit seq 2 (below the maximum, out of order) refused
+ok   R01-4b explicit seq -1 (the value SQLite shows an auto-assigned key as inside a BEFORE trigger) refused
+ok   R01-4c INSERT OR REPLACE with an explicit seq refused
+ok   R01-5 none of the refused inserts left a row (still CAT-001..003)
+ok   R01-6 control: the next engine-assigned mint is accepted
+ok   R01-6b ... and is CAT-004
+ok   R01-7 a mint after sqlite_sequence was raised (would be CAT-101, a gap) refused
+ok   R01-8 a dump of a clean register restores (explicit seq loads before the triggers) and holds CAT-001..004
+ok   R01-G1 rows CAT--03, CAT-000, CAT-005, CAT-009 (out of order, gaps, malformed) fail the gate naming v_ids_malformed
+ok   R01-G2 a gap made through sqlite_sequence (CAT-001 then CAT-101) fails the gate naming v_ids_malformed
+ok   R01-G3 the monotone trigger dropped (not restored) fails the gate: missing object / schema differs
+ok   R01-G4 golden-FALSE: a clean one-item register passes
+ok   R01-C1 raw items insert of CAT-000 without a mint refused (trg_items_require_mint)
+ok   R01-C3 the engine add with an auto-generated id and no mint behind it is refused (the engine's own id allocation is not a mint path)
+ok   R01-C2 the engine add with a grammar-bad, never-minted id CAT--03 is refused
+== R-03: a retried import mint cannot create a second id; orphan import ids fail the gate ==
+ok   R03-1 control: the first import mint for a marker is accepted
+ok   R03-2 the same marker minted again (a retry after an unknown-status write) refused by the database
+ok   R03-3 control: the same minted_by text is allowed for a non-import basis (the guard is scoped to import)
+ok   R03-4 only the legitimate rows exist (2)
+ok   R03-G1 an import-minted id with no item and no source mapping (an orphan) fails the gate naming v_import_mint_orphans
+ok   R03-G2 two ids for one import marker (the index dropped, a retry duplicated the mint) fail the gate
+ok   R03-G3 golden-FALSE: a manual mint with an item passes
+ok   R03-G4 golden-FALSE: an import-minted id that has its item passes
+== R-04: the CAT prefix must agree across .helix/reporting.yaml, the DDL and the import scripts ==
+ok   R04-0 control: the three sources agree on CAT, the gate passes and reports the check
+ok   R04-1 reporting.yaml id_prefix DOG against CAT in the DDL fails the gate
+ok   R04-2 import_plan.py --prefix DOG fails the gate
+ok   R04-3 import_tickets.py --prefix DOG fails the gate
+ok   R04-4 the DDL literal DOG- against reporting.yaml CAT fails the gate
+ok   R04-5 an absent reporting.yaml fails closed (a missing source is not agreement)
+ok   R04-6 an absent import script fails closed
+ok   R04-7 an import script whose --prefix is not a literal fails closed (zero matches is blindness, not agreement)
+ok   R04-8 the engine column atm_id is still the key of items and reg_ids (no local rename)
+== R-05: a tracker_receipt that cites a FILE is re-hashed ==
+ok   R05-0 control: a tracker_receipt file that re-hashes passes and is counted
+ok   R05-1 a changed tracker_receipt file fails the gate (sha256 mismatch)
+ok   R05-2 an absent tracker_receipt file fails the gate
+== R-06: the registry cross-check of step_view_empty has an isolated fixture ==
+ok   R06-1 a forged registry row that is only a SUBSTRING of a reference view name is reported by the cross-check (exact-line match)
+== R-02: replay.sh refuses a journal row with a missing field (journal_row_incomplete) instead of reading it as its safe value ==
+ok   R02-0 control: a complete journal passes validation and reaches the backup step (stub failure)
+ok   R02-seq a row without seq is refused journal_row_incomplete naming the field, nothing written
+ok   R02-op_id a row without op_id is refused journal_row_incomplete naming the field, nothing written
+ok   R02-mode a row without mode is refused journal_row_incomplete naming the field, nothing written
+ok   R02-argv a row without argv is refused journal_row_incomplete naming the field, nothing written
+ok   R02-db a row without db is refused journal_row_incomplete naming the field, nothing written
+ok   R02-db_sha_before a row without db_sha_before is refused journal_row_incomplete naming the field, nothing written
+ok   R02-db_sha_after a row without db_sha_after is refused journal_row_incomplete naming the field, nothing written
+ok   R02-ids_minted a row without ids_minted is refused journal_row_incomplete naming the field, nothing written
+ok   R02-ids_snapshot a row without ids_snapshot is refused journal_row_incomplete naming the field, nothing written
+ok   R02-wal_bytes_before a row without wal_bytes_before is refused journal_row_incomplete naming the field, nothing written
+ok   R02-wal_bytes_after a row without wal_bytes_after is refused journal_row_incomplete naming the field, nothing written
+ok   R02-exit a row without exit is refused journal_row_incomplete naming the field, nothing written
+ok   R02-input_args a row without input_args is refused journal_row_incomplete naming the field, nothing written
+ok   R02-base the base row without wal_bytes_after is refused (absent was read as 0 = an empty -wal)
+ok   R02-v1-wal_bytes_after a wal_bytes_after of the wrong type or shape ("0") is refused journal_row_incomplete
+ok   R02-v2-wal_bytes_after a wal_bytes_after of the wrong type or shape (true) is refused journal_row_incomplete
+ok   R02-v3-wal_bytes_before a wal_bytes_before of the wrong type or shape (-1) is refused journal_row_incomplete
+ok   R02-v4-ids_minted a ids_minted of the wrong type or shape ("CAT-001") is refused journal_row_incomplete
+ok   R02-v5-ids_snapshot a ids_snapshot of the wrong type or shape ("maybe") is refused journal_row_incomplete
+ok   R02-v6-exit a exit of the wrong type or shape ("0") is refused journal_row_incomplete
+ok   R02-v7-seq a seq of the wrong type or shape ("2") is refused journal_row_incomplete
+ok   R02-v8-mode a mode of the wrong type or shape ("bogus") is refused journal_row_incomplete
+ok   R02-v9-db_sha_after a db_sha_after of the wrong type or shape ("xyz") is refused journal_row_incomplete
+ok   R02-v10-db_sha_before a db_sha_before of the wrong type or shape ("Abbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb") is refused journal_row_incomplete
+ok   R02-v11-argv a argv of the wrong type or shape ("sh") is refused journal_row_incomplete
+ok   R02-null golden-FALSE: a field that is present with the value null is a recorded fact, not an absent field
+== R-10: replay.sh never deletes an output directory (or a file in it) it did not create ==
+ok   R10-1 a pre-existing EMPTY output directory still exists after a refusal (the run did not create it)
+ok   R10-2 a file another process wrote into the directory survives the refusal
+ok   R10-3 golden-FALSE: a directory the run created itself is removed on refusal (nothing left behind)
+ok   R10-4 in a pre-existing directory the run removes the outputs it wrote itself (backup.json) and keeps the directory
+== R-11: locked.sh --out runs fence an orphan writer too ==
+ok   R11-1 an --out run with a pending marker whose writer state cannot be verified is refused (20 writer_state_unverifiable), the command is not run
+ok   R11-2 golden-FALSE: an --out run with NO pending marker is not delayed or refused (rc 0)
+ok   R11-3 golden-FALSE: an --out run with a pending marker whose client is gone and whose container does not exist proceeds (the fence proved the writer finished)
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=75 fail=0

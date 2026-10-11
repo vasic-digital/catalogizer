@@ -269,9 +269,10 @@ S
   mkj() { mkdir -p "$H/j/$1"; python3 -I -c '
 import json,sys
 a,b,c=sys.argv[2:5]
+SEQ=[0]
 def row(op,mode,db,bs,as_,minted,argv,ex=0,snap="ok",wal=0,seq=None,**kw):
-    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"ids_snapshot":snap}
-    if seq is not None: r["seq"]=seq
+    r={"op_id":op,"mode":mode,"db":db,"db_sha_before":bs,"db_sha_after":as_,"ids_minted":minted,"argv":argv,"exit":ex,"input_args":{},"inputs":[],"wal_bytes_after":wal,"wal_bytes_before":0,"ids_snapshot":snap}
+    SEQ[0]+=1; r["seq"]=seq if seq is not None else SEQ[0]   # T068 R-02: replay refuses a row without seq / wal_bytes_before
     r.update(kw); return r
 REG="docs/workable_items.db"; M=["sqlite3","/src/"+REG,"MINT"]; MK="# register-regenerate:dump\nset -eo pipefail"
 rows=eval(sys.stdin.read())

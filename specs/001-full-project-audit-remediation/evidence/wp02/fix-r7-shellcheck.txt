@@ -1,0 +1,464 @@
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 71:
+[ "$NPROBE" -ge 20 ] && ok "N1 the scope declares $NPROBE baseline patterns (instrument sees the pattern set)" || bad "N1 baseline pattern list too short: $NPROBE"
+                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 113:
+  [ "$gi" = "true false" ] && ok "N4 control needle: the library does distinguish the modes (default true, ignorecase:false false)" || bad "N4 control needle: want 'true false', got [$gi]"
+                           ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 126:
+{ [ "$RC" -eq 2 ] && grep -q "captured-not-before" "$T/e"; } && ok "N7 --lumen-status without --captured-not-before -> usage rc=2 naming the option" || bad "N7 want rc=2, got rc=$RC"
+                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 129:
+[ "$RC" -ne 0 ] && [ "$RC" -ne 3 ] && ok "N7 a year-2000 capture without the bound can no longer reach PASS/INCOMPLETE (rc=$RC)" || bad "N7 year-2000 capture without bound: rc=$RC (want usage 2)"
+                                   ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 164:
+{ [ "$RC" -eq 0 ] && [ "$(jq -r .verdict "$T/o.json")" = PASS ]; } && ok "N2 golden-false: verified live proofs + bound drift report -> PASS rc=0" || bad "N2 golden-false: rc=$RC verdict=$(jq -r .verdict "$T/o.json") skipped=$(jq -rc .skipped_proofs "$T/o.json") reasons=$(reason P4)/$(reason P5)/$(reason P6)/$(reason P-ScopeDrift)"
+                                                                   ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 165:
+[ "$(jq -r '.codegraph.proofs[]|select(.id=="P4")|.kind' "$T/o.json")" = live ] && ok "N2 the row records kind=live" || bad "N2 row kind not recorded"
+                                                                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_fix_r7.sh line 196:
+{ [ "$RC" -eq 3 ] && [ "$(pv P4)" = SKIP ] && [ "$(jq -r .verdict "$T/o.json")" = INCOMPLETE ]; } && ok "N2 a per-unit grep fallback is SKIP (verdict INCOMPLETE rc=3), never a live PASS" || bad "N2 fallback: rc=$RC P4=$(pv P4) verdict=$(jq -r .verdict "$T/o.json")"
+                                                                                                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 19:
+[ "$RC" -eq 0 ] && ok "D1 the committed scope inputs are drift-free (rc=0)" || bad "D1 real inputs: rc=$RC $(head -c 300 "$T/e")"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 21:
+  [ "$(rcof $c)" = 0 ] && ok "D2 report names $c with rc 0" || bad "D2 $c: want rc 0, got $(rcof $c)"
+                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 23:
+[ -s "$T/fresh" ] && cmp -s "$T/fresh" .lumenignore && ok "D3 --fresh-out equals the committed .lumenignore" || bad "D3 fresh render differs from .lumenignore"
+                                                    ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 27:
+{ [ "$RC" -eq 1 ] && [ "$(rcof lumenignore_fresh)" = 1 ] && [ "$(rcof scope_render_check)" = 0 ]; } && ok "D4 stale .lumenignore -> rc=1, only lumenignore_fresh differs" || bad "D4 want rc=1 lumenignore_fresh=1, got rc=$RC $(rcof lumenignore_fresh)"
+                                                                                                    ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 31:
+{ [ "$RC" -eq 1 ] && [ "$(rcof scope_to_lumen_json_check)" = 1 ]; } && ok "D5 drifted lumen_scope.json -> rc=1, scope_to_lumen_json_check=1" || bad "D5 want rc=1, got rc=$RC check=$(rcof scope_to_lumen_json_check)"
+                                                                    ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 36:
+{ [ "$RC" -eq 1 ] && [ "$(rcof scope_render_check)" = 7 ]; } && ok "D6 a failing scope_render --check -> rc=1 with its rc recorded" || bad "D6 want rc=1 render=7, got rc=$RC render=$(rcof scope_render_check)"
+                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 39:
+{ [ "$RC" -eq 3 ] && [ "$(rcof lumenignore_fresh)" = 127 ]; } && ok "D7 absent gen_lumenignore.py -> rc=3, check rc 127 (not a pass)" || bad "D7 want rc=3 127, got rc=$RC $(rcof lumenignore_fresh)"
+                                                              ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 42:
+{ [ "$RC" -eq 0 ] && cmp -s "$T/li_regen" .lumenignore; } && ok "D8 --regen restores the fresh render (rc=0)" || bad "D8 regen: rc=$RC"
+                                                          ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 46:
+{ [ "$RC" -eq 1 ] && [ "$(rcof lumenignore_fresh)" = 1 ]; } && ok "D10 empty fresh render vs empty .lumenignore -> lumenignore_fresh=1 (blind, not equal)" || bad "D10 want rc=1 lumenignore_fresh=1, got rc=$RC $(rcof lumenignore_fresh)"
+                                                            ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 48:
+"$SDC" >/dev/null 2>&1; [ $? -eq 2 ] && ok "D9 no --out -> usage rc=2" || bad "D9 usage"
+                                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 59:
+  { [ "$RC" -eq 0 ] && grep -qx '/b/' "$T/li1" && grep -qx '/docs/' "$T/li1" && ! grep -qx '/a/' "$T/li1"; } && ok "D11a scratch repo: --regen renders the tracked tree (rc=0, /b/ and /docs/ denied, allowed /a/ not)" || bad "D11a scratch regen: rc=$RC $(tr '\n' ' ' < "$T/li1" | cut -c1-200)"
+                                                                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 62:
+  { [ "$RC" -eq 0 ] && cmp -s "$S/.lumenignore" "$T/li1"; } && ok "D11b untracked directories prev3, zz_stray_test_dir and an untracked file do not change the render (host independent)" || bad "D11b stray dirs changed the render: rc=$RC $(diff "$T/li1" "$S/.lumenignore" | head -3 | tr '\n' ' ')"
+                                                            ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 64:
+  { [ "$RC" -eq 0 ] && [ "$(jq -r '[.checks[]|select(.check=="lumenignore_fresh")|.rc][0]' "$T/s3.json" 2>/dev/null)" = 0 ]; } && ok "D11c the committed render stays fresh while stray directories exist (--check mode rc=0)" || bad "D11c check with stray dirs: rc=$RC"
+                                                                                                                               ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 65:
+  for hl in /.git/ /.claude/ /.remember/; do grep -qx "$hl" "$T/li1" && ok "D11d fixed host-local entry $hl is always denied (stable, tracked-independent)" || bad "D11d $hl missing from the render"; done
+                                                                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 68:
+  grep -qx '/newtracked/' "$S/.lumenignore" && ok "D11e control: a newly TRACKED top-level directory appears in the render" || bad "D11e tracked dir not rendered"
+                                            ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 76:
+  && ok "D12 report = scope-drift/1 with head, scope/lumen_scope/lumenignore sha256 equal to the files, and three checks" || bad "D12 report shape/binding: $(head -c 300 "$T/r12.json" 2>/dev/null)"
+  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_drift_check.sh line 83:
+  { [ "$RC" -eq 0 ] && cmp -s "$T/fresh13" .lumenignore; } && ok "D13 fresh-clone proof: the render from a clone's tracked tree equals the committed .lumenignore (rc=0)" || bad "D13 clone render differs: rc=$RC $(diff "$T/fresh13" .lumenignore 2>&1 | head -4 | tr '\n' ' ')"
+                                                           ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 93:
+[ "$rc" -eq 0 ] && ok "derive exits 0" || bad "derive: want rc=0, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 97:
+{ [ -f "$T/o1.json" ] && cmp -s "$T/o1.json" "$T/o2.json"; } && ok "second run byte-identical" || bad "second run differs or absent"
+                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 101:
+{ [ "$rc" -eq 3 ] && [ ! -s "$T/o3.json" ]; } && ok "empty allow-list refused (rc=3, nothing written)" || bad "empty allow: want rc=3 and no output, got rc=$rc"
+                                              ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 104:
+[ "$rc" -eq 0 ] && ok "--check passes on the golden JSON" || bad "--check golden: want rc=0, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 107:
+[ "$rc" -eq 1 ] && ok "--check FAILs when a scope.yaml class is missing from the JSON (rc=1)" || bad "--check missing class: want rc=1, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 112:
+  [ "$rc" -eq 1 ] && ok "--check rc=1: $1" || bad "--check $1: want rc=1, got rc=$rc"
+                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 127:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/o9.err"; } && ok "a non-mapping scope.yaml is rc=3, no traceback" || bad "non-mapping scope: want rc=3 without a traceback, got rc=$rc"
+                                                        ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 130:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/o10.err"; } && ok "a non-mapping baseline_excludes is rc=3 (also under --check)" || bad "non-mapping baseline_excludes: want rc=3, got rc=$rc"
+                                                         ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 137:
+  && ok "gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically" || bad "gen_lumenignore.py leg: rc=$rc1"
+  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 166:
+[ "$rc" -eq 0 ] && ok "control: blank lines in the TSV are tolerated (rc=0)" || bad "blank TSV lines: want rc=0, got $rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 170:
+{ [ "$rc" -eq 0 ] && [ "$(jq '[.deny[]|select(test("own_ab"))]|length' "$T/pre.json")" = 0 ]; } && ok "own_ab/x (a sibling, not nested under own_a) is not denied as nested" || bad "path-boundary: own_ab/x wrongly treated as nested under own_a (rc=$rc)"
+                                                                                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 174:
+{ [ "$rc" -eq 0 ] && cmp -s "$T/slash.json" "$T/golden.json"; } && ok "allowed roots with a trailing slash or padding derive the identical golden JSON" || bad "allow root normalisation: rc=$rc, output differs from golden"
+                                                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 179:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "--out to an unwritable path is rc=3 without a traceback" || bad "--out unwritable: want rc=3 without a traceback, got rc=$rc"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 184:
+{ [ "$rc" -eq 0 ] && jq -e '.allow|index("submodules/third_bx")!=null' "$T/sib.json" >/dev/null 2>&1; } && ok "m-3 a sibling root (third_bx next to third_b) is accepted, not refused (rc=0)" || bad "m-3 sibling root: want rc=0 with the root allowed, got rc=$rc"
+                                                                                                        ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 191:
+{ [ "$rc" -eq 0 ] && jq -e '.deny|index("/submodules/own_a/vendor/x\\[1\\]/")!=null' "$T/glob.json" >/dev/null 2>&1 && ! jq -e '.deny|index("/submodules/own_a/vendor/x[1]/")!=null' "$T/glob.json" >/dev/null 2>&1; } && ok "m-5b a nested third_party path with [ ] is denied literally (backslash-escaped)" || bad "m-5b glob metacharacters in a nested third_party path: rc=$rc deny=$(jq -c '.deny|map(select(test("vendor")))' "$T/glob.json" 2>/dev/null)"
+                                                                                                                                                                                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 193:
+[ "$rc" -eq 0 ] && ok "m-5b control: --check of the escaped derivation is exact (rc=0)" || bad "m-5b control: --check rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 199:
+{ [ "$rc" -eq 1 ] && grep -q duplicate "$T/r.err"; } && ok "m-8 a duplicated allow entry in the --check file is a difference (rc=1, named duplicate)" || bad "m-8 duplicate entry: want rc=1 naming a duplicate, got rc=$rc: $(head -c 160 "$T/r.err")"
+                                                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 206:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "round5 D1 no traceback and rc=3 for a non-string classes element" || bad "round5 D1: want rc=3 without a traceback, got rc=$rc: $(head -c 120 "$T/r.err")"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 213:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "N6-6 integer class name: rc=3 and no traceback (was TypeError, rc 1)" || bad "N6-6 integer class name: want rc=3 without a traceback, got rc=$rc: $(head -c 120 "$T/r.err")"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 217:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "N6-6 non-UTF-8 TSV: rc=3 and no traceback (was UnicodeDecodeError, rc 1)" || bad "N6-6 non-UTF-8 TSV: want rc=3 without a traceback, got rc=$rc: $(head -c 120 "$T/r.err")"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 224:
+{ [ "$rc" -eq 1 ] && grep -q root_files "$T/r.err"; } && ok "N6-6 root_files: 1 is NOT true: the exact check finds the difference (rc=1, root_files named)" || bad "N6-6 root_files 1: want rc=1 naming root_files, got rc=$rc: $(head -c 120 "$T/r.err")"
+                                                      ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 226:
+[ "$rc" -eq 0 ] && ok "N6-6 control: root_files true (the golden) still passes the exact check (rc=0)" || bad "N6-6 control: golden --check rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 230:
+{ [ "$rc" -eq 0 ] && jq -e '.allow|index("submodules/café")!=null' "$T/utf8.json" >/dev/null 2>&1; } && ok "N6-6 a UTF-8 TSV with a non-ASCII path is read as UTF-8 under an ASCII locale (rc=0)" || bad "N6-6 UTF-8 TSV under LC_ALL=C: want rc=0 with the path allowed, got rc=$rc: $(head -c 120 "$T/r.err")"
+                                                                                                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 235:
+grep -q '^  third_party_nested:' "$T/scope_res.yaml" && ok "M-7 fixture: the scope names the reserved class third_party_nested" || bad "M-7 fixture: the reserved class is not in the scope"
+                                                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 237:
+grep -q third_party_nested "$T/r.err" && ok "M-7 the refusal names the reserved class" || bad "M-7 the refusal does not name third_party_nested: $(head -c 160 "$T/r.err")"
+                                      ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 239:
+[ "$rc" -eq 3 ] && ok "M-7 --check of the golden against the reserved-class scope is rc 3, not a pass on a re-derived loss" || bad "M-7 --check: want rc=3, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 241:
+{ [ "$rc" -eq 0 ] && cmp -s "$T/res_ok.json" "$T/golden.json"; } && ok "M-7 golden-false: the scope without the reserved class still derives the golden byte for byte (rc 0)" || bad "M-7 golden-false: rc=$rc or the output differs from the golden"
+                                                                 ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 245:
+{ [ "$rc" -eq 1 ] && grep -q duplicate "$T/r.err" && grep -q caches "$T/r.err"; } && ok "M-8 a duplicated pattern in a classes list is a difference (rc=1, names duplicate and the class)" || bad "M-8 duplicate in classes: want rc=1 naming a duplicate in caches, got rc=$rc: $(head -c 200 "$T/r.err")"
+                                                                                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 248:
+{ [ "$rc" -eq 1 ] && grep -q caches "$T/r.err"; } && ok "M-8 a misplaced (reordered) classes list is a difference (rc=1): the comparison is exact, not set-wise" || bad "M-8 reordered classes list: want rc=1, got rc=$rc"
+                                                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 250:
+[ "$rc" -eq 0 ] && ok "M-8 golden-false: the unmodified golden still passes the exact check (rc=0)" || bad "M-8 golden-false: --check rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 256:
+{ [ "$rc" -eq 0 ] && cmp -s "$T/sib.out.json" "$T/golden.json"; } && ok "F4 the sibling lumen_allow_roots.yaml is read by default: derivation equals the golden (rc=0)" || bad "F4 sibling allow roots: rc=$rc $(head -c 160 "$T/r.err")"
+                                                                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 258:
+[ "$rc" -eq 0 ] && ok "F4 --check against the golden passes from committed inputs only (no scratch merge)" || bad "F4 --check with sibling roots: rc=$rc $(head -c 160 "$T/r.err")"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 261:
+{ [ "$rc" -eq 0 ] && cmp -s "$T/ar.out.json" "$T/golden.json"; } && ok "F4 --allow-roots FILE gives the golden without a sibling file" || bad "F4 --allow-roots: rc=$rc $(head -c 160 "$T/r.err")"
+                                                                 ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 263:
+[ "$rc" -eq 0 ] && ok "F4 --check with --allow-roots passes" || bad "F4 --check --allow-roots: rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 266:
+{ [ "$rc" -eq 1 ] && grep -q "catalog-web" "$T/r.err"; } && ok "F4 control: fewer allow roots than the committed JSON holds -> --check rc=1 naming the root" || bad "F4 control fewer roots: want rc=1 naming catalog-web, got rc=$rc"
+                                                         ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 269:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 allow-roots FILE naming a third_party row is refused (rc=3)" || bad "F4 leak via allow-roots file: want rc=3, got rc=$rc"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 272:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 malformed allow-roots FILE is rc=3, no traceback" || bad "F4 malformed allow-roots: want rc=3, got rc=$rc"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 274:
+{ [ "$rc" -eq 3 ] && ! grep -q Traceback "$T/r.err"; } && ok "F4 absent --allow-roots FILE is rc=3 (fail closed, not an empty allow)" || bad "F4 absent allow-roots file: want rc=3, got rc=$rc"
+                                                       ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 278:
+  [ "$rc" -eq 0 ] && ok "F4 the committed lumen_scope.json is re-derived from committed inputs by the tool alone (rc=0, no scratch merge)" || bad "F4 committed lumen_scope.json: rc=$rc $(head -c 200 "$T/r.err")"
+                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 284:
+{ [ "$rc" -eq 3 ] && [ ! -e "$T/nosib.out.json" ] && grep -qi "allow" "$T/r.err" && ! grep -q Traceback "$T/r.err"; } && ok "N9 --out with no lumen_allow_roots source (scope key, sibling file, --allow-roots) -> rc=3, nothing written, names the allow roots" || bad "N9 --out without allow roots: want rc=3 and no file, got rc=$rc exists=$([ -e "$T/nosib.out.json" ] && echo yes || echo no) $(head -c 160 "$T/r.err")"
+                                                                                                                      ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 286:
+{ [ "$rc" -eq 0 ] && jq -e '.allow == ["submodules/own_a"]' "$T/nosib2.out.json" >/dev/null 2>&1; } && ok "N9 control: the explicit --no-allow-roots opt-out derives from the TSV own rows only (rc=0)" || bad "N9 opt-out: rc=$rc $(head -c 160 "$T/r.err")"
+                                                                                                    ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 288:
+[ "$rc" -eq 1 ] && ok "N9 control: --check without allow roots stays a difference (rc=1), not a new failure mode" || bad "N9 --check without roots: want rc=1, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_scope_to_lumen_json.sh line 290:
+{ [ "$rc" -eq 0 ] && cmp -s "$T/sib9.out.json" "$T/golden.json"; } && ok "N9 control: with the sibling allow-roots file --out is unchanged (rc=0, golden)" || bad "N9 sibling control: rc=$rc"
+                                                                   ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 11:
+'sdc@@s01-lumenignore-cmp-dropped@@scripts/audit/scope_drift_check.sh@@elif [ -s "$T/fresh.lumenignore" ] && cmp -s "$T/fresh.lumenignore" "$LI"; then RC=0@@elif true; then RC=0'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 12:
+'sdc@@s02-exit-ignores-diff@@scripts/audit/scope_drift_check.sh@@[ "$BAD" -eq 0 ]@@true'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 13:
+'sdc@@s03-absent-tool-passes@@scripts/audit/scope_drift_check.sh@@[ "$ABSENT" -eq 0 ] || exit 3@@true'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 14:
+'sdc@@s04-regen-noop@@scripts/audit/scope_drift_check.sh@@then cp "$T/fresh.lumenignore" "$LI"; fi@@then true; fi'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 15:
+'sdc@@s05-empty-fresh-ok@@scripts/audit/scope_drift_check.sh@@elif [ -s "$T/fresh.lumenignore" ] && cmp@@elif cmp'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 19:
+'sdc@@s06-render-from-live-directory@@scripts/audit/scope_drift_check.sh@@python3 "$GL" --repo "$T/skel" --scope@@python3 "$GL" --repo . --scope'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/mutate_wp02_fix_r6.sh line 22:
+'sdc@@s09-report-head-empty@@scripts/audit/scope_drift_check.sh@@HEAD_ID="$(git rev-parse --verify -q HEAD 2>/dev/null || echo unborn)"@@HEAD_ID=""'
+^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 75:
+[ "$(jq -r '.complete' "$T/o.json")" = false ] && ok "X12b skipped proofs make complete=false" || bad "X12b complete flag"
+                                               ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 77:
+"$IH" --out "$T/o.json" --scope config/index/scope.yaml --cg-status --cg-files >/dev/null 2>&1; [ $? -eq 2 ] && ok "X13a option-like value -> rc 2" || bad "X13a"
+                                                                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 78:
+base --bogus x; [ "$RC" -eq 2 ] && ok "X13b unknown option -> rc 2" || bad "X13b rc=$RC"
+                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 79:
+base --cg-files "$T/f_good.json" --cg-files "$T/f_good.json"; [ "$RC" -eq 2 ] && ok "X13c duplicate option -> rc 2" || bad "X13c rc=$RC"
+                                                                              ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 80:
+base --cg-files "$T/f_good.json" --parity-tolerance-pct -1; [ "$RC" -eq 2 ] && ok "X13d negative tolerance -> rc 2" || bad "X13d rc=$RC"
+                                                                            ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 85:
+cmp -s "$T/o.json" "$T/o1.json" && ok "X15 identical inputs -> byte-identical output" || bad "X15 output differs between runs"
+                                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 88:
+[ "$want" = "$got" ] && ok "X16 inputs.cg_files.sha256 equals the sha256 of the file" || bad "X16 want $want got $got"
+                     ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 93:
+  printf "$v\n" > "$T/tp_bad.txt"; base --cg-files "$T/f_good.json" --third-party-roots "$T/tp_bad.txt"
+         ^----^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 114:
+  printf "$v\n" > "$T/tp_enc.txt"; base --cg-files "$T/f_enc.json" --third-party-roots "$T/tp_enc.txt"
+         ^----^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 115:
+  chk "N6-5 encoding-class third-party root [$(printf "$v" | od -An -c | tr -s ' ' | tr -d '\n')] -> P3 FAIL third_party_root_not_canonical" 1 P3 FAIL third_party_root_not_canonical
+                                                      ^--^ SC2059 (info): Don't use variables in the printf format string. Use printf '..%s..' "$foo".
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 150:
+[ "$NCLS" -ge 6 ] && ok "F1 scope.yaml declares $NCLS forbidden classes (instrument sees the class list)" || bad "F1 forbidden class list too short: $NCLS"
+                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 193:
+[ "$RC" -eq 2 ] && ok "F8 --captured-not-before without a zone -> usage rc=2" || bad "F8 zoneless not-before: rc=$RC"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 196:
+[ "$RC" -eq 3 ] && [ "$(jq -r .verdict "$T/o.json")" = INCOMPLETE ] && [ "$(jq -r .complete "$T/o.json")" = false ] && ok "F3 skipped proofs -> verdict INCOMPLETE rc=3 complete=false" || bad "F3 want INCOMPLETE rc=3, got rc=$RC $(jq -r .verdict "$T/o.json")"
+                                                                                                                    ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 197:
+[ "$(jq -r '.blocked_unavailable.P4' "$T/o.json")" != "" ] && [ "$(jq -r '.blocked_unavailable|keys|length' "$T/o.json")" -ge 4 ] && ok "F3 blocked_unavailable lists each skipped proof with its reason" || bad "F3 blocked_unavailable missing"
+                                                                                                                                  ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health_extra.sh line 222:
+[ "$RC" -eq 0 ] && [ "$(jq -r .verdict "$T/o.json")" = PASS ] && [ "$(jq -r .complete "$T/o.json")" = true ] && ok "F3 golden-false: every proof ran and none FAILs -> PASS rc=0" || bad "F3 full run: rc=$RC verdict=$(jq -r .verdict "$T/o.json") skipped=$(jq -rc .skipped_proofs "$T/o.json")"
+                                                                                                             ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health.sh line 106:
+[ "$sch" = "index-health/1" ] && ok "output carries schema index-health/1" || bad "schema: want index-health/1, got $sch"
+                              ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health.sh line 108:
+[ "$ev" = true ] && ok "P2 row records both control needles" || bad "P2 row must record needle_pos and needle_neg"
+                 ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+
+In scripts/audit/tests/test_index_health.sh line 130:
+[ "$rc" -eq 2 ] && ok "missing --out is a usage error (rc=2)" || bad "missing --out: want rc=2, got rc=$rc"
+                ^-- SC2015 (info): Note that A && B || C is not if-then-else. C may run when A is true.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2015 -- Note that A && B || C is not if-t...
+  https://www.shellcheck.net/wiki/SC2016 -- Expressions don't expand in singl...
+  https://www.shellcheck.net/wiki/SC2059 -- Don't use variables in the printf...

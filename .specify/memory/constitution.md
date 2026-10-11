@@ -9,11 +9,11 @@
 | Binds | the Catalogizer Spec Kit layer, together with `.specify/memory/constitution-appendix.md` |
 
 This is the Spec Kit governance layer for Catalogizer. It **incorporates** the Helix Universal
-Constitution (`submodules/constitution`), the project constitution (`CONSTITUTION.md`) and every
+Constitution (`constitution`), the project constitution (`CONSTITUTION.md`) and every
 project and module override (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md` at the root and in each module).
 It extends them and never weakens them.
 
-**Precedence (highest first):** Helix canon (`submodules/constitution/Constitution.md`) >
+**Precedence (highest first):** Helix canon (`constitution/Constitution.md`) >
 this document > root `CONSTITUTION.md` / `CLAUDE.md` / `AGENTS.md` > module `CLAUDE.md` /
 `AGENTS.md`. A project or module rule MAY tighten a canon rule and MUST NOT weaken it.
 
@@ -37,12 +37,12 @@ no-duplicate (§11.4.227) rules:
    review touches any anchor.
 
 Where a digest here or in the appendix is shorter than canon, canon governs. Read the anchor block before relying
-on it: `grep -n '§11\.4\.<N> —' submodules/constitution/Constitution.md`.
+on it: `grep -n '§11\.4\.<N> —' constitution/Constitution.md`.
 
-**Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `submodules/constitution` at commit
-`a71b1767b40229c8e88140924352fbe990b3049e`; `Constitution.md` sha256
-`95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`; `constitution_index.yaml` records sha256
-`d915a5c10f46041b5ba8020c685d845a6a3e3c5fca75384a1a807a98eed90c72`, which differs, so the index lags this pin: the catalogue below lists the anchors the index knows. Anchors present in `Constitution.md` but absent from the index: 11.4.276.
+**Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `constitution` at commit
+`1d0485f552880639865e2b95921b2ea742f4ed38`; `Constitution.md` sha256
+`95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`, identical to the hash
+recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
 
 ## Core Principles
 
@@ -245,7 +245,7 @@ guarantees otherwise.
 
 ## Inherited Constitution Rules
 
-These are the numbered Helix sections (`submodules/constitution/Constitution.md`). They bind in
+These are the numbered Helix sections (`constitution/Constitution.md`). They bind in
 full; the digests below state the operative rules.
 
 ### §1–§10 Foundations
@@ -326,7 +326,7 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
 
 ### Constitution Tooling Exposed to This Project
 
-| Surface | Contents (in `submodules/constitution/`) |
+| Surface | Contents (in `constitution/`) |
 |---------|------------------------------------------|
 | Groups | 12 topic groups under `groups/` (see the Anchor Catalogue) |
 | Index | `constitution_index.yaml`, machine-readable list of the 283 anchors it knows (it lacks §11.4.276 at this pin) |
@@ -486,7 +486,7 @@ ownership, coordination rules, constraints, commit conventions) are in the appen
 | QA | `challenges`, `helix_qa`, `vision_engine`, `screen_diff`, `replay_buffer`, `visual_regression`, `training_collector` | Challenges and autonomous QA |
 | Security tooling | SonarQube, gitleaks, Trivy, OWASP ZAP, HawkScan (§11.4.184) | Static and dynamic analysis, secrets |
 | Code intelligence | CodeGraph and Lumen (§11.4.78 to §11.4.80, §11.4.275) | Structural and semantic index |
-| Governance | `submodules/constitution`, `submodules/superspec` | Inherited rules and Spec Kit pipeline |
+| Governance | `constitution`, `submodules/superspec` | Inherited rules and Spec Kit pipeline |
 
 **Submodules (44 declared in `.gitmodules`):** `websocket_client_ts`, `ui_components_react`,
 `challenges`, `assets`, `concurrency`, `config`, `filesystem`, `database`, `auth`, `middleware`,
@@ -580,14 +580,14 @@ This project follows **specification-driven development** using the superspec pi
 
 ## Anchor Catalogue
 
-All 283 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
+All 286 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
 and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are
 in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors
 numbered 62, 64, 175 and 203 to 206 do not exist in canon and are cited-but-undefined elsewhere.
 
 ### Anti-bluff and evidence (33 anchors)
 
-Canon: `submodules/constitution/groups/anti-bluff-and-evidence.md`
+Canon: `constitution/groups/anti-bluff-and-evidence.md`
 
 - **§7.1** — NO BLUFF — positive-evidence-only validation
 - **§11.4** — End-user quality guarantee — forensic anchor (User mandate, 2026-04-28)
@@ -623,9 +623,9 @@ Canon: `submodules/constitution/groups/anti-bluff-and-evidence.md`
 - **§11.4.270** — Dependency-existence-verdict register: every proposed dependency carries a closed-set existence verdict {VERIFIED, AMBIGUOUS, UNVERIFIED} with citable evidence; adoption is gated behind resolution …
 - **§11.4.271** — Waiver mechanism: the strict FORMALIZATION of allow-with-tracked-debt (unifying §11.4.234(D)'s recorded-deferral, §11.4.236(4)'s explicit-operator-override, and §11.4.248(A)'s deadline-bound …
 
-### Code review and quality (11 anchors)
+### Code review and quality (12 anchors)
 
-Canon: `submodules/constitution/groups/code-review-and-quality.md`
+Canon: `constitution/groups/code-review-and-quality.md`
 
 - **§11.4.124** — Dead/unwired-code investigate-before-remove mandate (User mandate, 2026-06-04)
 - **§11.4.125** — Code-review-agent gate before pre-build + main build (mandatory multi-layer review) (User mandate, 2026-06-04)
@@ -634,14 +634,15 @@ Canon: `submodules/constitution/groups/code-review-and-quality.md`
 - **§11.4.145** — Independent multi-angle impact-research per change (User mandate, 2026-06-10)
 - **§11.4.165** — Universal Independent Verification Agent Mandate (User mandate, 2026-06-21)
 - **§11.4.194** — Exhaustive all-scenario, all-angle code-review + verify-against-captured-runtime-evidence mandate (User mandate, 2026-07-14)
-- **§11.4.209** — Code-review MUST run on the Opus model at xhigh effort, ALWAYS — no Fable, no escalation tier, no fallback model (User mandate, 2026-09-26, supersedes 2026-09-15 and 2026-07-15)
+- **§11.4.209** — Code-review MUST run on the Opus model at xhigh effort as PRIMARY substrate, with a genuine-unavailability Sonnet fallback — no Fable, no escalation tier (User mandate, 2026-09-26, supersedes …
 - **§11.4.240** — Producer ≠ Verifier scope separation: the actor that produces a change/artifact/verdict cannot be the one that gates it — least privilege over cleverness (research-derived, 2026-08-15)
 - **§11.4.241** — Illegal-state-unrepresentability preference: types before API-shape before lint before property-test before runtime-assertion (research-derived, 2026-08-15)
 - **§11.4.251** — Byte-identical-fork prohibition + role-as-data-pack (research-derived, 2026-08-15)
+- **§11.4.276** — Review-round budget: every independently-reviewed work item converges within a declared budget of at most 7 rounds (5–7, consumer-declared), by front-loading ground truth, class-exhaustive …
 
 ### Design system and UI (11 anchors)
 
-Canon: `submodules/constitution/groups/design-system-and-ui.md`
+Canon: `constitution/groups/design-system-and-ui.md`
 
 - **§11.4.162** — OpenDesign UI design system mandate (User mandate, 2026-06-21)
 - **§11.4.170** — Device-independent host-side rendered-UI visual-proof mandate (User mandate, 2026-06-25).
@@ -657,7 +658,7 @@ Canon: `submodules/constitution/groups/design-system-and-ui.md`
 
 ### Documentation and export (27 anchors)
 
-Canon: `submodules/constitution/groups/documentation-and-export.md`
+Canon: `constitution/groups/documentation-and-export.md`
 
 - **§11.4.12** — Auto-generated docs sync mandate
 - **§11.4.18** — Script documentation mandate (User mandate, 2026-05-14)
@@ -687,10 +688,11 @@ Canon: `submodules/constitution/groups/documentation-and-export.md`
 - **§11.4.258** — Architectural + data-flow + state-machine + sequence-diagram coverage: every project ships accurate, exported, machine-derivable-or-honestly-authored diagrams embedded into the docs that describe the …
 - **§11.4.259** — README quality-status badge row: at the top of every project README, a comprehensive row of quality badges with a closed green→amber→red vocabulary, each backed by machine-derived source data, …
 
-### Git and data safety (23 anchors)
+### Git and data safety (24 anchors)
 
-Canon: `submodules/constitution/groups/git-and-data-safety.md`
+Canon: `constitution/groups/git-and-data-safety.md`
 
+- **§2.1** — Multi-upstream push is the norm
 - **§9.1** — Mandatory safety protocol for destructive operations
 - **§9.2** — Force-push requires explicit user authorization every time
 - **§9.3** — Hardlinked backup is the standard — there is no excuse
@@ -717,7 +719,7 @@ Canon: `submodules/constitution/groups/git-and-data-safety.md`
 
 ### Governance and constitution meta (37 anchors)
 
-Canon: `submodules/constitution/groups/governance-and-constitution-meta.md`
+Canon: `constitution/groups/governance-and-constitution-meta.md`
 
 - **§11.4.11** — File-layout discipline
 - **§11.4.17** — Universal-vs-project classification of new rules (User mandate, 2026-05-14)
@@ -759,7 +761,7 @@ Canon: `submodules/constitution/groups/governance-and-constitution-meta.md`
 
 ### Host and resource safety (21 anchors)
 
-Canon: `submodules/constitution/groups/host-and-resource-safety.md`
+Canon: `constitution/groups/host-and-resource-safety.md`
 
 - **§11.4.24** — Build-resource stats tracking mandate (User mandate, 2026-05-14)
 - **§11.4.58** — Parallel-development methodology (User mandate, 2026-05-19)
@@ -785,7 +787,7 @@ Canon: `submodules/constitution/groups/host-and-resource-safety.md`
 
 ### Multi-track and parallelism (13 anchors)
 
-Canon: `submodules/constitution/groups/multi-track-and-parallelism.md`
+Canon: `constitution/groups/multi-track-and-parallelism.md`
 
 - **§11.4.103** — Continuous parallel-stream working routine (User mandate, 2026-05-29)
 - **§11.4.167** — Big-work-item feature work-stream lifecycle (own copy-on-write project copy + own branch/tags + per-feature builds, no-merge-until-approved, trunk-merged-into-every-stream) (User mandate, 2026-06-23)
@@ -796,14 +798,14 @@ Canon: `submodules/constitution/groups/multi-track-and-parallelism.md`
 - **§11.4.187** — Automatic multi-track ruler orchestration (User mandate, 2026-07-04; landed 2026-07-09).
 - **§11.4.191** — Work-to-track/branch binding enforcement: a logic-group's work can NEVER be committed OR dispatched onto the wrong track/branch (research-derived, 2026-07-10).
 - **§11.4.192** — Continuous multi-track auto-backfill: a FREE track MUST be IMMEDIATELY re-assigned its next-highest-priority domain work-set, never left idle while its domain has actionable items (User mandate, …
-- **§11.4.230** — Parallelized-pipeline methodology: build↔validate overlap + affected-stages-only re-run + parallel multi-device testing/recording + fan-out-subagents-always (research-derived, 2026-07-26)
+- **§11.4.230** — Parallelized-pipeline methodology: build↔validate overlap + affected-stages-only re-run + parallel multi-device testing/recording + fan-out-subagents-always + incremental delivery granularity with a …
 - **§11.4.231** — Nano-precision model-tier selection: lightest-capable-model-first with dynamic mid-task escalation (User mandate, 2026-07-26, `CRITICAL`)
 - **§11.4.232** — Anti-mess long-op orchestration: every long-op is registered, single-owned-per-purpose, liveness-PROVEN, handed-off-on-stop, safely-reaped, consistency-checked, and escape-bounded — the single source …
 - **§11.4.233** — Standing anti-mess control plane: a level-triggered, idempotent, invariant-catalogue reconciliation loop over the WHOLE persistent System state, orchestrating every per-domain enforcer, refusing …
 
 ### Project lifecycle and release (46 anchors)
 
-Canon: `submodules/constitution/groups/project-lifecycle-and-release.md`
+Canon: `constitution/groups/project-lifecycle-and-release.md`
 
 - **§11.4.8** — Deep-web-research-before-implementation
 - **§11.4.9** — Batch-source-fixes-before-rebuild
@@ -840,7 +842,7 @@ Canon: `submodules/constitution/groups/project-lifecycle-and-release.md`
 - **§11.4.207** — Instant multi-stream resume engine: whole-fleet continuation state is a durable, content-addressed, atomically-committed snapshot resumed in O(changed) reads, not an O(history) re-read (User mandate, …
 - **§11.4.208** — Operator-request-history document: every project maintains a project-local, always-in-sync ledger of every operator request/prompt (content + timestamp+timezone + track + alias + model + effort) …
 - **§11.4.210** — Zero-loss request/prompt intake: every operator request MUST be mechanically captured, tracked, and processed — never skipped, ignored, avoided, or lost (User mandate, 2026-07-15)
-- **§11.4.211** — Merge-conflict resolution during main→feature/product/flavor merges MUST run on the Opus model at xhigh effort, ALWAYS — no Fable, no fallback model (User mandate, 2026-07-16; amended 2026-09-26)
+- **§11.4.211** — Merge-conflict resolution during main→feature/product/flavor merges MUST run on the Opus model at xhigh effort as PRIMARY substrate, with a genuine-unavailability Sonnet fallback — no Fable (User …
 - **§11.4.213** — FEATURE research-scheduling directive: recognized via all §11.4.140 forms, SCHEDULES (never synchronously executes) a deep, enterprise-grade research + implementation-planning effort as a tracked …
 - **§11.4.229** — Live in-session task/todo tracker MUST always be up to date and fully in sync with the real work state — never stale, never showing completed work as pending nor pending as done (User mandate, …
 - **§11.4.235** — Build-and-deploy the moment source fixes are proven-correct (test-side hardening is a parallel stage, never a build gate) + post-deploy version increment (operator mandate, 2026-07-27)
@@ -852,10 +854,11 @@ Canon: `submodules/constitution/groups/project-lifecycle-and-release.md`
 - **§11.4.266** — Claim-vs-reality ledger: every ADVERTISED capability is a row, typed from the closed bluff-type vocabulary, and a capability with no passing challenge is a release blocker (research-derived, …
 - **§11.4.267** — Shared attempt record + converge-on-evidence / escalate-on-stall: a failed approach is never silently retried, and a non-converging loop is itself a signal (research-derived, 2026-08-20)
 
-### Testing and TDD (39 anchors)
+### Testing and TDD (40 anchors)
 
-Canon: `submodules/constitution/groups/testing-and-tdd.md`
+Canon: `constitution/groups/testing-and-tdd.md`
 
+- **§1.1** — False-positive immunity is an invariant
 - **§11.4.14** — Test playback cleanup mandate
 - **§11.4.25** — Full-Automation-Coverage Mandate (User mandate, 2026-05-15)
 - **§11.4.27** — No-Fakes-Beyond-Unit-Tests + 100%-Test-Type-Coverage Mandate (User mandate, 2026-05-15)
@@ -898,7 +901,7 @@ Canon: `submodules/constitution/groups/testing-and-tdd.md`
 
 ### Translation and localization (3 anchors)
 
-Canon: `submodules/constitution/groups/translation-and-localization.md`
+Canon: `constitution/groups/translation-and-localization.md`
 
 - **§11.4.237** — Mandatory exhaustive context-and-spirit-aware translation review: every localized artifact independently reviewed for CONTEXT (source) + SPIRIT (target-language idiom/register) + …
 - **§11.4.255** — Mandatory HelixTranslate canonical translation pipeline (User mandate, 2026-06-25)
@@ -906,7 +909,7 @@ Canon: `submodules/constitution/groups/translation-and-localization.md`
 
 ### Workable items and tracking (19 anchors)
 
-Canon: `submodules/constitution/groups/workable-items-and-tracking.md`
+Canon: `constitution/groups/workable-items-and-tracking.md`
 
 - **§11.4.15** — Item-status tracking mandate
 - **§11.4.16** — Item-type tracking mandate
@@ -1092,7 +1095,7 @@ repository, subordinate only to the Helix Universal Constitution.
 specs and plans, and verification that Principles I to VIII are not weakened. Amendments MUST be
 reviewed under Principle III before acceptance. The appendix is amended with this document and
 regenerated whenever the canon pin moves. A principle MUST NOT be removed or weakened to
-make a change pass. When the `submodules/constitution` pointer moves, the pinned commit and hash
+make a change pass. When the `constitution` pointer moves, the pinned commit and hash
 above MUST be updated, the Anchor Catalogue regenerated from `constitution_index.yaml`, and the
 post-pull sweep run (§11.4.26, §11.4.32, §11.4.164). Rules landing in canon are classified
 universal or project-specific (§11.4.17) and never duplicated here beyond a digest (§11.4.227).

@@ -39,7 +39,7 @@ scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- scripts/register
 # the real register (after T069): the ONE command of locked.sh (single writer), after the pre-op backup, in the background
 scripts/register/backup_db.sh --record $EV/register/backup-import.json
 scripts/register/locked.sh -- scripts/register/import.sh --db docs/workable_items.db --freeze-json <freeze.json> \
-  --engine submodules/constitution/scripts/workable-items/bin/workable-items --backup-record $EV/register/backup-import.json \
+  --engine constitution/scripts/workable-items/bin/workable-items --backup-record $EV/register/backup-import.json \
   --progress-log $EV/register/import-progress.log --report $EV/register/import-run.json --category-out $EV/register/category-raw.tsv
 ```
 

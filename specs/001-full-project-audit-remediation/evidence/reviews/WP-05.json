@@ -1,0 +1,243 @@
+{
+ "schema": "review-verdict/1",
+ "wp": "WP-05",
+ "tasks": [
+  "T048",
+  "T048a",
+  "T049",
+  "T050",
+  "T051",
+  "T051a",
+  "T052",
+  "T053",
+  "T054",
+  "T055",
+  "T056",
+  "T057"
+ ],
+ "gate": "T058",
+ "verdict": "NO-GO",
+ "author": "WP-05 implementation stream (commit 8bc60bd7)",
+ "reviewer": "T058 independent reviewer subagent",
+ "model": "opus",
+ "effort": "?",
+ "effort_note": "Dispatched through the Agent tool, which cannot set reasoning effort; recorded '?' honestly (constitution 11.4.231(F.2)). Provisional per T011a.",
+ "covers_runs": [],
+ "covers_runs_note": "Commit 8bc60bd7 carries no CPA-Run trailer; cpa_run is UNKNOWN and does not match the contract pattern. Tool files reviewed at HEAD 20f74abf (tools/evidence/{evcore,evanchor,evverdict}.py last changed in 8bc60bd7). Schema-conformance edit of the WP-05 fix round 8: contracts/review-verdict.schema.json requires covers_runs[].cpa_run to match the CPA-Run pattern, so the entry holding cpa_run UNKNOWN moved unchanged to reviewed_commits and covers_runs is empty (this verdict releases no held commit; it never could, the commit has no CPA-Run trailer).",
+ "blocking_findings": 6,
+ "findings": [
+  {
+   "id": "WP05-R1",
+   "blocking": true,
+   "finding_layer": "runtime",
+   "tasks": [
+    "T050",
+    "T055"
+   ],
+   "summary": "verify exits 0 ('OK ... chain-only verification') when anchors.jsonl is ABSENT or EMPTY. Reviewer tamper: truncate the ledger to 80 entries (or delete-and-recompute) and remove or empty anchors.jsonl -> exit 0. docs/06 s8 defines 0 as 'verified'; docs/06 s13.3 rev 1 records a moved-away anchor as UNVERIFIED exit 3; constitution 11.4.268(C)/(D) require a tamper-free verdict to name BOTH chain and anchor results and an unreachable anchor to REFUSE. The note on stdout does not change the exit status gates read. test_anchors.sh lines 46/53 assert this exit 0, so the defect is encoded as expected behaviour. Fix direction: no anchor => exit 3 UNVERIFIED (or an explicit --chain-only opt-in that never returns 0 as 'verified').",
+   "finding_class": "source-defect"
+  },
+  {
+   "id": "WP05-R2",
+   "blocking": true,
+   "finding_layer": "runtime",
+   "tasks": [
+    "T050",
+    "T055",
+    "T057"
+   ],
+   "summary": "The live store is unanchored: specs/.../evidence/ledger.jsonl holds 90 entries and $EV/anchors.jsonl does not exist and has never been committed (git log --all on the path is empty). docs/06 s8 requires an anchor at the end of every measuring session; nothing in evrec run or any wrapper writes one. Today the real evidence has NO protection against delete-and-recompute or tail truncation (reviewer run on a scratch copy: both pass verify with exit 0). Wire anchor writing (end of session / declared interval) and record the first anchor.",
+   "finding_class": "source-defect"
+  },
+  {
+   "id": "WP05-R3",
+   "blocking": true,
+   "finding_layer": "runtime",
+   "tasks": [
+    "T055"
+   ],
+   "summary": "Anchor strength is NOT honestly bounded to policy: `evrec anchor --probe-remote <bare repo>` on a same-uid local bare repo with receive.denyNonFastForwards/denyDeletes=true writes strength=mechanism (reviewer run: 'anchored count=90 ... strength=mechanism'; repo owner = the producer uid). The anchor row is still written to the rewritable anchors.jsonl beside the ledger, never to the probed remote, and the producer can flip that remote's config. Contradicts docs/06 s8 (rewrite-rejection must be evidenced; single-uid host => policy), constitution 11.4.240(F)/11.4.268(C), and the module's own text 'until OD-76 is answered the anchors stay in $EV/anchors.jsonl and are policy'. The default path (no probe) is honestly policy.",
+   "finding_class": "source-defect"
+  },
+  {
+   "id": "WP05-R4",
+   "blocking": true,
+   "finding_layer": "runtime",
+   "tasks": [
+    "T055"
+   ],
+   "summary": "verify trusts a self-asserted mechanism row: a hand-written row {strength:mechanism, probe:{rewrite_rejected:true, probe_kind:config, remote:'/nonexistent'}} over a truncated 80-entry ledger is reported 'anchor agrees ... strength=mechanism', exit 0. The strength is never re-derived or bounded at verify time (A5/A19 only check the row's shape).",
+   "finding_class": "source-defect"
+  },
+  {
+   "id": "WP05-R5",
+   "blocking": true,
+   "finding_layer": "runtime",
+   "tasks": [
+    "T054"
+   ],
+   "summary": "The verdict deriver never compares anchors (chain_walk only). On the reviewer's anchored delete-and-recompute ledger (verify exit 2) `verdict AUD-T164` still derives PASS exit 0; on a forged ledger with a fabricated RED inserted for AUD-T180 and the chain recomputed (verify exit 2), red_ok, red_before_green and fingerprints_differ flip to true. The deriver's own refusal text promises 'no verdict is derived from a ledger that does not verify'. Deriver must apply the same anchor comparison (and the R1 absent-anchor rule) as verify.",
+   "finding_class": "source-defect"
+  },
+  {
+   "id": "WP05-R6",
+   "blocking": true,
+   "finding_layer": "source",
+   "tasks": [
+    "T055",
+    "T056"
+   ],
+   "summary": "Vacuous mutation catches: run_mutations_wp05b.build_tree does not copy docs/scripts/evidence-recorder.md, so test_anchors.sh FAILs 'no-force-push scan found usage' on the UNMUTATED scratch tree (reviewer baseline: checks=55 failures=1, line 'docs/scripts/evidence-recorder.md: missing'). Mutants A17, A18, A18b are recorded CAUGHT in t055b-mutations.txt on exactly that FAIL line, so those three catches prove nothing. Neither harness runs an unmutated-baseline control (11.4.201(6) false match). With the guide copied the baseline is clean (reviewer REV-0: 0 FAIL lines) - re-run A17/A18/A18b with the fixed tree and add a baseline-green precondition.",
+   "finding_class": "test-instrumentation"
+  },
+  {
+   "id": "WP05-R7",
+   "blocking": false,
+   "finding_layer": "source",
+   "tasks": [
+    "T054",
+    "T055"
+   ],
+   "summary": "Reviewer-authored mutants that SURVIVE the suites (clean baseline): REV-1 anchor rows may go backward (count < previous row) - untested anchor_inconsistent branch; REV-3 rerecord anchor leg keeps rows with count < cp instead of <= cp - an anchor exactly at the common prefix is silently dropped; REV-4 same_test ignores cwd - no other-cwd scenario among the 18 cases; REV-5 evrec anchor without the ledger lock - concurrent anchor writers can lose a row; REV-6 count=0 anchor row accepted. REV-2 (same count, two heads) was caught.",
+   "finding_class": "test-instrumentation"
+  },
+  {
+   "id": "WP05-R8",
+   "blocking": false,
+   "finding_layer": "source",
+   "tasks": [
+    "T048a"
+   ],
+   "summary": "contracts/evidence-record.schema.json test_state_gos description still says the name 'stays UNCONFIRMED until T048a lands' although T048a has landed; items are free strings (a '../../etc/passwd' entry validates) although they name verdict files under $EV/reviews.",
+   "finding_class": "process-doc"
+  },
+  {
+   "id": "WP05-R9",
+   "blocking": false,
+   "finding_layer": "source",
+   "tasks": [
+    "T058"
+   ],
+   "summary": "Lead, not a finding against WP-05 code: on the live ledger 5 of 8 items derive FAIL (AUD-T162, T168, T169, T179, T180; mostly green_identical/same_test). Owners of those items should not cite the ledger as a PASS for them.",
+   "finding_class": "process-doc"
+  }
+ ],
+ "mutations": [
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-0 baseline no-op (control)",
+   "location": "tools/evidence/evanchor.py",
+   "result": "infeasible",
+   "infeasible_reason": "not a mutation: unmutated control run, 0 FAIL lines across test_anchors.sh and test_verdict.sh once the guide is copied into the scratch tree"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-1 anchor rows may go backward",
+   "location": "tools/evidence/evanchor.py verify_anchors",
+   "result": "survived"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-2 same count with two heads accepted",
+   "location": "tools/evidence/evanchor.py verify_anchors",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-3 rerecord keeps count < cp (off by one)",
+   "location": "tools/evidence/evanchor.py rerecord_anchor_leg",
+   "result": "survived"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-4 same_test ignores cwd",
+   "location": "tools/evidence/evverdict.py checks",
+   "result": "survived"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-5 evrec anchor takes no lock",
+   "location": "tools/evidence/evanchor.py cmd_anchor",
+   "result": "survived"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "REV-6 count=0 anchor row accepted",
+   "location": "tools/evidence/evanchor.py read_rows",
+   "result": "survived"
+  }
+ ],
+ "finding_layer_note": "Caller asked for finding_layer in {source-defect, test-instrumentation, process-doc} (11.4.235(D)); contracts/review-verdict.schema.json defines finding_layer as {source, artifact, runtime} (11.4.226). Both are recorded: finding_layer = the 11.4.226 layer (the schema field), finding_class = the 11.4.235(D) class. WP-05 fix round 8 renamed the fields so the file validates; the values were not changed (defect_layer -> finding_layer, the former finding_layer -> finding_class).",
+ "tamper_case": {
+  "location": "/tmp/claude-1000/-home-milosvasic-Projects-catalogizer/d7bdfeb7-d4d8-4f26-a5da-f8223bf6ce83/scratchpad/t058",
+  "ledger": "scratch copy of evidence/ledger.jsonl (90 entries) + blobs; anchor written by `evrec anchor` on the copy (count=90, strength=policy)",
+  "results": [
+   [
+    "delete entry 45, no repair",
+    "chain-only exit 1 broken link",
+    "anchored exit 1"
+   ],
+   [
+    "reorder entries 41/42, no repair",
+    "chain-only exit 1 broken link",
+    "anchored exit 1"
+   ],
+   [
+    "truncate tail to 80 whole lines",
+    "chain-only exit 0 (not detected)",
+    "anchored exit 2 anchor_disagrees"
+   ],
+   [
+    "truncate mid-line",
+    "chain-only exit 1 truncated final line",
+    "anchored exit 1"
+   ],
+   [
+    "delete entry 45 and recompute forward",
+    "chain-only exit 0 (not detected)",
+    "anchored exit 2"
+   ],
+   [
+    "reorder 41/42 and recompute forward",
+    "chain-only exit 0 (not detected)",
+    "anchored exit 2"
+   ],
+   [
+    "delete last entry and recompute",
+    "chain-only exit 0 (not detected)",
+    "anchored exit 2"
+   ],
+   [
+    "edit a field and recompute forward",
+    "chain-only exit 0 (not detected)",
+    "anchored exit 2"
+   ],
+   [
+    "truncate to 80 + anchors.jsonl removed / emptied",
+    "-",
+    "exit 0 (NOT detected: finding WP05-R1)"
+   ],
+   [
+    "truncate to 80 + anchors.jsonl a directory / mode 000",
+    "-",
+    "exit 3 anchor_unreadable"
+   ],
+   [
+    "truncate to 80 + forged mechanism row",
+    "-",
+    "exit 0 strength=mechanism (finding WP05-R4)"
+   ]
+  ],
+  "conclusion": "Matches docs/06 s7 for chain-only vs anchored on all 8 structural attacks; anchor-file deletion defeats it."
+ },
+ "strength_check": "Default anchor strength recorded honestly as policy (scratch run). The --probe-remote path writes mechanism on a same-uid local repo (WP05-R3) and verify accepts self-asserted mechanism (WP05-R4).",
+ "suites_run": "Host-run in a scratch tree (no container): test_anchors.sh 55/0, test_verdict.sh 26/0, test_evrec.sh 66/0, test_wrap_bash.sh 24/0, test_evcore_golden.py all ok (after copying the guide; without it test_anchors.sh 55/1). Container lanes (IMG-TESTUTIL, IMG-GO, IMG-KCOV) not re-run.",
+ "date": "2026-10-08",
+ "reviewed_commits": [
+  {
+   "repository": ".",
+   "commit": "8bc60bd70441bcf134c57d2e90da7dab72f28ebd",
+   "cpa_run": "UNKNOWN"
+  }
+ ]
+}

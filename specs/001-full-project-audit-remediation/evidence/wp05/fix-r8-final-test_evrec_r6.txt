@@ -1,0 +1,103 @@
+ok   R6-2: still redacted: kv: credential word + 128 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 128 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<128 chars>=V
+ok   R6-2: still redacted: flag head: --<128 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><128 chars> V
+ok   R6-2: still redacted: JSON double quotes, 128-char tail
+ok   R6-2: still redacted: JSON single quotes, 128-char tail
+ok   R6-2: still redacted: JSON double quotes, 128-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><128 chars>=V
+ok   R6-2: still redacted: argv element --<word><128 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 128-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 128-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 129 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 129 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<129 chars>=V
+ok   R6-2: still redacted: flag head: --<129 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><129 chars> V
+ok   R6-2: still redacted: JSON double quotes, 129-char tail
+ok   R6-2: still redacted: JSON single quotes, 129-char tail
+ok   R6-2: still redacted: JSON double quotes, 129-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><129 chars>=V
+ok   R6-2: still redacted: argv element --<word><129 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 129-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 129-char head, value in the next element
+ok   R6-2: still redacted: kv: credential word + 5000 name chars + =V
+ok   R6-2: still redacted: kv YAML form (word + 5000 chars + ": V")
+ok   R6-2: still redacted: env dump export SVC_<WORD>_<5000 chars>=V
+ok   R6-2: still redacted: flag head: --<5000 chars><word> V
+ok   R6-2: still redacted: flag tail: --<word><5000 chars> V
+ok   R6-2: still redacted: JSON double quotes, 5000-char tail
+ok   R6-2: still redacted: JSON single quotes, 5000-char tail
+ok   R6-2: still redacted: JSON double quotes, 5000-char HEAD
+ok   R6-2: still redacted: argv-style element --<word><5000 chars>=V
+ok   R6-2: still redacted: argv element --<word><5000 chars>=V through redact_argv
+ok   R6-2: still redacted: argv bare flag with a 5000-char name, value in the next element
+ok   R6-2: still redacted: argv bare flag with a 5000-char head, value in the next element
+ok   R6-2: negative control, not redacted: a 5000-char name with no credential word, then =V
+ok   R6-2: negative control, not redacted: a credential word followed by a value shorter than 6
+ok   R6-2: negative control, not redacted: a credential word in prose with no separator
+ok   R6-2: negative control, not redacted: a flag whose value starts with a dash
+ok   R6-2: negative control, not redacted: a 5000-char dashed name with no credential word
+ok   R6-2: end to end: a 5000-char-tail credential printed by a command is in no ledger line and no blob
+ok   R6-1: redact_bytes on '-eyJ' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (100000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of dashes (200000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJ' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on a run of dashes (400000 bytes) returns in under 10 s (0.43 s)
+ok   R6-1: redact_bytes on 'eyJ' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'eyJ-' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'eyJaaaaaaaaa.bbbbbbbbb.' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on '-eyJaaaaaaaaa.bbbbbbbbb' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of letters (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of x "a-" (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a run of x "_." (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '-token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'password' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on '--password ' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on 'token:' repeated (400000 bytes) returns in under 10 s (0.21 s)
+ok   R6-1: redact_bytes on a double quote then 'token' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: redact_bytes on a single quote then 'secret' repeated (400000 bytes) returns in under 10 s (0.33 s)
+ok   R6-1: redact_bytes on '"token":"' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   R6-1: redact_bytes on 'api-key' repeated (400000 bytes) returns in under 10 s (0.22 s)
+ok   R6-1: a bare JWT
+ok   R6-1: a JWT after a dash
+ok   R6-1: a JWT after dashes after a long dash run
+ok   R6-1: a JWT after a dash inside a name run
+ok   R6-1: a JWT at the start
+ok   R6-1: a too-short three-part token is not touched (negative control)
+ok   R6-4: a directory operand holding a non-UTF-8 file name records (no traceback)
+ok   R6-4: two different non-UTF-8 file names give different test_fingerprints
+ok   R6-4: a directory operand holding a file that cannot be read is refused on a RED (operand_unreadable, 69)
+ok   R6-4: the same operand on a PROBE is skipped, not a traceback
+ok   R6-4: the refused RED stored nothing (only the PROBE line)
+ok   R6-4: a directory operand holding an unlistable subdirectory is refused on a RED (operand_unreadable, 69)
+ok   R6-4: a FIFO inside a directory operand is skipped, never opened (no hang)
+ok   R6-4: a target directory holding a non-UTF-8 file name records (no traceback)
+ok   R6-5: a directory operand with more entries than the cap (empty subdirectories count) is refused on a RED
+ok   R6-5: exactly N=3 files with EVREC_OPERAND_DIR_MAX=3 is accepted
+ok   R6-5: N+1=4 files with EVREC_OPERAND_DIR_MAX=3 is refused
+ok   R6-5: a directory operand holding more bytes than EVREC_OPERAND_DIR_BYTES_MAX is refused on a RED
+ok   R6-5: the same directory under the byte cap is accepted
+ok   R6-5: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   R6-5: a directory operand holding a 4 GiB file is refused by the DEFAULT byte cap
+ok   R6-5: the 4 GiB refusal needs no hashing (0 s, under 10 s)
+ok   R6-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=-1 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=abc is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: EVREC_OPERAND_DIR_BYTES_MAX=1.5 is a usage_error (64) even with no directory operand
+ok   R6-8: a valid EVREC_OPERAND_DIR_MAX still records
+ok   R6-6: RED {a.sh pass, t.sh fail} and GREEN {t.sh pass, z.sh fail} get DIFFERENT directory fingerprints (relative names are hashed)
+ok   R6-6: RED through a TWO-level symlink chain to bash with -c is refused (interpreter_without_test_sources)
+ok   R6-6: a MUTATION record over the directory cap is refused (operand_directory_too_large)
+ok   R6-6: _is_holder({run_id:''}) with EVREC_TURN_RUN_ID set empty is False (second layer pinned)
+ok   R6-7: evcore.py holds no dead _NAMEMAX constant
+ok   hermetic: no call reached the host entry
+checks=102 failures=0

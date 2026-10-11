@@ -1,0 +1,165 @@
+# RED fix-r8 index_health: PRE-FIX tool sha256 bb86dd03b2820f997cd05acce2027dd22733da58076163aada8d3b7e90d2562d (specs/001-full-project-audit-remediation/evidence/wp02/fix-r8-prefix-tool/index_health.sh.prefix), driven through fix-r8-red-shim.sh (only drops new options / reshapes entries; every verdict is the old tool own)
+# date 2026-10-08T18:38:33Z  repo HEAD 20f74abfbe535f9ab13f6cedb61110d07339b62c
+ok   L00 golden-false: three consistent ledger-bound evidence files -> P4 P5 P6 PASS
+FAIL L01 consistent evidence whose derived recall is 0.75 (< 1.0) -> P4 FAIL (derived, not the entry's word): want rc=1 P4=FAIL p4_recall_below_threshold, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L02 evidence 'recall 0.10', entry verdict PASS -> P4 FAIL (R3-1 repro): want rc=1 P4=FAIL p4_recall_below_threshold, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L02b entry verdict FAIL over good evidence -> P4 FAIL entry_verdict_disagrees_with_evidence: want rc=1 P4=FAIL entry_verdict_disagrees_with_evidence, got rc=1 P4=FAIL reason=[] stderr=[]
+ok   L02c control: entry verdict PASS equal to the derived verdict -> P4 PASS
+ok   L03 kind outside {live,fallback} -> P4 FAIL
+ok   L04 kind fallback (grep evidence, even a perfect one) derives SKIP, never a live PASS
+FAIL L04b fallback evidence whose program is off the fallback allow-list -> P4 FAIL program_not_allowed: want rc=1 P4=FAIL program_not_allowed, got rc=1 P4=FAIL reason=[live_proof_cmd_not_allowed] stderr=[]
+FAIL L05 entry cmd that is not 'program argv' of the evidence -> P4 FAIL: want rc=1 P4=FAIL evidence_cmd_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L06 evidence file not tracked in the repository -> P4 FAIL (hand-written, nobody committed it): want rc=1 P4=FAIL evidence_not_tracked, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L06b evidence file modified after its commit -> P4 FAIL: want rc=1 P4=FAIL evidence_not_tracked, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L07 evidence tracked but absent from the ledger -> P4 FAIL: want rc=1 P4=FAIL evidence_not_in_ledger, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L08 ledger line with another sha256 than the evidence bytes -> P4 FAIL: want rc=1 P4=FAIL ledger_hash_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L08b ledger file modified after its commit -> FAIL ledger_not_tracked: want rc=1 P4=FAIL ledger_not_tracked, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L09 evidence_sha256 = 64 zeros -> P4 FAIL: want rc=1 P4=FAIL evidence_hash_zero, got rc=1 P4=FAIL reason=[evidence_hash_mismatch] stderr=[]
+ok   L10 evidence_sha256 differing from the bytes -> P4 FAIL
+FAIL L11 entry captured_at differing from the evidence line -> P4 FAIL: want rc=1 P4=FAIL captured_at_mismatch, got rc=1 P4=FAIL reason=[live_proof_stale] stderr=[]
+ok   L12 evidence captured 10 days ago (older than max_age_hours and --captured-not-before) -> P4 FAIL
+FAIL L13 captured_at 2099-style future date -> P4 FAIL captured_in_future (R3-1 repro): want rc=1 P4=FAIL captured_in_future, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L13b year 2099 on P6 -> P6 FAIL captured_in_future: want rc=1 P6=FAIL captured_in_future, got rc=3 P6=PASS reason=[] stderr=[]
+ok   L14 unparseable captured_at -> P4 FAIL
+FAIL L15 wrong evidence schema -> P4 FAIL: want rc=1 P4=FAIL evidence_schema_invalid, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L16 evidence for another proof entered in the P4 slot -> P4 FAIL: want rc=1 P4=FAIL evidence_proof_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L17 evidence exit 1 -> P4 FAIL: want rc=1 P4=FAIL evidence_exit_nonzero, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L18 program /tmp/evil/codegraph (basename codegraph, not in the closed absolute allow-list) -> P4 FAIL: want rc=1 P4=FAIL program_not_allowed, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L19 relative program name -> P4 FAIL program_not_absolute: want rc=1 P4=FAIL program_not_absolute, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L19b dot-dot program path -> P4 FAIL: want rc=1 P4=FAIL program_not_allowed, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L19c symlink to an off-list program -> P4 FAIL: want rc=1 P4=FAIL program_not_allowed, got rc=1 P4=FAIL reason=[live_proof_cmd_not_allowed] stderr=[]
+FAIL L20 allow-listed path that does not exist -> P4 FAIL program_not_executable: want rc=1 P4=FAIL program_not_executable, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L20b program allowed for P6 only (lumen) used for P5 -> P5 FAIL: want rc=1 P5=FAIL program_not_allowed, got rc=1 P5=FAIL reason=[live_proof_cmd_not_allowed] stderr=[]
+FAIL L21 evidence without argv -> P4 FAIL evidence_field_missing: want rc=1 P4=FAIL evidence_field_missing, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L21b duplicate header key -> P4 FAIL evidence_field_duplicate: want rc=1 P4=FAIL evidence_field_duplicate, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L21c command-text-only evidence (R3-1 repro A) -> P4 FAIL evidence_schema_invalid: want rc=1 P4=FAIL evidence_schema_invalid, got rc=1 P4=FAIL reason=[live_proof_cmd_not_allowed] stderr=[]
+FAIL L22 evidence for another scope (scope_sha256 mismatch) -> P4 FAIL: want rc=1 P4=FAIL evidence_scope_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L23 claimed queries differing from the q rows -> P4 FAIL p4_summary_mismatch: want rc=1 P4=FAIL p4_summary_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L24 claimed correct differing from the q rows -> P4 FAIL p4_summary_mismatch: want rc=1 P4=FAIL p4_summary_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L25 claimed recall differing from correct/answerable -> P4 FAIL p4_summary_mismatch: want rc=1 P4=FAIL p4_summary_mismatch, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L26 the unanswerable control answered instead of refused -> P4 FAIL p4_control_not_refused: want rc=1 P4=FAIL p4_control_not_refused, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L27 only 3 queries (< p4_min_queries 4) -> P4 FAIL p4_too_few_queries: want rc=1 P4=FAIL p4_too_few_queries, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L27b no unanswerable control row at all -> P4 FAIL p4_control_not_refused (a control that is absent proves nothing): want rc=1 P4=FAIL p4_control_not_refused, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L27c q row with an unknown expect value -> P4 FAIL p4_row_malformed: want rc=1 P4=FAIL p4_row_malformed, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL L28 index older than the last commit -> P5 FAIL p5_index_older_than_commit: want rc=1 P5=FAIL p5_index_older_than_commit, got rc=3 P5=PASS reason=[] stderr=[]
+FAIL L29 last_commit in the future -> P5 FAIL p5_commit_in_future: want rc=1 P5=FAIL p5_commit_in_future, got rc=3 P5=PASS reason=[] stderr=[]
+FAIL L30 unparseable last_indexed -> P5 FAIL p5_time_unparseable: want rc=1 P5=FAIL p5_time_unparseable, got rc=3 P5=PASS reason=[] stderr=[]
+FAIL L30b missing last_commit -> P5 FAIL evidence_field_missing: want rc=1 P5=FAIL evidence_field_missing, got rc=3 P5=PASS reason=[] stderr=[]
+FAIL L31 embedding of the wrong dimension -> P6 FAIL p6_dims_mismatch: want rc=1 P6=FAIL p6_dims_mismatch, got rc=3 P6=PASS reason=[] stderr=[]
+FAIL L32 zero vectors -> P6 FAIL p6_no_vectors: want rc=1 P6=FAIL p6_no_vectors, got rc=3 P6=PASS reason=[] stderr=[]
+FAIL L33 zero norm -> P6 FAIL p6_norm_not_positive: want rc=1 P6=FAIL p6_norm_not_positive, got rc=3 P6=PASS reason=[] stderr=[]
+FAIL L33b NaN norm -> P6 FAIL p6_norm_not_positive: want rc=1 P6=FAIL p6_norm_not_positive, got rc=3 P6=PASS reason=[] stderr=[]
+FAIL L33c non-numeric dims -> P6 FAIL p6_field_not_number: want rc=1 P6=FAIL p6_field_not_number, got rc=3 P6=PASS reason=[] stderr=[]
+FAIL L34 --captured-not-before older than max_age_hours (a caller cannot widen the window to 1970) -> usage rc=2: want rc=2 stderr~[older], got rc=3 []
+FAIL L35 --captured-not-before in the future -> usage rc=2: want rc=2 stderr~[future], got rc=1 []
+FAIL L36 Lumen status Captured in the future -> P7 FAIL captured_in_future: want rc=1 P7=FAIL captured_in_future, got rc=3 P7=PASS reason=[] stderr=[]
+ok   L36b control: capture older than --captured-not-before -> P7 FAIL
+FAIL W01 unreadable --live-policy -> P4 FAIL live_policy_unusable: want rc=1 P4=FAIL live_policy_unusable, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL W02 policy without programs -> P4 FAIL live_policy_unusable: want rc=1 P4=FAIL live_policy_unusable, got rc=3 P4=PASS reason=[] stderr=[]
+FAIL W03 --live-proofs without --live-policy -> usage rc=2: want rc=2 stderr~[live-policy], got rc=1 []
+FAIL W04 --live-proofs without --evidence-ledger -> usage rc=2: want rc=2 stderr~[evidence-ledger], got rc=1 []
+ok   D01 golden-false: report bound to the real scope, lumen json, lumenignore and HEAD -> P-ScopeDrift PASS
+FAIL D02 fabricated head 'deadbeef' (R3-2 repro) -> FAIL drift_head_unknown: want rc=1 P-ScopeDrift=FAIL drift_head_unknown, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D03 report older than HEAD with a non-evidence change in between -> FAIL drift_head_not_current: want rc=1 P-ScopeDrift=FAIL drift_head_not_current, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D04 lumen_scope_sha256 = 64 zeros (R3-2 repro) -> FAIL drift_digest_zero: want rc=1 P-ScopeDrift=FAIL drift_digest_zero, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D05 lumen_scope_sha256 of another file -> FAIL drift_report_not_for_this_lumen_scope: want rc=1 P-ScopeDrift=FAIL drift_report_not_for_this_lumen_scope, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D06 --drift-report without --lumen-json -> FAIL lumen_json_not_supplied (binding not checked is not a pass): want rc=1 P-ScopeDrift=FAIL lumen_json_not_supplied, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D07 drift report absent from the ledger -> FAIL evidence_not_in_ledger: want rc=1 P-ScopeDrift=FAIL evidence_not_in_ledger, got rc=0 P-ScopeDrift=PASS reason=[] stderr=[]
+FAIL D08 report says lumenignore_fresh rc 0 but the gate's own compare differs -> FAIL drift_disagrees_with_lumenignore_compare: want rc=1 P-ScopeDrift=FAIL drift_disagrees_with_lumenignore_compare, got rc=2 P-ScopeDrift=PASS reason=[] stderr=[index_health: usage: --lumenignore-fresh given twice ]
+ok   D09 scope_sha256 of another scope -> FAIL drift_report_not_for_this_scope
+ok   D09b lumenignore_sha256 of another file -> FAIL drift_report_not_for_this_lumenignore
+ok   D09c wrong schema -> FAIL drift_report_unusable
+ok   D09d a failing check -> FAIL drift:scope_to_lumen_json_check
+ok   D09e a missing required check -> FAIL missing_check
+ok   D10 golden-false: every proof ran, all evidence derived -> verdict PASS rc=0
+ok   C00 the member table holds 76 rows (instrument sees the table)
+ok   C .env -> P3 FAIL (env_file depth0)
+ok   C a/.env -> P3 FAIL (env_file depth1)
+ok   C a/b/.env.local -> P3 FAIL (env_file depth2)
+ok   C prod.env -> P3 FAIL (env_file *.env depth0)
+ok   C a/prod.env -> P3 FAIL (env_file *.env depth1)
+ok   C a/b/prod.env -> P3 FAIL (env_file *.env depth2)
+ok   C .env.example -> P3 PASS (exempt name depth0)
+ok   C a/.env.example -> P3 PASS (exempt name depth1)
+ok   C a/b/.env.sample -> P3 PASS (exempt name depth2)
+ok   C a/environment.c -> P3 PASS (near miss)
+ok   C secrets/db.yaml -> P3 FAIL (secrets_dir depth0)
+ok   C a/secrets/db.yaml -> P3 FAIL (secrets_dir depth1)
+ok   C a/b/secrets/db.yaml -> P3 FAIL (secrets_dir depth2)
+ok   C secretsauce/x.py -> P3 PASS (near miss: a directory merely containing the word is not a secrets dir)
+ok   C a/secretsauce/x.py -> P3 PASS (near miss depth1)
+ok   C api_Secret.py -> P3 FAIL (secret_basename depth0)
+ok   C a/api_Secret.py -> P3 FAIL (secret_basename depth1)
+ok   C a/b/my-secret.txt -> P3 FAIL (secret_basename depth2)
+ok   C a/secure.py -> P3 PASS (near miss)
+ok   C release.jks -> P3 FAIL (keystore depth0)
+ok   C a/release.keystore -> P3 FAIL (keystore depth1)
+ok   C a/b/store.p12 -> P3 FAIL (keystore depth2)
+ok   C x.pfx -> P3 FAIL (keystore depth0)
+ok   C a/x.pk8 -> P3 FAIL (signing key depth1)
+ok   C a/b/server.pem -> P3 FAIL (signing key depth2)
+ok   C localhost.key -> P3 FAIL (signing key depth0)
+ok   C a/b/localhost.key -> P3 FAIL (signing key depth2)
+ok   C a/keys.c -> P3 PASS (near miss)
+ok   C qa-results/r.py -> P3 FAIL (qa_corpus depth0)
+ok   C a/qa-results/r.py -> P3 FAIL (qa_corpus depth1)
+ok   C a/b/recordings/v.mp4 -> P3 FAIL (qa_corpus depth2)
+ok   C recordings/v.mp4 -> P3 FAIL (qa_corpus depth0)
+ok   C a/qa_resultsx/r.py -> P3 PASS (near miss)
+ok   C .venv/x.py -> P3 FAIL (cache depth0)
+ok   C a/.venv/x.py -> P3 FAIL (cache depth1)
+ok   C a/b/__pycache__/x.pyc -> P3 FAIL (cache depth2)
+ok   C node_modules/x.js -> P3 FAIL (cache depth0)
+ok   C a/node_modules/x.js -> P3 FAIL (cache depth1)
+ok   C a/b/.gradle/x -> P3 FAIL (cache depth2)
+ok   C ccache/x -> P3 FAIL (cache depth0)
+ok   C a/.ccache/x -> P3 FAIL (cache depth1)
+ok   C logs/x.log -> P3 FAIL (cache depth0)
+ok   C a/logs/x.log -> P3 FAIL (cache depth1)
+ok   C a/b/logs/x.log -> P3 FAIL (cache depth2)
+ok   C .pytest_cache/x -> P3 FAIL (cache depth0)
+ok   C a/b/.mypy_cache/x -> P3 FAIL (cache depth2)
+ok   C a/pycache.py -> P3 PASS (near miss)
+ok   C a/logger/x.go -> P3 PASS (near miss)
+ok   C google-services.json -> P3 FAIL (credentials depth0)
+ok   C a/google-services.json -> P3 FAIL (credentials depth1)
+ok   C a/b/credentials.json -> P3 FAIL (credentials depth2)
+ok   C credentials.json -> P3 FAIL (credentials depth0)
+ok   C service-account-x.json -> P3 FAIL (service account depth0)
+ok   C a/service-account-x.json -> P3 FAIL (service account depth1)
+FAIL C a/b/prod-service-account.json -> P3 FAIL (constitution segglob *service-account*.json depth2): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+FAIL C a/service_account.json -> P3 FAIL (constitution segglob *service_account*.json depth1): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+FAIL C gcp_service_account_key.json -> P3 FAIL (constitution segglob *service_account*.json depth0): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+ok   C credentials.go -> P3 PASS (near miss)
+ok   C a/google-services-readme.md -> P3 PASS (near miss)
+ok   C out/x.bin -> P3 FAIL (build_output root-anchored)
+ok   C a/out/x.bin -> P3 PASS (root-anchored only)
+ok   C dist/x.js -> P3 FAIL (build_output root-anchored)
+ok   C a/dist/x.js -> P3 PASS (root-anchored only)
+ok   C target/x.o -> P3 FAIL (build_output root-anchored)
+ok   C a/target/x.o -> P3 PASS (root-anchored only)
+ok   C .compressed/q.bin -> P3 FAIL (compressed depth0)
+ok   C a/.compressed/q.bin -> P3 FAIL (compressed depth1)
+ok   C a/b/.compressed/z.bin -> P3 FAIL (compressed depth2)
+FAIL C prebuilts/x.so -> P3 FAIL (constitution topdir prebuilts): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+ok   C a/prebuilts/x.so -> P3 PASS (topdir is the FIRST component only)
+FAIL C rockdev/a.img -> P3 FAIL (constitution topdir rockdev): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+ok   C a/rockdev/a.img -> P3 PASS (topdir only)
+FAIL C RKTools/t.exe -> P3 FAIL (constitution topdir RKTools): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+ok   C a/RKTools/t.exe -> P3 PASS (topdir only)
+ok   C a/b.go -> P3 PASS (plain source)
+ok   C catalog-api/main.go -> P3 PASS (plain source)
+FAIL K01 R1: class '/secrets/' misses root-level secrets/ -> the tool itself says baseline_pattern_uncovered (P3 FAIL): want P3=FAIL baseline_pattern_uncovered, got P3=PASS reason=[] rc=1 stderr=[]
+FAIL K01b R1: root-level secrets/db.yaml indexed under the mutant class -> still P3 FAIL (via the constitution baseline predicate): want P3=FAIL , got P3=PASS reason=[] rc=1 stderr=[]
+ok   K02 golden-false: a class covering exactly depth 0, 1 and 2 of the pattern -> no uncovered report (kills R2 'keep **/')
+FAIL K03 class that misses depth 0 (nested only) -> baseline_pattern_uncovered (kills 'probe at a/ only', R4): want P3=FAIL baseline_pattern_uncovered:**/zzdir/, got P3=PASS reason=[] rc=1 stderr=[]
+ok   K04 class that covers only the root form -> baseline_pattern_uncovered (kills 'probe at root only')
+ok   K05 class that misses depth 1 only -> baseline_pattern_uncovered (kills 'drop probe depth 1')
+FAIL K06 class that misses depth 2 only -> baseline_pattern_uncovered (kills 'drop probe depth 2'): want P3=FAIL baseline_pattern_uncovered:**/zzdir/, got P3=PASS reason=[] rc=1 stderr=[]
+ok   K07 golden-false: an anchored pattern /zzout/ is probed at the root only (a root-only class covers it)
+FAIL B01 an extra baseline class (topdir:zzcurated) in the --baseline file is judged -> P3 FAIL baseline_class_files_indexed: want P3=FAIL baseline_class_files_indexed, got P3=PASS reason=[] rc=1 stderr=[]
+FAIL B02 seg:zzseg matches any path component -> P3 FAIL: want P3=FAIL baseline_class_files_indexed, got P3=PASS reason=[] rc=1 stderr=[]
+FAIL B03 unreadable --baseline -> P3 FAIL baseline_unreadable: want P3=FAIL baseline_unreadable, got P3=PASS reason=[] rc=1 stderr=[]
+FAIL B04 malformed baseline row -> P3 FAIL baseline_malformed (never skipped): want P3=FAIL baseline_malformed, got P3=PASS reason=[] rc=1 stderr=[]
+SUMMARY pass=90 fail=71 skip=0
+EXIT 1

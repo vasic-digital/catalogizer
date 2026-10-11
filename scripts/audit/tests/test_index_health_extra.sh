@@ -22,7 +22,7 @@ PY
 files "$POS" a/b.go > "$T/f_good.json"
 printf 'Files: 2 | Indexed: 2 | Chunks: 9 | Stale: no\nCaptured: 2026-10-05T10:00:00Z\n' > "$T/lu.txt"
 base() {  # base [--opt value]... : defaults below are used for every option the caller does not give (no duplicates)
-  local -A d=( [--cg-status]="$T/st.json" [--tracked]="$T/tracked.txt" [--needle-pos]="$POS" [--needle-neg]="$NEG" [--lumen-status]="$T/lu.txt" )
+  local -A d=( [--scope]="config/index/scope.yaml" [--cg-status]="$T/st.json" [--tracked]="$T/tracked.txt" [--needle-pos]="$POS" [--needle-neg]="$NEG" [--lumen-status]="$T/lu.txt" [--captured-not-before]="2026-10-05T00:00:00Z" )
   local -a a=(); local k
   local -A given=(); local i=1
   while [ $i -le $# ]; do k="${!i}"; given[$k]=1; i=$((i+1)); done
@@ -39,7 +39,7 @@ chk() { # chk <name> <want rc> <proof> <want verdict> [reason substring]
 [ -x "$IH" ] || echo "NOTE: $IH absent or not executable (RED state)"
 # X1 positive needle absent from BOTH lists (tracked complete): only the needle can fail P2
 printf 'a/b.go\n' > "$T/tr_noposs.txt"; files a/b.go > "$T/f_nopos.json"
-"$IH" --out "$T/o.json" --cg-status "$T/st.json" --cg-files "$T/f_nopos.json" --tracked "$T/tr_noposs.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-status "$T/lu.txt" >/dev/null 2>&1; RC=$?
+"$IH" --out "$T/o.json" --scope config/index/scope.yaml --cg-status "$T/st.json" --cg-files "$T/f_nopos.json" --tracked "$T/tr_noposs.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-status "$T/lu.txt" --captured-not-before 2026-10-05T00:00:00Z >/dev/null 2>&1; RC=$?
 chk "X1 positive needle missing while tracked set is complete -> P2 FAIL" 1 P2 FAIL positive_needle_missing
 # X2 absent required field with the field's own check otherwise satisfiable: pendingChanges removed
 jq 'del(.pendingChanges)' "$T/st.json" > "$T/st_nopc.json"
@@ -56,10 +56,10 @@ printf 'Files: 2 | Indexed: 2 | Chunks: 9 | Stale: no\n' > "$T/lu_nocap.txt"
 base --cg-files "$T/f_good.json" --lumen-status "$T/lu_nocap.txt"; chk "X5 no Captured line -> P7 FAIL" 1 P7 FAIL status_field_absent
 # X6 secret-class file indexed -> P3 FAIL
 files "$POS" a/b.go a/.env.distributed > "$T/f_sec.json"; printf '%s\n' "$POS" a/b.go a/.env.distributed > "$T/tr_sec.txt"
-base --cg-files "$T/f_sec.json" --tracked "$T/tr_sec.txt"; chk "X6 .env.distributed indexed -> P3 FAIL" 1 P3 FAIL secret_class_files_indexed
+base --cg-files "$T/f_sec.json" --tracked "$T/tr_sec.txt"; chk "X6 .env.distributed indexed -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
 # X7 .env.example is allowed
 files "$POS" a/b.go .env.example > "$T/f_ex.json"; printf '%s\n' "$POS" a/b.go .env.example > "$T/tr_ex.txt"
-base --cg-files "$T/f_ex.json" --tracked "$T/tr_ex.txt"; chk "X7 .env.example allowed -> P3 PASS (false-positive guard)" 0 P3 PASS
+base --cg-files "$T/f_ex.json" --tracked "$T/tr_ex.txt"; chk "X7 .env.example allowed -> P3 PASS (false-positive guard)" 3 P3 PASS
 # X8 third-party root hit -> P3 FAIL ; X9 own-org root without file -> P3 FAIL
 printf 'a/b.go\n' > "$T/tp.txt"; base --cg-files "$T/f_good.json" --third-party-roots "$T/tp.txt"
 chk "X8 file under a third-party root -> P3 FAIL" 1 P3 FAIL third_party_files_indexed
@@ -68,13 +68,13 @@ chk "X9 own-org root with no indexed file -> P3 FAIL" 1 P3 FAIL own_org_root_wit
 # X10 tracked file not indexed -> P2 FAIL missing list
 files "$POS" > "$T/f_miss.json"; base --cg-files "$T/f_miss.json"; chk "X10 tracked file not indexed -> P2 FAIL" 1 P2 FAIL tracked_files_not_indexed
 # X11 existing lumen-bin and no status: still FAIL (probe refused, it would write the index)
-"$IH" --out "$T/o.json" --cg-status "$T/st.json" --cg-files "$T/f_good.json" --tracked "$T/tracked.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-bin /bin/true >/dev/null 2>&1; RC=$?
+"$IH" --out "$T/o.json" --scope config/index/scope.yaml --cg-status "$T/st.json" --cg-files "$T/f_good.json" --tracked "$T/tracked.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-bin /bin/true >/dev/null 2>&1; RC=$?
 chk "X11 executable --lumen-bin without a status capture -> P-Lumen FAIL (probe refused)" 1 P-Lumen FAIL probe_not_run
 # X12 no --lumen-files: P8 is an honest SKIP with a reason, verdict still PASS and complete=false
-base --cg-files "$T/f_good.json"; chk "X12 no --lumen-files -> P8 SKIP" 0 P8 SKIP no_lumen_files
+base --cg-files "$T/f_good.json"; chk "X12 no --lumen-files -> P8 SKIP" 3 P8 SKIP no_lumen_files
 [ "$(jq -r '.complete' "$T/o.json")" = false ] && ok "X12b skipped proofs make complete=false" || bad "X12b complete flag"
 # X13 option hygiene: option-like value, unknown option, duplicate option, bad tolerance -> rc 2
-"$IH" --out "$T/o.json" --cg-status --cg-files >/dev/null 2>&1; [ $? -eq 2 ] && ok "X13a option-like value -> rc 2" || bad "X13a"
+"$IH" --out "$T/o.json" --scope config/index/scope.yaml --cg-status --cg-files >/dev/null 2>&1; [ $? -eq 2 ] && ok "X13a option-like value -> rc 2" || bad "X13a"
 base --bogus x; [ "$RC" -eq 2 ] && ok "X13b unknown option -> rc 2" || bad "X13b rc=$RC"
 base --cg-files "$T/f_good.json" --cg-files "$T/f_good.json"; [ "$RC" -eq 2 ] && ok "X13c duplicate option -> rc 2" || bad "X13c rc=$RC"
 base --cg-files "$T/f_good.json" --parity-tolerance-pct -1; [ "$RC" -eq 2 ] && ok "X13d negative tolerance -> rc 2" || bad "X13d rc=$RC"
@@ -94,11 +94,11 @@ for v in 'a\r' 'a ' ' a' './a' '/a' 'a//b' 'a/./b' 'a/../b' 'a\001'; do
   chk "R4 non-canonical third-party root line [$(printf '%s' "$v" | od -An -c | tr -s ' ' | tr -d '\n')] -> P3 FAIL third_party_root_not_canonical" 1 P3 FAIL third_party_root_not_canonical
 done
 printf 'zz\n' > "$T/tp_ok.txt"; base --cg-files "$T/f_good.json" --third-party-roots "$T/tp_ok.txt"
-chk "R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard)" 0 P3 PASS
+chk "R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard)" 3 P3 PASS
 printf 'a/\n' > "$T/tp_slash.txt"; base --cg-files "$T/f_good.json" --third-party-roots "$T/tp_slash.txt"
 chk "R4 control: a canonical root with ONE trailing slash that holds an indexed file -> P3 FAIL third_party_files_indexed" 1 P3 FAIL third_party_files_indexed
 printf '\n   \nzz\n' > "$T/tp_blank.txt"; base --cg-files "$T/f_good.json" --third-party-roots "$T/tp_blank.txt"
-chk "R4 control: blank lines in the roots file are ignored -> P3 PASS" 0 P3 PASS
+chk "R4 control: blank lines in the roots file are ignored -> P3 PASS" 3 P3 PASS
 # M5-2: an empty tracked list is a blind completeness check, a P2 FAIL
 : > "$T/tr_empty.txt"; base --cg-files "$T/f_good.json" --tracked "$T/tr_empty.txt"
 chk "M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind" 1 P2 FAIL tracked_list_empty_blind
@@ -117,9 +117,9 @@ done
 printf 'caf\303\251\n' > "$T/tp_nfc.txt"; base --cg-files "$T/f_enc.json" --third-party-roots "$T/tp_nfc.txt"
 chk "N6-5 golden-false: a non-ASCII root in NFC that holds an indexed file is a normal hit -> P3 FAIL third_party_files_indexed" 1 P3 FAIL third_party_files_indexed
 printf 'na\303\257ve\n' > "$T/tp_nfc2.txt"; base --cg-files "$T/f_enc.json" --third-party-roots "$T/tp_nfc2.txt"
-chk "N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS" 0 P3 PASS
+chk "N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS" 3 P3 PASS
 printf 'a b\n' > "$T/tp_sp.txt"; base --cg-files "$T/f_enc.json" --third-party-roots "$T/tp_sp.txt"
-chk "N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS" 0 P3 PASS
+chk "N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS" 3 P3 PASS
 # ---- round 7 (WF7 M-6): (a) a CASE VARIANT of a real third-party root reads P3 clean unless refused; (b) an NFD root that names an NFD path git really indexed is a hit, not a refusal
 files a/main.go a/b.go third/x.go > "$T/f_case.json"
 printf 'Third\n' > "$T/tp_case.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case.txt"
@@ -128,7 +128,7 @@ printf 'third\n' > "$T/tp_case2.txt"; base --cg-files "$T/f_case.json" --third-p
 chk "M-6a control: the exact root third -> P3 FAIL third_party_files_indexed" 1 P3 FAIL third_party_files_indexed
 case "$(reason P3)" in *case_mismatch*) bad "M-6a control: an exact root is no case mismatch (reasons: $(reason P3))" ;; *) ok "M-6a control: an exact root is no case mismatch" ;; esac
 printf 'Vendorx\n' > "$T/tp_case3.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case3.txt"
-chk "M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS" 0 P3 PASS
+chk "M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS" 3 P3 PASS
 printf 'THIRD/x.go\n' > "$T/tp_case4.txt"; base --cg-files "$T/f_case.json" --third-party-roots "$T/tp_case4.txt"
 chk "M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch" 1 P3 FAIL third_party_root_case_mismatch
 files a/main.go a/b.go "$(printf 'cafe\314\201/y.go')" > "$T/f_nfd.json"
@@ -137,5 +137,77 @@ chk "M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_
 files a/main.go a/b.go "$(printf 'caf\303\251/y.go')" > "$T/f_nfc.json"
 base --cg-files "$T/f_nfc.json" --third-party-roots "$T/tp_nfd.txt"
 chk "M-6b golden-false: the same NFD root while only the NFC path is indexed stays refused -> P3 FAIL third_party_root_not_canonical" 1 P3 FAIL third_party_root_not_canonical
+# ---- round 8 (WP-02-T028 review F1/F2/F3, 11.4.224 RED first) ------------------------------------------------------------
+# F1: P3 derives its forbidden classes from scope.yaml (one class source). Every class: its positive FAILs, its negative PASSes (control needle).
+python3 - config/index/scope.yaml "$T/classes.tsv" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1]))
+with open(sys.argv[2], "w") as f:
+    for c in d["forbidden_classes"]:
+        f.write("%s\t%s\t%s\n" % (c["name"], c["positive"], c["negative"]))
+PY
+NCLS="$(wc -l < "$T/classes.tsv")"
+[ "$NCLS" -ge 6 ] && ok "F1 scope.yaml declares $NCLS forbidden classes (instrument sees the class list)" || bad "F1 forbidden class list too short: $NCLS"
+while IFS="$(printf '\t')" read -r cname cpos cneg; do
+  files "$POS" a/b.go "$cpos" > "$T/f_c.json"; printf '%s\n' "$POS" a/b.go "$cpos" > "$T/tr_c.txt"
+  base --cg-files "$T/f_c.json" --tracked "$T/tr_c.txt"
+  chk "F1 class $cname positive [$cpos] indexed -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
+  case "$(jq -r '.codegraph.proofs[]|select(.id=="P3")|.forbidden_by_class|keys|join(",")' "$T/o.json")" in *"$cname"*) ok "F1 class $cname named in forbidden_by_class" ;; *) bad "F1 class $cname not named" ;; esac
+  files "$POS" a/b.go "$cneg" > "$T/f_n.json"; printf '%s\n' "$POS" a/b.go "$cneg" > "$T/tr_n.txt"
+  base --cg-files "$T/f_n.json" --tracked "$T/tr_n.txt"
+  chk "F1 class $cname negative [$cneg] indexed -> P3 PASS (false-positive guard)" 3 P3 PASS
+done < "$T/classes.tsv"
+for fx in a/localhost.key a/dhparams.pem a/prod.env a/secrets/db.yaml a/release.jks a/store.p12 a/x.pfx a/y.keystore a/z.pk8; do
+  files "$POS" a/b.go "$fx" > "$T/f_r.json"; printf '%s\n' "$POS" a/b.go "$fx" > "$T/tr_r.txt"
+  base --cg-files "$T/f_r.json" --tracked "$T/tr_r.txt"
+  chk "F1 review fixture $fx -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
+done
+# scope problems are FAIL, never a quiet pass
+printf 'schema_version: 1\n' > "$T/sc_none.yaml"; base --cg-files "$T/f_good.json" --scope "$T/sc_none.yaml"
+chk "F1 scope without forbidden_classes -> P3 FAIL (blind)" 1 P3 FAIL forbidden_classes_unusable
+printf 'forbidden_classes:\n  - {name: k, regex: "\\\\.key$", positive: "a/b.txt", negative: "a/b.key"}\n' > "$T/sc_bad.yaml"; base --cg-files "$T/f_good.json" --scope "$T/sc_bad.yaml"
+chk "F1 class failing its own positive/negative self-test -> P3 FAIL" 1 P3 FAIL forbidden_classes_unusable
+base --cg-files "$T/f_good.json" --scope "$T/no/such.yaml"
+chk "F1 unreadable scope -> P3 FAIL" 1 P3 FAIL forbidden_classes_unusable
+# F2: surviving mutants of the review get their own RED cases
+jq '.index.reindexRecommended=true' "$T/st.json" > "$T/st_re.json"; base --cg-files "$T/f_good.json" --cg-status "$T/st_re.json"
+chk "F2 reindexRecommended true -> P1 FAIL" 1 P1 FAIL reindexRecommended_not_false
+for k in added modified removed; do
+  jq --arg k "$k" '.pendingChanges[$k]=3' "$T/st.json" > "$T/st_pc.json"; base --cg-files "$T/f_good.json" --cg-status "$T/st_pc.json"
+  chk "F2 pendingChanges.$k nonzero -> P1 FAIL" 1 P1 FAIL "pendingChanges.${k}_nonzero"
+done
+printf 'Files: 2 | Indexed: 2 | Chunks: 9 | Stale: no\nCaptured: not-a-time\n' > "$T/lu_badcap.txt"; base --cg-files "$T/f_good.json" --lumen-status "$T/lu_badcap.txt"
+chk "F2 unparseable Captured time -> P7 FAIL" 1 P7 FAIL captured_time_unparseable
+mkdir -p "$T/ow"; printf 'a/b\n' > "$T/own_b.txt"; files "$POS" a/bc/x.go > "$T/f_bc.json"; printf '%s\n' "$POS" a/bc/x.go > "$T/tr_bc.txt"
+base --cg-files "$T/f_bc.json" --tracked "$T/tr_bc.txt" --own-org-roots "$T/own_b.txt"
+chk "F2 own-org root a/b with only a sibling a/bc/x.go indexed -> P3 FAIL (prefix boundary)" 1 P3 FAIL own_org_root_without_indexed_file
+files "$POS" a/b/x.go > "$T/f_b.json"; printf '%s\n' "$POS" a/b/x.go > "$T/tr_b.txt"
+base --cg-files "$T/f_b.json" --tracked "$T/tr_b.txt" --own-org-roots "$T/own_b.txt"
+chk "F2 control: own-org root a/b with a/b/x.go indexed -> P3 PASS" 3 P3 PASS
+# F9-adjacent (review F8): P7 age floor via --captured-not-before (deterministic, no clock)
+base --cg-files "$T/f_good.json" --captured-not-before 2026-10-06T00:00:00Z
+chk "F8 capture older than --captured-not-before -> P7 FAIL" 1 P7 FAIL captured_before_required_time
+base --cg-files "$T/f_good.json" --captured-not-before 2026-10-05T10:00:00Z
+chk "F8 control: capture equal to --captured-not-before -> P7 PASS" 3 P7 PASS
+base --cg-files "$T/f_good.json" --captured-not-before 2026-10-05
+[ "$RC" -eq 2 ] && ok "F8 --captured-not-before without a zone -> usage rc=2" || bad "F8 zoneless not-before: rc=$RC"
+# F3: a SKIP is never a pass; INCOMPLETE rc=3 names the blocked proofs; PASS rc=0 only when every proof ran
+base --cg-files "$T/f_good.json"
+[ "$RC" -eq 3 ] && [ "$(jq -r .verdict "$T/o.json")" = INCOMPLETE ] && [ "$(jq -r .complete "$T/o.json")" = false ] && ok "F3 skipped proofs -> verdict INCOMPLETE rc=3 complete=false" || bad "F3 want INCOMPLETE rc=3, got rc=$RC $(jq -r .verdict "$T/o.json")"
+[ "$(jq -r '.blocked_unavailable.P4' "$T/o.json")" != "" ] && [ "$(jq -r '.blocked_unavailable|keys|length' "$T/o.json")" -ge 4 ] && ok "F3 blocked_unavailable lists each skipped proof with its reason" || bad "F3 blocked_unavailable missing"
+# Round 10 (reviews WP-02-T028-r3): the live-proof and drift-report cases (F3 golden-false full run, F4) moved to test_index_health_fix_r8.sh L/D, where the
+# verdict is derived from ledger-bound evidence. What stays here: the .lumenignore pair (F5) and the lumen-files parity input.
+printf '/dir/\n' > "$T/li_a.txt"; cp "$T/li_a.txt" "$T/li_b.txt"; printf '/dir/\n/other/\n' > "$T/li_c.txt"
+printf '%s\n' "$POS" a/b.go > "$T/lumen_files.txt"
+full() {  # full [--opt value]...: the .lumenignore pair and the Lumen file list, with the given options replacing the defaults (no duplicate options)
+  local -A d=( [--lumenignore]="$T/li_a.txt" [--lumenignore-fresh]="$T/li_b.txt" [--lumen-files]="$T/lumen_files.txt" )
+  local -a a=(); local -A g=(); local i=1 k
+  while [ $i -le $# ]; do k="${!i}"; g[$k]=1; i=$((i+2)); done
+  for k in "${!d[@]}"; do [ -n "${g[$k]:-}" ] || a+=("$k" "${d[$k]}"); done
+  base --cg-files "$T/f_good.json" "${a[@]}" "$@"
+}
+full --lumenignore-fresh "$T/li_c.txt"; chk "F5 stale .lumenignore vs fresh render -> P-LumenIgnore FAIL" 1 P-LumenIgnore FAIL lumenignore_stale_vs_scope
+: > "$T/li_empty.txt"; full --lumenignore "$T/li_empty.txt" --lumenignore-fresh "$T/li_empty.txt"; chk "F5 empty fresh render is blind -> P-LumenIgnore FAIL" 1 P-LumenIgnore FAIL fresh_render_empty_blind
+full --lumenignore-fresh "$T/li_b.txt" --lumenignore "$T/li_b.txt"; chk "F5 control: identical pair -> P-LumenIgnore PASS" 3 P-LumenIgnore PASS
 echo "SUMMARY pass=$PASSN fail=$FAILN"
 [ "$FAILN" -eq 0 ]

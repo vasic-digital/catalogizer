@@ -56,6 +56,10 @@ safe_dir_arg "$REPO" || die unsafe_repo "$(printf '%q' "$REPO")"
 safe_dir_arg "$RUND" || die unsafe_run_dir "$(printf '%q' "$RUND")"
 safe_runid "$RID" || die unsafe_run_id "$(printf '%q' "$RID")"
 [ "$HAVE_MSG" = 1 ] && [ -n "$MSG" ] || die usage "--message is required"
+# the message and the attribution go in FRONT of / after the trailer block that every reader parses with ONE parser (lib_safe.sh cpa_trailer): a `---` line, a control character (a CR) or a line that
+# reads like a reserved trailer would make the readers disagree about which block holds the Awaits-Review hold (WF-R6 R-01)
+mr="$(cpa_msg_check "$MSG")" || die unsafe_message "$mr"
+if [ -n "$ATTR" ]; then mr="$(cpa_msg_check "$ATTR")" || die unsafe_attribution "$mr"; fi
 if [ -n "$P0" ]; then   # the paths as a NUL-separated file: no argument-length limit (BOUNDS-2)
   [ -r "$P0" ] || die usage "--paths-from0 file unreadable"; [ "${#PATHS[@]}" -eq 0 ] || die usage "--paths-from0 together with path arguments"
   while IFS= read -r -d '' _p; do PATHS+=("$_p"); done < "$P0"
@@ -134,7 +138,9 @@ make_commit() { # make_commit <verdict or ""> <paths...>
       for s in "${FSH[@]+"${FSH[@]}"}"; do
         git -C "$REPO" cat-file -e "$s^{commit}" 2>/dev/null || continue
         git -C "$REPO" merge-base --is-ancestor "$s" HEAD 2>/dev/null || continue
-        git -C "$REPO" log --format='%(trailers:key=Foreign-Commit,valueonly,separator=%x0A)' HEAD 2>/dev/null | grep -qxF -- "$s" && continue
+        cpa_foreign_listed "$REPO" HEAD "$s"; frc=$?   # the ONE trailer parser (WF-R6 R-01)
+        [ "$frc" -le 1 ] || { rm -f "$mf" "$mf.err"; die git_listing_failed "Foreign-Commit lines of HEAD"; }
+        [ "$frc" = 0 ] && continue
         printf 'Foreign-Commit: %s\n' "$s"
       done
     fi
@@ -161,10 +167,16 @@ make_commit() { # make_commit <verdict or ""> <paths...>
   if [ -n "$EXPBR" ] && [ "$(git -C "$REPO" symbolic-ref -q HEAD 2>/dev/null)" != "refs/heads/$EXPBR" ]; then rm -f "$mf" "$mf.err"; die branch_moved "HEAD is no longer refs/heads/$EXPBR"; fi
   # the commit and its row are ONE window: a signal that arrives in it is held (a flag) and acted on after the row is written, never between the two (RES-3)
   GOT=""; trap 'GOT=143' TERM; trap 'GOT=130' INT; trap 'GOT=129' HUP
-  if [ -n "$EXPECT" ]; then git -C "$REPO" commit -q -F "$mf" >"$mf.out" 2>"$mf.err"; else git -C "$REPO" commit -q -F "$mf" --only -- "${lp[@]}" >"$mf.out" 2>"$mf.err"; fi
+  # --cleanup=verbatim: no configuration (commit.cleanup, core.commentChar, core.commentString) may strip or rewrite a line of the composed message (WP-04-T046-r2 F-01)
+  if [ -n "$EXPECT" ]; then git -C "$REPO" commit -q --cleanup=verbatim -F "$mf" >"$mf.out" 2>"$mf.err"; else git -C "$REPO" commit -q --cleanup=verbatim -F "$mf" --only -- "${lp[@]}" >"$mf.out" 2>"$mf.err"; fi
   crc=$?
   if [ "$crc" != 0 ]; then
     local e; e="$(head -c 300 "$mf.err")$(head -c 300 "$mf.out")"; rm -f "$mf" "$mf.err" "$mf.out"; trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; die commit_failed "$e"
+  fi
+  # read the commit back BEFORE its row is written: the stored bytes must be the composed bytes (hooks and config can still alter them); no row is written otherwise, so the next run names the
+  # commit unrecorded and nothing of it is pushed
+  if ! vwhy="$(cpa_commit_verify "$REPO" "$mf" "$RID" "$verdict")"; then
+    rm -f "$mf" "$mf.err" "$mf.out"; trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; die commit_message_altered "$vwhy (the commit exists and is not recorded)"
   fi
   rm -f "$mf" "$mf.err" "$mf.out"
   s="$(git -C "$REPO" rev-parse HEAD)" || { trap 'exit 143' TERM; trap 'exit 130' INT; trap - HUP; die internal "rev-parse HEAD"; }

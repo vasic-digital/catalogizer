@@ -1,0 +1,15 @@
+ok   F1/RR2-4: --anchor-after with an anchor the chain contradicts exits 2 anchor_disagrees and says the entry WAS recorded
+ok   F1/RR2-4: no anchor row was appended by the refused anchor (the file holds only the planted row)
+ok   F1/RR2-4: verify agrees with the refusal (exit 2)
+ok   F1 control: --anchor-after on a healthy ledger still exits 0
+FAIL F3: exit 0 marker=/tmp/tmp.80k3p4mDx5/marker err=
+FAIL F3 truncation: exit 0
+FAIL F3 unreadable anchor: exit 0
+ok   F3 golden-false: a LAGGING anchor over an intact prefix does not block a run (7 entries)
+ok   F3 golden-false: a ledger with NO anchor file is not blocked (nothing to contradict)
+FAIL F2: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "green_identical": true, "same_test": true, "red_before_green": true, "fingerprints_differ": true, "fingerprints_new": true, "verdict": "PASS", "anchor": "not compared (--chain-on
+ok   F2 golden-false: --chain-only with a good PRESENT anchor still derives PASS (exit 0)
+ok   F2 golden-false: a chain-only FAIL stays FAIL, exit 1 (the golden-bad fixtures)
+FAIL F5: --check output: V9-anchor-note-dropped             CAUGHT                     
+mutants=1 caught=1 equivalent=0 not_caught=0
+checks=13 failures=5

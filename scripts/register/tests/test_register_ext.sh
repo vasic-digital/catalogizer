@@ -14,11 +14,11 @@ out=$("$REG_DIR/apply_ext.sh" --db "$DB" 2>&1); rc=$?
 assert_eq "A1 apply on absent DB exits 0" "$rc" 0
 [ $rc -ne 0 ] && { echo "$out"; finish; exit 1; }
 assert_eq "A2 25 reg_ tables" "$(sql "$DB" "select count(*) from sqlite_master where type='table' and name like 'reg_%'")" 25
-assert_eq "A3 43 triggers (v5: 41 + reg_findings_no_delete + reg_findings_observation_no_update)" "$(sql "$DB" "select count(*) from sqlite_master where type='trigger'")" 43
-assert_eq "A4 ext_schema_version (v5)" "$(sql "$DB" "select value from reg_meta where key='ext_schema_version'")" 5
+assert_eq "A3 44 triggers (v6: 43 + reg_ids_mint_monotone)" "$(sql "$DB" "select count(*) from sqlite_master where type='trigger'")" 44
+assert_eq "A4 ext_schema_version (v6)" "$(sql "$DB" "select value from reg_meta where key='ext_schema_version'")" 6
 assert_eq "A5 engine schema_version still 7" "$(sql "$DB" "select value from meta where key='schema_version'")" 7
 "$REG_DIR/apply_ext.sh" --db "$DB" >/dev/null 2>&1; assert_eq "A6 second apply exits 0 (idempotent)" "$?" 0
-assert_eq "A7 trigger count unchanged after re-apply" "$(sql "$DB" "select count(*) from sqlite_master where type='trigger'")" 43
+assert_eq "A7 trigger count unchanged after re-apply" "$(sql "$DB" "select count(*) from sqlite_master where type='trigger'")" 44
 
 echo "== B. DB already holding items =="
 DB="$D/b.db"; rm -f "$DB"; "$WI" validate --db "$DB" >/dev/null 2>&1
@@ -188,7 +188,7 @@ EXT=${REG_EXT_SQL:-$REG_DIR/register_ext.sql}
 sed -n 's/^CREATE TRIGGER IF NOT EXISTS \([A-Za-z0-9_]*\).*/\1/p' "$EXT" | sort > "$D/ddl_triggers.txt"
 sql "$DB" "select name from sqlite_master where type='trigger' order by name" | sort > "$D/db_triggers.txt"
 assert_eq "F1 trigger names in the DB equal the names in the DDL (diff empty)" "$(diff "$D/ddl_triggers.txt" "$D/db_triggers.txt" | wc -l)" 0
-assert_eq "F2 43 trigger names in the DDL" "$(wc -l < "$D/ddl_triggers.txt")" 43
+assert_eq "F2 44 trigger names in the DDL" "$(wc -l < "$D/ddl_triggers.txt")" 44
 [ -n "${TRIGGERS_OUT:-}" ] && { { ident_header T061; echo "ddl_triggers=$(wc -l < "$D/ddl_triggers.txt") db_triggers=$(wc -l < "$D/db_triggers.txt") diff_lines=$(diff "$D/ddl_triggers.txt" "$D/db_triggers.txt" | wc -l)"; echo "--- DDL names"; cat "$D/ddl_triggers.txt"; echo "--- DB names"; cat "$D/db_triggers.txt"; echo "--- diff"; diff "$D/ddl_triggers.txt" "$D/db_triggers.txt"; } > "$TRIGGERS_OUT"; }
 # m-5: neutralise a go-live environment; F4 compares existence and checksum before/after, so it stays valid after T069
 had=0; [ -e "$ROOT/docs/workable_items.db" ] && had=1; sum0=$(sha256sum "$ROOT/docs/workable_items.db" 2>/dev/null | cut -d' ' -f1)
@@ -205,7 +205,7 @@ out=$(inCW env -u REGISTER_GO_LIVE "$REG_DIR/apply_ext.sh" --db "file:$ROOT/docs
 assert_eq "F5 a file: URI naming the real register is refused (rc 4)" "$rc" 4
 out=$(timeout 10 "$REG_DIR/apply_ext.sh" --db 2>&1); rc=$?
 assert_eq "F6 --db with no value exits 2 (usage), it does not hang (124 = hung)" "$rc" 2
-SP="$D/a dir with spaces"; mkdir -p "$SP"; "$REG_DIR/apply_ext.sh" --db "$SP/x.db" >/dev/null 2>&1; assert_eq "F7 a DB path with spaces is applied" "$(sql "$SP/x.db" "select value from reg_meta where key='ext_schema_version'")" 5
+SP="$D/a dir with spaces"; mkdir -p "$SP"; "$REG_DIR/apply_ext.sh" --db "$SP/x.db" >/dev/null 2>&1; assert_eq "F7 a DB path with spaces is applied" "$(sql "$SP/x.db" "select value from reg_meta where key='ext_schema_version'")" 6
 cp "$EXT" "$SP/ddl with space.sql"; "$REG_DIR/apply_ext.sh" --db "$D/f2.db" --sql "$SP/ddl with space.sql" >/dev/null 2>&1; assert_eq "F8 a DDL path with spaces is applied" "$(sql "$D/f2.db" "select count(*) from sqlite_master where name='reg_meta'")" 1
 QS="$D/dd\"q.sql"; cp "$EXT" "$QS"; out=$("$REG_DIR/apply_ext.sh" --db "$D/f3.db" --sql "$QS" 2>&1); rc=$?
 [ $rc -eq 2 ] && ok "F9 a DDL path holding a double quote is refused (rc 2), not interpolated into .read" || bad "F9 rc=$rc [$out]"

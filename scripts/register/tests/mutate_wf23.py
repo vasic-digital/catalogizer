@@ -11,7 +11,7 @@ Output: one line per mutant; the last line `MUTANTS: n run, k killed, e equivale
 import os, re, shutil, subprocess, sys, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__)); REG = os.path.dirname(HERE); ROOT = os.path.dirname(os.path.dirname(REG))
-WI = os.environ.get("WI", os.path.join(ROOT, "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+WI = os.environ.get("WI", os.path.join(ROOT, "constitution/scripts/workable-items/bin/workable-items-linux"))
 
 SUITES = {
     "absolute": ["python3", "tests/test_enumerate_absolute.py"],

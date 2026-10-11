@@ -1,0 +1,36 @@
+# identity: task=T064a utc=2026-10-08T14:40:23Z host=anton uid=1000
+# git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c tree_dirty_files=246
+# container leg: scripts/containers/run_pinned.sh IMG-TESTUTIL via the logging podman shim (deviation recorded in clib.sh); image: sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08
+# sha256 locked=b8208d57985b6e9ad7d3b68652734839ba3126bd62440cfa4c17d85eac9087b1 backup_db=b261062c84374013946c81a953e841d1f8761873af510e5e091724fb3c0f2ae8 test=8eb1bfaec2e9b6f5022c97bfb9fccd236c3119038d941bdd7e2bc409ff043447 clib=4fdafe4bc85fa2b8f5afdb1ff089b88eb2dae3cb0ad66a831c520af163831d68
+# sha256 dump=bddb28c984f272916f06ffc391492eb818cb90253f693dcb8d4801af0ece24f9 export=cc92f631af1849500bf1ce4b09bb797d60b13b2e3ebf9aaea162e6ba16aff54c reconcile=b29d6044fe4f06ffe413dfc18cf0078a860d62a06a710cc3b4f9133f3bbc960b replay=9b6e7ec0f1e8ed863fadd8753a0a8d8391cb46253c394038b4a5158d244c6831
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+== helper ==
+ok   B1 no --record: exit 2 and a usage text
+ok   B2 the helper succeeds and writes the record
+ok   B3 the backup is docs/workable_items.db.bak-<UTC>
+ok   B4 record field source_sha256
+ok   B4 record field backup_sha256
+ok   B4 record field source_rows
+ok   B4 record field backup_rows
+ok   B4 record field integrity
+ok   B4 record field restore_probe
+ok   B4 record field image_digest
+ok   B5 integrity_check result is ok
+ok   B6 restore probe: the restored backup's canonical dump equals the source dump
+ok   B7 both row counts are equal and non-zero (123)
+ok   B8 the record's backup sha256 is the file's
+ok   B9 the helper's sqlite work ran in the image: the run calls name the pinned image
+ok   B10 no -wal/-shm side file beside the backup (immutable reads)
+== the backup stays what it was; the hardlink control changes ==
+ok   B11 after one more row in the source (checkpointed) the backup's sha256 is unchanged
+ok   B12 the backup still holds 3 items, the source 4
+ok   B13 CONTROL: the cp -al copy changed with the source (the test can see the failure it guards against)
+== a failed check means no backup ==
+ok   B14 a backup that fails the integrity check exits non-zero and writes no record
+ok   B15 the failed backup file is removed (never reported as a backup)
+ok   B16 a normal run with the fault hook unset succeeds again
+ok   B18 a restore probe whose dump differs from the source dump fails: non-zero, no record, no backup file
+== a missing source database ==
+ok   B17 no source database: refused, no record
+ok   RT real repository evidence/disk holds no record of this suite's register operations (isolation proven by comparing this run's op ids with files newer than the suite start)
+RESULT pass=25 fail=0

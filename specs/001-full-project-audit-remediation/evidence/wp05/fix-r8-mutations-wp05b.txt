@@ -1,0 +1,79 @@
+baseline green: test_anchors.sh, test_anchors_r8.sh, test_evrec.sh, test_ts02.sh, test_verdict.sh, test_wrap_bash.sh, test_wrap_cargo.sh, test_wrap_go.sh, test_wrap_gradle.sh, test_wrap_vitest.sh run on the unmutated tree with 0 FAIL lines
+T056-A1-anchor-comparison-removed-in-verify             CAUGHT             FAIL tamper: delete-and-recompute is caught by the anchor (exit 2) (exit 3, want 2: verify: ledger=/tmp/tmp.9KUMmkyS9L/w/ledger.jsonl blobs=
+T056-A2-head-not-compared                               CAUGHT             FAIL tamper: two reordered entries, chain recomputed AND renumbered, caught by the anchor (exit 2) (exit 0, want 2: verify: ledger=/tmp/tmp.
+T056-A3-count-not-compared                              CAUGHT             FAIL tamper: truncated tail is caught by the anchor (exit 2) (exit 1, want 2: verify: ledger=/tmp/tmp.Y48eZmYozk/w/ledger.jsonl blobs=/tmp/t
+A4-only-newest-row-compared                             CAUGHT             FAIL an old anchor row that the rewritten history contradicts is caught although the newest row agrees (exit 2) (exit 0, want 2: verify: led
+A6-anchor-writer-skips-chain-check                      CAUGHT             FAIL anchor row malformed: 
+A7-retired-scratch-flag-accepted                        CAUGHT             FAIL probe(retired flag): exit 0
+A8-network-remote-probed                                CAUGHT             FAIL probe(url): exit 0
+A9-rerecord-keeps-local-anchors                         CAUGHT             FAIL rerecord anchor leg: wrong anchors
+A10-mechanism-claim-not-refused                         CAUGHT             FAIL anchor: mechanism claimed without evidence (exit 0)
+A11-denying-remote-gives-mechanism                      CAUGHT             FAIL probe(deny): exit 0 strength=mechanism 
+A12-existing-anchor-history-not-checked-when-adding     CAUGHT             FAIL anchor: re-anchored a forged chain (exit 0)
+A14-one-deny-key-suffices                               CAUGHT             FAIL probe(onlynff): exit 0 strength=policy 
+A15-executable-hook-counts-as-proof                     CAUGHT             FAIL probe(hook): exit 0 strength=policy {"at":"2026-10-08T13:52:58Z","count":4,"head":"7d74202fe34ca0c3944f094364e865ab5c023f5e5f67cf2579af
+A16-global-config-ignored                               CAUGHT             FAIL probe(global): origin not recorded: {"at":"2026-10-08T13:53:43Z","count":4,"head":"4c953eea9c5d5760245141ed9bdefa1d8df8966b2919a2ba7c24
+A17-forced-push-readded                                 CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+A18-plus-ref-push-readded                               CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+A18b-plain-push-built-in-code                           CAUGHT             FAIL no-force-push scan found usage (rc=1), see lines above
+R8-A20-REV1-anchor-rows-may-go-backward                 CAUGHT             FAIL REV-1: an anchor row with a count below the previous row's (each row agrees with the chain) is anchor_inconsistent, exit 2 (exit 0, wan
+R8-A21-REV3-rerecord-drops-anchor-at-common-prefix      CAUGHT             FAIL REV-3: anchor at the common prefix dropped: {"at":"2026-10-08T13:54:41Z","count":1,"head":"5408f34ad72f682c6e4265a56323109c037d028870a6
+R8-A22-REV5-anchor-writer-takes-no-lock                 CAUGHT             FAIL REV-5: anchor while the lock is held: exit 0 anchors=/tmp/tmp.E7hIta9oGf/w/anchors.jsonl 
+R8-A23-REV6-count-zero-row-accepted                     CAUGHT             FAIL REV-6: an anchor row with count 0 (it would index entry -1) is not a valid row, exit 3 anchor_not_compared (exit 0, want 3: verify: led
+R8-D12-REV4-same-test-ignores-cwd                       CAUGHT             FAIL REV-4: other-cwd GREEN: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "
+R8-A24-R1-verify-absent-anchor-passes                   CAUGHT             FAIL R1: a ledger with NO anchors file is UNVERIFIED, exit 3 reason=anchor_absent (exit 0, want 3: verify: ledger=/tmp/tmp.j4Khvzzcyr/w/ledg
+R8-A25-R1-chain-only-switches-off-a-present-anchor      CAUGHT             FAIL R1: --chain-only does NOT switch off an anchor that is present (delete-and-recompute still exit 2) (exit 0, want 2: verify: ledger=/tmp
+R8-A26-R4-verify-trusts-a-mechanism-row                 CAUGHT             FAIL R4: a hand-written mechanism row over a NONEXISTENT remote and a truncated ledger is UNVERIFIED (exit 3 strength_unproven), not 'agrees
+R8-A27-R2-end-session-is-a-noop                         CAUGHT             FAIL R2: end-session exit 0:  
+R8-A28-R2-anchor-after-ignored                          CAUGHT             FAIL R2: run --anchor-after exit 0 anchors=
+R8-D13-R5-deriver-skips-the-anchor-gate                 CAUGHT             FAIL R5: edited anchored ledger: verify=2 verdict=0  {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], 
+R8-D14-R5-deriver-chain-only-is-default                 CAUGHT             FAIL R5: unanchored ledger: verdict exit 0
+R8-A29-R3-probe-claims-no-reconfigure-risk              NOT_CAUSE_CAUGHT   1 unrelated FAIL line(s), e.g. FAIL R3: probe record lacks the honest facts: {"at":"2026-10-08T13:57:31Z","count":4,"head":"3e342d1
+T056-D1-green-without-prior-red                         CAUGHT             FAIL case green_first: exit 0, want 1 ()
+D1b-green-without-any-red                               CAUGHT             FAIL case reopen_no_new: wrong checks: {"item": "CAT-001", "cycle_after_seq": 5, "reopens_counted": 1, "reopens_ignored": [], "red_ok": true
+D2-red-accepts-any-nonzero                              CAUGHT             FAIL case exit127: wrong checks: {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "gre
+D3-same-test-ignores-test-fingerprint                   CAUGHT             FAIL case typo_red: exit 0, want 1 ()
+D4-green-iterations-not-distinct                        CAUGHT             FAIL case green_dup_iter: exit 0, want 1 ()
+D5-fingerprints-new-dropped                             CAUGHT             FAIL case green_on_reopen_fp: exit 0, want 1 ()
+D6-reopen-cuts-without-genuine-failure                  CAUGHT             FAIL case reopen_pass: exit 0, want 1 ()
+D7-reopen-cuts-an-incomplete-cycle                      CAUGHT             FAIL case reopen_after_fail: exit 0, want 1 ()
+D8-same-test-compares-argv-with-token                   CAUGHT             FAIL T051a golden-good: exit 1 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green
+D9-green-identical-unmasked                             CAUGHT             FAIL T051a golden-good: exit 1 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green
+D10-strict-mode-skips-schema                            CAUGHT             FAIL strict mode on a forged ledger: exit 3
+D11-deriver-trusts-a-broken-chain                       CAUGHT             FAIL deleted entry: exit 1
+T056-K1-deriver-skips-token-comparison                  CAUGHT             FAIL T051a golden-bad: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_
+K2-token-rule-only-with-flag                            CAUGHT             FAIL T051a: rule not applied by token presence: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": []
+K3-token-compared-against-any-blob-not-own              CAUGHT             FAIL T051a golden-bad: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_
+K4-token-shared-between-entries-allowed                 CAUGHT             FAIL T051a: shared token accepted by the deriver: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": 
+K5-verify-ignores-reused-token                          CAUGHT             FAIL T051a: verify on a reused token: exit 0 verify: ledger=/tmp/tmp.7mA1naTmvn/tk-re/ledger.jsonl blobs=/tmp/tmp.7mA1naTmvn/tk-re/blobs
+K6-argv-token-redacted                                  CAUGHT             FAIL T051a: token missing or redacted in the recorded argv: ["/tmp/mut.xfe4n4jk/tools/evidence/wrap-bash.sh","--run-token","[REDACTED:patter
+K7-stream-token-redacted                                CAUGHT             FAIL T051a: token not in the stdout blob
+K8-token-not-random                                     CAUGHT             FAIL T051a: tokens equal or absent
+K9-token-short                                          CAUGHT             FAIL T051a: evrec token printed [6ddcf206]
+P-go1-test-level-failures-ignored                       CAUGHT             FAIL recorded seeded failure is reported through the parser (exit 126, want 1; )
+P-go2-truncation-not-detected                           CAUGHT             FAIL a test that started and never finished is no pass and no failure verdict (126) (exit 0, want 126; )
+P-go3-zero-tests-pass                                   CAUGHT             FAIL a package without test files ran zero tests: error (summary lacks /reason=no_tests/: wrap: runner=go status=error tests=0 passed=0 fail
+P-go4-build-failure-is-a-test-failure                   CAUGHT             FAIL a package that does not compile is an error, not a test failure (exit 1, want 126; )
+P-bash1-summary-beats-fail-lines                        CAUGHT             FAIL recorded seeded failure (summary lacks /failed=1/: wrap: runner=bash status=fail tests=1 passed=1 failed=0 skipped=0|wrap: reason=summa
+P-bash2-exit-status-ignored                             CAUGHT             FAIL death under set -e: no FAIL line, no summary, exit 1 is still a failure (exit 0, want 1; )
+P-bash3-lost-line-ignored                               CAUGHT             FAIL a lost line (summary counts 3, two seen) is a failure (exit 0, want 1; )
+P-vt1-header-trusted-over-assertions                    CAUGHT             FAIL recorded seeded failure is reported through the parser (summary lacks /tests=4/: wrap: runner=vitest status=fail tests=3 passed=2 faile
+P-vt2-truncated-report-passes                           CAUGHT             FAIL hidden failure behind a TRUNCATED report is still found (exit 126, want 1; )
+P-vt3-header-failures-ignored                           CAUGHT             FAIL a header that counts failures the assertions do not show fails (hidden failure) (exit 0, want 1; )
+P-gr1-header-counts-trusted                             CAUGHT             FAIL authored seeded failure across two result files (summary lacks /failed=1/: wrap: runner=gradle status=fail tests=4 passed=4 failed=0 sk
+P-gr2-truncated-xml-passes                              CAUGHT             FAIL a truncated XML report still shows the failure (exit 126, want 1; )
+P-cg1-last-summary-wins                                 CAUGHT             FAIL authored seeded failure (summary lacks /failed=1/: wrap: runner=cargo status=fail tests=2 passed=2 failed=0 skipped=0|wrap: reason=summ
+P-cg2-build-error-is-pass-or-fail                       CAUGHT             FAIL a compile error is an error, not a test failure (exit 1, want 126; )
+W1-token-not-exported-bash                              CAUGHT             FAIL live: EVREC_RUN_TOKEN is exported to the test (exit 1, want 0; )
+W2-token-not-required                                   CAUGHT             FAIL no --run-token is refused (run_token_missing) (exit 126, want 126 reason=run_token_missing; stderr: wrap: refused reason=run_token_malf
+W3-token-shape-not-checked                              CAUGHT             FAIL a malformed --run-token is refused (run_token_malformed) (exit 0, want 126 reason=run_token_malformed; stderr: )
+W4-wrapper-prints-the-token                             CAUGHT             FAIL live: the wrapper itself printed the token
+W5-missing-runner-is-a-test-failure                     CAUGHT             FAIL live: a command that does not exist is an error (126), never a test failure (exit 1, stderr: bad )
+T52-L1-library-prints-pass-without-the-recorder         CAUGHT             FAIL recorder unavailable: PASS: d [evidence: /tmp/tmp.u3ojaLTqrb/w/evidence.json]
+T52-L2-library-never-calls-the-recorder                 CAUGHT             FAIL recorder unavailable: PASS: d [evidence: /tmp/tmp.BT4kZ2UMwq/w/evidence.json]
+T52-L3-empty-evidence-passes                            CAUGHT             FAIL negative control: PASS: d [evidence: /tmp/tmp.A70zOUMgcq/w/empty.json]
+T52-C1-census-counts-substrings                         CAUGHT             FAIL census: carriers
+T52-C2-census-blind-heredoc                             CAUGHT             FAIL census: tool failed on the scratch tree (exit 2) census: blind reason=needle_not_found the census instrument cannot see its own control
+T52-C4-census-misses-function-keyword-form              CAUGHT             FAIL census: tool failed on the scratch tree (exit 2) census: blind reason=needle_not_found the census instrument cannot see its own control
+mutants=76 caught=75 reported_unspecified=0 not_caught_or_invalid=1
+SURVIVOR/INVALID: R8-A29-R3-probe-claims-no-reconfigure-risk (NOT_CAUSE_CAUGHT) 1 unrelated FAIL line(s), e.g. FAIL R3: probe record lacks the honest facts: {"at":"2026-10-08T13:57:31Z","count":4,"head":"3e342d1

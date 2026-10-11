@@ -1,0 +1,20 @@
+ok   census: the control needle (function keyword form) and the spaced form are found, the decoys are not
+ok   census: carriers (mentions only) are listed apart from definitions
+ok   census: it reports that its own needle probe was found (the instrument can see)
+ok   census: a statement-position call is a call, not a definition
+ok   census: an absent root is a named refusal, never an empty census
+ok   repo census: no per-script definition remains under scripts/testing/full_automation (0)
+ok   repo census: the one shipping definition is tools/evidence/lib/ab_pass_with_evidence.sh (the legacy copy under fixtures/ is a fixture)
+ok   repo census: every one of the 11 suites still calls the helper (nothing was dropped)
+ok   every suite sources the shared definition by its own location
+ok   every suite still parses (bash -n)
+ok   golden-bad: the legacy copy prints PASS and writes NO ev/1 entry (the bluff the replacement removes)
+ok   golden-good: the shared definition prints the legacy PASS line and counts it
+ok   golden-good: exactly one ev/1 entry was written and the ledger verifies
+ok   golden-good: the entry names the item, is exit 0, carries the sha256 of the evidence bytes and the evidence path in its argv
+ok   negative control: empty evidence prints the legacy FAIL line, returns 1, writes no entry
+ok   recorder unavailable: FAIL, never PASS (a PASS without an entry is the bluff)
+ok   recorder refusing (ledger directory unwritable): FAIL, never PASS
+ok   two calls: two entries with iterations 1 and 2, SUMMARY_ROWS keeps the legacy tab format
+ok   without EVREC_ITEM the entry is filed under RUN-<pid> (a canonical run id)
+checks=19 failures=0

@@ -24,7 +24,7 @@ for pair in "scripts/foo.sh:source" "docs/new/page.md:source" "tests/contracts/v
   "$EV/p0-exit.json:evidence" "$AUD/golden.json:evidence" "$AUD/lumen-verify/results.tsv:evidence" "$EV/blobs/0123abcd:evidence" "$EV/x/SHA256SUMS:evidence" \
   "$EV/notes/a.md:source" "$EV/x/other.jsonl:evidence" "$EV/ledger.jsonl:evidence-ledger" "$EV/flake_ledger.jsonl:evidence-ledger" \
   "$AUD/patches/a.patch:patches" "scripts/x.patch:source" \
-  ".specify/memory/constitution-appendix.md:governance-carrier" "submodules/constitution/Constitution.md:governance-carrier" \
+  ".specify/memory/constitution-appendix.md:governance-carrier" "constitution/Constitution.md:governance-carrier" \
   "docs/issues/ISS-1.md:legacy-collection" "$EV/x/GoFile_test.go:source"; do
   out="$("$H" --exemptions "$TBL/check_exemptions.tsv" --classes "$TBL/check_classes.tsv" --fixture-roots /dev/null --check class "${pair%%:*}" 2>/dev/null)"
   eq "class of ${pair%%:*}" "$out" "${pair##*:}"; done
@@ -45,8 +45,8 @@ eq "evidence-ledger large_file is 32 MiB" "$(ap large_file $EV/ledger.jsonl)" 33
 for c in trailing_whitespace end_of_file check_yaml check_json shell_parse revision_header; do eq "patches skips $c" "$(ap $c $AUD/patches/a.patch)" skip; done
 for c in secret_fold private_key merge_conflict; do eq "patches applies $c" "$(ap $c $AUD/patches/a.patch)" apply; done
 eq "patches large_file" "$(ap large_file $AUD/patches/a.patch)" 1024000
-for c in secret_fold merge_conflict trailing_whitespace end_of_file revision_header private_key; do eq "governance-carrier applies $c" "$(ap $c submodules/constitution/Constitution.md)" apply; done
-for c in check_yaml check_json shell_parse anti_bluff check_pins; do eq "governance-carrier skips $c" "$(ap $c submodules/constitution/Constitution.md)" skip; done
+for c in secret_fold merge_conflict trailing_whitespace end_of_file revision_header private_key; do eq "governance-carrier applies $c" "$(ap $c constitution/Constitution.md)" apply; done
+for c in check_yaml check_json shell_parse anti_bluff check_pins; do eq "governance-carrier skips $c" "$(ap $c constitution/Constitution.md)" skip; done
 eq "governance-carrier large_file is 4 MiB" "$(ap large_file .specify/memory/constitution-appendix.md)" 4194304
 eq "legacy-collection skips revision_header" "$(ap revision_header docs/issues/ISS-1.md)" skip
 for c in trailing_whitespace end_of_file shell_parse secret_fold; do eq "legacy-collection applies $c" "$(ap $c docs/issues/ISS-1.md)" apply; done

@@ -22,7 +22,7 @@
 # (scripts/containers/run_pinned.sh) does not exist yet; rerun under RUNP when WP-09 lands (UNCONFIRMED).
 set -u
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../../.." && pwd)
-EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/verify
+EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/tests/verify_chain_only.sh
 SCHEMA=$root/specs/001-full-project-audit-remediation/contracts/evidence-record.schema.json
 S=$(mktemp -d); trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$S"' EXIT
 fails=0; n=0
@@ -248,29 +248,29 @@ if [ -s "$EV_LEDGER" ]; then
   [[ $LASTTOK =~ ^[0-9a-f]{32}$ ]] && jq -e --arg t "$LASTTOK" '[.argv[]]|index($t)!=null and (index("--run-token")!=null)' "$EV_LEDGER" >/dev/null 2>&1 && ok "T051a: the recorded argv holds --run-token and the token (not redacted)" || bad "T051a: token missing or redacted in the recorded argv: $(tail -1 "$EV_LEDGER" | jq -c .argv 2>/dev/null)"
   ob=$(tail -1 "$EV_LEDGER" | jq -r .stdout_sha256 2>/dev/null); { [[ $LASTTOK =~ ^[0-9a-f]{32}$ ]] && grep -qF "EVREC_RUN_TOKEN=$LASTTOK" "$EV_BLOBS/$ob" 2>/dev/null; } && ok "T051a: the test's post-state line carries the token in the stored stdout blob (not redacted)" || bad "T051a: token not in the stdout blob"
 else bad "T051a: no ledger written by the wrapper run"; bad "T051a: no stdout blob"; fi
-out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" --state-delta 2>/dev/null); r=$?
+"$EVREC" end-session >/dev/null 2>&1; out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" --state-delta 2>/dev/null); r=$?
 { [ "$r" = 0 ] && printf '%s' "$out" | jq -e '.verdict=="PASS" and .token_ok==true' >/dev/null 2>&1; } && ok "T051a golden-good: token written and read back, state-delta GREEN derives PASS (token_ok true)" || bad "T051a golden-good: exit $r $out"
 cd "$S"
 fresh; mkstate "$S/tk-bad"; export EV_LEDGER=$S/tk-bad/ledger.jsonl EV_ANCHOR=$S/tk-bad/anchors.jsonl EV_BLOBS=$S/tk-bad/blobs
 tr_run RED 1 st.sh art.txt state.txt; echo fixed >art.txt; printf 'deadbeefdeadbeefdeadbeefdeadbeef\n' >state.txt   # the state an EARLIER run left behind
 for i in 1 2 3; do tr_run GREEN "$i" st.sh art.txt state.txt ST_STALE=1; done
-out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" --state-delta 2>/dev/null); r=$?
+"$EVREC" end-session >/dev/null 2>&1; out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" --state-delta 2>/dev/null); r=$?
 { [ "$r" = 1 ] && printf '%s' "$out" | jq -e '.verdict=="FAIL" and .token_ok==false' >/dev/null 2>&1; } && ok "T051a golden-bad: post-state carries the token of an EARLIER run, derives FAIL (token_ok false)" || bad "T051a golden-bad: exit $r $out"
-out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
+"$EVREC" end-session >/dev/null 2>&1; out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
 { [ "$r" = 1 ] && printf '%s' "$out" | jq -e '.token_ok==false' >/dev/null 2>&1; } && ok "T051a: a token-carrying entry applies the rule without --state-delta (a producer cannot opt out by omitting the flag)" || bad "T051a: rule not applied by token presence: exit $r $out"
 cd "$S"
 fresh; mkstate "$S/tk-ro"; export EV_LEDGER=$S/tk-ro/ledger.jsonl EV_ANCHOR=$S/tk-ro/anchors.jsonl EV_BLOBS=$S/tk-ro/blobs
 cd "$S/tk-ro"; echo broken >art.txt
 ro() { "$EVREC" run CAT-001 "$1" "$2" shell_script art.txt --oracle specified --oracle-independent --evidence-class runtime --test-source ./ro.sh -- ./ro.sh art.txt >/dev/null 2>&1; }
 ro RED 1; echo fixed >art.txt; for i in 1 2 3; do ro GREEN "$i"; done
-out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
+"$EVREC" end-session >/dev/null 2>&1; out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
 { [ "$r" = 0 ] && printf '%s' "$out" | jq -e '.verdict=="PASS" and (has("token_ok")|not)' >/dev/null 2>&1; } && ok "T051a negative control: a read-only test changes no state and needs no token (PASS)" || bad "T051a negative control: exit $r $out"
 cd "$S"
 # a token shared by the GREEN entries is refused by the deriver itself (verify reports it too, below): a token names ONE run
 fresh; mkstate "$S/tk-sh"; export EV_LEDGER=$S/tk-sh/ledger.jsonl EV_ANCHOR=$S/tk-sh/anchors.jsonl EV_BLOBS=$S/tk-sh/blobs
 tr_run RED 1 st.sh art.txt state.txt; echo fixed >art.txt; shared3=$(tokn)
 for i in 1 2 3; do "$EVREC" run CAT-001 GREEN "$i" shell_script art.txt --oracle specified --oracle-independent --evidence-class runtime --test-source ./st.sh -- "$WRAPB" --run-token "$shared3" -- ./st.sh art.txt state.txt >/dev/null 2>&1; done
-out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
+"$EVREC" end-session >/dev/null 2>&1; out=$("$VERDICT" CAT-001 --ledger "$EV_LEDGER" 2>/dev/null); r=$?
 { [ "$r" = 1 ] && printf '%s' "$out" | jq -e '.token_ok==false and (.token_notes|join(" ")|test("shared"))' >/dev/null 2>&1; } && ok "T051a: GREEN entries that share one token derive FAIL (token_ok false, the notes say shared)" || bad "T051a: shared token accepted by the deriver: exit $r $out"
 cd "$S"
 # verify reports run_token_reused for two entries that share one token

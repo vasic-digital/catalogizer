@@ -1,0 +1,44 @@
+=== test_index_health
+SUMMARY pass=13 fail=0
+rc=0
+=== test_index_health_extra
+SUMMARY pass=105 fail=0
+rc=0
+=== test_scope_to_lumen_json
+IDENTITY test=fb50f87b651b1f7943bb0995298fc2568eba6f1c6344cdf19edbcf357554375e script=b998b5473c347b3366d00ee5624236fc7bfd3625c0254184eb5f1c0fe04cbf7b head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton python=3.14.4 utc=2026-10-08T13:33:33Z
+SUMMARY pass=69 fail=0
+rc=0
+=== test_scope_drift_check
+SUMMARY pass=12 fail=0
+rc=0
+=== test_scope_negation_reports
+SUMMARY rc=0
+rc=0
+=== test_derive_scope
+IDENTITY test=2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2 script=253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183 head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton git=2.53.0 python=3.14.4 utc=2026-10-08T13:33:38Z
+SUMMARY pass=9 fail=0
+rc=0
+=== T004 test_planned_paths_tracked
+PASS T019-shaped block appended after END marker: sweep unchanged (rule-lines=58, no false SURVIVED)
+TOTAL planned=107 control=187 failures=0
+rc=0
+=== scope_render --check
+SCOPE_RENDER {"config_filename": "codegraph.json", "drift": [], "exclude_patterns": 90, "gitmodules_files": 4, "include_patterns": 0, "negations": 6, "order_lint_unprobed": 0, "own_org_roots": 50, "third_party_roots": 44}
+rc=0
+=== scope_drift_check
+scope_render_check: SCOPE_RENDER {"config_filename": "codegraph.json", "drift": [], "exclude_patterns": 90, "gitmodules_files": 4, "include_patterns": 0, "negations": 6, "order_lint_unprobed": 0, "own_org_roots": 50, "third_party_roots": 44}
+rc=0
+[
+  {
+    "check": "scope_render_check",
+    "rc": 0
+  },
+  {
+    "check": "scope_to_lumen_json_check",
+    "rc": 0
+  },
+  {
+    "check": "lumenignore_fresh",
+    "rc": 0
+  }
+]

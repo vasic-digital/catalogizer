@@ -1,0 +1,20 @@
+$ tools/evidence/verify   # live ledger, after `evrec end-session`
+verify: ledger=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/ledger.jsonl blobs=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/blobs
+OK chain=90 entries head=da2e2808c8bd (chain, ev/1 schema, canonical form, blobs and anchor verified)
+anchor agrees: 1 row(s), newest count=90 head=da2e2808c8bd strength=policy
+size ledger.jsonl = 106092 bytes of bound 33554432 (scripts/repo/check_classes.tsv)
+rc=0
+
+$ tools/evidence/verify --chain-only
+verify: ledger=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/ledger.jsonl blobs=/home/milosvasic/Projects/catalogizer/specs/001-full-project-audit-remediation/evidence/blobs
+OK chain=90 entries head=da2e2808c8bd (chain, ev/1 schema, canonical form, blobs and anchor verified)
+anchor agrees: 1 row(s), newest count=90 head=da2e2808c8bd strength=policy
+size ledger.jsonl = 106092 bytes of bound 33554432 (scripts/repo/check_classes.tsv)
+rc=0
+
+$ tail anchors.jsonl
+{"at":"2026-10-08T13:33:24Z","count":90,"head":"da2e2808c8bd839a4ed3c1d249df7ee90d9aabd6c6a1cc1a605a59b17cc6080a","schema":"ev-anchor/1","strength":"policy"}
+
+$ tools/evidence/verdict AUD-T164   # the deriver now names its anchor result
+{"item": "AUD-T164", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "green_identical": true, "same_test": true, "red_before_green": true, "fingerprints_differ": true, "fingerprints_new": true, "verdict": "PASS", "anchor": "agrees: 1 row(s), newest count=90 head=da2e2808c8bd strength=policy"}
+rc=0

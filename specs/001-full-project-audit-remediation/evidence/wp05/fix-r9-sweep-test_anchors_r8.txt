@@ -1,0 +1,46 @@
+ok   R1: a ledger with NO anchors file is UNVERIFIED, exit 3 reason=anchor_absent
+ok   R1: a no-anchor verify never prints an OK line
+ok   R1: an EMPTY anchors file is UNVERIFIED, exit 3 anchor_absent
+ok   R1: a truncated tail with no anchors file is UNVERIFIED (exit 3), not verified
+ok   R1: delete-and-recompute with no anchors file is UNVERIFIED (exit 3), not verified
+ok   R1: --chain-only on an unanchored ledger exits 0 and says CHAIN-ONLY
+ok   R1: --chain-only output never claims the ledger is verified
+ok   R1: --chain-only does NOT switch off an anchor that is present (delete-and-recompute still exit 2)
+ok   R1: ledger plus agreeing anchor still verifies, exit 0 (golden-false: the new rule does not refuse a good ledger)
+ok   R2: evrec end-session anchors the ledger (exit 0)
+ok   R2: after end-session the ledger verifies against its anchor (exit 0)
+ok   R2: a second end-session on an unchanged ledger is a no-op (anchor file byte-identical)
+ok   R2: end-session takes no arguments (usage error 64)
+ok   R2: evrec run --anchor-after anchors right after recording (1 row, count 1)
+ok   R2: a second --anchor-after run appends the second anchor row (count 2)
+ok   R2: a ledger written with --anchor-after verifies against the last row (exit 0)
+ok   R2: end-session on a ledger whose chain fails writes nothing and fails (exit 1, chain_failure)
+ok   R3: a same-uid local bare repository that denies rewrites by config is still only policy (the reviewer's repro)
+ok   R3: the probe record states producer_can_reconfigure=true and anchor_location=local_file
+ok   R3: --strength mechanism over a reconfigurable remote is refused (71 strength_unproven, nothing written)
+ok   R3: --strength mechanism over a nonexistent remote is refused (71)
+ok   R4: a hand-written mechanism row over a NONEXISTENT remote and a truncated ledger is UNVERIFIED (exit 3 strength_unproven), not 'agrees'
+ok   R4: a hand-written mechanism row over a real deny.git remote and an intact ledger is UNVERIFIED (exit 3 strength_unproven)
+ok   R4: a hand-written mechanism row over an intact ledger is not accepted either (exit 3)
+ok   R5: golden-false: an anchored good ledger derives PASS, exit 0
+ok   R5: the derivation names the anchor result it relied on
+ok   R5: an anchored ledger edited with the chain recomputed: verify exits 2 and verdict exits 3 anchor_disagrees (no verdict)
+ok   R5: a ledger with no anchors derives no verdict (exit 3 anchor_absent)
+ok   R5: --chain-only is the explicit opt-in, the output says the anchor was not compared, and a derived PASS is CHAIN-ONLY-UNVERIFIED exit 4 (round 9 F2)
+ok   R5: --chain-only does not switch off a PRESENT anchor that disagrees (exit 3)
+ok   R5: a reordered-and-recomputed ledger that flips the verdict's checks is refused (verify 2, verdict 3)
+ok   REV-1: an anchor row with a count below the previous row's (each row agrees with the chain) is anchor_inconsistent, exit 2
+ok   REV-6: an anchor row with count 0 (it would index entry -1) is not a valid row, exit 3 anchor_not_compared
+ok   REV-5: evrec anchor waits for the ledger lock and refuses (75 lock_held) while another writer holds it, writing nothing
+ok   REV-3: a local anchor exactly at the common prefix (count 2) survives the re-record next to the remote's count 1 and the re-chained head
+ok   REV-4 control: RED and three GREEN from one directory derive PASS (same_test true)
+ok   REV-4: one GREEN run from another directory makes same_test false and the verdict FAIL
+ok   R8: test_state_gos description no longer says the name stays UNCONFIRMED until T048a lands
+ok   R8: test_state_gos a repository-relative verdict file path (valid)
+ok   R8: test_state_gos a short relative verdict file name (valid)
+ok   R8: test_state_gos a path-traversal entry (refused)
+ok   R8: test_state_gos an absolute path (refused)
+ok   R8: test_state_gos a non-json name (refused)
+ok   R8: test_state_gos an embedded parent segment (refused)
+ok   R8: the WP-05 independent verdict file validates against contracts/review-verdict.schema.json (finding_layer in source/artifact/runtime, the 11.4.235(D) class kept as finding_class)
+checks=45 failures=0

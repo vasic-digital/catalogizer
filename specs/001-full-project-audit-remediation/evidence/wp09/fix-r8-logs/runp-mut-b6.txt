@@ -1,0 +1,4 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:24Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-argv-net-host: caught (5 failing checks; first: FAIL: R-3: golden argv, default run (exact, whole argv) (got '25d24|< --network=host|' wan|FAIL: R-3: golden argv, --rw docs --network=none --out (exact) (got '25d24|< --network=hos|)
+MUTATION x-out-tmpdir-ambient: caught (1 failing checks; first: FAIL: R-1: outside a test run an ambient TMPDIR is not a root (checkout and out both outsi|)
+MUTATION x-scrub-test-mode: caught (1 failing checks; first: FAIL: R-2: DISK_HEADROOM_TEST_MODE is forwarded to disk_headroom.sh|)

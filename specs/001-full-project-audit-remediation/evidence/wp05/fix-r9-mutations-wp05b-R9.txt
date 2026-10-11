@@ -1,0 +1,9 @@
+baseline green: test_anchors_r9.sh run on the unmutated tree with 0 FAIL lines
+R9-RR2-4-anchor-after-swallows-the-refusal              CAUGHT             FAIL F1/RR2-4: exit 0 out=recorded seq=1 item=CAT-001 pol=PROBE it=1 exit=0 verdict=pass err=
+R9-F2-chain-only-pass-stays-pass                        CAUGHT             FAIL F2: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "gr
+R9-F2-chain-only-unverified-exit-0                      CAUGHT             FAIL F2: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "gr
+R9-F3-run-skips-the-anchor-precheck                     CAUGHT             FAIL F3 truncation: exit 0
+R9-F3-precheck-compares-no-head                         CAUGHT             FAIL F3 head: exit 0 
+R9-F3-precheck-compares-no-count                        CAUGHT             FAIL F3 truncation: exit 1
+R9-F3-precheck-blocks-a-lagging-anchor                  CAUGHT             FAIL F3 control: lagging anchor blocked a run (exit 2) evrec: refused reason=anchor_disagrees anchored count=4 head=7aa76fc43850 but the led
+mutants=7 caught=7 reported_unspecified=0 not_caught_or_invalid=0

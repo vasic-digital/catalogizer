@@ -44,7 +44,7 @@
 # This script intentionally does NOT commit or push. The operator reviews the
 # resulting working tree and commits under controlled conditions.
 #
-# NOTE: `submodules/constitution` is already migrated and is NOT in the mapping,
+# NOTE: `constitution` is already migrated and is NOT in the mapping,
 # so it is never touched.
 #
 # Constitution reference: doc §11.4.18 (companion: docs/scripts/reorg_submodules.md)

@@ -1,0 +1,15 @@
+# round 11 shellcheck -S warning (final shas), IMG-SHELLCHECK via run_pinned --network=none; utc=2026-10-08T18:40:21Z
+# sha256 f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c  scripts/repo/verify_repos.sh
+# sha256 f18c199f802e3d531fecc5291975e6d848996c92162cfdd20adb027a08a54aa4  scripts/repo/tests/test_verify_repos.sh
+# sha256 d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412  scripts/repo/tests/test_verify_repos_r6.sh
+# sha256 ac5d62d53029c60a665455465a4070a7e5d37850a36a6f531a9e12425fa47629  scripts/repo/tests/test_verify_repos_r7.sh
+# sha256 33401c3b611eac42243c3a298a245132cd28ea0f29860749583cb86f178451bb  scripts/repo/tests/test_verify_repos_r8.sh
+# sha256 90ddd50de1948748951c73e65d813debc37a8eefa4e29f23a014f659a326d340  scripts/repo/tests/test_verify_repos_r9.sh
+# sha256 baa0926305a578ca1df62c6e069f75c012db61215d92ccb25422d6a3ddf187b8  scripts/repo/tests/test_verify_repos_r10.sh
+# sha256 b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d  scripts/repo/tests/test_verify_schema.sh
+# sha256 cfdf612f3a242b71b3036b5ced1e9d96ab26e15a39b3f2b62db6d662d0bfbda0  specs/001-full-project-audit-remediation/evidence/wp03/fix-r6-mutate.sh
+# sha256 9e56bb5f62c87fb5082eab101a00d13050f0c574326b791a4a11a5f6e776a788  specs/001-full-project-audit-remediation/evidence/wp03/fix-r6-probe.sh
+# sha256 2fa0e41373f63b54aa1109163ed94c5a055d0de1b660377a80532cae91d0e821  specs/001-full-project-audit-remediation/evidence/wp03/fix-r6-red.sh
+# sha256 5d6ae073c36a27923e057104361eb68cc1fe3f4775a364414ab81a51d519422f  specs/001-full-project-audit-remediation/evidence/wp03/fix-r6-green.sh
+## container rc=0
+## host rc=0

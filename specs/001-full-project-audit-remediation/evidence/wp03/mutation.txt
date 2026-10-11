@@ -1,18 +1,16 @@
-=== mutant no_dirty_check: /exit 13$/d
-225d224
-< [ "$n_dirty" -gt 0 ] && exit 13
-T031 against mutant no_dirty_check: rc=1 SUMMARY pass=53 fail=5
-FAIL dirty file, plain: exit 13 (got '0', want '13')
-FAIL unreachable remote plus dirty file, plain: exit 13 (failing class precedes 14) (got '14', want '13')
-FAIL dirty plus diverged, --fetch: exit 13 (decision a: dirty first) (got '12', want '13')
-FAIL unexplained stash, plain: exit 13 (got '0', want '13')
-FAIL --no-remote still decides dirty (13) (got '0', want '13')
-=== mutant no_divergence_check: /exit 12$/{/n_div/d}
-226d225
-< [ "$n_div" -gt 0 ] && exit 12
-T031 against mutant no_divergence_check: rc=1 SUMMARY pass=55 fail=3
-FAIL diverged branch, --fetch: exit 12 (got '0', want '12')
-FAIL remote tip rewritten by a forced update, --fetch: exit 12 (got '0', want '12')
-FAIL R4 histories split, --fetch: exit 12 (DIVERGED) (got '0', want '12')
-=== mutant control_unmutated: s/zzzz_nomatch//
-T031 against mutant control_unmutated: rc=0 SUMMARY pass=58 fail=0
+# T034 re-recorded 2026-10-08 (round 11) for the current verifier; supersedes the record for the ~225-line verifier (in git history).
+# verifier sha256 f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c; test_verify_repos.sh sha256 f18c199f802e3d531fecc5291975e6d848996c92162cfdd20adb027a08a54aa4
+# method: fix-r6-mutate.sh builds each mutant in a scratch copy and runs the full T031 matrix (test_verify_repos.sh, 404 cases); control unmutated = 404/0 (fix-r6-green-*-test_verify_repos.txt)
+mutant no_dirty_check ([ "$n_dirty" -gt 0 ] && exit 13 removed):
+=== mutant T034_no_dirty_check
+  main rc=1 SUMMARY pass=358 fail=46
+    FAIL dirty file, plain: exit 13 (got '0', want '13')
+
+    FAIL unreachable remote plus dirty file, plain: exit 13 (failing class precedes 14) (got '14', want '13')
+mutant no_divergence_check ([ "$n_div" -gt 0 ] && exit 12 removed):
+=== mutant T034_no_divergence_check
+  main rc=1 SUMMARY pass=385 fail=19
+    FAIL diverged branch, --fetch: exit 12 (got '0', want '12')
+
+    FAIL remote tip rewritten by a forced update, --fetch: exit 12 (got '0', want '12')
+Both mutants are CAUGHT (the T031 matrix FAILs).

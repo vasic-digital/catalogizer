@@ -271,7 +271,7 @@ runp --out "$CK/somewhere/else" IMG-TOOL -- true; check "--out at an arbitrary s
 runp --out "$CK/.audit/out/../../docs" IMG-TOOL -- true; check "--out reaching docs through .. is refused" "$RC" 1
 runp --out "$CK/.audit/out/o2" IMG-TOOL -- true; check "--out under .audit/out is accepted" "$RC" 0
 runp --out "$CK/.audit/scratch/o3" IMG-TOOL -- true; check "--out under .audit/scratch is accepted" "$RC" 0
-runp --out "$CK/specs/001-full-project-audit-remediation/evidence/wp09/o4" IMG-TOOL -- true; check "--out under the evidence tree is accepted" "$RC" 0
+runp --out "$CK/specs/001-full-project-audit-remediation/evidence/wp09/smoke-out/o4" IMG-TOOL -- true; check "--out under <evidence>/wp09/smoke-out is accepted (R-1: the evidence tree itself is not, see the R-1 section)" "$RC" 0
 runp --out "$T/outdir/o5" IMG-TOOL -- true; check "--out outside the source tree is accepted" "$RC" 0
 rm -rf "$CK/.audit/out"; ln -s "$CK/docs" "$CK/.audit/out"
 runp --out "$CK/.audit/out/x" IMG-TOOL -- true; check "--out through an .audit/out symlink to docs is refused" "$RC" 1
@@ -495,6 +495,127 @@ if [ "$(ps -u "$(id -u)" -o pid= 2>/dev/null | wc -l)" -lt 8000 ] && ( ulimit -u
   check "real ulimit -u 10000: RUNP_PIDS=5001 is refused" "$(printf '%s\n' "$rl" | grep '^above')" "above rc=1"
 else echo "SKIP: real ulimit -u 10000 leg (the host user already runs too many processes, or the soft limit cannot be lowered)"; fi
 
+# ---------- review fix round 8 (WP-09-T010 R-1..R-8) ----------
+EVD="specs/001-full-project-audit-remediation/evidence"
+# R-1: --out is a closed set. Inside the tree only strictly BELOW .audit/out, .audit/scratch or <evidence>/wpNN*/.../smoke-out; the review/verdict tree
+# (<evidence>/reviews), SHA256SUMS and every other evidence file are never reachable; outside the tree only below /tmp, /var/tmp (and TMPDIR in a declared test run).
+mkcheckout "$CK"
+for rel in "$EVD" "$EVD/reviews" "$EVD/reviews/x" "$EVD/reviews/smoke-out/x" "$EVD/verdicts/smoke-out/x" "$EVD/wp09" "$EVD/wp09/x" "$EVD/wp09/smoke-out" \
+           "$EVD/wp09/smoke-out/../../reviews" "$EVD/SHA256SUMS" "$EVD/wp09/SHA256SUMS" "$EVD/smoke-out/x" "$EVD/wp09/reviews/smoke-out/x" specs "specs/001-full-project-audit-remediation" \
+           .audit/out .audit/scratch .audit/out/.. ; do
+  runp --out "$CK/$rel" IMG-TOOL -- true; check "R-1: --out '$rel' is refused, exit 1" "$RC" 1
+  grep -q 'reason=out_dir_in_source' "$T/err" && ok "  ...reason out_dir_in_source" || bad "  R-1 '$rel' reason: $(cat "$T/err")"
+done
+for rel in "$EVD/wp09/smoke-out/IMG-GO" "$EVD/wp09/fix-r8-smoke/smoke-out/IMG-GO" "$EVD/wp10/smoke-out/a/b" .audit/out/x .audit/out/x/y .audit/scratch/x; do
+  runp --out "$CK/$rel" IMG-TOOL -- true; check "R-1: --out '$rel' is accepted" "$RC" 0
+done
+for p in /etc /usr/lib / /var /root /home /proc /sys; do
+  runp --out "$p" IMG-TOOL -- true; check "R-1: --out outside the declared roots '$p' is refused, exit 1" "$RC" 1
+done
+grep -q 'reason=out_dir_not_sanctioned' "$T/err" && ok "  ...reason out_dir_not_sanctioned" || bad "  R-1 outside reason: $(cat "$T/err")"
+runp --out /tmp IMG-TOOL -- true; check "R-1: --out equal to /tmp itself is refused" "$RC" 1
+runp --out /tmp/runp-r1-ok IMG-TOOL -- true; check "R-1: --out below /tmp is accepted" "$RC" 0
+runp --out /var/tmp/runp-r1-ok IMG-TOOL -- true; check "R-1: --out below /var/tmp is accepted" "$RC" 0
+( unset RUNP_TEST_MODE RUNP_MEMINFO RUNP_ULIMIT_U; export TMPDIR=/var/lib/rtmp; mkdir -p "$T/x" 2>/dev/null; runp --out /var/lib/rtmp/x IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "R-1: TMPDIR is NOT a declared root outside a test run (cannot lift the closed set), exit 1" "$(cat "$T/rc")" 1
+# a checkout that is NOT under /tmp (so an --out of /tmp itself is judged by the outside-the-tree branch, not by the source-overlap branch)
+SHMCK="$(mktemp -d /dev/shm/runp-r1.XXXXXX 2>/dev/null)" && {
+  mkdir -p "$SHMCK/docs" "$SHMCK/.audit/scratch"
+  runp_shm() { ( cd "$SHMCK" && PATH="$SHIMS:$PATH" XDG_STATE_HOME="$SHMCK-state" RUNP_PRINT_ARGV=1 bash "$SUT" "$@" ) >"$T/argv" 2>"$T/err"; RC=$?; }
+  runp_shm --out /tmp IMG-TOOL -- true; check "R-1: checkout outside /tmp: --out equal to /tmp itself is refused, exit 1" "$RC" 1
+  grep -q 'reason=out_dir_not_sanctioned' "$T/err" && ok "  ...reason out_dir_not_sanctioned" || bad "  R-1 /tmp reason: $(cat "$T/err")"
+  runp_shm --out /var/tmp IMG-TOOL -- true; check "R-1: checkout outside /tmp: --out equal to /var/tmp itself is refused" "$RC" 1
+  runp_shm --out /tmp/runp-r1-below IMG-TOOL -- true; check "R-1: checkout outside /tmp: --out strictly below /tmp is accepted" "$RC" 0
+  runp_shm --out /dev/shm/runp-r1-elsewhere IMG-TOOL -- true; check "R-1: checkout outside /tmp: --out below another non-root directory is refused" "$RC" 1
+  SHMT="$(mktemp -d /dev/shm/runp-r1t.XXXXXX)"
+  ( unset RUNP_TEST_MODE RUNP_MEMINFO RUNP_ULIMIT_U; cd "$SHMCK" && PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 TMPDIR="$SHMT" bash "$SUT" --out "$SHMT/x" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
+  check "R-1: outside a test run an ambient TMPDIR is not a root (checkout and out both outside /tmp), exit 1" "$RC" 1
+  ( cd "$SHMCK" && PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 TMPDIR="$SHMT" bash "$SUT" --out "$SHMT/x" IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?
+  check "R-1 control: in a declared test run (RUNP_TEST_MODE=1) TMPDIR is a root, exit 0" "$RC" 0
+  rm -rf "$SHMT"
+  rm -rf "$SHMCK"; }
+# --out below the sanctioned root but reaching the review tree through a symlink is judged on the RESOLVED path
+mkcheckout "$CK"; mkdir -p "$CK/$EVD/reviews" "$CK/$EVD/wp09"; ln -s "$CK/$EVD/reviews" "$CK/$EVD/wp09/smoke-out"
+runp --out "$CK/$EVD/wp09/smoke-out/x" IMG-TOOL -- true; check "R-1: a smoke-out symlink to the review tree is refused (resolved path judged), exit 1" "$RC" 1
+mkcheckout "$CK"
+
+# R-3: the whole composed podman argv is asserted, exactly: privilege-escalating additions cannot survive
+GUSER="$(id -u):$(id -g)"; GMEM=$(( 32000000*1024*60/100 ))
+golden() { # golden <op> <outdir> <rwline|-> <net:0/1> <epo|-> <ref> <user> <cmd...>   (writes $T/golden)
+  local op=$1 out=$2 rw=$3 net=$4 epo=$5 ref=$6 usr=$7; shift 7
+  { printf '%s\n' podman run --rm --pull=never --userns=keep-id --user "$usr" --cap-drop=ALL --security-opt no-new-privileges \
+      --memory "$GMEM" --memory-swap "$GMEM" --pids-limit 2048 --cpus 2 --label project=catalogizer --label "catalogizer.op_id=$op" \
+      --tmpfs /tmp:rw,mode=1777 -e HOME=/tmp -e XDG_CACHE_HOME=/tmp/.cache -e GOCACHE=/tmp/.cache/go-build -e GOMODCACHE=/tmp/go/pkg/mod \
+      -v "$CK:/src:ro" --workdir /src
+    [ "$rw" = - ] || printf '%s\n' -v "$rw"
+    printf '%s\n' -v "$out:/out:rw"
+    [ "$net" = 0 ] || printf '%s\n' --network=none
+    if [ "$epo" != - ]; then printf '%s\n' --entrypoint "$epo" -- "$ref" "${@:2}"; else printf '%s\n' -- "$ref" "$@"; fi; } >"$T/golden"
+}
+export RUNP_ULIMIT_U=100000
+runp --op-id g1 IMG-TOOL -- echo hello world; golden g1 "$CK/.audit/out/g1" - 0 - "docker.io/example/tool@$D1" "$GUSER" echo hello world
+check "R-3: golden argv, default run (exact, whole argv)" "$(cmp -s "$T/argv" "$T/golden" && echo same || { diff "$T/argv" "$T/golden" | head -4 | tr '\n' '|'; })" same
+runp --op-id g2 --rw docs --network=none --need 5 --out "$T/outdir" IMG-TOOL -- go test ./...; golden g2 "$T/outdir" "$CK/docs:/src/docs:rw" 1 - "docker.io/example/tool@$D1" "$GUSER" go test ./...
+check "R-3: golden argv, --rw docs --network=none --out (exact)" "$(cmp -s "$T/argv" "$T/golden" && echo same || { diff "$T/argv" "$T/golden" | head -4 | tr '\n' '|'; })" same
+runp --op-id g3 IMG-SCR -- shellcheck x.sh; golden g3 "$CK/.audit/out/g3" - 0 /bin/shellcheck "docker.io/example/scratch@$D1" "$GUSER" shellcheck x.sh
+check "R-3: golden argv, entrypoint_override image (exact)" "$(cmp -s "$T/argv" "$T/golden" && echo same || { diff "$T/argv" "$T/golden" | head -4 | tr '\n' '|'; })" same
+RUNP_USER=0:0 runp --op-id g4 IMG-TOOL -- true; golden g4 "$CK/.audit/out/g4" - 0 - "docker.io/example/tool@$D1" 0:0 true
+check "R-3: golden argv, RUNP_USER=0:0 (exact)" "$(cmp -s "$T/argv" "$T/golden" && echo same || { diff "$T/argv" "$T/golden" | head -4 | tr '\n' '|'; })" same
+# second oracle: the argv the podman shim receives in run mode equals the same golden
+SHIM_KNOWN="$D1" runrun --op-id g1 IMG-TOOL -- echo hello world; shim_run_argv >"$T/shim_argv"; golden g1 "$CK/.audit/out/g1" - 0 - "docker.io/example/tool@$D1" "$GUSER" echo hello world
+tail -n +2 "$T/golden" >"$T/golden_tail"
+check "R-3: the shim argv of run mode equals the golden minus the leading podman (exact)" "$(cmp -s "$T/shim_argv" "$T/golden_tail" && echo same || echo different)" same
+unset RUNP_ULIMIT_U; mkcheckout "$CK"
+
+# R-5: a repeated --need / --op-id is an error (the large --need alone refuses; it must not be silently replaced)
+runp --need 1000000000000000 --need 1 IMG-TOOL -- true; check "R-5: --need given twice is a usage error, exit 2" "$RC" 2
+runp --op-id a --op-id b IMG-TOOL -- true; check "R-5: --op-id given twice is a usage error, exit 2" "$RC" 2
+runp --need 1 IMG-TOOL -- true; check "R-5 control: --need once composes" "$RC" 0
+runp --op-id a IMG-TOOL -- true; check "R-5 control: --op-id once composes" "$RC" 0
+
+# R-8: an unset (or empty) HOME is a named refusal, not a shell 'unbound variable' abort
+( unset HOME XDG_STATE_HOME; runp IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "R-8: HOME unset (no XDG_STATE_HOME) is refused, exit 1" "$(cat "$T/rc")" 1
+grep -q 'reason=state_dir_unresolvable' "$T/err" && ok "  ...reason state_dir_unresolvable" || bad "  R-8 reason: $(cat "$T/err")"
+grep -q 'unbound variable' "$T/err" && bad "  R-8: a shell 'unbound variable' message leaked" || ok "  ...no 'unbound variable' message"
+( export HOME=""; unset XDG_STATE_HOME; runp IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "R-8: empty HOME is refused, exit 1" "$(cat "$T/rc")" 1
+grep -q 'reason=state_dir_unresolvable' "$T/err" && ok "  ...reason state_dir_unresolvable" || bad "  R-8 empty reason: $(cat "$T/err")"
+( unset HOME; export XDG_STATE_HOME="$T/xdgstate"; runp IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "R-8 control: HOME unset but XDG_STATE_HOME set composes, exit 0" "$(cat "$T/rc")" 0
+
+# R-2: environment classification of run_pinned.sh. Every default-expansion read is listed; a new unclassified variable FAILs.
+#   forwarded-safe: validated/bounded or inert    gated: needs RUNP_TEST_MODE=1    scrubbed: never reaches disk_headroom.sh
+RUNP_ENV_CLASS="RUNP_PRINT_ARGV:inert RUNP_LOCK:input RUNP_MEMORY:bounded RUNP_CPUS:bounded RUNP_PIDS:bounded RUNP_USER:validated RUNP_TEST_MODE:gate RUNP_MEMINFO:gated RUNP_ULIMIT_U:gated XDG_STATE_HOME:store HOME:store TMPDIR:gated-root"
+found="$(grep -oE '\$\{[A-Z][A-Z0-9_]*(:-|-|:\+|\+)' "$SUT" | sed -E 's/^\$\{//; s/(:-|-|:\+|\+)$//' | sort -u | tr '\n' ' ')"
+unclassified=""; for v in $found; do case " $RUNP_ENV_CLASS " in *" $v:"*) ;; *) unclassified="$unclassified $v";; esac; done
+check "R-2: every default-expansion environment read of run_pinned.sh is classified" "$unclassified" ""
+# the scrubbed set never reaches disk_headroom.sh: a stub in a scratch tree dumps the environment it receives
+FW="$T/fwd/scripts/containers"; mkdir -p "$FW" "$T/fwd/build/containers"
+cp "$SUT" "$FW/run_pinned.sh"
+printf '#!/usr/bin/env bash\nenv >"${FWD_ENVDUMP:?}"\nexit 0\n' >"$FW/disk_headroom.sh"; chmod +x "$FW/disk_headroom.sh"
+fwd() { ( cd "$CK" && PATH="$SHIMS:$PATH" RUNP_PRINT_ARGV=1 FWD_ENVDUMP="$T/envdump" "$@" bash "$FW/run_pinned.sh" --op-id fw IMG-TOOL -- true ) >"$T/argv" 2>"$T/err"; RC=$?; }
+for v in DISK_HEADROOM_CONF DISK_HEADROOM_REPO_ROOT EV CPA_HOST_ENTRY DISK_HEADROOM_TEST_MODE; do
+  rm -f "$T/envdump"; fwd env "$v=/nonexistent/forwarded" DISK_HEADROOM_TEST_MODE=1
+  [ -s "$T/envdump" ] || { bad "R-2: stub headroom not reached for $v (rc $RC: $(cat "$T/err"))"; continue; }
+  if [ "$v" = DISK_HEADROOM_TEST_MODE ]; then
+    grep -q '^DISK_HEADROOM_TEST_MODE=' "$T/envdump" && bad "R-2: $v is forwarded to disk_headroom.sh" || ok "R-2: $v is not forwarded to disk_headroom.sh"
+  else
+    grep -q "^$v=" "$T/envdump" && bad "R-2: $v is forwarded to disk_headroom.sh" || ok "R-2: $v is not forwarded to disk_headroom.sh"
+  fi
+done
+rm -f "$T/envdump"; fwd env DISK_HEADROOM_OUT_DIR="$T/disk" DISK_HEADROOM_CMD_TIMEOUT=7
+grep -q "^DISK_HEADROOM_OUT_DIR=$T/disk\$" "$T/envdump" && ok "R-2 control: DISK_HEADROOM_OUT_DIR (documented, CPA) still reaches disk_headroom.sh" || bad "R-2: DISK_HEADROOM_OUT_DIR was scrubbed"
+grep -q '^DISK_HEADROOM_CMD_TIMEOUT=7$' "$T/envdump" && ok "R-2 control: DISK_HEADROOM_CMD_TIMEOUT (validated by the gate) still reaches it" || bad "R-2: DISK_HEADROOM_CMD_TIMEOUT was scrubbed"
+# end to end with the REAL gate: an exported conf with min_free_bytes=0 (and the test-mode switch) must not lift the floor
+printf 'min_free_bytes = 0\n' >"$T/zero.conf"
+runp --need 899999999999 IMG-TOOL -- true; check "R-2 control: need above the headroom is refused by the tracked conf, exit 1" "$RC" 1
+grep -q 'reason=disk_below_headroom' "$T/err" && ok "  ...reason disk_below_headroom" || bad "  R-2 control reason: $(cat "$T/err")"
+DISK_HEADROOM_CONF="$T/zero.conf" DISK_HEADROOM_TEST_MODE=1 runp --need 899999999999 IMG-TOOL -- true
+check "R-2: exported DISK_HEADROOM_CONF (+ test-mode switch) does not lift the floor through RUNP, exit 1" "$RC" 1
+grep -q 'reason=disk_below_headroom' "$T/err" && ok "  ...still reason disk_below_headroom" || bad "  R-2 reason: $(cat "$T/err")"
+mkcheckout "$CK"
+
 # ---------- smoke_probe.sh: a tool that errors is not present (I1) ----------
 SP="$HERE/../smoke_probe.sh"
 SPT="$T/sp"; mkdir -p "$SPT/bin" "$SPT/src"; chmod 555 "$SPT/src"
@@ -543,6 +664,26 @@ x-hook-empty	[ -n "${RUNP_MEMINFO+x}" ]	[ -n "${RUNP_MEMINFO:+x}" ]
 x-lock-isolation	ENTRY="$(python3 -I - "$LOCK" "$IMG" <<'PY'	ENTRY="$(python3 - "$LOCK" "$IMG" <<'PY'
 x-rp-trailing	printf -v "$_v" '%s' "${_x%?x}"	_x=${_x%?x}; printf -v "$_v" '%s' "${_x%$'\n'}"
 x-out-unresolvable	|| refuse out_dir_unresolvable	|| :
+x-argv-privileged	   --cap-drop=ALL	   --cap-drop=ALL --privileged
+x-argv-capadd	   --cap-drop=ALL	   --cap-drop=ALL --cap-add=ALL
+x-argv-label-disable	   --security-opt no-new-privileges 	   --security-opt no-new-privileges --security-opt label=disable 
+x-argv-net-host	   --tmpfs /tmp:rw,mode=1777	   --tmpfs /tmp:rw,mode=1777 --network=host
+x-argv-root-mount	   --tmpfs /tmp:rw,mode=1777	   --tmpfs /tmp:rw,mode=1777 -v /:/host:rw
+x-dup-need	[ "$SEEN_NEED" = 0 ] || usage "--need given twice"; 	
+x-dup-opid	[ "$SEEN_OPID" = 0 ] || usage "--op-id given twice"; 	
+x-home-unset	else refuse state_dir_unresolvable "	else STATE_DIR=/nonexistent/state; : "
+x-home-empty	elif [ -n "${HOME:-}" ]	elif [ -n "${HOME+x}" ]
+x-out-tmp-any	case "$_o/" in "${_tr%/}/"?*) _ok=1;; esac	case "$_o/" in *) _ok=1;; esac
+x-out-tmp-equal	"${_tr%/}/"?*)	"${_tr%/}"*)
+x-out-tmpdir-ambient	[ "${RUNP_TEST_MODE:-}" != 1 ] || _tmps="$_tmps ${TMPDIR:-}"	_tmps="$_tmps ${TMPDIR:-}"
+x-out-reviews-excl	*/reviews/*|*/verdicts/*|*/../*) ;;	*/../*) ;;
+x-out-evidence-wide	case "$_o" in "$PWD_REAL/$EVROOT/wp"[0-9]*/*/smoke-out/?*|"$PWD_REAL/$EVROOT/wp"[0-9]*/smoke-out/?*)	case "$_o" in "$PWD_REAL/$EVROOT"/*)
+x-out-root-equal	"$PWD_REAL/.audit/out/"?*|"$PWD_REAL/.audit/scratch/"?*)	"$PWD_REAL/.audit/out/"*|"$PWD_REAL/.audit/scratch/"*)
+x-scrub-conf	 -u DISK_HEADROOM_CONF	
+x-scrub-repo-root	 -u DISK_HEADROOM_REPO_ROOT	
+x-scrub-ev	 -u EV 	 
+x-scrub-host-entry	 -u CPA_HOST_ENTRY	
+x-scrub-test-mode	 -u DISK_HEADROOM_TEST_MODE	
 XM
 )"
   XNAMES="$(printf '%s\n' "$XMT" | cut -f1 | tr '\n' ' ')"

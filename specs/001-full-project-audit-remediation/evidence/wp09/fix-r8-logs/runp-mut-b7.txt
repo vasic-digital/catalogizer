@@ -1,0 +1,3 @@
+run_pinned.sh paired mutations (test_run_pinned.sh, 2026-10-08T15:22:24Z); sha256 of SUT: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+MUTATION x-argv-root-mount: caught (7 failing checks; first: FAIL: without --rw no writable bind except /out (got '2' want '1')|FAIL: --rw docs adds exactly one extra writable bind (got '3' want '2')|)
+MUTATION x-out-reviews-excl: caught (2 failing checks; first: FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/reviews/smoke-out|FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/reviews/smoke-out/x' r|)

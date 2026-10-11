@@ -1,0 +1,195 @@
+verifier sha256 f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c
+tracked-tree status before: c94f2e1e07be9af1
+=== mutant M0_control_unmutated
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MR1_replace_objects_dropped
+  r8 rc=0 SUMMARY pass=33 fail=5
+    FAIL R1 a replace ref that makes the remote tip look like a descendant: still DIVERGED, exit 12 (got '0', want '12')
+
+    FAIL R1 the diverged problem is listed under --strict (got 'null', want 'number')
+
+    FAIL R1 a caller-set GIT_NO_REPLACE_OBJECTS=0 cannot re-enable replace refs: exit 12 (got '0', want '12')
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MR2_graft_file_dropped
+  r8 rc=0 SUMMARY pass=36 fail=2
+    FAIL R1 an info/grafts line that rewrites the remote tip's parent: still DIVERGED, exit 12 (got '0', want '12')
+
+    FAIL R1 a caller-set GIT_GRAFT_FILE cannot change the verdict: exit 12 (got '0', want '12')
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MR3_commitgraph_dropped
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=1 SUMMARY pass=19 fail=2
+    FAIL N2 every merge-base --is-ancestor call carries core.commitGraph=false (got '0', want '2')
+
+    FAIL N2 no git call at all lacks core.commitGraph=false (got '28', want '0')
+  r10 rc=1 SUMMARY pass=42 fail=5
+    FAIL P07.1 forged interior commit-graph (v1): exit 12 DIVERGED, never 0 (got '0', want '12')
+
+    FAIL P07.1 the class is DIVERGED (got 'LOCAL-BEHIND', want 'DIVERGED')
+
+    FAIL P07.2 forged interior commit-graph (v2): exit 12 DIVERGED, never 0 (got '0', want '12')
+=== mutant MR4_writecommitgraph_dropped
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MX1_local_only_scope
+  r8 rc=0 SUMMARY pass=37 fail=1
+    FAIL R2 a repository core.excludesFile hiding the file: exit 13 (got '0', want '13')
+  r9 rc=1 SUMMARY pass=20 fail=1
+    FAIL N1 a repository-level core.excludesFile hiding the file: exit 13 (got '0', want '13')
+  r10 rc=1 SUMMARY pass=42 fail=5
+    FAIL P22 include.path in .git/config: exit 13 (got '0', want '13')
+
+    FAIL P22 u counted (got '0', want '1')
+
+    FAIL P22 the refusal does not name u: 
+=== mutant MX2_worktree_scope_dropped
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=46 fail=1
+    FAIL P24 config.worktree core.excludesFile: exit 13 (got '0', want '13')
+=== mutant MX3_global_scope_counted
+  r8 rc=0 SUMMARY pass=37 fail=1
+    FAIL R2 (round 10, N1: reversible decision) a file hidden ONLY by the global core.excludesFile is clean to git, so exit 0 (got '13', want '0')
+  r9 rc=1 SUMMARY pass=18 fail=3
+    FAIL N1 global core.excludesFile hiding *.swp and .idea/: exit 0 (got '13', want '0')
+
+    FAIL N1 no untracked file counted (got '2', want '0')
+
+    FAIL N1 only the visible file is counted (got '2', want '1')
+  r10 rc=1 SUMMARY pass=46 fail=1
+    FAIL P25 golden-false: the excludes file reached through the GLOBAL config (include) is global: exit 0 (got '13', want '0')
+=== mutant MX4_infoexclude_ignored
+  r8 rc=0 SUMMARY pass=35 fail=3
+    FAIL R2 .git/info/exclude '*' and a new untracked file: exit 13 (got '0', want '13')
+
+    FAIL R2 the row counts the hidden file as untracked (got '0', want '1')
+
+    FAIL R2 one file hidden by a local rule plus one visible untracked file: both counted (got '1', want '2')
+  r9 rc=1 SUMMARY pass=17 fail=4
+    FAIL N1 hidden by info/exclude AND by the global file: exit 13 (a local rule still hides unpushed work) (got '0', want '13')
+
+    FAIL N1 counted as untracked (got '0', want '1')
+
+    FAIL N1 the refusal does not name the file: 
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MX5_global_counted
+  r8 rc=0 SUMMARY pass=37 fail=1
+    FAIL R2 (round 10, N1: reversible decision) a file hidden ONLY by the global core.excludesFile is clean to git, so exit 0 (got '13', want '0')
+  r9 rc=1 SUMMARY pass=17 fail=4
+    FAIL N1 global core.excludesFile hiding *.swp and .idea/: exit 0 (got '13', want '0')
+
+    FAIL N1 no untracked file counted (got '2', want '0')
+
+    FAIL N1 the XDG default ignore file (core.excludesFile unset): exit 0 (got '13', want '0')
+  r10 rc=1 SUMMARY pass=46 fail=1
+    FAIL P25 golden-false: the excludes file reached through the GLOBAL config (include) is global: exit 0 (got '13', want '0')
+=== mutant MX6_rename_skip_dropped
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=1 SUMMARY pass=20 fail=1
+    FAIL N4 the hidden file is counted once (got '0', want '1')
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant MI1_isolation_skipped
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=38 fail=9
+    FAIL P40 no child saw BASH_ENV (got '28', want '0')
+
+    FAIL P44 no child saw ENV (got '28', want '0')
+
+    FAIL P47 no child saw an exported function git (got '28', want '0')
+=== mutant MI2_bash_env_allowed
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=1 SUMMARY pass=20 fail=1
+    FAIL N3 no git call of the verifier sees BASH_ENV (got '28', want '0')
+  r10 rc=1 SUMMARY pass=41 fail=6
+    FAIL P40 no child saw BASH_ENV (got '28', want '0')
+
+    FAIL P44 no child saw ENV (got '28', want '0')
+
+    FAIL P40 the caller's BASH_ENV file never ran in a direct run (got '28', want '0')
+=== mutant MI3_rebuild_keeps_all
+  r8 rc=0 SUMMARY pass=9 fail=29
+    FAIL R1 control: a diverged repository, plain: exit 12 (got '20', want '12')
+
+    FAIL R1 a replace ref that makes the remote tip look like a descendant: still DIVERGED, exit 12 (got '20', want '12')
+
+    FAIL R1 the same under --strict: exit 12 and the diverged class (not behind) (got '20', want '12')
+  r9 rc=1 SUMMARY pass=6 fail=15
+    FAIL N1 global core.excludesFile hiding *.swp and .idea/: exit 0 (got '20', want '0')
+
+    FAIL N1 no untracked file counted (got '?', want '0')
+
+    FAIL N1 the XDG default ignore file (core.excludesFile unset): exit 0 (got '20', want '0')
+  r10 rc=1 SUMMARY pass=23 fail=24
+    FAIL P07.1 forged interior commit-graph (v1): exit 12 DIVERGED, never 0 (got '20', want '12')
+
+    FAIL P07.1 the class is DIVERGED (got '?', want 'DIVERGED')
+
+    FAIL P07.2 forged interior commit-graph (v2): exit 12 DIVERGED, never 0 (got '20', want '12')
+=== mutant MI4_passenv_readmits_dangerous
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=45 fail=2
+    FAIL VERIFY_PASS_ENV cannot re-admit BASH_ENV (got '28', want '0')
+
+    FAIL VERIFY_PASS_ENV naming GIT_INDEX_FILE and GIT_DIR cannot re-admit them: exit 12 (got '20', want '12')
+=== mutant MI5_exec_without_p
+  r8 rc=0 SUMMARY pass=9 fail=29
+    FAIL R1 control: a diverged repository, plain: exit 12 (got '20', want '12')
+
+    FAIL R1 a replace ref that makes the remote tip look like a descendant: still DIVERGED, exit 12 (got '20', want '12')
+
+    FAIL R1 the same under --strict: exit 12 and the diverged class (not behind) (got '20', want '12')
+  r9 rc=1 SUMMARY pass=6 fail=15
+    FAIL N1 global core.excludesFile hiding *.swp and .idea/: exit 0 (got '20', want '0')
+
+    FAIL N1 no untracked file counted (got '?', want '0')
+
+    FAIL N1 the XDG default ignore file (core.excludesFile unset): exit 0 (got '20', want '0')
+  r10 rc=1 SUMMARY pass=22 fail=25
+    FAIL P07.1 forged interior commit-graph (v1): exit 12 DIVERGED, never 0 (got '20', want '12')
+
+    FAIL P07.1 the class is DIVERGED (got '?', want 'DIVERGED')
+
+    FAIL P07.2 forged interior commit-graph (v2): exit 12 DIVERGED, never 0 (got '20', want '12')
+=== mutant MI6_git_family_passable
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=46 fail=1
+    FAIL VERIFY_PASS_ENV naming GIT_INDEX_FILE and GIT_DIR cannot re-admit them: exit 12 (got '20', want '12')
+=== mutant MI7_functions_not_detected
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=46 fail=1
+    FAIL P47 no child saw the function (got '28', want '0')
+=== mutant MI8_dirty_env_loop_unguarded
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=1 SUMMARY pass=45 fail=2
+    FAIL VERIFY_ISOLATED=1 with a dirty environment: exit 20 (got '12', want '20')
+
+    FAIL no reason on stderr: 
+=== mutant EQ1_worker_without_p
+  r8 rc=0 SUMMARY pass=38 fail=0
+  r9 rc=0 SUMMARY pass=21 fail=0
+  r10 rc=0 SUMMARY pass=47 fail=0
+=== mutant T034_no_dirty_check
+  main rc=1 SUMMARY pass=358 fail=46
+    FAIL dirty file, plain: exit 13 (got '0', want '13')
+
+    FAIL unreachable remote plus dirty file, plain: exit 13 (failing class precedes 14) (got '14', want '13')
+
+    FAIL dirty plus diverged, --fetch: exit 13 (decision a: dirty first) (got '12', want '13')
+=== mutant T034_no_divergence_check
+  main rc=1 SUMMARY pass=385 fail=19
+    FAIL diverged branch, --fetch: exit 12 (got '0', want '12')
+
+    FAIL remote tip rewritten by a forced update, --fetch: exit 12 (got '0', want '12')
+
+    FAIL R4 histories split, --fetch: exit 12 (DIVERGED) (got '0', want '12')
+tracked-tree status after: c94f2e1e07be9af1

@@ -1,0 +1,19 @@
+FAIL R6: no green baseline line: A17-forced-push-readded                                 INVALID            edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+A18-plus-ref-push-readded                               INVALID            edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+FAIL R6: A17/A18/A18b: exit 1 caught=0: A17-forced-push-readded                                 INVALID            edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+A18-plus-ref-push-readded                               INVALID            edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+A18b-plain-push-built-in-code                           INVALID            edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+FAIL R6: catch lines do not cite the scan
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+AttributeError: module 'rm' has no attribute 'baseline'
+grep: /tmp/tmp.Pase8jRGBQ/damaged.txt: No such file or directory
+head: cannot open '/tmp/tmp.Pase8jRGBQ/damaged.txt' for reading: No such file or directory
+FAIL R6: baseline() did not see the missing guide: 
+grep: /tmp/tmp.Pase8jRGBQ/damaged_run.txt: No such file or directory
+head: cannot open '/tmp/tmp.Pase8jRGBQ/damaged_run.txt' for reading: No such file or directory
+FAIL R6: damaged-tree run: 
+FAIL R6: --check: A17-forced-push-readded                                 INVALID: edit does not apply: '    remote = os.path.abspath(remote)\n    env = dict(os.envir' not found in tools/evidence/evanchor.py
+A18-plus-ref-push-readded                               INVALID: edit does not apply: '    remote = os.path.ab
+checks=6 failures=6
+rc=1

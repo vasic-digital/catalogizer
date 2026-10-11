@@ -33,7 +33,7 @@ Both guards parse the **actual edited token** out of the CSS and compute the WCA
 
 **Type:** Task (governance integrity). **Severity:** Medium. **Pre-existing upstream debt — NOT introduced by, and correctly NOT touched by, the §11.4.170 commit `fc84675`.**
 
-In `submodules/constitution/Constitution.md` at upstream HEAD `04d71da`:
+In `constitution/Constitution.md` at upstream HEAD `04d71da`:
 - `### §11.4.140` appears **twice**: "Universal action-prefix system" (~line 8996, 2026-06-09) AND "Mandatory HelixTranslate canonical translation pipeline" (~line 9821, 2026-06-25, renamed from old §11.4.133 by `04d71da`).
 - `### §11.4.141` appears **twice**: "Token-efficiency mandate" (~line 9091, 2026-06-09) AND "Mandatory independent per-language translation review" (~line 9851, 2026-06-25, new in `04d71da`).
 

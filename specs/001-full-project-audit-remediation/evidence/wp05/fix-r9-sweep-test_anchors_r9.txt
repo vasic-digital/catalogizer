@@ -1,0 +1,14 @@
+ok   F1/RR2-4: --anchor-after with an anchor the chain contradicts exits 2 anchor_disagrees and says the entry WAS recorded
+ok   F1/RR2-4: no anchor row was appended by the refused anchor (the file holds only the planted row)
+ok   F1/RR2-4: verify agrees with the refusal (exit 2)
+ok   F1 control: --anchor-after on a healthy ledger still exits 0
+ok   F3: run onto a delete-and-recomputed ledger refuses (2 anchor_disagrees) before the command runs; ledger and anchors byte-unchanged
+ok   F3: run onto a tail-truncated ledger refuses (2) and appends nothing
+ok   F3: an unreadable anchor refuses the run (3 UNVERIFIED) and appends nothing
+ok   F3 golden-false: a LAGGING anchor over an intact prefix does not block a run (7 entries)
+ok   F3 golden-false: a ledger with NO anchor file is not blocked (nothing to contradict)
+ok   F2: verdict --chain-only on an unanchored recomputed ledger is CHAIN-ONLY-UNVERIFIED, exit 4, never PASS
+ok   F2 golden-false: --chain-only with a good PRESENT anchor still derives PASS (exit 0)
+ok   F2 golden-false: a chain-only FAIL stays FAIL, exit 1 (the golden-bad fixtures)
+ok   F5: run_mutations.py --check labels an applicable edit APPLIES, never CAUGHT
+checks=13 failures=0

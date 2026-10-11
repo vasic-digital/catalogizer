@@ -105,9 +105,9 @@ probe_suite() { # $1 = script under test, sets SUT; runs the whole assertion bod
   EV13="$T/ev13"; mkdir -p "$EV13"; : >"$T/cg-controllers"
   EV="$EV13" PROBE_CGROUP_CONTROLLERS="$T/cg-controllers" bash "$SUT" >/dev/null 2>&1
   check "fixture cgroup.controllers present: cgroup_version 2" "$(jq -r '.cgroup_version.value' "$EV13/host-probe.json" 2>/dev/null)" "2"
-  EV14="$T/ev14"; mkdir -p "$EV14"
-  EV="$EV14" PROBE_CGROUP_CONTROLLERS="$T/no-such-controllers" bash "$SUT" >/dev/null 2>&1
-  check "fixture cgroup.controllers absent: cgroup_version 1" "$(jq -r '.cgroup_version.value' "$EV14/host-probe.json" 2>/dev/null)" "1"
+  EV14="$T/ev14"; mkdir -p "$EV14" "$T/cg-v1/memory"; : >"$T/cg-v1/memory/memory.limit_in_bytes"
+  EV="$EV14" PROBE_CGROUP_ROOT="$T/cg-v1" bash "$SUT" >/dev/null 2>&1
+  check "fixture cgroup v1 hierarchy (no cgroup.controllers, a v1 controller file): cgroup_version 1" "$(jq -r '.cgroup_version.value' "$EV14/host-probe.json" 2>/dev/null)" "1"
   # root / rootless via the test-only PROBE_UID override
   EV15="$T/ev15"; mkdir -p "$EV15"
   EV="$EV15" PROBE_UID=0 bash "$SUT" >/dev/null 2>&1
@@ -203,9 +203,20 @@ probe_suite() { # $1 = script under test, sets SUT; runs the whole assertion bod
   EV30="$T/ev30"; mkdir -p "$EV30"
   EV="$EV30" PROBE_CGROUP_ROOT="$T/no-such-cgroup-root" bash "$SUT" >/dev/null 2>&1
   check "M3 missing cgroup root (no controllers file either): cgroup_version status error" "$(jq -r '.cgroup_version.status' "$EV30/host-probe.json" 2>/dev/null)" "error"
+  # round 8 (R-6): a directory is not evidence of cgroup v1; only a real v1 controller FILE is (an empty dir, a dir whose v1-looking entries are directories or
+  # empty names, or an unmounted mount point is an error, never version 1)
   EV31="$T/ev31"; mkdir -p "$EV31"; mkdir -p "$T/cg-root-v1"
   EV="$EV31" PROBE_CGROUP_ROOT="$T/cg-root-v1" bash "$SUT" >/dev/null 2>&1
-  check "M3 cgroup root present without controllers file: cgroup_version 1" "$(jq -r '.cgroup_version.status+":"+(.cgroup_version.value|tostring)' "$EV31/host-probe.json" 2>/dev/null)" "present:1"
+  check "R-6 cgroup root that is an EMPTY directory: cgroup_version status error (not present:1)" "$(jq -r '.cgroup_version.status+":"+(.cgroup_version.value // "null"|tostring)' "$EV31/host-probe.json" 2>/dev/null)" "error:null"
+  check "R-6 ...and the detail names the missing evidence" "$(jq -r '.cgroup_version.detail' "$EV31/host-probe.json" 2>/dev/null | grep -c 'neither cgroup.controllers')" "1"
+  EV31b="$T/ev31b"; mkdir -p "$EV31b" "$T/cg-root-dirs/memory/memory.limit_in_bytes" "$T/cg-root-dirs/cpu/cpu.shares"
+  EV="$EV31b" PROBE_CGROUP_ROOT="$T/cg-root-dirs" bash "$SUT" >/dev/null 2>&1
+  check "R-6 v1-looking names that are DIRECTORIES, not controller files: status error" "$(jq -r '.cgroup_version.status' "$EV31b/host-probe.json" 2>/dev/null)" "error"
+  for v1f in memory/memory.limit_in_bytes cpu/cpu.shares cpu,cpuacct/cpu.shares cpuacct/cpuacct.usage pids/pids.max blkio/blkio.weight; do
+    EV31c="$T/ev31c"; rm -rf "$EV31c" "$T/cg-root-one"; mkdir -p "$EV31c" "$T/cg-root-one/$(dirname "$v1f")"; : >"$T/cg-root-one/$v1f"
+    EV="$EV31c" PROBE_CGROUP_ROOT="$T/cg-root-one" bash "$SUT" >/dev/null 2>&1
+    check "R-6 a real v1 controller file ($v1f): cgroup_version 1" "$(jq -r '.cgroup_version.status+":"+(.cgroup_version.value|tostring)' "$EV31c/host-probe.json" 2>/dev/null)" "present:1"
+  done
   EV32="$T/ev32"; mkdir -p "$EV32"; mkdir -p "$T/cg-root-v2"; : >"$T/cg-root-v2/cgroup.controllers"
   EV="$EV32" PROBE_CGROUP_ROOT="$T/cg-root-v2" bash "$SUT" >/dev/null 2>&1
   check "M3 cgroup root with controllers file: cgroup_version 2" "$(jq -r '.cgroup_version.status+":"+(.cgroup_version.value|tostring)' "$EV32/host-probe.json" 2>/dev/null)" "present:2"
@@ -295,7 +306,10 @@ mutate memtotal-as-string 's/MT=\$\(pnum "\$mt"\)/MT=$(pres "$mt")/'
 mutate memavailable-as-string 's/MA=\$\(pnum "\$ma"\)/MA=$(pres "$ma")/'
 mutate fixed-tmp-name '/# MUT:tmpname$/c\TMPF="$OUT.tmp"'
 mutate positive-control-hardcoded-present 's/if \[ -e "\$POSITIVE" \]; then CP=/if true; then CP=/'
-mutate cgroup-missing-root-as-v1 's/elif \[ -d "\$CGROOT" \]; then CG=\$\(pnum 1\)/elif true; then CG=$(pnum 1)/'
+mutate cgroup-missing-root-as-v1 's/elif \[ -d "\$CGROOT" \]; then CG=\$\(errn "\$CGROOT exists/elif true; then CG=$(pnum 1); : "$CGROOT exists/'
+mutate cgroup-dir-as-v1       's/elif cg_v1; then CG=\$\(pnum 1\)/elif [ -d "$CGROOT" ]; then CG=$(pnum 1)/'
+mutate cgroup-v1-never        's/elif cg_v1; then CG=\$\(pnum 1\)/elif false; then CG=$(pnum 1)/'
+mutate cgroup-v1-dir-counts   's/\[ -f "\$CGROOT\/\$f" \] \&\& return 0/[ -e "$CGROOT\/$f" ] \&\& return 0/'
 mutate meminfo-digit-cap-removed 's/ \&\& length\(v\)<=15//'
 mutate positive-dev-hardcoded-present 's/^pos\(\) \{ if \[ -e "\$1" \]; then/pos() { if true; then/'
 mutate write-trap-dropped '/# MUT:write-trap$/c\:'

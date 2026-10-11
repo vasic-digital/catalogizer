@@ -1,5 +1,5 @@
 # Catalogizer consumer override of the Helix subagent tiering registry (§11.4.141, §11.4.231).
-# Derived from submodules/constitution/actions/subagent_tiering.yaml; the ONLY change is
+# Derived from constitution/actions/subagent_tiering.yaml; the ONLY change is
 # mechanical_model: haiku -> sonnet, because §11.4.231 (D.1) excludes haiku where it cannot receive
 # its governing context. Haiku fit for Catalogizer is UNCONFIRMED (unmeasured). Use with:
 #   export HELIX_SUBAGENT_TIERING="$PWD/config/subagent_tiering.yaml"

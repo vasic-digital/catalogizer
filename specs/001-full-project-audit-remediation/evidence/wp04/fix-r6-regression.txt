@@ -1,0 +1,11 @@
+# fix round 6 regression: the existing helper suites and the full matrix against the fixed scripts, 2026-10-08T15:36:00Z
+test_push_recursive rc=0 ---- 153 ok, 0 failed
+test_integrate_merge rc=1 ---- 128 ok, 2 failed
+test_commit_recursive rc=0 ---- 58 ok, 0 failed
+test_integrate_ff_only rc=0 ---- 84 ok, 0 failed
+test_wp04h rc=1 ---- 73 ok, 2 failed
+test_wp04g rc=0 ---- 30 ok, 0 failed
+test_tooling_decoupled rc=0 ---- 20 ok, 0 failed
+test_commit_push_all rc=0 ---- 1076 ok, 0 failed
+ALLDONE
+(test_integrate_merge and test_wp04h failed 2 cases each on the first pass: their fixtures wrote CPA-Run without the blank line before the trailer block, or the hold in a third paragraph; the writer never does either; the fixtures were aligned and re-run: test_integrate_merge 130 ok 0 failed, test_wp04h 75 ok 0 failed)

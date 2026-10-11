@@ -3,7 +3,7 @@
 # verify_constitution_inheritance.sh — Constitution-inheritance VERIFICATION GATE
 # -----------------------------------------------------------------------------
 # Purpose:
-#   Assert that the `submodules/constitution` submodule is really present and
+#   Assert that the `constitution` submodule is really present and
 #   genuinely inherited by this project, per Constitution §1.1 (paired-mutation
 #   requirement) and §11.4.35 (canonical-root inheritance clarity). This is a
 #   hard gate: ANY broken invariant exits non-zero with a directed message so
@@ -11,7 +11,7 @@
 #
 #   The gate has TEETH: its paired meta-test
 #   (scripts/meta_test_constitution_inheritance.sh) drives the constitution-side
-#   helper `submodules/constitution/meta_test_inheritance.sh`, which mutates
+#   helper `constitution/meta_test_inheritance.sh`, which mutates
 #   Constitution.md (strips the §11.4 anchor line), runs THIS gate, and asserts
 #   it FAILs — proving the gate is not a bluff gate (Constitution §1.1).
 #
@@ -21,7 +21,7 @@
 #
 # Inputs:
 #   - $PROJECT_ROOT (optional) — overrides the auto-resolved project root.
-#   - The repository tree (submodules/constitution/** + parent governance docs).
+#   - The repository tree (constitution/** + parent governance docs).
 #
 # Outputs:
 #   - Human-readable PASS/FAIL lines per invariant on stdout/stderr.
@@ -38,7 +38,7 @@
 #   - Constitution §11.4 (anti-bluff covenant — END-USER QUALITY GUARANTEE).
 #   - Constitution §11.4.18 (this in-source doc block).
 #   - Constitution §11.4.35 (canonical-root inheritance clarity).
-#   - submodules/constitution/meta_test_inheritance.sh (the paired helper).
+#   - constitution/meta_test_inheritance.sh (the paired helper).
 #   - scripts/meta_test_constitution_inheritance.sh (the paired meta-test).
 #   - tests/test_constitution_inheritance.sh (host-side runner).
 # =============================================================================
@@ -48,7 +48,7 @@ set -euo pipefail
 # --- Resolve the project root (parent of scripts/) ---------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
-CONST_DIR="${PROJECT_ROOT}/submodules/constitution"
+CONST_DIR="${PROJECT_ROOT}/constitution"
 
 FAILURES=0
 
@@ -63,11 +63,11 @@ ok() {
     echo "ok[$1]: $2"
 }
 
-# --- INV1: submodules/constitution/ exists -----------------------------------
+# --- INV1: constitution/ exists -----------------------------------
 if [[ -d "${CONST_DIR}" ]]; then
-    ok INV1 "submodules/constitution/ exists"
+    ok INV1 "constitution/ exists"
 else
-    fail INV1 "submodules/constitution/ is MISSING at ${CONST_DIR} — run \`git submodule update --init --recursive\` to materialise the constitution submodule"
+    fail INV1 "constitution/ is MISSING at ${CONST_DIR} — run \`git submodule update --init --recursive\` to materialise the constitution submodule"
 fi
 
 # --- INV2: Constitution.md exists AND contains the verified §11.4 anchor ------
@@ -89,7 +89,8 @@ if [[ -f "${CONST_MD}" ]]; then
     # upstream grep and making the whole pipeline exit non-zero (false FAIL).
     # Match the heading lines into a variable, then fixed-string test that.
     INV2_HEADINGS="$(grep -E '^#{1,6}[[:space:]]' "${CONST_MD}" || true)"
-    if printf '%s\n' "${INV2_HEADINGS}" | grep -qF "${ANCHOR_INV2}"; then
+    if printf "%s
+" "${INV2_HEADINGS}" | grep -F "${ANCHOR_INV2}" >/dev/null; then
         ok INV2 "Constitution.md present + contains the §11.4 forensic-anchor HEADING"
     else
         fail INV2 "Constitution.md is present but the verified anchor HEADING '${ANCHOR_INV2}' is MISSING — the §11.4 End-user quality guarantee section was stripped or the file is not the canonical Constitution"
@@ -124,11 +125,11 @@ else
     fail INV4 "constitution/AGENTS.md is MISSING at ${CONST_AGENTS}"
 fi
 
-# --- INV5: parent governance docs reference submodules/constitution ----------
+# --- INV5: parent governance docs reference constitution ----------
 # NOTE: another subagent adds these pointers in parallel. If INV5 fails right
 # now that is EXPECTED until the parent pointers land; the main stream re-runs
 # this gate afterward.
-PARENT_POINTER='submodules/constitution'
+PARENT_POINTER='constitution'
 for parent in CLAUDE.md AGENTS.md CONSTITUTION.md; do
     parent_path="${PROJECT_ROOT}/${parent}"
     if [[ -f "${parent_path}" ]]; then

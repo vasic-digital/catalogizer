@@ -1,0 +1,8 @@
+# R-4 live smoke re-run on the current launcher (fix round 8)
+# date_utc: 2026-10-08T14:21:52Z
+# sut_sha256: 5074be7428ae9d2a538766ae228d1f970e1a9624458dc4ad6f846c0601bba9b3
+# smoke_images_sha256: bad7bad34a3ff9942a725f96149fa1121e692d163c68604bfb1dcc4078ccb2ec
+# probe_sha256: 170691f94af898b733b45d84365d5b4fa9e4e216aa781ddfe469a9b8b5e4602b
+# images: local only, --pull=never (run_pinned), no build
+smoke: ALL OK
+# exit: 0

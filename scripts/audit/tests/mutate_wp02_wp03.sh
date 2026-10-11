@@ -26,6 +26,7 @@ PY
 }
 verdict() {  # verdict <id> <rc-of-mutation> <rc-of-suite> <desc>
   if [ "$2" -ne 0 ]; then BROKEN=$((BROKEN+1)); echo "BROKEN   $1 $4"
+  elif [ "$3" -eq 77 ]; then SURV=$((SURV+1)); echo "SKIPPED-NOT-KILLED $1 $4 (the suite exited 77: a skipped leg is not a kill)"
   elif [ "$3" -ne 0 ]; then CAUGHT=$((CAUGHT+1)); echo "CAUGHT   $1 $4"
   else SURV=$((SURV+1)); echo "SURVIVED $1 $4"; fi
 }

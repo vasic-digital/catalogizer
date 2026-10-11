@@ -1,0 +1,74 @@
+ok   canon: sorted keys, compact separators, non-ASCII kept as UTF-8 bytes
+ok   canon: quote and backslash escaped as in jq
+ok   entry_hash golden vector 1 (genesis prev, non-ASCII cwd, exit_status 3): 413af748bd2c
+ok   entry_hash golden vector 2 (prev = vector 1): 7e7f041978f6
+ok   entry_hash covers field exit_status (changing it changes the hash)
+ok   entry_hash covers field verdict (changing it changes the hash)
+ok   entry_hash covers field item (changing it changes the hash)
+ok   entry_hash covers field cwd (changing it changes the hash)
+ok   entry_hash covers field argv (changing it changes the hash)
+ok   entry_hash covers field started_at (changing it changes the hash)
+ok   entry_hash covers field duration_ms (changing it changes the hash)
+ok   entry_hash covers field stdout_sha256 (changing it changes the hash)
+ok   entry_hash covers field stderr_sha256 (changing it changes the hash)
+ok   entry_hash covers field target_fingerprint (changing it changes the hash)
+ok   entry_hash covers field target_ref (changing it changes the hash)
+ok   entry_hash covers field seq (changing it changes the hash)
+ok   entry_hash covers field prev_hash (changing it changes the hash)
+ok   entry_hash covers field iteration (changing it changes the hash)
+ok   entry_hash covers field polarity (changing it changes the hash)
+ok   entry_hash covers field target_class (changing it changes the hash)
+ok   entry_hash is computed without the entry_hash field itself
+ok   entry_hash is not the hash of the canonical body alone (prev_hash is a hashed prefix)
+ok   entry_hash is sha256(prev_hash ASCII || canonical body) exactly (re-derived here)
+ok   redaction: partially overlapping secrets leave no fragment of either
+ok   redaction: a secret that is a prefix of another (any value order) leaves no suffix
+ok   redaction: the same with the values in the other order
+ok   redaction: a single named secret keeps the [REDACTED:NAME] marker
+ok   redaction: clean bytes are returned unchanged with no hit
+ok   redaction: default pattern bearer hit
+ok   redaction: default pattern kv password hit
+ok   redaction: default pattern url userinfo hit
+ok   redaction: default pattern pem hit
+ok   stale: live pid with its recorded cmdline is NOT stale
+ok   stale: live pid with a different recorded cmdline (pid reuse) IS stale
+ok   stale: live pid whose /proc cmdline is unreadable is NOT stale (never reaped on an unreadable identity)
+ok   stale: a dead pid IS stale
+ok   stale: unreadable holder identity {'pid': 'x', 'cmdline': 'y'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 1, 'cmdline': 'init'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 0, 'cmdline': 'z'} is NOT stale
+ok   stale: unreadable holder identity {'pid': 4242, 'cmdline': 7} is NOT stale
+ok   stale: unreadable holder identity {} is NOT stale
+ok   lock.release does not delete a lock that another pid now holds (X5)
+ok   lock.release deletes the caller's own lock
+ok   X18: a re-chained record that ev/1 refuses stops rerecord (record_invalid)
+ok   portable_schema: the relative $id 'ev/1' becomes an absolute URN
+ok   portable_schema: nothing else of the contract changes and the input is not modified
+ok   portable_schema: an absolute $id is left as it is
+ok   portable_schema: a schema without $id is left as it is
+ok   W3-1: a holder that answers EPERM (alive, other uid) with its recorded cmdline is NOT stale
+ok   W3-1: a holder that answers EPERM and whose cmdline cannot be read is NOT stale
+ok   W3-1: a holder that answers EPERM whose live cmdline differs (pid reuse) IS stale
+ok   W3-6: the lock records the holder's own pid
+ok   W3-6: the lock records the holder's real, non-empty cmdline (the 11.4.180 identity)
+ok   W3-6: a second reader with the same /proc does NOT find the live lock stale
+ok   W3-6: a lock taken while /proc was unreadable records NO cmdline (never an empty string)
+ok   W3-6: and a reader with a readable /proc does not reap that live holder
+ok   W3-6: but a holder with an unreadable-identity marker whose pid is dead IS stale
+ok   redaction r4: json password is redacted with no fragment left
+ok   redaction r4: json spaced api_key is redacted with no fragment left
+ok   redaction r4: json single quotes is redacted with no fragment left
+ok   redaction r4: json value with a space is redacted with no fragment left
+ok   redaction r4: flag pair is redacted with no fragment left
+ok   redaction r4: basic is redacted with no fragment left
+ok   redaction r4: cookie is redacted with no fragment left
+ok   redaction r4: set-cookie is redacted with no fragment left
+ok   redaction r4: jwt is redacted with no fragment left
+ok   redaction r4: slack is redacted with no fragment left
+ok   redaction r4: stripe is redacted with no fragment left
+ok   redaction r4: benign json is left unchanged
+ok   redaction r4: prose with basic is left unchanged
+ok   redaction r4: flag without credential name is left unchanged
+ok   redact_argv: the value after a credential flag is redacted and the flag name kept
+ok   m4: verify without a readable schema exits 3 (UNVERIFIED), not 67
+checks=73 failures=0

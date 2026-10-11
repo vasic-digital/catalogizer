@@ -1,0 +1,106 @@
+ok   N1: --name ../flake_ledger.jsonl (escape from --out) is refused
+ok   N1: --name <absolute path of a shared file> is refused
+ok   N1: --name 'a/b' is not a plain token and is refused
+ok   N1: --name '.' is not a plain token and is refused
+ok   N1: --name '..' is not a plain token and is refused
+ok   N1: --name '' is not a plain token and is refused
+ok   N1: --name '-x' is not a plain token and is refused
+ok   N1: --name '.hidden' is not a plain token and is refused
+ok   N1: --name 'ledger-seq-map.json' is not a plain token and is refused
+ok   N1: --name 'a b' is not a plain token and is refused
+ok   N1: --name 'x/../y' is not a plain token and is refused
+ok   N1: --out <subdirectory of the evidence dir> is refused (any depth)
+ok   N1: --out <blob store> is refused
+ok   N1: --out <subdirectory of the blob store> is refused
+ok   N1: --out through a symlink into the evidence dir is refused
+ok   N1: --out inside a relocated blob store (EV_BLOBS elsewhere) is refused
+ok   N1: the shared flake ledger, deferrals and ledger are byte-unchanged after all refused attempts
+ok   N1: no file was created anywhere in the evidence directory by the refused attempts
+ok   N1: --out inside the evidence dir is refused even when the ledger lives in another directory
+ok   N1: a plain --name into a separate --out still works
+ok   N1: that output holds remote then the local suffix
+ok   N2: JSON login body {"username":..,"password":..} on stdout
+ok   N2: JSON token {"access_token":"<jwt>"} on stdout
+ok   N2: JSON "api_key": "..." with a space after the colon
+ok   N2: JSON client_secret and refresh_token keys
+ok   N2: single-quoted key form 'password': 'x'
+ok   N2: password value containing a space inside JSON quotes
+ok   N2: stream text '--password VALUE' pair
+ok   N2: Authorization: Basic <base64> header
+ok   N2: Authorization with a lower-case header and an unknown scheme
+ok   N2: Cookie header value
+ok   N2: Set-Cookie header value
+ok   N2: a bare three-part JWT in prose
+ok   N2: x-api-key header
+ok   N2: argv pair '--password VALUE' redacts the value, keeps the flag name, sets redacted
+ok   N2: argv pairs for --token, --secret-key and the --api-key=VALUE form are redacted
+ok   N2: JSON password inside an argv element is redacted
+ok   N2: benign JSON and flags are NOT redacted (no false positive)
+ok   N3: RED through launcher 'kcov' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'podman' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'docker' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ssh' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'adb' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'pytest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bats' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'vitest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'jest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'xvfb-run' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'strace' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'uv' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'poetry' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'bundle' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'rake' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'flutter' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through launcher 'ctest' without a declared test source is refused (interpreter_without_test_sources)
+ok   N3: RED through the project runner run_pinned.sh without a declared test source is refused
+ok   N3: GREEN through run_pinned.sh without a declared test source is refused
+ok   N3: MUTATION through run_pinned.sh without a declared test source is refused
+ok   N3: RED python3 -c without a declared test source is refused
+ok   N3: RED env bash -c without a declared test source is refused
+ok   N3: RED python3.12-style versioned interpreter without a source is refused
+ok   N3: with declared sources RED and GREEN through run_pinned.sh get different test_fingerprints
+ok   N3: test_fingerprint of an interpreter with a declared source is exactly sha256(sha256(argv0)\nsha256(source)\n); operands are not added
+ok   N3: test_fingerprint of an unlisted launcher is exactly sha256(sha256(argv0)\nsha256(file operand)\n)
+ok   N3: an unlisted launcher: RED and GREEN over different test files get different test_fingerprints (operands hashed)
+ok   N3: the same operand bytes give the same test_fingerprint again (deterministic)
+ok   N4: a failing GREEN is refused after the run (nothing stored)
+ok   N4: fixture: the ledger holds 5 entries, one foreign (the runner ran 5 commands)
+ok   N4: reconcile --run run4 --runner-count 5 is a mismatch (the foreign entry does not count, the failed GREEN left no entry)
+ok   N4: reconcile --run run4 --runner-count 4 passes (its own 4 stored entries)
+ok   N4: the token may come from EVREC_RUN_TOKEN
+ok   N4: another run's token sees 0 entries of run4
+ok   N4: unscoped reconcile on a ledger that holds tokened entries is refused
+ok   N4: a token that is not a plain token is refused
+ok   N4: reconcile with an unknown option is refused
+ok   N4: EVREC_RUN_TOKEN that is not a plain token refuses the run before the command runs
+ok   N4: a run-index row whose entry_hash does not match the ledger entry is not counted
+ok   N4: legacy: untokened runs on a ledger without tokened entries still reconcile unscoped
+ok   W3-2: one forged blob plus one missing blob is FAIL 1 blob_mismatch, not UNVERIFIED 3
+ok   W3-7: verify --ledger beside its own blobs dir passes when intact
+ok   W3-7: verify --ledger with a forged blob is FAIL 1 blob_mismatch
+ok   W3-7: verify --ledger --blobs DIR with a forged blob is FAIL 1 too
+ok   m1: verify --ledger with anchors.jsonl beside the ledger is UNVERIFIED 3 anchor_not_compared
+ok   W3-8: grant body {} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {}
+ok   W3-8: grant body {"run_id":7} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":7}
+ok   W3-8: grant body [] is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant []
+ok   W3-8: grant body "x" is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant "x"
+ok   W3-8: grant body null is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant null
+ok   W3-8: grant body {"run_id":null} is a malformed grant: commit_turn_held
+ok   W3-8: nothing recorded under the malformed grant {"run_id":null}
+ok   W3-5: check-record refuses started_at 2026-02-30T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-13-01T00:00:00Z
+ok   W3-5: check-record refuses started_at 2026-04-31T10:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T24:00:00Z
+ok   W3-5: check-record refuses started_at 2026-10-05T10:61:00Z
+ok   W3-5: a real date (2026-02-28T23:59:59Z) is accepted
+ok   m2: the executable bit survives remap-refs
+ok   m2: remap-refs through a symlink keeps the link and updates its target
+ok   m4: evrec run in a deleted cwd is usage_error 64, no traceback
+ok   hermetic: no call reached the host entry
+checks=105 failures=0

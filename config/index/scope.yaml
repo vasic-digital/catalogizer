@@ -3,10 +3,10 @@
 # ============================================================================
 # Purpose      The ONE declarative source for the structural (CodeGraph) index scope and, through
 #              scripts/audit/scope_to_lumen_json.py, for the semantic (Lumen) scope (constitution 11.4.78/79/275).
-#              Rendered ONLY by: python3 submodules/constitution/scripts/codegraph/scope_render.py
+#              Rendered ONLY by: python3 constitution/scripts/codegraph/scope_render.py
 #              --scope config/index/scope.yaml --root . --write   (outputs: codegraph.json and the delimited
 #              helix-codegraph-scope block of .gitignore). Rendered files are generated: hand edits are refused.
-# Schema       submodules/constitution/scripts/codegraph/scope.example.yaml (inherited by reference, never copied).
+# Schema       constitution/scripts/codegraph/scope.example.yaml (inherited by reference, never copied).
 # Own-org list Derived from the .gitmodules recursion (scripts/audit/derive_scope.sh, scripts/audit/own_orgs.txt):
 #              vasic-digital and HelixDevelopment (owner decision T017); other accounts are third party.
 #              ODG-15 pending accounts are NOT own (conservative reading), as in own_orgs.txt.
@@ -44,6 +44,14 @@ project_excludes:
   - /specs/001-full-project-audit-remediation/evidence/
   - /docs/reports/qa-sessions/
   - /docs/qa/
+  # Generated coverage reports inside the re-included Go package (review F6): the negation below re-includes the whole directory, `exclude` wins over it.
+  - /submodules/doc_processor/pkg/coverage/*.html
+  - /submodules/doc_processor/pkg/coverage/*.xml
+  - /submodules/doc_processor/pkg/coverage/*.info
+  - /submodules/doc_processor/pkg/coverage/*.out
+  - /submodules/doc_processor/pkg/coverage/*.profile
+  - /submodules/doc_processor/pkg/coverage/*.json
+  - /submodules/doc_processor/pkg/coverage/*.txt
 
 # Pathological single files (a 14 MB logcat dump is not source; temporary until the runner patch lands).
 pathological_excludes:
@@ -60,13 +68,20 @@ reinclude_negations:
   - /catalogizer-androidtv/app/src/main/res/values/
   - /catalogizer-androidtv/app/src/main/res/layout/
 
+# forbidden_classes: P3 (scripts/audit/index_health.sh) FAILs when the index holds a path of one of these classes. Semantics (review N1, round 9): EVERY
+# non-negated pattern of baseline_excludes above (build_outputs, caches, secrets, qa_corpora) is also a forbidden class, because a path the scope excludes
+# must not be in the index; index_health.sh builds a probe path from each baseline pattern and refuses (P3 FAIL, forbidden_classes_unusable,
+# baseline_pattern_uncovered:<pattern>) when no class matches it, so the two lists cannot silently disagree. Classes are matched case-insensitively
+# (the runner's `ignore` library is). Caches and build outputs are not secrets, but indexing them is the same kind of scope breach.
 forbidden_classes:
   - {name: env_file,        regex: '(^|/)\.env($|\.)|\.env$',                positive: 'a/.env.local',        negative: 'a/environment.c'}
   - {name: secrets_dir,     regex: '(^|/)secrets/',                          positive: 'x/secrets/a.py',      negative: 'x/secretsauce/a.py'}
   - {name: secret_basename, regex: '(?i)(^|/)[^/]*secret[^/]*$',            positive: 'a/api_Secret.py',     negative: 'a/secure.py'}
   - {name: keystore,        regex: '\.(jks|keystore|p12|pfx|pk8|pem|key)$', positive: 'a/release.jks',       negative: 'a/keys.c'}
   - {name: qa_corpus,       regex: '(^|/)(qa-results|recordings)/',          positive: 'd/qa-results/r.py',   negative: 'd/qa_resultsx/r.py'}
-  - {name: cache_dir,       regex: '(^|/)(\.?ccache|__pycache__|node_modules|\.gradle)/', positive: 'a/__pycache__/x.py', negative: 'a/pycache.py'}
+  - {name: cache_dir,       regex: '(^|/)(\.?ccache|__pycache__|node_modules|\.gradle|\.pytest_cache|\.mypy_cache|\.ruff_cache|\.cache|\.venv|logs)/', positive: 'a/.venv/x.py', negative: 'a/pycache.py'}
+  - {name: credentials_json, regex: '(^|/)(service-account[^/]*|credentials[^/]*|google-services)\.json$', positive: 'a/google-services.json', negative: 'a/credentials.go'}
+  - {name: build_output,    regex: '^(out|dist|target)/|(^|/)\.compressed/', positive: 'dist/x.js', negative: 'a/dist.go'}
 
 enumeration_controls:
   present: [catalog-api/main.go]

@@ -1,0 +1,27 @@
+# identity: task=T163 utc=2026-10-08T14:37:22Z host=anton uid=1000
+# git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c tree_dirty_files=240
+# sqlite3=3.50.6 2025-09-22 path=/home/milosvasic/Android/Sdk/platform-tools/sqlite3
+# engine=/home/milosvasic/Projects/catalogizer/submodules/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=421258ed0e88b76ac3499a94d4f72242cb44a2b33d49581294d1c971c6d4aadb apply_ext=73c975fb79ab6b59fe7146be9c3eb9256a5475a3c4c71c045c002d1969ac9683 gate=104a7b96616ec0dfd4b7d904d3959ab633a22de5c7bac3995528e324f4ab103a test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: host-side run (no container marker); a container leg is UNCONFIRMED for this transcript
+# engine probe: validate rc=0 (--version unsupported by the binary (UNCONFIRMED vs the T163 text); probe=validate)
+ok   engine binary sha256 d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da is the recorded verdict
+# TIC_IMAGE_DIGEST unset: image digest check UNCONFIRMED (host-side run)
+ok   (c) legacy_import row written BEFORE add is accepted
+ok   (c) legacy_import row written AFTER add is refused
+ok   importer first run exits 0
+ok   importer second run exits 0
+ok   (a) idempotency: second run changes no row count and no hash
+# unmapped after import (S-01 tickets are mapped, other classes may remain): 81
+ok   every issue_file entry is mapped to an item
+ok   (b) completeness: v_unmapped_entries grew by exactly entry 38
+ok   (d) long ticket has an item
+ok   (d) long description is <= 2048 bytes, Sources block included (2048 bytes)
+ok   (d) cut on a UTF-8 character boundary: the stored bytes decode strictly and hold no U+FFFD replacement character
+ok   (d) the stored text is a PREFIX of the ticket body (814 of 1500 characters kept)
+ok   (d) marked as cut
+ok   (d) Sources block names the source file and its sha256
+ok   (d) short ticket has an item
+ok   (d) short ticket keeps its whole text
+ok   (d) short ticket Sources block names file and sha256
+RESULT: pass=8 fail=0

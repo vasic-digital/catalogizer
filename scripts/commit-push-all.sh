@@ -276,8 +276,9 @@ fi
 # an option that would change nothing is refused, never ignored (INPUT)
 [ -z "$AWAIT" ] || [ -n "$PATHS" ] || fail S0 20 usage_error "--awaits-review needs --paths-from"
 [ -z "$MSG" ] || [ -n "$PATHS" ] || fail S0 20 usage_error "a message without --paths-from commits nothing"
-# a message line that reads like one of the run's own trailers is refused: push_recursive and the merge path read the LAST such line (MSG)
-[[ $'\n'"$MSG" =~ $'\n'(CPA-Run|Deferred-Gates|Awaits-Review|Foreign-Commit):\  ]] && fail S0 20 usage_error "message_impersonates_trailer"
+# the message goes in front of the trailer block that EVERY reader parses with the ONE parser of lib_safe.sh (cpa_trailer): a line that starts with `---` (the patch divider that git's own trailer
+# parser stops at), a control character (a CR included) and a line that reads like one of the run's own trailers (any case, leading blanks allowed) are refused (MSG, WF-R6 R-01)
+msgwhy="$(cpa_msg_check "$MSG")" || fail S0 20 usage_error "$msgwhy"
 if [ -n "$PATHS" ]; then
   [ -f "$PATHS" ] && [ -r "$PATHS" ] || fail S0 20 usage_error "--paths-from file unreadable or no regular file"
   [ "$(stat -c %s -- "$PATHS" 2>/dev/null || echo 99999999)" -le 1048576 ] || fail S0 20 usage_error "--paths-from file larger than 1 MiB"
@@ -289,6 +290,8 @@ else : > "$CPA_RUN/paths.txt"; fi
 
 # the owned organisations have ONE source: the approved scripts/audit/own_orgs.txt of the released copy (no caller-environment override, WF11 review F1)
 OWNED="$( [ -r "$D/audit/own_orgs.txt" ] && grep -v '^[[:space:]]*#' "$D/audit/own_orgs.txt" | awk 'NF{print $1}' | paste -sd, - )"
+# an absent, unreadable or empty approved list is a refusal, never "nothing to judge": a push whose ownership precondition cannot be verified fails closed (11.4.252; WF-R6 R-05)
+[ -n "$OWNED" ] || fail S0 20 own_orgs_unverifiable "the approved scripts/audit/own_orgs.txt is absent, unreadable or names no organisation: ownership of the remotes cannot be verified"
 is_owned() { approved_check "$D/audit/org_of.py"; repo_owned "$1" "$OWNED"; }     # EVERY url of EVERY remote names an own organisation (REPO-3a)
 # the initialised submodules at every depth, NUL-safe, deepest first (NAME-1); the listing status is read
 SUBS=()

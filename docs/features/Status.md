@@ -98,5 +98,5 @@ All submodules moved to `submodules/` with snake_case naming:
 
 - `submodules/helix_qa` — HelixQA test framework
 - `submodules/ui_components_react` — React UI components
-- `submodules/constitution` — Constitution rules
+- `constitution` — Constitution rules
 - Plus 21 Go modules and 2 TypeScript modules (see README.md)

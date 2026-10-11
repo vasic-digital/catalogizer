@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+# WP-02 review WP-02-T028-r2 test (TDD, constitution 11.4.224): N1 class coverage, N2 verified live proofs and drift binding, N4 case behaviour,
+# N5 the .env.example exemption, N7 mandatory capture age. Every case drives scripts/audit/index_health.sh through its real command line.
+#
+# Purpose   RED-first test for the round-9 review findings. Each case uses only options the previous tool already accepted, so against the
+#           previous tool a case fails on the DEFECT (a forged proof accepted, an uncovered secret class indexed, a stale capture passed), never on argv.
+# Usage     bash scripts/audit/tests/test_index_health_fix_r7.sh      Env: IH=<script under test> (default scripts/audit/index_health.sh)
+# Exit      0 all ran and ok; 1 a case failed; 77 no case failed but a leg was skipped (SKIP is never a pass, distinct code, review N8)
+set -u
+cd "$(git rev-parse --show-toplevel)" || exit 2
+IH="${IH:-scripts/audit/index_health.sh}"
+SCOPE="${SCOPE:-config/index/scope.yaml}"
+T="$(mktemp -d "${TMPDIR:-/tmp}/ih_r7.XXXXXX")"; trap 'rm -rf "$T"' EXIT
+PASSN=0; FAILN=0; SKIPN=0
+ok()  { PASSN=$((PASSN+1)); echo "ok   $1"; }
+bad() { FAILN=$((FAILN+1)); echo "FAIL $1"; }
+skp() { SKIPN=$((SKIPN+1)); echo "SKIP $1 (reason recorded; not a pass)"; }
+POS="a/main.go"; NEG="zz/none.go"; CNB="2026-10-06T00:00:00Z"; NOW="2026-10-08T12:00:00Z"
+printf '%s\n' "$POS" "a/b.go" > "$T/tracked.txt"
+cat > "$T/st.json" <<'J'
+{"index":{"state":"complete","pendingRefs":0,"reindexRecommended":false},"pendingChanges":{"added":0,"modified":0,"removed":0},"worktreeMismatch":null}
+J
+files() { python3 - "$@" <<'PY'
+import json, sys
+print(json.dumps([{"path": p} for p in sys.argv[1:]]))
+PY
+}
+files "$POS" a/b.go > "$T/f_good.json"
+printf 'Files: 2 | Indexed: 2 | Chunks: 9 | Stale: no\nCaptured: 2026-10-07T10:00:00Z\n' > "$T/lu.txt"
+base() {  # base [--opt value]...: defaults for every option the caller does not give
+  local -A d=( [--scope]="$SCOPE" [--cg-status]="$T/st.json" [--cg-files]="$T/f_good.json" [--tracked]="$T/tracked.txt" [--needle-pos]="$POS" [--needle-neg]="$NEG" [--lumen-status]="$T/lu.txt" [--captured-not-before]="$CNB" )
+  local -a a=(); local -A g=(); local i=1 k
+  while [ $i -le $# ]; do k="${!i}"; g[$k]=1; i=$((i+1)); done
+  for k in "${!d[@]}"; do [ -n "${g[$k]:-}" ] || a+=("$k" "${d[$k]}"); done
+  "$IH" --out "$T/o.json" "${a[@]}" "$@" >"$T/stdout" 2>"$T/stderr"; RC=$?
+}
+pv() { jq -r --arg id "$1" '([.codegraph.proofs[]?, .lumen.proofs[]?, .parity?] | map(select(.id? == $id)) | .[0].verdict) // "MISSING"' "$T/o.json" 2>/dev/null || echo MISSING; }
+reason() { jq -r --arg id "$1" '([.codegraph.proofs[]?, .lumen.proofs[]?, .parity?] | map(select(.id? == $id)) | .[0] | ((.reasons // []) + [.reason // empty] + (.forbidden_class_problems // [])) | join(",")) // ""' "$T/o.json" 2>/dev/null; }
+chk() { # chk <name> <want rc> <proof> <want verdict> [reason substring]
+  local got; got="$(pv "$3")"
+  if [ "$RC" -eq "$2" ] && [ "$got" = "$4" ] && { [ -z "${5:-}" ] || case "$(reason "$3")" in *"$5"*) true;; *) false;; esac; }; then ok "$1"
+  else bad "$1: want rc=$2 $3=$4 ${5:-}, got rc=$RC $3=$got reason=[$(reason "$3")]"; fi; }
+p3with() {  # p3with <path>: the path is the only extra indexed file (and tracked); P3 judged
+  files "$POS" a/b.go "$1" > "$T/f_p.json"; printf '%s\n' "$POS" a/b.go "$1" > "$T/tr_p.txt"
+  base --cg-files "$T/f_p.json" --tracked "$T/tr_p.txt"
+}
+[ -x "$IH" ] || echo "NOTE: $IH absent or not executable (RED state)"
+
+# ---- N1: every pattern of the scope's own baseline_excludes is covered by a forbidden class (one class source, 11.4.275(B); 11.4.273(f) set coverage)
+python3 - "$SCOPE" "$T/baseline_probes.tsv" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1]))
+def probe(pat):
+    anchored = pat.startswith("/")
+    p = pat.lstrip("/")
+    while p.startswith("**/"):
+        p = p[3:]
+    is_dir = p.endswith("/")
+    p = p.rstrip("/").replace("*", "probe")
+    return ("" if anchored else "a/") + p + ("/probe.py" if is_dir else "")
+n = 0
+with open(sys.argv[2], "w") as f:
+    for cls, pats in sorted((d.get("baseline_excludes") or {}).items()):
+        for pat in pats or []:
+            if pat.startswith("!"):
+                continue
+            f.write("%s\t%s\t%s\n" % (cls, pat, probe(pat))); n += 1
+print(n)
+PY
+NPROBE="$(wc -l < "$T/baseline_probes.tsv")"
+[ "$NPROBE" -ge 20 ] && ok "N1 the scope declares $NPROBE baseline patterns (instrument sees the pattern set)" || bad "N1 baseline pattern list too short: $NPROBE"
+while IFS="$(printf '\t')" read -r bcls bpat bprobe; do
+  p3with "$bprobe"
+  chk "N1 baseline $bcls pattern [$bpat] -> probe [$bprobe] indexed -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
+done < "$T/baseline_probes.tsv"
+for fx in a/google-services.json a/credentials.json a/service-account-x.json a/.venv/x.py a/.pytest_cache/x a/logs/x.log a/.mypy_cache/x a/.ruff_cache/y a/.cache/z a/.compressed/q.bin; do
+  p3with "$fx"; chk "N1 review fixture $fx -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
+done
+for ng in a/b.go a/logger/x.go a/.venv-notes.md a/google-services-readme.md a/credentials.go a/outline.md a/dist.go a/cachefile.go; do
+  p3with "$ng"; chk "N1 control (false-positive guard): near-miss $ng -> P3 PASS" 3 P3 PASS
+done
+# the subset check itself: a baseline pattern no class covers makes the gate unusable (blind), not quietly clean
+python3 - "$SCOPE" "$T/sc_extra.yaml" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1])); d["baseline_excludes"]["secrets"].append("*.zzvault")
+yaml.safe_dump(d, open(sys.argv[2], "w"), sort_keys=False)
+PY
+base --scope "$T/sc_extra.yaml"; chk "N1 baseline pattern *.zzvault with no class -> P3 FAIL forbidden_classes_unusable (subset check)" 1 P3 FAIL baseline_pattern_uncovered
+python3 - "$SCOPE" "$T/sc_nocred.yaml" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1])); d["forbidden_classes"] = [c for c in d["forbidden_classes"] if "service" not in c["regex"] and "credentials" not in c["regex"]]
+yaml.safe_dump(d, open(sys.argv[2], "w"), sort_keys=False)
+PY
+base --scope "$T/sc_nocred.yaml"; chk "N1 scope with the credentials/service-account class removed -> P3 FAIL (a secret pattern lost its class)" 1 P3 FAIL forbidden_classes_unusable
+
+printf 'forbidden_classes:\n  - {name: k, regex: "\\\\.key$", positive: "a/b.key", negative: "a/b.txt"}\n' > "$T/sc_nobase.yaml"; base --scope "$T/sc_nobase.yaml"
+chk "N1 golden-false: a scope with sound classes and no baseline_excludes key is not refused -> P3 PASS" 3 P3 PASS
+printf 'baseline_excludes: not-a-mapping\nforbidden_classes:\n  - {name: k, regex: "\\\\.key$", positive: "a/b.key", negative: "a/b.txt"}\n' > "$T/sc_badbase.yaml"; base --scope "$T/sc_badbase.yaml"
+chk "N1 malformed baseline_excludes (not a mapping) -> P3 FAIL baseline_excludes_malformed" 1 P3 FAIL baseline_excludes_malformed
+
+# ---- N4: case behaviour is pinned to the measured matcher: the runner's `ignore` library matches case-insensitively (default ignorecase true)
+for fx in a/server.PEM a/Release.JKS a/.ENV a/x.KEY a/Google-Services.JSON a/SECRETS/q.txt docs/security/SECRETS_MANAGEMENT.md a/App.P12; do
+  p3with "$fx"; chk "N4 case variant $fx -> P3 FAIL" 1 P3 FAIL forbidden_class_files_indexed
+done
+IGN="$HOME/.codegraph/versions/v1.6.0/lib/node_modules/ignore"
+NODE="$(command -v node || true)"
+if [ -n "$NODE" ] && [ -d "$IGN" ]; then
+  out="$("$NODE" -e '
+const ig=require(process.argv[1]); const ex=require("fs").existsSync("codegraph.json")?JSON.parse(require("fs").readFileSync("codegraph.json","utf8")).exclude:[];
+const m=ig().add(ex); const r=[];
+for (const p of ["a/server.PEM","a/.ENV","a/x.KEY","docs/security/SECRETS_MANAGEMENT.md"]) r.push(p+"="+m.ignores(p));
+console.log(r.join(" "));' "$IGN" 2>&1)"
+  case "$out" in
+    "a/server.PEM=true a/.ENV=true a/x.KEY=true docs/security/SECRETS_MANAGEMENT.md=true") ok "N4 measured: the runner's ignore library (codegraph.json exclude) excludes every case variant, i.e. is case-insensitive" ;;
+    *) bad "N4 measured matcher behaviour differs from the P3 case rule: $out" ;;
+  esac
+  gi="$(printf 'x' | "$NODE" -e 'const ig=require(process.argv[1]); console.log(ig().add(["*.pem"]).ignores("a/zz_probe.PEM"), ig({ignorecase:false}).add(["*.pem"]).ignores("a/zz_probe.PEM"))' "$IGN" 2>&1)"
+  [ "$gi" = "true false" ] && ok "N4 control needle: the library does distinguish the modes (default true, ignorecase:false false)" || bad "N4 control needle: want 'true false', got [$gi]"
+else skp "N4 runner ignore library or node absent ($IGN)"; fi
+
+# ---- N5: the .env.example exemption is exactly two names; the reviewer mutant (any .example/.sample) must not pass unnoticed
+for fx in a/secrets/db.yaml.example a/.env.example.bak a/.env.sample.bak a/secrets/token.sample; do
+  p3with "$fx"; chk "N5 $fx -> P3 FAIL (exemption is not widened to .example/.sample suffixes)" 1 P3 FAIL forbidden_class_files_indexed
+done
+for ex in .env.example .env.sample; do
+  p3with "$ex"; chk "N5 control: $ex stays exempt -> P3 PASS" 3 P3 PASS
+done
+
+# ---- N7: the capture age bound is mandatory whenever a capture or a live proof is judged
+"$IH" --out "$T/o.json" --scope "$SCOPE" --cg-status "$T/st.json" --cg-files "$T/f_good.json" --tracked "$T/tracked.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-status "$T/lu.txt" >/dev/null 2>"$T/e"; RC=$?
+{ [ "$RC" -eq 2 ] && grep -q "captured-not-before" "$T/e"; } && ok "N7 --lumen-status without --captured-not-before -> usage rc=2 naming the option" || bad "N7 want rc=2, got rc=$RC"
+printf 'Files: 2 | Indexed: 2 | Chunks: 9 | Stale: no\nCaptured: 2000-01-01T00:00:00Z\n' > "$T/lu_old.txt"
+"$IH" --out "$T/o.json" --scope "$SCOPE" --cg-status "$T/st.json" --cg-files "$T/f_good.json" --tracked "$T/tracked.txt" --needle-pos "$POS" --needle-neg "$NEG" --lumen-status "$T/lu_old.txt" >/dev/null 2>&1; RC=$?
+[ "$RC" -ne 0 ] && [ "$RC" -ne 3 ] && ok "N7 a year-2000 capture without the bound can no longer reach PASS/INCOMPLETE (rc=$RC)" || bad "N7 year-2000 capture without bound: rc=$RC (want usage 2)"
+base --lumen-status "$T/lu_old.txt"; chk "N7 control: with the bound a year-2000 capture -> P7 FAIL" 1 P7 FAIL captured_before_required_time
+base; chk "N7 control: a fresh capture with the bound -> P7 PASS" 3 P7 PASS
+
+# ---- N2: live proofs are verified, not trusted; the drift report is bound to the scope it judged
+EVD="$T/evd"; mkdir -p "$EVD"
+mkproof() {  # mkproof <id> <cmd> [kind] [captured_at] [verdict] -> sets PJ (a JSON object); writes a real evidence file holding the command line
+  local id="$1" cmd="$2" kind="${3:-live}" cap="${4:-$NOW}" ver="${5:-PASS}"
+  printf '# cmd: %s\n# exit: 0\nresult for %s\n' "$cmd" "$id" > "$EVD/$id.txt"
+  PJ="$(jq -nc --arg v "$ver" --arg c "$cmd" --arg p "$EVD/$id.txt" --arg h "$(sha256sum "$EVD/$id.txt" | cut -d' ' -f1)" --arg t "$cap" --arg k "$kind" \
+        '{verdict:$v,cmd:$c,evidence_path:$p,evidence_sha256:$h,captured_at:$t,kind:$k}')"
+}
+writelive() {  # writelive <P4 json> <P5 json> <P6 json>
+  jq -nc --argjson a "$1" --argjson b "$2" --argjson c "$3" '{P4:$a,P5:$b,P6:$c}' > "$T/live.json"
+}
+goodlive() {
+  mkproof P4 'codegraph explore golden_query'; p4="$PJ"; mkproof P5 'git log -1 --format=%cI'; p5="$PJ"; mkproof P6 'lumen_verify.sh --golden g.json --k 5'; p6="$PJ"
+  writelive "$p4" "$p5" "$p6"
+}
+SCSHA="$(sha256sum "$SCOPE" | cut -d' ' -f1)"
+printf '/dir/\n' > "$T/li_a.txt"; cp "$T/li_a.txt" "$T/li_b.txt"; LISHA="$(sha256sum "$T/li_a.txt" | cut -d' ' -f1)"
+mkdrift() {  # mkdrift [scope_sha] [lumenignore_sha] [rc_of_scope_to_lumen_json_check]
+  jq -nc --arg s "${1:-$SCSHA}" --arg l "${2:-$LISHA}" --argjson rc "${3:-0}" \
+    '{schema:"scope-drift/1",head:"0123456789abcdef0123456789abcdef01234567",scope_sha256:$s,lumen_scope_sha256:("0"*64),lumenignore_sha256:$l,
+      checks:[{check:"scope_render_check",rc:0},{check:"scope_to_lumen_json_check",rc:$rc},{check:"lumenignore_fresh",rc:0}]}' > "$T/drift.json"
+}
+printf '%s\n' "$POS" a/b.go > "$T/lumen_files.txt"
+full() {  # full [--opt value]...
+  local -A d=( [--live-proofs]="$T/live.json" [--drift-report]="$T/drift.json" [--lumenignore]="$T/li_a.txt" [--lumenignore-fresh]="$T/li_b.txt" [--lumen-files]="$T/lumen_files.txt" )
+  local -a a=(); local -A g=(); local i=1 k
+  while [ $i -le $# ]; do k="${!i}"; g[$k]=1; i=$((i+2)); done
+  for k in "${!d[@]}"; do [ -n "${g[$k]:-}" ] || a+=("$k" "${d[$k]}"); done
+  base "${a[@]}" "$@"
+}
+goodlive; mkdrift; full
+{ [ "$RC" -eq 0 ] && [ "$(jq -r .verdict "$T/o.json")" = PASS ]; } && ok "N2 golden-false: verified live proofs + bound drift report -> PASS rc=0" || bad "N2 golden-false: rc=$RC verdict=$(jq -r .verdict "$T/o.json") skipped=$(jq -rc .skipped_proofs "$T/o.json") reasons=$(reason P4)/$(reason P5)/$(reason P6)/$(reason P-ScopeDrift)"
+[ "$(jq -r '.codegraph.proofs[]|select(.id=="P4")|.kind' "$T/o.json")" = live ] && ok "N2 the row records kind=live" || bad "N2 row kind not recorded"
+# the reviewer's forged inputs, each in isolation
+mkproof P4 'codegraph explore golden_query'; p4="$PJ"; mkproof P5 'git log -1 --format=%cI'; p5="$PJ"; mkproof P6 'lumen_verify.sh --golden g.json'; p6="$PJ"
+writelive "$(jq -c '.evidence_sha256=("0"*64)' <<<"$p4")" "$p5" "$p6"; mkdrift; full
+chk "N2 evidence_sha256 = 64 zeros (resolves to no file hash) -> P4 FAIL" 1 P4 FAIL evidence_hash_mismatch
+mkproof P4 'echo trust me'; writelive "$PJ" "$p5" "$p6"; full
+chk "N2 cmd 'echo trust me' (outside the closed allow-list) -> P4 FAIL" 1 P4 FAIL live_proof_cmd_not_allowed
+mkproof P4 'codegraph explore golden_query' 'live' '2000-01-01T00:00:00Z'; writelive "$PJ" "$p5" "$p6"; full
+chk "N2 captured_at year 2000 (before --captured-not-before) -> P4 FAIL" 1 P4 FAIL live_proof_stale
+mkproof P4 'codegraph explore golden_query' 'live' 'yesterday-ish'; writelive "$PJ" "$p5" "$p6"; full
+chk "N2 captured_at unparseable -> P4 FAIL" 1 P4 FAIL captured_at_unparseable
+writelive "$(jq -c '.evidence_path="/no/such/evidence.txt"' <<<"$p4")" "$p5" "$p6"; full
+chk "N2 evidence_path names no file -> P4 FAIL" 1 P4 FAIL evidence_file_unreadable
+printf 'unrelated content\n' > "$EVD/P4x.txt"
+writelive "$(jq -c --arg p "$EVD/P4x.txt" --arg h "$(sha256sum "$EVD/P4x.txt" | cut -d' ' -f1)" '.evidence_path=$p|.evidence_sha256=$h' <<<"$p4")" "$p5" "$p6"; full
+chk "N2 a real file with the right hash that does not contain the command -> P4 FAIL" 1 P4 FAIL evidence_does_not_record_cmd
+: > "$EVD/P4e.txt"
+writelive "$(jq -c --arg p "$EVD/P4e.txt" --arg h "$(sha256sum "$EVD/P4e.txt" | cut -d' ' -f1)" '.evidence_path=$p|.evidence_sha256=$h' <<<"$p4")" "$p5" "$p6"; full
+chk "N2 empty evidence file -> P4 FAIL" 1 P4 FAIL evidence_empty
+writelive "$(jq -c 'del(.captured_at)' <<<"$p4")" "$p5" "$p6"; full
+chk "N2 entry without captured_at -> P4 FAIL malformed" 1 P4 FAIL live_proof_entry_malformed
+writelive "$(jq -c '.kind="guess"' <<<"$p4")" "$p5" "$p6"; full
+chk "N2 kind outside {live, fallback} -> P4 FAIL malformed" 1 P4 FAIL live_proof_entry_malformed
+writelive "$p4" "$p5" "$(jq -c '.cmd="lumen_verify.sh --golden other.json"' <<<"$p6")"; full
+chk "N2 P6 whose allowed cmd differs from the one its evidence records -> P6 FAIL" 1 P6 FAIL evidence_does_not_record_cmd
+writelive "$p4" "$p5" "$(jq -c '.cmd="git log -1"' <<<"$p6")"; full
+chk "N2 P6 with a program allowed for P5 only (git) -> P6 FAIL live_proof_cmd_not_allowed" 1 P6 FAIL live_proof_cmd_not_allowed
+mkproof P4 'grep -rn golden_query .' 'live'; writelive "$PJ" "$p5" "$p6"; full
+chk "N2 a grep command entered as kind=live -> P4 FAIL live_proof_cmd_not_allowed (grep is fallback-only)" 1 P4 FAIL live_proof_cmd_not_allowed
+# the fallback is recorded as a fallback and never as a live PASS
+mkproof P4 'grep -rn golden_query .' 'fallback'; writelive "$PJ" "$p5" "$p6"; full
+{ [ "$RC" -eq 3 ] && [ "$(pv P4)" = SKIP ] && [ "$(jq -r .verdict "$T/o.json")" = INCOMPLETE ]; } && ok "N2 a per-unit grep fallback is SKIP (verdict INCOMPLETE rc=3), never a live PASS" || bad "N2 fallback: rc=$RC P4=$(pv P4) verdict=$(jq -r .verdict "$T/o.json")"
+case "$(reason P4)" in *fallback*) ok "N2 the fallback skip names the fallback in its reason" ;; *) bad "N2 fallback reason: [$(reason P4)]" ;; esac
+writelive "$p4" "$p5" "$p6"
+# the drift report: hand-written inputs with no binding to the scope are refused
+printf '[{"check":"scope_render_check","rc":0},{"check":"scope_to_lumen_json_check","rc":0},{"check":"lumenignore_fresh","rc":0}]\n' > "$T/drift.json"; full
+chk "N2 hand-written all-rc-0 list (no schema, no scope binding) -> P-ScopeDrift FAIL" 1 P-ScopeDrift FAIL drift_report_unusable
+mkdrift "$(printf '0%.0s' $(seq 64))"; full
+chk "N2 drift report for a different scope (scope_sha256 mismatch) -> P-ScopeDrift FAIL" 1 P-ScopeDrift FAIL drift_report_not_for_this_scope
+mkdrift "$SCSHA" "$(printf '1%.0s' $(seq 64))"; full
+chk "N2 drift report for a different .lumenignore (lumenignore_sha256 mismatch) -> P-ScopeDrift FAIL" 1 P-ScopeDrift FAIL drift_report_not_for_this_lumenignore
+mkdrift "$SCSHA" "$LISHA" 1; full
+chk "N2 control: a bound report with a failing check -> P-ScopeDrift FAIL drift:" 1 P-ScopeDrift FAIL drift:scope_to_lumen_json_check
+mkdrift; jq 'del(.head)' "$T/drift.json" > "$T/drift_nohead.json"; full --drift-report "$T/drift_nohead.json"
+chk "N2 drift report without the head it judged -> P-ScopeDrift FAIL" 1 P-ScopeDrift FAIL drift_report_unusable
+goodlive; mkdrift; full; chk "N2 control: the bound report passes again" 0 P-ScopeDrift PASS
+
+echo "SUMMARY pass=$PASSN fail=$FAILN skip=$SKIPN"
+[ "$FAILN" -eq 0 ] || exit 1
+[ "$SKIPN" -eq 0 ] || exit 77
+exit 0

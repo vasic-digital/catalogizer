@@ -50,11 +50,13 @@ printf '%s\n' "$*" >>"$SHIM_LOG"
 exec /usr/bin/podman "$@"
 SH
 chmod +x "$SHIM_DIR/podman"
-WI_IN=/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux   # engine path INSIDE the container
+WI_IN=/src/constitution/scripts/workable-items/bin/workable-items-linux   # engine path INSIDE the container
 mkroot() {  # mkroot NAME -> scratch root path (stdout)
-  local r="$T_SCR/$1"; mkdir -p "$r/docs" "$r/.audit" "$r/submodules/constitution/scripts/workable-items/bin" "$r/scripts/register"
-  cp "$ROOT/submodules/constitution/scripts/workable-items/bin/workable-items-linux" "$ROOT/submodules/constitution/scripts/workable-items/bin/.source.sha256" "$r/submodules/constitution/scripts/workable-items/bin/"
-  cp "$REG_DIR/register_ext.sql" "$r/scripts/register/"; [ -f "${RECONCILE:-$REG_DIR/reconcile.sh}" ] && cp "${RECONCILE:-$REG_DIR/reconcile.sh}" "$r/scripts/register/reconcile.sh"; cp "$REG_DIR/gate.sh" "$REG_DIR/dump.sh" "$REG_DIR/export.sh" "$r/scripts/register/" 2>/dev/null; echo "$r"; }
+  local r="$T_SCR/$1"; mkdir -p "$r/docs" "$r/.audit" "$r/constitution/scripts/workable-items/bin" "$r/scripts/register"
+  cp "$ROOT/constitution/scripts/workable-items/bin/workable-items-linux" "$ROOT/constitution/scripts/workable-items/bin/.source.sha256" "$r/constitution/scripts/workable-items/bin/"
+  cp "$REG_DIR/register_ext.sql" "$r/scripts/register/"; [ -f "${RECONCILE:-$REG_DIR/reconcile.sh}" ] && cp "${RECONCILE:-$REG_DIR/reconcile.sh}" "$r/scripts/register/reconcile.sh"; cp "$REG_DIR/gate.sh" "$REG_DIR/dump.sh" "$REG_DIR/export.sh" "$r/scripts/register/" 2>/dev/null
+  # the three sources of the id prefix the gate compares (T068 R-04): the declared id_prefix and both importers' --prefix literal
+  mkdir -p "$r/.helix"; cp "$ROOT/.helix/reporting.yaml" "$r/.helix/" 2>/dev/null; cp "$REG_DIR/import_plan.py" "$REG_DIR/import_tickets.py" "$r/scripts/register/" 2>/dev/null; echo "$r"; }
 # lk ROOT <locked.sh args...> : run the wrapper under test against a scratch root, shim first on PATH
 lk() { local r=$1; shift; env LOCKED_TEST_MODE=1 LOCKED_ROOT="$r" LOCKED_RUNP="${LK_RUNP:-$RUNP}" LOCKED_BACKUP="${LK_BACKUP:-$BACKUP}" LOCKED_ROOT_SCRIPTS="$ROOT" SHIM_LOG="$SHIM_LOG" PATH="$SHIM_DIR:$PATH" bash "$LOCKED" "$@"; }
 # cdb ROOT NAME : fresh register-shaped DB docs/NAME inside the scratch root, written through the wrapper

@@ -1,0 +1,24 @@
+IDENTITY test=e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89 verifier=4e3b321f38973eb4de18a75d7c004bd1911bf72b1569e856bb20268deff63e7a head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-08T14:05:50Z
+ok   I-1 control: plain git status with the required filter configured succeeds (=0)
+ok   I-1 a required filter and a touched (content-identical) file: exit 0, not 20 (=0)
+ok   I-1 the repository is not reported dirty (=false)
+ok   I-1 golden-false: a really modified file under the required filter is still dirty (exit 13) (=13)
+ok   I-1 control: plain status with the global required filter succeeds (=0)
+ok   I-1 a required filter set only in the global config: exit 0 (=0)
+ok   I-1 a required filter whose name contains a dot: exit 0 (=0)
+ok   I-2 baseline: a pin no remote ref holds: exit 11 (REMOTE-BEHIND) (=11)
+ok   I-2 fixture: the annotated tag object is not held by the submodule (=absent)
+ok   I-2 an annotated tag whose peeled commit is held does not make the answer undecided: exit 11 (=11)
+ok   I-2 the same under --fetch: exit 11 (=11)
+ok   I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11 (=11)
+ok   I-2 a tag on a held tree: exit 11 (=11)
+ok   I-2 golden-false: a branch tip not held locally leaves the question undecided: exit 14 (=14)
+ok   I-2 golden-false: an annotated tag over a commit not held locally: exit 14 (=14)
+ok   I-2 golden-false: a tag whose commit is the pin holds it: exit 0 (=0)
+ok   M-5 control: a plain fetch runs core.alternateRefsCommand (the fixture is live)
+ok   M-5 diverged repository under --fetch: exit 12 (=12)
+ok   M-5 core.alternateRefsCommand never ran
+ok   RM3 control: a plain git status on a touched file runs the process filter (the fixture is live)
+ok   RM3 a process filter and a touched file: exit 0 (=0)
+ok   RM3 the process filter never ran
+SUMMARY pass=22 fail=0

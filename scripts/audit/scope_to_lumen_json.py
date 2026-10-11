@@ -4,8 +4,13 @@
 Purpose: the structural index scope (scope.yaml, rendered by scope_render.py) and the semantic index scope
   (.lumenignore, rendered by gen_lumenignore.py) must come from ONE class source (constitution 11.4.275(B)). This tool
   turns scope.yaml into the JSON form gen_lumenignore.py reads: {"allow": [...], "deny": [...], "root_files": bool}.
-Usage:   scope_to_lumen_json.py --scope scope.yaml --submodules-tsv FILE --out FILE      derive
-         scope_to_lumen_json.py --scope scope.yaml --submodules-tsv FILE --check FILE    prove no class was lost
+Usage:   scope_to_lumen_json.py --scope scope.yaml --submodules-tsv FILE [--allow-roots FILE] --out FILE      derive
+         scope_to_lumen_json.py --scope scope.yaml --submodules-tsv FILE [--allow-roots FILE] --check FILE    prove no class was lost
+         --out refuses (exit 3, review N9) when no allow roots exist anywhere (scope key, sibling file, --allow-roots) unless --no-allow-roots is given.
+Allow roots: the main repository's first-party top-level directories are DATA in a separate YAML file with the key `lumen_allow_roots`
+         (scope_render.py fails closed on that key inside scope.yaml). --allow-roots FILE names it; without the option the file
+         `lumen_allow_roots.yaml` next to scope.yaml is read when it exists. The roots of scope.yaml (key lumen_allow_roots, optional) and
+         of the file are united. A named FILE that is absent or malformed is exit 3 (never an empty allow).
 Inputs:  scope.yaml (keys baseline_excludes{class: [patterns]}, project_excludes, pathological_excludes, optional
          lumen_allow_roots [rel dirs]); the submodules TSV written by scripts/audit/derive_scope.sh (columns path,
          class, URL, alt_class, flag).
@@ -28,6 +33,7 @@ Side effects: writes --out only on success.
 """
 import argparse
 import json
+import os
 import sys
 
 import yaml
@@ -129,6 +135,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--scope", required=True)
     ap.add_argument("--submodules-tsv", required=True)
+    ap.add_argument("--allow-roots")
+    ap.add_argument("--no-allow-roots", action="store_true", help="--out only: derive from the TSV own rows alone, deliberately without allow roots")
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--out")
     g.add_argument("--check")
@@ -140,10 +148,28 @@ def main():
         with open(a.scope, encoding="utf-8") as fh:
             scope = yaml.safe_load(fh)
         scope = {} if scope is None else scope
+        roots_file = a.allow_roots
+        if roots_file is None:
+            sib = os.path.join(os.path.dirname(os.path.abspath(a.scope)), "lumen_allow_roots.yaml")
+            roots_file = sib if os.path.isfile(sib) else None
+        if roots_file is not None:
+            with open(roots_file, encoding="utf-8") as fh:
+                extra = yaml.safe_load(fh)
+            if not isinstance(extra, dict) or not isinstance(extra.get("lumen_allow_roots"), list) \
+                    or any(not isinstance(x, str) for x in extra["lumen_allow_roots"]):
+                fail(3, "malformed allow-roots file %s: want a mapping with a list of strings under lumen_allow_roots" % roots_file)
+            if isinstance(scope, dict):
+                scope = dict(scope)
+                have = scope.get("lumen_allow_roots")
+                scope["lumen_allow_roots"] = (list(have) if isinstance(have, list) else []) + extra["lumen_allow_roots"]
         with open(a.submodules_tsv, encoding="utf-8") as fh:
             tsv = fh.readlines()
     except (OSError, yaml.YAMLError, UnicodeDecodeError) as e:   # input that is not UTF-8 is malformed input: rc 3, never a traceback (N6-6)
         fail(3, "unreadable input: %s" % e)
+    have_roots = roots_file is not None or bool(isinstance(scope, dict) and scope.get("lumen_allow_roots"))
+    if a.out and not have_roots and not a.no_allow_roots:   # review N9: the F4 hazard (the main application denied from Lumen) for a naive re-render
+        fail(3, "no allow roots: lumen_allow_roots is neither in %s nor in a lumen_allow_roots.yaml next to it nor given with --allow-roots; "
+                "--out would write a list without the main repository's first-party directories (pass --no-allow-roots to derive from the TSV own rows alone on purpose)" % a.scope)
     want = derive(scope, tsv)
     if a.out:
         text = json.dumps(want, indent=2, sort_keys=True) + "\n"

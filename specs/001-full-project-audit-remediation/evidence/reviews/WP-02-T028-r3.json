@@ -1,0 +1,122 @@
+{
+  "wp": "WP-02",
+  "tasks": ["T028"],
+  "round": 3,
+  "verdict": "NO-GO",
+  "verdict_scope": "WP-02 fix round fix-r7 (uncommitted working tree on top of 20f74abf) answering WP-02-T028-r2.json N1-N9 and F7. Not a final T028 verdict.",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (11.4.231(F.2)); xhigh not claimed. The reviewer authored no WP-02 file and is neither the author nor a previous reviewer.",
+  "reviewed_head": "20f74abf",
+  "reviewed_state": "working tree: scripts/audit/index_health.sh, scripts/audit/lumenignore_skeleton.py (untracked), scripts/audit/scope_drift_check.sh (untracked), docs/scripts/lumenignore_skeleton.md (untracked), config/index/scope.yaml, codegraph.json, .lumenignore, tests, evidence/wp02/fix-r7-*",
+  "covers_runs": ["f04c555d", "4c8b07b7", "20f74abf+fix-r7-working-tree"],
+  "scratch_dir_note": "All repros and mutations ran in the session scratchpad (r3/); no tracked file was edited, no index writer, build or podman ran.",
+  "prior_findings": {
+    "N1": "PARTIAL - own run: all 32 non-negated baseline patterns are probed and each probe gives P3 FAIL; review fixtures (google-services.json, credentials.json, service-account-x.json, .venv, .pytest_cache, logs, root-level secrets/db.yaml, .env, OUT/x.js, a/X.PEM) all FAIL; near-miss controls PASS. But the coverage probe is one point per pattern at one depth, see R3-3 (a surviving DATA mutant).",
+    "N2": "PARTIAL - the named forgeries are rejected (own repro): 64-zero hash -> evidence_hash_mismatch; 'echo trust me' -> live_proof_cmd_not_allowed; captured_at 2000-01-01 -> live_proof_stale; matching-looking file with a wrong sha -> evidence_hash_mismatch; 'lumen' for P4 -> cmd_not_allowed; drift report with a wrong scope sha -> drift_report_not_for_this_scope. A legitimate-looking proof is accepted (no 11.4.201(1) false refusal). But the verdict is still not derived from the evidence, and the drift report's head and lumen_scope_sha256 are not checked, see R3-1 and R3-2.",
+    "N3": "FIXED - own run: skeleton+gen_lumenignore render on the host equals the committed .lumenignore; a `git clone -n -s` with only submodules/constitution checked out renders a byte-identical file; a clone with no submodule checkout fails closed (exit 3, allowed root inside a gitlink), as documented. A `git archive` copy (gitlinks lost) renders a file missing `/submodules/superspec/` silently, see R3-8 (minor).",
+    "N4": "FIXED for CodeGraph - verified from the runner source, not only the library: ~/.codegraph/versions/v1.6.0/lib/dist/extraction/index.js builds every matcher with `(0, ignore_1.default)()` (default options, lines 242-324 and 1203), and the codegraph.json exclude goes through that loader (project-config.js:232, extraction/index.js:1293), so ignorecase true is the applied mode; test's control needle (ignorecase:false differs) present. Lumen matcher stays UNCONFIRMED, honestly stated.",
+    "N5": "FIXED - not re-probed beyond the shipped suite (97/97 pass in my own run).",
+    "N6": "UNCONFIRMED - see R3-6: the pre-fix (fix-r6) tool is in no commit and the RED file records no fingerprint of it, so the RED cannot be re-run from git. HEAD's index_health.sh predates fix-r6 (no --scope option); the new suite against it gives 4 pass / 93 fail, mostly argv rc=2, which is not a valid RED. Counts in the recorded RED (41+56=97) match the green suite size.",
+    "N7": "FIXED - --live-proofs or --lumen-status without --captured-not-before is a usage error. The bound itself is caller-supplied (1970 accepted), see R3-1.",
+    "N8": "FIXED with a caveat - the three tests exit 77 on a skipped leg; but the mutation harnesses count any non-zero (77 included) as CAUGHT, see R3-5.",
+    "N9": "FIXED - not re-probed beyond the shipped suite.",
+    "F7": "ADDRESSED - covers_runs lists f04c555d and 4c8b07b7; T022 and T026 remain open (blocks_final_T028_GO)."
+  },
+  "findings": [
+    {
+      "id": "R3-1",
+      "title": "Live-proof verdict is self-asserted, not derived from the evidence; future captured_at and any program named codegraph are accepted",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "Own repro (scratch): evidence file containing 'lumen_verify.sh --golden\\nrecall 0.10 FAIL\\nexit 1', entry verdict PASS, kind live -> P4 PASS. Repro A: three evidence files whose whole content is the command text ('codegraph trust me', 'git log', 'lumen ok'), self-computed sha256, P6 captured_at 2099-01-01, plus the lumenignore pair, a Lumen status and a hand-written drift report -> verdict PASS, complete, rc=0. cmd '/tmp/evil/codegraph --version' is accepted for P5 (basename allow-list). --captured-not-before is chosen by the caller, so the freshness bound can be 1970. The documented honest boundary (index_health.md N2 paragraph) covers a forger writing a consistent file; it does not cover a gate that passes an entry whose own evidence says FAIL, nor a capture dated in the future. 11.4.115(F), 11.4.262, 11.4.201.",
+      "required_fix": "Derive the proof verdict from a machine-readable line in the evidence (e.g. the lumen_verify.sh / codegraph result record) and FAIL when the entry verdict disagrees; reject captured_at later than the gate's run time; record the resolved argv[0] and refuse a path outside the declared tool locations (or record it honestly as unverified). Add the two forgeries (contradicting evidence, future date) as RED cases."
+    },
+    {
+      "id": "R3-2",
+      "title": "Drift report binding checks scope and .lumenignore sha only: head and lumen_scope_sha256 are not verified, check rcs are self-asserted",
+      "severity": "important",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "Own repro: a hand-written scope-drift/1 report with head 'deadbeef', all three checks rc 0, the real sha256 of scope.yaml and .lumenignore (one sha256sum each) -> P-ScopeDrift PASS. The same report with lumen_scope_sha256 set to 64 zeros -> PASS: scope_drift_check.sh writes lumen_scope_sha256 but p_drift never compares it, so a stale config/index/lumen_scope.json is not caught by the binding. The reviewer forgery 'hand-written drift report' is rejected only when its hashes are wrong.",
+      "required_fix": "Bind lumen_scope_sha256 to a --lumen-json input (FAIL on mismatch or when unchecked, listed in not_checked otherwise); bind head to a supplied --repo HEAD (git rev-parse) or record it as unverified; state in the doc that check rcs are instance-tier (11.4.240(F))."
+    },
+    {
+      "id": "R3-3",
+      "title": "Class coverage check and its tests probe each unanchored pattern at one nested depth only; a class that misses root-level members survives every suite",
+      "severity": "important",
+      "finding_layer": "test-instrumentation",
+      "defect_layer": "source",
+      "detail": "Reviewer mutant R1 (DATA, scratch copy of scope.yaml): secrets_dir regex '(^|/)secrets/' -> '/secrets/'. Class self-test (positive x/secrets/a.py) and baseline probe (a/secrets/probe.py) still pass; behaviour regresses: root-level secrets/db.yaml P3 PASS (false-null) while a/secrets/db.yaml FAILs. test_index_health.sh rc=0, test_index_health_extra.sh rc=0, test_index_health_fix_r7.sh (SCOPE=mutant) rc=0: SURVIVED. Mutant R4 (probe built at root instead of 'a/') also survived (equivalent on today's data, which shows the depth is not pinned). The shipped data is correct today (root-level secrets/db.yaml FAILs with the real scope), so this is a guard gap, not a live defect. 11.4.273(f), 11.4.276(C).",
+      "required_fix": "Probe every unanchored baseline pattern both at the root and nested (and anchored patterns at root and refused when nested if the class is anchored); add root-level fixtures for every class; adopt R1 verbatim as a mutant that must fail the suite."
+    },
+    {
+      "id": "R3-4",
+      "title": "Constitution scope_baseline.txt members are outside both codegraph.json and the P3 classes",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "scope_baseline.txt declares segglob:*service-account*.json, segglob:*service_account*.json, topdir:prebuilts, topdir:rockdev, topdir:RKTools. scope.yaml narrows the first to **/service-account*.json and omits the rest; codegraph.json exclude has none of them; P3 PASSes a/prod-service-account.json, a/service_account.json, a/gcp_service_account_key.json, prebuilts/x.so, rockdev/a.img, RKTools/t.exe. Measured: no such tracked path exists in the repo today (git ls-files --recurse-submodules; control needle main.go found), so no live member. N1's 'one class source' is closed against scope.yaml but not against the constitution baseline (11.4.78(7) 'never drops a baseline class').",
+      "required_fix": "Probe scope_baseline.txt members in the coverage check as well, or record the narrowing as a reasoned class override."
+    },
+    {
+      "id": "R3-5",
+      "title": "Mutation harnesses count exit 77 (skipped leg) as a kill",
+      "severity": "minor",
+      "finding_layer": "test-instrumentation",
+      "defect_layer": "source",
+      "detail": "mutate_index_health.sh:94-95 sums test rcs and reports CAUGHT on any non-zero; run_wp04f/h_mutations.sh likewise (rc != 0). A mutant whose only effect is to make the N4 or D13 leg skip (77) is counted as caught, the false-kill twin of the 11.4.201(6) false-null. Baseline is protected (77 there aborts), mutation runs are not.",
+      "required_fix": "Treat 77 in a mutant run as NOT-KILLED-SKIP (reported separately), never CAUGHT."
+    },
+    {
+      "id": "R3-6",
+      "title": "RED record carries no identity of the pre-fix tool, and that tool is in no commit",
+      "severity": "minor",
+      "finding_layer": "process-doc",
+      "defect_layer": "artifact",
+      "detail": "fix-r7-red-index-health.txt has no sha256 of the index_health.sh it ran; fix-r6 was never committed (HEAD's tool has no --scope). The RED therefore cannot be reproduced from git (11.4.115(F) RED fingerprint). The counts are consistent (97 = 41 + 56).",
+      "required_fix": "Store the pre-fix tool under evidence (or its sha256 with a saved copy) and print its sha256 at the top of each RED file."
+    },
+    {
+      "id": "R3-7",
+      "title": "test_index_health_fix_r7.sh re-implements baseline_probe",
+      "severity": "minor",
+      "finding_layer": "test-instrumentation",
+      "defect_layer": "source",
+      "detail": "The N1 block copies the tool's probe() algorithm to build its fixtures, so a probe-construction bug is mirrored in the test (R2 'keep **/' and R4 'no a/ prefix' both survived). The tool itself is still driven through its real CLI, so this is minor. 11.4.276(D).",
+      "required_fix": "Use an independent, hand-written table of member paths per pattern (root and nested) instead of the copied algorithm."
+    },
+    {
+      "id": "R3-8",
+      "title": "Export copy without gitlinks renders a different .lumenignore silently",
+      "severity": "minor",
+      "finding_layer": "source-defect",
+      "defect_layer": "source",
+      "detail": "git archive HEAD + git init + add: skeleton rc 0, render differs from the committed file by one line (/submodules/superspec/ absent) because the gitlink is gone; no allowed-root-missing refusal. A real clone is correct and a clone without the constitution checkout fails closed, so this concerns non-git exports only.",
+      "required_fix": "Fail closed when an allowed root or a .gitmodules path is absent from the listing, or document the export case."
+    }
+  ],
+  "mutations_attempted": [
+    {"id": "R1", "kind": "data", "target": "config/index/scope.yaml (scratch copy)", "change": "secrets_dir regex '(^|/)secrets/' -> '/secrets/'", "behaviour_change_proven": "root-level secrets/db.yaml P3 PASS (was FAIL)", "result": "SURVIVED (all three suites rc 0)"},
+    {"id": "R2", "kind": "source", "target": "index_health.sh baseline_probe", "change": "drop the '**/' strip loop", "result": "SURVIVED (equivalent on today's data: regexes still match a/**/x/...)"},
+    {"id": "R3", "kind": "source", "target": "index_health.sh verify_live", "change": "evidence must contain only basename(argv[0]) instead of the full cmd", "result": "CAUGHT (test_index_health_fix_r7.sh 1 fail)"},
+    {"id": "R4", "kind": "source", "target": "index_health.sh baseline_probe", "change": "unanchored probe built at the root (no 'a/' prefix)", "result": "SURVIVED (equivalent on today's data; depth not pinned)"}
+  ],
+  "own_runs": {
+    "test_index_health_fix_r7_current_tool": "SUMMARY pass=97 fail=0 skip=0 (rc 0)",
+    "test_index_health_fix_r7_vs_HEAD_tool": "SUMMARY pass=4 fail=93 (argv rc 2 on most cases; HEAD tool predates fix-r6, not a valid RED)",
+    "lumenignore_host_render": "equal",
+    "lumenignore_clone_render": "equal",
+    "lumenignore_clone_no_submodule": "exit 3 fail closed",
+    "lumenignore_git_archive_render": "differs by /submodules/superspec/"
+  },
+  "blocks_final_T028_GO": [
+    "R3-1, R3-2 (important source-defects) and R3-3 (important test-instrumentation) of this round",
+    "T022 index refresh still blocked (writer preflight MemAvailable >= 32 GiB vs MemTotal 31.7 GiB; owner decision)",
+    "T026 MCP registration still blocked (patch anchor vs npm codegraph 1.6.1; owner decision)",
+    "Live P4/P5/P6 and P7 proofs against a refreshed index (depend on T022) - the gate is INCOMPLETE until then",
+    "Commit of fix-r6+fix-r7 so the reviewed tool and its RED baseline exist in git"
+  ],
+  "date": "2026-10-08"
+}

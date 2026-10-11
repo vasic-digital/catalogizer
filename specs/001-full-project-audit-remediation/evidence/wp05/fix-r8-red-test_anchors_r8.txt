@@ -1,0 +1,58 @@
+FAIL R1: a ledger with NO anchors file is UNVERIFIED, exit 3 reason=anchor_absent (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=4 entries head=b65e882efd2e (chain, ev/1 schema, canonical form and )
+FAIL R1: the output of a no-anchor verify still starts with OK
+FAIL R1: an EMPTY anchors file is UNVERIFIED, exit 3 anchor_absent (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=4 entries head=b65e882efd2e (chain, ev/1 schema, canonical form and )
+FAIL R1: a truncated tail with no anchors file is UNVERIFIED (exit 3), not verified (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=3 entries head=fe5fdb11b38b (chain, ev/1 schema, canonical form and )
+FAIL R1: delete-and-recompute with no anchors file is UNVERIFIED (exit 3), not verified (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=3 entries head=16e6d05619e3 (chain, ev/1 schema, canonical form and )
+FAIL R1: --chain-only on an unanchored ledger exits 0 and says CHAIN-ONLY (exit 64, want 0: usage_error: verify [--ledger FILE] [--blobs DIR]; refused argument '--chain-only'  verify: reason=usage_error )
+ok   R1: --chain-only output never claims the ledger is verified
+FAIL R1: --chain-only does NOT switch off an anchor that is present (delete-and-recompute still exit 2) (exit 64, want 2: usage_error: verify [--ledger FILE] [--blobs DIR]; refused argument '--chain-only'  verify: reason=usage_error )
+ok   R1: ledger plus agreeing anchor still verifies, exit 0 (golden-false: the new rule does not refuse a good ledger)
+FAIL R2: end-session exit 64:  evrec: refused reason=usage_error evrec {run|check-record|reconcile|rerecord|remap-refs|token|anchor} ...
+FAIL R2: after end-session the ledger verifies against its anchor (exit 0) (exit ok, output lacks /anchor agrees/: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs
+OK chain=4 entries head=7a37889074af (chain, ev/1 schema, canonical form and blobs verified)
+note: no anchor compare)
+sha256sum: /tmp/tmp.3nEFCXBWlK/w/anchors.jsonl: No such file or directory
+sha256sum: /tmp/tmp.3nEFCXBWlK/w/anchors.jsonl: No such file or directory
+FAIL R2: second end-session exit 64
+ok   R2: end-session takes no arguments (usage error 64)
+FAIL R2: run --anchor-after exit 64 anchors=
+tools/evidence/tests/test_anchors_r8.sh: line 64: /tmp/tmp.3nEFCXBWlK/w/anchors.jsonl: No such file or directory
+cat: /tmp/tmp.3nEFCXBWlK/w/anchors.jsonl: No such file or directory
+FAIL R2: second --anchor-after: 
+FAIL R2: a ledger written with --anchor-after verifies against the last row (exit 0) (exit 3, want 0: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs UNVERIFIED: ledger unreadable: No such file or directory  verify: reason=UNVERIFIED )
+FAIL R2: end-session anchored a broken chain (exit 64)
+FAIL R3: strength=mechanism exit 0: anchored count=4 head=ef9e5414cb86 strength=mechanism -> /tmp/tmp.3nEFCXBWlK/w/anchors.jsonl
+FAIL R3: probe record lacks the honest facts: {"at":"2026-10-08T13:12:00Z","count":4,"head":"ef9e5414cb866850369629401f1f9fb433d33ab53047161347b330ba088fae34","probe":{"config":{"receive.denyDeletes":{"effective":true,"values":[{"origin":"file:/tmp/tmp.3nEFCXBWlK/deny.git/config","value":"true"}]},"receive.denyNonFastForwards":{"effective":true,"values":[{"origin":"file:/tmp/tmp.3nEFCXBWlK/deny.git/config","value":"true"}]}},"hooks":{"pre-rec
+FAIL R3: mechanism claim exit 0
+ok   R3: --strength mechanism over a nonexistent remote is refused (71)
+FAIL R4: a hand-written mechanism row over a NONEXISTENT remote and a truncated ledger is UNVERIFIED (exit 3 strength_unproven), not 'agrees' (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=3 entries head=2fb2fda4d587 (chain, ev/1 schema, canonical form, bl )
+FAIL R4: a hand-written mechanism row over a real deny.git remote and an intact ledger is UNVERIFIED (exit 3 strength_unproven) (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=4 entries head=fc603a21cc33 (chain, ev/1 schema, canonical form, bl )
+FAIL R4: a hand-written mechanism row over an intact ledger is not accepted either (exit 3) (exit 0, want 3: verify: ledger=/tmp/tmp.3nEFCXBWlK/w/ledger.jsonl blobs=/tmp/tmp.3nEFCXBWlK/w/blobs OK chain=4 entries head=d6cb18a6e462 (chain, ev/1 schema, canonical form, bl )
+ok   R5: golden-false: an anchored good ledger derives PASS, exit 0
+FAIL R5: the derivation output carries no anchor field: {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "green_identical": true, "same_test": true, "red_before_green": true, "fingerprints_differ": true, "fingerprints_new": true, "verdict": "PASS"}
+FAIL R5: edited anchored ledger: verify=0 verdict=0  {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": tru
+FAIL R5: unanchored ledger: verdict exit 0
+FAIL R5: --chain-only unanchored: exit 0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "green_identical": true, "same_test": true, "red_before_green": true, "fingerpr
+FAIL R5: --chain-only on a forged anchored ledger exit 0
+FAIL R5: reordered ledger: verify=0 verdict=0 {"item": "CAT-001", "cycle_after_seq": 0, "reopens_counted": 0, "reopens_ignored": [], "red_ok": true, "green_ok": true, "green_identical": true, "same_test": true, "red_before_green": true, "fingerpr
+ok   REV-1: an anchor row with a count below the previous row's (each row agrees with the chain) is anchor_inconsistent, exit 2
+ok   REV-6: an anchor row with count 0 (it would index entry -1) is not a valid row, exit 3 anchor_not_compared
+ok   REV-5: evrec anchor waits for the ledger lock and refuses (75 lock_held) while another writer holds it, writing nothing
+ok   REV-3: a local anchor exactly at the common prefix (count 2) survives the re-record next to the remote's count 1 and the re-chained head
+ok   REV-4 control: RED and three GREEN from one directory derive PASS (same_test true)
+ok   REV-4: one GREEN run from another directory makes same_test false and the verdict FAIL
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+AssertionError: ld `test_state_gos` (each such GO 'named in the run's `ev/1` entry'); the name and the one-string-per-verdict-file form, chosen by the contracts revision 19 author, stay UNCONFIRMED until T048a lands.
+FAIL R8: the stale UNCONFIRMED sentence is still in the test_state_gos description
+ok   R8: test_state_gos a repository-relative verdict file path (valid)
+ok   R8: test_state_gos a short relative verdict file name (valid)
+FAIL R8: test_state_gos a path-traversal entry: wanted refused got valid
+FAIL R8: test_state_gos an absolute path: wanted refused got valid
+FAIL R8: test_state_gos a non-json name: wanted refused got valid
+FAIL R8: test_state_gos an embedded parent segment: wanted refused got valid
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+AssertionError: WP05-R1
+FAIL R8: the WP-05 verdict file does not validate against review-verdict.schema.json
+checks=45 failures=32

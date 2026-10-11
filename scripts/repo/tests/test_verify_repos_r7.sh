@@ -49,7 +49,7 @@ run t1 "$T/w_t1par"; eq "I-2 an annotated tag whose peeled commit is held does n
 run t1f "$T/w_t1par" --fetch; eq "I-2 the same under --fetch: exit 11" "$RC" 11
 fixture t2; rm -rf "${T:?}/o_t2"; git clone -q "$T/fx/r_t2sub.git" "$T/o_t2" 2>/dev/null; ( cd "$T/o_t2" && git tag blobtag "$(git rev-parse HEAD:f)" && git push -q origin blobtag 2>/dev/null )
 run t2 "$T/w_t2par"; eq "I-2 a tag on a held blob cannot hold a commit pin and is no undecided ref: exit 11" "$RC" 11
-fixture t3; rm -rf "${T:?}/o_t3"; git clone -q "$T/fx/r_t3sub.git" "$T/o_t3" 2>/dev/null; ( cd "$T/o_t3" && git tag treetag "$(git rev-parse HEAD^{tree})" && git push -q origin treetag 2>/dev/null )
+fixture t3; rm -rf "${T:?}/o_t3"; git clone -q "$T/fx/r_t3sub.git" "$T/o_t3" 2>/dev/null; ( cd "$T/o_t3" && git tag treetag "$(git rev-parse "HEAD^{tree}")" && git push -q origin treetag 2>/dev/null )
 run t3 "$T/w_t3par"; eq "I-2 a tag on a held tree: exit 11" "$RC" 11
 # golden-false: a colleague's NEW BRANCH whose tip object is not held locally stays undecided (14): that tip could descend from the pin
 fixture n; rm -rf "${T:?}/col_n"; git clone -q "$T/fx/r_nsub.git" "$T/col_n" 2>/dev/null; ( cd "$T/col_n" && git checkout -q -b feature && echo n > n && git add n && $G commit -qm feat && git push -q origin feature 2>/dev/null )

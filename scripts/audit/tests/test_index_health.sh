@@ -59,9 +59,9 @@ printf '%s\n' "$POS" "catalog-api/handlers/scan.go" "submodules/auth/auth.go" > 
 { cat "$T/lumen_files_good.txt"; printf 'extra/a.go\nextra/b.go\nextra/c.go\nextra/d.go\n'; } > "$T/lumen_files_parity.txt"
 
 # shellcheck disable=SC2054  # "sh,kt,txt" is ONE comma-separated option value, not a list of array words
-BASE=( --cg-status "$T/cg_status_good.json" --cg-files "$T/cg_files_good.json" --tracked "$T/tracked.txt"
+BASE=( --scope config/index/scope.yaml --cg-status "$T/cg_status_good.json" --cg-files "$T/cg_files_good.json" --tracked "$T/tracked.txt"
        --needle-pos "$POS" --needle-neg "$NEG" --lumen-status "$T/lumen_good.txt"
-       --lumen-files "$T/lumen_files_good.txt" --parity-tolerance-pct 2 --lumen-unindexable-ext sh,kt,txt )
+       --lumen-files "$T/lumen_files_good.txt" --parity-tolerance-pct 2 --lumen-unindexable-ext sh,kt,txt --captured-not-before 2026-10-05T00:00:00Z )
 
 # run NAME  [override args...]  -> sets RC and OUTJ; later duplicate options override earlier ones only by position, so
 # the helper rebuilds the argument list from BASE with the named option replaced.
@@ -97,8 +97,10 @@ expect_fail() {  # expect_fail <case name> <proof id> : RC==1, JSON verdict FAIL
 run good
 tv="$(jq -r '.verdict // "MISSING"' "$OUTJ" 2>/dev/null || echo MISSING)"
 bad_proofs="$(jq -r '[.codegraph.proofs[]?, .lumen.proofs[]?] | map(select(.verdict=="FAIL") | .id) | join(",")' "$OUTJ" 2>/dev/null || echo "?")"
-if [ "$RC" -eq 0 ] && [ "$tv" = PASS ] && [ -z "$bad_proofs" ]; then ok "all-good fixture PASS (rc=0, verdict=PASS, no FAIL proof)"
-else bad "all-good fixture: want rc=0 verdict=PASS, got rc=$RC verdict=$tv failing=[$bad_proofs]"; fi
+# F3 (WP-02 review): P4/P5/P6/P-ScopeDrift/P-LumenIgnore are SKIP here, so the best reachable verdict is INCOMPLETE rc=3, never rc=0
+sk="$(jq -r '.skipped_proofs | sort | join(",")' "$OUTJ" 2>/dev/null || echo "?")"
+if [ "$RC" -eq 3 ] && [ "$tv" = INCOMPLETE ] && [ -z "$bad_proofs" ] && [ "$sk" = "P-LumenIgnore,P-ScopeDrift,P4,P5,P6" ]; then ok "all-good fixture with SKIPped proofs is INCOMPLETE (rc=3, no FAIL proof, skipped=$sk)"
+else bad "all-good fixture: want rc=3 verdict=INCOMPLETE skipped=P-LumenIgnore,P-ScopeDrift,P4,P5,P6, got rc=$RC verdict=$tv failing=[$bad_proofs] skipped=[$sk]"; fi
 # schema marker and per-proof evidence fields (the gate must record command, raw sha256 and needles)
 sch="$(jq -r '.schema // "MISSING"' "$OUTJ" 2>/dev/null || echo MISSING)"
 [ "$sch" = "index-health/1" ] && ok "output carries schema index-health/1" || bad "schema: want index-health/1, got $sch"

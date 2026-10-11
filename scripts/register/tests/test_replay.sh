@@ -61,7 +61,7 @@ mkdir -p "$T_SCR/jd2/inputs"; python3 -I - "$JL" "$T_SCR/jd2/journal.jsonl" <<'P
 import json,sys
 rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
 # SYNTHETIC row (the installer of T175a does not exist yet): a register row whose argv names export.sh --install
-rows.append({"time":"2026-10-06T00:00:00.000000Z","op_id":"synthetic-install","mode":"register","argv":["bash","scripts/register/export.sh","--install","b1"],"exit":0,
+rows.append({"seq":max(x["seq"] for x in rows)+1,"wal_bytes_before":0,"time":"2026-10-06T00:00:00.000000Z","op_id":"synthetic-install","mode":"register","argv":["bash","scripts/register/export.sh","--install","b1"],"exit":0,
  "db_sha_before":"a"*64,"db_sha_after":"a"*64,"ids_minted":[],"input_args":{},"inputs":[],"wal_bytes_after":0,"stdin":None,"db":"docs/workable_items.db","ids_snapshot":"ok"})   # UNCHANGED (WF15 M6: an install row that changed the register is refused)
 open(sys.argv[2],"w").write("".join(json.dumps(r)+"\n" for r in rows))
 PY
@@ -73,7 +73,7 @@ mkdir -p "$T_SCR/jd3/inputs"; python3 -I - "$JL" "$T_SCR/jd3/journal.jsonl" <<'P
 import json,sys
 rows=[json.loads(l) for l in open(sys.argv[1]) if l.strip()]
 # SYNTHETIC golden-bad row: drops a guard trigger of the register (the same fault as B3 of test_gate.sh)
-rows.append({"time":"2026-10-06T00:00:00.000000Z","op_id":"synthetic-drop-trigger","mode":"register","argv":["sqlite3","/src/docs/workable_items.db","DROP TRIGGER reg_ids_no_delete"],"exit":0,
+rows.append({"seq":max(x["seq"] for x in rows)+1,"wal_bytes_before":0,"time":"2026-10-06T00:00:00.000000Z","op_id":"synthetic-drop-trigger","mode":"register","argv":["sqlite3","/src/docs/workable_items.db","DROP TRIGGER reg_ids_no_delete"],"exit":0,
  "db_sha_before":"c"*64,"db_sha_after":"d"*64,"ids_minted":[],"input_args":{},"inputs":[],"wal_bytes_after":0,"stdin":None,"db":"docs/workable_items.db","ids_snapshot":"ok"})
 open(sys.argv[2],"w").write("".join(json.dumps(r)+"\n" for r in rows))
 PY

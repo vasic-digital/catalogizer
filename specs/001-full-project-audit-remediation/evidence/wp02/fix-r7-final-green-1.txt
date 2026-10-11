@@ -1,0 +1,364 @@
+=== test_index_health run 1
+ok   all-good fixture with SKIPped proofs is INCOMPLETE (rc=3, no FAIL proof, skipped=P-LumenIgnore,P-ScopeDrift,P4,P5,P6)
+ok   output carries schema index-health/1
+ok   P2 row records both control needles
+ok   pendingRefs>0 (rc=1, P1=FAIL, verdict=FAIL)
+ok   required field index.pendingRefs absent (rc=1, P1=FAIL, verdict=FAIL)
+ok   worktreeMismatch non-null (rc=1, P1=FAIL, verdict=FAIL)
+ok   negative needle zz/does_not_exist.go found (rc=1, P2=FAIL, verdict=FAIL)
+ok   positive needle missing from the index (rc=1, P2=FAIL, verdict=FAIL)
+ok   Lumen status Stale: yes (rc=1, P7=FAIL, verdict=FAIL)
+ok   no Lumen status file and no probe (rc=1, P-Lumen=FAIL, verdict=FAIL)
+ok   --lumen-bin path does not exist (rc=1, P-Lumen=FAIL, verdict=FAIL)
+ok   scope parity outside tolerance (rc=1, P8=FAIL, verdict=FAIL)
+ok   missing --out is a usage error (rc=2)
+SUMMARY pass=13 fail=0
+RC test_index_health=0
+=== test_index_health_extra run 1
+ok   X1 positive needle missing while tracked set is complete -> P2 FAIL
+ok   X2 absent pendingChanges -> P1 FAIL required_field_absent
+ok   X3 Chunks 0 -> P7 FAIL
+ok   X4 Files != Indexed -> P7 FAIL
+ok   X5 no Captured line -> P7 FAIL
+ok   X6 .env.distributed indexed -> P3 FAIL
+ok   X7 .env.example allowed -> P3 PASS (false-positive guard)
+ok   X8 file under a third-party root -> P3 FAIL
+ok   X9 own-org root with no indexed file -> P3 FAIL
+ok   X10 tracked file not indexed -> P2 FAIL
+ok   X11 executable --lumen-bin without a status capture -> P-Lumen FAIL (probe refused)
+ok   X12 no --lumen-files -> P8 SKIP
+ok   X12b skipped proofs make complete=false
+ok   X13a option-like value -> rc 2
+ok   X13b unknown option -> rc 2
+ok   X13c duplicate option -> rc 2
+ok   X13d negative tolerance -> rc 2
+ok   X14 unreadable status file -> P1 FAIL
+ok   X15 identical inputs -> byte-identical output
+ok   X16 inputs.cg_files.sha256 equals the sha256 of the file
+ok   R4 non-canonical third-party root line [ a \ r] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a ] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ . / a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ / a] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / . / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a / . . / b] -> P3 FAIL third_party_root_not_canonical
+ok   R4 non-canonical third-party root line [ a \ 0 0 1] -> P3 FAIL third_party_root_not_canonical
+ok   R4 control: a canonical third-party root with no indexed file -> P3 PASS (false-positive guard)
+ok   R4 control: a canonical root with ONE trailing slash that holds an indexed file -> P3 FAIL third_party_files_indexed
+ok   R4 control: blank lines in the roots file are ignored -> P3 PASS
+ok   M5-2 empty --tracked list -> P2 FAIL tracked_list_empty_blind
+ok   M5-3 index.state indexing (everything else clean) -> P1 FAIL index.state_not_complete
+ok   N6-5 encoding-class third-party root [ 357 273 277 a] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 342 200 213] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 377] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a \ b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ c a f e 314 201] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 177] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 302 240] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ 342 200 213 a] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 302 240 b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 encoding-class third-party root [ a 342 200 250 b] -> P3 FAIL third_party_root_not_canonical
+ok   N6-5 golden-false: a non-ASCII root in NFC that holds an indexed file is a normal hit -> P3 FAIL third_party_files_indexed
+ok   N6-5 golden-false: a non-ASCII NFC root with no indexed file -> P3 PASS
+ok   N6-5 golden-false: an inner ASCII space is a plain character -> P3 PASS
+ok   M-6a case variant Third of the indexed root third -> P3 FAIL third_party_root_case_mismatch
+ok   M-6a control: the exact root third -> P3 FAIL third_party_files_indexed
+ok   M-6a control: an exact root is no case mismatch
+ok   M-6a golden-false: a root that matches nothing in any case (tree not indexed) -> P3 PASS
+ok   M-6a a case variant of a file-level root -> P3 FAIL third_party_root_case_mismatch
+ok   M-6b an NFD root naming an NFD path that IS indexed -> P3 FAIL third_party_files_indexed (a hit, not not_canonical)
+ok   M-6b golden-false: the same NFD root while only the NFC path is indexed stays refused -> P3 FAIL third_party_root_not_canonical
+ok   F1 scope.yaml declares 8 forbidden classes (instrument sees the class list)
+ok   F1 class env_file positive [a/.env.local] indexed -> P3 FAIL
+ok   F1 class env_file named in forbidden_by_class
+ok   F1 class env_file negative [a/environment.c] indexed -> P3 PASS (false-positive guard)
+ok   F1 class secrets_dir positive [x/secrets/a.py] indexed -> P3 FAIL
+ok   F1 class secrets_dir named in forbidden_by_class
+ok   F1 class secrets_dir negative [x/secretsauce/a.py] indexed -> P3 PASS (false-positive guard)
+ok   F1 class secret_basename positive [a/api_Secret.py] indexed -> P3 FAIL
+ok   F1 class secret_basename named in forbidden_by_class
+ok   F1 class secret_basename negative [a/secure.py] indexed -> P3 PASS (false-positive guard)
+ok   F1 class keystore positive [a/release.jks] indexed -> P3 FAIL
+ok   F1 class keystore named in forbidden_by_class
+ok   F1 class keystore negative [a/keys.c] indexed -> P3 PASS (false-positive guard)
+ok   F1 class qa_corpus positive [d/qa-results/r.py] indexed -> P3 FAIL
+ok   F1 class qa_corpus named in forbidden_by_class
+ok   F1 class qa_corpus negative [d/qa_resultsx/r.py] indexed -> P3 PASS (false-positive guard)
+ok   F1 class cache_dir positive [a/.venv/x.py] indexed -> P3 FAIL
+ok   F1 class cache_dir named in forbidden_by_class
+ok   F1 class cache_dir negative [a/pycache.py] indexed -> P3 PASS (false-positive guard)
+ok   F1 class credentials_json positive [a/google-services.json] indexed -> P3 FAIL
+ok   F1 class credentials_json named in forbidden_by_class
+ok   F1 class credentials_json negative [a/credentials.go] indexed -> P3 PASS (false-positive guard)
+ok   F1 class build_output positive [dist/x.js] indexed -> P3 FAIL
+ok   F1 class build_output named in forbidden_by_class
+ok   F1 class build_output negative [a/dist.go] indexed -> P3 PASS (false-positive guard)
+ok   F1 review fixture a/localhost.key -> P3 FAIL
+ok   F1 review fixture a/dhparams.pem -> P3 FAIL
+ok   F1 review fixture a/prod.env -> P3 FAIL
+ok   F1 review fixture a/secrets/db.yaml -> P3 FAIL
+ok   F1 review fixture a/release.jks -> P3 FAIL
+ok   F1 review fixture a/store.p12 -> P3 FAIL
+ok   F1 review fixture a/x.pfx -> P3 FAIL
+ok   F1 review fixture a/y.keystore -> P3 FAIL
+ok   F1 review fixture a/z.pk8 -> P3 FAIL
+ok   F1 scope without forbidden_classes -> P3 FAIL (blind)
+ok   F1 class failing its own positive/negative self-test -> P3 FAIL
+ok   F1 unreadable scope -> P3 FAIL
+ok   F2 reindexRecommended true -> P1 FAIL
+ok   F2 pendingChanges.added nonzero -> P1 FAIL
+ok   F2 pendingChanges.modified nonzero -> P1 FAIL
+ok   F2 pendingChanges.removed nonzero -> P1 FAIL
+ok   F2 unparseable Captured time -> P7 FAIL
+ok   F2 own-org root a/b with only a sibling a/bc/x.go indexed -> P3 FAIL (prefix boundary)
+ok   F2 control: own-org root a/b with a/b/x.go indexed -> P3 PASS
+ok   F8 capture older than --captured-not-before -> P7 FAIL
+ok   F8 control: capture equal to --captured-not-before -> P7 PASS
+ok   F8 --captured-not-before without a zone -> usage rc=2
+ok   F3 skipped proofs -> verdict INCOMPLETE rc=3 complete=false
+ok   F3 blocked_unavailable lists each skipped proof with its reason
+ok   F3 golden-false: every proof ran and none FAILs -> PASS rc=0
+ok   F3 live proof P4 FAIL -> FAIL
+ok   F3 malformed live proof entry -> P4 FAIL
+ok   F4 drift report with a failing scope_to_lumen_json_check -> P-ScopeDrift FAIL
+ok   F4 drift report missing required checks -> P-ScopeDrift FAIL
+ok   F5 stale .lumenignore vs fresh render -> P-LumenIgnore FAIL
+ok   F5 empty fresh render is blind -> P-LumenIgnore FAIL
+ok   F5 control: identical pair -> P-LumenIgnore PASS
+SUMMARY pass=111 fail=0
+RC test_index_health_extra=0
+=== test_index_health_fix_r7 run 1
+32
+ok   N1 the scope declares 32 baseline patterns (instrument sees the pattern set)
+ok   N1 baseline build_outputs pattern [/out/] -> probe [out/probe.py] indexed -> P3 FAIL
+ok   N1 baseline build_outputs pattern [/dist/] -> probe [dist/probe.py] indexed -> P3 FAIL
+ok   N1 baseline build_outputs pattern [/target/] -> probe [target/probe.py] indexed -> P3 FAIL
+ok   N1 baseline build_outputs pattern [.compressed/] -> probe [a/.compressed/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/ccache/] -> probe [a/ccache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.ccache/] -> probe [a/.ccache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.gradle/] -> probe [a/.gradle/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/__pycache__/] -> probe [a/__pycache__/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.pytest_cache/] -> probe [a/.pytest_cache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.mypy_cache/] -> probe [a/.mypy_cache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.ruff_cache/] -> probe [a/.ruff_cache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/node_modules/] -> probe [a/node_modules/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.cache/] -> probe [a/.cache/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/.venv/] -> probe [a/.venv/probe.py] indexed -> P3 FAIL
+ok   N1 baseline caches pattern [**/logs/] -> probe [a/logs/probe.py] indexed -> P3 FAIL
+ok   N1 baseline qa_corpora pattern [**/qa-results/] -> probe [a/qa-results/probe.py] indexed -> P3 FAIL
+ok   N1 baseline qa_corpora pattern [**/recordings/] -> probe [a/recordings/probe.py] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [.env] -> probe [a/.env] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [.env.*] -> probe [a/.env.probe] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.env] -> probe [a/probe.env] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*secret*] -> probe [a/probesecretprobe] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [**/secrets/] -> probe [a/secrets/probe.py] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.jks] -> probe [a/probe.jks] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.keystore] -> probe [a/probe.keystore] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.p12] -> probe [a/probe.p12] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pfx] -> probe [a/probe.pfx] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pk8] -> probe [a/probe.pk8] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.pem] -> probe [a/probe.pem] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [*.key] -> probe [a/probe.key] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [**/service-account*.json] -> probe [a/service-accountprobe.json] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [**/google-services.json] -> probe [a/google-services.json] indexed -> P3 FAIL
+ok   N1 baseline secrets pattern [**/credentials*.json] -> probe [a/credentialsprobe.json] indexed -> P3 FAIL
+ok   N1 review fixture a/google-services.json -> P3 FAIL
+ok   N1 review fixture a/credentials.json -> P3 FAIL
+ok   N1 review fixture a/service-account-x.json -> P3 FAIL
+ok   N1 review fixture a/.venv/x.py -> P3 FAIL
+ok   N1 review fixture a/.pytest_cache/x -> P3 FAIL
+ok   N1 review fixture a/logs/x.log -> P3 FAIL
+ok   N1 review fixture a/.mypy_cache/x -> P3 FAIL
+ok   N1 review fixture a/.ruff_cache/y -> P3 FAIL
+ok   N1 review fixture a/.cache/z -> P3 FAIL
+ok   N1 review fixture a/.compressed/q.bin -> P3 FAIL
+ok   N1 control (false-positive guard): near-miss a/b.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/logger/x.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/.venv-notes.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/google-services-readme.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/credentials.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/outline.md -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/dist.go -> P3 PASS
+ok   N1 control (false-positive guard): near-miss a/cachefile.go -> P3 PASS
+ok   N1 baseline pattern *.zzvault with no class -> P3 FAIL forbidden_classes_unusable (subset check)
+ok   N1 scope with the credentials/service-account class removed -> P3 FAIL (a secret pattern lost its class)
+ok   N1 golden-false: a scope with sound classes and no baseline_excludes key is not refused -> P3 PASS
+ok   N1 malformed baseline_excludes (not a mapping) -> P3 FAIL baseline_excludes_malformed
+ok   N4 case variant a/server.PEM -> P3 FAIL
+ok   N4 case variant a/Release.JKS -> P3 FAIL
+ok   N4 case variant a/.ENV -> P3 FAIL
+ok   N4 case variant a/x.KEY -> P3 FAIL
+ok   N4 case variant a/Google-Services.JSON -> P3 FAIL
+ok   N4 case variant a/SECRETS/q.txt -> P3 FAIL
+ok   N4 case variant docs/security/SECRETS_MANAGEMENT.md -> P3 FAIL
+ok   N4 case variant a/App.P12 -> P3 FAIL
+ok   N4 measured: the runner's ignore library (codegraph.json exclude) excludes every case variant, i.e. is case-insensitive
+ok   N4 control needle: the library does distinguish the modes (default true, ignorecase:false false)
+ok   N5 a/secrets/db.yaml.example -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/.env.example.bak -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/.env.sample.bak -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 a/secrets/token.sample -> P3 FAIL (exemption is not widened to .example/.sample suffixes)
+ok   N5 control: .env.example stays exempt -> P3 PASS
+ok   N5 control: .env.sample stays exempt -> P3 PASS
+ok   N7 --lumen-status without --captured-not-before -> usage rc=2 naming the option
+ok   N7 a year-2000 capture without the bound can no longer reach PASS/INCOMPLETE (rc=2)
+ok   N7 control: with the bound a year-2000 capture -> P7 FAIL
+ok   N7 control: a fresh capture with the bound -> P7 PASS
+ok   N2 golden-false: verified live proofs + bound drift report -> PASS rc=0
+ok   N2 the row records kind=live
+ok   N2 evidence_sha256 = 64 zeros (resolves to no file hash) -> P4 FAIL
+ok   N2 cmd 'echo trust me' (outside the closed allow-list) -> P4 FAIL
+ok   N2 captured_at year 2000 (before --captured-not-before) -> P4 FAIL
+ok   N2 captured_at unparseable -> P4 FAIL
+ok   N2 evidence_path names no file -> P4 FAIL
+ok   N2 a real file with the right hash that does not contain the command -> P4 FAIL
+ok   N2 empty evidence file -> P4 FAIL
+ok   N2 entry without captured_at -> P4 FAIL malformed
+ok   N2 kind outside {live, fallback} -> P4 FAIL malformed
+ok   N2 P6 whose allowed cmd differs from the one its evidence records -> P6 FAIL
+ok   N2 P6 with a program allowed for P5 only (git) -> P6 FAIL live_proof_cmd_not_allowed
+ok   N2 a grep command entered as kind=live -> P4 FAIL live_proof_cmd_not_allowed (grep is fallback-only)
+ok   N2 a per-unit grep fallback is SKIP (verdict INCOMPLETE rc=3), never a live PASS
+ok   N2 the fallback skip names the fallback in its reason
+ok   N2 hand-written all-rc-0 list (no schema, no scope binding) -> P-ScopeDrift FAIL
+ok   N2 drift report for a different scope (scope_sha256 mismatch) -> P-ScopeDrift FAIL
+ok   N2 drift report for a different .lumenignore (lumenignore_sha256 mismatch) -> P-ScopeDrift FAIL
+ok   N2 control: a bound report with a failing check -> P-ScopeDrift FAIL drift:
+ok   N2 drift report without the head it judged -> P-ScopeDrift FAIL
+ok   N2 control: the bound report passes again
+SUMMARY pass=97 fail=0 skip=0
+RC test_index_health_fix_r7=0
+=== test_scope_to_lumen_json run 1
+ok   derive exits 0
+ok   output equals the golden JSON byte-for-byte
+ok   second run byte-identical
+ok   empty allow-list refused (rc=3, nothing written)
+ok   --check passes on the golden JSON
+ok   --check FAILs when a scope.yaml class is missing from the JSON (rc=1)
+ok   --check rc=1: a third-party root added to allow (would index third-party code)
+ok   --check rc=1: root_files flipped to false
+ok   --check rc=1: root_files removed
+ok   --check rc=1: an allow root missing (SM2)
+ok   --check rc=1: a deny pattern missing from deny while still in its class (SM1)
+ok   --check rc=1: an extra deny pattern
+ok   --check rc=1: an extra class
+ok   --check rc=1: an extra pattern inside a class
+ok   --check rc=1: the nested third-party deny missing (class and deny)
+ok   --check rc=1: dropped_negations changed
+ok   a non-mapping scope.yaml is rc=3, no traceback
+ok   a non-mapping baseline_excludes is rc=3 (also under --check)
+ok   gen_lumenignore.py accepts the JSON and denies the non-allowed roots deterministically
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row
+ok   refused (rc=3, reason on stderr, no output): the same under --check (the leak is not re-derived as legal)
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots lies INSIDE a third_party row
+ok   refused (rc=3, reason on stderr, no output): a trailing slash does not hide a third_party root
+ok   refused (rc=3, reason on stderr, no output): lumen_allow_roots names a third_party row nested under an own root
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an unknown class (third-party)
+ok   refused (rc=3, reason on stderr, no output): a TSV row without a tab
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty class
+ok   refused (rc=3, reason on stderr, no output): a TSV row with an empty path
+ok   control: blank lines in the TSV are tolerated (rc=0)
+ok   own_ab/x (a sibling, not nested under own_a) is not denied as nested
+ok   allowed roots with a trailing slash or padding derive the identical golden JSON
+ok   refused (rc=3, reason on stderr, no output): --check file whose classes is a list
+ok   --out to an unwritable path is rc=3 without a traceback
+ok   m-3 a sibling root (third_bx next to third_b) is accepted, not refused (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-5a a path classed both own and third_party
+ok   m-5b a nested third_party path with [ ] is denied literally (backslash-escaped)
+ok   m-5b control: --check of the escaped derivation is exact (rc=0)
+ok   refused (rc=3, reason on stderr, no output): m-8 --check file whose allow holds a non-string element
+ok   m-8 a duplicated allow entry in the --check file is a difference (rc=1, named duplicate)
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a list element
+ok   refused (rc=3, reason on stderr, no output): round5 D1 --check file whose classes list holds a number
+ok   round5 D1 no traceback and rc=3 for a non-string classes element
+ok   refused (rc=3, reason on stderr, no output): N6-6 an integer class name in baseline_excludes
+ok   refused (rc=3, reason on stderr, no output): N6-6 a null class name in baseline_excludes
+ok   N6-6 integer class name: rc=3 and no traceback (was TypeError, rc 1)
+ok   refused (rc=3, reason on stderr, no output): N6-6 a submodules TSV that is not UTF-8
+ok   N6-6 non-UTF-8 TSV: rc=3 and no traceback (was UnicodeDecodeError, rc 1)
+ok   refused (rc=3, reason on stderr, no output): N6-6 a scope.yaml that is not UTF-8
+ok   refused (rc=3, reason on stderr, no output): N6-6 a --check file that is not UTF-8
+ok   N6-6 root_files: 1 is NOT true: the exact check finds the difference (rc=1, root_files named)
+ok   N6-6 control: root_files true (the golden) still passes the exact check (rc=0)
+ok   N6-6 a UTF-8 TSV with a non-ASCII path is read as UTF-8 under an ASCII locale (rc=0)
+ok   M-7 fixture: the scope names the reserved class third_party_nested
+ok   refused (rc=3, reason on stderr, no output): M-7 a baseline_excludes class named third_party_nested (reserved for the derived nested-third-party class)
+ok   M-7 the refusal names the reserved class
+ok   M-7 --check of the golden against the reserved-class scope is rc 3, not a pass on a re-derived loss
+ok   M-7 golden-false: the scope without the reserved class still derives the golden byte for byte (rc 0)
+ok   M-8 a duplicated pattern in a classes list is a difference (rc=1, names duplicate and the class)
+ok   M-8 a misplaced (reordered) classes list is a difference (rc=1): the comparison is exact, not set-wise
+ok   M-8 golden-false: the unmodified golden still passes the exact check (rc=0)
+ok   F4 the sibling lumen_allow_roots.yaml is read by default: derivation equals the golden (rc=0)
+ok   F4 --check against the golden passes from committed inputs only (no scratch merge)
+ok   F4 --allow-roots FILE gives the golden without a sibling file
+ok   F4 --check with --allow-roots passes
+ok   F4 control: fewer allow roots than the committed JSON holds -> --check rc=1 naming the root
+ok   F4 allow-roots FILE naming a third_party row is refused (rc=3)
+ok   F4 malformed allow-roots FILE is rc=3, no traceback
+ok   F4 absent --allow-roots FILE is rc=3 (fail closed, not an empty allow)
+ok   F4 the committed lumen_scope.json is re-derived from committed inputs by the tool alone (rc=0, no scratch merge)
+IDENTITY test=4b4bd2277c63163cccf9c971687be50279776f974abcb2b670b3cb9fc5cc6735 script=79503dca707813762f6ec3e7c613275a820433b98f008c5c4b85f0f794fdfa2b head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton python=3.14.4 utc=2026-10-08T15:13:47Z
+ok   N9 --out with no lumen_allow_roots source (scope key, sibling file, --allow-roots) -> rc=3, nothing written, names the allow roots
+ok   N9 control: the explicit --no-allow-roots opt-out derives from the TSV own rows only (rc=0)
+ok   N9 control: --check without allow roots stays a difference (rc=1), not a new failure mode
+ok   N9 control: with the sibling allow-roots file --out is unchanged (rc=0, golden)
+SUMMARY pass=73 fail=0 skip=0
+RC test_scope_to_lumen_json=0
+=== test_scope_drift_check run 1
+ok   D1 the committed scope inputs are drift-free (rc=0)
+ok   D2 report names scope_render_check with rc 0
+ok   D2 report names scope_to_lumen_json_check with rc 0
+ok   D2 report names lumenignore_fresh with rc 0
+ok   D3 --fresh-out equals the committed .lumenignore
+ok   D4 stale .lumenignore -> rc=1, only lumenignore_fresh differs
+ok   D5 drifted lumen_scope.json -> rc=1, scope_to_lumen_json_check=1
+ok   D6 a failing scope_render --check -> rc=1 with its rc recorded
+ok   D7 absent gen_lumenignore.py -> rc=3, check rc 127 (not a pass)
+ok   D8 --regen restores the fresh render (rc=0)
+ok   D10 empty fresh render vs empty .lumenignore -> lumenignore_fresh=1 (blind, not equal)
+ok   D9 no --out -> usage rc=2
+ok   D11a scratch repo: --regen renders the tracked tree (rc=0, /b/ and /docs/ denied, allowed /a/ not)
+ok   D11b untracked directories prev3, zz_stray_test_dir and an untracked file do not change the render (host independent)
+ok   D11c the committed render stays fresh while stray directories exist (--check mode rc=0)
+ok   D11d fixed host-local entry /.git/ is always denied (stable, tracked-independent)
+ok   D11d fixed host-local entry /.claude/ is always denied (stable, tracked-independent)
+ok   D11d fixed host-local entry /.remember/ is always denied (stable, tracked-independent)
+ok   D11e control: a newly TRACKED top-level directory appears in the render
+ok   D12 report = scope-drift/1 with head, scope/lumen_scope/lumenignore sha256 equal to the files, and three checks
+ok   D13 fresh-clone proof: the render from a clone's tracked tree equals the committed .lumenignore (rc=0)
+SUMMARY pass=21 fail=0 skip=0
+RC test_scope_drift_check=0
+=== test_scope_negation_reports run 1
+ok   F6 generated report submodules/doc_processor/pkg/coverage/coverage.html is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/lcov.info is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/coverage.xml is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/index.html is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/coverage.out is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/cover.profile is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/coverage.json is excluded from the index
+ok   F6 generated report submodules/doc_processor/pkg/coverage/report.txt is excluded from the index
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker.go is NOT excluded (instrument sees)
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker_test.go is NOT excluded (instrument sees)
+ok   F6 control: first-party source submodules/doc_processor/pkg/coverage/tracker_stress_test.go is NOT excluded (instrument sees)
+ok   F6 control: the negation block still re-includes the package directory
+ok   F6 control: a report outside the package is not this rule's business (no over-broad exclude)
+ok   F6 git: tracker.go is not ignored (negation effective)
+ok   F6 runner: the real enumeration keeps tracker.go and drops the generated reports
+ok   F6 runner control: the HEAD configuration enumerates a report (instrument sees)
+SUMMARY rc=0 skipped=0
+RC test_scope_negation_reports=0
+=== test_derive_scope run 1
+ok   fixture run exits 0
+ok   TSV equals the expected 10 rows (every depth, nesting rules, pending flags)
+ok   second run byte-identical (deterministic)
+ok   unclassifiable URL exits 3 and writes nothing
+ok   relative URL ../../org/repo.git exits 3 and writes nothing (DM3)
+ok   an unreadable .gitmodules exits 3 with a message and writes nothing (DM4)
+ok   an uninitialised (empty directory) submodule is reported not-descended (I8)
+ok   an unreadable --pending-orgs file exits 3 with a message and no traceback (m-g)
+ok   control needle: a mis-classified copy is detected as different
+IDENTITY test=2b68c924da2f3332a29c8369313023d08225884958574c8dbfbe04e2739293c2 script=253e704a33cc621a7d65e49614aba294e48eb3814e6acbee2ee0ef7eedba8183 head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton git=2.53.0 python=3.14.4 utc=2026-10-08T15:14:16Z
+SUMMARY pass=9 fail=0
+RC test_derive_scope=0

@@ -1,0 +1,82 @@
+# fix round 6 lint: RUNP IMG-SHELLCHECK (digest sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d, already present locally, no pull) date_utc 2026-10-08T13:39:22Z
+version: 0.11.0
+license: GNU General Public License, version 3
+website: https://www.shellcheck.net
+sha256 f2252ae77faf3b0ee961493a1696e1e24d9085a55bf18ef6071f245741c51864  scripts/commit-push-all.sh
+
+In scripts/commit-push-all.sh line 77:
+  { read -r rp rs < "$rd/run.pid"; } 2>/dev/null; [ "${rp:-}" = "$$" ] || return 0
+               ^-- SC2034 (warning): rs appears unused. Verify use (or export if used externally).
+
+
+In scripts/commit-push-all.sh line 83:
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) printf "cpa: internal_error exit %s before the run was opened\n" "$_rc" >&2; core_report self_test internal_error "exit $_rc"; exit 20 ;; esac' EXIT
+     ^-- SC2154 (warning): _rc is referenced but not assigned.
+
+
+In scripts/commit-push-all.sh line 136:
+export GIT_CONFIG_KEY_4=credential.helper GIT_CONFIG_VALUE_4= GIT_CONFIG_KEY_5=core.askPass GIT_CONFIG_VALUE_5= GIT_CONFIG_KEY_6=protocol.ext.allow GIT_CONFIG_VALUE_6=never
+                                                             ^-- SC1007 (warning): Remove space after = if trying to assign a value (for empty string, use var='' ... ).
+                                                                                                               ^-- SC1007 (warning): Remove space after = if trying to assign a value (for empty string, use var='' ... ).
+
+
+In scripts/commit-push-all.sh line 424:
+  local st="$1" cs="$2" rc reason ffreason ff=() mf=() from to c cl
+                                                                 ^-- SC2034 (warning): cl appears unused. Verify use (or export if used externally).
+
+
+In scripts/commit-push-all.sh line 499:
+    case "$xy" in R*|C*|?R|?C) IFS= read -r -d '' ol ;; esac        # a rename or copy record is followed by a bare record holding the OLD path (LIST-11)
+                                                  ^-- SC2034 (warning): ol appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1007 -- Remove space after = if trying to...
+  https://www.shellcheck.net/wiki/SC2034 -- cl appears unused. Verify use (or...
+  https://www.shellcheck.net/wiki/SC2064 -- Use single quotes, otherwise this...
+rc(scripts/commit-push-all.sh)=1
+sha256 a4306fa8904ecbc5e586fb73d402d976d8c84310dddf82b3e05c2b5376af37a5  scripts/repo/host_entry/cpa-host
+
+In scripts/repo/host_entry/cpa-host line 54:
+for n in "${CPA_SIGS[@]}"; do trap "trap '' ${CPA_SIGS[*]}; exit $((128+n))" "$n" 2>/dev/null; done
+                                            ^------------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+                                                                 ^--------^ SC2064 (warning): Use single quotes, otherwise this expands now rather than when signalled.
+
+
+In scripts/repo/host_entry/cpa-host line 77:
+  { read -r rp rs < "$RUN/run.pid"; } 2>/dev/null; [ "${rp:-}" = "$$" ] || return 0
+               ^-- SC2034 (warning): rs appears unused. Verify use (or export if used externally).
+
+
+In scripts/repo/host_entry/cpa-host line 83:
+trap '_rc=$?; case "$_rc" in 0|10|11|12|13|14|15|20) ;; *) host_report internal_error "host_exit_$_rc"; printf "{\"refusal\":\"internal_error\",\"reason\":\"host_exit_%s\"}\n" "$_rc" >&2; exit 20 ;; esac' EXIT
+     ^-- SC2154 (warning): _rc is referenced but not assigned.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- rs appears unused. Verify use (or...
+  https://www.shellcheck.net/wiki/SC2064 -- Use single quotes, otherwise this...
+  https://www.shellcheck.net/wiki/SC2154 -- _rc is referenced but not assigned.
+rc(scripts/repo/host_entry/cpa-host)=1
+sha256 bec52a095f12a165083dcbe1e60c5344750fcc04bb5a97f39400b50c102bb9d6  scripts/repo/lib_safe.sh
+
+In scripts/repo/lib_safe.sh line 27:
+  case "$p" in /*|-*|*\\*|..|../*|*/..|*/../*|./..|*//*) return 1 ;; esac
+                                  ^--^ SC2221 (warning): This pattern always overrides a later one on line 27.
+                                              ^--^ SC2222 (warning): This pattern never matches because of a previous pattern on line 27.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2221 -- This pattern always overrides a l...
+  https://www.shellcheck.net/wiki/SC2222 -- This pattern never matches becaus...
+rc(scripts/repo/lib_safe.sh)=1
+sha256 138fa3fbaa5b48b0e7aa506c5aebe849968c1f990cafdc9d61fedfd5ed649b2d  scripts/repo/push_recursive.sh
+rc(scripts/repo/push_recursive.sh)=0
+sha256 4079ff16a21cd9144a356ee6dc4a9686bdd042fc1c948cf2dbd66f1666c4ac6e  scripts/repo/integrate_merge.sh
+rc(scripts/repo/integrate_merge.sh)=0
+sha256 590444e83630d9e984db23a6bd7d12077d0966bd81a00eeb84d4667843261e20  scripts/repo/commit_recursive.sh
+
+In scripts/repo/commit_recursive.sh line 128:
+  local mf deferred first=0 s tr="" lp=() x
+                              ^-- SC2034 (warning): tr appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- tr appears unused. Verify use (or...
+rc(scripts/repo/commit_recursive.sh)=1

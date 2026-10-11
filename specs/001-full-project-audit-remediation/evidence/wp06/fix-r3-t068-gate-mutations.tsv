@@ -1,0 +1,3 @@
+# identity: task=T063 utc=2026-10-08T18:31:52Z host=anton uid=1000 git_head=20f74abfbe535f9ab13f6cedb61110d07339b62c
+# gate_sha256=e618ee18d8f6d43e0894407aa66b1dd47ed000baebd8123fc447c1de91063807 test_sha256=46af376ddcea611dcc2fa85051d7ebe79328116b258986503bddf01c61b08638 runner_sha256=4f168f84ff3cfa7144f44d038c2f66fff459f56fabfb1f3c23df9074a3e1e750
+# mutant<TAB>killed<TAB>first failing check of test_gate.sh

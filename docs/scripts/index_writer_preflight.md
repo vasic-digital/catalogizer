@@ -13,4 +13,4 @@ Read-only host preflight for the code-index writer. Owner decision 2026-10-07: t
 
 Usage: `scripts/audit/index_writer_preflight.sh [--limits FILE]`. Exit 0 PASS, 1 FAIL, 2 config error. Output: mem_avail_kb, min_mem_avail_kb, heap_mb (MemAvailable/2, at least 8192, at most cap), heap_cap_mb, PASS or FAIL lines. A live writer is detected by the real argv0 of other processes (codegraph or codegraph_safe.sh with index, sync or init), not by substring.
 
-Limit: the upstream writer submodules/constitution/scripts/codegraph/codegraph_safe.sh still hard-codes 32 GiB (lines 317-322) and has no override; this script does not make it pass. An upstream change is needed (see evidence/wp02/floor-0107-report.txt).
+Limit: the upstream writer constitution/scripts/codegraph/codegraph_safe.sh still hard-codes 32 GiB (lines 317-322) and has no override; this script does not make it pass. An upstream change is needed (see evidence/wp02/floor-0107-report.txt).

@@ -1,0 +1,89 @@
+{
+  "schema": "review-verdict/1",
+  "wp": "WP-04",
+  "tasks": ["T038", "T039", "T040", "T040a", "T040b", "T041", "T042", "T042a", "T043", "T044", "T045", "T045a", "T046"],
+  "gate": "G-GATE",
+  "verdict": "NO-GO",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "The Agent tool cannot set or report effort (constitution 11.4.231(F.2)), so the effort is recorded as '?' and not claimed as xhigh. This verdict is therefore provisional under T011a.",
+  "reviewer": "independent Agent-tool subagent, not the author",
+  "date": "2026-10-08",
+  "reviewed_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+  "reviewed_bytes_note": "evidence/wp04/fix-r5-SHA256SUMS checked with sha256sum -c: every listed file matched (scripts/commit-push-all.sh e39e9949..., scripts/repo/push_recursive.sh 7df65342...)",
+  "blocking_findings": 1,
+  "covers_runs": [],
+  "covers_runs_note": "No CPA run committed the reviewed bytes. They landed through the non-CPA commit 58cb30b8 'Auto-commit' (see finding R-04), so no run exists to list here.",
+  "finding_layer_note": "As the caller instructed, finding_layer uses the closed set of constitution 11.4.235(D) {source-defect, test-instrumentation, process-doc}. contracts/review-verdict.schema.json defines finding_layer as {source, artifact, runtime}, so these finding items do not validate against that schema. The schema sense is given in evidence_layer. See finding R-07.",
+  "findings": [
+    {
+      "id": "R-01",
+      "blocking": true,
+      "severity": "BLOCKING",
+      "finding_layer": "source-defect",
+      "evidence_layer": "runtime",
+      "summary": "A held commit is pushed without its GO verdict when the commit message contains a line that starts with '---'. push_recursive.sh trailer() (line 176) reads Awaits-Review through 'git interpret-trailers --parse', and git stops looking for trailers at the first line that starts with '---' (it treats that line as a patch divider). The trailers that commit_recursive.sh appends after the message are then not found, so the commit counts as unheld and is pushed. The CPA-commit predicate (lib_safe cpa_runid) and integrate_merge.sh:245 scan the whole message with awk, so they still accept the commit as a CPA commit. That is two models of one fact: the trailer class that WF17 meant to close (MODEL/MSG-1). S0 (commit-push-all.sh:280) refuses only message lines that look like trailers, not '---' lines. Other members of the same class: the Foreign-Commit dedupe through %(trailers) in commit_recursive.sh:137 and integrate_merge.sh:267, and trailer(CPA-Run) returning an empty run id.",
+      "reproduction": "(1) Helper on its real path, throwaway clone, local bare remote. Commit made by commit_recursive.sh --held-from (verdict specs/v.json, absent), then push_recursive.sh --repo . was run. Control message 'Add b': HELD, push rc=14, remote not moved. Needle message 'Add b\\n---\\nnotes': 'PUSHED . origin <sha>', rc=0, remote tip == local tip. (2) Full CPA through cpa-host, using the author's matrix harness on a scratch copy of test_commit_push_all.sh with two added sections. R0 (control, message 'held work\\n\\nnotes'): 2 ok, 0 failed. R1 (message 'held work\\n---\\nnotes'): CPA exit 14, but 'FAIL R1 origin does not hold the held commit': origin holds it. So the run reports a deferral while the unreviewed commit is already public.",
+      "remediation": "Use one trailer parser for every reader: the CPA-Run predicate, Awaits-Review, Foreign-Commit and integrate_merge. Alternatively, refuse at S0 any message line that starts with '---', and in either case check that the parsed trailer block contains the CPA-Run line commit_recursive wrote, and refuse 20 if it does not (fail closed). Add the R1 case to the matrix and a paired mutation."
+    },
+    {
+      "id": "R-02",
+      "blocking": false,
+      "severity": "IMPORTANT",
+      "finding_layer": "test-instrumentation",
+      "evidence_layer": "source",
+      "summary": "No test covers the documented rule 'while U holds an unreleased merge commit nothing of U is pushed to any remote' (push_recursive.sh header) in the case where the held merge sits after unheld outgoing commits (cut>0). Reviewer mutation mB replaced '[ \"$mergeblock\" = 1 ] && [ \"$cut\" -gt 0 ] && target=' with 'false && target='. It survived the helper suite test_push_recursive.sh (153 ok / 0 failed) and matrix section '7 merge' of test_commit_push_all.sh (90 ok / 0 failed, CPA_SRC pointing at the mutated copy; the harness seeds scripts/repo/*.sh from $SRC, test_commit_push_all.sh:56). Positive control for the helper-suite injection path: reviewer mutation mA, described in mutations_attempted, was CAUGHT."
+    },
+    {
+      "id": "R-03",
+      "blocking": false,
+      "severity": "IMPORTANT",
+      "finding_layer": "test-instrumentation",
+      "evidence_layer": "artifact",
+      "summary": "The T044 acceptance (matrix under kcov in IMG-KCOV and shellcheck in IMG-SHELLCHECK, transcripts naming image digests) is not met for the reviewed bytes. cpa-kcov.txt (2026-10-06) and cpa-shellcheck.txt (sha256 of commit-push-all.sh 59a53a65...) measure an older revision than the reviewed one (e39e9949...). fix-r5-shellcheck.txt used the host binary and says the pinned-image run is owed. fix-r5-convergence.md says kcov was not rerun."
+    },
+    {
+      "id": "R-04",
+      "blocking": false,
+      "severity": "IMPORTANT",
+      "finding_layer": "process-doc",
+      "evidence_layer": "source",
+      "summary": "The fix-round-5 bytes of commit-push-all.sh and its helpers reached main in 58cb30b8 'Auto-commit' (git log -- scripts/commit-push-all.sh). That commit was not made through CPA, had no independent review first (11.4.142), and carries no CPA-Run or attribution trailer. Any adoption under T047 must account for this commit and review the exact bytes it introduced."
+    },
+    {
+      "id": "R-05",
+      "blocking": false,
+      "severity": "MINOR",
+      "finding_layer": "source-defect",
+      "evidence_layer": "source",
+      "summary": "When scripts/audit/own_orgs.txt is missing from the approved copy (OWNED is empty), the main repository is pushed to every url and push url of every remote with no ownership check: commit-push-all.sh:315 skips the gate and push_recursive gets no --owned-orgs. Submodules, by contrast, are then never pushed. INSTALL.md documents this, but a push with an unverifiable precondition fails open, against 11.4.252. Suggest refusing 20 when the approved list is missing."
+    },
+    {
+      "id": "R-06",
+      "blocking": false,
+      "severity": "MINOR",
+      "finding_layer": "source-defect",
+      "evidence_layer": "source",
+      "summary": "In lib_safe.sh repo_config_gate, 'git config --local --list --name-only -z' runs inside a process substitution with 2>/dev/null, so its exit status is lost. A failing listing reads as 'no keys' and the gate passes. This is the LIST class the author closed elsewhere through listing() and gitlinks_ok. Separately, integrate_merge.sh --resolution runs 'git merge --no-ff --no-commit' and 'merge --abort' on the working tree (line 157) before the 9.2 backup is written (line 178 onward). Today the path always ends in secret_fold_unavailable, but the order is wrong for when that fold is built."
+    },
+    {
+      "id": "R-07",
+      "blocking": false,
+      "severity": "MINOR",
+      "finding_layer": "process-doc",
+      "evidence_layer": "source",
+      "summary": "The vocabularies conflict. contracts/review-verdict.schema.json makes finding_layer {source, artifact, runtime}, while constitution 11.4.235(D) and the T046 instructions use finding_layer {source-defect, test-instrumentation, process-doc}. A review cannot satisfy both with one field. Also carried from the author's own notes and still open: the real origin push URLs name milos85vasic, which own_orgs.txt does not list, so the first real run stops at S0 until the owner decides (11.4.66)."
+    }
+  ],
+  "mutations_attempted": [
+    {"id": "mA", "file": "scripts/repo/push_recursive.sh", "change": "'[ \"$cut\" -ge 0 ] || cut=\"$idx\"' -> 'cut=\"$idx\"' (the hold cut moves to the LAST held commit, not the first)", "suite": "scripts/repo/tests/test_push_recursive.sh (H=scratch copy)", "result": "CAUGHT", "detail": "152 ok / 1 failed: 'FAIL two unreleased held commits: the prefix stops below the FIRST'"},
+    {"id": "mB", "file": "scripts/repo/push_recursive.sh", "change": "'[ \"$mergeblock\" = 1 ] && [ \"$cut\" -gt 0 ] && target=' -> 'false && target=' (a held merge after unheld commits no longer blocks the whole outgoing range)", "suite": "test_push_recursive.sh and test_commit_push_all.sh CPA_ONLY='7 merge' with CPA_SRC=scratch copy", "result": "SURVIVED", "detail": "153 ok / 0 failed and 90 ok / 0 failed; unmutated control 153/0 and 90/0"},
+    {"id": "S1", "file": "(scenario, no code change)", "change": "commit message with a '---' line on a held path", "suite": "push_recursive.sh direct run, plus the matrix harness on a scratch copy with R0 (control) and R1 (needle) sections", "result": "NOT CAUGHT by the author's suite: no '---' message case exists; it exposes R-01", "detail": "control HELD rc 14; needle PUSHED rc 0 (helper); R1 origin holds the held commit while CPA exits 14"}
+  ],
+  "scope_not_reviewed": "Under the instructions' time-bounded depth: scripts/longops/*, scripts/anti-mess/sweep.sh, the build-event files of CENTRAL C10, validate_cheap.sh internals, verify_repos.sh, scope_check.sh, the check_class and fixture_roots tables, and docs/scripts/commit-push-all.md were not reviewed line by line. T046's full review scope (every file cpa_code.txt names) is therefore NOT covered by this verdict. A GO would need that coverage too.",
+  "checks_run": [
+    "sha256sum -c evidence/wp04/fix-r5-SHA256SUMS: all files OK (no output from the grep -v OK filter)",
+    "grep for forbidden git forms over commit-push-all.sh, integrate_merge.sh, integrate_ff_only.sh, push_recursive.sh, commit_recursive.sh, cpa-host: only the refusal case lists matched; the push call is 'git push -q -- <remote> <sha>:refs/heads/<branch>' with no force, and the fast-forward is 'git merge --ff-only'",
+    "git interpret-trailers --parse behaviour measured: plain message -> Awaits-Review found; message with '---' line -> not found (control needle for R-01)"
+  ]
+}

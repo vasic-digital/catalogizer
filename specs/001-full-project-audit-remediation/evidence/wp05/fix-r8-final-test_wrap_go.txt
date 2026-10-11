@@ -1,0 +1,24 @@
+ok   recorded pass: 3 tests, 2 passed, 1 skipped, exit 0
+ok   recorded seeded failure is reported through the parser
+ok   hidden failure behind a CUT summary is still found
+ok   hidden failure behind a TRUNCATED stream (last line cut mid-JSON) is still found
+ok   a test that started and never finished is no pass and no failure verdict (126)
+ok   a package that does not compile is an error, not a test failure
+ok   a package without test files ran zero tests: error
+ok   a fake ok line printed by a failing test does not hide it
+ok   an empty report is an error
+ok   an unparsable report is an error
+ok   --min-tests 4 turns a 3-test pass into an error
+ok   no --run-token is refused (run_token_missing)
+ok   a malformed --run-token is refused (run_token_malformed)
+ok   an unreadable --from-report file is refused
+ok   raw report follows the summary
+ok   the wrapper does not print the run token
+ok   live: passing package exits 0
+ok   live: seeded failing test exits 1 and is named
+ok   live: noisy package with a failure behind noise exits 1
+ok   live: build failure exits 126
+ok   live: package without tests exits 126
+ok   live: the wrapper exports EVREC_RUN_TOKEN to the test
+ok   live: the test's own output carries the token after the raw marker
+checks=23 failures=0

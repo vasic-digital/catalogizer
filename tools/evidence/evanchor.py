@@ -7,17 +7,22 @@ tail truncation (the chain walk alone is satisfied by both, docs/06 s7).
   verify_anchors(path, entries)   every row is compared with the chain: the entry at seq COUNT must carry the anchored head, and the
                                   chain must hold at least COUNT entries. A chain LONGER than the newest anchor with an intact prefix is valid
                                   growth (a lagging anchor, the continuum negative control). Exit statuses through Refuse: 2 anchor
-                                  disagreement / inconsistent rows, 3 UNVERIFIED (unreadable, malformed, `mechanism` without probe evidence).
+                                  disagreement / inconsistent rows, 3 UNVERIFIED (unreadable, malformed, any `mechanism` row). An ABSENT or empty
+                                  anchors file is not decided here: evcore.anchor_gate refuses it (3 anchor_absent) for verify and the deriver.
   cmd_anchor(args)                `evrec anchor [--strength policy|mechanism] [--probe-remote DIR]`
   rerecord_anchor_leg(...)        the anchor leg of `evrec rerecord`
 
-Strength (docs/06 s8, DR-E2): `policy` by default. `mechanism` is written only with evidence in the row (probe_kind=config): the
-probe READS the configuration of a local bare repository (`git config --show-origin`) and requires receive.denyNonFastForwards AND
-receive.denyDeletes both effectively true; executable pre-receive/update hooks are recorded as evidence only. No push of any kind is ever
-made (11.4.113: no forced, plus-ref or lease-guarded push, no rewrite, scratch repositories included), and a network remote is never contacted. The
-anchor location of the real feature (a remote with enforced fast-forward-only branches) is BLOCKED-ON OD-76: until it is answered the
-anchors stay in `$EV/anchors.jsonl` and are `policy`. Stated limits (11.4.6): an anchor in the same directory as the ledger is rewritable
-by whoever can rewrite the ledger (docs/06 s7 last row); verify says `policy` and nothing stronger.
+Strength (docs/06 s8, DR-E2; independent review WP-05 R3, R4): this tool records `policy` and nothing else. It writes every anchor to a local file
+(`$EV/anchors.jsonl`) beside the ledger, and that file is rewritable by whoever can rewrite the ledger (docs/06 s7 last row). A probe of a local
+bare repository can show that the repository's own configuration denies non-fast-forward updates and deletes, but (a) a repository owned by the
+producer's uid can be reconfigured by the producer in one command, and (b) the anchor is not stored in that repository at all. `mechanism` therefore
+cannot be established by this tool: `--strength mechanism` is refused (71 strength_unproven), and `verify` refuses (3 strength_unproven) every row that
+claims it, whatever probe evidence the row carries, because a row is data the producer can type. The probe is kept as EVIDENCE only (probe_kind=config:
+it READS `git config --show-origin` of a local bare repository; hooks are recorded, never counted): the row records producer_can_reconfigure and
+anchor_location=local_file so a reader sees why the strength is policy. The anchor location of the real feature (a remote with enforced
+fast-forward-only branches that the producer cannot reconfigure, holding the anchor itself) is BLOCKED-ON OD-76: until it is answered the anchors stay
+in `$EV/anchors.jsonl` and are `policy`. No push of any kind is ever made (11.4.113: no forced, plus-ref or lease-guarded push, no rewrite, scratch
+repositories included), and a network remote is never contacted.
 """
 import json
 import os
@@ -64,10 +69,10 @@ def read_rows(path):
         if not ok:
             raise Refuse("anchor_not_compared", 3, "anchor %s line %d is not a valid ev-anchor/1 row: the chain was verified but the anchor "
                          "was NOT compared: UNVERIFIED against the anchor" % (path, n))
-        if r["strength"] == "mechanism" and not (isinstance(r.get("probe"), dict) and r["probe"].get("rewrite_rejected") is True
-                                                 and r["probe"].get("probe_kind") == "config" and isinstance(r["probe"].get("remote"), str)):
-            raise Refuse("strength_unproven", 3, "anchor %s line %d claims strength mechanism without config-probe evidence (probe_kind=config) that a rewrite is denied: "
-                         "UNVERIFIED (the claim is not accepted; policy is the strength that can be shown)" % (path, n))
+        if r["strength"] == "mechanism":
+            raise Refuse("strength_unproven", 3, "anchor %s line %d claims strength mechanism: UNVERIFIED. This tool stores anchors in a local file the producer can "
+                         "rewrite and cannot establish mechanism strength; a row is data anyone can type, so the claim is not accepted whatever probe "
+                         "evidence it carries (policy is the strength that can be shown; the anchor location that could earn mechanism is BLOCKED-ON OD-76)" % (path, n))
         rows.append(r)
     return rows
 
@@ -96,6 +101,32 @@ def verify_anchors(path, entries):
                          "anchor was rewritten (edit, delete-and-recompute or reorder with the chain recomputed)"
                          % (c, r["head"][:12], c, entries[c - 1]["entry_hash"][:12]))
     return rows, rows[-1]
+
+
+def precheck(led, apath):
+    """Fail-closed check of `evrec run` BEFORE the command runs and before anything is appended (re-review WP-05-r2 F3): when an anchors file exists, its
+    NEWEST row must agree with the ledger (the chain must hold at least COUNT entries and the entry at COUNT must carry the anchored head), else the run is
+    refused (2 anchor_disagrees) and nothing is written. An absent or empty anchors file has nothing to contradict and passes; an unreadable or malformed one
+    is UNVERIFIED (3). Cheap on purpose (one read of the ledger, one line parsed): the full walk stays `verify`'s job. Stated limit: an anchor planted after
+    this check is caught by `verify` and by --anchor-after, not here."""
+    if not (os.path.exists(apath) and (os.path.isdir(apath) or os.path.getsize(apath) > 0)):
+        return
+    rows = read_rows(apath)
+    if not rows:
+        return
+    r = rows[-1]
+    _, lines = evcore.read_ledger_lines(led)
+    c, n = r["count"], len(lines)
+    if c > n:
+        raise Refuse("anchor_disagrees", 2, "anchored count=%d head=%s but the ledger has only %d entries: entries are missing (deleted tail, truncation or a "
+                     "replaced ledger); nothing was run and nothing was appended" % (c, r["head"][:12], n))
+    try:
+        h = json.loads(lines[c - 1].decode("utf-8")).get("entry_hash")
+    except (ValueError, UnicodeDecodeError, AttributeError):
+        h = None
+    if h != r["head"]:
+        raise Refuse("anchor_disagrees", 2, "anchored count=%d head=%s but entry %d of the ledger has hash %s: the history before the anchor was rewritten; "
+                     "nothing was run and nothing was appended" % (c, r["head"][:12], c, str(h)[:12]))
 
 
 def describe(rows, newest):
@@ -138,7 +169,8 @@ def _read_key(remote, key, env):
 def probe_rewrite(remote):
     """Read-only inspection of a LOCAL bare repository. Returns the probe record for the row (probe_kind=config). Never raises on an
     unreachable remote: nothing was shown to reject a rewrite, so the strength stays policy."""
-    rec = {"remote": os.path.abspath(remote), "probe_kind": PROBE_KIND, "rewrite_rejected": None, "result": None, "probed_at": now()}
+    rec = {"remote": os.path.abspath(remote), "probe_kind": PROBE_KIND, "rewrite_rejected": None, "result": None, "probed_at": now(),
+           "producer_can_reconfigure": None, "anchor_location": "local_file"}
     if shutil.which("git") is None:
         rec["result"] = "git_absent"
         return rec
@@ -146,6 +178,7 @@ def probe_rewrite(remote):
         rec["result"] = "unreachable"
         return rec
     remote = os.path.abspath(remote)
+    rec["producer_can_reconfigure"] = bool(os.access(remote, os.W_OK) or os.access(os.path.join(remote, "config"), os.W_OK))   # the effective uid of this process
     env = dict(os.environ)
     env["GIT_TERMINAL_PROMPT"] = "0"
     for k in [k for k in env if k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE")]:
@@ -194,11 +227,12 @@ def cmd_anchor(args):
             raise Refuse("probe_remote_not_local", 64, "%s is a network remote: the probe never contacts one (it only reads the configuration of a local "
                          "bare repository, and no push is ever made, 11.4.113); name a local bare repository" % remote)
         probe = probe_rewrite(remote)
-    strength = "mechanism" if (probe and probe["rewrite_rejected"] is True and want != "policy") else "policy"   # an explicit --strength policy is honoured
-    if want == "mechanism" and strength != "mechanism":
-        raise Refuse("strength_unproven", 71, "--strength mechanism needs a config probe that read both receive.denyNonFastForwards and "
-                     "receive.denyDeletes as true (--probe-remote DIR); %s. Nothing written; the achievable strength here is policy (docs/06 s8, DR-E2)"
-                     % ("the probe result was %s" % probe["result"] if probe else "no probe was given"))
+    strength = "policy"                                       # the only strength this tool can show (review R3): see the module docstring
+    if want == "mechanism":
+        raise Refuse("strength_unproven", 71, "--strength mechanism cannot be established by this tool: it stores the anchor in a local file beside the ledger, "
+                     "which the producer can rewrite, and a remote the producer's uid can reconfigure proves nothing (%s). Nothing written; the achievable "
+                     "strength is policy until OD-76 provides an anchor location the producer cannot rewrite (docs/06 s8, DR-E2)"
+                     % ("probe result: %s, producer_can_reconfigure=%s" % (probe["result"], probe["producer_can_reconfigure"]) if probe else "no probe was given"))
     led, apath = evcore.ledger_path(), evcore.anchor_path()
     lock = evcore.LedgerLock(led, evcore.lock_timeout())
     lock.acquire()

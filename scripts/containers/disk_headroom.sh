@@ -22,12 +22,26 @@
 # proves it is ours (11.4.263 / 11.4.196(D)); no pgrep/killall, no process-group signal. A child inside execve reads an EMPTY /proc cmdline: it
 # is still ours when its parent link and start time say so, and it is KILLed like a pre-exec child. The bounded probes write into one private
 # mktemp -d directory (mode 0700), removed as soon as they are done and by the signal handler.
-# Test overrides: DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT, EV, CPA_HOST_ENTRY.
+# Test overrides (DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT, EV, CPA_HOST_ENTRY) need DISK_HEADROOM_TEST_MODE=1; see below (round 8, R-2).
 set -u
 command -v jq >/dev/null 2>&1 || { echo "disk_headroom: jq is required" >&2; exit 2; }
 # Every external tool is checked up front, so a missing one is refused under its own name (rc 2) and never surfaces as a misleading
 # disk_free_unreadable / config_duplicate_key refusal further down.
 for _dep in timeout grep dirname cut tr date mktemp mkdir chmod mv rm sleep cat; do command -v "$_dep" >/dev/null 2>&1 || { echo "disk_headroom: REFUSED reason=dependency_missing $_dep is required" >&2; exit 2; }; done   # MUT:preflight
+# Test overrides (round 8, R-2). DISK_HEADROOM_CONF, DISK_HEADROOM_REPO_ROOT (naming a root other than this gate's own), CPA_HOST_ENTRY and EV replace a
+# real reading (the floor, the measured filesystem, the reaper that is executed, the record path): they are honoured ONLY when DISK_HEADROOM_TEST_MODE is
+# exactly 1. Outside it the first three are REFUSED (rc 2, test_override_outside_test_mode: a stray exported variable must never lift the 12.9 floor) and EV is
+# ignored (the record goes to the gate's own evidence directory). DISK_HEADROOM_OUT_DIR is the documented CPA input (moves the record, skips the freeze, never
+# lifts the floor); the two timeouts are validated; see the environment classification in tests/test_disk_headroom.sh (env_suite).
+TESTMODE=0; [ "${DISK_HEADROOM_TEST_MODE:-}" = 1 ] && TESTMODE=1   # MUT:ov-gate
+DEF_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
+override_refused() { echo "disk_headroom: REFUSED reason=test_override_outside_test_mode $1 is a test override and is honoured only with DISK_HEADROOM_TEST_MODE=1" >&2; exit 2; }
+if [ "$TESTMODE" != 1 ]; then
+  [ -z "${DISK_HEADROOM_CONF:-}" ] || override_refused DISK_HEADROOM_CONF   # MUT:ov-conf
+  if [ -n "${DISK_HEADROOM_REPO_ROOT:-}" ] && [ "$(cd "$DISK_HEADROOM_REPO_ROOT" 2>/dev/null && pwd -P)" != "$DEF_ROOT" ]; then override_refused DISK_HEADROOM_REPO_ROOT; fi   # MUT:ov-root
+  [ -z "${CPA_HOST_ENTRY:-}" ] || override_refused CPA_HOST_ENTRY   # MUT:ov-host
+  unset EV   # MUT:ov-ev
+fi
 ROOT_DIR="${DISK_HEADROOM_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 CONF="${DISK_HEADROOM_CONF:-$(dirname "${BASH_SOURCE[0]}")/disk_headroom.conf}"
 EV="${EV:-$ROOT_DIR/specs/001-full-project-audit-remediation/evidence}"

@@ -19,7 +19,7 @@ in-repo check (WF8 findings F1 and F3: the 11.4.230 digest dropped six flags and
 
 ```bash
 scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- python3 -I scripts/governance/appendix_token_check.py \
-  --canon submodules/constitution/Constitution.md --appendix .specify/memory/constitution-appendix.md \
+  --canon constitution/Constitution.md --appendix .specify/memory/constitution-appendix.md \
   --allow scripts/governance/appendix_token_allow.tsv --floor scripts/governance/appendix_wording_floor.tsv \
   --phrases scripts/governance/appendix_required_phrases.tsv [--json <out.json>]
 # after an independently reviewed digest rewrite: regenerate the floor from the digests

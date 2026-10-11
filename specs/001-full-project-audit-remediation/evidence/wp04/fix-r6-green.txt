@@ -1,0 +1,21 @@
+## GREEN run 1 helper tests (test_wp04j.sh) 2026-10-08T15:20:37Z
+IDENTITY test=1330a18ff6b3e51f836c5b56a6077347e3724d485fa0c006c6c2b5c5f66a77e9 lib_safe=bec52a095f12a165083dcbe1e60c5344750fcc04bb5a97f39400b50c102bb9d6 push_recursive=138fa3fbaa5b48b0e7aa506c5aebe849968c1f990cafdc9d61fedfd5ed649b2d integrate_merge=4079ff16a21cd9144a356ee6dc4a9686bdd042fc1c948cf2dbd66f1666c4ac6e commit_recursive=590444e83630d9e984db23a6bd7d12077d0966bd81a00eeb84d4667843261e20
+---- 192 ok, 0 failed
+exit=0
+## GREEN run 1 matrix section 19 r6
+---- 32 ok, 0 failed
+exit=0
+## GREEN run 2 helper tests (test_wp04j.sh) 2026-10-08T15:25:59Z
+IDENTITY test=1330a18ff6b3e51f836c5b56a6077347e3724d485fa0c006c6c2b5c5f66a77e9 lib_safe=bec52a095f12a165083dcbe1e60c5344750fcc04bb5a97f39400b50c102bb9d6 push_recursive=138fa3fbaa5b48b0e7aa506c5aebe849968c1f990cafdc9d61fedfd5ed649b2d integrate_merge=4079ff16a21cd9144a356ee6dc4a9686bdd042fc1c948cf2dbd66f1666c4ac6e commit_recursive=590444e83630d9e984db23a6bd7d12077d0966bd81a00eeb84d4667843261e20
+---- 192 ok, 0 failed
+exit=0
+## GREEN run 2 matrix section 19 r6
+---- 32 ok, 0 failed
+exit=0
+## GREEN run 3 helper tests (test_wp04j.sh) 2026-10-08T15:30:50Z
+IDENTITY test=1330a18ff6b3e51f836c5b56a6077347e3724d485fa0c006c6c2b5c5f66a77e9 lib_safe=bec52a095f12a165083dcbe1e60c5344750fcc04bb5a97f39400b50c102bb9d6 push_recursive=138fa3fbaa5b48b0e7aa506c5aebe849968c1f990cafdc9d61fedfd5ed649b2d integrate_merge=4079ff16a21cd9144a356ee6dc4a9686bdd042fc1c948cf2dbd66f1666c4ac6e commit_recursive=590444e83630d9e984db23a6bd7d12077d0966bd81a00eeb84d4667843261e20
+---- 192 ok, 0 failed
+exit=0
+## GREEN run 3 matrix section 19 r6
+---- 32 ok, 0 failed
+exit=0

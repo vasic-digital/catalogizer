@@ -1,0 +1,7 @@
+desc_bytes=2040
+items=2010 reg_ids=2010 ext=2010
+db_bytes=10801152
+register_sql_bytes=10167626
+Issues_md_bytes=4393764 Fixed_md_bytes=0
+gate: GATE OK
+done

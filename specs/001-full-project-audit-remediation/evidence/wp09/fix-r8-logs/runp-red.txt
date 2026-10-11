@@ -1,0 +1,54 @@
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/reviews' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/reviews' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/reviews/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/reviews/x' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/reviews/smoke-out/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/reviews/smoke-out/x' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/verdicts/smoke-out/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/verdicts/smoke-out/x' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/x' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/smoke-out' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/smoke-out' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/smoke-out/../../reviews' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/smoke-out/../../reviews' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/SHA256SUMS' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/SHA256SUMS' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/SHA256SUMS' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/SHA256SUMS' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/smoke-out/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/smoke-out/x' reason: 
+FAIL: R-1: --out 'specs/001-full-project-audit-remediation/evidence/wp09/reviews/smoke-out/x' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 'specs/001-full-project-audit-remediation/evidence/wp09/reviews/smoke-out/x' reason: 
+FAIL: R-1: --out '.audit/out' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 '.audit/out' reason: 
+FAIL: R-1: --out '.audit/scratch' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 '.audit/scratch' reason: 
+FAIL: R-1: --out outside the declared roots '/etc' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/usr/lib' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/var' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/root' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/home' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/proc' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/sys' is refused, exit 1 (got '0' want '1')
+FAIL: R-1: --out outside the declared roots '/tmp/runp-test.byV40P/home/.ssh' is refused, exit 1 (got '0' want '1')
+FAIL:   R-1 outside reason: 
+FAIL: R-1: a smoke-out symlink to the review tree is refused (resolved path judged), exit 1 (got '0' want '1')
+FAIL: R-5: --need given twice is a usage error, exit 2 (got '0' want '2')
+FAIL: R-5: --op-id given twice is a usage error, exit 2 (got '0' want '2')
+FAIL:   R-8 reason: /home/milosvasic/Projects/catalogizer/scripts/containers/tests/../run_pinned.sh: line 130: HOME: unbound variable
+FAIL:   R-8: a shell 'unbound variable' message leaked
+FAIL: R-8: empty HOME is refused, exit 1 (got '0' want '1')
+FAIL:   R-8 empty reason: 
+FAIL: R-2: DISK_HEADROOM_CONF is forwarded to disk_headroom.sh
+FAIL: R-2: DISK_HEADROOM_REPO_ROOT is forwarded to disk_headroom.sh
+FAIL: R-2: EV is forwarded to disk_headroom.sh
+FAIL: R-2: CPA_HOST_ENTRY is forwarded to disk_headroom.sh
+FAIL: R-2: DISK_HEADROOM_TEST_MODE is forwarded to disk_headroom.sh
+FAIL: R-2: exported DISK_HEADROOM_CONF (+ test-mode switch) does not lift the floor through RUNP, exit 1 (got '0' want '1')
+FAIL:   R-2 reason: 
+test_run_pinned: 412 passed, 53 failed

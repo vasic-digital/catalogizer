@@ -1,0 +1,46 @@
+# fix round 6 mutations (driver scripts/repo/tests/run_wp04j_mutations.sh, sha256 bfd4332f29a3b7a55de550783f99e642296b9883295ec4a406f97041a253c51f)
+## run 1 (all 29 mutations; 4 survived: J09 equivalent by a second layer (empty output on a non-zero status), J11 the test shim corrupted both reads, J13 and J21 named the wrong intended assertion)
+CONTROL  H against an unmutated copy of /home/milosvasic/Projects/catalogizer -> exit 0, 0 failing case(s)
+CONTROL  M against an unmutated copy of /home/milosvasic/Projects/catalogizer -> exit 0, 0 failing case(s)
+CAUGHT   J01 lib: the parser reads git interpret-trailers (the old second model) instead of the message lines -> FAIL R-01 cpa_runid [divider line in the body] (got '-', want '20261005T000000Z-1-aaaa')
+CAUGHT   J02 push: trailer() reads the Awaits-Review hold through git interpret-trailers (the review needle) -> FAIL R-01 push [divider line in the body (the review's needle)]: exit (got '20', want '14')
+CAUGHT   J03 lib: a folded trailer line is accepted -> FAIL R-01 cpa_runid [folded trailer] (got '20261005T000000Z-1-aaaa', want '-')
+CAUGHT   J04 lib: a repeated Awaits-Review / CPA-Run / Deferred-Gates is accepted -> FAIL R-01 cpa_runid [duplicate Awaits-Review] (got '20261005T000000Z-1-aaaa', want '-')
+CAUGHT   J05 lib: a reserved key before the block is accepted -> FAIL R-01 cpa_runid [Awaits-Review before the block] (got '20261005T000000Z-1-aaaa', want '-')
+CAUGHT   J06 lib: a control character (a CR) inside the block is accepted -> FAIL R-01 cpa_trailer Awaits-Review [CRLF line endings] (got '0:v.json
+CAUGHT   J07 lib: the block need not open with CPA-Run -> FAIL R-01 cpa_trailer Awaits-Review [CPA-Run in an earlier paragraph, hold alone in the last] (got '3:', want '1:')
+CAUGHT   J08 lib: a --- line inside the block is accepted -> FAIL R-01 cpa_runid [divider line inside the block] (got '20261005T000000Z-1-aaaa', want '-')
+SURVIVED J09 lib: cpa_runid ignores the parser status -> tests passed (or failed on other assertions)
+CAUGHT   J10 push: the malformed_trailers refusal is gone (the hold reader trusts what the predicate read) -> FAIL R-01 named malformed_trailers (no 'malformed_trailers' in 'PUSHED	.	r1	2ef8b5f89fb93182c4b3c530750971f21f3d00ea
+SURVIVED J11 push: a hold-reader status other than 0 is ignored (only an empty run id refuses) -> tests passed (or failed on other assertions)
+CAUGHT   J12 lib: cpa_msg_check lets a --- line pass -> FAIL R-01 cpa_msg_check refuses [divider line] (got '0', want '1')
+SURVIVED J13 lib: cpa_msg_check compares the reserved keys case-sensitively -> tests passed (or failed on other assertions)
+CAUGHT   J14 lib: cpa_msg_check lets a control character (a CR) pass -> FAIL R-01 cpa_msg_check refuses [CR] (got '0', want '1')
+CAUGHT   J15 lib: cpa_msg_check lets an indented reserved key pass -> FAIL R-01 cpa_msg_check refuses [indented Awaits-Review] (got '0', want '1')
+CAUGHT   J16 launcher: S0 does not check the message -> FAIL 19.1 usage_error (no 'usage_error' in 'cpa: FAIL S5 20 unsafe_message (commit_recursive.sh exit 20: REASON	unsafe_message commit_recursive: unsaf
+CAUGHT   J17 commit_recursive: the message is not checked -> FAIL R-01 commit_recursive refuses a message with a divider line: 20 (got '0', want '20')
+CAUGHT   J18 commit_recursive: the attribution is not checked -> FAIL R-01 commit_recursive refuses a divider as the attribution: 20 (got '0', want '20')
+CAUGHT   J19 merge: the held scan ignores a block it cannot read -> FAIL R-01 merge with a local commit whose block is malformed: 20 (got '0', want '20')
+CAUGHT   J20 merge: the Foreign-Commit dedupe never finds a listed commit -> FAIL R-01 a Foreign-Commit line behind a divider is found: not named again (unexpected 'Foreign-Commit: 48eb718be7751fe2b6533ddcbead2b6cba7bc6dd' in '
+SURVIVED J21 merge: the held scan reads no hold at all -> tests passed (or failed on other assertions)
+CAUGHT   J22 push: the merge-block condition is dropped from the target selection (only a hold at the first commit withholds everything) -> FAIL R-02 nothing of the range reached r1 (got '91cef95fbde94d48528d85c49a70a9e053b4c12f', want '850019d2a34500fef63214ffc3cb9d67b1d90e8c')
+CAUGHT   J23 push: a merge commit is never counted as a merge block -> FAIL R-02 nothing of the range reached r1 (got 'ea137c8c3a9ab3d209424f4a75e5d1fc7ea708a6', want 'ce9af86528fd9d7d63cda6d663895a4d29bc1575')
+CAUGHT   J24 launcher: the missing approved owner list is not refused -> FAIL 19.5 own_orgs_unverifiable (no 'own_orgs_unverifiable' in 'cpa: FAIL S7 20 verifier_report_unreadable (verifier exit 20; a missing or unreadable 
+CAUGHT   J25 lib: the config listing status is lost again (a process substitution) -> FAIL R-06 a failing config listing is a refusal, not 'no keys': 1 (got '0', want '1')
+CAUGHT   J26 merge: the --resolution trial merge runs before the backup -> FAIL R-06 the 9.2 backup existed before the trial merge (got 'no_backup_yet', want 'backup_first')
+CAUGHT   J27 schema: the 11.4.235(D) finding layers are not in the enum -> FAIL R-07 finding_layer source-defect + evidence_layer validates (got '1', want '0')
+CAUGHT   J28 schema: evidence_layer takes any value -> FAIL R-07 golden-false: an unknown evidence_layer is refused (got '0', want '1')
+CAUGHT   J29 schema: finding_layer takes any value -> FAIL R-07 golden-false: an unknown finding_layer is refused (got '0', want '1')
+## run 2 after the test/driver corrections (J09 documented EQ; J10 J11 J13 J21 re-run)
+CONTROL  H against an unmutated copy of /home/milosvasic/Projects/catalogizer -> exit 0, 0 failing case(s)
+EQUIVALENT J09 lib: cpa_runid ignores the parser status -> survived as documented in the entry (a second layer makes the edit unobservable)
+CAUGHT   J10 push: the malformed_trailers refusal is gone (the hold reader trusts what the predicate read) -> FAIL R-01 named malformed_trailers (no 'malformed_trailers' in 'PUSHED	.	r1	1ecb4240273e59400c46d04b04b23209edc997b4
+CAUGHT   J11 push: a hold-reader status other than 0 is ignored (only an empty run id refuses) -> FAIL R-01 named malformed_trailers (no 'malformed_trailers' in 'PUSHED	.	r1	06c5d8d7b2d766725544a7ff711c5e08e6c275bd
+CAUGHT   J13 lib: cpa_msg_check compares the reserved keys case-sensitively -> FAIL R-01 cpa_msg_check refuses [CPA-Run line] (got '0', want '1')
+CAUGHT   J21 merge: the held scan reads no hold at all -> FAIL R-01 the merge awaits its review (no 'Awaits-Review: ev/reviews/CPA-merge-20261005T000000Z-1-aaaa.json' in 'Merge r1/main 65b336b372706c1dacdf871
+---- 5 mutations listed, 0 not caught, errored, or mis-documented
+## R-02 equivalence evidence (--only PRE): the dead line restored, then mB and the hidden-condition mutant
+CONTROL  H against an unmutated copy of /home/milosvasic/Projects/catalogizer -> exit 0, 0 failing case(s)
+EQUIVALENT PRE-mB push: the dead line is restored, then the reviewer mutant mB replaces it by `false &&` -- EQUIVALENT: the first branch of the chain already decides -> survived as documented in the entry (a second layer makes the edit unobservable)
+EQUIVALENT PRE-mC push: the dead line is restored, then the merge block is dropped from the chain -- SURVIVES while the dead line exists (the line hid the mutation) -> survived as documented in the entry (a second layer makes the edit unobservable)
+---- 2 mutations listed, 0 not caught, errored, or mis-documented

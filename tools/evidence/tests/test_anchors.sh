@@ -43,14 +43,14 @@ cp "$S/orig.jsonl" "$EV_LEDGER"
 python3 "$FORGE" delete "$EV_LEDGER" 2; hold
 want "tamper: delete-and-recompute that keeps the old seq values is caught by the chain's contiguity check alone (exit 1, the documented bonus)" 1 'not contiguous'
 cp "$S/orig.jsonl" "$EV_LEDGER"; python3 "$FORGE" delete "$EV_LEDGER" 2 renumber
-want "tamper: delete-and-recompute (the careful forger renumbers) passes the chain alone (no anchor to compare: exit 0, stated)" 0 'no anchor'
+want "tamper: delete-and-recompute (the careful forger renumbers) with NO anchor to compare is UNVERIFIED, exit 3 anchor_absent (review R1: never exit 0)" 3 'anchor_absent'
 mv "$S/held.anchor" "$EV_ANCHOR"
 want "tamper: delete-and-recompute is caught by the anchor (exit 2)" 2 'anchored count=4'
 cp "$S/orig.jsonl" "$EV_LEDGER"; python3 "$FORGE" delete "$EV_LEDGER" 3 renumber; mv "$EV_ANCHOR" "$S/held.anchor"; cp "$S/orig.anchor" "$EV_ANCHOR"
 want "tamper: deleting a different entry (3) and recomputing is caught by the anchor too (exit 2)" 2 'anchor'
 cp "$S/orig.jsonl" "$EV_LEDGER"
 python3 "$FORGE" truncate "$EV_LEDGER" 3; hold
-want "tamper: truncated tail passes the chain alone (exit 0)" 0 'no anchor'
+want "tamper: truncated tail with NO anchor to compare is UNVERIFIED, exit 3 anchor_absent (review R1: never exit 0)" 3 'anchor_absent'
 mv "$S/held.anchor" "$EV_ANCHOR"
 want "tamper: truncated tail is caught by the anchor (exit 2)" 2 'anchored count=4'
 cp "$S/orig.jsonl" "$EV_LEDGER"
@@ -127,11 +127,11 @@ if command -v git >/dev/null 2>&1; then
   nopush() { ! grep -Eq '(^| )push( |$)' "$S/gitcalls"; }
   four; probe --probe-remote "$S/deny.git"; r=$?
   s=$(tail -1 "$EV_ANCHOR" 2>/dev/null | jq -r .strength 2>/dev/null)
-  { [ "$r" = 0 ] && [ "$s" = mechanism ] && tail -1 "$EV_ANCHOR" | jq -e '.probe.rewrite_rejected==true and .probe.probe_kind=="config"' >/dev/null 2>&1; } && ok "probe: both receive.denyNonFastForwards and receive.denyDeletes true gives mechanism with probe_kind=config" || bad "probe(deny): exit $r strength=$s $(head -c 200 "$S/ae")"
+  { [ "$r" = 0 ] && [ "$s" = policy ] && tail -1 "$EV_ANCHOR" | jq -e '.probe.rewrite_rejected==true and .probe.probe_kind=="config"' >/dev/null 2>&1; } && ok "probe: both receive.denyNonFastForwards and receive.denyDeletes true is recorded as evidence (probe_kind=config) but the strength stays policy (review R3: a same-uid remote is producer-reconfigurable and the anchor is not stored in it)" || bad "probe(deny): exit $r strength=$s $(head -c 200 "$S/ae")"
   tail -1 "$EV_ANCHOR" | jq -e '.probe.config["receive.denyNonFastForwards"].effective==true and .probe.config["receive.denyDeletes"].effective==true and (.probe.config["receive.denyNonFastForwards"].values[0].value=="true") and (.probe.config["receive.denyNonFastForwards"].values[0].origin|test("deny.git/config"))' >/dev/null 2>&1 && ok "probe: the exact config values read and their origin (show-origin) are recorded in the row" || bad "probe(deny): config values not recorded: $(tail -1 "$EV_ANCHOR" | head -c 400)"
   nopush && grep -q 'config' "$S/gitcalls" && ok "probe: read-only: git was called only to read config, and no push of any kind was made (call log checked)" || bad "probe: a git push was attempted: $(cat "$S/gitcalls" | head -5 | tr '\n' ';')"
   [ -z "$(git -C "$S/deny.git" for-each-ref)" ] && ok "probe: nothing was pushed to the bare repository (no refs)" || bad "probe: the bare repository gained refs"
-  want "verify: the probed mechanism row verifies (exit 0)" 0 'mechanism'
+  want "verify: the probed row verifies as policy (exit 0)" 0 'strength=policy'
   four; probe --strength policy --probe-remote "$S/deny.git"; r=$?
   s=$(tail -1 "$EV_ANCHOR" 2>/dev/null | jq -r .strength 2>/dev/null)
   { [ "$r" = 0 ] && [ "$s" = policy ] && tail -1 "$EV_ANCHOR" | jq -e '.probe.rewrite_rejected==true' >/dev/null 2>&1; } && ok "probe: an explicit --strength policy is honoured even when the config denies a rewrite (the evidence is still recorded)" || bad "probe(policy requested): exit $r strength=$s"

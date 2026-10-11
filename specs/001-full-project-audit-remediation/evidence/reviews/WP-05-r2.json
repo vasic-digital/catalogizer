@@ -1,0 +1,256 @@
+{
+ "schema": "review-verdict/1",
+ "wp": "WP-05",
+ "tasks": [
+  "T048",
+  "T048a",
+  "T049",
+  "T050",
+  "T051",
+  "T051a",
+  "T052",
+  "T053",
+  "T054",
+  "T055",
+  "T056",
+  "T057"
+ ],
+ "gate": "T058",
+ "verdict": "NO-GO",
+ "author": "WP-05 fix round 8 stream (working tree on HEAD 20f74abf, uncommitted)",
+ "reviewer": "T058 independent re-reviewer subagent (r2; neither the author nor the first reviewer)",
+ "model": "opus",
+ "effort": "?",
+ "effort_note": "Dispatched through the Agent tool, which cannot set or report reasoning effort; recorded '?' (constitution 11.4.231(F.2)), never a claimed xhigh.",
+ "date": "2026-10-08",
+ "reviewed_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+ "covers_runs": [],
+ "covers_runs_note": "The reviewed change is the uncommitted fix-round-8 working tree; no commit and no CPA-Run id exists, so covers_runs is empty (allowed by review-verdict/1) and this verdict releases no held commit. The prior verdict's move of cpa_run UNKNOWN into reviewed_commits is schema-legal (reviewed_commits is an additional property; covers_runs[].cpa_run must match the CPA-Run pattern).",
+ "blocking_findings": 1,
+ "reviewed_files": [
+  {
+   "path": "tools/evidence/evcore.py",
+   "sha256": "8dfe0b707403f6a575e8fc2fefa38982d7eb755480cc1e24920d2ea254caf88b"
+  },
+  {
+   "path": "tools/evidence/evanchor.py",
+   "sha256": "da28d7dfd0e4c7405b7ab6d35217ccc5880cef615d01629a42a7b8b3b2d98f45"
+  },
+  {
+   "path": "tools/evidence/evverdict.py",
+   "sha256": "c033ebe4b474b487acf23a5a8ef6a0dad511c95aed4215212467ee73517c1989"
+  },
+  {
+   "path": "tools/evidence/matrix/gen_matrix.py",
+   "sha256": "aaf64da7c3104e0aae414da57ea24173c3fb82796385623baeef9ceea8b5b1f1"
+  },
+  {
+   "path": "tools/evidence/tests/test_anchors_r8.sh",
+   "sha256": "f164a56c8c8818f9a1a168ed6b2e935391696768098cb51fe352d9154a4697bd"
+  },
+  {
+   "path": "tools/evidence/tests/test_anchors.sh",
+   "sha256": "da934388d12949afa4bdb1845fef46a5784e7eaa658006223803b17013e89d83"
+  },
+  {
+   "path": "tools/evidence/tests/run_mutations.py",
+   "sha256": "9658bf9e47f4d11c35389f150ce03e2e0efed3997e211a3939d6140b2d87f91b"
+  },
+  {
+   "path": "tools/evidence/tests/run_mutations_wp05b.py",
+   "sha256": "2b70d129eadcf526137236b3446b9eb64a7637399fa0d15a8f3db7e5b816b542"
+  },
+  {
+   "path": "tools/evidence/tests/verify_chain_only.sh",
+   "sha256": "53b13fca48eb4c62ad5244c7dc24ec11fae9774aaf2fe2cf44bdbacac5a50b79"
+  },
+  {
+   "path": "specs/001-full-project-audit-remediation/evidence/ledger.jsonl",
+   "sha256": "d5bfb4118c66ace264d247b185698693bc8d82929a6fa1a81c4d5acbbf64428a"
+  },
+  {
+   "path": "specs/001-full-project-audit-remediation/evidence/anchors.jsonl",
+   "sha256": "b2980f5d1421678de01c990b051a37f30a2191e8bc1af1f476a9e6e96c16b37e"
+  },
+  {
+   "path": "specs/001-full-project-audit-remediation/evidence/wp05/fix-r8-README.md",
+   "sha256": "429ff150e0455ae7fa8b1dde12e3a40e7715c80980c4e7d7f6c0a418297a5418"
+  }
+ ],
+ "prior_findings_status": {
+  "WP05-R1": "CLOSED: verify exits 3 anchor_absent for absent, empty, newline-only, dangling-symlink and EV_ANCHOR-unreachable anchors; unreadable / directory anchors exit 3 anchor_unreadable; --chain-only exits 0 printing CHAIN-ONLY (never OK) and still compares a present anchor (reviewer repros, scratch copies of the live ledger).",
+  "WP05-R2": "CLOSED in the working tree: live anchors.jsonl row count=90 head=da2e2808c8bd839a... independently recomputed by a reviewer-written chain walker (not evcore) on the ledger as it is now; ledger.jsonl has no diff against HEAD 58cb30b8 (its only commit), so nothing hand-edited it after commit; control needle (seq edit on a copy) was detected. Open: anchors.jsonl is untracked (see R2-F10).",
+  "WP05-R3": "CLOSED: --strength mechanism refused 71 with and without a probe of a same-uid bare repo configured deny-non-ff + deny-deletes; probe recorded producer_can_reconfigure=True.",
+  "WP05-R4": "CLOSED: hand-written mechanism rows (with forged probe, after a policy row, duplicate-key mechanism-last) refused 3 strength_unproven; case variant 'Mechanism' refused 3 anchor_not_compared.",
+  "WP05-R5": "CLOSED: deriver and gen_matrix.ledger_context refuse delete-and-recompute, truncated, edited-and-recomputed and forged-mechanism ledgers (3); both share evcore.anchor_gate. Residual: R2-F2.",
+  "WP05-R6": "CLOSED: test_mutation_harness.sh green on the reviewer's run (baseline control, A17/A18/A18b caught, control needle on a damaged tree).",
+  "WP05-R7": "CLOSED (five REV mutants caught per fixer evidence; not re-run by this reviewer).",
+  "WP05-R8": "CLOSED (test_anchors_r8.sh R8 checks green on the reviewer's run); see R2-F9 on how the verdict file was changed.",
+  "WP05-R9": "Lead only; unchanged."
+ },
+ "findings": [
+  {
+   "id": "WP05-R2-F1",
+   "blocking": true,
+   "finding_layer": "source-defect",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "Reviewer mutant RR2-4 SURVIVED all four suites (test_anchors_r8, test_anchors, test_verdict, test_gen_matrix): in evcore.cmd_run the --anchor-after branch's re-raise of the anchor refusal was replaced by `return 0`. The R2 fix's failure path (entry recorded, anchor refused) has no test, so per 11.4.194(6)(d)/11.4.235(D) the fix is not proven. The real code is correct (reviewer repro: anchored 4-entry ledger, delete-and-recompute, `evrec run ... --anchor-after` exits 2 anchor_disagrees, no anchor row appended, verify 2); the remediation is one test asserting exit != 0 and an unchanged anchors file, plus re-running RR2-4."
+  },
+  {
+   "id": "WP05-R2-F2",
+   "blocking": false,
+   "finding_layer": "source-defect",
+   "evidence_layer": "runtime",
+   "defect_layer": "runtime",
+   "summary": "`tools/evidence/verdict --chain-only` derives PASS with exit 0 on a delete-and-recomputed ledger that has NO anchor (reviewer repro); only the JSON field 'anchor: not compared' says so. The one flag both skips the per-entry ev/1 schema (needed for the golden-bad fixtures) and accepts an absent anchor, and a caller reading the exit status sees PASS. git grep finds no production caller of --chain-only (scripts/repo/integrate_merge.sh only checks that verify exists), so non-blocking; recommend separating the two opt-ins or a distinct exit status when no anchor was compared."
+  },
+  {
+   "id": "WP05-R2-F3",
+   "blocking": false,
+   "finding_layer": "source-defect",
+   "evidence_layer": "runtime",
+   "defect_layer": "runtime",
+   "summary": "`evrec run` appends a new entry onto a ledger whose existing anchor it contradicts (reviewer repro: after delete-and-recompute the run printed 'recorded seq=4' and chained new evidence onto the rewritten history before --anchor-after refused). verify still exits 2 afterwards, so detection survives; hardening: check the newest anchor before appending."
+  },
+  {
+   "id": "WP05-R2-F4",
+   "blocking": false,
+   "finding_layer": "source-defect",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "ev-anchor/1 row validation is loose: `at` is accepted when it merely ends with 'Z' (a hand row with at='Z' verified OK); a `policy` row may carry a forged probe {rewrite_rejected:true} and is accepted; duplicate JSON keys resolve last-wins ('mechanism' then 'policy' is accepted as policy). No strength bypass found (every mechanism reading is refused); this is the inherent policy limit plus misleading-row hygiene."
+  },
+  {
+   "id": "WP05-R2-F5",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "run_mutations.py --check labels every mutant whose edit applies as CAUGHT and prints 'mutants=241 caught=237' without running a single suite (pre-existing at HEAD; check_only returns 'CAUGHT'). A --check transcript can be misread as a kill result (11.4.273); use a distinct label such as APPLIES."
+  },
+  {
+   "id": "WP05-R2-F6",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "Four core mutants stay INVALID (N-I4g, N-I7e, N-I7f, W3-7; pre-existing at HEAD, their edit text no longer exists). The behaviour they guarded is still killed by live mutants: reviewer ports RR2-7 (stream redaction without patterns) and RR2-8 (named values not redacted in streams) were CAUGHT by test_evrec_r3.sh (I7 checks), RR2-9 (explicit --ledger skips blobs) CAUGHT by test_evrec_r4.sh W3-7, and the anchor-present path is killed by R8-A24/A25 and RR2-1. Port or retire them in run_mutations.py with a reason; non-blocking."
+  },
+  {
+   "id": "WP05-R2-F7",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "Core mutation coverage after this round's test edits (nine suites now verify through tests/verify_chain_only.sh): the fixer re-ran 7 of 241; the reviewer re-ran 86 of 241 with -j 8 before a 3000 s bound (baseline green, 85 CAUGHT, 1 INVALID N-I4g, 0 survived). The remaining 155 are not re-observed in this round; owed (tracked) before the full kill matrix is cited."
+  },
+  {
+   "id": "WP05-R2-F8",
+   "blocking": false,
+   "finding_layer": "test-instrumentation",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "test_gen_matrix.sh's own mutation legs did not complete in this round: the RED capture was stopped, and the three GREEN captures (89 PASS each) contain no mutation-leg lines; the generator's mutation set has no mutant for the new anchor_gate call in ledger_context. Reviewer mutant RR2-3 (tolerate anchor_absent) was caught by the new 'gate R1' case, so the new guard is proven; the full generator mutation run is still owed."
+  },
+  {
+   "id": "WP05-R2-F9",
+   "blocking": false,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "The fix round edited the independent reviewer's verdict file evidence/reviews/WP-05.json (finding_layer values remapped, covers_runs moved to reviewed_commits). The file is untracked, so the reviewer's original text is not recoverable; producer edits to a verifier record conflict with 11.4.240/11.4.249 even when disclosed (fix-r8-README R8 row discloses it). Also fix-r8-red-test_gen_matrix.txt carries a hand-appended NOTE line inside a captured evidence file. Keep the original verdict unmodified and record conformance corrections in a reviewer-authored file; keep commentary out of captures."
+  },
+  {
+   "id": "WP05-R2-F10",
+   "blocking": false,
+   "finding_layer": "process-doc",
+   "evidence_layer": "artifact",
+   "defect_layer": "artifact",
+   "summary": "The live anchor is correct (count 90, head da2e2808c8bd839a4ed3c1d249df7ee90d9aabd6c6a1cc1a605a59b17cc6080a, strength policy) but anchors.jsonl is untracked: until it is committed together with ledger.jsonl it protects nothing against a rewrite of both local files, and even then it is policy strength (mechanism BLOCKED-ON OD-76)."
+  },
+  {
+   "id": "WP05-R2-F11",
+   "blocking": false,
+   "finding_layer": "process-doc",
+   "evidence_layer": "source",
+   "defect_layer": "source",
+   "summary": "Review-round budget (11.4.276): WP-05 has been through the WF2..WF7 reviews, the T058 review and this r2, which exceeds R_max 7. 11.4.276(E)(3) requires the conductor to stop this approach and record an operator decision (re-scope, structural replacement, or a 11.4.271 waiver for residual low findings) rather than run another unbounded round; the single blocking finding here is a one-test addition."
+  }
+ ],
+ "mutations": [
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-0 unmutated control (all four suites; also CTL2 for test_evrec + test_evrec_r3)",
+   "location": "tools/evidence (scratch mirror)",
+   "result": "infeasible",
+   "infeasible_reason": "control, not a mutation: 0 FAIL lines on the unmutated mirror"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-1 anchor_gate returns (None, None) whenever --chain-only (switches off a present anchor)",
+   "location": "tools/evidence/evcore.py anchor_gate",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-2 deriver skips anchor_gate under --chain-only",
+   "location": "tools/evidence/evverdict.py main",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-3 gen_matrix tolerates anchor_absent",
+   "location": "tools/evidence/matrix/gen_matrix.py ledger_context",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-4 run --anchor-after swallows the anchor refusal (return 0)",
+   "location": "tools/evidence/evcore.py cmd_run",
+   "result": "survived"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-5 anchor count check off by one (c > n + 1)",
+   "location": "tools/evidence/evanchor.py verify_anchors",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-6 anchor_file ignores the anchors file beside an explicit --ledger",
+   "location": "tools/evidence/evcore.py anchor_file",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-7 stream redaction without secret patterns (port of INVALID N-I7e)",
+   "location": "tools/evidence/evcore.py redact_stream",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-8 named values not redacted in captured streams (port of INVALID N-I7f)",
+   "location": "tools/evidence/evcore.py cmd_run",
+   "result": "caught"
+  },
+  {
+   "authored_by": "reviewer",
+   "operator": "RR2-9 explicit --ledger skips the blob check (port of INVALID W3-7)",
+   "location": "tools/evidence/evcore.py cmd_verify",
+   "result": "caught"
+  }
+ ],
+ "checks_run": [
+  "Tamper matrix on scratch copies of the live ledger with the live anchor: delete-raw, reorder-raw -> 1 chain_failure; delete-and-recompute, reorder-and-recompute, tail truncation, edit-and-recompute -> 2 anchor_disagrees, identical with --chain-only (present anchor never switched off); unmutated control -> 0 OK.",
+  "Same recomputed tampers with NO anchor: default -> 3 anchor_absent; --chain-only -> 0 CHAIN-ONLY (the documented gap the anchor closes).",
+  "Anchor absent/empty/newline-only/dangling symlink/EV_ANCHOR to a missing path -> 3 anchor_absent; mode-000 file and directory -> 3 anchor_unreadable; whitespace row -> 3 anchor_not_compared.",
+  "Forged rows: mechanism (+probe), policy-then-mechanism, duplicate key mechanism-last -> 3 strength_unproven; float count, 'Mechanism' -> 3 anchor_not_compared; policy+forged probe, at='Z' hand row, duplicate key policy-last -> accepted (R2-F4).",
+  "Deriver: delete-and-recompute with anchor -> 3; no anchor -> 3 anchor_absent; forged mechanism -> 3; --chain-only with present anchor -> 3; --chain-only with no anchor -> 0 PASS (R2-F2). gen_matrix.ledger_context: control accepted; del/trunc/edit -> 3 anchor_disagrees; absent -> 3 anchor_absent; mechanism -> 3 strength_unproven.",
+  "evrec end-session (policy row), end-session with args -> 64, anchor --strength mechanism with/without same-uid bare-repo probe -> 71, end-session over a tampered anchored ledger -> 2 (rows unchanged), run --anchor-after over a tampered anchored ledger -> 2 (entry recorded, no anchor).",
+  "Independent recompute of the live ledger (own walker, python3 -I, no evcore import): 90 entries, contiguous seq, canonical lines, head da2e2808...; equals the anchor row; control needle detected.",
+  "Suites on the real tree: test_anchors_r8.sh 45/0, test_anchors.sh 55/0, test_mutation_harness.sh 6/0.",
+  "run_mutations.py --check: 237 applicable, 4 INVALID; run_mutations.py -j 8 bounded to 3000 s: 86 of 241 run, baseline green, 85 CAUGHT, 1 INVALID."
+ ],
+ "scope_not_reviewed": "155 core mutants not re-run (time bound); the five REV mutants of R7 and wp05b A17/A18/A18b not re-run individually beyond test_mutation_harness.sh; docs revision headers (evidence-recorder.md rev 3, evidence-verdict.md rev 2, docs/06 rev 30) read only for the claims above; no container, no podman, no commit."
+}

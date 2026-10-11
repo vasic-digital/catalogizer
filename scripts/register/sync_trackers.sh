@@ -60,10 +60,10 @@ except Exception:
     yaml = None
 
 ROOT = os.environ["SYNC_ROOT"]; LOCKED = os.environ["SYNC_LOCKED"]; SELF = os.environ["SYNC_SELF"]
-WIIN = "/src/submodules/constitution/scripts/workable-items/bin/workable-items-linux"
+WIIN = "/src/constitution/scripts/workable-items/bin/workable-items-linux"
 NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 ENV_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
-ATM_RE = re.compile(r"^[A-Z]{2,5}-[0-9]{3,}$")
+ATM_RE = re.compile(r"^[A-Z]{3}-[0-9]{3,}$")
 REF_RE = re.compile(r"^[\x21-\x7e]{1,512}$")
 STATE_RE = re.compile(r"^[\x20-\x7e]{1,64}$")
 SKIP_REASONS = ("credentials_absent", "tracker_client_absent", "unreachable", "not_configured", "disabled_by_operator")
@@ -219,7 +219,7 @@ def load_config():
     if extra: bad("unknown top-level key(s): " + ", ".join(sorted(map(str, extra))))
     if cfg.get("schema_version") != 1 or isinstance(cfg.get("schema_version"), bool): bad("schema_version must be 1")
     if not isinstance(cfg.get("db"), str) or not re.fullmatch(r"docs/[A-Za-z0-9_.-]+\.db", cfg["db"]): bad("db must be docs/<name>.db")
-    if not isinstance(cfg.get("id_prefix"), str) or not re.fullmatch(r"[A-Z]{2,5}", cfg["id_prefix"]): bad("id_prefix must be 2-5 capital letters")
+    if not isinstance(cfg.get("id_prefix"), str) or not re.fullmatch(r"[A-Z]{3}", cfg["id_prefix"]): bad("id_prefix must be 3 capital letters (the engine heading grammar [A-Z]{3}-[0-9A-Za-z]+, the same grammar gate.sh step_prefix_agreement checks)")
     if not isinstance(cfg.get("trackers"), list): bad("trackers must be a list (use [] for none)")
     ev = cfg.get("evidence_dir", ".audit/sync/evidence")
     if not isinstance(ev, str): bad("evidence_dir must be a string")

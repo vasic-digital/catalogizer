@@ -5,7 +5,7 @@
 # (a failing check prints the check label only, never a fixture value).
 set -u
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../../.." && pwd)
-EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/verify; EVD=$root/tools/evidence
+EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/tests/verify_chain_only.sh; EVD=$root/tools/evidence
 S=$(mktemp -d); trap 'kill $(jobs -p) 2>/dev/null; chmod -R u+rwx "${S:?}" 2>/dev/null; rm -rf "${S:?}"' EXIT
 fails=0; n=0
 . "$here/hermetic.sh"; hermetic_init "$S"
@@ -241,7 +241,7 @@ bad_m=('W7-6-selftest-unimportable', [(old, old.replace('rb\"(?i)', 'rb\"(?!x)x(
 good_m=('W7-6-selftest-importable', [(old, old.replace('rb\"(?i)', 'rb\"(?i)(?!x)x', 1))], ['x'], None)
 base='$S'
 r=rm.run_one(bad_m, base, True); print('ok' if r[1]=='INVALID' else 'MISS', 'a mutant that compiles but cannot be imported is INVALID (got %s)' % r[1])
-r=rm.run_one(good_m, base, True); print('ok' if r[1]=='CAUGHT' else 'MISS', 'an importable mutant passes the --check stage (got %s)' % r[1])
+r=rm.run_one(good_m, base, True); print('ok' if r[1]=='APPLIES' else 'MISS', 'an importable mutant passes the --check stage (got %s)' % r[1])
 ")
 [ -n "$out" ] || bad "W7-6: the runner import check did not finish in 120 s"
 while IFS= read -r l; do [ -n "$l" ] || continue; case "$l" in ok*) ok "W7-6: ${l#ok }";; *) bad "W7-6: ${l#MISS }";; esac; done <<<"$out"

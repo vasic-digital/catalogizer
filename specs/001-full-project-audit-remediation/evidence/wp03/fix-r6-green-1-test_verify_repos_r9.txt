@@ -1,0 +1,23 @@
+IDENTITY test=90ddd50de1948748951c73e65d813debc37a8eefa4e29f23a014f659a326d340 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton git=2.53.0 jq=jq-1.8.1 python=3.14.4 utc=2026-10-08T18:02:46Z
+ok   N1 control: plain git reports the repository clean (the fixture is live)
+ok   N1 global core.excludesFile hiding *.swp and .idea/: exit 0 (=0)
+ok   N1 no untracked file counted (=0)
+ok   N1 control: plain git with the XDG default ignore file reports clean
+ok   N1 the XDG default ignore file (core.excludesFile unset): exit 0 (=0)
+ok   N1 hidden by info/exclude AND by the global file: exit 13 (a local rule still hides unpushed work) (=13)
+ok   N1 counted as untracked (=1)
+ok   N1 the refusal names the offending file on stderr
+ok   N1 a repository-level core.excludesFile hiding the file: exit 13 (=13)
+ok   N1 globally ignored u plus a visible untracked v: exit 13 (=13)
+ok   N1 only the visible file is counted (=1)
+ok   N2 control: the diverged fixture through the shim: exit 12 (=12)
+ok   N2 control: the shim saw 2 merge-base calls
+ok   N2 every merge-base --is-ancestor call carries core.commitGraph=false (=2)
+ok   N2 no git call at all lacks core.commitGraph=false (=0)
+ok   N3 interpreter invocation with a caller BASH_ENV: exit 12 (=12)
+ok   N3 no git call of the verifier sees BASH_ENV (=0)
+ok   N3 the caller's BASH_ENV file ran at most once (the interpreter's own startup, which no script line can prevent; ran 1)
+ok   N4 staged rename from '?? u2' plus a hidden untracked u2: exit 13 (=13)
+ok   N4 the hidden file is counted once (=1)
+ok   N4 the rename is one tracked change (=1)
+SUMMARY pass=21 fail=0

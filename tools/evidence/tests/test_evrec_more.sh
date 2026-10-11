@@ -4,7 +4,7 @@
 # Same anti-vacuity rule as test_evrec.sh: with evrec/verify absent no check may pass.
 set -u
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../../.." && pwd)
-EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/verify
+EVREC=$root/tools/evidence/evrec; VERIFY=$root/tools/evidence/tests/verify_chain_only.sh
 S=$(mktemp -d); trap 'kill $(jobs -p) 2>/dev/null; rm -rf "$S"' EXIT
 fails=0; n=0
 . "$here/hermetic.sh"; hermetic_init "$S"   # round 3 (I12)
@@ -55,7 +55,7 @@ build; head -c -5 "$EV_LEDGER" >"$S/trunc"; cp "$S/trunc" "$EV_LEDGER"
 want "verify: torn final line exits 1" 1 "$VERIFY"
 build; : >"$EV_LEDGER"; want "verify: empty ledger is unverifiable, exit 3" 3 "$VERIFY"
 build; rm -f "$EV_LEDGER"; want "verify: absent ledger is unverifiable, exit 3" 3 "$VERIFY"
-build; cp "$S/orig.jsonl" "$EV_LEDGER"; v=$("$VERIFY" 2>&1); grep -q 'no anchor compared' <<<"$v" && ok "verify states that the anchor was not compared (T055)" || bad "verify silent about the missing anchor check"
+build; cp "$S/orig.jsonl" "$EV_LEDGER"; v=$("$VERIFY" 2>&1); grep -q 'NO anchor was compared' <<<"$v" && ok "verify states that the anchor was not compared (T055)" || bad "verify silent about the missing anchor check"
 
 # --- an append refuses a corrupt tail instead of extending it
 build; python3 - "$EV_LEDGER" <<'PY'

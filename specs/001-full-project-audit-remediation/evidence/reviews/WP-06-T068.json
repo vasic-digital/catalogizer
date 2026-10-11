@@ -1,0 +1,118 @@
+{
+  "wp": "WP-06",
+  "tasks": ["T059", "T060", "T061", "T062", "T063", "T064", "T064a", "T065", "T066", "T067", "T067a", "T068"],
+  "review_task": "T068 G-DATA (ST-REV)",
+  "verdict": "NO-GO",
+  "model": "opus",
+  "effort": "?",
+  "effort_note": "Dispatched through the Agent tool, which exposes no effort parameter (constitution 11.4.231(F.2)); effort is not settable or verifiable on this path, so it is recorded as '?', never claimed as xhigh. Per T011a/F6 a '?'-effort verdict is provisional.",
+  "reviewer_independence": "independent reviewer agent; not the author of any WP-06 file",
+  "date": "2026-10-08",
+  "git_head": "20f74abfbe535f9ab13f6cedb61110d07339b62c",
+  "scope_reviewed": [
+    "scripts/register/register_ext.sql (sha256 701171a4788f5c03...)",
+    "scripts/register/apply_ext.sh", "scripts/register/gate.sh (65e0124b7923e3c3...)",
+    "scripts/register/locked.sh (5919d4090c75f293...)", "scripts/register/backup_db.sh",
+    "scripts/register/dump.sh", "scripts/register/export.sh", "scripts/register/reconcile.sh",
+    "scripts/register/replay.sh (c6410793149ec36b...)", "scripts/register/run_mutations.sh", "scripts/register/mutate_ddl.py",
+    "specs/001-full-project-audit-remediation/evidence/wp06/*", ".gitignore register rules"
+  ],
+  "round1_record_check": {
+    "dispatch_description": "11 findings / 3 blocking incl. redaction leak and substring match",
+    "tracked_record": "commit 28e3662b + evidence/wp06/README.md section 'WF10 review fix round 1': F1-F14 + M1, blocking F1 (silent renumbering), F2 (base row), F3 (SIGTERM). The review document WF10-REVIEW-register-ops.md is not tracked anywhere in the repository.",
+    "match": "UNCONFIRMED: no tracked record contains a 'redaction leak' finding for WP-06; 'substring' appears only as OWED-WP06-8 (ledger, closed in WF6) and WF13 N1 (replay skip keyed on substring, fixed by program-argument match at replay.sh is_regenerate/is_install). The dispatch description could not be reconciled with any tracked record.",
+    "F1": "code present (replay.sh:133 replay_ids_unknown) but the check defaults an ABSENT ids_snapshot to 'ok' (see finding R-02): class not fully closed",
+    "F2": "code present (replay.sh:88 base row needs wal_bytes_after empty) but an absent wal_bytes_after is read as 0 (same fail-open class, R-02)",
+    "F3": "signal forwarding, lock kept until container gone: present in locked.sh; runtime NOT re-verified by this reviewer (podman forbidden for this review); author transcripts fix-r1/r2/r4-GREEN exist"
+  },
+  "findings": [
+    {
+      "id": "R-01", "finding_layer": "source-defect", "severity": "high", "blocking": true,
+      "title": "reg_ids accepts an explicit seq: out-of-order gap fill, CAT-000 and negative ids (CAT--03) are minted and the gate reports GATE OK",
+      "evidence": "Scratch DB from apply_ext.sh; INSERT reg_ids(seq,..) with seq=9, then 5, 0, -3: all accepted (rc=0); rows CAT--03, CAT-000, CAT-005 (minted after CAT-009). gate.sh on that DB: GATE OK. reg_ids_no_replace only refuses an EXISTING seq (register_ext.sql:33-36); no trigger requires NEW.seq IS NULL or NEW.seq > max(seq) or seq >= 1. CAT--03 does not match the engine heading grammar [A-Z]{3}-[0-9A-Za-z]+ (constitution 2026-10-08 extension: malformed keys are dropped by the db->md->db round trip).",
+      "violates": "11.4.54 monotonic, no gaps, never renumbered; 11.4.241 (enforce at the strongest rung available: a trigger is available)",
+      "fix": "BEFORE INSERT ON reg_ids trigger refusing NEW.seq IS NOT NULL (or NEW.seq < 1 or NEW.seq <= IFNULL(max(seq),0)); RED test with the four inserts above; paired mutation."
+    },
+    {
+      "id": "R-02", "finding_layer": "source-defect", "severity": "high", "blocking": true,
+      "title": "replay.sh reads absent journal fields as their safe value: the round-1 'row dropped/replayed blind with an OK verdict' class has surviving members",
+      "evidence": "Extracted the verbatim logic of replay.sh and ran it: control needle ids_snapshot='failed' -> refused; same row with the field ABSENT -> accepted ('ok' default at replay.sh:133). changed() (replay.sh:114-115) on a register row with no db_sha_before/db_sha_after/ids_minted/wal fields returns False, so the row is skipped as no_database_change with an OK verdict; control (hashes differ) -> True. Also r.get('db', REGDB) and the optional 'seq' order check (replay.sh:80) default open; base-row 'not r.get(\"wal_bytes_after\")' reads absent as 0.",
+      "violates": "11.4.146(D3)/11.4.271 absent-field-is-refused pattern; 11.4.252 fail-closed; 11.4.276(C) class-exhaustive closure of class C1",
+      "fix": "validate every row against a required-field schema (seq, mode, db, db_sha_before, db_sha_after, ids_minted, ids_snapshot, wal_bytes_before, wal_bytes_after, exit, argv) and REFUSE journal_row_incomplete; tests: one row per missing field must refuse."
+    },
+    {
+      "id": "R-03", "finding_layer": "source-defect", "severity": "medium", "blocking": false,
+      "title": "No DB-level idempotency guard on the id mint (11.4.253); orphan ids are invisible to the gate",
+      "evidence": "Two identical INSERT reg_ids(minted_by,mint_basis) with mint_basis='import' both succeed (no UNIQUE on minted_by); gate.sh on that DB: GATE OK (no view flags a reg_ids row with no items/reg_source_map row). The importers dedup by check-then-insert on minted_by (import_plan.py:145-149, import_tickets.py:343-348), anti-pattern (i) of 11.4.253; the single-writer lock removes the race but not a retry after an exit-22/unknown-status write.",
+      "fix": "partial UNIQUE INDEX on reg_ids(minted_by) WHERE mint_basis='import' (or an explicit idempotency_key column); a view_empty check for minted ids with no item after the import completes."
+    },
+    {
+      "id": "R-04", "finding_layer": "process-doc", "severity": "medium", "blocking": false,
+      "title": "ID prefix: CAT is declared in three unconnected places; do not rename atm_id to cat_id",
+      "evidence": ".helix/reporting.yaml:20 id_prefix: CAT (the declared DATA per the constitution 2026-10-08 extension of 11.4.54/11.4.248); register_ext.sql:23 hard-codes 'CAT-' in the generated column; import_plan.py:162 and import_tickets.py:361 hard-code --prefix CAT. No gate asserts they agree. The constitution states the legacy name atm_id is KEPT (rename to ticket_id is owed ENGINE work needing a schema migration + compatibility view); a local atm_id->cat_id rename would diverge from the engine's own items.atm_id and is not recommended. CAT is uppercase 3 letters, so it is inside the measured safe key grammar.",
+      "fix": "gate.sh (or apply_ext.sh) compares the DDL literal with reporting.yaml id_prefix and FAILs on mismatch; importers read the prefix from the same file; record in docs/04 that atm_id stays until the engine rename lands."
+    },
+    {
+      "id": "R-05", "finding_layer": "test-instrumentation", "severity": "medium", "blocking": false,
+      "title": "Reviewer mutant MY3 survives test_gate: re-hash of a tracker_receipt that cites a FILE can be skipped",
+      "evidence": "gate.sh line 153 mutated to '[ \"$kind\" = tracker_receipt ] && continue; n=$((n+1))'; test_gate.sh with GATE=<mutant>: RESULT pass=126 fail=0. No fixture holds a file-path tracker_receipt whose bytes changed, so a forged receipt (the evidence behind tracker SYNCED) is unguarded against this regression.",
+      "fix": "golden-bad fixture: tracker_receipt with a file path whose bytes changed must FAIL; adopt MY3 into tests/mutate_gate.sh."
+    },
+    {
+      "id": "R-06", "finding_layer": "test-instrumentation", "severity": "low", "blocking": false,
+      "title": "Reviewer mutant MY2 (registry cross-check grep -qx -> grep -q, substring) survives test_gate",
+      "evidence": "test_gate.sh with the mutant: pass=126 fail=0. Equivalent at system level: step_reference_diff part 3 already compares the G|name|kind seed rows, so a forged registry row FAILs there; the cross-check is a redundant guard with no isolated test.",
+      "fix": "either record it as a reviewed-equivalent mutant with this reason or add a fixture that only the cross-check can catch."
+    },
+    {
+      "id": "R-07", "finding_layer": "process-doc", "severity": "medium", "blocking": true,
+      "title": "T059 deliverable absent: evidence/wp06/engine.md does not exist",
+      "evidence": "find specs/001-full-project-audit-remediation -name 'engine*.md': no result (control: the same find returns other evidence files). engine_schema_required='7' is hard-coded in register_ext.sql:15 without the recorded engine read (version, validate, add --id, meta.schema_version) T059 requires and T060 depends on.",
+      "fix": "write engine.md from a real run of the committed engine binary (sha256 recorded)."
+    },
+    {
+      "id": "R-08", "finding_layer": "process-doc", "severity": "high", "blocking": true,
+      "title": "Acceptance items the G-DATA GO depends on are still open (stated by the author's own README)",
+      "evidence": "evidence/wp06/README.md: container image digest UNCONFIRMED in every T060-T063 transcript (RUNP/IMG-TESTUTIL, T007/T008 absent; host sqlite3 is /home/milosvasic/Android/Sdk/platform-tools/sqlite3 3.50.6, while gate.sh stat pins cite vendored 3.53.3); T062 reg_test_runs MUTATION rows NOT DONE; docs/04 section 5 still v4 while the DDL is v5 (OWED-WP06-9); db-size.json measures a 4-item fixture only, the 2,010-item projection against the 16 MiB generated bound of T040b (a T068 scope item) is UNCONFIRMED; export-header.json: Issues.md/Issues_Summary.md carry no revision header (11.4.44); OWED-WP06-14 SIGKILL residual and the missing container KILL escalation are open; README status line still 'draft, UNREVIEWED'.",
+      "fix": "close or explicitly waive (11.4.271, rostered non-producer authoriser, expiry, tracked item) each item before T069 relies on the real DB."
+    },
+    {
+      "id": "R-09", "finding_layer": "process-doc", "severity": "medium", "blocking": false,
+      "title": "The binding review records are not tracked (11.4.215)",
+      "evidence": "WF2/WF6/WF10/WF13/WF15 review documents are cited by the README and commits but no file of those names exists in the repository; the round-1 finding list in this dispatch could not be reconciled with any tracked record (see round1_record_check).",
+      "fix": "commit the review records (or their machine-readable verdicts) under evidence/reviews/."
+    },
+    {
+      "id": "R-10", "finding_layer": "source-defect", "severity": "low", "blocking": false,
+      "title": "replay.sh removes an --out directory it did not create",
+      "evidence": "replay.sh:94-95 sets created=True even when OUT already existed (empty); refuse() then shutil.rmtree(OUT). A pre-existing empty directory, or content written into it by another process after the listdir check, is deleted on any refusal (section 9 data safety).",
+      "fix": "created=True only when os.makedirs created the directory (or require OUT to be absent); rmtree only paths this run created."
+    },
+    {
+      "id": "R-11", "finding_layer": "source-defect", "severity": "low", "blocking": false,
+      "title": "locked.sh --out runs skip the orphan-writer fence",
+      "evidence": "locked.sh: 'if [ \"$MODE\" != out ] && [ \"$NESTED\" = 0 ]; then fence_orphans; fi'. A read through --out (replay id reads, export/dump out-mode) can start while a SIGKILLed predecessor's container still writes. SQLite read snapshots keep a single query consistent, so the practical risk is low; documenting the exception (or fencing) closes it.",
+      "fix": "fence in --out mode too, or document why a concurrent orphan writer is harmless for every --out caller."
+    }
+  ],
+  "not_findings_checked": [
+    "SQL injection: apply_ext.sh refuses quotes/backslash/newline in the DDL path; gate.sh takes view names only from the trusted reference, regex ^v_[a-z0-9_]+$ and is-a-view checked, and quotes them; locked.sh passes argv words, import-sql path restricted to .audit/out/*.sql without '..'; export.sh export_id interpolated from the DB copy is an INTEGER key. No injectable path found.",
+    "git tracking: git check-ignore -q docs/workable_items.db rc=1 (trackable); -journal, -wal, .bak-*, .register.lock, .audit/ ignored (rc=0). docs/workable_items.db does not exist in the working tree (not created by this review).",
+    "backup_db.sh: online .backup (not cp -al), checkpoint result checked, integrity_check on immutable URI, restore probe dump compared byte for byte, O_EXCL name, file removed on any failure/signal before the record is placed. No defect found; backups accumulate in docs/ with no retention rule (information only)."
+  ],
+  "mutations_attempted": [
+    {"id": "MY1", "target": "register_ext.sql", "change": "printf('%03d', seq) -> printf('%d', seq) (id format)", "in_author_set": false, "result": "KILLED: test_register_ext D29 (pass=183 fail=1), test_register_behaviour T1d (fail=8), test_gate (fail=6)"},
+    {"id": "MY2", "target": "gate.sh:81", "change": "grep -qx -- \"$row\" -> grep -q -- \"$row\" (substring cross-check)", "in_author_set": false, "result": "SURVIVED test_gate 126/0; reviewed as equivalent at system level (seed diff catches the same row), finding R-06"},
+    {"id": "MY3", "target": "gate.sh:153", "change": "skip the re-hash of tracker_receipt rows that cite a file", "in_author_set": false, "result": "SURVIVED test_gate 126/0: finding R-05"},
+    {"id": "PROBE-SEQ", "target": "register_ext.sql (behaviour probe, not a mutant)", "change": "explicit seq inserts 9,5,0,-3", "result": "all accepted, gate OK: finding R-01"},
+    {"id": "PROBE-REPLAY", "target": "replay.sh (verbatim logic extracted)", "change": "absent ids_snapshot / absent hash fields with control needles", "result": "absent fields read as safe: finding R-02"}
+  ],
+  "covers_runs": [
+    {"suite": "scripts/register/tests/test_register_ext.sh", "result": "pass=184 fail=0", "host_sqlite3": "3.50.6 (Android SDK copy)", "image_digest": "UNCONFIRMED (host run)"},
+    {"suite": "scripts/register/tests/test_register_behaviour.sh", "result": "pass=147 fail=0"},
+    {"suite": "scripts/register/tests/test_gate.sh", "result": "pass=126 fail=0"},
+    {"suite": "test_locked, test_backup_db, test_export, test_dump, test_replay, test_fix_r1/r2/r4", "result": "NOT RUN by this reviewer: they use podman (forbidden for this review); author transcripts only"}
+  ],
+  "scratch": "all runs used scratch DBs under the session scratchpad; docs/workable_items.db was not created; nothing committed",
+  "convergence_note": "WP-06 register ops have already run 4 fix rounds (WF10, WF13, WF15 + r4). R-02 is a surviving member of class C1 named in fix-r2-convergence-assessment.md; per 11.4.276(E) the next round should close the absent-field class over every journal consumer, not this instance only."
+}

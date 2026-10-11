@@ -28,7 +28,7 @@ SQ() { lk "$R" --out "$T_SCR/o$RANDOM" -- sqlite3 -readonly "file:/src/docs/s.db
 assert_eq "E8 two runs recorded two reg_export_runs rows, both OK" "$(SQ "select count(*)||':'||group_concat(distinct verdict) from reg_export_runs")" "2:OK"
 fps=$(SQ "select count(distinct db_fingerprint) from reg_export_runs"); assert_eq "E9 both runs recorded the same fingerprint (unchanged DB; the run's own rows are excluded)" "$fps" 1
 row=$(SQ "select length(db_fingerprint)||' '||engine_version||' '||container_image_digest from reg_export_runs limit 1")
-assert_eq "E10 fingerprint is 64 hex, engine version is the engine's .source.sha256, the image digest is recorded" "$row" "64 $(tr -d '\n' <"$ROOT/submodules/constitution/scripts/workable-items/bin/.source.sha256") $(grep -A4 '^- id: IMG-TESTUTIL$' "$RUNP_LOCK" | grep -o 'sha256:[0-9a-f]*' | head -1)"
+assert_eq "E10 fingerprint is 64 hex, engine version is the engine's .source.sha256, the image digest is recorded" "$row" "64 $(tr -d '\n' <"$ROOT/constitution/scripts/workable-items/bin/.source.sha256") $(grep -A4 '^- id: IMG-TESTUTIL$' "$RUNP_LOCK" | grep -o 'sha256:[0-9a-f]*' | head -1)"
 assert_eq "E11 each run has 5 written Markdown rows and 15 skipped sibling rows" "$(SQ "select status||':'||count(*) from reg_export_files where export_id=1 group by status order by status" | tr '\n' ' ')" "skipped_tool_absent:15 written:5 "
 assert_eq "E12 skipped rows: html/pdf/docx, the sentinel sha256 of zeros" "$(SQ "select count(*) from reg_export_files where status='skipped_tool_absent' and sha256=printf('%064d',0) and format in ('html','pdf','docx')")" 30
 ls "$D"/*.html "$D"/*.pdf "$D"/*.docx >/dev/null 2>&1 && bad "E13 a sibling file exists" || ok "E13 no HTML, PDF or DOCX file was faked"
@@ -54,7 +54,7 @@ ex --db docs/s.db --out-dir docs/register >/dev/null 2>&1; out=$(ex --check --db
 sha_before=$(fsha "$R/docs/s.db"); ex --check --db docs/s.db --out-dir docs/register >/dev/null 2>&1; assert_eq "E19 --check writes nothing: the database keeps its sha256" "$(fsha "$R/docs/s.db")" "$sha_before"
 echo "== diff gate: an engine diff that is not in sync records nothing =="
 R2=$(mkroot b); cdb "$R2" s.db; lk "$R2" -- sh -c "$(mint_cmd s.db)" >/dev/null 2>&1
-B2="$R2/submodules/constitution/scripts/workable-items/bin"; mv "$B2/workable-items-linux" "$B2/workable-items-real"
+B2="$R2/constitution/scripts/workable-items/bin"; mv "$B2/workable-items-linux" "$B2/workable-items-real"
 printf '#!/bin/sh\ncase "$1" in diff) echo "diff: DB and Markdown DIFFER (golden-bad engine stub)"; exit 1;; esac\nexec "$(dirname "$0")/workable-items-real" "$@"\n' >"$B2/workable-items-linux"; chmod +x "$B2/workable-items-linux"
 out=$(tool "$R2" "$EXPORT" --db docs/s.db --out-dir docs/register 2>&1); rc=$?
 [ $rc -eq 5 ] && printf '%s' "$out" | grep -q 'not in sync' && ok "E20 an engine diff that is not in sync: exit 5" || bad "E20 rc=$rc [$out]"

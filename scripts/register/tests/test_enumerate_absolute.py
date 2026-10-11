@@ -16,7 +16,7 @@ sys.path.insert(0, HERE)
 import wp20_fixture as F
 ENUM = os.environ.get("ENUMERATE_SOURCES", os.path.join(REG, "enumerate_sources.py"))
 APPLY = os.path.join(REG, "apply_ext.sh")
-os.environ.setdefault("WI", os.path.join(ROOT, "submodules/constitution/scripts/workable-items/bin/workable-items-linux"))
+os.environ.setdefault("WI", os.path.join(ROOT, "constitution/scripts/workable-items/bin/workable-items-linux"))
 FAILS = 0
 SCHEMA = ("CREATE TABLE reg_sources(source_id INTEGER PRIMARY KEY, kind TEXT, locator TEXT UNIQUE, parser TEXT, content_sha256 TEXT, last_scanned_at TEXT, scanned_entry_count INT);"
           "CREATE TABLE reg_source_entries(entry_id INTEGER PRIMARY KEY, source_id INT, locator TEXT, legacy_id TEXT, title TEXT, raw_status TEXT, raw_severity TEXT, entry_sha256 TEXT, scanned_at TEXT, UNIQUE(source_id,locator));")

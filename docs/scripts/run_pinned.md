@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-08 |
-| Last modified | 2026-10-08T12:00:00Z |
+| Last modified | 2026-10-08T15:30:00Z |
 | Status | tracked script (T007), guide written by T009; independent review owed (constitution 11.4.142) |
 | Source | `scripts/containers/run_pinned.sh`; test `scripts/containers/tests/test_run_pinned.sh` (T003); disk gate `scripts/containers/disk_headroom.sh` ([guide](disk_headroom.md)); lock file `build/containers/images.lock.yaml` |
 | Evidence | `specs/001-full-project-audit-remediation/evidence/wp09/` (README, `runp-*` records, `mutation.txt`); reuse check `containers-run-primitive.md` |
@@ -27,7 +27,7 @@ scripts/containers/run_pinned.sh [--rw docs|.audit/scratch] [--out DIR] [--netwo
 |---|---|
 | `IMG-ID` | id of a lock entry (`$RUNP_LOCK`, default `build/containers/images.lock.yaml`) |
 | `--rw V` | one extra writable bind, exactly `docs` or `.audit/scratch`, at most once; the source must be a real directory (no symlink component) |
-| `--out DIR` | output directory mounted at `/out:rw`; absolute; default `$PWD/.audit/out/<op_id>/`; inside the tree only under the sanctioned roots |
+| `--out DIR` | output directory mounted at `/out:rw`; absolute; default `$PWD/.audit/out/<op_id>/`. A closed set (round 8, R-1), judged on the resolved path: inside or above the tree only STRICTLY BELOW `.audit/out`, `.audit/scratch` or `specs/001-full-project-audit-remediation/evidence/wpNN*/.../smoke-out` (never the evidence tree, its `reviews/` verdict tree or `SHA256SUMS`: `out_dir_in_source`); disjoint from the tree only strictly below `/tmp` or `/var/tmp` (`TMPDIR` only in a declared test run: `out_dir_not_sanctioned`) |
 | `--network=none` | no network in the container |
 | `--need BYTES` | bytes the run needs for the disk gate (default the lock entry size) |
 | `--op-id ID` | operation id (label `catalogizer.op_id`, disk record name) |
@@ -45,6 +45,13 @@ user = host uid:gid (override `RUNP_USER`), `--pull=never`, labels `project=cata
 | `RUNP_USER` | `uid:gid` of the container user |
 | `RUNP_TEST_MODE=1` | enables the two test hooks `RUNP_MEMINFO` and `RUNP_ULIMIT_U`; the hooks are refused without it |
 | `DISK_HEADROOM_OUT_DIR` | inherited by the disk gate |
+| `DISK_HEADROOM_CONF`, `DISK_HEADROOM_REPO_ROOT`, `EV`, `CPA_HOST_ENTRY`, `DISK_HEADROOM_TEST_MODE` | scrubbed: never forwarded to the disk gate, so an exported variable cannot lift the 12.9 floor through this launcher (round 8, R-2) |
+| `XDG_STATE_HOME`, `HOME` | locate the secret-store directory; with both unset or empty the run is refused `state_dir_unresolvable` (R-8) |
+| `TMPDIR` | counts as an `--out` root only with `RUNP_TEST_MODE=1` |
+
+`--rw`, `--out`, `--need` and `--op-id` may each be given once; a repeat is a usage error (exit 2, R-5). The test suite asserts the WHOLE composed argv
+(exact golden for four invocation shapes, print mode and the podman shim) and kills reviewer mutants that add `--privileged`, `--cap-add=ALL`,
+`--security-opt label=disable`, `--network=host` or a host-root mount (R-3).
 
 Limits: `memory = min(0.60*MemTotal, MemAvailable - max(4 GiB, 0.15*MemTotal))`, `memory-swap = memory`, `cpus = min(2, 0.60*nproc)`,
 `pids-limit = min(2048, min(8192, ulimit -u / 2))`, until a measured envelope exists.

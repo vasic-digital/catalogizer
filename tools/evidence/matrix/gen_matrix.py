@@ -9,7 +9,9 @@ Usage:
   --out            directory receiving coverage-matrix.json and coverage-matrix.md (the 11.4.44 revision header, one final newline, no trailing
                    whitespace: an `$EV/**/*.md` file is class `source` of the commit-push table, docs/05 13.1)
   --ledger         the evidence ledger AS tools/evidence/evrec WRITES it (JSONL, hash-chained, schema ev/1). Its chain is walked FIRST (evcore.chain_walk: a deleted, forged,
-                   reordered or truncated line refuses the whole ledger, exit 3 `ledger_chain_invalid`); no cell is judged from a ledger that does not verify.
+                   reordered or truncated line refuses the whole ledger, exit 3 `ledger_chain_invalid`), then its anchors are compared with the same function `verify` uses
+                   (evcore.anchor_gate: no anchor row, a disagreeing anchor or a `mechanism` row refuses it, exit 3 `ledger_anchor_invalid`; write the anchor with `evrec end-session`);
+                   no cell is judged from a ledger that does not verify.
   --cell-items     JSON object {"<component>|<type>": "<register item id>"}: the register export that says which evidence item stands for which applicable cell. A key that names no
                    component or type of the map is refused (exit 3 `cell_items_unmatched`: a typo would leave the cell `absent` for the wrong reason). The 13.1 status of a cell is
                    `present` only when the verdict DERIVED by tools/evidence/evverdict for its item is PASS (a RED that failed, three identical GREENs, in the cycle after the last cutting
@@ -142,6 +144,10 @@ def ledger_context(path, cell_items, comps):
         entries, _head = evcore.chain_walk(path)
     except evcore.Refuse as r:
         die(3, "ledger_chain_invalid: %s: %s (no cell is judged from a ledger that does not verify)" % (r.reason, r.detail))
+    try:
+        evcore.anchor_gate(path, False, entries)             # WP-05 review R1, R5: the chain alone is satisfied by delete-and-recompute and by a tail truncation
+    except evcore.Refuse as r:
+        die(3, "ledger_anchor_invalid: %s: %s (no cell is judged from a ledger that no anchor vouches for)" % (r.reason, r.detail))
     return entries, os.path.join(os.path.dirname(os.path.abspath(path)), "blobs")
 
 

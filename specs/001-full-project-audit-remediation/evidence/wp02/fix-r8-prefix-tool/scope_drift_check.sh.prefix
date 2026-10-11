@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# scope_drift_check.sh - WP-02 (review F4/F5, 11.4.274): one command that proves the rendered index scope has not drifted from its DATA source.
+#
+# Purpose   Run the three decidable freshness checks and write a machine report that scripts/audit/index_health.sh reads (--drift-report):
+#           scope_render_check          scope_render.py --check: codegraph.json and the delimited .gitignore block equal a fresh render of scope.yaml
+#           scope_to_lumen_json_check   scope_to_lumen_json.py --check: config/index/lumen_scope.json equals its re-derivation from COMMITTED inputs
+#                                       (scope.yaml, lumen_allow_roots.yaml next to it, the submodules TSV), no scratch merge
+#           lumenignore_fresh           the committed .lumenignore is byte-identical to gen_lumenignore.py re-rendered from lumen_scope.json
+#                                       (a new top-level directory or a scope change that was not re-rendered makes this FAIL). Round 9 (review
+#                                       N3): the render reads a SKELETON of the TRACKED tree (lumenignore_skeleton.py: git ls-files plus a fixed
+#                                       host-local list .git .claude .remember), never the live directory, so untracked host-local directories
+#                                       (a stray test directory, prev3, reports) do not change it and a fresh clone renders the same file.
+#           The report is the object {schema: scope-drift/1, head, scope_sha256, lumen_scope_sha256, lumenignore_sha256, checks:[{check,rc}]}: the
+#           sha256 of the three files it judged and the HEAD it ran on, so index_health.sh can refuse a report for another scope (review N2).
+# Usage     scope_drift_check.sh --out REPORT.json [--fresh-out FILE] [--regen] [--repo DIR] [--scope FILE] [--lumen-json FILE]
+#                                [--submodules-tsv FILE] [--lumenignore FILE]
+#           --regen   rewrite --lumenignore from lumen_scope.json through gen_lumenignore.py (the ONLY sanctioned way to change that file), then check
+#           --fresh-out FILE   keep the fresh render (the --lumenignore-fresh input of index_health.sh)
+# Env       SCOPE_RENDER, STJ, GEN_LUMENIGNORE, LUMEN_SKELETON override the tools (the test points them at stubs).
+# Exit      0 = every check rc 0; 1 = at least one check differs (report still written); 2 = usage; 3 = a tool is absent (report records rc 127).
+# Side effects  writes --out (and --fresh-out, and --lumenignore with --regen). Read-only otherwise; never runs an index writer.
+set -u
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="" SCOPE="config/index/scope.yaml" LJ="config/index/lumen_scope.json"
+TSV="specs/001-full-project-audit-remediation/audit/submodules.tsv" LI=".lumenignore" OUT="" FRESH="" REGEN=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --out) OUT="${2:-}"; shift 2 ;; --fresh-out) FRESH="${2:-}"; shift 2 ;; --regen) REGEN=1; shift ;;
+    --repo) REPO="${2:-}"; shift 2 ;; --scope) SCOPE="${2:-}"; shift 2 ;; --lumen-json) LJ="${2:-}"; shift 2 ;;
+    --submodules-tsv) TSV="${2:-}"; shift 2 ;; --lumenignore) LI="${2:-}"; shift 2 ;;
+    *) echo "scope_drift_check: unknown option $1" >&2; exit 2 ;;
+  esac
+done
+[ -n "$OUT" ] || { echo "scope_drift_check: --out is required" >&2; exit 2; }
+[ -n "$REPO" ] || REPO="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "scope_drift_check: not in a git work tree and no --repo" >&2; exit 2; }
+cd "$REPO" || exit 2
+SR="${SCOPE_RENDER:-submodules/constitution/scripts/codegraph/scope_render.py}"
+STJ="${STJ:-scripts/audit/scope_to_lumen_json.py}"
+GL="${GEN_LUMENIGNORE:-submodules/constitution/scripts/lumen/gen_lumenignore.py}"
+SK="${LUMEN_SKELETON:-$SELF_DIR/lumenignore_skeleton.py}"
+T="$(mktemp -d "${TMPDIR:-/tmp}/scope_drift.XXXXXX")" || exit 2; trap 'rm -rf "$T"' EXIT
+ABSENT=0
+run() {  # run <name> <cmd...> -> sets RC, appends to the rows
+  local name="$1"; shift
+  if [ ! -f "$2" ]; then RC=127; ABSENT=1; echo "scope_drift_check: $name: tool absent: $2" >&2
+  else "$@" >"$T/$name.out" 2>"$T/$name.err"; RC=$?; fi
+  printf '%s\t%s\n' "$name" "$RC" >> "$T/rows"
+}
+: > "$T/rows"
+run scope_render_check python3 "$SR" --scope "$SCOPE" --root . --check
+run scope_to_lumen_json_check python3 "$STJ" --scope "$SCOPE" --submodules-tsv "$TSV" --check "$LJ"
+if [ -f "$GL" ] && [ -f "$SK" ]; then
+  python3 "$SK" --repo . --scope "$LJ" --out "$T/skel" >"$T/sk.out" 2>"$T/sk.err"; GRC=$?
+  if [ "$GRC" -eq 0 ]; then python3 "$GL" --repo "$T/skel" --scope "$LJ" --out "$T/fresh.lumenignore" >"$T/gl.out" 2>"$T/gl.err"; GRC=$?; fi
+  [ ! -s "$T/sk.err" ] || sed "s/^/lumenignore_skeleton: /" "$T/sk.err" >&2
+elif [ -f "$GL" ]; then GRC=127; ABSENT=1; echo "scope_drift_check: lumenignore_skeleton.py absent: $SK" >&2; : > "$T/fresh.lumenignore"
+else GRC=127; ABSENT=1; echo "scope_drift_check: gen_lumenignore.py absent: $GL" >&2; : > "$T/fresh.lumenignore"; fi
+if [ "$GRC" -eq 0 ] && [ "$REGEN" -eq 1 ]; then cp "$T/fresh.lumenignore" "$LI"; fi
+if [ "$GRC" -ne 0 ]; then RC=$GRC
+elif [ -s "$T/fresh.lumenignore" ] && cmp -s "$T/fresh.lumenignore" "$LI"; then RC=0
+else RC=1; fi
+printf '%s\t%s\n' lumenignore_fresh "$RC" >> "$T/rows"
+[ -z "$FRESH" ] || cp "$T/fresh.lumenignore" "$FRESH"
+HEAD_ID="$(git rev-parse --verify -q HEAD 2>/dev/null || echo unborn)"
+python3 - "$T/rows" "$OUT" "$HEAD_ID" "$SCOPE" "$LJ" "$LI" <<'PY' || exit 2
+import hashlib, json, sys
+rows = [l.rstrip("\n").split("\t") for l in open(sys.argv[1]) if l.strip()]
+def sha(p):
+    try:
+        return hashlib.sha256(open(p, "rb").read()).hexdigest()
+    except OSError:
+        return "0" * 64   # an unreadable file is bound as the zero digest, which no real file has: the consumer's comparison then differs
+doc = {"schema": "scope-drift/1", "head": sys.argv[3], "scope_sha256": sha(sys.argv[4]), "lumen_scope_sha256": sha(sys.argv[5]),
+       "lumenignore_sha256": sha(sys.argv[6]), "checks": [{"check": n, "rc": int(rc)} for n, rc in rows]}
+json.dump(doc, open(sys.argv[2], "w"), indent=2, sort_keys=True)
+open(sys.argv[2], "a").write("\n")
+PY
+for n in scope_render_check scope_to_lumen_json_check; do [ ! -s "$T/$n.err" ] || sed "s/^/$n: /" "$T/$n.err" >&2; done
+BAD="$(awk -F'\t' '$2!=0' "$T/rows" | wc -l)"
+[ "$ABSENT" -eq 0 ] || exit 3
+[ "$BAD" -eq 0 ]

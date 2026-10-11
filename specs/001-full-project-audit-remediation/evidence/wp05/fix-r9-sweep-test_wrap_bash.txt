@@ -1,0 +1,25 @@
+ok   recorded pass (PASS:, ok and SKIP: lines, summary agrees)
+ok   recorded seeded failure
+ok   a FAIL line wins over a summary that says FAIL=0 and over exit 0
+ok   death under set -e: no FAIL line, no summary, exit 1 is still a failure
+ok   zero tests and exit 0 is an error, not a pass
+ok   a lost line (summary counts 3, two seen) is a failure
+ok   a summary that reports a failure the lines do not show fails
+ok   TAP style 'not ok' counts as a failure
+ok   a TAP plan larger than the lines seen is a failure
+ok   ANSI colour around a result line does not hide it
+ok   --rc missing with --from-report is refused as unknown (no outcome claimed from lines alone when the exit is unknown)
+ok   an empty report with exit 0 is an error
+ok   no --run-token is refused (run_token_missing)
+ok   a malformed --run-token is refused (run_token_malformed)
+ok   live: seeded pass
+ok   live: seeded failure
+ok   live: liar
+ok   live: silent death
+ok   live: no tests
+ok   live: a command that does not exist is an error (126), never a test failure
+ok   live: the refusal names runner_not_executable
+ok   live: EVREC_RUN_TOKEN is exported to the test
+ok   live: the test's own output carries the token after the raw marker
+ok   live: the wrapper does not print the token in its summary
+checks=24 failures=0

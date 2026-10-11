@@ -6,7 +6,7 @@
 # tests run with the host sqlite3 and the committed engine binary. The identity header says so.
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)
 REG_DIR="$ROOT/scripts/register"
-WI=${WI:-$ROOT/submodules/constitution/scripts/workable-items/bin/workable-items-linux}
+WI=${WI:-$ROOT/constitution/scripts/workable-items/bin/workable-items-linux}
 SQLITE3=${SQLITE3:-sqlite3}
 PASS=0; FAIL=0
 T_SCR=$(mktemp -d "${REG_SCRATCH:-${TMPDIR:-/tmp}}/regtest.XXXXXX")

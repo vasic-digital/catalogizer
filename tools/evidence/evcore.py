@@ -9,14 +9,16 @@ without entry_hash)); prev_hash of seq 1 is 64 zeros; canonical JSON = keys sort
 
 Exit codes (named reasons are printed on stderr as `reason=<name>`):
   verify  0 verified, 1 chain / blob / schema failure or run_token_reused, 2 anchor disagreement (T055: anchor_disagrees,
-          anchor_inconsistent), 3 unverifiable (blob missing, anchor unreadable / malformed / mechanism without probe evidence,
-          ledger absent or empty), 64 usage_error (docs/06 section 8)
+          anchor_inconsistent), 3 unverifiable (blob missing, anchor ABSENT or empty (anchor_absent, review R1), anchor unreadable /
+          malformed / any `mechanism` row, ledger absent or empty), 64 usage_error (docs/06 section 8). `verify --chain-only` is the
+          explicit opt-in that walks the chain without requiring an anchor: it exits 0 but prints CHAIN-ONLY and never "OK" or "verified".
   evrec   0 done, 64 usage_error, 65 record_invalid, 66 ledger_inconsistent, 67 schema_unavailable,
           68 side_unverifiable / no_common_prefix / map_incomplete (rerecord, remap-refs),
           69 interpreter_without_test_sources (docs/06 rule 11), 70 out_is_shared_store (rerecord --out guard),
           75 lock_held, 76 commit_turn_held, 77 target_unreadable
           anchor (T055): 1 / 3 the ledger does not verify, 2 existing anchor rows disagree, 64 usage_error / probe_needs_scratch_remote /
           probe_remote_not_local, 71 strength_unproven
+          end-session (review R2): `evrec anchor` with no options; `evrec run ... --anchor-after` anchors right after the entry it records
           token (T051a): prints a fresh random 128-bit hex run token (see the run-token notes below)
 """
 import datetime
@@ -847,7 +849,7 @@ def _stall_for_test(led):
 _FLAGS = {"--oracle": "oracle", "--evidence-class": "evidence_class", "--precondition-provenance": "pp",
           "--mutation-json": "mutation", "--container-image-digest": "digest", "--test-source": "test_source",
           "--test-state-go": "state_go"}
-_BOOLS = {"--closes-item": "closes", "--pre-release": "pre_release", "--oracle-independent": "independent"}
+_BOOLS = {"--closes-item": "closes", "--pre-release": "pre_release", "--oracle-independent": "independent", "--anchor-after": "anchor_after"}
 _USAGE = "evrec run ITEM POLARITY ITER CLASS REF [opts] -- argv..."
 
 
@@ -921,6 +923,10 @@ def cmd_run(args):
     lock_timeout()
     owed_relocations({})                                  # validates EV_BLOB_BOUND now, not after the entry is written
     commit_turn_check(allow_reap=True, where="pre_run")   # before anything is written (or run)
+    ap = anchor_path()
+    if os.path.exists(ap) and (os.path.isdir(ap) or os.path.getsize(ap) > 0):    # nothing to contradict without an anchor (and a scratch tree without evanchor.py still runs)
+        import evanchor
+        evanchor.precheck(ledger_path(), ap)              # re-review WP-05-r2 F3: never chain new evidence onto a ledger its own anchor contradicts
 
     reds = redactions()
     sources = list(opts["test_source"]) + [s for s in os.environ.get("EV_TEST_SOURCES", "").split() if s]
@@ -998,10 +1004,23 @@ def cmd_run(args):
     print("recorded seq=%d item=%s pol=%s it=%s exit=%d verdict=%s" % (done["seq"], item, polarity, it, rc, done["verdict"]))
     for line in owed_relocations({done["stdout_sha256"]: len(out), done["stderr_sha256"]: len(err)}):
         print(line)
+    if opts.get("anchor_after"):                         # review R2: the end-of-session anchor of docs/06 s8, taken right after this entry
+        try:
+            return cmd_anchor([])
+        except Refuse as e:
+            raise Refuse(e.reason, e.code, "%s (the entry above WAS recorded; the anchor was NOT written)" % e.detail)
     return 0
 
 
 # ----------------------------------------------------------------------------- check-record / reconcile
+
+def cmd_end_session(args):
+    """`evrec end-session`: the end-of-session anchor (docs/06 s8: an anchor is written at the end of every measuring session). It is `evrec anchor`
+    with no options: the achievable strength here is `policy` (review R3), so no strength or probe argument exists on this path."""
+    if args:
+        raise Refuse("usage_error", 64, "evrec end-session takes no arguments (it appends a policy anchor over the current ledger head)")
+    return cmd_anchor([])
+
 
 def cmd_anchor(args):
     import evanchor                      # imported on use: the other commands never need the module (scratch trees that copy only evcore.py still run them)
@@ -1178,17 +1197,44 @@ def ledger_bound():
     return class_bound("evidence-ledger", "large_file", "EV_LEDGER_BOUND", DEFAULT_BOUND)
 
 
+def anchor_file(led, default):
+    """The anchors file that belongs to a ledger: EV_ANCHOR, else the one beside the default ledger, else the one beside an explicit --ledger."""
+    return anchor_path() if default or os.environ.get("EV_ANCHOR") else os.path.join(os.path.dirname(os.path.abspath(led)), "anchors.jsonl")
+
+
+def anchor_gate(led, default, entries, chain_only=False):
+    """The ONE anchor comparison of every reader that judges from the ledger (verify, the verdict deriver; review R1, R5). Returns (rows, newest).
+    An anchors file that is absent or holds no row is UNVERIFIED `anchor_absent` (exit 3): a chain walk alone is satisfied by delete-and-recompute and by
+    a tail truncation (docs/06 s7), so 'no anchor' must never read as 'verified' (11.4.268 C, D; docs/06 s13.3 rev 1). `chain_only=True` is the explicit
+    opt-in of a caller that wants the chain alone: it returns (None, None) for an absent or empty anchors file and says so, but a PRESENT anchor is
+    still compared in full (the opt-in never switches an existing anchor off)."""
+    a = anchor_file(led, default)
+    rows = newest = None
+    if os.path.exists(a) and (os.path.isdir(a) or os.path.getsize(a) > 0):
+        import evanchor
+        rows, newest = evanchor.verify_anchors(a, entries)
+    if newest is None and not chain_only:
+        raise Refuse("anchor_absent", 3, "no anchor row at %s: the chain was walked but NOT compared with any anchor, so a delete-and-recompute or a tail "
+                     "truncation would pass: UNVERIFIED (write one with `evrec end-session`; `verify --chain-only` is the explicit chain-only opt-in)" % a)
+    return rows, newest
+
+
 def cmd_verify(args):
     led = blobs = None
+    chain_only = False
     i = 0
     while i < len(args):
         a = args[i]
+        if a == "--chain-only" and not chain_only:
+            chain_only = True
+            i += 1
+            continue
         if a == "--ledger" and led is None and i + 1 < len(args) and not args[i + 1].startswith("--"):
             led = args[i + 1]
         elif a == "--blobs" and blobs is None and i + 1 < len(args) and not args[i + 1].startswith("--"):
             blobs = args[i + 1]
         else:
-            raise Refuse("usage_error", 64, "verify [--ledger FILE] [--blobs DIR]; refused argument %r" % a)
+            raise Refuse("usage_error", 64, "verify [--chain-only] [--ledger FILE] [--blobs DIR]; refused argument %r" % a)
         i += 2
     default = led is None
     led = led or ledger_path()
@@ -1210,17 +1256,14 @@ def cmd_verify(args):
         t, s = sorted(reused.items())[0]
         raise Refuse("run_token_reused", 1, "run token %s... is carried by %d entries (seq %s): a token names ONE run; a reused token is the "
                      "stale-state bluff (T051a)" % (t[:8], len(s), ",".join(map(str, s[:6]))))
-    a = anchor_path() if default or os.environ.get("EV_ANCHOR") else os.path.join(os.path.dirname(os.path.abspath(led)), "anchors.jsonl")
-    arows = newest = None
-    if os.path.exists(a) and (os.path.isdir(a) or os.path.getsize(a) > 0):
-        import evanchor
-        arows, newest = evanchor.verify_anchors(a, entries)
+    arows, newest = anchor_gate(led, default, entries, chain_only)
     if newest is not None:
+        import evanchor
         print("OK chain=%d entries head=%s (chain, ev/1 schema, canonical form, blobs and anchor verified)" % (len(entries), head[:12]))
         print(evanchor.describe(arows, newest))
     else:
-        print("OK chain=%d entries head=%s (chain, ev/1 schema, canonical form and blobs verified)" % (len(entries), head[:12]))
-        print("note: no anchor compared (T055); chain-only verification")
+        print("CHAIN-ONLY chain=%d entries head=%s: the chain, ev/1 schema, canonical form and blobs verify but NO anchor was compared; "
+              "this ledger is NOT verified against an anchor (a delete-and-recompute or a tail truncation would pass)" % (len(entries), head[:12]))
     flake = os.environ.get("EV_FLAKE_LEDGER") or os.path.join(os.path.dirname(led), "flake_ledger.jsonl")
     for p in (led, flake):
         if os.path.exists(p):
@@ -1414,7 +1457,7 @@ def cmd_remap_refs(args):
 
 def evrec_main(argv):
     cmds = {"run": cmd_run, "check-record": cmd_check_record, "reconcile": cmd_reconcile,
-            "rerecord": cmd_rerecord, "remap-refs": cmd_remap_refs, "token": cmd_token, "anchor": cmd_anchor}
+            "rerecord": cmd_rerecord, "remap-refs": cmd_remap_refs, "token": cmd_token, "anchor": cmd_anchor, "end-session": cmd_end_session}
     try:
         if not argv or argv[0] not in cmds:
             raise Refuse("usage_error", 64, "evrec {%s} ..." % "|".join(cmds))

@@ -55,7 +55,10 @@ if [ "$ur" -eq 0 ] && [ -n "$u" ]; then
 else UL=$(errn "ulimit -u unreadable"); fi
 
 # cgroup version
-if [ -f "$CGCTL" ]; then CG=$(pnum 2); elif [ -d "$CGROOT" ]; then CG=$(pnum 1); else CG=$(errn "$CGROOT unreadable"); fi   # MUT:cgroup
+# v2 = the unified hierarchy's cgroup.controllers file; v1 (or hybrid) = a real v1 controller FILE. A bare directory (an unmounted mount point, any
+# non-cgroup directory) is no evidence of either: error, never a version (round 8, R-6; 11.4.201: assert the real condition).
+cg_v1() { local f; for f in memory/memory.limit_in_bytes cpu/cpu.shares cpu,cpuacct/cpu.shares cpuacct/cpuacct.usage pids/pids.max blkio/blkio.weight; do [ -f "$CGROOT/$f" ] && return 0; done; return 1; }
+if [ -f "$CGCTL" ]; then CG=$(pnum 2); elif cg_v1; then CG=$(pnum 1); elif [ -d "$CGROOT" ]; then CG=$(errn "$CGROOT exists but holds neither cgroup.controllers (v2) nor a cgroup v1 controller file (unmounted or not a cgroup hierarchy)"); else CG=$(errn "$CGROOT unreadable"); fi   # MUT:cgroup
 
 # rootless: effective uid
 PUID="${PROBE_UID:-$(id -u)}"

@@ -37,7 +37,8 @@ subc() { # subc <cpa|hand|held|pushed> : a commit in the submodule, then the mai
   echo "$kind $RANDOM" > "$d/x.txt"; git -C "$d" add x.txt
   case "$kind" in
     cpa|pushed) git -C "$d" commit -q -m "sub change" -m "CPA-Run: $RID"; printf 'sub\t%s\t%s\n' "$(git -C "$d" rev-parse HEAD)" "$RID" >> "$A/$RID/commits.tsv" ;;
-    held) git -C "$d" commit -q -m "sub change" -m "CPA-Run: $RID" -m "Awaits-Review: reviews/none.json"; printf 'sub\t%s\t%s\n' "$(git -C "$d" rev-parse HEAD)" "$RID" >> "$A/$RID/commits.tsv" ;;
+    held) git -C "$d" commit -q -m "sub change" -m "CPA-Run: $RID
+Awaits-Review: reviews/none.json"; printf 'sub\t%s\t%s\n' "$(git -C "$d" rev-parse HEAD)" "$RID" >> "$A/$RID/commits.tsv" ;;
     hand) git -C "$d" commit -q -m "hand commit, no CPA trailer" ;;
   esac
   [ "$kind" != pushed ] || git -C "$d" push -q origin main

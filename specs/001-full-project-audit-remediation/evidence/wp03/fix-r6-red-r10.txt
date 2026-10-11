@@ -1,0 +1,45 @@
+IDENTITY test=8fe7d0cf3d111e8dd8b6c6bfe0a71965b2d4f1b6cf661a1d59036d62988637f1 verifier=b1eef321954907a7b34d3625927c2680af6b4dccc1ea6c2f7541257ba5584f0a head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=anton git=2.53.0 jq=jq-1.8.1 utc=2026-10-08T15:21:18Z
+ok   P07.1 control: plain git is-ancestor is FOOLED by the forged graph (generation v1): rc 0 = the fixture is live (=0)
+ok   P07.1 control: with core.commitGraph=false the truth is rc 1 (=1)
+FAIL P07.1 forged interior commit-graph (v1): exit 12 DIVERGED, never 0 (got '0', want '12')
+FAIL P07.1 the class is DIVERGED (got 'LOCAL-BEHIND', want 'DIVERGED')
+ok   P07.2 control: plain git is-ancestor is FOOLED by the forged graph (generation v2): rc 0 = the fixture is live (=0)
+ok   P07.2 control: with core.commitGraph=false the truth is rc 1 (=1)
+FAIL P07.2 forged interior commit-graph (v2): exit 12 DIVERGED, never 0 (got '0', want '12')
+FAIL P07.2 the class is DIVERGED (got 'LOCAL-BEHIND', want 'DIVERGED')
+ok   P09 forged commit-graph, tip commit: exit 12 (=12)
+FAIL P10 repository core.commitGraph=true cannot re-enable the forged graph: exit 12 (got '0', want '12')
+ok   P22 control: plain git reports clean (the include hides u: the fixture is live)
+ok   P22 control: --local --get does NOT see the included value (why the old code missed it)
+FAIL P22 include.path in .git/config: exit 13 (got '0', want '13')
+FAIL P22 u counted (got '0', want '1')
+FAIL P22 the refusal does not name u: 
+ok   P23 control: plain git reports clean (includeIf matched)
+FAIL P23 includeIf gitdir: exit 13 (got '0', want '13')
+ok   P24 control: plain git reports clean (config.worktree hides u)
+FAIL P24 config.worktree core.excludesFile: exit 13 (got '0', want '13')
+ok   P25 control: a global-config include hides u from plain git
+ok   P25 golden-false: the excludes file reached through the GLOBAL config (include) is global: exit 0 (=0)
+ok   P27 control: the repository value replaces the global one, git shows u
+ok   P27 a repository core.excludesFile naming a file that does not exist hides nothing: exit 13 (u visible to git too) (=13)
+ok   P28 control: the caller env hides u from plain git
+ok   P28 caller GIT_CONFIG_COUNT/KEY/VALUE excludes: exit 13 (=13)
+ok   P40 direct run with a hostile caller environment: exit 12 (=12)
+ok   P40 control: the non -p shim saw 28 git calls
+FAIL P40 no child saw BASH_ENV (got '28', want '0')
+FAIL P44 no child saw ENV (got '28', want '0')
+FAIL P47 no child saw an exported function git (got '28', want '0')
+FAIL P40 the caller's BASH_ENV file never ran in a direct run (got '28', want '0')
+ok   P45 interpreter invocation: exit 12 (=12)
+ok   P45 interpreter invocation: no child saw BASH_ENV (=0)
+ok   P45 the BASH_ENV file ran at most once (bash's own startup, which no script line can prevent; ran 1)
+ok   P48 direct run with SHELLOPTS=xtrace: exit 12 (=12)
+ok   P48 no child saw SHELLOPTS (=0)
+ok   VERIFY_PASS_ENV naming BASH_ENV still exit 12 (=12)
+FAIL VERIFY_PASS_ENV cannot re-admit BASH_ENV (got '28', want '0')
+FAIL VERIFY_PASS_ENV naming GIT_INDEX_FILE and GIT_DIR cannot re-admit them: exit 12 (got '20', want '12')
+ok   P13 control: unshallowed, two commits ahead: exit 11 (=11)
+ok   P13 a shallow file never gives a clean pass (exit 12)
+ok   P15 objects reached through objects/info/alternates: the diverged remote is exit 12
+ok   P30 BOUNDARY (stated, not a fix): core.fileMode=false hides a chmod; the verifier follows git: exit 0 (=0)
+SUMMARY pass=27 fail=16

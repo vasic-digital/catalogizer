@@ -1,0 +1,205 @@
+test_evrec_r7.sh: line 57: --: command not found
+test_evrec_r7.sh: line 57: _-: command not found
+ok   W7-1: after ESC[1m (bold): --password<space>V
+ok   W7-1: after ESC[1m (bold): --password<TAB>V
+ok   W7-1: after ESC[1m (bold): --token<space>V
+ok   W7-1: after ESC[1m (bold): --token<TAB>V
+ok   W7-1: after ESC[1m (bold): --api-key<space>V
+ok   W7-1: after ESC[1m (bold): --api-key<TAB>V
+ok   W7-1: after ESC[1m (bold): --secret<space>V
+ok   W7-1: after ESC[1m (bold): --secret<TAB>V
+ok   W7-1: after ESC[33m: --password<space>V
+ok   W7-1: after ESC[33m: --password<TAB>V
+ok   W7-1: after ESC[33m: --token<space>V
+ok   W7-1: after ESC[33m: --token<TAB>V
+ok   W7-1: after ESC[33m: --api-key<space>V
+ok   W7-1: after ESC[33m: --api-key<TAB>V
+ok   W7-1: after ESC[33m: --secret<space>V
+ok   W7-1: after ESC[33m: --secret<TAB>V
+ok   W7-1: after ESC[0m: --password<space>V
+ok   W7-1: after ESC[0m: --password<TAB>V
+ok   W7-1: after ESC[0m: --token<space>V
+ok   W7-1: after ESC[0m: --token<TAB>V
+ok   W7-1: after ESC[0m: --api-key<space>V
+ok   W7-1: after ESC[0m: --api-key<TAB>V
+ok   W7-1: after ESC[0m: --secret<space>V
+ok   W7-1: after ESC[0m: --secret<TAB>V
+ok   W7-1: after ESC[1;31m: --password<space>V
+ok   W7-1: after ESC[1;31m: --password<TAB>V
+ok   W7-1: after ESC[1;31m: --token<space>V
+ok   W7-1: after ESC[1;31m: --token<TAB>V
+ok   W7-1: after ESC[1;31m: --api-key<space>V
+ok   W7-1: after ESC[1;31m: --api-key<TAB>V
+ok   W7-1: after ESC[1;31m: --secret<space>V
+ok   W7-1: after ESC[1;31m: --secret<TAB>V
+ok   W7-1: after ESC[m: --password<space>V
+ok   W7-1: after ESC[m: --password<TAB>V
+ok   W7-1: after ESC[m: --token<space>V
+ok   W7-1: after ESC[m: --token<TAB>V
+ok   W7-1: after ESC[m: --api-key<space>V
+ok   W7-1: after ESC[m: --api-key<TAB>V
+ok   W7-1: after ESC[m: --secret<space>V
+ok   W7-1: after ESC[m: --secret<TAB>V
+ok   W7-1: after ESC[38;5;208m: --password<space>V
+ok   W7-1: after ESC[38;5;208m: --password<TAB>V
+ok   W7-1: after ESC[38;5;208m: --token<space>V
+ok   W7-1: after ESC[38;5;208m: --token<TAB>V
+ok   W7-1: after ESC[38;5;208m: --api-key<space>V
+ok   W7-1: after ESC[38;5;208m: --api-key<TAB>V
+ok   W7-1: after ESC[38;5;208m: --secret<space>V
+ok   W7-1: after ESC[38;5;208m: --secret<TAB>V
+ok   W7-1: after an alphanumeric char: --password<space>V
+ok   W7-1: after an alphanumeric char: --password<TAB>V
+ok   W7-1: after an alphanumeric char: --token<space>V
+ok   W7-1: after an alphanumeric char: --token<TAB>V
+ok   W7-1: after an alphanumeric char: --api-key<space>V
+ok   W7-1: after an alphanumeric char: --api-key<TAB>V
+ok   W7-1: after an alphanumeric char: --secret<space>V
+ok   W7-1: after an alphanumeric char: --secret<TAB>V
+ok   W7-1: after letters and digits: --password<space>V
+ok   W7-1: after letters and digits: --password<TAB>V
+ok   W7-1: after letters and digits: --token<space>V
+ok   W7-1: after letters and digits: --token<TAB>V
+ok   W7-1: after letters and digits: --api-key<space>V
+ok   W7-1: after letters and digits: --api-key<TAB>V
+ok   W7-1: after letters and digits: --secret<space>V
+ok   W7-1: after letters and digits: --secret<TAB>V
+ok   W7-1: after a dash: --password<space>V
+ok   W7-1: after a dash: --password<TAB>V
+ok   W7-1: after a dash: --token<space>V
+ok   W7-1: after a dash: --token<TAB>V
+ok   W7-1: after a dash: --api-key<space>V
+ok   W7-1: after a dash: --api-key<TAB>V
+ok   W7-1: after a dash: --secret<space>V
+ok   W7-1: after a dash: --secret<TAB>V
+ok   W7-1: after an underscore: --password<space>V
+ok   W7-1: after an underscore: --password<TAB>V
+ok   W7-1: after an underscore: --token<space>V
+ok   W7-1: after an underscore: --token<TAB>V
+ok   W7-1: after an underscore: --api-key<space>V
+ok   W7-1: after an underscore: --api-key<TAB>V
+ok   W7-1: after an underscore: --secret<space>V
+ok   W7-1: after an underscore: --secret<TAB>V
+ok   W7-1: after a long name: --password<space>V
+ok   W7-1: after a long name: --password<TAB>V
+ok   W7-1: after a long name: --token<space>V
+ok   W7-1: after a long name: --token<TAB>V
+ok   W7-1: after a long name: --api-key<space>V
+ok   W7-1: after a long name: --api-key<TAB>V
+ok   W7-1: after a long name: --secret<space>V
+ok   W7-1: after a long name: --secret<TAB>V
+ok   W7-1: single-dash flag, 128-char head
+ok   W7-1: single-dash flag, 128-char tail
+ok   W7-1: single-dash flag, 129-char head
+ok   W7-1: single-dash flag, 129-char tail
+ok   W7-1: single-dash flag, 5000-char head
+ok   W7-1: single-dash flag, 5000-char tail
+ok   W7-1: a_-password V
+ok   W7-1: x--password V (dash run before the flag)
+ok   W7-1: --password V alone
+ok   W7-1: -password V (single dash at the start)
+ok   W7-1: negative control, not redacted: reset-password link (a single dash after a letter, prose)
+ok   W7-1: negative control, not redacted: a flag with no credential word after a dash prefix
+ok   W7-1: negative control, not redacted: a credential flag whose value starts with a dash
+ok   W7-1: negative control, not redacted: ESC[1m then a flag with no credential word
+ok   W7-1: redact_bytes on 'x--' repeated (100000 bytes) returns in under 10 s (0.25 s)
+ok   W7-1: redact_bytes on '_-' repeated (100000 bytes) returns in under 10 s (0.23 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (100000 bytes) returns in under 10 s (0.23 s)
+ok   W7-1: redact_bytes on '--' repeated (100000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'x--' repeated (200000 bytes) returns in under 10 s (0.23 s)
+ok   W7-1: redact_bytes on '_-' repeated (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (200000 bytes) returns in under 10 s (0.22 s)
+ok   W7-1: redact_bytes on '--' repeated (200000 bytes) returns in under 10 s (0.23 s)
+ok   W7-1: redact_bytes on 'x--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '_-' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'a_-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--pas' repeated (a credential-word prefix) (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'x--passwor' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m--password ' repeated (400000 bytes) returns in under 10 s (0.34 s)
+ok   W7-1: redact_bytes on 'a--password ' repeated (400000 bytes) returns in under 10 s (0.34 s)
+ok   W7-1: redact_bytes on 'x--token' repeated, no separator (400000 bytes) returns in under 10 s (0.34 s)
+ok   W7-1: redact_bytes on '-a' repeated after a first '--' (400000 bytes) returns in under 10 s (0.33 s)
+ok   W7-1: redact_bytes on 'x-' repeated, a credential word at the end (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on 'ESC[1m' repeated (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: redact_bytes on '--a-' repeated, then 'token ' (400000 bytes) returns in under 10 s (0.32 s)
+ok   W7-1: end to end: an ANSI-coloured --password value is in no ledger line and no blob, redacted=true, verify exits 0
+ok   W7-2: a directory operand holding a file that reports st_size 0 but yields more bytes than the cap is refused on a RED
+ok   W7-2: the same directory under the byte cap is accepted
+ok   W7-2: the same directory over the byte cap on a PROBE is skipped, not refused
+ok   W7-2: two size-0 files that each fit under the cap but together exceed it are refused (the read-time count is cumulative)
+ok   W7-2: one such file under the same cap is accepted
+ok   W7-2: a 5000-byte file with a budget of 1000 raises too_large while reading
+ok   W7-2: a budget equal to the size hashes the file
+ok   W7-2: a budget one byte under the size raises too_large
+ok   W7-5: three 600-byte files with a 1000-byte cap (each under the cap, the sum over it) are refused on a RED
+ok   W7-5: a directory whose total is under the 1000-byte cap is accepted
+ok   W7-2: a 4 GiB mode-000 file in a directory operand is refused as too large by the st_size fast path (before any open)
+ok   W7-5: three mode-000 600-byte files with a 1000-byte cap are refused as too large by the CUMULATIVE st_size count (before any open)
+ok   W7-3: a 4 GiB plain file operand is refused by the DEFAULT byte cap on a RED (operand_file_too_large)
+ok   W7-3: the same file through --input=FILE is refused too
+ok   W7-3: both refusals together took 0 s (under 10 s, the file was not hashed)
+ok   W7-3: the same plain operand on a PROBE is skipped, not refused
+ok   W7-3: a 2000-byte plain operand with EVREC_OPERAND_DIR_BYTES_MAX=1000 is refused on a GREEN
+ok   W7-3: a small plain operand under the cap still records on a RED
+ok   W7-3: a plain procfs operand (st_size 0) over the cap is refused by the read-time count
+ok   W7-4: a mode-000 plain file operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same operand on a PROBE is skipped
+ok   W7-4: a mode-000 file inside a directory operand is refused on a RED (operand_unreadable, 69)
+ok   W7-4: an execute-only directory operand (the runner can run t.sh by name, evrec cannot list it) is refused on a RED (operand_unreadable, 69)
+ok   W7-4: the same execute-only directory on a GREEN is refused too
+ok   W7-4: the execute-only directory on a PROBE is skipped
+ok   W7-4: a TARGET directory with an unlistable sub-directory is refused (target_unreadable, 77), not fingerprinted without it
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_MAX set to the empty string is the default (records)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5\  is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=\ 5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1_000 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=+5 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=٥ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=１ is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=007 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0x10 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=1e3 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5.0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=-0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=0 is a usage_error (64)
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=5 records
+ok   W7-8: EVREC_OPERAND_DIR_BYTES_MAX=99999999999999999999 (a large positive integer) records
+ok   W7-5: EVREC_OPERAND_DIR_BYTES_MAX set to the empty string is the default (records)
+ok   W7-10: a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a FIFO is refused as unreadable, not blocked on
+ok   W7-10: a symlink to a regular file is still hashed (the bytes of its target)
+ok   W7-10: a directory whose entry became a FIFO between the two passes is refused as unreadable, not blocked on
+ok   W7-5: a spaced JSON value, double quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 128-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 129-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, double quotes, head, 5000-char name run: no fragment left
+ok   W7-5: a spaced JSON value, single quotes, tail, 5000-char name run: no fragment left
+ok   W7-5: negative control: a long credential-word name with no value is untouched
+ok   W7-6: a bare Bearer token, X-Api-Auth header
+ok   W7-6: a bare Bearer token, prose
+ok   W7-6: a bare Bearer token, a tab separator
+ok   W7-6: a mutant that compiles but cannot be imported is INVALID (got INVALID)
+ok   W7-6: an importable mutant passes the --check stage (got CAUGHT)
+ok   hermetic: no call reached the host entry
+checks=202 failures=0

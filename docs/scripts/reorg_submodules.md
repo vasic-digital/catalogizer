@@ -4,7 +4,7 @@ Relocates every **owned** Catalogizer submodule from the repository root into a
 single `submodules/` directory using lowercase `snake_case` names, and rewrites
 all path references across the repo accordingly.
 
-> `submodules/constitution` is **already migrated** and is intentionally absent
+> `constitution` is **already migrated** and is intentionally absent
 > from the mapping — the script never touches it. Re-running is a safe no-op.
 
 ---
@@ -145,7 +145,7 @@ ScreenDiff                   → submodules/screen_diff
 ReplayBuffer                 → submodules/replay_buffer
 VisualRegression             → submodules/visual_regression
 TrainingCollector            → submodules/training_collector
-(submodules/constitution — already migrated, SKIPPED)
+(constitution — already migrated, SKIPPED)
 ```
 
 ---

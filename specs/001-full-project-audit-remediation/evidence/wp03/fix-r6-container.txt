@@ -1,0 +1,44 @@
+##### test_verify_repos_r6
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r6.sh
+IDENTITY test=d934db9146dc7b4fcd9fff1ad1e3cca33b593619f3402bd55ff4b252d5eeb412 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=282d779ce887 git=2.39.5 jq=jq-1.6 python=3.11.
+SUMMARY pass=41 fail=0
+# rc=0
+##### test_verify_repos_r7
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r7.sh
+IDENTITY test=e446ddce020cee0e21ce553739e517e03e3ae249c4491078b37136654035cd89 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=c6dc6ebe6fcc git=2.39.5 jq=jq-1.6 python=3.11.
+SUMMARY pass=22 fail=0
+# rc=0
+##### test_verify_repos_r8
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r8.sh
+IDENTITY test=14ed0ae9c268d93a2135063a0748b4a28faaed819317a4372084df85b89f2b1b verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=061a70f44d36 git=2.39.5 jq=jq-1.6 python=3.11.
+error: failed to resolve '' as a valid ref
+FAIL R1 control: the replace ref has no effect on plain git
+error: failed to resolve '' as a valid ref
+error: failed to resolve '' as a valid ref
+SUMMARY pass=37 fail=1
+# rc=0
+##### test_verify_repos_r9
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r9.sh
+IDENTITY test=90ddd50de1948748951c73e65d813debc37a8eefa4e29f23a014f659a326d340 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=5a97a62c5a35 git=2.39.5 jq=jq-1.6 python=3.11.
+SUMMARY pass=21 fail=0
+# rc=0
+##### test_verify_repos_r10
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r10.sh
+IDENTITY test=baa0926305a578ca1df62c6e069f75c012db61215d92ccb25422d6a3ddf187b8 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=481e8d35f4db git=2.39.5 jq=jq-1.6 utc=2026-10-
+SUMMARY pass=47 fail=0
+# rc=0
+##### test_verify_schema
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_schema.sh
+IDENTITY test=b4cc181312b4b62a666dc32be97f4b233d78c03640ff8e2beb50265915bce83d verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c host=21d1fb954e50 git=2.39.5 jq=jq-1.6 jsonschema=4
+SUMMARY pass=14 fail=0
+# rc=0
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r8.sh (rerun after the commit-tree identity fixture fix; the first container run of r8 failed one control, a fixture without identity)
+IDENTITY test=33401c3b611eac42243c3a298a245132cd28ea0f29860749583cb86f178451bb verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c h
+SUMMARY pass=38 fail=0
+##### test_verify_repos (main matrix)
+# cmd: scripts/containers/run_pinned.sh --network=none IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos.sh
+IDENTITY test=f18c199f802e3d531fecc5291975e6d848996c92162cfdd20adb027a08a54aa4 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c h
+SUMMARY pass=404 fail=0
+# cmd: ... IMG-TESTUTIL -- bash scripts/repo/tests/test_verify_repos_r7.sh (rerun after the SC1083 quoting fix in r7 line 52)
+IDENTITY test=ac5d62d53029c60a665455465a4070a7e5d37850a36a6f531a9e12425fa47629 verifier=f5e7e4cfad1dfa1ea50e92b0f85ea2580182bf3ca01db778f9192027c81a036c head=20f74abfbe535f9ab13f6cedb61110d07339b62c h
+SUMMARY pass=22 fail=0

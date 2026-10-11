@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 3 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-06T16:00:00Z |
+| Last modified | 2026-10-08 (added lumenignore_skeleton.md, review WP-02-T028-r2 N3; earlier: added scope_drift_check.md, review WP-02-T028 F4/F5) |
 | Status | tracked; created in round 7 (WF7 review F7-1, constitution 11.4.212 reachability); independent review of this revision owed (constitution 11.4.142) |
 | Linked from | the root [`README.md`](../../README.md), documentation section |
 
@@ -24,6 +24,8 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [index_health.md](index_health.md) | `scripts/audit/index_health.sh` | |
 | [org_of.md](org_of.md) | `scripts/audit/org_of.py` | |
 | [scope_to_lumen_json.md](scope_to_lumen_json.md) | `scripts/audit/scope_to_lumen_json.py` | |
+| [scope_drift_check.md](scope_drift_check.md) | `scripts/audit/scope_drift_check.sh` | |
+| [lumenignore_skeleton.md](lumenignore_skeleton.md) | `scripts/audit/lumenignore_skeleton.py` | |
 | [verify_repos.md](verify_repos.md) | `scripts/repo/verify_repos.sh` | |
 | [locked.md](locked.md) | `scripts/register/locked.sh` | T064 single-writer wrapper of the register |
 | [backup_db.md](backup_db.md) | `scripts/register/backup_db.sh` | T064a pre-op backup (online backup, never `cp -al`) |

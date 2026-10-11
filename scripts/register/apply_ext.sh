@@ -12,7 +12,7 @@
 # Exit: 0 ok, 2 usage, 3 version mismatch, 4 refused path, 5 bootstrap/apply failure.
 set -u
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-WI=${WI:-$ROOT/submodules/constitution/scripts/workable-items/bin/workable-items-linux}
+WI=${WI:-$ROOT/constitution/scripts/workable-items/bin/workable-items-linux}
 SQLITE3=${SQLITE3:-sqlite3}
 DB=""; SQL=${REG_EXT_SQL:-$ROOT/scripts/register/register_ext.sql}   # REG_EXT_SQL: mutation runs (T062)
 while [ $# -gt 0 ]; do case "$1" in
