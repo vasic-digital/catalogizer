@@ -1,4 +1,5 @@
-# Execution state for /speckit-superspec-execute (spec 001). Updated 2026-10-07.
+# Execution state for /speckit-superspec-execute (spec 001). Updated 2026-10-12 (task ticks re-aligned with the tick rule; the rest of this file is as of 2026-10-07).
+# STALE: evidence/reconcile/NEXT-WAVE.md (rev 1, 2026-10-08) was planned against tasks.md rev 36 and 1 tick; it has not been re-derived since.
 # The relayed owner answers below are the binding source of decisions/owner-decisions.yaml (tests: scripts/governance/tests/test_decision_intake.sh); commit this file together with that intake, the test and $EV/wp01/ (see $EV/wp01/README.md; $EV = specs/001-full-project-audit-remediation/evidence).
 feature: 001-full-project-audit-remediation
 phase: P0
@@ -18,8 +19,8 @@ risks_recorded:
   - "Build and SC-011 measurement share one host (31 GiB RAM): measurements only while no build runs; 12.6 60% memory ceiling (~19 GiB) binds container builds."
   - "Constitution 11.4.54 and 11.4.248: the constitution (11.4.54, 11.4.248) mandates the ATM prefix for register ids; the owner chose CAT (ODG-11, 2026-10-05), a deviation until an upstream constitution change is approved (this project's CAT is an owner-approved exception to that literal, recorded, with the upstream change request pending; the contract patterns, tasks.md T190 and T564 plan against two gates, CM-ATM-TICKET-IDS-COMPLETE and the [PROTECTED-SPEC: ATM-NNN] tag, that expect that prefix; the exception conflicts with 11.4.54 and 11.4.248, which have no escape hatch, and with the CLAUDE.md precedence rule, and it stays OPEN until the owner confirms it at HC-0 and the upstream change is accepted). OPEN owner item: the owner is asked to acknowledge the deviation at HC-0 and to approve the upstream change as a separate request."
 tasks:
-  done: [T019, T001, T004, T005a, T005b, T011, T012, T013]   # reconciled 2026-10-07 (evidence/reconcile/REPORT.md): only T019 meets tick rule; every other implemented area awaits a clean independent review
-  in_progress: [T015, T016, T017, T018, T023, T030, T031, T032, T033, T034, T035, T036, T040, T040a, T040b, T041, T048a, T049, T050, T060, T061, T062, T063, T086, T087, T094a]
+  done: []   # matches tasks.md ticks (0, tasks.md rev 40). 2026-10-12: the 22 tasks ticked by commit ff62c1df were un-ticked (evidence/reconcile/UNTICK-2026-10-12.md: no GO verdict exists for any of them), and T019 (ticked by the 2026-10-07 reconcile, evidence/reconcile/REPORT.md) was un-ticked by conductor decision: it sits under the WP-02 NO-GO (evidence/reviews/WP-02-T028.json finding F7 names its early commit). T019 is in in_progress below, not in done.
+  in_progress: [T001, T004, T005a, T005b, T011, T012, T013, T015, T016, T017, T018, T019, T023, T030, T031, T032, T033, T034, T035, T036, T040, T040a, T040b, T041, T048a, T049, T050, T060, T061, T062, T063, T086, T087, T094a]
   blocked_on_containers_or_cpa_host: [T003, T005c, T005d, T006, T006a, T007, T008, T022, T051, T053, T057, T064, T066, T067, T068, T069, T074, T075, T076, T077]
   next_exempt_before_hc0: [T014, T011a]
 owner_answers_2026-10-05_interactive:   # relayed by conductor from AskUserQuestion, not verbatim quotes

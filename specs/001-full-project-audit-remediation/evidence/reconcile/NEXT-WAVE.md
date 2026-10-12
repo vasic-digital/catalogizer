@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-10-08 |
-| Last modified | 2026-10-08 |
-| Status | draft plan; produced by a READ-ONLY planner (Sonnet); nothing in this file was executed; every claim below was checked against the repository on 2026-10-08 unless marked UNCONFIRMED |
+| Last modified | 2026-10-12 |
+| Status | STALE (2026-10-12, flagged only, plan not re-derived): written against tasks.md rev 36 with 1 ticked task; tasks.md is at rev 40, and the 22 ticks of `ff62c1df` and the tick of T019 were reverted (UNTICK-2026-10-12.md), so 0 tasks are ticked, so every `ok` dependency state below still means deliverable on disk, never a reviewed GO; draft plan; produced by a READ-ONLY planner (Sonnet); nothing in this file was executed; every claim below was checked against the repository on 2026-10-08 unless marked UNCONFIRMED |
 
 Sources read: `tasks.md` (rev 36, 685 task ids parsed, 1 ticked: T019), `progress.yml`, `evidence/reconcile/REPORT.md` (2026-10-07), `decisions/owner-decisions.yaml` (rev 5), memory `project_owner_decisions_2026_10_07.md`, plus file-existence checks (`ls`/`find`), `git status`, `git log`, `podman images`, `/proc/meminfo`, `df`.
 
