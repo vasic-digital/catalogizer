@@ -25,7 +25,7 @@ specs/001-full-project-audit-remediation/evidence/**/SHA256SUMS	evidence	checksu
 specs/001-full-project-audit-remediation/audit/**/SHA256SUMS	evidence	checksum list: records a file sha256, never its class	T040b
 specs/001-full-project-audit-remediation/audit/patches/*.patch	patches	recorded diffs applied byte for byte	T040b
 .specify/memory/constitution-appendix.md	governance-carrier	quotes the constitution forbidden-content lists	T040b
-submodules/constitution/Constitution.md	governance-carrier	quotes the constitution forbidden-content lists	T040b
+constitution/Constitution.md	governance-carrier	quotes the constitution forbidden-content lists	T040b
 docs/issues/**	legacy-collection	1,778 tracked legacy tickets cited by sha256 from register Sources blocks	T040b
 ALL_ISSUES_FIXED.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b
 ANDROID_CRASH_FIXES_REPORT.md	legacy-collection	legacy root report no task edits (41 at plan review); an edit drops this row	T040b

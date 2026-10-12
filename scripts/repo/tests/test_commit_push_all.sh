@@ -1139,7 +1139,7 @@ hshim scripts/longops/acquire.sh 'd="$(dirname "$0")"; "$d/acquire_real.sh" "$@"
 run; eq "18.31 a TERM that arrives while acquire.sh returns: 20" "$RC" 20; [ -e "$W/.audit/longops/claims/commit_push" ] && bad "18.31 the claim was leaked" || ok "18.31 the claim was released by finish"
 unshim scripts/longops/acquire.sh; run; eq "18.31 the next run is not blocked: 0" "$RC" 0
 # a commit made but not recorded (TERM during git commit)
-mk x4; chg; XENV="GITSHIM_SIGNAL_ON=commit.-q.-F GITSHIM_SIGNAL=TERM GITSHIM_SIGNAL_TARGET=commit_recursive.sh GITSHIM_SIGNALED=$C/sig4" run --paths-from "$C/p.txt" "a"; XENV=""
+mk x4; chg; XENV="GITSHIM_SIGNAL_ON=commit.*-F GITSHIM_SIGNAL=TERM GITSHIM_SIGNAL_TARGET=commit_recursive.sh GITSHIM_SIGNALED=$C/sig4" run --paths-from "$C/p.txt" "a"; XENV=""
 [ -e "$C/sig4" ] && ok "18.32 control: the TERM reached commit_recursive.sh at git commit" || bad "18.32 control: no signal was sent"; eq "18.32 the run ended 20" "$RC" 20
 eq "18.32 the commit made is recorded in commits.tsv (the TERM was held until the row was written)" "$(wc -l < "$RD/commits.tsv" 2>/dev/null | tr -d ' ')" 1
 run; eq "18.32 the next run pushes it: 0, never unrecorded_local_commit" "$RC" 0; eq "18.32 origin holds HEAD" "$(tipof a)" "$(head_)"
