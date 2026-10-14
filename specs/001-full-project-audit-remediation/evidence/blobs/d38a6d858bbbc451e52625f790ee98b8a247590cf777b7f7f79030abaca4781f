@@ -1,0 +1,5 @@
+# identity: task=T171 utc=2026-10-12T11:50:47Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/innovation/sut/import_plan.sh sha256=ABSENT enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+FAIL importer present: /src/.audit/scratch/w2ev/innovation/sut/import_plan.sh (RED: T170 not implemented) :: 
+RESULT: pass=0 fail=1

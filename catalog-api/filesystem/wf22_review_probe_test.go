@@ -62,7 +62,7 @@ func TestReviewProbe_F3_PropfindForeignHrefAccepted(t *testing.T) {
 func TestReviewProbe_F4_EmptyDomainColumnOverridesIdentity(t *testing.T) {
 	h, empty := "nas", ""
 	root := &models.StorageRoot{Protocol: "smb", Host: &h, Domain: &empty}
-	s := SettingsFromRoot(root, func(*models.StorageRoot) (string, string, string) { return "u", "p", "CORP" })
+	s := MustSettingsFromRoot(root, func(*models.StorageRoot) (string, string, string) { return "u", "p", "CORP" })
 	require.Equal(t, "u", s[KeyUsername], "control: the resolver is used")
 	t.Logf("F4 domain=%q", s[KeyDomain])
 	assert.Equal(t, "CORP", s[KeyDomain], "an empty domain column should not erase the identity's domain")

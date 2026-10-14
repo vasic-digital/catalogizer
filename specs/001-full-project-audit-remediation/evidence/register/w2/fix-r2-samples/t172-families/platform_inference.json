@@ -1,0 +1,157 @@
+{
+ "counts": {
+  "declared": 4,
+  "inferred": 3,
+  "unknown": 5
+ },
+ "fixture": true,
+ "freeze": {
+  "fixture": true,
+  "frozen_at": "2026-10-08T00:00:00Z",
+  "head": "scratch",
+  "listing_sha256": "3156d3119bcc962cf3497af0ebd5305877aae23380bc50f03e33c4d843d15def",
+  "manifest_sha256": "9edb563d53b00e9aeeefaf2f4809ac47342a9f89b31b16f78a0804a017ae086d"
+ },
+ "rows": [
+  {
+   "atm_id": "CAT-006",
+   "basis": "UNKNOWN_no_evidence",
+   "declared": null,
+   "entry_id": 38,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-001-a.md",
+   "marker": null,
+   "platform": "UNKNOWN"
+  },
+  {
+   "atm_id": "CAT-007",
+   "basis": "UNKNOWN_no_evidence",
+   "declared": null,
+   "entry_id": 39,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-001-b.md",
+   "marker": null,
+   "platform": "UNKNOWN"
+  },
+  {
+   "atm_id": "CAT-008",
+   "basis": "declared",
+   "declared": "androidtv",
+   "entry_id": 46,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-510-login-spacing.md",
+   "marker": null,
+   "platform": "androidtv"
+  },
+  {
+   "atm_id": "CAT-009",
+   "basis": "declared",
+   "declared": "androidtv",
+   "entry_id": 47,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-511-login-spacing-again.md",
+   "marker": null,
+   "platform": "androidtv"
+  },
+  {
+   "atm_id": "CAT-010",
+   "basis": "declared",
+   "declared": "androidtv",
+   "entry_id": 48,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-512-login-spacing-other.md",
+   "marker": null,
+   "platform": "androidtv"
+  },
+  {
+   "atm_id": "CAT-011",
+   "basis": "inferred",
+   "declared": null,
+   "entry_id": 49,
+   "evidence": [
+    "screen:web-curiosity-006.png"
+   ],
+   "locator": "docs/issues/HELIX-520-contrast-web.md",
+   "marker": "[DEFAULT - adjustable]",
+   "platform": "web"
+  },
+  {
+   "atm_id": "CAT-012",
+   "basis": "inferred",
+   "declared": null,
+   "entry_id": 50,
+   "evidence": [
+    "screen:androidtv-curiosity-015.png"
+   ],
+   "locator": "docs/issues/HELIX-521-contrast-tv.md",
+   "marker": "[DEFAULT - adjustable]",
+   "platform": "androidtv"
+  },
+  {
+   "atm_id": "CAT-013",
+   "basis": "inferred",
+   "declared": null,
+   "entry_id": 51,
+   "evidence": [
+    "body:http://localhost:3000/api/v1/entities/stats"
+   ],
+   "locator": "docs/issues/HELIX-522-api-timeout.md",
+   "marker": "[DEFAULT - adjustable]",
+   "platform": "api"
+  },
+  {
+   "atm_id": "CAT-014",
+   "basis": "UNKNOWN_conflict",
+   "declared": null,
+   "entry_id": 52,
+   "evidence": [
+    "androidtv=screen:androidtv-001-loginform.png",
+    "web=body:web-curiosity-006.png"
+   ],
+   "locator": "docs/issues/HELIX-523-mixed-evidence.md",
+   "marker": null,
+   "platform": "UNKNOWN"
+  },
+  {
+   "atm_id": "CAT-015",
+   "basis": "UNKNOWN_no_evidence",
+   "declared": null,
+   "entry_id": 53,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-524-no-evidence.md",
+   "marker": null,
+   "platform": "UNKNOWN"
+  },
+  {
+   "atm_id": "CAT-016",
+   "basis": "declared",
+   "declared": "desktop",
+   "entry_id": 54,
+   "evidence": [],
+   "locator": "docs/issues/HELIX-525-declared.md",
+   "marker": null,
+   "platform": "desktop"
+  },
+  {
+   "atm_id": "CAT-017",
+   "basis": "UNKNOWN_no_evidence",
+   "declared": null,
+   "entry_id": 55,
+   "evidence": [],
+   "locator": "issues/ANR-2026-04-08-X.md",
+   "marker": null,
+   "platform": "UNKNOWN"
+  }
+ ],
+ "rule": "docs/12 section 11.4: inference is a draft marked [DEFAULT - adjustable]; an unresolvable platform stays UNKNOWN, never guessed",
+ "rules": [
+  "androidtv",
+  "android",
+  "web",
+  "desktop",
+  "installer",
+  "video-frame",
+  "api"
+ ],
+ "schema": "t172-platform-inference/1"
+}

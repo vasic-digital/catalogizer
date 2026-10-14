@@ -117,7 +117,7 @@ func (c *WebDAVClient) TestConnection(ctx context.Context) error {
 // resolveURL resolves a relative path to a full WebDAV URL. The path is a slash path whatever the host OS and is cleaned as if rooted, so a
 // ".." SEGMENT cannot climb out of the base; a name that merely CONTAINS ".." ("Wait.. Live", "...And Justice for All") is kept as it is (WF22 R11).
 func (c *WebDAVClient) resolveURL(p string) string {
-	cleanPath := pathpkg.Clean("/" + p)
+	cleanPath := ConfinePath(p)
 	u := *c.baseURL
 	u.Path = pathpkg.Join(u.Path, cleanPath)
 	u.RawPath = ""

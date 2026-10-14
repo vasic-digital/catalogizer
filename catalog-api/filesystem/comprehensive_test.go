@@ -1247,13 +1247,14 @@ func TestNFSClient_IsMounted_ViaIsConnected(t *testing.T) {
 	client, err := NewNFSClient(config)
 	require.NoError(t, err)
 
-	// Manually set internal state to exercise isMounted code path
-	// On Linux, /proc/mounts exists so isMounted returns true
+	// Manually set internal state and present a kernel mount table that names the mount point as NFS: IsConnected asks the table (WF22 N1)
 	client.connected = true
 	client.mounted = true
-
-	// This will call isMounted() internally
+	withProcMounts(t, "nas:/export /tmp/nfs-test-mount nfs4 rw 0 0\n")
 	assert.True(t, client.IsConnected())
+	// ... and without the mount in the table the same state is NOT connected: the old stub answered true for any readable /proc/mounts
+	withProcMounts(t, "proc /proc proc rw 0 0\n")
+	assert.False(t, client.IsConnected())
 }
 
 // newFakeConnectedNFSClient creates an NFSClient with a real temp directory
@@ -1274,7 +1275,9 @@ func newFakeConnectedNFSClient(t *testing.T) (*NFSClient, string) {
 	client, err := NewNFSClient(config)
 	require.NoError(t, err)
 
-	// Simulate connected state
+	// Simulate connected state: the kernel mount table (the seam IsConnected really reads since WF22 N1) names the directory as an NFS mount.
+	// The old stub that answered "mounted" for any readable /proc/mounts is what let a Connect that never mounted pass for a connection.
+	withProcMounts(t, "nas:/export "+tempDir+" nfs4 rw 0 0\n")
 	client.connected = true
 	client.mounted = true
 

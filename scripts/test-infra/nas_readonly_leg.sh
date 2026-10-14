@@ -29,7 +29,9 @@ if [ -n "$missing" ]; then echo "SKIP nas_readonly reason=credentials_absent var
 # never reaches a backup, a commit or a disk image; sweep_leaks.sh removes what a killed run left (its pid is proven gone). WF17 TI-C3.
 # a requested --json-out that cannot be written is an error BEFORE any NAS is contacted (WF17 TI-D10: it used to be noticed after the run and the run still exited 0)
 if [ -n "$JSON" ]; then ( : >>"$JSON" ) 2>/dev/null || ti_die "cannot write --json-out $JSON" 1; fi
-RTD="${XDG_RUNTIME_DIR:-}"; [ -n "$RTD" ] && [ -d "$RTD" ] && [ -w "$RTD" ] || ti_refuse runtime_dir_unavailable "XDG_RUNTIME_DIR is not a writable directory; the credentials must not be written under the checkout" 1
+# the run directory (credential file + results) lives strictly below /tmp: the container runs from a scratch VIEW that is not the repository, and run_pinned (round 8, R-1) accepts an --out disjoint from
+# its source tree only strictly below /tmp or /var/tmp. /tmp is a per-boot tmpfs on the host class this runs on; the directory is mode 0700, named by this pid, and removed on every exit path
+RTD=/tmp; [ -d "$RTD" ] && [ -w "$RTD" ] || ti_refuse run_dir_unavailable "/tmp is not a writable directory; the credentials must not be written under the checkout" 1
 OUT="$RTD/catalogizer-nas-ro.$$"; mkdir -m 700 "$OUT" || ti_die "cannot create $OUT"
 # the container sees a scratch VIEW with the client script only, never the repository (the real `.env` is in it): WF12 F3
 mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"

@@ -1,0 +1,8 @@
+# ledger seq=119 item=AUD-T170 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/w2ev/seeds/sut target_fingerprint=1353fe6c2de08fb63e06a73e9063551bd59f5544c5bd70d91532869b4d0ae0fa test_fingerprint=7b718458f1fdc80273b6105e1a07fd47681ca6f6e2beff02c5112da9ced3f4b1
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "IMPORT_PLAN=/src/.audit/scratch/w2ev/seeds/sut/import_plan.sh", "python3", "-I", "/src/scripts/register/tests/test_seed_import.py"]
+# identity: task=T170 utc=2026-10-12T11:50:07Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/seeds/sut/import_plan.sh sha256=ABSENT enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+FAIL importer present: /src/.audit/scratch/w2ev/seeds/sut/import_plan.sh (RED: T170 not implemented) :: 
+RESULT: pass=0 fail=1

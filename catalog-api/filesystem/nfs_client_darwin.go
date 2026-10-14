@@ -133,7 +133,7 @@ func (c *NFSClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
@@ -165,7 +165,7 @@ func (c *NFSClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 
 	info, err := os.Stat(fullPath)
 	if err != nil {
@@ -186,7 +186,7 @@ func (c *NFSClient) CreateDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	return os.MkdirAll(fullPath, 0755)
 }
 
@@ -195,7 +195,7 @@ func (c *NFSClient) DeleteDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	return os.RemoveAll(fullPath)
 }
 
@@ -204,7 +204,7 @@ func (c *NFSClient) DeleteFile(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	return os.Remove(fullPath)
 }
 
@@ -213,8 +213,8 @@ func (c *NFSClient) CopyFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath := filepath.Join(c.mountPoint, src)
-	dstPath := filepath.Join(c.mountPoint, dst)
+	srcPath := c.resolvePath(src)
+	dstPath := c.resolvePath(dst)
 
 	// Simple file copy using system commands for better performance
 	cmd := exec.CommandContext(ctx, "cp", srcPath, dstPath)
@@ -231,8 +231,8 @@ func (c *NFSClient) MoveFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath := filepath.Join(c.mountPoint, src)
-	dstPath := filepath.Join(c.mountPoint, dst)
+	srcPath := c.resolvePath(src)
+	dstPath := c.resolvePath(dst)
 
 	// Use system move command
 	cmd := exec.CommandContext(ctx, "mv", srcPath, dstPath)
@@ -249,7 +249,7 @@ func (c *NFSClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	return os.Open(fullPath)
 }
 
@@ -258,7 +258,7 @@ func (c *NFSClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	file, err := os.Create(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -274,7 +274,7 @@ func (c *NFSClient) FileExists(ctx context.Context, path string) (bool, error) {
 		return false, fmt.Errorf("not connected")
 	}
 
-	fullPath := filepath.Join(c.mountPoint, path)
+	fullPath := c.resolvePath(path)
 	_, err := os.Stat(fullPath)
 	if err == nil {
 		return true, nil
@@ -302,4 +302,9 @@ func (c *NFSClient) GetConfig() interface{} {
 	// nfs_client.go returns &c.config and both NFS tests assert .(*NFSConfig);
 	// returning a value here panicked the tests on darwin/windows only.
 	return &c.config
+}
+
+// resolvePath resolves a path within the mount point; ConfinePath: a ".." segment cannot leave the mount (WF22 N7 class A).
+func (c *NFSClient) resolvePath(path string) string {
+	return filepath.Join(c.mountPoint, filepath.FromSlash(ConfinePath(path)))
 }

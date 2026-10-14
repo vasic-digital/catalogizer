@@ -1,0 +1,10 @@
+# identity: task=T172 file=t172-entryset-red.txt utc=2026-10-12T11:53:52Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# RED: the T172 entry-set fixture (test_t172.py) run before the import exists (SUT directory without import_t172.sh); ledger entry follows
+# ledger seq=127 item=AUD-T172 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/w2ev/t172/sut target_fingerprint=9a4d4f14dfe583ffd4fab4e70189f053468168cc54e4e4f4125a99cfd0804e01 test_fingerprint=ef495c5f8a9a77b0992f63bab90015532d5b67c7bb13db31229e496d4f0ee2af
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "IMPORT_T172=/src/.audit/scratch/w2ev/t172/sut/import_t172.sh", "python3", "-I", "/src/scripts/register/tests/test_t172.py"]
+# identity: task=T172 utc=2026-10-12T11:51:30Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/t172/sut/import_t172.sh sha256=ABSENT enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+FAIL importer present: /src/.audit/scratch/w2ev/t172/sut/import_t172.sh (RED: T172 not implemented) :: 
+RESULT: pass=0 fail=1

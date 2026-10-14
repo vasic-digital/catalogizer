@@ -45,6 +45,9 @@ def check(label, cond, info=""):
         PASSES += 1
     else:
         FAILS += 1
+        if os.environ.get("W2_FAILFAST") == "1":     # mutation runs: the first FAIL kills the mutant
+            print("RESULT: pass=%d fail=%d (stopped at the first failure: W2_FAILFAST=1)" % (PASSES, FAILS))
+            sys.exit(1)
 
 
 def run(*args, **kw):
@@ -252,6 +255,46 @@ check("(h) a path named only in sections 2 and 4 is absent (Upstreams -> absent)
 cf = d.get("config", {})
 check("(i) config names the two index files individually, each excluded with a reason, with their listing state",
       [(x["path"], x["in_frozen_listing"]) for x in cf.get("excluded_files", [])] == [("config/index/scope.yaml", True), ("config/index/lumen_scope.json", False)] and all(x["reason"] for x in cf.get("excluded_files", [])), cf.get("excluded_files"))
+
+# ---- (k) the rules against a REAL root listing (review fix round 2, F6): the root entries of git HEAD ff62c1df plus the untracked ones (names only, tests/head_root_entries.tsv).
+# This is a probe, not the T161 freeze; the real-snapshot leg stays UNCONFIRMED until T161. The fixture is built as a scratch tree: a file entry is an empty file, a dir entry holds one
+# file, a gitlink is a gitlink of the freeze, an untracked entry is an untracked root entry of the freeze (no file is created for it: .env is never created, never read).
+PROBE = os.path.join(HERE, "head_root_entries.tsv")
+kinds, tree_k, gl_k, ut_k = {}, os.path.join(SCR, "probe_tree"), [], []
+os.makedirs(tree_k)
+for line in open(PROBE, encoding="utf-8"):
+    if line.startswith("#") or not line.strip():
+        continue
+    kind, name = line.rstrip("\n").split("\t")
+    kinds[name] = kind
+    if kind == "file":
+        open(os.path.join(tree_k, name), "w").close()
+    elif kind == "dir":
+        os.makedirs(os.path.join(tree_k, name))
+        open(os.path.join(tree_k, name, "x"), "w").close()
+    elif kind == "gitlink":
+        gl_k.append((name, "1" * 40))
+    else:
+        ut_k.append(name)
+fjk = freeze(tree_k, "probe", untracked=tuple(ut_k), gitlinks=tuple(gl_k))
+rk, reck = gen(fjk, os.path.join(SCR, "o_probe"))
+check("(k) the rules decide EVERY root entry of git HEAD and of the live untracked root (%d entries): the run passes, no row without a disposition" % len(kinds),
+      rk.returncode == 0 and reck and reck["verdict"] == "PASS" and reck["summary"]["without_disposition"] == [] and reck["summary"]["entries"] == len(kinds), (rk.returncode, reck and reck["summary"], rk.stdout[-300:]))
+rowk = {r_["entry"]: r_ for r_ in (reck or {}).get("rows", [])}
+check("(k) `constitution` (a gitlink) is a component; `.opencode` and `.kimi-code` (tracked agent tooling) are excluded with a reason",
+      rowk.get("constitution", {}).get("disposition") == "component" and rowk[".opencode"]["disposition"] == "excluded" and rowk[".kimi-code"]["disposition"] == "excluded" and rowk[".opencode"].get("reason"), [rowk.get(k_) for k_ in ("constitution", ".opencode")])
+check("(k) the live untracked roots `.env`, `reports`, `graph.json`, `prev3`, `catalogizer-test-zzsw10647std` are excluded with a reason; `.env` says it is never read (11.4.10)",
+      all(rowk[k_]["disposition"] == "excluded" and rowk[k_].get("reason") for k_ in (".env", "reports", "graph.json", "prev3", "catalogizer-test-zzsw10647std")) and "NEVER read" in rowk[".env"]["reason"] and rowk[".env"]["tracked"] is False, rowk.get(".env"))
+check("(k) root-items.json of a freeze whose head is `scratch` is marked fixture (F7); the head is the only input of the marker", reck.get("fixture") is True and reck["freeze"]["head"] == "scratch", (reck.get("fixture"), reck["freeze"]))
+# control (the rules WITHOUT the review-fix block fail exactly on the entries the review named: the probe sees what it claims to see)
+old_rules = open(RULES, encoding="utf-8").read()
+cut = old_rules.index("  # ---- root entries found undecided by the independent review")
+rules_old = os.path.join(SCR, "rules_before_fix.yaml")
+open(rules_old, "w", encoding="utf-8").write(old_rules[:cut])
+r0, rec0 = gen(fjk, os.path.join(SCR, "o_probe_old"), "--dispositions", rules_old)
+und = sorted(r_["entry"] for r_ in (rec0 or {}).get("rows", []) if r_.get("disposition") is None)
+check("(k) CONTROL: without the review-fix rules the same probe FAILS (exit 1) with exactly the eight undecided entries of the review",
+      r0.returncode == 1 and und == sorted([".env", ".kimi-code", ".opencode", "catalogizer-test-zzsw10647std", "constitution", "graph.json", "prev3", "reports"]), (r0.returncode, und))
 
 # ---- (j) the real listing leg
 fjr = os.environ.get("REAL_FREEZE_JSON")

@@ -1,0 +1,130 @@
+# fix-r2b verification, 2026-10-12 (round 2.1: review findings P-1..P-7, T-A..T-D closed). Commands run in rootless IMG-NODE via scripts/containers/run_pinned.sh, RUNP_MEMORY=3221225472.
+## U47-U62 (ONLY=...): cases=16 failed=0
+## mutation harness test_memfloor_mutations.sh (GOLD + MF1-8 + R01-R24 + R26-R29 + R25 negative control)
+workdir /tmp/cg_safe_tests/memfloor_mut.WMiy5r
+RESULT GOLD PASS unmutated tooling: U47-U62 all GREEN (golden-false)
+RESULT MF1 PASS mutant KILLED (env knob ignored): named case(s) U50,U51,U52 turn RED
+RESULT MF2 PASS mutant KILLED (limits-file GiB converted with the wrong factor): named case(s) U49,U53 turn RED
+RESULT MF3 PASS mutant KILLED (lower-bound check removed): named case(s) U54 turn RED
+RESULT MF4 PASS mutant KILLED (lower bound back to 4 GiB (S3 heap invariant lost)): named case(s) U54 turn RED
+RESULT MF5 PASS mutant KILLED (regular-file check weakened to exists (dir/devnull/FIFO)): named case(s) U56 turn RED
+RESULT MF6 PASS mutant KILLED (echoed floor stuck at the default): named case(s) U49,U50 turn RED
+RESULT MF7 PASS mutant KILLED (memory floor not enforced): named case(s) U47,U49,U50 turn RED
+RESULT MF8 PASS mutant KILLED (limits file never consulted): named case(s) U49,U55,U56 turn RED
+RESULT R01 PASS mutant KILLED (refusal printed but not enforced (ok=1 dropped)): named case(s) U52 turn RED
+RESULT R02 PASS mutant KILLED (memory FAIL printed but not enforced (ok=1 dropped)): named case(s) U47,U49 turn RED
+RESULT R03 PASS mutant KILLED (equality boundary: mem == floor refused): named case(s) U48,U49 turn RED
+RESULT R04 PASS mutant KILLED (memory check ALWAYS fails (golden-TRUE absent)): named case(s) U48,U49 turn RED
+RESULT R05 PASS mutant KILLED (duplicate keys no longer refused): named case(s) U55 turn RED
+RESULT R06 PASS mutant KILLED (key anchor ^ dropped (a commented-out key is honoured)): named case(s) U57 turn RED
+RESULT R07 PASS mutant KILLED (precedence: env ignored whenever a limits file is named): named case(s) U50 turn RED
+RESULT R08 PASS mutant KILLED (lower bound 2 GiB): named case(s) U54 turn RED
+RESULT R09 PASS mutant KILLED (existing-but-unreadable file no longer refused as such): named case(s) U56 turn RED
+RESULT R10 PASS mutant KILLED (below-bound value silently clamped to default instead of refused): named case(s) U54 turn RED
+RESULT R11 PASS mutant KILLED (FAIL-message GiB conversion wrong): named case(s) U50 turn RED
+RESULT R12 PASS mutant KILLED (empty value accepted by the digit check): named case(s) U52 turn RED
+RESULT R13 PASS mutant KILLED (env value scaled x10): named case(s) U50 turn RED
+RESULT R14 PASS mutant KILLED (default floor halved to 16 GiB): named case(s) U47 turn RED
+RESULT R15 PASS mutant KILLED (digit class widened ("20 x" reaches arithmetic)): named case(s) U52 turn RED
+RESULT R16 PASS mutant KILLED (sanitiser removed (echo injection, S8)): named case(s) U58 turn RED
+RESULT R17 PASS mutant KILLED (env may lower the floor (S9)): named case(s) U51 turn RED
+RESULT R18 PASS mutant KILLED (GiB digit cap removed (overflow wraps to a low floor, S4)): named case(s) U52 turn RED
+RESULT R19 PASS mutant KILLED (size cap removed (S7)): named case(s) U56 turn RED
+RESULT R20 PASS mutant KILLED (empty limits file accepted (S6)): named case(s) U56 turn RED
+RESULT R21 PASS mutant KILLED (indented/nested key accepted (S6)): named case(s) U56 turn RED
+RESULT R22 PASS mutant KILLED (convention-path discovery dropped (S9)): named case(s) U59 turn RED
+RESULT R23 PASS mutant KILLED (octal parsing reintroduced (S1/S2)): named case(s) U53,U61 turn RED
+RESULT R24 PASS mutant KILLED (heap floor halved: derived lower bound shrinks, S3 invariant case catches it): named case(s) U54 turn RED
+RESULT R26 PASS mutant KILLED (dangling symlink at the convention path silently ignored (round-2 review V02/T-A)): named case(s) U59 turn RED
+RESULT R27 PASS mutant KILLED (env == base value relabels the source as env (V04/T-B)): named case(s) U50 turn RED
+RESULT R28 PASS mutant KILLED (duplicate-count anchor drops the colon: prefix keys counted as duplicates (V15/T-C)): named case(s) U62 turn RED
+RESULT R29 PASS mutant KILLED (leading-zero strip removed: 00020 refused (V16/T-C)): named case(s) U62 turn RED
+RESULT R25 PASS negative control (NEGATIVE CONTROL (identity edit): every case stays green): all cases stay GREEN
+SUMMARY cases=38 failed=0
+## full test_unit_safe.sh (62 cases): U01-U46 failures identical to base (pre-existing host disk/memory floors); U47-U62 all PASS
+RESULT U01 FAIL runner REFUSED (patch exit 2) -> exit 5, stock NEVER used
+RESULT U02 FAIL NOT_NEEDED + probe SAFE -> stock init allowed
+RESULT U03 FAIL NOT_NEEDED + probe HAZARD -> exit 5, nothing run
+RESULT U04 FAIL NOT_NEEDED + probe CANNOT_EVALUATE -> exit 5 (fail closed)
+RESULT U05 FAIL runner READY -> patched runner used for init, not stock
+RESULT U06 FAIL runner version != stock version -> exit 5
+RESULT U07 FAIL runner without valid RUNNER_RECEIPT.json -> exit 5 (stock-as-runner impossible)
+RESULT U08 PASS status on populated DB -> stock, runner tool not consulted
+RESULT U09 FAIL sync: missing DB -> bulk via runner; populated DB -> stock
+RESULT U10 PASS live codegraph lock holder -> index AND sync refused (exit 3), lock untouched
+RESULT U11 FAIL dead-pid lock: refused w/o flag (4); reaped+logged with --reap-dead-lock
+RESULT U12 FAIL carrier (alive, argv mentions codegraph.js, not node) is NOT a live indexer; reap never signals it
+RESULT U13 PASS lock pid<=1 / non-numeric -> stale, refused w/o flag (4)
+RESULT U14 PASS preflight: low disk / mem / thread headroom -> exit 6 for bulk; non-bulk unaffected
+RESULT U15 PASS test override can only LOWER a measurement (cannot fake free disk)
+RESULT U16 FAIL no progress -> watcher STALL surfaces as exit 7 (stall never looks healthy)
+RESULT U17 FAIL free disk below tripwire -> indexer SIGSTOPped (not killed), exit 8
+RESULT U18 FAIL index_state != complete -> exit 1
+RESULT U19 FAIL files count != reported (log / metadata / status) -> exit 1
+RESULT U20 FAIL secret-class path indexed -> exit 1; carrier names (dotenv_loader, environment) -> PASS
+RESULT U21 FAIL instrument blind (absolute paths defeat anchored globs) -> control needle FAILs it
+RESULT U22 FAIL ledger appended when Status.md exists; SKIP-with-reason when absent (run not failed)
+RESULT U23 FAIL detached launch returns at once with a pids record; later 'verify' PASSes
+RESULT U24 FAIL indexer exits non-zero -> exit 1 (never masked)
+RESULT U25 PASS unknown op -> exit 2
+RESULT U26 PASS 'unlock' never removes a LIVE indexer lock, even with --reap-dead-lock
+RESULT U27 PASS /proc scan: live 'sync <root>' or 'serve' (cwd below root) w/o lock -> writers refused (3); read op still allowed next to serve
+RESULT U28 FAIL --expected-count N --tolerance-pct P enforced on the files table
+RESULT U29 PASS read op refused while a live bulk writer (index) targets the root (DB mid-rewrite)
+RESULT U30 PASS wrapper flock .codegraph/.helix_index.flock held by another launcher -> exit 3
+RESULT U31 FAIL sync with pending refs >= 150000 -> BULK: patched runner, detached supervisor, watcher+tripwire armed; not stock/foreground
+RESULT U32 FAIL golden-false: 149999 pending (< threshold) stays INCREMENTAL (stock, foreground, patch tool untouched)
+RESULT U33 FAIL threshold: default keeps 10 pending incremental; --pending-threshold 10 and CG_SAFE_PENDING_BULK_MIN=10 -> BULK; flag beats env; 0/abc -> exit 2
+RESULT U34 FAIL --bulk forces the supervised patched path for sync on a healthy DB (0 pending); rejected (2) on read ops
+RESULT U35 FAIL golden-false: 200000 status='failed' rows (retry tail) + 0 pending stays INCREMENTAL — only status='pending' counts
+RESULT U36 FAIL pending probe cannot evaluate (index missing / table missing) -> UNKNOWN -> BULK (conservative), stated in output; a table-less DB then fails verify (1)
+RESULT U37 PASS probe is BOUNDED: 400000 pending rows are counted only up to threshold+1 (150001), never a full COUNT(*); exact below threshold
+RESULT U38 FAIL patch set: default = validated subset fkidx1,resolve1 (untested lockfix1/datafrag1 NOT default); --patches / CG_SAFE_PATCHES pass through; 'all' = registry default; malformed -> exit 2
+RESULT U39 FAIL verify asserts pending==0 (failed-tail rows OK, pending rows FAIL) — also on the post-BULK verdict
+RESULT U40 FAIL known gap made explicit: missing indexed_with_version stamp -> VERIFY_NOTE ABSENT (status will say stale), NOT a FAIL; present -> PRESENT
+RESULT U41 PASS helper 'pending' exit contract: >=threshold 1 (inclusive), below 0, UNKNOWN 3 (missing index / no DB), usage 2
+RESULT U42 FAIL dbinfo never COUNTs the nodes table (14.9M rows): nodes_present via a LIMIT-1 probe, instant even over a 300M-row view
+RESULT U43 FAIL BULK sync result file carries op=sync, pending_zero PASS and EXIT=0 (auditable evidence)
+RESULT U44 FAIL heap_mb = half of MemAvailable (32 GiB avail -> 16384 MiB, above floor/below cap, exact formula)
+RESULT U45 PASS heap_mb floors at 8192 MiB when half-of-available would go lower (never below stock-plus-headroom)
+RESULT U46 PASS heap_mb clamps to §12.6's real 60%-of-MemTotal ceiling (6144 MiB on a 10 GiB host), overriding even the 8192 floor, never a hardcoded number
+RESULT U47 PASS no knob: output is the pre-knob output (floor 32 GiB, exact FAIL line, NO source line, NO floor suffix, exit 6)
+RESULT U48 PASS golden-TRUE: MemAvailable == default floor (32 GiB) PASSes with heap <= half of available; redirected copy still reads the real meminfo (control)
+RESULT U49 PASS limits file min_mem_avail_gib: 20 lowers the floor: 19 GiB refused with exact line, 20 GiB PASS (equality) with heap 10240 <= half
+RESULT U50 PASS env RAISES the floor (24 GiB over a 20 GiB file; 40 GiB over the default); env == base accepted and the source line is NOT relabelled env
+RESULT U51 PASS env may NEVER lower the floor (below a file value or below the default): refused loudly, nothing runs
+RESULT U52 PASS non-decimal / empty / signed / float / hex / over-long values (env kB and file GiB, incl. 2^44+5 overflow) are REFUSED, no shell noise, no writer side effects
+RESULT U53 PASS leading zeros are DECIMAL (010=10, 020=20, 0020=20, 09 refused cleanly, env 033554432==32 GiB, env 08388608 refused) - no octal, no arithmetic error, no writer fall-through
+RESULT U54 PASS lower bound = 16 GiB (2 x heap floor): floors 16/20/32 PASS with heap_mb <= MemAvailable/2; 15/8/4/1/0 refused; floor 4 + 5 GiB never PASSes; 9999 GiB handled
+RESULT U55 PASS duplicate min_mem_avail_gib keys (different or identical values) are REFUSED (no first-wins / last-wins ambiguity)
+RESULT U56 PASS limits-file classes REFUSED loudly: directory, /dev/null, missing, FIFO (no hang), empty, >64 KiB, indented, nested, empty value, set-but-empty env, unreadable
+RESULT U57 PASS accepted forms: CRLF + trailing comment, symlink to a regular file; a commented-out key is NOT honoured; a file without the key leaves the default (no source line)
+RESULT U58 PASS untrusted env / path / file values are sanitised before echo: no forged 'PREFLIGHT PASS' / 'heap_mb=' line, no ESC byte
+RESULT U59 PASS convention file <project>/config/index/writer_limits.yaml is discovered without any env; an explicit CG_SAFE_LIMITS_FILE overrides it; a non-regular convention path (directory, DANGLIN
+RESULT U60 PASS REAL live writer (lock holder with codegraph identity): init refused with exit 3 both with the default floor and with the lowered floor; control without a writer is neither 3 nor 6
+RESULT U61 PASS preflight op on bad file values creates no flock/index_runs, prints no bulk-path die line (S2)
+RESULT U62 PASS prefix keys (min_mem_avail_gib_x) are not duplicates of the real key; zero-padded values longer than 4 chars are decimal (00020 = 20)
+SUMMARY cases=62 failed=32
+## propagation family + gate-ledger ratchet + block-start counts (tree copies, git-initialised)
+base PROPAGATION pass=87 fail=0 failed: none
+base ratchet: LEDGER: unimplemented=394 baseline=402 fails=0
+base ratchet: ✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+base ratchet rc=0
+new PROPAGATION pass=87 fail=0 failed: none
+new ratchet: LEDGER: unimplemented=394 baseline=402 fails=0
+new ratchet: ✅ CM-GATE-LEDGER-RATCHET: PASS — every named CM-* gate is implemented-or-deferred within the checked-in monotone-decrease baseline; no uncited vanished name
+new ratchet rc=0
+base Constitution 54:1 248:1 ext:0
+base CLAUDE 54:0 248:1 ext:0
+base AGENTS 54:0 248:1 ext:0
+base QWEN 54:0 248:1 ext:0
+base GEMINI 54:0 248:1 ext:0
+new Constitution 54:1 248:1 ext:2
+new CLAUDE 54:0 248:1 ext:1
+new AGENTS 54:0 248:1 ext:1
+new QWEN 54:0 248:1 ext:1
+new GEMINI 54:0 248:1 ext:1
+CLAUDE b9144df73cf83fdcf998f19583515771  -
+AGENTS b9144df73cf83fdcf998f19583515771  -
+QWEN b9144df73cf83fdcf998f19583515771  -
+GEMINI b9144df73cf83fdcf998f19583515771  -

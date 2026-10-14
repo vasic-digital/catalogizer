@@ -1,0 +1,11 @@
+{
+ "added": [],
+ "after_rows": 130,
+ "after_sha256": "d7ea09e9af307aecad24de6577f936166c0d6d2d6223dd56ff70f9f9d637e667",
+ "before_rows": 130,
+ "before_sha256": "d7ea09e9af307aecad24de6577f936166c0d6d2d6223dd56ff70f9f9d637e667",
+ "identical": true,
+ "removed": [],
+ "schema": "t172-entryset/1",
+ "stage": "qa"
+}

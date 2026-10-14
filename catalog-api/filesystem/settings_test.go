@@ -145,30 +145,39 @@ func TestSettingsFromRoot_RegisteredProtocolUsesItsSchemaOnly(t *testing.T) {
 	require.NoError(t, RegisterProtocol(spec(name, func(map[string]interface{}) (FileSystemClient, error) { return nil, nil })))
 	host, user, pass, path := "h", "u", "inline-secret", "/media"
 	port := 2222
-	opts := `{"credential_ref":"nas-1","tls_mode":"explicit","host_key_fingerprint":"SHA256:abc","cert_sha256":"not-in-schema","junk":"x"}`
-	s := SettingsFromRoot(&models.StorageRoot{Protocol: name, Host: &host, Port: &port, Path: &path, Username: &user, Password: &pass, Options: &opts}, nil)
+	opts := `{"credential_ref":"nas-1","tls_mode":"explicit","host_key_fingerprint":"SHA256:abc"}`
+	s := MustSettingsFromRoot(&models.StorageRoot{Protocol: name, Host: &host, Port: &port, Path: &path, Username: &user, Password: &pass, Options: &opts}, nil)
 	assert.Equal(t, map[string]interface{}{"host": "h", "port": 2222, "path": "/media", "username": "u", "credential_ref": "nas-1", "tls_mode": "explicit", "host_key_fingerprint": "SHA256:abc"}, s,
-		"password is not in the schema so it is never forwarded; cert_sha256 is not in this schema; junk is dropped")
+		"password is not in the schema so it is never forwarded")
 	require.NoError(t, ValidateSettings(name, s))
+	// WF22 N4: a key the schema does not consume (a pin the protocol cannot honour, or junk) is an ERROR, never silently dropped
+	for _, bad := range []string{`{"cert_sha256":"not-in-schema"}`, `{"junk":"x"}`} {
+		b := bad
+		_, err := SettingsFromRoot(&models.StorageRoot{Protocol: name, Host: &host, Options: &b}, nil)
+		assert.Error(t, err, bad)
+	}
 }
 
 func TestSettingsFromRoot_UnknownProtocolIsEmpty(t *testing.T) {
 	h := "h"
-	assert.Empty(t, SettingsFromRoot(&models.StorageRoot{Protocol: "gopher", Host: &h}, nil))
+	assert.Empty(t, MustSettingsFromRoot(&models.StorageRoot{Protocol: "gopher", Host: &h}, nil))
 }
 
 func TestSettingsFromRoot_AlwaysValidatesForBuiltins(t *testing.T) {
 	str := func(s string) *string { return &s }
 	port := 1
 	for _, proto := range []string{"local", "smb", "ftp", "nfs", "webdav"} {
-		r := &models.StorageRoot{Protocol: proto, Host: str("h"), Port: &port, Path: str("/p"), Username: str("u"), Password: str("p"), Domain: str("d"), MountPoint: str("/m"), Options: str("o"), URL: str("http://h/")}
-		assert.NoError(t, ValidateSettings(proto, SettingsFromRoot(r, nil)), proto)
+		r := &models.StorageRoot{Protocol: proto, Host: str("h"), Port: &port, Path: str("/p"), Username: str("u"), Password: str("p"), Domain: str("d"), MountPoint: str("/m"), URL: str("http://h/")}
+		if proto == "nfs" {
+			r.Options = str("o") // mount options: a free string for nfs only; every other protocol's options are a JSON object (WF22 N4)
+		}
+		assert.NoError(t, ValidateSettings(proto, MustSettingsFromRoot(r, nil)), proto)
 	}
 }
 
 func TestSettingsFromRoot_SMBIdentityResolverWins(t *testing.T) {
 	r := &models.StorageRoot{Protocol: "smb"}
-	s := SettingsFromRoot(r, func(*models.StorageRoot) (string, string, string) { return "resolved-user", "resolved-pass", "RD" })
+	s := MustSettingsFromRoot(r, func(*models.StorageRoot) (string, string, string) { return "resolved-user", "resolved-pass", "RD" })
 	assert.Equal(t, "resolved-user", s["username"])
 	assert.Equal(t, "resolved-pass", s["password"])
 	assert.Equal(t, "RD", s["domain"])

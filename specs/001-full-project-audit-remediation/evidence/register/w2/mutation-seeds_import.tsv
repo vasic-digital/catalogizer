@@ -1,0 +1,26 @@
+# identity: tool=seeds_import utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh seeds_import (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	the family severity is the LOWEST member severity
+M02	KILLED	1	entries older than the snapshot are accepted
+M03	KILLED	1	the docs/21 section 9.3 families are not folded
+M04	KILLED	1	every family member is primary (none is duplicate_of)
+M05	KILLED	1	no member governs the severity
+M06	KILLED	1	an item imported by another source is minted a second time
+M07	KILLED	1	the description cap is not applied
+M08	KILLED	1	a resumed run mints a new id
+M09	KILLED	1	the crash hook before the mapping never fires
+M10	KILLED	1	seed items are Bugs
+M11	KILLED	1	seed items require re-verification
+M12	KILLED	1	an unrated seed is defaulted low
+M13	KILLED	1	a linked family member is a primary of the existing item
+M14	KILLED	1	a compound severity label takes the lower word
+M15	KILLED	1	the R-ADJ routing is not named in the item
+M16	KILLED	1	a partly folded member is folded as well
+M17	EQUIVALENT	0	the item bound is not enforced
+M18	KILLED	1	an unmapped entry after the import is not an error
+M19	KILLED	1	a family member that is not a seed is accepted
+M20	KILLED	1	the engine validation after the import is skipped
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 19, 'EQUIVALENT': 1, 'ERROR': 0}

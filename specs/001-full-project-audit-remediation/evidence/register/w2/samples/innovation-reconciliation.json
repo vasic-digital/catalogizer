@@ -1,0 +1,58 @@
+{
+ "by_evidence_label": {
+  "PROVEN": 4
+ },
+ "by_kind": {
+  "PROPOSAL": 2,
+  "PROPOSAL part": 2
+ },
+ "by_status": {
+  "Queued": 4
+ },
+ "by_type": {
+  "Feature": 4
+ },
+ "candidates_read": 6,
+ "class": "S-27",
+ "component_id_not_null": 5,
+ "coverage": {
+  "S-26 only": [
+   "T1-A",
+   "T2-A"
+  ],
+  "S-27 only": [
+   "T1-B",
+   "T2-B"
+  ],
+  "both": [
+   "T5-D",
+   "T7-C"
+  ],
+  "neither": []
+ },
+ "coverage_counts": {
+  "S-26 only": 2,
+  "S-27 only": 2,
+  "both": 2,
+  "neither": 0
+ },
+ "coverage_mismatches": [],
+ "entries": 4,
+ "feature_items_planned": 4,
+ "findings_rows_written": 0,
+ "items_in_register": 4,
+ "map_rows": {
+  "primary": 4
+ },
+ "no_reg_findings_row": true,
+ "schema": "innovation-reconciliation/1",
+ "single_source": 0,
+ "tag_classes": {
+  "PROPOSAL": 2,
+  "R-ADJ": 2,
+  "mixed": 2,
+  "none": 0
+ },
+ "unmapped_entries": 0,
+ "with_ranked_game_changer": 3
+}

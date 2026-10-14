@@ -1,0 +1,8 @@
+# ledger seq=131 item=AUD-T174 polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/w2ev/root/sut target_fingerprint=3d5eb2bd15a26fd1c0430a3099937aba5d45d35b9a9df88c3c4c9d482cef23b9 test_fingerprint=c2a98ef62e358e66fcfdee97b2aecb4b4e8ffb57e695a8c10c72c86611f236c5
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "ROOT_INVENTORY=/src/.audit/scratch/w2ev/root/sut/root_inventory.py", "python3", "-I", "/src/scripts/register/tests/test_root_inventory.py"]
+# identity: task=T174 utc=2026-10-12T11:52:26Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# tool=/src/.audit/scratch/w2ev/root/sut/root_inventory.py sha256=ABSENT rules sha256=ABSENT
+FAIL root_inventory.py present: /src/.audit/scratch/w2ev/root/sut/root_inventory.py (RED: T174 not implemented) :: 
+RESULT: pass=0 fail=1

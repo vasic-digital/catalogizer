@@ -82,7 +82,15 @@ func (h *StreamHandler) StreamFile(c *gin.Context) {
 	}
 
 	// Build settings map from storage root
-	settings := storageRootToSettings(storageRoot)
+	settings, err := storageRootToSettings(storageRoot)
+	if err != nil {
+		h.logger.Error("Storage root settings are invalid",
+			zap.String("protocol", storageRoot.Protocol),
+			zap.Int64("file_id", id),
+			zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Storage root configuration is invalid"})
+		return
+	}
 
 	// Create a protocol-appropriate filesystem client
 	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
@@ -95,7 +103,7 @@ func (h *StreamHandler) StreamFile(c *gin.Context) {
 		h.logger.Error("Failed to create filesystem client for streaming",
 			zap.String("protocol", storageRoot.Protocol),
 			zap.Int64("file_id", id),
-			zap.Error(err))
+			zap.String("error", services.ScrubErrorFor(err, storageRoot)))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to storage"})
 		return
 	}
@@ -105,7 +113,7 @@ func (h *StreamHandler) StreamFile(c *gin.Context) {
 		h.logger.Error("Failed to connect to storage backend",
 			zap.String("protocol", storageRoot.Protocol),
 			zap.String("root_name", storageRoot.Name),
-			zap.Error(err))
+			zap.String("error", services.ScrubErrorFor(err, storageRoot)))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to storage backend"})
 		return
 	}
@@ -223,7 +231,7 @@ func (h *StreamHandler) getStorageRootByName(ctx context.Context, name string) (
 
 // storageRootToSettings converts a StorageRoot model to the settings map expected
 // by the filesystem ClientFactory. PA-01: one shared mapping, filesystem.SettingsFromRoot.
-func storageRootToSettings(root *root_models.StorageRoot) map[string]interface{} {
+func storageRootToSettings(root *root_models.StorageRoot) (map[string]interface{}, error) {
 	return filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
 }
 

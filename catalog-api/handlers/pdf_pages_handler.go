@@ -128,11 +128,15 @@ func (h *PdfPagesHandler) openPDFDocument(ctx context.Context, sf *repository.St
 	// comic_pages_handler.go) maps a StorageRoot to the per-protocol
 	// settings the ClientFactory expects — identical for both readers, so
 	// it is reused rather than duplicated.
+	settings, err := comicStorageRootSettings(root)
+	if err != nil {
+		return nil, nil, fmt.Errorf("storage root %q settings: %w", root.Name, err)
+	}
 	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
 		ID:       root.Name,
 		Name:     root.Name,
 		Protocol: root.Protocol,
-		Settings: comicStorageRootSettings(root),
+		Settings: settings,
 	})
 	if err != nil {
 		return nil, nil, fmt.Errorf("create %s filesystem client: %w", root.Protocol, err)

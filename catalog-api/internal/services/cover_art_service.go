@@ -1328,7 +1328,11 @@ func (t thumbnailTask) storageRoot() *models.StorageRoot {
 func (s *CoverArtService) copyRemoteFileToTemp(ctx context.Context, t thumbnailTask) (string, error) {
 	// The same single mapping every other CreateClient caller uses (filesystem.SettingsFromRoot). The hand-built SMB-shaped map this replaced
 	// carried share/domain/username/password for EVERY protocol, which the strict factory refuses for ftp, nfs and webdav (WF22 R1).
-	settings := filesystem.SettingsFromRoot(t.storageRoot(), nil)
+	// ResolveSMBIdentity is passed like every other caller does: a root that stores only identity_index must authenticate here too (WF22 N6).
+	settings, err := filesystem.SettingsFromRoot(t.storageRoot(), ResolveSMBIdentity)
+	if err != nil {
+		return "", fmt.Errorf("storage root settings: %w", err)
+	}
 
 	config := &filesystem.StorageConfig{
 		Protocol: t.protocol,

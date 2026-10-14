@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // LocalConfig contains local filesystem configuration
@@ -64,15 +63,10 @@ func (c *LocalClient) TestConnection(ctx context.Context) error {
 	return err
 }
 
-// resolvePath resolves a relative path to an absolute path within the base directory
+// resolvePath resolves a relative path to an absolute path within the base directory. The confinement rule is ConfinePath (shared with every
+// protocol client): a ".." segment cannot climb out of the base, and a name that merely contains ".." is kept (WF22 N7).
 func (c *LocalClient) resolvePath(path string) string {
-	// Clean the path and prevent directory traversal
-	cleanPath := filepath.Clean(path)
-	if strings.Contains(cleanPath, "..") {
-		// Prevent directory traversal attacks
-		cleanPath = strings.ReplaceAll(cleanPath, "..", "")
-	}
-	return filepath.Join(c.basePath, cleanPath)
+	return filepath.Join(c.basePath, filepath.FromSlash(ConfinePath(filepath.ToSlash(path))))
 }
 
 // ReadFile reads a file from the local filesystem

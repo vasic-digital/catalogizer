@@ -271,6 +271,21 @@ run_helixqa() {
     export HELIX_ANDROID_PACKAGE="com.catalogizer.androidtv"
     log_info "Android package: $HELIX_ANDROID_PACKAGE"
     
+    # llmctl vision (BG-LLMCTL-001): opt-in with HELIX_USE_LLMCTL=1. READ-ONLY detection: the model is never
+    # started here. Only a READY state exports LLMCTL_VISION_URL, which HelixQA's provider discovery
+    # (pkg/llm ProviderLlmctl) picks up; every other state is an honest, logged SKIP-with-reason.
+    if [[ "${HELIX_USE_LLMCTL:-0}" == "1" ]]; then
+        local llmctl_json llmctl_state
+        llmctl_json=$("$PROJECT_ROOT/scripts/llmctl/llmctl_vision_ensure.sh" --json 2>/dev/null || true)
+        llmctl_state=$(printf '%s' "$llmctl_json" | python3 -I -c 'import json,sys; d=json.load(sys.stdin); print(d["state"], "-", d["detail"])' 2>/dev/null || echo "UNKNOWN - ensure script gave no verdict")
+        if [[ "$llmctl_state" == READY* ]]; then
+            export LLMCTL_VISION_URL="${LLMCTL_VISION_URL:-http://127.0.0.1:8082}"
+            log_info "llmctl vision: $llmctl_state"
+        else
+            log_warn "llmctl vision SKIPPED: $llmctl_state"
+        fi
+    fi
+
     # HelixQA automatically reads .devignore from project root
     # and respects HELIX_ADB_EXCLUDE env var if set.
     # No need to manually filter - HelixQA handles device exclusion internally.

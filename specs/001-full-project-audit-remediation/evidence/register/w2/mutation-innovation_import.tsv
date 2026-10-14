@@ -1,0 +1,24 @@
+# identity: tool=innovation_import utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh innovation_import (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	EMERGING is recorded PROVEN
+M02	KILLED	1	the secondary-source marking is lost
+M03	KILLED	1	the disposition line is changed
+M04	KILLED	1	innovation items are Tasks
+M05	KILLED	1	innovation items are category bug
+M06	KILLED	1	innovation items carry severity medium
+M07	KILLED	1	the R-ADJ tag is expected in S-27 as well
+M08	KILLED	1	the ranked game changer is not recorded
+M09	KILLED	1	the falsifiable experiment is not recorded
+M10	KILLED	1	a missing docs/18 candidate row is accepted
+M11	KILLED	1	a snapshot without docs/18 is accepted
+M12	KILLED	1	the PROPOSAL tag is expected in S-26
+M13	KILLED	1	the sentence that a proposal is not a finding is dropped
+M14	KILLED	1	the Sources block lacks the docs/18 row
+M15	KILLED	1	entries older than the snapshot are accepted
+M16	KILLED	1	a resumed run mints a new id
+M17	KILLED	1	the n/a label loses its repository citation
+M18	KILLED	1	an innovation item requires re-verification
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 18, 'EQUIVALENT': 0, 'ERROR': 0}

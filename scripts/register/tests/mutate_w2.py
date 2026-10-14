@@ -23,10 +23,10 @@ TOOLS = {
                        "suite": "bash scripts/register/tests/test_freeze_listing.sh", "item": "AUD-W2-LISTING",
                        "sources": ["scripts/register/tests/test_freeze_listing.sh", "scripts/register/tests/w2_fixture.py", "scripts/register/tests/wp20_fixture.py"]},
     "recount": {"files": ["recount_sources.sh", "recount_sources.py"] + list(COMMON), "target": "recount_sources.py", "env": {"RECOUNT_SH": "recount_sources.sh"},
-                "suite": "python3 -I scripts/register/tests/test_recount.py", "item": "AUD-T166",
+                "suite": "W2_FAILFAST=1 python3 -I scripts/register/tests/test_recount.py", "item": "AUD-T166",
                 "sources": ["scripts/register/tests/test_recount.py", "scripts/register/tests/w2_fixture.py", "scripts/register/tests/wp20_fixture.py"]},
     "root_inventory": {"files": ["root_inventory.py", "root_dispositions.yaml", "check_freeze_listing.sh"], "target": "root_inventory.py", "env": {"ROOT_INVENTORY": "root_inventory.py"},
-                       "suite": "python3 -I scripts/register/tests/test_root_inventory.py", "item": "AUD-T174",
+                       "suite": "W2_FAILFAST=1 python3 -I scripts/register/tests/test_root_inventory.py", "item": "AUD-T174",
                        "sources": ["scripts/register/tests/test_root_inventory.py", "scripts/register/tests/w2_fixture.py", "scripts/register/tests/wp20_fixture.py"]},
 }
 
@@ -44,6 +44,13 @@ M["freeze_listing"] = [
     ("M08", "accepts an empty path record", "    if any(r == b\"\" for r in recs):", "    if False:"),
     ("M09", "hash taken over the sorted record set, not the file bytes (a reordering passes)", "    h = hashlib.sha256(data).hexdigest()", "    h = hashlib.sha256(b\"\\0\".join(sorted(_recs)) + b\"\\0\").hexdigest()"),
     ("M10", "refusal exit code 0 instead of 20", "    sys.exit(20)", "    sys.exit(0)"),
+    ("M11", "accepts a freeze.json whose listing is not a string", "not isinstance(fj.get(\"listing\"), str)", "False"),
+    ("M12", "a malformed manifest escapes as a crash instead of freeze_manifest_invalid", "    except (OSError, ValueError, KeyError, TypeError) as e:", "    except OSError as e:"),
+    ("M13", "a path that is not UTF-8 is silently skipped", "            refuse(\"freeze_path_unsafe\", repr(r))", "            continue"),
+    ("M14", "the duplicate refusal names no path", "if n > 1)[:3]", "if n > 99)[:3]"),
+    ("M15", "a moved listing is reported as invalid, not moved", "        refuse(\"freeze_listing_moved\", \"the listing %s hashes", "        refuse(\"freeze_listing_invalid\", \"the listing %s hashes"),
+    ("M16", "the duplicate scan is quadratic again (the pre-fix recs.count)", "dup = sorted(r for r, n in collections.Counter(recs).items() if n > 1)[:3]", "dup = sorted({r for r in recs if recs.count(r) > 1})[:3]"),
+    ("M17", "a missing manifest file in the two-argument form is not a usage error", "[ -f \"$1\" ] && [ -f \"$2\" ]; }", "[ -f \"$1\" ]; }"),
 ]
 M["recount"] = [
     ("N00", "NEGATIVE CONTROL: the unmutated tree must pass", None, None),
@@ -75,6 +82,7 @@ M["recount"] = [
     ("M23", "scanned_entry_count vs rows is not itemised", "            if sc != len(rows):", "            if False:"),
     ("M24", "gosec records counted by line (a one-line JSON file reads 1)", "n = len(xargs_grep(pop, [p], [\"-E\", \"-o\", \"-e\", r'\"rule_id\"'], count=False))", "n = gcount(pop, [p], r'\"rule_id\"').get(p, 0)"),
     ("M25", "a source without a method passes as unrecounted", "failing = [s for s in out_src if s[\"status\"] in (\"diff\", \"no_recount_method\")]", "failing = [s for s in out_src if s[\"status\"] in (\"diff\",)]"),
+    ("M27", "every recount.json is marked as real evidence (F7)", "\"fixture\": not (isinstance(fj.get(\"head\"), str) and re.fullmatch(r\"[0-9a-f]{40}\", fj[\"head\"]) is not None),", "\"fixture\": False,"),
 ]
 M["root_inventory"] = [
     ("N00", "NEGATIVE CONTROL: the unmutated tree must pass", None, None),
@@ -103,7 +111,14 @@ M["root_inventory"] = [
     ("M22", "a governance file is counted as a source class", "k = \"governance\" if r[\"entry\"] in GOVERNANCE_ROOT else r.get(\"source_class\", \"none\")", "k = r.get(\"source_class\", \"none\")"),
     ("M23", "a problem_source row without a source class passes --check", "        if d == \"problem_source\" and not r.get(\"source_class\"):", "        if False:"),
     ("M24", "an excluded row without a reason passes --check", "        if d == \"excluded\" and not r.get(\"reason\"):", "        if False:"),
+    ("M25", "every root-items.json is marked as real evidence (F7)", "\"fixture\": not (isinstance(fj.get(\"head\"), str) and re.fullmatch(r\"[0-9a-f]{40}\", fj[\"head\"]) is not None),", "\"fixture\": False,"),
 ]
+
+
+sys.path.insert(0, HERE)
+import mutate_w2_sets as _S   # noqa: E402  (T170/T171/T172 sets)
+TOOLS.update(_S.TOOLS2)
+M.update(_S.M2)
 
 
 def build(tool, out, ids):

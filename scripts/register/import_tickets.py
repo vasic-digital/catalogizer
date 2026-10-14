@@ -34,6 +34,37 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 DESC_CAP = 2048                       # bytes, Sources block included (T168; the register bound of T040b)
 CLOSED_CLASS = ("resolved", "fixed", "closed")
+# the QA-instrument classifier (docs/12 section 11.3, QF-10), shared by T168 (this importer: the fail-closed ORDER guard) and T172 (import_t172.py: the grouping).
+# Class membership is decided here, once (review fix round 2, F4): a QA-instrument closure is a ticket in a TERMINAL status (the closed class plus `wontfix`: the
+# statement "the QA tool, not the product, was wrong" is the same defect whatever closure word the ticket carries; `open` is never grouped) whose RESOLUTION text
+# (the front-matter `resolution:` field, or the `## Resolution` section of the body) carries a QA-instrument statement.
+QA_TERMINAL = CLOSED_CLASS + ("wontfix",)
+QA_STATEMENT = re.compile(r"QA infrastructure|test infrastructure|False positive: screenshot captured during screen transition", re.I)
+CAUSE_RULES = (
+    ("screenshot_timing", re.compile(r"screenshot timing|screen transition or app loading", re.I)),
+    ("black_frame", re.compile(r"black frame|blank frame|nothing rendered", re.I)),
+    ("wrong_screen", re.compile(r"wrong screen|screenshot showed", re.I)),
+    ("wrong_adb", re.compile(r"keycode|\badb\b|package name", re.I)),
+)
+RESOLUTION_SECTION = re.compile(r"^##[ \t]+Resolution[ \t]*$(.*?)(?=^##[ \t]|\Z)", re.I | re.S | re.M)
+
+
+def resolution_text(fm, body):
+    parts = [fm.get("resolution") or ""] + [m.group(1) for m in RESOLUTION_SECTION.finditer(body or "")]
+    return "\n".join(p.strip() for p in parts if p and p.strip())
+
+
+def qa_cause_of(raw_status, fm, body):
+    """-> the stated QA-instrument cause key of a ticket, or None when it is not a QA-instrument closure"""
+    if (raw_status or "").strip().lower() not in QA_TERMINAL:
+        return None
+    res = resolution_text(fm, body)
+    if not QA_STATEMENT.search(res):
+        return None
+    for key, rx in CAUSE_RULES:
+        if rx.search(res):
+            return key
+    return "other_qa_instrument"
 SEVERITIES = ("critical", "high", "medium", "low", "cosmetic")
 S_SCALE = {"s1": "critical", "s2": "high", "s3": "medium", "s4": "low", "s5": "cosmetic"}     # IC-01 (docs/21 section 7)
 SUPPORTED_KINDS = ("issue_file",)
@@ -408,6 +439,13 @@ class Importer:
                 self.stats["already_mapped"] += 1
                 continue
             todo.append(t)
+        # the ORDER guard (review fix round 2, F1): the QA-instrument tickets are grouped into their cause items by `import_t172.sh --stage qa` BEFORE this importer; an
+        # unmapped QA-instrument ticket here means that stage has not run (or crashed part way), and importing it per ticket would mint an id and an item that can
+        # never be retracted (ids are never reused, reg_source_map rows are never deleted). Refused before any mint, dry runs included.
+        unqa = [t["locator"] for t in todo if qa_cause_of(t["raw_status"], t["fm"], t["body"])]
+        if unqa:
+            raise Refusal("qa_grouping_not_run", "%d QA-instrument ticket(s) are not mapped to a cause item yet (%s%s): run `import_t172.sh --stage qa` to completion BEFORE import.sh "
+                          "(a crashed stage qa is re-run, it resumes); nothing written" % (len(unqa), ", ".join(unqa[:5]), " ..." if len(unqa) > 5 else ""))
         if a.dry_run:
             log("dry run: %d entries selected, %d already mapped, %d to import" % (len(tickets), self.stats["already_mapped"], len(todo)))
             return self.finish(c, kinds, dry=True)

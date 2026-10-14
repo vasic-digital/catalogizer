@@ -83,5 +83,37 @@ open(sys.argv[1], "wb").write(b"\0".join(d) + b"\0")
 PY
 assert_eq "two-argument form: a missing path is refused freeze_listing_moved" "$(run "$LST" "$MF") $(grep -c 'REFUSED reason=freeze_listing_moved.*missing ' "$T_SCR/e.txt")" "20 1"
 cp "$LST.orig" "$LST"
+# review fix round 2 (F9): the duplicate detail names the duplicate, a malformed manifest / a non-UTF-8 path / a missing manifest file are refused with their own reason, and the refusal path is O(n)
+printf 'a.md\0b.md\0a.md\0' >"$LST"; python3 - "$T_SCR/f.json" "$LST" <<'PY'
+import hashlib, json, sys
+fj = json.load(open(sys.argv[1])); fj["listing_sha256"] = hashlib.sha256(open(sys.argv[2], "rb").read()).hexdigest()
+json.dump(fj, open(sys.argv[1] + ".dupnamed", "w"))
+PY
+assert_eq "duplicate path: the refusal names the duplicated path (not an empty list)" "$(run "$T_SCR/f.json.dupnamed") $(grep -c "duplicate path: \[b'a.md'\]" "$T_SCR/e.txt")" "20 1"
+cp "$LST.orig" "$LST"
+python3 - "$LST" "$T_SCR/f.json" <<'PY'
+import hashlib, json, sys
+recs = [("dir%03d/file%05d.md" % (i % 200, i)).encode() for i in range(20000)]
+data = b"\0".join(recs + [recs[0]]) + b"\0"
+open(sys.argv[1], "wb").write(data)
+fj = json.load(open(sys.argv[2])); fj["listing_sha256"] = hashlib.sha256(data).hexdigest()
+json.dump(fj, open(sys.argv[2] + ".big", "w"))
+PY
+T0=$(date +%s.%N); RC=$(run "$T_SCR/f.json.big"); T1=$(date +%s.%N)
+assert_eq "a 20,001-record listing with one duplicate: refused freeze_listing_invalid in under 4 s (the duplicate scan is one pass, not quadratic)" "$RC $(python3 -c "import sys;print('fast' if float(sys.argv[2])-float(sys.argv[1]) < 4 else 'slow')" "$T0" "$T1")" "20 fast"
+cp "$LST.orig" "$LST"
+printf '{not json' >"$T_SCR/bad_manifest.json"
+assert_eq "two-argument form: a manifest that is not JSON is refused freeze_manifest_invalid" "$(run "$LST" "$T_SCR/bad_manifest.json") $(grep -c 'reason=freeze_manifest_invalid' "$T_SCR/e.txt")" "20 1"
+printf '{"entries": 5}' >"$T_SCR/bad_manifest2.json"
+assert_eq "two-argument form: a manifest whose entries are not a list of path records is refused freeze_manifest_invalid" "$(run "$LST" "$T_SCR/bad_manifest2.json") $(grep -c 'reason=freeze_manifest_invalid' "$T_SCR/e.txt")" "20 1"
+assert_eq "two-argument form: a manifest file that does not exist is a usage error (exit 2)" "$(run "$LST" "$T_SCR/none_manifest.json")" "2"
+printf 'a\xffb.md\0' >"$T_SCR/nonutf8.lst"
+printf '{"entries": []}' >"$T_SCR/empty_manifest.json"
+assert_eq "two-argument form: a path that is not UTF-8 is refused freeze_path_unsafe" "$(run "$T_SCR/nonutf8.lst" "$T_SCR/empty_manifest.json") $(grep -c 'reason=freeze_path_unsafe' "$T_SCR/e.txt")" "20 1"
+python3 - "$T_SCR/f.json" <<'PY'
+import json, sys
+fj = json.load(open(sys.argv[1])); fj["listing"] = 7; json.dump(fj, open(sys.argv[1] + ".listnum", "w"))
+PY
+assert_eq "freeze.json whose listing is not a string: refused freeze_listing_unrecorded" "$(run "$T_SCR/f.json.listnum") $(grep -c 'reason=freeze_listing_unrecorded' "$T_SCR/e.txt")" "20 1"
 echo "RESULT: pass=$PASS fail=$FAIL"
 [ "$FAIL" -eq 0 ]

@@ -194,11 +194,15 @@ func (h *ComicPagesHandler) resolveComicReaderAt(ctx context.Context, sf *reposi
 		return nil, 0, nil, err
 	}
 
+	settings, err := comicStorageRootSettings(root)
+	if err != nil {
+		return nil, 0, nil, fmt.Errorf("storage root %q settings: %w", root.Name, err)
+	}
 	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{
 		ID:       root.Name,
 		Name:     root.Name,
 		Protocol: root.Protocol,
-		Settings: comicStorageRootSettings(root),
+		Settings: settings,
 	})
 	if err != nil {
 		return nil, 0, nil, fmt.Errorf("create %s filesystem client: %w", root.Protocol, err)
@@ -287,7 +291,7 @@ func (h *ComicPagesHandler) getStorageRootForFile(ctx context.Context, fileID in
 // filesystem.SettingsFromRoot; SMB credentials are resolved via
 // services.ResolveSMBIdentity (env-var identities; §11.4.10 - the password is
 // never logged here).
-func comicStorageRootSettings(root *root_models.StorageRoot) map[string]interface{} {
+func comicStorageRootSettings(root *root_models.StorageRoot) (map[string]interface{}, error) {
 	return filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
 }
 

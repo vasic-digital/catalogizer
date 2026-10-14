@@ -101,6 +101,7 @@ Many seeds describe the same defect from different angles.
 | Backup | doc18 T7-C (`R-ADJ` part); doc15 S-03 (part) |
 
 These 5 families list 15 member ids, of which one, doc15 S-03, is only partly folded (marked `(part)`).
+The 27 itemised seeds fold to at most 18 register items before any further deduplication (27 minus 14 plus 5).
 
 ### 9.4 Legacy backlog population
 

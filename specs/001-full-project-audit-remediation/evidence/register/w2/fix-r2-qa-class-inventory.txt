@@ -1,0 +1,31 @@
+needle closed + fm QA infrastructure                        want=screenshot_timing      got=screenshot_timing      ok
+needle wontfix + fm QA infrastructure                       want=wrong_screen           got=wrong_screen           ok
+needle resolved + body Resolution FP statement              want=screenshot_timing      got=screenshot_timing      ok
+needle fixed + fm test infrastructure (other)               want=other_qa_instrument    got=other_qa_instrument    ok
+needle open + QA infrastructure (NOT a member)              want=None                   got=None                   ok
+needle closed, product reason (NOT a member)                want=None                   got=None                   ok
+needle fixed + QA phrase only in Notes (NOT a member)       want=None                   got=None                   ok
+
+tickets read: 1778 (/home/milosvasic/Projects/catalogizer/docs/issues)
+by status: {'closed': 299, 'fixed': 492, 'open': 1, 'resolved': 704, 'wontfix': 282}
+grouped (status, cause): count
+  closed     other_qa_instrument    1
+  closed     screenshot_timing      294
+  closed     wrong_adb              1
+  closed     wrong_screen           3
+  fixed      other_qa_instrument    12
+  fixed      wrong_adb              4
+  fixed      wrong_screen           26
+  resolved   other_qa_instrument    6
+  resolved   screenshot_timing      10
+  resolved   wrong_adb              2
+  resolved   wrong_screen           13
+  wontfix    other_qa_instrument    6
+  wontfix    wrong_adb              2
+  wontfix    wrong_screen           13
+grouped total: 393 (terminal statuses ('resolved', 'fixed', 'closed', 'wontfix'))
+by status of the grouped: {'closed': 299, 'fixed': 42, 'resolved': 31, 'wontfix': 21}
+UNGROUPED candidates (terminal status, resolution mentions infrastructure / false positive / screenshot): 3 distinct, 6 tickets
+     4  Not a defect — closed on source evidence. The Android TV client is a J
+     1  false_positive — LLM cannot detect ARIA attributes, focus indicators, 
+     1  false_positive — the registration form is fully implemented with 6 fie

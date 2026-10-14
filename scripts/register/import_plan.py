@@ -70,13 +70,28 @@ def norm_severity(label):
     return sev, "source label %r normalised to %s%s" % (label[:60], sev, cand), False, bool(cand)
 
 
+EVIDENCE_WORD = {"PROVEN": "PROVEN", "EMERGING": "PLAUSIBLE", "SPECULATIVE": "SPECULATIVE", "UNCONFIRMED": "UNCONFIRMED"}
+EVIDENCE_STRENGTH = ("UNCONFIRMED", "SPECULATIVE", "PLAUSIBLE", "PROVEN")        # weakest first
+
+
+def evidence_parts(raw):
+    """docs/18 evidence label -> [register value of each `;`-separated clause]. A clause starts with one of the four label words (its parenthesised citation is
+    ignored); a clause that does not (`integrated form not found`, `prerequisite is a repository defect`) states no evidence level and counts as UNCONFIRMED."""
+    r = re.sub(r"\([^)]*\)", " ", (raw or "").strip())
+    parts = []
+    for clause in r.split(";"):
+        m = re.match(r"^\W*(PROVEN|EMERGING|SPECULATIVE|UNCONFIRMED)\b", clause.strip())
+        parts.append(EVIDENCE_WORD[m.group(1)] if m else "UNCONFIRMED")
+    return parts
+
+
 def evidence_label(raw):
-    """docs/18 evidence label -> (register value, single_source flag) under the docs/18 section 2.1 mapping"""
+    """docs/18 evidence label -> (register value, single_source flag) under the docs/18 section 2.1 mapping. A COMPOUND label (several `;` clauses, docs/18 section 2.1
+    has no row for them) takes its WEAKEST clause: the register value never states more evidence than the weakest stated part (review fix round 2, F2)."""
     r = (raw or "").strip()
     if not r or r.lower().startswith("n/a"):
         return "n/a", False
-    first = re.match(r"^(PROVEN|EMERGING|SPECULATIVE|UNCONFIRMED)\b", r)
-    val = {"PROVEN": "PROVEN", "EMERGING": "PLAUSIBLE", "SPECULATIVE": "SPECULATIVE", "UNCONFIRMED": "UNCONFIRMED"}[first.group(1)] if first else "UNCONFIRMED"
+    val = min(evidence_parts(r), key=EVIDENCE_STRENGTH.index)
     return val, "secondary" in r.lower()
 
 
@@ -201,9 +216,14 @@ class PlanImporter(IT.Importer):
         fam_of, fam_list = {}, []
         for f in fams:
             ms = []
+            seen_in_family = set()
             for (doc, i, part) in f["members"]:
                 if (doc, i) not in by_key:
                     raise Refusal("family_member_not_a_seed", "docs/21 line %d: family %r names %s %s which is not a section 9.1 seed" % (f["line"], f["family"][:40], doc, i))
+                if (doc, i) in seen_in_family:
+                    raise Refusal("family_member_repeated", "docs/21 line %d: family %r names %s %s more than once - nothing written (a repeated member would count as folded twice)" % (
+                        f["line"], f["family"][:40], doc, i))
+                seen_in_family.add((doc, i))
                 if part:
                     continue
                 if (doc, i) in fam_of:
@@ -249,8 +269,16 @@ class PlanImporter(IT.Importer):
                     "items_upper_bound": bound, "items_planned": len(groups), "linked_to_items_of_other_sources": len(links), "located_in_source_document": sum(1 for s in seeds if s["located"]),
                     "unlocated_seed_ids": [("%s:%s" % (s["doc"], s["id"])) for s in seeds if not s["located"]],
                     "doc21_bound_rev8": 198}
-        if len(groups) > bound:
-            raise Refusal("item_bound_exceeded", "%d items planned, the docs/21 bound is %d (%d seeds - %d folded) - nothing written" % (len(groups), bound, len(seeds), folded))
+        # the bound has TWO sources (review fix round 2, F3): the one derived from the parsed tables (seeds - folded) and the number docs/21 itself STATES ("fold to at
+        # most N register items"), an independent oracle: a plan above either is refused, and a stated number the table does not reproduce is a stale document.
+        stated = sorted({int(m.group(1)) for m in re.finditer(r"fold(?:s|ing)? to at most (\d+) register items", "\n".join(lines))})
+        if len(stated) > 1:
+            raise Refusal("declared_bound_conflict", "docs/21 states more than one item bound (%s) - nothing written" % ", ".join(str(x) for x in stated))
+        limit = min(bound, stated[0]) if stated else bound
+        self.rec["items_bound_stated_in_docs21"] = stated[0] if stated else None
+        if len(groups) > limit:
+            raise Refusal("item_bound_exceeded", "%d items planned, the docs/21 bound is %d (%d seeds - %d folded; the document states %s) - nothing written" % (
+                len(groups), limit, len(seeds), folded, stated[0] if stated else "no number"))
         self.links = links
         return groups, seeds, fam_list
 
@@ -333,11 +361,13 @@ class PlanImporter(IT.Importer):
             cells = cc["cells"]
             label_raw = cells.get("Evidence label (finding)", "")
             val, single = evidence_label(label_raw)
+            parts = evidence_parts(label_raw) if val != "n/a" else []
+            compound = " (compound label %s: the weakest part wins)" % "+".join(parts) if len(parts) > 1 else ""
             rk = re.search(r"rank\s+(\d+)", e["rank"])
             body = ["Innovation %s of docs/21 section 9.5 (%s): a PROPOSAL for a LATER feature, not a finding, defect or task of feature 001; it is not implemented here (docs/18 section 1)." % (e["id"], e["kind"]),
                     "docs/18 row (line %d): %s" % (cc["line"], cut_text(cells.get("Candidate", ""), 520)),
                     "Touches: %s; effort %s, impact %s, risk %s." % (cut_text(cells.get("Touches", ""), 80), cells.get("Effort", "?"), cells.get("Impact", "?"), cells.get("Risk", "?")),
-                    "Evidence label: %s -> register value %s%s%s (docs/18 section 2.1)." % (cut_text(label_raw, 120), val, " + single_source" if single else "",
+                    "Evidence label: %s -> register value %s%s%s%s (docs/18 section 2.1)." % (cut_text(label_raw, 120), val, " + single_source" if single else "", compound,
                                                                                             " (repository citation: the docs/18 row itself)" if val == "n/a" else "")]
             if rk and rk.group(1) in ranks:
                 body.append("Ranked game changer (docs/18 section 13, rank %s): %s." % (rk.group(1), cut_text(ranks[rk.group(1)], 150)))
@@ -408,6 +438,10 @@ class PlanImporter(IT.Importer):
             raise Refusal("class_unsupported", "--class seeds|innovation")
         fj = self.read_freeze()
         self.check_snapshot(fj)
+        head = fj.get("head")       # provenance of the reconciliation record (11.4.115(F), review fix round 2 F7): the freeze it was produced from, and whether it is a fixture
+        self.ident = {"head": head, "frozen_at": fj.get("frozen_at"), "listing_sha256": fj.get("listing_sha256"),
+                      "manifest_sha256": hashlib.sha256(open(fj["manifest"], "rb").read()).hexdigest(),
+                      "fixture": not (isinstance(head, str) and re.fullmatch(r"[0-9a-f]{40}", head) is not None)}
         self.load_map()
         dbf = os.open(a.db, os.O_RDONLY)
         try:
@@ -473,6 +507,7 @@ class PlanImporter(IT.Importer):
             self.rec["findings_rows_written"] = c.execute("SELECT count(*) FROM reg_findings").fetchone()[0]
             self.rec["component_id_not_null"] = c.execute("SELECT count(*) FROM reg_item_ext WHERE component_id IS NOT NULL").fetchone()[0]
         if a.reconciliation:
+            self.rec["freeze"], self.rec["fixture"] = self.ident, self.ident["fixture"]
             with open(a.reconciliation, "w", encoding="utf-8", newline="\n") as f:
                 json.dump(self.rec, f, sort_keys=True, indent=1)
                 f.write("\n")

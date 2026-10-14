@@ -113,7 +113,7 @@ func rootWebDAV(t *testing.T, pathSetting string) *models.StorageRoot {
 
 func connect(t *testing.T, root *models.StorageRoot) filesystem.FileSystemClient {
 	t.Helper()
-	settings := filesystem.SettingsFromRoot(root, nil)
+	settings := filesystem.MustSettingsFromRoot(root, nil)
 	c, err := filesystem.NewDefaultClientFactory().CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
 	require.NoError(t, err, "the settings the scanner side writes must be accepted by the factory (PA-01)")
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
@@ -200,7 +200,7 @@ func TestRealFTP_WrongPasswordNeverReachesAScan(t *testing.T) {
 	root := rootFTP(t, "")
 	bad := "wrong-credential-for-the-negative-test"
 	root.Password = &bad
-	c, err := filesystem.NewDefaultClientFactory().CreateClient(&filesystem.StorageConfig{Protocol: "ftp", Settings: filesystem.SettingsFromRoot(root, nil)})
+	c, err := filesystem.NewDefaultClientFactory().CreateClient(&filesystem.StorageConfig{Protocol: "ftp", Settings: filesystem.MustSettingsFromRoot(root, nil)})
 	require.NoError(t, err)
 	cerr := c.Connect(context.Background())
 	require.Error(t, cerr)

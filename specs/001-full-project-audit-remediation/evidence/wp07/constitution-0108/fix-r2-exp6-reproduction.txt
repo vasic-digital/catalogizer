@@ -1,0 +1,49 @@
+# Reproduction log for the MEASURED ENGINE FACTS cited by the Constitution.md §11.4.54 / §11.4.248 EXTENSION (2026-10-08)
+# RE-MEASURED 2026-10-12 (round 2.2, review WF31 finding P-1r): the round-2 log recorded 7 items / 5 after the round trip while the
+# governance text said 8 / 2-of-8; this run re-measures everything first-hand, adds an id-level dump (step E) and a derived-default
+# step without --prefix (steps F/G). Engine: the tracked prebuilt constitution/scripts/workable-items/bin/workable-items at
+# constitution HEAD 1c89813, run inside a rootless IMG-NODE container via scripts/containers/run_pinned.sh (--network=none,
+# RUNP_MEMORY=3221225472); the script is stored as fix-r2-exp6-reproduction.script.sh.txt in this evidence pack. No credentials involved.
+# Stored as .txt because .gitignore ignores *.log. This file lives in the CONSUMER repository evidence pack (tracked with the
+# consumer change), NOT in the constitution tree: a constitution-only clone cannot resolve the path; the numbers in the text are
+# the load-bearing claim and this log is the consumer-side proof.
+# What it shows (read from the output below): explicit --prefix minted CAT-001..003 plus cat-001, CATS-001, C1T-001, AB-001
+# (7 items, 5 keys); `validate` printed "OK — 7 items"; the md export lists all 7 headings; a db -> md -> db round trip ended with
+# 5 items and the ids dropped are CATS-001 and cat-001; with NO --prefix in a directory named `catalogizer` three mints gave
+# CAT-001..003 (the derived default), and in a directory named `other-proj` the derived default was OTH.
+# ---- begin captured output ----
+## engine binary: /src/constitution/scripts/workable-items/bin/workable-items
+d789d6251326b523
+## A. explicit --prefix mints (7 items, 5 keys)
+add: created CAT-001 (Bug, status=Queued) in Issues
+add: created CAT-002 (Bug, status=Queued) in Issues
+add: created CAT-003 (Bug, status=Queued) in Issues
+add: created cat-001 (Bug, status=Queued) in Issues
+add: created CATS-001 (Bug, status=Queued) in Issues
+add: created C1T-001 (Bug, status=Queued) in Issues
+add: created AB-001 (Bug, status=Queued) in Issues
+## B. validate
+validate: OK — 7 items, all invariants satisfied
+## C. db -> md
+wrote /tmp/e6/F.md (0 bytes)
+7
+## CAT-001 — t CAT
+## CAT-002 — t CAT
+## CAT-003 — t CAT
+## cat-001. t cat
+## CATS-001 — t CATS
+## C1T-001. t C1T
+## AB-001. t AB
+## D. md -> db round trip (second database)
+synced 5 total items into /tmp/e6/w2.db
+validate: OK — 5 items, all invariants satisfied
+## E. ids before / after / dropped (python3 -I, sqlite3 read-only)
+before(7)=['CAT-001', 'CAT-002', 'CAT-003', 'cat-001', 'CATS-001', 'C1T-001', 'AB-001']
+after (5)=['CAT-001', 'CAT-002', 'CAT-003', 'C1T-001', 'AB-001']
+dropped=['CATS-001', 'cat-001']
+## F. derived default prefix: three mints WITHOUT --prefix in a clone directory named catalogizer (git-initialised)
+add: created CAT-001 (Bug, status=Queued) in Issues
+add: created CAT-002 (Bug, status=Queued) in Issues
+add: created CAT-003 (Bug, status=Queued) in Issues
+## G. same, directory named other-proj
+add: created OTH-001 (Bug, status=Queued) in Issues

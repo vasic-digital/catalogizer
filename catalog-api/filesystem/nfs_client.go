@@ -7,12 +7,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	pathpkg "path"
 	"path/filepath"
 	"strings"
 	"syscall"
 )
+
+// procMountsPath is the kernel mount table; a variable so a test can present a mount table without a privileged mount.
+var procMountsPath = "/proc/mounts"
 
 // NFSConfig contains NFS connection configuration
 type NFSConfig struct {
@@ -43,11 +47,17 @@ func NewNFSClient(config NFSConfig) (*NFSClient, error) {
 	}, nil
 }
 
-// Connect establishes the NFS connection by mounting the filesystem
+// Connect establishes the NFS connection.
+//
+// Root cause of WF22 N1 (every NFS scan failed "not connected"): isMounted was a stub that returned true whenever /proc/mounts could be opened,
+// so Connect decided "already mounted", set connected=true and NEVER mounted, while IsConnected additionally required mounted=true, which was
+// never set. The behaviour had nothing to do with privileges. isMounted now really parses /proc/mounts for an NFS mount at the mount point:
+//   - a mount point that is ALREADY an NFS mount (mounted by the host, or bind-mounted into a rootless container) connects with no privilege at
+//     all, and Disconnect then leaves it alone (this client did not mount it);
+//   - otherwise Connect mounts it itself, which needs CAP_SYS_ADMIN, and fails with the mount error when it does not have it.
 func (c *NFSClient) Connect(ctx context.Context) error {
-	// Check if already mounted
 	if c.isMounted() {
-		c.connected = true
+		c.connected = true // mounted by someone else: readable as it is, and never unmounted by this client (c.mounted stays false)
 		return nil
 	}
 
@@ -62,6 +72,12 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	if c.config.Options != "" {
 		options = c.config.Options
 	}
+	// mount(2) does not resolve names: the kernel NFS client needs the server address in addr=
+	if !strings.Contains(options, "addr=") {
+		if ip := resolveHostIP(c.config.Host); ip != "" {
+			options += ",addr=" + ip
+		}
+	}
 
 	err := syscall.Mount(source, c.mountPoint, "nfs", 0, options)
 	if err != nil {
@@ -71,6 +87,21 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	c.mounted = true
 	c.connected = true
 	return nil
+}
+
+// resolveHostIP returns the first address of host ("" when it cannot be resolved; a literal IP is returned as it is).
+func resolveHostIP(host string) string {
+	if host == "" {
+		return ""
+	}
+	if ip := net.ParseIP(host); ip != nil {
+		return ip.String()
+	}
+	addrs, err := net.LookupHost(host)
+	if err != nil || len(addrs) == 0 {
+		return ""
+	}
+	return addrs[0]
 }
 
 // Disconnect unmounts the NFS filesystem
@@ -88,7 +119,7 @@ func (c *NFSClient) Disconnect(ctx context.Context) error {
 
 // IsConnected returns true if the client is connected
 func (c *NFSClient) IsConnected() bool {
-	return c.connected && c.mounted && c.isMounted()
+	return c.connected && c.isMounted()
 }
 
 // TestConnection tests the NFS connection
@@ -100,27 +131,70 @@ func (c *NFSClient) TestConnection(ctx context.Context) error {
 	return err
 }
 
-// isMounted checks if the mount point is actually mounted
+// isMounted reports whether the mount point is an NFS (nfs / nfs4) mount in /proc/mounts.
 func (c *NFSClient) isMounted() bool {
-	file, err := os.Open("/proc/mounts")
+	data, err := os.ReadFile(procMountsPath)
 	if err != nil {
 		return false
 	}
-	defer file.Close()
-
-	// This is a simplified check - in production you'd parse /proc/mounts properly
-	return true // For now, assume it's mounted if no error
+	return mountsContainNFS(string(data), c.mountPoint)
 }
 
-// resolvePath resolves a relative path within the NFS mount point
-func (c *NFSClient) resolvePath(path string) string {
-	// Clean the path and prevent directory traversal
-	cleanPath := filepath.Clean(path)
-	if strings.Contains(cleanPath, "..") {
-		// Prevent directory traversal attacks
-		cleanPath = strings.ReplaceAll(cleanPath, "..", "")
+// mountsContainNFS parses /proc/mounts text: a line is "source target fstype options dump pass" with the characters space, tab, newline and
+// backslash octal-escaped in source and target. It reports whether target is mounted with an nfs / nfs4 file system type.
+func mountsContainNFS(mounts, target string) bool {
+	want := filepath.Clean(target)
+	for _, line := range strings.Split(mounts, "\n") {
+		f := strings.Fields(line)
+		if len(f) < 3 {
+			continue
+		}
+		if filepath.Clean(unescapeMount(f[1])) == want && (f[2] == "nfs" || f[2] == "nfs4") {
+			return true
+		}
 	}
-	return filepath.Join(c.mountPoint, cleanPath)
+	return false
+}
+
+// unescapeMount decodes the \040-style octal escapes of a /proc/mounts field.
+func unescapeMount(s string) string {
+	if !strings.Contains(s, "\\") {
+		return s
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\\' && i+4 <= len(s) {
+			if n, ok := octal3(s[i+1 : i+4]); ok {
+				b.WriteByte(n)
+				i += 3
+				continue
+			}
+		}
+		b.WriteByte(s[i])
+	}
+	return b.String()
+}
+
+func octal3(s string) (byte, bool) {
+	if len(s) != 3 {
+		return 0, false
+	}
+	var n int
+	for _, ch := range []byte(s) {
+		if ch < '0' || ch > '7' {
+			return 0, false
+		}
+		n = n*8 + int(ch-'0')
+	}
+	if n > 255 {
+		return 0, false
+	}
+	return byte(n), true
+}
+
+// resolvePath resolves a relative path within the NFS mount point (ConfinePath: a ".." segment cannot leave the mount, a name containing ".." is kept).
+func (c *NFSClient) resolvePath(path string) string {
+	return filepath.Join(c.mountPoint, filepath.FromSlash(ConfinePath(path)))
 }
 
 // ReadFile reads a file from the NFS mount

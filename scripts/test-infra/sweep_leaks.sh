@@ -12,7 +12,7 @@
 #           marker (down.sh --keep-state writes it: a deliberate result stays); (2) no lease claim, no live keeper process named by a lease.keep.* file, no container of ANY checkout labelled
 #           catalogizer.test_project=<project>; (3) the operation named in <state>/op_id is terminal in THIS registry or its owner is PROVEN dead (reap.sh --op-id --dry-run); a directory with no op_id
 #           record is kept (nothing proves it is dead). The leaks of a crash (SIGKILL) and of the documented direct use of gen_env.sh end here (WF17 TI-A3, TI-C6).
-#   nasdirs `$XDG_RUNTIME_DIR/catalogizer-nas-ro.<pid>` and `<repo>/.audit/out/nas-ro-<pid>` (the run directory of nas_readonly_leg.sh, which holds the NAS auth file) are removed when ALL hold: (1) a real
+#   nasdirs `/tmp/catalogizer-nas-ro.<pid>` (and the legacy `$XDG_RUNTIME_DIR/catalogizer-nas-ro.<pid>`; owned by this user only) and `<repo>/.audit/out/nas-ro-<pid>` (the run directory of nas_readonly_leg.sh, which holds the NAS auth file) are removed when ALL hold: (1) a real
 #           directory; (2) /proc/<pid> proves the leg is gone: no such process, a zombie, or a process whose command line does not name nas_readonly_leg (a recycled pid). A SIGKILLed run ends here (WF17 TI-C3).
 # A resource that fails a proof is KEPT and the failed proof is printed; a podman query that FAILS is `failed=podman_query_failed` (unknown is never "nothing there", WF17 TI-B5). Usage: sweep_leaks.sh [--dry-run]
 # Output: one line per candidate `REMOVED|WOULD_REMOVE|KEPT <kind> <name> <proofs or the failed proof>`, then `SWEEP pods_removed=<n> pods_kept=<n> dirs_removed=<n> dirs_kept=<n> states_removed=<n> states_kept=<n> nasdirs_removed=<n> nasdirs_kept=<n>`.
@@ -81,11 +81,12 @@ for sd in "$TI_STATE_DIR"/catalogizer-test-*; do
   elif podman unshare rm -rf -- "${sd:?}" 2>/dev/null || rm -rf -- "$sd" 2>/dev/null; then echo "REMOVED state $n proof=real_directory,not_kept,no_claim,no_keeper,no_container,$proof"; sr=$((sr+1))
   else echo "KEPT state $n failed=rm_refused"; rc=1; fi
 done
-for d in "${XDG_RUNTIME_DIR:-/nonexistent}"/catalogizer-nas-ro.* "$TI_ROOT"/.audit/out/nas-ro-*; do
+for d in /tmp/catalogizer-nas-ro.* "${XDG_RUNTIME_DIR:-/nonexistent}"/catalogizer-nas-ro.* "$TI_ROOT"/.audit/out/nas-ro-*; do
   [ -e "$d" ] || [ -L "$d" ] || continue
   n="$(basename "$d")"; [[ "$n" =~ ^(catalogizer-nas-ro\.|nas-ro-)([0-9]+)$ ]] || continue
   npid="${BASH_REMATCH[2]}"
   { [ -d "$d" ] && [ ! -L "$d" ]; } || { echo "KEPT nasdir $n failed=not_a_real_directory"; nk=$((nk+1)); continue; }
+  [ -O "$d" ] || { echo "KEPT nasdir $n failed=not_owned_by_this_user"; nk=$((nk+1)); continue; }   # /tmp is shared: a directory of another user is never ours to remove
   nst=""; [ -r "/proc/$npid/stat" ] && nst="$(sed 's/^.*) //' "/proc/$npid/stat" 2>/dev/null | cut -c1)"
   if [ -n "$nst" ] && [ "$nst" != Z ] && tr '\0' ' ' <"/proc/$npid/cmdline" 2>/dev/null | grep -q nas_readonly_leg; then echo "KEPT nasdir $n failed=process_alive(pid=$npid)"; nk=$((nk+1)); continue; fi
   if [ "$DRY" = 1 ]; then echo "WOULD_REMOVE nasdir $n proof=real_directory,leg_process_gone"; nr=$((nr+1))

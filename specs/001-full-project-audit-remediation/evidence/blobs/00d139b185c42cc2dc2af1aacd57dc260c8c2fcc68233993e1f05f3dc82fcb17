@@ -1,0 +1,46 @@
+# identity: task=T172 utc=2026-10-12T11:42:33Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/t172/sut/import_t172.sh sha256=8f3fe7982c94b7ca enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+ok   (b) stage qa exits 0
+ok   (b) exactly 5 items: one Bug per stated cause (screenshot timing, wrong screen, black frame, wrong ADB, other QA statement), all Queued, category bug, machine_evidence
+ok   (b) the record names the five causes and the component of each (helixqa, qa-scripts for the wrong ADB command)
+ok   (b) every QA ticket is a source entry of ITS cause item in reg_source_map (6 tickets, 6 rows, the right item each)
+ok   (b) the two screenshot-timing tickets: the first locator is primary, the second duplicate_of; all manual_operator (the plan's own mapping)
+ok   (b) exactly one severity_governs=1 row per cause item
+ok   (b) no reg_source_entries row was inserted: the entry count is unchanged and the before/after triple exports are byte-identical
+ok   (b) every description is within 2,048 bytes and carries the stated cause, the component, the fix with a RED case and a Sources block
+ok   (b) the engine validate, foreign_key_check and integrity_check are clean
+ok   (b) import.sh (T168) after stage qa exits 0 and mints no per-ticket item for the six QA tickets
+ok   (b) after both importers every entry is mapped (v_unmapped_entries is empty) and no QA ticket has a second item
+ok   (g) HELIX-001 (two files in the fixture) is listed by v_legacy_id_collisions, and every entry locator is distinct (keyed by path)
+ok   (d) stage families exits 0 after import.sh
+ok   (d) a declared platform wins over its evidence (HELIX-525: declared desktop, screen androidtv-001)
+ok   (d) one evidence class is inferred and marked [DEFAULT - adjustable]: HELIX-520 web (screen web-curiosity), HELIX-521 androidtv, HELIX-522 api (URL in the body)
+ok   (d) two evidence classes (HELIX-523: androidtv screen, web in the body) -> UNKNOWN conflict, no evidence (HELIX-524) -> UNKNOWN, never guessed
+ok   (d) the QA tickets are not in the families stage (they live in their cause items)
+ok   (d) the inferred platform is in the item description with the marker and its evidence; an UNKNOWN platform adds no line; descriptions stay within 2,048 bytes
+ok   (d) exactly one family: HELIX-510 and HELIX-511 (same normalised title slug, platform class and screen), head = the lowest locator
+ok   (d) one reg_recurrence_links row: UNDECIDED (mint-with-link, the doc04 section 8 autonomous default; never SAME_DEFECT), intake_path import, not reopened, head and new item as expected
+ok   (d) the same slug with a different screen (HELIX-512) and the same slug with a different platform class (HELIX-520 web, HELIX-521 androidtv; HELIX-540 androidtv, HELIX-541 desktop on one screen) are DISTINCT and never linked
+ok   (d) v_recurrence_violations is empty and the entry-set export is byte-identical for the families stage too
+ok   (d) the engine validate, foreign_key_check and integrity_check are clean after the families stage
+ok   (e) a second run of each stage exits 0 and writes nothing (state identical, no new id, no new link)
+ok   (e) crash after_mint at cause 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_mint at cause 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_ext at cause 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_ext at cause 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_add at cause 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_add at cause 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash before_map at cause 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash before_map at cause 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (a) a stage whose writes insert ONE reg_source_entries row is refused `t172_entry_set_changed` (exit 20) naming the planted triple
+ok   (a) the verdict file records identical=false with the added triple
+ok   (a) a stage that inserts one row and deletes another (the COUNT is unchanged) is refused `t172_entry_set_changed`, the verdict lists both triples
+ok   (c) an OPEN ticket that carries the QA statement and a closed ticket without it are not grouped (only the six closed QA tickets are mapped)
+ok   (f) a cause whose component is not a reg_components row (qa-scripts) is refused `component_not_registered`, nothing written
+ok   (f) QA tickets that import.sh already imported one by one: refused `qa_entry_individually_imported`, nothing written
+ok   (f) the families stage before import.sh: refused `families_need_import`, nothing written
+ok   (f) a snapshot changed after its manifest: refused `freeze_snapshot_moved` (exit 20), nothing written
+ok   (f) entries older than the snapshot (a ticket changed after enumeration): refused `entry_changed` (exit 20) naming the ticket, nothing written
+ok   (f) the real register database name without a backup record: refused `backup_record_required`, nothing written
+RESULT: pass=42 fail=0

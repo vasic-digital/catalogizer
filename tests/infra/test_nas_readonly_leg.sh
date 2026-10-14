@@ -27,11 +27,11 @@ printf "smbclient //h/s -A f -c 'del x'\n" >"$FX/needle.sh"; [ -n "$(write_verbs
 nh=$(grep -vE '^[[:space:]]*#' "$LEG" | grep -c 'smbclient'); check "A: the host script runs no smbclient itself (it only starts the read-only client script)" "$nh" 0
 
 # ---- B SKIP ----
-before=$(ls -d "$XDG_RUNTIME_DIR"/catalogizer-nas-ro.* "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')
+before=$(ls -d /tmp/catalogizer-nas-ro.* "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')
 o=$(TI_ENV_FILE="$FX/no-such.env" bash "$LEG" 2>&1); rc=$?
 check "B: absent env file exits 0 (SKIP, not FAIL)" "$rc" 0
 case "$o" in "SKIP nas_readonly reason=env_absent"*) ok "B: the output is SKIP nas_readonly reason=env_absent";; *) bad "B: wrong output: $o";; esac
-check "B: nothing was created for the skipped run" "$(ls -d "$XDG_RUNTIME_DIR"/catalogizer-nas-ro.* "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')" "$before"
+check "B: nothing was created for the skipped run" "$(ls -d /tmp/catalogizer-nas-ro.* "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')" "$before"
 printf 'SYNOLOGY_IP_3=192.0.2.1\n' >"$FX/partial.env"
 o=$(TI_ENV_FILE="$FX/partial.env" bash "$LEG" --hosts 3 2>&1); rc=$?
 check "B: an env file without the credentials exits 0 (SKIP)" "$rc" 0
@@ -45,7 +45,7 @@ secrecy() { # secrecy <leg script>: runs the leg against the sentinel env, sampl
   # WF12 F14: only the out directory of THIS run (nas-ro-<pid of the leg>) is ever read or removed: a real NAS leg of another stream keeps its auth file
   local od mh=0 m
   TI_ENV_FILE="$FX/sentinel.env" bash "$leg" --hosts 3 >"$FX/c.out" 2>"$FX/c.err" & pid=$!
-  od="$XDG_RUNTIME_DIR/catalogizer-nas-ro.$pid"
+  od="/tmp/catalogizer-nas-ro.$pid"
   while kill -0 "$pid" 2>/dev/null; do
     s="$(ps -eo args 2>/dev/null; podman ps -a --format '{{.Command}} {{.Names}}' 2>/dev/null; for c in $(podman ps -q --filter label=catalogizer.op_id 2>/dev/null); do podman inspect "$c" --format '{{.Config.Env}} {{.Config.Cmd}} {{.Args}}' 2>/dev/null; done)"
     if printf '%s' "$s" | grep -qF -e "$SP" -e "$SU"; then hits=$((hits+1)); fi
@@ -93,22 +93,22 @@ else bad "C2: strace is not installed on this host (the exec-level secrecy check
 # ---- C3 SIGKILL (WF17 TI-C3): no trap runs; the credential file must not be on a persistent disk, and the sweep removes what is left ----
 secfiles() { # secfiles <root>...: regular files under the roots that hold a sentinel value (find -type f: never opens a socket or a fifo)
   local r; for r in "$@"; do [ -d "$r" ] && find "$r" -type f -readable -print0 2>/dev/null | timeout 120 xargs -0 -r grep -lF -e "$SP" -e "$SU" 2>/dev/null | grep -v "^$FX/"; done; true; }   # the test's OWN fixtures (the sentinel env file, the strace traces, the leg's logs) live under $FX and are the control, not a finding
-authfile() { [ -f "$XDG_RUNTIME_DIR/catalogizer-nas-ro.$kp/auth" ]; }
+authfile() { [ -f "/tmp/catalogizer-nas-ro.$kp/auth" ]; }
 setsid env TI_ENV_FILE="$FX/sentinel.env" bash "$LEG" --hosts 3 >"$FX/k.out" 2>&1 & kp=$!; TI_BG_PIDS+=("$kp")
 if wait_cond 40 authfile; then
   ok "C3: the auth file exists while the leg runs (under the per-user tmpfs)"
-  [ -n "$(secfiles "$XDG_RUNTIME_DIR/catalogizer-nas-ro.$kp")" ] && ok "C3: control needle: the sentinel IS found in the auth file while the leg runs" || bad "C3: control needle: the sentinel is not in the auth file (the search is blind)"
+  [ -n "$(secfiles "/tmp/catalogizer-nas-ro.$kp")" ] && ok "C3: control needle: the sentinel IS found in the auth file while the leg runs" || bad "C3: control needle: the sentinel is not in the auth file (the search is blind)"
   kpg=$(ps -o pgid= -p "$kp" 2>/dev/null | tr -d ' ')
   if [ -n "$kpg" ] && [ "$kpg" -gt 1 ]; then kill -KILL -- "-$kpg" 2>/dev/null; else bad "C3: cannot resolve the process group of the leg (pgid '$kpg')"; fi
   wait "$kp" 2>/dev/null
   for c in $(podman ps -a -q --filter "label=catalogizer.op_id=nas-ro-$kp-3" 2>/dev/null); do podman rm -f "$c" >/dev/null 2>&1; done
   check "C3: after SIGKILL no file under the checkout's .audit holds a credential value (a trap-less death leaves it on the tmpfs only)" "$(secfiles "$TI_REPO/.audit" | wc -l)" 0
-  kd="$XDG_RUNTIME_DIR/catalogizer-nas-ro.$kp"
+  kd="/tmp/catalogizer-nas-ro.$kp"
   [ -d "$kd" ] && ok "C3: the killed run left its run directory on the tmpfs (what the sweep must remove)" || bad "C3: the killed run left no directory (the test would prove nothing about the sweep)"
   so=$(bash "$TI_REPO/$SD/sweep_leaks.sh" 2>&1); src=$?
   check "C3: sweep_leaks.sh exits 0" "$src" 0
   case "$so" in *"REMOVED nasdir catalogizer-nas-ro.$kp"*) ok "C3: the sweep removed the killed run's directory (its pid is proven gone)";; *) bad "C3: the sweep did not remove it: $(printf '%s' "$so" | grep nasdir | head -2 | tr '\n' ' ' | cut -c1-200)";; esac
-  check "C3: after the sweep no file under .audit or the runtime directory holds a credential value" "$(secfiles "$TI_REPO/.audit" "$XDG_RUNTIME_DIR" | wc -l)" 0
+  check "C3: after the sweep no file under .audit or /tmp holds a credential value" "$(secfiles "$TI_REPO/.audit" /tmp | wc -l)" 0
   rm -rf -- "${kd:?}"
 else bad "C3: the auth file never appeared"; kill -KILL "$kp" 2>/dev/null; wait "$kp" 2>/dev/null; fi
 
@@ -121,7 +121,7 @@ for sg in INT TERM HUP; do
     gone_() { ! kill -0 "$kp" 2>/dev/null; }; wait_cond 60 gone_ && ok "C4-$sg: the leg exited within 60 s of $sg" || bad "C4-$sg: the leg is still running 60 s after $sg"
     wait "$kp" 2>/dev/null
     for c in $(podman ps -a -q --filter "label=catalogizer.op_id=nas-ro-$kp-3" 2>/dev/null); do podman rm -f "$c" >/dev/null 2>&1; done
-    check "C4-$sg: the run directory (and with it the credential file) is gone" "$([ -e "$XDG_RUNTIME_DIR/catalogizer-nas-ro.$kp" ] && echo left || echo gone)" gone
+    check "C4-$sg: the run directory (and with it the credential file) is gone" "$([ -e "/tmp/catalogizer-nas-ro.$kp" ] && echo left || echo gone)" gone
     check "C4-$sg: no container labelled with the leg's operation is left" "$(podman ps -a -q --filter "label=catalogizer.op_id=nas-ro-$kp-3" | wc -l)" 0
   else bad "C4-$sg: the auth file never appeared"; kill -KILL "$kp" 2>/dev/null; wait "$kp" 2>/dev/null; fi
 done
@@ -130,7 +130,7 @@ done
 o=$(TI_ENV_FILE="$FX/sentinel.env" bash "$LEG" --hosts 3 --json-out /proc/no-such-dir/out.json 2>&1); rc=$?
 check "D10: an unwritable --json-out exits non-zero" "$rc" 1
 case "$o" in *"cannot write --json-out"*) ok "D10: the refusal names the unwritable output";; *) bad "D10: wrong output: $(printf '%s' "$o" | head -2 | tr '\n' ' ' | cut -c1-200)";; esac
-check "D10: nothing was contacted (no run directory was created)" "$(ls -d "$XDG_RUNTIME_DIR"/catalogizer-nas-ro.* 2>/dev/null | wc -l)" 0
+check "D10: nothing was contacted (no run directory was created)" "$(ls -d /tmp/catalogizer-nas-ro.* 2>/dev/null | wc -l)" 0
 
 # ---- D real leg ----
 REALENV="$TI_REPO/.env"
@@ -150,7 +150,7 @@ if [ "${NAS_NO_REAL:-0}" = 1 ] || [ ! -r "$REALENV" ]; then echo "SKIP: D: the r
     if [ -n "${NAS_EV:-}" ]; then check "D: the real password occurs in no evidence file under $NAS_EV" "$(grep -rlF -- "$realpw" "$NAS_EV" 2>/dev/null | wc -l)" 0; fi
   fi
   unset realpw
-  check "D: no auth file is left behind" "$(ls "$XDG_RUNTIME_DIR"/catalogizer-nas-ro.*/auth "$TI_REPO"/.audit/out/nas-ro-*/auth 2>/dev/null | wc -l)" 0
+  check "D: no auth file is left behind" "$(ls /tmp/catalogizer-nas-ro.*/auth "$TI_REPO"/.audit/out/nas-ro-*/auth 2>/dev/null | wc -l)" 0
 fi
 
 # ---- mutations ----

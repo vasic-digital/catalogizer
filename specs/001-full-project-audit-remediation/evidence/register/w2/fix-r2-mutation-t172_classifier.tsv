@@ -1,0 +1,16 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	an open ticket with the QA statement is grouped
+M02	KILLED	1	a wontfix ticket is not a QA-instrument closure (F4)
+M03	KILLED	1	every resolution counts as a QA statement
+M04	KILLED	1	the `False positive: screenshot captured during screen transition` statement is not recognised (F4)
+M05	KILLED	1	the screenshot-timing cause is not recognised
+M06	KILLED	1	the black-frame cause is not recognised
+M07	KILLED	1	the wrong-screen cause is not recognised
+M08	KILLED	1	the wrong-ADB cause is not recognised
+M09	KILLED	1	the `## Resolution` section of the body is not read (F4)
+M10	KILLED	1	the front-matter resolution is not read
+M11	KILLED	1	the whole body is read as the resolution (a QA phrase in a Notes section counts)
+M12	KILLED	1	the import order guard of import.sh is not enforced (F1)
+M13	KILLED	1	the import order guard does not apply to a dry run (F1)
+M14	KILLED	1	the import order guard looks at the mapped tickets too (F1)

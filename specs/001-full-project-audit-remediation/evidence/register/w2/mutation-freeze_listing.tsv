@@ -1,0 +1,16 @@
+# identity: tool=freeze_listing utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh freeze_listing (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	skips the listing hash comparison
+M02	KILLED	1	accepts a listing that is not NUL-terminated
+M03	KILLED	1	accepts an empty listing
+M04	KILLED	1	accepts a duplicate path
+M05	KILLED	1	accepts a freeze.json without listing_sha256
+M06	KILLED	1	two-argument form ignores added paths
+M07	KILLED	1	two-argument form ignores missing paths
+M08	KILLED	1	accepts an empty path record
+M09	KILLED	1	hash taken over the sorted record set, not the file bytes (a reordering passes)
+M10	KILLED	1	refusal exit code 0 instead of 20
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 10, 'EQUIVALENT': 0, 'ERROR': 0}

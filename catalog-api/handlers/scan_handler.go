@@ -94,18 +94,16 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		return
 	}
 
-	// The root must be addressable by the settings contract: a WebDAV root without a url, or a port outside 1-65535, could never be scanned.
+	// The root is validated as a ROW (filesystem.ValidateRoot, WF22 N3): every column it carries must be one the protocol consumes, every key the
+	// protocol requires must be there, the options must parse and be honourable, the port must be 1-65535. A root that could never be scanned is
+	// refused here instead of being stored and silently ignored.
 	candidate := &models.StorageRoot{Protocol: req.Protocol, Host: req.Host, Port: req.Port, Path: req.Path, Username: req.Username, Password: req.Password,
 		Domain: req.Domain, URL: req.URL, MountPoint: req.MountPoint, Options: req.Options}
 	if req.Port != nil && (*req.Port < 1 || *req.Port > 65535) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "port must be 1-65535"})
 		return
 	}
-	if req.Protocol == "webdav" && (req.URL == nil || *req.URL == "") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "a webdav storage root needs a url"})
-		return
-	}
-	if err := filesystem.ValidateSettings(req.Protocol, filesystem.SettingsFromRoot(candidate, nil)); err != nil {
+	if err := filesystem.ValidateRoot(candidate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

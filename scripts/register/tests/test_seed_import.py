@@ -52,6 +52,9 @@ def check(label, cond, info=""):
         PASSES += 1
     else:
         FAILS += 1
+        if os.environ.get("W2_FAILFAST") == "1":     # mutation runs: the first FAIL kills the mutant, the rest of the suite is not needed
+            print("RESULT: pass=%d fail=%d (stopped at the first failure: W2_FAILFAST=1)" % (PASSES, FAILS))
+            sys.exit(1)
 
 
 def sh(cmd, **kw):
@@ -75,10 +78,22 @@ SCR = tempfile.mkdtemp(prefix="seedimp.", dir=os.environ.get("SCRATCH_BASE") or 
 DOC21 = F.DOCS + "/21-master-plan-phases-risks-and-traceability.md"
 
 
+def decoys(t):
+    """two decoy lines in the doc07 fixture: an id mention in an EARLIER section than the cited one (a locator that ignores the cited section finds it first) and a row
+    whose id merely STARTS with the seed id (`C10` before `C1`: a locator without the id-boundary rule matches it)"""
+    p_ = os.path.join(t, F.DOCS, "07-backend-catalog-api-audit-plan.md")
+    s_ = open(p_).read()
+    a_ = "# doc07\n\n## 9. Findings\n\n| ID | Finding | Severity |\n|---|---|---|\n"
+    assert a_ in s_
+    open(p_, "w").write(s_.replace(a_, "# doc07\n\n## 1. Overview\n\n| ID | Finding | Severity |\n|---|---|---|\n| C1 | Decoy of the overview section, not the cited one | Low |\n\n## 9. Findings\n\n"
+                                    "| ID | Finding | Severity |\n|---|---|---|\n| C10 | Decoy whose id only starts with the seed id | Low |\n", 1))
+
+
 def mktree(name, edit=None):
     t = os.path.join(SCR, name)
     W.build(t)
     F.plan_docs(t)
+    decoys(t)
     if edit:
         edit(t)
     return t
@@ -181,6 +196,7 @@ for label, edit, reason in (
         ("a Count cell that disagrees with the ids", lambda t: _sub(t, "| doc01 §15 | O-01..O-03 | cross-system | 3 |", "| doc01 §15 | O-01..O-03 | cross-system | 4 |"), "seed_count_mismatch"),
         ("a Total row that disagrees with the rows", lambda t: _sub(t, "**27**", "**26**"), "seed_count_mismatch"),
         ("a duplicate seed pair", lambda t: _sub(t, "| doc15 §13 | S-01..S-03 |", "| doc15 §13 | S-01..S-03, S-03 |"), "seed_count_mismatch"),
+        ("a (document, id) pair repeated in another row (counts consistent)", lambda t: _sub(t, "| **Total itemised** | | | **27** | |", "| doc15 §13 again | S-01 | security | 1 | unrated |\n| **Total itemised** | | | **28** | |"), "seed_duplicate"),
         ("a family member that is not a seed", lambda t: _sub(t, "doc07 C1; doc15 S-01 (linked", "doc07 C1; doc15 S-09 (linked"), None),
         ("a family count that disagrees with the table", lambda t: _sub(t, "These 5 families list 15 member ids", "These 6 families list 15 member ids"), None)):
     tt = mktree("bad_" + re.sub(r"\W", "", label)[:12], edit)
@@ -202,6 +218,18 @@ r = imp(db1, fj0)
 check("(b) the import exits 0", r.returncode == 0, r.stdout + r.stderr)
 rec = json.load(open(db1 + ".rec.json")) if os.path.exists(db1 + ".rec.json") else {}
 items = q(db1, "SELECT count(DISTINCT m.atm_id) FROM reg_source_map m JOIN reg_source_entries e USING(entry_id) JOIN reg_sources s USING(source_id) WHERE s.locator=?", PLAN_SRC)[0][0]
+check("(F7) the reconciliation record carries the freeze identity (listing hash and manifest hash of THIS freeze) and `fixture` true (the head is not a full git sha)",
+      rec.get("fixture") is True and (rec.get("freeze") or {}).get("listing_sha256") == json.load(open(fj0)).get("listing_sha256")
+      and (rec.get("freeze") or {}).get("manifest_sha256") == __import__("hashlib").sha256(open(json.load(open(fj0))["manifest"], "rb").read()).hexdigest(), rec.get("freeze"))
+# (F7) negative control: the `fixture` marker is DERIVED from the freeze head, so a freeze whose head is a full 40-hex git sha reads as NOT a fixture (a marker that is always true is no marker)
+_d = json.load(open(fj0))
+_d["head"] = "a" * 40
+fjh = fj0 + ".head40.json"
+json.dump(_d, open(fjh, "w"))
+dbh = load_sql(fresh_db("head40"), out0)
+rh = imp(dbh, fjh, "seeds", "--dry-run")
+rech = json.load(open(dbh + ".rec.json")) if os.path.exists(dbh + ".rec.json") else {}
+check("(F7) control: a freeze with a 40-hex head gives `fixture` false and records that head", rh.returncode == 0 and rech.get("fixture") is False and (rech.get("freeze") or {}).get("head") == "a" * 40, (rh.returncode, rh.stderr[-200:], rech.get("fixture")))
 check("(b) 27 seeds, 5 families, 14 fully folded members -> 18 items (= 27 - 14 + 5, the docs/21 bound formula)", items == 18 and rec.get("items_upper_bound") == 18 and rec.get("families") == 5 and rec.get("fully_folded_members") == 14, (items, rec))
 check("(b) the partly folded member doc15:S-03 keeps its own item", rec.get("partly_folded_members_kept_separate") == ["doc15:S-03"] and
       q(db1, "SELECT m.relation FROM reg_source_map m JOIN reg_source_entries e USING(entry_id) WHERE e.locator LIKE '%#seed:doc15:S-03'")[0][0] == "primary")
@@ -220,6 +248,43 @@ check("(b) exactly one severity_governs=1 row per item", q(db1, "SELECT count(*)
 check("(b) the engine validate, foreign_key_check and integrity_check are clean", sh([WI, "validate", "--db", db1]).returncode == 0 and q(db1, "PRAGMA foreign_key_check") == [] and q(db1, "PRAGMA integrity_check") == [("ok",)])
 check("(b) no register id is minted twice: reg_ids has exactly 18 import ids for 27 entries", q(db1, "SELECT count(*) FROM reg_ids WHERE mint_basis='import'")[0][0] == 18)
 
+# ---- (b3) the extra seed of a row keeps a slug id, and each entry carries its rated / unrated status
+stale = q(db1, "SELECT e.locator, e.legacy_id, e.raw_status FROM reg_source_entries e WHERE e.locator LIKE '%#seed:doc12:%stale%'")
+check("(b3) the seed `plus the stale constitution index hash` has the slug id doc12:stale-constitution-index-hash (the leading `the` dropped)",
+      stale == [("%s#seed:doc12:stale-constitution-index-hash" % DOC21, "doc12:stale-constitution-index-hash", "unrated")], stale)
+check("(b3) every entry carries its status: rated seeds `rated`, unrated seeds `unrated` (the severity distribution cell of the row)",
+      q(db1, "SELECT e.raw_status, count(*) FROM reg_source_entries e JOIN reg_sources s USING(source_id) WHERE s.locator=? GROUP BY 1 ORDER BY 1", PLAN_SRC) == [("rated", 7), ("unrated", 20)])
+rated_n = q(db1, "SELECT count(*) FROM reg_source_entries e JOIN reg_sources s USING(source_id) WHERE s.locator=? AND e.raw_status='rated'", PLAN_SRC)[0][0]
+check("(b3) the rated count equals the seeds of the rated rows (doc07 4 + doc08 3 = 7 in the fixture)", rated_n == 7, rated_n)
+
+# ---- (b4) doc20 `T-N` seeds: the labels name the N-th data row of the cited section's first table
+def _doc20(t):
+    p_ = os.path.join(t, DOC21)
+    s_ = open(p_).read()
+    open(p_, "w").write(s_.replace("| **Total itemised** | | | **27** | |", "| doc20 §2.2 | T-1..T-2 | security tooling | 2 | unrated |\n| **Total itemised** | | | **29** | |"))
+    W.w(t, F.DOCS + "/20-research-second-pass-gaps.md", "# doc20\n\n## 2.2 Tools\n\n| Tool | Why |\n|---|---|\n| first-tool | the first data row |\n| second-tool | the second data row |\n")
+
+
+T20 = mktree("doc20", _doc20)
+fj20, out20, r = enumerate_tree(T20, "doc20")
+db20 = load_sql(fresh_db("doc20"), out20) if r.returncode == 0 else None
+t2 = q(db20, "SELECT e.title FROM reg_source_entries e WHERE e.locator LIKE '%#seed:doc20:T-2'") if db20 else []
+check("(b4) the doc20 seed T-2 is located at the SECOND data row of the cited table, T-1 at the first", r.returncode == 0 and t2 and "second data row" in str(t2[0]) and "first data row" in str(q(db20, "SELECT e.title FROM reg_source_entries e WHERE e.locator LIKE '%#seed:doc20:T-1'")[0]), (r.returncode, t2, r.stderr[-200:]))
+
+# ---- (b5) an import that leaves an entry unmapped is a failure, never a quiet success
+dbu = load_sql(fresh_db("unmapped"), out0)
+sh(["sqlite3", dbu, "CREATE TRIGGER t170_ignore BEFORE INSERT ON reg_source_map WHEN NEW.entry_id=(SELECT entry_id FROM reg_source_entries WHERE locator LIKE '%#seed:doc09:S-02') BEGIN SELECT RAISE(IGNORE); END;"])
+r = imp(dbu, fj0)
+check("(b5) a mapping that the register silently drops leaves an entry unmapped: the import exits 1 `incomplete`, it does not report success", r.returncode == 1 and b"incomplete" in r.stderr, (r.returncode, r.stderr[-250:]))
+
+# ---- (b6) an engine whose validation fails after the import is a failure, never a quiet success
+_wrap = os.path.join(SCR, "wi_validate_fails.sh")
+open(_wrap, "w").write('#!/bin/sh\nif [ "$1" = validate ]; then echo "validate: planted failure" >&2; exit 3; fi\nexec "%s" "$@"\n' % WI)
+os.chmod(_wrap, 0o755)
+dbv = load_sql(fresh_db("validatefail"), out0)
+rv = sh([IMP, "--class", "seeds", "--db", dbv, "--freeze-json", fj0, "--engine", _wrap, "--report", dbv + ".run.json"])
+check("(b6) the engine validation failing after the import: exit 1 `validate_failed`", rv.returncode == 1 and b"validate_failed" in rv.stderr, (rv.returncode, rv.stderr[-250:]))
+
 # ---- (c) severity
 sev = dict(q(db1, "SELECT e.locator, x.severity FROM reg_source_entries e JOIN reg_source_map m USING(entry_id) JOIN reg_item_ext x USING(atm_id) WHERE m.relation='primary'"))
 src = dict(q(db1, "SELECT e.locator, x.severity_source FROM reg_source_entries e JOIN reg_source_map m USING(entry_id) JOIN reg_item_ext x USING(atm_id) WHERE m.relation='primary'"))
@@ -232,6 +297,19 @@ check("(c) an unrated seed (doc01 O-03) is defaulted medium and says so [DEFAULT
 check("(c) a 'High' seed (doc07 C1, head of its family) is high", sev.get(loc("doc07", "C1")) == "high", sev.get(loc("doc07", "C1")))
 gov = q(db1, "SELECT e.locator FROM reg_source_map m JOIN reg_source_entries e USING(entry_id) WHERE m.atm_id=? AND m.severity_governs=1", fam1_head)
 check("(c) the member that gives the family severity governs (one severity_governs row; the 'High' WEB-F02, not the 'High if confirmed' C2)", len(gov) == 1 and gov[0][0] in (loc("doc08", "WEB-F02"),), gov)
+
+# ---- (b2) the description cap (doc04 / T168: at most 2,048 bytes, the Sources block included, cut on a character boundary and marked) on the importer's own assembler
+import importlib.util   # noqa: E402
+_spec = importlib.util.spec_from_file_location("import_plan_under_test", os.path.join(os.path.dirname(IMP), "import_plan.py"))
+_mod = importlib.util.module_from_spec(_spec)
+sys.dont_write_bytecode = True
+_spec.loader.exec_module(_mod)
+_long = ("\u00e9\u00e8 a very long explanation " * 200)
+_d, _cut = _mod.assemble(_long, ["- File: docs/x.md", "- sha256: " + "a" * 64], "**Disposition:** pending")
+_d2, _cut2 = _mod.assemble("short body", ["- File: docs/x.md"], "")
+check("(b2) assemble: a body of %d bytes is cut to a description within 2,048 bytes on a character boundary, marked as cut, the Sources block and the fixed tail kept" % len(_long.encode()),
+      _cut is True and len(_d.encode("utf-8")) <= 2048 and "is cut at" in _d and "**Sources**" in _d and "**Disposition:** pending" in _d and _d.encode("utf-8").decode("utf-8") == _d, (_cut, len(_d.encode())))
+check("(b2) assemble: a short body is kept whole and not marked cut", _cut2 is False and "is cut at" not in _d2 and _d2.startswith("short body"), _d2)
 
 # ---- (g) the R-ADJ seeds name their plan document and fix work package
 d = q(db1, "SELECT i.description FROM items i JOIN reg_source_map m ON m.atm_id=i.atm_id JOIN reg_source_entries e USING(entry_id) WHERE e.locator=?", loc("doc18", "T1-A"))[0][0]
@@ -349,6 +427,70 @@ if fjr:
         print("# (h) the section 9.2 Total rated row was not found in the real docs/21: control skipped (UNCONFIRMED)")
 else:
     print("# (h) real documents leg SKIPPED: REAL_FREEZE_JSON not set")
+
+# ---- (F3) a member named twice INSIDE one family is refused (review fix round 2): it would count as folded twice, shrink the bound and make the planner plan more items than its bound
+def _dup_in_family(t):
+    _sub(t, "| Stubs | doc01 O-01; doc07 C3 |", "| Stubs | doc01 O-01; doc07 C3; doc07 C3 |")
+    _sub(t, "These 5 families list 15 member ids", "These 5 families list 16 member ids")      # the stated count is the raw token count, so the count check passes
+
+
+T = mktree("dupfam", _dup_in_family)
+fjd_, outd_, rd_ = enumerate_tree(T, "dupfam")
+dbd_ = load_sql(fresh_db("dupfam"), outd_) if rd_.returncode == 0 else None
+r2 = imp(dbd_, fjd_) if dbd_ else None
+check("(F3) a member named twice inside one family (the stated member count adjusted, the enumerator passes) is refused `family_member_repeated` (exit 20) naming the family and the member, nothing written",
+      r2 is not None and r2.returncode == 20 and b"family_member_repeated" in r2.stderr and b"doc07 C3" in r2.stderr and b"Stubs" in r2.stderr and q(dbd_, "SELECT count(*) FROM items")[0][0] == 0,
+      (rd_.returncode, r2 and r2.returncode, r2 and r2.stderr[-300:]))
+check("(F3) the refusal is the NEW one: the same input does not reach the item-bound check (`item_bound_exceeded` is what the unfixed planner said)", r2 is not None and b"item_bound_exceeded" not in r2.stderr)
+
+# ---- the item bound has two sources: the one derived from the tables and the number docs/21 STATES ("fold to at most N register items"); a plan above either is refused,
+# and for every accepted layout the planned item count EQUALS the derived bound (tested on the baseline and on three different accepted family layouts, the stated number
+# kept in step with each layout, as the real docs/21 keeps it)
+STATED = "The 27 itemised seeds fold to at most 18 register items before any further deduplication (27 minus 14 plus 5)."
+
+
+def _layout(variant):
+    def edit(t):
+        if variant == "drop_family":
+            _sub(t, "| Stubs | doc01 O-01; doc07 C3 |\n", "")
+            _sub(t, "These 5 families list 15 member ids", "These 4 families list 13 member ids")
+            _sub(t, STATED, "The 27 itemised seeds fold to at most 19 register items before any further deduplication (27 minus 13 plus 4).")
+        elif variant == "add_family":
+            _sub(t, "| Stubs | doc01 O-01; doc07 C3 |", "| Stubs | doc01 O-01; doc07 C3 |\n| Web pair | doc08 WEB-F01; doc09 S-01 |")
+            _sub(t, "These 5 families list 15 member ids", "These 6 families list 17 member ids")
+            _sub(t, STATED, "The 27 itemised seeds fold to at most 17 register items before any further deduplication (27 minus 15 plus 6).")
+        elif variant == "grow_family":
+            _sub(t, "| Stubs | doc01 O-01; doc07 C3 |", "| Stubs | doc01 O-01; doc07 C3; doc08 WEB-F01 |")
+            _sub(t, "These 5 families list 15 member ids", "These 5 families list 16 member ids")
+            _sub(t, STATED, "The 27 itemised seeds fold to at most 17 register items before any further deduplication (27 minus 15 plus 5).")
+    return edit
+
+
+for variant in ("baseline", "drop_family", "add_family", "grow_family"):
+    T = mktree("lay_" + variant, _layout(variant) if variant != "baseline" else None)
+    fjl_, outl_, rl_ = enumerate_tree(T, "lay_" + variant)
+    dbl_ = load_sql(fresh_db("lay_" + variant), outl_)
+    r2 = imp(dbl_, fjl_)
+    recl = json.load(open(dbl_ + ".rec.json")) if os.path.exists(dbl_ + ".rec.json") else {}
+    check("(F3) layout %s: accepted, and the planned item count EQUALS the bound (%s items, bound %s)" % (variant, recl.get("items_planned"), recl.get("items_upper_bound")),
+          r2.returncode == 0 and recl.get("items_planned") == recl.get("items_upper_bound") and recl.get("items_planned") is not None, (r2.returncode, r2.stderr[-200:], recl.get("items_planned"), recl.get("items_upper_bound")))
+
+# ---- (F3) the number docs/21 states is an independent oracle: the mutant that removes the bound check is killed by a document whose stated number is below the plan
+def _stated_low(t):
+    _sub(t, STATED, "The 27 itemised seeds fold to at most 17 register items before any further deduplication (27 minus 14 plus 5).")
+
+
+def _stated_conflict(t):
+    _sub(t, STATED, STATED + "\nThe register holds at most 19 register items after folding to at most 19 register items.")
+
+
+for nm, fn, reason in (("stated_low", _stated_low, b"item_bound_exceeded"), ("stated_conflict", _stated_conflict, b"declared_bound_conflict")):
+    T = mktree(nm, fn)
+    fjs_, outs_, rs_ = enumerate_tree(T, nm)
+    dbs_ = load_sql(fresh_db(nm), outs_) if rs_.returncode == 0 else None
+    r3 = imp(dbs_, fjs_) if dbs_ else None
+    check("(F3) %s: the plan (18 items, derived bound 18) is refused `%s` (exit 20), nothing written" % (nm, reason.decode()),
+          r3 is not None and r3.returncode == 20 and reason in r3.stderr and q(dbs_, "SELECT count(*) FROM items")[0][0] == 0, (rs_.returncode, r3 and r3.returncode, r3 and r3.stderr[-300:]))
 
 shutil.rmtree(SCR, ignore_errors=True)
 print("RESULT: pass=%d fail=%d" % (PASSES, FAILS))

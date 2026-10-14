@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/hirochachacha/go-smb2"
@@ -122,7 +123,7 @@ func (c *SmbClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	file, err := c.share.Open(path)
+	file, err := c.share.Open(smbPath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SMB file %s: %w", path, err)
 	}
@@ -136,7 +137,7 @@ func (c *SmbClient) OpenSeekable(ctx context.Context, path string) (ReadSeekClos
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	file, err := c.share.Open(path)
+	file, err := c.share.Open(smbPath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SMB file %s: %w", path, err)
 	}
@@ -149,7 +150,7 @@ func (c *SmbClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	file, err := c.share.Create(path)
+	file, err := c.share.Create(smbPath(path))
 	if err != nil {
 		return fmt.Errorf("failed to create SMB file %s: %w", path, err)
 	}
@@ -168,7 +169,7 @@ func (c *SmbClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	stat, err := c.share.Stat(path)
+	stat, err := c.share.Stat(smbPath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat SMB file %s: %w", path, err)
 	}
@@ -188,7 +189,7 @@ func (c *SmbClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	entries, err := c.share.ReadDir(path)
+	entries, err := c.share.ReadDir(smbPath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list SMB directory %s: %w", path, err)
 	}
@@ -213,7 +214,7 @@ func (c *SmbClient) FileExists(ctx context.Context, path string) (bool, error) {
 	if !c.IsConnected() {
 		return false, fmt.Errorf("not connected")
 	}
-	_, err := c.share.Stat(path)
+	_, err := c.share.Stat(smbPath(path))
 	if err != nil {
 		if isNotExistError(err) {
 			return false, nil
@@ -228,7 +229,7 @@ func (c *SmbClient) CreateDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	err := c.share.Mkdir(path, 0755)
+	err := c.share.Mkdir(smbPath(path), 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create SMB directory %s: %w", path, err)
 	}
@@ -240,7 +241,7 @@ func (c *SmbClient) DeleteDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	err := c.share.Remove(path)
+	err := c.share.Remove(smbPath(path))
 	if err != nil {
 		return fmt.Errorf("failed to delete SMB directory %s: %w", path, err)
 	}
@@ -252,7 +253,7 @@ func (c *SmbClient) DeleteFile(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	err := c.share.Remove(path)
+	err := c.share.Remove(smbPath(path))
 	if err != nil {
 		return fmt.Errorf("failed to delete SMB file %s: %w", path, err)
 	}
@@ -265,14 +266,14 @@ func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		return fmt.Errorf("not connected")
 	}
 	// Read source file
-	srcFile, err := c.share.Open(srcPath)
+	srcFile, err := c.share.Open(smbPath(srcPath))
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", srcPath, err)
 	}
 	defer srcFile.Close()
 
 	// Create destination file
-	dstFile, err := c.share.Create(dstPath)
+	dstFile, err := c.share.Create(smbPath(dstPath))
 	if err != nil {
 		return fmt.Errorf("failed to create destination file %s: %w", dstPath, err)
 	}
@@ -302,4 +303,17 @@ func isNotExistError(err error) bool {
 	// This is a simplified check - in practice you might want to check
 	// for specific SMB error codes
 	return err != nil && (err.Error() == "file does not exist" || err.Error() == "no such file or directory")
+}
+
+// smbPath applies the shared containment rule (ConfinePath) to a share-relative path: a path with a ".." SEGMENT is confined to the share root
+// and returned share-relative; every other path is handed to the share exactly as given (WF22 N2 class A).
+func smbPath(p string) string {
+	if !hasDotDotSegment(p) {
+		return p
+	}
+	rel := strings.TrimPrefix(ConfinePath(p), "/")
+	if rel == "" {
+		return "."
+	}
+	return rel
 }

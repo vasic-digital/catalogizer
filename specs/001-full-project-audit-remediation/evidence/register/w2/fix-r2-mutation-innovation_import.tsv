@@ -1,0 +1,26 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	EMERGING is recorded PROVEN
+M02	KILLED	1	the secondary-source marking is lost
+M03	KILLED	1	the disposition line is changed
+M04	KILLED	1	innovation items are Tasks
+M05	KILLED	1	innovation items are category bug
+M06	KILLED	1	innovation items carry severity medium
+M07	KILLED	1	the R-ADJ tag is expected in S-27 as well
+M08	KILLED	1	the ranked game changer is not recorded
+M09	KILLED	1	the falsifiable experiment is not recorded
+M10	KILLED	1	a missing docs/18 candidate row is accepted
+M11	KILLED	1	a snapshot without docs/18 is accepted
+M12	KILLED	1	the PROPOSAL tag is expected in S-26
+M13	KILLED	1	the sentence that a proposal is not a finding is dropped
+M14	KILLED	1	the Sources block lacks the docs/18 row
+M15	KILLED	1	entries older than the snapshot are accepted
+M16	KILLED	1	a resumed run mints a new id
+M17	KILLED	1	the n/a label loses its repository citation
+M18	KILLED	1	an innovation item requires re-verification
+M19	KILLED	1	a compound label takes its FIRST part (review fix round 2, F2)
+M20	KILLED	1	a compound label takes its STRONGEST part
+M21	KILLED	1	a clause that names no evidence level counts as PROVEN
+M22	KILLED	1	the description does not say the label is compound
+M23	KILLED	1	a parenthesised citation is read as a label part (PROVEN (1.4); UNCONFIRMED ... splits wrongly)
+M24	KILLED	1	the reconciliation record carries no freeze identity (F7)

@@ -5,7 +5,9 @@
 # `interpreter` (T121b); a service-class image or any other id is refused.
 # Usage:  run_client.sh --build-id <id> [--out DIR] [--image IMG-ID] -- <command word>...
 #   --build-id ID   the project catalogizer-test-<id> whose network the client joins and whose per-run env file (credentials, 0600) is handed over
-#   --out DIR       output directory mounted at /out (default <repo>/.audit/out/<project>-client); must satisfy run_pinned's sanctioned roots
+#   --out DIR       output directory mounted at /out; must satisfy run_pinned's sanctioned roots. The client runs from a scratch VIEW that is NOT the repository, so run_pinned (round 8, R-1)
+#                   accepts only a directory strictly below /tmp or /var/tmp (TMPDIR never counts here: RUNP_* is scrubbed). Default: a fresh mode 0700 directory under /tmp
+#                   (catalogizer-ti-client.XXXXXX) that is removed when the run ends; a caller that wants the output passes its own --out under /tmp
 #   --image ID      the image id (default IMG-INFRA-CLIENT; the option exists so the refusal of another image is testable)
 # The container gets the env file through `--env-file` (never argv), the label catalogizer.op_id of the project's registered long operation (REPLACING the one run_pinned set: the anti-mess sweep reads
 # catalogizer.op_id first and must match the container to the stack's operation, WF17 TI-A4), the checkout label catalogizer.test_root, a scratch VIEW read-only at /src (only the directories the command names: client scripts live in scripts/test-infra/client/; never `.env`) and the seeded
@@ -39,8 +41,8 @@ P="$(ti_project "$BID")"; S="$(ti_state "$BID")"; ENVF="$S/env"
 NET="$(ti_network "$BID")"
 podman network exists "$NET" 2>/dev/null || ti_refuse network_absent "$NET"
 OPID="$(ti_env_get "$ENVF" TI_OP_ID)"
-[ -n "$OUT" ] || OUT="$TI_ROOT/.audit/out/$P-client"
-mkdir -p "$OUT" || ti_die "cannot create $OUT"
+OUTTMP=""
+[ -z "$OUT" ] || mkdir -p "$OUT" || ti_die "cannot create $OUT"
 # WF12 F3: the container's /src is NOT the repository. run_pinned.sh binds its working directory read-only at /src, and the repository holds the real `.env` (NAS credentials) and every
 # project's per-run credential file. The client therefore runs from a scratch VIEW that holds only the directories its command names under /src (client scripts): a /src/<path> word of
 # the command must lie under scripts/test-infra/ or .audit/scratch/, else REFUSED client_path_not_in_view. The project's own credentials reach it only through --env-file.
@@ -56,8 +58,9 @@ for a in "$@"; do
 done
 mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"
 ti_exit_on_signals
-trap 'case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac' EXIT
+trap 'case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; case "$OUTTMP" in /tmp/catalogizer-ti-client.??????) rm -rf -- "$OUTTMP";; esac' EXIT
 ti_view_dir "$VIEW" "${VDIRS[@]}" || ti_refuse client_view_failed "cannot build the view of ${VDIRS[*]:-nothing}"
+if [ -z "$OUT" ]; then OUT="$(mktemp -d /tmp/catalogizer-ti-client.XXXXXX)" || ti_die "cannot create the client output directory under /tmp"; OUTTMP=$OUT; fi
 ARGV=()
 while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$VIEW" && TI_RUNP_PRINT=1 ti_runpinned --out "$OUT" --op-id "$P-client-$$-$RANDOM" "$IMG" -- "$@")
 [ "${#ARGV[@]}" -gt 5 ] && [ "${ARGV[0]}" = podman ] || ti_refuse run_pinned_failed "run_pinned.sh printed no podman argv (see its message above)"

@@ -1,0 +1,30 @@
+# identity: tool=root_inventory utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh root_inventory (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	skips the listing check
+M02	KILLED	1	.git is kept as a root entry
+M03	KILLED	1	untracked root entries of freeze.json are ignored
+M04	KILLED	1	gitlinks of freeze.json are ignored
+M05	KILLED	1	the LAST matching rule wins
+M06	KILLED	1	an entry no rule decides is silently excluded
+M07	KILLED	1	the generating run exits 0 with problems
+M08	KILLED	1	the check mode exits 0 with problems
+M09	KILLED	1	documentation rows get a doc_class (WP-37 assigns it)
+M10	KILLED	1	rows are not sorted
+M11	KILLED	1	the docs/01 tables of 3.1-3.6 count as root rows
+M12	KILLED	1	a sub-path token is read as a root path row
+M13	KILLED	1	leading dots are stripped from a token (.claude -> claude)
+M14	KILLED	1	excluded_files are always reported as in the frozen listing
+M15	KILLED	1	--check does not compare the rows with the freeze
+M16	KILLED	1	--check accepts a .git row
+M17	KILLED	1	--check accepts a duplicate row
+M18	KILLED	1	--check accepts unsorted rows
+M19	KILLED	1	the rule table may name a disposition outside the closed set
+M20	KILLED	1	the rule table may omit the field a disposition needs
+M21	KILLED	1	an untracked entry is reported as tracked
+M22	KILLED	1	a governance file is counted as a source class
+M23	KILLED	1	a problem_source row without a source class passes --check
+M24	KILLED	1	an excluded row without a reason passes --check
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 24, 'EQUIVALENT': 0, 'ERROR': 0}

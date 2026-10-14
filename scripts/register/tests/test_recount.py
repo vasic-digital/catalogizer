@@ -44,6 +44,9 @@ def check(label, cond, info=""):
         PASSES += 1
     else:
         FAILS += 1
+        if os.environ.get("W2_FAILFAST") == "1":     # mutation runs: the first FAIL kills the mutant
+            print("RESULT: pass=%d fail=%d (stopped at the first failure: W2_FAILFAST=1)" % (PASSES, FAILS))
+            sys.exit(1)
 
 
 def sh(cmd, **kw):
@@ -109,6 +112,7 @@ def status_of(rec):
 BASE = os.path.join(SCR, "base")
 W.build(BASE)
 F.recount_extras(BASE)
+F.plan_docs(BASE)   # S-26 / S-27 read docs/21; a fixture without it leaves both sources at zero (a blind class)
 fj0, db0 = build_db(BASE, "base")
 r, rec = recount(fj0, db0, os.path.join(SCR, "o0"))
 check("(a) base tree: recount exits 0", r.returncode == 0, r.stdout + r.stderr)
@@ -117,6 +121,7 @@ nsrc = sqlite3.connect(db0).execute("SELECT count(*) FROM reg_sources").fetchone
 check("(a) every source row of the register is recounted (%d sources, none without a method, none differing)" % nsrc,
       rec and len(rec["sources"]) == nsrc and all(v == "match" for v in st.values()), {k: v for k, v in st.items() if v != "match"})
 check("(a) recount.json carries the freeze identity and the verdict", rec and rec["verdict"] == "PASS" and rec["freeze"]["listing_sha256"] == json.load(open(fj0))["listing_sha256"], rec and rec["verdict"])
+check("(a) recount.json says it is fixture evidence when the freeze head is not a full git sha (F7: `fixture` is derived from the freeze head, never typed)", rec and rec["freeze"]["head"] == "scratch" and rec.get("fixture") is True, rec and (rec["freeze"]["head"], rec.get("fixture")))
 zero = [s["locator"] for s in rec["sources"] if s["recount"] == 0 and not s["locator"].startswith("submodules/")] if rec else ["no record"]
 check("(a) control: no source of the fixture reads zero (a blind instrument reads zero everywhere)", not zero, zero)
 
@@ -178,14 +183,25 @@ CLASS_LOC = {  # class -> the source locator that must differ
     "S-17": "challenges/helixqa-banks/*.yaml", "S-18": "challenges/data/challenges_bank.json", "S-19": "submodules/helix_qa/banks/**",
     "S-20": "submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md", "S-21": ".specify/memory/constitution.md",
     "S-22": "module CLAUDE.md and AGENTS.md (outside submodules)", "S-23": "marker and skipped-test scan of every text file of the snapshot", "S-24": ".implementation/**",
-    "S-25": "S-25:SECURITY_KEY_ROTATION_REQUIRED.md", "XID": "legacy-ids:defect ids referenced only outside the S-14 and S-15 files"}
+    "S-25": "S-25:SECURITY_KEY_ROTATION_REQUIRED.md",
+    "S-26": "plan-document seeds (docs/21 section 9.1)", "S-27": "innovation entries (docs/21 section 9.5)", "XID": "legacy-ids:defect ids referenced only outside the S-14 and S-15 files"}
 for cls, loc in CLASS_LOC.items():
     if base_counts.get(loc, 0) <= 0:
         check("(e) base tree: the source of %s reads > 0 (%s)" % (cls, loc), False, base_counts.get(loc))
         continue
     T = os.path.join(SCR, "pl_" + cls)
     shutil.copytree(BASE, T, symlinks=True)
-    W.plant(T, cls)
+    if cls in ("S-26", "S-27"):
+        d21 = os.path.join(T, F.DOCS, "21-master-plan-phases-risks-and-traceability.md")
+        t = open(d21).read()
+        if cls == "S-26":
+            t2 = t.replace("| **Total itemised** | | | **27** | |", "| doc20 §2.2 | T-1 | security tooling | 1 | unrated |\n| **Total itemised** | | | **28** | |")
+        else:
+            t2 = t.replace("| T7-C | `PROPOSAL` part |", "| T1-C | `PROPOSAL` | planted candidate | - |\n| T7-C | `PROPOSAL` part |").replace("Counts: 4 entries (2 `PROPOSAL`", "Counts: 5 entries (3 `PROPOSAL`")
+        assert t2 != t, "plant did not change docs/21"
+        open(d21, "w").write(t2)
+    else:
+        W.plant(T, cls)
     fjp = os.path.join(SCR, "pl_%s.freeze.json" % cls)
     F.freeze2(T, fjp)
     r, rec = recount(fjp, db0, os.path.join(SCR, "o_pl_" + cls))

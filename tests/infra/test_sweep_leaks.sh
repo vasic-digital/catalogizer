@@ -43,8 +43,8 @@ mkfix() {
   for sd in "$STV" "$STK" "$STC" "$STN" "$STL" "$STD" "$STX"; do rm -rf -- "$STD_/$sd"; mkdir -p "$STD_/$sd/data"; echo x >"$STD_/$sd/data/f"; TI_FOREIGN_DIRS+=("$STD_/$sd"); done
   echo "zz-stv-$R" >"$STD_/$STV/op_id"; echo "zz-stk-$R" >"$STD_/$STK/op_id"; : >"$STD_/$STK/.keep-state"; echo "zz-stc-$R" >"$STD_/$STC/op_id"; echo "zz-stl-$R" >"$STD_/$STL/op_id"; echo "zz-std-$R" >"$STD_/$STD/op_id"; echo "zz-stx-$R" >"$STD_/$STX/op_id"
   podman rm -f "$STX-c" >/dev/null 2>&1; STXC=$(podman create --pull=never --name "$STX-c" --label "catalogizer.test_project=$STX" --entrypoint sleep "$LOCKIMG" 60 2>/dev/null); TI_FOREIGN+=("$STXC")
-  # the FOURTH kind: the NAS leg's run directories (tmpfs and the old in-checkout place)
-  RTD="${XDG_RUNTIME_DIR:-}"; GONE_PID=$(bash -c 'echo $$'); NASV="$RTD/catalogizer-nas-ro.$GONE_PID"; NASR="$RTD/catalogizer-nas-ro.$$"; NASL_PROC_PID=""
+  # the FOURTH kind: the NAS leg's run directories (under /tmp since run_pinned round 8 R-1, and the old in-checkout place)
+  RTD=/tmp; GONE_PID=$(bash -c 'echo $$'); NASV="$RTD/catalogizer-nas-ro.$GONE_PID"; NASR="$RTD/catalogizer-nas-ro.$$"; NASL_PROC_PID=""
   bash -c 'exec -a nas_readonly_leg sleep 120' & NASL_PROC_PID=$!; disown; NASK="$TI_REPO/.audit/out/nas-ro-$NASL_PROC_PID"
   for d in "$NASV" "$NASR" "$NASK"; do mkdir -p "$d"; echo x >"$d/auth-decoy"; TI_FOREIGN_DIRS+=("$d"); done
 }
@@ -115,7 +115,7 @@ if [ "${SWEEP_NO_MUTATIONS:-0}" != 1 ] && [ "${SWEEP_TEST_MUTANT:-0}" != 1 ]; th
     local name=$1 md="$TI_REPO/.audit/scratch/sweep-mut-$$-$1" r n; local dst="$md/sweep_leaks.sh"; shift; mkdir -p "$md"; cp "$TI_REPO/scripts/test-infra/lib.sh" "$md/"
     mkfix   # BEFORE the rewrite: the confinement below bakes the fixture paths (NASV, NASR, NASK carry the pids of THIS mkfix) into the mutant
     # every mutant is confined to THIS test's fixtures (names carry $R): a mutant that dropped a proof must never touch a pod or directory of another stream on this shared host
-    python3 -I - "$TI_REPO/$SUT" "$dst" "$@" "for pod in \$(podman pod ls --format '{{.Name}}' 2>/dev/null); do" "for pod in \$(podman pod ls --format '{{.Name}}' 2>/dev/null | grep \"$R\"); do" 'for d in "$TI_ROOT"/.audit/out/catalogizer-test-*; do' "for d in \"\$TI_ROOT\"/.audit/out/catalogizer-test-$R*; do" 'for sd in "$TI_STATE_DIR"/catalogizer-test-*; do' "for sd in \"\$TI_STATE_DIR\"/catalogizer-test-$R*; do" 'for d in "${XDG_RUNTIME_DIR:-/nonexistent}"/catalogizer-nas-ro.* "$TI_ROOT"/.audit/out/nas-ro-*; do' "for d in \"$NASV\" \"$NASR\" \"$NASK\"; do" <<'PY' || { bad "mutation $name: anchor missing"; return; }
+    python3 -I - "$TI_REPO/$SUT" "$dst" "$@" "for pod in \$(podman pod ls --format '{{.Name}}' 2>/dev/null); do" "for pod in \$(podman pod ls --format '{{.Name}}' 2>/dev/null | grep \"$R\"); do" 'for d in "$TI_ROOT"/.audit/out/catalogizer-test-*; do' "for d in \"\$TI_ROOT\"/.audit/out/catalogizer-test-$R*; do" 'for sd in "$TI_STATE_DIR"/catalogizer-test-*; do' "for sd in \"\$TI_STATE_DIR\"/catalogizer-test-$R*; do" 'for d in /tmp/catalogizer-nas-ro.* "${XDG_RUNTIME_DIR:-/nonexistent}"/catalogizer-nas-ro.* "$TI_ROOT"/.audit/out/nas-ro-*; do' "for d in \"$NASV\" \"$NASR\" \"$NASK\"; do" <<'PY' || { bad "mutation $name: anchor missing"; return; }
 import sys
 s = open(sys.argv[1]).read(); a = sys.argv[3:]
 for i in range(0, len(a), 2):

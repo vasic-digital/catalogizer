@@ -39,13 +39,13 @@ Anything else fails the scan: skipping an unrecognised failure turns an outage i
 
 `POST /api/v1/storage/roots` takes `url`, `mount_point`, `options` and `allow_empty` besides the earlier fields; the protocol must be one the client factory builds (the built-ins plus every protocol registered through
 `filesystem.RegisterProtocol`); a webdav root needs a `url`; `port` must be 1-65535. `POST /api/v1/scans` loads every column the settings contract consumes (`models.StorageRootConnColumns`). `GET /storage/roots` returns the
-url with its password redacted. `GET /scans[/:id]` returns `reason`. The cover-art thumbnail copy builds its client through the same single mapping.
+url with its password redacted; `models.StorageRoot.MarshalJSON` never serialises the password column nor a url password, so `/api/v1/browse` and `/api/v1/browse/roots` cannot return a credential either (WF22 N5). `GET /scans[/:id]` returns `reason`. The cover-art thumbnail copy builds its client through the same single mapping.
 
 ## Not done here (tracked, not claimed)
 
 - Change tokens are kept in memory (`MemoryTokenStore`); a database-backed store (a migration) is a separate work item. Deleted files are not detected (`FilesDeleted` stays 0). Hence no production scanner is incremental.
 - A cancel endpoint (`ScanJob.Context` is `context.Background()` in the only producer, so a user cannot cancel), the `reason` field in `catalog-web` (`scansApi.ts`) and a UI notification for `scan.cancelled` are tracked, not done (outside `catalog-api`).
-- NFS: no real-target evidence. The NFS client mounts with `syscall.Mount` (needs CAP_SYS_ADMIN), which the rootless / no-sudo mandate makes structurally unavailable on the build host (11.4.112); its row is `blocked-unavailable`. The unit tests cover its settings and scanner behaviour, not a real mount.
+- NFS: no real-target evidence (UNCONFIRMED against a live server). Root cause of "every NFS scan fails not connected" (WF22 N1, round 3): `isMounted` was a stub that answered true for any readable `/proc/mounts`, so `Connect` believed it was already mounted, never mounted, and `IsConnected` (which also needs the mount to be real) was always false - nothing to do with privileges. `isMounted` now parses `/proc/mounts` for an `nfs`/`nfs4` mount at the mount point. A mount point that is ALREADY an NFS mount (mounted by the host and bind-mounted into the rootless container) therefore connects and lists with no privilege; a client that has to mount itself still needs CAP_SYS_ADMIN (`syscall.Mount`, with `addr=` resolved from the host name) and fails with the mount error without it. Only the pre-mounted path is exercised by tests (a fake mount table); a real NFS mount was not run.
 - `job.IncludePatterns` / `job.ExcludePatterns` are not applied (the LocalScanner does not apply them either).
 - ETag / inode extras exist as the optional `TokenSource` interface; no client implements it yet (PA-04/05/06/09).
 - Defaults of `Workers`: ftp 1 (one control connection), webdav 1, nfs 4, pluggable protocols 1. Raising them is PA-07.

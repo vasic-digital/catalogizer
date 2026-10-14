@@ -58,6 +58,7 @@ cleanup() {
   [ "$CLEANED" = 0 ] || return 0
   CLEANED=1
   trap - EXIT INT TERM HUP
+  case "${OUTD:-}" in /tmp/catalogizer-ftps-out.??????) rm -rf -- "$OUTD";; esac
   local rc_state=complete verdict=ok
   if [ "$UP" = 1 ]; then
     FTPS_OP_ID="$OPID" FTPS_PROJECT="$PROJECT" FTPS_DIR="$SD" FTPS_USER="$USER_NAME" FTPS_PASSWORD="${PASS:-x}" \
@@ -162,7 +163,8 @@ podman network exists "$NET" || refuse network_absent "$NET"
 GOCMD='cd /src/filesystem && go test -count=1 -tags integration'
 for a in "${TESTARGS[@]:-}"; do [ -n "$a" ] && GOCMD+=" $(printf '%q' "$a")"; done
 if [ "$MODE" = selftest ]; then GOCMD='cd /src/filesystem && go test -count=1 -tags integration -run TestIntegrationSelftest -v ./pkg/ftp/'; fi
-OUTD="$SD/out"; mkdir -p "$OUTD"
+# the container runs from the scratch view $SD/view, which is not the repository: run_pinned (round 8, R-1) accepts an --out disjoint from its source tree only strictly below /tmp or /var/tmp
+OUTD="$(mktemp -d /tmp/catalogizer-ftps-out.XXXXXX)" || refuse scratch_uncreatable "cannot create the output directory under /tmp"
 ARGV=()
 while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$SD/view" && RUNP_PRINT_ARGV=1 bash "$ROOT/scripts/containers/run_pinned.sh" --out "$OUTD" --op-id "$OPID" IMG-GO -- \
     env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 GOFLAGS=-buildvcs=false sh -c "$GOCMD")

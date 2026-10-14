@@ -18,6 +18,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// cwdServerPWD, when set, makes the probe server answer PWD with whatever it returns for the current directory (WF22 R3 K10: a server that
+// answers a RELATIVE working directory). Unset: PWD is not implemented (502), as before.
+var cwdServerPWD func(cwd string) string
+
 func startCwdServer(t *testing.T, tree map[string][]string, seen *[]string) (string, int) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
@@ -64,6 +68,12 @@ func startCwdServer(t *testing.T, tree map[string][]string, seen *[]string) (str
 							say("250 ok")
 						} else {
 							say("550 no")
+						}
+					case "PWD":
+						if cwdServerPWD == nil {
+							say("502 not implemented")
+						} else {
+							say(fmt.Sprintf("257 \"%s\" is the current directory", cwdServerPWD(cwd)))
 						}
 					case "EPSV":
 						dl, _ = net.Listen("tcp", "127.0.0.1:0")

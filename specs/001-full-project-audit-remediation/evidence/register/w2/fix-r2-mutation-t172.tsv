@@ -1,0 +1,35 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	the entry-set invariant is not enforced
+M02	KILLED	1	REVIEWER MUTANT A (verbatim): the refusal condition is narrowed to `if r and not cause_atm`
+M03	KILLED	1	REVIEWER MUTANT B (verbatim): the Fixed/Issues location is always Issues
+M04	KILLED	1	qa_causes.json carries no freeze identity (F7)
+M05	KILLED	1	every freeze is marked fixture (F7)
+M06	KILLED	1	the recorded manifest hash is not the manifest hash (F7)
+M07	KILLED	1	the android rule treats an underscore as a word character again (F8)
+M08	KILLED	1	the wrong-ADB cause is filed against helixqa
+M09	KILLED	1	every ticket of a cause is primary
+M10	KILLED	1	no ticket governs the severity
+M11	KILLED	1	QA tickets imported one by one are accepted
+M12	KILLED	1	an unregistered component is accepted
+M13	KILLED	1	the families stage runs before the import
+M14	KILLED	1	a declared platform does not win
+M15	KILLED	1	two evidence classes are not a conflict
+M16	KILLED	1	the screen is not part of the family key
+M17	KILLED	1	the platform class is not part of the family key
+M18	KILLED	1	a family is decided SAME_DEFECT
+M19	KILLED	1	an empty screen is a scope
+M20	KILLED	1	the inferred platform line is written again on every run
+M21	KILLED	1	the family head is the highest locator
+M22	KILLED	1	a resumed run mints a new id
+M23	KILLED	1	the crash hook before the mapping never fires
+M24	KILLED	1	the cause item takes the lowest severity
+M25	KILLED	1	the QA tickets enter the families stage
+M26	KILLED	1	an existing recurrence link is written again
+M27	KILLED	1	a cause item is not a Bug
+M28	KILLED	1	the entry-set verdict file is not written
+M29	KILLED	1	a declared platform is not normalised to its class (F8)
+M30	KILLED	1	the entry-set verdict carries no freeze identity (F7)
+M31	KILLED	1	the qa refusal text drops the recovery path (F1)
+M32	KILLED	1	families.json carries no freeze identity (F7)
+M33	KILLED	1	platform_inference.json carries no freeze identity (F7)

@@ -201,7 +201,8 @@ func TestStorageRootToSettings_IdentityResolution(t *testing.T) {
 	scanner := &UniversalScanner{}
 	root := scanHandlerTestRoot(t, nil, nil, 1)
 
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	require.Equal(t, "probe_user", settings["username"], "scanner should resolve username from identity_index")
 	require.Equal(t, "probe_pass", settings["password"], "scanner should resolve password from identity_index")
 }
@@ -216,7 +217,8 @@ func TestStorageRootToSettings_DirectCredentialsWin(t *testing.T) {
 	scanner := &UniversalScanner{}
 	root := scanHandlerTestRoot(t, pstr("direct_user"), pstr("direct_pass"), 1)
 
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "direct_user", settings["username"], "direct credentials must override identity")
 	assert.Equal(t, "direct_pass", settings["password"], "direct credentials must override identity")
 }

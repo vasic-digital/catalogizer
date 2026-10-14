@@ -1,0 +1,8 @@
+# identity: task=T172 file=t172-entryset-mutation.txt utc=2026-10-12T11:53:52Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# Mutations of the entry-set invariant (docs: task text T172 'paired mutations'). Two live in the fixture itself (test_t172.py (a)): a register whose own write path inserts ONE reg_source_entries row (a trigger on reg_source_map), and one that inserts one row and deletes another (the count unchanged, the no-delete trigger dropped in the scratch DB): the tool must refuse t172_entry_set_changed naming each triple. Both checks passed in every GREEN run (ledger-t172-green1..3).
+# Two mutant COPIES of the tool (mutate_w2.sh t172): M01 (entry-set comparison disabled) and M28 (the verdict file is not written) each make the suite FAIL:
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	the entry-set invariant is not enforced
+M28	KILLED	1	the entry-set verdict file is not written
+# full set: w2/mutation-t172.tsv (28 mutants)

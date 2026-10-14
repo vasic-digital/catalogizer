@@ -1,0 +1,19 @@
+{
+ "added": [],
+ "after_rows": 130,
+ "after_sha256": "d7ea09e9af307aecad24de6577f936166c0d6d2d6223dd56ff70f9f9d637e667",
+ "before_rows": 130,
+ "before_sha256": "d7ea09e9af307aecad24de6577f936166c0d6d2d6223dd56ff70f9f9d637e667",
+ "fixture": true,
+ "freeze": {
+  "fixture": true,
+  "frozen_at": "2026-10-08T00:00:00Z",
+  "head": "scratch",
+  "listing_sha256": "3156d3119bcc962cf3497af0ebd5305877aae23380bc50f03e33c4d843d15def",
+  "manifest_sha256": "9edb563d53b00e9aeeefaf2f4809ac47342a9f89b31b16f78a0804a017ae086d"
+ },
+ "identical": true,
+ "removed": [],
+ "schema": "t172-entryset/1",
+ "stage": "families"
+}

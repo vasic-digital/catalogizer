@@ -260,6 +260,7 @@ def generate(a):
         problems.append("the freeze lists %s as a root entry: .git is not a root entry (T161 excludes it)" % ", ".join(forbidden))
     rec = {"schema": "root-items/1",
            "freeze": {"head": fj.get("head"), "listing_sha256": fj.get("listing_sha256"), "frozen_at": fj.get("frozen_at")},
+           "fixture": not (isinstance(fj.get("head"), str) and re.fullmatch(r"[0-9a-f]{40}", fj["head"]) is not None),      # derived from the freeze head, never typed
            "rules": {"file": os.path.basename(a.dispositions), "sha256": sha_file(a.dispositions)},
            "inventory_doc": {"file": os.path.basename(a.inventory), "sha256": sha_file(a.inventory)},
            "rows": rows, "summary": summarise(rows, paths), "problems": problems, "verdict": "FAIL" if problems else "PASS"}

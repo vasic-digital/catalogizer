@@ -1,0 +1,12 @@
+# ledger seq=135 item=AUD-W2-LISTING polarity=RED iteration=1 exit_status=1 verdict=fail
+# target_ref=.audit/scratch/w2ev/listing/sut target_fingerprint=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 test_fingerprint=a654ba7d8ab53ef6c974c683ef68063f56a3cc6a35b236d364ee7f1d2dd0cf55
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "CHECK_FREEZE_LISTING=/src/.audit/scratch/w2ev/listing/sut/check_freeze_listing.sh", "bash", "/src/scripts/register/tests/test_freeze_listing.sh"]
+# identity: task=W2-freeze-listing utc=2026-10-12T11:52:46Z host=f62558682652 uid=1000
+# git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0 tree_dirty_files=129
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=1f8c261d222d07be5e9b65c748e69a37134b86b721315321bfb359984945c7b6 apply_ext=7cd104ce4d7f50112000615424ae71ffcd5cf0aa9c88b7756e0b4fbb31f246f4 gate=4bf8cede0a46d00403ec92e75cfca224e644f3edf8b02b4a08d1fa2d1eb37d18 test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# check=/src/.audit/scratch/w2ev/listing/sut/check_freeze_listing.sh sha256=
+FAIL check_freeze_listing.sh absent: /src/.audit/scratch/w2ev/listing/sut/check_freeze_listing.sh (RED: the listing check is not implemented)
+RESULT: pass=0 fail=1

@@ -671,7 +671,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 			Password: strPtr("pass"),
 			Domain:   strPtr("WORKGROUP"),
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Equal(t, "192.168.0.241", settings["host"])
 		assert.Equal(t, 445, settings["port"])
 		assert.Equal(t, "media", settings["share"])
@@ -688,7 +689,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 			Username: strPtr("ftpuser"),
 			Password: strPtr("ftppass"),
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Equal(t, "ftp.example.com", settings["host"])
 		assert.Equal(t, 21, settings["port"])
 		assert.Equal(t, "ftpuser", settings["username"])
@@ -703,7 +705,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 			MountPoint: strPtr("/mnt/nfs"),
 			Options:    strPtr("vers=3"),
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Equal(t, "nfs.example.com", settings["host"])
 		assert.Equal(t, "/export/media", settings["path"])
 		assert.Equal(t, "/mnt/nfs", settings["mount_point"])
@@ -717,7 +720,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 			Username: strPtr("davuser"),
 			Password: strPtr("davpass"),
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Equal(t, "https://dav.example.com/media", settings["url"])
 		assert.Equal(t, "davuser", settings["username"])
 		assert.Equal(t, "davpass", settings["password"])
@@ -728,7 +732,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 			Protocol: "local",
 			Path:     strPtr("/mnt/data"),
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Equal(t, "/mnt/data", settings["base_path"])
 	})
 
@@ -736,7 +741,8 @@ func TestStreamHandler_StorageRootToSettings_AllProtocols(t *testing.T) {
 		root := &root_models.StorageRoot{
 			Protocol: "smb",
 		}
-		settings := storageRootToSettings(root)
+		settings, serr := storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Empty(t, settings)
 	})
 }

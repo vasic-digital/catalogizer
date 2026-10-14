@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/src/scripts/register/tests/test_root_inventory.py", line 291, in <module>
+    cut = old_rules.index("  # ---- root entries found undecided by the independent review")
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: substring not found

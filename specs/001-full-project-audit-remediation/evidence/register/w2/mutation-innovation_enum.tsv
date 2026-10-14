@@ -1,0 +1,21 @@
+# identity: tool=innovation_enum utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh innovation_enum (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	an unknown entry kind is accepted
+M02	KILLED	1	a Counts line that disagrees with the table is accepted
+M03	KILLED	1	a duplicate entry id is accepted
+M04	KILLED	1	a missing section 9.5 is accepted
+M05	KILLED	1	the docs/18 row is left out of the entry hash
+M06	KILLED	1	a PROPOSAL part has the locator of a whole candidate
+M07	KILLED	1	the docs/18 candidate table is not read
+M08	KILLED	1	a duplicate docs/18 candidate id is accepted
+M09	KILLED	1	the tag classification swaps R-ADJ and PROPOSAL
+M10	KILLED	1	an entry hash that ignores the entry kind
+M11	KILLED	1	an entry id that is not a T-id is read as an entry
+M12	KILLED	1	the Counts line is searched only on the first line
+M13	KILLED	1	the candidate table needs no complete row
+M14	KILLED	1	the entry status is the candidate tag
+M15	KILLED	1	the count of docs/18 candidates read is wrong
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 15, 'EQUIVALENT': 0, 'ERROR': 0}

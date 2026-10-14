@@ -88,7 +88,8 @@ func TestStorageRootToSettings_Local(t *testing.T) {
 	scanner := &UniversalScanner{logger: zap.NewNop()}
 	path := "/data/media"
 	root := &models.StorageRoot{Protocol: "local", Path: &path}
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "/data/media", settings["base_path"])
 }
 
@@ -105,7 +106,8 @@ func TestStorageRootToSettings_SMB_AllFields(t *testing.T) {
 		Host:     &host, Port: &port, Path: &path,
 		Username: &user, Password: &pass, Domain: &domain,
 	}
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "nas.local", settings["host"])
 	assert.Equal(t, 445, settings["port"])
 	assert.Equal(t, "media", settings["share"])
@@ -124,7 +126,8 @@ func TestStorageRootToSettings_FTP(t *testing.T) {
 		Protocol: "ftp",
 		Host:     &host, Port: &port, Username: &user, Password: &pass,
 	}
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "ftp.example.com", settings["host"])
 	assert.Equal(t, 21, settings["port"])
 	assert.Equal(t, "ftpuser", settings["username"])
@@ -141,7 +144,8 @@ func TestStorageRootToSettings_NFS(t *testing.T) {
 		Protocol: "nfs",
 		Host:     &host, Path: &path, MountPoint: &mount, Options: &opts,
 	}
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "nfs.local", settings["host"])
 	assert.Equal(t, "/exports/media", settings["path"])
 	assert.Equal(t, "/mnt/nfs", settings["mount_point"])
@@ -157,7 +161,8 @@ func TestStorageRootToSettings_WebDAV(t *testing.T) {
 		Protocol: "webdav",
 		URL:      &url, Username: &user, Password: &pass,
 	}
-	settings := scanner.storageRootToSettings(root)
+	settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 	assert.Equal(t, "https://webdav.example.com/files", settings["url"])
 	assert.Equal(t, "davuser", settings["username"])
 	assert.Equal(t, "davpass", settings["password"])
@@ -167,7 +172,8 @@ func TestStorageRootToSettings_NilFields(t *testing.T) {
 	scanner := &UniversalScanner{logger: zap.NewNop()}
 	for _, proto := range []string{"local", "smb", "ftp", "nfs", "webdav", "unknown"} {
 		root := &models.StorageRoot{Protocol: proto}
-		settings := scanner.storageRootToSettings(root)
+		settings, serr := scanner.storageRootToSettings(root)
+		require.NoError(t, serr)
 		assert.Empty(t, settings, proto)
 	}
 }

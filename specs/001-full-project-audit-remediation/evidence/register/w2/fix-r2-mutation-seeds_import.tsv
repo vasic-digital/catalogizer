@@ -1,0 +1,26 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	the family severity is the LOWEST member severity
+M02	KILLED	1	entries older than the snapshot are accepted
+M03	KILLED	1	the docs/21 section 9.3 families are not folded
+M04	KILLED	1	every family member is primary (none is duplicate_of)
+M05	KILLED	1	no member governs the severity
+M06	KILLED	1	an item imported by another source is minted a second time
+M07	KILLED	1	the description cap is not applied
+M08	KILLED	1	a resumed run mints a new id
+M09	KILLED	1	the crash hook before the mapping never fires
+M10	KILLED	1	seed items are Bugs
+M11	KILLED	1	seed items require re-verification
+M12	KILLED	1	an unrated seed is defaulted low
+M13	KILLED	1	a linked family member is a primary of the existing item
+M14	KILLED	1	a compound severity label takes the lower word
+M15	KILLED	1	the R-ADJ routing is not named in the item
+M16	KILLED	1	a partly folded member is folded as well
+M17	KILLED	1	the item bound is not enforced
+M18	KILLED	1	an unmapped entry after the import is not an error
+M19	KILLED	1	a family member that is not a seed is accepted
+M20	KILLED	1	the engine validation after the import is skipped
+M21	KILLED	1	a member named twice inside one family is accepted (review fix round 2, F3)
+M22	KILLED	1	two different item bounds stated by docs/21 are accepted (F3)
+M23	KILLED	1	the reconciliation record carries no freeze identity (F7)
+M24	KILLED	1	the fixture marker is always true (F7)

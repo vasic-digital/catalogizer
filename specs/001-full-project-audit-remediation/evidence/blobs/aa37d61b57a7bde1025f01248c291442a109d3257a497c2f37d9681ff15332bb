@@ -1,0 +1,58 @@
+# identity: task=T166 utc=2026-10-12T11:49:30Z host=c251ca04c813 uid=1000
+# git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# tool=/src/.audit/scratch/w2ev/recount/sut/recount_sources.sh sha256=328624bcd42f4770 engine(recount_sources.py) sha256=d90fbd3419107cb4 enumerator sha256=f7460279287d2c05
+ok   enumerate base exits 0
+ok   (a) base tree: recount exits 0
+ok   (a) every source row of the register is recounted (35 sources, none without a method, none differing)
+ok   (a) recount.json carries the freeze identity and the verdict
+ok   (a) control: no source of the fixture reads zero (a blind instrument reads zero everywhere)
+ok   (g) two recounts give a byte-identical recount.json
+ok   (g) the recount leaves the register database bytes unchanged
+ok   (g) a scanned_entry_count that disagrees with the rows is a difference (exit 1, the source itemised under `<scanned_entry_count vs rows>`)
+ok   enumerate dashn exits 0
+ok   (b) the enumerator records the marker row of the file `-n` (the fixture is real)
+ok   (b) fixture 1: the recount counts the line of `-n` and passes (paths are passed after `--`)
+ok   (c) fixture 2: a snapshot file changed after its manifest -> exit 20 `freeze_snapshot_moved` naming the file
+ok   (c) fixture 2: no recount.json written
+ok   (d) listing with an appended path -> exit 20 `freeze_listing_moved`, no recount.json
+ok   (e) control needle S-01: the recount of a tree with one planted entry differs from the base register at docs/issues/*.md by exactly +1 and itemises it
+ok   (e) control needle S-02: the recount of a tree with one planted entry differs from the base register at issues/*.md by exactly +1 and itemises it
+ok   (e) control needle S-03: the recount of a tree with one planted entry differs from the base register at TASK_TRACKER.md by exactly +1 and itemises it
+ok   (e) control needle S-04: the recount of a tree with one planted entry differs from the base register at MASTER_EXECUTION_CHECKLIST.md by exactly +1 and itemises it
+ok   (e) control needle S-05: the recount of a tree with one planted entry differs from the base register at docs/MASTER_EXECUTION_CHECKLIST.md by exactly +1 and itemises it
+ok   (e) control needle S-06: the recount of a tree with one planted entry differs from the base register at COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md by exactly +1 and itemises it
+ok   (e) control needle S-07: the recount of a tree with one planted entry differs from the base register at COMPREHENSIVE_UNFINISHED_WORK_REPORT.md by exactly +1 and itemises it
+ok   (e) control needle S-08: the recount of a tree with one planted entry differs from the base register at docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md by exactly +1 and itemises it
+ok   (e) control needle S-09: the recount of a tree with one planted entry differs from the base register at UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md by exactly +1 and itemises it
+ok   (e) control needle S-10: the recount of a tree with one planted entry differs from the base register at docs/OPEN_POINTS_CLOSURE.md by exactly +1 and itemises it
+ok   (e) control needle S-11: the recount of a tree with one planted entry differs from the base register at docs/LANDMINES.md by exactly +1 and itemises it
+ok   (e) control needle S-12: the recount of a tree with one planted entry differs from the base register at /*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md by exactly +1 and itemises it
+ok   (e) control needle S-13: the recount of a tree with one planted entry differs from the base register at docs/status/*.md by exactly +1 and itemises it
+ok   (e) control needle S-14: the recount of a tree with one planted entry differs from the base register at legacy-ids:defect ids first seen in the S-14 files by exactly +1 and itemises it
+ok   (e) control needle S-15: the recount of a tree with one planted entry differs from the base register at legacy-ids:defect ids first seen in the S-15 files by exactly +1 and itemises it
+ok   (e) control needle S-16: the recount of a tree with one planted entry differs from the base register at docs/security/** by exactly +1 and itemises it
+ok   (e) control needle S-17: the recount of a tree with one planted entry differs from the base register at challenges/helixqa-banks/*.yaml by exactly +1 and itemises it
+ok   (e) control needle S-18: the recount of a tree with one planted entry differs from the base register at challenges/data/challenges_bank.json by exactly +1 and itemises it
+ok   (e) control needle S-19: the recount of a tree with one planted entry differs from the base register at submodules/helix_qa/banks/** by exactly +1 and itemises it
+ok   (e) control needle S-20: the recount of a tree with one planted entry differs from the base register at submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md by exactly +1 and itemises it
+ok   (e) control needle S-21: the recount of a tree with one planted entry differs from the base register at .specify/memory/constitution.md by exactly +1 and itemises it
+ok   (e) control needle S-22: the recount of a tree with one planted entry differs from the base register at module CLAUDE.md and AGENTS.md (outside submodules) by exactly +1 and itemises it
+ok   (e) control needle S-23: the recount of a tree with one planted entry differs from the base register at marker and skipped-test scan of every text file of the snapshot by exactly +1 and itemises it
+ok   (e) control needle S-24: the recount of a tree with one planted entry differs from the base register at .implementation/** by exactly +1 and itemises it
+ok   (e) control needle S-25: the recount of a tree with one planted entry differs from the base register at S-25:SECURITY_KEY_ROTATION_REQUIRED.md by exactly +1 and itemises it
+ok   (e) control needle S-26: the recount of a tree with one planted entry differs from the base register at plan-document seeds (docs/21 section 9.1) by exactly +1 and itemises it
+ok   (e) control needle S-27: the recount of a tree with one planted entry differs from the base register at innovation entries (docs/21 section 9.5) by exactly +1 and itemises it
+ok   (e) control needle XID: the recount of a tree with one planted entry differs from the base register at legacy-ids:defect ids referenced only outside the S-14 and S-15 files by exactly +1 and itemises it
+ok   (f) a differing source that is explained is `explained` and the recount exits 0
+ok   (f) an explanation of ANOTHER source does not excuse the difference (exit 1)
+ok   (f) a register source with no recount method fails (`no_recount_method`), never passes unrecounted
+ok   enumerate nlpath exits 0
+ok   (h) a path holding a newline is counted (exit 0, markers equal)
+ok   (i) doc03 comparison: the fixture has 2 tickets, not 1778 -> S-01 is a delta of the right sign, itemised
+ok   (i) doc03 comparison: the fixture holds 2 rotation rows against doc03's 37 -> a delta of -35 itemised
+ok   (i) doc03 comparison: S-02 equal (1 = 1); a group missing from doc03 -> `doc03_value_not_found`
+ok   (i) an unreadable doc03 is recorded `doc03_unreadable`, not a crash
+ok   usage: no arguments exits 2
+ok   a missing freeze json is refused (exit 20, nothing written)
+RESULT: pass=53 fail=0

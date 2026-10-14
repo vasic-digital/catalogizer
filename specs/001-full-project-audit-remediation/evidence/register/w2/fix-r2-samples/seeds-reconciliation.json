@@ -1,0 +1,45 @@
+{
+ "by_status": {
+  "Queued": 18
+ },
+ "by_type": {
+  "Task": 18
+ },
+ "class": "S-26",
+ "component_id_not_null": 5,
+ "doc21_bound_rev8": 198,
+ "entries": 27,
+ "families": 5,
+ "family_members": 15,
+ "findings_rows_written": 0,
+ "fixture": true,
+ "folded_non_head_members": 9,
+ "freeze": {
+  "fixture": true,
+  "frozen_at": "2026-10-08T00:00:00Z",
+  "head": "scratch",
+  "listing_sha256": "3156d3119bcc962cf3497af0ebd5305877aae23380bc50f03e33c4d843d15def",
+  "manifest_sha256": "9edb563d53b00e9aeeefaf2f4809ac47342a9f89b31b16f78a0804a017ae086d"
+ },
+ "fully_folded_members": 14,
+ "items_bound_stated_in_docs21": 18,
+ "items_in_register": 18,
+ "items_planned": 18,
+ "items_upper_bound": 18,
+ "linked_to_items_of_other_sources": 0,
+ "located_in_source_document": 26,
+ "map_rows": {
+  "duplicate_of": 9,
+  "primary": 18
+ },
+ "partly_folded_members_kept_separate": [
+  "doc15:S-03"
+ ],
+ "rated": 7,
+ "schema": "seed-reconciliation/1",
+ "unlocated_seed_ids": [
+  "doc12:stale-constitution-index-hash"
+ ],
+ "unmapped_entries": 0,
+ "unrated": 20
+}

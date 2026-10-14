@@ -43,11 +43,11 @@ plus a generic dotted-quad scan with a control needle) and publishes nothing on 
 TMPDIR=/dev/shm DISK_HEADROOM_REPO_ROOT=$PWD LONGOPS_ALLOW_TMPFS=1 scripts/test-infra/nas_clients_leg.sh [--hosts 1,2,3,4,5,6,7] [--protocols ftps,ftp,sftp,nfs] [--ev-dir DIR] [--assemble-only] [--diag]
 ```
 
-- `--assemble-only`: no container; scan and assemble the results already under `.audit/out/nas-clients/res` (a protocol run refused for host memory, `run_pinned: REFUSED reason=memory_budget_unavailable`, can be repeated alone). A run replaces only the results of the protocols and hosts it measures.
+- `--assemble-only`: no container; scan and assemble the results already under `/tmp/catalogizer-nas-clients.<uid>/res` (a protocol run refused for host memory, `run_pinned: REFUSED reason=memory_budget_unavailable`, can be repeated alone). A run replaces only the results of the protocols and hosts it measures.
 - `--diag`: runs `TestDiagFTPUnparsed` (`nas_diag_test.go`, Synology6 / DATA20-3) instead of the main test: re-walks the same deterministic sample over FTP up to the first `ErrListingIncomplete`, records the STRUCTURE of the unparsed line and, over SFTP, counts of peculiar entry names of that directory (no names). Result `diag-ftp-6.json`.
 
 One container at a time (rootless, `run_pinned.sh IMG-GO`); inside a protocol run the hosts are goroutines, each host sequential at <= 1 request/second. Go module and build caches persist in
-`.audit/out/nas-clients/`. Without the env file: `SKIP nas_clients reason=env_absent` (exit 0); with missing variables: `SKIP ... credentials_absent variables: <NAMES>`. Exit 1 on a leak, a failed container run or an
+`/tmp/catalogizer-nas-clients.<uid>/` (mode 0700, owned by this user: the client runs from a scratch view, so run_pinned round 8 R-1 accepts the --out only strictly below /tmp; a foreign or symlinked directory of that name is refused). Without the env file: `SKIP nas_clients reason=env_absent` (exit 0); with missing variables: `SKIP ... credentials_absent variables: <NAMES>`. Exit 1 on a leak, a failed container run or an
 assembly error; a refused, blocked or unreachable protocol is a recorded result.
 
 ## Evidence

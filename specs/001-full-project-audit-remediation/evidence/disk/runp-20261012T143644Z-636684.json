@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "runp-20261012T143644Z-636684",
+  "at": "2026-10-12T15:19:32Z",
+  "need_bytes": 832636324,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "",
+      "free_before": null,
+      "free_after": null,
+      "readable": false
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/Projects/catalogizer",
+      "free_before": 1135790047232,
+      "free_after": 1134957410908,
+      "readable": true
+    }
+  ],
+  "verdict": "refused",
+  "reason": "disk_free_unreadable"
+}

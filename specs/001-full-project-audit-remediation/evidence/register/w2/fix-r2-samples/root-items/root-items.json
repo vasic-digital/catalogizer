@@ -1,0 +1,408 @@
+{
+ "fixture": true,
+ "freeze": {
+  "frozen_at": "2026-10-08T00:00:00Z",
+  "head": "scratch",
+  "listing_sha256": "3156d3119bcc962cf3497af0ebd5305877aae23380bc50f03e33c4d843d15def"
+ },
+ "inventory_doc": {
+  "file": "01-system-architecture-map.md",
+  "sha256": "a263270c64193dafc3bd613831c6a83d9fc7ceb20826c35207aa76ff210634cf"
+ },
+ "problems": [],
+ "rows": [
+  {
+   "component": "security-and-service-config",
+   "disposition": "component",
+   "docs01": "absent",
+   "entry": ".firebaserc",
+   "kind": "file",
+   "note": "scanner configuration and the marker files of the named external services (doc03 5.20 sources EXT)",
+   "proposed": true,
+   "rule": "R-C-SECCFG",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": {
+    "kind": "table-row",
+    "section": "3.8",
+    "text": "| `.implementation/` | 6 tracked files: two ticket-validation reports dated 2026-04-17 and four empty progress markers (`backend_tests_fixed`, `cicd_configured`, `documentation_started`, `frontend_tes"
+   },
+   "entry": ".implementation",
+   "kind": "directory",
+   "note": "docs/01 3.8: two ticket-validation reports and four empty progress markers; the markers are imported as evidence-free claims, never as facts",
+   "rule": "R-S24",
+   "source_class": "S-24",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": ".specify",
+   "kind": "directory",
+   "note": "holds .specify/memory/constitution.md (Known Conflicts, docs/03 5.17); the rest of the directory is Spec Kit tooling",
+   "proposed": true,
+   "rule": "R-S21",
+   "source_class": "S-21",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "AGENTS.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "ALL_ISSUES_FIXED.md",
+   "kind": "file",
+   "rule": "R-S12",
+   "source_class": "S-12",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "CLAUDE.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md",
+   "kind": "file",
+   "rule": "R-S06",
+   "source_class": "S-06",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "COMPREHENSIVE_UNFINISHED_WORK_REPORT.md",
+   "kind": "file",
+   "rule": "R-S07",
+   "source_class": "S-07",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "CONSTITUTION.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "FINAL_UNFINISHED_WORK_REPORT.md",
+   "kind": "file",
+   "rule": "R-S09",
+   "source_class": "S-09",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "GEMINI.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "GETTING_STARTED.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "MASTER_EXECUTION_CHECKLIST.md",
+   "kind": "file",
+   "rule": "R-S04",
+   "source_class": "S-04",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "MEMORY.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "QUICK_REFERENCE.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "README.md",
+   "kind": "file",
+   "note": "governance and entry file (docs/03: not a problem source, GOVERNANCE_ROOT of the enumerator)",
+   "rule": "R-GOV",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "SECURITY_AUDIT_REPORT.md",
+   "kind": "file",
+   "rule": "R-S25",
+   "source_class": "S-25",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "SECURITY_KEY_ROTATION_REQUIRED.md",
+   "kind": "file",
+   "rule": "R-S25",
+   "source_class": "S-25",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "TASK_TRACKER.md",
+   "kind": "file",
+   "rule": "R-S03",
+   "source_class": "S-03",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "UNFINISHED_WORK_ANALYSIS.md",
+   "kind": "file",
+   "rule": "R-S09",
+   "source_class": "S-09",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "UNFINISHED_WORK_AND_ISSUES.md",
+   "kind": "file",
+   "rule": "R-S09",
+   "source_class": "S-09",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "component": "catalog-api",
+   "disposition": "component",
+   "docs01": {
+    "kind": "heading",
+    "section": "3.1",
+    "text": "3.1 catalog-api (Go backend)"
+   },
+   "entry": "catalog-api",
+   "kind": "directory",
+   "rule": "R-C-API",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "component": "catalog-web",
+   "disposition": "component",
+   "docs01": {
+    "kind": "heading",
+    "section": "3.2",
+    "text": "3.2 catalog-web (React web client)"
+   },
+   "entry": "catalog-web",
+   "kind": "directory",
+   "rule": "R-C-WEB",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "also_source_classes": [
+    "S-17",
+    "S-18"
+   ],
+   "component": "challenges",
+   "disposition": "component",
+   "docs01": {
+    "kind": "table-row",
+    "section": "3.7",
+    "text": "| `challenges/` | Repository-level HelixQA bank files and shell challenges | `helixqa-banks/` 15 YAML banks containing 1,269 test cases in total (parsed with PyYAML); `data/challenges_bank.json` with "
+   },
+   "entry": "challenges",
+   "kind": "directory",
+   "note": "docs/01 3.7: repository-level HelixQA banks (also Stage 0 sources) and shell challenges",
+   "rule": "R-C-CHALLENGES",
+   "tracked": true,
+   "tracked_files": 2
+  },
+  {
+   "also_source_classes": [
+    "S-01",
+    "S-05",
+    "S-08",
+    "S-10",
+    "S-11",
+    "S-13",
+    "S-14",
+    "S-15",
+    "S-16"
+   ],
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "docs",
+   "kind": "directory",
+   "note": "the documentation tree; several of its files are also Stage 0 sources, listed here as annotations",
+   "proposed": true,
+   "rule": "R-DOCS",
+   "tracked": true,
+   "tracked_files": 36
+  },
+  {
+   "disposition": "problem_source",
+   "docs01": "absent",
+   "entry": "issues",
+   "kind": "directory",
+   "note": "the ANR ticket directory (docs/03 5.2)",
+   "rule": "R-S02",
+   "source_class": "S-02",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "component": "security-and-service-config",
+   "disposition": "component",
+   "docs01": "absent",
+   "entry": "sonar-project.properties",
+   "kind": "file",
+   "note": "scanner configuration and the marker files of the named external services (doc03 5.20 sources EXT)",
+   "proposed": true,
+   "rule": "R-C-SECCFG",
+   "tracked": true,
+   "tracked_files": 1
+  },
+  {
+   "disposition": "documentation",
+   "doc_class": null,
+   "doc_class_by": "WP-37 T282",
+   "docs01": "absent",
+   "entry": "specs",
+   "kind": "directory",
+   "note": "feature specifications and the plan documents of this feature",
+   "proposed": true,
+   "rule": "R-SPECS",
+   "tracked": true,
+   "tracked_files": 10
+  },
+  {
+   "also_source_classes": [
+    "S-19",
+    "S-20"
+   ],
+   "component": "submodules",
+   "disposition": "component",
+   "docs01": "absent",
+   "entry": "submodules",
+   "kind": "directory",
+   "note": "docs/01 section 4: 44 declared submodules plus the vendored llms_verifier tree; each is audited by WP-34",
+   "rule": "R-C-SUBMODULES",
+   "tracked": true,
+   "tracked_files": 3
+  }
+ ],
+ "rules": {
+  "file": "root_dispositions.yaml",
+  "sha256": "0bbf2103d6703efd891e54c1e2f0b11409a1dad2a6a75000ca9ea454fedb9162"
+ },
+ "schema": "root-items/1",
+ "summary": {
+  "by_disposition": {
+   "component": 6,
+   "documentation": 10,
+   "problem_source": 13
+  },
+  "entries": 29,
+  "proposed_not_owner_decided": [
+   ".firebaserc",
+   ".specify",
+   "docs",
+   "sonar-project.properties",
+   "specs"
+  ],
+  "root_markdown": {
+   "by_class": {
+    "S-03": 1,
+    "S-04": 1,
+    "S-06": 1,
+    "S-07": 1,
+    "S-09": 3,
+    "S-12": 1,
+    "S-25": 2,
+    "governance": 8
+   },
+   "tracked_files": 18
+  },
+  "untracked": [],
+  "without_disposition": []
+ },
+ "verdict": "PASS"
+}

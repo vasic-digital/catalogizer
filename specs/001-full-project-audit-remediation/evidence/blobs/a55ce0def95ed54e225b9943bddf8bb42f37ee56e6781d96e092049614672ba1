@@ -1,0 +1,5 @@
+# identity: task=T174 utc=2026-10-12T11:43:13Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# tool=/src/.audit/scratch/w2ev/root/sut/root_inventory.py sha256=ABSENT rules sha256=ABSENT
+FAIL root_inventory.py present: /src/.audit/scratch/w2ev/root/sut/root_inventory.py (RED: T174 not implemented) :: 
+RESULT: pass=0 fail=1

@@ -14,6 +14,11 @@ reconstructed. Fields that could not be recovered are `UNKNOWN`, never guessed.
 
 ## Entries (newest first)
 
+### 2026-10-12 15:24 CEST
+- **Request (BACKGROUND :: CRITICAL, faithful summary):** extend the project and the HelixQA submodule for llmctl support (https://github.com/vasic-digital/llmctl): detect an installed llmctl and use it; otherwise add llmctl as a submodule of HelixQA (under its submodules dir) and run its setup/install first; use the locally run llmctl VISION model (started and enabled by llmctl) for HelixQA and everywhere the System needs vision, for fully autonomous QA sessions; use the Decision models to raise quality and efficiency; document everything; add tests, challenges and HelixQA test banks that validate all features, apps, use cases and edge cases fully deterministically, with no false results, no AI slop, no bluff.
+- **Tracked as:** `docs/requests/background_queue.md` item BG-LLMCTL-001 (scheduled, not done).
+- **Track:** UNKNOWN · **Alias:** UNKNOWN · **Model/effort:** Sonnet 5.5 / UNKNOWN
+
 ### 2026-10-03 12:41 CEST
 - **Request (faithful summary; full verbatim text is the `Input` of `specs/001-full-project-audit-remediation/spec.md`):** via /speckit-specify: exhaustive analysis of the whole project relying on the CodeGraph and Lumen indexes; detect every gap, misalignment, shortcoming, weak spot, danger zone, bug and issue (including everything already documented as issues, workable items and tickets, HelixQA especially); fix and improve; cover with every constitution test type, all deterministic and machine-verified; update all documents and exports, link everything from the main README, add manuals, guides, FAQs, diagrams and schemas, SQL and template definitions; cover all applications; keep all dependencies current with upstreams; commit and push regularly and verify recursively with git status.
 - **Track:** UNKNOWN · **Alias:** UNKNOWN · **Model/effort:** Sonnet 5.5 / UNKNOWN

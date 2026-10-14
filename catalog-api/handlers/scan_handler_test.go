@@ -160,6 +160,7 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_DuplicateNameRejected()
 		"name":      "Existing Share",
 		"protocol":  "smb",
 		"host":      "server.example.com",
+		"path":      "share",
 		"max_depth": 10,
 	})
 	req1 := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body1))
@@ -227,8 +228,18 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAc
 			"name":     "Root_" + proto,
 			"protocol": proto,
 		}
-		if proto == "webdav" {
-			req0["url"] = "http://nas.example/dav" // WF22 H2: a webdav root is addressed by its url; one without can never be scanned and is refused at creation
+		// WF22 H2/N3: a root is addressed by the fields its protocol requires; one without them can never be scanned and is refused at creation
+		switch proto {
+		case "webdav":
+			req0["url"] = "http://nas.example/dav"
+		case "local":
+			req0["path"] = "/data/local"
+		case "smb":
+			req0["host"], req0["path"] = "nas.example", "share"
+		case "ftp":
+			req0["host"] = "nas.example"
+		case "nfs":
+			req0["host"], req0["path"], req0["mount_point"] = "nas.example", "/export", "/mnt/nas"
 		}
 		body, _ := json.Marshal(req0)
 		req := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body))
@@ -246,6 +257,8 @@ func (suite *ScanHandlerTestSuite) TestGetStorageRoots() {
 	reqBody := map[string]interface{}{
 		"name":      "Test Share",
 		"protocol":  "smb",
+		"host":      "server.example.com",
+		"path":      "share",
 		"max_depth": 10,
 	}
 	body, _ := json.Marshal(reqBody)
@@ -275,6 +288,8 @@ func (suite *ScanHandlerTestSuite) TestQueueScan_ValidRequest() {
 	reqBody := map[string]interface{}{
 		"name":      "Scan Test Share",
 		"protocol":  "smb",
+		"host":      "server.example.com",
+		"path":      "share",
 		"max_depth": 10,
 	}
 	body, _ := json.Marshal(reqBody)

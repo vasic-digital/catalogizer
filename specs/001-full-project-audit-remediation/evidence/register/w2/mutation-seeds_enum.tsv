@@ -1,0 +1,23 @@
+# identity: tool=seeds_enum utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh seeds_enum (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	a Count cell that disagrees with its ids is accepted
+M02	KILLED	1	a Total row that disagrees with the rows is accepted
+M03	KILLED	1	a duplicate (document, id) pair is accepted
+M04	KILLED	1	a family count that disagrees with the table is accepted
+M05	KILLED	1	an id range loses its last member
+M06	KILLED	1	the R-ADJ seeds of docs/18 lose their suffix
+M07	KILLED	1	a (part) family member is no longer recognised as partly folded
+M08	KILLED	1	the R-ADJ part of a family member loses its suffix
+M09	KILLED	1	an unrated seed reads the severity found in its source document
+M10	KILLED	1	the entry hash leaves the source text out
+M11	KILLED	1	the cited sections are ignored when locating a seed
+M12	KILLED	1	the doc13 measured defect classes are not expanded
+M13	KILLED	1	the stale-hash extra seed keeps its prose as id
+M14	KILLED	1	the Total row is read as a seed row
+M15	KILLED	1	a seed id may be a mention in the middle of a sentence
+M16	KILLED	1	a seed row of a doc20 table is not the N-th data row
+M17	KILLED	1	the status of an entry always says rated
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 17, 'EQUIVALENT': 0, 'ERROR': 0}

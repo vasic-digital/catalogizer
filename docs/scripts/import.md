@@ -79,3 +79,10 @@ Test hooks (refused unless `IMPORT_TEST_MODE=1`): `IMPORT_FAULT=<stage>:<n>`, `I
 * `entry_sha256` of a Stage 0 `issue_file` entry is the sha256 of the file bytes (true for the stand-in enumerator rev 2).
 * The instructions of the `--backup-record` check rely on the record fields of `backup_db.sh` (`backup_path`, `source_sha256`, `integrity`, `restore_probe`); the combination with a WAL-mode database whose `-wal` is not empty is untested (the record's hash is the main file's).
 * The scope convention that `workable-items intake-match` needs (`**Affected scope / file-scope manifest:**` in the description) is NOT written by this importer; T172 must decide the scope string (see `docs/scripts/intake_match.md`).
+
+
+## Order guard (review fix round 2, F1)
+
+`import.sh` refuses `qa_grouping_not_run` (exit 20, before any id is minted, dry runs included) while a QA-instrument ticket (the classifier of `import_tickets.qa_cause_of`, shared
+with T172) is not mapped to a cause item yet: run `import_t172.sh --stage qa` to completion first (a crashed stage qa is re-run, it resumes). Details, the classifier classes
+and the recovery of a register that was imported in the wrong order are in [import_t172.md](import_t172.md).

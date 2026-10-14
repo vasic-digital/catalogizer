@@ -1,0 +1,34 @@
+# identity: tool=t172 utc=2026-10-12T11:50:08Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# host-side run of scripts/register/tests/mutate_w2.sh t172 (MUT_HOST=1, W2_FAILFAST=1 where the suite supports it); a container leg for the mutation runs is UNCONFIRMED (the RED/GREEN runs are container ledger entries)
+# columns: id, outcome, suite exit, what; N00 = unmutated (must PASS), C00 = comment-only (must SURVIVE); the rows of the long sets were run in chunks of ids
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+M01	KILLED	1	the entry-set invariant is not enforced
+M02	KILLED	1	an open ticket with the QA statement is grouped
+M03	KILLED	1	every resolution counts as a QA statement
+M04	KILLED	1	the screenshot-timing cause is not recognised
+M05	KILLED	1	the black-frame cause is not recognised
+M06	KILLED	1	the wrong-screen cause is not recognised
+M07	KILLED	1	the wrong-ADB cause is not recognised
+M08	KILLED	1	the wrong-ADB cause is filed against helixqa
+M09	KILLED	1	every ticket of a cause is primary
+M10	KILLED	1	no ticket governs the severity
+M11	KILLED	1	QA tickets imported one by one are accepted
+M12	KILLED	1	an unregistered component is accepted
+M13	KILLED	1	the families stage runs before the import
+M14	KILLED	1	a declared platform does not win
+M15	KILLED	1	two evidence classes are not a conflict
+M16	KILLED	1	the screen is not part of the family key
+M17	KILLED	1	the platform class is not part of the family key
+M18	KILLED	1	a family is decided SAME_DEFECT
+M19	KILLED	1	an empty screen is a scope
+M20	KILLED	1	the inferred platform line is written again on every run
+M21	KILLED	1	the family head is the highest locator
+M22	KILLED	1	a resumed run mints a new id
+M23	KILLED	1	the crash hook before the mapping never fires
+M24	KILLED	1	the cause item takes the lowest severity
+M25	KILLED	1	the QA tickets enter the families stage
+M26	KILLED	1	an existing recurrence link is written again
+M27	KILLED	1	a cause item is not a Bug
+M28	KILLED	1	the entry-set verdict file is not written
+# summary: {'PASSED': 1, 'SURVIVED': 1, 'KILLED': 28, 'EQUIVALENT': 0, 'ERROR': 0}

@@ -1,0 +1,25 @@
+# identity: task=W2-freeze-listing utc=2026-10-12T11:43:38Z host=928e7322d2e8 uid=1000
+# git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0 tree_dirty_files=79
+# sqlite3=3.40.1 2022-12-28 path=/usr/bin/sqlite3
+# engine=/src/constitution/scripts/workable-items/bin/workable-items-linux sha256=d789d6251326b5236b98cc68ff6ce6ae602136ea3f10391ffb89cf3005d430da
+# sha256 ddl=1f8c261d222d07be5e9b65c748e69a37134b86b721315321bfb359984945c7b6 apply_ext=7cd104ce4d7f50112000615424ae71ffcd5cf0aa9c88b7756e0b4fbb31f246f4 gate=4bf8cede0a46d00403ec92e75cfca224e644f3edf8b02b4a08d1fa2d1eb37d18 test=a48164fa9256d4e53fe01b71e493db9af5513506b3c3a6df59b65408837f0875
+# container: in-container run (container=podman) image=IMG-TESTUTIL lock_digest=sha256:56b9be7079b1439103f7d6a38766e8f0ff7db26863264664e9fafd48f8809f08 (the digest the lock pins; the running image is not readable from inside)
+# check=/src/.audit/scratch/w2ev/listing/sut/check_freeze_listing.sh sha256=931397ac24da7d13013f8b95501be1ec40b44f96b4b3a49971884042f0970d4f
+ok   recorded untouched listing passes
+ok   appended NUL-terminated path: refused with exit 20
+ok   appended path: reason freeze_listing_moved
+ok   restored listing passes again
+ok   one record dropped: refused freeze_listing_moved
+ok   two records swapped (same path set): refused freeze_listing_moved
+ok   newline-separated listing: refused freeze_listing_invalid
+ok   empty listing: refused freeze_listing_invalid, the detail says it is empty
+ok   duplicate path (hash recorded for it): refused freeze_listing_invalid
+ok   an empty path record (hash recorded for it): refused freeze_listing_invalid naming it
+ok   freeze.json without listing_sha256: refused freeze_listing_unrecorded
+ok   freeze.json without listing: refused freeze_listing_unrecorded
+ok   no argument: usage exit 2
+ok   a freeze.json that does not exist: usage exit 2
+ok   two-argument form: listing path set equals the manifest path set
+ok   two-argument form: an added path is refused freeze_listing_moved naming it
+ok   two-argument form: a missing path is refused freeze_listing_moved
+RESULT: pass=17 fail=0

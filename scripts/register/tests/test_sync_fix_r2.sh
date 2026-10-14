@@ -393,7 +393,14 @@ ctl_j=0; grep -qF "$CANARY_BODY" "$O/.audit/register/journal.jsonl" && ctl_j=1  
 anytable "$O/$DB" "$CANARY_BODY" 'reg_%' && leak=1
 ctl=0; anytable "$O/$DB" "$CANARY_BODY" 'items' && ctl=1
 ran=$(wc -l <"$O/adapter.log")
-[ "$ran" -ge 3 ] && [ "$leak" = 0 ] && [ "$ctl" = 1 ] && [ "$ctl_j" = 1 ] && ok "OA3 the secret found in a body is not in any driver output, any reg_* table, the driver's batch files, wal and journal rows, or the adapter log (controls: the same scans find it in the items table and in the journal row of the fixture step that planted it)" || bad "OA3 adapter_calls=$ran (need >= 3 for a non-vacuous scan) leak=$leak control_items=$ctl control_journal=$ctl_j"
+# class-matched controls (11.4.201(7)(b)/11.4.273): the SAME scan forms, over the SAME paths and table pattern, with a needle KNOWN to be present, must see it; otherwise a
+# zero from the leak scan could be a scan that never reaches a file or table (a wal directory that is empty, a reg_% pattern that matches nothing)
+ctl_reg=0; anytable "$O/$DB" "CAT-001" 'reg_%' && ctl_reg=1                                                                                  # reg_% matches tables and they hold an item id
+ctl_dir=0; grep -rqF "CAT-001" "$O/.audit/sync" "$O/.audit/register/inputs" "$O/adapter.log" 2>/dev/null && ctl_dir=1                        # the recursive file scan reaches real content
+ctl_wal=0; grep -rqF "CAT-001" "$O/.audit/sync/wal" 2>/dev/null && ctl_wal=1                                                                  # the write-ahead journal directory exists and holds rows
+ctl_syn=0; [ "$(syncrows "$O" | wc -l)" -ge 1 ] && syncrows "$O" | grep -qF "sync-" && ctl_syn=1                                             # the driver's own wrapper rows exist in the journal scan
+ctl_out=0; grep -qF "tracker=pubt" "$LEAK" && ctl_out=1                                                                                       # the captured driver output holds real driver text (its per-tracker summary line)
+[ "$ran" -ge 3 ] && [ "$leak" = 0 ] && [ "$ctl" = 1 ] && [ "$ctl_j" = 1 ] && [ "$ctl_reg" = 1 ] && [ "$ctl_dir" = 1 ] && [ "$ctl_wal" = 1 ] && [ "$ctl_syn" = 1 ] && [ "$ctl_out" = 1 ] && ok "OA3 the secret found in a body is not in any driver output, any reg_* table, the driver's batch files, wal and journal rows, or the adapter log (controls: the same scans find the canary in the items table and in the journal row of the fixture step that planted it, and find a known-present item id through the same reg_% table pattern, the same recursive file scan, the wal directory, the driver's wrapper rows and the captured driver output)" || bad "OA3 adapter_calls=$ran (need >= 3 for a non-vacuous scan) leak=$leak control_items=$ctl control_journal=$ctl_j control_reg=$ctl_reg control_dir=$ctl_dir control_wal=$ctl_wal control_syncrows=$ctl_syn control_output=$ctl_out"
 n0=$(pq "$O" "select count(*) from reg_tracker_sync_log")
 out=$(drv "$O" --max-attempts 1 2>&1); rc=$?
 assert_eq "OA4 withheld items are not re-recorded on an unchanged re-run: no new row, exit 0" "$rc/$(pq "$O" "select count(*) from reg_tracker_sync_log")" "0/$n0"

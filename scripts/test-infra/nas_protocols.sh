@@ -5,7 +5,7 @@
 # Clients run in rootless containers through scripts/containers/run_pinned.sh: IMG-GO (python3 stdlib + ssh for FTP/FTPS/SFTP/RPC: client/nas_proto.py) and IMG-INFRA-CLIENT (libnfs user-space nfs-ls/nfs-cat:
 # client/nas_proto_nfs.sh). No kernel mount, no sudo, no host client.
 # Credentials: ONLY from the gitignored env file (default <repo>/.env: SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_IP_<n>); parsed with dotenv_get.py, never sourced. They go to a 0600 file in a 0700 run directory on the
-# per-user tmpfs ($XDG_RUNTIME_DIR), read by the client, removed on every exit path; never argv, never the environment, never a log or an evidence file. Before the evidence is written it is scanned for the user name, the
+# per-boot tmpfs (/tmp, mode 0700), read by the client, removed on every exit path; never argv, never the environment, never a log or an evidence file. Before the evidence is written it is scanned for the user name, the
 # password and every host address, and the run is REFUSED if one is found. Evidence records aliases (Synology<n>), share names, counts, sha256 of names, extension histograms, latencies and throughputs only.
 # Usage:  nas_protocols.sh [--hosts 1,2,3,4,5,6,7] [--protocols nfs,ftp,ftps,sftp] [--ev-dir DIR] [--jobs N]     Env: TI_ENV_FILE (default <repo>/.env)
 #   --ev-dir  default specs/001-full-project-audit-remediation/evidence/wp12/nas-protocols (per-host-per-protocol JSON, summary.json, SHA256SUMS)
@@ -32,7 +32,8 @@ missing=""
 IFS=, read -r -a IDX <<<"$HOSTS"
 for i in "${IDX[@]}"; do [ -n "$(envval "SYNOLOGY_IP_$i")" ] || missing="$missing SYNOLOGY_IP_$i"; done
 if [ -n "$missing" ]; then echo "SKIP nas_protocols reason=credentials_absent variables:$missing"; exit 0; fi
-RTD="${XDG_RUNTIME_DIR:-}"; [ -n "$RTD" ] && [ -d "$RTD" ] && [ -w "$RTD" ] || ti_refuse runtime_dir_unavailable "XDG_RUNTIME_DIR is not a writable directory; the credentials must not be written under the checkout" 1
+# strictly below /tmp: the clients run from a scratch VIEW that is not the repository, and run_pinned (round 8, R-1) accepts such an --out only below /tmp or /var/tmp (mode 0700, removed on every exit path)
+RTD=/tmp; [ -d "$RTD" ] && [ -w "$RTD" ] || ti_refuse run_dir_unavailable "/tmp is not a writable directory; the credentials must not be written under the checkout" 1
 RUN="$RTD/catalogizer-nas-proto.$$"; mkdir -m 700 "$RUN" || ti_die "cannot create $RUN"
 mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ti-view.XXXXXX")" || ti_die "cannot create the client view"
 ti_view_dir "$VIEW" scripts/test-infra/client || ti_die "cannot build the client view"

@@ -212,6 +212,9 @@ func (s *UniversalScanner) Stop() {
 
 // QueueScan adds a scan job to the queue
 func (s *UniversalScanner) QueueScan(job ScanJob) error {
+	// The one entry every scan request goes through: the path is confined here (a ".." segment cannot leave the storage root), in the form
+	// the caller used (rooted or relative; "" stays "" = the root) - WF22 N2, class A.
+	job.Path = ConfineScanPath(job.Path)
 	select {
 	case s.scanQueue <- job:
 		s.logger.Debug("Queued scan job",
@@ -274,7 +277,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 	if err := s.scanSem.Acquire(job.Context); err != nil {
 		s.logger.Debug("Scan job cancelled before acquiring semaphore",
 			zap.String("job_id", job.ID),
-			zap.Error(err))
+			errField(err, secretsOf(job.StorageRoot)))
 		return
 	}
 	defer s.scanSem.Release()
@@ -336,18 +339,30 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		return
 	}
 
-	// Create filesystem client
+	// Create filesystem client. A root whose options cannot be honoured (an unparsable pin, an unknown key) fails the scan with its reason
+	// instead of connecting without the pin (WF22 N4).
+	settings, err := s.storageRootToSettings(job.StorageRoot)
+	if err != nil {
+		s.logger.Error("Storage root settings are invalid",
+			zap.String("protocol", job.StorageRoot.Protocol),
+			zap.String("job_id", job.ID),
+			zap.String("error", scrubSecrets(err.Error(), status.secrets)))
+		status.incrementCounters(0, 0, 0, 0, 1)
+		status.fail(err)
+		s.publishScanEvent(job, status, err)
+		return
+	}
 	client, err := s.clientFactory.CreateClient(&filesystem.StorageConfig{
 		ID:       job.StorageRoot.Name,
 		Name:     job.StorageRoot.Name,
 		Protocol: job.StorageRoot.Protocol,
-		Settings: s.storageRootToSettings(job.StorageRoot),
+		Settings: settings,
 	})
 	if err != nil {
 		s.logger.Error("Failed to create filesystem client",
 			zap.String("protocol", job.StorageRoot.Protocol),
 			zap.String("job_id", job.ID),
-			zap.Error(err))
+			errField(err, status.secrets))
 		status.fail(err)
 		s.publishScanEvent(job, status, err)
 		return
@@ -359,7 +374,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 			zap.String("protocol", job.StorageRoot.Protocol),
 			zap.String("job_id", job.ID),
 			zap.String("storage_root", job.StorageRoot.Name),
-			zap.Error(err))
+			errField(err, status.secrets))
 		status.incrementCounters(0, 0, 0, 0, 1)
 		status.fail(err)
 		s.publishScanEvent(job, status, err)
@@ -371,7 +386,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 	if err := protocolScanner.ScanPath(job.Context, client, job, status); err != nil {
 		s.logger.Error("Scan failed",
 			zap.String("job_id", job.ID),
-			zap.Error(err))
+			errField(err, status.secrets))
 		// Only an operator CANCELLATION is "cancelled"; a deadline is a failure (the scan did not finish), reported with kind "timeout" (WF22 R7).
 		if job.Context != nil && job.Context.Err() != nil && errors.Is(err, job.Context.Err()) && !errors.Is(job.Context.Err(), context.DeadlineExceeded) {
 			status.cancel(err)
@@ -399,7 +414,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 			if err := s.aggregationService.AggregateAfterScan(job.Context, int64(job.StorageRoot.ID)); err != nil {
 				s.logger.Error("Post-scan aggregation failed",
 					zap.String("job_id", job.ID),
-					zap.Error(err))
+					errField(err, status.secrets))
 			}
 		}()
 	}
@@ -429,7 +444,7 @@ func (s *UniversalScanner) GetAllActiveScanStatuses() map[string]*ScanStatus {
 
 // storageRootToSettings converts StorageRoot to filesystem settings. PA-01: it delegates to filesystem.SettingsFromRoot, the single
 // settings-key vocabulary shared with the client factory, the stream handler and the comic-pages handler.
-func (s *UniversalScanner) storageRootToSettings(root *models.StorageRoot) map[string]interface{} {
+func (s *UniversalScanner) storageRootToSettings(root *models.StorageRoot) (map[string]interface{}, error) {
 	return filesystem.SettingsFromRoot(root, ResolveSMBIdentity)
 }
 
@@ -557,7 +572,7 @@ func (s *LocalScanner) scanDirectory(ctx context.Context, client filesystem.File
 		if err := s.processFileInfo(ctx, client, fullPath, file, job, status); err != nil {
 			s.logger.Error("Failed to process file",
 				zap.String("path", fullPath),
-				zap.Error(err))
+				errField(err, status.secrets))
 			status.incrementCounters(0, 0, 0, 0, 1)
 		}
 
@@ -566,7 +581,7 @@ func (s *LocalScanner) scanDirectory(ctx context.Context, client filesystem.File
 			if err := s.scanDirectory(ctx, client, fullPath, job, status, depth+1); err != nil {
 				s.logger.Error("Failed to scan subdirectory",
 					zap.String("path", fullPath),
-					zap.Error(err))
+					errField(err, status.secrets))
 			}
 		}
 	}
@@ -647,7 +662,7 @@ func (s *SMBScanner) scanDirectory(ctx context.Context, client filesystem.FileSy
 			if err := insertFileRecord(ctx, s.db, fullPath, file, job, status, s.logger); err != nil {
 				s.logger.Error("Failed to insert file record",
 					zap.String("path", fullPath),
-					zap.Error(err))
+					errField(err, status.secrets))
 				status.incrementCounters(0, 0, 0, 0, 1)
 			}
 
@@ -656,7 +671,7 @@ func (s *SMBScanner) scanDirectory(ctx context.Context, client filesystem.FileSy
 				if err := s.scanDirectory(ctx, client, fullPath, job, status, depth+1); err != nil {
 					s.logger.Error("Failed to scan SMB subdirectory",
 						zap.String("path", fullPath),
-						zap.Error(err))
+						errField(err, status.secrets))
 				}
 			}
 		}
@@ -740,13 +755,13 @@ func ensureDirectoryPathExists(ctx context.Context, db *database.DB, storageRoot
 					*parentID, dirID,
 				); uerr != nil {
 					logger.Warn("Failed to backfill directory parent_id",
-						zap.String("path", currentPath), zap.Int64("id", dirID), zap.Error(uerr))
+						zap.String("path", currentPath), zap.Int64("id", dirID), errField(uerr, nil))
 				}
 			}
 			parentID = &dirID
 			continue
 		}
-		logger.Warn("Directory does not exist, will create", zap.String("path", currentPath), zap.Error(err))
+		logger.Warn("Directory does not exist, will create", zap.String("path", currentPath), errField(err, nil))
 
 		// Directory doesn't exist, create it
 		logger.Warn("Creating directory", zap.String("path", currentPath), zap.Any("parentID", parentID))
@@ -928,7 +943,7 @@ func insertFileRecord(ctx context.Context, db *database.DB, path string, file *f
 			logger.Error("Failed to ensure parent directory exists",
 				zap.String("path", path),
 				zap.String("parent_path", parentPath),
-				zap.Error(err))
+				errField(err, status.secrets))
 			// Continue with NULL parent_id rather than failing entirely
 			status.incrementCounters(0, 0, 0, 0, 1)
 		} else {
@@ -1037,3 +1052,7 @@ func classifyFileType(ext string) string {
 }
 
 // FTP, NFS and WebDAV (and every registered protocol) are scanned by GenericScanner (generic_scanner.go, PA-03).
+
+// ConfineScanPath confines a requested scan path to the storage root (filesystem.ConfineKeepForm): "" stays "" (the root), a relative path
+// stays relative, a rooted path stays rooted.
+func ConfineScanPath(p string) string { return filesystem.ConfineKeepForm(p) }

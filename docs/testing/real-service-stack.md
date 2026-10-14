@@ -63,7 +63,7 @@ UNCONFIRMED on this host. The real-host leg (T134a) is NOT closed by that pass: 
 `scripts/test-infra/nas_readonly_leg.sh` lists one DATA share per host (depth 1) and reads at most one small file, at most 2 requests per second, from IMG-INFRA-CLIENT; it never writes. Credentials come only
 from the gitignored `.env` (`SYNOLOGY_SMB_USER`, `SYNOLOGY_SMB_PASSWORD`, `SYNOLOGY_IP_<n>`); the leg SKIPs (not fails) when the file is absent. It is not part of the deterministic suite.
 
-The run directory with the auth file is `$XDG_RUNTIME_DIR/catalogizer-nas-ro.<pid>` (per-user tmpfs, mode 0700), never the checkout: a SIGKILL leaves it on the tmpfs only and `sweep_leaks.sh` removes it once the pid is proven gone; INT/TERM/HUP remove it. The secrecy test checks every execve of the leg's process tree (`strace -f -e execve`), not a 1 Hz sample.
+The run directory with the auth file is `/tmp/catalogizer-nas-ro.<pid>` (tmpfs, mode 0700; strictly below /tmp since run_pinned round 8 R-1 accepts the --out of a scratch-view client only there), never the checkout: a SIGKILL leaves it on the tmpfs only and `sweep_leaks.sh` removes it once the pid is proven gone; INT/TERM/HUP remove it. The secrecy test checks every execve of the leg's process tree (`strace -f -e execve`), not a 1 Hz sample.
 
 ## Legs that need an external credential or device (T135)
 

@@ -9,3 +9,26 @@ round-1 files (no prefix) are SUPERSEDED by the fix-r2-* files: round-1 patch ke
   - "~47 engine files" was wrong; measured 2026-10-08: atm_id occurs in 67 Go files (20 non-test), 68 with AtmID/atmID, 70 files of any type.
   - the engine is NOT enforcing a key grammar at mint/validate time (measured by the independent review, exp6.log); rule text corrected.
 owner approval, stated truthfully: relayed interactive owner decision of 2026-10-08 (memory file project_owner_decisions_2026_10_07.md) that the agent commits to the constitution repo ff-only for (a) the codegraph_safe.sh min-mem knob and (b) the per-project id prefix; decision ledger ODG-11 still says the constitution wording needs separate approval, so the WORDING is pending the independent review and owner sight. Nothing committed or pushed.
+
+ROUND 2.1 (2026-10-12, post-review GO on source) - UNCOMMITTED, awaiting delta review by the conductor
+note: the submodule moved to `constitution/` (main-repo commit 772dd4c3); everything above that says `submodules/constitution` now means `constitution/`.
+submodule HEAD at re-application: 1c89813 (== origin/main after fetch); the round-2 patch was re-applied unchanged to that tree, then the review findings
+P-1..P-7 and T-A..T-D were closed on top (see fix-r2b-*). The five evidence logs that .gitignore:165 (`*.log`) would have excluded were renamed `.log` -> `.txt`
+(content and hashes unchanged) so SHA256SUMS can be verified from a clone.
+
+ROUND 2.2 (2026-10-12) - UNCOMMITTED, awaiting re-review (answers WF31 NO-GO: 1 source-defect S-1, P-1r, D-2..D-4, T-1..T-4)
+current patch: fix-r2c-constitution-full-vs-1c89813.patch (full diff of the constitution/ working tree vs 1c89813; applies cleanly to a clean git-archive of 1c89813, the 10
+resulting files are byte-identical in content and mode to the working tree, see fix-r2c-verification.txt). fix-r2b-constitution-full-vs-1c89813.patch is SUPERSEDED by it
+(kept for the review trail); fix-r2-constitution-0108.patch and round1-*.superseded likewise.
+- S-1: codegraph_safe.sh resolve_mem_floor measured a symlinked limits file with `stat -c %s` (the link, not the target) so a symlink to an empty or >64 KiB file
+  bypassed both refusals; now `stat -L`. Class enumeration (control-needled by the mutants below): the only other size/stat call is the db/wal `db_bytes` measurement
+  (same defect class, now `stat -L`, new case U63); `-f`, `-r` and the `tr <` read already follow the link. New cases: U56 (symlink to empty / oversize via env and via the
+  convention path, symlink chain, TAB-indented and TAB-nested keys, exact 64 KiB boundary), U58 (existing file whose NAME carries an injection), U63. New mutants R30-R35.
+- P-1r: the exp6 figures were re-measured first-hand (fix-r2-exp6-reproduction.txt regenerated, with its script fix-r2-exp6-reproduction.script.sh.txt): 7 items / 5 keys,
+  validate "OK - 7 items", round trip 5 items, dropped CATS-001 and cat-001, derived default CAT in a directory named catalogizer (3 mints), OTH in other-proj. The governance
+  text (Constitution.md + CLAUDE/AGENTS/QWEN/GEMINI, byte-identical carrier block) now says 7 / 2-of-7 and states that the log is a file of THIS consumer evidence pack.
+- D-2/D-3/D-4: guide corrected (continuation line is REFUSED exit 6, not default-in-force; every line citation re-derived; tests U47-U63 + mutation harness cited; stale heap cap
+  "65536 MiB" corrected to 60% of MemTotal); Last-modified headers set to a real UTC timestamp in Constitution.md, the four carriers and the guide.
+- T-4: U59 records a fixture failure on its own flag (r4); U49/U50/U59 compare the path through the tool's own 200-character cut (s200).
+- NOT done: .html/.pdf/.docx twins of the guide and governance files (stale, exporter not runnable in-repo, §11.4.106(E)); gate code for the recommended gates (owed);
+  no commit/push of the constitution or the main repo.

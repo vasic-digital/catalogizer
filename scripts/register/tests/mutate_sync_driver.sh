@@ -109,6 +109,7 @@ m("N16_reconcile_skipped", 'if not reconcile_wal():', 'if False and not reconcil
 m("N17_wal_written_to_devnull", 'fd = os.open(WAL_PATH, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)', 'fd = os.open(os.devnull, os.O_WRONLY)', "r2:wal", "WA1|WB1|WG1")
 m("N17b_intent_written_after_the_call", '            wal({"ev": "intent", "k": k, "tracker": name, "atm_id": it["atm_id"], "rev": it["rev"], "ref": ref0, "t": base["attempted_at"]})\n            res = adapter_call(t, it, ref0, k)',
   '            res = adapter_call(t, it, ref0, k)\n            wal({"ev": "intent", "k": k, "tracker": name, "atm_id": it["atm_id"], "rev": it["rev"], "ref": ref0, "t": base["attempted_at"]})', "r2:wal", "WI1|WC2")
+m("N53_wal_to_devnull_leak_scan_blind", 'fd = os.open(WAL_PATH, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)', 'fd = os.open(os.devnull, os.O_WRONLY)', "r2:outbound", "OA3")   # vacuity proof of OA3: with no journal the wal scan sees nothing, and only the known-present-needle control can tell
 m("N18_group_kill_removed", '    kill_group(p)   # a timed-out adapter, and any child an adapter that returned left behind, must not keep pushing', '    pass', "r2:proc", "PA[12]")
 m("N19_killpg_guard_removed", 'if not isinstance(pgid, int) or pgid <= 1 or pgid == os.getpgrp(): return', 'if False: return', "r2:proc", "PA3")
 m("N20_timeout_retried", 'if last.get("indeterminate") and not ref: break', 'if False: break', "r2:proc", "PA1")

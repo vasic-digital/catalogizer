@@ -37,7 +37,7 @@ func TestReviewProbe_H1_LoadStorageRootDropsURLAndMountPoint(t *testing.T) {
 	root, err := h.loadStorageRoot(context.Background(), id)
 	require.NoError(t, err)
 	require.NotNil(t, root.Host, "control: the loader reads the row (host is loaded)")
-	settings := filesystem.SettingsFromRoot(root, nil)
+	settings := filesystem.MustSettingsFromRoot(root, nil)
 	t.Logf("H1 loaded root url=%v mount_point=%v -> settings keys %v", root.URL, root.MountPoint, keys(settings))
 	assert.NotNil(t, root.URL, "the WebDAV URL stored in the row must reach the scanner")
 	assert.NotNil(t, root.MountPoint, "the NFS mount point stored in the row must reach the scanner")

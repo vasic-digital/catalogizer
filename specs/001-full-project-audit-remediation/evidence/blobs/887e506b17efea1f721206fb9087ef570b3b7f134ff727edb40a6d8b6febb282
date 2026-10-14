@@ -1,0 +1,48 @@
+# identity: task=T171 utc=2026-10-12T11:50:49Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/innovation/sut/import_plan.sh sha256=dde5d5997cfe98c6 enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+ok   (a) baseline enumeration exits 0
+ok   (a) S-27 reads 4 entries on the fixture (a class that reads zero is a blind instrument)
+ok   (a) one candidate added to docs/21 section 9.5 and docs/18 of a scratch copy -> exactly ONE new S-27 entry
+ok   (a) the register gains exactly ONE new reg_source_entries row (by natural key) and it is the planted candidate
+ok   (a) the planted candidate removed again: the sql equals the baseline byte for byte
+ok   (a) a docs/18 candidate with NO docs/21 section 9.5 entry adds no S-27 entry (the entry set is docs/21's)
+ok   (a) ... and the reconciliation reports it as a coverage mismatch (candidate T1-C in neither S-26 nor S-27: a requirement is never lost silently)
+ok   (a) a Counts line that disagrees with the table: the enumerator refuses `innovation_count_mismatch` (exit 20), nothing written
+ok   (a) a duplicate entry id: the enumerator refuses `innovation_duplicate` (exit 20), nothing written
+ok   (a) an unknown kind: the enumerator refuses `innovation_kind_unknown` (exit 20), nothing written
+ok   (a) a missing section: the enumerator refuses `innovation_section_missing` (exit 20), nothing written
+ok   (b) the S-26 import that T171 depends on exits 0
+ok   (b) the innovation import exits 0
+ok   (b) 4 Feature items (28-style PROPOSAL entries and PROPOSAL parts each their own item), all Queued
+ok   (b) every entry of the source is mapped (v_unmapped_entries empty for S-27)
+ok   (b) relation primary, match_basis import_1to1, one severity_governs row per item
+ok   (b) category gap, defect_layer source, custody machine_evidence, component_id NULL, no reg_findings row, mint_basis import
+ok   (b) every description is within 2,048 bytes, carries the Sources block with the S-27 locator, its sha256, the docs/18 row line and the Disposition (ODG-39) pending line
+ok   (b) T2-B (rank 1) records its ranked game changer and the falsifiable experiment E1 of docs/18 section 13.1
+ok   (b) T1-B (no ranked game changer) records none and says its evidence label maps to a register value (docs/18 section 2.1)
+ok   (b) the PROPOSAL parts T5-D and T7-C are marked as parts in the locator and each has its own item
+ok   (b) the engine validate, foreign_key_check and integrity_check are clean
+ok   (c) reconciliation: 6 candidates read, tag classes 2 PROPOSAL / 2 R-ADJ / 2 mixed, coverage 2 S-26 only / 2 S-27 only / 2 both / 0 neither, no mismatch, no reg_findings row
+ok   (f) the S-26 items and map rows written before are byte-identical after the innovation import
+ok   (d) a second run exits 0 and writes nothing (state identical, no new id)
+ok   (d) crash after_mint at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash after_mint at group 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash after_ext at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash after_ext at group 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash after_add at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash after_add at group 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash before_map at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) crash before_map at group 3 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) a snapshot changed after its manifest: refused `freeze_snapshot_moved` (exit 20), nothing written
+ok   (e) entries older than the snapshot (docs/18 row changed after enumeration): refused `entries_out_of_date` naming the entry, nothing written
+ok   (e) docs/18 absent from the snapshot: refused (exit 20), nothing written
+ok   (b2) EMERGING (secondary source) is recorded PLAUSIBLE with the single-source qualifier (docs/18 section 2.1)
+ok   (b2) n/a is recorded n/a and the repository citation is stated
+ok   (b2) Feature items carry severity low with a note that a proposal has no severity, and the Type/category stay Feature / gap
+ok   (e2) a docs/18 candidate id that occurs twice: the enumerator refuses `candidate_duplicate` (exit 20), nothing written
+ok   (e2) an entry whose docs/18 candidate row is missing: refused `candidate_row_missing` naming T1-B (exit 20), nothing written
+ok   (e3) a docs/18 row with a missing cell is no candidate row: the entry is refused `candidate_row_missing` naming T1-B (exit 20), nothing written
+ok   (a2) each S-27 entry carries its kind as its status (PROPOSAL / PROPOSAL part) and the legacy id doc18:<id>
+ok   (a2) the enumeration statistics record the 6 docs/18 candidates read and no entry without a docs/18 row
+RESULT: pass=44 fail=0

@@ -19,7 +19,6 @@ import (
 	"catalogizer/database"
 	"catalogizer/filesystem"
 	"catalogizer/internal/services"
-	"catalogizer/internal/tests"
 	"catalogizer/models"
 
 	"github.com/gin-gonic/gin"
@@ -39,8 +38,7 @@ type apiHarness struct {
 func newAPIHarness(t *testing.T, withScanner bool) *apiHarness {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	db := database.WrapDB(tests.SetupTestDB(t), database.DialectSQLite)
-	t.Cleanup(func() { db.Close() })
+	db := openProductionFileDB(t) // the production open path + the production migrations (owner decision OD-23), not a hand-written schema
 	h := &apiHarness{t: t, db: db, r: gin.New()}
 	var sc scannerInterface
 	if withScanner {
@@ -323,7 +321,7 @@ func TestWF22_H2_NFSRootKeepsItsMountPointAndOptionsAndBuildsAClient(t *testing.
 	assert.Equal(t, "vers=3,ro", *root.Options)
 	assert.True(t, root.AllowEmpty)
 	assert.True(t, root.Enabled)
-	settings := filesystem.SettingsFromRoot(root, nil)
+	settings := filesystem.MustSettingsFromRoot(root, nil)
 	require.NoError(t, filesystem.ValidateSettings("nfs", settings))
 	c, err := filesystem.NewDefaultClientFactory().CreateClient(&filesystem.StorageConfig{Protocol: "nfs", Settings: settings})
 	require.NoError(t, err)
@@ -430,14 +428,15 @@ func TestWF22_ComicAndPDFSettingsGoThroughTheSingleMapping(t *testing.T) {
 	}
 	f := filesystem.NewDefaultClientFactory()
 	for proto, root := range roots {
-		s := comicStorageRootSettings(root)
+		s, serr := comicStorageRootSettings(root)
+		require.NoError(t, serr)
 		require.NoError(t, filesystem.ValidateSettings(proto, s), proto)
 		c, err := f.CreateClient(&filesystem.StorageConfig{Protocol: proto, Settings: s})
 		require.NoError(t, err, proto)
 		assert.Equal(t, proto, c.GetProtocol())
 	}
-	assert.Equal(t, "/pub", f2(t, f, "ftp", comicStorageRootSettings(roots["ftp"])).(*filesystem.FTPConfig).Path)
-	assert.Equal(t, "https://dav.example/dav", f2(t, f, "webdav", comicStorageRootSettings(roots["webdav"])).(*filesystem.WebDAVConfig).URL)
+	assert.Equal(t, "/pub", f2(t, f, "ftp", mustComicSettings(t, roots["ftp"])).(*filesystem.FTPConfig).Path)
+	assert.Equal(t, "https://dav.example/dav", f2(t, f, "webdav", mustComicSettings(t, roots["webdav"])).(*filesystem.WebDAVConfig).URL)
 }
 
 func f2(t *testing.T, f *filesystem.DefaultClientFactory, proto string, s map[string]interface{}) interface{} {
@@ -445,4 +444,11 @@ func f2(t *testing.T, f *filesystem.DefaultClientFactory, proto string, s map[st
 	c, err := f.CreateClient(&filesystem.StorageConfig{Protocol: proto, Settings: s})
 	require.NoError(t, err)
 	return c.GetConfig()
+}
+
+func mustComicSettings(t *testing.T, root *models.StorageRoot) map[string]interface{} {
+	t.Helper()
+	s, err := comicStorageRootSettings(root)
+	require.NoError(t, err)
+	return s
 }

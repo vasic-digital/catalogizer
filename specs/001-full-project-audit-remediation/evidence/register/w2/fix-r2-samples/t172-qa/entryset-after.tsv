@@ -1,0 +1,130 @@
+.implementation/**	.implementation/r1.md	41b6ea33f498612e5d118a3e217d9c482e71fe439777e518beee493e6f6df997
+.specify/memory/constitution.md	.specify/memory/constitution.md:L10#item2	32a5c0df486482855dafa8eda226651c6b9fc57837d5123260b4e5339d0dad89
+.specify/memory/constitution.md	.specify/memory/constitution.md:L11#item2.1	733ab1e2b68d257efc4610a030200d900c6ad9114e89ebcd7509923613d61e4a
+.specify/memory/constitution.md	.specify/memory/constitution.md:L12#item3	eb2300bbb2e45db8cf6571d4b803892a4ed7086a61462f5256b9d3a34c7b9c1e
+.specify/memory/constitution.md	.specify/memory/constitution.md:L13#item4	8268649100bb18b1e6c475e9ec28613768a6b8274fd29a71d9e2e96b6bdea2d0
+.specify/memory/constitution.md	.specify/memory/constitution.md:L15#item5	97c2ff75ddb94fac7b1a38753f291f0e3cccb3113adf92cbd828e1f6aa4c9f6b
+.specify/memory/constitution.md	.specify/memory/constitution.md:L16#item5.1	98e7ea219afc7af57ba8143af11cf7bf804959b5c8320c167defad4f144c59c1
+.specify/memory/constitution.md	.specify/memory/constitution.md:L17#item5.2	b11c225241f07a236cecbed108ac1ad9fd4a1f7af224d30edadbe85fd2262e36
+.specify/memory/constitution.md	.specify/memory/constitution.md:L9#item1	e1b630c0f5498fe7ac2c83bf3ec779a34f81f97576887b8d3317f473a9a5c8dc
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	ALL_ISSUES_FIXED.md	8c2c9f49bca80d9d831b707e59fe62bdcf972aa4e64184f48c7cf1f2ecddb9c4
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	ALL_ISSUES_FIXED.md:L3	369d78252860fe07f612c0f1b80e237a7096d865d49291c43c7b729d5038f347
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	docs/COMPREHENSIVE_PACKAGE_SUMMARY.md	915860518a8cef2ccbdf9a2b50e8ec7220ef70cbad5511b52a1c2ae3e9a4ec6e
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	docs/COMPREHENSIVE_PACKAGE_SUMMARY.md:L3	ae01d4307c9bc8173a03d6c3f634fe31cc9baec408a0a3d24db45f771a2ea6c6
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	docs/COMPREHENSIVE_PACKAGE_SUMMARY.md:L4	850b792bbaf69c0fba908960ebbf89a2780e43d6aad4848c0ee2131fa3256097
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	docs/README_IMPLEMENTATION_PACKAGE.md	d3372203429e20f7fb0fde6cbd494098d0a26a49ed3edfae7ab51c6332beec30
+/*.md (other root status reports)+docs/COMPREHENSIVE_PACKAGE_SUMMARY.md+docs/README_IMPLEMENTATION_PACKAGE.md	docs/README_IMPLEMENTATION_PACKAGE.md:L3	9176ae9cbea8642d0f45dec5423e752c1e9d7f0593750934843e30242dcc0e77
+COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md	COMPREHENSIVE_PROJECT_STATUS_AND_PLAN.md:L3	96ee26405bff04aa979e427928b28197bfab88c7ca93748e851163602e2a6bd9
+COMPREHENSIVE_UNFINISHED_WORK_REPORT.md	COMPREHENSIVE_UNFINISHED_WORK_REPORT.md:L3	96ee26405bff04aa979e427928b28197bfab88c7ca93748e851163602e2a6bd9
+COMPREHENSIVE_UNFINISHED_WORK_REPORT.md	COMPREHENSIVE_UNFINISHED_WORK_REPORT.md:L4	c097f673d3254699008d370780d3f1b999cff1e032f28c79082bd214fff3f9cc
+MASTER_EXECUTION_CHECKLIST.md	MASTER_EXECUTION_CHECKLIST.md:L3	96ee26405bff04aa979e427928b28197bfab88c7ca93748e851163602e2a6bd9
+MASTER_EXECUTION_CHECKLIST.md	MASTER_EXECUTION_CHECKLIST.md:L4	f3b813159f6c702293e5abbc450e725c4793ba9903d52a9256f5a0f933ebf756
+S-25:SECURITY_AUDIT_REPORT.md	SECURITY_AUDIT_REPORT.md	b1ab504a836749d4a1bc71f148ce7cb17f144049133bf2569a395943bdd339b2
+S-25:SECURITY_KEY_ROTATION_REQUIRED.md	SECURITY_KEY_ROTATION_REQUIRED.md:L7#Astica	ad6ea6c50e1c1a1ea95ca4bfcfdf17b0d0a4e3fcce5eaf26a4110473e748d993
+S-25:SECURITY_KEY_ROTATION_REQUIRED.md	SECURITY_KEY_ROTATION_REQUIRED.md:L8#Cerebras	25b4cfaaff453089e64341cd14cf646cda16a3cd676ddf9c15d2c579a6a18c7d
+TASK_TRACKER.md	TASK_TRACKER.md:L11	ed050f825db1d6fc4a6f1455a2bfb7f19909aa7d0d88d146ef568cbeae0b6ff3
+TASK_TRACKER.md	TASK_TRACKER.md:L12	2d4c211421e764756d4dac5d0ff169f26c180e874bf14d10ea1a7b665efdf140
+TASK_TRACKER.md	TASK_TRACKER.md:L13	fe289ab1a3ef9468d542a12bedb6747eb9d99560702cccc5ca00acb207c42310
+TASK_TRACKER.md	TASK_TRACKER.md:L14	1ec29945b98f70e3c1f32b042e99b98f59047ee23cf1e107e93eeb115ec0f62b
+TASK_TRACKER.md	TASK_TRACKER.md:L15	33c0da44106cea83bf8b77ba84e9c5462416402dd46719c482cb00025bb8d2ea
+UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md	FINAL_UNFINISHED_WORK_REPORT.md:L3	9ad2f54f041b4340a85d25f15808bdee008f75f2ddcad15561851c0feff880b7
+UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md	UNFINISHED_WORK_ANALYSIS.md:L3	9ad2f54f041b4340a85d25f15808bdee008f75f2ddcad15561851c0feff880b7
+UNFINISHED_WORK_ANALYSIS.md+UNFINISHED_WORK_AND_ISSUES.md+FINAL_UNFINISHED_WORK_REPORT.md	UNFINISHED_WORK_AND_ISSUES.md:L3	9ad2f54f041b4340a85d25f15808bdee008f75f2ddcad15561851c0feff880b7
+challenges/data/challenges_bank.json	challenges/data/challenges_bank.json	b840a35687e20dc8f3b687ff12862e8d0c6e4beb4e6090ef5388a29b6442f18e
+challenges/data/challenges_bank.json	challenges/data/challenges_bank.json#c1	1c5363ea6c232d472060d3258839727c7f4fd922baaf939019183302d30f335f
+challenges/data/challenges_bank.json	challenges/data/challenges_bank.json#c2	348cea937eea5f356dab3b60bd29265a720ba4d3f82e6ab06113e67e72fb20a5
+challenges/helixqa-banks/*.yaml	challenges/helixqa-banks/b1.yaml	ae3d5fde92967246f1cc12dbf7c37c9e90bbadd184140b0c3caaea7d3ffa469c
+challenges/helixqa-banks/*.yaml	challenges/helixqa-banks/b1.yaml#case-one	248ad0258359c4b6bcae07944cd1b8a0cd17608ea212ad9f3f76b4fcc6fabeab
+challenges/helixqa-banks/*.yaml	challenges/helixqa-banks/b1.yaml#case-two	3eec004795d31081ce633281afc9f6af706bb310506e892ca8516ec846dbdac9
+docs/*AUDIT*.md	docs/FRONTEND_AUDIT.md	df625720bc346f35827e5c0efec11ffc940ed779081bbcd56f0302902f308514
+docs/*AUDIT*.md	docs/MASTER_AUDIT_AND_IMPLEMENTATION_PLAN.md	239768c2aabdd5ca0e2eb510a15d2d3df84e550a619ed757825fcd81b722a276
+docs/*AUDIT*.md	docs/MASTER_AUDIT_AND_IMPLEMENTATION_PLAN.md:L3	77658a7b8fb62f191c713d738935dbb4f5076b603a1ee8035ea2d9d2edc2bff3
+docs/*AUDIT*.md	docs/MASTER_AUDIT_AND_IMPLEMENTATION_PLAN.md:L4	ea1e9da50118c42b522951f01f60b889dd5b96c6d1e51fac626a2aab7b6d3d1e
+docs/LANDMINES.md	docs/LANDMINES.md:L3#RULE-API-001	20fb1c32c6f88aa63df04e9bed4d9063a1c819535c4382fe26fa1e9e8d89a7d7
+docs/LANDMINES.md	docs/LANDMINES.md:L4#RULE-WEB-002	53ca9139d59586f5dec577ec7bbcbdc454af92c6c898adc92a73a05a1fc0b5e8
+docs/MASTER_EXECUTION_CHECKLIST.md	docs/MASTER_EXECUTION_CHECKLIST.md:L3	96ee26405bff04aa979e427928b28197bfab88c7ca93748e851163602e2a6bd9
+docs/OPEN_POINTS_CLOSURE.md	docs/OPEN_POINTS_CLOSURE.md:L3	a8d72c0aa4b454bffbdec88723ec8afe696a9e9f4c77ea33cf26b28f6ef0aa77
+docs/OPEN_POINTS_CLOSURE.md	docs/OPEN_POINTS_CLOSURE.md:L4	09b9ee5ee817c3bc03013143723b3e5a22019192d800ff9ce9b43117791df131
+docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md	docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md:L3	9ad2f54f041b4340a85d25f15808bdee008f75f2ddcad15561851c0feff880b7
+docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md	docs/UNFINISHED_WORK_COMPREHENSIVE_REPORT.md:L4	2ec247698ed9f45c9330a01465d60c27099b16f23569ebad26c581457331b634
+docs/audits/*.md	docs/audits/a1.md	dbdb01e92e7a7370af7b2cdeb8c2fc6f210b4e5e374812c00a78c5274240804b
+docs/issues/*.md	docs/issues/HELIX-001-a.md	8c2ad9edf94f0ec5015e6baed0f4e77c9d8bc8920572f54d3f1d8276776f6491
+docs/issues/*.md	docs/issues/HELIX-001-b.md	dafa606ae49dd803ca0ed73efdc88c7d0bca3bc800e81c12d295664095f85f6b
+docs/issues/*.md	docs/issues/HELIX-501-tv-focus-step-1.md	68b7f474b264462564a0acd048f188b46e851201256fb4f50955b3dc318d7135
+docs/issues/*.md	docs/issues/HELIX-502-tv-focus-step-2.md	11446b097be3d0465af45d01d84253f194520061e8731b3e192a7378d5902b30
+docs/issues/*.md	docs/issues/HELIX-503-playback-wrong-screen.md	1ac33b741e6497bb79dbf2b15b01ba9ca9737c5cead3e8ee8a12919d08ba7aff
+docs/issues/*.md	docs/issues/HELIX-504-home-key.md	d9b9a95ea67edbd2343b8513c362d957082137b9a45e588a2d4a48791a76c4c5
+docs/issues/*.md	docs/issues/HELIX-505-black.md	d3dd1b2b02c7dd1d1df0d2f6b84c6b6ee428e188f2ed1881de62247c73e6cb4c
+docs/issues/*.md	docs/issues/HELIX-506-emulator-restart.md	8bf1bfa456736a25fc1aec4ffb0e1916fc8647db1627313e8f0c62aee7a124d1
+docs/issues/*.md	docs/issues/HELIX-510-login-spacing.md	aa8e566fe32f3ffc16ee270dc94da002663e3465635e38743698d2d59960f920
+docs/issues/*.md	docs/issues/HELIX-511-login-spacing-again.md	f162cdcf6c9c36e5af265d5beda0f5c06881626a789a1ff4f7938390462a90ba
+docs/issues/*.md	docs/issues/HELIX-512-login-spacing-other.md	48574a30fc06dfec6aceda09fdff1005ec673a00c4bd48250406cb02bec6418b
+docs/issues/*.md	docs/issues/HELIX-520-contrast-web.md	f4a9d75e6d41bf178b6996def5302fc3ee9501410819e7e5ee1c1c498affaca8
+docs/issues/*.md	docs/issues/HELIX-521-contrast-tv.md	a5e9a77ef95ecc28393fc252a3ffb86e4d77d72c8211adf102a06ad1c7f2ccaf
+docs/issues/*.md	docs/issues/HELIX-522-api-timeout.md	5da9cf8fc7b61237cfa98af94b648b3107e43fbcb92a5625b1a36d700a9494b0
+docs/issues/*.md	docs/issues/HELIX-523-mixed-evidence.md	8640f92c509daec3f24e7d8e96c868c79f87ecbec0a94625ef1607d532a8b4fb
+docs/issues/*.md	docs/issues/HELIX-524-no-evidence.md	0aabf2cbfb0b15729e272c36f08851f2d4126c8a7f9eb615dc60da43e53f5d00
+docs/issues/*.md	docs/issues/HELIX-525-declared.md	a2200de029da71f73dbc62e35cc3e2d80509afc7f070c2d593d2e551c089d273
+docs/qa/**+docs/reports/qa-sessions/**	docs/qa/q1.md	5fd15866c44e12d77f5b8a625aaa6e22b962ff6dbd64c4554b2fc8e92333926d
+docs/qa/**+docs/reports/qa-sessions/**	docs/reports/qa-sessions/s1/notes.md	b6e36d09aee308713710cbcabd60d9a064b6bdc84fa0ecbc9b56a0ae4ca09d18
+docs/security/**	docs/security/gosec-20260101_000000.json	85a1305e2c4c008cf18747145b81a50626ce50caf1d557ee48cd68701fce1485
+docs/security/**	docs/security/gosec-20260201_000000.json	b0844b87db006d0d3be21b163d63ab1cd716d7fda225ff2159a5cad5a1c06f8d
+docs/security/**	docs/security/gosec-20260201_000000.json#0:G102:b.go:4	c4c82b224f64f85ef1711c9d10b469d4ae796d91866cdd9ace2cb494c4229f85
+docs/security/**	docs/security/gosec-20260201_000000.json#1:G103:b.go:9	4bd54c0895e11b260219154dae3a9c30b047ac2fb7b80a99dd4ff738c428a554
+docs/security/**	docs/security/note.md	c2f92031c1bdc84166a86e6003926514861b838b5cda62775be8cc6fd066caac
+docs/security/**	docs/security/snyk-go-20260201_000000.json	d6f37ab1a58aa3620e7588914f1917c4842846ce91faab5d02853d1710a77f2d
+docs/security/**	docs/security/snyk-go-20260201_000000.json#scan-failed	d6f37ab1a58aa3620e7588914f1917c4842846ce91faab5d02853d1710a77f2d
+docs/security/firebase-api-key-exposure-20260629.md	docs/security/firebase-api-key-exposure-20260629.md	7e62453772b102ed89a0850d39012b8766b5272f7090f1ec6e40770b43dfe062
+docs/status/*.md	docs/status/s1.md	c27cbe142664e11d2f9793746f25176849c1193bd60b66aa4ea26e0239cc7b2c
+external:git remotes recorded in the freeze json	remote:github	bd0afb4e310344d068bbf47ed757c3ac645865069196caec31f13050794f978f
+external:git remotes recorded in the freeze json	remote:origin	5bc061a3c777f71dfc7563fc7349b4e2c3e2c7289aa98c0203726441ca2f71e4
+external:named services (firebase-crashlytics, sonarqube, snyk, trivy)	service:firebase-crashlytics	f5555a240ebadeb719ec477211bf7572e7c07bd80946f291a9b41f1799f7dfa3
+external:named services (firebase-crashlytics, sonarqube, snyk, trivy)	service:snyk	4b603cc5887db03520571eab139796b22586f78df7e9ae87daf509a2a0916ab1
+external:named services (firebase-crashlytics, sonarqube, snyk, trivy)	service:sonarqube	a2420448cd8bfa95868f0445b5dec1994b685d4c95ea23bdd10c06e43e1d9900
+external:named services (firebase-crashlytics, sonarqube, snyk, trivy)	service:trivy	b1a5a8fcb68ed74bd47246aadcba1fe15b346bfa3ead4b0760b4e419ac9cfe2c
+innovation entries (docs/21 section 9.5)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#innovation:T1-B	7b3f5b0140b36a8380b244b313c531eb095ad2748a9cb55a4e2b54b3f098c806
+innovation entries (docs/21 section 9.5)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#innovation:T2-B	5be6efba046103db36bd5ef7d5054b22aee86fcc0b5b6aed44a4b5a1731a1e39
+innovation entries (docs/21 section 9.5)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#innovation:T5-D:PROPOSAL-part	f58ed6e6ceccbb59feb52c7d072cceeb7c497a62f14e91b2e8163619adc229a0
+innovation entries (docs/21 section 9.5)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#innovation:T7-C:PROPOSAL-part	9d70be9f1dd44e3bad047bf9c1114bcb77133de4d30b06e6d396528bcd943b0b
+issues/*.md	issues/ANR-2026-04-08-X.md	873150805446478fbe708c3b9d38ff2b4fb1bbd1cd60b45c938bcd9799e667de
+legacy-ids:defect ids first seen in the S-14 files	docs/audits/a1.md:L3#CATAPI-DEFECT-001	d39a9b44412647d301946e51256aa8760b82b38f8fded4545a13a2ae9460fc5b
+legacy-ids:defect ids first seen in the S-15 files	docs/qa/q1.md:L3#FIX-QA-2026-04-21-001	66610820f02131741843b1dffbc45858665898df3081d0e9c9d399ea5194a1d5
+legacy-ids:defect ids referenced only outside the S-14 and S-15 files	docs/OTHER_REF.md:L3#DEFER-001	54ab5919de70fb7a19a2426e166028566d944b0b16f8cfb51445fa34b6c85e8f
+legacy-ids:defect ids referenced only outside the S-14 and S-15 files	docs/OTHER_REF.md:L3#FINDING-7	54ab5919de70fb7a19a2426e166028566d944b0b16f8cfb51445fa34b6c85e8f
+legacy-ids:defect ids referenced only outside the S-14 and S-15 files	docs/OTHER_REF.md:L3#FIX-OC2-001	54ab5919de70fb7a19a2426e166028566d944b0b16f8cfb51445fa34b6c85e8f
+marker and skipped-test scan of every text file of the snapshot	catalog-api/main.go:L3:HACK	601e0d46710d0d80336d413a7b60c1be9682b6d6e0f5d13bc7ca91a7227b3cfd
+module CLAUDE.md and AGENTS.md (outside submodules)	catalog-web/CLAUDE.md	0143946fe1dd1a4678440e03ddaf0ba6c95cebc3060a7bb428f13525cbadfc0d
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc01:O-01	b73b1d340c90ec1d0c0bb28cff48f5358ec5efcc43d0827e5006f84ccd59ab2a
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc01:O-02	1dac660eb699995dbd21c397b99d1059b70fe33150fe69dffd502d6a49127ebd
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc01:O-03	24e07633be4c8316b398dde40b4083f422a5b1a2b2d89fe76c161e5c91e398c5
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc02:F-INDEX-001	d339b4666432294ec97c6a2ae1f0aaafc87b05fd7232bcd24389365a31a93c2a
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc02:F-INDEX-002	e076f8bef6178e612029fed76ea3d8fde1137d2377a93b896a5e9497c11e4681
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc07:C1	8e6a1a1f5f921eaf7da6601f3d025dfe2d07280ec6092b0be1d06655777d2f99
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc07:C2	efa2486fbef3d4852f4c902eab685a387e7ddee8c6dc4503c2bab386a48ee32d
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc07:C3	64a956ea295cf2dc96efcd94c4e907c429231f97584fcf48aa64294a5235e9e6
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc07:C4	e544e89644dcada6bf9672847a7e7bb7b6d8955fcec40b62e2ed6285bec37d7e
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc08:WEB-F01	77a3d473d4ed1db4c73f8b5d4193d981c6fe33c53b25736e5700654a49576ec4
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc08:WEB-F02	251029b615beb85bc7b404d0e241a28f42ceb923997fc567ed8a0803663cf459
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc08:WEB-F03	96e7744fe58bb3bfde332413f18058b414f3a825d71ca3eab24adec6507178d2
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc09:S-01	1c502ab88e756a417de021d7b7d1ad94a7d5ba74de7e28da193f07b8b678f5c8
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc09:S-02	0130fa7bca9d4e5adcb118a58db57da67caa710cf92a35875c38f0557d2b0682
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc12:QF-01	a179cd00f84790108da9ee3e0c7ab70db281fd937a2e1ee922710a3a4ef71f08
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc12:QF-02	c5c4ea0f6f66e87060f07115cf737910143b4dd9824756c4d182869e61a46e83
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc12:stale-constitution-index-hash	f0b5b9b38a87d7f6f7a6dd5b47da6efcf8ac0a767901e2c95c2d02d37a748f84
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc13:class-broken-links	524b9a810463f82db1de942793262c2dd931460f6dd2b60534f6e6276d9d17b9
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc13:class-orphans	817272f6c57da571c1344cb5d1ccff87041a30de7bc71ec8e781fcaf3afe5979
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc13:class-stale-readme-version	09f6c9b36df185823abab7e6e72dfa4d448dc9c1dd8cb82cc545122b2560cb01
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc15:S-01	e94186a862ff09734e7eabc00c688f8556f4503c957ea5e0a0820db3c939a5cc
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc15:S-02	de8685f52a371ae293232e50da04ec8c7eccba2a4d23863361b0c05800123d60
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc15:S-03	ad55c0ac379d2efcbd07e0bfaebad4e1d7fbf1ca3d2cff22caf40acd1251997a
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc18:T1-A	1fb287955873a7e72eb74b9e98a7adf87fbf4ff95e114516935007e6beadb2ea
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc18:T2-A	520dbf0c3b0eebf78ff741d70b5edcacda87f16c566983b18b4e5a24a7add58b
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc18:T5-D(R-ADJ)	230d096fe3dfa53a0047e9c089056d1bf8b98e03f53476099405033548809230
+plan-document seeds (docs/21 section 9.1)	specs/001-full-project-audit-remediation/docs/21-master-plan-phases-risks-and-traceability.md#seed:doc18:T7-C(R-ADJ)	ba0284d28d8ffd67f20f5b05af96fbd1ddd2fcadc1b896f74f76803bca595ebb
+submodules/helix_qa/banks/**	submodules/helix_qa/banks/hq1.yaml	ae3d5fde92967246f1cc12dbf7c37c9e90bbadd184140b0c3caaea7d3ffa469c
+submodules/helix_qa/banks/**	submodules/helix_qa/banks/hq1.yaml#case-one	248ad0258359c4b6bcae07944cd1b8a0cd17608ea212ad9f3f76b4fcc6fabeab
+submodules/helix_qa/banks/**	submodules/helix_qa/banks/hq1.yaml#case-two	3eec004795d31081ce633281afc9f6af706bb310506e892ca8516ec846dbdac9
+submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md	submodules/helix_qa/challenges/baselines/bluff-baseline.txt:L2	9e62686b9d6fffbbd2f66ac9a9114264137e4b62ed3422318fedc9083e62ca82
+submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md	submodules/helix_qa/challenges/baselines/bluff-baseline.txt:L3	1a1afd0372aabd93aee9f6ad332c8ade30c3dafa0a217f72efc05cfd2c321467
+submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md	submodules/helix_qa/docs/behavior-anchors.md:L5#CAP-001	f784e2f0e08b7d110119d8a21b6181d5765bf51276fca018bf0ebf19a55519e9
+submodules/helix_qa/challenges/baselines/bluff-baseline.txt+submodules/helix_qa/docs/behavior-anchors.md	submodules/helix_qa/docs/behavior-anchors.md:L6#CAP-002	aa411d714747163522d9c7c5ca8b98b72d5aaa4ef2d6be217a902550b6b9f08f

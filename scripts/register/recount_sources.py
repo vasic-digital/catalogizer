@@ -404,7 +404,7 @@ METHODS = {
     "plan-document seeds (docs/21 section 9.1)": awk_doc21(S26_PROG),
     "innovation entries (docs/21 section 9.5)": awk_doc21(S27_PROG),
 }
-WHOLE_KEY = ("plan-document seeds (docs/21 section 9.1)", "innovation entries (docs/21 section 9.5)", "external:git remotes recorded in the freeze json",
+WHOLE_KEY = ("external:git remotes recorded in the freeze json",
              "external:named services (firebase-crashlytics, sonarqube, snyk, trivy)")
 ID_KEY = ("legacy-ids:defect ids first seen in the S-14 files", "legacy-ids:defect ids first seen in the S-15 files",
           "legacy-ids:defect ids referenced only outside the S-14 and S-15 files")
@@ -544,6 +544,7 @@ def run(a):
     failing = [s for s in out_src if s["status"] in ("diff", "no_recount_method")]
     rec = {"schema": "source-recount/1", "freeze": {"head": fj.get("head"), "listing_sha256": fj.get("listing_sha256"), "manifest_sha256": sha256_file(manifest),
                                                     "frozen_at": fj.get("frozen_at")},
+           "fixture": not (isinstance(fj.get("head"), str) and re.fullmatch(r"[0-9a-f]{40}", fj["head"]) is not None),      # derived from the freeze head, never typed
            "db": os.path.basename(a.db), "listing_paths": len(pop.paths),
            "sources": out_src, "doc03_section7": d3,
            "summary": {"sources": len(out_src), "match": sum(1 for s in out_src if s["status"] == "match"),

@@ -12,7 +12,7 @@
 # password and every host address; the run is REFUSED if one is found. Evidence records host indexes (Synology<n>), share names, counts, sha256 of names, extension histograms, latencies only.
 # Containers: rootless, scripts/containers/run_pinned.sh IMG-GO, ONE container at a time (protocols run sequentially; the hosts of one protocol run in parallel goroutines inside it, each host sequential at <= 1 request/second).
 # Usage:  nas_clients_leg.sh [--hosts 1,2,3,4,5,6,7] [--protocols ftps,ftp,sftp,nfs] [--ev-dir DIR] [--assemble-only]
-#   --assemble-only  run no container: scan and assemble the results already present under .audit/out/nas-clients/res (a protocol run refused for host memory can be repeated alone, then all are assembled)     Env: TI_ENV_FILE (default <repo>/.env)
+#   --assemble-only  run no container: scan and assemble the results already present under /tmp/catalogizer-nas-clients.<uid>/res (a protocol run refused for host memory can be repeated alone, then all are assembled)     Env: TI_ENV_FILE (default <repo>/.env)
 # Exit:   0 finished (a refused/blocked protocol is a RESULT, recorded); 1 a leak scan, container run or assembly step failed; 2 usage. SKIP (exit 0) when the env file or a variable is absent.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib.sh"
@@ -39,7 +39,12 @@ SRC_EV="$TI_ROOT/specs/001-full-project-audit-remediation/evidence/wp12"
 SECDIR="$(mktemp -d /dev/shm/catalogizer-ncl.XXXXXX)" || ti_die "cannot create a directory under /dev/shm"
 chmod 700 "$SECDIR"
 mkdir -p "$TI_ROOT/.audit/scratch" && VIEW="$(mktemp -d "$TI_ROOT/.audit/scratch/ncl-view.XXXXXX")" || ti_die "cannot create the view"
-STABLE="$TI_ROOT/.audit/out/nas-clients"; mkdir -p "$STABLE/gocache" "$STABLE/gomod" || ti_die "cannot create $STABLE"
+# the container runs from a scratch VIEW that is not the repository: run_pinned (round 8, R-1) accepts such an --out only strictly below /tmp or /var/tmp. The stable result and cache directory is
+# therefore /tmp/catalogizer-nas-clients.<uid> (mode 0700, owned by this user: /tmp is shared, so a foreign or symlinked directory of that name is refused, never used)
+STABLE="/tmp/catalogizer-nas-clients.$(id -u)"
+[ ! -L "$STABLE" ] || ti_refuse stable_dir_not_ours "$STABLE is a symlink"
+mkdir -p -m 700 "$STABLE" 2>/dev/null; { [ -d "$STABLE" ] && [ -O "$STABLE" ]; } || ti_refuse stable_dir_not_ours "$STABLE is not a directory owned by this user"
+mkdir -p "$STABLE/gocache" "$STABLE/gomod" || ti_die "cannot create $STABLE"
 cleanup() {
   case "$SECDIR" in /dev/shm/catalogizer-ncl.*) rm -rf -- "${SECDIR:?}";; esac
   case "$VIEW" in "$TI_ROOT"/.audit/scratch/ncl-view.*) rm -rf -- "${VIEW:?}";; esac

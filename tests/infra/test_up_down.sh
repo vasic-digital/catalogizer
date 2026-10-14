@@ -296,7 +296,8 @@ PY
   M down_keeps_out_dirs core down.sh 'ti_rm_out_dirs "$P" || rc=1' 'true'
   # in_pod: the compose file itself says `x-podman: in_pod: false` since WF17, so dropping the flag alone is an EQUIVALENT mutant; the mutant removes BOTH (the flag and the file's x-podman block) and a pod must come back
   M in_pod_back core up.sh 'CF=(-f "$TI_COMPOSE_FILE")' 'sed "/^x-podman:/,/^$/d" "$TI_COMPOSE_FILE" >"$S/compose-nopod.yml"; CF=(-f "$S/compose-nopod.yml")' 'ti_compose --in-pod false -p "$P"' 'ti_compose -p "$P"'
-  M fail_down_without_op core up.sh 'bash "$HERE/down.sh" --build-id "$BID" --op-id "$OPID" --keep-logs --outcome failed --reason "$1"' 'bash "$HERE/down.sh" --build-id "$BID" --keep-logs --outcome failed --reason "$1"'
+  # TI-A5: the section that reaches fail_down WITH the lease held is `cache` (a corrupted cache is refused AFTER the registration); in `core` the only refusal after registration releases explicitly, so the mutant survived there (WF17 r5 capture)
+  M fail_down_without_op cache up.sh 'bash "$HERE/down.sh" --build-id "$BID" --op-id "$OPID" --keep-logs --outcome failed --reason "$1"' 'bash "$HERE/down.sh" --build-id "$BID" --keep-logs --outcome failed --reason "$1"'
   M foreign_start_records_complete core up.sh 'ti_lo release --op-id "$OPID" --state failed --verdict foreign_owner' 'ti_lo release --op-id "$OPID" --state complete --verdict foreign_owner'
   M cache_trusted cache up.sh '[ "$CDIGEST" = "$(cut -d'"'"' '"'"' -f1 "$SEEDOUT/corpus.sha256")" ] || fail_down' 'true || fail_down'
   M no_port_retry retry up.sh '&& [ "$attempt" -lt 3 ]; then' '&& false; then'

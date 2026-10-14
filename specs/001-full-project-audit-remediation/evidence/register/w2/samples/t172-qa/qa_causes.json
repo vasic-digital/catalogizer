@@ -1,0 +1,67 @@
+{
+ "cause_rules": [
+  "screenshot_timing",
+  "black_frame",
+  "wrong_screen",
+  "wrong_adb",
+  "other_qa_instrument"
+ ],
+ "causes": {
+  "black_frame": {
+   "atm_id": "CAT-001",
+   "component": "helixqa",
+   "locators": [
+    "docs/issues/HELIX-505-black.md"
+   ],
+   "severity": "high",
+   "tickets_in_snapshot": 1,
+   "tickets_mapped": 1
+  },
+  "other_qa_instrument": {
+   "atm_id": "CAT-002",
+   "component": "helixqa",
+   "locators": [
+    "docs/issues/HELIX-506-emulator-restart.md"
+   ],
+   "severity": "high",
+   "tickets_in_snapshot": 1,
+   "tickets_mapped": 1
+  },
+  "screenshot_timing": {
+   "atm_id": "CAT-003",
+   "component": "helixqa",
+   "locators": [
+    "docs/issues/HELIX-501-tv-focus-step-1.md",
+    "docs/issues/HELIX-502-tv-focus-step-2.md"
+   ],
+   "severity": "high",
+   "tickets_in_snapshot": 2,
+   "tickets_mapped": 2
+  },
+  "wrong_adb": {
+   "atm_id": "CAT-004",
+   "component": "qa-scripts",
+   "locators": [
+    "docs/issues/HELIX-504-home-key.md"
+   ],
+   "severity": "high",
+   "tickets_in_snapshot": 1,
+   "tickets_mapped": 1
+  },
+  "wrong_screen": {
+   "atm_id": "CAT-005",
+   "component": "helixqa",
+   "locators": [
+    "docs/issues/HELIX-503-playback-wrong-screen.md"
+   ],
+   "severity": "high",
+   "tickets_in_snapshot": 1,
+   "tickets_mapped": 1
+  }
+ },
+ "no_reg_source_entries_row_inserted": true,
+ "not_qa_instrument": 12,
+ "qa_instrument_tickets": 6,
+ "schema": "t172-qa-causes/1",
+ "tickets_read": 18
+}

@@ -1,0 +1,19 @@
+N00	PASSED	0	NEGATIVE CONTROL: the unmutated tree must pass
+C00	SURVIVED	0	CONTROL: a comment-only change must SURVIVE
+M01	KILLED	1	skips the listing hash comparison
+M02	KILLED	1	accepts a listing that is not NUL-terminated
+M03	KILLED	1	accepts an empty listing
+M04	KILLED	1	accepts a duplicate path
+M05	KILLED	1	accepts a freeze.json without listing_sha256
+M06	KILLED	1	two-argument form ignores added paths
+M07	KILLED	1	two-argument form ignores missing paths
+M08	KILLED	1	accepts an empty path record
+M09	KILLED	1	hash taken over the sorted record set, not the file bytes (a reordering passes)
+M10	KILLED	1	refusal exit code 0 instead of 20
+M11	KILLED	1	accepts a freeze.json whose listing is not a string
+M12	KILLED	1	a malformed manifest escapes as a crash instead of freeze_manifest_invalid
+M13	KILLED	1	a path that is not UTF-8 is silently skipped
+M14	KILLED	1	the duplicate refusal names no path
+M15	KILLED	1	a moved listing is reported as invalid, not moved
+M16	KILLED	1	the duplicate scan is quadratic again (the pre-fix recs.count)
+M17	KILLED	1	a missing manifest file in the two-argument form is not a usage error

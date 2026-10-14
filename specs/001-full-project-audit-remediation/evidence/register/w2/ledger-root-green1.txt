@@ -1,0 +1,52 @@
+# ledger seq=132 item=AUD-T174 polarity=GREEN iteration=1 exit_status=0 verdict=pass
+# target_ref=.audit/scratch/w2ev/root/sut target_fingerprint=6dcfab15b83dce11f0b7779264c231fc3997ad7005c2cd607817e930510f4278 test_fingerprint=c2a98ef62e358e66fcfdee97b2aecb4b4e8ffb57e695a8c10c72c86611f236c5
+# argv=["scripts/containers/run_pinned.sh", "--network=none", "IMG-TESTUTIL", "--", "env", "ROOT_INVENTORY=/src/.audit/scratch/w2ev/root/sut/root_inventory.py", "python3", "-I", "/src/scripts/register/tests/test_root_inventory.py"]
+# identity: task=T174 utc=2026-10-12T11:52:28Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# tool=/src/.audit/scratch/w2ev/root/sut/root_inventory.py sha256=f32522b361952ec9 rules sha256=81aa25e902a76ae3
+ok   (a) base tree: exit 0 and verdict PASS
+ok   (a) one row per root entry of the freeze (30), sorted by byte order, no duplicates
+ok   (a) no row without a disposition and no `.git` row
+ok   (a) untracked entries come from freeze.json (`.claude`, `.remember`) with kind `untracked`, tracked false
+ok   (a) documentation rows carry doc_class null and doc_class_by; excluded rows carry a reason
+ok   (a) the root Markdown summary counts the 8 governance files and the Stage 0 source classes (the fixture holds S-03, S-04, S-06, S-07, S-09 x3, S-25 x2 and S-12 reports)
+ok   (g) two runs give a byte-identical root-items.json
+ok   (b) needle: the planted root entries appear as rows WITHOUT a disposition
+ok   (b) needle: the run FAILS (exit 1) and names them; the file is still written for review
+ok   (c) needle: a root entry created in the live tree after the freeze is absent from root-items.json
+ok   (c) the run passes with the snapshot directory DELETED (no snapshot file is read, only the listing and freeze.json)
+ok   (d) `.git` in untracked_root_entries: the run FAILS and no `.git` row is written
+ok   (d) a root-level gitlink is a `gitlink` row (tracked, no listing line)
+ok   (d) a nested gitlink makes no new root entry (its root is `submodules`, already a directory row)
+ok   (e) every rule of the table decides its own entries (96 entries, no rule shadowed by an earlier one)
+ok   (e) every disposition of the closed set occurs in the table's output
+ok   (e) the table's output has no row without a disposition
+ok   (e) rule table with a disposition outside the closed set: refused `rules_invalid` (exit 20)
+ok   (e) rule table with problem_source without a source class: refused `rules_invalid` (exit 20)
+ok   (e) rule table with excluded without a reason: refused `rules_invalid` (exit 20)
+ok   (e) rule table with a component without an id: refused `rules_invalid` (exit 20)
+ok   (e) rule table with documentation without doc_class_by: refused `rules_invalid` (exit 20)
+ok   (e) rule table with a duplicate rule id: refused `rules_invalid` (exit 20)
+ok   (f) --check of a generated file passes (with the freeze)
+ok   (f) --check of a file with a removed disposition fails (exit 1)
+ok   (f) --check of a file with an unknown disposition fails (exit 1)
+ok   (f) --check of a file with a `.git` row (inserted in sorted position) fails (exit 1)
+ok   (f) --check of a file with a duplicate row fails (exit 1)
+ok   (f) --check of a file with an unsorted file fails (exit 1)
+ok   (f) --check of a file with a problem_source row without a source class fails (exit 1)
+ok   (f) --check of a file with an excluded row without a reason fails (exit 1)
+ok   (f) --check of a file with a documentation row without doc_class fails (exit 1)
+ok   (f) --check of a file with a missing row (the freeze has the entry) fails (exit 1)
+ok   (f) --check of a file with an extra row (the freeze lacks the entry; sorted position) fails (exit 1)
+ok   (f) --check of an unreadable file is refused `root_items_invalid` (exit 20)
+ok   (g) listing moved after the freeze: refused `freeze_listing_moved` (exit 20), nothing written
+ok   (g) usage: no arguments exits 2
+ok   (h) a 3.7 table row is found for a root path (Website -> 3.7)
+ok   (h) a 3.8 table row is found for a root file and a ignored directory (LICENSE, .claude)
+ok   (h) a heading of 3.1 is found (catalog-api -> 3.1 heading)
+ok   (h) an application-relative path of 3.1 is NOT a root row (database -> absent)
+ok   (h) a sub-path row is the weakest evidence for its root (examples -> table-row-subpath)
+ok   (h) a path named only in sections 2 and 4 is absent (Upstreams -> absent)
+ok   (i) config names the two index files individually, each excluded with a reason, with their listing state
+# (j) real listing leg SKIPPED: REAL_FREEZE_JSON not set
+RESULT: pass=44 fail=0

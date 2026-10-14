@@ -1,6 +1,8 @@
 package models
 
 import (
+	"encoding/json"
+	"net/url"
 	"time"
 )
 
@@ -68,6 +70,33 @@ type StorageRoot struct {
 	CreatedAt                time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`
 	LastScanAt               *time.Time `json:"last_scan_at" db:"last_scan_at"`
+}
+
+// RedactedURL returns the storage root's URL without the password of its userinfo ("https://alice:***@host/dav"); "" when there is none.
+func (r StorageRoot) RedactedURL() *string {
+	if r.URL == nil {
+		return nil
+	}
+	u, err := url.Parse(*r.URL)
+	if err != nil {
+		// an unparsable URL is not echoed: it may be a credential-bearing string
+		s := "[unparsable url]"
+		return &s
+	}
+	s := u.Redacted()
+	return &s
+}
+
+// MarshalJSON is the ONE serialisation seam of a StorageRoot (WF22 N5, class B "no read endpoint returns a credential"): the password column
+// and the password inside the url's userinfo are never part of the JSON, whichever endpoint, cache or log serialises a row. A new endpoint that
+// returns a StorageRoot is safe by construction; there is no JSON decode of a StorageRoot that needs the password back (request bodies are their
+// own types and the connection columns are read with StorageRootConnColumns).
+func (r StorageRoot) MarshalJSON() ([]byte, error) {
+	type plain StorageRoot // same fields, no methods: no recursion
+	p := plain(r)
+	p.Password = nil
+	p.URL = r.RedactedURL()
+	return json.Marshal(p)
 }
 
 // StorageRootConnColumns lists, in the order of ConnScanTargets, the storage_roots columns the settings contract

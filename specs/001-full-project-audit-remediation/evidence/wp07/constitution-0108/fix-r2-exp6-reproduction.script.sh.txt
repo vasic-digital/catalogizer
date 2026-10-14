@@ -1,0 +1,29 @@
+set -u
+B=/src/constitution/scripts/workable-items/bin/workable-items
+D=/tmp/e6; rm -rf "$D"; mkdir -p "$D"; cd "$D"
+dsc="this is a reviewer experiment description of enough words"
+echo "## engine binary: $B"; sha256sum "$B" | cut -c1-16
+echo "## A. explicit --prefix mints (7 items, 5 keys)"
+for p in CAT CAT CAT cat CATS C1T AB; do "$B" add bug low --db "$D/w.db" --title "t $p" --description "$dsc" --prefix "$p" 2>&1 | tail -1; done
+echo "## B. validate"
+"$B" validate --db "$D/w.db" 2>&1 | tail -1
+echo "## C. db -> md"
+"$B" sync db-to-md --db "$D/w.db" --out-issues "$D/I.md" --out-fixed "$D/F.md" 2>&1 | tail -1
+grep -c '^## ' "$D/I.md"; grep '^## ' "$D/I.md" | cut -c1-40
+echo "## D. md -> db round trip (second database)"
+"$B" sync md-to-db --db "$D/w2.db" --issues "$D/I.md" --fixed "$D/F.md" 2>&1 | tail -1
+"$B" validate --db "$D/w2.db" 2>&1 | tail -1
+echo "## E. ids before / after / dropped (python3 -I, sqlite3 read-only)"
+python3 -I - "$D/w.db" "$D/w2.db" <<'PY'
+import sqlite3, sys
+a=[r[0] for r in sqlite3.connect("file:%s?mode=ro" % sys.argv[1], uri=True).execute("select atm_id from items order by rowid")]
+b=[r[0] for r in sqlite3.connect("file:%s?mode=ro" % sys.argv[2], uri=True).execute("select atm_id from items order by rowid")]
+print("before(%d)=%s" % (len(a), a)); print("after (%d)=%s" % (len(b), b)); print("dropped=%s" % sorted(set(a)-set(b)))
+PY
+echo "## F. derived default prefix: three mints WITHOUT --prefix in a clone directory named catalogizer (git-initialised)"
+mkdir -p /tmp/catalogizer && cd /tmp/catalogizer && git init -q 2>/dev/null
+env -u HELIX_RELEASE_PREFIX true
+for i in 1 2 3; do env -u HELIX_RELEASE_PREFIX "$B" add bug low --db /tmp/catalogizer/w.db --title "t d$i" --description "$dsc" 2>&1 | tail -1; done
+echo "## G. same, directory named other-proj"
+mkdir -p /tmp/other-proj && cd /tmp/other-proj && git init -q 2>/dev/null
+env -u HELIX_RELEASE_PREFIX "$B" add bug low --db /tmp/other-proj/w.db --title "t o" --description "$dsc" 2>&1 | tail -1

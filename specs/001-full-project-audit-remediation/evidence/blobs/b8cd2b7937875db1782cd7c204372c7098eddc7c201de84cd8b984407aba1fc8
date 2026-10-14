@@ -1,0 +1,67 @@
+# identity: task=T170 utc=2026-10-12T13:26:48Z uid=1000 git_head=ff62c1dfc18cf1415d501e105ec8d2ac808d1ed0
+# container: in-container run (container=podman) image=IMG-TESTUTIL
+# importer=/src/.audit/scratch/w2ev/seeds/sut/import_plan.sh sha256=dde5d5997cfe98c6 enumerator sha256=f7460279287d2c05 engine sha256=d789d6251326b523
+ok   (a) baseline enumeration exits 0
+ok   (a) S-26 reads 27 entries on the fixture (a class that reads zero is a blind instrument)
+ok   (a) one seed row added to a scratch copy of docs/21 -> exactly ONE new S-26 entry
+ok   (a) the register gains exactly ONE new reg_source_entries row (by natural key) and it is the planted seed
+ok   (a) the planted row removed from the planted copy: the sql equals the baseline byte for byte
+ok   (a) a Count cell that disagrees with the ids: the enumerator refuses `seed_count_mismatch` (exit 20), nothing written
+ok   (a) a Total row that disagrees with the rows: the enumerator refuses `seed_count_mismatch` (exit 20), nothing written
+ok   (a) a duplicate seed pair: the enumerator refuses `seed_count_mismatch` (exit 20), nothing written
+ok   (a) a (document, id) pair repeated in another row (counts consistent): the enumerator refuses `seed_duplicate` (exit 20), nothing written
+ok   (a) a family member that is not a seed: the importer refuses (exit 20), nothing written
+ok   (a) a family count that disagrees with the table: the importer refuses (exit 20), nothing written
+ok   (b) the import exits 0
+ok   (b) 27 seeds, 5 families, 14 fully folded members -> 18 items (= 27 - 14 + 5, the docs/21 bound formula)
+ok   (b) the partly folded member doc15:S-03 keeps its own item
+ok   (b) every seed id is mapped (v_unmapped_entries empty for the source)
+ok   (b) relations: 18 primary + 9 duplicate_of = 27 map rows (head primary, the other members duplicate_of the head)
+ok   (b) folded members use match_basis manual_operator (the folding is the plan's own table), single seeds import_1to1
+ok   (b) all items are Task / Queued; reg_item_ext custody machine_evidence, defect_layer source, component_id NULL; no reg_findings row
+ok   (b) every description is within 2,048 bytes and carries a Sources block with the entry locator and its sha256
+ok   (b) exactly one severity_governs=1 row per item
+ok   (b) the engine validate, foreign_key_check and integrity_check are clean
+ok   (b) no register id is minted twice: reg_ids has exactly 18 import ids for 27 entries
+ok   (b3) the seed `plus the stale constitution index hash` has the slug id doc12:stale-constitution-index-hash (the leading `the` dropped)
+ok   (b3) every entry carries its status: rated seeds `rated`, unrated seeds `unrated` (the severity distribution cell of the row)
+ok   (b3) the rated count equals the seeds of the rated rows (doc07 4 + doc08 3 = 7 in the fixture)
+ok   (b4) the doc20 seed T-2 is located at the SECOND data row of the cited table, T-1 at the first
+ok   (b5) a mapping that the register silently drops leaves an entry unmapped: the import exits 1 `incomplete`, it does not report success
+ok   (b6) the engine validation failing after the import: exit 1 `validate_failed`
+ok   (c) the family 'Unauthenticated /ws' (doc01 O-02, doc07 C2 'High if confirmed', doc08 WEB-F02 'High', doc15 S-02, doc18 T5-D) takes the HIGHEST member severity
+ok   (c) 'Low-Medium' (doc07 C4) normalises to the higher word, medium, and keeps the raw label in severity_source
+ok   (c) an unrated seed (doc01 O-03) is defaulted medium and says so [DEFAULT - adjustable]
+ok   (c) a 'High' seed (doc07 C1, head of its family) is high
+ok   (c) the member that gives the family severity governs (one severity_governs row; the 'High' WEB-F02, not the 'High if confirmed' C2)
+ok   (b2) assemble: a body of 5800 bytes is cut to a description within 2,048 bytes on a character boundary, marked as cut, the Sources block and the fixed tail kept
+ok   (b2) assemble: a short body is kept whole and not marked cut
+ok   (g) the R-ADJ seed doc18 T1-A names the plan document and fix work package of docs/18 section 1.1 (doc 07, WP-30, WP-51)
+ok   (e) a second run exits 0 and writes nothing (state identical, no new id)
+ok   (e) crash after_mint at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_mint at group 7 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_ext at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_ext at group 7 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_add at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash after_add at group 7 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash before_map at group 1 (exit 137), then a re-run completes with the state of a clean run
+ok   (e) crash before_map at group 7 (exit 137), then a re-run completes with the state of a clean run
+ok   (d) the import with a pre-existing item for doc07:C2 exits 0
+ok   (d) the whole family of doc07:C2 (5 seeds) is linked duplicate_of the existing item and no item is minted for it
+ok   (d) 17 items are minted for the seeds (18 - the linked family), the existing item is not re-minted
+ok   (f) a snapshot changed after its manifest: refused `freeze_snapshot_moved` (exit 20), nothing written
+ok   (f) entries older than the snapshot (a source document changed after enumeration): refused `entries_out_of_date` naming the seed, nothing written
+ok   (f) the real register database name without a backup record: refused `backup_record_required`, nothing written
+ok   (f) no docs/21 in the snapshot: S-26 reads nothing and the importer refuses `plan_document_missing`
+ok   (f) an unknown --class is refused (exit 20), a missing option is usage (exit 2)
+ok   (f) --dry-run writes nothing
+# (h) real documents leg SKIPPED: REAL_FREEZE_JSON not set
+ok   (F3) a member named twice inside one family (the stated member count adjusted, the enumerator passes) is refused `family_member_repeated` (exit 20) naming the family and the member, nothing written
+ok   (F3) the refusal is the NEW one: the same input does not reach the item-bound check (`item_bound_exceeded` is what the unfixed planner said)
+ok   (F3) layout baseline: accepted, and the planned item count EQUALS the bound (18 items, bound 18)
+ok   (F3) layout drop_family: accepted, and the planned item count EQUALS the bound (19 items, bound 19)
+ok   (F3) layout add_family: accepted, and the planned item count EQUALS the bound (17 items, bound 17)
+ok   (F3) layout grow_family: accepted, and the planned item count EQUALS the bound (17 items, bound 17)
+ok   (F3) stated_low: the plan (18 items, derived bound 18) is refused `item_bound_exceeded` (exit 20), nothing written
+ok   (F3) stated_conflict: the plan (18 items, derived bound 18) is refused `declared_bound_conflict` (exit 20), nothing written
+RESULT: pass=62 fail=0

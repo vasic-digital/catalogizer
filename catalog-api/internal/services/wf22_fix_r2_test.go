@@ -704,9 +704,9 @@ func TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping
 	// a WebDAV task carries its url all the way: without it the client cannot be built into anything usable
 	root := base("webdav").storageRoot()
 	require.NotNil(t, root.URL)
-	assert.Equal(t, "http://127.0.0.1:1/dav", filesystem.SettingsFromRoot(root, nil)["url"])
+	assert.Equal(t, "http://127.0.0.1:1/dav", filesystem.MustSettingsFromRoot(root, nil)["url"])
 	nfs := base("nfs").storageRoot()
-	assert.Equal(t, "/mnt/none", filesystem.SettingsFromRoot(nfs, nil)["mount_point"])
+	assert.Equal(t, "/mnt/none", filesystem.MustSettingsFromRoot(nfs, nil)["mount_point"])
 }
 
 func TestWF22_StorageRootConnColumns(t *testing.T) {

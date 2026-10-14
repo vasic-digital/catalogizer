@@ -30,11 +30,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/textproto"
 	"net/url"
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -340,7 +342,7 @@ func hostKey(job ScanJob) string {
 	if r.Host != nil && *r.Host != "" {
 		h := *r.Host
 		if r.Port != nil && *r.Port > 0 {
-			return fmt.Sprintf("%s:%d", h, *r.Port)
+			return net.JoinHostPort(h, strconv.Itoa(*r.Port)) // brackets an IPv6 literal: "fe80::1:21" would be a DIFFERENT valid address (WF22 N8)
 		}
 		return h
 	}
@@ -402,10 +404,8 @@ type scanRun struct {
 
 // ScanPath scans job.Path breadth first. See the file comment for the guarantees.
 func (g *GenericScanner) ScanPath(ctx context.Context, client filesystem.FileSystemClient, job ScanJob, status *ScanStatus) error {
-	root := job.Path
-	if root == "" {
-		root = "/"
-	}
+	// The scan root is confined like every other path: a ".." segment cannot leave the storage root (WF22 N2, class A).
+	root := filesystem.ConfinePath(job.Path)
 	maxDepth := job.MaxDepth
 	if maxDepth <= 0 {
 		maxDepth = defaultScanDepth
@@ -589,7 +589,7 @@ func (rs *scanRun) handleListing(ctx context.Context, r listResult) ([]dirTask, 
 		}
 		rs.status.incrementCounters(0, 0, 0, 0, 1)
 		if isBenignListError(r.err) {
-			rs.g.o.Logger.Warn("directory skipped", zap.String("path", r.t.p), zap.Error(r.err))
+			rs.g.o.Logger.Warn("directory skipped", zap.String("path", r.t.p), errField(r.err, rs.status.secrets))
 			rs.skippedDirs = append(rs.skippedDirs, r.t.p)
 			return nil, nil
 		}
@@ -675,7 +675,7 @@ func (rs *scanRun) processEntries(ctx context.Context, dir string, depth int, en
 		} else if err := rs.g.record(ctx, full, &entry, rs.job, rs.status); err != nil {
 			rs.recordFails++
 			rs.status.incrementCounters(0, 0, 0, 0, 1)
-			rs.g.o.Logger.Error("failed to record entry", zap.String("path", full), zap.Error(err))
+			rs.g.o.Logger.Error("failed to record entry", zap.String("path", full), errField(err, rs.status.secrets))
 		} else {
 			rs.recordedOK++
 			if rs.g.o.Tokens != nil {

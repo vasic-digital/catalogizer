@@ -56,6 +56,8 @@ type ProtocolSpec struct {
 	Keys map[string]KeyType
 	// New builds the client from validated settings. Required for a registered protocol; unused for the built-ins.
 	New func(settings map[string]interface{}) (FileSystemClient, error)
+	// Required lists the settings keys a NEW storage root must carry (ValidateRoot): a root without them could never be scanned.
+	Required []string
 }
 
 // legacyKeyHints maps a retired or misspelt key to the vocabulary key to use. Used only to make the rejection message useful.
@@ -70,11 +72,11 @@ var legacyKeyHints = map[string]string{
 }
 
 var builtinSpecs = map[string]ProtocolSpec{
-	"local":  {Name: "local", Keys: map[string]KeyType{KeyBasePath: KeyString}},
-	"smb":    {Name: "smb", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyShare: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyDomain: KeyString}},
-	"ftp":    {Name: "ftp", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}},
-	"nfs":    {Name: "nfs", Keys: map[string]KeyType{KeyHost: KeyString, KeyPath: KeyString, KeyMountPoint: KeyString, KeyOptions: KeyString}},
-	"webdav": {Name: "webdav", Keys: map[string]KeyType{KeyURL: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}},
+	"local":  {Name: "local", Keys: map[string]KeyType{KeyBasePath: KeyString}, Required: []string{KeyBasePath}},
+	"smb":    {Name: "smb", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyShare: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyDomain: KeyString}, Required: []string{KeyHost, KeyShare}},
+	"ftp":    {Name: "ftp", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyHost}},
+	"nfs":    {Name: "nfs", Keys: map[string]KeyType{KeyHost: KeyString, KeyPath: KeyString, KeyMountPoint: KeyString, KeyOptions: KeyString}, Required: []string{KeyHost, KeyPath, KeyMountPoint}},
+	"webdav": {Name: "webdav", Keys: map[string]KeyType{KeyURL: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyURL}},
 }
 
 // builtinOrder is the stable order of SupportedProtocols for the built-ins.
@@ -249,10 +251,75 @@ func wholeNumber(v interface{}) (int64, bool) {
 	return n, true
 }
 
-// SettingsFromRoot is THE mapping from a StorageRoot row to factory settings. smbIdentity resolves the SMB identity (direct fields, then the
-// identity_index in Options); it may be nil, in which case only the direct fields are used. Only keys the protocol consumes are produced, so the
-// result always passes ValidateSettings. A registered protocol is mapped generically from the root fields its schema allows.
-func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.StorageRoot) (user, pass, domain string)) map[string]interface{} {
+// KeyIdentityIndex is the options-JSON key of an SMB root whose credentials come from the environment identity table (ResolveSMBIdentity).
+const KeyIdentityIndex = "identity_index"
+
+// optionKeys is the closed set of keys the options JSON object of a non-NFS root may carry for protocol: the tls / pin / credential-reference
+// keys the protocol's schema consumes, plus identity_index for smb. Anything else (a misspelling, a pin the protocol cannot honour) is an error.
+func optionKeys(protocol string, spec ProtocolSpec) map[string]bool {
+	out := map[string]bool{}
+	for _, k := range []string{KeyCredentialRef, KeyTLSMode, KeyHostKeyFingerprint, KeyCertSHA256} {
+		if _, ok := spec.Keys[k]; ok {
+			out[k] = true
+		}
+	}
+	if protocol == "smb" {
+		out[KeyIdentityIndex] = true
+	}
+	return out
+}
+
+// parseOptions reads the options JSON object of a non-NFS root. It fails on text that is not a JSON object, a key outside optionKeys, and a
+// value that is not a string (identity_index: a whole number). Nothing is dropped silently: a host-key or certificate pin that cannot be
+// parsed or honoured is a refusal, never a missing pin (fail closed, 11.4.252).
+func parseOptions(protocol string, spec ProtocolSpec, raw string) (map[string]string, error) {
+	var obj map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(raw), &obj); err != nil || obj == nil {
+		return nil, fmt.Errorf("invalid %s settings: options is not a JSON object", protocol)
+	}
+	allowed := optionKeys(protocol, spec)
+	out := map[string]string{}
+	var unknown, wrong []string
+	for k, v := range obj {
+		if !allowed[k] {
+			unknown = append(unknown, k)
+			continue
+		}
+		if k == KeyIdentityIndex {
+			var n json.Number
+			if err := json.Unmarshal(v, &n); err != nil {
+				wrong = append(wrong, k+" (want integer)")
+			}
+			continue // consumed by ResolveSMBIdentity, never forwarded to the client
+		}
+		var str string
+		if err := json.Unmarshal(v, &str); err != nil {
+			wrong = append(wrong, k+" (want string)")
+			continue
+		}
+		out[k] = str
+	}
+	if len(unknown) > 0 || len(wrong) > 0 {
+		sort.Strings(unknown)
+		sort.Strings(wrong)
+		return nil, &SettingsError{Protocol: protocol, Unknown: prefixOptions(unknown), WrongType: prefixOptions(wrong)}
+	}
+	return out, nil
+}
+
+func prefixOptions(keys []string) []string {
+	out := make([]string, len(keys))
+	for i, k := range keys {
+		out[i] = "options." + k
+	}
+	return out
+}
+
+// SettingsFromRoot is THE mapping from a StorageRoot row to factory settings (create, validate, serialise and read all go through it).
+// smbIdentity resolves the SMB identity (direct fields, then the identity_index in Options); it may be nil, in which case only the direct
+// fields are used. Only keys the protocol consumes are produced. It returns an error, never a silently thinner map, when the row carries options
+// the protocol cannot honour (unparsable, unknown key, non-string pin): a dropped pin is a fail-open security control (WF22 N4).
+func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.StorageRoot) (user, pass, domain string)) (map[string]interface{}, error) {
 	s := make(map[string]interface{})
 	put := func(k string, v *string) {
 		if v != nil {
@@ -262,6 +329,18 @@ func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.Storage
 	putInt := func(k string, v *int) {
 		if v != nil && !(k == KeyPort && *v <= 0) { // a stored port of 0 means "not set": the client default applies
 			s[k] = *v
+		}
+	}
+	// options of the non-NFS protocols: parsed and checked once, whatever the protocol
+	var opts map[string]string
+	hasOpts := root.Options != nil && *root.Options != ""
+	if root.Protocol != "nfs" && hasOpts {
+		spec, ok := specFor(root.Protocol)
+		if ok {
+			var err error
+			if opts, err = parseOptions(root.Protocol, spec, *root.Options); err != nil {
+				return nil, err
+			}
 		}
 	}
 	switch root.Protocol {
@@ -308,7 +387,7 @@ func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.Storage
 	default:
 		spec, ok := specFor(root.Protocol)
 		if !ok {
-			return s
+			return s, nil
 		}
 		allow := func(k string) bool { _, ok := spec.Keys[k]; return ok }
 		if allow(KeyHost) {
@@ -337,19 +416,111 @@ func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.Storage
 		}
 		if allow(KeyOptions) {
 			put(KeyOptions, root.Options)
-		} else if root.Options != nil && *root.Options != "" {
-			// Options is a JSON object for non-NFS protocols; it carries the TLS / pin / credential-reference keys.
-			var extra map[string]interface{}
-			if json.Unmarshal([]byte(*root.Options), &extra) == nil {
-				for _, k := range []string{KeyCredentialRef, KeyTLSMode, KeyHostKeyFingerprint, KeyCertSHA256} {
-					if v, ok := extra[k].(string); ok && allow(k) && v != "" {
-						s[k] = v
-					}
-				}
-			}
+			opts = nil
 		}
 	}
+	for k, v := range opts {
+		if v != "" {
+			s[k] = v
+		}
+	}
+	return s, nil
+}
+
+// MustSettingsFromRoot is SettingsFromRoot for tests and fixtures whose row is known to be valid: it panics on an error. Production code MUST
+// use SettingsFromRoot and handle the error (a classifier test refuses a production caller).
+func MustSettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.StorageRoot) (user, pass, domain string)) map[string]interface{} {
+	s, err := SettingsFromRoot(root, smbIdentity)
+	if err != nil {
+		panic(err)
+	}
 	return s
+}
+
+// columnKey is the single column -> settings-key table: the key a StorageRoot column is read as by protocol ("" when the column has no home).
+func columnKey(column, protocol string, spec ProtocolSpec) string {
+	switch column {
+	case "host":
+		return KeyHost
+	case "port":
+		return KeyPort
+	case "username":
+		return KeyUsername
+	case "password":
+		return KeyPassword
+	case "domain":
+		return KeyDomain
+	case "url":
+		return KeyURL
+	case "mount_point":
+		return KeyMountPoint
+	case "path":
+		switch protocol {
+		case "smb":
+			return KeyShare
+		case "local":
+			return KeyBasePath
+		}
+		return KeyPath
+	}
+	return ""
+}
+
+// ValidateRoot is the create-time contract of a StorageRoot (WF22 N3). It validates the ROW, not the output of SettingsFromRoot (which only ever
+// emits consumed keys and so can never report anything): (1) the protocol is supported; (2) every column the row carries is one the protocol
+// consumes (an ftp root with a url, an smb root with a mount_point are refused, not stored-and-ignored); (3) every key the protocol requires is
+// present; (4) the options parse (SettingsFromRoot); (5) the resulting settings pass ValidateSettings (types, port range).
+func ValidateRoot(root *models.StorageRoot) error {
+	spec, ok := specFor(root.Protocol)
+	if !ok {
+		return fmt.Errorf("unsupported protocol: %s", root.Protocol)
+	}
+	type col struct {
+		name string
+		set  bool
+	}
+	nonEmpty := func(p *string) bool { return p != nil && *p != "" }
+	cols := []col{
+		{"host", nonEmpty(root.Host)},
+		{"port", root.Port != nil && *root.Port != 0},
+		{"path", nonEmpty(root.Path)},
+		{"username", nonEmpty(root.Username)},
+		{"password", nonEmpty(root.Password)},
+		{"domain", nonEmpty(root.Domain)},
+		{"url", nonEmpty(root.URL)},
+		{"mount_point", nonEmpty(root.MountPoint)},
+	}
+	var unused []string
+	present := map[string]bool{}
+	for _, c := range cols {
+		if !c.set {
+			continue
+		}
+		k := columnKey(c.name, root.Protocol, spec)
+		if _, consumed := spec.Keys[k]; !consumed {
+			unused = append(unused, c.name)
+			continue
+		}
+		present[k] = true
+	}
+	if len(unused) > 0 {
+		sort.Strings(unused)
+		return fmt.Errorf("invalid %s storage root: %s not used by this protocol", root.Protocol, strings.Join(unused, ", "))
+	}
+	var missing []string
+	for _, k := range spec.Required {
+		if !present[k] {
+			missing = append(missing, k)
+		}
+	}
+	if len(missing) > 0 {
+		return fmt.Errorf("invalid %s storage root: missing %s", root.Protocol, strings.Join(missing, ", "))
+	}
+	settings, err := SettingsFromRoot(root, nil)
+	if err != nil {
+		return err
+	}
+	return ValidateSettings(root.Protocol, settings)
 }
 
 func deref(p *string) string {

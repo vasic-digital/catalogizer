@@ -30,7 +30,7 @@ Per share: at most 30 listing requests, depth 3, 2000 entries (checked before ea
 ## Rules
 
 Read-only by construction (the test scans the clients for write-class verbs, with control needles); at most one request per second per host (a `Pacer`; hosts are measured in parallel, each host sequentially); entry names, file content
-and host addresses are never recorded (aliases, share names, counts, sha256 of names, extension histograms only); credentials only from the gitignored env file via a 0600 file in a 0700 run directory on `$XDG_RUNTIME_DIR`
+and host addresses are never recorded (aliases, share names, counts, sha256 of names, extension histograms only); credentials only from the gitignored env file via a 0600 file in a 0700 run directory `/tmp/catalogizer-nas-proto.<pid>` (strictly below /tmp: run_pinned round 8 R-1 accepts an --out disjoint from its source tree only there; removed on every exit path)
 (read by the client, removed on every exit path; the SSH password reaches ssh through `SSH_ASKPASS` reading that file, never argv or the environment). Before the evidence is written it is scanned for the user name, the password
 and every host address; the run fails and the files are removed if one occurs. Clients run in rootless containers through `scripts/containers/run_pinned.sh`: `IMG-GO` (python3 stdlib, ssh, openssl) and
 `IMG-INFRA-CLIENT` (libnfs-utils); no kernel mount, no sudo.

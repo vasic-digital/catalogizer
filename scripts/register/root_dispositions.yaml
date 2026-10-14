@@ -127,3 +127,39 @@ rules:
     proposed: true
     note: "scanner configuration and the marker files of the named external services (doc03 5.20 sources EXT)"
   - {id: R-C-REPOCFG, names: [.gitattributes, .gitignore, .gitmodules, .devignore], disposition: component, component: "repository-config", proposed: true}
+  # ---- root entries found undecided by the independent review of 2026-10-12 (F6), decided here [DEFAULT - adjustable]; nothing is moved, removed or read by these rules
+  - id: R-C-CONSTITUTION
+    names: [constitution]
+    disposition: component
+    component: "constitution"
+    proposed: true
+    note: "the governance submodule, a gitlink at the project root since commit 772dd4c3 (moved from the submodules tree); its text binds this repository; its content is not audited as product code"
+  - id: R-X-OPENCODE
+    names: [.opencode]
+    disposition: excluded
+    reason: "agent-platform configuration (OpenCode commands and skills) installed by Spec Kit and the constitution hook; tracked at HEAD, but tooling state, not product source"
+    proposed: true
+  - id: R-X-KIMI
+    names: [.kimi-code]
+    disposition: excluded
+    reason: "agent-platform configuration (Kimi Code) installed by the constitution hook; tracked at HEAD, but tooling state, not product source"
+    proposed: true
+  - id: R-X-ENV
+    names: [.env]
+    disposition: excluded
+    reason: "the local environment file: ignored by .gitignore, never tracked, holds credentials; excluded and NEVER read by this inventory (11.4.10)"
+  - id: R-X-REPORTS
+    names: [reports]
+    disposition: excluded
+    reason: "local generated report output: `reports/` is ignored by .gitignore and never tracked"
+    proposed: true
+  - id: R-X-GRAPH
+    names: [graph.json]
+    disposition: excluded
+    reason: "untracked generated task-dependency graph of feature 001 (edges between task ids), written by the task tooling; the task tooling owns it"
+    proposed: true
+  - id: R-X-STRAY
+    names: [prev3, catalogizer-test-zzsw10647std]
+    disposition: excluded
+    reason: "empty untracked scratch directories left by earlier test runs; left in place, never removed (11.4.122, 11.4.124); the owner decides whether to delete them"
+    proposed: true

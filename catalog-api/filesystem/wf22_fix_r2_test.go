@@ -68,15 +68,15 @@ func TestWF22_C09_LegacyHintOnlyWhenTheHintedKeyBelongsToTheProtocol(t *testing.
 func TestWF22_C02_F4_SMBDomainColumn(t *testing.T) {
 	h, dom, empty := "nas", "CORP", ""
 	ident := func(*models.StorageRoot) (string, string, string) { return "u", "p", "IDDOM" }
-	assert.Equal(t, "CORP", SettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &dom}, ident)[KeyDomain], "a non-empty domain column wins")
-	assert.Equal(t, "IDDOM", SettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &empty}, ident)[KeyDomain], "an empty column does not erase the identity's domain")
-	_, has := SettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &empty}, nil)[KeyDomain]
+	assert.Equal(t, "CORP", MustSettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &dom}, ident)[KeyDomain], "a non-empty domain column wins")
+	assert.Equal(t, "IDDOM", MustSettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &empty}, ident)[KeyDomain], "an empty column does not erase the identity's domain")
+	_, has := MustSettingsFromRoot(&models.StorageRoot{Protocol: "smb", Host: &h, Domain: &empty}, nil)[KeyDomain]
 	assert.False(t, has, "and without any domain the key is absent, so the factory's WORKGROUP default applies")
 }
 
 func TestWF22_StoredPortZeroMeansUnset(t *testing.T) {
 	h, z := "nas", 0
-	s := SettingsFromRoot(&models.StorageRoot{Protocol: "ftp", Host: &h, Port: &z}, nil)
+	s := MustSettingsFromRoot(&models.StorageRoot{Protocol: "ftp", Host: &h, Port: &z}, nil)
 	_, has := s[KeyPort]
 	assert.False(t, has)
 	require.NoError(t, ValidateSettings("ftp", s))

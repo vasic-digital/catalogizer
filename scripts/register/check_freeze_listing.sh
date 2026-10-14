@@ -13,7 +13,7 @@
 set -u
 { [ $# -eq 1 ] && [ -f "$1" ]; } || { [ $# -eq 2 ] && [ -f "$1" ] && [ -f "$2" ]; } || { echo "usage: check_freeze_listing.sh <freeze.json> | <listing> <manifest>" >&2; exit 2; }
 exec python3 -I - "$@" <<'PY'
-import hashlib, json, sys
+import collections, hashlib, json, sys
 
 def refuse(reason, detail=""):
     sys.stderr.write("check_freeze_listing: REFUSED reason=%s %s\n" % (reason, detail))
@@ -32,7 +32,7 @@ def read_listing(path):
     if any(r == b"" for r in recs):
         refuse("freeze_listing_invalid", "%s holds an empty path record" % path)
     if len(set(recs)) != len(recs):
-        dup = sorted({r for r in recs if recs.count(r) > 1})[:3]
+        dup = sorted(r for r, n in collections.Counter(recs).items() if n > 1)[:3]       # one pass: O(n) on the refusal path too
         refuse("freeze_listing_invalid", "%s holds a duplicate path: %r" % (path, dup))
     return data, recs
 

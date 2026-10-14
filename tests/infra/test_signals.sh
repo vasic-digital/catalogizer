@@ -23,7 +23,11 @@ interrupt() {
   local label=$1 sig=$2 stage=$3 id P S pid pg op sp; shift 3
   id=$(ti_new_id); TI_IDS+=("$id"); P=$(ti_project "$id"); S=$(ti_state "$id")
   local claim="$(ti_regdir)/claims/$P/holder.json"
-  s1() { [ -s "$claim" ] && jq -e .run_id "$claim" >/dev/null 2>&1; };   # stage 1 = a COMPLETE claim record: the file appears before its content is written, and a signal inside that window leaves a truncated holder record that the registry (rightly) refuses to release on a guess s2() { [ -r "$S/env" ]; }; s3() { [ -n "$(podman ps -a -q --filter "label=catalogizer.test_project=$P" 2>/dev/null)" ]; }; s4() { [ -e "$S/ready.log" ]; }
+  # stage 1 = a COMPLETE claim record: the file appears before its content is written, and a signal inside that window leaves a truncated holder record that the registry (rightly) refuses to release on a guess
+  s1() { [ -s "$claim" ] && jq -e .run_id "$claim" >/dev/null 2>&1; }
+  s2() { [ -r "$S/env" ]; }
+  s3() { [ -n "$(podman ps -a -q --filter "label=catalogizer.test_project=$P" 2>/dev/null)" ]; }
+  s4() { [ -e "$S/ready.log" ]; }
   # a background job of a non-interactive shell inherits SIGINT as IGNORED (and bash cannot reset an inherited ignore): restore the default disposition first, as a foreground Ctrl-C would find it
   setsid python3 -I -c 'import os,signal,sys; [signal.signal(s, signal.SIG_DFL) for s in (signal.SIGINT, signal.SIGHUP, signal.SIGTERM, signal.SIGQUIT)]; os.execvp(sys.argv[1], sys.argv[1:])' "$@" --build-id "$id" >"$TI_SCRATCH/sg-$label.out" 2>&1 & pid=$!; TI_BG_PIDS+=("$pid")
   if ! wait_cond 90 "s$stage"; then bad "$label: stage $stage was never observed (the start ended or stalled first): $(tail -2 "$TI_SCRATCH/sg-$label.out" | tr '\n' ' ' | cut -c1-160)"; wait "$pid" 2>/dev/null; return; fi

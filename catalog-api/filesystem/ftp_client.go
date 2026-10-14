@@ -105,15 +105,16 @@ func (c *FTPClient) TestConnection(ctx context.Context) error {
 	return err
 }
 
-// resolvePath resolves a path within the FTP base directory (always as a slash path, whatever the host OS).
+// resolvePath resolves a path within the FTP base directory (always as a slash path, whatever the host OS). The request is confined with
+// ConfinePath first, so "/../../etc" under "/srv/movies" is "/srv/movies/etc", never "/etc" (WF22 N2).
 func (c *FTPClient) resolvePath(p string) string {
 	if c.base != "" {
-		return pathpkg.Join(c.base, p)
+		return JoinConfined(c.base, p)
 	}
 	if c.config.Path != "" { // not connected through Connect (unit use): the configured path, made absolute
-		return pathpkg.Join("/", c.config.Path, p)
+		return JoinConfined(pathpkg.Join("/", c.config.Path), p)
 	}
-	return p
+	return ConfineKeepForm(p)
 }
 
 // ReadFile reads a file from the FTP server
