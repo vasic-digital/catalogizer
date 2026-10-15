@@ -44,6 +44,7 @@ echo ""
 
 TOTAL_PASS=0
 TOTAL_FAIL=0
+TOTAL_BLOCKED=0
 TOTAL_ISSUES=0
 RESULTS=""
 
@@ -65,7 +66,10 @@ run_platform() {
     local LOG_FILE="$LOG_DIR/helixqa-autonomous-$PLATFORM-$TIMESTAMP.log"
     local START_TIME=$(date +%s)
 
-    if "$HELIXQA_BIN" autonomous \
+    # HelixQA exit-code contract: 0 pass, 1 FAILED (app finding),
+    # 2 BLOCKED / undetermined (never a pass, never an app failure).
+    set +e
+    "$HELIXQA_BIN" autonomous \
         --project "$PROJECT_ROOT" \
         --platforms "$PLATFORM" \
         --env "$ENV_FILE" \
@@ -75,22 +79,30 @@ run_platform() {
         --output "$OUTPUT_DIR" \
         --verbose \
         $EXTRA_ARGS \
-        2>&1 | tee "$LOG_FILE"; then
+        2>&1 | tee "$LOG_FILE"
+    local HQA_RC=${PIPESTATUS[0]}
+    set -e
 
-        local END_TIME=$(date +%s)
-        local DURATION=$(( END_TIME - START_TIME ))
-        echo ""
-        echo "[$PLATFORM] COMPLETED in ${DURATION}s"
-        RESULTS="$RESULTS\n  $PLATFORM: COMPLETED (${DURATION}s)"
-        TOTAL_PASS=$((TOTAL_PASS + 1))
-    else
-        local END_TIME=$(date +%s)
-        local DURATION=$(( END_TIME - START_TIME ))
-        echo ""
-        echo "[$PLATFORM] FAILED after ${DURATION}s"
-        RESULTS="$RESULTS\n  $PLATFORM: FAILED (${DURATION}s)"
-        TOTAL_FAIL=$((TOTAL_FAIL + 1))
-    fi
+    local END_TIME=$(date +%s)
+    local DURATION=$(( END_TIME - START_TIME ))
+    echo ""
+    case "$HQA_RC" in
+        0)
+            echo "[$PLATFORM] PASSED in ${DURATION}s"
+            RESULTS="$RESULTS\n  $PLATFORM: PASSED (${DURATION}s)"
+            TOTAL_PASS=$((TOTAL_PASS + 1))
+            ;;
+        1)
+            echo "[$PLATFORM] FAILED after ${DURATION}s (exit 1: app finding)"
+            RESULTS="$RESULTS\n  $PLATFORM: FAILED (${DURATION}s)"
+            TOTAL_FAIL=$((TOTAL_FAIL + 1))
+            ;;
+        *)
+            echo "[$PLATFORM] BLOCKED after ${DURATION}s (exit $HQA_RC: could not determine — not a pass, not an app failure)"
+            RESULTS="$RESULTS\n  $PLATFORM: BLOCKED/UNDETERMINED exit $HQA_RC (${DURATION}s)"
+            TOTAL_BLOCKED=$((TOTAL_BLOCKED + 1))
+            ;;
+    esac
 
     # Copy evidence to report directory
     local LATEST_SESSION=$(ls -td "$OUTPUT_DIR"/session-* 2>/dev/null | head -1)
@@ -127,8 +139,9 @@ echo ""
 echo "================================================================"
 echo "  HelixQA FULL QA — Summary"
 echo "================================================================"
-echo "  Completed: $TOTAL_PASS"
+echo "  Passed:    $TOTAL_PASS"
 echo "  Failed:    $TOTAL_FAIL"
+echo "  Blocked:   $TOTAL_BLOCKED (undetermined — not passes)"
 echo -e "  Results:$RESULTS"
 echo "  Finished:  $(date)"
 echo "================================================================"
@@ -140,8 +153,9 @@ cat > "$REPORT_DIR/helixqa-summary-$TIMESTAMP.md" << EOF
 | Metric | Value |
 |--------|-------|
 | Date | $(date) |
-| Platforms completed | $TOTAL_PASS |
+| Platforms passed | $TOTAL_PASS |
 | Platforms failed | $TOTAL_FAIL |
+| Platforms blocked (undetermined) | $TOTAL_BLOCKED |
 | Timeout/platform | $TIMEOUT |
 
 ## Platform Results
@@ -153,3 +167,11 @@ EOF
 
 echo ""
 echo "Full report: $REPORT_DIR/helixqa-summary-$TIMESTAMP.md"
+
+# Propagate the contract: a finding outranks could-not-determine.
+if [ "$TOTAL_FAIL" -gt 0 ]; then
+    exit 1
+elif [ "$TOTAL_BLOCKED" -gt 0 ]; then
+    exit 2
+fi
+exit 0

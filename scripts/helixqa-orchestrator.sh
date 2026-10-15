@@ -311,10 +311,25 @@ run_helixqa() {
     local helixqa_rc=${PIPESTATUS[0]}
     set +o pipefail
 
-    if [[ $helixqa_rc -ne 0 ]]; then
-        log_error "✗ HelixQA failed (exit code $helixqa_rc)"
-        return 1
-    fi
+    # HelixQA exit-code contract (docs/vision/NO_BLUFF_VISION.md):
+    #   0 = every verdict PASSED, 1 = a FINDING (the app failed),
+    #   2 = BLOCKED / could not determine (never a pass, never an app
+    #   failure), 70 = HelixQA internal panic (not a verdict about the app).
+    case "$helixqa_rc" in
+        0) ;;
+        1)
+            log_error "✗ HelixQA reported a FAILURE (exit 1): the app failed a check"
+            return 1
+            ;;
+        2)
+            log_warn "⚠ HelixQA could NOT DETERMINE the verdict (exit 2: blocked / not executed) — NOT a pass, NOT an app failure"
+            return 2
+            ;;
+        *)
+            log_error "✗ HelixQA internal error (exit $helixqa_rc) — no verdict about the app; treated as undetermined"
+            return 2
+            ;;
+    esac
 
     # Additional guard: even a zero exit code is suspect if the
     # session report never reached Analyze phase. Scan the
@@ -412,8 +427,15 @@ main() {
     connect_devices
     install_apks
     start_monitoring
-    run_helixqa
+    # Capture the three-valued HelixQA outcome instead of letting `set -e`
+    # abort before the report: the report is still written, then the
+    # outcome becomes this script's exit code.
+    local helixqa_status=0
+    run_helixqa || helixqa_status=$?
     generate_report
+    if [[ $helixqa_status -ne 0 ]]; then
+        exit "$helixqa_status"
+    fi
     
     log_step "=== Orchestration Complete ==="
     log_info "Session directory: $SESSION_DIR"
