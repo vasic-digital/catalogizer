@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 8 (WF9 pin re-review minor findings G1-G7: owner-record citations corrected, anchor counts and catalogue-staleness stated, both Sonnet-fallback flags named, Known Conflicts preamble covers items 17 and 18) |
+| Revision | 9 (canon pin move 1c89813a -> 94b8836, helixconstitution-v70-1: new §11.4.277 and §11.4.278; clause (E) of §11.4.230 and §11.4.235; the §11.4.141 context-budget extension; the §11.4.54 and §11.4.248 per-project ticket-key extension; the upstream index and groups confirmed fresh (the lag fix landed at or before `1c89813a`); Known Conflicts items 8, 14 and 18 corrected, items 19 to 24 added; version 2.3.0) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-06T19:37:16Z |
-| Status | active, BINDING; the 2026-10-06 canon pin move (constitution version 2.2.0) is held for its G-PIN review (WP-07 T084) and owner ratification (T081a) |
+| Last modified | 2026-10-20T16:50:32Z |
+| Status | active, BINDING; the canon pin move to `94b8836` was applied on the owner's 2026-10-20 instruction to bring this layer to the latest canon (independently reviewed the same day by an Opus subagent dispatched through the Agent tool, whose effort setting is not settable there and is recorded as unverified; round 1 returned NO-GO with 0 blocking and 3 important findings, all fixed in this change; the owner instruction is the 2026-10-20 session request, with no request-history record verified); the project's own WP-07 pin-move checkpoints (T084 G-PIN review record, T081a owner ratification record, `specs/001-full-project-audit-remediation/tasks.md`) are OPEN and are not created by this change |
 | Binds | the Catalogizer Spec Kit layer, together with `.specify/memory/constitution-appendix.md` |
 
 This is the Spec Kit governance layer for Catalogizer. It **incorporates** the Helix Universal
@@ -17,7 +17,7 @@ It extends them and never weakens them.
 this document > root `CONSTITUTION.md` / `CLAUDE.md` / `AGENTS.md` > module `CLAUDE.md` /
 `AGENTS.md`. A project or module rule MAY tighten a canon rule and MUST NOT weaken it.
 
-**Completeness model.** The canon is 11,900 lines (about 1.85 MB), so it is incorporated in four
+**Completeness model.** The canon is 12,149 lines (about 2.06 MB), so it is incorporated in four
 layers rather than copied verbatim, which would breach its own token-efficiency (§11.4.141) and
 no-duplicate (§11.4.227) rules:
 
@@ -25,12 +25,13 @@ no-duplicate (§11.4.227) rules:
    anchor's text, its gate names and its "no escape hatch" list. Nothing here narrows that.
 2. **Stated here.** The principles, the digest of §1–§12, the project overrides, the technology
    and the known conflicts are written out below.
-3. **Enumerated here.** The 283 anchors the canon's machine index lists are in the Anchor Catalogue,
-   generated from that index, so none of them can be missed or mis-transcribed; the canon has 284
-   anchors at this pin and the index lacks §11.4.276 (Known Conflicts item 18), which is stated in
-   the appendix only.
+3. **Enumerated here.** The 288 anchors the canon's machine index lists are in the Anchor Catalogue,
+   generated from that index, so none of them can be missed or mis-transcribed. The index is fresh
+   at this pin: it records the sha256 of the pinned `Constitution.md` and lists §11.4.276 to
+   §11.4.278 (Known Conflicts item 18).
 4. **Ported in the binding appendix.** `.specify/memory/constitution-appendix.md` (about 1 MB)
-   states the operative rules of every anchor of the canon (284 at this pin: 283 from the index plus §11.4.276; every MUST clause, lettered clause,
+   states the operative rules of every anchor of the canon (285 canon block-starts at this pin, one
+   digest each; every MUST clause, lettered clause,
    gate name, no-escape-hatch flag and honest boundary) and every project and module rule. It is
    part of this constitution and binds with it. It is a separate file only because Spec Kit loads
    the main file on every command; Spec Kit commands MUST read the appendix when a plan, task or
@@ -40,8 +41,8 @@ Where a digest here or in the appendix is shorter than canon, canon governs. Rea
 on it: `grep -n '§11\.4\.<N> —' constitution/Constitution.md`.
 
 **Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `constitution` at commit
-`1c89813a86c313ddf3064bdc4e9bb192d171b211`; `Constitution.md` sha256
-`95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e`, identical to the hash
+`94b8836731939dccbd537e6671db184e9f658ba5`; `Constitution.md` sha256
+`1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56`, identical to the hash
 recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
 
 ## Core Principles
@@ -65,6 +66,15 @@ shipping is that users can use the feature, not that tests pass (§7.1, §8, §1
   a control needle proves the instrument can see (§11.4.201, §11.4.273).
 - Every user-interface interaction MUST be seen and understood by OCR, vision or screenshot proof
   before and after; blind typing is forbidden (§11.4.193).
+- A model whose answer feeds a verdict, a gate, a recording check, a translation, a review or any
+  user-visible output (a Vision model reading screens above all) MUST NOT be used until it holds a
+  fresh deterministic known-answer validation for its exact identity on the host that uses it.
+  Models are acquired and run only through the vendored `llmctl`; decision-bearing use runs with
+  `LLMCTL_VALIDATE_STRICT=1` and gates on `llmctl require-validated <profile>`; a wrong answer is a
+  model or runtime defect to investigate, never a reason to retry, re-seed or loosen a threshold
+  (§11.4.277). A deterministic oracle (accessibility tree, DOM, OCR, template) outranks the model; the model
+  decides alone only where none exists, marked `model-decided` and needing a corroborating second
+  angle (§11.4.117, §11.4.278(F)).
 - Tests, Challenges and HelixQA sessions are bound equally.
 
 *Rationale:* This is the project's prime directive. The project reached a state where all tests
@@ -86,6 +96,12 @@ reproduction's exact sequence (§11.4.146, §11.4.199).
   Challenge and HelixQA tests MUST exercise the real system (§11.4.27).
 - Every supported test type MUST cover the whole codebase, with HelixQA and Challenges fully
   incorporated (§11.4.27, §11.4.169, §11.4.25).
+- Every user-interface surface the project ships (web, desktop, installer wizard, Android, Android
+  TV and the Website) MUST be covered by HelixQA full suites over a closed, enumerated
+  screen-and-flow catalogue, read by a validated Vision model against expected-content
+  specifications written before the run, with no skip flags and a per-frame evidence path for every
+  verdict (§11.4.278). Canon marks §11.4.278 PROPOSED with its end-to-end evidence pending; the
+  adoption state is Known Conflicts item 21.
 - Code coverage MUST be at least 85% with a target near 100%, bash included. Coverage is necessary
   and never sufficient (§11.4.224). The root rule requires 100% across all ten test types.
 - `go vet ./...` MUST pass with zero warnings and no suppressions. At least 60% of assertions
@@ -119,10 +135,10 @@ edit, MUST pass an independent review before acceptance, commit or build (§11.4
   answer is OA-2026-10-05-23 (`owner-decisions.yaml` line 1216, relayed by the conductor, not a
   verbatim owner quotation): "run independent reviews through the Workflow path with Opus xhigh
   and record effort". Neither says "no fallback" or "blocked". Status: an OPEN canon conflict
-  (Known Conflicts item 17, owner question OD-WP07-SONNET-FALLBACK, default: follow canon). The
-  generated Anchor Catalogue titles of §11.4.209 and §11.4.211 below are the machine index's
-  pre-amendment titles ("ALWAYS ... no fallback model"): they are stale index lag (Known
-  Conflicts item 18), and this principle controls. Interim practice, an agent's interim choice and
+  (Known Conflicts item 17, owner question OD-WP07-SONNET-FALLBACK, default: follow canon). At the
+  `a71b1767` pin the generated Anchor Catalogue titles of §11.4.209 and §11.4.211 were the machine
+  index's pre-amendment titles ("ALWAYS ... no fallback model"); at the current pin the index is
+  fresh and the titles are the amended ones (Known Conflicts item 18). Interim practice, an agent's interim choice and
   NOT an owner decision: follow canon, Opus at `xhigh` first and the Sonnet fallback only on a
   captured Opus-unavailability fact, recorded with model and effort. The same pin binds
   merge-conflict resolution (§11.4.209, §11.4.211).
@@ -157,6 +173,11 @@ Every build of every component MUST run inside a build container provisioned thr
 - Build and deploy begin the moment source fixes are proven correct; test-side hardening runs in
   parallel and never gates the build. Every deploy increments the version, and every manual-QA
   deploy opens a new development cycle (§11.4.235).
+- Where the project has a device-targeted flash or deploy entry point, each completed group's image
+  is built in the background, flashed to every available (enumerated, eligible, leased) target and
+  live-verified with a sanity suite plus every contained item, and each deployed image's version is
+  incremented by decimal carry if the declared scheme is positional-digit (§11.4.235(E)). Whether
+  and how this binds Catalogizer, and which version scheme it declares, is Known Conflicts item 19.
 
 *Rationale:* Reproducibility, host isolation and capacity offload. A missing build capability is
 added by extending the containers submodule, not by an ad-hoc host build.
@@ -215,8 +236,10 @@ Work MUST be resumable from any agent at any moment, and no request or requireme
   (§11.4.210, §11.4.208). Reports become fully populated workable items synced to the database,
   the documents and every external tracker (§11.4.202, §11.4.213).
 - Workable items live in the tracked SQLite single source of truth with status, type and a stable
-  ATM-NNN id. A returning defect reopens its item and is never re-minted (§11.4.93, §11.4.95,
-  §11.4.15, §11.4.16, §11.4.54, §11.4.214).
+  `<KEY>-NNN` id. Canon writes `ATM-NNN` as the notation for the project's own key; this project's
+  declared key is `CAT` (`.helix/reporting.yaml` `id_prefix`, owner decision ODG-11; canon §11.4.54
+  extension; Known Conflicts item 24). A returning defect reopens its item and is never re-minted
+  (§11.4.93, §11.4.95, §11.4.15, §11.4.16, §11.4.54, §11.4.214).
 - Research and kicked-off work MUST be driven to completion and wiring, or explicitly closed
   with evidence; it is never left in the backlog (§11.4.197).
 - The live in-session task tracker MUST always match the real work state (§11.4.229).
@@ -239,6 +262,12 @@ Automation is necessary and never the last word (§11.4.185, §8).
   a monotone-decreasing audit ratchet (§11.4.261, §11.4.260).
 - Fixes are verified at four layers with a runtime signature on a clean artifact (§11.4.108,
   §11.4.139). Deferrals are documented with concrete blockers, never "fix next cycle" (§8).
+- The first QA deliverable of a scope is delivered quickly and is always labelled as quick: it
+  carries a machine-computed hardening status (`delivered-unhardened`,
+  `delivered-hardened-awaiting-qa` or `production-ready`) with its open hardening ledger, which is
+  tracked to production readiness. Speed is never bought with weaker evidence, a quick deliverable
+  is never announced as production ready, and "quick" is a trend measurement that never gates
+  (§11.4.230(E)). The consumer data this needs is Known Conflicts item 20.
 
 *Rationale:* The operator is the first user-layer oracle most claims ever meet unless the pipeline
 guarantees otherwise.
@@ -286,7 +315,7 @@ full; the digests below state the operative rules.
 
 ### §11.4 End-User Quality Covenant
 
-§11.4 and its anchors §11.4.1 to §11.4.275 are the covenant that a PASS means the feature works for
+§11.4 and its anchors §11.4.1 to §11.4.278 are the covenant that a PASS means the feature works for
 the end user. Every anchor is listed in the Anchor Catalogue with its group and title; the
 operative text is in `Constitution.md` and in `groups/*.md`. The ten rules the index file lists as
 binding unconditionally before anything else map to this document as follows: anti-bluff (§11.4,
@@ -329,12 +358,14 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
 | Surface | Contents (in `constitution/`) |
 |---------|------------------------------------------|
 | Groups | 12 topic groups under `groups/` (see the Anchor Catalogue) |
-| Index | `constitution_index.yaml`, machine-readable list of the 283 anchors it knows (it lacks §11.4.276 at this pin) |
+| Index | `constitution_index.yaml`, machine-readable list of the 288 ids it knows; fresh at this pin (it records the sha256 of the pinned `Constitution.md` and lists §11.4.276 to §11.4.278) |
 | Action prefixes | `actions/registry.yaml`: BACKGROUND, REMINDER, CRITICAL, IMPORTANT, NOTE, BUG, TASK, ISSUE, FEATURE and sub-system shortcuts, in the six grammar forms of §11.4.140 and §11.4.202 |
 | Model tiering | `actions/subagent_tiering.yaml`, `scripts/subagent_tier.sh` (see Known Conflicts, item 3) |
 | Skills | `action-prefix-system`, `media-validator`, `multitrack`, `reporting-workable-items`, `scheduled-work-queue`, `session-sync`, `skill-catalog`, `workable-item-lifecycle` |
 | MCP and plugins | `mcp/media-validator-mcp.json`, `mcp/scheduled-work-mcp.json`; plugins `helix`, `scheduled-work` |
 | Script families | `scripts/`: gates, hooks, multitrack, codegraph, lumen, sonarqube, gitleaks, trivy, zap, hawkscan, translation, workable-items, doc_integrity, fastcycle, reporting, token_efficiency, validation, skill_activation and more |
+| Progressive disclosure | `progressive/`: a deterministic splitter, a lean core, a slim catalog, one file per clause, a local MCP server (search, load, list, verify) and validators; canon's own `progressive/REPORT.md` records open items (no baseline tag, no independent review, no fresh-clone sign-off). This layer does not depend on it |
+| Vendored model manager | `submodules/llmctl` (tag `v3.2.2`, commit `5c3dea57`), a depth-1 hub entry that MUST NOT be initialised recursively (§11.4.277(B), `recursive_init: false`); see Known Conflicts item 21 |
 | Pull hook | `scripts/post_update_hook.sh`, run after every constitution pull (§11.4.26, §11.4.32, §11.4.164) |
 | Multi-upstream | `install_upstreams.sh`, `Upstreams/` |
 | Path discovery | `find_constitution.sh` |
@@ -535,6 +566,10 @@ This project follows **specification-driven development** using the superspec pi
 - Release tags are project-prefixed and mirrored on owned submodules (§4, §11.4.151).
 - Operator action prefixes (`BUG ::`, `TASK ::`, `ISSUE ::`, `FEATURE ::`, `NOTE ::` and the rest)
   are recognized and create tracked items (§11.4.140, §11.4.202, §11.4.213).
+- Always-loaded agent context is budgeted: a declared byte ceiling per always-loaded file,
+  progressive disclosure instead of inlined governance text, one task per session with no
+  mid-session account or provider switch, and routine work on the default model tier
+  (§11.4.141 extension, M2 to M9; Known Conflicts items 22 and 23).
 - New rules are classified universal or project-specific on landing (§11.4.17).
 
 ## Quality Gates
@@ -550,6 +585,10 @@ This project follows **specification-driven development** using the superspec pi
 - [x] **Stress and chaos**: REQUIRED for concurrency and protocol paths (§11.4.85, §11.4.253).
 - [x] **End-to-end, Challenges and HelixQA**: REQUIRED for user-visible behaviour, with captured
   evidence and, for video or audio, validated recordings (§11.4.158 to §11.4.160, §11.4.163).
+  Full-IA UI QA read by a validated Vision model is §11.4.278 (PROPOSED in canon; Known Conflicts
+  item 21).
+- [x] **Model validation**: REQUIRED before any model-fed verdict: known-answer validation through
+  the vendored `llmctl`, `LLMCTL_VALIDATE_STRICT=1`, `llmctl require-validated` (§11.4.277).
 - [x] **Visual proof**: REQUIRED for every user interface: host-rendered pixels per screen, state and
   theme, validated by golden diff plus an OCR oracle (§11.4.170), using OpenDesign tokens and the
   design rules of §11.4.162 and §11.4.216 to §11.4.223.
@@ -577,15 +616,18 @@ This project follows **specification-driven development** using the superspec pi
 - [ ] README badge row, production-readiness tracker and claim-vs-reality ledger current
   (§11.4.259, §11.4.260, §11.4.266)
 - [ ] No force-push, no rewritten history, no secret in the diff, no increase in the zero-findings ledger (§11.4.261)
+- [ ] Every QA deliverable announces its hardening status, pending field and open-ledger counts, and
+  is not described as production ready unless the status says so (§11.4.230(E))
+- [ ] Every model that fed a verdict held a fresh `llmctl require-validated` PASS for the host that ran it (§11.4.277)
 
 ## Anchor Catalogue
 
-All 286 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
+All 288 anchors the machine index lists, grouped as the canon groups them. Each line is the anchor id
 and its title (long titles are shortened with an ellipsis). The operative rules of each anchor are
 in `.specify/memory/constitution-appendix.md`, Part 1, in the same order. Anchors
 numbered 62, 64, 175 and 203 to 206 do not exist in canon and are cited-but-undefined elsewhere.
 
-### Anti-bluff and evidence (33 anchors)
+### Anti-bluff and evidence (34 anchors)
 
 Canon: `constitution/groups/anti-bluff-and-evidence.md`
 
@@ -622,6 +664,7 @@ Canon: `constitution/groups/anti-bluff-and-evidence.md`
 - **§11.4.269** — Critic/consensus advisory-only ban AT THE EVIDENCE-ACCEPTANCE SEAM: an ungoverned confidence/consensus signal MAY inform but MUST NEVER substitute for a receipt or adjudicate producer-verifier …
 - **§11.4.270** — Dependency-existence-verdict register: every proposed dependency carries a closed-set existence verdict {VERIFIED, AMBIGUOUS, UNVERIFIED} with citable evidence; adoption is gated behind resolution …
 - **§11.4.271** — Waiver mechanism: the strict FORMALIZATION of allow-with-tracked-debt (unifying §11.4.234(D)'s recorded-deferral, §11.4.236(4)'s explicit-operator-override, and §11.4.248(A)'s deadline-bound …
+- **§11.4.277** — llmctl model validation gate: every model run through llmctl (Vision included) by a project or any of its components / services / submodules (recursively) passes deterministic known-answer validation …
 
 ### Code review and quality (12 anchors)
 
@@ -845,7 +888,7 @@ Canon: `constitution/groups/project-lifecycle-and-release.md`
 - **§11.4.211** — Merge-conflict resolution during main→feature/product/flavor merges MUST run on the Opus model at xhigh effort as PRIMARY substrate, with a genuine-unavailability Sonnet fallback — no Fable (User …
 - **§11.4.213** — FEATURE research-scheduling directive: recognized via all §11.4.140 forms, SCHEDULES (never synchronously executes) a deep, enterprise-grade research + implementation-planning effort as a tracked …
 - **§11.4.229** — Live in-session task/todo tracker MUST always be up to date and fully in sync with the real work state — never stale, never showing completed work as pending nor pending as done (User mandate, …
-- **§11.4.235** — Build-and-deploy the moment source fixes are proven-correct (test-side hardening is a parallel stage, never a build gate) + post-deploy version increment (operator mandate, 2026-07-27)
+- **§11.4.235** — Build-and-deploy the moment source fixes are proven-correct (test-side hardening is a parallel stage, never a build gate) + post-deploy version increment + per-group flash-every-eligible-target live …
 - **§11.4.236** — QA-deploy-readiness gate: no manual-QA hand-off until the mandated validation produced a candidate-fingerprinted PASS verdict; a blocker MUST bind to a seam, never prose (research-derived, 2026-07-31)
 - **§11.4.260** — Cutting-edge enterprise quality + production-deployment readiness: every work product is built for production deployment, maximal stability, zero nasty surprises, and enterprise-grade robustness — …
 - **§11.4.261** — Zero-shortcomings / zero-gaps / zero-weak-spots / zero-danger-zones invariant with a mechanical audit ratchet: at all times the project holds exactly zero of these; every finding is closed OR …
@@ -854,7 +897,7 @@ Canon: `constitution/groups/project-lifecycle-and-release.md`
 - **§11.4.266** — Claim-vs-reality ledger: every ADVERTISED capability is a row, typed from the closed bluff-type vocabulary, and a capability with no passing challenge is a release blocker (research-derived, …
 - **§11.4.267** — Shared attempt record + converge-on-evidence / escalate-on-stall: a failed approach is never silently retried, and a non-converging loop is itself a signal (research-derived, 2026-08-20)
 
-### Testing and TDD (40 anchors)
+### Testing and TDD (41 anchors)
 
 Canon: `constitution/groups/testing-and-tdd.md`
 
@@ -898,6 +941,7 @@ Canon: `constitution/groups/testing-and-tdd.md`
 - **§11.4.248** — Flaky-test quarantine + protected-regression-spec gate via `[PROTECTED-SPEC: ATM-NNN]` tag + CODEOWNERS required reviewer (operator decision, 2026-08-15)
 - **§11.4.249** — Producer ≠ oracle ≠ gate ≠ verifier + flight recorder (research-derived, 2026-08-15)
 - **§11.4.250** — Heuristic-tower signals a primitive defect: when N heuristic layers stack to compensate, the primitive is broken (research-derived, 2026-08-15)
+- **§11.4.278** — Mandatory HelixQA UI QA with Vision eyes: every project with a UI on ANY platform or OS passes HelixQA full suites over all screens, flows, use cases and edge cases, driven and read by a Vision model …
 
 ### Translation and localization (3 anchors)
 
@@ -935,11 +979,15 @@ Canon: `constitution/groups/workable-items-and-tracking.md`
 
 These were found while reading every source in full. Canon wins on each. Items marked
 `UNCONFIRMED` could not be verified from this repository and are recorded rather than assumed
-(§11.4.6). Items 2 to 4, 7, 11 and 13 carry a mixed FIXED/OPEN status inline; the others are: 1 DECIDED (the
+(§11.4.6). Items 2 to 4, 7, 11, 13 and 21 carry a mixed FIXED/OPEN status inline; the others are: 1 DECIDED (the
 stricter project limit governs), 5 DECIDED (operator), 6 OPEN, 8 NOTE (informational), 9 DECIDED
 (operator, per-application phase-in), 10 OPEN, 12 DECIDED (workflow narrowed), 14 NOTE (state at
-commit time), 15 DECIDED (operator), 16 DECIDED (operator), 17 OPEN (owner decision: the canon
-Sonnet fallback), 18 NOTE (upstream index and groups lag, reported not fixed). Statuses: FIXED in this change
+commit time, corrected 2026-10-20), 15 DECIDED (operator), 16 DECIDED (operator), 17 OPEN (owner
+decision: the canon Sonnet fallback), 18 RESOLVED (the upstream index and groups lag, fixed in canon
+at or before `1c89813a`; history kept), 19 OPEN (§11.4.235(E) binding and version scheme), 20 OPEN
+(§11.4.230(E) consumer data), 21 OPEN (§11.4.277 and §11.4.278 adoption; mixed), 22 OPEN (§11.4.141
+extension: no declared always-loaded budget), 23 NOTE (a label collision inside canon's §11.4.141), 24
+NOTE (the ticket-id key `CAT` is now canon-sanctioned). Statuses: FIXED in this change
 (main-repo files only), DECIDED (an autonomous reversible default under §11.4.101 where no
 "operator" is named, otherwise a decision the operator gave), OPEN (an operator decision or a
 follow-up), NOTE (informational).
@@ -996,11 +1044,10 @@ follow-up), NOTE (informational).
    exists, but no `scripts/commit_all.sh` or `commit-push-all.sh` was found (**OPEN**).
    `docs/CONTINUATION.md` exists.
 8. **Host-level index lag.** The host index file loaded by the agent lists anchors only through
-   §11.4.271; the pinned canon defines through §11.4.276 (§11.4.272 to §11.4.276 are real). The
+   §11.4.271; the pinned canon defines through §11.4.278 (§11.4.272 to §11.4.278 are real). The
    Anchor Catalogue above is generated from the canon's machine index `constitution_index.yaml`,
-   and at the current pin that index itself lags `Constitution.md` (see item 18): the catalogue
-   lists the 283 anchors the index knows and omits §11.4.276, whose operative digest is in
-   `.specify/memory/constitution-appendix.md`, Part 1. `Constitution.md` is authoritative.
+   which is fresh at the current pin (see item 18) and lists all 288 ids, §11.4.276 to §11.4.278
+   included. `Constitution.md` is authoritative.
 9. **Owed operator decision.** Brownfield adoption of the 85% coverage floor (immediate hard
    floor, one-time monotone ratchet, per-corpus phase-in, or changed-code-only with a deadline)
    is the operator's call under §11.4.224 and §11.4.66. **DECIDED by the operator (2026-10-03):**
@@ -1032,16 +1079,19 @@ follow-up), NOTE (informational).
     describes a `kotlin.daemon.jvmargs` line that does not exist in its `gradle.properties`;
     `catalog-web` uses TypeScript 4.9 and `catalogizer-api-client` uses TypeScript 5. Each needs
     an operator decision on the intended value.
-14. **Repository state at commit time (verified with `git ls-remote` and `git status`).** The
-    `constitution` submodule's remote is at least 6 commits ahead of the pin as of the last fetch
-    (those 6 change hook and fastcycle tooling, not `Constitution.md`, `constitution_index.yaml` or
-    `groups/`); later remote commits are `UNCONFIRMED` because the remote keeps moving. The pin is
-    deliberately not moved here. `submodules/websocket_client_ts` had a local `github` remote with the wrong owner
-    (`nickkvasic`, which returns 404 even when authenticated as `milos85vasic`; `.gitmodules` and every
-    other owned submodule use `vasic-digital`). Found by systematic debugging and **FIXED** by
-    pointing the remote at `vasic-digital/WebSocket-Client-TS` (local git configuration, not tracked);
-    `git ls-remote github` now returns the same commit as the local HEAD (6e624db0). `submodules/helix_qa/tools/opensource/docling` is a vendored
-    third-party repository with one modified data file; it is not committed or pushed.
+14. **Repository state at commit time (verified with `git ls-remote` and `git status`).** First
+    recorded 2026-10-06 and corrected 2026-10-20. At the correction, `git fetch --all` inside
+    `constitution/` showed all eight constitution remotes (`gitflic`, `github`, `gitlab`,
+    `gitverse`, `origin`, `upstream`, `vasic_digital_github`, `vasic_digital_gitlab`) at `94b8836`,
+    the pin, with 0 commits ahead and 0 behind on every remote, so the pin is the live canon tip;
+    this replaces the 2026-10-06 statement that the remote was at least 6 commits ahead. The
+    remaining 2026-10-06 observations are historical and were not re-verified on 2026-10-20
+    (UNCONFIRMED now): `submodules/websocket_client_ts` had a local `github` remote with the wrong
+    owner (`nickkvasic`, a 404), found by systematic debugging and **FIXED** by pointing the remote at
+    `vasic-digital/WebSocket-Client-TS` (local git configuration, not tracked), after which
+    `git ls-remote github` returned the local HEAD (6e624db0); and
+    `submodules/helix_qa/tools/opensource/docling` is a vendored third-party repository with one
+    modified data file that is not committed or pushed.
 15. **Branch policy for spec 001.** The operator instructed (2026-10-03) that all work is done on
     the main branch of the main repository and of every submodule. This is a decision for the audit
     and remediation work and overrides the default branch-per-feature convention of §11.4.195 for
@@ -1074,17 +1124,121 @@ follow-up), NOTE (informational).
     owner rule: follow canon (Opus `xhigh` first, Sonnet fallback only on a captured Opus
     unavailability fact, recorded with model and effort). Recorded as OD-WP07-SONNET-FALLBACK in
     `decisions/owner-request-list.md`.
-18. **Upstream index and groups lag at `a71b1767` (reported, not fixed here).** At the new pin the
-    machine index `constitution_index.yaml` is byte-identical to the one at the old pin: it records
-    the `Constitution.md` hash of the old canon and lacks §11.4.276, and its generator guard
-    stops with `anchor 11.4.276 matches no group rule`. The `groups/*.md` files also lack the
-    amendments to §11.4.134, §11.4.209, §11.4.211, §11.4.230, §11.4.231, §11.4.235, §11.4.240 and
-    §11.4.267 and the whole of §11.4.276. The appendix digests of those anchors were written from
-    `Constitution.md` (the pinned canon), not from the groups files. Consequence for this file: the
-    generated Anchor Catalogue lists the index's titles, so the entries for §11.4.209 and §11.4.211
-    still read "ALWAYS ... no fallback model" (the pre-amendment titles) and §11.4.276 is not listed
-    at all; those entries are stale index lag, and Principle III and item 17 control over them. Evidence:
-    `specs/001-full-project-audit-remediation/evidence/wp07/pin-upstream-findings.md`.
+    Re-verified at `94b8836` (2026-10-20): the §11.4.209 and §11.4.211 blocks are byte-identical to
+    those at the previous pin `1c89813a`, so this item is unchanged.
+18. **Upstream index and groups lag (RESOLVED at or before `1c89813a`; history kept).** At the `a71b1767` pin the
+    machine index `constitution_index.yaml` was byte-identical to the one at the previous pin, recorded the
+    `Constitution.md` hash of the old canon, lacked §11.4.276, and its generator guard stopped with
+    `anchor 11.4.276 matches no group rule`; the `groups/*.md` files also lacked the amendments to
+    §11.4.134, §11.4.209, §11.4.211, §11.4.230, §11.4.231, §11.4.235, §11.4.240 and §11.4.267 and the
+    whole of §11.4.276, so the appendix digests of those anchors had to be written from
+    `Constitution.md` line ranges, and the generated Anchor Catalogue showed the pre-amendment titles of
+    §11.4.209 and §11.4.211. Evidence for that state:
+    `specs/001-full-project-audit-remediation/evidence/wp07/pin-upstream-findings.md`. **It is
+    fixed in canon.** Revision 8 of this file still stated the lag at `1c89813a`, but there the index already had
+    286 ids with a matching sha256 and `groups/code-review-and-quality.md` already held §11.4.276, so that
+    statement was stale at its own pin. Re-measured at `94b8836` on 2026-10-20: the index records `source_sha256`
+    `1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56`, equal to the sha256 of
+    `Constitution.md`, and lists 288 ids including §11.4.276 to §11.4.278; and all 285 canon
+    block-starts are byte-identical to their `groups/*.md` block (a block-by-block comparison with the
+    heading marker normalised). The catalogue titles of §11.4.209 and §11.4.211 are therefore the
+    amended ones, and this change retired the `Constitution.md` line-range workaround: every appendix
+    Source line now cites `groups/*.md` at this pin. Not a defect: the index also lists the ids §1.1
+    and §2.1 (headed without a `§` in canon, digested in this file's §1–§10 section) and §11.4.184(I)
+    (its digest continues §11.4.184).
+
+19. **§11.4.235(E): flash-every-target and decimal-carry versions; binding and scheme undeclared (found
+    by the 2026-10-20 pin move; OPEN, owner decision).** Canon clause (E) obliges a consumer that has
+    an official flash or deploy entry point for a device-targeted artifact, or a bound deploy ledger,
+    to build each completed group's image in the background, flash it to every available (enumerated,
+    eligible, leased) target, live-verify a sanity suite plus every contained item, and increment
+    every deployed image's version by decimal carry where its declared scheme is positional-digit
+    (E.5). Measured here on 2026-10-20: the components carry SemVer-style ids (`catalog-web` and
+    `catalogizer-desktop` 2.4.0, `catalogizer-android` versionName 2.4.0 with versionCode 6,
+    `catalogizer-api-client` 1.0.0, `versions.json` global 2.3.0 build 25), and a search of the
+    repository outside the constitution tree, `submodules` and `.specify` found no `version_scheme`
+    or deploy-ledger declaration (the one textual hit is an unrelated field of a test mock server,
+    `catalog-api/internal/tests/media_recognition_mock_servers.go:1087`). Device install paths DO
+    exist: `scripts/run-helixqa-android.sh` enumerates `adb devices` (line 61) and runs
+    `adb -s "$serial" install -r "$APK"` (line 89), and `scripts/build-test-release.sh:369` runs an
+    `adb ... install`; none is declared as the (E.2) device-listing command. If these are device-targeted
+    deploy entry points, canon makes the missing device-listing declaration a CONFIG ERROR and the
+    no-ledger SKIP a CONFIG ERROR at the release seam. Whether they count is UNCONFIRMED, so this
+    item does NOT treat the SKIP as safe. The SemVer exemption exists only through an explicit
+    declaration backed by a recorded §11.4.66 operator decision naming the consumer, and none exists.
+    **OPEN owner questions:** (1) which version scheme Catalogizer declares (SemVer, positional-digit
+    or other); (2) whether the install paths above make the device legs binding, and if so the
+    device-listing command and the eligibility map. Interim practice, an agent's reversible default
+    under §11.4.101 and not an owner decision: no version id is rewritten; the clause (B) increment
+    on every deploy applies; the device legs are to be treated as POSSIBLY BOUND, which means a
+    deploy of a completed group is not reported as live-verified without per-device evidence.
+20. **§11.4.230(E): hardening status and ledger, consumer data owed (found 2026-10-20; OPEN).** Clause
+    (E) requires every QA hand-off to carry a machine-computed hardening status, its open ledger and
+    the counts per class and disposition, fed by consumer-declared DATA: the scope definition, the
+    stall bound N (a bound scope with no declared N is a CONFIG ERROR), a keying class for each
+    owning store (any not-fingerprint-bound store labelled as such), the polish-item marker, and the
+    badge and report locations. A search of the repository outside the constitution tree,
+    `submodules` and `.specify` (specs included) found no file using the terms `delivered-unhardened`, `hardening ledger` or `hardening_status`
+    (measured 2026-10-20), so none of this exists here yet. Canon registers the six gates as tracked
+    deferrals (OWED-GATE-115 to OWED-GATE-120), so nothing is enforced mechanically, but the labelling
+    duty applies from the pin. Interim practice (reversible, §11.4.101): state each QA deliverable's
+    hardening state and open hardening items in its hand-off note, and do not describe a quick
+    deliverable as production ready. **OPEN:** declare N and the store declarations as hand-off data.
+21. **§11.4.277 and §11.4.278 adoption state (found 2026-10-20; mixed, OPEN).** (a) §11.4.278 is PROPOSED
+    in canon with its end-to-end evidence pending. The surfaces it would cover here are
+    `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`,
+    `catalogizer-androidtv` and the Website (`catalogizer-api-client` has no UI); none of the consumer
+    DATA it requires (catalogue and specification paths, capture mechanism per platform, OCR engine,
+    evidence root) is declared yet. OPEN. (b) Vision host state, measured 2026-10-20 with the read-only
+    `scripts/llmctl/llmctl_vision_ensure.sh --json`: state `GATED`, exit 4, "host tier below-minimum",
+    not started. No Vision model can be validated on this host, so every vision-dependent check is
+    `not_validated` (§11.4.277(A), §11.4.278(D)); the choice of how to proceed is the pending owner
+    decision recorded in `docs/requests/background_queue.md` (BG-LLMCTL-001). (c) Two llmctl copies: canon vendors llmctl at
+    `constitution/submodules/llmctl` (tag `v3.2.2`, commit `5c3dea57`), while `llmctl` on this host's
+    PATH resolves to a separate checkout, `/home/milosvasic/Projects/llmctl`, at `v3.2.2-55-g18b6728`
+    (it contains the pinned commit and is 55 commits past it). `llmctl_vision_ensure.sh` detects
+    `LLMCTL_BIN`, then PATH, then `submodules/helix_qa/submodules/llmctl`, and that third path does not
+    exist in this checkout; the constitution-vendored copy is not among its detection paths.
+    §11.4.277(B) requires models to be acquired and run only through the vendored llmctl and any
+    change to be a pin bump, never a local fork; whether the 55 later commits change the gate
+    semantics the clause describes is UNKNOWN (the clause describes `v3.2.2` only). OPEN owner
+    decision: point the project at the vendored `v3.2.2`, bump the canon pin, or record the
+    divergence. (d) Non-recursive hub entry: canon requires `constitution/submodules/llmctl` to be
+    initialised without `--recursive` (`recursive_init: false`), and `scripts/quick-start-phase0.sh`
+    line 237 runs `git submodule update --init --recursive` from the repository root, which descends
+    into every nested submodule, llmctl's own `constitution` included. In the current checkout
+    llmctl's nested submodules are NOT initialised (measured: every entry of
+    `git -C constitution/submodules/llmctl submodule status` begins with `-`), so nothing is violated
+    today. Two more files advise the same command in their messages: `scripts/verify_constitution_inheritance.sh:70`
+    and `scripts/meta_test_constitution_inheritance.sh:59`. OPEN: audit these three before they are run.
+22. **§11.4.141 extension: no declared always-loaded budget (found 2026-10-20; OPEN).** Canon's
+    extension requires each consumer to declare a byte ceiling per always-loaded agent file in a
+    checked-in config, enforced by a script that FAILS on a violation, a missing file or
+    `AGENTS.md`/`CLAUDE.md` divergence, with positive and negative controls (EXT-M2). Measured
+    2026-10-20: root `CLAUDE.md` 5,896 B, `AGENTS.md` 6,098 B and `GEMINI.md` 5,801 B (the root has no
+    `QWEN.md`), so the footprint is small, but no budget config or enforcing script was found (a
+    search of `.helix`, `config`, `scripts` and `docs` for `context_budget`, `context_footprint`
+    and `always_loaded` found no budget; the only `budget_bytes` hits are unrelated container
+    memory fields) and `docs/context/` does not exist. This layer's own main file is
+    about 95 KB before this change and loads on every Spec Kit command; it relies on the
+    appendix split (progressive disclosure, EXT-M3) rather than inlining the anchors. **OPEN:**
+    declare the ceilings (canon suggests roughly twice the current size) and add the script. Canon
+    registers the extension's two gates as not shipped.
+23. **A label collision inside canon's §11.4.141 (NOTE).** The extension's measures M2 to M9 re-use the
+    labels M2 to M5 that the original text of the same anchor uses for different measures (subagent
+    model-tiering, the thin index, retrieval-first, output reduction). The appendix digest writes the
+    extension's measures as EXT-M2 to EXT-M9 to keep them apart. No canon change is made here; the
+    owner of the wording is the constitution repository (§11.4.26).
+24. **The ticket-id key `CAT` is now canon-sanctioned (NOTE).** This project's key is `CAT`, declared
+    in `.helix/reporting.yaml` (`id_prefix`) by the owner's answer OA-2026-10-05-15 to question ODG-11 (2026-10-05, `owner-decisions.yaml`). The canon
+    extension of 2026-10-08 to §11.4.54 and §11.4.248 makes the key per-project DATA and reads
+    `ATM-NNN` as notation, so the project's earlier deviation from the literal `ATM` (that test's exemption E1 exempts these
+    `.specify` files from the scan and notes the deviation) is covered by canon. Canon records
+    engine work as OWED and not done: key-grammar validation at mint and validate time,
+    one-key-per-register validation, and the `atm_id` family rename (the header of that test records
+    the owner's yes of 2026-10-05 to renaming them in this project's register; the rename is outside
+    this change). The wording of the canon extension is PENDING independent review and owner sight
+    in canon.
 
 ## Governance
 
@@ -1112,4 +1266,4 @@ between a module rule and canon is recorded under Known Conflicts.
 **Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults (those not marked as operator decisions) may be
 replaced by the operator.
 
-**Version**: 2.2.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-06
+**Version**: 2.3.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-20

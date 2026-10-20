@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Revision | 4 (WF9 pin re-review minor findings: the token tool now covers every anchor id and adds the wording floor and required phrases; §11.4.230 and §11.4.209 digest wording restored from canon; owner-record citations corrected) |
+| Revision | 5 (canon pin move 1c89813a -> 94b8836, the v70+1 tip: NEW digests of §11.4.277 and §11.4.278; clause (E) added to the §11.4.230 and §11.4.235 digests; the §11.4.141 context-budget extension, the §11.4.54 and §11.4.248 per-project ticket-key extension; every Source citation re-derived from the now-synchronised `groups/*.md`; the "index and groups lag" notes retired because both are fresh at this pin) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-06T19:37:16Z |
+| Last modified | 2026-10-20T16:45:53Z |
 | Status | active, BINDING |
 | Binds | Part of the Catalogizer Constitution (`.specify/memory/constitution.md`) |
-| Canon pin | `constitution` at `1c89813a86c313ddf3064bdc4e9bb192d171b211`; `Constitution.md` sha256 `95117cf3d96e4bb144d4e4cfed4031392abd91e22d55c95e6eb5aed940238a4e` |
-| Generated from | `constitution/groups/*.md` and `constitution_index.yaml` (283 anchors; the index lags the canon at the current pin and lacks §11.4.276, so this appendix carries 284 digests, and the digests of §11.4.276 and of the 2026-10-04 and 2026-10-05 amendments are hand-written from `Constitution.md`) plus the project and module `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `CONSTITUTION.md` files |
+| Canon pin | `constitution` at `94b8836731939dccbd537e6671db184e9f658ba5`; `Constitution.md` sha256 `1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56` |
+| Generated from | `constitution/groups/*.md` and `constitution_index.yaml` (288 ids; the index records the sha256 of the pinned `Constitution.md` and lists §11.4.276 to §11.4.278, so it is fresh at this pin; all 285 canon block-starts were measured byte-identical to their `groups/*.md` block, so the digests are written from the groups; 285 digests = 285 canon block-starts) plus the project and module `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `CONSTITUTION.md` files |
 
 ## How this appendix binds
 
@@ -20,12 +20,13 @@ digest is shorter than the canon text, the canon in `constitution/Constitution.m
 `groups/*.md` governs, and a digest MUST NOT be read as weakening it. Digests were written by
 reading each canon block in full and were checked by a deterministic comparison (every `CM-*`
 gate name and every `--flag` in canon appears in the matching digest) and by independent review.
-Result at the pinned canon (`a71b1767`, measured by the tracked tool `scripts/governance/appendix_token_check.py`,
-output kept as evidence `pin-fix2-*` under `specs/001-full-project-audit-remediation/evidence/wp07`):
-284 digests, each present once (the 283 anchors of the index plus §11.4.276, which the lagging index does not list; the
-§11.4.184(I) digest continues §11.4.184); 283 canon block-starts compared, every dotted anchor id with no id excluded
-(this includes §7.1, §9.1 to §9.4 and §11.4, which an earlier version of the tool left out); 1,814 distinct per-anchor
-`CM-*` gate and `--flag` tokens checked; 0 gaps after six
+Result at the pinned canon (`94b8836`, measured on 2026-10-20 by the tracked tool `scripts/governance/appendix_token_check.py`;
+the run's summary lines are in the commit message of the pin move, and the earlier `pin-fix2-*` evidence under
+`specs/001-full-project-audit-remediation/evidence/wp07` belongs to the `a71b1767` pin):
+285 digests, each present once (one per canon block-start; the §11.4.184(I) digest continues §11.4.184); 285 canon
+block-starts compared, every dotted anchor id with no id excluded (this includes §7.1, §9.1 to §9.4 and §11.4, which an
+earlier version of the tool left out); 1,903 per-anchor `CM-*` gate and `--flag` tokens checked (the tool's
+`tokens_checked`); 0 gaps after six
 exemptions, each a carrier with a recorded reason in `scripts/governance/appendix_token_allow.tsv`:
 `CM-COVENANT-114-N-PROPAGATION` (a template placeholder), `CM-COVENANT-114-182-PROPAGATION` and
 `CM-TRACK-BRANCH-LABEL` (belong to the §11.4.182 extension that sits beside §11.4.232 in canon), `--skip-item-creation`
@@ -44,12 +45,12 @@ When the pin moves, regenerate the generated regions (`scripts/governance/regen_
 `scripts/containers/run_pinned.sh`): a non-zero exit blocks the pin commit. After an independently reviewed digest rewrite, the
 floor file is regenerated with `--write-floor`; lowering a floor row is a reviewed edit.
 
-## Part 1: Anchor operative digests (284 anchors: 283 from the index plus §11.4.276)
+## Part 1: Anchor operative digests (285 digests, one per canon block-start; the index's 288 ids add §1.1 and §2.1, digested in the constitution file's §1-§10 section, and §11.4.184(I), which continues the §11.4.184 digest)
 
-### Anti-bluff and evidence (33 anchors)
+### Anti-bluff and evidence (34 anchors)
 
 #### §7.1 — NO BLUFF: positive-evidence-only validation
-- **Source:** anti-bluff-and-evidence.md:3-36
+- **Source:** anti-bluff-and-evidence.md:3-38
 - **Rules:**
   - Every runtime test MUST satisfy ALL FIVE constraints below; a test violating any one is a bluff and is forbidden from being committed.
   - (1) Real ACTION: the test MUST invoke at least one user-visible action via a project anti-bluff helper (e.g. `ab_send_action()`); a test that records PASS without calling such a helper is automatically failed by the summary function.
@@ -203,7 +204,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.2, §11.4.3, §11.4.4, §11.4.5, §11.4.17, §11.4.25, §11.4.27
 
 #### §11.4.68 — Positive sink-side / downstream evidence mandate (User mandate, 2026-05-20)
-- **Source:** anti-bluff-and-evidence.md:379-514
+- **Source:** anti-bluff-and-evidence.md:379-516
 - **Rules:**
   - A test asserting audio or video routing PASS MUST capture and verify positive sink-side or downstream evidence; never config-only, metadata-only, or PCM-open-state-only. Fixes the failure where helpers silently SKIPped the very evidence the assertion depended on.
   - Closed enumeration; at least one MUST be captured for every audio/video routing PASS (none alone sufficient if the canonical sink/downstream is reachable): (1) sink-side codec-state (Arvus/Sonos/Yamaha/Denon/Marantz/WiSA REST API) with NON-EMPTY Codec-In-Use matching the expected codec regex during playback; empty/`<unreachable>`/`<N.E.>`/`<None>` are NOT positive evidence.
@@ -256,7 +257,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.2, §11.4.5, §11.4.6, §11.4.13, §11.4.27, §11.4.50, §11.4.52, §11.4.68, §11.4.135, §11.4.164, §11.4.201, §1.1
 
 #### §11.4.83 — docs/qa/ end-user evidence mandate (User mandate, 2026-05-22)
-- **Source:** anti-bluff-and-evidence.md:805-827
+- **Source:** anti-bluff-and-evidence.md:805-829
 - **Rules:**
   - Every feature that ships MUST carry a recorded end-to-end communication transcript plus attached materials (screenshots, request/response payloads, audio, file uploads) committed under `docs/qa/<run-id>/`, one directory per feature run; a feature with no QA transcript is itself a §11.4/§107 PASS-bluff.
   - (1) Every consuming project MUST maintain a `docs/qa/` tree (no exception); each new feature run lands under `docs/qa/<run-id>/` where run-id is monotonic + greppable (timestamp, HRD-NNN, ATM-NNN, or other workable-item id per §11.4.54).
@@ -272,7 +273,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Paired §1.1 mutation: delete a `docs/qa/<run-id>/` directory and the release gate MUST FAIL.
 
 #### §11.4.105 — Natural-language intent recognition & clarification (User mandate, 2026-05-31)
-- **Source:** anti-bluff-and-evidence.md:831-874
+- **Source:** anti-bluff-and-evidence.md:831-876
 - **Rules:**
   - Binds natural-language intent recognition on every consumer shipping a messenger/notification-driven command surface (Herald and flavor binaries are the reference implementation; detailed normative spec = Herald design contract `docs/design/INTENT_RECOGNITION.md`; implementations code against the contract).
   - (A) No required command syntax: users MUST NOT be required to know command syntax (no `COMMAND:` prefix, no rigid grammar); the System determines intent; a design forcing users to memorize syntax violates the anchor.
@@ -287,7 +288,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.16, §11.4.17, §11.4.35, §11.4.69, §11.4.96, §11.4.98, §11.4.104, §1.1
 
 #### §11.4.107 — Anti-bluff AV/test-validation techniques mandate (User-driven research, 2026-06-02)
-- **Source:** anti-bluff-and-evidence.md:878-924
+- **Source:** anti-bluff-and-evidence.md:878-926
 - **Rules:**
   - Raises the bar from captured evidence to liveness + correct-routing + self-validated analyzer; every test asserting audio/video output is playing/advancing MUST satisfy ALL 13 points (omission of any is a §11.4 PASS-bluff).
   - (1) A single captured frame is NOT proof of playback: prove LIVE ADVANCING frames over a steady-state window (>= N frames across >= a few seconds) via a freeze-detection oracle (frame-difference/`freezedetect`-class OR perceptual-hash adjacent-frame distance), NOT byte-identical compare (byte-identity only as zero-cost early-out pre-filter); adjacent frames MUST differ above a calibrated threshold; a sustained near-identical interval => FROZEN => FAIL.
@@ -311,7 +312,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.2, §11.4.3, §11.4.4, §11.4.5, §11.4.6, §11.4.13, §11.4.17, §11.4.35, §11.4.48, §11.4.50, §11.4.52, §11.4.68, §11.4.69, §11.4.85, §1.1
 
 #### §11.4.108 — Four-layer fix-verification + runtime-signature-as-definition-of-done mandate (2026-06-03)
-- **Source:** anti-bluff-and-evidence.md:928-960
+- **Source:** anti-bluff-and-evidence.md:928-962
 - **Rules:**
   - A fix must cross FOUR layers; "fixed" at one does NOT imply the next: (1) SOURCE (committed in source); (2) ARTIFACT (change BYTES landed in the produced build artifact: image/bundle/installer/boot artifact/embedded command-line); (3) RUNTIME-ON-CLEAN-TARGET (active on a clean/fresh deployment with no stale overlay shadowing); (4) USER-VISIBLE (feature works for the end user, §11.4.5/§11.4.69). A gate verifying ONLY the source layer is insufficient and is itself a §11.4 bluff surface.
   - Clause 1: a fix is DONE only when its declared runtime signature is verified on a CLEAN/fresh deployment; source-committed != artifact-contains-it != active-on-clean-target != user-visible-working.
@@ -541,7 +542,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.5, §11.4.6, §11.4.13, §11.4.15, §11.4.20, §11.4.27, §11.4.50, §11.4.66, §11.4.69, §11.4.85, §11.4.98, §11.4.107(10)(11)(12), §11.4.108, §11.4.110, §11.4.115(F), §11.4.116, §11.4.117, §11.4.126, §11.4.128, §11.4.135, §11.4.169, §11.4.185, §11.4.198, §11.4.201, §11.4.207, §11.4.226, §11.4.236, §11.4.238, §11.4.259, §11.4.260, §11.4.261, §11.4.17
 
 #### §11.4.268 — Tamper-evident evidence chain + periodic anchor record
-- **Source:** anti-bluff-and-evidence.md:1287-1297
+- **Source:** anti-bluff-and-evidence.md:1287-1299
 - **Rules:**
   - Every accepted evidence record (the §11.4.115(F) verdict store, the §11.4.116 event stream, or equivalent ledger) MUST be tamper-evident against THREE attacks: (1) deleting an entry, (2) reordering two entries, (3) truncating the tail; the mechanism detecting each MUST be named. A forward-hash-chain alone does NOT detect delete-then-recompute-forward (0.43 s for 100k entries per spec FR-029); closing that gap requires a SEPARATE periodic anchor record the producer can append to but never rewrite.
   - (A) Scope: binds the declared COVERED-CALL SET (consumer-declared as DATA per §11.4.35) - not a fleet-wide every-write obligation. A state-changing call within the set (write, exec, deploy) MUST produce a matching chain entry. An UNCITED read (result backs no claim) MUST NOT be required to produce an entry; a read result CITED in support of a claim MUST have a chain entry. Distinction is CITED-vs-UNCITED, never present-vs-absent-in-storage.
@@ -556,7 +557,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.69, §11.4.115(F), §11.4.116, §11.4.201, §11.4.205, §11.4.207, §11.4.226, §11.4.262, §11.4.240, §11.4.227, §11.4.35, §11.4.17, §9.2, §1.1
 
 #### §11.4.269 — Critic/consensus advisory-only ban at the evidence-acceptance seam
-- **Source:** anti-bluff-and-evidence.md:1301-1313
+- **Source:** anti-bluff-and-evidence.md:1301-1315
 - **Rules:**
   - At the evidence-acceptance / claim-adjudication seam (where a producer's DONE/PASS claim is accepted/refused and producer-verifier DISAGREEMENT is adjudicated), an UNGOVERNED second opinion (confidence score, LLM-judge output, or consensus aggregation, none produced under the constitution's own independent-review discipline) MUST be admitted ADVISORY-ONLY, never as the mechanism deciding accept/refuse. Disagreement is adjudicated on the recorded receipt, never on confidence or argument quality; an LLM judge is barred from being the gate.
   - This anchor is NARROWER than "no second model may review": it does NOT weaken, override, or substitute for the mandatory independent-review-verdict family §11.4.125, §11.4.134, §11.4.142, §11.4.165, §11.4.209 (Opus `xhigh`), §11.4.237, §11.4.256 - those remain fully in force, receipt-generating, gating (NO-GO blocks build per §11.4.125 and re-arms iterate-to-GO per §11.4.134).
@@ -573,7 +574,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.69, §11.4.115(F), §11.4.125, §11.4.134, §11.4.142, §11.4.165, §11.4.209, §11.4.237, §11.4.256, §11.4.240, §11.4.249, §11.4.268, §11.4.102, §11.4.201, §11.4.227, §11.4.35, §11.4.17, §1.1
 
 #### §11.4.270 — Dependency-existence-verdict register
-- **Source:** anti-bluff-and-evidence.md:1317-1328
+- **Source:** anti-bluff-and-evidence.md:1317-1330
 - **Rules:**
   - A project adopting an external (or cross-module) dependency to close a coverage gap MUST first record a closed-set EXISTENCE verdict {VERIFIED, AMBIGUOUS, UNVERIFIED} with a citable artifact or an explicit statement that none was found. Existence verification is NECESSARY but NOT SUFFICIENT for adoption ("existing is not the same as working"): VERIFIED is the floor, never a fitness claim.
   - (A) One register row per claimed dependency, keyed by stable identifier (name + version + source per §11.4.111), carrying the verdict + evidence field.
@@ -603,7 +604,33 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.15, §11.4.16, §11.4.21, §11.4.33, §11.4.35, §11.4.54, §11.4.90, §11.4.146(D3), §11.4.197, §11.4.234(D), §11.4.236(4), §11.4.248(A), §11.4.240, §11.4.261, §11.4.115(F), §11.4.17, §1.1
 
 
-### Code review and quality (12 anchors: 11 from the index plus §11.4.276, which the lagging index does not list)
+#### §11.4.277 — llmctl model validation gate: every model run through llmctl (Vision included) is known-answer validated BEFORE decision-bearing use; models only via the vendored llmctl; a wrong answer is a defect, never retried-until-green; llmctl units are host-safe by construction (User mandate, 2026-10-12)
+- **Source:** anti-bluff-and-evidence.md:1345-1410
+- **Rules:**
+  - Operator mandate (paraphrased in canon; the verbatim text lives in the consuming project's request-history record, §11.4.208/§11.4.210): every model run through llmctl, Vision models included, that the project or ANY of its components / services / submodules (recursively) uses MUST first go through deterministic validation; for Vision, screenshots of KNOWN content are prepared IN ADVANCE and the model's answers are compared with the expected answers; a wrong answer means the model / runtime is defective and MUST be investigated and fixed.
+  - Reference implementation: llmctl vendored in the constitution as `submodules/llmctl` (`git@github.com:vasic-digital/llmctl.git`), tag `v3.2.2`, commit `5c3dea57fb35215cdaa4b7412da438e7a8d96d86`, listed in `helix-deps.yaml` (§11.4.31). Every statement about llmctl describes THAT pin; a consumer that bumps the pin re-reads this clause against it (§11.4.26). "Reference values" are what llmctl v3.2.2 ships; they are HOST-DEPENDENT calibrations, not constants of the constitution (a consumer MAY be stricter, NEVER looser), and the clause names no model as mandatory.
+  - Forensic FACTS (host incident 2026-10-12, genericised): a llmctl unit carried `Restart=always`, `RestartSec=5` and a `MemoryMax` EQUAL to total RAM; it was OOM-killed 8 times in about an hour, each restart re-reading about 3.3 GB; load average about 160, memory PSI `full` 97-99 %; the host stalled and was force-powered-off. Root causes: no restart bound, a ceiling equal to RAM, no pre-flight pressure check, nothing stopping a second model loading beside the first (the class §12.3/§12.6/§12.12 already forbid).
+  - NOT this (§11.4.227): does not replace §11.4.107/§11.4.117/§11.4.163 (it VALIDATES the model those analyzers depend on), §11.4.160 (the HelixQA frame bridge; this is the precondition its vision step must satisfy) or §12.6/§12.12 (it adds llmctl-unit-specific obligations; no new escape hatch).
+  - (A) VALIDATION GATE - UNDETERMINED IS NEVER A PASS: a model is NEVER used for a decision-bearing purpose (a verdict, a gate, a recording check, a translation, a review or any user-visible output) until `llmctl require-validated <profile>` exits 0, i.e. the profile holds a FRESH PASS record for the model, engine and launch it is running as. "Used by a component" is recursive over submodules (§11.4.28). Decision-bearing use MUST run with `LLMCTL_VALIDATE_STRICT=1` AND MUST gate on `llmctl require-validated <profile>` before each such use. `LLMCTL_VALIDATE_ON_START=0` is for explicit, human-attended diagnostics only: a profile started with it is not validated and `require-validated` refuses it unless a fresh PASS record for the same key already exists. A profile naming no validation suite is never reported as validated. Use of an unvalidated model is a §11.4.277 violation even if every downstream test is green.
+  - (A.1) Reference gate semantics (llmctl v3.2.2): exit codes of `llmctl validate`, `llmctl vision validate`, `llmctl validate-all`: `0` all checks passed; `1` any WRONG result (never excused; outranks `2`); `2` could not determine (not downloaded, not served, endpoint down, no suite, insufficient resources). `75` is the pressure-gate refusal (`hw_pressure_gate`) and `validate` maps it to `2` (a refusal is not a verdict, nothing recorded as a FAIL). `98` is "port already in use", produced by the unit's `ExecCondition` portcheck skip and, in the v3.2.2 pin, by the onnx server on EADDRINUSE; UNKNOWN: the exit status of a `llama-server` bind failure (v3.2.2 source sets `98` only in the portcheck and the onnx server); systemd tests `RestartPreventExitStatus` against the MAIN process only. A judge crash exiting `1` without an explicit `VERDICT: FAIL` is UNDETERMINED, never a wrong answer. `llmctl require-validated <profile>` exits `0` only for a fresh PASS, `1` not validated (reasons listed), `2` unknown profile or uncomputable key. After `start`, `switch`, `auto`, `enable` and `restart` the post-start hook runs the profile's suites unless a fresh passing record covers it: FAIL (1) STOPS the profile and the command exits non-zero; UNDETERMINED (2) stops it only when `LLMCTL_VALIDATE_STRICT=1`. Units started by systemd (boot, `Restart=`) are validated by the post-start waiter ONLY when the port registry is active and ONLY for catalog LLM profiles (a scaled instance is covered by its base profile): a consumer MUST NOT assume a systemd-started unit was validated and asks `require-validated`. `llmctl validate <profile> --host URL` validates an external endpoint as EVIDENCE ONLY and records no local state.
+  - (B) ACQUIRE AND RUN ONLY THROUGH THE VENDORED llmctl: models are fetched, verified, installed, started and stopped ONLY through the vendored llmctl (§11.4.74, §11.4.76/§11.4.161 for container legs). Ad-hoc `llama-server`, hand-written unit files, manual `curl` GGUF downloads and per-project re-implementations are forbidden; a missing capability is added to llmctl and propagated by a pin bump (§11.4.26), never a local fork (§11.4.251). Download sources, catalog checksums and licences are recorded; a downloaded file whose SHA256 mismatches the catalog is deleted (a null catalog `sha256` for small non-LFS files is recorded as `none` and no checksum is claimed) and the profile is not validated (§11.4.270). Credentials follow §11.4.10. OPERATOR DECISION (explicit): llmctl vendors this constitution as its own `constitution` submodule, so vendoring llmctl creates a mutual reference. It is a depth-1 hub entry consumers MUST NOT initialise recursively (`git submodule update --init submodules/llmctl` WITHOUT `--recursive`); `helix-deps.yaml` carries `recursive_init: false`. The cycle is finite only because llmctl's own `constitution` pin (`4091798` at v3.2.2) contains no `submodules/llmctl`; bumping it to a commit that does MUST be refused. `CM-LLMCTL-SUBMODULE-NONRECURSIVE` (implemented) reads the llmctl commit RECORDED in this repo, inspects the own-org submodules it pins (`constitution`, `submodules/containers`), fails when a pin's tree has an entry named `llmctl` at ANY path or its `.gitmodules` names this constitution or llmctl, and treats an unresolvable pin as BLIND (exit 2).
+  - (C) VISION KNOWN-ANSWER VALIDATION: for every Vision-capable model (1) a FIXTURE CORPUS of screenshots with KNOWN content is prepared IN ADVANCE (the expectation manifest's commit precedes the first validation run), rendered or captured from controlled sources so truth is known by construction; (2) a machine-readable EXPECTED-ANSWER MANIFEST (fixture id, SHA256, question(s), the closed expected answer(s) or required / forbidden substrings / numbers, and why the answer is known) is committed alongside; (3) the corpus covers at minimum every class of content the CONSUMER's own screens depend on and includes NEGATIVE controls (blank frame, wrong content) - an uncovered class is a class the model is NOT validated for, and the consumer says so; (4) the run is DETERMINISTIC: temperature 0, fixed seed, top-k 1, no prompt cache, exact model + `mmproj` identity and engine build in the key (H); (5) answers are judged by a MECHANICAL judge (normalised substring / ordered / forbidden / first-number / regex / JSON), never by another model or by eye (§11.4.262(C)); (6) the judge is self-validated against known-good / known-bad canned answers BEFORE any request is sent (§11.4.107(10)); (7) REPEATABILITY: determinism repeats MUST be identical (reference: one repeat; a consumer MAY, and for decision-bearing Vision use SHOULD, require more); a non-deterministic answer under pinned settings is itself a defect finding, not noise to average away.
+  - (C.1) Reference suite `vision-golden-v1` (llmctl v3.2.2, honest coverage): 11 generated fixtures - 9 golden fixtures carrying 16 probes (large text, shape counting, login form, list view, table, dialog, dark theme, small text, colour blocks) and 2 golden-bad control fixtures (blank, wrong content) carrying 2 control-self probes - plus 1 determinism-repeat probe and 19 judge self-test entries reported separately. Each recorded live run's 21 results = 16 golden + 2 control-self + 2 discrimination controls + 1 determinism repeat. Fixtures come from a stdlib-only byte-reproducible script with an embedded 5x7 bitmap font. NO claim about CJK or right-to-left scripts, photographs, real application screenshots, other fonts or resolutions; a consumer whose screens need such a class adds fixtures and a manifest (suite content is hashed into the record). Other shipped suites: `chat-v1`, `coder-v1`, `embedding-v1`.
+  - (D) WRONG ANSWER = DEFECT, INVESTIGATED NOT RETRIED: a wrongly answered fixture means the model, quantization, `mmproj`, prompt template, image preprocessing or engine build is defective for this use until proven otherwise. The response is §11.4.102 root-cause investigation with a §11.4.115 RED baseline (reproduce from a fresh process), a fix that changes the actual cause (different quant, correct `mmproj` pairing, engine upgrade/patch via llmctl, chat-template correction), then re-validation from a clean baseline (§11.4.4). FORBIDDEN: retrying until green, raising temperature, re-seeding to find a passing seed, lowering the pass threshold, dropping or softening the failing fixture, widening the manifest's accepted answers after seeing the output, swapping the judge, or marking the model "advisory" and using it anyway (§11.4.269 does not apply: an unvalidated model is not usable at the evidence-acceptance point at all). The pass bar is 100 % of non-quarantined probes; a probe is quarantined only via a §11.4.271 waiver with a tracked item (§11.4.197) and never for a class the consumer's own screens depend on.
+  - (E) HOST-SAFETY CLAUSE (binding on every llmctl unit and every validation run; mechanism mandatory, numbers are llmctl v3.2.2 reference values, host-dependent, stricter allowed, looser never): (1) BOUNDED RESTARTS - `Restart=on-failure` with a growing delay (reference `RestartSec=5`, `RestartSteps=4`, `RestartMaxDelaySec=120`), `StartLimitBurst=3` and `StartLimitIntervalSec=900` in `[Unit]` (systemd ignores it in `[Service]`), `RestartPreventExitStatus=SIGKILL SIGTERM 98` (main process only); `Restart=always` or any fixed short `RestartSec` loop is FORBIDDEN; an exhausted start limit stays failed until `reset-failed` and is surfaced in `llmctl status`; composes §12.3(3). (2) MEMORY CEILINGS WELL BELOW HOST RAM - every engine unit carries `MemoryHigh` and `MemoryMax` strictly below total RAM and `MemorySwapMax=0`; reference: per-profile drop-in with `MemoryHigh` 1.25x and `MemoryMax` 1.5x of the plan footprint (floors 1024 / 1280 MiB; 5120 / 6144 MiB for an unmeasured GPU-mode profile), always below 90 % of RAM, template backstop 70 % / 85 %; a `MemoryMax` equal to or above RAM is a defect; the one measured data point is a single host, run 2 of 2 of the `vision` profile, peak 3005 MiB, committed in llmctl at the `v3.2.2` tag as `docs/qa/vision-live-2026-10-13-run2/` - evidence about one host and one profile, not a constant. (3) PRE-FLIGHT PRESSURE GATE - refuse, do not start: before ANY start or restart of an ENGINE unit (its `ExecStartPre`, so restarts and boot are gated; it WAITS up to `LLMCTL_GATE_WAIT` = 120 s, polling every 5 s), before `sched_start` / `enable` and before a validation run starts a profile, llmctl refuses with exit `75` and no partial start when memory PSI `some` avg10 > 10, or `full` avg10 > 2, or `MemAvailable` < footprint + 4 GiB (overridable for tests by `LLMCTL_GATE_SOME_MAX` / `LLMCTL_GATE_FULL_MAX` / `LLMCTL_GATE_RESERVE_MB`); validation re-checks PSI after load and stops a profile it started itself if the host became stressed; `switch` runs a PSI-only pre-stop gate before anything is stopped and then the normal footprint gate for its target; the decision-gateway unit is NOT an engine unit (no `ExecStartPre` gate, own caps 20 % / 25 % of RAM, max 3 / 4 GiB); I/O PSI, swap-in rate and load-average bounds are consumer-optional and NOT claimed by v3.2.2. (4) CO-RESIDENCY IS A BUDGET, NOT A COUNT - a start is admitted only when the combined footprint fits the host's live RAM and VRAM budgets; on a host fitting one model exactly one model is resident; a start that does not fit is refused, not queued silently and not co-loaded; validation runs are serialised with production use of the same resource (§11.4.119). (5) NEVER ON A STRESSED OR RECOVERING HOST - after a crash or forced power-off the first action is the §12.3(4) clean-slate check, a boot-enabled unit still passes the pre-flight gate, and nothing here authorises any power-state transition (CONST-033). (6) Validation itself is subject to §12.6 / §12.12, the build-concurrency caps and the 30-40 % test-resource rule and never runs in parallel with another heavy workload on the same host.
+  - (F) EVIDENCE - what exists and what is owed: llmctl v3.2.2 appends per run to `${LLMCTL_VERIFY_DIR}/validate-<profile>.log` (mode 0600) the key, the redacted endpoint, every raw model answer, the expected checks and the verdicts; the machine record is `${LLMCTL_STATE_DIR}/validation/<profile>.json`. The consumer's evidence tree (`docs/qa/<run-id>/model-validation/`, §11.4.83) additionally preserves (§11.4.5/§11.4.69/§11.4.262) the exact command line, the SHA256 of model / `mmproj` / each fixture / engine binary, build flags, the pre-flight PSI / memory reading and a host-class fingerprint (GPU model + VRAM + driver/CUDA + OS + kernel). UNKNOWN (§11.4.6): llmctl v3.2.2 does NOT hash-chain its evidence log (§11.4.268) and does not record the host-class fingerprint; both are consumer obligations, and a consumer that has not implemented them says so.
+  - (G) OTHER MODEL KINDS: the same gate applies to every non-Vision model run through llmctl, each with its own known-answer suite declared BEFORE the run (v3.2.2 ships `chat-v1`, `coder-v1`, `embedding-v1`; its shipped catalog has no embedding profile, so that suite runs only against a fixture profile). Every other kind (speech-to-text with a WER bound, text-to-speech round-tripped through a self-validated STT, reranker ordering, translation engines - content stays under §11.4.255/§11.4.256) needs a closed-form oracle supplied as DATA; where none exists the consumer MUST say `UNKNOWN` / `PENDING_FORENSICS` and the model stays unvalidated for decision-bearing use (§11.4.6, §11.4.123).
+  - (H) WHAT THE RECORD BINDS, AND RE-VALIDATION: `require-validated` re-compares on every call (1) `model_sha256` (a hash of the catalog's declared file names and catalog SHA256 values, `none` where null; the `mmproj` file is one of them), (2) `model_files` (name, size, mtime on disk - a change detector, NOT a re-hash; byte checksums are `llmctl models verify`'s job), (3) `engine_tag` (for llama the `llama-server --version` line only; for colibri the submodule commit; for onnx a hash of the server script), (4) `launch_fingerprint` (SHA256 of executable and arguments with `--host` / `--port` removed), (5) each suite's content hash, plus `status`, `epoch` / `timestamp` and the evidence path. The record is void when ANY differs, when not a PASS, when it has no usable epoch or is stamped in the future, or when older than `LLMCTL_VALIDATION_MAX_AGE` (reference 604800 s = 7 days; a consumer SHOULD tighten to at least once per release candidate, §11.4.40). NOT bound (UNKNOWN as to any later pin): host class (GPU, VRAM, driver / CUDA, OS, kernel), engine build flags beyond the version line, an externally supplied chat template, quantization other than via file identity. A consumer's record MUST bind those in addition or record an explicit gap; a change of any voids it and a fresh validation is REQUIRED, never carried over.
+  - (I) PER-HOST VALIDATION RECORD: the record lives in the host's own state directory, so validation is per host: a model validated on host A is NOT validated on host B, and `llmctl validate --host URL` against another machine is evidence only. The consumer keeps a record of validated {model identity x host} pairs, for remote workstations reached over SSH with key-based authentication already provisioned (never passwords, never committed keys or tokens, §11.4.10; remote commands run llmctl on that host through the same pre-flight and limits; §12.12 and §11.4.263 apply). An unreachable or pre-flight-refused remote host is recorded `not_validated: <reason>` and dependent checks SKIP-with-reason (§11.4.3), never a faked PASS. UNKNOWN: llmctl v3.2.2 has no cross-host record store.
+  - (J) CONSUMER ADOPTION (§11.4.35): the consumer declares as DATA its model inventory (profile, purpose), fixture-corpus and manifest paths, determinism repeats, tightened pressure / memory thresholds, maximum record age, remote-host list and evidence location. The first adopter feeds its Vision model into the §11.4.278 HelixQA "eyes".
+  - Evidence honesty: llmctl v3.2.2's own Vision evidence is TWO live runs (both 2026-10-13, ONE host, committed as `docs/qa/vision-live-2026-10-13/` and `docs/qa/vision-live-2026-10-13-run2/`) of the `vision` catalog profile, each pass=21, fail=0, undetermined=0, judge self-test 19/19 reported separately; `vision-pro` and every other profile were NOT run and remain not validated; variation across hosts, profiles and further runs is UNKNOWN.
+  - Classification universal (§11.4.17): no vendor, hardware, model or project literal is mandated; fixtures, thresholds, host classes and paths are consumer DATA (§11.4.35). Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-277-PROPAGATION (implemented: `scripts/gates/cm_covenant_114_277_propagation.sh` + mutation test), CM-LLMCTL-SUBMODULE-NONRECURSIVE (implemented: `scripts/gates/cm_llmctl_submodule_nonrecursive.sh` + mutation test); registered as tracked deferrals OWED-GATE-121 to OWED-GATE-130 in `scripts/gates/gate_ledger_deferrals.tsv` (gate code is a separate work item, NOT claimed shipped): CM-LLMCTL-VALIDATED-BEFORE-DECISION-USE (a decision-bearing use without a `require-validated` exit 0, without `LLMCTL_VALIDATE_STRICT=1`, or with a missing / stale / refused record or `LLMCTL_VALIDATE_ON_START=0` FAILs, fail-closed per §11.4.254), CM-VISION-KNOWN-ANSWER-FIXTURES (manifest commit predates the first run, fixture hashes match, corpus covers the declared classes and has negative controls; a manifest edited after a failing run FAILs), CM-MODEL-ANSWER-COMPARATOR-SELF-VALIDATED (the judge accepts known-good and REJECTS known-bad; a judge that is itself a model FAILs), CM-MODEL-DETERMINISM-PINNED (temperature 0, fixed seed, top-k 1, pinned engine build; a differing repeat FAILs), CM-MODEL-WRONG-ANSWER-NOT-RETRIED (a failed validation followed by a pass without a recorded §11.4.102 root cause and a changed key FAILs; threshold, fixture or seed changes between the runs FAIL), CM-LLMCTL-ONLY-ACQUISITION (no `llama-server` / `llama-cli` / model download outside the vendored llmctl, no hand-written model unit files), CM-LLMCTL-UNIT-HOST-SAFE (bounded `Restart=on-failure`, `StartLimitBurst` / `StartLimitIntervalSec` in `[Unit]`, `RestartPreventExitStatus` covering SIGKILL / SIGTERM / 98, `MemorySwapMax=0`, `MemoryHigh` < `MemoryMax` strictly below host RAM and within §12.6; `Restart=always` or `MemoryMax` >= `MemTotal` FAILs), CM-LLMCTL-PREFLIGHT-PRESSURE-ABORT (a start under injected pressure that proceeds FAILs), CM-MODEL-VALIDATION-KEY-COMPLETE (the consumer's record binds model identity, `mmproj`, engine build, launch fingerprint, suite hash AND the host-class fingerprint per host), CM-MODEL-VALIDATION-EVIDENCE (the (F) artifact set is present and re-verifiable, and a claimed hash chain verifies). Paired §1.1 mutations (each MUST make its gate FAIL): set a unit's `MemoryMax` to `MemTotal`; set `Restart=always` + `RestartSec=5`; remove `StartLimitBurst`; start a model under injected memory PSI `full` above threshold; use a model after `require-validated` exits non-zero; run decision-bearing use with `LLMCTL_VALIDATE_ON_START=0`; change the `mmproj` catalog entry without re-validating; widen a manifest answer after a failing run; raise temperature / change the seed between a failing and a passing run; make the judge accept a known-bad answer; invoke `llama-server` directly from a project script; strip the literal. Golden-FALSE (§11.4.201(1)): a fully validated model, bounded units, a clean pre-flight and a fitting budget MUST NOT fire any gate.
+- **No escape hatch:** --skip-model-validation, --unvalidated-model-OK, --retry-until-green, --lower-vision-threshold, --raise-temperature-to-pass, --reseed-until-pass, --edit-manifest-after-failure, --model-judges-its-own-answer, --adhoc-llama-server, --manual-model-download, --restart-always, --memorymax-equals-ram, --skip-psi-preflight, --undetermined-is-pass, --carry-over-validation-after-change (all fifteen flags bind)
+- **Honest boundary:** validation shows the model answers the declared fixture set correctly under pinned settings on the validated host, on the evidence available then; it does NOT prove correctness on screens or inputs outside the corpus (that is §11.4.118 discovery pressure plus the §11.4.278 per-screen oracles), NOT that the model is safe or licensed for every use, and does NOT make a Vision answer a substitute for a deterministic oracle where one exists (§11.4.117 pixel/OCR oracle and the accessibility tree stay primary; the model corroborates). The host-safety clause bounds the observed failure mode; it does not guarantee a host cannot stall for reasons outside llmctl.
+- **Composes:** §11.4, §11.4.3, §11.4.4, §11.4.5, §11.4.6, §11.4.10, §11.4.26, §11.4.28, §11.4.31, §11.4.40, §11.4.69, §11.4.74, §11.4.76, §11.4.83, §11.4.101, §11.4.102, §11.4.107, §11.4.108, §11.4.115, §11.4.117, §11.4.119, §11.4.123, §11.4.133, §11.4.159, §11.4.160, §11.4.161, §11.4.163, §11.4.193, §11.4.197, §11.4.201, §11.4.208, §11.4.210, §11.4.251, §11.4.252, §11.4.254, §11.4.255, §11.4.256, §11.4.262, §11.4.263, §11.4.268, §11.4.269, §11.4.270, §11.4.271, §12.3, §12.6, §12.12, CONST-033, §1.1, §11.4.17, §11.4.35, §11.4.227
+
+### Code review and quality (12 anchors)
 
 #### §11.4.124 — Dead/unwired-code investigate-before-remove mandate
 - **Source:** code-review-and-quality.md:3-27
@@ -621,7 +648,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.8, §11.4.84, §11.4.92, §11.4.90, §11.4.101, §11.4.114, §11.4.122, §11.4.27, §11.4.43, §11.4.115, §11.4.35
 
 #### §11.4.125 — Code-review-agent gate before pre-build + main build
-- **Source:** code-review-and-quality.md:29-51
+- **Source:** code-review-and-quality.md:29-53
 - **Rules:**
   - Pre-build gates and the build prove consistency/buildability, not that the work is correct, safe, will-really-work, or that its tests catch its negation; that is an independent-review responsibility that MUST run BEFORE the build.
   - After all fixes/changes/implementations of a batch are done, and BEFORE the pre-build test sweep and main (artifact) build (any project), the agent MUST dispatch one or more dedicated code-review agents (subagent-driven by default, §11.4.70/§11.4.20) performing a multi-layer review.
@@ -637,7 +664,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.40, §11.4.43, §11.4.50, §11.4.70, §11.4.20, §11.4.92, §11.4.102, §11.4.107, §11.4.108, §11.4.110, §11.4.114, §11.4.124, §11.4.115, §11.4.69, §11.4.35, §1.1
 
 #### §11.4.134 — Code-review iterate-until-GO + rock-solid-evidence mandate
-- **Source:** code-review-and-quality.md:55-67 (the 2026-10-05 EXTENSION bullet: Constitution.md (constitution tip a71b1767) lines 9110-9111; groups/ at this tip does not carry it, see the evidence note pin-upstream-findings.md)
+- **Source:** code-review-and-quality.md:55-69
 - **Rules:**
   - When the §11.4.125 code-review returns ANY finding (BLOCKING, nit, or warning) and the author fixes the batch, the review MUST BE RE-RUN, and KEEP being re-run after each remediation round, until it returns a clean GO with ZERO new issues AND ZERO warnings of any kind.
   - A single pass that "addressed the findings" is NOT sufficient: the corrected batch MUST pass a FRESH adversarial review (fixes can introduce new findings, fix-A-creates-B). A residual warning is itself a finding that re-arms the loop; the loop terminates ONLY on a clean GO.
@@ -651,7 +678,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.125, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.69, §11.4.107, §11.4.50, §11.4.108, §11.4.123
 
 #### §11.4.142 — Universal code-review mandate: every change reviewed, always, no exception
-- **Source:** code-review-and-quality.md:69-87
+- **Source:** code-review-and-quality.md:71-89
 - **Rules:**
   - EVERY change to ANY repository governed by this Constitution MUST pass an INDEPENDENT code-review step BEFORE it is accepted, committed, or built. No change class is exempt: source, fixes, tests, gates, meta-test mutations, documentation, doc-tooling, build/CI scripts, configuration, governance files (Constitution/CLAUDE/AGENTS/QWEN), conductor main-stream edits, sub-agent output, refactors, single-line edits. If a diff exists, it gets an independent review.
   - This is the ABSOLUTE form of §11.4.125: no "just a doc edit", "just a one-liner", "author already self-reviewed (§11.4.92)", or "trivial change" exemption.
@@ -668,7 +695,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Gates (completeness patch):** CM-CODE-REVIEW-GATE-BEFORE-BUILD (recommended mechanism gate shared with §11.4.125)
 
 #### §11.4.145 — Independent multi-angle impact-research per change
-- **Source:** code-review-and-quality.md:89-103
+- **Source:** code-review-and-quality.md:91-107
 - **Rules:**
   - For EVERY fix/change/new feature, INDEPENDENT impact-research agents (subagent-driven §11.4.70/§11.4.20, structurally separate from the author; §11.4.92 self-eval precedes, never satisfies; adversarial "refute-the-change" stance against reviewer confirmation bias) MUST research the change AND connected/dependent features across a CLOSED SET OF EIGHT ANGLES: (1) correctness/logic; (2) regression (call-graph impact enumerating every direct+transitive caller and contract-dependent feature, each mapped to its test); (3) latent/dangerous code - the "recents class" (runtime-only failure, interface/ABI/contract mismatch, concurrency/data-race, resource lifecycle); (4) security (taint/injection/secret/unsafe-API); (5) performance (latency/memory/thermal under load vs baseline); (6) host/data/target-hardware safety per §12/§9/§11.4.133; (7) cross-feature interaction (shared state/timing/hardware contention); (8) business-logic conformance (spec AND connected features' contracts, not merely compiles).
   - Each angle MUST name the TOOL(S) used, obtain the required DEPTH (read the diff, the full changed unit, its declared contract, the spec section and every connected feature, never diff lines alone), and emit a captured-evidence conclusion per §11.4.5/§11.4.69 (tool findings/impact/diff artefact path; "looks fine" forbidden, §11.4.1).
@@ -682,7 +709,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.92, §11.4.125, §11.4.108, §11.4.110, §11.4.134, §11.4.78, §11.4.79, §11.4.107, §11.4.85, §11.4.133, §12, §9, §11.4.99, §11.4.6, §11.4.5, §11.4.69, §11.4.70, §11.4.20, §11.4.35, §1.1
 
 #### §11.4.165 — Universal Independent Verification Agent Mandate
-- **Source:** code-review-and-quality.md:107-129
+- **Source:** code-review-and-quality.md:109-131
 - **Rules:**
   - Every code change OR recorded media artifact MUST pass an INDEPENDENT verification agent structurally separate from the author (§11.4.70/§11.4.20; dedicated subagent or distinct human, never the author; §11.4.92 self-evaluation precedes, never satisfies). It is the FIRST verification layer, complementing (never replacing) §11.4.108, §11.4.125/§11.4.142 and §11.4.40.
   - (a) CODE changes: the verifier MUST (i) run the §11.4.142 code-review discipline (adversarial analysis, blast radius, contract integrity, test genuineness); (ii) build and test changed packages (project's `pre_build_verification.sh` on the diff scope); (iii) run paired §1.1 meta-test mutations for every touched gate (mutated gate still FAILs, restoration still PASSes); (iv) verify the §11.4.108 runtime-signature registry entry declares one machine-checkable observable. Passing only one of (i)-(iv) is NOT verified.
@@ -699,7 +726,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.142, §11.4.163, §11.4.44, §11.4.65, §11.4.86, §11.4.108, §11.4.125, §11.4.134, §11.4.10, §11.4.40, §11.4.92, §11.4.70, §11.4.20, §11.4.102, §11.4.159, §11.4.130, §11.4.118, §11.4.6, §11.4.35, §1.1
 
 #### §11.4.194 — Exhaustive all-scenario, all-angle code-review + verify-against-captured-runtime-evidence
-- **Source:** code-review-and-quality.md:131-157
+- **Source:** code-review-and-quality.md:133-159
 - **Rules:**
   - Strengthens §11.4.125/§11.4.134/§11.4.142: before returning GO every code-review MUST do the following (reason: a clean zero-finding GO dismissed a clamp branch as "effectively unreachable" without proof, and a boundary product A x B with two independent zero-triggers had only one factor verified, so the target still crash-looped).
   - (1) Enumerate the FULL input/scenario space of BOTH the change AND the defect: every dimension, code path, interacting feature and input domain, not only the happy path. For a MULTI-FACTOR failure mode (product of N terms, any degenerate term - zero, empty, null, default-initialised, out-of-range - triggers it), enumerate AND INDEPENDENTLY VERIFY the fix covers EACH factor; verifying one and assuming the rest is the forbidden gap.
@@ -715,7 +742,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.125, §11.4.134, §11.4.142, §11.4.6, §11.4.108, §11.4.130, §11.4.107, §11.4.133, §11.4.226, §11.4.201, §11.4.227, §11.4.115, §11.4.3, §1.1, §11.4.35
 
 #### §11.4.209 — Code-review MUST run on Opus at xhigh effort as PRIMARY substrate, with a genuine-unavailability Sonnet fallback; no Fable, no escalation tier (amended 2026-10-04)
-- **Source:** Constitution.md (constitution tip a71b1767) lines 10576-10596 (groups/code-review-and-quality.md:159-173 holds the pre-amendment text, see pin-upstream-findings.md)
+- **Source:** code-review-and-quality.md:161-177
 - **Rules:**
   - Operator mandate 2026-10-04 (CRITICAL), AMENDING clause (A), verbatim in canon: if Opus is not available but Sonnet is, "we MUST USE what we have! Reviews MUST BE done. Ideally with Opus model, however Sonet MUST BE used if Opus for any reason cannot be used!"; nothing is blocked with a review not performed; "We MUST BE maximally efficient! Work MUST BE performed with all means we have at particular moment!". It does not change the primary substrate. Operator mandate 2026-09-26 (CRITICAL): reviews and other heavy work are done by Opus instead of Fable; it supersedes the 2026-09-15 mandate (Opus-xhigh default with Fable-xhigh escalation) and the 2026-07-15 mandate (Fable first, Opus fallback); both withdrawn, kept as lineage only.
   - Every mandatory independent code-review (§11.4.125 gate before pre-build + main build, §11.4.142 universal every-change review, §11.4.194 exhaustive review, iterated to zero-finding GO per §11.4.134) MUST be dispatched on the Opus model at `xhigh` effort as PRIMARY substrate, whatever the size or complexity of the change.
@@ -731,7 +758,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.125, §11.4.134, §11.4.142, §11.4.194, §11.4.6, §11.4.10, §11.4.20, §11.4.21, §11.4.70, §11.4.183, §11.4.196, §11.4.197, §11.4.231, §11.4.201
 
 #### §11.4.240 — Producer != Verifier scope separation: least privilege over cleverness
-- **Source:** code-review-and-quality.md:175-193
+- **Source:** code-review-and-quality.md:179-199
 - **Rules:**
   - Every project MUST enforce STRUCTURAL SEPARATION between the actor that PRODUCES a change/artifact/verdict and the actor that GATES it: the producer cannot write, weaken, delete or edit the acceptance tests, oracle, gate configuration, verdict store, paired §1.1 mutation, or any check whose green result is a precondition for certifying the producer's own work done. Enforcement is by CAPABILITY (producer structurally cannot reach the gate), NOT by INSTRUCTION; mechanism is least privilege over cleverness (reason: a producer that can edit tests/oracle/gate config/verdict store will, under optimization pressure, hardcode expected values, weaken assertions, mock the unit under test, delete the failing test, or write "verified: true" on itself).
   - (A) Four SCOPES MUST be distinct actors: (i) PRODUCER (source diff, config change, migration, artifact-generation code); (ii) ORACLE (decides correct output: test author, spec writer, characterization-baseline capturer, reference-implementation author per §11.4.245); (iii) GATE (decides PASS: CI config, gate scripts, custody-chain enforcer §11.4.146(D3), release-verdict-coverage machinery §11.4.135); (iv) VERIFIER (re-runs the gate from a clean checkout and attaches receipts: independent verifier §11.4.165, §11.4.209 Opus-xhigh for code review, §11.4.194 exhaustive review). The producer cannot also be oracle, gate or verifier of the same change. A four-scope collapse is maximum severity; any two-scope collapse involving the producer is a finding of §11.4/§11.4.1 severity at the certification layer.
@@ -746,7 +773,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.20, §11.4.70, §11.4.92, §11.4.107, §11.4.115, §11.4.125, §11.4.134, §11.4.135, §11.4.142, §11.4.146, §11.4.165, §11.4.194, §11.4.201, §11.4.205, §11.4.209, §11.4.243, §11.4.245, §11.4.248, §11.4.249, §11.4.256, §11.4.227, §11.4.35, §12
 
 #### §11.4.241 — Illegal-state-unrepresentability preference ladder
-- **Source:** code-review-and-quality.md:197-201
+- **Source:** code-review-and-quality.md:201-207
 - **Rules:**
   - Every load-bearing invariant MUST be enforced at the STRONGEST rung the language/toolchain supports on the closed ordered ladder: (1) TYPE SYSTEM -> (2) API SHAPE -> (3) LINT -> (4) PROPERTY-BASED TEST -> (5) RUNTIME ASSERTION. A defect preventable at rung N but caught only at rung > N is a finding.
   - Rung-by-language capability baseline: strongly-typed languages rungs 1-5; dynamically-typed with gradual typing rung 1 conditional; untyped scripting rungs 3-5 unconditional.
@@ -758,7 +785,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.108, §11.4.115, §11.4.142, §11.4.194, §11.4.201, §11.4.224, §1.1, §11.4.6, §11.4.35, §11.4.107, §11.4.209
 
 #### §11.4.251 — Byte-identical-fork prohibition + role-as-data-pack
-- **Source:** code-review-and-quality.md:205-209
+- **Source:** code-review-and-quality.md:209-215
 - **Rules:**
   - When project needs would be met by TWO NEAR-IDENTICAL CODE COPIES differing only in configuration/data/role-specific parameters (e.g. prod+staging with hardcoded hostnames; reader+writer with different flag values; web+mobile with different feature flags), copies MUST NOT be maintained as parallel forks. Retain ONE code copy and extract role-specific values into a DATA PACK (role-config file / env var set / capability descriptor / feature-flag bundle) consumed by the one code to instantiate either role.
   - DETECTION: reviewer or mechanical scan finds a byte-identical fork when `diff` shows every difference is a config value (hostname/port/flag/label/env/credential-ref), not behavioral; common git-history ancestor; > 90% byte identity (threshold is per-§11.4.35 DATA).
@@ -771,7 +798,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.28, §11.4.35, §11.4.124, §11.4.177, §11.4.194, §11.4.197, §11.4.243, §1.1
 
 #### §11.4.276 — Review-round budget: every independently-reviewed work item converges within a declared budget of at most 7 rounds (5-7, consumer-declared), by front-loading ground truth, class-exhaustive enumeration, real-path tests and a declared threat boundary, with a binding methodology change at round 3 (User mandate, 2026-10-05)
-- **Source:** Constitution.md (constitution tip a71b1767) lines 11928-11965 (this anchor is in no groups/*.md file at this tip, see pin-upstream-findings.md)
+- **Source:** code-review-and-quality.md:217-254
 - **Rules:**
   - Verbatim operator mandate (2026-10-05, CRITICAL): "Make sure we never ever get to such extremely high never ending review rounds count! Determine exact causes of issues we are facing with deep planning and exhaustive analisys so all work ALWAYS gets done with 5 to 7 reviews max! This MUST BE mandatory part of the constitution!!! Reasonable reviews rounds count with fully deterministically validated and verified working results produced!"
   - Forensic FACTS (genericised): one reference consuming project ran four independently-reviewed work items to 7, 10+, 30 and 39+ rounds in one week; the recorded findings show five avoidable mechanisms: (1) wrong-model ground truth (a build-configuration fix and its verifying gate both built on a simplified model of an external build tool's inheritance mechanism, the gate running the real tool on a hand-simplified fixture and so reporting GREEN on a fix that could never work); (2) instance-at-a-time closure of a known class (a command-shadowing gate hardened one command name per round across consecutive rounds; a 'close the whole class' instruction met by fixing a syntactic proxy token, the same defect family returning in four consecutive rounds); (3) fixer-authored tests that never drive the real code (re-implemented or text-extracted logic, so the reviewer's mutations of the real code survived); (4) non-binding escalation signals (the heuristic-tower anchor §11.4.250 invoked about thirty times, the stall anchor §11.4.267 having no declared retry bound, a reviewer-recommended structural fix deferred in two successive rounds while in-file point hardening continued); (5) scope drift (an out-of-scope tangent absorbed by a review loop while the round counter kept accruing against the original item). Genuinely new findings legitimately needing another round also occurred; iteration as such is not the defect, rounds spent re-discovering what one front-loaded investigation would have found are.
@@ -809,7 +836,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.74, §11.4.25, §11.4.27, §11.4.4(b), §11.4.107, §11.4.48, §11.4.49, §11.4.35, §11.4.6, §11.4.69, §11.4.17
 
 #### §11.4.170 — Device-independent host-side rendered-UI visual-proof mandate
-- **Source:** design-system-and-ui.md:31
+- **Source:** design-system-and-ui.md:31-33
 - **Rules:**
   - Every change to any user-facing UI surface (screen/component/view/widget/layout/theme on any platform: Android-Compose, iOS SwiftUI/UIKit, web, desktop, TUI) MUST be proven by device-independent host-side RENDERED PIXELS before it may be claimed correct: the real component rendered to an image ON THE HOST (no device, no emulator, no running app) via a host-render harness (Compose -> Roborazzi/Paparazzi on JVM; web -> Playwright/Storybook snapshot; SwiftUI -> snapshot-testing; equivalent per stack), for EVERY relevant screen x state x {light,dark} theme combination.
   - Each produced PNG MUST be validated by BOTH (i) image-diff against an approved golden (per-pixel or perceptual-diff PASS/FAIL) AND (ii) an OCR/vision oracle reading rendered text, labels and control bounds to assert legibility and NO element overlap, NO label-over-label, NO clipping, NO off-screen control, NO collapsed-or-giant unbounded widget (the §11.4.162 layout invariants proven on real pixels, not asserted on tokens).
@@ -1008,7 +1035,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.5, §11.4.12, §11.4.15, §11.4.16, §11.4.17
 
 #### §11.4.22 — Document-sync commit discipline
-- **Source:** documentation-and-export.md:180-271
+- **Source:** documentation-and-export.md:180-273
 - **Rules:**
   - Universal (§11.4.17). Every project shipping a status-tracking doc set MUST provide a lightweight commit path distinct from the full-repo commit wrapper, which stages, commits and pushes ONLY the status-tracking doc set.
   - Doc set: (1) active issue tracker (docs/Issues.md or equivalent) + HTML + PDF exports; (2) docs/Issues_Summary.md + exports; (3) docs/Fixed.md + exports; (4) docs/Fixed_Summary.md + exports; (5) docs/CONTINUATION.md (per §12.10) + exports; (6) any auto-generated audit artifact (docs/audit/anti_bluff_audit.md or equivalent) pairing with the above.
@@ -1027,7 +1054,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.4, §11.4.12, §11.4.15, §11.4.17, §11.4.18, §12.10, §9
 
 #### §11.4.23 — Visual-cue & grouping mandate for Issues docs
-- **Source:** documentation-and-export.md:275-371
+- **Source:** documentation-and-export.md:275-373
 - **Rules:**
   - Classification mixed: discipline universal; implementation (CSS, HTML post-processor, weasyprint) project-specific.
   - Every project shipping tracked-item docs (per §11.4.15) MUST apply visual-cue coloring AND status grouping to the HTML + PDF exports; the Markdown source stays free of color noise; exports enriched in a post-processing stage.
@@ -1043,7 +1070,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.12, §11.4.15, §11.4.17, §11.4.19, §11.4.22
 
 #### §11.4.44 — Document Revision Header Mandate
-- **Source:** documentation-and-export.md:375-475
+- **Source:** documentation-and-export.md:375-407
 - **Rules:**
   - Every IN-scope tracked Markdown document MUST carry a header block directly below the H1 with two MANDATORY fields: `**Revision:** N` (monotonic positive integer; never decremented, never reset on rewrite; new docs start at 1) and `**Last modified:** YYYY-MM-DDTHH:MM:SSZ` (ISO 8601 UTC).
   - Optional encouraged fields: Description, Authority, Maintainer, Scope, Auto-generated-from (auto-generated docs only), Status (plan docs only).
@@ -1085,7 +1112,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.7, §11.4.12, §11.4.13, §11.4.15, §11.4.22, §11.4.23, §11.4.44, §12.10
 
 #### §11.4.53 — Fixed_Summary parity mandate
-- **Source:** documentation-and-export.md:576-714
+- **Source:** documentation-and-export.md:576-716
 - **Rules:**
   - docs/Fixed_Summary.md is the symmetric short-form summary of docs/Fixed.md; it MUST be regenerated whenever Fixed.md changes; its HTML + PDF exports MUST travel with the markdown (identical mtimes within sync_issues_docs.sh granularity). Stale exports are violations even if the .md is correct. Same discipline as §11.4.12 applied to Fixed.md. Universal (§11.4.17).
   - Generator: scripts/testing/generate_fixed_summary.sh is canonical; MUST exist, be executable and emit a markdown table whose header includes Status and Type (per §11.4.19) mirroring Issues_Summary.md.
@@ -1104,7 +1131,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** CM-COVENANT-114-51-PROPAGATION and CM-COVENANT-114-52-PROPAGATION are sibling propagation patterns, and CM-FIXED-COLUMN-ALIGNMENT and CM-DOCS-EXPORT-SYNC partially overlap; this anchor owns CM-FIXED-SUMMARY-SYNC and CM-COVENANT-114-53-PROPAGATION.
 
 #### §11.4.56 — Status_Summary parity + two-audience format
-- **Source:** documentation-and-export.md:718-814
+- **Source:** documentation-and-export.md:718-816
 - **Rules:**
   - For every docs/<domain>/<integration>/Status.md satisfying §11.4.45, a companion Status_Summary.md MUST exist in the same directory, always derived from Status.md so the two cannot diverge. Universal (§11.4.17); applies wherever §11.4.45 applies.
   - (1) Revision header per §11.4.44.
@@ -1122,7 +1149,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.12, §11.4.17, §11.4.23, §11.4.44, §11.4.45, §11.4.53, §11.4.54, §12.10, §1.1
 
 #### §11.4.57 — README.md doc-link section + revision metadata
-- **Source:** documentation-and-export.md:818-917
+- **Source:** documentation-and-export.md:818-919
 - **Rules:**
   - Every project's top-level README.md MUST contain a section whose heading contains the literal `Tracked-Items` (title `Tracked-Items + Status Documents` or localized equivalent), as a markdown table with columns: Document (human-readable name), Last modified (ISO 8601 UTC from the doc's §11.4.44 header), Revision (integer from same header), Markdown (relative link to .md), HTML (relative link to .html), PDF (relative link to .pdf).
   - The section MUST link to: (1) Issues.md, Issues_Summary.md; (2) Fixed.md, Fixed_Summary.md; (3) CONTINUATION.md; (4) EVERY docs/**/Status.md and its Status_Summary.md pair (auto-discovered via `find docs -name 'Status.md'`).
@@ -1207,7 +1234,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.7, §11.4.11, §11.4.12, §11.4.15, §11.4.16, §11.4.17, §11.4.19, §11.4.23, §11.4.33, §11.4.34, §11.4.44, §11.4.53, §11.4.54, §11.4.55, §11.4.60
 
 #### §11.4.65 — Universal Markdown export mandate
-- **Source:** documentation-and-export.md:1331-1461
+- **Source:** documentation-and-export.md:1331-1463
 - **Rules:**
   - Every Markdown document in the project that is not part of an application/service source-code tree MUST be exported (available) as .html and .pdf; already-existing such docs lacking or out of sync with exports MUST have them (re)generated; every modification MUST regenerate its HTML and PDF; Markdown, HTML and PDF MUST be in sync at all times. This is the catch-all generalising the per-class always-sync anchors §11.4.12/.18/.44/.45/.53/.56/.57/.59/.60/.63/.64.
   - INCLUDED scope (closed set): project-root *.md (README.md, CLAUDE.md, AGENTS.md, CONTRIBUTING.md, etc.); docs/**/*.md (guides, research, plans, changelogs, procedures, hardware notes); scripts/**/*.md (script-companion docs, NOT shebang scripts); owned-submodule trees at device/rockchip/atmosphere/<submodule>/ (top-level README.md / CLAUDE.md / AGENTS.md / CHANGELOG.md and docs/**/*.md); constitution/**/*.md; tools/helixqa/<helixqa-submodule>/ top-level README/CLAUDE/AGENTS and docs/**/*.md (owned HelixQA deps).
@@ -1276,7 +1303,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.5, §11.4.8, §11.4.35, §11.4.90, §11.4.92, §11.4.98, §107
 
 #### §11.4.106 — Docs Chain: mechanical documentation/DB sync engine
-- **Source:** documentation-and-export.md:1572-1604
+- **Source:** documentation-and-export.md:1572-1606
 - **Rules:**
   - Docs Chain (the vasic-digital/docs_chain engine; Go-implemented bidirectional document-and-database dependency-propagation engine) is the canonical mechanical enforcer of the documentation-sync mandates; MANDATORY for every consuming project. Normative spec is the engine's own docs docs/CONSTITUTION_INTEGRATION.md and docs/USE_CASE_CATALOGUE.md; implementations code against the engine's contract, not a paraphrase.
   - (A) Use the engine, never ad-hoc scripts: consume it BY REFERENCE (flat-layout sibling ~/Projects/docs_chain during local dev / the constitution-exposed path once the Phase-6 submodule pointer lands), inherited like §11.4.80's codegraph_* scripts, NEVER copied into the consumer. Ad-hoc per-project scripts (sync_issues_docs.sh, generate_*_summary.sh, sync_*_export.sh, update_readme_doc_links.sh, et al.) are superseded and MUST be retired as each matching context is registered.
@@ -1377,7 +1404,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.11, §11.4.28, §11.4.30, §11.4.35, §11.4.44, §11.4.57, §11.4.65, §11.4.73, §11.4.95, §11.4.106, §11.4.120, §11.4.177, §11.4.186, §11.4.197, §11.4.212
 
 #### §11.4.257 — Comprehensive user-manual + guide + FAQ coverage for every component / service / feature / workflow
-- **Source:** documentation-and-export.md:1688-1708
+- **Source:** documentation-and-export.md:1688-1710
 - **Rules:**
   - Every project MUST cover the WHOLE project (every component, service, subsystem, binary, container, plugin, feature, user-visible workflow) with three cooperating documentation classes: (a) complete USER MANUAL per component/service/product, (b) task-oriented GUIDES for every user-facing workflow, (c) properly-created FAQs derived from real operator/QA/end-user questions; always in sync with shipped code, exported per §11.4.65, reachable from README per §11.4.212, regenerated via Docs-Chain per §11.4.106, tracked as workable items when incomplete per §11.4.197. A surface shipping without its trio is a violation of PASS-bluff severity at the documentation layer.
   - Generalises §11.4.18 (script docs) and §11.4.153 (per-feature Status set) into the full three-class floor for every user-facing surface; binds §11.4.212 + §11.4.106 + §11.4.65 into the always-in-sync guarantee.
@@ -1393,7 +1420,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.11, §11.4.18, §11.4.44, §11.4.65, §11.4.86, §11.4.99, §11.4.106, §11.4.148, §11.4.153, §11.4.194, §11.4.197, §11.4.208, §11.4.212, §11.4.223, §11.4.238, §11.4.93, §11.4.95, §11.4.138
 
 #### §11.4.258 — Architecture + data-flow + state-machine + sequence-diagram coverage embedded in docs
-- **Source:** documentation-and-export.md:1712-1732
+- **Source:** documentation-and-export.md:1712-1734
 - **Rules:**
   - Every project MUST cover the WHOLE project with properly created graphs/diagrams/schemes across FOUR canonical classes: (a) SYSTEM ARCHITECTURE (services, containers, ports, dependencies, deployment topology), (b) DATA FLOW (information movement between components, storage, external systems), (c) STATE MACHINE (lifecycle of every stateful entity: workable items, orchestrator sessions, long-ops, agents, deploys), (d) SEQUENCE (per critical user workflow and per critical cross-component protocol); INCORPORATED into the existing documentation surface (README, manuals per §11.4.257, guides, Status docs per §11.4.153, design docs per §11.4.218/.219) at the natural point of use, NEVER a lone diagram directory.
   - Every diagram is (i) exported in a scale-appropriate open format (SVG structural; PNG raster fallback; source in diffable text: Mermaid, PlantUML, D2, or diffable SVG source; §11.4.220, never proprietary-tool-only master), (ii) rendered non-blank + non-degenerate + accurate (§11.4.107(10) analyzer discipline; a blank/mislabelled/truncated diagram is a bluff), (iii) reachable from README per §11.4.212, (iv) in sync via §11.4.106 Docs-Chain so a code change invalidating a diagram REFUSES the commit until updated.
@@ -1410,7 +1437,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.65, §11.4.86, §11.4.106, §11.4.107(10), §11.4.153, §11.4.201, §11.4.212, §11.4.216, §11.4.218, §11.4.219, §11.4.220, §11.4.222, §11.4.223, §11.4.257, §11.4.15, §11.4.232, §11.4.187, §11.4.147, §11.4.108, §11.4.3
 
 #### §11.4.259 — README quality-status badge row: closed green-amber-red vocabulary, machine-derived, production-readiness gauge
-- **Source:** documentation-and-export.md:1736-1758
+- **Source:** documentation-and-export.md:1736-1760
 - **Rules:**
   - Every project MUST render, at the TOP of the main README (immediately below the H1, above the introduction), a comprehensive BADGE ROW carrying every applicable quality signal with a CLOSED color vocabulary from GREEN (ok) through AMBER (attention) to RED (not ok), plus a production-readiness gauge; EVERY badge backed by MACHINE-DERIVED source data (never hand-typed, §11.4.6). A README lacking the row, or with fabricated/stale/non-source-backed badges, is a violation of PASS-bluff severity.
   - Extends §11.4.57 with a symmetric badge section; binds §11.4.106 (Docs-Chain regeneration on every state change), §11.4.86 (fingerprint-driven sync from the SSoT), §11.4.201 (badge is a guard for the reader's eye).
@@ -1427,10 +1454,10 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.15, §11.4.27, §11.4.44, §11.4.57, §11.4.86, §11.4.93, §11.4.106, §11.4.108, §11.4.129, §11.4.135, §11.4.169, §11.4.184, §11.4.185, §11.4.189, §11.4.201, §11.4.212, §11.4.223, §11.4.224, §11.4.229, §11.4.236, §11.4.238, §11.4.257, §11.4.258, §11.4.260, §11.4.261, §11.4.262, §11.4.246
 
 
-### Git and data safety (23 anchors)
+### Git and data safety (23 digests; the index counts 24 because it also lists §2.1, digested in the constitution file's §1-§10 section)
 
 #### §9.1 — Mandatory safety protocol for destructive operations
-- **Source:** git-and-data-safety.md:3-42
+- **Source:** git-and-data-safety.md:100-139
 - **Rules:**
   - Every destructive operation MUST execute in strict order (steps 1-7).
   - (1) Full backup before touching anything: hardlinked mirror `cp -al .git <backup>/<repo>.git.mirror` (near-instant, zero extra disk on same filesystem); if `.git` is small also `git bundle create <backup>/main.bundle --all`.
@@ -1447,7 +1474,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Step 7 note: the annotation that force-push is absolutely forbidden is from §11.4.113, not text of §9.1 itself.
 
 #### §9.2 — Force-push requires explicit user authorization every time
-- **Source:** git-and-data-safety.md:44-63
+- **Source:** git-and-data-safety.md:141-160
 - **Rules:**
   - Force-pushing (`push --force`, `push --force-with-lease`, or any divergence-recovery code path in an automated wrapper) overwrites remote history; irreversible on shared branches.
   - Automated push wrappers MUST NOT auto-force-push as fallback to any failure (size rejection, divergence, server error, anything). Historical divergence-recovery code that silently force-resets the remote is forbidden and MUST be removed or gated behind an explicit flag.
@@ -1461,7 +1488,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §9.1, §11.4.113
 
 #### §9.3 — Hardlinked backup is the standard
-- **Source:** git-and-data-safety.md:65-71
+- **Source:** git-and-data-safety.md:162-168
 - **Rules:**
   - Hardlinked `.git` copies are near-instant and use zero additional disk (same-filesystem inodes), so backup cost is trivial.
   - Any destructive operation without a fresh hardlinked backup is a Constitution violation regardless of repo size or operator confidence.
@@ -1471,7 +1498,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §9.1
 
 #### §9.4 — Commit-message audit trail for history rewrites
-- **Source:** git-and-data-safety.md:73-82
+- **Source:** git-and-data-safety.md:170-181
 - **Rules:**
   - After any `git filter-repo` run (or equivalent), commit a record under `docs/changelogs/` (or `docs/history-rewrites/`) containing: what was stripped and why; pre-op `.git` size vs post-op size; pre-op HEAD commit vs post-op HEAD commit; pre-op HEAD tree hash vs post-op (MUST match for non-content-changing rewrites); backup location.
   - (Section §10 follows: any commit/tag/release violating §1-§9 is non-compliant; fix = amend/revert and re-land; no exceptions for speed pressure; §9 data-safety and §12 host-session-safety violations are catastrophic and block the entire release cycle until fully remediated.)
@@ -1481,7 +1508,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §9.1
 
 #### §11.4.10 — Credentials-handling mandate
-- **Source:** git-and-data-safety.md:98-138
+- **Source:** git-and-data-safety.md:195-235
 - **Rules:**
   - Credentials, secrets, API tokens, passwords, phone numbers, OAuth refresh tokens, signing keys, encryption keys, and any auth-bearing data used by tests, build automation, or tooling MUST NOT leak; applies to all submodules and the main project.
   - (1) No tracked-file storage: credentials NEVER live in any git-tracked file; placeholder templates (`<replace ...>` or `EXAMPLE_VALUE_DO_NOT_USE`) allowed in committed `.example` files.
@@ -1498,7 +1525,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** none cited
 
 #### §11.4.10.A — Pre-store credential leak audit
-- **Source:** git-and-data-safety.md:140-207
+- **Source:** git-and-data-safety.md:237-304
 - **Rules:**
   - When an operator provides credentials/tokens/keys to be stored in gitignored config (.env, scripts/testing/secrets/*, secrets/*), the storer MUST FIRST run a repo-wide audit for prior leaks of THOSE specific values BEFORE storing.
   - (1) Grep every tracked file for the literal value(s): `git ls-files | xargs grep -l <value>`; cover all file types (.md .json .yaml .kt .go .py .sh .sql, build configs, docs).
@@ -1514,7 +1541,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.10, §11.4.30, §11.4.6, §11.4.7, §9.2, §11.4.17
 
 #### §11.4.30 — .gitignore + No-Versioned-Build-Artifacts Mandate
-- **Source:** git-and-data-safety.md:209-337
+- **Source:** git-and-data-safety.md:306-434
 - **Rules:**
   - Every project module, owned submodule, service, and application MUST ship a proper `.gitignore` covering forbidden-from-VCS patterns; we MUST NOT version build artifacts, caches, tmp files, `.env` or any file containing sensitive data/API keys/tokens; any build derivative recreatable by a generating mechanism MUST NOT be versioned.
   - Forbidden classes: (1) build artefacts (`/bin/ /build/ /dist/ /out/ target/ *.exe *.dll *.so *.dylib *.a *.o *.class *.pyc`; generated sources where generator is committed e.g. `.pb.go` may be checked in OR ignored, project decides, never both; bundled assets where bundler is committed); (2) caches (`__pycache__/ .pytest_cache/ .mypy_cache/ .ruff_cache/ node_modules/ .next/ .nuxt/ .cache/ .gradle/ .idea/cache/ .vscode-test/ target/ .terraform/`, language-server caches); (3) temp files (`*.tmp *.swp *.swo *~ .DS_Store Thumbs.db *.orig *.rej`, IDE backups); (4) sensitive-data files (`.env`, `.env.*` allowing `.env.example/.sample/.template` with placeholders only; `*.pem *.key *.crt *.p12 *.pfx id_rsa* id_ed25519* *.kdbx .netrc secrets/` trees; `api_keys.sh`; any file with `BEGIN PRIVATE KEY`, tokens, session cookies); (5) generated reports/logs (`*.log coverage.out *.coverage htmlcov/ *.gcda *.gcno`, non-reference screenshots/recordings); (6) OS/IDE/personal-state (`.idea/ .vscode/` except explicitly shared settings, `.history/ .svn/`); (7) test playback artefacts (§11.4.14) under an ignored evidence directory unless the capture IS the reference asset.
@@ -1532,7 +1559,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Canon severity: equivalent to a §11.4 PASS-bluff at the repository-hygiene layer.
 
 #### §11.4.36 — Mandatory install_upstreams on clone/add
-- **Source:** git-and-data-safety.md:339-424
+- **Source:** git-and-data-safety.md:436-523
 - **Rules:**
   - Every Git repository added or cloned (`git clone`, `git submodule add`, `incorporate-submodule` per §11.4.31) MUST have upstreams installed via the Upstreamable utility `install_upstreams`, available on host PATH (via `.bashrc`/`.zshrc`), executed from the root of the cloned/added repo, only if an `upstreams/` (or legacy `Upstreams/`) directory with `*.sh` recipe files is present.
   - (1) cd into the new working tree. (2) If `upstreams/` has recipe `*.sh` files declaring upstream SSH URLs, MUST invoke `install_upstreams` from that directory. (3) `install_upstreams` (implementation: constitution submodule `install_upstreams.sh`, aliased/symlinked onto PATH once per host) reads recipes, configures every upstream as a named git remote, and fans out `origin` push URLs. (4) No `upstreams/` directory: no invocation required. (5) If `upstreams/` is present but `install_upstreams` is not on PATH, the operator MUST install it BEFORE making the clone usable. (6) Skipping step 2 when `upstreams/` is present is a violation (breaks §2.1).
@@ -1546,7 +1573,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2, §2.1, §3, §9.2, §11.4.17, §11.4.20, §11.4.28, §11.4.29, §11.4.30, §11.4.31, CONST-043, CONST-051, CONST-052, CONST-053, CONST-054
 
 #### §11.4.37 — Fetch-before-edit mandate
-- **Source:** git-and-data-safety.md:428-519
+- **Source:** git-and-data-safety.md:525-617
 - **Rules:**
   - The FIRST git-touching action of any session on any consuming project MUST be: `git fetch --all --prune`; `git log --oneline HEAD..@{u}` (parent); `git submodule foreach --recursive 'git fetch --all --prune --quiet'`.
   - If `HEAD..@{u}` is non-empty the agent MUST integrate (ff-merge, rebase, or if non-fast-forward surface to operator per §11.4.4) BEFORE any local edit, scanner run, or test cycle. The fetch is non-negotiable even if the directive says "do X immediately".
@@ -1562,7 +1589,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Canon severity: equivalent to a §11.4 PASS-bluff at the planning layer.
 
 #### §11.4.41 — Pre-Force-Push Merge-First Mandate
-- **Source:** git-and-data-safety.md:522-653
+- **Source:** git-and-data-safety.md:619-750
 - **Rules:**
   - NOTE: §11.4.113 supersedes the terminal force-push step; the merge-first machinery remains the integration discipline.
   - Any force-push (`--force`, `--force-with-lease`, `+<ref>`, equivalent history rewrite on any remote) authorised under §9.2 / CONST-043 MUST be preceded by a mechanical 4-step merge-first pipeline, in order.
@@ -1582,7 +1609,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Canon severity: equivalent to a §11.4 PASS-bluff at the remote-data-integrity layer.
 
 #### §11.4.71 — Pre-Push Fetch + Investigate + Integrate Mandate
-- **Source:** git-and-data-safety.md:654-687
+- **Source:** git-and-data-safety.md:751-784
 - **Rules:**
   - Everyday-push variant of §11.4.41: governs EVERY push, in every repository (main + every submodule). Before pushing to any upstream we MUST fetch and pull all changes, investigate what differs from our previous HEAD, understand what/why/impact on our project and System, incorporate mandatory changes, cover them with all supported test types producing REAL PROOFS in anti-bluff manner.
   - Mandatory 5-step cycle: (1) Fetch all remotes `git fetch --all --prune --tags` (per-remote loop if `--all` unavailable), capture stdout. (2) Pull all upstream branches `git pull --no-rebase <remote> <branch>` for each remote whose tip differs; resolve conflicts per §11.4.41 step 2 (rebase/merge/cherry-pick by judgment, NOT auto `--ours`/`--theirs`). (3) Investigate diff vs OUR previous HEAD: `git log --oneline <previous-head>..HEAD` + `git diff --stat <previous-head>..HEAD` + read EVERY commit body; for each foreign commit understand what changed, why, and how it affects our project/System. (4) Integrate mandatory changes (new anchor/gate/propagation requirement) with §11.4.4(b) four-layer coverage (pre-build gate + post-build inspection + on-device test + HelixQA Challenge) + §11.4.43 TDD-fix RED-test-first; every PASS carries §11.4.5 captured evidence. (5) Then push to every configured remote in per-repo cascade order (canonical first, then mirrors); verify with `git ls-remote <remote> <branch>`.
@@ -1598,7 +1625,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Non-compliance is a release blocker regardless of context.
 
 #### §11.4.84 — Working-tree quiescence rule for subagent commits
-- **Source:** git-and-data-safety.md:689-718
+- **Source:** git-and-data-safety.md:786-817
 - **Rules:**
   - No subagent commit may proceed while any concurrent mutation gate, paired-mutation experiment, or other in-flight mutation is live in the same checkout.
   - Before `git add`, the committing agent MUST grep its own working tree for mutation markers (`MUTATED for paired`, `// always pass`, `return json.Marshal` shortcut paths, `// MUTATION` / `# MUTATION`, `_mutated_*` filename suffixes; consuming project MAY extend) and explicitly account for every modified file in the staging area. Any unexplained file in staging triggers ABORT.
@@ -1615,7 +1642,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §1.1, §11.4.10, §11.4.17, §11.4.20, §11.4.27, §11.4.70, §11.4.71, §107
 
 #### §11.4.88 — Background-push mandate: commit-lock release immediately after commit, push runs detached
-- **Source:** git-and-data-safety.md:722-748
+- **Source:** git-and-data-safety.md:819-847
 - **Rules:**
   - (A) Flock release IMMEDIATELY after commit lands: once `git commit` returns 0, `.git/.commit_all.lock` MUST be released BEFORE `do_push` is invoked.
   - (B) Push runs detached: after flock release the push is spawned via `nohup ./push_all.sh ... > <log> 2>&1 &` then `disown`; the orchestrator exit code reports COMMIT success, NOT push success (push success logged separately and reconciled by §11.4.71 on next interactive turn).
@@ -1631,7 +1658,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2.1, §9.2, §11.4.41, §11.4.42, §11.4.71, §11.4.87
 
 #### §11.4.113 — Absolute no-force-push + merge-onto-latest-main mandate
-- **Source:** git-and-data-safety.md:752-783
+- **Source:** git-and-data-safety.md:849-882
 - **Rules:**
   - Force-push is STRICTLY FORBIDDEN with NO exception: `git push --force`, `--force-with-lease`, `push +<ref>`, or any history-rewriting op overwriting a remote ref non-fast-forward, against every governed repository (main repo, constitution submodule, every owned and nested submodule, every upstream). No operator-approval path, no "after merge-first audit" path.
   - Mandated 6-step integration procedure per repo/submodule with commits to publish or diverged mirrors: (1) fetch all remotes `git fetch --all --prune --tags` against origin + every upstream, capture output; (2) set base to the LATEST commit on canonical `main`/`master` (most-advanced mirror tip), never a stale local branch point; (3) carefully MERGE every change to be published on top (union merge preserving BOTH sides); NEVER `-s ours`, NEVER rebase/reset/`--allow-unrelated-histories` that could drop commits; the merge commit MUST descend from every mirror tip so every push is fast-forward; (4) resolve every conflict carefully: no conflict markers (`grep -rn '^<<<<<<< \|^=======$\|^>>>>>>> '` empty), no file dropped, every previously-passing gate/test still passes (§11.4.4 + §11.4.40), evidence artefacts still validate; (5) commit the merge, staging only intended files (NEVER `git add -A` in a submodule with untracked build content per §11.4.30); (6) push to ALL upstreams as fast-forward; if an upstream reports non-fast-forward do NOT force: return to step 1 for that upstream, fetch, MERGE (union), re-validate step 4, re-push.
@@ -1645,7 +1672,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2.1, §9, §9.2, §11.4.4, §11.4.6, §11.4.26, §11.4.30, §11.4.37, §11.4.40, §11.4.41, §11.4.71, §11.4.88, §11.4.109, §11.4.17, §11.4.35, CONST-043
 
 #### §11.4.121 — No-commit-while-build-writes-tracked-artifacts mandate
-- **Source:** git-and-data-safety.md:787-807
+- **Source:** git-and-data-safety.md:884-906
 - **Rules:**
   - A commit (especially `git add -A` / any broad stage) MUST NOT run while a build/packaging/generation step is actively writing artifacts INTO tracked directories (race stages a partial or stale artifact: a §11.4.108 SOURCE->ARTIFACT integrity failure in VCS).
   - The commit MUST be deferred until the artifact-writing build step has COMPLETED so (1) the tree is quiescent at the artifact layer and (2) committed artifacts are the FRESH whole outputs of the completed build.
@@ -1660,7 +1687,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.17, §11.4.30, §11.4.35, §11.4.58, §11.4.84, §11.4.88, §11.4.96, §11.4.103, §11.4.108
 
 #### §11.4.179 — Corruption-isolated parallel git streams
-- **Source:** git-and-data-safety.md:811-811
+- **Source:** git-and-data-safety.md:908
 - **Rules:**
   - When corruption-isolation is a requirement, parallel git work streams MUST each be an isolated repository with its OWN `.git` (own object store, index, lock namespace), NOT `git worktree` checkouts sharing one common `.git` (a shared common-dir is a single point of failure: one stale `index.lock`/`.commit_all.lock`/`.push_all.lock` freezes every stream; one corrupted object store loses all).
   - Each stream's `git rev-parse --git-common-dir` MUST resolve INSIDE the stream's own tree; a common-dir resolving to a shared parent is a violation.
@@ -1674,7 +1701,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.167, §11.4.119, §11.4.176, §9.2, §11.4.58, §11.4.180, §11.4.113, §11.4.17, §11.4.35
 
 #### §11.4.180 — Commit/push (single-writer) wrappers MUST auto-reap provably-stale locks before acquiring
-- **Source:** git-and-data-safety.md:813-813
+- **Source:** git-and-data-safety.md:910
 - **Rules:**
   - Every commit/push/single-writer wrapper MUST, before acquiring its own lock, auto-reap any PROVABLY-stale git lock: holder PID DEAD (`kill -0` fails), OR (no PID recorded) older than a defined threshold AND no live wrapper/git process holding that repo.
   - Reap covers the wrapper's own lock plus git-internal existence-based locks (`index.lock`, `HEAD.lock`, `refs/**/*.lock`) that git does not auto-release on holder death.
@@ -1690,7 +1717,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.84, §11.4.88, §11.4.6, §9.2, §11.4.116, §11.4.179, §11.4.17, §11.4.35
 
 #### §11.4.181 — Consistent controlled feature-branch naming: one feature/logic-group => ONE canonical branch name
-- **Source:** git-and-data-safety.md:815-815
+- **Source:** git-and-data-safety.md:912
 - **Rules:**
   - One feature / logical group of workable items MUST map to EXACTLY ONE canonical branch name, used IDENTICALLY on the main repo AND every owned submodule the group touches; NEVER two differently-named branches for one feature, NEVER per-repo naming drift. No false results, mis-alignment or inconsistency.
   - (1) Single canonical name per group, minted ONCE per §11.4.167 D scheme: `feature/<slug>` on the branch axis + `<prefix>-<base>-feat-<slug>` on the tag axis; `<slug>` lowercase snake/kebab (§11.4.29). Untouched submodules stay on base branch (not force-branched), but any branched submodule MUST use the identical name.
@@ -1705,7 +1732,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.167, §11.4.176, §11.4.178, §11.4.179, §11.4.28, §11.4.29, §11.4.93, §11.4.113, §11.4.84, §9.2, §11.4.6, §11.4.75, §11.4.17, §11.4.35
 
 #### §11.4.188 — Regular main->feature merge cadence
-- **Source:** git-and-data-safety.md:817-817
+- **Source:** git-and-data-safety.md:914
 - **Rules:**
   - Every long-lived feature branch AND every parallel-development track (§11.4.58/§11.4.103/§11.4.167/§11.4.176/§11.4.178/§11.4.179) MUST regularly `git merge origin/main` (canonical trunk) INTO its own branch THROUGHOUT the work, NOT only at the end. Generalises §11.4.167(D) to EVERY feature branch on EVERY track (small/medium branches and any worktree/CoW track included).
   - (1) WHAT: fetch latest canonical `main`/`master` and merge INTO the working branch; a branch not integrating trunk within cadence is flagged STALE.
@@ -1721,7 +1748,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §9, §9.2, §11.4.6, §11.4.17, §11.4.37, §11.4.41, §11.4.42, §11.4.71, §11.4.84, §11.4.88, §11.4.89, §11.4.103, §11.4.113, §11.4.167, §11.4.176, §11.4.178, §11.4.179, §11.4.181
 
 #### §11.4.195 — Branch-structure governance: taxonomy + merge-after-live-QA + flavor/product non-merge
-- **Source:** git-and-data-safety.md:819-852
+- **Source:** git-and-data-safety.md:916-949
 - **Rules:**
   - Operator rules: taxonomy `feat/<NAME_OF_FEATURE>`, `product/<NAME_OF_PRODUCT>`, `flavor/<NAME_OF_FLAVOR>`; tracks on FEATURE branches or `main` MUST, after full confirmation + validation + verification + full LIVE MANUAL TESTING (§11.4.185), MERGE to `main` COMPLETELY (all submodules + main repo), ff-only, NEVER force-push, no commit lost (§9.2); entirely-new FLAVOR/PRODUCT tracks do ALL work on flavor and/or product branches (both may exist) which do NOT merge to `main` the same way; commit + push ALL branches to ALL upstreams (§2.1), ff-only.
   - (A) Taxonomy (extends §11.4.181/§11.4.167(D)): prefix declares class and lifecycle: `feat/` = FEATURE (merges to main after live-manual-QA, clause B); `product/` = PRODUCT line and `flavor/` = FLAVOR line (do NOT merge to `main` the standard way, clause C). Slug lowercase snake/kebab (§11.4.29). Canonical name minted ONCE and used IDENTICALLY across main + every touched owned submodule (§11.4.181), recorded once in the §11.4.176 claim registry / §11.4.93 `logic_group -> branch` mapping and LOOKED UP (§11.4.6). Untouched submodules stay on base. A project using a different feature prefix (e.g. `feature/...`) is compliant if it is the ONE canonical name per §11.4.181; reconcile by the §11.4.181 MERGE-onto-canonical path (ff-only, no commit lost), never a silent rename.
@@ -1736,7 +1763,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2.1, §9, §9.2, §11.4.6, §11.4.17, §11.4.29, §11.4.35, §11.4.40, §11.4.41, §11.4.84, §11.4.93, §11.4.113, §11.4.167(D)/(I), §11.4.176, §11.4.178, §11.4.181, §11.4.185, §11.4.188, §11.4.191
 
 #### §11.4.234 — Dedicated hook-validation script: commit/push mechanism is ALWAYS unblocked
-- **Source:** git-and-data-safety.md:854-870
+- **Source:** git-and-data-safety.md:951-967
 - **Rules:**
   - (A) DEDICATED SCRIPT AS SINGLE COMMIT/PUSH ENTRYPOINT: every consumer MUST ship a dedicated, executable, idempotent script (Lava binding `scripts/commit-push-all.sh`; consumers bind their own path as DATA per §11.4.35) that runs in order: (1) submodule/workspace sync, (2) commit of all pending state, (3) the hook validations as an EXPLICIT stage (unmodified hook logic fed the real push range; cheap checks always, long gates stage-separated), (4) push to ALL configured upstreams (§2.1), (5) closing green/clean verification (clean status + zero unpushed commits, recursive over submodules). Prints per-stage evidence, safe to re-run; direct `git commit`/`git push` on the main repo ceases to be the routine workflow (§2).
   - (B) HOOKS MUST NOT BLOCK THE MECHANISM: automatic git hooks via `core.hooksPath` MUST NOT gate routine commit/push in a way that can leave the repo uncommittable/unpushable. Disconnecting = `core.hooksPath` unset, hook file preserved UNMODIFIED in the repo, `--no-verify` NEVER the routine path. Validation relocates to the explicit script stage (A) and tag/release gates; never deleted.
@@ -1751,7 +1778,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Honest boundary: the anti-bluff covenant, the tag-time full gate and the §11.4.32 sweep all still bind at their own seams.
 
 #### §11.4.252 — Fail-closed-on-dangerous-combination for mutating / credential surfaces
-- **Source:** git-and-data-safety.md:872-876
+- **Source:** git-and-data-safety.md:969-975
 - **Rules:**
   - Every code path COMBINING >= 2 dangerous capabilities MUST FAIL CLOSED: refuse the operation unless every capability's precondition is verifiably satisfied; NEVER fail open on ambiguous/missing/unresolvable input (generalisation of §11.4.201 guard-honesty).
   - Dangerous-combination taxonomy (closed set of 6): (1) MUTATION of shared resource (DB/filesystem/container state/config); (2) UNTRUSTED INPUT (user string/network bytes/external env var/unverified file); (3) CREDENTIAL ACCESS (secret read/authenticated API call/signing key use); (4) EXTERNAL SIDE EFFECT (email/webhook/MQ publish/payment endpoint); (5) SHELL/EXEC (subshell/binary with user-influenced args/template eval with user values); (6) IRREVERSIBLE (delete/drop/truncate; force-push already absolutely forbidden by §11.4.113). Any path combining >= 2 MUST fail closed.
@@ -1765,7 +1792,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.10, §11.4.66, §11.4.101, §11.4.113, §11.4.194, §11.4.201, §1.1, §11.4.17
 
 #### §11.4.253 — Idempotency under retry + DB-level durable uniqueness guard
-- **Source:** git-and-data-safety.md:880-884
+- **Source:** git-and-data-safety.md:977-983
 - **Rules:**
   - Every retryable operation (network calls with auto-retry, at-least-once MQ consumers, cron with overlapping schedules, HTTP endpoints with client-retry, DB transactions with retry-on-serialisation-failure, deploy pipelines with rerun) MUST BE IDEMPOTENT: N executions produce the same observable end state as one.
   - Idempotency ENFORCED at the LOWEST LAYER where "same end state" is durably provable, typically a DATABASE UNIQUENESS CONSTRAINT on a caller-supplied idempotency key, NEVER only application-layer check-then-insert (races). Prevents double-charge/email/delete/effect.
@@ -1780,7 +1807,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.85, §11.4.201, §11.4.252, §1.1, §11.4.17
 
 
-### Governance and constitution meta (37 anchors)
+### Governance and constitution meta (37 anchors: 36 digests, with §11.4.184(I) continuing the §11.4.184 digest)
 
 #### §11.4.11 — File-layout discipline
 - **Source:** governance-and-constitution-meta.md:3-38
@@ -1811,7 +1838,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** none cited
 
 #### §11.4.26 — Constitution-Submodule Update Workflow Mandate
-- **Source:** governance-and-constitution-meta.md:87-174
+- **Source:** governance-and-constitution-meta.md:87-176
 - **Rules:**
   - Before ANY agent/operator modifies constitution/Constitution.md, constitution/CLAUDE.md or constitution/AGENTS.md of a consuming project, the following pipeline MUST run in order with NO step skipped.
   - (1) Fetch + pull first: from inside the constitution/ submodule worktree run git fetch for every configured remote then git pull --ff-only origin <branch> (or --rebase if non-FF-mergeable; NEVER --strategy=ours / --allow-unrelated-histories without explicit operator authorization). Submodule MUST be at upstream tip before any local edit.
@@ -1868,7 +1895,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §1, §1.1, §11.4.12, §11.4.17, §11.4.18, §11.4.20, §11.4.25, §11.4.26, §11.4.27, §11.4.28, CONST-035, CONST-047, CONST-050(B), CONST-051
 
 #### §11.4.31 — Submodule-Dependency-Manifest Mandate
-- **Source:** governance-and-constitution-meta.md:501-646
+- **Source:** governance-and-constitution-meta.md:501-533
 - **Rules:**
   - Every owned-by-us submodule MUST ship a machine-readable version-controlled dependency manifest at canonical path helix-deps.yaml (or helix-deps.json / helix-deps.toml if the ecosystem strongly prefers; only ONE canonical file per submodule; its name MUST appear in the submodule's README.md + governance trio).
   - Manifest schema (CONST-051(C)-aligned): schema_version: 1; deps: list of {name (canonical name, snake_case per §11.4.29), ssh_url, ref (branch or pinned tag), why, layout (flat = <root>/<name>/ | grouped = <root>/submodules/<name>/)}; transitive_handling: {recursive: true, conflict_resolution: operator-required}; language_specific_subtree: false (set true for Android/Kotlin/Apple roots per §11.4.29 exception).
@@ -1916,7 +1943,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.17, §11.4.18
 
 #### §11.4.74 — Submodule-catalogue-first discovery + extend-don't-reimplement
-- **Source:** governance-and-constitution-meta.md:849-882
+- **Source:** governance-and-constitution-meta.md:849-884
 - **Rules:**
   - Before scaffolding ANY new module, package, helper or utility the contributor (human or AI) MUST survey the canonical Submodule catalogue: orgs vasic-digital (github.com/vasic-digital, gitlab.com/vasic-digital) and HelixDevelopment (github.com/HelixDevelopment, gitlab.com/HelixDevelopment), mirrored across all four hosts per §2.1 so surveying one mirror yields the full catalogue.
   - Inventory via the canonical INDEX submodules-catalogue.md in this submodule (142 repos at landing, categorised, one-line capability each); it MUST be regenerated quarterly or after any non-trivial repo create/rename per its section 3 recipe.
@@ -1947,7 +1974,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §1.1, §9, §11.4, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.40, §11.4.41, §11.4.43, §11.4.51, §11.4.52, §11.4.58, §11.4.65, §11.4.66, §11.4.67, §11.4.69, §11.4.70, §11.4.71, §11.4.72, §11.4.73, §11.4.74
 
 #### §11.4.76 — Containers-submodule mandate
-- **Source:** governance-and-constitution-meta.md:1028-1057
+- **Source:** governance-and-constitution-meta.md:1028-1059
 - **Rules:**
   - For ANY containerized workload (Docker, Podman, Qemu, Kubernetes, container-backed emulators such as Android emulator or VM-based testbeds) every consuming project MUST use the canonical Containers Submodule https://github.com/vasic-digital/containers (git@github.com:vasic-digital/containers.git, module digital.vasic.containers), mirrored across the four §2.1 hosts (GitHub + GitLab + GitFlic + GitVerse).
   - (1) Use it as authoritative library for runtime auto-detection, endpoint discovery, lifecycle/health management, compose orchestration, cross-build, emulator integration and on-demand service boot.
@@ -1964,7 +1991,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §3, §11.4.28, §11.4.31, §11.4.36, §11.4.65, §11.4.74, §11.4.75, §1.1, §2.1
 
 #### §11.4.77 — Regeneration-mechanism-required mandate
-- **Source:** governance-and-constitution-meta.md:1061-1109
+- **Source:** governance-and-constitution-meta.md:1061-1111
 - **Rules:**
   - Every .gitignore entry excluding either (a) more than ~100 MiB of content, OR (b) any artifact essential to building/running/testing the project, MUST be accompanied by a documented + automated mechanism that re-obtains or re-generates the content on a fresh clone. Closed set: (1) Re-obtain (download from authoritative source: vendor tarball, SDK installer, npm/pip/cargo/go-mod registry, container image registry, dedicated git submodule, S3, GCS, vendor-internal artifact server) via a script deterministic on a fresh clone; (2) Re-generate (produce from tracked source via a script: build pipeline, codegen, asset rendering, captured-evidence replay, container build, kernel build, image packaging).
   - Required artefacts per qualifying entry (each independently mandatory): (1) metadata file .gitignore-meta/<entry-slug>.yaml (or project-canonical equivalent declared in the project's CLAUDE.md) carrying gitignore-pattern verbatim, mechanism-type: re-obtain | re-generate, script-path (repo-relative deterministic entrypoint), expected-disk-usage, vendor-url-or-source when applicable, integrity {algorithm: sha256 | md5, value: hex} when fetchable from a known-stable mirror, requires-network: true|false, requires-credentials: true|false (and which credentials slot per §11.4.10); (2) entry in the post-clone bootstrap script (scripts/setup.sh or equivalent), runnable non-interactively on a fresh clone or as an idempotent step (scripts/setup.sh --regenerate <entry-slug>); (3) pre-build gate verifying regenerated content is present at the expected path OR the regeneration script ran successfully (e.g. stamp file .gitignore-meta/.regenerated/<entry-slug>.ok with mtime >= source freshness window); (4) documentation update - README plus relevant docs/guides/*.md describing the mechanism, manual fallback (vendor URL, alternative mirrors), time + disk-usage budget, per-§11.4.10 credentials requirements.
@@ -2045,7 +2072,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Paired §1.1 mutation: temporarily downgrade the installed codegraph version; the script MUST detect drift and self-correct; then restore.
 
 #### §11.4.100 — RETIRED
-- **Source:** governance-and-constitution-meta.md:1294-1294
+- **Source:** governance-and-constitution-meta.md:1294-1296
 - **Rules:**
   - RETIRED. Demoted to the consuming project layer (a project's video-color/visual-quality fidelity) per §11.4.17/§11.4.35: project-specific (RK3588/MPV/Arvus), not universal. Consult the consuming project's Constitution/CLAUDE/AGENTS/QWEN.
 - **Gates:** none named
@@ -2054,7 +2081,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.17, §11.4.35
 
 #### §11.4.109 — Mandatory Anti-Forgetting Enforcement: PreToolUse guard hook + subagent constitutional preamble + orchestrator pre-action checklist
-- **Source:** governance-and-constitution-meta.md:1298-1380
+- **Source:** governance-and-constitution-meta.md:1298-1382
 - **Rules:**
   - Short tag `anti-forgetting-enforcement`. Reason: a rule the orchestrator forgets to paste into subagent prompts is a social contract with memory, not enforcement (emulator subagents ran raw host-direct emulator/adb commands instead of routing through the Containers submodule). Two-layer model: hook = floor, preamble = ceiling.
   - Every consuming project MUST deploy all three components together.
@@ -2092,7 +2119,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.5, §11.4.6, §11.4.17, §11.4.20, §11.4.28, §11.4.35, §11.4.58, §11.4.66, §11.4.69, §11.4.70, §11.4.75, §11.4.80, §11.4.89, §11.4.91, §11.4.93, §11.4.103, §11.4.105, §11.4.107, §11.4.109
 
 #### §11.4.141 — Token-efficiency mandate
-- **Source:** governance-and-constitution-meta.md:1503-1531
+- **Source:** governance-and-constitution-meta.md:1503-1548
 - **Rules:**
   - Operator mandate: cut AI-agent token spend to 30-40% of current (a 60-70% reduction) WITHOUT degrading quality, performance or safety and WITHOUT breaking any existing mechanism. Every project worked on by AI agents MUST adopt the regime below and MUST PROVE the reduction with a measured anti-bluff harness, never an asserted number (§11.4.6/§11.4.123). The 60-70% is the warm-cache target; the rule requires the measured best-safe reduction with cited evidence.
   - M1 (primary): prompt-cache the static governance prefix. Always-loaded governance MUST form a byte-stable prefix with a cache breakpoint at its end and nothing volatile rendered ahead of it. Caching is transparent (cannot remove a rule or change a verdict; changes only billing); the only failure is a silent invalidator (timestamp/UUID/unsorted-JSON ahead of the breakpoint), detectable via `cache_read_input_tokens`. Operative discipline: batch governance edits and keep CLAUDE.md + the constitution byte-stable mid-session (every governance edit busts the cache). SDK callers use `cache_control:{type:"ephemeral"}`; Gemini/Qwen use their context cache via API-key auth.
@@ -2104,15 +2131,23 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
   - M7: compaction/context-editing for long sessions - prune stale tool-results/old thinking; never touches the governance prefix or on-disk evidence.
   - Mandatory measured proof: a token-accounting harness measuring tokens per development cycle BEFORE vs AFTER on a frozen deterministic workload, split into `input_tokens` / `cache_read_input_tokens` / `cache_creation_input_tokens` / `output_tokens` from the authoritative Anthropic `usage` object (NEVER tiktoken; NEVER client-side `total_cost_usd` - recompute cost from raw fields with published prices), reproduced N times to identical verdict (§11.4.50). Pass = AFTER <= 40% of BEFORE OR the measured best-safe reduction with a cited cold-cache reason. The AFTER run MUST ALSO show ZERO regression on the pre-build full sweep, the meta-test mutation sweep (every gate still FAILs its paired mutation), every propagation gate, a strong-model reasoning-path probe (M2/M5 tiered nothing that decides), and a cache-warm proof (`cache_read_input_tokens > 0`). Cost reduction with quality/safety regression is a §11.4 FAIL.
   - No measure may break or degrade any existing mechanism: §11.4 covenant family, §11.4.50, §11.4.125, §11.4.40 and the §12.6 memory ceiling are unconditionally preserved.
+  - EXTENSION - the always-loaded-context budget, Measures M2-M9 (operator mandate 2026-10-17; research-derived from a measured subscription-exhaustion incident: the founding consumer measured 1,610,148 bytes, about 402,000 tokens, of always-loaded project instruction files, about 98 % of it verbatim duplication of anchor text already in `Constitution.md`; M1 prompt caching cannot help when the prefix itself is enormous). LABEL COLLISION IN CANON: the extension's M2-M9 re-use the labels the original text already uses for its numbered measures (original 2 subagent tiering, 3 thin index, 4 retrieval, 5 output reduction), so in this appendix the extension's measures are written EXT-M2 to EXT-M9 and the original measures keep M1-M7.
+  - EXT-M2 ALWAYS-LOADED BYTE BUDGET, MECHANICALLY ENFORCED: every consumer declares as DATA (§11.4.35) a byte ceiling per always-loaded agent file (`CLAUDE.md` / `AGENTS.md` / `QWEN.md` / `GEMINI.md`) in a checked-in config and enforces it from a script that FAILS on a budget violation, on a missing always-loaded file and on divergence between `AGENTS.md` and `CLAUDE.md` (they MUST carry identical rules; only the title and the constitution pointer differ); ceilings sit at roughly 2x the current size; the measuring script carries a POSITIVE and a NEGATIVE control (§11.4.273) and reports an absent file as `MISSING`, never `0`.
+  - EXT-M3 PROGRESSIVE DISCLOSURE IS MANDATORY, INLINING GOVERNANCE TEXT IS FORBIDDEN: canonical anchor text lives in `Constitution.md`; always-loaded files carry a compact core plus LINKS to on-demand documents (a `docs/context/*` note, an area `CLAUDE.md`, the governance-anchor index); restating anchor bodies in an always-loaded file is the defect EXT-M2 budgets against and is already prohibited by `--inline-all-governance`.
+  - EXT-M4 ONE TASK = ONE SESSION, NO MID-SESSION ACCOUNT / PROVIDER SWITCH: the prompt cache keys on the account / provider and the accumulated prefix, so a switch forces a full-price re-write of the whole context; switch only at a session boundary and hand off through §11.4.127 / §11.4.131 / §12.10 artefacts, never by carrying an open session across accounts.
+  - EXT-M5 RARE PROCEDURES ARE ON-DEMAND ARTEFACTS (a document or skill loaded when needed, never prose re-read every turn). EXT-M6 MECHANICALLY CHECKABLE RULES BELONG IN A SEAM, NOT IN PROSE: a rule a script can check MUST be checked by a hook or gate (§11.4.205's test: if nobody implemented the check, would anything catch it?).
+  - EXT-M7 DOCUMENT EXPORTS ARE OPT-IN: regenerating `.html` / `.pdf` / `.docx` twins on every documentation write is a per-write cost; exports are generated on explicit request or at release time; a sibling not regenerated is recorded honestly as stale (§11.4.106(E)), never claimed fresh, and the freshness gate honours the declared policy with a SKIP-with-reason; release documentation and human-read artefacts still get twins at release time.
+  - EXT-M8 PARALLELISM AND REVIEW BOUNDS: default concurrent agent fan-out is bounded by consumer DATA (the founding consumer declares two); SpecKit / Superpowers pipelines are reserved for large multi-phase features, capped by the §11.4.276 review-round budget; neither bound weakens §11.4.183. EXT-M9 ROUTINE WORK RUNS ON THE DEFAULT MODEL TIER (§11.4.231): mechanical, documentation and status work on the lightest capable tier; the heavy tier is reserved for reviews (§11.4.209), hard root-cause analysis and architecture.
+  - Extension measurement and boundary: the metric is the always-loaded footprint in BYTES, tokens estimated at bytes / 4 (a documented heuristic, never a tokenizer count); the EXT-M2 budget is validated against the definition of done per §11.4.201(8) (at the correct end-state, a compact core plus links, the footprint sits far below the ceiling) and is NECESSARY, never sufficient (task choice, tool-call count and repeated large-file reads still dominate; EXT-M4 to EXT-M9 address those); slimming the constitution submodule's OWN mirrors is NOT performed by this extension and remains a consumer-side tracked obligation. The extension mints no anchor number and `CM-COVENANT-114-141-PROPAGATION` is unchanged.
   - Classification: universal (§11.4.17); consumer supplies model IDs, mechanical-subagent allowlist, governance files, structural-index tool and frozen workload per §11.4.35. Non-compliance is a release blocker.
-- **Gates:** CM-COVENANT-114-141-PROPAGATION, CM-TOKEN-EFFICIENCY
+- **Gates:** CM-COVENANT-114-141-PROPAGATION, CM-TOKEN-EFFICIENCY, CM-CONTEXT-FOOTPRINT-BUDGET (a declared always-loaded budget exists, is mechanically enforced and the instrument is control-needled), CM-NO-INLINED-GOVERNANCE-IN-ALWAYS-LOADED-FILE (an always-loaded file restating anchor bodies beyond the declared budget FAILs); paired §1.1 mutations; gate code for the two extension gates is a separate work item, NOT claimed shipped
 - **No escape hatch:** --skip-token-efficiency, --no-cache-governance, --assert-reduction-without-measuring, --tier-down-reasoning, --inline-all-governance, --tiktoken-estimate-OK
-- **Honest boundary:** The headline 60-70% is a warm-cache target; the rule requires the measured reduction. Gate-code is a separate work item. Research/design/measurement docs live at `docs/research/token_efficiency/{RESEARCH,DESIGN,MEASUREMENT,TEST_PLAN}.md`.
-- **Composes:** §11.4.5, §11.4.6, §11.4.20, §11.4.40, §11.4.50, §11.4.58, §11.4.69, §11.4.70, §11.4.78, §11.4.79, §11.4.80, §11.4.103, §11.4.106, §11.4.123, §11.4.125, §11.4.128, §12.6, §1.1, §11.4.7, §11.4.102, §11.4.35, §11.4.17
+- **Honest boundary:** The headline 60-70% is a warm-cache target; the rule requires the measured reduction. Gate-code is a separate work item. Research/design/measurement docs live at `docs/research/token_efficiency/{RESEARCH,DESIGN,MEASUREMENT,TEST_PLAN}.md`. The EXT-M2 to EXT-M9 extension adds the always-loaded-context budget; its footprint metric is bytes (tokens estimated at bytes / 4, a heuristic) and is NECESSARY, never sufficient; slimming the constitution submodule's own mirrors remains a consumer-side tracked obligation.
+- **Composes:** §11.4.5, §11.4.6, §11.4.20, §11.4.40, §11.4.50, §11.4.58, §11.4.69, §11.4.70, §11.4.78, §11.4.79, §11.4.80, §11.4.103, §11.4.106, §11.4.123, §11.4.125, §11.4.128, §12.6, §1.1, §11.4.7, §11.4.102, §11.4.35, §11.4.17, §11.4.106(E), §11.4.127, §11.4.131, §11.4.183, §11.4.201(8), §11.4.205, §11.4.209, §11.4.231, §11.4.273, §11.4.276, §12.10
 - **Review addendum:** Recommended-gate mutation: inject a per-turn volatile token ahead of the governance cache breakpoint; `cache_read_input_tokens` collapses and the gate FAILs. Stated prices: cache read about 0.1x, cache write 1.25x (5-minute TTL) or 2x (1-hour), output about 5x input.
 
 #### §11.4.156 — All CI/CD automation (GitHub Actions / GitLab pipelines / equivalents) MUST be disabled
-- **Source:** governance-and-constitution-meta.md:1533-1547
+- **Source:** governance-and-constitution-meta.md:1550-1564
 - **Rules:**
   - Every governed repository (main repo, constitution submodule, every owned and nested submodule we author and push) MUST ship with ALL server-side CI/CD DISABLED. No push to any owned upstream may trigger a GitHub Actions run, GitLab pipeline, or equivalent (Jenkins, CircleCI, Travis, Drone, Woodpecker, Bitbucket Pipelines, Azure Pipelines, any `on: push`/`schedule`/`workflow_dispatch` workflow). Generalises and makes ABSOLUTE the §11.4.75 Layer-5 posture; enforcement migrates to the LOCAL §11.4.75 five-layer git-hook ritual + the §11.4.40 pre-tag sweep, never a remote runner.
   - (A) Zero active CI at the repository root: no active `.github/workflows/*.yml|*.yaml`, no `.gitlab-ci.yml`, no `.gitlab/**` pipeline include, nor equivalent provider config at the ROOT of any governed repo/submodule.
@@ -2127,7 +2162,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.75, §11.4.29, §11.4.6, §11.4.40, §11.4.42, §11.4.109, §11.4.113, §2.1, §11.4.17, §11.4.35
 
 #### §11.4.157 — GEMINI.md maintained in lockstep with CLAUDE.md / AGENTS.md / QWEN.md
-- **Source:** governance-and-constitution-meta.md:1549-1563
+- **Source:** governance-and-constitution-meta.md:1566-1580
 - **Rules:**
   - `GEMINI.md` is a FIRST-CLASS governance context carrier, EQUAL to CLAUDE.md / AGENTS.md / QWEN.md, never optional or best-effort. Every governance addition or edit MUST land in ALL FIVE carriers in lockstep (canonical `Constitution.md` + CLAUDE.md + AGENTS.md + QWEN.md + GEMINI.md, plus any other per-agent context file a runtime introduces) in the SAME change-window, each with synchronized `.html`/`.pdf`/`.docx` exports per §11.4.65.
   - (A) Five-carrier lockstep: no governance change is complete until GEMINI.md carries it; GEMINI.md is added explicitly to the §11.4.26 pipeline's stage-2 propagation set and stage-3 cross-reference validation.
@@ -2141,7 +2176,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.26, §11.4.35, §11.4.17, §11.4.44, §11.4.65, §11.4.140, §11.4.156, §1.1, §11.4.6
 
 #### §11.4.161 — Rootless container runtime mandate
-- **Source:** governance-and-constitution-meta.md:1565-1581
+- **Source:** governance-and-constitution-meta.md:1582-1598
 - **Rules:**
   - Every project MUST use Podman in rootless mode (or an equivalent rootless runtime) for ALL containerized workloads. Docker in rootful mode, `sudo`, or any escalation to root for container management is STRICTLY FORBIDDEN unless the target platform genuinely has no rootless option AND that constraint is documented per §11.4.112 (structurally-impossible, with cited authoritative sources).
   - The `vasic-digital/containers` Submodule (§11.4.76) MUST be the SOLE container orchestration layer: every container operation goes through its `pkg/boot` / `pkg/compose` / `pkg/health` primitives. No ad-hoc `docker`/`podman` commands outside the Submodule; a missing capability MUST be extended in the Submodule upstream (§11.4.74), not worked around with a raw command.
@@ -2154,7 +2189,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.76, §11.4.74, §11.4.10, §11.4.112, §12.3, §11.4.6, §11.4.17, §11.4.35
 
 #### §11.4.164 — Universal Constitution Auto-Propagation & Hook System
-- **Source:** governance-and-constitution-meta.md:1583-1609
+- **Source:** governance-and-constitution-meta.md:1600-1626
 - **Rules:**
   - Every fetch+pull of the constitution submodule MUST trigger an automatic post-update hook that installs/registers newly added or modified components, making the pull a COMPLETE governance-update transaction. Canonical hook: `constitution/scripts/post_update_hook.sh`, inherited by reference (§11.4.28), NEVER copied.
   - (a) Change detection: detect changed constitution files (`Constitution.md`, `CLAUDE.md`, `AGENTS.md`, `QWEN.md`, `GEMINI.md`, and any file under `scripts/`, `hooks/`, `skills/`, `mcp/`, `plugins/`) by comparing HEAD before vs after via `git diff --name-only HEAD@{1} HEAD` (or the merge/pull equivalent).
@@ -2173,7 +2208,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.28, §11.4.32, §11.4.35, §11.4.67, §11.4.77, §11.4.102(B), §11.4.122, §11.4.31, §11.4.30, §11.4.6, §11.4.17, §1.1
 
 #### §11.4.166 — REPEALED (Semgrep static-analysis mandate)
-- **Source:** governance-and-constitution-meta.md:1611-1611
+- **Source:** governance-and-constitution-meta.md:1628
 - **Rules:**
   - REPEALED by operator decision 2026-06-22: Semgrep is NO LONGER a mandatory requirement. Static analysis / security scanning remains encouraged and may be re-adopted per project, but is NOT mandated, NOT a release blocker, NOT cascaded.
   - Removed with the repeal: `scripts/semgrep/`, `scripts/hooks/semgrep_precommit.sh`, the `submodules/semgrep` submodule, the MCP / pre-commit / PATH wiring, the consumer `.docs_chain/contexts/semgrep_status.yaml` context, and the `CM-COVENANT-114-166-PROPAGATION` / `CM-SEMGREP-WIRED` gates.
@@ -2184,7 +2219,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** none cited
 
 #### §11.4.173 — Containerized + distributed build mandate
-- **Source:** governance-and-constitution-meta.md:1613-1613
+- **Source:** governance-and-constitution-meta.md:1630
 - **Rules:**
   - EVERY build of EVERY component (source compile, artifact/package/installer/container-image production, codegen, asset render - any language/platform) MUST run INSIDE a specialized build container provisioned via the `digital.vasic.containers` submodule (§11.4.76), NEVER on the bare host.
   - Build containers MUST be DISTRIBUTED to the designated remote build host(s) (e.g. `thinker.local`) via the SAME containers-submodule distribution mechanism the infra uses (§11.4.76 Distributor / remote compose over SSH, §11.4.161 rootless), so the build EXECUTES remotely; on completion the produced artifacts MUST be brought BACK to the originating main host (scp/rsync/volume copy).
@@ -2197,7 +2232,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.76, §11.4.161, §11.4.74, §11.4.28, §11.4.24, §11.4.82, §11.4.121, §11.4.38, §11.4.108, §12.6, §11.4.6, §11.4.40, §11.4.17
 
 #### §11.4.177 — Developer-tooling project-decoupling + invocation-directory operation
-- **Source:** governance-and-constitution-meta.md:1615-1615
+- **Source:** governance-and-constitution-meta.md:1632
 - **Rules:**
   - No project-specific script, hook, alias or binary may be wired (copied, symlinked, PATH-exported or aliased) into a global or shared developer-tooling PATH.
   - Shared tooling MUST be project-agnostic and operate on the INVOCATION directory (cwd, or an explicit path/config argument), NEVER on a hardcoded project path.
@@ -2210,7 +2245,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.28, §11.4.29, §11.4.35, §11.4.11, §11.4.6, §11.4.17
 
 #### §11.4.184 — Mandatory SonarQube static-analysis CLI + local tooling installed and PATH-discoverable
-- **Source:** governance-and-constitution-meta.md:1617-1617
+- **Source:** governance-and-constitution-meta.md:1634
 - **Rules:**
   - Every project/host that runs static analysis MUST have the SonarQube scanner CLI (`sonar-scanner`) installed AND durably discoverable on the system PATH via the shell rc (`.bashrc`/`.zshrc`), like the Firebase/GitHub/GitLab CLIs, PLUS the shared `constitution/scripts/sonarqube/` tooling (`sonarqube_install_check.sh`, `sonarqube_lib.sh`, `sonarqube_run_scan.sh`, `sonarqube_container.sh`, `compose/`) consumed BY REFERENCE (§11.4.28/§11.4.177/§11.4.80-style, NEVER copied per project).
   - (1) Installed + PATH-durable: the scanner CLI resolves in every fresh shell (a durable rc export, e.g. a generic `Factory/software/*/bin` glob or explicit line, not an ephemeral session PATH).
@@ -2224,7 +2259,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.28, §11.4.36, §11.4.74, §11.4.75, §11.4.109, §11.4.161, §11.4.166, §11.4.177, §11.4.6
 
 #### §11.4.184(I) — HawkScan (DAST) + OWASP ZAP + gitleaks + Trivy: mandatory local security-tooling extension
-- **Source:** governance-and-constitution-meta.md:1619-1634
+- **Source:** governance-and-constitution-meta.md:1636-1651
 - **Rules:**
   - Every project/host that runs security scanning MUST have four additional tools installed and locally runnable through the constitution's `scripts/<tool>/` tree, mirroring the `scripts/sonarqube/` five-file structure: `<tool>_lib.sh` (sourced, never executed), `<tool>_install_check.sh` (three-tier presence/version verifier), `<tool>_container.sh` (rootless-podman lifecycle where a local server is needed), `<tool>_run_scan.sh` (drives the scan, polls for completion, writes a Markdown report to `qa-results/<tool>/<ts>/`, never printing secrets), `compose/docker-compose.<tool>.yml` for containerized tools. Consumed BY REFERENCE, never copied (§11.4.28/§11.4.80).
   - gitleaks (secrets scanner): fully open-source, no account, runs locally with no network callout; installable via package manager or upstream release binary; complements and does NOT replace or conflict with the constitution's `credential_scan_lib.sh` pre-commit-hook detector - both run.
@@ -2240,7 +2275,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.184, §11.4.166, §11.4.31, §11.4.28, §11.4.80, §11.4.161, §11.4.10, §11.4.6, §11.4.227
 
 #### §11.4.196 — Native-alias-first priority + per-alias real-signal limit/subscription tracking + auto-rebind-on-recovery + resource-detection-by-real-identity
-- **Source:** governance-and-constitution-meta.md:1637-1645
+- **Source:** governance-and-constitution-meta.md:1654-1662
 - **Rules:**
   - The multi-track alias-binding + rate-limit/subscription-tracking layer of the §11.4.187 ruler MUST implement ALL of (A)-(E): use ALL operational claude-NATIVE aliases FIRST (not session-limited, not weekly-limit-reached, not expired-subscription) before ANY provider alias; track limits/subscription from REAL signals (never faked, §11.4.6); rebind upward when a higher-priority native recovers; fix the `pgrep -f` substring-match guard footgun.
   - (A) NATIVE-ALIAS-FIRST: every OPERATIONAL native (`claudeN`) alias is selected before ANY provider alias, UNCONDITIONALLY while >=1 native is operational. The guarantee is STRUCTURAL: a native/provider CLASS partition scanned native-class-completely-before-provider-class (§11.4.111 resolve-by-CLASS), so a provider can NEVER win while a non-cooled native exists regardless of roster file order. Within a class the operator order (native equal-capability, then providers deepseek->xiaomi->opencode->kimi->...) is authoritative decision-DATA (§11.4.28), never re-invented.
@@ -2256,7 +2291,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.187, §11.4.182, §11.4.176, §11.4.111, §11.4.101, §11.4.103, §11.4.6, §11.4.108, §11.4.115, §11.4.119, §12.12, §12.6, §12.8, §11.4.198, §11.4.147, §11.4.28, §11.4.50, §11.4.69, §11.4.17
 
 #### §11.4.197 — Research / kicked-off-work completion mandate
-- **Source:** governance-and-constitution-meta.md:1647-1667
+- **Source:** governance-and-constitution-meta.md:1664-1684
 - **Rules:**
   - Every research effort, kicked-off improvement, design doc, spike, prototype, PoC or partially-landed feature a project STARTS MUST be driven to FULL completion OR explicitly evidence-backed CLOSED. There is no third "sitting un-wired in the backlog" state; "we researched/designed/started it" is never terminal. A `docs/research/*` doc, design doc, spike branch or half-wired feature neither COMPLETED-and-wired nor explicitly closed is a violation (same class as a §11.4 PASS-bluff at the requirements-integrity layer). Loss of requirements and failure to incorporate started work are FORBIDDEN.
   - COMPLETED means ALL hold: (1) implemented; (2) WIRED - integrated AND used by default, not merely present behind a dead flag / uncalled function / unreferenced module / never-selected path (§11.4.124 dead-code gap + §11.4.108 layer-2/3 SOURCE->ARTIFACT->RUNTIME gap); (3) confirmed + validated + verified with captured physical evidence per §11.4.5/§11.4.69/§11.4.107 on a clean deployment per §11.4.108 runtime-signature, never metadata-only/config-only/absence-of-error/grep-without-runtime; (4) tracked to a terminal Status per §11.4.15/§11.4.33.
@@ -2269,7 +2304,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.8, §11.4.87, §11.4.94, §11.4.97, §11.4.103, §11.4.126, §11.4.192, §11.4.118, §11.4.123, §11.4.124, §11.4.150, §11.4.90, §11.4.112, §11.4.122, §11.4.21, §11.4.93, §11.4.54, §11.4.108, §11.4.15, §11.4.33, §11.4.5, §11.4.69, §11.4.107, §11.4.17
 
 #### §11.4.198 — Default working mechanisms: multi-alias native-first orchestration AND heavy token-optimization are ALWAYS-ON defaults
-- **Source:** governance-and-constitution-meta.md:1669-1685
+- **Source:** governance-and-constitution-meta.md:1686-1702
 - **Rules:**
   - Two mechanisms are STANDING always-on defaults for EVERY configuration (single- OR multiple-agent; single- OR multi-track), never a per-request opt-in.
   - (A) Multi-alias native-first orchestration is the DEFAULT: every OPERATIONAL claude-NATIVE alias before ANY provider per §11.4.196 (priority + real-signal limit tracking + auto-rebind-on-recovery), driven by the §11.4.187 ruler, MUST be the default execution substrate for ALL work, not only multi-track. A single-track/single-agent session STILL binds its worker through the native-first alias-priority mechanism (best operational native + rebind on recovery); a multi-track/multi-agent config uses it across every track (§11.4.176 exactly-once claim + §11.4.182 track+branch+alias label). Running on an arbitrary/hardcoded/provider-first alias when an operational native exists, or bypassing alias-priority because "it is just one agent", is a violation.
@@ -2281,7 +2316,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.141, §11.4.187, §11.4.196, §11.4.182, §11.4.176, §11.4.183, §11.4.103, §11.4.58, §11.4.20, §11.4.70, §11.4.126, §12.6, §12.12, §11.4.17
 
 #### §11.4.227 — Governance-corpus self-custody: named-gate ledger ratchet + anchor-block integrity
-- **Source:** governance-and-constitution-meta.md:1687-1707
+- **Source:** governance-and-constitution-meta.md:1704-1724
 - **Rules:**
   - The rule corpus is bound by the same custody it imposes. Reason (measured 2026-07-22): 413 named CM-* gates, 241 (58%) with no implementation in either canonical gate site, plus 85 "gate-code = separate work item" deferrals; propagation gates asserting literal-presence >= 1 reward restatement over implementation (two anchor blocks duplicated divergently in all four mirrors while presence gates stayed green; the §11.4.140/§11.4.141 anchor-number collision).
   - (A) NAMED-GATE LEDGER + IMPLEMENTATION RATCHET: every `CM-*`-class gate token named anywhere in the governance corpus MUST, at every build (governance repo and every wired consumer), be either IMPLEMENTED (token present in an EXECUTABLE gate site; prose carriers NEVER count, §11.4.201(7)(a)) or covered by a REGISTERED DEFERRAL row pointing at a tracked work item (§11.4.197). Silent gate debt is refused at the build seam. The unimplemented count is a MONOTONE-DECREASING ratchet, validated per §11.4.201(8) against the definition of done (at the correct end-state the count is 0). A gate NAME that vanishes without an explicit removal citation FAILs (deleting names to lower the count is closed; repeals stay legal and visible, §11.4.166 pattern). An anchor's "done" state is its SEAM landing, not its TEXT landing. Brownfield adoption (ratchet down from measured baseline vs hard-fail day one) is an operator §11.4.66 decision mirroring §11.4.224(E), never an invented ratchet.
@@ -2296,7 +2331,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.15, §11.4.17, §11.4.32, §11.4.54, §11.4.66, §11.4.75, §11.4.141, §11.4.157, §11.4.164, §11.4.166, §11.4.186, §11.4.194(6), §11.4.197, §11.4.201, §11.4.205, §11.4.224(E), §11.4.112(5), §11.4.120, §11.4.140, §11.4.142
 
 #### §11.4.228 — Cross-agent extension lifecycle: per-platform compatibility, source tracking, catalog with matrix, auto-wiring on constitution pull
-- **Source:** governance-and-constitution-meta.md:1709-1754
+- **Source:** governance-and-constitution-meta.md:1726-1771
 - **Rules:**
   - Reason (one clause): constitution skills existed in source but were un-wired to any platform ("docs say present, runtime says absent", the gap §11.4.108 forbids); 14 of 18 local skills had no origin record.
   - (A) Every governed extension (Skill, MCP server, ACP bridge, LSP, plugin, provider alias, embedding, daemon, any future class) MUST ship a per-platform compatibility declaration covering at minimum Claude Code, OpenCode, Gemini CLI, Qwen Code.
@@ -2326,7 +2361,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.164, §11.4.157, §11.4.65, §11.4.86, §11.4.106, §11.4.69, §11.4.124, §11.4.3, §11.4.112, §11.4.139, §11.4.32, §11.4.108, §11.4.197, §11.4.169, §11.4.142, §11.4.194, §11.4.17, §11.4.35, §11.4.44, §11.4.6, §11.4.201, §1.1
 
 #### §11.4.272 — Dynamic, on-demand skill/extension activation: active capability surface is the minimum needed now
-- **Source:** governance-and-constitution-meta.md:1756-1784
+- **Source:** governance-and-constitution-meta.md:1773-1803
 - **Rules:**
   - Reason: a host skill pool of 955 skills cost ~29,153 B (~7,288 tok, bytes/4 ESTIMATE) of names per turn, or 101,279 B (~25,319 tok) with descriptions (3.5x cliff the project does not control).
   - Every project whose agent platform exposes a capability surface (Agent Skills, plugins, extensions, tool sets) MUST keep the ACTIVE surface at the minimum genuinely needed, everything else activatable ON DEMAND; ALL of (A)-(H) hold.
@@ -2352,7 +2387,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §9.2, §11.4.6, §11.4.28, §11.4.35, §11.4.74, §11.4.80, §11.4.102(B), §11.4.119, §11.4.122, §11.4.141, §11.4.164, §11.4.174, §11.4.176, §11.4.177, §11.4.180, §11.4.201, §11.4.17, §11.4.227, §1.1
 
 #### §11.4.273 — Measuring-instrument verification: a census that informs a decision must be control-needled before its result is believed
-- **Source:** governance-and-constitution-meta.md:1788-1826
+- **Source:** governance-and-constitution-meta.md:1805-1845
 - **Rules:**
   - Reason: fifteen ad-hoc measurements in one session returned plausible actionable results that were instrument artefacts (e.g. a census matching one of two block-opener forms manufactured 24 phantom dangling anchors; `$?` read after a pipeline or clobbered by a command substitution in the same statement; a denylist with two needles searched with one reported a live credential as eliminated; `comm` on numerically-sorted input; `grep -w` treating `-` as boundary; `while read` dropping a final line without newline; wrong env knob so the mutation tree was never loaded).
   - Gap closed: §11.4.201 governs blocking guards/gates and §11.4.107(10) analyzers; neither covers the ad-hoc census that INFORMS (grep, set difference, exit-code read, field lookup, row count) whose output is a FACT a decision is built upon.
@@ -2373,7 +2408,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.2, §11.4.107(10), §11.4.118, §11.4.201, §11.4.17, §11.4.35, §11.4.227, §1.1
 
 #### §11.4.274 — Mechanical work belongs in a script, not in an agent's context: extract it, test it, re-scan on a cadence
-- **Source:** governance-and-constitution-meta.md:1830-1848
+- **Source:** governance-and-constitution-meta.md:1847-1865
 - **Rules:**
   - Reason: five review agents consumed ~400-450k tokens EACH, dominated by deterministic mechanics (copy tree, apply one-line mutation, run suite, read summary, restore, verify byte-identical, compare counts) run one tool call at a time.
   - Work that is DETERMINISTIC, REPEATABLE and contains NO JUDGMENT MUST be delegated to a properly written script or small compiled utility and invoked, not performed turn-by-turn inside an agent's context. Belongs in a tool: mutation apply/run/restore/verify loops; suite fan-outs and result tabulation; before/after comparisons; scratch-tree setup/teardown; residue and quiescence scans; census and inventory queries; artifact fingerprinting; evidence collection and layout; any step already written as a fixed recipe.
@@ -2390,7 +2425,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.18, §11.4.50, §11.4.5, §11.4.141, §11.4.201, §11.4.273, §11.4.124, §11.4.102, §11.4.125, §11.4.142, §11.4.194, §11.4.17, §11.4.35, §11.4.6, §11.4.227, §1.1
 
 #### §11.4.275 — Semantic (Lumen) index + indexing-efficiency gate + universal agent/subagent accessibility
-- **Source:** governance-and-constitution-meta.md:1850-1880
+- **Source:** governance-and-constitution-meta.md:1867-1897
 - **Rules:**
   - Reason: a semantic search server was configured yet reported 0 files/no model/never indexed; the structural index cut tokens 69.2% over 8 both-correct queries yet answered 5 of 15 WRONG (grep+read 2 of 15); one uncached full-table query was 93.4% of resolve time; FK cascade stalled bulk window; launcher classified `sync` by stored rows not pending backlog; vendor reaps locks by age not liveness and a writable open recreates dropped indexes without the lock; an errored instrument's empty result nearly read as absent.
   - (A) UNIVERSAL ACCESSIBILITY: every code index the project maintains (structural CodeGraph §11.4.78, semantic Lumen, any future index) MUST be reachable by EVERY AI agent AND every dispatched subagent through a server DEFINITION they can actually resolve (project-scoped committed configuration or installed plugin; never a per-user toggle only the main session sees). A configuration that ENABLES a server which nothing DECLARES is a violation. Proof = a real tool call FROM A DISPATCHED SUBAGENT returning an index-only fact (§11.4.78(4) unforgeable challenge), per agent; an agent that cannot be driven is a documented §11.4.3 SKIP, never a faked PASS.
@@ -2433,7 +2468,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.12, §11.4.18, §11.4.22, §12.6, §12.7, §12.9
 
 #### §11.4.58 — Parallel-development methodology (PWU pipeline)
-- **Source:** host-and-resource-safety.md:118-331
+- **Source:** host-and-resource-safety.md:118-333
 - **Rules:**
   - Project work proceeds through the Parallel Work Unit (PWU) pipeline, not a sequential phase-chain. Each PWU is a self-contained workable item with mandatory components: ATM-NNN id (11.4.54), Issues.md entry (11.4.15+11.4.16), file-scope manifest, 11.4.43 RED test, source patch, pre-build gate (11.4.4(b) layer 1), post-flash test (layer 3), paired 1.1 meta-test mutation, layer 4 HelixQA Challenge bank entry, captured-evidence directory (11.4.5+11.4.52).
   - Five stages: Stage 1 DEVELOP (parallel, N PWU agents in isolated worktrees); Stage 2 MERGE (serial, conductor one PWU at a time via commit_all.sh flock + 11.4.41 4-step merge-first pipeline); Stage 3 REBUILD+FLASH (parallel where possible; AOSP build in bounded scope, flash serialised on USB hardware); Stage 4 VALIDATE (parallel on D3+D4+meta-test+coverage-audit); Stage 5 SWEEP (parallel: HelixQA bank, Issues to Fixed migration, README doc-link refresh per 11.4.57, HTML+PDF exports). Stage 1 of round N+1 starts while Stages 4+5 of round N run.
@@ -2453,7 +2488,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Applicability: projects with multiple owned submodules, a sequential commit/push tool and a captured-evidence testing discipline. Peak-agent bound: about 6 GB total, within a 38 GB budget.
 
 #### §11.4.96 — Safe-parallel-work-with-long-build catalogue + mandate
-- **Source:** host-and-resource-safety.md:335-385
+- **Source:** host-and-resource-safety.md:335-387
 - **Rules:**
   - Operational catalogue extending 11.4.94 (always check parallel-work feasibility before idle), 11.4.89, 11.4.58, for the canonical long workload (5-7 h AOSP containerised build per 12.9).
   - SAFE during the build (closed set): (A) Markdown/documentation work (docs/, *.md, README, CLAUDE.md, AGENTS.md, QWEN.md, Status, Issues/Fixed and summaries, changelogs, research notes); (B) generator and helper script work under scripts/ (host-side, never consumed by the build); (C) pre-build/meta-test gate authoring + paired 1.1 mutations (picked up by the NEXT pre-build run); (D) on-device test authoring under device/rockchip/rk3588/tests/test_*.sh; (E) constitution submodule edits + push to all 6 remotes; (F) project submodule commit + push (background per 11.4.88); (G) read-only live-ADB probes of D3/D4 (dumpsys, getprop, cat /proc/asound, screencap, logcat -d); (H) subagent dispatch per 11.4.20/11.4.70 (multiple subagents coordinate via 11.4.84 quiescence); (I) web research and external API queries with 11.4.10 credential discipline; (J) workable-items DB operations per 11.4.93+11.4.95; (K) pre-build verification + meta-test execution run per 11.4.89 background discipline.
@@ -2483,7 +2518,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.8, §11.4.17, §11.4.35, §11.4.69, §11.4.108, §11.4.110
 
 #### §11.4.119 — Single-resource-owner partitioning for parallel hardware testing
-- **Source:** host-and-resource-safety.md:409-429
+- **Source:** host-and-resource-safety.md:409-431
 - **Rules:**
   - Short tag: single-resource-owner-partitioning. Reason: two streams driving media on the same device corrupt each other's evidence.
   - When multiple parallel work/test/discovery streams exercise shared hardware or any exclusive-access resource (media-playback path, single HDMI/audio sink, exclusive device handle, single serial/JTAG line, GPU under exclusive capture), exactly ONE stream MUST own each such resource at a time.
@@ -2519,7 +2554,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.2, §11.4.5, §11.4.13, §11.4.69, §11.4.40, §11.4.42, §11.4.70, §11.4.77, §11.4.78, §11.4.79, §11.4.83, §11.4.103, §11.4.119
 
 #### §11.4.144 — Tracked/recorded-device availability-following mandate
-- **Source:** host-and-resource-safety.md:445-455
+- **Source:** host-and-resource-safety.md:445-457
 - **Rules:**
   - Every device the project records or tracks (test/debug/manual-testing, any transport) MUST be availability-FOLLOWED: connection state continuously monitored; a drop is never silently abandoned and never presented as continuous recording (a silent corpus hole is a PASS-bluff at the recording-integrity layer).
   - On a tracked device leaving its reachable state the system MUST automatically: (a) DETECT and log an honest offline event into the recording corpus; (b) WAIT for return using the project's ALREADY-DEFINED reconnection timings (same grace/reconnect/poll budgets as the recovery path; never invented numbers); (c) RE-ATTACH and resume recording/tracking the moment the device returns, logging an honest online/resume event; (d) ESCALATE to the sanctioned device-recovery path (11.4.69 feature class device_recovery) if the device does not return within the defined timeout, via the authorization-gated entry point ONLY, never bypassing its gate and never performing a destructive recovery (e.g. power-cycle) autonomously without that authorization (11.4.21/11.4.101); while blocked keep following and log the blocked escalation honestly.
@@ -2579,7 +2614,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.151, §11.4.128, §11.4.153, §11.4.154, §11.4.111, §11.4.83, §11.4.6, §11.4.29, §11.4.30, §11.4.35, §11.4.77, §11.4.86, §11.4.122, §9.2
 
 #### §11.4.174 — Shared-host process-ownership verification mandate
-- **Source:** host-and-resource-safety.md:507-507
+- **Source:** host-and-resource-safety.md:507
 - **Rules:**
   - On any host where other projects/users/agents may run concurrently, EVERY inspection of, conclusion about, or action on a process, build, daemon, port, lock-file, or system-state signal MUST FIRST positively verify the target is OURS before diagnosing or acting. Diagnosis from another project's process is a 11.4.6 guessing-class error; killing/signalling/restarting/altering a process not positively ours is a 12 + 11.4.133-class safety violation.
   - (a) Positive-ownership discriminator REQUIRED: attribute only via a strong signal: cwd inside THIS project's tree, argv naming this project's scripts/artifacts/repo path, a PID we launched and recorded (11.4.147 launched-PID registry), or lock/port/socket path under our tree. A loose name match (pgrep java/gradle/node/python/podman/zig) is NEVER sufficient.
@@ -2625,7 +2660,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Canon cites §11.4.239 only in a citation note, not in its Composes list.
 
 #### §11.4.263 — Process-group signal-safety mandate (never signal pgid <= 1)
-- **Source:** host-and-resource-safety.md:535-599
+- **Source:** host-and-resource-safety.md:535-601
 - **Rules:**
   - Reason (BOB-126): an AsyncMock subprocess with unset pid coerced to int 1, so os.killpg(os.getpgid(1), SIGKILL) became kill(-1, SIGKILL), killing the whole UID session; seven forced logouts over ~48h; a suppress(Exception) swallowed nothing because the syscall succeeded.
   - (A) NEVER signal pgid <= 1: no code path may call os.killpg / kill(-pid, sig) / killpg(2) / pkill -<pgid> / subprocess.killpg / Process.killpg where pgid (or pid in the negative-pid kill form) is <= 1. killpg(1,sig) == kill(-1,sig) signals every process the caller may signal; portable across BSD/macOS.
@@ -2713,7 +2748,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §12.1, §12.2, §12.3, §12.6, §12.10, §11.4.6, §11.4.24, §11.4.133, §9.2, §11.4.35
 
 #### §12.12 — Process/thread-limit (RLIMIT_NPROC) awareness for parallel subagent/multi-process work
-- **Source:** host-and-resource-safety.md:741-761
+- **Source:** host-and-resource-safety.md:741-763
 - **Rules:**
   - The limit: parallel subagent/multi-process work is bounded by the OS per-user process/thread limit `ulimit -u` (RLIMIT_NPROC), which on Linux counts ALL threads AND processes of the real UID (not per-process). Ambient tooling (MCP servers, language runtime worker pools, mongod/chrome/prisma-class servers, local LLM servers) consumes a large FIXED fraction before project work starts. Reason: a host at `ulimit -u 4096` sat at ~3900-4005 threads from ambient MCP alone; a 4th Go-heavy subagent (GOMAXPROCS=nproc) hit EAGAIN / `failed to create new OS thread (errno=11)`; stopping three non-essential MCP servers freed ~1345 threads (3827 -> 2482).
   - Mandate: BEFORE scaling to N parallel subagents/processes the agent MUST check thread headroom and treat thread-limit exhaustion as a §12 host-safety event that YIELDS UNCONDITIONALLY, same standing as §12.6 (memory) and §12.7 (AOSP -j cap). It is an ORTHOGONAL exhaustion axis to §12.6: both MUST be checked independently.
@@ -2735,7 +2770,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 ### Multi-track and parallelism (13 anchors)
 
 #### §11.4.103 — Continuous parallel-stream working routine (main stream FREE, >=3 background streams, auto-backfill)
-- **Source:** multi-track-and-parallelism.md:3-35
+- **Source:** multi-track-and-parallelism.md:3-37
 - **Rules:**
   - Standing default working routine, not a per-request opt-in. Promotes the multi-stream pattern; binds §11.4.87/.88/.89/.94/.96 into one always-on routine.
   - (A) Main stream stays FREE: every commit AND every push MUST run detached in the background (`nohup ... > <log> 2>&1 &` + `disown`, per §11.4.88). Main stream MUST NOT block on a commit landing or a push/mirror completing; once the local commit is durable it returns to the priority queue. Blocking on a push is a violation.
@@ -2802,7 +2837,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.111, §11.4.119, §11.4.176, §11.4.29, §11.4.58, §11.4.187, §11.4.35, §11.4.17
 
 #### §11.4.182 — Track+branch work-stream identity label (T<N>/<branch> - alias - model - effort) on every agent/subagent/work-stream label
-- **Source:** multi-track-and-parallelism.md:161 (base anchor) and :256 (2026-07-26 model/effort-in-label extension, which cites and extends this anchor)
+- **Source:** multi-track-and-parallelism.md:161
 - **Rules:**
   - (1) Every agent/subagent/work-stream label AND every operator-facing reference to a work stream (dispatch descriptions, status reports, resume/handoff docs, progress lines) MUST START with the prefix `(T<N>/<branch> - <alias>)`: `<N>` track number, `<branch>` git branch, `<alias>` claude-toolkit alias in use; e.g. `(T1/main - claude1) ATM-312 ...`.
   - (2) Label is DERIVED, never typed from memory/guessed (§11.4.6): `<N>` from checkout path (`/mnt/track<N>/...`; honest `?` if not under a numbered track), `<branch>` from `git rev-parse --abbrev-ref HEAD`, `<alias>` from `CLAUDE_CONFIG_DIR` basename `.claude-<alias>` (honest `?` when unset/non-matching). Consumer supplies a deterministic labeler (reference `scripts/multitrack/track_branch_label.sh`).
@@ -2866,7 +2901,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.28, §11.4.29, §11.4.35, §11.4.58, §11.4.75, §11.4.84, §11.4.93, §11.4.95, §11.4.109, §11.4.110, §11.4.113, §11.4.119, §11.4.167, §11.4.176, §11.4.177, §11.4.178, §11.4.181, §11.4.182, §9.2
 
 #### §11.4.192 — Continuous multi-track auto-backfill (a FREE track is immediately re-assigned its next domain work-set)
-- **Source:** multi-track-and-parallelism.md:169
+- **Source:** multi-track-and-parallelism.md:169-171
 - **Rules:**
   - The moment any track's worker COMPLETES its current work-set (items closed with anti-bluff evidence, or merged), that FREE track MUST be IMMEDIATELY assigned the NEXT-highest-priority actionable work-set from its OWN domain (its §11.4.191 logic_group / canonical branch). A track is NEVER idle while its domain holds actionable items; the conductor/ruler continuously re-assigns with no stopping. Promotes §11.4.103(B) (stream backfill) into the multi-track layer (track backfill, keyed to canonical (track, branch) domain).
   - (1) On completion the conductor/ruler (§11.4.187) MUST look up the next actionable work-set for that track's domain, CLAIM it exactly-once (§11.4.176), and DISPATCH it as the track's new §11.4.182-labelled work stream, without waiting for a scheduled wake or operator prompt.
@@ -2879,10 +2914,10 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Honest boundary:** a track idles only in the (4) closed set; "nothing visible" is never valid. Gate-code is a separate work item.
 - **Composes:** §11.4.42, §11.4.58, §11.4.72, §11.4.94, §11.4.97, §11.4.101, §11.4.103, §11.4.167, §11.4.176, §11.4.178, §11.4.179, §11.4.182, §11.4.187, §11.4.191, §11.4.108, §11.4.115, §11.4.185, §11.4.3, §11.4.52
 
-#### §11.4.230 — Parallelized-pipeline methodology (build/validate overlap, affected-stages-only re-run, parallel multi-device testing, fan-out subagents always, incremental delivery granularity with a declared QA-build cadence; clause (D) added 2026-10-04)
-- **Source:** multi-track-and-parallelism.md:189-204 for clauses (A)-(C); clause (D): Constitution.md (constitution tip a71b1767) lines 10986-11004 (groups/ at this tip does not carry clause (D), see pin-upstream-findings.md)
+#### §11.4.230 — Parallelized-pipeline methodology (build/validate overlap, affected-stages-only re-run, parallel multi-device testing, fan-out subagents always, incremental delivery granularity with a declared QA-build cadence, a quick visible first deliverable with a machine-computed hardening status and ledger tracked to production readiness; clause (D) added 2026-10-04, clause (E) added 2026-10-12)
+- **Source:** multi-track-and-parallelism.md:189-242
 - **Rules:**
-  - Binds §11.4.58/.89/.103/.119/.128/.144 into one discipline and adds the four invariants they did not each state on their own: (A) the build<->validate CONCURRENCY seam + affected-stages-only re-run-on-discovery, (B) all-devices-concurrent + worker-pool recording/processing, (C) fan-out-subagents as the standing default, (D) incremental delivery granularity + a declared QA-build cadence (added 2026-10-04); a strengthening bind, never a weakening (parallelization capstone like §11.4.103).
+  - Binds §11.4.58/.89/.103/.119/.128/.144 into one discipline and adds the five invariants they did not each state on their own: (A) the build<->validate CONCURRENCY seam + affected-stages-only re-run-on-discovery, (B) all-devices-concurrent + worker-pool recording/processing, (C) fan-out-subagents as the standing default, (D) incremental delivery granularity + a declared QA-build cadence (added 2026-10-04), (E) a quick visible first deliverable, then hardening tracked to production readiness (added 2026-10-12); a strengthening bind, never a weakening (parallelization capstone like §11.4.103).
   - (A) PIPELINE-OVERLAP: validation/verification MUST run CONCURRENTLY WITH the build wherever a stage does NOT depend on the build's own not-yet-produced artifact. Deploy the moment the build is done (build completion is the deploy trigger; §11.4.121, §11.4.108 ordering). WHILE a build runs, run in parallel per §11.4.96 SAFE catalogue: pre-build source-layer gates + meta-test mutation sweeps + coverage/clash checks (§11.4.110), independent code review on batch SOURCE (§11.4.125/.142/.194), doc/DB sync (§11.4.106), on-device validation of the PRIOR build (§11.4.119).
   - (A) On any NON-huge-blocker discovery the cycle MUST: (1) bump the version code (new distinctly-identifiable candidate; never reuse the failing artifact's id; §11.4.111, §11.4.200); (2) fix at proven root cause (§11.4.102 first, §11.4.115 RED on the broken artifact); (3) RE-RUN ONLY THE AFFECTED STAGES, parallelized (its own targeted validation FIRST per §11.4.130, then the affected regression set), NOT a serial restart of the entire cycle.
   - (A) Efficiency target: **4-5x reduction in time-to-a-manual-QA-capable-release** versus fully sequential, a MEASURED target tracked as build-and-validate wall-clock deltas (§11.4.24), never assumed.
@@ -2899,14 +2934,25 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
   - (D.6) QA FINDINGS ON EARLY INCREMENTS ARE STILL COVERAGE ESCAPES: earlier more frequent QA builds do not make manual QA the discovery mechanism; every defect manual QA finds triggers the §11.4.238(C) coverage-escape audit and a new automated check.
   - (D) honest boundary: changes WHEN and HOW OFTEN proven-correct work reaches QA, NOT what gates a release candidate; it does not prove any increment correct (that stays §11.4.108 / §11.4.235); does not weaken §11.4.129, §11.4.40 (a cadence QA build is not a tag), §11.4.185, §11.4.236, §11.4.264/§11.4.265, §11.4.134 or §11.4.235(D)'s conservative default (an unclassifiable finding is a source-defect). Research grounding stated honestly in canon (DORA small batches, Hodgson toggle taxonomy, branch-by-abstraction, SAFe cadence, GitHub Next Continuous AI as direction only); no published methodology combining per-increment QA delivery with continuous agent hardening streams was found, the composition is the clause's own synthesis. §11.4.230's next free clause letter is (E); never reuse (A)-(D).
   - (D) recommended gates: CM-INCREMENT-DELIVERED-NOT-SPEC-WITHHELD (FAIL: an increment holding its source-correctness GO is absent from every handed-to-QA or in-flight QA build from its integration branch after the trigger fired and no build from that branch is in flight, with coalescing so waiting on an in-flight build's successor is never a FAIL and a failed/refused build counts as neither completed nor in flight; FAIL, the §11.4.201(1) dual guard: an increment WITHOUT that GO appears in a QA build), CM-QA-BUILD-CADENCE-DECLARED (FAIL: build-eligible content uncovered after the trigger fired with no build in flight; a periodic/whichever-first interval with no justification; an absent declaration must resolve to per-increment, never to no cadence), CM-RELEASE-TOGGLE-TRACKED-EXPIRY (FAIL: a toggle with no tracked removal item or no expiry, or past expiry), CM-QA-HANDOFF-TRACKER-IN-SYNC (FAIL: a hand-off item set disagrees with the deliverable's contents); paired §1.1 mutations; gate-code is a separate work item, NOT claimed shipped.
+  - (E) QUICK VISIBLE FIRST DELIVERABLE, THEN HARDENING TRACKED TO PRODUCTION READINESS (operator CRITICAL mandate 2026-10-12, request R-2026-10-12-195857, quoted in canon exactly as typed with its typos preserved [sic]): a fast deliverable is ALWAYS labelled as fast, NEVER passed off as finished and NEVER bought with weaker evidence. Gap closed: clause (D) makes proven increments deliverable and keeps the tracker true at hand-off, but nothing (i) ordered a new scope's critical path so its FIRST deliverable is not queued behind deliverable-independent work, (ii) recorded HOW HARDENED a delivered build is, (iii) joined the hardening debt open against a delivered fingerprint into one ledger, (iv) tracked that debt's trajectory with direction, stall and starvation rules, or (v) defined "quick" as a measurement. A fast deliverable whose record cannot be told from a finished one is a §11.4 PASS-bluff at the delivery-status layer; one that skipped any seam is a PASS-bluff at the evidence layer.
+  - (E.1) FIRST-DELIVERABLE CRITICAL PATH, SCHEDULED FIRST: when a scope starts (a spec, a declared group of tracked items or any consumer-declared delivery scope, DATA per §11.4.35) the work that makes its FIRST increment build-eligible and deliverable is the critical path and runs first: the source fix; its source-correctness review to GO (§11.4.235(A)/(D), §11.4.209 substrate, bounded by §11.4.276); the pre/post-build gates and every operator-declared QA-deploy blocker §11.4.236 requires; the build; the flash; the §11.4.235(E) live sanity and per-item verdicts. Deliverable-independent work (every (E.3)(b) ledger entry class that the (E.2) seams do not require for a QA build) MUST NOT be placed ahead of it; it STARTS IN PARALLEL from the first moment as background streams (clause (C), §11.4.103, §11.4.183, §11.4.192). "Quick" re-orders WHEN hardening COMPLETES relative to the first deliverable, never WHETHER it runs and never makes it wait to START. The first deliverable MUST contain at least one increment holding its own source-correctness GO (D.1) and MUST exercise a user-visible behaviour of that increment on the target; an empty or no-behaviour-change build delivered only to stop a clock is a §11.4.6 fabrication. A consumer's stricter build precondition (e.g. a mandatory specification-and-review workflow reaching GO) still applies in full and is part of the critical path.
+  - (E.2) EVIDENCE IS NEVER TRADED FOR SPEED: a quick deliverable passes EXACTLY the same seams with the same evidence strength as any other QA build - the source-correctness GO (§11.4.235(A)/(D), §11.4.209, §11.4.134, §11.4.276); §11.4.108 artifact-layer and runtime-on-clean-target evidence for the delivered fingerprint; §11.4.236 readiness; the §11.4.235(E) per-device live sanity and per-item verdicts; §11.4.5 / §11.4.262 machine-created evidence; §11.4.50 as written (N=3, N=10 for cycle-validation suites, identical PASS each time against the same firmware MD5, device and topology); §11.4.201(6)-(12) / §11.4.273 control-needled nulls. Nothing lowers, skips, defers, samples or narrates any of these; a deliverable that reached QA by weakening one is a PASS-bluff and §11.4.236 refuses it. The ONLY permitted gaps are the (E.3)(b) ledger's entry classes (the two lists are identical by construction), except that a seam is never a gap: a contained item with neither a live verdict nor an honest per-item SKIP-with-reason blocks the hand-off itself, and an (L1) entry is `open` in a delivered ledger only when a later live FAIL reopens it. Every permitted gap is LABELLED in the status and ledger, never silently absent.
+  - (E.3) EVERY DELIVERABLE CARRIES A MACHINE-COMPUTED HARDENING STATUS, ITS OPEN HARDENING LEDGER AND THE EVENT RECORDS BOTH ARE COMPUTED FROM: every QA hand-off record (D.5) carries (a) the HARDENING STATUS computed from (b) the OPEN HARDENING LEDGER and (c) the EVENT RECORDS. (b) The ledger is a READ-ONLY JOIN over the stores that already own each fact, NEVER a new parallel or hand-maintained store (§11.4.227, §11.4.233(F)); its entry classes are a CLOSED list: (L1) each contained item with no passing §11.4.235(E.3) live verdict on this fingerprint; (L2) per contained item the tests still owed (§11.4.4(b) four layers, §11.4.27 / §11.4.169 types, paired §1.1 mutations); (L3) each open §11.4.235(D) test-instrumentation / process-doc finding against contained code; (L4) each open §11.4.261 finding touching contained code; (L5) each tracked polish item against a contained item; (L6) the §11.4.40 full-suite retest until it has passed on this fingerprint; (L7) each §11.4.260 production-readiness invariant not green for a contained component; (L8) each §11.4.271 waiver covering contained code. Every entry carries its own tracked §11.4.197 id (§11.4.54; an entry with none is itself a §11.4.261 finding) and exactly one DISPOSITION from the CLOSED set {open | closed | skipped | not-applicable | waived}: closed = its own closing evidence exists for this fingerprint; skipped = an honest per-item SKIP whose code is one of the two TOPOLOGY-ABSENT codes of the consumer's §11.4.69 closed set, `hardware_not_present` or `topology_unsupported`, never invented (§11.4.3); not-applicable = the consumer has no tier for the entry, recorded with `feature_disabled_by_config` (for L1 exactly the §11.4.235(E.4) N/A consumer); waived = covered by a waiver valid under §11.4.271 at computation time (an elapsed or invalid waiver makes it open); open = every other case and every case whose input cannot be resolved. PERMITTED DISPOSITIONS PER CLASS (a disposition outside its row is INVALID): L1 open | closed | skipped | not-applicable (a live verdict is a seam, never waived); L2 open | closed | skipped | not-applicable | waived; L3, L4, L5 open | closed | waived (a finding or polish item never disappears as absent topology); L6 open | closed | not-applicable (the §11.4.40 retest is never skipped and never waived); L7 open | closed | not-applicable (an unmet §11.4.260 invariant blocks release; not-applicable only when the invariant has no subject in that component); L8 open | closed | waived. skipped, not-applicable and waived entries count as resolved for the status but are NEVER hidden: listed with reason and tracked id, counted per class in every announcement and enumerated as honest gaps in the release notes (§11.4.135, §11.4.118).
+  - (E.3)(c) EVENT RECORDS: every fact the status reads is an EVENT RECORD in the existing append-only §11.4.116 event stream (reused, never a second store) carrying the fingerprint; a SEQUENCE NUMBER assigned by the stream's single writer at append time (strictly increasing; the ONLY ordering key); the wall-clock write time (audit only, NEVER ordering, because clocks skew); the WRITER ROLE stamped by the seam that performs the write and never by the writer (§11.4.240(B)); the record KIND from {disposition, qa-confirmation, release-seam-pass}; and its payload. Every write to an owning store (create, change disposition, delete) lands in that store's write-seam log (§11.4.106(F)) and the seam mirrors every creating or disposition-changing write as a `disposition` record: a creation as an `open` BIRTH record (reason code `open-debt`) so a later row deletion never removes the entry. A record carries exactly ONE fingerprint and is never inherited: fingerprint-keyed stores mirror once; scope-keyed stores mirror once per already-delivered fingerprint whose hand-off names a matching item or path at write time; a fingerprint delivered later gets `open` BIRTH records for every matched row at its hand-off. WRITER ROLES {verifier-seam | qa-confirmer | release-seam | producer}; ALLOWED WRITERS: a `disposition` setting `open` - any role (a downward write is always safe, §11.4.201(4)); any other disposition - the verifier-seam ONLY, never the producer (§11.4.240, §11.4.249); `qa-confirmation` - the qa-confirmer only; `release-seam-pass` - the release-seam only. The FIELD TABLE (F1-F10: fingerprint, contained_items, contained_paths, store_decls with required / keying, store_reads with a §11.4.273 control needle, records with rid / seq / kind / role / fp / entry / disp / code / ref / label, write_log, waivers, repairs, now) is the projection of the status function's ONE typed input record: every value the function reads is a named field, every field is read, each carries SOURCE / VALID / ABSENT / ORDER / IDENTITY, and an implementation conforms only when its input record projects to the table byte for byte; no unlisted fact (store declaration or storage order, wall-clock time other than F10, a record label) ever decides a status, and a tie the table does not resolve is X. DERIVED VALUES V1-V9 (record scope; sequence check, with a §11.4.268 repair carrying a recorded §11.4.66 decision as the only quarantine; join with normalised-path comparison; entry identity with row keys unique across stores; entry set; class from the owning-store row, never from a record label; latest record; waiver validity; valid-until) and the PERMITTED REASON CODES PER DISPOSITION table (open `open-debt`; closed `closing-evidence` with an evidence reference; skipped `hardware_not_present` | `topology_unsupported`; not-applicable `feature_disabled_by_config`; waived `waiver` with an evidence reference) are in canon. A `disposition` record is VALID only when in scope, its entry matches exactly one row, any class label equals that class, the writer role is allowed, the disposition and reason code are permitted and the evidence reference its code requires is present (for `waived`, the waiver its evidence reference names is valid, V8); a `qa-confirmation` is VALID when in scope, written by the qa-confirmer, with a sequence number greater than every in-scope `disposition` record; a `release-seam-pass` when in scope, written by the release-seam, with a sequence number greater than the latest `qa-confirmation`. A record that is not valid is never silently dropped: it is shown, it is a §11.4.261 finding, and it makes its entry `open` when it is the entry's latest record.
+  - (E.3)(a) THE STATUS takes exactly one value from the CLOSED set {delivered-unhardened | delivered-hardened-awaiting-qa | production-ready} and carries a `pending` field from the closed set {ledger, manual-qa, release-seam, not-fingerprint-bound, unresolvable-input}; it is a PURE FUNCTION of the FIELD TABLE's fields (never typed by hand, never dependent on record storage order or on wall-clock time except through §11.4.271 waiver expiry, which can only lower it) and carries a VALID-UNTIL (the earliest waiver expiry it counts). Inputs: X = at least one input cannot be resolved (a missing or unreadable field, an undeclared or unreadable store whether required or not, a required store with no matched row, a sequence defect, a row key matched in more than one row, an unnormalisable scope or path, a missing write-log mirror or birth record); O = entries in the entry set whose disposition is `open`; Q = the latest in-scope `qa-confirmation` is valid (so any ledger record written after a confirmation - a reopen and its later re-close alike - VOIDS it); S = Q holds and a valid `release-seam-pass` exists after the latest confirmation (voiding the confirmation voids the seam record); B = at least one owning store is labelled not-fingerprint-bound. The release seam MUST refuse to write its record unless O = 0, Q holds and B does not. TRANSITION TABLE (top to bottom, first match wins, total over X, O, Q, S, B): row 1 X -> delivered-unhardened, pending unresolvable-input (conservative-safe, never upward); row 2 O > 0 -> delivered-unhardened, pending ledger; row 3 O = 0 and not Q -> delivered-hardened-awaiting-qa, pending manual-qa; row 4 O = 0, Q, and (not S or B) -> delivered-hardened-awaiting-qa, pending containing release-seam exactly when S fails and not-fingerprint-bound exactly when B holds; row 5 O = 0, Q, S and not B -> production-ready, pending empty. A later record changing any disposition recomputes the status DOWNWARD by the same table; no status is sticky. FRESHNESS: every owning store is fingerprint-keyed, scope-keyed (item id / code path with a per-record write time) or explicitly labelled NOT-FINGERPRINT-BOUND in the consumer's store declaration (§11.4.35); a status is FRESH only while its ledger snapshot includes - by sequence number, never wall-clock - the latest event record of every matching record of every owning store, and only before its VALID-UNTIL; it is recomputed at every announcement, at every owning-store write (§11.4.106(F), §11.4.229) and at its VALID-UNTIL; a status announced from an older snapshot, another fingerprint or at / after its VALID-UNTIL is STALE and itself a §11.4.261 finding; a not-fingerprint-bound store can never be proven fresh, so it holds the status below production-ready (row 4) until bound. ANNOUNCEMENT: status, pending field and per-class per-disposition ledger counts MUST appear wherever the deliverable is announced (hand-off record, release / deploy notes, §11.4.97 progress report, §11.4.259 README badge row) with the fingerprint, snapshot time, VALID-UNTIL and every quarantine relied on; while the newest deliverable of any open scope is delivered-unhardened, stale or unknown the §11.4.259 production-readiness gauge MUST NOT read GREEN; "quick" is never presented as "production ready".
+  - (E.4) TRACKED CONVERGENCE TO PRODUCTION READINESS: each cadence build appends a convergence record to the §11.4.116 stream (fingerprint, status, pending, ledger counts per class and disposition, delta against the previous deliverable of the scope), the trajectory reported in every §11.4.97 progress report. DIRECTION RULE: a scope's `open` count MUST NOT grow between consecutive deliverables except by entries NEW increments brought in (otherwise a §11.4.261 finding). STALL RULE: the `open` count failing to decrease across N consecutive no-new-increment deliverables is a STALL under §11.4.267(D) - escalated, re-tiered (§11.4.231) or routed to a recorded §11.4.66 decision; N is consumer DATA (§11.4.35, §11.4.267(E)), never a constitutional literal, and distinct from every other consumer N (e.g. the §11.4.235(E.2) consecutive-DEFERRED bound); a bound scope with no declared N is a CONFIG ERROR, never a silently unbounded window. STARVATION RULE: a scope with O > 0 MUST have at least one live hardening stream dispatched (§11.4.232(A) registry row, §11.4.147 agent registry) whenever host headroom exists under clause (C); O > 0 with zero live streams is STARVATION and a §11.4.94 / §11.4.97 zero-idle violation. LOOP DONE-CONDITION: the §11.4.126 done-condition is NOT satisfied while any delivered scope of the current release has O > 0 (unless every open entry is blocked on a recorded external dependency, §11.4.101 / §11.4.21); a scope at delivered-hardened-awaiting-qa IS a recorded external block (the QA confirmation and release-seam record are the operator's and the seam's by design); for a non-release scope (§11.4.126(B)) reaching that status with pending naming only manual-qa or release-seam satisfies done. An external block NEVER idles the loop.
+  - (E.5) PARALLELISM MAXIMAL AND BOUNDED: the critical path (E.1) and the hardening streams (E.4) run concurrently by default under clause (C) / §11.4.183 inside clause (C)'s boundary; where they contend for one exclusive resource (§11.4.119 / §11.4.176) the critical path holds it until the first deliverable is handed off, and contention is never resolved by skipping an (E.2) seam.
+  - (E.6) "QUICK" IS MEASURED, NEVER GATING: each scope records TIME-TO-FIRST-DELIVERABLE (scope start to the first hand-off passing §11.4.236 with its (E.3) status) and per-increment GO-TO-HAND-OFF latency (§11.4.24-style statistics) as TREND metrics only, validated under §11.4.201(8) for direction (a shorter time that still passes (E.2) is better; one achieved by failing (E.2) does not count) and NEVER used to gate, rank or reward (a gating speed metric invites exactly the gaming (E.1) forbids); reported next to the open count and convergence trajectory, never instead of them.
+  - (E.7) FIVE FAILURE MODES, EACH WITH ITS DETECTOR: (1) STALE STATUS - CM-DELIVERY-STATUS-FRESH; (2) STATUS INFLATION (hand-set, outside the closed set, differing from the transition table, computed over an entry set that omits an entry named by a record or with an unreadable store, from a non-field value, by an implementation not projecting to the FIELD TABLE, a tie broken instead of X, production-ready with no release-seam record, a voided confirmation counted, a GREEN gauge over an unhardened deliverable) - CM-DELIVERY-HARDENING-STATUS-COMPUTED; (3) UNTRACKED OR HIDDEN DEBT - CM-HARDENING-LEDGER-TRACKED; (4) HARDENING STARVED OR NEVER CONVERGING - CM-HARDENING-CONVERGENCE-MONOTONE; (5) DELIVERED WITHOUT EVIDENCE OR WITHOUT LABELS - CM-QUICK-DELIVERY-EVIDENCE-UNWEAKENED. Each detector is itself a §11.4.201 guard (golden-TRUE and golden-FALSE-with-carrier fixtures, conservative-safe default on an unresolvable signal, resolved evidence printed on every refusal).
+  - (E.8) honest boundary: clause (E) re-orders WHEN deliverable-independent hardening COMPLETES relative to a scope's first deliverable and makes the remaining debt visible, tracked and converging; it weakens none of §11.4.5 / §11.4.262 / §11.4.50 evidence, §11.4.108, §11.4.209 / §11.4.134 / §11.4.276 review, §11.4.236, §11.4.235(E), §11.4.185, §11.4.40 (a quick deliverable is a QA build, not a tag), §11.4.129, §11.4.239 or a consumer's stricter delivery precondition; a skipped / not-applicable / waived disposition is an honest disclosed gap, never a PASS; it proves no deliverable correct and the 4-5x target of clause (A) stays a measured target.
   - Classification universal; consumer supplies device set + serials, build/flash tooling, recording layout, worker-pool implementation (§11.4.35). Non-compliance is a release blocker.
-- **Gates:** CM-COVENANT-114-230-PROPAGATION, CM-PIPELINE-OVERLAP-VALIDATION (build running with zero deploy-independent validation stages concurrent while SAFE-catalogue work is queued -> FAIL; non-huge-blocker discovery restarting whole cycle -> FAIL), CM-PARALLEL-DEVICE-WORKER-POOL (independent devices validated serially, or recording capture/analysis serialised onto one processor when a worker-pool path exists -> FAIL), CM-FAN-OUT-SUBAGENTS-DEFAULT (parallelizable effort run monolithically with fan-out path and host-safety headroom -> FAIL); paired §1.1 mutations; gate-code separate work item, NOT claimed shipped
-- **No escape hatch:** --sequential-build-then-validate, --restart-whole-cycle-on-discovery, --serial-device-testing, --serialise-recording-processing, --no-fan-out, --monolithic-parallelizable-work; clause (D) adds, in canon's own words, "No escape hatch — no `--withhold-until-spec-complete`, `--hardening-gates-next-increment`, `--no-qa-cadence`, `--untracked-release-toggle`, `--stale-tracker-at-handoff`, `--manual-qa-as-discovery` flag." (all twelve flags bind)
-- **Honest boundary:** current-artifact layers 2/3 cannot overlap their own build; affected-stages-only bounded to non-huge-blocker; fan-out bounded by host-safety and genuine parallelizability; 4-5x is a measured target never assumed.
-- **Composes:** §11.4.20, §11.4.24, §11.4.40, §11.4.58, §11.4.69, §11.4.70, §11.4.88, §11.4.89, §11.4.94, §11.4.96, §11.4.97, §11.4.102, §11.4.103, §11.4.108, §11.4.110, §11.4.115, §11.4.119, §11.4.120, §11.4.121, §11.4.125, §11.4.126, §11.4.128, §11.4.129, §11.4.130, §11.4.132, §11.4.144, §11.4.183, §11.4.185, §11.4.187, §11.4.192, §11.4.200, §12.6, §12.12, §11.4.106, §11.4.111, §11.4.142, §11.4.194, §11.4.189, §11.4.113; clause (D) additionally composes (canon's own list): §11.4.101, §11.4.103, §11.4.106(F), §11.4.129, §11.4.134, §11.4.148, §11.4.151, §11.4.185, §11.4.188, §11.4.192, §11.4.195, §11.4.197, §11.4.202, §11.4.208, §11.4.210, §11.4.229, §11.4.235(A)(B)(D), §11.4.236, §11.4.238, §11.4.239, §11.4.261, §11.4.264, §11.4.265, §11.4.266, §11.4.271
+- **Gates:** CM-COVENANT-114-230-PROPAGATION, CM-PIPELINE-OVERLAP-VALIDATION (build running with zero deploy-independent validation stages concurrent while SAFE-catalogue work is queued -> FAIL; non-huge-blocker discovery restarting whole cycle -> FAIL), CM-PARALLEL-DEVICE-WORKER-POOL (independent devices validated serially, or recording capture/analysis serialised onto one processor when a worker-pool path exists -> FAIL), CM-FAN-OUT-SUBAGENTS-DEFAULT (parallelizable effort run monolithically with fan-out path and host-safety headroom -> FAIL); paired §1.1 mutations; gate-code separate work item, NOT claimed shipped Clause (E) recommended gates (gate code is a separate work item, NOT claimed shipped, registered as tracked deferrals OWED-GATE-115 to OWED-GATE-120 in scripts/gates/gate_ledger_deferrals.tsv): CM-DELIVERY-HARDENING-STATUS-COMPUTED (FAIL: a hand-off with no status or `pending`; a value outside its closed set or differing from the transition-table value recomputed from the join; production-ready with no release-seam record, with O > 0, without the §11.4.185 confirmation or with a not-fingerprint-bound input; a confirmation or seam record counted although a later ledger record voids it; an entry set omitting an entry named by a record; a status computed with any declared store unreadable; an entry id matching more than one row resolved instead of X; an implementation whose input record does not project to the FIELD TABLE; the §11.4.259 gauge GREEN over an unhardened deliverable), CM-DELIVERY-STATUS-FRESH (FAIL: an announced status older than the latest matching write, at or after its VALID-UNTIL, for another fingerprint, with no fingerprint or snapshot time, or a store with no declared keying class), CM-HARDENING-LEDGER-TRACKED (FAIL: an entry with no tracked id or disposition; a disposition outside its class row; a non-`open` record not written by the verifier-seam; a `skipped` entry with a reason other than the two topology-absent codes; an elapsed waiver; a resolved-but-disclosed entry missing from an announcement; a hand-maintained ledger), CM-HARDENING-CONVERGENCE-MONOTONE (FAIL: unexplained `open` growth; an un-escalated stall; a bound scope with no declared N; O > 0 with zero live streams while headroom exists; the loop reported done with O > 0 and no recorded external block), CM-QUICK-DELIVERY-EVIDENCE-UNWEAKENED (FAIL: a hand-off without the §11.4.236 candidate-fingerprinted verdict, a source GO not on the §11.4.209 substrate or its recorded fallback, a per-item verdict replaced by narrative, a first deliverable with no source-GO'd increment or no user-visible behaviour, or no status / ledger attached), CM-CANONICAL-MIRROR-BODY-LOCKSTEP (FAIL: the canonical `Constitution.md` block body, heading marker normalised, differs from any full-block mirror body; compact or pointer mirrors are legitimate cross-layer variance per §11.4.227(B)); each with golden-FALSE per §11.4.201(1) and paired §1.1 mutations (hand-set a status to production-ready; replay a reopen and a re-close after the release-seam record with no new confirmation; delete the row of an entry whose latest record is `open`; mark an L7 entry skipped; let a producer-role record close an entry; edit the §11.4.230 body in `Constitution.md` only, or in every full-block mirror only, and regenerate - each MUST make its gate FAIL).
+- **No escape hatch:** --sequential-build-then-validate, --restart-whole-cycle-on-discovery, --serial-device-testing, --serialise-recording-processing, --no-fan-out, --monolithic-parallelizable-work; clause (D) adds, in canon's own words, "No escape hatch — no `--withhold-until-spec-complete`, `--hardening-gates-next-increment`, `--no-qa-cadence`, `--untracked-release-toggle`, `--stale-tracker-at-handoff`, `--manual-qa-as-discovery` flag." (all twenty-four flags bind: six base, six clause (D), twelve clause (E)); clause (E) adds, in canon's own words, "No escape hatch - no `--quick-skips-review`, `--quick-skips-readiness-verdict`, `--hand-set-delivery-status`, `--unlabelled-quick-build`, `--stale-status-OK`, `--quick-is-production-ready`, `--untracked-hardening-debt`, `--hidden-skip-OK`, `--hardening-can-wait`, `--speed-metric-gates`, `--stop-hardening-after-delivery`, `--qa-wait-idles-loop` flag."
+- **Honest boundary:** current-artifact layers 2/3 cannot overlap their own build; affected-stages-only bounded to non-huge-blocker; fan-out bounded by host-safety and genuine parallelizability; 4-5x is a measured target never assumed. Clause (E) (E.8): re-orders only WHEN deliverable-independent hardening COMPLETES relative to a scope's first deliverable and makes the remaining debt visible, tracked and converging; it weakens no evidence, review, readiness, live-verification, manual-QA, tag or huge-blocker rule; a skipped / not-applicable / waived disposition is a disclosed gap, never a PASS; `delivered-unhardened` is an honest statement of debt, never permission to stop paying it.
+- **Composes:** §11.4.20, §11.4.24, §11.4.40, §11.4.58, §11.4.69, §11.4.70, §11.4.88, §11.4.89, §11.4.94, §11.4.96, §11.4.97, §11.4.102, §11.4.103, §11.4.108, §11.4.110, §11.4.115, §11.4.119, §11.4.120, §11.4.121, §11.4.125, §11.4.126, §11.4.128, §11.4.129, §11.4.130, §11.4.132, §11.4.144, §11.4.183, §11.4.185, §11.4.187, §11.4.192, §11.4.200, §12.6, §12.12, §11.4.106, §11.4.111, §11.4.142, §11.4.194, §11.4.189, §11.4.113; clause (D) additionally composes (canon's own list): §11.4.101, §11.4.103, §11.4.106(F), §11.4.129, §11.4.134, §11.4.148, §11.4.151, §11.4.185, §11.4.188, §11.4.192, §11.4.195, §11.4.197, §11.4.202, §11.4.208, §11.4.210, §11.4.229, §11.4.235(A)(B)(D), §11.4.236, §11.4.238, §11.4.239, §11.4.261, §11.4.264, §11.4.265, §11.4.266, §11.4.271; clause (E) additionally composes (canon's own list): §11.4.3, §11.4.4(b), §11.4.5, §11.4.27, §11.4.50, §11.4.54, §11.4.66, §11.4.69, §11.4.94, §11.4.97, §11.4.116, §11.4.118, §11.4.135, §11.4.147, §11.4.169, §11.4.176, §11.4.201, §11.4.209, §11.4.227, §11.4.231, §11.4.232, §11.4.233, §11.4.239, §11.4.259, §11.4.260, §11.4.261, §11.4.262, §11.4.267, §11.4.271, §11.4.273, §11.4.276
 
 #### §11.4.231 — Nano-precision model-tier selection (lightest-capable-first, dynamic escalation, effort tiering)
-- **Source:** multi-track-and-parallelism.md:206-229
+- **Source:** multi-track-and-parallelism.md:244-267
 - **Rules:**
   - Every work effort MUST use the LIGHTEST CAPABLE model, escalating only as complexity rises; neither "always heaviest" nor "always lightest" is compliant.
   - (A) Every dispatched effort (main or subagent, single- or multi-track) is assigned the LIGHTEST tier from the closed capability-ordered ladder `sonnet < opus` genuinely sufficient to complete it correctly; `sonnet` is the DEFAULT working tier, `opus` for every review and other heavy work (operator mandate 2026-09-26). The review/merge-conflict-resolution substrate is a SEPARATE pinned Opus-xhigh tier per (E), not a ladder rung; `fable` is not a rung and not a permitted dispatch tier; `haiku` excluded per (D.1).
@@ -2928,7 +2974,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.20, §11.4.70, §11.4.92, §11.4.101, §11.4.102, §11.4.194, §11.4.126, §11.4.141, §11.4.183, §11.4.187, §11.4.192, §11.4.196, §11.4.198, §11.4.209, §11.4.211, §11.4.182, §11.4.147, §11.4.133, §11.4.227, §11.4.5, §11.4.69, §11.4.107, §11.4.201, §11.4.17, §11.4.35
 
 #### §11.4.232 — Anti-mess long-op orchestration (registry, single-owner-per-purpose, proven liveness, handoff-on-stop, safe reaping, consistency sweep, escape)
-- **Source:** multi-track-and-parallelism.md:231-254
+- **Source:** multi-track-and-parallelism.md:269-294
 - **Rules:**
   - Binds EVERY long-op (any op expected to exceed the §11.4.89 background-execution threshold: verification sweep, meta-test sweep, build, flash/deploy, test/QA suite, dispatched subagent) to a long-op orchestration layer. Reason: no single source of truth existed for what long-op runs, who owns it, its state and proven liveness; an un-observable bad state is a bluff at the orchestration layer.
   - (A) SINGLE SOURCE OF TRUTH: every long-op MUST register BEFORE it runs and reach a terminal state `complete|failed|reaped|handoff|blocked-escape` when it ends, in a durable (never-tmpfs, write-temp-then-rename; §11.4.116 append-only event stream + atomic snapshot) registry recording `{op_id, purpose_key, owner, pid|pgid, cwd, state, last_heartbeat, heartbeat_seq, progress_offset, log_path, verdict, evidence_path}`. Success read from the op's terminal verdict/result, NEVER its process exit code. A long-op with no registry record, or a record with no live op, is a FALSE-READY drift state.
@@ -2946,7 +2992,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 
 
 #### §11.4.233 — Standing anti-mess control plane (level-triggered idempotent invariant-catalogue reconciliation loop; dependency-pointer preflight)
-- **Source:** multi-track-and-parallelism.md:258-281
+- **Source:** multi-track-and-parallelism.md:296-319
 - **Rules:**
   - A standing control plane (desired-state/actual-state reconciliation loop, control-plane/data-plane pattern) over the WHOLE persistent System state; reason: existing enforcers are EDGE-TRIGGERED, so a mess arising without an edge firing is unobserved (e.g. uncommitted-batch pile-up, stale locks held by dead holders). Planes: R repository, G governance, S tracking, P runtime.
   - (A) DECLARED INVARIANT CATALOGUE: one machine-readable consumer-owned catalogue (DATA, §11.4.28/.35) enumerating every consistency invariant across the planes, each `{id, plane, desired-condition, detector, reconcile-class in {auto-safe | operator-gated | owned-by <anchor>}, evidence-shape}`; the catalogue IS the desired clean state; an un-catalogued mess class is an honest tracked GAP (§11.4.6/.197), never claimed covered.
@@ -2967,7 +3013,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 ### Project lifecycle and release (46 anchors)
 
 #### §11.4.8 — Deep-web-research-before-implementation
-- **Source:** project-lifecycle-and-release.md:3-26
+- **Source:** project-lifecycle-and-release.md:3-25
 - **Rules:**
   - Before designing a non-trivial fix, implementing a new feature, or declaring an architectural choice, perform deep web research to verify the approach is informed by current state of the art.
   - Research surface: (1) official docs of platform/framework/language/service; (2) vendor technical guides for hardware/cloud/library; (3) open-source codebases that solved analogous problems; (4) coding tutorials and technical articles; (5) issue trackers of relevant projects.
@@ -3072,7 +3118,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.4(a), §11.4.6, §11.4.7, §11.4.10, §11.4.12, §11.4.14, §11.4.15, §11.4.16, §11.4.17, §11.4.34, §11.4.42, §11.4.43, §11.4.44, §11.4.45, §11.4.46
 
 #### §11.4.52 — Autonomous-Validation Mandate
-- **Source:** project-lifecycle-and-release.md:508-687
+- **Source:** project-lifecycle-and-release.md:508-689
 - **Rules:**
   - (1) Every user-facing feature MUST have at least one AUTONOMOUS validation path: runs end-to-end via `adb shell` + scripted automation, produces captured runtime evidence per §11.4.5, reaches PASS/FAIL WITHOUT a human present to drive UI, observe, or decide. Operator-attended tests are SUPPLEMENTARY, never PRIMARY; a feature whose only path is operator-attended is a violation regardless of evidence quality.
   - (2) Acceptable autonomous paths (any one or more, non-exhaustive): programmatic instrumentation APK (platform-signed app exercising the surface via SDK APIs, writing structured JSON result to a discoverable path); headless intent dispatch + state poll (`am start --es` / `am broadcast --es`, then poll `dumpsys`, `/proc/<pid>/maps`, `media.metrics`, `/sys/...`, sysfs, or network probe); ADB-driven uiautomator ONLY if the app exposes accessibility nodes (MUST verify `uiautomator dump | grep -c clickable=true` >= 1; a near-empty hierarchy is evidence UI automation is infeasible and test MUST fall back to instrumentation-APK or headless-intent); network-side sink probe (sink's own report counts as out-of-band evidence per §11.4.13); HelixQA autonomous QA session for projects with HelixQA incorporated per §11.4.27.
@@ -3086,7 +3132,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.13, §11.4.15, §11.4.16, §11.4.17, §11.4.25, §11.4.27, §11.4.39, §11.4.43, §11.4.46, §11.4.48, §11.4.49, §11.4.50, §11.4.51, §1.1
 
 #### §11.4.66 — Blocker-resolution interactive-clarification mandate
-- **Source:** project-lifecycle-and-release.md:691-783
+- **Source:** project-lifecycle-and-release.md:691-785
 - **Rules:**
   - When a task is blocked on input the agent cannot mechanically derive (operator decision, hardware access, external-service authorization, ambiguous scope), follow five steps before idling or asking free-form questions.
   - (1) In-depth research of agent-side options: identify the maximum scope landable unilaterally; surface every agent-actionable path even if it needs small operator confirmation.
@@ -3127,7 +3173,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Canon severity: non-compliance is a process violation (the one anchor in its group that is not stated as a release blocker).
 
 #### §11.4.82 — Iteration-speedup discipline mandate
-- **Source:** project-lifecycle-and-release.md:875-936
+- **Source:** project-lifecycle-and-release.md:875-938
 - **Rules:**
   - Every consuming project's build/test/commit/debug pipeline MUST adopt the following, each independently enforceable. (A) Phase 1 forensic before any speculative source patch: before any non-trivial patch (kernel, framework, native, HAL, ASoC) complete Phase 1 of `superpowers:systematic-debugging` (read error/log/call-chain end-to-end, identify a FACT-grade root cause); speculative patches are §11.4.6 and §11.4.82 violations regardless of time pressure.
   - (B) Live-ADB-First (or live-equivalent) before any rebuild (per §11.4.51, strengthened to release-blocker): ~70% of audio/UI/boot-script/config changes are LIVE_ADB_TESTABLE (push + `setprop` + `pm install -r` + ~30 s validation); only kernel / framework Java/AIDL / native C++-in-APEX / sepolicy / init.rc / ro.* / Android.bp / XML-resource-overlays / codec-XML-in-APEX changes truly REQUIRE rebuild; skipping the live probe for a LIVE_ADB_TESTABLE change is a violation.
@@ -3159,7 +3205,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.2, §11.4.4, §11.4.5, §11.4.6, §11.4.7, §11.4.13, §11.4.15, §11.4.20, §11.4.27, §11.4.42, §11.4.43, §11.4.48, §11.4.50, §11.4.52, §11.4.58, §11.4.68, §11.4.69, §11.4.70, §11.4.83, §11.4.85, §11.4.86, §12, §12.6, §12.7, §12.8, §12.9, §12.10
 
 #### §11.4.89 — Background test execution mandate
-- **Source:** project-lifecycle-and-release.md:978-1008
+- **Source:** project-lifecycle-and-release.md:978-1010
 - **Rules:**
   - (A) Any test cycle expected to exceed ~30 seconds (`pre_build_verification.sh`, `meta_test_false_positive_proof.sh`, `test_all_fixes.sh`, `recent_work_validate.sh`, HelixQA Challenge banks, on-device 4-phase cycles, full-suite retests per §11.4.40, `audio_loop_supervisor.sh`, `dual_display_record.sh`, `verify-all-constitution-rules.sh`) MUST be spawned detached via `nohup ... > <log> 2>&1 &` + `disown`, log under a known directory (e.g. `qa-results/<test_id>_<timestamp>.log`).
   - (B) Main stream proceeds on queued items: immediately return to the §11.4.42 priority queue; "wait for results" is the ONLY acceptable idle reason, and then check via short polling (`tail` / mtime / exit-status file), not blocking `wait`.
@@ -3175,7 +3221,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.14, §11.4.40, §11.4.42, §11.4.66, §11.4.82, §11.4.84, §11.4.85, §11.4.87, §11.4.88, §11.4.147, §11.4
 
 #### §11.4.94 — Zero-idle priority-first parallel-by-default operating mode
-- **Source:** project-lifecycle-and-release.md:1012-1051
+- **Source:** project-lifecycle-and-release.md:1012-1053
 - **Rules:**
   - Operating-mode reaffirmation binding §11.4.87, §11.4.20/.70, §11.4.42, §11.4.58, §11.4.72, §11.4.82, §11.4.88, §11.4.89 into one always-on contract; binds conductor, every subagent, every helper script.
   - (A) Idle-only-when-genuinely-blocked: the conductor MAY sleep/wait/idle ONLY when (i) every priority-queued item is genuinely blocked on external dependency (operator hardware action, network upstream, hardware-attended forensic, build/test completion it cannot accelerate), OR (ii) operator issued explicit STOP, OR (iii) host-session safety per §12 demands it. "I don't see what to do next" is NEVER valid; recheck the priority queue per §11.4.42 step 1 and §11.4.87(A).
@@ -3193,7 +3239,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.20, §11.4.42, §11.4.58, §11.4.70, §11.4.72, §11.4.82, §11.4.84, §11.4.85, §11.4.87, §11.4.88, §11.4.89, §11.4.92, §12, §12.6, §12.7, §12.8, §12.9, §11.4
 
 #### §11.4.97 — Maximum-use-of-idle-time mandate + progress-update cadence
-- **Source:** project-lifecycle-and-release.md:1055-1089
+- **Source:** project-lifecycle-and-release.md:1055-1091
 - **Rules:**
   - Strengthens §11.4.87, §11.4.94, §11.4.96 with a maximum-use-of-idle-time mandate and a progress-update cadence.
   - (A) Every minute of conductor idle time during which the conductor has work it could autonomously progress AND is NOT genuinely blocked (operator hardware action, network upstream, host-session safety, build/test completion) is a violation; the conductor MUST dispatch work continuously through the entire idle window, not just sample-check at scheduled wakes ("as much as possible, if not it all").
@@ -3208,7 +3254,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.13, §11.4.20, §11.4.27, §11.4.42, §11.4.50, §11.4.52, §11.4.69, §11.4.70, §11.4.72, §11.4.83, §11.4.85, §11.4.87, §11.4.88, §11.4.89, §11.4.93, §11.4.94, §11.4.96
 
 #### §11.4.101 — Autonomous-decision-over-blocking mandate
-- **Source:** project-lifecycle-and-release.md:1093-1122
+- **Source:** project-lifecycle-and-release.md:1093-1124
 - **Rules:**
   - In autonomous/endless-loop mode (§11.4.87) the agent MUST minimize operator-blocking and make the safe, reliable, reversible decision itself so work is not stalled (e.g. overnight).
   - The agent MAY proceed autonomously when ALL hold: (a) the action is reversible OR has a captured pre-op backup per §9.2 (hardlinked `.git` mirror, recorded refs/tags/submodule pointers); (b) the safe choice can be determined from captured evidence per §11.4.6 (`LIKELY` / `probably` / `seems` is NOT a determination); (c) a wrong choice's blast radius is bounded AND recoverable (local, undoable, no cascade); (d) it composes with existing covenants (anti-bluff §11.4, host-session-safety §12 incl. no suspend/log-out/overrun of §12.6 memory budget, data-safety §9 with no destructive op without the §9 protocol).
@@ -3221,7 +3267,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.21, §11.4.40, §11.4.41, §11.4.66, §11.4.87, §11.4.94, §11.4.97, §9, §9.2, §12, §12.6, §11.4, §11.4.4(b), §11.4.17
 
 #### §11.4.102 — Mandatory systematic-debugging activation + always-loaded skill-discovery + plugin-dependency availability
-- **Source:** project-lifecycle-and-release.md:1126-1152
+- **Source:** project-lifecycle-and-release.md:1126-1154
 - **Rules:**
   - (A) On ANY spotted issue, bug, test failure, gate failure, regression, misalignment, inconsistency, unexpected behaviour, or contradiction between evidence and expectation, the agent MUST activate the structured root-cause skill (`superpowers:systematic-debugging` on Claude Code, or platform-equivalent) BEFORE proposing, writing, or applying any fix. Iron Law: NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST. Run the full four-phase arc: (1) root-cause phase (read actual error/failing assertion/divergent evidence, reproduce deterministically, gather facts); (2) pattern phase (classify the defect, search for the same pattern elsewhere); (3) hypothesis phase (falsifiable hypothesis, prove or disprove with captured evidence, never LIKELY/probably/seems per §11.4.6); (4) implementation phase (design the fix only after the cause is a FACT).
   - Guess-and-retry, symptom-patching, "let me just try changing this", and re-running a failed test hoping it passes without a completed investigation are violations. Declaring a failure transient/flaky/intermittent/probably-timing without captured forensic evidence is simultaneously a §11.4.6 and §11.4.7 violation; the classification is forbidden until the arc has captured the proving evidence.
@@ -3340,7 +3386,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.5, §11.4.6, §11.4.7, §11.4.40, §11.4.42, §11.4.46, §11.4.50, §11.4.55, §11.4.69, §11.4.107, §11.4.130, §11.4.72, §11.4.93, §11.4.17, §11.4.35
 
 #### §11.4.133 — Target-System + hardware safety mandate
-- **Source:** project-lifecycle-and-release.md:1288-1312
+- **Source:** project-lifecycle-and-release.md:1288-1314
 - **Rules:**
   - Every change to the TARGET system (firmware, kernel, init/boot scripts, drivers, sysfs/devfreq/voltage/clock/thermal/regulator register writes, partition layout/bootloader/U-Boot, HAL, framework, prebuilts, device config, or non-Android equivalents) MUST ALWAYS be safe for (a) the target System (MUST NOT brick, boot-loop, corrupt user/system data, or render unrecoverable) AND (b) the hardware (MUST NOT drive any hardware-control surface beyond its safe electrical/thermal/voltage/clock envelope, MUST NOT damage panels, storage, radios, regulators, other components).
   - (1) Reversible-first: prefer reversible changes; for irreversible/high-blast-radius (bootloader/U-Boot/partition layout/fuse/OTP) verify against a known-good value (MD5/checksum/golden manifest) BEFORE applying and capture a pre-op backup of overwritten state (§9.2).
@@ -3402,7 +3448,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.5, §11.4.6, §11.4.9, §11.4.34, §11.4.40, §11.4.43, §11.4.47, §11.4.69, §11.4.90, §11.4.102, §11.4.107, §11.4.108, §11.4.115, §11.4.118, §11.4.123, §11.4.130, §11.4.135, §11.4.138, §11.4.150, §1.1, §11.4.10, §11.4.17, §11.4.35
 
 #### §11.4.172 — Mandatory production-readiness planning with realistic timeline projection
-- **Source:** project-lifecycle-and-release.md:1391-1391
+- **Source:** project-lifecycle-and-release.md:1391
 - **Rules:**
   - Every project MUST maintain a living production-readiness planning document that: (a) gives REALISTIC timeline projections for all milestones (MVP, beta, production-ready) based on actual velocity data (items completed per week, reopening rate, blocking dependencies); (b) identifies ALL danger zones, weaknesses, risk areas with mitigations; (c) accounts for HW delivery timelines, licensing delays, external dependency risks; (d) defines the critical path and which items can slip without affecting MVP; (e) includes workstation/build-capacity analysis and optimisation recommendations; (f) is updated at least monthly or whenever item count changes by >= 10%; (g) is cross-referenced against the workable-items database.
   - The document MUST live at `docs/research/production_planning_<YYYYMMDD>/ANALYSIS.md` with HTML+PDF exports per §11.4.65.
@@ -3488,7 +3534,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.197, §11.4.202, §11.4.208, §11.4.205, §11.4.106, §11.4.126, §11.4.87, §11.4.94, §11.4.97, §11.4.103, §11.4.6, §11.4.75, §11.4.147(e), §11.4.65, §11.4.73, §11.4.17, §11.4.35
 
 #### §11.4.211 — Merge-conflict resolution during main->feature/product/flavor merges MUST run on Opus at xhigh effort as PRIMARY substrate, with a genuine-unavailability Sonnet fallback; no Fable (amended 2026-10-04)
-- **Source:** Constitution.md (constitution tip a71b1767) lines 10610-10622 (groups/project-lifecycle-and-release.md:1453-1465 holds the pre-amendment text, see pin-upstream-findings.md)
+- **Source:** project-lifecycle-and-release.md:1453-1467
 - **Rules:**
   - Any merge-CONFLICT resolution while integrating the canonical trunk (`main`/`master`) into a feature/product/flavor branch (§11.4.188 cadence, §11.4.195 integration, §11.4.41 merge-first, §11.4.167(D) trunk-into-stream, §11.4.167(I) approval-gated back-merge) MUST be done on the Opus model at `xhigh` effort as PRIMARY substrate. Merge-resolution analogue of §11.4.209: pins model+effort for the DECISION-MAKING (which side to keep, union both sides without loss, marker removal, semantic reconciliation). The 2026-09-26 mandate superseded the model choice of the 2026-07-16 mandate (Fable-first); its scope and `xhigh` requirement stand. Amended 2026-10-04 by the same verbatim operator mandate as §11.4.209 (use Sonnet when Opus cannot be used; nothing blocked; maximal efficiency).
   - (A) PRIMARY substrate Opus-xhigh plus genuine-unavailability SONNET FALLBACK (amended 2026-10-04), no Fable: Fable is NOT permitted in any role; no lower effort for Opus itself. When Opus-xhigh is genuinely unavailable (not configured, rate-limited or unreachable, established as FACT per §11.4.6, never guessed) the resolution MUST be carried out on Sonnet (highest effort the path can set) rather than blocked; the Opus-unavailability FACT and the Sonnet substitution MUST both be recorded in the merge's captured evidence (§11.4.5/§11.4.69), never presenting a Sonnet-resolved merge as Opus-resolved. `xhigh` is REQUIRED on whichever substrate resolves the conflict where the dispatch path can set it (careless resolution drops a commit or commits a marker, §9/§11.4.41 step 3); where it cannot (§11.4.231(F.2) harness gap) the gap is recorded, never claimed as xhigh. ONLY when BOTH Opus and Sonnet are genuinely unavailable (each its own captured FACT) is the resolution BLOCKED and deferred: record the facts, do NOT complete the merge, leave the branch quiescent with no conflict marker committed (§11.4.84/§11.4.41 step 3).
@@ -3503,7 +3549,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.209, §11.4.188, §11.4.195, §11.4.41, §11.4.113, §9, §9.2, §11.4.6, §11.4.167(D)(I), §11.4.84, §11.4.37, §11.4.71, §11.4.196, §11.4.183, §11.4.231, §11.4.5, §11.4.69, §11.4.201, §11.4.17
 
 #### §11.4.213 — FEATURE research-scheduling directive: SCHEDULES (never synchronously executes) a deep enterprise-grade research + planning effort as a tracked workable item
-- **Source:** project-lifecycle-and-release.md:1467-1487
+- **Source:** project-lifecycle-and-release.md:1469-1489
 - **Rules:**
   - Adds a fourth registered action `FEATURE` to the §11.4.202 reporting-directive family, recognised via ALL §11.4.140 forms: `FEATURE :: <desc>`, `DEFAULT::FEATURE :: <desc>`, `/FEATURE <desc>`, `/DEFAULT::FEATURE <desc>`, `FEATURE ---> <desc>`, and the single-colon `FEATURE: <desc>`; REGISTERED-ACTION-ONLY: the action token grammar is UPPERCASE-only (`[A-Z][A-Z0-9_]*`), so lowercase prose "feature: ..." never expands and is never asked about (§11.4.6). `\FEATURE` escapes to a literal per §11.4.140.
   - (1) SCHEDULING, NOT SYNCHRONOUS EXECUTION: the directive's own execution is fast and bounded: create the tracked item (Type=Task, Status=Queued, §11.4.54 stable id), append it to a durable never-dropped feature-research queue, sync DB-derived documents, push to configured trackers, via the SAME §11.4.202 engine (never a duplicate implementation). The deep multi-day research is performed LATER by the standing autonomous loop (§11.4.87/.94/.97/.103/.126) when it claims the item and is driven to COMPLETED (implemented AND wired AND verified) or evidence-backed CLOSED under §11.4.197; never left un-wired in the backlog; "scheduled" is never reported as "done".
@@ -3517,7 +3563,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.140, §11.4.202, §11.4.197, §11.4.8, §11.4.99, §11.4.150, §11.4.102, §11.4.65, §11.4.73, §11.4.28, §11.4.74, §11.4.177, §11.4.27, §11.4.169, §11.4.162, §11.4.190, §11.4.78, §11.4.79, §11.4.80, §11.4.93, §11.4.95, §11.4.148, §11.4.54, §11.4.15, §11.4.16, §11.4.10, §11.4.6, §11.4.87, §11.4.94, §11.4.97, §11.4.103, §11.4.126, §11.4.171, §11.4.108, §11.4.17, §11.4.35
 
 #### §11.4.229 — Live in-session task/todo tracker MUST always be up to date and fully in sync with the real work state
-- **Source:** project-lifecycle-and-release.md:1489-1507
+- **Source:** project-lifecycle-and-release.md:1491-1509
 - **Rules:**
   - The agent's LIVE IN-SESSION TASK/TODO TRACKER (harness task list / `TodoWrite`-class tool / equivalent moment-to-moment execution-state surface) MUST ALWAYS be up to date and FULLY IN SYNC with real live work state: never stale, never showing completed work as pending, never showing pending/blocked/abandoned work as done or in-progress. Updated the MOMENT any task starts (in-progress), completes (done), is blocked, abandoned, split, re-scoped, or newly discovered; not batched, not reconstructed from memory at the end, not left on a superseded plan. A lagging tracker is a PASS-bluff at the execution-transparency layer.
   - (A) EVERY STATE-CHANGE UPDATES IT IMMEDIATELY: exactly one task in-progress where the surface models single-active-task; no completed task left pending; no pending task left done; no ghost task for dropped work (dropped work is closed with a reason); deferring the update is forbidden.
@@ -3530,21 +3576,28 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Honest boundary:** honestly N/A where the runtime exposes no live tracker; "in sync" means as known to the agent at that moment. Gate-code is a separate work item, not claimed shipped.
 - **Composes:** §12.10, §11.4.131, §11.4.97, §11.4.106(F), §11.4.126, §11.4.116, §11.4.202, §11.4.208, §11.4.6, §11.4.1, §11.4.3, §11.4.96, §11.4.17, §11.4.35
 
-#### §11.4.235 — Build-and-deploy the moment source fixes are proven-correct (test-side hardening is a parallel stage, never a build gate) + post-deploy version increment
-- **Source:** project-lifecycle-and-release.md:1509-1521 for clauses (A)-(C); clause (D): Constitution.md (constitution tip a71b1767) lines 11113-11117 (groups/ at this tip does not carry clause (D), see pin-upstream-findings.md)
+#### §11.4.235 — Build-and-deploy the moment source fixes are proven-correct (test-side hardening is a parallel stage, never a build gate) + post-deploy version increment + group-complete flash-every-available-target live verification with decimal-carry versioning (clause (E) added 2026-10-09)
+- **Source:** project-lifecycle-and-release.md:1511-1541
 - **Rules:**
   - (A) The moment SOURCE fixes of a batch are done AND proven-correct (proven-correct = mandatory independent SOURCE-correctness review returned a clean GO: §11.4.125/§11.4.142/§11.4.194 on the source diff, on the §11.4.209 Opus-`xhigh` substrate, iterated to zero-finding/zero-warning GO per §11.4.134), the build MUST be triggered, pre-build + post-build tests EXECUTED (§11.4.108 layer-1 before, layer-2 after), and the artifact deployed. IN PARALLEL WITH the build AND manual-QA (§11.4.185), NEVER gating the build: (1) gate-instrumentation hardening + new-gate authoring (§11.4.110); (2) paired §1.1 mutations + four-layer §11.4.4(b) coverage + HelixQA Challenges; (3) "gates and checks of all kinds" (§11.4.96); (4) re-review of that test-instrumentation work. The build's GO-SIGNAL is source-correctness alone; test-guard hardening + its re-review are a deploy-independent parallel stage (§11.4.230(A)). Holding the build to wait for test-instrumentation buildout/re-review when source is proven-correct is a violation.
   - (B) POST-DEPLOY VERSION INCREMENT + MANUAL-QA-DEPLOY CYCLE BOUNDARY: the moment image(s)/artifact(s) deploy, the version code/version is INCREMENTED (next build targets next version; every deployed artifact has a distinct, monotonic, greppable id; §11.4.151/§11.4.108/§11.4.200); two deployments sharing one version id is a violation. EVERY deployment for manual QA testing (§11.4.185) is a DEVELOPMENT-CYCLE BOUNDARY: it CLOSES the outgoing cycle and STARTS a NEW one, with the version incremented AT THAT POINT, new-cycle work targeting the NEXT monotonic version (§11.4.151 prefix preserved), ALWAYS, as the STANDING working model. QA findings against the deployed artifact land in the NEW cycle on the NEW version id, never patched onto the already-QA-deployed id; new-cycle work still targeting the QA-deployed version id is a violation.
   - (C) STANDING DEFAULT (§11.4.126/§11.4.230/§11.4.103), never a per-request opt-in.
   - (D) FINDING-LAYER CLASSIFIER (added 2026-10-03, research-derived from the §11.4.230 four-agent audit of a consuming project's SpecKit-004 T048 remediation saga): the decidable split clause (A) relies on, mandatory at every §11.4.125/§11.4.142/§11.4.194 review verdict. Every finding a verdict records (§11.4.115(F) machine-written) MUST carry exactly one `finding_layer` from the closed set {source-defect | test-instrumentation | process-doc}, a field DISTINCT from any other per-finding classification the record carries (e.g. a pre-existing `class` field {mechanical | judgment | false-positive} is a different axis). `source-defect`: the finding shows the SHIPPED artifact's own behaviour wrong, unsafe or exploitable as it will run, OR invalidates the evidence that proves THIS batch's fixes correct (their §11.4.115 RED->GREEN guard, §11.4.108 runtime signature, or covering test per §11.4.125(6); a proving guard that cannot fail, or whose reviewer-authored mutation survives per §11.4.194(6)(d), means the source is NOT proven-correct). `test-instrumentation`: concerns only future-regression coverage, mutation-guard robustness or detection completeness of a guard/gate/meta-test whose protected behaviour was ALREADY proven, with no production decision path shown wrong and no proof-of-this-batch evidence invalidated. `process-doc`: labels, comments, citations or prose with no behavioural effect. The layer is recorded by the REVIEWER (§11.4.240/§11.4.249); the producer MAY contest it only via a fresh review round and MUST NOT lower it unilaterally. A finding that cannot be decidably classified defaults to `source-defect` (conservative-safe, §11.4.201(4), §11.4.101). §11.4.134 is NOT relaxed: every finding of every layer is still driven to zero-finding zero-warning GO in its own loop; (D) decides only which GO is the BUILD GO-signal: a batch/slice is BUILD-ELIGIBLE when its source-defect findings reach that GO, while outstanding test-instrumentation/process-doc findings continue as their own tracked §11.4.197 item on a §11.4.230(A)/§11.4.103 parallel stream. A BATCHED review spanning many slices/files MUST record its verdict PER SLICE/FILE, never one undifferentiated verdict. Applies prospectively; recorded verdicts are never rewritten or reclassified (§11.4.6/§11.4.268). Honest boundary: classification is a required, recorded, reviewer-owned decision, not made easy or infallible.
-- **Gates:** CM-COVENANT-114-235-PROPAGATION, CM-BUILD-ON-SOURCE-PROVEN-NOT-TEST-SIDE, CM-VERSION-INCREMENT-ON-DEPLOY, CM-REVIEW-FINDING-CLASS-RECORDED (clause (D): FAIL a batched-review verdict covering more than one slice/file with no per-slice verdict or no per-finding `finding_layer`; FAIL a slice marked build-eligible while any source-defect finding in it has not reached GO; FAIL a `finding_layer` lowered by the producer without a fresh review round; paired §1.1 mutation; gate-code is a separate work item, NOT claimed shipped, registered as a tracked deferral in scripts/gates/gate_ledger_deferrals.tsv; it binds additively by computing whether the existing `source_review_go` marker may be written). Upstream correction: CM-BUILD-ON-SOURCE-PROVEN-NOT-TEST-SIDE and CM-VERSION-INCREMENT-ON-DEPLOY ARE implemented (scripts/gates/cm_build_on_source_proven_not_test_side.sh, cm_version_increment_on_deploy.sh and their paired mutation tests); the earlier 'gate-code = separate work item' disclaimer for those two was stale.
-- **No escape hatch:** --build-behind-test-hardening, --test-side-gates-the-build, --skip-source-correctness-review, --deploy-without-version-increment, --not-default-speed-mode, --serialise-build-and-validate
-- **Honest boundary:** relocates the test-instrumentation re-review + gate hardening OFF the build critical path; does NOT weaken any substantive gate. The source-correctness review still precedes and gates the build; pre/post-build tests run at their seams; §11.4.185, §11.4.129, §11.4.40 un-weakened. Bounded to future-regression instrumentation: a check proving the SHIPPED artifact wrong is a §11.4.108 L1-2 gate and stays on the critical path. Clause (D) supplies the mandatory classification mechanism this boundary's own test presupposes: a review that never classifies its findings has not applied this boundary, it has merely stated it.
-- **Composes:** §11.4.125, §11.4.142, §11.4.194, §11.4.209, §11.4.134, §11.4.108, §11.4.110, §11.4.4(b), §11.4.96, §11.4.230(A), §11.4.185, §11.4.151, §11.4.200, §11.4.126, §11.4.103, §11.4.129, §11.4.40, §11.4.201(1), §11.4.6, §11.4.227, §11.4.17
+  - (E) GROUP-COMPLETE => BACKGROUND FLASHABLE BUILD => FLASH EVERY AVAILABLE TARGET => LIVE VERIFICATION OF SANITY + EVERY CONTAINED ITEM, WITH A DECIMAL-CARRY VERSION INCREMENT ON EVERY DEPLOYED IMAGE (operator IMPORTANT mandate 2026-10-09, quoted in canon): closes the gap that (A) triggers the build on a source GO and (B) increments the version on a deploy, §11.4.230(B) exercises devices concurrently during validation, §11.4.230(D.3) cuts QA deliverables on a cadence, §11.4.200 isolates and read-back-verifies each single flash and §11.4.236 refuses a hand-off without a verdict - yet nothing obliged a completed group's image to be FLASHED on EVERY available target, bound LIVE on-device verification of a basic sanity suite plus every contained workable item, or fixed HOW a version id is incremented. The project names in the operator's quote are his example; consumers supply names as DATA (§11.4.35).
+  - (E.1) TRIGGER + BACKGROUND BUILD: the moment a group / increment (§11.4.230(D.1), a project-declared group of tracked items) holds its source-correctness GO per (A)/(D) it is ELIGIBLE for a FLASHABLE image, built in the BACKGROUND (§11.4.89, §11.4.230(A)) through the consumer's official build entry point only, inside the §12.6 / §12.11 / §12.12 bounds. WHEN the build is cut follows the consumer's declared §11.4.230(D.3) cadence and coalescing, never a second competing cadence: under `per-increment` each GO'd group triggers a build; a build in flight covers every group that reached GO before it started, later groups roll into the NEXT build, a failed build covers nothing; `periodic` / `whichever-first` consumers cut at their declared trigger. A group without its GO is NOT built for flashing.
+  - (E.2) FLASH EVERY AVAILABLE TARGET: the image is deployed through the consumer's official flash / deploy tooling only to EVERY AVAILABLE target. A device is AVAILABLE only when ALL THREE hold: (i) ENUMERATED fresh at flash time by the consumer-declared device-listing command (DATA, e.g. `adb devices`), keyed by stable serial (§11.4.111), never a remembered or hand-typed list; (ii) ELIGIBLE for this image (its product / hardware class matches per the consumer's eligibility map; never flashed onto a different product line or variant); (iii) its device LEASE acquired under §11.4.176(B) / §11.4.119 (all-or-nothing, non-blocking, TTL-reaped). An enumerated device that cannot be exercised is recorded by one of TWO DIFFERENT mechanisms, never conflated: a §11.4.69 SKIP-with-reason (§11.4.3) ONLY when genuinely absent or ineligible, using a code from the consumer's CLOSED §11.4.69 set (no new code is minted; no device enumerated -> `hardware_not_present`; enumerated but ineligible -> `topology_unsupported`); or DEFERRED in the DEPLOY RECORD, with the field `device_leased_by_other_stream` naming the holder, for a device leased by another stream (it IS present and eligible, so recording it as `hardware_not_present` would assert a present board absent). The specific cause travels alongside the code (a deploy-record field, or the SKIP description - the §11.4.69 helper takes only a description and a code). A DEFERRED device is retried at the next covered build, never waited on unboundedly; after N consecutive DEFERRED builds of the same device (N consumer DATA, §11.4.35 / §11.4.267(E)) the stall escalates per §11.4.267(D): a tracked §11.4.197 item naming the device and holder, surfaced in every §11.4.97 report, routed to a recorded §11.4.66 decision. Each flash is target-isolated and verify-after-write per §11.4.200. Independent devices are tested CONCURRENTLY; shared exclusive resources (flash bus, single-eligible-target tool, power controller, sink) serialise per §11.4.119 / §11.4.230(B); devices are independent only when their CONTROL TRANSPORTS are (legs sharing one host-side transport daemon whose recovery restarts it serialise, unless per-device daemon isolation is PROVEN on that host with captured evidence - unproven isolation is treated as shared). An available device that cannot be flashed or verified is a per-device FAIL or honest SKIP-with-reason, never silently dropped; the deploy record lists the enumerated, eligible, leased, flashed and read-back-verified serials plus every SKIP code with its cause and every DEFERRED device with its holder.
+  - (E.3) LIVE VERIFICATION ON EACH FLASHED DEVICE: (a) the consumer-declared basic major-sanity suite (at minimum boot completed, core services up, no crash / hang loop) AND (b) a LIVE test of EVERY workable item contained in the build (the item set in the hand-off, §11.4.230(D.5)), each with captured machine evidence on that device (§11.4.262 / §11.4.69 / §11.4.108 runtime layer); metadata-only, config-only or grep-only PASS is forbidden. A genuinely device- or topology-gated item is SKIP-with-reason PER ITEM, never folded into a group PASS. A FAIL on any device links to the affected item (a terminal item is re-opened; an item still open is only linked, §11.4.214); a huge FAIL triggers §11.4.129.
+  - (E.4) LATENT BINDING + NO AVAILABLE DEVICE => HONEST SKIP: the device legs bind every consumer that HAS an official flash / deploy entry point for a device-targeted artifact, or has bound a deploy ledger for one (the §11.4.96 / §11.4.275 latent-binding pattern); a bound consumer MUST declare its device-listing command, and one that has not is a CONFIG ERROR (blocking, never N/A). Only a consumer with NO device-targeted flash / deploy entry point AND NO bound deploy ledger records the legs as honest N/A (`feature_disabled_by_config`), never a fabricated device run; the obligation binds the moment either becomes true. With zero AVAILABLE targets the legs record what (E.2) prescribes (a §11.4.69 SKIP `hardware_not_present` with cause `no_target_device_attached`, or `topology_unsupported`, and DEFERRED per leased device) plus a tracked §11.4.197 item for the owed live run, never a faked PASS; the build still completes and is retained.
+  - (E.5) DECIMAL-CARRY VERSION INCREMENT ON EVERY DEPLOYED IMAGE: every image built and deployed carries a NEW version id per (B). SCOPE (a conservative-safe reading recorded in canon as AWAITING OPERATOR CONFIRMATION, §11.4.6 / §11.4.201(1)): the carry binds the dotted numeric group the consumer's ONE version tool owns under its DECLARED version scheme (DATA), and only where that scheme is POSITIONAL-DIGIT (every non-leftmost position a single digit, as in the operator's example); a consumer on SemVer, CalVer or any scheme with unbounded counters or dates declares that scheme and is NOT subject (`1.2.10` is correct SemVer) - an exemption that exists ONLY by explicit declaration backed by a recorded operator decision (§11.4.66) naming the consumer; a declaration without that record is UNDECLARED. Once a consumer binds a deploy ledger, declaring its scheme is MANDATORY: a bound ledger with no declared scheme is UNDECLARED, a distinct result a consuming release seam MUST treat as blocking like a FAIL (§11.4.135; until such a seam exists that is an obligation each consuming project tracks per §11.4.197, not an enforced block); a consumer with no bound ledger records an honest SKIP mechanically distinct from PASS - but a consumer bound by (E.4) MUST bind a deploy ledger, so for it the no-ledger SKIP is a CONFIG ERROR at the release seam. Enforcement over a ledger applies only to rows AFTER the consumer-declared adoption marker (§11.4.224(E) precedent); earlier ids are history. ONE POSITIONAL-DIGIT ID GRAMMAR, implemented identically by the version tool and the gate: (i) in EVERY dotted numeric group of the id every non-leftmost position is a single digit 0..9 and the leftmost has no leading zero (so a suffix or build-metadata group cannot hide a no-carry group: `...-0.0.10-rc.1.2` violates); (ii) no two numeric runs are joined by a single dash; (iii) the OWNED group (the dot-joined positions ending the id after its last dash, or the whole id when it has no dash) has no leading zero in any position (a single-position owned group such as `-dev-7` may grow); an id ending in a non-numeric suffix (`-rc1`) has no owned group and is held to (i) and (ii) alone. The tool refuses to bump an id violating (i)-(iii) or not ending in its owned group; the gate fails an in-scope id violating (i) or (ii) or whose owned group violates (iii). The next id is computed by DECIMAL CARRY: add 1 to the LAST position; a position that would exceed 9 becomes 0 and carries +1 left; the leftmost absorbs the final carry and may grow; the tag prefix (§11.4.151), pre-release separators and non-group characters are preserved. Worked examples: `1.0.0-dev-0.0.8 -> 1.0.0-dev-0.0.9`; `1.0.0-dev-0.0.9 -> 1.0.0-dev-0.1.0`; `1.0.0-dev-0.9.9 -> 1.0.0-dev-1.0.0`; `0.9.9 -> 1.0.0`; `9.9.9 -> 10.0.0`; `0.0.10` is the no-carry violation. A rollover is a CARRY, not a reset or a skip (`0.0.9 -> 0.1.0` is the immediate successor, so §11.4.151 "never reset, never skipped" holds); an integer version CODE derived from the id MUST be strictly monotone over carried ids, and an encoder that cannot represent the next carried id MUST refuse loudly rather than wrap or collide. The consumer's ONE version tool is the single implementation (§11.4.28 / §11.4.251); a hand-rolled or hand-edited increment is a violation.
+  - (E.6) honest boundary: clause (E) makes deploying and live-verifying every completed group mandatory and mechanical; it does NOT replace §11.4.185 manual QA, the §11.4.40 tag preconditions or the §11.4.236 readiness verdict; never flashes a build lacking its review GO; never authorises bypassing the consumer's official flash tooling or power-cycling outside its authorised recovery path (§11.4.133 / §11.4.144); a live PASS proves the available devices only - hardware variants not attached are an enumerated gap (§11.4.118), never an implied PASS.
+- **Gates:** CM-COVENANT-114-235-PROPAGATION, CM-BUILD-ON-SOURCE-PROVEN-NOT-TEST-SIDE, CM-VERSION-INCREMENT-ON-DEPLOY, CM-REVIEW-FINDING-CLASS-RECORDED (clause (D): FAIL a batched-review verdict covering more than one slice/file with no per-slice verdict or no per-finding `finding_layer`; FAIL a slice marked build-eligible while any source-defect finding in it has not reached GO; FAIL a `finding_layer` lowered by the producer without a fresh review round; paired §1.1 mutation; gate-code is a separate work item, NOT claimed shipped, registered as a tracked deferral in scripts/gates/gate_ledger_deferrals.tsv; it binds additively by computing whether the existing `source_review_go` marker may be written). Upstream correction: CM-BUILD-ON-SOURCE-PROVEN-NOT-TEST-SIDE and CM-VERSION-INCREMENT-ON-DEPLOY ARE implemented (scripts/gates/cm_build_on_source_proven_not_test_side.sh, cm_version_increment_on_deploy.sh and their paired mutation tests); the earlier 'gate-code = separate work item' disclaimer for those two was stale. Clause (E) adds two recommended gates: CM-GROUP-DEPLOY-FLASH-ALL-AND-LIVE-VERIFIED (binds per (E.4); FAIL: a bound consumer with no declared device-listing command; a per-device SKIP code outside the consumer's §11.4.69 closed set; a lease-held device recorded as a SKIP instead of DEFERRED; a device DEFERRED beyond its declared N with no escalation item; a group holding its GO that no completed covered image was ever flashed for; an enumerated device absent from the deploy record with no per-device FAIL or SKIP reason; a device flashed while ineligible or without its lease; a flashed device with no §11.4.200 read-back; a contained item with no per-device live verdict or per-item SKIP-with-reason; a zero-device run recorded as PASS; golden-FALSE per §11.4.201(1): every available device flashed and read-back-verified with sanity and per-item verdicts present, ineligible devices as reasoned closed-set SKIPs and leased devices as DEFERRED with their holder, and a consumer with no device-targeted flash / deploy entry point and no bound ledger recorded N/A, fires nothing; paired §1.1 mutation: drop one enumerated serial from the deploy record, strip one item's live verdict, or record a zero-device run as PASS; gate code NOT claimed shipped, registered as tracked deferral OWED-GATE-114) and CM-VERSION-DECIMAL-CARRY (IMPLEMENTED as an added check inside scripts/gates/cm_version_increment_on_deploy.sh, with its discriminators in the paired cm_version_increment_on_deploy_mutation_test.sh, RED observed before the check existed; armed only for a gate config declaring a positional-digit `version_scheme`, and binding only ledger rows after its declared `carry_adoption_marker`; FAIL: a row breaking the positional-digit id grammar; UNDECLARED, distinct and to be treated as blocking by a consuming release seam: a bound ledger with no declared `version_scheme`, or a non-positional scheme with no `scheme_decision_ref`; golden-FALSE: `9.9.9 -> 10.0.0`, opaque non-dotted ids, an explicitly declared non-positional scheme and pre-marker rows do not fire; a declared marker absent from the ledger, a named config that is missing or unreadable, an unknown / duplicated / empty config key, or a ledger row that is not exactly two non-empty TAB-separated fields is a config error, never a silent pass or SKIP). Every gate run prints machine-readable `VERDICT:` and `CARRY:` lines that callers MUST parse, and every VERDICT has its own exit code (0 PASS, 1 FAIL, 2 config error, 3 UNDECLARED, 4 SKIP) so a SKIP can never be read as a PASS - the exit code alone is ambiguous by design (0 covers CARRY PASS and CARRY SKIP; 1 covers a version-id collision and a carry failure); the informational modes `--help` and `--print-example-config` exit 0 with NO verdict line and are refused unless used alone. Honest scope: it proves no in-scope deployed id is in the no-carry form, not that each deploy used the immediate successor, and it SKIPs (exit 4, never the PASS code) only for a consumer that has bound no deploy ledger or whose bound ledger has no recorded deploys yet.
+- **No escape hatch:** --build-behind-test-hardening, --test-side-gates-the-build, --skip-source-correctness-review, --deploy-without-version-increment, --not-default-speed-mode, --serialise-build-and-validate, --flash-one-device-only, --skip-live-item-verification, --zero-devices-is-pass, --hand-rolled-version-bump, --no-carry-version (clause (E) adds the last five; all eleven bind)
+- **Honest boundary:** relocates the test-instrumentation re-review + gate hardening OFF the build critical path; does NOT weaken any substantive gate. The source-correctness review still precedes and gates the build; pre/post-build tests run at their seams; §11.4.185, §11.4.129, §11.4.40 un-weakened. Bounded to future-regression instrumentation: a check proving the SHIPPED artifact wrong is a §11.4.108 L1-2 gate and stays on the critical path. Clause (D) supplies the mandatory classification mechanism this boundary's own test presupposes: a review that never classifies its findings has not applied this boundary, it has merely stated it. Clause (E) adds deployment and live-verification obligations on top of (A)-(D) and weakens none of them: its own boundary (E.6) applies in full - no manual-QA, tag or readiness gate is replaced, no un-GO'd build is flashed, no device is flashed outside its eligibility or lease, and a live PASS proves only the devices it ran on.
+- **Composes:** §11.4.125, §11.4.142, §11.4.194, §11.4.209, §11.4.134, §11.4.108, §11.4.110, §11.4.4(b), §11.4.96, §11.4.230(A), §11.4.185, §11.4.151, §11.4.200, §11.4.126, §11.4.103, §11.4.129, §11.4.40, §11.4.201(1), §11.4.6, §11.4.227, §11.4.17, §11.4.3, §11.4.4(b), §11.4.5, §11.4.24, §11.4.27, §11.4.50, §11.4.54, §11.4.66, §11.4.69, §11.4.94, §11.4.97, §11.4.101, §11.4.106(F), §11.4.111, §11.4.116, §11.4.118, §11.4.119, §11.4.133, §11.4.135, §11.4.144, §11.4.147, §11.4.169, §11.4.176, §11.4.183, §11.4.192, §11.4.197, §11.4.214, §11.4.224(E), §11.4.229, §11.4.230(B)(D), §11.4.231, §11.4.236, §11.4.251, §11.4.264, §11.4.267, §11.4.275, §11.4.28 (clause (E) additions, canon's own list)
 - **Review addendum:** FAIL conditions of the recommended gates: a build held past the source-correctness GO while test-side work is unfinished; a build started with NO source-review GO (the §11.4.201(1) dual-assertion guard); a new-artifact deploy sharing a version id; work of the cycle opened by a manual-QA deploy still targeting the QA-deployed version id.
 
 #### §11.4.236 — QA-deploy-readiness gate: no manual-QA hand-off until the mandated validation produced a candidate-fingerprinted PASS verdict; a blocker MUST bind to a seam, never prose
-- **Source:** project-lifecycle-and-release.md:1523-1527
+- **Source:** project-lifecycle-and-release.md:1543-1547
 - **Rules:**
   - (1) DEPLOY-SEAM VERDICT-COVERAGE (§11.4.135 applied to the QA-deploy seam): a release artifact MUST NOT be deployed, published, or handed off for manual QA (§11.4.185) until the mandated autonomous validation(s) for that artifact produced a machine-written PASS verdict whose artifact fingerprint == the candidate (§11.4.115(F), fingerprint READ FROM THE TARGET at run time). ABSENCE of the verdict BLOCKS the deploy exactly as a FAIL does.
   - (2) MECHANICAL, NOT PROSE (§11.4.205/§11.4.226): the refusal lives in the deploy tool itself (the seam), never in prose an agent is trusted to honour; a source-gate asserting the validation harness merely EXISTS is necessary-not-sufficient.
@@ -3558,7 +3611,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.107(10), §11.4.108, §11.4.111, §11.4.115(F), §11.4.120, §11.4.126, §11.4.135, §11.4.146(D3), §11.4.185, §11.4.201, §11.4.205, §11.4.226, §11.4.234, §11.4.140, §11.4.6, §11.4.227, §11.4.17, §11.4.35
 
 #### §11.4.260 — Cutting-edge enterprise quality + production-deployment readiness (operator mandate 2026-08-15)
-- **Source:** project-lifecycle-and-release.md:1529-1551
+- **Source:** project-lifecycle-and-release.md:1549-1573
 - **Rules:**
   - Every work product MUST be built for cutting-edge enterprise quality targeted at production deployment, maximal stability and zero nasty surprises; standing default from the first prompt of a session for every batch, subagent, feature, fix and change; NEVER a per-request opt-in, NEVER downgraded to "good-enough", "will-do-for-now" or "MVP-first".
   - Every change MUST satisfy the closed production-readiness invariant set (B) before it is considered done; the project maintains docs/PRODUCTION_READINESS.md tracking readiness per component x invariant x evidence-source.
@@ -3575,7 +3628,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.8, §11.4.10, §11.4.27, §11.4.34, §11.4.44, §11.4.50, §11.4.66, §11.4.69, §11.4.85, §11.4.99, §11.4.101, §11.4.106, §11.4.107, §11.4.108, §11.4.118, §11.4.120, §11.4.124, §11.4.126, §11.4.128, §11.4.134, §11.4.135, §11.4.150, §11.4.152, §11.4.153, §11.4.161, §11.4.169, §11.4.183, §11.4.184, §11.4.185, §11.4.190, §11.4.197, §11.4.198, §11.4.200, §11.4.201, §11.4.209, §11.4.212, §11.4.223, §11.4.224, §11.4.226, §11.4.231, §11.4.235, §11.4.236, §11.4.238, §11.4.246, §11.4.257, §11.4.258, §11.4.259, §11.4.261, §11.4.262, §11.4.265, §11.4.17, §11.4.227, §1.1
 
 #### §11.4.261 — Zero shortcomings / gaps / weak spots / danger zones invariant with mechanical audit ratchet (operator mandate 2026-08-15)
-- **Source:** project-lifecycle-and-release.md:1555-1575
+- **Source:** project-lifecycle-and-release.md:1575-1597
 - **Rules:**
   - Every project MUST hold at ALL TIMES exactly ZERO shortcomings, gaps, weak spots and danger zones across every code path, service, component, gate, doc and configuration: a standing invariant, not a per-release checklist.
   - Enforced by a mechanical audit script inventorying a closed finding vocabulary, run at every pre-build, release and constitution-pull seam, producing a machine-readable ledger, bound to a MONOTONE-DECREASING ratchet (§11.4.135 pattern): the count of open findings only drops or the release refuses.
@@ -3592,7 +3645,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.6, §11.4.15, §11.4.16, §11.4.34, §11.4.44, §11.4.66, §11.4.87, §11.4.94, §11.4.95, §11.4.97, §11.4.101, §11.4.103, §11.4.107(10), §11.4.113, §11.4.115, §11.4.116, §11.4.118, §11.4.124, §11.4.126, §11.4.135, §11.4.148, §11.4.161, §11.4.197, §11.4.201, §11.4.223, §11.4.224(E), §11.4.226, §11.4.233, §11.4.238, §11.4.17
 
 #### §11.4.264 — Build once, promote ONE immutable content-addressed artifact through every environment; never rebuild per stage (research-derived, 2026-08-20)
-- **Source:** project-lifecycle-and-release.md:1579-1608
+- **Source:** project-lifecycle-and-release.md:1599-1629
 - **Rules:**
   - Rationale: rebuilding per stage breaks the chain of evidence - every gate against the staging artifact measured a different binary than production runs, making each green verdict a PASS-bluff about the shipped artifact. Immutable artifact plus environment-specific config injected at deploy is the rule.
   - (A) BUILD ONCE: exactly ONE artifact per release candidate, by ONE build, under §11.4.246 (reproducible + hermetic + SLSA-L2 provenance); every later environment receives THAT artifact. A pipeline invoking its build step once per environment violates §11.4.264 however deterministic the build is claimed; determinism makes a rebuild detectably equivalent, never a licence to rebuild instead of promote.
@@ -3609,7 +3662,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Clause (F): a flaky test is quarantined with an owner and a deadline, never laundered by a rebuild; retries are counted and surfaced (§11.4.248).
 
 #### §11.4.265 — Progressive delivery: traffic-shifted rollout gated by automated analysis on SLO AND business metrics, automatic abort to stable (research-derived, 2026-08-20)
-- **Source:** project-lifecycle-and-release.md:1611-1641
+- **Source:** project-lifecycle-and-release.md:1631-1663
 - **Rules:**
   - Progressive delivery is the first gate whose oracle is real user traffic; it exists to catch the defect the suite never encoded at a small blast radius.
   - (A) A release reaches users by a bounded-blast-radius strategy, NEVER an ungated cutover. The project declares its strategy per §11.4.35 from two named forms: CANARY (gradual traffic shift pausing at each step to evaluate; smallest blast radius; needs weight-based routing; old and new run concurrently so schema/compat must tolerate it) or BLUE-GREEN (stand up green alongside blue, switch all live traffic at once, keep blue for a rollback window; near-instant undo but all users hit the new version simultaneously). For a §11.4.239 critical-invariant surface the stated preference is canary paired with blue-green's instant-undo posture.
@@ -3625,7 +3678,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.3, §11.4.5, §11.4.6, §11.4.35, §11.4.50, §11.4.69, §11.4.107, §11.4.185, §11.4.201, §11.4.235, §11.4.238, §11.4.239, §11.4.240, §11.4.252, §11.4.254, §11.4.262, §11.4.264, §11.4.17, §11.4.227, §1.1
 
 #### §11.4.266 — Claim-vs-reality ledger: every ADVERTISED capability is a row, typed from a closed bluff-type vocabulary; a capability with no passing challenge is a release blocker (research-derived, 2026-08-20)
-- **Source:** project-lifecycle-and-release.md:1645-1673
+- **Source:** project-lifecycle-and-release.md:1665-1695
 - **Rules:**
   - The ledger enumerates from the CLAIM side (what the project advertises), unlike §11.4.25/§11.4.52/§11.4.169 which are keyed on known features; a claim with no feature row is invisible to a feature-keyed ledger. It adds a keying, not a restatement (§11.4.227).
   - (A) ONE LEDGER PER REPOSITORY, claim-side: every advertised capability is a row. The project declares per §11.4.35 which surfaces are "advertised" (at minimum: README capability set reachable per §11.4.212, the §11.4.257 manual/guide/FAQ set, the §11.4.254 capability matrix, the §11.4.259 badge assertions).
@@ -3640,7 +3693,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.6, §11.4.25, §11.4.27, §11.4.35, §11.4.52, §11.4.106, §11.4.108, §11.4.115(F), §11.4.118, §11.4.124, §11.4.135, §11.4.146(D3), §11.4.169, §11.4.186, §11.4.196(F), §11.4.197, §11.4.212, §11.4.224, §11.4.226, §11.4.227, §11.4.236, §11.4.238, §11.4.240, §11.4.245, §11.4.249, §11.4.251, §11.4.254, §11.4.257, §11.4.259, §11.4.262, §11.4.17, §1.1
 
 #### §11.4.267 — Shared attempt record + converge-on-evidence / escalate-on-stall (research-derived, 2026-08-20)
-- **Source:** project-lifecycle-and-release.md:1677-1707
+- **Source:** project-lifecycle-and-release.md:1697-1729
 - **Rules:**
   - Premise: the agent has no durable memory of prior attempts; the regime must externalise it; the record is externalised memory, not a convenience log.
   - Scope boundary: §11.4.147 governs a CRASHED agent, §11.4.232(C) a HUNG long-op, §11.4.21 the TERMINAL exhaustion audit; §11.4.267 governs the LIVE, healthy, progressing loop re-walking a dead end its predecessor already proved dead.
@@ -3657,10 +3710,10 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.20, §11.4.21, §11.4.35, §11.4.66, §11.4.70, §11.4.87, §11.4.93, §11.4.94, §11.4.97, §11.4.101, §11.4.102, §11.4.115(F), §11.4.116, §11.4.126, §11.4.146, §11.4.147, §11.4.176, §11.4.187, §11.4.196(F), §11.4.197, §11.4.199, §11.4.231, §11.4.232(C), §11.4.240, §11.4.249, §11.4.262, §11.4.17, §11.4.227, §1.1
 
 
-### Testing and TDD (39 anchors)
+### Testing and TDD (40 digests; the index counts 41 because it also lists §1.1, digested in the constitution file's §1-§10 section)
 
 #### §11.4.14 — Test playback cleanup mandate
-- **Source:** testing-and-tdd.md:3-27
+- **Source:** testing-and-tdd.md:41-64
 - **Rules:**
   - A test that completes (PASS, FAIL or SKIP) MUST leave the target quiescent: no orphan playback, recording, capture or background process after the last assertion; test side-effects on shared target state MUST NOT outlive the test.
   - Every test that issues a playback or capture command MUST issue the matching cleanup at test end (force-stop app, stop recorder, close fd, terminate helper).
@@ -3674,7 +3727,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.5
 
 #### §11.4.25 — Full-Automation-Coverage Mandate (User mandate, 2026-05-15)
-- **Source:** testing-and-tdd.md:28-106
+- **Source:** testing-and-tdd.md:66-144
 - **Rules:**
   - No feature, functionality, flow, use case, edge case, service or application on any supported platform is DELIVERABLE until covered by automation tests collectively proving six invariants.
   - Invariant 1, anti-bluff posture (§7.1 + §11.4): every assertion carries captured runtime evidence; metadata-only, config-only, grep-based, absence-of-error PASSes are forbidden.
@@ -3694,7 +3747,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §1, §1.1, §7.1, §11.4, §11.4.1, §11.4.2, §11.4.3, §11.4.6, §11.4.12, §11.4.15, §11.4.16, §11.4.17, §11.4.18, §11.4.20, §11.4.22
 
 #### §11.4.27 — No-Fakes-Beyond-Unit-Tests + 100%-Test-Type-Coverage Mandate (User mandate, 2026-05-15)
-- **Source:** testing-and-tdd.md:108-249
+- **Source:** testing-and-tdd.md:146-289
 - **Rules:**
   - (A) Mocks, stubs, fakes, placeholders, in-memory facsimile implementations, TODO, FIXME, "for now", "in production this would", or any empty-implementation pattern are PERMITTED only inside unit-test sources (e.g. `*_test.go` without the integration build tag; `tests/unit/`; per-language equivalents).
   - (A) Every other test type (integration, E2E, full automation, security, DDoS, scaling, chaos, stress, performance, benchmarking, UI, UX, Challenges, HelixQA suites) MUST exercise the real, fully implemented system against real infrastructure (real databases, HTTP endpoints, containers, downstream services, captured devices). A non-unit test importing mocks, in-memory repositories, fabricated provider responses or placeholder structs is a violation (PASS-bluff severity).
@@ -3712,7 +3765,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §1, §7.1, §11.4.1, §11.4.2, §11.4.3, §11.4.6, §11.4.10, §11.4.15, §11.4.16, §11.4.17, §11.4.20, §11.4.22, §11.4.23, §11.4.24, §11.4.25, §11.4.26, §11.4.35, §11.4.224, CONST-047
 
 #### §11.4.39 — Per-Feature On-Device End-User Validation Mandate (iter-76, 2026-05-17)
-- **Source:** testing-and-tdd.md:253-295
+- **Source:** testing-and-tdd.md:291-333
 - **Rules:**
   - Every user-facing feature MUST have at least one HelixQA scenario exercising it from cold-launch with positive runtime evidence: a screenshot or screen recording at a named checkpoint; at least one assertion of type `screenshot`, `accessibility_count`, `accessibility_node`, `ocr_text`, `pixel_histogram` or `editor_state`; evidence files in a discoverable output directory so each PASS is cross-verifiable.
   - Scenarios MUST be RE-EXECUTED on every release candidate; a scenario authored but never re-run degrades to a metadata-only gate (PASS-bluff at the regression layer).
@@ -3729,7 +3782,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §7.1, §11.4, §11.4.17, §11.4.25, §11.4.27, §11.4.38
 
 #### §11.4.43 — TDD-Fix-Discipline Mandate (User mandate, 2026-05-18)
-- **Source:** testing-and-tdd.md:297-399
+- **Source:** testing-and-tdd.md:335-437
 - **Rules:**
   - Every fix MUST follow the 5-step TDD-fix workflow.
   - Step 1 RED, failing test FIRST: before any code change author (or extend) a test exercising the user-visible path of the defect that FAILs for that defect specifically. Per §11.4.1 the FAIL MUST be a real product defect, not a script-bug FAIL. Per §11.4.2 the FAIL run MUST produce captured evidence (logcat/dumpsys/screenrecord/dmesg//sys snapshot/sink-side probe). The test identifier MUST cite the section letter or Fix-# under repair. A RED that "happens to pass because the probe lifecycle isn't wired" is itself a PASS-bluff.
@@ -3746,7 +3799,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Step 2 (LIVE-ADB-PROBE) force is MUST: the operator MUST attempt the fix on the running device via `adb shell` first, subject to the listed exceptions and the `LIVE_PROBE_INFEASIBLE:` footer.
 
 #### §11.4.48 — UI-Driven Video Testing Mandate (User mandate, 2026-05-18)
-- **Source:** testing-and-tdd.md:401-535
+- **Source:** testing-and-tdd.md:439-573
 - **Rules:**
   - Every video-playback test asserting secondary-display routing MUST traverse the user-equivalent UI path (Intent / MediaSession-only dispatch skips content-selection UI, player-surface allocation, MediaSession lifecycle and back-button cleanup, and cannot reproduce defects like routing-race §CL or frozen-frame mid-back-press §CM). Mandatory 5-surface coverage per video app.
   - Surface A, launch via launcher icon: `am start -n <launcher-pkg>/<launcher-activity>`, then `uiautomator dump` to locate the app icon tile, then `input tap X Y`. NOT `am start <video-pkg>/<MainActivity>`.
@@ -3770,7 +3823,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.5, §11.4.13, §11.4.14, §11.4.17, §11.4.43, §11.4.44, §CG, §CL, §CM
 
 #### §11.4.49 — Dual-Approach Testing Mandate (User mandate, 2026-05-18)
-- **Source:** testing-and-tdd.md:537-645
+- **Source:** testing-and-tdd.md:575-683
 - **Rules:**
   - REFINES §11.4.48 (does not replace): every feature test ships in BOTH variants, UI-driven AND Intent-driven, over a shared assertion base; either alone is a PASS-bluff for the opposite half of the stack (UI catches app-side bugs; Intent catches framework/system-server bugs: Intent extras parsing, MediaCodec.configure hook MIME routing, IVideoOutputManager bind timing, broadcast permission gating, headless cron paths).
   - Element 1, both variants required: every feature test of a user-visible behaviour MUST ship `<feature>_ui.sh` (uiautomator-based, §11.4.48 surfaces A-E) AND `test_<feature>_intent.sh` (`am start --es` / `am broadcast`-based). Either alone is forbidden.
@@ -3789,7 +3842,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.5, §11.4.6, §11.4.10, §11.4.13, §11.4.14, §11.4.17, §11.4.43, §11.4.44, §11.4.48, §CG, §CB, §CN
 
 #### §11.4.50 — Deterministic Consistency Mandate (User mandate, 2026-05-18)
-- **Source:** testing-and-tdd.md:647-765
+- **Source:** testing-and-tdd.md:685-805
 - **Rules:**
   - Closes the gap left by §11.4.7's textual ban on `intermittent` / `transient` / `flake`: every PASS must come from N identical iterations, not a single observation.
   - Element 1, N-iteration deterministic outcome: every PASSing test MUST have been executed N times (default N=3; N=10 for cycle-validation suites) against the same firmware MD5 + same device + same topology with IDENTICAL PASS every iteration. A test whose outcome diverges across iterations is auto-FAIL; no "first PASSed therefore X was a flake" path.
@@ -3806,7 +3859,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.2, §11.4.5, §11.4.6, §11.4.7, §11.4.17, §11.4.18, §11.4.43, §11.4.46, §11.4.48, §11.4.49
 
 #### §11.4.51 — Live-ADB-First Maximization Mandate (User mandate, 2026-05-18)
-- **Source:** testing-and-tdd.md:769-889
+- **Source:** testing-and-tdd.md:807-929
 - **Rules:**
   - REFINES §11.4.43 step 2 (LIVE-ADB-PROBE) with a per-file-class decision matrix, a classifier helper and a commit-message footer literal.
   - Element 1: classify every fix by rebuild-requirement using the project's per-file-class decision matrix; no guessing (§11.4.6); every file in the diff cites its matrix row.
@@ -3823,7 +3876,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.9, §11.4.17, §11.4.43, §11.4.46, §11.4.48, §11.4.49, §11.4.50
 
 #### §11.4.67 — Shell-script target-shell-parseability mandate (User mandate, 2026-05-19)
-- **Source:** testing-and-tdd.md:893-1054
+- **Source:** testing-and-tdd.md:931-1092
 - **Rules:**
   - Every shell script that may be invoked under a target shell other than its shebang's MUST parse cleanly under that target shell (reason: Android `/system/bin/sh` is mksh, which parses the entire script before executing, so a runtime guard cannot save bash-only syntax like `exec > >(tee ...)`).
   - (1) Closed-set scope: every tracked `.sh` under `device/rockchip/rk3588/tests/`, `scripts/`, `scripts/testing/` (and equivalents in owned submodules). OUT of scope: `external/`, `prebuilts/`, `packages/modules/`, `kernel-5.10/`, `out/`, `build/`, `scripts/legacy/` (legacy quarantine), third-party vendored shell dirs.
@@ -3843,7 +3896,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.4, §11.4.6, §11.4.50, §11.4.51, §11.4.142, §11.4.201
 
 #### §11.4.81 — Cross-platform-parity mandate (User mandate, 2026-05-21)
-- **Source:** testing-and-tdd.md:1056-1093
+- **Source:** testing-and-tdd.md:1094-1133
 - **Rules:**
   - Every consuming project whose `supported-platforms` manifest lists more than one OS MUST, for every feature/test/gate/challenge/mutation depending on platform-specific primitives, ship a per-OS-equivalent implementation chosen at runtime via `uname -s` (or equivalent detection). A Linux-only gate without macOS/Windows/BSD equivalents (when the kernel permits) is a PASS-bluff at the platform-coverage layer.
   - (A) Per-OS implementation REQUIRED: every feature whose Linux implementation uses a cgroup/systemd//proc primitive MUST have a documented per-OS equivalent (POSIX `setrlimit`/`ulimit`, macOS launchd plist `HardResourceLimits`, BSD `rctl`, Windows Job Object) chosen by runtime detection with NO operator awareness required (same invocation works everywhere; e.g. `tmx new -s NAME` dispatches to `systemd-run --user --scope` on Linux and `scripts/tmx-rlimit-wrapper.sh` on Darwin).
@@ -3859,7 +3912,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.2, §11.4.3, §11.4.4, §11.4.5, §11.4.6, §11.4.17, §11.4.20, §11.4.27, §11.4.69, §11.4.70, §1.1, §107
 
 #### §11.4.85 — Stress + Chaos Test Mandate (User mandate, 2026-05-24)
-- **Source:** testing-and-tdd.md:1097-1150
+- **Source:** testing-and-tdd.md:1135-1190
 - **Rules:**
   - Short tag `stress-chaos-mandate`. Every fix or improvement MUST ship with full-automation STRESS AND CHAOS test suites exercising edge cases, sustained load, concurrent contention and failure injection; a fix with only a happy-path PASS is a PASS-bluff at the resilience layer.
   - Stress test definition (at MINIMUM one of): Sustained load (N >= 100 sequential iterations OR >= 30 s wall-clock continuous load; per-iteration latency recorded; p50/p95/p99 reported); Concurrent contention (N >= 10 parallel invocations, all MUST complete, no deadlock, no resource leak in fd count / process-table count / RSS, no data race); Boundary conditions (empty min input, provider/codec/protocol-limit max input, off-by-one at every size threshold; each yields a categorised result: success, categorised-error or deterministic-skip, NEVER an uncaught exception or silent corruption).
@@ -3876,7 +3929,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.14, §11.4.17, §11.4.43, §11.4.50, §11.4.51, §11.4.52, §11.4.67, §11.4.69, §11.4.83, §107, §1.1
 
 #### §11.4.98 — Full-Automation Anti-Bluff Mandate: live tests MUST be re-runnable end-to-end without manual intervention (User mandate, 2026-05-28)
-- **Source:** testing-and-tdd.md:1154-1183
+- **Source:** testing-and-tdd.md:1192-1223
 - **Rules:**
   - Closes the manual-intervention gap: a live/integration/e2e/Challenge test requiring any human action during execution (typing a chat message, clicking a UI, hand-triggering a webhook, manually attaching a file) is by definition a PASS-bluff at the automation layer.
   - (A) Every governed test (unit / integration / e2e / Challenge / stress / chaos / live) MUST be fully self-driving end-to-end: inputs from configuration alone, exercises the load-bearing path autonomously, reports PASS/FAIL/SKIP-with-reason with no further human action.
@@ -3897,7 +3950,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.2, §11.4.3, §11.4.5, §11.4.10, §11.4.35, §11.4.50, §11.4.85, §11.4.87, §11.4.89, §11.4.90, §11.4.94
 
 #### §11.4.114 — Last-known-good-tag regression isolation mandate (1.1.8-dev remediation, 2026-06-03)
-- **Source:** testing-and-tdd.md:1187-1207
+- **Source:** testing-and-tdd.md:1225-1247
 - **Rules:**
   - Short tag `last-known-good-tag-isolation`. When a previously-working feature is observed broken, the FIRST diagnostic action MUST be to identify the last release tag (or commit/build/deployment) at which it was KNOWN-GOOD and diff/bisect the broken state against it, BEFORE any open-ended root-cause investigation or speculative fix.
   - The known-good revision is the regression oracle: (1) it bounds the search to commits between known-good and now (`git diff <good-tag>..HEAD --stat` of the feature's files is the captured evidence); (2) it tells you the fix is a regression REPAIR not a from-scratch design; (3) each suspect file is compared to its known-good version as behavioural oracle.
@@ -3911,7 +3964,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.6, §11.4.7, §11.4.17, §11.4.35, §11.4.40, §11.4.43, §11.4.102, §11.4.108, §11.4.115
 
 #### §11.4.115 — RED-baseline-on-the-broken-artifact + polarity-switch mandate (1.1.8-dev remediation, 2026-06-03)
-- **Source:** testing-and-tdd.md:1211-1237
+- **Source:** testing-and-tdd.md:1249-1277
 - **Rules:**
   - Short tag `red-baseline-polarity-switch`. Every §11.4.43 RED test MUST be authored to reproduce the defect on the CURRENT pre-fix artifact (the actual broken build/deployment), capturing positive evidence per §11.4.5/§11.4.69/§11.4.107 that the defect is genuinely present, never a synthetic/hypothetical failure the fix is written to agree with.
   - The SAME test source MUST carry a single polarity switch (env flag/parameter, canonical `RED_MODE`, default `1` = reproduce-and-assert-defect-present) which, set to `0` post-fix, converts it into the GREEN regression-guard asserting the defect is ABSENT.
@@ -3928,7 +3981,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.2, §11.4.4, §11.4.5, §11.4.6, §11.4.7, §11.4.11, §11.4.43, §11.4.50, §11.4.69, §11.4.90, §11.4.102, §11.4.107, §11.4.108, §11.4.112, §11.4.114, §11.4.135, §11.4.139, §11.4.142, §11.4.146, §11.4.194, §11.4.197, §11.4.199, §11.4.201, §11.4.205, §11.4.227
 
 #### §11.4.116 — Real-time conductor<->autonomous-test-framework sync channel mandate (1.1.8-dev remediation, 2026-06-03)
-- **Source:** testing-and-tdd.md:1241-1261
+- **Source:** testing-and-tdd.md:1279-1301
 - **Rules:**
   - Short tag `conductor-test-sync-channel`. Any autonomous long-running test/QA/validation framework an external orchestrator (conductor agent or operator) depends on for real-time decisions MUST expose a real-time sync channel in two parts.
   - Part 1: a structured append-only event stream (JSONL or equivalent, one event per line, never rewritten, e.g. `conduit.events.jsonl`) emitting at minimum session-start, phase-transition, per-test-or-challenge-start, captured-evidence-path, external-call (LLM/vision/sink-probe), error, and per-item-verdict events.
@@ -3944,7 +3997,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.5, §11.4.17, §11.4.27, §11.4.28, §11.4.35, §11.4.45, §11.4.52, §11.4.69, §11.4.89, §11.4.94, §11.4.97
 
 #### §11.4.117 — Computer-vision / OCR pixel-oracle fallback for non-introspectable UIs mandate (1.1.8-dev remediation, 2026-06-03)
-- **Source:** testing-and-tdd.md:1265-1285
+- **Source:** testing-and-tdd.md:1303-1325
 - **Rules:**
   - Short tag `cv-ocr-pixel-oracle-fallback`. Any test that drives a UI control or asserts on-screen content MUST NOT assume the accessibility/semantic/DOM hierarchy is the source of truth for what the user sees.
   - When the hierarchy is blank, partial or known-unreliable (TV-Compose, leanback, canvas/SurfaceView/GL, games, custom-rendered UIs; `uiautomator dump` with zero clickable nodes), the test MUST fall back to a pixel oracle: (1) DRIVE input by computer-vision template-match (locate a control by rendered appearance, tap its screen coordinates) not by hierarchy node id; (2) ASSERT on-screen content by ROI OCR (read rendered text in the region the user reads: caption strip, title, error overlay) with a per-word confidence floor + region-of-interest per §11.4.107(12), never a hierarchy text attribute.
@@ -3958,7 +4011,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.5, §11.4.6, §11.4.17, §11.4.35, §11.4.48, §11.4.49, §11.4.52, §11.4.107, §11.4.112
 
 #### §11.4.118 — Discovery-pressure to confirm known-issue-set completeness
-- **Source:** testing-and-tdd.md:1289-1309
+- **Source:** testing-and-tdd.md:1327-1349
 - **Rules:**
   - A remediation/release cycle MUST NOT treat "every reported defect is fixed" as "the build is good"; the reported set is biased by what the operator happened to test.
   - After (or in parallel with) fixing the reported set, the cycle MUST run a discovery + stress pass across ALL target devices/environments that deliberately exercises subsystems, journeys and edge cases BEYOND the reported defects.
@@ -3977,7 +4030,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.4, §11.4.5, §11.4.69, §11.4.25, §11.4.40, §11.4.42, §11.4.52, §11.4.85, §11.4.114, §11.4.115, §11.4.119, §11.4.15, §11.4.16, §11.4.17, §11.4.35, §11.4.6, §1.1
 
 #### §11.4.120 — Fix-breaks-its-own-gate reconciliation + gate seam-placement
-- **Source:** testing-and-tdd.md:1313-1337
+- **Source:** testing-and-tdd.md:1351-1377
 - **Rules:**
   - When a correct fix makes a pre-existing gate/test FAIL because it asserted the OLD (now removed/changed) behaviour, the FAIL is the CORRECT signal the fix landed and MUST NOT be suppressed.
   - FORBIDDEN response 1: fake-passing the gate (editing to always pass, weakening to a tautology, deleting it).
@@ -4001,7 +4054,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.4, §11.4.6, §11.4.84, §11.4.102, §11.4.108, §11.4.69, §11.4.66, §11.4.101, §11.4.201, §11.4.110, §11.4.17, §11.4.35, §1.1
 
 #### §11.4.135 — Standing regression-guard suite + every fixed defect gets a permanent regression test
-- **Source:** testing-and-tdd.md:1341-1351
+- **Source:** testing-and-tdd.md:1379-1389
 - **Rules:**
   - Every project MUST maintain a STANDING regression-guard suite that runs on EVERY build+deploy and BLOCKS the release tag on any failure.
   - Every closed defect (stable ticket id e.g. ATM-NNN) MUST, in the SAME commit as its fix (extending the §11.4.43 DOCUMENT step), register a permanent §11.4.115 RED-on-broken-artifact regression test: `RED_MODE=1` captures the historical defect on a pre-fix artifact (proof the guard is real), `RED_MODE=0` is the standing GREEN guard asserting the defect is ABSENT.
@@ -4021,7 +4074,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.40, §11.4.43, §11.4.46, §11.4.50, §11.4.107, §11.4.108, §11.4.115, §11.4.118, §11.4.123, §11.4.124, §11.4.130, §11.4.132, §11.4.3, §11.4.115(F), §11.4.146(D3), §11.4.201, §11.4.205, §11.4.17
 
 #### §11.4.136 — Real-content end-to-end playback-test mandate
-- **Source:** testing-and-tdd.md:1354-1360
+- **Source:** testing-and-tdd.md:1392-1398
 - **Rules:**
   - Any test asserting media playback works MUST drive REAL content (catalog stream or offline reference clip) through the user's path (§11.4.48 UI-driven -> §11.4.117 CV/OCR fallback).
   - It MUST assert genuine playback via the §11.4.107 liveness battery PLUS a decoder-health census: a numeric drop-buffer budget, no buffer-timestamp re-order/discard, no codec-reject (Media3 ExoPlayer OEM mandate failure modes: "too many dropped buffers" >25, "unexpected presentation timestamp", "test timed out").
@@ -4035,7 +4088,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.48, §11.4.50, §11.4.107, §11.4.117, §11.4.123, §11.4.13, §11.4.69, §11.4, §11.4.1, §11.4.17
 
 #### §11.4.137 — Subtitle/caption content-correctness oracle + secure-display-proxy honesty
-- **Source:** testing-and-tdd.md:1363-1375
+- **Source:** testing-and-tdd.md:1401-1413
 - **Rules:**
   - A test asserting a subtitle/caption is correct MUST classify the content class of the rendered/forwarded cue; a present cue is NOT a correct cue.
   - A cue is CHROME (FAIL) if it is: a known control/menu label (closed multilingual deny-list MIRRORED from the source-side denylist, case-folded both sides incl. non-ASCII scripts); time-counter/numeric chrome; not prose; outside the lower safe-title position band where caption position is available (CEA-708 grid); OR static across the window (>=2 distinct prose cues required; dialogue cadence).
@@ -4052,7 +4105,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.3, §11.4.5, §11.4.6, §11.4.107, §11.4.108, §11.4.112, §11.4.115, §11.4.117, §11.4.123, §11.4.13, §11.4.69, §11.4.52, §11.4.17
 
 #### §11.4.138 — Operator-escape => mandatory bluff-audit + permanent guard
-- **Source:** testing-and-tdd.md:1378-1384
+- **Source:** testing-and-tdd.md:1416-1422
 - **Rules:**
   - When the operator (or any out-of-band channel) finds a defect the GREEN suite passed, it is a §11.4 PASS-bluff and MUST trigger, before the fix is closed: (1) a §11.4.102 systematic-debugging pass to FACT-root-cause.
   - (2) A bluff-audit identifying the EXACT assertion that should have caught it but didn't, cited to `file:line`.
@@ -4066,7 +4119,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.102, §11.4.108, §11.4.115, §11.4.118, §11.4.123, §11.4.135, §11.4.17
 
 #### §11.4.143 — Real-user-journey mandate for video-streaming-app full-automation tests
-- **Source:** testing-and-tdd.md:1387-1399
+- **Source:** testing-and-tdd.md:1425-1437
 - **Rules:**
   - Any full-automation test asserting a video player/streaming app plays content MUST drive the REAL end-user journey through the app's OWN UI: launch -> BROWSE the actual catalog -> choose a SPECIFIC title -> press the real Play/Resume button -> confirm THAT chosen content plays with its correct subtitles on the intended routing target.
   - A test bypassing the journey with a sample/demo/built-in-loop clip, deep-link / `am start -a VIEW` / intent shortcut, synthetic or pre-staged stream is a §11.4 PASS-bluff at the user-journey layer (validates routing only).
@@ -4085,7 +4138,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.48, §11.4.107, §11.4.117, §11.4.136, §11.4.137, §11.4.52, §11.4.3, §11.4.10, §11.4.112, §11.4.15, §11.4.16, §107, §1.1, §11.4.17, §11.4.35, §11.4.6
 
 #### §11.4.169 — Mandatory comprehensive test-type coverage with anti-bluff captured evidence
-- **Source:** testing-and-tdd.md:1401-1433
+- **Source:** testing-and-tdd.md:1439-1485
 - **Rules:**
   - Every project MUST be covered by the CLOSED enumerated test-type set, each driven to as close to 100% coverage as the domain permits, every PASS backed by rock-solid captured PHYSICAL evidence (§11.4.5/§11.4.69/§11.4.107), zero false results. A green result with no falsifiable captured evidence is a §11.4 PASS-bluff. Strict enumerated expansion of §11.4.27.
   - Each type REQUIRED where the domain warrants; the ONLY permitted absence is an honest §11.4.3 SKIP-with-reason (topology/hardware/credential genuinely absent), NEVER a silent gap.
@@ -4105,7 +4158,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.4, §11.4.5, §11.4.6, §11.4.25, §11.4.27, §11.4.50, §11.4.52, §11.4.69, §11.4.76, §11.4.85, §11.4.98, §11.4.107, §11.4.123, §11.4.135, §11.4.146, §11.4.3, §11.4.10, §11.4.161, §11.4.197, §11.4.201, §11.4.224, §11.4.227, §11.4.35, §1.1
 
 #### §11.4.189 — Most-reopened cases get extra-depth live-testing scrutiny FIRST
-- **Source:** testing-and-tdd.md:1449
+- **Source:** testing-and-tdd.md:1487
 - **Rules:**
   - All LIVE TESTING (on-device/on-target runtime validation, deploy-and-observe) MUST give EXTRA-DEPTH retest + in-depth investigation + FULL validation/verification with REAL PHYSICAL captured evidence (§11.4.5/§11.4.69/§11.4.107: captured audio/video/sysfs/dumpsys/sink-side/runtime-signature) and NO bluff to the cases REOPENED THE MOST TIMES (highest §11.4.55 reopens-count).
   - (1) WHAT: not a single pass: re-run at extra depth (more iterations per §11.4.50, wider edge-case + regression coverage), RE-INVESTIGATE the defect per §11.4.102 + §11.4.146 reproduce-first, CONFIRM with rock-solid captured physical evidence per §11.4.123; never metadata-only/config-only/absence-of-error/grep-without-runtime.
@@ -4120,7 +4173,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.55, §11.4.69, §11.4.107, §11.4.108, §11.4.115, §11.4.129, §11.4.130, §11.4.132, §11.4.135, §11.4.146, §11.4.50, §11.4.102, §11.4.123, §11.4.93, §11.4.17, §11.4.35, §11.4.1
 
 #### §11.4.199 — Exact-reproduction-sequence mandate
-- **Source:** testing-and-tdd.md:1451-1469
+- **Source:** testing-and-tdd.md:1489-1507
 - **Rules:**
   - (1) When a working reproduction ALREADY EXISTS (test/harness/script/recorded sequence demonstrably reaching the defect or code path), the investigation MUST drive the target with THAT EXACT sequence: same inputs, order, timing, preconditions, environment/topology (§11.4.3). A hand-rolled approximation is NOT a substitute.
   - (2) A deviating/simplified/alternative sequence MUST FIRST be proven with captured evidence to reach the SAME precondition (the entry-state the mechanism/defect keys off) before ANY conclusion is drawn from it.
@@ -4138,7 +4191,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.3, §11.4.5, §11.4.6, §11.4.7, §11.4.102, §11.4.107, §11.4.115, §11.4.123, §11.4.135, §11.4.146, §11.4.17, §11.4.35
 
 #### §11.4.224 — Test-first (TDD) for ALL work + minimum code-coverage floor (necessary, never sufficient)
-- **Source:** testing-and-tdd.md:1471-1497
+- **Source:** testing-and-tdd.md:1509-1535
 - **Rules:**
   - Closes two gaps: §11.4.43 binds only fixes (new features/wiring/gates/Challenges/bash scripts had no test-first obligation); §11.4.27/§11.4.169 "100%" is test-TYPE breadth and states no CODE-coverage figure.
   - (A) TEST-FIRST BINDS ALL WORK with an executable surface (change, feature, implementation, wiring, refactor, pre-build gate, §1.1 mutation, Challenge, test-harness code, AND bash/shell scripts): the test is WRITTEN FIRST, RUN FIRST, and OBSERVED TO FAIL for the right reason before the implementation exists. Where a broken artifact exists the RED baseline is taken ON it per §11.4.115 (polarity switch converts it to the permanent §11.4.135 guard); for genuinely new work the RED is the test failing against absent behaviour, captured before implementation lands. A test authored AFTER implementation shows only agreement, never catching the defect.
@@ -4161,7 +4214,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.5, §11.4.6, §11.4.27, §11.4.35, §11.4.43, §11.4.50, §11.4.66, §11.4.67, §11.4.69, §11.4.77, §11.4.85, §11.4.107, §11.4.108, §11.4.110, §11.4.115, §11.4.122, §11.4.135, §11.4.142, §11.4.146, §11.4.169, §11.4.185, §11.4.197, §11.4.201(8), §11.4.202, §11.4.3, §11.4.17, §11.4.44, §11.4.65, §11.4.106, §11.4.212, §1.1
 
 #### §11.4.238 — Automated QA must be the DISCOVERER: manual QA finds nothing new
-- **Source:** testing-and-tdd.md:1499-1525
+- **Source:** testing-and-tdd.md:1537-1566
 - **Rules:**
   - (A) The automated QA system (HelixQA per §11.4.27 or consumer's equivalent per §11.4.35) MUST be the mechanism that FINDS defects. Discovery by a human, operator manual pass, agent reading code, or end-user report is a FAILURE of the QA system; the finding is still fixed, but the QA gap is a defect of equal standing and closing only the reported defect while leaving the gap is the violation.
   - (B) By the time manual QA runs (§11.4.185) the automated regime MUST already have surfaced everything; manual QA is a CONFIRMATION and sufficiency gate, never the discovery mechanism. Target: a manual pass discovering zero previously-unknown defects.
@@ -4182,7 +4235,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.27, §11.4.138, §11.4.185, §11.4.118, §11.4.135, §11.4.115, §11.4.98, §11.4.136, §11.4.143, §11.4.158, §11.4.159, §11.4.160, §11.4.102, §11.4.6, §1.1, §11.4.240, §11.4.201, §11.4.261, §11.4.227, §11.4.17, §11.4.35
 
 #### §11.4.239 — Critical-invariant work-class Definition of Done: failure-path scenarios as gates
-- **Source:** testing-and-tdd.md:1530-1546
+- **Source:** testing-and-tdd.md:1568-1586
 - **Rules:**
   - Every project's DoD (§11.4.15/§11.4.16 lifecycle + §11.4.33 closure vocabulary) MUST identify a closed CRITICAL-INVARIANT WORK CLASS (code where a single incorrect outcome is unrecoverable between failure and remediation) and MUST require that a change touching it carry EXPLICIT FAILURE-PATH SCENARIOS as passing tests BEFORE closure. A DoD stopping at "compiles + happy-path green" for such a change is forbidden.
   - (A) Consumer MUST declare as DATA (§11.4.35) its instantiation of four categories: (i) MONEY (credits, debits, transfers, holds, releases, refunds, reconciles); (ii) SAFETY (outputs actuating physical hardware, medical devices, transport, industrial controls); (iii) AVAILABILITY (code on the critical path of the primary user-facing capability: login, primary action, load-bearing data read); (iv) INTEGRITY (mutates the persistent record whose corruption cannot be silently repaired: append-only ledgers, audit logs, cryptographic anchors, source-of-truth writes per §11.4.93/§11.4.95). A region is IN the class when at least one category applies; consumer extensions (regulatory outputs, privacy-critical PII, legal-hold) carry the same discipline. Categories are not claimed exhaustive.
@@ -4200,7 +4253,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.15, §11.4.16, §11.4.33, §11.4.35, §11.4.43, §11.4.69, §11.4.108, §11.4.115(F), §11.4.135, §11.4.146(D3), §11.4.185, §11.4.205, §11.4.226, §11.4.238, §11.4.93, §11.4.95, §11.4.129, §11.4.6, §11.4.17
 
 #### §11.4.242 — Bisection-not-blame regression cause-finding + delta debugging
-- **Source:** testing-and-tdd.md:1550-1556
+- **Source:** testing-and-tdd.md:1588-1596
 - **Rules:**
   - When a previously-working behaviour regresses, the FIRST-choice localisation is BISECTION (`git bisect` or equivalent monotone search, O(log N)) over the ordered commit range between the last known-good tag per §11.4.114 and HEAD, NOT blame-log inspection nor speculative root-cause hunting.
   - MONOTONE-SEARCH INVARIANT: bisection valid only when the observable is monotone (broken stays broken); non-monotone (flaky, environment-dependent, timing-race) MUST be stabilised first; bisecting over a flaky signal yields a WRONG "guilty" commit with equal confidence (a §11.4/§11.4.1 localisation-layer bluff).
@@ -4219,7 +4272,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.69, §11.4.102, §11.4.114, §11.4.115, §11.4.201, §11.4.224, §11.4.50, §11.4.248, §11.4.227, §1.1, §11.4.17
 
 #### §11.4.243 — Characterization / golden-master safety net before behaviour-changing legacy modification
-- **Source:** testing-and-tdd.md:1560-1564
+- **Source:** testing-and-tdd.md:1598-1604
 - **Rules:**
   - Before ANY behaviour-changing modification to legacy code lacking characterization tests, the modifier MUST FIRST author CHARACTERIZATION TESTS asserting CURRENT observable behaviour as GROUND TRUTH (correct or not) and land them as a green baseline; only AFTER may the modification proceed.
   - LEGACY SCOPE (any of): (i) lacks tests asserting observable behaviour; (ii) written spec diverges from measured actual behaviour; (iii) predates the constitution's TDD discipline (§11.4.224); (iv) modifier cannot describe exact behaviour from reading source in the time budget.
@@ -4234,7 +4287,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.115, §11.4.124, §11.4.118, §11.4.201, §11.4.224, §11.4.66, §11.4.17, §1.1
 
 #### §11.4.244 — Cross-boundary contract tests + can-i-deploy gate
-- **Source:** testing-and-tdd.md:1568-1572
+- **Source:** testing-and-tdd.md:1606-1612
 - **Rules:**
   - Changes modifying a boundary between independently-deployable components (service<->consumer, library<->dependents, DB schema<->readers/writers, message topic<->subscribers) MUST be covered by CONSUMER-DRIVEN CONTRACT TESTS on both sides AND a `can-i-deploy` gate MUST verify proposed provider version compatibility against every currently-deployed consumer version BEFORE shipping. The two are merged: useless in isolation.
   - CDC pattern: consumers publish assumptions about the provider (Pact / Spring Cloud Contract / gRPC schema-evolution rules); providers verify each consumer's contract against actual implementation; a provider change breaking a live consumer's contract fails the provider's build BEFORE shipping.
@@ -4250,7 +4303,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.35, §11.4.66, §11.4.108, §11.4.135, §11.4.185, §11.4.201, §11.4.17, §1.1
 
 #### §11.4.245 — Oracle-problem-first test authoring
-- **Source:** testing-and-tdd.md:1576-1580
+- **Source:** testing-and-tdd.md:1614-1620
 - **Rules:**
   - Every test MUST FIRST identify its ORACLE (the mechanism deciding PASS vs FAIL for the input it drives), and the oracle MUST be DIFFERENT from the code under test AND from the test's own assertion mechanism. Authoring without explicit oracle identification yields the "test agrees with the code" anti-pattern (a §11.4/§11.4.1 bluff at the test-authoring layer).
   - ORACLE STRATEGY CLOSED SET, each test's oracle NAMED explicitly in source: (1) SPECIFIED (spec/RFC/standard names expected output); (2) DERIVED (independent reference implementation); (3) METAMORPHIC (relations between related inputs, §11.4.107(8) generalised); (4) GOLDEN-MASTER/CHARACTERIZATION (past captured behaviour, §11.4.243); (5) INVARIANT (universal property, e.g. sort output sorted + permutation of input); (6) STATISTICAL (distribution properties for stochastic outputs, never a specific value); (7) HUMAN (§11.4.185 manual QA). NO other classes.
@@ -4265,7 +4318,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.107(10), §11.4.115, §11.4.194, §11.4.201, §11.4.224, §11.4.243, §11.4.185, §11.4.17, §1.1
 
 #### §11.4.246 — Reproducible + hermetic builds + supply-chain integrity at SLSA Build Level 2
-- **Source:** testing-and-tdd.md:1584-1588
+- **Source:** testing-and-tdd.md:1622-1628
 - **Rules:**
   - Every consuming project's build pipeline MUST produce REPRODUCIBLE, HERMETIC artifacts and MUST meet SLSA Build Level 2 as the FLEET-WIDE MINIMUM (operator decision 2026-08-15; Level 3+ tracked as backlog per §11.4.197).
   - REPRODUCIBLE: same source at same time on any conformant host yields byte-identical artifacts (or a diff-set fully accounted for by declared non-determinisms pinned to canonical values).
@@ -4281,7 +4334,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2.1, §11.4.6, §11.4.30, §11.4.35, §11.4.108, §11.4.113, §11.4.135, §11.4.142, §11.4.161, §11.4.184, §11.4.185, §11.4.197, §11.4.209, §11.4.77, §11.4.17, §1.1
 
 #### §11.4.247 — Composite-output layer-move must move every layer
-- **Source:** testing-and-tdd.md:1592-1596
+- **Source:** testing-and-tdd.md:1630-1636
 - **Rules:**
   - Changes MOVING a system-boundary layer (service migrates hosts, endpoint URL changes, API version bumps, DB schema shifts, message topic renames, ingress path re-routes, storage bucket moves) MUST move EVERY LAYER of the composite output atomically or via an explicit compatibility window; NEVER piecemeal.
   - Layer taxonomy (per §11.4.35 baseline): (i) server (handler + route + OpenAPI/proto/gRPC descriptor); (ii) client (call-sites + SDK stubs + integration tests); (iii) infrastructure (LB + ingress + API gateway + CDN + service-mesh + DNS); (iv) data stores (cached keys + DB URL rows + MQ subscriptions); (v) observability (metric labels + span names + log fields + dashboards + alerts + SLOs); (vi) documentation (user + dev + runbook + README + cookbook); (vii) tests (integration + e2e + contract per §11.4.244 + load + smoke).
@@ -4294,12 +4347,13 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.35, §11.4.111, §11.4.118, §11.4.124, §11.4.135, §11.4.191, §11.4.197, §11.4.238, §11.4.244, §1.1
 
 #### §11.4.248 — Flaky-test quarantine + protected-regression-spec gate ([PROTECTED-SPEC: ATM-NNN] + CODEOWNERS)
-- **Source:** testing-and-tdd.md:1600-1604
+- **Source:** testing-and-tdd.md:1638-1646
 - **Rules:**
   - Flaky tests are the silent anti-bluff decay vector; two disciplines bound it.
   - (A) QUARANTINE: mechanical detection (test-history aggregator flags two-consecutive-run-different-verdict OR rerun-after-red pattern) moves the flaky test to `tests/quarantine/` (per §11.4.35), opens a tracked §11.4.197 stabilisation deadline, and the blocking suite runs WITHOUT the quarantined test so green means green; a deadline past = §11.4.66 extension or a violation.
   - (B) PROTECTED-REGRESSION-SPEC: regression tests codifying known-broken defect fixes (§11.4.135 permanent-guard suite) MAY be tagged `# [PROTECTED-SPEC: ATM-NNN]` (target-language comment equivalent) referencing the workable-item ATM-NNN (§11.4.54) they guard, marking the test load-bearing whose modification requires elevated review. The tag is applied deliberately per test, NOT blanket (blanket voids the discipline).
   - CODEOWNERS-REQUIRED-REVIEWER GATE: the consuming project's CODEOWNERS declares that modifications to `[PROTECTED-SPEC]`-tagged tests OR `regression/**/*` path scope require designated required-reviewer approval BEFORE merge; composes with §2.1 SSH + §11.4.113 no-force-push (gate cannot be silently bypassed); audit trail in PR review thread + commit history. The reviewer distinguishes STRENGTHEN (approve), FIX-DEFECT-IN-TEST (approve after verifying ATM-NNN's defect not re-introduced), WEAKEN/REMOVE (refuse or §11.4.66 escalate); the gate makes modification VISIBLE, not preventable.
+  - EXTENSION (2026-10-08) - ticket-id key: the `ATM-NNN` in the tag `[PROTECTED-SPEC: ATM-NNN]` and in `--tag-without-atm-id` is the default NOTATION; the tag carries the project's own declared `<KEY>-NNN` per the §11.4.54 EXTENSION of the same date.
   - Classification universal (§11.4.17).
 - **Gates:** CM-COVENANT-114-248-PROPAGATION, CM-FLAKY-TEST-QUARANTINE-WIRED, CM-PROTECTED-REGRESSION-SPEC-GATE (plus paired §1.1 mutations)
 - **No escape hatch:** --rerun-until-green, --quarantine-permanent, --protected-spec-review-optional, --codeowners-skip, --blanket-protect-everything, --tag-without-atm-id
@@ -4307,7 +4361,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §2.1, §11.4.6, §11.4.35, §11.4.50, §11.4.54, §11.4.66, §11.4.113, §11.4.115, §11.4.135, §11.4.197, §11.4.226, §1.1
 
 #### §11.4.249 — Producer != oracle != gate != verifier + flight recorder
-- **Source:** testing-and-tdd.md:1608-1612
+- **Source:** testing-and-tdd.md:1648-1654
 - **Rules:**
   - Every load-bearing quality mechanism has FOUR structurally separate roles: (1) PRODUCER (code computing/emitting/building output); (2) ORACLE (decides correctness per §11.4.245); (3) GATE (seam consuming the oracle verdict to allow/block/proceed); (4) VERIFIER (audits the gate's decision; paired §1.1 mutation proving the gate can refuse a bad output).
   - Collapse classes: producer=oracle (oracle-agrees-with-code, §11.4.245); oracle=gate (never says "cannot decide", defaults to allow: §11.4.201(6) FALSE-NULL); gate=verifier (self-auditing gate, §11.4.142 self-review anti-pattern).
@@ -4320,7 +4374,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.5, §11.4.6, §11.4.107, §11.4.116, §11.4.142, §11.4.194, §11.4.201, §11.4.207, §11.4.240, §11.4.245, §1.1
 
 #### §11.4.250 — Heuristic-tower signals a primitive defect
-- **Source:** testing-and-tdd.md:1616-1620
+- **Source:** testing-and-tdd.md:1656-1662
 - **Rules:**
   - A codebase accumulating a TOWER of heuristics compensating for the same underlying issue (e.g. retry-with-backoff + connection-pool-warmup + DNS-cache-flush + health-check-with-startup-grace, all guarding one flaky DB connection) IS the diagnostic: the PRIMITIVE is defective; every layer papers over a manifestation.
   - Recognition signals: (i) each layer's justification is "we added because sometimes X happens" (reactive); (ii) removing any layer INCREASES failures but keeping all shows occasional residual; (iii) no single layer owns responsibility; (iv) layers added at different times by different authors per specific incidents; (v) monotone layer-count growth, a debugging session for the residual adds layer N+1 rather than fixing 1..N.
@@ -4332,6 +4386,30 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Honest boundary:** Source offset un-resolvable per §11.4.239 CITATION NOTE; resolves to module 35 taxonomy row 4 (module_35:99/102/104); the constant-offset mapping across §11.4.250/.251/.254 is an observed correlation, not asserted fact.
 - **Composes:** §11.4.5, §11.4.6, §11.4.102, §11.4.124, §11.4.194, §11.4.201, §11.4.226, §1.1
 
+
+#### §11.4.278 — Mandatory HelixQA UI QA with Vision eyes: every project with a UI on ANY platform or OS passes HelixQA full suites over all screens, flows, use cases and edge cases, read by a Vision model validated under §11.4.277, against deterministic expected-content oracles, with no skip flags and a per-frame evidence path for every verdict (User mandate, 2026-10-12; status PROPOSED)
+- **Source:** testing-and-tdd.md:1664-1722
+- **Rules:**
+  - Operator mandate (paraphrased in canon; verbatim in the consuming project's request-history record, §11.4.208/§11.4.210): every project with a UI, on any platform and operating system (web, desktop, Android, Android TV, iOS, installer wizard and so on), MUST be covered by full HelixQA suites over ALL screens, flows, use cases and edge cases; HelixQA MUST have real "eyes" - a Vision model recognising the real content of each screen, page, component and widget; no bluff.
+  - Why it exists: §11.4.27, §11.4.158/§11.4.159/§11.4.160/§11.4.163, §11.4.117/§11.4.193 and §11.4.52/§11.4.238 never state as ONE universal obligation that (1) EVERY UI project on EVERY platform is covered by a HelixQA full suite over its WHOLE information architecture, (2) the "eyes" are themselves proven correct before they are trusted (§11.4.277), so a hallucinating Vision model cannot certify a screen, and (3) coverage is a closed, enumerated, machine-checkable set rather than a happy-path sample. Without (2) the vision step is the most fluent bluff surface in the pipeline: it can describe a plausible screen that is not there.
+  - NOT this (§11.4.227): does not replace §11.4.158, §11.4.159, §11.4.160, §11.4.163, §11.4.117, §11.4.193, §11.4.143 or §11.4.185 (manual QA stays the final human confirmation); it binds them into a per-platform whole-IA coverage obligation and adds the Vision-validation precondition. The accessibility tree / DOM / uiautomator remain PRIMARY oracles where trustworthy (§11.4.117); the model corroborates and covers the pixels the tree cannot.
+  - (A) UNIVERSAL SCOPE: every project and every submodule shipping a user-facing surface MUST pass HelixQA full suites for EACH platform / surface it ships: web (every supported browser engine x viewport class), desktop (every shipped OS - Linux, Windows, macOS - native, Electron / Tauri / Qt), mobile (Android phone / tablet, iOS / iPadOS), TV (Android TV / leanback / tvOS with remote-control navigation), wearable / automotive if shipped, TUI / CLI-with-screens, installer / setup wizards (including OS installer and first-run flows), embedded / kiosk displays, admin / back-office UIs. A shipped platform not covered is a violation (composes §11.4.81 cross-platform parity and §11.4.25). A platform that genuinely cannot be driven or captured (FLAG_SECURE / DRM-black surface, no emulator, hardware not available) is recorded `structurally_impossible` with citations (§11.4.112) or `topology_unsupported` / `operator_attended` (§11.4.3) with a tracked item (§11.4.197), never silently omitted, never a fake PASS.
+  - (B) WHOLE-IA COVERAGE IS A CLOSED, ENUMERATED SET: per surface a machine-readable SCREEN-AND-FLOW CATALOGUE (the §11.4.219 per-app screen catalogue where one exists, otherwise created under this clause) enumerates every screen / page / dialog / sheet / toast / empty-state / error-state / loading-state, every component and widget x state (§11.4.218), every flow and use case, and every declared edge case (valid / invalid / boundary / empty / max / concurrent / offline / slow-network / permission-denied / interrupted / rotated / locale-RTL / large-text / dark+light theme / low-memory, plus failure injection per §11.4.85). Coverage = catalogue entries with a read-verified PASS record / catalogue entries; the required ratio is 100 % of non-waived entries. The catalogue is cross-checked against the build's actual route / activity / view / window inventory (§11.4.118), so an undeclared screen is a finding. Waivers only through §11.4.271.
+  - (C) HelixQA IS THE DRIVER AND ORCHESTRATOR; THE SUITES ARE FULL: HelixQA (§11.4.27, vendored per §11.4.74/§11.4.28) drives test banks per surface, challenge scripts per use case, the exercise -> record -> read -> score pass of §11.4.158(C), the §11.4.160 frame bridge (a frame at <= 5 s intervals and at every state transition) and the §11.4.163 media pipeline. "Full suite" = every catalogue entry exercised by the UI-driven variant (§11.4.48) AND the intent / API variant (§11.4.49) where both exist, on the real build artifact on a clean target (§11.4.108, §11.4.139), never a mock, stub or hand-fed screenshot. The suites are ALL-types per §11.4.27 / §11.4.169 (functional, e2e, regression, visual, accessibility, performance / jank, security, stress / chaos, localisation, upgrade / install): vision is added to that matrix, never substituted for any of it.
+  - (D) THE EYES: the Vision model HelixQA uses MUST hold a current §11.4.277 validation record for its exact model identity (the llmctl record plus the host-class elements the consumer binds) BEFORE its output counts in any verdict: `llmctl require-validated <profile>` exits 0 and the vision step runs with `LLMCTL_VALIDATE_STRICT=1`; HelixQA refuses to run its vision step otherwise (fail-closed, §11.4.252/§11.4.254) and the run's vision-dependent checks are reported `not_validated`, never green. The model also obeys §11.4.277(E) (pre-flight pressure refusal, bounded restarts, memory caps below RAM, co-residency bounded by live budgets); a vision run that would breach it is deferred, not forced. The "eyes" have two layers: the validated model for recognition and a deterministic OCR / template / pixel layer (§11.4.117) for assertions whose truth must be exact (text, numbers, colours, positions, counts).
+  - (E) WHAT THE EYES MUST ESTABLISH - real content, not plausibility: for every captured frame a structured record of (1) SCREEN IDENTITY (which catalogue entry, and that it is NOT a neighbouring screen, a blank, a spinner-stuck, a crash dialog or an error page); (2) COMPONENT / WIDGET INVENTORY and state (enabled / disabled / selected / focused / loading / error), each located by region; (3) CONTENT - the actual text, numbers, images and media compared with the expected content for THAT screen in THAT state with THAT data (not "looks like a login screen" but "shows the labelled fields X and Y and the error text Z"); (4) HEALTH - no clipped / overlapping / off-screen elements, no untranslated or placeholder strings (`TODO`, `lorem`, raw keys, `{{var}}`), no stale / frozen frame (§11.4.107 liveness), no obstruction; (5) CONSISTENCY with the product's own data (the value shown equals what the backend / DB / fixture holds - a sink-side cross-check, §11.4.68/§11.4.69). A merely plausible description is a FAIL.
+  - (F) DETERMINISTIC EXPECTED-CONTENT ORACLES DECLARED BEFORE THE RUN: every catalogue entry carries an EXPECTED-CONTENT SPECIFICATION written before the exercise (§11.4.159(J)): the closed set of required strings / regions / components / states / counts, forbidden patterns, the data fixtures making content known (seeded accounts, fixed catalogue, frozen clock, fixed locale) and, per assertion, WHICH oracle decides it (accessibility tree / DOM / uiautomator > deterministic OCR / template > validated-Vision model; the model decides alone ONLY where no deterministic oracle exists, the assertion is then marked `model-decided` and needs a corroborating second angle per §11.4.145 / §11.4.123 or stays `PENDING_FORENSICS`). The comparator is mechanical, never a model judging a model (§11.4.262(C)/(D)), and golden-good / golden-bad self-validated (§11.4.107(10)). Data and environment are pinned (§11.4.50); inherently dynamic screens declare masked regions explicitly rather than loosening the whole assertion.
+  - (G) NO SKIP FLAGS, NO PARTIAL SUITES, NO SILENT SKIPS: no `--skip-vision`, `--skip-platform`, `--happy-path-only`, `--screens-subset`, `--ignore-failing-screen`, `--lower-ocr-threshold`, `--accept-model-description`, `--no-recording`, `--fixture-screenshot-instead-of-live` flag or equivalent environment variable, config key or `t.Skip` exists. The ONLY permitted non-PASS outcomes are the closed set `FAIL`, `not_validated`, `topology_unsupported`, `operator_attended`, `structurally_impossible` (§11.4.112) and `waived` (§11.4.271), each with a reason and a tracked item; a result set with an unexplained skip, or whose PASS count is not catalogue entries minus recorded non-PASS entries, FAILs. Skips are loud (`SKIP-OK: #<ticket>` where the language needs it). A run whose HelixQA version, Vision model identity or catalogue hash differs from the recorded one is a different run.
+  - (H) PER-FRAME EVIDENCE PATH FOR EVERY VERDICT: under `docs/qa/<run-id>/helixqa-ui/<platform>/<surface>/<catalogue-id>/` - the raw PNG with SHA256, capture timestamp and window-scoped capture parameters (§11.4.159(A)), the OCR text, the Vision structured record (E), the expected-content spec, matched / unmatched pattern lists with exact pinpoint on FAIL (§11.4.163(e)), the §11.4.277 validation-record id, the analyzer / comparator version and calibration hash, and the MP4 segment with project-name prefix (§11.4.155/§11.4.159(C)) and frame offset. Evidence is machine-created and hash-chained (§11.4.268). Credential characters visible in frames are redacted before commit (§11.4.10, §11.4.193(5)). No blind typing: every input step is preceded and followed by a captured, read screen (§11.4.193).
+  - (I) DISCOVERY PRESSURE AND ESCAPE AUDIT: the suite is the DISCOVERER (§11.4.238); a defect found by manual QA, an operator or a user that the HelixQA run called PASS is an operator-escape -> mandatory bluff-audit and permanent guard (§11.4.138) AND a re-validation review of the Vision model identity (§11.4.277(H)): was it the model, the fixture set, the spec or the comparator? Every fixed defect gains a regression bank entry (§11.4.135) driving the same screen through the same path (§11.4.146). Exploratory / monkey sweeps of the real build (§11.4.118) feed new screens back into the catalogue.
+  - (J) REQUIRED ARTIFACTS PER CONSUMING PROJECT: (1) the screen-and-flow catalogue per surface; (2) HelixQA test banks + challenge scripts per surface and use case, each paired with its §1.1 mutation; (3) expected-content specifications and seeded-data fixtures; (4) the §11.4.277 validation record for the Vision model identity with its fixture corpus + manifest; (5) the coverage ledger (per-entry status, last-verified run id, evidence path) kept current per §11.4.153 / §11.4.15; (6) documentation per §11.4.60 / §11.4.257 / §11.4.258 - manual + guide + FAQ entry for each covered screen / flow (read-checked against the live UI so docs cannot drift), the HelixQA run guide, and architecture / data-flow / sequence / state-machine diagrams updated for any screen or flow a change adds (a screen without doc + diagram is incomplete); (7) README quality-status badge row entries for UI-QA coverage and Vision validation (§11.4.259); (8) docs mirrored per §11.4.65 and translated where localised (§11.4.255/§11.4.256); (9) the §11.4.236 qa-readiness gate input: no manual-QA hand-off until the catalogue coverage gate is GREEN.
+  - (K) CONSUMER ADOPTION (§11.4.35): the consumer states as DATA the surfaces and platforms it ships, catalogue and spec paths, HelixQA bank / challenge locations, capture mechanism per platform, OCR engine + confidence floor + frame interval (calibrated on its own frames, §11.4.6/§11.4.160), the Vision model identity and its §11.4.277 record, seeded-data fixtures and the evidence root; the first adopter declares each shipped surface (§11.4.28) and every other consumer adopts in the same shape and may not narrow it.
+  - STATUS OF THIS ANCHOR (operator decision 2026-10-13: ship as proposed, evidence PENDING): §11.4.278 is PROPOSED. No HelixQA / consumer end-to-end evidence exists yet; a real HelixQA bank run that reads screens through llmctl `vision` with `LLMCTL_VALIDATE_STRICT=1` and `require-validated` gating is a separate future work item, and until it exists every mechanism gate below is a deferral, not a shipped mechanism.
+  - Classification universal (§11.4.17): no project or platform literal is hardcoded. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-278-PROPAGATION (implemented: `scripts/gates/cm_covenant_114_278_propagation.sh` + mutation test); registered as tracked deferrals OWED-GATE-131 to OWED-GATE-142 in `scripts/gates/gate_ledger_deferrals.tsv` (gate code is a separate work item, NOT claimed shipped): CM-HELIXQA-UI-SUITE-PER-PLATFORM (a shipped platform with no suite run record FAILs), CM-UI-CATALOGUE-COVERAGE-100 (read-verified PASS / non-waived entries = 100 %; PASS count != entries - recorded non-PASS FAILs), CM-UI-CATALOGUE-MATCHES-BUILD-INVENTORY (an undeclared screen or phantom entry FAILs; control-needled per §11.4.201(7)(b)), CM-HELIXQA-VISION-VALIDATED (the vision step runs only with a current §11.4.277 record for the live tuple), CM-UI-EXPECTED-CONTENT-SPEC-BEFORE-RUN (a spec edited after a failing run FAILs), CM-UI-VERDICT-PER-FRAME-EVIDENCE (a missing or dangling evidence path FAILs), CM-UI-SCREEN-IDENTITY-NOT-PLAUSIBILITY (a `model-decided` assertion without a corroborating second angle FAILs), CM-UI-NO-SKIP-FLAGS (static + runtime scan for the forbidden flags / env / config / `t.Skip`), CM-UI-EDGE-CASE-MATRIX-COVERED (each declared edge-case dimension has a verdict), CM-UI-ESCAPE-TRIGGERS-REVALIDATION (an operator-escape triggers the §11.4.138 audit and a §11.4.277(H) re-validation review record), CM-UI-QA-DOCS-DIAGRAMS-SYNC (a screen or flow added without manual / guide / FAQ entry and diagram FAILs, §11.4.257/§11.4.258/§11.4.60), CM-UI-QA-READINESS-GATE (manual-QA hand-off blocked until the coverage gates are GREEN, §11.4.236). Paired §1.1 mutations (each MUST make its gate FAIL): add a screen with no catalogue entry; delete one platform's suite record; mark an entry PASS with no frame evidence; edit a spec after a failing run; run the vision step with the Vision model's `mmproj` changed and no re-validation; make the comparator accept a golden-bad frame (blank / wrong screen / error dialog / placeholder text); introduce a `--skip-vision` flag or `t.Skip` with no ticket; replace a live capture with a static fixture screenshot; a `model-decided` assertion with no second angle; strip the literal. Golden-FALSE (§11.4.201(1)): a fully covered, fully evidenced catalogue with a validated Vision model, deterministic oracles first and every non-PASS outcome explained MUST NOT fire any gate.
+- **No escape hatch:** --skip-vision, --skip-platform, --happy-path-only, --screens-subset, --ignore-failing-screen, --lower-ocr-threshold, --accept-model-description, --no-recording, --fixture-instead-of-live-capture, --unvalidated-vision-OK, --model-decides-alone, --catalogue-by-hand-no-inventory-check, --manual-qa-replaces-helixqa (all thirteen flags bind; the clause-(G) variant `--fixture-screenshot-instead-of-live` names the same forbidden act)
+- **Honest boundary:** a 100 % catalogue-coverage PASS shows every ENUMERATED screen, flow and edge case rendered the expected content under the declared data and environments; it does NOT prove the absence of screens or states the catalogue and discovery sweep missed (§11.4.118), does NOT prove real-user taste / usability (§11.4.185 manual QA stays the final human gate with its own machine-created record), and a Vision model's recognition is bounded by its validated corpus (§11.4.277), which is why deterministic oracles outrank it wherever they exist. Where a surface is FLAG_SECURE / DRM-black only the documented proxy oracle of §11.4.112 / §11.4.117 applies and the gap is recorded.
+- **Composes:** §11.4, §11.4.3, §11.4.5, §11.4.6, §11.4.10, §11.4.15, §11.4.25, §11.4.27, §11.4.28, §11.4.35, §11.4.48, §11.4.49, §11.4.50, §11.4.52, §11.4.60, §11.4.65, §11.4.68, §11.4.69, §11.4.74, §11.4.81, §11.4.83, §11.4.85, §11.4.107, §11.4.108, §11.4.112, §11.4.117, §11.4.118, §11.4.123, §11.4.135, §11.4.138, §11.4.139, §11.4.143, §11.4.145, §11.4.146, §11.4.153, §11.4.155, §11.4.158, §11.4.159, §11.4.160, §11.4.163, §11.4.169, §11.4.185, §11.4.193, §11.4.197, §11.4.218, §11.4.219, §11.4.236, §11.4.238, §11.4.252, §11.4.254, §11.4.255, §11.4.256, §11.4.257, §11.4.258, §11.4.259, §11.4.262, §11.4.268, §11.4.271, §11.4.277, §1.1, §11.4.17
 
 ### Translation and localization (3 anchors)
 
@@ -4354,7 +4432,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** The mention that the §11.4.140/§11.4.141 translation numbering collision was later re-minted as §11.4.255/§11.4.256 is an annotation from the project status record, not text of this canon block; this block says the re-mint was still operator-owned.
 
 #### §11.4.255 — Mandatory HelixTranslate canonical translation pipeline
-- **Source:** translation-and-localization.md:25-51
+- **Source:** translation-and-localization.md:25-53
 - **Rules:**
   - Operator mandate (2026-06-25): every project inheriting this constitution MUST use HelixTranslate (`git@github.com:HelixDevelopment/HelixTranslate.git`) via a universal reusable pipeline to generate ANY translations; hard, non-negotiable.
   - ALL translations of ANY content (UI strings, documents, articles, CVs, READMEs, marketing copy, in-app messages, release notes, legal text, any human-language string in a non-source language) MUST be produced by HelixTranslate driven through the canonical pipeline at `scripts/translation/` (`translate-pipeline.sh` + `render-articles.sh`).
@@ -4374,7 +4452,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.5, §11.4.6, §11.4.7, §11.4.69, §11.4.107, §11.4.17, §11.4.35, §1.1
 
 #### §11.4.256 — Mandatory independent per-language translation review
-- **Source:** translation-and-localization.md:55-81
+- **Source:** translation-and-localization.md:55-83
 - **Rules:**
   - Operator mandate (2026-06-25): translation quality for all supported languages MUST always be checked by independent specialized review agents performing full testing, review, validation and verification of all translated content.
   - Every translated artifact produced under §11.4.255 MUST, before it is shipped/committed/deployed, be INDEPENDENTLY REVIEWED by a per-language review agent; a hard non-negotiable gate that composes with and never replaces §11.4.255.
@@ -4423,7 +4501,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.12, §11.4.15
 
 #### §11.4.21 — Operator-blocked status + self-resolution exhaustion mandate
-- **Source:** workable-items-and-tracking.md:60-201
+- **Source:** workable-items-and-tracking.md:60-203
 - **Rules:**
   - Operator dependency is a last-resort classification, earned only after documented exhaustion of self-resolution paths; routing an item to the operator without proving agent+tooling cannot unblock it is a planning-layer PASS-bluff.
   - (1) Status closed set is extended to seven values: Queued, In progress, Ready for testing, In testing, Reopened, `Operator-blocked` (cannot proceed without an operator action the agent and available tooling cannot perform), `Fixed (→ Fixed.md)`.
@@ -4440,7 +4518,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.15, §11.4.16, §11.4.19, §11.4.12, §11.4.20, §11.4.8, §11.4.6, §11.4.3, §11.4.17
 
 #### §11.4.33 — Type-aware closure-status vocabulary
-- **Source:** workable-items-and-tracking.md:205-257
+- **Source:** workable-items-and-tracking.md:205-259
 - **Rules:**
   - The closure terminal Status MUST agree with the item Type, from a 3-element closed map: `Bug` → `Fixed (→ Fixed.md)`; `Feature` → `Implemented (→ Fixed.md)`; `Task` → `Completed (→ Fixed.md)`.
   - The `(→ Fixed.md)` suffix is preserved across all three so the Issues.md → Fixed.md atomic-move tooling (§11.4.19) works without per-Type branching.
@@ -4453,7 +4531,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.15, §11.4.16, §11.4.19, §11.4.23, §11.4.17
 
 #### §11.4.34 — Reopened-source attribution mandate
-- **Source:** workable-items-and-tracking.md:261-326
+- **Source:** workable-items-and-tracking.md:261-328
 - **Rules:**
   - Every tracker heading whose Status is `Reopened` MUST carry, within 8 non-blank lines, a `**Reopened-Details:**` line capturing four sub-facts.
   - **By:** `AI` (in-loop reopens: test failure, gate regression, captured-evidence retrospect) or `User` (operator-side: manual testing, end-user report, design reconsideration).
@@ -4468,7 +4546,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.7, §11.4.15, §11.4.21, §11.4.17
 
 #### §11.4.54 — ATM-NNN ticket identifier mandate
-- **Source:** workable-items-and-tracking.md:330-451
+- **Source:** workable-items-and-tracking.md:330-455
 - **Rules:**
   - Every workable item in `docs/Issues.md` AND `docs/Fixed.md` MUST carry a stable, unique, monotonic, append-only `[ATM-NNN]` identifier in its heading: `## §X.Y. [ATM-NNN] <title>` (or `### §X.Y.` for nested). NNN is a positive integer zero-padded to at least 3 digits.
   - Identifiers are allocated by the canonical helper `scripts/testing/assign_atm_ticket_ids.sh` maintaining an append-only state file `scripts/testing/.atm_ticket_state.json`.
@@ -4477,14 +4555,16 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
   - `heading_hash` is the canonical binding key: the helper looks up an existing ATM-NNN by hash before allocating; if heading text changes substantially, the hash is updated in place via an explicit migration command, NOT auto-rebound.
   - `docs/Issues_Summary.md` and `docs/Fixed_Summary.md` MUST carry a leftmost `ATM ID` column; generators (`generate_issues_summary.sh`, `generate_fixed_summary.sh`) MUST emit it as the first data column.
   - The helper MUST be invoked from `sync_issues_docs.sh` so new items get IDs before summary regeneration; per-item Reopens.md lives at `docs/issues/<ATM-NNN>/Reopens.md` (§11.4.55).
+  - EXTENSION (2026-10-08) - THE TICKET-ID KEY IS PER-PROJECT DATA, NOT THE LITERAL `ATM`: the spelling `ATM-NNN` throughout the corpus (the `[ATM-NNN]` heading token, the `[PROTECTED-SPEC: ATM-NNN]` tag, the three gate contracts below, the state-file field `atm_id`) is the constitution's canonical NOTATION and the legacy key of the originating project; read it as `<KEY>-NNN`, where `<KEY>` is the consuming project's own declared key (`ATM` remains the default notation). Concrete historical ids are NOT rewritten. A register's key MUST be DECLARED as consumer data (the `id_prefix` key already carried by the reporting / feature config, §11.4.202 / §11.4.213, passed to `workable-items add --prefix`) and then used consistently: monotonic, unique, never renumbered, no gaps are per key. The engine's derived default (key from the §11.4.151 release prefix via `defaultKeyPrefix()` in `scripts/workable-items/cmd/workable-items/prefix.go`, last resort `WIT`) only BOOTSTRAPS a key and depends on the clone directory name and `HELIX_RELEASE_PREFIX`, so it is NOT a stable register key by itself. Switching a live register to a new key is a §11.4.66 operator decision that preserves every existing id.
+  - Measured engine facts recorded in canon (independent review WF26 on 2026-10-08, re-measured first-hand 2026-10-12): the happy path is key-generic (with no `--prefix` in a clone named `catalogizer` the derived default `CAT` minted `CAT-001..003`; in `other-proj` it was `OTH`) and the heading parser accepts `^## [A-Z]{3}-[0-9A-Za-z]+` and the bracket form `\[[A-Z]{2,}-\d+\]`; BUT the engine does NOT enforce a key grammar at mint or validate time (`add --prefix` minted `cat-001`, `CATS-001`, `C1T-001` and `AB-001`; `validate` reported OK over 7 items across 5 different keys) and a db -> markdown -> db round trip silently dropped 2 of the 7 items (`cat-001`, `CATS-001`). Mint / validate-time key-grammar validation and one-key-per-register validation are OWED engine work, tracked per §11.4.197, not done and not claimed fixed. The legacy NAMES `atm_id`, `new_atm_id`, `head_atm_id` and the `ATM-DERIVED-<hash>` legacy-import marker are NOT renamed (a rename needs a schema migration plus a compatibility view; measured 67 Go files, 20 non-test, under `scripts/workable-items`), also OWED engine work. Whether the engine's last-resort key should be `ATM` instead of `WIT` is an owner decision (UNCONFIRMED). The extension introduces no new CM-* token; the wording is PENDING independent review and owner sight in canon.
   - Applies to every consuming project with an Issues/Fixed split; projects without it are NOT_APPLICABLE. Classification: universal (§11.4.17).
-- **Gates:** CM-ATM-TICKET-IDS-COMPLETE (every heading carries a token matching `\[ATM-[0-9]{3,}\]`), CM-ATM-TICKET-IDS-UNIQUE (state-file record count equals union of Issues.md + Fixed.md occurrences; no orphans/duplicates), CM-ATM-TICKET-IDS-MONOTONIC (max ATM-NNN equals record_count; no gaps), CM-COVENANT-114-54-PROPAGATION (literal `§11.4.54` in constitution/Constitution.md, constitution/CLAUDE.md, constitution/AGENTS.md, parent consumer CLAUDE.md + AGENTS.md); paired mutations: remove an ID, duplicate an ID, delete ATM-NNN=2 from a 5-record file, strip the literal -> each gate FAILs
+- **Gates:** CM-ATM-TICKET-IDS-COMPLETE (every heading carries a token matching `\[<KEY>-[0-9]{3,}\]`, where `<KEY>` is the register's declared key and `ATM` is the default notation), CM-ATM-TICKET-IDS-UNIQUE (state-file record count equals union of Issues.md + Fixed.md occurrences; no orphans/duplicates), CM-ATM-TICKET-IDS-MONOTONIC (max ATM-NNN equals record_count; no gaps), CM-COVENANT-114-54-PROPAGATION (literal `§11.4.54` in constitution/Constitution.md, constitution/CLAUDE.md, constitution/AGENTS.md, parent consumer CLAUDE.md + AGENTS.md); paired mutations: remove an ID, duplicate an ID, delete ATM-NNN=2 from a 5-record file, strip the literal -> each gate FAILs
 - **No escape hatch:** `--skip-atm-assignment`, `--renumber`, `--no-atm-id-required`
-- **Honest boundary:** none stated
-- **Composes:** §11.4.15, §11.4.16, §11.4.19, §11.4.33, §11.4.12, §11.4.53, §11.4.55, §11.4.57, §11.4.44, §11.4.17
+- **Honest boundary:** the per-project-key EXTENSION (2026-10-08) leaves engine work OWED, not done and not claimed fixed: mint / validate-time key-grammar validation, one-key-per-register validation, and the `atm_id` family rename; the wording of the extension is PENDING independent review and owner sight in canon.
+- **Composes:** §11.4.15, §11.4.16, §11.4.19, §11.4.33, §11.4.12, §11.4.53, §11.4.55, §11.4.57, §11.4.44, §11.4.17, §11.4.248, §11.4.202, §11.4.213, §11.4.151, §11.4.66, §11.4.197
 
 #### §11.4.55 — Reopens-history tracking + per-item Reopens.md doc
-- **Source:** workable-items-and-tracking.md:455-564
+- **Source:** workable-items-and-tracking.md:457-568
 - **Rules:**
   - Every workable item with `reopens_count > 0` MUST have a companion `docs/issues/ATM-NNN/Reopens.md` plus HTML + PDF exports (§11.4.44 + §11.4.53 sync).
   - The document MUST contain: (1) revision header per §11.4.44 (`Revision` integer + `Last modified` ISO 8601 UTC); (2) item identification: ATM ID, Title, Type, Current Status, Current Location (Issues.md/Fixed.md), link to live heading; (3) cycle counters: Total reopens, Total fixed cycles; (4) chronological timeline with one entry per state-change event, each with By (AI/User per §11.4.34), On (ISO date), Event (`Opened|Reopened|Fixed|Implemented|Completed`), Reason (the §11.4.34 closed-vocabulary value for reopens; captured-evidence summary for closures), Evidence (path/short description), Outcome (next state transition); (5) a reasoning chain for each closure (root-cause analysis link, captured evidence under same conditions per §11.4.7, gate/mutation pair defending against regression); (6) a most-recent state-change pointer to the current Issues.md/Fixed.md heading.
@@ -4497,7 +4577,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.34, §11.4.54, §11.4.44, §11.4.45, §11.4.53, §11.4.23, §11.4.7, §11.4.17
 
 #### §11.4.90 — Obsolete status + per-item obsolescence audit mandate
-- **Source:** workable-items-and-tracking.md:568-593
+- **Source:** workable-items-and-tracking.md:570-597
 - **Rules:**
   - The §11.4.15 Status set gains a 4th terminal value `Obsolete (→ Fixed.md)`, applied regardless of Type when the item is no longer valid because: (a) superseded by a later operator mandate/design pivot, (b) the feature was removed, (c) duplicated and the canonical entry resolved it, (d) filed against an unsupported hardware/topology variant.
   - Every Obsolete heading MUST carry within 8 non-blank lines an `**Obsolete-Details:**` line with: Since (ISO date); Reason from closed vocabulary `{ superseded-by-design-change | superseded-by-later-mandate | feature-removed | duplicate-of | unsupported-topology | not-reproducible }` (`not-reproducible` = defect not reproducing on the canonical tree/baseline, an environment/isolated-worktree artifact; triple-check evidence MUST capture the canonical-tree non-reproduction); Superseding-item (§-letter reference or User-mandate verbatim quote anchor); Triple-check evidence (path to captured evidence: git log, code grep, runtime behaviour; bare assertion forbidden).
@@ -4511,7 +4591,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Review addendum:** Gate CM-OBSOLETE-COLORIZER-WIRED checks two things: the colorizer emits the `cell-status-obsolete` class on the right cells, and the CSS file defines that class.
 
 #### §11.4.91 — Summary-doc clarity mandate
-- **Source:** workable-items-and-tracking.md:597-632
+- **Source:** workable-items-and-tracking.md:599-636
 - **Rules:**
   - Every short-form summary entry (Issues_Summary.md, Fixed_Summary.md, README.md doc-link section, Status_Summary.md pages 1+2, any one-liner derived from a long-form tracker entry) MUST have a self-contained, meaningfully informative description of WHAT the item is, not a fragment of the long-form body.
   - Forbidden one-liner anti-patterns: section labels as descriptions (`Composes with`, `Closure criteria`, `Fix direction`, `Forensic anchor`, `Reopened-Details`, `Operator-Block-Details`, `Obsolete-Details`, `Summary`, `Status`, `Type`, `Severity`, etc.); bare numeric/categorical fragments (`Critical`, `High`, `Medium`, `Low`, `Bug`, `Feature`, `Task`, `Fixed`); generic restatements of Status (`In progress`, `Queued`, `Reopened`, `Operator-blocked`, `Fixed`); section-marker echoes matching `^[A-Z][a-z]+ (with|by|on|in|to|for):?$` with empty right-hand side; a §-letter alone (`§KB`, `§EU`).
@@ -4524,7 +4604,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.12, §11.4.19, §11.4.23, §11.4.44, §11.4.53, §11.4.56, §11.4.57, §11.4.59, §11.4.60, §11.4.65, §11.4.74, §11.4.40, §11.4.42, §11.4.15, §11.4.16, §11.4.54
 
 #### §11.4.92 — Multi-pass change-evaluation discipline
-- **Source:** workable-items-and-tracking.md:636-668
+- **Source:** workable-items-and-tracking.md:638-672
 - **Rules:**
   - Every non-trivial change MUST pass a 5-pass evaluation (ALL passes must hold) BEFORE being accepted as commit-ready.
   - Pass 1 Main-task verification: captured evidence per §11.4.5/§11.4.69 shows the user-visible behaviour works as intended; no inferred/assumed/"should work".
@@ -4541,7 +4621,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1, §11.4.4, §11.4.5, §11.4.6, §11.4.8, §11.4.20, §11.4.70, §11.4.27, §11.4.42, §11.4.43, §11.4.50, §11.4.52, §11.4.69, §11.4.78, §11.4.79, §11.4.82, §11.4.83, §11.4.85, §11.4.87, §11.4.89, §11.4.58, §11.4.84, §11.4.88, §11.4.40
 
 #### §11.4.93 — SQLite-backed single-source-of-truth for workable items
-- **Source:** workable-items-and-tracking.md:672-730
+- **Source:** workable-items-and-tracking.md:674-734
 - **Rules:**
   - The DB is authoritative; all Markdown/HTML/PDF/Status/Summary surfaces (Issues.md, Fixed.md, Issues_Summary.md, Fixed_Summary.md, CONTINUATION.md, Status.md) are generator output. Regeneration always starts from the DB.
   - Canonical artefacts: (1) DB file at `docs/workable_items.db` (SQLite 3), TRACKED in git, NEVER gitignored; every commit mutating workable items MUST stage + push the DB with the Markdown regen output; exception to §11.4.30 (not a build artefact); WAL sidecars `*.db-wal` + `*.db-shm` ARE gitignored and checkpointed into the main `.db` by `workable-items sync` or `PRAGMA wal_checkpoint(TRUNCATE)`.
@@ -4559,7 +4639,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.12, §11.4.15, §11.4.16, §11.4.17, §11.4.19, §11.4.21, §11.4.27, §11.4.30, §11.4.33, §11.4.34, §11.4.42, §11.4.43, §11.4.44, §11.4.45, §11.4.47, §11.4.50, §11.4.51, §11.4.52, §11.4.53, §11.4.54, §11.4.55, §11.4.56, §11.4.57, §11.4.58, §11.4.60, §11.4.65, §11.4.74, §11.4.77, §11.4.83, §11.4.85, §11.4.86, §11.4.87, §11.4.89, §11.4.90, §11.4.91, §11.4.92
 
 #### §11.4.95 — Workable-items SQLite DB is TRACKED in git, NEVER gitignored
-- **Source:** workable-items-and-tracking.md:734-758
+- **Source:** workable-items-and-tracking.md:736-762
 - **Rules:**
   - The DB at `docs/workable_items.db` is the AUTHORITATIVE source of truth for every workable item in every consuming project and MUST be TRACKED in git; NEVER gitignored regardless of file size or build-artefact heuristics (it is authoritative source data, not a build artefact).
   - Committed alongside every workable-item state change: every `workable-items sync md-to-db` that mutates DB state MUST stage + commit + push the DB file in the same commit as the MD changes per §11.4.19 atomic-move discipline.
@@ -4575,7 +4655,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.93, §11.4.30, §11.4.77, §2.1, §9.2, §11.4.41, §11.4.19
 
 #### §11.4.104 — Participant identity, attribution & notification-tagging
-- **Source:** workable-items-and-tracking.md:762-801
+- **Source:** workable-items-and-tracking.md:764-785
 - **Rules:**
   - Binds every consumer that ships a messenger/notification surface (Herald and flavor binaries are the reference implementation); detailed normative spec is Herald `docs/design/PARTICIPANT_ATTRIBUTION.md`; implementations code against the contract, not a paraphrase. Short tag: `participant-attribution-tagging`.
   - (A) Participant identity: every supported messenger MUST relate inbound+outbound messages to a Participant (logical Subscriber/User). Identity = logical subscriber (canonical messenger-neutral `handle`, `kind` in `{human, agent, service}`) PLUS per-channel aliases (`channel`, `channel_user_id`, per-channel `@username`). The canonical handle stored in attribution columns is from the closed set: `Claude` (reserved system-agent sentinel, kind=agent) OR a human's canonical handle (subscriber `@username`, resolved per-channel via the alias table).
@@ -4590,7 +4670,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4, §11.4.1..§11.4.16, §11.4.5, §11.4.69, §11.4.50, §11.4.91, §11.4.93, §11.4.95, §1.1, §11.4.17, §11.4.96, §11.4.35, §11.4.4
 
 #### §11.4.112 — Structural-impossibility won't-fix classification mandate
-- **Source:** workable-items-and-tracking.md:805-827
+- **Source:** workable-items-and-tracking.md:807-831
 - **Rules:**
   - When deep research per §11.4.8 PROVES (cited authoritative sources AND, where applicable, reproducible captured evidence) that a goal is structurally impossible on the target platform (forbidden by platform design / hardware-protocol constraint / documented kernel-or-API limitation, not merely unimplemented or hard), the goal MUST be: (1) classified `Won't-fix` and closed per §11.4.90 terminal-status discipline with closure reason `structurally-impossible` (a value in the §11.4.90 closed reason vocabulary); (2) documented with the impossibility evidence: cited authoritative source URLs (per §11.4.99 latest-source verification) PLUS reproducible probe/captured evidence, recorded in the tracker entry and the relevant `docs/` guide; (3) NOT re-attempted in future cycles: the closed entry is canonical; a re-open MUST cite NEW evidence that the platform constraint changed (per §11.4.34 and §11.4.7), never re-derive the same impossibility; (4) paired with the correct posture: the entry MUST state what the project DOES instead, so "impossible" is never confused with "broken/unhandled".
   - (5) Scope bounding (extension 2026-07-17): every `structurally-impossible` verdict MUST additionally (a) STATE ITS EXACT SCOPE as the narrowest claim the evidence supports (every load-bearing qualifier such as "without the application's cooperation", "while the UI stays put", "on this platform version" is part of the verdict; dropping one widens it); (b) ENUMERATE ADJACENT GOALS IT DOES NOT COVER, each marked NOT-COVERED-BY-THIS-VERDICT (a neighbour of unknown viability is recorded UNKNOWN with a tracked follow-up per §11.4.6, never silently absorbed); (c) BE CITATION-FENCED: the verdict MUST NOT be cited as the answer for any goal outside its stated scope, in planning/investigation/design/status, without that goal's OWN §11.4.150 deep-research pass and OWN proof (citing beyond the fence is a §11.4.6 violation and a verdict-layer bluff of the class §11.4.199 names).
@@ -4603,7 +4683,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.7, §11.4.8, §11.4.34, §11.4.90, §11.4.99, §11.4.150, §11.4.199, §11.4.21, §11.4.17
 
 #### §11.4.148 — Workable-item integrity (status+type+id) + structured description + bidirectional external-tracker sync + BLOCKED unblock-choices
-- **Source:** workable-items-and-tracking.md:831-853
+- **Source:** workable-items-and-tracking.md:833-855
 - **Rules:**
   - BINDS and STRENGTHENS §11.4.15/16/54/21/91/93/95/106 into one integrity contract across three surfaces: DB, docs, external tracker.
   - (D1) Every item, at every moment, MUST carry (i) a `**Status:**` from the §11.4.15/§11.4.21/§11.4.90 closed set, (ii) a `**Type:**` from `{Bug | Feature | Task}` (§11.4.16), (iii) a stable unique monotonic append-only `[<ID-NNN>]` identifier (§11.4.54). Missing any of the three in the DB, rendered docs, OR external tracker is a violation; validator FAILs (non-zero exit, release blocker). An id on one surface but absent on another is a sync-integrity failure.
@@ -4620,7 +4700,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.15, §11.4.16, §11.4.21, §11.4.33, §11.4.34, §11.4.54, §11.4.66, §11.4.86, §11.4.91, §11.4.93, §11.4.95, §11.4.104, §11.4.106, §11.4.112, §11.4.123, §11.4.10, §11.4.28, §11.4.69, §11.4.6, §1.1, §11.4.5, §11.4.65, §11.4.115, §11.4.146, §11.4.239, §11.4.240, §11.4.262, §11.4.185, §11.4.201, §11.4.227
 
 #### §11.4.149 — Per-workable-item testing-diary mandate
-- **Source:** workable-items-and-tracking.md:855-873
+- **Source:** workable-items-and-tracking.md:857-875
 - **Rules:**
   - Every workable item MUST carry a TESTING DIARY: a chronological append-only record of every test run against it. It is distinct from §11.4.93 `item_history` (lifecycle state transitions) and §11.4.55 Reopens.md (reopen cycles): the diary records TEST EXECUTIONS, each of which may or may not cause a state transition.
   - (a) Append-only per-item `test_diary` table in the SQLite SSoT (additive to the §11.4.93/§11.4.95 schema, never a competing source): one row per test run, soft-keyed to the item's stable id, with at minimum: ISO-8601-UTC `date_time` (sortable, deterministic §11.4.50); `tested_by` from a closed set (e.g. `User | Operator | AI-agent | HelixQA`); `result` from the §11.4.45 closed verdict vocabulary `{PASS | FAIL | SKIP}` + short detail; in-depth `observations` (long markdown; facts or explicit `UNCONFIRMED:`/`PENDING_FORENSICS:` per §11.4.6, never "likely"); `action_taken` + a `status_changed` flag + from/to (did the run change status and WHY/why-not); and a §11.4.69 `evidence_path` + `feature_class`. A structural schema constraint makes a `PASS` row WITHOUT a non-empty evidence path impossible.
@@ -4635,7 +4715,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.6, §11.4.27, §11.4.45, §11.4.50, §11.4.55, §11.4.65, §11.4.69, §11.4.86, §11.4.93, §11.4.95, §11.4.106, §11.4.107, §11.4.123, §11.4.132, §11.4.148, §11.4.10, §11.4.13, §11.4.28, §11.4.33, §11.4.112, §11.4.3, §1.1
 
 #### §11.4.171 — Mandatory comprehensive human-readable workable-item descriptions
-- **Source:** workable-items-and-tracking.md:875
+- **Source:** workable-items-and-tracking.md:877
 - **Rules:**
   - Every workable item (ATM-NNN) in the workable-items DB, Issues.md, Fixed.md, Issues_Summary.md, Fixed_Summary.md and ALL derived documents MUST carry a comprehensive human-readable description in plain non-technical language suitable for non-developers (project managers, stakeholders, team leads, business partners).
   - The description MUST be 5-7 sentences minimum and explain: (a) WHAT the item is (feature/fix/task in simple terms); (b) WHY it matters (user/business value); (c) HOW it works (mechanism, without code references); (d) WHO benefits (end user or stakeholder); (e) WHAT the expected outcome is (measurable result).
@@ -4649,7 +4729,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.15, §11.4.16, §11.4.19, §11.4.91, §11.4.93, §11.4.148, §11.4.65, §11.4.17
 
 #### §11.4.202 — Reporting directives: a report MUST auto-create a fully-populated, fully-synced workable item
-- **Source:** workable-items-and-tracking.md:877-881
+- **Source:** workable-items-and-tracking.md:879-883
 - **Rules:**
   - Every governed project MUST expose REPORTING DIRECTIVES, the §11.4.140 registered actions `BUG` (Type=Bug), `TASK` (Type=Task) and `ISSUE` (generic report, CLASSIFIED into the §11.4.16 closed set), so a plain-language operator report becomes a real tracked fully-synced workable item automatically every time. A report discussed/acknowledged/answered in prose/"noted" WITHOUT landing a tracked item is a PASS-bluff at the requirements-intake layer (the §11.4.197 loss-of-requirements failure at its entry point).
   - (1) GRAMMAR: the directives are ordinary registry rows so every §11.4.140 form works (`BUG :: <text>`, `DEFAULT::BUG :: <text>`, `/DEFAULT::BUG <text>`, `BUG ---> <text>`) PLUS a SIXTH form added here: single-colon `NAME: <text>` (e.g. `ISSUE: subtitles are late`). The single-colon form is REGISTERED-ACTION-ONLY by construction: a single-colon token not a registered action is a NO-OP (ordinary prompt), NEVER an ASK and NEVER a sub-system shortcut (prose like `TODO:`, `WARNING:`, `FIXME:` shares the shape; `NOTE:` is a registered §11.4.140 severity marker); the other five forms keep ASK-on-unknown behaviour. Host-command collisions use the existing §11.4.140 mechanism (`slash_bare: auto` + `slash_conflicts: [..]`): a bare `/NAME` colliding with a built-in (e.g. Claude Code's `/bug`) is NOT honored, the namespaced `/DEFAULT::NAME` is always unambiguous, and `NAME:` / `NAME ::` / `NAME --->` forms are never affected by any host command.
@@ -4665,7 +4745,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.140, §11.4.93, §11.4.95, §11.4.15, §11.4.16, §11.4.54, §11.4.148, §11.4.171, §11.4.106, §11.4.12, §11.4.53, §11.4.65, §11.4.10, §11.4.66, §11.4.105, §11.4.101, §11.4.197, §11.4.28, §11.4.177, §11.4.164, §11.4.107, §11.4.108, §11.4.27, §11.4.3, §11.4.6, §1.1
 
 #### §11.4.214 — Recurrence-links-not-mints: a returning defect MUST reopen its existing item, never enter as a new id (research-derived, 2026-07-17)
-- **Source:** workable-items-and-tracking.md:883-901
+- **Source:** workable-items-and-tracking.md:885-903
 - **Rules:**
   - Reason: recurrences filed as new ids never increment the original's reopen counter, so the §11.4.55 reopens_count (the signal §11.4.132(d)/§11.4.189 use to rank the most-fragile work) stays quiet precisely on items that keep breaking; the recorded 52% reopen rate was a known undercount; duplicates inflate the queue and fork conflicting fixes.
   - Mandate: before minting a NEW id for any incoming defect from ANY intake path, check whether an existing item describes the SAME defect; if so LINK the report to it rather than mint, and REOPEN it if and only if it is currently in a terminal state (§11.4.33 Fixed/Implemented/Completed, or a §11.4.90 closure other than duplicate-of).
